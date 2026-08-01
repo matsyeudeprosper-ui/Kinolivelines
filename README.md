@@ -36,8 +36,12 @@ futures markets that took no part in discovery** (grains, softs, livestock, meta
 showed **+5.6%** adverse excursion at positioning extremes. Different data, different
 instruments, different measure of crowding — same sign, same magnitude.
 
-**This is a risk rule, not an entry signal.** It says size smaller and expect deeper
-excursions when positioning is crowded. It says nothing about which way to bet.
+**It is a risk fact, not an entry signal** — and it did **not** make it into the live
+system. Tested on the setups this bot genuinely takes rather than on every hour, the
+effect vanishes and reverses (crowded stop-out 65.2% vs normal 67.5%), and all five risk
+policies land within ±3.6pp of baseline with signs that flip between periods. A
+population-level effect is not a strategy-level effect; see
+[`FINDINGS.md`](FINDINGS.md) §4.
 
 ---
 

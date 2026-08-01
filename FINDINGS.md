@@ -70,17 +70,53 @@ histories it was found in. **Holdout markets are not optional.**
 
 ---
 
-## 4. Crowding as a RISK measure — SURVIVES
+## 4. Crowding as a RISK measure — real in the population, CLOSED for this bot
 
-See the table in [`README.md`](README.md). Adverse excursion rises ~5–6% at positioning
-extremes, on BTC and ETH via funding and on 20 unseen futures markets via COT.
+Adverse excursion rises ~5–6% at positioning extremes, on BTC and ETH via funding and on
+20 unseen futures markets via COT. Direction remains completely unpredictable. Favourable
+excursion does **not** replicate, so the widening is asymmetric — a crowded market travels
+further against a position than for it. The effect lives at **~4 hours**; at 8h it points
+the same way but fails the rotation null, and at 1 day it is gone.
 
-Direction remains completely unpredictable. Favourable excursion does **not** replicate,
-so the widening is asymmetric — a crowded market travels further against a position than
-for it.
+| | BTC | ETH |
+|---|---|---|
+| adverse excursion, 4h, stratified by entry volatility | +0.061 ±0.026 | +0.051 ±0.024 |
+| volatility quintiles with the same sign | 5 of 5 | 5 of 5 |
+| two-sided rotation null | 1.0% | 0.0% |
+| stop-out rate at 1.0× ATR | +2.90 pp | +2.00 pp |
 
-**Effect lives at ~4 hours.** At 8h it points the same way with the same magnitude but
-fails the rotation null; at 1 day it is gone.
+### …and why it still closed
+
+Tested on **the setups this bot genuinely takes** rather than on every hour, the effect
+disappears and the point estimate reverses:
+
+| convention | crowded stop-out | normal | difference (2SE 3.4pp) |
+|---|---|---|---|
+| fade | 65.2% (n=920) | 67.5% (n=4,972) | **−2.3 pp** |
+| follow | 66.8% | 67.4% | −0.5 pp |
+
+Mean R is also *better* when crowded (−0.0075 vs −0.0454, fade). All five policies —
+baseline, skip-when-crowded, 75% size, 50% size, wider stop at constant risk — landed
+within ±3.6pp of baseline total return, with signs flipping between direction conventions
+and between development and holdout. Every apparent improvement is mechanical: baseline
+expectancy is negative, so a policy that trades less always looks better.
+
+**A population-level effect is not a strategy-level effect.** Conditioning on "price is
+within 0.06 × ATR_H1 of a level" evidently removes whatever the crowding measure was
+capturing. This is the most important methodological lesson in the file.
+
+### Two facts worth more than the negative result
+
+**OKX funding does not transfer to Deribit.** Over 277 matched settlements the levels
+correlate only **r = 0.30**, and at the top/bottom 5% tail OKX flags 31 hours, Deribit
+flags 27, and they **agree on 1** — below chance. Deribit BTC-PERPETUAL is inverse and
+USD-margined; OKX BTC-USDT-SWAP is linear. A live rule keyed to `funding_okx` would have
+fired on essentially unrelated hours. *Always verify that a researched signal exists in
+the feed the live system actually reads.*
+
+**The field matters too.** The research used `interest_8h`; the live recorder captures
+`interest_1h`. They correlate 0.85 and the effect survives on `interest_1h` but weaker —
++0.0391 ±0.0254 (4 of 5 quintiles) against +0.0614 ±0.0258 (5 of 5).
 
 ---
 
@@ -131,7 +167,28 @@ Compute detectable effect size **before** running a test.
 
 ---
 
+**10. A population-level effect assumed to be a strategy-level effect.** An edge measured
+across all hours need not exist among the hours a strategy actually trades — the entry
+condition is itself a filter, and it can remove exactly what the effect was capturing.
+Test candidates against the strategy's real setups before believing them.
+
+---
+
 ## Methods worth reusing
+
+**The setup reconstructor.** `study/sim_setups.py` rebuilds every setup the daemon would
+have been woken for, from OHLC alone: level set = previous closed H4/H1/M15 high and low,
+merged within `max(3 × spread, 0.12 × ATR_H1)` with the higher timeframe winning; trigger
+= flat, price within `0.06 × ATR_H1`, one-shot arming that re-arms at 2.5× that distance,
+1800s per-level cooldown, and M15 levels matching the last two M15 bars skipped as
+self-referential (which removes *all* M15 levels — matching live behaviour). ~340 setups
+per month. `sim_variants.py` then runs any policy through the real management rules
+**sequentially, one position at a time**, so declining a setup genuinely frees the bot for
+the next one rather than just deleting a row from a table.
+
+Any future risk or entry idea should be tested through these two scripts before it is
+believed. Note the data ceiling: MT5 BTCUSDm M15 reaches back only ~1.4 years, against
+7.6 for H1 and H4.
 
 **Phase shifting.** With a hold of *N* bars there are *N* distinct places to start a
 chain of non-overlapping windows. Each is a complete clean sample. Running all of them
