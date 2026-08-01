@@ -149,6 +149,23 @@ the feed the live system actually reads.*
 
 ---
 
+## 5. Perp-index basis — NULL
+
+Basis = (perpetual close − spot index)/index. Worth testing because `corr(basis,
+funding) = 0.046` — genuinely orthogonal to funding, so it was new information rather
+than a relabelling of a variable already killed.
+
+63,587 hourly rows, 7.3 years, BTC and ETH, horizons 4h/24h/72h, against a
+**volatility-matched** random control, with the final 18 months untouched. Nothing beat
+the control anywhere. The best cell was BTC 72h fade at +0.3035 with 5 of 5 volatility
+quintiles agreeing — but 2SE was 0.6769 and ETH gave the opposite sign at the same
+horizon. Holdout showed nothing on either instrument.
+
+See [`RESEARCH_MAP.md`](RESEARCH_MAP.md) for the remaining hypotheses, each with its
+mechanism, minimum detectable effect, validation universe and pass/fail rule.
+
+---
+
 ## Traps this project has actually fallen into
 
 Each of these produced a wrong answer that was believed for a while.
@@ -195,6 +212,19 @@ effect is 6%. Underpowered ~4×. Every interval spans zero, and that means *noth
 Compute detectable effect size **before** running a test.
 
 ---
+
+**11. An unmatched random control.** A control must resemble the signal in everything
+except the signal. Basis extremes arrive after violent moves, so signal entries sit at
+high ATR while a freely-drawn control sits at average ATR — and ATR is the denominator,
+so the control's returns come out larger in magnitude and the signal appears to beat it
+on *both* the fade and follow arms at once. Draw each control from the same volatility
+band as the trade it stands in for. The guard that caught this — *"fade and follow are
+mirror trades; if both look good the control is broken, not the market"* — should be
+printed by every study that has a mirror arm.
+
+**12. One instrument's costs applied to another.** BTC's $10 spread was applied to ETH,
+which trades near $1,900 with a $1.00 spread, inflating its cost tenfold and making every
+ETH figure in that run meaningless.
 
 **10. Declaring a result absent without checking whether the test could see it.** The
 crowding effect was pronounced "absent and wrong-signed" on the bot's setups from a
