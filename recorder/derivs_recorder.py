@@ -42,7 +42,7 @@ OUT = os.path.join(HERE, "data", "derivs_BTC.csv")
 LIQ = os.path.join(HERE, "data", "liquidations_BTC.csv")
 ALIVE = os.path.join(HERE, "data", "derivs_alive.json")
 POLL = 300                      # 5 minutes, matching the finest OKX granularity
-LIQ_POLL = 60                   # see LIQUIDATIONS below - cascades outrun a 5-min poll
+LIQ_POLL = 60                   # generous: one call already returns ~22h of events
 UA = {"User-Agent": "Mozilla/5.0 (research)"}
 
 COLS = ["ts_utc", "ts_ms", "open_interest", "contract_volume", "long_short",
@@ -55,10 +55,9 @@ COLS = ["ts_utc", "ts_ms", "open_interest", "contract_volume", "long_short",
 # for an hour. Forcing them into the wide row would either lose events or pad the file
 # with blanks.
 #
-# They are polled every 60s rather than every 300s because the endpoint returns at most
-# 100 recent events. Liquidations matter precisely during cascades - which is exactly
-# when more than 100 can occur inside five minutes, so a slow poll would silently drop
-# the observations the whole dataset exists to capture.
+# They are polled on their own 60s clock rather than the 5-minute derivs clock. That is
+# comfortable rather than necessary: a single call returns ~1,500 events covering about
+# 22 hours, so nothing is lost even if the recorder is down for most of a day.
 #
 # This is the field the earlier research could not test at all: forced selling is
 # non-informational price pressure, the cleanest available candidate for a move that
@@ -109,25 +108,53 @@ def funding_deribit():
         return None
 
 
-def liquidations():
-    """Recent forced liquidations on BTC-USDT swaps, flattened to one row per event."""
-    out = []
+def liquidations(known=None, max_pages=12):
+    """Recent forced liquidations on BTC-USDT swaps, one row per event.
+
+    MEASURED BEHAVIOUR, not assumed: `limit=100` caps the outer INSTRUMENT array, not
+    the events inside it. One call returns roughly 1,500 events spanning about 22 hours.
+    An audit found a minute containing 193 liquidations and it was captured whole, so
+    there is no truncation problem and no need to poll quickly - the 22-hour overlap on
+    every call also means a recorder outage of up to a day loses nothing.
+
+    Pagination is kept as a cheap safety net in case that behaviour ever changes: each
+    poll walks backwards with `after` until it reaches events already stored. With the
+    current endpoint that means it stops after a single call.
+    """
+    out, cursor = [], None
+    known = known or set()
     try:
-        d = get("https://www.okx.com/api/v5/public/liquidation-orders"
-                "?instType=SWAP&uly=BTC-USDT&state=filled&limit=100")
-        if str(d.get("code")) != "0":
-            return out
-        for inst in d.get("data") or []:
-            iid = inst.get("instId") or inst.get("uly") or "BTC-USDT-SWAP"
-            for ev in inst.get("details") or []:
-                try:
-                    ts = int(ev.get("ts") or ev.get("time"))
-                except (TypeError, ValueError):
-                    continue
-                out.append([
-                    datetime.fromtimestamp(ts / 1000, timezone.utc).isoformat(timespec="milliseconds"),
-                    ts, iid, ev.get("side", ""), ev.get("posSide", ""),
-                    ev.get("sz", ""), ev.get("bkPx", "")])
+        for _ in range(max_pages):
+            url = ("https://www.okx.com/api/v5/public/liquidation-orders"
+                   "?instType=SWAP&uly=BTC-USDT&state=filled&limit=100")
+            if cursor:
+                url += "&after=%d" % cursor
+            d = get(url)
+            if str(d.get("code")) != "0":
+                break
+            page, oldest = [], None
+            for inst in d.get("data") or []:
+                iid = inst.get("instId") or inst.get("uly") or "BTC-USDT-SWAP"
+                for ev in inst.get("details") or []:
+                    try:
+                        ts = int(ev.get("ts") or ev.get("time"))
+                    except (TypeError, ValueError):
+                        continue
+                    page.append([
+                        datetime.fromtimestamp(ts / 1000, timezone.utc).isoformat(timespec="milliseconds"),
+                        ts, iid, ev.get("side", ""), ev.get("posSide", ""),
+                        ev.get("sz", ""), ev.get("bkPx", "")])
+                    oldest = ts if oldest is None else min(oldest, ts)
+            if not page:
+                break
+            out += page
+            # stop as soon as this page is entirely material we already hold
+            if all(("%s|%s|%s|%s" % (r[1], r[3], r[5], r[6])) in known for r in page):
+                break
+            if oldest is None:
+                break
+            cursor = oldest
+            time.sleep(0.12)                      # stay polite to the endpoint
     except Exception:
         pass
     return out
@@ -176,7 +203,7 @@ def main():
         try:
             # ---- liquidations, on the fast clock ----
             fresh = 0
-            for row in liquidations():
+            for row in liquidations(liq_seen):
                 k = "%s|%s|%s|%s" % (row[1], row[3], row[5], row[6])
                 if k in liq_seen:
                     continue

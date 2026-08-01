@@ -90,6 +90,30 @@ bleed ~2bp a night. Triple charge on Fridays.
 - **Pass/fail** — a cross-correlation peak at a strictly positive lag, stable across all
   three days, with implied move > spread. Anything at lag 0 kills it permanently.
 
+### H6 — Variance risk premium (implied vs realised vol). **TESTABLE NOW. New.**
+
+- **Mechanism** — DVOL is Deribit's 30-day implied volatility index, computed from the
+  live options book. It is what traders are actually paying for protection, quoted in a
+  different market from the one we trade. Realised volatility is computable from data
+  already held, so the pair gives the variance risk premium directly.
+- **Why an edge should exist** — sellers of volatility earn a premium over realised
+  volatility persistently and across every asset class studied. Its size varies, and when
+  it is unusually wide fear is priced in; when it inverts, the options market is signalling
+  stress the spot market has not yet expressed. Neither reading is derived from past price,
+  which is the whole category already exhausted here.
+- **Instrument / horizon** — BTC, hours to days.
+- **Data** — `dvol_BTC.csv` and `dvol_ETH.csv`, **46,947 hourly points each, 2021-03 →
+  2026-08 (5.4 years)**, cached by `recorder/fetch_dvol.py`.
+- **Minimum detectable effect** — ~11,700 non-overlapping 4h windows, ~1,170 in the tails.
+  MDE ≈ **1.3pp** on a rate. Ample.
+- **Validation universe** — BTC across separate periods, replicated on ETH DVOL. Crypto
+  options mechanism; no equity, metal or agricultural proof is owed.
+- **Pass/fail** — beats a volatility-matched random control by >2SE, same sign in ≥4 of 5
+  entry-volatility quintiles, replicates on ETH, survives a two-sided rotation null, and
+  holds on an untouched final period. For any directional claim the capturable move must
+  exceed $14.
+- **Status** — **the strongest testable-now hypothesis. Run next.**
+
 ### H4 — Order-flow imbalance / liquidation cascades. **NOT YET.**
 
 - **Mechanism** — forced liquidations are non-informational selling; price should
