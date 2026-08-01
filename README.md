@@ -105,12 +105,36 @@ attempt — including the failures. Do not bypass it.
 
 ## Status
 
-Demo account, ~$979 equity, no strategy currently authorised to open trades on a signal.
-The live loop asks a decider at structural events; the decider has been declining most
-of them, correctly, because no entry criterion has ever beaten a random-entry control.
+> **Authorised to trade on demo for forward observation, data collection and execution
+> validation. Not authorised for real-money deployment, and not considered to have a
+> validated edge.**
 
-The crowding result above is a **candidate for the risk engine** and has not yet been
-implemented. The untested next step is comparing three variants — reduce size when
-crowded / skip entries when crowded / widen the stop at constant risk — against the
-current baseline on expectancy, drawdown, stop-out frequency, mean adverse excursion and
-recovery time.
+Demo account 436771046, ~$979 equity.
+
+### Two questions, kept separate in all reporting
+
+1. **Is the strategy profitable?** — **Unproven, and the historical evidence is
+   negative.** The reconstructed baseline over 5,892 setups is deeply negative and no
+   entry criterion has ever beaten a random-entry control. Demo trades are **not**
+   evidence for this question.
+2. **Is the live system executing its stated rules correctly?** — testable now, and
+   that is what demo activity is for. Fills, slippage, stop placement, rule adherence
+   and failure handling can all be validated without any edge existing.
+
+Conflating the two is the main way a demo record gets misread.
+
+### Standing constraints
+
+- demo only — `act.py` refuses outright if `trade_mode != 0`
+- no automatic migration to real money, ever
+- no increase in risk to chase recovery
+- fixed conservative risk limits — `MAX_LOTS = 0.05` hard ceiling
+- one position at a time unless existing rules explicitly require otherwise
+- every signal, rejection, entry, fill, slippage, stop, exit and decision context is
+  recorded — **rejections included**, via `act.py note`
+- the strategy is **not** modified on the basis of a small number of demo outcomes
+- performance is evaluated only after a predefined sample size, and then against the
+  reconstructed historical expectation and a random-entry control
+
+Demo activity must not divert attention from the liquidation and order-flow research
+gates in [`RESEARCH_MAP.md`](RESEARCH_MAP.md); those still govern what gets tested next.

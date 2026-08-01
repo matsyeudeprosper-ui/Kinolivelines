@@ -117,7 +117,15 @@ if cmd == "pend":
     # in decisions.csv at all, so the trade record silently omitted a decision that
     # was actually made. A failure is part of the record.
     if ok:
-        log("PEND", f"{otype} {lots} @ {price} SL {sl} TP {tp} R:R {rew/risk:.2f}", reason)
+        # The order TICKET goes in the log alongside the requested price. Without it,
+        # slippage can only be recovered by fuzzy-matching price and time against
+        # fills_BTCUSDm.csv, which is fragile once two orders sit at similar levels.
+        # With it, slippage is an exact join: this row's requested price against the
+        # fill price on the matching `order` in the fills file. Now that the bot is
+        # authorised to trade the demo for forward observation, execution quality is
+        # one of the two things being measured, so it has to be recoverable exactly.
+        log("PEND", f"ticket {getattr(r, 'order', '?')} {otype} {lots} @ {price} "
+                    f"SL {sl} TP {tp} R:R {rew/risk:.2f}", reason)
         print(f"\nresting orders now: {mt5.orders_total()}")
     else:
         log("FAILED:PEND", f"{otype} {lots} @ {price} SL {sl} TP {tp} "

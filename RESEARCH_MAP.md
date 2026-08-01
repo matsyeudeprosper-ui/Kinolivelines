@@ -139,5 +139,11 @@ tests, six instruments, four horizons.
 
 ## Standing constraint
 
-The M15 bot stays unauthorised to open trades on a signal until an entry edge or a
-complete strategy survives validation and then forward-demo confirmation.
+The M15 bot is **authorised to trade on demo for forward observation, data collection and
+execution validation. It is not authorised for real-money deployment, and is not
+considered to have a validated edge.**
+
+Its trades are forward data collection, not evidence. Two questions stay separate in every
+report: *is the strategy profitable* (unproven, historical evidence negative) and *is the
+live system executing its stated rules correctly* (testable now, and the point of the
+exercise). Full constraints in [`README.md`](README.md).
