@@ -201,7 +201,14 @@ forced     = set()   # tickets already flagged for exceeding max hold
 fires      = {}      # level key -> how many times it has fired this run
 born_dead  = set()   # levels first seen already broken; silent until reclaimed
 unreachable_flagged = set()   # pending tickets already warned about under rule 8
-last_event = 0.0
+# Seeded to NOW, not 0.0. The staleness backstop measures now - last_event, so a
+# zero start meant the first pass after a restart measured against the Unix epoch:
+# on 2026-08-01 it woke the decider with "NO DECISION FOR 29759658 MINUTES", about
+# 56 years. Harmless in effect - the wake was spurious but not dangerous - yet it
+# puts a nonsense number into the permanent decision record, and a later reader has
+# no way to tell it from a real 45-minute blind spell. The clock starts when the
+# daemon starts.
+last_event = time.time()
 last_wake_price = None   # mid at the last wake; the staleness backstop's baseline
 
 while True:
@@ -259,10 +266,14 @@ while True:
         for t in known_ord - curo:
             if t in {p.ticket for p in pos}:
                 continue                      # it filled; POSITION OPENED covers it
-            if t in brain.SELF_CANCELLED:
+            if brain.was_self_cancelled(t):
                 # We cancelled it ourselves; the model already knows and has
                 # acted. Waking it to say the order vanished "NOT by this loop"
                 # is both a wasted call and a false statement.
+                #
+                # This consults the on-disk record as well as the in-memory set,
+                # because a cancel issued by running act.py directly happens in a
+                # different process and would otherwise look mysterious here.
                 say(f"pending #{t} gone - our own cancel, not waking")
                 brain.SELF_CANCELLED.discard(t)
                 continue

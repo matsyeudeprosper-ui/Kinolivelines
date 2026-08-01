@@ -4,24 +4,24 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63238.42,
-      "dir": "above",
-      "note": "H4 resistance and the session high. Rule 9: if it breaks, do NOT enter in the break direction - following H1/H4 breaks measured worse than random on 520 days."
-    },
-    {
-      "price": 62772.73,
-      "dir": "below",
-      "note": "The spike low from 21:05. Losing it confirms continuation rather than a flush; rule 9 still forbids joining the break, so this is information, not a trigger."
-    },
-    {
-      "price": 62613.2,
-      "dir": "below",
-      "note": "H4 support, the next real structural floor. Deep enough that reaching it would mean a genuine trend day rather than intraday noise."
-    },
-    {
       "price": 63094.11,
       "dir": "above",
-      "note": "Next real H1 resistance. Replaces 62966.13 which fired twice on pokes without acceptance. Rule 9: a break here is NOT an entry."
+      "note": "Next real H1 resistance, about 60 above spot. First genuine test of whether the upward resolution has acceptance or is another overshoot. Rule 9: a break here is NOT an entry."
+    },
+    {
+      "price": 63238.42,
+      "dir": "above",
+      "note": "H4 resistance and the session high, the next structural level once 63094.11 is cleared. Rule 9 applies: do not join a break here."
+    },
+    {
+      "price": 62924.14,
+      "dir": "below",
+      "note": "H1 support, 111 below spot and beneath the 62992.22 M15 support. Replaces 63005.58, which fired twice in three minutes on pokes of 0.63 and 2.63 points that were instantly recovered - it was marking a wick zone rather than the failure it was set to detect, the same defect that retired 62861.23 and 62966 earlier. Placed deep enough that only a genuine loss of the whole upward resolution can trigger it. Information, not an entry: rule 9 forbids joining the break."
+    },
+    {
+      "price": 62820.64,
+      "dir": "below",
+      "note": "H4 support, the next real structural floor. Reaching it would mean the upward resolution has fully unwound and the session is trending down rather than chopping."
     }
   ],
   "max_hold_minutes": 120

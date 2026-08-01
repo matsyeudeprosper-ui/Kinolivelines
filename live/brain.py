@@ -10,7 +10,7 @@ tool calls — only the order execution is stubbed. That is deliberate: the thin
 worth testing is whether the loop produces well-formed, correctly-numbered tool
 calls, and stubbing the LLM would test nothing.
 """
-import json, os, csv, subprocess, sys
+import json, os, csv, subprocess, sys, time
 from datetime import datetime
 
 HERE      = os.path.dirname(os.path.abspath(__file__))
@@ -179,6 +179,45 @@ _CURRENT = {"provider": "", "model": ""}
 # detector exists to catch orders that left the book WITHOUT us, and reporting
 # our own cancels back to the model as mysterious tells it something false.
 SELF_CANCELLED = set()
+
+# ...but an in-memory set only covers cancels made from INSIDE the daemon process.
+# A cancel issued by running act.py directly - which is how a human or an attached
+# session does it - happens in a different process, so the daemon never learns it was
+# deliberate and reports the order as having vanished mysteriously. That happened on
+# 2026-07-30 and again on 2026-08-01, and it is worse than noise: a later reader of the
+# record sees a phantom broker rejection that never occurred.
+#
+# act.py therefore records its cancels to this file and the daemon consults it too.
+SELF_CANCEL_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "self_cancelled.json")
+
+
+def note_self_cancel(ticket):
+    """Record a deliberate cancel so any process can recognise it as ours."""
+    try:
+        rows = []
+        if os.path.exists(SELF_CANCEL_FILE):
+            with open(SELF_CANCEL_FILE, encoding="utf-8") as f:
+                rows = json.load(f)
+        rows.append({"ticket": int(ticket), "at": time.time()})
+        rows = [r for r in rows if time.time() - r.get("at", 0) < 86400][-200:]
+        with open(SELF_CANCEL_FILE, "w", encoding="utf-8") as f:
+            json.dump(rows, f)
+    except Exception:
+        pass                      # never let bookkeeping break a cancel
+
+
+def was_self_cancelled(ticket):
+    """True if this ticket was cancelled deliberately, by this process or another."""
+    if int(ticket) in SELF_CANCELLED:
+        return True
+    try:
+        if os.path.exists(SELF_CANCEL_FILE):
+            with open(SELF_CANCEL_FILE, encoding="utf-8") as f:
+                return any(int(r.get("ticket", -1)) == int(ticket) for r in json.load(f))
+    except Exception:
+        pass
+    return False
 
 
 def log_decision(action, detail, reason, dry_run):

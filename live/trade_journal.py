@@ -140,8 +140,25 @@ for pid, ds in sorted(by_pos.items()):
     a15 = atr(frames["M15"])
     a15v = float(a15[frames["M15"]["time"] <= t_in].iloc[-1]) if len(a15) else np.nan
 
+    # INSTRUMENTATION, NOT A TRADE.
+    #
+    # A commission-measurement exercise opened and closed positions immediately to
+    # read the fee actually charged. Those rows are real MT5 positions and belong in
+    # the history, but they are not decisions and must never enter a performance
+    # statistic. On 2026-08-01 they nearly produced a wrong conclusion: 13 of the 33
+    # "trades" in the current config were fee tests with 0.0 minutes duration, which
+    # dragged the apparent win rate from 10% down to 6% and made the sample look four
+    # standard errors worse than it was.
+    #
+    # They are tagged rather than dropped, because the fees they measured are the
+    # reason they exist. Every analysis must filter on this column.
+    cmt = ((e.comment or "") + " " + (x.comment or "")).lower()
+    is_instr = ("fee test" in cmt or "fee" in cmt and "close" in cmt
+                or getattr(e, "magic", 0) == 990909)
+
     row = {
         "position_id": pid,
+        "instrumentation": is_instr,
         "opened": t_in.isoformat(), "closed": t_out.isoformat(),
         "duration_s": int(dur_s), "duration_min": round(dur_s / 60, 1),
         "side": "BUY" if is_buy else "SELL",

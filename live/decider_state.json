@@ -1,6 +1,6 @@
 ﻿{
-    "pid":  10488,
+    "pid":  9820,
     "decider":  "session",
-    "set_at":  "2026-07-31T15:55:16",
+    "set_at":  "2026-08-01T05:14:57",
     "note":  "Claude Code session decides. Zero API cost. Needs a Monitor armed on daemon.log for DECISION NEEDED|AWAIT_SESSION, or handoffs are written and never read. Nothing decides while no session is attached - open positions still hold their broker-side SL/TP."
 }

@@ -236,6 +236,17 @@ Compute detectable effect size **before** running a test.
 
 ---
 
+**13. Instrumentation rows counted as trades.** A commission-measurement exercise had
+opened and closed positions immediately to read the fee actually charged. Those are real
+MT5 positions and sat in `trades_journal.csv` looking like trades. They were **13 of the
+33** rows in the current config, all with 0.0 minutes duration, and they dragged the
+apparent win rate from 10% to 6% — making the sample look four standard errors worse
+than it was, when the true figure is about 2.7. They are now tagged with an
+`instrumentation` column rather than deleted, because the fees they measured are why
+they exist. *Every performance query must filter on that column.* Any dataset that
+mixes measurement artefacts with decisions will mislead whoever reads it next, including
+another model.
+
 **11. An unmatched random control.** A control must resemble the signal in everything
 except the signal. Basis extremes arrive after violent moves, so signal entries sit at
 high ATR while a freely-drawn control sits at average ATR — and ATR is the denominator,

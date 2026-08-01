@@ -164,6 +164,16 @@ elif cmd == "cancel":
     ok, r = send({"action": mt5.TRADE_ACTION_REMOVE, "order": ticket}, "cancel")
     if ok:
         log("CANCEL", f"#{ticket}", reason)
+        # Tell the daemon this was deliberate. act.py runs as its own process, so
+        # brain's in-memory SELF_CANCELLED set is invisible to it and the daemon
+        # would otherwise report the order as having vanished "NOT by this loop" -
+        # a phantom broker rejection in the permanent record.
+        try:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import brain
+            brain.note_self_cancel(ticket)
+        except Exception:
+            pass
         print(f"resting orders now: {mt5.orders_total()}")
 elif cmd == "note":
     # Deciding NOT to trade is a decision and belongs in the record. Without this
