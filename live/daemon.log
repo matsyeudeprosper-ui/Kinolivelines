@@ -1,0 +1,757 @@
+[2026-07-30 14:15:24] daemon up | BTCUSDm | account 436771046 | mode=DRY RUN (no orders sent) | llm=on | poll 30s
+[2026-07-30 14:15:24] dry run: the model IS called and DOES return tool calls; only order execution is stubbed. Read decisions.csv and llm_calls.jsonl.
+[2026-07-30 14:15:24] NOTE: ANTHROPIC_API_KEY is not set - events will be detected and logged but no decisions made. Set it to enable the model.
+[2026-07-30 14:17:29] daemon up | BTCUSDm | account 436771046 | mode=DRY RUN (no orders sent) | llm=on | poll 30s
+[2026-07-30 14:17:29] dry run: the model IS called and DOES return tool calls; only order execution is stubbed. Read decisions.csv and llm_calls.jsonl.
+[2026-07-30 14:17:29] NOTE: ANTHROPIC_API_KEY is not set - events will be detected and logged but no decisions made. Set it to enable the model.
+[2026-07-30 14:17:29] EVENT  AT LEVEL - flat, price 64781.36 at M15 RESISTANCE 64797.86 (16 px away). Assess for a trade.
+[2026-07-30 14:17:37]        NO API KEY - skipped the model call. Event plumbing verified; set ANTHROPIC_API_KEY to enable decisions.
+[2026-07-30 14:24:16] EVENT  AT LEVEL - flat, price 64786.74 at M15 RESISTANCE 64797.86 (11 px away). Assess for a trade.
+[2026-07-30 14:24:23]        NO API KEY - skipped the model call. Event plumbing verified; set ANTHROPIC_API_KEY to enable decisions.
+[2026-07-30 14:25:34] daemon up | BTCUSDm | account 436771046 | mode=DRY RUN (no orders sent) | llm=on | poll 30s
+[2026-07-30 14:25:34] dry run: the model IS called and DOES return tool calls; only order execution is stubbed. Read decisions.csv and llm_calls.jsonl.
+[2026-07-30 14:25:34] NOTE: ANTHROPIC_API_KEY is not set - events will be detected and logged but no decisions made. Set it to enable the model.
+[2026-07-30 14:30:04] EVENT  AT LEVEL - flat, price 64819.82 at H1 RESISTANCE 64836.74 (17 px away). Assess for a trade.
+[2026-07-30 14:30:12]        NO API KEY - skipped the model call. Event plumbing verified; set ANTHROPIC_API_KEY to enable decisions.
+[2026-07-30 14:44:59] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 14:44:59] NOTE: ANTHROPIC_API_KEY is not set - events will be detected and logged but no decisions made. Set it to enable the model.
+[2026-07-30 14:46:34] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 14:46:34] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 14:47:05] EVENT  LEVEL BROKEN below 64730.0 (reached 64725.99, now 64731.15). Note: 19:15 swing low. Losing it means the rally leg off 64614 is failing and the short side reopens - on a retest, not a chase
+[2026-07-30 14:47:56]        place_pending: FAILED. account 436771046 DEMO  equity 988.70   bid 64732.16 ask 64742.16
+[2026-07-30 14:47:56]        risk 138.10px = $1.38 (0.14% eq) | reward 131.90px = $1.32 | R:R 0.96:1
+[2026-07-30 14:47:56]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 64751.9, 'sl': 64890.0, 'tp': 64620.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 14:47:56]        retcode 10009  ok  ->  OK
+[2026-07-30 14:47:56]        resting orders now: 1
+[2026-07-30 14:48:26] pending #3027323289 now resting
+[2026-07-30 14:49:26] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 14:49:26] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 14:50:56] EVENT  POSITION OPENED #3027323289 SELL 0.01 @ 64751.9 SL 64890.0 TP 64620.0
+[2026-07-30 14:51:42]        close_position: FAILED. account 436771046 DEMO  equity 988.18   bid 64794.12 ask 64804.12
+[2026-07-30 14:51:42]        sending: {'action': 1, 'position': 3027323289, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 0, 'price': 64804.12, 'deviation': 20, 'comment': 'KL-close'}
+[2026-07-30 14:51:42]        retcode 10009  ok  ->  OK
+[2026-07-30 14:51:42]        closed. open positions now: 0
+[2026-07-30 14:52:12] EVENT  POSITION CLOSED #3027323289 - flat now, bid 64771.16. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-30 14:53:39] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 14:53:39] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 14:56:09] EVENT  LEVEL BROKEN below 64730.0 (reached 64726.92, now 64744.24). Note: 19:15 swing low. Losing it means the rally leg off 64614 is failing and the short side reopens - on a retest, not a chase
+[2026-07-30 14:57:36]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.19   bid 64723.07 ask 64733.07
+[2026-07-30 14:57:36]        risk 118.10px = $1.18 (0.12% eq) | reward 221.90px = $2.22 | R:R 1.88:1
+[2026-07-30 14:57:36]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 64751.9, 'sl': 64870.0, 'tp': 64530.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 14:57:36]        retcode 10009  ok  ->  OK
+[2026-07-30 14:57:36]        resting orders now: 1
+[2026-07-30 14:57:36]        -> state changed
+[2026-07-30 14:57:51] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 14:57:51] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 14:59:21] EVENT  POSITION OPENED #3027350848 SELL 0.01 @ 64751.9 SL 64870.0 TP 64530.0
+[2026-07-30 15:00:41]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 15:00:41]        -> state changed
+[2026-07-30 15:02:11] EVENT  POSITION CLOSED #3027350848 - flat now, bid 64866.14. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-30 15:03:41]        place_pending: EXECUTED. account 436771046 DEMO  equity 987.01   bid 64838.03 ask 64848.03
+[2026-07-30 15:03:41]        risk 132.26px = $1.32 (0.13% eq) | reward 227.16px = $2.27 | R:R 1.72:1
+[2026-07-30 15:03:41]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 64927.74, 'sl': 65060.0, 'tp': 64700.58, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 15:03:41]        retcode 10009  ok  ->  OK
+[2026-07-30 15:03:41]        resting orders now: 1
+[2026-07-30 15:03:41]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 15:03:41]        -> state changed
+[2026-07-30 15:04:11] pending #3027380511 now resting
+[2026-07-30 15:07:11] EVENT  LEVEL BROKEN below 64794.82 (reached 64793.15, now 64799.02). Note: Loss of the reclaimed M15 level; if this breaks before fill and cannot be reclaimed, momentum is slipping back into range — reassess the pending short.
+[2026-07-30 15:08:18]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-30 15:08:18]        -> state changed
+[2026-07-30 15:18:25] EVENT  LEVEL BROKEN below 64700.58 (reached 64691.76, now 64713.34). Note: M15 support lost; if not reclaimed on the next M15 rotation, cancel the distant H4 sell limit and reassess from lower range.
+[2026-07-30 15:19:36]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 15:19:36]        no_action: Acknowledged - no action taken.
+[2026-07-30 15:19:36]        -> state changed
+[2026-07-30 15:26:51] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 15:26:51] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 15:30:51] EVENT  LEVEL BROKEN below 64700.58 (reached 64693.22, now 64723.44). Note: If the next M15 rotation fails to reclaim and price pushes back below here, cancel pending short #3027380511 and reassess from H4 support 64,614–64,620.
+[2026-07-30 15:31:39]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 15:31:39]        -> state changed
+[2026-07-30 15:34:09] EVENT  LEVEL BROKEN below 64700.58 (reached 64699.33, now 64732.72). Note: If the next M15 rotation fails to reclaim and price pushes back back below ~64,700, cancel pending short #3027380511 and reassess from H4 support 64,614–64,620.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 15:34:41]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 15:34:41]        -> state changed
+[2026-07-30 15:49:09] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 15:49:09] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 16:07:09] EVENT  LEVEL BROKEN below 64700.58 (reached 64688.44, now 64704.39). Note: If price pushes back below ~64,700 again, wake me to CANCEL pending short #3027380511 and reassess from H4 support 64,614–64,620.
+[2026-07-30 16:07:51]        place_pending: EXECUTED. account 436771046 DEMO  equity 987.01   bid 64697.36 ask 64707.36
+[2026-07-30 16:07:51]        risk 80.00px = $0.80 (0.08% eq) | reward 195.00px = $1.95 | R:R 2.44:1
+[2026-07-30 16:07:51]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 64625.0, 'sl': 64545.0, 'tp': 64820.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 16:07:51]        retcode 10009  ok  ->  OK
+[2026-07-30 16:07:51]        resting orders now: 1
+[2026-07-30 16:07:51]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 16:07:51]        -> state changed
+[2026-07-30 16:07:55] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 16:07:55] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 16:07:55] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 16:08:20]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-30 16:08:20]        -> state changed
+[2026-07-30 17:01:00] EVENT  POSITION OPENED #3027541590 BUY 0.01 @ 64625.0 SL 64545.0 TP 64820.0
+[2026-07-30 17:01:22]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 17:01:22]        -> state changed
+[2026-07-30 17:03:22] EVENT  POSITION AT 1.19R #3027541590 (+95 px, risk 80 px). Consider moving the stop to break-even at 64625.0.
+[2026-07-30 17:03:41]        modify_sltp: EXECUTED. account 436771046 DEMO  equity 988.12   bid 64735.84 ask 64745.84
+[2026-07-30 17:03:41]        sending: {'action': 6, 'position': 3027541590, 'symbol': 'BTCUSDm', 'sl': 64625.0, 'tp': 64820.0}
+[2026-07-30 17:03:41]        retcode 10009  ok  ->  OK
+[2026-07-30 17:03:41]        CONFIRMED #3027541590 SL 64625.0 TP 64820.0 P&L +1.11
+[2026-07-30 17:03:41]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 17:03:41]        -> state changed
+[2026-07-30 17:08:11] EVENT  POSITION CLOSED #3027541590 - flat now, bid 64815.31. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-30 17:08:41]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.96   bid 64864.79 ask 64874.79
+[2026-07-30 17:08:41]        risk 120.38px = $1.20 (0.12% eq) | reward 199.62px = $2.00 | R:R 1.66:1
+[2026-07-30 17:08:41]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 64720.38, 'sl': 64600.0, 'tp': 64920.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 17:08:41]        retcode 10009  ok  ->  OK
+[2026-07-30 17:08:41]        resting orders now: 1
+[2026-07-30 17:08:41]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 17:08:41]        -> state changed
+[2026-07-30 17:09:11] pending #3027600123 now resting
+[2026-07-30 17:28:41] EVENT  LEVEL BROKEN above 64927.74 (reached 64929.02, now 64934.02). Note: If H4 resistance 64,927.74 is accepted above, momentum may continue; reassess longs on higher pullback. Pending buy at 64,720.38 is still valid unless structure shifts materially.
+[2026-07-30 17:28:55]        no_action: Acknowledged - no action taken.
+[2026-07-30 17:31:57] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 17:31:57] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 17:31:58] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 17:32:32]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-30 17:32:32]        -> state changed
+[2026-07-30 17:39:32] EVENT  LEVEL BROKEN below 64828.03 (reached 64822.17, now 64841.70). Note: If bid breaks below the M15 support, momentum is shifting down; confirms approach toward our pending entry. Reassess premise only if the break accelerates abnormally.
+[2026-07-30 17:39:59]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 17:39:59]        -> state changed
+[2026-07-30 17:47:59] EVENT  LEVEL BROKEN above 64860.0 (reached 64865.95, now 64832.30). Note: Reclaim and push away from the broken M15 64828. If market runs up without tagging our entry, reassess and likely cancel the pending rather than chase.
+[2026-07-30 17:49:46] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 17:49:46] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 17:49:46] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 17:50:27]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 17:50:27]        -> state changed
+[2026-07-30 17:55:27] EVENT  LEVEL BROKEN below 64801.44 (reached 64799.07, now 64809.85). Note: M15 support. A clean break increases odds we trade down to the 64720 buy limit; watch for pace of the break when/if entry is tagged.
+[2026-07-30 17:55:44]        no_action: Acknowledged - no action taken.
+[2026-07-30 18:09:34] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 18:09:34] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 18:09:34] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 18:10:02]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 18:10:02]        -> state changed
+[2026-07-30 18:12:32] EVENT  LEVEL BROKEN above 64865.95 (reached 64870.81, now 64866.53). Note: M15 resistance. If price accepts above here before the BUY_LIMIT fills, the shallow-pullback buy premise weakens; reassess and likely cancel rather than chase.
+[2026-07-30 18:12:47]        no_action: Acknowledged - no action taken.
+[2026-07-30 18:44:17] EVENT  LEVEL BROKEN below 64771.6 (reached 64754.41, now 64778.78). Note: M15 support. A clean break increases odds we trade down to the 64720.38 BUY_LIMIT; watch the pace of the break into entry.
+[2026-07-30 18:44:27]        no_action: Acknowledged - no action taken.
+[2026-07-30 18:44:54] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 18:44:54] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 18:44:54] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 18:45:27]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 18:45:27]        -> state changed
+[2026-07-30 18:46:27] EVENT  LEVEL BROKEN above 64834.14 (reached 64835.31, now 64792.01). Note: Reclaim of broken M15 support. If price accepts back above, the premise for buying a shallow pullback at 64720.38 degrades; reassess pending.
+[2026-07-30 18:46:41]        no_action: Acknowledged - no action taken.
+[2026-07-30 18:51:11] EVENT  POSITION OPENED #3027600123 BUY 0.01 @ 64720.38 SL 64600.0 TP 64920.0
+[2026-07-30 18:51:34]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 18:51:34]        -> state changed
+[2026-07-30 19:05:32] EVENT  LEVEL BROKEN above 64841.0 (reached 64841.29, now 64843.38). Note: Entry +1R. If we get a clean M5 close and hold above ~64841, consider moving the stop to breakeven (64720.38) on the next check; do not modify mid-candle.
+[2026-07-30 19:05:44]        no_action: Acknowledged - no action taken.
+[2026-07-30 19:08:22] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 19:08:22] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 19:08:22] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 19:08:46]        no_action: Acknowledged - no action taken.
+[2026-07-30 19:30:06] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 19:30:06] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 19:30:06] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 19:30:40]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 19:30:40]        -> state changed
+[2026-07-30 19:31:40] EVENT  LEVEL BROKEN below 64671.02 (reached 64661.94, now 64740.07). Note: H1 support. If there is a decisive break-and-hold below while there is still meaningful distance (>~40) to the stop, consider an early exit; otherwise let the stop work.
+[2026-07-30 19:31:55]        no_action: Acknowledged - no action taken.
+[2026-07-30 19:47:25] EVENT  LEVEL BROKEN below 64671.02 (reached 64670.21, now 64709.66). Note: H1 support. If there is a decisive break-and-hold below while there is still meaningful distance (>~40) to the stop, consider an early exit; otherwise let the stop work.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 19:47:40]        no_action: Acknowledged - no action taken.
+[2026-07-30 19:51:40] EVENT  LEVEL BROKEN below 64671.02 (reached 64652.59, now 64659.28). Note: H1 support. If there is a decisive break-and-hold below while there is still meaningful distance (>~40) to the stop, consider an early exit; otherwise let the stop work.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 19:52:08]        close_position: EXECUTED. account 436771046 DEMO  equity 988.34   bid 64657.67 ask 64667.67
+[2026-07-30 19:52:08]        sending: {'action': 1, 'position': 3027600123, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 1, 'price': 64657.67, 'deviation': 20, 'comment': 'KL-close'}
+[2026-07-30 19:52:08]        retcode 10009  ok  ->  OK
+[2026-07-30 19:52:08]        closed. open positions now: 0
+[2026-07-30 19:52:08]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 19:52:08]        -> state changed
+[2026-07-30 19:52:40]        journalled #3027600123
+[2026-07-30 19:52:40] EVENT  POSITION CLOSED #3027600123 - flat now, bid 64640.5. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-30 19:53:08]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64645.41 ask 64655.41
+[2026-07-30 19:53:08]        risk 119.93px = $1.20 (0.12% eq) | reward 430.26px = $4.30 | R:R 3.59:1
+[2026-07-30 19:53:08]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 64599.93, 'sl': 64480.0, 'tp': 65030.19, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 19:53:08]        retcode 10009  ok  ->  OK
+[2026-07-30 19:53:08]        resting orders now: 1
+[2026-07-30 19:53:08]        -> state changed
+[2026-07-30 19:53:38] pending #3027933248 now resting
+[2026-07-30 19:56:44] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 19:56:44] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 19:56:44] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 19:57:13]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 19:57:13]        -> state changed
+[2026-07-30 20:00:13] EVENT  LEVEL BROKEN above 64671.02 (reached 64712.20, now 64703.39). Note: H1 level just lost. If we get an M5 close and hold back above, it indicates a reclaim; reassess longs on a retest if R:R allows.
+[2026-07-30 20:00:56]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64763.91 ask 64773.91
+[2026-07-30 20:00:56]        sending: {'action': 8, 'order': 3027933248}
+[2026-07-30 20:00:56]        retcode 10009  ok  ->  OK
+[2026-07-30 20:00:56]        resting orders now: 0
+[2026-07-30 20:00:56]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 20:00:56]        -> state changed
+[2026-07-30 20:01:26] EVENT  PENDING GONE #3027933248 left the book without filling - cancelled, expired or rejected, and NOT by this loop. Flat with no order unless stated otherwise. Reassess from current structure.
+[2026-07-30 20:01:47]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64834.61 ask 64844.61
+[2026-07-30 20:01:47]        risk 101.02px = $1.01 (0.10% eq) | reward 163.76px = $1.64 | R:R 1.62:1
+[2026-07-30 20:01:47]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 64681.02, 'sl': 64580.0, 'tp': 64844.78, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 20:01:47]        retcode 10009  ok  ->  OK
+[2026-07-30 20:01:47]        resting orders now: 1
+[2026-07-30 20:01:47]        -> state changed
+[2026-07-30 20:02:17] pending #3027959212 now resting
+[2026-07-30 20:04:48] EVENT  LEVEL BROKEN above 64844.78 (reached 64888.46, now 64884.27). Note: H1 resistance/first target. Acceptance above opens room toward 65030; if rejected, manage targets tighter on any long.
+[2026-07-30 20:05:30]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64911.41 ask 64921.41
+[2026-07-30 20:05:30]        sending: {'action': 8, 'order': 3027959212}
+[2026-07-30 20:05:30]        retcode 10009  ok  ->  OK
+[2026-07-30 20:05:30]        resting orders now: 0
+[2026-07-30 20:05:30]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 20:05:30]        -> state changed
+[2026-07-30 20:06:01] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 20:06:01] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 20:06:01] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 20:06:29]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64913.64 ask 64923.64
+[2026-07-30 20:06:29]        risk 114.78px = $1.15 (0.12% eq) | reward 175.41px = $1.75 | R:R 1.53:1
+[2026-07-30 20:06:29]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 64854.78, 'sl': 64740.0, 'tp': 65030.19, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 20:06:29]        retcode 10009  ok  ->  OK
+[2026-07-30 20:06:29]        resting orders now: 1
+[2026-07-30 20:06:29]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 20:06:29]        -> state changed
+[2026-07-30 20:06:29] pending #3027973734 now resting
+[2026-07-30 20:08:59] EVENT  LEVEL BROKEN above 65030.19 (reached 65044.29, now 65049.29). Note: H4 resistance/next objective. If accepted above while pending is unfilled, cancel the pullback buy as premise has run; if filled and accepted above, consider managing target on strength.
+[2026-07-30 20:09:21]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 65267.78 ask 65277.78
+[2026-07-30 20:09:21]        sending: {'action': 8, 'order': 3027973734}
+[2026-07-30 20:09:21]        retcode 10009  ok  ->  OK
+[2026-07-30 20:09:21]        resting orders now: 0
+[2026-07-30 20:09:21]        set_watch_levels: Watch levels updated (3 active).
+[2026-07-30 20:09:21]        -> state changed
+[2026-07-30 20:09:51] pending #3027973734 gone - our own cancel, not waking
+[2026-07-30 20:15:36] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 20:15:36] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 20:15:36] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 20:16:21]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 65065.21 ask 65075.21
+[2026-07-30 20:16:21]        risk 123.95px = $1.24 (0.13% eq) | reward 256.05px = $2.56 | R:R 2.07:1
+[2026-07-30 20:16:21]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 65356.05, 'sl': 65480.0, 'tp': 65100.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-30 20:16:21]        retcode 10009  ok  ->  OK
+[2026-07-30 20:16:21]        resting orders now: 1
+[2026-07-30 20:16:21]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 20:16:21]        -> state changed
+[2026-07-30 20:16:21] pending #3028006319 now resting
+[2026-07-30 20:16:51] EVENT  LEVEL BROKEN below 65030.19 (reached 65028.71, now 65034.71). Note: If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.
+[2026-07-30 20:17:22]        no_action: Acknowledged - no action taken.
+[2026-07-30 20:20:22] EVENT  LEVEL BROKEN below 65030.19 (reached 64961.10, now 65002.14). Note: If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 20:20:42]        no_action: Acknowledged - no action taken.
+[2026-07-30 20:26:12] EVENT  LEVEL BROKEN below 65030.19 (reached 64977.11, now 65108.41). Note: If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 20:26:29]        no_action: Acknowledged - no action taken.
+[2026-07-30 20:32:29] EVENT  LEVEL BROKEN below 65030.19 (reached 65011.48, now 65036.78). Note: If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.  NOTE: this level has now fired 4 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 20:32:46]        no_action: Acknowledged - no action taken.
+[2026-07-30 20:37:46] EVENT  LEVEL BROKEN below 64844.78 (reached 64842.84, now 64851.15). Note: Deeper bearish flip on H1. If reclaimed below, intraday bias shifts down and we avoid buying dips.
+[2026-07-30 20:37:57]        no_action: Acknowledged - no action taken.
+[2026-07-30 20:47:28] EVENT  LEVEL BROKEN below 64658.09 (reached 64602.84, now 64607.84). Note: M15 support. A clean test or sweep-and-reclaim here could be a future long level; if accepted through, expect continuation lower and reframe levels.
+[2026-07-30 20:47:45]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-30 20:47:45]        -> state changed
+[2026-07-30 20:54:44] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 20:54:44] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 20:54:44] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 20:55:09]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-30 20:55:09]        -> state changed
+[2026-07-30 20:55:09] level 64758.24 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-30 20:55:09] level 64589.93 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-30 21:56:37] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-30 21:56:37] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-30 21:56:37] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-30 21:57:15]        set_watch_levels: Watch levels updated (8 active).
+[2026-07-30 21:57:15]        -> state changed
+[2026-07-30 22:05:45] EVENT  LEVEL BROKEN below 64137.56 (reached 64136.88, now 64141.88). Note: M15 support/recent low. Acceptance below opens continuation risk lower; avoid fading until a sweep-and-reclaim is proven.
+[2026-07-30 22:06:04]        no_action: Acknowledged - no action taken.
+[2026-07-30 22:54:09] EVENT  LEVEL BROKEN above 64359.41 (reached 64360.48, now 64363.46). Note: Local M15 resistance from the latest bounce. A tag-and-reject could set intraday shorts; acceptance weakens the immediate downside.
+[2026-07-30 22:54:21]        no_action: Acknowledged - no action taken.
+[2026-07-30 23:03:51] EVENT  LEVEL BROKEN above 64359.41 (reached 64359.70, now 64361.82). Note: Local M15 resistance from the latest bounce. A tag-and-reject could set intraday shorts; acceptance weakens the immediate downside.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-30 23:04:18]        set_watch_levels: Watch levels updated (8 active).
+[2026-07-30 23:04:18]        -> state changed
+[2026-07-30 23:04:48] level 64359.41 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 01:28:32] EVENT  NO DECISION FOR 145 MINUTES while price moved +118 (1.0 x ATR-M15) to 64335.69. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-07-31 01:29:02]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64320.49 ask 64330.49
+[2026-07-31 01:29:02]        sending: {'action': 8, 'order': 3028006319}
+[2026-07-31 01:29:02]        retcode 10009  ok  ->  OK
+[2026-07-31 01:29:02]        resting orders now: 0
+[2026-07-31 01:29:02]        place_pending: EXECUTED. account 436771046 DEMO  equity 988.37   bid 64324.49 ask 64334.49
+[2026-07-31 01:29:02]        risk 75.00px = $0.75 (0.08% eq) | reward 158.32px = $1.58 | R:R 2.11:1
+[2026-07-31 01:29:02]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 64355.06, 'sl': 64430.06, 'tp': 64196.74, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 01:29:02]        retcode 10009  ok  ->  OK
+[2026-07-31 01:29:02]        resting orders now: 1
+[2026-07-31 01:29:02]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 01:29:02]        -> state changed
+[2026-07-31 01:29:32] pending #3028590824 now resting
+[2026-07-31 01:29:32] pending #3028006319 gone - our own cancel, not waking
+[2026-07-31 01:30:02] EVENT  POSITION OPENED #3028590824 SELL 0.01 @ 64355.06 SL 64430.06 TP 64196.74
+[2026-07-31 01:30:23]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 01:30:23]        -> state changed
+[2026-07-31 01:30:53] level 64355.06 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 01:32:55]        journalled #3028590824
+[2026-07-31 01:32:55] EVENT  POSITION CLOSED #3028590824 - flat now, bid 64430.46. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 01:33:21]        place_pending: EXECUTED. account 436771046 DEMO  equity 987.57   bid 64395.15 ask 64405.15
+[2026-07-31 01:33:21]        risk 82.83px = $0.83 (0.08% eq) | reward 149.81px = $1.50 | R:R 1.81:1
+[2026-07-31 01:33:21]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 64437.17, 'sl': 64520.0, 'tp': 64287.36, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 01:33:21]        retcode 10009  ok  ->  OK
+[2026-07-31 01:33:21]        resting orders now: 1
+[2026-07-31 01:33:21]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 01:33:21]        -> state changed
+[2026-07-31 01:33:51] pending #3028606410 now resting
+[2026-07-31 01:33:51] level 64400.99 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 01:36:21] EVENT  LEVEL BROKEN below 64355.06 (reached 64319.31, now 64330.22). Note: Reclaim back below the H1 resistance flip adds follow‑through probability lower toward 64,287.
+[2026-07-31 01:36:35]        no_action: Acknowledged - no action taken.
+[2026-07-31 01:38:40] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 01:38:40] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 01:38:40] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 01:39:07]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 01:39:07]        no_action: Acknowledged - no action taken.
+[2026-07-31 01:39:07]        -> state changed
+[2026-07-31 01:39:07] level 64400.99 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 01:39:07] level 64355.06 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 01:40:07] EVENT  LEVEL BROKEN below 64287.36 (reached 64283.34, now 64319.44). Note: M15 support and our TP zone. If traded through, expect take-profit fill.
+[2026-07-31 01:40:21]        no_action: Acknowledged - no action taken.
+[2026-07-31 01:43:21] EVENT  LEVEL BROKEN below 64287.36 (reached 64204.84, now 64219.75). Note: M15 support and our TP zone. If traded through, expect take-profit fill.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 01:43:40]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 01:43:40]        -> state changed
+[2026-07-31 01:46:40] EVENT  LEVEL BROKEN below 64196.74 (reached 64151.21, now 64168.14). Note: Break of H1 support opens path toward 64,095 H4 support.
+[2026-07-31 01:47:03]        no_action: Acknowledged - no action taken.
+[2026-07-31 02:04:03] EVENT  LEVEL BROKEN below 64095.34 (reached 64052.22, now 64071.52). Note: Break of H4 support signals continuation lower; watch for acceleration/flush.
+[2026-07-31 02:04:49]        no_action: Acknowledged - no action taken.
+[2026-07-31 02:49:19] EVENT  NO DECISION FOR 45 MINUTES while price moved -405 (3.3 x ATR-M15) to 63911.38. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-07-31 02:50:05]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 02:50:05]        -> state changed
+[2026-07-31 03:09:35] EVENT  LEVEL BROKEN below 63797.16 (reached 63795.99, now 63816.25). Note: Break of the nearby M15 support would signal continuation lower; watch for acceleration/flush.
+[2026-07-31 03:09:52]        no_action: Acknowledged - no action taken.
+[2026-07-31 03:12:52] EVENT  LEVEL BROKEN below 63797.16 (reached 63780.95, now 63842.15). Note: Break of the nearby M15 support would signal continuation lower; watch for acceleration/flush.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 03:13:06]        no_action: Acknowledged - no action taken.
+[2026-07-31 03:22:06] EVENT  LEVEL BROKEN below 63797.16 (reached 63796.34, now 63816.10). Note: Break of the nearby M15 support would signal continuation lower; watch for acceleration/flush.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 03:22:26]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 03:22:26]        no_action: Acknowledged - no action taken.
+[2026-07-31 03:22:26]        -> state changed
+[2026-07-31 03:40:58] EVENT  LEVEL BROKEN below 63780.0 (reached 63733.62, now 63749.64). Note: Break of the 4H/session low would signal continuation lower; watch for acceleration/flush. Replaces the repeatedly-triggered 63,797 level.
+[2026-07-31 03:41:27]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 03:41:27]        no_action: Acknowledged - no action taken.
+[2026-07-31 03:41:27]        -> state changed
+[2026-07-31 03:41:57] level 63780.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 04:06:27] EVENT  LEVEL BROKEN below 63733.0 (reached 63705.94, now 63718.57). Note: Break of the fresh 4H/session low opens continuation/flush lower; consider momentum only if geometry fits the hard rules.
+[2026-07-31 04:06:53]        no_action: Acknowledged - no action taken.
+[2026-07-31 04:34:44] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 04:34:44] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 04:34:44] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 04:35:04]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 987.57   bid 63608.53 ask 63618.53
+[2026-07-31 04:35:04]        sending: {'action': 8, 'order': 3028606410}
+[2026-07-31 04:35:04]        retcode 10009  ok  ->  OK
+[2026-07-31 04:35:04]        resting orders now: 0
+[2026-07-31 04:35:04]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 04:35:04]        -> state changed
+[2026-07-31 04:35:04] pending #3028606410 gone - our own cancel, not waking
+[2026-07-31 04:36:04] EVENT  LEVEL BROKEN above 63618.91 (reached 63633.32, now 63621.64). Note: Reclaim of the broken M15 support. If accepted above, short squeeze risk back toward 63,734/63,964—reassess for possible fade lower if geometry fits.
+[2026-07-31 04:36:23]        no_action: Acknowledged - no action taken.
+[2026-07-31 05:05:54] EVENT  LEVEL BROKEN below 63561.65 (reached 63544.37, now 63597.82). Note: Break of the 4H range low opens continuation lower; consider momentum continuation ONLY if stop can sit outside noise and R:R≥1.5 within 120 min.
+[2026-07-31 05:06:24]        place_pending: EXECUTED. account 436771046 DEMO  equity 987.57   bid 63547.54 ask 63557.54
+[2026-07-31 05:06:24]        risk 120.00px = $1.20 (0.12% eq) | reward 180.00px = $1.80 | R:R 1.50:1
+[2026-07-31 05:06:24]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 5, 'price': 63530.0, 'sl': 63650.0, 'tp': 63350.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 05:06:24]        retcode 10009  ok  ->  OK
+[2026-07-31 05:06:24]        resting orders now: 1
+[2026-07-31 05:06:24]        -> state changed
+[2026-07-31 05:06:54] pending #3029485049 now resting
+[2026-07-31 05:08:54] EVENT  LEVEL BROKEN above 63618.91 (reached 63632.85, now 63620.46). Note: Reclaim of the broken M15 support. If accepted above, short squeeze risk back toward 63,734/63,964—reassess for possible fade lower if geometry fits.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 05:09:12]        no_action: Acknowledged - no action taken.
+[2026-07-31 05:25:42] EVENT  PENDING #3029485049 @ 63530.00 is now 1.5x ATR(M15) from price 63727.17 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-07-31 05:25:56]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 987.57   bid 63736.0 ask 63746.0
+[2026-07-31 05:25:56]        sending: {'action': 8, 'order': 3029485049}
+[2026-07-31 05:25:56]        retcode 10009  ok  ->  OK
+[2026-07-31 05:25:56]        resting orders now: 0
+[2026-07-31 05:25:56]        -> state changed
+[2026-07-31 05:26:26] pending #3029485049 gone - our own cancel, not waking
+[2026-07-31 05:28:56] EVENT  LEVEL BROKEN above 63733.62 (reached 63754.72, now 63752.61). Note: Reclaim of the H1 support-turned-resistance reduces short bias; watch for push toward 63,964 and 64,095.
+[2026-07-31 05:29:23]        no_action: Acknowledged - no action taken.
+[2026-07-31 05:32:23] EVENT  LEVEL BROKEN above 63780.0 (reached 63788.64, now 63753.43). Note: Reclaim of prior 4H/session low would further confirm failed breakdown; stand down from shorts unless new structure forms.
+[2026-07-31 05:32:47]        place_pending: EXECUTED. account 436771046 DEMO  equity 987.57   bid 63750.92 ask 63760.92
+[2026-07-31 05:32:47]        risk 85.00px = $0.85 (0.09% eq) | reward 130.00px = $1.30 | R:R 1.53:1
+[2026-07-31 05:32:47]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 63780.0, 'sl': 63865.0, 'tp': 63650.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 05:32:47]        retcode 10009  ok  ->  OK
+[2026-07-31 05:32:47]        resting orders now: 1
+[2026-07-31 05:32:47]        -> state changed
+[2026-07-31 05:33:17] pending #3029584729 now resting
+[2026-07-31 05:33:47] EVENT  POSITION OPENED #3029584729 SELL 0.01 @ 63780.0 SL 63865.0 TP 63650.0
+[2026-07-31 05:34:04]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 05:34:04]        no_action: Acknowledged - no action taken.
+[2026-07-31 05:34:04]        -> state changed
+[2026-07-31 05:37:04] EVENT  LEVEL BROKEN above 63797.16 (reached 63804.42, now 63797.70). Note: Reclaim of H4 support-turned-resistance increases squeeze risk; no change to plan but be prepared for noise near stop.
+[2026-07-31 05:37:18]        no_action: Acknowledged - no action taken.
+[2026-07-31 05:52:20]        journalled #3029584729
+[2026-07-31 05:52:20] EVENT  POSITION CLOSED #3029584729 - flat now, bid 63849.63. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 05:52:59]        place_pending: EXECUTED. account 436771046 DEMO  equity 986.71   bid 63851.61 ask 63861.61
+[2026-07-31 05:52:59]        risk 116.00px = $1.16 (0.12% eq) | reward 174.00px = $1.74 | R:R 1.50:1
+[2026-07-31 05:52:59]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 63754.43, 'sl': 63638.43, 'tp': 63928.43, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 05:52:59]        retcode 10009  ok  ->  OK
+[2026-07-31 05:52:59]        resting orders now: 1
+[2026-07-31 05:52:59]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 05:52:59]        -> state changed
+[2026-07-31 05:53:29] pending #3029651299 now resting
+[2026-07-31 06:04:05] EVENT  LEVEL BROKEN above 63914.0 (reached 63930.38, now 63928.16). Note: Acceptance above prior swing high reduces odds of a deep pullback; do NOT chase—keep pending only while entry remains within 1.5x ATR(M15) of price.
+[2026-07-31 06:04:41]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 986.71   bid 63929.71 ask 63939.71
+[2026-07-31 06:04:41]        sending: {'action': 8, 'order': 3029651299}
+[2026-07-31 06:04:41]        retcode 10009  ok  ->  OK
+[2026-07-31 06:04:41]        resting orders now: 0
+[2026-07-31 06:04:41]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 06:04:41]        -> state changed
+[2026-07-31 06:05:11] pending #3029651299 gone - our own cancel, not waking
+[2026-07-31 06:07:11] EVENT  AT LEVEL - flat, price 63904.78 at H1 RESISTANCE 63886.75 (18 px away). Assess for a trade.
+[2026-07-31 06:07:34]        place_pending: FAILED. account 436771046 DEMO  equity 986.71   bid 63894.55 ask 63904.55
+[2026-07-31 06:07:34]        risk 83.25px = $0.83 (0.08% eq) | reward 132.32px = $1.32 | R:R 1.59:1
+[2026-07-31 06:07:34]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 63886.75, 'sl': 63970.0, 'tp': 63754.43, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 06:07:34]        retcode 10015  Invalid price  ->  FAILED
+[2026-07-31 06:07:34]        last_error (1, 'Success')
+[2026-07-31 06:16:22] EVENT  AT LEVEL - flat, price 63804.86 at H4 SUPPORT 63797.16 (8 px away). Assess for a trade.
+[2026-07-31 06:17:13]        place_pending: EXECUTED. account 436771046 DEMO  equity 986.71   bid 63809.63 ask 63819.63
+[2026-07-31 06:17:13]        risk 109.16px = $1.09 (0.11% eq) | reward 163.84px = $1.64 | R:R 1.50:1
+[2026-07-31 06:17:13]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 63807.16, 'sl': 63698.0, 'tp': 63971.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 06:17:13]        retcode 10009  ok  ->  OK
+[2026-07-31 06:17:13]        resting orders now: 1
+[2026-07-31 06:17:13]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 06:17:13]        -> state changed
+[2026-07-31 06:17:43] pending #3029753881 now resting
+[2026-07-31 06:33:43] EVENT  POSITION OPENED #3029753881 BUY 0.01 @ 63807.16 SL 63698.0 TP 63971.0
+[2026-07-31 06:34:00]        set_watch_levels: Watch levels updated (2 active).
+[2026-07-31 06:34:00]        -> state changed
+[2026-07-31 07:04:32]        journalled #3029753881
+[2026-07-31 07:04:32] EVENT  POSITION CLOSED #3029753881 - flat now, bid 63692.76. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 07:04:59]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 07:04:59]        -> state changed
+[2026-07-31 07:05:29] level 63718.49 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 07:09:59] EVENT  AT LEVEL - flat, price 63699.94 at H1 SUPPORT 63718.49 (19 px away). Assess for a trade.
+[2026-07-31 07:10:19]        no_action: Acknowledged - no action taken.
+[2026-07-31 07:12:41] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 07:12:41] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 07:12:41] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 07:13:12]        place_pending: EXECUTED. account 436771046 DEMO  equity 985.60   bid 63657.03 ask 63667.03
+[2026-07-31 07:13:12]        risk 91.00px = $0.91 (0.09% eq) | reward 149.00px = $1.49 | R:R 1.64:1
+[2026-07-31 07:13:12]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 63541.0, 'sl': 63450.0, 'tp': 63690.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 07:13:12]        retcode 10009  ok  ->  OK
+[2026-07-31 07:13:12]        resting orders now: 1
+[2026-07-31 07:13:12]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 07:13:12]        -> state changed
+[2026-07-31 07:13:12] pending #3029983005 now resting
+[2026-07-31 07:28:42] EVENT  PENDING #3029983005 @ 63541.00 is now 1.6x ATR(M15) from price 63709.09 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-07-31 07:28:51]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 985.60   bid 63705.78 ask 63715.78
+[2026-07-31 07:28:51]        sending: {'action': 8, 'order': 3029983005}
+[2026-07-31 07:28:51]        retcode 10009  ok  ->  OK
+[2026-07-31 07:28:51]        resting orders now: 0
+[2026-07-31 07:28:51]        -> state changed
+[2026-07-31 07:29:21] pending #3029983005 gone - our own cancel, not waking
+[2026-07-31 08:16:16] EVENT  LEVEL BROKEN above 63718.49 (reached 63728.63, now 63722.12). Note: H1 support reclaim. If price reclaims/holds above, look for a buy on a retest of 63,718 (+spread) with a stop below the swing; do not chase a runaway break.
+[2026-07-31 08:17:09]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:21:09] EVENT  LEVEL BROKEN above 63718.49 (reached 63740.14, now 63691.46). Note: H1 support reclaim. If price reclaims/holds above, look for a buy on a retest of 63,718 (+spread) with a stop below the swing; do not chase a runaway break.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 08:21:30]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:30:46] EVENT  LEVEL BROKEN above 63718.49 (reached 63755.89, now 63644.52). Note: H1 support reclaim. If price reclaims/holds above, look for a buy on a retest of 63,718 (+spread) with a stop below the swing; do not chase a runaway break.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 08:31:26]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 08:31:26]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:31:26]        -> state changed
+[2026-07-31 08:32:00] level 63671.42 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 08:34:07] EVENT  LEVEL BROKEN below 63531.45 (reached 63469.55, now 63587.54). Note: H4 support approach. Look for a BUY LIMIT at 63,531 (+spread) only if the level holds; stop outside noise and target a realistic bounce within 120 min.
+[2026-07-31 08:35:19]        place_pending: EXECUTED. account 436771046 DEMO  equity 985.60   bid 63643.25 ask 63653.25
+[2026-07-31 08:35:19]        risk 96.45px = $0.96 (0.10% eq) | reward 171.55px = $1.72 | R:R 1.78:1
+[2026-07-31 08:35:19]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 63541.45, 'sl': 63445.0, 'tp': 63713.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 08:35:19]        retcode 10009  ok  ->  OK
+[2026-07-31 08:35:19]        resting orders now: 1
+[2026-07-31 08:35:19]        -> state changed
+[2026-07-31 08:35:49] pending #3030511807 now resting
+[2026-07-31 08:37:29] EVENT  LEVEL BROKEN above 63671.42 (reached 63685.52, now 63603.02). Note: M15 support reclaim. If price reclaims/holds above, consider a BUY LIMIT on a retest of 63,671 (+spread) with a stop below the swing; only if R:R>=1.5 and target within 1.5x ATR.
+[2026-07-31 08:37:42]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:38:42] EVENT  POSITION OPENED #3030511807 BUY 0.01 @ 63541.45 SL 63445.0 TP 63713.0
+[2026-07-31 08:39:11]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:41:46] EVENT  LEVEL BROKEN below 63531.45 (reached 63469.51, now 63478.46). Note: H4 support approach. Look for a BUY LIMIT at 63,531 (+spread) only if the level holds; stop outside noise and target a realistic bounce within 120 min.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 08:42:08]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:42:49]        journalled #3030511807
+[2026-07-31 08:42:49] EVENT  POSITION CLOSED #3030511807 - flat now, bid 63420.45. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 08:43:35]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 08:43:35]        no_action: Acknowledged - no action taken.
+[2026-07-31 08:43:35]        -> state changed
+[2026-07-31 09:01:57] EVENT  AT LEVEL - flat, price 63164.62 at H1 SUPPORT 63161.92 (3 px away). Assess for a trade.
+[2026-07-31 09:02:39]        place_pending: FAILED. ssed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-07-31 09:02:39]        REJECTED: BUY_LIMIT must rest BELOW ask 63144.07, but you sent 63171.92. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-07-31 09:02:39]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 09:02:39]        -> state changed
+[2026-07-31 09:03:10] level 63161.92 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 09:47:21] EVENT  NO DECISION FOR 45 MINUTES while price moved -1066 (5.1 x ATR-M15) to 62596.10. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-07-31 09:48:07]        place_pending: EXECUTED. account 436771046 DEMO  equity 984.50   bid 62639.09 ask 62649.09
+[2026-07-31 09:48:07]        risk 120.45px = $1.20 (0.12% eq) | reward 226.80px = $2.27 | R:R 1.88:1
+[2026-07-31 09:48:07]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 62727.55, 'sl': 62848.0, 'tp': 62500.75, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 09:48:07]        retcode 10009  ok  ->  OK
+[2026-07-31 09:48:07]        resting orders now: 1
+[2026-07-31 09:48:07]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 09:48:07]        -> state changed
+[2026-07-31 09:48:37] pending #3031013950 now resting
+[2026-07-31 10:02:07] EVENT  LEVEL BROKEN below 62500.75 (reached 62494.55, now 62547.13). Note: M15 support. If reached from above, expect reaction; if cleanly accepted below (multiple closes), consider continuation short only if fresh structure allows R:R >=1.5 within 1.5x ATR(M15).
+[2026-07-31 10:02:24]        no_action: Acknowledged - no action taken.
+[2026-07-31 10:11:25] EVENT  LEVEL BROKEN below 62500.75 (reached 62490.50, now 62499.63). Note: M15 support. If reached from above, expect reaction; if cleanly accepted below (multiple closes), consider continuation short only if fresh structure allows R:R >=1.5 within 1.5x ATR(M15).  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 10:11:44]        no_action: Acknowledged - no action taken.
+[2026-07-31 10:17:14] EVENT  LEVEL BROKEN below 62500.75 (reached 62499.53, now 62523.42). Note: M15 support. If reached from above, expect reaction; if cleanly accepted below (multiple closes), consider continuation short only if fresh structure allows R:R >=1.5 within 1.5x ATR(M15).  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 10:17:34]        no_action: Acknowledged - no action taken.
+[2026-07-31 10:19:46] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 10:19:46] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 10:19:46] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 10:20:19]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 984.50   bid 62535.84 ask 62545.84
+[2026-07-31 10:20:19]        sending: {'action': 8, 'order': 3031013950}
+[2026-07-31 10:20:19]        retcode 10009  ok  ->  OK
+[2026-07-31 10:20:19]        resting orders now: 0
+[2026-07-31 10:20:19]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 10:20:19]        -> state changed
+[2026-07-31 10:20:19] pending #3031013950 gone - our own cancel, not waking
+[2026-07-31 10:20:19] level 62500.75 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 10:36:50] EVENT  LEVEL BROKEN below 62500.75 (reached 62493.64, now 62568.52). Note: M15 support. If reached from above, expect reaction; continuation short only if fresh structure allows R:R in 0.6–1.2 band with target <= ~1.5x ATR(M15).
+[2026-07-31 10:37:22]        place_pending: EXECUTED. account 436771046 DEMO  equity 984.50   bid 62585.58 ask 62595.58
+[2026-07-31 10:37:22]        risk 143.36px = $1.43 (0.15% eq) | reward 114.00px = $1.14 | R:R 0.80:1
+[2026-07-31 10:37:22]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 62626.64, 'sl': 62770.0, 'tp': 62512.64, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 10:37:22]        retcode 10009  ok  ->  OK
+[2026-07-31 10:37:22]        resting orders now: 1
+[2026-07-31 10:37:22]        -> state changed
+[2026-07-31 10:37:52] EVENT  POSITION OPENED #3031306654 SELL 0.01 @ 62626.64 SL 62770.0 TP 62512.64
+[2026-07-31 10:38:10]        no_action: Acknowledged - no action taken.
+[2026-07-31 10:41:10] EVENT  LEVEL BROKEN above 62627.72 (reached 62672.15, now 62669.01). Note: M15 resistance. If tapped/rejected, consider fade via SELL LIMIT at the level (no offset). Stop > ~0.5x ATR(M15) beyond; target chosen by nearby structure with R:R between 0.6 and 1.2 and target distance <= ~1.5x ATR(M15).
+[2026-07-31 10:41:23]        no_action: Acknowledged - no action taken.
+[2026-07-31 11:05:01] EVENT  LEVEL BROKEN above 62727.55 (reached 62733.68, now 62719.45). Note: Prior intraday swing high (14:35). If first test rejects, consider fade via SELL LIMIT at the level (no offset) with stop outside noise (>~0.5x ATR-M15) and target within R:R 0.6–1.2 and <= ~1.5x ATR(M15).
+[2026-07-31 11:05:22]        no_action: Acknowledged - no action taken.
+[2026-07-31 11:09:23]        journalled #3031306654
+[2026-07-31 11:09:23] EVENT  POSITION CLOSED #3031306654 - flat now, bid 62783.61. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 11:09:55]        place_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 62778.96 ask 62788.96
+[2026-07-31 11:09:55]        risk 133.60px = $1.34 (0.14% eq) | reward 96.40px = $0.96 | R:R 0.72:1
+[2026-07-31 11:09:55]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62693.6, 'sl': 62560.0, 'tp': 62790.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 11:09:55]        retcode 10009  ok  ->  OK
+[2026-07-31 11:09:55]        resting orders now: 1
+[2026-07-31 11:09:55]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 11:09:55]        -> state changed
+[2026-07-31 11:10:25] pending #3031449773 now resting
+[2026-07-31 11:10:25] level 62790.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 11:17:56] EVENT  LEVEL BROKEN above 62790.0 (reached 62793.78, now 62774.80). Note: Nearby intraday resistance/target area. If reached with position open, target likely hit; otherwise reassess structure for next setup.
+[2026-07-31 11:18:14]        no_action: Acknowledged - no action taken.
+[2026-07-31 11:26:17] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 11:26:17] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 11:26:17] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 11:27:17]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 62836.16 ask 62846.16
+[2026-07-31 11:27:17]        sending: {'action': 8, 'order': 3031449773}
+[2026-07-31 11:27:17]        retcode 10009  ok  ->  OK
+[2026-07-31 11:27:17]        resting orders now: 0
+[2026-07-31 11:27:17]        place_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 62836.16 ask 62846.16
+[2026-07-31 11:27:17]        risk 100.80px = $1.01 (0.10% eq) | reward 151.20px = $1.51 | R:R 1.50:1
+[2026-07-31 11:27:17]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62693.6, 'sl': 62592.8, 'tp': 62844.8, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 11:27:17]        retcode 10009  ok  ->  OK
+[2026-07-31 11:27:17]        resting orders now: 1
+[2026-07-31 11:27:17]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 11:27:17]        -> state changed
+[2026-07-31 11:27:17] pending #3031529166 now resting
+[2026-07-31 11:27:17] pending #3031449773 gone - our own cancel, not waking
+[2026-07-31 11:27:17] level 62826.8 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 11:27:47] EVENT  LEVEL BROKEN above 62844.8 (reached 62849.71, now 62827.02). Note: Target/nearby intraday highs. If reached with position open, TP should be hit; otherwise reassess for continuation.
+[2026-07-31 11:28:04]        no_action: Acknowledged - no action taken.
+[2026-07-31 12:01:59] EVENT  LEVEL BROKEN above 62826.8 (reached 62838.91, now 62843.91). Note: M15 resistance. A clean break-and-hold above increases odds that the target area will trade; if it fails repeatedly, expect chop back to the retest.
+[2026-07-31 12:02:20]        no_action: Acknowledged - no action taken.
+[2026-07-31 12:13:20] EVENT  LEVEL BROKEN above 62826.8 (reached 62827.04, now 62832.04). Note: M15 resistance. A clean break-and-hold above increases odds that the target area will trade; if it fails repeatedly, expect chop back to the retest.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 12:13:38]        no_action: Acknowledged - no action taken.
+[2026-07-31 12:19:42] EVENT  LEVEL BROKEN above 62844.8 (reached 62897.29, now 62865.75). Note: Target/nearby intraday highs. If reached with position open, TP should be hit; otherwise reassess for continuation.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 12:20:16]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 12:20:16]        -> state changed
+[2026-07-31 12:20:46] level 62897.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 12:20:46] level 62844.8 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 12:24:46] EVENT  LEVEL BROKEN above 62897.0 (reached 62910.22, now 62913.51). Note: Break of the latest intraday high. If price accepts above and our pending is >1.5x ATR(M15) away, cancel per rule 8 and reassess continuation.
+[2026-07-31 12:25:01]        no_action: Acknowledged - no action taken.
+[2026-07-31 12:43:27] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 12:43:27] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 12:43:27] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 12:44:12]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 62987.71 ask 62997.71
+[2026-07-31 12:44:12]        sending: {'action': 8, 'order': 3031529166}
+[2026-07-31 12:44:12]        retcode 10009  ok  ->  OK
+[2026-07-31 12:44:12]        resting orders now: 0
+[2026-07-31 12:44:12]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 12:44:12]        -> state changed
+[2026-07-31 12:44:12] pending #3031529166 gone - our own cancel, not waking
+[2026-07-31 12:47:12] EVENT  LEVEL BROKEN above 63035.8 (reached 63051.30, now 63047.54). Note: Break/acceptance above the latest M5 high. If accepted, prioritize continuation buys on shallow pullbacks; do not chase if already extended.
+[2026-07-31 12:47:47]        place_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 63044.92 ask 63054.92
+[2026-07-31 12:47:47]        risk 69.00px = $0.69 (0.07% eq) | reward 103.00px = $1.03 | R:R 1.49:1
+[2026-07-31 12:47:47]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62907.0, 'sl': 62838.0, 'tp': 63010.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 12:47:47]        retcode 10009  ok  ->  OK
+[2026-07-31 12:47:47]        resting orders now: 1
+[2026-07-31 12:47:47]        -> state changed
+[2026-07-31 12:48:17] pending #3031807346 now resting
+[2026-07-31 12:54:47] EVENT  PENDING #3031807346 @ 62907.00 is now 1.5x ATR(M15) from price 63173.54 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-07-31 12:55:08]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 63179.81 ask 63189.81
+[2026-07-31 12:55:08]        sending: {'action': 8, 'order': 3031807346}
+[2026-07-31 12:55:08]        retcode 10009  ok  ->  OK
+[2026-07-31 12:55:08]        resting orders now: 0
+[2026-07-31 12:55:08]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 12:55:08]        -> state changed
+[2026-07-31 12:55:38] pending #3031807346 gone - our own cancel, not waking
+[2026-07-31 13:01:10] EVENT  AT LEVEL - flat, price 63239.02 at H1 RESISTANCE 63227.19 (12 px away). Assess for a trade.
+[2026-07-31 13:01:30]        no_action: Acknowledged - no action taken.
+[2026-07-31 13:13:44] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 13:13:44] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 13:13:44] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 13:14:22]        place_pending: EXECUTED. account 436771046 DEMO  equity 983.07   bid 63069.9 ask 63079.9
+[2026-07-31 13:14:22]        risk 68.00px = $0.68 (0.07% eq) | reward 102.00px = $1.02 | R:R 1.50:1
+[2026-07-31 13:14:22]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62997.84, 'sl': 62929.84, 'tp': 63099.84, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 13:14:22]        retcode 10009  ok  ->  OK
+[2026-07-31 13:14:22]        resting orders now: 1
+[2026-07-31 13:14:22]        set_watch_levels: Watch levels updated (4 active).
+[2026-07-31 13:14:22]        -> state changed
+[2026-07-31 13:14:22] pending #3031888392 now resting
+[2026-07-31 13:19:28] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 13:19:28] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 13:19:28] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 13:19:51]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:19:51]        -> state changed
+[2026-07-31 13:19:51] level 63061.54 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 13:27:51] EVENT  LEVEL BROKEN below 62997.84 (reached 62992.44, now 63010.00). Note: Our BUY_LIMIT entry. If tagged and defended on M5, let it fill. If M5 accepts below this zone (multiple closes below ~62,980), premise is gone—cancel the pending.
+[2026-07-31 13:28:10]        no_action: Acknowledged - no action taken.
+[2026-07-31 13:29:40] EVENT  POSITION OPENED #3031888392 BUY 0.01 @ 62997.84 SL 62929.84 TP 63099.84
+[2026-07-31 13:29:57]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:29:57]        no_action: Acknowledged - no action taken.
+[2026-07-31 13:29:57]        -> state changed
+[2026-07-31 13:34:13] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 13:34:13] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 13:34:13] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 13:34:36]        no_action: Acknowledged - no action taken.
+[2026-07-31 13:38:38]        journalled #3031888392
+[2026-07-31 13:38:38] EVENT  POSITION CLOSED #3031888392 - flat now, bid 62953.44. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 13:39:07]        place_pending: EXECUTED. account 436771046 DEMO  equity 982.38   bid 62958.88 ask 62968.88
+[2026-07-31 13:39:07]        risk 74.32px = $0.74 (0.08% eq) | reward 111.48px = $1.11 | R:R 1.50:1
+[2026-07-31 13:39:07]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 62975.68, 'sl': 63050.0, 'tp': 62864.2, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 13:39:07]        retcode 10009  ok  ->  OK
+[2026-07-31 13:39:07]        resting orders now: 1
+[2026-07-31 13:39:07]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:39:07]        -> state changed
+[2026-07-31 13:39:37] pending #3031946049 now resting
+[2026-07-31 13:39:37] level 62975.68 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 13:45:59] EVENT  POSITION OPENED #3031946049 SELL 0.01 @ 62975.68 SL 63050.0 TP 62864.2
+[2026-07-31 13:46:21]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:46:21]        -> state changed
+[2026-07-31 13:49:22]        journalled #3031946049
+[2026-07-31 13:49:22] EVENT  POSITION CLOSED #3031946049 - flat now, bid 63036.79. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 13:49:50]        place_pending: EXECUTED. account 436771046 DEMO  equity 981.63   bid 63013.91 ask 63023.91
+[2026-07-31 13:49:50]        risk 60.00px = $0.60 (0.06% eq) | reward 90.00px = $0.90 | R:R 1.50:1
+[2026-07-31 13:49:50]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 63030.35, 'sl': 63090.35, 'tp': 62940.35, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 13:49:50]        retcode 10009  ok  ->  OK
+[2026-07-31 13:49:50]        resting orders now: 1
+[2026-07-31 13:49:50]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:49:50]        -> state changed
+[2026-07-31 13:50:20] pending #3031966287 now resting
+[2026-07-31 13:50:20] level 63030.35 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 13:51:20] EVENT  POSITION OPENED #3031966287 SELL 0.01 @ 63030.35 SL 63090.35 TP 62940.35
+[2026-07-31 13:51:38]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:51:38]        -> state changed
+[2026-07-31 13:52:08] level 63030.35 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 13:53:39]        journalled #3031966287
+[2026-07-31 13:53:39] EVENT  POSITION CLOSED #3031966287 - flat now, bid 63078.45. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 13:54:05]        place_pending: EXECUTED. account 436771046 DEMO  equity 980.94   bid 63100.11 ask 63110.11
+[2026-07-31 13:54:05]        risk 60.00px = $0.60 (0.06% eq) | reward 90.00px = $0.90 | R:R 1.50:1
+[2026-07-31 13:54:05]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 63040.35, 'sl': 62980.35, 'tp': 63130.35, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 13:54:05]        retcode 10009  ok  ->  OK
+[2026-07-31 13:54:05]        resting orders now: 1
+[2026-07-31 13:54:05]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:54:05]        -> state changed
+[2026-07-31 13:54:35] pending #3031975506 now resting
+[2026-07-31 13:58:06] EVENT  POSITION OPENED #3031975506 BUY 0.01 @ 63040.35 SL 62980.35 TP 63130.35
+[2026-07-31 13:58:24]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 13:58:24]        no_action: Acknowledged - no action taken.
+[2026-07-31 13:58:24]        -> state changed
+[2026-07-31 14:01:24] EVENT  LEVEL BROKEN below 63030.35 (reached 63015.59, now 63081.48). Note: M15 resistance reclaimed and used as entry. If price returns below and holds on M5, the retest-as-support premise is weakened; DO NOT pre-empt—let the stop work.
+[2026-07-31 14:01:37]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:04:39]        journalled #3031975506
+[2026-07-31 14:04:39] EVENT  POSITION CLOSED #3031975506 - flat now, bid 62983.1. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 14:05:11]        place_pending: EXECUTED. account 436771046 DEMO  equity 980.34   bid 62975.99 ask 62985.99
+[2026-07-31 14:05:11]        risk 74.37px = $0.74 (0.08% eq) | reward 111.56px = $1.12 | R:R 1.50:1
+[2026-07-31 14:05:11]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62963.12, 'sl': 62888.75, 'tp': 63074.68, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 14:05:11]        retcode 10009  ok  ->  OK
+[2026-07-31 14:05:11]        resting orders now: 1
+[2026-07-31 14:05:11]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 14:05:11]        -> state changed
+[2026-07-31 14:05:41] EVENT  POSITION OPENED #3031999878 BUY 0.01 @ 62963.12 SL 62888.75 TP 63074.68
+[2026-07-31 14:05:59]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 14:05:59]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:05:59]        -> state changed
+[2026-07-31 14:06:29] level 63037.49 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 14:36:23]        journalled #3031999878
+[2026-07-31 14:36:23] EVENT  POSITION CLOSED #3031999878 - flat now, bid 62889.02. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 14:36:57]        place_pending: EXECUTED. account 436771046 DEMO  equity 979.51   bid 62898.19 ask 62908.19
+[2026-07-31 14:36:57]        risk 55.60px = $0.56 (0.06% eq) | reward 83.40px = $0.83 | R:R 1.50:1
+[2026-07-31 14:36:57]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62898.75, 'sl': 62843.15, 'tp': 62982.15, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 14:36:57]        retcode 10009  ok  ->  OK
+[2026-07-31 14:36:57]        resting orders now: 1
+[2026-07-31 14:36:57]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 14:36:57]        -> state changed
+[2026-07-31 14:37:27] EVENT  POSITION OPENED #3032059833 BUY 0.01 @ 62898.75 SL 62843.15 TP 62982.15
+[2026-07-31 14:37:55]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 14:37:55]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:37:55]        -> state changed
+[2026-07-31 14:37:55] level 62898.75 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 14:40:55] EVENT  LEVEL BROKEN below 62888.75 (reached 62856.51, now 62870.49). Note: H1 support and thesis line. If accepted below (confirmed), context is weaker but do not close early; let stop work unless non-price info appears.
+[2026-07-31 14:41:09]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:44:39] EVENT  LEVEL BROKEN below 62888.75 (reached 62865.13, now 62933.28). Note: H1 support and thesis line. If accepted below (confirmed), context is weaker but do not close early; let stop work unless non-price info appears.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 14:44:52]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:45:22] EVENT  POSITION AT 1.11R #3032059833 (+62 px, risk 56 px). Consider moving the stop to break-even at 62898.75.
+[2026-07-31 14:45:39]        modify_sltp: EXECUTED. account 436771046 DEMO  equity 980.05   bid 62952.67 ask 62962.67
+[2026-07-31 14:45:39]        sending: {'action': 6, 'position': 3032059833, 'symbol': 'BTCUSDm', 'sl': 62898.75, 'tp': 62982.15}
+[2026-07-31 14:45:39]        retcode 10009  ok  ->  OK
+[2026-07-31 14:45:39]        CONFIRMED #3032059833 SL 62898.75 TP 62982.15 P&L +0.54
+[2026-07-31 14:45:39]        -> state changed
+[2026-07-31 14:47:11]        journalled #3032059833
+[2026-07-31 14:47:11] EVENT  POSITION CLOSED #3032059833 - flat now, bid 62979.38. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 14:47:40]        place_pending: EXECUTED. account 436771046 DEMO  equity 980.34   bid 62962.29 ask 62972.29
+[2026-07-31 14:47:40]        risk 67.48px = $0.67 (0.07% eq) | reward 101.22px = $1.01 | R:R 1.50:1
+[2026-07-31 14:47:40]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62971.48, 'sl': 62904.0, 'tp': 63072.7, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 14:47:40]        retcode 10009  ok  ->  OK
+[2026-07-31 14:47:40]        resting orders now: 1
+[2026-07-31 14:47:40]        set_watch_levels: Watch levels updated (5 active).
+[2026-07-31 14:47:40]        -> state changed
+[2026-07-31 14:48:50] EVENT  POSITION OPENED #3032081330 BUY 0.01 @ 62971.48 SL 62904.0 TP 63072.7
+[2026-07-31 14:49:07]        no_action: Acknowledged - no action taken.
+[2026-07-31 14:49:07] level 62961.48 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 14:59:20]        journalled #3032081330
+[2026-07-31 14:59:20] EVENT  POSITION CLOSED #3032081330 - flat now, bid 62902.32. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 14:59:50]        place_pending: EXECUTED. account 436771046 DEMO  equity 979.67   bid 62901.28 ask 62911.28
+[2026-07-31 14:59:50]        risk 55.20px = $0.55 (0.06% eq) | reward 82.80px = $0.83 | R:R 1.50:1
+[2026-07-31 14:59:50]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62898.75, 'sl': 62843.55, 'tp': 62981.55, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-07-31 14:59:50]        retcode 10009  ok  ->  OK
+[2026-07-31 14:59:50]        resting orders now: 1
+[2026-07-31 14:59:50]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 14:59:50]        -> state changed
+[2026-07-31 15:00:20] EVENT  POSITION OPENED #3032105672 BUY 0.01 @ 62898.75 SL 62843.55 TP 62981.55
+[2026-07-31 15:00:33] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 15:00:33] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-07-31 15:00:33] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 15:01:00]        set_watch_levels: Watch levels updated (6 active).
+[2026-07-31 15:01:00]        -> state changed
+[2026-07-31 15:18:00] EVENT  POSITION AT 1.18R #3032105672 (+65 px, risk 55 px). Consider moving the stop to break-even at 62898.75.
+[2026-07-31 15:18:18]        no_action: Acknowledged - no action taken.
+[2026-07-31 15:41:53] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 15:41:53] decider: session / None (None present)
+[2026-07-31 15:41:53] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 15:41:55]        *** DECISION NEEDED - CLAUDE SESSION *** DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 15:48:44] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 15:48:44] decider: session / None (None present)
+[2026-07-31 15:48:44] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 15:48:46]        *** DECISION NEEDED - CLAUDE SESSION *** DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 15:55:17] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-07-31 15:55:17] decider: session / None (None present)
+[2026-07-31 15:55:17] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-07-31 15:55:20]        *** DECISION NEEDED - CLAUDE SESSION *** DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 1 open position(s), 0 pending order(s). Re-sync your  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:01:50] EVENT  LEVEL BROKEN below 62855.93 (reached 62846.14, now 62857.60). Note: H1 support being retested. If there is confirmed acceptance below, premise weakens and stop may be vulnerable; otherwise stay with plan.
+[2026-07-31 16:01:51]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN below 62855.93 (reached 62846.14, now 62857.60). Note: H1 support being retested. If there is confirmed acceptance below, premise weakens and stop may be vulnerable; otherwise stay with plan. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:02:53]        journalled #3032105672
+[2026-07-31 16:02:53] EVENT  POSITION CLOSED #3032105672 - flat now, bid 62797.57. Reassess: is there a next setup, and are the watch levels still right?
+[2026-07-31 16:02:55]        *** DECISION NEEDED - CLAUDE SESSION *** POSITION CLOSED #3032105672 - flat now, bid 62797.57. Reassess: is there a next setup, and are the watch levels still right? | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:05:55] EVENT  LEVEL BROKEN below 62843.55 (reached 62772.73, now 62873.49). Note: Protective stop for the open long. Awareness only; do not widen.
+[2026-07-31 16:05:56]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN below 62843.55 (reached 62772.73, now 62873.49). Note: Protective stop for the open long. Awareness only; do not widen. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:07:26] level 62861.23 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-07-31 16:14:06] EVENT  AT LEVEL - flat, price 62954.28 at H1 RESISTANCE 62966.13 (12 px away). Assess for a trade.
+[2026-07-31 16:14:07]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62954.28 at H1 RESISTANCE 62966.13 (12 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:17:37] EVENT  LEVEL BROKEN above 62966.13 (reached 62969.10, now 62967.17). Note: Prev closed H1 high. A reclaim here would end the current downswing; until then the bias is lower. Not a buy signal by itself - levels alone are worse than random.
+[2026-07-31 16:17:39]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN above 62966.13 (reached 62969.10, now 62967.17). Note: Prev closed H1 high. A reclaim here would end the current downswing; until then the bias is lower. Not a buy signal by itself - levels alone are worse than random. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:39:52] EVENT  LEVEL BROKEN above 62966.13 (reached 62970.51, now 62969.50). Note: Prev closed H1 high. A reclaim here would end the current downswing; until then the bias is lower. Not a buy signal by itself - levels alone are worse than random.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 16:39:53]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN above 62966.13 (reached 62970.51, now 62969.50). Note: Prev closed H1 high. A reclaim here would end the current downswing; until then the bias is lower. Not a buy signal by itself - levels alone are worse than random.  NOTE: this level has now fired 2 times - if it is no longer meaning | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 16:58:01] EVENT  AT LEVEL - flat, price 62871.17 at H1 SUPPORT 62861.23 (10 px away). Assess for a trade.
+[2026-07-31 16:58:02]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62871.17 at H1 SUPPORT 62861.23 (10 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 17:01:02] EVENT  LEVEL BROKEN below 62861.23 (reached 62840.98, now 62867.12). Note: Prev closed H1 and M15 low, and the level price is sitting on right now. A clean break-and-hold below extends the move that just stopped out the long.
+[2026-07-31 17:01:03]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN below 62861.23 (reached 62840.98, now 62867.12). Note: Prev closed H1 and M15 low, and the level price is sitting on right now. A clean break-and-hold below extends the move that just stopped out the long. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 17:05:58] EVENT  LEVEL BROKEN below 62861.23 (reached 62794.50, now 62926.99). Note: Prev closed H1 and M15 low, and the level price is sitting on right now. A clean break-and-hold below extends the move that just stopped out the long.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-07-31 17:08:20]        *** DECISION NEEDED - CLAUDE SESSION *** LEVEL BROKEN below 62861.23 (reached 62794.50, now 62926.99). Note: Prev closed H1 and M15 low, and the level price is sitting on right now. A clean break-and-hold below extends the move that just stopped out the long.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 18:20:24] EVENT  AT LEVEL - flat, price 62947.69 at H1 RESISTANCE 62965.69 (18 px away). Assess for a trade.
+[2026-07-31 18:20:25]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62947.69 at H1 RESISTANCE 62965.69 (18 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 18:52:00] EVENT  AT LEVEL - flat, price 62812.68 at H1 SUPPORT 62794.50 (18 px away). Assess for a trade.
+[2026-07-31 18:52:02]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62812.68 at H1 SUPPORT 62794.50 (18 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 19:45:07] EVENT  AT LEVEL - flat, price 62950.02 at H1 RESISTANCE 62959.61 (10 px away). Assess for a trade.
+[2026-07-31 19:45:09]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62950.02 at H1 RESISTANCE 62959.61 (10 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.

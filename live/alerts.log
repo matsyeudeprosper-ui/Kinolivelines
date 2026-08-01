@@ -1,0 +1,111 @@
+2026-07-30T13:40:43	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-30T14:03:44	OPENED	#3027083591 SELL 0.01 @ 64697.00 SL 64762.0 TP 64540.0 - now managing
+2026-07-30T14:06:44	LEVEL	broke above 64715.00 (reached 64736.97, now 64741.97) - EARLY WARNING - 18:35 high. Taking it out leaves only 64757 between price and the stop; reassess the short before the SL does it for me
+2026-07-30T14:07:14	CLOSED	#3027083591 (opened @ 64697.00) is gone - flat now, bid 64763.00. Look for the next setup.
+2026-07-30T14:10:14	LEVEL	broke above 64757.00 (reached 64776.46, now 64776.11) - 18:30 swing high and the pre-committed invalidation. Reclaiming it kills the breakdown thesis - CLOSE the short rather than ride the remaining points to the 64762 stop
+2026-07-30T14:18:44	SETUP	flat, price 64796.28 at M15 RESIST 64797.86 (2px away). Assess for a trade.
+2026-07-30T14:24:29	SETUP	flat, price 64791.42 at M15 RESIST 64797.86 (6px away). Assess for a trade.
+2026-07-30T14:27:29	LEVEL	broke above 64830.00 (reached 64832.36, now 64815.66) - top of the 18:00-18:05 supply shelf. Clearing it opens the 64,898-64,928 cluster - the rally is a real trend leg rather than a bounce
+2026-07-30T14:45:40	SETUP	flat, price 64764.48 at M15 SUPPORT 64751.90 (13px away). Assess for a trade.
+2026-07-30T14:48:10	PENDING	order #3027323289 placed
+2026-07-30T14:48:40	LEVEL	broke below 64730.00 (reached 64722.72, now 64731.43) - 19:15 swing low. Losing it means the rally leg off 64614 is failing and the short side reopens - on a retest, not a chase
+2026-07-30T14:51:10	OPENED	#3027323289 SELL 0.01 @ 64751.90 SL 64890.0 TP 64620.0 - now managing
+2026-07-30T14:52:10	CLOSED	#3027323289 (opened @ 64751.90) is gone - flat now, bid 64771.81. Look for the next setup.
+2026-07-30T14:56:10	LEVEL	broke below 64730.00 (reached 64726.92, now 64744.47) - 19:15 swing low. Losing it means the rally leg off 64614 is failing and the short side reopens - on a retest, not a chase
+2026-07-30T14:57:40	PENDING	order #3027350848 placed
+2026-07-30T14:59:40	OPENED	#3027350848 SELL 0.01 @ 64751.90 SL 64870.0 TP 64530.0 - now managing
+2026-07-30T15:02:10	CLOSED	#3027350848 (opened @ 64751.90) is gone - flat now, bid 64864.83. Look for the next setup.
+2026-07-30T15:04:10	PENDING	order #3027380511 placed
+2026-07-30T15:07:10	LEVEL	broke below 64794.82 (reached 64793.15, now 64799.04) - Loss of the reclaimed M15 level; if this breaks before fill and cannot be reclaimed, momentum is slipping back into range — reassess the pending short.
+2026-07-30T15:18:25	LEVEL	broke below 64700.58 (reached 64691.76, now 64713.34) - M15 support lost; if not reclaimed on the next M15 rotation, cancel the distant H4 sell limit and reassess from lower range.
+2026-07-30T15:30:55	LEVEL	broke below 64700.58 (reached 64693.22, now 64724.54) - If the next M15 rotation fails to reclaim and price pushes back below here, cancel pending short #3027380511 and reassess from H4 support 64,614–64,620.
+2026-07-30T15:58:01	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-30T15:58:40	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-30T16:00:08	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-30T16:02:17	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-30T16:06:47	LEVEL	broke below 64700.58 (reached 64693.59, now 64698.93) - If price pushes back below ~64,700 again, wake me to CANCEL pending short #3027380511 and reassess from H4 support 64,614–64,620.
+2026-07-30T16:08:17	PENDING	order #3027541590 placed
+2026-07-30T17:01:00	OPENED	#3027541590 BUY 0.01 @ 64625.00 SL 64545.0 TP 64820.0 - now managing
+2026-07-30T17:03:32	AT_1R	#3027541590 is +128px = 1.60R (risk 80px). bid 64753.29. Consider moving stop to break-even 64625.00.
+2026-07-30T17:08:02	CLOSED	#3027541590 (opened @ 64625.00) is gone - flat now, bid 64816.73. Look for the next setup.
+2026-07-30T17:09:02	PENDING	order #3027600123 placed
+2026-07-30T17:29:02	LEVEL	broke above 64927.74 (reached 64939.69, now 64933.30) - If H4 resistance 64,927.74 is accepted above, momentum may continue; reassess longs on higher pullback. Pending buy at 64,720.38 is still valid unless structure shifts materially.
+2026-07-30T17:39:32	LEVEL	broke below 64828.03 (reached 64822.17, now 64840.78) - If bid breaks below the M15 support, momentum is shifting down; confirms approach toward our pending entry. Reassess premise only if the break accelerates abnormally.
+2026-07-30T17:43:32	LEVEL	broke above 64860.00 (reached 64863.73, now 64867.61) - Reclaim and push away from the broken M15 64828. If market runs up without tagging our entry, reassess and likely cancel the pending rather than chase.
+2026-07-30T17:55:26	LEVEL	broke below 64801.44 (reached 64799.07, now 64810.02) - M15 support. A clean break increases odds we trade down to the 64720 buy limit; watch for pace of the break when/if entry is tagged.
+2026-07-30T18:12:26	LEVEL	broke above 64865.95 (reached 64870.81, now 64872.90) - M15 resistance. If price accepts above here before the BUY_LIMIT fills, the shallow-pullback buy premise weakens; reassess and likely cancel rather than chase.
+2026-07-30T18:25:26	LEVEL	broke above 64865.95 (reached 64874.47, now 64879.47) - M15 resistance. If price accepts above here before the BUY_LIMIT fills, the shallow-pullback buy premise weakens; reassess and likely cancel rather than chase.
+2026-07-30T18:30:26	LEVEL	broke above 64865.95 (reached 64873.59, now 64874.06) - M15 resistance. If price accepts above here before the BUY_LIMIT fills, the shallow-pullback buy premise weakens; reassess and likely cancel rather than chase.
+2026-07-30T18:44:26	LEVEL	broke below 64771.60 (reached 64754.41, now 64779.04) - M15 support. A clean break increases odds we trade down to the 64720.38 BUY_LIMIT; watch the pace of the break into entry.
+2026-07-30T18:49:57	LEVEL	broke above 64834.14 (reached 64835.32, now 64835.23) - Reclaim of broken M15 support. If price accepts back above, the premise for buying a shallow pullback at 64720.38 degrades; reassess pending.
+2026-07-30T18:50:57	OPENED	#3027600123 BUY 0.01 @ 64720.38 SL 64600.0 TP 64920.0 - now managing
+2026-07-30T19:05:32	LEVEL	broke above 64841.00 (reached 64841.29, now 64843.38) - Entry +1R. If we get a clean M5 close and hold above ~64841, consider moving the stop to breakeven (64720.38) on the next check; do not modify mid-candle.
+2026-07-30T19:47:32	LEVEL	broke below 64671.02 (reached 64670.21, now 64719.68) - H1 support. If there is a decisive break-and-hold below while there is still meaningful distance (>~40) to the stop, consider an early exit; otherwise let the stop work.
+2026-07-30T19:51:32	LEVEL	broke below 64671.02 (reached 64659.50, now 64664.50) - H1 support. If there is a decisive break-and-hold below while there is still meaningful distance (>~40) to the stop, consider an early exit; otherwise let the stop work.
+2026-07-30T19:52:32	CLOSED	#3027600123 (opened @ 64720.38) is gone - flat now, bid 64641.37. Look for the next setup.
+2026-07-30T19:53:32	PENDING	order #3027933248 placed
+2026-07-30T20:00:02	LEVEL	broke above 64671.02 (reached 64672.31, now 64671.72) - H1 level just lost. If we get an M5 close and hold back above, it indicates a reclaim; reassess longs on a retest if R:R allows.
+2026-07-30T20:02:02	PENDING	order #3027959212 placed
+2026-07-30T20:03:02	LEVEL	broke above 64844.78 (reached 64878.49, now 64869.97) - H1 resistance/first target. Acceptance above opens room toward 65030; if rejected, manage targets tighter on any long.
+2026-07-30T20:06:35	PENDING	order #3027973734 placed
+2026-07-30T20:09:05	LEVEL	broke above 65030.19 (reached 65063.62, now 65039.79) - H4 resistance/next objective. If accepted above while pending is unfilled, cancel the pullback buy as premise has run; if filled and accepted above, consider managing target on strength.
+2026-07-30T20:16:35	PENDING	order #3028006319 placed
+2026-07-30T20:17:05	LEVEL	broke below 65030.19 (reached 65028.71, now 65054.19) - If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.
+2026-07-30T20:20:05	LEVEL	broke below 65030.19 (reached 64971.55, now 64976.55) - If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.
+2026-07-30T20:32:35	LEVEL	broke below 65030.19 (reached 65005.60, now 65010.60) - If price accepts back below the H4 breakout level, treat 65030 as resistance again and avoid longs; reassess for short-only setups on bounces.
+2026-07-30T20:37:35	LEVEL	broke below 64844.78 (reached 64842.84, now 64850.14) - Deeper bearish flip on H1. If reclaimed below, intraday bias shifts down and we avoid buying dips.
+2026-07-30T20:47:35	LEVEL	broke below 64658.09 (reached 64558.55, now 64632.74) - M15 support. A clean test or sweep-and-reclaim here could be a future long level; if accepted through, expect continuation lower and reframe levels.
+2026-07-30T20:50:35	LEVEL	broke below 64589.93 (reached 64467.39, now 64498.54) - H4 support. If accepted below and held, expect continuation lower; reframe levels for short-only bias and be ready to cancel any bullish plans.
+2026-07-30T22:06:14	LEVEL	broke below 64137.56 (reached 64125.28, now 64133.02) - M15 support/recent low. Acceptance below opens continuation risk lower; avoid fading until a sweep-and-reclaim is proven.
+2026-07-30T22:12:14	LEVEL	broke below 64137.56 (reached 64135.25, now 64151.64) - M15 support/recent low. Acceptance below opens continuation risk lower; avoid fading until a sweep-and-reclaim is proven.
+2026-07-30T22:54:15	LEVEL	broke above 64359.41 (reached 64360.48, now 64351.22) - Local M15 resistance from the latest bounce. A tag-and-reject could set intraday shorts; acceptance weakens the immediate downside.
+2026-07-30T23:04:15	LEVEL	broke above 64359.41 (reached 64371.22, now 64372.48) - Local M15 resistance from the latest bounce. A tag-and-reject could set intraday shorts; acceptance weakens the immediate downside.
+2026-07-31T01:29:02	PENDING	order #3028590824 placed
+2026-07-31T01:30:02	OPENED	#3028590824 SELL 0.01 @ 64355.06 SL 64430.06 TP 64196.74 - now managing
+2026-07-31T01:33:02	CLOSED	#3028590824 (opened @ 64355.06) is gone - flat now, bid 64414.21. Look for the next setup.
+2026-07-31T01:33:32	PENDING	order #3028606410 placed
+2026-07-31T01:36:07	ERROR	UnicodeEncodeError: 'charmap' codec can't encode character '\u2011' in position 127: character maps to <undefined>
+2026-07-31T01:36:47	ERROR	UnicodeEncodeError: 'charmap' codec can't encode character '\u2011' in position 127: character maps to <undefined>
+2026-07-31T01:37:27	ERROR	UnicodeEncodeError: 'charmap' codec can't encode character '\u2011' in position 127: character maps to <undefined>
+2026-07-31T01:38:25	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-07-31T01:39:55	LEVEL	broke below 64287.36 (reached 64283.34, now 64292.27) - M15 support and our TP zone. If traded through, expect take-profit fill.
+2026-07-31T01:45:25	LEVEL	broke below 64196.74 (reached 64181.23, now 64196.27) - Break of H1 support opens path toward 64,095 H4 support.
+2026-07-31T02:03:55	LEVEL	broke below 64095.34 (reached 64052.22, now 64085.78) - Break of H4 support signals continuation lower; watch for acceleration/flush.
+2026-07-31T03:09:30	LEVEL	broke below 63797.16 (reached 63795.99, now 63807.65) - Break of the nearby M15 support would signal continuation lower; watch for acceleration/flush.
+2026-07-31T03:22:00	LEVEL	broke below 63797.16 (reached 63796.34, now 63813.39) - Break of the nearby M15 support would signal continuation lower; watch for acceleration/flush.
+2026-07-31T03:40:58	LEVEL	broke below 63780.00 (reached 63733.62, now 63749.64) - Break of the 4H/session low would signal continuation lower; watch for acceleration/flush. Replaces the repeatedly-triggered 63,797 level.
+2026-07-31T04:06:28	LEVEL	broke below 63733.00 (reached 63705.94, now 63721.34) - Break of the fresh 4H/session low opens continuation/flush lower; consider momentum only if geometry fits the hard rules.
+2026-07-31T04:35:09	SETUP	flat, price 63605.24 at M15 SUPPORT 63618.91 (14px away). Assess for a trade.
+2026-07-31T04:38:09	LEVEL	broke above 63618.91 (reached 63665.68, now 63664.68) - Reclaim of the broken M15 support. If accepted above, short squeeze risk back toward 63,734/63,964—reassess for possible fade lower if geometry fits.
+2026-07-31T04:44:09	SETUP	flat, price 63635.52 at M15 SUPPORT 63618.91 (17px away). Assess for a trade.
+2026-07-31T04:49:39	SETUP	flat, price 63655.68 at M15 RESIST 63665.68 (10px away). Assess for a trade.
+2026-07-31T05:05:39	LEVEL	broke below 63561.65 (reached 63544.37, now 63577.55) - Break of the 4H range low opens continuation lower; consider momentum continuation ONLY if stop can sit outside noise and R:R≥1.5 within 120 min.
+2026-07-31T05:06:39	PENDING	order #3029485049 placed
+2026-07-31T05:08:39	LEVEL	broke above 63618.91 (reached 63632.85, now 63629.24) - Reclaim of the broken M15 support. If accepted above, short squeeze risk back toward 63,734/63,964—reassess for possible fade lower if geometry fits.
+2026-07-31T05:26:09	LEVEL	broke above 63733.62 (reached 63741.60, now 63738.87) - Reclaim of the H1 support-turned-resistance reduces short bias; watch for push toward 63,964 and 64,095.
+2026-07-31T05:31:09	SETUP	flat, price 63783.90 at H4 SUPPORT 63797.16 (13px away). Assess for a trade.
+2026-07-31T05:33:09	PENDING	order #3029584729 placed
+2026-07-31T05:34:09	OPENED	#3029584729 SELL 0.01 @ 63780.00 SL 63865.0 TP 63650.0 - now managing
+2026-07-31T05:37:11	LEVEL	broke above 63797.16 (reached 63804.42, now 63796.96) - Reclaim of H4 support-turned-resistance increases squeeze risk; no change to plan but be prepared for noise near stop.
+2026-07-31T05:52:17	CLOSED	#3029584729 (opened @ 63780.00) is gone - flat now, bid 63856.59. Look for the next setup.
+2026-07-31T05:53:17	PENDING	order #3029651299 placed
+2026-07-31T06:04:05	LEVEL	broke above 63914.00 (reached 63930.38, now 63928.16) - Acceptance above prior swing high reduces odds of a deep pullback; do NOT chase—keep pending only while entry remains within 1.5x ATR(M15) of price.
+2026-07-31T06:07:05	SETUP	flat, price 63903.47 at H1 RESIST 63886.75 (17px away). Assess for a trade.
+2026-07-31T06:16:22	SETUP	flat, price 63804.86 at H4 SUPPORT 63797.16 (8px away). Assess for a trade.
+2026-07-31T06:17:22	PENDING	order #3029753881 placed
+2026-07-31T06:33:52	OPENED	#3029753881 BUY 0.01 @ 63807.16 SL 63698.0 TP 63971.0 - now managing
+2026-07-31T07:04:24	CLOSED	#3029753881 (opened @ 63807.16) is gone - flat now, bid 63697.51. Look for the next setup.
+2026-07-31T07:10:24	SETUP	flat, price 63702.22 at H1 SUPPORT 63718.49 (16px away). Assess for a trade.
+2026-07-31T07:13:28	PENDING	order #3029983005 placed
+2026-07-31T07:30:28	SETUP	flat, price 63646.69 at M15 SUPPORT 63628.38 (18px away). Assess for a trade.
+2026-07-31T07:35:58	SETUP	flat, price 63633.88 at M15 SUPPORT 63628.38 (6px away). Assess for a trade.
+2026-07-31T07:43:58	SETUP	flat, price 63614.20 at M15 SUPPORT 63628.38 (14px away). Assess for a trade.
+2026-07-31T07:53:07	SETUP	flat, price 63666.78 at M15 RESIST 63679.99 (13px away). Assess for a trade.
+2026-07-31T08:00:16	SETUP	flat, price 63674.09 at M15 RESIST 63691.40 (17px away). Assess for a trade.
+2026-07-31T08:14:46	SETUP	flat, price 63694.40 at M15 RESIST 63691.40 (3px away). Assess for a trade.
+2026-07-31T08:17:48	LEVEL	broke above 63718.49 (reached 63730.44, now 63732.48) - H1 support reclaim. If price reclaims/holds above, look for a buy on a retest of 63,718 (+spread) with a stop below the swing; do not chase a runaway break.
+2026-07-31T08:21:18	SETUP	flat, price 63709.38 at M15 RESIST 63709.62 (0px away). Assess for a trade.
+2026-07-31T08:30:16	SETUP	flat, price 63679.02 at M15 SUPPORT 63671.42 (8px away). Assess for a trade.
+2026-07-31T08:33:27	LEVEL	broke below 63531.45 (reached 63469.55, now 63565.05) - H4 support approach. Look for a BUY LIMIT at 63,531 (+spread) only if the level holds; stop outside noise and target a realistic bounce within 120 min.
+2026-07-31T08:35:19	PENDING	order #3030511807 placed
+2026-07-31T08:36:51	LEVEL	broke above 63671.42 (reached 63705.95, now 63578.19) - M15 support reclaim. If price reclaims/holds above, consider a BUY LIMIT on a retest of 63,671 (+spread) with a stop below the swing; only if R:R>=1.5 and target within 1.5x ATR.

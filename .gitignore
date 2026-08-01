@@ -1,0 +1,21 @@
+# Regenerable caches - large and rebuildable from the scripts that made them
+study/touches.pkl
+study/pool_signals.pkl
+__pycache__/
+*.pyc
+
+# Liveness heartbeats - rewritten every few seconds, meaningless in history
+live/daemon_alive.json
+live/watcher_alive.json
+recorder/data/derivs_alive.json
+recorder/data/micro_alive.json
+recorder/data/state.json
+recorder/data/status.json
+
+# Editor / local tool settings
+live/.claude/
+.claude/
+
+# Backup copies of the decision log; decisions.csv itself IS tracked
+live/decisions.csv.bak
+live/decisions.csv.bak2

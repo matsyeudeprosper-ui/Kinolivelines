@@ -1,0 +1,28 @@
+{
+  "be_trigger_r": 1.0,
+  "setup_proximity_atr": 0.06,
+  "setup_cooldown_sec": 1800,
+  "watch_levels": [
+    {
+      "price": 63238.42,
+      "dir": "above",
+      "note": "H4 resistance and the session high. Rule 9: if it breaks, do NOT enter in the break direction - following H1/H4 breaks measured worse than random on 520 days."
+    },
+    {
+      "price": 62772.73,
+      "dir": "below",
+      "note": "The spike low from 21:05. Losing it confirms continuation rather than a flush; rule 9 still forbids joining the break, so this is information, not a trigger."
+    },
+    {
+      "price": 62613.2,
+      "dir": "below",
+      "note": "H4 support, the next real structural floor. Deep enough that reaching it would mean a genuine trend day rather than intraday noise."
+    },
+    {
+      "price": 63094.11,
+      "dir": "above",
+      "note": "Next real H1 resistance. Replaces 62966.13 which fired twice on pokes without acceptance. Rule 9: a break here is NOT an entry."
+    }
+  ],
+  "max_hold_minutes": 120
+}
