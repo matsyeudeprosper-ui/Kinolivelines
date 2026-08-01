@@ -755,3 +755,5 @@
 [2026-07-31 18:52:02]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62812.68 at H1 SUPPORT 62794.50 (18 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
 [2026-07-31 19:45:07] EVENT  AT LEVEL - flat, price 62950.02 at H1 RESISTANCE 62959.61 (10 px away). Assess for a trade.
 [2026-07-31 19:45:09]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62950.02 at H1 RESISTANCE 62959.61 (10 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-07-31 21:01:22] EVENT  AT LEVEL - flat, price 62914.69 at H1 RESISTANCE 62925.53 (11 px away). Assess for a trade.
+[2026-07-31 21:01:23]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 62914.69 at H1 RESISTANCE 62925.53 (11 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.

@@ -39,12 +39,32 @@ from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "data", "derivs_BTC.csv")
+LIQ = os.path.join(HERE, "data", "liquidations_BTC.csv")
 ALIVE = os.path.join(HERE, "data", "derivs_alive.json")
 POLL = 300                      # 5 minutes, matching the finest OKX granularity
+LIQ_POLL = 60                   # see LIQUIDATIONS below - cascades outrun a 5-min poll
 UA = {"User-Agent": "Mozilla/5.0 (research)"}
 
 COLS = ["ts_utc", "ts_ms", "open_interest", "contract_volume", "long_short",
         "taker_buy", "taker_sell", "funding_okx", "funding_deribit"]
+
+# LIQUIDATIONS - added 2026-08-01, in their own file and on their own clock.
+#
+# Two reasons they are not columns in derivs_BTC.csv: they are events rather than a
+# value sampled every five minutes, and there can be dozens in a single minute or none
+# for an hour. Forcing them into the wide row would either lose events or pad the file
+# with blanks.
+#
+# They are polled every 60s rather than every 300s because the endpoint returns at most
+# 100 recent events. Liquidations matter precisely during cascades - which is exactly
+# when more than 100 can occur inside five minutes, so a slow poll would silently drop
+# the observations the whole dataset exists to capture.
+#
+# This is the field the earlier research could not test at all: forced selling is
+# non-informational price pressure, the cleanest available candidate for a move that
+# must revert. Recording starts now so the clock is already running when there is
+# enough of it to analyse.
+LIQ_COLS = ["ts_utc", "ts_ms", "instId", "side", "posSide", "sz", "bkPx"]
 
 
 def get(url, timeout=20):
@@ -89,6 +109,42 @@ def funding_deribit():
         return None
 
 
+def liquidations():
+    """Recent forced liquidations on BTC-USDT swaps, flattened to one row per event."""
+    out = []
+    try:
+        d = get("https://www.okx.com/api/v5/public/liquidation-orders"
+                "?instType=SWAP&uly=BTC-USDT&state=filled&limit=100")
+        if str(d.get("code")) != "0":
+            return out
+        for inst in d.get("data") or []:
+            iid = inst.get("instId") or inst.get("uly") or "BTC-USDT-SWAP"
+            for ev in inst.get("details") or []:
+                try:
+                    ts = int(ev.get("ts") or ev.get("time"))
+                except (TypeError, ValueError):
+                    continue
+                out.append([
+                    datetime.fromtimestamp(ts / 1000, timezone.utc).isoformat(timespec="milliseconds"),
+                    ts, iid, ev.get("side", ""), ev.get("posSide", ""),
+                    ev.get("sz", ""), ev.get("bkPx", "")])
+    except Exception:
+        pass
+    return out
+
+
+def seen_liquidations():
+    """Composite keys already stored, so repeated polls cannot duplicate an event."""
+    if not os.path.exists(LIQ):
+        return set()
+    try:
+        with open(LIQ, newline="", encoding="utf-8") as f:
+            return {"%s|%s|%s|%s" % (r.get("ts_ms"), r.get("side"), r.get("sz"),
+                                     r.get("bkPx")) for r in csv.DictReader(f)}
+    except Exception:
+        return set()
+
+
 def seen_timestamps():
     """Existing ts_ms values, so a restart cannot duplicate rows."""
     if not os.path.exists(OUT):
@@ -105,12 +161,46 @@ def main():
     if not os.path.exists(OUT) or os.path.getsize(OUT) == 0:
         with open(OUT, "w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(COLS)
+    if not os.path.exists(LIQ) or os.path.getsize(LIQ) == 0:
+        with open(LIQ, "w", newline="", encoding="utf-8") as f:
+            csv.writer(f).writerow(LIQ_COLS)
     seen = seen_timestamps()
-    print("derivs recorder up. %d rows already stored. polling every %ds"
-          % (len(seen), POLL), flush=True)
+    liq_seen = seen_liquidations()
+    print("derivs recorder up. %d derivs rows, %d liquidations already stored. "
+          "derivs every %ds, liquidations every %ds"
+          % (len(seen), len(liq_seen), POLL, LIQ_POLL), flush=True)
 
+    liq_total = len(liq_seen)
+    next_derivs = 0.0
     while True:
         try:
+            # ---- liquidations, on the fast clock ----
+            fresh = 0
+            for row in liquidations():
+                k = "%s|%s|%s|%s" % (row[1], row[3], row[5], row[6])
+                if k in liq_seen:
+                    continue
+                liq_seen.add(k)
+                with open(LIQ, "a", newline="", encoding="utf-8") as f:
+                    csv.writer(f).writerow(row)
+                fresh += 1
+            if fresh:
+                liq_total += fresh
+                if liq_total % 50 < fresh:          # occasional progress note only
+                    print("%s  %d liquidations stored"
+                          % (datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                             liq_total), flush=True)
+            # keep the dedup set from growing without bound over a long run
+            if len(liq_seen) > 200000:
+                liq_seen = set(list(liq_seen)[-100000:])
+
+            if time.time() < next_derivs:
+                with open(ALIVE, "w", encoding="utf-8") as f:
+                    json.dump({"alive_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                               "rows": len(seen), "liquidations": liq_total}, f)
+                time.sleep(LIQ_POLL)
+                continue
+            next_derivs = time.time() + POLL
             oi = okx_latest("/api/v5/rubik/stat/contracts/open-interest-volume?ccy=BTC&period=5m", 2)
             ls = okx_latest("/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=BTC&period=5m", 1)
             tv = okx_latest("/api/v5/rubik/stat/taker-volume?ccy=BTC&instType=CONTRACTS&period=5m", 2)
@@ -132,14 +222,14 @@ def main():
 
             with open(ALIVE, "w", encoding="utf-8") as f:
                 json.dump({"alive_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                           "rows": len(seen)}, f)
+                           "rows": len(seen), "liquidations": liq_total}, f)
         except Exception as e:
             # never die: an unattended recorder that stops is worse than no recorder
             try:
                 print("poll error %s: %s" % (type(e).__name__, str(e)[:90]), flush=True)
             except Exception:
                 pass
-        time.sleep(POLL)
+        time.sleep(LIQ_POLL)
 
 
 if __name__ == "__main__":

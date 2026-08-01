@@ -164,6 +164,29 @@ horizon. Holdout showed nothing on either instrument.
 See [`RESEARCH_MAP.md`](RESEARCH_MAP.md) for the remaining hypotheses, each with its
 mechanism, minimum detectable effect, validation universe and pass/fail rule.
 
+## 6. Broker feed lag — CLOSED
+
+Exness quote BTCUSDm themselves rather than matching orders, so a lagging feed would be a
+pure execution edge needing no directional forecast — and, being broker-specific, owing no
+cross-market replication. Tested on paired Exness/OKX samples (~2.2s apart, millisecond
+stamps) using price **changes** with the BTC-USD/BTC-USDT basis removed by rolling median,
+each day analysed separately, entry only from the next sample.
+
+| criterion | result |
+|---|---|
+| technically present | **No** — peak lag **0 on both days** (r = +0.53, +0.63 at lag 0; +0.08 and 0.00 at lag +1) |
+| economically real | **No** — after OKX moves >$10, Exness then moves **−$0.59 / +$0.53** over six samples against a $14 requirement (spread + slippage both ways). 2SE $3–4, so anything above ~$4 is excluded |
+| stable across days | consistently absent on both |
+| executable | moot |
+
+**The test was biased toward finding a lag and still found none.** The recorder reads MT5
+first and fetches OKX afterwards, so the OKX stamp sits ~0.6s *later* (measured +0.58s,
++0.61s). OKX therefore carries the fresher information, and a genuinely lagging Exness
+would have peaked at lag +1. It peaked at 0.
+
+Honest caveat: moves >$25 had only 4–6 samples, so a lag appearing exclusively during
+violent moves is not excluded. Nothing in the tradeable >$10 range.
+
 ---
 
 ## Traps this project has actually fallen into
