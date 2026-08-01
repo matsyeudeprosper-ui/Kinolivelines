@@ -36,11 +36,11 @@ futures markets that took no part in discovery** (grains, softs, livestock, meta
 showed **+5.6%** adverse excursion at positioning extremes. Different data, different
 instruments, different measure of crowding — same sign, same magnitude.
 
-**It is a risk fact, not an entry signal** — and it did **not** make it into the live
-system. Tested on the setups this bot genuinely takes rather than on every hour, the
-effect vanishes and reverses (crowded stop-out 65.2% vs normal 67.5%), and all five risk
-policies land within ±3.6pp of baseline with signs that flip between periods. A
-population-level effect is not a strategy-level effect; see
+**It is a risk fact, not an entry signal**, and it has not yet been implemented. It is
+also **not testable on this bot's own history**: sequential trading leaves only 307
+crowded trades, a 2SE near 6pp against a 2–3pp effect. The horizontal levels are not the
+obstacle — near-level entries show the same +1.8pp gap as trading every hour (+1.9pp).
+The obstacle is that MT5 BTCUSDm M15 reaches back only 1.4 years. See
 [`FINDINGS.md`](FINDINGS.md) §4.
 
 ---

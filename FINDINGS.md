@@ -101,9 +101,38 @@ within ±3.6pp of baseline total return, with signs flipping between direction c
 and between development and holdout. Every apparent improvement is mechanical: baseline
 expectancy is negative, so a policy that trades less always looks better.
 
-**A population-level effect is not a strategy-level effect.** Conditioning on "price is
-within 0.06 × ATR_H1 of a level" evidently removes whatever the crowding measure was
-capturing. This is the most important methodological lesson in the file.
+### Correction — that closure was overstated
+
+Two follow-ups revised this, and both matter more than the original result.
+
+**The hlines are not to blame.** On 7.3 years of hourly BTC, stratified by entry
+volatility, the gap is the same whether you trade every hour or only near a level:
+
+| population | stratified gap | 2SE | chains agreeing |
+|---|---|---|---|
+| all bars | +1.9 pp | 3.3 | 3 of 4 |
+| **near level** | **+1.8 pp** | 6.9 | 4 of 4 |
+| breakout | +5.2 pp | 9.7 | 4 of 4 |
+| random, matched count | +2.8 pp | 6.7 | 4 of 4 |
+
+Level proximity does not remove the effect. The entry condition was never the problem.
+
+**And the bot's setups could not have detected it.** Sequential one-position-at-a-time
+leaves **307 crowded trades** and a 2SE near 6pp against an effect of 2–3pp. Stratified,
+the three direction conventions give −3.3pp (fade), +1.4pp (follow), +4.7pp
+(prior-move) — an 8pp swing from an arbitrary choice, every one consistent with zero and
+with the others. The earlier "absent and wrong-signed" verdict was a sample-size artefact
+reported as a finding.
+
+The original interaction test was also computed **without volatility stratification**,
+repeating trap #5 from this very file. Stratifying barely moved these particular numbers
+(−3.8 → −3.3), so the confound was not the driver here — but the statistic was still
+wrong to report.
+
+**Honest status: not closed — untestable on this bot's history.** The binding constraint
+is data: MT5 BTCUSDm M15 reaches back only ~1.4 years while H1 and H4 reach 7.6, capping
+the bot at ~2,000 non-overlapping 4-hour trades. Re-running the same test will not settle
+it.
 
 ### Two facts worth more than the negative result
 
@@ -167,10 +196,12 @@ Compute detectable effect size **before** running a test.
 
 ---
 
-**10. A population-level effect assumed to be a strategy-level effect.** An edge measured
-across all hours need not exist among the hours a strategy actually trades — the entry
-condition is itself a filter, and it can remove exactly what the effect was capturing.
-Test candidates against the strategy's real setups before believing them.
+**10. Declaring a result absent without checking whether the test could see it.** The
+crowding effect was pronounced "absent and wrong-signed" on the bot's setups from a
+sample of 307 crowded trades with a 2SE of 6pp — against an effect of 2–3pp. That test
+could not have detected the effect had it been certain. *Compute the detectable effect
+size before interpreting a null,* and state it beside every negative result. This is the
+same error as trap #9, made a second time in the same project.
 
 ---
 
