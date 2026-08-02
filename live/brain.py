@@ -476,6 +476,48 @@ def _session_unanswered_minutes():
         return None
 
 
+def _session_attached():
+    """True if a Claude session is attached RIGHT NOW.
+
+    Proof is `watcher_alive.json`. The watcher runs as a child of the session's
+    Monitor and therefore dies with the terminal - so a fresh heartbeat is the
+    one thing on disk that cannot outlive the session that wrote it.
+
+    Why this exists: without it a session that had been away for over
+    SESSION_TIMEOUT_MIN could never take primary back. The fallback branch below
+    short-circuits BEFORE writing a handoff, so the daemon would never ask the
+    new session anything, the session could never answer, and the unanswered
+    handoff stayed unanswered forever. On 2026-08-02 that silently routed 25
+    hours of decisions to GPT-5 while KL_PROVIDER was set to session and every
+    heartbeat read green.
+
+    THRESHOLD IS MEASURED, NOT ASSUMED. watcher.py has POLL=30, but it writes the
+    heartbeat AFTER its MT5 work and only then sleeps 30s, so the real interval is
+    30s + however long MT5 takes. Sampled 2026-08-02: 79s and 104s, never 30s. A
+    naive 120s would have sat one slow cycle away from declaring a live session
+    dead. 360s tolerates roughly three consecutive slow cycles.
+
+    Err LOOSE on purpose. Too tight hands trading to GPT-5 while a session is
+    sitting right here, against the standing "session primary always" rule - the
+    exact failure this function exists to prevent. Too loose delays fallback for a
+    genuinely dead session by up to 6 minutes, costing at most one missed entry.
+
+    An ORPHANED watcher (running with no session) would wrongly report attached
+    and suppress the fallback. That fails to "no new trade", not to an unmanaged
+    one, and the hourly health check kills orphans - the safe direction to err.
+    """
+    try:
+        with open(os.path.join(HERE, "watcher_alive.json"), encoding="utf-8") as f:
+            hb = json.load(f)
+        # watcher.py stamps datetime.utcnow() - naive, UTC. Compare in UTC, not
+        # local: on a UTC-5 box a local comparison reads every heartbeat as five
+        # hours stale and the fallback fires permanently.
+        age = (datetime.utcnow() - datetime.fromisoformat(hb["alive_utc"])).total_seconds()
+        return age < 360
+    except Exception:
+        return False
+
+
 def _write_handoff(trigger, briefing, dry_run, reason, errors=None):
     """Everything the Claude session needs to decide, in one file.
 
@@ -520,7 +562,9 @@ def decide(briefing, trigger, dry_run=True, provider=None, model=None):
     # an unmanaged one. Failing closed is the correct failure for a decider.
     if primary == "session":
         stale_min = _session_unanswered_minutes()
-        if stale_min is not None and stale_min >= SESSION_TIMEOUT_MIN and os.environ.get("OPENAI_API_KEY"):
+        attached = _session_attached()
+        if (not attached) and stale_min is not None and stale_min >= SESSION_TIMEOUT_MIN \
+                and os.environ.get("OPENAI_API_KEY"):
             # The session has stopped answering - almost always because the
             # terminal was closed. Without this the daemon would keep writing
             # handoffs nobody reads and trade nothing, forever, while every

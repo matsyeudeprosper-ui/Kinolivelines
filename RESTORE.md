@@ -70,6 +70,27 @@ powershell -File C:\Projects\KinoliveLines\set_decider.ps1 session    # Claude d
 
 **If the decider is `session` you MUST arm a persistent Monitor** on `daemon.log` matching `DECISION NEEDED|AWAIT_SESSION|ALL PROVIDERS FAILED`. Without it the daemon writes handoffs to `NEEDS_HUMAN.json` that nobody ever reads, and it looks healthy the whole time. That file holds the full briefing — decide from it, then act through `act.py` with `KL_DECIDER_PROVIDER=claude-session` set so `decisions.csv` attributes correctly.
 
+### The re-attach deadlock — fixed 2026-08-02, know how it works
+
+Arming the Monitor was **not enough** on its own. The 20-minute fallback used to short-circuit
+*before* writing a handoff, so once a session died past the timeout, a newly attached session was
+never asked anything, could never answer, and the unanswered `AWAIT_SESSION` stayed unanswered
+forever. Result: **25 hours of decisions silently routed to GPT-5** (63 paid calls) while
+`KL_PROVIDER=session`, `decider_state.json` said `session`, and every heartbeat read green.
+
+`brain._session_attached()` now reads `live/watcher_alive.json`. The watcher is a child of the
+session's Monitor and dies with the terminal, so a fresh heartbeat is the one thing on disk that
+cannot outlive the session that wrote it. Fresh ⇒ never fall back, just write the handoff and wait.
+Threshold 360s, set from measured cadence (79–104s, see trap 10) — **not** from `POLL=30`.
+
+**If you find GPT-5 deciding while the policy says session,** the lock is a stale unanswered
+handoff. Clear it with one log-only action, no order:
+
+```powershell
+$env:KL_DECIDER_PROVIDER="claude-session"; $env:KL_DECIDER_MODEL="claude-in-session"
+python C:\Projects\KinoliveLines\live\act.py note NO_ACTION "session re-attached" "reclaiming primary"
+```
+
 **Nothing deciding is SAFE, not broken.** No decider means no NEW trades; it does not mean unmanaged ones. Every open position keeps its stop and target on Exness's server regardless of what happens in this stack — that is the real safety net and it never depended on any model.
 
 Switching back is one command and needs no code change. `set_decider.ps1` restarts the daemon with the right environment and rewrites `decider_state.json`; the launcher and the hourly health check both read that file rather than assuming.
@@ -208,19 +229,43 @@ Two recorders double-write the CSVs; two daemons race on orders. Both have happe
 7. **Claude's prose about file state is unreliable.** Twice on 2026-07-30 Claude reported updating
    `watch_config.json` without writing it, and once flattened a conditional plan into a certainty.
    Verify by reading the file, not the summary.
+8. **`import daemon` starts a SECOND live daemon.** The loop runs at module level with no `main()`
+   guard, so importing the file to test one helper launches a full second daemon on the same account.
+   Happened 2026-08-02 — it was dry-run by luck, not design. The file now refuses to be imported.
+   To test a helper, run the file as a script or copy the function out.
+9. **A trade can fill AND close inside one 30s poll.** The daemon used to check only *currently open*
+   positions, so a pending that filled and stopped out between polls was reported to the decider as
+   `PENDING GONE — left the book without filling`. The decider was told "nothing happened, you're
+   flat" immediately after a loss, and re-placed the same setup. Four times on 2026-08-02. Fixed via
+   `order_filled_and_closed()`, which reads deal history — positions lie here, deals do not.
+10. **The heartbeat cadence is not the poll interval.** `watcher.py` has `POLL=30` but writes its
+   heartbeat *after* its MT5 work, so the real gap is 79–104s (measured 2026-08-02). Any freshness
+   threshold built from the 30s constant will fire falsely. Measure, do not read the constant.
 
-## The rules GPT-5 trades by (in `brain.py` SYSTEM)
+## ⚠ The trading rules are NOT listed here — read `brain.py` SYSTEM
 
-1. One position at a time; no pending resting while a position is open
-2. 0.01 lots working size, 0.05 hard ceiling, risk ≤ 0.5% of equity
-3. BUY limit = level + spread (fills on ask); SELL limit = level, no offset (fills on bid)
-4. Stops outside the noise — ATR(M15) runs $120–160
-5. Both stop and target set before entry
-6. **Minimum 1.5:1 reward-to-risk**, or `no_action` — never manufacture the ratio by moving levels
-7. Keep `watch_config` current; reconsider after every open and close
+**Do not summarise the rules in this file.** This section used to hold a copy, and the copy went
+stale. On 2026-08-02 a session read it, saw *"stops outside the noise — ATR(M15) runs $120–160"*,
+compared that to the live 20-point stops, and reported the loop as violating its own rule 4. It was
+not: rule 4 had been deliberately changed to **a fixed 20 points** and the stale copy here never
+caught up. That session then proposed re-opening the stop/target search — which **rule 6b explicitly
+closes**, on 30 shapes tested across 68 days — and shipped an `act.py` gate that would have rejected
+every rule-compliant order. Caught before it traded, but only just.
 
-Rules 2 and 6 were added *after* live bugs: it read the lot cap as a target size, and it placed a
-0.96:1 trade because nothing required reward to exceed risk.
+```powershell
+# The only source of truth. Read it before judging any decision the loop made.
+python -c "import sys; sys.path.insert(0,r'C:\Projects\KinoliveLines\live'); import brain; print(brain.SYSTEM)"
+```
+
+Two things about those rules that are easy to get wrong from the outside:
+
+- **The tight stop is intentional.** Rule 4 fixes it at 20 points and says being hit often "is not a
+  reason to widen it." At 0.01 lots that is $0.20 of risk. The live mirror is an **execution record,
+  not a P&L experiment** — losses at this size are the cost of the recording, not evidence.
+- **Geometry is a closed question.** Rule 6b: thirty stop/target shapes tested over the full 68 days,
+  every one losing 0.021–0.037 ATR per trade, all thirty statistically tied — the loss simply equals
+  the spread. Two earlier "findings" here evaporated once timed-out trades were settled at their real
+  closing price. **The entry is the only lever.** Do not propose a 31st shape.
 
 ## The honest state of the edge
 

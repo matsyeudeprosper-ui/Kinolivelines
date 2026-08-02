@@ -13,7 +13,7 @@ account, side, lot cap and stop placement on every order.
 """
 import MetaTrader5 as mt5
 import json, os, time, sys, subprocess, traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Windows stdout is cp1252 by default and the model's text is full of Unicode.
 # See say() below - this is the root fix, the guard there is the backstop.
@@ -113,6 +113,41 @@ def wake(trigger):
         say(traceback.format_exc()[-800:])
 
 
+def order_filled_and_closed(ticket, lookback_hours=6):
+    """Did pending `ticket` fill and then close, both before we noticed?
+
+    Returns a dict of what actually happened, or None if it never filled.
+
+    Deals are the ground truth here, not positions: a position that has already
+    closed is gone from positions_get(), which is precisely why the caller's
+    open-position check misses this case. The fill deal carries `order == ticket`
+    and the position id it opened; the closing deal shares that position id and
+    carries the realised profit.
+
+    Trap (RESTORE.md #3): deal times are broker epoch seconds - subtract two of
+    them for a duration, never mix one with a local datetime.
+    """
+    try:
+        frm = datetime.now() - timedelta(hours=lookback_hours)
+        deals = mt5.history_deals_get(frm, datetime.now() + timedelta(hours=6)) or []
+    except Exception:
+        return None
+    fill = next((d for d in deals if d.order == ticket and d.entry == mt5.DEAL_ENTRY_IN), None)
+    if fill is None:
+        return None
+    close = next((d for d in deals
+                  if d.position_id == fill.position_id and d.entry == mt5.DEAL_ENTRY_OUT), None)
+    if close is None:
+        return None                     # filled but still open - caller handles that
+    how = (close.comment or "").strip() or "closed"
+    if "sl" in how.lower():
+        how = "stopped out"
+    elif "tp" in how.lower():
+        how = "hit target"
+    return {"entry": fill.price, "exit": close.price, "profit": close.profit,
+            "secs": close.time - fill.time, "how": how}
+
+
 def atr_h1():
     r = mt5.copy_rates_from_pos(SYM, mt5.TIMEFRAME_H1, 0, 30)
     if r is None or len(r) < 16:
@@ -159,6 +194,27 @@ def levels():
             break
     return out
 
+
+# ==================== NOTHING ABOVE HERE HAS SIDE EFFECTS ====================
+# Everything BELOW is the live loop and runs at import time - there is no main()
+# guard, so `import daemon` starts a SECOND daemon on account 436771046.
+#
+# That is not hypothetical. On 2026-08-02 a session imported this module to unit
+# test one helper function and started a rogue loop that was writing its own
+# handoffs within two minutes. It happened to be dry-run (no --live in argv) so
+# no orders were sent - that was luck, not design. A copy started from a context
+# that DID pass --live would have raced the real daemon on the same account and
+# could breach the one-position-at-a-time rule.
+#
+# Refusing the import is deliberate: there is no way to import this file safely,
+# so a loud failure beats a silent second trading loop. To test a helper defined
+# above, run this file as a script or copy the function out.
+if __name__ != "__main__":
+    raise ImportError(
+        "daemon.py must never be imported - the live trading loop runs at import "
+        "time and an import starts a second daemon on account 436771046. "
+        "Run it as a script, or copy the helper you want to test."
+    )
 
 connect()
 say(f"daemon up | {SYM} | account {LOGIN} | "
@@ -297,9 +353,28 @@ while True:
                 say(f"pending #{t} gone - our own cancel, not waking")
                 brain.SELF_CANCELLED.discard(t)
                 continue
-            wake(f"PENDING GONE #{t} left the book without filling - cancelled, "
-                 f"expired or rejected, and NOT by this loop. Flat with no order "
-                 f"unless stated otherwise. Reassess from current structure.")
+            filled = order_filled_and_closed(t)
+            if filled:
+                # It DID fill - it just also closed before this poll came round.
+                # The `t in pos` check above only catches a fill that is STILL
+                # open, so a trade that filled and hit its stop inside one 30s
+                # poll fell through to the "never filled" message below.
+                # Observed 2026-08-02: #3033618550 filled 17:24:30 and stopped
+                # out 17:24:46, and the decider was told it never filled and was
+                # flat. That is the worst possible briefing - it hides a loss on
+                # the exact setup the decider is about to re-place, so it cannot
+                # learn the setup is failing. Four identical fades were placed
+                # that day, all stopped within 16s, all reported as non-fills.
+                wake(f"PENDING GONE #{t} FILLED AND ALREADY CLOSED inside one poll - "
+                     f"entry {filled['entry']:.2f}, exit {filled['exit']:.2f}, "
+                     f"realised {filled['profit']:+.2f} ({filled['how']}). "
+                     f"Held {filled['secs']:.0f}s. You are flat now. This was a REAL "
+                     f"completed trade, not a cancelled order - weigh it before "
+                     f"re-placing the same setup.")
+            else:
+                wake(f"PENDING GONE #{t} left the book without filling - cancelled, "
+                     f"expired or rejected, and NOT by this loop. Flat with no order "
+                     f"unless stated otherwise. Reassess from current structure.")
             last_event = now
         known_ord = curo
 
