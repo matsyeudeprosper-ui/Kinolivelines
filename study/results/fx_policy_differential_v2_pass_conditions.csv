@@ -1,0 +1,17 @@
+condition,result,value
+1  canonical validation net profit > 0,FAIL,$-30.39
+2  canonical holdout net profit > 0,FAIL,$-19.55
+3  combined canonical > 0 under 3.0% financing,FAIL,$-107.96
+4  doubled-spread result > 0,FAIL,$-55.47
+5  long-D1 validation signal-only > 0,PASS,+0.0080
+6  long-D1 holdout signal-only > 0,PASS,+0.0544
+7  canonical and long-D1 overlap both positive,FAIL,"canon -0.0071, D1 +0.0367"
+8  baseline beats median random pair+direction,FAIL,$-49.93 vs $-36.90
+9  randomisation p <= 0.10,FAIL,p=0.5525
+10 reverse net <= 0 AND worse than baseline,PASS,$-137.88 vs $-49.93
+11 at least 45 completed canonical trades,PASS,47
+12 profit factor > 1.10,FAIL,0.826
+13 max drawdown <= 20%,PASS,-9.42%
+14 no trade > 25% of total positive net profit,N/A ,NOT APPLICABLE (net profit <= 0)
+15 24-hour delayed entry remains positive,FAIL,$-26.39
+16 no margin call / negative equity / overlap,PASS,min equity $920.51

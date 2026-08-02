@@ -1,0 +1,8 @@
+control,n,baseline_net,median_random_net,p_value_one_sided,beats_median,pct5,pct95,net,worse_than_baseline,net_le_zero,ret_pct,still_positive
+random_pair_and_direction,10000,-49.93304564334395,-36.90485058790266,0.5525447455254474,False,-172.32559019804052,135.3799499859798,,,,,
+random_pair_policy_direction,10000,-49.93304564334395,-28.62860203339498,0.597940205979402,False,,,,,,,
+reverse,47,,,,,,,-137.87772293902887,True,True,,
+delay_24h,47,,,,,,,-26.39250947525936,,,-2.6958640934891864,False
+delay_1week,47,,,,,,,-145.1436126118306,,,-14.825700981800871,False
+double_spread,47,,,,,,,-55.466843673142144,,,-5.6656632965416005,False
+current_swap_static_sensitivity_NON_HISTORICAL,47,,,,,,,-49.93304564334395,,,-5.100413242425339,
