@@ -1,0 +1,9 @@
+control,baseline_net,median_random_net,p_value_one_sided,n_perm,beats_median,net,worse_than_baseline,ret_pct,n,still_positive,sum_logret_validation,sum_logret_holdout,diagnostic_only
+randomisation,-75.84217007106588,-33.24329416193301,0.7304,10000.0,False,,,,,,,,
+reverse,,,,,,25.42010882677043,False,,,,,,
+delay_24h,,,,,,-55.313033070872166,,-5.6499523055027705,23.0,,,,
+delay_1week,,,,,,90.63889462542679,,9.258314057755568,29.0,,,,
+double_spread,,,,,,-77.04420192449615,,-7.869683546935269,22.0,False,,,
+formation_4w_signal_only,,,,,,,,,,,-0.13433351400911936,-0.21801756328066493,True
+formation_13w_signal_only,,,,,,,,,,,-0.07643202917570442,-0.05235233070231529,False
+formation_26w_signal_only,,,,,,,,,,,0.0028744937453543604,0.004913092096230254,True

@@ -1,0 +1,117 @@
+====================================================================================================
+TASK 003 - FX CROSS-SECTIONAL MOMENTUM 3M-1M V1
+====================================================================================================
+generated : 2026-08-02 15:32:46
+
+EXECUTABLE UNIVERSE (19 pairs), printed before any test:
+   AUDCADm  AUDCHFm  AUDJPYm  AUDNZDm  AUDUSDm  CADJPYm
+   EURCADm  EURCHFm  EURGBPm  EURJPYm  EURNZDm  EURUSDm
+   GBPAUDm  GBPCHFm  NZDCADm  NZDJPYm  USDCADm  USDCHFm
+   USDJPYm
+currencies (8): AUD, CAD, CHF, EUR, GBP, JPY, NZD, USD
+
+dropped from the task-002 23 (4):
+   CHFJPYm   revised risk 1.716% > 1.50%
+   GBPJPYm   revised risk 1.929% > 1.50%
+   GBPNZDm   revised risk 1.575% > 1.50%
+   GBPUSDm   revised risk 1.662% > 1.50%
+   NZDCHFm remains excluded from task 002 (spread 6.02% > 6.00%); the limit was not rounded.
+
+STRENGTHENED COMPLETENESS AUDIT (expected hourly grid per session)
+  sessions audited        : 24681
+  complete                : 24355
+  incomplete              : 326
+  missing OPENING hour    : 96   <- undetectable by the task-002 audit
+  missing CLOSING hour    : 133   <- undetectable by the task-002 audit
+
+CANONICAL WEEKLY PANEL: 261 weeks, 239 complete and usable, 22 excluded
+
+currency LS residual rms (canonical): median 9.52e-05  max 1.11e-03
+
+LONG-HISTORY D1 SIGNAL PANEL
+  D1 bars merged from Sunday into Monday : 7961
+  weeks total 422, complete and usable 415, excluded 7
+  span: 2018-07-13 -> 2026-07-31
+  currency LS residual rms (D1): median 1.23e-04
+  no forward-filling; incomplete weeks excluded; execution costs NOT claimed here
+
+MONTHLY SCHEDULE: 60 rebalances, 0 months skipped (no H1 bar between Monday 20:00 and Tuesday 20:00 New York)
+
+precomputing costed outcomes for every (month, pair, direction)...
+  2090 outcome rows over 55 rebalances
+
+====================================================================================================
+BASELINE V1 - frozen 13-week formation, minimum lot, one position
+====================================================================================================
+  spread_only    trades  22  net $  -75.84  ret   -7.75%  PF  0.53  maxDD -13.74%  win  27.3%
+  fin_1.5pct     trades  22  net $  -87.52  ret   -8.94%  PF  0.47  maxDD -14.34%  win  27.3%
+  fin_3.0pct     trades  22  net $  -99.20  ret  -10.13%  PF  0.42  maxDD -14.94%  win  27.3%
+  swap_snapshot  SENSITIVITY ONLY: 2026-08-02 snapshot would cost $1.66 -> net $  -77.50
+    (not a historical cost - Exness publishes no historical swap rates)
+
+PERIOD SPLITS (canonical executable panel)
+  validation  spread_only  trades   8  net $  -96.25  ret   -9.83%  PF  0.00  maxDD  -9.83%
+  validation  fin_3.0pct   trades   8  net $ -100.71  ret  -10.29%  PF  0.00  maxDD -10.29%
+  holdout     spread_only  trades  14  net $   20.41  ret    2.08%  PF  1.32  maxDD -13.74%
+  holdout     fin_3.0pct   trades  14  net $    1.51  ret    0.15%  PF  1.02  maxDD -14.94%
+  (holdout results are reported and NOT used to change anything)
+
+SIGNAL-ONLY TESTS (no costs; direction check only)
+    panel      period  n_months  sum_logret  sign
+canonical development         0         NaN   NaN
+canonical  validation       101   -0.076432  -1.0
+canonical     holdout       124   -0.052352  -1.0
+  long_D1 development       140   -0.129923  -1.0
+  long_D1  validation       126   -0.057108  -1.0
+  long_D1     holdout       135   -0.056932  -1.0
+
+  formation diagnostics (4 / 13 / 26) - 4 and 26 CANNOT replace the frozen 13:
+formation_weeks              4         13        26
+panel     period                                   
+canonical holdout     -0.218018 -0.052352  0.004913
+          validation  -0.134334 -0.076432  0.002874
+long_D1   development -0.222816 -0.129923 -0.160059
+          holdout     -0.156705 -0.056932 -0.065809
+          validation  -0.068894 -0.057108 -0.102168
+
+  panel overlap 225 weeks: same pair 67.6%, same direction 84.4%
+
+====================================================================================================
+REQUIRED CONTROLS
+====================================================================================================
+  (fast permutation engine verified against the costed engine: net $-75.84, 22 trades - identical)
+  1. randomisation  10000 perms: baseline $-75.84 vs median $-33.24  one-sided p = 0.7304
+  2. reverse (buy weak / sell strong): net $25.42 vs baseline $-75.84
+  3. delay_24h   net $  -55.31  ret   -5.65%  trades 23
+  4. delay_1week net $   90.64  ret    9.26%  trades 29
+  5. doubled spread: net $  -77.04  ret   -7.87%  trades 22
+
+====================================================================================================
+PASS CONDITIONS
+====================================================================================================
+  [FAIL] 1  canonical return positive in validation     -9.83%
+  [PASS] 2  canonical return positive in holdout        2.08%
+  [FAIL] 3  positive under 3.0% financing stress        -10.13%
+  [FAIL] 4  doubled-spread result positive              $-77.04
+  [PASS] 5  long-D1 and canonical signal same sign      canon -0.1288 / D1 -0.1140
+  [FAIL] 6  baseline beats median randomised            $-75.84 vs $-33.24
+  [FAIL] 7  randomisation p <= 0.10                     p=0.7304
+  [FAIL] 8  reverse performs worse than baseline        $25.42 vs $-75.84
+  [FAIL] 9  at least 40 completed trades                22
+  [PASS] 10 max drawdown <= 20%                         -13.74%
+  [FAIL] 11 profit factor > 1.10                        0.529
+  [PASS] 12 no trade > 25% of net profit                n/a
+  [PASS] 13 no margin call / account failure            final equity $903.16
+
+  conditions passed: 5/13
+  >>> V1 VERDICT: FAILED
+  Per the specification V1 is reported FAILED and is NOT optimised or repaired.
+
+SKIPPED TRADES
+reason
+risk_gt_1.5pct    33
+
+trades   -> C:\Projects\KinoliveLines\study\results\fx_momentum_v1_trades.csv
+monthly  -> C:\Projects\KinoliveLines\study\results\fx_momentum_v1_monthly.csv
+signal   -> C:\Projects\KinoliveLines\study\results\fx_momentum_v1_signal_tests.csv
+controls -> C:\Projects\KinoliveLines\study\results\fx_momentum_v1_controls.csv
