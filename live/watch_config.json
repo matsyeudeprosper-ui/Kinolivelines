@@ -11,27 +11,32 @@
     {
       "price": 63468.88,
       "dir": "above",
-      "note": "H1/H4 resistance zone. If price returns while flat, consider SELL LIMIT fade (fills on bid, no offset) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
+      "note": "H1/H4 resistance zone. If price returns while flat, consider SELL LIMIT fade (fills on bid) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
     },
     {
-      "price": 63175,
+      "price": 63175.03,
       "dir": "above",
-      "note": "M5 swing high (12:20). If tagged while flat, SELL LIMIT fade with SL 20, TP 40; cancel if acceptance above toward 63,210/63,469."
+      "note": "H4 resistance from briefing. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9."
     },
     {
-      "price": 63043,
+      "price": 63074.98,
       "dir": "above",
-      "note": "Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid, no offset) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4."
-    },
-    {
-      "price": 62919.34,
-      "dir": "below",
-      "note": "H4 support. If tagged while flat, consider BUY LIMIT fade at 62,919.34 + spread (Rule 3), SL 20, TP 40; cancel if H4 acceptance below."
+      "note": "M15 resistance (current pending SELL LIMIT placed here). If acceptance above, premise weakens; avoid chasing buys per Rule 9 on H1/H4."
     },
     {
       "price": 63082.91,
       "dir": "below",
-      "note": "H1 resistance. If price rejects and drops back below, consider SELL LIMIT fade on the first underside retest at 63,082.91 (fills on bid, no offset). SL 20, TP 40. Cancel if H1 accepts above; per Rule 9 avoid buy continuation of H1/H4 breaks."
+      "note": "H1 resistance reclaim logic: if price pops above then drops back below, consider SELL LIMIT fade on first underside retest at 63,082.91 (fills on bid). SL 20, TP 40. Cancel if H1 accepts above."
+    },
+    {
+      "price": 63043,
+      "dir": "above",
+      "note": "Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4."
+    },
+    {
+      "price": 62930.38,
+      "dir": "below",
+      "note": "H4 support from briefing. If tagged while flat, consider BUY LIMIT fade at support + spread per Rule 3. SL 20, TP 40; cancel if H4 acceptance below."
     }
   ],
   "max_hold_minutes": 120

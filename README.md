@@ -1,5 +1,11 @@
 # KinoliveLines
 
+> **NEW HERE? READ [HANDOFF.md](HANDOFF.md) FIRST.** ~20 ideas have been tested to
+> completion. It lists what is closed, what works, what is still open, and what not to
+> re-propose. Reading it will save you from re-running experiments that already have
+> answers.
+
+
 An autonomous BTCUSDm trading loop on a **demo** MetaTrader 5 account, and the research
 programme that grew out of it: a systematic search for a tradeable edge, conducted with
 enough discipline that most of the answers came back "no".
