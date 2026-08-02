@@ -1,0 +1,13 @@
+currency,start_date,end_date,regime_name,rate_available,official_BIS_description,potential_comparability_break
+JPY,2010-10-05,2013-04-03,UOCR around 0 to 0.1%,True,from 5 Oct 2010 to 3 Apr 2013: the BOJ encouraged the UOCR to remain at around 0 to 0.1%,False
+JPY,2013-04-04,2016-09-20,NO POLICY RATE (QQE),False,from 4 Apr 2013 to 20 Sep 2016: no policy rate,True
+JPY,2016-09-21,2024-03-20,Short-term policy rate -0.1% with YCC,True,from 21 Sep 2016 to 20 Mar 2024: the BOJ set the guideline for market operations which specifies a short-term policy interest rate at minus 0.1% and a target level of 10-year JGB yields at around 0%,True
+JPY,2024-03-21,2024-07-31,UOCR around 0 to 0.1%,True,From 21 Mar 2024 to 31 July: the BOJ encouraged the UOCR to remain at around 0 to 0.1 %,True
+JPY,2024-08-01,2025-01-26,UOCR around 0.25%,True,From 1 Aug 2024 to 26 Jan 2025: the BOJ encouraged the UOCR to remain at around 0.25%,False
+JPY,2025-01-27,2025-12-21,UOCR around 0.50%,True,From 27 Jan 2025 to 21 Dec 2025: the BOJ encourages the UOCR to remain at around 0.50 percent,False
+JPY,2025-12-22,2026-06-16,UOCR around 0.75%,True,From 22 Dec 2025 to 16 Jun 2026: the BOJ encourages the UOCR to remain at around 0.75 percent,False
+JPY,2026-06-17,,UOCR around 1.00%,True,From 17 Jun 2026 onwards: the BOJ encourages the uncollateralized overnight call rate to remain at around 1.00 percent,False
+CHF,2000-01-01,2019-06-12,Mid-point of SNB target range,True,From 1 Jan 2000 to 12 June 2019 mid-point of the SNB target range,False
+CHF,2019-06-13,,SNB policy rate,True,From 13 June 2019 onwards SNB Policy rate,True
+EUR,2008-10-15,2024-09-17,MRO fixed rate,True,"from 15 Oct 2008 to 17 Sep 2024: official central bank liquidity providing, main refinancing operations, fixed rate",False
+EUR,2024-09-18,,Deposit facility rate,True,"From 18 Sep 2024 onwards: official central bank steering rate is the deposit facility rate, fixed rate",True

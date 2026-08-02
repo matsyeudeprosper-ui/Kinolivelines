@@ -1,38 +1,63 @@
 ====================================================================================================
 TASK 004 - OFFICIAL FX POLICY-RATE DATA PANEL
 ====================================================================================================
-generated : 2026-08-02 22:10:49 UTC
+generated : 2026-08-02 22:30:11 UTC
 
 using already-downloaded raw file: C:\Projects\KinoliveLines\study\data\external\raw\WS_CBPOL_csv_flat.zip
   sha-256          : f0f4c42a3cdeb14984bd2e0938ce807a16a409b65ac38ab99565d355068a2ec6
   size             : 4,094,197 bytes
   retrieved (UTC)  : 2026-08-02 22:04:57
-  BIS release date : Thu, 30 Jul 2026 09:05:41 GMT
+  bulk file HTTP Last-Modified : Thu, 30 Jul 2026 09:05:41 GMT
+  historical observation release date available: FALSE - the BIS flat CSV carries
+  no observation-level release or vintage timestamp, so the header above says only
+  when the bulk file was rebuilt. It does NOT mean every historical observation was
+  published on that date, and no point-in-time claim can be made from this file.
 
 streaming and filtering the bulk CSV (daily frequency, eight economies)...
   frequencies in file : {'M': 25023, 'D': 706078}
-  daily rows kept     : 157,126 across 8 currencies
+  daily rows kept     : 147,829 across 8 currencies
+  REJECTED non-finite : 9,297
+     AUD:    95  1976-04-16 .. 1989-12-26  (non-finite (NaN))
+     CAD:  5882  1960-07-30 .. 2026-07-19  (non-finite (NaN))
+     CHF:    60  1991-01-01 .. 1999-12-31  (non-finite (NaN))
+     EUR:    32  2024-09-21 .. 2025-01-05  (non-finite (NaN))
+     GBP:   422  1975-01-01 .. 2026-05-25  (non-finite (NaN))
+     NZD:  2806  1985-01-05 .. 2026-07-12  (non-finite (NaN))
+     These are BIS non-publication placeholders. Task 004 accepted them because
+     float('NaN') succeeds; they are now rejected and logged, and the dates they
+     occupied are ordinary forward-filled dates rather than observations.
   latest reference date: 2026-07-29
 
 building the daily panel (forward fill only after an observation is effective)
   daily wide panel : 6,054 calendar dates x 8 currencies
-  long panel       : 48,432 rows
-  any NaN in wide  : 0
+  long panel       : 48,432 rows (every currency x date, kept)
+  available rows   : 47,166
+  UNAVAILABLE rows : 1,266
+     JPY: 1,266 dates  2013-04-04 .. 2016-09-20  (BIS metadata: no policy rate under QQE regime)
+  empty cells in wide panel : 1,266   <- these are intentional unavailability, not missing source data
+
+  [OK] assertions: every available value is finite; no available value is NaN or inf;
+       every unavailable row is empty, not forward-filled, and points at no observation
 
 building monthly rebalance snapshots (first Monday, cutoff = preceding Friday)
   snapshots: 1,592 rows over 199 months (2010-01-04 -> 2026-07-06)
-  complete months (all 8 currencies): 199/199
-  value age days: median 0, max 1248
+  rows marked available            : 1,551
+  rows marked UNAVAILABLE          : 41
+  COMPLETE months (all 8 available and finite): 158/199
+  incomplete months                : 41
+     incomplete range: 2013-05 .. 2016-09
+  value age days (available rows only): median 0, max 7
+  [OK] assertion: every snapshot row marked available carries a finite rate
 
 auditing each currency
 currency first_observation last_observation  n_observations  n_rate_changes  min_rate  max_rate  latest_rate  longest_stale_interval_days  longest_stale_in_panel_days
-     AUD        1976-04-07       2026-07-23           12842            3315     0.100     85.00        4.350                            6                            6
-     CAD        1960-07-27       2026-07-28           23040            1025     0.250     21.24        2.250                            3                            3
-     CHF        1946-01-01       2026-07-29           21022              89    -0.750      7.00        0.000                            3                            3
-     EUR        1999-01-01       2026-07-29           10072              60     0.000      4.75        2.250                            1                            1
-     GBP        1946-01-01       2026-07-28           23826             318     0.100     17.00        3.750                            3                            3
+     AUD        1976-04-07       2026-07-23           12747            3374     0.100     85.00        4.350                            6                            6
+     CAD        1960-07-27       2026-07-28           17158            1084     0.250     21.24        2.250                            5                            5
+     CHF        1946-01-01       2026-07-29           20962              90    -0.750      7.00        0.000                            5                            3
+     EUR        1999-01-01       2026-07-29           10040              60     0.000      4.75        2.250                            3                            3
+     GBP        1946-01-01       2026-07-28           23404             323     0.100     17.00        3.750                            5                            5
      JPY        1946-01-01       2026-07-29           24850              89    -0.100      9.00        1.000                         1817                         1267
-     NZD        1985-01-04       2026-07-17           15148            2223     0.250    265.00        2.500                            8                            8
+     NZD        1985-01-04       2026-07-17           12342            2797     0.250    265.00        2.500                           10                           10
      USD        1954-07-01       2026-07-29           26326            5700     0.125     22.36        3.625                            2                            2
 
   !! STALE INTERVALS LONGER THAN 90 DAYS INSIDE THE 2010+ PANEL
@@ -42,7 +67,7 @@ currency first_observation last_observation  n_observations  n_rate_changes  min
      simply has no observation. Flagged rather than patched.
 
 current Exness swap comparison (dated diagnostic, 2026-08-02 snapshot)
-  latest BIS policy rates: AUD 4.35%, CAD 2.25%, CHF 0.00%, EUR 2.25%, GBP 3.75%, JPY 1.00%, NZD 2.50%, USD 3.62%
+  latest AVAILABLE BIS policy rates: AUD 4.35% (2026-07-29), CAD 2.25% (2026-07-29), CHF 0.00% (2026-07-29), EUR 2.25% (2026-07-29), GBP 3.75% (2026-07-29), JPY 1.00% (2026-07-29), NZD 2.50% (2026-07-29), USD 3.62% (2026-07-29)
   pairs compared                          : 19
   sign agrees, long side                  : 4/19
   sign agrees, short side                 : 13/19
@@ -77,10 +102,31 @@ USDJPYm                           2.62                          0.00            
   applied to any historical date, and a policy-rate differential is NOT claimed to
   equal a retail CFD swap - measuring the distance between them is the point.
 
-COVERAGE CONFIRMATION
-  2010_onward          all eight covered: True   total gap-days across currencies: 0
-  exness_D1_2018       all eight covered: True   total gap-days across currencies: 0
-  canonical_2021_08    all eight covered: True   total gap-days across currencies: 0
+COVERAGE - four categories kept separate (correction 4)
+  'covered' now means: source present AND policy rate intentionally available.
+  A period BIS declares to have no policy rate is NOT reported as zero gap-days.
+
+  2010_onward          all eight continuously available: False
+                         intentionally unavailable days : 1266  (JPY)
+                         missing source days            : 0
+  exness_D1_2018       all eight continuously available: True
+                         intentionally unavailable days : 0
+                         missing source days            : 0
+  canonical_2021_08    all eight continuously available: True
+                         intentionally unavailable days : 0
+                         missing source days            : 0
+
+  rejected non-finite values (all history)   : 9,297
+  forward-filled unchanged days (available)  : 9,272
+
+REGIME AND DEFINITION BREAKS (BIS metadata, verbatim)
+  12 regimes recorded; 5 flagged as comparability breaks
+    JPY  2013-04-04 .. 2016-09-20  NO POLICY RATE (QQE)
+    JPY  2016-09-21 .. 2024-03-20  Short-term policy rate -0.1% with YCC
+    JPY  2024-03-21 .. 2024-07-31  UOCR around 0 to 0.1%
+    CHF  2019-06-13 .. nan  SNB policy rate
+    EUR  2024-09-18 .. nan  Deposit facility rate
+  full table -> C:\Projects\KinoliveLines\study\results\fx_policy_rate_regime_breaks.csv
 
 daily     -> C:\Projects\KinoliveLines\study\data\fx_policy_rates_daily.csv
 long      -> C:\Projects\KinoliveLines\study\data\fx_policy_rates_long.csv

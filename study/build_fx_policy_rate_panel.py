@@ -87,6 +87,57 @@ WINDOWS = {
     "canonical_2021_08": pd.Timestamp("2021-08-02"),
 }
 
+# --------------------------------------------------------------------------------
+# TASK 004A - POLICY REGIMES AND DEFINITION BREAKS
+# --------------------------------------------------------------------------------
+# Transcribed verbatim from the BIS COMPILATION field of each series. These are not
+# my interpretation of monetary history - they are what BIS itself publishes about
+# how the series is defined, and they are recorded so later sensitivity tests can see
+# where a level is not comparable with the level before it.
+#
+# The JPY entry is the one with teeth: BIS states plainly "from 4 Apr 2013 to
+# 20 Sep 2016: no policy rate". Task 004 forward-filled 0.05% across it. That is
+# corrected here - the interval is marked UNAVAILABLE, not stale.
+REGIMES = [
+    # currency, start, end (None = open), name, rate_available, BIS text, break?
+    ("JPY", "2010-10-05", "2013-04-03", "UOCR around 0 to 0.1%", True,
+     "from 5 Oct 2010 to 3 Apr 2013: the BOJ encouraged the UOCR to remain at around 0 to 0.1%",
+     False),
+    ("JPY", "2013-04-04", "2016-09-20", "NO POLICY RATE (QQE)", False,
+     "from 4 Apr 2013 to 20 Sep 2016: no policy rate", True),
+    ("JPY", "2016-09-21", "2024-03-20", "Short-term policy rate -0.1% with YCC", True,
+     "from 21 Sep 2016 to 20 Mar 2024: the BOJ set the guideline for market operations "
+     "which specifies a short-term policy interest rate at minus 0.1% and a target level "
+     "of 10-year JGB yields at around 0%", True),
+    ("JPY", "2024-03-21", "2024-07-31", "UOCR around 0 to 0.1%", True,
+     "From 21 Mar 2024 to 31 July: the BOJ encouraged the UOCR to remain at around 0 to 0.1 %",
+     True),
+    ("JPY", "2024-08-01", "2025-01-26", "UOCR around 0.25%", True,
+     "From 1 Aug 2024 to 26 Jan 2025: the BOJ encouraged the UOCR to remain at around 0.25%",
+     False),
+    ("JPY", "2025-01-27", "2025-12-21", "UOCR around 0.50%", True,
+     "From 27 Jan 2025 to 21 Dec 2025: the BOJ encourages the UOCR to remain at around 0.50 percent",
+     False),
+    ("JPY", "2025-12-22", "2026-06-16", "UOCR around 0.75%", True,
+     "From 22 Dec 2025 to 16 Jun 2026: the BOJ encourages the UOCR to remain at around 0.75 percent",
+     False),
+    ("JPY", "2026-06-17", None, "UOCR around 1.00%", True,
+     "From 17 Jun 2026 onwards: the BOJ encourages the uncollateralized overnight call rate "
+     "to remain at around 1.00 percent", False),
+
+    ("CHF", "2000-01-01", "2019-06-12", "Mid-point of SNB target range", True,
+     "From 1 Jan 2000 to 12 June 2019 mid-point of the SNB target range", False),
+    ("CHF", "2019-06-13", None, "SNB policy rate", True,
+     "From 13 June 2019 onwards SNB Policy rate", True),
+
+    ("EUR", "2008-10-15", "2024-09-17", "MRO fixed rate", True,
+     "from 15 Oct 2008 to 17 Sep 2024: official central bank liquidity providing, main "
+     "refinancing operations, fixed rate", False),
+    ("EUR", "2024-09-18", None, "Deposit facility rate", True,
+     "From 18 Sep 2024 onwards: official central bank steering rate is the deposit facility "
+     "rate, fixed rate", True),
+]
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 EXT = os.path.join(DATA, "external")
@@ -103,6 +154,8 @@ OUT_META = os.path.join(EXT, "bis_policy_rates_source.json")
 OUT_AUDIT = os.path.join(RES, "fx_policy_rate_data_audit.csv")
 OUT_SWAP = os.path.join(RES, "fx_policy_rate_swap_snapshot.csv")
 OUT_REPORT = os.path.join(RES, "fx_policy_rate_data_report.txt")
+OUT_REJECT = os.path.join(RES, "fx_policy_rate_rejected_values.csv")
+OUT_BREAKS = os.path.join(RES, "fx_policy_rate_regime_breaks.csv")
 UNIV = os.path.join(RES, "fx_universe_audit.csv")
 
 LOG = []
@@ -169,12 +222,16 @@ release_date = http_headers.get("last-modified") or http_headers.get("Last-Modif
 say(f"  sha-256          : {sha256}")
 say(f"  size             : {size_bytes:,} bytes")
 say(f"  retrieved (UTC)  : {retrieved_utc:%Y-%m-%d %H:%M:%S}")
-say(f"  BIS release date : {release_date or 'unavailable from HTTP headers'}")
+say(f"  bulk file HTTP Last-Modified : {release_date or 'unavailable'}")
+say("  historical observation release date available: FALSE - the BIS flat CSV carries")
+say("  no observation-level release or vintage timestamp, so the header above says only")
+say("  when the bulk file was rebuilt. It does NOT mean every historical observation was")
+say("  published on that date, and no point-in-time claim can be made from this file.")
 say("")
 
 # ============================================================ 2. filter
 say("streaming and filtering the bulk CSV (daily frequency, eight economies)...")
-rows, meta, freq_seen, area_seen = [], {}, {}, set()
+rows, meta, freq_seen, area_seen, rejected = [], {}, {}, set(), []
 try:
     z = zipfile.ZipFile(RAW_ZIP)
     if CSV_IN_ZIP not in z.namelist():
@@ -194,13 +251,27 @@ try:
                 continue
             area_seen.add(ar)
             v = row["OBS_VALUE:Observation Value"].strip()
+            tp = row["TIME_PERIOD:Time period or range"].strip()
+            # TASK 004A CORRECTION 1
+            # float("NaN") SUCCEEDS, so the previous parser accepted BIS's NaN
+            # placeholders as real observations. They are numerous (thousands per
+            # currency, running to within days of the file date) and marking them as
+            # observations both inflated the observation count and mislabelled
+            # forward-filled dates as genuine. Every value must now be FINITE.
             if v == "":
+                rejected.append((AREA2CCY[ar], ar, tp, v, "empty OBS_VALUE"))
                 continue
             try:
                 val = float(v)
             except ValueError:
+                rejected.append((AREA2CCY[ar], ar, tp, v, "unparseable as float"))
                 continue
-            rows.append((ar, row["TIME_PERIOD:Time period or range"].strip(), val))
+            if not np.isfinite(val):
+                kind = ("NaN" if np.isnan(val)
+                        else "+infinity" if val > 0 else "-infinity")
+                rejected.append((AREA2CCY[ar], ar, tp, v, f"non-finite ({kind})"))
+                continue
+            rows.append((ar, tp, val))
             if ar not in meta:
                 meta[ar] = {
                     "ref_area": row["REF_AREA:Reference area"],
@@ -230,11 +301,44 @@ if src["obs_date"].isna().any():
 src["currency"] = src["area"].map(AREA2CCY)
 src = src.sort_values(["currency", "obs_date"]).reset_index(drop=True)
 
+rej = pd.DataFrame(rejected, columns=["currency", "bis_area", "observation_date",
+                                      "raw_observation_value", "reason"])
+rej.to_csv(OUT_REJECT, index=False)
+
 say(f"  frequencies in file : {freq_seen}")
 say(f"  daily rows kept     : {len(src):,} across {src['currency'].nunique()} currencies")
+say(f"  REJECTED non-finite : {len(rej):,}")
+if len(rej):
+    for c, g in rej.groupby("currency"):
+        say(f"     {c}: {len(g):5d}  {g['observation_date'].min()} .. "
+            f"{g['observation_date'].max()}  ({g['reason'].iloc[0]})")
+    say("     These are BIS non-publication placeholders. Task 004 accepted them because")
+    say("     float('NaN') succeeds; they are now rejected and logged, and the dates they")
+    say("     occupied are ordinary forward-filled dates rather than observations.")
 latest_ref = src["obs_date"].max()
 say(f"  latest reference date: {latest_ref:%Y-%m-%d}")
 say("")
+
+# regime lookup ---------------------------------------------------------------
+breaks = pd.DataFrame(REGIMES, columns=[
+    "currency", "start_date", "end_date", "regime_name", "rate_available",
+    "official_BIS_description", "potential_comparability_break"])
+breaks.to_csv(OUT_BREAKS, index=False)
+
+
+def regime_for(ccy, d):
+    """(regime_name, rate_available, reason) for a currency on a calendar date."""
+    for c, s, e, name, avail, _desc, _brk in REGIMES:
+        if c != ccy:
+            continue
+        if pd.Timestamp(s) <= d and (e is None or d <= pd.Timestamp(e)):
+            return name, avail, ("" if avail
+                                 else "BIS metadata: no policy rate under QQE regime")
+    return "BIS main policy rate (no post-2010 definition break recorded)", True, ""
+
+
+UNAVAIL = {(c, pd.Timestamp(s), pd.Timestamp(e) if e else pd.Timestamp("2100-01-01"))
+           for c, s, e, _n, avail, _d, _b in REGIMES if not avail}
 
 # ============================================================ 3. panel
 say("building the daily panel (forward fill only after an observation is effective)")
@@ -256,27 +360,78 @@ for ccy in CCYS:
     before = cal < first_obs[ccy]
     vals[before] = np.nan
     obsd[before] = pd.NaT
+    ff = pd.Series(~cal.isin(s.index), index=cal)
+
+    # TASK 004A CORRECTION 2/3 - intentional policy-rate unavailability
+    # A regime BIS itself describes as "no policy rate" is NOT a stale rate. The
+    # value is cleared, the source observation date is cleared so nothing implies a
+    # stale value is still valid, and is_forward_filled is set False because nothing
+    # was filled - the rate does not exist.
+    reg = [regime_for(ccy, d) for d in cal]
+    regime_name = [r[0] for r in reg]
+    avail = np.array([r[1] for r in reg], dtype=bool)
+    reason = [r[2] for r in reg]
+    avail = avail & np.isfinite(vals.values)
+    for i_, d in enumerate(cal):
+        if not reg[i_][1]:
+            vals.iloc[i_] = np.nan
+            obsd.iloc[i_] = pd.NaT
+            ff.iloc[i_] = False
+    reason = [r if r else ("no observation on or before this date" if not a else "")
+              for r, a in zip(reason, avail)]
+
     wide[ccy] = vals.values
-    ff = ~cal.isin(s.index)
     long_rows.append(pd.DataFrame({
         "date": cal, "currency": ccy, "economy": meta[
             [a for a, c in AREA2CCY.items() if c == ccy][0]]["ref_area"],
         "policy_rate_pct": vals.values,
         "bis_series_id": f"BIS:WS_CBPOL(1.0):D.{[a for a,c in AREA2CCY.items() if c==ccy][0]}",
         "source_observation_date": obsd.values,
-        "is_forward_filled": ff,
-        "source_release_date": release_date or "",
+        "is_forward_filled": ff.values,
+        "is_policy_rate_available": avail,
+        "availability_reason": reason,
+        "policy_regime": regime_name,
+        # CORRECTION 6: this is the BULK FILE's modification time, not a per-observation
+        # release timestamp. Named so it cannot be misread as the latter.
+        "bulk_file_http_last_modified": release_date or "",
     }))
 
 wide = wide.reset_index()
+# CORRECTION 3: one row per currency per calendar date, INCLUDING unavailable
+# periods. Task 004 dropped NaN rows, which hid the JPY hole entirely.
 long = pd.concat(long_rows, ignore_index=True)
-long = long[long["policy_rate_pct"].notna()]
 
 wide.to_csv(OUT_DAILY, index=False)
 long.to_csv(OUT_LONG, index=False)
+n_unavail = int((~long["is_policy_rate_available"]).sum())
 say(f"  daily wide panel : {len(wide):,} calendar dates x {len(CCYS)} currencies")
-say(f"  long panel       : {len(long):,} rows")
-say(f"  any NaN in wide  : {int(wide[CCYS].isna().sum().sum())}")
+say(f"  long panel       : {len(long):,} rows (every currency x date, kept)")
+say(f"  available rows   : {int(long['is_policy_rate_available'].sum()):,}")
+say(f"  UNAVAILABLE rows : {n_unavail:,}")
+for c, g in long[~long["is_policy_rate_available"]].groupby("currency"):
+    say(f"     {c}: {len(g):,} dates  {g['date'].min():%Y-%m-%d} .. {g['date'].max():%Y-%m-%d}"
+        f"  ({g['availability_reason'].iloc[0]})")
+say(f"  empty cells in wide panel : {int(wide[CCYS].isna().sum().sum()):,}"
+    "   <- these are intentional unavailability, not missing source data")
+say("")
+
+# ---- deterministic assertions on finiteness and availability
+av = long[long["is_policy_rate_available"]]
+assert np.isfinite(av["policy_rate_pct"].values).all(), \
+    "ASSERT: a row marked available has a non-finite policy_rate_pct"
+assert not av["policy_rate_pct"].isna().any(), \
+    "ASSERT: a row marked available has a null policy_rate_pct"
+un = long[~long["is_policy_rate_available"]]
+assert un["policy_rate_pct"].isna().all(), \
+    "ASSERT: a row marked unavailable carries a rate"
+assert not un["is_forward_filled"].any(), \
+    "ASSERT: an unavailable row is marked forward-filled"
+assert un["source_observation_date"].isna().all(), \
+    "ASSERT: an unavailable row still points at a source observation date"
+assert np.isfinite(wide[CCYS].values[~pd.isna(wide[CCYS].values)]).all(), \
+    "ASSERT: a non-null wide-panel cell is non-finite"
+say("  [OK] assertions: every available value is finite; no available value is NaN or inf;")
+say("       every unavailable row is empty, not forward-filled, and points at no observation")
 say("")
 
 
@@ -296,8 +451,27 @@ for per in pd.period_range(PANEL_START, end, freq="M"):
         continue
     cutoff = fm - pd.Timedelta(days=3)          # the completed Friday before it
     for ccy in CCYS:
+        rname, ravail, rreason = regime_for(ccy, cutoff)
         s = src[(src["currency"] == ccy) & (src["obs_date"] <= cutoff)]
+        # CORRECTION 3: a row is emitted for every currency in every month, marked
+        # unavailable where appropriate, so completeness can never be inferred from
+        # row count alone.
+        if not ravail:
+            snaps.append({
+                "rebalance_month": str(per), "first_monday": fm.date(),
+                "information_cutoff_friday": cutoff.date(), "currency": ccy,
+                "policy_rate_pct": np.nan, "source_observation_date": "",
+                "value_age_days": np.nan, "is_policy_rate_available": False,
+                "availability_reason": rreason, "policy_regime": rname})
+            continue
         if not len(s):
+            snaps.append({
+                "rebalance_month": str(per), "first_monday": fm.date(),
+                "information_cutoff_friday": cutoff.date(), "currency": ccy,
+                "policy_rate_pct": np.nan, "source_observation_date": "",
+                "value_age_days": np.nan, "is_policy_rate_available": False,
+                "availability_reason": "no observation on or before the cutoff",
+                "policy_regime": rname})
             continue
         last = s.iloc[-1]
         snaps.append({
@@ -306,16 +480,33 @@ for per in pd.period_range(PANEL_START, end, freq="M"):
             "policy_rate_pct": last["rate"],
             "source_observation_date": last["obs_date"].date(),
             "value_age_days": int((cutoff - last["obs_date"]).days),
-        })
+            "is_policy_rate_available": True, "availability_reason": "",
+            "policy_regime": rname})
 snap = pd.DataFrame(snaps)
 snap.to_csv(OUT_SNAP, index=False)
 n_months = snap["rebalance_month"].nunique()
+
+# CORRECTION 3: completeness requires a row AND availability AND a finite rate -
+# never row count alone.
+ok_mask = snap["is_policy_rate_available"] & np.isfinite(
+    snap["policy_rate_pct"].astype(float))
+per_month = snap.assign(ok=ok_mask).groupby("rebalance_month")["ok"].sum()
+complete_months = int((per_month == len(CCYS)).sum())
 say(f"  snapshots: {len(snap):,} rows over {n_months} months "
     f"({snap['first_monday'].min()} -> {snap['first_monday'].max()})")
-say(f"  complete months (all 8 currencies): "
-    f"{int((snap.groupby('rebalance_month').size() == 8).sum())}/{n_months}")
-say(f"  value age days: median {snap['value_age_days'].median():.0f}, "
-    f"max {snap['value_age_days'].max()}")
+say(f"  rows marked available            : {int(ok_mask.sum()):,}")
+say(f"  rows marked UNAVAILABLE          : {int((~ok_mask).sum()):,}")
+say(f"  COMPLETE months (all 8 available and finite): {complete_months}/{n_months}")
+say(f"  incomplete months                : {n_months - complete_months}")
+_inc = per_month[per_month < len(CCYS)]
+if len(_inc):
+    say(f"     incomplete range: {_inc.index.min()} .. {_inc.index.max()}")
+_ages = snap.loc[ok_mask, "value_age_days"].astype(float)
+say(f"  value age days (available rows only): median {_ages.median():.0f}, "
+    f"max {_ages.max():.0f}")
+assert np.isfinite(snap.loc[ok_mask, "policy_rate_pct"].astype(float)).all(), \
+    "ASSERT: an available snapshot row has a non-finite rate"
+say("  [OK] assertion: every snapshot row marked available carries a finite rate")
 say("")
 
 # ============================================================ 5. audit
@@ -356,10 +547,21 @@ for ccy in CCYS:
     dn = changes.nsmallest(5)
     row["top5_increases"] = "; ".join(f"{d.date()}:{v:+.2f}" for d, v in up.items())
     row["top5_decreases"] = "; ".join(f"{d.date()}:{v:+.2f}" for d, v in dn.items())
+    # CORRECTION 4: four distinct concepts, never collapsed into one "gap" number
+    lc = long[long["currency"] == ccy].set_index("date")
+    row["n_rejected_nonfinite"] = int((rej["currency"] == ccy).sum())
+    row["n_intentionally_unavailable_days"] = int((~lc["is_policy_rate_available"]).sum())
+    row["n_missing_source_days"] = int(
+        (lc["is_policy_rate_available"] & lc["policy_rate_pct"].isna()).sum())
+    row["n_forward_filled_unchanged_days"] = int(
+        (lc["is_policy_rate_available"] & lc["is_forward_filled"]).sum())
     for wname, wstart in WINDOWS.items():
-        row[f"covers_{wname}"] = bool(s.index.min() <= wstart)
-        seg = w[w.index >= wstart]
-        row[f"gaps_{wname}"] = int(seg.isna().sum())
+        seg = lc[lc.index >= wstart]
+        n_un = int((~seg["is_policy_rate_available"]).sum())
+        row[f"covers_{wname}"] = bool(s.index.min() <= wstart and n_un == 0)
+        row[f"unavailable_days_{wname}"] = n_un
+        row[f"missing_source_days_{wname}"] = int(
+            (seg["is_policy_rate_available"] & seg["policy_rate_pct"].isna()).sum())
     # Stale intervals INSIDE the panel window matter far more than the all-history
     # maximum: a multi-year hole means the panel carries one stale number across a
     # period in which policy actually moved. Reported per currency, and the offending
@@ -399,9 +601,18 @@ sel = u[u["selected"] == True]                                          # noqa: 
 ex = sel[(sel["revised_risk_pct_of_979"] <= 1.50) & (sel["census_exposure_x"] <= 2.00)
          & (sel["census_spread_pct_atr"] <= 6.00) & (sel["both_sides"] == True)]
 pairs = sorted(ex["symbol"].tolist())
-latest = {c: float(wide[c].iloc[-1]) for c in CCYS}
-say(f"  latest BIS policy rates: "
-    + ", ".join(f"{c} {latest[c]:.2f}%" for c in CCYS))
+# CORRECTION 7: rebuilt on the corrected panel. "Latest available" means the newest
+# date on which the currency is BOTH available and finite - not simply the last row.
+latest, latest_dt = {}, {}
+for c in CCYS:
+    lc = long[(long["currency"] == c) & long["is_policy_rate_available"]]
+    lc = lc[np.isfinite(lc["policy_rate_pct"])]
+    if not len(lc):
+        continue
+    latest[c] = float(lc["policy_rate_pct"].iloc[-1])
+    latest_dt[c] = lc["date"].iloc[-1]
+say("  latest AVAILABLE BIS policy rates: "
+    + ", ".join(f"{c} {latest[c]:.2f}% ({latest_dt[c]:%Y-%m-%d})" for c in CCYS))
 
 sw = []
 for p in pairs:
@@ -458,7 +669,17 @@ metadata = {
     "source_url_resolved": BIS_URL,
     "file_in_archive": CSV_IN_ZIP,
     "retrieval_timestamp_utc": retrieved_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "bis_release_date_http_last_modified": release_date,
+    # CORRECTION 6: this header is the BULK FILE's modification timestamp. It is NOT
+    # a per-observation release date, and it must not be read as implying that every
+    # historical observation was published on that day.
+    "bulk_file_http_last_modified": release_date,
+    "historical_observation_release_date_available": False,
+    "release_date_note": (
+        "The BIS flat CSV carries no observation-level release or vintage timestamp. "
+        "bulk_file_http_last_modified is only when the bulk file itself was last "
+        "rebuilt; it says nothing about when any individual historical observation "
+        "was first published. No point-in-time/vintage claim can be made from this "
+        "file, so revision effects are not observable here."),
     "sha256_of_download": sha256,
     "download_size_bytes": size_bytes,
     "source_frequency_selected": "D (daily)",
@@ -487,11 +708,31 @@ metadata = {
 with open(OUT_META, "w", encoding="utf-8") as f:
     json.dump(metadata, f, indent=2)
 
-say("COVERAGE CONFIRMATION")
+say("COVERAGE - four categories kept separate (correction 4)")
+say("  'covered' now means: source present AND policy rate intentionally available.")
+say("  A period BIS declares to have no policy rate is NOT reported as zero gap-days.")
+say("")
 for wname in WINDOWS:
-    ok = audit[f"covers_{wname}"].all()
-    gaps = int(audit[f"gaps_{wname}"].sum())
-    say(f"  {wname:20s} all eight covered: {ok}   total gap-days across currencies: {gaps}")
+    ok = bool(audit[f"covers_{wname}"].all())
+    un = int(audit[f"unavailable_days_{wname}"].sum())
+    ms = int(audit[f"missing_source_days_{wname}"].sum())
+    bad_c = audit.loc[audit[f"unavailable_days_{wname}"] > 0, "currency"].tolist()
+    say(f"  {wname:20s} all eight continuously available: {ok}")
+    say(f"  {'':20s}   intentionally unavailable days : {un}"
+        + (f"  ({', '.join(bad_c)})" if bad_c else ""))
+    say(f"  {'':20s}   missing source days            : {ms}")
+say("")
+say(f"  rejected non-finite values (all history)   : {len(rej):,}")
+say(f"  forward-filled unchanged days (available)  : "
+    f"{int(audit['n_forward_filled_unchanged_days'].sum()):,}")
+say("")
+say("REGIME AND DEFINITION BREAKS (BIS metadata, verbatim)")
+say(f"  {len(breaks)} regimes recorded; "
+    f"{int(breaks['potential_comparability_break'].sum())} flagged as comparability breaks")
+for _, r in breaks[breaks["potential_comparability_break"]].iterrows():
+    say(f"    {r['currency']}  {r['start_date']} .. {r['end_date'] or 'open'}  "
+        f"{r['regime_name']}")
+say(f"  full table -> {OUT_BREAKS}")
 say("")
 say(f"daily     -> {OUT_DAILY}")
 say(f"long      -> {OUT_LONG}")

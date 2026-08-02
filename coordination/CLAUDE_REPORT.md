@@ -1,36 +1,33 @@
 FROM: CLAUDE
-TASK: 004 — FX POLICY-RATE DATA PANEL
+TASK: 004A — CORRECTED FX POLICY-RATE PANEL
 
-Data task only. No trading performance was tested, no lookback or entry threshold was
-chosen, no trade rule is recommended, the live bot was not modified and no order was placed
-or changed. No V2 parameters are proposed.
+Data correction only. No strategy returns were tested, no strategy parameter was chosen, the
+live bot was not modified and no order was placed or changed.
 
-Task 003B's report is preserved at `coordination/CLAUDE_REPORT_TASK003B.md`.
-
----
-
-## The one finding that matters most for a carry family
-
-**For 0 of the 19 executable pairs does the theoretical positive-carry direction actually
-pay under the current Exness swap snapshot.**
-
-Every pair where the policy differential favours being long shows a broker long carry of
-**exactly 0.00%**, and every pair where it favours being short shows a broker short carry of
-**0.00%**. The broker does not pay the positive-carry side at all — it zeroes it and charges
-the other. Median markup is **1.38 pp** on the long side and **0.60 pp** on the short.
-
-This is a **current dated diagnostic**, not a historical result, and it is reported because
-the task asked for it — not as an argument about strategy design, which is not mine to make.
+Task 004's report is preserved at `coordination/CLAUDE_REPORT_TASK004.md`.
 
 ---
+
+# Both defects were real, and one invalidated a headline claim
+
+Task 004 reported **"zero gap-days"** and **199/199 complete months**. Both were wrong.
+
+| | Task 004 | Task 004A |
+|---|---|---|
+| Non-finite values accepted as observations | **9,297** | **0** (rejected and logged) |
+| JPY 2013–2016 | forward-filled at 0.05% | **unavailable, 1,266 dates** |
+| Complete snapshot months | 199 / 199 | **158 / 199** |
+| Max snapshot value age | 1,248 days | **7 days** |
+| 2010+ continuous availability, all eight | "zero gap-days" | **False** |
+| Long-panel rows | 48,432 (NaN rows dropped) | 48,432 (**unavailable rows kept and marked**) |
 
 ## Commit
 
 | | |
 |---|---|
-| Commit SHA | `42dafef493842f8d724a84a979f018da1e5feaf1` |
+| Commit SHA | `PENDING_SHA` |
 | Branch | `main` |
-| Parent | `f7fca9f` |
+| Parent | `452a23f` |
 
 ## Commands run
 
@@ -38,209 +35,218 @@ the task asked for it — not as an argument about strategy design, which is not
 python study/build_fx_policy_rate_panel.py
 ```
 
-## BIS source and checksum
+---
 
-| | |
-|---|---|
-| Dataset | `BIS:WS_CBPOL(1.0)` — Central bank policy rates |
-| Resolved URL | `https://data.bis.org/static/bulk/WS_CBPOL_csv_flat.zip` |
-| File in archive | `WS_CBPOL_csv_flat.csv` (469,780,817 bytes uncompressed) |
-| **SHA-256** | `f0f4c42a3cdeb14984bd2e0938ce807a16a409b65ac38ab99565d355068a2ec6` |
-| Download size | 4,094,197 bytes |
-| Retrieval timestamp (UTC) | 2026-08-02 22:04:57Z |
-| **BIS release date** | Thu, 30 Jul 2026 09:05:41 GMT (HTTP `Last-Modified`) |
-| Latest reference date | **2026-07-29** |
-| Frequency selected | `D` (daily) |
-| Frequencies present in file | `{M: 25,023, D: 706,078}` |
-| Units | Per cent per year (`UNIT_MEASURE 368`), `UNIT_MULT 0` |
-| Daily rows kept | 157,126 across 8 currencies |
+## 1. Rejected non-finite values
 
-No substitute source was used anywhere. The script `fail()`s loudly rather than falling back
-to FRED or a web scrape if the BIS file cannot be downloaded or parsed, and it validates the
-column layout before trusting it.
+**9,297 rejected**, all `NaN` string placeholders BIS writes on non-publication days. The
+task-004 parser accepted every one because `float("NaN")` succeeds and returns a float.
 
-The full raw download lives at `study/data/external/raw/WS_CBPOL_csv_flat.zip`, which is
-**gitignored and not committed**. Only the filtered panel and the metadata JSON are committed.
-
-## The exact eight series
-
-Each is the BIS designated main policy rate for its economy, selected by `REF_AREA` and
-`FREQ=D`. No choice among competing national rates was made — and none could have been made
-on trading results, since no returns are computed in this task.
-
-| Currency | BIS series ID | Economy | Publication source |
-|---|---|---|---|
-| AUD | `BIS:WS_CBPOL(1.0):D.AU` | Australia | Reserve Bank of Australia |
-| CAD | `BIS:WS_CBPOL(1.0):D.CA` | Canada | Bank of Canada |
-| CHF | `BIS:WS_CBPOL(1.0):D.CH` | Switzerland | Swiss National Bank |
-| EUR | `BIS:WS_CBPOL(1.0):D.XM` | Euro area | European Central Bank |
-| GBP | `BIS:WS_CBPOL(1.0):D.GB` | United Kingdom | Bank of England |
-| JPY | `BIS:WS_CBPOL(1.0):D.JP` | Japan | Bank of Japan |
-| NZD | `BIS:WS_CBPOL(1.0):D.NZ` | New Zealand | Reserve Bank of New Zealand |
-| USD | `BIS:WS_CBPOL(1.0):D.US` | United States | US Federal Reserve System |
-
-## Coverage for every currency
-
-| Currency | First obs | Last obs | Obs | Rate changes | Min | Max | Latest |
-|---|---|---|---|---|---|---|---|
-| AUD | 1976-04-07 | 2026-07-23 | 12,842 | 3,315 | 0.100 | 85.00 | 4.350 |
-| CAD | 1960-07-27 | 2026-07-28 | 23,040 | 1,025 | 0.250 | 21.24 | 2.250 |
-| CHF | 1946-01-01 | 2026-07-29 | 21,022 | 89 | **−0.750** | 7.00 | **0.000** |
-| EUR | 1999-01-01 | 2026-07-29 | 10,072 | 60 | **0.000** | 4.75 | 2.250 |
-| GBP | 1946-01-01 | 2026-07-28 | 23,826 | 318 | 0.100 | 17.00 | 3.750 |
-| JPY | 1946-01-01 | 2026-07-29 | 24,850 | 89 | **−0.100** | 9.00 | 1.000 |
-| NZD | 1985-01-04 | 2026-07-17 | 15,148 | 2,223 | 0.250 | 265.00 | 2.500 |
-| USD | 1954-07-01 | 2026-07-29 | 26,326 | 5,700 | 0.125 | 22.36 | 3.625 |
-
-Negative rates (CHF to −0.75%, JPY to −0.10%) and legitimate zero rates (CHF 0.00% latest,
-EUR floor 0.000) are **preserved exactly**, not clipped or treated as missing.
-
-**All three required windows are fully covered by all eight currencies, with zero gap-days:**
-
-| Window | All eight covered | Gap-days |
+| Currency | Rejected | Date range |
 |---|---|---|
-| 2010-01-01 onward | Yes | **0** |
-| Exness D1 period from 2018-07-03 | Yes | **0** |
-| Canonical executable period from 2021-08-02 | Yes | **0** |
+| CAD | **5,882** | 1960-07-30 … **2026-07-19** |
+| NZD | **2,806** | 1985-01-05 … **2026-07-12** |
+| GBP | 422 | 1975-01-01 … **2026-05-25** |
+| AUD | 95 | 1976-04-16 … 1989-12-26 |
+| CHF | 60 | 1991-01-01 … 1999-12-31 |
+| EUR | 32 | **2024-09-21 … 2025-01-05** |
+| JPY | 0 | — |
+| USD | 0 | — |
 
-## Missing-data findings
+Full log: `study/results/fx_policy_rate_rejected_values.csv` (currency, BIS area,
+observation date, raw value, reason).
 
-**The material one: JPY has a 1,267-day stale interval inside the panel, 2013-04-03 →
-2016-09-21.** The BIS series carries no observation across it; the rate on either side moves
-from +0.05% to −0.10%. Forward fill therefore holds **0.05% constant for three and a half
-years**, which is the rule exactly as specified — but it means the panel shows a flat rate
-through the QQE period, when Japanese policy in fact changed substantially. This is flagged
-in the audit CSV (`stale_intervals_over_90d`) and printed in the report rather than patched,
-because inventing observations BIS does not publish would be worse than showing the hole.
+Two consequences that were not visible before:
 
-BIS documents the instrument history for JPY in its `COMPILATION` field, which is preserved
-verbatim in `bis_policy_rates_source.json` along with the `SUPP_INFO_BREAKS` links.
+- **These run to within days of the file date** — CAD to 2026-07-19, NZD to 2026-07-12. They
+  are not an ancient-history artefact.
+- **Observation counts and rate-change counts were both wrong.** With NaN rows removed, CAD
+  drops from 23,040 to 17,158 observations, NZD from 15,148 to 12,342 — while *rate changes
+  rise* (NZD 2,223 → 2,797, AUD 3,315 → 3,374), because a NaN sitting between two different
+  values previously masked the change on either side of it.
+- The EUR block (2024-09-21 … 2025-01-05) sits exactly at the MRO → deposit-facility
+  transition, so it was a definition change showing up as missing data.
 
-It is the only stale interval over 90 days in the whole 2010+ panel:
+## 2. Japan's no-policy-rate regime
 
-| Currency | Longest stale, all history | Longest stale, inside panel | Intervals > 90d in panel |
-|---|---|---|---|
-| AUD | 6 d | 6 d | 0 |
-| CAD | 3 d | 3 d | 0 |
-| CHF | 3 d | 3 d | 0 |
-| EUR | 1 d | 1 d | 0 |
-| GBP | 3 d | 3 d | 0 |
-| **JPY** | **1,817 d** | **1,267 d** | **1** |
-| NZD | 8 d | 8 d | 0 |
-| USD | 2 d | 2 d | 0 |
+BIS states it verbatim in the series `COMPILATION` field:
 
-Other findings:
+> *"from 4 Apr 2013 to 20 Sep 2016: no policy rate"*
 
-- **Duplicates: 0** across all eight series.
-- **Uneven last observations.** NZD stops at 2026-07-17 and AUD at 2026-07-23, while the
-  other six run to 2026-07-28/29. Any cross-sectional read on the latest date is therefore
-  comparing values of differing freshness — NZD is 12 days stale at the file's own latest
-  reference date.
-- **No wide-panel NaN.** All 6,054 calendar dates × 8 currencies are populated, because every
-  currency's first observation predates 2010 by decades.
+**Corrected interval: 2013-04-04 through 2016-09-20 inclusive — 1,266 calendar dates.**
 
-## Effective-date and forward-fill methodology
+- `policy_rate_pct` = empty
+- `is_policy_rate_available` = false
+- `availability_reason` = "BIS metadata: no policy rate under QQE regime"
+- `is_forward_filled` = false (nothing was filled — the rate does not exist)
+- `source_observation_date` = empty, so nothing implies a stale value is still valid
 
-One rule governs the whole panel:
+Task 004 forward-filled **0.05% flat across all 1,266 days**. No substitute Japanese rate was
+used and no equivalent was invented. From 2016-09-21 the official observations resume normally.
 
-```
-rate(currency, date d) = value of the LAST observation whose obs_date <= d
-```
+Any future strategy using this panel must exclude a JPY pair whenever JPY is unavailable —
+the field is there to make that enforceable rather than remembered.
 
-- a rate change is **never** moved earlier than its official observation date;
-- forward fill happens **only after** an observation becomes effective;
-- **nothing is backward-filled** before a currency's first observation (moot here — all eight
-  begin well before 2010, but the guard is in the code);
-- no future publication or effective value is used on an earlier date;
-- negative and zero rates preserved; values kept as published, unrounded.
+## 3. Availability fields
 
-Every long-format row carries `source_observation_date` and `is_forward_filled`, so staleness
-is visible per cell rather than assumed.
-
-## Monthly snapshot counts
+Added to the long panel: `is_policy_rate_available`, `availability_reason`, `policy_regime`.
+One row per currency per calendar date is kept, **including unavailable periods** — task 004
+dropped null rows, which is precisely why the JPY hole was invisible in the committed data.
 
 | | |
 |---|---|
-| Snapshot rows | **1,592** |
-| Months covered | **199** (2010-01-04 → 2026-07-06) |
-| Months with all eight currencies | **199 / 199** |
-| Median value age | **0 days** |
-| Maximum value age | **1,248 days** |
-| Rows with age > 90 days | **38**, all JPY |
+| Long-panel rows | 48,432 |
+| Available | **47,166** |
+| Unavailable | **1,266** (all JPY) |
+| Empty cells in the wide panel | 1,266 — intentional unavailability, not missing source |
 
-Each first Monday takes its information cutoff as the **preceding completed Friday**
-(`first_monday − 3 days`) and uses only observations effective on or before it. The 38 stale
-rows are exactly the JPY QQE hole described above.
+Snapshots carry the same three fields. **Completeness is now defined as: a row exists AND is
+marked available AND carries a finite rate** — never row count alone.
 
-No strategy returns were calculated at any snapshot.
+| | Task 004 | Task 004A |
+|---|---|---|
+| Snapshot rows | 1,592 | 1,592 |
+| Rows available | (not distinguished) | **1,551** |
+| Rows unavailable | (not distinguished) | **41** |
+| **Complete months** | **199 / 199** | **158 / 199** |
+| Incomplete months | 0 | **41** (2013-05 … 2016-09) |
+| Max value age | **1,248 days** | **7 days** |
 
-## Current Exness swap comparison — dated diagnostic
+The maximum age collapsing from 1,248 days to 7 is the clearest single symptom of the fix: the
+old figure was entirely the JPY stale carry.
 
-Uses the **2026-08-02 snapshot already stored from task 002**. The live account was not
-queried or changed. The 2026 snapshot is **not applied to any historical date**, and a policy
-differential is **not** claimed to equal a retail CFD swap — measuring the distance between
-them is the entire point.
+## 4. Corrected coverage — four categories kept separate
 
-Latest BIS rates used: AUD 4.35, CAD 2.25, CHF 0.00, EUR 2.25, GBP 3.75, JPY 1.00, NZD 2.50,
-USD 3.62 (per cent per year).
+"Covered" now means source present **and** the policy rate intentionally available.
+
+| Window | All eight continuously available | Intentionally unavailable days | Missing source days |
+|---|---|---|---|
+| **2010-01-01 onward** | **False** | **1,266** (JPY) | 0 |
+| Exness D1 from 2018-07-03 | **True** | 0 | 0 |
+| Canonical from 2021-08-02 | **True** | 0 | 0 |
+
+This matches the expected interpretation exactly. Across all history: 9,297 rejected
+non-finite values and 9,272 ordinary forward-filled unchanged days — reported as distinct
+quantities, never merged into one "gap" number.
+
+## 5. Regime and definition breaks
+
+`study/results/fx_policy_rate_regime_breaks.csv` — **12 regimes, 5 flagged as comparability
+breaks**, all transcribed verbatim from the BIS `COMPILATION` metadata rather than from my own
+reading of monetary history.
+
+| Currency | Start | End | Regime | Available | Break |
+|---|---|---|---|---|---|
+| JPY | 2010-10-05 | 2013-04-03 | UOCR around 0–0.1% | yes | |
+| **JPY** | **2013-04-04** | **2016-09-20** | **NO POLICY RATE (QQE)** | **no** | **yes** |
+| JPY | 2016-09-21 | 2024-03-20 | Short-term policy rate −0.1% with YCC | yes | **yes** |
+| JPY | 2024-03-21 | 2024-07-31 | UOCR around 0–0.1% | yes | **yes** |
+| JPY | 2024-08-01 | 2025-01-26 | UOCR around 0.25% | yes | |
+| JPY | 2025-01-27 | 2025-12-21 | UOCR around 0.50% | yes | |
+| JPY | 2025-12-22 | 2026-06-16 | UOCR around 0.75% | yes | |
+| JPY | 2026-06-17 | open | UOCR around 1.00% | yes | |
+| CHF | 2000-01-01 | 2019-06-12 | Mid-point of SNB target range | yes | |
+| **CHF** | **2019-06-13** | open | **SNB policy rate** | yes | **yes** |
+| EUR | 2008-10-15 | 2024-09-17 | MRO fixed rate | yes | |
+| **EUR** | **2024-09-18** | open | **Deposit facility rate** | yes | **yes** |
+
+All three breaks the task named are present, plus the subsequent JPY operating-target changes.
+**No published value was altered around any valid definition change** — the table exists to
+expose the breaks for later sensitivity tests, not to adjust the data.
+
+## 6. Corrected release-date terminology
+
+The HTTP header is the **bulk file's modification timestamp** and is now named as such
+everywhere:
+
+| Field | Value |
+|---|---|
+| `bulk_file_http_last_modified` | Thu, 30 Jul 2026 09:05:41 GMT |
+| `historical_observation_release_date_available` | **false** |
+
+The metadata JSON carries an explicit note: the BIS flat CSV contains no observation-level
+release or vintage timestamp, so the header says only when the bulk file was last rebuilt. It
+does **not** mean every historical observation was published on 30 July 2026, and **no
+point-in-time or vintage claim can be made from this file** — revision effects are not
+observable in it. The long panel column was renamed from `source_release_date` to
+`bulk_file_http_last_modified` for the same reason.
+
+## 7. Rebuilt swap comparison
+
+Rebuilt on the corrected panel, using the newest date on which each currency is **both
+available and finite** rather than simply the last row.
+
+Latest available rates, all effective 2026-07-29: AUD 4.35, CAD 2.25, CHF 0.00, EUR 2.25,
+GBP 3.75, JPY 1.00, NZD 2.50, USD 3.62.
+
+**The finding survives the rebuild unchanged** — the output file is byte-identical to task
+004's, because the corrections do not touch the latest values:
 
 | | |
 |---|---|
 | Pairs compared | 19 |
-| Sign agrees, long side | **4 / 19** |
-| Sign agrees, short side | **13 / 19** |
-| Both directions charge a cost | **2 / 19** (`EURCADm`, `EURNZDm`) |
-| Swap-free both directions | 1 (`USDCADm`) |
+| Sign agrees, long / short | 4 / 19 and 13 / 19 |
+| Both directions charge a cost | 2 / 19 (`EURCADm`, `EURNZDm`) |
 | **Theoretical positive-carry side also positive at the broker** | **0 / 19** |
-| Median markup, long side (theory − broker) | **1.38 pp** (range 0.08 → 4.35) |
-| Median markup, short side | **0.60 pp** (range −2.83 → 1.87) |
+| Median markup, long / short | **1.38 pp** / 0.60 pp |
 
-The pattern is uniform: wherever the policy differential says one side should earn carry, the
-broker's snapshot for that side is exactly **0.00%**, while the opposite side is charged. The
-largest distortions sit where the theoretical differential is largest — `AUDCHFm` 4.35 pp,
-`USDCHFm` 3.62 pp, `GBPCHFm` 3.75 pp.
+Wherever the policy differential says a side should earn carry, the broker's snapshot for that
+side is exactly **0.00%** and the opposite side is charged. Largest distortions where the
+differential is largest: `AUDCHFm` 4.35 pp, `GBPCHFm` 3.75 pp, `USDCHFm` 3.62 pp.
 
-Full per-pair table: `study/results/fx_policy_rate_swap_snapshot.csv`.
+Still a **2026 dated snapshot only**. Not applied historically; a policy differential is not
+claimed to equal a retail CFD swap.
+
+## Assertions and results
+
+All pass:
+
+| Assertion | Result |
+|---|---|
+| Every value marked available is finite | **PASS** (47,166 rows) |
+| No available value is NaN or infinity | **PASS** |
+| Every unavailable row has an empty rate | **PASS** (1,266 rows) |
+| No unavailable row is marked forward-filled | **PASS** |
+| No unavailable row points at a source observation date | **PASS** |
+| Every non-null wide-panel cell is finite | **PASS** |
+| Every available snapshot row carries a finite rate | **PASS** (1,551 rows) |
 
 ## Errors and assumptions
 
-- **`requests` is not installed on this machine.** The first run silently skipped the header
-  fetch and reported the BIS release date as unavailable. Rewritten to use stdlib
-  `urllib.request`, and the release date is now captured correctly.
-- **Assumption:** the BIS release date is taken from the bulk file's HTTP `Last-Modified`
-  header. BIS does not expose a per-file release field in the flat CSV itself.
-- **Assumption:** `REF_AREA=XM` is the euro area series for EUR. This is the BIS designated
-  euro-area aggregate, not any member state's national rate.
-- **Assumption:** where BIS publishes a daily observation on a non-business day, it is taken at
-  face value; no trading calendar was imposed on the rate series.
-- The panel is built on **calendar** dates, not trading dates, so it can be joined to any
-  trading calendar later without re-deriving effective dates.
-- Layout validation: the script checks BIS's column names before parsing and stops if they
-  have changed, rather than mis-parsing a renamed schema.
-- No exception occurred. 157,126 daily rows parsed; 0 unparseable dates; 0 rows dropped for
-  bad values among the eight economies.
+- **Assumption:** BIS `NaN` placeholders are non-publication days, not zero rates. They are
+  rejected and the dates become ordinary forward-filled dates — the previous value stays in
+  force, which is what the effective-date rule requires.
+- **Assumption:** the JPY interval is taken exactly as BIS words it, 4 Apr 2013 to 20 Sep 2016
+  inclusive. No judgement was applied to its boundaries.
+- **Assumption:** regime rows are transcribed from the BIS `COMPILATION` string verbatim; where
+  BIS gives a date without a year for a range end ("to 31 July" in the 2024 entry) it is read
+  from the surrounding context as 2024-07-31.
+- The forward-fill rule is unchanged from task 004 and still correct: rate on date *d* is the
+  last **finite, available** observation with obs_date ≤ *d*.
+- The wide panel now legitimately contains empty cells. Anything consuming it must treat empty
+  as "no policy rate exists", not as a missing value to be imputed.
+- No exception occurred; the run completed cleanly.
 
 ## Files changed
 
 | File | Status |
 |---|---|
-| `study/build_fx_policy_rate_panel.py` | new |
-| `study/data/fx_policy_rates_daily.csv` | new — 6,054 dates × 8 currencies |
-| `study/data/fx_policy_rates_long.csv` | new — 48,432 rows |
-| `study/data/fx_policy_rate_rebalance_snapshots.csv` | new — 1,592 rows, 199 months |
-| `study/data/external/bis_policy_rates_source.json` | new — source metadata + per-series BIS fields |
-| `study/results/fx_policy_rate_data_audit.csv` | new — per-currency audit |
-| `study/results/fx_policy_rate_swap_snapshot.csv` | new — 19-pair diagnostic |
-| `study/results/fx_policy_rate_data_report.txt` | new — full run report |
-| `FINDINGS.md` | updated — added the closed FX momentum section |
-| `.gitignore` | updated — `study/data/external/raw/` |
-| `coordination/CLAUDE_REPORT.md` | this file (004) |
-| `coordination/CLAUDE_REPORT_TASK003B.md` | renamed to preserve the 003B report |
+| `study/build_fx_policy_rate_panel.py` | modified — 7 corrections |
+| `study/data/fx_policy_rates_daily.csv` | updated — 1,266 empty JPY cells |
+| `study/data/fx_policy_rates_long.csv` | updated — availability fields, unavailable rows kept |
+| `study/data/fx_policy_rate_rebalance_snapshots.csv` | updated — availability fields |
+| `study/data/external/bis_policy_rates_source.json` | updated — release-date terminology |
+| `study/results/fx_policy_rate_data_audit.csv` | updated — four separated categories |
+| `study/results/fx_policy_rate_swap_snapshot.csv` | rebuilt (identical values) |
+| `study/results/fx_policy_rate_data_report.txt` | updated |
+| `study/results/fx_policy_rate_rejected_values.csv` | **new** — 9,297 rejected rows |
+| `study/results/fx_policy_rate_regime_breaks.csv` | **new** — 12 regimes, 5 breaks |
+| `coordination/CLAUDE_REPORT.md` | this file (004A) |
+| `coordination/CLAUDE_REPORT_TASK004.md` | renamed to preserve the 004 report |
 
-The raw BIS bulk download is **not committed**, as required.
-
-Nothing under `live/` or `recorder/` was modified or committed.
+Raw BIS bulk download still gitignored and not committed. Nothing under `live/` or `recorder/`
+was modified or committed.
 
 ---
 
-No strategy profitability is reported and no V2 parameter is recommended in this document.
+No strategy was tested and none is recommended.
