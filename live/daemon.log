@@ -1199,3 +1199,11 @@
 [2026-08-01 21:30:00]        set_watch_levels: Watch levels updated (4 active).
 [2026-08-01 21:30:00]        -> state changed
 [2026-08-01 21:30:00] pending #3033082880 now resting
+[2026-08-01 21:39:00] EVENT  PENDING #3033082880 @ 63488.13 is now 1.5x ATR(M15) from price 63292.25 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 21:39:10]        [SESSION SILENT 629 min - fell back to GPT-5]
+[2026-08-01 21:39:10]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 63283.39 ask 63293.39
+[2026-08-01 21:39:10]        sending: {'action': 8, 'order': 3033082880}
+[2026-08-01 21:39:10]        retcode 10009  ok  ->  OK
+[2026-08-01 21:39:10]        resting orders now: 0
+[2026-08-01 21:39:10]        -> state changed
+[2026-08-01 21:39:40] pending #3033082880 gone - our own cancel, not waking
