@@ -213,18 +213,23 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
    double entry = src_is_buy ? price - spread : price + spread;
    entry = NormalizeDouble(entry, dg);
 
-   // Distances are taken from the SOURCE trade and applied to the MIRROR's own entry,
-   // rather than reflecting through the demo price. Reflecting was what made the
-   // geometry wrong once the fill landed somewhere else.
-   double risk   = MathAbs(price - sl);
-   double reward = MathAbs(tp - price);
-   double m_sl, m_tp;
-   if(src_is_buy)                                   // mirror SELLS
-     { m_sl = entry + risk;  m_tp = entry - reward; }
-   else                                             // mirror BUYS
-     { m_sl = entry - risk;  m_tp = entry + reward; }
-   m_sl = NormalizeDouble(m_sl, dg);
-   m_tp = NormalizeDouble(m_tp, dg);
+   // THE BARRIERS ARE THE SAME PRICES, WITH THEIR ROLES SWAPPED.
+   //
+   //     the demo's STOP price  becomes  this side's TARGET
+   //     the demo's TARGET price becomes this side's STOP
+   //
+   // So both accounts close at the same instant on the same tick, one winning exactly
+   // where the other loses. That is what makes it a hedge.
+   //
+   // The earlier version copied the DISTANCES instead and measured them from the
+   // mirror's own entry. Because the mirror enters one spread away, its barriers landed
+   // one spread off the demo's - the demo stop sat at 63,067.87 while the mirror target
+   // sat at 63,057.87 - so the two sides did not close together and the pair lost a full
+   // $1.00 instead of the spread. Matching the prices costs exactly one spread per pair
+   // and nothing more, which is the best a hedge can do: you cannot buy and sell at the
+   // same price at the same moment.
+   double m_tp = NormalizeDouble(sl, dg);           // demo's stop  -> our target
+   double m_sl = NormalizeDouble(tp, dg);           // demo's target -> our stop
 
    string comment = StringFormat("KLmir#%I64d", src_ticket);
    double bid = SymbolInfoDouble(InpSymbol, SYMBOL_BID);

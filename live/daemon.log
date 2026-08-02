@@ -1088,3 +1088,81 @@
 [2026-08-01 19:38:28]        set_watch_levels: Watch levels updated (4 active).
 [2026-08-01 19:38:28]        -> state changed
 [2026-08-01 19:38:58] pending #3033021883 now resting
+[2026-08-01 20:05:39] EVENT  PENDING #3033021883 @ 62708.64 is now 1.5x ATR(M15) from price 62815.72 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 20:05:55]        [SESSION SILENT 536 min - fell back to GPT-5]
+[2026-08-01 20:05:55]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62813.15 ask 62823.15
+[2026-08-01 20:05:55]        sending: {'action': 8, 'order': 3033021883}
+[2026-08-01 20:05:55]        retcode 10009  ok  ->  OK
+[2026-08-01 20:05:55]        resting orders now: 0
+[2026-08-01 20:05:55]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 20:05:55]        -> state changed
+[2026-08-01 20:06:25] pending #3033021883 gone - our own cancel, not waking
+[2026-08-01 20:08:55] EVENT  LEVEL BROKEN above 62819.96 (reached 62855.56, now 62847.21). Note: H4 resistance. If accepted back above, avoid short continuation per Rule 9; consider long on retest from above.
+[2026-08-01 20:09:10]        [SESSION SILENT 539 min - fell back to GPT-5]
+[2026-08-01 20:09:10]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62843.76 ask 62853.76
+[2026-08-01 20:09:10]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 20:09:10]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62829.96, 'sl': 62789.96, 'tp': 62849.96, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 20:09:10]        retcode 10009  ok  ->  OK
+[2026-08-01 20:09:10]        resting orders now: 1
+[2026-08-01 20:09:10]        -> state changed
+[2026-08-01 20:09:40] pending #3033033781 now resting
+[2026-08-01 20:14:46] EVENT  PENDING #3033033781 @ 62829.96 is now 1.8x ATR(M15) from price 62954.66 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 20:14:58]        [SESSION SILENT 545 min - fell back to GPT-5]
+[2026-08-01 20:14:58]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62936.84 ask 62946.84
+[2026-08-01 20:14:58]        sending: {'action': 8, 'order': 3033033781}
+[2026-08-01 20:14:58]        retcode 10009  ok  ->  OK
+[2026-08-01 20:14:58]        resting orders now: 0
+[2026-08-01 20:14:58]        -> state changed
+[2026-08-01 20:15:28] pending #3033033781 gone - our own cancel, not waking
+[2026-08-01 20:17:58] EVENT  LEVEL BROKEN above 62917.02 (reached 63027.87, now 62957.68). Note: Spike high. If reclaimed/accepted above, do not chase; reassess for a clean fade or a structured retest from above.
+[2026-08-01 20:18:18]        [SESSION SILENT 548 min - fell back to GPT-5]
+[2026-08-01 20:18:18]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62951.48 ask 62961.48
+[2026-08-01 20:18:18]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 20:18:18]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63027.87, 'sl': 63067.87, 'tp': 63007.87, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 20:18:18]        retcode 10009  ok  ->  OK
+[2026-08-01 20:18:18]        resting orders now: 1
+[2026-08-01 20:18:18]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 20:18:18]        -> state changed
+[2026-08-01 20:18:48] pending #3033044972 now resting
+[2026-08-01 20:21:50] EVENT  LEVEL BROKEN below 62917.02 (reached 62914.31, now 62919.31). Note: H1 resistance reclaimed below. If accepted back under, the 63,028 fade premise weakens; reassess or cancel pending.
+[2026-08-01 20:22:03]        [SESSION SILENT 552 min - fell back to GPT-5]
+[2026-08-01 20:22:03]        no_action: Acknowledged - no action taken.
+[2026-08-01 20:25:03] EVENT  PENDING #3033044972 @ 63027.87 is now 1.5x ATR(M15) from price 62911.66 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 20:25:56]        [SESSION SILENT 556 min - fell back to GPT-5]
+[2026-08-01 20:25:56]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62915.59 ask 62925.59
+[2026-08-01 20:25:56]        sending: {'action': 8, 'order': 3033044972}
+[2026-08-01 20:25:56]        retcode 10009  ok  ->  OK
+[2026-08-01 20:25:56]        resting orders now: 0
+[2026-08-01 20:25:56]        -> state changed
+[2026-08-01 20:26:26] pending #3033044972 gone - our own cancel, not waking
+[2026-08-01 20:28:37] EVENT  AT LEVEL - flat, price 62921.11 at H1 RESISTANCE 62917.02 (4 px away). Assess for a trade.
+[2026-08-01 20:28:53]        [SESSION SILENT 559 min - fell back to GPT-5]
+[2026-08-01 20:28:53]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62920.11 ask 62930.11
+[2026-08-01 20:28:53]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 20:28:53]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63027.87, 'sl': 63067.87, 'tp': 63007.87, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 20:28:53]        retcode 10009  ok  ->  OK
+[2026-08-01 20:28:53]        resting orders now: 1
+[2026-08-01 20:28:53]        -> state changed
+[2026-08-01 20:29:23] pending #3033049649 now resting
+[2026-08-01 20:35:52] EVENT  LEVEL BROKEN below 62917.02 (reached 62913.46, now 62955.63). Note: H1 resistance reclaimed below. If accepted back under, the 63,028 fade premise weakens; reassess or cancel pending.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-01 20:36:07]        [SESSION SILENT 566 min - fell back to GPT-5]
+[2026-08-01 20:36:07]        no_action: Acknowledged - no action taken.
+[2026-08-01 20:49:43] EVENT  LEVEL BROKEN below 62917.02 (reached 62913.97, now 62929.06). Note: H1 resistance reclaimed below. If accepted back under, the 63,028 fade premise weakens; reassess or cancel pending.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-01 20:49:58]        [SESSION SILENT 580 min - fell back to GPT-5]
+[2026-08-01 20:49:58]        no_action: Acknowledged - no action taken.
+[2026-08-01 20:50:56] daemon up | BTCUSDm | account 436771046 | mode=DRY RUN (no orders sent) | llm=on | poll 30s
+[2026-08-01 20:50:56] dry run: the model IS called and DOES return tool calls; only order execution is stubbed. Read decisions.csv and llm_calls.jsonl.
+[2026-08-01 20:50:56] NOTE: provider=openai but OPENAI_API_KEY is not set - events will be detected and logged, no decisions made.
+[2026-08-01 20:50:56] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-01 20:50:57]        *** ALL PROVIDERS FAILED - ESCALATING TO HUMAN *** openai: RuntimeError: OPENAI_API_KEY not set | claude: RuntimeError: ANTHROPIC_API_KEY not set | Context written to NEEDS_HUMAN.json. No action taken. Any open position still has its stop and target on the broker.
+[2026-08-01 20:50:57] level 62917.02 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 20:51:38] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-08-01 20:51:38] decider: openai / gpt-5 (OPENAI_API_KEY present)
+[2026-08-01 20:51:38] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-01 20:52:10]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62920.29 ask 62930.29
+[2026-08-01 20:52:10]        sending: {'action': 8, 'order': 3033049649}
+[2026-08-01 20:52:10]        retcode 10009  ok  ->  OK
+[2026-08-01 20:52:10]        resting orders now: 0
+[2026-08-01 20:52:10]        -> state changed
+[2026-08-01 20:52:10] pending #3033049649 gone - our own cancel, not waking
+[2026-08-01 20:52:10] level 62917.02 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
