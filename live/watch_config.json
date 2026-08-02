@@ -20,8 +20,13 @@
     },
     {
       "price": 63043,
+      "dir": "above",
+      "note": "Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid, no offset) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4."
+    },
+    {
+      "price": 62919.34,
       "dir": "below",
-      "note": "Intraday pivot low tested twice (10:25 and 11:20). If we accept below, avoid sell continuation/chasing; reassess for fades only (e.g., SELL LIMIT into 63,043 from below or BUY LIMIT at 62,919 H4 support) with SL 20/TP 40."
+      "note": "H4 support. If tagged while flat, consider BUY LIMIT fade at 62,919.34 + spread (Rule 3), SL 20, TP 40; cancel if H4 acceptance below."
     }
   ],
   "max_hold_minutes": 120

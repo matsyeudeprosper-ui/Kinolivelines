@@ -1472,3 +1472,12 @@
 [2026-08-02 07:38:27]        set_watch_levels: Watch levels updated (4 active).
 [2026-08-02 07:38:27]        -> state changed
 [2026-08-02 07:38:57] level 63043.0 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 08:00:27] EVENT  LEVEL BROKEN below 63043.0 (reached 63042.98, now 63053.55). Note: Intraday pivot low tested twice (10:25 and 11:20). If we accept below, avoid sell continuation/chasing; reassess for fades only (e.g., SELL LIMIT into 63,043 from below or BUY LIMIT at 62,919 H4 support) with SL 20/TP 40.
+[2026-08-02 08:00:39]        [SESSION SILENT 1251 min - fell back to GPT-5]
+[2026-08-02 08:00:39]        no_action: Acknowledged - no action taken.
+[2026-08-02 08:07:09] EVENT  LEVEL BROKEN below 63043.0 (reached 63032.31, now 63040.84). Note: Intraday pivot low tested twice (10:25 and 11:20). If we accept below, avoid sell continuation/chasing; reassess for fades only (e.g., SELL LIMIT into 63,043 from below or BUY LIMIT at 62,919 H4 support) with SL 20/TP 40.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 08:07:36]        [SESSION SILENT 1257 min - fell back to GPT-5]
+[2026-08-02 08:07:36]        set_watch_levels: Watch levels updated (5 active).
+[2026-08-02 08:07:36]        no_action: Acknowledged - no action taken.
+[2026-08-02 08:07:36]        -> state changed
+[2026-08-02 08:08:06] level 63043.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
