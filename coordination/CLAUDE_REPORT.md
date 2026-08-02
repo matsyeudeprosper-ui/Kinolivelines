@@ -28,7 +28,7 @@ the task asked for it — not as an argument about strategy design, which is not
 
 | | |
 |---|---|
-| Commit SHA | `PENDING_SHA` |
+| Commit SHA | `42dafef493842f8d724a84a979f018da1e5feaf1` |
 | Branch | `main` |
 | Parent | `f7fca9f` |
 
