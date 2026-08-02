@@ -15,20 +15,25 @@
 //   event:        OPEN or CLOSE
 //
 // THE REVERSAL
-//   A demo BUY becomes a SELL here, and the stop and target are reflected through the
-//   entry price so the mirrored trade has the same distances:
+//   A demo BUY becomes a SELL here. The ENTRY is mirrored - one spread away, which is
+//   inherent because you cannot buy and sell at one price. The EXIT is not mirrored at
+//   all: this side always aims for +$1.00 and risks -$2.00 in account currency, computed
+//   from its own entry, and the demo's own stop and target are ignored.
 //
-//       demo BUY  entry E, SL E-40, TP E+20
-//       mirror    SELL  E, SL E+40, TP E-20
+//       demo BUY  entry E,     SL E-20, TP E+40      ($1 risk, $2 reward)
+//       mirror    SELL E-spread, TP -$1.00, SL -$2.00 from ITS entry
 //
-// WHAT THIS COSTS - measured, not guessed
-//   The two accounts are exact mirrors, so exactly one of them wins on every trade:
-//       price hits the demo target -> demo +$1.00, here -$2.00   = -$1.00 for the pair
-//       price hits the demo stop   -> demo -$2.00, here +$1.00   = -$1.00 for the pair
-//   There is no third outcome. The pair loses $1.00 every time, because the winning
-//   side collects $1 while the losing side pays $2. Each account independently loses
-//   one spread per trade; running two loses two spreads instead of one. Reversing the
-//   direction does not offset the loss, it doubles it.
+// WHAT THIS COSTS - and what it gives up
+//   An earlier version put both accounts' barriers on the SAME two prices with their
+//   roles swapped, so the two closed on the same tick and every demo loss was an equal
+//   live win. That version cost exactly one spread per pair, always, which is the floor.
+//
+//   This version does not do that, by explicit user instruction: fixed dollar exits on
+//   the live side matter more than simultaneous closing. The consequence is that the two
+//   sides close at different prices and different times, so they no longer offset and
+//   the combined result becomes path-dependent rather than a fixed number. Do not read
+//   the two accounts as a hedge any more - they are two separate trades that happen to
+//   start at the same moment in opposite directions.
 //
 //   THIS ACCOUNT IS REAL MONEY. At the observed trade rate a $42.70 balance funds
 //   roughly eleven days. That was accepted deliberately.
@@ -53,6 +58,8 @@ input double InpMaxLots        = 0.05;        // hard ceiling
 input double InpMinEquity      = 5.0;         // stop trading below this
 input int    InpMagic          = 778001;
 input int    InpMaxSignalAge   = 120;         // seconds; older signals are ignored
+input double InpTargetUSD      = 1.00;        // exit +$1 exactly, in account currency
+input double InpStopUSD        = 2.00;        // exit -$2 exactly, in account currency
 input int    InpPendingMaxMin  = 180;         // orphan backstop only; 0 disables
 input string InpSignalFile     = "kl_mirror_signals.csv";
 input int    InpPollMs         = 1000;
@@ -213,23 +220,70 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
    double entry = src_is_buy ? price - spread : price + spread;
    entry = NormalizeDouble(entry, dg);
 
-   // THE BARRIERS ARE THE SAME PRICES, WITH THEIR ROLES SWAPPED.
+   // THE EXIT IS A FIXED AMOUNT OF MONEY, NOT A COPY OF THE DEMO'S BARRIERS.
    //
-   //     the demo's STOP price  becomes  this side's TARGET
-   //     the demo's TARGET price becomes this side's STOP
+   // The demo's sl and tp are deliberately IGNORED here. This side always exits at
+   // +InpTargetUSD or -InpStopUSD in account currency, measured from its own entry.
    //
-   // So both accounts close at the same instant on the same tick, one winning exactly
-   // where the other loses. That is what makes it a hedge.
+   // The distance is computed from the symbol's contract terms rather than hard-coded
+   // in points, so the money stays exact if the volume ever changes:
    //
-   // The earlier version copied the DISTANCES instead and measured them from the
-   // mirror's own entry. Because the mirror enters one spread away, its barriers landed
-   // one spread off the demo's - the demo stop sat at 63,067.87 while the mirror target
-   // sat at 63,057.87 - so the two sides did not close together and the pair lost a full
-   // $1.00 instead of the spread. Matching the prices costs exactly one spread per pair
-   // and nothing more, which is the best a hedge can do: you cannot buy and sell at the
-   // same price at the same moment.
-   double m_tp = NormalizeDouble(sl, dg);           // demo's stop  -> our target
-   double m_sl = NormalizeDouble(tp, dg);           // demo's target -> our stop
+   //     money per 1.0 of price movement = (tick value / tick size) * volume
+   //     distance                        = dollars wanted / that
+   //
+   // WHAT THIS GIVES UP, said plainly. The previous version put both accounts' barriers
+   // on the same two prices, so they closed on the same tick and every demo loss was an
+   // equal live win - the pair cost exactly one spread, always. This does not do that.
+   // The two sides now close at different prices and different times, so the results no
+   // longer offset. That is a deliberate choice by the user: the live exit amounts are
+   // what matters, and the demo is free to finish whenever it finishes.
+   double tick_val = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_VALUE);
+   double tick_sz  = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tick_val <= 0.0 || tick_sz <= 0.0)
+     {
+      PrintFormat("KLMirror: bad contract terms (tick value %.5f, tick size %.5f) - skipping %I64d",
+                  tick_val, tick_sz, src_ticket);
+      return;
+     }
+   double per_unit = (tick_val / tick_sz) * vol;    // account currency per 1.0 of price
+   double tp_dist  = InpTargetUSD / per_unit;
+   double sl_dist  = InpStopUSD   / per_unit;
+
+   // SANITY GUARD ON THE CONVERSION.
+   // Converting dollars to a distance depends on the broker's contract terms, and a
+   // wrong tick value would silently produce something absurd - a 400 point stop where
+   // the demo used 20. Measured on this account the conversion gives $1 = 20 points and
+   // $2 = 40 points, the same magnitudes the demo runs, so anything far outside the
+   // demo's own distances means the contract terms are not what is assumed. Refuse
+   // rather than place it.
+   double demo_risk   = MathAbs(price - sl);
+   double demo_reward = MathAbs(tp - price);
+   double demo_big    = MathMax(demo_risk, demo_reward);
+   double demo_small  = MathMin(demo_risk, demo_reward);
+   if(demo_big > 0.0 && demo_small > 0.0)
+      if(MathMax(tp_dist, sl_dist) > 4.0 * demo_big
+      || MathMin(tp_dist, sl_dist) < 0.25 * demo_small)
+        {
+         PrintFormat("KLMirror: REFUSING %I64d - dollar conversion gives target %.1f / stop %.1f points "
+                     "against demo %.1f / %.1f. Check tick value (%.5f) and tick size (%.5f).",
+                     src_ticket, tp_dist, sl_dist, demo_reward, demo_risk, tick_val, tick_sz);
+         return;
+        }
+
+   double m_sl, m_tp;
+   if(src_is_buy)                                   // mirror SELLS: profit is downward
+     { m_tp = entry - tp_dist;  m_sl = entry + sl_dist; }
+   else                                             // mirror BUYS: profit is upward
+     { m_tp = entry + tp_dist;  m_sl = entry - sl_dist; }
+   m_tp = NormalizeDouble(m_tp, dg);
+   m_sl = NormalizeDouble(m_sl, dg);
+
+   // Report what the rounding to whole ticks actually bought us, so a symbol whose tick
+   // is too coarse to land on $1.00 exactly is visible in the log rather than assumed.
+   PrintFormat("KLMirror: %.2f lots -> $%.4f per price unit; target %.2f pts = $%.4f, stop %.2f pts = $%.4f",
+               vol, per_unit,
+               MathAbs(m_tp - entry), MathAbs(m_tp - entry) * per_unit,
+               MathAbs(m_sl - entry), MathAbs(m_sl - entry) * per_unit);
 
    string comment = StringFormat("KLmir#%I64d", src_ticket);
    double bid = SymbolInfoDouble(InpSymbol, SYMBOL_BID);

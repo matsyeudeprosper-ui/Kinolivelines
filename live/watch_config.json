@@ -4,14 +4,14 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63027.87,
+      "price": 63208.85,
       "dir": "above",
-      "note": "Spike high. Our SELL_LIMIT fades the first retest. If accepted/held above on H1, avoid short continuation per Rule 9 and consider cancelling the fade."
+      "note": "Spike high (M5/4h). Our SELL_LIMIT fades the first retest. If accepted/held above on H1, avoid short continuation per Rule 9 and consider cancelling the fade."
     },
     {
       "price": 62917.02,
       "dir": "below",
-      "note": "H1 resistance reclaimed below. If accepted back under, the 63,028 fade premise weakens; reassess or cancel pending."
+      "note": "H1 resistance reclaimed below. If accepted back under, the 63,208 fade premise weakens; reassess or cancel pending."
     },
     {
       "price": 62819.96,

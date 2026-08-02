@@ -1166,3 +1166,24 @@
 [2026-08-01 20:52:10]        -> state changed
 [2026-08-01 20:52:10] pending #3033049649 gone - our own cancel, not waking
 [2026-08-01 20:52:10] level 62917.02 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 21:00:16] EVENT  LEVEL BROKEN below 62917.02 (reached 62910.70, now 62919.99). Note: H1 resistance reclaimed below. If accepted back under, the 63,028 fade premise weakens; reassess or cancel pending.
+[2026-08-01 21:00:32]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62923.26 ask 62933.26
+[2026-08-01 21:00:32]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-01 21:00:32]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63027.87, 'sl': 63047.87, 'tp': 62987.87, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 21:00:32]        retcode 10009  ok  ->  OK
+[2026-08-01 21:00:32]        resting orders now: 1
+[2026-08-01 21:00:32]        -> state changed
+[2026-08-01 21:01:02] pending #3033055912 now resting
+[2026-08-01 21:03:33] EVENT  PENDING #3033055912 @ 63027.87 is now 1.7x ATR(M15) from price 62896.04 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 21:04:30]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62898.82 ask 62908.82
+[2026-08-01 21:04:30]        sending: {'action': 8, 'order': 3033055912}
+[2026-08-01 21:04:30]        retcode 10009  ok  ->  OK
+[2026-08-01 21:04:30]        resting orders now: 0
+[2026-08-01 21:04:30]        -> state changed
+[2026-08-01 21:05:00] pending #3033055912 gone - our own cancel, not waking
+[2026-08-01 21:07:00] EVENT  LEVEL BROKEN above 63027.87 (reached 63208.85, now 63201.48). Note: Spike high. Our SELL_LIMIT fades the first retest. If accepted/held above on H1, avoid short continuation per Rule 9 and consider cancelling the fade.
+[2026-08-01 21:07:28]        place_pending: FAILED. d through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 21:07:28]        REJECTED: SELL_LIMIT must rest ABOVE bid 63264.86, but you sent 63208.85. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 21:07:28]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 21:07:28]        -> state changed
+[2026-08-01 21:07:58] level 63208.85 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
