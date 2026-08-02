@@ -60,6 +60,7 @@ input int    InpMagic          = 778001;
 input int    InpMaxSignalAge   = 120;         // seconds; older signals are ignored
 input double InpTargetUSD      = 1.00;        // exit +$1 exactly, in account currency
 input double InpStopUSD        = 2.00;        // exit -$2 exactly, in account currency
+input int    InpMaxConcurrent  = 3;           // mirrors open at once; was effectively 1
 input int    InpPendingMaxMin  = 180;         // orphan backstop only; 0 disables
 input string InpSignalFile     = "kl_mirror_signals.csv";
 input int    InpPollMs         = 1000;
@@ -193,9 +194,24 @@ void OnTimer()
 void MirrorOpen(long src_ticket, string side, double vol, double price,
                 double sl, double tp)
   {
-   if(HasOpenMirror())
+   // ONE-AT-A-TIME NO LONGER WORKS, because a filled mirror now outlives its source.
+   //
+   // The demo runs one position at a time, so a single mirror slot used to be exactly
+   // right - the mirror was closed alongside the demo and the slot freed immediately.
+   // Now that a filled mirror runs to its own barriers it can still be open when the NEXT
+   // demo trade appears, and a hard limit of one would silently skip that pair. Skipping
+   // is the worst outcome available: the demo takes the trade unhedged.
+   //
+   // So a small cap instead of one. Overlap should be brief - the mirror's barriers are
+   // 20 and 40 points, minutes away at normal volatility - and InpMinEquity plus
+   // InpMaxLots still bound the total risk. Anything beyond the cap means mirrors are
+   // NOT resolving and something is wrong, so it is worth refusing loudly.
+   int held = CountOpenMirrors();
+   if(held >= InpMaxConcurrent)
      {
-      PrintFormat("KLMirror: already holding a mirror, skipping ticket %I64d", src_ticket);
+      PrintFormat("KLMirror: %d mirrors already open (cap %d), SKIPPING ticket %I64d - "
+                  "this demo trade will be unhedged. Mirrors are not resolving.",
+                  held, InpMaxConcurrent, src_ticket);
       return;
      }
    if(vol > InpMaxLots)
@@ -340,14 +356,38 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
   }
 
 //+------------------------------------------------------------------+
-//| Close the mirror opened for a given source ticket                |
+//| Source closed: cancel an UNFILLED order, but LEAVE a filled one    |
 //+------------------------------------------------------------------+
+//
+// A FILLED MIRROR IS NO LONGER CLOSED WHEN THE SOURCE CLOSES.
+//
+// It used to be, and that quietly destroyed the whole point of the pair. The live side is
+// given its own fixed dollar barriers - $1 target, $2 stop - and then was shut at market
+// the instant the demo closed, so it almost never reached either. Measured over the night
+// of 2026-08-01: four of eight live trades exited this way, averaging -$0.39 each, none
+// of them collecting the $1 they existed to collect.
+//
+// 02:38 is the clearest case. The demo SELL was stopped out by a spike UP:
+//
+//     02:38:35  demo SELL stopped out at 63,458.27   -$1.00   (spike up)
+//     02:38:36  live BUY  closed by EA at 63,442.05  -$0.35   (spike already gone)
+//
+// The live BUY should have profited from exactly that spike. One second later it had
+// reversed 16 points and the EA sold into it, so BOTH sides lost. The very move that
+// triggers the demo's stop is the move the mirror is supposed to earn from, and closing
+// on the same tick gives it away every time.
+//
+// So a filled mirror now lives its own life and resolves at its own barriers. That is
+// what unlinked dollar exits actually means, and it is what the user asked for.
+//
+// An UNFILLED order is different and is still cancelled: it has no position to protect,
+// and leaving it resting would hold the single mirror slot forever and block every later
+// signal.
+//
 void MirrorClose(long src_ticket)
   {
    string want = StringFormat("KLmir#%I64d", src_ticket);
 
-   // A limit that never filled must be cancelled when the source closes, or it sits in
-   // the book forever holding the single mirror slot and blocking every later signal.
    for(int i = OrdersTotal()-1; i >= 0; i--)
      {
       ulong t = OrderGetTicket(i);
@@ -366,13 +406,12 @@ void MirrorClose(long src_ticket)
       if(t == 0) continue;
       if(PositionGetInteger(POSITION_MAGIC) != InpMagic) continue;
       if(PositionGetString(POSITION_COMMENT) != want)    continue;
-      bool ok = trade.PositionClose(t);
-      PrintFormat("KLMirror %s mirror of src=%I64d (ticket %I64u)",
-                  ok ? "CLOSED" : "FAILED TO CLOSE", src_ticket, t);
+      PrintFormat("KLMirror: src=%I64d closed, LEAVING mirror #%I64u open to run to its own "
+                  "SL %.2f / TP %.2f. Currently %+.2f.",
+                  src_ticket, t, PositionGetDouble(POSITION_SL),
+                  PositionGetDouble(POSITION_TP), PositionGetDouble(POSITION_PROFIT));
       return;
      }
-   // Not an error: the mirror may already have hit its own stop or target, which is
-   // the normal case since the two sides resolve at opposite barriers.
    PrintFormat("KLMirror: no open mirror for src=%I64d (already resolved)", src_ticket);
   }
 
@@ -519,26 +558,29 @@ void ResyncFilledStops()
   }
 
 //+------------------------------------------------------------------+
-//| A resting limit counts as "holding the slot" just as a position   |
-//| does - rule 1 on the demo side is one at a time, and the mirror   |
-//| has to match that or it will stack orders.                        |
+//| How many mirrors are live right now - positions AND resting orders |
 //+------------------------------------------------------------------+
-bool HasOpenMirror()
+//
+// A resting order counts. It is a commitment that can become a position at any tick, so
+// ignoring it would let the cap be exceeded the moment the book came back.
+//
+int CountOpenMirrors()
   {
+   int n = 0;
    for(int i = PositionsTotal()-1; i >= 0; i--)
      {
       ulong t = PositionGetTicket(i);
       if(t == 0) continue;
       if(PositionGetInteger(POSITION_MAGIC) == InpMagic)
-         return(true);
+         n++;
      }
    for(int i = OrdersTotal()-1; i >= 0; i--)
      {
       ulong t = OrderGetTicket(i);
       if(t == 0) continue;
       if(OrderGetInteger(ORDER_MAGIC) == InpMagic)
-         return(true);
+         n++;
      }
-   return(false);
+   return(n);
   }
 //+------------------------------------------------------------------+
