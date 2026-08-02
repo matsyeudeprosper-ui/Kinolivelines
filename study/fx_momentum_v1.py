@@ -226,12 +226,27 @@ def simulate_leg(sym, h1, t_entry, t_exit, direction, atr, spread_mult=1.0):
     BUY  : enter ask (bid+spread), exit bid,          stop on bar low
     SELL : enter bid,              exit ask (+spread), stop on bar high + spread
     Stop gaps fill at the WORSE of the stop price or the first tradeable price.
+
+    TASK 003A CORRECTIONS 1 and 2
+    -----------------------------
+    (1) An unstopped trade now closes at the OPEN of the next rebalance H1 bar, and
+        that bar is NOT scanned for the old trade's stop. Previously the holding
+        window ran `t_utc <= t_exit` and exited at that bar's CLOSE, which both
+        monitored the old position inside the bar where the new one is opened and
+        credited it an extra hour of drift it could never have captured.
+    (2) The stop is now checked during the ENTRY bar itself. Previously the scan
+        started at `seg.iloc[1:]`, so a position whose stop was breached in its own
+        first hour survived to the next bar - a free hour of immunity.
+
+    Holding window is therefore [t_entry, t_exit) for stop monitoring, with the bar
+    at t_exit used only to supply the exit open.
     """
-    seg = h1[(h1["t_utc"] >= t_entry) & (h1["t_utc"] <= t_exit)]
-    if len(seg) < 2:
+    hold = h1[(h1["t_utc"] >= t_entry) & (h1["t_utc"] < t_exit)]
+    exit_bar = h1[h1["t_utc"] == t_exit]
+    if not len(hold) or not len(exit_bar):
         return None
-    point = seg["point"].iloc[0] if "point" in seg else None
-    e = seg.iloc[0]
+    point = hold["point"].iloc[0]
+    e = hold.iloc[0]
     sp_e = e["spread"] * point * spread_mult
     if direction > 0:
         entry = e["open"] + sp_e
@@ -240,31 +255,40 @@ def simulate_leg(sym, h1, t_entry, t_exit, direction, atr, spread_mult=1.0):
         entry = e["open"]
         stop = entry + STOP_ATR_MULT * atr
 
-    body = seg.iloc[1:]
     hit, exit_px, t_out, reason = False, None, None, "rebalance"
-    for _, r in body.iterrows():
+    entry_bar_stop = False
+    for n_, (_, r) in enumerate(hold.iterrows()):        # includes the entry bar
         sp = r["spread"] * point * spread_mult
         if direction > 0:
-            if r["low"] <= stop:                       # bid touched the stop
-                exit_px = min(stop, r["open"])          # gap fills at the worse price
+            if r["low"] <= stop:                        # bid touched the stop
+                # on the entry bar the position exists from the open, so a gap
+                # cannot be worse than the entry itself
+                ref = entry if n_ == 0 else r["open"]
+                exit_px = min(stop, ref)
                 hit, t_out, reason = True, r["t_utc"], "stop"
+                entry_bar_stop = (n_ == 0)
                 break
         else:
-            if r["high"] + sp >= stop:                 # ask touched the stop
-                exit_px = max(stop, r["open"] + sp)
+            if r["high"] + sp >= stop:                  # ask touched the stop
+                ref = entry if n_ == 0 else r["open"] + sp
+                exit_px = max(stop, ref)
                 hit, t_out, reason = True, r["t_utc"], "stop"
+                entry_bar_stop = (n_ == 0)
                 break
     if not hit:
-        x = seg.iloc[-1]
+        x = exit_bar.iloc[0]
         sp_x = x["spread"] * point * spread_mult
-        exit_px = x["close"] if direction > 0 else x["close"] + sp_x
+        exit_px = x["open"] if direction > 0 else x["open"] + sp_x
         t_out = x["t_utc"]
 
     gross_quote = (exit_px - entry) * direction * CONTRACT * LOTS
     days = max((t_out - t_entry).total_seconds() / 86400.0, 0.0)
     return {"entry_px": entry, "exit_px": exit_px, "stop_px": stop, "t_out": t_out,
             "exit_reason": reason, "gross_quote": gross_quote, "days_held": days,
-            "notional_quote": abs(entry) * CONTRACT * LOTS}
+            "notional_quote": abs(entry) * CONTRACT * LOTS,
+            "entry_bar_stop": entry_bar_stop,
+            "exit_bar_open_bid": float(exit_bar.iloc[0]["open"]),
+            "exit_bar_spread_px": float(exit_bar.iloc[0]["spread"] * point * spread_mult)}
 
 
 # ============================================================ run
@@ -453,6 +477,19 @@ def quote_to_usd(week_i, ccy):
     return float(np.exp(row[f"cv_{ccy}"]))
 
 
+def graph_at(ts):
+    """TASK 003A CORRECTION 4.
+
+    Index of the newest completed weekly currency graph at or before `ts`.
+    Previously risk, exposure AND realised P&L were all converted with the SIGNAL
+    week's graph. For a trade held a month that meant the exit was converted at a
+    rate up to five weeks stale, so P&L carried an FX error that had nothing to do
+    with the trade. Now risk/exposure use the graph at the ENTRY timestamp and
+    realised P&L uses the graph at the EXIT timestamp.
+    """
+    return latest_week_before(ts)
+
+
 def precompute(entry_offset_h=0, spread_mult=1.0, formation=FORMATION_WEEKS):
     """Outcome of EVERY (month, pair, direction) so controls reuse one costed engine."""
     out = []
@@ -474,16 +511,28 @@ def precompute(entry_offset_h=0, spread_mult=1.0, formation=FORMATION_WEEKS):
                 leg = simulate_leg(p, H1[p], t_in, t_out, d_, atr, spread_mult)
                 if leg is None:
                     continue
-                q2u = quote_to_usd(wi, p[3:6])
+                # CORRECTION 4: entry-dated graph for risk/exposure, exit-dated for P&L
+                gi = graph_at(t_in)
+                go = graph_at(leg["t_out"])
+                if gi is None or go is None:
+                    continue
+                q2u_in = quote_to_usd(gi, p[3:6])
+                q2u_out = quote_to_usd(go, p[3:6])
                 out.append({
                     "k": k, "month": sched.loc[k, "month"], "t_in": t_in, "t_out": leg["t_out"],
                     "pair": p, "dir": d_, "atr": atr,
-                    "gross_usd": leg["gross_quote"] * q2u,
-                    "notional_usd": leg["notional_quote"] * q2u,
-                    "stop_risk_usd": STOP_ATR_MULT * atr * CONTRACT * LOTS * q2u,
+                    "gross_usd": leg["gross_quote"] * q2u_out,
+                    "notional_usd": leg["notional_quote"] * q2u_in,
+                    "stop_risk_usd": STOP_ATR_MULT * atr * CONTRACT * LOTS * q2u_in,
                     "days_held": leg["days_held"], "exit_reason": leg["exit_reason"],
                     "entry_px": leg["entry_px"], "exit_px": leg["exit_px"],
-                    "stop_px": leg["stop_px"],
+                    "stop_px": leg["stop_px"], "entry_bar_stop": leg["entry_bar_stop"],
+                    "exit_bar_open_bid": leg["exit_bar_open_bid"],
+                    "exit_bar_spread_px": leg["exit_bar_spread_px"],
+                    "graph_week_entry": wk_list[gi], "graph_week_exit": wk_list[go],
+                    "graph_end_entry": pd.to_datetime(cv_canon.loc[wk_list[gi], "week_end"]),
+                    "graph_end_exit": pd.to_datetime(cv_canon.loc[wk_list[go], "week_end"]),
+                    "q2u_in": q2u_in, "q2u_out": q2u_out,
                     "is_signal": (p == best and d_ == bdir),
                     "signal_pair": best, "signal_dir": bdir, "signal_score": bval,
                 })
@@ -493,6 +542,63 @@ def precompute(entry_offset_h=0, spread_mult=1.0, formation=FORMATION_WEEKS):
 say("precomputing costed outcomes for every (month, pair, direction)...")
 PRE = precompute()
 say(f"  {len(PRE)} outcome rows over {PRE['k'].nunique()} rebalances")
+say("")
+
+# ============================================================ 5b. assertions
+say("=" * 100)
+say("DETERMINISTIC ASSERTIONS (task 003A)")
+say("=" * 100)
+
+# --- A1: an unstopped exit equals the OPEN of the next rebalance bar
+_un = PRE[PRE["exit_reason"] == "rebalance"]
+assert len(_un), "no unstopped trades to verify"
+_long = _un[_un["dir"] == 1]
+_short = _un[_un["dir"] == -1]
+assert np.allclose(_long["exit_px"], _long["exit_bar_open_bid"], atol=1e-12), \
+    "A1 long: unstopped exit is not the next rebalance bar open (bid)"
+assert np.allclose(_short["exit_px"],
+                   _short["exit_bar_open_bid"] + _short["exit_bar_spread_px"],
+                   atol=1e-12), \
+    "A1 short: unstopped exit is not the next rebalance bar open (ask)"
+say(f"  [OK] A1 unstopped exit == next rebalance bar OPEN "
+    f"({len(_long)} long at bid, {len(_short)} short at ask)")
+
+# --- A2: a stop inside the entry bar is detected (synthetic, data-independent)
+_pt = 1e-5
+_fake = pd.DataFrame({
+    "t_utc": pd.to_datetime(["2022-01-03 20:00", "2022-01-03 21:00",
+                             "2022-02-07 20:00"], utc=True),
+    "open": [1.10000, 1.09000, 1.08000],
+    "high": [1.10050, 1.09050, 1.08050],
+    "low":  [1.09000, 1.08500, 1.07900],      # entry bar low breaches a 2-ATR stop
+    "close": [1.09500, 1.08800, 1.08000],
+    "spread": [10, 10, 10], "point": [_pt] * 3})
+_r = simulate_leg("TEST", _fake, _fake["t_utc"].iloc[0], _fake["t_utc"].iloc[-1],
+                  1, 0.00200)
+assert _r["exit_reason"] == "stop" and _r["entry_bar_stop"] is True \
+    and _r["t_out"] == _fake["t_utc"].iloc[0], \
+    f"A2 entry-bar stop not detected: {_r['exit_reason']}, {_r['entry_bar_stop']}"
+_n_ebs = int(PRE["entry_bar_stop"].sum())
+say(f"  [OK] A2 entry-bar stop detected on a synthetic breach; "
+    f"{_n_ebs} entry-bar stops present in the real precompute")
+
+# --- A3: conversion timestamps match entry and exit timestamps
+_bad_in = PRE[PRE["graph_end_entry"] >= pd.to_datetime(PRE["t_in"]).dt.tz_localize(None)]
+_bad_out = PRE[PRE["graph_end_exit"] >= pd.to_datetime(PRE["t_out"]).dt.tz_localize(None)]
+assert len(_bad_in) == 0 and len(_bad_out) == 0, \
+    "A3 a conversion graph is dated at or after the timestamp it converts"
+_diff = int((PRE["graph_week_entry"] != PRE["graph_week_exit"]).sum())
+say(f"  [OK] A3 entry graph precedes entry and exit graph precedes exit; "
+    f"{_diff}/{len(PRE)} rows use DIFFERENT graphs for entry vs exit")
+
+# --- A5: consecutive positions never overlap
+_s = PRE[PRE["is_signal"]].sort_values("k")
+_ov = 0
+for _a, _b in zip(_s.itertuples(), _s.iloc[1:].itertuples()):
+    if _b.t_in < _a.t_out:
+        _ov += 1
+assert _ov == 0, f"A5 {_ov} consecutive signal positions overlap"
+say(f"  [OK] A5 consecutive positions never overlap ({len(_s)} signal legs checked)")
 say("")
 
 
@@ -540,28 +646,45 @@ def choose_reverse(k, sub):
     return None if not len(r) else (r.iloc[0]["pair"], -int(r.iloc[0]["dir"]))
 
 
-def stats(tr, eq_end):
+def stats(tr, eq_end, start_eq=None):
+    """TASK 003A CORRECTION 5.
+
+    `start_eq` is the equity the period ACTUALLY began with. Previously every period
+    was measured against the global $979 opening balance, so a validation window that
+    started at $979 and a holdout window that started at $882 were both divided by
+    $979 - understating the holdout return and computing its drawdown against a peak
+    the account never had while that period was running.
+    """
+    base = START_EQUITY if start_eq is None else start_eq
     if not len(tr):
         return {"n": 0, "net": 0.0, "ret_pct": 0.0, "pf": np.nan, "maxdd_pct": np.nan,
-                "win_pct": np.nan, "top_trade_share": np.nan}
-    eq = pd.concat([pd.Series([START_EQUITY]), tr["equity_after"]], ignore_index=True)
+                "win_pct": np.nan, "top_trade_share": np.nan, "start_equity": base}
+    eq = pd.concat([pd.Series([base]), tr["equity_after"]], ignore_index=True)
     dd = (eq / eq.cummax() - 1.0).min() * 100.0
     wins = tr[tr["net_usd"] > 0]
     gross_win = wins["net_usd"].sum()
     gross_loss = -tr[tr["net_usd"] < 0]["net_usd"].sum()
     net = tr["net_usd"].sum()
     top = (tr["net_usd"].max() / net * 100.0) if net > 0 else np.nan
-    return {"n": len(tr), "net": net, "ret_pct": (eq_end / START_EQUITY - 1) * 100.0,
+    return {"n": len(tr), "net": net,
+            "ret_pct": (tr["equity_after"].iloc[-1] / base - 1) * 100.0,
             "pf": (gross_win / gross_loss) if gross_loss > 0 else np.inf,
             "maxdd_pct": dd, "win_pct": len(wins) / len(tr) * 100.0,
-            "top_trade_share": top}
+            "top_trade_share": top, "start_equity": base}
 
 
 def window(tr, a, b):
+    """Slice a period AND return the equity it actually started with (correction 5)."""
     if not len(tr):
-        return tr
+        return tr, START_EQUITY
     t = pd.to_datetime(tr["t_in"]).dt.tz_localize(None)
-    return tr[(t >= a) & (t <= b)]
+    mask = (t >= a) & (t <= b)
+    sl = tr[mask]
+    if not len(sl):
+        return sl, START_EQUITY
+    prior = tr[t < a]
+    start_eq = float(prior["equity_after"].iloc[-1]) if len(prior) else START_EQUITY
+    return sl, start_eq
 
 
 # ============================================================ 6. baseline
@@ -606,27 +729,56 @@ say("PERIOD SPLITS (canonical executable panel)")
 PER = {}
 for nm, a, b in [("validation", VAL_START, VAL_END), ("holdout", HOLD_START, HOLD_END)]:
     for fin in ("spread_only", "fin_3.0pct"):
-        t = window(BASE[fin]["trades"], a, b)
-        eq = START_EQUITY + (t["net_usd"].sum() if len(t) else 0.0)
-        PER[(nm, fin)] = stats(t, eq)
+        t, seq = window(BASE[fin]["trades"], a, b)
+        eq = seq + (t["net_usd"].sum() if len(t) else 0.0)
+        PER[(nm, fin)] = stats(t, eq, start_eq=seq)
         s = PER[(nm, fin)]
         say(f"  {nm:11s} {fin:12s} trades {s['n']:3d}  net ${s['net']:8.2f}  "
-            f"ret {s['ret_pct']:7.2f}%  PF {s['pf']:5.2f}  maxDD {s['maxdd_pct']:6.2f}%")
+            f"ret {s['ret_pct']:7.2f}%  PF {s['pf']:5.2f}  maxDD {s['maxdd_pct']:6.2f}%  "
+            f"(period opened at ${s['start_equity']:.2f})")
 say("  (holdout results are reported and NOT used to change anything)")
 say("")
 
 
 # ============================================================ 7. signal-only tests
 def signal_only(cv, wk_list_, closes, formation, a=None, b=None):
-    """Cost-free directional test: sum of direction x log return, monthly holding."""
+    """TASK 003A CORRECTION 3 - a true MONTHLY test.
+
+    Cost-free directional test: exactly ONE signal and ONE outcome per scheduled
+    calendar month.
+
+    The previous version stepped week by week and held one week, so it produced ~4x
+    too many observations, each measuring a one-week horizon while the strategy it
+    was meant to represent holds for a month. Those counts (101, 124, 140 "months")
+    were weeks. Overlapping weekly draws also make the observations serially
+    dependent, so any comparison against the monthly strategy was apples to oranges.
+
+    Now: for each calendar month, the signal is taken from the last completed week
+    before that month's first Monday, and the outcome runs to the corresponding week
+    of the NEXT month - one observation per month, non-overlapping.
+    """
     ends = pd.to_datetime(cv["week_end"])
+    # anchor week for each calendar month = last completed week before its first Monday
+    anchors = {}
+    for m in pd.period_range(ends.min(), ends.max(), freq="M"):
+        fm = pd.Timestamp(first_monday(m.year, m.month))
+        ok = ends[ends < fm]
+        if not len(ok):
+            continue
+        i = wk_list_.index(ok.index[-1])
+        if i >= formation:
+            anchors[str(m)] = i
+    keys = sorted(anchors)
     recs = []
-    for i in range(formation, len(wk_list_) - 1):
+    for n_ in range(len(keys) - 1):
+        i, j = anchors[keys[n_]], anchors[keys[n_ + 1]]
+        if j <= i:
+            continue
         sc = pair_scores(cv, wk_list_, i, formation)
         if sc is None:
             continue
         p, d_, v = pick(sc)
-        w0, w1 = wk_list_[i], wk_list_[i + 1]
+        w0, w1 = wk_list_[i], wk_list_[j]
         try:
             c0, c1 = closes.loc[w0, p], closes.loc[w1, p]
         except KeyError:
@@ -636,8 +788,8 @@ def signal_only(cv, wk_list_, closes, formation, a=None, b=None):
         t = ends.loc[w1]
         if a is not None and (t < a or t > b):
             continue
-        recs.append({"week": w1, "t": t, "pair": p, "dir": d_, "score": v,
-                     "logret": d_ * np.log(c1 / c0)})
+        recs.append({"month": keys[n_], "week": w1, "t": t, "pair": p, "dir": d_,
+                     "score": v, "logret": d_ * np.log(c1 / c0)})
     return pd.DataFrame(recs)
 
 
@@ -658,6 +810,20 @@ for panel, cv, wl, cl in PANELS:
                         "sign": (np.sign(tot) if np.isfinite(tot) else np.nan),
                         "is_frozen_baseline": f == FORMATION_WEEKS})
 SIGDF = pd.DataFrame(SIG)
+
+# --- A4: signal-only output has at most ONE observation per calendar month
+for _pn, _cv, _wl, _cl in PANELS:
+    for _f in DIAG_FORMATIONS:
+        _r = signal_only(_cv, _wl, _cl, _f)
+        if not len(_r):
+            continue
+        _dup = _r["month"].duplicated().sum()
+        assert _dup == 0, f"A4 {_pn} f={_f}: {_dup} duplicate calendar months"
+        assert _r["month"].is_monotonic_increasing, f"A4 {_pn} f={_f}: months unordered"
+say("  [OK] A4 signal-only output has at most one observation per calendar month "
+    "(checked on every panel x formation)")
+say("")
+
 say(SIGDF[SIGDF["formation_weeks"] == FORMATION_WEEKS][
     ["panel", "period", "n_months", "sum_logret", "sign"]].to_string(index=False))
 say("")
@@ -667,11 +833,11 @@ say(SIGDF.pivot_table(index=["panel", "period"], columns="formation_weeks",
 say("")
 
 ov = signal_only(cv_canon, wk_list, wc, FORMATION_WEEKS).merge(
-    signal_only(cv_d1, list(cv_d1.index), wc_d1, FORMATION_WEEKS), on="week",
+    signal_only(cv_d1, list(cv_d1.index), wc_d1, FORMATION_WEEKS), on="month",
     suffixes=("_canon", "_d1"))
 agree_pair = float((ov["pair_canon"] == ov["pair_d1"]).mean() * 100) if len(ov) else np.nan
 agree_dir = float((ov["dir_canon"] == ov["dir_d1"]).mean() * 100) if len(ov) else np.nan
-say(f"  panel overlap {len(ov)} weeks: same pair {agree_pair:.1f}%, "
+say(f"  panel overlap {len(ov)} MONTHS: same pair {agree_pair:.1f}%, "
     f"same direction {agree_dir:.1f}%")
 say("")
 
@@ -808,19 +974,28 @@ COND = [
     ("9  at least 40 completed trades", allc["n"] >= 40, f"{allc['n']}"),
     ("10 max drawdown <= 20%", abs(allc["maxdd_pct"]) <= 20.0, f"{allc['maxdd_pct']:.2f}%"),
     ("11 profit factor > 1.10", allc["pf"] > 1.10, f"{allc['pf']:.3f}"),
+    # CORRECTION 6: with net profit negative there is no profit to concentrate, so
+    # this condition cannot be evaluated. It is marked NOT APPLICABLE and is NOT
+    # counted as a pass - previously it scored a free PASS in a losing run.
     ("12 no trade > 25% of net profit",
-     bool((not np.isfinite(allc["top_trade_share"])) or allc["top_trade_share"] <= 25.0),
-     f"{allc['top_trade_share']:.1f}%" if np.isfinite(allc["top_trade_share"]) else "n/a"),
+     None if allc["net"] <= 0 else bool(allc["top_trade_share"] <= 25.0),
+     "NOT APPLICABLE (net profit <= 0)" if allc["net"] <= 0
+     else f"{allc['top_trade_share']:.1f}%"),
     ("13 no margin call / account failure", BASE["spread_only"]["equity"] > 0,
      f"final equity ${BASE['spread_only']['equity']:.2f}"),
 ]
-n_pass = 0
+n_pass = n_na = 0
 for name, okc, val in COND:
-    say(f"  [{'PASS' if okc else 'FAIL'}] {name:46s} {val}")
-    n_pass += bool(okc)
-VERDICT = "PASS CANDIDATE" if n_pass == len(COND) else "FAILED"
+    tag = "N/A " if okc is None else ("PASS" if okc else "FAIL")
+    say(f"  [{tag}] {name:46s} {val}")
+    if okc is None:
+        n_na += 1
+    else:
+        n_pass += bool(okc)
+VERDICT = "PASS CANDIDATE" if (n_pass == len(COND) and n_na == 0) else "FAILED"
 say("")
-say(f"  conditions passed: {n_pass}/{len(COND)}")
+say(f"  conditions passed: {n_pass}/{len(COND)}"
+    + (f"   ({n_na} not applicable, not counted as passes)" if n_na else ""))
 say(f"  >>> V1 VERDICT: {VERDICT}")
 if VERDICT == "FAILED":
     say("  Per the specification V1 is reported FAILED and is NOT optimised or repaired.")
