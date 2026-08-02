@@ -1,7 +1,7 @@
 ====================================================================================================
 TASK 005 - FX POLICY-RATE DIFFERENTIAL V2
 ====================================================================================================
-generated : 2026-08-02 17:54:38
+generated : 2026-08-02 18:20:34
 
 FROZEN RULES
   signal          : rate_differential = policy_rate(BASE) - policy_rate(QUOTE)
@@ -53,11 +53,17 @@ COST SCENARIOS
   fin_1.5pct             trades  47  net $  -78.94  ret   -8.06%  PF  0.74  maxDD -10.47%  win  34.0%
   fin_3.0pct             trades  47  net $ -107.96  ret  -11.03%  PF  0.65  maxDD -12.56%  win  34.0%
   swap_snapshot_2026     trades  47  net $  -49.93  ret   -5.10%   <- NON-HISTORICAL sensitivity, not evidence of cost
-  policy_credit_bench    trades  49  net $   -7.32  ret   -0.75%   <- NON-EXECUTABLE benchmark, cannot satisfy a condition
+  5B policy_credit_rec   trades  49  net $   -7.32  ret   -0.75%   <- RECURSIVELY GATED: credit changes equity, which
+                         changes which months pass the risk gate, so the trade set differs from baseline (49 vs 47)
 
   Exness does not pay the theoretical differential: task 004A found 0 of 19 pairs
   where the theoretically positive side receives positive carry. Scenario 1 is the
   principal test and assumes ZERO credit.
+
+  5A policy_credit_fixed trades  47  net $   19.87  ret    2.03%   <- FIXED baseline trade set, credit $69.80 added
+     A = fixed-baseline-trade credit counterfactual (this line)
+     B = recursively gated theoretical-credit account path (line above)
+     NEITHER may satisfy a hard pass condition.
 
 PERIOD SPLITS (canonical executable panel)
   validation  baseline_zero_credit   trades  22  net $  -30.39  ret   -3.10%  PF  0.79  maxDD  -8.12%  (opened $979.00)
@@ -69,16 +75,24 @@ PERIOD SPLITS (canonical executable panel)
   calendar period for other questions.
 
 SIGNAL-ONLY TESTS (no stop, no financing)
-  broker D1 loaded for 19/19 pairs; span 2018-07-03 .. 2026-08-03
-  D1 monthly schedule: 97 months (2018-08-06 .. 2026-08-03)
+  D1 retrieval (UTC)   : 2026-08-02 23:22:21
+  MT5 server clock     : 2026-08-02 23:22:18  (offset -0.0 h vs UTC -> server frame IS UTC)
+  D1 timestamp meaning : bar OPEN time on the UTC day boundary
+  incomplete/forming sessions excluded: 19 (1 per pair)
+     dropped session date: 2026-08-03 (still open at retrieval)
+  broker D1 usable for 19/19 pairs; span 2018-07-03 .. 2026-07-31
+  LAST FULLY COMPLETED D1 SESSION: 2026-07-31
+  D1 monthly schedule: 96 months (2018-08-06 .. 2026-07-06)
          panel      period  n_months  sum_logret  sign
      canonical development         0         NaN   NaN
      canonical  validation        28   -0.062423  -1.0
      canonical     holdout        30    0.055350   1.0
 long_D1_approx development        36    0.096925   1.0
 long_D1_approx  validation        29    0.008036   1.0
-long_D1_approx     holdout        31    0.054377   1.0
+long_D1_approx     holdout        30    0.039276   1.0
   [OK ] signal-only <= 1 observation per calendar month  both panels
+  [OK ] every D1 bar used was fully closed before retrieval  last completed session 2026-07-31, retrieval 2026-08-02 23:22Z, 19 forming bars excluded
+  [OK ] JPY unavailable across 2013-04-04..2016-09-20 (historical check only)  41 months all unavailable; interval ends before the 2018-07 D1 panel, so it does not bind in task 005
   overlap 58 months: same pair 100.0%, same direction 100.0%
   overlapping sum_logret: canonical -0.0071, long-D1 +0.0367
 
@@ -94,11 +108,20 @@ high     362    -0.000139   -0.050247  39.226519       3.707666
 ====================================================================================================
 CONTROLS
 ====================================================================================================
-  [OK ] fast control engine reproduces the costed engine  net $-49.93, 47 trades
+  [OK ] fast control engine reproduces the costed engine  net $-49.93, 47 trades, 11 risk skips
+  [OK ] two paths at different equity make different risk-skip decisions  $979 budget $14.69 takes a $12.00 risk; $700 budget $10.50 skips it
   [OK ] random controls use the same eligible monthly outcome set as baseline  58 months, 2172 eligible outcomes
 
-  1. random pair AND direction : baseline $-49.93 vs median $-36.90, p = 0.5525
-  2. random pair, policy dir   : baseline $-49.93 vs median $-28.63, p = 0.5979
+  1. random pair AND direction
+     net    : median $  -36.90   5th $ -172.33   95th $  135.38   baseline $-49.93
+     trades : median    51   min  39   max  58      (baseline 47)
+     risk skips : median    7   min   0   max  19   (baseline 11)
+     one-sided p = 0.5525
+  2. random pair, POLICY-IMPLIED direction
+     net    : median $  -28.63   5th $ -161.63   95th $  135.35   baseline $-49.93
+     trades : median    51   min  36   max  58      (baseline 47)
+     risk skips : median    7   min   0   max  22   (baseline 11)
+     one-sided p = 0.5979
   3. reverse                   : net $-137.88 vs baseline $-49.93
   4. delay_24h                : net $  -26.39  ret   -2.70%  trades 47
   5. delay_1week              : net $ -145.14  ret  -14.83%  trades 47
@@ -113,7 +136,7 @@ HARD PASS CONDITIONS
   [FAIL] 3  combined canonical > 0 under 3.0% financing       $-107.96
   [FAIL] 4  doubled-spread result > 0                         $-55.47
   [PASS] 5  long-D1 validation signal-only > 0                +0.0080
-  [PASS] 6  long-D1 holdout signal-only > 0                   +0.0544
+  [PASS] 6  long-D1 holdout signal-only > 0                   +0.0393
   [FAIL] 7  canonical and long-D1 overlap both positive       canon -0.0071, D1 +0.0367
   [FAIL] 8  baseline beats median random pair+direction       $-49.93 vs $-36.90
   [FAIL] 9  randomisation p <= 0.10                           p=0.5525
@@ -134,7 +157,7 @@ SKIPPED TRADES (baseline)
 reason
 risk_gt_1.5pct    11
 
-assertions passed: 13/13
+assertions passed: 16/16
 
 trades     -> C:\Projects\KinoliveLines\study\results\fx_policy_differential_v2_trades.csv
 monthly    -> C:\Projects\KinoliveLines\study\results\fx_policy_differential_v2_monthly.csv

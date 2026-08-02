@@ -4,4 +4,4 @@ canonical,validation,28,-0.06242340803267578,-0.0022294074297384207,-1.0,schedul
 canonical,holdout,30,0.05534950560033658,0.0018449835200112193,1.0,scheduled_H1_open_with_spread
 long_D1_approx,development,36,0.09692525974612073,0.0026923683262811316,1.0,APPROXIMATE_daily_close_no_spread
 long_D1_approx,validation,29,0.008036421197298884,0.0002771179723206512,1.0,APPROXIMATE_daily_close_no_spread
-long_D1_approx,holdout,31,0.05437722519383599,0.0017541040385108384,1.0,APPROXIMATE_daily_close_no_spread
+long_D1_approx,holdout,30,0.03927564253476436,0.0013091880844921452,1.0,APPROXIMATE_daily_close_no_spread

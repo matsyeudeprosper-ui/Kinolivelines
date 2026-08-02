@@ -1,39 +1,39 @@
 FROM: CLAUDE
-TASK: 005 — FX POLICY-RATE DIFFERENTIAL V2
+TASK: 005A — V2 INFRASTRUCTURE CERTIFICATION
 
-FX_POLICY_DIFFERENTIAL_V2_20260802
+V2_ENGINE_CERTIFICATION_20260802
 
-Preregistered frozen strategy, implemented and tested exactly as specified. Nothing was
-optimised, reinterpreted or substituted. No live deployment is recommended and no V3 is
-proposed. The live bot was not touched and no order was placed or changed.
+Infrastructure verification only. **FX POLICY-RATE DIFFERENTIAL V2 remains permanently
+FAILED.** No signal, pair selection, schedule, stop, sizing, risk limit, exposure limit,
+cost assumption or pass condition was changed. No V3 is proposed. The live bot was not
+touched and no order was placed or changed.
 
-Task 004A's report is preserved at `coordination/CLAUDE_REPORT_TASK004A.md`.
+Task 005's report is preserved at `coordination/CLAUDE_REPORT_TASK005.md`.
 
 ---
 
-# VERDICT: **FAILED** — 6 of 16 conditions passed, 1 not applicable
+# VERDICT UNCHANGED: **FAILED** — 6 of 16, 1 not applicable
 
-Per the specification V2 is reported FAILED and has **not** been optimised, repaired,
-reversed, thresholded, or given a different stop after results were seen.
+| | Task 005 | Task 005A certified |
+|---|---|---|
+| Conditions passed | 6/16 (+1 N/A) | **6/16 (+1 N/A)** |
+| Baseline net | −$49.93 | **−$49.93** (unchanged) |
+| Condition 6, long-D1 holdout | +0.0544 | **+0.0393** |
+| Long-D1 holdout months | 31 | **30** |
+| D1 panel end | 2026-08-03 | **2026-07-31** |
+| D1 schedule months | 97 | **96** |
+| Assertions | 13 | **16** |
 
-| Principal test — scenario 1, zero-credit execution | |
-|---|---|
-| Net | **−$49.93** (−5.10%) |
-| Trades | 47 |
-| Profit factor | **0.826** |
-| Max drawdown | −9.42% |
-| Win rate | 36.2% |
-| Validation | **−$30.39** (−3.10%) |
-| Holdout | **−$19.55** (−2.06%) |
-| Randomisation p | **0.5525** |
+Only the D1-derived numbers moved. The canonical executable strategy was untouched, exactly
+as required.
 
 ## Commit
 
 | | |
 |---|---|
-| Commit SHA | `95c5eb392d512dc736f4ca956fabdcee7ed0972d` |
+| Commit SHA | `PENDING_SHA` |
 | Branch | `main` |
-| Parent | `5e898b2` |
+| Parent | `0de1c15` |
 
 ## Commands run
 
@@ -43,188 +43,134 @@ python study/fx_policy_differential_v2.py
 
 ---
 
-## The single most informative number in this task
+## 1. Broker D1 completeness — a forming bar was being used
 
-**The 2026 Exness swap sensitivity is exactly $0.00 on every one of the 47 trades.**
-
-V2 always trades the side the policy differential favours. Task 004A found that for 0 of
-19 pairs does the broker pay positive carry on that side — it zeroes it. So applying the
-stored snapshot changes the result by nothing at all, on any trade, in either direction.
-
-That is the cleanest possible confirmation of the 004A finding, arrived at independently:
-**a policy-carry strategy on this broker collects no carry by construction.** It is left
-as a directional bet, and as a directional bet it loses.
-
-The non-executable benchmark makes the same point from the other side: crediting the full
-theoretical differential would have improved the result from −$49.93 to **−$7.32** — still
-negative. Even a broker that paid the entire differential would not have made V2 profitable.
-That benchmark is diagnostic and cannot satisfy any condition.
-
----
-
-## Exact frozen rules
-
-```
-signal        rate_differential = policy_rate(BASE) - policy_rate(QUOTE)
-direction     >0 BUY, <0 SELL, ==0 not a candidate
-selection     largest |differential|, ties alphabetical by symbol, no threshold,
-              no discretionary filtering, one position maximum
-schedule      first Monday of the month, 20:00 New York, first H1 bar at/after,
-              no entry later than Tuesday 20:00
-info cutoff   preceding completed Friday; source_observation_date <= cutoff
-stop          1.5 x canonical New York-session ATR(20), live from the entry bar,
-              never trailed, no take profit
-ATR data      only canonical sessions completed on or before the Friday cutoff
-size          broker minimum lot 0.01 only, never increased to reach a target
-limits        stop risk <= 1.50% of current equity, exposure <= 2.00x, skip not violate
-exit          stop, or the OPEN of the next scheduled rebalance bar; no re-entry after
-              a stop within the same month
-pricing       bars are BID; BUY enters ask exits bid, SELL enters bid exits ask;
-              ask reconstructed from that bar's recorded historical spread
-conversion    exact H1 midpoint graph at entry for risk/exposure, at exit for P&L,
-              USD pinned to zero, disconnected graphs skipped
-equity        $979.00
-```
-
-## Exact executable universe — 19 pairs
-
-```
-AUDCADm  AUDCHFm  AUDJPYm  AUDNZDm  AUDUSDm  CADJPYm  EURCADm  EURCHFm
-EURGBPm  EURJPYm  EURNZDm  EURUSDm  GBPAUDm  GBPCHFm  NZDCADm  NZDJPYm
-USDCADm  USDCHFm  USDJPYm
-```
-
-8 currencies: AUD, CAD, CHF, EUR, GBP, JPY, NZD, USD.
-
-## Policy-rate availability checks
-
-Policy data came from the 004A snapshots unaltered — 1,592 rows over 199 months, 1,551
-available, 41 unavailable.
-
-| Check | Result |
-|---|---|
-| Policy observation dates ≤ Friday cutoff | **PASS** — max age 1 day (base), 0 (quote) |
-| Selected rates finite | **PASS** — 58 selections |
-| No JPY selection while JPY unavailable | **PASS** — 41 JPY-unavailable months in the table |
-| Unavailable rates imputed | **Never** |
-
-The JPY unavailability window never binds in the traded period, because the canonical panel
-begins 2021-08 and the QQE hole ends 2016-09-20. The check is enforced anyway, and it does
-bind on the long-D1 panel, which reaches back to 2018-07.
-
-## Trade and skip counts
+**The anomaly was real and it was a leak.** Evidence, measured rather than assumed:
 
 | | |
 |---|---|
-| Rebalances scheduled | 60 (0 months lacked an entry bar) |
-| Rebalances with eligible candidates | 58 |
-| Eligible outcome rows precomputed | 2,172 |
-| **Completed trades** | **47** |
-| Skipped — stop risk > 1.50% of equity | **11** |
-| Skipped — exposure > 2.00× | 0 |
-| Skipped — conversion unreliable | 0 |
+| D1 retrieval timestamp (UTC) | **2026-08-02 23:22:21Z** |
+| MT5 server clock at that moment | 2026-08-02 23:22:18 |
+| Measured offset | **−0.0 h → the MT5 server frame IS UTC** |
+| D1 timestamp convention | **bar OPEN time, on the UTC day boundary** |
+| Last fully completed broker D1 session | **2026-07-31 (Friday)** |
+| Forming sessions excluded | **19 — exactly one per pair** |
+| Dropped session | **2026-08-03**, still open at retrieval |
 
-Eligibility skips (pair-months excluded before selection):
+**What was happening.** The FX week opens Sunday ~21:00 UTC, so Sunday carries a partial D1
+bar — on 2026-08-02 it held **2,969 ticks against 31,000–58,000 for a full weekday**. That
+bar was still forming at retrieval (last H1 bar 23:00 UTC, retrieval 23:22 UTC), and the
+Sunday→Monday merge relabelled it **2026-08-03**. That is why task 005 reported a panel
+ending a day *after* the run date.
 
-| Reason | Count |
+**Rule applied:** a merged session dated D is closed only once the whole UTC day D has
+elapsed at the recorded retrieval timestamp. One forming bar per pair was excluded.
+
+**Deterministic assertion added and passing:**
+
+> *every D1 bar used in a signal or return calculation was fully closed before the recorded
+> retrieval timestamp* — last completed session 2026-07-31, retrieval 2026-08-02 23:22Z,
+> 19 forming bars excluded.
+
+**Rerun scope:** only the D1 signal-only analysis and conditions 5, 6 and 7, as instructed.
+
+| | Task 005 | Certified |
+|---|---|---|
+| Long-D1 development | +0.0969 (36 mo) | **+0.0969 (36 mo)** — unchanged |
+| Long-D1 validation | +0.0080 (29 mo) | **+0.0080 (29 mo)** — unchanged |
+| **Long-D1 holdout** | **+0.0544 (31 mo)** | **+0.0393 (30 mo)** |
+| Condition 5 | PASS | **PASS** |
+| Condition 6 | PASS | **PASS** |
+| Condition 7 | FAIL | **FAIL** |
+
+The forming bar had inflated the holdout signal by **+0.0151**, roughly 28% of the reported
+figure. Conditions 5 and 6 still pass and 7 still fails, so the verdict is unaffected — but
+the number was wrong and is now right. Canonical results are byte-identical.
+
+## 2. Random-control equity paths — verified independent
+
+Each of the 10,000 simulations already walked its own account. `run_fast()` initialises
+`eq = $979` locally on every call and recomputes **both** gates against that path's evolving
+equity; the baseline's monthly pass/fail, trade count and equity curve are never consulted.
+Only market outcomes (gross P&L, notional, stop risk, days held) are precomputed, and those
+are path-independent by construction.
+
+The distributions now prove it rather than asserting it:
+
+### Control 1 — random pair AND direction
+
+| | |
 |---|---|
-| No ATR available at the cutoff | 19 |
-| Zero differential — not a candidate | 16 |
-| Policy rate unavailable | 0 (in the traded window) |
+| Net: median / 5th / 95th | **−$36.90** / −$172.33 / +$135.38 |
+| Trades: median / min / max | **51 / 39 / 58** (baseline 47) |
+| Risk skips: median / min / max | **7 / 0 / 19** (baseline 11) |
+| One-sided p | **0.5525** |
 
-47 trades clears the 45-trade bar — the 1.5× ATR stop is tighter than V1's 2.0×, so fewer
-months were lost to the risk limit (11 here versus 33 in V1).
+### Control 2 — random pair, policy-implied direction
 
-Exits: 27 by stop, 20 at rebalance. Six distinct pairs traded, concentrated in `NZDJPYm`
-(23), `USDCHFm` (9) and `GBPCHFm` (9) — a direct consequence of "largest absolute
-differential", which repeatedly selects the same high-differential pairs. Absolute
-differential ranged 0.88 to 5.60, median 4.35.
+| | |
+|---|---|
+| Net: median / 5th / 95th | **−$28.63** / −$161.63 / +$135.35 |
+| Trades: median / min / max | **51 / 36 / 58** (baseline 47) |
+| Risk skips: median / min / max | **7 / 0 / 22** (baseline 11) |
+| One-sided p | **0.5979** |
 
-## Cost scenarios
+Trade counts spanning 36–58 and risk skips spanning 0–22 are only possible if each path
+gates on its own equity. A shared or fixed $979 budget would have produced one skip count
+for every simulation.
 
-| Scenario | Trades | Net | Return | PF | Max DD |
-|---|---|---|---|---|---|
-| **1 baseline, zero credit** (principal) | 47 | **−$49.93** | −5.10% | 0.83 | −9.42% |
-| 2 financing stress 1.5% | 47 | −$78.94 | −8.06% | 0.74 | −10.47% |
-| 3 financing stress 3.0% | 47 | −$107.96 | −11.03% | 0.65 | −12.56% |
-| 4 current 2026 swap snapshot | 47 | **−$49.93** | −5.10% | — | — |
-| 5 theoretical policy credit | 49 | −$7.32 | −0.75% | — | — |
+p-values use the specified `(1 + #{random ≥ baseline}) / 10001`.
 
-Scenario 4 is **non-historical** and is not evidence of past cost; it is identical to
-baseline for the reason given above. Scenario 5 is **non-executable** and cannot satisfy a
-pass condition.
+**Synthetic assertion added and passing** — one candidate, two accounts:
 
-## Validation and holdout
+> at $979 the 1.50% budget is **$14.69** and a $12.00 stop risk is taken; at $700 the budget
+> is **$10.50** and the *same* candidate is skipped.
 
-| Period | Scenario | Trades | Net | Return | PF | Max DD | Opened at |
-|---|---|---|---|---|---|---|---|
-| Validation | baseline | 22 | −$30.39 | −3.10% | 0.79 | −8.12% | $979.00 |
-| Validation | +3.0% fin | 22 | −$57.21 | −5.84% | 0.63 | −9.23% | $979.00 |
-| Holdout | baseline | 25 | −$19.55 | −2.06% | 0.87 | −9.42% | $948.61 |
-| Holdout | +3.0% fin | 25 | −$50.74 | −5.50% | 0.68 | −11.63% | $921.79 |
+## 3. JPY reporting correction
 
-**The holdout is untouched for this policy-rate strategy family.** It is *not* globally
-untouched by every prior study in this project — earlier work has examined this calendar
-period for other questions. Holdout results were not used to change anything.
+Task 005 stated the 2013–2016 JPY no-policy-rate interval *"does bind on the long-D1 panel,
+which reaches back to 2018-07."* **That was wrong.** The interval ends **2016-09-20**; the D1
+panel begins **2018-07-03**. It cannot bind, and it binds nowhere in task 005 — neither the
+traded canonical period (from 2021-08) nor the D1 period.
 
-## D1 versus canonical signal-only results
+The corrected position: **the JPY unavailable interval does not affect any task-005 result.**
 
-| Panel | Development | Validation | Holdout |
+An independent historical assertion is retained to prove the availability rule works, worded
+so it makes no claim about task-005 periods:
+
+> *JPY unavailable across 2013-04-04..2016-09-20 (historical check only)* — 41 months, all
+> unavailable; the interval ends before the 2018-07 D1 panel, so it does not bind in task 005.
+
+The live selection guard (a JPY pair cannot be chosen while JPY is unavailable) is unchanged
+and also passing.
+
+## 4. Theoretical credit benchmark — the two versions disagree in sign
+
+This is the most consequential finding of the certification.
+
+| | Trades | Net | Return |
 |---|---|---|---|
-| Canonical (scheduled H1, with spread) | n/a — panel starts 2021-08 | **−0.0624** (28 mo) | **+0.0554** (30 mo) |
-| Long D1 (approximate, no spread) | **+0.0969** (36 mo) | **+0.0080** (29 mo) | **+0.0544** (31 mo) |
+| Baseline, zero credit | 47 | −$49.93 | −5.10% |
+| **A — fixed-baseline-trade credit counterfactual** | **47** | **+$19.87** | **+2.03%** |
+| **B — recursively gated theoretical-credit path** | **49** | **−$7.32** | **−0.75%** |
 
-Broker D1 span 2018-07-03 → 2026-08-03, 97 scheduled months.
+**A** holds the 47 baseline trades fixed — same symbols, directions, entries, exits and skips
+— and adds only the theoretical policy credit of **$69.80**.
 
-Overlap: **58 months, 100% same pair and 100% same direction** — the two panels agree
-completely on what to trade, so the difference between them is pricing alone. Over that
-overlap the canonical panel returns **−0.0071** while the approximate D1 panel returns
-**+0.0367**. The gap is the spread and the scheduled-open pricing that D1 cannot represent.
+**B** re-runs the account with the credit included, so the credit raises equity, which changes
+which months clear the 1.50% risk gate, which changes the trade set (49 rather than 47).
 
-That gap is the finding: the signal has a small positive drift when measured on unpriced
-daily closes, and that drift does not survive being executed.
+**They disagree in sign.** Task 005 reported only B (−$7.32) and drew the conclusion that
+even full credit leaves the strategy negative. On the apples-to-apples comparison that
+conclusion does not hold: the same 47 trades with the differential credited would have
+returned **+$19.87**. The difference is entirely the two extra trades the recursive path
+takes once its equity is higher.
 
-## Differential-tercile diagnostic
+**Neither may satisfy a hard pass condition**, and neither does. The executable reality is
+unchanged and is scenario 1: the broker pays $0.00 on the side V2 trades, so the credit does
+not exist.
 
-All eligible outcomes at the policy-implied direction, split by absolute differential:
-
-| Tercile | n | Mean log-ret | Sum log-ret | Win % | Mean abs diff |
-|---|---|---|---|---|---|
-| Low | 380 | +0.000493 | +0.1875 | 33.7% | 0.45 |
-| Middle | 344 | −0.001899 | −0.6533 | 31.7% | 1.42 |
-| High | 362 | −0.000139 | −0.0502 | 39.2% | 3.71 |
-
-**No monotonicity.** The relationship is non-ordered — the low tercile is the only positive
-one and the middle is the worst. A larger policy differential did not produce a better
-outcome. Diagnostic only; it is a property of eligible outcomes, not of the traded strategy,
-and cannot satisfy a condition.
-
-## Randomisation and controls
-
-| Control | Result |
-|---|---|
-| 1 Random pair AND direction (10,000) | median **−$36.90**, baseline −$49.93, **p = 0.5525** |
-| 2 Random pair, policy-implied direction (10,000) | median **−$28.63**, **p = 0.5979** |
-| 3 Reverse | **−$137.88** |
-| 4 Entry delayed 24 h | **−$26.39** (−2.70%, 47 trades) |
-| 5 Entry delayed one week (diagnostic) | −$145.14 (−14.83%, 47 trades) |
-| 6 Doubled historical spreads | −$55.47 (−5.67%, 47 trades) |
-| 7 Current-swap static sensitivity | −$49.93 — **non-historical** |
-
-p-value uses the specified formula `(1 + #{random ≥ baseline}) / 10001`.
-
-Control 2 is the more searching of the two: even holding the policy-implied *direction* and
-randomising only the *pair*, the median random selection (−$28.63) beats the frozen
-largest-differential rule (−$49.93). **Choosing the biggest differential was worse than
-choosing an arbitrary eligible pair with the same directional logic.**
-
-Reverse loses much more than baseline (−$137.88), so unlike V1 this signal is not
-merely inverted noise — but that satisfies only condition 10, not profitability. Doubling
-spreads costs just $5.54, so again the failure is directional rather than cost-driven.
-
-**No control is proposed as a strategy.**
-
-## Complete pass-condition table
+## Complete pass-condition table (certified)
 
 | # | Condition | Value | |
 |---|---|---|---|
@@ -233,7 +179,7 @@ spreads costs just $5.54, so again the failure is directional rather than cost-d
 | 3 | Combined canonical > 0 under 3.0% financing | −$107.96 | **FAIL** |
 | 4 | Doubled-spread result > 0 | −$55.47 | **FAIL** |
 | 5 | Long-D1 validation signal-only > 0 | +0.0080 | PASS |
-| 6 | Long-D1 holdout signal-only > 0 | +0.0544 | PASS |
+| 6 | Long-D1 holdout signal-only > 0 | **+0.0393** | PASS |
 | 7 | Canonical and long-D1 overlap both positive | canon −0.0071, D1 +0.0367 | **FAIL** |
 | 8 | Baseline beats median random pair+direction | −$49.93 vs −$36.90 | **FAIL** |
 | 9 | Randomisation p ≤ 0.10 | p = 0.5525 | **FAIL** |
@@ -245,68 +191,56 @@ spreads costs just $5.54, so again the failure is directional rather than cost-d
 | 15 | 24-hour delayed entry remains positive | −$26.39 | **FAIL** |
 | 16 | No margin call / negative equity / overlap | min equity $920.51 | PASS |
 
-**6 passed, 9 failed, 1 not applicable.** Per the specification, condition 14 being N/A with
-non-positive net profit means V2 still fails.
-
-## Assertions and results — 13 of 13 pass
+## Assertions — 16 of 16 pass
 
 | Assertion | Result |
 |---|---|
-| Policy observation dates ≤ Friday cutoff | **PASS** (max age 1 day) |
-| Selected currency rates available and finite | **PASS** (58 selections) |
-| JPY pairs unselectable while JPY unavailable | **PASS** |
-| One baseline selection per calendar month | **PASS** (58 months) |
-| ATR uses no data after the cutoff | **PASS** |
-| Entry graph timestamp == entry fill | **PASS** (2,172 rows) |
-| Exit graph timestamp == exit fill | **PASS** (2,172 rows) |
-| Entry-bar stops detected (synthetic breach) | **PASS** (0 occur in real data) |
-| Unstopped exit == next rebalance open | **PASS** (461 long at bid, 394 short at ask) |
-| Consecutive positions never overlap | **PASS** (58 legs) |
-| Stop risk ≤ 1.50% at entry | **PASS** (enforced; 11 months skipped) |
-| Exposure ≤ 2.00× at entry | **PASS** (0 skips needed) |
-| Random controls use the baseline's eligible set | **PASS** (58 months, 2,172 outcomes) |
-| Fast control engine reproduces the costed engine | **PASS** (−$49.93, 47 trades, identical) |
-
-Graph residual RMS median 2.17e-05; conversion is fitted at the exact fill timestamp
-throughout.
+| Policy observation dates ≤ Friday cutoff | PASS (max age 1 day) |
+| Selected rates available and finite | PASS (58 selections) |
+| No JPY selection while JPY unavailable | PASS |
+| One baseline selection per calendar month | PASS (58 months) |
+| ATR uses no data after the cutoff | PASS |
+| Entry graph timestamp == entry fill | PASS (2,172 rows) |
+| Exit graph timestamp == exit fill | PASS (2,172 rows) |
+| Entry-bar stop detected (synthetic) | PASS (0 in real data) |
+| Unstopped exit == next rebalance open | PASS (461 long, 394 short) |
+| Consecutive positions never overlap | PASS (58 legs) |
+| Signal-only ≤ 1 observation per month | PASS (both panels) |
+| **Every D1 bar fully closed before retrieval** | **PASS (new)** |
+| **JPY unavailable 2013-04-04..2016-09-20, historical only** | **PASS (new)** |
+| **Two paths at different equity skip differently** | **PASS (new)** |
+| Random controls use the baseline's eligible set | PASS (58 months, 2,172 outcomes) |
+| Fast control engine reproduces the costed engine | PASS (−$49.93, 47 trades, 11 skips) |
 
 ## Errors and assumptions
 
-- **Defect I found and fixed mid-task.** My first build derived the "long-D1" panel by
-  resampling the H1 files. Dense H1 only begins 2021-08, so that panel silently covered the
-  same window as the canonical one and reported an empty development period while calling
-  itself long-history. Conditions 5, 6 and 7 read off it. Rebuilt from **broker D1 bars**
-  (2018-07-03 → 2026-08-03) on an independent monthly schedule; conditions 5 and 6 changed
-  from FAIL to PASS as a result. The canonical executable path was untouched by the fix, so
-  the baseline and conditions 1–4 and 8–16 are unchanged.
-- **Assumption:** the long-D1 panel is explicitly approximate — nearest broker daily close at
-  or after each scheduled first Monday, no spread. It is labelled
-  `APPROXIMATE_daily_close_no_spread` in the signal-tests CSV and makes no claim of intraday
-  execution.
-- **Assumption:** Sunday D1 candles are merged into the following Monday, consistent with
-  tasks 002 and 004A.
-- **Assumption:** the theoretical policy-credit benchmark accrues `direction × differential`
-  annualised on notional, prorated by holding days. Since direction always equals the sign of
-  the differential, this is always a credit for the baseline.
-- Task 004A data rules were not altered in any way.
-- No exception occurred. All 13 assertions passed.
+- **Bug hit during this task:** I referenced `BASE` before its definition when adding the
+  credit scenarios; the run crashed at the cost-scenario stage. Fixed and re-run in full.
+- **Assumption:** a merged Sunday→Monday session is complete only when the whole UTC day has
+  elapsed. This is conservative — it excludes a session that is merely *probably* finished.
+- **Assumption:** the D1 completeness rule is applied at load, so every downstream D1 use
+  inherits it rather than relying on each consumer to re-check.
+- The `Timestamp.utcnow` deprecation warning from pandas 4 is cosmetic and does not affect
+  values; the timestamp is correct.
+- Canonical executable results were not recomputed differently in any way — they reproduce
+  exactly, which is itself the evidence that the D1 fix stayed in its lane.
 
 ## Files changed
 
 | File | Status |
 |---|---|
-| `study/fx_policy_differential_v2.py` | new |
-| `study/results/fx_policy_differential_v2_trades.csv` | new — 47 trades |
-| `study/results/fx_policy_differential_v2_monthly.csv` | new |
-| `study/results/fx_policy_differential_v2_signal_tests.csv` | new — both panels, 3 periods |
-| `study/results/fx_policy_differential_v2_controls.csv` | new — all 7 controls |
-| `study/results/fx_policy_differential_v2_pass_conditions.csv` | new — 16 conditions |
-| `study/results/fx_policy_differential_v2_report.txt` | new — full run log |
-| `coordination/CLAUDE_REPORT.md` | this file (005) |
-| `coordination/CLAUDE_REPORT_TASK004A.md` | renamed to preserve the 004A report |
+| `study/fx_policy_differential_v2.py` | modified — 4 certifications |
+| `study/results/fx_policy_differential_v2_signal_tests.csv` | updated — D1 holdout 30 months |
+| `study/results/fx_policy_differential_v2_controls.csv` | updated — full random distributions |
+| `study/results/fx_policy_differential_v2_pass_conditions.csv` | updated |
+| `study/results/fx_policy_differential_v2_report.txt` | updated |
+| `study/results/fx_policy_differential_v2_trades.csv` | unchanged (canonical untouched) |
+| `study/results/fx_policy_differential_v2_monthly.csv` | unchanged |
+| `coordination/CLAUDE_REPORT.md` | this file (005A) |
+| `coordination/CLAUDE_REPORT_TASK005.md` | renamed to preserve the 005 report |
 
 Nothing under `live/` or `recorder/` was modified or committed.
 
 ---
 
-V2 is reported FAILED. No live deployment is recommended and no V3 is proposed.
+V2 remains permanently FAILED. No V3 is proposed and no live deployment is recommended.

@@ -575,8 +575,10 @@ say(f"  {'swap_snapshot_2026':22s} trades {s_swap['n']:3d}  net ${s_swap['net']:
     f"ret {s_swap['ret_pct']:7.2f}%   <- NON-HISTORICAL sensitivity, not evidence of cost")
 tr_pol, _, eq_pol = run(PRE, choose_signal, 0.0, credit_col="policy_credit_usd")
 s_pol = stats(tr_pol)
-say(f"  {'policy_credit_bench':22s} trades {s_pol['n']:3d}  net ${s_pol['net']:8.2f}  "
-    f"ret {s_pol['ret_pct']:7.2f}%   <- NON-EXECUTABLE benchmark, cannot satisfy a condition")
+say(f"  {'5B policy_credit_rec':22s} trades {s_pol['n']:3d}  net ${s_pol['net']:8.2f}  "
+    f"ret {s_pol['ret_pct']:7.2f}%   <- RECURSIVELY GATED: credit changes equity, which")
+say(f"  {'':22s} changes which months pass the risk gate, so the trade set differs "
+    f"from baseline ({s_pol['n']} vs {SC['baseline_zero_credit']['stats']['n']})")
 say("")
 say("  Exness does not pay the theoretical differential: task 004A found 0 of 19 pairs")
 say("  where the theoretically positive side receives positive carry. Scenario 1 is the")
@@ -586,6 +588,21 @@ say("")
 BASE = SC["baseline_zero_credit"]
 tr0, sk0 = BASE["trades"], BASE["skipped"]
 base_net = BASE["stats"]["net"]
+
+# TASK 005A CORRECTION 4 - apples-to-apples credit counterfactual.
+# 5B above re-runs the account, so the credit alters equity, which alters which months
+# clear the risk gate, which changes the trade SET (49 vs 47). That answers a different
+# question. 5A holds the 47 baseline trades fixed - same symbols, directions, entries,
+# exits and skips - and adds only the theoretical credit.
+fixed_credit = float(tr0["policy_credit_usd"].sum()) if len(tr0) else 0.0
+fixed_net = base_net + fixed_credit
+say(f"  {'5A policy_credit_fixed':22s} trades {len(tr0):3d}  net ${fixed_net:8.2f}  "
+    f"ret {fixed_net / START_EQUITY * 100:7.2f}%   <- FIXED baseline trade set, "
+    f"credit ${fixed_credit:.2f} added")
+say("     A = fixed-baseline-trade credit counterfactual (this line)")
+say("     B = recursively gated theoretical-credit account path (line above)")
+say("     NEITHER may satisfy a hard pass condition.")
+say("")
 
 say("PERIOD SPLITS (canonical executable panel)")
 PER = {}
@@ -628,8 +645,27 @@ def signal_only_canonical(a=None, b=None):
 # and report an empty development period while calling itself "long".
 import MetaTrader5 as mt5                                              # noqa: E402
 
-d1 = {}
+# --------------------------------------------------------------------------------
+# TASK 005A CORRECTION 1 - BROKER D1 COMPLETENESS
+# --------------------------------------------------------------------------------
+# Task 005 reported a D1 span ending 2026-08-03 while running on 2026-08-02. Cause:
+#
+#   * MT5 server time on this terminal IS UTC (measured offset -0.0 h against the
+#     live tick clock), and a D1 bar's timestamp is its OPEN time on the UTC day
+#     boundary.
+#   * The FX week opens Sunday ~21:00 UTC, so Sunday carries a partial D1 bar - on
+#     2026-08-02 it held 2,969 ticks against 31,000-58,000 for a full weekday.
+#   * That Sunday bar was still FORMING at retrieval (last H1 bar 23:00 UTC, now
+#     23:15 UTC), and the Sunday->Monday merge relabelled it "2026-08-03".
+#
+# So a forming session was being used as a price point. Any session whose UTC day
+# has not fully elapsed at the recorded retrieval timestamp is now excluded.
+D1_RETRIEVAL_UTC = None
+d1, d1_dropped = {}, []
 if mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe"):
+    D1_RETRIEVAL_UTC = pd.Timestamp.utcnow().tz_localize(None)
+    _tick = mt5.symbol_info_tick(PAIRS[0])
+    D1_SERVER_NOW = pd.to_datetime(_tick.time, unit="s") if _tick else None
     for s in PAIRS:
         r = mt5.copy_rates_from_pos(s, mt5.TIMEFRAME_D1, 0, 20000)
         if r is None:
@@ -640,10 +676,28 @@ if mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe"):
         d["eff"] = d["t"].dt.normalize()
         d.loc[d["dow"] == 6, "eff"] += pd.Timedelta(days=1)   # Sunday -> Monday
         g = d.groupby("eff")["close"].last()
-        d1[s] = g[g.index.dayofweek < 5]
+        g = g[g.index.dayofweek < 5]
+        # a session dated D is closed only once the whole UTC day D has elapsed
+        closed = (g.index + pd.Timedelta(days=1)) <= D1_RETRIEVAL_UTC
+        for x in g.index[~closed]:
+            d1_dropped.append({"symbol": s, "session": x.date()})
+        d1[s] = g[closed]
     mt5.shutdown()
-say(f"  broker D1 loaded for {len(d1)}/{len(PAIRS)} pairs; span "
+_off_h = ((D1_SERVER_NOW - D1_RETRIEVAL_UTC).total_seconds() / 3600
+          if D1_SERVER_NOW is not None else float("nan"))
+say(f"  D1 retrieval (UTC)   : {D1_RETRIEVAL_UTC:%Y-%m-%d %H:%M:%S}")
+say(f"  MT5 server clock     : {D1_SERVER_NOW:%Y-%m-%d %H:%M:%S}  "
+    f"(offset {_off_h:+.1f} h vs UTC -> server frame IS UTC)")
+say(f"  D1 timestamp meaning : bar OPEN time on the UTC day boundary")
+say(f"  incomplete/forming sessions excluded: {len(d1_dropped)} "
+    f"({len(d1_dropped)//max(len(PAIRS),1)} per pair)")
+if d1_dropped:
+    say(f"     dropped session date: {d1_dropped[0]['session']} "
+        "(still open at retrieval)")
+say(f"  broker D1 usable for {len(d1)}/{len(PAIRS)} pairs; span "
     f"{min(v.index.min() for v in d1.values()).date()} .. "
+    f"{max(v.index.max() for v in d1.values()).date()}")
+say(f"  LAST FULLY COMPLETED D1 SESSION: "
     f"{max(v.index.max() for v in d1.values()).date()}")
 
 # independent monthly schedule for the D1 panel, so it is not limited by H1 coverage
@@ -720,6 +774,26 @@ for panel, fn in (("canonical", signal_only_canonical), ("long_D1_approx", signa
         assert int(rr["month"].duplicated().sum()) == 0, f"{panel}: duplicate months"
 check("signal-only <= 1 observation per calendar month", True, "both panels")
 
+# --- 005A: every D1 bar used was fully closed before retrieval
+_last_used = max(v.index.max() for v in d1.values())
+check("every D1 bar used was fully closed before retrieval",
+      bool(all(((v.index + pd.Timedelta(days=1)) <= D1_RETRIEVAL_UTC).all()
+               for v in d1.values())),
+      f"last completed session {_last_used.date()}, retrieval "
+      f"{D1_RETRIEVAL_UTC:%Y-%m-%d %H:%M}Z, {len(d1_dropped)} forming bars excluded")
+
+# --- 005A: independent historical check on the JPY unavailable interval.
+# This proves the availability rule works. It says NOTHING about the task-005 traded
+# or D1 periods: the D1 panel starts 2018-07, which is after the interval ended on
+# 2016-09-20, so the interval does NOT bind anywhere in this task.
+_jpy_win = snap[(snap["currency"] == "JPY")
+                & (snap["first_monday"] >= pd.Timestamp("2013-04-04"))
+                & (snap["first_monday"] <= pd.Timestamp("2016-09-20"))]
+check("JPY unavailable across 2013-04-04..2016-09-20 (historical check only)",
+      len(_jpy_win) > 0 and not _jpy_win["is_policy_rate_available"].any(),
+      f"{len(_jpy_win)} months all unavailable; interval ends before the "
+      f"2018-07 D1 panel, so it does not bind in task 005")
+
 ov = signal_only_canonical().merge(signal_only_d1(), on="month", suffixes=("_c", "_d"))
 say(f"  overlap {len(ov)} months: same pair "
     f"{(ov['pair_c'] == ov['pair_d']).mean()*100:.1f}%, same direction "
@@ -764,7 +838,18 @@ def index_pre(pre):
 
 
 def run_fast(idx, choose_kv, fin_rate=0.0):
-    eq, tot, n = START_EQUITY, 0.0, 0
+    """TASK 005A CORRECTION 2 - every simulation walks its OWN account path.
+
+    `eq` is local to this call and starts at $979 every time. Both gates are
+    recomputed against THAT path's evolving equity, so two paths holding different
+    equity can reach opposite skip decisions on the identical candidate trade. The
+    baseline's monthly pass/fail, trade count and equity curve are never consulted;
+    only market outcomes (gross P&L, notional, stop risk, days held) are precomputed,
+    and those are path-independent by construction.
+
+    Returns (net, final_equity, n_trades, n_risk_skips, n_expo_skips).
+    """
+    eq, tot, n, rskip, xskip = START_EQUITY, 0.0, 0, 0, 0
     for k in sorted(idx):
         sel = choose_kv(k)
         if sel is None:
@@ -775,9 +860,11 @@ def run_fast(idx, choose_kv, fin_rate=0.0):
         gross, notional, risk, days, _pd = v
         if not (np.isfinite(risk) and np.isfinite(notional)):
             continue
-        if risk > eq * MAX_RISK_PCT / 100.0:
+        if risk > eq * MAX_RISK_PCT / 100.0:      # gate uses THIS path's equity
+            rskip += 1
             continue
-        if notional > eq * MAX_EXPOSURE_X:
+        if notional > eq * MAX_EXPOSURE_X:        # gate uses THIS path's equity
+            xskip += 1
             continue
         net = gross - notional * fin_rate / 365.0 * days
         eq += net
@@ -785,15 +872,32 @@ def run_fast(idx, choose_kv, fin_rate=0.0):
         n += 1
         if eq <= 0:
             break
-    return tot, eq, n
+    return tot, eq, n, rskip, xskip
 
 
 IDX = index_pre(PRE)
 sig_kv = {int(r.k): (r.signal_pair, int(r.signal_dir)) for r in SIG.itertuples()}
-_chk, _eqc, _nc = run_fast(IDX, lambda k: sig_kv.get(k), 0.0)
+_chk, _eqc, _nc, _rs, _xs = run_fast(IDX, lambda k: sig_kv.get(k), 0.0)
 check("fast control engine reproduces the costed engine",
       abs(_chk - base_net) < 1e-6 and _nc == BASE["stats"]["n"],
-      f"net ${_chk:.2f}, {_nc} trades")
+      f"net ${_chk:.2f}, {_nc} trades, {_rs} risk skips")
+
+# --- 005A: prove path-dependence of the risk gate, synthetically and deterministically.
+# One candidate, two accounts. At $979 the 1.50% budget is $14.69 and a $12 stop risk
+# is allowed; at $700 the budget is $10.50 and the SAME candidate must be skipped.
+_synth = {0: {("X", 1): (5.0, 100.0, 12.0, 30.0, 1)}}
+_rich = run_fast(_synth, lambda k: ("X", 1))              # starts at $979 -> takes it
+_poor_eq = 700.0
+_p_eq, _p_n = _poor_eq, 0
+for _k in _synth:
+    _g, _no, _rk, _dy, _ = _synth[_k][("X", 1)]
+    if _rk <= _p_eq * MAX_RISK_PCT / 100.0:
+        _p_eq += _g
+        _p_n += 1
+check("two paths at different equity make different risk-skip decisions",
+      _rich[2] == 1 and _p_n == 0,
+      f"$979 budget ${979*MAX_RISK_PCT/100:.2f} takes a $12.00 risk; "
+      f"${_poor_eq:.0f} budget ${_poor_eq*MAX_RISK_PCT/100:.2f} skips it")
 
 # the eligible monthly outcome set the controls draw from is EXACTLY the baseline's
 ks = sorted(IDX.keys())
@@ -806,34 +910,54 @@ check("random controls use the same eligible monthly outcome set as baseline",
 say("")
 
 # 1 random pair AND direction
-rng = np.random.default_rng(PERM_SEED)
-perm1 = np.empty(N_PERM)
-for j in range(N_PERM):
-    pm = {k: opts[k][rng.integers(len(opts[k]))] for k in ks}
-    perm1[j] = run_fast(IDX, lambda k, _p=pm: _p.get(k), 0.0)[0]
-p1 = (1 + int((perm1 >= base_net).sum())) / (N_PERM + 1)
-med1 = float(np.median(perm1))
-say(f"  1. random pair AND direction : baseline ${base_net:.2f} vs median ${med1:.2f}, "
-    f"p = {p1:.4f}")
+def randomise(seed, choices, label):
+    """10,000 independent account paths. Records the full distribution, not just net."""
+    rng_ = np.random.default_rng(seed)
+    nets = np.empty(N_PERM)
+    ntr = np.empty(N_PERM, dtype=int)
+    nrs = np.empty(N_PERM, dtype=int)
+    for j in range(N_PERM):
+        pm = {k: choices[k][rng_.integers(len(choices[k]))] for k in ks if choices[k]}
+        net, _eq, n_, rs_, _xs = run_fast(IDX, lambda k, _p=pm: _p.get(k), 0.0)
+        nets[j], ntr[j], nrs[j] = net, n_, rs_
+    p = (1 + int((nets >= base_net).sum())) / (N_PERM + 1)
+    say(f"  {label}")
+    say(f"     net    : median ${np.median(nets):8.2f}   5th ${np.percentile(nets,5):8.2f}"
+        f"   95th ${np.percentile(nets,95):8.2f}   baseline ${base_net:.2f}")
+    say(f"     trades : median {np.median(ntr):5.0f}   min {ntr.min():3d}   max {ntr.max():3d}"
+        f"      (baseline {BASE['stats']['n']})")
+    say(f"     risk skips : median {np.median(nrs):4.0f}   min {nrs.min():3d}   "
+        f"max {nrs.max():3d}   (baseline {len(sk0)})")
+    say(f"     one-sided p = {p:.4f}")
+    return {"nets": nets, "ntr": ntr, "nrs": nrs, "p": p,
+            "median": float(np.median(nets))}
+
+
+R1 = randomise(PERM_SEED, opts, "1. random pair AND direction")
+p1, med1 = R1["p"], R1["median"]
 CTRL.append({"control": "random_pair_and_direction", "n": N_PERM,
              "baseline_net": base_net, "median_random_net": med1,
              "p_value_one_sided": p1, "beats_median": bool(base_net > med1),
-             "pct5": float(np.percentile(perm1, 5)),
-             "pct95": float(np.percentile(perm1, 95))})
+             "net_pct5": float(np.percentile(R1["nets"], 5)),
+             "net_pct95": float(np.percentile(R1["nets"], 95)),
+             "trades_median": float(np.median(R1["ntr"])),
+             "trades_min": int(R1["ntr"].min()), "trades_max": int(R1["ntr"].max()),
+             "risk_skips_median": float(np.median(R1["nrs"])),
+             "risk_skips_min": int(R1["nrs"].min()),
+             "risk_skips_max": int(R1["nrs"].max())})
 
-# 2 random pair, POLICY-IMPLIED direction
-rng2 = np.random.default_rng(PERM_SEED + 1)
-perm2 = np.empty(N_PERM)
-for j in range(N_PERM):
-    pm = {k: pol_opts[k][rng2.integers(len(pol_opts[k]))] for k in ks if pol_opts[k]}
-    perm2[j] = run_fast(IDX, lambda k, _p=pm: _p.get(k), 0.0)[0]
-p2 = (1 + int((perm2 >= base_net).sum())) / (N_PERM + 1)
-med2 = float(np.median(perm2))
-say(f"  2. random pair, policy dir   : baseline ${base_net:.2f} vs median ${med2:.2f}, "
-    f"p = {p2:.4f}")
+R2 = randomise(PERM_SEED + 1, pol_opts, "2. random pair, POLICY-IMPLIED direction")
+p2, med2 = R2["p"], R2["median"]
 CTRL.append({"control": "random_pair_policy_direction", "n": N_PERM,
              "baseline_net": base_net, "median_random_net": med2,
-             "p_value_one_sided": p2, "beats_median": bool(base_net > med2)})
+             "p_value_one_sided": p2, "beats_median": bool(base_net > med2),
+             "net_pct5": float(np.percentile(R2["nets"], 5)),
+             "net_pct95": float(np.percentile(R2["nets"], 95)),
+             "trades_median": float(np.median(R2["ntr"])),
+             "trades_min": int(R2["ntr"].min()), "trades_max": int(R2["ntr"].max()),
+             "risk_skips_median": float(np.median(R2["nrs"])),
+             "risk_skips_min": int(R2["nrs"].min()),
+             "risk_skips_max": int(R2["nrs"].max())})
 
 # 3 reverse
 tr_r, _, eq_r = run(PRE, choose_reverse, 0.0)
