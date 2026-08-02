@@ -28,3 +28,6 @@ live/*.bak_pre_geometry
 
 # Task 002 raw H1 downloads - regenerable, large, not part of the deliverable
 study/data/raw_h1/
+
+# Task 004 raw BIS bulk download - 4MB zip / 469MB CSV, regenerable from the URL
+study/data/external/raw/

@@ -1,264 +1,246 @@
 FROM: CLAUDE
-TASK: 003B — FX SIMULATOR CERTIFICATION
+TASK: 004 — FX POLICY-RATE DATA PANEL
 
-Simulator certification, not strategy optimisation. **V1 remains permanently FAILED.** No V1
-strategy rule, parameter, universe, schedule, stop, risk limit or pass condition was changed.
-All 003A corrections are preserved. No V2 or replacement strategy is proposed.
+Data task only. No trading performance was tested, no lookback or entry threshold was
+chosen, no trade rule is recommended, the live bot was not modified and no order was placed
+or changed. No V2 parameters are proposed.
 
-The live bot was not modified and no order was placed or changed.
-
-Earlier reports: `CLAUDE_REPORT_TASK001.md`, `_TASK002.md`, `_TASK003.md`, `_TASK003A.md`.
+Task 003B's report is preserved at `coordination/CLAUDE_REPORT_TASK003B.md`.
 
 ---
 
-# CERTIFICATION RESULT: simulator now converts at the exact fill timestamp
+## The one finding that matters most for a carry family
 
-Both defects were real. Neither changed the verdict.
+**For 0 of the 19 executable pairs does the theoretical positive-carry direction actually
+pay under the current Exness swap snapshot.**
 
-| | 003A | 003B |
-|---|---|---|
-| **Conditions passed** | 4/13 (+1 N/A) | **4/13 (+1 N/A)** |
-| Net, spread only | −$75.19 | **−$75.94** |
-| Return | −7.68% | −7.76% |
-| Profit factor | 0.533 | 0.529 |
-| Final equity | $903.81 | $903.06 |
-| Randomisation p | 0.7282 | 0.7286 |
-| Reverse | +$27.86 | +$27.73 |
+Every pair where the policy differential favours being long shows a broker long carry of
+**exactly 0.00%**, and every pair where it favours being short shows a broker short carry of
+**0.00%**. The broker does not pay the positive-carry side at all — it zeroes it and charges
+the other. Median markup is **1.38 pp** on the long side and **0.60 pp** on the short.
 
-Net moved by **−$0.74** on a −$75 result. 17 of 22 trades changed, largest single change $0.49.
+This is a **current dated diagnostic**, not a historical result, and it is reported because
+the task asked for it — not as an argument about strategy design, which is not mine to make.
+
+---
 
 ## Commit
 
 | | |
 |---|---|
-| Commit SHA | `c8a02357a1192c3c5fa7ec7d3233eb6cbade419f` |
+| Commit SHA | `PENDING_SHA` |
 | Branch | `main` |
-| Parent | `0c633e2` |
+| Parent | `f7fca9f` |
 
 ## Commands run
 
 ```
-python study/fx_momentum_v1.py
+python study/build_fx_policy_rate_panel.py
 ```
 
----
-
-# Correction 1 — exact H1 currency graphs
-
-**Defect.** `graph_at()` returned the newest completed **weekly** graph, so a conversion could
-be up to five trading days stale at the moment of a fill.
-
-**Fix.** The graph is now rebuilt at the exact H1 timestamp of every entry and every exit:
-
-```
-mid_open = bid_open + 0.5 * spread_points * point      per pair, at that bar
-log(mid) = value(BASE) - value(QUOTE),  value(USD) = 0  fitted by least squares
-q2u      = exp(value(QUOTE))
-```
-
-Midpoints rather than bids, because a currency value is a property of the market, not of one
-side of the quote — fitting on bids would push a systematic half-spread into every currency and
-therefore into every conversion.
-
-- **Entry-timestamp graph** → stop risk and economic exposure
-- **Exit-timestamp graph** → realised quote-currency P&L
-- **A stop firing inside an H1 bar** is converted with the graph built from *that bar's* opening
-  prices — the finest historical timestamp the data supports
-- Rank-deficiency check: if the available pairs do not connect every currency back to USD the
-  outcome is **skipped** rather than fitted from an under-determined system
-
-**Certification evidence:**
+## BIS source and checksum
 
 | | |
 |---|---|
-| Rows priced with graph timestamp **equal** to the fill timestamp | **2,090 / 2,090** |
-| Rows using a *different* graph at entry vs exit | **2,090 / 2,090** (was 1,857 under weekly) |
-| Pairs contributing to each graph | **19 of 19**, min and max |
-| Graph residual RMS, entry | median **2.14e-05**, max 6.30e-05 |
-| Graph residual RMS, exit | median 2.27e-05 |
-| Outcomes skipped for a disconnected graph | **0** |
+| Dataset | `BIS:WS_CBPOL(1.0)` — Central bank policy rates |
+| Resolved URL | `https://data.bis.org/static/bulk/WS_CBPOL_csv_flat.zip` |
+| File in archive | `WS_CBPOL_csv_flat.csv` (469,780,817 bytes uncompressed) |
+| **SHA-256** | `f0f4c42a3cdeb14984bd2e0938ce807a16a409b65ac38ab99565d355068a2ec6` |
+| Download size | 4,094,197 bytes |
+| Retrieval timestamp (UTC) | 2026-08-02 22:04:57Z |
+| **BIS release date** | Thu, 30 Jul 2026 09:05:41 GMT (HTTP `Last-Modified`) |
+| Latest reference date | **2026-07-29** |
+| Frequency selected | `D` (daily) |
+| Frequencies present in file | `{M: 25,023, D: 706,078}` |
+| Units | Per cent per year (`UNIT_MEASURE 368`), `UNIT_MULT 0` |
+| Daily rows kept | 157,126 across 8 currencies |
 
-The H1 midpoint graph is roughly **4× more triangularly consistent** than the weekly close
-graph it replaces (2.1e-05 vs 9.5e-05), which is what one expects when the quotes being fitted
-are simultaneous rather than spread across a week.
+No substitute source was used anywhere. The script `fail()`s loudly rather than falling back
+to FRED or a web scrape if the BIS file cannot be downloaded or parsed, and it validates the
+column layout before trusting it.
 
-**Assertion A3 now demands equality**, not "graph is earlier":
+The full raw download lives at `study/data/external/raw/WS_CBPOL_csv_flat.zip`, which is
+**gitignored and not committed**. Only the filtered panel and the metadata JSON are committed.
+
+## The exact eight series
+
+Each is the BIS designated main policy rate for its economy, selected by `REF_AREA` and
+`FREQ=D`. No choice among competing national rates was made — and none could have been made
+on trading results, since no returns are computed in this task.
+
+| Currency | BIS series ID | Economy | Publication source |
+|---|---|---|---|
+| AUD | `BIS:WS_CBPOL(1.0):D.AU` | Australia | Reserve Bank of Australia |
+| CAD | `BIS:WS_CBPOL(1.0):D.CA` | Canada | Bank of Canada |
+| CHF | `BIS:WS_CBPOL(1.0):D.CH` | Switzerland | Swiss National Bank |
+| EUR | `BIS:WS_CBPOL(1.0):D.XM` | Euro area | European Central Bank |
+| GBP | `BIS:WS_CBPOL(1.0):D.GB` | United Kingdom | Bank of England |
+| JPY | `BIS:WS_CBPOL(1.0):D.JP` | Japan | Bank of Japan |
+| NZD | `BIS:WS_CBPOL(1.0):D.NZ` | New Zealand | Reserve Bank of New Zealand |
+| USD | `BIS:WS_CBPOL(1.0):D.US` | United States | US Federal Reserve System |
+
+## Coverage for every currency
+
+| Currency | First obs | Last obs | Obs | Rate changes | Min | Max | Latest |
+|---|---|---|---|---|---|---|---|
+| AUD | 1976-04-07 | 2026-07-23 | 12,842 | 3,315 | 0.100 | 85.00 | 4.350 |
+| CAD | 1960-07-27 | 2026-07-28 | 23,040 | 1,025 | 0.250 | 21.24 | 2.250 |
+| CHF | 1946-01-01 | 2026-07-29 | 21,022 | 89 | **−0.750** | 7.00 | **0.000** |
+| EUR | 1999-01-01 | 2026-07-29 | 10,072 | 60 | **0.000** | 4.75 | 2.250 |
+| GBP | 1946-01-01 | 2026-07-28 | 23,826 | 318 | 0.100 | 17.00 | 3.750 |
+| JPY | 1946-01-01 | 2026-07-29 | 24,850 | 89 | **−0.100** | 9.00 | 1.000 |
+| NZD | 1985-01-04 | 2026-07-17 | 15,148 | 2,223 | 0.250 | 265.00 | 2.500 |
+| USD | 1954-07-01 | 2026-07-29 | 26,326 | 5,700 | 0.125 | 22.36 | 3.625 |
+
+Negative rates (CHF to −0.75%, JPY to −0.10%) and legitimate zero rates (CHF 0.00% latest,
+EUR floor 0.000) are **preserved exactly**, not clipped or treated as missing.
+
+**All three required windows are fully covered by all eight currencies, with zero gap-days:**
+
+| Window | All eight covered | Gap-days |
+|---|---|---|
+| 2010-01-01 onward | Yes | **0** |
+| Exness D1 period from 2018-07-03 | Yes | **0** |
+| Canonical executable period from 2021-08-02 | Yes | **0** |
+
+## Missing-data findings
+
+**The material one: JPY has a 1,267-day stale interval inside the panel, 2013-04-03 →
+2016-09-21.** The BIS series carries no observation across it; the rate on either side moves
+from +0.05% to −0.10%. Forward fill therefore holds **0.05% constant for three and a half
+years**, which is the rule exactly as specified — but it means the panel shows a flat rate
+through the QQE period, when Japanese policy in fact changed substantially. This is flagged
+in the audit CSV (`stale_intervals_over_90d`) and printed in the report rather than patched,
+because inventing observations BIS does not publish would be worse than showing the hole.
+
+BIS documents the instrument history for JPY in its `COMPILATION` field, which is preserved
+verbatim in `bis_policy_rates_source.json` along with the `SUPP_INFO_BREAKS` links.
+
+It is the only stale interval over 90 days in the whole 2010+ panel:
+
+| Currency | Longest stale, all history | Longest stale, inside panel | Intervals > 90d in panel |
+|---|---|---|---|
+| AUD | 6 d | 6 d | 0 |
+| CAD | 3 d | 3 d | 0 |
+| CHF | 3 d | 3 d | 0 |
+| EUR | 1 d | 1 d | 0 |
+| GBP | 3 d | 3 d | 0 |
+| **JPY** | **1,817 d** | **1,267 d** | **1** |
+| NZD | 8 d | 8 d | 0 |
+| USD | 2 d | 2 d | 0 |
+
+Other findings:
+
+- **Duplicates: 0** across all eight series.
+- **Uneven last observations.** NZD stops at 2026-07-17 and AUD at 2026-07-23, while the
+  other six run to 2026-07-28/29. Any cross-sectional read on the latest date is therefore
+  comparing values of differing freshness — NZD is 12 days stale at the file's own latest
+  reference date.
+- **No wide-panel NaN.** All 6,054 calendar dates × 8 currencies are populated, because every
+  currency's first observation predates 2010 by decades.
+
+## Effective-date and forward-fill methodology
+
+One rule governs the whole panel:
 
 ```
-entry_graph_timestamp == trade entry timestamp     (all 2,090 rows)
-exit_graph_timestamp  == trade exit timestamp      (all 2,090 rows)
+rate(currency, date d) = value of the LAST observation whose obs_date <= d
 ```
 
-003A only proved the graph was not from the future — a five-day-stale graph passed that test.
-Equality is the stronger claim and it now holds exactly.
+- a rate change is **never** moved earlier than its official observation date;
+- forward fill happens **only after** an observation becomes effective;
+- **nothing is backward-filled** before a currency's first observation (moot here — all eight
+  begin well before 2010, but the guard is in the code);
+- no future publication or effective value is used on an earlier date;
+- negative and zero rates preserved; values kept as published, unrounded.
 
-**New columns in the trades CSV:** `entry_graph_timestamp`, `exit_graph_timestamp`,
-`entry_graph_residual_rms`, `exit_graph_residual_rms`, `entry_graph_pairs`, `exit_graph_pairs`,
-`q2u_entry`, `q2u_exit`.
+Every long-format row carries `source_observation_date` and `is_forward_filled`, so staleness
+is visible per cell rather than assumed.
 
-**Effect:** 17 of 22 trades repriced, total −$0.74. USD-quoted pairs are unaffected by
-construction (`q2u = 1.000000` exactly for `AUDUSDm`, `EURUSDm`), which is itself a sanity check
-that the fit is behaving.
-
----
-
-# Correction 2 — canonical signal-only priced at the real schedule
-
-**Defect.** The canonical signal test still measured returns between **Friday weekly closes**,
-while the strategy it represents enters at the Monday 20:00 New York H1 open and exits at the
-next scheduled monthly open. Different prices, different days — the signal test and the
-executable test were not measuring the same thing.
-
-**Fix (canonical panel).** Enter at the actual scheduled H1 open, exit at the next actual
-scheduled H1 open, with bid/ask applied by direction (bars are BID, so a BUY pays the spread on
-entry and a SELL pays it on exit). Still no stop, no financing and no risk skipping — that is
-what keeps it signal-only rather than the strategy itself. One observation per calendar month by
-construction, since the schedule has one rebalance per month.
-
-**Fix (long-D1 panel).** D1 has no intraday resolution, so the 20:00 New York open cannot be
-reproduced. The nearest available broker D1 close at or after each scheduled first Monday is
-used, **no spread applied**, and every row is labelled
-`APPROXIMATE_broker_D1_close_no_spread` in `fx_momentum_v1_signal_tests.csv`. This panel is not
-entitled to claim execution costs and does not.
-
-**Effect:**
-
-| Panel / period | 003A | 003B |
-|---|---|---|
-| canonical validation | 25 obs, −0.1265 | 25 obs, **−0.1439** |
-| canonical holdout | 30 obs, −0.1454 | 30 obs, **−0.1278** |
-| long_D1 development | 33 obs, −0.0522 | 33 obs, **−0.0396** |
-| long_D1 validation | 29 obs, −0.2501 | 29 obs, **−0.2156** |
-| long_D1 holdout | 30 obs, −0.1454 | 31 obs, **−0.1289** |
-
-**Every sign remains negative on both panels in every period.** Observation counts are
-essentially unchanged, confirming the 003A monthly restructuring was already correct — this
-correction changed *prices*, not *cadence*.
-
-**Panel agreement, recalculated:** 55 overlapping months, **same pair 72.7%, same direction
-87.3%** — unchanged from 003A.
-
-**Pass condition 5, recalculated:** canonical −0.2717 / long-D1 −0.3445 → **same sign, PASS**.
-It still passes only because both panels agree on a *losing* sign.
-
----
-
-# Certified results
-
-## Baseline
-
-| Scenario | Trades | Net | Return | PF | Max DD | Win |
-|---|---|---|---|---|---|---|
-| Spread only | 22 | −$75.94 | −7.76% | 0.53 | −13.66% | 27.3% |
-| + 1.5% financing | 22 | −$87.61 | −8.95% | 0.47 | −14.26% | 27.3% |
-| + 3.0% financing | 22 | −$99.29 | −10.14% | 0.42 | −14.86% | 27.3% |
-| 2026-08-02 swap snapshot | *sensitivity only* | −$77.60 | | | | |
-
-## Validation (opened at $979.00) and holdout (opened at $882.57)
-
-| Period | Scenario | Trades | Net | Return | PF | Max DD |
-|---|---|---|---|---|---|---|
-| Validation | spread only | 8 | −$96.43 | −9.85% | 0.00 | −9.85% |
-| Validation | + 3.0% fin | 8 | −$100.89 | −10.30% | 0.00 | −10.30% |
-| Holdout | spread only | 14 | +$20.49 | +2.32% | 1.32 | −5.00% |
-| Holdout | + 3.0% fin | 14 | +$1.60 | +0.18% | 1.02 | −5.63% |
-
-Holdout was reported only and **not used to alter anything**.
-
-## Every pass condition
-
-| # | Condition | Result | |
-|---|---|---|---|
-| 1 | Canonical return positive in validation | −9.85% | **FAIL** |
-| 2 | Canonical return positive in holdout | +2.32% | PASS |
-| 3 | Positive under 3.0% financing stress | −10.14% | **FAIL** |
-| 4 | Doubled-spread result positive | −$77.11 | **FAIL** |
-| 5 | Long-D1 and canonical signal same sign | canon −0.2717 / D1 −0.3445 | PASS |
-| 6 | Baseline beats median randomised | −$75.94 vs −$34.01 | **FAIL** |
-| 7 | Randomisation p ≤ 0.10 | p = 0.7286 | **FAIL** |
-| 8 | Reverse performs worse than baseline | +$27.73 vs −$75.94 | **FAIL** |
-| 9 | At least 40 completed trades | 22 | **FAIL** |
-| 10 | Max drawdown ≤ 20% | −13.66% | PASS |
-| 11 | Profit factor > 1.10 | 0.529 | **FAIL** |
-| 12 | No trade > 25% of net profit | NOT APPLICABLE (net ≤ 0) | **N/A** |
-| 13 | No margin call / account failure | final equity $903.06 | PASS |
-
-## Controls
-
-| Control | 003A | 003B |
-|---|---|---|
-| Median random | −$33.03 | −$34.01 |
-| One-sided p | 0.7282 | **0.7286** |
-| Reverse | +$27.86 | **+$27.73** |
-| Entry delayed 24 h | −$63.69 | −$65.00 (−6.64%, 23 trades) |
-| Entry delayed 1 week | +$88.11 | **+$87.59 (+8.95%, 29 trades)** |
-| Doubled spread | −$76.39 | −$77.11 (−7.88%, 22 trades) |
-
-The fast permutation engine was again asserted equal to the costed engine (−$75.94, 22 trades).
-
-## Trades skipped
-
-| Reason | Count |
-|---|---|
-| Stop risk > 1.50% of current equity | **33** |
-| Exposure > 2.00× equity | 0 |
-| Conversion unreliable / disconnected graph | **0** |
-
-Unchanged at 33 of 55 rebalances. Notably **zero** outcomes were lost to the stricter
-conversion requirement — all 19 pairs are present at every fill timestamp.
-
-## Formation diagnostics — 4 and 26 weeks remain diagnostics only
-
-| Panel / period | 4w | 13w (frozen) | 26w |
-|---|---|---|---|
-| canonical validation | −0.1869 | −0.1439 | −0.0441 |
-| canonical holdout | −0.2141 | −0.1278 | −0.0298 |
-| long_D1 development | −0.0726 | −0.0396 | −0.0586 |
-| long_D1 validation | −0.1904 | −0.2156 | −0.2065 |
-| long_D1 holdout | −0.1628 | −0.1289 | +0.0042 |
-
-Under exact H1 pricing the 26-week column is now **negative in 4 of 5 cells** — in 003A it was
-positive in two. Its only remaining positive is long-D1 holdout at +0.004, which is
-indistinguishable from zero. Recorded because the spec required the diagnostic; **not proposed**.
-
-## Assertions — all five pass
+## Monthly snapshot counts
 
 | | |
 |---|---|
-| A1 | Unstopped exit == next rebalance bar open (577 long at bid, 498 short at ask) |
-| A2 | Entry-bar stop detected on a synthetic breach; 0 occur in real data |
-| A3 | **Graph timestamps EQUAL fill timestamps, all 2,090 rows** |
-| A4 | Signal-only output ≤ 1 observation per calendar month, every panel × formation |
-| A5 | Consecutive positions never overlap (55 signal legs) |
+| Snapshot rows | **1,592** |
+| Months covered | **199** (2010-01-04 → 2026-07-06) |
+| Months with all eight currencies | **199 / 199** |
+| Median value age | **0 days** |
+| Maximum value age | **1,248 days** |
+| Rows with age > 90 days | **38**, all JPY |
+
+Each first Monday takes its information cutoff as the **preceding completed Friday**
+(`first_monday − 3 days`) and uses only observations effective on or before it. The 38 stale
+rows are exactly the JPY QQE hole described above.
+
+No strategy returns were calculated at any snapshot.
+
+## Current Exness swap comparison — dated diagnostic
+
+Uses the **2026-08-02 snapshot already stored from task 002**. The live account was not
+queried or changed. The 2026 snapshot is **not applied to any historical date**, and a policy
+differential is **not** claimed to equal a retail CFD swap — measuring the distance between
+them is the entire point.
+
+Latest BIS rates used: AUD 4.35, CAD 2.25, CHF 0.00, EUR 2.25, GBP 3.75, JPY 1.00, NZD 2.50,
+USD 3.62 (per cent per year).
+
+| | |
+|---|---|
+| Pairs compared | 19 |
+| Sign agrees, long side | **4 / 19** |
+| Sign agrees, short side | **13 / 19** |
+| Both directions charge a cost | **2 / 19** (`EURCADm`, `EURNZDm`) |
+| Swap-free both directions | 1 (`USDCADm`) |
+| **Theoretical positive-carry side also positive at the broker** | **0 / 19** |
+| Median markup, long side (theory − broker) | **1.38 pp** (range 0.08 → 4.35) |
+| Median markup, short side | **0.60 pp** (range −2.83 → 1.87) |
+
+The pattern is uniform: wherever the policy differential says one side should earn carry, the
+broker's snapshot for that side is exactly **0.00%**, while the opposite side is charged. The
+largest distortions sit where the theoretical differential is largest — `AUDCHFm` 4.35 pp,
+`USDCHFm` 3.62 pp, `GBPCHFm` 3.75 pp.
+
+Full per-pair table: `study/results/fx_policy_rate_swap_snapshot.csv`.
 
 ## Errors and assumptions
 
-- All 003A assumptions preserved. New in 003B: currency graphs are fitted on **midpoints**, not
-  bids, to avoid embedding a half-spread in every currency value.
-- The long-D1 signal panel is **explicitly approximate** — nearest broker D1 close at or after
-  the scheduled first Monday, no spread, labelled in the CSV.
-- Dead code removed: the superseded weekly `signal_only()` (52 lines) was deleted rather than
-  left in the file as an unused second path.
-- No exception occurred; 0 outcomes skipped for conversion.
-- Carried limitation: the executable panel spans 4.99 years, not 6.
+- **`requests` is not installed on this machine.** The first run silently skipped the header
+  fetch and reported the BIS release date as unavailable. Rewritten to use stdlib
+  `urllib.request`, and the release date is now captured correctly.
+- **Assumption:** the BIS release date is taken from the bulk file's HTTP `Last-Modified`
+  header. BIS does not expose a per-file release field in the flat CSV itself.
+- **Assumption:** `REF_AREA=XM` is the euro area series for EUR. This is the BIS designated
+  euro-area aggregate, not any member state's national rate.
+- **Assumption:** where BIS publishes a daily observation on a non-business day, it is taken at
+  face value; no trading calendar was imposed on the rate series.
+- The panel is built on **calendar** dates, not trading dates, so it can be joined to any
+  trading calendar later without re-deriving effective dates.
+- Layout validation: the script checks BIS's column names before parsing and stops if they
+  have changed, rather than mis-parsing a renamed schema.
+- No exception occurred. 157,126 daily rows parsed; 0 unparseable dates; 0 rows dropped for
+  bad values among the eight economies.
 
 ## Files changed
 
 | File | Status |
 |---|---|
-| `study/fx_momentum_v1.py` | modified — exact H1 graphs, scheduled-price signal test, A3 tightened |
-| `study/results/fx_momentum_v1_trades.csv` | updated — 8 new graph/conversion columns |
-| `study/results/fx_momentum_v1_monthly.csv` | updated |
-| `study/results/fx_momentum_v1_signal_tests.csv` | updated — adds `pricing` label |
-| `study/results/fx_momentum_v1_controls.csv` | updated |
-| `study/results/fx_momentum_v1_report.txt` | updated |
-| `coordination/CLAUDE_REPORT.md` | this file (003B) |
-| `coordination/CLAUDE_REPORT_TASK003A.md` | renamed to preserve the 003A report |
+| `study/build_fx_policy_rate_panel.py` | new |
+| `study/data/fx_policy_rates_daily.csv` | new — 6,054 dates × 8 currencies |
+| `study/data/fx_policy_rates_long.csv` | new — 48,432 rows |
+| `study/data/fx_policy_rate_rebalance_snapshots.csv` | new — 1,592 rows, 199 months |
+| `study/data/external/bis_policy_rates_source.json` | new — source metadata + per-series BIS fields |
+| `study/results/fx_policy_rate_data_audit.csv` | new — per-currency audit |
+| `study/results/fx_policy_rate_swap_snapshot.csv` | new — 19-pair diagnostic |
+| `study/results/fx_policy_rate_data_report.txt` | new — full run report |
+| `FINDINGS.md` | updated — added the closed FX momentum section |
+| `.gitignore` | updated — `study/data/external/raw/` |
+| `coordination/CLAUDE_REPORT.md` | this file (004) |
+| `coordination/CLAUDE_REPORT_TASK003B.md` | renamed to preserve the 003B report |
+
+The raw BIS bulk download is **not committed**, as required.
 
 Nothing under `live/` or `recorder/` was modified or committed.
 
 ---
 
-The simulator is certified: conversions are now built at the exact fill timestamp and the signal
-test is priced at the real schedule. **V1 remains FAILED.** No V2 or replacement strategy is
-proposed.
+No strategy profitability is reported and no V2 parameter is recommended in this document.

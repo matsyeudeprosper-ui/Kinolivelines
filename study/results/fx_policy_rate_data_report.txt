@@ -1,0 +1,91 @@
+====================================================================================================
+TASK 004 - OFFICIAL FX POLICY-RATE DATA PANEL
+====================================================================================================
+generated : 2026-08-02 22:10:49 UTC
+
+using already-downloaded raw file: C:\Projects\KinoliveLines\study\data\external\raw\WS_CBPOL_csv_flat.zip
+  sha-256          : f0f4c42a3cdeb14984bd2e0938ce807a16a409b65ac38ab99565d355068a2ec6
+  size             : 4,094,197 bytes
+  retrieved (UTC)  : 2026-08-02 22:04:57
+  BIS release date : Thu, 30 Jul 2026 09:05:41 GMT
+
+streaming and filtering the bulk CSV (daily frequency, eight economies)...
+  frequencies in file : {'M': 25023, 'D': 706078}
+  daily rows kept     : 157,126 across 8 currencies
+  latest reference date: 2026-07-29
+
+building the daily panel (forward fill only after an observation is effective)
+  daily wide panel : 6,054 calendar dates x 8 currencies
+  long panel       : 48,432 rows
+  any NaN in wide  : 0
+
+building monthly rebalance snapshots (first Monday, cutoff = preceding Friday)
+  snapshots: 1,592 rows over 199 months (2010-01-04 -> 2026-07-06)
+  complete months (all 8 currencies): 199/199
+  value age days: median 0, max 1248
+
+auditing each currency
+currency first_observation last_observation  n_observations  n_rate_changes  min_rate  max_rate  latest_rate  longest_stale_interval_days  longest_stale_in_panel_days
+     AUD        1976-04-07       2026-07-23           12842            3315     0.100     85.00        4.350                            6                            6
+     CAD        1960-07-27       2026-07-28           23040            1025     0.250     21.24        2.250                            3                            3
+     CHF        1946-01-01       2026-07-29           21022              89    -0.750      7.00        0.000                            3                            3
+     EUR        1999-01-01       2026-07-29           10072              60     0.000      4.75        2.250                            1                            1
+     GBP        1946-01-01       2026-07-28           23826             318     0.100     17.00        3.750                            3                            3
+     JPY        1946-01-01       2026-07-29           24850              89    -0.100      9.00        1.000                         1817                         1267
+     NZD        1985-01-04       2026-07-17           15148            2223     0.250    265.00        2.500                            8                            8
+     USD        1954-07-01       2026-07-29           26326            5700     0.125     22.36        3.625                            2                            2
+
+  !! STALE INTERVALS LONGER THAN 90 DAYS INSIDE THE 2010+ PANEL
+     JPY: 2013-04-03..2016-09-21(1267d)
+     Forward fill holds one value across these, which is the rule as specified,
+     but it means the panel shows a constant rate where the official series
+     simply has no observation. Flagged rather than patched.
+
+current Exness swap comparison (dated diagnostic, 2026-08-02 snapshot)
+  latest BIS policy rates: AUD 4.35%, CAD 2.25%, CHF 0.00%, EUR 2.25%, GBP 3.75%, JPY 1.00%, NZD 2.50%, USD 3.62%
+  pairs compared                          : 19
+  sign agrees, long side                  : 4/19
+  sign agrees, short side                 : 13/19
+  BOTH directions charge a cost           : 2/19
+  theoretical positive-carry side is also
+    positive under the broker snapshot    : 0/19
+  median markup, long  side (theory-broker): 1.38 pp
+  median markup, short side (theory-broker): 0.60 pp
+
+   pair  theoretical_long_differential  broker_annual_carry_long_pct  broker_annual_carry_short_pct  both_directions_cost theoretical_positive_side  broker_pays_that_side
+AUDCADm                           2.10                          0.00                          -3.12                 False                      long                  False
+AUDCHFm                           4.35                          0.00                          -6.22                 False                      long                  False
+AUDJPYm                           3.35                          0.00                          -0.52                 False                      long                  False
+AUDNZDm                           1.85                          0.00                          -2.60                 False                      long                  False
+AUDUSDm                           0.72                          0.00                          -1.04                 False                      long                  False
+CADJPYm                           1.25                          0.00                          -1.53                 False                      long                  False
+EURCADm                           0.00                         -0.32                          -0.32                  True                      flat                  False
+EURCHFm                           2.25                          0.00                          -2.85                 False                      long                  False
+EURGBPm                          -1.50                         -1.58                           0.00                 False                     short                  False
+EURJPYm                           1.25                          0.00                          -1.90                 False                      long                  False
+EURNZDm                          -0.25                         -0.63                          -0.32                  True                     short                  False
+EURUSDm                          -1.38                         -1.90                           0.00                 False                     short                  False
+GBPAUDm                          -0.60                         -1.08                           0.00                 False                     short                  False
+GBPCHFm                           3.75                          0.00                          -4.33                 False                      long                  False
+NZDCADm                           0.25                          0.00                          -0.62                 False                      long                  False
+NZDJPYm                           1.50                          0.00                          -3.10                 False                      long                  False
+USDCADm                           1.38                          0.00                           0.00                 False                      long                  False
+USDCHFm                           3.62                          0.00                          -4.38                 False                      long                  False
+USDJPYm                           2.62                          0.00                          -3.65                 False                      long                  False
+
+  This is a CURRENT DATED DIAGNOSTIC only. The 2026-08-02 broker snapshot is not
+  applied to any historical date, and a policy-rate differential is NOT claimed to
+  equal a retail CFD swap - measuring the distance between them is the point.
+
+COVERAGE CONFIRMATION
+  2010_onward          all eight covered: True   total gap-days across currencies: 0
+  exness_D1_2018       all eight covered: True   total gap-days across currencies: 0
+  canonical_2021_08    all eight covered: True   total gap-days across currencies: 0
+
+daily     -> C:\Projects\KinoliveLines\study\data\fx_policy_rates_daily.csv
+long      -> C:\Projects\KinoliveLines\study\data\fx_policy_rates_long.csv
+snapshots -> C:\Projects\KinoliveLines\study\data\fx_policy_rate_rebalance_snapshots.csv
+metadata  -> C:\Projects\KinoliveLines\study\data\external\bis_policy_rates_source.json
+audit     -> C:\Projects\KinoliveLines\study\results\fx_policy_rate_data_audit.csv
+swap      -> C:\Projects\KinoliveLines\study\results\fx_policy_rate_swap_snapshot.csv
+raw       -> C:\Projects\KinoliveLines\study\data\external\raw\WS_CBPOL_csv_flat.zip  (GITIGNORED, not committed)

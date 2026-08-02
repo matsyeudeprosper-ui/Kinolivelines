@@ -321,3 +321,50 @@ Two build rules that must not be undone:
 - **CFTC renamed contracts to "Consolidated" in Feb 2022.** The fetcher picks the longest
   *single continuous* series rather than splicing. A splice makes position counts jump,
   and a trailing rank reads that jump as an extreme for three years afterwards.
+
+---
+
+## FX CROSS-SECTIONAL MOMENTUM 3M-1M — CLOSED
+
+Preregistered, frozen by the strategy lead, implemented and certified over tasks 003,
+003A and 003B. **Permanently failed. The exact V1 must not be revisited.**
+
+Certified task-003B numbers, on the canonical executable panel, 19 fiat FX pairs,
+minimum lot, one position, monthly rebalance at the first Monday 20:00 New York:
+
+| | |
+|---|---|
+| Net | **−$75.94** |
+| Return | **−7.76%** |
+| Completed trades | **22** |
+| Profit factor | **0.529** |
+| Validation | **−9.85%** |
+| Untouched holdout | **+2.32%** |
+| Randomisation p (one-sided, 10,000 perms) | **0.7286** |
+| Reverse strategy | **+$27.73** |
+
+**All baseline monthly signal-only periods are negative on both panels** — canonical and
+the 8-year broker-D1 panel, in development, validation and holdout alike.
+
+**The failure was directional, not primarily spread cost.** Doubling every historical
+spread moved the result by about a dollar on a −$76 outcome. The signal picks worse than
+chance: 73% of random pair-and-direction draws beat it.
+
+The simulator itself was certified in 003B — conversions are fitted at the exact H1
+timestamp of every fill from midpoint opens, and five deterministic assertions cover exit
+pricing, entry-bar stops, graph timestamp equality, monthly signal cadence and position
+overlap. The infrastructure is reusable; the strategy is not.
+
+**The reverse and delayed-entry controls are diagnostics, not candidate strategies.**
+They exist to show the signal is worse than its own inverse and worse than a stale copy of
+itself. Neither has been tested as a strategy, neither is preregistered, and neither may be
+promoted on the strength of a control result.
+
+Two structural facts that will recur in any successor on this account:
+
+- **The trade-count bar and the risk rule are in direct tension.** 33 of 55 rebalances were
+  skipped, every one on the 1.50%-of-equity stop-risk rule, because a 2-ATR stop at minimum
+  lot costs about $14 against a $14.69 budget. Forty trades is not reachable on $979 with
+  that stop and a monthly schedule.
+- **The canonical executable panel has no development period.** It begins 2021-08-02;
+  development ends 2021-07-31. Only the broker-D1 panel has one.
