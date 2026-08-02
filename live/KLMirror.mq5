@@ -67,6 +67,7 @@ input int    InpPollMs         = 1000;
 CTrade   trade;
 long     g_seq_done = -1;      // highest sequence number already acted on
 bool     g_halted   = false;
+ulong    g_resynced[];         // tickets whose SL/TP have been fixed to the real fill
 
 //+------------------------------------------------------------------+
 int OnInit()
@@ -132,6 +133,7 @@ void OnTimer()
      }
 
    ExpireOrphanPendings();
+   ResyncFilledStops();
 
    int h = FileOpen(InpSignalFile, FILE_READ|FILE_TXT|FILE_ANSI|FILE_COMMON|FILE_SHARE_READ|FILE_SHARE_WRITE);
    if(h == INVALID_HANDLE)
@@ -410,6 +412,110 @@ void ExpireOrphanPendings()
                   "arrived, publisher may be down", ok ? "EXPIRED" : "FAILED TO EXPIRE",
                   t, age_min);
      }
+  }
+
+//+------------------------------------------------------------------+
+//| Re-set SL and TP from the price the position ACTUALLY filled at    |
+//+------------------------------------------------------------------+
+//
+// WHY THIS EXISTS. MirrorOpen computes the barriers from the price it INTENDS to fill
+// at, because that is all it knows when it places the order. A pending that rests and
+// fills quietly does land there - but a STOP order becomes a market order the instant it
+// triggers, so in a fast move it fills wherever the book happens to be.
+//
+// Observed on 2026-08-01 23:20: the mirror was placed for an entry of 63,498.13 with a
+// 20-point target and 40-point stop, and filled at 63,504.32 - 6.19 points worse. The
+// barriers were left where they were, so from the real fill they measured 14 points and
+// 46 points. It stopped out at -$2.32 instead of the -$2.00 that was asked for.
+//
+// This pass runs every tick, reads POSITION_PRICE_OPEN - the true fill - and moves the
+// barriers to sit at exactly InpTargetUSD and InpStopUSD from it. It is idempotent: once
+// a position is right it computes the same numbers and changes nothing.
+//
+// WHAT IT CANNOT FIX. Slippage on the EXIT. A stop order guarantees a trigger price, not
+// a fill price, so a $2.00 stop can still cost more when price gaps through it - that has
+// been seen on the demo side too, which has no mirror logic at all. This makes the
+// barriers exact; it does not make the outcomes exact.
+//
+void ResyncFilledStops()
+  {
+   double tick_val = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_VALUE);
+   double tick_sz  = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_SIZE);
+   if(tick_val <= 0.0 || tick_sz <= 0.0)
+      return;
+   int    dg   = (int)SymbolInfoInteger(InpSymbol, SYMBOL_DIGITS);
+   double pt   = SymbolInfoDouble(InpSymbol, SYMBOL_POINT);
+   double stops= SymbolInfoInteger(InpSymbol, SYMBOL_TRADE_STOPS_LEVEL) * pt;
+   double bid  = SymbolInfoDouble(InpSymbol, SYMBOL_BID);
+   double ask  = SymbolInfoDouble(InpSymbol, SYMBOL_ASK);
+
+   for(int i = PositionsTotal()-1; i >= 0; i--)
+     {
+      ulong t = PositionGetTicket(i);
+      if(t == 0) continue;
+      if(PositionGetInteger(POSITION_MAGIC) != InpMagic) continue;
+      if(PositionGetString(POSITION_SYMBOL) != InpSymbol) continue;
+
+      bool done = false;                      // tried already - do not retry every second
+      for(int k = ArraySize(g_resynced)-1; k >= 0; k--)
+         if(g_resynced[k] == t) { done = true; break; }
+      if(done) continue;
+
+      double open = PositionGetDouble(POSITION_PRICE_OPEN);
+      double vol  = PositionGetDouble(POSITION_VOLUME);
+      bool   is_buy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+
+      double per_unit = (tick_val / tick_sz) * vol;
+      if(per_unit <= 0.0) continue;
+      double tp_dist = InpTargetUSD / per_unit;
+      double sl_dist = InpStopUSD   / per_unit;
+
+      double want_tp = NormalizeDouble(is_buy ? open + tp_dist : open - tp_dist, dg);
+      double want_sl = NormalizeDouble(is_buy ? open - sl_dist : open + sl_dist, dg);
+
+      double cur_sl = PositionGetDouble(POSITION_SL);
+      double cur_tp = PositionGetDouble(POSITION_TP);
+      if(MathAbs(cur_sl - want_sl) < pt/2 && MathAbs(cur_tp - want_tp) < pt/2)
+        {
+         ArrayResize(g_resynced, ArraySize(g_resynced)+1);
+         g_resynced[ArraySize(g_resynced)-1] = t;
+         continue;                            // already exact, nothing to do
+        }
+
+      // The broker rejects a barrier that price has already reached or is inside the
+      // minimum stop distance of. If the move was violent enough for that, the position
+      // is about to close anyway and the honest thing is to say so, not to retry.
+      double ref_close = is_buy ? bid : ask;
+      bool reachable = is_buy
+                     ? (want_sl < ref_close - stops && want_tp > ref_close + stops)
+                     : (want_sl > ref_close + stops && want_tp < ref_close - stops);
+      if(!reachable)
+        {
+         PrintFormat("KLMirror: cannot resync #%I64u - price %.2f already past the "
+                     "corrected barriers (SL %.2f, TP %.2f). Leaving as placed.",
+                     t, ref_close, want_sl, want_tp);
+         ArrayResize(g_resynced, ArraySize(g_resynced)+1);
+         g_resynced[ArraySize(g_resynced)-1] = t;
+         continue;
+        }
+
+      if(trade.PositionModify(t, want_sl, want_tp))
+         PrintFormat("KLMirror: resynced #%I64u to its real fill %.2f - SL %.2f (%.1f pts, $%.2f), "
+                     "TP %.2f (%.1f pts, $%.2f). Was SL %.2f, TP %.2f.",
+                     t, open, want_sl, MathAbs(open-want_sl), MathAbs(open-want_sl)*per_unit,
+                     want_tp, MathAbs(want_tp-open), MathAbs(want_tp-open)*per_unit,
+                     cur_sl, cur_tp);
+      else
+         PrintFormat("KLMirror: resync of #%I64u FAILED, retcode %d (%s). Barriers left at "
+                     "SL %.2f, TP %.2f.", t, trade.ResultRetcode(),
+                     trade.ResultRetcodeDescription(), cur_sl, cur_tp);
+
+      ArrayResize(g_resynced, ArraySize(g_resynced)+1);
+      g_resynced[ArraySize(g_resynced)-1] = t;
+     }
+
+   if(ArraySize(g_resynced) > 200)             // keep the list from growing forever
+      ArrayRemove(g_resynced, 0, 100);
   }
 
 //+------------------------------------------------------------------+

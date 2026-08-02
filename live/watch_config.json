@@ -4,24 +4,24 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63488.13,
+      "price": 63575,
       "dir": "above",
-      "note": "Fresh M15 spike/4h range high. Our SELL_LIMIT fades the first retest. If accepted/held above on H1, cancel the fade and avoid long continuation per Rule 9."
+      "note": "M5/H1 swing high and H4 resistance (05:00 high 63,575). If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4 breaks."
     },
     {
-      "price": 63027.87,
-      "dir": "below",
-      "note": "H1 resistance reclaimed below. If accepted back under, momentum cools; reassess any short fade premise and look for reclaims."
+      "price": 63468.88,
+      "dir": "above",
+      "note": "H1 resistance 63,468.88. If price returns toward this zone while flat, consider SELL LIMIT fade (fills on bid, no offset) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
     },
     {
-      "price": 62878.52,
-      "dir": "below",
-      "note": "M15 support. If swept/reclaimed, consider a first-retest long fade; avoid chasing breaks per Rule 9."
+      "price": 63355.03,
+      "dir": "above",
+      "note": "H1 level previously broken. If reclaimed and H1 holds above, avoid fresh shorts per Rule 9; consider buy-the-retest only if structure supports it with fixed SL 20, TP 40."
     },
     {
-      "price": 62819.96,
-      "dir": "below",
-      "note": "H4 resistance. Acceptance back below weakens longs; prefer reclaim/fade setups over continuation shorts."
+      "price": 63097.05,
+      "dir": "above",
+      "note": "H1 support just broken. If we reclaim/accept back above (ask > 63,097 and holding), consider buy-the-retest using BUY LIMIT at L+spread per Rule 3 with SL 20, TP 40. Avoid SELLs into the direction of this H1 break per Rule 9."
     }
   ],
   "max_hold_minutes": 120
