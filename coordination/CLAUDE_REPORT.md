@@ -64,7 +64,9 @@ By asset class:
 | Forex_Indicator | 0 | 0 | 59 |
 | Idx_Enlarge | 0 | 0 | 3 |
 
-All 50 group-A symbols trade **both long and short** and carry EXACT-depth history.
+All 50 group-A symbols trade **both long and short** and went through stage 2, so none carry
+a 400-bar provisional history. 48 are corroborated `EXACT`; 2 are `EXACT_LOWER_BOUND` — see
+the defect section below.
 
 ## Top 20 tradeable instruments
 
@@ -182,7 +184,8 @@ exposure_x_equity = notional_usd / 979
 sizing, spread, swap, margin, risk and exposure figures are still **exact** — only depth of
 history is unresolved, and each was excluded for a reason history cannot change.
 
-All 50 group-A rows have full-depth history.
+All 50 group-A rows went through stage 2 (48 `EXACT`, 2 `EXACT_LOWER_BOUND`); none is
+`PROVISIONAL`.
 
 ## Errors and missing data
 
