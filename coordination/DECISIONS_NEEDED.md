@@ -1,109 +1,88 @@
 FROM: CLAUDE
-RE: TASK 002 — open decisions for the strategy lead
+RE: TASK 003 — duplicate spec received, and what needs deciding before any V2
 
-Five things task 002 surfaced that I cannot decide, because each one is a strategy or
-research-design call, not an implementation detail. Each is stated with the measured facts
-and the consequence of either choice. No option is recommended.
-
-Blocking status: **none of these block task 003 from starting.** The dataset as committed is
-usable today at 4.99 years. Decisions 1 and 2 change what the universe is, so they are
-cheapest to make now rather than after a strategy is fitted.
+Supersedes the task-002 version of this file. Those five items were all answered by the
+task-003 spec (history: both panels; risk cap: 1.50%; ATR: canonical supersedes; NZDCHFm:
+stays excluded; execution: first Monday 20:00 New York).
 
 ---
 
-## 1. History depth — 4.99 years, or ~8 years without canonical sessions?
+## 1. The task-003 spec arrived twice, identical
 
-**Fact.** Exness serves dense H1 only from 2021-08. Before that: 155 / 311 / 312 H1 bars for
-2018 / 2019 / 2020, where a full year is ~6,200. Verified with explicit `copy_rates_range()`
-calls, so it is the broker's limit, not a retryable download.
+The second copy was byte-identical to the first. **It was not re-run.** TASK 003 was already
+complete and pushed:
 
-Broker **D1** does reach back to 2018-07 (~8 years, 2,522 bars).
+- commit `2ddf7a2` (SHA recorded in `b25e959`)
+- all 7 required outputs on `origin/main`, report begins with the required two lines
+- **verdict: V1 FAILED, 5 of 13 conditions**
 
-| Option | Span | Session boundary | Cost |
-|---|---|---|---|
-| **A** — keep the committed H1-derived panel | 4.99 yrs, 261 weekly bars | true 17:00 NY | ~5 years is thin for a weekly cross-sectional test; 261 weekly observations |
-| **B** — rebuild from broker D1 | ~8 yrs, ~420 weekly bars | broker's own daily cut, **not** 17:00 NY | loses canonical sessions; broker cut differs measurably (see decision 3) |
-| **C** — both: D1 panel for the long test, H1 panel to check the boundary matters | ~8 yrs + 4.99 yrs | both | roughly one extra build; no new download, D1 is already cached |
+If the duplicate was intentional — a re-verification request, or a different task number that
+got pasted wrong — say so and I will act on it. Results are deterministic (permutation seed
+fixed at 20260802), so a re-run reproduces the same numbers; it costs ~15 minutes and would
+confirm nothing new unless the spec actually changed.
 
-**What I need:** which panel task 003 should be fitted on.
-
----
-
-## 2. Which risk cap governs the universe?
-
-**Fact.** Re-measuring on canonical sessions raised every symbol's 2-ATR risk. Two symbols
-crossed the 1% line that task 001 had them inside:
-
-| Symbol | Task 001 risk | Canonical risk |
-|---|---|---|
-| AUDJPYm | 0.95% | **1.07%** |
-| NZDJPYm | 0.90% | **1.03%** |
-
-Universe size by cap, on canonical numbers:
-
-| Cap | Symbols |
-|---|---|
-| ≤ 1.00% | **10** |
-| ≤ 1.50% | **19** |
-| ≤ 2.00% | **23** |
-
-**What I need:** the cap. It sets the cross-sectional breadth, and breadth is the thing that
-decides whether a cross-sectional test can resolve anything at all. 10 names is a materially
-different experiment from 23.
+**No answer needed if it was just a duplicate.** Proceed to section 2.
 
 ---
 
-## 3. Which ATR governs sizing from here?
+## 2. Three structural findings that will repeat in any V2 unless the spec changes
 
-**Fact.** Canonical ATR(20) exceeds broker D1 ATR(20) for **23 of 23** symbols — ratio 1.049
-to 1.195, median **1.113**. This is a session-boundary effect, not an error: the broker's daily
-candle splits range that the 17:00-NY session keeps whole.
+These are properties of the account and the schedule, not of the momentum idea. A V2 that
+keeps the same geometry inherits all three.
 
-Consequence: **every risk number in task 001 is ~11% too small** if canonical sessions are the
-intended trading unit.
+### 2a. Condition 9 (≥40 trades) was close to unreachable by construction
 
-**What I need:** confirmation that canonical ATR supersedes the task-001 D1 ATR for all future
-sizing. If yes, task 001's group A/B boundaries should be treated as provisional, since they
-were drawn on the smaller ATR.
+**33 of 55 rebalances were skipped**, every one of them by the 1.50% risk rule. Nothing else
+skipped a single trade — 0 for exposure, 0 for conversion.
+
+The arithmetic: a 2-ATR stop at minimum lot on the JPY crosses costs roughly **$14**, against a
+budget of **$14.69** (1.50% of $979). The rule sits almost exactly on top of the cheapest
+position the broker will let this account open. As equity fell the budget shrank and the skip
+rate rose.
+
+So on a $979 account, **2-ATR stop + minimum lot + monthly rebalancing cannot produce 40 trades
+in 5 years** — 60 months is the ceiling before any skipping, and skipping removed 60% of what
+remained. This is the frozen rule behaving exactly as written; it is not a defect. But the
+trade-count condition and the risk rule are in direct tension and one of them has to give.
+
+**Decision needed:** which. Options are yours — a wider risk budget, a tighter stop, a higher
+rebalance frequency, a longer test window, or a lower trade-count bar. I am not recommending
+one.
+
+### 2b. The canonical panel has no development period
+
+It begins **2021-08-02**; development ends **2021-07-31**. Zero months exist. Development on
+the executable panel was therefore empty in task 003, and will be empty in any V2 using the same
+split. Only the long-D1 panel has a development period (140 months, signal-only).
+
+**Decision needed:** whether V2 splits the canonical panel differently, or accepts that
+development is D1-only.
+
+### 2c. Two pass conditions can be satisfied without meaning anything
+
+- **Condition 5** ("same return sign") passed because **both** panels were negative. It cannot
+  distinguish agreement-on-profit from agreement-on-loss.
+- **Condition 12** ("no trade > 25% of net profit") passed **vacuously** — with net profit
+  negative there is no profit to concentrate.
+
+Both were correctly reported as PASS because that is what the written conditions say. Flagging
+that neither carried information in a failing run, so a V2 that fails the same way would again
+score 2 free passes.
+
+**Decision needed:** whether to restate either condition. Purely a specification question.
 
 ---
 
-## 4. NZDCHFm — excluded by 0.02 percentage points
+## 3. Standing constraint, unchanged
 
-**Fact.** Median spread 6.02% of D1 ATR against a 6.00% cap. Everything else passes: risk
-0.63%, exposure 0.60x, 1,705 D1 bars.
-
-I held the threshold rather than rounding in its favour. It is a one-constant change to include
-it, taking the universe from 23 to 24.
-
-**What I need:** hold the line, or admit it.
+The executable panel spans **4.99 years**, not 6. Exness serves no dense H1 before 2021-08 —
+verified in task 002 with explicit `copy_rates_range()` calls. Broker D1 reaches ~8 years but
+cannot be cut to the 17:00 New York session boundary.
 
 ---
 
-## 5. The 17:00 NY rollover hour
+## Not asked
 
-**Fact,** from spread alone — no return series was inspected in producing this:
-
-| NY hour | Median spread | p90 |
-|---|---|---|
-| 00–16 | 20–21 pts | 38–43 |
-| **17** | **53 pts** | **158** |
-| **18** | **46 pts** | **108** |
-| 19–23 | 21 pts | 38–41 |
-
-The rollover hour costs ~2.6x the median hour, and its p90 is ~4x normal. The Sunday
-mini-session is similar (median 24, p90 93).
-
-A weekly strategy has to execute somewhere. This is what each hour costs.
-
-**What I need:** the intended execution timestamp for weekly rebalancing. I will not pick it
-from returns — choosing an hour by looking at what it earns is exactly the selection that makes
-a backtest lie. Name it on cost or on principle and I will build to it.
-
----
-
-## Not asked, deliberately
-
-I am not proposing a strategy, an entry rule, a ranking formula, a lookback, or a holding
-period. Those are the strategy lead's. This file only asks for the parameters that change what
-the DATA is, so the dataset does not have to be rebuilt after a strategy is already fitted to it.
+No V2, no parameter change, no replacement strategy and no repair of V1 is proposed here or
+anywhere in the task-003 report. V1 is reported FAILED and left alone, as instructed. This file
+raises only the specification-level questions whose answers change what I build next.
