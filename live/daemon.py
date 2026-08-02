@@ -200,7 +200,19 @@ declined   = {}      # level price -> time it was last assessed and passed on
 forced     = set()   # tickets already flagged for exceeding max hold
 fires      = {}      # level key -> how many times it has fired this run
 born_dead  = set()   # levels first seen already broken; silent until reclaimed
-unreachable_flagged = set()   # pending tickets already warned about under rule 8
+# Rule 8 escalation: ticket -> the highest threshold already warned about.
+#
+# This was a set, so the warning fired ONCE per ticket and never again. That treated
+# 1.6x and 5.3x as the same event, when they are not - fill odds inside the hold window
+# fall from about 28% to about 6% between them. The order that caused rule 8 to exist
+# drifted to 5.3x, and under the one-shot design the decider would have been told once
+# at 1.5x and then left alone while it got four times worse.
+#
+# Now each band warns separately, so the wake tracks the situation deteriorating rather
+# than assuming the first look settled it. Still bounded - three warnings per ticket at
+# most, not one per poll.
+UNREACHABLE_BANDS = (1.5, 3.0, 5.0)
+unreachable_flagged = {}      # ticket -> highest band already warned
 # Seeded to NOW, not 0.0. The staleness backstop measures now - last_event, so a
 # zero start meant the first pass after a restart measured against the Unix epoch:
 # on 2026-08-01 it woke the decider with "NO DECISION FOR 29759658 MINUTES", about
@@ -352,19 +364,30 @@ while True:
         # through a 1,465-point trend, holding the single slot rule 1 allows,
         # kept at every wake because its R:R still read 1.81.
         for o in ords:
-            if o.ticket in unreachable_flagged:
-                continue
             away = abs(o.price_open - mid) / (atr_m15 or 120)
-            if away > 1.5 and now - last_event > MIN_GAP:
-                unreachable_flagged.add(o.ticket)
-                wake(f"PENDING #{o.ticket} @ {o.price_open:.2f} is now {away:.1f}x ATR(M15) "
-                     f"from price {mid:.2f} - under RULE 8 that is unreachable "
-                     f"(roughly {'6' if away >= 5 else '15' if away >= 3 else '28'}% chance of "
-                     f"filling inside 120 minutes) and it is holding the only pending slot. "
-                     f"Cancel it unless you can say specifically why price returns there soon. "
-                     f"Do NOT replace it at a worse entry.")
-                last_event = now
-        unreachable_flagged &= {o.ticket for o in ords}   # forget closed tickets
+            # highest band this order has now crossed, and the highest already warned
+            band = max([b for b in UNREACHABLE_BANDS if away > b], default=None)
+            if band is None:
+                continue
+            if unreachable_flagged.get(o.ticket, 0) >= band:
+                continue                       # already warned at this band or worse
+            if now - last_event <= MIN_GAP:
+                continue
+            prev = unreachable_flagged.get(o.ticket, 0)
+            unreachable_flagged[o.ticket] = band
+            odds = "6" if away >= 5 else "15" if away >= 3 else "28"
+            again = (f" This is the SECOND escalation - it was already {prev:.1f}x when "
+                     f"you last chose to keep it, and it has since got worse." if prev else "")
+            wake(f"PENDING #{o.ticket} @ {o.price_open:.2f} is now {away:.1f}x ATR(M15) "
+                 f"from price {mid:.2f} - under RULE 8 that is unreachable "
+                 f"(roughly {odds}% chance of filling inside 120 minutes) and it is "
+                 f"holding the only pending slot.{again} "
+                 f"Cancel it unless you can say specifically why price returns there soon. "
+                 f"Do NOT replace it at a worse entry.")
+            last_event = now
+        # forget tickets that have left the book
+        for t in [t for t in unreachable_flagged if t not in {o.ticket for o in ords}]:
+            unreachable_flagged.pop(t, None)
 
         # --- STALENESS BACKSTOP: the decider must not sleep through a real move ---
         # Every wake-up depends on the model's own watch levels being correct, and

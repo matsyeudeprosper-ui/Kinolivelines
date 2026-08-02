@@ -802,3 +802,289 @@
 [2026-08-01 05:14:59]        *** DECISION NEEDED - CLAUDE SESSION *** DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
 [2026-08-01 05:18:29] EVENT  NO DECISION FOR 29759658 MINUTES while price moved +47 (1.0 x ATR-M15) to 63001.88. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
 [2026-08-01 05:18:31]        *** DECISION NEEDED - CLAUDE SESSION *** NO DECISION FOR 29759658 MINUTES while price moved +47 (1.0 x ATR-M15) to 63001.88. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 07:00:28] EVENT  AT LEVEL - flat, price 63033.05 at H1 RESISTANCE 63031.18 (2 px away). Assess for a trade.
+[2026-08-01 07:00:29]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 63033.05 at H1 RESISTANCE 63031.18 (2 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 07:30:30] EVENT  AT LEVEL - flat, price 63035.56 at H1 RESISTANCE 63031.18 (4 px away). Assess for a trade.
+[2026-08-01 07:30:31]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 63035.56 at H1 RESISTANCE 63031.18 (4 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 08:39:09] EVENT  AT LEVEL - flat, price 63014.52 at H1 SUPPORT 63011.74 (3 px away). Assess for a trade.
+[2026-08-01 08:39:10]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 63014.52 at H1 SUPPORT 63011.74 (3 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 09:17:25] EVENT  AT LEVEL - flat, price 63041.08 at H1 RESISTANCE 63045.08 (4 px away). Assess for a trade.
+[2026-08-01 09:17:27]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 63041.08 at H1 RESISTANCE 63045.08 (4 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 09:29:31] pending #3032554661 now resting
+[2026-08-01 10:00:18] EVENT  POSITION OPENED #3032554661 SELL 0.01 @ 63056.0 SL 63082.0 TP 63017.0
+[2026-08-01 10:00:19]        *** DECISION NEEDED - CLAUDE SESSION *** POSITION OPENED #3032554661 SELL 0.01 @ 63056.0 SL 63082.0 TP 63017.0 | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 10:19:24]        journalled #3032554661
+[2026-08-01 10:19:24] EVENT  POSITION CLOSED #3032554661 - flat now, bid 63009.7. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 10:19:25]        *** DECISION NEEDED - CLAUDE SESSION *** POSITION CLOSED #3032554661 - flat now, bid 63009.7. Reassess: is there a next setup, and are the watch levels still right? | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 10:25:25] EVENT  AT LEVEL - flat, price 63000.62 at H1 SUPPORT 62995.88 (5 px away). Assess for a trade.
+[2026-08-01 10:25:27]        *** DECISION NEEDED - CLAUDE SESSION *** AT LEVEL - flat, price 63000.62 at H1 SUPPORT 62995.88 (5 px away). Assess for a trade. | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 10:26:27] EVENT  POSITION OPENED #3032581047 BUY 0.01 @ 63006.0 SL 62978.0 TP 63048.0
+[2026-08-01 10:26:28]        *** DECISION NEEDED - CLAUDE SESSION *** POSITION OPENED #3032581047 BUY 0.01 @ 63006.0 SL 62978.0 TP 63048.0 | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 10:49:16]        journalled #3032581047
+[2026-08-01 10:49:16] EVENT  POSITION CLOSED #3032581047 - flat now, bid 62976.48. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 10:49:49]        [SESSION SILENT 23 min - fell back to GPT-5]
+[2026-08-01 10:49:49]        place_pending: EXECUTED. account 436771046 DEMO  equity 978.55   bid 62969.78 ask 62979.78
+[2026-08-01 10:49:49]        risk 27.12px = $0.27 (0.03% eq) | reward 40.88px = $0.41 | R:R 1.51:1
+[2026-08-01 10:49:49]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 62995.88, 'sl': 63023.0, 'tp': 62955.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 10:49:49]        retcode 10009  ok  ->  OK
+[2026-08-01 10:49:49]        resting orders now: 1
+[2026-08-01 10:49:49]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 10:49:49]        -> state changed
+[2026-08-01 10:50:19] pending #3032590812 now resting
+[2026-08-01 11:00:50] EVENT  PENDING #3032590812 @ 62995.88 is now 1.6x ATR(M15) from price 62938.90 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 11:01:37]        [SESSION SILENT 34 min - fell back to GPT-5]
+[2026-08-01 11:01:37]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 978.55   bid 62925.28 ask 62935.28
+[2026-08-01 11:01:37]        sending: {'action': 8, 'order': 3032590812}
+[2026-08-01 11:01:37]        retcode 10009  ok  ->  OK
+[2026-08-01 11:01:37]        resting orders now: 0
+[2026-08-01 11:01:37]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 11:01:37]        -> state changed
+[2026-08-01 11:02:07] pending #3032590812 gone - our own cancel, not waking
+[2026-08-01 11:04:07] EVENT  LEVEL BROKEN below 62915.63 (reached 62853.66, now 62928.03). Note: H4 support. A decisive move below implies upward resolution has unwound; information only per rule 9.
+[2026-08-01 11:04:28]        [SESSION SILENT 38 min - fell back to GPT-5]
+[2026-08-01 11:04:28]        place_pending: EXECUTED. account 436771046 DEMO  equity 978.55   bid 62922.65 ask 62932.65
+[2026-08-01 11:04:28]        risk 32.80px = $0.33 (0.03% eq) | reward 49.20px = $0.49 | R:R 1.50:1
+[2026-08-01 11:04:28]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 2, 'price': 62925.63, 'sl': 62892.83, 'tp': 62974.83, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 11:04:28]        retcode 10009  ok  ->  OK
+[2026-08-01 11:04:28]        resting orders now: 1
+[2026-08-01 11:04:28]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 11:04:28]        -> state changed
+[2026-08-01 11:04:58] EVENT  POSITION OPENED #3032610473 BUY 0.01 @ 62925.63 SL 62892.83 TP 62974.83
+[2026-08-01 11:05:08]        [SESSION SILENT 39 min - fell back to GPT-5]
+[2026-08-01 11:05:08]        no_action: Acknowledged - no action taken.
+[2026-08-01 11:06:39]        journalled #3032610473
+[2026-08-01 11:06:39] EVENT  POSITION CLOSED #3032610473 - flat now, bid 62905.07. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 11:06:40]        *** DECISION NEEDED - CLAUDE SESSION *** POSITION CLOSED #3032610473 - flat now, bid 62905.07. Reassess: is there a next setup, and are the watch levels still right? | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 11:09:54] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-08-01 11:09:54] decider: session / None (None present)
+[2026-08-01 11:09:54] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-01 11:09:55]        *** DECISION NEEDED - CLAUDE SESSION *** DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your  | Context written to NEEDS_HUMAN.json. No action taken by the loop. Any open position still has its stop and target on the broker.
+[2026-08-01 11:09:55] level 62915.63 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 11:37:12] EVENT  AT LEVEL - flat, price 62939.83 at H4 SUPPORT 62935.36 (4 px away). Assess for a trade.
+[2026-08-01 11:37:52]        [SESSION SILENT 27 min - fell back to GPT-5]
+[2026-08-01 11:37:52]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 11:37:52]        no_action: Acknowledged - no action taken.
+[2026-08-01 11:37:52]        -> state changed
+[2026-08-01 11:38:22] level 62945.36 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 11:38:22] level 62935.36 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 11:40:22] EVENT  LEVEL BROKEN above 62945.36 (reached 62959.17, now 62928.90). Note: Ask at L+spread for H4 support 62,935.36. If reached while flat, consider placing BUY_LIMIT at 62,945.36 (fill lands on support per Rule 3).
+[2026-08-01 11:40:42]        [SESSION SILENT 30 min - fell back to GPT-5]
+[2026-08-01 11:40:42]        no_action: Acknowledged - no action taken.
+[2026-08-01 12:07:44] EVENT  AT LEVEL - flat, price 62930.81 at H4 SUPPORT 62935.36 (5 px away). Assess for a trade.
+[2026-08-01 12:08:02]        [SESSION SILENT 58 min - fell back to GPT-5]
+[2026-08-01 12:08:02]        place_pending: FAILED. ssed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 12:08:02]        REJECTED: BUY_LIMIT must rest BELOW ask 62933.82, but you sent 62945.36. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 12:17:02] EVENT  AT LEVEL - flat, price 62798.38 at H1 SUPPORT 62797.27 (1 px away). Assess for a trade.
+[2026-08-01 12:17:32]        [SESSION SILENT 67 min - fell back to GPT-5]
+[2026-08-01 12:17:32]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 12:17:32]        -> state changed
+[2026-08-01 12:18:02] level 62807.27 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 12:18:02] level 62797.27 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 12:20:32] EVENT  LEVEL BROKEN below 62797.27 (reached 62783.81, now 62816.36). Note: Acceptance below H1 support on M5 weakens the long fade. Avoid buying into a turned resistance until reclaimed and held.
+[2026-08-01 12:20:39]        [SESSION SILENT 71 min - fell back to GPT-5]
+[2026-08-01 12:20:39]        no_action: Acknowledged - no action taken.
+[2026-08-01 12:25:39] EVENT  LEVEL BROKEN below 62797.27 (reached 62778.61, now 62794.87). Note: Acceptance below H1 support on M5 weakens the long fade. Avoid buying into a turned resistance until reclaimed and held.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-01 12:26:00]        [SESSION SILENT 76 min - fell back to GPT-5]
+[2026-08-01 12:26:00]        set_watch_levels: Watch levels updated (3 active).
+[2026-08-01 12:26:00]        no_action: Acknowledged - no action taken.
+[2026-08-01 12:26:00]        -> state changed
+[2026-08-01 13:02:02] EVENT  AT LEVEL - flat, price 62595.81 at H1 SUPPORT 62590.28 (6 px away). Assess for a trade.
+[2026-08-01 13:02:48]        [SESSION SILENT 112 min - fell back to GPT-5]
+[2026-08-01 13:02:48]        place_pending: EXECUTED. account 436771046 DEMO  equity 978.21   bid 62601.15 ask 62611.15
+[2026-08-01 13:02:48]        risk 40.00px = $2.00 (0.20% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 13:02:48]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62600.28, 'sl': 62560.28, 'tp': 62620.28, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 13:02:48]        retcode 10009  ok  ->  OK
+[2026-08-01 13:02:48]        resting orders now: 1
+[2026-08-01 13:02:48]        -> state changed
+[2026-08-01 13:03:21] pending #3032722239 now resting
+[2026-08-01 13:03:59] EVENT  PENDING GONE #3032722239 left the book without filling - cancelled, expired or rejected, and NOT by this loop. Flat with no order unless stated otherwise. Reassess from current structure.
+[2026-08-01 13:04:27]        [SESSION SILENT 114 min - fell back to GPT-5]
+[2026-08-01 13:04:27]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 13:04:27]        no_action: Acknowledged - no action taken.
+[2026-08-01 13:04:27]        -> state changed
+[2026-08-01 13:04:57] level 62600.28 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 13:17:43] EVENT  LEVEL BROKEN below 62549.32 (reached 62540.09, now 62560.31). Note: Prior M5 swing low. If swept and quickly reclaimed on M5, consider a BUY_LIMIT on pullback to the reclaimed level (entry = L+spread), 40-pt stop / 20-pt target.
+[2026-08-01 13:17:59]        [SESSION SILENT 128 min - fell back to GPT-5]
+[2026-08-01 13:17:59]        place_pending: FAILED. ssed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 13:17:59]        REJECTED: BUY_LIMIT must rest BELOW ask 62559.15, but you sent 62559.32. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 14:03:06] EVENT  NO DECISION FOR 45 MINUTES while price moved -351 (2.6 x ATR-M15) to 62544.02. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-08-01 14:03:33]        [SESSION SILENT 173 min - fell back to GPT-5]
+[2026-08-01 14:03:33]        place_pending: FAILED. ssed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 14:03:33]        REJECTED: BUY_LIMIT must rest BELOW ask 62534.53, but you sent 62537.33. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 14:03:33]        set_watch_levels: Watch levels updated (5 active).
+[2026-08-01 14:03:33]        -> state changed
+[2026-08-01 14:04:03] level 62537.33 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:04:03] level 62527.33 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:04:03] level 62497.33 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:06:33] EVENT  LEVEL BROKEN above 62557.33 (reached 62569.40, now 62533.66). Note: Reference for target on the pending (20 pts).
+[2026-08-01 14:06:47]        [SESSION SILENT 177 min - fell back to GPT-5]
+[2026-08-01 14:06:47]        no_action: Acknowledged - no action taken.
+[2026-08-01 14:13:17] EVENT  LEVEL BROKEN below 62497.33 (reached 62496.76, now 62533.84). Note: Reference for stop location on the pending (40 pts).
+[2026-08-01 14:13:31]        [SESSION SILENT 183 min - fell back to GPT-5]
+[2026-08-01 14:13:31]        place_pending: FAILED. ssed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 14:13:31]        REJECTED: BUY_LIMIT must rest BELOW ask 62536.28, but you sent 62537.33. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a BUY_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 14:19:01] EVENT  LEVEL BROKEN below 62497.33 (reached 62471.31, now 62551.21). Note: Reference for stop location on the pending (40 pts).  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-01 14:19:29]        [SESSION SILENT 189 min - fell back to GPT-5]
+[2026-08-01 14:19:29]        place_pending: EXECUTED. account 436771046 DEMO  equity 975.67   bid 62527.71 ask 62537.71
+[2026-08-01 14:19:29]        risk 40.00px = $2.00 (0.20% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:19:29]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62537.33, 'sl': 62497.33, 'tp': 62557.33, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:19:29]        retcode 10009  ok  ->  OK
+[2026-08-01 14:19:29]        resting orders now: 1
+[2026-08-01 14:19:29]        -> state changed
+[2026-08-01 14:19:59] EVENT  POSITION OPENED #3032829322 BUY 0.05 @ 62537.33 SL 62497.33 TP 62557.33
+[2026-08-01 14:20:16]        [SESSION SILENT 190 min - fell back to GPT-5]
+[2026-08-01 14:20:16]        set_watch_levels: Watch levels updated (3 active).
+[2026-08-01 14:20:16]        -> state changed
+[2026-08-01 14:21:17]        journalled #3032829322
+[2026-08-01 14:21:17] EVENT  POSITION CLOSED #3032829322 - flat now, bid 62510.27. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 14:21:34]        [SESSION SILENT 191 min - fell back to GPT-5]
+[2026-08-01 14:21:34]        place_pending: EXECUTED. account 436771046 DEMO  equity 973.58   bid 62492.3 ask 62502.3
+[2026-08-01 14:21:34]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:21:34]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62463.63, 'sl': 62423.63, 'tp': 62483.63, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:21:34]        retcode 10009  ok  ->  OK
+[2026-08-01 14:21:34]        resting orders now: 1
+[2026-08-01 14:21:34]        set_watch_levels: Watch levels updated (3 active).
+[2026-08-01 14:21:34]        -> state changed
+[2026-08-01 14:22:04] pending #3032830769 now resting
+[2026-08-01 14:22:04] level 62463.63 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:22:04] level 62483.63 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:22:34] EVENT  POSITION OPENED #3032830769 BUY 0.05 @ 62463.63 SL 62423.63 TP 62483.63
+[2026-08-01 14:22:40]        [SESSION SILENT 193 min - fell back to GPT-5]
+[2026-08-01 14:22:40]        no_action: Acknowledged - no action taken.
+[2026-08-01 14:27:43]        journalled #3032830769
+[2026-08-01 14:27:43] EVENT  POSITION CLOSED #3032830769 - flat now, bid 62480.99. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 14:27:55]        [SESSION SILENT 198 min - fell back to GPT-5]
+[2026-08-01 14:27:55]        place_pending: EXECUTED. account 436771046 DEMO  equity 974.58   bid 62481.79 ask 62491.79
+[2026-08-01 14:27:55]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:27:55]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62463.63, 'sl': 62423.63, 'tp': 62483.63, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:27:55]        retcode 10009  ok  ->  OK
+[2026-08-01 14:27:55]        resting orders now: 1
+[2026-08-01 14:27:55]        -> state changed
+[2026-08-01 14:28:25] pending #3032838295 now resting
+[2026-08-01 14:30:55] EVENT  LEVEL BROKEN above 62483.63 (reached 62532.76, now 62537.74). Note: TP reference (20 pts above entry). If ask trades above, TP should fill; manage only if execution fails.
+[2026-08-01 14:31:03]        [SESSION SILENT 201 min - fell back to GPT-5]
+[2026-08-01 14:31:03]        no_action: Acknowledged - no action taken.
+[2026-08-01 14:34:03] EVENT  POSITION OPENED #3032838295 BUY 0.05 @ 62463.63 SL 62423.63 TP 62483.63
+[2026-08-01 14:34:10]        [SESSION SILENT 204 min - fell back to GPT-5]
+[2026-08-01 14:34:10]        no_action: Acknowledged - no action taken.
+[2026-08-01 14:34:41]        journalled #3032838295
+[2026-08-01 14:34:41] EVENT  POSITION CLOSED #3032838295 - flat now, bid 62472.84. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 14:34:54]        [SESSION SILENT 205 min - fell back to GPT-5]
+[2026-08-01 14:34:54]        place_pending: EXECUTED. account 436771046 DEMO  equity 975.58   bid 62451.4 ask 62461.4
+[2026-08-01 14:34:54]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:34:54]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62435.15, 'sl': 62395.15, 'tp': 62455.15, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:34:54]        retcode 10009  ok  ->  OK
+[2026-08-01 14:34:54]        resting orders now: 1
+[2026-08-01 14:34:54]        set_watch_levels: Watch levels updated (3 active).
+[2026-08-01 14:34:54]        -> state changed
+[2026-08-01 14:35:24] pending #3032844367 now resting
+[2026-08-01 14:35:24] level 62455.15 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:35:24] level 62435.15 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:37:54] EVENT  POSITION OPENED #3032844367 BUY 0.05 @ 62435.15 SL 62395.15 TP 62455.15
+[2026-08-01 14:38:02]        [SESSION SILENT 208 min - fell back to GPT-5]
+[2026-08-01 14:38:02]        no_action: Acknowledged - no action taken.
+[2026-08-01 14:39:03]        journalled #3032844367
+[2026-08-01 14:39:03] EVENT  POSITION CLOSED #3032844367 - flat now, bid 62394.31. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 14:39:21]        [SESSION SILENT 209 min - fell back to GPT-5]
+[2026-08-01 14:39:21]        place_pending: EXECUTED. account 436771046 DEMO  equity 973.57   bid 62421.75 ask 62431.75
+[2026-08-01 14:39:21]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:39:21]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 62425.15, 'sl': 62465.15, 'tp': 62405.15, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:39:21]        retcode 10009  ok  ->  OK
+[2026-08-01 14:39:21]        resting orders now: 1
+[2026-08-01 14:39:21]        set_watch_levels: Watch levels updated (3 active).
+[2026-08-01 14:39:21]        -> state changed
+[2026-08-01 14:39:51] pending #3032848479 now resting
+[2026-08-01 14:39:51] level 62425.15 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:39:51] level 62405.15 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 14:40:21] EVENT  POSITION OPENED #3032848479 SELL 0.05 @ 62425.15 SL 62465.15 TP 62405.15
+[2026-08-01 14:40:33]        [SESSION SILENT 210 min - fell back to GPT-5]
+[2026-08-01 14:40:33]        set_watch_levels: Watch levels updated (2 active).
+[2026-08-01 14:40:33]        -> state changed
+[2026-08-01 14:50:05]        journalled #3032848479
+[2026-08-01 14:50:05] EVENT  POSITION CLOSED #3032848479 - flat now, bid 62461.97. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 14:50:24]        [SESSION SILENT 220 min - fell back to GPT-5]
+[2026-08-01 14:50:24]        place_pending: EXECUTED. account 436771046 DEMO  equity 971.37   bid 62482.05 ask 62492.05
+[2026-08-01 14:50:24]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 14:50:24]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62404.31, 'sl': 62364.31, 'tp': 62424.31, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 14:50:24]        retcode 10009  ok  ->  OK
+[2026-08-01 14:50:24]        resting orders now: 1
+[2026-08-01 14:50:24]        set_watch_levels: Watch levels updated (2 active).
+[2026-08-01 14:50:24]        -> state changed
+[2026-08-01 14:50:54] pending #3032857550 now resting
+[2026-08-01 15:20:10] EVENT  LEVEL BROKEN above 62534.09 (reached 62538.51, now 62533.00). Note: M15 resistance. If price accepts above and holds, the range premise weakens; reassess/cancel the buy pending if the setup is invalidated.
+[2026-08-01 15:20:20]        [SESSION SILENT 250 min - fell back to GPT-5]
+[2026-08-01 15:20:20]        no_action: Acknowledged - no action taken.
+[2026-08-01 16:00:50] EVENT  PENDING #3032857550 @ 62404.31 is now 1.6x ATR(M15) from price 62641.96 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-01 16:01:09]        [SESSION SILENT 291 min - fell back to GPT-5]
+[2026-08-01 16:01:09]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 971.37   bid 62648.76 ask 62658.76
+[2026-08-01 16:01:09]        sending: {'action': 8, 'order': 3032857550}
+[2026-08-01 16:01:09]        retcode 10009  ok  ->  OK
+[2026-08-01 16:01:09]        resting orders now: 0
+[2026-08-01 16:01:09]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 16:01:09]        -> state changed
+[2026-08-01 16:01:39] pending #3032857550 gone - our own cancel, not waking
+[2026-08-01 16:01:39] level 62614.95 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 16:45:51] EVENT  NO DECISION FOR 45 MINUTES while price moved +201 (1.4 x ATR-M15) to 62745.21. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-08-01 16:46:40]        [SESSION SILENT 336 min - fell back to GPT-5]
+[2026-08-01 16:46:40]        place_pending: EXECUTED. account 436771046 DEMO  equity 971.37   bid 62742.59 ask 62752.59
+[2026-08-01 16:46:40]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 16:46:40]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 62819.96, 'sl': 62859.96, 'tp': 62799.96, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 16:46:40]        retcode 10009  ok  ->  OK
+[2026-08-01 16:46:40]        resting orders now: 1
+[2026-08-01 16:46:40]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 16:46:40]        -> state changed
+[2026-08-01 16:47:10] pending #3032949438 now resting
+[2026-08-01 18:32:28] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-08-01 18:32:28] decider: session / None (None present)
+[2026-08-01 18:32:28] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-01 18:32:51]        [SESSION SILENT 443 min - fell back to GPT-5]
+[2026-08-01 18:32:51]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 18:32:51]        -> state changed
+[2026-08-01 19:04:00] EVENT  POSITION OPENED #3032949438 SELL 0.05 @ 62819.96 SL 62859.96 TP 62799.96
+[2026-08-01 19:04:17]        [SESSION SILENT 474 min - fell back to GPT-5]
+[2026-08-01 19:04:17]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 19:04:17]        -> state changed
+[2026-08-01 19:04:47] level 62819.96 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 19:04:47] level 62799.96 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 19:10:18]        journalled #3032949438
+[2026-08-01 19:10:18] EVENT  POSITION CLOSED #3032949438 - flat now, bid 62850.4. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 19:10:36]        [SESSION SILENT 480 min - fell back to GPT-5]
+[2026-08-01 19:10:36]        place_pending: FAILED. d through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 19:10:36]        REJECTED: SELL_LIMIT must rest ABOVE bid 62852.49, but you sent 62819.96. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-01 19:10:36]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 19:10:36]        -> state changed
+[2026-08-01 19:13:36] EVENT  LEVEL BROKEN above 62859.96 (reached 62917.02, now 62904.03). Note: Our SL area. If accepted above, the short premise is invalid; expect stop-out and avoid new longs per Rule 9 after the confirmed H4 break.
+[2026-08-01 19:14:01]        [SESSION SILENT 484 min - fell back to GPT-5]
+[2026-08-01 19:14:01]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 19:14:01]        -> state changed
+[2026-08-01 19:17:09] EVENT  LEVEL BROKEN below 62859.96 (reached 62858.26, now 62875.26). Note: Reclaim below the SL/acceptance area would negate the immediate upside acceptance. If M5 closes back under, consider short bias on a retest from below; still avoid longs per Rule 9 after the confirmed H4 break.
+[2026-08-01 19:17:24]        [SESSION SILENT 487 min - fell back to GPT-5]
+[2026-08-01 19:17:24]        no_action: Acknowledged - no action taken.
+[2026-08-01 19:28:48] EVENT  LEVEL BROKEN below 62819.96 (reached 62816.99, now 62822.13). Note: Loss of the broken H4 level. If traded and accepted below, look to place a SELL LIMIT on a retest from below with fixed SL 40 pts (62859.96) and TP 20 pts (62799.96).
+[2026-08-01 19:29:06]        [SESSION SILENT 499 min - fell back to GPT-5]
+[2026-08-01 19:29:06]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 19:29:06]        no_action: Acknowledged - no action taken.
+[2026-08-01 19:29:06]        -> state changed
+[2026-08-01 19:33:36] EVENT  AT LEVEL - flat, price 62828.53 at H4 RESISTANCE 62819.96 (9 px away). Assess for a trade.
+[2026-08-01 19:33:57]        [SESSION SILENT 504 min - fell back to GPT-5]
+[2026-08-01 19:33:57]        place_pending: EXECUTED. account 436771046 DEMO  equity 969.10   bid 62832.23 ask 62842.23
+[2026-08-01 19:33:57]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 19:33:57]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62829.96, 'sl': 62789.96, 'tp': 62849.96, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 19:33:57]        retcode 10009  ok  ->  OK
+[2026-08-01 19:33:57]        resting orders now: 1
+[2026-08-01 19:33:57]        -> state changed
+[2026-08-01 19:34:27] pending #3033020716 now resting
+[2026-08-01 19:34:57] EVENT  POSITION OPENED #3033020716 BUY 0.05 @ 62829.96 SL 62789.96 TP 62849.96
+[2026-08-01 19:35:05]        [SESSION SILENT 505 min - fell back to GPT-5]
+[2026-08-01 19:35:05]        no_action: Acknowledged - no action taken.
+[2026-08-01 19:38:07]        journalled #3033020716
+[2026-08-01 19:38:07] EVENT  POSITION CLOSED #3033020716 - flat now, bid 62794.67. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-01 19:38:28]        [SESSION SILENT 508 min - fell back to GPT-5]
+[2026-08-01 19:38:28]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 62789.64 ask 62799.64
+[2026-08-01 19:38:28]        risk 40.00px = $2.00 (0.21% eq) | reward 20.00px = $1.00 | R:R 0.50:1
+[2026-08-01 19:38:28]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62708.64, 'sl': 62668.64, 'tp': 62728.64, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 19:38:28]        retcode 10009  ok  ->  OK
+[2026-08-01 19:38:28]        resting orders now: 1
+[2026-08-01 19:38:28]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 19:38:28]        -> state changed
+[2026-08-01 19:38:58] pending #3033021883 now resting

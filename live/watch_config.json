@@ -4,24 +4,24 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63094.11,
+      "price": 62917.02,
       "dir": "above",
-      "note": "Next real H1 resistance, about 60 above spot. First genuine test of whether the upward resolution has acceptance or is another overshoot. Rule 9: a break here is NOT an entry."
+      "note": "Spike high. If reclaimed/accepted above, do not chase breakouts; reassess for a clean fade or a structured retest setup."
     },
     {
-      "price": 63238.42,
+      "price": 62819.96,
       "dir": "above",
-      "note": "H4 resistance and the session high, the next structural level once 63094.11 is cleared. Rule 9 applies: do not join a break here."
+      "note": "H4 level reclaim. If price accepts back above, prefer long bias on retest from above; avoid short continuation per Rule 9."
     },
     {
-      "price": 62924.14,
+      "price": 62698.64,
       "dir": "below",
-      "note": "H1 support, 111 below spot and beneath the 62992.22 M15 support. Replaces 63005.58, which fired twice in three minutes on pokes of 0.63 and 2.63 points that were instantly recovered - it was marking a wick zone rather than the failure it was set to detect, the same defect that retired 62861.23 and 62966 earlier. Placed deep enough that only a genuine loss of the whole upward resolution can trigger it. Information, not an entry: rule 9 forbids joining the break."
+      "note": "H1 support. If accepted below, the long-fade premise weakens \u2014 consider cancelling the resting buy limit and wait for a reclaim/fade from above."
     },
     {
-      "price": 62820.64,
+      "price": 62424.99,
       "dir": "below",
-      "note": "H4 support, the next real structural floor. Reaching it would mean the upward resolution has fully unwound and the session is trending down rather than chopping."
+      "note": "H4 support. If tested, look for a fade/reclaim setup; avoid chasing breakdowns per Rule 9."
     }
   ],
   "max_hold_minutes": 120

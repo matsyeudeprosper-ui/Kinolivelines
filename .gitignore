@@ -19,3 +19,9 @@ live/.claude/
 # Backup copies of the decision log; decisions.csv itself IS tracked
 live/decisions.csv.bak
 live/decisions.csv.bak2
+
+# transient runtime state
+live/mirror_publisher_alive.json
+live/self_cancelled.json
+live/*.bak_pre_geometry
+

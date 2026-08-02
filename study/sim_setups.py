@@ -31,7 +31,23 @@ import pandas as pd, numpy as np
 from datetime import datetime
 
 SYM = "BTCUSDm"
-PROX_ATR, COOLDOWN_S, REARM_MULT = 0.06, 1800, 2.5
+
+# Live defaults, overridable from the command line so the effect of a config change can
+# be measured on 17 months of history instead of guessed at:
+#     python sim_setups.py                 the live settings
+#     python sim_setups.py 0.10 600        proximity 0.10 x ATR-H1, cooldown 600s
+#     python sim_setups.py 0.10 600 1.5   proximity, cooldown, re-arm multiplier
+#
+# The re-arm multiplier is the one that matters. A level fires once, then goes quiet
+# until price moves REARM_MULT x the proximity away from it. That gate dominates the
+# cooldown completely - sweeping the cooldown from 1800s down to 300s changed the setup
+# count by exactly zero, because price has almost always failed to travel far enough to
+# re-arm before the cooldown expires anyway. Anyone trying to raise the trade rate by
+# shortening the cooldown is adjusting dead config.
+import sys as _sys
+PROX_ATR = float(_sys.argv[1]) if len(_sys.argv) > 1 else 0.06
+COOLDOWN_S = int(_sys.argv[2]) if len(_sys.argv) > 2 else 1800
+REARM_MULT = float(_sys.argv[3]) if len(_sys.argv) > 3 else 2.5
 
 mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe")
 mt5.symbol_select(SYM, True)
@@ -140,6 +156,8 @@ for i in range(start, len(m15) - 1):
 
 s = pd.DataFrame(setups)
 print("SETUP RECONSTRUCTION - what the daemon would have woken for")
+print("config: proximity %.3f x ATR-H1, cooldown %ds, re-arm at %.1fx"
+      % (PROX_ATR, COOLDOWN_S, REARM_MULT))
 print("M15 history: %s bars, %s to %s"
       % (f"{len(m15):,}", m15.time.min().date(), m15.time.max().date()))
 print("live spread used for the merge tolerance: $%.2f\n" % SPREAD)
