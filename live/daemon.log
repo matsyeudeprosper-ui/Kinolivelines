@@ -1394,3 +1394,9 @@
 [2026-08-02 04:56:35]        resting orders now: 1
 [2026-08-02 04:56:35]        -> state changed
 [2026-08-02 04:57:05] pending #3033288081 now resting
+[2026-08-02 05:23:13] EVENT  PENDING GONE #3033288081 left the book without filling - cancelled, expired or rejected, and NOT by this loop. Flat with no order unless stated otherwise. Reassess from current structure.
+[2026-08-02 05:24:28]        [SESSION SILENT 1093 min - fell back to GPT-5]
+[2026-08-02 05:24:28]        no_action: Acknowledged - no action taken.
+[2026-08-02 05:26:59] EVENT  LEVEL BROKEN above 63097.05 (reached 63100.17, now 63069.93). Note: H1 support just broken. If we reclaim/accept back above (ask > 63,097 and holding), consider buy-the-retest using BUY LIMIT at L+spread per Rule 3 with SL 20, TP 40. Avoid SELLs into the direction of this H1 break per Rule 9.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 05:27:14]        [SESSION SILENT 1097 min - fell back to GPT-5]
+[2026-08-02 05:27:14]        no_action: Acknowledged - no action taken.

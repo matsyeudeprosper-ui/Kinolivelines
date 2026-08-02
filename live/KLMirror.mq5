@@ -1,4 +1,4 @@
-//+------------------------------------------------------------------+
+﻿//+------------------------------------------------------------------+
 //| KLMirror.mq5                                                      |
 //| Copies KinoliveLines demo trades onto this account with the       |
 //| direction REVERSED.                                               |
@@ -58,9 +58,7 @@ input double InpMaxLots        = 0.05;        // hard ceiling
 input double InpMinEquity      = 5.0;         // stop trading below this
 input int    InpMagic          = 778001;
 input int    InpMaxSignalAge   = 120;         // seconds; older signals are ignored
-input double InpTargetUSD      = 1.00;        // exit +$1 exactly, in account currency
-input double InpStopUSD        = 2.00;        // exit -$2 exactly, in account currency
-input int    InpMaxConcurrent  = 3;           // mirrors open at once; was effectively 1
+input int    InpMaxConcurrent  = 1;           // the demo runs one at a time, so this does too
 input int    InpPendingMaxMin  = 180;         // orphan backstop only; 0 disables
 input string InpSignalFile     = "kl_mirror_signals.csv";
 input int    InpPollMs         = 1000;
@@ -68,7 +66,6 @@ input int    InpPollMs         = 1000;
 CTrade   trade;
 long     g_seq_done = -1;      // highest sequence number already acted on
 bool     g_halted   = false;
-ulong    g_resynced[];         // tickets whose SL/TP have been fixed to the real fill
 
 //+------------------------------------------------------------------+
 int OnInit()
@@ -134,7 +131,6 @@ void OnTimer()
      }
 
    ExpireOrphanPendings();
-   ResyncFilledStops();
 
    int h = FileOpen(InpSignalFile, FILE_READ|FILE_TXT|FILE_ANSI|FILE_COMMON|FILE_SHARE_READ|FILE_SHARE_WRITE);
    if(h == INVALID_HANDLE)
@@ -238,70 +234,33 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
    double entry = src_is_buy ? price - spread : price + spread;
    entry = NormalizeDouble(entry, dg);
 
-   // THE EXIT IS A FIXED AMOUNT OF MONEY, NOT A COPY OF THE DEMO'S BARRIERS.
+   // THE BARRIERS ARE THE DEMO'S OWN PRICES, WITH THEIR ROLES SWAPPED.
    //
-   // The demo's sl and tp are deliberately IGNORED here. This side always exits at
-   // +InpTargetUSD or -InpStopUSD in account currency, measured from its own entry.
+   //     the demo's STOP price   becomes this side's TARGET
+   //     the demo's TARGET price becomes this side's STOP
    //
-   // The distance is computed from the symbol's contract terms rather than hard-coded
-   // in points, so the money stays exact if the volume ever changes:
+   // Both accounts therefore close on the SAME TICK at the SAME PRICE, one winning where
+   // the other loses. Whatever the demo loses, this gains, and the other way round. The
+   // amounts are not fixed at any particular figure and are not meant to be - they are
+   // whatever the demo's geometry happens to be that trade.
    //
-   //     money per 1.0 of price movement = (tick value / tick size) * volume
-   //     distance                        = dollars wanted / that
+   // THIS IS A DELIBERATE RETURN. An intermediate version gave this side fixed dollar
+   // exits ($1 target, $2 stop) measured from its own entry. It was tried live on the
+   // night of 2026-08-01 and was worse in two ways that are worth recording:
    //
-   // WHAT THIS GIVES UP, said plainly. The previous version put both accounts' barriers
-   // on the same two prices, so they closed on the same tick and every demo loss was an
-   // equal live win - the pair cost exactly one spread, always. This does not do that.
-   // The two sides now close at different prices and different times, so the results no
-   // longer offset. That is a deliberate choice by the user: the live exit amounts are
-   // what matters, and the demo is free to finish whenever it finishes.
-   double tick_val = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_VALUE);
-   double tick_sz  = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_SIZE);
-   if(tick_val <= 0.0 || tick_sz <= 0.0)
-     {
-      PrintFormat("KLMirror: bad contract terms (tick value %.5f, tick size %.5f) - skipping %I64d",
-                  tick_val, tick_sz, src_ticket);
-      return;
-     }
-   double per_unit = (tick_val / tick_sz) * vol;    // account currency per 1.0 of price
-   double tp_dist  = InpTargetUSD / per_unit;
-   double sl_dist  = InpStopUSD   / per_unit;
-
-   // SANITY GUARD ON THE CONVERSION.
-   // Converting dollars to a distance depends on the broker's contract terms, and a
-   // wrong tick value would silently produce something absurd - a 400 point stop where
-   // the demo used 20. Measured on this account the conversion gives $1 = 20 points and
-   // $2 = 40 points, the same magnitudes the demo runs, so anything far outside the
-   // demo's own distances means the contract terms are not what is assumed. Refuse
-   // rather than place it.
-   double demo_risk   = MathAbs(price - sl);
-   double demo_reward = MathAbs(tp - price);
-   double demo_big    = MathMax(demo_risk, demo_reward);
-   double demo_small  = MathMin(demo_risk, demo_reward);
-   if(demo_big > 0.0 && demo_small > 0.0)
-      if(MathMax(tp_dist, sl_dist) > 4.0 * demo_big
-      || MathMin(tp_dist, sl_dist) < 0.25 * demo_small)
-        {
-         PrintFormat("KLMirror: REFUSING %I64d - dollar conversion gives target %.1f / stop %.1f points "
-                     "against demo %.1f / %.1f. Check tick value (%.5f) and tick size (%.5f).",
-                     src_ticket, tp_dist, sl_dist, demo_reward, demo_risk, tick_val, tick_sz);
-         return;
-        }
-
-   double m_sl, m_tp;
-   if(src_is_buy)                                   // mirror SELLS: profit is downward
-     { m_tp = entry - tp_dist;  m_sl = entry + sl_dist; }
-   else                                             // mirror BUYS: profit is upward
-     { m_tp = entry + tp_dist;  m_sl = entry - sl_dist; }
-   m_tp = NormalizeDouble(m_tp, dg);
-   m_sl = NormalizeDouble(m_sl, dg);
-
-   // Report what the rounding to whole ticks actually bought us, so a symbol whose tick
-   // is too coarse to land on $1.00 exactly is visible in the log rather than assumed.
-   PrintFormat("KLMirror: %.2f lots -> $%.4f per price unit; target %.2f pts = $%.4f, stop %.2f pts = $%.4f",
-               vol, per_unit,
-               MathAbs(m_tp - entry), MathAbs(m_tp - entry) * per_unit,
-               MathAbs(m_sl - entry), MathAbs(m_sl - entry) * per_unit);
+   //   * the two sides stopped closing together, so results no longer offset. Three of
+   //     eight pairs had BOTH stops hit as price ran one way then turned - -$4.39,
+   //     -$3.84 and -$3.05 for the pair - which cannot happen when the barriers share
+   //     prices.
+   //   * entry slippage broke the dollar amounts anyway. A stop order fills wherever the
+   //     book is, so a "$2.00" stop cost $2.32.
+   //
+   // Matching prices needs no dollar conversion, no slippage correction, and no cap on
+   // concurrent mirrors, because the mirror cannot outlive its source. The pair costs
+   // exactly one spread - about $0.50 at 0.05 lots - every time, which is the floor. You
+   // cannot buy and sell at the same price at the same moment.
+   double m_tp = NormalizeDouble(sl, dg);           // demo's stop   -> our target
+   double m_sl = NormalizeDouble(tp, dg);           // demo's target -> our stop
 
    string comment = StringFormat("KLmir#%I64d", src_ticket);
    double bid = SymbolInfoDouble(InpSymbol, SYMBOL_BID);
@@ -356,33 +315,17 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
   }
 
 //+------------------------------------------------------------------+
-//| Source closed: cancel an UNFILLED order, but LEAVE a filled one    |
+//| Source closed: cancel an unfilled order, close a filled mirror     |
 //+------------------------------------------------------------------+
 //
-// A FILLED MIRROR IS NO LONGER CLOSED WHEN THE SOURCE CLOSES.
+// Both sides start together and end together. Because the barriers are the demo's own
+// prices with their roles swapped, the mirror has usually resolved on the same tick
+// already and there is nothing left to close - this is the backstop for when the demo
+// exits some other way, such as a manual close or the 120-minute force-close.
 //
-// It used to be, and that quietly destroyed the whole point of the pair. The live side is
-// given its own fixed dollar barriers - $1 target, $2 stop - and then was shut at market
-// the instant the demo closed, so it almost never reached either. Measured over the night
-// of 2026-08-01: four of eight live trades exited this way, averaging -$0.39 each, none
-// of them collecting the $1 they existed to collect.
-//
-// 02:38 is the clearest case. The demo SELL was stopped out by a spike UP:
-//
-//     02:38:35  demo SELL stopped out at 63,458.27   -$1.00   (spike up)
-//     02:38:36  live BUY  closed by EA at 63,442.05  -$0.35   (spike already gone)
-//
-// The live BUY should have profited from exactly that spike. One second later it had
-// reversed 16 points and the EA sold into it, so BOTH sides lost. The very move that
-// triggers the demo's stop is the move the mirror is supposed to earn from, and closing
-// on the same tick gives it away every time.
-//
-// So a filled mirror now lives its own life and resolves at its own barriers. That is
-// what unlinked dollar exits actually means, and it is what the user asked for.
-//
-// An UNFILLED order is different and is still cancelled: it has no position to protect,
-// and leaving it resting would hold the single mirror slot forever and block every later
-// signal.
+// A brief experiment on 2026-08-01 left filled mirrors open to run to their own separate
+// dollar barriers. It is recorded in MirrorOpen above and was reverted: unlinked exits
+// let both sides lose on the same move.
 //
 void MirrorClose(long src_ticket)
   {
@@ -406,12 +349,14 @@ void MirrorClose(long src_ticket)
       if(t == 0) continue;
       if(PositionGetInteger(POSITION_MAGIC) != InpMagic) continue;
       if(PositionGetString(POSITION_COMMENT) != want)    continue;
-      PrintFormat("KLMirror: src=%I64d closed, LEAVING mirror #%I64u open to run to its own "
-                  "SL %.2f / TP %.2f. Currently %+.2f.",
-                  src_ticket, t, PositionGetDouble(POSITION_SL),
-                  PositionGetDouble(POSITION_TP), PositionGetDouble(POSITION_PROFIT));
+      bool ok = trade.PositionClose(t);
+      PrintFormat("KLMirror %s mirror of src=%I64d (ticket %I64u)",
+                  ok ? "CLOSED" : "FAILED TO CLOSE", src_ticket, t);
       return;
      }
+   // Not an error, and in fact the usual case: the barriers are shared prices, so the
+   // mirror has normally already hit its own target or stop on the same tick that closed
+   // the source. This path only runs when the demo was closed some other way.
    PrintFormat("KLMirror: no open mirror for src=%I64d (already resolved)", src_ticket);
   }
 
@@ -453,109 +398,6 @@ void ExpireOrphanPendings()
      }
   }
 
-//+------------------------------------------------------------------+
-//| Re-set SL and TP from the price the position ACTUALLY filled at    |
-//+------------------------------------------------------------------+
-//
-// WHY THIS EXISTS. MirrorOpen computes the barriers from the price it INTENDS to fill
-// at, because that is all it knows when it places the order. A pending that rests and
-// fills quietly does land there - but a STOP order becomes a market order the instant it
-// triggers, so in a fast move it fills wherever the book happens to be.
-//
-// Observed on 2026-08-01 23:20: the mirror was placed for an entry of 63,498.13 with a
-// 20-point target and 40-point stop, and filled at 63,504.32 - 6.19 points worse. The
-// barriers were left where they were, so from the real fill they measured 14 points and
-// 46 points. It stopped out at -$2.32 instead of the -$2.00 that was asked for.
-//
-// This pass runs every tick, reads POSITION_PRICE_OPEN - the true fill - and moves the
-// barriers to sit at exactly InpTargetUSD and InpStopUSD from it. It is idempotent: once
-// a position is right it computes the same numbers and changes nothing.
-//
-// WHAT IT CANNOT FIX. Slippage on the EXIT. A stop order guarantees a trigger price, not
-// a fill price, so a $2.00 stop can still cost more when price gaps through it - that has
-// been seen on the demo side too, which has no mirror logic at all. This makes the
-// barriers exact; it does not make the outcomes exact.
-//
-void ResyncFilledStops()
-  {
-   double tick_val = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_VALUE);
-   double tick_sz  = SymbolInfoDouble(InpSymbol, SYMBOL_TRADE_TICK_SIZE);
-   if(tick_val <= 0.0 || tick_sz <= 0.0)
-      return;
-   int    dg   = (int)SymbolInfoInteger(InpSymbol, SYMBOL_DIGITS);
-   double pt   = SymbolInfoDouble(InpSymbol, SYMBOL_POINT);
-   double stops= SymbolInfoInteger(InpSymbol, SYMBOL_TRADE_STOPS_LEVEL) * pt;
-   double bid  = SymbolInfoDouble(InpSymbol, SYMBOL_BID);
-   double ask  = SymbolInfoDouble(InpSymbol, SYMBOL_ASK);
-
-   for(int i = PositionsTotal()-1; i >= 0; i--)
-     {
-      ulong t = PositionGetTicket(i);
-      if(t == 0) continue;
-      if(PositionGetInteger(POSITION_MAGIC) != InpMagic) continue;
-      if(PositionGetString(POSITION_SYMBOL) != InpSymbol) continue;
-
-      bool done = false;                      // tried already - do not retry every second
-      for(int k = ArraySize(g_resynced)-1; k >= 0; k--)
-         if(g_resynced[k] == t) { done = true; break; }
-      if(done) continue;
-
-      double open = PositionGetDouble(POSITION_PRICE_OPEN);
-      double vol  = PositionGetDouble(POSITION_VOLUME);
-      bool   is_buy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
-
-      double per_unit = (tick_val / tick_sz) * vol;
-      if(per_unit <= 0.0) continue;
-      double tp_dist = InpTargetUSD / per_unit;
-      double sl_dist = InpStopUSD   / per_unit;
-
-      double want_tp = NormalizeDouble(is_buy ? open + tp_dist : open - tp_dist, dg);
-      double want_sl = NormalizeDouble(is_buy ? open - sl_dist : open + sl_dist, dg);
-
-      double cur_sl = PositionGetDouble(POSITION_SL);
-      double cur_tp = PositionGetDouble(POSITION_TP);
-      if(MathAbs(cur_sl - want_sl) < pt/2 && MathAbs(cur_tp - want_tp) < pt/2)
-        {
-         ArrayResize(g_resynced, ArraySize(g_resynced)+1);
-         g_resynced[ArraySize(g_resynced)-1] = t;
-         continue;                            // already exact, nothing to do
-        }
-
-      // The broker rejects a barrier that price has already reached or is inside the
-      // minimum stop distance of. If the move was violent enough for that, the position
-      // is about to close anyway and the honest thing is to say so, not to retry.
-      double ref_close = is_buy ? bid : ask;
-      bool reachable = is_buy
-                     ? (want_sl < ref_close - stops && want_tp > ref_close + stops)
-                     : (want_sl > ref_close + stops && want_tp < ref_close - stops);
-      if(!reachable)
-        {
-         PrintFormat("KLMirror: cannot resync #%I64u - price %.2f already past the "
-                     "corrected barriers (SL %.2f, TP %.2f). Leaving as placed.",
-                     t, ref_close, want_sl, want_tp);
-         ArrayResize(g_resynced, ArraySize(g_resynced)+1);
-         g_resynced[ArraySize(g_resynced)-1] = t;
-         continue;
-        }
-
-      if(trade.PositionModify(t, want_sl, want_tp))
-         PrintFormat("KLMirror: resynced #%I64u to its real fill %.2f - SL %.2f (%.1f pts, $%.2f), "
-                     "TP %.2f (%.1f pts, $%.2f). Was SL %.2f, TP %.2f.",
-                     t, open, want_sl, MathAbs(open-want_sl), MathAbs(open-want_sl)*per_unit,
-                     want_tp, MathAbs(want_tp-open), MathAbs(want_tp-open)*per_unit,
-                     cur_sl, cur_tp);
-      else
-         PrintFormat("KLMirror: resync of #%I64u FAILED, retcode %d (%s). Barriers left at "
-                     "SL %.2f, TP %.2f.", t, trade.ResultRetcode(),
-                     trade.ResultRetcodeDescription(), cur_sl, cur_tp);
-
-      ArrayResize(g_resynced, ArraySize(g_resynced)+1);
-      g_resynced[ArraySize(g_resynced)-1] = t;
-     }
-
-   if(ArraySize(g_resynced) > 200)             // keep the list from growing forever
-      ArrayRemove(g_resynced, 0, 100);
-  }
 
 //+------------------------------------------------------------------+
 //| How many mirrors are live right now - positions AND resting orders |
