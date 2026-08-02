@@ -1,0 +1,322 @@
+====================================================================================================
+TASK 001 - EXNESS FEASIBILITY CENSUS
+====================================================================================================
+generated        : 2026-08-02 13:51:38
+terminal         : build 6061  path C:\Program Files\MetaTrader 5
+account          : 436771046  Exness-MT5Trial9  (Exness Technologies Ltd)
+account type     : DEMO  leverage 1:2000
+deposit currency : USD   live equity 954.57
+reference balance: $979.00  (the figure named by the task)
+
+SCAN SUMMARY
+  symbols on account      : 356 (visible 194, hidden 162) - ALL screened
+  screened in stage 1     : 356   (<= 400 D1 bars each)
+  reached stage 2         : 92   (full depth, 20000 bars requested)
+  stage-2 rows completed  : 92
+  stage 1 duration        : 24.0 min
+  stage 2 duration        : 49.5 min
+  TOTAL download time     : 73.5 min
+  measured cleanly        : 224
+  failed to measure       : 132
+
+EXACT vs PROVISIONAL
+  EXACT history (stage 2)      : 92 symbols - d1_start, d1_bars, ATR(20)
+                                 and every history-dependent figure are final.
+  PROVISIONAL (stage 1 only)   : 264 symbols -
+                                 d1_start is a LOWER BOUND and d1_bars is capped at
+                                 400. Their sizing, spread, swap, risk and
+                                 exposure figures are still exact; only the depth of
+                                 history is unresolved, and every one of them was
+                                 excluded for a reason that history cannot change.
+  provisional rows whose bar count hit the 400-bar ceiling: 250
+
+TERMINAL CONTENTION
+  latency probes          : 128  median 0 ms, p95 2 ms, max 7909 ms
+  slow-terminal pauses    : 1
+  aborted for contention  : False
+  interruption log:
+    2026-08-02T13:28:50  stage2  at TRYJPYm            7909.2 ms  pause 20s (attempt 1)
+    2026-08-02T13:29:10  stage2  at TRYJPYm               0.1 ms  recovered
+  -> results gathered after any pause are unaffected: the census waits for the
+     terminal to answer normally again before measuring anything further.
+
+PARAMETERS
+  ATR              : SMA of True Range, period 20, timeframe D1
+  stop assumed     : 2 x ATR(20) D1
+  risk caps        : 0.25%, 0.50%, 1.00% of $979 (= $2.45, $4.90, $9.79)
+  exposure caps    : 1x, 2x, 3x of $979
+  history adequate : >= 250 D1 bars
+  spread ceiling   : group A <= 10% of D1 ATR, B <= 25%
+  stage-2 rule     : >= 250 bars, spread <= 25% of ATR, and
+                     (risk <= 1.00% AND expo <= 3.00x), or ONE
+                     of them missed by <= 25% (risk <= 1.25% or expo <= 3.75x)
+
+FORMULAS
+  notional_usd        = order_calc_profit(BUY, sym, vol_min, ask, ask*1.01) / 0.01
+  margin_usd          = order_calc_margin(BUY, sym, vol_min, ask)
+  pl_1pct             = order_calc_profit(BUY, sym, vol_min, ask, ask*1.01)
+  loss_k_atr          = |order_calc_profit(BUY, sym, vol_min, ask, ask - k*ATR20)|
+  spread_pct_of_atr   = (ask-bid) / ATR20_D1 * 100
+  swap_usd_day_side   = order_calc_profit(BUY, sym, vol_min, ask, ask + swap_pts_side*point)
+  annual_cost_pct     = -(swap_usd_day * 365) / notional_usd * 100   (positive = you pay)
+  risk_2atr_pct       = loss_2_atr / 979 * 100
+  exposure_x_equity   = notional_usd / 979
+
+GROUP COUNTS
+  A_TRADEABLE_NOW            50
+  B_POSSIBLY_TRADEABLE       67
+  C_NOT_TRADEABLE           239
+
+BY ASSET CLASS
+group            A_TRADEABLE_NOW  B_POSSIBLY_TRADEABLE  C_NOT_TRADEABLE
+asset_class                                                            
+Crypto                         0                     1               30
+CryptoCross                    0                     0                6
+Energies                       0                     0                3
+Forex                         16                    27               98
+Forex_Indicator                0                     0               59
+Idx_Enlarge                    0                     0                3
+Indices                        2                     3                6
+Stocks                        32                    36               34
+
+====================================================================================================
+GROUP A - TRADEABLE NOW  (ranked: spread/ATR, holding cost, history, min-lot risk)
+====================================================================================================
+ rank  symbol asset_class  volume_min  notional$  expo_x    atr20  loss2atr$   risk%  sprd%atr  cost_L%/y  cost_S%/y  d1_bars   d1_start  margin$
+    1 USDCADm       Forex        0.01      1,000   1.021 0.005021       7.16  0.7314     2.191         -0         -0     2522 2018-07-03      0.5
+    2 AUDUSDm       Forex        0.01        703  0.7181 0.004041       8.08  0.8253     2.227         -0      1.038     2522 2018-07-03     0.35
+    3 NZDCADm       Forex        0.01        589  0.6016 0.004826       6.89  0.7038     2.694         -0     0.6197     2522 2018-07-03     0.29
+    4 AUDNZDm       Forex        0.01        703  0.7181 0.005446       6.41  0.6547     3.305         -0      2.596     2522 2018-07-03     0.35
+    5 AUDCHFm       Forex        0.01        704  0.7191 0.003076       7.62  0.7783     2.925         -0      6.222     2522 2018-07-03     0.35
+    6   NFLXm      Stocks        0.01         72 0.07354    2.571       5.14   0.525     2.334      5.069      5.069     1603 2020-03-16     3.59
+    7 AUDCADm       Forex        0.01        703  0.7181 0.004765        6.8  0.6946     3.778         -0      3.115     2522 2018-07-03     0.35
+    8 AUDJPYm       Forex        0.01        704  0.7191   0.7326       9.31   0.951     2.457         -0     0.5185     2522 2018-07-03     0.35
+    9    WMTm      Stocks        0.01        111  0.1134    2.518       5.04  0.5148     1.986      6.577      13.15     1603 2020-03-16     5.56
+   10 AUS200m     Indices        0.06        377  0.3851    106.3       8.97  0.9162     2.766         -0      10.65     2491 2018-06-12     1.88
+   11 CADJPYm       Forex        0.01        714  0.7293   0.6996       8.89  0.9081     3.431         -0      1.534     2522 2018-07-03     0.36
+   12 NZDCHFm       Forex        0.01        590  0.6027 0.002494       6.18  0.6313     6.016         -0      3.712     1705 2021-02-14     0.29
+   13 NZDJPYm       Forex        0.01        589  0.6016   0.6935       8.81  0.8999     4.182         -0      3.098     2522 2018-07-03     0.29
+   14     KOm      Stocks        0.01         88 0.08989    1.925       3.85  0.3933     5.193      4.148      33.18     1603 2020-03-16     4.39
+   15    XOMm      Stocks        0.01        156  0.1593    3.478       6.96  0.7109     2.875      4.679      7.019     1603 2020-03-16      7.8
+   16  CMCSAm      Stocks        0.01         24 0.02451    0.765       1.53  0.1563     7.843          0      91.25     1413 2020-12-14      1.2
+   17   HK50m     Indices        0.07        232   0.237    438.4       7.83  0.7998     4.551         -0      6.293     1968 2019-07-10     1.16
+   18    WFCm      Stocks        0.01         87 0.08887    1.933       3.87  0.3953     5.173      4.195      20.98     1603 2020-03-16     4.33
+   19     MOm      Stocks        0.01         68 0.06946    2.043       4.09  0.4178     3.426      5.368       16.1     1413 2020-12-14     3.42
+   20   BILIm      Stocks        0.01         19 0.01941    0.705       1.41   0.144     7.092          0          0     1216 2021-09-27     1.91
+   21      Cm      Stocks        0.01        133  0.1359    4.147       8.29  0.8468     2.411      5.489      10.98     1603 2020-03-16     6.64
+   22    MRKm      Stocks        0.01        131  0.1338    3.007       6.02  0.6149      2.66      5.573       61.3     1413 2020-12-14     6.54
+   23 XCUUSDm       Forex        0.01        138   0.141    185.2        3.7  0.3779     3.925       5.29         -0      826 2023-04-26     1.38
+   24     PGm      Stocks        0.01        145  0.1481      3.3        6.6  0.6742     2.727      5.034      30.21     1413 2020-12-14     7.24
+   25    BMYm      Stocks        0.01         66 0.06742    1.529       3.06  0.3126     3.924       5.53      11.06     1413 2020-12-14     3.28
+   26   GILDm      Stocks        0.01        131  0.1338    3.484       6.97   0.712     2.009      5.573      108.7     1413 2020-12-14     6.54
+   27   VIPSm      Stocks        0.01         15 0.01532   0.3455       0.69 0.07048     8.683          0          0     1216 2021-09-27     1.53
+   28   CSCOm      Stocks        0.01        117  0.1195    3.171       6.34  0.6476     3.154      6.239      62.39     1603 2020-03-16     5.83
+   29   EBAYm      Stocks        0.01        114  0.1164    2.675       5.35  0.5465     3.738      6.404      25.61     1603 2020-03-16     5.71
+   30   BEKEm      Stocks        0.01         17 0.01736   0.9005        1.8  0.1839     7.773          0      1,116     1216 2021-09-27     1.69
+   31    BACm      Stocks        0.01         62 0.06333    1.398        2.8   0.286     7.151      5.887      41.21     1603 2020-03-16     3.11
+   32   MDLZm      Stocks        0.01         62 0.06333     1.73       3.46  0.3534     4.047      5.887      41.21     1413 2020-12-14     3.12
+   33    PEPm      Stocks        0.01        140   0.143    3.308       6.62  0.6762     3.023      5.214      5.214     1413 2020-12-14     6.99
+   34   SBUXm      Stocks        0.01        105  0.1073    2.764       5.53  0.5649     2.533      6.952      38.24     1413 2020-12-14     5.27
+   35 XALUSDm       Forex        0.01         32 0.03269    48.18       0.96 0.09806     9.484         -0         -0      834 2023-04-14     0.32
+   36    ABTm      Stocks        0.01        106  0.1083    3.074       6.15  0.6282     2.602      6.887      13.77     1413 2020-12-14      5.3
+   37    CVSm      Stocks        0.01        105  0.1073    2.344       4.69  0.4791     2.986      6.952      6.952     1413 2020-12-14     5.25
+   38   PYPLm      Stocks        0.01         57 0.05822    2.279       4.56  0.4658     6.144      6.404      6.404     1603 2020-03-16     2.87
+   39    MMMm      Stocks        0.01        177  0.1808    4.595       9.19  0.9387     2.177      6.186      43.31     1413 2020-12-14     8.85
+   40    PDDm      Stocks        0.01         88 0.08989    2.738       5.48  0.5598     4.748      4.148      4.148     1216 2021-09-27     8.83
+   41    CSXm      Stocks        0.01         50 0.05107    1.018       2.04  0.2084     4.909        7.3      350.4     1413 2020-12-14     2.52
+   42    UPSm      Stocks        0.01        105  0.1073    2.835       5.67  0.5792     3.527      6.952      83.43     1413 2020-12-14     5.25
+   43     VZm      Stocks        0.01         47 0.04801    1.268       2.54  0.2594      7.89      7.766      38.83     1603 2020-03-16     2.34
+   44   YUMCm      Stocks        0.01         48 0.04903     1.03       2.06  0.2104     3.885      7.604      76.04     1216 2021-09-27     4.84
+   45 EURGBPm       Forex        0.01      1,153   1.178 0.002547       6.86  0.7007     5.497      1.583         -0     1008 2023-05-11     0.58
+   46   BABAm      Stocks        0.01        122  0.1246    4.106       8.21  0.8386     4.384      5.984      5.984     1603 2020-03-16    12.18
+   47 EURCHFm       Forex        0.01      1,153   1.178  0.00327        8.1  0.8274     5.199         -0      2.849      403 2025-04-18     0.58
+   48    AMTm      Stocks        0.01        173  0.1767    4.229       8.46  0.8641     3.783      6.329      52.75     1413 2020-12-14     8.66
+   49 EURCADm       Forex        0.01      1,153   1.178 0.005625       8.03  0.8202     4.445     0.3166     0.3166      409 2025-04-11     0.58
+   50 XZNUSDm       Forex        0.01         36 0.03677    58.16       1.17  0.1195     7.428      10.14      10.14      868 2023-02-23     0.36
+
+TOP 20 TRADEABLE INSTRUMENTS
+    1. USDCADm        Forex            min lot 0.01    notional $     1,000 (1.02x)  2-ATR risk $   7.16 (0.73%)  spread 2.2% of ATR
+    2. AUDUSDm        Forex            min lot 0.01    notional $       703 (0.72x)  2-ATR risk $   8.08 (0.83%)  spread 2.2% of ATR
+    3. NZDCADm        Forex            min lot 0.01    notional $       589 (0.60x)  2-ATR risk $   6.89 (0.70%)  spread 2.7% of ATR
+    4. AUDNZDm        Forex            min lot 0.01    notional $       703 (0.72x)  2-ATR risk $   6.41 (0.65%)  spread 3.3% of ATR
+    5. AUDCHFm        Forex            min lot 0.01    notional $       704 (0.72x)  2-ATR risk $   7.62 (0.78%)  spread 2.9% of ATR
+    6. NFLXm          Stocks           min lot 0.01    notional $        72 (0.07x)  2-ATR risk $   5.14 (0.53%)  spread 2.3% of ATR
+    7. AUDCADm        Forex            min lot 0.01    notional $       703 (0.72x)  2-ATR risk $   6.80 (0.69%)  spread 3.8% of ATR
+    8. AUDJPYm        Forex            min lot 0.01    notional $       704 (0.72x)  2-ATR risk $   9.31 (0.95%)  spread 2.5% of ATR
+    9. WMTm           Stocks           min lot 0.01    notional $       111 (0.11x)  2-ATR risk $   5.04 (0.51%)  spread 2.0% of ATR
+   10. AUS200m        Indices          min lot 0.06    notional $       377 (0.39x)  2-ATR risk $   8.97 (0.92%)  spread 2.8% of ATR
+   11. CADJPYm        Forex            min lot 0.01    notional $       714 (0.73x)  2-ATR risk $   8.89 (0.91%)  spread 3.4% of ATR
+   12. NZDCHFm        Forex            min lot 0.01    notional $       590 (0.60x)  2-ATR risk $   6.18 (0.63%)  spread 6.0% of ATR
+   13. NZDJPYm        Forex            min lot 0.01    notional $       589 (0.60x)  2-ATR risk $   8.81 (0.90%)  spread 4.2% of ATR
+   14. KOm            Stocks           min lot 0.01    notional $        88 (0.09x)  2-ATR risk $   3.85 (0.39%)  spread 5.2% of ATR
+   15. XOMm           Stocks           min lot 0.01    notional $       156 (0.16x)  2-ATR risk $   6.96 (0.71%)  spread 2.9% of ATR
+   16. CMCSAm         Stocks           min lot 0.01    notional $        24 (0.02x)  2-ATR risk $   1.53 (0.16%)  spread 7.8% of ATR
+   17. HK50m          Indices          min lot 0.07    notional $       232 (0.24x)  2-ATR risk $   7.83 (0.80%)  spread 4.6% of ATR
+   18. WFCm           Stocks           min lot 0.01    notional $        87 (0.09x)  2-ATR risk $   3.87 (0.40%)  spread 5.2% of ATR
+   19. MOm            Stocks           min lot 0.01    notional $        68 (0.07x)  2-ATR risk $   4.09 (0.42%)  spread 3.4% of ATR
+   20. BILIm          Stocks           min lot 0.01    notional $        19 (0.02x)  2-ATR risk $   1.41 (0.14%)  spread 7.1% of ATR
+
+====================================================================================================
+GROUP B - POSSIBLY TRADEABLE  (needs a larger balance or another account type)
+====================================================================================================
+ symbol asset_class  volume_min  notional_usd_min_lot  exposure_x_equity  loss_2atr_min_lot_usd  risk_2atr_pct_of_balance  spread_pct_of_atr_med  d1_bars history_depth
+XPBUSDm       Forex        0.01                    19            0.01941                   0.47                   0.04801                  17.97      851         EXACT
+   ZTOm      Stocks        0.01                    24            0.02451                    0.7                    0.0715                  14.33     1216         EXACT
+   PFEm      Stocks        0.01                    25            0.02554                   0.89                   0.09091                  22.57     1603         EXACT
+     Tm      Stocks        0.01                    23            0.02349                   1.35                    0.1379                  14.87     1603         EXACT
+HKDJPYm       Forex        0.01                   129             0.1318                   1.65                    0.1685                  18.48     2518         EXACT
+ZARJPYm       Forex        0.01                    60            0.06129                   1.86                      0.19                  11.61     2521         EXACT
+   NKEm      Stocks        0.01                    42             0.0429                   2.54                    0.2594                  10.23     1603         EXACT
+AUDMXNm       Forex        0.01                   703             0.7181                   6.24                    0.6374                  14.53     2522         EXACT
+XNIUSDm       Forex        0.01                   173             0.1767                   6.41                    0.6547                  13.17      909         EXACT
+EURSGDm       Forex        0.01                 1,152              1.177                   7.71                    0.7875                  16.23     2522         EXACT
+USDSGDm       Forex        0.01                 1,000              1.021                   7.89                    0.8059                  24.77     2522         EXACT
+  BIDUm      Stocks        0.01                   111             0.1134                   9.81                     1.002                  3.873     1216         EXACT
+USDDKKm       Forex        0.01                 1,000              1.021                  10.04                     1.026                  19.24     2522         EXACT
+   MCDm      Stocks        0.01                   271             0.2768                  10.36                     1.058                  3.088     1603         EXACT
+USDMXNm       Forex        0.01                 1,000              1.021                  10.59                     1.082                  7.009     2522         EXACT
+EURUSDm       Forex        0.01                 1,153              1.178                  10.64                     1.087                  1.504     2522         EXACT
+EURMXNm       Forex        0.01                 1,153              1.178                  10.88                     1.111                   12.4      409         EXACT
+    PMm      Stocks        0.01                   191             0.1951                  10.95                     1.118                  1.826     1413         EXACT
+GBPCHFm       Forex        0.01                 1,349              1.378                  11.62                     1.187                  5.117     2522         EXACT
+EURNZDm       Forex        0.01                 1,154              1.179                  11.67                     1.192                  3.632     2522         EXACT
+   JNJm      Stocks        0.01                   257             0.2625                  11.74                     1.199                  2.385     1603         EXACT
+  ABBVm      Stocks        0.01                   253             0.2584                   11.9                     1.216                  1.849     1413         EXACT
+  FR40m     Indices        0.05                   492             0.5026                  12.18                     1.244                  2.235     2483         EXACT
+   CMEm      Stocks        0.01                   269             0.2748                  12.27                     1.253                  3.748      400   PROVISIONAL
+USDJPYm       Forex        0.01                 1,000              1.021                  12.38                     1.265                  1.026      400   PROVISIONAL
+GBPAUDm       Forex        0.01                 1,349              1.378                  12.55                     1.282                  2.801      400   PROVISIONAL
+EURJPYm       Forex        0.01                 1,154              1.179                  12.68                     1.295                  2.405      400   PROVISIONAL
+  CHTRm      Stocks        0.01                   146             0.1491                  12.69                     1.296                  3.862      400   PROVISIONAL
+   JPMm      Stocks        0.01                   353             0.3606                  12.75                     1.302                  5.021      400   PROVISIONAL
+GBPNZDm       Forex        0.01                 1,349              1.378                   12.9                     1.318                  5.298      400   PROVISIONAL
+ETHUSDm      Crypto         0.1                   186               0.19                  12.99                     1.327                  2.156      400   PROVISIONAL
+    MSm      Stocks        0.01                   212             0.2165                  13.11                     1.339                  2.135      400   PROVISIONAL
+  ORCLm      Stocks        0.01                   130             0.1328                  13.31                      1.36                  2.104      400   PROVISIONAL
+  TMUSm      Stocks        0.01                   172             0.1757                   13.4                     1.369                  2.537      400   PROVISIONAL
+USDCHFm       Forex        0.01                 1,000              1.021                  13.58                     1.387                  2.373      400   PROVISIONAL
+     Vm      Stocks        0.01                   367             0.3749                  13.87                     1.417                   3.46      400   PROVISIONAL
+GBPMXNm       Forex        0.01                 1,348              1.377                  14.84                     1.516                  10.46      400   PROVISIONAL
+GBPUSDm       Forex        0.01                 1,348              1.377                  14.98                      1.53                  1.335      400   PROVISIONAL
+  BIIBm      Stocks        0.01                   205             0.2094                  15.25                     1.558                  2.361      400   PROVISIONAL
+  NVDAm      Stocks        0.01                   201             0.2053                  15.29                     1.562                  2.093      400   PROVISIONAL
+CHFJPYm       Forex        0.01                 1,240              1.267                  15.91                     1.625                  1.518      400   PROVISIONAL
+  AMZNm      Stocks        0.01                   271             0.2768                  16.01                     1.635                 0.8746      400   PROVISIONAL
+   ADPm      Stocks        0.01                   266             0.2717                  16.09                     1.644                  2.858      400   PROVISIONAL
+CHFMXNm       Forex        0.01                 1,239              1.266                  16.13                     1.648                  10.84      400   PROVISIONAL
+  FTNTm      Stocks        0.01                   161             0.1645                  16.13                     1.648                   1.24      400   PROVISIONAL
+    HDm      Stocks        0.01                   334             0.3412                  16.53                     1.688                  2.662      400   PROVISIONAL
+GBPJPYm       Forex        0.01                 1,350              1.379                  16.59                     1.695                  1.685      400   PROVISIONAL
+  INTCm      Stocks        0.01                    92            0.09397                  16.73                     1.709                  1.196      400   PROVISIONAL
+    BAm      Stocks        0.01                   217             0.2217                   17.3                     1.767                  4.971      400   PROVISIONAL
+ UK100m     Indices        0.05                   733             0.7487                  17.39                     1.776                    1.1      400   PROVISIONAL
+  AMGNm      Stocks        0.01                   387             0.3953                   17.4                     1.777                  3.104      400   PROVISIONAL
+USDILSm       Forex        0.01                 1,000              1.021                  17.62                       1.8                  10.83      400   PROVISIONAL
+  AAPLm      Stocks        0.01                   307             0.3136                  18.22                     1.861                  1.317      400   PROVISIONAL
+AUDZARm       Forex        0.01                   703             0.7181                  18.24                     1.863                   18.7      400   PROVISIONAL
+   LINm      Stocks        0.01                   480             0.4903                  21.05                      2.15                  3.516      400   PROVISIONAL
+   UNHm      Stocks        0.01                   417             0.4259                  21.47                     2.193                  2.096      400   PROVISIONAL
+GBPILSm       Forex        0.01                 1,346              1.375                  21.77                     2.224                  16.53      400   PROVISIONAL
+  ADBEm      Stocks        0.01                   250             0.2554                  21.92                     2.239                  2.281      400   PROVISIONAL
+    MAm      Stocks        0.01                   574             0.5863                  21.96                     2.243                  4.918      400   PROVISIONAL
+ GOOGLm      Stocks        0.01                   357             0.3647                  22.48                     2.296                  1.779      400   PROVISIONAL
+ US500m     Indices        0.14                 1,049              1.072                  23.69                      2.42                 0.7564      400   PROVISIONAL
+USDZARm       Forex        0.01                 1,000              1.021                  23.91                     2.442                  1.981      400   PROVISIONAL
+  VRTXm      Stocks        0.01                   480             0.4903                  24.16                     2.468                  4.222      400   PROVISIONAL
+   IBMm      Stocks        0.01                   222             0.2268                  25.12                     2.566                  1.911      400   PROVISIONAL
+  INTUm      Stocks        0.01                   316             0.3228                  27.54                     2.813                   4.14      400   PROVISIONAL
+  MSFTm      Stocks        0.01                   462             0.4719                  28.31                     2.892                   2.26      400   PROVISIONAL
+   LMTm      Stocks        0.01                   583             0.5955                  28.54                     2.915                  3.013      400   PROVISIONAL
+
+  balance that would put each inside the 1.00% risk cap:
+    XPBUSDm        $          47
+    ZTOm           $          70
+    PFEm           $          89
+    Tm             $         135
+    HKDJPYm        $         165
+    ZARJPYm        $         186
+    NKEm           $         254
+    AUDMXNm        $         624
+    XNIUSDm        $         641
+    EURSGDm        $         771
+    USDSGDm        $         789
+    BIDUm          $         981
+    USDDKKm        $       1,004
+    MCDm           $       1,036
+    USDMXNm        $       1,059
+    EURUSDm        $       1,064
+    EURMXNm        $       1,088
+    PMm            $       1,095
+    GBPCHFm        $       1,162
+    EURNZDm        $       1,167
+    JNJm           $       1,174
+    ABBVm          $       1,190
+    FR40m          $       1,218
+    CMEm           $       1,227
+    USDJPYm        $       1,238
+    GBPAUDm        $       1,255
+    EURJPYm        $       1,268
+    CHTRm          $       1,269
+    JPMm           $       1,275
+    GBPNZDm        $       1,290
+
+====================================================================================================
+GROUP C - NOT TRADEABLE  (reasons tallied)
+====================================================================================================
+  data:not_tradeable                          115
+  spread_too_expensive                         63
+  min_lot_risk_too_large                       44
+  not_tradeable_both_sides                     19
+  data:no_history                              16
+  exposure_too_large                            6
+  history_inadequate                            3
+  data:no_quote                                 1
+
+  (a symbol can fail for more than one reason, so these sum to more than the group)
+
+====================================================================================================
+ERRORS AND MISSING DATA
+====================================================================================================
+  symbols that could not be fully measured: 132
+    no_history             16   e.g. AUDSGDm, CADCHFm, DKKJPYm, DKKZARm, DXYm, EURAUDm
+    no_quote                1   e.g. XAUUSD247m
+    not_tradeable         115   e.g. BCHUSDm, BTCKRWm, LTCUSDm, XRPUSDm, AAVEUSDm, BATUSDm
+  symbols whose swap could NOT be converted: 0
+  symbols using the linear ATR-loss fallback: 0
+  symbols priced from the last D1 close (market closed): 0
+  swap modes seen (confirmed before conversion): {'POINTS': np.int64(224)}
+
+full table -> C:\Projects\KinoliveLines\study\results\exness_feasibility_census.csv
+
+====================================================================================================
+ADDENDUM - HISTORY DEPTH AUDIT  (study/verify_history_depth.py)
+====================================================================================================
+The EXACT label on stage-2 rows was independently checked against the terminal's own
+on-disk minute-history cache, which the census never consults. Method: compare the year
+of the reported first D1 bar with the earliest non-stub yearly .hcc file for that symbol.
+Filesystem only - no terminal calls, so the running bot was not competed with.
+
+  rows in census         : 356
+  labelled EXACT         : 92
+  corroborated           : 90
+  understated            :  2   -> relabelled EXACT_LOWER_BOUND in the CSV
+
+    EURCHFm  A_TRADEABLE_NOW  reported 403 bars from 2025-04-18, cache reaches 2021 (4 yrs)
+    EURCADm  A_TRADEABLE_NOW  reported 409 bars from 2025-04-11, cache reaches 2024 (1 yr)
+
+CAUSE  MetaTrader answered the deep request from a D1 cache it had not finished building,
+returning a truncated series rather than an error. Minute data from 2021 cannot coexist
+with a genuine D1 history starting in 2025, which is what exposed it.
+
+BLAST RADIUS  Depth-of-history fields only. ATR(20) reads the most recent 20 bars and is
+unaffected. Sizing, margin, notional, spread, swap and the risk/exposure tests never use
+history depth. Both symbols clear the >= 250-bar adequacy test on the short count already,
+and the true count can only be larger. Understated history can only push a symbol DOWN the
+group A ranking - "most history" is one of the four rank inputs - so the ranking is
+conservative with respect to this defect rather than inflated. Both affected symbols rank
+47th and 49th of 50.
+
+READING RULE  history_depth is now one of:
+  EXACT              d1_start and d1_bars are final and corroborated  (90 symbols)
+  EXACT_LOWER_BOUND  true history is deeper than recorded              (2 symbols)
+  PROVISIONAL        stage-1 only; d1_bars capped at 400              (264 symbols)
