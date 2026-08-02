@@ -27,6 +27,11 @@
       "price": 62919.34,
       "dir": "below",
       "note": "H4 support. If tagged while flat, consider BUY LIMIT fade at 62,919.34 + spread (Rule 3), SL 20, TP 40; cancel if H4 acceptance below."
+    },
+    {
+      "price": 63082.91,
+      "dir": "below",
+      "note": "H1 resistance. If price rejects and drops back below, consider SELL LIMIT fade on the first underside retest at 63,082.91 (fills on bid, no offset). SL 20, TP 40. Cancel if H1 accepts above; per Rule 9 avoid buy continuation of H1/H4 breaks."
     }
   ],
   "max_hold_minutes": 120
