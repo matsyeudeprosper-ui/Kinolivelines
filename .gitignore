@@ -25,3 +25,6 @@ live/mirror_publisher_alive.json
 live/self_cancelled.json
 live/*.bak_pre_geometry
 
+
+# Task 002 raw H1 downloads - regenerable, large, not part of the deliverable
+study/data/raw_h1/

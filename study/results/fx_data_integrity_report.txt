@@ -1,0 +1,235 @@
+====================================================================================================
+TASK 002 - CLEAN FX RESEARCH DATASET - DATA INTEGRITY REPORT
+====================================================================================================
+generated  : 2026-08-02 14:52:59
+account    : 436771046 Exness-MT5Trial9  (DEMO)
+terminal   : build 6061
+
+!! HISTORY REQUIREMENT NOT MET - READ FIRST
+----------------------------------------------------------------------------------------------------
+The universe rule asks for >= 6 calendar years of reliable history. No symbol on this
+account meets that on H1. Exness serves only sparse remnants before 2021-08:
+  EURUSDm H1 bars/year: 2018=155  2019=311  2020=312  2021=3055  2022=6235  2023=6216
+  A full FX year is ~6,200 H1 bars. Explicit copy_rates_range() for 2019 and 2020
+  returns the same 311/312, so a longer download does not fix it.
+First dense month: 2021-08. Usable window 2021-08-01 -> last complete session,
+which is 5.0 years, not 6. The dataset below is built on that real window and every
+symbol carries meets_6y_requirement=False in the audit CSV.
+
+Broker D1 reaches back to 2018-07 (~8 years), but a canonical 17:00-NY session cannot
+be built from daily bars - that construction needs intraday data. Stated as a fact for
+whoever sets strategy; no recommendation is made here.
+
+UNIVERSE
+----------------------------------------------------------------------------------------------------
+  census rows considered      : 356
+  selected (fiat FX, limits)  : 23
+  built successfully          : 23
+  thresholds                  : risk <= 2.00% of $979, exposure <= 2.00x, median spread <= 6.00% of D1 ATR
+
+  SELECTED SYMBOLS:
+    USDCADm, AUDUSDm, NZDCADm, AUDNZDm, AUDCHFm, AUDCADm, AUDJPYm, CADJPYm, NZDJPYm, EURGBPm, EURCHFm, EURCADm, CHFJPYm, EURJPYm, GBPAUDm, GBPJPYm, GBPNZDm, GBPUSDm, USDCHFm, USDJPYm, EURNZDm, EURUSDm, GBPCHFm
+
+  EXCLUDED FROM THE FX UNIVERSE (grouped by first reason):
+    asset_class=Crypto                    1   ETHUSDm
+    asset_class=Indices                   5   AUS200m, HK50m, UK100m, US500m, FR40m
+    asset_class=Stocks                   68   NFLXm, WMTm, KOm, XOMm, CMCSAm, WFCm, MOm, BILIm, Cm, MRKm, PGm, BMYm (+56 more)
+    non_fiat_base_or_profit(XAL/USD)      1   XALUSDm
+    non_fiat_base_or_profit(XCU/USD)      1   XCUUSDm
+    non_fiat_base_or_profit(XNI/USD)      1   XNIUSDm
+    non_fiat_base_or_profit(XPB/USD)      1   XPBUSDm
+    non_fiat_base_or_profit(XZN/USD)      1   XZNUSDm
+    not_group_A_or_B                    239   BCHUSDm, BTCJPYm, BTCKRWm, BTCUSDm, LTCUSDm, XRPUSDm, AAVEUSDm, BATUSDm, LINKUSDm, SNXUSDm, SOLUSDm, UNIUSDm (+227 more)
+    risk_2.22pct>2.00                     1   GBPILSm
+    risk_2.44pct>2.00                     1   USDZARm
+    spread_10.46pct>6.00                  1   GBPMXNm
+    spread_10.83pct>6.00                  1   USDILSm
+    spread_10.84pct>6.00                  1   CHFMXNm
+    spread_11.61pct>6.00                  1   ZARJPYm
+    spread_12.40pct>6.00                  1   EURMXNm
+    spread_14.53pct>6.00                  1   AUDMXNm
+    spread_16.23pct>6.00                  1   EURSGDm
+    spread_18.48pct>6.00                  1   HKDJPYm
+    spread_18.70pct>6.00                  1   AUDZARm
+    spread_19.24pct>6.00                  1   USDDKKm
+    spread_24.77pct>6.00                  1   USDSGDm
+    spread_6.02pct>6.00                   1   NZDCHFm
+    spread_7.01pct>6.00                   1   USDMXNm
+
+TIME BASE
+----------------------------------------------------------------------------------------------------
+  MT5 timestamps treated as UTC, converted to America/New_York (as instructed).
+  Canonical session: 17:00 NY -> next 17:00 NY, session_date = (t_ny + 7h).date()
+  Sunday evening bars shift into Monday by construction, so NO standalone Sunday
+  canonical candle can exist. Sessions are emitted for Mon-Fri only.
+  observed Sunday open  NY hour (should be 17): [17]
+  observed Friday last  NY hour (should be 16): [16]
+  stray weekend session bars dropped: 3818
+  -> the open/close hours above corroborate the UTC assumption; had the feed been
+     on a UTC+2/+3 server clock these would not land on 17:00/16:00 New York.
+
+SUNDAY BARS IN THE BROKER'S OWN D1 SERIES
+----------------------------------------------------------------------------------------------------
+  The broker D1 series used in task 001 is the broker's own daily aggregation, which
+  is where a standalone Sunday candle would appear. In the canonical panel built here
+  the count is structurally zero, as shown above. Raw H1 bars falling on a New York
+  Sunday (i.e. the Sunday mini-session that gets merged into Monday):
+    45654 Sunday H1 bars across 23 symbols, all merged into Monday
+
+COVERAGE PER SYMBOL
+----------------------------------------------------------------------------------------------------
+ symbol  daily_bars  weekly_bars first_session last_session  session_span_years  meets_6y_requirement  days_with_gap  total_missing_h1  duplicate_timestamps  missing_weeks
+USDCADm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+AUDUSDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+NZDCADm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+AUDNZDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+AUDCHFm        1299          261    2021-08-02   2026-07-31                4.99                 False              6                 6                     0              1
+AUDCADm        1299          261    2021-08-02   2026-07-31                4.99                 False              6                 6                     0              1
+AUDJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+CADJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+NZDJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+EURGBPm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+EURCHFm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+EURCADm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+CHFJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              6                 6                     0              1
+EURJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+GBPAUDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+GBPJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+GBPNZDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+GBPUSDm        1299          261    2021-08-02   2026-07-31                4.99                 False              4                 4                     0              1
+USDCHFm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+USDJPYm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+EURNZDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+EURUSDm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+GBPCHFm        1299          261    2021-08-02   2026-07-31                4.99                 False              5                 5                     0              1
+
+WEEKDAY COUNTS
+----------------------------------------------------------------------------------------------------
+ symbol  n_mon  n_tue  n_wed  n_thu  n_fri  short_days_lt20h  long_days_gt25h  dst_23h_sessions  dst_25h_sessions
+USDCADm    259    261    259    259    261                 0                0                 0                 0
+AUDUSDm    259    261    259    259    261                 0                0                 0                 0
+NZDCADm    259    261    259    259    261                 0                0                 0                 0
+AUDNZDm    259    261    259    259    261                 0                0                 0                 0
+AUDCHFm    259    261    259    259    261                 0                0                 0                 0
+AUDCADm    259    261    259    259    261                 0                0                 0                 0
+AUDJPYm    259    261    259    259    261                 0                0                 0                 0
+CADJPYm    259    261    259    259    261                 0                0                 0                 0
+NZDJPYm    259    261    259    259    261                 0                0                 0                 0
+EURGBPm    259    261    259    259    261                 0                0                 0                 0
+EURCHFm    259    261    259    259    261                 0                0                 0                 0
+EURCADm    259    261    259    259    261                 0                0                 0                 0
+CHFJPYm    259    261    259    259    261                 0                0                 0                 0
+EURJPYm    259    261    259    259    261                 0                0                 0                 0
+GBPAUDm    259    261    259    259    261                 0                0                 0                 0
+GBPJPYm    259    261    259    259    261                 0                0                 0                 0
+GBPNZDm    259    261    259    259    261                 0                0                 0                 0
+GBPUSDm    259    261    259    259    261                 0                0                 0                 0
+USDCHFm    259    261    259    259    261                 0                0                 1                 0
+USDJPYm    259    261    259    259    261                 0                0                 0                 0
+EURNZDm    259    261    259    259    261                 0                0                 0                 0
+EURUSDm    259    261    259    259    261                 0                0                 0                 0
+GBPCHFm    259    261    259    259    261                 0                0                 0                 0
+
+  dst_23h/dst_25h are sessions spanning 23 or 25 hours across a daylight-saving
+  transition. They are reported, not normalised - forcing them to 24 would either
+  invent or discard an hour of real market data.
+
+BROKER D1 ATR(20) vs CANONICAL 5-DAY ATR(20), AND REVISED RISK
+----------------------------------------------------------------------------------------------------
+ symbol  atr20_broker_d1  atr20_canonical_5d  atr_ratio_canon_over_broker  census_loss_2atr_usd  revised_loss_2atr_usd  revised_risk_pct_of_979 fits_1_00pct fits_1_50pct fits_2_00pct
+USDCADm        0.0050215           0.0054995                       1.0952                  7.16                 7.8416                  0.80098         True         True         True
+AUDUSDm        0.0040415            0.004472                       1.1065                  8.08                 8.9407                  0.91325         True         True         True
+NZDCADm         0.004826            0.005426                       1.1243                  6.89                 7.7466                  0.79128         True         True         True
+AUDNZDm         0.005446            0.006208                       1.1399                  6.41                 7.3069                  0.74636         True         True         True
+AUDCHFm        0.0030765           0.0033665                       1.0943                  7.62                 8.3383                  0.85171         True         True         True
+AUDCADm         0.004765           0.0054815                       1.1504                   6.8                 7.8225                  0.79903         True         True         True
+AUDJPYm           0.7326              0.8277                       1.1298                  9.31                 10.519                   1.0744        False         True         True
+CADJPYm           0.6996              0.7653                       1.0939                  8.89                 9.7249                  0.99335         True         True         True
+NZDJPYm           0.6935             0.79575                       1.1474                  8.81                 10.109                   1.0326        False         True         True
+EURGBPm         0.002547            0.002907                       1.1413                  6.86                 7.8296                  0.79976         True         True         True
+EURCHFm          0.00327            0.003653                       1.1171                   8.1                 9.0487                  0.92428         True         True         True
+EURCADm        0.0056245           0.0060395                       1.0738                  8.03                 8.6225                  0.88074         True         True         True
+CHFJPYm           1.2518              1.3218                        1.056                 15.91                   16.8                   1.7161        False        False         True
+EURJPYm           0.9978              1.1111                       1.1135                 12.68                 14.119                   1.4422        False         True         True
+GBPAUDm        0.0089245           0.0096835                        1.085                 12.55                 13.617                   1.3909        False         True         True
+GBPJPYm           1.3053              1.4855                       1.1381                 16.59                  18.88                   1.9285        False        False         True
+GBPNZDm         0.010948            0.013088                       1.1954                  12.9                  15.42                   1.5751        False        False         True
+GBPUSDm        0.0074925            0.008136                       1.0859                 14.98                 16.267                   1.6615        False        False         True
+USDCHFm        0.0054785           0.0057735                       1.0538                 13.58                 14.311                   1.4618        False         True         True
+USDJPYm          0.97475              1.0617                       1.0892                 12.38                 13.484                   1.3773        False         True         True
+EURNZDm         0.009911            0.011403                       1.1505                 11.67                 13.427                   1.3715        False         True         True
+EURUSDm        0.0053185             0.00558                       1.0492                 10.64                 11.163                   1.1403        False         True         True
+GBPCHFm          0.00469           0.0053645                       1.1438                 11.62                 13.291                   1.3576        False         True         True
+
+  The canonical ATR is measured on 17:00-NY sessions; the broker's D1 ATR is measured
+  on whatever daily boundary the broker uses. A ratio away from 1.00 is that boundary
+  difference, not an error. Revised USD risk re-prices the canonical ATR using the
+  USD-per-price-unit implied by the terminal's own order_calc_profit result from
+  task 001, so no assumed contract maths enters here.
+
+SPREAD BY WEEKDAY AND NEW YORK HOUR
+----------------------------------------------------------------------------------------------------
+  full table -> C:\Projects\KinoliveLines\study\results\fx_spread_by_hour.csv  (2760 rows)
+  pooled across symbols, by New York hour:
+    hour  median_pts   p90_pts     n
+       0        21.0      38.0   29877
+       1        20.0      38.0   29877
+       2        20.0      38.0   29877
+       3        20.0      38.0   29877
+       4        20.0      38.0   29877
+       5        20.0      38.0   29877
+       6        20.0      38.0   29877
+       7        20.0      38.0   29877
+       8        20.0      38.0   29877
+       9        20.0      38.0   29877
+      10        20.0      38.0   29877
+      11        20.0      38.0   29877
+      12        20.0      38.0   29877
+      13        20.0      38.0   29875
+      14        20.0      38.0   29877
+      15        20.0      38.0   29831
+      16        20.0      43.0   29831
+      17        53.0     158.0   29876
+      18        46.0     108.0   29877
+      19        21.0      41.0   29854
+      20        21.0      38.0   29877
+      21        21.0      38.0   29877
+      22        21.0      38.0   29785
+      23        21.0      38.0   29877
+
+  pooled across symbols, by New York weekday:
+    Mon   median     21.0  p90     46.0  n 143267
+    Tue   median     20.0  p90     43.0  n 143703
+    Wed   median     20.0  p90     43.0  n 142945
+    Thu   median     20.0  p90     43.0  n 143266
+    Fri   median     20.0  p90     38.0  n 101959
+    Sun   median     24.0  p90     93.0  n  41698
+
+  This table is built from SPREAD ONLY. No return series was inspected in producing
+  it, so it cannot have been tuned to a favourable execution hour.
+
+SWAP
+----------------------------------------------------------------------------------------------------
+  Swap values carried into the universe CSV are a DATED BROKER SNAPSHOT taken
+  2026-08-02 and are labelled *_snapshot. They are NOT applied across historical
+  years. Exness does not publish historical swap rates and none were separately
+  collected, so any historical carry number would be fabricated. Treat holding cost as
+  known only as of the snapshot date.
+
+TERMINAL CONTENTION
+----------------------------------------------------------------------------------------------------
+  probes 23  median 0 ms  p95 0 ms  max 1 ms
+  pauses taken      : 0
+  aborted           : False
+  H1 download time  : 13.6 min
+  no contention detected; every probe answered within 1500 ms, so no data was read from a strained terminal.
+
+MISSING DATA AND FAILURES
+----------------------------------------------------------------------------------------------------
+  symbols that failed to build: 0
+  No missing price was forward-filled anywhere in this pipeline.
+
+daily  -> C:\Projects\KinoliveLines\study\data\fx_daily_canonical.csv  (29877 rows)
+weekly -> C:\Projects\KinoliveLines\study\data\fx_weekly_canonical.csv (6003 rows)
+universe audit -> C:\Projects\KinoliveLines\study\results\fx_universe_audit.csv
+raw H1 -> C:\Projects\KinoliveLines\study\data\raw_h1  (NOT committed)
