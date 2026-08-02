@@ -1598,3 +1598,32 @@
 [2026-08-02 11:22:03] EVENT  LEVEL BROKEN above 63043.0 (reached 63044.66, now 63047.35). Note: Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
 [2026-08-02 11:22:13]        [SESSION SILENT 1452 min - fell back to GPT-5]
 [2026-08-02 11:22:13]        no_action: Acknowledged - no action taken.
+[2026-08-02 11:32:14] EVENT  POSITION OPENED #3033590006 SELL 0.01 @ 63074.98 SL 63094.98 TP 63034.98
+[2026-08-02 11:32:27]        [SESSION SILENT 1462 min - fell back to GPT-5]
+[2026-08-02 11:32:27]        no_action: Acknowledged - no action taken.
+[2026-08-02 11:32:59]        journalled #3033590006
+[2026-08-02 11:32:59] EVENT  POSITION CLOSED #3033590006 - flat now, bid 63081.27. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-02 11:33:15]        [SESSION SILENT 1463 min - fell back to GPT-5]
+[2026-08-02 11:33:15]        place_pending: EXECUTED. account 436771046 DEMO  equity 955.00   bid 63100.41 ask 63110.41
+[2026-08-02 11:33:15]        risk 20.00px = $0.20 (0.02% eq) | reward 40.00px = $0.40 | R:R 2.00:1
+[2026-08-02 11:33:15]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 63175.03, 'sl': 63195.03, 'tp': 63135.03, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 11:33:15]        retcode 10009  ok  ->  OK
+[2026-08-02 11:33:15]        resting orders now: 1
+[2026-08-02 11:33:15]        -> state changed
+[2026-08-02 11:33:45] pending #3033600251 now resting
+[2026-08-02 11:36:15] EVENT  LEVEL BROKEN above 63074.98 (reached 63123.74, now 63099.01). Note: M15 resistance (current pending SELL LIMIT placed here). If acceptance above, premise weakens; avoid chasing buys per Rule 9 on H1/H4.
+[2026-08-02 11:36:27]        [SESSION SILENT 1466 min - fell back to GPT-5]
+[2026-08-02 11:36:27]        no_action: Acknowledged - no action taken.
+[2026-08-02 11:42:27] EVENT  PENDING GONE #3033600251 left the book without filling - cancelled, expired or rejected, and NOT by this loop. Flat with no order unless stated otherwise. Reassess from current structure.
+[2026-08-02 11:42:40]        [SESSION SILENT 1473 min - fell back to GPT-5]
+[2026-08-02 11:42:40]        place_pending: FAILED. d through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-02 11:42:40]        REJECTED: SELL_LIMIT must rest ABOVE bid 63181.57, but you sent 63175.03. Price has already passed through that level, so it is behind the market and this order can never rest there. Either use a SELL_STOP if you still want that direction, pick a level price has not yet reached, or take no trade. Do NOT resend the same price - it will fail again.
+[2026-08-02 11:45:33] EVENT  LEVEL BROKEN above 63175.03 (reached 63186.00, now 63162.43). Note: H4 resistance from briefing. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9.
+[2026-08-02 11:45:45]        [SESSION SILENT 1476 min - fell back to GPT-5]
+[2026-08-02 11:45:45]        place_pending: EXECUTED. account 436771046 DEMO  equity 954.78   bid 63161.44 ask 63171.44
+[2026-08-02 11:45:45]        risk 20.00px = $0.20 (0.02% eq) | reward 40.00px = $0.40 | R:R 2.00:1
+[2026-08-02 11:45:45]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.01, 'type': 3, 'price': 63175.03, 'sl': 63195.03, 'tp': 63135.03, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 11:45:45]        retcode 10009  ok  ->  OK
+[2026-08-02 11:45:45]        resting orders now: 1
+[2026-08-02 11:45:45]        -> state changed
+[2026-08-02 11:46:15] pending #3033618550 now resting

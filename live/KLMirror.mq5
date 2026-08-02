@@ -290,13 +290,31 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
    // history. The $0.50 figure came from treating both sides as closing at one price,
    // which is exactly the mistake this block fixes. Two accounts pay two spreads and
    // there is no arrangement that avoids it.
-   double m_tp, m_sl;
-   if(src_is_buy)                                   // mirror SELLS, closes on the ask
-     { m_tp = sl + spread;  m_sl = tp + spread; }
-   else                                             // mirror BUYS, closes on the bid
-     { m_tp = sl - spread;  m_sl = tp - spread; }
-   m_tp = NormalizeDouble(m_tp, dg);
-   m_sl = NormalizeDouble(m_sl, dg);
+   // THE SPREAD SHIFT IS OFF, BECAUSE IT IS GEOMETRICALLY IMPOSSIBLE AT THIS STOP SIZE.
+   //
+   // Shifting the barriers by one spread makes both accounts close on the same tick, which
+   // is correct. But the mirror also ENTERS one spread away, so the shifted target sits
+   //
+   //     demo stop distance - 2 x spread
+   //
+   // from the mirror's own entry. The demo runs a 20-point stop and the spread is 10, so
+   // that is 20 - 20 = ZERO. The broker rejected every order for three trades running:
+   //
+   //     buy stop 0.01 BTCUSDm at 63084.98  sl: 63024.98  tp: 63084.98  [rejected]
+   //                                                          ^^^^^^^^ = the entry price
+   //
+   // Nothing about lot size changes this - it is pure price geometry. A synchronised hedge
+   // needs the demo's stop to be MORE than two spreads wide; at 20 points against a $10
+   // spread there is no room to place one at all.
+   //
+   // So the barriers go back to the demo's exact prices. That leaves 10 points of room and
+   // the orders place. The known cost of doing it this way: the two sides trigger one
+   // spread apart rather than together, so the mirror often gets closed by MirrorClose
+   // instead of reaching its own target, and the pair no longer offsets cleanly. That is
+   // accepted deliberately - the user has fixed the 20/40 point geometry and this is the
+   // only arrangement that functions inside it.
+   double m_tp = NormalizeDouble(sl, dg);           // demo's stop   -> our target
+   double m_sl = NormalizeDouble(tp, dg);           // demo's target -> our stop
 
    string comment = StringFormat("KLmir#%I64d", src_ticket);
    double bid = SymbolInfoDouble(InpSymbol, SYMBOL_BID);
