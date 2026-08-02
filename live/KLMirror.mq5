@@ -54,7 +54,7 @@
 
 input long   InpAccount        = 134499778;   // ONLY this account may trade
 input string InpSymbol         = "BTCUSDm";
-input double InpMaxLots        = 0.05;        // hard ceiling
+input double InpMaxLots        = 0.01;        // hard ceiling; 0.05 -> 0.01 on 2026-08-02
 input double InpMinEquity      = 5.0;         // stop trading below this
 input int    InpMagic          = 778001;
 input int    InpMaxSignalAge   = 120;         // seconds; older signals are ignored

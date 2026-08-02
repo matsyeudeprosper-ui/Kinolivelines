@@ -13,7 +13,10 @@ from datetime import datetime
 TERMINAL = r"C:\Program Files\MetaTrader 5\terminal64.exe"
 LOGIN    = 436771046
 SYM      = "BTCUSDm"
-MAX_LOTS = 0.05                     # hard ceiling; nothing larger ever goes out
+MAX_LOTS = 0.01                     # hard ceiling; nothing larger ever goes out.
+                                    # Lowered from 0.05 on 2026-08-02: the live mirror is
+                                    # now an execution record rather than a P&L
+                                    # experiment, so the pair costs ~$0.20 not ~$1.00.
 LOG      = os.path.join(os.path.dirname(os.path.abspath(__file__)), "decisions.csv")
 
 ORDER_TYPES = {"BUY_LIMIT": mt5.ORDER_TYPE_BUY_LIMIT, "SELL_LIMIT": mt5.ORDER_TYPE_SELL_LIMIT,

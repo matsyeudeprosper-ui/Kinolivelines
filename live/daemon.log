@@ -1548,3 +1548,27 @@
 [2026-08-02 09:19:58]        no_action: Acknowledged - no action taken.
 [2026-08-02 09:19:58]        -> state changed
 [2026-08-02 09:20:28] level 63082.91 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 10:04:37] EVENT  NO DECISION FOR 45 MINUTES while price moved -102 (1.1 x ATR-M15) to 62992.90. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-08-02 10:04:54]        [SESSION SILENT 1375 min - fell back to GPT-5]
+[2026-08-02 10:04:54]        place_pending: EXECUTED. account 436771046 DEMO  equity 955.43   bid 62989.45 ask 62999.45
+[2026-08-02 10:04:54]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-02 10:04:54]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 2, 'price': 62929.34, 'sl': 62909.34, 'tp': 62969.34, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 10:04:54]        retcode 10009  ok  ->  OK
+[2026-08-02 10:04:54]        resting orders now: 1
+[2026-08-02 10:04:54]        -> state changed
+[2026-08-02 10:05:24] pending #3033536097 now resting
+[2026-08-02 10:13:28] EVENT  LEVEL BROKEN above 63043.0 (reached 63062.31, now 63061.53). Note: Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid, no offset) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4.  NOTE: this level has now fired 4 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 10:13:38]        [SESSION SILENT 1384 min - fell back to GPT-5]
+[2026-08-02 10:13:38]        no_action: Acknowledged - no action taken.
+[2026-08-02 10:20:02] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-08-02 10:20:02] decider: PRIMARY = attached Claude Code session (no API cost). Every decision is written to NEEDS_HUMAN.json and waits for a Monitor to wake the session - nothing decides while no session is attached. Fallback after 20 min of silence: GPT-5.
+[2026-08-02 10:20:02] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 1 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-02 10:20:30]        [SESSION SILENT 1390 min - fell back to GPT-5]
+[2026-08-02 10:20:30]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 955.43   bid 63040.02 ask 63050.02
+[2026-08-02 10:20:30]        sending: {'action': 8, 'order': 3033536097}
+[2026-08-02 10:20:30]        retcode 10009  ok  ->  OK
+[2026-08-02 10:20:30]        resting orders now: 0
+[2026-08-02 10:20:30]        -> state changed
+[2026-08-02 10:20:30] pending #3033536097 gone - our own cancel, not waking
+[2026-08-02 10:20:30] level 63043.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 10:20:30] level 63082.91 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
