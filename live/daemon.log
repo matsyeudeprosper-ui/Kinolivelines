@@ -1403,3 +1403,21 @@
 [2026-08-02 05:30:48] EVENT  LEVEL BROKEN above 63097.05 (reached 63097.97, now 63087.71). Note: H1 support just broken. If we reclaim/accept back above (ask > 63,097 and holding), consider buy-the-retest using BUY LIMIT at L+spread per Rule 3 with SL 20, TP 40. Avoid SELLs into the direction of this H1 break per Rule 9.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
 [2026-08-02 05:30:58]        [SESSION SILENT 1101 min - fell back to GPT-5]
 [2026-08-02 05:30:58]        no_action: Acknowledged - no action taken.
+[2026-08-02 06:16:05] EVENT  NO DECISION FOR 45 MINUTES while price moved -117 (1.2 x ATR-M15) to 63094.67. Nothing in your watch levels fired - check whether they are still pointing where the market actually is, and whether any resting order is still reachable. Re-frame from current structure.
+[2026-08-02 06:16:40]        [SESSION SILENT 1146 min - fell back to GPT-5]
+[2026-08-02 06:16:40]        set_watch_levels: Watch levels updated (5 active).
+[2026-08-02 06:16:40]        -> state changed
+[2026-08-02 06:17:17] level 63107.05 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 06:17:17] level 63097.05 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 06:19:21] EVENT  LEVEL BROKEN above 63141.56 (reached 63146.00, now 63126.84). Note: M15 resistance 63,141.56. If tagged while flat, consider SELL LIMIT fade only if H1 63,210 remains intact; otherwise avoid shorts per Rule 9.
+[2026-08-02 06:21:21]        [SESSION SILENT 1151 min - fell back to GPT-5]
+[2026-08-02 06:21:21]        place_pending: EXECUTED. account 436771046 DEMO  equity 959.78   bid 63096.25 ask 63106.25
+[2026-08-02 06:21:21]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-02 06:21:21]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63141.56, 'sl': 63161.56, 'tp': 63101.56, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 06:21:21]        retcode 10009  ok  ->  OK
+[2026-08-02 06:21:21]        resting orders now: 1
+[2026-08-02 06:21:21]        -> state changed
+[2026-08-02 06:21:51] pending #3033340605 now resting
+[2026-08-02 06:22:21] EVENT  LEVEL BROKEN below 63107.05 (reached 63071.49, now 63077.55). Note: Reclaimed H1 63,097: watch for pullback into L+spread (63,107). If tagged while holding above, consider BUY LIMIT at 63,107 (ask) with SL 20 (63,087) and TP 40 (63,147). Avoid chasing higher.
+[2026-08-02 06:22:33]        [SESSION SILENT 1152 min - fell back to GPT-5]
+[2026-08-02 06:22:33]        no_action: Acknowledged - no action taken.
