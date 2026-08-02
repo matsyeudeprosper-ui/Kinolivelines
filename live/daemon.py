@@ -170,7 +170,15 @@ if DRY_RUN:
 if USE_LLM:
     _prov = brain.default_provider()
     _key  = {"openai": "OPENAI_API_KEY", "claude": "ANTHROPIC_API_KEY"}.get(_prov)
-    if _key and not os.environ.get(_key):
+    if _prov == "session":
+        # Say plainly what this costs, because a green heartbeat looks identical
+        # whether a session is reading the handoffs or the terminal was closed.
+        _fb = "GPT-5" if os.environ.get("OPENAI_API_KEY") else "NOTHING - no OPENAI_API_KEY"
+        say(f"decider: PRIMARY = attached Claude Code session (no API cost). "
+            f"Every decision is written to NEEDS_HUMAN.json and waits for a Monitor "
+            f"to wake the session - nothing decides while no session is attached. "
+            f"Fallback after {brain.SESSION_TIMEOUT_MIN} min of silence: {_fb}.")
+    elif _key and not os.environ.get(_key):
         say(f"NOTE: provider={_prov} but {_key} is not set - events will be "
             f"detected and logged, no decisions made.")
     else:

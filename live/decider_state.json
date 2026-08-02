@@ -1,6 +1,9 @@
-﻿{
-    "pid":  11604,
+{
+    "pid":  11448,
     "decider":  "session",
-    "set_at":  "2026-08-01T18:32:27",
-    "note":  "Claude Code session decides. Zero API cost. Needs a Monitor armed on daemon.log for DECISION NEEDED|AWAIT_SESSION, or handoffs are written and never read. Nothing decides while no session is attached - open positions still hold their broker-side SL/TP."
+    "set_at":  "2026-08-01T21:29:32",
+    "primary":  "attached Claude Code session - ALWAYS, until the user says otherwise",
+    "fallback":  "openai / gpt-5, ONLY after 20 minutes of session silence",
+    "how_it_is_set":  "KL_PROVIDER=session, stored as a USER environment variable so it survives a daemon restart, the scheduled task and a reboot. It is no longer held only in one process's environment - that is exactly how it was silently lost on 2026-08-01, when a daemon restart brought the loop back on GPT-5 as primary without anything looking wrong.",
+    "note":  "Claude Code session decides. Zero API cost. REQUIRES a Monitor armed on daemon.log for DECISION NEEDED|AWAIT_SESSION|ALL PROVIDERS FAILED, or handoffs are written and never read. Nothing decides while no session is attached - open positions still hold their broker-side SL/TP, so the failure mode is no NEW trade rather than an unmanaged one."
 }

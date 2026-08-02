@@ -1187,3 +1187,15 @@
 [2026-08-01 21:07:28]        set_watch_levels: Watch levels updated (4 active).
 [2026-08-01 21:07:28]        -> state changed
 [2026-08-01 21:07:58] level 63208.85 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-01 21:29:33] daemon up | BTCUSDm | account 436771046 | mode=*** LIVE *** | llm=on | poll 30s
+[2026-08-01 21:29:33] decider: PRIMARY = attached Claude Code session (no API cost). Every decision is written to NEEDS_HUMAN.json and waits for a Monitor to wake the session - nothing decides while no session is attached. Fallback after 20 min of silence: GPT-5.
+[2026-08-01 21:29:33] EVENT  DAEMON STARTED / RESTARTED. Your watch levels and any assumptions from before the restart may be stale - state can have changed while this loop was down, including orders cancelled or filled outside it. Treat the briefing below as the only truth: 0 open position(s), 0 pending order(s). Re-sync your watch levels to what is actually there now.
+[2026-08-01 21:30:00]        [SESSION SILENT 620 min - fell back to GPT-5]
+[2026-08-01 21:30:00]        place_pending: EXECUTED. account 436771046 DEMO  equity 966.97   bid 63337.42 ask 63347.42
+[2026-08-01 21:30:00]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-01 21:30:00]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63488.13, 'sl': 63508.13, 'tp': 63448.13, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-01 21:30:00]        retcode 10009  ok  ->  OK
+[2026-08-01 21:30:00]        resting orders now: 1
+[2026-08-01 21:30:00]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-01 21:30:00]        -> state changed
+[2026-08-01 21:30:00] pending #3033082880 now resting

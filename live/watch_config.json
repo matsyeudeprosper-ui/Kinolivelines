@@ -4,24 +4,24 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63208.85,
+      "price": 63488.13,
       "dir": "above",
-      "note": "Spike high (M5/4h). Our SELL_LIMIT fades the first retest. If accepted/held above on H1, avoid short continuation per Rule 9 and consider cancelling the fade."
+      "note": "Fresh M15 spike/4h range high. Our SELL_LIMIT fades the first retest. If accepted/held above on H1, cancel the fade and avoid long continuation per Rule 9."
     },
     {
-      "price": 62917.02,
+      "price": 63027.87,
       "dir": "below",
-      "note": "H1 resistance reclaimed below. If accepted back under, the 63,208 fade premise weakens; reassess or cancel pending."
+      "note": "H1 resistance reclaimed below. If accepted back under, momentum cools; reassess any short fade premise and look for reclaims."
+    },
+    {
+      "price": 62878.52,
+      "dir": "below",
+      "note": "M15 support. If swept/reclaimed, consider a first-retest long fade; avoid chasing breaks per Rule 9."
     },
     {
       "price": 62819.96,
       "dir": "below",
-      "note": "H4 resistance reclaimed below. Avoid chasing breakdowns per Rule 9; look for fade/reclaim setups."
-    },
-    {
-      "price": 62739.53,
-      "dir": "below",
-      "note": "H1 support. If tested/accepted below, long-fade premise weakens further; wait for clear reclaim before longs."
+      "note": "H4 resistance. Acceptance back below weakens longs; prefer reclaim/fade setups over continuation shorts."
     }
   ],
   "max_hold_minutes": 120
