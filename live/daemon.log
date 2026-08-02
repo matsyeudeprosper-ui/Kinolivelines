@@ -1481,3 +1481,20 @@
 [2026-08-02 08:07:36]        no_action: Acknowledged - no action taken.
 [2026-08-02 08:07:36]        -> state changed
 [2026-08-02 08:08:06] level 63043.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 08:15:40] EVENT  PENDING #3033405075 @ 63175.00 is now 1.5x ATR(M15) from price 63032.94 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-02 08:15:49]        [SESSION SILENT 1266 min - fell back to GPT-5]
+[2026-08-02 08:15:49]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 958.78   bid 63029.18 ask 63039.18
+[2026-08-02 08:15:49]        sending: {'action': 8, 'order': 3033405075}
+[2026-08-02 08:15:49]        retcode 10009  ok  ->  OK
+[2026-08-02 08:15:49]        resting orders now: 0
+[2026-08-02 08:15:49]        -> state changed
+[2026-08-02 08:16:19] pending #3033405075 gone - our own cancel, not waking
+[2026-08-02 08:28:50] EVENT  LEVEL BROKEN above 63043.0 (reached 63048.86, now 63045.96). Note: Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid, no offset) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4.
+[2026-08-02 08:29:04]        [SESSION SILENT 1279 min - fell back to GPT-5]
+[2026-08-02 08:29:04]        place_pending: EXECUTED. account 436771046 DEMO  equity 958.78   bid 63035.42 ask 63045.42
+[2026-08-02 08:29:04]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-02 08:29:04]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63043.0, 'sl': 63063.0, 'tp': 63003.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 08:29:04]        retcode 10009  ok  ->  OK
+[2026-08-02 08:29:04]        resting orders now: 1
+[2026-08-02 08:29:04]        -> state changed
+[2026-08-02 08:29:34] pending #3033460510 now resting
