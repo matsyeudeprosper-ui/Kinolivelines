@@ -256,11 +256,47 @@ void MirrorOpen(long src_ticket, string side, double vol, double price,
    //     book is, so a "$2.00" stop cost $2.32.
    //
    // Matching prices needs no dollar conversion, no slippage correction, and no cap on
-   // concurrent mirrors, because the mirror cannot outlive its source. The pair costs
-   // exactly one spread - about $0.50 at 0.05 lots - every time, which is the floor. You
-   // cannot buy and sell at the same price at the same moment.
-   double m_tp = NormalizeDouble(sl, dg);           // demo's stop   -> our target
-   double m_sl = NormalizeDouble(tp, dg);           // demo's target -> our stop
+   // concurrent mirrors, because the mirror cannot outlive its source. The pair costs two
+   // spreads - about $1.00 at 0.05 lots - every time. See the barrier block below for why
+   // it is two and not one.
+   // ...SHIFTED BY ONE SPREAD, because each account CLOSES on the opposite quote.
+   //
+   // Copying the demo's barrier prices verbatim is not enough, and this cost real money
+   // before it was spotted. A demo SELL closes on the ASK; the mirroring BUY closes on
+   // the BID. Those are one spread apart, so identical barrier prices fire at prices one
+   // spread apart - which is to say, not together at all.
+   //
+   // Observed 2026-08-02 07:23, the first pair to run on matched prices:
+   //
+   //     demo SELL 63,141.56  SL 63,161.56  -> stopped out on the ask,      -$1.00
+   //     live BUY  63,151.56  TP 63,161.56  -> needed the BID to reach it,
+   //                                           which needed the ask at 63,171.56.
+   //                                           Never fired. Closed later at -$0.44.
+   //
+   // So shift every mirrored barrier by one spread, in the direction that makes the
+   // mirror's own quote arrive at the same instant as the demo's:
+   //
+   //     demo BUY  (closes on bid) -> mirror SELL closes on ask -> barriers + spread
+   //     demo SELL (closes on ask) -> mirror BUY  closes on bid -> barriers - spread
+   //
+   // WHAT THIS COSTS, corrected. Each account crosses its own spread on the way in AND
+   // relies on its own quote on the way out, so the pair pays TWO spreads, not one:
+   //
+   //     demo  BUY  enters ask P, exits bid S           = S - P
+   //     mirror SELL enters bid P-s, exits ask S+s      = P - S - 2s
+   //     sum                                            = -2 x spread
+   //
+   // That is $1.00 per pair at 0.05 lots, not the $0.50 quoted earlier in this file's
+   // history. The $0.50 figure came from treating both sides as closing at one price,
+   // which is exactly the mistake this block fixes. Two accounts pay two spreads and
+   // there is no arrangement that avoids it.
+   double m_tp, m_sl;
+   if(src_is_buy)                                   // mirror SELLS, closes on the ask
+     { m_tp = sl + spread;  m_sl = tp + spread; }
+   else                                             // mirror BUYS, closes on the bid
+     { m_tp = sl - spread;  m_sl = tp - spread; }
+   m_tp = NormalizeDouble(m_tp, dg);
+   m_sl = NormalizeDouble(m_sl, dg);
 
    string comment = StringFormat("KLmir#%I64d", src_ticket);
    double bid = SymbolInfoDouble(InpSymbol, SYMBOL_BID);

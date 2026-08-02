@@ -1432,3 +1432,43 @@
 [2026-08-02 06:56:08]        resting orders now: 0
 [2026-08-02 06:56:08]        -> state changed
 [2026-08-02 06:56:38] pending #3033340605 gone - our own cancel, not waking
+[2026-08-02 07:17:21] EVENT  LEVEL BROKEN above 63141.56 (reached 63152.61, now 63136.60). Note: M15 resistance 63,141.56. If tagged while flat, consider SELL LIMIT fade only if H1 63,210 remains intact; otherwise avoid shorts per Rule 9.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 07:17:39]        [SESSION SILENT 1207 min - fell back to GPT-5]
+[2026-08-02 07:17:39]        place_pending: EXECUTED. account 436771046 DEMO  equity 959.78   bid 63122.34 ask 63132.34
+[2026-08-02 07:17:39]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-02 07:17:39]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63141.56, 'sl': 63161.56, 'tp': 63101.56, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 07:17:39]        retcode 10009  ok  ->  OK
+[2026-08-02 07:17:39]        resting orders now: 1
+[2026-08-02 07:17:39]        -> state changed
+[2026-08-02 07:18:09] pending #3033398617 now resting
+[2026-08-02 07:20:40] EVENT  LEVEL BROKEN below 63097.05 (reached 63090.59, now 63121.93). Note: If we accept back below the H1 level (bid/ask both below and holding), stand down on the buy-retest idea; avoid fresh shorts in the direction of the H1 break per Rule 9.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 07:20:52]        [SESSION SILENT 1211 min - fell back to GPT-5]
+[2026-08-02 07:20:52]        no_action: Acknowledged - no action taken.
+[2026-08-02 07:22:52] EVENT  POSITION OPENED #3033398617 SELL 0.05 @ 63141.56 SL 63161.56 TP 63101.56
+[2026-08-02 07:23:02]        [SESSION SILENT 1213 min - fell back to GPT-5]
+[2026-08-02 07:23:02]        no_action: Acknowledged - no action taken.
+[2026-08-02 07:23:34]        journalled #3033398617
+[2026-08-02 07:23:34] EVENT  POSITION CLOSED #3033398617 - flat now, bid 63152.8. Reassess: is there a next setup, and are the watch levels still right?
+[2026-08-02 07:23:56]        [SESSION SILENT 1214 min - fell back to GPT-5]
+[2026-08-02 07:23:56]        place_pending: EXECUTED. account 436771046 DEMO  equity 958.78   bid 63137.7 ask 63147.7
+[2026-08-02 07:23:56]        risk 20.00px = $1.00 (0.10% eq) | reward 40.00px = $2.00 | R:R 2.00:1
+[2026-08-02 07:23:56]        sending: {'action': 5, 'symbol': 'BTCUSDm', 'volume': 0.05, 'type': 3, 'price': 63175.0, 'sl': 63195.0, 'tp': 63135.0, 'type_time': 0, 'comment': 'KL-auto'}
+[2026-08-02 07:23:56]        retcode 10009  ok  ->  OK
+[2026-08-02 07:23:56]        resting orders now: 1
+[2026-08-02 07:23:56]        set_watch_levels: Watch levels updated (5 active).
+[2026-08-02 07:23:56]        -> state changed
+[2026-08-02 07:24:26] pending #3033405075 now resting
+[2026-08-02 07:24:26] level 63175.0 (above) was ALREADY BROKEN when registered - it will not fire until price reclaims it
+[2026-08-02 07:30:26] EVENT  LEVEL BROKEN below 63107.05 (reached 63105.31, now 63123.14). Note: Prior H1 63,097 reclaim area. Note: Rule 9 forbids continuation buys after an H1 break — stand down on the buy-retest idea while H1 break holds.  NOTE: this level has now fired 2 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 07:30:36]        [SESSION SILENT 1221 min - fell back to GPT-5]
+[2026-08-02 07:30:36]        no_action: Acknowledged - no action taken.
+[2026-08-02 07:34:36] EVENT  LEVEL BROKEN below 63107.05 (reached 63104.33, now 63109.33). Note: Prior H1 63,097 reclaim area. Note: Rule 9 forbids continuation buys after an H1 break — stand down on the buy-retest idea while H1 break holds.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 07:34:59]        [SESSION SILENT 1225 min - fell back to GPT-5]
+[2026-08-02 07:34:59]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-02 07:34:59]        no_action: Acknowledged - no action taken.
+[2026-08-02 07:34:59]        -> state changed
+[2026-08-02 07:38:08] EVENT  LEVEL BROKEN below 63097.05 (reached 63080.61, now 63091.78). Note: If we accept back below the H1 level (bid/ask both below and holding), stand down on shorts in direction of that break per Rule 9; reassess for fades only.  NOTE: this level has now fired 3 times - if it is no longer meaningful, replace it via set_watch_levels.
+[2026-08-02 07:38:27]        [SESSION SILENT 1228 min - fell back to GPT-5]
+[2026-08-02 07:38:27]        set_watch_levels: Watch levels updated (4 active).
+[2026-08-02 07:38:27]        -> state changed
+[2026-08-02 07:38:57] level 63043.0 (below) was ALREADY BROKEN when registered - it will not fire until price reclaims it

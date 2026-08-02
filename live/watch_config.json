@@ -6,27 +6,22 @@
     {
       "price": 63575,
       "dir": "above",
-      "note": "M5/H1 swing high and H4 resistance (05:00 high 63,575). If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4 breaks."
+      "note": "H4 resistance and session high. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40. Avoid buy continuation per Rule 9 on H1/H4 breaks."
     },
     {
       "price": 63468.88,
       "dir": "above",
-      "note": "H1 resistance 63,468.88. If price returns toward this zone while flat, consider SELL LIMIT fade (fills on bid, no offset) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
+      "note": "H1/H4 resistance zone. If price returns while flat, consider SELL LIMIT fade (fills on bid, no offset) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
     },
     {
-      "price": 63141.56,
+      "price": 63175,
       "dir": "above",
-      "note": "M15 resistance 63,141.56. If tagged while flat, consider SELL LIMIT fade only if H1 63,210 remains intact; otherwise avoid shorts per Rule 9."
+      "note": "M5 swing high (12:20). If tagged while flat, SELL LIMIT fade with SL 20, TP 40; cancel if acceptance above toward 63,210/63,469."
     },
     {
-      "price": 63107.05,
+      "price": 63043,
       "dir": "below",
-      "note": "Reclaimed H1 63,097: watch for pullback into L+spread (63,107). If tagged while holding above, consider BUY LIMIT at 63,107 (ask) with SL 20 (63,087) and TP 40 (63,147). Avoid chasing higher."
-    },
-    {
-      "price": 63097.05,
-      "dir": "below",
-      "note": "If we accept back below the H1 level (bid/ask both below and holding), stand down on the buy-retest idea; avoid fresh shorts in the direction of the H1 break per Rule 9."
+      "note": "Intraday pivot low tested twice (10:25 and 11:20). If we accept below, avoid sell continuation/chasing; reassess for fades only (e.g., SELL LIMIT into 63,043 from below or BUY LIMIT at 62,919 H4 support) with SL 20/TP 40."
     }
   ],
   "max_hold_minutes": 120
