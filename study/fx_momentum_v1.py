@@ -189,6 +189,82 @@ def currency_values(week_close, ccys, pairs):
     return vals, resid
 
 
+def fit_graph(quotes, ccys, pairs_):
+    """Least-squares currency log-values from {pair: price}, USD pinned to zero.
+
+    Returns (values, residual_rms, n_pairs_used) or (None, nan, 0) when the system
+    is rank-deficient - i.e. the available pairs do not connect every currency back
+    to USD, so some currency's value would be unidentifiable.
+    """
+    free = [c for c in ccys if c != "USD"]
+    idx = {c: i for i, c in enumerate(free)}
+    A, b = [], []
+    for p in pairs_:
+        v = quotes.get(p)
+        if v is None or not np.isfinite(v) or v <= 0:
+            continue
+        row = np.zeros(len(free))
+        if p[:3] in idx:
+            row[idx[p[:3]]] += 1.0
+        if p[3:6] in idx:
+            row[idx[p[3:6]]] -= 1.0
+        A.append(row)
+        b.append(np.log(v))
+    if len(A) < len(free):
+        return None, np.nan, len(A)
+    A, b = np.array(A), np.array(b)
+    if np.linalg.matrix_rank(A) < len(free):      # graph not connected to USD
+        return None, np.nan, len(A)
+    sol, *_ = np.linalg.lstsq(A, b, rcond=None)
+    resid = float(np.sqrt(np.mean((A @ sol - b) ** 2)))
+    vals = {"USD": 0.0}
+    vals.update({c: float(sol[idx[c]]) for c in free})
+    return vals, resid, len(A)
+
+
+# --------------------------------------------------------------------------------
+# TASK 003B CORRECTION 1 - EXACT H1 CURRENCY GRAPHS
+# --------------------------------------------------------------------------------
+# 003A still converted with the newest completed WEEKLY graph, which could be up to
+# five trading days stale at the moment of a fill. The graph is now rebuilt at the
+# exact H1 timestamp of every entry and every exit, from that bar's MIDPOINT opens:
+#
+#     mid_open = bid_open + 0.5 * spread_points * point
+#
+# Midpoints, not bids, because a currency value is a property of the market rather
+# than of one side of the quote; using bids would push a systematic half-spread into
+# every fitted currency and therefore into every conversion.
+#
+# A stop that fires inside an H1 bar is converted with the graph built from THAT
+# bar's opening prices - the finest historical timestamp the data supports.
+H1IDX = {}
+_GCACHE = {}
+
+
+def h1_graph(ts):
+    """Currency graph at exactly `ts`, from that H1 bar's midpoint opens.
+
+    Returns (values, residual_rms, n_pairs, ts) or None when no connected graph
+    exists at that timestamp.
+    """
+    key = pd.Timestamp(ts)
+    if key in _GCACHE:
+        return _GCACHE[key]
+    quotes = {}
+    for p, tbl in H1IDX.items():
+        rec = tbl.get(key)
+        if rec is None:
+            continue
+        bid_open, spread_pts, point = rec
+        mid = bid_open + 0.5 * spread_pts * point
+        if mid > 0:
+            quotes[p] = mid
+    vals, resid, n = fit_graph(quotes, CCYS, list(H1IDX.keys()))
+    out = None if vals is None else (vals, resid, n, key)
+    _GCACHE[key] = out
+    return out
+
+
 def build_weekly_currency(weekly_close, ccys, pairs):
     recs = []
     for wk, row in weekly_close.iterrows():
@@ -327,6 +403,8 @@ for s in pairs:
     H1[s] = h
     sess = canon[canon["symbol"] == s]["trading_date"].tolist()
     AUD[s] = session_grid_audit(h, sess)
+    # timestamp -> (bid open, spread points, point) for the exact-H1 graph builder
+    H1IDX[s] = dict(zip(h["t_utc"], zip(h["open"], h["spread"], h["point"])))
 
 aud_all = pd.concat([a.assign(symbol=s) for s, a in AUD.items()], ignore_index=True)
 say(f"  sessions audited        : {len(aud_all)}")
@@ -511,13 +589,14 @@ def precompute(entry_offset_h=0, spread_mult=1.0, formation=FORMATION_WEEKS):
                 leg = simulate_leg(p, H1[p], t_in, t_out, d_, atr, spread_mult)
                 if leg is None:
                     continue
-                # CORRECTION 4: entry-dated graph for risk/exposure, exit-dated for P&L
-                gi = graph_at(t_in)
-                go = graph_at(leg["t_out"])
+                # 003A correction 4 + 003B correction 1: the graph is now rebuilt at
+                # the EXACT H1 timestamp of the fill, not the newest weekly graph.
+                gi = h1_graph(t_in)
+                go = h1_graph(leg["t_out"])
                 if gi is None or go is None:
-                    continue
-                q2u_in = quote_to_usd(gi, p[3:6])
-                q2u_out = quote_to_usd(go, p[3:6])
+                    continue                      # no connected graph -> skip outcome
+                q2u_in = float(np.exp(gi[0][p[3:6]]))
+                q2u_out = float(np.exp(go[0][p[3:6]]))
                 out.append({
                     "k": k, "month": sched.loc[k, "month"], "t_in": t_in, "t_out": leg["t_out"],
                     "pair": p, "dir": d_, "atr": atr,
@@ -529,10 +608,10 @@ def precompute(entry_offset_h=0, spread_mult=1.0, formation=FORMATION_WEEKS):
                     "stop_px": leg["stop_px"], "entry_bar_stop": leg["entry_bar_stop"],
                     "exit_bar_open_bid": leg["exit_bar_open_bid"],
                     "exit_bar_spread_px": leg["exit_bar_spread_px"],
-                    "graph_week_entry": wk_list[gi], "graph_week_exit": wk_list[go],
-                    "graph_end_entry": pd.to_datetime(cv_canon.loc[wk_list[gi], "week_end"]),
-                    "graph_end_exit": pd.to_datetime(cv_canon.loc[wk_list[go], "week_end"]),
-                    "q2u_in": q2u_in, "q2u_out": q2u_out,
+                    "entry_graph_timestamp": gi[3], "exit_graph_timestamp": go[3],
+                    "entry_graph_residual_rms": gi[1], "exit_graph_residual_rms": go[1],
+                    "entry_graph_pairs": gi[2], "exit_graph_pairs": go[2],
+                    "q2u_entry": q2u_in, "q2u_exit": q2u_out,
                     "is_signal": (p == best and d_ == bdir),
                     "signal_pair": best, "signal_dir": bdir, "signal_score": bval,
                 })
@@ -582,14 +661,24 @@ _n_ebs = int(PRE["entry_bar_stop"].sum())
 say(f"  [OK] A2 entry-bar stop detected on a synthetic breach; "
     f"{_n_ebs} entry-bar stops present in the real precompute")
 
-# --- A3: conversion timestamps match entry and exit timestamps
-_bad_in = PRE[PRE["graph_end_entry"] >= pd.to_datetime(PRE["t_in"]).dt.tz_localize(None)]
-_bad_out = PRE[PRE["graph_end_exit"] >= pd.to_datetime(PRE["t_out"]).dt.tz_localize(None)]
-assert len(_bad_in) == 0 and len(_bad_out) == 0, \
-    "A3 a conversion graph is dated at or after the timestamp it converts"
-_diff = int((PRE["graph_week_entry"] != PRE["graph_week_exit"]).sum())
-say(f"  [OK] A3 entry graph precedes entry and exit graph precedes exit; "
-    f"{_diff}/{len(PRE)} rows use DIFFERENT graphs for entry vs exit")
+# --- A3: conversion graph timestamps EQUAL the trade timestamps (003B)
+# Equality, not "earlier than". 003A only proved the graph was not from the future;
+# it could still be five days stale. This requires the graph to be built at exactly
+# the bar being priced.
+_eq_in = (pd.to_datetime(PRE["entry_graph_timestamp"], utc=True)
+          == pd.to_datetime(PRE["t_in"], utc=True))
+_eq_out = (pd.to_datetime(PRE["exit_graph_timestamp"], utc=True)
+           == pd.to_datetime(PRE["t_out"], utc=True))
+assert bool(_eq_in.all()), \
+    f"A3 entry_graph_timestamp != entry timestamp on {int((~_eq_in).sum())} rows"
+assert bool(_eq_out.all()), \
+    f"A3 exit_graph_timestamp != exit timestamp on {int((~_eq_out).sum())} rows"
+_diff = int((PRE["entry_graph_timestamp"] != PRE["exit_graph_timestamp"]).sum())
+say(f"  [OK] A3 entry/exit graph timestamps EQUAL the trade timestamps exactly "
+    f"({len(PRE)} rows); {_diff} rows use different graphs at the two ends")
+say(f"       graph residual rms: entry median {PRE['entry_graph_residual_rms'].median():.2e}, "
+    f"exit median {PRE['exit_graph_residual_rms'].median():.2e}; "
+    f"pairs per graph min {int(PRE['entry_graph_pairs'].min())}")
 
 # --- A5: consecutive positions never overlap
 _s = PRE[PRE["is_signal"]].sort_values("k")
@@ -741,59 +830,97 @@ say("")
 
 
 # ============================================================ 7. signal-only tests
-def signal_only(cv, wk_list_, closes, formation, a=None, b=None):
-    """TASK 003A CORRECTION 3 - a true MONTHLY test.
+def signal_only_canonical(formation, a=None, b=None):
+    """TASK 003B CORRECTION 2 - canonical signal test priced at the ACTUAL schedule.
 
-    Cost-free directional test: exactly ONE signal and ONE outcome per scheduled
-    calendar month.
+    003A still measured the signal from Friday weekly CLOSES, while the strategy it
+    represents enters at the Monday 20:00 New York H1 open and exits at the next
+    scheduled monthly open. Those are different prices on different days, so the
+    signal test and the executable test were not measuring the same thing.
 
-    The previous version stepped week by week and held one week, so it produced ~4x
-    too many observations, each measuring a one-week horizon while the strategy it
-    was meant to represent holds for a month. Those counts (101, 124, 140 "months")
-    were weeks. Overlapping weekly draws also make the observations serially
-    dependent, so any comparison against the monthly strategy was apples to oranges.
+    Now: enter at the real scheduled H1 open and exit at the next real scheduled H1
+    open, with bid/ask applied by direction (bars are BID, so a BUY pays the spread
+    on entry and a SELL pays it on exit). Still no stop, no financing and no risk
+    skipping - that is what makes it signal-only rather than the strategy.
 
-    Now: for each calendar month, the signal is taken from the last completed week
-    before that month's first Monday, and the outcome runs to the corresponding week
-    of the NEXT month - one observation per month, non-overlapping.
+    One observation per calendar month by construction: the schedule has one
+    rebalance per month.
     """
-    ends = pd.to_datetime(cv["week_end"])
-    # anchor week for each calendar month = last completed week before its first Monday
-    anchors = {}
-    for m in pd.period_range(ends.min(), ends.max(), freq="M"):
-        fm = pd.Timestamp(first_monday(m.year, m.month))
-        ok = ends[ends < fm]
-        if not len(ok):
-            continue
-        i = wk_list_.index(ok.index[-1])
-        if i >= formation:
-            anchors[str(m)] = i
-    keys = sorted(anchors)
     recs = []
-    for n_ in range(len(keys) - 1):
-        i, j = anchors[keys[n_]], anchors[keys[n_ + 1]]
-        if j <= i:
+    for k in range(len(sched) - 1):
+        t_in = pd.Timestamp(sched.loc[k, "entry_utc"])
+        t_out = pd.Timestamp(sched.loc[k + 1, "entry_utc"])
+        wi = latest_week_before(t_in)
+        if wi is None:
             continue
-        sc = pair_scores(cv, wk_list_, i, formation)
+        sc = pair_scores(cv_canon, wk_list, wi, formation)
         if sc is None:
             continue
         p, d_, v = pick(sc)
-        w0, w1 = wk_list_[i], wk_list_[j]
-        try:
-            c0, c1 = closes.loc[w0, p], closes.loc[w1, p]
-        except KeyError:
+        rin, rout = H1IDX[p].get(t_in), H1IDX[p].get(t_out)
+        if rin is None or rout is None:
             continue
-        if not (np.isfinite(c0) and np.isfinite(c1) and c0 > 0 and c1 > 0):
+        sp_in = rin[1] * rin[2]
+        sp_out = rout[1] * rout[2]
+        if d_ > 0:
+            entry, exit_ = rin[0] + sp_in, rout[0]          # buy ask, sell bid
+        else:
+            entry, exit_ = rin[0], rout[0] + sp_out          # sell bid, buy ask
+        if not (entry > 0 and exit_ > 0):
             continue
-        t = ends.loc[w1]
+        t = t_in.tz_localize(None) if t_in.tzinfo else t_in
         if a is not None and (t < a or t > b):
             continue
-        recs.append({"month": keys[n_], "week": w1, "t": t, "pair": p, "dir": d_,
-                     "score": v, "logret": d_ * np.log(c1 / c0)})
+        recs.append({"month": sched.loc[k, "month"], "t": t, "pair": p, "dir": d_,
+                     "score": v, "logret": d_ * np.log(exit_ / entry)})
     return pd.DataFrame(recs)
 
 
-say("SIGNAL-ONLY TESTS (no costs; direction check only)")
+def signal_only_d1(formation, a=None, b=None):
+    """Long-D1 panel: APPROXIMATE signal-only analysis.
+
+    D1 has no intraday resolution, so the scheduled 20:00 New York open cannot be
+    reproduced. The nearest available broker D1 close at or after each scheduled
+    first Monday is used instead, and no spread is applied - this panel is not
+    entitled to claim execution costs. Labelled approximate everywhere it appears.
+    """
+    px = d1p.pivot_table(index="eff", columns="symbol", values="close")
+    dates = px.index
+    ends = pd.to_datetime(cv_d1["week_end"])
+    wl = list(cv_d1.index)
+    recs = []
+    for m in pd.period_range(dates.min(), dates.max(), freq="M"):
+        fm = pd.Timestamp(first_monday(m.year, m.month))
+        nxt = dates[dates >= fm]
+        if not len(nxt):
+            continue
+        d_in = nxt[0]
+        ok = ends[ends < fm]
+        if not len(ok):
+            continue
+        i = wl.index(ok.index[-1])
+        if i < formation:
+            continue
+        sc = pair_scores(cv_d1, wl, i, formation)
+        if sc is None:
+            continue
+        p, d_, v = pick(sc)
+        nm = pd.Timestamp(first_monday(*( (m + 1).year, (m + 1).month )))
+        nxt2 = dates[dates >= nm]
+        if not len(nxt2):
+            continue
+        d_out = nxt2[0]
+        c0, c1 = px.loc[d_in, p], px.loc[d_out, p]
+        if not (np.isfinite(c0) and np.isfinite(c1) and c0 > 0 and c1 > 0):
+            continue
+        if a is not None and (d_in < a or d_in > b):
+            continue
+        recs.append({"month": str(m), "t": d_in, "pair": p, "dir": d_, "score": v,
+                     "logret": d_ * np.log(c1 / c0)})
+    return pd.DataFrame(recs)
+
+
+say("SIGNAL-ONLY TESTS (no stop, no financing; canonical priced at the real schedule)")
 SIG = []
 PANELS = [("canonical", cv_canon, wk_list, wc),
           ("long_D1", cv_d1, list(cv_d1.index), wc_d1)]
@@ -802,22 +929,25 @@ for panel, cv, wl, cl in PANELS:
         for pnm, a, b in [("development", pd.Timestamp("1900-01-01"), DEV_END),
                           ("validation", VAL_START, VAL_END),
                           ("holdout", HOLD_START, HOLD_END)]:
-            r = signal_only(cv, wl, cl, f, a, b)
+            r = (signal_only_canonical(f, a, b) if panel == "canonical"
+                 else signal_only_d1(f, a, b))
             tot = r["logret"].sum() if len(r) else np.nan
             SIG.append({"panel": panel, "formation_weeks": f, "period": pnm,
                         "n_months": len(r), "sum_logret": tot,
                         "mean_logret": r["logret"].mean() if len(r) else np.nan,
                         "sign": (np.sign(tot) if np.isfinite(tot) else np.nan),
-                        "is_frozen_baseline": f == FORMATION_WEEKS})
+                        "is_frozen_baseline": f == FORMATION_WEEKS,
+                        "pricing": ("scheduled_H1_open_with_spread" if panel == "canonical"
+                                    else "APPROXIMATE_broker_D1_close_no_spread")})
 SIGDF = pd.DataFrame(SIG)
 
 # --- A4: signal-only output has at most ONE observation per calendar month
-for _pn, _cv, _wl, _cl in PANELS:
-    for _f in DIAG_FORMATIONS:
-        _r = signal_only(_cv, _wl, _cl, _f)
+for _f in DIAG_FORMATIONS:
+    for _pn, _fn in (("canonical", signal_only_canonical), ("long_D1", signal_only_d1)):
+        _r = _fn(_f)
         if not len(_r):
             continue
-        _dup = _r["month"].duplicated().sum()
+        _dup = int(_r["month"].duplicated().sum())
         assert _dup == 0, f"A4 {_pn} f={_f}: {_dup} duplicate calendar months"
         assert _r["month"].is_monotonic_increasing, f"A4 {_pn} f={_f}: months unordered"
 say("  [OK] A4 signal-only output has at most one observation per calendar month "
@@ -832,9 +962,8 @@ say(SIGDF.pivot_table(index=["panel", "period"], columns="formation_weeks",
                       values="sum_logret").to_string())
 say("")
 
-ov = signal_only(cv_canon, wk_list, wc, FORMATION_WEEKS).merge(
-    signal_only(cv_d1, list(cv_d1.index), wc_d1, FORMATION_WEEKS), on="month",
-    suffixes=("_canon", "_d1"))
+ov = signal_only_canonical(FORMATION_WEEKS).merge(
+    signal_only_d1(FORMATION_WEEKS), on="month", suffixes=("_canon", "_d1"))
 agree_pair = float((ov["pair_canon"] == ov["pair_d1"]).mean() * 100) if len(ov) else np.nan
 agree_dir = float((ov["dir_canon"] == ov["dir_d1"]).mean() * 100) if len(ov) else np.nan
 say(f"  panel overlap {len(ov)} MONTHS: same pair {agree_pair:.1f}%, "

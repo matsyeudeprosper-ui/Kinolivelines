@@ -1,7 +1,7 @@
 ====================================================================================================
 TASK 003 - FX CROSS-SECTIONAL MOMENTUM 3M-1M V1
 ====================================================================================================
-generated : 2026-08-02 16:11:40
+generated : 2026-08-02 16:44:02
 
 EXECUTABLE UNIVERSE (19 pairs), printed before any test:
    AUDCADm  AUDCHFm  AUDJPYm  AUDNZDm  AUDUSDm  CADJPYm
@@ -29,7 +29,7 @@ CANONICAL WEEKLY PANEL: 261 weeks, 239 complete and usable, 22 excluded
 currency LS residual rms (canonical): median 9.52e-05  max 1.11e-03
 
 LONG-HISTORY D1 SIGNAL PANEL
-  D1 bars merged from Sunday into Monday : 7979
+  D1 bars merged from Sunday into Monday : 7980
   weeks total 423, complete and usable 415, excluded 8
   span: 2018-07-13 -> 2026-07-31
   currency LS residual rms (D1): median 1.23e-04
@@ -45,73 +45,74 @@ DETERMINISTIC ASSERTIONS (task 003A)
 ====================================================================================================
   [OK] A1 unstopped exit == next rebalance bar OPEN (577 long at bid, 498 short at ask)
   [OK] A2 entry-bar stop detected on a synthetic breach; 0 entry-bar stops present in the real precompute
-  [OK] A3 entry graph precedes entry and exit graph precedes exit; 1857/2090 rows use DIFFERENT graphs for entry vs exit
+  [OK] A3 entry/exit graph timestamps EQUAL the trade timestamps exactly (2090 rows); 2090 rows use different graphs at the two ends
+       graph residual rms: entry median 2.25e-05, exit median 2.27e-05; pairs per graph min 19
   [OK] A5 consecutive positions never overlap (55 signal legs checked)
 
 ====================================================================================================
 BASELINE V1 - frozen 13-week formation, minimum lot, one position
 ====================================================================================================
-  spread_only    trades  22  net $  -75.19  ret   -7.68%  PF  0.53  maxDD -13.64%  win  27.3%
-  fin_1.5pct     trades  22  net $  -86.87  ret   -8.87%  PF  0.48  maxDD -14.24%  win  27.3%
-  fin_3.0pct     trades  22  net $  -98.55  ret  -10.07%  PF  0.43  maxDD -14.84%  win  27.3%
-  swap_snapshot  SENSITIVITY ONLY: 2026-08-02 snapshot would cost $1.66 -> net $  -76.86
+  spread_only    trades  22  net $  -75.94  ret   -7.76%  PF  0.53  maxDD -13.66%  win  27.3%
+  fin_1.5pct     trades  22  net $  -87.61  ret   -8.95%  PF  0.47  maxDD -14.26%  win  27.3%
+  fin_3.0pct     trades  22  net $  -99.29  ret  -10.14%  PF  0.42  maxDD -14.86%  win  27.3%
+  swap_snapshot  SENSITIVITY ONLY: 2026-08-02 snapshot would cost $1.66 -> net $  -77.60
     (not a historical cost - Exness publishes no historical swap rates)
 
 PERIOD SPLITS (canonical executable panel)
-  validation  spread_only  trades   8  net $  -96.48  ret   -9.85%  PF  0.00  maxDD  -9.85%  (period opened at $979.00)
-  validation  fin_3.0pct   trades   8  net $ -100.94  ret  -10.31%  PF  0.00  maxDD -10.31%  (period opened at $979.00)
-  holdout     spread_only  trades  14  net $   21.29  ret    2.41%  PF  1.33  maxDD  -4.98%  (period opened at $882.52)
-  holdout     fin_3.0pct   trades  14  net $    2.39  ret    0.27%  PF  1.03  maxDD  -5.60%  (period opened at $878.06)
+  validation  spread_only  trades   8  net $  -96.43  ret   -9.85%  PF  0.00  maxDD  -9.85%  (period opened at $979.00)
+  validation  fin_3.0pct   trades   8  net $ -100.89  ret  -10.30%  PF  0.00  maxDD -10.30%  (period opened at $979.00)
+  holdout     spread_only  trades  14  net $   20.49  ret    2.32%  PF  1.32  maxDD  -5.00%  (period opened at $882.57)
+  holdout     fin_3.0pct   trades  14  net $    1.60  ret    0.18%  PF  1.02  maxDD  -5.63%  (period opened at $878.11)
   (holdout results are reported and NOT used to change anything)
 
-SIGNAL-ONLY TESTS (no costs; direction check only)
+SIGNAL-ONLY TESTS (no stop, no financing; canonical priced at the real schedule)
   [OK] A4 signal-only output has at most one observation per calendar month (checked on every panel x formation)
 
     panel      period  n_months  sum_logret  sign
 canonical development         0         NaN   NaN
-canonical  validation        25   -0.126473  -1.0
-canonical     holdout        30   -0.145384  -1.0
-  long_D1 development        33   -0.052213  -1.0
-  long_D1  validation        29   -0.250112  -1.0
-  long_D1     holdout        30   -0.145392  -1.0
+canonical  validation        25   -0.143893  -1.0
+canonical     holdout        30   -0.127806  -1.0
+  long_D1 development        33   -0.039571  -1.0
+  long_D1  validation        29   -0.215586  -1.0
+  long_D1     holdout        31   -0.128881  -1.0
 
   formation diagnostics (4 / 13 / 26) - 4 and 26 CANNOT replace the frozen 13:
 formation_weeks              4         13        26
 panel     period                                   
-canonical holdout     -0.184562 -0.145384  0.027727
-          validation  -0.228641 -0.126473 -0.041449
-long_D1   development -0.048228 -0.052213 -0.048298
-          holdout     -0.135940 -0.145392  0.022317
-          validation  -0.269646 -0.250112 -0.261416
+canonical holdout     -0.214123 -0.127806 -0.029849
+          validation  -0.186860 -0.143893 -0.044087
+long_D1   development -0.072589 -0.039571 -0.058622
+          holdout     -0.162793 -0.128881  0.004248
+          validation  -0.190449 -0.215586 -0.206527
 
   panel overlap 55 MONTHS: same pair 72.7%, same direction 87.3%
 
 ====================================================================================================
 REQUIRED CONTROLS
 ====================================================================================================
-  (fast permutation engine verified against the costed engine: net $-75.19, 22 trades - identical)
-  1. randomisation  10000 perms: baseline $-75.19 vs median $-33.03  one-sided p = 0.7282
-  2. reverse (buy weak / sell strong): net $27.86 vs baseline $-75.19
-  3. delay_24h   net $  -63.69  ret   -6.51%  trades 23
-  4. delay_1week net $   88.11  ret    9.00%  trades 29
-  5. doubled spread: net $  -76.39  ret   -7.80%  trades 22
+  (fast permutation engine verified against the costed engine: net $-75.94, 22 trades - identical)
+  1. randomisation  10000 perms: baseline $-75.94 vs median $-34.01  one-sided p = 0.7286
+  2. reverse (buy weak / sell strong): net $27.73 vs baseline $-75.94
+  3. delay_24h   net $  -65.00  ret   -6.64%  trades 23
+  4. delay_1week net $   87.59  ret    8.95%  trades 29
+  5. doubled spread: net $  -77.11  ret   -7.88%  trades 22
 
 ====================================================================================================
 PASS CONDITIONS
 ====================================================================================================
   [FAIL] 1  canonical return positive in validation     -9.85%
-  [PASS] 2  canonical return positive in holdout        2.41%
-  [FAIL] 3  positive under 3.0% financing stress        -10.07%
-  [FAIL] 4  doubled-spread result positive              $-76.39
-  [PASS] 5  long-D1 and canonical signal same sign      canon -0.2719 / D1 -0.3955
-  [FAIL] 6  baseline beats median randomised            $-75.19 vs $-33.03
-  [FAIL] 7  randomisation p <= 0.10                     p=0.7282
-  [FAIL] 8  reverse performs worse than baseline        $27.86 vs $-75.19
+  [PASS] 2  canonical return positive in holdout        2.32%
+  [FAIL] 3  positive under 3.0% financing stress        -10.14%
+  [FAIL] 4  doubled-spread result positive              $-77.11
+  [PASS] 5  long-D1 and canonical signal same sign      canon -0.2717 / D1 -0.3445
+  [FAIL] 6  baseline beats median randomised            $-75.94 vs $-34.01
+  [FAIL] 7  randomisation p <= 0.10                     p=0.7286
+  [FAIL] 8  reverse performs worse than baseline        $27.73 vs $-75.94
   [FAIL] 9  at least 40 completed trades                22
-  [PASS] 10 max drawdown <= 20%                         -13.64%
-  [FAIL] 11 profit factor > 1.10                        0.533
+  [PASS] 10 max drawdown <= 20%                         -13.66%
+  [FAIL] 11 profit factor > 1.10                        0.529
   [N/A ] 12 no trade > 25% of net profit                NOT APPLICABLE (net profit <= 0)
-  [PASS] 13 no margin call / account failure            final equity $903.81
+  [PASS] 13 no margin call / account failure            final equity $903.06
 
   conditions passed: 4/13   (1 not applicable, not counted as passes)
   >>> V1 VERDICT: FAILED

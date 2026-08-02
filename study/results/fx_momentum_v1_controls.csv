@@ -1,9 +1,9 @@
 control,baseline_net,median_random_net,p_value_one_sided,n_perm,beats_median,net,worse_than_baseline,ret_pct,n,still_positive,sum_logret_validation,sum_logret_holdout,diagnostic_only
-randomisation,-75.1937680241159,-33.02594045860012,0.7282,10000.0,False,,,,,,,,
-reverse,,,,,,27.8626549077641,False,,,,,,
-delay_24h,,,,,,-63.69134259554811,,-6.50575511701208,23.0,,,,
-delay_1week,,,,,,88.11425199860847,,9.000434320593321,29.0,,,,
-double_spread,,,,,,-76.388691605175,,-7.802726415237471,22.0,False,,,
-formation_4w_signal_only,,,,,,,,,,,-0.2286406744982942,-0.18456202235020108,True
-formation_13w_signal_only,,,,,,,,,,,-0.12647291985994077,-0.1453841816831943,False
-formation_26w_signal_only,,,,,,,,,,,-0.04144917904973016,0.027727273814135603,True
+randomisation,-75.9384955671367,-34.00761058744242,0.7286,10000.0,False,,,,,,,,
+reverse,,,,,,27.728801036660933,False,,,,,,
+delay_24h,,,,,,-65.00106849312208,,-6.639537129021678,23.0,,,,
+delay_1week,,,,,,87.58867804568469,,8.946749545013732,29.0,,,,
+double_spread,,,,,,-77.105354093901,,-7.8759299380899765,22.0,False,,,
+formation_4w_signal_only,,,,,,,,,,,-0.186859841047126,-0.2141231199622632,True
+formation_13w_signal_only,,,,,,,,,,,-0.1438926461479539,-0.12780613609028268,False
+formation_26w_signal_only,,,,,,,,,,,-0.04408678923000646,-0.02984917259242717,True
