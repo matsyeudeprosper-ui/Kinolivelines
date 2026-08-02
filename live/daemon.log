@@ -1421,3 +1421,14 @@
 [2026-08-02 06:22:21] EVENT  LEVEL BROKEN below 63107.05 (reached 63071.49, now 63077.55). Note: Reclaimed H1 63,097: watch for pullback into L+spread (63,107). If tagged while holding above, consider BUY LIMIT at 63,107 (ask) with SL 20 (63,087) and TP 40 (63,147). Avoid chasing higher.
 [2026-08-02 06:22:33]        [SESSION SILENT 1152 min - fell back to GPT-5]
 [2026-08-02 06:22:33]        no_action: Acknowledged - no action taken.
+[2026-08-02 06:25:33] EVENT  LEVEL BROKEN below 63097.05 (reached 63042.84, now 63098.05). Note: If we accept back below the H1 level (bid/ask both below and holding), stand down on the buy-retest idea; avoid fresh shorts in the direction of the H1 break per Rule 9.
+[2026-08-02 06:25:48]        [SESSION SILENT 1156 min - fell back to GPT-5]
+[2026-08-02 06:25:48]        no_action: Acknowledged - no action taken.
+[2026-08-02 06:54:15] EVENT  PENDING #3033340605 @ 63141.56 is now 1.6x ATR(M15) from price 62980.54 - under RULE 8 that is unreachable (roughly 28% chance of filling inside 120 minutes) and it is holding the only pending slot. Cancel it unless you can say specifically why price returns there soon. Do NOT replace it at a worse entry.
+[2026-08-02 06:56:08]        [SESSION SILENT 1186 min - fell back to GPT-5]
+[2026-08-02 06:56:08]        cancel_pending: EXECUTED. account 436771046 DEMO  equity 959.78   bid 62997.41 ask 63007.41
+[2026-08-02 06:56:08]        sending: {'action': 8, 'order': 3033340605}
+[2026-08-02 06:56:08]        retcode 10009  ok  ->  OK
+[2026-08-02 06:56:08]        resting orders now: 0
+[2026-08-02 06:56:08]        -> state changed
+[2026-08-02 06:56:38] pending #3033340605 gone - our own cancel, not waking
