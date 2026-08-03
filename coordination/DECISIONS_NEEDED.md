@@ -1,88 +1,86 @@
 FROM: CLAUDE
-RE: TASK 003 — duplicate spec received, and what needs deciding before any V2
+RE: three structural constraints to settle before the third strategy family
 
-Supersedes the task-002 version of this file. Those five items were all answered by the
-task-003 spec (history: both panels; risk cap: 1.50%; ATR: canonical supersedes; NZDCHFm:
-stays excluded; execution: first Monday 20:00 New York).
+Supersedes the earlier version of this file. Its task-002 and task-003 items were all
+answered by the specs that followed.
 
----
+Two families are now closed and must not be revisited:
 
-## 1. The task-003 spec arrived twice, identical
+- **FX CROSS-SECTIONAL MOMENTUM 3M-1M V1** — FAILED (tasks 003, 003A, 003B)
+- **FX POLICY-RATE DIFFERENTIAL V2** — FAILED (tasks 005, 005A)
 
-The second copy was byte-identical to the first. **It was not re-run.** TASK 003 was already
-complete and pushed:
+Both simulators are certified. The infrastructure is reusable; the strategies are not.
 
-- commit `2ddf7a2` (SHA recorded in `b25e959`)
-- all 7 required outputs on `origin/main`, report begins with the required two lines
-- **verdict: V1 FAILED, 5 of 13 conditions**
-
-If the duplicate was intentional — a re-verification request, or a different task number that
-got pasted wrong — say so and I will act on it. Results are deterministic (permutation seed
-fixed at 20260802), so a re-run reproduces the same numbers; it costs ~15 minutes and would
-confirm nothing new unless the spec actually changed.
-
-**No answer needed if it was just a duplicate.** Proceed to section 2.
+Everything below is a **property of this account and this broker**, not of either failed
+idea. A third family inherits all three unless the spec says otherwise. None of this is a
+strategy proposal — each is a measured constraint with the options it implies, and the
+choice is the strategy lead's.
 
 ---
 
-## 2. Three structural findings that will repeat in any V2 unless the spec changes
+## 1. The broker pays zero carry on the side that should earn it
 
-These are properties of the account and the schedule, not of the momentum idea. A V2 that
-keeps the same geometry inherits all three.
+**Measured, task 004A, all 19 executable pairs.** Wherever the policy-rate differential says
+a side should receive carry, the Exness snapshot for that side is **exactly 0.00%**, and the
+opposite side is charged. Median markup 1.38 pp long, 0.60 pp short; worst 4.35 pp
+(`AUDCHFm`).
 
-### 2a. Condition 9 (≥40 trades) was close to unreachable by construction
+Task 005 then confirmed it from inside a backtest without being asked to: V2 always trades
+the theoretically positive side, so applying the stored swap snapshot changed the result by
+**$0.00 on every one of 47 trades**.
 
-**33 of 55 rebalances were skipped**, every one of them by the 1.50% risk rule. Nothing else
-skipped a single trade — 0 for exposure, 0 for conversion.
+**Why it matters beyond V2.** This is structural. Any family whose edge is *holding* rather
+than *moving* — carry, rate differential, roll, term structure — collects nothing here by
+construction and is left as a pure directional bet.
 
-The arithmetic: a 2-ATR stop at minimum lot on the JPY crosses costs roughly **$14**, against a
-budget of **$14.69** (1.50% of $979). The rule sits almost exactly on top of the cheapest
-position the broker will let this account open. As equity fell the budget shrank and the skip
-rate rose.
+**What I need:** whether the third family is allowed to depend on being paid to hold. If it
+is, the venue has to change, because this one does not pay. If it is not, the family should
+be one whose edge lives in price movement.
 
-So on a $979 account, **2-ATR stop + minimum lot + monthly rebalancing cannot produce 40 trades
-in 5 years** — 60 months is the ceiling before any skipping, and skipping removed 60% of what
-remained. This is the frozen rule behaving exactly as written; it is not a defect. But the
-trade-count condition and the risk rule are in direct tension and one of them has to give.
+Related measurement already in hand: delta-neutral perpetual carry does pay, but needs spot
+plus perp on one venue — not Exness — and the premium has compressed to roughly 1–3%/yr.
 
-**Decision needed:** which. Options are yours — a wider risk budget, a tighter stop, a higher
-rebalance frequency, a longer test window, or a lower trade-count bar. I am not recommending
-one.
+## 2. Stop size, not signal quality, decides whether a sample exists
 
-### 2b. The canonical panel has no development period
+On $979 with minimum lot, the 1.50%-of-equity risk gate binds directly against the trade
+count, and the stop multiple is the lever:
 
-It begins **2021-08-02**; development ends **2021-07-31**. Zero months exist. Development on
-the executable panel was therefore empty in task 003, and will be empty in any V2 using the same
-split. Only the long-D1 panel has a development period (140 months, signal-only).
+| | V1 (2.0 × ATR) | V2 (1.5 × ATR) |
+|---|---|---|
+| Rebalances | 55 | 58 |
+| Skipped on the risk gate | **33** | **11** |
+| Completed trades | **22** | **47** |
+| Trade-count condition | ≥ 40 — **failed** | ≥ 45 — **passed** |
 
-**Decision needed:** whether V2 splits the canonical panel differently, or accepts that
-development is D1-only.
+A 2-ATR stop at minimum lot costs about **$14** against a **$14.69** budget — the rule sits
+almost exactly on top of the cheapest position the broker will open, so small ATR changes
+flip whole months in or out.
 
-### 2c. Two pass conditions can be satisfied without meaning anything
+**What I need:** the stop multiple and the trade-count bar decided **together**, before the
+run rather than after. Any monthly-rebalance family on this account inherits a hard ceiling
+of ~60 trades in five years before any skipping at all.
 
-- **Condition 5** ("same return sign") passed because **both** panels were negative. It cannot
-  distinguish agreement-on-profit from agreement-on-loss.
-- **Condition 12** ("no trade > 25% of net profit") passed **vacuously** — with net profit
-  negative there is no profit to concentrate.
+## 3. The executable panel has no development period
 
-Both were correctly reported as PASS because that is what the written conditions say. Flagging
-that neither carried information in a failing run, so a V2 that fails the same way would again
-score 2 free passes.
+The canonical H1 panel begins **2021-08-02**; every spec so far has ended development on
+**2021-07-31**. Development on the executable panel has therefore been **empty in both
+families**, and only the broker-D1 panel has one.
 
-**Decision needed:** whether to restate either condition. Purely a specification question.
+The two panels are not interchangeable. Broker D1 reaches 2018-07 and gives a real
+development window, but it cannot be cut to the 17:00 New York session boundary and cannot
+price execution — task 005 measured that gap directly: over 58 overlapping months the two
+panels agreed on **100% of pairs and 100% of directions**, yet returned **+0.0367** on
+unpriced daily closes against **−0.0071** once executed. The difference was entirely
+spread and scheduled-open pricing.
 
----
-
-## 3. Standing constraint, unchanged
-
-The executable panel spans **4.99 years**, not 6. Exness serves no dense H1 before 2021-08 —
-verified in task 002 with explicit `copy_rates_range()` calls. Broker D1 reaches ~8 years but
-cannot be cut to the 17:00 New York session boundary.
+**What I need:** either a different split for the canonical panel so development is
+non-empty, or an explicit acceptance that development is D1-only and that a D1 result is a
+directional check which says nothing about executability.
 
 ---
 
 ## Not asked
 
-No V2, no parameter change, no replacement strategy and no repair of V1 is proposed here or
-anywhere in the task-003 report. V1 is reported FAILED and left alone, as instructed. This file
-raises only the specification-level questions whose answers change what I build next.
+No third family, no parameter, no threshold and no repair of either failed strategy is
+proposed here or anywhere in the task 003–005A reports. This file raises only the
+constraints whose answers change what I build next.
