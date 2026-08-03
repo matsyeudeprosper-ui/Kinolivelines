@@ -91,26 +91,36 @@ specifically so an underpowered null cannot be mistaken for a finding — the er
 made once on the crowding branch. **Do not run the outcome test before the gate.** The two
 recorders collecting it are IRREPLACEABLE; their history cannot be backfilled.
 
-**Status at 2026-08-03** (task 006 read-only audit, no outcomes examined): 2,947 events over
-3.22 days → **5 independent cascades**, split **4 development / 1 holdout**. Remaining:
-**396 development, 99 holdout**.
+**Status at 2026-08-03** (task 006A read-only audit, no outcomes examined):
+
+| | |
+|---|---|
+| Events captured | 2,947 over 3.22 days |
+| **FORMAL cascades** | **0** |
+| **FORMAL development / holdout** | **0 / 0** |
+| **Formal gate** | **CLOSED** |
+| Formal scoring begins in | **~26.8 days** |
+| Provisional startup diagnostic | 5 independent — **NOT gate progress** |
+
+**The formal count is zero and that is correct, not pessimism.** The frozen definition ranks
+each bucket against a **trailing 30-day** distribution. The feed began 2026-07-31, so no
+bucket yet has a complete preceding window and none can be scored as the preregistration
+requires. See Amendment 1 in `PREREGISTRATION_liquidations.md`.
 
 **An earlier version of this file said "roughly 85 days out at 42.6 events/hour". That was
-wrong on two counts** and is corrected here:
+wrong** — it used the *event* rate rather than the independent-*cascade* rate, and ignored
+the holdout arm. **A task-006 replacement estimate of "~340 days" was also wrong**, derived
+from a 3.22-day sample that cannot forecast a 30-day-trailing statistic.
 
-- it used the **event** rate, not the independent-**cascade** rate. A cascade is a top-5%
-  5-minute *bucket* ranked on a trailing 30-day window, and after 4-hour independence they
-  arrive at ~**1.55/day**, not 42.6/hour;
-- it ignored the **holdout arm**. Satisfying both arms under the 75-25 split needs ~533
-  independent cascades, not 400.
+**No ETA is published.** The trigger is the formal count, never a date.
 
-At the current pace that is **several hundred days**, not 85. Pace is regime-dependent and
-the trailing threshold moves with it, so no date is promised — **the trigger is the count.**
-
-**Feed caveat:** the OKX endpoint returns at most 100 events per poll and four minutes have
-already carried ≥90. Cascades are precisely the busiest minutes, so the feed may be
-truncating the episodes the hypothesis is about. Flagged in task 006, not fixed (task 006
-was forbidden from changing recorder settings).
+**There is no feed-truncation problem.** Task 006 warned that the OKX endpoint truncates
+liquidation events at 100 per poll and called it urgent. That was incorrect and is withdrawn:
+`limit=100` caps the **outer instrument array**, not the events inside each `details` array.
+Measured 2026-08-03 — one call returned **654 events spanning 22.6 hours**. Commit `812ac5f`
+had already established this on 2026-07-31, and `recorder/derivs_recorder.py` documents the
+measured behaviour and paginates backwards with `after` as a safety net. **Do not shorten the
+60-second poll interval on this basis.**
 
 ---
 

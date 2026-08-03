@@ -5,10 +5,17 @@ observations to detect an economically useful effect". This computes that for ev
 hypothesis still open, so the decision to test or keep waiting is made on arithmetic
 rather than on the calendar.
 
-It also audits the liquidation feed before anything is built on it: duplicates,
-timestamp sanity, and - the one that actually matters - whether the 100-event cap is
-truncating cascades. Liquidations are only interesting during cascades, so a feed that
-silently drops the biggest ones would be worse than no feed at all.
+It also audits the liquidation feed before anything is built on it: duplicates and
+timestamp sanity.
+
+TASK 006A: an earlier version of this file tested whether a "100-event cap" was
+truncating cascades. There is no such cap on events - `limit=100` bounds the OUTER
+instrument array, and one call returns ~650+ events spanning ~22 hours. That test has
+been removed rather than softened, because it produced a false alarm twice.
+
+The H4 cascade count is no longer computed here either. It now comes from
+`study/liquidation_readiness.py`, the single authoritative implementation, and an
+assertion at the end of this file fails loudly if the two ever disagree again.
 """
 import os, csv, math
 import numpy as np, pandas as pd
@@ -52,18 +59,20 @@ else:
     print("  posSide split        %s" % L["posSide"].value_counts().to_dict())
     print("  size    median %.2f  p95 %.2f  max %.2f" % (L.sz.median(), L.sz.quantile(.95), L.sz.max()))
 
-    # --- the cap question: does any 60s window hold ~100 events? ---
+    # --- TASK 006A: the truncation check is REMOVED, not softened, because it tested a
+    # false premise. `limit=100` caps the OUTER instrument array, not the events inside
+    # each `details` array. Measured 2026-08-03 by okx_liquidation_endpoint_audit.py: ONE
+    # call returned 654 events spanning 22.6 hours. Commit 812ac5f established the same on
+    # 2026-07-31 and recorder/derivs_recorder.py documents it. A busy minute is therefore
+    # NOT evidence of truncation and the 60s poll must not be shortened on that basis.
     L = L.sort_values("t")
     per_min = L.set_index("t").resample("1min").size()
     busy = per_min[per_min > 0]
-    print("\n  CASCADE TRUNCATION CHECK (endpoint returns at most 100 events per poll)")
+    print("\n  MINUTE-LEVEL ACTIVITY (descriptive only - NOT a truncation test)")
     print("    minutes with any event   %d" % len(busy))
     print("    busiest minute           %d events" % (busy.max() if len(busy) else 0))
-    print("    minutes at/over 90       %d" % int((per_min >= 90).sum()))
-    if len(busy) and busy.max() >= 90:
-        print("    *** AT RISK - a poll may be truncating; consider 30s polling ***")
-    else:
-        print("    headroom is fine at the current 60s poll")
+    print("    a busy minute is NOT evidence of truncation: limit=100 caps the outer")
+    print("    instrument array, and one call returns ~650+ events spanning ~22 hours")
 
     # gaps that look like missed polls rather than quiet markets
     gaps = L["t"].diff().dt.total_seconds().dropna()
@@ -82,20 +91,23 @@ def row(name, rows, indep, mde, when):
 
 
 # H4 liquidations
+# TASK 006A: this no longer computes its own cascade count. It previously ranked
+# INDIVIDUAL EVENTS at the 90th percentile against the WHOLE SAMPLE and ignored the
+# holdout arm, giving 14 independent cascades and a "+2,129 h" estimate where the frozen
+# preregistration gives 0 formal. That looser number propagated into HANDOFF.md as a
+# wrong "~85 days". There is now ONE authoritative implementation and both scripts call
+# it; the assertion below fails loudly if they ever diverge again.
 if os.path.exists(lp):
-    L2 = pd.read_csv(lp)
-    n_ev = len(L2)
-    # independent = distinct 4h windows containing at least one sizeable event
-    L2["t"] = pd.to_datetime(pd.to_numeric(L2["ts_ms"], errors="coerce"), unit="ms", utc=True)
-    L2["sz"] = pd.to_numeric(L2["sz"], errors="coerce")
-    big = L2[L2.sz >= L2.sz.quantile(0.90)]
-    indep = big.set_index("t").resample("4h").size().gt(0).sum() if len(big) else 0
-    hrs = (L2.t.max() - L2.t.min()).total_seconds() / 3600 if len(L2) else 0
-    rate = indep / max(hrs, 1e-9)
-    need = 400
-    eta = (need - indep) / max(rate, 1e-9)
-    row("H4 liquidation cascade", n_ev, indep, mde_binomial(max(indep, 1)),
-        "need ~%d windows; +%.0f h at current rate" % (need, max(eta, 0)))
+    from liquidation_readiness import compute_readiness, AGREEMENT_KEYS
+    R = compute_readiness()
+    row("H4 liquidation cascade (FORMAL)", R["usable_events"], R["formal_cascades"],
+        mde_binomial(max(R["formal_cascades"], 1)),
+        "gate %d dev + %d holdout; formal scoring starts in ~%.1f days"
+        % (R["dev_gate"], R["hold_gate"], R["days_until_formal_scoring_begins"]))
+    row("  (provisional startup only)", R["usable_events"],
+        R["provisional_independent_4h"],
+        mde_binomial(max(R["provisional_independent_4h"], 1)),
+        "NOT gate progress - partial trailing window, no ETA derivable")
 
 # H5 open interest
 oi = os.path.join(DATA, "derivs_BTC_hourly.csv")
@@ -125,3 +137,30 @@ Compare it with the effect actually worth having: for a stop-out or continuation
 that is roughly 2-3 percentage points. A hypothesis whose MDE is far above that cannot
 be tested yet regardless of how many rows it has, and running it early only produces a
 null that means nothing - the mistake already made once with the crowding branch.""")
+
+# ---------------------------------------------------------------------------
+# TASK 006A - deterministic agreement assertion.
+# The repository briefly carried two disagreeing liquidation-readiness numbers and the
+# looser one reached HANDOFF.md as a wrong "~85 days". Both scripts now read the same
+# implementation, and this fails loudly rather than silently drifting apart again.
+if os.path.exists(lp):
+    import csv as _csv
+    from liquidation_readiness import compute_readiness as _cr, AGREEMENT_KEYS as _AK
+    _mine = _cr()
+    _audit_csv = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "results", "liquidation_readiness_audit.csv")
+    if os.path.exists(_audit_csv):
+        with open(_audit_csv, encoding="utf-8") as _f:
+            _saved = list(_csv.DictReader(_f))[-1]
+        _bad = []
+        for _k in _AK:
+            _a, _b = str(_mine[_k]), str(_saved.get(_k))
+            if _a != _b:
+                _bad.append("%s: data_readiness=%s audit=%s" % (_k, _a, _b))
+        assert not _bad, ("TASK 006A ASSERTION FAILED - the two readiness "
+                          "implementations disagree:\n  " + "\n  ".join(_bad))
+        print("\n[OK] readiness agreement assertion: data_readiness.py and "
+              "liquidation_readiness_audit.py agree on all %d shared keys" % len(_AK))
+    else:
+        print("\n[--] readiness agreement assertion skipped: run "
+              "study/liquidation_readiness_audit.py first")

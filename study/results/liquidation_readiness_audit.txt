@@ -1,75 +1,72 @@
 ================================================================================================
-TASK 006 - LIQUIDATION DATA-READINESS AUDIT (READ-ONLY, NO OUTCOMES)
+LIQUIDATION DATA-READINESS AUDIT (READ-ONLY, NO OUTCOMES EXAMINED)
 ================================================================================================
-generated : 2026-08-03 07:28:54 UTC
+generated : 2026-08-03 07:53:20 UTC
 
-1. RAW FEED
-  file                    : recorder/data/liquidations_BTC.csv
-  raw rows (incl. header) : 2,947 data rows
-  first timestamp (UTC)   : 2026-07-31 02:02:15
-  latest timestamp (UTC)  : 2026-08-03 07:15:37
-  span                    : 77.2 hours (3.22 days)
-  audit run at (UTC)      : 2026-08-03 07:28:54
+1. FEED
+  raw rows                : 2,947
+  usable events           : 2,947
+  first timestamp (UTC)   : 2026-07-31T02:02:15Z
+  latest timestamp (UTC)  : 2026-08-03T07:15:37Z
+  span                    : 77.2 h (3.22 days)
   observed rate           : 38.2 events/hour
 
 2. INTEGRITY
-  duplicate rows removed  : 0   CLEAN
-  malformed rows          : 0  (unparseable ts_ms / sz / bkPx)
-    non-finite / missing ts_ms : 0
-    non-finite / missing sz    : 0
-    non-finite / missing bkPx  : 0
-    non-positive size          : 0
-  timestamps in the future: 0   ok
-  stored in time order    : False   (newest-first writer; sorted for this audit)
-  usable events after clean: 2,947
+  duplicate rows          : 0   CLEAN
+  malformed rows          : 0
+  non-finite ts / sz / px : 0 / 0 / 0
+  non-positive sizes      : 0
+  timestamps in future    : 0
+  stored in time order    : False   (newest-first writer; sorted for audit)
+  non-empty 5-min buckets : 166
 
 3. GROWTH
   last 24 hours :    655 events   (feed covers 24.0h of that window)
   last 7 days   :  2,947 events   (feed covers 77.2h of that window)
   last 30 days  :  2,947 events   (feed covers 77.2h of that window)
+  inter-event gaps > 1 h  : 22, longest 4.10 h
 
-4. COVERAGE AND GAPS
-  non-empty 5-minute buckets : 166
-  5-minute slots in span     : 928
-  empty 5-minute slots       : 762 (82.1% - quiet market, not necessarily loss)
-  inter-event gaps > 1 hour  : 22
-    longest gap              : 4.10 hours
-      2026-08-01 03:57 -> 2026-08-01 08:03  (4.10 h)
-      2026-08-02 05:01 -> 2026-08-02 08:38  (3.62 h)
-      2026-08-01 00:35 -> 2026-08-01 03:57  (3.36 h)
+4. FORMAL CASCADE COUNT - the only numbers that count toward the gate
+  frozen rule: a 5-minute bucket whose TOTAL size exceeds the 95% quantile
+  of the trailing 30-day distribution of non-empty buckets.
 
-5. CASCADE CANDIDATES (frozen trailing-30-day definition, no outcomes examined)
-  definition        : 5-min bucket total size > 95th percentile of the trailing
-                      30-day distribution of NON-EMPTY buckets
-  buckets scorable  : 146 (the rest lack enough trailing history to rank)
-  RAW cascade buckets: 10
-  first / latest    : 2026-07-31 13:40 -> 2026-08-03 03:45
+  !! FORMAL SCORING HAS NOT STARTED.
+     The feed is 3.22 days old. No bucket yet has a complete
+     preceding 30-day capture window, so none can be ranked as the
+     frozen definition requires.
+     Formal scoring begins in ~26.78 days,
+     and only then does the first eligible bucket appear.
 
-6. INDEPENDENCE AND THE GATE
-  independent at 15min  (0.25h separation):     7
-  independent at 1h     (1.00h separation):     5
-  independent at 4h     (4.00h separation):     5  <- PRIMARY (longest horizon, strictest)
+  formally scorable buckets : 0
+  FORMAL cascades           : 0
+  FORMAL development        : 0 / 400   remaining 400
+  FORMAL holdout            : 0 / 100   remaining 100
+  FORMAL GATE OPEN          : False
 
-  chronological split, final 25% reserved and untouched:
-    development candidates : 4
-    holdout  (reserved)    : 1
+5. PROVISIONAL STARTUP DIAGNOSTIC - NOT gate progress
+  Ranks against whatever history exists, with an ad-hoc floor of
+  20 prior non-empty buckets. THAT FLOOR IS NOT IN THE
+  PREREGISTRATION. These numbers are a sanity check on the pipeline only.
 
-  GATE: >= 400 development AND >= 100 holdout
-    development  4 / 400   remaining 396
-    holdout      1 / 100   remaining 99
-    GATE OPEN    : False
+  provisional scorable buckets : 146
+  provisional raw cascades     : 10
+  provisional independent 15min: 7
+  provisional independent 1h   : 5
+  provisional independent 4h   : 5   <- primary separation
+  provisional split            : 4 dev / 1 holdout
 
-  ROUGH pace estimate - NOT a deadline. The trigger is the COUNT, never a date.
-    independent cascades so far : 5 over 3.22 days
-    recent pace                 : 1.55 independent cascades/day
-    total needed to satisfy both arms: ~533
-    at the CURRENT pace that is roughly 340 more days
-    Pace is not stable - liquidation activity is regime-dependent and the trailing
-    threshold moves with it, so this figure will change. Do not convert it to a date.
+  These MUST NOT be reported as gate progress and MUST NOT be used to publish a
+  gate ETA. A 3-day sample cannot forecast a 30-day-trailing statistic, and task 006
+  was wrong to derive one. The trigger is the FORMAL count.
 
-  !! PROVISIONAL: the feed is 3.22 days old, shorter than the 30-day trailing window.
-     No bucket yet has a full trailing distribution, so the 5% threshold is being
-     set by partial history. Every cascade count above is provisional and will be
-     recomputed once the feed exceeds 30 days. This does not affect the gate rule.
+6. ENDPOINT TRUNCATION - WITHDRAWN
+  Task 006 warned that the OKX limit=100 parameter truncates liquidation events and
+  called it urgent. That was WRONG and is withdrawn.
+  limit=100 caps the OUTER instrument array, not the events inside each `details`
+  array. Measured fresh in study/okx_liquidation_endpoint_audit.py: ONE call returned
+  654 events spanning 22.6 hours. The repository had already established this in
+  commit 812ac5f, and recorder/derivs_recorder.py documents the measured behaviour
+  and paginates backwards with `after` as a safety net.
+  The 60-second poll interval is comfortable and must NOT be shortened on this basis.
 
 audit table -> C:\Projects\KinoliveLines\study\results\liquidation_readiness_audit.csv

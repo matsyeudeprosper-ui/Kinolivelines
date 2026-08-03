@@ -1,0 +1,44 @@
+================================================================================================
+TASK 006A - OKX LIQUIDATION ENDPOINT SHAPE AUDIT (READ-ONLY)
+================================================================================================
+request UTC        : 2026-08-03 07:51:17Z
+url                : https://www.okx.com/api/v5/public/liquidation-orders?instType=SWAP&uly=BTC-USDT&state=filled&limit=100
+
+1. SINGLE RESPONSE SHAPE
+  http status          : 200
+  api code             : 0  (ok)
+  elapsed              : 2.50s
+  outer `data` objects : 16   <- this is what limit=100 caps
+  max details in one outer object : 654
+  TOTAL events across all details : 654
+
+2. TIME COVERAGE OF ONE RESPONSE
+  earliest event : 2026-08-02 08:38:49Z
+  latest event   : 2026-08-03 07:15:37Z
+  span           : 22.61 hours
+
+3. THE DECISIVE TEST
+  more than 100 total detail events in ONE response? : True
+    -> 654 events returned from a single limit=100 call.
+    -> limit=100 therefore caps the OUTER instrument array, NOT events.
+    -> THE TRUNCATION CLAIM IS DISPROVED by direct measurement.
+
+4. `after` PAGINATION
+  page 2 returned no events
+
+5. OVERLAP WITH STORED DATA (dedup sanity)
+  events in this response      : 654
+  already stored (composite key): 548  (83.8%)
+  new since last poll          : 106
+  -> a high overlap is expected and is the dedup working, not a fault
+
+6. VERDICT ON TRUNCATION
+  NO evidence of event truncation. Measured this run:
+    - a single limit=100 call returned 654 events
+    - one response spans 22.6 hours
+  The 100-event cap applies to the OUTER instrument array. Task 006's urgent
+  warning was incorrect and is withdrawn. The 60-second poll interval is
+  comfortable, not marginal, and must NOT be shortened on this basis.
+
+READ-ONLY: no recorder file, polling interval, live process or trade was changed.
+No price data was downloaded and no post-event outcome was inspected.

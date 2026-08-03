@@ -103,3 +103,37 @@ separated by at least one horizon length.
 ## Amendments
 
 *(none yet — any change after outcomes are seen must be logged here with date and reason)*
+
+---
+
+## Amendment 1 — 2026-08-03: when formal scoring begins
+
+**Clarification only. No frozen parameter is changed.** Recorded before any outcome was
+examined, and no outcome has been examined at any point.
+
+**Reason.** The cascade definition ranks each 5-minute bucket against a **trailing 30-day**
+distribution. The feed began 2026-07-31, so for the first 30 days no bucket has a complete
+preceding window. Task 006 ranked early buckets against whatever partial history existed,
+applied an ad-hoc floor of 20 prior non-empty buckets that appears nowhere in this document,
+and reported the resulting numbers as gate progress. That was wrong on both counts.
+
+**Clarification.** A bucket is **formally scorable** only once **≥ 30 calendar days of
+captured liquidation history precede it**. Until the first such bucket exists:
+
+- the formal cascade count is **0**;
+- the formal development and holdout counts are **0**;
+- the gate is **closed**;
+- no gate ETA may be published from partial history.
+
+A partial-history calculation may be kept as a **clearly labelled provisional startup
+diagnostic** — useful for checking the pipeline runs — but it is **not** gate progress and
+must never be reported as such.
+
+**Explicitly unchanged by this amendment:** the top-5% threshold; the 5-minute bucket; total
+liquidated size as the ranking quantity; the 30-day trailing window; 400 development; 100
+holdout; the 15-minute, 1-hour and 4-hour horizons; and every pass/fail condition.
+
+**Also corrected on this date:** a claim that the OKX endpoint truncates liquidation events
+at 100 per poll. It does not — `limit=100` caps the outer instrument array. One call
+returned 654 events spanning 22.6 hours when measured on 2026-08-03. The recording
+methodology is unchanged and the 60-second poll interval is adequate.

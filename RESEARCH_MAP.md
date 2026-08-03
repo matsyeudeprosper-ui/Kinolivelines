@@ -46,25 +46,29 @@ policy-rate differential says a side should *earn* carry, the broker pays **exac
   written before any outcome was examined. Definitions, thresholds and pass/fail are fixed.
 - **Gate** — **≥ 400 independent cascades in development AND ≥ 100 in untouched holdout.**
   The trigger is the **count**, never a date.
-- **Status at 2026-08-03** (task 006 audit, read-only, no outcomes examined):
+- **Status at 2026-08-03** (task 006A audit, read-only, no outcomes examined):
 
   | | |
   |---|---|
-  | Events recorded | 2,947 over 3.22 days |
-  | Independent cascades (4h separation, frozen definition) | **5** |
-  | Development / holdout under the 75-25 split | **4 / 1** |
-  | Remaining to gate | **396 development, 99 holdout** |
-  | Rough pace, **not a deadline** | ~1.55 independent cascades/day |
+  | Events captured | 2,947 over 3.22 days |
+  | **FORMAL cascades** | **0** |
+  | **FORMAL development / holdout** | **0 / 0** |
+  | **Formal gate** | **CLOSED** |
+  | Formal scoring begins in | **~26.8 days** |
+  | Provisional startup diagnostic | 5 independent — **NOT gate progress** |
 
-- **The old "~85 days" estimate was wrong.** It came from `study/data_readiness.py`, which
-  counts any 4-hour window containing one top-10%-by-size *event*. The frozen definition is
-  stricter — a 5-minute **bucket** whose **total** size is top-5% against a **trailing
-  30-day** distribution — and it also requires a holdout arm the old estimate ignored. On
-  the frozen definition the honest figure at the current pace is **several hundred days**.
-  Both numbers move with market regime; neither is a promise.
-- **Caveat on the feed** — the OKX endpoint returns at most 100 events per poll and four
-  minutes have already carried ≥ 90. Cascades are precisely the busiest minutes, so the
-  feed may be truncating the very episodes the hypothesis is about. Flagged, not yet fixed.
+- **Zero is the correct formal count.** The frozen rule ranks each bucket against a
+  **trailing 30-day** distribution; the feed began 2026-07-31, so no bucket yet has a
+  complete preceding window. See Amendment 1 in `PREREGISTRATION_liquidations.md`.
+- **No ETA is published.** Two earlier estimates were both wrong — "~85 days" used the
+  *event* rate rather than the independent-*cascade* rate and ignored the holdout arm, and a
+  task-006 replacement of "~340 days" was derived from a 3.22-day sample that cannot
+  forecast a 30-day-trailing statistic. **The trigger is the formal count, never a date.**
+- **There is no feed-truncation problem.** A task-006 warning that the OKX endpoint caps
+  liquidation *events* at 100 per poll was incorrect and is withdrawn. `limit=100` caps the
+  **outer instrument array**; one call returned **654 events spanning 22.6 hours** when
+  measured on 2026-08-03. Commit `812ac5f` established this on 2026-07-31 and
+  `recorder/derivs_recorder.py` documents it. **Do not shorten the 60-second poll.**
 - **The two recorders collecting this are IRREPLACEABLE.** Their history cannot be
   backfilled.
 

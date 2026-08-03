@@ -11,68 +11,51 @@ and **FX policy-rate differential V2**. Both simulators are certified and reusab
 
 ---
 
-# A. New — three decisions from the task 006 audit
+# A. Liquidation state — corrected in task 006A, nothing outstanding
 
-## A1. The liquidation feed may be truncating the cascades themselves ⚠ most urgent
+## A1. ~~Feed truncation~~ — WITHDRAWN. There is no truncation problem.
 
-The OKX endpoint returns **at most 100 events per poll**. Four minutes have already carried
-**≥ 90 events**; the busiest carried **193**.
+Task 006 claimed the OKX endpoint caps liquidation *events* at 100 per poll and called it
+urgent. **That was wrong and is withdrawn.** `limit=100` caps the **outer instrument
+array**, not the events inside each `details` array.
 
-Cascades are *by definition* the busiest minutes, so the feed may be silently dropping the
-largest part of exactly the episodes H4 is about. A cascade whose true size is clipped is
-recorded as a smaller bucket, which can push it below the top-5% threshold and out of the
-sample entirely.
+Measured fresh on 2026-08-03 (`study/okx_liquidation_endpoint_audit.py`): **one call
+returned 654 events spanning 22.6 hours**, from 16 outer objects. Commit `812ac5f` had
+already established this on 2026-07-31, and `recorder/derivs_recorder.py` documents the
+measured behaviour and paginates backwards with `after`.
 
-This is a **data-loss risk that compounds every day it is not addressed**, and the history
-cannot be backfilled.
+**No decision needed. Do not shorten the 60-second poll interval.** The recorder was not
+changed and needs no change.
 
-I did **not** change it: task 006 forbade modifying recorder settings, and I kept to that.
+## A2. ~~Two disagreeing readiness numbers~~ — FIXED in task 006A
 
-**Decision needed:** whether to shorten the derivs recorder's poll interval (30 s was the
-suggestion already in `data_readiness.py`) or otherwise raise the cap. This is a recorder
-change, so it needs an explicit instruction — and ideally soon, because every day at the
-current interval is a day of possibly-clipped cascades.
+`study/data_readiness.py` no longer computes its own cascade count. Both scripts now call
+the single authoritative `study/liquidation_readiness.py`, and a deterministic assertion
+fails loudly if they diverge. Verified agreeing on all 10 shared keys.
 
-## A2. `study/data_readiness.py` does not implement the frozen definition
+**No decision needed.**
 
-It reports **14** independent cascades where the preregistered rule gives **5**, and it is
-the origin of the "~85 days" figure that had propagated into `HANDOFF.md`.
-
-Three divergences, all loosening:
-
-| | `data_readiness.py` | Frozen preregistration |
-|---|---|---|
-| Unit | individual **event** | 5-minute **bucket**, total size |
-| Threshold | 90th percentile | **95th** percentile |
-| Ranked against | whole sample | **trailing 30 days** |
-| Holdout arm | ignored (targets 400) | required (needs ~533 total) |
-
-I left it unchanged — out of scope for task 006 — and documented the divergence in
-`HANDOFF.md` and `RESEARCH_MAP.md`.
-
-**Decision needed:** align `data_readiness.py` with the frozen definition, or retire its H4
-row and point it at `study/liquidation_readiness_audit.py`. Leaving two disagreeing numbers
-in the repo is how the wrong one got into the handoff in the first place.
-
-## A3. The gate is far further away than the project believed
-
-Corrected position under the frozen definition:
+## A3. Formal gate status — corrected, and no ETA is published
 
 | | |
 |---|---|
-| Independent cascades so far | **5** (4 development, 1 holdout) |
-| Remaining | **396 development, 99 holdout** |
-| Rough pace | ~1.55/day → **several hundred days**, not 85 |
+| **FORMAL cascades** | **0** |
+| **FORMAL development / holdout** | **0 / 0** |
+| Formal gate | **CLOSED** |
+| Formal scoring begins in | **~26.8 days** |
+| Provisional startup diagnostic | 5 — **not gate progress** |
 
-The trigger remains the **count**, never a date, and pace is regime-dependent.
+Zero is correct, not pessimistic: the frozen rule ranks against a trailing 30-day window and
+the feed is 3.22 days old, so nothing is yet scorable. Recorded as Amendment 1 in
+`PREREGISTRATION_liquidations.md`, with every frozen parameter unchanged.
 
-**Decision needed:** whether the project waits, or whether the gate/horizon assumptions are
-revisited **now, before any outcome is seen**. Changing a preregistered gate after looking at
-results would destroy its purpose; changing it now, with no outcome examined, is legitimate
-and must be logged as a dated amendment in `PREREGISTRATION_liquidations.md`.
+Both previous ETAs were wrong — "~85 days" (event rate, no holdout arm) and my "~340 days"
+(a 3-day sample cannot forecast a 30-day-trailing statistic). **No ETA is published. The
+trigger is the formal count.**
 
-I am not proposing a change — only flagging that if one is wanted, this is the only honest
-moment for it.
+**Optional decision, no urgency:** if the gate or horizons are ever to be revisited, the
+only honest moment is *before* any outcome is seen — which is still true today. I am not
+proposing a change.
 
 ---
 
