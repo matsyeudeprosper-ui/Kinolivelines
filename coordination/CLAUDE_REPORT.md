@@ -25,7 +25,7 @@ current pace, not 85. Corrected in both `HANDOFF.md` and `RESEARCH_MAP.md`.
 
 | | |
 |---|---|
-| Commit SHA | `PENDING_SHA` |
+| Commit SHA | `5ffa8002ab4170ca481a69abee73f54f03c7cc83` |
 | Branch | `main` (the existing research branch) |
 | Parent | `a5dd74c` |
 
