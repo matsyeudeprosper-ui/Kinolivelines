@@ -650,9 +650,11 @@ import MetaTrader5 as mt5                                              # noqa: E
 # --------------------------------------------------------------------------------
 # Task 005 reported a D1 span ending 2026-08-03 while running on 2026-08-02. Cause:
 #
-#   * MT5 server time on this terminal IS UTC (measured offset -0.0 h against the
-#     live tick clock), and a D1 bar's timestamp is its OPEN time on the UTC day
-#     boundary.
+#   * The MT5 Python API returns bar and tick timestamps in UTC, and a bar's timestamp
+#     is its OPEN time. The measured -0.0 h offset against the live tick clock confirms
+#     the timestamps this script receives are UTC-aligned - it does NOT independently
+#     establish the broker's internal server timezone, and no such claim is made. Only
+#     the UTC alignment matters here, because that is what the completeness rule uses.
 #   * The FX week opens Sunday ~21:00 UTC, so Sunday carries a partial D1 bar - on
 #     2026-08-02 it held 2,969 ticks against 31,000-58,000 for a full weekday.
 #   * That Sunday bar was still FORMING at retrieval (last H1 bar 23:00 UTC, now
@@ -686,9 +688,10 @@ if mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe"):
 _off_h = ((D1_SERVER_NOW - D1_RETRIEVAL_UTC).total_seconds() / 3600
           if D1_SERVER_NOW is not None else float("nan"))
 say(f"  D1 retrieval (UTC)   : {D1_RETRIEVAL_UTC:%Y-%m-%d %H:%M:%S}")
-say(f"  MT5 server clock     : {D1_SERVER_NOW:%Y-%m-%d %H:%M:%S}  "
-    f"(offset {_off_h:+.1f} h vs UTC -> server frame IS UTC)")
-say(f"  D1 timestamp meaning : bar OPEN time on the UTC day boundary")
+say(f"  MT5 tick clock       : {D1_SERVER_NOW:%Y-%m-%d %H:%M:%S}  "
+    f"(offset {_off_h:+.1f} h -> API timestamps are UTC-aligned;")
+say(f"                         this does NOT establish the broker's server timezone)")
+say(f"  D1 timestamp meaning : bar OPEN time, UTC day boundary")
 say(f"  incomplete/forming sessions excluded: {len(d1_dropped)} "
     f"({len(d1_dropped)//max(len(PAIRS),1)} per pair)")
 if d1_dropped:

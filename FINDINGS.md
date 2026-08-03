@@ -368,3 +368,87 @@ Two structural facts that will recur in any successor on this account:
   that stop and a monthly schedule.
 - **The canonical executable panel has no development period.** It begins 2021-08-02;
   development ends 2021-07-31. Only the broker-D1 panel has one.
+
+---
+
+## FX POLICY-RATE DIFFERENTIAL V2 — CLOSED
+
+Preregistered and frozen by the strategy lead; implemented in task 005 and certified in
+task 005A. **Permanently failed. The exact V2 must not be revisited.**
+
+Principal test is scenario 1, **zero-credit execution**: historical spreads only, no carry
+credit of any kind, because this broker does not pay one (below).
+
+| | |
+|---|---|
+| Baseline net | **−$49.93** (−5.10%), 47 trades |
+| Validation | **−$30.39** |
+| Untouched holdout | **−$19.55** |
+| Profit factor | **0.826** |
+| Randomisation p (one-sided, 10,000 paths) | **0.5525** |
+| Conditions passed | **6 of 16**, plus one N/A |
+
+### The broker pays nothing on the side the signal selects
+
+Task 004A measured, across all 19 executable pairs, that wherever the policy differential
+says a side should earn carry the Exness snapshot pays **exactly 0.00%** on it and charges
+the other. V2 always trades that side, so applying the stored 2026 snapshot changed the
+result by **$0.00 on every one of the 47 trades**.
+
+**A carry-shaped strategy collects no carry here by construction.** It is left as a pure
+directional bet, and the bet loses.
+
+### The two theoretical-credit counterfactuals disagree in sign
+
+| | Trades | Net |
+|---|---|---|
+| Baseline, zero credit (the executable reality) | 47 | **−$49.93** |
+| **A** — fixed 47 baseline trades, credit added | 47 | **+$19.87** |
+| **B** — recursively gated account path with credit | 49 | **−$7.32** |
+| Actual 2026 Exness snapshot contribution | 47 | **$0.00** |
+
+**A** holds the trade set fixed and adds only the $69.80 theoretical credit. **B** re-runs
+the account, so the credit raises equity, which changes which months clear the 1.50% risk
+gate, which changes the trade set. Task 005 reported only **B** and concluded that even full
+credit leaves V2 negative; on the apples-to-apples comparison that conclusion does not hold.
+
+**Neither may satisfy a pass condition.** Theoretical carry could have turned the fixed
+trade set into a small profit — but that carry was not available on this setup, and the
+executable strategy still lost.
+
+### Why it failed
+
+Not cost. Doubling every historical spread moved the result by $5.54. It failed on
+**direction and on selection**:
+
+- **73% of random pair-and-direction paths beat it** (median −$36.90 against −$49.93).
+- Holding the policy-implied *direction* and randomising only the *pair*, the median random
+  pick still beat it (−$28.63). **Choosing the largest differential was worse than choosing
+  arbitrarily with the same directional logic.**
+- The differential tercile diagnostic is **non-monotonic** — the low-differential tercile is
+  the only positive one, the middle is the worst.
+- The signal does not survive execution: over 58 overlapping months the canonical and D1
+  panels agreed on **100% of pairs and 100% of directions**, yet returned **+0.0367**
+  unpriced against **−0.0071** executed. The gap is spread and scheduled-open pricing.
+
+### Data correction made during certification
+
+Task 005 used a **forming Sunday D1 bar**. MT5 D1 timestamps are bar-open times on the UTC
+day boundary, the FX week opens Sunday ~21:00 UTC, and that partial bar (2,969 ticks against
+31,000–58,000 for a full weekday) was still open at retrieval; the Sunday→Monday merge
+relabelled it 2026-08-03. Removing it moved the D1 panel end to **2026-07-31** and the D1
+holdout from +0.0544 to **+0.0393** — the forming bar had inflated it by 28%. The verdict did
+not change.
+
+### Two distinctions that must be preserved
+
+- **A current swap snapshot is not historical swap evidence.** The 2026 figures are a dated
+  snapshot and were never applied to a historical date.
+- **Zero carry on V2's selected side does not prove that every holding-based strategy on
+  every venue is impossible.** It is one venue, one snapshot, one selected side.
+
+### Not candidate strategies
+
+The reverse (−$137.88) and delayed-entry controls exist to characterise the failure. Neither
+is preregistered, neither has been tested as a strategy, and neither may be promoted on the
+strength of a control result.

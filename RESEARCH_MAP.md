@@ -1,11 +1,18 @@
-# Research map — BTC-specific edges still open
+# Research map — what is open, what is closed
 
-Written 2026-08-01, after the OHLC/indicator space was closed and the crowding branch was
-found untestable on this bot's history.
+**Synchronised 2026-08-03 (task 006)** against the completed committed studies, which are
+the source of truth. An earlier version of this file still presented perp-index basis,
+broker feed lag and DVOL as "run this first" / "run next" long after all three had been
+tested and closed. Anyone reading it would have re-run dead research. That is corrected
+below.
 
-**Narrowed objective: one robust, profitable BTC edge after costs.** Cross-symbol
-transfer is optional. A BTC-specific mechanism is not required to work on cattle, gold or
-currencies — the validation universe must match the mechanism.
+> **Exactly one hypothesis is open: liquidation cascades (H4), and it is gated.**
+> Everything else on this page is closed. Do not re-open a closed family "with a different
+> indicator, parameter or timeframe" — that is the same test.
+
+Read [`HANDOFF.md`](HANDOFF.md) first, then this file, then [`FINDINGS.md`](FINDINGS.md).
+
+---
 
 ## The cost structure that shapes everything
 
@@ -18,132 +25,108 @@ Spread is a fixed $10 on BTCUSDm. What that costs depends entirely on horizon:
 | H4 | $798 | 1.25% | 7.59 yr |
 | D1 | $1,727 | **0.58%** | 7.59 yr |
 
-The current bot trades where costs are 20× worse and history is 5× shorter. Both argue
-for the same move.
+**Carry, measured and asymmetric:** `swap_long` = −1248.8 points = **−$12.49/night/lot
+(−7.24%/yr)**; `swap_short` = **exactly 0.00**. Triple charge on Fridays.
 
-**Carry, newly measured and asymmetric:** `swap_long` = −1248.8 points = **−$12.49 per
-night per lot (−7.24%/yr)**. `swap_short` = **exactly 0.00**. Shorts finance free; longs
-bleed ~2bp a night. Triple charge on Fridays.
+**The FX equivalent, measured in task 004A across all 19 executable pairs:** wherever the
+policy-rate differential says a side should *earn* carry, the broker pays **exactly
+0.00%** on that side and charges the other. Any family whose edge is *holding* rather than
+*moving* collects nothing on this venue by construction.
 
 ---
 
-## Hypotheses, ranked by strength-if-testable-now
+## OPEN — the only live question
 
-### H1 — Perp-index basis (leverage demand). **TESTABLE NOW. Strongest.**
+### H4 — Liquidation cascades. **GATED. Do not run the outcome test yet.**
 
-- **Mechanism** — a perpetual has no expiry, so it trades at a premium or discount to its
-  spot index purely according to how badly leveraged traders want exposure. A large
-  premium means leveraged longs are paying up to get on; a large discount means positions
-  are being dumped or unwound.
-- **Why an edge should exist** — the gap is an arbitrage relationship. Market makers close
-  it by taking the other side and hedging in spot. The question is not whether it reverts
-  but whether the reversion is large and slow enough to clear $10.
-- **Why it is not funding again** — measured: `corr(basis, funding) = 0.046`. Essentially
-  orthogonal. Funding is an 8-hour smoothed average of the same pressure; the basis is
-  instantaneous. Funding has been tested and is null for direction; the basis has never
-  been tested at all.
-- **Instrument / horizon** — BTC, 4h to 3 days.
-- **Data** — `hist_BTC_PERPETUAL.csv`, 63,587 hourly rows, 2019-04→2026-07, cached.
-  Basis sd 68bp, 1st/99th percentile ±197bp.
-- **Minimum detectable effect** — ~15,900 non-overlapping 4h windows, ~1,600 in the
-  extreme tails. 2SE ≈ 0.05R on mean R and ≈2.5pp on a stop-out rate. The effects worth
-  having (≥0.1R) are comfortably detectable.
-- **Validation universe** — BTC across separate periods, ETH-PERPETUAL (cached, same
-  mechanism), and OKX BTC-USDT (different margin currency, fetchable). **Not** equities,
-  metals or agriculture — the mechanism is specific to perpetual swaps.
-- **Pass/fail** — beats a matched random-entry control by >2SE; same sign in ≥4 of 5
-  entry-volatility quintiles; replicates on ETH; survives a two-sided rotation null; and
-  holds on an untouched final 18 months never used to choose anything.
-- **Status** — run this first.
+- **Mechanism** — a forced liquidation is not a trade anyone chose to make, so the
+  resulting market order carries no information about value. Price may extend, revert, or
+  merely become more volatile; those are separated in the preregistration.
+- **Frozen rules** — [`PREREGISTRATION_liquidations.md`](PREREGISTRATION_liquidations.md),
+  written before any outcome was examined. Definitions, thresholds and pass/fail are fixed.
+- **Gate** — **≥ 400 independent cascades in development AND ≥ 100 in untouched holdout.**
+  The trigger is the **count**, never a date.
+- **Status at 2026-08-03** (task 006 audit, read-only, no outcomes examined):
 
-### H2 — Carry asymmetry. **TESTABLE NOW. Low prior, cheap to check.**
+  | | |
+  |---|---|
+  | Events recorded | 2,947 over 3.22 days |
+  | Independent cascades (4h separation, frozen definition) | **5** |
+  | Development / holdout under the 75-25 split | **4 / 1** |
+  | Remaining to gate | **396 development, 99 holdout** |
+  | Rough pace, **not a deadline** | ~1.55 independent cascades/day |
 
-- **Mechanism** — not a prediction; a measured cash flow. Shorts pay zero financing, longs
-  pay 7.24%/yr.
-- **Why an edge might exist** — at multi-day horizons this tilts the arithmetic of any
-  hold. A strategy that is a coin flip before financing is positive on the short side and
-  negative on the long side.
-- **Instrument / horizon** — BTCUSDm specifically (broker-specific), days to weeks.
-- **Data** — 7.59 yr of D1/H4.
-- **Minimum detectable effect** — carry is 0.02%/night against a D1 ATR of 2.7%, so it is
-  ~1/135th of daily noise. ~390 non-overlapping weekly holds. **Underpowered on its own**;
-  only meaningful as a tiebreaker applied to a strategy that is already near-neutral.
-- **Validation universe** — BTCUSDm on Exness only. Broker-specific by construction.
-- **Pass/fail** — converts an otherwise-neutral rule to positive by >2SE. Never to be
-  claimed as an edge in isolation.
-- **Honest caveat** — BTC appreciated across the sample, so a naive short bias loses on
-  direction far faster than carry can pay.
-
-### H3 — Broker feed lag. **TESTABLE NOW (preliminary). Highest payoff, lowest prior.**
-
-- **Mechanism** — Exness quotes BTCUSDm themselves, derived from real exchanges. If the
-  quote trails the market, the next move is briefly knowable.
-- **Why an edge should exist** — it would be near-arbitrage, requiring no directional
-  forecast at all.
-- **Instrument / horizon** — BTCUSDm vs OKX, sub-second to seconds.
-- **Data** — 152,307 ticks over 3 days (ms stamps) plus 7,173 rows of 2-second paired
-  quotes. **The 2-second study already found the cross-correlation peaks at lag 0**
-  (r=0.6127), so the remaining question is strictly sub-2-second.
-- **Minimum detectable effect** — to be worth trading the lag must imply a move >$10.
-  Tick data resolves milliseconds; 152k ticks is enough for a preliminary read.
-- **Validation universe** — Exness BTCUSDm only. Correctly needs no cross-market proof.
-- **Pass/fail** — a cross-correlation peak at a strictly positive lag, stable across all
-  three days, with implied move > spread. Anything at lag 0 kills it permanently.
-
-### H6 — Variance risk premium (implied vs realised vol). **TESTABLE NOW. New.**
-
-- **Mechanism** — DVOL is Deribit's 30-day implied volatility index, computed from the
-  live options book. It is what traders are actually paying for protection, quoted in a
-  different market from the one we trade. Realised volatility is computable from data
-  already held, so the pair gives the variance risk premium directly.
-- **Why an edge should exist** — sellers of volatility earn a premium over realised
-  volatility persistently and across every asset class studied. Its size varies, and when
-  it is unusually wide fear is priced in; when it inverts, the options market is signalling
-  stress the spot market has not yet expressed. Neither reading is derived from past price,
-  which is the whole category already exhausted here.
-- **Instrument / horizon** — BTC, hours to days.
-- **Data** — `dvol_BTC.csv` and `dvol_ETH.csv`, **46,947 hourly points each, 2021-03 →
-  2026-08 (5.4 years)**, cached by `recorder/fetch_dvol.py`.
-- **Minimum detectable effect** — ~11,700 non-overlapping 4h windows, ~1,170 in the tails.
-  MDE ≈ **1.3pp** on a rate. Ample.
-- **Validation universe** — BTC across separate periods, replicated on ETH DVOL. Crypto
-  options mechanism; no equity, metal or agricultural proof is owed.
-- **Pass/fail** — beats a volatility-matched random control by >2SE, same sign in ≥4 of 5
-  entry-volatility quintiles, replicates on ETH, survives a two-sided rotation null, and
-  holds on an untouched final period. For any directional claim the capturable move must
-  exceed $14.
-- **Status** — **the strongest testable-now hypothesis. Run next.**
-
-### H4 — Order-flow imbalance / liquidation cascades. **NOT YET.**
-
-- **Mechanism** — forced liquidations are non-informational selling; price should
-  overshoot then revert.
-- **Data** — `micro_*` has OKX top-5 bid/ask sizes but only 7,173 rows over 2 days.
-  Liquidations are **not currently recorded at all** — that is a gap worth closing now so
-  the clock starts.
-- **Minimum detectable effect** — needs ~30 days for ~4,000 non-overlapping windows.
-- **Action** — add liquidation capture to `derivs_recorder.py`; revisit at ~30 days.
+- **The old "~85 days" estimate was wrong.** It came from `study/data_readiness.py`, which
+  counts any 4-hour window containing one top-10%-by-size *event*. The frozen definition is
+  stricter — a 5-minute **bucket** whose **total** size is top-5% against a **trailing
+  30-day** distribution — and it also requires a holdout arm the old estimate ignored. On
+  the frozen definition the honest figure at the current pace is **several hundred days**.
+  Both numbers move with market regime; neither is a promise.
+- **Caveat on the feed** — the OKX endpoint returns at most 100 events per poll and four
+  minutes have already carried ≥ 90. Cascades are precisely the busiest minutes, so the
+  feed may be truncating the very episodes the hypothesis is about. Flagged, not yet fixed.
+- **The two recorders collecting this are IRREPLACEABLE.** Their history cannot be
+  backfilled.
 
 ### H5 — Open-interest change. **NOT YET.**
 
-- 719 hourly rows (30 days backfilled from OKX, which caps there). ~180 non-overlapping
-  4h windows — far too few. Revisit as the recorder fills.
+719 hourly rows (OKX caps backfill at 30 days), ~180 non-overlapping 4h windows. Far too
+few. Revisit as the live recorder extends it.
 
 ---
 
-## Explicitly closed — do not revisit
+## CLOSED — do not revisit
 
-Every OHLC/indicator hypothesis (see `FINDINGS.md` §1), funding as a direction signal,
-COT positioning as a direction signal, and horizontal levels as an entry trigger. Fifteen
-tests, six instruments, four horizons.
+| hypothesis | verdict | evidence |
+|---|---|---|
+| Price / OHLC / indicator timing on BTC (15 tests) | null | `FINDINGS.md` §1 |
+| Funding rate as a DIRECTION signal | null | `funding_edge.py`, `funding_phases.py` |
+| COT positioning as a direction signal | died out-of-sample on 20 unseen markets | `cot_*.py` |
+| **H1 Perp-index basis / spot-perp spread** | **null** | `basis_edge.py` |
+| **H3 Broker feed lag / latency arb** | **null on all 4 preregistered criteria** | `broker_lag2.py` |
+| **H6 DVOL / variance risk premium** | **null; Q2 died out-of-sample** | `dvol_*.py` |
+| Order-book imbalance | **real but 5× too small** — $2.04 move vs $10 cost | `orderflow_concentration.py` |
+| Stop/target geometry search (30 shapes) | all tied; the loss is the spread | `sim_variants.py` |
+| Cross-sectional momentum, 19 US stocks | null, MDE 1.47%/rebalance | `xs_momentum.py` |
+| Cross-sectional momentum, 57 crypto perps | null, MDE 3.23%/rebalance | `xs_crypto.py` |
+| Trend following, 13 instruments | **underpowered, NOT disproven** — MDE 10.2%/yr | `trend_following.py` |
+| Horizontal levels as an entry trigger | null | `hline_*.py` |
+| **FX cross-sectional momentum 3M-1M V1** | **FAILED** — see `FINDINGS.md` | `fx_momentum_v1.py` |
+| **FX policy-rate differential V2** | **FAILED** — see `FINDINGS.md` | `fx_policy_differential_v2.py` |
+| The demo↔live mirror as a money-maker | arithmetic: costs 2 spreads, cannot win | `KLMirror.mq5` |
+
+### H2 — Carry asymmetry. **Not an edge in isolation; never to be claimed as one.**
+
+Shorts pay zero financing on BTCUSDm and longs pay 7.24%/yr. That is a measured cash flow,
+not a prediction. It is **~1/135th of daily noise**, so it is underpowered on its own and is
+only meaningful as a tiebreaker applied to a rule that is already near-neutral. BTC also
+appreciated across the sample, so a naive short bias loses on direction far faster than
+carry can pay. Not a candidate family.
+
+### Two things that measurably work — but not at this capital
+
+Both documented in [`HANDOFF.md`](HANDOFF.md) §3, neither reachable at ~$1,000:
+**delta-neutral perp carry** (needs spot+perp on one venue; Exness has no spot; premium
+compressed to ~1–3%/yr) and a **diversified hold basket** (blocked by minimum lot sizes;
+needs ~$13,200 at 1×).
+
+---
 
 ## Standing constraint
 
 The M15 bot is **authorised to trade on demo for forward observation, data collection and
-execution validation. It is not authorised for real-money deployment, and is not
-considered to have a validated edge.**
+execution validation. It is not authorised for real-money deployment, and is not considered
+to have a validated edge.**
 
 Its trades are forward data collection, not evidence. Two questions stay separate in every
 report: *is the strategy profitable* (unproven, historical evidence negative) and *is the
 live system executing its stated rules correctly* (testable now, and the point of the
 exercise). Full constraints in [`README.md`](README.md).
+
+## One distinction that must not be lost
+
+A **current swap snapshot is not historical swap evidence.** Exness publishes no historical
+swap rates and none have been collected, so no backtest in this project may charge or credit
+a historical carry figure. Equally, measuring that this broker pays zero on V2's selected
+side does **not** prove that every holding-based strategy on every venue is impossible — it
+is one venue, one snapshot, one selected side.

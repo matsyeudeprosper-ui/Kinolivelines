@@ -39,7 +39,15 @@ strategy, is the binding constraint.**
 | Cross-sectional momentum, 19 US stocks | null, MDE 1.47%/rebalance | `xs_momentum.py` |
 | Cross-sectional momentum, 57 crypto perps | null, MDE 3.23%/rebalance | `xs_crypto.py` |
 | Trend following, 13 instruments | **underpowered, NOT disproven** — MDE 10.2%/yr | `trend_following.py` |
+| **FX cross-sectional momentum 3M-1M V1** | **FAILED** 5/13; −$75.94, PF 0.529, p 0.7286 | `fx_momentum_v1.py` |
+| **FX policy-rate differential V2** | **FAILED** 6/16; −$49.93, PF 0.826, p 0.5525 | `fx_policy_differential_v2.py` |
 | The demo↔live mirror as a money-maker | arithmetic: costs 2 spreads, cannot win | `KLMirror.mq5` header |
+
+**On the two FX families:** both were preregistered and frozen by the strategy lead, and both
+failed on *direction*, not cost — doubling every spread moved V1 by ~$1 and V2 by $5.54. V2
+additionally established that **this broker pays exactly 0.00% carry on the side a
+policy-differential signal selects**, across all 19 executable pairs, so a carry-shaped
+family collects nothing here by construction. Full detail in `FINDINGS.md`.
 
 ### The order-book one deserves emphasis
 It is the **only** signal in the project that beat its error bar on the Exness feed
@@ -78,11 +86,31 @@ and re-test."** That is the answer to a null, not to a measured effect that is 5
 ## 4. STILL OPEN — the only genuinely live question
 
 **Liquidation cascades.** Preregistered in `PREREGISTRATION_liquidations.md`, gated at
-**400 independent cascades**, roughly **85 days out** from 2026-08-02 at the observed 42.6
-events/hour. The gate exists specifically so an underpowered null cannot be mistaken for a
-finding — the error already made once on the crowding branch. **Do not run the outcome
-test before the gate.** The two recorders collecting it are IRREPLACEABLE; their history
-cannot be backfilled.
+**≥400 independent cascades in development AND ≥100 in untouched holdout**. The gate exists
+specifically so an underpowered null cannot be mistaken for a finding — the error already
+made once on the crowding branch. **Do not run the outcome test before the gate.** The two
+recorders collecting it are IRREPLACEABLE; their history cannot be backfilled.
+
+**Status at 2026-08-03** (task 006 read-only audit, no outcomes examined): 2,947 events over
+3.22 days → **5 independent cascades**, split **4 development / 1 holdout**. Remaining:
+**396 development, 99 holdout**.
+
+**An earlier version of this file said "roughly 85 days out at 42.6 events/hour". That was
+wrong on two counts** and is corrected here:
+
+- it used the **event** rate, not the independent-**cascade** rate. A cascade is a top-5%
+  5-minute *bucket* ranked on a trailing 30-day window, and after 4-hour independence they
+  arrive at ~**1.55/day**, not 42.6/hour;
+- it ignored the **holdout arm**. Satisfying both arms under the 75-25 split needs ~533
+  independent cascades, not 400.
+
+At the current pace that is **several hundred days**, not 85. Pace is regime-dependent and
+the trailing threshold moves with it, so no date is promised — **the trigger is the count.**
+
+**Feed caveat:** the OKX endpoint returns at most 100 events per poll and four minutes have
+already carried ≥90. Cascades are precisely the busiest minutes, so the feed may be
+truncating the episodes the hypothesis is about. Flagged in task 006, not fixed (task 006
+was forbidden from changing recorder settings).
 
 ---
 
