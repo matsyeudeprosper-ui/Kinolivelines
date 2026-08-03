@@ -1,86 +1,117 @@
 FROM: CLAUDE
-RE: three structural constraints to settle before the third strategy family
+RE: decisions arising from task 006, plus the three standing constraints
 
-Supersedes the earlier version of this file. Its task-002 and task-003 items were all
-answered by the specs that followed.
+Full detail is in `coordination/CLAUDE_REPORT.md` (task 006). This file is the short
+actionable list.
 
-Two families are now closed and must not be revisited:
+Two families are closed and must not be revisited: **FX cross-sectional momentum 3M-1M V1**
+and **FX policy-rate differential V2**. Both simulators are certified and reusable.
 
-- **FX CROSS-SECTIONAL MOMENTUM 3M-1M V1** — FAILED (tasks 003, 003A, 003B)
-- **FX POLICY-RATE DIFFERENTIAL V2** — FAILED (tasks 005, 005A)
-
-Both simulators are certified. The infrastructure is reusable; the strategies are not.
-
-Everything below is a **property of this account and this broker**, not of either failed
-idea. A third family inherits all three unless the spec says otherwise. None of this is a
-strategy proposal — each is a measured constraint with the options it implies, and the
-choice is the strategy lead's.
+**Exactly one hypothesis is open: liquidation cascades (H4), and it is gated.**
 
 ---
 
-## 1. The broker pays zero carry on the side that should earn it
+# A. New — three decisions from the task 006 audit
 
-**Measured, task 004A, all 19 executable pairs.** Wherever the policy-rate differential says
-a side should receive carry, the Exness snapshot for that side is **exactly 0.00%**, and the
-opposite side is charged. Median markup 1.38 pp long, 0.60 pp short; worst 4.35 pp
-(`AUDCHFm`).
+## A1. The liquidation feed may be truncating the cascades themselves ⚠ most urgent
 
-Task 005 then confirmed it from inside a backtest without being asked to: V2 always trades
-the theoretically positive side, so applying the stored swap snapshot changed the result by
-**$0.00 on every one of 47 trades**.
+The OKX endpoint returns **at most 100 events per poll**. Four minutes have already carried
+**≥ 90 events**; the busiest carried **193**.
 
-**Why it matters beyond V2.** This is structural. Any family whose edge is *holding* rather
-than *moving* — carry, rate differential, roll, term structure — collects nothing here by
-construction and is left as a pure directional bet.
+Cascades are *by definition* the busiest minutes, so the feed may be silently dropping the
+largest part of exactly the episodes H4 is about. A cascade whose true size is clipped is
+recorded as a smaller bucket, which can push it below the top-5% threshold and out of the
+sample entirely.
 
-**What I need:** whether the third family is allowed to depend on being paid to hold. If it
-is, the venue has to change, because this one does not pay. If it is not, the family should
-be one whose edge lives in price movement.
+This is a **data-loss risk that compounds every day it is not addressed**, and the history
+cannot be backfilled.
 
-Related measurement already in hand: delta-neutral perpetual carry does pay, but needs spot
-plus perp on one venue — not Exness — and the premium has compressed to roughly 1–3%/yr.
+I did **not** change it: task 006 forbade modifying recorder settings, and I kept to that.
 
-## 2. Stop size, not signal quality, decides whether a sample exists
+**Decision needed:** whether to shorten the derivs recorder's poll interval (30 s was the
+suggestion already in `data_readiness.py`) or otherwise raise the cap. This is a recorder
+change, so it needs an explicit instruction — and ideally soon, because every day at the
+current interval is a day of possibly-clipped cascades.
 
-On $979 with minimum lot, the 1.50%-of-equity risk gate binds directly against the trade
-count, and the stop multiple is the lever:
+## A2. `study/data_readiness.py` does not implement the frozen definition
+
+It reports **14** independent cascades where the preregistered rule gives **5**, and it is
+the origin of the "~85 days" figure that had propagated into `HANDOFF.md`.
+
+Three divergences, all loosening:
+
+| | `data_readiness.py` | Frozen preregistration |
+|---|---|---|
+| Unit | individual **event** | 5-minute **bucket**, total size |
+| Threshold | 90th percentile | **95th** percentile |
+| Ranked against | whole sample | **trailing 30 days** |
+| Holdout arm | ignored (targets 400) | required (needs ~533 total) |
+
+I left it unchanged — out of scope for task 006 — and documented the divergence in
+`HANDOFF.md` and `RESEARCH_MAP.md`.
+
+**Decision needed:** align `data_readiness.py` with the frozen definition, or retire its H4
+row and point it at `study/liquidation_readiness_audit.py`. Leaving two disagreeing numbers
+in the repo is how the wrong one got into the handoff in the first place.
+
+## A3. The gate is far further away than the project believed
+
+Corrected position under the frozen definition:
+
+| | |
+|---|---|
+| Independent cascades so far | **5** (4 development, 1 holdout) |
+| Remaining | **396 development, 99 holdout** |
+| Rough pace | ~1.55/day → **several hundred days**, not 85 |
+
+The trigger remains the **count**, never a date, and pace is regime-dependent.
+
+**Decision needed:** whether the project waits, or whether the gate/horizon assumptions are
+revisited **now, before any outcome is seen**. Changing a preregistered gate after looking at
+results would destroy its purpose; changing it now, with no outcome examined, is legitimate
+and must be logged as a dated amendment in `PREREGISTRATION_liquidations.md`.
+
+I am not proposing a change — only flagging that if one is wanted, this is the only honest
+moment for it.
+
+---
+
+# B. Standing — the three constraints from before task 006
+
+Unchanged and still unanswered. These are properties of the **account and broker**, not of
+either failed idea, so any future family inherits them.
+
+## B1. The broker pays zero carry on the side that should earn it
+
+Measured across all 19 executable pairs (004A), then confirmed inside a backtest (005): the
+2026 swap snapshot moved V2's result by **$0.00 on every one of 47 trades**. Any family whose
+edge is *holding* rather than *moving* collects nothing here by construction.
+
+**Needed:** may a future family depend on being paid to hold? If yes, the venue must change.
+
+## B2. Stop size decides whether a sample exists
 
 | | V1 (2.0 × ATR) | V2 (1.5 × ATR) |
 |---|---|---|
-| Rebalances | 55 | 58 |
-| Skipped on the risk gate | **33** | **11** |
-| Completed trades | **22** | **47** |
-| Trade-count condition | ≥ 40 — **failed** | ≥ 45 — **passed** |
+| Skipped on the risk gate | 33 of 55 | 11 of 58 |
+| Completed trades | 22 (bar 40 — failed) | 47 (bar 45 — passed) |
 
-A 2-ATR stop at minimum lot costs about **$14** against a **$14.69** budget — the rule sits
-almost exactly on top of the cheapest position the broker will open, so small ATR changes
-flip whole months in or out.
+The 1.50% risk gate sits almost exactly on the cheapest position the broker will open.
 
-**What I need:** the stop multiple and the trade-count bar decided **together**, before the
-run rather than after. Any monthly-rebalance family on this account inherits a hard ceiling
-of ~60 trades in five years before any skipping at all.
+**Needed:** stop multiple and trade-count bar fixed **together, before the run**.
 
-## 3. The executable panel has no development period
+## B3. The executable panel has no development period
 
-The canonical H1 panel begins **2021-08-02**; every spec so far has ended development on
-**2021-07-31**. Development on the executable panel has therefore been **empty in both
-families**, and only the broker-D1 panel has one.
+Canonical H1 starts 2021-08-02; development has ended 2021-07-31 in every spec, so it has
+been **empty in both families**. The D1 panel has one but cannot price execution — across 58
+overlapping months the panels agreed on 100% of pairs and directions yet returned **+0.0367**
+unpriced against **−0.0071** executed.
 
-The two panels are not interchangeable. Broker D1 reaches 2018-07 and gives a real
-development window, but it cannot be cut to the 17:00 New York session boundary and cannot
-price execution — task 005 measured that gap directly: over 58 overlapping months the two
-panels agreed on **100% of pairs and 100% of directions**, yet returned **+0.0367** on
-unpriced daily closes against **−0.0071** once executed. The difference was entirely
-spread and scheduled-open pricing.
-
-**What I need:** either a different split for the canonical panel so development is
-non-empty, or an explicit acceptance that development is D1-only and that a D1 result is a
-directional check which says nothing about executability.
+**Needed:** re-split the canonical panel, or accept development is D1-only and directional-only.
 
 ---
 
 ## Not asked
 
-No third family, no parameter, no threshold and no repair of either failed strategy is
-proposed here or anywhere in the task 003–005A reports. This file raises only the
-constraints whose answers change what I build next.
+No new family, parameter, threshold, gate change or repair is proposed here. A1 is the only
+item with a time cost attached; the rest can wait for the next task.
