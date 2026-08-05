@@ -109,3 +109,188 @@
 2026-07-31T08:33:27	LEVEL	broke below 63531.45 (reached 63469.55, now 63565.05) - H4 support approach. Look for a BUY LIMIT at 63,531 (+spread) only if the level holds; stop outside noise and target a realistic bounce within 120 min.
 2026-07-31T08:35:19	PENDING	order #3030511807 placed
 2026-07-31T08:36:51	LEVEL	broke above 63671.42 (reached 63705.95, now 63578.19) - M15 support reclaim. If price reclaims/holds above, consider a BUY LIMIT on a retest of 63,671 (+spread) with a stop below the swing; only if R:R>=1.5 and target within 1.5x ATR.
+2026-08-02T12:14:11	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-08-02T12:25:06	LEVEL	broke above 63175.03 (reached 63276.34, now 63261.27) - H4 resistance from briefing. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9.
+2026-08-02T12:45:12	SETUP	flat, price 63264.42 at M15 RESIST 63253.85 (11px away). Assess for a trade.
+2026-08-02T13:06:22	SETUP	flat, price 63234.06 at M15 SUPPORT 63225.21 (9px away). Assess for a trade.
+2026-08-02T13:25:37	PENDING	order #3033692029 placed
+2026-08-02T13:35:52	OPENED	#3033692029 SELL 0.01 @ 63276.34 SL 63296.34 TP 63236.34 - now managing
+2026-08-02T13:36:29	CLOSED	#3033692029 (opened @ 63276.34) is gone - flat now, bid 63292.75. Look for the next setup.
+2026-08-02T13:38:52	PENDING	order #3033707895 placed
+2026-08-02T13:46:39	LEVEL	broke below 63361.88 (reached 63334.87, now 63370.02) - First pullback low after the breakout (18:40 M1 low). Losing it says the 18:35-18:41 impulse is stalling rather than continuing.
+2026-08-02T14:03:04	SETUP	flat, price 63285.20 at M15 SUPPORT 63295.11 (10px away). Assess for a trade.
+2026-08-02T14:11:22	LEVEL	broke below 63276.34 (reached 63265.24, now 63296.21) - The H1 resistance that capped price all afternoon and was cleared at 18:35 - now the key support. This is the level whose loss means the breakout has failed outright. Also where short #3033692029 was stopped.
+2026-08-02T14:11:52	PENDING	order #3033750760 placed
+2026-08-02T14:13:37	OPENED	#3033750760 BUY 0.01 @ 63286.34 SL 63266.34 TP 63326.34 - now managing
+2026-08-02T14:14:07	CLOSED	#3033750760 (opened @ 63286.34) is gone - flat now, bid 63292.28. Look for the next setup.
+2026-08-02T14:25:08	LEVEL	broke below 63265.00 (reached 63263.60, now 63268.60) - THE SWEPT LOW. Probed twice, 63,265.24 at 19:11 and 63,265.39 at 19:13, and reclaimed both times. Replaces 63,276.34 as the level that matters: 63,276 is now noise price oscillates through, whereas a decisive break BELOW 63,265 is the first real evidence the breakout support has failed. Do not fade a long at 63,276 with a 20-point stop - the stop lands at bid 63,266, INSIDE this proven sweep range, which is exactly how #3033750760 was lost.
+2026-08-02T14:35:14	LEVEL	broke above 63265.00 (reached 63276.68, now 63280.62) - FLIPPED to 'above'. This was the swept low; price broke 18 points through it to 63,246.92 at 19:25, so the breakout support has failed and the long premise from 63,276 is dead. A reclaim back ABOVE 63,265 would say the breakdown itself failed - that is now the bullish trigger, not the 63,276 retest.
+2026-08-02T14:39:14	SETUP	flat, price 63293.10 at M15 RESIST 63301.91 (9px away). Assess for a trade.
+2026-08-02T14:42:47	OPENED	#3033765694 SELL 0.01 @ 63301.91 SL 63321.91 TP 63261.91 - now managing
+2026-08-02T14:45:13	CLOSED	#3033765694 (opened @ 63301.91) is gone - flat now, bid 63320.06. Look for the next setup.
+2026-08-02T15:01:38	SETUP	flat, price 63400.17 at H1 RESIST 63405.09 (5px away). Assess for a trade.
+2026-08-02T15:02:38	PENDING	order #3033782415 placed
+2026-08-02T15:25:30	SETUP	flat, price 63341.52 at M15 SUPPORT 63334.06 (7px away). Assess for a trade.
+2026-08-02T15:45:32	SETUP	flat, price 63343.10 at M15 SUPPORT 63332.28 (11px away). Assess for a trade.
+2026-08-02T15:48:33	SETUP	flat, price 63402.06 at H1 RESIST 63405.09 (3px away). Assess for a trade.
+2026-08-02T16:00:03	SETUP	flat, price 63428.75 at H1 RESIST 63431.55 (3px away). Assess for a trade.
+2026-08-02T16:03:03	LEVEL	broke above 63437.94 (reached 63454.57, now 63459.57) - M15 resistance and the nearest genuine upside decision point. SELL LIMIT fade rests AT the level with no offset per Rule 3.
+2026-08-02T16:08:07	LEVEL	broke below 63437.94 (reached 63437.09, now 63443.42) - Broken upward 21:03, was M15 resistance, now support. Losing it says the push toward the session high has failed.
+2026-08-02T16:13:08	SETUP	flat, price 63441.52 at H1 RESIST 63431.55 (10px away). Assess for a trade.
+2026-08-02T16:17:38	SETUP	flat, price 63434.75 at H1 RESIST 63431.55 (3px away). Assess for a trade.
+2026-08-02T16:39:39	SETUP	flat, price 63443.39 at H1 RESIST 63431.55 (12px away). Assess for a trade.
+2026-08-02T16:40:53	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-08-02T16:42:23	LEVEL	broke above 63535.83 (reached 63673.21, now 63665.72) - Session high, set 18:41. The next genuine upside decision point. A SELL LIMIT fade rests AT the level with no offset per Rule 3 - but note it is a FRESH EXTREME, so the sweep filter gives only the vacuous 10 points of clearance by construction. Do NOT chase a break per Rule 9.
+2026-08-02T16:46:03	LEVEL	broke above 63717.16 (reached 63719.78, now 63674.24) - New session high, set by the 21:42 M1 bar which ran 225 points (open 63,491.92, high 63,717.16). FRESH EXTREME - the sweep filter is vacuous here (10 points of clearance by construction), so do not read a filter pass as quality. Do NOT chase a break per Rule 9. A fade is only worth assessing on a first retest after price has LEFT this level. CAUTION: the 'reached X' figure in a LEVEL event is the price at POLL TIME, not the bar's extreme - the watcher said 63,673.21 and the daemon said 63,687.35 for this same move, both understating the true 63,717.16. Always read the M1 bar before setting a level from an event.
+2026-08-02T16:54:19	LEVEL	broke below 63535.83 (reached 63526.92, now 63546.26) - The old session high, cleared 21:42, now support. This is the breakout level - losing it means the 137-point impulse has failed. Note it was correctly NOT pre-shorted: a Rule 3 fade here would have put the stop at bid 63,545.83 and price ran straight to 63,673.
+2026-08-02T17:12:19	LEVEL	broke above 63719.78 (reached 63727.27, now 63669.69) - New session high, set by the 21:42 M1 bar which ran 225 points (open 63,491.92, high 63,717.16). FRESH EXTREME - the sweep filter is vacuous here (10 points of clearance by construction), so do not read a filter pass as quality. Do NOT chase a break per Rule 9. A fade is only worth assessing on a first retest after price has LEFT this level. CAUTION: the 'reached X' figure in a LEVEL event is the price at POLL TIME, not the bar's extreme - the watcher said 63,673.21 and the daemon said 63,687.35 for this same move, both understating the true 63,717.16. Always read the M1 bar before setting a level from an event.
+2026-08-02T17:26:50	LEVEL	broke below 63535.83 (reached 63531.32, now 63540.20) - The old session high, cleared 21:42, now support. This is the breakout level - losing it means the 137-point impulse has failed. Note it was correctly NOT pre-shorted: a Rule 3 fade here would have put the stop at bid 63,545.83 and price ran straight to 63,673.
+2026-08-02T17:29:50	SETUP	flat, price 63528.84 at H4 RESIST 63535.83 (7px away). Assess for a trade.
+2026-08-02T17:32:50	LEVEL	broke below 63474.40 (reached 63435.43, now 63447.97) - Replaces 63,535.83, which fired three times (21:54, 22:00, 22:26) with no actionable outcome - price oscillates across it and it is permanently un-fadeable long, since the probe to 63,474.40 sits 51 points beyond where a Rule 3 long's stop would rest. 63,474.40 IS that probe low: the deepest point of the pullback from the 63,727 high. Losing it is the first evidence the whole 21:42 impulse has failed, and it is far enough below to fire only on a real move.
+2026-08-02T17:35:50	LEVEL	broke below 63405.09 (reached 63354.83, now 63359.83) - H1 resistance tested three times and cleared, now deeper support. Has a KNOWN probe to 63,429.67, so a short here stays vetoed by the sweep filter.
+2026-08-02T17:39:23	LEVEL	broke below 63323.21 (reached 63291.25, now 63303.72) - Leg low from 20:26, where long #3033799553 was stopped. First structural support beneath the current decline - price has already proved it trades here.
+2026-08-02T17:44:53	LEVEL	broke above 63405.09 (reached 63460.57, now 63443.21) - FLIPPED to 'above' at 22:35 - broke to 63,354.83. H1 resistance that was tested three times, cleared, and has now failed as support. Nearest reclaim marker. A short fade here stays vetoed while the 63,429.67 probe is recent.
+2026-08-02T17:47:54	LEVEL	broke above 63474.40 (reached 63504.34, now 63422.35) - Reclaim trigger. Broke down through here at 22:32; recovering above it would say the breakdown failed. Also the ceiling of the current down-leg.
+2026-08-02T18:06:54	PENDING	order #3034220207 placed
+2026-08-02T18:06:54	LEVEL	broke below 63291.25 (reached 63283.42, now 63321.40) - LOWER BOUNDARY of the chop band - the floor of the 22:39/22:42 double probe. A decisive break here means the range has resolved downward.
+2026-08-02T18:07:43	OPENED	#3034220207 BUY 0.01 @ 63301.25 SL 63281.25 TP 63341.25 - now managing
+2026-08-02T18:08:43	CLOSED	#3034220207 (opened @ 63301.25) is gone - flat now, bid 63296.91. Look for the next setup.
+2026-08-02T18:11:43	LEVEL	broke below 63279.39 (reached 63274.76, now 63295.05) - LOWER BOUNDARY, moved down from 63,291.25 which broke at 23:08. 63,279.39 is where long #3034220207 was stopped - the deepest print of the session's base. Three probes now cluster here: 63,291.25 (22:39), 63,283.42 (23:06), 63,279.39 (23:08), each slightly deeper. That descending sequence is why a long fade in this zone keeps failing: every stop placed 10 points under the last low is inside the next probe.
+2026-08-02T18:30:16	SETUP	flat, price 63477.05 at M15 RESIST 63481.28 (4px away). Assess for a trade.
+2026-08-02T18:31:46	OPENED	#3034294887 SELL 0.01 @ 63481.28 SL 63501.28 TP 63441.28 - now managing
+2026-08-02T18:34:16	CLOSED	#3034294887 (opened @ 63481.28) is gone - flat now, bid 63500.21. Look for the next setup.
+2026-08-02T18:45:16	SETUP	flat, price 63421.53 at M15 SUPPORT 63410.10 (11px away). Assess for a trade.
+2026-08-02T19:28:51	LEVEL	broke below 63207.38 (reached 63166.14, now 63207.26) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-02T19:44:51	SETUP	flat, price 63256.89 at H4 SUPPORT 63251.06 (6px away). Assess for a trade.
+2026-08-02T19:47:51	LEVEL	broke below 63207.38 (reached 63192.72, now 63207.83) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-02T19:52:51	SETUP	flat, price 63264.16 at H4 SUPPORT 63251.06 (13px away). Assess for a trade.
+2026-08-02T20:00:21	LEVEL	broke below 63207.38 (reached 63189.21, now 63198.72) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-02T20:07:51	LEVEL	broke below 63207.38 (reached 63160.09, now 63165.65) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-02T20:18:26	SETUP	flat, price 63125.27 at H1 SUPPORT 63113.64 (12px away). Assess for a trade.
+2026-08-02T20:30:59	SETUP	flat, price 63170.67 at M15 RESIST 63184.48 (14px away). Assess for a trade.
+2026-08-02T20:37:59	SETUP	flat, price 63120.75 at H1 SUPPORT 63113.64 (7px away). Assess for a trade.
+2026-08-02T20:55:29	SETUP	flat, price 63087.21 at M15 SUPPORT 63073.45 (14px away). Assess for a trade.
+2026-08-02T21:04:07	SETUP	flat, price 63155.99 at M15 RESIST 63156.55 (1px away). Assess for a trade.
+2026-08-02T21:19:07	SETUP	flat, price 63152.10 at M15 RESIST 63152.60 (0px away). Assess for a trade.
+2026-08-02T21:31:38	SETUP	flat, price 63041.39 at H1 SUPPORT 63028.29 (13px away). Assess for a trade.
+2026-08-02T21:58:11	SETUP	flat, price 63039.05 at H1 SUPPORT 63028.29 (11px away). Assess for a trade.
+2026-08-02T22:16:35	SETUP	flat, price 63018.17 at H1 SUPPORT 63005.71 (12px away). Assess for a trade.
+2026-08-02T23:18:04	SETUP	flat, price 62846.16 at M15 RESIST 62861.55 (15px away). Assess for a trade.
+2026-08-02T23:30:04	SETUP	flat, price 62890.12 at M15 RESIST 62898.94 (9px away). Assess for a trade.
+2026-08-02T23:47:04	SETUP	flat, price 62873.23 at M15 SUPPORT 62868.18 (5px away). Assess for a trade.
+2026-08-03T00:07:35	SETUP	flat, price 62696.43 at H4 SUPPORT 62682.92 (14px away). Assess for a trade.
+2026-08-03T00:20:05	SETUP	flat, price 62781.50 at M15 RESIST 62791.19 (10px away). Assess for a trade.
+2026-08-03T00:27:05	SETUP	flat, price 62778.16 at M15 RESIST 62791.19 (13px away). Assess for a trade.
+2026-08-03T00:35:35	SETUP	flat, price 62693.14 at H4 SUPPORT 62682.92 (10px away). Assess for a trade.
+2026-08-03T00:48:05	SETUP	flat, price 62768.28 at M15 RESIST 62772.47 (4px away). Assess for a trade.
+2026-08-03T01:06:35	SETUP	flat, price 62779.33 at H1 RESIST 62793.24 (14px away). Assess for a trade.
+2026-08-03T01:16:35	SETUP	flat, price 62778.44 at H1 RESIST 62793.24 (15px away). Assess for a trade.
+2026-08-03T01:20:05	SETUP	flat, price 62738.66 at M15 SUPPORT 62730.80 (8px away). Assess for a trade.
+2026-08-03T01:36:05	SETUP	flat, price 62693.38 at H4 SUPPORT 62682.92 (10px away). Assess for a trade.
+2026-08-03T01:47:06	SETUP	flat, price 62565.51 at M15 SUPPORT 62551.27 (14px away). Assess for a trade.
+2026-08-03T01:56:06	SETUP	flat, price 62567.27 at M15 SUPPORT 62551.27 (16px away). Assess for a trade.
+2026-08-03T02:01:36	SETUP	flat, price 62526.69 at H1 SUPPORT 62519.28 (7px away). Assess for a trade.
+2026-08-03T02:10:06	SETUP	flat, price 62529.58 at H1 SUPPORT 62519.28 (10px away). Assess for a trade.
+2026-08-03T02:16:36	SETUP	flat, price 62528.55 at H1 SUPPORT 62519.28 (9px away). Assess for a trade.
+2026-08-03T02:27:06	SETUP	flat, price 62583.80 at M15 RESIST 62592.84 (9px away). Assess for a trade.
+2026-08-03T02:30:36	SETUP	flat, price 62571.92 at M15 RESIST 62585.03 (13px away). Assess for a trade.
+2026-08-03T02:41:36	SETUP	flat, price 62570.99 at M15 RESIST 62585.03 (14px away). Assess for a trade.
+2026-08-03T02:52:06	SETUP	flat, price 62531.70 at H1 SUPPORT 62519.28 (12px away). Assess for a trade.
+2026-08-03T03:08:37	SETUP	flat, price 62472.92 at H4 SUPPORT 62459.93 (13px away). Assess for a trade.
+2026-08-03T03:17:07	SETUP	flat, price 62430.55 at M15 SUPPORT 62422.17 (8px away). Assess for a trade.
+2026-08-03T03:35:07	SETUP	flat, price 62248.49 at M15 SUPPORT 62236.47 (12px away). Assess for a trade.
+2026-08-03T03:45:04	SETUP	flat, price 62350.24 at M15 RESIST 62364.44 (14px away). Assess for a trade.
+2026-08-03T04:05:39	SETUP	flat, price 62466.47 at H4 SUPPORT 62459.93 (7px away). Assess for a trade.
+2026-08-03T04:16:09	SETUP	flat, price 62501.93 at M15 RESIST 62513.27 (11px away). Assess for a trade.
+2026-08-03T04:30:39	SETUP	flat, price 62551.74 at H1 RESIST 62567.77 (16px away). Assess for a trade.
+2026-08-03T05:00:40	SETUP	flat, price 62782.54 at H1 RESIST 62785.48 (3px away). Assess for a trade.
+2026-08-03T05:28:40	SETUP	flat, price 62688.68 at M15 SUPPORT 62672.24 (16px away). Assess for a trade.
+2026-08-03T05:47:40	SETUP	flat, price 62590.78 at M15 SUPPORT 62574.75 (16px away). Assess for a trade.
+2026-08-03T05:56:40	SETUP	flat, price 62652.11 at M15 RESIST 62661.43 (9px away). Assess for a trade.
+2026-08-03T06:08:10	SETUP	flat, price 62541.71 at H1 SUPPORT 62525.04 (17px away). Assess for a trade.
+2026-08-03T06:20:10	SETUP	flat, price 62649.99 at M15 RESIST 62663.60 (14px away). Assess for a trade.
+2026-08-03T06:34:41	SETUP	flat, price 62682.46 at M15 RESIST 62696.64 (14px away). Assess for a trade.
+2026-08-03T06:55:41	SETUP	flat, price 62536.80 at H1 SUPPORT 62525.04 (12px away). Assess for a trade.
+2026-08-03T07:12:12	SETUP	flat, price 62454.62 at H1 SUPPORT 62447.91 (7px away). Assess for a trade.
+2026-08-03T07:23:12	SETUP	flat, price 62535.53 at M15 RESIST 62534.74 (1px away). Assess for a trade.
+2026-08-03T07:45:12	SETUP	flat, price 62680.92 at H1 RESIST 62697.30 (16px away). Assess for a trade.
+2026-08-03T08:04:42	SETUP	flat, price 62615.72 at M15 SUPPORT 62600.15 (16px away). Assess for a trade.
+2026-08-03T08:13:12	SETUP	flat, price 62703.96 at H1 RESIST 62719.48 (16px away). Assess for a trade.
+2026-08-03T08:26:07	SETUP	flat, price 62771.28 at H4 RESIST 62785.48 (14px away). Assess for a trade.
+2026-08-03T08:34:07	SETUP	flat, price 62637.51 at M15 SUPPORT 62631.20 (6px away). Assess for a trade.
+2026-08-03T08:38:37	SETUP	flat, price 62703.40 at H1 RESIST 62719.48 (16px away). Assess for a trade.
+2026-08-03T08:46:37	SETUP	flat, price 62771.39 at H4 RESIST 62785.48 (14px away). Assess for a trade.
+2026-08-03T08:49:37	SETUP	flat, price 62858.65 at M15 RESIST 62860.60 (2px away). Assess for a trade.
+2026-08-03T09:00:07	SETUP	flat, price 63302.21 at H1 RESIST 63311.55 (9px away). Assess for a trade.
+2026-08-03T09:10:37	SETUP	flat, price 63306.58 at H1 RESIST 63311.55 (5px away). Assess for a trade.
+2026-08-03T09:14:37	LEVEL	broke below 63207.38 (reached 63203.08, now 63238.81) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-03T09:20:37	LEVEL	broke below 63207.38 (reached 63139.54, now 63144.54) - SOLE DOWNSIDE MARKER. Stopped chasing the low with a level at 23:11 - the boundary had been moved three times in 30 minutes (63,323.21, 63,291.25, 63,279.39) and each move was immediately broken, because the base is stair-stepping DOWN: 63,291.25 at 22:39, 63,283.42 at 23:06, 63,279.39 at 23:08, 63,274.76 at 23:11, steps of 4-8 points. Re-anchoring on every new low is churn that generates a wake per step and tells me nothing I do not already know. H1 support 63,207.38 is structural, roughly 70 points below the leading edge, so it only fires if the decline becomes real rather than continuing to grind. WHILE THE STAIR-STEP CONTINUES, no long fade in the 63,27x-63,29x zone is worth taking: any stop 10 points under the latest low is inside the range the sequence is walking through.
+2026-08-03T09:30:07	LEVEL	broke above 63727.27 (reached 63727.59, now 63666.14) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T09:33:07	SETUP	flat, price 63709.04 at M15 RESIST 63723.17 (14px away). Assess for a trade.
+2026-08-03T09:38:07	LEVEL	broke above 63727.27 (reached 63737.84, now 63716.66) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T09:44:37	SETUP	flat, price 63726.20 at M15 RESIST 63723.17 (3px away). Assess for a trade.
+2026-08-03T09:47:37	LEVEL	broke above 63727.27 (reached 63735.47, now 63675.42) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T09:50:37	LEVEL	broke above 63727.27 (reached 63745.68, now 63734.48) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T09:55:08	SETUP	flat, price 63834.77 at M15 RESIST 63844.41 (10px away). Assess for a trade.
+2026-08-03T10:00:08	SETUP	flat, price 63906.65 at H1 RESIST 63923.34 (17px away). Assess for a trade.
+2026-08-03T10:22:07	SETUP	flat, price 63705.85 at M15 SUPPORT 63685.24 (21px away). Assess for a trade.
+2026-08-03T10:32:37	LEVEL	broke above 63727.27 (reached 63729.75, now 63708.58) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T10:38:37	LEVEL	broke above 63727.27 (reached 63746.85, now 63748.00) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T10:56:37	SETUP	flat, price 63647.49 at M15 SUPPORT 63630.65 (17px away). Assess for a trade.
+2026-08-03T11:02:37	LEVEL	broke above 63727.27 (reached 63737.08, now 63742.08) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T11:05:37	SETUP	flat, price 63780.37 at M15 RESIST 63777.29 (3px away). Assess for a trade.
+2026-08-03T11:13:37	LEVEL	broke above 63727.27 (reached 63750.66, now 63742.81) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T11:16:37	SETUP	flat, price 63827.88 at M15 RESIST 63829.00 (1px away). Assess for a trade.
+2026-08-03T11:23:07	SETUP	flat, price 63821.49 at M15 RESIST 63829.00 (8px away). Assess for a trade.
+2026-08-03T11:38:07	SETUP	flat, price 63743.84 at M15 SUPPORT 63722.35 (21px away). Assess for a trade.
+2026-08-03T11:45:31	LEVEL	broke above 63727.27 (reached 63734.66, now 63711.20) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T12:02:01	SETUP	flat, price 63683.20 at M15 SUPPORT 63672.14 (11px away). Assess for a trade.
+2026-08-03T12:05:31	LEVEL	broke above 63727.27 (reached 63735.88, now 63714.84) - Session high, 22:12. UPPER BOUNDARY of the chop band. Only a break here means price has left the range it has been thrashing inside since 22:12 - that is worth a wake; crossings inside the band are not.
+2026-08-03T12:15:01	SETUP	flat, price 63782.42 at M15 RESIST 63796.16 (14px away). Assess for a trade.
+2026-08-03T12:24:31	SETUP	flat, price 63912.25 at H4 RESIST 63923.37 (11px away). Assess for a trade.
+2026-08-03T12:28:01	SETUP	flat, price 63797.03 at M15 RESIST 63796.16 (1px away). Assess for a trade.
+2026-08-03T12:32:02	SETUP	flat, price 63759.29 at M15 SUPPORT 63746.93 (12px away). Assess for a trade.
+2026-08-03T12:40:32	SETUP	flat, price 63758.65 at M15 SUPPORT 63746.93 (12px away). Assess for a trade.
+2026-08-03T13:02:03	SETUP	flat, price 63817.10 at M15 SUPPORT 63800.28 (17px away). Assess for a trade.
+2026-08-03T13:13:33	SETUP	flat, price 63920.96 at H4 RESIST 63923.37 (2px away). Assess for a trade.
+2026-08-03T13:26:03	SETUP	flat, price 63823.23 at M15 SUPPORT 63802.27 (21px away). Assess for a trade.
+2026-08-03T13:41:03	SETUP	flat, price 63756.05 at M15 SUPPORT 63738.31 (18px away). Assess for a trade.
+2026-08-03T13:47:03	SETUP	flat, price 63752.72 at M15 SUPPORT 63741.20 (12px away). Assess for a trade.
+2026-08-03T13:54:33	SETUP	flat, price 63850.16 at M15 RESIST 63864.41 (14px away). Assess for a trade.
+2026-08-03T14:01:08	SETUP	flat, price 63837.03 at M15 RESIST 63858.23 (21px away). Assess for a trade.
+2026-08-03T14:09:38	SETUP	flat, price 63840.78 at M15 RESIST 63858.23 (17px away). Assess for a trade.
+2026-08-03T14:15:12	SETUP	flat, price 63872.61 at M15 RESIST 63874.66 (2px away). Assess for a trade.
+2026-08-03T14:30:12	SETUP	flat, price 63926.79 at H4 RESIST 63923.37 (3px away). Assess for a trade.
+2026-08-03T14:36:42	SETUP	flat, price 63918.85 at H4 RESIST 63923.37 (5px away). Assess for a trade.
+2026-08-03T14:37:12	PENDING	order #3038789789 placed
+2026-08-03T14:39:42	LEVEL	broke below 63852.43 (reached 63837.84, now 63850.26) - M15 support. A decisive break-and-hold below weakens bounce odds; if filled short, it is on the path to TP.
+2026-08-03T14:49:12	LEVEL	broke below 63852.43 (reached 63852.38, now 63862.92) - M15 support. A decisive break-and-hold below weakens bounce odds; if filled short, it is on the path to TP.
+2026-08-03T15:20:13	LEVEL	broke above 63923.37 (reached 63933.70, now 63938.34) - H4 resistance tap to fill SELL_LIMIT 63,923.37. If traded, expect order fill.
+2026-08-03T15:23:13	LEVEL	broke above 63943.37 (reached 63952.59, now 63910.77) - Invalidation for the short fade (20-point SL). If accepted above here, resistance has failed.
+2026-08-03T15:26:13	SETUP	flat, price 63882.20 at M15 RESIST 63896.96 (15px away). Assess for a trade.
+2026-08-03T15:45:13	SETUP	flat, price 63854.47 at M15 SUPPORT 63844.05 (10px away). Assess for a trade.
+2026-08-03T15:49:43	LEVEL	broke below 63771.88 (reached 63741.38, now 63746.38) - H1 support, 124 points below. A BUY LIMIT fade rests at level + spread per Rule 3 so the fill lands here.
+2026-08-03T16:01:13	SETUP	flat, price 63710.68 at H1 SUPPORT 63702.65 (8px away). Assess for a trade.
+2026-08-03T16:02:13	OPENED	#3038999911 BUY 0.01 @ 63712.65 SL 63692.65 TP 63752.65 - now managing
+2026-08-03T16:02:43	CLOSED	#3038999911 (opened @ 63712.65) is gone - flat now, bid 63684.93. Look for the next setup.
+2026-08-03T16:37:53	PENDING	order #3039017931 placed
+2026-08-03T16:49:23	LEVEL	broke below 63587.33 (reached 63573.88, now 63583.88) - H4 support. Deeper structure; fires only if the decline becomes real.
+2026-08-03T16:52:23	SETUP	flat, price 63601.91 at H4 SUPPORT 63587.33 (15px away). Assess for a trade.
+2026-08-03T17:02:23	SETUP	flat, price 63489.67 at H1 SUPPORT 63477.47 (12px away). Assess for a trade.
+2026-08-03T17:15:53	SETUP	flat, price 63497.55 at H1 SUPPORT 63477.47 (20px away). Assess for a trade.
+2026-08-03T17:18:54	SETUP	flat, price 63608.45 at H4 SUPPORT 63587.33 (21px away). Assess for a trade.
+2026-08-03T17:22:24	SETUP	flat, price 63492.30 at H1 SUPPORT 63477.47 (15px away). Assess for a trade.
+2026-08-03T17:45:24	SETUP	flat, price 63450.03 at M15 SUPPORT 63428.80 (21px away). Assess for a trade.
+2026-08-03T17:46:24	PENDING	order #3039119876 placed
+2026-08-03T17:48:24	LEVEL	broke above 63477.47 (reached 63487.64, now 63484.43) - H1 support that price has now broken BELOW - so this is a reclaim trigger, not a fade level. Getting back above it says the decline has stalled. A long fade here stays vetoed while the 63,320.41 run low stands, since a Rule 3 stop would sit at 63,467.47, well inside that.
+2026-08-03T18:52:00	SETUP	flat, price 63419.57 at M15 SUPPORT 63400.13 (19px away). Assess for a trade.
+2026-08-03T18:53:00	PENDING	order #3039221733 placed
+2026-08-03T19:15:30	OPENED	#3039221733 BUY 0.01 @ 63410.13 SL 63390.13 TP 63450.13 - now managing
+2026-08-03T19:16:00	CLOSED	#3039221733 (opened @ 63410.13) is gone - flat now, bid 63360.83. Look for the next setup.
+2026-08-03T19:19:30	SETUP	flat, price 63340.10 at H4 SUPPORT 63320.41 (20px away). Assess for a trade.
+2026-08-03T19:20:30	PENDING	order #3039297691 placed
+2026-08-03T19:34:30	OPENED	#3039297691 BUY 0.01 @ 63330.41 SL 63310.41 TP 63370.41 - now managing
+2026-08-03T19:35:30	CLOSED	#3039297691 (opened @ 63330.41) is gone - flat now, bid 63294.87. Look for the next setup.
+2026-08-03T19:38:30	LEVEL	broke below 63320.41 (reached 63283.84, now 63291.26) - The run low, and the ONLY downside marker - every level the detector reports is now above price, so there is no structure beneath us. Superseded 63,430.00 within three minutes of setting it, which is the third time today a marker chasing a falling low was broken before it could be useful. Anchoring on the actual low instead of guessing below it: a break here means the decline extends past its own extreme, which is the only downside event worth a wake.
+2026-08-03T19:42:31	LEVEL	broke below 63280.27 (reached 63278.92, now 63284.16) - THE RUN LOW, 00:35 UTC. Anchored ON the low rather than guessed below it: three markers today were placed just under a falling low and each was broken within minutes, which produced a wake per step and no information. A break of this one means the decline has extended past its own extreme, which is the only downside event worth waking for.
+2026-08-03T19:50:31	LEVEL	broke above 63400.13 (reached 63416.00, now 63421.00) - H1 support that price has fallen BELOW, so it now acts as resistance 112 points overhead. A reclaim above it would say the decline has stalled.

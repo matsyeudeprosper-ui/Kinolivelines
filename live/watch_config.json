@@ -4,40 +4,37 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63575,
+      "price": 63560.81,
       "dir": "above",
-      "note": "H4 resistance and session high. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40. Avoid buy continuation per Rule 9 on H1/H4 breaks."
+      "note": "H1 resistance, 273 points overhead. The only genuine upside decision point with real separation. Dropped 63,972.48 as unreachable at 1.86x ATR-H1."
     },
     {
-      "price": 63468.88,
-      "dir": "above",
-      "note": "H1/H4 resistance zone. If price returns while flat, consider SELL LIMIT fade (fills on bid) with SL 20, TP 40; cancel if H1/H4 accept above 63,469\u201363,575."
-    },
-    {
-      "price": 63175.03,
-      "dir": "above",
-      "note": "H4 resistance from briefing. If tagged while flat, consider SELL LIMIT fade with SL 20, TP 40; avoid buy continuation per Rule 9."
-    },
-    {
-      "price": 63074.98,
-      "dir": "above",
-      "note": "M15 resistance (current pending SELL LIMIT placed here). If acceptance above, premise weakens; avoid chasing buys per Rule 9 on H1/H4."
-    },
-    {
-      "price": 63082.91,
+      "price": 63400.13,
       "dir": "below",
-      "note": "H1 resistance reclaim logic: if price pops above then drops back below, consider SELL LIMIT fade on first underside retest at 63,082.91 (fills on bid). SL 20, TP 40. Cancel if H1 accepts above."
+      "note": "H1 support. Reclaimed from below at 00:50, so it is support again rather than a reclaim trigger. Losing it would say the bounce failed. A long fade here stays vetoed while the 63,276 low is recent - a Rule 3 stop would sit at 63,390.13, well inside it."
     },
     {
-      "price": 63043,
-      "dir": "above",
-      "note": "Intraday pivot low twice-tested. If reclaimed from below while flat, consider SELL LIMIT fade of underside test at 63,043 (fills on bid) with SL 20, TP 40; avoid buy continuation per Rule 9 on H1/H4."
-    },
-    {
-      "price": 62930.38,
+      "price": 63320.41,
       "dir": "below",
-      "note": "H4 support from briefing. If tagged while flat, consider BUY LIMIT fade at support + spread per Rule 3. SL 20, TP 40; cancel if H4 acceptance below."
+      "note": "H4 support, back below price after the 00:50 reclaim. Second line of support beneath 63,400.13."
+    },
+    {
+      "price": 63246.0,
+      "dir": "below",
+      "note": "Run low 63,280.27 MINUS 0.25x ATR(M15)=120, i.e. 30 points of buffer. Both naive placements failed today: anchored just BELOW a falling low, three markers were outrun within minutes; anchored exactly ON the low, it fired twice on 1.4-point breaks that reversed immediately. A fixed fraction of ATR is the middle - it ignores noise around the extreme but still fires on a genuine extension, and it scales with volatility instead of being a guess."
     }
   ],
-  "max_hold_minutes": 120
+  "max_hold_minutes": 120,
+  "_rebuilt": "2026-08-04 00:38. Every level the detector reports is ABOVE price again - there is no structure underneath, so three of the four markers are reclaim triggers and the fourth is the run low itself. ATR(M15) 120.",
+  "_sweep_filter": {
+    "status": "UNDER REVIEW - raised with the user 2026-08-02 22:30, no ruling yet. Behaviour UNCHANGED until the user rules.",
+    "rule": "Do not fade a level L when a KNOWN probe sits beyond the stop. The stop is 10 points of BID movement from the level - L-10 for a long, L+10 for a short - NOT 20.",
+    "why": "Rule 3 lands the fill on L, but Rule 4 sets the stop 20 from the ENTRY PRICE, on the opposite side of the book. At fill the position is already one spread underwater, so only half the nominal stop remains.",
+    "known_weaknesses": [
+      "VACUOUS on fresh extremes - the level IS the recent high or low, so clearance is always 10 points by construction.",
+      "'Recent' is UNDEFINED and has decided the answer on several trades.",
+      "It admits mainly the fresh extremes where it says nothing, and vetoes almost any level price has already tested."
+    ]
+  },
+  "_run_record": "17 trades since the session took over, 17 losses, equity 954.78 -> 951.56. At the true 1-in-6 win rate zero wins in 17 is a 4.5% outcome - still variance. TWENTY straight losses (2.6%) is the preregistered point at which that explanation is abandoned and the entry is treated as worse than the model assumes."
 }
