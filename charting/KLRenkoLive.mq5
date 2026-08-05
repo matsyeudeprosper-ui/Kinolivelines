@@ -24,6 +24,7 @@ input color  InpUpColor  = clrSteelBlue;   // forming zone, upward
 input color  InpDnColor  = clrIndianRed;   // forming zone, downward
 input color  InpLineCol  = clrGold;        // live price line
 input bool   InpFill     = false;          // solid block (true) or outline (false)
+input bool   InpRebuild  = false;          // wipe and rebuild this custom symbol
 input bool   InpShowBots = true;           // draw the two bots' live trades
 input color  InpPlainCol = clrDodgerBlue;  // plain bot   (magic 770404)
 input color  InpRecovCol = clrOrange;      // harvest bot (magic 770405)
@@ -148,6 +149,17 @@ int OnInit()
    if(StringFind(_Symbol, ".RENKO") >= 0)      g_csv = "kl_renko_bars.csv";
    else if(StringFind(_Symbol, ".BRK") >= 0)   g_csv = "kl_custom_bars.csv";
    else                                        g_csv = "";   // real symbol: draw only
+
+   // Wipe and rebuild. The feed only ADDS bars, it never removes them, so after
+   // a filter-rule change the chart holds a mix: bars the old rule kept sitting
+   // next to bars the new rule keeps. Nothing marks them apart and the chart
+   // looks like neither rule. Tick this once after any rule change.
+   if(InpRebuild && g_csv != "")
+     {
+      CustomRatesDelete(_Symbol, 0, D'2100.01.01');
+      g_lastPushed = 0;                     // so PushNew re-sends everything
+      PrintFormat("KLRenkoLive: cleared %s and rebuilding from %s", _Symbol, g_csv);
+     }
 
    EventSetMillisecondTimer(1000);          // the custom symbol gets no ticks,
    if(g_csv != "")                          // so a timer is the only clock here

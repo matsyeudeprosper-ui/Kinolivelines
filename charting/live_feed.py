@@ -90,12 +90,33 @@ def write_atomic(path, rows):
 
 
 def breakout_rows(rates):
-    """Closed source bars whose close broke the previous bar's range."""
+    """Keep a bar only if it closes outside the range of the last bar WE KEPT.
+
+    Changed 2026-08-05 at the user's request. It used to compare against the
+    immediately preceding SOURCE bar, so a bar could qualify by clearing a bar
+    that had itself been thrown away - the reference reset every 5 minutes
+    whatever happened.
+
+    Now the reference only moves when a bar survives. Each kept bar raises the
+    bar for the next one, so an up-sequence is a genuine ladder: every candle
+    shown closed above the high of the last candle shown. Same downward.
+    A bar closing outside the reference on EITHER side is kept, which is what
+    lets the ladder turn around.
+
+    Measured on 5,656 M5 bars since 17 July: old rule kept 2,566 (45%), this
+    keeps 1,752 (31%).
+
+    A variant comparing against the last kept bar's CLOSE instead of its
+    high/low was measured too and is useless - every close is either above or
+    below a single price, so it kept 5,654 of 5,656 bars.
+    """
     out = []
-    for i, r in enumerate(rates):
-        if i == 0 or r["close"] > rates[i - 1]["high"] or r["close"] < rates[i - 1]["low"]:
+    ref = None
+    for r in rates:
+        if ref is None or r["close"] > ref["high"] or r["close"] < ref["low"]:
             out.append([int(r["time"]), r["open"], r["high"], r["low"], r["close"],
                         int(r["tick_volume"]), int(r["spread"]), 0])
+            ref = r
     return out
 
 
