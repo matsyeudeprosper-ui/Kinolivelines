@@ -202,36 +202,85 @@ position is *not* closed — each later reversal adds another 0.01 lot up to a c
 cycle's own P&L returns to zero the basket closes; if it would exceed the cap it closes at
 a loss.
 
-### The bug
+### Three separate defects, each found by a check rather than by reading code
 
-Entries were priced at the **next** bar's open, then the take-profit and stop were tested
-against the **signal bar** — the bar that closed before the trade existed. Barriers were
-being checked against a bar the position was not alive for, in both directions.
+**1. Alignment.** Entries were priced at the **next** bar's open, then the take-profit and
+stop were tested against the **signal bar** — the bar that closed before the trade existed.
+One variable changed, everything else identical:
 
-One variable changed, everything else identical, invariants checked
-(opened + skipped = 12,520 signals in both runs):
-
-| capped recovery, cap 4, 7.6y H1 | final | worst drawdown | lowest equity |
+| capped recovery, cap 4 | final | worst drawdown | lowest equity |
 |---|---|---|---|
 | original alignment | $3,558 | $384 | $1,000 |
-| **corrected** | **$415** | **$966** | **$204** |
+| corrected | $415 | $966 | $204 |
+
+**2. Stale recovery flag.** When a recovery basket emptied entirely on take-profits, `rec`
+was never reset, so the next cycle inherited the previous cycle's recovery target. The live
+bot does not have this bug (`if not ps: recovery = False`). Caught by a P&L reconciliation
+invariant — sum of every cycle's P&L must equal the change in equity — not by inspection.
+
+**3. THE DATA WAS NOT HOURLY.** See trap 16. Exness serves BTCUSDm H1 with **365 bars for
+all of 2019** and 366 for 2020 — one bar per *day*, dressed as hours. A 5-brick take profit
+tested against a daily bar's high/low fires almost always. Every "7.6 years of H1" figure
+above, in both directions, was partly built on that.
+
+### The trustworthy run: 2022-01-01 onward, ~100% hourly coverage, 4.6 years
+
+Both invariants pass (signals: 9,221 opened + 1,389 skipped + 1 unfillable = 10,611;
+P&L: cycles −$426.12 = equity change −$426.12).
+
+| | |
+|---|---|
+| $1,000 → | **$573.88 (−43%)** |
+| lowest equity | $352.31 |
+| worst drawdown | $706 (**66.7%** from peak) |
+| expectancy | **−$0.11 per cycle** |
+| months | 56 · **57% profitable** · median **+$7.07** · average **−$7.61** |
+| signals skipped while holding a basket | **1,389 (13.1%)** |
+
+**Why it loses, in one line.** 93% of cycles win about **+$2.04**; 7% hit the cap and lose
+about **−$27.68**. 0.93 × 2.04 = 1.90 against 0.07 × 27.68 = 1.94. The losses win by four
+cents a cycle, 3,790 times.
+
+**The shape is the trap, not the size.** Median month **positive**, average month
+**negative**. More than half of all months make money and a few take it all back. Anyone
+running this would feel it working almost until it wasn't.
 
 ### Survival is a lucky cell, not a plateau
 
-| cap | outcome, corrected |
-|---|---|
-| none | **died** at 3.5 years |
-| 2 | **died** at 6.2 years |
-| 3 | survived at $177 — equity reached **$3** |
-| 4 | survived at $415, lowest $204 |
-| 5 | **died** at 6.5 years |
-| 6 | **died** at 6.9 years |
-| 8 | **died** at 6.2 years |
-| 12 | **died** at 5.2 years |
+On the clean 2022+ data, **seven of eight cap settings reach zero**:
 
-Six of eight settings reach zero. The retracted claim called caps 2–12 "a broad plateau,
-not a tuned cell" and used that as evidence of robustness. It is the reverse: one
-surviving cell surrounded by ruin, which is what noise looks like.
+| cap | outcome |
+|---|---|
+| none | **died** 2022-06-13 |
+| 2 | **died** 2025-03-05 |
+| 3 | **died** 2024-12-05 |
+| 4 | survived at $573.88, lowest $352.31 |
+| 5 | **died** 2024-11-13 |
+| 6 | **died** 2024-11-11 |
+| 8 | **died** 2023-10-23 |
+| 12 | **died** 2023-03-17 |
+
+The retracted claim called caps 2–12 "a broad plateau, not a tuned cell" and used it as
+evidence of robustness. It is one surviving cell surrounded by ruin — and the survivor is
+the setting that happens to be running live.
+
+<details><summary>the earlier 7.6y figures, kept only to show what the bad data did</summary>
+
+| cap | outcome on the contaminated 7.6y series |
+|---|---|
+| none | died at 3.5 years |
+| 2 | died at 6.2 years |
+| 3 | survived at $177 — equity reached $3 |
+| 4 | survived at $415, lowest $204 |
+| 5 | died at 6.5 years |
+| 6 | died at 6.9 years |
+| 8 | died at 6.2 years |
+| 12 | died at 5.2 years |
+
+Same qualitative answer as the clean run, reached partly through daily bars pretending to
+be hourly. Agreement between a contaminated series and a clean one is luck, not validation.
+
+</details>
 
 ### The plain version is not merely edgeless, it is untestable
 
@@ -343,6 +392,20 @@ printed by every study that has a mirror arm.
 **12. One instrument's costs applied to another.** BTC's $10 spread was applied to ETH,
 which trades near $1,900 with a $1.00 spread, inflating its cost tenfold and making every
 ETH figure in that run meaningless.
+
+**16. A timeframe that is not the timeframe it says it is.** `copy_rates_from_pos` on
+BTCUSDm H1 returns **45,217 bars spanning 7.6 years** — and it is nothing like hourly for
+most of that. Coverage by year: 2019 **365 bars (4.2%)**, 2020 **366 (4.2%)**, 2021 4,233
+(48%), 2022 onward ~100%. The early years are **one bar per day**, served under an H1
+label, with no error and no gap flag. Barrier-based tests are destroyed by this: a 5-brick
+take profit checked against a *daily* bar's high and low fires almost every time, so those
+years manufacture wins. Three successive versions of the same study quoted "7.6 years of
+H1" — the number of bars looked right, and nobody asked what was *in* them.
+
+*Check coverage before quoting a span.* Bars ÷ hours-in-window, per year, plus the
+distribution of gaps between consecutive bars. `study/renko_clean.py` prints both. And note
+the near-miss: the contaminated series and the clean one happened to agree on the verdict.
+Agreement between a broken measurement and a good one is luck, not corroboration.
 
 **15. Barriers tested on the bar before the trade existed.** The single most expensive
 error in this project. A signal on bar *j* was filled at `open[j+1]`, and the take-profit
