@@ -24,8 +24,14 @@ input color  InpUpColor  = clrSteelBlue;   // forming zone, upward
 input color  InpDnColor  = clrIndianRed;   // forming zone, downward
 input color  InpLineCol  = clrGold;        // live price line
 input bool   InpFill     = false;          // solid block (true) or outline (false)
+input bool   InpShowBots = true;           // draw the two bots' live trades
+input color  InpPlainCol = clrDodgerBlue;  // plain bot   (magic 770404)
+input color  InpRecovCol = clrOrange;      // harvest bot (magic 770405)
 
-#define PFX "KLRL_"
+#define PFX  "KLRL_"
+#define TPFX "KLRL_T_"                     // trade objects, cleaned separately
+#define MAGIC_PLAIN 770404
+#define MAGIC_RECOV 770405
 
 //--- this indicator ALSO feeds the chart --------------------------------
 // Originally the feeding was a separate MQL5 Service. That needed the user to
@@ -36,6 +42,104 @@ input bool   InpFill     = false;          // solid block (true) or outline (fal
 // depends on it now.
 string g_csv = "";
 datetime g_lastPushed = 0;
+
+//+------------------------------------------------------------------+
+//| Draw the two bots' open trades, and return a text block for the   |
+//| corner readout.                                                    |
+//|                                                                    |
+//| WHY THIS IS HAND-DRAWN. The bots trade BTCUSDm. This chart is a     |
+//| CUSTOM symbol built from BTCUSDm prices, so MT5 shows no position   |
+//| markers on it at all - as far as the terminal is concerned there is |
+//| nothing open on this instrument. The vertical price scale is the    |
+//| same though, so a horizontal line at an entry price lands exactly   |
+//| where it belongs. Time is not usable: brick timestamps are the      |
+//| moment a brick CLOSED, not a clock, so entry arrows would sit in    |
+//| the wrong column. Lines only, no arrows.                            |
+//|                                                                    |
+//| Reads positions. Sends nothing.                                     |
+//+------------------------------------------------------------------+
+string DrawBotTrades()
+  {
+   // clear last pass - positions close and their lines must go with them
+   ObjectsDeleteAll(0, TPFX);
+   if(!InpShowBots) return("");
+
+   int    nP = 0, nR = 0;
+   double pP = 0.0, pR = 0.0;
+   int    k  = 0;
+
+   for(int i = PositionsTotal() - 1; i >= 0; i--)
+     {
+      ulong tk = PositionGetTicket(i);
+      if(tk == 0 || !PositionSelectByTicket(tk))          continue;
+      if(PositionGetString(POSITION_SYMBOL) != InpSource) continue;
+      long mg = PositionGetInteger(POSITION_MAGIC);
+      if(mg != MAGIC_PLAIN && mg != MAGIC_RECOV)          continue;
+
+      bool   recov = (mg == MAGIC_RECOV);
+      color  col   = recov ? InpRecovCol : InpPlainCol;
+      double open  = PositionGetDouble(POSITION_PRICE_OPEN);
+      double tp    = PositionGetDouble(POSITION_TP);
+      double prof  = PositionGetDouble(POSITION_PROFIT);
+      bool   isBuy = (PositionGetInteger(POSITION_TYPE) == POSITION_TYPE_BUY);
+
+      if(recov) { nR++; pR += prof; } else { nP++; pP += prof; }
+
+      string nm = TPFX + "e" + IntegerToString(k);
+      ObjectCreate(0, nm, OBJ_HLINE, 0, 0, open);
+      ObjectSetInteger(0, nm, OBJPROP_COLOR, col);
+      ObjectSetInteger(0, nm, OBJPROP_WIDTH, 2);
+      ObjectSetInteger(0, nm, OBJPROP_STYLE, STYLE_SOLID);
+      ObjectSetInteger(0, nm, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, nm, OBJPROP_BACK, false);
+      ObjectSetString (0, nm, OBJPROP_TOOLTIP,
+                       StringFormat("%s %s %.2f  P&L %+.2f",
+                                    recov ? "HARVEST" : "plain",
+                                    isBuy ? "BUY" : "SELL", open, prof));
+      k++;
+
+      if(tp > 0.0)
+        {
+         string tn = TPFX + "t" + IntegerToString(k);
+         ObjectCreate(0, tn, OBJ_HLINE, 0, 0, tp);
+         ObjectSetInteger(0, tn, OBJPROP_COLOR, col);
+         ObjectSetInteger(0, tn, OBJPROP_WIDTH, 1);
+         ObjectSetInteger(0, tn, OBJPROP_STYLE, STYLE_DOT);
+         ObjectSetInteger(0, tn, OBJPROP_SELECTABLE, false);
+         ObjectSetString (0, tn, OBJPROP_TOOLTIP,
+                          StringFormat("%s target %.2f",
+                                       recov ? "HARVEST" : "plain", tp));
+         k++;
+        }
+     }
+
+   // today's realised, per bot, straight from deal history
+   double rP = 0.0, rR = 0.0;
+   int    cP = 0,   cR = 0;
+   datetime from = TimeCurrent() - 86400 * 3;
+   if(HistorySelect(from, TimeCurrent() + 3600))
+     {
+      for(int d = HistoryDealsTotal() - 1; d >= 0; d--)
+        {
+         ulong dt = HistoryDealGetTicket(d);
+         if(dt == 0) continue;
+         if(HistoryDealGetString(dt, DEAL_SYMBOL) != InpSource)      continue;
+         if(HistoryDealGetInteger(dt, DEAL_ENTRY) != DEAL_ENTRY_OUT) continue;
+         long mg = HistoryDealGetInteger(dt, DEAL_MAGIC);
+         double pr = HistoryDealGetDouble(dt, DEAL_PROFIT)
+                   + HistoryDealGetDouble(dt, DEAL_SWAP)
+                   + HistoryDealGetDouble(dt, DEAL_COMMISSION);
+         if(mg == MAGIC_RECOV)      { rR += pr; cR++; }
+         else if(mg == MAGIC_PLAIN) { rP += pr; cP++; }
+        }
+     }
+
+   return(StringFormat(
+      "HARVEST  %d open  floating %+.2f   |  closed %d  %+.2f\n"
+      "plain    %d open  floating %+.2f   |  closed %d  %+.2f\n"
+      "-----------------------------------------------\n",
+      nR, pR, cR, rR, nP, pP, cP, rP));
+  }
 
 //+------------------------------------------------------------------+
 int OnInit()
@@ -203,8 +307,11 @@ void Redraw()
       ObjectSetInteger(0, bx, OBJPROP_COLOR, bid > bodyHi ? InpUpColor : InpDnColor);
      }
 
+   //--- the bots' live trades -------------------------------------------
+   string botLines = DrawBotTrades();
+
    //--- readout --------------------------------------------------------
-   Comment(StringFormat(
+   Comment(botLines + StringFormat(
       "%s  live %.2f   %s\nlast brick close %.2f  (%s)  bars %d\nnext UP brick  in %.1f pts  (at %.2f)\nnext DOWN brick in %.1f pts  (at %.2f)\nforming: %+.1f pts of %.0f\nfeed: %s",
       InpSource, bid, inside ? "inside last brick" : "moving away",
       lastClose, dir == 1 ? "up" : "down", bars,

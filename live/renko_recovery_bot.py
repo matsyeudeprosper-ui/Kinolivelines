@@ -59,7 +59,7 @@ Now the cycle is measured from THIS BOT'S OWN money only: every position opened
 in the cycle is tracked by ticket, and cycle P&L = realised on those tickets +
 floating on the ones still open. Nothing else on the account can move it.
 """
-import json, os, time
+import json, os, sys, time
 from datetime import datetime, timedelta
 
 import MetaTrader5 as mt5
@@ -77,6 +77,16 @@ MAX_BASKET  = 4
 POLL        = 20
 FRESH_MIN   = 6
 ANCHOR      = datetime(2026, 7, 17)
+
+# If the terminal dies, this process stays alive and keeps failing quietly - and
+# the 5-minute scheduled-task watchdog will NOT help, because IgnoreNew sees a
+# running process and does nothing. So after this many consecutive failures the
+# bot exits deliberately. The watchdog then restarts it, and mt5.initialize(path)
+# relaunches the terminal on the way back up.
+# Exiting while holding a basket sounds worse than it is: a disconnected bot
+# cannot manage those positions anyway, and this bot carries NO broker stop, so
+# getting the connection back is the only thing that helps them.
+MAX_FAILS   = 10                # 10 x 20s = ~3.5 min before giving up
 
 HERE  = os.path.dirname(os.path.abspath(__file__))
 LOG   = os.path.join(HERE, "renko_recovery.log")
@@ -234,15 +244,32 @@ def main():
         "floating). Account equity is no longer used - the other bot's P&L "
         "used to move it.")
     st = load_state()
+    fails = 0
     while True:
         try:
             rates = mt5.copy_rates_range(SYMBOL, mt5.TIMEFRAME_M1, ANCHOR, datetime.utcnow())
             if rates is None or len(rates) < 2:
+                fails += 1
+                say(f"no bars from the terminal ({fails}/{MAX_FAILS}) "
+                    f"last_error {mt5.last_error()}")
+                if fails >= MAX_FAILS:
+                    say("TERMINAL UNREACHABLE - exiting so the watchdog can "
+                        "restart this bot and relaunch MT5")
+                    mt5.shutdown(); sys.exit(1)
                 time.sleep(POLL); continue
             bricks = build_bricks(rates[:-1])
             rev = last_reversal(bricks)
             ps = mine()
-            eq = mt5.account_info().equity
+            acc = mt5.account_info()
+            if acc is None:                     # connected enough for bars, not
+                fails += 1                      # for the account - still broken
+                say(f"no account_info ({fails}/{MAX_FAILS})")
+                if fails >= MAX_FAILS:
+                    say("TERMINAL UNREACHABLE - exiting for the watchdog")
+                    mt5.shutdown(); sys.exit(1)
+                time.sleep(POLL); continue
+            eq = acc.equity
+            fails = 0                           # a clean pass clears the counter
 
             # This bot's own cycle P&L: banked on this cycle's tickets, plus
             # what is still floating. NOT account equity - see the 2026-08-05

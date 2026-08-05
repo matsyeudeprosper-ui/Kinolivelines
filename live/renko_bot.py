@@ -44,7 +44,7 @@ SAFETY
   - only acts on a reversal detected in the last FRESH_MIN minutes, so a restart
     cannot fire on a stale signal
 """
-import json, os, time
+import json, os, sys, time
 from datetime import datetime, timedelta
 
 import MetaTrader5 as mt5
@@ -61,6 +61,12 @@ SL_BRICKS  = 3
 POLL       = 20                     # seconds
 FRESH_MIN  = 6                      # ignore a reversal older than this
 ANCHOR     = datetime(2026, 7, 17)  # fixed, so brick boundaries never shift
+
+# A dead terminal leaves this process alive and failing silently, and the
+# 5-minute task watchdog will not intervene because IgnoreNew sees it running.
+# Exit deliberately instead; the watchdog restarts us and initialize() relaunches
+# the terminal.
+MAX_FAILS  = 10                     # 10 x 20s = ~3.5 min
 
 HERE  = os.path.dirname(os.path.abspath(__file__))
 LOG   = os.path.join(HERE, "renko_bot.log")
@@ -179,10 +185,18 @@ def main():
         f"({BRICK*TP_BRICKS:.0f}pt), SL {SL_BRICKS} bricks ({BRICK*SL_BRICKS:.0f}pt), "
         f"one at a time, {LOTS} lots, magic {MAGIC}")
     state = load_state()
+    fails = 0
     while True:
         try:
             rates = mt5.copy_rates_range(SYMBOL, mt5.TIMEFRAME_M1, ANCHOR, datetime.utcnow())
             if rates is None or len(rates) < 2:
+                fails += 1
+                say(f"no bars from the terminal ({fails}/{MAX_FAILS}) "
+                    f"last_error {mt5.last_error()}")
+                if fails >= MAX_FAILS:
+                    say("TERMINAL UNREACHABLE - exiting so the watchdog can "
+                        "restart this bot and relaunch MT5")
+                    mt5.shutdown(); sys.exit(1)
                 time.sleep(POLL); continue
             closed = rates[:-1]                      # never act on a forming bar
             bricks = build_bricks(closed)
@@ -212,13 +226,22 @@ def main():
                     state["last_traded_brick"] = rev["time"]
                     save_state(state)
 
+            acc = mt5.account_info()
+            if acc is None:                     # bars arrive but the account
+                fails += 1                      # does not - still broken
+                say(f"no account_info ({fails}/{MAX_FAILS})")
+                if fails >= MAX_FAILS:
+                    say("TERMINAL UNREACHABLE - exiting for the watchdog")
+                    mt5.shutdown(); sys.exit(1)
+                time.sleep(POLL); continue
+            fails = 0                           # a clean pass clears the counter
             with open(ALIVE, "w", encoding="utf-8") as f:
                 json.dump({"alive_utc": datetime.utcnow().isoformat(),
                            "bricks": len(bricks),
                            "last_reversal_utc": datetime.utcfromtimestamp(rev["time"]).isoformat() if rev else None,
                            "last_reversal_dir": rev["dir"] if rev else None,
                            "open_positions": len(pos),
-                           "equity": mt5.account_info().equity}, f)
+                           "equity": acc.equity}, f)
         except Exception as e:
             say(f"ERROR {type(e).__name__}: {e}")
         time.sleep(POLL)
