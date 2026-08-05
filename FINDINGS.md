@@ -189,6 +189,53 @@ violent moves is not excluded. Nothing in the tradeable >$10 range.
 
 ---
 
+## 7. Renko capped recovery — RUNNING ON DEMO, not validated
+
+The first design in this project that both survives a long backtest and ends it in
+profit. It is running forward on demo 436771046 to find out whether that is real. It has
+**not** met the bar at the top of this file and must not be described as an edge.
+
+**The rule.** A Renko reversal brick (50 points, 2-brick reversal) opens one 0.01 lot with
+a 5-brick take profit. If price goes 3 bricks against it the position is *not* closed —
+each subsequent reversal adds another 0.01 lot, to a maximum of 4. When the cycle's own
+P&L returns to zero the whole basket closes. If the basket would exceed the cap, it closes
+at a loss instead.
+
+**Step 6 — the cap — is the entire design.** Uncapped, the identical rule ran 5.2 years
+and then died. Recovery succeeded **743 times out of 744**; the single failure took the
+account. Capped at 4: 3,626 recoveries, 266 forced small losses, survived. Those 266
+losses are what buys the survival.
+
+7.6 years of H1: $1,000 → $3,631, 74% of months positive, median month +$33, worst month
+−$173, worst drawdown **$384 (11.7%)**, equity never below the starting deposit. Caps 2
+through 12 all survived (+131% to +263%) — a broad plateau, not a tuned cell, which is the
+opposite of what the TP/SL grid showed.
+
+**What was killed reaching it, and must not be re-proposed:**
+
+| tested | result |
+|---|---|
+| plain 5:3 with a broker stop, one at a time | bled to zero in 3.3 years; best of 25 cells matched by shuffled data |
+| no stop, unlimited positions | +287% in 55 days, dead in 5 years; underwater 98% of the time |
+| close the basket at +2% profit | never fires — the basket is in profit 0.1% of the time, peak +0.25% |
+| monthly $1,000 deposit chasing "house money" | 62 months, **zero** ever exceeded the deposit |
+| breakeven stop after 1 brick | worse at every level (−7 to −11 vs +1.71); wins fell 322 → 290 |
+
+**Capital buys survival, not returns.** At fixed 0.01 lots the dollar profit is identical
+at any balance — $250 and $10,000 accounts both made exactly $2,630 over 7.6 years, and
+the worst drawdown is $384 either way. Sizing capital ≈ 2–3× worst drawdown ≈ $1,000.
+Anything above that is idle. Compounding was tested and **parked**: it doubles the return
+for ~3× the drawdown, and critically the safety cap counts *positions, not dollars*, so it
+does not scale with size. Rewrite the cap as a percentage of equity before ever enabling it.
+
+**The brick is fixed at 50 points and that is a live liability.** It was calibrated at BTC
+$64,000 (0.078% of price). A fixed brick silently changes meaning as price moves, and a
+mismatched brick roughly **tripled** the worst drawdown in backtest ($987 vs $384) purely
+because 50 points meant something different at BTC $3,500. `live/brick_watch.py` warns
+beyond 30% drift and changes nothing — the decision is deliberately human.
+
+---
+
 ## Traps this project has actually fallen into
 
 Each of these produced a wrong answer that was believed for a while.
@@ -259,6 +306,26 @@ printed by every study that has a mirror arm.
 **12. One instrument's costs applied to another.** BTC's $10 spread was applied to ETH,
 which trades near $1,900 with a $1.00 spread, inflating its cost tenfold and making every
 ETH figure in that run meaningless.
+
+**14. A strategy measuring the whole account when it shares that account.** The Renko
+recovery bot's rule 5 is "close when the money is back to where the cycle started". It
+read `mt5.account_info().equity` — which includes the *other* bot's positions and its
+realised wins. On 2026-08-04 the recovery basket sat at −$1.13, the plain bot banked
++$2.46 at 19:05, account equity touched the target, and the basket closed **at a loss
+under a rule that says close at zero or better**. The reverse is worse: when the other bot
+is losing, the target becomes unreachable and the basket is held *longer* than the rule
+allows, adding positions toward the cap — defeating the one mechanism that keeps the
+design alive. The backtest could never show this because the simulation contained one
+strategy. Fixed 2026-08-05 by tracking each cycle's own position tickets and computing
+realised + floating on those tickets alone. *A shared account is shared state. Any rule
+phrased in terms of "equity" must name whose.*
+
+Two smaller ones from the same build, both caught only by looking:
+
+- **Entering the backtest at the brick price** rather than the next bar's open. The gap
+  averaged 78.5 points and manufactured a 94.7% win rate. Corrected: −20.5 pts/trade.
+- **Charging the spread twice**, once in the barrier and once in the P&L, which made the
+  same results ~10 points per trade too pessimistic.
 
 **10. Declaring a result absent without checking whether the test could see it.** The
 crowding effect was pronounced "absent and wrong-signed" on the bot's setups from a

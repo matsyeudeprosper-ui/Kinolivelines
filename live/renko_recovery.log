@@ -1,0 +1,27 @@
+[2026-08-04 17:14:17] recovery bot up | BTCUSDm | 436771046 DEMO | equity 942.95
+[2026-08-04 17:14:17] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-04 18:08:11] OPEN BUY 0.01 @ 64294.22 TP 64544.22  [new cycle]
+[2026-08-04 18:08:12]   retcode 10009 -> OK
+[2026-08-04 18:29:37] RECOVERY ON - #3044110931 is 153 pts against; target to recover: equity 941.84
+[2026-08-04 18:29:37] OPEN SELL 0.01 @ 64140.50 TP 63890.50  [recovery add #2]
+[2026-08-04 18:29:37]   retcode 10009 -> OK
+[2026-08-04 20:26:19] recovery bot up | BTCUSDm | 436771046 DEMO | equity 940.86
+[2026-08-04 20:26:19] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-04 20:31:21] OPEN BUY 0.01 @ 64094.74 TP 64344.74  [recovery add #3]
+[2026-08-04 20:31:22]   retcode 10009 -> OK
+[2026-08-04 20:39:24] CLOSE BASKET of 3  pnl -1.13  [recovered to 941.84]
+[2026-08-04 20:39:25]   close #3044110931 -> OK
+[2026-08-04 20:39:25]   close #3044171323 -> OK
+[2026-08-04 20:39:26]   close #3044413137 -> OK
+[2026-08-04 22:18:17] OPEN SELL 0.01 @ 64269.70 TP 64019.70  [new cycle]
+[2026-08-04 22:18:18]   retcode 10009 -> OK
+[2026-08-05 00:03:11] OPEN BUY 0.01 @ 64192.85 TP 64442.85  [new cycle]
+[2026-08-05 00:03:12]   retcode 10009 -> OK
+[2026-08-05 00:50:10] OPEN SELL 0.01 @ 64259.77 TP 64009.77  [new cycle]
+[2026-08-05 00:50:11]   retcode 10009 -> OK
+[2026-08-05 03:01:14] OPEN BUY 0.01 @ 64139.20 TP 64389.20  [new cycle]
+[2026-08-05 03:01:15]   retcode 10009 -> OK
+[2026-08-05 04:55:02] recovery bot up | BTCUSDm | 436771046 DEMO | equity 958.10
+[2026-08-05 04:55:02] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-05 04:55:02] exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + floating). Account equity is no longer used - the other bot's P&L used to move it.
+[2026-08-05 04:55:02] adopted 1 untracked position(s) into the cycle - realised P&L before this restart is not counted

@@ -7,6 +7,14 @@ __pycache__/
 # Liveness heartbeats - rewritten every few seconds, meaningless in history
 live/daemon_alive.json
 live/watcher_alive.json
+live/renko_bot_alive.json
+live/renko_recovery_alive.json
+live/brick_watch_status.json
+
+# Renko bot cursors - which brick was last traded, which tickets are in the
+# open cycle. Machine-local and rewritten constantly; the logs carry the history.
+live/renko_bot_state.json
+live/renko_recovery_state.json
 recorder/data/derivs_alive.json
 recorder/data/micro_alive.json
 recorder/data/state.json
