@@ -449,39 +449,95 @@ SESSION_TIMEOUT_MIN = 20
 
 
 def _session_unanswered_minutes():
-    """Minutes the newest handoff has gone unanswered, or None if none is pending.
+    """Minutes the OLDEST unanswered handoff has been waiting, or None if none is.
 
     A handoff is 'answered' when any decision row appears AFTER it from the
     session - that is the only observable proof a human-in-the-loop is actually
     reading. Process liveness proves nothing here: the daemon can be perfectly
     healthy and writing into the void because the terminal was closed.
+
+    OLDEST, NOT NEWEST - this was a real bug, fixed 2026-08-03.
+    The original kept overwriting `oldest` with each new AWAIT_SESSION row, so it
+    reported the age of the most RECENT handoff. That resets the clock every time
+    the daemon asks another question, and the daemon asks far more often than
+    SESSION_TIMEOUT_MIN. The measured age therefore never reached the timeout and
+    the fallback could never fire, no matter how long the session ignored it.
+
+    Demonstrated on the live record: with 44 consecutive unanswered handoffs
+    spanning 19 hours, the old code reported 2 minutes. The correct figure was
+    1,144. A session that answers NOTHING was indistinguishable from one
+    answering promptly - the exact condition this function exists to detect.
     """
     try:
         with open(DECISIONS, newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
     except Exception:
         return None
-    last_await = None
+    oldest = None
     for r in rows:
         if r.get("action", "").endswith("AWAIT_SESSION"):
-            last_await = r
-        elif last_await is not None and r.get("provider") == "claude-session":
-            last_await = None                      # a later session decision answered it
-    if last_await is None:
+            if oldest is None:
+                oldest = r                         # keep the FIRST one in the run
+        elif oldest is not None and r.get("provider") == "claude-session":
+            oldest = None                          # a later session decision answered it
+    if oldest is None:
         return None
     try:
-        age = datetime.now() - datetime.fromisoformat(last_await["time"])
+        age = datetime.now() - datetime.fromisoformat(oldest["time"])
         return age.total_seconds() / 60.0
     except Exception:
         return None
 
 
-def _session_attached():
-    """True if a Claude session is attached RIGHT NOW.
+# How long a session may go without answering ANYTHING before it is presumed
+# unresponsive, even though its watcher is still beating. Deliberately much
+# longer than SESSION_TIMEOUT_MIN: a session can legitimately sit quiet through a
+# stretch with no setups worth taking, and handing over then would be wrong.
+SESSION_UNRESPONSIVE_MIN = 60
 
-    Proof is `watcher_alive.json`. The watcher runs as a child of the session's
-    Monitor and therefore dies with the terminal - so a fresh heartbeat is the
-    one thing on disk that cannot outlive the session that wrote it.
+
+def _session_last_answer_minutes():
+    """Minutes since the session last wrote ANY decision row, or None if never.
+
+    This is the responsiveness signal. `_session_attached()` pairs it with the
+    watcher heartbeat, which is only a liveness signal.
+    """
+    try:
+        with open(DECISIONS, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+    except Exception:
+        return None
+    for r in reversed(rows):
+        if r.get("provider") == "claude-session" and not r.get("action", "").endswith("AWAIT_SESSION"):
+            try:
+                return (datetime.now() - datetime.fromisoformat(r["time"])).total_seconds() / 60.0
+            except Exception:
+                return None
+    return None
+
+
+def _session_attached():
+    """True if a Claude session is attached AND still answering.
+
+    TWO signals, both required - corrected 2026-08-03 after this function caused
+    a 19-hour outage in which nothing traded at all.
+
+    1. LIVENESS - `watcher_alive.json` is fresh. The watcher runs as a child of
+       the session's Monitor and dies with the terminal, so a fresh heartbeat is
+       the one thing on disk that cannot outlive the session that wrote it.
+    2. RESPONSIVENESS - the session has written a real decision within
+       SESSION_UNRESPONSIVE_MIN.
+
+    Why both: the first version tested only liveness, and a fresh heartbeat
+    proves the PROCESS is alive, not that the decider is ANSWERING. The watcher
+    keeps beating whether or not anyone reads its events. On 2026-08-02/03 the
+    daemon therefore concluded "a session is attending" for 19 hours, refused to
+    hand over to GPT-5, and wrote 44 handoffs that nobody read. Zero trades were
+    taken while price moved 1,700 points. That is strictly worse than the
+    deadlock it replaced, because the old code at least gave up after 20 minutes.
+
+    An unanswered-handoff count is NOT a substitute for signal 2: the daemon
+    stops asking once it falls back, so the count freezes and cannot recover.
 
     Why this exists: without it a session that had been away for over
     SESSION_TIMEOUT_MIN could never take primary back. The fallback branch below
@@ -513,9 +569,17 @@ def _session_attached():
         # local: on a UTC-5 box a local comparison reads every heartbeat as five
         # hours stale and the fallback fires permanently.
         age = (datetime.utcnow() - datetime.fromisoformat(hb["alive_utc"])).total_seconds()
-        return age < 360
+        if age >= 360:
+            return False                            # signal 1 failed: process gone
     except Exception:
         return False
+
+    # Signal 2. None means the session has NEVER answered - treat as unresponsive
+    # rather than attached, so a stale orphaned watcher cannot suppress fallover.
+    quiet = _session_last_answer_minutes()
+    if quiet is None or quiet >= SESSION_UNRESPONSIVE_MIN:
+        return False
+    return True
 
 
 def _write_handoff(trigger, briefing, dry_run, reason, errors=None):

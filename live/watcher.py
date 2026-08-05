@@ -204,7 +204,20 @@ while True:
                 near = cfg.get("setup_proximity_atr", 0.15) * a
                 for lp, isHigh, prio, nm in levels():
                     k = round(lp, 2)
-                    if abs(mid - lp) <= near:
+                    # Only wake for a level where a Rule 3 order could actually
+                    # REST. A SELL LIMIT fades a resistance at the level itself and
+                    # must sit above the bid; a BUY LIMIT fades a support at
+                    # level+spread and must sit below the ask, which reduces to the
+                    # level being below the bid. Once price is on the wrong side,
+                    # the broker rejects the order as behind the market, so the
+                    # wake can never produce a trade.
+                    #
+                    # Added 2026-08-02: H1 resistance 63,431.55 fired four SETUP
+                    # events in 26 minutes while price sat ABOVE it, every one of
+                    # them un-actionable. Un-actionable wakes are worse than no
+                    # wake - they train whoever is on the other end to skim.
+                    tradeable = (lp > tick.bid) if isHigh else (lp < tick.bid)
+                    if abs(mid - lp) <= near and tradeable:
                         if setup_armed.get(k, True):
                             setup_armed[k] = False
                             emit("SETUP", f"flat, price {mid:.2f} at {nm} "
