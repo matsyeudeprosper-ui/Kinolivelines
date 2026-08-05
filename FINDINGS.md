@@ -189,50 +189,87 @@ violent moves is not excluded. Nothing in the tradeable >$10 range.
 
 ---
 
-## 7. Renko capped recovery — RUNNING ON DEMO, not validated
+## 7. Renko reversal, plain and capped-recovery — BOTH DEAD
 
-The first design in this project that both survives a long backtest and ends it in
-profit. It is running forward on demo 436771046 to find out whether that is real. It has
-**not** met the bar at the top of this file and must not be described as an edge.
+**Corrected 2026-08-05. The earlier version of this section claimed the capped-recovery
+design turned $1,000 into $3,631 over 7.6 years. That was an artifact of a backtest bug.
+It loses. Every number in the retracted claim is void — they are listed at the bottom so
+nobody resurrects one from an old note.**
 
-**The rule.** A Renko reversal brick (50 points, 2-brick reversal) opens one 0.01 lot with
-a 5-brick take profit. If price goes 3 bricks against it the position is *not* closed —
-each subsequent reversal adds another 0.01 lot, to a maximum of 4. When the cycle's own
-P&L returns to zero the whole basket closes. If the basket would exceed the cap, it closes
-at a loss instead.
+**The rule tested.** A Renko reversal brick (50 pts / 0.078% of price, 2-brick reversal)
+opens one 0.01 lot with a 5-brick take profit. If price goes 3 bricks against it the
+position is *not* closed — each later reversal adds another 0.01 lot up to a cap. When the
+cycle's own P&L returns to zero the basket closes; if it would exceed the cap it closes at
+a loss.
 
-**Step 6 — the cap — is the entire design.** Uncapped, the identical rule ran 5.2 years
-and then died. Recovery succeeded **743 times out of 744**; the single failure took the
-account. Capped at 4: 3,626 recoveries, 266 forced small losses, survived. Those 266
-losses are what buys the survival.
+### The bug
 
-7.6 years of H1: $1,000 → $3,631, 74% of months positive, median month +$33, worst month
-−$173, worst drawdown **$384 (11.7%)**, equity never below the starting deposit. Caps 2
-through 12 all survived (+131% to +263%) — a broad plateau, not a tuned cell, which is the
-opposite of what the TP/SL grid showed.
+Entries were priced at the **next** bar's open, then the take-profit and stop were tested
+against the **signal bar** — the bar that closed before the trade existed. Barriers were
+being checked against a bar the position was not alive for, in both directions.
 
-**What was killed reaching it, and must not be re-proposed:**
+One variable changed, everything else identical, invariants checked
+(opened + skipped = 12,520 signals in both runs):
 
-| tested | result |
+| capped recovery, cap 4, 7.6y H1 | final | worst drawdown | lowest equity |
+|---|---|---|---|
+| original alignment | $3,558 | $384 | $1,000 |
+| **corrected** | **$415** | **$966** | **$204** |
+
+### Survival is a lucky cell, not a plateau
+
+| cap | outcome, corrected |
 |---|---|
-| plain 5:3 with a broker stop, one at a time | bled to zero in 3.3 years; best of 25 cells matched by shuffled data |
-| no stop, unlimited positions | +287% in 55 days, dead in 5 years; underwater 98% of the time |
-| close the basket at +2% profit | never fires — the basket is in profit 0.1% of the time, peak +0.25% |
-| monthly $1,000 deposit chasing "house money" | 62 months, **zero** ever exceeded the deposit |
-| breakeven stop after 1 brick | worse at every level (−7 to −11 vs +1.71); wins fell 322 → 290 |
+| none | **died** at 3.5 years |
+| 2 | **died** at 6.2 years |
+| 3 | survived at $177 — equity reached **$3** |
+| 4 | survived at $415, lowest $204 |
+| 5 | **died** at 6.5 years |
+| 6 | **died** at 6.9 years |
+| 8 | **died** at 6.2 years |
+| 12 | **died** at 5.2 years |
 
-**Capital buys survival, not returns.** At fixed 0.01 lots the dollar profit is identical
-at any balance — $250 and $10,000 accounts both made exactly $2,630 over 7.6 years, and
-the worst drawdown is $384 either way. Sizing capital ≈ 2–3× worst drawdown ≈ $1,000.
-Anything above that is idle. Compounding was tested and **parked**: it doubles the return
-for ~3× the drawdown, and critically the safety cap counts *positions, not dollars*, so it
-does not scale with size. Rewrite the cap as a percentage of equity before ever enabling it.
+Six of eight settings reach zero. The retracted claim called caps 2–12 "a broad plateau,
+not a tuned cell" and used that as evidence of robustness. It is the reverse: one
+surviving cell surrounded by ruin, which is what noise looks like.
 
-**The brick is fixed at 50 points and that is a live liability.** It was calibrated at BTC
-$64,000 (0.078% of price). A fixed brick silently changes meaning as price moves, and a
-mismatched brick roughly **tripled** the worst drawdown in backtest ($987 vs $384) purely
-because 50 points meant something different at BTC $3,500. `live/brick_watch.py` warns
-beyond 30% drift and changes nothing — the decision is deliberately human.
+### The plain version is not merely edgeless, it is untestable
+
+Its sign changes with the tie convention, so by trap #2 there is no finding at all:
+
+| tie convention | result | win rate |
+|---|---|---|
+| tie → loss | died at 3.2 years | 19.2% |
+| tie → split | died at 6.9 years | 33.8% |
+| tie → win | +$4,597 | 47.2% |
+
+A driftless random walk with TP 5 / SL 3 wins 3/(5+3) = **37.5%** by construction. The
+retracted "38% wins, +1.71 pts/trade" is indistinguishable from a coin landing where
+geometry says it should.
+
+### The cost the broken run erased
+
+Corrected, the bot cannot act on **1,419 of 12,520 signals (11.3%)** because it is holding
+a basket. The broken run reported 96 (0.8%). *Holding losers means missing winners* — a
+live observation that reached us before the measurement did, and the reason a
+basket/recovery design cannot be judged on its basket losses alone.
+
+### Retracted numbers — void, do not reuse
+
++263% / $3,631 final · 74% or 83% of months positive · median month +$33 or +$9 · worst
+drawdown $384 = 11.7% · "equity never below the starting deposit" · "743 of 744 recoveries
+succeeded" · "caps 2–12 all survived, +131% to +263%" · "capital buys survival, not
+returns; $250 and $10,000 accounts both made $2,630" · the compounding study built on top
+of it · the $987-vs-$384 fixed-vs-scaled brick comparison (same broken run, never re-tested).
+
+`live/brick_watch.py` still runs and still warns on brick drift. Its *reasoning* is sound —
+a fixed point-brick does change meaning as price moves — but the $987 vs $384 figure it
+cites came from the broken simulation and is unverified.
+
+**What was killed on the way, and still stands** (these did not depend on the bug):
+unlimited positions with no stop (+287% in 55 days, dead in 5 years, underwater 98% of the
+time); the 2%-basket-profit exit (never fires — the basket is in profit 0.1% of the time);
+and the "house money" search (62 months, zero ever exceeded the deposit).
 
 ---
 
@@ -306,6 +343,22 @@ printed by every study that has a mirror arm.
 **12. One instrument's costs applied to another.** BTC's $10 spread was applied to ETH,
 which trades near $1,900 with a $1.00 spread, inflating its cost tenfold and making every
 ETH figure in that run meaningless.
+
+**15. Barriers tested on the bar before the trade existed.** The single most expensive
+error in this project. A signal on bar *j* was filled at `open[j+1]`, and the take-profit
+and stop were then evaluated against `high[j]` / `low[j]` — the signal bar, which had
+already closed. The position collected outcomes from a bar it was never alive for, in both
+directions. It turned a losing design ($415 over 7.6 years) into a winning one ($3,558),
+survived being written up as a finding, was ported into two live bots, and produced a
+recommendation to fund five accounts. It was caught only because the *plain* variant came
+back with a **0.5% win rate** — a number too absurd to shrug at, when TP 5 / SL 3 on a
+random walk must win about 37.5%.
+
+*Two lessons, and the second matters more.* Fill on bar *j+1*'s open and test barriers from
+bar *j+1* onward — never earlier. And: **a result that is implausible in the direction of
+failure gets investigated; one that is implausible in the direction of success gets
+believed.** The +263% was as anomalous as the 0.5%, sat in the record for a day, and was
+never questioned until the same code produced an embarrassing number.
 
 **14. A strategy measuring the whole account when it shares that account.** The Renko
 recovery bot's rule 5 is "close when the money is back to where the cycle started". It

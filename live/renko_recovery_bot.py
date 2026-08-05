@@ -8,21 +8,35 @@ THE RULE (user's design + the cap that makes it survive)
   5. equity back to where the cycle started -> close everything, new cycle
   6. basket would exceed MAX_BASKET -> close everything at a loss, new cycle
 
-Step 6 is the difference between living and dying. Without it the same design
-ran 5.2 years and then died: recovery succeeded 743 times out of 744, and the
-single failure took the whole account. Capped at 4, recovery succeeded 3,626
-times and was force-closed for a small loss 266 times - those 266 losses are
-what buys the survival.
+*** THIS STRATEGY LOSES MONEY IN BACKTEST. READ BEFORE CHANGING ANYTHING. ***
 
-BACKTEST, 7.6 years of H1, recorded here so live results are read honestly:
-  $1,000 -> $3,631 (+263%), 83% of months profitable, max drawdown $384,
-  equity never fell below the starting $1,000. Median month only +$9 - this
-  grows slowly by compounding, it does not earn much month to month.
-  Every cap from 2 to 12 survived and profited (+131% to +263%), so this is a
-  broad plateau rather than one tuned setting - unlike the TP/SL search, where
-  the best cell was matched by shuffled data.
-  H1 bricks are coarser than the M1 this bot uses, so live trade counts and
-  timing will differ. The risk SHAPE is what was tested, not the exact return.
+2026-08-05. The backtest that justified this design was wrong. Entries were
+priced at the NEXT bar's open while the take profit and stop were tested against
+the SIGNAL bar - the bar that closed before the trade existed. Re-run with that
+one thing corrected and nothing else changed:
+
+  7.6 years of H1, cap 4:  $1,000 -> $415  (-59%)
+                           worst drawdown $966, equity reached $204
+  the version this file used to quote:  $1,000 -> $3,631
+
+Survival is not robust either. Corrected, caps 2, 5, 6, 8, 12 and no-cap all go
+to ZERO; cap 3 survives at $177 having touched $3; cap 4 is the only setting
+left with anything, and it still lost 59%. Six of eight settings die. The old
+docstring called caps 2-12 "a broad plateau" - it is one lucky cell surrounded
+by ruin, which is what noise looks like.
+
+Also corrected: the bot cannot act on 11.3% of signals because it is holding a
+basket (the broken run said 0.8%). Holding losers means missing winners, and
+that cost is real - it showed up live before the measurement did.
+
+VOID, do not resurrect from an old note: +263%, 83% or 74% of months positive,
+median month +$9 or +$33, max drawdown $384 / 11.7%, "equity never fell below
+the starting deposit", "743 of 744 recoveries succeeded", "caps 2-12 all
+survived", the capital-sizing result and the compounding study.
+
+This process keeps running only as forward MEASUREMENT on a demo account. It is
+not a strategy, it has no validated edge, and no live money should follow it.
+See FINDINGS.md section 7 and trap 15.
 
 NO BROKER STOP LOSS. Positions carry a take profit but no stop, because the
 exit logic lives here. If this process dies while holding a basket, those

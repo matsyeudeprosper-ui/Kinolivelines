@@ -6,13 +6,32 @@ THE RULE (user's, 2026-08-04, after backtesting 25 geometries):
     Take profit 5 bricks (250 pts), stop loss 3 bricks (150 pts).
     ONE trade at a time.
 
-WHAT THE BACKTEST SAID, recorded here so nobody reads live results as proof of
-something they are not. Over 45 days and 849 trades this setting returned
-+1.71 points per trade - but the same 25-cell search run on SHUFFLED data, with
-any real pattern destroyed, produced +0.91 on the identical cell. The standard
-error is about 6.7 points, so +1.71 is a quarter of one SE from zero. This is
-being run forward to find out whether that is anything at all. Treat it as a
-measurement, not a strategy with a known edge.
+*** THE BACKTEST FOR THIS RULE IS UNTESTABLE. READ BEFORE CHANGING ANYTHING. ***
+
+2026-08-05. Re-run over 7.6 years of H1 with the entry alignment corrected (the
+old run tested barriers against the bar BEFORE the trade existed), the result
+changes SIGN depending on how a bar that spans both barriers is scored:
+
+    tie -> loss    died at 3.2 years   19.2% wins
+    tie -> split   died at 6.9 years   33.8% wins
+    tie -> win     +$4,597             47.2% wins
+
+Trap 2 in FINDINGS.md: if the sign changes between tie conventions, there is no
+finding. So this rule has not been measured at all - it is not "an edge too
+small to see", it is unmeasured.
+
+For scale: a driftless random walk with TP 5 / SL 3 wins 3/(5+3) = 37.5% of the
+time by geometry alone. The figure this file used to quote - "38% wins,
++1.71 points per trade" - is indistinguishable from a coin landing exactly where
+the arithmetic says it must.
+
+VOID: +1.71 pts/trade, the 38% win rate, "bled to zero in 3.3 years", and the
+shuffled-data comparison built on the same run.
+
+This runs as forward MEASUREMENT on a demo account and as a control against
+renko_recovery_bot.py, which takes the same entries. It is not a strategy.
+Slippage remains the thing most likely to sink it: 0.3 to 6.4 points observed
+live, averaging ~3.8.
 
 Slippage is the thing most likely to sink it: observed 0.3 to 4.9 points on live
 stops today, averaging ~3.8, which is more than twice the backtested gain.

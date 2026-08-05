@@ -10,9 +10,12 @@ A fixed brick silently changes meaning as price moves:
   BTC  $32,000 -> 50 pts is 0.156%, twice as significant. Bricks become rare,
                   baskets sit open longer, drawdowns get bigger.
 
-Backtested proof this matters: over 7.6 years, a fixed 50-pt brick had a worst
-drawdown of $987 versus $384 for a price-scaled one - purely because 50 points
-meant something completely different at BTC $3,500 than at $64,000.
+The REASONING above stands on its own arithmetic. The evidence that used to be
+cited here does not: "a fixed 50-pt brick had a worst drawdown of $987 versus
+$384 price-scaled" came from the backtest whose entry alignment was wrong
+(FINDINGS.md trap 15), and has never been re-measured. Treat the size of the
+effect as unknown; the direction is still a straightforward consequence of a
+fixed point-size meaning different things at different price levels.
 
 The user chose a deliberate warning over automatic scaling, so that the chart
 and the bot never change underneath them without a decision. This only WARNS.
