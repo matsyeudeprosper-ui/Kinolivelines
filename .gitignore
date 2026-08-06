@@ -39,3 +39,5 @@ study/data/raw_h1/
 
 # Task 004 raw BIS bulk download - 4MB zip / 469MB CSV, regenerable from the URL
 study/data/external/raw/
+live/hedge_bot_alive.json
+live/hedge_bot_state.json
