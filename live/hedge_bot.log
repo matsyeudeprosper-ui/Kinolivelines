@@ -1,0 +1,29 @@
+[2026-08-06 14:06:45] ======================================================================
+[2026-08-06 14:06:45] HEDGE BOT UP - REAL MONEY - account 134499778 Exness-MT5Real9 balance 30.95 USD
+[2026-08-06 14:06:45] rule: 1 trade TP 250pt no stop | recovery at 150pt | ONE opposite hedge, target 1.5x drawdown, stop 1.0x | max 2 positions
+[2026-08-06 14:06:45] EQUITY FLOOR $15.00 - no new positions below this
+[2026-08-06 14:06:45] backtest says this LOSES: $1,000 -> $473 over 27 months. Deployed on the user's instruction with the risk stated and accepted.
+[2026-08-06 14:06:45] ======================================================================
+[2026-08-06 15:09:19] OPEN BUY 0.01 @ 64479.09 TP 64729.09 (no stop)  [new cycle]
+[2026-08-06 15:09:19]   retcode 10009 ok -> OK
+[2026-08-06 15:09:19]   position ticket 1035823862
+[2026-08-06 16:47:21] ======================================================================
+[2026-08-06 16:47:21] HEDGE BOT UP - REAL MONEY - account 134499778 Exness-MT5Real9 balance 30.95 USD
+[2026-08-06 16:47:21] rule: 1 trade TP 250pt no stop | recovery at 150pt | ONE opposite hedge, target 1.5x drawdown, stop 1.0x | max 2 positions
+[2026-08-06 16:47:21] EQUITY FLOOR $15.00 - no new positions below this
+[2026-08-06 16:47:21] MONTH TRAIL $0.31 - once the month gives back this much from its peak, no new cycles until it rolls over (scaled from $10 on $1,000)
+[2026-08-06 16:47:21] backtest says this LOSES: $1,000 -> $473 over 27 months. Deployed on the user's instruction with the risk stated and accepted.
+[2026-08-06 16:47:21] ======================================================================
+[2026-08-06 16:47:22] new month 2026-08 - trailing stop reset, peak 30.13
+[2026-08-06 16:48:46] ======================================================================
+[2026-08-06 16:48:46] HEDGE BOT UP - REAL MONEY - account 134499778 Exness-MT5Real9 balance 30.95 USD
+[2026-08-06 16:48:46] rule: 1 trade TP 250pt no stop | recovery at 150pt | ONE opposite hedge, target 1.5x drawdown, stop 1.0x | max 2 positions
+[2026-08-06 16:48:46] EQUITY FLOOR $15.00 - no new positions below this
+[2026-08-06 16:48:46] MONTH TRAIL $10.00 - once the month gives back this much from its peak, no new cycles until it rolls over (scaled from $10 on $1,000)
+[2026-08-06 16:48:46] backtest says this LOSES: $1,000 -> $473 over 27 months. Deployed on the user's instruction with the risk stated and accepted.
+[2026-08-06 16:48:46] ======================================================================
+[2026-08-06 17:01:10] RECOVERY ON - #1035823862 is 154 pts against
+[2026-08-06 17:22:20] OPEN SELL 0.01 @ 64284.61 TP 63992.61 SL 64479.28  [hedge, drawdown 195pt -> target 292 stop 195]
+[2026-08-06 17:22:20]   retcode 10009 ok -> OK
+[2026-08-06 17:22:20]   position ticket 1035840953
+[2026-08-06 18:34:55] flat - cycle closed, resetting

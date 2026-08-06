@@ -4,7 +4,8 @@ THE RULE (user's design + the cap that makes it survive)
   1. a reversal brick opens ONE trade, take profit 5 bricks (250 pts)
   2. wins  -> banked, new cycle
   3. price goes 3 bricks (150 pts) against it -> do NOT close. Enter RECOVERY.
-  4. in recovery, each new reversal adds another 0.01 lot, up to MAX_BASKET
+  4. in recovery, each new reversal adds another 0.01 lot, up to MAX_BASKET,
+     BUT ONLY IF IT POINTS THE SAME WAY AS THE FIRST TRADE OF THE CYCLE
   5. equity back to where the cycle started -> close everything, new cycle
   6. basket would exceed MAX_BASKET -> close everything at a loss, new cycle
 
@@ -33,6 +34,30 @@ VOID, do not resurrect from an old note: +263%, 83% or 74% of months positive,
 median month +$9 or +$33, max drawdown $384 / 11.7%, "equity never fell below
 the starting deposit", "743 of 744 recoveries succeeded", "caps 2-12 all
 survived", the capital-sizing result and the compounding study.
+
+2026-08-06 CHANGE - SAME-DIRECTION RECOVERY ADDS, at the user's instruction.
+
+Rule 4 now skips any reversal pointing against the FIRST trade of the cycle. The
+old behaviour added on every reversal, which builds a straddled basket - seen
+live this morning, four positions all losing at once with price sitting between
+them, paying the 10-point spread on every leg while the group could not move
+anywhere together.
+
+Backtested, same brick and spread, paired across brick anchors:
+
+                current (any)      SAME direction
+  M1  1.8 mo          -             +$145  (8/8 anchors)
+  M5  9.1 mo       $530             $1,174 (6/6)
+  H1   55 mo     $0 DEAD            $506   (5/6)
+
+Cap hits fall from 38-41/month to 15-17. On H1 the old rule takes the account to
+zero and this one survives.
+
+IT STILL LOSES MONEY. H1 ends at half the deposit. The H1 breakdown: 1,888 target
+wins at +$2.84 and 1,164 recoveries at +$1.61, against 112 cap hits at -$70.34 -
+so 3.5% of cycles erase everything the other 96.5% earn. This turns a dying
+design into a surviving one, nothing more. It is also NOT out-of-sample: every
+window used had already been looked at.
 
 This process keeps running only as forward MEASUREMENT on a demo account. It is
 not a strategy, it has no validated edge, and no live money should follow it.
@@ -174,7 +199,7 @@ def load_state():
             return json.load(f)
     except Exception:
         return {"last_brick": 0, "recovery": False, "cycle_equity": None,
-                "cycle_tickets": []}
+                "cycle_tickets": [], "cycle_dir": None}
 
 
 def save_state(s):
@@ -243,6 +268,8 @@ def main():
     say("exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + "
         "floating). Account equity is no longer used - the other bot's P&L "
         "used to move it.")
+    say("adds: SAME DIRECTION ONLY - a reversal against the first trade of the "
+        "cycle is skipped. Deployed 2026-08-06.")
     st = load_state()
     fails = 0
     while True:
@@ -282,8 +309,14 @@ def main():
                 # the count, so say so rather than pretend the number is clean.
                 tickets = [p.ticket for p in ps]
                 st["cycle_tickets"] = tickets
+                # The cycle's direction is the OLDEST position's - that is the
+                # trade the whole basket is supposed to be following.
+                oldest = min(ps, key=lambda p: p.time)
+                st["cycle_dir"] = 1 if oldest.type == 0 else -1
                 say(f"adopted {len(tickets)} untracked position(s) into the cycle "
-                    f"- realised P&L before this restart is not counted")
+                    f"- realised P&L before this restart is not counted; "
+                    f"cycle direction taken from the oldest position: "
+                    f"{'BUY' if st['cycle_dir'] == 1 else 'SELL'}")
                 save_state(st)
             realised = cycle_realised(tickets)
             cyc = None if realised is None else realised + basket_pnl(ps)
@@ -293,6 +326,7 @@ def main():
                 st["recovery"] = False
                 st["cycle_equity"] = eq
                 st["cycle_tickets"] = []
+                st["cycle_dir"] = None          # next cycle sets its own
                 save_state(st)
             else:
                 # has anything gone SL_BRICKS against us? -> recovery
@@ -334,11 +368,21 @@ def main():
                         if tk:
                             st["last_brick"] = rev["time"]; st["cycle_equity"] = eq
                             st["cycle_tickets"] = [tk]
+                            st["cycle_dir"] = rev["dir"]   # the whole cycle follows this
                     elif st.get("recovery") and len(ps) <= MAX_BASKET:
-                        tk = open_one(rev["dir"], f"recovery add #{len(ps)+1}")
-                        if tk:
+                        # SAME-DIRECTION ONLY. A reversal pointing against the
+                        # first trade is marked seen and skipped, not queued -
+                        # otherwise it would be reconsidered on every poll.
+                        if st.get("cycle_dir") is not None and rev["dir"] != st["cycle_dir"]:
+                            say(f"skip add: reversal is "
+                                f"{'BUY' if rev['dir'] == 1 else 'SELL'} but the cycle "
+                                f"is {'BUY' if st['cycle_dir'] == 1 else 'SELL'}")
                             st["last_brick"] = rev["time"]
-                            st["cycle_tickets"] = (st.get("cycle_tickets") or []) + [tk]
+                        else:
+                            tk = open_one(rev["dir"], f"recovery add #{len(ps)+1}")
+                            if tk:
+                                st["last_brick"] = rev["time"]
+                                st["cycle_tickets"] = (st.get("cycle_tickets") or []) + [tk]
                     save_state(st)
                 else:
                     st["last_brick"] = rev["time"]; save_state(st)
@@ -353,6 +397,8 @@ def main():
                            "cycle_pnl": None if cyc is None else round(cyc, 2),
                            "cycle_realised": None if realised is None else round(realised, 2),
                            "cycle_tickets": len(st.get("cycle_tickets") or []),
+                           "cycle_dir": ("BUY" if st.get("cycle_dir") == 1 else
+                                         "SELL" if st.get("cycle_dir") == -1 else None),
                            "cycle_equity": st.get("cycle_equity"),
                            "equity": eq}, f)
         except Exception as e:

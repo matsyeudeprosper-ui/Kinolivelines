@@ -41,3 +41,6 @@ study/data/raw_h1/
 study/data/external/raw/
 live/hedge_bot_alive.json
 live/hedge_bot_state.json
+live/harvest_live_alive.json
+live/harvest_live_state.json
+live/harvest_live.log

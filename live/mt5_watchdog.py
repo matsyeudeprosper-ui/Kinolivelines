@@ -67,7 +67,11 @@ def terminal_running():
             ["powershell", "-NoProfile", "-NonInteractive", "-Command",
              "Get-CimInstance Win32_Process -Filter \"Name='terminal64.exe'\" "
              "| ForEach-Object { $_.ExecutablePath }"],
-            capture_output=True, text=True, timeout=60).stdout
+            capture_output=True,
+            text=True,
+            timeout=60,
+            creationflags=subprocess.CREATE_NO_WINDOW,
+        ).stdout
     except Exception as e:
         say(f"could not list processes: {type(e).__name__}: {e}")
         return None

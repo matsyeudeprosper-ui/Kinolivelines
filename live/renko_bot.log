@@ -45,3 +45,53 @@
 [2026-08-05 00:50:12]   retcode 10009 ok -> OK
 [2026-08-05 03:01:13] ENTER BUY 0.01 @ 64139.75  SL 63989.75  TP 64389.75  (reversal brick close 64071.23)
 [2026-08-05 03:01:14]   retcode 10009 ok -> OK
+[2026-08-05 05:48:08] ENTER SELL 0.01 @ 63983.93  SL 64133.93  TP 63733.93  (reversal brick close 64071.23)
+[2026-08-05 05:48:08]   retcode 10009 ok -> OK
+[2026-08-05 07:17:09] ENTER BUY 0.01 @ 64182.37  SL 64032.37  TP 64432.37  (reversal brick close 64121.23)
+[2026-08-05 07:17:10]   retcode 10009 ok -> OK
+[2026-08-05 07:53:19] ENTER SELL 0.01 @ 64310.91  SL 64460.91  TP 64060.91  (reversal brick close 64371.23)
+[2026-08-05 07:53:20]   retcode 10009 ok -> OK
+[2026-08-05 08:39:08] ENTER BUY 0.01 @ 64111.77  SL 63961.77  TP 64361.77  (reversal brick close 63971.23)
+[2026-08-05 08:39:09]   retcode 10009 ok -> OK
+[2026-08-05 09:05:15] reversal at 2026-08-05 13:49:00 is 16 min old (limit 6) - skipping
+[2026-08-05 09:25:03] ENTER SELL 0.01 @ 64324.80  SL 64474.80  TP 64074.80  (reversal brick close 64371.23)
+[2026-08-05 09:25:04]   retcode 10009 ok -> OK
+[2026-08-05 09:57:37] reversal at 2026-08-05 14:49:00 is 9 min old (limit 6) - skipping
+[2026-08-05 10:16:06] ENTER SELL 0.01 @ 64499.98  SL 64649.98  TP 64249.98  (reversal brick close 64571.23)
+[2026-08-05 10:16:06]   retcode 10009 ok -> OK
+[2026-08-05 10:41:01] ENTER BUY 0.01 @ 64598.38  SL 64448.38  TP 64848.38  (reversal brick close 64571.23)
+[2026-08-05 10:41:07]   retcode 10009 ok -> OK
+[2026-08-05 10:48:10] ENTER SELL 0.01 @ 64490.12  SL 64640.12  TP 64240.12  (reversal brick close 64521.23)
+[2026-08-05 10:48:11]   retcode 10009 ok -> OK
+[2026-08-05 11:21:50] reversal at 2026-08-05 16:14:00 is 8 min old (limit 6) - skipping
+[2026-08-05 12:16:12] ENTER SELL 0.01 @ 64511.31  SL 64661.31  TP 64261.31  (reversal brick close 64571.23)
+[2026-08-05 12:16:13]   retcode 10009 ok -> OK
+[2026-08-05 12:43:09] ENTER BUY 0.01 @ 64683.64  SL 64533.64  TP 64933.64  (reversal brick close 64621.23)
+[2026-08-05 12:43:09]   retcode 10009 ok -> OK
+[2026-08-05 13:51:26] renko_bot up | BTCUSDm | account 436771046 DEMO | equity 963.71
+[2026-08-05 13:51:26] rule: reversal brick -> market entry, TP 5 bricks (250pt), SL 3 bricks (150pt), one at a time, 0.01 lots, magic 770404
+[2026-08-05 15:59:25] ENTER SELL 0.01 @ 64780.62  SL 64930.62  TP 64530.62  (reversal brick close 64871.23)
+[2026-08-05 15:59:26]   retcode 10009 ok -> OK
+[2026-08-05 23:21:17] ENTER BUY 0.01 @ 64592.03  SL 64442.03  TP 64842.03  (reversal brick close 64521.23)
+[2026-08-05 23:21:17]   retcode 10009 ok -> OK
+[2026-08-06 01:14:18] ENTER SELL 0.01 @ 64717.49  SL 64867.49  TP 64467.49  (reversal brick close 64771.23)
+[2026-08-06 01:14:18]   retcode 10009 ok -> OK
+[2026-08-06 02:15:15] ENTER BUY 0.01 @ 64880.25  SL 64730.25  TP 65130.25  (reversal brick close 64821.23)
+[2026-08-06 02:15:16]   retcode 10009 ok -> OK
+[2026-08-06 02:53:14] ENTER SELL 0.01 @ 64721.72  SL 64871.72  TP 64471.72  (reversal brick close 64771.23)
+[2026-08-06 02:53:14]   retcode 10009 ok -> OK
+[2026-08-06 03:53:16] ENTER BUY 0.01 @ 64932.23  SL 64782.23  TP 65182.23  (reversal brick close 64821.23)
+[2026-08-06 03:53:17]   retcode 10009 ok -> OK
+[2026-08-06 04:12:01] ENTER SELL 0.01 @ 64720.58  SL 64870.58  TP 64470.58  (reversal brick close 64771.23)
+[2026-08-06 04:12:22]   retcode 10009 ok -> OK
+[2026-08-06 08:41:09] ENTER BUY 0.01 @ 64280.10  SL 64130.10  TP 64530.10  (reversal brick close 64221.23)
+[2026-08-06 08:41:10]   retcode 10009 ok -> OK
+[2026-08-06 09:35:14] ENTER BUY 0.01 @ 64495.09  SL 64345.09  TP 64745.09  (reversal brick close 64421.23)
+[2026-08-06 09:35:15]   retcode 10009 ok -> OK
+[2026-08-06 10:20:12] ENTER SELL 0.01 @ 64675.56  SL 64825.56  TP 64425.56  (reversal brick close 64771.23)
+[2026-08-06 10:20:13]   retcode 10009 ok -> OK
+[2026-08-06 13:07:21] reversal at 2026-08-06 17:37:00 is 30 min old (limit 6) - skipping
+[2026-08-06 15:09:21] ENTER BUY 0.01 @ 64478.82  SL 64328.82  TP 64728.82  (reversal brick close 64421.23)
+[2026-08-06 15:09:21]   retcode 10009 ok -> OK
+[2026-08-06 17:22:20] ENTER SELL 0.01 @ 64284.61  SL 64434.61  TP 64034.61  (reversal brick close 64371.23)
+[2026-08-06 17:22:21]   retcode 10009 ok -> OK
