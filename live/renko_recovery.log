@@ -115,3 +115,61 @@
 [2026-08-06 15:09:18]   position ticket 3054684692
 [2026-08-06 17:01:16] RECOVERY ON - #3054684692 is 154 pts against; own cycle P&L -1.54, recovering to 0.00
 [2026-08-06 17:22:04] skip add: reversal is SELL but the cycle is BUY
+[2026-08-06 19:06:21] OPEN BUY 0.01 @ 64324.17 TP 64574.17  [recovery add #2]
+[2026-08-06 19:06:22]   retcode 10009 -> OK
+[2026-08-06 19:06:22]   position ticket 3055035579
+[2026-08-06 20:33:06] CLOSE BASKET of 2  pnl +0.11  [recovered - own cycle P&L +0.11 (realised +0.00 + floating +0.11)]
+[2026-08-06 20:33:07]   close #3054684692 -> OK
+[2026-08-06 20:33:08]   close #3055035579 -> OK
+[2026-08-06 21:26:15] OPEN SELL 0.01 @ 64287.89 TP 64037.89  [new cycle]
+[2026-08-06 21:26:15]   retcode 10009 -> OK
+[2026-08-06 21:26:15]   position ticket 3055315716
+[2026-08-07 03:31:46] RECOVERY ON - #3055315716 is 155 pts against; own cycle P&L -1.55, recovering to 0.00
+[2026-08-07 03:31:46] skip add: reversal is BUY but the cycle is SELL
+[2026-08-07 07:31:06] OPEN SELL 0.01 @ 64981.77 TP 64731.77  [recovery add #2]
+[2026-08-07 07:31:08]   retcode 10009 -> OK
+[2026-08-07 07:31:08]   position ticket 3057585276
+[2026-08-07 07:41:14] skip add: reversal is BUY but the cycle is SELL
+[2026-08-07 08:29:07] OPEN SELL 0.01 @ 65098.80 TP 64848.80  [recovery add #3]
+[2026-08-07 08:29:08]   retcode 10009 -> OK
+[2026-08-07 08:29:08]   position ticket 3058372039
+[2026-08-07 09:12:08] CLOSE BASKET of 2  pnl -2.25  [recovered - own cycle P&L +0.28 (realised +2.53 + floating -2.25)]
+[2026-08-07 09:12:09]   close #3055315716 -> OK
+[2026-08-07 09:12:10]   close #3057585276 -> OK
+[2026-08-07 09:21:14] OPEN BUY 0.01 @ 65040.74 TP 65290.74  [new cycle]
+[2026-08-07 09:21:14]   retcode 10009 -> OK
+[2026-08-07 09:21:14]   position ticket 3058820435
+[2026-08-07 10:02:39] RECOVERY ON - #3058820435 is 164 pts against; own cycle P&L -1.64, recovering to 0.00
+[2026-08-07 10:33:10] CLOSE BASKET of 1  pnl +0.36  [recovered - own cycle P&L +0.36 (realised +0.00 + floating +0.36)]
+[2026-08-07 10:33:11]   close #3058820435 -> OK
+[2026-08-07 10:33:11] OPEN BUY 0.01 @ 65086.61 TP 65336.61  [new cycle]
+[2026-08-07 10:33:11]   retcode 10009 -> OK
+[2026-08-07 10:33:11]   position ticket 3059265245
+[2026-08-07 10:38:54] RECOVERY ON - #3059265245 is 169 pts against; own cycle P&L -1.69, recovering to 0.00
+[2026-08-07 10:53:06] skip add: reversal is SELL but the cycle is BUY
+[2026-08-07 12:46:02] OPEN BUY 0.01 @ 64676.07 TP 64926.07  [recovery add #2]
+[2026-08-07 12:46:03]   retcode 10009 -> OK
+[2026-08-07 12:46:03]   position ticket 3059859186
+[2026-08-07 13:45:20] skip add: reversal is SELL but the cycle is BUY
+[2026-08-07 14:02:05] OPEN BUY 0.01 @ 64777.60 TP 65027.60  [recovery add #3]
+[2026-08-07 14:02:06]   retcode 10009 -> OK
+[2026-08-07 14:02:06]   position ticket 3060081217
+[2026-08-07 14:20:52] CLOSE BASKET of 3  pnl +0.75  [recovered - own cycle P&L +0.75 (realised +0.00 + floating +0.75)]
+[2026-08-07 14:20:52]   close #3059265245 -> OK
+[2026-08-07 14:20:53]   close #3059859186 -> OK
+[2026-08-07 14:20:54]   close #3060081217 -> OK
+[2026-08-07 15:44:19] recovery bot up | BTCUSDm | 436771046 DEMO | equity 981.74
+[2026-08-07 15:44:19] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-07 15:44:19] exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + floating). Account equity is no longer used - the other bot's P&L used to move it.
+[2026-08-07 15:44:19] adds: SAME DIRECTION ONLY - a reversal against the first trade of the cycle is skipped. Deployed 2026-08-06.
+[2026-08-07 17:05:18] OPEN SELL 0.01 @ 64864.54 TP 64614.54  [new cycle]
+[2026-08-07 17:05:19]   retcode 10009 -> OK
+[2026-08-07 17:05:19]   position ticket 3060407625
+[2026-08-07 17:41:02] recovery bot up | BTCUSDm | 436771046 DEMO | equity 982.28
+[2026-08-07 17:41:02] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-07 17:41:02] exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + floating). Account equity is no longer used - the other bot's P&L used to move it.
+[2026-08-07 17:41:02] adds: SAME DIRECTION ONLY - a reversal against the first trade of the cycle is skipped. Deployed 2026-08-06.
+[2026-08-07 18:07:22] recovery bot up | BTCUSDm | 436771046 DEMO | equity 982.10
+[2026-08-07 18:07:22] rule: TP 5 bricks, recovery at 3 bricks, MAX BASKET 4, 0.01 lots, magic 770405
+[2026-08-07 18:07:22] exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + floating). Account equity is no longer used - the other bot's P&L used to move it.
+[2026-08-07 18:07:22] adds: SAME DIRECTION ONLY - a reversal against the first trade of the cycle is skipped. Deployed 2026-08-06.

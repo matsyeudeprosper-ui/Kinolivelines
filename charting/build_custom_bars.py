@@ -107,7 +107,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tf", default="M5", choices=list(TF))
     ap.add_argument("--bars", type=int, default=5000, help="source bars to pull")
-    ap.add_argument("--mode", default="original", choices=["original", "chain"])
+    # chain is what the RUNNING feed uses (live_feed.py compares each close to
+    # the last KEPT bar). Defaulting this builder to "original" meant a manual
+    # rebuild silently produced a different series from the one the live chart
+    # accumulates - same name, different rule.
+    ap.add_argument("--mode", default="chain", choices=["original", "chain"])
     ap.add_argument("--renko", type=float, default=0,
                     help="brick size in points; builds Renko instead of the breakout filter")
     a = ap.parse_args()

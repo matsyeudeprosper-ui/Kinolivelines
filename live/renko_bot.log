@@ -95,3 +95,25 @@
 [2026-08-06 15:09:21]   retcode 10009 ok -> OK
 [2026-08-06 17:22:20] ENTER SELL 0.01 @ 64284.61  SL 64434.61  TP 64034.61  (reversal brick close 64371.23)
 [2026-08-06 17:22:21]   retcode 10009 ok -> OK
+[2026-08-06 21:15:51] reversal at 2026-08-07 00:05:00 is 131 min old (limit 6) - skipping
+[2026-08-06 21:26:14] ENTER SELL 0.01 @ 64288.68  SL 64438.68  TP 64038.68  (reversal brick close 64321.23)
+[2026-08-06 21:26:15]   retcode 10009 ok -> OK
+[2026-08-07 03:31:58] ENTER BUY 0.01 @ 64418.04  SL 64268.04  TP 64668.04  (reversal brick close 64321.23)
+[2026-08-07 03:31:59]   retcode 10009 ok -> OK
+[2026-08-07 07:31:07] ENTER SELL 0.01 @ 64986.15  SL 65136.15  TP 64736.15  (reversal brick close 65071.23)
+[2026-08-07 07:31:08]   retcode 10009 ok -> OK
+[2026-08-07 07:41:13] ENTER BUY 0.01 @ 65125.32  SL 64975.32  TP 65375.32  (reversal brick close 65071.23)
+[2026-08-07 07:41:14]   retcode 10009 ok -> OK
+[2026-08-07 08:57:03] reversal at 2026-08-07 13:28:00 is 29 min old (limit 6) - skipping
+[2026-08-07 09:21:13] ENTER BUY 0.01 @ 65028.07  SL 64878.07  TP 65278.07  (reversal brick close 64921.23)
+[2026-08-07 09:21:14]   retcode 10009 ok -> OK
+[2026-08-07 10:02:38] reversal at 2026-08-07 14:51:00 is 12 min old (limit 6) - skipping
+[2026-08-07 10:33:09] ENTER BUY 0.01 @ 65086.39  SL 64936.39  TP 65336.39  (reversal brick close 64971.23)
+[2026-08-07 10:33:10]   retcode 10009 ok -> OK
+[2026-08-07 10:53:06] ENTER SELL 0.01 @ 64915.23  SL 65065.23  TP 64665.23  (reversal brick close 64971.23)
+[2026-08-07 10:53:06]   retcode 10009 ok -> OK
+[2026-08-07 12:46:03] ENTER BUY 0.01 @ 64672.00  SL 64522.00  TP 64922.00  (reversal brick close 64621.23)
+[2026-08-07 12:46:03]   retcode 10009 ok -> OK
+[2026-08-07 14:28:16] reversal at 2026-08-07 19:01:00 is 27 min old (limit 6) - skipping
+[2026-08-07 17:05:18] ENTER SELL 0.01 @ 64864.54  SL 65014.54  TP 64614.54  (reversal brick close 64921.23)
+[2026-08-07 17:05:19]   retcode 10009 ok -> OK

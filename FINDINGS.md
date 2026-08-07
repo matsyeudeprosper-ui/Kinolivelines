@@ -635,3 +635,49 @@ not change.
 The reverse (−$137.88) and delayed-entry controls exist to characterise the failure. Neither
 is preregistered, neither has been tested as a strategy, and neither may be promoted on the
 strength of a control result.
+
+## DAILY TRAILING STOP ON HARVEST — TESTED, NOT DEPLOYED TO LIVE (2026-08-07)
+
+Two independent engines (this repo's `hedge_engine.py`, ChatGPT's
+`harvest_daily_trail_m1.py` in its own clone) agree on the shape:
+
+- **$5-activate / $3-giveback daily trail**: cuts drawdown (~$66→$49 on the live
+  anchor) but the untouched-half median is **−$24.92** and it improves only 3/8
+  anchors out-of-sample. Risk control, not edge.
+- **Monthly $20 trail**: rescues M15 (only 27-month stretch: $160→$1,254, 6/6
+  anchors) because it trades less while the rule is losing; it costs money on
+  M1/M5 where the rule was winning. Same brake, opposite sign by regime.
+- **$20 daily / $20 basket loss caps** (ChatGPT): selected on early half, beat
+  trail-only on **1/8** unseen anchors. Failed validation; basket stop never
+  fired on the live path. Not deployed.
+- **Fragility check**: +15 adverse points per fill flattens every variant.
+- Removing per-position TPs in recovery **destroys** the P&L (M5: $1,274→$896;
+  TP hits 1,998→333). The $2.50 harvests are the income.
+
+Deployment state: live bot has **no trail**. Demo A/B running: 770405 control
+vs 770408 trail arm ($5/$3, verified liquidation, persisted
+ACTIVE/LIQUIDATING/STOPPED). `study/shadow_trail.py` records what the trail
+WOULD do on live, including `pnl_when_floor_hit` vs realised — the execution
+gap is the number the demo test must produce before any live decision.
+
+### Trap 17: an error that reads as "flat"
+
+`positions_get(...) or []` converts a terminal error into "no positions", and
+every bot here reads no-positions as FLAT → clears cycle state → next reversal
+opens a NEW cycle on top of a still-open stopless basket. Was live in all three
+bots including real money. `mine()` now raises; the poll skips.
+
+### Trap 18: persisting the attempt but not the decision
+
+Recovery hits P&L ≥ 0 → close decided → one leg fails → price moves → the
+trigger condition is gone → the close is never retried and adds resume on a
+half-closed basket. Every close decision is now persisted (`close_pending` /
+LIQUIDATING) and retried unconditionally until MT5 confirms the book empty.
+Corollary: verification belongs on EVERY close path, not just the new feature's.
+
+### Execution measurements (live account, small n)
+
+- Cycle 2: decided at floating −1.87, filled −2.04 — **0.17 of a 0.47 result
+  (a third) was execution**, on the EXIT side. Entry slippage was favourable
+  (+$0.09 over 8 fills). Order-time recording now captures both sides.
+- Spread at first instrumented fill: $10.00; latency 622 ms; retcode 10009.

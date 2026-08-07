@@ -182,8 +182,52 @@ def last_reversal(b):
     return None
 
 
+class PositionsUnavailable(RuntimeError):
+    """The terminal could not tell us what we hold."""
+
+
 def mine():
-    return [p for p in (mt5.positions_get(symbol=SYMBOL) or []) if p.magic == MAGIC]
+    """Positions belonging to THIS bot. Raises if the terminal cannot answer.
+
+    This used to be `positions_get(...) or []`. positions_get returns None on
+    error, so `or []` reported NO POSITIONS - and every caller here reads no
+    positions as FLAT. Flat clears the cycle tickets and lets the next reversal
+    start a fresh cycle on top of a basket that is still open, untracked, and
+    stopless. One dropped call was enough.
+
+    Raising instead sends the whole poll into the main loop's handler, which
+    logs and waits. Not knowing what we hold is a reason to do nothing, never a
+    reason to assume the best case.
+    """
+    ps = mt5.positions_get(symbol=SYMBOL)
+    if ps is None:
+        raise PositionsUnavailable(f"positions_get failed: {mt5.last_error()}")
+    return [p for p in ps if p.magic == MAGIC]
+
+
+def close_all_verified(ps, why, tries=3):
+    """close_all, then PROVE the book is empty. True only when confirmed.
+
+    close_all fires the orders and never looks back, while the caller clears
+    its cycle state immediately afterwards. A rejected close therefore leaves a
+    live position that the bot has forgotten it owns. Verification costs one
+    extra read and is a no-op whenever the close worked."""
+    for attempt in range(1, tries + 1):
+        close_all(ps, why if attempt == 1 else f"{why} (retry {attempt})")
+        time.sleep(1.0)
+        try:
+            left = mine()
+        except PositionsUnavailable as e:
+            say(f"  cannot confirm the close: {e} - will re-check next poll")
+            return False
+        if not left:
+            if attempt > 1:
+                say(f"  confirmed flat after attempt {attempt}")
+            return True
+        say(f"  {len(left)} position(s) STILL OPEN after attempt {attempt}")
+        ps = left
+    say("  *** CLOSE UNCONFIRMED - state NOT cleared, will retry next poll ***")
+    return False
 
 
 def basket_pnl(ps):
@@ -205,9 +249,14 @@ def cycle_realised(tickets):
                                   datetime.now() + timedelta(days=1))
     if deals is None:
         return None                     # unknown - caller must not act on it
-    return sum(d.profit + d.swap + d.commission for d in deals
-               if d.magic == MAGIC and d.entry == mt5.DEAL_ENTRY_OUT
-               and d.position_id in want)
+    # ALL deals for these tickets, not just the exits. Commission and fee can
+    # be charged on the ENTRY deal (profit is zero there, the costs are not),
+    # and filtering to DEAL_ENTRY_OUT hid them - so "cycle P&L back to zero"
+    # was really "back to zero before entry costs". Zero on this broker today,
+    # wrong the day that changes.
+    return sum(d.profit + d.swap + d.commission + getattr(d, "fee", 0.0)
+               for d in deals
+               if d.magic == MAGIC and d.position_id in want)
 
 
 def load_state():
@@ -227,13 +276,55 @@ def save_state(s):
         pass
 
 
+
+# ---------------------------------------------------------------------------
+# Order-time instrumentation. These facts exist ONLY at the moment the order
+# goes out and cannot be reconstructed from broker history afterwards: the
+# spread we saw, how long the round trip took, the retcode of a REJECTED order
+# (which leaves no deal at all), free margin at that instant, and the price we
+# intended to close at.
+#
+# Everything here is wrapped so that a journalling failure can never stop or
+# delay a trade. If the disk is full the bot keeps trading and loses only the
+# record.
+EVENTS = LOG.replace(".log", "_events.jsonl")
+
+
+def acct_snapshot():
+    try:
+        a = mt5.account_info()
+        if a is None:
+            return {}
+        return dict(balance=round(a.balance, 2), equity=round(a.equity, 2),
+                    margin=round(a.margin, 2),
+                    margin_free=round(a.margin_free, 2),
+                    margin_level=round(a.margin_level or 0.0, 1))
+    except Exception:
+        return {}
+
+
+def rec_event(kind, **kw):
+    try:
+        row = {"ts_utc": datetime.utcnow().isoformat(timespec="milliseconds"),
+               "kind": kind, "magic": MAGIC}
+        row.update(kw)
+        with open(EVENTS, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, default=str) + "\n")
+    except Exception:
+        pass
+
+
 def open_one(direction, why):
     """Returns the POSITION ticket on success, None on failure. The ticket is
     what ties the position to this cycle, so a failure to resolve it has to be
     treated as a failure to open - an untracked position would sit outside the
     cycle P&L and never be counted."""
+    # counted BEFORE the send. Reading it afterwards includes the position we
+    # just opened, which made every "new cycle" event report a basket of 1.
+    _before = len(mine())
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
+        rec_event("open_blocked", why=why, reason="no tick", basket_before=_before)
         return None
     buy = (direction == 1)
     price = tick.ask if buy else tick.bid
@@ -244,9 +335,25 @@ def open_one(direction, why):
            "deviation": 30, "magic": MAGIC, "comment": "KL-recov",
            "type_time": mt5.ORDER_TIME_GTC}
     say(f"OPEN {'BUY' if buy else 'SELL'} {LOTS} @ {price:.2f} TP {tp:.2f}  [{why}]")
+    _t0 = time.perf_counter()
     r = mt5.order_send(req)
+    _lat = round((time.perf_counter() - _t0) * 1000, 1)
     ok = r is not None and r.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED)
     say(f"  retcode {getattr(r,'retcode','?')} -> {'OK' if ok else 'FAILED'}")
+    _fill = getattr(r, "price", None) or None
+    rec_event("order_open",
+              side="BUY" if buy else "SELL", volume=LOTS, why=why, ok=ok,
+              requested_price=round(price, 2), tp=round(tp, 2),
+              bid=tick.bid, ask=tick.ask, spread=round(tick.ask - tick.bid, 2),
+              fill_price=_fill, fill_volume=getattr(r, "volume", None),
+              # signed as P&L impact: positive means a better fill than asked
+              slippage_usd=(round((_fill - price) * (-1 if buy else 1) * LOTS, 4)
+                            if _fill else None),
+              retcode=getattr(r, "retcode", None),
+              broker_comment=getattr(r, "comment", ""),
+              deal=getattr(r, "deal", None), order=getattr(r, "order", None),
+              request_id=getattr(r, "request_id", None),
+              latency_ms=_lat, basket_before=_before, **acct_snapshot())
     if not ok:
         return None
     ticket = None
@@ -264,17 +371,36 @@ def open_one(direction, why):
 
 
 def close_all(ps, why):
-    say(f"CLOSE BASKET of {len(ps)}  pnl {basket_pnl(ps):+.2f}  [{why}]")
+    _decided = basket_pnl(ps)
+    say(f"CLOSE BASKET of {len(ps)}  pnl {_decided:+.2f}  [{why}]")
+    rec_event("close_decided", n=len(ps), decided_pnl=round(_decided, 2),
+              why=why, **acct_snapshot())
     for p in ps:
         t = mt5.symbol_info_tick(SYMBOL)
+        want = t.bid if p.type == 0 else t.ask
         req = {"action": mt5.TRADE_ACTION_DEAL, "position": p.ticket, "symbol": SYMBOL,
                "volume": p.volume,
                "type": mt5.ORDER_TYPE_SELL if p.type == 0 else mt5.ORDER_TYPE_BUY,
-               "price": t.bid if p.type == 0 else t.ask,
+               "price": want,
                "deviation": 30, "magic": MAGIC, "comment": "KL-recov-close"}
+        _t0 = time.perf_counter()
         r = mt5.order_send(req)
+        _lat = round((time.perf_counter() - _t0) * 1000, 1)
         ok = r is not None and r.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED)
         say(f"  close #{p.ticket} -> {'OK' if ok else 'FAILED ' + str(getattr(r,'retcode','?'))}")
+        _fill = getattr(r, "price", None) or None
+        rec_event("order_close", position=p.ticket, ok=ok,
+                  side="BUY" if p.type == 0 else "SELL", volume=p.volume,
+                  pos_profit=round(p.profit, 2), entry=p.price_open,
+                  requested_price=round(want, 2), fill_price=_fill,
+                  bid=t.bid, ask=t.ask, spread=round(t.ask - t.bid, 2),
+                  # the exit-side gap the history journal could never see
+                  slippage_usd=(round((_fill - want) * (1 if p.type == 0 else -1)
+                                      * p.volume, 4) if _fill else None),
+                  retcode=getattr(r, "retcode", None),
+                  broker_comment=getattr(r, "comment", ""),
+                  deal=getattr(r, "deal", None), order=getattr(r, "order", None),
+                  latency_ms=_lat, why=why)
 
 
 def main():
@@ -323,6 +449,27 @@ def main():
             eq = acc.equity
             fails = 0                           # a clean pass clears the counter
 
+            # ---- unconfirmed basket close: finish it FIRST ------------
+            # The trigger condition (cyc >= 0, cap breach) may no longer hold
+            # by now - price moved. The DECISION was already made and persisted,
+            # so it is carried out unconditionally until the book is confirmed
+            # empty. Nothing else happens while this is outstanding.
+            if st.get("close_pending"):
+                if ps:
+                    say(f"resuming unconfirmed close [{st['close_pending']}] "
+                        f"- {len(ps)} position(s) left")
+                    if close_all_verified(ps, f"{st['close_pending']} (resumed)"):
+                        st["close_pending"] = None
+                        st["recovery"] = False; st["cycle_equity"] = None
+                        st["cycle_tickets"] = []; save_state(st)
+                        ps = []
+                else:
+                    # everything filled/closed on its own between polls
+                    say(f"pending close [{st['close_pending']}] - book already empty")
+                    st["close_pending"] = None
+                    st["recovery"] = False; st["cycle_equity"] = None
+                    st["cycle_tickets"] = []; save_state(st)
+
             # This bot's own cycle P&L: banked on this cycle's tickets, plus
             # what is still floating. NOT account equity - see the 2026-08-05
             # note at the top of this file.
@@ -368,19 +515,33 @@ def main():
                 # exit conditions. cyc is None only when the deal history could
                 # not be read - hold rather than guess, the next poll retries.
                 if st.get("recovery") and cyc is not None and cyc >= 0:
-                    close_all(ps, f"recovered - own cycle P&L {cyc:+.2f} "
-                                  f"(realised {realised:+.2f} + floating {basket_pnl(ps):+.2f})")
-                    st["recovery"] = False; st["cycle_equity"] = None
-                    st["cycle_tickets"] = []; save_state(st)
-                    ps = []
+                    # persist the DECISION before the attempt - if the close
+                    # fails and price moves, cyc >= 0 may never be true again
+                    st["close_pending"] = "recovered"; save_state(st)
+                    if close_all_verified(ps,
+                            f"recovered - own cycle P&L {cyc:+.2f} "
+                            f"(realised {realised:+.2f} + floating {basket_pnl(ps):+.2f})"):
+                        st["close_pending"] = None
+                        st["recovery"] = False; st["cycle_equity"] = None
+                        st["cycle_tickets"] = []; save_state(st)
+                        ps = []
                 elif len(ps) > MAX_BASKET:
-                    close_all(ps, f"basket cap {MAX_BASKET} exceeded - taking the loss"
-                                  + (f", cycle P&L {cyc:+.2f}" if cyc is not None else ""))
-                    st["recovery"] = False; st["cycle_equity"] = None
-                    st["cycle_tickets"] = []; save_state(st)
-                    ps = []
+                    st["close_pending"] = "basket cap"; save_state(st)
+                    if close_all_verified(ps,
+                            f"basket cap {MAX_BASKET} exceeded - taking the loss"
+                            + (f", cycle P&L {cyc:+.2f}" if cyc is not None else "")):
+                        st["close_pending"] = None
+                        st["recovery"] = False; st["cycle_equity"] = None
+                        st["cycle_tickets"] = []; save_state(st)
+                        ps = []
 
-            # entries: one when flat, more only while recovering
+            # entries: one when flat, more only while recovering.
+            # A pending close blocks EVERYTHING - opening anything while the
+            # book is half-closed rebuilds the basket the bot is trying to end.
+            if st.get("close_pending") and rev and rev["time"] > st.get("last_brick", 0):
+                say("skip signal: a basket close is still unconfirmed")
+                st["last_brick"] = rev["time"]; save_state(st)
+                rev = None
             if rev and rev["time"] > st.get("last_brick", 0):
                 age = (datetime.utcnow() - datetime.utcfromtimestamp(rev["time"])).total_seconds() / 60
                 if age <= FRESH_MIN:

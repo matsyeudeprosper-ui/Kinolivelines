@@ -24,6 +24,9 @@ enum ENUM_KL_PRESET
 input ENUM_KL_PRESET InpPreset = PRESET_BREAKOUT;   // which chart to build
 input string InpBaseSymbol     = "BTCUSDm";         // clone tick size / digits from this
 input bool   InpOpenChart      = true;              // open a chart when done
+input bool   InpAttachIndi     = true;              // attach KLRenkoLive to it
+
+#define INDI_NAME "KLRenkoLive"
 
 //+------------------------------------------------------------------+
 int OnStart()
@@ -137,6 +140,25 @@ int OnStart()
          ChartSetInteger(cid, CHART_MODE, CHART_CANDLES);
          ChartSetInteger(cid, CHART_AUTOSCROLL, true);
          ChartSetInteger(cid, CHART_SHIFT, true);
+
+         // Attach KLRenkoLive. Without it the chart is a dead custom symbol:
+         // nothing feeds it new bars and none of the indicator's options exist,
+         // which reads as "the feature is missing" rather than "the indicator
+         // is not on this chart". Both charts this script builds get it.
+         if(InpAttachIndi)
+           {
+            int h = iCustom(InpSymbol, PERIOD_M1, INDI_NAME);
+            if(h == INVALID_HANDLE)
+               PrintFormat("iCustom(%s) failed err=%d - is %s.ex5 compiled and in MQL5\\Indicators?",
+                           INDI_NAME, GetLastError(), INDI_NAME);
+            else if(!ChartIndicatorAdd(cid, 0, h))
+               PrintFormat("ChartIndicatorAdd failed err=%d", GetLastError());
+            else
+               PrintFormat("Attached %s to chart %I64d", INDI_NAME, cid);
+            // the chart holds its own reference once added
+            if(h != INVALID_HANDLE) IndicatorRelease(h);
+           }
+
          ChartRedraw(cid);
          PrintFormat("Opened chart %I64d on %s M1", cid, InpSymbol);
         }

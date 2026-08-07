@@ -93,7 +93,7 @@ TERMINAL    = r"C:\Program Files\MetaTrader 5\terminal64.exe"
 LOGIN       = 436771046
 SYMBOL      = "BTCUSDm"
 LOTS        = 0.01
-MAGIC       = 770405            # distinct from renko_bot's 770404
+MAGIC       = 770408            # TRAIL arm; 770405 is the no-trail control
 BRICK       = 50.0
 REVERSAL    = 2
 TP_BRICKS   = 5
@@ -114,9 +114,9 @@ ANCHOR      = datetime(2026, 7, 17)
 MAX_FAILS   = 10                # 10 x 20s = ~3.5 min before giving up
 
 HERE  = os.path.dirname(os.path.abspath(__file__))
-LOG   = os.path.join(HERE, "renko_recovery.log")
-ALIVE = os.path.join(HERE, "renko_recovery_alive.json")
-STATE = os.path.join(HERE, "renko_recovery_state.json")
+LOG   = os.path.join(HERE, "harvest_trail_demo.log")
+ALIVE = os.path.join(HERE, "harvest_trail_demo_alive.json")
+STATE = os.path.join(HERE, "harvest_trail_demo_state.json")
 
 
 def say(m):
@@ -386,6 +386,85 @@ def close_all(ps, why):
                   latency_ms=_lat, why=why)
 
 
+
+
+# ===========================================================================
+# DAILY TRAIL - the only difference from the control bot (magic 770405).
+#
+# THE DEFINITION, per review 2026-08-07:
+#
+#   bot_value   = every P&L this magic has ever realised + what it holds now
+#   daily_total = bot_value - bot_value at the start of the UTC day
+#
+# NOT "daily realised + current-cycle realised + floating". A take-profit taken
+# inside the open cycle lands in both of the first two terms, so that version
+# double-counts precisely the harvest events this strategy runs on.
+#
+# Nothing here reads ACCOUNT equity. Three bots share this demo account and the
+# other two move equity constantly; an equity-based trail would fire on their
+# results. Same class of bug as the 2026-08-05 shared-account one.
+#
+# WHAT IT DOES NOT PROMISE. Hitting the floor triggers an ATTEMPT to liquidate
+# and a verification that nothing is left. It does not promise the fill lands at
+# the floor. Price can gap through it and a close can fail. Measuring that gap
+# is the reason this runs on demo first.
+# ===========================================================================
+TRAIL_ACTIVATE = 5.00        # arm the trail once the day is this far up
+TRAIL_GIVEBACK = 3.00        # give this much back from the peak and it fires
+TRAIL_EPOCH    = datetime(2026, 8, 1)   # far enough back to hold all history
+
+
+def all_realised():
+    """Every P&L this magic has booked. None if history cannot be read - the
+    caller must then hold rather than assume zero, or a broker hiccup would
+    read as a flat day and disarm the trail."""
+    deals = mt5.history_deals_get(TRAIL_EPOCH, datetime.now() + timedelta(days=1))
+    if deals is None:
+        return None
+    # Every deal, not just the exits. Commission and fee are often charged on
+    # the ENTRY deal, and filtering to DEAL_ENTRY_OUT silently dropped them -
+    # the trail would then arm on a P&L that ignored its own costs.
+    return sum(d.profit + d.swap + d.commission + getattr(d, "fee", 0.0)
+               for d in deals if d.magic == MAGIC and d.symbol == SYMBOL)
+
+
+# The trail's own state, PERSISTED. The previous version printed the word
+# LIQUIDATING and returned False without storing anything, and entry blocking
+# only consulted `trail_stopped` - so a failed liquidation left the bot fully
+# active, still adding, holding a basket it had already decided to close.
+#   ACTIVE       trade normally
+#   LIQUIDATING  close everything, block EVERY order including recovery adds,
+#                retry until MT5 confirms flat
+#   STOPPED      confirmed flat; no new cycles until the UTC day rolls over
+S_ACTIVE, S_LIQUIDATING, S_STOPPED = "ACTIVE", "LIQUIDATING", "STOPPED"
+
+
+def liquidate(st, ps, why):
+    """Attempt liquidation and record the outcome in the PERSISTED state."""
+    if st.get("trail_state") != S_LIQUIDATING:
+        st["trail_state"] = S_LIQUIDATING
+        save_state(st)
+        say(f"  -> LIQUIDATING ({why})")
+    done = (not ps) or close_all_verified(ps, why)
+    if done:
+        try:
+            done = not mine()              # independent final confirmation
+        except PositionsUnavailable as e:
+            say(f"  cannot confirm flat: {e} - staying LIQUIDATING")
+            done = False
+    if done:
+        st["trail_state"] = S_STOPPED
+        st["cycle_tickets"] = []
+        st["cycle_dir"] = None
+        st["recovery"] = False
+        save_state(st)
+        say("  -> STOPPED (confirmed flat)")
+        return True
+    save_state(st)
+    say("  *** still LIQUIDATING - all orders blocked, retrying next poll ***")
+    return False
+
+
 def main():
     acc = connect()
     say(f"recovery bot up | {SYMBOL} | {acc.login} DEMO | equity {acc.equity:.2f}")
@@ -396,6 +475,10 @@ def main():
         "used to move it.")
     say("adds: SAME DIRECTION ONLY - a reversal against the first trade of the "
         "cycle is skipped. Deployed 2026-08-06.")
+    say(f"DAILY TRAIL: arm at +${TRAIL_ACTIVATE:.2f}, give back ${TRAIL_GIVEBACK:.2f} "
+        f"from the day's peak -> liquidate and stop for the UTC day.")
+    say("this is the TRAIL arm of an A/B test. magic 770405 is the no-trail "
+        "control on the same account. Do not compare it to anything else.")
     st = load_state()
     fails = 0
     while True:
@@ -423,6 +506,90 @@ def main():
                 time.sleep(POLL); continue
             eq = acc.equity
             fails = 0                           # a clean pass clears the counter
+
+            # ---- daily trail ------------------------------------------
+            realised_all = all_realised()
+            now_utc = datetime.utcnow()
+            did = now_utc.strftime("%Y-%m-%d")
+            trail_blocks_entry = False
+
+            if realised_all is not None:
+                bot_value = realised_all + basket_pnl(ps)
+
+                if st.get("trail_day") != did:
+                    # Midnight while armed and holding throws the protection
+                    # away and leaves the position running. Close first - and
+                    # if the close is NOT confirmed, keep the OLD day and stay
+                    # LIQUIDATING. Rolling over on an unconfirmed close was the
+                    # worst of both: protection gone AND position still open.
+                    if st.get("trail_armed") and ps:
+                        say(f"MIDNIGHT with the trail armed and {len(ps)} open - "
+                            f"liquidating before the day resets")
+                        if not liquidate(st, ps, "midnight while armed"):
+                            say("  day roll-over HELD until the book is confirmed flat")
+                            save_state(st)
+                            time.sleep(POLL)
+                            continue
+                        ps = []
+                        bot_value = (all_realised() or realised_all)
+                    st["trail_state"] = S_ACTIVE
+                    st["trail_day"] = did
+                    st["trail_start"] = bot_value
+                    st["trail_armed"] = False
+                    st["trail_peak"] = 0.0
+                    st["trail_floor"] = 0.0
+                    st["trail_stopped"] = False
+                    save_state(st)
+                    say(f"new UTC day {did} | day-start bot value {bot_value:+.2f}")
+
+                daily_total = bot_value - st.get("trail_start", bot_value)
+
+                if not st.get("trail_armed") and daily_total >= TRAIL_ACTIVATE:
+                    st["trail_armed"] = True
+                    st["trail_peak"] = daily_total
+                    st["trail_floor"] = max(0.0, daily_total - TRAIL_GIVEBACK)
+                    say(f"TRAIL ARMED at {daily_total:+.2f} | floor "
+                        f"{st['trail_floor']:.2f}")
+                    save_state(st)
+                elif st.get("trail_armed") and daily_total > st.get("trail_peak", 0.0):
+                    st["trail_peak"] = daily_total
+                    nf = max(0.0, daily_total - TRAIL_GIVEBACK)
+                    if nf > st.get("trail_floor", 0.0):
+                        st["trail_floor"] = nf
+                        say(f"new peak {daily_total:+.2f} | floor raised to {nf:.2f}")
+                    save_state(st)
+
+                if (st.get("trail_armed") and not st.get("trail_stopped")
+                        and daily_total <= st.get("trail_floor", 0.0)):
+                    say(f"*** TRAIL FLOOR HIT: day {daily_total:+.2f} <= floor "
+                        f"{st['trail_floor']:.2f} (peak {st['trail_peak']:+.2f}) "
+                        f"- liquidating {len(ps)} position(s) ***")
+                    st["trail_hit_pnl"] = round(daily_total, 2)
+                    if liquidate(st, ps, f"daily trail floor {st['trail_floor']:.2f}"):
+                        st["trail_stopped"] = True
+                        ps = []
+                        fin = all_realised()
+                        if fin is not None:
+                            final_daily = fin - st.get("trail_start", bot_value)
+                            say(f"  STOPPED for {did}. P&L at floor "
+                                f"{st['trail_hit_pnl']:+.2f}, realised after "
+                                f"liquidation {final_daily:+.2f}, execution cost "
+                                f"{final_daily - st['trail_hit_pnl']:+.2f}")
+                            st["trail_final_pnl"] = round(final_daily, 2)
+                    save_state(st)
+
+                # An unfinished liquidation is retried before anything else,
+                # every poll, until the terminal confirms the book is empty.
+                if st.get("trail_state") == S_LIQUIDATING:
+                    liquidate(st, ps, "resuming unfinished liquidation")
+                    ps = mine()
+
+                # LIQUIDATING blocks EVERY order, adds included. STOPPED blocks
+                # only new cycles - by then there is nothing left to add to.
+                trail_blocks_entry = st.get("trail_state") in (S_LIQUIDATING, S_STOPPED)
+                st["trail_daily_total"] = round(daily_total, 2)
+            else:
+                say("history unreadable - trail holds its current state this poll")
 
             # ---- unconfirmed basket close: finish it FIRST ------------
             # The trigger condition (cyc >= 0, cap breach) may no longer hold
@@ -511,12 +678,19 @@ def main():
                         ps = []
 
             # entries: one when flat, more only while recovering.
-            # A pending close blocks EVERYTHING - opening anything while the
-            # book is half-closed rebuilds the basket the bot is trying to end.
-            if st.get("close_pending") and rev and rev["time"] > st.get("last_brick", 0):
-                say("skip signal: a basket close is still unconfirmed")
-                st["last_brick"] = rev["time"]; save_state(st)
+            # A stopped day blocks NEW CYCLES ONLY. An add to a basket that is
+            # somehow still open is still allowed, because refusing to manage an
+            # open stopless position is a different and worse strategy than the
+            # one being tested. In practice the liquidation leaves nothing to
+            # add to.
+            if st.get("trail_state") == S_LIQUIDATING or st.get("close_pending"):
+                rev = None                 # block EVERYTHING while any close
+                                           # (trail or ordinary) is unconfirmed
+            elif trail_blocks_entry and not mine():
+                if rev and rev["time"] > st.get("last_brick", 0):
+                    st["last_brick"] = rev["time"]; save_state(st)
                 rev = None
+
             if rev and rev["time"] > st.get("last_brick", 0):
                 age = (datetime.utcnow() - datetime.utcfromtimestamp(rev["time"])).total_seconds() / 60
                 if age <= FRESH_MIN:
@@ -561,6 +735,15 @@ def main():
                            "cycle_dir": ("BUY" if st.get("cycle_dir") == 1 else
                                          "SELL" if st.get("cycle_dir") == -1 else None),
                            "cycle_equity": st.get("cycle_equity"),
+                           "trail_day": st.get("trail_day"),
+                           "trail_daily_total": st.get("trail_daily_total"),
+                           "trail_armed": bool(st.get("trail_armed")),
+                           "trail_peak": round(st.get("trail_peak", 0.0), 2),
+                           "trail_floor": round(st.get("trail_floor", 0.0), 2),
+                           "trail_state": st.get("trail_state", S_ACTIVE),
+                           "trail_stopped": bool(st.get("trail_stopped")),
+                           "trail_hit_pnl": st.get("trail_hit_pnl"),
+                           "trail_final_pnl": st.get("trail_final_pnl"),
                            "equity": eq}, f)
         except Exception as e:
             say(f"ERROR {type(e).__name__}: {e}")
