@@ -120,6 +120,11 @@ DEAL_COLS = [
     "spread_at_entry", "latency_ms_entry", "retcode_entry",
     "broker_comment_entry", "request_id", "free_margin_at_entry",
     "spread_at_exit", "latency_ms_exit", "retcode_exit", "decided_cycle_pnl",
+    # CustomChart chain-filter state at entry. READ-ONLY: the 15-minute filter
+    # failed the year-long close-only test (0/11 months) and gates NOTHING.
+    # These exist so passed-vs-failed trades can be compared on real fills.
+    "custom_direction", "custom_last_flip_time", "custom_flip_age_minutes",
+    "custom_filter_15m_pass", "custom_filter_30m_pass",
     "balance_after",
 ]
 
@@ -279,6 +284,63 @@ def context_frames(terminal_open_already, symbol="BTCUSDm"):
     return out
 
 
+CUSTOM_ANCHOR = calendar.timegm((2026, 7, 17, 0, 0, 0))   # live_feed's anchor
+
+
+def custom_chain(m5):
+    """The KLCustomChart chain filter, replicated from live_feed.py: keep an
+    M5 bar when its CLOSE breaks the last KEPT bar's high or low. Returns the
+    kept bars' close-times, directions (+1 broke up / -1 broke down) and the
+    flip points. A bar exists only from its CLOSE time (t + 300) - sampling it
+    earlier would hand the journal a bar the chart had not drawn yet."""
+    if m5 is None:
+        return None
+    t, c, h, l = m5["t"], m5["close"], m5["high"], m5["low"]
+    i0 = int(np.searchsorted(t, CUSTOM_ANCHOR, side="left"))
+    kt, kd = [], []
+    ref_h = ref_l = None
+    for i in range(i0, len(t)):
+        if ref_h is None:
+            ref_h, ref_l = h[i], l[i]
+            kt.append(t[i] + 300); kd.append(0)
+            continue
+        if c[i] > ref_h or c[i] < ref_l:
+            kt.append(t[i] + 300)
+            kd.append(1 if c[i] > ref_h else -1)
+            ref_h, ref_l = h[i], l[i]
+    kt = np.array(kt, dtype=np.int64); kd = np.array(kd, dtype=int)
+    flips = [(kt[i], kd[i]) for i in range(1, len(kd))
+             if kd[i] != 0 and kd[i] != kd[i - 1]]
+    return dict(kt=kt, kd=kd, flips=flips)
+
+
+def custom_at(chain, ts, side_long):
+    """Chain state as of ts. Empty strings when the anchor postdates ts."""
+    blank = dict(custom_direction="", custom_last_flip_time="",
+                 custom_flip_age_minutes="", custom_filter_15m_pass="",
+                 custom_filter_30m_pass="")
+    if chain is None or len(chain["kt"]) == 0:
+        return blank
+    i = int(np.searchsorted(chain["kt"], ts, side="right")) - 1
+    if i < 0:
+        return blank
+    d = int(chain["kd"][i])
+    past = [(ft, fd) for ft, fd in chain["flips"] if ft <= ts]
+    if not past:
+        return dict(custom_direction=d, custom_last_flip_time="",
+                    custom_flip_age_minutes="", custom_filter_15m_pass="no",
+                    custom_filter_30m_pass="no")
+    ft, fd = past[-1]
+    age_min = (ts - ft) / 60.0
+    want = 1 if side_long else -1
+    return dict(
+        custom_direction=d,
+        custom_last_flip_time=datetime.utcfromtimestamp(int(ft)).strftime("%Y-%m-%d %H:%M:%S"),
+        custom_flip_age_minutes=f"{age_min:.1f}",
+        custom_filter_15m_pass="yes" if (fd == want and age_min <= 15.0) else "no",
+        custom_filter_30m_pass="yes" if (fd == want and age_min <= 30.0) else "no")
+
+
 def last_closed_before(frame, ts):
     """Index of the last bar that had FULLY CLOSED before ts.
 
@@ -375,6 +437,7 @@ def collect(feed):
     tz_shift = round((datetime.utcnow() - datetime.now()).total_seconds() / 3600)
     events, requested = parse_botlog(feed["botlog"], tz_shift)
     ev_open, ev_close, ev_decided = load_order_events(feed["botlog"])
+    chain = custom_chain(frames.get("m5"))
     req_by_ticket = {r["ticket"]: r for r in requested if r["ticket"]}
 
     ours = [d for d in deals if d.magic == feed["magic"]]
@@ -477,6 +540,7 @@ def collect(feed):
 
         eo = ev_open.get(t["entry_deal"], {})
         ec = ev_close.get(t["exit_deal"], {})
+        cst = custom_at(chain, t["t_in"], t["long"])
         move = (t["p_out"] - t["p_in"]) if t["long"] else (t["p_in"] - t["p_out"])
         dt_in = datetime.utcfromtimestamp(t["t_in"])
         drows.append({
@@ -524,6 +588,11 @@ def collect(feed):
             "latency_ms_exit": ec.get("latency_ms", ""),
             "retcode_exit": ec.get("retcode", ""),
             "decided_cycle_pnl": ec.get("pos_profit", ""),
+            "custom_direction": cst["custom_direction"],
+            "custom_last_flip_time": cst["custom_last_flip_time"],
+            "custom_flip_age_minutes": cst["custom_flip_age_minutes"],
+            "custom_filter_15m_pass": cst["custom_filter_15m_pass"],
+            "custom_filter_30m_pass": cst["custom_filter_30m_pass"],
             "balance_after": f'{t["balance_after"]:.2f}',
         })
 
