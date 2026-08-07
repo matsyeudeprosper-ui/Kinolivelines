@@ -132,3 +132,38 @@ money was never on the table for the base rule; nothing here changes the entry.
 - No trusting a result that arrives implausibly good — audit BEFORE reporting
   (the +263% retraction is section 7 of FINDINGS.md).
 - No estimating: every number re-simulated, trade logs from the one engine.
+
+---
+
+## AMENDMENTS (2026-08-07, before Phase 0 ran — no results existed)
+
+a. **§4 gate metric was internally inconsistent** (20×spread = 200 pts exceeds
+   the 100-pt clamp ceiling, making every add "sub-cost" in every arm).
+   Enforceable replacement: A3 must hold the subset property (it may only
+   REJECT adds the fixed rule takes — the renko trigger is untouched), spread
+   at the clamp floor must stay ≤ 40% of spacing, and rejection share ≤ 80%.
+b. **ATR per run-timeframe, not M1** — M1 history reaches ~55 days, the M15
+   stretch is 27 months. k is mean-matched per timeframe from the ATR series
+   alone (never P&L), then frozen across anchors. Clamp = [T/2, 2T].
+
+## PHASE 0 RESULT (2026-08-07) — PASS, all timeframes
+
+`study/phase0_adaptive.py`. A0 add distances pooled over 6 anchors:
+
+| tf | n adds | median | p10 | A3 rejects | rejected med | kept med | spread@floor |
+|---|---|---|---|---|---|---|---|
+| M1 | 2,056 | 140 | **16** | 58% | 69 | 346 | 14% |
+| M5 | 10,586 | 253 | **32** | 55% | 109 | 589 | 8% |
+| M15 | 15,869 | 430 | **47** | 54% | 170 | 1000 | 5% |
+
+- Clustering confirmed: ~10% of A0's adds land within ~50 pts of an existing
+  entry — near-duplicate exposure for an extra spread payment.
+- A3 rejects the clustered half and keeps the distant half: the intended
+  discrimination, visible before any P&L.
+- **Caution carried into Phase 2:** 55% rejection is heavy — the rate-matched
+  control is decisive. If fixed-min-distance at equal add count matches A3,
+  this is "fewer adds" in disguise and already known.
+- **Jensen penalty measured** for A1/A2: +17.8–21.3% expected cost at equal
+  means. Either arm must clear its own penalty before any claim.
+- **Frozen k** (from ATR only): M1 3.64 (clamp 70–280), M5 1.84 (126–505),
+  M15 1.58 (215–860). Not to be re-fitted.
