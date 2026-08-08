@@ -103,6 +103,13 @@ POLL        = 20
 FRESH_MIN   = 6
 ANCHOR      = datetime(2026, 7, 17)
 
+# Bot-only daily protection. It never reads whole-account P&L, so deposits,
+# withdrawals and any other EA on the account cannot arm or fire it.
+TRAIL_ACTIVATE   = 7.00
+TRAIL_GIVEBACK   = 4.00
+DAILY_LOSS_LIMIT = 20.00
+PROTECTION_EPOCH = ANCHOR
+
 # If the terminal dies, this process stays alive and keeps failing quietly - and
 # the 5-minute scheduled-task watchdog will NOT help, because IgnoreNew sees a
 # running process and does nothing. So after this many consecutive failures the
@@ -178,7 +185,12 @@ def build_bricks(rates):
 def last_reversal(b):
     for k in range(len(b) - 1, 0, -1):
         if b[k]["dir"] != b[k - 1]["dir"]:
-            return b[k]
+            # Return a copy so the observation fields do not alter the brick
+            # list used by the strategy.
+            out = dict(b[k])
+            out["brick_index"] = k
+            out["prior_dir"] = b[k - 1]["dir"]
+            return out
     return None
 
 
@@ -270,10 +282,16 @@ def load_state():
 
 def save_state(s):
     try:
-        with open(STATE, "w", encoding="utf-8") as f:
+        tmp = STATE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
             json.dump(s, f)
-    except Exception:
-        pass
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, STATE)
+        return True
+    except Exception as exc:
+        say(f"STATE SAVE FAILED: {exc}")
+        return False
 
 
 
@@ -314,7 +332,73 @@ def rec_event(kind, **kw):
         pass
 
 
-def open_one(direction, why):
+def closed_m1_context(closed_rates, rev, tick=None, decision_time=None):
+    """Facts known before an order is sent, using CLOSED M1 bars only.
+
+    Positive chase means price has already moved beyond the reversal brick in
+    the trade direction. Negative means the available quote is better than the
+    brick price. These fields observe candidate filters; they do not gate an
+    order.
+    """
+    decision_time = decision_time or datetime.utcnow()
+    tick = tick or mt5.symbol_info_tick(SYMBOL)
+    direction = int(rev["dir"])
+    brick_price = float(rev["close"])
+    quote = None
+    if tick is not None:
+        quote = float(tick.ask if direction == 1 else tick.bid)
+
+    closes = [float(r["close"]) for r in closed_rates]
+
+    def ema(period):
+        if not closes:
+            return None
+        value = closes[0]
+        alpha = 2.0 / (period + 1.0)
+        for close in closes[1:]:
+            value = alpha * close + (1.0 - alpha) * value
+        return value
+
+    atr = None
+    if len(closed_rates) >= 15:
+        trs = []
+        for i in range(1, len(closed_rates)):
+            hi = float(closed_rates[i]["high"])
+            lo = float(closed_rates[i]["low"])
+            prev = float(closed_rates[i - 1]["close"])
+            trs.append(max(hi - lo, abs(hi - prev), abs(lo - prev)))
+        atr = sum(trs[-14:]) / 14.0
+
+    chase = None if quote is None else (quote - brick_price) * direction
+    signal_dt = datetime.utcfromtimestamp(int(rev["time"]))
+    last_bar_time = (datetime.utcfromtimestamp(int(closed_rates[-1]["time"]))
+                     if len(closed_rates) else None)
+    point = getattr(mt5.symbol_info(SYMBOL), "point", 0.01) or 0.01
+    return {
+        "signal_time_utc": signal_dt.isoformat(),
+        "decision_time_utc": decision_time.isoformat(timespec="milliseconds"),
+        "signal_age_seconds": round((decision_time - signal_dt).total_seconds(), 3),
+        "reversal_direction": "BUY" if direction == 1 else "SELL",
+        "reversal_brick_price": round(brick_price, 2),
+        "reversal_brick_index": rev.get("brick_index"),
+        "m1_closed_bar_time_utc": (last_bar_time.isoformat() if last_bar_time else None),
+        "bid_at_decision": (float(tick.bid) if tick is not None else None),
+        "ask_at_decision": (float(tick.ask) if tick is not None else None),
+        "spread_at_decision": (round(float(tick.ask - tick.bid), 2)
+                               if tick is not None else None),
+        "quote_at_decision": (round(quote, 2) if quote is not None else None),
+        "chase_price_signed": (round(chase, 2) if chase is not None else None),
+        "chase_points_signed": (round(chase / point, 1) if chase is not None else None),
+        "atr_m1_14_at_decision": (round(atr, 4) if atr is not None else None),
+        "atr_over_brick_at_decision": (round(atr / BRICK, 4) if atr is not None else None),
+        "ema20_at_decision": (round(ema(20), 4) if closes else None),
+        "ema50_at_decision": (round(ema(50), 4) if closes else None),
+        "shadow_chase_50_pass": (chase is not None and chase <= 50.0),
+        "shadow_chase_100_pass": (chase is not None and chase <= 100.0),
+    }
+
+
+def open_one(direction, why, rev=None, closed_rates=None):
     """Returns the POSITION ticket on success, None on failure. The ticket is
     what ties the position to this cycle, so a failure to resolve it has to be
     treated as a failure to open - an untracked position would sit outside the
@@ -323,8 +407,12 @@ def open_one(direction, why):
     # just opened, which made every "new cycle" event report a basket of 1.
     _before = len(mine())
     tick = mt5.symbol_info_tick(SYMBOL)
+    decision_time = datetime.utcnow()
+    context = (closed_m1_context(closed_rates, rev, tick, decision_time)
+               if rev is not None and closed_rates is not None else {})
     if tick is None:
-        rec_event("open_blocked", why=why, reason="no tick", basket_before=_before)
+        rec_event("open_blocked", why=why, reason="no tick", basket_before=_before,
+                  **context)
         return None
     buy = (direction == 1)
     price = tick.ask if buy else tick.bid
@@ -341,11 +429,26 @@ def open_one(direction, why):
     ok = r is not None and r.retcode in (mt5.TRADE_RETCODE_DONE, mt5.TRADE_RETCODE_PLACED)
     say(f"  retcode {getattr(r,'retcode','?')} -> {'OK' if ok else 'FAILED'}")
     _fill = getattr(r, "price", None) or None
+    _after = mt5.symbol_info_tick(SYMBOL)
+    _brick = float(rev["close"]) if rev is not None else None
+    _fill_from_brick = ((_fill - _brick) * direction
+                        if _fill is not None and _brick is not None else None)
+    _adverse_slip = ((_fill - price) * direction if _fill is not None else None)
+    _point = getattr(mt5.symbol_info(SYMBOL), "point", 0.01) or 0.01
     rec_event("order_open",
               side="BUY" if buy else "SELL", volume=LOTS, why=why, ok=ok,
               requested_price=round(price, 2), tp=round(tp, 2),
               bid=tick.bid, ask=tick.ask, spread=round(tick.ask - tick.bid, 2),
+              bid_after_fill=(getattr(_after, "bid", None) if _after else None),
+              ask_after_fill=(getattr(_after, "ask", None) if _after else None),
+              spread_after_fill=(round(_after.ask - _after.bid, 2) if _after else None),
               fill_price=_fill, fill_volume=getattr(r, "volume", None),
+              fill_distance_from_brick=(round(_fill_from_brick, 2)
+                                        if _fill_from_brick is not None else None),
+              adverse_slippage_price=(round(_adverse_slip, 2)
+                                      if _adverse_slip is not None else None),
+              adverse_slippage_points=(round(_adverse_slip / _point, 1)
+                                       if _adverse_slip is not None else None),
               # signed as P&L impact: positive means a better fill than asked
               slippage_usd=(round((_fill - price) * (-1 if buy else 1) * LOTS, 4)
                             if _fill else None),
@@ -353,7 +456,7 @@ def open_one(direction, why):
               broker_comment=getattr(r, "comment", ""),
               deal=getattr(r, "deal", None), order=getattr(r, "order", None),
               request_id=getattr(r, "request_id", None),
-              latency_ms=_lat, basket_before=_before, **acct_snapshot())
+              latency_ms=_lat, basket_before=_before, **context, **acct_snapshot())
     if not ok:
         return None
     ticket = None
@@ -403,6 +506,107 @@ def close_all(ps, why):
                   latency_ms=_lat, why=why)
 
 
+# ---------------------------------------------------------------------------
+# Bot-only daily profit protection.
+#
+#   bot_value   = every realised dollar for this MAGIC + current floating P&L
+#   daily_total = bot_value - bot_value when this protection day started
+#
+# The baseline is persisted, so an ordinary restart cannot reset the trail or
+# the daily loss. A first deployment during a UTC day starts from the value at
+# deployment; this prevents old, partly reconstructed P&L from closing an open
+# position merely because the process was upgraded.
+
+S_ACTIVE, S_LIQUIDATING, S_STOPPED = "ACTIVE", "LIQUIDATING", "STOPPED"
+
+
+def all_realised():
+    """All realised P&L for this bot since a fixed epoch.
+
+    Entry deals are included because commission and fees may be charged there.
+    None means history is unreadable; the caller must not pretend that is zero.
+    """
+    deals = mt5.history_deals_get(PROTECTION_EPOCH,
+                                  datetime.now() + timedelta(days=1))
+    if deals is None:
+        return None
+    return sum(d.profit + d.swap + d.commission + getattr(d, "fee", 0.0)
+               for d in deals if d.magic == MAGIC and d.symbol == SYMBOL)
+
+
+def reset_protection_day(st, day_id, bot_value):
+    st["protection_day"] = day_id
+    st["protection_day_start_value"] = bot_value
+    st["protection_state"] = S_ACTIVE
+    st["protection_stop_reason"] = None
+    st["protection_trigger_total"] = None
+    st["protection_final_total"] = None
+    st["trail_armed"] = False
+    st["trail_peak"] = 0.0
+    st["trail_floor"] = 0.0
+    st["daily_total"] = 0.0
+    save_state(st)
+    rec_event("protection_day_start", day=day_id,
+              bot_value=round(bot_value, 4), activate=TRAIL_ACTIVATE,
+              giveback=TRAIL_GIVEBACK, daily_loss_limit=DAILY_LOSS_LIMIT)
+    say(f"PROTECTION DAY {day_id} starts at bot value {bot_value:+.2f}")
+
+
+def protection_liquidate(st, ps, reason_code, why):
+    """Persist the stop decision, close, and prove this bot is flat."""
+    if st.get("protection_state") != S_LIQUIDATING:
+        st["protection_state"] = S_LIQUIDATING
+        st["protection_stop_reason"] = reason_code
+        save_state(st)                       # decision survives a crash
+        rec_event("protection_liquidating", reason=reason_code, why=why,
+                  positions=len(ps), **acct_snapshot())
+        say(f"  -> PROTECTION LIQUIDATING [{reason_code}] ({why})")
+
+    done = (not ps) or close_all_verified(ps, why)
+    if done:
+        try:
+            done = not mine()               # independent final confirmation
+        except PositionsUnavailable as exc:
+            say(f"  cannot confirm protection close: {exc}")
+            done = False
+
+    if not done:
+        save_state(st)
+        say("  *** protection close is not confirmed; all orders stay blocked ***")
+        return False
+
+    st["protection_state"] = S_STOPPED
+    st["close_pending"] = None
+    st["cycle_tickets"] = []
+    st["cycle_dir"] = None
+    st["cycle_equity"] = None
+    st["recovery"] = False
+    save_state(st)
+    rec_event("protection_stopped", reason=st.get("protection_stop_reason"),
+              day=st.get("protection_day"), **acct_snapshot())
+    say("  -> PROTECTION STOPPED (flat confirmed; no trading until next UTC day)")
+    return True
+
+
+def finish_protection_measurement(st):
+    """Record what was actually banked after a protection liquidation."""
+    realised = all_realised()
+    if realised is None:
+        return
+    final_total = realised - st.get("protection_day_start_value", realised)
+    st["protection_final_total"] = round(final_total, 2)
+    st["daily_total"] = round(final_total, 2)
+    save_state(st)
+    trigger_total = st.get("protection_trigger_total")
+    trigger_number = trigger_total if isinstance(trigger_total, (int, float)) else 0.0
+    rec_event("protection_final", reason=st.get("protection_stop_reason"),
+              trigger_total=trigger_total,
+              final_total=round(final_total, 4),
+              execution_gap=round(final_total - trigger_number, 4))
+    say(f"  final protected day P&L {final_total:+.2f} "
+        f"(trigger was {trigger_number:+.2f})")
+
+
 def main():
     acc = connect()
     say("=" * 70)
@@ -419,6 +623,9 @@ def main():
     say("=" * 70)
     say("adds: SAME DIRECTION ONLY - a reversal against the first trade of the "
         "cycle is skipped. Deployed 2026-08-06.")
+    say(f"PROFIT PROTECTION: arm +${TRAIL_ACTIVATE:.2f}, trail by "
+        f"${TRAIL_GIVEBACK:.2f}; daily stop -${DAILY_LOSS_LIMIT:.2f}; "
+        "close this bot only and stop until the next UTC day")
     st = load_state()
     fails = 0
     while True:
@@ -448,6 +655,130 @@ def main():
                 time.sleep(POLL); continue
             eq = acc.equity
             fails = 0                           # a clean pass clears the counter
+
+            # ---- profit protection and daily loss --------------------
+            # A persisted liquidation is always completed first, even when
+            # deal history is temporarily unavailable.
+            if st.get("protection_state") == S_LIQUIDATING:
+                reason = st.get("protection_stop_reason") or "protection"
+                if protection_liquidate(st, ps, reason,
+                                         f"resume {reason} liquidation"):
+                    ps = []
+                    finish_protection_measurement(st)
+                else:
+                    ps = mine()
+
+            realised_all = all_realised()
+            day_id = datetime.utcnow().strftime("%Y-%m-%d")
+            protection_data_ok = realised_all is not None
+
+            if protection_data_ok:
+                if st.get("protection_history_ok") is False:
+                    rec_event("protection_history_restored")
+                    say("protection history is readable again")
+                st["protection_history_ok"] = True
+                bot_value = realised_all + basket_pnl(ps)
+
+                if (st.get("protection_day") != day_id and
+                        st.get("protection_state") != S_LIQUIDATING):
+                    # If yesterday's trail was armed while a position crossed
+                    # midnight, bank it before throwing yesterday's floor away.
+                    if st.get("trail_armed") and ps:
+                        old_day = st.get("protection_day")
+                        say(f"UTC day changed with the trail armed and {len(ps)} "
+                            "position(s); closing before reset")
+                        st["protection_trigger_total"] = st.get("daily_total")
+                        if not protection_liquidate(st, ps, "midnight_armed",
+                                                    f"midnight after {old_day}"):
+                            protection_data_ok = False
+                        else:
+                            ps = []
+                            finish_protection_measurement(st)
+                            realised_all = all_realised()
+                            if realised_all is None:
+                                protection_data_ok = False
+                            else:
+                                bot_value = realised_all
+                    if (protection_data_ok and
+                            st.get("protection_state") != S_LIQUIDATING):
+                        reset_protection_day(st, day_id, bot_value)
+
+                if (protection_data_ok and
+                        st.get("protection_day") == day_id):
+                    daily_total = bot_value - st.get(
+                        "protection_day_start_value", bot_value)
+                    st["daily_total"] = round(daily_total, 2)
+
+                    if st.get("protection_state", S_ACTIVE) == S_ACTIVE:
+                        stop_reason = None
+                        stop_why = None
+
+                        # The hard loss takes priority over the profit trail.
+                        if daily_total <= -DAILY_LOSS_LIMIT:
+                            stop_reason = "daily_loss"
+                            stop_why = (f"daily bot P&L {daily_total:+.2f} <= "
+                                        f"-${DAILY_LOSS_LIMIT:.2f}")
+                        else:
+                            if (not st.get("trail_armed") and
+                                    daily_total >= TRAIL_ACTIVATE):
+                                st["trail_armed"] = True
+                                st["trail_peak"] = daily_total
+                                st["trail_floor"] = max(
+                                    0.0, daily_total - TRAIL_GIVEBACK)
+                                save_state(st)
+                                rec_event("trail_armed", day=day_id,
+                                          daily_total=round(daily_total, 4),
+                                          peak=round(st["trail_peak"], 4),
+                                          floor=round(st["trail_floor"], 4))
+                                say(f"TRAIL ARMED at {daily_total:+.2f}; "
+                                    f"floor {st['trail_floor']:+.2f}")
+                            elif (st.get("trail_armed") and
+                                  daily_total > st.get("trail_peak", 0.0)):
+                                st["trail_peak"] = daily_total
+                                new_floor = max(0.0,
+                                                daily_total - TRAIL_GIVEBACK)
+                                if new_floor > st.get("trail_floor", 0.0):
+                                    st["trail_floor"] = new_floor
+                                    rec_event("trail_peak", day=day_id,
+                                              daily_total=round(daily_total, 4),
+                                              peak=round(daily_total, 4),
+                                              floor=round(new_floor, 4))
+                                    say(f"trail peak {daily_total:+.2f}; "
+                                        f"floor raised to {new_floor:+.2f}")
+                                save_state(st)
+
+                            if (st.get("trail_armed") and
+                                    daily_total <= st.get("trail_floor", 0.0)):
+                                stop_reason = "profit_trail"
+                                stop_why = (f"daily bot P&L {daily_total:+.2f} <= "
+                                            f"trail floor {st['trail_floor']:+.2f}")
+
+                        if stop_reason:
+                            st["protection_trigger_total"] = round(daily_total, 2)
+                            save_state(st)
+                            rec_event("protection_trigger", reason=stop_reason,
+                                      day=day_id,
+                                      daily_total=round(daily_total, 4),
+                                      peak=round(st.get("trail_peak", 0.0), 4),
+                                      floor=round(st.get("trail_floor", 0.0), 4),
+                                      positions=len(ps), **acct_snapshot())
+                            say(f"*** PROTECTION HIT: {stop_why}; closing "
+                                f"{len(ps)} position(s) ***")
+                            if protection_liquidate(st, ps, stop_reason, stop_why):
+                                ps = []
+                                finish_protection_measurement(st)
+                    save_state(st)
+            else:
+                if st.get("protection_history_ok") is not False:
+                    rec_event("protection_history_unavailable",
+                              last_error=str(mt5.last_error()))
+                    say("PROTECTION HISTORY UNAVAILABLE - blocking all new orders")
+                st["protection_history_ok"] = False
+                save_state(st)
+
+            protection_blocks_orders = (
+                not protection_data_ok or
+                st.get("protection_state") in (S_LIQUIDATING, S_STOPPED))
 
             # ---- unconfirmed basket close: finish it FIRST ------------
             # The trigger condition (cyc >= 0, cap breach) may no longer hold
@@ -538,8 +869,36 @@ def main():
             # entries: one when flat, more only while recovering.
             # A pending close blocks EVERYTHING - opening anything while the
             # book is half-closed rebuilds the basket the bot is trying to end.
-            if st.get("close_pending") and rev and rev["time"] > st.get("last_brick", 0):
-                say("skip signal: a basket close is still unconfirmed")
+            first_signal_observation = False
+            signal_context = {}
+            if (rev and rev["time"] > st.get("last_brick", 0) and
+                    rev["time"] > st.get("last_signal_observed", 0)):
+                signal_context = closed_m1_context(
+                    rates[:-1], rev, mt5.symbol_info_tick(SYMBOL))
+                first_signal_observation = True
+                st["last_signal_observed"] = rev["time"]
+                rec_event("signal_seen", **signal_context,
+                          positions=len(ps), recovery=bool(st.get("recovery")),
+                          cycle_direction=("BUY" if st.get("cycle_dir") == 1 else
+                                           "SELL" if st.get("cycle_dir") == -1 else None),
+                          protection_state=st.get("protection_state", S_ACTIVE),
+                          daily_total=st.get("daily_total"),
+                          trail_armed=bool(st.get("trail_armed")))
+                save_state(st)
+
+            block_reason = None
+            if st.get("close_pending"):
+                block_reason = "basket_close_unconfirmed"
+            elif protection_blocks_orders:
+                if not protection_data_ok:
+                    block_reason = "protection_history_unavailable"
+                else:
+                    block_reason = ("protection_" +
+                                    st.get("protection_state", S_STOPPED).lower())
+
+            if block_reason and rev and rev["time"] > st.get("last_brick", 0):
+                say(f"skip signal: {block_reason.replace('_', ' ')}")
+                rec_event("signal_skipped", reason=block_reason, **signal_context)
                 st["last_brick"] = rev["time"]; save_state(st)
                 rev = None
             if rev and rev["time"] > st.get("last_brick", 0):
@@ -548,12 +907,14 @@ def main():
                     ps = mine()
                     if not ps and eq <= FLOOR_USD:
                         say(f"EQUITY FLOOR: {eq:.2f} <= {FLOOR_USD:.2f} - no new cycle")
+                        rec_event("signal_skipped", reason="account_equity_floor",
+                                  equity=round(eq, 2), **signal_context)
                         st["last_brick"] = rev["time"]; save_state(st)
                     elif not ps:
                         # a new cycle starts with an empty ticket list, so its
                         # P&L begins at exactly zero
                         st["cycle_tickets"] = []
-                        tk = open_one(rev["dir"], "new cycle")
+                        tk = open_one(rev["dir"], "new cycle", rev, rates[:-1])
                         if tk:
                             st["last_brick"] = rev["time"]; st["cycle_equity"] = eq
                             st["cycle_tickets"] = [tk]
@@ -566,14 +927,26 @@ def main():
                             say(f"skip add: reversal is "
                                 f"{'BUY' if rev['dir'] == 1 else 'SELL'} but the cycle "
                                 f"is {'BUY' if st['cycle_dir'] == 1 else 'SELL'}")
+                            rec_event("signal_skipped", reason="opposite_to_cycle",
+                                      **signal_context)
                             st["last_brick"] = rev["time"]
                         else:
-                            tk = open_one(rev["dir"], f"recovery add #{len(ps)+1}")
+                            tk = open_one(rev["dir"], f"recovery add #{len(ps)+1}",
+                                          rev, rates[:-1])
                             if tk:
                                 st["last_brick"] = rev["time"]
                                 st["cycle_tickets"] = (st.get("cycle_tickets") or []) + [tk]
+                    elif first_signal_observation:
+                        # Keep the signal eligible for the rest of FRESH_MIN in
+                        # case this basket enters recovery, but record why it did
+                        # not trade on its first observation.
+                        rec_event("signal_waiting", reason="holding_not_in_recovery",
+                                  **signal_context)
                     save_state(st)
                 else:
+                    if first_signal_observation:
+                        rec_event("signal_skipped", reason="stale",
+                                  age_minutes=round(age, 3), **signal_context)
                     st["last_brick"] = rev["time"]; save_state(st)
 
             ps = mine()
@@ -589,6 +962,19 @@ def main():
                            "cycle_dir": ("BUY" if st.get("cycle_dir") == 1 else
                                          "SELL" if st.get("cycle_dir") == -1 else None),
                            "cycle_equity": st.get("cycle_equity"),
+                           "protection_day": st.get("protection_day"),
+                           "daily_total": st.get("daily_total"),
+                           "protection_state": st.get("protection_state", S_ACTIVE),
+                           "protection_stop_reason": st.get("protection_stop_reason"),
+                           "protection_history_ok": st.get("protection_history_ok"),
+                           "trail_activate": TRAIL_ACTIVATE,
+                           "trail_giveback": TRAIL_GIVEBACK,
+                           "daily_loss_limit": DAILY_LOSS_LIMIT,
+                           "trail_armed": bool(st.get("trail_armed")),
+                           "trail_peak": round(st.get("trail_peak", 0.0), 2),
+                           "trail_floor": round(st.get("trail_floor", 0.0), 2),
+                           "protection_trigger_total": st.get("protection_trigger_total"),
+                           "protection_final_total": st.get("protection_final_total"),
                            "equity": eq}, f)
         except Exception as e:
             say(f"ERROR {type(e).__name__}: {e}")

@@ -42,10 +42,15 @@ got. Matching them gives real slippage without touching the trading bot. This
 is not cosmetic: live cycle 2 was decided at a floating -1.87 and filled at
 -2.04, so 0.17 of a 0.47 result - a third of it - happened during execution.
 
-ORDER-TIME DATA (v3). Spread, latency, retcode, request id and free margin
+ORDER-TIME DATA (v4). Spread, latency, retcode, request id and free margin
 cannot be recovered from history at all - they exist only at the instant the
 order goes out. The bots now write them to `*_events.jsonl` and this file joins
 them in ON THE DEAL TICKET, never on time.
+
+v4 adds the reversal brick, signal age, directional chase, closed-bar ATR/EMAs,
+the decision quote, the order-result fill and post-fill quote. It also writes a
+`*_telemetry.csv` immediately, so skipped signals are available for research
+without waiting for a position to close.
 
 Broker history stays the authority for money. MT5's order result is what the
 server said at send time, and an accepted order can still finish differently,
@@ -105,7 +110,16 @@ DEAL_COLS = [
     "strategy_version", "param_id", "cycle_id", "cycle", "seq", "role",
     "position_id", "entry_deal", "exit_deal", "entry_order", "exit_order",
     "side", "lots", "n_exit_deals",
-    "open_time", "open_price", "requested_price", "slippage_price",
+    "open_time", "open_price", "requested_price", "fill_price",
+    "entry_reason", "signal_time_utc", "decision_time_utc",
+    "signal_age_seconds", "reversal_direction", "reversal_brick_price",
+    "reversal_brick_index", "m1_closed_bar_time_utc",
+    "bid_at_decision", "ask_at_decision", "quote_at_decision",
+    "chase_price_signed", "chase_points_signed", "fill_distance_from_brick",
+    "atr_m1_14_at_decision", "atr_over_brick_at_decision",
+    "ema20_at_decision", "ema50_at_decision",
+    "shadow_chase_50_pass", "shadow_chase_100_pass",
+    "slippage_price",
     "slippage_points", "slippage_usd",
     "close_time", "close_price", "minutes",
     "price_move", "broker_points",
@@ -117,7 +131,8 @@ DEAL_COLS = [
     "ema20", "ema50", "dist_ema20_atr", "dist_ema50_atr",
     "utc_hour", "dow", "session",
     # from the bots' order-time JSONL - none of this exists in broker history
-    "spread_at_entry", "latency_ms_entry", "retcode_entry",
+    "spread_at_entry", "spread_after_fill", "latency_ms_entry", "retcode_entry",
+    "adverse_slippage_price", "adverse_slippage_points",
     "broker_comment_entry", "request_id", "free_margin_at_entry",
     "spread_at_exit", "latency_ms_exit", "retcode_exit", "decided_cycle_pnl",
     # CustomChart chain-filter state at entry. READ-ONLY: the 15-minute filter
@@ -139,6 +154,27 @@ CYCLE_COLS = [
 ]
 
 EVENT_COLS = ["time", "kind", "detail"]
+
+TELEMETRY_COLS = [
+    "ts_utc", "kind", "magic", "side", "why", "reason", "ok",
+    "signal_time_utc", "decision_time_utc", "signal_age_seconds",
+    "reversal_direction", "reversal_brick_price", "reversal_brick_index",
+    "m1_closed_bar_time_utc", "bid_at_decision", "ask_at_decision",
+    "spread_at_decision", "quote_at_decision", "chase_price_signed",
+    "chase_points_signed", "atr_m1_14_at_decision",
+    "atr_over_brick_at_decision", "ema20_at_decision", "ema50_at_decision",
+    "shadow_chase_50_pass", "shadow_chase_100_pass",
+    "requested_price", "fill_price", "fill_distance_from_brick",
+    "adverse_slippage_price", "adverse_slippage_points", "slippage_usd",
+    "bid", "ask", "spread", "bid_after_fill", "ask_after_fill",
+    "spread_after_fill", "latency_ms", "retcode", "broker_comment",
+    "deal", "order", "request_id", "basket_before", "positions",
+    "recovery", "cycle_direction", "protection_state", "daily_total",
+    "trail_armed", "peak", "floor", "trigger_total", "final_total",
+    "execution_gap", "day", "bot_value", "activate", "giveback",
+    "daily_loss_limit", "balance", "equity", "margin", "margin_free",
+    "margin_level",
+]
 
 SESSIONS = ((0, 7, "asia"), (7, 13, "europe"), (13, 21, "us"), (21, 24, "late"))
 
@@ -185,9 +221,9 @@ def load_order_events(botlog_path):
     only what history cannot know: spread, latency, retcode and free margin.
     """
     path = botlog_path.replace(".log", "_events.jsonl")
-    op, cl, dec = {}, {}, []
+    op, cl, dec, telemetry = {}, {}, [], []
     if not os.path.exists(path):
-        return op, cl, dec
+        return op, cl, dec, telemetry
     try:
         with open(path, encoding="utf-8", errors="replace") as fh:
             for ln in fh:
@@ -198,6 +234,7 @@ def load_order_events(botlog_path):
                     e = json.loads(ln)
                 except Exception:
                     continue          # a torn last line while the bot writes
+                telemetry.append(e)
                 k = e.get("kind")
                 if k == "order_open" and e.get("deal"):
                     op[int(e["deal"])] = e
@@ -207,7 +244,7 @@ def load_order_events(botlog_path):
                     dec.append(e)
     except Exception:
         pass
-    return op, cl, dec
+    return op, cl, dec, telemetry
 
 
 def parse_botlog(path, tz_shift_hours):
@@ -436,7 +473,7 @@ def collect(feed):
     # box local time -> UTC, measured from this machine rather than assumed
     tz_shift = round((datetime.utcnow() - datetime.now()).total_seconds() / 3600)
     events, requested = parse_botlog(feed["botlog"], tz_shift)
-    ev_open, ev_close, ev_decided = load_order_events(feed["botlog"])
+    ev_open, ev_close, ev_decided, telemetry = load_order_events(feed["botlog"])
     chain = custom_chain(frames.get("m5"))
     req_by_ticket = {r["ticket"]: r for r in requested if r["ticket"]}
 
@@ -553,7 +590,31 @@ def collect(feed):
             "side": t["side"], "lots": f'{t["lots"]:.2f}', "n_exit_deals": t["n_out"],
             "open_time": dt_in.strftime("%Y-%m-%d %H:%M:%S"),
             "open_price": f'{t["p_in"]:.2f}',
-            "requested_price": f'{rq["price"]:.2f}' if rq else "",
+            "requested_price": (eo.get("requested_price", "") or
+                                (f'{rq["price"]:.2f}' if rq else "")),
+            # Broker history remains the final fill authority. The event's
+            # order-result price is retained in telemetry for diagnosis.
+            "fill_price": f'{t["p_in"]:.2f}',
+            "entry_reason": eo.get("why", ""),
+            "signal_time_utc": eo.get("signal_time_utc", ""),
+            "decision_time_utc": eo.get("decision_time_utc", ""),
+            "signal_age_seconds": eo.get("signal_age_seconds", ""),
+            "reversal_direction": eo.get("reversal_direction", ""),
+            "reversal_brick_price": eo.get("reversal_brick_price", ""),
+            "reversal_brick_index": eo.get("reversal_brick_index", ""),
+            "m1_closed_bar_time_utc": eo.get("m1_closed_bar_time_utc", ""),
+            "bid_at_decision": eo.get("bid_at_decision", eo.get("bid", "")),
+            "ask_at_decision": eo.get("ask_at_decision", eo.get("ask", "")),
+            "quote_at_decision": eo.get("quote_at_decision", ""),
+            "chase_price_signed": eo.get("chase_price_signed", ""),
+            "chase_points_signed": eo.get("chase_points_signed", ""),
+            "fill_distance_from_brick": eo.get("fill_distance_from_brick", ""),
+            "atr_m1_14_at_decision": eo.get("atr_m1_14_at_decision", ""),
+            "atr_over_brick_at_decision": eo.get("atr_over_brick_at_decision", ""),
+            "ema20_at_decision": eo.get("ema20_at_decision", ""),
+            "ema50_at_decision": eo.get("ema50_at_decision", ""),
+            "shadow_chase_50_pass": eo.get("shadow_chase_50_pass", ""),
+            "shadow_chase_100_pass": eo.get("shadow_chase_100_pass", ""),
             "slippage_price": slip_price, "slippage_points": slip_pts,
             "slippage_usd": slip_usd,
             "close_time": datetime.utcfromtimestamp(t["t_out"]).strftime("%Y-%m-%d %H:%M:%S"),
@@ -579,8 +640,11 @@ def collect(feed):
             "utc_hour": dt_in.hour, "dow": dt_in.strftime("%a"),
             "session": session_of(dt_in.hour),
             "spread_at_entry": eo.get("spread", ""),
+            "spread_after_fill": eo.get("spread_after_fill", ""),
             "latency_ms_entry": eo.get("latency_ms", ""),
             "retcode_entry": eo.get("retcode", ""),
+            "adverse_slippage_price": eo.get("adverse_slippage_price", ""),
+            "adverse_slippage_points": eo.get("adverse_slippage_points", ""),
             "broker_comment_entry": eo.get("broker_comment", ""),
             "request_id": eo.get("request_id", ""),
             "free_margin_at_entry": eo.get("margin_free", ""),
@@ -654,7 +718,8 @@ def collect(feed):
             "balance_after": f'{max(grp, key=lambda x: x["t_out"])["balance_after"]:.2f}',
         })
 
-    return dict(deals=drows, cycles=crows, events=events), None
+    return dict(deals=drows, cycles=crows, events=events,
+                telemetry=telemetry), None
 
 
 def write(path, cols, rows):
@@ -667,7 +732,7 @@ def write(path, cols, rows):
 
 
 def main():
-    say(f"harvest journal v2 up | poll {POLL}s | {len(FEEDS)} accounts")
+    say(f"harvest journal v4 up | poll {POLL}s | {len(FEEDS)} accounts")
     fails = 0
     while True:
         counts = {}
@@ -680,14 +745,17 @@ def main():
             write(feed["prefix"] + "_deals.csv", DEAL_COLS, got["deals"])
             write(feed["prefix"] + "_cycles.csv", CYCLE_COLS, got["cycles"])
             write(feed["prefix"] + "_events.csv", EVENT_COLS, got["events"])
+            write(feed["prefix"] + "_telemetry.csv", TELEMETRY_COLS,
+                  got["telemetry"])
             counts[feed["name"]] = dict(deals=len(got["deals"]),
                                         cycles=len(got["cycles"]),
-                                        events=len(got["events"]))
+                                        events=len(got["events"]),
+                                        telemetry=len(got["telemetry"]))
             fails = 0
         if counts:
             with open(ALIVE, "w") as fh:
                 json.dump(dict(alive_utc=datetime.utcnow().isoformat(),
-                               version=2, counts=counts), fh)
+                               version=4, counts=counts), fh)
         if fails >= 10:
             say("10 consecutive failures - exiting so the watchdog restarts me")
             sys.exit(1)

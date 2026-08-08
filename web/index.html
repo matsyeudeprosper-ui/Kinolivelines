@@ -120,7 +120,11 @@ async function refresh(){
         <div class="sub">paid in $${paidIn.toFixed(2)} (incl. $${d.deployed.deposits} deposit)</div></div>
       <div class="card"><h3>Cycle</h3>
         <div class="big">${st.recovery?'<span class="warn">RECOVERY</span>':(st.positions?st.cycle_dir||"open":"flat")}</div>
-        <div class="sub">${st.positions??0}/5 positions · cycle ${fmt(st.cycle_pnl,1)}</div></div>`;
+        <div class="sub">${st.positions??0}/5 positions · cycle ${fmt(st.cycle_pnl,1)}</div></div>
+      <div class="card"><h3>Protection (live)</h3>
+        <div class="big">${st.protection_state==="ACTIVE"?(st.trail_armed?'<span class="warn">ARMED</span>':"watching")
+          :st.protection_state?`<span class="neg">${st.protection_state}</span>`:"–"}</div>
+        <div class="sub">day ${fmt(st.daily_total,1)} · arms at +$${st.trail_activate??"?"}${st.trail_armed?" · floor "+(+st.trail_floor).toFixed(2):""} · stop −$${st.daily_loss_limit??"?"}</div></div>`;
   }
 
   const ps=(L&&L.positions||[]).filter(p=>p.magic===770407);
