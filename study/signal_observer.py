@@ -42,7 +42,7 @@ LOG = os.path.join(HERE, "signal_observer.log")
 
 COLS = ["signal_utc", "known_utc", "age_seconds", "side",
         "rev_brick_close", "bid", "ask", "spread",
-        "dist_beyond_brick", "accepted_50pt",
+        "dist_beyond_brick", "accepted_50pt", "hh_ll_pass",
         "prev_run_bricks", "mins_since_prev_reversal",
         "atr_m1_14", "session",
         "mfe60_pts", "mae60_pts", "mfe240_pts", "mae240_pts"]
@@ -224,6 +224,15 @@ def main():
                 age = (now - datetime.utcfromtimestamp(rv["time"])).total_seconds()
                 j = int(np.searchsorted(tmc, rv["time"], side="right")) - 1
                 a_ = atr[j] if 0 <= j < len(atr) and not np.isnan(atr[j]) else ""
+                # SPEC_HHLL_ENTRY, recorded on every live signal: do the last 3
+                # closed M1 bars agree with the trade's direction?
+                hh = ""
+                if j >= 2:
+                    hi_, lo_ = closed["high"], closed["low"]
+                    if side == "BUY":
+                        hh = "yes" if hi_[j] > hi_[j-1] > hi_[j-2] else "no"
+                    else:
+                        hh = "yes" if lo_[j] < lo_[j-1] < lo_[j-2] else "no"
                 rows.append({
                     "signal_utc": sig_utc,
                     "known_utc": now.strftime("%Y-%m-%d %H:%M:%S"),
@@ -234,6 +243,7 @@ def main():
                     "spread": f"{tick.ask - tick.bid:.2f}",
                     "dist_beyond_brick": f"{beyond:.2f}",
                     "accepted_50pt": "yes" if beyond <= FILTER_PTS else "no",
+                    "hh_ll_pass": hh,
                     "prev_run_bricks": rv["prev_run"],
                     "mins_since_prev_reversal": (f"{rv['mins_prev']:.1f}"
                                                  if rv["mins_prev"] else ""),

@@ -28,7 +28,8 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
              reward=1.5, hedge_sl=1.0, lot_pt=0.01, start=1000.0,
              arm="hedge", hours=None, month_target=None, month_trail=None,
              month_max_cycles=None, hedge_mult=1.0, drop_tp_in_recovery=False,
-             adapt=None, atr_override=None, max_basket=4):
+             adapt=None, atr_override=None, max_basket=4,
+             entry_filter=None, filter_seed=0):
     """arm: 'hedge' | 'any' | 'same'  ('any' is the current live bot).
 
     drop_tp_in_recovery: once recovery starts, strip the take-profit off EVERY
@@ -99,6 +100,13 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         S_trig = _S(adapt.get("trigger"), TRIG)
         S_tp = _S(adapt.get("tp"), TP)
         S_add = _S(adapt.get("add_dist"), 0.0)  # 0 = accept, i.e. A0 behaviour
+
+    # SPEC_HHLL_ENTRY. entry_filter gates NEW CYCLES only:
+    #   ("hhll",)      last 3 closed bars must agree with the direction
+    #   ("random", p)  accept with probability p - the rate-matched control
+    _rng_f = (np.random.default_rng(filter_seed)
+              if entry_filter is not None and entry_filter[0] == "random" else None)
+    f_seen = f_pass = 0
 
     def tp_of(j):
         return S_tp[j] if S_tp is not None else TP
@@ -214,6 +222,19 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                         # firing this time before any result was reported.)
                         if month_max_cycles is not None and month_cycles >= month_max_cycles:
                             allow = False
+                    if allow and entry_filter is not None:
+                        f_seen += 1
+                        if entry_filter[0] == "hhll":
+                            if j < 2:
+                                allow = False
+                            elif want:
+                                allow = bool(h[j] > h[j - 1] > h[j - 2])
+                            else:
+                                allow = bool(l[j] < l[j - 1] < l[j - 2])
+                        elif entry_filter[0] == "random":
+                            allow = bool(_rng_f.random() < entry_filter[1])
+                        if allow:
+                            f_pass += 1
                     if allow:
                         pending = (want, tp_of(j), 0.0, True)
                         month_cycles += 1
@@ -311,7 +332,8 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
             return dict(eq=0.0, dead=True, curve=curve, tm=tm, cycles=cycles, tlog=tlog,
                         opened=opened, hedges=hedges, won=hedge_won,
                         stopped=hedge_stop, caps=caps, mdd=mdd, lo=0.0,
-                        max_open=max_open, ok=True)
+                        max_open=max_open, ok=True,
+                        f_seen=f_seen, f_pass=f_pass)
 
     # ---- invariant: cycles must account for the equity change -------------
     resid = (eq - start) - sum(cycles)
@@ -319,4 +341,5 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
     return dict(eq=eq, dead=False, curve=curve, tm=tm, cycles=cycles, tlog=tlog,
                 opened=opened, hedges=hedges, won=hedge_won, stopped=hedge_stop,
                 caps=caps, mdd=mdd, lo=lo, max_open=max_open, ok=ok,
-                resid=resid, still_open=len(ent))
+                resid=resid, still_open=len(ent),
+                f_seen=f_seen, f_pass=f_pass)
