@@ -66,7 +66,12 @@ def read_account(terminal, login, magics):
         now = datetime.now(timezone.utc)
         deals = mt5.history_deals_get(EPOCH, datetime.now() + timedelta(days=1)) or []
         out = dict(balance=round(a.balance, 2), equity=round(a.equity, 2),
-                   margin_free=round(a.margin_free, 2), magics={})
+                   margin_free=round(a.margin_free, 2),
+                   # deposits read from BALANCE deals, not hardcoded - the
+                   # second $50 arrived unannounced and froze the old figure
+                   deposits=round(sum(d.profit for d in deals
+                                      if d.type == mt5.DEAL_TYPE_BALANCE), 2),
+                   magics={})
         for mg in magics:
             rows = [d for d in deals if d.magic == mg]
             def s(pred):

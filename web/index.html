@@ -105,7 +105,7 @@ async function refresh(){
 
   if(L){
     const m=L.magics["770407"]||{};
-    const paidIn=d.deployed.start+d.deployed.deposits;
+    const paidIn=d.deployed.start+(L.deposits??d.deployed.deposits);
     const floating=(L.positions||[]).filter(p=>p.magic===770407)
                     .reduce((s,p)=>s+p.pnl,0);
     const st=d.state.live||{};
