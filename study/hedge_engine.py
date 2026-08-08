@@ -101,11 +101,19 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         S_tp = _S(adapt.get("tp"), TP)
         S_add = _S(adapt.get("add_dist"), 0.0)  # 0 = accept, i.e. A0 behaviour
 
-    # SPEC_HHLL_ENTRY. entry_filter gates NEW CYCLES only:
-    #   ("hhll",)      last 3 closed bars must agree with the direction
-    #   ("random", p)  accept with probability p - the rate-matched control
+    # SPEC_HHLL_ENTRY / SPEC_HHLL_VARIANTS. entry_filter gates NEW CYCLES only:
+    #   ("hhll",)            last 3 closed bars must agree with the direction
+    #   ("random", p)        accept with probability p - the rate-matched control
+    #   ("mask", buy, sell)  full-length pre-slice bool arrays (like
+    #                        atr_override), buy[j]/sell[j] = structure agrees
+    #                        at bar j using only bars <= j
     _rng_f = (np.random.default_rng(filter_seed)
               if entry_filter is not None and entry_filter[0] == "random" else None)
+    _mask_b = _mask_s = None
+    if entry_filter is not None and entry_filter[0] == "mask":
+        _mask_b = np.asarray(entry_filter[1], dtype=bool)[a:]
+        _mask_s = np.asarray(entry_filter[2], dtype=bool)[a:]
+        assert len(_mask_b) == N and len(_mask_s) == N
     f_seen = f_pass = 0
 
     def tp_of(j):
@@ -233,6 +241,8 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                                 allow = bool(l[j] < l[j - 1] < l[j - 2])
                         elif entry_filter[0] == "random":
                             allow = bool(_rng_f.random() < entry_filter[1])
+                        elif entry_filter[0] == "mask":
+                            allow = bool(_mask_b[j] if want else _mask_s[j])
                         if allow:
                             f_pass += 1
                     if allow:

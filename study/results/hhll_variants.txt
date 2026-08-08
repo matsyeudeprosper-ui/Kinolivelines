@@ -1,0 +1,57 @@
+﻿================================================================================================
+SELECTION - first halves, 6 anchors, R = rate-matched random seed 0
+================================================================================================
+--- M1 first half (0.9 months) ---
+  A0           mean   1051.77  dead 0/6  cycles    536
+  D2 pivHH k1  mean    979.19  dead 0/6  cycles    413  share 50.7%  vs A0   -72.57 (0/6)  vs R   -49.41 (1/6)
+  D3 pivHL k1  mean   1043.32  dead 0/6  cycles    449  share 60.1%  vs A0    -8.45 (2/6)  vs R   +45.19 (5/6)
+  D4 pivHL k2  mean   1131.88  dead 0/6  cycles    416  share 51.9%  vs A0   +80.11 (6/6)  vs R  +129.47 (6/6)
+  D5 trend k1  mean   1093.81  dead 0/6  cycles    342  share 36.1%  vs A0   +42.04 (4/6)  vs R   +66.84 (4/6)
+  D6 donch10   mean   1021.43  dead 0/6  cycles    466  share 67.2%  vs A0   -30.34 (2/6)  vs R   +31.64 (4/6)
+
+--- M5 first half (4.6 months) ---
+  A0           mean   1118.35  dead 0/6  cycles   3086
+  D2 pivHH k1  mean    894.51  dead 0/6  cycles   2052  share 38.3%  vs A0  -223.83 (0/6)  vs R   -64.93 (2/6)
+  D3 pivHL k1  mean   1061.79  dead 0/6  cycles   2095  share 39.4%  vs A0   -56.56 (2/6)  vs R   -90.80 (1/6)
+  D4 pivHL k2  mean   1013.29  dead 0/6  cycles   2141  share 41.6%  vs A0  -105.06 (1/6)  vs R   +45.22 (3/6)
+  D5 trend k1  mean   1386.44  dead 0/6  cycles   1396  share 20.6%  vs A0  +268.09 (6/6)  vs R  +342.18 (6/6)
+  D6 donch10   mean   1015.22  dead 0/6  cycles   1360  share 19.9%  vs A0  -103.12 (1/6)  vs R   -36.84 (2/6)
+
+--- M15 first half (13.7 months) ---
+  A0           mean    459.22  dead 2/6  cycles   3872
+  D2 pivHH k1  mean   1254.80  dead 0/6  cycles   3360  share 41.0%  vs A0  +795.59 (6/6)  vs R  +513.36 (5/6)
+  D3 pivHL k1  mean    795.61  dead 1/6  cycles   2947  share 39.1%  vs A0  +336.39 (5/6)  vs R  -151.10 (1/6)
+  D4 pivHL k2  mean   1540.38  dead 0/6  cycles   3493  share 44.4%  vs A0 +1081.17 (6/6)  vs R  +344.85 (6/6)
+  D5 trend k1  mean    978.65  dead 0/6  cycles   2452  share 24.1%  vs A0  +519.44 (6/6)  vs R  -167.83 (2/6)
+  D6 donch10   mean    982.01  dead 0/6  cycles   1597  share 13.4%  vs A0  +522.80 (5/6)  vs R  -249.47 (1/6)
+
+qualifiers (F-R > 0 on >=2 of 3 halves): ['D4 pivHL k2', 'D5 trend k1']
+PICKED: D4 pivHL k2  (sum F-A0 across halves +1056.22; all scores {'D4 pivHL k2': 1056.2, 'D5 trend k1': 829.6})
+
+================================================================================================
+VALIDATION - untouched second halves. One shot.
+================================================================================================
+--- M1 second half (0.9 months) ---
+  A0           mean   1027.69  dead 0/6
+  F D4 pivHL k2 mean   1051.91  dead 0/6  share 54.5%
+  vs A0    +24.22  2SE   25.45  better 5/6
+  vs R     +46.81  2SE   26.72  better 5/6
+
+--- M5 second half (4.6 months) ---
+  A0           mean   1145.19  dead 0/6
+  F D4 pivHL k2 mean   1181.20  dead 0/6  share 39.8%
+  vs A0    +36.00  2SE  110.81  better 3/6
+  vs R     +96.73  2SE   85.52  better 5/6
+
+--- M15 second half (13.7 months) ---
+  A0           mean    431.58  dead 2/6
+  F D4 pivHL k2 mean    353.17  dead 2/6  share 44.6%
+  vs A0    -78.42  2SE   89.42  better 1/6
+  vs R    -199.32  2SE  167.14  better 2/6
+
+================================================================================================
+VERDICT (spec criteria, all required)
+  1. beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (0/3, big loss False)
+  2. beats R the same way: False  (2/3, big loss True)
+  3. share 20-80% somewhere: True
+  SURVIVES: False
