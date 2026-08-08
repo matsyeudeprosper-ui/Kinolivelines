@@ -62,3 +62,28 @@ One engine (`study/hedge_engine.py`), new `max_basket` parameter regression-
 tested so default reproduces A0 to the cent. Invariants on. Add-count printed
 per arm (Trap 16: identical counts across different D = dead gate = abort).
 Distance gate reuses the Phase-2 `add_dist` code path with lo=hi=D.
+
+---
+
+## RESULT (2026-08-08) — DOES NOT SURVIVE. SPEC CLOSED.
+
+`study/wide_spacing.py`, output in `study/wide_spacing_results.txt`.
+
+Selected on M15-h1: **D=4000** ($890 vs A0 $558, 6/6 survival). Validation:
+
+1. M15-h2 vs A0: **PASS** (+$477, 5/6, > 2SE; wipeouts 0/6 vs 2/6)
+2. vs cap controls: **PASS** (C0 4/6, C2 5/6 — it is genuinely spacing,
+   not just fewer adds)
+3. M1/M5 no-harm: **FAIL — M5 −$523.55, 0/6, far beyond 2SE**
+4. fewer wipeouts: PASS
+
+Also: the selection grid was violently non-monotonic (D=500 survives 6/6,
+D=1000 dies 6/6, D=2000 survives 5/6) — anchor noise is steering the dose-
+response, which is itself a fragility verdict.
+
+**Three brakes, one conclusion (monthly trail, daily trail, wide spacing):
+every trade-reduction mechanism rescues the losing regime and taxes the
+winning one, because the entry has no edge and a brake can only choose WHEN
+not to trade, never turn the rule profitable. This family of ideas is now
+CLOSED — no further brake variants without a mechanism for why it would beat
+the M5 tax.**

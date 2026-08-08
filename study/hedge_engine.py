@@ -28,7 +28,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
              reward=1.5, hedge_sl=1.0, lot_pt=0.01, start=1000.0,
              arm="hedge", hours=None, month_target=None, month_trail=None,
              month_max_cycles=None, hedge_mult=1.0, drop_tp_in_recovery=False,
-             adapt=None, atr_override=None):
+             adapt=None, atr_override=None, max_basket=4):
     """arm: 'hedge' | 'any' | 'same'  ('any' is the current live bot).
 
     drop_tp_in_recovery: once recovery starts, strip the take-profit off EVERY
@@ -64,7 +64,11 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
     month_cycles = 0
     TP = brick * tp_bricks
     TRIG = brick * sl_bricks
-    CAP = 4                                   # only used by 'any' / 'same'
+    # only used by 'any' / 'same'. CAP standing positions are allowed; the
+    # (CAP+1)th fill triggers the forced loss-close, matching the live bots.
+    # CAP=0 is the no-adds control: adds blocked entirely, and the cap-close
+    # branch is skipped so a lone first trade is not instantly "over cap".
+    CAP = max_basket
 
     # ---- SPEC_ADAPTIVE_SPACING arms -----------------------------------
     # adapt = {"trigger": (k, lo, hi), "tp": (...), "add_dist": (...)}, any
@@ -218,9 +222,9 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                         if (not hedged) and want != cyc_dir:
                             dn = max(((f_ent - c[j]) if f_long else (c[j] - f_ent)), brick)
                             pending = (want, reward * dn, hedge_sl * dn, False)
-                    elif arm == "any" and len(ent) <= CAP:
+                    elif arm == "any" and CAP >= 1 and len(ent) <= CAP:
                         pending = (want, add_tp(j), 0.0, False)
-                    elif arm == "same" and len(ent) <= CAP and want == cyc_dir:
+                    elif arm == "same" and CAP >= 1 and len(ent) <= CAP and want == cyc_dir:
                         # A3: the add must sit at least S_add away from the
                         # NEAREST basket entry, or it is clustered exposure -
                         # Phase 0 showed 10% of adds land within ~50 pts of an
@@ -295,7 +299,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         # ---- back to zero, or cap -----------------------------------------
         if rec and len(ent) and eq >= cyc:
             close_all(c[j], when=tm[j]); cycles.append(bal - cyc); cyc = bal; eq = bal
-        elif arm != "hedge" and len(ent) > CAP:
+        elif arm != "hedge" and CAP >= 1 and len(ent) > CAP:
             caps += 1
             close_all(c[j], when=tm[j]); cycles.append(bal - cyc); cyc = bal; eq = bal
 

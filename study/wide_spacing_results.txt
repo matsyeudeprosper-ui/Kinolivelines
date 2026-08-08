@@ -1,0 +1,38 @@
+==========================================================================================
+SELECTION - M15 first half (40000 bars, 13.7 months), 6 anchors
+==========================================================================================
+  A0                 mean    557.81  dead 1/6  adds    1992
+  D=250              mean     58.12  dead 5/6  adds     583  vs A0   -499.69  2SE  236.49  better 0/6
+  D=500              mean    542.68  dead 0/6  adds    1243  vs A0    -15.14  2SE  207.92  better 2/6
+  D=1000             mean      0.00  dead 6/6  adds     542  vs A0   -557.81  2SE  224.58  better 0/6
+  D=2000             mean    608.44  dead 1/6  adds     582  vs A0    +50.63  2SE  385.06  better 3/6
+  D=4000             mean    890.49  dead 0/6  adds     447  vs A0   +332.68  2SE  264.07  better 5/6
+
+SELECTED: D=4000.0 (mean 890.49); grid and rule preregistered.
+
+==========================================================================================
+VALIDATION - untouched data. One shot.
+==========================================================================================
+--- M15 second half (13.7 months) ---
+  A0                 mean    389.82  dead 2/6  adds    1773
+  D=4000             mean    867.27  dead 0/6  adds     332  vs A0   +477.45  2SE  288.49  better 5/6
+  C0 no adds         mean    750.40  dead 0/6  adds       0  vs A0   +360.58  2SE  226.06  better 5/6
+  C2 cap 2           mean    407.61  dead 0/6  adds    1722  vs A0    +17.79  2SE  391.38  better 3/6
+--- M1 full (1.8 months) ---
+  A0                 mean   1089.78  dead 0/6  adds     383
+  D=4000             mean   1099.51  dead 0/6  adds      22  vs A0     +9.73  2SE   48.41  better 2/6
+  C0 no adds         mean   1035.51  dead 0/6  adds       0  vs A0    -54.27  2SE   42.86  better 1/6
+  C2 cap 2           mean    944.03  dead 0/6  adds     348  vs A0   -145.75  2SE   70.87  better 1/6
+--- M5 full (9.1 months) ---
+  A0                 mean   1291.38  dead 0/6  adds    2169
+  D=4000             mean    767.83  dead 0/6  adds     206  vs A0   -523.55  2SE  100.01  better 0/6
+  C0 no adds         mean    670.26  dead 0/6  adds       0  vs A0   -621.12  2SE  108.22  better 0/6
+  C2 cap 2           mean    633.00  dead 0/6  adds    1829  vs A0   -658.38  2SE  197.65  better 0/6
+
+==========================================================================================
+VERDICT (spec section 4)
+  1. beats A0 on M15-h2 >=5/6, mean>2SE : True  (mean +477.45, 2SE 288.49)
+  2. beats BOTH cap controls >=4/6      : True  (vs C0 4/6, vs C2 5/6)
+  3. no M1/M5 loss beyond 2SE           : False  (M1 +9.73/48.41, M5 -523.55/100.01)
+  4. fewer wipeouts than A0 on M15-h2   : True
+  SURVIVES: False
