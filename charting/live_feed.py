@@ -52,6 +52,11 @@ REVERSAL = 2                      # bricks of counter-move needed to turn; 2 = c
 COMMON    = os.path.join(os.environ["APPDATA"], "MetaQuotes", "Terminal", "Common", "Files")
 OUT_BRK   = os.path.join(COMMON, "kl_custom_bars.csv")
 OUT_RENKO = os.path.join(COMMON, "kl_renko_bars.csv")
+# VIEW-ONLY M1 breakout series. Measured 2026-08-08: spread is 29% of the
+# median kept M1 candle (vs 9% on M5) and it fires ~507 events/day - far too
+# costly to trade, useful only for zooming into how an M5 breakout unfolded.
+# No rule may be based on this series without a new preregistration.
+OUT_BRK1  = os.path.join(COMMON, "kl_custom_bars_m1.csv")
 ALIVE     = os.path.join(COMMON, "kl_feed_alive.json")
 
 HDR = ["time", "open", "high", "low", "close", "tick_volume", "spread", "real_volume"]
@@ -205,8 +210,12 @@ def main():
             # shows live movement between them.
             rnk = renko_rows(closed_r, None, BRICK)
 
+            # same chain rule, M1 source - closed_r is already the M1 series
+            brk1 = breakout_rows(closed_r)
+
             write_atomic(OUT_BRK, brk)
             write_atomic(OUT_RENKO, rnk)
+            write_atomic(OUT_BRK1, brk1)
 
             with open(ALIVE, "w", encoding="utf-8") as f:
                 f.write('{"alive_utc": "%s", "breakout": %d, "renko": %d, "bid": %s}'

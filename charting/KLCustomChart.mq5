@@ -17,8 +17,9 @@
 
 enum ENUM_KL_PRESET
   {
-   PRESET_BREAKOUT,   // Breakout filter  (your rule)
-   PRESET_RENKO       // Renko bricks
+   PRESET_BREAKOUT,     // Breakout filter  (your rule, M5)
+   PRESET_RENKO,        // Renko bricks
+   PRESET_BREAKOUT_M1   // Breakout on M1 - VIEW ONLY (spread ~29% of a candle)
   };
 
 input ENUM_KL_PRESET InpPreset = PRESET_BREAKOUT;   // which chart to build
@@ -34,8 +35,12 @@ int OnStart()
    //--- 0. resolve the preset -------------------------------------------
    // A dropdown rather than two free-text fields, so picking a chart cannot be
    // got wrong by typing a filename that does not exist.
-   string InpCsv    = (InpPreset == PRESET_RENKO) ? "kl_renko_bars.csv" : "kl_custom_bars.csv";
-   string InpSymbol = (InpPreset == PRESET_RENKO) ? "BTCUSDm.RENKO"     : "BTCUSDm.BRK";
+   string InpCsv    = (InpPreset == PRESET_RENKO)       ? "kl_renko_bars.csv"
+                    : (InpPreset == PRESET_BREAKOUT_M1) ? "kl_custom_bars_m1.csv"
+                                                        : "kl_custom_bars.csv";
+   string InpSymbol = (InpPreset == PRESET_RENKO)       ? "BTCUSDm.RENKO"
+                    : (InpPreset == PRESET_BREAKOUT_M1) ? "BTCUSDm.BRK1"
+                                                        : "BTCUSDm.BRK";
 
    //--- 1. read the CSV -------------------------------------------------
    // FILE_COMMON: the shared folder every terminal on the machine can see,

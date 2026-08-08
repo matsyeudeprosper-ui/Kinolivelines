@@ -59,8 +59,9 @@ input int            InpSepScan  = 4000;         // how many bricks back to scan
 // depends on it now.
 string g_csv = "";
 datetime g_lastPushed = 0;
-bool g_breakout = false;      // .BRK chart: filtered M5 candles, NOT bricks -
+bool g_breakout = false;      // .BRK/.BRK1 chart: filtered candles, NOT bricks -
                               // the renko countdown would be fiction there
+int  g_srcSecs = 300;         // source bar length: 300 for .BRK (M5), 60 for .BRK1
 int g_sepBars = -1;                        // bar count when separators were last drawn
 int g_sepDrawn = 0;                        // how many lines the last pass created
 int g_sepErr = 0;                          // last ObjectCreate error, 0 = none
@@ -272,6 +273,12 @@ int OnInit()
   {
    // Pick the data file from whichever custom symbol we are attached to.
    if(StringFind(_Symbol, ".RENKO") >= 0)      g_csv = "kl_renko_bars.csv";
+   else if(StringFind(_Symbol, ".BRK1") >= 0)               // check BEFORE .BRK -
+     {                                                      // ".BRK" matches both
+      g_csv = "kl_custom_bars_m1.csv";
+      g_breakout = true;
+      g_srcSecs = 60;                       // countdown to the M1 close here
+     }
    else if(StringFind(_Symbol, ".BRK") >= 0) { g_csv = "kl_custom_bars.csv"; g_breakout = true; }
    else                                        g_csv = "";   // real symbol: draw only
 
@@ -444,21 +451,23 @@ void Redraw()
                                  : "keep the next M5 bar if it CLOSES below here");
         }
 
-      // Seconds left in the CURRENT source M5 candle - the decision moment.
+      // Seconds left in the CURRENT source candle - the decision moment.
       // Server time, like every timestamp on this chart.
-      long   secs  = (long)PeriodSeconds(PERIOD_M5);
+      long   secs  = (long)g_srcSecs;
       long   nowS  = (long)TimeCurrent();
       long   left  = secs - (nowS % secs);
 
       string botLines2 = DrawBotTrades();
       Comment(botLines2 + StringFormat(
-         "%s  live %.2f   BREAKOUT chart (filtered M5 closes)\n"
+         "%s  live %.2f   BREAKOUT chart (filtered M%d closes)%s\n"
          "last kept bar  high %.2f  low %.2f   bars %d\n"
          "to break UP:   %+.1f pts (close above %.2f)\n"
          "to break DOWN: %+.1f pts (close below %.2f)\n"
-         "M5 closes in %d:%02d - a cross does NOT count until the close\n"
+         "bar closes in %d:%02d - a cross does NOT count until the close\n"
          "separators: " + g_sepNote + "\nfeed: %s",
-         InpSource, bid, kHi, kLo, bars,
+         InpSource, bid, (int)(g_srcSecs / 60),
+         g_srcSecs == 60 ? "  [VIEW ONLY - spread is ~29% of an M1 candle]" : "",
+         kHi, kLo, bars,
          kHi - bid, kHi, bid - kLo, kLo,
          (int)(left / 60), (int)(left % 60),
          g_lastPushed > 0 ? "OK, newest " + TimeToString(g_lastPushed, TIME_MINUTES)
