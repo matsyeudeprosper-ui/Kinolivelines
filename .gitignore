@@ -44,3 +44,19 @@ live/hedge_bot_state.json
 live/harvest_live_alive.json
 live/harvest_live_state.json
 live/harvest_live.log
+# Live, ever-growing data - stays local (agreed with ChatGPT 2026-08-07).
+# Snapshots get committed deliberately at milestones, not on every feed tick.
+recorder/data/
+study/results/liquidation_readiness_audit.*
+# runtime state, heartbeats and event streams - regenerate, never reviewed
+live/*_alive.json
+live/*_state.json
+live/*.log
+live/*.err
+live/*_events.jsonl
+study/*_alive.json
+study/*_state.json
+study/*.log
+study/shadow_trail_*.jsonl
+web/stats.json
+web/stats_alive.json
