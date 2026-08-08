@@ -240,7 +240,15 @@ if USE_LLM:
     else:
         say(f"decider: {_prov} / {brain.DEFAULT_MODELS.get(_prov)} ({_key} present)")
 
-known_pos  = {p.ticket for p in (mt5.positions_get(symbol=SYM) or [])}
+def own_positions():
+    # This loop's trades only (act.py sends magic 0, comment KL-auto). The
+    # harvest/renko bots (magic 7704xx) and any EA (9909xx) run recovery baskets
+    # on this same account with no SL and multi-hour holds - every rule here
+    # (max hold, 1R, open/close wakes) is about OUR trades, and on 2026-08-08
+    # the max-hold wake told the decider to CLOSE two harvest baskets.
+    return [p for p in (mt5.positions_get(symbol=SYM) or []) if p.magic == 0]
+
+known_pos  = {p.ticket for p in own_positions()}
 known_ord  = {o.ticket for o in (mt5.orders_get(symbol=SYM) or [])}
 
 # Re-sync on startup. A restart baselines every level and every known order, so
@@ -299,7 +307,7 @@ while True:
             time.sleep(POLL)
             continue
         mid  = (tick.bid + tick.ask) / 2
-        pos  = list(mt5.positions_get(symbol=SYM) or [])
+        pos  = own_positions()
         ords = list(mt5.orders_get(symbol=SYM) or [])
         now  = time.time()
 
