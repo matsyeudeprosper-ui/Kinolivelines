@@ -27,8 +27,18 @@ import numpy as np
 def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
              reward=1.5, hedge_sl=1.0, lot_pt=0.01, start=1000.0,
              arm="hedge", hours=None, month_target=None, month_trail=None,
-             month_max_cycles=None, hedge_mult=1.0):
+             month_max_cycles=None, hedge_mult=1.0, drop_tp_in_recovery=False,
+             adapt=None, atr_override=None):
     """arm: 'hedge' | 'any' | 'same'  ('any' is the current live bot).
+
+    drop_tp_in_recovery: once recovery starts, strip the take-profit off EVERY
+    open position and give new adds none either, so the only way out is the
+    cycle's own P&L reaching zero (or the basket cap). This removes the
+    "harvest" - the ability of one position to bank its 250 points while the
+    basket as a whole is still under water. Note it changes nothing for a
+    single position: with one trade open, P&L-back-to-zero is always crossed
+    before +250, so its TP could never have fired in recovery anyway. The
+    difference is entirely in multi-position baskets.
 
     hours: a set of UTC hours in which a NEW CYCLE may start. None = any hour.
     A hedge is always allowed regardless of the clock - refusing to hedge an
@@ -55,6 +65,42 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
     TP = brick * tp_bricks
     TRIG = brick * sl_bricks
     CAP = 4                                   # only used by 'any' / 'same'
+
+    # ---- SPEC_ADAPTIVE_SPACING arms -----------------------------------
+    # adapt = {"trigger": (k, lo, hi), "tp": (...), "add_dist": (...)}, any
+    # subset. S_t = clamp(k * ATR14_t, lo, hi) on THIS run's own bars, sampled
+    # at the SIGNAL bar (closed before the next-bar-open fill, so nothing is
+    # read from the future). atr_override (full-length, pre-slice) exists for
+    # the shuffled-ATR control and for nothing else.
+    S_trig = S_tp = S_add = None
+    if adapt:
+        if atr_override is not None:
+            _atr = np.asarray(atr_override, dtype=float)[a:]
+        else:
+            _pc = np.concatenate([[c[0]], c[:-1]])
+            _tr = np.maximum(h - l, np.maximum(np.abs(h - _pc), np.abs(l - _pc)))
+            _atr = np.full(N, np.nan)
+            if N > 14:
+                _atr[13] = _tr[:14].mean()
+                for _i in range(14, N):
+                    _atr[_i] = (_atr[_i - 1] * 13 + _tr[_i]) / 14.0   # Wilder
+
+        def _S(spec_, fallback):
+            if spec_ is None:
+                return None
+            _k, _lo, _hi = spec_
+            s_ = np.clip(_k * _atr, _lo, _hi)
+            s_[np.isnan(s_)] = fallback       # warm-up bars: behave like A0
+            return s_
+        S_trig = _S(adapt.get("trigger"), TRIG)
+        S_tp = _S(adapt.get("tp"), TP)
+        S_add = _S(adapt.get("add_dist"), 0.0)  # 0 = accept, i.e. A0 behaviour
+
+    def tp_of(j):
+        return S_tp[j] if S_tp is not None else TP
+
+    def trig_of(j):
+        return S_trig[j] if S_trig is not None else TRIG
 
     ao = ac = float(o[0]); d = 0; pd_ = 0
     bal = start; cyc = start
@@ -83,6 +129,12 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         tpp = np.empty(0); slv = np.empty(0); lotm = np.empty(0)
         rec = False; cyc_dir = None; f_ent = None; hedged = False
 
+    def add_tp(j):
+        """TP for a recovery add. np.inf means the broker TP is simply absent -
+        the hit test can then never be true, so the position can only leave via
+        the basket exit."""
+        return np.inf if drop_tp_in_recovery else tp_of(j)
+
     eq_now = start
     for j in range(N):
         # ---- month roll-over, before anything else this bar ---------------
@@ -97,6 +149,16 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         # ---- fill ---------------------------------------------------------
         if pending is not None:
             L, ptp, psl, is_first = pending
+            # BUG FIXED 2026-08-07. is_first was decided when the SIGNAL
+            # appeared, but the fill lands on the NEXT bar. If the basket emptied
+            # on a take-profit in between, the fill arrived flagged as an add, so
+            # cyc_dir was never set and stayed None - and `want == cyc_dir` is
+            # false forever after, silently refusing every same-direction add
+            # until the next clean cycle. It under-added by about 3x (1,324 adds
+            # against the reference implementation's 4,291) and turned M15
+            # harvest from a loss into $1,358, contradicting the out-of-sample
+            # run. Decide from the ACTUAL basket state at fill time.
+            is_first = (len(ent) == 0)
             px = o[j] + spread if L else o[j]
             ent = np.append(ent, px); lng = np.append(lng, L)
             tpp = np.append(tpp, ptp); slv = np.append(slv, psl)
@@ -149,7 +211,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                         if month_max_cycles is not None and month_cycles >= month_max_cycles:
                             allow = False
                     if allow:
-                        pending = (want, TP, 0.0, True)
+                        pending = (want, tp_of(j), 0.0, True)
                         month_cycles += 1
                 elif rec:
                     if arm == "hedge":
@@ -157,9 +219,15 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                             dn = max(((f_ent - c[j]) if f_long else (c[j] - f_ent)), brick)
                             pending = (want, reward * dn, hedge_sl * dn, False)
                     elif arm == "any" and len(ent) <= CAP:
-                        pending = (want, TP, 0.0, False)
+                        pending = (want, add_tp(j), 0.0, False)
                     elif arm == "same" and len(ent) <= CAP and want == cyc_dir:
-                        pending = (want, TP, 0.0, False)
+                        # A3: the add must sit at least S_add away from the
+                        # NEAREST basket entry, or it is clustered exposure -
+                        # Phase 0 showed 10% of adds land within ~50 pts of an
+                        # existing position. S_add None or 0 = A0 behaviour.
+                        if (S_add is None
+                                or float(np.min(np.abs(c[j] - ent))) >= S_add[j]):
+                            pending = (want, add_tp(j), 0.0, False)
             pd_ = d
 
         # ---- targets ------------------------------------------------------
@@ -211,8 +279,14 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
 
         # ---- recovery trigger ---------------------------------------------
         if len(ent) and not rec:
-            if np.where(lng, l[j] <= ent - TRIG, h[j] >= ent + TRIG + spread).any():
+            _tg = trig_of(j)
+            if np.where(lng, l[j] <= ent - _tg, h[j] >= ent + _tg + spread).any():
                 rec = True
+                if drop_tp_in_recovery and arm != "hedge":
+                    # strip the TP off everything already open, not just future
+                    # adds - the user's rule is "after recovery we remove all
+                    # TPs", present positions included
+                    tpp = np.full(len(tpp), np.inf)
 
         flo = float(np.sum(np.where(lng, c[j] - ent, ent - c[j] - spread))) * lot_pt \
             if len(ent) else 0.0

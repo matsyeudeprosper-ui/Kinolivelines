@@ -1,0 +1,59 @@
+================================================================================================
+M1  1.8 months   k1(trig)=3.90  k2(tp)=6.50  k3(add)=3.64 [frozen from Phase 0]
+================================================================================================
+arm                     mean end     vs A0     2SE   better   dead     adds     maxDD
+A0 live rule             1081.28                         -    0/6      388    111.54
+                      anchor noise floor (A0 std): 64.05
+A1 adaptive trigger      1038.45    -42.83   32.27      1/6    0/6      380    123.62
+                      per anchor:    +15.17   -106.79    -38.34    -56.90    -38.00    -32.12
+A2 adaptive TP           1020.69    -60.59   48.56      1/6    0/6      389    161.86
+                      per anchor:    -76.69   -132.10    -57.48    -18.28    +29.87   -108.88
+A3 adaptive add-dist     1044.85    -36.43   53.28      2/6    0/6      200    167.21
+                      per anchor:    +48.01   -143.17    +12.06    -34.00    -50.44    -51.02
+RM fixed dist 199        1047.94    -33.34   59.83      3/6    0/6      182    152.19
+                      per anchor:    +24.44   -127.24     -2.86    +21.32    +11.33   -127.04
+                      add-count match: A3 200 vs RM 182 (OUTSIDE 5% - note)
+SH shuffled-ATR A3       1036.91  (seeds: 1066 1061 983)
+
+================================================================================================
+M5  9.1 months   k1(trig)=1.09  k2(tp)=1.82  k3(add)=1.84 [frozen from Phase 0]
+================================================================================================
+arm                     mean end     vs A0     2SE   better   dead     adds     maxDD
+A0 live rule             1218.11                         -    0/6     2171    392.28
+                      anchor noise floor (A0 std): 77.75
+A1 adaptive trigger      1540.46   +322.36  159.53      6/6    0/6     2182    354.14
+                      per anchor:   +438.24   +439.40   +548.21   +198.35    +11.25   +298.69
+A2 adaptive TP            960.85   -257.26  142.29      0/6    0/6     2121    542.69
+                      per anchor:   -230.05    -62.26   -112.68   -201.85   -468.27   -468.43
+A3 adaptive add-dist     1199.98    -18.13  148.97      3/6    0/6     1088    419.45
+                      per anchor:   -144.09   +110.91   +138.78   -259.76   -131.53   +176.94
+RM fixed dist 301        1271.36    +53.26   93.07      3/6    0/6     1065    377.09
+                      per anchor:    -43.59   +204.18   +129.79    -27.79    -69.38   +126.33
+                      add-count match: A3 1088 vs RM 1065 (OK)
+SH shuffled-ATR A3       1093.65  (seeds: 1071 1153 1057)
+
+================================================================================================
+M15  27.4 months   k1(trig)=0.55  k2(tp)=0.92  k3(add)=1.58 [frozen from Phase 0]
+================================================================================================
+arm                     mean end     vs A0     2SE   better   dead     adds     maxDD
+A0 live rule                0.00                         -    6/6     3252   1049.64
+                      anchor noise floor (A0 std): 0.00
+A1 adaptive trigger       235.12   +235.12  270.42      3/6    3/6     3759   1114.62
+                      per anchor:   +143.54     +0.00   +465.24   +801.94     +0.00     +0.00
+A2 adaptive TP            337.85   +337.85  309.00      3/6    3/6     3607    989.73
+                      per anchor:     +0.00     +0.00   +549.74     +0.00   +799.76   +677.59
+A3 adaptive add-dist        0.00     +0.00    0.00      0/6    6/6      418   1052.94
+                      per anchor:     +0.00     +0.00     +0.00     +0.00     +0.00     +0.00
+*** A3 IDENTICAL TO A0 - DEAD GATE (Trap 16), result void ***
+RM fixed dist 2000        660.63   +660.63  342.57      5/6    1/6     1094    915.57
+                      per anchor:     +0.00   +578.71   +963.24  +1238.64   +561.27   +621.91
+                      add-count match: A3 418 vs RM 1094 (OUTSIDE 5% - note)
+SH shuffled-ATR A3          0.00  (seeds: 0 0 0)
+
+================================================================================================
+PHASE 2 VERDICT (criteria from spec section 5, judged mechanically)
+  M15 better>=5/6 AND mean>2SE AND mean>noise : False  (better 0/6, mean +0.00, 2SE 0.00, noise 0.00)
+  no M1/M5 loss beyond 2SE                    : True  (M1 -36.43/2SE 53.28, M5 -18.13/2SE 148.97)
+  beats rate-matched on >=4/6 (M15)           : False  (0/6, RM itself +660.63 vs A0)
+  shuffled ATR reproduces < half the gain     : True  (shuffle gain +0.00)
+  A3 SURVIVES: False

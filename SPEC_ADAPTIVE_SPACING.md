@@ -167,3 +167,31 @@ b. **ATR per run-timeframe, not M1** — M1 history reaches ~55 days, the M15
   means. Either arm must clear its own penalty before any claim.
 - **Frozen k** (from ATR only): M1 3.64 (clamp 70–280), M5 1.84 (126–505),
   M15 1.58 (215–860). Not to be re-fitted.
+
+## PHASE 2 RESULT (2026-08-07) — NO ARM SURVIVES. SPEC CLOSED.
+
+`study/phase2_adaptive.py`, results in `study/phase2_results.txt`. A0
+regression-tested to the cent before any arm ran; A3's gate verified firing
+(399→198 adds, M1 anchor 0).
+
+- **A3 (the headline arm): dead.** M1 −$36 (2/6), M5 −$18 (3/6), M15 wiped out
+  6/6 exactly like A0 — halving the adds (418 vs 3,252) changed nothing about
+  survival. Fails every survival criterion.
+- The script's "Trap 16 / identical to A0" warning on M15 was the CHECKER
+  misfiring: both arms are equal at zero because both died, not because the
+  gate was dead. Gate firing was proven separately.
+- **A1 (adaptive trigger): +$322, 6/6 on M5** — but −$43 on M1 and only 3/6
+  survival on M15. Fails the spec. Recorded as the strongest cell; one-
+  timeframe wins are this week's recurring mirage.
+- **A2 (adaptive TP): worst arm.** Consistent with its measured +21% Jensen
+  cost penalty.
+- **The rate-matched CONTROL beat every adaptive arm on M15**: fixed 2,000-pt
+  min add distance → +$661, survived 5/6, DD 916 vs 1050. The value is in
+  WIDE spacing, not ADAPTIVE spacing. This is a control, selected by bisection
+  against A3's add count — it may NOT be promoted to a strategy without a new
+  preregistration (standing rule, FINDINGS "not candidate strategies").
+- Phase 3 (breakout-candle engine) was gated on a survivor: does not run.
+
+**Conclusion: volatility-tracking buys nothing here. The only live signal in
+the whole experiment is the old one — fewer, wider-spaced adds reduce ruin on
+long stretches — and a fixed distance does that as well as ATR does.**
