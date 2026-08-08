@@ -42,7 +42,7 @@ LOG = os.path.join(HERE, "signal_observer.log")
 
 COLS = ["signal_utc", "known_utc", "age_seconds", "side",
         "rev_brick_close", "bid", "ask", "spread",
-        "dist_beyond_brick", "accepted_50pt", "hh_ll_pass",
+        "dist_beyond_brick", "accepted_50pt", "hh_ll_pass", "d4_pass",
         "prev_run_bricks", "mins_since_prev_reversal",
         "atr_m1_14", "session",
         "mfe60_pts", "mae60_pts", "mfe240_pts", "mae240_pts"]
@@ -113,6 +113,33 @@ def atr14(rates):
         for i in range(14, len(tr)):
             a[i] = (a[i - 1] * 13 + tr[i]) / 14.0
     return a
+
+
+def d4_pass_of(side, hi_, lo_, j):
+    """SPEC_HHLL_VARIANTS D4, the validation near-miss on M1 (missed the 2SE
+    bar by $1): last two CONFIRMED 5-bar swing lows rising -> BUY pass; last
+    two confirmed swing highs falling -> SELL pass. Strict fractals (unique
+    extreme in the 5-bar window); pivot i is known only from bar i+2, so only
+    i <= j-2 counts - same no-lookahead rule as the backtest."""
+    arr = lo_ if side == "BUY" else hi_
+    vals = []
+    i = j - 2
+    stop = max(2, j - 3000)
+    while i >= stop and len(vals) < 2:
+        w = arr[i - 2:i + 3]
+        if side == "BUY":
+            if arr[i] == w.min() and (w == arr[i]).sum() == 1:
+                vals.append(arr[i])
+        else:
+            if arr[i] == w.max() and (w == arr[i]).sum() == 1:
+                vals.append(arr[i])
+        i -= 1
+    if len(vals) < 2:
+        return ""
+    v1, v0 = vals[0], vals[1]          # vals[0] = most recent pivot
+    if side == "BUY":
+        return "yes" if v1 > v0 else "no"
+    return "yes" if v1 < v0 else "no"
 
 
 def load_rows():
@@ -244,6 +271,9 @@ def main():
                     "dist_beyond_brick": f"{beyond:.2f}",
                     "accepted_50pt": "yes" if beyond <= FILTER_PTS else "no",
                     "hh_ll_pass": hh,
+                    "d4_pass": (d4_pass_of(side, closed["high"].astype(float),
+                                           closed["low"].astype(float), j)
+                                if j >= 4 else ""),
                     "prev_run_bricks": rv["prev_run"],
                     "mins_since_prev_reversal": (f"{rv['mins_prev']:.1f}"
                                                  if rv["mins_prev"] else ""),
