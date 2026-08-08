@@ -1,0 +1,51 @@
+====================================================================================================
+### M1
+--- M1 full (1.8 mo) --- A0 mean  1025.83  dead 0/6  cycles 849
+  W   mean  1010.50  dead 0/6  share 67.8%  vs A0   -15.33 2SE   8.83 (1/6)  vs R   +16.18 2SE  12.12 (4/6)
+  A   mean  1015.52  dead 0/6  share 33.8%  vs A0   -10.31 2SE  30.96 (2/6)  vs R   +30.48 2SE  34.13 (5/6)
+  WA  mean  1015.69  dead 0/6  share 29.6%  vs A0   -10.14 2SE  29.16 (2/6)  vs R   -10.57 2SE  42.67 (2/6)
+
+--- M1 half1 (0.9 mo) --- A0 mean  1027.12  dead 0/6  cycles 532
+  W   mean  1007.81  dead 0/6  share 65.0%  vs A0   -19.31 2SE   6.84 (0/6)  vs R   +33.56 2SE  36.98 (5/6)
+  A   mean  1016.63  dead 0/6  share 40.4%  vs A0   -10.49 2SE  14.02 (1/6)  vs R   +13.62 2SE  21.60 (4/6)
+  WA  mean   997.93  dead 0/6  share 34.7%  vs A0   -29.19 2SE  13.75 (0/6)  vs R    -7.70 2SE  18.25 (2/6)
+
+--- M1 half2 (0.9 mo) --- A0 mean  1027.90  dead 0/6  cycles 311
+  W   mean  1035.53  dead 0/6  share 73.9%  vs A0    +7.63 2SE  14.81 (4/6)  vs R   -31.72 2SE  14.96 (0/6)
+  A   mean  1013.47  dead 0/6  share 24.5%  vs A0   -14.42 2SE  11.92 (2/6)  vs R   -25.49 2SE  25.46 (1/6)
+  WA  mean  1031.89  dead 0/6  share 22.9%  vs A0    +3.99 2SE  11.20 (5/6)  vs R    +0.49 2SE  25.08 (4/6)
+
+====================================================================================================
+### M5
+--- M5 full (9.1 mo) --- A0 mean  1245.98  dead 0/6  cycles 4816
+  W   mean  1393.41  dead 0/6  share 60.9%  vs A0  +147.43 2SE  58.50 (6/6)  vs R  +316.32 2SE 263.38 (5/6)
+  A   mean  1235.40  dead 0/6  share 99.1%  vs A0   -10.58 2SE  21.95 (3/6)  vs R    -2.99 2SE  40.11 (3/6)
+  WA  mean  1393.41  dead 0/6  share 60.9%  vs A0  +147.43 2SE  58.50 (6/6)  vs R  +316.32 2SE 263.38 (5/6)
+
+--- M5 half1 (4.6 mo) --- A0 mean  1026.76  dead 0/6  cycles 3066
+  W   mean  1181.74  dead 0/6  share 58.7%  vs A0  +154.98 2SE  47.07 (6/6)  vs R  +216.87 2SE 201.57 (5/6)
+  A   mean  1037.06  dead 0/6  share 99.5%  vs A0   +10.31 2SE  11.35 (5/6)  vs R    -0.67 2SE  12.84 (2/6)
+  WA  mean  1181.74  dead 0/6  share 58.7%  vs A0  +154.98 2SE  47.07 (6/6)  vs R  +216.87 2SE 201.57 (5/6)
+
+--- M5 half2 (4.6 mo) --- A0 mean  1100.56  dead 0/6  cycles 1753
+  W   mean  1164.68  dead 0/6  share 65.1%  vs A0   +64.12 2SE  56.45 (5/6)  vs R  +122.73 2SE  79.89 (6/6)
+  A   mean  1084.34  dead 0/6  share 98.2%  vs A0   -16.21 2SE  35.77 (2/6)  vs R    -7.18 2SE  34.98 (1/6)
+  WA  mean  1164.68  dead 0/6  share 65.1%  vs A0   +64.12 2SE  56.45 (5/6)  vs R  +122.73 2SE  79.89 (6/6)
+
+====================================================================================================
+### M15
+--- M15 full (17.1 mo) --- A0 mean   295.71  dead 2/6  cycles 5186
+  W   mean   583.99  dead 1/6  share 59.3%  vs A0  +288.28 2SE 162.37 (5/6)  vs R  +144.37 2SE 221.03 (4/6)
+  A   mean   292.73  dead 2/6  share 100.0%  vs A0    -2.98 2SE   2.67 (0/6)  vs R    -2.73 2SE   2.53 (1/6)
+  WA  mean   583.99  dead 1/6  share 59.3%  vs A0  +288.28 2SE 162.37 (5/6)  vs R  +144.37 2SE 221.03 (4/6)
+
+--- M15 half1 (8.6 mo) --- A0 mean   660.60  dead 0/6  cycles 3303
+  W   mean   793.26  dead 0/6  share 58.8%  vs A0  +132.66 2SE  54.99 (6/6)  vs R  -120.13 2SE 107.91 (1/6)
+  A   mean   660.60  dead 0/6  share 100.0%  vs A0    +0.00 2SE   0.00 (0/6)  vs R    +0.00 2SE   0.00 (0/6)
+  WA  mean   793.26  dead 0/6  share 58.8%  vs A0  +132.66 2SE  54.99 (6/6)  vs R  -120.13 2SE 107.91 (1/6)
+
+--- M15 half2 (8.6 mo) --- A0 mean   721.05  dead 0/6  cycles 2579
+  W   mean   869.01  dead 0/6  share 60.3%  vs A0  +147.96 2SE  76.05 (6/6)  vs R   +94.18 2SE 169.28 (5/6)
+  A   mean   716.31  dead 0/6  share 99.9%  vs A0    -4.74 2SE   1.95 (0/6)  vs R   -13.10 2SE  14.01 (1/6)
+  WA  mean   869.01  dead 0/6  share 60.3%  vs A0  +147.96 2SE  76.05 (6/6)  vs R   +94.18 2SE 169.28 (5/6)
+
