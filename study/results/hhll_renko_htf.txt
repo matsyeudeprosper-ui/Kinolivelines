@@ -1,0 +1,44 @@
+================================================================================================
+QUALIFICATION - first halves, 6 anchors (renko re-seeded per anchor)
+================================================================================================
+--- H1 first half (22649 bars, 60.3 months) ---
+  A0         mean    297.25  dead 3/6  cycles   1290
+  RENKO      mean    917.59  dead 0/6  cycles   1676  share 38.3%  vs A0  +620.34 2SE 323.92 (5/6)  vs R   +71.74 2SE 241.37 (4/6)
+
+--- H4 first half (6013 bars, 58.4 months) ---
+  A0         mean    241.11  dead 3/6  cycles    546
+  RENKO      mean   1155.38  dead 0/6  cycles    658  share 37.6%  vs A0  +914.28 2SE 235.61 (6/6)  vs R  +460.10 2SE 344.88 (5/6)
+
+--- D1 first half (1390 bars, 45.6 months) ---
+  A0         mean     85.58  dead 5/6  cycles    158
+  RENKO      mean   1113.02  dead 0/6  cycles    187  share 39.8%  vs A0 +1027.43 2SE 219.32 (6/6)  vs R +1010.23 2SE 163.27 (6/6)
+
+qualification: (F-R) > 0 on 3/3 first halves (need >=2)
+
+================================================================================================
+VALIDATION - untouched second halves. One shot.
+================================================================================================
+--- H1 second half (22649 bars, 31.0 months) ---
+  A0         mean    634.17  dead 0/6
+  RENKO      mean     41.29  dead 5/6  share 37.9%
+  vs A0   -592.88  2SE  135.23  better 0/6
+  vs R    -551.47  2SE  153.94  better 0/6
+
+--- H4 second half (6014 bars, 32.9 months) ---
+  A0         mean   1178.40  dead 0/6
+  RENKO      mean    380.16  dead 2/6  share 38.7%
+  vs A0   -798.25  2SE  249.92  better 0/6
+  vs R    -252.46  2SE  384.56  better 2/6
+
+--- D1 second half (1390 bars, 45.6 months) ---
+  A0         mean    238.83  dead 5/6
+  RENKO      mean    214.99  dead 5/6  share 37.8%
+  vs A0    -23.84  2SE   47.69  better 0/6
+  vs R    -709.19  2SE  355.44  better 1/6
+
+================================================================================================
+VERDICT (spec criteria, all required)
+  1. beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (0/3, big loss True)
+  2. beats R the same way: False  (0/3, big loss True)
+  3. share 20-80% somewhere: True
+  SURVIVES: False

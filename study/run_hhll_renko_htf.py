@@ -1,37 +1,45 @@
-"""SPEC_HHLL_RENKO - the user's renko-brick HH/HL definition, as definition #6
-after SPEC_HHLL_VARIANTS killed D2-D6.
+"""SPEC_HHLL_RENKO_HTF - same preregistered renko-brick HH/HL gate as
+run_hhll_renko.py (definition unchanged, user-confirmed), now on H1/H4/D1.
+Fresh qualification round: (F-R) > 0 on >=2 of 3 first halves, else closes.
+The M15 second half from the base spec stays untouched regardless.
 
-DEFINITION (preregistered before any run):
-  Bricks: built from bar CLOSES exactly like hedge_engine (brick 50, rev 2,
-  seeded at the slice's first OPEN) - one renko walk per anchor, so the
-  anchor sweep also captures renko seed sensitivity (the $240 noise-floor
-  lesson).
-  Swing high = the last brick close of an up-run, confirmed the moment the
-  first down-reversal brick prints. Swing low = mirror.
-  buy[j]  = >=2 swing highs and >=2 swing lows confirmed by bar j, AND
-            last swing high > previous AND last swing low > previous
-  sell[j] = mirror (lower lows AND lower highs). Equal swings = neither.
-  Gate applies to NEW CYCLES only, arm="same" (the live harvest shape).
-
-PROTOCOL (same as SPEC_HHLL_VARIANTS):
-  Qualification on FIRST halves of M1/M5/M15: (F-R) mean > 0 on >=2 of 3,
-  R = rate-matched random seed 0. Fail -> spec closes, second halves stay
-  untouched. Pass -> one-shot validation on second halves, R averaged over
-  seeds 0,1,2. Survive = beats A0 AND R on >=2 TFs (mean>2SE, >=5/6), no
-  >2SE loss anywhere, share 20-80% somewhere.
+Known caveat, stated up front: the live harvest shape (A0) DIES on H1 in
+prior work, so any filter can "win" there by just trading less - that is
+exactly why the rate-matched random control is the qualification bar, not
+the A0 comparison.
 """
 import numpy as np
+import MetaTrader5 as mt5
 from hedge_engine import simulate
 from renko_structure import renko_masks
 
 ANCH = range(6)
 
 
+def fetch(tf, want):
+    """MT5 returns None/empty for oversized requests - step down."""
+    n = want
+    while n > 500:
+        r = mt5.copy_rates_from_pos("BTCUSDm", tf, 0, n)
+        if r is not None and len(r) > 0:
+            return r
+        n = int(n * 0.9)
+    raise RuntimeError(f"no data for {tf}")
+
+
 def mask_for_anchor(Rh, a):
-    """per-anchor renko walk; front-pad so the engine's [a:] slice aligns"""
     mb, ms = renko_masks(Rh[a:])
     pad = np.zeros(a, bool)
     return np.concatenate([pad, mb]), np.concatenate([pad, ms])
+
+
+def run6(Rh, **kw):
+    rs = []
+    for a in ANCH:
+        r = simulate(Rh, a=a, arm="same", **kw)
+        assert r["ok"], f"invariant failed anchor {a}"
+        rs.append(r)
+    return rs
 
 
 def run6_filtered(Rh):
@@ -39,15 +47,6 @@ def run6_filtered(Rh):
     for a in ANCH:
         mb, ms = mask_for_anchor(Rh, a)
         r = simulate(Rh, a=a, arm="same", entry_filter=("mask", mb, ms))
-        assert r["ok"], f"invariant failed anchor {a}"
-        rs.append(r)
-    return rs
-
-
-def run6(Rh, **kw):
-    rs = []
-    for a in ANCH:
-        r = simulate(Rh, a=a, arm="same", **kw)
         assert r["ok"], f"invariant failed anchor {a}"
         rs.append(r)
     return rs
@@ -63,14 +62,11 @@ def stats(eqA, eqB):
     return float(d.mean()), float(se2), int((d > 0).sum())
 
 
-import MetaTrader5 as mt5
 mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe")
-R1 = mt5.copy_rates_from_pos("BTCUSDm", mt5.TIMEFRAME_M1, 0, 80000)
-R5 = mt5.copy_rates_from_pos("BTCUSDm", mt5.TIMEFRAME_M5, 0, 80000)
-R15 = mt5.copy_rates_from_pos("BTCUSDm", mt5.TIMEFRAME_M15, 0, 80000)
+TFS = (("H1", fetch(mt5.TIMEFRAME_H1, 46000)),
+       ("H4", fetch(mt5.TIMEFRAME_H4, 12500)),
+       ("D1", fetch(mt5.TIMEFRAME_D1, 2900)))
 mt5.shutdown()
-
-TFS = (("M1", R1), ("M5", R5), ("M15", R15))
 
 print("=" * 96)
 print("QUALIFICATION - first halves, 6 anchors (renko re-seeded per anchor)")
@@ -79,7 +75,7 @@ qual_hits = 0
 for name, R in TFS:
     Rh = R[:len(R) // 2]
     months = (Rh["time"][-1] - Rh["time"][0]) / (86400 * 30.44)
-    print(f"--- {name} first half ({months:.1f} months) ---")
+    print(f"--- {name} first half ({len(Rh)} bars, {months:.1f} months) ---")
     rs0 = run6(Rh)
     eq0 = eqv(rs0)
     op0 = np.mean([r["opened"] for r in rs0])
@@ -116,7 +112,7 @@ res = {}
 for name, R in TFS:
     Rh = R[len(R) // 2:]
     months = (Rh["time"][-1] - Rh["time"][0]) / (86400 * 30.44)
-    print(f"--- {name} second half ({months:.1f} months) ---")
+    print(f"--- {name} second half ({len(Rh)} bars, {months:.1f} months) ---")
     rs0 = run6(Rh)
     eq0 = eqv(rs0)
     print(f"  {'A0':<10} mean {eq0.mean():9.2f}  dead {sum(r['dead'] for r in rs0)}/6")
