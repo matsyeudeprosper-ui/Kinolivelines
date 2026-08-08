@@ -60,3 +60,13 @@ study/*.log
 study/shadow_trail_*.jsonl
 web/stats.json
 web/stats_alive.json
+# journal outputs - regenerated every 2 min from broker history
+live/renko_journal.csv
+live/harvest_live_journal.csv
+live/harvest_demo_journal.csv
+live/harvest_*_deals.csv
+live/harvest_*_cycles.csv
+live/harvest_*_events.csv
+live/trades_journal.csv
+live/decisions.csv
+study/signal_observer.csv
