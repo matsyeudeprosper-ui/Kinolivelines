@@ -1,0 +1,17 @@
+================================================================================================
+QUALIFICATION - first halves, 6 anchors (renko re-seeded per anchor)
+================================================================================================
+--- M1 first half (0.9 months) ---
+  A0         mean   1055.33  dead 0/6  cycles    536
+  RENKO      mean    974.52  dead 0/6  cycles    379  share 40.3%  vs A0   -80.81 2SE  67.08 (1/6)  vs R   -26.80 2SE  51.43 (2/6)
+
+--- M5 first half (4.6 months) ---
+  A0         mean   1082.00  dead 0/6  cycles   3068
+  RENKO      mean    753.67  dead 0/6  cycles   2070  share 38.8%  vs A0  -328.33 2SE 199.14 (0/6)  vs R   -73.25 2SE 181.28 (3/6)
+
+--- M15 first half (13.7 months) ---
+  A0         mean    346.37  dead 3/6  cycles   3395
+  RENKO      mean   1476.16  dead 0/6  cycles   3244  share 38.7%  vs A0 +1129.79 2SE 441.94 (6/6)  vs R  +401.80 2SE 176.75 (6/6)
+
+qualification: (F-R) > 0 on 1/3 first halves (need >=2)
+NO QUALIFICATION - SPEC CLOSES, second halves stay untouched.
