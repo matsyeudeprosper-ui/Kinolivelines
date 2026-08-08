@@ -1,0 +1,27 @@
+﻿--- M1 (1.8 months, 80000 bars) ---
+  A0             mean   1053.09  dead 0/6  cycles    852
+  F hh/ll        mean   1047.70  dead 0/6  cycles    756  vs A0     -5.39  2SE   51.50  better 2/6
+  accept share 68.6% (2296/3349)
+  R random       mean   1033.58  dead 0/6  cycles      0  vs A0    -19.51  2SE   48.82  better 2/6
+
+--- M5 (9.1 months, 80000 bars) ---
+  A0             mean   1198.75  dead 0/6  cycles   4847
+  F hh/ll        mean   1323.73  dead 0/6  cycles   3252  vs A0   +124.98  2SE   77.65  better 5/6
+  accept share 39.6% (9596/24209)
+  R random       mean   1124.96  dead 0/6  cycles      0  vs A0    -73.79  2SE  101.77  better 2/6
+
+--- M15 (27.4 months, 80000 bars) ---
+  A0             mean     44.11  dead 5/6  cycles   4936
+  F hh/ll        mean     75.68  dead 5/6  cycles   3902  vs A0    +31.57  2SE   63.15  better 1/6
+  accept share 23.4% (10879/46464)
+  R random       mean    787.72  dead 0/6  cycles      0  vs A0   +743.61  2SE  483.76  better 6/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  M1   share 68.6%  F-A0     -5.39 (2SE   51.50) beats:False  F-R    +14.12 (2SE   86.01) beats:False
+  M5   share 39.6%  F-A0   +124.98 (2SE   77.65) beats:True  F-R   +198.77 (2SE  137.06) beats:True
+  M15  share 23.4%  F-A0    +31.57 (2SE   63.15) beats:False  F-R   -712.04 (2SE  523.83) beats:False
+  1. F beats A0 on >=2 timeframes, no >2SE loss on the third: False  (1/3 beaten, big loss: False)
+  2. F beats R the same way: False  (1/3 beaten, big loss: True)
+  3. accept share 20-80% somewhere: True
+  SURVIVES: False
