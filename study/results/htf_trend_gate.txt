@@ -1,0 +1,24 @@
+﻿--- M1 (1.8 months) gated on H1 EMA21 ---
+  A0        mean   1064.57  dead 0/6  cycles    849
+  F trend   mean   1021.20  dead 0/6  cycles    671  share 51.1%
+  vs A0    -43.37  2SE   63.78  better 1/6
+  vs R      -9.48  2SE   78.28  better 3/6
+
+--- M5 (9.1 months) gated on H4 EMA21 ---
+  A0        mean   1212.57  dead 0/6  cycles   4838
+  F trend   mean    759.71  dead 0/6  cycles   3758  share 52.1%
+  vs A0   -452.86  2SE  139.82  better 0/6
+  vs R    -393.02  2SE  206.65  better 0/6
+
+--- M15 (27.4 months) gated on D1 EMA21 ---
+  A0        mean      0.00  dead 6/6  cycles   2767
+  F trend   mean    475.41  dead 1/6  cycles   6994  share 51.4%
+  vs A0   +475.41  2SE  239.12  better 5/6
+  vs R    +139.88  2SE  345.35  better 4/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  1. beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (1/3, big loss True)
+  2. beats R the same way: False  (0/3, big loss True)
+  3. share 20-80% somewhere: True
+  SURVIVES: False
