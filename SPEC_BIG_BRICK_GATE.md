@@ -45,3 +45,15 @@ M15 first half was the first). Slow-timeframe brick alignment may be real.
 brick, rev 2, same-direction gate) on H1 bars — data no brick-gate hypothesis
 has ever touched. Survival: F beats A0 AND R, mean > 2SE and >=5/6 anchors,
 on H1. Kill: anything less. One run, no follow-up grid on this data.
+(Result: WIPED OUT 6/6 on H1. Killed.)
+
+## ADDENDUM 3 (2026-08-09) — full battery on the DEPLOYED config ($150 gate)
+
+The user corrected the formulation (normal M1-base harvest, gate 3-4x) and
+mandated demo deployment regardless of backtest outcome; $150 won the
+declared size pick. This addendum runs the standard battery on that exact
+config for the record: A0 / F150 / rate-matched R (seeds 0/1/2), 6 anchors,
+M1/M5/M15 + the H1 long-data check (M15-window illusions have hit twice).
+Same criteria shape as the parent spec. This is measurement, not a
+deployment decision — the demo run continues either way; the user decides
+with both numbers in hand.

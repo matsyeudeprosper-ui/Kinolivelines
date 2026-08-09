@@ -1,0 +1,30 @@
+﻿--- M1 (1.8 months) ---
+  A0      mean   1061.62  dead 0/6  cycles     836
+  F150    mean   1061.01  dead 0/6  cycles     641  share 48.3%
+  vs A0     -0.61  2SE   89.65  better 3/6
+  vs R     +25.50  2SE  105.80  better 3/6
+
+--- M5 (9.1 months) ---
+  A0      mean   1172.20  dead 0/6  cycles    4785
+  F150    mean    892.28  dead 0/6  cycles    3427  share 43.6%
+  vs A0   -279.92  2SE  183.31  better 1/6
+  vs R     -67.24  2SE  157.25  better 2/6
+
+--- M15 (27.4 months) ---
+  A0      mean      0.00  dead 6/6  cycles    4460
+  F150    mean    599.18  dead 2/6  cycles    6375  share 43.5%
+  vs A0   +599.18  2SE  385.47  better 4/6
+  vs R     -93.33  2SE  498.79  better 2/6
+
+--- H1 (91.4 months) ---
+  A0      mean     94.08  dead 5/6  cycles    2443
+  F150    mean     50.80  dead 5/6  cycles    4204  share 47.4%
+  vs A0    -43.28  2SE  231.03  better 1/6
+  vs R     -37.20  2SE  181.93  better 1/6
+
+==========================================================================================
+SUMMARY (deployment already decided by the user - this is the record)
+  M1   vs A0     -0.61 (2SE   89.65, 3/6)   vs R    +25.50 (2SE  105.80, 3/6)   dead 0/6
+  M5   vs A0   -279.92 (2SE  183.31, 1/6)   vs R    -67.24 (2SE  157.25, 2/6)   dead 0/6
+  M15  vs A0   +599.18 (2SE  385.47, 4/6)   vs R    -93.33 (2SE  498.79, 2/6)   dead 2/6
+  H1   vs A0    -43.28 (2SE  231.03, 1/6)   vs R    -37.20 (2SE  181.93, 1/6)   dead 5/6
