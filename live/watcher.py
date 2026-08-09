@@ -120,7 +120,14 @@ def levels():
 connect()
 emit("START", f"watching {SYM} on {LOGIN}, poll {POLL}s - silent until something needs a decision")
 
-known_pos   = {p.ticket: p.price_open for p in (mt5.positions_get(symbol=SYM) or [])}
+def own_positions():
+    # KL-loop trades only (act.py sends magic 0). The harvest/renko bots
+    # (7704xx) run their own exits on this account - a 1R stop suggestion or
+    # an open/close notice for THEIR positions is noise at best and a wrong
+    # instruction at worst. Same fix as daemon.py, 2026-08-08.
+    return [p for p in (mt5.positions_get(symbol=SYM) or []) if p.magic == 0]
+
+known_pos   = {p.ticket: p.price_open for p in own_positions()}
 known_ord   = {o.ticket for o in (mt5.orders_get(symbol=SYM) or [])}
 fired_1r    = set()      # tickets already flagged at 1R
 level_side  = {}         # flagged level -> which side price was on last poll
@@ -137,7 +144,7 @@ while True:
         if tick is None:
             time.sleep(POLL); continue
         mid  = (tick.bid + tick.ask) / 2
-        pos  = list(mt5.positions_get(symbol=SYM) or [])
+        pos  = own_positions()
         ords = list(mt5.orders_get(symbol=SYM) or [])
         now  = time.time()
 
