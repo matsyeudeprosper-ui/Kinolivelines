@@ -4,28 +4,18 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 63560.81,
+      "price": 65350.0,
       "dir": "above",
-      "note": "H1 resistance, 273 points overhead. The only genuine upside decision point with real separation. Dropped 63,972.48 as unreachable at 1.86x ATR-H1."
+      "note": "Wide extension marker ~100 pts above the 65,252 high - the run is live, so no bar-by-bar chasing (same rule as last night's decline). Fires only on a genuine continuation leg."
     },
     {
-      "price": 63400.13,
+      "price": 65060.0,
       "dir": "below",
-      "note": "H1 support. Reclaimed from below at 00:50, so it is support again rather than a reclaim trigger. Losing it would say the bounce failed. A long fade here stays vetoed while the 63,276 low is recent - a Rule 3 stop would sit at 63,390.13, well inside it."
-    },
-    {
-      "price": 63320.41,
-      "dir": "below",
-      "note": "H4 support, back below price after the 00:50 reclaim. Second line of support beneath 63,400.13."
-    },
-    {
-      "price": 63246.0,
-      "dir": "below",
-      "note": "Run low 63,280.27 MINUS 0.25x ATR(M15)=120, i.e. 30 points of buffer. Both naive placements failed today: anchored just BELOW a falling low, three markers were outrun within minutes; anchored exactly ON the low, it fired twice on 1.4-point breaks that reversed immediately. A fixed fraction of ATR is the middle - it ignores noise around the extreme but still fires on a genuine extension, and it scales with volatility instead of being a guess."
+      "note": "Failed-breakout line: back under the old range top 65,146 with wide buffer (whipsaw regime). Losing it says the 08:40 breakout was a trap and the old range is back in charge."
     }
   ],
   "max_hold_minutes": 120,
-  "_rebuilt": "2026-08-04 00:38. Every level the detector reports is ABOVE price again - there is no structure underneath, so three of the four markers are reclaim triggers and the fourth is the run low itself. ATR(M15) 120.",
+  "_rebuilt": "2026-08-08 10:45 by the session decider after the reboot + 45-min staleness wake. Old set was 1,500+ points below market (pre-reboot structure at 63,xxx). H4 resist 65,012.55 deliberately NOT set: 13 points from mid = born-dead, fires on spread noise. ATR(M15) 51.",
   "_sweep_filter": {
     "status": "UNDER REVIEW - raised with the user 2026-08-02 22:30, no ruling yet. Behaviour UNCHANGED until the user rules.",
     "rule": "Do not fade a level L when a KNOWN probe sits beyond the stop. The stop is 10 points of BID movement from the level - L-10 for a long, L+10 for a short - NOT 20.",

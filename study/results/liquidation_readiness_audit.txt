@@ -1,15 +1,15 @@
 ================================================================================================
 LIQUIDATION DATA-READINESS AUDIT (READ-ONLY, NO OUTCOMES EXAMINED)
 ================================================================================================
-generated : 2026-08-03 07:53:20 UTC
+generated : 2026-08-08 00:31:06 UTC
 
 1. FEED
-  raw rows                : 2,947
-  usable events           : 2,947
+  raw rows                : 7,072
+  usable events           : 7,072
   first timestamp (UTC)   : 2026-07-31T02:02:15Z
-  latest timestamp (UTC)  : 2026-08-03T07:15:37Z
-  span                    : 77.2 h (3.22 days)
-  observed rate           : 38.2 events/hour
+  latest timestamp (UTC)  : 2026-08-07T21:41:05Z
+  span                    : 187.7 h (7.82 days)
+  observed rate           : 37.7 events/hour
 
 2. INTEGRITY
   duplicate rows          : 0   CLEAN
@@ -18,23 +18,23 @@ generated : 2026-08-03 07:53:20 UTC
   non-positive sizes      : 0
   timestamps in future    : 0
   stored in time order    : False   (newest-first writer; sorted for audit)
-  non-empty 5-min buckets : 166
+  non-empty 5-min buckets : 495
 
 3. GROWTH
-  last 24 hours :    655 events   (feed covers 24.0h of that window)
-  last 7 days   :  2,947 events   (feed covers 77.2h of that window)
-  last 30 days  :  2,947 events   (feed covers 77.2h of that window)
-  inter-event gaps > 1 h  : 22, longest 4.10 h
+  last 24 hours :    928 events   (feed covers 24.0h of that window)
+  last 7 days   :  5,534 events   (feed covers 168.0h of that window)
+  last 30 days  :  7,072 events   (feed covers 187.7h of that window)
+  inter-event gaps > 1 h  : 49, longest 4.10 h
 
 4. FORMAL CASCADE COUNT - the only numbers that count toward the gate
   frozen rule: a 5-minute bucket whose TOTAL size exceeds the 95% quantile
   of the trailing 30-day distribution of non-empty buckets.
 
   !! FORMAL SCORING HAS NOT STARTED.
-     The feed is 3.22 days old. No bucket yet has a complete
+     The feed is 7.82 days old. No bucket yet has a complete
      preceding 30-day capture window, so none can be ranked as the
      frozen definition requires.
-     Formal scoring begins in ~26.78 days,
+     Formal scoring begins in ~22.18 days,
      and only then does the first eligible bucket appear.
 
   formally scorable buckets : 0
@@ -48,12 +48,12 @@ generated : 2026-08-03 07:53:20 UTC
   20 prior non-empty buckets. THAT FLOOR IS NOT IN THE
   PREREGISTRATION. These numbers are a sanity check on the pipeline only.
 
-  provisional scorable buckets : 146
-  provisional raw cascades     : 10
-  provisional independent 15min: 7
-  provisional independent 1h   : 5
-  provisional independent 4h   : 5   <- primary separation
-  provisional split            : 4 dev / 1 holdout
+  provisional scorable buckets : 475
+  provisional raw cascades     : 23
+  provisional independent 15min: 20
+  provisional independent 1h   : 18
+  provisional independent 4h   : 14   <- primary separation
+  provisional split            : 10 dev / 4 holdout
 
   These MUST NOT be reported as gate progress and MUST NOT be used to publish a
   gate ETA. A 3-day sample cannot forecast a 30-day-trailing statistic, and task 006

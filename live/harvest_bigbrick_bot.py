@@ -4,22 +4,21 @@ DEPLOYED 2026-08-09 ON THE USER'S EXPLICIT DECISION, with the backtest
 evidence stated and accepted. The user's frame: not a strategy that never
 dies, but one that banks enough profit before the blowup arrives.
 
-The rule: the harvest rule on M15 bars ($50 bricks from M15 closes), with new
-cycles allowed ONLY in the direction of a second $100-brick series built from
-the same closes (SPEC_BIG_BRICK_GATE, "F"). Recovery adds unchanged.
+THE RULE, corrected 2026-08-09 to the user's actual formulation: the NORMAL
+harvest exactly as the live bot runs it ($50 bricks from M1 closes, same
+anchor), with ONE addition - a new cycle may only open in the direction of a
+second, bigger brick series built from the same closes (3-4x the trading
+brick; size set below from the declared M1 pick rule in
+run_big_brick_size_pick.py). Recovery adds unchanged.
 
-What the backtest says, both sides:
-- In its window (M15, 27.4 months): +31%, survived 6/6 anchors, beat both
-  the ungated rule AND rate-matched random skipping 6/6 - the only variant
-  in the whole search to do that.
-- Out of its window (H1, 91 months): wiped out 6/6. The failure mode is a
-  multi-week trend: the big bricks point one way for weeks, the gate keeps
-  approving that direction on every counter-swing, and the stopless basket
-  rides the drawdown to the cap or the account.
+Honest record: the $100-gate version of this idea FAILED its backtest on M1
+(-80 vs the plain rule, >2SE) and the M15-bars variant wiped out on 7.6y of
+H1. The user knows and chose to forward-run it anyway under their
+profit-before-blowup frame - the bot does not need to be immortal, it needs
+to bank profit before its failure mode (a multi-week one-way trend) arrives.
 
-This forward run is the arbiter of which face shows up in practice.
 Magic 770410, comments KL-bb15 / KL-bb15-close. No protection layer - the
-rule runs pure so the forward record matches what was backtested.
+rule runs pure so the forward record is a clean measurement.
 
 --- everything below is the control bot's own documentation ---
 """ + """renko_recovery_bot.py - the CAPPED RECOVERY design, on the DEMO account.
@@ -117,14 +116,18 @@ TERMINAL    = r"C:\Program Files\MetaTrader 5\terminal64.exe"
 LOGIN       = 436771046
 SYMBOL      = "BTCUSDm"
 LOTS        = 0.01
-MAGIC       = 770410            # M15 big-brick-gated arm (SPEC_BIG_BRICK_GATE F)
+MAGIC       = 770410            # big-brick-gated arm (SPEC_BIG_BRICK_GATE, corrected)
+BIG_BRICK   = 150.0             # 3x, picked by the declared M1 rule in
+                                # run_big_brick_size_pick.py (150 -> -35.81
+                                # vs A0, 200 -> -82.52; both negative on M1,
+                                # this is the least harmful - user informed)
 BRICK       = 50.0
 REVERSAL    = 2
 TP_BRICKS   = 5
 SL_BRICKS   = 3                 # a TRIGGER level, not a broker stop
 MAX_BASKET  = 4
 POLL        = 20
-FRESH_MIN   = 20                # M15 bars close every 15 min - 6 was M1-scaled
+FRESH_MIN   = 6                 # M1 base series, same as the other bots
 ANCHOR      = datetime(2026, 7, 17)
 
 # If the terminal dies, this process stays alive and keeps failing quietly - and
@@ -138,9 +141,9 @@ ANCHOR      = datetime(2026, 7, 17)
 MAX_FAILS   = 10                # 10 x 20s = ~3.5 min before giving up
 
 HERE  = os.path.dirname(os.path.abspath(__file__))
-LOG   = os.path.join(HERE, "harvest_bigbrick_m15.log")
-ALIVE = os.path.join(HERE, "harvest_bigbrick_m15_alive.json")
-STATE = os.path.join(HERE, "harvest_bigbrick_m15_state.json")
+LOG   = os.path.join(HERE, "harvest_bigbrick.log")
+ALIVE = os.path.join(HERE, "harvest_bigbrick_alive.json")
+STATE = os.path.join(HERE, "harvest_bigbrick_state.json")
 
 
 def say(m):
@@ -189,7 +192,9 @@ def last_reversal(b):
     return None
 
 
-def big_dir_at(closed, sig_time, brick=100.0, rev=2):
+def big_dir_at(closed, sig_time, brick=None, rev=2):
+    if brick is None:
+        brick = BIG_BRICK
     """THE GATE (SPEC_BIG_BRICK_GATE F): direction of the $100-brick series
     at the signal bar's close - the exact brick loop the bots use, brick size
     doubled, walked over the same closed bars up to and including the signal
@@ -437,6 +442,8 @@ def close_all(ps, why):
 
 
 def main():
+    if BIG_BRICK is None:
+        raise SystemExit("BIG_BRICK not set - the size pick has not been applied")
     acc = connect()
     say(f"recovery bot up | {SYMBOL} | {acc.login} DEMO | equity {acc.equity:.2f}")
     say(f"rule: TP {TP_BRICKS} bricks, recovery at {SL_BRICKS} bricks, "
@@ -450,7 +457,7 @@ def main():
     fails = 0
     while True:
         try:
-            rates = mt5.copy_rates_range(SYMBOL, mt5.TIMEFRAME_M15, ANCHOR, datetime.utcnow())
+            rates = mt5.copy_rates_range(SYMBOL, mt5.TIMEFRAME_M1, ANCHOR, datetime.utcnow())
             if rates is None or len(rates) < 2:
                 fails += 1
                 say(f"no bars from the terminal ({fails}/{MAX_FAILS}) "

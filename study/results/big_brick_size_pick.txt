@@ -1,0 +1,16 @@
+﻿--- M1 (1.8 months) ---
+  A0     mean   1084.62  dead 0/6
+  F150   mean   1048.81  dead 0/6  cycles    634  share 47.7%  vs A0    -35.81  2SE   49.86  better 2/6
+  F200   mean   1002.09  dead 0/6  cycles    654  share 50.9%  vs A0    -82.52  2SE   42.06  better 0/6
+
+--- M5 (9.1 months) ---
+  A0     mean   1268.84  dead 0/6
+  F150   mean    911.30  dead 0/6  cycles   3438  share 43.8%  vs A0   -357.54  2SE  135.73  better 0/6
+  F200   mean   1312.76  dead 0/6  cycles   3582  share 47.9%  vs A0    +43.92  2SE  164.47  better 3/6
+
+--- M15 (27.4 months) ---
+  A0     mean     81.60  dead 5/6
+  F150   mean    613.93  dead 0/6  cycles   6646  share 43.0%  vs A0   +532.32  2SE  190.12  better 6/6
+  F200   mean    784.79  dead 0/6  cycles   6854  share 45.6%  vs A0   +703.18  2SE  179.28  better 6/6
+
+PICK (by M1 vs A0, tie-break M5): $150 gate  (M1: 150 -> -35.81, 200 -> -82.52)

@@ -294,3 +294,49 @@
 2026-08-03T19:38:30	LEVEL	broke below 63320.41 (reached 63283.84, now 63291.26) - The run low, and the ONLY downside marker - every level the detector reports is now above price, so there is no structure beneath us. Superseded 63,430.00 within three minutes of setting it, which is the third time today a marker chasing a falling low was broken before it could be useful. Anchoring on the actual low instead of guessing below it: a break here means the decline extends past its own extreme, which is the only downside event worth a wake.
 2026-08-03T19:42:31	LEVEL	broke below 63280.27 (reached 63278.92, now 63284.16) - THE RUN LOW, 00:35 UTC. Anchored ON the low rather than guessed below it: three markers today were placed just under a falling low and each was broken within minutes, which produced a wake per step and no information. A break of this one means the decline has extended past its own extreme, which is the only downside event worth waking for.
 2026-08-03T19:50:31	LEVEL	broke above 63400.13 (reached 63416.00, now 63421.00) - H1 support that price has fallen BELOW, so it now acts as resistance 112 points overhead. A reclaim above it would say the decline has stalled.
+2026-08-08T09:55:53	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-08-08T14:13:26	OPENED	#3060917103 SELL 0.01 @ 64971.50 SL NONE TP 64721.5 - now managing
+2026-08-08T14:13:26	OPENED	#3060917114 SELL 0.01 @ 64965.30 SL 65121.5 TP 64721.5 - now managing
+2026-08-08T14:13:26	OPENED	#3060917126 SELL 0.01 @ 64965.30 SL NONE TP 64715.3 - now managing
+2026-08-08T14:17:26	OPENED	#3060919934 SELL 0.01 @ 64969.74 SL NONE TP 64726.93 - now managing
+2026-08-08T17:51:57	CLOSED	#3060407417 (opened @ 64867.46) is gone - flat now, bid 64895.42. Look for the next setup.
+2026-08-08T17:51:57	CLOSED	#3060407625 (opened @ 64861.19) is gone - flat now, bid 64895.42. Look for the next setup.
+2026-08-08T17:51:57	CLOSED	#3060917103 (opened @ 64971.50) is gone - flat now, bid 64895.42. Look for the next setup.
+2026-08-08T17:51:57	CLOSED	#3060917126 (opened @ 64965.30) is gone - flat now, bid 64895.42. Look for the next setup.
+2026-08-08T17:54:57	LEVEL	broke below 64907.52 (reached 64898.40, now 64915.65) - H4 support, -118 from mid, 1.38x ATR-H1. Losing it says the pullback from the 65,146 high is deepening, with the 4h range low 64,875 next.
+2026-08-08T20:25:30	LEVEL	broke below 64862.30 (reached 64844.83, now 64857.91) - 4h range low 64,875.09 MINUS 0.25x ATR(M15)=51, i.e. ~13 points of buffer - the standing convention for extension markers. Fires only on a genuine extension past the day's low, not on a retest.
+2026-08-08T20:52:00	AT_1R	#3060917114 is +170px = 1.09R (risk 156px). bid 64785.06. Consider moving stop to break-even 64965.30.
+2026-08-08T20:52:49	START	watching BTCUSDm on 436771046, poll 30s - silent until something needs a decision
+2026-08-08T21:33:19	SETUP	flat, price 64785.98 at H1 SUPPORT 64780.70 (5px away). Assess for a trade.
+2026-08-08T21:44:19	LEVEL	broke below 64738.00 (reached 64731.41, now 64741.73) - Run low 64,749.15 (held ~25 min) MINUS 0.25x ATR(M15)=45 = ~11 points of buffer, the standing convention. Anchored AFTER the low stabilised rather than chased bar-by-bar. Fires only on a genuine extension of tonight's decline.
+2026-08-08T22:01:22	SETUP	flat, price 64770.56 at M15 RESIST 64775.56 (5px away). Assess for a trade.
+2026-08-08T22:45:23	SETUP	flat, price 64752.85 at M15 RESIST 64752.37 (0px away). Assess for a trade.
+2026-08-08T23:12:23	SETUP	flat, price 64768.72 at H1 RESIST 64766.40 (2px away). Assess for a trade.
+2026-08-08T23:31:11	SETUP	flat, price 64769.77 at H1 RESIST 64766.40 (3px away). Assess for a trade.
+2026-08-09T01:00:41	SETUP	flat, price 64752.46 at H1 RESIST 64751.79 (1px away). Assess for a trade.
+2026-08-09T02:13:15	SETUP	flat, price 64805.53 at H1 RESIST 64806.50 (1px away). Assess for a trade.
+2026-08-09T02:18:45	SETUP	flat, price 64803.18 at H1 RESIST 64806.50 (3px away). Assess for a trade.
+2026-08-09T03:02:02	SETUP	flat, price 64809.46 at H4 RESIST 64806.50 (3px away). Assess for a trade.
+2026-08-09T03:05:02	LEVEL	broke above 64875.09 (reached 64875.38, now 64866.97) - The old range low, now overhead after the 20:25 extension through 64,862. Reclaiming it says the breakdown failed - the one upside event with information down here.
+2026-08-09T03:15:32	SETUP	flat, price 64872.48 at M15 RESIST 64875.38 (3px away). Assess for a trade.
+2026-08-09T03:39:32	SETUP	flat, price 64802.74 at H4 RESIST 64806.50 (4px away). Assess for a trade.
+2026-08-09T04:00:31	SETUP	flat, price 64770.69 at M15 RESIST 64773.53 (3px away). Assess for a trade.
+2026-08-09T05:15:17	SETUP	flat, price 64893.30 at M15 RESIST 64897.50 (4px away). Assess for a trade.
+2026-08-09T05:26:47	SETUP	flat, price 64894.03 at M15 RESIST 64897.50 (3px away). Assess for a trade.
+2026-08-09T05:47:18	SETUP	flat, price 64917.83 at M15 RESIST 64919.04 (1px away). Assess for a trade.
+2026-08-09T06:06:48	SETUP	flat, price 64931.02 at H1 RESIST 64927.45 (4px away). Assess for a trade.
+2026-08-09T06:39:19	SETUP	flat, price 64929.63 at H1 RESIST 64927.45 (2px away). Assess for a trade.
+2026-08-09T06:50:19	SETUP	flat, price 64930.85 at H1 RESIST 64927.45 (3px away). Assess for a trade.
+2026-08-09T08:00:22	SETUP	flat, price 64911.84 at H1 RESIST 64908.79 (3px away). Assess for a trade.
+2026-08-09T08:06:53	LEVEL	broke above 64979.00 (reached 64987.98, now 64984.87) - The pre-drop shelf (old H1 support band). Price reclaimed the range low at 03:16 and the brick series flipped up; clearing this shelf would fully unwind the breakdown. ~1.2x ATR-M15 overhead, real separation.
+2026-08-09T08:17:53	SETUP	flat, price 64990.61 at M15 RESIST 64987.98 (3px away). Assess for a trade.
+2026-08-09T08:22:23	SETUP	flat, price 64986.37 at M15 RESIST 64987.98 (2px away). Assess for a trade.
+2026-08-09T08:31:23	SETUP	flat, price 65045.91 at M15 RESIST 65043.88 (2px away). Assess for a trade.
+2026-08-09T08:40:23	LEVEL	broke above 65146.04 (reached 65199.17, now 65189.06) - H1 resistance = today's high (14:30). +120 from mid, 1.40x ATR-H1. A break says the range top gave way - the only genuine upside decision point with real separation.
+2026-08-09T09:00:23	SETUP	flat, price 65185.63 at M15 RESIST 65181.84 (4px away). Assess for a trade.
+2026-08-09T09:06:23	SETUP	flat, price 65178.99 at M15 RESIST 65181.84 (3px away). Assess for a trade.
+2026-08-09T09:26:58	SETUP	flat, price 65139.15 at M15 SUPPORT 65133.28 (6px away). Assess for a trade.
+2026-08-09T09:59:28	LEVEL	broke above 65250.00 (reached 65252.13, now 65220.23) - Extension past the breakout high 65,199 with ~50 pts of buffer. The range top 65,146 gave way at 08:40 - this fires only if the breakout keeps running, not on a retest of the high.
+2026-08-09T10:36:59	SETUP	flat, price 65187.23 at M15 RESIST 65192.83 (6px away). Assess for a trade.
+2026-08-09T11:07:01	SETUP	flat, price 65210.88 at H1 RESIST 65214.78 (4px away). Assess for a trade.
+2026-08-09T11:38:34	SETUP	flat, price 65211.17 at H1 RESIST 65214.78 (4px away). Assess for a trade.
