@@ -1,0 +1,24 @@
+﻿--- M1 (1.8 months) ---
+  A0      mean   1073.52  dead 0/6  cycles     849
+  C2      mean   1084.16  dead 0/6  cycles     200  (keep 23.6%)
+  C2 vs A0    +10.64  2SE   66.00  better 4/6
+  C2 vs R     +90.08  2SE   67.17  better 5/6
+
+--- M5 (9.1 months) ---
+  A0      mean   1346.06  dead 0/6  cycles    4806
+  C2      mean   1245.82  dead 0/6  cycles    1164  (keep 24.2%)
+  C2 vs A0   -100.24  2SE  111.32  better 2/6
+  C2 vs R    +186.59  2SE  182.63  better 5/6
+
+--- M15 (27.4 months) ---
+  A0      mean     82.28  dead 5/6  cycles    5770
+  C2      mean    447.99  dead 0/6  cycles    3400  (keep 58.9%)
+  C2 vs A0   +365.71  2SE  291.35  better 5/6
+  C2 vs R    -231.40  2SE  434.38  better 2/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  1. C2 beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (1/3, big loss False)
+  2. C2 beats R the same way: True  (2/3, big loss False)
+  3. keeps >=20% of A0 cycles everywhere: True
+  SURVIVES: False
