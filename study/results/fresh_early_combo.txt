@@ -1,0 +1,34 @@
+﻿--- M1 (1.8 months) ---
+  A0     mean   1064.00  dead 0/6  cycles     834
+  FREV   mean   1003.30
+  C2     mean   1079.48
+  COMBO  mean   1013.56  dead 0/6  cycles     159  (keep 19.1%)
+  COMBO vs R     -6.42  2SE   23.70  better 3/6
+
+--- M5 (9.1 months) ---
+  A0     mean   1314.74  dead 0/6  cycles    4808
+  FREV   mean    977.13
+  C2     mean   1171.02
+  COMBO  mean   1025.34  dead 0/6  cycles     731  (keep 15.2%)
+  COMBO vs R    +54.58  2SE  182.14  better 2/6
+
+--- M15 (27.4 months) ---
+  A0     mean      0.00  dead 6/6  cycles    4534
+  FREV   mean    593.13
+  C2     mean    487.55
+  COMBO  mean    963.76  dead 0/6  cycles    1768  (keep 39.0%)
+  COMBO vs R   +466.14  2SE  373.39  better 5/6
+
+--- H1 (91.4 months) ---
+  A0     mean     94.07  dead 5/6  cycles    2443
+  FREV   mean    755.54
+  C2     mean      0.00
+  COMBO  mean    959.87  dead 0/6  cycles    1667  (keep 68.2%)
+  COMBO vs R   +922.88  2SE  116.34  better 6/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  1. zero wipeouts everywhere: True
+  2. beats R on >=2 of 4, never loses >2SE to R: True  (2/4, big loss False)
+  3. ABSOLUTE profit (mean > 1000) on >=2 of 4: True  (2/4)
+  SURVIVES: True
