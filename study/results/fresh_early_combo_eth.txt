@@ -1,0 +1,32 @@
+﻿ETHUSDm  price ~1904  spread 1.0  brick 1.5  big brick 4.4
+sanity: spread/brick = 0.67 (BTC is 10/50 = 0.20)
+
+--- ETH M1 (1.8 months) ---
+  A0     mean    987.39  dead 0/6  cycles    1213
+  COMBO  mean    997.07  dead 0/6  cycles     209  (keep 17.2%)
+  vs A0     +9.68  2SE    2.48  better 6/6
+  vs R      +2.92  2SE    1.00  better 6/6
+
+--- ETH M5 (9.2 months) ---
+  A0     mean    942.47  dead 0/6  cycles    6637
+  COMBO  mean    990.34  dead 0/6  cycles     957  (keep 14.4%)
+  vs A0    +47.87  2SE    6.21  better 6/6
+  vs R     +10.17  2SE    4.45  better 6/6
+
+--- ETH M15 (27.4 months) ---
+  A0     mean    786.21  dead 0/6  cycles   13083
+  COMBO  mean    961.57  dead 0/6  cycles    2590  (keep 19.8%)
+  vs A0   +175.35  2SE    5.11  better 6/6
+  vs R     +55.62  2SE   10.68  better 6/6
+
+--- ETH H1 (91.7 months) ---
+  A0     mean    769.90  dead 0/6  cycles    9434
+  COMBO  mean    992.71  dead 0/6  cycles    2755  (keep 29.2%)
+  vs A0   +222.81  2SE   20.41  better 6/6
+  vs R     +94.42  2SE   29.12  better 6/6
+
+==========================================================================================
+VERDICT (ETH confirmation criteria)
+  1. zero wipeouts everywhere: True
+  2. beats R (mean>2SE, >=5/6) on >=1 of 4, no >2SE loss to R: True  (4/4, big loss False)
+  CONFIRMS: True
