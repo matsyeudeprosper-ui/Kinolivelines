@@ -1,0 +1,27 @@
+﻿--- M1 (1.8 months, 56 days) ---
+  A0      mean   1023.83  dead 0/6  cycles     842
+  W       mean   1047.62  dead 0/6  cycles      98  (1.7/day)
+  C cap2 mean   1084.19  dead 0/6  cycles     194
+  W vs A0    +23.79  2SE   64.89  better 4/6
+  W vs C     -36.57  2SE   19.39  better 1/6
+
+--- M5 (9.1 months, 279 days) ---
+  A0      mean   1308.96  dead 0/6  cycles    4804
+  W       mean   1074.15  dead 0/6  cycles     616  (2.2/day)
+  C cap2 mean   1233.99  dead 0/6  cycles    1155
+  W vs A0   -234.81  2SE   95.88  better 0/6
+  W vs C    -159.84  2SE   17.47  better 0/6
+
+--- M15 (27.4 months, 834 days) ---
+  A0      mean     82.28  dead 5/6  cycles    7456
+  W       mean    515.67  dead 0/6  cycles    1847  (2.2/day)
+  C cap2 mean    527.89  dead 0/6  cycles    3400
+  W vs A0   +433.39  2SE  226.25  better 5/6
+  W vs C     -12.22  2SE  129.66  better 3/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  1. W beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (1/3, big loss True)
+  2. W beats C the same way: False  (0/3, big loss True)
+  3. gate fires everywhere, nowhere below 20% of A0: False
+  SURVIVES: False

@@ -1,4 +1,4 @@
-"""ONE engine for the hedge rule. Every test imports this - nothing re-types it.
+﻿"""ONE engine for the hedge rule. Every test imports this - nothing re-types it.
 
 Three earlier scripts each re-implemented the same rule and gave $378, $598 and
 a third answer on the same 27 months. The difference was a single line: whether
@@ -29,7 +29,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
              arm="hedge", hours=None, month_target=None, month_trail=None,
              month_max_cycles=None, hedge_mult=1.0, drop_tp_in_recovery=False,
              adapt=None, atr_override=None, max_basket=4,
-             entry_filter=None, filter_seed=0):
+             entry_filter=None, filter_seed=0, day_stop=None):
     """arm: 'hedge' | 'any' | 'same'  ('any' is the current live bot).
 
     drop_tp_in_recovery: once recovery starts, strip the take-profit off EVERY
@@ -61,6 +61,17 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
     ymk = None
     if month_target is not None or month_trail is not None or month_max_cycles is not None:
         ymk = np.array([_dt.datetime.utcfromtimestamp(t).strftime("%Y-%m") for t in tm])
+    # SPEC_WIN_STOP. day_stop: None | "win" (no new cycles for the rest of the
+    # UTC day after a cycle closes with P&L > 0) | ("cap", N) - the
+    # count-matched control, at most N new cycles per UTC day.
+    dyk = None; cur_day = None; day_stopped = False; day_cycles = 0
+    if day_stop is not None:
+        dyk = (np.asarray(tm, dtype=np.int64) // 86400)
+
+    def _cycle_done(pnl):
+        nonlocal day_stopped
+        if day_stop == "win" and pnl > 0:
+            day_stopped = True
     cur_month = None; month_start_eq = start; month_peak_eq = start
     month_cycles = 0
     TP = brick * tp_bricks
@@ -166,6 +177,8 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                 month_cycles = 0
             elif eq_now > month_peak_eq:
                 month_peak_eq = eq_now
+        if dyk is not None and cur_day != dyk[j]:
+            cur_day = dyk[j]; day_stopped = False; day_cycles = 0
         # ---- fill ---------------------------------------------------------
         if pending is not None:
             L, ptp, psl, is_first = pending
@@ -230,6 +243,11 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                         # firing this time before any result was reported.)
                         if month_max_cycles is not None and month_cycles >= month_max_cycles:
                             allow = False
+                    if allow and day_stop is not None:
+                        if day_stopped:
+                            allow = False
+                        elif day_stop != "win" and day_cycles >= day_stop[1]:
+                            allow = False
                     if allow and entry_filter is not None:
                         f_seen += 1
                         if entry_filter[0] == "hhll":
@@ -248,6 +266,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                     if allow:
                         pending = (want, tp_of(j), 0.0, True)
                         month_cycles += 1
+                        day_cycles += 1
                 elif rec:
                     if arm == "hedge":
                         if (not hedged) and want != cyc_dir:
@@ -290,10 +309,10 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                 if hedge_hit:
                     hedge_won += 1
                     close_all(c[j], when=tm[j])                      # rule 4
-                    cycles.append(bal - cyc); cyc = bal
+                    cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal
                 elif len(ent) == 0:
                     rec = False; cyc_dir = None; hedged = False; f_ent = None
-                    cycles.append(bal - cyc); cyc = bal
+                    cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal
 
         # ---- hedge stop ---------------------------------------------------
         if len(ent):
@@ -310,7 +329,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                 keep = ~hitS
                 ent, lng, tpp, slv, lotm = ent[keep], lng[keep], tpp[keep], slv[keep], lotm[keep]
                 close_all(c[j], when=tm[j])                          # rule 5
-                cycles.append(bal - cyc); cyc = bal
+                cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal
 
         # ---- recovery trigger ---------------------------------------------
         if len(ent) and not rec:
@@ -329,10 +348,10 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
 
         # ---- back to zero, or cap -----------------------------------------
         if rec and len(ent) and eq >= cyc:
-            close_all(c[j], when=tm[j]); cycles.append(bal - cyc); cyc = bal; eq = bal
+            close_all(c[j], when=tm[j]); cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal; eq = bal
         elif arm != "hedge" and CAP >= 1 and len(ent) > CAP:
             caps += 1
-            close_all(c[j], when=tm[j]); cycles.append(bal - cyc); cyc = bal; eq = bal
+            close_all(c[j], when=tm[j]); cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal; eq = bal
 
         peak = max(peak, eq); mdd = max(mdd, peak - eq); lo = min(lo, eq)
         eq_now = eq
