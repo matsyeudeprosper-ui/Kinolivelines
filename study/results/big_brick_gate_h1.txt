@@ -1,0 +1,7 @@
+﻿--- H1 out-of-sample (91.3 months, 45318 bars) ---
+  A0      mean     94.18  dead 5/6  cycles    2443
+  F big   mean      0.00  dead 6/6  cycles    4245  share 52.8%
+  F vs A0    -94.18  2SE  188.35  better 0/6
+  F vs R     -94.14  2SE  135.47  better 0/6
+
+SURVIVES H1 OUT-OF-SAMPLE (beats A0 AND R, mean>2SE, >=5/6): False

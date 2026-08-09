@@ -1,0 +1,24 @@
+﻿--- M1 (1.8 months) ---
+  A0      mean   1068.65  dead 0/6  cycles     837
+  F big   mean    988.88  dead 0/6  cycles     574  share 37.0%
+  F vs A0    -79.77  2SE   36.97  better 0/6
+  F vs R     -16.56  2SE   33.62  better 2/6
+
+--- M5 (9.1 months) ---
+  A0      mean   1320.96  dead 0/6  cycles    4790
+  F big   mean   1066.07  dead 0/6  cycles    3194  share 38.5%
+  F vs A0   -254.90  2SE  312.01  better 2/6
+  F vs R     -14.83  2SE  246.07  better 3/6
+
+--- M15 (27.4 months) ---
+  A0      mean     82.27  dead 5/6  cycles    5704
+  F big   mean   1313.74  dead 0/6  cycles    6772  share 44.7%
+  F vs A0  +1231.47  2SE  182.12  better 6/6
+  F vs R    +881.46  2SE  245.26  better 6/6
+
+==========================================================================================
+VERDICT (spec criteria, all required)
+  1. F beats A0 on >=2 TFs (mean>2SE, >=5/6), no >2SE loss: False  (1/3, big loss True)
+  2. F beats R the same way: False  (1/3, big loss False)
+  3. share 20-80% somewhere: True
+  SURVIVES: False
