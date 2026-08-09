@@ -1,0 +1,30 @@
+﻿--- M1 (1.8 months) ---
+  A0      mean   1057.07  dead 0/6  cycles     844
+  Frev    mean   1017.06  dead 0/6  cycles     192  share  7.4%
+  vs A0    -40.02  2SE   51.03  better 2/6
+  vs R     +25.37  2SE   40.54  better 5/6
+
+--- M5 (9.1 months) ---
+  A0      mean   1311.08  dead 0/6  cycles    4797
+  Frev    mean    864.28  dead 0/6  cycles    1008  share  7.6%
+  vs A0   -446.80  2SE   46.00  better 0/6
+  vs R    -102.13  2SE   83.85  better 1/6
+
+--- M15 (27.4 months) ---
+  A0      mean      0.00  dead 6/6  cycles    4534
+  Frev    mean    782.62  dead 0/6  cycles    2067  share  8.1%
+  vs A0   +782.62  2SE  177.56  better 6/6
+  vs R     -78.60  2SE  175.75  better 2/6
+
+--- H1 (91.4 months) ---
+  A0      mean     94.09  dead 5/6  cycles    2443
+  Frev    mean    755.42  dead 0/6  cycles    1695  share  9.4%
+  vs A0   +661.33  2SE  207.95  better 6/6
+  vs R    +262.51  2SE  253.14  better 4/6
+
+==========================================================================================
+SUMMARY (fresh-reversal tweak)
+  M1   vs A0    -40.02 (2SE   51.03, 2/6)   vs R    +25.37 (2SE   40.54, 5/6)   dead 0/6
+  M5   vs A0   -446.80 (2SE   46.00, 0/6)   vs R   -102.13 (2SE   83.85, 1/6)   dead 0/6
+  M15  vs A0   +782.62 (2SE  177.56, 6/6)   vs R    -78.60 (2SE  175.75, 2/6)   dead 0/6
+  H1   vs A0   +661.33 (2SE  207.95, 6/6)   vs R   +262.51 (2SE  253.14, 4/6)   dead 0/6

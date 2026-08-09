@@ -47,6 +47,17 @@ has ever touched. Survival: F beats A0 AND R, mean > 2SE and >=5/6 anchors,
 on H1. Kill: anything less. One run, no follow-up grid on this data.
 (Result: WIPED OUT 6/6 on H1. Killed.)
 
+## ADDENDUM 4 (2026-08-09) — the user's "fresh reversal" tweak
+
+New rule (user's, chosen from three formalizations): a $50-series entry is
+allowed ONLY while the $150 series' LATEST brick is a REVERSAL brick, and
+only in its direction. As soon as the big series prints its next brick
+(continuation or flip back), permission ends until its next reversal.
+Parameter-free freshness window. Same battery as addendum 3 (A0 / F / R,
+6 anchors, M1/M5/M15 + H1). Deployment of the tweak follows the user's
+standing forward-run mandate regardless of outcome; the numbers are for the
+record and their later judgment.
+
 ## ADDENDUM 3 (2026-08-09) — full battery on the DEPLOYED config ($150 gate)
 
 The user corrected the formulation (normal M1-base harvest, gate 3-4x) and

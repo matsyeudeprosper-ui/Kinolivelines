@@ -193,15 +193,22 @@ def last_reversal(b):
 
 
 def big_dir_at(closed, sig_time, brick=None, rev=2):
+    """THE GATE (SPEC_BIG_BRICK_GATE, addendum 4): walk the $150-brick series
+    over the same closed bars up to and including the signal bar. Returns
+    (direction, fresh). USER TWEAK 2026-08-09: `fresh` is True only while the
+    big series' LATEST brick is a REVERSAL brick - the moment a further big
+    brick prints (continuation or flip back), fresh goes False and entries are
+    blocked until the next big reversal ("until next big brick", the user's
+    pick of three formalizations). direction 0 = no brick yet -> block."""
     if brick is None:
         brick = BIG_BRICK
-    """THE GATE (SPEC_BIG_BRICK_GATE F): direction of the $100-brick series
-    at the signal bar's close - the exact brick loop the bots use, brick size
-    doubled, walked over the same closed bars up to and including the signal
-    bar. Returns +1 / -1 / 0 (0 = big series has not printed a brick yet ->
-    caller must block, matching the backtest mask)."""
     ao = ac = float(closed[0]["open"])
     d = 0
+    # A 2-brick reversal ALWAYS prints two bricks atomically (flip + paired
+    # continuation at the same threshold), so "latest brick is the reversal
+    # brick" would never hold. The reversal EVENT is that pair: fresh while
+    # <=1 brick has printed since the flip. Same logic as the backtest mask.
+    since = 99
     for r in closed:
         t, ci = int(r["time"]), float(r["close"])
         if t > sig_time:
@@ -211,13 +218,15 @@ def big_dir_at(closed, sig_time, brick=None, rev=2):
             dn = (ao if d == 1 else ac) - brick * (rev if d == 1 else 1)
             if ci >= up:
                 base = ao if d == -1 else ac
+                since = 0 if d == -1 else since + 1
                 ao, ac, d = base, base + brick, 1
             elif ci <= dn:
                 base = ao if d == 1 else ac
+                since = 0 if d == 1 else since + 1
                 ao, ac, d = base, base - brick, -1
             else:
                 break
-    return d
+    return d, (d != 0 and since <= 1)
 
 
 class PositionsUnavailable(RuntimeError):
@@ -581,14 +590,16 @@ def main():
                     if not ps:
                         # THE GATE - new cycles only in the $100-brick
                         # direction. Recovery adds below are untouched.
-                        bd = big_dir_at(rates[:-1], rev["time"])
-                        if bd != rev["dir"]:
+                        bd, fresh = big_dir_at(rates[:-1], rev["time"])
+                        if bd != rev["dir"] or not fresh:
                             side = "BUY" if rev["dir"] == 1 else "SELL"
                             big = {1: "UP", -1: "DOWN", 0: "NONE"}[bd]
-                            say(f"skip new cycle: signal {side} but $100-brick "
-                                f"direction is {big}")
+                            why = ("stale (big series moved on past its "
+                                   "reversal)" if bd == rev["dir"] else
+                                   f"direction is {big}")
+                            say(f"skip new cycle: signal {side} but big brick {why}")
                             rec_event("bb_skip", side=side, big_dir=big,
-                                      signal_time=rev["time"])
+                                      fresh=fresh, signal_time=rev["time"])
                             st["last_brick"] = rev["time"]
                         else:
                             # a new cycle starts with an empty ticket list, so
