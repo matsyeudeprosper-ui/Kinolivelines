@@ -248,8 +248,14 @@ def own_positions():
     # the max-hold wake told the decider to CLOSE two harvest baskets.
     return [p for p in (mt5.positions_get(symbol=SYM) or []) if p.magic == 0]
 
+def own_orders():
+    # same magic-0 filter as own_positions - on 2026-08-10 a foreign pending
+    # (#3067160991) vanishing woke the decider with "PENDING GONE ... NOT by
+    # this loop", which was true but not our business.
+    return [o for o in (mt5.orders_get(symbol=SYM) or []) if o.magic == 0]
+
 known_pos  = {p.ticket for p in own_positions()}
-known_ord  = {o.ticket for o in (mt5.orders_get(symbol=SYM) or [])}
+known_ord  = {o.ticket for o in own_orders()}
 
 # Re-sync on startup. A restart baselines every level and every known order, so
 # anything that changed while the daemon was down is absorbed silently and never
@@ -308,7 +314,7 @@ while True:
             continue
         mid  = (tick.bid + tick.ask) / 2
         pos  = own_positions()
-        ords = list(mt5.orders_get(symbol=SYM) or [])
+        ords = own_orders()
         now  = time.time()
 
         # --- position appeared / disappeared: always wake, never rate-limited ---
