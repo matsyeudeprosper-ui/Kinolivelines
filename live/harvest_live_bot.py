@@ -138,6 +138,24 @@ def say(m):
 
 FLOOR_USD = 15.00     # open nothing below this. See the note in the docstring.
 
+# ---- BALANCE-PROPORTIONAL SCALING (user's decision, 2026-08-10) ------------
+# One "unit" = 0.01 lots per BASE_BALANCE of account balance, so the whole
+# system scales with the account WITHOUT changing the strategy's shape:
+# at ~$270 the bot trades 0.02 with a $40 daily stop, at ~$1,080 it reaches
+# 0.08 with a $160 stop, and every ratio (protection ~15%/day, floor, trail)
+# stays what it is today. Two freeze rules keep the math honest:
+#   - lots are FIXED PER CYCLE (equal-lot baskets are load-bearing - the
+#     retired hedge bot proved unequal/mid-cycle changes break the geometry);
+#   - the protection scale is FIXED PER UTC DAY (set at day start).
+BASE_BALANCE = 135.0
+
+
+def scale_units(balance):
+    try:
+        return max(1, int(float(balance) // BASE_BALANCE))
+    except Exception:
+        return 1
+
 
 def check_account():
     """REAL account 134499778 only, verified on EVERY loop rather than once at
@@ -398,7 +416,7 @@ def closed_m1_context(closed_rates, rev, tick=None, decision_time=None):
     }
 
 
-def open_one(direction, why, rev=None, closed_rates=None):
+def open_one(direction, why, rev=None, closed_rates=None, lots=LOTS):
     """Returns the POSITION ticket on success, None on failure. The ticket is
     what ties the position to this cycle, so a failure to resolve it has to be
     treated as a failure to open - an untracked position would sit outside the
@@ -417,12 +435,12 @@ def open_one(direction, why, rev=None, closed_rates=None):
     buy = (direction == 1)
     price = tick.ask if buy else tick.bid
     tp = price + BRICK * TP_BRICKS if buy else price - BRICK * TP_BRICKS
-    req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": LOTS,
+    req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lots,
            "type": mt5.ORDER_TYPE_BUY if buy else mt5.ORDER_TYPE_SELL,
            "price": price, "tp": tp,           # NO sl - the exit logic is here
            "deviation": 30, "magic": MAGIC, "comment": "KL-recov",
            "type_time": mt5.ORDER_TIME_GTC}
-    say(f"OPEN {'BUY' if buy else 'SELL'} {LOTS} @ {price:.2f} TP {tp:.2f}  [{why}]")
+    say(f"OPEN {'BUY' if buy else 'SELL'} {lots} @ {price:.2f} TP {tp:.2f}  [{why}]")
     _t0 = time.perf_counter()
     r = mt5.order_send(req)
     _lat = round((time.perf_counter() - _t0) * 1000, 1)
@@ -436,7 +454,7 @@ def open_one(direction, why, rev=None, closed_rates=None):
     _adverse_slip = ((_fill - price) * direction if _fill is not None else None)
     _point = getattr(mt5.symbol_info(SYMBOL), "point", 0.01) or 0.01
     rec_event("order_open",
-              side="BUY" if buy else "SELL", volume=LOTS, why=why, ok=ok,
+              side="BUY" if buy else "SELL", volume=lots, why=why, ok=ok,
               requested_price=round(price, 2), tp=round(tp, 2),
               bid=tick.bid, ask=tick.ask, spread=round(tick.ask - tick.bid, 2),
               bid_after_fill=(getattr(_after, "bid", None) if _after else None),
@@ -450,7 +468,7 @@ def open_one(direction, why, rev=None, closed_rates=None):
               adverse_slippage_points=(round(_adverse_slip / _point, 1)
                                        if _adverse_slip is not None else None),
               # signed as P&L impact: positive means a better fill than asked
-              slippage_usd=(round((_fill - price) * (-1 if buy else 1) * LOTS, 4)
+              slippage_usd=(round((_fill - price) * (-1 if buy else 1) * lots, 4)
                             if _fill else None),
               retcode=getattr(r, "retcode", None),
               broker_comment=getattr(r, "comment", ""),
@@ -538,6 +556,9 @@ def reset_protection_day(st, day_id, bot_value):
     st["protection_day"] = day_id
     st["protection_day_start_value"] = bot_value
     st["protection_state"] = S_ACTIVE
+    # protection scale is fixed for the whole UTC day from the balance now
+    a = mt5.account_info()
+    st["day_units"] = scale_units(a.balance if a else 0)
     st["protection_stop_reason"] = None
     st["protection_trigger_total"] = None
     st["protection_final_total"] = None
@@ -546,7 +567,11 @@ def reset_protection_day(st, day_id, bot_value):
     st["trail_floor"] = 0.0
     st["daily_total"] = 0.0
     save_state(st)
-    rec_event("protection_day_start", day=day_id,
+    say(f"  scale: {st['day_units']} unit(s) -> lots {0.01*st['day_units']:.2f}, "
+        f"daily stop -${DAILY_LOSS_LIMIT*st['day_units']:.0f}, "
+        f"trail +${TRAIL_ACTIVATE*st['day_units']:.0f}/"
+        f"${TRAIL_GIVEBACK*st['day_units']:.0f}")
+    rec_event("protection_day_start", day=day_id, units=st["day_units"],
               bot_value=round(bot_value, 4), activate=TRAIL_ACTIVATE,
               giveback=TRAIL_GIVEBACK, daily_loss_limit=DAILY_LOSS_LIMIT)
     say(f"PROTECTION DAY {day_id} starts at bot value {bot_value:+.2f}")
@@ -617,7 +642,13 @@ def main():
     say("exit: OWN cycle P&L back to 0.00 (realised on this cycle's tickets + "
         "floating). Account equity is no longer used - the other bot's P&L "
         "used to move it.")
-    say(f"EQUITY FLOOR ${FLOOR_USD:.2f} - no new cycle below this")
+    _u0 = scale_units(acc.balance)
+    say(f"BALANCE SCALING: {_u0} unit(s) at balance {acc.balance:.2f} "
+        f"(1 unit per ${BASE_BALANCE:.0f}) -> lots {0.01*_u0:.2f}, "
+        f"floor ${FLOOR_USD*_u0:.0f}, daily stop -${DAILY_LOSS_LIMIT*_u0:.0f}, "
+        f"trail +${TRAIL_ACTIVATE*_u0:.0f}/${TRAIL_GIVEBACK*_u0:.0f}. "
+        f"Lots freeze per cycle; protection scale freezes per UTC day.")
+    say(f"EQUITY FLOOR ${FLOOR_USD*_u0:.2f} - no new cycle below this")
     say("backtest says this LOSES. Deployed on the user's instruction with the "
         "risk stated and accepted.")
     say("=" * 70)
@@ -709,22 +740,28 @@ def main():
                         "protection_day_start_value", bot_value)
                     st["daily_total"] = round(daily_total, 2)
 
+                    # thresholds scaled by the day's frozen unit count
+                    _du = st.get("day_units", 1) or 1
+                    _limit = DAILY_LOSS_LIMIT * _du
+                    _act = TRAIL_ACTIVATE * _du
+                    _give = TRAIL_GIVEBACK * _du
+
                     if st.get("protection_state", S_ACTIVE) == S_ACTIVE:
                         stop_reason = None
                         stop_why = None
 
                         # The hard loss takes priority over the profit trail.
-                        if daily_total <= -DAILY_LOSS_LIMIT:
+                        if daily_total <= -_limit:
                             stop_reason = "daily_loss"
                             stop_why = (f"daily bot P&L {daily_total:+.2f} <= "
-                                        f"-${DAILY_LOSS_LIMIT:.2f}")
+                                        f"-${_limit:.2f}")
                         else:
                             if (not st.get("trail_armed") and
-                                    daily_total >= TRAIL_ACTIVATE):
+                                    daily_total >= _act):
                                 st["trail_armed"] = True
                                 st["trail_peak"] = daily_total
                                 st["trail_floor"] = max(
-                                    0.0, daily_total - TRAIL_GIVEBACK)
+                                    0.0, daily_total - _give)
                                 save_state(st)
                                 rec_event("trail_armed", day=day_id,
                                           daily_total=round(daily_total, 4),
@@ -736,7 +773,7 @@ def main():
                                   daily_total > st.get("trail_peak", 0.0)):
                                 st["trail_peak"] = daily_total
                                 new_floor = max(0.0,
-                                                daily_total - TRAIL_GIVEBACK)
+                                                daily_total - _give)
                                 if new_floor > st.get("trail_floor", 0.0):
                                     st["trail_floor"] = new_floor
                                     rec_event("trail_peak", day=day_id,
@@ -905,19 +942,24 @@ def main():
                 age = (datetime.utcnow() - datetime.utcfromtimestamp(rev["time"])).total_seconds() / 60
                 if age <= FRESH_MIN:
                     ps = mine()
-                    if not ps and eq <= FLOOR_USD:
-                        say(f"EQUITY FLOOR: {eq:.2f} <= {FLOOR_USD:.2f} - no new cycle")
+                    _floor = FLOOR_USD * scale_units(acc.balance)
+                    if not ps and eq <= _floor:
+                        say(f"EQUITY FLOOR: {eq:.2f} <= {_floor:.2f} - no new cycle")
                         rec_event("signal_skipped", reason="account_equity_floor",
                                   equity=round(eq, 2), **signal_context)
                         st["last_brick"] = rev["time"]; save_state(st)
                     elif not ps:
                         # a new cycle starts with an empty ticket list, so its
-                        # P&L begins at exactly zero
+                        # P&L begins at exactly zero. Lots are set HERE from the
+                        # balance and frozen for the whole cycle.
                         st["cycle_tickets"] = []
-                        tk = open_one(rev["dir"], "new cycle", rev, rates[:-1])
+                        cyc_lots = round(0.01 * scale_units(acc.balance), 2)
+                        tk = open_one(rev["dir"], "new cycle", rev, rates[:-1],
+                                      lots=cyc_lots)
                         if tk:
                             st["last_brick"] = rev["time"]; st["cycle_equity"] = eq
                             st["cycle_tickets"] = [tk]
+                            st["cycle_lots"] = cyc_lots
                             st["cycle_dir"] = rev["dir"]   # the whole cycle follows this
                     elif st.get("recovery") and len(ps) <= MAX_BASKET:
                         # SAME-DIRECTION ONLY. A reversal pointing against the
@@ -932,7 +974,8 @@ def main():
                             st["last_brick"] = rev["time"]
                         else:
                             tk = open_one(rev["dir"], f"recovery add #{len(ps)+1}",
-                                          rev, rates[:-1])
+                                          rev, rates[:-1],
+                                          lots=st.get("cycle_lots", LOTS))
                             if tk:
                                 st["last_brick"] = rev["time"]
                                 st["cycle_tickets"] = (st.get("cycle_tickets") or []) + [tk]
@@ -967,9 +1010,11 @@ def main():
                            "protection_state": st.get("protection_state", S_ACTIVE),
                            "protection_stop_reason": st.get("protection_stop_reason"),
                            "protection_history_ok": st.get("protection_history_ok"),
-                           "trail_activate": TRAIL_ACTIVATE,
-                           "trail_giveback": TRAIL_GIVEBACK,
-                           "daily_loss_limit": DAILY_LOSS_LIMIT,
+                           "day_units": st.get("day_units", 1),
+                           "cycle_lots": st.get("cycle_lots", LOTS),
+                           "trail_activate": TRAIL_ACTIVATE * (st.get("day_units", 1) or 1),
+                           "trail_giveback": TRAIL_GIVEBACK * (st.get("day_units", 1) or 1),
+                           "daily_loss_limit": DAILY_LOSS_LIMIT * (st.get("day_units", 1) or 1),
                            "trail_armed": bool(st.get("trail_armed")),
                            "trail_peak": round(st.get("trail_peak", 0.0), 2),
                            "trail_floor": round(st.get("trail_floor", 0.0), 2),
