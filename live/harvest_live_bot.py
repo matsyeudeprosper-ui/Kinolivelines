@@ -157,6 +157,47 @@ def scale_units(balance):
         return 1
 
 
+# ---- THE COMBO GATE (user's decision, 2026-08-10) --------------------------
+# SPEC_FRESH_EARLY_COMBO - the only rule of ~20 tested that passed its
+# preregistered criteria AND the ETH out-of-sample check: zero wipeouts on
+# every timeframe of both instruments, small positive expectancy on M1/M5.
+# A NEW CYCLE may only open when BOTH hold:
+#   1. the $150-brick series is in a FRESH reversal window (its flip pair has
+#      printed and nothing further - a 2-brick reversal always prints two
+#      bricks atomically, so freshness = bricks-since-flip <= 1), in the
+#      signal's direction;
+#   2. it is one of the day's first MAX_CYCLES_PER_DAY cycles (UTC).
+# Recovery adds are UNCHANGED - the gate is entries only.
+BIG_BRICK = 150.0
+MAX_CYCLES_PER_DAY = 2
+
+
+def big_dir_at(closed, sig_time, brick=BIG_BRICK, rev=2):
+    """(direction, fresh) of the $150-brick series at the signal bar's close.
+    Exact brick loop the bots use; no lookahead. dir 0 = no brick yet."""
+    ao = ac = float(closed[0]["open"])
+    d = 0
+    since = 99
+    for r in closed:
+        t, ci = int(r["time"]), float(r["close"])
+        if t > sig_time:
+            break
+        while True:
+            up = (ao if d == -1 else ac) + brick * (rev if d == -1 else 1)
+            dn = (ao if d == 1 else ac) - brick * (rev if d == 1 else 1)
+            if ci >= up:
+                base = ao if d == -1 else ac
+                since = 0 if d == -1 else since + 1
+                ao, ac, d = base, base + brick, 1
+            elif ci <= dn:
+                base = ao if d == 1 else ac
+                since = 0 if d == 1 else since + 1
+                ao, ac, d = base, base - brick, -1
+            else:
+                break
+    return d, (d != 0 and since <= 1)
+
+
 def check_account():
     """REAL account 134499778 only, verified on EVERY loop rather than once at
     startup - a terminal can be re-logged into a different account while this is
@@ -649,8 +690,13 @@ def main():
         f"trail +${TRAIL_ACTIVATE*_u0:.0f}/${TRAIL_GIVEBACK*_u0:.0f}. "
         f"Lots freeze per cycle; protection scale freezes per UTC day.")
     say(f"EQUITY FLOOR ${FLOOR_USD*_u0:.2f} - no new cycle below this")
-    say("backtest says this LOSES. Deployed on the user's instruction with the "
-        "risk stated and accepted.")
+    say(f"COMBO GATE (2026-08-10): new cycles ONLY in a fresh ${BIG_BRICK:.0f}-brick "
+        f"reversal window AND only the day's first {MAX_CYCLES_PER_DAY} cycles (UTC). "
+        f"Recovery adds unchanged. SPEC_FRESH_EARLY_COMBO - passed prereg + ETH check.")
+    say("history: the UNGATED rule lost in backtest and was run at the user's "
+        "informed instruction until 2026-08-10 (week 1 live: -14.59, one "
+        "protection stop). The combo-gated rule above is the first variant "
+        "that PASSED its preregistered tests (both instruments, no wipeouts).")
     say("=" * 70)
     say("adds: SAME DIRECTION ONLY - a reversal against the first trade of the "
         "cycle is skipped. Deployed 2026-08-06.")
@@ -949,18 +995,42 @@ def main():
                                   equity=round(eq, 2), **signal_context)
                         st["last_brick"] = rev["time"]; save_state(st)
                     elif not ps:
-                        # a new cycle starts with an empty ticket list, so its
-                        # P&L begins at exactly zero. Lots are set HERE from the
-                        # balance and frozen for the whole cycle.
-                        st["cycle_tickets"] = []
-                        cyc_lots = round(0.01 * scale_units(acc.balance), 2)
-                        tk = open_one(rev["dir"], "new cycle", rev, rates[:-1],
-                                      lots=cyc_lots)
-                        if tk:
-                            st["last_brick"] = rev["time"]; st["cycle_equity"] = eq
-                            st["cycle_tickets"] = [tk]
-                            st["cycle_lots"] = cyc_lots
-                            st["cycle_dir"] = rev["dir"]   # the whole cycle follows this
+                        # THE COMBO GATE - both conditions must hold before a
+                        # new cycle may open. Recovery adds are untouched.
+                        _today = datetime.utcnow().strftime("%Y-%m-%d")
+                        if st.get("cycles_day") != _today:
+                            st["cycles_day"] = _today
+                            st["cycles_today"] = 0
+                        _bd, _fresh = big_dir_at(rates[:-1], rev["time"])
+                        _side = "BUY" if rev["dir"] == 1 else "SELL"
+                        if st.get("cycles_today", 0) >= MAX_CYCLES_PER_DAY:
+                            say(f"skip new cycle: day cap reached "
+                                f"({st.get('cycles_today')}/{MAX_CYCLES_PER_DAY} cycles today)")
+                            rec_event("signal_skipped", reason="combo_daily_cap",
+                                      **signal_context)
+                            st["last_brick"] = rev["time"]
+                        elif _bd != rev["dir"] or not _fresh:
+                            _big = {1: "UP", -1: "DOWN", 0: "NONE"}[_bd]
+                            _why = ("stale (big series moved past its reversal)"
+                                    if _bd == rev["dir"] else f"direction is {_big}")
+                            say(f"skip new cycle: signal {_side} but $150-brick {_why}")
+                            rec_event("signal_skipped", reason="combo_big_brick",
+                                      big_dir=_big, fresh=_fresh, **signal_context)
+                            st["last_brick"] = rev["time"]
+                        else:
+                            # a new cycle starts with an empty ticket list, so
+                            # its P&L begins at exactly zero. Lots are set HERE
+                            # from the balance and frozen for the whole cycle.
+                            st["cycle_tickets"] = []
+                            cyc_lots = round(0.01 * scale_units(acc.balance), 2)
+                            tk = open_one(rev["dir"], "new cycle (combo pass)",
+                                          rev, rates[:-1], lots=cyc_lots)
+                            if tk:
+                                st["last_brick"] = rev["time"]; st["cycle_equity"] = eq
+                                st["cycle_tickets"] = [tk]
+                                st["cycle_lots"] = cyc_lots
+                                st["cycles_today"] = st.get("cycles_today", 0) + 1
+                                st["cycle_dir"] = rev["dir"]   # the whole cycle follows this
                     elif st.get("recovery") and len(ps) <= MAX_BASKET:
                         # SAME-DIRECTION ONLY. A reversal pointing against the
                         # first trade is marked seen and skipped, not queued -
