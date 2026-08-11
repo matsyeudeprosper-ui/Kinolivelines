@@ -1,0 +1,33 @@
+﻿=== BTCUSDm  brick 50.0  big 150.0  spread 10.0 ===
+  M1   day   n=  57  best +   13.26 (median +  11.93)  worst    -18.50 (median    -8.76)  max intra-period DD    27.84
+  M1   week  n=   9  best +   22.49 (median +  21.01)  worst    -18.67 (median     0.41)  max intra-period DD    33.99
+  M1   month n=   3  best +   61.91 (median +  58.42)  worst    -20.12 (median    11.26)  max intra-period DD    34.10
+  M5   day   n= 279  best +   25.22 (median +  23.30)  worst    -82.80 (median   -82.80)  max intra-period DD   108.61
+  M5   week  n=  41  best +   40.81 (median +  39.12)  worst   -109.07 (median   -69.32)  max intra-period DD   118.54
+  M5   month n=  10  best +   87.14 (median +  64.10)  worst   -135.56 (median  -111.96)  max intra-period DD   178.35
+  M15  day   n= 835  best +   68.53 (median +  65.68)  worst   -164.22 (median  -141.28)  max intra-period DD   184.00
+  M15  week  n= 120  best +   53.09 (median +  46.43)  worst   -228.21 (median  -183.75)  max intra-period DD   266.01
+  M15  month n=  29  best +  102.66 (median +  77.54)  worst   -232.70 (median  -184.19)  max intra-period DD   266.78
+  H1   day   n=2783  best +  153.86 (median + 153.86)  worst   -148.55 (median  -148.55)  max intra-period DD   148.55
+  H1   week  n= 399  best +  139.56 (median + 139.56)  worst   -199.26 (median  -199.26)  max intra-period DD   227.02
+  H1   month n=  93  best +   90.69 (median +  88.36)  worst   -304.40 (median  -301.90)  max intra-period DD   321.98
+
+=== ETHUSDm  brick 1.5  big 4.4  spread 1.0 ===
+  M1   day   n=  57  best +    0.25 (median +   0.22)  worst     -1.41 (median    -1.31)  max intra-period DD     1.95
+  M1   week  n=   9  best +    0.56 (median +   0.47)  worst     -1.74 (median    -1.18)  max intra-period DD     2.31
+  M1   month n=   3  best +    0.03 (median +  -0.30)  worst     -1.99 (median    -1.61)  max intra-period DD     2.78
+  M5   day   n= 279  best +    0.52 (median +   0.45)  worst     -4.48 (median    -4.40)  max intra-period DD     4.98
+  M5   week  n=  41  best +    1.26 (median +   1.16)  worst     -4.23 (median    -3.79)  max intra-period DD     5.13
+  M5   month n=  10  best +    2.65 (median +   2.45)  worst     -7.25 (median    -3.91)  max intra-period DD     9.83
+  M15  day   n= 835  best +    4.23 (median +   4.15)  worst     -8.46 (median    -8.46)  max intra-period DD     9.07
+  M15  week  n= 121  best +    1.87 (median +   1.35)  worst    -17.45 (median   -15.93)  max intra-period DD    17.99
+  M15  month n=  29  best +    3.15 (median +   3.09)  worst    -15.90 (median   -14.64)  max intra-period DD    19.13
+  H1   day   n=2782  best +    7.96 (median +   6.78)  worst    -10.07 (median   -10.07)  max intra-period DD    11.04
+  H1   week  n= 400  best +    8.41 (median +   6.87)  worst    -10.26 (median   -10.26)  max intra-period DD    13.09
+  H1   month n=  93  best +    6.56 (median +   5.12)  worst    -14.43 (median   -13.04)  max intra-period DD    19.67
+
+================================================================================
+HEADLINE (worst-case across all timeframes/anchors, both symbols)
+  day    best single period  +153.86   worst single period   -164.22   worst intra-period DD   184.00
+  week   best single period  +139.56   worst single period   -228.21   worst intra-period DD   266.01
+  month  best single period  +102.66   worst single period   -304.40   worst intra-period DD   321.98

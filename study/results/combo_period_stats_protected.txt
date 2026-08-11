@@ -1,0 +1,19 @@
+﻿=== BTCUSDm  brick 50.0  big 150.0  spread 10.0  daily_loss_limit 20.0 ===
+  M1   day   n=  57  best +   11.83 (median +   8.89)  worst    -23.75 (median   -23.13)  max intra-period DD    25.74
+  M1   week  n=   9  best +   19.26 (median +  17.40)  worst    -35.08 (median   -34.15)  max intra-period DD    45.89
+  M1   month n=   3  best +   61.53 (median +  45.66)  worst    -82.57 (median   -45.87)  max intra-period DD    85.46
+  M5   day   n= 279  best +   28.72 (median +  21.77)  worst    -31.24 (median   -27.60)  max intra-period DD    42.45
+  M5   week  n=  41  best +   30.23 (median +  28.52)  worst    -46.60 (median   -38.52)  max intra-period DD    60.79
+  M5   month n=  10  best +   73.91 (median +  66.90)  worst    -97.00 (median   -36.49)  max intra-period DD   105.18
+  M15  day   n= 835  best +   21.60 (median +  21.60)  worst    -42.65 (median   -42.65)  max intra-period DD    45.15
+  M15  week  n= 120  best +   44.10 (median +  42.88)  worst    -81.08 (median   -74.28)  max intra-period DD    86.47
+  M15  month n=  29  best +   85.17 (median +  80.14)  worst   -108.21 (median  -105.52)  max intra-period DD   140.57
+  H1   day   n=2783  best +   29.76 (median +  29.76)  worst    -46.26 (median   -45.79)  max intra-period DD    48.61
+  H1   week  n= 399  best +   33.32 (median +  33.32)  worst    -70.35 (median   -68.70)  max intra-period DD    78.47
+  H1   month n=  93  best +   86.81 (median +  79.99)  worst   -116.62 (median  -102.30)  max intra-period DD   140.25
+
+================================================================================
+HEADLINE (worst-case across all timeframes/anchors, WITH the live $20/day protection folded in)
+  day    best single period   +29.76   worst single period    -46.26   worst intra-period DD    48.61
+  week   best single period   +44.10   worst single period    -81.08   worst intra-period DD    86.47
+  month  best single period   +86.81   worst single period   -116.62   worst intra-period DD   140.57

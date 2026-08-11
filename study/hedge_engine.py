@@ -29,7 +29,8 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
              arm="hedge", hours=None, month_target=None, month_trail=None,
              month_max_cycles=None, hedge_mult=1.0, drop_tp_in_recovery=False,
              adapt=None, atr_override=None, max_basket=4,
-             entry_filter=None, filter_seed=0, day_stop=None):
+             entry_filter=None, filter_seed=0, day_stop=None,
+             daily_loss_limit=None):
     """arm: 'hedge' | 'any' | 'same'  ('any' is the current live bot).
 
     drop_tp_in_recovery: once recovery starts, strip the take-profit off EVERY
@@ -65,8 +66,9 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
     # UTC day after a cycle closes with P&L > 0) | ("cap", N) - the
     # count-matched control, at most N new cycles per UTC day.
     dyk = None; cur_day = None; day_stopped = False; day_cycles = 0
-    if day_stop is not None:
+    if day_stop is not None or daily_loss_limit is not None:
         dyk = (np.asarray(tm, dtype=np.int64) // 86400)
+    day_start_eq = start
 
     def _cycle_done(pnl):
         nonlocal day_stopped
@@ -179,6 +181,7 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                 month_peak_eq = eq_now
         if dyk is not None and cur_day != dyk[j]:
             cur_day = dyk[j]; day_stopped = False; day_cycles = 0
+            day_start_eq = eq_now
         # ---- fill ---------------------------------------------------------
         if pending is not None:
             L, ptp, psl, is_first = pending
@@ -243,10 +246,10 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
                         # firing this time before any result was reported.)
                         if month_max_cycles is not None and month_cycles >= month_max_cycles:
                             allow = False
+                    if allow and day_stopped:
+                        allow = False
                     if allow and day_stop is not None:
-                        if day_stopped:
-                            allow = False
-                        elif day_stop != "win" and day_cycles >= day_stop[1]:
+                        if day_stop != "win" and day_cycles >= day_stop[1]:
                             allow = False
                     if allow and entry_filter is not None:
                         f_seen += 1
@@ -345,6 +348,17 @@ def simulate(R, a=0, spread=10.0, brick=50.0, rev=2, tp_bricks=5, sl_bricks=3,
         flo = float(np.sum(np.where(lng, c[j] - ent, ent - c[j] - spread))) * lot_pt \
             if len(ent) else 0.0
         eq = bal + flo
+
+        # ---- daily hard loss (mirrors the live bot's daily protection) -----
+        # Takes priority over every other exit this bar - force-close whatever
+        # is open the moment the day's own P&L breaches the limit, and block
+        # new cycles for the rest of the UTC day (day_stopped, same flag the
+        # day_stop machinery already reads).
+        if (daily_loss_limit is not None and len(ent)
+                and (eq - day_start_eq) <= -daily_loss_limit):
+            close_all(c[j], when=tm[j])
+            cycles.append(bal - cyc); _cycle_done(cycles[-1]); cyc = bal; eq = bal
+            day_stopped = True
 
         # ---- back to zero, or cap -----------------------------------------
         if rec and len(ent) and eq >= cyc:
