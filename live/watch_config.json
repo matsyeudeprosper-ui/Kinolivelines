@@ -4,14 +4,24 @@
   "setup_cooldown_sec": 1800,
   "watch_levels": [
     {
-      "price": 65350.0,
+      "price": 63273.51,
       "dir": "above",
-      "note": "Wide extension marker ~100 pts above the 65,252 high - the run is live, so no bar-by-bar chasing (same rule as last night's decline). Fires only on a genuine continuation leg."
+      "note": "H4 level reclaim. If M5 closes back above and retests from above, consider BUY_LIMIT at L + spread with 20/40 geometry. Do not chase if price is far; cancel if entry drifts >1.5x ATR(M15)."
     },
     {
-      "price": 65060.0,
+      "price": 63343.13,
+      "dir": "above",
+      "note": "H4 support reclaim. If accepted back above and retested from above, consider BUY_LIMIT at L + spread; 20/40 geometry. Avoid selling continuation per Rule 9."
+    },
+    {
+      "price": 63241.57,
+      "dir": "above",
+      "note": "M15 support reclaim from below. If reclaimed and retested from above, consider BUY_LIMIT at L + spread; 20/40 geometry."
+    },
+    {
+      "price": 62918.0,
       "dir": "below",
-      "note": "Failed-breakout line: back under the old range top 65,146 with wide buffer (whipsaw regime). Losing it says the 08:40 breakout was a trap and the old range is back in charge."
+      "note": "Prior spike low. If flushed below and then quickly reclaimed back above, consider a BUY on retest of 62918 + spread; 20/40 geometry. If accepted below, stand aside (do not sell continuation per Rule 9)."
     }
   ],
   "max_hold_minutes": 120,

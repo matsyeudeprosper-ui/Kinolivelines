@@ -1,0 +1,4 @@
+DIP-ENTRY: wait for the 63-pt routine dip, enter at the discount, TP back at the open, bell backstop, true costs
+LONG  : n=35773 (495/mo)  total $ +5848.01 ($ +80.89/mo)  win 80%  maxDD $743.41  eras $+2333/$-374/$+3889
+SHORT : n=35621 (493/mo)  total $ +4040.32 ($ +55.88/mo)  win 79%  maxDD $1491.35  eras $+2178/$-860/$+2722
+BOTH  : n=71394 (988/mo)  total $ +9888.33 ($+136.77/mo)  win 80%  maxDD $2091.04  eras $+4511/$-1234/$+6611

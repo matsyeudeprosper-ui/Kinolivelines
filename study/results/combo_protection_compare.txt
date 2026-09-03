@@ -1,0 +1,5 @@
+﻿TF    no-cap mean   w/cap mean      diff   no-cap worst-anchor   w/cap worst-anchor   no-cap dead  w/cap dead
+M1        1001.70       982.70    -19.00                966.98               952.57             0           0
+M5         959.46       961.31     +1.86                815.78               884.50             0           0
+M15        299.97       681.42   +381.44                  0.00               531.50             1           0
+H1         952.69       937.53    -15.15                847.84               866.29             0           0

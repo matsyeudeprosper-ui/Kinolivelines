@@ -1,0 +1,2 @@
+signal_utc,known_utc,age_seconds,side,rev_brick_close,bid,ask,spread,dist_beyond_brick,accepted_50pt,prev_run_bricks,mins_since_prev_reversal,atr_m1_14,session,mfe60_pts,mae60_pts,mfe240_pts,mae240_pts
+2026-08-08 03:26:00,2026-08-08 03:27:18,79,BUY,64921.23,64982.68,64992.68,10.00,71.45,no,3,322.0,15.81,asia,-47.59,65.50,-47.59,65.50

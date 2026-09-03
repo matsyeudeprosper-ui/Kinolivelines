@@ -1,0 +1,3 @@
+OPEN-ENTRY + 2-WIN/2-LOSS DAY CAPS (true costs, honest measurement)
+SHORT : n=5311 (73/mo)  total $  -653.23 ($ -9.04/mo)  trade-win 72%  GREEN DAYS 65%  maxDD $788.58  eras $+51/$-253/$-451
+LONG  : n=5366 (74/mo)  total $ -1422.92 ($-19.68/mo)  trade-win 69%  GREEN DAYS 61%  maxDD $1425.93  eras $-241/$-595/$-587

@@ -1,0 +1,91 @@
+COIL V1 (frozen) - compression -> decisive breakout -> continuation
+
+== PRIMARY: 6-H1 box, CR<=0.5 ==
+funnel: armed=1592  entries=1531  timeouts=61  (21.2/mo overall; per era 8.9 / 22.9 / 30.8 per mo)
+   15min: n=1531  mean    -2.1pts  med   -12.3pts  hit 42.4%  move/W mean -0.019 med -0.040  MFE/W +0.271  MAE/W -0.246
+        net $/0.01: 0.0pts -0.0211  6.6pts -0.0871  8.25pts -0.1036  9.9pts -0.1201
+        net@6.6 bootstrap CI: -0.1702..-0.0070
+   30min: n=1531  mean    -1.5pts  med   -15.7pts  hit 43.0%  move/W mean -0.018 med -0.052  MFE/W +0.359  MAE/W -0.327
+        net $/0.01: 0.0pts -0.0147  6.6pts -0.0807  8.25pts -0.0972  9.9pts -0.1137
+        net@6.6 bootstrap CI: -0.1922..+0.0324
+   60min: n=1531  mean    -5.2pts  med   -18.2pts  hit 42.9%  move/W mean -0.024 med -0.080  MFE/W +0.480  MAE/W -0.444
+        net $/0.01: 0.0pts -0.0519  6.6pts -0.1179  8.25pts -0.1344  9.9pts -0.1509
+        net@6.6 bootstrap CI: -0.2631..+0.0318
+  120min: n=1531  mean   -12.4pts  med   -34.5pts  hit 40.5%  move/W mean -0.055 med -0.124  MFE/W +0.643  MAE/W -0.621
+        net $/0.01: 0.0pts -0.1244  6.6pts -0.1904  8.25pts -0.2069  9.9pts -0.2234
+        net@6.6 bootstrap CI: -0.3914..+0.0227
+  240min: n=1531  mean    -8.5pts  med   -49.0pts  hit 40.1%  move/W mean -0.047 med -0.180  MFE/W +0.891  MAE/W -0.867
+        net $/0.01: 0.0pts -0.0852  6.6pts -0.1512  8.25pts -0.1677  9.9pts -0.1842
+        net@6.6 bootstrap CI: -0.4294..+0.1349
+
+== diag: CR<=0.4 ==
+funnel: armed=783  entries=759  timeouts=24  (10.5/mo overall; per era 2.8 / 11.6 / 16.5 per mo)
+   15min: n=759  mean   -13.5pts  med   -13.7pts  hit 38.5%  move/W mean -0.052 med -0.060  MFE/W +0.269  MAE/W -0.281
+        net $/0.01: 0.0pts -0.1347  6.6pts -0.2007  8.25pts -0.2172  9.9pts -0.2337
+        net@6.6 bootstrap CI: -0.3157..-0.0884
+   30min: n=759  mean   -10.4pts  med   -15.5pts  hit 41.2%  move/W mean -0.040 med -0.064  MFE/W +0.369  MAE/W -0.366
+        net $/0.01: 0.0pts -0.1039  6.6pts -0.1699  8.25pts -0.1864  9.9pts -0.2029
+        net@6.6 bootstrap CI: -0.3134..-0.0231
+   60min: n=759  mean    -6.5pts  med   -14.0pts  hit 44.1%  move/W mean -0.036 med -0.072  MFE/W +0.500  MAE/W -0.484
+        net $/0.01: 0.0pts -0.0651  6.6pts -0.1311  8.25pts -0.1476  9.9pts -0.1641
+        net@6.6 bootstrap CI: -0.3265..+0.0513
+  120min: n=759  mean    -8.2pts  med   -29.8pts  hit 39.9%  move/W mean -0.054 med -0.134  MFE/W +0.691  MAE/W -0.665
+        net $/0.01: 0.0pts -0.0816  6.6pts -0.1476  8.25pts -0.1641  9.9pts -0.1806
+        net@6.6 bootstrap CI: -0.4019..+0.1179
+  240min: n=759  mean   -19.6pts  med   -48.3pts  hit 38.7%  move/W mean -0.084 med -0.211  MFE/W +0.930  MAE/W -0.938
+        net $/0.01: 0.0pts -0.1961  6.6pts -0.2621  8.25pts -0.2786  9.9pts -0.2951
+        net@6.6 bootstrap CI: -0.6170..+0.0893
+
+== diag: CR<=0.6 ==
+funnel: armed=2522  entries=2406  timeouts=116  (33.3/mo overall; per era 17.5 / 34.4 / 46.4 per mo)
+   15min: n=2406  mean    +3.0pts  med   -12.7pts  hit 42.6%  move/W mean -0.002 med -0.041  MFE/W +0.278  MAE/W -0.230
+        net $/0.01: 0.0pts +0.0299  6.6pts -0.0361  8.25pts -0.0526  9.9pts -0.0691
+        net@6.6 bootstrap CI: -0.1154..+0.0439
+   30min: n=2406  mean    +2.4pts  med   -15.8pts  hit 43.6%  move/W mean +0.003 med -0.051  MFE/W +0.362  MAE/W -0.309
+        net $/0.01: 0.0pts +0.0245  6.6pts -0.0415  8.25pts -0.0580  9.9pts -0.0745
+        net@6.6 bootstrap CI: -0.1468..+0.0580
+   60min: n=2406  mean    +3.3pts  med   -18.3pts  hit 43.9%  move/W mean +0.006 med -0.067  MFE/W +0.477  MAE/W -0.413
+        net $/0.01: 0.0pts +0.0326  6.6pts -0.0334  8.25pts -0.0499  9.9pts -0.0664
+        net@6.6 bootstrap CI: -0.1731..+0.1095
+  120min: n=2406  mean    -2.2pts  med   -31.1pts  hit 41.7%  move/W mean -0.010 med -0.104  MFE/W +0.636  MAE/W -0.573
+        net $/0.01: 0.0pts -0.0216  6.6pts -0.0876  8.25pts -0.1041  9.9pts -0.1206
+        net@6.6 bootstrap CI: -0.2699..+0.0998
+  240min: n=2406  mean    +2.9pts  med   -39.3pts  hit 43.6%  move/W mean -0.006 med -0.124  MFE/W +0.869  MAE/W -0.796
+        net $/0.01: 0.0pts +0.0293  6.6pts -0.0367  8.25pts -0.0532  9.9pts -0.0697
+        net@6.6 bootstrap CI: -0.3011..+0.2189
+
+== diag: 4-H1 box, CR<=0.5 ==
+funnel: armed=2120  entries=2096  timeouts=24  (29.0/mo overall; per era 12.4 / 31.5 / 41.7 per mo)
+   15min: n=2096  mean    -7.2pts  med   -10.6pts  hit 42.5%  move/W mean -0.024 med -0.048  MFE/W +0.305  MAE/W -0.281
+        net $/0.01: 0.0pts -0.0720  6.6pts -0.1380  8.25pts -0.1545  9.9pts -0.1710
+        net@6.6 bootstrap CI: -0.2059..-0.0700
+   30min: n=2096  mean    -8.4pts  med   -13.0pts  hit 42.5%  move/W mean -0.024 med -0.060  MFE/W +0.402  MAE/W -0.376
+        net $/0.01: 0.0pts -0.0838  6.6pts -0.1498  8.25pts -0.1663  9.9pts -0.1828
+        net@6.6 bootstrap CI: -0.2328..-0.0612
+   60min: n=2096  mean    -7.7pts  med   -18.2pts  hit 42.9%  move/W mean -0.027 med -0.083  MFE/W +0.549  MAE/W -0.509
+        net $/0.01: 0.0pts -0.0771  6.6pts -0.1431  8.25pts -0.1596  9.9pts -0.1761
+        net@6.6 bootstrap CI: -0.2609..-0.0134
+  120min: n=2096  mean    -5.7pts  med   -27.8pts  hit 42.2%  move/W mean -0.037 med -0.121  MFE/W +0.755  MAE/W -0.716
+        net $/0.01: 0.0pts -0.0572  6.6pts -0.1232  8.25pts -0.1397  9.9pts -0.1562
+        net@6.6 bootstrap CI: -0.2900..+0.0338
+  240min: n=2096  mean    +1.0pts  med   -34.1pts  hit 42.9%  move/W mean -0.008 med -0.164  MFE/W +1.069  MAE/W -1.013
+        net $/0.01: 0.0pts +0.0098  6.6pts -0.0562  8.25pts -0.0727  9.9pts -0.0892
+        net@6.6 bootstrap CI: -0.2868..+0.1688
+
+== diag: 8-H1 box, CR<=0.5 ==
+funnel: armed=1365  entries=1260  timeouts=105  (17.4/mo overall; per era 8.0 / 19.0 / 24.4 per mo)
+   15min: n=1260  mean    -5.9pts  med   -14.0pts  hit 40.9%  move/W mean -0.021 med -0.046  MFE/W +0.254  MAE/W -0.234
+        net $/0.01: 0.0pts -0.0593  6.6pts -0.1253  8.25pts -0.1418  9.9pts -0.1583
+        net@6.6 bootstrap CI: -0.2196..-0.0317
+   30min: n=1260  mean    -9.2pts  med   -17.6pts  hit 41.7%  move/W mean -0.025 med -0.063  MFE/W +0.336  MAE/W -0.314
+        net $/0.01: 0.0pts -0.0924  6.6pts -0.1584  8.25pts -0.1749  9.9pts -0.1914
+        net@6.6 bootstrap CI: -0.2815..-0.0307
+   60min: n=1260  mean    -2.7pts  med   -16.5pts  hit 44.0%  move/W mean -0.014 med -0.062  MFE/W +0.450  MAE/W -0.411
+        net $/0.01: 0.0pts -0.0270  6.6pts -0.0930  8.25pts -0.1095  9.9pts -0.1260
+        net@6.6 bootstrap CI: -0.2684..+0.0885
+  120min: n=1260  mean    -2.2pts  med   -30.9pts  hit 40.7%  move/W mean -0.024 med -0.107  MFE/W +0.603  MAE/W -0.554
+        net $/0.01: 0.0pts -0.0221  6.6pts -0.0881  8.25pts -0.1046  9.9pts -0.1211
+        net@6.6 bootstrap CI: -0.3108..+0.1427
+  240min: n=1260  mean    -2.8pts  med   -42.1pts  hit 42.4%  move/W mean -0.035 med -0.154  MFE/W +0.805  MAE/W -0.766
+        net $/0.01: 0.0pts -0.0284  6.6pts -0.0944  8.25pts -0.1109  9.9pts -0.1274
+        net@6.6 bootstrap CI: -0.4173..+0.2360

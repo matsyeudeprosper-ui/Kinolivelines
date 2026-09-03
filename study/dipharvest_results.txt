@@ -1,0 +1,4 @@
+DIP HARVESTER: enter at each H1 open, TP at the 63-pt median pullback, hour-flat, true costs
+SHORT : total $ -9083.21 ($-125.64/mo)  win 70%  maxDD $9103.07  eras $-1032/$-2874/$-5177
+LONG  : total $ -9207.08 ($-127.35/mo)  win 70%  maxDD $9252.18  eras $-1095/$-3036/$-5076
+BOTH  : total $-18290.29 ($-252.99/mo)  win 70%  maxDD $18309.06  eras $-2127/$-5911/$-10253

@@ -1,0 +1,21 @@
+FIB RECLAIM + GREEN LIGHT: fib touch->reclaim entry, H4==D1 required | exit +$1.0 | START 500.0
+3154353 M1 bars
+KINO-CLONE FULL SYSTEM: recipe + escape v2 + auto-hedge + deadline cuts
+hour-flats: 4102 totalling $-11,955.91
+escape cuts: 0 totalling $0.00
+
+ENGINE: closes 11327  tp-wins 0  BE/mid 0  hour_clean 7225
+engine pnl (ignoring deaths) $-421.09  ($-5.83/mo)
+max concurrent positions: 1
+max combined floating DD: $62.59
+
+ACCOUNT LIVES (start $157 each, death = lose deposit + banked):
+deaths: 1
+banked-at-death: avg $-489.10  max $-489.10
+death dates: ['2024-12-14']
+life length days: avg 1,581.3  min 1,581.3  max 1,581.3
+
+TOTAL: deposited $1,000 over 2 lives; final life banked $68.01 -> overall net $-431.99
+  2020-22: engine closes=3630 engine pnl=$98.09 deaths=0
+  2022-24: engine closes=3754 engine pnl=$-320.93 deaths=0
+  2024-26: engine closes=3919 engine pnl=$-191.27 deaths=1

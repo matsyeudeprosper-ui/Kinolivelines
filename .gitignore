@@ -76,3 +76,17 @@ live/owl_app_token.txt
 live/owl_*.json
 live/owl_*.csv
 live/nest_data/
+# one-shot patch scripts + terminal .ini files that embed credentials
+live/make_demo2.py
+live/make_nest_landing3.py
+live/make_nest_v4.py
+live/make_nest_welcome.py
+live/make_pro.py
+live/make_raw_gen.py
+live/make_trading_wire.py
+live/*_start.ini
+# bulk re-downloadable market data + compiled MQL binaries
+study/coinbase_m1_*.json
+study/*.json.partial
+charting/*.ex5
+charting/*compile.log

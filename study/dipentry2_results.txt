@@ -1,0 +1,4 @@
+DIP-ENTRY CONSERVATIVE: same-bar prizes excluded, wins from next bar only
+LONG  : n=35773 (495/mo)  total $-13337.42 ($-184.48/mo)  win 75%  maxDD $13373.22  eras $-3567/$-1763/$-8008
+SHORT : n=35621 (493/mo)  total $-14204.66 ($-196.48/mo)  win 73%  maxDD $14228.51  eras $-3603/$-2108/$-8494
+BOTH  : n=71394 (988/mo)  total $-27542.07 ($-380.95/mo)  win 74%  maxDD $27577.52  eras $-7169/$-3870/$-16502
