@@ -165,6 +165,12 @@ RECOV_MIN_WALL_PTS = 60.0  # 2026-09-01 user ("do the 1"): raised from
                            # walls inside the noise die by accident and
                            # the spread eats the micro-prizes. No entry
                            # or chain link unless the wall is >= 60pts.
+PARTIAL_FRAC = 0.85        # 2026-09-03 user: at 85% of prize, close HALF
+                           # (0.01 steps, so lots >= 0.02 only). Measured on
+                           # the 124-trade replay: +$62 vs +$42 for lock40
+                           # alone; a near-miss round trip still pays half.
+                           # Deep fighters (>= DEEP_LOT) keep their full
+                           # 70% bank instead - do not stack both.
 BUFFER_USD = 0.10          # guaranteed min profit on breakeven/midpoint exits
 CLEAN_PTS_HEADROOM = 50.0  # hour-clean: group must be up 50pts-worth per lot of volume
                            # (>= ~2x the worst observed check-to-fill slippage, which
@@ -421,13 +427,13 @@ def open_at_market(direction, volume, comment):
         "type_filling": mt5.ORDER_FILLING_IOC,
     })
 
-def close_at_market(p, comment="OWL-hour-clean"):
+def close_at_market(p, comment="OWL-hour-clean", volume=None):
     tick = mt5.symbol_info_tick(p.symbol)
     if tick is None:
         return None
     return mt5.order_send({
         "action": mt5.TRADE_ACTION_DEAL, "position": p.ticket, "symbol": p.symbol,
-        "volume": p.volume,
+        "volume": round(volume if volume else p.volume, 2),
         "type": mt5.ORDER_TYPE_SELL if p.type == mt5.POSITION_TYPE_BUY else mt5.ORDER_TYPE_BUY,
         "price": tick.bid if p.type == mt5.POSITION_TYPE_BUY else tick.ask,
         "deviation": 50, "comment": comment,
@@ -1337,6 +1343,7 @@ def main():
                 for _tk in list((st.get("kino_walls") or {}).keys()):
                     if int(_tk) not in open_tickets:
                         st["kino_walls"].pop(_tk, None)
+                        (st.get("kino_part") or {}).pop(_tk, None)
                         # FRESH PULLBACK RULE (2026-09-03 user): a closed
                         # KINO trade clears any armed pending - the next
                         # signal entry needs a NEW pullback (down close
@@ -1385,6 +1392,24 @@ def main():
                                 save_state(st)
                                 say(f"KINO 40% LOCK: {_tk} wall moved "
                                     f"to entry")
+                    # PARTIAL at 85% (2026-09-03 user): close half, let the
+                    # rest ride to the full TP. Lots >= 0.02 only.
+                    if (_kp is not None and _kp.tp and _kp.volume >= 0.02
+                            and not (st.get("kino_part") or {}).get(_tk)):
+                        _d = (1 if _kp.type == mt5.POSITION_TYPE_BUY
+                              else -1)
+                        _przp = ((_kp.tp - _kp.price_open) * _d
+                                 * _kp.volume)
+                        if _przp > 0 and _kp.profit >= PARTIAL_FRAC * _przp:
+                            _half = (int(round(_kp.volume / 0.01))
+                                     // 2) * 0.01
+                            r = close_at_market(_kp, "OWL-partial", _half)
+                            if (r is not None and r.retcode
+                                    == mt5.TRADE_RETCODE_DONE):
+                                st.setdefault("kino_part", {})[_tk] = 1
+                                save_state(st)
+                                say(f"KINO PARTIAL 85%: {_tk} banked "
+                                    f"{_half} lots, rest rides to TP")
                 kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 2)
                 if (kb is not None and len(kb) == 2
                         and int(kb[1]["time"]) != st.get("kino_last_bar")):
@@ -1491,6 +1516,26 @@ def main():
                                 say(f"RECOV[{_ri.get('chain')}] 40% "
                                     f"LOCK: link {_rp.ticket} wall "
                                     f"moved to entry")
+                    # PARTIAL at 85% for small fighters (2026-09-03 user).
+                    # Deep fighters (>= DEEP_LOT) keep the 70% full bank.
+                    if (_rp.volume < DEEP_LOT and _rp.volume >= 0.02
+                            and _rp.tp and not _ri.get("part")):
+                        _d = (1 if _rp.type == mt5.POSITION_TYPE_BUY
+                              else -1)
+                        _przp = ((_rp.tp - _rp.price_open) * _d
+                                 * _rp.volume)
+                        if (_przp > 0
+                                and _rp.profit >= PARTIAL_FRAC * _przp):
+                            _half = (int(round(_rp.volume / 0.01))
+                                     // 2) * 0.01
+                            r = close_at_market(_rp, "OWL-partial", _half)
+                            if (r is not None and r.retcode
+                                    == mt5.TRADE_RETCODE_DONE):
+                                _ri["part"] = 1
+                                save_state(st)
+                                say(f"RECOV[{_ri.get('chain')}] PARTIAL "
+                                    f"85%: link {_rp.ticket} banked "
+                                    f"{_half} lots, rest rides to TP")
                     if _rp.volume >= DEEP_LOT and _rp.tp:
                         _d = 1 if _rp.type == mt5.POSITION_TYPE_BUY else -1
                         _prize = ((_rp.tp - _rp.price_open) * _d
