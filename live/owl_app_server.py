@@ -236,7 +236,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="hero">
 <div class="topline"><span class="brand">&#129417; OwlNest</span>
 <span style="display:flex;align-items:center;gap:10px">
-<span class="live"><span class="dot"></span>EN DIRECT</span>
+<span class="live" id="lv"><span class="dot" id="lvd"></span><span
+ id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello">Bonjour %%NAME%% &#128075;</div>
@@ -311,6 +312,13 @@ async function load(){
   if(d.error){document.getElementById('st').innerHTML=
    '&#9203; '+(d.error.includes('patientez')?d.error:
    'Petit souci technique, r&eacute;essai automatique...');return}
+  const lv=document.getElementById('lv'),lvd=document.getElementById('lvd'),
+   lvt=document.getElementById('lvt');
+  if(d.stale){lv.style.background='rgba(230,160,40,.16)';
+   lv.style.color='#ffd27a';lvd.style.background='#e6a028';
+   lvt.textContent='RECONNEXION';}
+  else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='#8df0bb';
+   lvd.style.background='#2ecc71';lvt.textContent='EN DIRECT';}
   const mt=document.getElementById('meteo-txt');
   if(d.meteo==='storm'||d.meteo==='shelter'){
    mt.innerHTML='&#9928;&#65039; <b>Gros orage</b><br>Le march&eacute; '+
@@ -356,7 +364,8 @@ async function load(){
   const w=document.getElementById('week');
   w.innerHTML=(d.week>=0?'&#9650; ':'&#9660; ')+f(d.week);
   w.className='val '+(d.week>=0?'pos':'neg');
-  document.getElementById('dd').textContent='-'+d.max_dd_7d.toFixed(0)+' $';
+  const dv=d.max_dd_7d.toFixed(0);
+  document.getElementById('dd').textContent=(dv==0?'0':'-'+dv)+' $';
   document.getElementById('open').textContent=n;
   if(d.curve&&d.curve.length>1){
    const c=d.curve,mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
@@ -365,11 +374,14 @@ async function load(){
    const pts=c.map((v,i)=>P(v,i)).join(' ');
    const up=c[c.length-1]>=0;
    const col=up?'#2ecc71':'#ff5c5c';
+   const y0=(62-((0-mn)/sp*54)).toFixed(1);
    document.getElementById('spark').innerHTML=
     '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
     '<stop offset="0%" stop-color="'+col+'" stop-opacity=".35"/>'+
     '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'+
     '</linearGradient></defs>'+
+    '<line x1="0" y1="'+y0+'" x2="300" y2="'+y0+'" stroke="#3a4a5c"'+
+    ' stroke-width="1" stroke-dasharray="4 4"/>'+
     '<polygon points="0,70 '+pts+' 300,70" fill="url(#g)"/>'+
     '<polyline points="'+pts+'" fill="none" stroke="'+col+
     '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
@@ -388,6 +400,13 @@ load();setInterval(load,5000);setInterval(ago,1000);
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register(B+'sw.js',{scope:B}).catch(()=>{});}
 let dp=null;
+if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
+ document.getElementById('howto').innerHTML=
+  '&#128241; <b>Pour installer sur iPhone :</b><br>'+
+  '1. Ouvrez cette page dans <b>Safari</b><br>'+
+  '2. Touchez le bouton <b>Partager</b> &#11014;&#65039; en bas<br>'+
+  '3. Choisissez <b>&laquo; Sur l&#8217;&eacute;cran d&#8217;accueil'+
+  ' &raquo;</b><br>4. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !';}
 if(window.matchMedia('(display-mode: standalone)').matches){
  document.getElementById('inst').style.display='none';}
 window.addEventListener('beforeinstallprompt',(e)=>{
