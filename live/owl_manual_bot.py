@@ -1368,7 +1368,10 @@ def main():
                               else -1)
                         _prize = ((_kp.tp - _kp.price_open) * _d
                                   * _kp.volume)
-                        if _prize > 0 and _kp.profit >= 0.80 * _prize:
+                        # 2026-09-03 user: lock at 40% (was 80%). Replayed
+                        # 123 trades first: +$77 total, helps pages AND
+                        # fighters (study/owl_lockbank_replay.py).
+                        if _prize > 0 and _kp.profit >= 0.40 * _prize:
                             r = mt5.order_send(
                                 {"action": mt5.TRADE_ACTION_SLTP,
                                  "position": _kp.ticket,
@@ -1380,7 +1383,7 @@ def main():
                                 _w.append(1)
                                 st["kino_walls"][_tk] = _w
                                 save_state(st)
-                                say(f"KINO 80% LOCK: {_tk} wall moved "
+                                say(f"KINO 40% LOCK: {_tk} wall moved "
                                     f"to entry")
                 kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 2)
                 if (kb is not None and len(kb) == 2
@@ -1471,7 +1474,9 @@ def main():
                               else -1)
                         _prize = ((_rp.tp - _rp.price_open) * _d
                                   * _rp.volume)
-                        if _prize > 0 and _rp.profit >= 0.80 * _prize:
+                        # 2026-09-03 user: lock at 40% (was 80%), same
+                        # measured basis as the KINO lock above.
+                        if _prize > 0 and _rp.profit >= 0.40 * _prize:
                             r = mt5.order_send(
                                 {"action": mt5.TRADE_ACTION_SLTP,
                                  "position": _rp.ticket,
@@ -1483,7 +1488,7 @@ def main():
                                 _ri["rat"] = 1
                                 _ri["sl"] = round(_rp.price_open, 2)
                                 save_state(st)
-                                say(f"RECOV[{_ri.get('chain')}] 80% "
+                                say(f"RECOV[{_ri.get('chain')}] 40% "
                                     f"LOCK: link {_rp.ticket} wall "
                                     f"moved to entry")
                     if _rp.volume >= DEEP_LOT and _rp.tp:
