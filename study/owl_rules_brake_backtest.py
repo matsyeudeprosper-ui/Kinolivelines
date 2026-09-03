@@ -1,0 +1,274 @@
+"""Backtest of the user's discretionary rule set as reverse-engineered from
+the Owl journal + user's own description (2026-08-21). NOT a confirmed
+strategy - exploratory ("just to see what that gives").
+
+Rules encoded:
+- H4 regime: BUY mode until a red H4 CLOSES below the open of the last green
+  H4 (tide provably turned) -> SELL mode; mirror to flip back.
+- H1 gate (buy side): last closed H1 green -> ok; red -> only if price is
+  back above that red H1's close. Never when closed+forming H1 both red.
+  (mirrored for sells)
+- M15 trigger (buy): last closed M15 red AND forming M15 green. (mirror)
+- Max 1 entry per clock hour. LOTS=0.02, TP $3 (150pts), NO SL.
+- Owl exits: recovery (newest keeps TP150; older losers paired deepest/
+  shallowest at midpoint+5pts, odd one BE+5pts; sticky, re-evaluated on
+  open/close), hour-team cleanup: group older than current hour closes when
+  its net P&L >= max($1, 50pts*group volume).
+- Spread 10pts on buy entries (same convention as all project sims).
+Start balance $157 (user's deposits). Tracks min equity / max combined
+floating DD / would-be margin deaths (equity < $8/open position approx).
+"""
+import json
+import numpy as np
+import MetaTrader5 as mt5
+from datetime import datetime
+
+SPREAD = 10.0
+LOTS = 0.02
+TP_PTS = 3.0 / LOTS          # 150
+BE_PTS = 0.10 / LOTS         # 5
+CLEAN_USD = 1.00
+CLEAN_PTS = 50.0
+START_BAL = 157.0
+import sys
+BRAKE_USD = float(sys.argv[1]) if len(sys.argv) > 1 else 10.0
+BRAKE_PTS = BRAKE_USD / LOTS
+print(f"=== BRAKE ${BRAKE_USD:.0f} ===", flush=True)
+
+files = ['coinbase_m1_2yr_partneg1.json','coinbase_m1_2yr_part0.json','coinbase_m1_2yr_part1.json',
+         'coinbase_m1_2yr_part2.json','coinbase_m1_extra_year.json','coinbase_m1_pilot.json']
+rows = {}
+for f in files:
+    for t, lo, hi, op, cl, vol in json.load(open(f)):
+        rows[int(t)] = (op, hi, lo, cl)
+ok = mt5.initialize(path=r"C:\Program Files\MetaTrader 5\terminal64.exe")
+mt5.symbol_select("BTCUSDm", True)
+r = mt5.copy_rates_from_pos("BTCUSDm", mt5.TIMEFRAME_M1, 0, 99000)
+mt5.shutdown()
+for i in range(len(r)):
+    rows[int(r["time"][i])] = (float(r["open"][i]), float(r["high"][i]), float(r["low"][i]), float(r["close"][i]))
+times = sorted(rows.keys())
+o = np.array([rows[t][0] for t in times]); h = np.array([rows[t][1] for t in times])
+l = np.array([rows[t][2] for t in times]); c = np.array([rows[t][3] for t in times])
+tm = np.array(times); N = len(times)
+print(f"{N} M1 bars", flush=True)
+
+eras = [("2020-22", datetime(2020,8,16).timestamp(), datetime(2022,8,16).timestamp()),
+        ("2022-24", datetime(2022,8,16).timestamp(), datetime(2024,8,16).timestamp()),
+        ("2024-26", datetime(2024,8,16).timestamp(), datetime(2026,8,22).timestamp())]
+
+# --- state ---
+mode = 0  # +1 buy mode, -1 sell mode, 0 undecided (first H4 sets it)
+last_green_h4_open = None
+last_red_h4_open = None
+# rolling candle builders: (window_id, open, high, low, close)
+cur = {}
+closed = {}   # tf -> (open, high, low, close)
+def upd(tf, sec, i):
+    wid = tm[i] // sec
+    e = cur.get(tf)
+    out = None
+    if e is None or e[0] != wid:
+        if e is not None:
+            out = (e[1], e[2], e[3], e[4])
+        cur[tf] = [wid, o[i], h[i], l[i], c[i]]
+    else:
+        if h[i] > e[2]: e[2] = h[i]
+        if l[i] < e[3]: e[3] = l[i]
+        e[4] = c[i]
+    return out
+
+positions = []   # dicts: dir, entry, vol, hour, tp, idx
+groups = {}      # hour_id -> realized
+balance = 0.0
+trades = []      # (t, pnl, kind)
+pending = None
+last_entry_hour = -1
+min_equity = 1e9
+max_float_dd = 0.0
+deaths = 0
+death_dates = []
+max_conc = 0
+
+def reassign():
+    if not positions:
+        return
+    for d in (1, -1):
+        grp = [p for p in positions if p['dir'] == d]
+        if not grp:
+            continue
+        grp.sort(key=lambda p: p['idx'])
+        newest = grp[-1]
+        newest['tp'] = newest['entry'] + d * TP_PTS
+        older = grp[:-1]
+        price = c[i]
+        losers = [p for p in older if (d == 1 and price < p['entry']) or (d == -1 and price > p['entry'])]
+        winners = [p for p in older if p not in losers]
+        for p in winners:
+            p['tp'] = p['entry'] + d * TP_PTS
+        losers.sort(key=lambda p: p['entry'], reverse=(d == 1))
+        a, b = 0, len(losers) - 1
+        while a < b:
+            m = (losers[a]['entry'] + losers[b]['entry']) / 2 + d * BE_PTS
+            losers[a]['tp'] = m; losers[b]['tp'] = m
+            a += 1; b -= 1
+        if a == b:
+            losers[a]['tp'] = losers[a]['entry'] + d * BE_PTS
+
+for i in range(N):
+    h4c = upd('h4', 14400, i)
+    h1c = upd('h1', 3600, i)
+    m15c = upd('m15', 900, i)
+    if h4c is not None:
+        closed['h4'] = h4c
+        op4, _, _, cl4 = h4c
+        green = cl4 > op4
+        if green:
+            last_green_h4_open = op4
+            if mode == 0: mode = 1
+            if mode == -1 and last_red_h4_open is not None and cl4 > last_red_h4_open:
+                mode = 1
+        else:
+            last_red_h4_open = op4
+            if mode == 0: mode = -1
+            if mode == 1 and last_green_h4_open is not None and cl4 < last_green_h4_open:
+                mode = -1
+    if h1c is not None: closed['h1'] = h1c
+    if m15c is not None: closed['m15'] = m15c
+
+    # fill pending entry at this bar's open
+    if pending is not None:
+        d = pending
+        ep = o[i] + (SPREAD if d == 1 else 0.0)
+        positions.append({'dir': d, 'entry': ep, 'vol': LOTS,
+                          'hour': tm[i] // 3600, 'tp': ep + d * TP_PTS, 'idx': i})
+        groups.setdefault(tm[i] // 3600, 0.0)
+        pending = None
+        reassign()
+        max_conc = max(max_conc, len(positions))
+
+    # --- exits: TP touches ---
+    closed_any = False
+    for p in positions[:]:
+        bp = p['entry'] - p['dir'] * BRAKE_PTS
+        braked = (l[i] <= bp) if p['dir'] == 1 else (h[i] >= bp)
+        if braked:
+            pnl = -BRAKE_USD
+            balance += pnl
+            groups[p['hour']] = groups.get(p['hour'], 0.0) + pnl
+            trades.append((tm[i], pnl, 'brake'))
+            positions.remove(p)
+            closed_any = True
+            continue
+        hit = (h[i] >= p['tp']) if p['dir'] == 1 else (l[i] <= p['tp'])
+        if hit:
+            pnl = (p['tp'] - p['entry']) * p['vol'] * p['dir']
+            balance += pnl
+            groups[p['hour']] = groups.get(p['hour'], 0.0) + pnl
+            kind = 'tp' if abs(pnl - 3.0) < 0.5 else 'be'
+            trades.append((tm[i], pnl, kind))
+            positions.remove(p)
+            closed_any = True
+    # --- hour-team cleanup ---
+    cur_hour = tm[i] // 3600
+    for hid in list(groups.keys()):
+        mem = [p for p in positions if p['hour'] == hid]
+        if hid >= cur_hour:
+            continue
+        if not mem:
+            del groups[hid]
+            continue
+        floating = sum((c[i] - p['entry']) * p['vol'] * p['dir'] for p in mem)
+        total = groups[hid] + floating
+        need = max(CLEAN_USD, CLEAN_PTS * sum(p['vol'] for p in mem))
+        if total >= need:
+            for p in mem:
+                pnl = (c[i] - p['entry']) * p['vol'] * p['dir']
+                balance += pnl
+                trades.append((tm[i], pnl, 'hour_clean'))
+                positions.remove(p)
+            del groups[hid]
+            closed_any = True
+    if closed_any:
+        reassign()
+
+    # --- equity / death tracking ---
+    if positions:
+        floating = sum((c[i] - p['entry']) * p['vol'] * p['dir'] for p in positions)
+        eq = START_BAL + balance + floating
+        if floating < -max_float_dd: max_float_dd = -floating
+        if eq < min_equity: min_equity = eq
+        # lifecycle: margin stop (~$8 margin per 0.02 position) kills the
+        # account - lose whole remaining equity, redeposit $157, start fresh
+        if eq < 8.0 * len(positions):
+            deaths += 1
+            death_dates.append(datetime.utcfromtimestamp(int(tm[i])).strftime('%Y-%m-%d'))
+            trades.append((tm[i], balance, 'account_death'))  # banked-at-death
+            balance = 0.0          # deposit + banked all gone; new $157 life starts
+            positions.clear(); groups.clear()
+
+    # --- entry signal (evaluated at bar close, filled next open) ---
+    if mode == 0 or pending is not None:
+        continue
+    if cur_hour == last_entry_hour:
+        continue
+    if 'm15' not in closed or 'h1' not in closed:
+        continue
+    price = c[i]
+    d = mode
+    m15o, _, _, m15cl = closed['m15']
+    m15_red_closed = m15cl < m15o
+    m15_forming = cur['m15'][1]  # forming open
+    m15_form_green = price > m15_forming
+    h1o, _, _, h1cl = closed['h1']
+    h1_green = h1cl > h1o
+    h1_form_open = cur['h1'][1]
+    if d == 1:
+        trig = m15_red_closed and m15_form_green
+        gate = h1_green or (price > h1cl and price > h1_form_open)
+    else:
+        trig = (m15cl > m15o) and (price < m15_forming)
+        gate = (h1cl < h1o) or (price < h1cl and price < h1_form_open)
+    if trig and gate and i + 1 < N:
+        pending = d
+        last_entry_hour = cur_hour
+
+# close remaining at end
+for p in positions:
+    pnl = (c[-1] - p['entry']) * p['vol'] * p['dir']
+    balance += pnl
+    trades.append((tm[-1], pnl, 'open_end'))
+
+engine = [t for t in trades if t[2] in ('tp', 'be', 'hour_clean', 'open_end', 'brake')]
+brakes = [t for t in trades if t[2] == 'brake']
+tp_wins = sum(1 for t in trades if t[2] == 'tp')
+be = sum(1 for t in trades if t[2] == 'be')
+hc = sum(1 for t in trades if t[2] == 'hour_clean')
+deaths_l = [t for t in trades if t[2] == 'account_death']
+span_mo = (tm[-1] - tm[0]) / 86400 / 30.44
+engine_pnl = sum(t[1] for t in engine)
+print(f"\nENGINE: closes {len(engine)}  tp-wins {tp_wins}  BE/mid {be}  hour_clean {hc}")
+print(f"engine pnl (ignoring deaths) ${engine_pnl:,.2f}  (${engine_pnl/span_mo:,.2f}/mo)")
+print(f"BRAKED {len(brakes)} closes, brake cost ${sum(t[1] for t in brakes):,.2f}")
+print(f"max concurrent positions: {max_conc}")
+print(f"max combined floating DD: ${max_float_dd:,.2f}")
+print(f"\nACCOUNT LIVES (start $157 each, death = lose deposit + banked):")
+print(f"deaths: {deaths}")
+if deaths_l:
+    bk = [t[1] for t in deaths_l]
+    print(f"banked-at-death: avg ${sum(bk)/len(bk):,.2f}  max ${max(bk):,.2f}")
+    print(f"last death: {death_dates[-1] if death_dates else None}")
+    prev = tm[0]
+    lens = []
+    for t in deaths_l:
+        lens.append((t[0]-prev)/86400); prev = t[0]
+    print(f"life length days: avg {sum(lens)/len(lens):,.1f}  min {min(lens):,.1f}  max {max(lens):,.1f}")
+net_deposits = (deaths + 1) * START_BAL
+final_life_banked = balance
+print(f"\nTOTAL: deposited ${net_deposits:,.0f} over {deaths+1} lives; "
+      f"final life banked ${final_life_banked:,.2f} -> overall net ${final_life_banked + START_BAL - net_deposits:,.2f}")
+for lbl, d0, d1 in eras:
+    n = sum(1 for t in engine if d0 <= t[0] < d1)
+    g = sum(t[1] for t in engine if d0 <= t[0] < d1)
+    dd = sum(1 for t in deaths_l if d0 <= t[0] < d1)
+    print(f"  {lbl}: engine closes={n} engine pnl=${g:,.2f} deaths={dd}")

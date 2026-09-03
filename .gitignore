@@ -70,3 +70,9 @@ live/harvest_*_events.csv
 live/trades_journal.csv
 live/decisions.csv
 study/signal_observer.csv
+# OwlNest - secrets (bot token, MT5 passwords, duckdns) and runtime data.
+# The code is tracked; the credentials and ever-growing journals are not.
+live/owl_app_token.txt
+live/owl_*.json
+live/owl_*.csv
+live/nest_data/
