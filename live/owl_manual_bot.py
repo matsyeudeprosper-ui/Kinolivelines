@@ -1337,6 +1337,19 @@ def main():
                 for _tk in list((st.get("kino_walls") or {}).keys()):
                     if int(_tk) not in open_tickets:
                         st["kino_walls"].pop(_tk, None)
+                        # FRESH PULLBACK RULE (2026-09-03 user): a closed
+                        # KINO trade clears any armed pending - the next
+                        # signal entry needs a NEW pullback (down close
+                        # below the last green candle's low) to make the
+                        # peak/dip official again. Measured before adding:
+                        # would have cut 19/84 trades, win rate unchanged.
+                        _ks = st.get("kino") or {}
+                        for _side in ("up", "dn"):
+                            if (_ks.get(_side) or {}).get("pending"):
+                                _ks[_side]["pending"] = None
+                                say(f"KINO: pending {_side} cleared - "
+                                    f"fresh pullback required after "
+                                    f"closed trade {_tk}")
                         save_state(st)
                         continue
                     _kp = next((p for p in manual
