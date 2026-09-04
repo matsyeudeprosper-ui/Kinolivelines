@@ -124,6 +124,8 @@ KINO_ENTRY = True          # 2026-08-31 user: auto-trade THEIR entry system.
                            # any page. NO page/hour caps (user rule); only
                            # the 0.04 chain gate + $100/page cap. Base lot:
 KINO_LOTS = 0.02           # page base lot (0.01 below the soft floor)
+PAGE_RISK_MAX_USD = 5.0    # 2026-09-04 user: max tolerated page risk at
+                           # 0.02 lots ($2.50 at 0.01); wider walls skip
 PAGE_RISK_USD = 3.0        # 2026-09-04 user, v2: lots do NOT scale.
                            # Target risk $3 at 0.02 lots, half ($1.50)
                            # at 0.01. A wall too far to fit the target
@@ -613,11 +615,12 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                      and ai.balance < _softfloor) else KINO_LOTS)
     _rtarget = PAGE_RISK_USD * (blot / 0.02)
     _pdist = abs(entry_px - wall)
-    # 1.65x = rounding slack (user 2026-09-04: a 234pt wall at the old
-    # 225 cutoff was a needless rejection); ~248 pts at either lot size
-    if _pdist > 1.65 * _rtarget / blot:
-        _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts too far "
-                 f"(max {1.65 * _rtarget / blot:.0f})")
+    # user 2026-09-04 final: tolerate risk up to $5 at 0.02 lots
+    # ($2.50 at 0.01) = 250 pts; skip only beyond that
+    _rmax = PAGE_RISK_MAX_USD * (blot / 0.02)
+    if _pdist * blot > _rmax:
+        _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts would risk "
+                 f"${_pdist * blot:.2f} > ${_rmax:.2f} max")
         if st.get("kino_last_skip") != _kmsg:
             st["kino_last_skip"] = _kmsg
             say(_kmsg)
