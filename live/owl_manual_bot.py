@@ -708,6 +708,38 @@ def reent_trigger(dirn, entry_price, t0):
     as BUY when an M1 CLOSES back above it (mirror for SELL)."""
     return float(entry_price)
 
+def resume_frozen_chains(st):
+    """Storm-lift (user 2026-09-04, freeze-and-resume): every chain that
+    froze during shelter re-arms as a REAL two-door watch on FRESH
+    structure - doors = the last 30 M1 bars' extremes, lot preserved.
+    Built after the ghost contest: $14.50 of chain recoveries were
+    forfeited virtually vs $8.27 saved across the first two storms."""
+    fc = st.get("frozen_chains") or {}
+    if not fc:
+        return
+    bars = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 30)
+    if bars is None or len(bars) < 5:
+        return                      # no data - keep frozen, retry later
+    hi = float(np.max(bars["high"]))
+    lo = float(np.min(bars["low"]))
+    now = int(time.time())
+    for cn, f in list(fc.items()):
+        d = int(f.get("dir", 1))
+        st.setdefault("recov_watches", []).append({
+            "dir": d,
+            "sl": round(lo if d == 1 else hi, 2),
+            "lot": round(float(f["lot"]) - RECOV_STEP, 2),
+            "t0": now, "t_sl": now,
+            "trig": round(hi if d == 1 else lo, 2),
+            "chain": cn,
+            "kino": bool(f.get("kino")),
+            "loss": float(f.get("loss") or 0.0)})
+        say(f"CHAIN RESUMED[{cn}]: fresh doors {lo:.2f}/{hi:.2f}, "
+            f"next fighter {f['lot']} is REAL again "
+            f"(owed ${float(f.get('loss') or 0.0):.2f})")
+    st["frozen_chains"] = {}
+    save_state(st)
+
 def connect():
     if not mt5.initialize(path=TERMINAL):
         return False
@@ -1247,34 +1279,29 @@ def main():
                                            and ai.balance < hard_floor))
                                       and (st.get("shadow") or {})
                                       .get("streak", 0) < 2):
-                                    # STORM / below-hard-floor: virtual
+                                    # STORM / below-hard-floor: FREEZE
+                                    # (user 2026-09-04, replaces the
+                                    # ghost chain link). The ladder
+                                    # remembers its next lot + debt and
+                                    # resumes REAL on fresh doors when
+                                    # the storm lifts. Ghost pages alone
+                                    # decide the lift.
                                     _sh = st.setdefault(
                                         "shadow",
                                         {"links": [], "streak": 0})
-                                    tpd = dist - min(
-                                        0.75, 0.25 * risk) / new_lot
-                                    if (new_lot >= DEEP_LOT
-                                            and rw.get("loss")):
-                                        _ghd = ((float(rw["loss"])
-                                                 + HEAL_EXTRA_USD)
-                                                / new_lot)
-                                        if (RECOV_MIN_WALL_PTS < _ghd
-                                                < tpd):
-                                            tpd = _ghd
-                                    _stp = (entry_px + tpd if new_dir == 1
-                                            else entry_px - tpd)
-                                    _sh["links"].append(
-                                        {"dir": new_dir, "lot": new_lot,
-                                         "entry": entry_px,
-                                         "sl": round(wall, 2),
-                                         "tp": round(_stp, 2),
-                                         "chain": _cn})
+                                    st.setdefault("frozen_chains", {})[
+                                        str(_cn)] = {
+                                        "lot": new_lot,
+                                        "dir": rw["dir"],
+                                        "loss": float(rw.get("loss")
+                                                      or 0.0),
+                                        "kino": bool(rw.get("kino"))}
                                     done = True
                                     _dirty = True
-                                    say(f"SHADOW chain[{_cn}] ENTRY: "
-                                        f"{'BUY' if new_dir == 1 else 'SELL'}"
-                                        f" {new_lot} @ {entry_px:.2f} "
-                                        f"(virtual - shelter mode)")
+                                    say(f"CHAIN FROZEN[{_cn}]: next "
+                                        f"fighter {new_lot} waits out "
+                                        f"the storm (owed "
+                                        f"${float(rw.get('loss') or 0.0):.2f})")
                                     try:
                                         _md = ("storm"
                                                if ((st.get("wx") or {})
@@ -1639,6 +1666,7 @@ def main():
                     save_state(st)
                     say("WEATHER: balance back above the floor - "
                         "normal mode")
+                    resume_frozen_chains(st)
                     try:
                         json.dump({"mode": "normal", "streak": 0},
                                   open(os.path.join(
@@ -1698,6 +1726,7 @@ def main():
                                 say("WEATHER CLEAR: two shadow wins - "
                                     "everything real AUTO-RESUMES "
                                     "(hard floor still guards)")
+                                resume_frozen_chains(st)
                             try:
                                 json.dump({"mode": _mode,
                                            "streak": _sh["streak"]},
