@@ -581,14 +581,19 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     # fighter's stop is the same bet doubled - when the wall breaks both
     # die in the same second (2026-09-04 03:48: -$4.64 and -$1.20 on the
     # identical SL 80948.32). Skip the page; the fighter carries the bet.
+    # Check the recov_links RECORDS, not just open positions: a fighter
+    # opened in the SAME poll loop is registered here before it appears
+    # in the `manual` snapshot. 2026-09-04 17:43: page SELL duplicated a
+    # 0.04 fighter's SL 79588.34 exactly through that 5s race.
     _links2 = st.get("recov_links") or {}
-    for _p2 in manual:
-        if str(_p2.ticket) not in _links2 or not _p2.sl:
+    for _lk in _links2.values():
+        _lsl, _ltp = float(_lk.get("sl") or 0), float(_lk.get("tp") or 0)
+        if not _lsl or not _ltp:
             continue
-        _pd2 = 1 if _p2.type == mt5.POSITION_TYPE_BUY else -1
-        if _pd2 == direction and abs(_p2.sl - wall) <= 50.0:
-            _kmsg = (f"KINO skipped: same wall as open fighter "
-                     f"{_p2.ticket} (SL {_p2.sl:.2f})")
+        _ld = 1 if _ltp > _lsl else -1
+        if _ld == direction and abs(_lsl - wall) <= 50.0:
+            _kmsg = (f"KINO skipped: same wall as fighter chain "
+                     f"{_lk.get('chain')} (SL {_lsl:.2f})")
             if st.get("kino_last_skip") != _kmsg:
                 st["kino_last_skip"] = _kmsg
                 say(_kmsg)
