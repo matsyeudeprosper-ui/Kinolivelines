@@ -123,7 +123,13 @@ KINO_ENTRY = True          # 2026-08-31 user: auto-trade THEIR entry system.
                            # as RECOV). Guarded by the two-door chains like
                            # any page. NO page/hour caps (user rule); only
                            # the 0.04 chain gate + $100/page cap. Base lot:
-KINO_LOTS = 0.02
+KINO_LOTS = 0.02           # superseded 2026-09-04 by PAGE_RISK_USD sizing
+PAGE_RISK_USD = 3.0        # 2026-09-04 user: the FIRST trade of a page
+                           # always risks a fixed ~$3. Lot = $3 / wall
+                           # distance (0.01 steps, capped 0.01-0.06).
+                           # Walls so far that even 0.01 lots risks more
+                           # than 1.5x the target are skipped. Fighters
+                           # keep their current ladder (last lot + 0.01).
 MANUAL_HANDS_OFF = True    # 2026-08-25 user: NEVER modify/close/TP the
                            # user's own hand trades. Bot-opened positions
                            # (comment OWL-*) keep full management. Hand trades
@@ -598,8 +604,20 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     except Exception:
         _softfloor = 0.0
         _hardfloor = 0.0
-    blot = (0.01 if (_softfloor and ai is not None
-                     and ai.balance < _softfloor) else KINO_LOTS)
+    # fixed-$3 first trade (2026-09-04 user) - replaces the old fixed-lot
+    # and below-soft-floor downsizing for pages
+    _pdist = abs(entry_px - wall)
+    if _pdist <= 0:
+        return None
+    blot = min(0.06, max(0.01, round(PAGE_RISK_USD / _pdist, 2)))
+    if _pdist * blot > 1.5 * PAGE_RISK_USD:
+        _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts away - even 0.01 "
+                 f"lots risks ${_pdist * 0.01:.2f}, target "
+                 f"${PAGE_RISK_USD:.0f}")
+        if st.get("kino_last_skip") != _kmsg:
+            st["kino_last_skip"] = _kmsg
+            say(_kmsg)
+        return None
     _below_hard = (_hardfloor and ai is not None
                    and ai.balance < _hardfloor)
     if (((st.get("wx") or {}).get("forced") or _below_hard)
