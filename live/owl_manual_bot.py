@@ -1670,6 +1670,15 @@ def main():
                                 say(f"SHADOW chain[{L['chain']}] WIN "
                                     f"{_pnl:+.2f} (streak "
                                     f"{_sh['streak']})")
+                                # measure the user's freeze-and-resume
+                                # idea (2026-09-04): a CHAIN ghost win is
+                                # a real-recovery opportunity forfeited
+                                # to shelter. Count these before building
+                                # the feature.
+                                if str(L.get("chain")) != "page":
+                                    say(f"GHOST WIN would have been REAL "
+                                        f"recovery: {_pnl:+.2f} "
+                                        f"(chain {L['chain']})")
                             elif _pnl < -0.5:
                                 _sh["streak"] = 0
                                 say(f"SHADOW chain[{L['chain']}] LOSS "
