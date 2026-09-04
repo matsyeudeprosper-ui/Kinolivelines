@@ -603,23 +603,14 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     except Exception:
         _softfloor = 0.0
         _hardfloor = 0.0
-    # $3-target pages v2 (2026-09-04 user): lot mechanism unchanged
-    # (0.02 base, 0.01 below soft floor); risk target $3 at 0.02 and
-    # $1.50 at 0.01. Wall too far to fit -> SKIP, never up-size.
+    # $3-target pages v3 (2026-09-04 user final): lots never scale
+    # (0.02 base, 0.01 below soft floor). SL stays at the structure
+    # wall - risk MAY exceed $3. The $3 is the PROFIT side: TP is the
+    # normal near-1:1 target but capped at $3 profit ($1.50 at 0.01).
+    # No far-wall skip. Fighters untouched.
     blot = (0.01 if (_softfloor and ai is not None
                      and ai.balance < _softfloor) else KINO_LOTS)
-    _pdist = abs(entry_px - wall)
-    if _pdist <= 0:
-        return None
     _rtarget = PAGE_RISK_USD * (blot / 0.02)
-    if _pdist * blot > 1.5 * _rtarget:
-        _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts -> risk "
-                 f"${_pdist * blot:.2f} over the ${_rtarget:.2f} "
-                 f"target at {blot} lots")
-        if st.get("kino_last_skip") != _kmsg:
-            st["kino_last_skip"] = _kmsg
-            say(_kmsg)
-        return None
     _below_hard = (_hardfloor and ai is not None
                    and ai.balance < _hardfloor)
     if (((st.get("wx") or {}).get("forced") or _below_hard)
@@ -655,6 +646,8 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     strong = a14 > 0 and body >= a14
     disc = min(0.5 if strong else 1.0, 0.25 * risk)
     tp_dist = dist - disc / blot
+    # profit cap: aim/cut at $3 ($1.50 at 0.01) even when the wall is far
+    tp_dist = min(tp_dist, _rtarget / blot)
     tp = entry_px + tp_dist if direction == 1 else entry_px - tp_dist
     slp = round(wall, 2)
     mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "position": tkt,
