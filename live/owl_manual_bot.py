@@ -556,6 +556,22 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
             st["kino_last_skip"] = _kmsg
             say(_kmsg)
         return None
+    # SAME-WALL BLOCK (2026-09-04 user): a page that duplicates an open
+    # fighter's stop is the same bet doubled - when the wall breaks both
+    # die in the same second (2026-09-04 03:48: -$4.64 and -$1.20 on the
+    # identical SL 80948.32). Skip the page; the fighter carries the bet.
+    _links2 = st.get("recov_links") or {}
+    for _p2 in manual:
+        if str(_p2.ticket) not in _links2 or not _p2.sl:
+            continue
+        _pd2 = 1 if _p2.type == mt5.POSITION_TYPE_BUY else -1
+        if _pd2 == direction and abs(_p2.sl - wall) <= 50.0:
+            _kmsg = (f"KINO skipped: same wall as open fighter "
+                     f"{_p2.ticket} (SL {_p2.sl:.2f})")
+            if st.get("kino_last_skip") != _kmsg:
+                st["kino_last_skip"] = _kmsg
+                say(_kmsg)
+            return None
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return None
