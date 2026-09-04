@@ -613,9 +613,11 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                      and ai.balance < _softfloor) else KINO_LOTS)
     _rtarget = PAGE_RISK_USD * (blot / 0.02)
     _pdist = abs(entry_px - wall)
-    if _pdist > 1.5 * _rtarget / blot:
+    # 1.65x = rounding slack (user 2026-09-04: a 234pt wall at the old
+    # 225 cutoff was a needless rejection); ~248 pts at either lot size
+    if _pdist > 1.65 * _rtarget / blot:
         _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts too far "
-                 f"(max {1.5 * _rtarget / blot:.0f})")
+                 f"(max {1.65 * _rtarget / blot:.0f})")
         if st.get("kino_last_skip") != _kmsg:
             st["kino_last_skip"] = _kmsg
             say(_kmsg)
