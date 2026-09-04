@@ -603,14 +603,23 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     except Exception:
         _softfloor = 0.0
         _hardfloor = 0.0
-    # $3-target pages v3 (2026-09-04 user final): lots never scale
-    # (0.02 base, 0.01 below soft floor). SL stays at the structure
-    # wall - risk MAY exceed $3. The $3 is the PROFIT side: TP is the
-    # normal near-1:1 target but capped at $3 profit ($1.50 at 0.01).
-    # No far-wall skip. Fighters untouched.
+    # $3-target pages v4 (2026-09-04 user, after testing both ideas):
+    # lots never scale (0.02 base, 0.01 below soft floor). TP capped at
+    # $3 profit ($1.50 at 0.01) AND walls beyond 1.5x the cap distance
+    # (>225 pts) are skipped - the 93-page replay scored the combo
+    # -$4.51 vs -$22.53 uncapped (study/owl_page_v2_v3_test.py).
+    # Fighters untouched.
     blot = (0.01 if (_softfloor and ai is not None
                      and ai.balance < _softfloor) else KINO_LOTS)
     _rtarget = PAGE_RISK_USD * (blot / 0.02)
+    _pdist = abs(entry_px - wall)
+    if _pdist > 1.5 * _rtarget / blot:
+        _kmsg = (f"KINO skipped: wall {_pdist:.0f}pts too far "
+                 f"(max {1.5 * _rtarget / blot:.0f})")
+        if st.get("kino_last_skip") != _kmsg:
+            st["kino_last_skip"] = _kmsg
+            say(_kmsg)
+        return None
     _below_hard = (_hardfloor and ai is not None
                    and ai.balance < _hardfloor)
     if (((st.get("wx") or {}).get("forced") or _below_hard)
