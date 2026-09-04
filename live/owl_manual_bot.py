@@ -447,6 +447,20 @@ def close_at_market(p, comment="OWL-hour-clean", volume=None):
         "type_filling": mt5.ORDER_FILLING_IOC,
     })
 
+def be_plus(p):
+    """Breakeven-PLUS (2026-09-04 user): when a lock moves the wall to
+    entry, shift it past the spread (+ BUFFER_USD) so a scratch exits
+    at >= $0 instead of minus-the-spread. Capped at half the current
+    favourable distance so the stop stays legal and doesn't crowd
+    price."""
+    tick = mt5.symbol_info_tick(p.symbol)
+    d = 1 if p.type == mt5.POSITION_TYPE_BUY else -1
+    spread = (tick.ask - tick.bid) if tick else 10.0
+    bump = spread + BUFFER_USD / p.volume
+    fav = max(0.0, p.profit / p.volume)      # points currently in our favour
+    bump = min(bump, 0.5 * fav)
+    return round(p.price_open + d * bump, 2)
+
 def _regime(tf, count):
     bars = mt5.copy_rates_from_pos(SYMBOL, tf, 0, count)
     if bars is None or len(bars) < 3:
@@ -1422,11 +1436,12 @@ def main():
                         # 123 trades first: +$77 total, helps pages AND
                         # fighters (study/owl_lockbank_replay.py).
                         if _prize > 0 and _kp.profit >= 0.40 * _prize:
+                            _bep = be_plus(_kp)
                             r = mt5.order_send(
                                 {"action": mt5.TRADE_ACTION_SLTP,
                                  "position": _kp.ticket,
                                  "symbol": SYMBOL,
-                                 "sl": round(_kp.price_open, 2),
+                                 "sl": _bep,
                                  "tp": _kp.tp})
                             if (r is not None and r.retcode
                                     == mt5.TRADE_RETCODE_DONE):
@@ -1545,16 +1560,17 @@ def main():
                         # 2026-09-03 user: lock at 40% (was 80%), same
                         # measured basis as the KINO lock above.
                         if _prize > 0 and _rp.profit >= 0.40 * _prize:
+                            _bep = be_plus(_rp)
                             r = mt5.order_send(
                                 {"action": mt5.TRADE_ACTION_SLTP,
                                  "position": _rp.ticket,
                                  "symbol": SYMBOL,
-                                 "sl": round(_rp.price_open, 2),
+                                 "sl": _bep,
                                  "tp": _rp.tp})
                             if (r is not None and r.retcode
                                     == mt5.TRADE_RETCODE_DONE):
                                 _ri["rat"] = 1
-                                _ri["sl"] = round(_rp.price_open, 2)
+                                _ri["sl"] = _bep
                                 save_state(st)
                                 say(f"RECOV[{_ri.get('chain')}] 40% "
                                     f"LOCK: link {_rp.ticket} wall "
@@ -1594,7 +1610,7 @@ def main():
                         elif (_prize > 0
                                 and _rp.profit >= RATCHET_LOCK * _prize
                                 and not _ri.get("rat")):
-                            _be = round(_rp.price_open, 2)
+                            _be = be_plus(_rp)
                             r = mt5.order_send(
                                 {"action": mt5.TRADE_ACTION_SLTP,
                                  "position": _rp.ticket, "symbol": SYMBOL,
