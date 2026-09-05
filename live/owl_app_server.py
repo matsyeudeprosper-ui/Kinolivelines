@@ -357,7 +357,7 @@ async function load(){
    const pc=Math.max(0,Math.min(100,d.equity/d.palier*100));
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
-    'Prochain palier : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
+    'Objectif : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
     pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
   }
