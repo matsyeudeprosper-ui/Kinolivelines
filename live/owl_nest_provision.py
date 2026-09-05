@@ -51,6 +51,17 @@ while True:
             else:
                 say(f"robocopy FAILED for {uid}: rc={r.returncode}")
         if changed:
-            json.dump(users, open(USERS, "w", encoding="utf-8"),
-                      ensure_ascii=False, indent=2)
+            # MERGE-AT-WRITE (2026-09-05): robocopy takes minutes, and a
+            # user deleted via the app during that window was silently
+            # resurrected by this stale full-list write. Re-read the
+            # file and only update the fields of users still present.
+            try:
+                cur = json.load(open(USERS, encoding="utf-8"))
+                byid = {x.get("id"): x for x in users}
+                cur = [byid.get(x.get("id"), x) for x in cur]
+                json.dump(cur, open(USERS, "w", encoding="utf-8"),
+                          ensure_ascii=False, indent=2)
+            except Exception:
+                json.dump(users, open(USERS, "w", encoding="utf-8"),
+                          ensure_ascii=False, indent=2)
     time.sleep(15)
