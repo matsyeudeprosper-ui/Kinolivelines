@@ -78,6 +78,8 @@ def stats():
         pnl = lambda ds: sum(d.profit + d.commission + d.swap for d in ds)
         today = pnl(bot_out_deals(midnight, utcnow + timedelta(minutes=5)))
         week = pnl(bot_out_deals(monday, utcnow + timedelta(minutes=5)))
+        month = pnl(bot_out_deals(midnight.replace(day=1),
+                                  utcnow + timedelta(minutes=5)))
         d7 = sorted(bot_out_deals(week_ago, utcnow + timedelta(minutes=5)),
                     key=lambda d: d.time)
         cum = 0.0
@@ -118,6 +120,7 @@ def stats():
             "equity": round(ai.equity, 2),
             "today": round(today, 2),
             "week": round(week, 2),
+            "month": round(month, 2),
             "max_dd_7d": round(dd, 2),
             "open_positions": len(mt5.positions_get(symbol="BTCUSDm") or []),
             "updated_utc": utcnow.isoformat(timespec="seconds"),
@@ -267,9 +270,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="val" id="week">--</div><div class="sub">depuis lundi</div></div>
 <div class="card"><div class="lbl">Pire creux</div>
 <div class="val neg" id="dd">--</div><div class="sub">7 derniers jours</div></div>
-<div class="card"><div class="lbl">Trades en cours</div>
-<div class="val neu" id="open">--</div><div class="sub">g&#233;r&#233;s
- par le robot</div></div>
+<div class="card"><div class="lbl">Ce mois</div>
+<div class="val" id="month">--</div><div class="sub">depuis le 1er</div></div>
 </div>
 <div class="sec">Progression &middot; 7 jours</div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
@@ -366,7 +368,11 @@ async function load(){
   w.className='val '+(d.week>=0?'pos':'neg');
   const dv=d.max_dd_7d.toFixed(0);
   document.getElementById('dd').textContent=(dv==0?'0':'-'+dv)+' $';
-  document.getElementById('open').textContent=n;
+  if(d.month!==undefined){
+   const mo=document.getElementById('month');
+   mo.innerHTML=(d.month>=0?'&#9650; ':'&#9660; ')+f(d.month);
+   mo.className='val '+(d.month>=0?'pos':'neg');
+  }
   if(d.curve&&d.curve.length>1){
    const c=d.curve,mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
    const P=(v,i)=>((i/(c.length-1))*300).toFixed(1)+','+

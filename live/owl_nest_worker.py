@@ -70,9 +70,11 @@ def compute():
     monday = midnight - timedelta(days=midnight.weekday())
     week_ago = utcnow - timedelta(days=7)
     horizon = utcnow + timedelta(minutes=5)
+    month_start = midnight.replace(day=1)
     pnl = lambda ds: sum(d.profit + d.commission + d.swap for d in ds)
     today = pnl(out_deals(midnight, horizon))
     week = pnl(out_deals(monday, horizon))
+    month = pnl(out_deals(month_start, horizon))
     d7 = sorted(out_deals(week_ago, horizon), key=lambda d: d.time)
     cum = peak = dd = 0.0
     curve = []
@@ -113,6 +115,7 @@ def compute():
         "equity": round(ai.equity, 2),
         "today": round(today, 2),
         "week": round(week, 2),
+        "month": round(month, 2),
         "max_dd_7d": round(dd, 2),
         "open_positions": len(open_list),
         "open_list": open_list,
