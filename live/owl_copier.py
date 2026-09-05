@@ -97,8 +97,19 @@ missing_since = {}  # copy vanished while master still open: wait 20s
                     # before re-opening - the copy usually just hit its
                     # own SL a beat before the master's exit reaches the
                     # feed (luc pilot 09-05: churn cost -0.21)
+_last_mtime = 0.0
 while True:
-    time.sleep(1)
+    # event-push (2026-09-05): watch the feed file's mtime at 10Hz and
+    # act only on change - the publisher heartbeats every 5s, so grace
+    # timers and staleness still get evaluated regularly.
+    time.sleep(0.1)
+    try:
+        _mt = os.stat(MASTER).st_mtime
+    except Exception:
+        continue
+    if _mt == _last_mtime:
+        continue
+    _last_mtime = _mt
     try:
         try:
             m = json.load(open(MASTER))

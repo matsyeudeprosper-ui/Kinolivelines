@@ -25,6 +25,12 @@ def say(m):
 
 
 say("publisher starting")
+# event-push upgrade (2026-09-05 user): poll the terminal at 0.25s but
+# WRITE only when something changed (plus a 5s heartbeat so copiers can
+# tell a quiet master from a dead one). Copiers watch the file's mtime
+# at 10Hz - a change propagates in ~0.1s instead of ~1s.
+_last_payload = None
+_last_write = 0.0
 while True:
     try:
         if not mt5.initialize(path=TERMINAL):
@@ -36,8 +42,7 @@ while True:
             time.sleep(10)
             continue
         pos = mt5.positions_get(symbol=SYMBOL) or []
-        data = {
-            "t": time.time(),
+        payload = {
             "balance": ai.balance,
             "positions": [{
                 "ticket": p.ticket,
@@ -47,10 +52,16 @@ while True:
                 "sl": p.sl, "tp": p.tp,
             } for p in pos if (p.comment or "").startswith("OWL-")],
         }
-        tmp = OUT + ".tmp"
-        json.dump(data, open(tmp, "w"))
-        os.replace(tmp, OUT)
+        key = json.dumps(payload["positions"], sort_keys=True)
+        now = time.time()
+        if key != _last_payload or now - _last_write >= 5:
+            data = dict(payload, t=now)
+            tmp = OUT + ".tmp"
+            json.dump(data, open(tmp, "w"))
+            os.replace(tmp, OUT)
+            _last_payload = key
+            _last_write = now
     except Exception as e:
         say(f"error: {e}")
         time.sleep(5)
-    time.sleep(1)
+    time.sleep(0.25)
