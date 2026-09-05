@@ -215,7 +215,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
 .lbl{font-size:.74rem;color:#8fa1b3;text-transform:uppercase;
  letter-spacing:.06em;font-weight:600}
-.val{font-size:1.6rem;font-weight:800;margin-top:8px}
+.val{font-size:1.45rem;font-weight:800;margin-top:8px;
+ white-space:nowrap}
 .sub{font-size:.72rem;color:#5f7185;margin-top:6px}
 .pos{color:#2ecc71}.neg{color:#ff5c5c}.neu{color:#e8eef4}
 .sec{margin:24px 6px 10px;color:#b9c7d4;font-weight:700;font-size:.96rem;
@@ -339,7 +340,7 @@ async function load(){
    tb.innerHTML='&#127873; Essai gratuit &mdash; <b>'+d.trial_days_left+
     ' jour'+(d.trial_days_left>1?'s':'')+' restant'+
     (d.trial_days_left>1?'s':'')+'</b>';}
-  const f=(x)=>(x>=0?'+':'-')+Math.abs(x).toFixed(2)+' $';
+  const f=(x)=>(x>=0?'+':'-')+Math.abs(x).toFixed(2)+'&nbsp;$';
   document.getElementById('eq').textContent=d.equity.toFixed(2)+' $';
   if(d.eurusd){document.getElementById('eqe').innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
