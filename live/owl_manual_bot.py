@@ -1665,28 +1665,27 @@ def main():
                                          * L["dir"] * L["lot"], 2)
                         if _res is not None:
                             _pnl = _res
-                            if _pnl > 0.5:
+                            # 2026-09-05 user fix: score ghosts by WHICH
+                            # LEVEL they reached, not by dollar size. In
+                            # a quiet market ghost prizes are ~$0.30, so
+                            # the old >$0.50 bar made wins invisible and
+                            # the shelter never lifted (stuck 14h on
+                            # 09-04/05 overnight). Target hit = win,
+                            # stop hit = loss, whatever the size.
+                            if _hit_tp:
                                 _sh["streak"] += 1
                                 say(f"SHADOW chain[{L['chain']}] WIN "
-                                    f"{_pnl:+.2f} (streak "
+                                    f"{_pnl:+.2f} (target hit, streak "
                                     f"{_sh['streak']})")
-                                # measure the user's freeze-and-resume
-                                # idea (2026-09-04): a CHAIN ghost win is
-                                # a real-recovery opportunity forfeited
-                                # to shelter. Count these before building
-                                # the feature.
                                 if str(L.get("chain")) != "page":
                                     say(f"GHOST WIN would have been REAL "
                                         f"recovery: {_pnl:+.2f} "
                                         f"(chain {L['chain']})")
-                            elif _pnl < -0.5:
+                            else:
                                 _sh["streak"] = 0
                                 say(f"SHADOW chain[{L['chain']}] LOSS "
-                                    f"{_pnl:+.2f} (streak reset)")
-                            else:
-                                say(f"SHADOW chain[{L['chain']}] "
-                                    f"breakeven {_pnl:+.2f} "
-                                    f"(streak kept)")
+                                    f"{_pnl:+.2f} (stop hit, streak "
+                                    f"reset)")
                             save_state(st)
                             _mode = ("clear" if _sh["streak"] >= 2
                                      else "shelter")
