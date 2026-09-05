@@ -277,6 +277,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="sec">Progression &middot; 7 jours</div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
  style="width:100%;height:70px"></svg></div>
+<div class="panel" id="days" style="margin-top:10px;display:none"></div>
 <div class="sec">Derniers trades</div>
 <div class="panel" id="hist"><div class="rowt"
  style="padding:8px">chargement...</div></div>
@@ -392,6 +393,13 @@ async function load(){
     '<polygon points="0,70 '+pts+' 300,70" fill="url(#g)"/>'+
     '<polyline points="'+pts+'" fill="none" stroke="'+col+
     '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  }
+  if(d.days&&d.days.length){
+   const de=document.getElementById('days');de.style.display='block';
+   de.innerHTML=d.days.map(x=>
+    '<div class="row"><span class="rowt">'+x.d+'</span><b class="'+
+    (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
+    '&nbsp;$</b></div>').join('');
   }
   if(d.trades&&d.trades.length){
    document.getElementById('hist').innerHTML=d.trades.map(x=>

@@ -108,6 +108,18 @@ def compute():
                     .strftime("%d/%m %H:%M"),
                "p": round(d.profit + d.commission + d.swap, 2)}
               for d in d7[-10:]][::-1]
+    # daily strip: one line per UTC day over the last 7 days
+    _wd = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
+    _dm = {}
+    for d in d7:
+        _dt = datetime.fromtimestamp(d.time, tz=timezone.utc)
+        _k = _dt.strftime("%Y-%m-%d")
+        if _k not in _dm:
+            _dm[_k] = [_dt, 0.0]
+        _dm[_k][1] += d.profit + d.commission + d.swap
+    days = [{"d": f"{_wd[v[0].weekday()]} {v[0].strftime('%d/%m')}",
+             "p": round(v[1], 2)}
+            for _k, v in sorted(_dm.items(), reverse=True)]
     return {
         "name": u.get("name", uid),
         "eurusd": eur,
@@ -120,6 +132,7 @@ def compute():
         "open_positions": len(open_list),
         "open_list": open_list,
         "trades": trades,
+        "days": days,
         "curve": curve[-120:],
         "updated_utc": utcnow.isoformat(timespec="seconds"),
     }
