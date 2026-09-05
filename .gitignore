@@ -90,3 +90,6 @@ study/coinbase_m1_*.json
 study/*.json.partial
 charting/*.ex5
 charting/*compile.log
+
+# generated family bots embed account passwords - never commit
+live/owl_fam_*

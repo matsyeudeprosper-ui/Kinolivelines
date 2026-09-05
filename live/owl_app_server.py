@@ -580,6 +580,15 @@ def user_stats(u):
                     .get("paused"))
             except Exception:
                 d["trading_paused"] = False
+        elif u.get("trade"):
+            # family member whose real account the bot trades: their
+            # own pause switch (2026-09-05)
+            try:
+                d["trading_paused"] = bool(json.load(open(os.path.join(
+                    DIR, f"owl_trading_pause_{u['id']}.json")))
+                    .get("paused"))
+            except Exception:
+                d["trading_paused"] = False
         return d
     except Exception:
         # fall back to the built-in kino stats while the worker warms up
@@ -923,15 +932,20 @@ class H(BaseHTTPRequestHandler):
                                        "err": "bad password"}),
                            "application/json")
                 return
+            # per-user pause file: the main account keeps the global
+            # name (the live bot reads it); family bots read
+            # owl_trading_pause_<uid>.json (2026-09-05, family real)
+            _pp = ("owl_trading_pause.json"
+                   if str(u.get("login")) == str(LOGIN)
+                   else f"owl_trading_pause_{u['id']}.json")
             if _parts[1] == "pause":
                 try:
                     on = (_form.get("on", ["1"])[0] == "1")
-                    if str(u.get("login")) == str(LOGIN):
+                    if (str(u.get("login")) == str(LOGIN)
+                            or u.get("trade")):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
-                                  open(os.path.join(
-                                      DIR, "owl_trading_pause.json"),
-                                      "w"))
+                                  open(os.path.join(DIR, _pp), "w"))
                     self._send(json.dumps({"ok": True, "paused": on}),
                                "application/json")
                 except Exception as e:
@@ -945,11 +959,10 @@ class H(BaseHTTPRequestHandler):
                 json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
                           indent=2)
                 _users_cache["t"] = 0.0
-                if str(u.get("login")) == str(LOGIN):
+                if str(u.get("login")) == str(LOGIN) or u.get("trade"):
                     json.dump({"paused": True, "by": u["id"],
                                "t": time.time()},
-                              open(os.path.join(
-                                  DIR, "owl_trading_pause.json"), "w"))
+                              open(os.path.join(DIR, _pp), "w"))
                 try:
                     os.remove(os.path.join(NEST_DATA,
                                            u["id"] + ".json"))
