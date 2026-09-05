@@ -342,6 +342,12 @@ async function load(){
   else{
    mt.innerHTML='&#9728;&#65039; <b>Grand beau temps</b><br>March&eacute; '+
     'tranquille : le robot travaille normalement.';}
+  if((d.meteo==='storm'||d.meteo==='shelter'||d.meteo==='floor')
+     &&d.meteo_since){
+   const s=Math.max(0,Math.round(Date.now()/1000-d.meteo_since));
+   const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60);
+   mt.innerHTML+='<br><span style="color:#6f93b5;font-size:.85rem">'+
+    'En pause depuis '+(hh>0?hh+' h ':'')+mm+' min</span>';}
   if(d.trial_days_left!==undefined){
    const tb=document.getElementById('trial');tb.style.display='block';
    tb.innerHTML='&#127873; Essai gratuit &mdash; <b>'+d.trial_days_left+
@@ -495,8 +501,10 @@ def user_stats(u):
             d["trial_days_left"] = max(0, int(left // 86400) + 1)
         if u.get("id") == "kino":
             try:
-                d["meteo"] = json.load(open(os.path.join(
-                    DIR, "owl_weather.json"))).get("mode")
+                _wx = json.load(open(os.path.join(
+                    DIR, "owl_weather.json")))
+                d["meteo"] = _wx.get("mode")
+                d["meteo_since"] = _wx.get("since")
             except Exception:
                 pass
             try:

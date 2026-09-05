@@ -447,6 +447,24 @@ def close_at_market(p, comment="OWL-hour-clean", volume=None):
         "type_filling": mt5.ORDER_FILLING_IOC,
     })
 
+def write_weather(mode, streak):
+    """Write owl_weather.json, preserving `since` (epoch of the moment
+    this mode began) across same-mode rewrites - the app shows how long
+    the robot has been paused."""
+    try:
+        p = os.path.join(DIR, "owl_weather.json")
+        old = {}
+        try:
+            old = json.load(open(p))
+        except Exception:
+            pass
+        since = (old.get("since") if old.get("mode") == mode
+                 else time.time())
+        json.dump({"mode": mode, "streak": streak,
+                   "since": since or time.time()}, open(p, "w"))
+    except Exception:
+        pass
+
 def be_plus(p):
     """Breakeven-PLUS (2026-09-04 user): when a lock moves the wall to
     entry, shift it past the spread (+ BUFFER_USD) so a scratch exits
@@ -1171,14 +1189,7 @@ def main():
                             say("WEATHER: storm detected (3 straight "
                                 "real losses) - FULL SHELTER, everything "
                                 "goes virtual")
-                            try:
-                                json.dump({"mode": "shelter",
-                                           "streak": 0},
-                                          open(os.path.join(
-                                              DIR, "owl_weather.json"),
-                                              "w"))
-                            except Exception:
-                                pass
+                            write_weather("shelter", 0)
                     elif _px2 > 0.5:
                         _wx["ls"] = 0
                     save_state(st)
@@ -1340,23 +1351,15 @@ def main():
                                         f"{new_lot} waits for one ghost "
                                         f"target + a fresh structure "
                                         f"(owed ${float(rw.get('loss') or 0.0):.2f})")
-                                    try:
-                                        _md = ("storm"
-                                               if ((st.get("wx") or {})
-                                                   .get("forced")
-                                                   or (hard_floor
-                                                       and ai is not None
-                                                       and ai.balance
-                                                       < hard_floor))
-                                               else "floor")
-                                        json.dump(
-                                            {"mode": _md,
-                                             "streak": _sh["streak"]},
-                                            open(os.path.join(
-                                                DIR, "owl_weather.json"),
-                                                "w"))
-                                    except Exception:
-                                        pass
+                                    _md = ("storm"
+                                           if ((st.get("wx") or {})
+                                               .get("forced")
+                                               or (hard_floor
+                                                   and ai is not None
+                                                   and ai.balance
+                                                   < hard_floor))
+                                           else "floor")
+                                    write_weather(_md, _sh["streak"])
                                 elif (owl_open_count + len(_fired)
                                         >= MAX_OPEN_PAGES):
                                     if not rw.get("held_pages"):
@@ -1704,12 +1707,7 @@ def main():
                     save_state(st)
                     say("WEATHER: balance back above the floor - "
                         "normal mode")
-                    try:
-                        json.dump({"mode": "normal", "streak": 0},
-                                  open(os.path.join(
-                                      DIR, "owl_weather.json"), "w"))
-                    except Exception:
-                        pass
+                    write_weather("normal", 0)
                 elif _sh["links"]:
                     _keepL = []
                     for L in _sh["links"]:
@@ -1762,14 +1760,7 @@ def main():
                                 say("WEATHER CLEAR: two shadow wins - "
                                     "everything real AUTO-RESUMES "
                                     "(hard floor still guards)")
-                            try:
-                                json.dump({"mode": _mode,
-                                           "streak": _sh["streak"]},
-                                          open(os.path.join(
-                                              DIR, "owl_weather.json"),
-                                              "w"))
-                            except Exception:
-                                pass
+                            write_weather(_mode, _sh["streak"])
                         else:
                             _keepL.append(L)
                     if len(_keepL) != len(_sh["links"]):
