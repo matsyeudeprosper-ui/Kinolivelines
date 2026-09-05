@@ -248,6 +248,12 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="money" id="eq">--</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <div class="bankline" id="bank">&nbsp;</div>
+<div id="palier" style="display:none;margin-top:14px;text-align:left">
+ <div style="font-size:.78rem;color:#9fc2de" id="palier-lbl"></div>
+ <div style="background:rgba(255,255,255,.15);border-radius:99px;
+  height:8px;margin-top:6px"><div id="palier-bar" style="background:
+  #2ecc71;height:8px;border-radius:99px;width:0%"></div></div>
+</div>
 </div>
 <div class="wrap">
 <div class="status" id="st" style="margin-top:26px">Connexion...</div>
@@ -347,6 +353,14 @@ async function load(){
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   document.getElementById('bank').innerHTML=
    'Solde des trades termin&eacute;s : '+d.balance.toFixed(2)+' $';
+  if(d.palier&&d.equity){
+   const pc=Math.max(0,Math.min(100,d.equity/d.palier*100));
+   document.getElementById('palier').style.display='block';
+   document.getElementById('palier-lbl').innerHTML=
+    'Prochain palier : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
+    pc.toFixed(0)+'&nbsp;%';
+   document.getElementById('palier-bar').style.width=pc+'%';
+  }
   const n=d.open_positions;
   document.getElementById('st').innerHTML = n>0
    ? '&#129302; Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
@@ -483,6 +497,13 @@ def user_stats(u):
             try:
                 d["meteo"] = json.load(open(os.path.join(
                     DIR, "owl_weather.json"))).get("mode")
+            except Exception:
+                pass
+            try:
+                _ms = json.load(open(os.path.join(
+                    DIR, "owl_milestone.json")))
+                if _ms.get("enabled") and _ms.get("milestone"):
+                    d["palier"] = float(_ms["milestone"])
             except Exception:
                 pass
         return d
