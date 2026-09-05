@@ -616,6 +616,66 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
             say(_kmsg)
         return None
     st["kino_last_skip"] = None
+    # RESUME-ON-STRUCTURE (user 2026-09-05): a chain frozen by a storm
+    # re-enters on the next confirmed structure signal once the ghosts
+    # have hit ONE target (= the range likely broke). This signal
+    # becomes the chain's fighter (its next lot, debt carried) instead
+    # of a page; the ladder then runs REAL even inside the storm.
+    # Validated on 5 replayed storms: +1.74 total, both first losses
+    # recovered by the follow-up fighters.
+    _fc = st.get("frozen_chains") or {}
+    _now3 = time.time()
+    for _k3 in [k for k, v in list(_fc.items())
+                if _now3 - float(v.get("t", _now3)) > 21600]:
+        say(f"CHAIN FROZEN[{_k3}] expired (6h) - chain over")
+        _fc.pop(_k3, None)
+        save_state(st)
+    if _fc and (st.get("shadow") or {}).get("streak", 0) >= 1:
+        _cn3, _f3 = next(iter(_fc.items()))
+        _flot = float(_f3.get("lot", 0.02))
+        _dist3 = abs(entry_px - wall)
+        if _dist3 < RECOV_MIN_WALL_PTS or _dist3 * _flot > 35.27:
+            say(f"CHAIN RESUME[{_cn3}] held: wall {_dist3:.0f}pts, "
+                f"risk ${_dist3 * _flot:.2f} - waiting for a fitter "
+                f"structure")
+        else:
+            r3 = open_at_market(direction, _flot, "OWL-recov")
+            if r3 is not None and r3.retcode == mt5.TRADE_RETCODE_DONE:
+                tkt3 = r3.order
+                _tpd3 = _dist3 - min(1.0, 0.25 * _dist3 * _flot) / _flot
+                if _flot >= DEEP_LOT and _f3.get("loss"):
+                    _hd3 = ((float(_f3["loss"]) + HEAL_EXTRA_USD)
+                            / _flot)
+                    if RECOV_MIN_WALL_PTS < _hd3 < _tpd3:
+                        _tpd3 = _hd3
+                tp3 = (entry_px + _tpd3 if direction == 1
+                       else entry_px - _tpd3)
+                mt5.order_send({"action": mt5.TRADE_ACTION_SLTP,
+                                "position": tkt3, "symbol": SYMBOL,
+                                "sl": round(wall, 2),
+                                "tp": round(tp3, 2)})
+                st.setdefault("recov_links", {})[str(tkt3)] = {
+                    "sl": round(wall, 2), "tp": round(tp3, 2),
+                    "lot": _flot, "chain": _cn3,
+                    "kino": bool(_f3.get("kino")),
+                    "loss": float(_f3.get("loss") or 0.0)}
+                if str(tkt3) not in st["user_owned"]:
+                    st["user_owned"].append(str(tkt3))
+                st.setdefault("resumed_chains", [])
+                if str(_cn3) not in st["resumed_chains"]:
+                    st["resumed_chains"].append(str(_cn3))
+                _fc.pop(_cn3, None)
+                save_state(st)
+                if fired is not None:
+                    fired.append((direction, entry_px))
+                say(f"CHAIN RESUMED[{_cn3}] on structure: "
+                    f"{'BUY' if direction == 1 else 'SELL'} {_flot} @ "
+                    f"~{entry_px:.2f} SL {wall:.2f} TP {tp3:.2f} "
+                    f"(risk ${_dist3 * _flot:.2f}, owed "
+                    f"${float(_f3.get('loss') or 0.0):.2f})")
+                return tkt3
+        # the structure signal was spent on the resume attempt - no page
+        return None
     # HALF-SIZE CHOP MODE: base 0.01 below the soft floor, else 0.02
     try:
         _cfj0 = json.load(open(os.path.join(DIR, "owl_chain_floor.json")))
@@ -1157,6 +1217,9 @@ def main():
                         else:
                             say(f"RECOV[{_cn}]: chain ENDED (link {tkey} exit="
                                 f"{row.get('exit_reason')} {row.get('profit_usd')})")
+                            if str(_cn) in (st.get("resumed_chains")
+                                            or []):
+                                st["resumed_chains"].remove(str(_cn))
                         save_state(st)
                     elif (row.get("exit_reason") == "sl"
                           and int(tkey) not in runner_tickets
@@ -1240,41 +1303,43 @@ def main():
                                         f"would risk ${risk:.2f} >= "
                                         f"${RECOV_MAX_RISK_USD:.0f} cap "
                                         f"(lot {new_lot}, wall {wall:.2f})")
+                                    if str(_cn) in (st.get("resumed_chains")
+                                                    or []):
+                                        st["resumed_chains"].remove(str(_cn))
                                     done = True
                                     _dirty = True
                                 elif (((st.get("wx") or {}).get("forced")
                                        or (hard_floor and ai is not None
                                            and ai.balance < hard_floor))
                                       and (st.get("shadow") or {})
-                                      .get("streak", 0) < 2):
-                                    # STORM / below-hard-floor: virtual
+                                      .get("streak", 0) < 2
+                                      and str(_cn) not in
+                                      (st.get("resumed_chains") or [])):
+                                    # STORM / below-hard-floor: FREEZE
+                                    # (user 2026-09-05, resume-on-
+                                    # structure). The chain waits; once
+                                    # a ghost hits ONE target, the next
+                                    # confirmed structure signal becomes
+                                    # this chain's fighter for REAL.
+                                    # Already-resumed chains skip this
+                                    # branch and ladder on for real.
                                     _sh = st.setdefault(
                                         "shadow",
                                         {"links": [], "streak": 0})
-                                    tpd = dist - min(
-                                        0.75, 0.25 * risk) / new_lot
-                                    if (new_lot >= DEEP_LOT
-                                            and rw.get("loss")):
-                                        _ghd = ((float(rw["loss"])
-                                                 + HEAL_EXTRA_USD)
-                                                / new_lot)
-                                        if (RECOV_MIN_WALL_PTS < _ghd
-                                                < tpd):
-                                            tpd = _ghd
-                                    _stp = (entry_px + tpd if new_dir == 1
-                                            else entry_px - tpd)
-                                    _sh["links"].append(
-                                        {"dir": new_dir, "lot": new_lot,
-                                         "entry": entry_px,
-                                         "sl": round(wall, 2),
-                                         "tp": round(_stp, 2),
-                                         "chain": _cn})
+                                    st.setdefault("frozen_chains", {})[
+                                        str(_cn)] = {
+                                        "lot": new_lot,
+                                        "dir": rw["dir"],
+                                        "loss": float(rw.get("loss")
+                                                      or 0.0),
+                                        "kino": bool(rw.get("kino")),
+                                        "t": time.time()}
                                     done = True
                                     _dirty = True
-                                    say(f"SHADOW chain[{_cn}] ENTRY: "
-                                        f"{'BUY' if new_dir == 1 else 'SELL'}"
-                                        f" {new_lot} @ {entry_px:.2f} "
-                                        f"(virtual - shelter mode)")
+                                    say(f"CHAIN FROZEN[{_cn}]: fighter "
+                                        f"{new_lot} waits for one ghost "
+                                        f"target + a fresh structure "
+                                        f"(owed ${float(rw.get('loss') or 0.0):.2f})")
                                     try:
                                         _md = ("storm"
                                                if ((st.get("wx") or {})
