@@ -654,13 +654,13 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
             say(_kmsg)
         return None
     st["kino_last_skip"] = None
-    # RESUME-ON-STRUCTURE (user 2026-09-05): a chain frozen by a storm
-    # re-enters on the next confirmed structure signal once the ghosts
-    # have hit ONE target (= the range likely broke). This signal
-    # becomes the chain's fighter (its next lot, debt carried) instead
-    # of a page; the ladder then runs REAL even inside the storm.
-    # Validated on 5 replayed storms: +1.74 total, both first losses
-    # recovered by the follow-up fighters.
+    # RESUME-AFTER-STORM (user spec 2026-09-05 21:44, v2): during a
+    # storm NOTHING real trades - the whole system fights virtually.
+    # Only after a VIRTUAL WIN lifts the storm does a frozen chain
+    # resume: the next confirmed structure signal becomes its fighter
+    # (last real lot + 0.01, debt carried). v1 (early resume on one
+    # scout target-hit, ladder real mid-storm) cost ~$17 on 09-05 and
+    # was retired the same night.
     _fc = st.get("frozen_chains") or {}
     _now3 = time.time()
     for _k3 in [k for k, v in list(_fc.items())
@@ -668,7 +668,18 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
         say(f"CHAIN FROZEN[{_k3}] expired (6h) - chain over")
         _fc.pop(_k3, None)
         save_state(st)
-    if _fc and (st.get("shadow") or {}).get("streak", 0) >= 1:
+    _shelter3 = False
+    if _fc:
+        try:
+            _hf3 = float(json.load(open(os.path.join(
+                DIR, "owl_chain_floor.json"))).get("hard_floor", 0.0))
+        except Exception:
+            _hf3 = 0.0
+        _shelter3 = (((st.get("wx") or {}).get("forced")
+                      or (_hf3 and ai is not None
+                          and ai.balance < _hf3))
+                     and (st.get("shadow") or {}).get("streak", 0) < 2)
+    if _fc and not _shelter3:
         _cn3, _f3 = next(iter(_fc.items()))
         _flot = float(_f3.get("lot", 0.02))
         _dist3 = abs(entry_px - wall)
@@ -1343,9 +1354,7 @@ def main():
                                        or (hard_floor and ai is not None
                                            and ai.balance < hard_floor))
                                       and (st.get("shadow") or {})
-                                      .get("streak", 0) < 2
-                                      and str(_cn) not in
-                                      (st.get("resumed_chains") or [])):
+                                      .get("streak", 0) < 2):
                                     # STORM / below-hard-floor: FREEZE
                                     # (user 2026-09-05, resume-on-
                                     # structure). The chain waits; once
@@ -1723,69 +1732,115 @@ def main():
                         and not (st.get("wx") or {}).get("forced")
                         and (_sh["links"] or _sh["streak"])):
                     _sh["links"] = []
+                    _sh["watches"] = []
                     _sh["streak"] = 0
                     save_state(st)
                     say("WEATHER: balance back above the floor - "
                         "normal mode")
                     write_weather("normal", 0)
-                elif _sh["links"]:
+                elif _sh["links"] or _sh.get("watches"):
+                    # --- FULL VIRTUAL SYSTEM (user spec 2026-09-05) ---
+                    # During a storm the machine keeps fighting with the
+                    # SAME rules, just virtually: a virtual stop spawns
+                    # a virtual two-door watch, doors ladder +0.01, and
+                    # the FIRST virtual TP hit (page or fighter) lifts
+                    # the storm - proof the market pays again.
                     _keepL = []
+                    _lifted = False
                     for L in _sh["links"]:
-                        # SCOUTS SENSE FREELY: ghosts judge the RAW market
-                        # (did the setup reach its target or its stop) - no
-                        # 80% lock / breakeven, so a paying market resumes us.
                         _px = tick.bid if L["dir"] == 1 else tick.ask
-                        _res = None
                         _hit_tp = (_px >= L["tp"] if L["dir"] == 1
                                    else _px <= L["tp"])
                         _hit_sl = (_px <= L["sl"] if L["dir"] == 1
                                    else _px >= L["sl"])
                         if _hit_tp:
-                            _res = round((L["tp"] - L["entry"])
+                            _pnl = round((L["tp"] - L["entry"])
                                          * L["dir"] * L["lot"], 2)
+                            say(f"SHADOW[{L['chain']}] WIN {_pnl:+.2f} "
+                                f"(virtual target hit)")
+                            _lifted = True
                         elif _hit_sl:
-                            _res = round((L["sl"] - L["entry"])
+                            _pnl = round((L["sl"] - L["entry"])
                                          * L["dir"] * L["lot"], 2)
-                        if _res is not None:
-                            _pnl = _res
-                            # 2026-09-05 user fix: score ghosts by WHICH
-                            # LEVEL they reached, not by dollar size. In
-                            # a quiet market ghost prizes are ~$0.30, so
-                            # the old >$0.50 bar made wins invisible and
-                            # the shelter never lifted (stuck 14h on
-                            # 09-04/05 overnight). Target hit = win,
-                            # stop hit = loss, whatever the size.
-                            if _hit_tp:
-                                _sh["streak"] += 1
-                                say(f"SHADOW chain[{L['chain']}] WIN "
-                                    f"{_pnl:+.2f} (target hit, streak "
-                                    f"{_sh['streak']})")
-                                if str(L.get("chain")) != "page":
-                                    say(f"GHOST WIN would have been REAL "
-                                        f"recovery: {_pnl:+.2f} "
-                                        f"(chain {L['chain']})")
-                            else:
-                                _sh["streak"] = 0
-                                say(f"SHADOW chain[{L['chain']}] LOSS "
-                                    f"{_pnl:+.2f} (stop hit, streak "
-                                    f"reset)")
-                            save_state(st)
-                            _mode = ("clear" if _sh["streak"] >= 2
-                                     else "shelter")
-                            if _sh["streak"] == 2:
-                                _wx2 = st.setdefault(
-                                    "wx", {"ls": 0, "forced": False})
-                                _wx2["forced"] = False
-                                _wx2["ls"] = 0
-                                say("WEATHER CLEAR: two shadow wins - "
-                                    "everything real AUTO-RESUMES "
-                                    "(hard floor still guards)")
-                            write_weather(_mode, _sh["streak"])
+                            say(f"SHADOW[{L['chain']}] LOSS {_pnl:+.2f} "
+                                f"(virtual stop) -> virtual doors arm, "
+                                f"next {round(L['lot'] + 0.01, 2)}")
+                            _sh.setdefault("watches", []).append({
+                                "dir": L["dir"], "sl": L["sl"],
+                                "trig": L["entry"], "lot": L["lot"],
+                                "t_sl": int(time.time()),
+                                "chain": L.get("chain", "page")})
                         else:
                             _keepL.append(L)
-                    if len(_keepL) != len(_sh["links"]):
-                        _sh["links"] = _keepL
-                        save_state(st)
+                    _sh["links"] = _keepL
+                    # virtual two-door watches (same candle-close rules)
+                    _keepW = []
+                    _b1v = mt5.copy_rates_from_pos(SYMBOL,
+                                                   mt5.TIMEFRAME_M1,
+                                                   1, 1)
+                    for W in (_sh.get("watches") or []):
+                        if _lifted:
+                            break
+                        if int(time.time()) - W["t_sl"] > 21600:
+                            say(f"SHADOW watch[{W['chain']}] expired "
+                                f"(6h)")
+                            continue
+                        if (_b1v is None or not len(_b1v)
+                                or int(_b1v["time"][0]) + 60
+                                <= W["t_sl"]):
+                            _keepW.append(W)
+                            continue
+                        _clv = float(_b1v["close"][0])
+                        _broke = (_clv < W["sl"] if W["dir"] == 1
+                                  else _clv > W["sl"])
+                        _reent = (not _broke
+                                  and (_clv > W["trig"]
+                                       if W["dir"] == 1
+                                       else _clv < W["trig"]))
+                        if not (_broke or _reent):
+                            _keepW.append(W)
+                            continue
+                        _nd = W["dir"] if _reent else -W["dir"]
+                        _nl = round(W["lot"] + 0.01, 2)
+                        _bars = mt5.copy_rates_from_pos(
+                            SYMBOL, mt5.TIMEFRAME_M1, 1, 30)
+                        if _bars is None or not len(_bars):
+                            _keepW.append(W)
+                            continue
+                        _wallv = (float(min(_bars["low"])) if _nd == 1
+                                  else float(max(_bars["high"])))
+                        _ev = tick.ask if _nd == 1 else tick.bid
+                        _dv = abs(_ev - _wallv)
+                        if (_dv < RECOV_MIN_WALL_PTS
+                                or _dv * _nl > 35.27):
+                            _keepW.append(W)      # unfit - keep waiting
+                            continue
+                        _tpv = _ev + _nd * (_dv - min(1.0, 0.25 * _dv
+                                                      * _nl) / _nl)
+                        _sh["links"].append({
+                            "dir": _nd, "lot": _nl, "entry": _ev,
+                            "sl": round(_wallv, 2),
+                            "tp": round(_tpv, 2),
+                            "chain": W.get("chain", "page")})
+                        say(f"SHADOW[{W['chain']}] "
+                            f"{'RE-ENTRY' if _reent else 'flip'}: "
+                            f"{'BUY' if _nd == 1 else 'SELL'} {_nl} @ "
+                            f"{_ev:.2f} (virtual)")
+                    _sh["watches"] = _keepW
+                    if _lifted:
+                        _sh["links"] = []
+                        _sh["watches"] = []
+                        _sh["streak"] = 2
+                        _wx2 = st.setdefault(
+                            "wx", {"ls": 0, "forced": False})
+                        _wx2["forced"] = False
+                        _wx2["ls"] = 0
+                        say("WEATHER CLEAR: a VIRTUAL WIN lifted the "
+                            "storm - real trading resumes; frozen "
+                            "chains re-enter on the next structure "
+                            "at last lot + 0.01")
+                        write_weather("clear", 2)
+                    save_state(st)
             # --- GROUP HEAL (user 2026-09-01): whole-account escape ---
             if RECOV_ENTRY and ai is not None:
                 _gl = st.get("recov_links") or {}
