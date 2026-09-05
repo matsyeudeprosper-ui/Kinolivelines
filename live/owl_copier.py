@@ -28,7 +28,8 @@ import MetaTrader5 as mt5
 DIR = r"C:\Projects\KinoliveLines\live"
 USERS = os.path.join(DIR, "owl_nest_users.json")
 MASTER = os.path.join(DIR, "owl_master_positions.json")
-SYMBOL = "BTCUSDm"
+SYMBOL = None       # resolved per account - Exness names the pair
+                    # BTCUSDm on Standard and BTCUSD on Pro accounts
 SCALE_CAP = 3.0
 
 uid = sys.argv[1]
@@ -63,6 +64,20 @@ def connect():
         say(f"WRONG ACCOUNT {ai.login if ai else None}, want {LOGIN}")
         mt5.shutdown()
         return False
+    # resolve THIS account's BTC symbol once: fresh terminals have no
+    # Market Watch selection, and the name differs by account class
+    # (BTCUSDm vs BTCUSD - found on luc 09-05)
+    global SYMBOL
+    if SYMBOL is None:
+        for cand in (u.get("symbol"), "BTCUSDm", "BTCUSD"):
+            if (cand and mt5.symbol_select(cand, True)
+                    and mt5.symbol_info_tick(cand)):
+                SYMBOL = cand
+                say(f"symbol resolved: {SYMBOL}")
+                break
+        if SYMBOL is None:
+            say("NO BTC symbol tradable on this account")
+            return False
     return True
 
 
