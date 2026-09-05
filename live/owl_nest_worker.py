@@ -140,6 +140,20 @@ def compute():
 
 while True:
     try:
+        # account deleted from the app (2026-09-05)? stop cleanly - the
+        # manager only respawns users still in the file
+        if not any(x.get("id") == uid for x in
+                   json.load(open(USERS, encoding="utf-8"))):
+            try:
+                os.remove(OUTP)
+            except Exception:
+                pass
+            sys.exit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+    try:
         if not init():
             data = {"error": "mt5 init failed"}
         else:

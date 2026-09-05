@@ -296,6 +296,14 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t sur votre
  t&eacute;l&eacute;phone !</div>
 <div class="foot" id="upd">chargement...</div>
+<div style="margin-top:24px;text-align:center">
+<a href="#" id="pausebtn" style="display:none;color:#8fa1b3;
+ font-size:.86rem;text-decoration:none">&#9208;&#65039; Mettre le robot
+ en pause</a>
+<br><a href="#" id="delbtn" style="color:#8a5a5a;font-size:.78rem;
+ text-decoration:none;display:inline-block;margin-top:12px">&#128465;
+ Retirer mon compte du robot</a>
+</div>
 <a class="exit" href="../">&#8618; Changer de compte &middot;
  cr&eacute;er un nouveau nid</a>
 </div><script>
@@ -307,6 +315,33 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
  i.href=B+'icon192.png';document.head.appendChild(i);
 })();
 let lastOk=0;
+let isPaused=false;
+window.addEventListener('load',()=>{
+ const pb=document.getElementById('pausebtn');
+ if(pb)pb.onclick=async(e)=>{e.preventDefault();
+  const msg=isPaused
+   ?'Reprendre le trading ?'
+   :'Le robot ne prendra plus de nouveaux trades sur ce compte. Les '+
+    'trades ouverts gardent leur protection (SL/TP). Continuer ?';
+  if(!confirm(msg))return;
+  await fetch(B+'pause',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'on='+(isPaused?'0':'1')}).catch(()=>{});
+  load();};
+ const db=document.getElementById('delbtn');
+ if(db)db.onclick=async(e)=>{e.preventDefault();
+  if(!confirm('Retirer votre compte du robot ? Le robot arr&ecirc;te '+
+   'de trader ce compte et cette page ne fonctionnera plus.'))return;
+  if(!confirm('Vraiment s&ucirc;r ? Pour revenir il faudra vous '+
+   'inscrire &agrave; nouveau.'))return;
+  const r=await fetch(B+'delete',{method:'POST'}).catch(()=>null);
+  if(r&&r.ok){document.body.innerHTML=
+   '<div style="padding:48px 24px;text-align:center;color:#c6d3df;'+
+   'font-family:sans-serif;line-height:1.7">&#128075; <b>Compte '+
+   'retir&eacute;.</b><br>Le robot ne trade plus ce compte.<br>Pour '+
+   'revenir : inscrivez-vous &agrave; nouveau.<br><br>'+
+   '<a href="../" style="color:#2563eb">Accueil</a></div>';}};
+});
 function ago(){
  if(!lastOk){return}
  const s=Math.max(0,Math.round((Date.now()-lastOk)/1000));
@@ -368,10 +403,22 @@ async function load(){
    document.getElementById('palier-bar').style.width=pc+'%';
   }
   const n=d.open_positions;
-  document.getElementById('st').innerHTML = n>0
+  if(d.trading_paused!==undefined){
+   isPaused=d.trading_paused;
+   const pb=document.getElementById('pausebtn');
+   pb.style.display='inline';
+   pb.innerHTML=isPaused
+    ?'&#9654;&#65039; Reprendre le trading'
+    :'&#9208;&#65039; Mettre le robot en pause';
+  }
+  document.getElementById('st').innerHTML =
+   (d.trading_paused)
+   ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
+     'nouveau trade'
+   : (n>0
    ? '&#129302; Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
      ' en cours</b>'
-   : '&#127747; March&eacute; sous surveillance &mdash; aucun trade ouvert';
+   : '&#127747; March&eacute; sous surveillance &mdash; aucun trade ouvert');
   const bs=document.getElementById('battles-sec');
   if(d.open_list&&d.open_list.length){
    bs.style.display='block';
@@ -514,6 +561,12 @@ def user_stats(u):
                     d["palier"] = float(_ms["milestone"])
             except Exception:
                 pass
+            try:
+                d["trading_paused"] = bool(json.load(open(
+                    os.path.join(DIR, "owl_trading_pause.json")))
+                    .get("paused"))
+            except Exception:
+                d["trading_paused"] = False
         return d
     except Exception:
         # fall back to the built-in kino stats while the worker warms up
@@ -836,6 +889,56 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
+        _parts = [x for x in p.split("/") if x]
+        # token-gated user actions (2026-09-05 user): pause the robot's
+        # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] in ("pause", "delete"):
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            if _parts[1] == "pause":
+                try:
+                    ln = int(self.headers.get("Content-Length", 0))
+                    body = self.rfile.read(ln).decode("utf-8", "replace")
+                    import urllib.parse as _up
+                    on = (_up.parse_qs(body).get("on", ["1"])[0] == "1")
+                    if str(u.get("login")) == str(LOGIN):
+                        json.dump({"paused": on, "by": u["id"],
+                                   "t": time.time()},
+                                  open(os.path.join(
+                                      DIR, "owl_trading_pause.json"),
+                                      "w"))
+                    self._send(json.dumps({"ok": True, "paused": on}),
+                               "application/json")
+                except Exception as e:
+                    self._send(json.dumps({"ok": False, "err": str(e)}),
+                               "application/json")
+                return
+            try:                                   # delete
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                us = [x for x in us
+                      if x.get("token") != u.get("token")]
+                json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
+                          indent=2)
+                _users_cache["t"] = 0.0
+                if str(u.get("login")) == str(LOGIN):
+                    json.dump({"paused": True, "by": u["id"],
+                               "t": time.time()},
+                              open(os.path.join(
+                                  DIR, "owl_trading_pause.json"), "w"))
+                try:
+                    os.remove(os.path.join(NEST_DATA,
+                                           u["id"] + ".json"))
+                except Exception:
+                    pass
+                self._send(json.dumps({"ok": True}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if p.endswith("/find"):
             try:
                 ln = int(self.headers.get("Content-Length", 0))

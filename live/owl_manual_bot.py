@@ -418,10 +418,30 @@ def write_market_log(manual_open):
             w.writeheader()
         w.writerow(row)
 
+_pause_last_log = [0.0]
+
+def trading_paused():
+    """2026-09-05 user: the account owner can pause the robot from the
+    app (owl_trading_pause.json). Paused = NO new positions of any kind;
+    management of open trades (SL/TP, locks, journaling) continues."""
+    try:
+        if json.load(open(os.path.join(
+                DIR, "owl_trading_pause.json"))).get("paused"):
+            if time.time() - _pause_last_log[0] > 600:
+                _pause_last_log[0] = time.time()
+                say("TRADING PAUSED by the account owner (app switch) "
+                    "- no new positions")
+            return True
+    except Exception:
+        pass
+    return False
+
 def open_at_market(direction, volume, comment):
     """Open a market position (used ONLY by the auto hedge-freeze, user
     authorized 2026-08-22: on a confirmed H4 flip against open positions,
     open the freeze-holder so escape v2 can manage the exit)."""
+    if trading_paused():
+        return None
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return None
