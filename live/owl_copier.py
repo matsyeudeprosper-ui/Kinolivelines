@@ -92,6 +92,11 @@ say(f"copier starting for {uid} (account {LOGIN})")
 last_mvol = {}      # master volume last seen per copy - partial closes
                     # trigger ONLY on a real master reduction, never on
                     # balance/scale drift
+seen = set()        # master tickets we have already copied once
+missing_since = {}  # copy vanished while master still open: wait 20s
+                    # before re-opening - the copy usually just hit its
+                    # own SL a beat before the master's exit reaches the
+                    # feed (luc pilot 09-05: churn cost -0.21)
 while True:
     time.sleep(1)
     try:
@@ -136,7 +141,14 @@ while True:
             if p is None:
                 # 2) open missing copy (unless paused or stale feed)
                 if paused() or stale:
+                    missing_since.pop(cmt, None)
                     continue
+                if cmt in seen:
+                    t0m = missing_since.setdefault(cmt, time.time())
+                    if time.time() - t0m < 20:
+                        continue
+                missing_since.pop(cmt, None)
+                seen.add(cmt)
                 d = mp["dir"]
                 if send({"action": mt5.TRADE_ACTION_DEAL,
                          "symbol": SYMBOL, "volume": lot,
