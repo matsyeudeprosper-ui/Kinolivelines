@@ -266,6 +266,25 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
   letter-spacing:.08em;margin-bottom:6px">&Eacute;tat du robot</div>
  <div id="meteo-txt">&#9925; ...</div></div>
+<div id="actcard" style="display:none;margin-top:12px;background:#0f2740;
+ border:1px solid #2a5a80;border-radius:16px;
+ padding:16px;text-align:center">
+ <div style="font-size:1rem;color:#cfe3f5">&#128273; <b>Activer le
+  robot</b></div>
+ <div style="font-size:.86rem;color:#9fc2de;margin-top:6px;line-height:1.5">
+  Demandez votre code d&#8217;activation &agrave; <b>Kino sur
+  Telegram</b>, puis entrez-le ici.</div>
+ <input id="actcode" inputmode="text" autocapitalize="characters"
+  maxlength="6" placeholder="CODE"
+  style="margin-top:10px;width:60%;padding:12px;font-size:1.3rem;
+  text-align:center;letter-spacing:.3em;border-radius:12px;border:1px
+  solid #2a5a80;background:#0b1826;color:#fff;text-transform:uppercase">
+ <br><button id="actbtn" style="margin-top:10px;background:#2563eb;
+  color:#fff;border:0;border-radius:12px;padding:12px 26px;
+  font-size:1rem;font-weight:700">Activer</button>
+ <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:#ff9c9c">
+ </div>
+</div>
 <div id="battles-sec" style="display:none">
 <div class="sec">Combats en cours</div>
 <div class="panel" id="battles"></div>
@@ -297,8 +316,12 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  t&eacute;l&eacute;phone !</div>
 <div class="foot" id="upd">chargement...</div>
 <div style="margin-top:24px;text-align:center">
-<a href="#" id="pausebtn" style="display:none;color:#8fa1b3;
- font-size:.86rem;text-decoration:none">&#9208;&#65039; Mettre le robot
+<a href="#" id="codebtn" style="display:none;color:#8fa1b3;
+ font-size:.86rem;text-decoration:none">&#128273; G&eacute;n&eacute;rer
+ un code d&#8217;activation</a>
+<br><a href="#" id="pausebtn" style="display:none;color:#8fa1b3;
+ font-size:.86rem;text-decoration:none;margin-top:10px;
+ display:none">&#9208;&#65039; Mettre le robot
  en pause</a>
 <br><a href="#" id="delbtn" style="color:#8a5a5a;font-size:.78rem;
  text-decoration:none;display:inline-block;margin-top:12px">&#128465;
@@ -333,6 +356,37 @@ window.addEventListener('load',()=>{
   try{const j=await r.json();
    if(!j.ok){alert('Mot de passe incorrect.');return;}}catch(e2){}
   load();};
+ const ab=document.getElementById('actbtn');
+ if(ab)ab.onclick=async(e)=>{e.preventDefault();
+  const code=(document.getElementById('actcode').value||'').trim();
+  const msg=document.getElementById('actmsg');
+  if(code.length<6){msg.textContent='Entrez le code complet.';return;}
+  ab.disabled=true;ab.textContent='...';
+  const r=await fetch(B+'activate',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'code='+encodeURIComponent(code)}).catch(()=>null);
+  ab.disabled=false;ab.textContent='Activer';
+  try{const j=await r.json();
+   if(j.ok){document.getElementById('actcard').innerHTML=
+    '<div style="font-size:1.05rem;color:#8df0bb">&#127881; '+
+    '<b>Robot activ&eacute; !</b><br><span style="font-size:.85rem;'+
+    'color:#9fc2de">Le robot copie maintenant les trades sur votre '+
+    'compte.</span></div>';setTimeout(load,1500);}
+   else{msg.textContent='Code invalide ou expir&eacute;. Demandez un '+
+    'nouveau code &agrave; Kino.';}}
+  catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
+ const cb=document.getElementById('codebtn');
+ if(cb)cb.onclick=async(e)=>{e.preventDefault();
+  const pw=prompt('Mot de passe du compte (broker) :');
+  if(!pw)return;
+  const r=await fetch(B+'actcode',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
+  try{const j=await r.json();
+   if(j.ok){prompt('Code (valable 24 h, usage unique) - '+
+    'envoyez-le sur Telegram :',j.code);}
+   else{alert('Mot de passe incorrect.');}}
+  catch(e2){alert('Petit souci, r&eacute;essayez.');}};
  const db=document.getElementById('delbtn');
  if(db)db.onclick=async(e)=>{e.preventDefault();
   if(!confirm('Retirer votre compte du robot ? Le robot arr&ecirc;te '+
@@ -424,6 +478,10 @@ async function load(){
     ?'&#9654;&#65039; Reprendre le trading'
     :'&#9208;&#65039; Mettre le robot en pause';
   }
+  document.getElementById('actcard').style.display=
+   d.activation_needed?'block':'none';
+  if(d.is_master){document.getElementById('codebtn')
+   .style.display='inline';}
   document.getElementById('st').innerHTML =
    (d.trading_paused)
    ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
@@ -518,7 +576,53 @@ window.addEventListener('appinstalled',()=>{
 
 USERS_FILE = os.path.join(DIR, "owl_nest_users.json")
 NEST_DATA = os.path.join(DIR, "nest_data")
+CODES_FILE = os.path.join(DIR, "owl_activation_codes.json")
 _users_cache = {"t": 0.0, "users": []}
+
+
+def _load_codes():
+    try:
+        return json.load(open(CODES_FILE, encoding="utf-8"))
+    except Exception:
+        return {"codes": []}
+
+
+def _save_codes(c):
+    json.dump(c, open(CODES_FILE, "w", encoding="utf-8"), indent=2)
+
+
+def new_activation_code():
+    """One-time activation code (2026-09-05 user): the master generates
+    it in HIS app, sends it to the family member on Telegram; entering
+    it activates copying - no operator in the loop. Single use, 24h."""
+    import random
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # no O/0/I/1
+    code = "".join(random.choice(alphabet) for _ in range(6))
+    c = _load_codes()
+    c["codes"].append({"code": code, "t": time.time(), "used_by": None})
+    c["codes"] = c["codes"][-200:]
+    _save_codes(c)
+    return code
+
+
+def redeem_activation_code(code, uid):
+    c = _load_codes()
+    for e in c["codes"]:
+        if (e["code"] == code.strip().upper() and not e.get("used_by")
+                and time.time() - float(e["t"]) < 86400):
+            e["used_by"] = uid
+            e["used_t"] = time.time()
+            _save_codes(c)
+            return True
+    return False
+
+
+def start_copier(uid):
+    import subprocess
+    pyw = (r"C:\Users\Administrator\AppData\Local\Programs\Python"
+           r"\Python311\pythonw.exe")
+    subprocess.Popen([pyw, os.path.join(DIR, "owl_copier.py"), uid],
+                     cwd=DIR)
 
 
 def users():
@@ -580,7 +684,11 @@ def user_stats(u):
                     .get("paused"))
             except Exception:
                 d["trading_paused"] = False
-        elif u.get("trade"):
+        if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
+            d["is_master"] = True
+        elif not u.get("trade"):
+            d["activation_needed"] = True
+        if u.get("id") != "kino" and u.get("trade"):
             # family member whose real account the bot trades: their
             # own pause switch (2026-09-05)
             try:
@@ -914,6 +1022,60 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] == "activate":
+            # family member enters the one-time code from Kino
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(ln).decode("utf-8", "replace")
+                import urllib.parse as _up
+                code = (_up.parse_qs(body).get("code", [""])[0] or "")
+                if not redeem_activation_code(code, u["id"]):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad code"}),
+                               "application/json")
+                    return
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                for x in us:
+                    if x.get("id") == u["id"]:
+                        x["trade"] = True
+                json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
+                          indent=2)
+                _users_cache["t"] = 0.0
+                start_copier(u["id"])
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "actcode":
+            # the master generates a fresh one-time code (password-gated)
+            u = user_by_token(_parts[0])
+            if u is None or str(u.get("login")) != str(LOGIN):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(ln).decode("utf-8", "replace")
+                import urllib.parse as _up
+                _pw = (_up.parse_qs(body).get("pwd", [""])[0] or "").strip()
+                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                self._send(json.dumps({"ok": True,
+                                       "code": new_activation_code()}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] in ("pause", "delete"):
             u = user_by_token(_parts[0])
             if u is None:

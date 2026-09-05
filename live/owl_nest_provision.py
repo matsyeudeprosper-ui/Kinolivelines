@@ -58,7 +58,14 @@ while True:
             try:
                 cur = json.load(open(USERS, encoding="utf-8"))
                 byid = {x.get("id"): x for x in users}
-                cur = [byid.get(x.get("id"), x) for x in cur]
+                # merge ONLY the terminal field - replacing whole
+                # records stomped flags set meanwhile (e.g. trade:true
+                # from an activation code, 2026-09-05)
+                for x in cur:
+                    v = byid.get(x.get("id"))
+                    if (v and v.get("terminal")
+                            and not x.get("terminal")):
+                        x["terminal"] = v["terminal"]
                 json.dump(cur, open(USERS, "w", encoding="utf-8"),
                           ensure_ascii=False, indent=2)
             except Exception:

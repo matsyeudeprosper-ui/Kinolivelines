@@ -98,7 +98,24 @@ missing_since = {}  # copy vanished while master still open: wait 20s
                     # own SL a beat before the master's exit reaches the
                     # feed (luc pilot 09-05: churn cost -0.21)
 _last_mtime = 0.0
+_last_user_check = 0.0
 while True:
+    # self-exit if this user was deleted or de-activated (10s check);
+    # open copies keep their broker-side SL/TP
+    if time.time() - _last_user_check > 10:
+        _last_user_check = time.time()
+        try:
+            _u2 = next((x for x in
+                        json.load(open(USERS, encoding="utf-8"))
+                        if x.get("id") == uid), None)
+            if _u2 is None or not _u2.get("trade"):
+                say("user deleted/deactivated - copier exiting "
+                    "(open copies keep their SL/TP)")
+                sys.exit(0)
+        except SystemExit:
+            raise
+        except Exception:
+            pass
     # event-push (2026-09-05): watch the feed file's mtime at 10Hz and
     # act only on change - the publisher heartbeats every 5s, so grace
     # timers and staleness still get evaluated regularly.
