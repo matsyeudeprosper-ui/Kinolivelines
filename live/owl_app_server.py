@@ -324,9 +324,14 @@ window.addEventListener('load',()=>{
    :'Le robot ne prendra plus de nouveaux trades sur ce compte. Les '+
     'trades ouverts gardent leur protection (SL/TP). Continuer ?';
   if(!confirm(msg))return;
-  await fetch(B+'pause',{method:'POST',
+  const pw=prompt('Mot de passe du compte (broker) :');
+  if(!pw)return;
+  const r=await fetch(B+'pause',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:'on='+(isPaused?'0':'1')}).catch(()=>{});
+   body:'on='+(isPaused?'0':'1')+'&pwd='+encodeURIComponent(pw)}
+   ).catch(()=>null);
+  try{const j=await r.json();
+   if(!j.ok){alert('Mot de passe incorrect.');return;}}catch(e2){}
   load();};
  const db=document.getElementById('delbtn');
  if(db)db.onclick=async(e)=>{e.preventDefault();
@@ -334,7 +339,13 @@ window.addEventListener('load',()=>{
    'de trader ce compte et cette page ne fonctionnera plus.'))return;
   if(!confirm('Vraiment s&ucirc;r ? Pour revenir il faudra vous '+
    'inscrire &agrave; nouveau.'))return;
-  const r=await fetch(B+'delete',{method:'POST'}).catch(()=>null);
+  const pw=prompt('Mot de passe du compte (broker) :');
+  if(!pw)return;
+  const r=await fetch(B+'delete',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
+  try{const j=await r.clone().json();
+   if(!j.ok){alert('Mot de passe incorrect.');return;}}catch(e2){}
   if(r&&r.ok){document.body.innerHTML=
    '<div style="padding:48px 24px;text-align:center;color:#c6d3df;'+
    'font-family:sans-serif;line-height:1.7">&#128075; <b>Compte '+
@@ -381,8 +392,10 @@ async function load(){
      &&d.meteo_since){
    const s=Math.max(0,Math.round(Date.now()/1000-d.meteo_since));
    const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60);
+   const lt=new Date(d.meteo_since*1000).toLocaleTimeString([],
+    {hour:'2-digit',minute:'2-digit'});
    mt.innerHTML+='<br><span style="color:#6f93b5;font-size:.85rem">'+
-    'En pause depuis '+(hh>0?hh+' h ':'')+mm+' min</span>';}
+    'En pause depuis '+lt+' ('+(hh>0?hh+' h ':'')+mm+' min)</span>';}
   if(d.trial_days_left!==undefined){
    const tb=document.getElementById('trial');tb.style.display='block';
    tb.innerHTML='&#127873; Essai gratuit &mdash; <b>'+d.trial_days_left+
@@ -898,12 +911,21 @@ class H(BaseHTTPRequestHandler):
                 self.send_response(404)
                 self.end_headers()
                 return
+            # both actions need the account's broker password (2026-09-05)
+            ln = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(ln).decode("utf-8", "replace")
+            import urllib.parse as _up
+            _form = _up.parse_qs(body)
+            _pwd = (_form.get("pwd", [""])[0] or "").strip()
+            _real = (u.get("mt5_password") or "").strip()
+            if not _real or _pwd != _real:
+                self._send(json.dumps({"ok": False,
+                                       "err": "bad password"}),
+                           "application/json")
+                return
             if _parts[1] == "pause":
                 try:
-                    ln = int(self.headers.get("Content-Length", 0))
-                    body = self.rfile.read(ln).decode("utf-8", "replace")
-                    import urllib.parse as _up
-                    on = (_up.parse_qs(body).get("on", ["1"])[0] == "1")
+                    on = (_form.get("on", ["1"])[0] == "1")
                     if str(u.get("login")) == str(LOGIN):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
