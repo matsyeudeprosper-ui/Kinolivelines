@@ -1740,6 +1740,7 @@ def main():
                             up["pt"] = now_t
                             up["plow"] = clo
                             up["leg"] = False
+                            up["retest"] = None    # new pattern replaces
                             say(f"KINO: peak {up['peak']:.2f} official -> "
                                 f"pending BUY on M1 close back above it")
                     if up.get("pending"):
@@ -1749,11 +1750,44 @@ def main():
                                 f"expired (6h)")
                             up["pending"] = None
                         elif cc > up["pending"]:
-                            if kino_open(1, up.get("plow", clo), st, ai,
-                                         manual, runner_tickets,
+                            # NO-CHASE (user 2026-09-06): if the
+                            # confirmation candle closed far beyond the
+                            # level (>35% of the wall distance), do NOT
+                            # chase - remember the level and enter only
+                            # if price RETESTS it before a new pattern
+                            # forms.
+                            _wd_u = abs(up["pending"]
+                                        - up.get("plow", clo))
+                            if (cc - up["pending"]
+                                    > max(20.0, 0.35 * _wd_u)):
+                                up["retest"] = up["pending"]
+                                up["rt_plow"] = up.get("plow", clo)
+                                up["rt_t"] = now_t
+                                say(f"KINO: confirmation ran "
+                                    f"{cc - up['pending']:.0f}pts past "
+                                    f"{up['pending']:.2f} - NOT "
+                                    f"chasing; BUY only on a retest")
+                                up["pending"] = None
+                            elif kino_open(1, up.get("plow", clo), st,
+                                           ai, manual, runner_tickets,
+                                           split_tickets, recov_tickets,
+                                           cb) is not None:
+                                up["pending"] = None
+                    elif up.get("retest"):
+                        # retest window: enter if price returns to the
+                        # level; a NEW official pattern (which sets
+                        # pending) or 6h replaces/kills it
+                        if now_t - up.get("rt_t", now_t) > 21600:
+                            up["retest"] = None
+                        elif (clo <= up["retest"] + 15.0
+                              and cc >= up["retest"] - 15.0):
+                            say(f"KINO: retest of {up['retest']:.2f} - "
+                                f"entering the missed BUY properly")
+                            if kino_open(1, up.get("rt_plow", clo), st,
+                                         ai, manual, runner_tickets,
                                          split_tickets, recov_tickets,
                                          cb) is not None:
-                                up["pending"] = None
+                                up["retest"] = None
                     # DOWN side: mirror -> official dip -> return = SELL
                     if pc < po and cc < co and cc < pl:
                         dn["leg"] = True
@@ -1768,6 +1802,7 @@ def main():
                             dn["pt"] = now_t
                             dn["phigh"] = ch
                             dn["leg"] = False
+                            dn["retest"] = None    # new pattern replaces
                             say(f"KINO: dip {dn['dip']:.2f} official -> "
                                 f"pending SELL on M1 close back below it")
                     if dn.get("pending"):
@@ -1777,11 +1812,36 @@ def main():
                                 f"expired (6h)")
                             dn["pending"] = None
                         elif cc < dn["pending"]:
-                            if kino_open(-1, dn.get("phigh", ch), st, ai,
-                                         manual, runner_tickets,
+                            # NO-CHASE mirror (user 2026-09-06)
+                            _wd_d = abs(dn.get("phigh", ch)
+                                        - dn["pending"])
+                            if (dn["pending"] - cc
+                                    > max(20.0, 0.35 * _wd_d)):
+                                dn["retest"] = dn["pending"]
+                                dn["rt_phigh"] = dn.get("phigh", ch)
+                                dn["rt_t"] = now_t
+                                say(f"KINO: confirmation ran "
+                                    f"{dn['pending'] - cc:.0f}pts past "
+                                    f"{dn['pending']:.2f} - NOT "
+                                    f"chasing; SELL only on a retest")
+                                dn["pending"] = None
+                            elif kino_open(-1, dn.get("phigh", ch), st,
+                                           ai, manual, runner_tickets,
+                                           split_tickets, recov_tickets,
+                                           cb) is not None:
+                                dn["pending"] = None
+                    elif dn.get("retest"):
+                        if now_t - dn.get("rt_t", now_t) > 21600:
+                            dn["retest"] = None
+                        elif (ch >= dn["retest"] - 15.0
+                              and cc <= dn["retest"] + 15.0):
+                            say(f"KINO: retest of {dn['retest']:.2f} - "
+                                f"entering the missed SELL properly")
+                            if kino_open(-1, dn.get("rt_phigh", ch), st,
+                                         ai, manual, runner_tickets,
                                          split_tickets, recov_tickets,
                                          cb) is not None:
-                                dn["pending"] = None
+                                dn["retest"] = None
                     save_state(st)
             # babysit open links: SL/TP stickiness + DEEP-FIGHTER RATCHET
             if RECOV_ENTRY and st.get("recov_links"):
