@@ -124,12 +124,17 @@ KINO_ENTRY = True          # 2026-08-31 user: auto-trade THEIR entry system.
                            # any page. NO page/hour caps (user rule); only
                            # the 0.04 chain gate + $100/page cap. Base lot:
 KINO_LOTS = 0.02           # page base lot (0.01 below the soft floor)
-TP_FRACTION = 0.5          # 2026-09-06 user TRIAL: cut every trade at
-                           # HALF WAY to its normal TP (SL/geometry
-                           # unchanged). Backtest sweep: 50% was best
-                           # (-114 vs -336 at full TP, storms halved).
-                           # ROLLBACK: set 1.0 + restart, or restore
-                           # owl_manual_bot.py.rollback-halftp-20260906
+TP_FRACTION = 0.25         # 2026-09-06 evening, user "aim realistic":
+                           # QUARTER-way TP. Replay on the war-chest
+                           # config: -15 vs -45 at half-TP over 69d,
+                           # dip 21 vs 48; whole short family (20-30pts,
+                           # quarter) sits on a -15..-24 plateau =
+                           # robust, and the fancy adaptive-to-recent-
+                           # moves version scored the same (-14.83) as
+                           # a dumb 20pt cap, so simplest wins.
+                           # ROLLBACK: set 0.5 + restart. History:
+                           # 0.5 trial ran 09-06 morning (was 1.0,
+                           # rollback-halftp-20260906 = the 1.0 code).
 PAGE_RISK_MAX_USD = 5.0    # 2026-09-04 user: max tolerated page risk at
                            # 0.02 lots ($2.50 at 0.01); wider walls skip
 PAGE_RISK_USD = 3.0        # 2026-09-04 user, v2: lots do NOT scale.
