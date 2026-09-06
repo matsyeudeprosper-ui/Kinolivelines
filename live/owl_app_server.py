@@ -224,6 +224,11 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 .row{display:flex;justify-content:space-between;align-items:center;
  padding:11px 4px;border-bottom:1px solid #1e2937;font-size:1rem}
 .row:last-child{border-bottom:0}
+@keyframes livepulse{0%{opacity:1;transform:scale(1)}
+ 50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}}
+.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;
+ background:#2ecc71;margin-right:6px;vertical-align:middle;
+ animation:livepulse 1.6s infinite}
 .rowt{color:#8fa1b3;font-size:.92rem}
 .bd{display:inline-block;width:8px;height:8px;border-radius:50%;
  margin-right:8px;animation:p 1.8s infinite}
@@ -299,8 +304,19 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  </div>
 </div>
 <div id="battles-sec" style="display:none">
-<div class="sec">Combats en cours</div>
-<div class="panel" id="battles"></div>
+<div class="panel" style="margin-top:24px;
+ background:linear-gradient(135deg,#0f2740,#151d29);
+ border:1px solid #2a5a80;box-shadow:0 6px 22px rgba(37,99,235,.28)">
+ <div style="display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:6px">
+  <span style="font-size:.7rem;color:#7fb3e0;text-transform:uppercase;
+   letter-spacing:.08em;font-weight:700">&#9876;&#65039; En plein
+   combat</span>
+  <span style="font-size:.66rem;color:#8df0bb;font-weight:800;
+   letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
+ </div>
+ <div id="battles"></div>
+</div>
 </div>
 <div class="grid">
 <div class="card"><div class="lbl">Aujourd&#8217;hui</div>
@@ -534,10 +550,12 @@ async function load(){
   if(d.open_list&&d.open_list.length){
    bs.style.display='block';
    document.getElementById('battles').innerHTML=d.open_list.map(x=>
-    '<div class="row"><span class="rowt"><span class="bd" style="background:'+
-    (x.pl>=0?'#2ecc71':'#ff5c5c')+'"></span>'+
-    (x.d=='A'?'Achat':'Vente')+' &middot; '+x.lot.toFixed(2)+
-    '</span><b class="'+(x.pl>=0?'pos':'neg')+'">'+
+    '<div class="row" style="border-bottom-color:#1d3350">'+
+    '<span style="display:flex;align-items:center;gap:8px">'+
+    (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
+    ' <span style="color:#6f93b5;font-size:.85rem">'+x.lot.toFixed(2)+
+    ' lot</span></span><b style="font-size:1.12rem" class="'+
+    (x.pl>=0?'pos':'neg')+'">'+
     (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>').join('');
   }else{bs.style.display='none'}
   const t=document.getElementById('today');
