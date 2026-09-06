@@ -754,6 +754,24 @@ document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
   x.style.borderColor=on?'#2a5a80':'#263341';
   x.style.color=on?'#cfe3f5':'#8fa1b3';});
  drawSpark();};});
+function tradeSheet(i){
+ const x=(window._tr||[])[i];
+ if(!x)return;
+ const L=(a,b)=>'<div style="display:flex;justify-content:'+
+  'space-between;padding:9px 2px;border-bottom:1px solid #1e2937;'+
+  'font-size:.95rem"><span style="color:#8fa1b3">'+a+
+  '</span><b>'+b+'</b></div>';
+ sheet('<h3>'+(x.dir==='A'?'&#128200; Achat':'&#128201; Vente')+
+  (x.k?' &middot; '+x.k:'')+'</h3>'+
+  L('R&eacute;sultat','<span class="'+(x.p>=0?'pos':'neg')+'">'+
+   (x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+' $</span>')+
+  (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
+  (x.ep!=null?L('Entr&eacute;e',x.ep.toFixed(2)):'')+
+  (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
+  (x.dur!=null?L('Dur&eacute;e',x.dur+' min'):'')+
+  L('Quand',x.w)+
+  '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
+}
 async function nestPause(uid,on){
  const pw=await askPwd(
   on=='1'?'Mettre ce membre en pause ?':'Reprendre ce membre ?',
@@ -963,7 +981,17 @@ async function load(){
   drawSpark();
   if(d.is_master&&d.nest){
    document.getElementById('tb-nid').style.display='flex';
-   document.getElementById('nest').innerHTML=d.nest.map(x=>{
+   const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
+   const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
+   const hdr='<div class="row" style="border-bottom:2px solid '+
+    '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
+    'color:#5f7185;font-size:.75rem">'+d.nest.length+
+    ' compte'+(d.nest.length>1?'s':'')+'</span></span>'+
+    '<span style="text-align:right"><b>'+tb.toFixed(2)+' $</b>'+
+    '<span style="display:block;font-size:.78rem" class="'+
+    (tt>=0?'pos':'neg')+'">auj. '+(tt>=0?'+':'-')+
+    Math.abs(tt).toFixed(2)+' $</span></span></div>';
+   document.getElementById('nest').innerHTML=hdr+d.nest.map(x=>{
     const dot=x.err||x.stale?'#e6a028':(x.paused?'#8fa1b3':'#2ecc71');
     const st=x.err?'probl&egrave;me':(x.stale?'hors ligne'
      :(x.paused?'en pause':'actif'));
@@ -1091,8 +1119,10 @@ async function load(){
    }).join('');
   }
   if(d.trades&&d.trades.length){
-   document.getElementById('hist').innerHTML=d.trades.map(x=>
-    '<div class="row"><span class="rowt">'+x.w+
+   window._tr=d.trades;
+   document.getElementById('hist').innerHTML=d.trades.map((x,i)=>
+    '<div class="row" style="cursor:pointer" data-i="'+i+
+    '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
     (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; ':'')+x.k:'')+
     (x.dur!=null?' &middot; '+x.dur+' min':'')+
     '</span><b class="'+

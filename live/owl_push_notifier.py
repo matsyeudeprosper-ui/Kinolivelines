@@ -106,13 +106,48 @@ def instant_event(line):
     return None
 
 
+WEEKLY_MARK = os.path.join(DIR, "owl_push_weekly.json")
+
+
+def maybe_weekly():
+    """Sunday >= 20:00 UTC: one weekly report push."""
+    t = time.gmtime()
+    if t.tm_wday != 6 or t.tm_hour < 20:
+        return
+    wk = time.strftime("%Y-%W", t)
+    try:
+        if json.load(open(WEEKLY_MARK)).get("sent") == wk:
+            return
+    except Exception:
+        pass
+    try:
+        d = json.load(open(os.path.join(DIR, "nest_data",
+                                        "kino.json")))
+        week = float(d.get("week") or 0.0)
+        days = d.get("days") or []
+        g = sum(1 for x in days if x.get("p", 0) > 0)
+        r = sum(1 for x in days if x.get("p", 0) < 0)
+        title = (f"\U0001f4ca Votre semaine : {week:+.2f} $")
+        body = (f"{g} jour{'s' if g > 1 else ''} vert"
+                f"{'s' if g > 1 else ''}, {r} rouge"
+                f"{'s' if r > 1 else ''}. Bonne semaine !")
+        send_all(title, body)
+        json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
+    except Exception as e:
+        mylog(f"weekly failed: {e}")
+
+
 def main():
     mylog("notifier started")
     f = open(LOG, "r", encoding="utf-8", errors="replace")
     f.seek(0, 2)
     batch = []
     batch_t0 = None
+    _wk_last = 0.0
     while True:
+        if time.time() - _wk_last > 600:
+            _wk_last = time.time()
+            maybe_weekly()
         line = f.readline()
         if not line:
             if batch and time.time() - batch_t0 >= BATCH_SECS:

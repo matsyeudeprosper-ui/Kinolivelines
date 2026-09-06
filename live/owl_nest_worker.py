@@ -125,14 +125,19 @@ def compute():
         if ic.startswith("OWL-recov"):
             return "soldat"
         return "page"
-    trades = [{"w": datetime.fromtimestamp(d.time, tz=timezone.utc)
-                    .strftime("%d/%m %H:%M"),
-               "p": round(d.profit + d.commission + d.swap, 2),
-               "k": _tkind(d),
-               "dur": (round((d.time
-                              - ins_map[d.position_id].time) / 60)
-                       if d.position_id in ins_map else None)}
-              for d in d7[-10:]][::-1]
+    def _trow(d):
+        _in = ins_map.get(d.position_id)
+        return {"w": datetime.fromtimestamp(d.time, tz=timezone.utc)
+                .strftime("%d/%m %H:%M"),
+                "p": round(d.profit + d.commission + d.swap, 2),
+                "k": _tkind(d), "lot": d.volume,
+                "dir": ("A" if _in is not None
+                        and _in.type == mt5.DEAL_TYPE_BUY else "V"),
+                "ep": round(_in.price, 2) if _in is not None else None,
+                "xp": round(d.price, 2),
+                "dur": (round((d.time - _in.time) / 60)
+                        if _in is not None else None)}
+    trades = [_trow(d) for d in d7[-10:]][::-1]
     d30 = _since(d30_start)
     _c30 = 0.0
     curve30 = []
