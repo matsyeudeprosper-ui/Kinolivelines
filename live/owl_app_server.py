@@ -496,10 +496,11 @@ async function load(){
      'tout petits trades et garde chaque petit gain de '+
      'c&ocirc;t&eacute;.</span>';
     lw.style.display='block';lb.style.width=pc2+'%';
-    ls2.innerHTML='Quand il a mis assez d&#8217;argent de '+
-     'c&ocirc;t&eacute; ('+pc2.toFixed(0)+'&nbsp;%), il tente un '+
-     'coup un peu plus gros pour rattraper la perte &mdash; avec '+
-     'cet argent-l&agrave;, pas avec votre compte.';
+    ls2.innerHTML='Quand il a mis assez de c&ocirc;t&eacute; ('+
+     pc2.toFixed(0)+'&nbsp;%), il tente un coup un peu plus gros '+
+     'pour rattraper la perte. Ce coup est d&eacute;j&agrave; '+
+     'pay&eacute; d&#8217;avance : m&ecirc;me si &ccedil;a rate, '+
+     'votre compte ne descend pas plus bas.';
    }else{
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
      'rattraper.';

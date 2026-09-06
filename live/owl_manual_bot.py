@@ -177,7 +177,13 @@ CHEST_MODE = True          # 2026-09-06 user WAR-CHEST (version C, backtest
                            # False + restart, or restore
                            # owl_manual_bot.py.rollback-prechest-20260906
 CHEST_LADDER_CAP = 0.04    # funded fighters never exceed this lot
-CHEST_FUND_FRAC = 0.5      # chest must cover this fraction of the risk
+CHEST_FUND_FRAC = 1.0      # 2026-09-06 user split rule: chest must cover
+                           # the FULL fighter risk (= half of every win
+                           # protects the account, half funds the war).
+                           # Measured (variant B): −42 vs −39 over 69d =
+                           # equal, 14 vs 22 fighters, and every attempt
+                           # is fully pre-paid - the account can never
+                           # sink below the trouble-start point. Was 0.5.
 MAX_OPEN_PAGES = 3         # 2026-09-01 user: never more than 3 open Owl
                            # trades (pages + fighters) at once; extra doors
                            # wait their turn.
