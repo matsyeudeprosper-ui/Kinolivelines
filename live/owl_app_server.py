@@ -433,7 +433,7 @@ function askPwd(title,desc,btn,danger){return sheet(
  '<input id="shpw" type="password" autocomplete="current-password" '+
  'placeholder="Mot de passe du compte (broker)">'+
  '<button class="shbtn '+(danger?'shdanger':'shmain')+'" '+
- 'onclick="_shDone(document.getElementById(\'shpw\').value)">'+
+ 'onclick="_shDone(document.getElementById(\\'shpw\\').value)">'+
  btn+'</button>'+
  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler'+
  '</button>').then(v=>{
@@ -482,7 +482,7 @@ window.addEventListener('load',()=>{
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
  const cb=document.getElementById('codebtn');
  if(cb)cb.onclick=async(e)=>{e.preventDefault();
-  const pw=await askPwd('G&eacute;n&eacute;rer un code d\'activation',
+  const pw=await askPwd('G&eacute;n&eacute;rer un code d&#39;activation',
    'Le code est valable 24 h, usage unique. Envoyez-le au membre '+
    'sur Telegram.','&#128273; G&eacute;n&eacute;rer',false);
   if(!pw)return;
@@ -490,13 +490,13 @@ window.addEventListener('load',()=>{
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
   try{const j=await r.json();
-   if(j.ok){await sheet('<h3>Code d\'activation</h3>'+
+   if(j.ok){await sheet('<h3>Code d&#39;activation</h3>'+
     '<div style="font-size:2rem;font-weight:800;letter-spacing:.3em;'+
     'text-align:center;background:#0b1420;border-radius:14px;'+
     'padding:18px 6px;margin:6px 0 10px;color:#8df0bb">'+j.code+
     '</div><p>Valable 24 h &middot; usage unique</p>'+
     '<button class="shbtn shmain" onclick="navigator.clipboard&&'+
-    'navigator.clipboard.writeText(\''+j.code+'\');_shDone(1)">'+
+    'navigator.clipboard.writeText(\\''+j.code+'\\');_shDone(1)">'+
     '&#128203; Copier et fermer</button>');}
    else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
   catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
