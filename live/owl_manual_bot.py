@@ -418,6 +418,11 @@ def write_market_log(manual_open):
             w.writeheader()
         w.writerow(row)
 
+ONE_POSITION_MODE = True   # 2026-09-06 user: no more than ONE running
+                           # position at a time, until further notice.
+                           # Chains keep their sequencing - the next
+                           # entitled entry simply waits for the slot.
+_onepos_last_log = [0.0]
 _pause_last_log = [0.0]
 
 def trading_paused():
@@ -442,6 +447,14 @@ def open_at_market(direction, volume, comment):
     open the freeze-holder so escape v2 can manage the exit)."""
     if trading_paused():
         return None
+    if ONE_POSITION_MODE:
+        _ps1 = mt5.positions_get(symbol=SYMBOL) or []
+        if any((p.comment or "").startswith("OWL-") for p in _ps1):
+            if time.time() - _onepos_last_log[0] > 600:
+                _onepos_last_log[0] = time.time()
+                say("ONE-POSITION MODE: slot occupied - new entries "
+                    "wait their turn")
+            return None
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return None
@@ -782,6 +795,8 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     if (((st.get("wx") or {}).get("forced") or _below_hard)
             and (st.get("shadow") or {}).get("streak", 0) < 2):
         _sh = st.setdefault("shadow", {"links": [], "streak": 0})
+        if ONE_POSITION_MODE and _sh["links"]:
+            return None        # virtual slot occupied too (symmetry)
         # virtual FLIP-WAIT consumption (2026-09-06, full symmetry):
         # a virtual flip enters on the structure signal in its break
         # direction, SL at the two-door wall - exactly like real
@@ -1928,6 +1943,9 @@ def main():
                     for W in (_sh.get("watches") or []):
                         if _lifted:
                             break
+                        if ONE_POSITION_MODE and _sh["links"]:
+                            _keepW.append(W)
+                            continue       # virtual slot occupied
                         if int(time.time()) - W["t_sl"] > 21600:
                             say(f"SHADOW watch[{W['chain']}] expired "
                                 f"(6h)")
