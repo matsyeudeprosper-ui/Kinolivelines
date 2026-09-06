@@ -118,9 +118,10 @@ while True:
                 _wp = procs.pop(u["id"], None)
                 if _wp is not None and _wp.poll() is None:
                     _wp.kill()          # stop the failing worker now
-                _t = u.get("terminal") or ""
-                _tdir = os.path.dirname(_t)
-                if _tdir.startswith(r"C:\NestTerminals"):
+                # derive the dir from the uid - the record's terminal
+                # field may still be empty if the robocopy is mid-run
+                _tdir = os.path.join(r"C:\NestTerminals", u["id"])
+                if os.path.isdir(_tdir):
                     # the tried terminal64.exe keeps running even after
                     # a failed login - kill it before deleting
                     subprocess.run(
