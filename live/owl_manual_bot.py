@@ -39,9 +39,12 @@ from datetime import datetime, timezone, timedelta
 import numpy as np
 import MetaTrader5 as mt5
 
-LOGIN = 134499778
-TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
-SYMBOL = "BTCUSDm"
+LOGIN = 223985697          # 2026-09-06 user: moved to the PRO account
+                           # ($200 fresh, Exness-MT5Real30) - tighter
+                           # spread ($7 vs $10 measured at switch).
+                           # Old standard acct 134499778 retired.
+TERMINAL = r"C:\NestTerminals\u223985697\terminal64.exe"
+SYMBOL = "BTCUSD"          # Pro accounts have no 'm' suffix
 TP_USD = 3.0
 HOUR_FLAT = True           # 2026-08-23 user: "no trade position carried over the
                            # next hour" - at each hour boundary ALL manual

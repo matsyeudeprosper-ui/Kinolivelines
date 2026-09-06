@@ -12,9 +12,9 @@ import time
 import MetaTrader5 as mt5
 
 DIR = r"C:\Projects\KinoliveLines\live"
-TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
-LOGIN = 134499778
-SYMBOL = "BTCUSDm"
+TERMINAL = r"C:\NestTerminals\u223985697\terminal64.exe"
+LOGIN = 223985697
+SYMBOL = "BTCUSD"
 OUT = os.path.join(DIR, "owl_master_positions.json")
 LOG = os.path.join(DIR, "owl_master_publisher.log")
 
