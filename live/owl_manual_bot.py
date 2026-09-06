@@ -163,6 +163,21 @@ DEEP_LOT = 0.04            # 2026-09-01 user "build both": fighters at/above
 RATCHET_LOCK = 0.40        # profit >= 40% of prize -> wall moves to entry
 RATCHET_BANK = 0.70        # profit >= 70% of prize -> bank at market
 HEAL_EXTRA_USD = 3.0       # heal target = page losses repaid + this
+CHEST_MODE = True          # 2026-09-06 user WAR-CHEST (version C, backtest
+                           # -39 vs -104 deployed, dip 44 vs 145, worst day
+                           # -4 vs -44 over 69d). In debt the system trades
+                           # small 0.01 collection pages; WINS fill a chest;
+                           # the fighter (next ladder lot, +0.01 cap 0.04)
+                           # fires on a structure signal only when the
+                           # chest covers HALF its risk. Fighter win clears
+                           # the debt book; fighter loss spends the chest
+                           # and steps the ladder. The two-door watches and
+                           # flip-waits are OFF in this mode - all entries
+                           # come from fresh structures. ROLLBACK: set
+                           # False + restart, or restore
+                           # owl_manual_bot.py.rollback-prechest-20260906
+CHEST_LADDER_CAP = 0.04    # funded fighters never exceed this lot
+CHEST_FUND_FRAC = 0.5      # chest must cover this fraction of the risk
 MAX_OPEN_PAGES = 3         # 2026-09-01 user: never more than 3 open Owl
                            # trades (pages + fighters) at once; extra doors
                            # wait their turn.
@@ -231,6 +246,24 @@ def load_state():
                                         # [{dir, sl, lot, t0, t_sl, chain}]
     st.setdefault("recov_links", {})    # open links: ticket(str) ->
                                         # {sl, tp, lot, chain}
+    st.setdefault("ledger", {"debt": 0.0, "chest": 0.0,
+                             "next_lot": 0.02})
+    if CHEST_MODE:
+        # one-time migration: pending doors / frozen chains become book
+        # debt; their ladder position carries into next_lot
+        _mig, _mlot = 0.0, 0.02
+        for _w in (st.get("recov_watches") or []):
+            _mig += float(_w.get("loss") or 0.0)
+            _mlot = max(_mlot, float(_w.get("lot") or 0.0) + RECOV_STEP)
+        for _v in (st.get("frozen_chains") or {}).values():
+            _mig += float(_v.get("loss") or 0.0)
+            _mlot = max(_mlot, float(_v.get("lot") or 0.0))
+        if _mig > 0.0:
+            st["ledger"]["debt"] = round(st["ledger"]["debt"] + _mig, 2)
+            st["ledger"]["next_lot"] = min(CHEST_LADDER_CAP,
+                                           round(_mlot, 2))
+            st["recov_watches"] = []
+            st["frozen_chains"] = {}
     return st
 
 def save_state(st):
@@ -518,6 +551,22 @@ def be_plus(p):
     bump = min(bump, 0.5 * fav)
     return round(p.price_open + d * bump, 2)
 
+def write_ledger(st):
+    """Publish the war-chest ledger for the mobile app card."""
+    _led = st.get("ledger") or {}
+    try:
+        with open(os.path.join(DIR, "owl_ledger.json"), "w") as f:
+            json.dump({"debt": round(float(_led.get("debt", 0.0)), 2),
+                       "chest": round(float(_led.get("chest", 0.0)), 2),
+                       "next_lot": float(_led.get("next_lot", 0.02)),
+                       "need_min": round(CHEST_FUND_FRAC
+                                         * RECOV_MIN_WALL_PTS
+                                         * float(_led.get("next_lot",
+                                                          0.02)), 2),
+                       "updated": int(time.time())}, f)
+    except Exception:
+        pass
+
 def _regime(tf, count):
     bars = mt5.copy_rates_from_pos(SYMBOL, tf, 0, count)
     if bars is None or len(bars) < 3:
@@ -794,6 +843,59 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     except Exception:
         _softfloor = 0.0
         _hardfloor = 0.0
+    # WAR-CHEST (version C, 2026-09-06): while the book holds debt, a
+    # structure signal becomes the FUNDED FIGHTER when the chest covers
+    # half its risk; otherwise the same signal opens a small 0.01
+    # collection page (below) whose wins fill the chest.
+    _led = st.setdefault("ledger", {"debt": 0.0, "chest": 0.0,
+                                    "next_lot": 0.02})
+    _shelC = (((st.get("wx") or {}).get("forced")
+               or (_hardfloor and ai is not None
+                   and ai.balance < _hardfloor))
+              and (st.get("shadow") or {}).get("streak", 0) < 2)
+    if CHEST_MODE and not _shelC and _led["debt"] > 0.5:
+        _fl = float(_led.get("next_lot", 0.02))
+        _fd = abs(entry_px - wall)
+        _frisk = _fd * _fl
+        if (_fd >= RECOV_MIN_WALL_PTS and _frisk <= 35.27
+                and _led["chest"] >= CHEST_FUND_FRAC * _frisk):
+            r = open_at_market(direction, _fl, "OWL-recov")
+            if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+                say(f"FUNDED FIGHTER entry FAILED retcode="
+                    f"{r.retcode if r else None}")
+                return None
+            tkt = r.order
+            _tpdC = _fd - min(1.0, 0.25 * _frisk) / _fl
+            if _fl >= DEEP_LOT:
+                _hdC = (_led["debt"] + HEAL_EXTRA_USD) / _fl
+                if RECOV_MIN_WALL_PTS < _hdC < _tpdC:
+                    _tpdC = _hdC
+            _tpdC *= TP_FRACTION
+            tpC = (entry_px + _tpdC if direction == 1
+                   else entry_px - _tpdC)
+            mt5.order_send({"action": mt5.TRADE_ACTION_SLTP,
+                            "position": tkt, "symbol": SYMBOL,
+                            "sl": round(wall, 2), "tp": round(tpC, 2)})
+            st.setdefault("recov_links", {})[str(tkt)] = {
+                "sl": round(wall, 2), "tp": round(tpC, 2),
+                "lot": _fl, "chain": "chest", "kino": True,
+                "loss": float(_led["debt"])}
+            if str(tkt) not in st["user_owned"]:
+                st["user_owned"].append(str(tkt))
+            save_state(st)
+            if fired is not None:
+                fired.append((direction, entry_px))
+            say(f"FUNDED FIGHTER: {'BUY' if direction == 1 else 'SELL'} "
+                f"{_fl} @ ~{entry_px:.2f} SL {wall:.2f} TP {tpC:.2f} "
+                f"(risk ${_frisk:.2f}, chest ${_led['chest']:.2f} "
+                f"funds it, book ${_led['debt']:.2f})")
+            return tkt
+        _cmsg = (f"collecting: chest ${_led['chest']:.2f} of "
+                 f"${CHEST_FUND_FRAC * _frisk:.2f} needed for the "
+                 f"{_fl:.2f} fighter - small page instead")
+        if st.get("chest_last_msg") != _cmsg:
+            st["chest_last_msg"] = _cmsg
+            say(_cmsg)
     # $3-target pages v4 (2026-09-04 user, after testing both ideas):
     # lots never scale (0.02 base, 0.01 below soft floor). TP capped at
     # $3 profit ($1.50 at 0.01) AND walls beyond 1.5x the cap distance
@@ -802,6 +904,8 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     # Fighters untouched.
     blot = (0.01 if (_softfloor and ai is not None
                      and ai.balance < _softfloor) else KINO_LOTS)
+    if CHEST_MODE and _led["debt"] > 0.5:
+        blot = 0.01            # collection page: small coins only
     _rtarget = PAGE_RISK_USD * (blot / 0.02)
     _pdist = abs(entry_px - wall)
     # user 2026-09-04 final: tolerate risk up to $5 at 0.02 lots
@@ -945,6 +1049,12 @@ def connect():
 def main():
     say("OWL starting (TP+recovery manager, trade scribe)")
     st = load_state()
+    save_state(st)          # persist the war-chest migration, if any
+    write_ledger(st)
+    if CHEST_MODE:
+        _l0 = st["ledger"]
+        say(f"WAR-CHEST mode ON: book ${_l0['debt']:.2f}, chest "
+            f"${_l0['chest']:.2f}, next fighter {_l0['next_lot']:.2f}")
     last_mktlog = 0.0
     # shadow-recipe state (clone step 2: log where the user's 3-step recipe
     # WOULD enter, no orders; reset each hour, max 1 fire/hour)
@@ -1351,10 +1461,48 @@ def main():
                     elif _px2 > 0.5:
                         _wx["ls"] = 0
                     save_state(st)
+                # --- WAR-CHEST bookkeeping (version C, 2026-09-06):
+                # no doors are armed - losses go to the debt book, wins
+                # fill the chest, a fighter win clears the book ---
+                if RECOV_ENTRY and CHEST_MODE:
+                    _led = st["ledger"]
+                    _pnl2 = float(row.get("profit_usd") or 0.0)
+                    _lk = st.setdefault("recov_links", {}).pop(tkey, None)
+                    if _lk is not None and row.get("exit_reason") == "sl":
+                        # fighter stopped (loss or locked scratch):
+                        # chest spent, ladder steps, book grows
+                        if _pnl2 < 0:
+                            _led["debt"] = round(_led["debt"] - _pnl2, 2)
+                        _led["chest"] = 0.0
+                        _led["next_lot"] = min(
+                            CHEST_LADDER_CAP,
+                            round(float(_lk.get("lot", 0.02))
+                                  + RECOV_STEP, 2))
+                        say(f"FIGHTER out at {_pnl2:+.2f} - chest spent, "
+                            f"book ${_led['debt']:.2f}, next soldier "
+                            f"{_led['next_lot']:.2f} waits for funding")
+                    elif _lk is not None and _pnl2 > 0:
+                        say(f"FIGHTER WON {_pnl2:+.2f} - DEBT BOOK "
+                            f"CLEARED (was ${_led['debt']:.2f})")
+                        _led["debt"] = 0.0
+                        _led["chest"] = 0.0
+                        _led["next_lot"] = 0.02
+                    elif _pnl2 < 0:
+                        _led["debt"] = round(_led["debt"] - _pnl2, 2)
+                        say(f"DEBT BOOK +{-_pnl2:.2f} -> "
+                            f"${_led['debt']:.2f} owed")
+                    elif (_pnl2 > 0 and _led["debt"] > 0.5
+                          and row.get("exit_reason") == "tp"):
+                        _led["chest"] = round(_led["chest"] + _pnl2, 2)
+                        say(f"CHEST +{_pnl2:.2f} -> ${_led['chest']:.2f} "
+                            f"saved toward the {_led['next_lot']:.2f} "
+                            f"fighter")
+                    write_ledger(st)
+                    save_state(st)
                 # --- RECOVERY CHAIN trigger (user spec 2026-08-31;
                 # 2026-08-31 amendment: MULTI-PAGE - every stopped trade gets
                 # its OWN chain, tracked separately by origin ticket) ---
-                if RECOV_ENTRY:
+                if RECOV_ENTRY and not CHEST_MODE:
                     _t0 = None
                     try:
                         _t0 = int(datetime.fromisoformat(ent["entry_time_utc"])
@@ -1415,7 +1563,8 @@ def main():
                                 f"or back beyond {_tr:.2f} = re-enter")
             loop_fired = []
             # --- RECOVERY CHAIN: confirmation watches + entries (per chain) ---
-            if RECOV_ENTRY and st.get("recov_watches") and tick is not None:
+            if (RECOV_ENTRY and not CHEST_MODE
+                    and st.get("recov_watches") and tick is not None):
                 b1 = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 1)
                 _keep = []
                 _dirty = False

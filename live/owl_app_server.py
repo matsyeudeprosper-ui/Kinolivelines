@@ -266,6 +266,20 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
   letter-spacing:.08em;margin-bottom:6px">&Eacute;tat du robot</div>
  <div id="meteo-txt">&#9925; ...</div></div>
+<div id="ledcard" style="display:none;margin-top:12px;background:#101c2b;
+ border:1px solid #23405e;border-radius:16px;
+ padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
+ <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:6px">Plan de
+  r&eacute;cup&eacute;ration</div>
+ <div id="led-txt"></div>
+ <div id="led-barwrap" style="display:none;
+  background:rgba(255,255,255,.15);border-radius:99px;height:8px;
+  margin-top:8px"><div id="led-bar" style="background:#e8c55a;
+  height:8px;border-radius:99px;width:0%"></div></div>
+ <div id="led-sub" style="font-size:.78rem;color:#6f93b5;margin-top:6px">
+ </div>
+</div>
 <div id="actcard" style="display:none;margin-top:12px;background:#0f2740;
  border:1px solid #2a5a80;border-radius:16px;
  padding:16px;text-align:center">
@@ -450,6 +464,29 @@ async function load(){
     {hour:'2-digit',minute:'2-digit'});
    mt.innerHTML+='<br><span style="color:#6f93b5;font-size:.85rem">'+
     'En pause depuis '+lt+' ('+(hh>0?hh+' h ':'')+mm+' min)</span>';}
+  if(d.ledger){
+   const lc=document.getElementById('ledcard');lc.style.display='block';
+   const lt2=document.getElementById('led-txt'),
+    lb=document.getElementById('led-bar'),
+    lw=document.getElementById('led-barwrap'),
+    ls2=document.getElementById('led-sub');
+   if(d.ledger.debt>0.5){
+    const need=Math.max(d.ledger.need_min||0,0.01);
+    const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
+    lt2.innerHTML='&#9876;&#65039; Dette &agrave; reprendre : '+
+     '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
+     '&nbsp;$</b><br>&#128176; Cagnotte (petits gains) : '+
+     '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+'&nbsp;$</b>';
+    lw.style.display='block';lb.style.width=pc2+'%';
+    ls2.innerHTML='Le combattant de <b>'+d.ledger.next_lot.toFixed(2)+
+     ' lot</b> part quand la cagnotte couvre la moiti&eacute; de son '+
+     'risque (min &asymp; '+need.toFixed(2)+'&nbsp;$) &mdash; '+
+     pc2.toFixed(0)+'&nbsp;%';
+   }else{
+    lt2.innerHTML='&#9989; Aucune dette &mdash; le livre est propre.';
+    lw.style.display='none';ls2.innerHTML='';
+   }
+  }
   if(d.trial_days_left!==undefined){
    const tb=document.getElementById('trial');tb.style.display='block';
    tb.innerHTML='&#127873; Essai gratuit &mdash; <b>'+d.trial_days_left+
@@ -684,6 +721,13 @@ def user_stats(u):
                     .get("paused"))
             except Exception:
                 d["trading_paused"] = False
+        try:
+            # war-chest ledger (version C): shared strategy state, shown
+            # to every user - copiers mirror the same trades
+            d["ledger"] = json.load(open(os.path.join(
+                DIR, "owl_ledger.json")))
+        except Exception:
+            pass
         if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
             d["is_master"] = True
         elif not u.get("trade"):
