@@ -54,9 +54,11 @@ def out_deals(frm, to):
                 if (d.comment or "").startswith("OWL-")}
     else:
         keep = {d.position_id for d in ins}
-    return [d for d in alld if d.entry == mt5.DEAL_ENTRY_OUT
+    outs = [d for d in alld if d.entry == mt5.DEAL_ENTRY_OUT
             and d.position_id in keep
             and datetime.fromtimestamp(d.time, tz=timezone.utc) >= frm]
+    ins_map = {d.position_id: d for d in ins if d.position_id in keep}
+    return outs, ins_map
 
 
 def compute():
@@ -72,9 +74,10 @@ def compute():
     horizon = utcnow + timedelta(minutes=5)
     month_start = midnight.replace(day=1)
     val = lambda d: d.profit + d.commission + d.swap
-    base_from = min(month_start, monday, week_ago)
-    alldeals = sorted(out_deals(base_from, horizon),
-                      key=lambda d: d.time)
+    d30_start = utcnow - timedelta(days=30)
+    base_from = min(month_start, monday, week_ago, d30_start)
+    alldeals, ins_map = out_deals(base_from, horizon)
+    alldeals = sorted(alldeals, key=lambda d: d.time)
     _since = lambda t0: [d for d in alldeals
                          if d.time >= t0.timestamp()]
     today = sum(val(d) for d in _since(midnight))
@@ -109,13 +112,36 @@ def compute():
                   "lot": p.volume,
                   "pl": round(p.profit + p.swap, 2),
                   "e": p.price_open, "sl": p.sl, "tp": p.tp,
-                  "cur": p.price_current} for p in _shown]
+                  "cur": p.price_current,
+                  "k": ("s" if (p.comment or "").startswith("OWL-recov")
+                        else "p")} for p in _shown]
     te = mt5.symbol_info_tick("EURUSDm")
     eur = round(te.bid, 5) if te and te.bid > 0 else None
+    def _tkind(d):
+        ic = getattr(ins_map.get(d.position_id), "comment", "") or ""
+        oc = d.comment or ""
+        if "partial" in oc:
+            return "partiel"
+        if ic.startswith("OWL-recov"):
+            return "soldat"
+        return "page"
     trades = [{"w": datetime.fromtimestamp(d.time, tz=timezone.utc)
                     .strftime("%d/%m %H:%M"),
-               "p": round(d.profit + d.commission + d.swap, 2)}
+               "p": round(d.profit + d.commission + d.swap, 2),
+               "k": _tkind(d),
+               "dur": (round((d.time
+                              - ins_map[d.position_id].time) / 60)
+                       if d.position_id in ins_map else None)}
               for d in d7[-10:]][::-1]
+    d30 = _since(d30_start)
+    _c30 = 0.0
+    curve30 = []
+    for d in d30:
+        _c30 += val(d)
+        curve30.append(round(_c30, 2))
+    if len(curve30) > 300:
+        _stp = len(curve30) / 300.0
+        curve30 = [curve30[int(i * _stp)] for i in range(300)]
     # daily strip: one line per UTC day over the last 7 days
     _wd = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
     _dm = {}
@@ -162,6 +188,7 @@ def compute():
         "day_trades": _dtr,
         "month_days": month_days,
         "curve": curve[-120:],
+        "curve30": curve30,
         "updated_utc": utcnow.isoformat(timespec="seconds"),
     }
 

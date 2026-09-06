@@ -417,7 +417,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="val skel" id="month">--</div>
 <div class="sub">depuis le 1er</div></div>
 </div>
-<div class="sec">Progression &middot; 7 jours</div>
+<div class="sec" style="display:flex;justify-content:space-between;
+ align-items:center">Progression
+ <span><button class="cvc" data-c="7" style="border:1px solid #2a5a80;
+  background:#1d3350;color:#cfe3f5;border-radius:99px;padding:4px 12px;
+  font-size:.72rem;font-weight:700">7 j</button>
+ <button class="cvc" data-c="30" style="border:1px solid #263341;
+  background:#0f1620;color:#8fa1b3;border-radius:99px;padding:4px 12px;
+  font-size:.72rem;font-weight:700;margin-left:6px">30 j</button></span>
+</div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
  style="width:100%;height:70px"></svg></div>
 </div>
@@ -488,12 +496,19 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <a class="exit" href="../">&#8618; Changer de compte &middot;
  cr&eacute;er un nouveau nid</a>
 </div>
+<div class="tab" id="tab-nid">
+<div class="sec" style="margin-top:26px">Le Nid &middot; tous les
+ comptes</div>
+<div class="panel" id="nest">...</div>
+</div>
 </div>
 <div class="tabbar">
 <button class="tb on" onclick="tab('home',this)"><span>&#127968;
 </span>Accueil</button>
 <button class="tb" onclick="tab('hist',this)"><span>&#128197;
 </span>Historique</button>
+<button class="tb" id="tb-nid" style="display:none"
+ onclick="tab('nid',this)"><span>&#129417;</span>Le Nid</button>
 <button class="tb" onclick="tab('set',this)"><span>&#9881;&#65039;
 </span>R&eacute;glages</button>
 </div>
@@ -709,6 +724,53 @@ function dayx(l){
  window.openDay=(window.openDay===l?null:l);
  load();
 }
+window._cvz='7';
+function drawSpark(){
+ const c=(window._cvz==='30'&&window._c30&&window._c30.length>1)
+  ?window._c30:(window._c7||[]);
+ if(c.length<2)return;
+ const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
+ const P=(v,i)=>((i/(c.length-1))*300).toFixed(1)+','+
+   (62-((v-mn)/sp*54)).toFixed(1);
+ const pts=c.map((v,i)=>P(v,i)).join(' ');
+ const col=c[c.length-1]>=0?'#2ecc71':'#ff5c5c';
+ const y0=(62-((0-mn)/sp*54)).toFixed(1);
+ document.getElementById('spark').innerHTML=
+  '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
+  '<stop offset="0%" stop-color="'+col+'" stop-opacity=".35"/>'+
+  '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'+
+  '</linearGradient></defs>'+
+  '<line x1="0" y1="'+y0+'" x2="300" y2="'+y0+'" stroke="#3a4a5c"'+
+  ' stroke-width="1" stroke-dasharray="4 4"/>'+
+  '<polygon points="0,70 '+pts+' 300,70" fill="url(#g)"/>'+
+  '<polyline points="'+pts+'" fill="none" stroke="'+col+
+  '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+}
+document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
+ window._cvz=b.dataset.c;
+ document.querySelectorAll('.cvc').forEach(x=>{
+  const on=x.dataset.c===window._cvz;
+  x.style.background=on?'#1d3350':'#0f1620';
+  x.style.borderColor=on?'#2a5a80':'#263341';
+  x.style.color=on?'#cfe3f5':'#8fa1b3';});
+ drawSpark();};});
+async function nestPause(uid,on){
+ const pw=await askPwd(
+  on=='1'?'Mettre ce membre en pause ?':'Reprendre ce membre ?',
+  'Le robot '+(on=='1'?'ne prendra plus':'reprendra')+
+  ' de nouveaux trades sur ce compte.',
+  on=='1'?'&#9208;&#65039; Mettre en pause':'&#9654;&#65039; Reprendre',
+  on=='1');
+ if(!pw)return;
+ const r=await fetch(B+'nest_pause',{method:'POST',
+  headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'uid='+encodeURIComponent(uid)+'&on='+on+'&pwd='+
+   encodeURIComponent(pw)}).catch(()=>null);
+ try{const j=await r.json();
+  if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
+   return;}}catch(e){}
+ load();
+}
 function ago(){
  if(!lastOk){return}
  const s=Math.max(0,Math.round((Date.now()-lastOk)/1000));
@@ -875,7 +937,11 @@ async function load(){
     '<span style="display:flex;align-items:center;gap:8px">'+
     (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
     ' <span style="color:#6f93b5;font-size:.85rem">'+x.lot.toFixed(2)+
-    ' lot</span></span><b style="font-size:1.12rem" class="'+
+    ' lot</span>'+(x.k=='s'?' <span style="background:'+
+    'rgba(232,197,90,.15);color:#e8c55a;padding:2px 8px;'+
+    'border-radius:99px;font-size:.68rem;font-weight:700">'+
+    '&#9876;&#65039; soldat</span>':'')+
+    '</span><b style="font-size:1.12rem" class="'+
     (x.pl>=0?'pos':'neg')+'">'+
     (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>'+bar;
    }).join('');
@@ -893,24 +959,33 @@ async function load(){
    mo.innerHTML=(d.month>=0?'&#9650; ':'&#9660; ')+f(d.month);
    mo.className='val '+(d.month>=0?'pos':'neg');
   }
-  if(d.curve&&d.curve.length>1){
-   const c=d.curve,mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
-   const P=(v,i)=>((i/(c.length-1))*300).toFixed(1)+','+
-     (62-((v-mn)/sp*54)).toFixed(1);
-   const pts=c.map((v,i)=>P(v,i)).join(' ');
-   const up=c[c.length-1]>=0;
-   const col=up?'#2ecc71':'#ff5c5c';
-   const y0=(62-((0-mn)/sp*54)).toFixed(1);
-   document.getElementById('spark').innerHTML=
-    '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
-    '<stop offset="0%" stop-color="'+col+'" stop-opacity=".35"/>'+
-    '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'+
-    '</linearGradient></defs>'+
-    '<line x1="0" y1="'+y0+'" x2="300" y2="'+y0+'" stroke="#3a4a5c"'+
-    ' stroke-width="1" stroke-dasharray="4 4"/>'+
-    '<polygon points="0,70 '+pts+' 300,70" fill="url(#g)"/>'+
-    '<polyline points="'+pts+'" fill="none" stroke="'+col+
-    '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  window._c7=d.curve||[];window._c30=d.curve30||[];
+  drawSpark();
+  if(d.is_master&&d.nest){
+   document.getElementById('tb-nid').style.display='flex';
+   document.getElementById('nest').innerHTML=d.nest.map(x=>{
+    const dot=x.err||x.stale?'#e6a028':(x.paused?'#8fa1b3':'#2ecc71');
+    const st=x.err?'probl&egrave;me':(x.stale?'hors ligne'
+     :(x.paused?'en pause':'actif'));
+    return '<div class="row"><span style="display:flex;'+
+    'flex-direction:column;gap:3px"><span><span style="display:'+
+    'inline-block;width:9px;height:9px;border-radius:50%;background:'+
+    dot+';margin-right:8px"></span><b>'+x.name+'</b> '+
+    '<span style="color:#5f7185;font-size:.75rem">'+st+
+    (x.plan?' &middot; '+x.plan:'')+'</span></span>'+
+    '<span style="font-size:.8rem;color:#8fa1b3">'+
+    (x.bal!=null?x.bal.toFixed(2)+' $':'--')+
+    (x.today!=null?' &middot; auj. <span class="'+
+     (x.today>=0?'pos':'neg')+'">'+(x.today>=0?'+':'-')+
+     Math.abs(x.today).toFixed(2)+' $</span>':'')+'</span></span>'+
+    (x.trade?'<button data-u="'+x.id+'" data-o="'+(x.paused?0:1)+
+    '" onclick="nestPause(this.dataset.u,this.dataset.o)" '+
+    'style="border:1px solid #263341;background:#0f1620;'+
+    'color:#c6d3df;border-radius:10px;padding:8px 13px;'+
+    'font-size:.85rem">'+
+    (x.paused?'&#9654;&#65039;':'&#9208;&#65039;')+'</button>':'')+
+    '</div>';
+   }).join('');
   }
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
@@ -1017,7 +1092,10 @@ async function load(){
   }
   if(d.trades&&d.trades.length){
    document.getElementById('hist').innerHTML=d.trades.map(x=>
-    '<div class="row"><span class="rowt">'+x.w+'</span><b class="'+
+    '<div class="row"><span class="rowt">'+x.w+
+    (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; ':'')+x.k:'')+
+    (x.dur!=null?' &middot; '+x.dur+' min':'')+
+    '</span><b class="'+
     (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
     ' $</b></div>').join('');
   }
@@ -1186,6 +1264,40 @@ def user_stats(u):
             d["push_level"] = "all"
         if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
             d["is_master"] = True
+            # v2 Le Nid: one row per member for the master console
+            try:
+                _rows = []
+                for x in json.load(open(USERS_FILE, encoding="utf-8")):
+                    _ndp = os.path.join(NEST_DATA, x["id"] + ".json")
+                    try:
+                        nd = json.load(open(_ndp))
+                    except Exception:
+                        nd = {}
+                    _ppf = ("owl_trading_pause.json"
+                            if x.get("id") == "kino"
+                            else f"owl_trading_pause_{x['id']}.json")
+                    try:
+                        _pz = bool(json.load(open(os.path.join(
+                            DIR, _ppf))).get("paused"))
+                    except Exception:
+                        _pz = False
+                    try:
+                        _age = time.time() - os.path.getmtime(_ndp)
+                    except Exception:
+                        _age = 9e9
+                    _rows.append({
+                        "id": x["id"],
+                        "name": x.get("name", x["id"]),
+                        "bal": nd.get("balance"),
+                        "today": nd.get("today"),
+                        "err": bool(nd.get("error")),
+                        "stale": _age > 60, "paused": _pz,
+                        "trade": bool(x.get("trade")
+                                      or x.get("id") == "kino"),
+                        "plan": x.get("plan")})
+                d["nest"] = _rows
+            except Exception:
+                pass
         elif not u.get("trade"):
             d["activation_needed"] = True
         if u.get("id") != "kino" and u.get("trade"):
@@ -1617,6 +1729,43 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] == "nest_pause":
+            # master pauses/resumes any member (master pwd gated)
+            u = user_by_token(_parts[0])
+            if u is None or str(u.get("login")) != str(LOGIN):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up3
+                _f3 = _up3.parse_qs(self.rfile.read(ln)
+                                    .decode("utf-8", "replace"))
+                _pw = (_f3.get("pwd", [""])[0] or "").strip()
+                _uid = (_f3.get("uid", [""])[0] or "").strip()
+                _on = (_f3.get("on", ["1"])[0] == "1")
+                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                if not any(x.get("id") == _uid for x in us):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "no such user"}),
+                               "application/json")
+                    return
+                _ppf = ("owl_trading_pause.json" if _uid == "kino"
+                        else f"owl_trading_pause_{_uid}.json")
+                json.dump({"paused": _on, "by": "master",
+                           "t": time.time()},
+                          open(os.path.join(DIR, _ppf), "w"))
+                self._send(json.dumps({"ok": True, "paused": _on}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "push_pref":
             u = user_by_token(_parts[0])
             if u is None:
