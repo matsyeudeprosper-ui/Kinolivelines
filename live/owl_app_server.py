@@ -350,6 +350,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <div class="bankline" id="bank">&nbsp;</div>
+<div id="acctline" style="margin-top:8px;font-size:.72rem;
+ color:#5f7185">&nbsp;</div>
 <div id="palier" style="display:none;margin-top:14px;text-align:left">
  <div style="font-size:.78rem;color:#9fc2de" id="palier-lbl"></div>
  <div style="background:rgba(255,255,255,.15);border-radius:99px;
@@ -957,6 +959,17 @@ function render(d){
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   document.getElementById('bank').innerHTML=
    'Solde des trades termin&eacute;s : '+d.balance.toFixed(2)+' $';
+  if(d.acct){
+   document.getElementById('acctline').innerHTML=
+    'Compte <b style="color:#9fc2de">'+d.acct+'</b>'+
+    (d.srv?' &middot; '+String(d.srv).replace('Exness-MT5','Exness '):'')+
+    ' &middot; <span style="background:'+
+    (d.real?'rgba(46,204,113,.15)':'rgba(230,160,40,.15)')+
+    ';color:'+(d.real?'#8df0bb':'#ffd27a')+
+    ';padding:2px 9px;border-radius:99px;font-weight:700;'+
+    'font-size:.64rem;letter-spacing:.06em">'+
+    (d.real?'R&Eacute;EL':'D&Eacute;MO')+'</span>';
+  }
   if(d.palier&&d.equity){
    const pc=Math.max(0,Math.min(100,d.equity/d.palier*100));
    document.getElementById('palier').style.display='block';
@@ -1064,7 +1077,8 @@ function render(d){
     'inline-block;width:9px;height:9px;border-radius:50%;background:'+
     dot+';margin-right:8px"></span><b>'+x.name+'</b> '+
     '<span style="color:#5f7185;font-size:.75rem">'+st+
-    (x.plan?' &middot; '+x.plan:'')+'</span></span>'+
+    (x.plan?' &middot; '+x.plan:'')+
+    (x.login?' &middot; '+x.login:'')+'</span></span>'+
     '<span style="font-size:.8rem;color:#8fa1b3">'+
     (x.bal!=null?x.bal.toFixed(2)+' $':'--')+
     (x.today!=null?' &middot; auj. <span class="'+
@@ -1407,6 +1421,7 @@ def user_stats(u):
                     _rows.append({
                         "id": x["id"],
                         "name": x.get("name", x["id"]),
+                        "login": x.get("login"),
                         "bal": nd.get("balance"),
                         "today": nd.get("today"),
                         "err": bool(nd.get("error")),

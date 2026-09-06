@@ -179,6 +179,9 @@ def compute():
                   for k, v in sorted(_mm.items())]
     return {
         "name": u.get("name", uid),
+        "acct": ai.login,
+        "srv": ai.server,
+        "real": ai.trade_mode == mt5.ACCOUNT_TRADE_MODE_REAL,
         "eurusd": eur,
         "balance": round(ai.balance, 2),
         "equity": round(ai.equity, 2),
