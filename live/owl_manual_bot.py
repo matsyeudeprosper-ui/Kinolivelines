@@ -124,6 +124,12 @@ KINO_ENTRY = True          # 2026-08-31 user: auto-trade THEIR entry system.
                            # any page. NO page/hour caps (user rule); only
                            # the 0.04 chain gate + $100/page cap. Base lot:
 KINO_LOTS = 0.02           # page base lot (0.01 below the soft floor)
+TP_FRACTION = 0.5          # 2026-09-06 user TRIAL: cut every trade at
+                           # HALF WAY to its normal TP (SL/geometry
+                           # unchanged). Backtest sweep: 50% was best
+                           # (-114 vs -336 at full TP, storms halved).
+                           # ROLLBACK: set 1.0 + restart, or restore
+                           # owl_manual_bot.py.rollback-halftp-20260906
 PAGE_RISK_MAX_USD = 5.0    # 2026-09-04 user: max tolerated page risk at
                            # 0.02 lots ($2.50 at 0.01); wider walls skip
 PAGE_RISK_USD = 3.0        # 2026-09-04 user, v2: lots do NOT scale.
@@ -732,6 +738,7 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                             / _flot)
                     if RECOV_MIN_WALL_PTS < _hd3 < _tpd3:
                         _tpd3 = _hd3
+                _tpd3 *= TP_FRACTION
                 tp3 = (entry_px + _tpd3 if direction == 1
                        else entry_px - _tpd3)
                 mt5.order_send({"action": mt5.TRADE_ACTION_SLTP,
@@ -848,6 +855,7 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                         / _nlv)
                 if RECOV_MIN_WALL_PTS < _hdv < _tpdv:
                     _tpdv = _hdv
+            _tpdv *= TP_FRACTION
             _sh["links"].append({
                 "dir": direction, "lot": _nlv, "entry": entry_px,
                 "sl": round(_wallv, 2),
@@ -865,7 +873,7 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
             return None      # virtual saga still fighting - no new page
         _sdist = abs(entry_px - wall)
         _stpd = max(RECOV_MIN_WALL_PTS / 2.0,
-                    _sdist - 0.75 / blot)
+                    _sdist - 0.75 / blot) * TP_FRACTION
         _stp = (entry_px + _stpd if direction == 1
                 else entry_px - _stpd)
         _sh["links"].append({"dir": direction, "lot": blot,
@@ -896,6 +904,7 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     tp_dist = dist - disc / blot
     # profit cap: aim/cut at $3 ($1.50 at 0.01) even when the wall is far
     tp_dist = min(tp_dist, _rtarget / blot)
+    tp_dist *= TP_FRACTION
     tp = entry_px + tp_dist if direction == 1 else entry_px - tp_dist
     slp = round(wall, 2)
     mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "position": tkt,
@@ -1588,6 +1597,7 @@ def main():
                                             if RECOV_MIN_WALL_PTS < _hd < tp_dist:
                                                 tp_dist = _hd
                                                 _healed = True
+                                        tp_dist *= TP_FRACTION
                                         tp = (entry_px - tp_dist
                                               if new_dir == -1
                                               else entry_px + tp_dist)
@@ -2085,6 +2095,7 @@ def main():
                                     / _nl)
                             if RECOV_MIN_WALL_PTS < _hdw < _tpdw:
                                 _tpdw = _hdw
+                        _tpdw *= TP_FRACTION
                         _sh["links"].append({
                             "dir": _nd, "lot": _nl, "entry": _ev,
                             "sl": round(_wallv, 2),
