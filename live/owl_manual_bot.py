@@ -177,6 +177,11 @@ CHEST_MODE = True          # 2026-09-06 user WAR-CHEST (version C, backtest
                            # False + restart, or restore
                            # owl_manual_bot.py.rollback-prechest-20260906
 CHEST_LADDER_CAP = 0.04    # funded fighters never exceed this lot
+CHEST_FUND_MAX = 5.0       # 2026-09-06 user: wins keep filling the fund
+                           # even with NO debt (a standing emergency
+                           # fund, ~one ticket) - capped, or the gate
+                           # would eventually become meaningless and
+                           # drift into auto-fighters (the -90 result)
 CHEST_FUND_FRAC = 1.0      # 2026-09-06 user split rule: chest must cover
                            # the FULL fighter risk (= half of every win
                            # protects the account, half funds the war).
@@ -1513,12 +1518,20 @@ def main():
                         _led["debt"] = round(_led["debt"] - _pnl2, 2)
                         say(f"DEBT BOOK +{-_pnl2:.2f} -> "
                             f"${_led['debt']:.2f} owed")
-                    elif (_pnl2 > 0 and _led["debt"] > 0.5
-                          and row.get("exit_reason") == "tp"):
-                        _led["chest"] = round(_led["chest"] + _pnl2, 2)
-                        say(f"CHEST +{_pnl2:.2f} -> ${_led['chest']:.2f} "
-                            f"saved toward the {_led['next_lot']:.2f} "
-                            f"fighter")
+                    elif _pnl2 > 0 and row.get("exit_reason") == "tp":
+                        # wins fill the fund with OR without debt
+                        # (standing emergency fund, user 09-06)
+                        _led["chest"] = round(min(
+                            CHEST_FUND_MAX, _led["chest"] + _pnl2), 2)
+                        if _led["debt"] > 0.5:
+                            say(f"CHEST +{_pnl2:.2f} -> "
+                                f"${_led['chest']:.2f} saved toward "
+                                f"the {_led['next_lot']:.2f} fighter")
+                        else:
+                            say(f"WAR FUND +{_pnl2:.2f} -> "
+                                f"${_led['chest']:.2f} set aside for "
+                                f"future fighters (cap "
+                                f"${CHEST_FUND_MAX:.0f})")
                     write_ledger(st)
                     save_state(st)
                 # --- RECOVERY CHAIN trigger (user spec 2026-08-31;

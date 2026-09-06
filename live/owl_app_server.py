@@ -503,7 +503,10 @@ async function load(){
      'votre compte ne descend pas plus bas.';
    }else{
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
-     'rattraper.';
+     'rattraper.'+(d.ledger.chest>0
+     ?'<br>&#128176; Gard&eacute; pour les jours difficiles : '+
+      '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+
+      '&nbsp;$</b>':'');
     lw.style.display='none';ls2.innerHTML='';
    }
   }
