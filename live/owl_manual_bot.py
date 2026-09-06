@@ -782,6 +782,53 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     if (((st.get("wx") or {}).get("forced") or _below_hard)
             and (st.get("shadow") or {}).get("streak", 0) < 2):
         _sh = st.setdefault("shadow", {"links": [], "streak": 0})
+        # virtual FLIP-WAIT consumption (2026-09-06, full symmetry):
+        # a virtual flip enters on the structure signal in its break
+        # direction, SL at the two-door wall - exactly like real
+        _fw = [w for w in (_sh.get("flip_wait") or [])
+               if int(time.time()) - int(w.get("t", 0)) <= 21600]
+        _pick = next((w for w in _fw
+                      if w.get("req_dir") == direction), None)
+        if _pick is not None:
+            _lbv = mt5.copy_rates_range(
+                SYMBOL, mt5.TIMEFRAME_M1,
+                datetime.fromtimestamp(int(_pick.get("t0", 0)) - 60,
+                                       tz=timezone.utc),
+                datetime.now(timezone.utc))
+            _wallv = wall
+            if _lbv is not None and len(_lbv):
+                _wallv = (float(np.min(_lbv["low"]))
+                          if direction == 1
+                          else float(np.max(_lbv["high"])))
+            _dvv = abs(entry_px - _wallv)
+            _nlv = float(_pick.get("lot", 0.02))
+            if _dvv < RECOV_MIN_WALL_PTS or _dvv * _nlv > 35.27:
+                say(f"SHADOW FLIP[{_pick.get('chain')}] held: wall "
+                    f"{_dvv:.0f}pts - waiting (virtual)")
+                _sh["flip_wait"] = _fw
+                save_state(st)
+                return None
+            _fw.remove(_pick)
+            _sh["flip_wait"] = _fw
+            _tpdv = _dvv - min(1.0, 0.25 * _dvv * _nlv) / _nlv
+            if _nlv >= DEEP_LOT and _pick.get("loss"):
+                _hdv = ((float(_pick["loss"]) + HEAL_EXTRA_USD)
+                        / _nlv)
+                if RECOV_MIN_WALL_PTS < _hdv < _tpdv:
+                    _tpdv = _hdv
+            _sh["links"].append({
+                "dir": direction, "lot": _nlv, "entry": entry_px,
+                "sl": round(_wallv, 2),
+                "tp": round(entry_px + direction * _tpdv, 2),
+                "loss": float(_pick.get("loss") or 0.0),
+                "t0": int(_pick.get("t0") or time.time()),
+                "chain": _pick.get("chain", "page")})
+            save_state(st)
+            say(f"SHADOW FLIP[{_pick.get('chain')}] entered on "
+                f"structure: {'BUY' if direction == 1 else 'SELL'} "
+                f"{_nlv} @ {entry_px:.2f} (virtual)")
+            return -1
+        _sh["flip_wait"] = _fw
         _sdist = abs(entry_px - wall)
         _stpd = max(RECOV_MIN_WALL_PTS / 2.0,
                     _sdist - 0.75 / blot)
@@ -789,7 +836,8 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                 else entry_px - _stpd)
         _sh["links"].append({"dir": direction, "lot": blot,
                              "entry": entry_px, "sl": round(wall, 2),
-                             "tp": round(_stp, 2), "chain": "page"})
+                             "tp": round(_stp, 2), "chain": "page",
+                             "loss": 0.0, "t0": int(time.time())})
         save_state(st)
         say(f"SHADOW page ENTRY: "
             f"{'BUY' if direction == 1 else 'SELL'} {blot} @ "
@@ -1795,6 +1843,7 @@ def main():
                         and (_sh["links"] or _sh["streak"])):
                     _sh["links"] = []
                     _sh["watches"] = []
+                    _sh["flip_wait"] = []
                     _sh["streak"] = 0
                     save_state(st)
                     say("WEATHER: balance back above the floor - "
@@ -1810,11 +1859,41 @@ def main():
                     _keepL = []
                     _lifted = False
                     for L in _sh["links"]:
+                        # FULL SYMMETRY (2026-09-06): virtual trades get
+                        # every real rule - partial85, deep bank70,
+                        # lock40 with breakeven-plus, heal - the ONLY
+                        # difference is no broker order.
                         _px = tick.bid if L["dir"] == 1 else tick.ask
+                        _prz = abs(L["tp"] - L["entry"])
+                        _fav = (_px - L["entry"]) * L["dir"]
+                        if (not L.get("parted") and L["lot"] >= 0.02
+                                and _fav >= 0.85 * _prz):
+                            _bank = round(0.85 * _prz
+                                          * (L["lot"] / 2), 2)
+                            L["parted"] = True
+                            L["lot"] = round(L["lot"] / 2, 2)
+                            say(f"SHADOW[{L['chain']}] PARTIAL 85%: "
+                                f"+{_bank:.2f} banked virtually, "
+                                f"rest rides")
+                        if (L["lot"] >= DEEP_LOT
+                                and _fav >= 0.70 * _prz):
+                            _pnl = round(0.70 * _prz * L["lot"], 2)
+                            say(f"SHADOW[{L['chain']}] BANK70 "
+                                f"{_pnl:+.2f} (virtual win)")
+                            _lifted = True
+                            continue
+                        if not L.get("locked") and _fav >= 0.40 * _prz:
+                            L["locked"] = True
+                            _spr = abs(tick.ask - tick.bid)
+                            L["cur_sl"] = (L["entry"] + L["dir"]
+                                           * min(_spr + BUFFER
+                                                 / L["lot"],
+                                                 0.5 * _fav))
+                        _slv = L.get("cur_sl", L["sl"])
                         _hit_tp = (_px >= L["tp"] if L["dir"] == 1
                                    else _px <= L["tp"])
-                        _hit_sl = (_px <= L["sl"] if L["dir"] == 1
-                                   else _px >= L["sl"])
+                        _hit_sl = (_px <= _slv if L["dir"] == 1
+                                   else _px >= _slv)
                         if _hit_tp:
                             _pnl = round((L["tp"] - L["entry"])
                                          * L["dir"] * L["lot"], 2)
@@ -1822,15 +1901,21 @@ def main():
                                 f"(virtual target hit)")
                             _lifted = True
                         elif _hit_sl:
-                            _pnl = round((L["sl"] - L["entry"])
+                            _pnl = round((_slv - L["entry"])
                                          * L["dir"] * L["lot"], 2)
-                            say(f"SHADOW[{L['chain']}] LOSS {_pnl:+.2f} "
-                                f"(virtual stop) -> virtual doors arm, "
-                                f"next {round(L['lot'] + 0.01, 2)}")
+                            say(f"SHADOW[{L['chain']}] "
+                                f"{'scratch' if L.get('locked') else 'LOSS'}"
+                                f" {_pnl:+.2f} (virtual stop) -> "
+                                f"virtual doors arm, next "
+                                f"{round(L['lot'] + 0.01, 2)}")
                             _sh.setdefault("watches", []).append({
                                 "dir": L["dir"], "sl": L["sl"],
                                 "trig": L["entry"], "lot": L["lot"],
                                 "t_sl": int(time.time()),
+                                "t0": int(L.get("t0")
+                                          or time.time()),
+                                "loss": round(float(L.get("loss", 0.0))
+                                              - min(0.0, _pnl), 2),
                                 "chain": L.get("chain", "page")})
                         else:
                             _keepL.append(L)
@@ -1864,34 +1949,60 @@ def main():
                             continue
                         _nd = W["dir"] if _reent else -W["dir"]
                         _nl = round(W["lot"] + 0.01, 2)
-                        _bars = mt5.copy_rates_from_pos(
-                            SYMBOL, mt5.TIMEFRAME_M1, 1, 30)
+                        if _broke and not _reent:
+                            # virtual flips wait for a pullback
+                            # structure too (2026-09-06 symmetry)
+                            _sh.setdefault("flip_wait", []).append({
+                                "req_dir": _nd, "lot": _nl,
+                                "t0": int(W.get("t0") or W["t_sl"]),
+                                "loss": float(W.get("loss", 0.0)),
+                                "t": int(time.time()),
+                                "chain": W.get("chain", "page")})
+                            say(f"SHADOW FLIP[{W['chain']}] break "
+                                f"confirmed "
+                                f"{'DOWN' if _nd == -1 else 'UP'} - "
+                                f"waiting for a pullback structure "
+                                f"(virtual)")
+                            continue
+                        _t0w = int(W.get("t0") or W["t_sl"])
+                        _bars = mt5.copy_rates_range(
+                            SYMBOL, mt5.TIMEFRAME_M1,
+                            datetime.fromtimestamp(_t0w - 60,
+                                                   tz=timezone.utc),
+                            datetime.now(timezone.utc))
                         if _bars is None or not len(_bars):
                             _keepW.append(W)
                             continue
-                        _wallv = (float(min(_bars["low"])) if _nd == 1
-                                  else float(max(_bars["high"])))
+                        _wallv = (float(np.min(_bars["low"]))
+                                  if _nd == 1
+                                  else float(np.max(_bars["high"])))
                         _ev = tick.ask if _nd == 1 else tick.bid
                         _dv = abs(_ev - _wallv)
                         if (_dv < RECOV_MIN_WALL_PTS
                                 or _dv * _nl > 35.27):
                             _keepW.append(W)      # unfit - keep waiting
                             continue
-                        _tpv = _ev + _nd * (_dv - min(1.0, 0.25 * _dv
-                                                      * _nl) / _nl)
+                        _tpdw = _dv - min(1.0, 0.25 * _dv * _nl) / _nl
+                        if _nl >= DEEP_LOT and W.get("loss"):
+                            _hdw = ((float(W["loss"]) + HEAL_EXTRA_USD)
+                                    / _nl)
+                            if RECOV_MIN_WALL_PTS < _hdw < _tpdw:
+                                _tpdw = _hdw
                         _sh["links"].append({
                             "dir": _nd, "lot": _nl, "entry": _ev,
                             "sl": round(_wallv, 2),
-                            "tp": round(_tpv, 2),
+                            "tp": round(_ev + _nd * _tpdw, 2),
+                            "loss": float(W.get("loss", 0.0)),
+                            "t0": _t0w,
                             "chain": W.get("chain", "page")})
-                        say(f"SHADOW[{W['chain']}] "
-                            f"{'RE-ENTRY' if _reent else 'flip'}: "
+                        say(f"SHADOW[{W['chain']}] RE-ENTRY: "
                             f"{'BUY' if _nd == 1 else 'SELL'} {_nl} @ "
                             f"{_ev:.2f} (virtual)")
                     _sh["watches"] = _keepW
                     if _lifted:
                         _sh["links"] = []
                         _sh["watches"] = []
+                        _sh["flip_wait"] = []
                         _sh["streak"] = 2
                         _wx2 = st.setdefault(
                             "wx", {"ls": 0, "forced": False})
