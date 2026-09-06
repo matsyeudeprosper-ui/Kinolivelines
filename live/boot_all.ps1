@@ -48,6 +48,13 @@ if (-not (ProcRunning "owl_nest_provision.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+# 3b3) phone push notifier (web-push from owl_manual.log events)
+if (-not (ProcRunning "owl_push_notifier.py")) {
+    Say "starting push notifier"
+    Start-Process python -ArgumentList "owl_push_notifier.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 3c) Telegram alert daemon
 if (-not (ProcRunning "owl_telegram.py")) {
     Say "starting Telegram daemon"

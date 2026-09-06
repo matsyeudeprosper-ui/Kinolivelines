@@ -44,10 +44,13 @@ def send_all(title, body):
         keep = []
         for s in lst:
             try:
-                webpush(s, json.dumps({"title": title, "body": body,
-                                       "tag": "owl"}),
-                        vapid_private_key=VAPID_PEM,
-                        vapid_claims=dict(CLAIMS), timeout=10)
+                resp = webpush(s, json.dumps({"title": title,
+                                              "body": body,
+                                              "tag": "owl"}),
+                               vapid_private_key=VAPID_PEM,
+                               vapid_claims=dict(CLAIMS), timeout=10)
+                mylog(f"  {uid}: HTTP "
+                      f"{getattr(resp, 'status_code', '?')}")
                 keep.append(s)
                 total += 1
             except WebPushException as e:

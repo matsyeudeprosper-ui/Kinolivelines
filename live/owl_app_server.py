@@ -176,6 +176,9 @@ MANIFEST = json.dumps({
 })
 
 SW = (
+    "self.addEventListener('install',e=>self.skipWaiting());"
+    "self.addEventListener('activate',e=>e.waitUntil("
+    "clients.claim()));"
     "self.addEventListener('fetch',()=>{});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
