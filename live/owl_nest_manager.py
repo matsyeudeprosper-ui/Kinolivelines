@@ -79,5 +79,68 @@ while True:
                         [sys.executable,
                          os.path.join(DIR, "owl_user_bot.py"), uid],
                         cwd=DIR, creationflags=CREATE_NO_WINDOW)
+    # AUTO-REGISTRATION CLEANUP (2026-09-06 user): a pending signup
+    # whose worker reports bad credentials (auth_failed), or that never
+    # came alive within 12 minutes, is removed - user record AND the
+    # terminal instance we tried with.
+    try:
+        _changed = False
+        _keep = []
+        for u in users:
+            _ps = u.get("pending_since")
+            if not _ps:
+                _keep.append(u)
+                continue
+            _nd = os.path.join(DIR, "nest_data", u["id"] + ".json")
+            _bad = False
+            _ok = False
+            try:
+                _d = json.load(open(_nd, encoding="utf-8"))
+                if _d.get("auth_failed"):
+                    _bad = True
+                elif _d.get("balance") is not None:
+                    _ok = True
+            except Exception:
+                pass
+            if _ok:
+                u.pop("pending_since", None)
+                say(f"signup {u['id']} verified - credentials work")
+                _changed = True
+                _keep.append(u)
+            elif _bad or time.time() - float(_ps) > 720:
+                say(f"signup {u['id']} FAILED validation - cleaning "
+                    f"up user + terminal")
+                _changed = True
+                try:
+                    os.remove(_nd)
+                except Exception:
+                    pass
+                _wp = procs.pop(u["id"], None)
+                if _wp is not None and _wp.poll() is None:
+                    _wp.kill()          # stop the failing worker now
+                _t = u.get("terminal") or ""
+                _tdir = os.path.dirname(_t)
+                if _tdir.startswith(r"C:\NestTerminals"):
+                    # the tried terminal64.exe keeps running even after
+                    # a failed login - kill it before deleting
+                    subprocess.run(
+                        ["powershell", "-NoProfile", "-Command",
+                         "Get-CimInstance Win32_Process -Filter "
+                         "\"Name='terminal64.exe'\" | Where-Object "
+                         "{ $_.ExecutablePath -like '" + _tdir
+                         + "*' } | ForEach-Object "
+                         "{ Stop-Process -Id $_.ProcessId -Force }"],
+                        capture_output=True)
+                    time.sleep(2)
+                    subprocess.run(
+                        ["cmd", "/c", f"rmdir /s /q \"{_tdir}\""],
+                        capture_output=True)
+            else:
+                _keep.append(u)
+        if _changed:
+            json.dump(_keep, open(USERS, "w", encoding="utf-8"),
+                      ensure_ascii=False, indent=2)
+    except Exception as e:
+        say(f"cleanup error: {e}")
     duck_ping(say)
     time.sleep(30)

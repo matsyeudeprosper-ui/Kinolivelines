@@ -833,10 +833,8 @@ jour et nuit. Vous, vous regardez.</div>
 <span>L&#8217;essai se fait sur un compte d&eacute;mo : argent fictif,
  vraies performances.</span></div></div>
 </div>
-<button class="bigbtn b1" onclick="show('v-join')">
-Cr&eacute;er mon OwlNest</button>
-<button class="bigbtn b2" onclick="show('v-find')">
-J&#8217;ai d&eacute;j&agrave; un compte</button>
+<button class="bigbtn b1" onclick="show('v-login')">
+Se connecter</button>
 <button class="bigbtn b2" id="inst2" onclick="inst2()"
  style="margin-top:12px">&#128241; Installer l&#8217;application</button>
 <div id="howto2" style="display:none;margin-top:12px;background:#141c28;
@@ -851,44 +849,18 @@ J&#8217;ai d&eacute;j&agrave; un compte</button>
  par la famille Kino</div>
 </div>
 
-<div class="view" id="v-join">
+<div class="view" id="v-login">
 <a class="back" onclick="show('v-home')">&#8592; Retour</a>
-<form class="card" method="POST" action="join">
-<h2>Connecter l&#8217;Owl &agrave; mon compte</h2>
-<div style="color:#9aa7b4;font-size:.85rem">Essai gratuit 7 jours sur
- compte D&Eacute;MO &mdash; argent fictif, z&eacute;ro risque.</div>
-<label>Votre pr&eacute;nom</label>
-<input name="name" required maxlength="30" placeholder="Marie">
-<label>Num&eacute;ro de compte MT5</label>
-<input name="login" required inputmode="numeric" placeholder="12345678">
-<label>Mot de passe du compte d&eacute;mo</label>
-<input name="password" required placeholder="mot de passe du compte">
-<label>Serveur MT5</label>
-<input name="server" required placeholder="Exness-MT5Trial9">
-<label>Code famille</label>
-<input name="code" required placeholder="le mot secret">
-<label>Code d&#8217;invitation <span style="color:#9aa7b4">(compte
- r&eacute;el famille &mdash; sinon laisser vide)</span></label>
-<input name="invite" placeholder="ex : FAM-XXXX">
-<button class="go">Cr&eacute;er &#10142;</button>
-<div class="note">&#127873; <b>Pourquoi un compte d&eacute;mo ?</b>
-Pour que vous voyiez l&#8217;Owl travailler en vrai, sans le moindre
-risque : l&#8217;argent d&eacute;mo est fictif. Apr&egrave;s
-l&#8217;essai, contactez Kino pour la suite.</div>
-</form>
+<form class="card" method="POST" action="login">
+<h2>Se connecter</h2>
+<div style="color:#9aa7b4;font-size:.85rem">Compte connu : vous entrez
+ directement. Nouveau compte : on vous demande juste une info de plus.
 </div>
-
-<div class="view" id="v-find">
-<a class="back" onclick="show('v-home')">&#8592; Retour</a>
-<form class="card" method="POST" action="find">
-<h2>Retrouver mon nid</h2>
-<div style="color:#9aa7b4;font-size:.85rem">Entrez vos identifiants
- pour retrouver votre lien personnel.</div>
 <label>Num&eacute;ro de compte MT5</label>
 <input name="login" required inputmode="numeric" placeholder="12345678">
-<label>Mot de passe investisseur</label>
+<label>Mot de passe du compte</label>
 <input name="password" required placeholder="votre mot de passe">
-<button class="go">Retrouver &#10142;</button>
+<button class="go">Continuer &#10142;</button>
 </form>
 </div>
 
@@ -926,6 +898,129 @@ def _join_result(title, body_html):
             "max-width:420px;margin:0 auto;line-height:1.6}"
             "</style></head><body><div class=\"k\">"
             f"<h2>{title}</h2>{body_html}</div></body></html>")
+
+
+def _step2_page(login, pwd):
+    """Smart login step 2 (2026-09-06 user): the account is new - ask
+    ONLY the missing pieces (first name + server)."""
+    import html as _h
+    return ("<!doctype html><html lang=\"fr\"><head>"
+            "<meta charset=\"utf-8\"><meta name=\"viewport\" "
+            "content=\"width=device-width,initial-scale=1\">"
+            "<title>OwlNest</title><style>body{background:#0b0f14;"
+            "color:#e8eef4;margin:0;padding:34px 20px;font-family:"
+            "-apple-system,'Segoe UI',Roboto,sans-serif}.k{background:"
+            "#151d29;border-radius:20px;padding:24px 20px;max-width:"
+            "420px;margin:0 auto;box-shadow:0 6px 18px rgba(0,0,0,.35)}"
+            "label{display:block;margin:16px 0 7px;color:#9db0c2;"
+            "font-size:.92rem;font-weight:600}input{width:100%;"
+            "box-sizing:border-box;padding:15px;border-radius:12px;"
+            "border:1.5px solid #263341;background:#0f1620;color:"
+            "#e8eef4;font-size:1.05rem}button{width:100%;margin-top:"
+            "22px;background:#2563eb;color:#fff;border:0;border-radius:"
+            "14px;padding:17px;font-size:1.1rem;font-weight:700}"
+            "</style></head><body><div class=\"k\">"
+            "<h2>&#129417; Nouveau compte !</h2>"
+            "<p style=\"color:#9aa7b4;font-size:.9rem;line-height:1.5\">"
+            f"Le compte <b>{_h.escape(login)}</b> n&#8217;est pas encore "
+            "dans le nid. Deux petites infos et c&#8217;est fait :</p>"
+            "<form method=\"POST\" action=\"/register\">"
+            f"<input type=\"hidden\" name=\"login\" "
+            f"value=\"{_h.escape(login)}\">"
+            f"<input type=\"hidden\" name=\"password\" "
+            f"value=\"{_h.escape(pwd)}\">"
+            "<label>Votre pr&eacute;nom</label>"
+            "<input name=\"name\" required maxlength=\"30\" "
+            "placeholder=\"Marie\">"
+            "<label>Serveur MT5 (visible dans votre app Exness)</label>"
+            "<input name=\"server\" required list=\"srv\" "
+            "placeholder=\"Exness-MT5Real9\">"
+            "<datalist id=\"srv\">"
+            "<option value=\"Exness-MT5Real9\">"
+            "<option value=\"Exness-MT5Real14\">"
+            "<option value=\"Exness-MT5Trial9\">"
+            "<option value=\"Exness-MT5Trial10\"></datalist>"
+            "<button>Cr&eacute;er mon nid &#10142;</button></form>"
+            "</div></body></html>")
+
+
+def handle_login(form):
+    """Smart login (2026-09-06 user): one page for everyone.
+    Known account+password -> straight in. Known account, wrong
+    password -> error. Unknown account -> step 2 (auto-register)."""
+    import re as _re
+    login = _re.sub(r"\D", "", form.get("login", [""])[0] or "")[:12]
+    pwd = (form.get("password", [""])[0] or "").strip()[:64]
+    if not (login and pwd):
+        return ("page", _join_result("&#10060; Il manque une info",
+                                     "<p>Compte et mot de passe.</p>"))
+    u = next((x for x in users()
+              if str(x.get("login")) == login
+              or str(x.get("mt5_login") or "") == login), None)
+    if u is not None:
+        if (u.get("mt5_password") or "") == pwd:
+            return ("redirect", f"https://owltrader.duckdns.org/"
+                                f"{u['token']}/")
+        return ("page", _join_result(
+            "&#128274; Mot de passe incorrect",
+            "<p>Ce compte existe d&eacute;j&agrave; dans le nid, mais "
+            "le mot de passe ne correspond pas.</p>"
+            "<p><a href=\"/\">R&eacute;essayer</a></p>"))
+    return ("page", _step2_page(login, pwd))
+
+
+def handle_register(form):
+    """Auto-registration from the smart login. Credentials are
+    validated by the worker actually logging in; failures are cleaned
+    up by the nest manager (user + terminal removed)."""
+    import re as _re
+    import secrets as _sec
+    login = _re.sub(r"\D", "", form.get("login", [""])[0] or "")[:12]
+    pwd = (form.get("password", [""])[0] or "").strip()[:64]
+    name = (form.get("name", [""])[0] or "").strip()[:30]
+    server = (form.get("server", [""])[0] or "").strip()[:48]
+    if not (login and pwd and name and server):
+        return _join_result("&#10060; Il manque une info",
+                            "<p>Toutes les cases sont requises.</p>")
+    us = json.load(open(USERS_FILE, encoding="utf-8"))
+    if len(us) >= 12:
+        return _join_result("&#128679; Nid complet",
+                            "<p>Contactez Kino pour une place.</p>")
+    if any(str(x.get("login")) == login
+           or str(x.get("mt5_login") or "") == login for x in us):
+        return _join_result("&#9888;&#65039; D&eacute;j&agrave; inscrit",
+                            "<p>Ce compte existe. <a href=\"/\">"
+                            "Connectez-vous</a>.</p>")
+    uid = "u" + login
+    _is_demo = "trial" in server.lower() or "demo" in server.lower()
+    rec = {
+        "id": uid, "name": name,
+        "token": _sec.token_urlsafe(9),
+        "login": int(login), "mt5_login": int(login),
+        "mt5_password": pwd, "mt5_server": server,
+        "era_start": datetime.now(timezone.utc)
+        .isoformat(timespec="seconds"),
+        "symbol": "BTCUSDm",
+        "plan": "trial" if _is_demo else "premium",
+        "pending_since": time.time(),
+    }
+    if _is_demo:
+        rec["trial_end"] = (datetime.now(timezone.utc)
+                            + timedelta(days=7)) \
+            .isoformat(timespec="seconds")
+    us.append(rec)
+    json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
+              ensure_ascii=False, indent=2)
+    _users_cache["t"] = 0.0
+    link = f"https://owltrader.duckdns.org/{rec['token']}/"
+    return _join_result(
+        "&#129417; Nid en pr&eacute;paration !",
+        f"<p>Bienvenue {name} ! Votre espace se construit "
+        "(environ 2 minutes).</p>"
+        f"<p><a href=\"{link}\">Ouvrir mon OwlNest</a></p>"
+        "<p style=\"color:#8fa1b3;font-size:.85rem\">Si les "
+        "identifiants sont incorrects, la page vous le dira et "
+        "l&#8217;essai sera nettoy&eacute; automatiquement.</p>")
 
 
 def handle_join(form):
@@ -1135,6 +1230,28 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
+            return
+        if p.endswith("/login") or p.endswith("/register"):
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(ln).decode("utf-8", "replace")
+                import urllib.parse as _up
+                form = _up.parse_qs(body)
+                if p.endswith("/login"):
+                    kind, val = handle_login(form)
+                    if kind == "redirect":
+                        self.send_response(302)
+                        self.send_header("Location", val)
+                        self.end_headers()
+                    else:
+                        self._send(val, "text/html; charset=utf-8")
+                else:
+                    self._send(handle_register(form),
+                               "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(_join_result("&#9888;&#65039; Petit souci",
+                                        f"<p>{e}</p>"),
+                           "text/html; charset=utf-8")
             return
         if p.endswith("/find"):
             try:

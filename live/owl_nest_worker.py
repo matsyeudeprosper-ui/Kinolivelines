@@ -138,6 +138,7 @@ def compute():
     }
 
 
+_authfails = 0
 while True:
     try:
         # account deleted from the app (2026-09-05)? stop cleanly - the
@@ -155,8 +156,14 @@ while True:
         pass
     try:
         if not init():
+            _authfails += 1
             data = {"error": "mt5 init failed"}
+            if _authfails >= 6:
+                # 6 straight login failures = bad credentials; the
+                # manager cleans up this attempt (2026-09-06)
+                data["auth_failed"] = True
         else:
+            _authfails = 0
             data = compute()
     except Exception as e:
         data = {"error": str(e)}
