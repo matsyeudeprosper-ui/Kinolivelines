@@ -330,7 +330,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
-<div class="hello">Bonjour %%NAME%% &#128075;</div>
+<div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <div class="bankline" id="bank">&nbsp;</div>
@@ -422,6 +422,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" style="margin-top:26px">Jour par jour &middot;
  touchez un jour</div>
 <div class="panel" id="days" style="display:none"></div>
+<div class="sec" id="msum-sec" style="display:none">R&eacute;sum&eacute;
+ du mois</div>
+<div class="grid" id="msum" style="display:none;margin-top:2px"></div>
 <div class="sec" id="cal-sec" style="display:none">Calendrier du mois
 </div>
 <div class="panel" id="cal" style="display:none"></div>
@@ -641,6 +644,33 @@ function tab(n,el){
  try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}
  window.scrollTo({top:0});
 }
+(function(){
+ const h=new Date().getHours();
+ const g=(h>=5&&h<12)?'Bonjour':(h<18?'Bon apr&egrave;s-midi'
+  :'Bonsoir');
+ const he=document.getElementById('hello');
+ he.innerHTML=he.innerHTML.replace('Bonjour',g)
+  .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;')
+  .replace('👋',(h>=20||h<5)?'🌙'
+   :'👋');
+})();
+function confetti(){
+ for(let i=0;i<44;i++){
+  const s=document.createElement('div');
+  s.textContent=['🎉','✨','💚',
+   '🏆'][i%4];
+  s.style.cssText='position:fixed;z-index:60;top:-30px;left:'+
+   (Math.random()*100)+'vw;font-size:'+(14+Math.random()*16)+
+   'px;transition:transform 2.8s ease-in,opacity 2.8s;'+
+   'pointer-events:none';
+  document.body.appendChild(s);
+  requestAnimationFrame(()=>{s.style.transform='translateY('+
+   (window.innerHeight+80)+'px) rotate('+
+   (Math.random()*720-360)+'deg)';s.style.opacity='0';});
+  setTimeout(()=>s.remove(),3000);
+ }
+ try{navigator.vibrate&&navigator.vibrate([40,60,40])}catch(e){}
+}
 window.openDay=null;
 function dayx(l){
  window.openDay=(window.openDay===l?null:l);
@@ -753,6 +783,7 @@ async function load(){
     'Objectif : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
     pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
+   if(pc>=100&&!window._conf){window._conf=1;confetti();}
   }
   const n=d.open_positions;
   if(d.trading_paused!==undefined){
@@ -839,6 +870,23 @@ async function load(){
    }).join('');
   }
   if(d.month_days&&d.month_days.length){
+   const vals=d.month_days.map(x=>x.p);
+   const net=vals.reduce((a,b)=>a+b,0);
+   const g=vals.filter(v=>v>0.005).length,
+    rr=vals.filter(v=>v<-0.005).length;
+   const best=Math.max(...vals),worst=Math.min(...vals);
+   const cell=(l,v,c,s)=>'<div class="card"><div class="lbl">'+l+
+    '</div><div class="val '+c+'" style="font-size:1.15rem">'+v+
+    '</div><div class="sub">'+s+'</div></div>';
+   document.getElementById('msum-sec').style.display='block';
+   const ms=document.getElementById('msum');
+   ms.style.display='grid';
+   ms.innerHTML=
+    cell('Net du mois',f(net),net>=0?'pos':'neg','depuis le 1er')+
+    cell('Jours','<span class="pos">'+g+'</span> / <span class="neg">'+
+     rr+'</span>','neu','verts / rouges')+
+    cell('Meilleur jour',f(best),'pos','le plus gagnant')+
+    cell('Pire jour',f(worst),worst>=0?'pos':'neg','le plus dur');
    const md={};d.month_days.forEach(x=>md[x.d]=x.p);
    const now=new Date();
    const y=now.getUTCFullYear(),m=now.getUTCMonth();
