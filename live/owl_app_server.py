@@ -241,6 +241,42 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 .foot{margin-top:20px;text-align:center;font-size:.8rem;color:#5f7185}
 .exit{display:block;margin-top:14px;text-align:center;color:#5f7185;
  font-size:.82rem;text-decoration:none}
+.money,.val{font-variant-numeric:tabular-nums}
+@supports(padding:env(safe-area-inset-top)){
+ .hero{padding-top:calc(22px + env(safe-area-inset-top))}}
+@keyframes fup{0%{text-shadow:0 0 20px rgba(46,204,113,.95)}
+ 100%{text-shadow:none}}
+@keyframes fdn{0%{text-shadow:0 0 20px rgba(255,92,92,.95)}
+ 100%{text-shadow:none}}
+.flash-up{animation:fup .9s ease}
+.flash-dn{animation:fdn .9s ease}
+.skel{position:relative;overflow:hidden;color:transparent!important;
+ background:#1a2432!important;border-radius:8px}
+.skel::after{content:'';position:absolute;inset:0;
+ background:linear-gradient(90deg,transparent,
+ rgba(255,255,255,.08),transparent);animation:shim 1.2s infinite}
+@keyframes shim{0%{transform:translateX(-100%)}
+ 100%{transform:translateX(100%)}}
+#sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.55);
+ display:none;z-index:40;opacity:0;transition:opacity .2s}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;
+ background:#151d29;border-radius:22px 22px 0 0;
+ padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
+ transform:translateY(105%);transition:transform .25s ease;
+ box-shadow:0 -10px 40px rgba(0,0,0,.5);max-width:480px;margin:0 auto}
+#sheet h3{font-size:1.08rem;margin-bottom:8px;color:#e8eef4}
+#sheet p{color:#9fc2de;font-size:.9rem;line-height:1.55;
+ margin-bottom:14px}
+#sheet input{width:100%;padding:13px;border-radius:12px;
+ border:1px solid #2a3a4e;background:#0b1420;color:#fff;
+ font-size:1rem;margin-bottom:6px}
+.shbtn{width:100%;border:0;border-radius:13px;padding:14px;
+ font-size:1rem;font-weight:700;margin-top:8px}
+.shmain{background:#2563eb;color:#fff}
+.shdanger{background:#a03030;color:#fff}
+.shghost{background:#1e2937;color:#c6d3df}
+.grab{width:38px;height:4px;border-radius:99px;background:#2a3a4e;
+ margin:0 auto 14px}
 </style></head><body>
 <div class="hero">
 <div class="topline"><span class="brand">&#129417; OwlNest</span>
@@ -250,7 +286,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello">Bonjour %%NAME%% &#128075;</div>
-<div class="money" id="eq">--</div>
+<div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <div class="bankline" id="bank">&nbsp;</div>
 <div id="palier" style="display:none;margin-top:14px;text-align:left">
@@ -320,21 +356,30 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 </div>
 <div class="grid">
 <div class="card"><div class="lbl">Aujourd&#8217;hui</div>
-<div class="val" id="today">--</div><div class="sub">gains du jour</div></div>
+<div class="val skel" id="today">--</div>
+<div class="sub">gains du jour</div></div>
 <div class="card"><div class="lbl">Cette semaine</div>
-<div class="val" id="week">--</div><div class="sub">depuis lundi</div></div>
+<div class="val skel" id="week">--</div>
+<div class="sub">depuis lundi</div></div>
 <div class="card"><div class="lbl">Pire creux</div>
-<div class="val neg" id="dd">--</div><div class="sub">7 derniers jours</div></div>
+<div class="val neg skel" id="dd">--</div>
+<div class="sub">7 derniers jours</div></div>
 <div class="card"><div class="lbl">Ce mois</div>
-<div class="val" id="month">--</div><div class="sub">depuis le 1er</div></div>
+<div class="val skel" id="month">--</div>
+<div class="sub">depuis le 1er</div></div>
 </div>
 <div class="sec">Progression &middot; 7 jours</div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
  style="width:100%;height:70px"></svg></div>
 <div class="panel" id="days" style="margin-top:10px;display:none"></div>
 <div class="sec">Derniers trades</div>
-<div class="panel" id="hist"><div class="rowt"
- style="padding:8px">chargement...</div></div>
+<div class="panel" id="hist">
+<div class="row"><span class="skel" style="width:42%">&nbsp;</span>
+<span class="skel" style="width:18%">&nbsp;</span></div>
+<div class="row"><span class="skel" style="width:36%">&nbsp;</span>
+<span class="skel" style="width:22%">&nbsp;</span></div>
+<div class="row"><span class="skel" style="width:46%">&nbsp;</span>
+<span class="skel" style="width:16%">&nbsp;</span></div></div>
 <button id="inst" onclick="inst()">Installer l&#8217;application</button>
 <div id="howto">&#128241; <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
@@ -358,7 +403,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 </div>
 <a class="exit" href="../">&#8618; Changer de compte &middot;
  cr&eacute;er un nouveau nid</a>
-</div><script>
+</div>
+<div id="sheetbg"></div>
+<div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
+<script>
 const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 (function(){
  const m=document.createElement('link');m.rel='manifest';
@@ -368,22 +416,50 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 })();
 let lastOk=0;
 let isPaused=false;
+function sheet(html){return new Promise(res=>{
+ const bg=document.getElementById('sheetbg'),
+  sh=document.getElementById('sheet');
+ document.getElementById('sheet-c').innerHTML=html;
+ bg.style.display='block';
+ requestAnimationFrame(()=>{bg.style.opacity='1';
+  sh.style.transform='translateY(0)'});
+ window._shDone=(v)=>{bg.style.opacity='0';
+  sh.style.transform='translateY(105%)';
+  setTimeout(()=>{bg.style.display='none'},250);res(v)};
+ bg.onclick=()=>window._shDone(null);
+});}
+function askPwd(title,desc,btn,danger){return sheet(
+ '<h3>'+title+'</h3><p>'+desc+'</p>'+
+ '<input id="shpw" type="password" autocomplete="current-password" '+
+ 'placeholder="Mot de passe du compte (broker)">'+
+ '<button class="shbtn '+(danger?'shdanger':'shmain')+'" '+
+ 'onclick="_shDone(document.getElementById(\'shpw\').value)">'+
+ btn+'</button>'+
+ '<button class="shbtn shghost" onclick="_shDone(null)">Annuler'+
+ '</button>').then(v=>{
+  if(v){try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+  return v;});}
+function info(html){return sheet(html+
+ '<button class="shbtn shmain" onclick="_shDone(1)">OK</button>');}
 window.addEventListener('load',()=>{
  const pb=document.getElementById('pausebtn');
  if(pb)pb.onclick=async(e)=>{e.preventDefault();
-  const msg=isPaused
-   ?'Reprendre le trading ?'
-   :'Le robot ne prendra plus de nouveaux trades sur ce compte. Les '+
-    'trades ouverts gardent leur protection (SL/TP). Continuer ?';
-  if(!confirm(msg))return;
-  const pw=prompt('Mot de passe du compte (broker) :');
+  const pw=await askPwd(
+   isPaused?'Reprendre le trading ?':'Mettre le robot en pause ?',
+   isPaused
+    ?'Le robot reprendra les nouveaux trades sur ce compte.'
+    :'Le robot ne prendra plus de nouveaux trades sur ce compte. '+
+     'Les trades ouverts gardent leur protection (SL/TP).',
+   isPaused?'&#9654;&#65039; Reprendre':'&#9208;&#65039; Mettre en pause',
+   !isPaused);
   if(!pw)return;
   const r=await fetch(B+'pause',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'on='+(isPaused?'0':'1')+'&pwd='+encodeURIComponent(pw)}
    ).catch(()=>null);
   try{const j=await r.json();
-   if(!j.ok){alert('Mot de passe incorrect.');return;}}catch(e2){}
+   if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
+    return;}}catch(e2){}
   load();};
  const ab=document.getElementById('actbtn');
  if(ab)ab.onclick=async(e)=>{e.preventDefault();
@@ -406,29 +482,38 @@ window.addEventListener('load',()=>{
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
  const cb=document.getElementById('codebtn');
  if(cb)cb.onclick=async(e)=>{e.preventDefault();
-  const pw=prompt('Mot de passe du compte (broker) :');
+  const pw=await askPwd('G&eacute;n&eacute;rer un code d\'activation',
+   'Le code est valable 24 h, usage unique. Envoyez-le au membre '+
+   'sur Telegram.','&#128273; G&eacute;n&eacute;rer',false);
   if(!pw)return;
   const r=await fetch(B+'actcode',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
   try{const j=await r.json();
-   if(j.ok){prompt('Code (valable 24 h, usage unique) - '+
-    'envoyez-le sur Telegram :',j.code);}
-   else{alert('Mot de passe incorrect.');}}
-  catch(e2){alert('Petit souci, r&eacute;essayez.');}};
+   if(j.ok){await sheet('<h3>Code d\'activation</h3>'+
+    '<div style="font-size:2rem;font-weight:800;letter-spacing:.3em;'+
+    'text-align:center;background:#0b1420;border-radius:14px;'+
+    'padding:18px 6px;margin:6px 0 10px;color:#8df0bb">'+j.code+
+    '</div><p>Valable 24 h &middot; usage unique</p>'+
+    '<button class="shbtn shmain" onclick="navigator.clipboard&&'+
+    'navigator.clipboard.writeText(\''+j.code+'\');_shDone(1)">'+
+    '&#128203; Copier et fermer</button>');}
+   else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
+  catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
  const db=document.getElementById('delbtn');
  if(db)db.onclick=async(e)=>{e.preventDefault();
-  if(!confirm('Retirer votre compte du robot ? Le robot arr&ecirc;te '+
-   'de trader ce compte et cette page ne fonctionnera plus.'))return;
-  if(!confirm('Vraiment s&ucirc;r ? Pour revenir il faudra vous '+
-   'inscrire &agrave; nouveau.'))return;
-  const pw=prompt('Mot de passe du compte (broker) :');
+  const pw=await askPwd('Retirer mon compte du robot ?',
+   '&#9888;&#65039; Le robot arr&ecirc;te de trader ce compte et '+
+   'cette page ne fonctionnera plus. Pour revenir il faudra vous '+
+   'inscrire &agrave; nouveau.',
+   '&#128465; Retirer d&eacute;finitivement',true);
   if(!pw)return;
   const r=await fetch(B+'delete',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
   try{const j=await r.clone().json();
-   if(!j.ok){alert('Mot de passe incorrect.');return;}}catch(e2){}
+   if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
+    return;}}catch(e2){}
   if(r&&r.ok){document.body.innerHTML=
    '<div style="padding:48px 24px;text-align:center;color:#c6d3df;'+
    'font-family:sans-serif;line-height:1.7">&#128075; <b>Compte '+
@@ -516,7 +601,22 @@ async function load(){
     ' jour'+(d.trial_days_left>1?'s':'')+' restant'+
     (d.trial_days_left>1?'s':'')+'</b>';}
   const f=(x)=>(x>=0?'+':'-')+Math.abs(x).toFixed(2)+'&nbsp;$';
-  document.getElementById('eq').textContent=d.equity.toFixed(2)+' $';
+  document.querySelectorAll('.skel').forEach(el=>
+   el.classList.remove('skel'));
+  const eqEl=document.getElementById('eq');
+  const prevEq=parseFloat(eqEl.dataset.v||'NaN');
+  if(isNaN(prevEq)||Math.abs(prevEq-d.equity)<0.005){
+   eqEl.textContent=d.equity.toFixed(2)+' $';}
+  else{
+   const from=prevEq,to=d.equity,t0=performance.now();
+   eqEl.classList.remove('flash-up','flash-dn');void eqEl.offsetWidth;
+   eqEl.classList.add(to>=from?'flash-up':'flash-dn');
+   (function stepA(ts){const k=Math.min(1,(ts-t0)/500);
+    eqEl.textContent=(from+(to-from)*(1-Math.pow(1-k,3)))
+     .toFixed(2)+' $';
+    if(k<1)requestAnimationFrame(stepA);})(t0);
+  }
+  eqEl.dataset.v=d.equity;
   if(d.eurusd){document.getElementById('eqe').innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   document.getElementById('bank').innerHTML=
@@ -611,7 +711,14 @@ async function load(){
  }catch(e){document.getElementById('upd').textContent=
   'hors ligne - nouvel essai...'}
 }
-load();setInterval(load,5000);setInterval(ago,1000);
+load();
+let pollT=setInterval(load,5000);
+setInterval(ago,1000);
+document.addEventListener('visibilitychange',()=>{
+ clearInterval(pollT);
+ if(document.hidden){pollT=setInterval(load,30000);}
+ else{load();pollT=setInterval(load,5000);}
+});
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register(B+'sw.js',{scope:B}).catch(()=>{});}
 let dp=null;
