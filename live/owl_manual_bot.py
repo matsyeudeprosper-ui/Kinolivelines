@@ -679,10 +679,32 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                       or (_hf3 and ai is not None
                           and ai.balance < _hf3))
                      and (st.get("shadow") or {}).get("streak", 0) < 2)
+    _cn3 = None
     if _fc and not _shelter3:
-        _cn3, _f3 = next(iter(_fc.items()))
+        # pick the first frozen/waiting chain COMPATIBLE with this
+        # signal: storm-frozen chains (no req_dir) take any direction;
+        # flip-waits (2026-09-06) only take their break direction
+        for _k4, _v4 in _fc.items():
+            if _v4.get("req_dir") in (None, direction):
+                _cn3, _f3 = _k4, _v4
+                break
+    if _cn3 is not None:
         _flot = float(_f3.get("lot", 0.02))
-        _dist3 = abs(entry_px - wall)
+        # SL: flip-waits keep the two-door wall = M1 extreme since the
+        # stopped trade's entry, computed NOW; others use the structure
+        _wall3 = wall
+        if _f3.get("req_dir") is not None and _f3.get("t0"):
+            _lb3 = mt5.copy_rates_range(
+                SYMBOL, mt5.TIMEFRAME_M1,
+                datetime.fromtimestamp(int(_f3["t0"]) - 60,
+                                       tz=timezone.utc),
+                datetime.now(timezone.utc))
+            if _lb3 is not None and len(_lb3):
+                import numpy as _np3
+                _wall3 = (float(_np3.min(_lb3["low"]))
+                          if direction == 1
+                          else float(_np3.max(_lb3["high"])))
+        _dist3 = abs(entry_px - _wall3)
         if _dist3 < RECOV_MIN_WALL_PTS or _dist3 * _flot > 35.27:
             say(f"CHAIN RESUME[{_cn3}] held: wall {_dist3:.0f}pts, "
                 f"risk ${_dist3 * _flot:.2f} - waiting for a fitter "
@@ -701,10 +723,10 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                        else entry_px - _tpd3)
                 mt5.order_send({"action": mt5.TRADE_ACTION_SLTP,
                                 "position": tkt3, "symbol": SYMBOL,
-                                "sl": round(wall, 2),
+                                "sl": round(_wall3, 2),
                                 "tp": round(tp3, 2)})
                 st.setdefault("recov_links", {})[str(tkt3)] = {
-                    "sl": round(wall, 2), "tp": round(tp3, 2),
+                    "sl": round(_wall3, 2), "tp": round(tp3, 2),
                     "lot": _flot, "chain": _cn3,
                     "kino": bool(_f3.get("kino")),
                     "loss": float(_f3.get("loss") or 0.0)}
@@ -719,11 +741,13 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                     fired.append((direction, entry_px))
                 say(f"CHAIN RESUMED[{_cn3}] on structure: "
                     f"{'BUY' if direction == 1 else 'SELL'} {_flot} @ "
-                    f"~{entry_px:.2f} SL {wall:.2f} TP {tp3:.2f} "
+                    f"~{entry_px:.2f} SL {_wall3:.2f} TP {tp3:.2f} "
                     f"(risk ${_dist3 * _flot:.2f}, owed "
                     f"${float(_f3.get('loss') or 0.0):.2f})")
                 return tkt3
         # the structure signal was spent on the resume attempt - no page
+        # (a waiting chain of the OTHER direction falls through to
+        # normal page logic instead)
         return None
     # HALF-SIZE CHOP MODE: base 0.01 below the soft floor, else 0.02
     try:
@@ -1309,6 +1333,44 @@ def main():
                         if _broke or _reent:
                             new_dir = rw["dir"] if _reent else -rw["dir"]
                             new_lot = round(rw["lot"] + RECOV_STEP, 2)
+                            # user 2026-09-06: a FLIP no longer enters on
+                            # the door close alone - it waits for a
+                            # pullback structure in the break direction
+                            # (the KINO leg->pullback->return sequence)
+                            # and enters on ITS confirmation. The SL rule
+                            # is unchanged: the two-door wall (M1 extreme
+                            # since the stopped trade's entry), computed
+                            # at the actual entry moment. Re-entries
+                            # (fake breaks) are untouched - they are a
+                            # pullback-return by nature.
+                            _shelterF = (((st.get("wx") or {})
+                                          .get("forced")
+                                          or (hard_floor
+                                              and ai is not None
+                                              and ai.balance
+                                              < hard_floor))
+                                         and (st.get("shadow") or {})
+                                         .get("streak", 0) < 2)
+                            if _broke and not _reent and not _shelterF:
+                                st.setdefault("frozen_chains", {})[
+                                    str(_cn)] = {
+                                    "lot": new_lot,
+                                    "dir": rw["dir"],
+                                    "req_dir": new_dir,
+                                    "t0": int(rw.get("t0")
+                                              or time.time()),
+                                    "loss": float(rw.get("loss")
+                                                  or 0.0),
+                                    "kino": bool(rw.get("kino")),
+                                    "t": time.time()}
+                                done = True
+                                _dirty = True
+                                say(f"FLIP[{_cn}] break confirmed "
+                                    f"{'DOWN' if new_dir == -1 else 'UP'}"
+                                    f" - waiting for a pullback "
+                                    f"structure to enter {new_lot} "
+                                    f"(SL stays at the two-door wall)")
+                                continue
                             legbars = mt5.copy_rates_range(
                                 SYMBOL, mt5.TIMEFRAME_M1,
                                 datetime.fromtimestamp(
