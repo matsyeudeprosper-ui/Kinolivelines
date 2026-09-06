@@ -229,7 +229,15 @@ PAGE = """<!doctype html><html lang="fr"><head>
 body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
 .tab{display:none}
-.tab.on{display:block}
+.tab.on{display:block;animation:tfade .25s ease}
+@keyframes tfade{0%{opacity:0;transform:translateY(6px)}
+ 100%{opacity:1;transform:none}}
+.card,.panel,.status{animation:cin .5s ease backwards}
+.grid .card:nth-child(2){animation-delay:.06s}
+.grid .card:nth-child(3){animation-delay:.12s}
+.grid .card:nth-child(4){animation-delay:.18s}
+@keyframes cin{0%{opacity:0;transform:translateY(10px)}
+ 100%{opacity:1;transform:none}}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;
  display:flex;max-width:480px;margin:0 auto;
  background:rgba(15,22,32,.94);backdrop-filter:blur(12px);
@@ -530,6 +538,8 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
  m.href=B+'manifest.json';document.head.appendChild(m);
  const i=document.createElement('link');i.rel='icon';
  i.href=B+'icon192.png';document.head.appendChild(i);
+ const a=document.createElement('link');a.rel='apple-touch-icon';
+ a.href=B+'icon192.png';document.head.appendChild(a);
 })();
 let lastOk=0;
 let isPaused=false;
@@ -540,11 +550,36 @@ function sheet(html){return new Promise(res=>{
  bg.style.display='block';
  requestAnimationFrame(()=>{bg.style.opacity='1';
   sh.style.transform='translateY(0)'});
- window._shDone=(v)=>{bg.style.opacity='0';
+ window._shOpen=true;
+ try{history.pushState({sh:1},'')}catch(e){}
+ window._shDone=(v)=>{
+  if(!window._shOpen)return;
+  window._shOpen=false;
+  bg.style.opacity='0';
   sh.style.transform='translateY(105%)';
-  setTimeout(()=>{bg.style.display='none'},250);res(v)};
+  setTimeout(()=>{bg.style.display='none'},250);
+  try{if(history.state&&history.state.sh)history.back()}catch(e){}
+  res(v)};
  bg.onclick=()=>window._shDone(null);
+ const inp=document.getElementById('shpw');
+ if(inp){setTimeout(()=>inp.focus(),280);
+  inp.onkeydown=(ev)=>{if(ev.key==='Enter'){
+   const m=sh.querySelector('.shmain');if(m)m.click();}};}
 });}
+window.addEventListener('popstate',()=>{
+ if(window._shOpen)window._shDone(null);});
+let _pty=null;
+document.addEventListener('touchstart',e=>{
+ _pty=(window.scrollY===0)?e.touches[0].clientY:null;},
+ {passive:true});
+document.addEventListener('touchmove',e=>{
+ if(_pty!=null&&!window._shOpen
+    &&e.touches[0].clientY-_pty>80){
+  _pty=null;
+  document.getElementById('upd').textContent='actualisation...';
+  window._lastS=null;load();
+  try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}}},
+ {passive:true});
 function askPwd(title,desc,btn,danger){return sheet(
  '<h3>'+title+'</h3><p>'+desc+'</p>'+
  '<input id="shpw" type="password" autocomplete="current-password" '+
@@ -1169,8 +1204,12 @@ async function load(){
  try{
   const r=await fetch(B+'api?t='+Date.now(),{cache:'no-store'});
   const d=await r.json();
-  render(d);
-  try{localStorage.setItem('owlLast',JSON.stringify(d))}catch(e){}
+  const s=JSON.stringify(d);
+  if(s!==window._lastS){
+   window._lastS=s;
+   render(d);
+   try{localStorage.setItem('owlLast',s)}catch(e){}
+  }
   lastOk=Date.now();ago();
  }catch(e){
   document.getElementById('upd').textContent=
