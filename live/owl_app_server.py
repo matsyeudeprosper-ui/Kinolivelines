@@ -270,8 +270,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
  border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
  <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:6px">Plan de
-  r&eacute;cup&eacute;ration</div>
+  letter-spacing:.08em;margin-bottom:6px">La tirelire de secours</div>
  <div id="led-txt"></div>
  <div id="led-barwrap" style="display:none;
   background:rgba(255,255,255,.15);border-radius:99px;height:8px;
@@ -473,17 +472,21 @@ async function load(){
    if(d.ledger.debt>0.5){
     const need=Math.max(d.ledger.need_min||0,0.01);
     const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
-    lt2.innerHTML='&#9876;&#65039; Dette &agrave; reprendre : '+
+    lt2.innerHTML='&#128546; Le robot a perdu un peu : '+
      '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
-     '&nbsp;$</b><br>&#128176; Cagnotte (petits gains) : '+
-     '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+'&nbsp;$</b>';
+     '&nbsp;$</b> &agrave; rattraper<br>&#128055; Dans la tirelire : '+
+     '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+'&nbsp;$</b>'+
+     '<br><span style="font-size:.84rem;color:#9fc2de">En attendant, '+
+     'il fait de tout petits trades et met chaque petit gain de '+
+     'c&ocirc;t&eacute;.</span>';
     lw.style.display='block';lb.style.width=pc2+'%';
-    ls2.innerHTML='Le combattant de <b>'+d.ledger.next_lot.toFixed(2)+
-     ' lot</b> part quand la cagnotte couvre la moiti&eacute; de son '+
-     'risque (min &asymp; '+need.toFixed(2)+'&nbsp;$) &mdash; '+
-     pc2.toFixed(0)+'&nbsp;%';
+    ls2.innerHTML='Quand la tirelire est assez pleine ('+
+     pc2.toFixed(0)+'&nbsp;%), le robot tente un coup un peu plus '+
+     'gros pour rattraper &mdash; pay&eacute; par la tirelire, pas '+
+     'par votre compte.';
    }else{
-    lt2.innerHTML='&#9989; Aucune dette &mdash; le livre est propre.';
+    lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
+     'rattraper. La tirelire attend, bien au chaud.';
     lw.style.display='none';ls2.innerHTML='';
    }
   }
