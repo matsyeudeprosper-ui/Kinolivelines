@@ -762,6 +762,23 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
         # (a waiting chain of the OTHER direction falls through to
         # normal page logic instead)
         return None
+    # ONE-SAGA MODE (user 2026-09-06): no NEW page until the current
+    # page AND its whole chain of fighters have fully ended. An open
+    # OWL position, armed doors, a flip-wait or a frozen chain all
+    # count as "still fighting". Chain continuations (the resume/flip
+    # intercept above) are unaffected.
+    _busy = bool((st.get("recov_links") or {})
+                 or (st.get("recov_watches") or [])
+                 or (st.get("frozen_chains") or {})
+                 or any((p.comment or "").startswith("OWL-")
+                        for p in manual))
+    if _busy:
+        _kmsg = ("KINO skipped: a page/chain is still fighting "
+                 "(one saga at a time)")
+        if st.get("kino_last_skip") != _kmsg:
+            st["kino_last_skip"] = _kmsg
+            say(_kmsg)
+        return None
     # HALF-SIZE CHOP MODE: base 0.01 below the soft floor, else 0.02
     try:
         _cfj0 = json.load(open(os.path.join(DIR, "owl_chain_floor.json")))
@@ -844,6 +861,8 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                 f"{_nlv} @ {entry_px:.2f} (virtual)")
             return -1
         _sh["flip_wait"] = _fw
+        if _sh.get("watches") or _fw:
+            return None      # virtual saga still fighting - no new page
         _sdist = abs(entry_px - wall)
         _stpd = max(RECOV_MIN_WALL_PTS / 2.0,
                     _sdist - 0.75 / blot)
