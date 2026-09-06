@@ -583,6 +583,20 @@ def write_ledger(st):
     except Exception:
         pass
 
+def fight_log(res, lot, pnl, book):
+    """Append one finished fighter battle for the app's history."""
+    try:
+        fp = os.path.join(DIR, "owl_fight_history.json")
+        try:
+            h = json.load(open(fp))
+        except Exception:
+            h = []
+        h.append({"t": int(time.time()), "res": res, "lot": lot,
+                  "pnl": round(pnl, 2), "book": round(book, 2)})
+        json.dump(h[-100:], open(fp, "w"))
+    except Exception:
+        pass
+
 def _regime(tf, count):
     bars = mt5.copy_rates_from_pos(SYMBOL, tf, 0, count)
     if bars is None or len(bars) < 3:
@@ -1498,12 +1512,18 @@ def main():
                                 f"spent, book ${_led['debt']:.2f}, next "
                                 f"soldier {_led['next_lot']:.2f} waits "
                                 f"for funding")
+                            fight_log("perdu",
+                                      float(_lk.get("lot", 0.02)),
+                                      _pnl2, _led["debt"])
                         else:
                             # breakeven exit (user 09-06): no ladder
                             # step, savings untouched
                             say(f"FIGHTER breakeven ({_pnl2:+.2f}) - "
                                 f"ladder and savings untouched, book "
                                 f"${_led['debt']:.2f}")
+                            fight_log("nul",
+                                      float(_lk.get("lot", 0.02)),
+                                      _pnl2, _led["debt"])
                     elif _lk is not None and _pnl2 > 0:
                         # user 09-06: a win pays only what it won -
                         # recovery continues until the book is empty
@@ -1519,6 +1539,9 @@ def main():
                             say(f"FIGHTER WON {_pnl2:+.2f} - book down "
                                 f"to ${_led['debt']:.2f}, collecting "
                                 f"for the next ticket")
+                        fight_log("gagne",
+                                  float(_lk.get("lot", 0.02)),
+                                  _pnl2, _led["debt"])
                     elif _pnl2 < 0:
                         _led["debt"] = round(_led["debt"] - _pnl2, 2)
                         say(f"DEBT BOOK +{-_pnl2:.2f} -> "

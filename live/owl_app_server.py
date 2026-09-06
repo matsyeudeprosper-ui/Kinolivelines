@@ -428,6 +428,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" id="cal-sec" style="display:none">Calendrier du mois
 </div>
 <div class="panel" id="cal" style="display:none"></div>
+<div class="sec" id="fights-sec" style="display:none">&#9876;&#65039;
+ Combats des soldats</div>
+<div class="panel" id="fights" style="display:none"></div>
 <div class="sec">Derniers trades</div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
@@ -945,6 +948,39 @@ async function load(){
    const ce=document.getElementById('cal');
    ce.style.display='block';ce.innerHTML=h;
   }
+  if(d.fights&&d.fights.length){
+   document.getElementById('fights-sec').style.display='block';
+   const fe=document.getElementById('fights');
+   fe.style.display='block';
+   fe.innerHTML=d.fights.map(x=>{
+    const dt=new Date(x.t*1000);
+    const when=String(dt.getDate()).padStart(2,'0')+'/'+
+     String(dt.getMonth()+1).padStart(2,'0')+' '+
+     String(dt.getHours()).padStart(2,'0')+':'+
+     String(dt.getMinutes()).padStart(2,'0');
+    const badge=x.res==='gagne'
+     ?'<span style="background:rgba(46,204,113,.18);color:#8df0bb;'+
+      'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
+      'font-weight:700">GAGN&Eacute;</span>'
+     :(x.res==='perdu'
+      ?'<span style="background:rgba(255,92,92,.16);color:#ff9c9c;'+
+       'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
+       'font-weight:700">PERDU</span>'
+      :'<span style="background:rgba(255,255,255,.1);color:#9fb2c4;'+
+       'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
+       'font-weight:700">NUL</span>');
+    const after=x.book<=0.5
+     ?'<span style="color:#8df0bb">livre sold&eacute; &#10024;</span>'
+     :'reste '+x.book.toFixed(2)+'&nbsp;$ &agrave; rattraper';
+    return '<div class="row"><span style="display:flex;'+
+     'flex-direction:column;gap:3px"><span>'+badge+
+     ' <span style="color:#6f93b5;font-size:.82rem">'+
+     x.lot.toFixed(2)+' lot &middot; '+when+'</span></span>'+
+     '<span style="font-size:.75rem;color:#5f7185">'+after+
+     '</span></span><b class="'+(x.pnl>=0?'pos':'neg')+'">'+
+     (x.pnl>=0?'+':'-')+Math.abs(x.pnl).toFixed(2)+' $</b></div>';
+   }).join('');
+  }
   if(d.trades&&d.trades.length){
    document.getElementById('hist').innerHTML=d.trades.map(x=>
     '<div class="row"><span class="rowt">'+x.w+'</span><b class="'+
@@ -1102,6 +1138,11 @@ def user_stats(u):
             # to every user - copiers mirror the same trades
             d["ledger"] = json.load(open(os.path.join(
                 DIR, "owl_ledger.json")))
+        except Exception:
+            pass
+        try:
+            d["fights"] = json.load(open(os.path.join(
+                DIR, "owl_fight_history.json")))[-12:][::-1]
         except Exception:
             pass
         if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
