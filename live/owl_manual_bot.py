@@ -2186,7 +2186,7 @@ def main():
                             L["locked"] = True
                             _spr = abs(tick.ask - tick.bid)
                             L["cur_sl"] = (L["entry"] + L["dir"]
-                                           * min(_spr + BUFFER
+                                           * min(_spr + BUFFER_USD
                                                  / L["lot"],
                                                  0.5 * _fav))
                         _slv = L.get("cur_sl", L["sl"])
