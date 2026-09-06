@@ -93,3 +93,4 @@ charting/*compile.log
 
 # generated family bots embed account passwords - never commit
 live/owl_fam_*
+live/owl_std_bot_gen.py

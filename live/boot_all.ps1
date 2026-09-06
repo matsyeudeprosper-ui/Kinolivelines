@@ -27,6 +27,14 @@ if (-not (ProcRunning "owl_manual_bot.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+# 2b) STANDARD-account Owl instance (one codebase, regenerated at
+#     launch from owl_manual_bot.py by owl_run_std.py)
+if (-not (ProcRunning "owl_run_std.py")) {
+    Say "starting STD Owl (134499778)"
+    Start-Process pythonw -ArgumentList "owl_run_std.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 3) OwlNest app server
 if (-not (ProcRunning "owl_app_server.py")) {
     Say "starting OwlNest"
