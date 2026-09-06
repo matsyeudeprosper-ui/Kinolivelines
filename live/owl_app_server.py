@@ -185,8 +185,20 @@ PAGE = """<!doctype html><html lang="fr"><head>
 <title>OwlNest</title>
 <style>
 *{box-sizing:border-box;margin:0}
-body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
+body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
+.tab{display:none}
+.tab.on{display:block}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;
+ display:flex;max-width:480px;margin:0 auto;
+ background:rgba(15,22,32,.94);backdrop-filter:blur(12px);
+ border-top:1px solid #1e2937;border-radius:18px 18px 0 0;
+ padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+.tb{flex:1;background:none;border:0;color:#5f7185;font-size:.68rem;
+ font-weight:600;display:flex;flex-direction:column;
+ align-items:center;gap:3px;padding:6px 0;border-radius:12px}
+.tb span{font-size:1.3rem;line-height:1}
+.tb.on{color:#8fc6ff}
 .hero{background:linear-gradient(165deg,#0f2740 0%,#14406b 100%);
  color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -297,6 +309,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 </div>
 </div>
 <div class="wrap">
+<div class="tab on" id="tab-home">
 <div class="status" id="st" style="margin-top:26px">Connexion...</div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:#251d07;border:1px solid #4a3c12;border-radius:14px;
@@ -371,7 +384,11 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="sec">Progression &middot; 7 jours</div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
  style="width:100%;height:70px"></svg></div>
-<div class="panel" id="days" style="margin-top:10px;display:none"></div>
+</div>
+<div class="tab" id="tab-hist">
+<div class="sec" style="margin-top:26px">Jour par jour &middot;
+ touchez un jour</div>
+<div class="panel" id="days" style="display:none"></div>
 <div class="sec" id="cal-sec" style="display:none">Calendrier du mois
 </div>
 <div class="panel" id="cal" style="display:none"></div>
@@ -383,6 +400,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <span class="skel" style="width:22%">&nbsp;</span></div>
 <div class="row"><span class="skel" style="width:46%">&nbsp;</span>
 <span class="skel" style="width:16%">&nbsp;</span></div></div>
+</div>
+<div class="tab" id="tab-set">
+<div class="sec" style="margin-top:26px">R&eacute;glages</div>
 <button id="inst" onclick="inst()">Installer l&#8217;application</button>
 <div id="howto">&#128241; <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
@@ -406,6 +426,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 </div>
 <a class="exit" href="../">&#8618; Changer de compte &middot;
  cr&eacute;er un nouveau nid</a>
+</div>
+</div>
+<div class="tabbar">
+<button class="tb on" onclick="tab('home',this)"><span>&#127968;
+</span>Accueil</button>
+<button class="tb" onclick="tab('hist',this)"><span>&#128197;
+</span>Historique</button>
+<button class="tb" onclick="tab('set',this)"><span>&#9881;&#65039;
+</span>R&eacute;glages</button>
 </div>
 <div id="sheetbg"></div>
 <div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
@@ -524,6 +553,14 @@ window.addEventListener('load',()=>{
    'revenir : inscrivez-vous &agrave; nouveau.<br><br>'+
    '<a href="../" style="color:#2563eb">Accueil</a></div>';}};
 });
+function tab(n,el){
+ document.querySelectorAll('.tab').forEach(x=>
+  x.classList.toggle('on',x.id==='tab-'+n));
+ document.querySelectorAll('.tb').forEach(x=>
+  x.classList.toggle('on',x===el));
+ try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}
+ window.scrollTo({top:0});
+}
 window.openDay=null;
 function dayx(l){
  window.openDay=(window.openDay===l?null:l);
