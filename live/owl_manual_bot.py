@@ -1475,24 +1475,40 @@ def main():
                     _pnl2 = float(row.get("profit_usd") or 0.0)
                     _lk = st.setdefault("recov_links", {}).pop(tkey, None)
                     if _lk is not None and row.get("exit_reason") == "sl":
-                        # fighter stopped (loss or locked scratch):
-                        # chest spent, ladder steps, book grows
                         if _pnl2 < 0:
                             _led["debt"] = round(_led["debt"] - _pnl2, 2)
-                        _led["chest"] = 0.0
-                        _led["next_lot"] = min(
-                            CHEST_LADDER_CAP,
-                            round(float(_lk.get("lot", 0.02))
-                                  + RECOV_STEP, 2))
-                        say(f"FIGHTER out at {_pnl2:+.2f} - chest spent, "
-                            f"book ${_led['debt']:.2f}, next soldier "
-                            f"{_led['next_lot']:.2f} waits for funding")
+                        if _pnl2 < -0.5:
+                            # REAL loss: chest spent, ladder steps
+                            _led["chest"] = 0.0
+                            _led["next_lot"] = min(
+                                CHEST_LADDER_CAP,
+                                round(float(_lk.get("lot", 0.02))
+                                      + RECOV_STEP, 2))
+                            say(f"FIGHTER lost {_pnl2:+.2f} - chest "
+                                f"spent, book ${_led['debt']:.2f}, next "
+                                f"soldier {_led['next_lot']:.2f} waits "
+                                f"for funding")
+                        else:
+                            # breakeven exit (user 09-06): no ladder
+                            # step, savings untouched
+                            say(f"FIGHTER breakeven ({_pnl2:+.2f}) - "
+                                f"ladder and savings untouched, book "
+                                f"${_led['debt']:.2f}")
                     elif _lk is not None and _pnl2 > 0:
-                        say(f"FIGHTER WON {_pnl2:+.2f} - DEBT BOOK "
-                            f"CLEARED (was ${_led['debt']:.2f})")
-                        _led["debt"] = 0.0
+                        # user 09-06: a win pays only what it won -
+                        # recovery continues until the book is empty
+                        _led["debt"] = round(max(0.0, _led["debt"]
+                                                 - _pnl2), 2)
                         _led["chest"] = 0.0
                         _led["next_lot"] = 0.02
+                        if _led["debt"] <= 0.5:
+                            _led["debt"] = 0.0
+                            say(f"FIGHTER WON {_pnl2:+.2f} - DEBT BOOK "
+                                f"EMPTY, recovery over")
+                        else:
+                            say(f"FIGHTER WON {_pnl2:+.2f} - book down "
+                                f"to ${_led['debt']:.2f}, collecting "
+                                f"for the next ticket")
                     elif _pnl2 < 0:
                         _led["debt"] = round(_led["debt"] - _pnl2, 2)
                         say(f"DEBT BOOK +{-_pnl2:.2f} -> "
