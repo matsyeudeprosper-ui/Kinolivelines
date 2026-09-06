@@ -71,11 +71,17 @@ def compute():
     week_ago = utcnow - timedelta(days=7)
     horizon = utcnow + timedelta(minutes=5)
     month_start = midnight.replace(day=1)
-    pnl = lambda ds: sum(d.profit + d.commission + d.swap for d in ds)
-    today = pnl(out_deals(midnight, horizon))
-    week = pnl(out_deals(monday, horizon))
-    month = pnl(out_deals(month_start, horizon))
-    d7 = sorted(out_deals(week_ago, horizon), key=lambda d: d.time)
+    val = lambda d: d.profit + d.commission + d.swap
+    base_from = min(month_start, monday, week_ago)
+    alldeals = sorted(out_deals(base_from, horizon),
+                      key=lambda d: d.time)
+    _since = lambda t0: [d for d in alldeals
+                         if d.time >= t0.timestamp()]
+    today = sum(val(d) for d in _since(midnight))
+    week = sum(val(d) for d in _since(monday))
+    mdeals = _since(month_start)
+    month = sum(val(d) for d in mdeals)
+    d7 = _since(week_ago)
     cum = peak = dd = 0.0
     curve = []
     for d in d7:
@@ -120,6 +126,24 @@ def compute():
     days = [{"d": f"{_wd[v[0].weekday()]} {v[0].strftime('%d/%m')}",
              "p": round(v[1], 2)}
             for _k, v in sorted(_dm.items(), reverse=True)]
+    # per-day trade lists (last 7 days) keyed by the strip label, so
+    # the app can expand a day on tap
+    _dtr = {}
+    for d in d7:
+        _dt = datetime.fromtimestamp(d.time, tz=timezone.utc)
+        _lbl = f"{_wd[_dt.weekday()]} {_dt.strftime('%d/%m')}"
+        _dtr.setdefault(_lbl, []).append(
+            {"t": _dt.strftime("%H:%M"), "p": round(val(d), 2)})
+    for _k in _dtr:
+        _dtr[_k] = _dtr[_k][-15:]
+    # whole-month day P&L for the calendar heat-map
+    _mm = {}
+    for d in mdeals:
+        _k = (datetime.fromtimestamp(d.time, tz=timezone.utc)
+              .strftime("%Y-%m-%d"))
+        _mm[_k] = _mm.get(_k, 0.0) + val(d)
+    month_days = [{"d": k, "p": round(v, 2)}
+                  for k, v in sorted(_mm.items())]
     return {
         "name": u.get("name", uid),
         "eurusd": eur,
@@ -133,6 +157,8 @@ def compute():
         "open_list": open_list,
         "trades": trades,
         "days": days,
+        "day_trades": _dtr,
+        "month_days": month_days,
         "curve": curve[-120:],
         "updated_utc": utcnow.isoformat(timespec="seconds"),
     }

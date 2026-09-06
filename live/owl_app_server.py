@@ -372,6 +372,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
  style="width:100%;height:70px"></svg></div>
 <div class="panel" id="days" style="margin-top:10px;display:none"></div>
+<div class="sec" id="cal-sec" style="display:none">Calendrier du mois
+</div>
+<div class="panel" id="cal" style="display:none"></div>
 <div class="sec">Derniers trades</div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
@@ -521,6 +524,11 @@ window.addEventListener('load',()=>{
    'revenir : inscrivez-vous &agrave; nouveau.<br><br>'+
    '<a href="../" style="color:#2563eb">Accueil</a></div>';}};
 });
+window.openDay=null;
+function dayx(l){
+ window.openDay=(window.openDay===l?null:l);
+ load();
+}
 function ago(){
  if(!lastOk){return}
  const s=Math.max(0,Math.round((Date.now()-lastOk)/1000));
@@ -696,10 +704,56 @@ async function load(){
   }
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
-   de.innerHTML=d.days.map(x=>
-    '<div class="row"><span class="rowt">'+x.d+'</span><b class="'+
-    (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
-    '&nbsp;$</b></div>').join('');
+   window._dtr=d.day_trades||{};
+   de.innerHTML=d.days.map(x=>{
+    const tr=window._dtr[x.d]||[];
+    const open=window.openDay===x.d&&tr.length;
+    return '<div class="row" style="cursor:pointer" data-l="'+x.d+
+    '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
+    (tr.length?(open?'&#9662; ':'&#9656; '):'&nbsp;&nbsp;')+x.d+
+    '</span><b class="'+(x.p>=0?'pos':'neg')+'">'+
+    (x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+'&nbsp;$</b></div>'+
+    (open?'<div style="padding:0 0 6px 18px;border-bottom:1px solid '+
+    '#1e2937">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
+    'padding:6px 4px;border-bottom:0"><span class="rowt">'+t.t+
+    '</span><span class="'+(t.p>=0?'pos':'neg')+'">'+
+    (t.p>=0?'+':'-')+Math.abs(t.p).toFixed(2)+'&nbsp;$</span></div>')
+    .join('')+'</div>':'');
+   }).join('');
+  }
+  if(d.month_days&&d.month_days.length){
+   const md={};d.month_days.forEach(x=>md[x.d]=x.p);
+   const now=new Date();
+   const y=now.getUTCFullYear(),m=now.getUTCMonth();
+   const nd=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+   const off=(new Date(Date.UTC(y,m,1)).getUTCDay()+6)%7;
+   let h='<div style="display:grid;'+
+    'grid-template-columns:repeat(7,1fr);gap:6px">';
+   ['L','M','M','J','V','S','D'].forEach(w=>h+=
+    '<div style="text-align:center;font-size:.62rem;'+
+    'color:#5f7185">'+w+'</div>');
+   for(let i=0;i<off;i++)h+='<div></div>';
+   for(let dd2=1;dd2<=nd;dd2++){
+    const k=y+'-'+String(m+1).padStart(2,'0')+'-'+
+     String(dd2).padStart(2,'0');
+    const p=md[k];let bg='#141c28',fg='#4c5c6f';
+    if(p!==undefined){
+     if(p>0.005){bg='rgba(46,204,113,'+
+      Math.min(.85,.28+p/4).toFixed(2)+')';fg='#eafff3';}
+     else if(p<-0.005){bg='rgba(255,92,92,'+
+      Math.min(.85,.28-p/4).toFixed(2)+')';fg='#ffecec';}
+     else{bg='#22303f';fg='#9fb2c4';}
+    }
+    h+='<div style="aspect-ratio:1;border-radius:9px;background:'+bg+
+     ';display:flex;align-items:center;justify-content:center;'+
+     'font-size:.7rem;font-weight:600;color:'+fg+'" title="'+
+     (p===undefined?'':((p>=0?'+':'-')+Math.abs(p).toFixed(2)+' $'))+
+     '">'+dd2+'</div>';
+   }
+   h+='</div>';
+   document.getElementById('cal-sec').style.display='block';
+   const ce=document.getElementById('cal');
+   ce.style.display='block';ce.innerHTML=h;
   }
   if(d.trades&&d.trades.length){
    document.getElementById('hist').innerHTML=d.trades.map(x=>
