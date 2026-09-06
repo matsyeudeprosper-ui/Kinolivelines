@@ -175,7 +175,37 @@ MANIFEST = json.dumps({
     ],
 })
 
-SW = "self.addEventListener('fetch',()=>{});"
+SW = (
+    "self.addEventListener('fetch',()=>{});"
+    "self.addEventListener('push',e=>{let d={};"
+    "try{d=e.data.json()}catch(x){}"
+    "e.waitUntil(self.registration.showNotification("
+    "d.title||'OwlNest',{body:d.body||'',icon:'icon192.png',"
+    "badge:'icon192.png',tag:d.tag||'owl'}));});"
+    "self.addEventListener('notificationclick',e=>{"
+    "e.notification.close();"
+    "e.waitUntil(clients.matchAll({type:'window',"
+    "includeUncontrolled:true}).then(cs=>{"
+    "for(const c of cs){if('focus' in c)return c.focus();}"
+    "return clients.openWindow('.');}));});")
+
+VAPID_FILE = os.path.join(DIR, "owl_push_vapid.json")
+PUSH_SUBS_FILE = os.path.join(DIR, "owl_push_subs.json")
+try:
+    _VAPID = json.load(open(VAPID_FILE))
+except Exception:
+    _VAPID = None
+
+
+def _load_subs():
+    try:
+        return json.load(open(PUSH_SUBS_FILE))
+    except Exception:
+        return {}
+
+
+def _save_subs(s):
+    json.dump(s, open(PUSH_SUBS_FILE, "w"))
 
 PAGE = """<!doctype html><html lang="fr"><head>
 <meta charset="utf-8">
@@ -403,6 +433,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">R&eacute;glages</div>
+<button id="notifbtn" style="width:100%;margin-top:4px;
+ background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
+ border-radius:14px;padding:15px;font-size:1rem;font-weight:700;
+ display:none">&#128276; Activer les notifications</button>
 <button id="inst" onclick="inst()">Installer l&#8217;application</button>
 <div id="howto">&#128241; <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
@@ -553,6 +587,49 @@ window.addEventListener('load',()=>{
    'revenir : inscrivez-vous &agrave; nouveau.<br><br>'+
    '<a href="../" style="color:#2563eb">Accueil</a></div>';}};
 });
+async function notifSetup(){
+ const nb=document.getElementById('notifbtn');
+ if(!nb||!('serviceWorker' in navigator)||!('PushManager' in window)
+    ||!window.Notification){return;}
+ const reg=await navigator.serviceWorker.ready.catch(()=>null);
+ if(!reg||!reg.pushManager){return;}
+ nb.style.display='block';
+ const cur=await reg.pushManager.getSubscription().catch(()=>null);
+ nb.dataset.on=cur?'1':'0';
+ nb.innerHTML=cur?'&#128277; D&eacute;sactiver les notifications'
+  :'&#128276; Activer les notifications';
+ nb.onclick=async()=>{
+  if(nb.dataset.on==='1'){
+   const s=await reg.pushManager.getSubscription().catch(()=>null);
+   if(s){await fetch(B+'push_unsub',{method:'POST',
+    body:JSON.stringify(s)}).catch(()=>null);
+    await s.unsubscribe().catch(()=>null);}
+   notifSetup();return;
+  }
+  const perm=await Notification.requestPermission();
+  if(perm!=='granted'){await info('<h3>Le t&eacute;l&eacute;phone a '+
+   'refus&eacute; les notifications.</h3><p>Autorisez-les dans les '+
+   'r&eacute;glages du navigateur.</p>');return;}
+  const kr=await fetch(B+'push_key').then(r=>r.json())
+   .catch(()=>null);
+  if(!kr||!kr.key){await info('<h3>Service indisponible.</h3>');
+   return;}
+  const conv=(s)=>{const p='='.repeat((4-s.length%4)%4);
+   const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));
+   return Uint8Array.from([...b].map(c=>c.charCodeAt(0)));};
+  const s=await reg.pushManager.subscribe({userVisibleOnly:true,
+   applicationServerKey:conv(kr.key)}).catch(()=>null);
+  if(!s){await info('<h3>Abonnement impossible sur cet '+
+   'appareil.</h3>');return;}
+  await fetch(B+'push_sub',{method:'POST',body:JSON.stringify(s)})
+   .catch(()=>null);
+  await info('&#128276; <h3>Notifications activ&eacute;es !</h3>'+
+   '<p>Vous recevrez les gains, les orages et les victoires des '+
+   'soldats &mdash; m&ecirc;me app ferm&eacute;e.</p>');
+  notifSetup();
+ };
+}
+window.addEventListener('load',notifSetup);
 function tab(n,el){
  document.querySelectorAll('.tab').forEach(x=>
   x.classList.toggle('on',x.id==='tab-'+n));
@@ -1384,6 +1461,29 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] in ("push_sub", "push_unsub"):
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                sub = json.loads(self.rfile.read(ln)
+                                 .decode("utf-8", "replace"))
+                ep = (sub or {}).get("endpoint")
+                subs = _load_subs()
+                lst = [s for s in subs.get(u["id"], [])
+                       if s.get("endpoint") != ep]
+                if _parts[1] == "push_sub" and ep:
+                    lst.append(sub)
+                subs[u["id"]] = lst
+                _save_subs(subs)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "activate":
             # family member enters the one-time code from Kino
             u = user_by_token(_parts[0])
@@ -1597,6 +1697,10 @@ class H(BaseHTTPRequestHandler):
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
             self._send(json.dumps(user_stats(user)), "application/json")
+        elif sub == "push_key":
+            self._send(json.dumps(
+                {"key": (_VAPID or {}).get("public_key")}),
+                "application/json")
         elif sub == "manifest.json":
             self._send(MANIFEST, "application/manifest+json")
         elif sub == "sw.js":
