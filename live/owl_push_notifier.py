@@ -33,14 +33,21 @@ if not os.path.exists(VAPID_PEM):
     open(VAPID_PEM, "w").write(pem)
 
 
-def send_all(title, body):
+def send_all(title, body, kind="instant"):
     try:
         subs = json.load(open(SUBS))
     except Exception:
         return
+    try:
+        prefs = json.load(open(os.path.join(DIR,
+                                            "owl_push_prefs.json")))
+    except Exception:
+        prefs = {}
     changed = False
     total = 0
     for uid, lst in list(subs.items()):
+        if kind == "batch" and prefs.get(uid) == "important":
+            continue    # this user only wants the big events
         keep = []
         for s in lst:
             try:
@@ -117,7 +124,7 @@ def main():
                 body = (f"{n} trade{'s' if n > 1 else ''} "
                         f"({wins} gagn\u00e9{'s' if wins > 1 else ''}) "
                         f"sur les 10 derni\u00e8res minutes.")
-                send_all(title, body)
+                send_all(title, body, kind="batch")
                 batch, batch_t0 = [], None
             time.sleep(2)
             continue

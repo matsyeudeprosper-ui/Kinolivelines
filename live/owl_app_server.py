@@ -200,6 +200,9 @@ except Exception:
     _VAPID = None
 
 
+PUSH_PREFS_FILE = os.path.join(DIR, "owl_push_prefs.json")
+
+
 def _load_subs():
     try:
         return json.load(open(PUSH_SUBS_FILE))
@@ -446,6 +449,21 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700;
  display:none">&#128276; Activer les notifications</button>
+<div id="nprefs" style="display:none;margin-top:10px;
+ background:#151d29;border:1px solid #263341;border-radius:14px;
+ padding:12px">
+ <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
+  Que recevoir sur le t&eacute;l&eacute;phone ?</div>
+ <div style="display:flex;gap:8px">
+  <button class="npc" data-l="all" style="flex:1;border:1px solid
+   #2a5a80;background:#1d3350;color:#cfe3f5;border-radius:10px;
+   padding:10px;font-size:.84rem;font-weight:700">Tout</button>
+  <button class="npc" data-l="important" style="flex:1;border:1px
+   solid #263341;background:#0f1620;color:#8fa1b3;border-radius:10px;
+   padding:10px;font-size:.84rem;font-weight:700">Important
+   seulement</button>
+ </div>
+</div>
 <button id="inst" onclick="inst()">Installer l&#8217;application</button>
 <div id="howto">&#128241; <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
@@ -607,6 +625,18 @@ async function notifSetup(){
  nb.dataset.on=cur?'1':'0';
  nb.innerHTML=cur?'&#128277; D&eacute;sactiver les notifications'
   :'&#128276; Activer les notifications';
+ document.getElementById('nprefs').style.display=cur?'block':'none';
+ document.querySelectorAll('.npc').forEach(b=>{b.onclick=async()=>{
+  await fetch(B+'push_pref',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'level='+b.dataset.l}).catch(()=>null);
+  window._plvl=b.dataset.l;npcPaint();};});
+ function npcPaint(){document.querySelectorAll('.npc').forEach(b=>{
+  const on=b.dataset.l===(window._plvl||'all');
+  b.style.background=on?'#1d3350':'#0f1620';
+  b.style.borderColor=on?'#2a5a80':'#263341';
+  b.style.color=on?'#cfe3f5':'#8fa1b3';});}
+ window.npcPaint=npcPaint;npcPaint();
  nb.onclick=async()=>{
   if(nb.dataset.on==='1'){
    const s=await reg.pushManager.getSubscription().catch(()=>null);
@@ -775,6 +805,10 @@ async function load(){
     if(k<1)requestAnimationFrame(stepA);})(t0);
   }
   eqEl.dataset.v=d.equity;
+  if(d.push_level&&window._plvl===undefined){
+   window._plvl=d.push_level;
+   if(window.npcPaint)window.npcPaint();
+  }
   if(d.eurusd){document.getElementById('eqe').innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   document.getElementById('bank').innerHTML=
@@ -1145,6 +1179,11 @@ def user_stats(u):
                 DIR, "owl_fight_history.json")))[-12:][::-1]
         except Exception:
             pass
+        try:
+            d["push_level"] = json.load(open(PUSH_PREFS_FILE)).get(
+                u["id"], "all")
+        except Exception:
+            d["push_level"] = "all"
         if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
             d["is_master"] = True
         elif not u.get("trade"):
@@ -1578,6 +1617,31 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] == "push_pref":
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up2
+                lvl = _up2.parse_qs(
+                    self.rfile.read(ln).decode("utf-8", "replace")
+                ).get("level", ["all"])[0]
+                if lvl not in ("all", "important"):
+                    lvl = "all"
+                try:
+                    prefs = json.load(open(PUSH_PREFS_FILE))
+                except Exception:
+                    prefs = {}
+                prefs[u["id"]] = lvl
+                json.dump(prefs, open(PUSH_PREFS_FILE, "w"))
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] in ("push_sub", "push_unsub"):
             u = user_by_token(_parts[0])
             if u is None:
