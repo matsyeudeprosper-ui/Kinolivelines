@@ -1321,6 +1321,18 @@ def main():
                 save_state(st)
                 say(f"EXIT logged: ticket {tkey} {row.get('exit_reason')} "
                     f"profit {row.get('profit_usd')} dur {row.get('duration_min')}min")
+                # CLEAN-CHART RESET (user 2026-09-06, backtested best:
+                # -103.63 vs -113.62): every position close wipes the
+                # WHOLE structure tracker - legs, candidates, pendings,
+                # retest memory - fresh tracking as on a clean chart.
+                # Touches ONLY st["kino"]; fighters/doors/flip-waits
+                # (recov_watches, recov_links, frozen_chains) are
+                # separate state and continue untouched - a waiting
+                # flip simply gets its signal from the freshly built
+                # structure, exactly as in the winning replay.
+                st["kino"] = {"up": {}, "dn": {}}
+                save_state(st)
+                say("KINO tracker reset - clean chart")
                 # --- WEATHER v2 storm detector ---
                 if RECOV_ENTRY:
                     _wx = st.setdefault("wx", {"ls": 0, "forced": False})
