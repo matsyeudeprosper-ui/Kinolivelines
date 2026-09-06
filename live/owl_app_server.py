@@ -809,14 +809,39 @@ async function load(){
   const bs=document.getElementById('battles-sec');
   if(d.open_list&&d.open_list.length){
    bs.style.display='block';
-   document.getElementById('battles').innerHTML=d.open_list.map(x=>
-    '<div class="row" style="border-bottom-color:#1d3350">'+
+   document.getElementById('battles').innerHTML=d.open_list.map(x=>{
+    let bar='';
+    if(x.e&&x.sl&&x.tp&&x.cur){
+     const P=(v)=>x.d=='A'
+      ?(v-x.sl)/((x.tp-x.sl)||1)*100
+      :(x.sl-v)/((x.sl-x.tp)||1)*100;
+     const cp=Math.max(2,Math.min(98,P(x.cur))),
+      ep=Math.max(2,Math.min(98,P(x.e)));
+     const col=x.pl>=0?'#2ecc71':'#ff5c5c';
+     bar='<div style="position:relative;height:6px;border-radius:99px;'+
+      'background:linear-gradient(90deg,rgba(255,92,92,.4),'+
+      'rgba(255,255,255,.08) 50%,rgba(46,204,113,.4));'+
+      'margin:2px 4px 12px">'+
+      '<div style="position:absolute;top:-2px;left:calc('+
+      ep.toFixed(1)+'% - 1px);width:2px;height:10px;'+
+      'background:#8fa1b3"></div>'+
+      '<div style="position:absolute;top:-3px;left:calc('+
+      cp.toFixed(1)+'% - 6px);width:12px;height:12px;'+
+      'border-radius:50%;background:'+col+';box-shadow:0 0 8px '+col+
+      '"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;'+
+      'margin:-8px 4px 8px;font-size:.6rem;color:#5f7185">'+
+      '<span>mur</span><span>cible</span></div>';
+    }
+    return '<div class="row" style="border-bottom-color:#1d3350;'+
+    'border-bottom:0">'+
     '<span style="display:flex;align-items:center;gap:8px">'+
     (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
     ' <span style="color:#6f93b5;font-size:.85rem">'+x.lot.toFixed(2)+
     ' lot</span></span><b style="font-size:1.12rem" class="'+
     (x.pl>=0?'pos':'neg')+'">'+
-    (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>').join('');
+    (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>'+bar;
+   }).join('');
   }else{bs.style.display='none'}
   const t=document.getElementById('today');
   t.innerHTML=(d.today>=0?'&#9650; ':'&#9660; ')+f(d.today);

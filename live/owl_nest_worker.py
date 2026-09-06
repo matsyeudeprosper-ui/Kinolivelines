@@ -107,7 +107,9 @@ def compute():
         _shown = list(open_pos)
     open_list = [{"d": ("A" if p.type == mt5.POSITION_TYPE_BUY else "V"),
                   "lot": p.volume,
-                  "pl": round(p.profit + p.swap, 2)} for p in _shown]
+                  "pl": round(p.profit + p.swap, 2),
+                  "e": p.price_open, "sl": p.sl, "tp": p.tp,
+                  "cur": p.price_current} for p in _shown]
     te = mt5.symbol_info_tick("EURUSDm")
     eur = round(te.bid, 5) if te and te.bid > 0 else None
     trades = [{"w": datetime.fromtimestamp(d.time, tz=timezone.utc)
