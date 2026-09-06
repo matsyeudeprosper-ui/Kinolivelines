@@ -961,14 +961,12 @@ function render(d){
    'Solde des trades termin&eacute;s : '+d.balance.toFixed(2)+' $';
   if(d.acct){
    document.getElementById('acctline').innerHTML=
-    'Compte <b style="color:#9fc2de">'+d.acct+'</b>'+
-    (d.srv?' &middot; '+String(d.srv).replace('Exness-MT5','Exness '):'')+
-    ' &middot; <span style="background:'+
-    (d.real?'rgba(46,204,113,.15)':'rgba(230,160,40,.15)')+
+    '<span style="background:'+
+    (d.real?'rgba(46,204,113,.13)':'rgba(230,160,40,.13)')+
     ';color:'+(d.real?'#8df0bb':'#ffd27a')+
-    ';padding:2px 9px;border-radius:99px;font-weight:700;'+
-    'font-size:.64rem;letter-spacing:.06em">'+
-    (d.real?'R&Eacute;EL':'D&Eacute;MO')+'</span>';
+    ';padding:3px 10px;border-radius:99px;font-weight:700;'+
+    'font-size:.64rem;letter-spacing:.05em">'+
+    (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct+'</span>';
   }
   if(d.palier&&d.equity){
    const pc=Math.max(0,Math.min(100,d.equity/d.palier*100));
