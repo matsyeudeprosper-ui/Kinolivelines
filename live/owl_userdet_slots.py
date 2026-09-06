@@ -20,7 +20,7 @@ STATE = os.path.join(DIR, "owl_userdet_slots.json")
 SYMBOL = "BTCUSDm"
 TERM = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
 MIN_WALL, PAGE_MAXR, PAGE_TGT = 60.0, 2.50, 1.50
-TPF, LOT, BUFFER_USD = 0.5, 0.01, 0.10
+TPF, LOT, BUFFER_USD = 0.25, 0.01, 0.10
 
 
 def say(m):
