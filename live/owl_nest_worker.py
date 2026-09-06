@@ -137,7 +137,7 @@ def compute():
                 "xp": round(d.price, 2),
                 "dur": (round((d.time - _in.time) / 60)
                         if _in is not None else None)}
-    trades = [_trow(d) for d in d7[-10:]][::-1]
+    trades = [_trow(d) for d in d7[-30:]][::-1]
     d30 = _since(d30_start)
     _c30 = 0.0
     curve30 = []

@@ -179,7 +179,12 @@ SW = (
     "self.addEventListener('install',e=>self.skipWaiting());"
     "self.addEventListener('activate',e=>e.waitUntil("
     "clients.claim()));"
-    "self.addEventListener('fetch',()=>{});"
+    "self.addEventListener('fetch',e=>{"
+    "if(e.request.mode==='navigate'){"
+    "e.respondWith(fetch(e.request).then(r=>{"
+    "const cp=r.clone();"
+    "caches.open('owl1').then(c=>c.put(e.request,cp));"
+    "return r;}).catch(()=>caches.match(e.request)));}});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
     "e.waitUntil(self.registration.showNotification("
@@ -500,6 +505,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" style="margin-top:26px">Le Nid &middot; tous les
  comptes</div>
 <div class="panel" id="nest">...</div>
+<button id="invbtn" style="width:100%;margin-top:14px;
+ background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
+ border-radius:14px;padding:15px;font-size:1rem;font-weight:700">
+ &#127915; Code d&#39;invitation (compte r&eacute;el)</button>
 </div>
 </div>
 <div class="tabbar">
@@ -772,6 +781,29 @@ function tradeSheet(i){
   L('Quand',x.w)+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
+window.addEventListener('load',()=>{
+ const ib=document.getElementById('invbtn');
+ if(ib)ib.onclick=async()=>{
+  const pw=await askPwd('Code d&#39;invitation (compte r&eacute;el)',
+   'Pour un membre de la famille qui veut connecter son VRAI compte. '+
+   'Usage unique.','&#127915; G&eacute;n&eacute;rer',false);
+  if(!pw)return;
+  const r=await fetch(B+'nest_invite',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
+  try{const j=await r.json();
+   if(j.ok){await sheet('<h3>Code d&#39;invitation</h3>'+
+    '<div style="font-size:2rem;font-weight:800;letter-spacing:.3em;'+
+    'text-align:center;background:#0b1420;border-radius:14px;'+
+    'padding:18px 6px;margin:6px 0 10px;color:#7fb0ff">'+j.code+
+    '</div><p>Usage unique &middot; &agrave; entrer &agrave; '+
+    'l&#39;inscription avec un compte r&eacute;el</p>'+
+    '<button class="shbtn shmain" onclick="navigator.clipboard&&'+
+    'navigator.clipboard.writeText(\\''+j.code+'\\');_shDone(1)">'+
+    '&#128203; Copier et fermer</button>');}
+   else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
+  catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
+});
 async function nestPause(uid,on){
  const pw=await askPwd(
   on=='1'?'Mettre ce membre en pause ?':'Reprendre ce membre ?',
@@ -794,10 +826,7 @@ function ago(){
  const s=Math.max(0,Math.round((Date.now()-lastOk)/1000));
  document.getElementById('upd').innerHTML='Mis &agrave; jour il y a '+s+' s';
 }
-async function load(){
- try{
-  const r=await fetch(B+'api?t='+Date.now(),{cache:'no-store'});
-  const d=await r.json();
+function render(d){
   if(d.expired){document.getElementById('st').innerHTML=
    '&#9203; <b>Essai termin&eacute;.</b> Contactez Kino pour passer au '+
    'Premium et continuer.';return}
@@ -1120,18 +1149,39 @@ async function load(){
   }
   if(d.trades&&d.trades.length){
    window._tr=d.trades;
-   document.getElementById('hist').innerHTML=d.trades.map((x,i)=>
+   const N=window._trN||10;
+   document.getElementById('hist').innerHTML=
+    d.trades.slice(0,N).map((x,i)=>
     '<div class="row" style="cursor:pointer" data-i="'+i+
     '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
     (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; ':'')+x.k:'')+
     (x.dur!=null?' &middot; '+x.dur+' min':'')+
     '</span><b class="'+
     (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
-    ' $</b></div>').join('');
+    ' $</b></div>').join('')+
+    (d.trades.length>N
+    ?'<div class="row" style="cursor:pointer;justify-content:center;'+
+     'color:#7fb0ff;font-size:.9rem" onclick="window._trN=99;load()">'+
+     'Voir plus ('+d.trades.length+')</div>':'');
   }
+}
+async function load(){
+ try{
+  const r=await fetch(B+'api?t='+Date.now(),{cache:'no-store'});
+  const d=await r.json();
+  render(d);
+  try{localStorage.setItem('owlLast',JSON.stringify(d))}catch(e){}
   lastOk=Date.now();ago();
- }catch(e){document.getElementById('upd').textContent=
-  'hors ligne - nouvel essai...'}
+ }catch(e){
+  document.getElementById('upd').textContent=
+   'hors ligne - nouvel essai...';
+  if(!window._offR){window._offR=1;
+   try{const c=JSON.parse(localStorage.getItem('owlLast')||'null');
+    if(c){render(c);
+     document.getElementById('st').innerHTML='&#128244; '+
+      '<b>Hors ligne</b> &mdash; derni&egrave;res donn&eacute;es '+
+      'connues';}}catch(e2){}}
+ }
 }
 load();
 let pollT=setInterval(load,5000);
@@ -1759,6 +1809,41 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] == "nest_invite":
+            # master creates a real-account invite code (pwd gated)
+            u = user_by_token(_parts[0])
+            if u is None or str(u.get("login")) != str(LOGIN):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up4
+                _pw = (_up4.parse_qs(self.rfile.read(ln)
+                                     .decode("utf-8", "replace"))
+                       .get("pwd", [""])[0] or "").strip()
+                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                import secrets as _sec4
+                _alph = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+                _code = "".join(_sec4.choice(_alph) for _ in range(6))
+                _ipath = os.path.join(DIR, "owl_invites.json")
+                try:
+                    _iv = json.load(open(_ipath, encoding="utf-8"))
+                except Exception:
+                    _iv = {"codes": {}}
+                _iv.setdefault("codes", {})[_code] = {
+                    "used": False, "t": time.time(), "by": "app"}
+                json.dump(_iv, open(_ipath, "w", encoding="utf-8"))
+                self._send(json.dumps({"ok": True, "code": _code}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_pause":
             # master pauses/resumes any member (master pwd gated)
             u = user_by_token(_parts[0])
