@@ -25,7 +25,10 @@ import MetaTrader5 as mt5
 
 DIR = r"C:\Projects\KinoliveLines\live"
 TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
-LOGIN = 134499778
+LOGIN = 223985697          # 2026-09-07: the Pro master account
+                           # (was 134499778 - stale after the account
+                           # move; master gates were keying on the
+                           # wrong login)
 PORT = 8787
 TOKEN_FILE = os.path.join(DIR, "owl_app_token.txt")
 
@@ -529,13 +532,6 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">R&eacute;glages</div>
-<div id="acctsw" style="display:none;margin-bottom:14px;
- background:#151d29;border:1px solid #263341;border-radius:14px;
- padding:12px">
- <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
-  Mes comptes (admin)</div>
- <div id="acctsw-b" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-</div>
 <button id="notifbtn" style="width:100%;margin-top:4px;
  background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700;
@@ -591,6 +587,13 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="tab" id="tab-nid">
 <div class="sec" style="margin-top:26px">Le Nid &middot; tous les
  comptes</div>
+<div id="acctsw" style="display:none;margin-bottom:12px;
+ background:#151d29;border:1px solid #263341;border-radius:14px;
+ padding:12px">
+ <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
+  Changer de vue (admin)</div>
+ <div id="acctsw-b" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
 <div class="panel" id="nest">...</div>
 <button id="invbtn" style="width:100%;margin-top:14px;
  background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
