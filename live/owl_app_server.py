@@ -1281,26 +1281,46 @@ function render(d){
        'transition:transform .3s"></span>';
      }
      lt2.innerHTML=
-      '<div style="display:flex;gap:8px;justify-content:center;'+
-       'flex-wrap:wrap">'+
-       '<span style="background:rgba(255,92,92,.12);color:#ff9c9c;'+
-        'border:1px solid rgba(255,92,92,.3);border-radius:99px;'+
-        'padding:3px 10px;font-size:.78rem">&#128546; '+
-        d.ledger.debt.toFixed(2)+'&nbsp;$</span>'+
-       '<span style="background:rgba(232,197,90,.1);color:#e8c55a;'+
-        'border:1px solid rgba(232,197,90,.3);border-radius:99px;'+
-        'padding:3px 10px;font-size:.78rem">&#128299; '+
-        am.toFixed(2)+'&nbsp;$</span>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;'+
+       'gap:8px">'+
+       '<div style="background:rgba(255,92,92,.08);border:1px '+
+        'solid rgba(255,92,92,.22);border-radius:12px;'+
+        'padding:8px 10px;text-align:center">'+
+        '<div style="font-size:.62rem;color:#ff9c9c;'+
+         'text-transform:uppercase;letter-spacing:.08em">'+
+         '&Agrave; rattraper</div>'+
+        '<b style="color:#ffb3b3;font-size:1.05rem;'+
+         'font-variant-numeric:tabular-nums">'+
+         d.ledger.debt.toFixed(2)+'&nbsp;$</b></div>'+
+       '<div style="background:rgba(232,197,90,.07);border:1px '+
+        'solid rgba(232,197,90,.22);border-radius:12px;'+
+        'padding:8px 10px;text-align:center">'+
+        '<div style="font-size:.62rem;color:#e8c55a;'+
+         'text-transform:uppercase;letter-spacing:.08em">'+
+         'Gains de c&ocirc;t&eacute;</div>'+
+        '<b style="color:#f0d788;font-size:1.05rem;'+
+         'font-variant-numeric:tabular-nums">'+
+         am.toFixed(2)+'&nbsp;$</b></div>'+
       '</div>'+
-      '<div style="text-align:center;margin:10px 0 6px">'+
-       '<b style="color:#7fd4a0;font-size:2rem;'+
+      '<div style="text-align:center;margin:12px 0 4px">'+
+       '<div style="font-size:.62rem;color:#7fb3e0;'+
+        'text-transform:uppercase;letter-spacing:.08em">'+
+        'Vous pouvez trader jusqu&#39;&agrave;</div>'+
+       '<b style="color:#7fd4a0;font-size:2.1rem;'+
         'font-variant-numeric:tabular-nums">'+
         (ml>=0.01?ml.toFixed(2):'0.00')+'</b>'+
-       '<span style="color:#8fa1b3;font-size:.8rem"> lot max</span>'+
+       '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
       '</div>'+
-      '<div style="text-align:center">'+pills+
+      '<div style="text-align:center;margin-top:4px">'+pills+
        (nb>SL?'<span style="color:#e8c55a;font-size:.78rem"> '+
-        '&times;'+nb+'</span>':'')+'</div>';
+        '&times;'+nb+'</span>':'')+'</div>'+
+      '<div style="text-align:center;font-size:.68rem;'+
+       'color:#5f7185;margin-top:4px">'+
+       (nb>0
+        ?nb+' tir'+(nb>1?'s':'')+' pr&ecirc;t'+(nb>1?'s':'')+
+         ' &middot; 1 tir = 0.01 lot'
+        :'Aucun tir pr&ecirc;t &mdash; chaque gain remplit la '+
+         'r&eacute;serve')+'</div>';
      lw.style.display='none';ls2.innerHTML='';
      if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
       setTimeout(()=>{
