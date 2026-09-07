@@ -1182,15 +1182,20 @@ function render(d){
      '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
      '&nbsp;$</b><br>&#128176; Argent mis de c&ocirc;t&eacute; : '+
      '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+'&nbsp;$</b>'+
-     '<br><span style="font-size:.84rem;color:#9fc2de">Il fait de '+
-     'tout petits trades et garde chaque petit gain de '+
-     'c&ocirc;t&eacute;.</span>';
+     '<br><span style="font-size:.84rem;color:#9fc2de">'+
+     (d.trading_paused
+      ?'&#129302; Robot en pause &mdash; il tient juste les '+
+       'comptes pour l&#39;instant.'
+      :'Il fait de tout petits trades et garde chaque petit gain '+
+       'de c&ocirc;t&eacute;.')+'</span>';
     lw.style.display='block';lb.style.width=pc2+'%';
-    ls2.innerHTML='Quand il a mis assez de c&ocirc;t&eacute; ('+
-     pc2.toFixed(0)+'&nbsp;%), il tente un coup un peu plus gros '+
-     'pour rattraper la perte. Ce coup est d&eacute;j&agrave; '+
-     'pay&eacute; d&#8217;avance : m&ecirc;me si &ccedil;a rate, '+
-     'votre compte ne descend pas plus bas.';
+    ls2.innerHTML=d.trading_paused
+     ?'Le rattrapage reprendra quand le robot sera remis en marche.'
+     :'Quand il a mis assez de c&ocirc;t&eacute; ('+
+      pc2.toFixed(0)+'&nbsp;%), il tente un coup un peu plus gros '+
+      'pour rattraper la perte. Ce coup est d&eacute;j&agrave; '+
+      'pay&eacute; d&#8217;avance : m&ecirc;me si &ccedil;a rate, '+
+      'votre compte ne descend pas plus bas.';
    }else{
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
      'rattraper.'+(d.ledger.chest>0
@@ -1750,6 +1755,13 @@ def user_stats(u):
                 DIR, f"owl_fight_history{_sfx}.json")))[-12:][::-1]
         except Exception:
             pass
+        if u.get("id") == "std":
+            try:
+                d["trading_paused"] = bool(json.load(open(
+                    os.path.join(DIR, "owl_trading_pause_std.json")))
+                    .get("paused"))
+            except Exception:
+                d["trading_paused"] = False
         try:
             d["push_level"] = json.load(open(PUSH_PREFS_FILE)).get(
                 u["id"], "all")
