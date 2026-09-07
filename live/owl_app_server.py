@@ -1274,7 +1274,9 @@ function render(d){
      ' en cours</b>'
    : '&#127747; March&eacute; sous surveillance &mdash; aucun trade ouvert');
   const bs=document.getElementById('battles-sec');
+  const met=document.getElementById('meteo');
   if(d.open_list&&d.open_list.length){
+   met.style.display='none';
    bs.style.display='block';
    document.getElementById('battles').innerHTML=d.open_list.map(x=>{
     let bar='';
@@ -1313,7 +1315,7 @@ function render(d){
     (x.pl>=0?'pos':'neg')+'">'+
     (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>'+bar;
    }).join('');
-  }else{bs.style.display='none'}
+  }else{bs.style.display='none';met.style.display='block';}
   const t=document.getElementById('today');
   t.innerHTML=(d.today>=0?'&#9650; ':'&#9660; ')+f(d.today);
   t.className='val '+(d.today>=0?'pos':'neg');
