@@ -1258,29 +1258,21 @@ function render(d){
    if(d.ledger.debt>0.5){
     if(d.trading_paused){
      const am=d.ledger.chest;
-     const mk=s=>Math.floor(am/s*100)/100;
-     const rows=[[20,mk(20)],[50,mk(50)],[100,mk(100)]]
-      .filter(r=>r[1]>=0.01)
-      .map(r=>'stop '+r[0]+'&nbsp;pts &rarr; <b>'+
-       r[1].toFixed(2)+'</b> lot max').join(' &middot; ');
+     let rk=50,rn=0,rs=0;
+     (d.trades||[]).forEach(x=>{
+      if(x.p<-0.005&&x.lot>0){rs+=Math.abs(x.p)/x.lot;rn++;}});
+     if(rn>=3)rk=rs/rn;
+     const ml=Math.floor(am/rk*100)/100;
      const pc2=Math.max(0,Math.min(100,am/d.ledger.debt*100));
      lt2.innerHTML='&#128546; &Agrave; rattraper : '+
       '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
-      '&nbsp;$</b><br>&#128299; Munitions (vos gains) : '+
+      '&nbsp;$</b><br>&#128299; Munitions : '+
       '<b style="color:#e8c55a">'+am.toFixed(2)+
-      '&nbsp;$</b><br><span style="font-size:.84rem;color:#9fc2de">'+
-      (rows
-       ?'R&egrave;gle : lot &times; stop (points) &le; '+
-        am.toFixed(2)+'&nbsp;$. '+rows+'.'
-       :'&#127919; Pas encore de munitions &mdash; tradez petit '+
-        '(0.01) et collectez des gains pour financer un coup '+
-        'plus gros.')+'</span>';
+      '&nbsp;$</b><br>&#127919; Lot max : <b style="color:#7fd4a0;'+
+      'font-size:1.15rem">'+(ml>=0.01?ml.toFixed(2):'&mdash;')+
+      '</b>';
      lw.style.display='block';lb.style.width=pc2+'%';
-     ls2.innerHTML='Comme le robot : le coup est pay&eacute; '+
-      'd&#39;avance par vos gains. Gagn&eacute; &rarr; la dette '+
-      'baisse. Rat&eacute; &rarr; seules les munitions paient, le '+
-      'compte ne descend pas plus bas. Barre : munitions face '+
-      '&agrave; la dette ('+pc2.toFixed(0)+'&nbsp;%).';
+     ls2.innerHTML='';
     }else{
     const need=Math.max(d.ledger.need_min||0,0.01);
     const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
