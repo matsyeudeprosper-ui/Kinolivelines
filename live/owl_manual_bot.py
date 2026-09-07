@@ -1631,6 +1631,130 @@ def main():
                                 f"{ent['volume']} stopped at {float(_sl):.2f} -> "
                                 f"two doors: M1 close beyond the line = flip, "
                                 f"or back beyond {_tr:.2f} = re-enter")
+            # BLINK BACKFILL (2026-09-07): a position that opens AND
+            # closes inside one ~5s poll is invisible to the snapshots
+            # - never journaled, never booked. Every 60s cross-check
+            # the broker's own deal history and repair the books.
+            if time.time() - st.get("blink_t", 0) > 60:
+                st["blink_t"] = time.time()
+                try:
+                    _t4 = time.time()
+                    _dls = mt5.history_deals_get(
+                        datetime.fromtimestamp(_t4 - 1200,
+                                               tz=timezone.utc),
+                        datetime.fromtimestamp(_t4 + 120,
+                                               tz=timezone.utc)) or []
+                    _ins4 = {d.position_id: d for d in _dls
+                             if d.entry == mt5.DEAL_ENTRY_IN}
+                    _outs4 = [d for d in _dls
+                              if d.entry == mt5.DEAL_ENTRY_OUT]
+                    _seen4 = set(st.get("blink_seen") or [])
+                    _openpids = {p.ticket for p in manual}
+                    _jt = set()
+                    try:
+                        with open(JOURNAL, "r",
+                                  encoding="utf-8") as _jf:
+                            for _r4 in _jf.readlines()[-80:]:
+                                _jt.add(_r4.split(",", 1)[0].strip())
+                    except Exception:
+                        pass
+                    for _d4 in _outs4:
+                        _pid = _d4.position_id
+                        _in4 = _ins4.get(_pid)
+                        if (_in4 is None
+                                or str(_pid) in _seen4
+                                or str(_pid) in _jt
+                                or str(_pid) in st.get("pending", {})
+                                or _pid in _openpids
+                                or not (_in4.comment or "")
+                                .startswith("OWL-")):
+                            continue
+                        _pnl4 = round(sum(
+                            x.profit + x.commission + x.swap
+                            for x in _outs4
+                            if x.position_id == _pid), 2)
+                        _dir4 = ("BUY"
+                                 if _in4.type == mt5.DEAL_TYPE_BUY
+                                 else "SELL")
+                        write_journal_row({
+                            "ticket": _pid,
+                            "direction": _dir4,
+                            "volume": _in4.volume,
+                            "entry_time_utc": datetime.fromtimestamp(
+                                _in4.time, tz=timezone.utc)
+                            .isoformat(timespec="seconds"),
+                            "entry_price": _in4.price,
+                            "exit_time_utc": datetime.fromtimestamp(
+                                _d4.time, tz=timezone.utc)
+                            .isoformat(timespec="seconds"),
+                            "exit_price": _d4.price,
+                            "duration_min": round(
+                                (_d4.time - _in4.time) / 60, 1),
+                            "profit_usd": _pnl4,
+                            "exit_reason": ("sl" if _pnl4 < 0
+                                            else "tp")})
+                        st["trades_logged"] = st.get(
+                            "trades_logged", 0) + 1
+                        _seen4.add(str(_pid))
+                        say(f"BLINK BACKFILL: ticket {_pid} {_dir4} "
+                            f"{_in4.volume} closed {_pnl4:+.2f} "
+                            f"inside one poll - books repaired")
+                        _wx4 = st.setdefault("wx", {"ls": 0,
+                                                    "forced": False})
+                        if _pnl4 < -0.5:
+                            _wx4["ls"] += 1
+                            if (_wx4["ls"] >= 3
+                                    and not _wx4["forced"]):
+                                _wx4["forced"] = True
+                                st.setdefault(
+                                    "shadow",
+                                    {"links": [],
+                                     "streak": 0})["streak"] = 0
+                                say("WEATHER: storm detected (3 "
+                                    "straight real losses incl. "
+                                    "blink) - FULL SHELTER")
+                                write_weather("shelter", 0)
+                        elif _pnl4 > 0.5:
+                            _wx4["ls"] = 0
+                        if CHEST_MODE:
+                            _led4 = st["ledger"]
+                            _lk4 = st.setdefault(
+                                "recov_links", {}).pop(
+                                str(_pid), None)
+                            _isf4 = (_lk4 is not None
+                                     or (_in4.comment or "")
+                                     .startswith("OWL-recov"))
+                            if _isf4 and _pnl4 < -0.5:
+                                _led4["debt"] = round(
+                                    _led4["debt"] - _pnl4, 2)
+                                _led4["chest"] = round(max(
+                                    0.0,
+                                    _led4["chest"] + _pnl4), 2)
+                                _led4["next_lot"] = min(
+                                    CHEST_LADDER_CAP,
+                                    round(_in4.volume
+                                          + RECOV_STEP, 2))
+                                fight_log("perdu", _in4.volume,
+                                          _pnl4, _led4["debt"])
+                            elif _isf4 and _pnl4 > 0:
+                                _led4["debt"] = round(max(
+                                    0.0,
+                                    _led4["debt"] - _pnl4), 2)
+                                _led4["next_lot"] = 0.02
+                                fight_log("gagne", _in4.volume,
+                                          _pnl4, _led4["debt"])
+                            elif _pnl4 < 0:
+                                _led4["debt"] = round(
+                                    _led4["debt"] - _pnl4, 2)
+                            elif _pnl4 > 0:
+                                _led4["chest"] = round(min(
+                                    CHEST_FUND_MAX,
+                                    _led4["chest"] + _pnl4), 2)
+                            write_ledger(st)
+                    st["blink_seen"] = list(_seen4)[-200:]
+                    save_state(st)
+                except Exception as _e4:
+                    say(f"BLINK BACKFILL error: {_e4}")
             loop_fired = []
             # --- RECOVERY CHAIN: confirmation watches + entries (per chain) ---
             if (RECOV_ENTRY and not CHEST_MODE
