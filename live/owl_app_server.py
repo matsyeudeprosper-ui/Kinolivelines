@@ -1771,6 +1771,13 @@ def user_stats(u):
             except Exception:
                 pass
             try:
+                _ga = json.load(open(os.path.join(
+                    DIR, "owl_goal_app.json")))
+                if _ga.get("enabled") and _ga.get("milestone"):
+                    d["palier"] = float(_ga["milestone"])
+            except Exception:
+                pass
+            try:
                 d["trading_paused"] = bool(json.load(open(
                     os.path.join(DIR, "owl_trading_pause.json")))
                     .get("paused"))
@@ -1830,6 +1837,13 @@ def user_stats(u):
                     DIR, "owl_milestone_std.json")))
                 if _ms2.get("enabled") and _ms2.get("milestone"):
                     d["palier"] = float(_ms2["milestone"])
+            except Exception:
+                pass
+            try:
+                _ga2 = json.load(open(os.path.join(
+                    DIR, "owl_goal_app_std.json")))
+                if _ga2.get("enabled") and _ga2.get("milestone"):
+                    d["palier"] = float(_ga2["milestone"])
             except Exception:
                 pass
         try:
@@ -2335,10 +2349,12 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     _amt = 0.0
                 _gs = "_std" if u.get("id") == "std" else ""
+                # the app's own goal store - the bot's auto milestone
+                # manager can't overwrite this one (2026-09-07)
                 json.dump({"enabled": _amt > 0,
                            "milestone": round(_amt, 2)},
                           open(os.path.join(
-                              DIR, f"owl_milestone{_gs}.json"), "w"))
+                              DIR, f"owl_goal_app{_gs}.json"), "w"))
                 self._send(json.dumps({"ok": True, "goal": _amt}),
                            "application/json")
             except Exception as e:
