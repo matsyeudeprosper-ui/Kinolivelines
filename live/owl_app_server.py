@@ -782,23 +782,44 @@ window.addEventListener('load',()=>{
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
  const gb=document.getElementById('goalbtn');
  if(gb)gb.onclick=async(e)=>{e.preventDefault();
-  const v=await sheet('<h3>&#127919; D&eacute;finir '+
-   'l&#39;objectif</h3><p>Le montant vis&eacute; pour la barre '+
-   'Objectif (0 = d&eacute;sactiver). Solde actuel : <b>'+
-   ((window._d&&window._d.balance)
-    ?window._d.balance.toFixed(2):'?')+
-   '&nbsp;$</b> &mdash; visez plus haut !</p>'+
+  const b0=(window._d&&window._d.balance)?window._d.balance:0;
+  const chips=[25,50,100,250].map(a=>
+   '<button class="shbtn shghost" style="flex:1;margin:0;'+
+   'padding:11px 0;font-size:.9rem" '+
+   'onclick="document.getElementById(\\'goalamt\\').value=\\''+
+   Math.ceil(b0+a)+'\\'">+'+a+'&nbsp;$</button>').join('');
+  const v=await sheet('<h3>&#127919; Objectif</h3>'+
+   '<div style="display:flex;justify-content:space-between;'+
+   'align-items:center;background:#0b1420;border-radius:12px;'+
+   'padding:12px 14px;margin-bottom:12px">'+
+   '<span style="color:#8fa1b3;font-size:.85rem">Solde actuel'+
+   '</span><b style="font-size:1.1rem">'+b0.toFixed(2)+
+   '&nbsp;$</b></div>'+
+   '<div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">'+
+   'Choix rapide &mdash; ou entrez votre montant :</div>'+
+   '<div style="display:flex;gap:8px;margin-bottom:10px">'+chips+
+   '</div>'+
    '<input id="goalamt" type="number" inputmode="decimal" '+
-   'placeholder="ex : 300">'+
+   'placeholder="Montant vis&eacute; (ex : '+
+   Math.ceil(b0+50)+')">'+
    '<input id="shpw" type="password" '+
    'placeholder="Mot de passe du compte (broker)">'+
    '<button class="shbtn shmain" onclick="_shDone('+
    '[document.getElementById(\\'goalamt\\').value,'+
-   'document.getElementById(\\'shpw\\').value])">Enregistrer'+
-   '</button>'+
+   'document.getElementById(\\'shpw\\').value])">'+
+   '&#127919; Enregistrer l&#39;objectif</button>'+
+   '<button class="shbtn shghost" style="color:#ff9c9c" '+
+   'onclick="_shDone([\\'0\\','+
+   'document.getElementById(\\'shpw\\').value])">D&eacute;sactiver '+
+   'la barre</button>'+
    '<button class="shbtn shghost" onclick="_shDone(null)">Annuler'+
    '</button>');
   if(!v||!v[1])return;
+  if(v[0]!=='0'&&parseFloat(v[0]||'0')<=b0){
+   await info('&#9888;&#65039; <h3>Visez plus haut !</h3>'+
+    '<p>L&#39;objectif doit &ecirc;tre au-dessus du solde actuel ('+
+    b0.toFixed(2)+'&nbsp;$).</p>');
+   return;}
   const r=await fetch(B+'set_goal',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'amount='+encodeURIComponent(v[0]||'0')+'&pwd='+
@@ -1313,8 +1334,10 @@ function render(d){
     (d.equity-pb0)/(d.palier-pb0)*100));
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
-    'Objectif : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
-    pc.toFixed(0)+'&nbsp;%';
+    (d.palier_def
+     ?'Objectif de la semaine : +50&nbsp;$'
+     :'Objectif : '+d.palier.toFixed(0)+'&nbsp;$')+
+    ' &middot; '+pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
    if(pc>=100&&!window._conf){window._conf=1;confetti();}
   }
@@ -1782,6 +1805,8 @@ def user_stats(u):
                 if _ga.get("enabled") and _ga.get("milestone"):
                     d["palier"] = float(_ga["milestone"])
                     d["palier_base"] = float(_ga.get("base") or 0)
+                elif _ga.get("disabled"):
+                    d["palier_off"] = True
             except Exception:
                 pass
             try:
@@ -1852,6 +1877,8 @@ def user_stats(u):
                 if _ga2.get("enabled") and _ga2.get("milestone"):
                     d["palier"] = float(_ga2["milestone"])
                     d["palier_base"] = float(_ga2.get("base") or 0)
+                elif _ga2.get("disabled"):
+                    d["palier_off"] = True
             except Exception:
                 pass
         try:
@@ -1859,6 +1886,17 @@ def user_stats(u):
                 u["id"], "all")
         except Exception:
             d["push_level"] = "all"
+        # default weekly objective (+$50 from Monday's balance) so the
+        # bar is always alive unless explicitly disabled (2026-09-08)
+        try:
+            if (not d.get("palier") and not d.get("palier_off")
+                    and d.get("balance") is not None):
+                _wb = float(d["balance"]) - float(d.get("week") or 0)
+                d["palier"] = round(_wb + 50.0, 2)
+                d["palier_base"] = round(_wb, 2)
+                d["palier_def"] = True
+        except Exception:
+            pass
         if (u.get("id") in ("kino", "std")
                 or str(u.get("login")) == str(LOGIN)):
             d["is_master"] = True
@@ -2369,6 +2407,7 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 json.dump({"enabled": _amt > 0,
+                           "disabled": _amt <= 0,
                            "milestone": round(_amt, 2),
                            "base": round(_base, 2)},
                           open(os.path.join(
