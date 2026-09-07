@@ -236,6 +236,19 @@ def rate_fail(key):
     _rl.setdefault(key, []).append(time.time())
 
 
+def is_admin(u):
+    """Both of the owner's pages (Pro master + manual Standard)."""
+    return u is not None and (u.get("id") in ("kino", "std")
+                              or str(u.get("login")) == str(LOGIN))
+
+
+def master_pwd_ok(pw):
+    """Master actions always validate against the KINO record's
+    broker password, whichever admin page they come from."""
+    k = next((x for x in users() if x.get("id") == "kino"), None)
+    return k is not None and pwd_ok(k, pw)
+
+
 def pwd_ok(u, pw):
     """Broker-password check with 5-fails-per-10-min lockout."""
     key = ("pwd", u.get("id"))
@@ -1762,6 +1775,13 @@ def user_stats(u):
                     .get("paused"))
             except Exception:
                 d["trading_paused"] = False
+            try:
+                _ms2 = json.load(open(os.path.join(
+                    DIR, "owl_milestone_std.json")))
+                if _ms2.get("enabled") and _ms2.get("milestone"):
+                    d["palier"] = float(_ms2["milestone"])
+            except Exception:
+                pass
         try:
             d["push_level"] = json.load(open(PUSH_PREFS_FILE)).get(
                 u["id"], "all")
@@ -2245,7 +2265,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "set_goal":
             # master sets the Objectif bar target (pwd gated)
             u = user_by_token(_parts[0])
-            if u is None or str(u.get("login")) != str(LOGIN):
+            if not is_admin(u):
                 self.send_response(404)
                 self.end_headers()
                 return
@@ -2255,7 +2275,7 @@ class H(BaseHTTPRequestHandler):
                 _f5 = _up5.parse_qs(self.rfile.read(ln)
                                     .decode("utf-8", "replace"))
                 _pw = (_f5.get("pwd", [""])[0] or "").strip()
-                if not pwd_ok(u, _pw):
+                if not master_pwd_ok(_pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -2264,10 +2284,11 @@ class H(BaseHTTPRequestHandler):
                     _amt = float(_f5.get("amount", ["0"])[0] or 0)
                 except Exception:
                     _amt = 0.0
+                _gs = "_std" if u.get("id") == "std" else ""
                 json.dump({"enabled": _amt > 0,
                            "milestone": round(_amt, 2)},
                           open(os.path.join(
-                              DIR, "owl_milestone.json"), "w"))
+                              DIR, f"owl_milestone{_gs}.json"), "w"))
                 self._send(json.dumps({"ok": True, "goal": _amt}),
                            "application/json")
             except Exception as e:
@@ -2277,7 +2298,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "nest_invite":
             # master creates a real-account invite code (pwd gated)
             u = user_by_token(_parts[0])
-            if u is None or str(u.get("login")) != str(LOGIN):
+            if not is_admin(u):
                 self.send_response(404)
                 self.end_headers()
                 return
@@ -2287,7 +2308,7 @@ class H(BaseHTTPRequestHandler):
                 _pw = (_up4.parse_qs(self.rfile.read(ln)
                                      .decode("utf-8", "replace"))
                        .get("pwd", [""])[0] or "").strip()
-                if not pwd_ok(u, _pw):
+                if not master_pwd_ok(_pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -2312,7 +2333,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "nest_pause":
             # master pauses/resumes any member (master pwd gated)
             u = user_by_token(_parts[0])
-            if u is None or str(u.get("login")) != str(LOGIN):
+            if not is_admin(u):
                 self.send_response(404)
                 self.end_headers()
                 return
@@ -2324,7 +2345,7 @@ class H(BaseHTTPRequestHandler):
                 _pw = (_f3.get("pwd", [""])[0] or "").strip()
                 _uid = (_f3.get("uid", [""])[0] or "").strip()
                 _on = (_f3.get("on", ["1"])[0] == "1")
-                if not pwd_ok(u, _pw):
+                if not master_pwd_ok(_pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -2427,7 +2448,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "actcode":
             # the master generates a fresh one-time code (password-gated)
             u = user_by_token(_parts[0])
-            if u is None or str(u.get("login")) != str(LOGIN):
+            if not is_admin(u):
                 self.send_response(404)
                 self.end_headers()
                 return
@@ -2436,7 +2457,7 @@ class H(BaseHTTPRequestHandler):
                 body = self.rfile.read(ln).decode("utf-8", "replace")
                 import urllib.parse as _up
                 _pw = (_up.parse_qs(body).get("pwd", [""])[0] or "").strip()
-                if not pwd_ok(u, _pw):
+                if not master_pwd_ok(_pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
