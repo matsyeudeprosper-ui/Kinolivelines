@@ -529,6 +529,13 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">R&eacute;glages</div>
+<div id="acctsw" style="display:none;margin-bottom:14px;
+ background:#151d29;border:1px solid #263341;border-radius:14px;
+ padding:12px">
+ <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
+  Mes comptes (admin)</div>
+ <div id="acctsw-b" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
 <button id="notifbtn" style="width:100%;margin-top:4px;
  background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700;
@@ -1321,6 +1328,22 @@ function render(d){
   drawSpark();
   if(d.is_master&&d.nest){
    document.getElementById('tb-nid').style.display='flex';
+   const asw=document.getElementById('acctsw');
+   asw.style.display='block';
+   document.getElementById('acctsw-b').innerHTML=d.nest
+    .filter(x=>x.tok)
+    .map(x=>{
+     const cur=(x.login&&d.acct&&String(x.login)===String(d.acct));
+     return '<a href="/'+x.tok+'/" style="text-decoration:none;'+
+      'padding:9px 14px;border-radius:10px;font-size:.85rem;'+
+      'font-weight:700;border:1px solid '+
+      (cur?'#2a5a80':'#263341')+';background:'+
+      (cur?'#1d3350':'#0f1620')+';color:'+
+      (cur?'#cfe3f5':'#8fa1b3')+'">'+x.name+
+      (cur?' &#10004;':'')+'</a>';
+    }).join('');
+  }
+  if(d.is_master&&d.nest){
    const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
    const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
    const hdr='<div class="row" style="border-bottom:2px solid '+
@@ -1523,14 +1546,15 @@ async function load(){
   if(s!==window._lastS){
    window._lastS=s;
    render(d);
-   try{localStorage.setItem('owlLast',s)}catch(e){}
+   try{localStorage.setItem('owlLast:'+B,s)}catch(e){}
   }
   lastOk=Date.now();ago();
  }catch(e){
   document.getElementById('upd').textContent=
    'hors ligne - nouvel essai...';
   if(!window._offR){window._offR=1;
-   try{const c=JSON.parse(localStorage.getItem('owlLast')||'null');
+   try{const c=JSON.parse(
+    localStorage.getItem('owlLast:'+B)||'null');
     if(c){render(c);
      document.getElementById('st').innerHTML='&#128244; '+
       '<b>Hors ligne</b> &mdash; derni&egrave;res donn&eacute;es '+
@@ -1679,11 +1703,12 @@ def user_stats(u):
                     .get("paused"))
             except Exception:
                 d["trading_paused"] = False
+        # per-account books (2026-09-07): std has its own ledger/
+        # fights; family mirrors follow the master's
+        _sfx = "_std" if u.get("id") == "std" else ""
         try:
-            # war-chest ledger (version C): shared strategy state, shown
-            # to every user - copiers mirror the same trades
             d["ledger"] = json.load(open(os.path.join(
-                DIR, "owl_ledger.json")))
+                DIR, f"owl_ledger{_sfx}.json")))
         except Exception:
             pass
         try:
@@ -1717,7 +1742,7 @@ def user_stats(u):
             pass
         try:
             d["fights"] = json.load(open(os.path.join(
-                DIR, "owl_fight_history.json")))[-12:][::-1]
+                DIR, f"owl_fight_history{_sfx}.json")))[-12:][::-1]
         except Exception:
             pass
         try:
@@ -1725,7 +1750,8 @@ def user_stats(u):
                 u["id"], "all")
         except Exception:
             d["push_level"] = "all"
-        if u.get("id") == "kino" or str(u.get("login")) == str(LOGIN):
+        if (u.get("id") in ("kino", "std")
+                or str(u.get("login")) == str(LOGIN)):
             d["is_master"] = True
             # v2 Le Nid: one row per member for the master console
             try:
