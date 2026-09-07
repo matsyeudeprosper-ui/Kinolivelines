@@ -1045,16 +1045,30 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
         say(f"KINO skipped: wall {wall:.2f} too close ({dist:.1f}pts)")
         return None
     risk = dist * blot
-    r = open_at_market(direction, blot, "OWL-kino")
-    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
-        say(f"KINO entry FAILED retcode={r.retcode if r else None}")
-        return None
-    tkt = r.order
+    # CALM-ONLY FILTER (2026-09-07, from the user's momentum question
+    # - the data answered INVERTED): a confirming candle whose body
+    # >= ATR14 means the move already ran; entering its top with a
+    # 25pt stop loses (strong 62%/51% win vs calm 72%/77% in the two
+    # windows; calm-only replay +5.57/+4.14 optimistic/pessimistic
+    # over 69d, +1.13/+1.05 Sep - first all-positive result). Only
+    # calm confirmations are taken.
     body = abs(float(conf_bar["close"]) - float(conf_bar["open"]))
     m1b = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 120)
     a14 = (atr(m1b["high"], m1b["low"], m1b["close"])
            if m1b is not None and len(m1b) > 20 else 0.0)
     strong = a14 > 0 and body >= a14
+    if strong:
+        _kmsg = (f"KINO skipped: burst confirmation ({body:.0f}pts "
+                 f">= ATR {a14:.0f}) - calm entries only")
+        if st.get("kino_last_skip") != _kmsg:
+            st["kino_last_skip"] = _kmsg
+            say(_kmsg)
+        return None
+    r = open_at_market(direction, blot, "OWL-kino")
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        say(f"KINO entry FAILED retcode={r.retcode if r else None}")
+        return None
+    tkt = r.order
     disc = min(0.5 if strong else 1.0, 0.25 * risk)
     tp_dist = dist - disc / blot
     # profit cap: aim/cut at $3 ($1.50 at 0.01) even when the wall is far
