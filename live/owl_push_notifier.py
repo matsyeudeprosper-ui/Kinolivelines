@@ -137,6 +137,45 @@ def maybe_weekly():
         mylog(f"weekly failed: {e}")
 
 
+MORNING_MARK = os.path.join(DIR, "owl_push_morning.json")
+
+
+def maybe_morning():
+    """Every day between 06:00 and 12:00 UTC, one good-morning push
+    with the overnight story of both accounts."""
+    t = time.gmtime()
+    if not (6 <= t.tm_hour < 12):
+        return
+    day = time.strftime("%Y-%m-%d", t)
+    try:
+        if json.load(open(MORNING_MARK)).get("sent") == day:
+            return
+    except Exception:
+        pass
+    try:
+        parts = []
+        for uid, label in (("kino", "Pro"), ("std", "Standard")):
+            try:
+                d = json.load(open(os.path.join(
+                    DIR, "nest_data", uid + ".json")))
+                today = float(d.get("today") or 0.0)
+                n = sum(1 for x in (d.get("trades") or [])
+                        if x.get("w", "").startswith(
+                            time.strftime("%d/%m", t)))
+                parts.append(f"{label} {today:+.2f} $ "
+                             f"({n} trade{'s' if n > 1 else ''})")
+            except Exception:
+                continue
+        if not parts:
+            return
+        send_all("☀️ Bonjour ! Pendant la nuit :",
+                 " · ".join(parts)
+                 + ". Bonne journée !")
+        json.dump({"sent": day}, open(MORNING_MARK, "w"))
+    except Exception as e:
+        mylog(f"morning failed: {e}")
+
+
 def main():
     mylog("notifier started")
     # two live accounts (2026-09-07): Pro (flagship, no prefix) and
@@ -165,6 +204,7 @@ def main():
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
+            maybe_morning()
         if _bf is not None:
             while True:
                 bl = _bf.readline()
