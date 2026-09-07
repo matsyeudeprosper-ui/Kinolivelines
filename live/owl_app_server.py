@@ -784,7 +784,10 @@ window.addEventListener('load',()=>{
  if(gb)gb.onclick=async(e)=>{e.preventDefault();
   const v=await sheet('<h3>&#127919; D&eacute;finir '+
    'l&#39;objectif</h3><p>Le montant vis&eacute; pour la barre '+
-   'Objectif (0 = d&eacute;sactiver).</p>'+
+   'Objectif (0 = d&eacute;sactiver). Solde actuel : <b>'+
+   ((window._d&&window._d.balance)
+    ?window._d.balance.toFixed(2):'?')+
+   '&nbsp;$</b> &mdash; visez plus haut !</p>'+
    '<input id="goalamt" type="number" inputmode="decimal" '+
    'placeholder="ex : 300">'+
    '<input id="shpw" type="password" '+
@@ -987,8 +990,8 @@ function tab(n,el){
 }
 (function(){
  const h=new Date().getHours();
- const g=(h>=5&&h<12)?'Bonjour':(h<18?'Bon apr&egrave;s-midi'
-  :'Bonsoir');
+ const g=(h>=5&&h<12)?'Bonjour'
+  :((h>=12&&h<18)?'Bon apr&egrave;s-midi':'Bonsoir');
  const he=document.getElementById('hello');
  he.innerHTML=he.innerHTML.replace('Bonjour',g)
   .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;')
@@ -1304,7 +1307,10 @@ function render(d){
     (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct+'</span>';
   }
   if(d.palier&&d.equity){
-   const pc=Math.max(0,Math.min(100,d.equity/d.palier*100));
+   const pb0=(d.palier_base&&d.palier_base<d.palier)
+    ?d.palier_base:0;
+   const pc=Math.max(0,Math.min(100,
+    (d.equity-pb0)/(d.palier-pb0)*100));
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
     'Objectif : '+d.palier.toFixed(0)+'&nbsp;$ &middot; '+
@@ -1775,6 +1781,7 @@ def user_stats(u):
                     DIR, "owl_goal_app.json")))
                 if _ga.get("enabled") and _ga.get("milestone"):
                     d["palier"] = float(_ga["milestone"])
+                    d["palier_base"] = float(_ga.get("base") or 0)
             except Exception:
                 pass
             try:
@@ -1844,6 +1851,7 @@ def user_stats(u):
                     DIR, "owl_goal_app_std.json")))
                 if _ga2.get("enabled") and _ga2.get("milestone"):
                     d["palier"] = float(_ga2["milestone"])
+                    d["palier_base"] = float(_ga2.get("base") or 0)
             except Exception:
                 pass
         try:
@@ -2350,9 +2358,19 @@ class H(BaseHTTPRequestHandler):
                     _amt = 0.0
                 _gs = "_std" if u.get("id") == "std" else ""
                 # the app's own goal store - the bot's auto milestone
-                # manager can't overwrite this one (2026-09-07)
+                # manager can't overwrite this one (2026-09-07).
+                # base = balance at set time, so the bar measures the
+                # JOURNEY from here to the goal, not absolute level
+                _base = 0.0
+                try:
+                    _base = float(json.load(open(os.path.join(
+                        NEST_DATA, u["id"] + ".json")))
+                        .get("balance") or 0.0)
+                except Exception:
+                    pass
                 json.dump({"enabled": _amt > 0,
-                           "milestone": round(_amt, 2)},
+                           "milestone": round(_amt, 2),
+                           "base": round(_base, 2)},
                           open(os.path.join(
                               DIR, f"owl_goal_app{_gs}.json"), "w"))
                 self._send(json.dumps({"ok": True, "goal": _amt}),
