@@ -16,7 +16,7 @@ DIR = r"C:\Projects\KinoliveLines\live"
 LOG = os.path.join(DIR, "owl_sstop_paper.log")
 STATE = os.path.join(DIR, "owl_sstop_paper.json")
 SYMBOL = "BTCUSD"
-TERM = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
+TERM = r"C:\NestTerminals\u223985697\terminal64.exe"
 MIN_WALL, PAGE_MAXR, PAGE_TGT = 60.0, 2.50, 1.50
 LOT, BUFFER_USD = 0.01, 0.10
 
