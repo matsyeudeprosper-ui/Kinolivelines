@@ -837,7 +837,7 @@ function tradeSheet(i){
   'font-size:.95rem"><span style="color:#8fa1b3">'+a+
   '</span><b>'+b+'</b></div>';
  sheet('<h3>'+(x.dir==='A'?'&#128200; Achat':'&#128201; Vente')+
-  (x.k?' &middot; '+x.k:'')+'</h3>'+
+  (x.k?' &middot; '+(x.k==='page'?'normal':x.k):'')+'</h3>'+
   L('R&eacute;sultat','<span class="'+(x.p>=0?'pos':'neg')+'">'+
    (x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+' $</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
@@ -1243,7 +1243,8 @@ function render(d){
     d.trades.slice(0,N).map((x,i)=>
     '<div class="row" style="cursor:pointer" data-i="'+i+
     '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
-    (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; ':'')+x.k:'')+
+    (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; soldat'
+     :(x.k==='page'?'normal':x.k)):'')+
     (x.dur!=null?' &middot; '+x.dur+' min':'')+
     '</span><b class="'+
     (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
