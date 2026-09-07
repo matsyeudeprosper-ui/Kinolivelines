@@ -361,21 +361,25 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
-<div class="status" id="st" style="margin-top:26px">Connexion...</div>
+<div id="meteo" class="status" style="margin-top:26px;
+ text-align:center;background:#101c2b;border:1px solid #23405e;
+ border-radius:16px;padding:14px;color:#cfe3f5;font-size:.95rem;
+ line-height:1.5">
+ <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:6px">&Eacute;tat du robot</div>
+ <div id="meteo-txt">&#9925; ...</div>
+ <div id="st" style="margin-top:9px;border-top:1px solid #1c2a3d;
+  padding-top:9px;font-size:.97rem;color:#c6d3df">Connexion...</div>
+</div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:#251d07;border:1px solid #4a3c12;border-radius:14px;
  padding:10px;color:#e8c55a;font-size:.9rem"></div>
-<div id="meteo" style="margin-top:12px;text-align:center;
- background:#101c2b;border:1px solid #23405e;border-radius:16px;
- padding:14px;color:#cfe3f5;font-size:.95rem;line-height:1.5">
- <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:6px">&Eacute;tat du robot</div>
- <div id="meteo-txt">&#9925; ...</div></div>
 <div id="ledcard" style="display:none;margin-top:12px;background:#101c2b;
  border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
- <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:6px">Le rattrapage</div>
+ <div id="led-hd" style="font-size:.7rem;color:#6f93b5;
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">
+  Le rattrapage</div>
  <div id="led-txt"></div>
  <div id="led-barwrap" style="display:none;
   background:rgba(255,255,255,.15);border-radius:99px;height:8px;
@@ -904,6 +908,10 @@ function render(d){
     lb=document.getElementById('led-bar'),
     lw=document.getElementById('led-barwrap'),
     ls2=document.getElementById('led-sub');
+   lc.style.padding=d.ledger.debt>0.5?'14px':'8px 14px';
+   lc.style.fontSize=d.ledger.debt>0.5?'.92rem':'.8rem';
+   document.getElementById('led-hd').style.display=
+    d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
     const need=Math.max(d.ledger.need_min||0,0.01);
     const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
@@ -957,8 +965,11 @@ function render(d){
   }
   if(d.eurusd){document.getElementById('eqe').innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
-  document.getElementById('bank').innerHTML=
-   'Solde des trades termin&eacute;s : '+d.balance.toFixed(2)+' $';
+  const bk=document.getElementById('bank');
+  if(Math.abs(d.equity-d.balance)<0.005){bk.style.display='none';}
+  else{bk.style.display='block';
+   bk.innerHTML='Solde des trades termin&eacute;s : '+
+    d.balance.toFixed(2)+' $';}
   if(d.acct){
    document.getElementById('acctline').innerHTML=
     '<span style="background:'+
