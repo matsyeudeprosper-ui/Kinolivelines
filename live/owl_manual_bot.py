@@ -185,6 +185,16 @@ CHEST_MODE = True          # 2026-09-06 user WAR-CHEST (version C, backtest
                            # False + restart, or restore
                            # owl_manual_bot.py.rollback-prechest-20260906
 CHEST_LADDER_CAP = 0.04    # funded fighters never exceed this lot
+SSTOP_CAP_PTS = 25.0       # 2026-09-07 user DEPLOY (ahead of forward
+                           # proof, their call): no trade risks more
+                           # than 25pts - the structural wall is kept
+                           # only when nearer; TP still computed from
+                           # the wall geometry. Replay: +1.95 optimistic
+                           # / -1.32 all-ties-lose over 69d vs -15.37
+                           # deployed; 44% ambiguous bars, so treat as
+                           # breakeven+-2. Storm system goes dormant at
+                           # this loss scale (losses < $0.50 bar).
+                           # ROLLBACK: set to 1e9 + restart both bots.
 CHEST_FUND_MAX = 5.0       # 2026-09-06 user: wins keep filling the fund
                            # even with NO debt (a standing emergency
                            # fund, ~one ticket) - capped, or the gate
@@ -906,11 +916,15 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
             _tpdC *= TP_FRACTION
             tpC = (entry_px + _tpdC if direction == 1
                    else entry_px - _tpdC)
+            _slwF = (wall if _fd <= SSTOP_CAP_PTS
+                     else (entry_px - SSTOP_CAP_PTS if direction == 1
+                           else entry_px + SSTOP_CAP_PTS))
             mt5.order_send({"action": mt5.TRADE_ACTION_SLTP,
                             "position": tkt, "symbol": SYMBOL,
-                            "sl": round(wall, 2), "tp": round(tpC, 2)})
+                            "sl": round(_slwF, 2),
+                            "tp": round(tpC, 2)})
             st.setdefault("recov_links", {})[str(tkt)] = {
-                "sl": round(wall, 2), "tp": round(tpC, 2),
+                "sl": round(_slwF, 2), "tp": round(tpC, 2),
                 "lot": _fl, "chain": "chest", "kino": True,
                 "loss": float(_led["debt"])}
             if str(tkt) not in st["user_owned"]:
@@ -1013,8 +1027,12 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
                     _sdist - 0.75 / blot) * TP_FRACTION
         _stp = (entry_px + _stpd if direction == 1
                 else entry_px - _stpd)
+        _slwS = (wall if _sdist <= SSTOP_CAP_PTS
+                 else (entry_px - SSTOP_CAP_PTS if direction == 1
+                       else entry_px + SSTOP_CAP_PTS))
         _sh["links"].append({"dir": direction, "lot": blot,
-                             "entry": entry_px, "sl": round(wall, 2),
+                             "entry": entry_px,
+                             "sl": round(_slwS, 2),
                              "tp": round(_stp, 2), "chain": "page",
                              "loss": 0.0, "t0": int(time.time())})
         save_state(st)
@@ -1043,7 +1061,10 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     tp_dist = min(tp_dist, _rtarget / blot)
     tp_dist *= TP_FRACTION
     tp = entry_px + tp_dist if direction == 1 else entry_px - tp_dist
-    slp = round(wall, 2)
+    _slw0 = (wall if dist <= SSTOP_CAP_PTS
+             else (entry_px - SSTOP_CAP_PTS if direction == 1
+                   else entry_px + SSTOP_CAP_PTS))
+    slp = round(_slw0, 2)
     mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "position": tkt,
                     "symbol": SYMBOL, "sl": slp, "tp": round(tp, 2)})
     if fired is not None:
