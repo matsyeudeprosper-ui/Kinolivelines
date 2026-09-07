@@ -410,6 +410,20 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:#251d07;border:1px solid #4a3c12;border-radius:14px;
  padding:10px;color:#e8c55a;font-size:.9rem"></div>
+<div id="ftcard" style="display:none;margin-top:12px;
+ background:linear-gradient(150deg,#132036,#101c2b);
+ border:1px solid #2a5a80;border-radius:16px;padding:14px;
+ color:#cfe3f5;font-size:.9rem;line-height:1.5">
+ <div style="font-size:.7rem;color:#7fb3e0;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:6px">&#129514; Le grand test
+  de la strat&eacute;gie</div>
+ <div id="ft-txt"></div>
+ <div style="background:rgba(255,255,255,.15);border-radius:99px;
+  height:8px;margin-top:8px"><div id="ft-bar" style="height:8px;
+  border-radius:99px;width:0%;background:#7fb0ff"></div></div>
+ <div id="ft-sub" style="font-size:.76rem;color:#6f93b5;
+  margin-top:6px"></div>
+</div>
 <div id="ledcard" style="display:none;margin-top:12px;background:#101c2b;
  border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
@@ -1098,6 +1112,29 @@ function render(d){
     {hour:'2-digit',minute:'2-digit'});
    mt.innerHTML+='<br><span style="color:#6f93b5;font-size:.85rem">'+
     'En pause depuis '+lt+' ('+(hh>0?hh+' h ':'')+mm+' min)</span>';}
+  if(d.ftest){
+   const ft=d.ftest;
+   const fc=document.getElementById('ftcard');
+   fc.style.display='block';
+   const wr=ft.n?ft.w/Math.max(1,ft.w+ft.l):0;
+   const col=(ft.w+ft.l)<5?'#7fb0ff'
+    :(wr>=ft.wr_pass?'#2ecc71':(wr>=0.60?'#e8c55a':'#ff5c5c'));
+   document.getElementById('ft-txt').innerHTML=
+    'Trade <b>'+ft.n+'</b> sur '+ft.target+' &middot; '+
+    '<span style="color:#8df0bb">'+ft.w+' gagn&eacute;s</span> / '+
+    '<span style="color:#ff9c9c">'+ft.l+' perdus</span>'+
+    ((ft.w+ft.l)?' (<b style="color:'+col+'">'+
+     Math.round(wr*100)+'&nbsp;%</b>)':'')+
+    ' &middot; <b class="'+(ft.net>=0?'pos':'neg')+'">'+
+    (ft.net>=0?'+':'-')+Math.abs(ft.net).toFixed(2)+'&nbsp;$</b>';
+   const pb=document.getElementById('ft-bar');
+   pb.style.width=Math.min(100,ft.n/ft.target*100)+'%';
+   pb.style.background=col;
+   document.getElementById('ft-sub').innerHTML=
+    'Objectif : '+Math.round(ft.wr_pass*100)+'&nbsp;% de '+
+    'r&eacute;ussite sur '+ft.target+' trades &mdash; si le robot '+
+    'y arrive, la strat&eacute;gie est prouv&eacute;e.';
+  }
   if(d.ledger){
    const lc=document.getElementById('ledcard');lc.style.display='block';
    const lt2=document.getElementById('led-txt'),
@@ -1627,6 +1664,31 @@ def user_stats(u):
             # to every user - copiers mirror the same trades
             d["ledger"] = json.load(open(os.path.join(
                 DIR, "owl_ledger.json")))
+        except Exception:
+            pass
+        try:
+            # the preregistered forward test of the edge candidate
+            _ft = json.load(open(os.path.join(
+                DIR, "owl_forward_test.json")))
+            _fps = []
+            with open(os.path.join(DIR, "owl_manual_journal.csv"),
+                      encoding="utf-8", errors="replace") as _jf:
+                import csv as _csv
+                for _r in _csv.DictReader(_jf):
+                    if ((_r.get("exit_time_utc") or "")
+                            >= _ft["start"]):
+                        try:
+                            _fps.append(float(
+                                _r.get("profit_usd") or 0))
+                        except Exception:
+                            pass
+            _w = sum(1 for x in _fps if x > 0.005)
+            _l = sum(1 for x in _fps if x < -0.005)
+            d["ftest"] = {
+                "n": len(_fps), "target": _ft.get("target", 50),
+                "w": _w, "l": _l,
+                "net": round(sum(_fps), 2),
+                "wr_pass": _ft.get("wr_pass", 0.66)}
         except Exception:
             pass
         try:
