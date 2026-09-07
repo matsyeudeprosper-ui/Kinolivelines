@@ -1262,17 +1262,53 @@ function render(d){
      (d.trades||[]).forEach(x=>{
       if(x.p<-0.005&&x.lot>0){rs+=Math.abs(x.p)/x.lot;rn++;}});
      if(rn>=3)rk=rs/rn;
-     const ml=Math.floor(am/rk*100)/100;
-     const pc2=Math.max(0,Math.min(100,am/d.ledger.debt*100));
-     lt2.innerHTML='&#128546; &Agrave; rattraper : '+
-      '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
-      '&nbsp;$</b><br>&#128299; Munitions : '+
-      '<b style="color:#e8c55a">'+am.toFixed(2)+
-      '&nbsp;$</b><br>&#127919; Lot max : <b style="color:#7fd4a0;'+
-      'font-size:1.15rem">'+(ml>=0.01?ml.toFixed(2):'&mdash;')+
-      '</b>';
-     lw.style.display='block';lb.style.width=pc2+'%';
-     ls2.innerHTML='';
+     const bc=rk*0.01;
+     const nb=Math.floor(am/bc+1e-9);
+     const fr=(am-nb*bc)/bc;
+     const ml=nb*0.01;
+     const SL=10;
+     let pills='';
+     for(let i=0;i<SL;i++){
+      const on=i<nb;
+      const g=(!on&&i===nb&&fr>0.02)
+       ?'background:linear-gradient(90deg,#e8c55a '+
+        (fr*100).toFixed(0)+'%,rgba(255,255,255,.07) '+
+        (fr*100).toFixed(0)+'%);'
+       :'background:'+(on?'#e8c55a':'rgba(255,255,255,.07)')+';';
+      pills+='<span data-bp="'+i+'" style="display:inline-block;'+
+       'width:13px;height:22px;border-radius:4px;margin:0 2px;'+g+
+       (on?'box-shadow:0 0 6px rgba(232,197,90,.45);':'')+
+       'transition:transform .3s"></span>';
+     }
+     lt2.innerHTML=
+      '<div style="display:flex;gap:8px;justify-content:center;'+
+       'flex-wrap:wrap">'+
+       '<span style="background:rgba(255,92,92,.12);color:#ff9c9c;'+
+        'border:1px solid rgba(255,92,92,.3);border-radius:99px;'+
+        'padding:3px 10px;font-size:.78rem">&#128546; '+
+        d.ledger.debt.toFixed(2)+'&nbsp;$</span>'+
+       '<span style="background:rgba(232,197,90,.1);color:#e8c55a;'+
+        'border:1px solid rgba(232,197,90,.3);border-radius:99px;'+
+        'padding:3px 10px;font-size:.78rem">&#128299; '+
+        am.toFixed(2)+'&nbsp;$</span>'+
+      '</div>'+
+      '<div style="text-align:center;margin:10px 0 6px">'+
+       '<b style="color:#7fd4a0;font-size:2rem;'+
+        'font-variant-numeric:tabular-nums">'+
+        (ml>=0.01?ml.toFixed(2):'0.00')+'</b>'+
+       '<span style="color:#8fa1b3;font-size:.8rem"> lot max</span>'+
+      '</div>'+
+      '<div style="text-align:center">'+pills+
+       (nb>SL?'<span style="color:#e8c55a;font-size:.78rem"> '+
+        '&times;'+nb+'</span>':'')+'</div>';
+     lw.style.display='none';ls2.innerHTML='';
+     if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
+      setTimeout(()=>{
+       const el=lc.querySelector('[data-bp="'+(nb-1)+'"]');
+       if(el){el.style.transform='scale(1.6)';
+        setTimeout(()=>{el.style.transform='';},450);}},60);
+     }
+     window._ammoB=nb;
     }else{
     const need=Math.max(d.ledger.need_min||0,0.01);
     const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
