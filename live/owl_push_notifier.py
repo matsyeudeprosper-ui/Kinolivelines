@@ -139,43 +139,58 @@ def maybe_weekly():
 
 def main():
     mylog("notifier started")
-    f = open(LOG, "r", encoding="utf-8", errors="replace")
-    f.seek(0, 2)
-    batch = []
-    batch_t0 = None
+    # two live accounts (2026-09-07): Pro (flagship, no prefix) and
+    # Standard (prefixed) - one notifier tails both logs
+    sources = []
+    for path, pfx in ((LOG, ""),
+                      (os.path.join(DIR, "owl_std.log"),
+                       "\U0001f948 Standard \u2014 ")):
+        try:
+            fh = open(path, "r", encoding="utf-8", errors="replace")
+            fh.seek(0, 2)
+            sources.append({"f": fh, "pfx": pfx, "batch": [],
+                            "t0": None})
+        except Exception:
+            pass
     _wk_last = 0.0
     while True:
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
-        line = f.readline()
-        if not line:
-            if batch and time.time() - batch_t0 >= BATCH_SECS:
-                n = len(batch)
-                tot = sum(batch)
-                wins = sum(1 for p in batch if p > 0)
-                title = (f"\U0001f4b0 {tot:+.2f} $"
-                         if tot >= 0 else f"\U0001f4c9 {tot:+.2f} $")
+        got = False
+        for s in sources:
+            while True:
+                line = s["f"].readline()
+                if not line:
+                    break
+                got = True
+                ev = instant_event(line)
+                if ev is not None:
+                    send_all(s["pfx"] + ev[0], ev[1])
+                    continue
+                m = RX_EXIT.search(line)
+                if m:
+                    try:
+                        s["batch"].append(float(m.group(2)))
+                    except Exception:
+                        continue
+                    if s["t0"] is None:
+                        s["t0"] = time.time()
+            if s["batch"] and time.time() - s["t0"] >= BATCH_SECS:
+                n = len(s["batch"])
+                tot = sum(s["batch"])
+                wins = sum(1 for p in s["batch"] if p > 0)
+                title = s["pfx"] + (f"\U0001f4b0 {tot:+.2f} $"
+                                    if tot >= 0
+                                    else f"\U0001f4c9 {tot:+.2f} $")
                 body = (f"{n} trade{'s' if n > 1 else ''} "
-                        f"({wins} gagn\u00e9{'s' if wins > 1 else ''}) "
-                        f"sur les 10 derni\u00e8res minutes.")
+                        f"({wins} gagn\u00e9"
+                        f"{'s' if wins > 1 else ''}) sur les 10 "
+                        f"derni\u00e8res minutes.")
                 send_all(title, body, kind="batch")
-                batch, batch_t0 = [], None
+                s["batch"], s["t0"] = [], None
+        if not got:
             time.sleep(2)
-            continue
-        ev = instant_event(line)
-        if ev is not None:
-            send_all(*ev)
-            continue
-        m = RX_EXIT.search(line)
-        if m:
-            try:
-                p = float(m.group(2))
-            except Exception:
-                continue
-            batch.append(p)
-            if batch_t0 is None:
-                batch_t0 = time.time()
 
 
 if __name__ == "__main__":

@@ -218,6 +218,30 @@ def _load_subs():
 def _save_subs(s):
     json.dump(s, open(PUSH_SUBS_FILE, "w"))
 
+
+_rl = {}   # brute-force limiter: key -> [fail timestamps]
+
+
+def rate_limited(key, limit=5, window=600):
+    now = time.time()
+    _rl[key] = [t for t in _rl.get(key, []) if now - t < window]
+    return len(_rl[key]) >= limit
+
+
+def rate_fail(key):
+    _rl.setdefault(key, []).append(time.time())
+
+
+def pwd_ok(u, pw):
+    """Broker-password check with 5-fails-per-10-min lockout."""
+    key = ("pwd", u.get("id"))
+    if rate_limited(key):
+        return False
+    if pw and (u.get("mt5_password") or "") == pw:
+        return True
+    rate_fail(key)
+    return False
+
 PAGE = """<!doctype html><html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1093,13 +1117,19 @@ function render(d){
     (x.today!=null?' &middot; auj. <span class="'+
      (x.today>=0?'pos':'neg')+'">'+(x.today>=0?'+':'-')+
      Math.abs(x.today).toFixed(2)+' $</span>':'')+'</span></span>'+
+    '<span style="display:flex;gap:6px">'+
+    (x.tok?'<a href="/'+x.tok+'/" target="_blank" '+
+    'style="border:1px solid #263341;background:#0f1620;'+
+    'color:#c6d3df;border-radius:10px;padding:8px 11px;'+
+    'font-size:.85rem;text-decoration:none">&#128065;&#65039;'+
+    '</a>':'')+
     (x.trade?'<button data-u="'+x.id+'" data-o="'+(x.paused?0:1)+
     '" onclick="nestPause(this.dataset.u,this.dataset.o)" '+
     'style="border:1px solid #263341;background:#0f1620;'+
     'color:#c6d3df;border-radius:10px;padding:8px 13px;'+
     'font-size:.85rem">'+
     (x.paused?'&#9654;&#65039;':'&#9208;&#65039;')+'</button>':'')+
-    '</div>';
+    '</span></div>';
    }).join('');
   }
   if(d.days&&d.days.length){
@@ -1431,6 +1461,7 @@ def user_stats(u):
                         "id": x["id"],
                         "name": x.get("name", x["id"]),
                         "login": x.get("login"),
+                        "tok": x.get("token"),
                         "bal": nd.get("balance"),
                         "today": nd.get("today"),
                         "err": bool(nd.get("error")),
@@ -1709,6 +1740,10 @@ def handle_login(form):
     if not (login and pwd):
         return ("page", _join_result("&#10060; Il manque une info",
                                      "<p>Compte et mot de passe.</p>"))
+    if rate_limited(("login", login)):
+        return ("page", _join_result(
+            "&#9203; Trop d&#8217;essais",
+            "<p>Attendez 10 minutes puis r&eacute;essayez.</p>"))
     u = next((x for x in users()
               if str(x.get("login")) == login
               or str(x.get("mt5_login") or "") == login), None)
@@ -1716,6 +1751,7 @@ def handle_login(form):
         if (u.get("mt5_password") or "") == pwd:
             return ("redirect", f"https://owltrader.duckdns.org/"
                                 f"{u['token']}/")
+        rate_fail(("login", login))
         return ("page", _join_result(
             "&#128274; Mot de passe incorrect",
             "<p>Ce compte existe d&eacute;j&agrave; dans le nid, mais "
@@ -1885,7 +1921,7 @@ class H(BaseHTTPRequestHandler):
                 _pw = (_up4.parse_qs(self.rfile.read(ln)
                                      .decode("utf-8", "replace"))
                        .get("pwd", [""])[0] or "").strip()
-                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                if not pwd_ok(u, _pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -1922,7 +1958,7 @@ class H(BaseHTTPRequestHandler):
                 _pw = (_f3.get("pwd", [""])[0] or "").strip()
                 _uid = (_f3.get("uid", [""])[0] or "").strip()
                 _on = (_f3.get("on", ["1"])[0] == "1")
-                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                if not pwd_ok(u, _pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -2034,7 +2070,7 @@ class H(BaseHTTPRequestHandler):
                 body = self.rfile.read(ln).decode("utf-8", "replace")
                 import urllib.parse as _up
                 _pw = (_up.parse_qs(body).get("pwd", [""])[0] or "").strip()
-                if not u.get("mt5_password") or _pw != u["mt5_password"]:
+                if not pwd_ok(u, _pw):
                     self._send(json.dumps({"ok": False,
                                            "err": "bad password"}),
                                "application/json")
@@ -2058,8 +2094,7 @@ class H(BaseHTTPRequestHandler):
             import urllib.parse as _up
             _form = _up.parse_qs(body)
             _pwd = (_form.get("pwd", [""])[0] or "").strip()
-            _real = (u.get("mt5_password") or "").strip()
-            if not _real or _pwd != _real:
+            if not pwd_ok(u, _pwd):
                 self._send(json.dumps({"ok": False,
                                        "err": "bad password"}),
                            "application/json")
