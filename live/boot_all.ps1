@@ -63,6 +63,29 @@ if (-not (ProcRunning "owl_push_notifier.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+# 3b4) master publisher + family copiers (2026-09-07 go-live: these
+#      were missing here - a reboot silently stopped the mirroring)
+if (-not (ProcRunning "owl_master_publisher.py")) {
+    Say "starting master publisher"
+    Start-Process pythonw -ArgumentList "owl_master_publisher.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+try {
+    $users = Get-Content "C:\Projects\KinoliveLines\live\owl_nest_users.json" -Raw |
+        ConvertFrom-Json
+    foreach ($u in $users) {
+        if ($u.trade -eq $true -and $u.id -ne "kino") {
+            if (-not (ProcRunning ("owl_copier.py " + $u.id))) {
+                Say ("starting copier " + $u.id)
+                Start-Process pythonw -ArgumentList ("owl_copier.py " + $u.id) `
+                    -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+            }
+        }
+    }
+} catch {
+    Say ("copier revive failed: " + $_)
+}
+
 # 3c) Telegram alert daemon
 if (-not (ProcRunning "owl_telegram.py")) {
     Say "starting Telegram daemon"

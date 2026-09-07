@@ -572,6 +572,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  text-decoration:none;display:inline-block;margin-top:12px">&#128465;
  Retirer mon compte du robot</a>
 </div>
+<a href="#" id="infobtn" style="display:block;margin-top:14px;
+ text-align:center;color:#8fa1b3;font-size:.86rem;
+ text-decoration:none">&#8505;&#65039; Ce qu&#39;il faut savoir</a>
 <a href="#" id="tourbtn" style="display:block;margin-top:14px;
  text-align:center;color:#8fa1b3;font-size:.86rem;
  text-decoration:none">&#127891; Revoir le guide</a>
@@ -884,6 +887,23 @@ window.addEventListener('load',()=>{
  document.getElementById('tournext').onclick=()=>tourStep(_ti+1);
  document.getElementById('tourskip').onclick=(e)=>{
   e.preventDefault();tourStep(TOUR.length);};
+ const ib2=document.getElementById('infobtn');
+ if(ib2)ib2.onclick=(e)=>{e.preventDefault();
+  info('<h3>&#8505;&#65039; Ce qu&#39;il faut savoir</h3>'+
+   '<div style="text-align:left;font-size:.92rem;color:#c6d3df;'+
+   'line-height:1.7">'+
+   '&#128176; Le robot travaille avec de l&#39;argent '+
+   'r&eacute;el. Il peut gagner <b>et</b> perdre.<br>'+
+   '&#128737;&#65039; Chaque trade ne risque qu&#39;une toute '+
+   'petite part du compte &mdash; jamais tout d&#39;un coup.<br>'+
+   '&#9928;&#65039; Quand le march&eacute; devient m&eacute;chant, '+
+   'le robot s&#39;abrite tout seul et attend.<br>'+
+   '&#128184; Ne confiez que de l&#39;argent que vous pouvez '+
+   'laisser travailler longtemps, sans en avoir besoin.<br>'+
+   '&#9208;&#65039; Vous pouvez mettre en pause ou retirer votre '+
+   'compte &agrave; tout moment, ici dans les R&eacute;glages.<br>'+
+   '&#128200; Les r&eacute;sultats pass&eacute;s ne promettent '+
+   'jamais l&#39;avenir.</div>');};
  const tb=document.getElementById('tourbtn');
  if(tb)tb.onclick=(e)=>{e.preventDefault();
   tab('home',document.querySelector('.tb'));tourStep(0);};
