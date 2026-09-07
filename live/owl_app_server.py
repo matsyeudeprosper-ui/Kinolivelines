@@ -1667,7 +1667,11 @@ def user_stats(u):
         except Exception:
             pass
         try:
-            # the preregistered forward test of the edge candidate
+            # the preregistered forward test - MASTER ONLY (2026-09-07
+            # user: the family sees the product, not the lab)
+            if not (u.get("id") == "kino"
+                    or str(u.get("login")) == str(LOGIN)):
+                raise ValueError("not master")
             _ft = json.load(open(os.path.join(
                 DIR, "owl_forward_test.json")))
             _fps = []
