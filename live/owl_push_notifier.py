@@ -181,14 +181,14 @@ def main():
     # two live accounts (2026-09-07): Pro (flagship, no prefix) and
     # Standard (prefixed) - one notifier tails both logs
     sources = []
-    for path, pfx in ((LOG, ""),
-                      (os.path.join(DIR, "owl_std.log"),
-                       "\U0001f948 Standard \u2014 ")):
+    for path, pfx, uid in ((LOG, "", "kino"),
+                           (os.path.join(DIR, "owl_std.log"),
+                            "\U0001f948 Standard \u2014 ", "std")):
         try:
             fh = open(path, "r", encoding="utf-8", errors="replace")
             fh.seek(0, 2)
-            sources.append({"f": fh, "pfx": pfx, "batch": [],
-                            "t0": None})
+            sources.append({"f": fh, "pfx": pfx, "uid": uid,
+                            "batch": [], "t0": None})
         except Exception:
             pass
     # watchdog restarts: any "starting X" line in boot_all.log means
@@ -227,25 +227,29 @@ def main():
                     continue
                 m = RX_EXIT.search(line)
                 if m:
+                    # 2026-09-07 user: instant per-trade pushes (the
+                    # calm-only era trades ~3-6x/day - no spam risk);
+                    # "Important seulement" users still skip these
                     try:
-                        s["batch"].append(float(m.group(2)))
+                        p = float(m.group(2))
                     except Exception:
                         continue
-                    if s["t0"] is None:
-                        s["t0"] = time.time()
-            if s["batch"] and time.time() - s["t0"] >= BATCH_SECS:
-                n = len(s["batch"])
-                tot = sum(s["batch"])
-                wins = sum(1 for p in s["batch"] if p > 0)
-                title = s["pfx"] + (f"\U0001f4b0 {tot:+.2f} $"
-                                    if tot >= 0
-                                    else f"\U0001f4c9 {tot:+.2f} $")
-                body = (f"{n} trade{'s' if n > 1 else ''} "
-                        f"({wins} gagn\u00e9"
-                        f"{'s' if wins > 1 else ''}) sur les 10 "
-                        f"derni\u00e8res minutes.")
-                send_all(title, body, kind="batch")
-                s["batch"], s["t0"] = [], None
+                    if p > 0.005:
+                        title = f"\U0001f4b0 +{p:.2f} $"
+                    elif p < -0.005:
+                        title = f"\U0001f6e1\ufe0f {p:.2f} $"
+                    else:
+                        title = "\u26aa 0,00 $"
+                    body = "Trade termin\u00e9."
+                    try:
+                        nd = json.load(open(os.path.join(
+                            DIR, "nest_data", s["uid"] + ".json")))
+                        body = (f"Aujourd'hui : "
+                                f"{float(nd.get('today') or 0):+.2f}"
+                                f" $")
+                    except Exception:
+                        pass
+                    send_all(s["pfx"] + title, body, kind="batch")
         if not got:
             time.sleep(2)
 
