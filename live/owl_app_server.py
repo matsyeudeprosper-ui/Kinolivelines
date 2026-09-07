@@ -449,6 +449,37 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  <div id="ft-sub" style="font-size:.76rem;color:#6f93b5;
   margin-top:6px"></div>
 </div>
+<div id="sesscard" style="display:none;margin-top:12px;
+ background:linear-gradient(150deg,#131e30,#0f1a29);
+ border:1px solid #23405e;border-radius:16px;padding:14px;
+ color:#cfe3f5;transition:box-shadow .6s">
+ <div style="display:flex;justify-content:space-between;
+  align-items:center">
+  <span style="font-size:.7rem;color:#7fb3e0;
+   text-transform:uppercase;letter-spacing:.08em">&#127919; Ma
+   session (manuel)</span>
+  <span id="sess-strk" style="font-size:.9rem"></span>
+ </div>
+ <div style="display:flex;align-items:baseline;gap:12px;
+  margin-top:8px">
+  <b id="sess-net" style="font-size:1.7rem;
+   font-variant-numeric:tabular-nums">--</b>
+  <span id="sess-cnt" style="font-size:.82rem;color:#8fa1b3"></span>
+ </div>
+ <div style="display:flex;height:8px;border-radius:99px;
+  overflow:hidden;margin-top:10px;background:rgba(255,255,255,.08)">
+  <div id="sess-wbar" style="background:#2ecc71;width:50%;
+   transition:width .6s"></div>
+  <div id="sess-lbar" style="background:#ff5c5c;width:50%;
+   transition:width .6s"></div>
+ </div>
+ <div style="display:flex;justify-content:space-between;
+  font-size:.68rem;color:#5f7185;margin-top:4px">
+  <span id="sess-wavg"></span><span id="sess-lavg"></span>
+ </div>
+ <div id="sess-msg" style="font-size:.84rem;color:#9fc2de;
+  margin-top:9px;line-height:1.5"></div>
+</div>
 <div id="ledcard" style="display:none;margin-top:12px;background:#101c2b;
  border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
@@ -1245,6 +1276,79 @@ function render(d){
     'r&eacute;ussite sur '+ft.target+' trades &mdash; si le robot '+
     'y arrive, la strat&eacute;gie est prouv&eacute;e.';
   }
+  const sc=document.getElementById('sesscard');
+  if(d.trading_paused&&d.trades&&d.trades.length){
+   const nu=new Date();
+   const dk=String(nu.getUTCDate()).padStart(2,'0')+'/'+
+    String(nu.getUTCMonth()+1).padStart(2,'0');
+   const ts=d.trades.filter(x=>x.w&&x.w.startsWith(dk));
+   if(ts.length){
+    sc.style.display='block';
+    const ps=ts.map(x=>x.p);
+    const W=ps.filter(p=>p>0.005),Lo=ps.filter(p=>p<-0.005);
+    const net=ps.reduce((a,b)=>a+b,0);
+    const aw=W.length?W.reduce((a,b)=>a+b,0)/W.length:0;
+    const al=Lo.length?Math.abs(Lo.reduce((a,b)=>a+b,0))/Lo.length:0;
+    let stk=0;
+    for(const p of ps){
+     if(Math.abs(p)<0.005)continue;
+     if(stk===0){stk=p>0?1:-1;}
+     else if(stk>0&&p>0.005)stk++;
+     else if(stk<0&&p<-0.005)stk--;
+     else break;
+    }
+    const sn=document.getElementById('sess-net');
+    sn.textContent=(net>=0?'+':'-')+Math.abs(net).toFixed(2)+' $';
+    sn.style.color=net>=0?'#2ecc71':'#ff5c5c';
+    if(window._sessN!==undefined&&window._sessN!==ts.length){
+     sc.style.boxShadow='0 0 26px '+
+      (ps[0]>=0?'rgba(46,204,113,.5)':'rgba(255,92,92,.5)');
+     setTimeout(()=>{sc.style.boxShadow='none'},1200);
+    }
+    window._sessN=ts.length;
+    document.getElementById('sess-cnt').innerHTML=
+     ts.length+' trade'+(ts.length>1?'s':'')+' &middot; '+
+     '<span class="pos">'+W.length+'&#10003;</span> '+
+     '<span class="neg">'+Lo.length+'&#10007;</span>';
+    document.getElementById('sess-strk').innerHTML=
+     stk>=3?'&#128293; '+stk+' de suite'
+     :(stk<=-2?'&#129482; '+(-stk)+' pertes de suite':'');
+    const tot=aw+al||1;
+    document.getElementById('sess-wbar').style.width=
+     (aw/tot*100)+'%';
+    document.getElementById('sess-lbar').style.width=
+     (al/tot*100)+'%';
+    document.getElementById('sess-wavg').textContent=
+     'gain moyen +'+aw.toFixed(2)+' $';
+    document.getElementById('sess-lavg').textContent=
+     'perte moyenne -'+al.toFixed(2)+' $';
+    let msg='';
+    const lots=ts.map(x=>x.lot||0);
+    let tilt=false;
+    if(ts.length>=3){
+     tilt=(ps[1]<-0.005&&lots[0]>lots[1])
+       ||(ps[0]<-0.005&&ps[1]<-0.005&&lots[0]>lots[2]);
+    }
+    if(tilt){msg='&#9888;&#65039; Les lots montent apr&egrave;s '+
+     'des pertes &mdash; le pi&egrave;ge classique. Une pause de '+
+     '10 minutes co&ucirc;te 0&nbsp;$.';}
+    else if(stk<=-3){msg='&#129482; '+(-stk)+' pertes de suite '+
+     '&mdash; le march&eacute; ne vous doit rien ce soir. La '+
+     'pause est une arme.';}
+    else if(al>0&&aw>0&&al>2.5*aw){msg='&#9878;&#65039; Vos '+
+     'pertes p&egrave;sent '+(al/aw).toFixed(1)+'&times; vos '+
+     'gains &mdash; coupez plus t&ocirc;t, laissez courir les '+
+     'gagnants.';}
+    else if(net>0&&stk>=3){msg='&#128293; Belle main ! '+
+     'Prot&eacute;gez vos gains &mdash; le meilleur trade est '+
+     'parfois celui qu&#39;on ne prend pas.';}
+    else if(net>0){msg='&#9989; Session positive &mdash; '+
+     'discipline au rendez-vous.';}
+    else{msg='Session en cours &mdash; petits risques, '+
+     't&ecirc;te froide.';}
+    document.getElementById('sess-msg').innerHTML=msg;
+   }else{sc.style.display='none';}
+  }else{sc.style.display='none';}
   if(d.ledger){
    const lc=document.getElementById('ledcard');lc.style.display='block';
    const lt2=document.getElementById('led-txt'),
