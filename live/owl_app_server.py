@@ -1257,31 +1257,30 @@ function render(d){
     d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
     if(d.trading_paused){
-     const nl=Math.max(d.ledger.next_lot||0.02,0.02);
-     const tk=25*nl;
-     const mx=Math.min(0.05,Math.floor(d.ledger.chest/25*100)/100);
-     const ok=d.ledger.chest>=tk-0.005;
-     const pc2=Math.max(0,Math.min(100,d.ledger.chest/tk*100));
+     const am=d.ledger.chest;
+     const mk=s=>Math.floor(am/s*100)/100;
+     const rows=[[20,mk(20)],[50,mk(50)],[100,mk(100)]]
+      .filter(r=>r[1]>=0.01)
+      .map(r=>'stop '+r[0]+'&nbsp;pts &rarr; <b>'+
+       r[1].toFixed(2)+'</b> lot max').join(' &middot; ');
+     const pc2=Math.max(0,Math.min(100,am/d.ledger.debt*100));
      lt2.innerHTML='&#128546; &Agrave; rattraper : '+
       '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
-      '&nbsp;$</b><br>&#128176; Vos gains mis de c&ocirc;t&eacute; : '+
-      '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+
+      '&nbsp;$</b><br>&#128299; Munitions (vos gains) : '+
+      '<b style="color:#e8c55a">'+am.toFixed(2)+
       '&nbsp;$</b><br><span style="font-size:.84rem;color:#9fc2de">'+
-      (ok
-       ?'&#128170; Coup de rattrapage <b>PR&Ecirc;T</b> : '+
-        '<b>'+nl.toFixed(2)+' lot</b>, stop 25 pts (risque '+
-        tk.toFixed(2)+'&nbsp;$) &mdash; d&eacute;j&agrave; '+
-        'pay&eacute; par vos gains.'+
-        (mx>nl+0.005
-         ?' Maximum financ&eacute; : '+mx.toFixed(2)+' lot.':'')
-       :'&#127919; Tradez en 0.01 et collectez les gains. Encore '+
-        '<b>'+(tk-d.ledger.chest).toFixed(2)+'&nbsp;$</b> pour '+
-        'financer un coup de '+nl.toFixed(2)+' lot (stop 25 pts).')+
-      '</span>';
+      (rows
+       ?'R&egrave;gle : lot &times; stop (points) &le; '+
+        am.toFixed(2)+'&nbsp;$. '+rows+'.'
+       :'&#127919; Pas encore de munitions &mdash; tradez petit '+
+        '(0.01) et collectez des gains pour financer un coup '+
+        'plus gros.')+'</span>';
      lw.style.display='block';lb.style.width=pc2+'%';
-     ls2.innerHTML='Comme le robot : coup gagnant &rarr; la dette '+
-      'baisse. Coup rat&eacute; &rarr; seule la cagnotte paie, le '+
-      'compte ne descend pas plus bas. Stop 25 pts, toujours.';
+     ls2.innerHTML='Comme le robot : le coup est pay&eacute; '+
+      'd&#39;avance par vos gains. Gagn&eacute; &rarr; la dette '+
+      'baisse. Rat&eacute; &rarr; seules les munitions paient, le '+
+      'compte ne descend pas plus bas. Barre : munitions face '+
+      '&agrave; la dette ('+pc2.toFixed(0)+'&nbsp;%).';
     }else{
     const need=Math.max(d.ledger.need_min||0,0.01);
     const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
