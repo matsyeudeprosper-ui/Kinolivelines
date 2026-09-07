@@ -508,6 +508,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <span class="skel" style="width:22%">&nbsp;</span></div>
 <div class="row"><span class="skel" style="width:46%">&nbsp;</span>
 <span class="skel" style="width:16%">&nbsp;</span></div></div>
+<button id="sharebtn" onclick="shareWeek()" style="width:100%;
+ margin-top:18px;background:linear-gradient(135deg,#2563eb,#5b3fd4);
+ color:#fff;border:0;border-radius:14px;padding:15px;font-size:1rem;
+ font-weight:700">&#128228; Partager ma semaine</button>
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">R&eacute;glages</div>
@@ -891,11 +895,11 @@ function tab(n,el){
   .replace('👋',(h>=20||h<5)?'🌙'
    :'👋');
 })();
-function confetti(){
+function confetti(em){
  for(let i=0;i<44;i++){
   const s=document.createElement('div');
-  s.textContent=['🎉','✨','💚',
-   '🏆'][i%4];
+  s.textContent=(em||['🎉','✨','💚',
+   '🏆'])[i%4];
   s.style.cssText='position:fixed;z-index:60;top:-30px;left:'+
    (Math.random()*100)+'vw;font-size:'+(14+Math.random()*16)+
    'px;transition:transform 2.8s ease-in,opacity 2.8s;'+
@@ -984,6 +988,58 @@ window.addEventListener('load',()=>{
    else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
   catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
 });
+function shareWeek(){
+ const d=window._d;
+ if(!d)return;
+ const c=document.createElement('canvas');
+ c.width=720;c.height=940;
+ const g=c.getContext('2d');
+ const gr=g.createLinearGradient(0,0,0,940);
+ gr.addColorStop(0,'#0f2740');gr.addColorStop(1,'#0b0f14');
+ g.fillStyle=gr;g.fillRect(0,0,720,940);
+ g.textAlign='center';
+ g.fillStyle='#cfe3f5';g.font='bold 46px sans-serif';
+ g.fillText('🦉 OwlNest',360,92);
+ g.fillStyle='#7d9cb8';g.font='26px sans-serif';
+ g.fillText('Ma semaine · '+(d.name||''),360,138);
+ const wk=d.week||0;
+ g.fillStyle=wk>=0?'#2ecc71':'#ff5c5c';
+ g.font='bold 92px sans-serif';
+ g.fillText((wk>=0?'+':'-')+Math.abs(wk).toFixed(2)+' $',360,252);
+ const cv=d.curve||[];
+ if(cv.length>1){
+  const mn=Math.min(...cv,0),mx=Math.max(...cv,0),sp=(mx-mn)||1;
+  g.beginPath();
+  cv.forEach((v,i)=>{
+   const x=80+(i/(cv.length-1))*560;
+   const y=470-((v-mn)/sp)*150;
+   i?g.lineTo(x,y):g.moveTo(x,y);});
+  g.strokeStyle=cv[cv.length-1]>=0?'#2ecc71':'#ff5c5c';
+  g.lineWidth=5;g.lineJoin='round';g.stroke();
+ }
+ let y=560;
+ (d.days||[]).slice(0,7).forEach(x=>{
+  g.textAlign='left';g.fillStyle='#8fa1b3';
+  g.font='26px sans-serif';
+  g.fillText(x.d,110,y);
+  g.textAlign='right';
+  g.fillStyle=x.p>=0?'#2ecc71':'#ff5c5c';
+  g.font='bold 26px sans-serif';
+  g.fillText((x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+' $',610,y);
+  y+=44;});
+ g.textAlign='center';g.fillStyle='#5f7185';
+ g.font='22px sans-serif';
+ g.fillText('Le robot Owl trade pour vous, jour et nuit.',360,898);
+ c.toBlob(async b=>{
+  const f=new File([b],'owlnest-semaine.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){
+   try{await navigator.share({files:[f],
+    title:'Ma semaine OwlNest'});}catch(e){}
+  }else{
+   try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}
+  }
+ },'image/png');
+}
 async function nestPause(uid,on){
  const pw=await askPwd(
   on=='1'?'Mettre ce membre en pause ?':'Reprendre ce membre ?',
@@ -1007,6 +1063,7 @@ function ago(){
  document.getElementById('upd').innerHTML='Mis &agrave; jour il y a '+s+' s';
 }
 function render(d){
+  window._d=d;
   if(d.expired){document.getElementById('st').innerHTML=
    '&#9203; <b>Essai termin&eacute;.</b> Contactez Kino pour passer au '+
    'Premium et continuer.';return}
@@ -1344,6 +1401,12 @@ function render(d){
     SR('Meilleure s&eacute;rie',bs+' gains de suite','pos');
   }
   if(d.fights&&d.fights.length){
+   const f0=d.fights[0];
+   if(window._lf===undefined){window._lf=f0.t;}
+   else if(f0.t>window._lf){window._lf=f0.t;
+    if(f0.res==='gagne'){
+     confetti(['⚔️','🏆','✨',
+      '🪙']);}}
    document.getElementById('fights-sec').style.display='block';
    const fe=document.getElementById('fights');
    fe.style.display='block';
