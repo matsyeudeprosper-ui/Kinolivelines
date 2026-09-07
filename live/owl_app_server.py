@@ -289,6 +289,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  align-items:center;gap:3px;padding:6px 0;border-radius:12px}
 .tb span{font-size:1.3rem;line-height:1}
 .tb.on{color:#8fc6ff}
+.srow{display:flex;align-items:center;gap:13px;padding:13px 2px;
+ border-bottom:1px solid #1e2937;cursor:pointer;color:#e8eef4}
+.srow:last-child{border-bottom:0}
+.srow b{font-weight:600;font-size:.97rem}
+.sic{width:38px;height:38px;border-radius:11px;background:#0f2740;
+ display:flex;align-items:center;justify-content:center;
+ font-size:1.15rem;flex:none}
+.chv{color:#3d4c5c;font-size:1.3rem;line-height:1}
+.ssub{font-size:.76rem;color:#5f7185;margin-top:2px}
 .hero{background:linear-gradient(165deg,#0f2740 0%,#14406b 100%);
  color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
@@ -544,58 +553,91 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  font-weight:700">&#128228; Partager ma semaine</button>
 </div>
 <div class="tab" id="tab-set">
-<div class="sec" style="margin-top:26px">R&eacute;glages</div>
-<button id="notifbtn" style="width:100%;margin-top:4px;
- background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
- border-radius:14px;padding:15px;font-size:1rem;font-weight:700;
- display:none">&#128276; Activer les notifications</button>
-<div id="nprefs" style="display:none;margin-top:10px;
- background:#151d29;border:1px solid #263341;border-radius:14px;
- padding:12px">
- <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
-  Que recevoir sur le t&eacute;l&eacute;phone ?</div>
- <div style="display:flex;gap:8px">
-  <button class="npc" data-l="all" style="flex:1;border:1px solid
-   #2a5a80;background:#1d3350;color:#cfe3f5;border-radius:10px;
-   padding:10px;font-size:.84rem;font-weight:700">Tout</button>
-  <button class="npc" data-l="important" style="flex:1;border:1px
-   solid #263341;background:#0f1620;color:#8fa1b3;border-radius:10px;
-   padding:10px;font-size:.84rem;font-weight:700">Important
-   seulement</button>
+<div class="sec" style="margin-top:26px">Notifications</div>
+<div class="panel" style="padding:4px 14px">
+ <div class="srow" id="notifbtn" style="display:none">
+  <div class="sic">&#128276;</div>
+  <div style="flex:1"><b id="notif-lbl">Notifications</b>
+   <div class="ssub">Gains, orages et soldats sur votre
+    t&eacute;l&eacute;phone</div></div>
+  <span class="chv">&#8250;</span>
+ </div>
+ <div id="nprefs" style="display:none;padding:2px 0 14px 51px">
+  <div style="display:flex;gap:8px">
+   <button class="npc" data-l="all" style="flex:1;border:1px solid
+    #2a5a80;background:#1d3350;color:#cfe3f5;border-radius:10px;
+    padding:9px;font-size:.82rem;font-weight:700">Tout</button>
+   <button class="npc" data-l="important" style="flex:1;border:1px
+    solid #263341;background:#0f1620;color:#8fa1b3;
+    border-radius:10px;padding:9px;font-size:.82rem;
+    font-weight:700">Important seulement</button>
+  </div>
  </div>
 </div>
-<button id="inst" onclick="inst()">Installer l&#8217;application</button>
-<div id="howto">&#128241; <b>Pour installer :</b><br>
+<div class="sec">Application</div>
+<div class="panel" style="padding:4px 14px">
+ <div class="srow" onclick="inst()">
+  <div class="sic">&#128241;</div>
+  <div style="flex:1"><b>Installer l&#39;application</b>
+   <div class="ssub">Une ic&ocirc;ne sur votre &eacute;cran
+    d&#39;accueil</div></div>
+  <span class="chv">&#8250;</span>
+ </div>
+ <div class="srow" id="infobtn">
+  <div class="sic">&#8505;&#65039;</div>
+  <div style="flex:1"><b>Ce qu&#39;il faut savoir</b></div>
+  <span class="chv">&#8250;</span>
+ </div>
+ <div class="srow" id="tourbtn">
+  <div class="sic">&#127891;</div>
+  <div style="flex:1"><b>Revoir le guide</b></div>
+  <span class="chv">&#8250;</span>
+ </div>
+</div>
+<div id="howto" style="margin-top:10px">&#128241;
+ <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b> (ou &laquo; Installer
  l&#8217;application &raquo;)<br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t sur votre
  t&eacute;l&eacute;phone !</div>
-<div class="foot" id="upd">chargement...</div>
-<div style="margin-top:24px;text-align:center">
-<a href="#" id="goalbtn" style="display:none;color:#8fa1b3;
- font-size:.86rem;text-decoration:none">&#127919; D&eacute;finir
- l&#8217;objectif</a>
-<br><a href="#" id="codebtn" style="display:none;color:#8fa1b3;
- font-size:.86rem;text-decoration:none">&#128273; G&eacute;n&eacute;rer
- un code d&#8217;activation</a>
-<br><a href="#" id="pausebtn" style="display:none;color:#8fa1b3;
- font-size:.86rem;text-decoration:none;margin-top:10px;
- display:none">&#9208;&#65039; Mettre le robot
- en pause</a>
-<br><a href="#" id="delbtn" style="color:#8a5a5a;font-size:.78rem;
- text-decoration:none;display:inline-block;margin-top:12px">&#128465;
- Retirer mon compte du robot</a>
+<div class="sec" id="adm-sec" style="display:none">Administration</div>
+<div class="panel" id="adm-card" style="display:none;padding:4px 14px">
+ <div class="srow" id="goalbtn">
+  <div class="sic">&#127919;</div>
+  <div style="flex:1"><b>D&eacute;finir l&#39;objectif</b></div>
+  <span class="chv">&#8250;</span>
+ </div>
+ <div class="srow" id="codebtn">
+  <div class="sic">&#128273;</div>
+  <div style="flex:1"><b>Code d&#39;activation</b>
+   <div class="ssub">Pour activer le robot d&#39;un membre</div></div>
+  <span class="chv">&#8250;</span>
+ </div>
+ <div class="srow" id="pausebtn" style="display:none">
+  <div class="sic">&#9208;&#65039;</div>
+  <div style="flex:1"><b id="pause-lbl">Mettre le robot en
+   pause</b></div>
+  <span class="chv">&#8250;</span>
+ </div>
 </div>
-<a href="#" id="infobtn" style="display:block;margin-top:14px;
- text-align:center;color:#8fa1b3;font-size:.86rem;
- text-decoration:none">&#8505;&#65039; Ce qu&#39;il faut savoir</a>
-<a href="#" id="tourbtn" style="display:block;margin-top:14px;
- text-align:center;color:#8fa1b3;font-size:.86rem;
- text-decoration:none">&#127891; Revoir le guide</a>
-<a class="exit" href="../">&#8618; Changer de compte &middot;
- cr&eacute;er un nouveau nid</a>
+<div class="sec">Compte</div>
+<div class="panel" style="padding:4px 14px">
+ <a class="srow" href="../" style="text-decoration:none">
+  <div class="sic">&#8618;</div>
+  <div style="flex:1"><b>Changer de compte</b>
+   <div class="ssub">Ou cr&eacute;er un nouveau nid</div></div>
+  <span class="chv">&#8250;</span>
+ </a>
+ <div class="srow" id="delbtn">
+  <div class="sic" style="background:#2a1518">&#128465;</div>
+  <div style="flex:1"><b style="color:#ff9c9c">Retirer mon compte
+   du robot</b></div>
+  <span class="chv">&#8250;</span>
+ </div>
+</div>
+<div class="foot" id="upd">chargement...</div>
 </div>
 <div class="tab" id="tab-nid">
 <div class="sec" style="margin-top:26px">Le Nid &middot; tous les
@@ -810,11 +852,12 @@ async function notifSetup(){
     ||!window.Notification){return;}
  const reg=await navigator.serviceWorker.ready.catch(()=>null);
  if(!reg||!reg.pushManager){return;}
- nb.style.display='block';
+ nb.style.display='flex';
  const cur=await reg.pushManager.getSubscription().catch(()=>null);
  nb.dataset.on=cur?'1':'0';
- nb.innerHTML=cur?'&#128277; D&eacute;sactiver les notifications'
-  :'&#128276; Activer les notifications';
+ document.getElementById('notif-lbl').innerHTML=cur
+  ?'Notifications activ&eacute;es &mdash; toucher pour couper'
+  :'Activer les notifications';
  document.getElementById('nprefs').style.display=cur?'block':'none';
  document.querySelectorAll('.npc').forEach(b=>{b.onclick=async()=>{
   await fetch(B+'push_pref',{method:'POST',
@@ -1273,16 +1316,20 @@ function render(d){
   if(d.trading_paused!==undefined){
    isPaused=d.trading_paused;
    const pb=document.getElementById('pausebtn');
-   pb.style.display='inline';
-   pb.innerHTML=isPaused
+   pb.style.display='flex';
+   document.getElementById('adm-sec').style.display='block';
+   document.getElementById('adm-card').style.display='block';
+   document.getElementById('pause-lbl').innerHTML=isPaused
     ?'&#9654;&#65039; Reprendre le trading'
-    :'&#9208;&#65039; Mettre le robot en pause';
+    :'Mettre le robot en pause';
   }
   document.getElementById('actcard').style.display=
    d.activation_needed?'block':'none';
-  if(d.is_master){document.getElementById('codebtn')
-   .style.display='inline';
-   document.getElementById('goalbtn').style.display='inline';}
+  if(d.is_master){
+   document.getElementById('adm-sec').style.display='block';
+   document.getElementById('adm-card').style.display='block';
+   document.getElementById('codebtn').style.display='flex';
+   document.getElementById('goalbtn').style.display='flex';}
   document.getElementById('st').innerHTML =
    (d.trading_paused)
    ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
