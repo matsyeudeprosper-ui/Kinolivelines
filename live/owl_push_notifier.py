@@ -152,11 +152,28 @@ def main():
                             "t0": None})
         except Exception:
             pass
+    # watchdog restarts: any "starting X" line in boot_all.log means
+    # something was found dead and revived - tell the master
+    try:
+        _bf = open(os.path.join(DIR, "boot_all.log"), "r",
+                   encoding="utf-8", errors="replace")
+        _bf.seek(0, 2)
+    except Exception:
+        _bf = None
     _wk_last = 0.0
     while True:
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
+        if _bf is not None:
+            while True:
+                bl = _bf.readline()
+                if not bl:
+                    break
+                if "starting" in bl:
+                    send_all("⚠️ Redémarrage",
+                             "Le gardien a relancé : "
+                             + bl.split("starting", 1)[-1].strip())
         got = False
         for s in sources:
             while True:
