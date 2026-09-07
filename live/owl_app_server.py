@@ -494,6 +494,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" id="cal-sec" style="display:none">Calendrier du mois
 </div>
 <div class="panel" id="cal" style="display:none"></div>
+<div class="sec" id="statx-sec" style="display:none">Statistiques
+ &middot; 30 derniers trades</div>
+<div class="panel" id="statx" style="display:none"></div>
 <div class="sec" id="fights-sec" style="display:none">&#9876;&#65039;
  Combats des soldats</div>
 <div class="panel" id="fights" style="display:none"></div>
@@ -537,7 +540,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  t&eacute;l&eacute;phone !</div>
 <div class="foot" id="upd">chargement...</div>
 <div style="margin-top:24px;text-align:center">
-<a href="#" id="codebtn" style="display:none;color:#8fa1b3;
+<a href="#" id="goalbtn" style="display:none;color:#8fa1b3;
+ font-size:.86rem;text-decoration:none">&#127919; D&eacute;finir
+ l&#8217;objectif</a>
+<br><a href="#" id="codebtn" style="display:none;color:#8fa1b3;
  font-size:.86rem;text-decoration:none">&#128273; G&eacute;n&eacute;rer
  un code d&#8217;activation</a>
 <br><a href="#" id="pausebtn" style="display:none;color:#8fa1b3;
@@ -688,6 +694,31 @@ window.addEventListener('load',()=>{
    else{msg.textContent='Code invalide ou expir&eacute;. Demandez un '+
     'nouveau code &agrave; Kino.';}}
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
+ const gb=document.getElementById('goalbtn');
+ if(gb)gb.onclick=async(e)=>{e.preventDefault();
+  const v=await sheet('<h3>&#127919; D&eacute;finir '+
+   'l&#39;objectif</h3><p>Le montant vis&eacute; pour la barre '+
+   'Objectif (0 = d&eacute;sactiver).</p>'+
+   '<input id="goalamt" type="number" inputmode="decimal" '+
+   'placeholder="ex : 300">'+
+   '<input id="shpw" type="password" '+
+   'placeholder="Mot de passe du compte (broker)">'+
+   '<button class="shbtn shmain" onclick="_shDone('+
+   '[document.getElementById(\\'goalamt\\').value,'+
+   'document.getElementById(\\'shpw\\').value])">Enregistrer'+
+   '</button>'+
+   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler'+
+   '</button>');
+  if(!v||!v[1])return;
+  const r=await fetch(B+'set_goal',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'amount='+encodeURIComponent(v[0]||'0')+'&pwd='+
+    encodeURIComponent(v[1])}).catch(()=>null);
+  try{const j=await r.json();
+   if(j.ok){await info('&#127919; <h3>Objectif enregistr&eacute; !'+
+    '</h3>');load();}
+   else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
+  catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
  const cb=document.getElementById('codebtn');
  if(cb)cb.onclick=async(e)=>{e.preventDefault();
   const pw=await askPwd('G&eacute;n&eacute;rer un code d&#39;activation',
@@ -1108,7 +1139,8 @@ function render(d){
   document.getElementById('actcard').style.display=
    d.activation_needed?'block':'none';
   if(d.is_master){document.getElementById('codebtn')
-   .style.display='inline';}
+   .style.display='inline';
+   document.getElementById('goalbtn').style.display='inline';}
   document.getElementById('st').innerHTML =
    (d.trading_paused)
    ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
@@ -1285,6 +1317,31 @@ function render(d){
    document.getElementById('cal-sec').style.display='block';
    const ce=document.getElementById('cal');
    ce.style.display='block';ce.innerHTML=h;
+  }
+  if(d.trades&&d.trades.length>4){
+   const ps=d.trades.map(x=>x.p);
+   const W=ps.filter(p=>p>0.005),Lo=ps.filter(p=>p<-0.005);
+   const sw=W.reduce((a,b)=>a+b,0),
+    slo=Math.abs(Lo.reduce((a,b)=>a+b,0));
+   let bs=0,cur=0;
+   ps.slice().reverse().forEach(p=>{
+    if(p>0.005){cur++;if(cur>bs)bs=cur;}
+    else if(p<-0.005)cur=0;});
+   const SR=(a,b,c)=>'<div class="row"><span class="rowt">'+a+
+    '</span><b class="'+(c||'neu')+'">'+b+'</b></div>';
+   document.getElementById('statx-sec').style.display='block';
+   const sx=document.getElementById('statx');
+   sx.style.display='block';
+   sx.innerHTML=
+    SR('Trades gagnants',W.length+' sur '+ps.length+' ('+
+     Math.round(W.length/ps.length*100)+'&nbsp;%)','pos')+
+    SR('Gain moyen','+'+(sw/Math.max(1,W.length)).toFixed(2)+
+     '&nbsp;$','pos')+
+    SR('Perte moyenne','-'+(slo/Math.max(1,Lo.length)).toFixed(2)+
+     '&nbsp;$','neg')+
+    SR('Gains / pertes',slo>0?(sw/slo).toFixed(2):'&#8734;',
+     sw>=slo?'pos':'neg')+
+    SR('Meilleure s&eacute;rie',bs+' gains de suite','pos');
   }
   if(d.fights&&d.fights.length){
    document.getElementById('fights-sec').style.display='block';
@@ -1993,6 +2050,38 @@ class H(BaseHTTPRequestHandler):
         _parts = [x for x in p.split("/") if x]
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
+        if len(_parts) == 2 and _parts[1] == "set_goal":
+            # master sets the Objectif bar target (pwd gated)
+            u = user_by_token(_parts[0])
+            if u is None or str(u.get("login")) != str(LOGIN):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up5
+                _f5 = _up5.parse_qs(self.rfile.read(ln)
+                                    .decode("utf-8", "replace"))
+                _pw = (_f5.get("pwd", [""])[0] or "").strip()
+                if not pwd_ok(u, _pw):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                try:
+                    _amt = float(_f5.get("amount", ["0"])[0] or 0)
+                except Exception:
+                    _amt = 0.0
+                json.dump({"enabled": _amt > 0,
+                           "milestone": round(_amt, 2)},
+                          open(os.path.join(
+                              DIR, "owl_milestone.json"), "w"))
+                self._send(json.dumps({"ok": True, "goal": _amt}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_invite":
             # master creates a real-account invite code (pwd gated)
             u = user_by_token(_parts[0])
