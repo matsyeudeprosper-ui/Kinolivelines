@@ -1505,8 +1505,10 @@ def main():
                         if _pnl2 < 0:
                             _led["debt"] = round(_led["debt"] - _pnl2, 2)
                         if _pnl2 < -0.5:
-                            # REAL loss: chest spent, ladder steps
-                            _led["chest"] = 0.0
+                            # keep-the-change (user 09-07, measured
+                            # free): only the actual bill is deducted
+                            _led["chest"] = round(max(
+                                0.0, _led["chest"] + _pnl2), 2)
                             _led["next_lot"] = min(
                                 CHEST_LADDER_CAP,
                                 round(float(_lk.get("lot", 0.02))
@@ -1532,7 +1534,9 @@ def main():
                         # recovery continues until the book is empty
                         _led["debt"] = round(max(0.0, _led["debt"]
                                                  - _pnl2), 2)
-                        _led["chest"] = 0.0
+                        # win costs the pot nothing - it stays, so
+                        # fighters can go back-to-back while debt
+                        # remains (user 09-07, measured free)
                         _led["next_lot"] = 0.02
                         if _led["debt"] <= 0.5:
                             _led["debt"] = 0.0
