@@ -33,7 +33,8 @@ if not os.path.exists(VAPID_PEM):
     open(VAPID_PEM, "w").write(pem)
 
 
-def send_all(title, body, kind="instant"):
+def send_all(title, body, kind="instant", only_uid=None,
+             skip_uids=None):
     try:
         subs = json.load(open(SUBS))
     except Exception:
@@ -46,6 +47,10 @@ def send_all(title, body, kind="instant"):
     changed = False
     total = 0
     for uid, lst in list(subs.items()):
+        if only_uid is not None and uid != only_uid:
+            continue
+        if skip_uids and uid in skip_uids:
+            continue
         if kind == "batch" and prefs.get(uid) == "important":
             continue    # this user only wants the big events
         keep = []
@@ -121,17 +126,23 @@ def maybe_weekly():
     except Exception:
         pass
     try:
-        d = json.load(open(os.path.join(DIR, "nest_data",
-                                        "kino.json")))
-        week = float(d.get("week") or 0.0)
-        days = d.get("days") or []
-        g = sum(1 for x in days if x.get("p", 0) > 0)
-        r = sum(1 for x in days if x.get("p", 0) < 0)
-        title = (f"\U0001f4ca Votre semaine : {week:+.2f} $")
-        body = (f"{g} jour{'s' if g > 1 else ''} vert"
-                f"{'s' if g > 1 else ''}, {r} rouge"
-                f"{'s' if r > 1 else ''}. Bonne semaine !")
-        send_all(title, body)
+        subs = json.load(open(SUBS))
+        for uid in subs:
+            src = "kino" if uid in ("kino", "std") else uid
+            try:
+                d = json.load(open(os.path.join(
+                    DIR, "nest_data", src + ".json")))
+            except Exception:
+                continue
+            week = float(d.get("week") or 0.0)
+            days = d.get("days") or []
+            g = sum(1 for x in days if x.get("p", 0) > 0)
+            r = sum(1 for x in days if x.get("p", 0) < 0)
+            send_all(f"\U0001f4ca Votre semaine : {week:+.2f} $",
+                     f"{g} jour{'s' if g > 1 else ''} vert"
+                     f"{'s' if g > 1 else ''}, {r} rouge"
+                     f"{'s' if r > 1 else ''}. Bonne semaine !",
+                     only_uid=uid)
         json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
     except Exception as e:
         mylog(f"weekly failed: {e}")
@@ -176,6 +187,38 @@ def maybe_morning():
         mylog(f"morning failed: {e}")
 
 
+_member_today = {}
+
+
+def member_trades():
+    """Per-member personalized pushes: watch each subscribed family
+    member's own nest stats and push THEIR deltas (their scale)."""
+    try:
+        subs = json.load(open(SUBS))
+    except Exception:
+        return
+    for uid in subs:
+        if uid in ("kino", "std"):
+            continue    # the master hears the log-based pushes
+        try:
+            nd = json.load(open(os.path.join(DIR, "nest_data",
+                                             uid + ".json")))
+            t = round(float(nd.get("today") or 0.0), 2)
+        except Exception:
+            continue
+        prev = _member_today.get(uid)
+        _member_today[uid] = t
+        if prev is None:
+            continue
+        delta = round(t - prev, 2)
+        if abs(delta) < 0.01 or (t == 0 and abs(prev) > 0.01):
+            continue    # no change, or day rollover
+        title = (f"\U0001f4b0 +{delta:.2f} $" if delta > 0
+                 else f"\U0001f6e1️ {delta:.2f} $")
+        send_all(title, f"Aujourd'hui : {t:+.2f} $ (votre compte)",
+                 kind="batch", only_uid=uid)
+
+
 def main():
     mylog("notifier started")
     # two live accounts (2026-09-07): Pro (flagship, no prefix) and
@@ -200,11 +243,15 @@ def main():
     except Exception:
         _bf = None
     _wk_last = 0.0
+    _mb_last = 0.0
     while True:
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
             maybe_morning()
+        if time.time() - _mb_last > 12:
+            _mb_last = time.time()
+            member_trades()
         if _bf is not None:
             while True:
                 bl = _bf.readline()
@@ -249,7 +296,11 @@ def main():
                                 f" $")
                     except Exception:
                         pass
-                    send_all(s["pfx"] + title, body, kind="batch")
+                    # master log numbers go only to the master; family
+                    # members get their OWN account's numbers via the
+                    # per-member watcher below (2026-09-07 go-live)
+                    send_all(s["pfx"] + title, body, kind="batch",
+                             only_uid="kino")
         if not got:
             time.sleep(2)
 
