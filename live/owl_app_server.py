@@ -363,6 +363,17 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .shghost{background:#1e2937;color:#c6d3df}
 .grab{width:38px;height:4px;border-radius:99px;background:#2a3a4e;
  margin:0 auto 14px}
+#tourbg{position:fixed;inset:0;background:rgba(4,8,14,.72);
+ display:none;z-index:51}
+#tourbx{position:fixed;left:16px;right:16px;z-index:53;display:none;
+ background:#16202e;border:1px solid #2a5a80;border-radius:18px;
+ padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.6);
+ max-width:420px;margin:0 auto}
+#tourbx p{color:#dbe7f3;font-size:1rem;line-height:1.6;margin:0}
+#tourdots{margin-top:12px;color:#5f7185;letter-spacing:.35em;
+ font-size:.8rem}
+.tourhl{position:relative;z-index:52;border-radius:16px;
+ box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(37,99,235,.65)!important}
 </style></head><body>
 <div class="hero">
 <div class="topline"><span class="brand">&#129417; OwlNest</span>
@@ -537,6 +548,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  text-decoration:none;display:inline-block;margin-top:12px">&#128465;
  Retirer mon compte du robot</a>
 </div>
+<a href="#" id="tourbtn" style="display:block;margin-top:14px;
+ text-align:center;color:#8fa1b3;font-size:.86rem;
+ text-decoration:none">&#127891; Revoir le guide</a>
 <a class="exit" href="../">&#8618; Changer de compte &middot;
  cr&eacute;er un nouveau nid</a>
 </div>
@@ -562,6 +576,17 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div id="sheetbg"></div>
 <div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
+<div id="tourbg"></div>
+<div id="tourbx"><p id="tourtxt"></p>
+ <div style="display:flex;justify-content:space-between;
+  align-items:center;margin-top:14px">
+  <a href="#" id="tourskip" style="color:#5f7185;font-size:.85rem;
+   text-decoration:none">Passer</a>
+  <span id="tourdots"></span>
+  <button id="tournext" class="shbtn shmain" style="width:auto;
+   margin:0;padding:10px 22px">Suivant</button>
+ </div>
+</div>
 <script>
 const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 (function(){
@@ -759,6 +784,64 @@ async function notifSetup(){
  };
 }
 window.addEventListener('load',notifSetup);
+const TOUR=[
+ ['eq','&#128176; &Ccedil;a, c&#39;est votre argent. Il se met '+
+  '&agrave; jour tout seul, toutes les 5 secondes.'],
+ ['meteo','&#127782;&#65039; La m&eacute;t&eacute;o du robot : '+
+  'soleil = il travaille tranquillement, orage = il se met &agrave; '+
+  'l&#39;abri et attend.'],
+ ['ledcard','&#9876;&#65039; Quand le robot perd un peu, il '+
+  '&eacute;conomise ses petits gains, puis envoie un soldat '+
+  'rattraper la perte. Tout se suit ici.'],
+ [null,'&#128197; En bas : l&#39;Accueil, l&#39;Historique jour par '+
+  'jour, et les R&eacute;glages &mdash; pensez &agrave; activer '+
+  'les notifications !']];
+let _ti=-1;
+function tourStep(i){
+ document.querySelectorAll('.tourhl').forEach(x=>
+  x.classList.remove('tourhl'));
+ if(i>=TOUR.length){
+  document.getElementById('tourbg').style.display='none';
+  document.getElementById('tourbx').style.display='none';
+  try{localStorage.setItem('owlTourDone','1')}catch(e){}
+  _ti=-1;return;
+ }
+ _ti=i;
+ const [tid,txt]=TOUR[i];
+ const el=tid?document.getElementById(tid)
+  :document.querySelector('.tabbar');
+ document.getElementById('tourbg').style.display='block';
+ const bx=document.getElementById('tourbx');
+ bx.style.display='block';
+ document.getElementById('tourtxt').innerHTML=txt;
+ document.getElementById('tourdots').innerHTML=
+  TOUR.map((_,k)=>k===i?'&#9679;':'&#9675;').join('');
+ document.getElementById('tournext').textContent=
+  i===TOUR.length-1?'C’est parti !':'Suivant';
+ if(el){
+  el.classList.add('tourhl');
+  try{el.scrollIntoView({block:'center',behavior:'smooth'})}
+  catch(e){}
+  setTimeout(()=>{
+   const r=el.getBoundingClientRect();
+   const below=r.bottom<window.innerHeight*0.55;
+   bx.style.top=below?(r.bottom+14)+'px':'';
+   bx.style.bottom=below?'':(window.innerHeight-r.top+14)+'px';
+   if(!below)bx.style.top='auto';
+  },350);
+ }
+}
+window.addEventListener('load',()=>{
+ document.getElementById('tournext').onclick=()=>tourStep(_ti+1);
+ document.getElementById('tourskip').onclick=(e)=>{
+  e.preventDefault();tourStep(TOUR.length);};
+ const tb=document.getElementById('tourbtn');
+ if(tb)tb.onclick=(e)=>{e.preventDefault();
+  tab('home',document.querySelector('.tb'));tourStep(0);};
+ setTimeout(()=>{try{
+  if(!localStorage.getItem('owlTourDone'))tourStep(0);
+ }catch(e){}},1500);
+});
 function tab(n,el){
  document.querySelectorAll('.tab').forEach(x=>
   x.classList.toggle('on',x.id==='tab-'+n));
