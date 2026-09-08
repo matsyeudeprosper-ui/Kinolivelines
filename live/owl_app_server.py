@@ -368,6 +368,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  rgba(255,255,255,.08),transparent);animation:shim 1.2s infinite}
 @keyframes shim{0%{transform:translateX(-100%)}
  100%{transform:translateX(100%)}}
+@keyframes ipulse{0%{box-shadow:0 0 0 0 rgba(127,179,224,.45)}
+ 70%{box-shadow:0 0 0 8px rgba(127,179,224,0)}
+ 100%{box-shadow:0 0 0 0 rgba(127,179,224,0)}}
 #sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.55);
  display:none;z-index:40;opacity:0;transition:opacity .2s}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;
@@ -449,9 +452,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  <div id="ft-sub" style="font-size:.76rem;color:#6f93b5;
   margin-top:6px"></div>
 </div>
-<div id="ledcard" style="display:none;margin-top:12px;background:#101c2b;
- border:1px solid #23405e;border-radius:16px;
+<div id="ledcard" style="display:none;position:relative;margin-top:12px;
+ background:#101c2b;border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
+ <button onclick="ledInfo()" aria-label="explications" style="
+  position:absolute;right:9px;bottom:9px;width:26px;height:26px;
+  border-radius:50%;border:1px solid rgba(127,179,224,.4);
+  background:rgba(127,179,224,.12);color:#7fb3e0;font-size:.8rem;
+  font-weight:700;font-style:italic;font-family:Georgia,serif;
+  cursor:pointer;animation:ipulse 2.6s ease-out infinite">i</button>
  <div id="led-hd" style="font-size:.7rem;color:#6f93b5;
   text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">
   Le rattrapage</div>
@@ -741,6 +750,53 @@ function askPwd(title,desc,btn,danger){return sheet(
   return v;});}
 function info(html){return sheet(html+
  '<button class="shbtn shmain" onclick="_shDone(1)">OK</button>');}
+function ledInfo(){
+ const row=(ic,t,s)=>'<div style="display:flex;gap:12px;'+
+  'align-items:flex-start;margin:13px 0">'+
+  '<div style="flex:0 0 38px;height:38px;border-radius:12px;'+
+   'background:rgba(127,179,224,.1);border:1px solid '+
+   'rgba(127,179,224,.18);display:flex;align-items:center;'+
+   'justify-content:center;font-size:1.05rem">'+ic+'</div>'+
+  '<div style="min-width:0"><b style="font-size:.86rem">'+t+
+   '</b><div style="font-size:.79rem;color:#8fa1b3;'+
+   'line-height:1.45">'+s+'</div></div></div>';
+ const man=isPaused;
+ sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
+  '<p style="font-size:.78rem;color:#6f93b5;margin:0 0 6px">'+
+  (man?'Votre plan de r&eacute;cup&eacute;ration, comme celui '+
+    'du robot':'Comment le robot r&eacute;cup&egrave;re une '+
+    'perte, sans jamais creuser le compte')+'</p>'+
+  row('&#128546;','&Agrave; rattraper',
+   'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
+   'Chaque gain fait baisser ce chiffre.')+
+  row('&#128176;','Gains de c&ocirc;t&eacute;',
+   (man?'Vos gains':'Les gains du robot')+' sont mis dans une '+
+   'r&eacute;serve au lieu d&#39;&ecirc;tre risqu&eacute;s '+
+   '&agrave; nouveau.')+
+  row('&#127919;',man?'Le grand chiffre vert'
+    :'Prochain soldat',
+   (man?'Le plus gros trade que la r&eacute;serve peut payer '+
+     'enti&egrave;rement. Vous pouvez prendre moins &mdash; '+
+     'jamais plus.'
+    :'Le trade un peu plus gros que le robot pr&eacute;pare '+
+     'pour rattraper la perte, pay&eacute; par la '+
+     'r&eacute;serve.'))+
+  row('&#128299;','Les balles',
+   (man?'1 balle = un trade de 0.01 d&eacute;j&agrave; '+
+     'pay&eacute;. Magasin plein = carte dor&eacute;e : votre '+
+     'grand coup est pr&ecirc;t.'
+    :'Le soldat se remplit gain apr&egrave;s gain. Magasin '+
+     'plein = carte dor&eacute;e : il attaque au prochain '+
+     'signal.'))+
+  '<div style="background:rgba(46,204,113,.08);border:1px solid '+
+   'rgba(46,204,113,.2);border-radius:12px;padding:10px 12px;'+
+   'font-size:.8rem;color:#9fd4b5;line-height:1.45;margin:4px 0 '+
+   '10px">&#128737;&#65039; Si le coup rate, seule la '+
+   'r&eacute;serve paie &mdash; le compte ne descend pas plus '+
+   'bas. S&#39;il gagne, la dette fond.</div>'+
+  '<button class="shbtn shmain" onclick="_shDone(1)">'+
+  'Compris&nbsp;!</button>');
+}
 window.addEventListener('load',()=>{
  const pb=document.getElementById('pausebtn');
  if(pb)pb.onclick=async(e)=>{e.preventDefault();
