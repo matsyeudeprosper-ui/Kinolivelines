@@ -298,16 +298,23 @@ def main():
         f"choch {eng.choch} kept {len(eng.kept)}")
     last_book = time.time() - 60
     warned_funds = 0.0
+    last_house = 0.0
 
     while True:
-        time.sleep(10)
+        # user 2026-09-08: act ON the candle close - wake right
+        # after each broker minute boundary (max ~0.2s + processing
+        # lag), light 1s ticks in between
+        _to_min = 60.0 - (time.time() % 60.0) + 0.2
+        time.sleep(min(_to_min, 1.0))
         try:
             if st.get("killed"):
                 time.sleep(300)
                 continue
-            book_closes(st, last_book - 30)
-            last_book = time.time()
-            save_state(st)
+            if time.time() - last_house >= 10.0:
+                last_house = time.time()
+                book_closes(st, last_book - 30)
+                last_book = time.time()
+                save_state(st)
             net = st.get("banked", 0.0) + floating()
             if net <= KILL_NET:
                 say(f"KILL LINE: net {net:.2f} <= {KILL_NET} - "

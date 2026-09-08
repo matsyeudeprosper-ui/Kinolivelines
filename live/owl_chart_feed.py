@@ -320,7 +320,10 @@ def main():
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)
             time.sleep(30)
-        time.sleep(3)
+        # sync with the broker minute: wake right after each candle
+        # close so the chart flips forming->closed with the broker,
+        # ~1s ticks otherwise (user 2026-09-08)
+        time.sleep(min(60.0 - (time.time() % 60.0) + 0.2, 1.0))
 
 
 if __name__ == "__main__":
