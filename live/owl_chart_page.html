@@ -6,8 +6,8 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-#hd{display:flex;align-items:center;gap:9px;padding:12px 14px 6px;
- position:relative;z-index:3}
+#hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+ padding:12px 96px 6px 14px;position:relative;z-index:3}
 #back{text-decoration:none;color:#9fc2de;font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
 #hd h1{font-size:1rem;font-weight:700;letter-spacing:.01em}
@@ -31,8 +31,8 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  opacity:0;transition:opacity 1s}
 #aura.choc{opacity:1;animation:chocp 2.4s ease-in-out infinite}
 @keyframes chocp{
- 0%,100%{box-shadow:inset 0 0 34px 2px rgba(232,197,90,.14)}
- 50%{box-shadow:inset 0 0 60px 10px rgba(232,197,90,.32)}}
+ 0%,100%{box-shadow:inset 0 0 16px 0 rgba(232,197,90,.05)}
+ 50%{box-shadow:inset 0 0 28px 3px rgba(232,197,90,.13)}}
 </style></head><body>
 <div id="aura"></div>
 <div id="hd">
@@ -80,13 +80,13 @@ function draw(){
  ctx.clearRect(0,0,W,Hh);
  // --- trend atmosphere ---
  if(D.trend===1){
-  const g=ctx.createLinearGradient(0,Hh,0,Hh*0.35);
-  g.addColorStop(0,'rgba(46,204,113,.12)');
+  const g=ctx.createLinearGradient(0,Hh,0,Hh*0.55);
+  g.addColorStop(0,'rgba(46,204,113,.06)');
   g.addColorStop(1,'rgba(46,204,113,0)');
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Hh);
  }else if(D.trend===-1){
-  const g=ctx.createLinearGradient(0,0,0,Hh*0.65);
-  g.addColorStop(0,'rgba(255,92,92,.12)');
+  const g=ctx.createLinearGradient(0,0,0,Hh*0.45);
+  g.addColorStop(0,'rgba(255,92,92,.06)');
   g.addColorStop(1,'rgba(255,92,92,0)');
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Hh);
  }
