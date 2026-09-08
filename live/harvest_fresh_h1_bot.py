@@ -43,8 +43,13 @@ from datetime import datetime, timezone
 
 import MetaTrader5 as mt5
 
-TERMINAL = r"C:\NestTerminals\u223985697\terminal64.exe"
-LOGIN = 223985697
+# 2026-09-08 user: forward test on the DEMO Pro account (the -$120
+# live kill was too much real money to spend on a test). $1000 demo
+# = the strategy can live through its full historical drawdown.
+TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
+LOGIN = 476954287
+PASSWORD = "M@tsy1983"
+SERVER = "Exness-MT5Trial9"
 SYMBOL = "BTCUSD"
 MAGIC = 909001
 COMMENT = "KL-FRESH"
@@ -60,12 +65,13 @@ CAP = 3                     # standing positions; 4th fill = liquidate
                             # / vsR +996 2SE 314 6/6 - strictly beats
                             # cap4's +1632 / -199; cap1 loses the edge)
 DAY_CAP = 2                 # first N cycle starts per UTC day
-KILL_NET = -120.0           # SPEC_FRESH_H1_LIVE amended kill: one
-                            # worst-observed cycle (-118) breaches it;
-                            # that outcome = unlucky-fail, user decides
-                            # any restart. Backtest maxDD is 313 over
-                            # 12.6y - the $198 account cannot buy that
-                            # much patience; this is a direction test.
+KILL_NET = -350.0           # DEMO amendment 2026-09-08: on $1000
+                            # demo money the test can afford the
+                            # strategy's full historical drawdown
+                            # (maxDD 313 over 12.6y) - kill only
+                            # beyond it, meaning "worse than the
+                            # worst 12.6 years" = the edge is not
+                            # what the backtest said.
 SEED_BARS = 80000
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -198,7 +204,9 @@ def banked_since(t_from):
 
 
 def main():
-    assert mt5.initialize(path=TERMINAL), "MT5 init failed"
+    assert mt5.initialize(path=TERMINAL, login=LOGIN,
+                          password=PASSWORD, server=SERVER,
+                          timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
     say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f}")
