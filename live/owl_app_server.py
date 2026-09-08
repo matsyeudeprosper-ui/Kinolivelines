@@ -3224,7 +3224,15 @@ class H(BaseHTTPRequestHandler):
         elif sub == "api":
             self._send(json.dumps(user_stats(user)), "application/json")
         elif sub == "chart":
-            self._send(CHART_PAGE, "text/html; charset=utf-8")
+            # aura redesign 2026-09-08 lives in its own file; the
+            # inline constant is only the fallback
+            try:
+                self._send(open(os.path.join(
+                    DIR, "owl_chart_page.html"),
+                    encoding="utf-8").read(),
+                    "text/html; charset=utf-8")
+            except Exception:
+                self._send(CHART_PAGE, "text/html; charset=utf-8")
         elif sub == "chart_data":
             try:
                 self._send(open(os.path.join(
