@@ -630,6 +630,14 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
    pause</b></div>
   <span class="chv">&#8250;</span>
  </div>
+ <a class="srow" id="chartbtn" href="#"
+  style="display:none;text-decoration:none;color:inherit">
+  <div class="sic">&#128200;</div>
+  <div style="flex:1"><b>Graphique custom (BTC)</b>
+   <div class="ssub">M1 filtr&eacute; &mdash; labo du
+    ma&icirc;tre</div></div>
+  <span class="chv">&#8250;</span>
+ </a>
 </div>
 <div class="sec">Compte</div>
 <div class="panel" style="padding:4px 14px">
@@ -1584,7 +1592,10 @@ function render(d){
    document.getElementById('adm-sec').style.display='block';
    document.getElementById('adm-card').style.display='block';
    document.getElementById('codebtn').style.display='flex';
-   document.getElementById('goalbtn').style.display='flex';}
+   document.getElementById('goalbtn').style.display='flex';
+   const cb=document.getElementById('chartbtn');
+   cb.style.display='flex';
+   cb.href=location.pathname.replace(/\\/+$/,'')+'/chart';}
   document.getElementById('st').innerHTML =
    (d.trading_paused)
    ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
