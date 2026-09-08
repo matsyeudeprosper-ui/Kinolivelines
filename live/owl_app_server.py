@@ -2078,6 +2078,16 @@ def user_stats(u):
                 d["ledger"] = json.load(open(os.path.join(
                     DIR, f"owl_ledger{_sfx}.json")))
                 d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
+            elif u.get("id") == "bos":
+                # the Structure Bot keeps its own debt/bullet books
+                _bs = json.load(open(os.path.join(
+                    DIR, "bos_state.json")))
+                d["ledger"] = {
+                    "debt": float(_bs.get("debt") or 0.0),
+                    "chest": float(_bs.get("chest") or 0.0),
+                    "cap": 5.0,
+                    "next_lot": 0.03,
+                    "need_min": 3.0}  # ~one bullet at typical stop
         except Exception:
             pass
         try:

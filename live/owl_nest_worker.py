@@ -94,8 +94,11 @@ def compute():
         curve.append(round(cum, 2))
     open_pos = mt5.positions_get(symbol=SYMBOL) or []
     if BOT_ONLY:
+        # 2026-09-08: KL- covers the new bot family (KL-BOS,
+        # KL-FRESH) - their trades were invisible with OWL- only
         floating = sum(p.profit + p.swap for p in open_pos
-                       if (p.comment or "").startswith("OWL-"))
+                       if (p.comment or "").startswith(
+                           ("OWL-", "KL-")))
     else:
         floating = ai.equity - ai.balance
     dd = max(dd, peak - (cum + floating))
@@ -105,7 +108,7 @@ def compute():
     dd = max(x[1] for x in _ddhist)
     if BOT_ONLY:
         _shown = [p for p in open_pos
-                  if (p.comment or "").startswith("OWL-")]
+                  if (p.comment or "").startswith(("OWL-", "KL-"))]
     else:
         _shown = list(open_pos)
     open_list = [{"d": ("A" if p.type == mt5.POSITION_TYPE_BUY else "V"),
