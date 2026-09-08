@@ -2260,6 +2260,9 @@ function draw(){
  let lo=Infinity,hi=-Infinity;
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
  if(D.live){hi=Math.max(hi,D.live[2]);lo=Math.min(lo,D.live[3]);}
+ (D.trades||[]).forEach(t=>{
+  [t[2],t[3],t[4]].forEach(v=>{
+   if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
  const cw=W/(N+9);   // ~7 empty slots of forward space
@@ -2351,6 +2354,40 @@ function draw(){
   dot.style.left=(r.left+x-5)+'px';
   dot.style.top=(r.top+yc-5)+'px';
  }else{dot.style.display='none';}
+ const tag=(y,txt,col,bg)=>{
+  ctx.font='bold 9px system-ui';
+  const w=ctx.measureText(txt).width+10;
+  ctx.fillStyle=bg;
+  ctx.beginPath();
+  ctx.roundRect(W-w-4,y-8,w,16,8);ctx.fill();
+  ctx.fillStyle=col;
+  ctx.fillText(txt,W-w+1,y+3.5);};
+ (D.trades||[]).forEach(t=>{
+  const yE=px(t[2]);
+  ctx.strokeStyle='rgba(127,179,224,.8)';
+  ctx.setLineDash([7,4]);
+  ctx.beginPath();ctx.moveTo(0,yE);ctx.lineTo(W,yE);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=t[0]===1?'#2ecc71':'#ff5c5c';
+  const s=5;
+  ctx.beginPath();
+  if(t[0]===1){ctx.moveTo(8,yE-2-s);ctx.lineTo(8-s,yE-2+s*0.6);
+   ctx.lineTo(8+s,yE-2+s*0.6);}
+  else{ctx.moveTo(8,yE+2+s);ctx.lineTo(8-s,yE+2-s*0.6);
+   ctx.lineTo(8+s,yE+2-s*0.6);}
+  ctx.closePath();ctx.fill();
+  tag(yE,(t[0]===1?'\\u25b2 ':'\\u25bc ')+t[1].toFixed(2)+
+   (t[5]>=0?'  +':'  ')+t[5].toFixed(2)+' $',
+   '#cfe3f5','rgba(127,179,224,.25)');
+  if(t[3]>0){const y=px(t[3]);
+   ctx.strokeStyle='rgba(255,92,92,.75)';
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   tag(y,'SL '+t[3].toFixed(0),'#ffd7d7','rgba(255,92,92,.3)');}
+  if(t[4]>0){const y=px(t[4]);
+   ctx.strokeStyle='rgba(46,204,113,.75)';
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   tag(y,'TP '+t[4].toFixed(0),'#d2f5e0','rgba(46,204,113,.3)');}
+ });
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(232,197,90,.55)';
    ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(0,y);

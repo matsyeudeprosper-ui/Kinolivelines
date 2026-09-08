@@ -258,6 +258,13 @@ def main():
             R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
                                         0, RAW_BARS)
             tick = mt5.symbol_info_tick(SYMBOL)
+            trades = []
+            for p in (mt5.positions_get(symbol=SYMBOL) or []):
+                trades.append([
+                    1 if p.type == mt5.POSITION_TYPE_BUY else -1,
+                    float(p.volume), round(p.price_open, 2),
+                    round(p.sl, 2), round(p.tp, 2),
+                    round(p.profit, 2)])
             if R is not None and len(R) > 1 and tick is not None:
                 kept = build(R[:-1])       # closed bars only
                 lv = R[-1]                 # the forming candle, live
@@ -283,6 +290,7 @@ def main():
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
                      "marks": marks, "trend": trend, "choch": choch,
+                     "trades": trades,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:
