@@ -47,6 +47,41 @@ def build(rates):
     return kept
 
 
+def swings(kept):
+    """Swing markers (user 2026-09-08), computed on VISIBLE candles:
+    - a new higher high confirms a SWING LOW = the lowest low
+      strictly between the last high and the new high, valid only if
+      at least one red candle sits in that span;
+    - a new lower low confirms a SWING HIGH = the highest high in
+      the span, valid only with at least one green candle there.
+    Bullish legs therefore mark lows, bearish legs mark highs.
+    Returns [[time, price, kind], ...], kind 1=low, -1=high."""
+    if len(kept) < 3:
+        return []
+    dots = []
+    hi_i, hi_v = 0, kept[0][2]
+    lo_i, lo_v = 0, kept[0][3]
+    for i in range(1, len(kept)):
+        h, l = kept[i][2], kept[i][3]
+        if h > hi_v:
+            span = kept[hi_i + 1:i]
+            if span and any(x[5] == -1 for x in span):
+                m = min(span, key=lambda x: x[3])
+                dots.append([m[0], m[3], 1])
+                lo_i = kept.index(m)
+                lo_v = m[3]
+            hi_i, hi_v = i, h
+        elif l < lo_v:
+            span = kept[lo_i + 1:i]
+            if span and any(x[5] == 1 for x in span):
+                m = max(span, key=lambda x: x[2])
+                dots.append([m[0], m[2], -1])
+                hi_i = kept.index(m)
+                hi_v = m[2]
+            lo_i, lo_v = i, l
+    return dots
+
+
 def main():
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
@@ -65,10 +100,13 @@ def main():
                         round(float(lv["low"]), 2),
                         round(float(lv["close"]), 2),
                         1 if lv["close"] >= lv["open"] else -1]
+                win = kept[-KEEP_LAST:]
+                t0 = win[0][0] if win else 0
+                dots = [d for d in swings(kept) if d[0] >= t0]
                 json.dump(
                     {"updated": int(time.time()), "symbol": SYMBOL,
                      "raw": len(R) - 1, "kept": len(kept),
-                     "candles": kept[-KEEP_LAST:], "live": live,
+                     "candles": win, "live": live, "dots": dots,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:

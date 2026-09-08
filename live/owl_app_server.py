@@ -2269,8 +2269,10 @@ function draw(){
   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
   ctx.fillStyle='#3d4f63';ctx.font='10px system-ui';
   ctx.fillText((lo+pad+(hi-lo-2*pad)*g/4).toFixed(0),4,y-3);}
+ const xoft={};
  cs.forEach((c,i)=>{
   const x=cw*(i+1);
+  xoft[c[0]]=x;
   const up=c[5]===1;
   ctx.strokeStyle=up?'#2ecc71':'#ff5c5c';
   ctx.fillStyle=up?'#2ecc71':'#ff5c5c';
@@ -2279,6 +2281,25 @@ function draw(){
   ctx.stroke();
   const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
   ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
+ });
+ (D.dots||[]).forEach(d=>{
+  const x=xoft[d[0]];
+  if(x===undefined)return;
+  const isLow=d[2]===1;
+  const y=px(d[1])+(isLow?9:-9);
+  const col=isLow?'#4fd8c8':'#ffb86b';
+  const g=ctx.createRadialGradient(x,y,0,x,y,11);
+  g.addColorStop(0,col);
+  g.addColorStop(0.35,col+'88');
+  g.addColorStop(1,col+'00');
+  ctx.fillStyle=g;
+  ctx.beginPath();ctx.arc(x,y,11,0,6.3);ctx.fill();
+  ctx.fillStyle=col;
+  ctx.beginPath();ctx.arc(x,y,3,0,6.3);ctx.fill();
+  ctx.fillStyle='#ffffff';
+  ctx.globalAlpha=0.9;
+  ctx.beginPath();ctx.arc(x,y,1.2,0,6.3);ctx.fill();
+  ctx.globalAlpha=1;
  });
  const dot=document.getElementById('livedot');
  if(D.live){
