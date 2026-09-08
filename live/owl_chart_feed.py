@@ -125,10 +125,15 @@ def engine(kept):
             marks.append([t, prot_lo[1], "choch", -1])
             choch = -1
             prot_lo = None
+            # the BOS must break a low formed AFTER the choc - the
+            # choc candle itself becomes the new reference (2026-09-08
+            # fix: choc+bos were collapsing onto one candle)
+            lo_i, lo_v = i, l
         elif trend == -1 and prot_hi is not None and c > prot_hi[1]:
             marks.append([t, prot_hi[1], "choch", 1])
             choch = 1
             prot_hi = None
+            hi_i, hi_v = i, h
         # --- higher-high close event -> may confirm a LOW dot ---
         if c > hi_v:
             span = kept[hi_i + 1:i]
