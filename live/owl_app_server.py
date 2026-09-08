@@ -508,6 +508,13 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
    letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
  </div>
  <div id="battles"></div>
+ <a id="batchart" href="#" style="display:flex;align-items:center;
+  justify-content:center;gap:7px;margin-top:10px;padding:9px;
+  border-radius:12px;text-decoration:none;color:#9fd4ff;
+  font-size:.8rem;font-weight:700;
+  background:rgba(127,179,224,.1);
+  border:1px solid rgba(127,179,224,.3)">&#128200; Suivre sur le
+  graphique en direct</a>
 </div>
 </div>
 <div class="grid">
@@ -1601,6 +1608,8 @@ function render(d){
    cb.style.display='flex';
    cb.href=location.pathname.replace(/\\/+$/,'')+'/chart';}
   document.getElementById('chartlink').href=
+   location.pathname.replace(/\\/+$/,'')+'/chart';
+  document.getElementById('batchart').href=
    location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
