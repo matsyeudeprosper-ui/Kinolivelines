@@ -195,6 +195,14 @@ SSTOP_CAP_PTS = 25.0       # 2026-09-07 user DEPLOY (ahead of forward
                            # breakeven+-2. Storm system goes dormant at
                            # this loss scale (losses < $0.50 bar).
                            # ROLLBACK: set to 1e9 + restart both bots.
+KINO_ENTRIES = False       # 2026-09-08 RETIRED under the user's
+                           # standing auto-fix authorisation: the
+                           # recipe failed its preregistered forward
+                           # test (33 trades, -2.22, kill line) and
+                           # spread-correct replay shows the entry is
+                           # noise (random beats it). This bot is now
+                           # scribe/manager only; harvest_fresh_h1_bot
+                           # trades the account. ROLLBACK: True.
 CHEST_FUND_MAX = 5.0       # 2026-09-06 user: wins keep filling the fund
                            # even with NO debt (a standing emergency
                            # fund, ~one ticket) - capped, or the gate
@@ -679,6 +687,15 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
     max 2 pages (hand + kino, chains excluded), 1 fire/hour, balance,
     min wall distance. SL = wall, TP = near-1:1 with the strength discount.
     Returns the ticket or None."""
+    # RETIRED 2026-09-08 (user's standing auto-fix authorisation): the
+    # recipe FAILED its preregistered live forward test (33 trades,
+    # net -2.22, kill line) and the corrected spread-aware replay
+    # showed the entry is noise - random controls beat it (study/
+    # run_fresh_early_combo_pro.py session). harvest_fresh_h1_bot.py
+    # is the account's engine now. Return True (not a ticket) so
+    # callers consume their pending state without opening anything.
+    if not KINO_ENTRIES:
+        return True
     # ONE PAGE AT A TIME (user 2026-08-31 final + clarification): the
     # 0.04 lot UNLOCKS the next page. Only the LAST active Owl page is
     # checked: if it is still below 0.04, no new page; once it reaches

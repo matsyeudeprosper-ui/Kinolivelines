@@ -27,6 +27,14 @@ if (-not (ProcRunning "owl_manual_bot.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+# 2a) FRESH-H1 harvest engine (the Pro account's TRADING bot since
+#     2026-09-08; owl_manual_bot is scribe/manager only now)
+if (-not (ProcRunning "harvest_fresh_h1_bot.py")) {
+    Say "starting FRESH-H1 harvest (Pro)"
+    Start-Process pythonw -ArgumentList "harvest_fresh_h1_bot.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 2b) STANDARD-account Owl instance (one codebase, regenerated at
 #     launch from owl_manual_bot.py by owl_run_std.py)
 if (-not (ProcRunning "owl_run_std.py")) {

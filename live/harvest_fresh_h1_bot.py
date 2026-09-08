@@ -1,0 +1,343 @@
+"""harvest_fresh_h1_bot.py - the FRESH+EARLY H1 combo, LIVE on the
+Pro account (223985697, BTCUSD, $7 spread). Deployed 2026-09-08 under
+the user's standing auto-fix authorisation, after the KINO recipe
+failed its preregistered forward test (33 trades, net -2.22) and the
+corrected spread-aware replay showed the entry itself is noise
+(random controls beat it on M5/M15; +$0.005/trade gross at S=0).
+
+WHY THIS RULE. It is the only result in this project's history that
+beat rate-matched random selection everywhere tested (original
+2026-08-09 run on BTCUSDm + ETH; re-validated 2026-09-08 on THIS
+symbol/feed: H1 combo +1429 vs random, 2SE 162, 6/6 anchors, zero
+wipeouts in 12.6 years, while the ungated rule dies 5/6). Per-year:
+2022 +134, 2023 +152, 2024 -31, 2025 +375, 2026 +28 YTD (at 0.01).
+Expected pace is SLOW: ~4-14 cycle starts a month.
+
+THE RULE (hedge_engine.simulate, arm="same", exactly):
+  bricks: $50 trading series, $150 gate series, both from H1 CLOSES,
+          2-brick reversals, continuous from seeded history
+  new cycle (basket empty) on a $50-series flip ONLY when
+    a) $150 series direction == trade direction AND its flip pair
+       just printed (bricks-since-flip <= 1)  [fresh window]
+    b) the cycle is one of the day's FIRST 2 (UTC)  [early]
+  first trade 0.01, TP +5 bricks (250), NO stop-loss
+  any position 3 bricks (150) against -> cycle enters RECOVERY
+  in recovery each $50 flip in the FIRST trade's direction adds 0.01
+  (max 4 standing; a 5th fill force-closes the whole basket at loss)
+  basket floating+banked P&L of the cycle back >= 0 -> close all
+  cycle P&L decisions are taken on H1 CLOSES (like the backtest);
+  TPs are broker-side and fire intra-bar (like the backtest's h/l)
+
+SAFETY
+  - honors owl_trading_pause.json: paused = no NEW cycles; an open
+    basket keeps being managed (engine philosophy: abandoning a
+    stopless basket is a different, worse strategy)
+  - hard kill line: bot's own cumulative net <= -$40 (backtest maxDD
+    territory) -> close basket, stop opening, say KILL loudly
+  - one instance; positions tagged comment KL-FRESH, magic 909001
+"""
+import json
+import os
+import time
+from datetime import datetime, timezone
+
+import MetaTrader5 as mt5
+
+TERMINAL = r"C:\NestTerminals\u223985697\terminal64.exe"
+LOGIN = 223985697
+SYMBOL = "BTCUSD"
+MAGIC = 909001
+COMMENT = "KL-FRESH"
+LOT = 0.01
+BRICK = 50.0
+GATE_BRICK = 150.0
+REV = 2
+TP_PTS = 5 * BRICK          # 250
+TRIG_PTS = 3 * BRICK        # 150
+CAP = 4                     # standing positions; 5th fill = liquidate
+DAY_CAP = 2                 # first N cycle starts per UTC day
+KILL_NET = -60.0            # SPEC_FRESH_H1_LIVE preregistered kill
+SEED_BARS = 80000
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+STATE_F = os.path.join(DIR, "harvest_fresh_state.json")
+LOG_F = os.path.join(DIR, "harvest_fresh.log")
+PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
+
+
+def say(msg):
+    line = f"{datetime.now(timezone.utc).isoformat()} {msg}"
+    print(line, flush=True)
+    with open(LOG_F, "a", encoding="utf-8") as f:
+        f.write(line + "\n")
+
+
+class Brick:
+    """Renko series identical to hedge_engine's inline brick loop."""
+
+    def __init__(self, brick, seed_open):
+        self.brick = brick
+        self.ao = self.ac = float(seed_open)
+        self.d = 0
+        self.since = 99          # bricks since last flip
+
+    def push(self, close):
+        """Feed one close; returns list of directions after each brick
+        printed this close (empty if none). Updates freshness."""
+        out = []
+        while True:
+            up = ((self.ao if self.d == -1 else self.ac)
+                  + self.brick * (REV if self.d == -1 else 1))
+            dn = ((self.ao if self.d == 1 else self.ac)
+                  - self.brick * (REV if self.d == 1 else 1))
+            if close >= up:
+                base = self.ao if self.d == -1 else self.ac
+                self.since = 0 if self.d == -1 else self.since + 1
+                self.ao, self.ac, self.d = base, base + self.brick, 1
+            elif close <= dn:
+                base = self.ao if self.d == 1 else self.ac
+                self.since = 0 if self.d == 1 else self.since + 1
+                self.ao, self.ac, self.d = base, base - self.brick, -1
+            else:
+                break
+            out.append(self.d)
+        return out
+
+
+def paused():
+    try:
+        return bool(json.load(open(PAUSE_F)).get("paused"))
+    except Exception:
+        return False
+
+
+def load_state():
+    try:
+        return json.load(open(STATE_F))
+    except Exception:
+        return {"banked": 0.0, "cycle_banked": 0.0, "rec": False,
+                "cyc_dir": None, "day": None, "day_cycles": 0,
+                "killed": False, "last_bar": 0}
+
+
+def save_state(st):
+    json.dump(st, open(STATE_F, "w"))
+
+
+def my_positions():
+    ps = mt5.positions_get(symbol=SYMBOL) or []
+    return [p for p in ps if p.magic == MAGIC]
+
+
+def open_trade(want_long, tp_px):
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return None
+    r = mt5.order_send({
+        "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+        "volume": LOT,
+        "type": mt5.ORDER_TYPE_BUY if want_long else mt5.ORDER_TYPE_SELL,
+        "price": tick.ask if want_long else tick.bid,
+        "tp": round(tp_px, 2),
+        "deviation": 200, "magic": MAGIC, "comment": COMMENT,
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        say(f"ENTRY FAILED retcode={r.retcode if r else None}")
+        return None
+    return r
+
+
+def close_position(p):
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return False
+    r = mt5.order_send({
+        "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+        "volume": p.volume, "position": p.ticket,
+        "type": (mt5.ORDER_TYPE_SELL if p.type == mt5.POSITION_TYPE_BUY
+                 else mt5.ORDER_TYPE_BUY),
+        "price": (tick.bid if p.type == mt5.POSITION_TYPE_BUY
+                  else tick.ask),
+        "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-close",
+        "type_filling": mt5.ORDER_FILLING_IOC})
+    return r is not None and r.retcode == mt5.TRADE_RETCODE_DONE
+
+
+def close_all(why):
+    ok = True
+    for p in my_positions():
+        ok = close_position(p) and ok
+    say(f"BASKET CLOSED ({why}) ok={ok}")
+    return ok
+
+
+def floating():
+    return sum(p.profit + p.swap for p in my_positions())
+
+
+def banked_since(t_from):
+    """Realized P&L of MAGIC deals since t_from (cycle bookkeeping)."""
+    ds = mt5.history_deals_get(
+        datetime.fromtimestamp(t_from, tz=timezone.utc),
+        datetime.now(timezone.utc)) or []
+    tot = 0.0
+    for d in ds:
+        if d.magic == MAGIC and d.entry == mt5.DEAL_ENTRY_OUT:
+            tot += d.profit + d.swap + d.commission
+    return tot
+
+
+def main():
+    assert mt5.initialize(path=TERMINAL), "MT5 init failed"
+    ai = mt5.account_info()
+    assert ai and ai.login == LOGIN, f"wrong account {ai}"
+    say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f}")
+
+    R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, SEED_BARS)
+    assert R is not None and len(R) > 1000, "no H1 history"
+    trade_b = Brick(BRICK, R["open"][0])
+    gate_b = Brick(GATE_BRICK, R["open"][0])
+    pd_ = 0
+    for row in R:
+        cl = float(row["close"])
+        for d in trade_b.push(cl):
+            pd_ = d
+        gate_b.push(cl)
+    st = load_state()
+    st["last_bar"] = int(R["time"][-1])
+    save_state(st)
+    say(f"seeded {len(R)} H1 bars; trade dir {trade_b.d} "
+        f"gate dir {gate_b.d} since {gate_b.since}")
+
+    while True:
+        time.sleep(30)
+        try:
+            if st.get("killed"):
+                time.sleep(300)
+                continue
+            kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, 2)
+            if kb is None or len(kb) < 2:
+                continue
+            bar = kb[-1]
+            bt = int(bar["time"])
+            ps = my_positions()
+
+            # kill line, checked every poll
+            net = st.get("banked", 0.0) + floating()
+            if net <= KILL_NET and not st.get("killed"):
+                say(f"KILL LINE: bot net {net:.2f} <= {KILL_NET} - "
+                    f"closing basket, stopping")
+                close_all("kill line")
+                st["killed"] = True
+                save_state(st)
+                continue
+
+            if bt == st.get("last_bar"):
+                continue
+            # ---- new completed H1 bar ----
+            st["last_bar"] = bt
+            cl = float(bar["close"])
+            hi, lo = float(bar["high"]), float(bar["low"])
+            day = bt // 86400
+            if st.get("day") != day:
+                st["day"] = day
+                st["day_cycles"] = 0
+
+            # recovery trigger from this bar's extremes (engine h/l)
+            if ps and not st.get("rec"):
+                for p in ps:
+                    adverse = ((p.price_open - lo)
+                               if p.type == mt5.POSITION_TYPE_BUY
+                               else (hi - p.price_open))
+                    if adverse >= TRIG_PTS:
+                        st["rec"] = True
+                        say(f"RECOVERY: {adverse:.0f}pts against "
+                            f"{p.ticket} - same-direction adds armed")
+                        break
+
+            # cycle bookkeeping: TPs may have banked this bar
+            if st.get("cyc_t0"):
+                st["cycle_banked"] = banked_since(st["cyc_t0"] - 60)
+            ps = my_positions()
+            if not ps and st.get("cyc_dir") is not None:
+                # basket emptied via TPs -> cycle over
+                pnl = st.get("cycle_banked", 0.0)
+                st["banked"] = st.get("banked", 0.0) + pnl
+                say(f"CYCLE OVER via targets {pnl:+.2f} - "
+                    f"bot net {st['banked']:+.2f}")
+                st.update(cyc_dir=None, rec=False, cyc_t0=None,
+                          cycle_banked=0.0)
+
+            # cycle-zero / cap exits (H1 close decisions, like engine)
+            if ps and st.get("rec"):
+                cyc_pnl = st.get("cycle_banked", 0.0) + floating()
+                if cyc_pnl >= 0:
+                    close_all("cycle back to zero")
+                    time.sleep(3)
+                    pnl = banked_since(st["cyc_t0"] - 60)
+                    st["banked"] = st.get("banked", 0.0) + pnl
+                    say(f"CYCLE OVER at zero {pnl:+.2f} - "
+                        f"bot net {st['banked']:+.2f}")
+                    st.update(cyc_dir=None, rec=False, cyc_t0=None,
+                              cycle_banked=0.0)
+                    ps = []
+            if len(ps) > CAP:
+                close_all(f"cap {CAP} exceeded")
+                time.sleep(3)
+                pnl = banked_since(st["cyc_t0"] - 60)
+                st["banked"] = st.get("banked", 0.0) + pnl
+                say(f"CYCLE OVER at cap {pnl:+.2f} - "
+                    f"bot net {st['banked']:+.2f}")
+                st.update(cyc_dir=None, rec=False, cyc_t0=None,
+                          cycle_banked=0.0)
+                ps = []
+
+            # ---- bricks from this close; act on flips ----
+            gate_b.push(cl)
+            for d in trade_b.push(cl):
+                if pd_ and d != pd_:
+                    want_long = d == 1
+                    ps = my_positions()
+                    if not ps and st.get("cyc_dir") is None:
+                        fresh = (gate_b.d == d and gate_b.since <= 1)
+                        early = st.get("day_cycles", 0) < DAY_CAP
+                        if not fresh or not early:
+                            say(f"flip {'UP' if want_long else 'DOWN'} "
+                                f"skipped (fresh={fresh} early={early})")
+                        elif paused():
+                            say("flip skipped - trading paused (app)")
+                        else:
+                            tick = mt5.symbol_info_tick(SYMBOL)
+                            ref = tick.ask if want_long else tick.bid
+                            tp = ref + TP_PTS if want_long else ref - TP_PTS
+                            if open_trade(want_long, tp):
+                                st["cyc_dir"] = 1 if want_long else -1
+                                st["rec"] = False
+                                st["cyc_t0"] = int(time.time())
+                                st["cycle_banked"] = 0.0
+                                st["day_cycles"] = (
+                                    st.get("day_cycles", 0) + 1)
+                                say(f"CYCLE {st['day_cycles']}/2: "
+                                    f"{'BUY' if want_long else 'SELL'} "
+                                    f"{LOT} TP {tp:.2f} (fresh gate, "
+                                    f"gate-since {gate_b.since})")
+                    elif (ps and st.get("rec")
+                          and len(ps) <= CAP
+                          and st.get("cyc_dir") == d):
+                        tick = mt5.symbol_info_tick(SYMBOL)
+                        ref = tick.ask if want_long else tick.bid
+                        tp = ref + TP_PTS if want_long else ref - TP_PTS
+                        if open_trade(want_long, tp):
+                            say(f"RECOVERY ADD #{len(ps)+1}: "
+                                f"{'BUY' if want_long else 'SELL'} "
+                                f"{LOT} TP {tp:.2f}")
+                pd_ = d
+            save_state(st)
+        except Exception as e:
+            say(f"ERROR {type(e).__name__}: {e}")
+            time.sleep(60)
+
+
+if __name__ == "__main__":
+    main()
