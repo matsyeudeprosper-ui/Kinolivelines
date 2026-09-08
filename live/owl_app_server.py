@@ -406,6 +406,10 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="hero">
 <div class="topline"><span class="brand">&#129417; OwlNest</span>
 <span style="display:flex;align-items:center;gap:10px">
+<a id="chartlink" href="#" title="Graphique en direct"
+ style="text-decoration:none;font-size:.95rem;line-height:1;
+ background:rgba(232,197,90,.1);border:1px solid rgba(232,197,90,.35);
+ border-radius:99px;padding:4px 9px">&#128200;</a>
 <span class="live" id="lv"><span class="dot" id="lvd"></span><span
  id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
@@ -1596,6 +1600,8 @@ function render(d){
    const cb=document.getElementById('chartbtn');
    cb.style.display='flex';
    cb.href=location.pathname.replace(/\\/+$/,'')+'/chart';}
+  document.getElementById('chartlink').href=
+   location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
    ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
@@ -2218,16 +2224,29 @@ padding:2px 9px;text-transform:uppercase;letter-spacing:.06em}
 #px{position:fixed;top:12px;right:14px;font-size:.95rem;
 font-variant-numeric:tabular-nums;color:#e8c55a;font-weight:700}
 </style></head><body>
-<div id="hd"><h1>BTCUSD &middot; M1</h1>
+<div id="hd">
+<a id="back" href="#" style="text-decoration:none;color:#9fc2de;
+ font-size:1.35rem;line-height:1;padding:2px 8px 2px 0">&#8592;</a>
+<h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span></div>
 <div id="sub">chargement...</div>
 <span id="px"></span>
+<div id="livedot"></div>
 <canvas id="cv"></canvas>
+<style>
+#livedot{position:fixed;width:10px;height:10px;border-radius:50%;
+background:#e8c55a;display:none;pointer-events:none;
+animation:ldp 1.2s ease-out infinite}
+@keyframes ldp{0%{box-shadow:0 0 0 0 rgba(232,197,90,.55)}
+100%{box-shadow:0 0 0 12px rgba(232,197,90,0)}}
+</style>
 <script>
 const tok=location.pathname.split('/').filter(x=>x)[0];
+document.getElementById('back').onclick=(e)=>{e.preventDefault();
+ if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
-let D=null;
+let D=null,lastPx=null;
 function draw(){
  if(!D||!D.candles||!D.candles.length)return;
  const dpr=window.devicePixelRatio||1;
@@ -2239,9 +2258,10 @@ function draw(){
  const cs=D.candles.slice(-N);
  let lo=Infinity,hi=-Infinity;
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
+ if(D.live){hi=Math.max(hi,D.live[2]);lo=Math.min(lo,D.live[3]);}
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
- const cw=W/(N+2);
+ const cw=W/(N+3);
  const bw=Math.max(2,Math.min(9,cw*0.62));
  ctx.strokeStyle='rgba(255,255,255,.05)';
  ctx.lineWidth=1;
@@ -2260,6 +2280,28 @@ function draw(){
   const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
   ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
  });
+ const dot=document.getElementById('livedot');
+ if(D.live){
+  const x=cw*(cs.length+1);
+  const c=D.live;
+  const up=c[4]>=c[1];
+  const col=up?'#2ecc71':'#ff5c5c';
+  ctx.strokeStyle=col;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,px(c[2]));ctx.lineTo(x,px(c[3]));
+  ctx.stroke();
+  const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
+  ctx.globalAlpha=0.35;
+  ctx.fillStyle=col;
+  ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='#e8c55a';
+  ctx.strokeRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
+  const yc=px(c[4]);
+  const r=cv.getBoundingClientRect();
+  dot.style.display='block';
+  dot.style.left=(r.left+x-5)+'px';
+  dot.style.top=(r.top+yc-5)+'px';
+ }else{dot.style.display='none';}
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(232,197,90,.55)';
    ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(0,y);
@@ -2267,8 +2309,13 @@ function draw(){
  document.getElementById('sub').textContent=
   cs.length+' bougies affich\\u00e9es \\u00b7 '+
   (D.raw-D.kept)+' silenc\\u00e9es sur '+D.raw+' (M1)';
- document.getElementById('px').textContent=
-  D.px?D.px.toFixed(0)+' $':'';
+ const pe=document.getElementById('px');
+ if(D.px){
+  pe.textContent=D.px.toFixed(0)+' $';
+  if(lastPx!==null&&D.px!==lastPx){
+   pe.style.color=D.px>lastPx?'#2ecc71':'#ff5c5c';
+   setTimeout(()=>{pe.style.color='#e8c55a'},600);}
+  lastPx=D.px;}
 }
 async function load(){
  try{
@@ -2277,7 +2324,7 @@ async function load(){
  }catch(e){}
 }
 window.addEventListener('resize',draw);
-load();setInterval(load,10000);
+load();setInterval(load,3000);
 </script></body></html>"""
 
 JOIN_PAGE = """<!doctype html><html lang="fr"><head>
@@ -3073,9 +3120,9 @@ class H(BaseHTTPRequestHandler):
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
             self._send(json.dumps(user_stats(user)), "application/json")
-        elif sub == "chart" and is_admin(user):
+        elif sub == "chart":
             self._send(CHART_PAGE, "text/html; charset=utf-8")
-        elif sub == "chart_data" and is_admin(user):
+        elif sub == "chart_data":
             try:
                 self._send(open(os.path.join(
                     DIR, "owl_chart_btc.json")).read(),

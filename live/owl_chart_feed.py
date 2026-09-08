@@ -51,21 +51,27 @@ def main():
     while True:
         try:
             R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
-                                        1, RAW_BARS)
+                                        0, RAW_BARS)
             tick = mt5.symbol_info_tick(SYMBOL)
-            if R is not None and len(R) and tick is not None:
-                kept = build(R)
+            if R is not None and len(R) > 1 and tick is not None:
+                kept = build(R[:-1])       # closed bars only
+                lv = R[-1]                 # the forming candle, live
+                live = [int(lv["time"]), round(float(lv["open"]), 2),
+                        round(float(lv["high"]), 2),
+                        round(float(lv["low"]), 2),
+                        round(float(lv["close"]), 2),
+                        1 if lv["close"] >= lv["open"] else -1]
                 json.dump(
                     {"updated": int(time.time()), "symbol": SYMBOL,
-                     "raw": len(R), "kept": len(kept),
-                     "candles": kept[-KEEP_LAST:],
+                     "raw": len(R) - 1, "kept": len(kept),
+                     "candles": kept[-KEEP_LAST:], "live": live,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)
             time.sleep(30)
-        time.sleep(10)
+        time.sleep(3)
 
 
 if __name__ == "__main__":
