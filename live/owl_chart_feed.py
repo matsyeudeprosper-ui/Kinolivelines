@@ -62,8 +62,11 @@ def swings(kept):
     hi_i, hi_v = 0, kept[0][2]
     lo_i, lo_v = 0, kept[0][3]
     for i in range(1, len(kept)):
-        h, l = kept[i][2], kept[i][3]
-        if h > hi_v:
+        h, l, c = kept[i][2], kept[i][3], kept[i][4]
+        # user precision 2026-09-08: the confirming candle must
+        # CLOSE beyond the reference extreme - a wick poke does not
+        # confirm a swing dot
+        if c > hi_v:
             span = kept[hi_i + 1:i]
             if span and any(x[5] == -1 for x in span):
                 m = min(span, key=lambda x: x[3])
@@ -71,7 +74,7 @@ def swings(kept):
                 lo_i = kept.index(m)
                 lo_v = m[3]
             hi_i, hi_v = i, h
-        elif l < lo_v:
+        elif c < lo_v:
             span = kept[lo_i + 1:i]
             if span and any(x[5] == 1 for x in span):
                 m = max(span, key=lambda x: x[2])
