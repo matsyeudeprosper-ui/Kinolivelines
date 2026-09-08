@@ -136,6 +136,52 @@ def paused():
         return False
 
 
+def ensure_algo():
+    """The cloned terminal can come up with AutoTrading OFF (retcode
+    10027, seen 2026-09-08 on the first live cycle). WM_COMMAND
+    32851 toggles the button without window focus. Returns True when
+    trading is allowed afterwards."""
+    ti = mt5.terminal_info()
+    if ti is not None and ti.trade_allowed:
+        return True
+    try:
+        import ctypes
+        import ctypes.wintypes as wt
+        import subprocess
+        tok = os.path.basename(os.path.dirname(TERMINAL))
+        out = subprocess.run(
+            ["powershell", "-NoProfile", "-Command",
+             "Get-CimInstance Win32_Process -Filter "
+             "\"Name='terminal64.exe'\" | Where-Object "
+             "{ $_.CommandLine -match '" + tok + "' } | "
+             "Select-Object -ExpandProperty ProcessId"],
+            capture_output=True, text=True, timeout=30)
+        pid = int(out.stdout.strip().splitlines()[0])
+        user32 = ctypes.windll.user32
+        hwnds = []
+
+        @ctypes.WINFUNCTYPE(ctypes.c_bool, wt.HWND, wt.LPARAM)
+        def cb(h, l):
+            p = wt.DWORD()
+            user32.GetWindowThreadProcessId(h, ctypes.byref(p))
+            if p.value == pid and user32.IsWindowVisible(h):
+                hwnds.append(h)
+            return True
+
+        user32.EnumWindows(cb, 0)
+        for h in hwnds:
+            user32.PostMessageW(h, 0x0111, 32851, 0)
+        time.sleep(3)
+        ti = mt5.terminal_info()
+        ok = ti is not None and ti.trade_allowed
+        say(f"ensure_algo: toggled AutoTrading -> "
+            f"trade_allowed={ok}")
+        return ok
+    except Exception as e:
+        say(f"ensure_algo FAILED {type(e).__name__}: {e}")
+        return False
+
+
 def load_state():
     try:
         return json.load(open(STATE_F))
@@ -167,6 +213,19 @@ def open_trade(want_long, tp_px):
         "deviation": 200, "magic": MAGIC, "comment": COMMENT,
         "type_time": mt5.ORDER_TIME_GTC,
         "type_filling": mt5.ORDER_FILLING_IOC})
+    if r is not None and r.retcode == 10027 and ensure_algo():
+        # AutoTrading was off - toggled; one retry
+        tick = mt5.symbol_info_tick(SYMBOL)
+        r = mt5.order_send({
+            "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+            "volume": LOT,
+            "type": (mt5.ORDER_TYPE_BUY if want_long
+                     else mt5.ORDER_TYPE_SELL),
+            "price": tick.ask if want_long else tick.bid,
+            "tp": round(tp_px, 2),
+            "deviation": 200, "magic": MAGIC, "comment": COMMENT,
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC})
     if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
         say(f"ENTRY FAILED retcode={r.retcode if r else None}")
         return None
@@ -235,6 +294,7 @@ def main():
     say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f} "
         f"symbol {SYMBOL} brick {BRICK} gate {GATE_BRICK} "
         f"kill {KILL_NET}")
+    ensure_algo()
 
     R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, SEED_BARS)
     assert R is not None and len(R) > 1000, "no H1 history"
