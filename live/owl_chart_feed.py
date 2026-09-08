@@ -30,12 +30,16 @@ OUT = os.path.join(DIR, "owl_chart_btc.json")
 
 
 def build(rates):
+    """v2 filter (user 2026-09-08): a candle is shown only if its
+    CLOSE lands beyond the last shown candle's high or low - wick
+    pokes no longer count, the close has to commit."""
     kept = []
     ref_h = ref_l = None
     for r in rates:
         h, l = float(r["high"]), float(r["low"])
-        if ref_h is None or h > ref_h or l < ref_l:
-            o, c = float(r["open"]), float(r["close"])
+        c = float(r["close"])
+        if ref_h is None or c > ref_h or c < ref_l:
+            o = float(r["open"])
             kept.append([int(r["time"]), round(o, 2), round(h, 2),
                          round(l, 2), round(c, 2),
                          1 if c >= o else -1])
