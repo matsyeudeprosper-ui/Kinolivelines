@@ -33,13 +33,30 @@ M5/M15).
 - M1/M15 cells on this terminal are noise-floor (1.8/27 months of
   data, sign flips between runs) — not evidence either way.
 
+## Amendment 2026-09-08 (BEFORE the first live cycle — zero trades taken)
+
+The drawdown study landed after deployment but before any cycle
+opened: cap-4's loss unit (avg losing cycle −$75, worst −$199,
+maxDD $343/12.6y) is bigger than the original −$60 kill — the kill
+would fire on the first ordinary losing cycle, and a cap-4 basket
+oversizes a $198 account. A cap sweep with per-cap random controls
+(study/fresh_combo_pro_caps.py) showed cap 3 strictly better:
+eq +1704 (vs cap4 +1632), worst cycle −118 (vs −199), maxDD 313,
+beats random +996 (2SE 314) 6/6; cap 1 loses the edge (+105±159).
+Deployed config amended to CAP=3, kill −$120. A single
+worst-observed cycle (−118) can breach the kill — if that happens
+it counts as UNLUCKY-FAIL and any restart is the user's decision.
+The backtest's own maxDD (313) exceeds what a $198 account can
+carry at 0.01; this deployment is a direction test, not a
+survival guarantee.
+
 ## Preregistered criteria (do not move after the fact)
 
 Window: 90 days from first cycle, or 40 cycle starts, whichever
 comes FIRST.
 
-- KILL (anytime): bot's own net (banked + floating) ≤ −$60 →
-  basket closed, bot stops, verdict FAIL.
+- KILL (anytime): bot's own net (banked + floating) ≤ −$120 →
+  basket closed, bot stops, verdict FAIL (see amendment).
 - FAIL at window end: net < $0.
 - PASS at window end: net ≥ $0 and no kill. (The edge's expected
   pace is ≈ +$0.31/cycle long-run; a 90-day window cannot prove the

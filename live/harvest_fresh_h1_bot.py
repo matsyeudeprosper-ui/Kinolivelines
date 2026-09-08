@@ -54,9 +54,18 @@ GATE_BRICK = 150.0
 REV = 2
 TP_PTS = 5 * BRICK          # 250
 TRIG_PTS = 3 * BRICK        # 150
-CAP = 4                     # standing positions; 5th fill = liquidate
+CAP = 3                     # standing positions; 4th fill = liquidate
+                            # (2026-09-08 cap sweep, BEFORE any live
+                            # cycle: cap3 eq +1704 / worst cycle -118
+                            # / vsR +996 2SE 314 6/6 - strictly beats
+                            # cap4's +1632 / -199; cap1 loses the edge)
 DAY_CAP = 2                 # first N cycle starts per UTC day
-KILL_NET = -60.0            # SPEC_FRESH_H1_LIVE preregistered kill
+KILL_NET = -120.0           # SPEC_FRESH_H1_LIVE amended kill: one
+                            # worst-observed cycle (-118) breaches it;
+                            # that outcome = unlucky-fail, user decides
+                            # any restart. Backtest maxDD is 313 over
+                            # 12.6y - the $198 account cannot buy that
+                            # much patience; this is a direction test.
 SEED_BARS = 80000
 
 DIR = os.path.dirname(os.path.abspath(__file__))
