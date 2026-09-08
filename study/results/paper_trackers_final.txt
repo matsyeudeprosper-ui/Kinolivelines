@@ -1,0 +1,14 @@
+Paper trackers - final tallies at retirement (2026-09-08 13:40 UTC)
+All five retired after the spread-corrected replay proved the M1
+peak/dip entry family is noise (random controls beat it; see
+scratchpad bt_fix/bt_fix2 session work + FRESH-H1 deployment).
+
+UDET   user detector, free pace   net -7.12 | 73 trades | 60 wins
+UDET2  rationed 2/hour            net -2.09 | 50 trades | 44 wins
+UDET3  rationed + flips           net -7.04 | 36 trades | 30 wins
+ADTP   adaptive targets           net -0.83 | 12 trades | 10 wins
+SSTOP  25pt cap shadow            net -0.09 |  7 trades |  5 wins
+
+Shared shape everywhere: 80-88% win rates, tiny wins, occasional
+full stops that erase 10+ wins at once. The ration (UDET2) slows
+the bleed but cannot reverse it - cost arithmetic, not luck.
