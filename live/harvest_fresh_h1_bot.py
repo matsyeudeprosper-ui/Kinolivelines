@@ -38,6 +38,7 @@ SAFETY
 """
 import json
 import os
+import sys
 import time
 from datetime import datetime, timezone
 
@@ -50,20 +51,28 @@ TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
 LOGIN = 476954287
 PASSWORD = "M@tsy1983"
 SERVER = "Exness-MT5Trial9"
-SYMBOL = "BTCUSD"
-MAGIC = 909001
-COMMENT = "KL-FRESH"
+# multi-symbol (2026-09-08, user approved the ETH second stream):
+#   pythonw harvest_fresh_h1_bot.py          -> BTCUSD, $50 bricks
+#   pythonw harvest_fresh_h1_bot.py ETHUSD   -> bricks scaled to the
+#     price at launch (the ETH study's 50/65000 proportion), kill
+#     line scaled by the same ratio
+SYMBOL = sys.argv[1] if len(sys.argv) > 1 else "BTCUSD"
+MAGIC = 909001 if SYMBOL == "BTCUSD" else 909002
+COMMENT = ("KL-FRESH" if SYMBOL == "BTCUSD"
+           else f"KL-FRESH-{SYMBOL[:3]}")
 LOT = 0.01
-BRICK = 50.0
+BRICK = 50.0                # BTC baseline; scaled in main() for others
 GATE_BRICK = 150.0
 REV = 2
-TP_PTS = 5 * BRICK          # 250
-TRIG_PTS = 3 * BRICK        # 150
-CAP = 3                     # standing positions; 4th fill = liquidate
-                            # (2026-09-08 cap sweep, BEFORE any live
-                            # cycle: cap3 eq +1704 / worst cycle -118
-                            # / vsR +996 2SE 314 6/6 - strictly beats
-                            # cap4's +1632 / -199; cap1 loses the edge)
+TP_PTS = 5 * BRICK
+TRIG_PTS = 3 * BRICK
+CAP = 3 if SYMBOL == "BTCUSD" else 4
+                            # BTC cap sweep 2026-09-08: cap3 eq +1704
+                            # / worst -118 / vsR +996 2SE 314 6/6 -
+                            # beats cap4 (+1632/-199); cap1 loses the
+                            # edge. ETH validation same day: cap4 vsR
+                            # +84 2SE 35 6/6 but cap3 NULL (+6+-19) -
+                            # each symbol runs its measured best.
 DAY_CAP = 2                 # first N cycle starts per UTC day
 KILL_NET = -350.0           # DEMO amendment 2026-09-08: on $1000
                             # demo money the test can afford the
@@ -75,8 +84,9 @@ KILL_NET = -350.0           # DEMO amendment 2026-09-08: on $1000
 SEED_BARS = 80000
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-STATE_F = os.path.join(DIR, "harvest_fresh_state.json")
-LOG_F = os.path.join(DIR, "harvest_fresh.log")
+_sfx = "" if SYMBOL == "BTCUSD" else f"_{SYMBOL.lower()}"
+STATE_F = os.path.join(DIR, f"harvest_fresh_state{_sfx}.json")
+LOG_F = os.path.join(DIR, f"harvest_fresh{_sfx}.log")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 
 
@@ -204,12 +214,27 @@ def banked_since(t_from):
 
 
 def main():
+    global BRICK, GATE_BRICK, TP_PTS, TRIG_PTS, KILL_NET
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
                           timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
-    say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f}")
+    mt5.symbol_select(SYMBOL, True)
+    if SYMBOL != "BTCUSD":
+        # scale bricks to price (the ETH study's 50/65000 proportion)
+        tk0 = mt5.symbol_info_tick(SYMBOL)
+        assert tk0 is not None, f"no tick for {SYMBOL}"
+        BRICK = round(tk0.bid * 50.0 / 65000.0, 1)
+        GATE_BRICK = round(tk0.bid * 150.0 / 65000.0, 1)
+        TP_PTS = 5 * BRICK
+        TRIG_PTS = 3 * BRICK
+        # ETH validation: maxDD $42 / worst cycle -$14 over 7.7y at
+        # cap 4 - kill at -60 = well beyond the observed worst
+        KILL_NET = -60.0
+    say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f} "
+        f"symbol {SYMBOL} brick {BRICK} gate {GATE_BRICK} "
+        f"kill {KILL_NET}")
 
     R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, SEED_BARS)
     assert R is not None and len(R) > 1000, "no H1 history"

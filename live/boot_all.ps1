@@ -27,14 +27,20 @@ if (-not (ProcRunning "owl_manual_bot.py")) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
-# 2a) FRESH-H1 harvest engine - 2026-09-08 user: forward test moves
-#     to a DEMO Pro account first ($120 live risk declined). Re-enable
-#     once the bot points at the demo terminal.
-# if (-not (ProcRunning "harvest_fresh_h1_bot.py")) {
-#     Say "starting FRESH-H1 harvest"
-#     Start-Process pythonw -ArgumentList "harvest_fresh_h1_bot.py" `
-#         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
-# }
+# 2a) FRESH-H1 harvest forward test on DEMO Pro 476954287 (BTC + ETH
+#     streams, 2026-09-08). BTC instance has no symbol arg.
+$fh = Get-CimInstance Win32_Process |
+    Where-Object { $_.CommandLine -like "*harvest_fresh_h1_bot.py*" }
+if (-not ($fh | Where-Object { $_.CommandLine -notlike "*ETHUSD*" })) {
+    Say "starting FRESH-H1 BTC (demo)"
+    Start-Process pythonw -ArgumentList "harvest_fresh_h1_bot.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+if (-not ($fh | Where-Object { $_.CommandLine -like "*ETHUSD*" })) {
+    Say "starting FRESH-H1 ETH (demo)"
+    Start-Process pythonw -ArgumentList "harvest_fresh_h1_bot.py", "ETHUSD" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 
 # 2b) STANDARD-account Owl instance (one codebase, regenerated at
 #     launch from owl_manual_bot.py by owl_run_std.py)
