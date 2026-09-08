@@ -85,6 +85,114 @@ def swings(kept):
     return dots
 
 
+def engine(kept):
+    """Structure engine v5 (user 2026-09-08, CHoCH + BOS rules).
+
+    Swing dots as before: a candle CLOSING beyond the reference
+    high/low confirms the span's swing low/high (needs one opposite-
+    color candle in the span).
+
+    Trend states and transitions:
+    - from NEUTRAL: two higher low-dots in a row = uptrend, two
+      lower high-dots = downtrend (the original 2-dot rule);
+    - a candle closing completely beyond the CURRENT trend's newest
+      glowing dot, first time = CHoCH (marked, trend keeps its
+      color but is now wounded);
+    - after a CHoCH, the FIRST dot-confirmed break of extreme in
+      the new direction = BOS -> the trend actually flips there.
+      No flip without CHoCH first, and no flip on CHoCH alone.
+    - while a trend holds, only its own dot side is drawn.
+
+    Returns (dots, marks, trend, choch_pending)
+      dots  [[t, price, kind]]           kind 1=low, -1=high
+      marks [[t, price, label, dir]]     label 'choch'|'bos'
+    """
+    if len(kept) < 3:
+        return [], [], 0, 0
+    dots = []
+    marks = []
+    hi_i, hi_v = 0, kept[0][2]
+    lo_i, lo_v = 0, kept[0][3]
+    trend = 0
+    choch = 0            # pending direction after a CHoCH, else 0
+    last_lo = last_hi = None
+    up_st = dn_st = 0
+    prot_lo = prot_hi = None     # the trend's newest glowing dot
+    for i in range(1, len(kept)):
+        t, o, h, l, c, d = kept[i]
+        # --- CHoCH: close fully beyond the trend's newest dot ---
+        if trend == 1 and prot_lo is not None and c < prot_lo[1]:
+            marks.append([t, prot_lo[1], "choch", -1])
+            choch = -1
+            prot_lo = None
+        elif trend == -1 and prot_hi is not None and c > prot_hi[1]:
+            marks.append([t, prot_hi[1], "choch", 1])
+            choch = 1
+            prot_hi = None
+        # --- higher-high close event -> may confirm a LOW dot ---
+        if c > hi_v:
+            span = kept[hi_i + 1:i]
+            if span and any(x[5] == -1 for x in span):
+                m = min(span, key=lambda x: x[3])
+                nd = [m[0], m[3], 1]
+                if choch == 1 and trend != 1:
+                    # first bullish BOS after a bullish CHoCH
+                    marks.append([t, hi_v, "bos", 1])
+                    trend = 1
+                    choch = 0
+                    dots.append(nd)
+                    prot_lo = nd
+                    up_st = dn_st = 0
+                elif trend == 1:
+                    dots.append(nd)
+                    prot_lo = nd
+                elif trend == 0:
+                    if last_lo is not None and m[3] > last_lo:
+                        up_st += 1
+                        dots.append(nd)
+                        if up_st >= 2:
+                            trend = 1
+                            prot_lo = nd
+                            dn_st = 0
+                    else:
+                        up_st = 0
+                last_lo = m[3]
+                lo_i = kept.index(m)
+                lo_v = m[3]
+            hi_i, hi_v = i, h
+        # --- lower-low close event -> may confirm a HIGH dot ---
+        elif c < lo_v:
+            span = kept[lo_i + 1:i]
+            if span and any(x[5] == 1 for x in span):
+                m = max(span, key=lambda x: x[2])
+                nd = [m[0], m[2], -1]
+                if choch == -1 and trend != -1:
+                    marks.append([t, lo_v, "bos", -1])
+                    trend = -1
+                    choch = 0
+                    dots.append(nd)
+                    prot_hi = nd
+                    up_st = dn_st = 0
+                elif trend == -1:
+                    dots.append(nd)
+                    prot_hi = nd
+                elif trend == 0:
+                    if last_hi is not None and m[2] < last_hi:
+                        dn_st += 1
+                        dots.append(nd)
+                        if dn_st >= 2:
+                            trend = -1
+                            prot_hi = nd
+                            up_st = 0
+                    else:
+                        dn_st = 0
+                last_hi = m[2]
+                hi_i = kept.index(m)
+                hi_v = m[2]
+            lo_i, lo_v = i, l
+    return dots, marks, trend, choch
+
+
 def trend_filter(cands):
     """Trend layer (user 2026-09-08): a low dot is kept only when it
     is HIGHER than the previous low dot; a high dot only when LOWER
@@ -158,13 +266,14 @@ def main():
                         1 if lv["close"] >= lv["open"] else -1]
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
-                dots, trend = trend_filter(swings(kept))
+                dots, marks, trend, choch = engine(kept)
                 dots = [d for d in dots if d[0] >= t0]
+                marks = [m for m in marks if m[0] >= t0]
                 json.dump(
                     {"updated": int(time.time()), "symbol": SYMBOL,
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
-                     "trend": trend,
+                     "marks": marks, "trend": trend, "choch": choch,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:

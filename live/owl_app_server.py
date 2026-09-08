@@ -2283,6 +2283,22 @@ function draw(){
   const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
   ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
  });
+ (D.marks||[]).forEach(m=>{
+  const x=xoft[m[0]];
+  if(x===undefined)return;
+  const up=m[3]===1;
+  const col=up?'#2ecc71':'#ff5c5c';
+  const y=px(m[1]);
+  ctx.strokeStyle=col;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(x-22,y);ctx.lineTo(x+22,y);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle=col;
+  ctx.font='bold 9px system-ui';
+  const lbl=m[2]==='choch'?'CHoCH':'BOS';
+  ctx.fillText(lbl,x-ctx.measureText(lbl).width/2,
+   up?y-6:y+13);
+ });
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
   if(x===undefined)return;
@@ -2333,11 +2349,12 @@ function draw(){
   (D.raw-D.kept)+' silenc\\u00e9es sur '+D.raw+' (M1)';
  const tb=document.getElementById('trbadge');
  tb.style.display='inline-block';
- if(D.trend===1){tb.textContent='\\u25b2 haussier';
+ const wound=D.choch?' \\u00b7 choc!':'';
+ if(D.trend===1){tb.textContent='\\u25b2 haussier'+wound;
   tb.style.color='#2ecc71';
   tb.style.borderColor='rgba(46,204,113,.45)';
   tb.style.background='rgba(46,204,113,.1)';}
- else if(D.trend===-1){tb.textContent='\\u25bc baissier';
+ else if(D.trend===-1){tb.textContent='\\u25bc baissier'+wound;
   tb.style.color='#ff5c5c';
   tb.style.borderColor='rgba(255,92,92,.45)';
   tb.style.background='rgba(255,92,92,.1)';}
