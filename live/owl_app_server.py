@@ -288,7 +288,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  font-weight:600;display:flex;flex-direction:column;
  align-items:center;gap:3px;padding:6px 0;border-radius:12px}
 .tb span{font-size:1.3rem;line-height:1}
-.tb.on{color:#8fc6ff}
+.tb.on{color:#8fc6ff;background:rgba(127,179,224,.12)}
 .srow{display:flex;align-items:center;gap:13px;padding:13px 2px;
  border-bottom:1px solid #1e2937;cursor:pointer;color:#e8eef4}
 .srow:last-child{border-bottom:0}
@@ -300,7 +300,14 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .ssub{font-size:.76rem;color:#5f7185;margin-top:2px}
 .hero{background:linear-gradient(165deg,#0f2740 0%,#14406b 100%);
  color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
- text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+ text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35);
+ position:relative;overflow:hidden}
+#spark{position:absolute;left:0;right:0;bottom:0;width:100%;
+ height:64px;opacity:.3;pointer-events:none}
+.hero>*{position:relative}
+#daychip{display:none;margin-top:8px;font-size:.74rem;
+ font-weight:700;padding:4px 12px;border-radius:99px;
+ font-variant-numeric:tabular-nums}
 .topline{display:flex;justify-content:space-between;align-items:center}
 .brand{font-weight:700;color:#cfe3f5;font-size:1.02rem}
 .live{display:inline-flex;align-items:center;gap:6px;
@@ -316,22 +323,31 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .eur{color:#9fc2de;font-size:1.2rem;margin-top:2px}
 .bankline{color:#7d9cb8;font-size:.85rem;margin-top:9px}
 .wrap{max-width:440px;margin:-20px auto 0;padding:0 16px}
-.status{background:#151d29;border-radius:18px;padding:16px;
+.status{background:linear-gradient(160deg,#131e2e,#101927);
+ border:1px solid #1f3145;border-radius:18px;padding:16px;
  text-align:center;font-size:1.04rem;color:#c6d3df;
- box-shadow:0 6px 18px rgba(0,0,0,.35)}
-.panel{background:#151d29;border-radius:18px;padding:16px;
- box-shadow:0 6px 18px rgba(0,0,0,.35)}
+ box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.panel{background:linear-gradient(160deg,#131e2e,#101927);
+ border:1px solid #1f3145;border-radius:18px;padding:16px;
+ box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.card{background:#151d29;border-radius:18px;padding:18px 10px 15px;
- text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.card{background:linear-gradient(160deg,#131e2e,#101927);
+ border:1px solid #1f3145;border-radius:18px;padding:18px 10px 15px;
+ text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.empty{text-align:center;padding:26px 10px;color:#4d5f73}
+.empty i{font-style:normal;font-size:1.7rem;display:block}
+.empty p{font-size:.85rem;margin-top:7px}
 .lbl{font-size:.74rem;color:#8fa1b3;text-transform:uppercase;
  letter-spacing:.06em;font-weight:600}
 .val{font-size:1.45rem;font-weight:800;margin-top:8px;
  white-space:nowrap}
 .sub{font-size:.72rem;color:#5f7185;margin-top:6px}
 .pos{color:#2ecc71}.neg{color:#ff5c5c}.neu{color:#e8eef4}
-.sec{margin:24px 6px 10px;color:#b9c7d4;font-weight:700;font-size:.96rem;
+.sec{margin:26px 8px 10px;color:#5f7185;font-weight:700;
+ font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;
  text-align:left}
+.sec .hint{opacity:.65;letter-spacing:.02em;text-transform:none;
+ font-weight:500}
 .row{display:flex;justify-content:space-between;align-items:center;
  padding:11px 4px;border-bottom:1px solid #1e2937;font-size:1rem}
 .row:last-child{border-bottom:0}
@@ -415,15 +431,18 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
+<canvas id="spark"></canvas>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
+<span id="daychip"></span>
 <div class="bankline" id="bank">&nbsp;</div>
 <div id="acctline" style="margin-top:8px;font-size:.72rem;
  color:#5f7185">&nbsp;</div>
 <div id="palier" style="display:none;margin-top:14px;text-align:left">
  <div style="font-size:.78rem;color:#9fc2de" id="palier-lbl"></div>
  <div style="background:rgba(255,255,255,.15);border-radius:99px;
-  height:8px;margin-top:6px"><div id="palier-bar" style="background:
+  height:8px;margin-top:6px"><div id="palier-bar" style="
+  transition:width .9s cubic-bezier(.2,.8,.2,1);background:
   #2ecc71;height:8px;border-radius:99px;width:0%"></div></div>
 </div>
 </div>
@@ -544,8 +563,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  style="width:100%;height:70px"></svg></div>
 </div>
 <div class="tab" id="tab-hist">
-<div class="sec" style="margin-top:26px">Jour par jour &middot;
- touchez un jour</div>
+<div class="sec" style="margin-top:26px">Jour par jour
+ <span class="hint">&middot; touchez un jour</span></div>
 <div class="panel" id="days" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none">R&eacute;sum&eacute;
  du mois</div>
@@ -1563,6 +1582,48 @@ function render(d){
   else{bk.style.display='block';
    bk.innerHTML='Solde des trades termin&eacute;s : '+
     d.balance.toFixed(2)+' $';}
+  const dc=document.getElementById('daychip');
+  if(typeof d.today==='number'){
+   dc.style.display='inline-block';
+   const up=d.today>=0;
+   dc.textContent=(up?'+':'')+d.today.toFixed(2)+
+    ' $ aujourd\\u2019hui';
+   dc.style.background=up?'rgba(46,204,113,.16)'
+    :'rgba(255,92,92,.16)';
+   dc.style.color=up?'#8df0bb':'#ffb3b3';
+  }
+  try{
+   const sc2=document.getElementById('spark');
+   const cv30=d.curve30&&d.curve30.length>2?d.curve30
+    :(d.curve&&d.curve.length>2?d.curve:null);
+   if(cv30){
+    const dpr=window.devicePixelRatio||1;
+    const w=sc2.clientWidth,h=sc2.clientHeight;
+    sc2.width=w*dpr;sc2.height=h*dpr;
+    const g=sc2.getContext('2d');
+    g.setTransform(dpr,0,0,dpr,0,0);
+    g.clearRect(0,0,w,h);
+    let mn=Math.min(...cv30),mx=Math.max(...cv30);
+    if(mx-mn<0.01){mx+=0.5;mn-=0.5;}
+    g.strokeStyle='rgba(255,255,255,.85)';
+    g.lineWidth=1.6;g.lineJoin='round';
+    g.beginPath();
+    cv30.forEach((v,i)=>{
+     const x=i/(cv30.length-1)*w;
+     const y=h-6-((v-mn)/(mx-mn))*(h-14);
+     i?g.lineTo(x,y):g.moveTo(x,y);});
+    g.stroke();
+   }
+  }catch(e){}
+  const lvE=document.getElementById('lv'),
+   lvtE=document.getElementById('lvt');
+  if(lvE&&lvtE){
+   if(d.stale){lvtE.textContent='EN ATTENTE \\u23f3';
+    lvE.style.background='rgba(230,160,40,.16)';
+    lvE.style.color='#ffd27a';}
+   else{lvtE.textContent='EN DIRECT';
+    lvE.style.background='';lvE.style.color='';}
+  }
   if(d.acct){
    document.getElementById('acctline').innerHTML=
     '<span style="background:'+
@@ -1739,6 +1800,11 @@ function render(d){
     '</span></div>';
    }).join('');
   }
+  if(d.days&&!d.days.length){
+   const de=document.getElementById('days');de.style.display='block';
+   de.innerHTML='<div class="empty"><i>&#129417;</i>'+
+    '<p>Vos journ&eacute;es appara&icirc;tront ici</p></div>';
+  }
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
    window._dtr=d.day_trades||{};
@@ -1872,6 +1938,11 @@ function render(d){
      '</span></span><b class="'+(x.pnl>=0?'pos':'neg')+'">'+
      (x.pnl>=0?'+':'-')+Math.abs(x.pnl).toFixed(2)+' $</b></div>';
    }).join('');
+  }
+  if(d.trades&&!d.trades.length){
+   document.getElementById('hist').innerHTML=
+    '<div class="empty"><i>&#129417;</i>'+
+    '<p>Aucun trade encore &mdash; le robot chasse</p></div>';
   }
   if(d.trades&&d.trades.length){
    window._tr=d.trades;
