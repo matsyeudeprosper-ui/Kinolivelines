@@ -146,6 +146,7 @@ def engine(kept):
                 elif trend == 1:
                     dots.append(nd)
                     prot_lo = nd
+                    choch = 0    # new BOS up repairs a pending choc
                 elif trend == 0:
                     if last_lo is not None and m[3] > last_lo:
                         up_st += 1
@@ -176,6 +177,7 @@ def engine(kept):
                 elif trend == -1:
                     dots.append(nd)
                     prot_hi = nd
+                    choch = 0    # new BOS down repairs a pending choc
                 elif trend == 0:
                     if last_hi is not None and m[2] < last_hi:
                         dn_st += 1
@@ -267,6 +269,13 @@ def main():
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
                 dots, marks, trend, choch = engine(kept)
+                # user 2026-09-08 (screenshot): NEVER show the
+                # opposite side's dots while a trend is confirmed -
+                # uptrend displays lows only, downtrend highs only
+                if trend == 1:
+                    dots = [d for d in dots if d[2] == 1]
+                elif trend == -1:
+                    dots = [d for d in dots if d[2] == -1]
                 dots = [d for d in dots if d[0] >= t0]
                 marks = [m for m in marks if m[0] >= t0]
                 json.dump(

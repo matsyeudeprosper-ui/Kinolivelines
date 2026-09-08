@@ -2295,9 +2295,10 @@ function draw(){
   ctx.setLineDash([]);
   ctx.fillStyle=col;
   ctx.font='bold 9px system-ui';
-  const lbl=m[2]==='choch'?'CHoCH':'BOS';
-  ctx.fillText(lbl,x-ctx.measureText(lbl).width/2,
-   up?y-6:y+13);
+  const isC=m[2]==='choch';
+  const lbl=isC?'CHoCH':'BOS';
+  const dy=isC?(up?-6:13):(up?-18:25);
+  ctx.fillText(lbl,x-ctx.measureText(lbl).width/2,y+dy);
  });
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
