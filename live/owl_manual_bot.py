@@ -1606,40 +1606,82 @@ def main():
                                   float(_lk.get("lot", 0.02)),
                                   _pnl2, _led["debt"])
                     elif _pnl2 < 0:
-                        _led["debt"] = round(_led["debt"] - _pnl2, 2)
-                        say(f"DEBT BOOK +{-_pnl2:.2f} -> "
-                            f"${_led['debt']:.2f} owed")
+                        _vol2 = float(row.get("volume") or 0.0)
+                        if trading_paused() and _vol2 >= 0.03:
+                            # SHOT rule (user 2026-09-08): a manual
+                            # trade at 0.03+ lots is a funded shot -
+                            # the ammunition pays its bill first,
+                            # only the overflow grows the debt
+                            _pay = round(min(_led["chest"],
+                                             -_pnl2), 2)
+                            _led["chest"] = round(
+                                _led["chest"] - _pay, 2)
+                            _rest = round(-_pnl2 - _pay, 2)
+                            if _rest > 0:
+                                _led["debt"] = round(
+                                    _led["debt"] + _rest, 2)
+                            say(f"OWNER SHOT lost {_pnl2:+.2f}: ammo "
+                                f"pays {_pay:.2f}, debt +{_rest:.2f} "
+                                f"-> ${_led['debt']:.2f} owed, chest "
+                                f"${_led['chest']:.2f}")
+                        else:
+                            _led["debt"] = round(
+                                _led["debt"] - _pnl2, 2)
+                            say(f"DEBT BOOK +{-_pnl2:.2f} -> "
+                                f"${_led['debt']:.2f} owed")
                     elif _pnl2 > 0 and (row.get("exit_reason") == "tp"
                                         or trading_paused()):
-                        # wins fill the fund with OR without debt
-                        # (standing emergency fund, user 09-06).
-                        # Manual mode (paused, 2026-09-08 user): any
-                        # profitable close counts, and once the fund
-                        # is full the overflow pays the debt directly
-                        # - the owner IS the fighter.
-                        _room = round(max(
-                            0.0, CHEST_FUND_MAX - _led["chest"]), 2)
-                        _toc = round(min(_pnl2, _room), 2)
-                        _led["chest"] = round(_led["chest"] + _toc, 2)
-                        _over = round(_pnl2 - _toc, 2)
-                        if (_over > 0 and trading_paused()
+                        _vol2 = float(row.get("volume") or 0.0)
+                        if (trading_paused() and _vol2 >= 0.03
                                 and _led["debt"] > 0):
-                            _led["debt"] = round(max(
-                                0.0, _led["debt"] - _over), 2)
+                            # SHOT win (user 2026-09-08): pays the
+                            # debt FIRST, ammo untouched (keep-the-
+                            # change); leftover tops up the fund
+                            _pay = round(min(_led["debt"], _pnl2), 2)
+                            _led["debt"] = round(
+                                _led["debt"] - _pay, 2)
                             if _led["debt"] <= 0.5:
                                 _led["debt"] = 0.0
-                            say(f"OWNER WIN +{_pnl2:.2f}: fund full, "
-                                f"{_over:.2f} pays the book -> "
-                                f"${_led['debt']:.2f} owed")
-                        elif _led["debt"] > 0.5:
-                            say(f"CHEST +{_pnl2:.2f} -> "
-                                f"${_led['chest']:.2f} saved toward "
-                                f"the {_led['next_lot']:.2f} fighter")
+                            _sur = round(_pnl2 - _pay, 2)
+                            if _sur > 0:
+                                _led["chest"] = round(min(
+                                    CHEST_FUND_MAX,
+                                    _led["chest"] + _sur), 2)
+                            say(f"OWNER SHOT WON +{_pnl2:.2f}: book "
+                                f"-> ${_led['debt']:.2f}, chest "
+                                f"${_led['chest']:.2f}")
                         else:
-                            say(f"WAR FUND +{_pnl2:.2f} -> "
-                                f"${_led['chest']:.2f} set aside for "
-                                f"future fighters (cap "
-                                f"${CHEST_FUND_MAX:.0f})")
+                            # wins fill the fund with OR without debt
+                            # (standing emergency fund, user 09-06).
+                            # Manual mode: once the fund is full the
+                            # overflow pays the debt directly.
+                            _room = round(max(
+                                0.0, CHEST_FUND_MAX - _led["chest"]),
+                                2)
+                            _toc = round(min(_pnl2, _room), 2)
+                            _led["chest"] = round(
+                                _led["chest"] + _toc, 2)
+                            _over = round(_pnl2 - _toc, 2)
+                            if (_over > 0 and trading_paused()
+                                    and _led["debt"] > 0):
+                                _led["debt"] = round(max(
+                                    0.0, _led["debt"] - _over), 2)
+                                if _led["debt"] <= 0.5:
+                                    _led["debt"] = 0.0
+                                say(f"OWNER WIN +{_pnl2:.2f}: fund "
+                                    f"full, {_over:.2f} pays the "
+                                    f"book -> ${_led['debt']:.2f} "
+                                    f"owed")
+                            elif _led["debt"] > 0.5:
+                                say(f"CHEST +{_pnl2:.2f} -> "
+                                    f"${_led['chest']:.2f} saved "
+                                    f"toward the "
+                                    f"{_led['next_lot']:.2f} fighter")
+                            else:
+                                say(f"WAR FUND +{_pnl2:.2f} -> "
+                                    f"${_led['chest']:.2f} set aside "
+                                    f"for future fighters (cap "
+                                    f"${CHEST_FUND_MAX:.0f})")
                     write_ledger(st)
                     save_state(st)
                 # --- RECOVERY CHAIN trigger (user spec 2026-08-31;
