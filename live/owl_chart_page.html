@@ -278,14 +278,17 @@ function draw(){
  // often share them - no duplicate lines or clipped double tags)
  const lv={};
  (D.trades||[]).forEach(t=>{
-  if(t[3]>0)lv['S'+t[3].toFixed(0)]=['S',t[3]];
-  if(t[4]>0)lv['T'+t[4].toFixed(0)]=['T',t[4]];});
- Object.values(lv).forEach(([k,v])=>{
+  if(t[3]>0){const k='S'+t[3].toFixed(0);
+   (lv[k]=lv[k]||['S',t[3],0])[2]+=Math.abs(t[2]-t[3])*t[1];}
+  if(t[4]>0){const k='T'+t[4].toFixed(0);
+   (lv[k]=lv[k]||['T',t[4],0])[2]+=Math.abs(t[4]-t[2])*t[1];}});
+ Object.values(lv).forEach(([k,v,amt])=>{
   const y=px(v);
   const isS=k==='S';
   ctx.strokeStyle=isS?'rgba(255,92,92,.75)':'rgba(46,204,113,.75)';
   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-  tag(y,(isS?'SL ':'TP ')+v.toFixed(0),
+  tag(y,(isS?'SL ':'TP ')+v.toFixed(0)+'  '+
+   (isS?'−':'+')+amt.toFixed(2)+' $',
    isS?'#ffd7d7':'#d2f5e0',
    isS?'rgba(255,92,92,.3)':'rgba(46,204,113,.3)');
  });
