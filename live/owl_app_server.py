@@ -2262,7 +2262,7 @@ function draw(){
  if(D.live){hi=Math.max(hi,D.live[2]);lo=Math.min(lo,D.live[3]);}
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
- const cw=W/(N+3);
+ const cw=W/(N+9);   // ~7 empty slots of forward space
  const bw=Math.max(2,Math.min(9,cw*0.62));
  ctx.strokeStyle='rgba(255,255,255,.05)';
  ctx.lineWidth=1;
@@ -2289,16 +2289,26 @@ function draw(){
   const up=m[3]===1;
   const col=up?'#2ecc71':'#ff5c5c';
   const y=px(m[1]);
-  ctx.strokeStyle=col;
-  ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(x-22,y);ctx.lineTo(x+22,y);ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle=col;
-  ctx.font='bold 9px system-ui';
   const isC=m[2]==='choch';
-  const lbl=isC?'CHoCH':'BOS';
-  const dy=isC?(up?-6:13):(up?-18:25);
-  ctx.fillText(lbl,x-ctx.measureText(lbl).width/2,y+dy);
+  ctx.strokeStyle=col;
+  ctx.lineWidth=isC?1:2;
+  if(isC)ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(x-20,y);ctx.lineTo(x+20,y);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.lineWidth=1;
+  if(isC){
+   // CHoCH: small open circle on the dashed break line
+   ctx.beginPath();ctx.arc(x,y,3.5,0,6.3);ctx.stroke();
+  }else{
+   // BOS: filled arrow at the break, pointing the new direction
+   const s=5,dy2=up?-7:7;
+   ctx.fillStyle=col;
+   ctx.beginPath();
+   ctx.moveTo(x,y+dy2+(up?-s:s));
+   ctx.lineTo(x-s,y+dy2+(up?s*0.6:-s*0.6));
+   ctx.lineTo(x+s,y+dy2+(up?s*0.6:-s*0.6));
+   ctx.closePath();ctx.fill();
+  }
  });
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
