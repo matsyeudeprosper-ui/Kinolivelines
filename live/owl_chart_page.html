@@ -112,7 +112,12 @@ function draw(){
   const s=v.toFixed(0);
   ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);}
  // --- trade zones (behind candles) ---
- const tag=(y,txt,col,bg)=>{
+ const usedY=[];
+ const tag=(y0,txt,col,bg)=>{
+  let y=Math.max(12,Math.min(Hh-12,y0));
+  while(usedY.some(u=>Math.abs(u-y)<17))y+=17;
+  if(y>Hh-12)y=Math.max(12,Math.min(...usedY)-17);
+  usedY.push(y);
   ctx.font='bold 9px system-ui';
   const w=ctx.measureText(txt).width+10;
   ctx.fillStyle=bg;
@@ -254,14 +259,21 @@ function draw(){
    (t[0]===1?'▲ ':'▼ ')+t[1].toFixed(2)+
    (t[5]>=0?'  +':'  ')+t[5].toFixed(2)+' $',
    '#cfe3f5',man?'rgba(232,197,90,.28)':'rgba(127,179,224,.25)');
-  if(t[3]>0){const y=px(t[3]);
-   ctx.strokeStyle='rgba(255,92,92,.75)';
-   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-   tag(y,'SL '+t[3].toFixed(0),'#ffd7d7','rgba(255,92,92,.3)');}
-  if(t[4]>0){const y=px(t[4]);
-   ctx.strokeStyle='rgba(46,204,113,.75)';
-   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-   tag(y,'TP '+t[4].toFixed(0),'#d2f5e0','rgba(46,204,113,.3)');}
+ });
+ // SL/TP levels drawn ONCE per unique price (several positions
+ // often share them - no duplicate lines or clipped double tags)
+ const lv={};
+ (D.trades||[]).forEach(t=>{
+  if(t[3]>0)lv['S'+t[3].toFixed(0)]=['S',t[3]];
+  if(t[4]>0)lv['T'+t[4].toFixed(0)]=['T',t[4]];});
+ Object.values(lv).forEach(([k,v])=>{
+  const y=px(v);
+  const isS=k==='S';
+  ctx.strokeStyle=isS?'rgba(255,92,92,.75)':'rgba(46,204,113,.75)';
+  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  tag(y,(isS?'SL ':'TP ')+v.toFixed(0),
+   isS?'#ffd7d7':'#d2f5e0',
+   isS?'rgba(255,92,92,.3)':'rgba(46,204,113,.3)');
  });
  // --- live candle + price line ---
  const dot=document.getElementById('livedot');
@@ -288,8 +300,8 @@ function draw(){
   dot.style.top=(r.top+yc-5)+'px';
  }else{dot.style.display='none';}
  if(D.px){const y=px(D.px);
-  if(y>0&&y<Hh){ctx.strokeStyle='rgba(232,197,90,.5)';
-   ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(0,y);
+  if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
+   ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
    ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);}}
 }
 function ui(){
