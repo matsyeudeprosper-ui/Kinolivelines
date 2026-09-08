@@ -2188,6 +2188,87 @@ def user_stats(u):
 
 FAMILY_CODE = "kino"
 
+CHART_PAGE = """<!doctype html><html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,
+maximum-scale=1,user-scalable=no">
+<title>Graphique custom</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0b1420;color:#cfe3f5;font-family:system-ui,
+-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+#hd{display:flex;align-items:baseline;gap:10px;padding:12px 14px 8px}
+#hd h1{font-size:1.02rem;font-weight:700}
+#hd .badge{font-size:.62rem;color:#7fb3e0;background:rgba(127,179,
+224,.12);border:1px solid rgba(127,179,224,.3);border-radius:99px;
+padding:2px 9px;text-transform:uppercase;letter-spacing:.06em}
+#sub{font-size:.7rem;color:#5f7185;padding:0 14px 8px}
+#cv{display:block;width:100vw;height:calc(100vh - 64px)}
+#px{position:fixed;top:12px;right:14px;font-size:.95rem;
+font-variant-numeric:tabular-nums;color:#e8c55a;font-weight:700}
+</style></head><body>
+<div id="hd"><h1>BTCUSD &middot; M1</h1>
+<span class="badge">filtre silence</span></div>
+<div id="sub">chargement...</div>
+<span id="px"></span>
+<canvas id="cv"></canvas>
+<script>
+const tok=location.pathname.split('/').filter(x=>x)[0];
+const cv=document.getElementById('cv');
+const ctx=cv.getContext('2d');
+let D=null;
+function draw(){
+ if(!D||!D.candles||!D.candles.length)return;
+ const dpr=window.devicePixelRatio||1;
+ const W=cv.clientWidth,Hh=cv.clientHeight;
+ cv.width=W*dpr;cv.height=Hh*dpr;
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.clearRect(0,0,W,Hh);
+ const N=Math.min(D.candles.length,Math.max(60,Math.floor(W/7)));
+ const cs=D.candles.slice(-N);
+ let lo=Infinity,hi=-Infinity;
+ for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
+ const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
+ const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
+ const cw=W/(N+2);
+ const bw=Math.max(2,Math.min(9,cw*0.62));
+ ctx.strokeStyle='rgba(255,255,255,.05)';
+ ctx.lineWidth=1;
+ for(let g=0;g<5;g++){const y=px(lo+pad+(hi-lo-2*pad)*g/4);
+  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  ctx.fillStyle='#3d4f63';ctx.font='10px system-ui';
+  ctx.fillText((lo+pad+(hi-lo-2*pad)*g/4).toFixed(0),4,y-3);}
+ cs.forEach((c,i)=>{
+  const x=cw*(i+1);
+  const up=c[5]===1;
+  ctx.strokeStyle=up?'#2ecc71':'#ff5c5c';
+  ctx.fillStyle=up?'#2ecc71':'#ff5c5c';
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x,px(c[2]));ctx.lineTo(x,px(c[3]));
+  ctx.stroke();
+  const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
+  ctx.fillRect(x-bw/2,y1,bw,Math.max(1,y2-y1));
+ });
+ if(D.px){const y=px(D.px);
+  if(y>0&&y<Hh){ctx.strokeStyle='rgba(232,197,90,.55)';
+   ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(0,y);
+   ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);}}
+ document.getElementById('sub').textContent=
+  cs.length+' bougies affich\\u00e9es \\u00b7 '+
+  (D.raw-D.kept)+' silenc\\u00e9es sur '+D.raw+' (M1)';
+ document.getElementById('px').textContent=
+  D.px?D.px.toFixed(0)+' $':'';
+}
+async function load(){
+ try{
+  const r=await fetch('/'+tok+'/chart_data',{cache:'no-store'});
+  if(r.ok){D=await r.json();draw();}
+ }catch(e){}
+}
+window.addEventListener('resize',draw);
+load();setInterval(load,10000);
+</script></body></html>"""
+
 JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -2981,6 +3062,15 @@ class H(BaseHTTPRequestHandler):
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
             self._send(json.dumps(user_stats(user)), "application/json")
+        elif sub == "chart" and is_admin(user):
+            self._send(CHART_PAGE, "text/html; charset=utf-8")
+        elif sub == "chart_data" and is_admin(user):
+            try:
+                self._send(open(os.path.join(
+                    DIR, "owl_chart_btc.json")).read(),
+                    "application/json")
+            except Exception:
+                self._send("{}", "application/json")
         elif sub == "push_key":
             self._send(json.dumps(
                 {"key": (_VAPID or {}).get("public_key")}),
