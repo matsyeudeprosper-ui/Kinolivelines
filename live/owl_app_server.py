@@ -1253,6 +1253,7 @@ function render(d){
     ls2=document.getElementById('led-sub');
    lc.style.padding=d.ledger.debt>0.5?'14px':'8px 14px';
    lc.style.fontSize=d.ledger.debt>0.5?'.92rem':'.8rem';
+   lc.style.boxShadow='';lc.style.borderColor='#23405e';
    document.getElementById('led-hd').style.display=
     d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
@@ -1266,7 +1267,8 @@ function render(d){
      const nb=Math.floor(am/bc+1e-9);
      const fr=(am-nb*bc)/bc;
      const ml=nb*0.01;
-     const SL=10;
+     const SL=Math.max(4,Math.min(10,
+      Math.floor((d.ledger.cap||5)/bc+1e-9)));
      let pills='';
      for(let i=0;i<SL;i++){
       const on=i<nb;
@@ -1290,8 +1292,8 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          '&Agrave; rattraper</div>'+
         '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">'+
-         d.ledger.debt.toFixed(2)+'&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums"><span id="rz-debt">'+
+         d.ledger.debt.toFixed(2)+'</span>&nbsp;$</b></div>'+
        '<div style="background:rgba(232,197,90,.07);border:1px '+
         'solid rgba(232,197,90,.22);border-radius:12px;'+
         'padding:8px 10px;text-align:center">'+
@@ -1299,16 +1301,16 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          'Gains de c&ocirc;t&eacute;</div>'+
         '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">'+
-         am.toFixed(2)+'&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums"><span id="rz-ammo">'+
+         am.toFixed(2)+'</span>&nbsp;$</b></div>'+
       '</div>'+
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
         'text-transform:uppercase;letter-spacing:.08em">'+
         'Vous pouvez trader jusqu&#39;&agrave;</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
-        'font-variant-numeric:tabular-nums">'+
-        (ml>=0.01?ml.toFixed(2):'0.00')+'</b>'+
+        'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
+        (ml>=0.01?ml.toFixed(2):'0.00')+'</span></b>'+
        '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
       '</div>'+
       '<div style="text-align:center;margin-top:4px">'+pills+
@@ -1322,6 +1324,32 @@ function render(d){
         :'Aucun tir pr&ecirc;t &mdash; chaque gain remplit la '+
          'r&eacute;serve')+'</div>';
      lw.style.display='none';ls2.innerHTML='';
+     const full=nb>=SL;
+     lc.style.transition='box-shadow .8s,border-color .8s';
+     lc.style.boxShadow=full?'0 0 24px rgba(232,197,90,.3)':'';
+     lc.style.borderColor=full?'rgba(232,197,90,.55)':'#23405e';
+     const rz=window._rz||{};
+     const roll=(id,a,b)=>{
+      if(a===undefined||Math.abs(a-b)<0.005)return;
+      const el=lc.querySelector('#'+id);if(!el)return;
+      const t0=performance.now();
+      const st=t=>{const k=Math.min(1,(t-t0)/600);
+       el.textContent=(a+(b-a)*k).toFixed(2);
+       if(k<1)requestAnimationFrame(st);};
+      requestAnimationFrame(st);};
+     const fl=(id,a,b,good)=>{
+      if(a===undefined||Math.abs(a-b)<0.005)return;
+      const el=lc.querySelector('#'+id);if(!el)return;
+      el.style.transition='color .25s';
+      el.style.color=good?'#2ecc71':'#ff5c5c';
+      setTimeout(()=>{el.style.color='';},1100);};
+     roll('rz-debt',rz.d,d.ledger.debt);
+     fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
+     roll('rz-ammo',rz.a,am);
+     fl('rz-ammo',rz.a,am,am>rz.a);
+     roll('rz-lot',rz.m,ml);
+     fl('rz-lot',rz.m,ml,ml>rz.m);
+     window._rz={d:d.ledger.debt,a:am,m:ml};
      if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
       setTimeout(()=>{
        const el=lc.querySelector('[data-bp="'+(nb-1)+'"]');
@@ -1891,6 +1919,7 @@ def user_stats(u):
         try:
             d["ledger"] = json.load(open(os.path.join(
                 DIR, f"owl_ledger{_sfx}.json")))
+            d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
         except Exception:
             pass
         try:
