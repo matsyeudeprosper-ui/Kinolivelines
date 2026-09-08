@@ -2110,8 +2110,13 @@ def user_stats(u):
         except Exception:
             pass
         try:
-            d["fights"] = json.load(open(os.path.join(
-                DIR, f"owl_fight_history{_sfx}.json")))[-12:][::-1]
+            # war-chest fight history belongs to kino/std only -
+            # other accounts (fresh, bos, family) have their own
+            # systems and must not inherit the master's fights
+            if u.get("id") in ("kino", "std") or str(
+                    u.get("login")) == str(LOGIN):
+                d["fights"] = json.load(open(os.path.join(
+                    DIR, f"owl_fight_history{_sfx}.json")))[-12:][::-1]
         except Exception:
             pass
         if u.get("id") == "std":
