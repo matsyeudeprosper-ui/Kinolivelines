@@ -16,9 +16,23 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  border:1px solid rgba(127,179,224,.22);border-radius:99px;
  padding:3px 10px;text-transform:uppercase;letter-spacing:.07em;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-#sub{font-size:.66rem;color:#4d5f73;padding:0 14px 6px;
- position:relative;z-index:3}
-#cv{display:block;width:100vw;height:calc(100vh - 62px)}
+#cv{display:block;width:100vw;height:calc(100vh - 48px)}
+#pnl{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+ z-index:4;display:none;text-align:center;padding:9px 20px 7px;
+ border-radius:18px;backdrop-filter:blur(10px);
+ -webkit-backdrop-filter:blur(10px);
+ background:rgba(13,22,36,.55);border:1px solid rgba(127,179,224,.2);
+ transition:box-shadow .6s,border-color .6s}
+#pnl b{font-size:1.35rem;font-variant-numeric:tabular-nums;
+ display:block;line-height:1.15;transition:transform .15s}
+#pnl span{font-size:.62rem;color:#5f7185;letter-spacing:.05em;
+ text-transform:uppercase}
+#pnl.win{border-color:rgba(46,204,113,.45);
+ box-shadow:0 0 24px rgba(46,204,113,.22)}
+#pnl.win b{color:#2ecc71}
+#pnl.loss{border-color:rgba(255,92,92,.45);
+ box-shadow:0 0 24px rgba(255,92,92,.22)}
+#pnl.loss b{color:#ff5c5c}
 #px{position:fixed;top:12px;right:14px;font-size:1rem;z-index:4;
  font-variant-numeric:tabular-nums;color:#e8c55a;font-weight:800;
  transition:transform .18s ease,color .18s ease}
@@ -41,8 +55,8 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <span class="badge">filtre silence</span>
 <span class="badge" id="trbadge" style="display:none"></span>
 </div>
-<div id="sub">chargement...</div>
 <span id="px"></span>
+<div id="pnl"><b>--</b><span></span></div>
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
 <script>
@@ -304,13 +318,26 @@ function draw(){
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
    ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);}}
 }
+let lastPnl=null;
 function ui(){
  if(!D)return;
- document.getElementById('sub').textContent=
-  Math.min(D.candles.length,Math.max(60,
-   Math.floor(cv.clientWidth/7)))+
-  ' bougies affichées · '+(D.raw-D.kept)+
-  ' silencées sur '+D.raw+' (M1)';
+ const pn=document.getElementById('pnl');
+ const ts=D.trades||[];
+ if(ts.length){
+  const tot=ts.reduce((a,t)=>a+t[5],0);
+  const lots=ts.reduce((a,t)=>a+t[1],0);
+  pn.style.display='block';
+  pn.className=tot>=0?'win':'loss';
+  const b=pn.querySelector('b');
+  b.textContent=(tot>=0?'+':'')+tot.toFixed(2)+' $';
+  pn.querySelector('span').textContent=
+   ts.length+' position'+(ts.length>1?'s':'')+' · '+
+   lots.toFixed(2)+' lot';
+  if(lastPnl!==null&&tot!==lastPnl){
+   b.style.transform='scale(1.12)';
+   setTimeout(()=>{b.style.transform='none'},160);}
+  lastPnl=tot;
+ }else{pn.style.display='none';lastPnl=null;}
  const tb=document.getElementById('trbadge');
  tb.style.display='inline-block';
  const wound=D.choch?' · choc!':'';
