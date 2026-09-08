@@ -1358,21 +1358,93 @@ function render(d){
      }
      window._ammoB=nb;
     }else{
-    const need=Math.max(d.ledger.need_min||0,0.01);
-    const pc2=Math.max(0,Math.min(100,d.ledger.chest/need*100));
-    lt2.innerHTML='&#128546; Le robot a perdu : '+
-     '<b style="color:#ff9c9c">'+d.ledger.debt.toFixed(2)+
-     '&nbsp;$</b><br>&#128176; Argent mis de c&ocirc;t&eacute; : '+
-     '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+'&nbsp;$</b>'+
-     '<br><span style="font-size:.84rem;color:#9fc2de">'+
-     'Il fait de tout petits trades et garde chaque petit gain '+
-     'de c&ocirc;t&eacute;.</span>';
-    lw.style.display='block';lb.style.width=pc2+'%';
-    ls2.innerHTML='Quand il a mis assez de c&ocirc;t&eacute; ('+
-      pc2.toFixed(0)+'&nbsp;%), il tente un coup un peu plus gros '+
-      'pour rattraper la perte. Ce coup est d&eacute;j&agrave; '+
-      'pay&eacute; d&#8217;avance : m&ecirc;me si &ccedil;a rate, '+
-      'votre compte ne descend pas plus bas.';
+     const am=d.ledger.chest;
+     const need=Math.max(d.ledger.need_min||0.01,0.01);
+     const nl=Math.max(d.ledger.next_lot||0.02,0.01);
+     const SL=Math.max(2,Math.min(10,Math.round(nl/0.01)));
+     const prog=Math.max(0,Math.min(SL,am/need*SL));
+     const fillN=Math.floor(prog+1e-9);
+     const fr=prog-fillN;
+     const ok=am>=need-0.005;
+     let pills='';
+     for(let i=0;i<SL;i++){
+      const on=i<fillN;
+      const g=(!on&&i===fillN&&fr>0.02)
+       ?'background:linear-gradient(90deg,#e8c55a '+
+        (fr*100).toFixed(0)+'%,rgba(255,255,255,.07) '+
+        (fr*100).toFixed(0)+'%);'
+       :'background:'+(on?'#e8c55a':'rgba(255,255,255,.07)')+';';
+      pills+='<span style="display:inline-block;width:13px;'+
+       'height:22px;border-radius:4px;margin:0 2px;'+g+
+       (on?'box-shadow:0 0 6px rgba(232,197,90,.45);':'')+
+       '"></span>';
+     }
+     lt2.innerHTML=
+      '<div style="display:grid;grid-template-columns:1fr 1fr;'+
+       'gap:8px">'+
+       '<div style="background:rgba(255,92,92,.08);border:1px '+
+        'solid rgba(255,92,92,.22);border-radius:12px;'+
+        'padding:8px 10px;text-align:center">'+
+        '<div style="font-size:.62rem;color:#ff9c9c;'+
+         'text-transform:uppercase;letter-spacing:.08em">'+
+         '&Agrave; rattraper</div>'+
+        '<b style="color:#ffb3b3;font-size:1.05rem;'+
+         'font-variant-numeric:tabular-nums"><span id="rz-debt">'+
+         d.ledger.debt.toFixed(2)+'</span>&nbsp;$</b></div>'+
+       '<div style="background:rgba(232,197,90,.07);border:1px '+
+        'solid rgba(232,197,90,.22);border-radius:12px;'+
+        'padding:8px 10px;text-align:center">'+
+        '<div style="font-size:.62rem;color:#e8c55a;'+
+         'text-transform:uppercase;letter-spacing:.08em">'+
+         'Gains de c&ocirc;t&eacute;</div>'+
+        '<b style="color:#f0d788;font-size:1.05rem;'+
+         'font-variant-numeric:tabular-nums"><span id="rz-ammo">'+
+         am.toFixed(2)+'</span>&nbsp;$</b></div>'+
+      '</div>'+
+      '<div style="text-align:center;margin:12px 0 4px">'+
+       '<div style="font-size:.62rem;color:#7fb3e0;'+
+        'text-transform:uppercase;letter-spacing:.08em">'+
+        'Prochain soldat du robot</div>'+
+       '<b style="color:#7fd4a0;font-size:2.1rem;'+
+        'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
+        nl.toFixed(2)+'</span></b>'+
+       '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
+      '</div>'+
+      '<div style="text-align:center;margin-top:4px">'+pills+
+      '</div>'+
+      '<div style="text-align:center;font-size:.68rem;'+
+       'color:#5f7185;margin-top:4px">'+
+       (ok
+        ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
+         'signal'
+        :'Encore '+(need-am).toFixed(2)+'&nbsp;$ de gains avant '+
+         'l&#39;attaque')+'</div>';
+     lw.style.display='none';ls2.innerHTML='';
+     lc.style.transition='box-shadow .8s,border-color .8s';
+     lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
+     lc.style.borderColor=ok?'rgba(232,197,90,.55)':'#23405e';
+     const rz=window._rz||{};
+     const roll=(id,a,b)=>{
+      if(a===undefined||Math.abs(a-b)<0.005)return;
+      const el=lc.querySelector('#'+id);if(!el)return;
+      const t0=performance.now();
+      const st=t=>{const k=Math.min(1,(t-t0)/600);
+       el.textContent=(a+(b-a)*k).toFixed(2);
+       if(k<1)requestAnimationFrame(st);};
+      requestAnimationFrame(st);};
+     const fl=(id,a,b,good)=>{
+      if(a===undefined||Math.abs(a-b)<0.005)return;
+      const el=lc.querySelector('#'+id);if(!el)return;
+      el.style.transition='color .25s';
+      el.style.color=good?'#2ecc71':'#ff5c5c';
+      setTimeout(()=>{el.style.color='';},1100);};
+     roll('rz-debt',rz.d,d.ledger.debt);
+     fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
+     roll('rz-ammo',rz.a,am);
+     fl('rz-ammo',rz.a,am,am>rz.a);
+     roll('rz-lot',rz.m,nl);
+     fl('rz-lot',rz.m,nl,nl>rz.m);
+     window._rz={d:d.ledger.debt,a:am,m:nl};
     }
    }else{
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
