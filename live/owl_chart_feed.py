@@ -273,19 +273,21 @@ def main():
             # user 2026-09-08: the MANUAL account's open trades show
             # on the chart too (from its nest worker publication -
             # BTCUSDm quotes sit within cents of BTCUSD)
-            try:
-                _std = json.load(open(os.path.join(
-                    DIR, "nest_data", "std.json")))
-                for p in (_std.get("open_list") or []):
-                    trades.append([
-                        1 if p.get("d") == "A" else -1,
-                        float(p.get("lot") or 0),
-                        round(float(p.get("e") or 0), 2),
-                        round(float(p.get("sl") or 0), 2),
-                        round(float(p.get("tp") or 0), 2),
-                        round(float(p.get("pl") or 0), 2), "m"])
-            except Exception:
-                pass
+            for _fn, _src in (("std.json", "m"), ("bos.json", "b")):
+                try:
+                    _nd = json.load(open(os.path.join(
+                        DIR, "nest_data", _fn)))
+                    for p in (_nd.get("open_list") or []):
+                        trades.append([
+                            1 if p.get("d") == "A" else -1,
+                            float(p.get("lot") or 0),
+                            round(float(p.get("e") or 0), 2),
+                            round(float(p.get("sl") or 0), 2),
+                            round(float(p.get("tp") or 0), 2),
+                            round(float(p.get("pl") or 0), 2),
+                            _src])
+                except Exception:
+                    pass
             if R is not None and len(R) > 1 and tick is not None:
                 kept = build(R[:-1])       # closed bars only
                 lv = R[-1]                 # the forming candle, live

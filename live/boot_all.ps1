@@ -42,6 +42,20 @@ if (-not ($fh | Where-Object { $_.CommandLine -like "*ETHUSD*" })) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
+# 2c) STRUCTURE bot (user's BOS rules, real acct 223995441)
+if (-not (ProcRunning "structure_bos_bot.py")) {
+    Say "starting STRUCTURE bot (223995441)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
+# 2d) chart feed (aura chart data)
+if (-not (ProcRunning "owl_chart_feed.py")) {
+    Say "starting chart feed"
+    Start-Process pythonw -ArgumentList "owl_chart_feed.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 2b) STANDARD-account Owl instance (one codebase, regenerated at
 #     launch from owl_manual_bot.py by owl_run_std.py)
 if (-not (ProcRunning "owl_run_std.py")) {
