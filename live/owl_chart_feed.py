@@ -82,6 +82,59 @@ def swings(kept):
     return dots
 
 
+def trend_filter(cands):
+    """Trend layer (user 2026-09-08): a low dot is kept only when it
+    is HIGHER than the previous low dot; a high dot only when LOWER
+    than the previous high dot. Two kept dots of the same type in a
+    row = confirmed trend (up for higher lows, down for lower highs).
+    While a trend is confirmed, only its own dot type is drawn; the
+    opposite stream still runs silently and flips the trend when it
+    confirms twice. A broken chain drops the trend back to neutral.
+    Returns (dots, trend)."""
+    trend = 0
+    last_lo = last_hi = None
+    up_st = dn_st = 0
+    out = []
+    for t, price, kind in cands:
+        if kind == 1:
+            higher = last_lo is not None and price > last_lo
+            last_lo = price
+            if higher:
+                up_st += 1
+                if trend >= 0:
+                    out.append([t, price, 1])
+                    if up_st >= 2:
+                        trend = 1
+                        dn_st = 0
+                elif up_st >= 2:
+                    trend = 1
+                    dn_st = 0
+                    out.append([t, price, 1])
+            else:
+                up_st = 0
+                if trend == 1:
+                    trend = 0
+        else:
+            lower = last_hi is not None and price < last_hi
+            last_hi = price
+            if lower:
+                dn_st += 1
+                if trend <= 0:
+                    out.append([t, price, -1])
+                    if dn_st >= 2:
+                        trend = -1
+                        up_st = 0
+                elif dn_st >= 2:
+                    trend = -1
+                    up_st = 0
+                    out.append([t, price, -1])
+            else:
+                dn_st = 0
+                if trend == -1:
+                    trend = 0
+    return out, trend
+
+
 def main():
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
@@ -102,11 +155,13 @@ def main():
                         1 if lv["close"] >= lv["open"] else -1]
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
-                dots = [d for d in swings(kept) if d[0] >= t0]
+                dots, trend = trend_filter(swings(kept))
+                dots = [d for d in dots if d[0] >= t0]
                 json.dump(
                     {"updated": int(time.time()), "symbol": SYMBOL,
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
+                     "trend": trend,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:

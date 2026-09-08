@@ -2228,7 +2228,8 @@ font-variant-numeric:tabular-nums;color:#e8c55a;font-weight:700}
 <a id="back" href="#" style="text-decoration:none;color:#9fc2de;
  font-size:1.35rem;line-height:1;padding:2px 8px 2px 0">&#8592;</a>
 <h1>BTCUSD &middot; M1</h1>
-<span class="badge">filtre silence</span></div>
+<span class="badge">filtre silence</span>
+<span class="badge" id="trbadge" style="display:none"></span></div>
 <div id="sub">chargement...</div>
 <span id="px"></span>
 <div id="livedot"></div>
@@ -2330,6 +2331,20 @@ function draw(){
  document.getElementById('sub').textContent=
   cs.length+' bougies affich\\u00e9es \\u00b7 '+
   (D.raw-D.kept)+' silenc\\u00e9es sur '+D.raw+' (M1)';
+ const tb=document.getElementById('trbadge');
+ tb.style.display='inline-block';
+ if(D.trend===1){tb.textContent='\\u25b2 haussier';
+  tb.style.color='#2ecc71';
+  tb.style.borderColor='rgba(46,204,113,.45)';
+  tb.style.background='rgba(46,204,113,.1)';}
+ else if(D.trend===-1){tb.textContent='\\u25bc baissier';
+  tb.style.color='#ff5c5c';
+  tb.style.borderColor='rgba(255,92,92,.45)';
+  tb.style.background='rgba(255,92,92,.1)';}
+ else{tb.textContent='\\u2012 neutre';
+  tb.style.color='#8fa1b3';
+  tb.style.borderColor='rgba(143,161,179,.35)';
+  tb.style.background='rgba(143,161,179,.08)';}
  const pe=document.getElementById('px');
  if(D.px){
   pe.textContent=D.px.toFixed(0)+' $';
