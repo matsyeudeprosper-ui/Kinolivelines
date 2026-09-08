@@ -2363,8 +2363,9 @@ function draw(){
   ctx.fillStyle=col;
   ctx.fillText(txt,W-w+1,y+3.5);};
  (D.trades||[]).forEach(t=>{
+  const man=t[6]==='m';
   const yE=px(t[2]);
-  ctx.strokeStyle='rgba(127,179,224,.8)';
+  ctx.strokeStyle=man?'rgba(232,197,90,.85)':'rgba(127,179,224,.8)';
   ctx.setLineDash([7,4]);
   ctx.beginPath();ctx.moveTo(0,yE);ctx.lineTo(W,yE);ctx.stroke();
   ctx.setLineDash([]);
@@ -2376,9 +2377,10 @@ function draw(){
   else{ctx.moveTo(8,yE+2+s);ctx.lineTo(8-s,yE+2-s*0.6);
    ctx.lineTo(8+s,yE+2-s*0.6);}
   ctx.closePath();ctx.fill();
-  tag(yE,(t[0]===1?'\\u25b2 ':'\\u25bc ')+t[1].toFixed(2)+
+  tag(yE,(man?'\\u270B ':'\\u{1F916} ')+
+   (t[0]===1?'\\u25b2 ':'\\u25bc ')+t[1].toFixed(2)+
    (t[5]>=0?'  +':'  ')+t[5].toFixed(2)+' $',
-   '#cfe3f5','rgba(127,179,224,.25)');
+   '#cfe3f5',man?'rgba(232,197,90,.28)':'rgba(127,179,224,.25)');
   if(t[3]>0){const y=px(t[3]);
    ctx.strokeStyle='rgba(255,92,92,.75)';
    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
