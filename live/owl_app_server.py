@@ -2045,9 +2045,13 @@ def user_stats(u):
         # fights; family mirrors follow the master's
         _sfx = "_std" if u.get("id") == "std" else ""
         try:
-            d["ledger"] = json.load(open(os.path.join(
-                DIR, f"owl_ledger{_sfx}.json")))
-            d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
+            # war-chest books exist only on the kino/std accounts;
+            # the fresh demo (harvest engine) has no ledger card
+            if u.get("id") in ("kino", "std") or str(
+                    u.get("login")) == str(LOGIN):
+                d["ledger"] = json.load(open(os.path.join(
+                    DIR, f"owl_ledger{_sfx}.json")))
+                d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
         except Exception:
             pass
         try:
