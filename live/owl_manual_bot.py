@@ -902,6 +902,10 @@ def kino_open(direction, wall, st, ai, manual, runner_tickets,
         _frisk = _fd * _fl
         if (_fd >= RECOV_MIN_WALL_PTS and _frisk <= 35.27
                 and _led["chest"] >= CHEST_FUND_FRAC * _frisk):
+            if trading_paused():
+                # 2026-09-08: paused = scribe only; skip quietly
+                # instead of logging a FAILED attempt every poll
+                return None
             r = open_at_market(direction, _fl, "OWL-recov")
             if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
                 say(f"FUNDED FIGHTER entry FAILED retcode="
@@ -1588,12 +1592,29 @@ def main():
                         _led["debt"] = round(_led["debt"] - _pnl2, 2)
                         say(f"DEBT BOOK +{-_pnl2:.2f} -> "
                             f"${_led['debt']:.2f} owed")
-                    elif _pnl2 > 0 and row.get("exit_reason") == "tp":
+                    elif _pnl2 > 0 and (row.get("exit_reason") == "tp"
+                                        or trading_paused()):
                         # wins fill the fund with OR without debt
-                        # (standing emergency fund, user 09-06)
-                        _led["chest"] = round(min(
-                            CHEST_FUND_MAX, _led["chest"] + _pnl2), 2)
-                        if _led["debt"] > 0.5:
+                        # (standing emergency fund, user 09-06).
+                        # Manual mode (paused, 2026-09-08 user): any
+                        # profitable close counts, and once the fund
+                        # is full the overflow pays the debt directly
+                        # - the owner IS the fighter.
+                        _room = round(max(
+                            0.0, CHEST_FUND_MAX - _led["chest"]), 2)
+                        _toc = round(min(_pnl2, _room), 2)
+                        _led["chest"] = round(_led["chest"] + _toc, 2)
+                        _over = round(_pnl2 - _toc, 2)
+                        if (_over > 0 and trading_paused()
+                                and _led["debt"] > 0):
+                            _led["debt"] = round(max(
+                                0.0, _led["debt"] - _over), 2)
+                            if _led["debt"] <= 0.5:
+                                _led["debt"] = 0.0
+                            say(f"OWNER WIN +{_pnl2:.2f}: fund full, "
+                                f"{_over:.2f} pays the book -> "
+                                f"${_led['debt']:.2f} owed")
+                        elif _led["debt"] > 0.5:
                             say(f"CHEST +{_pnl2:.2f} -> "
                                 f"${_led['chest']:.2f} saved toward "
                                 f"the {_led['next_lot']:.2f} fighter")
