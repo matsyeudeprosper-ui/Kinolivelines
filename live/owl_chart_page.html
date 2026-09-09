@@ -66,6 +66,7 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null;
+let LA=null,LT=null;   // live candle: animated state + target
 const born={dot:{},bos:{},cand:{}};
 const seen={dot:new Set(),bos:new Set(),cand:0,first:true};
 function ease(t){return t<0?0:t>1?1:1-Math.pow(1-t,3);}
@@ -82,6 +83,15 @@ function digest(d){
  if(cs.length){const lt=cs[cs.length-1][0];
   if(lt!==seen.cand){seen.cand=lt;
    born.cand[lt]=seen.first?-1e9:now;}}
+ if(d.live){
+  if(!LT||LT[0]!==d.live[0]){
+   // a fresh candle: born at its open, then fills toward reality
+   LA=seen.first
+    ?{o:d.live[1],h:d.live[2],l:d.live[3],c:d.live[4]}
+    :{o:d.live[1],h:d.live[1],l:d.live[1],c:d.live[1]};
+  }
+  LT=d.live.slice();
+ }else{LA=null;LT=null;}
  seen.first=false;
 }
 function draw(){
@@ -106,9 +116,16 @@ function draw(){
  }
  const N=Math.min(D.candles.length,Math.max(60,Math.floor(W/7)));
  const cs=D.candles.slice(-N);
+ if(LA&&LT){
+  const f=0.14;               // smooth fill, ~half-life 300ms
+  LA.o=LT[1];
+  LA.c+=(LT[4]-LA.c)*f;
+  LA.h+=(LT[2]-LA.h)*f;
+  LA.l+=(LT[3]-LA.l)*f;
+ }
  let lo=Infinity,hi=-Infinity;
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
- if(D.live){hi=Math.max(hi,D.live[2]);lo=Math.min(lo,D.live[3]);}
+ if(LT){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  (D.trades||[]).forEach(t=>{[t[2],t[3],t[4]].forEach(v=>{
   if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
@@ -299,15 +316,14 @@ function draw(){
  });
  // --- live candle + price line ---
  const dot=document.getElementById('livedot');
- if(D.live){
+ if(LA){
   const x=Math.round(cw*(cs.length+1))+0.5;
-  const c=D.live;
-  const up=c[4]>=c[1];
+  const up=LA.c>=LA.o;
   const col=up?'#2ecc71':'#ff5c5c';
   ctx.strokeStyle=col;ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x,px(c[2]));ctx.lineTo(x,px(c[3]));
+  ctx.beginPath();ctx.moveTo(x,px(LA.h));ctx.lineTo(x,px(LA.l));
   ctx.stroke();
-  const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
+  const y1=px(Math.max(LA.o,LA.c)),y2=px(Math.min(LA.o,LA.c));
   ctx.globalAlpha=0.35;ctx.fillStyle=col;
   ctx.beginPath();
   ctx.roundRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1),Math.min(2,bw/3));
@@ -315,7 +331,7 @@ function draw(){
   ctx.globalAlpha=1;
   ctx.strokeStyle='#e8c55a';
   ctx.strokeRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1));
-  const yc=px(c[4]);
+  const yc=px(LA.c);
   const r=cv.getBoundingClientRect();
   dot.style.display='block';
   dot.style.left=(r.left+x-5)+'px';
