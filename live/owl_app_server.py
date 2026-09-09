@@ -738,6 +738,15 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 })();
 let lastOk=0;
 let isPaused=false;
+function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
+function fdur(m){
+ if(m==null)return '';
+ m=Math.round(m);
+ if(m<60)return m+' min';
+ const h=Math.floor(m/60),r=m%60;
+ if(h<24)return h+' h'+(r?' '+String(r).padStart(2,'0'):'');
+ const j=Math.floor(h/24);
+ return j+' j '+(h%24)+' h';}
 function sheet(html){return new Promise(res=>{
  const bg=document.getElementById('sheetbg'),
   sh=document.getElementById('sheet');
@@ -1179,7 +1188,7 @@ function tradeSheet(i){
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
   (x.ep!=null?L('Entr&eacute;e',x.ep.toFixed(2)):'')+
   (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
-  (x.dur!=null?L('Dur&eacute;e',x.dur+' min'):'')+
+  (x.dur!=null?L('Dur&eacute;e',fdur(x.dur)):'')+
   L('Quand',x.w)+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
@@ -1836,12 +1845,12 @@ function render(d){
    document.getElementById('msum-sec').style.display='block';
    const ms=document.getElementById('msum');
    ms.style.display='grid';
-   ms.innerHTML=
+   setH(ms,
     cell('Net du mois',f(net),net>=0?'pos':'neg','depuis le 1er')+
     cell('Jours','<span class="pos">'+g+'</span> / <span class="neg">'+
      rr+'</span>','neu','verts / rouges')+
     cell('Meilleur jour',f(best),'pos','le plus gagnant')+
-    cell('Pire jour',f(worst),worst>=0?'pos':'neg','le plus dur');
+    cell('Pire jour',f(worst),worst>=0?'pos':'neg','le plus dur'));
    const md={};d.month_days.forEach(x=>md[x.d]=x.p);
    const now=new Date();
    const y=now.getUTCFullYear(),m=now.getUTCMonth();
@@ -1873,7 +1882,7 @@ function render(d){
    h+='</div>';
    document.getElementById('cal-sec').style.display='block';
    const ce=document.getElementById('cal');
-   ce.style.display='block';ce.innerHTML=h;
+   ce.style.display='block';setH(ce,h);
   }
   if(d.trades&&d.trades.length>4){
    const ps=d.trades.map(x=>x.p);
@@ -1889,7 +1898,7 @@ function render(d){
    document.getElementById('statx-sec').style.display='block';
    const sx=document.getElementById('statx');
    sx.style.display='block';
-   sx.innerHTML=
+   setH(sx,
     SR('Trades gagnants',W.length+' sur '+ps.length+' ('+
      Math.round(W.length/ps.length*100)+'&nbsp;%)','pos')+
     SR('Gain moyen','+'+(sw/Math.max(1,W.length)).toFixed(2)+
@@ -1898,7 +1907,7 @@ function render(d){
      '&nbsp;$','neg')+
     SR('Gains / pertes',slo>0?(sw/slo).toFixed(2):'&#8734;',
      sw>=slo?'pos':'neg')+
-    SR('Meilleure s&eacute;rie',bs+' gains de suite','pos');
+    SR('Meilleure s&eacute;rie',bs+' gains de suite','pos'));
   }
   if(d.fights&&d.fights.length){
    const f0=d.fights[0];
@@ -1947,20 +1956,20 @@ function render(d){
   if(d.trades&&d.trades.length){
    window._tr=d.trades;
    const N=window._trN||10;
-   document.getElementById('hist').innerHTML=
+   setH(document.getElementById('hist'),
     d.trades.slice(0,N).map((x,i)=>
     '<div class="row" style="cursor:pointer" data-i="'+i+
     '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
     (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; soldat'
      :(x.k==='page'?'normal':x.k)):'')+
-    (x.dur!=null?' &middot; '+x.dur+' min':'')+
+    (x.dur!=null?' &middot; '+fdur(x.dur):'')+
     '</span><b class="'+
     (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
     ' $</b></div>').join('')+
     (d.trades.length>N
     ?'<div class="row" style="cursor:pointer;justify-content:center;'+
      'color:#7fb0ff;font-size:.9rem" onclick="window._trN=99;load()">'+
-     'Voir plus ('+d.trades.length+')</div>':'');
+     'Voir plus ('+d.trades.length+')</div>':''));
   }
 }
 async function load(){
