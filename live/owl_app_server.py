@@ -1,4 +1,4 @@
-"""OwlNest v3 - MULTI-USER French PWA (2026-09-01).
+﻿"""OwlNest v3 - MULTI-USER French PWA (2026-09-01).
 
 Users live in owl_nest_users.json; per-user stats are computed by
 owl_nest_worker.py processes (kept alive by owl_nest_manager.py) into
@@ -833,16 +833,33 @@ function info(html){return sheet(html+
  '<button class="shbtn shmain" onclick="_shDone(1)">OK</button>');}
 function ledInfo(){
  const row=(ic,t,s)=>'<div style="display:flex;gap:12px;'+
-  'align-items:flex-start;margin:13px 0">'+
-  '<div style="flex:0 0 38px;height:38px;border-radius:12px;'+
-   'background:rgba(127,179,224,.1);border:1px solid '+
-   'rgba(127,179,224,.18);display:flex;align-items:center;'+
-   'justify-content:center;font-size:1.05rem">'+ic+'</div>'+
+  'align-items:center;margin:13px 0">'+
+  '<div style="flex:0 0 44px;display:flex;align-items:center;'+
+   'justify-content:center">'+ic+'</div>'+
   '<div style="min-width:0"><b style="font-size:.86rem">'+t+
    '</b><div style="font-size:.79rem;color:#8fa1b3;'+
    'line-height:1.45">'+s+'</div></div></div>';
  const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
  const F=x=>x.toFixed(2)+'&nbsp;$';
+ // popup icons = miniatures of the REAL card elements
+ const tile=(v,c)=>'<span style="display:inline-flex;'+
+  'align-items:center;justify-content:center;width:44px;'+
+  'height:30px;border-radius:9px;font-weight:800;'+
+  'font-size:.68rem;background:rgba('+c+',.1);border:1px solid '+
+  'rgba('+c+',.35);color:rgb('+c+')">'+v.toFixed(0)+'&nbsp;$'+
+  '</span>';
+ const miniDebt=tile(L.debt,'255,150,150');
+ const miniRes=tile(L.chest,'240,215,136');
+ const miniLot='<span style="color:#7fd4a0;font-weight:800;'+
+  'font-size:1.1rem;font-variant-numeric:tabular-nums">'+
+  L.nl.toFixed(2)+'</span>';
+ let mp='';
+ for(let i=0;i<3;i++){
+  mp+='<span style="display:inline-block;width:7px;height:16px;'+
+   'border-radius:3px;margin:0 1.5px;background:'+
+   (i<Math.min(3,L.fill)?'#e8c55a':'rgba(255,255,255,.09)')+
+   '"></span>';}
+ const miniBalles='<span>'+mp+'</span>';
  const mode=L.mode;
  const sub=mode==='man'
   ?'Votre plan de r&eacute;cup&eacute;ration, comme celui du robot'
@@ -850,41 +867,41 @@ function ledInfo(){
    'creuser le compte';
  let r3,r4;
  if(mode==='bos'){
-  r3=row('&#9876;&#65039;','Riposte : jusqu&#39;&agrave; '+
+  r3=row(miniLot,'Prochain combat : jusqu&#39;&agrave; '+
    L.nl.toFixed(2)+' lot',
    'Tant qu&#39;il y a une dette, le robot peut grossir son '+
    'prochain trade : 0.02 de base + 1 balle de 0.01 par tranche '+
    'de r&eacute;serve disponible (maximum 3 balles).');
-  r4=row('&#128299;','Les balles &mdash; '+L.fill+' sur 3',
+  r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
    'Chaque balle est pay&eacute;e d&#39;avance par la '+
    'r&eacute;serve, au prix du stop du moment. Balle perdue = la '+
    'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
    'directement.');
  }else if(mode==='man'){
-  r3=row('&#127919;','Votre plafond : '+L.nl.toFixed(2)+' lot',
+  r3=row(miniLot,'Votre plafond : '+L.nl.toFixed(2)+' lot',
    'Le plus gros trade que votre r&eacute;serve paie '+
    'enti&egrave;rement aujourd&#39;hui. Prenez moins si vous '+
    'voulez &mdash; jamais plus.');
-  r4=row('&#128299;','Les balles &mdash; '+L.fill+' charg&eacute;e'+
+  r4=row(miniBalles,'Les balles &mdash; '+L.fill+' charg&eacute;e'+
    (L.fill>1?'s':''),
    '1 balle = un trade de 0.01 d&eacute;j&agrave; pay&eacute; '+
    'par vos gains. Magasin plein = carte dor&eacute;e : votre '+
    'grand coup est pr&ecirc;t.');
  }else{
-  r3=row('&#127919;','Prochain soldat : '+L.nl.toFixed(2)+' lot',
+  r3=row(miniLot,'Prochain soldat : '+L.nl.toFixed(2)+' lot',
    'Le trade un peu plus gros que le robot pr&eacute;pare pour '+
    'rattraper la perte, pay&eacute; par la r&eacute;serve.');
-  r4=row('&#128299;','Les balles',
+  r4=row(miniBalles,'Les balles',
    'Le soldat se remplit gain apr&egrave;s gain. Magasin plein '+
    '= carte dor&eacute;e : il attaque au prochain signal.');
  }
  sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
   '<p style="font-size:.78rem;color:#6f93b5;margin:0 0 6px">'+
   sub+'</p>'+
-  row('&#128546;','&Agrave; rattraper : '+F(L.debt),
+  row(miniDebt,'&Agrave; rattraper : '+F(L.debt),
    'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
    'Chaque gain fait baisser ce chiffre.')+
-  row('&#128176;','R&eacute;serve : '+F(L.chest),
+  row(miniRes,'R&eacute;serve : '+F(L.chest),
    (mode==='man'?'Vos gains':'Les gains')+' mis de '+
    'c&ocirc;t&eacute; au lieu d&#39;&ecirc;tre risqu&eacute;s '+
    '&agrave; nouveau &mdash; c&#39;est la munition du '+
@@ -1117,7 +1134,7 @@ function tourStep(i){
  document.getElementById('tourdots').innerHTML=
   TOUR.map((_,k)=>k===i?'&#9679;':'&#9675;').join('');
  document.getElementById('tournext').textContent=
-  i===TOUR.length-1?'C’est parti !':'Suivant';
+  i===TOUR.length-1?'Câ€™est parti !':'Suivant';
  if(el){
   el.classList.add('tourhl');
   try{el.scrollIntoView({block:'center',behavior:'smooth'})}
@@ -1174,14 +1191,14 @@ function tab(n,el){
  const he=document.getElementById('hello');
  he.innerHTML=he.innerHTML.replace('Bonjour',g)
   .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;')
-  .replace('👋',(h>=20||h<5)?'🌙'
-   :'👋');
+  .replace('ðŸ‘‹',(h>=20||h<5)?'ðŸŒ™'
+   :'ðŸ‘‹');
 })();
 function confetti(em){
  for(let i=0;i<44;i++){
   const s=document.createElement('div');
-  s.textContent=(em||['🎉','✨','💚',
-   '🏆'])[i%4];
+  s.textContent=(em||['ðŸŽ‰','âœ¨','ðŸ’š',
+   'ðŸ†'])[i%4];
   s.style.cssText='position:fixed;z-index:60;top:-30px;left:'+
    (Math.random()*100)+'vw;font-size:'+(14+Math.random()*16)+
    'px;transition:transform 2.8s ease-in,opacity 2.8s;'+
@@ -1206,7 +1223,7 @@ function drawSpark(){
  if(c.length<2){
   document.getElementById('spark').innerHTML=
    '<text x="150" y="40" text-anchor="middle" fill="#4d5f73" '+
-   'font-size="11">La courbe se dessinera après quelques '+
+   'font-size="11">La courbe se dessinera aprÃ¨s quelques '+
    'trades</text>';
   return;}
  const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
@@ -1286,9 +1303,9 @@ function shareWeek(){
  g.fillStyle=gr;g.fillRect(0,0,720,940);
  g.textAlign='center';
  g.fillStyle='#cfe3f5';g.font='bold 46px sans-serif';
- g.fillText('🦉 OwlNest',360,92);
+ g.fillText('ðŸ¦‰ OwlNest',360,92);
  g.fillStyle='#7d9cb8';g.font='26px sans-serif';
- g.fillText('Ma semaine · '+(d.name||''),360,138);
+ g.fillText('Ma semaine Â· '+(d.name||''),360,138);
  const wk=d.week||0;
  g.fillStyle=wk>=0?'#2ecc71':'#ff5c5c';
  g.font='bold 92px sans-serif';
@@ -1606,7 +1623,7 @@ function render(d){
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
         'text-transform:uppercase;letter-spacing:.08em">'+
-        (bos?'Riposte possible : jusqu&#39;&agrave;'
+        (bos?'Prochain combat : jusqu&#39;&agrave;'
          :'Prochain soldat du robot')+'</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
@@ -2020,8 +2037,8 @@ function render(d){
    if(window._lf===undefined){window._lf=f0.t;}
    else if(f0.t>window._lf){window._lf=f0.t;
     if(f0.res==='gagne'){
-     confetti(['⚔️','🏆','✨',
-      '🪙']);}}
+     confetti(['âš”ï¸','ðŸ†','âœ¨',
+      'ðŸª™']);}}
    document.getElementById('fights-sec').style.display='block';
    const fe=document.getElementById('fights');
    fe.style.display='block';
@@ -3475,3 +3492,4 @@ class H(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
+
