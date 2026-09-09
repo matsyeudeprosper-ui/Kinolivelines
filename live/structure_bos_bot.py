@@ -319,6 +319,56 @@ def main():
     save_state(st)
     say(f"seeded {len(R)} bars: trend {eng.trend} "
         f"choch {eng.choch} kept {len(eng.kept)}")
+
+    def enter(d, slp, kind):
+        """Shared entry executor (close-BOS, flip-BOS and touch)."""
+        if my_positions():
+            return False
+        if paused():
+            return False
+        ai2 = mt5.account_info()
+        if ai2 is None or ai2.balance < MIN_BALANCE:
+            return False
+        tick = mt5.symbol_info_tick(SYMBOL)
+        if tick is None:
+            return False
+        e_ref = tick.ask if d == 1 else tick.bid
+        dist = abs(e_ref - slp)
+        if dist <= S_MIN_DIST:
+            say(f"{kind} skipped: dot {dist:.0f}pts inside the "
+                f"spread zone")
+            return False
+        lot = BASE_LOT
+        if st["debt"] > 0.5:
+            risk001 = dist * 0.01
+            extra = min(MAX_EXTRA,
+                        int(st["chest"] // max(risk001, 0.01)))
+            lot = round(BASE_LOT + extra * 0.01, 2)
+            if extra > 0:
+                say(f"FIGHTER: {extra} bullet(s) ride along -> "
+                    f"lot {lot:.2f} (chest ${st['chest']:.2f} "
+                    f"covers {extra} x ${risk001:.2f})")
+        tp = e_ref + d * RR * dist
+        req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+               "volume": lot,
+               "type": (mt5.ORDER_TYPE_BUY if d == 1
+                        else mt5.ORDER_TYPE_SELL),
+               "price": e_ref, "sl": round(slp, 2),
+               "tp": round(tp, 2), "deviation": 200,
+               "magic": MAGIC, "comment": COMMENT,
+               "type_time": mt5.ORDER_TIME_GTC,
+               "type_filling": mt5.ORDER_FILLING_IOC}
+        r = mt5.order_send(req)
+        if r is not None and r.retcode == 10027 and ensure_algo():
+            r = mt5.order_send(req)
+        if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+            say(f"ENTRY FAILED retcode={r.retcode if r else None}")
+            return False
+        say(f"{kind} ENTRY: {'BUY' if d == 1 else 'SELL'} {lot} @ "
+            f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
+            f"(risk ${dist * lot:.2f}, "
+            f"trend {'up' if d == 1 else 'down'})")
+        return True
     last_book = time.time() - 60
     warned_funds = 0.0
     last_house = 0.0
@@ -360,6 +410,32 @@ def main():
                 st["killed"] = True
                 save_state(st)
                 continue
+            # TOUCH continuation (user 2026-09-09, measured first:
+            # +263/DD67 vs +207/DD85 close-only; flips keep the
+            # close rule). Checked every ~1s wake on live ticks.
+            if (not my_positions()
+                    and any(f > time.time() - AWAKE_WIN
+                            for f in flips)):
+                tk2 = mt5.symbol_info_tick(SYMBOL)
+                if tk2 is not None:
+                    if (eng.trend == 1 and eng.hi_v is not None
+                            and tk2.bid > eng.hi_v
+                            and st.get("used_hi") != eng.hi_v):
+                        span = eng.kept[eng.hi_i + 1:]
+                        if span and any(x[5] == -1 for x in span):
+                            m = min(span, key=lambda x: x[3])
+                            st["used_hi"] = eng.hi_v
+                            save_state(st)
+                            enter(1, m[3], "TOUCH")
+                    elif (eng.trend == -1 and eng.lo_v is not None
+                            and tk2.bid < eng.lo_v
+                            and st.get("used_lo") != eng.lo_v):
+                        span = eng.kept[eng.lo_i + 1:]
+                        if span and any(x[5] == 1 for x in span):
+                            m = max(span, key=lambda x: x[2])
+                            st["used_lo"] = eng.lo_v
+                            save_state(st)
+                            enter(-1, m[2], "TOUCH")
             kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
                                          1, 2)
             if kb is None or len(kb) < 2:
@@ -370,6 +446,7 @@ def main():
                 continue
             st["last_bar"] = bt
             _pt = eng.trend
+            _hv, _lv = eng.hi_v, eng.lo_v
             sig = eng.step(bt, float(bar["open"]),
                            float(bar["high"]), float(bar["low"]),
                            float(bar["close"]))
@@ -406,70 +483,16 @@ def main():
                     "in 2h)")
                 continue
             d, slp = sig
-            if my_positions():
-                continue                     # one trade at a time
-            if paused():
-                say("BOS signal skipped - trading paused (app)")
-                continue
-            ai = mt5.account_info()
-            if ai is None or ai.balance < MIN_BALANCE:
-                if time.time() - warned_funds > 3600:
-                    warned_funds = time.time()
-                    say(f"BOS signal but balance "
-                        f"{ai.balance if ai else 0:.2f} < "
-                        f"{MIN_BALANCE} - waiting for funds")
-                continue
-            tick = mt5.symbol_info_tick(SYMBOL)
-            if tick is None:
-                continue
-            e_ref = tick.ask if d == 1 else tick.bid
-            dist = abs(e_ref - slp)
-            if dist <= S_MIN_DIST:
-                say(f"signal skipped: dot {dist:.0f}pts inside "
-                    f"the spread zone")
-                continue
-            lot = BASE_LOT
-            if st["debt"] > 0.5:
-                risk001 = dist * 0.01
-                extra = min(MAX_EXTRA,
-                            int(st["chest"] // max(risk001, 0.01)))
-                lot = round(BASE_LOT + extra * 0.01, 2)
-                if extra > 0:
-                    say(f"FIGHTER: {extra} bullet(s) ride along -> "
-                        f"lot {lot:.2f} (chest ${st['chest']:.2f} "
-                        f"covers {extra} x ${risk001:.2f})")
-            tp = e_ref + d * RR * dist
-            r = mt5.order_send({
-                "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
-                "volume": lot,
-                "type": (mt5.ORDER_TYPE_BUY if d == 1
-                         else mt5.ORDER_TYPE_SELL),
-                "price": e_ref, "sl": round(slp, 2),
-                "tp": round(tp, 2),
-                "deviation": 200, "magic": MAGIC,
-                "comment": COMMENT,
-                "type_time": mt5.ORDER_TIME_GTC,
-                "type_filling": mt5.ORDER_FILLING_IOC})
-            if r is not None and r.retcode == 10027 and ensure_algo():
-                r = mt5.order_send({
-                    "action": mt5.TRADE_ACTION_DEAL,
-                    "symbol": SYMBOL, "volume": lot,
-                    "type": (mt5.ORDER_TYPE_BUY if d == 1
-                             else mt5.ORDER_TYPE_SELL),
-                    "price": e_ref, "sl": round(slp, 2),
-                    "tp": round(tp, 2),
-                    "deviation": 200, "magic": MAGIC,
-                    "comment": COMMENT,
-                    "type_time": mt5.ORDER_TIME_GTC,
-                    "type_filling": mt5.ORDER_FILLING_IOC})
-            if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
-                say(f"ENTRY FAILED retcode="
-                    f"{r.retcode if r else None}")
-            else:
-                say(f"BOS ENTRY: {'BUY' if d == 1 else 'SELL'} "
-                    f"{lot} @ ~{e_ref:.2f} SL {slp:.2f} "
-                    f"TP {tp:.2f} (risk ${dist * lot:.2f}, "
-                    f"trend {'up' if d == 1 else 'down'})")
+            flip = eng.trend != _pt
+            if not flip:
+                # touch owns continuations; close-entry only as the
+                # fallback when the level was never touched (gap,
+                # downtime)
+                lvl = _hv if d == 1 else _lv
+                if (d == 1 and st.get("used_hi") == lvl) or \
+                        (d == -1 and st.get("used_lo") == lvl):
+                    continue
+            enter(d, slp, "FLIP-BOS" if flip else "BOS")
         except Exception as e:
             say(f"ERROR {type(e).__name__}: {e}")
             time.sleep(30)
