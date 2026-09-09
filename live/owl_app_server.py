@@ -334,6 +334,30 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .card{background:linear-gradient(160deg,#131e2e,#101927);
  border:1px solid #1f3145;border-radius:18px;padding:18px 10px 15px;
  text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+#mx-orb{width:52px;height:52px;border-radius:50%;flex:none;
+ display:flex;align-items:center;justify-content:center;
+ font-size:1.65rem;background:radial-gradient(circle at 35% 30%,
+ rgba(255,255,255,.14),rgba(255,255,255,.03));
+ border:1px solid rgba(255,255,255,.1);
+ animation:orbp 3.2s ease-in-out infinite}
+@keyframes orbp{0%,100%{box-shadow:0 0 0 0 var(--mxg)}
+ 50%{box-shadow:0 0 22px 3px var(--mxg)}}
+#mx-wave{position:absolute;inset:0;pointer-events:none;
+ background:linear-gradient(115deg,transparent 30%,var(--mxg) 50%,
+ transparent 70%);background-size:280% 100%;opacity:.5;
+ animation:wv 7s linear infinite}
+@keyframes wv{0%{background-position:120% 0}
+ 100%{background-position:-60% 0}}
+.mx-sun{--mxg:rgba(232,197,90,.12)}
+.mx-fish{--mxg:rgba(79,216,200,.16)}
+.mx-sleep{--mxg:rgba(109,125,160,.12)}
+.mx-sleep #mx-wave{animation-duration:16s;opacity:.3}
+.mx-storm{--mxg:rgba(255,92,92,.16)}
+.mx-cloud{--mxg:rgba(230,160,40,.14)}
+.mxc{font-size:.68rem;font-weight:700;padding:3px 10px;
+ border-radius:99px;border:1px solid rgba(255,255,255,.12);
+ background:rgba(255,255,255,.05);color:#a9bccf;
+ letter-spacing:.03em}
 .empty{text-align:center;padding:26px 10px;color:#4d5f73}
 .empty i{font-style:normal;font-size:1.7rem;display:block}
 .empty p{font-size:.85rem;margin-top:7px}
@@ -448,15 +472,25 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
-<div id="meteo" class="status" style="margin-top:26px;
- text-align:center;background:#101c2b;border:1px solid #23405e;
- border-radius:16px;padding:14px;color:#cfe3f5;font-size:.95rem;
- line-height:1.5">
- <div style="font-size:.7rem;color:#6f93b5;text-transform:uppercase;
-  letter-spacing:.08em;margin-bottom:6px">&Eacute;tat du robot</div>
- <div id="meteo-txt">&#9925; ...</div>
- <div id="st" style="margin-top:9px;border-top:1px solid #1c2a3d;
-  padding-top:9px;font-size:.97rem;color:#c6d3df">Connexion...</div>
+<div id="meteo" class="status mx-sun" style="margin-top:26px;
+ position:relative;overflow:hidden;text-align:left;padding:0;
+ border-radius:18px">
+ <div id="mx-wave"></div>
+ <div style="position:relative;display:flex;align-items:center;
+  gap:14px;padding:15px 16px 12px">
+  <div id="mx-orb">&#9925;</div>
+  <div style="flex:1;min-width:0">
+   <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
+    ...</b>
+   <div id="mx-line" style="font-size:.8rem;color:#8fa1b3;
+    line-height:1.45;margin-top:2px"></div>
+   <div id="mx-chips" style="display:flex;gap:6px;flex-wrap:wrap;
+    margin-top:8px"></div>
+  </div>
+ </div>
+ <div id="st" style="position:relative;margin:0 16px;
+  border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
+  font-size:.8rem;color:#7d90a5">Connexion...</div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:#251d07;border:1px solid #4a3c12;border-radius:14px;
@@ -1309,42 +1343,53 @@ function render(d){
    lvt.textContent='RECONNEXION';}
   else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='#8df0bb';
    lvd.style.background='#2ecc71';lvt.textContent='EN DIRECT';}
-  const mt=document.getElementById('meteo-txt');
-  if(d.meteo_struct){
-   const ms2=d.meteo_struct;
-   const tr2=ms2.trend===1
-    ?'<br><span style="color:#8df0bb;font-size:.85rem">Tendance '+
-     'verte &#9650;</span>'
-    :(ms2.trend===-1
-     ?'<br><span style="color:#ffb3b3;font-size:.85rem">Tendance '+
-      'rouge &#9660;</span>':'');
-   mt.innerHTML=ms2.awake
-    ?'&#127754; <b>La mer bouge</b><br>Le march&eacute; a de '+
-     'l&#39;&eacute;nergie : le robot p&ecirc;che.'+tr2
-    :'&#128564; <b>Mer endormie</b><br>Pas un mouvement depuis '+
-     '2&nbsp;heures : le robot range sa canne et attend que '+
-     '&ccedil;a bouge.'+tr2;
+  {
+   const mc=document.getElementById('meteo');
+   let cls='mx-sun',orb='\\u2600\\ufe0f',
+    ti='Grand beau temps',
+    ln='March\\u00e9 tranquille : le robot travaille normalement.';
+   const chips=[];
+   if(d.meteo_struct){
+    const ms2=d.meteo_struct;
+    if(ms2.awake){cls='mx-fish';orb='\\u{1F30A}';
+     ti='La mer bouge';
+     ln='Le march\\u00e9 a de l\\u2019\\u00e9nergie : le robot '+
+      'p\\u00eache.';
+     if(ms2.flips_2h)chips.push(ms2.flips_2h+' mouvement'+
+      (ms2.flips_2h>1?'s':'')+' / 2 h');}
+    else{cls='mx-sleep';orb='\\u{1F634}';
+     ti='Mer endormie';
+     ln='Pas un mouvement depuis 2 heures \\u2014 le robot range '+
+      'sa canne et attend.';}
+    if(ms2.trend===1)chips.push(
+     '<span style="color:#8df0bb">tendance \\u25b2</span>');
+    else if(ms2.trend===-1)chips.push(
+     '<span style="color:#ffb3b3">tendance \\u25bc</span>');
+   }
+   else if(d.meteo==='storm'||d.meteo==='shelter'){
+    cls='mx-storm';orb='\\u26c8\\ufe0f';ti='Gros orage';
+    ln='Le march\\u00e9 s\\u2019agite trop : le robot se met '+
+     '\\u00e0 l\\u2019abri et attend.';}
+   else if(d.meteo==='floor'){
+    cls='mx-cloud';orb='\\u{1F326}\\ufe0f';ti='Temps couvert';
+    ln='March\\u00e9 nerveux : le robot ne fait que de petits '+
+     'trades, prudemment.';}
+   else if(d.meteo==='clear'){
+    cls='mx-sun';orb='\\u{1F324}\\ufe0f';ti='\\u00c9claircie';
+    ln='Le calme revient : le robot se remet \\u00e0 trader '+
+     'normalement.';}
+   if((d.meteo==='storm'||d.meteo==='shelter'||d.meteo==='floor')
+      &&d.meteo_since){
+    const s=Math.max(0,Math.round(Date.now()/1000-d.meteo_since));
+    const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60);
+    chips.push('\\u23f8 depuis '+(hh>0?hh+' h ':'')+mm+' min');}
+   mc.className='status '+cls;
+   document.getElementById('mx-orb').textContent=orb;
+   setH(document.getElementById('mx-title'),ti);
+   setH(document.getElementById('mx-line'),ln);
+   setH(document.getElementById('mx-chips'),
+    chips.map(c=>'<span class="mxc">'+c+'</span>').join(''));
   }
-  else if(d.meteo==='storm'||d.meteo==='shelter'){
-   mt.innerHTML='&#9928;&#65039; <b>Gros orage</b><br>Le march&eacute; '+
-    's&#8217;agite trop : le robot se met en pause et attend.';}
-  else if(d.meteo==='floor'){
-   mt.innerHTML='&#127783;&#65039; <b>Temps couvert</b><br>March&eacute; '+
-    'nerveux : le robot ne fait que de petits trades, prudemment.';}
-  else if(d.meteo==='clear'){
-   mt.innerHTML='&#127781;&#65039; <b>&Eacute;claircie</b><br>Le calme '+
-    'revient : le robot se remet &agrave; trader normalement.';}
-  else{
-   mt.innerHTML='&#9728;&#65039; <b>Grand beau temps</b><br>March&eacute; '+
-    'tranquille : le robot travaille normalement.';}
-  if((d.meteo==='storm'||d.meteo==='shelter'||d.meteo==='floor')
-     &&d.meteo_since){
-   const s=Math.max(0,Math.round(Date.now()/1000-d.meteo_since));
-   const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60);
-   const lt=new Date(d.meteo_since*1000).toLocaleTimeString([],
-    {hour:'2-digit',minute:'2-digit'});
-   mt.innerHTML+='<br><span style="color:#6f93b5;font-size:.85rem">'+
-    'En pause depuis '+lt+' ('+(hh>0?hh+' h ':'')+mm+' min)</span>';}
   if(d.ftest){
    const ft=d.ftest;
    const fc=document.getElementById('ftcard');
