@@ -302,7 +302,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35);
  position:relative;overflow:hidden}
-#spark{position:absolute;left:0;right:0;bottom:0;width:100%;
+#hspark{position:absolute;left:0;right:0;bottom:0;width:100%;
  height:64px;opacity:.3;pointer-events:none}
 .hero>*{position:relative}
 #daychip{display:none;margin-top:8px;font-size:.74rem;
@@ -431,7 +431,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
-<canvas id="spark"></canvas>
+<canvas id="hspark"></canvas>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <span id="daychip"></span>
@@ -1148,7 +1148,12 @@ window._cvz='7';
 function drawSpark(){
  const c=(window._cvz==='30'&&window._c30&&window._c30.length>1)
   ?window._c30:(window._c7||[]);
- if(c.length<2)return;
+ if(c.length<2){
+  document.getElementById('spark').innerHTML=
+   '<text x="150" y="40" text-anchor="middle" fill="#4d5f73" '+
+   'font-size="11">La courbe se dessinera après quelques '+
+   'trades</text>';
+  return;}
  const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
  const P=(v,i)=>((i/(c.length-1))*300).toFixed(1)+','+
    (62-((v-mn)/sp*54)).toFixed(1);
@@ -1602,7 +1607,7 @@ function render(d){
    dc.style.color=up?'#8df0bb':'#ffb3b3';
   }
   try{
-   const sc2=document.getElementById('spark');
+   const sc2=document.getElementById('hspark');
    const cv30=d.curve30&&d.curve30.length>2?d.curve30
     :(d.curve&&d.curve.length>2?d.curve:null);
    if(cv30){
