@@ -80,6 +80,7 @@ class Struct:
         self.last_lo = self.last_hi = None
         self.up_st = self.dn_st = 0
         self.prot_lo = self.prot_hi = None
+        self.quiet = False       # True during the seed replay
 
     def step(self, t, o, h, l, c):
         if self.ref_h is not None and not (c > self.ref_h
@@ -98,13 +99,15 @@ class Struct:
             self.choch = -1
             self.prot_lo = None
             self.lo_i, self.lo_v = i, l
-            say(f"CHoCH bearish at {self.kept[i][4]:.2f}")
+            if not self.quiet:
+                say(f"CHoCH bearish at {self.kept[i][4]:.2f}")
         elif (self.trend == -1 and self.prot_hi is not None
                 and c > self.prot_hi[1]):
             self.choch = 1
             self.prot_hi = None
             self.hi_i, self.hi_v = i, h
-            say(f"CHoCH bullish at {self.kept[i][4]:.2f}")
+            if not self.quiet:
+                say(f"CHoCH bullish at {self.kept[i][4]:.2f}")
         if c > self.hi_v:
             span = k[self.hi_i + 1:i]
             if span and any(x[5] == -1 for x in span):
@@ -290,12 +293,14 @@ def main():
     ensure_algo()
 
     eng = Struct()
+    eng.quiet = True
     R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1,
                                 SEED_BARS)
     assert R is not None and len(R) > 100, "no history"
     for r in R:
         eng.step(int(r["time"]), float(r["open"]), float(r["high"]),
                  float(r["low"]), float(r["close"]))
+    eng.quiet = False
     st = load_state()
     st["last_bar"] = int(R["time"][-1])
     save_state(st)
