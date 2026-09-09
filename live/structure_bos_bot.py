@@ -243,9 +243,14 @@ def book_closes(st, t_from):
     ds = mt5.history_deals_get(
         datetime.fromtimestamp(t_from, tz=timezone.utc),
         datetime.now(timezone.utc)) or []
+    seen = st.setdefault("seen_deals", [])
     for d in ds:
         if d.magic != MAGIC or d.entry != mt5.DEAL_ENTRY_OUT:
             continue
+        if d.ticket in seen:
+            continue          # the query window overlaps on purpose;
+        seen.append(d.ticket)  # each deal books exactly once
+        del seen[:-200]
         pnl = d.profit + d.swap + d.commission
         lot = float(d.volume)
         st["banked"] = round(st.get("banked", 0.0) + pnl, 2)
