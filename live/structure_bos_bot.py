@@ -268,43 +268,35 @@ def book_closes(st, t_from):
         pnl = d.profit + d.swap + d.commission
         lot = float(d.volume)
         st["banked"] = round(st.get("banked", 0.0) + pnl, 2)
-        if d.position_id in (st.get("add_ids") or []):
-            # pullback-add bullets: a loss is paid by the chest,
-            # a win melts the debt first (overflow to the chest)
-            if pnl < 0:
-                st["chest"] = round(max(0.0, st["chest"] + pnl), 2)
-                say(f"ADD lost {pnl:+.2f}: chest pays -> "
-                    f"${st['chest']:.2f}")
-            elif pnl > 0:
-                pay = min(st["debt"], pnl)
-                st["debt"] = round(st["debt"] - pay, 2)
-                st["chest"] = round(min(CHEST_CAP,
-                                        st["chest"] + pnl - pay), 2)
-                say(f"ADD won {pnl:+.2f}: debt ${st['debt']:.2f}, "
-                    f"chest ${st['chest']:.2f}")
-            continue
-        st["trades"] = st.get("trades", 0) + 1
+        # HIGH-WATER-MARK ledger (user 2026-09-09, measured: same
+        # net as the per-loss ledger, maxDD 72 vs 80): the debt IS
+        # the drawdown from the equity peak; fighters hunt until
+        # the peak is reclaimed. Chest fills from new-high overflow
+        # (cap $10) and pays every bullet's losses.
+        is_add = d.position_id in (st.get("add_ids") or [])
         if pnl < 0:
-            base_sh = pnl * min(1.0, BASE_LOT / max(lot, 0.01))
-            extra_sh = pnl - base_sh
-            st["debt"] = round(st["debt"] - base_sh, 2)
-            st["chest"] = round(max(0.0, st["chest"] + extra_sh), 2)
-            say(f"LOSS {pnl:+.2f} (lot {lot:.2f}): debt "
-                f"${st['debt']:.2f}, chest ${st['chest']:.2f}")
-        elif pnl > 0:
-            if st["debt"] > 0:
-                pay = min(st["debt"], pnl)
-                st["debt"] = round(st["debt"] - pay, 2)
-                left = pnl - pay
-            else:
-                left = pnl
-            if left > 0:
-                st["chest"] = round(min(CHEST_CAP,
-                                        st["chest"] + left), 2)
-            say(f"WIN {pnl:+.2f} (lot {lot:.2f}): debt "
-                f"${st['debt']:.2f}, chest ${st['chest']:.2f} "
-                f"- bot net {st['banked']:+.2f} "
-                f"({st['trades']} trades)")
+            if is_add:
+                st["chest"] = round(max(0.0, st["chest"] + pnl), 2)
+            elif lot > BASE_LOT + 0.001:
+                extra_sh = pnl * (1.0 - BASE_LOT / lot)
+                st["chest"] = round(max(0.0,
+                                        st["chest"] + extra_sh), 2)
+        pk = st.get("peak", 0.0)
+        if st["banked"] > pk:
+            st["chest"] = round(min(CHEST_CAP,
+                                    st["chest"]
+                                    + st["banked"] - pk), 2)
+            st["peak"] = st["banked"]
+        st["debt"] = round(max(0.0, st.get("peak", 0.0)
+                               - st["banked"]), 2)
+        if not is_add:
+            st["trades"] = st.get("trades", 0) + 1
+        tag = "ADD" if is_add else ("WIN" if pnl > 0 else
+                                    "LOSS" if pnl < 0 else "FLAT")
+        say(f"{tag} {pnl:+.2f} (lot {lot:.2f}): debt "
+            f"${st['debt']:.2f} (peak {st.get('peak', 0.0):+.2f}), "
+            f"chest ${st['chest']:.2f} - bot net "
+            f"{st['banked']:+.2f} ({st.get('trades', 0)} trades)")
 
 
 def main():
