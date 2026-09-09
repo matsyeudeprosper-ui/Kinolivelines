@@ -265,6 +265,21 @@ def book_closes(st, t_from):
         pnl = d.profit + d.swap + d.commission
         lot = float(d.volume)
         st["banked"] = round(st.get("banked", 0.0) + pnl, 2)
+        if d.position_id in (st.get("add_ids") or []):
+            # pullback-add bullets: a loss is paid by the chest,
+            # a win melts the debt first (overflow to the chest)
+            if pnl < 0:
+                st["chest"] = round(max(0.0, st["chest"] + pnl), 2)
+                say(f"ADD lost {pnl:+.2f}: chest pays -> "
+                    f"${st['chest']:.2f}")
+            elif pnl > 0:
+                pay = min(st["debt"], pnl)
+                st["debt"] = round(st["debt"] - pay, 2)
+                st["chest"] = round(min(CHEST_CAP,
+                                        st["chest"] + pnl - pay), 2)
+                say(f"ADD won {pnl:+.2f}: debt ${st['debt']:.2f}, "
+                    f"chest ${st['chest']:.2f}")
+            continue
         st["trades"] = st.get("trades", 0) + 1
         if pnl < 0:
             base_sh = pnl * min(1.0, BASE_LOT / max(lot, 0.01))
@@ -368,6 +383,13 @@ def main():
             f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
             f"(risk ${dist * lot:.2f}, "
             f"trend {'up' if d == 1 else 'down'})")
+        # arm the 50%-pullback add (user 2026-09-09, measured:
+        # +343/+422 vs +263 without; chest-funded bullets only)
+        st["add"] = {"d": d, "lvl": round(e_ref - d * 0.5 * dist, 2),
+                     "sl": round(slp, 2), "tp": round(tp, 2),
+                     "risk001": round(0.5 * dist * 0.01, 2),
+                     "done": False}
+        save_state(st)
         return True
     last_book = time.time() - 60
     warned_funds = 0.0
@@ -410,6 +432,50 @@ def main():
                 st["killed"] = True
                 save_state(st)
                 continue
+            # 50%-PULLBACK ADD on the open trade (chest bullets)
+            _ad = st.get("add")
+            if _ad and not _ad.get("done") and my_positions():
+                tk3 = mt5.symbol_info_tick(SYMBOL)
+                if tk3 is not None:
+                    _hit = (tk3.bid <= _ad["lvl"] if _ad["d"] == 1
+                            else tk3.bid >= _ad["lvl"])
+                    if _hit:
+                        _ad["done"] = True
+                        _n = min(2, int(st["chest"]
+                                        // max(_ad["risk001"], 0.01)))
+                        if _n > 0:
+                            _al = round(_n * 0.01, 2)
+                            _r3 = mt5.order_send({
+                                "action": mt5.TRADE_ACTION_DEAL,
+                                "symbol": SYMBOL, "volume": _al,
+                                "type": (mt5.ORDER_TYPE_BUY
+                                         if _ad["d"] == 1
+                                         else mt5.ORDER_TYPE_SELL),
+                                "price": (tk3.ask if _ad["d"] == 1
+                                          else tk3.bid),
+                                "sl": _ad["sl"], "tp": _ad["tp"],
+                                "deviation": 200, "magic": MAGIC,
+                                "comment": COMMENT + "-ADD",
+                                "type_time": mt5.ORDER_TIME_GTC,
+                                "type_filling":
+                                    mt5.ORDER_FILLING_IOC})
+                            if (_r3 is not None and _r3.retcode
+                                    == mt5.TRADE_RETCODE_DONE):
+                                st.setdefault("add_ids", [])\
+                                    .append(_r3.order)
+                                del st["add_ids"][:-40]
+                                say(f"PULLBACK ADD: {_al} bullet"
+                                    f"{'s' if _n > 1 else ''} at "
+                                    f"50% ({_ad['lvl']:.2f}), same "
+                                    f"SL/TP - chest covers "
+                                    f"${_n * _ad['risk001']:.2f}")
+                            else:
+                                say(f"ADD FAILED retcode="
+                                    f"{_r3.retcode if _r3 else None}")
+                        save_state(st)
+            if st.get("add") and not my_positions():
+                st["add"] = None
+                save_state(st)
             # TOUCH continuation (user 2026-09-09, measured first:
             # +263/DD67 vs +207/DD85 close-only; flips keep the
             # close rule). Checked every ~1s wake on live ticks.
