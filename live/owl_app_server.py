@@ -1392,6 +1392,13 @@ function render(d){
       'p\\u00eache.';
      if(ms2.flips_2h)chips.push(ms2.flips_2h+' mouvement'+
       (ms2.flips_2h>1?'s':'')+' / 2 h');}
+    else if(ms2.trend===1||ms2.trend===-1){cls='mx-sleep';
+     orb='\\u{1F682}';
+     ti='Marche forc\\u00e9e';
+     ln='Le march\\u00e9 file tout droit sans un seul '+
+      'retournement depuis 2 h \\u2014 le robot ne monte pas '+
+      'dans un train sans arr\\u00eats. C\\u2019est l\\u00e0 '+
+      'qu\\u2019il perdait, mesur\\u00e9.';}
     else{cls='mx-sleep';orb='\\u{1F634}';
      ti='Mer endormie';
      ln='Pas un mouvement depuis 2 heures \\u2014 le robot range '+
