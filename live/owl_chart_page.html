@@ -17,7 +17,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  padding:3px 10px;text-transform:uppercase;letter-spacing:.07em;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #cv{display:block;width:100vw;height:calc(100vh - 48px);
- touch-action:pan-x;cursor:grab}
+ touch-action:none;cursor:grab;overscroll-behavior:none}
 #backlive{position:fixed;right:14px;bottom:18px;z-index:5;
  display:none;font-size:.72rem;font-weight:800;color:#0a111c;
  background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
@@ -75,13 +75,28 @@ let D=null,lastPx=null;
 let viewOff=0,cwG=7;
 let drag=null;
 cv.addEventListener('pointerdown',e=>{
- drag={x:e.clientX,off:viewOff};
+ e.preventDefault();
+ drag={x:e.clientX,off:viewOff,v:0,px:e.clientX,
+  t:performance.now()};
  cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointermove',e=>{
  if(!drag)return;
+ e.preventDefault();
+ const now=performance.now();
+ drag.v=(e.clientX-drag.px)/Math.max(8,now-drag.t);
+ drag.px=e.clientX;drag.t=now;
  viewOff=drag.off+(e.clientX-drag.x)/Math.max(3,cwG);});
-cv.addEventListener('pointerup',()=>{drag=null;});
-cv.addEventListener('pointercancel',()=>{drag=null;});
+const endDrag=()=>{
+ if(!drag)return;
+ let v=drag.v*16/Math.max(3,cwG);   // px/frame -> candles/frame
+ drag=null;
+ const glide=()=>{
+  if(Math.abs(v)<0.02||drag)return;
+  viewOff+=v;v*=0.94;
+  requestAnimationFrame(glide);};
+ glide();};
+cv.addEventListener('pointerup',endDrag);
+cv.addEventListener('pointercancel',endDrag);
 document.getElementById('backlive').onclick=()=>{viewOff=0;};
 let LA=null,LT=null;   // live candle: animated state + target
 const born={dot:{},bos:{},cand:{}};
