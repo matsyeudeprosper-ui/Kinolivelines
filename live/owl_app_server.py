@@ -302,8 +302,6 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
  text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35);
  position:relative;overflow:hidden}
-#hspark{position:absolute;left:0;right:0;bottom:0;width:100%;
- height:64px;opacity:.3;pointer-events:none}
 .hero>*{position:relative}
 #daychip{display:none;margin-top:8px;font-size:.74rem;
  font-weight:700;padding:4px 12px;border-radius:99px;
@@ -455,7 +453,6 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
-<canvas id="hspark"></canvas>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <span id="daychip"></span>
@@ -1724,33 +1721,6 @@ function render(d){
     :'rgba(255,92,92,.16)';
    dc.style.color=up?'#8df0bb':'#ffb3b3';
   }
-  try{
-   const sc2=document.getElementById('hspark');
-   const cv30=d.curve30&&d.curve30.length>4?d.curve30
-    :(d.curve&&d.curve.length>4?d.curve:null);
-   if(!cv30){
-    const s0=document.getElementById('hspark');
-    s0.getContext('2d').clearRect(0,0,s0.width,s0.height);
-   }
-   if(cv30){
-    const dpr=window.devicePixelRatio||1;
-    const w=sc2.clientWidth,h=sc2.clientHeight;
-    sc2.width=w*dpr;sc2.height=h*dpr;
-    const g=sc2.getContext('2d');
-    g.setTransform(dpr,0,0,dpr,0,0);
-    g.clearRect(0,0,w,h);
-    let mn=Math.min(...cv30),mx=Math.max(...cv30);
-    if(mx-mn<0.01){mx+=0.5;mn-=0.5;}
-    g.strokeStyle='rgba(255,255,255,.85)';
-    g.lineWidth=1.6;g.lineJoin='round';
-    g.beginPath();
-    cv30.forEach((v,i)=>{
-     const x=i/(cv30.length-1)*w;
-     const y=h-6-((v-mn)/(mx-mn))*(h-14);
-     i?g.lineTo(x,y):g.moveTo(x,y);});
-    g.stroke();
-   }
-  }catch(e){}
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
