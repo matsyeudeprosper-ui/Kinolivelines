@@ -1381,44 +1381,47 @@ function render(d){
   {
    const mc=document.getElementById('meteo');
    let cls='mx-sun',orb='\\u2600\\ufe0f',
-    ti='Grand beau temps',
-    ln='March\\u00e9 tranquille : le robot travaille normalement.';
+    ti='March\\u00e9 normal',
+    ln='Grand beau temps sur la mer \\u2014 le hibou laisse son '+
+     'robot travailler tranquillement.';
    const chips=[];
    if(d.meteo_struct){
     const ms2=d.meteo_struct;
     if(ms2.awake){cls='mx-fish';orb='\\u{1F30A}';
-     ti='La mer bouge';
-     ln='Le march\\u00e9 a de l\\u2019\\u00e9nergie : le robot '+
-      'p\\u00eache.';
-     if(ms2.flips_2h)chips.push(ms2.flips_2h+' mouvement'+
+     ti='March\\u00e9 actif';
+     ln='La mer bouge, pleine d\\u2019\\u00e9nergie \\u2014 le '+
+      'hibou laisse son robot p\\u00eacher.';
+     if(ms2.flips_2h)chips.push(ms2.flips_2h+' retournement'+
       (ms2.flips_2h>1?'s':'')+' / 2 h');}
     else if(ms2.trend===1||ms2.trend===-1){cls='mx-sleep';
      orb='\\u26f5';
-     ti='Courant trop fort';
-     ln='La mer file dans un seul sens, sans une vague depuis '+
-      '2 h \\u2014 on ne p\\u00eache pas dans un courant '+
-      'pareil, on le laisse passer.';}
+     ti='Tendance sans retournement';
+     ln='Courant trop fort, la mer file dans un seul sens '+
+      'depuis 2 h \\u2014 le hibou garde son robot au sec.';}
     else{cls='mx-sleep';orb='\\u{1F634}';
-     ti='Mer endormie';
-     ln='Pas une vague depuis 2 heures \\u2014 le robot range '+
-      'sa canne et attend.';}
+     ti='March\\u00e9 sans mouvement';
+     ln='Mer endormie, pas une vague depuis 2 heures \\u2014 '+
+      'le hibou veille, la canne rang\\u00e9e.';}
     if(ms2.trend===1)chips.push(
      '<span style="color:#8df0bb">tendance \\u25b2</span>');
     else if(ms2.trend===-1)chips.push(
      '<span style="color:#ffb3b3">tendance \\u25bc</span>');
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
-    cls='mx-storm';orb='\\u26c8\\ufe0f';ti='Gros orage';
-    ln='Le march\\u00e9 s\\u2019agite trop : le robot se met '+
+    cls='mx-storm';orb='\\u26c8\\ufe0f';
+    ti='March\\u00e9 tr\\u00e8s agit\\u00e9';
+    ln='Gros orage sur la mer \\u2014 le hibou met son robot '+
      '\\u00e0 l\\u2019abri et attend.';}
    else if(d.meteo==='floor'){
-    cls='mx-cloud';orb='\\u{1F326}\\ufe0f';ti='Temps couvert';
-    ln='March\\u00e9 nerveux : le robot ne fait que de petits '+
-     'trades, prudemment.';}
+    cls='mx-cloud';orb='\\u{1F326}\\ufe0f';
+    ti='March\\u00e9 nerveux';
+    ln='Temps couvert \\u2014 le hibou ne laisse passer que de '+
+     'petits trades, prudemment.';}
    else if(d.meteo==='clear'){
-    cls='mx-sun';orb='\\u{1F324}\\ufe0f';ti='\\u00c9claircie';
-    ln='Le calme revient : le robot se remet \\u00e0 trader '+
-     'normalement.';}
+    cls='mx-sun';orb='\\u{1F324}\\ufe0f';
+    ti='Retour au calme';
+    ln='\\u00c9claircie sur la mer \\u2014 le hibou renvoie son '+
+     'robot travailler.';}
    if((d.meteo==='storm'||d.meteo==='shelter'||d.meteo==='floor')
       &&d.meteo_since){
     const s=Math.max(0,Math.round(Date.now()/1000-d.meteo_since));
@@ -1915,7 +1918,8 @@ function render(d){
   if(d.days&&!d.days.length){
    const de=document.getElementById('days');de.style.display='block';
    de.innerHTML='<div class="empty"><i>&#129417;</i>'+
-    '<p>Vos journ&eacute;es appara&icirc;tront ici</p></div>';
+    '<p>Le hibou surveille la mer &mdash; vos journ&eacute;es '+
+    'appara&icirc;tront ici</p></div>';
   }
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
@@ -2054,7 +2058,8 @@ function render(d){
   if(d.trades&&!d.trades.length){
    document.getElementById('hist').innerHTML=
     '<div class="empty"><i>&#129417;</i>'+
-    '<p>Aucun trade encore &mdash; le robot chasse</p></div>';
+    '<p>Aucun trade encore &mdash; le hibou attend la bonne '+
+    'vague</p></div>';
   }
   if(d.trades&&d.trades.length){
    window._tr=d.trades;
