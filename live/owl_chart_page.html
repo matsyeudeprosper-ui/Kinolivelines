@@ -167,6 +167,13 @@ function draw(){
  if(LT&&atLive){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  (D.trades||[]).forEach(t=>{[t[2],t[3],t[4]].forEach(v=>{
   if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
+ if(D.trend===1||D.trend===-1){
+  const tds0=(D.dots||[]).filter(x=>x[2]===(D.trend===1?1:-1));
+  if(tds0.length){
+   const pv=tds0[tds0.length-1][1];
+   hi=Math.max(hi,pv);lo=Math.min(lo,pv);
+  }
+ }
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
  const cw=W/(N+9);
@@ -290,6 +297,30 @@ function draw(){
      ctx.globalAlpha=1;}}
   }
  });
+ // --- FLIP LINE: the trend's protected dot = where the CHoCH
+ //     fires; a close beyond this price wounds the trend ---
+ if(D.trend===1||D.trend===-1){
+  const side=D.trend===1?1:-1;
+  const tds=(D.dots||[]).filter(x=>x[2]===side);
+  if(tds.length){
+   const pd=tds[tds.length-1];
+   const y=px(pd[1]);
+   const col=side===1?'#4fd8c8':'#ffb86b';
+   ctx.strokeStyle=col;
+   ctx.globalAlpha=0.55;
+   ctx.setLineDash([8,5]);
+   ctx.lineWidth=1.2;
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   ctx.setLineDash([]);
+   ctx.globalAlpha=1;
+   // small diamond at the right edge marks it as the trigger
+   ctx.fillStyle=col;
+   ctx.beginPath();
+   ctx.moveTo(W-14,y-5);ctx.lineTo(W-9,y);
+   ctx.lineTo(W-14,y+5);ctx.lineTo(W-19,y);
+   ctx.closePath();ctx.fill();
+  }
+ }
  // --- glowing dots with birth bloom ---
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
