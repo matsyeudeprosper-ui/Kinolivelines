@@ -54,7 +54,10 @@ COMMENT = "KL-BOS"
 BASE_LOT = 0.02
 RR = 0.8
 MAX_EXTRA = 3            # bullets that may ride along (0.01 each)
-CHEST_CAP = 5.0
+CHEST_CAP = 10.0         # 2026-09-09 cap sweep: $5 starved the
+                         # bullets (+243); $10 restores the full
+                         # add/fighter bonus (+342, DD 80, both
+                         # halves better); $20 = plateau (+341)
 KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
