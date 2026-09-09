@@ -44,29 +44,61 @@ from datetime import datetime, timezone
 
 import MetaTrader5 as mt5
 
-TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
-LOGIN = 223995441
+# --- variants (2026-09-09): argv[1] picks the account/config.
+#     "live" (default) = the FROZEN real config.
+#     "sniper"  = demo 476989735: ONLY the 2nd trade of each trend,
+#        flat 0.06, no chest features (backtest: 65% wr, +106 at
+#        0.02 -> ~+318 at 0.06, maxDD ~78, halves +44/+63).
+#     "halfdebt" = demo 476989740: full live config but per-loss
+#        debt at 0.5x (backtest +372 vs +335, DD 80, chest richer,
+#        3x more adds) - the queued upgrade, auditioning forward.
+import sys as _sys
+VARIANT = _sys.argv[1] if len(_sys.argv) > 1 else "live"
 PASSWORD = "M@tsy1983"
-SERVER = "Exness-MT5Real30"
 SYMBOL = "BTCUSD"
-MAGIC = 909101
-COMMENT = "KL-BOS"
-BASE_LOT = 0.02
 RR = 0.8
+BASE_LOT = 0.02
 MAX_EXTRA = 3            # bullets that may ride along (0.01 each)
-CHEST_CAP = 10.0         # 2026-09-09 cap sweep: $5 starved the
-                         # bullets (+243); $10 restores the full
-                         # add/fighter bonus (+342, DD 80, both
-                         # halves better); $20 = plateau (+341)
+CHEST_CAP = 10.0         # cap sweep 2026-09-09: $10 = sweet spot
 KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
 S_MIN_DIST = 10.0        # dot inside the spread zone = no trade
 AWAKE_WIN = 7200         # awake gate: >=1 flip within this window
+DEBT_MODE = "hwm"        # hwm (peak) | half (0.5x per loss)
+SNIPER = False           # only the 2nd trade of each trend
+ADDS_ON = True
+_SFX = ""
+if VARIANT == "sniper":
+    TERMINAL = r"C:\NestTerminals\u476989735\terminal64.exe"
+    LOGIN = 476989735
+    SERVER = "Exness-MT5Trial9"
+    MAGIC = 909201
+    COMMENT = "KL-SNIPER"
+    BASE_LOT = 0.06
+    MAX_EXTRA = 0
+    ADDS_ON = False
+    SNIPER = True
+    KILL_NET = -80.0
+    _SFX = "_sniper"
+elif VARIANT == "halfdebt":
+    TERMINAL = r"C:\NestTerminals\u476989740\terminal64.exe"
+    LOGIN = 476989740
+    SERVER = "Exness-MT5Trial9"
+    MAGIC = 909301
+    COMMENT = "KL-HALF"
+    DEBT_MODE = "half"
+    _SFX = "_half"
+else:
+    TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
+    LOGIN = 223995441
+    SERVER = "Exness-MT5Real30"
+    MAGIC = 909101
+    COMMENT = "KL-BOS"
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-STATE_F = os.path.join(DIR, "bos_state.json")
-LOG_F = os.path.join(DIR, "bos_bot.log")
+STATE_F = os.path.join(DIR, f"bos_state{_SFX}.json")
+LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 
 
@@ -281,14 +313,24 @@ def book_closes(st, t_from):
                 extra_sh = pnl * (1.0 - BASE_LOT / lot)
                 st["chest"] = round(max(0.0,
                                         st["chest"] + extra_sh), 2)
-        pk = st.get("peak", 0.0)
-        if st["banked"] > pk:
-            st["chest"] = round(min(CHEST_CAP,
-                                    st["chest"]
-                                    + st["banked"] - pk), 2)
-            st["peak"] = st["banked"]
-        st["debt"] = round(max(0.0, st.get("peak", 0.0)
-                               - st["banked"]), 2)
+        if DEBT_MODE == "half":
+            # per-loss debt at 0.5x; wins pay it, overflow -> chest
+            if pnl < 0:
+                st["debt"] = round(st["debt"] + 0.5 * (-pnl), 2)
+            elif pnl > 0:
+                pay = min(st["debt"], pnl)
+                st["debt"] = round(st["debt"] - pay, 2)
+                st["chest"] = round(min(CHEST_CAP,
+                                        st["chest"] + pnl - pay), 2)
+        else:
+            pk = st.get("peak", 0.0)
+            if st["banked"] > pk:
+                st["chest"] = round(min(CHEST_CAP,
+                                        st["chest"]
+                                        + st["banked"] - pk), 2)
+                st["peak"] = st["banked"]
+            st["debt"] = round(max(0.0, st.get("peak", 0.0)
+                                   - st["banked"]), 2)
         if not is_add:
             st["trades"] = st.get("trades", 0) + 1
         tag = "ADD" if is_add else ("WIN" if pnl > 0 else
@@ -380,10 +422,12 @@ def main():
             f"trend {'up' if d == 1 else 'down'})")
         # arm the 50%-pullback add (user 2026-09-09, measured:
         # +343/+422 vs +263 without; chest-funded bullets only)
-        st["add"] = {"d": d, "lvl": round(e_ref - d * 0.5 * dist, 2),
-                     "sl": round(slp, 2), "tp": round(tp, 2),
-                     "risk001": round(0.5 * dist * 0.01, 2),
-                     "done": False}
+        if ADDS_ON:
+            st["add"] = {"d": d,
+                         "lvl": round(e_ref - d * 0.5 * dist, 2),
+                         "sl": round(slp, 2), "tp": round(tp, 2),
+                         "risk001": round(0.5 * dist * 0.01, 2),
+                         "done": False}
         save_state(st)
         return True
     last_book = time.time() - 60
@@ -486,8 +530,10 @@ def main():
                         if span and any(x[5] == -1 for x in span):
                             m = min(span, key=lambda x: x[3])
                             st["used_hi"] = eng.hi_v
+                            st["ord"] = st.get("ord", 0) + 1
                             save_state(st)
-                            enter(1, m[3], "TOUCH")
+                            if not SNIPER or st["ord"] == 2:
+                                enter(1, m[3], "TOUCH")
                     elif (eng.trend == -1 and eng.lo_v is not None
                             and tk2.bid < eng.lo_v
                             and st.get("used_lo") != eng.lo_v):
@@ -495,8 +541,10 @@ def main():
                         if span and any(x[5] == 1 for x in span):
                             m = max(span, key=lambda x: x[2])
                             st["used_lo"] = eng.lo_v
+                            st["ord"] = st.get("ord", 0) + 1
                             save_state(st)
-                            enter(-1, m[2], "TOUCH")
+                            if not SNIPER or st["ord"] == 2:
+                                enter(-1, m[2], "TOUCH")
             kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
                                          1, 2)
             if kb is None or len(kb) < 2:
@@ -545,13 +593,22 @@ def main():
                 continue
             d, slp = sig
             flip = eng.trend != _pt
-            if not flip:
+            if flip:
+                st["ord"] = 1
+                save_state(st)
+                if SNIPER:
+                    continue      # sniper skips the flip trade
+            else:
                 # touch owns continuations; close-entry only as the
                 # fallback when the level was never touched (gap,
                 # downtime)
                 lvl = _hv if d == 1 else _lv
                 if (d == 1 and st.get("used_hi") == lvl) or \
                         (d == -1 and st.get("used_lo") == lvl):
+                    continue
+                st["ord"] = st.get("ord", 0) + 1
+                save_state(st)
+                if SNIPER and st["ord"] != 2:
                     continue
             enter(d, slp, "FLIP-BOS" if flip else "BOS")
         except Exception as e:

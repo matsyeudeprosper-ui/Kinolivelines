@@ -42,10 +42,22 @@ if (-not ($fh | Where-Object { $_.CommandLine -like "*ETHUSD*" })) {
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
-# 2c) STRUCTURE bot (user's BOS rules, real acct 223995441)
-if (-not (ProcRunning "structure_bos_bot.py")) {
-    Say "starting STRUCTURE bot (223995441)"
+# 2c) STRUCTURE bots: live (223995441) + demo variants
+$sb = Get-CimInstance Win32_Process |
+    Where-Object { $_.CommandLine -like "*structure_bos_bot.py*" }
+if (-not ($sb | Where-Object { $_.CommandLine -notmatch "sniper|halfdebt" })) {
+    Say "starting STRUCTURE bot live (223995441)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+if (-not ($sb | Where-Object { $_.CommandLine -match "sniper" })) {
+    Say "starting STRUCTURE sniper (demo 476989735)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "sniper" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+if (-not ($sb | Where-Object { $_.CommandLine -match "halfdebt" })) {
+    Say "starting STRUCTURE halfdebt (demo 476989740)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "halfdebt" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
