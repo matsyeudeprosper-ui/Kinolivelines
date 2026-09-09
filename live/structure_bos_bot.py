@@ -380,10 +380,19 @@ def main():
                     f"{'up' if eng.trend == 1 else 'down'}")
             awake = any(f > bt - AWAKE_WIN for f in flips)
             try:
+                # live bullet price estimate: distance to the
+                # trend's protected dot = the likely next stop
+                _c = float(bar["close"])
+                _pd = (eng.prot_lo if eng.trend == 1
+                       else eng.prot_hi if eng.trend == -1 else None)
+                _blt = (round(max(0.5, min(3.0,
+                        abs(_c - _pd[1]) * 0.01)), 2)
+                        if _pd else 3.0)
                 json.dump({"awake": awake, "trend": eng.trend,
                            "choch": eng.choch,
                            "flips_2h": sum(1 for f in flips
                                            if f > bt - AWAKE_WIN),
+                           "bullet": _blt,
                            "updated": int(time.time())},
                           open(os.path.join(
                               DIR, "bos_weather.json"), "w"))

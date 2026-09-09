@@ -1726,8 +1726,12 @@ function render(d){
   }
   try{
    const sc2=document.getElementById('hspark');
-   const cv30=d.curve30&&d.curve30.length>2?d.curve30
-    :(d.curve&&d.curve.length>2?d.curve:null);
+   const cv30=d.curve30&&d.curve30.length>4?d.curve30
+    :(d.curve&&d.curve.length>4?d.curve:null);
+   if(!cv30){
+    const s0=document.getElementById('hspark');
+    s0.getContext('2d').clearRect(0,0,s0.width,s0.height);
+   }
    if(cv30){
     const dpr=window.devicePixelRatio||1;
     const w=sc2.clientWidth,h=sc2.clientHeight;
@@ -2294,6 +2298,10 @@ def user_stats(u):
                 try:
                     d["meteo_struct"] = json.load(open(os.path.join(
                         DIR, "bos_weather.json")))
+                    # live bullet price from the bot (stop distance)
+                    _bl = d["meteo_struct"].get("bullet")
+                    if _bl:
+                        d["ledger"]["need_min"] = float(_bl)
                 except Exception:
                     pass
         except Exception:
