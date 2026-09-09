@@ -154,8 +154,9 @@ function draw(){
  });
  // --- candles: rounded, depth fade, glow on the recent ---
  const xoft={};
+ ctx.lineCap='round';
  cs.forEach((c,i)=>{
-  const x=cw*(i+1);
+  const x=Math.round(cw*(i+1))+0.5;   // crisp pixel-centred wick
   xoft[c[0]]=x;
   const up=c[5]===1;
   const col=up?'#2ecc71':'#ff5c5c';
@@ -167,12 +168,16 @@ function draw(){
    sy=0.55+0.45*k;}
   ctx.globalAlpha=al;
   if(i>=cs.length-9){ctx.shadowColor=col;ctx.shadowBlur=6;}
-  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=1;
+  ctx.strokeStyle=col;ctx.lineWidth=1;
   ctx.beginPath();ctx.moveTo(x,px(c[2]));ctx.lineTo(x,px(c[3]));
   ctx.stroke();
   const y1=px(Math.max(c[1],c[4])),y2=px(Math.min(c[1],c[4]));
   const hgt=Math.max(1.5,(y2-y1)*sy);
   const cym=(y1+y2)/2;
+  const gb=ctx.createLinearGradient(0,cym-hgt/2,0,cym+hgt/2);
+  if(up){gb.addColorStop(0,'#49e58c');gb.addColorStop(1,'#1da65a');}
+  else{gb.addColorStop(0,'#d64848');gb.addColorStop(1,'#ff7a7a');}
+  ctx.fillStyle=gb;
   ctx.beginPath();
   ctx.roundRect(x-bw/2,cym-hgt/2,bw,hgt,Math.min(2,bw/3));
   ctx.fill();
@@ -295,7 +300,7 @@ function draw(){
  // --- live candle + price line ---
  const dot=document.getElementById('livedot');
  if(D.live){
-  const x=cw*(cs.length+1);
+  const x=Math.round(cw*(cs.length+1))+0.5;
   const c=D.live;
   const up=c[4]>=c[1];
   const col=up?'#2ecc71':'#ff5c5c';
