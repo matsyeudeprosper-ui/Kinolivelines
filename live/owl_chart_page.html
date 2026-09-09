@@ -16,7 +16,12 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  border:1px solid rgba(127,179,224,.22);border-radius:99px;
  padding:3px 10px;text-transform:uppercase;letter-spacing:.07em;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
-#cv{display:block;width:100vw;height:calc(100vh - 48px)}
+#cv{display:block;width:100vw;height:calc(100vh - 48px);
+ touch-action:pan-x;cursor:grab}
+#backlive{position:fixed;right:14px;bottom:18px;z-index:5;
+ display:none;font-size:.72rem;font-weight:800;color:#0a111c;
+ background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
+ letter-spacing:.04em;box-shadow:0 4px 14px rgba(232,197,90,.35)}
 #pnl{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
  z-index:4;display:none;text-align:center;padding:9px 20px 7px;
  border-radius:18px;backdrop-filter:blur(10px);
@@ -57,6 +62,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 </div>
 <span id="px"></span>
 <div id="pnl"><b>--</b><span></span></div>
+<button id="backlive">&#9654; EN DIRECT</button>
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
 <script>
@@ -66,6 +72,17 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null;
+let viewOff=0,cwG=7;
+let drag=null;
+cv.addEventListener('pointerdown',e=>{
+ drag={x:e.clientX,off:viewOff};
+ cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{
+ if(!drag)return;
+ viewOff=drag.off+(e.clientX-drag.x)/Math.max(3,cwG);});
+cv.addEventListener('pointerup',()=>{drag=null;});
+cv.addEventListener('pointercancel',()=>{drag=null;});
+document.getElementById('backlive').onclick=()=>{viewOff=0;};
 let LA=null,LT=null;   // live candle: animated state + target
 const born={dot:{},bos:{},cand:{}};
 const seen={dot:new Set(),bos:new Set(),cand:0,first:true};
@@ -115,7 +132,14 @@ function draw(){
   ctx.fillStyle=g;ctx.fillRect(0,0,W,Hh);
  }
  const N=Math.min(D.candles.length,Math.max(60,Math.floor(W/7)));
- const cs=D.candles.slice(-N);
+ const maxOff=Math.max(0,D.candles.length-N);
+ if(viewOff>maxOff)viewOff=maxOff;
+ if(viewOff<0)viewOff=0;
+ const end=D.candles.length-Math.round(viewOff);
+ const cs=D.candles.slice(Math.max(0,end-N),end);
+ const atLive=viewOff<0.5;
+ document.getElementById('backlive').style.display=
+  atLive?'none':'block';
  if(LA&&LT){
   const f=0.14;               // smooth fill, ~half-life 300ms
   LA.o=LT[1];
@@ -125,12 +149,13 @@ function draw(){
  }
  let lo=Infinity,hi=-Infinity;
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
- if(LT){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
+ if(LT&&atLive){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  (D.trades||[]).forEach(t=>{[t[2],t[3],t[4]].forEach(v=>{
   if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
  const cw=W/(N+9);
+ cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
  // --- price ticks, right edge only ---
  ctx.font='10px system-ui';
@@ -316,7 +341,7 @@ function draw(){
  });
  // --- live candle + price line ---
  const dot=document.getElementById('livedot');
- if(LA){
+ if(LA&&atLive){
   const x=Math.round(cw*(cs.length+1))+0.5;
   const up=LA.c>=LA.o;
   const col=up?'#2ecc71':'#ff5c5c';
