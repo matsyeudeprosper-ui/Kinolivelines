@@ -29,6 +29,13 @@ GUARD RAILS
     close, stop, say KILL. Preregistered review at 100 trades.
   - honors owl_trading_pause.json for new entries
   - waits quietly while balance < $20 (account starts unfunded)
+
+AWAKE GATE (user 2026-09-09, measured before deploy): entries only
+when at least one trend FLIP happened in the last 2 hours. The
+sleepy-market trades were the losers: gated backtest +207 over 69d
+vs all-negative random controls (5 seeds), walk-forward winner
+picked on days 1-35 scored +116 blind on days 36-69 (scratchpad
+bt_chop*.py). Sleeping market = no fishing.
 """
 import json
 import os
@@ -52,6 +59,7 @@ KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
 S_MIN_DIST = 10.0        # dot inside the spread zone = no trade
+AWAKE_WIN = 7200         # awake gate: >=1 flip within this window
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_F = os.path.join(DIR, "bos_state.json")
@@ -294,12 +302,17 @@ def main():
 
     eng = Struct()
     eng.quiet = True
+    flips = []               # epoch times of trend flips (awake gate)
     R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1,
                                 SEED_BARS)
     assert R is not None and len(R) > 100, "no history"
     for r in R:
+        _pt = eng.trend
         eng.step(int(r["time"]), float(r["open"]), float(r["high"]),
                  float(r["low"]), float(r["close"]))
+        if eng.trend != _pt and eng.trend != 0 and _pt != 0:
+            flips.append(int(r["time"]))
+    flips = flips[-20:]
     eng.quiet = False
     st = load_state()
     st["last_bar"] = int(R["time"][-1])
@@ -356,11 +369,32 @@ def main():
             if bt == st.get("last_bar"):
                 continue
             st["last_bar"] = bt
+            _pt = eng.trend
             sig = eng.step(bt, float(bar["open"]),
                            float(bar["high"]), float(bar["low"]),
                            float(bar["close"]))
+            if eng.trend != _pt and eng.trend != 0 and _pt != 0:
+                flips.append(bt)
+                del flips[:-20]
+                say(f"FLIP: trend now "
+                    f"{'up' if eng.trend == 1 else 'down'}")
+            awake = any(f > bt - AWAKE_WIN for f in flips)
+            try:
+                json.dump({"awake": awake, "trend": eng.trend,
+                           "choch": eng.choch,
+                           "flips_2h": sum(1 for f in flips
+                                           if f > bt - AWAKE_WIN),
+                           "updated": int(time.time())},
+                          open(os.path.join(
+                              DIR, "bos_weather.json"), "w"))
+            except Exception:
+                pass
             save_state(st)
             if sig is None:
+                continue
+            if not awake:
+                say("BOS signal skipped - market asleep (no flip "
+                    "in 2h)")
                 continue
             d, slp = sig
             if my_positions():

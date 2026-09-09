@@ -1310,7 +1310,22 @@ function render(d){
   else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='#8df0bb';
    lvd.style.background='#2ecc71';lvt.textContent='EN DIRECT';}
   const mt=document.getElementById('meteo-txt');
-  if(d.meteo==='storm'||d.meteo==='shelter'){
+  if(d.meteo_struct){
+   const ms2=d.meteo_struct;
+   const tr2=ms2.trend===1
+    ?'<br><span style="color:#8df0bb;font-size:.85rem">Tendance '+
+     'verte &#9650;</span>'
+    :(ms2.trend===-1
+     ?'<br><span style="color:#ffb3b3;font-size:.85rem">Tendance '+
+      'rouge &#9660;</span>':'');
+   mt.innerHTML=ms2.awake
+    ?'&#127754; <b>La mer bouge</b><br>Le march&eacute; a de '+
+     'l&#39;&eacute;nergie : le robot p&ecirc;che.'+tr2
+    :'&#128564; <b>Mer endormie</b><br>Pas un mouvement depuis '+
+     '2&nbsp;heures : le robot range sa canne et attend que '+
+     '&ccedil;a bouge.'+tr2;
+  }
+  else if(d.meteo==='storm'||d.meteo==='shelter'){
    mt.innerHTML='&#9928;&#65039; <b>Gros orage</b><br>Le march&eacute; '+
     's&#8217;agite trop : le robot se met en pause et attend.';}
   else if(d.meteo==='floor'){
@@ -2173,6 +2188,11 @@ def user_stats(u):
                     "cap": 5.0,
                     "next_lot": 0.03,
                     "need_min": 3.0}  # ~one bullet at typical stop
+                try:
+                    d["meteo_struct"] = json.load(open(os.path.join(
+                        DIR, "bos_weather.json")))
+                except Exception:
+                    pass
         except Exception:
             pass
         try:
