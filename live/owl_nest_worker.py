@@ -51,7 +51,7 @@ def out_deals(frm, to):
     ins = [d for d in alld if d.entry == mt5.DEAL_ENTRY_IN]
     if BOT_ONLY:
         keep = {d.position_id for d in ins
-                if (d.comment or "").startswith("OWL-")}
+                if (d.comment or "").startswith(("OWL-", "KL-"))}
     else:
         keep = {d.position_id for d in ins}
     outs = [d for d in alld if d.entry == mt5.DEAL_ENTRY_OUT
