@@ -841,34 +841,55 @@ function ledInfo(){
   '<div style="min-width:0"><b style="font-size:.86rem">'+t+
    '</b><div style="font-size:.79rem;color:#8fa1b3;'+
    'line-height:1.45">'+s+'</div></div></div>';
- const man=isPaused;
+ const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
+ const F=x=>x.toFixed(2)+'&nbsp;$';
+ const mode=L.mode;
+ const sub=mode==='man'
+  ?'Votre plan de r&eacute;cup&eacute;ration, comme celui du robot'
+  :'Comment le robot r&eacute;cup&egrave;re ses pertes, sans '+
+   'creuser le compte';
+ let r3,r4;
+ if(mode==='bos'){
+  r3=row('&#9876;&#65039;','Riposte : jusqu&#39;&agrave; '+
+   L.nl.toFixed(2)+' lot',
+   'Tant qu&#39;il y a une dette, le robot peut grossir son '+
+   'prochain trade : 0.02 de base + 1 balle de 0.01 par tranche '+
+   'de r&eacute;serve disponible (maximum 3 balles).');
+  r4=row('&#128299;','Les balles &mdash; '+L.fill+' sur 3',
+   'Chaque balle est pay&eacute;e d&#39;avance par la '+
+   'r&eacute;serve, au prix du stop du moment. Balle perdue = la '+
+   'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
+   'directement.');
+ }else if(mode==='man'){
+  r3=row('&#127919;','Votre plafond : '+L.nl.toFixed(2)+' lot',
+   'Le plus gros trade que votre r&eacute;serve paie '+
+   'enti&egrave;rement aujourd&#39;hui. Prenez moins si vous '+
+   'voulez &mdash; jamais plus.');
+  r4=row('&#128299;','Les balles &mdash; '+L.fill+' charg&eacute;e'+
+   (L.fill>1?'s':''),
+   '1 balle = un trade de 0.01 d&eacute;j&agrave; pay&eacute; '+
+   'par vos gains. Magasin plein = carte dor&eacute;e : votre '+
+   'grand coup est pr&ecirc;t.');
+ }else{
+  r3=row('&#127919;','Prochain soldat : '+L.nl.toFixed(2)+' lot',
+   'Le trade un peu plus gros que le robot pr&eacute;pare pour '+
+   'rattraper la perte, pay&eacute; par la r&eacute;serve.');
+  r4=row('&#128299;','Les balles',
+   'Le soldat se remplit gain apr&egrave;s gain. Magasin plein '+
+   '= carte dor&eacute;e : il attaque au prochain signal.');
+ }
  sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
   '<p style="font-size:.78rem;color:#6f93b5;margin:0 0 6px">'+
-  (man?'Votre plan de r&eacute;cup&eacute;ration, comme celui '+
-    'du robot':'Comment le robot r&eacute;cup&egrave;re une '+
-    'perte, sans jamais creuser le compte')+'</p>'+
-  row('&#128546;','&Agrave; rattraper',
+  sub+'</p>'+
+  row('&#128546;','&Agrave; rattraper : '+F(L.debt),
    'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
    'Chaque gain fait baisser ce chiffre.')+
-  row('&#128176;','Gains de c&ocirc;t&eacute;',
-   (man?'Vos gains':'Les gains du robot')+' sont mis dans une '+
-   'r&eacute;serve au lieu d&#39;&ecirc;tre risqu&eacute;s '+
-   '&agrave; nouveau.')+
-  row('&#127919;',man?'Le grand chiffre vert'
-    :'Prochain soldat',
-   (man?'Le plus gros trade que la r&eacute;serve peut payer '+
-     'enti&egrave;rement. Vous pouvez prendre moins &mdash; '+
-     'jamais plus.'
-    :'Le trade un peu plus gros que le robot pr&eacute;pare '+
-     'pour rattraper la perte, pay&eacute; par la '+
-     'r&eacute;serve.'))+
-  row('&#128299;','Les balles',
-   (man?'1 balle = un trade de 0.01 d&eacute;j&agrave; '+
-     'pay&eacute;. Magasin plein = carte dor&eacute;e : votre '+
-     'grand coup est pr&ecirc;t.'
-    :'Le soldat se remplit gain apr&egrave;s gain. Magasin '+
-     'plein = carte dor&eacute;e : il attaque au prochain '+
-     'signal.'))+
+  row('&#128176;','R&eacute;serve : '+F(L.chest),
+   (mode==='man'?'Vos gains':'Les gains')+' mis de '+
+   'c&ocirc;t&eacute; au lieu d&#39;&ecirc;tre risqu&eacute;s '+
+   '&agrave; nouveau &mdash; c&#39;est la munition du '+
+   'rattrapage.')+
+  r3+r4+
   '<div style="background:rgba(46,204,113,.08);border:1px solid '+
    'rgba(46,204,113,.2);border-radius:12px;padding:10px 12px;'+
    'font-size:.8rem;color:#9fd4b5;line-height:1.45;margin:4px 0 '+
@@ -1517,6 +1538,8 @@ function render(d){
      fl('rz-ammo',rz.a,am,am>rz.a);
      roll('rz-lot',rz.m,ml);
      fl('rz-lot',rz.m,ml,ml>rz.m);
+     window._ledD={mode:'man',debt:d.ledger.debt,chest:am,
+      need:rk*0.01,nl:ml,fill:nb};
      window._rz={d:d.ledger.debt,a:am,m:ml};
      if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
       setTimeout(()=>{
@@ -1528,12 +1551,23 @@ function render(d){
     }else{
      const am=d.ledger.chest;
      const need=Math.max(d.ledger.need_min||0.01,0.01);
-     const nl=Math.max(d.ledger.next_lot||0.02,0.01);
-     const SL=Math.max(2,Math.min(10,Math.round(nl/0.01)));
-     const prog=Math.max(0,Math.min(SL,am/need*SL));
+     const bos=!!d.ledger.bos;
+     let nl=Math.max(d.ledger.next_lot||0.02,0.01);
+     let SL,prog,ok;
+     if(bos){
+      SL=3;                       // the 3 possible bullets
+      prog=Math.max(0,Math.min(SL,am/need));
+      nl=0.02+Math.min(3,Math.floor(prog+1e-9))*0.01;
+      ok=prog>=3;
+     }else{
+      SL=Math.max(2,Math.min(10,Math.round(nl/0.01)));
+      prog=Math.max(0,Math.min(SL,am/need*SL));
+      ok=am>=need-0.005;
+     }
      const fillN=Math.floor(prog+1e-9);
      const fr=prog-fillN;
-     const ok=am>=need-0.005;
+     window._ledD={mode:bos?'bos':'bot',debt:d.ledger.debt,
+      chest:am,need:need,nl:nl,fill:fillN};
      let pills='';
      for(let i=0;i<SL;i++){
       const on=i<fillN;
@@ -1572,7 +1606,8 @@ function render(d){
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
         'text-transform:uppercase;letter-spacing:.08em">'+
-        'Prochain soldat du robot</div>'+
+        (bos?'Riposte possible : jusqu&#39;&agrave;'
+         :'Prochain soldat du robot')+'</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
         nl.toFixed(2)+'</span></b>'+
@@ -1582,11 +1617,17 @@ function render(d){
       '</div>'+
       '<div style="text-align:center;font-size:.68rem;'+
        'color:#5f7185;margin-top:4px">'+
-       (ok
+       (bos
+        ?(fillN>0
+         ?fillN+' balle'+(fillN>1?'s':'')+' pr&ecirc;te'+
+          (fillN>1?'s':'')+' &middot; 1 balle = 0.01 de plus au '+
+          'prochain combat'
+         :'Chaque gain charge une balle pour riposter plus fort')
+        :(ok
         ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
          'signal'
         :'Encore '+(need-am).toFixed(2)+'&nbsp;$ de gains avant '+
-         'l&#39;attaque')+'</div>';
+         'l&#39;attaque'))+'</div>';
      lw.style.display='none';ls2.innerHTML='';
      lc.style.transition='box-shadow .8s,border-color .8s';
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
@@ -2230,8 +2271,8 @@ def user_stats(u):
                 d["ledger"] = {
                     "debt": float(_bs.get("debt") or 0.0),
                     "chest": float(_bs.get("chest") or 0.0),
-                    "cap": 5.0,
-                    "next_lot": 0.03,
+                    "cap": 5.0, "bos": True,
+                    "next_lot": 0.05,
                     "need_min": 3.0}  # ~one bullet at typical stop
                 try:
                     d["meteo_struct"] = json.load(open(os.path.join(
