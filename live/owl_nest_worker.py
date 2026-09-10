@@ -111,12 +111,21 @@ def compute():
                   if (p.comment or "").startswith(("OWL-", "KL-"))]
     else:
         _shown = list(open_pos)
+    def _bullets(comment, vol):
+        """Structure-bot trades that carry chest bullets: the 50%%
+        adds (KL-*-ADD) and entries above the 0.02 base (fighters).
+        KL-SNIPER runs a flat 0.06 - never a bullet trade."""
+        c = comment or ""
+        if not c.startswith(("KL-BOS", "KL-HALF")):
+            return False
+        return "-ADD" in c or vol > 0.021
     open_list = [{"d": ("A" if p.type == mt5.POSITION_TYPE_BUY else "V"),
                   "lot": p.volume,
                   "pl": round(p.profit + p.swap, 2),
                   "e": p.price_open, "sl": p.sl, "tp": p.tp,
                   "cur": p.price_current,
-                  "k": ("s" if (p.comment or "").startswith("OWL-recov")
+                  "k": ("s" if ((p.comment or "").startswith("OWL-recov")
+                               or _bullets(p.comment, p.volume))
                         else "p")} for p in _shown]
     te = mt5.symbol_info_tick("EURUSDm")
     eur = round(te.bid, 5) if te and te.bid > 0 else None
@@ -126,6 +135,8 @@ def compute():
         if "partial" in oc:
             return "partiel"
         if ic.startswith("OWL-recov"):
+            return "soldat"
+        if _bullets(ic, d.volume):
             return "soldat"
         return "page"
     def _trow(d):
