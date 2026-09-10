@@ -1841,8 +1841,13 @@ function render(d){
     'border-bottom:0">'+
     '<span style="display:flex;align-items:center;gap:8px">'+
     (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
-    ' <span style="color:#6f93b5;font-size:.85rem">'+x.lot.toFixed(2)+
-    ' lot</span>'+(x.k=='s'?' <span style="background:'+
+    ' <span style="color:#6f93b5;font-size:.85rem">'+
+    (x.sl>0
+     ?(m=>'mise '+(m<10?m.toFixed(1):m.toFixed(0))+
+       ' $ <span style="font-size:.72rem;color:#51687e">('+
+       x.lot.toFixed(2)+' lot)</span>')(Math.abs(x.e-x.sl)*x.lot)
+     :x.lot.toFixed(2)+' lot')+
+    '</span>'+(x.k=='s'?' <span style="background:'+
     'rgba(232,197,90,.15);color:#e8c55a;padding:2px 8px;'+
     'border-radius:99px;font-size:.68rem;font-weight:700">'+
     '&#9876;&#65039; soldat</span>':'')+
