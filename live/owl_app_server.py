@@ -849,7 +849,8 @@ function ledInfo(){
  const miniRes=tile(L.chest,'240,215,136');
  const miniLot='<span style="color:#7fd4a0;font-weight:800;'+
   'font-size:1.1rem;font-variant-numeric:tabular-nums">'+
-  L.nl.toFixed(2)+'</span>';
+  (L.mode==='bos'?(L.stake||0).toFixed(0)+'&nbsp;$'
+   :L.nl.toFixed(2))+'</span>';
  let mp='';
  for(let i=0;i<3;i++){
   mp+='<span style="display:inline-block;width:7px;height:16px;'+
@@ -864,14 +865,16 @@ function ledInfo(){
    'creuser le compte';
  let r3,r4;
  if(mode==='bos'){
-  r3=row(miniLot,'Prochain combat : jusqu&#39;&agrave; '+
-   L.nl.toFixed(2)+' lot',
-   'Tant qu&#39;il y a une dette, le robot peut grossir son '+
-   'prochain trade : 0.02 de base + 1 balle de 0.01 par tranche '+
-   'de r&eacute;serve disponible (maximum 3 balles).');
+  r3=row(miniLot,'Prochain combat : mise jusqu&#39;&agrave; '+
+   (L.stake||0).toFixed(0)+' $',
+   'La mise = ce que le trade risque si son stop est touch&eacute;. '+
+   'Base : '+(2*(L.need||0)).toFixed(0)+' $. Tant qu&#39;il y a '+
+   'une dette, chaque balle pay&eacute;e ajoute '+
+   (L.need||0).toFixed(0)+' $ de frappe (maximum 3 balles).');
   r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
-   'Chaque balle est pay&eacute;e d&#39;avance par la '+
-   'r&eacute;serve, au prix du stop du moment. Balle perdue = la '+
+   'Une balle co&ucirc;te le prix du stop du moment &mdash; '+
+   (L.need||0).toFixed(0)+' $ aujourd&#39;hui &mdash; pay&eacute;e '+
+   'd&#39;avance par la r&eacute;serve. Balle perdue = la '+
    'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
    'directement.');
  }else if(mode==='man'){
@@ -1589,8 +1592,9 @@ function render(d){
      }
      const fillN=Math.floor(prog+1e-9);
      const fr=prog-fillN;
+     const stake=(2+Math.min(3,fillN))*need;
      window._ledD={mode:bos?'bos':'bot',debt:d.ledger.debt,
-      chest:am,need:need,nl:nl,fill:fillN};
+      chest:am,need:need,nl:nl,fill:fillN,stake:stake};
      let pills='';
      for(let i=0;i<SL;i++){
       const on=i<fillN;
@@ -1629,12 +1633,13 @@ function render(d){
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
         'text-transform:uppercase;letter-spacing:.08em">'+
-        (bos?'Prochain combat : jusqu&#39;&agrave;'
+        (bos?'Prochain combat : mise jusqu&#39;&agrave;'
          :'Prochain soldat du robot')+'</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
-        nl.toFixed(2)+'</span></b>'+
-       '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
+        (bos?stake.toFixed(0):nl.toFixed(2))+'</span></b>'+
+       '<span style="color:#8fa1b3;font-size:.85rem"> '+
+        (bos?'$':'lot')+'</span>'+
       '</div>'+
       '<div style="text-align:center;margin-top:4px">'+pills+
       '</div>'+
@@ -1642,10 +1647,13 @@ function render(d){
        'color:#5f7185;margin-top:4px">'+
        (bos
         ?(fillN>0
-         ?fillN+' balle'+(fillN>1?'s':'')+' pr&ecirc;te'+
-          (fillN>1?'s':'')+' &middot; 1 balle = 0.01 de plus au '+
-          'prochain combat'
-         :'Chaque gain charge une balle pour riposter plus fort')
+         ?(2*need).toFixed(0)+' $ de base + '+fillN+' balle'+
+          (fillN>1?'s':'')+' de '+need.toFixed(0)+' $ d&eacute;'+
+          'j&agrave; pay&eacute;e'+(fillN>1?'s':'')+' par la '+
+          'r&eacute;serve'
+         :'Mise de base '+(2*need).toFixed(0)+' $ &middot; chaque '+
+          'gain charge une balle de '+need.toFixed(0)+' $ pour '+
+          'frapper plus fort')
         :(ok
         ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
          'signal'
@@ -1656,12 +1664,12 @@ function render(d){
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
      lc.style.borderColor=ok?'rgba(232,197,90,.55)':'#23405e';
      const rz=window._rz||{};
-     const roll=(id,a,b)=>{
+     const roll=(id,a,b,dec)=>{
       if(a===undefined||Math.abs(a-b)<0.005)return;
       const el=lc.querySelector('#'+id);if(!el)return;
       const t0=performance.now();
       const st=t=>{const k=Math.min(1,(t-t0)/600);
-       el.textContent=(a+(b-a)*k).toFixed(2);
+       el.textContent=(a+(b-a)*k).toFixed(dec===undefined?2:dec);
        if(k<1)requestAnimationFrame(st);};
       requestAnimationFrame(st);};
      const fl=(id,a,b,good)=>{
@@ -1670,13 +1678,14 @@ function render(d){
       el.style.transition='color .25s';
       el.style.color=good?'#2ecc71':'#ff5c5c';
       setTimeout(()=>{el.style.color='';},1100);};
+     const bigV=bos?stake:nl;
      roll('rz-debt',rz.d,d.ledger.debt);
      fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
      roll('rz-ammo',rz.a,am);
      fl('rz-ammo',rz.a,am,am>rz.a);
-     roll('rz-lot',rz.m,nl);
-     fl('rz-lot',rz.m,nl,nl>rz.m);
-     window._rz={d:d.ledger.debt,a:am,m:nl};
+     roll('rz-lot',rz.m,bigV,bos?0:2);
+     fl('rz-lot',rz.m,bigV,bigV>rz.m);
+     window._rz={d:d.ledger.debt,a:am,m:bigV};
     }
    }else{
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
