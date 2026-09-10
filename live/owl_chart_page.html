@@ -364,7 +364,7 @@ function draw(){
   ctx.closePath();ctx.fill();
   tag(yE,(man?'✋ ':'\u{1F916} ')+
    (t[0]===1?'▲ ':'▼ ')+t[1].toFixed(2)+
-   (t[5]>=0?'  +':'  ')+t[5].toFixed(2)+' $',
+   (t[5]>=0?'  +$':'  -$')+Math.abs(t[5]).toFixed(2),
    '#cfe3f5',man?'rgba(232,197,90,.28)':'rgba(127,179,224,.25)');
  });
  // SL/TP levels drawn ONCE per unique price (several positions
@@ -381,7 +381,7 @@ function draw(){
   ctx.strokeStyle=isS?'rgba(255,92,92,.75)':'rgba(46,204,113,.75)';
   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
   tag(y,(isS?'SL ':'TP ')+v.toFixed(0)+'  '+
-   (isS?'−':'+')+amt.toFixed(2)+' $',
+   (isS?'−$':'+$')+amt.toFixed(2),
    isS?'#ffd7d7':'#d2f5e0',
    isS?'rgba(255,92,92,.3)':'rgba(46,204,113,.3)');
  });
@@ -424,7 +424,7 @@ function ui(){
   pn.style.display='block';
   pn.className=tot>=0?'win':'loss';
   const b=pn.querySelector('b');
-  b.textContent=(tot>=0?'+':'')+tot.toFixed(2)+' $';
+  b.textContent=(tot>=0?'+$':'-$')+Math.abs(tot).toFixed(2);
   pn.querySelector('span').textContent=
    ts.length+' position'+(ts.length>1?'s':'')+' · '+
    lots.toFixed(2)+' lot';
@@ -451,7 +451,7 @@ function ui(){
  document.getElementById('aura').className=D.choch?'choc':'';
  const pe=document.getElementById('px');
  if(D.px){
-  pe.textContent=D.px.toFixed(0)+' $';
+  pe.textContent='$'+D.px.toFixed(0);
   if(lastPx!==null&&D.px!==lastPx){
    const up=D.px>lastPx;
    pe.style.color=up?'#2ecc71':'#ff5c5c';

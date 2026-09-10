@@ -837,20 +837,20 @@ function ledInfo(){
    '</b><div style="font-size:.79rem;color:#8fa1b3;'+
    'line-height:1.45">'+s+'</div></div></div>';
  const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
- const F=x=>x.toFixed(2)+'&nbsp;$';
+ const F=x=>'$'+x.toFixed(2);
  const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
  // popup icons = miniatures of the REAL card elements
  const tile=(v,c)=>'<span style="display:inline-flex;'+
   'align-items:center;justify-content:center;width:44px;'+
   'height:30px;border-radius:9px;font-weight:800;'+
   'font-size:.68rem;background:rgba('+c+',.1);border:1px solid '+
-  'rgba('+c+',.35);color:rgb('+c+')">'+v.toFixed(0)+'&nbsp;$'+
+  'rgba('+c+',.35);color:rgb('+c+')">$'+v.toFixed(0)+
   '</span>';
  const miniDebt=tile(L.debt,'255,150,150');
  const miniRes=tile(L.chest,'240,215,136');
  const miniLot='<span style="color:#7fd4a0;font-weight:800;'+
   'font-size:1.1rem;font-variant-numeric:tabular-nums">'+
-  (L.mode==='bos'?fm(L.stake||0)+'&nbsp;$'
+  (L.mode==='bos'?'$'+fm(L.stake||0)
    :L.nl.toFixed(2))+'</span>';
  let mp='';
  for(let i=0;i<3;i++){
@@ -867,14 +867,14 @@ function ledInfo(){
  let r3,r4;
  if(mode==='bos'){
   r3=row(miniLot,'Prochain combat : mise jusqu&#39;&agrave; '+
-   fm(L.stake||0)+' $',
+   '$'+fm(L.stake||0),
    'La mise = ce que le trade risque si son stop est touch&eacute;. '+
-   'Base : '+fm(2*(L.need||0))+' $. Tant qu&#39;il y a '+
+   'Base : $'+fm(2*(L.need||0))+'. Tant qu&#39;il y a '+
    'une dette, chaque balle pay&eacute;e ajoute '+
-   fm(L.need||0)+' $ de frappe (maximum 3 balles).');
+   '$'+fm(L.need||0)+' de frappe (maximum 3 balles).');
   r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
    'Une balle co&ucirc;te le prix du stop du moment &mdash; '+
-   fm(L.need||0)+' $ aujourd&#39;hui &mdash; pay&eacute;e '+
+   '$'+fm(L.need||0)+' aujourd&#39;hui &mdash; pay&eacute;e '+
    'd&#39;avance par la r&eacute;serve. Balle perdue = la '+
    'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
    'directement.');
@@ -963,14 +963,14 @@ window.addEventListener('load',()=>{
    '<button class="shbtn shghost" style="flex:1;margin:0;'+
    'padding:11px 0;font-size:.9rem" '+
    'onclick="document.getElementById(\\'goalamt\\').value=\\''+
-   Math.ceil(b0+a)+'\\'">+'+a+'&nbsp;$</button>').join('');
+   Math.ceil(b0+a)+'\\'">+$'+a+'</button>').join('');
   const v=await sheet('<h3>&#127919; Objectif</h3>'+
    '<div style="display:flex;justify-content:space-between;'+
    'align-items:center;background:#0b1420;border-radius:12px;'+
    'padding:12px 14px;margin-bottom:12px">'+
    '<span style="color:#8fa1b3;font-size:.85rem">Solde actuel'+
-   '</span><b style="font-size:1.1rem">'+b0.toFixed(2)+
-   '&nbsp;$</b></div>'+
+   '</span><b style="font-size:1.1rem">$'+b0.toFixed(2)+
+   '</b></div>'+
    '<div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">'+
    'Choix rapide &mdash; ou entrez votre montant :</div>'+
    '<div style="display:flex;gap:8px;margin-bottom:10px">'+chips+
@@ -994,7 +994,7 @@ window.addEventListener('load',()=>{
   if(v[0]!=='0'&&parseFloat(v[0]||'0')<=b0){
    await info('&#9888;&#65039; <h3>Visez plus haut !</h3>'+
     '<p>L&#39;objectif doit &ecirc;tre au-dessus du solde actuel ('+
-    b0.toFixed(2)+'&nbsp;$).</p>');
+    '$'+b0.toFixed(2)+').</p>');
    return;}
   const r=await fetch(B+'set_goal',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -1262,7 +1262,7 @@ function tradeSheet(i){
  sheet('<h3>'+(x.dir==='A'?'&#128200; Achat':'&#128201; Vente')+
   (x.k?' &middot; '+(x.k==='page'?'normal':x.k):'')+'</h3>'+
   L('R&eacute;sultat','<span class="'+(x.p>=0?'pos':'neg')+'">'+
-   (x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+' $</span>')+
+   (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
   (x.ep!=null?L('Entr&eacute;e',x.ep.toFixed(2)):'')+
   (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
@@ -1310,7 +1310,7 @@ function shareWeek(){
  const wk=d.week||0;
  g.fillStyle=wk>=0?'#2ecc71':'#ff5c5c';
  g.font='bold 92px sans-serif';
- g.fillText((wk>=0?'+':'-')+Math.abs(wk).toFixed(2)+' $',360,252);
+ g.fillText((wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2),360,252);
  const cv=d.curve||[];
  if(cv.length>1){
   const mn=Math.min(...cv,0),mx=Math.max(...cv,0),sp=(mx-mn)||1;
@@ -1330,7 +1330,7 @@ function shareWeek(){
   g.textAlign='right';
   g.fillStyle=x.p>=0?'#2ecc71':'#ff5c5c';
   g.font='bold 26px sans-serif';
-  g.fillText((x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+' $',610,y);
+  g.fillText((x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2),610,y);
   y+=44;});
  g.textAlign='center';g.fillStyle='#5f7185';
  g.font='22px sans-serif';
@@ -1452,7 +1452,7 @@ function render(d){
     ((ft.w+ft.l)?' (<b style="color:'+col+'">'+
      Math.round(wr*100)+'&nbsp;%</b>)':'')+
     ' &middot; <b class="'+(ft.net>=0?'pos':'neg')+'">'+
-    (ft.net>=0?'+':'-')+Math.abs(ft.net).toFixed(2)+'&nbsp;$</b>';
+    (ft.net>=0?'+$':'-$')+Math.abs(ft.net).toFixed(2)+'</b>';
    const pb=document.getElementById('ft-bar');
    pb.style.width=Math.min(100,ft.n/ft.target*100)+'%';
    pb.style.background=col;
@@ -1508,8 +1508,8 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          '&Agrave; rattraper</div>'+
         '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums"><span id="rz-debt">'+
-         d.ledger.debt.toFixed(2)+'</span>&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums">$<span id="rz-debt">'+
+         d.ledger.debt.toFixed(2)+'</span></b></div>'+
        '<div style="background:rgba(232,197,90,.07);border:1px '+
         'solid rgba(232,197,90,.22);border-radius:12px;'+
         'padding:8px 10px;text-align:center">'+
@@ -1517,8 +1517,8 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          'Gains de c&ocirc;t&eacute;</div>'+
         '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums"><span id="rz-ammo">'+
-         am.toFixed(2)+'</span>&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
+         am.toFixed(2)+'</span></b></div>'+
       '</div>'+
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
@@ -1620,8 +1620,8 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          '&Agrave; rattraper</div>'+
         '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums"><span id="rz-debt">'+
-         d.ledger.debt.toFixed(2)+'</span>&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums">$<span id="rz-debt">'+
+         d.ledger.debt.toFixed(2)+'</span></b></div>'+
        '<div style="background:rgba(232,197,90,.07);border:1px '+
         'solid rgba(232,197,90,.22);border-radius:12px;'+
         'padding:8px 10px;text-align:center">'+
@@ -1629,8 +1629,8 @@ function render(d){
          'text-transform:uppercase;letter-spacing:.08em">'+
          'Gains de c&ocirc;t&eacute;</div>'+
         '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums"><span id="rz-ammo">'+
-         am.toFixed(2)+'</span>&nbsp;$</b></div>'+
+         'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
+         am.toFixed(2)+'</span></b></div>'+
       '</div>'+
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
@@ -1638,10 +1638,11 @@ function render(d){
         (bos?'Prochain combat : mise jusqu&#39;&agrave;'
          :'Prochain soldat du robot')+'</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
-        'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
+        'font-variant-numeric:tabular-nums">'+(bos?'$':'')+
+        '<span id="rz-lot">'+
         (bos?fm(stake):nl.toFixed(2))+'</span></b>'+
-       '<span style="color:#8fa1b3;font-size:.85rem"> '+
-        (bos?'$':'lot')+'</span>'+
+       (bos?'':'<span style="color:#8fa1b3;font-size:.85rem">'+
+        ' lot</span>')+
       '</div>'+
       '<div style="text-align:center;margin-top:4px">'+pills+
       '</div>'+
@@ -1649,17 +1650,19 @@ function render(d){
        'color:#5f7185;margin-top:4px">'+
        (bos
         ?(fillN>0
-         ?fm(2*need)+' $ de base + '+fillN+' balle'+
-          (fillN>1?'s':'')+' de '+fm(need)+' $ d&eacute;'+
+         ?'$'+fm(2*need)+' de base + '+fillN+' balle'+
+          (fillN>1?'s':'')+' de $'+fm(need)+' d&eacute;'+
           'j&agrave; pay&eacute;e'+(fillN>1?'s':'')+' par la '+
-          'r&eacute;serve'
-         :'Mise de base '+fm(2*need)+' $ &middot; chaque '+
-          'gain charge une balle de '+fm(need)+' $ pour '+
-          'frapper plus fort')
+          'r&eacute;serve <span style="color:#44586d">('+
+          nl.toFixed(2)+' lot)</span>'
+         :'Mise de base $'+fm(2*need)+' &middot; chaque '+
+          'gain charge une balle de $'+fm(need)+' pour '+
+          'frapper plus fort <span style="color:#44586d">('+
+          nl.toFixed(2)+' lot)</span>')
         :(ok
         ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
          'signal'
-        :'Encore '+(need-am).toFixed(2)+'&nbsp;$ de gains avant '+
+        :'Encore $'+(need-am).toFixed(2)+' de gains avant '+
          'l&#39;attaque'))+'</div>';
      lw.style.display='none';ls2.innerHTML='';
      lc.style.transition='box-shadow .8s,border-color .8s';
@@ -1693,8 +1696,8 @@ function render(d){
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
      'rattraper.'+(d.ledger.chest>0
      ?'<br>&#128176; Gard&eacute; pour les jours difficiles : '+
-      '<b style="color:#e8c55a">'+d.ledger.chest.toFixed(2)+
-      '&nbsp;$</b>':'');
+      '<b style="color:#e8c55a">$'+d.ledger.chest.toFixed(2)+
+      '</b>':'');
     lw.style.display='none';ls2.innerHTML='';
    }
   }
@@ -1703,20 +1706,20 @@ function render(d){
    tb.innerHTML='&#127873; Essai gratuit &mdash; <b>'+d.trial_days_left+
     ' jour'+(d.trial_days_left>1?'s':'')+' restant'+
     (d.trial_days_left>1?'s':'')+'</b>';}
-  const f=(x)=>(x>=0?'+':'-')+Math.abs(x).toFixed(2)+'&nbsp;$';
+  const f=(x)=>(x>=0?'+$':'-$')+Math.abs(x).toFixed(2);
   document.querySelectorAll('.skel').forEach(el=>
    el.classList.remove('skel'));
   const eqEl=document.getElementById('eq');
   const prevEq=parseFloat(eqEl.dataset.v||'NaN');
   if(isNaN(prevEq)||Math.abs(prevEq-d.equity)<0.005){
-   eqEl.textContent=d.equity.toFixed(2)+' $';}
+   eqEl.textContent='$'+d.equity.toFixed(2);}
   else{
    const from=prevEq,to=d.equity,t0=performance.now();
    eqEl.classList.remove('flash-up','flash-dn');void eqEl.offsetWidth;
    eqEl.classList.add(to>=from?'flash-up':'flash-dn');
    (function stepA(ts){const k=Math.min(1,(ts-t0)/500);
-    eqEl.textContent=(from+(to-from)*(1-Math.pow(1-k,3)))
-     .toFixed(2)+' $';
+    eqEl.textContent='$'+(from+(to-from)*(1-Math.pow(1-k,3)))
+     .toFixed(2);
     if(k<1)requestAnimationFrame(stepA);})(t0);
   }
   eqEl.dataset.v=d.equity;
@@ -1730,13 +1733,13 @@ function render(d){
   if(Math.abs(d.equity-d.balance)<0.005){bk.style.display='none';}
   else{bk.style.display='block';
    bk.innerHTML='Solde des trades termin&eacute;s : '+
-    d.balance.toFixed(2)+' $';}
+    '$'+d.balance.toFixed(2);}
   const dc=document.getElementById('daychip');
   if(typeof d.today==='number'){
    dc.style.display='inline-block';
    const up=d.today>=0;
-   dc.textContent=(up?'+':'')+d.today.toFixed(2)+
-    ' $ aujourd\\u2019hui';
+   dc.textContent=(up?'+$':'-$')+Math.abs(d.today).toFixed(2)+
+    ' aujourd\\u2019hui';
    dc.style.background=up?'rgba(46,204,113,.16)'
     :'rgba(255,92,92,.16)';
    dc.style.color=up?'#8df0bb':'#ffb3b3';
@@ -1767,8 +1770,8 @@ function render(d){
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
     (d.palier_def
-     ?'Objectif de la semaine : +50&nbsp;$'
-     :'Objectif : '+d.palier.toFixed(0)+'&nbsp;$')+
+     ?'Objectif de la semaine : +$50'
+     :'Objectif : $'+d.palier.toFixed(0))+
     ' &middot; '+pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
    if(pc>=100&&!window._conf){window._conf=1;confetti();}
@@ -1843,8 +1846,8 @@ function render(d){
     (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
     ' <span style="color:#6f93b5;font-size:.85rem">'+
     (x.sl>0
-     ?(m=>'mise '+(m<10?m.toFixed(1):m.toFixed(0))+
-       ' $ <span style="font-size:.72rem;color:#51687e">('+
+     ?(m=>'mise $'+(m<10?m.toFixed(1):m.toFixed(0))+
+       ' <span style="font-size:.72rem;color:#51687e">('+
        x.lot.toFixed(2)+' lot)</span>')(Math.abs(x.e-x.sl)*x.lot)
      :x.lot.toFixed(2)+' lot')+
     '</span>'+(x.k=='s'?' <span style="background:'+
@@ -1853,7 +1856,7 @@ function render(d){
     '&#9876;&#65039; soldat</span>':'')+
     '</span><b style="font-size:1.12rem" class="'+
     (x.pl>=0?'pos':'neg')+'">'+
-    (x.pl>=0?'+':'-')+Math.abs(x.pl).toFixed(2)+' $</b></div>'+bar;
+    (x.pl>=0?'+$':'-$')+Math.abs(x.pl).toFixed(2)+'</b></div>'+bar;
    }).join('');
   }else{bs.style.display='none';met.style.display='block';
    if(lc0)lc0.style.marginTop='12px';}
@@ -1864,7 +1867,7 @@ function render(d){
   w.innerHTML=(d.week>=0?'&#9650; ':'&#9660; ')+f(d.week);
   w.className='val '+(d.week>=0?'pos':'neg');
   const dv=d.max_dd_7d.toFixed(0);
-  document.getElementById('dd').textContent=(dv==0?'0':'-'+dv)+' $';
+  document.getElementById('dd').textContent=(dv==0?'$0':'-$'+dv);
   if(d.month!==undefined){
    const mo=document.getElementById('month');
    mo.innerHTML=(d.month>=0?'&#9650; ':'&#9660; ')+f(d.month);
@@ -1896,10 +1899,10 @@ function render(d){
     '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
     'color:#5f7185;font-size:.75rem">'+d.nest.length+
     ' compte'+(d.nest.length>1?'s':'')+'</span></span>'+
-    '<span style="text-align:right"><b>'+tb.toFixed(2)+' $</b>'+
+    '<span style="text-align:right"><b>$'+tb.toFixed(2)+'</b>'+
     '<span style="display:block;font-size:.78rem" class="'+
-    (tt>=0?'pos':'neg')+'">auj. '+(tt>=0?'+':'-')+
-    Math.abs(tt).toFixed(2)+' $</span></span></div>';
+    (tt>=0?'pos':'neg')+'">auj. '+(tt>=0?'+$':'-$')+
+    Math.abs(tt).toFixed(2)+'</span></span></div>';
    document.getElementById('nest').innerHTML=hdr+d.nest.map(x=>{
     const dot=x.err||x.stale?'#e6a028':(x.paused?'#8fa1b3':'#2ecc71');
     const st=x.err?'probl&egrave;me':(x.stale?'hors ligne'
@@ -1912,10 +1915,10 @@ function render(d){
     (x.plan?' &middot; '+x.plan:'')+
     (x.login?' &middot; '+x.login:'')+'</span></span>'+
     '<span style="font-size:.8rem;color:#8fa1b3">'+
-    (x.bal!=null?x.bal.toFixed(2)+' $':'--')+
+    (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
     (x.today!=null?' &middot; auj. <span class="'+
-     (x.today>=0?'pos':'neg')+'">'+(x.today>=0?'+':'-')+
-     Math.abs(x.today).toFixed(2)+' $</span>':'')+'</span></span>'+
+     (x.today>=0?'pos':'neg')+'">'+(x.today>=0?'+$':'-$')+
+     Math.abs(x.today).toFixed(2)+'</span>':'')+'</span></span>'+
     '<span style="display:flex;gap:6px">'+
     (x.tok?'<a href="/'+x.tok+'/" target="_blank" '+
     'style="border:1px solid #263341;background:#0f1620;'+
@@ -1947,12 +1950,12 @@ function render(d){
     '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
     (tr.length?(open?'&#9662; ':'&#9656; '):'&nbsp;&nbsp;')+x.d+
     '</span><b class="'+(x.p>=0?'pos':'neg')+'">'+
-    (x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+'&nbsp;$</b></div>'+
+    (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b></div>'+
     (open?'<div style="padding:0 0 6px 18px;border-bottom:1px solid '+
     '#1e2937">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
     'padding:6px 4px;border-bottom:0"><span class="rowt">'+t.t+
     '</span><span class="'+(t.p>=0?'pos':'neg')+'">'+
-    (t.p>=0?'+':'-')+Math.abs(t.p).toFixed(2)+'&nbsp;$</span></div>')
+    (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</span></div>')
     .join('')+'</div>':'');
    }).join('');
   }
@@ -1999,7 +2002,7 @@ function render(d){
     h+='<div style="aspect-ratio:1;border-radius:9px;background:'+bg+
      ';display:flex;align-items:center;justify-content:center;'+
      'font-size:.7rem;font-weight:600;color:'+fg+'" title="'+
-     (p===undefined?'':((p>=0?'+':'-')+Math.abs(p).toFixed(2)+' $'))+
+     (p===undefined?'':((p>=0?'+$':'-$')+Math.abs(p).toFixed(2)))+
      '">'+dd2+'</div>';
    }
    h+='</div>';
@@ -2024,10 +2027,10 @@ function render(d){
    setH(sx,
     SR('Trades gagnants',W.length+' sur '+ps.length+' ('+
      Math.round(W.length/ps.length*100)+'&nbsp;%)','pos')+
-    SR('Gain moyen','+'+(sw/Math.max(1,W.length)).toFixed(2)+
-     '&nbsp;$','pos')+
-    SR('Perte moyenne','-'+(slo/Math.max(1,Lo.length)).toFixed(2)+
-     '&nbsp;$','neg')+
+    SR('Gain moyen','+$'+(sw/Math.max(1,W.length)).toFixed(2),
+     'pos')+
+    SR('Perte moyenne','-$'+(slo/Math.max(1,Lo.length)).toFixed(2),
+     'neg')+
     SR('Gains / pertes',slo>0?(sw/slo).toFixed(2):'&#8734;',
      sw>=slo?'pos':'neg')+
     SR('Meilleure s&eacute;rie',bs+' gains de suite','pos'));
@@ -2061,14 +2064,14 @@ function render(d){
        'font-weight:700">NUL</span>');
     const after=x.book<=0.5
      ?'<span style="color:#8df0bb">livre sold&eacute; &#10024;</span>'
-     :'reste '+x.book.toFixed(2)+'&nbsp;$ &agrave; rattraper';
+     :'reste $'+x.book.toFixed(2)+' &agrave; rattraper';
     return '<div class="row"><span style="display:flex;'+
      'flex-direction:column;gap:3px"><span>'+badge+
      ' <span style="color:#6f93b5;font-size:.82rem">'+
      x.lot.toFixed(2)+' lot &middot; '+when+'</span></span>'+
      '<span style="font-size:.75rem;color:#5f7185">'+after+
      '</span></span><b class="'+(x.pnl>=0?'pos':'neg')+'">'+
-     (x.pnl>=0?'+':'-')+Math.abs(x.pnl).toFixed(2)+' $</b></div>';
+     (x.pnl>=0?'+$':'-$')+Math.abs(x.pnl).toFixed(2)+'</b></div>';
    }).join('');
   }
   if(d.trades&&!d.trades.length){
@@ -2088,8 +2091,8 @@ function render(d){
      :(x.k==='page'?'normal':x.k)):'')+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
     '</span><b class="'+
-    (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+':'-')+Math.abs(x.p).toFixed(2)+
-    ' $</b></div>').join('')+
+    (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
+    '</b></div>').join('')+
     (d.trades.length>N
     ?'<div class="row" style="cursor:pointer;justify-content:center;'+
      'color:#7fb0ff;font-size:.9rem" onclick="window._trN=99;load()">'+
@@ -2616,7 +2619,7 @@ function draw(){
   ctx.closePath();ctx.fill();
   tag(yE,(man?'\\u270B ':'\\u{1F916} ')+
    (t[0]===1?'\\u25b2 ':'\\u25bc ')+t[1].toFixed(2)+
-   (t[5]>=0?'  +':'  ')+t[5].toFixed(2)+' $',
+   (t[5]>=0?'  +$':'  -$')+Math.abs(t[5]).toFixed(2),
    '#cfe3f5',man?'rgba(232,197,90,.28)':'rgba(127,179,224,.25)');
   if(t[3]>0){const y=px(t[3]);
    ctx.strokeStyle='rgba(255,92,92,.75)';
@@ -2651,7 +2654,7 @@ function draw(){
   tb.style.background='rgba(143,161,179,.08)';}
  const pe=document.getElementById('px');
  if(D.px){
-  pe.textContent=D.px.toFixed(0)+' $';
+  pe.textContent='$'+D.px.toFixed(0);
   if(lastPx!==null&&D.px!==lastPx){
    pe.style.color=D.px>lastPx?'#2ecc71':'#ff5c5c';
    setTimeout(()=>{pe.style.color='#e8c55a'},600);}
@@ -2760,7 +2763,7 @@ jour et nuit. Vous, vous regardez.</div>
 </div>
 <div class="preview">
 <div class="pv-lbl">Aper&ccedil;u en direct</div>
-<div class="pv-money">1 234,56 $</div>
+<div class="pv-money">$1 234,56</div>
 <div class="pv-eur">&asymp; 1 062 &euro;</div>
 <svg viewBox="0 0 260 44" style="width:100%;height:44px;margin-top:10px">
 <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
