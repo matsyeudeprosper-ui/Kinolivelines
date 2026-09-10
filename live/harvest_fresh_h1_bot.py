@@ -273,7 +273,7 @@ def banked_since(t_from):
 
 
 def main():
-    global BRICK, GATE_BRICK, TP_PTS, TRIG_PTS, KILL_NET
+    global BRICK, GATE_BRICK, TP_PTS, TRIG_PTS, KILL_NET, LOT
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
                           timeout=60000), "MT5 init failed"
@@ -291,6 +291,16 @@ def main():
         # ETH validation: maxDD $42 / worst cycle -$14 over 7.7y at
         # cap 4 - kill at -60 = well beyond the observed worst
         KILL_NET = -60.0
+    si = mt5.symbol_info(SYMBOL)
+    if si is not None and si.volume_min > LOT:
+        # broker minimum overrides (ETHUSD on Trial9 is min 0.10 -
+        # retcode 10014 on 0.01, seen 2026-09-10). P&L and the kill
+        # line scale together so the test keeps its preregistered
+        # shape, just in bigger units.
+        KILL_NET = round(KILL_NET * si.volume_min / LOT, 2)
+        LOT = si.volume_min
+        say(f"lot raised to broker minimum {LOT}; "
+            f"kill scaled to {KILL_NET}")
     say(f"FRESH-H1 starting on {ai.login} balance {ai.balance:.2f} "
         f"symbol {SYMBOL} brick {BRICK} gate {GATE_BRICK} "
         f"kill {KILL_NET}")
