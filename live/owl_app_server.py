@@ -510,7 +510,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  background:#101c2b;border:1px solid #23405e;border-radius:16px;
  padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
  <button onclick="ledInfo()" aria-label="explications" style="
-  position:absolute;right:9px;bottom:9px;width:26px;height:26px;
+  position:absolute;right:10px;top:10px;width:26px;height:26px;
   border-radius:50%;border:1px solid rgba(127,179,224,.4);
   background:rgba(127,179,224,.12);color:#7fb3e0;font-size:.8rem;
   font-weight:700;font-style:italic;font-family:Georgia,serif;
@@ -838,6 +838,7 @@ function ledInfo(){
    'line-height:1.45">'+s+'</div></div></div>';
  const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
  const F=x=>x.toFixed(2)+'&nbsp;$';
+ const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
  // popup icons = miniatures of the REAL card elements
  const tile=(v,c)=>'<span style="display:inline-flex;'+
   'align-items:center;justify-content:center;width:44px;'+
@@ -849,7 +850,7 @@ function ledInfo(){
  const miniRes=tile(L.chest,'240,215,136');
  const miniLot='<span style="color:#7fd4a0;font-weight:800;'+
   'font-size:1.1rem;font-variant-numeric:tabular-nums">'+
-  (L.mode==='bos'?(L.stake||0).toFixed(0)+'&nbsp;$'
+  (L.mode==='bos'?fm(L.stake||0)+'&nbsp;$'
    :L.nl.toFixed(2))+'</span>';
  let mp='';
  for(let i=0;i<3;i++){
@@ -866,14 +867,14 @@ function ledInfo(){
  let r3,r4;
  if(mode==='bos'){
   r3=row(miniLot,'Prochain combat : mise jusqu&#39;&agrave; '+
-   (L.stake||0).toFixed(0)+' $',
+   fm(L.stake||0)+' $',
    'La mise = ce que le trade risque si son stop est touch&eacute;. '+
-   'Base : '+(2*(L.need||0)).toFixed(0)+' $. Tant qu&#39;il y a '+
+   'Base : '+fm(2*(L.need||0))+' $. Tant qu&#39;il y a '+
    'une dette, chaque balle pay&eacute;e ajoute '+
-   (L.need||0).toFixed(0)+' $ de frappe (maximum 3 balles).');
+   fm(L.need||0)+' $ de frappe (maximum 3 balles).');
   r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
    'Une balle co&ucirc;te le prix du stop du moment &mdash; '+
-   (L.need||0).toFixed(0)+' $ aujourd&#39;hui &mdash; pay&eacute;e '+
+   fm(L.need||0)+' $ aujourd&#39;hui &mdash; pay&eacute;e '+
    'd&#39;avance par la r&eacute;serve. Balle perdue = la '+
    'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
    'directement.');
@@ -1593,6 +1594,7 @@ function render(d){
      const fillN=Math.floor(prog+1e-9);
      const fr=prog-fillN;
      const stake=(2+Math.min(3,fillN))*need;
+     const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
      window._ledD={mode:bos?'bos':'bot',debt:d.ledger.debt,
       chest:am,need:need,nl:nl,fill:fillN,stake:stake};
      let pills='';
@@ -1637,7 +1639,7 @@ function render(d){
          :'Prochain soldat du robot')+'</div>'+
        '<b style="color:#7fd4a0;font-size:2.1rem;'+
         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
-        (bos?stake.toFixed(0):nl.toFixed(2))+'</span></b>'+
+        (bos?fm(stake):nl.toFixed(2))+'</span></b>'+
        '<span style="color:#8fa1b3;font-size:.85rem"> '+
         (bos?'$':'lot')+'</span>'+
       '</div>'+
@@ -1647,12 +1649,12 @@ function render(d){
        'color:#5f7185;margin-top:4px">'+
        (bos
         ?(fillN>0
-         ?(2*need).toFixed(0)+' $ de base + '+fillN+' balle'+
-          (fillN>1?'s':'')+' de '+need.toFixed(0)+' $ d&eacute;'+
+         ?fm(2*need)+' $ de base + '+fillN+' balle'+
+          (fillN>1?'s':'')+' de '+fm(need)+' $ d&eacute;'+
           'j&agrave; pay&eacute;e'+(fillN>1?'s':'')+' par la '+
           'r&eacute;serve'
-         :'Mise de base '+(2*need).toFixed(0)+' $ &middot; chaque '+
-          'gain charge une balle de '+need.toFixed(0)+' $ pour '+
+         :'Mise de base '+fm(2*need)+' $ &middot; chaque '+
+          'gain charge une balle de '+fm(need)+' $ pour '+
           'frapper plus fort')
         :(ok
         ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
@@ -1683,7 +1685,7 @@ function render(d){
      fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
      roll('rz-ammo',rz.a,am);
      fl('rz-ammo',rz.a,am,am>rz.a);
-     roll('rz-lot',rz.m,bigV,bos?0:2);
+     roll('rz-lot',rz.m,bigV,bos?(stake<10?1:0):2);
      fl('rz-lot',rz.m,bigV,bigV>rz.m);
      window._rz={d:d.ledger.debt,a:am,m:bigV};
     }
