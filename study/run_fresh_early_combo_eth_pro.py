@@ -4,12 +4,17 @@ stream, 2026-09-08. Bricks scaled to ETH price (same proportion as
 $50 on ~65k BTC); spread measured live; cap 3 (the deployed config)
 checked alongside the original cap 4.
 """
+import json
+import os
 import numpy as np
 import MetaTrader5 as mt5
 from hedge_engine import simulate
 
+_SECRETS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "..", "live", "owl_secrets.json")  # not in git
 mt5.initialize(path=r"C:\NestTerminals\u476954287\terminal64.exe",
-               login=476954287, password="M@tsy1983",
+               login=476954287,
+               password=json.load(open(_SECRETS, encoding="utf-8"))["mt5_password"],
                server="Exness-MT5Trial9", timeout=90000)
 mt5.symbol_select("ETHUSD", True)
 import time

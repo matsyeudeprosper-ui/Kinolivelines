@@ -54,7 +54,8 @@ import MetaTrader5 as mt5
 #        3x more adds) - the queued upgrade, auditioning forward.
 import sys as _sys
 VARIANT = _sys.argv[1] if len(_sys.argv) > 1 else "live"
-PASSWORD = "M@tsy1983"
+PASSWORD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "owl_secrets.json"), encoding="utf-8"))["mt5_password"]  # not in git
 SYMBOL = "BTCUSD"
 RR = 0.8
 BASE_LOT = 0.02

@@ -49,7 +49,8 @@ import MetaTrader5 as mt5
 # = the strategy can live through its full historical drawdown.
 TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
 LOGIN = 476954287
-PASSWORD = "M@tsy1983"
+PASSWORD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "owl_secrets.json"), encoding="utf-8"))["mt5_password"]  # not in git
 SERVER = "Exness-MT5Trial9"
 # multi-symbol (2026-09-08, user approved the ETH second stream):
 #   pythonw harvest_fresh_h1_bot.py          -> BTCUSD, $50 bricks

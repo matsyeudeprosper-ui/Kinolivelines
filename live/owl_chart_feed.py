@@ -19,7 +19,8 @@ import MetaTrader5 as mt5
 
 TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
 LOGIN = 476954287
-PASSWORD = "M@tsy1983"
+PASSWORD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     "owl_secrets.json"), encoding="utf-8"))["mt5_password"]  # not in git
 SERVER = "Exness-MT5Trial9"
 SYMBOL = "BTCUSD"
 RAW_BARS = 3000
