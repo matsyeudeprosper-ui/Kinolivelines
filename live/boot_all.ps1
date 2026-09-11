@@ -60,6 +60,13 @@ if (-not ($sb | Where-Object { $_.CommandLine -match "halfdebt" })) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "halfdebt" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
+if (-not (Get-CimInstance Win32_Process |
+        Where-Object { $_.CommandLine -like "*bos_paper_touch.py*" })) {
+    Say "starting BOS paper twin (flip+touch, virtual)"
+    Start-Process pythonw -ArgumentList "bos_paper_touch.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 
 # 2d) chart feed (aura chart data)
 if (-not (ProcRunning "owl_chart_feed.py")) {

@@ -69,6 +69,7 @@ AWAKE_WIN = 7200         # awake gate: >=1 flip within this window
 DEBT_MODE = "hwm"        # hwm (peak) | half (0.5x per loss)
 SNIPER = False           # only the 2nd trade of each trend
 ADDS_ON = True
+TOUCH_ENTRIES = True     # continuation on level TOUCH (False = candle close)
 _SFX = ""
 if VARIANT == "sniper":
     TERMINAL = r"C:\NestTerminals\u476989735\terminal64.exe"
@@ -96,6 +97,11 @@ else:
     SERVER = "Exness-MT5Real30"
     MAGIC = 909101
     COMMENT = "KL-BOS"
+    # user 2026-09-11 after the execution audit (Owl/study/audit):
+    # continuation entries go back to the candle CLOSE (no execution
+    # bias, +237 on ticks vs +206 touch); the touch rule keeps running
+    # as a paper twin in bos_paper_touch.py for a side-by-side record.
+    TOUCH_ENTRIES = False
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_F = os.path.join(DIR, f"bos_state{_SFX}.json")
@@ -519,7 +525,7 @@ def main():
             # TOUCH continuation (user 2026-09-09, measured first:
             # +263/DD67 vs +207/DD85 close-only; flips keep the
             # close rule). Checked every ~1s wake on live ticks.
-            if (not my_positions()
+            if (TOUCH_ENTRIES and not my_positions()
                     and any(f > time.time() - AWAKE_WIN
                             for f in flips)):
                 tk2 = mt5.symbol_info_tick(SYMBOL)
