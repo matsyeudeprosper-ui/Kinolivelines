@@ -205,7 +205,7 @@ def twin_trades():
 
 COLS = ["source", "era", "id", "open_time", "kind", "dir", "lot", "entry", "sl", "tp", "stop_dist", "narrow_stop",
         "shadow_state_before", "rolling20_before", "close_time", "exit", "pnl", "pnl_002",
-        "lot_cr", "pnl_cr", "lot_ca", "pnl_ca"]
+        "lot_cr", "pnl_cr", "lot_ca", "pnl_ca", "R", "cum_R"]
 
 
 def cycle(seed):
@@ -219,8 +219,19 @@ def cycle(seed):
     for r in live:
         if r["kind"] == "ADD":
             r["shadow_state_before"], r["rolling20_before"] = "", ""
+            r["R"], r["cum_R"] = "", ""
     for r, (s, v) in zip(twin, st_twin):
         r["shadow_state_before"], r["rolling20_before"] = s, ("" if v is None else round(v, 2))
+    for src_rows in (base_live, twin):
+        cum = 0.0
+        for r in src_rows:
+            d = r.get("stop_dist")
+            if r.get("pnl_002") is not None and d not in ("", None) and float(d) > 0:
+                r["R"] = round(r["pnl_002"] / (float(d) * BASE_LOT), 3)
+                cum += r["R"]
+                r["cum_R"] = round(cum, 3)
+            else:
+                r["R"], r["cum_R"] = "", ""
     rows = sorted(live + twin, key=lambda r: r["t"])
     tmp = LEDGER + ".tmp"
     with open(tmp, "w", newline="", encoding="utf-8") as f:
