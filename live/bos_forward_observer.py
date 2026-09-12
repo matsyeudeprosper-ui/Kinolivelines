@@ -47,7 +47,19 @@ NARROW_PTS = 98.0
 N = 20
 P10, P5, P50 = -15.65, -22.51, 8.14
 BASE_LOT = 0.02
+# E009 forward-watch (informational): constant-risk sizing hypotheticals, frozen 2026-09-12
+CR_TARGET = 2.99
+CR_CAP = 0.05
+CR_COST = 12.0
 utc = dt.timezone.utc
+
+
+def cr_lot(dist, cost=0.0):
+    if not dist or dist <= 0:
+        return None
+    lot = int(CR_TARGET / (dist + cost) / 0.01 + 1e-9) * 0.01
+    return round(min(CR_CAP, max(0.01, lot)), 2)
+
 
 
 def say(msg):
@@ -148,6 +160,13 @@ def live_trades():
             r.update(close_time=dt.datetime.fromtimestamp(o.time, utc).isoformat(timespec="seconds"),
                      exit=round(o.price, 2), pnl=round(net, 2),
                      pnl_002=round(net / i.volume * BASE_LOT, 4) if kind != "ADD" else None)
+        if kind != "ADD" and dist:
+            r["lot_cr"] = cr_lot(dist)
+            r["lot_ca"] = cr_lot(dist, CR_COST)
+            if o is not None:
+                pts = (o.price - i.price) * (1 if direction == "BUY" else -1)
+                r["pnl_cr"] = round(pts * r["lot_cr"], 2)
+                r["pnl_ca"] = round(pts * r["lot_ca"], 2)
         rows.append(r)
     rows.sort(key=lambda r: r["t"])
     return rows
@@ -168,7 +187,10 @@ def twin_trades():
                          kind=x["kind"], dir="BUY" if x["d"] == 1 else "SELL", lot=BASE_LOT, entry=round(x["e"], 2),
                          sl=x["sl"], tp=x["tp"], stop_dist=round(dist, 2), narrow_stop=1 if dist <= NARROW_PTS else 0,
                          close_time=dt.datetime.fromtimestamp(x["t_close"], utc).isoformat(timespec="seconds"),
-                         exit=round(x["x"], 2), pnl=x["pnl"], pnl_002=x["pnl"], t=x["t_open"]))
+                         exit=round(x["x"], 2), pnl=x["pnl"], pnl_002=x["pnl"], t=x["t_open"],
+                         lot_cr=cr_lot(dist), lot_ca=cr_lot(dist, CR_COST),
+                         pnl_cr=round((x["x"] - x["e"]) * x["d"] * cr_lot(dist), 2),
+                         pnl_ca=round((x["x"] - x["e"]) * x["d"] * cr_lot(dist, CR_COST), 2)))
     p = st.get("pos")
     if p:
         to = dt.datetime.fromtimestamp(p["t"], utc)
@@ -182,7 +204,8 @@ def twin_trades():
 
 
 COLS = ["source", "era", "id", "open_time", "kind", "dir", "lot", "entry", "sl", "tp", "stop_dist", "narrow_stop",
-        "shadow_state_before", "rolling20_before", "close_time", "exit", "pnl", "pnl_002"]
+        "shadow_state_before", "rolling20_before", "close_time", "exit", "pnl", "pnl_002",
+        "lot_cr", "pnl_cr", "lot_ca", "pnl_ca"]
 
 
 def cycle(seed):
@@ -218,8 +241,12 @@ def cycle(seed):
                              net=round(sum(r["pnl"] for r in live if r["pnl"] != ""), 2),
                              net_002=round(sum(r["pnl_002"] for r in base_live if r["pnl_002"] is not None), 2),
                              narrow=sum(1 for r in base_live if r["narrow_stop"] == 1),
+                             net_cr=round(sum(r.get("pnl_cr", 0) or 0 for r in base_live), 2),
+                             net_ca=round(sum(r.get("pnl_ca", 0) or 0 for r in base_live), 2),
                              next_state=nxt_live[0], rolling20=nxt_live[1]),
                    twin=dict(trades=len(twin), net=round(sum(r["pnl"] for r in twin if r["pnl"] != ""), 2),
+                             net_cr=round(sum(r.get("pnl_cr", 0) or 0 for r in twin), 2),
+                             net_ca=round(sum(r.get("pnl_ca", 0) or 0 for r in twin), 2),
                              narrow=sum(1 for r in twin if r["narrow_stop"] == 1),
                              next_state=nxt_twin[0], rolling20=nxt_twin[1]))
     json.dump(summary, open(STATE, "w"), indent=1)
