@@ -409,27 +409,29 @@ function draw(){
   dot.style.top=(r.top+yc-5)+'px';
  }else{dot.style.display='none';}
  // --- previous H1 candle open/close (user 2026-09-13): two thin
- // grey hairlines drawn only across the current hour, dotted = open,
- // solid = close, tiny tag at the right edge ---
+ // blue hairlines across the chart, dotted = open, solid = close;
+ // labels stacked so they never overlap each other or the price ---
  if(D.h1&&D.h1.length>=5){
-  const hEnd=D.h1[0]+3600;
-  let x0=null;
-  for(const c of cs){if(c[0]>=hEnd){x0=xoft[c[0]];break;}}
-  if(x0===null&&cs.length)x0=xoft[cs[cs.length-1][0]]+cw;
-  if(x0!==null){
-   [[D.h1[1],'O',[2,4]],[D.h1[4],'C',[]]].forEach(([v,lb,dash])=>{
-    const y=px(v);
-    if(y<4||y>Hh-4)return;
-    ctx.save();
-    ctx.strokeStyle='rgba(176,196,214,.42)';ctx.lineWidth=1;
-    ctx.setLineDash(dash);
-    ctx.beginPath();ctx.moveTo(x0,y+0.5);ctx.lineTo(W-58,y+0.5);ctx.stroke();
-    ctx.restore();
-    ctx.font='9px system-ui';
-    ctx.fillStyle='rgba(176,196,214,.62)';
-    ctx.fillText('H1 '+lb+' '+v.toFixed(0),W-56,y+3);
-   });
-  }
+  const items=[[D.h1[1],'H1 O',[3,4]],[D.h1[4],'H1 C',[]]];
+  ctx.font='bold 9px system-ui';
+  const lw=Math.max(...items.map(it=>ctx.measureText(it[1]+' '+it[0].toFixed(0)).width))+10;
+  const ys=items.map(it=>px(it[0]));
+  let ly=ys.slice();
+  if(Math.abs(ly[0]-ly[1])<14){const m=(ly[0]+ly[1])/2;ly=ys[0]<=ys[1]?[m-7,m+7]:[m+7,m-7];}
+  items.forEach((it,k)=>{
+   const y=ys[k];
+   if(y<4||y>Hh-4)return;
+   ctx.save();
+   ctx.strokeStyle='rgba(126,166,255,.75)';ctx.lineWidth=1;
+   ctx.setLineDash(it[2]);
+   ctx.beginPath();ctx.moveTo(0,Math.round(y)+0.5);ctx.lineTo(W-lw-6,Math.round(y)+0.5);ctx.stroke();
+   ctx.restore();
+   const yl=Math.max(10,Math.min(Hh-10,ly[k]));
+   ctx.fillStyle='rgba(126,166,255,.22)';
+   ctx.beginPath();ctx.roundRect(W-lw-4,yl-7,lw,14,7);ctx.fill();
+   ctx.fillStyle='#bcd0ff';
+   ctx.fillText(it[1]+' '+it[0].toFixed(0),W-lw+1,yl+3.5);
+  });
  }
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
