@@ -264,6 +264,18 @@ def main():
             R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
                                         0, RAW_BARS)
             tick = mt5.symbol_info_tick(SYMBOL)
+            # user 2026-09-13: previous (closed) H1 candle's open/close
+            # for a discreet reference on the chart; [t, o, h, l, c]
+            h1 = None
+            try:
+                _H = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, 1)
+                if _H is not None and len(_H) == 1:
+                    _b = _H[0]
+                    h1 = [int(_b["time"]), round(float(_b["open"]), 2),
+                          round(float(_b["high"]), 2), round(float(_b["low"]), 2),
+                          round(float(_b["close"]), 2)]
+            except Exception:
+                h1 = None
             trades = []
             for p in (mt5.positions_get(symbol=SYMBOL) or []):
                 trades.append([
@@ -314,7 +326,7 @@ def main():
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
                      "marks": marks, "trend": trend, "choch": choch,
-                     "trades": trades,
+                     "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
         except Exception as e:
