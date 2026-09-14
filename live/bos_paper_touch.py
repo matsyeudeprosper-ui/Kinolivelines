@@ -58,9 +58,19 @@ def load_state():
 
 
 def save_state(st):
+    """2026-09-14: os.replace can hit WinError 5 when a scanner holds the
+    .tmp for a moment. Retry briefly; never let a write kill the loop -
+    the in-memory state is authoritative and the next save persists it."""
     tmp = STATE + ".tmp"
-    json.dump(st, open(tmp, "w", encoding="utf-8"))
-    os.replace(tmp, STATE)
+    for attempt in range(5):
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(st, f)
+            os.replace(tmp, STATE)
+            return
+        except PermissionError:
+            time.sleep(0.4 * (attempt + 1))
+    say("WARN state write failed 5x (kept in memory)")
 
 
 def main():

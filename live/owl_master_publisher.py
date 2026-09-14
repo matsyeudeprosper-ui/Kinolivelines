@@ -57,10 +57,19 @@ while True:
         if key != _last_payload or now - _last_write >= 5:
             data = dict(payload, t=now)
             tmp = OUT + ".tmp"
-            json.dump(data, open(tmp, "w"))
-            os.replace(tmp, OUT)
-            _last_payload = key
-            _last_write = now
+            # 2026-09-14: 690 WinError 5 on os.replace (a scanner holds
+            # the fresh .tmp for a moment). Close the handle explicitly
+            # and retry briefly instead of losing the cycle.
+            for attempt in range(5):
+                try:
+                    with open(tmp, "w") as f:
+                        json.dump(data, f)
+                    os.replace(tmp, OUT)
+                    _last_payload = key
+                    _last_write = now
+                    break
+                except PermissionError:
+                    time.sleep(0.2 * (attempt + 1))
     except Exception as e:
         say(f"error: {e}")
         time.sleep(5)
