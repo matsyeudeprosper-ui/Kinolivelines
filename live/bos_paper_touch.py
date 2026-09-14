@@ -164,6 +164,24 @@ def main():
             if bt == st.get("last_bar"):
                 continue
             st["last_bar"] = bt
+            # 2026-09-14: the 1-second tick sampler can miss a sub-second
+            # spike that the broker's server-side stop would catch (live
+            # stopped at 04:33, twin only at 05:24). Sweep the closed bar's
+            # extremes for an open position (bid bars; ask = bid + spread);
+            # stop before target when both sit inside the bar.
+            p = st.get("pos")
+            if p and p["t"] < bt + 60:
+                _sp = float(bar["spread"]) * 0.01 if "spread" in bar.dtype.names else 0.0
+                if p["d"] == 1:
+                    if float(bar["low"]) <= p["sl"]:
+                        close(p["sl"], "sl-bar")
+                    elif float(bar["high"]) >= p["tp"]:
+                        close(p["tp"], "tp-bar")
+                else:
+                    if float(bar["high"]) + _sp >= p["sl"]:
+                        close(p["sl"], "sl-bar")
+                    elif float(bar["low"]) + _sp <= p["tp"]:
+                        close(p["tp"], "tp-bar")
             _pt = eng.trend
             _hv, _lv = eng.hi_v, eng.lo_v
             sig = eng.step(bt, float(bar["open"]), float(bar["high"]),
