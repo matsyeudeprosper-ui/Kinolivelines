@@ -1770,7 +1770,7 @@ function render(d){
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
     (d.palier_def
-     ?'Objectif de la semaine : +$50'
+     ?'Objectif de la semaine : +$'+(d.palier_step||50).toFixed(0)
      :'Objectif : $'+d.palier.toFixed(0))+
     ' &middot; '+pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
@@ -2385,10 +2385,14 @@ def user_stats(u):
         try:
             if (not d.get("palier") and not d.get("palier_off")
                     and d.get("balance") is not None):
+                # 2026-09-14: the weekly step is per member
+                # ("week_goal" on the nest record, default +$50)
+                _step = float(u.get("week_goal") or 50.0)
                 _wb = float(d["balance"]) - float(d.get("week") or 0)
-                d["palier"] = round(_wb + 50.0, 2)
+                d["palier"] = round(_wb + _step, 2)
                 d["palier_base"] = round(_wb, 2)
                 d["palier_def"] = True
+                d["palier_step"] = _step
         except Exception:
             pass
         if (u.get("id") in ("kino", "std")
