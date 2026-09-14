@@ -91,6 +91,24 @@ elif VARIANT == "halfdebt":
     COMMENT = "KL-HALF"
     DEBT_MODE = "half"
     _SFX = "_half"
+elif VARIANT == "valere":
+    # 2026-09-14 (owner): Valere's real account runs its OWN instance of
+    # the frozen live config - identical rules, but its own debt ledger,
+    # its own war-chest and its own -$60 kill line, so his account never
+    # depends on Kino's. Credentials come from the nest record (that file
+    # is untracked); nothing here is shared with the live instance.
+    _vu = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == "u224016179"][0]
+    TERMINAL = _vu["terminal"]
+    LOGIN = int(_vu["mt5_login"])
+    SERVER = _vu["mt5_server"]
+    PASSWORD = _vu["mt5_password"]
+    MAGIC = 909401
+    COMMENT = "KL-BOS-V"
+    TOUCH_ENTRIES = False       # same candle-close rule as live
+    _SFX = "_valere"
 else:
     TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
     LOGIN = 223995441

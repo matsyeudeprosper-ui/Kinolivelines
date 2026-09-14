@@ -95,3 +95,10 @@ charting/*compile.log
 live/owl_fam_*
 live/owl_std_bot_gen.py
 live/backups/
+
+# Nest member records and one-time codes. owl_nest_users.json holds each
+# member's MT5 login AND password; never let these into history (see the
+# 2026-09-08 password leak). All three are machine-local state.
+live/owl_nest_users.json
+live/owl_activation_codes.json
+live/owl_invites.json

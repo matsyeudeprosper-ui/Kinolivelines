@@ -60,11 +60,25 @@ if (-not ($sb | Where-Object { $_.CommandLine -match "halfdebt" })) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "halfdebt" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2g) Valere's real account: its own instance of the frozen live config
+# (own debt ledger, own war-chest, own -$60 kill line). Owner 2026-09-14.
+if (-not (ProcRunning "structure_bos_bot.py valere")) {
+    Say "starting BOS bot (valere)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "valere" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2e) forward-observation ledger (narrow-stop flag + rolling-20 shadow state, informational)
 if (-not (Get-CimInstance Win32_Process |
         Where-Object { $_.CommandLine -like "*bos_forward_observer.py*" })) {
     Say "starting BOS forward observer"
     Start-Process pythonw -ArgumentList "bos_forward_observer.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+# 2f) E016 liquidation shadow observer (OKX websocket latency logger, NO ORDERS, informational)
+if (-not (Get-CimInstance Win32_Process |
+        Where-Object { $_.CommandLine -like "*liq_shadow.py*" })) {
+    Say "starting liquidation shadow observer"
+    Start-Process pythonw -ArgumentList "liq_shadow.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 # 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
@@ -129,7 +143,9 @@ try {
     $users = Get-Content "C:\Projects\KinoliveLines\live\owl_nest_users.json" -Raw |
         ConvertFrom-Json
     foreach ($u in $users) {
-        if ($u.trade -eq $true -and $u.id -ne "kino") {
+        # 2026-09-14: a member running his OWN bot instance must NOT
+        # also get a copier, or he would trade the same signal twice.
+        if ($u.trade -eq $true -and $u.id -ne "kino" -and -not $u.dedicated) {
             if (-not (ProcRunning ("owl_copier.py " + $u.id))) {
                 Say ("starting copier " + $u.id)
                 Start-Process pythonw -ArgumentList ("owl_copier.py " + $u.id) `
