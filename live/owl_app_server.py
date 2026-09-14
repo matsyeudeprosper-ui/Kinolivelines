@@ -2285,10 +2285,16 @@ def user_stats(u):
                 d["ledger"] = json.load(open(os.path.join(
                     DIR, f"owl_ledger{_sfx}.json")))
                 d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
-            elif u.get("id") == "bos":
-                # the Structure Bot keeps its own debt/bullet books
+            elif u.get("id") == "bos" or u.get("dedicated"):
+                # the Structure Bot keeps its own debt/bullet books.
+                # 2026-09-14: a member running his OWN instance (field
+                # "dedicated" = "structure_bos_bot.py <variant>") gets
+                # the same card, read from HIS state file.
+                _var = (u.get("dedicated") or "").split()
+                _var = _var[-1] if len(_var) > 1 else ""
+                _bsfx = f"_{_var}" if _var else ""
                 _bs = json.load(open(os.path.join(
-                    DIR, "bos_state.json")))
+                    DIR, f"bos_state{_bsfx}.json")))
                 d["ledger"] = {
                     "debt": float(_bs.get("debt") or 0.0),
                     "chest": float(_bs.get("chest") or 0.0),
