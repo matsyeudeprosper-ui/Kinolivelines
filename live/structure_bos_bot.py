@@ -70,6 +70,8 @@ DEBT_MODE = "hwm"        # hwm (peak) | half (0.5x per loss)
 SNIPER = False           # only the 2nd trade of each trend
 ADDS_ON = True
 TOUCH_ENTRIES = True     # continuation on level TOUCH (False = candle close)
+DAY_CAP = None           # daily realised-profit stop (None = uncapped)
+WEEK_TARGET = None       # informational only, printed at startup
 _SFX = ""
 if VARIANT == "sniper":
     TERMINAL = r"C:\NestTerminals\u476989735\terminal64.exe"
@@ -108,6 +110,12 @@ elif VARIANT == "valere":
     MAGIC = 909401
     COMMENT = "KL-BOS-V"
     TOUCH_ENTRIES = False       # same candle-close rule as live
+    # owner 2026-09-14: objective ~$20/week. Once the day is +$3
+    # REALISED, stop opening (a running position is left alone) and
+    # resume next UTC day. Waived while the account is in debt -
+    # catching up must not be throttled.
+    DAY_CAP = 3.0
+    WEEK_TARGET = 20.0
     _SFX = "_valere"
 else:
     TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
@@ -255,6 +263,29 @@ def load_state():
                 "open_lot": 0.0}
 
 
+def day_key():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def day_roll(st):
+    """Reset the daily counter when the UTC date changes."""
+    if st.get("day_key") != day_key():
+        st["day_key"] = day_key()
+        st["day_pnl"] = 0.0
+        st["day_capped"] = False
+    return st.get("day_pnl", 0.0)
+
+
+def day_blocked(st):
+    """True when today's realised profit reached the cap AND the
+    account owes nothing. Debt means catch-up: the cap is waived."""
+    if DAY_CAP is None:
+        return False
+    if st.get("debt", 0.0) > 0.5:
+        return False
+    return day_roll(st) >= DAY_CAP
+
+
 def save_state(st):
     json.dump(st, open(STATE_F, "w"))
 
@@ -325,6 +356,8 @@ def book_closes(st, t_from):
         pnl = d.profit + d.swap + d.commission
         lot = float(d.volume)
         st["banked"] = round(st.get("banked", 0.0) + pnl, 2)
+        day_roll(st)
+        st["day_pnl"] = round(st.get("day_pnl", 0.0) + pnl, 2)
         # HIGH-WATER-MARK ledger (user 2026-09-09, measured: same
         # net as the per-loss ledger, maxDD 72 vs 80): the debt IS
         # the drawdown from the equity peak; fighters hunt until
@@ -374,7 +407,9 @@ def main():
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
     mt5.symbol_select(SYMBOL, True)
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
-        f"base {BASE_LOT} RR {RR} kill {KILL_NET}")
+        f"base {BASE_LOT} RR {RR} kill {KILL_NET}"
+        + (f" | day cap +${DAY_CAP:.2f} (waived while in debt), "
+           f"target ${WEEK_TARGET:.0f}/week" if DAY_CAP else ""))
     ensure_algo()
 
     eng = Struct()
@@ -402,6 +437,14 @@ def main():
         if my_positions():
             return False
         if paused():
+            return False
+        if day_blocked(st):
+            if not st.get("day_capped"):
+                st["day_capped"] = True
+                save_state(st)
+                say(f"DAY CAP: +{st.get('day_pnl', 0.0):.2f} today "
+                    f"(>= ${DAY_CAP:.2f}), no debt - no new entry until "
+                    f"the next UTC day")
             return False
         ai2 = mt5.account_info()
         if ai2 is None or ai2.balance < MIN_BALANCE:
