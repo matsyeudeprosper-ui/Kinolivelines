@@ -531,8 +531,8 @@ function draw(){
    });
   // the entry tag: glued to the market, or its own dashed line when the
   // order is pending - no extra permanent line either way
-  if(mc&&mc.d!==0&&MS&&MS.px){
-   const pend=!!MT.entry,ye=px(pend?MT.entry:MS.px);
+  if(mc&&mc.d!==0&&MS&&MS.px&&MT.entry){
+   const pend=true,ye=px(MT.entry);
    if(ye>2&&ye<TOPP+PLOT-2){
     const ec=mc.d===1?'#2ecc71':'#ff5c5c';
     const on=(MTdrag==='entry');
@@ -675,10 +675,11 @@ function mtRender(){
  i.innerHTML=(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b> &middot; ':'')+
   (pnd?'<b style="color:#e8c55a">'+pnd.kind+' '+pnd.lot.toFixed(2)+
    ' @ '+pnd.e.toFixed(0)+' en cours</b> &middot; ':'')+
-  'R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
-  c.rr.toFixed(2)+'</b>'+
-  (c.bul>0?' &middot; <span style="color:#8df0bb">+'+c.bul+' balle'+
+  'lot <b style="color:#cfe3f5;font-size:.95rem">'+c.lot.toFixed(2)+'</b>'+
+  (c.bul>0?' <span style="color:#8df0bb">+'+c.bul+' balle'+
    (c.bul>1?'s':'')+'</span>':'')+
+  ' &middot; R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
+  c.rr.toFixed(2)+'</b>'+
   ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
   (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
