@@ -65,6 +65,14 @@ KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
 S_MIN_DIST = 10.0        # dot inside the spread zone = no trade
+# 2026-09-15 (owner, after a 1478-pt stop risked $31 on a $29 cushion):
+# two guards against a single freak trade. MEASURED on R0 + 5 eras: the
+# blocked trades are NOT reliably losers (their P&L flips sign era to
+# era), so this is risk control, not a profit filter.
+MAX_DIST_MULT = 5.0      # stop wider than 5x the trailing median = skip
+DIST_WINDOW = 50         # how many recent stops define "normal"
+DIST_MIN_SAMPLE = 10     # below this the multiple is not meaningful yet
+MAX_RISK_FRAC = 0.25     # never risk more than 1/4 of the room left to kill
 AWAKE_WIN = 7200         # awake gate: >=1 flip within this window
 DEBT_MODE = "hwm"        # hwm (peak) | half (0.5x per loss)
 SNIPER = False           # only the 2nd trade of each trend
@@ -458,6 +466,14 @@ def main():
             say(f"{kind} skipped: dot {dist:.0f}pts inside the "
                 f"spread zone")
             return False
+        # --- guard 1: is this stop normal for recent conditions?
+        ds = st.get("dists") or []
+        if len(ds) >= DIST_MIN_SAMPLE:
+            med = sorted(ds)[len(ds) // 2]
+            if med > 0 and dist > MAX_DIST_MULT * med:
+                say(f"{kind} SKIPPED: stop {dist:.0f}pts = "
+                    f"{dist / med:.1f}x the usual {med:.0f}pts")
+                return False
         lot = BASE_LOT
         if st["debt"] > 0.5:
             risk001 = dist * 0.01
@@ -468,6 +484,13 @@ def main():
                 say(f"FIGHTER: {extra} bullet(s) ride along -> "
                     f"lot {lot:.2f} (chest ${st['chest']:.2f} "
                     f"covers {extra} x ${risk001:.2f})")
+        # --- guard 2: one trade must never be able to end the run
+        room = st.get("banked", 0.0) - KILL_NET
+        risk = dist * lot
+        if room > 0 and risk > MAX_RISK_FRAC * room:
+            say(f"{kind} SKIPPED: risk ${risk:.2f} > "
+                f"{MAX_RISK_FRAC:.0%} of the ${room:.2f} left before kill")
+            return False
         tp = e_ref + d * RR * dist
         req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
                "volume": lot,
@@ -488,6 +511,8 @@ def main():
             f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
             f"(risk ${dist * lot:.2f}, "
             f"trend {'up' if d == 1 else 'down'})")
+        st.setdefault("dists", []).append(round(dist, 1))
+        del st["dists"][:-DIST_WINDOW]
         # arm the 50%-pullback add (user 2026-09-09, measured:
         # +343/+422 vs +263 without; chest-funded bullets only)
         if ADDS_ON:
