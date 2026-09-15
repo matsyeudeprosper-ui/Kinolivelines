@@ -92,6 +92,8 @@ const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
 let viewOff=0,cwG=7;
 let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null;  // assisted manual trading
+const mtbar=document.getElementById('mtbar');
+const mtopen=document.getElementById('mtopen');
 let drag=null;
 cv.addEventListener('pointerdown',e=>{
  if(MTdrag)return;                 // a SL/TP line has the pointer
@@ -198,8 +200,11 @@ function draw(){
   }
  }
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
- const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
- SCALE={hi:hi,lo:lo,Hh:Hh,W:W};
+ // the trade panel is an opaque overlay: keep the plot above it
+ const TOPP=8,BOTP=MT?((mtbar.offsetHeight||140)+12):26;
+ const PLOT=Math.max(60,Hh-TOPP-BOTP);
+ const px=v=>(hi-v)/(hi-lo)*PLOT+TOPP;
+ SCALE={hi:hi,lo:lo,Hh:Hh,W:W,top:TOPP,bot:BOTP,plot:PLOT};
  const cw=W/(N+9);
  cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
@@ -478,8 +483,8 @@ function draw(){
    ctx.fillText(v.toFixed(0),60,y+4);
    ctx.fillStyle=col;
    ctx.beginPath();ctx.arc(W-16,y,on?12:10,0,6.3);ctx.fill();
-   if(on&&MTy!==null&&(MTy>Hh-80||MTy<80)){
-    const up=MTy<80,ay=up?26:Hh-26;
+   if(on&&MTy!==null&&(MTy>TOPP+PLOT-80||MTy<80)){
+    const up=MTy<80,ay=up?TOPP+22:TOPP+PLOT-22;
     ctx.save();ctx.globalAlpha=.85;ctx.fillStyle=col;
     ctx.beginPath();
     ctx.moveTo(W/2,ay+(up?-11:11));
@@ -555,12 +560,10 @@ load();setInterval(load,1500);
 requestAnimationFrame(frame);
 
 /* ---- assisted manual trading: drag SL / TP on the chart (2026-09-15) ---- */
-const mtbar=document.getElementById('mtbar');
-const mtopen=document.getElementById('mtopen');
 function y2p(y){if(!SCALE)return null;
- return SCALE.hi-(y-8)/(SCALE.Hh-26)*(SCALE.hi-SCALE.lo);}
+ return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
 function p2y(v){if(!SCALE)return null;
- return (SCALE.hi-v)/(SCALE.hi-SCALE.lo)*(SCALE.Hh-26)+8;}
+ return (SCALE.hi-v)/(SCALE.hi-SCALE.lo)*SCALE.plot+SCALE.top;}
 function mtLot(dist){
  if(!MS)return{lot:0.02,bul:0};
  const base=MS.base_lot||0.02;
@@ -644,7 +647,8 @@ cv.addEventListener('pointermove',e=>{
  if(!MT||!MTdrag)return;
  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
  MTy=y;
- const inEdge=SCALE&&(y>SCALE.Hh-MTEDGE||y<MTEDGE);
+ const plotBot=SCALE?SCALE.top+SCALE.plot:0;
+ const inEdge=SCALE&&(y>plotBot-MTEDGE||y<MTEDGE);
  if(!inEdge){const v=y2p(y);
   if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}}
  e.preventDefault();
@@ -653,7 +657,8 @@ cv.addEventListener('pointermove',e=>{
 function mtEdgePush(){
  if(!MT||!MTdrag||MTy===null||!SCALE)return;
  let dir=0,depth=0;
- if(MTy>SCALE.Hh-MTEDGE){dir=-1;depth=(MTy-(SCALE.Hh-MTEDGE))/MTEDGE;}
+ const pb=SCALE.top+SCALE.plot;
+ if(MTy>pb-MTEDGE){dir=-1;depth=(MTy-(pb-MTEDGE))/MTEDGE;}
  else if(MTy<MTEDGE){dir=1;depth=(MTEDGE-MTy)/MTEDGE;}
  if(!dir)return;
  const step=(SCALE.hi-SCALE.lo)*0.012*Math.min(1,Math.max(0.15,depth));
