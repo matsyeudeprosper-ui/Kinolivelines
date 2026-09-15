@@ -96,7 +96,7 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
-let viewOff=0,cwG=7;
+let viewOff=0,cwG=7,vzoom=1,vz=null;   // vz = axis-drag in progress
 let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null;  // assisted manual trading
 const mtbar=document.getElementById('mtbar');
 const mtopen=document.getElementById('mtopen');
@@ -206,6 +206,8 @@ function draw(){
   }
  }
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
+ if(vzoom!==1){const mid=(hi+lo)/2,half=(hi-lo)/2*vzoom;
+  hi=mid+half;lo=mid-half;}
  // the trade panel is an opaque overlay: keep the plot above it
  const TOPP=8,BOTP=MT?((mtbar.offsetHeight||140)+12):26;
  const PLOT=Math.max(60,Hh-TOPP-BOTP);
@@ -214,6 +216,14 @@ function draw(){
  const cw=W/(N+9);
  cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
+ if(vzoom!==1||vz){
+  ctx.save();ctx.globalAlpha=vz?.5:.28;ctx.fillStyle='#7fb3e0';
+  ctx.fillRect(W-2,TOPP,2,PLOT);
+  ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
+  ctx.fillStyle='#7fb3e0';
+  const z='x'+(1/vzoom).toFixed(1);
+  ctx.fillText(z,W-ctx.measureText(z).width-6,TOPP+PLOT-6);
+  ctx.restore();}
  // --- price ticks, right edge only ---
  ctx.font='10px system-ui';
  for(let g2=0;g2<5;g2++){
@@ -556,6 +566,33 @@ function draw(){
     ctx.fillStyle='#0b1118';
     ctx.fillText(et,W/2-ew/2+9,ye+4);}}
  }
+ // where the next BOS would fire, and where the trend would break.
+ // Deliberately small: a stub over the recent candles plus an edge tag,
+ // so it never competes with the SL/TP lines.
+ if(D.next_bos){
+  const yb=px(D.next_bos),up=D.trend===1;
+  if(yb>TOPP+6&&yb<TOPP+PLOT-6){
+   const col=up?'#4fd8c8':'#ff9678';
+   const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;
+   ctx.save();
+   ctx.strokeStyle=col;ctx.globalAlpha=near?.95:.5;
+   ctx.lineWidth=near?2:1;ctx.setLineDash([1,4]);
+   ctx.beginPath();ctx.moveTo(W*0.55,yb);ctx.lineTo(W-64,yb);ctx.stroke();
+   ctx.setLineDash([]);
+   // a caret pointing the way price must go to trigger it
+   ctx.beginPath();
+   ctx.moveTo(W-58,yb);ctx.lineTo(W-66,yb+(up?5:-5));
+   ctx.lineTo(W-66,yb+(up?-5:5));ctx.closePath();ctx.fill();
+   ctx.globalAlpha=1;
+   ctx.font='bold 9px system-ui';
+   const lbl='BOS '+D.next_bos.toFixed(0);
+   const lw=ctx.measureText(lbl).width+10;
+   ctx.fillStyle=near?col:'rgba(8,14,22,.8)';
+   ctx.beginPath();ctx.roundRect(W-lw-4,yb-8,lw,16,8);ctx.fill();
+   if(!near){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();}
+   ctx.fillStyle=near?'#0b1118':col;
+   ctx.fillText(lbl,W-lw+1,yb+3.5);
+   ctx.restore();}}
  if(!MT&&MS&&MS.pending&&MS.pending.length){
   const p=MS.pending[0],ye=px(p.e);
   if(ye>2&&ye<TOPP+PLOT-2){
@@ -762,9 +799,20 @@ document.getElementById('mtgo').onclick=async()=>{
  }catch(e){g.textContent='Confirmer';g.disabled=false;alert('reseau');}
 };
 const MTGRAB=38;                 // finger-sized catch zone
+const AXIS=64;                   // right strip = vertical zoom
 cv.addEventListener('pointerdown',e=>{
+ const r0=cv.getBoundingClientRect();
+ const x0=e.clientX-r0.left,y0=e.clientY-r0.top;
+ // a line handle wins over the axis; otherwise the axis zooms
+ const nearLine=MT&&SCALE&&Math.min(
+   Math.abs(y0-p2y(MT.sl)),Math.abs(y0-p2y(MT.tp)),
+   MT.entry?Math.abs(y0-p2y(MT.entry)):1e9)<=MTGRAB;
+ if(!nearLine&&x0>cv.clientWidth-AXIS){
+  vz={y:y0,z:vzoom,t:performance.now()};
+  drag=null;cv.setPointerCapture(e.pointerId);
+  e.preventDefault();e.stopImmediatePropagation();return;}
  if(!MT)return;
- const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
+ const r=r0,y=y0;
  const ys=p2y(MT.sl),yt=p2y(MT.tp);
  if(ys===null||yt===null)return;
  const cand=[['sl',Math.abs(y-ys)],['tp',Math.abs(y-yt)]];
@@ -781,6 +829,10 @@ cv.addEventListener('pointerdown',e=>{
 const MTEDGE=64;                // hold here and the line keeps going
 let MTlast=0;                   // timestamp of the last push tick
 cv.addEventListener('pointermove',e=>{
+ if(vz){
+  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
+  vzoom=Math.max(0.25,Math.min(8,vz.z*Math.exp((y-vz.y)/240)));
+  e.preventDefault();e.stopImmediatePropagation();return;}
  if(!MT||!MTdrag)return;
  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
  MTy=y;
@@ -808,6 +860,11 @@ function mtEdgePush(){
  mtRender();
 }
 const mtRelease=e=>{
+ if(vz){
+  // a quick tap on the axis with no travel resets the scale
+  if(performance.now()-vz.t<280&&Math.abs(vzoom/vz.z-1)<0.04)vzoom=1;
+  vz=null;try{cv.releasePointerCapture(e.pointerId);}catch(x){}
+  e.stopImmediatePropagation();return;}
  if(!MTdrag)return;
  MTdrag=null;drag=null;MTy=null;
  try{cv.releasePointerCapture(e.pointerId);}catch(x){}

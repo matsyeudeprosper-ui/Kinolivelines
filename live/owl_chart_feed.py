@@ -198,7 +198,13 @@ def engine(kept):
                 hi_i = kept.index(m)
                 hi_v = m[2]
             lo_i, lo_v = i, l
-    return dots, marks, trend, choch
+    # 2026-09-15: the two levels that decide what happens next -
+    # hi_v/lo_v is the price a close must beat for the NEXT BOS,
+    # prot_* is where the trend would break instead (CHoCH).
+    nxt = hi_v if trend == 1 else (lo_v if trend == -1 else None)
+    inv = (prot_lo[1] if (trend == 1 and prot_lo) else
+           (prot_hi[1] if (trend == -1 and prot_hi) else None))
+    return dots, marks, trend, choch, nxt, inv
 
 
 def trend_filter(cands):
@@ -311,7 +317,7 @@ def main():
                         1 if lv["close"] >= lv["open"] else -1]
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
-                dots, marks, trend, choch = engine(kept)
+                dots, marks, trend, choch, nxt, inv = engine(kept)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only
@@ -326,6 +332,8 @@ def main():
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
                      "marks": marks, "trend": trend, "choch": choch,
+                     "next_bos": round(nxt, 2) if nxt else None,
+                     "invalid": round(inv, 2) if inv else None,
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
