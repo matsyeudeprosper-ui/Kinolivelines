@@ -91,7 +91,7 @@ const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
 let viewOff=0,cwG=7;
-let MT=null,MS=null,MTdrag=null,MSerr=null;   // assisted manual trading
+let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null;  // assisted manual trading
 let drag=null;
 cv.addEventListener('pointerdown',e=>{
  if(MTdrag)return;                 // a SL/TP line has the pointer
@@ -189,6 +189,7 @@ function draw(){
  if(LT&&atLive){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  (D.trades||[]).forEach(t=>{[t[2],t[3],t[4]].forEach(v=>{
   if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
+ if(MT){hi=Math.max(hi,MT.sl,MT.tp);lo=Math.min(lo,MT.sl,MT.tp);}
  if(D.trend===1||D.trend===-1){
   const tds0=(D.dots||[]).filter(x=>x[2]===(D.trend===1?1:-1));
   if(tds0.length){
@@ -477,6 +478,17 @@ function draw(){
    ctx.fillText(v.toFixed(0),60,y+4);
    ctx.fillStyle=col;
    ctx.beginPath();ctx.arc(W-16,y,on?12:10,0,6.3);ctx.fill();
+   if(on&&MTy!==null&&(MTy>Hh-80||MTy<80)){
+    const up=MTy<80,ay=up?26:Hh-26;
+    ctx.save();ctx.globalAlpha=.85;ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.moveTo(W/2,ay+(up?-11:11));
+    ctx.lineTo(W/2-11,ay+(up?6:-6));
+    ctx.lineTo(W/2+11,ay+(up?6:-6));
+    ctx.closePath();ctx.fill();
+    ctx.font='bold 10px system-ui';ctx.fillText(
+     up?'le prix monte':'le prix descend',W/2-38,ay+(up?26:-18));
+    ctx.restore();}
    ctx.strokeStyle='#0b1118';ctx.lineWidth=2;ctx.beginPath();
    ctx.moveTo(W-22,y-3);ctx.lineTo(W-10,y-3);ctx.moveTo(W-22,y+3);
    ctx.lineTo(W-10,y+3);ctx.stroke();});}
@@ -538,7 +550,7 @@ async function load(){
   if(r.ok){D=await r.json();digest(D);ui();}
  }catch(e){}
 }
-function frame(){draw();requestAnimationFrame(frame);}
+function frame(){mtEdgePush();draw();requestAnimationFrame(frame);}
 load();setInterval(load,1500);
 requestAnimationFrame(frame);
 
@@ -627,16 +639,30 @@ cv.addEventListener('pointerdown',e=>{
  e.stopImmediatePropagation();   // the pan listener must not see this
  mtRender();
 },true);
+const MTEDGE=80;                // hold here and the line keeps going
 cv.addEventListener('pointermove',e=>{
  if(!MT||!MTdrag)return;
- const r=cv.getBoundingClientRect(),v=y2p(e.clientY-r.top);
- if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}
+ const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
+ MTy=y;
+ const inEdge=SCALE&&(y>SCALE.Hh-MTEDGE||y<MTEDGE);
+ if(!inEdge){const v=y2p(y);
+  if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}}
  e.preventDefault();
  e.stopImmediatePropagation();
 },true);
+function mtEdgePush(){
+ if(!MT||!MTdrag||MTy===null||!SCALE)return;
+ let dir=0,depth=0;
+ if(MTy>SCALE.Hh-MTEDGE){dir=-1;depth=(MTy-(SCALE.Hh-MTEDGE))/MTEDGE;}
+ else if(MTy<MTEDGE){dir=1;depth=(MTEDGE-MTy)/MTEDGE;}
+ if(!dir)return;
+ const step=(SCALE.hi-SCALE.lo)*0.012*Math.min(1,Math.max(0.15,depth));
+ MT[MTdrag]=Math.round((MT[MTdrag]+dir*step)*100)/100;
+ mtRender();
+}
 const mtRelease=e=>{
  if(!MTdrag)return;
- MTdrag=null;drag=null;
+ MTdrag=null;drag=null;MTy=null;
  try{cv.releasePointerCapture(e.pointerId);}catch(x){}
  e.stopImmediatePropagation();
 };
