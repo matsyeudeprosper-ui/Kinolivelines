@@ -94,11 +94,74 @@ def open_positions():
     return [p for p in (mt5.positions_get(symbol=SYMBOL) or [])]
 
 
+def pending_orders():
+    return [o for o in (mt5.orders_get(symbol=SYMBOL) or []) if o.magic == MAGIC]
+
+
+PEND = {(1, True): mt5.ORDER_TYPE_BUY_STOP, (1, False): mt5.ORDER_TYPE_BUY_LIMIT,
+        (-1, True): mt5.ORDER_TYPE_SELL_STOP, (-1, False): mt5.ORDER_TYPE_SELL_LIMIT}
+PEND_NAME = {(1, True): "BUY STOP", (1, False): "BUY LIMIT",
+             (-1, True): "SELL STOP", (-1, False): "SELL LIMIT"}
+
+
+def place_pending(d, entry, sl, tp, tick, led):
+    """A pending order: the type follows from where the entry sits relative
+    to the market, exactly as the chart shows it."""
+    mkt = tick.ask if d == 1 else tick.bid
+    if d == 1 and not (sl < entry < tp):
+        return False, "achat: il faut SL < entree < TP"
+    if d == -1 and not (tp < entry < sl):
+        return False, "vente: il faut TP < entree < SL"
+    dist = abs(entry - sl)
+    if dist <= B.S_MIN_DIST:
+        return False, f"stop trop proche ({dist:.0f} pts)"
+    stop_side = (entry > mkt) if d == 1 else (entry < mkt)
+    info = mt5.symbol_info(SYMBOL)
+    gap = (info.trade_stops_level * info.point) if info else 0.0
+    if abs(entry - mkt) <= max(gap, B.S_MIN_DIST):
+        return False, f"entree trop pres du marche ({abs(entry-mkt):.0f} pts)"
+    if pending_orders():
+        cancel_pending()                 # one pending at a time
+    lot, bullets = lot_for(dist, led)
+    otype = PEND[(d, stop_side)]
+    name = PEND_NAME[(d, stop_side)]
+    r = mt5.order_send({
+        "action": mt5.TRADE_ACTION_PENDING, "symbol": SYMBOL, "volume": lot,
+        "type": otype, "price": round(entry, 2), "sl": round(sl, 2),
+        "tp": round(tp, 2), "deviation": 200, "magic": MAGIC,
+        "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
+    risk = dist * lot
+    say(f"{name} {lot} @ {entry:.2f} SL {sl:.2f} TP {tp:.2f} "
+        f"(risque ${risk:.2f}, {bullets} balle(s))")
+    push(f"{name} programme", f"{lot} lot a {entry:.0f}, risque ${risk:.2f}")
+    return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
+                      risk=round(risk, 2), bullets=bullets)
+
+
+def cancel_pending(ticket=None):
+    n = 0
+    for o in pending_orders():
+        if ticket and o.ticket != ticket:
+            continue
+        r = mt5.order_send({"action": mt5.TRADE_ACTION_REMOVE, "order": o.ticket})
+        if r is not None and r.retcode == mt5.TRADE_RETCODE_DONE:
+            n += 1
+            say(f"ordre en attente {o.ticket} annule")
+    return n
+
+
 def execute(req, led):
     """Validate and place the order the chart asked for."""
+    if req.get("cancel"):
+        n = cancel_pending(int(req["cancel"]) if req["cancel"] != 1 else None)
+        return (n > 0), (f"{n} ordre(s) annule(s)" if n else "rien a annuler")
     d = int(req.get("d", 0))
     sl = float(req.get("sl", 0))
     tp = float(req.get("tp", 0))
+    entry = float(req.get("entry", 0) or 0)
     if d not in (1, -1) or sl <= 0 or tp <= 0:
         return False, "requete invalide"
     if time.time() - float(req.get("ts", 0)) > REQ_MAX_AGE:
@@ -108,6 +171,8 @@ def execute(req, led):
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return False, "pas de cotation"
+    if entry > 0:
+        return place_pending(d, entry, sl, tp, tick, led)
     px = tick.ask if d == 1 else tick.bid
     if d == 1 and not (sl < px < tp):
         return False, f"achat: il faut SL < {px:.2f} < TP"
@@ -216,6 +281,12 @@ def main():
                     "open": [{"lot": p.volume, "d": 1 if p.type == 0 else -1,
                               "e": p.price_open, "sl": p.sl, "tp": p.tp,
                               "pl": round(p.profit, 2)} for p in pos],
+                    "pending": [{"ticket": o.ticket, "lot": o.volume_current,
+                                 "e": o.price_open, "sl": o.sl, "tp": o.tp,
+                                 "kind": PEND_NAME.get(
+                                     (1 if o.type in (2, 4) else -1,
+                                      o.type in (4, 5)), "EN ATTENTE")}
+                                for o in pending_orders()],
                     "updated": int(time.time()),
                 }, open(STATE, "w"))
         except Exception as e:

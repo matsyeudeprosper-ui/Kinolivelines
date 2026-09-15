@@ -3286,7 +3286,15 @@ class H(BaseHTTPRequestHandler):
                 req = {"d": int(q.get("d", ["0"])[0]),
                        "sl": float(q.get("sl", ["0"])[0]),
                        "tp": float(q.get("tp", ["0"])[0]),
+                       "entry": float(q.get("entry", ["0"])[0] or 0),
+                       "cancel": q.get("cancel", [""])[0],
                        "ts": time.time(), "by": u.get("id")}
+                if req["cancel"]:
+                    req["cancel"] = int(req["cancel"])
+                    with open(os.path.join(DIR, "manual_order.json"), "w") as f:
+                        json.dump(req, f)
+                    self._send(json.dumps({"ok": True}), "application/json")
+                    return
                 if req["d"] not in (1, -1) or req["sl"] <= 0 or req["tp"] <= 0:
                     self._send(json.dumps({"ok": False, "err": "champs invalides"}),
                                "application/json")

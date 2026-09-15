@@ -71,6 +71,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  <div id="mtinfo" style="display:flex;gap:8px;flex-wrap:wrap;
   font-size:.72rem;color:#9fb6cc;margin-bottom:6px;line-height:1.5"></div>
  <div style="display:flex;gap:8px">
+  <button id="mtpend" style="flex:1;padding:11px;border-radius:12px;
+   border:1px solid #33475c;background:#16202c;color:#e8c55a;
+   font-weight:700;font-size:.82rem">&#9202; En attente</button>
   <button id="mtflip" style="flex:1;padding:11px;border-radius:12px;
    border:1px solid #33475c;background:#16202c;color:#cfe3f5;
    font-weight:700;font-size:.82rem">&#8645; Inverser</button>
@@ -526,20 +529,46 @@ function draw(){
      'relache pour t’arreter',W/2-62,ay+(up?26:-18));
     ctx.restore();}
    });
-  // the entry tag rides the live price with the direction and the lot
+  // the entry tag: glued to the market, or its own dashed line when the
+  // order is pending - no extra permanent line either way
   if(mc&&mc.d!==0&&MS&&MS.px){
-   const ye=px(MS.px);
+   const pend=!!MT.entry,ye=px(pend?MT.entry:MS.px);
    if(ye>2&&ye<TOPP+PLOT-2){
     const ec=mc.d===1?'#2ecc71':'#ff5c5c';
-    const et=(mc.d===1?'ACHAT ':'VENTE ')+mc.lot.toFixed(2)+
-     (mc.bul>0?' +'+mc.bul:'');
+    const on=(MTdrag==='entry');
+    if(pend){
+     ctx.save();
+     ctx.globalAlpha=on?.14:.06;ctx.fillStyle='#e8c55a';
+     ctx.fillRect(0,ye-19,W,38);ctx.globalAlpha=1;
+     ctx.strokeStyle='#e8c55a';ctx.lineWidth=on?3:1.5;
+     ctx.setLineDash([2,5]);
+     ctx.beginPath();ctx.moveTo(0,ye);ctx.lineTo(W,ye);ctx.stroke();
+     ctx.restore();
+     ctx.fillStyle='#e8c55a';
+     ctx.beginPath();ctx.arc(W-16,ye,on?12:9,0,6.3);ctx.fill();}
+    const et=(pend?mc.kind:(mc.d===1?'ACHAT':'VENTE'))+' '+
+     mc.lot.toFixed(2)+(mc.bul>0?' +'+mc.bul:'')+
+     (pend?'  '+MT.entry.toFixed(0):'');
     ctx.font='bold 11px system-ui';
     const ew=ctx.measureText(et).width+18;
-    ctx.fillStyle=ec;ctx.beginPath();
+    ctx.fillStyle=pend?'#e8c55a':ec;ctx.beginPath();
     ctx.roundRect(W/2-ew/2,ye-12,ew,24,12);ctx.fill();
     ctx.fillStyle='#0b1118';
     ctx.fillText(et,W/2-ew/2+9,ye+4);}}
  }
+ if(!MT&&MS&&MS.pending&&MS.pending.length){
+  const p=MS.pending[0],ye=px(p.e);
+  if(ye>2&&ye<TOPP+PLOT-2){
+   ctx.save();ctx.strokeStyle='#e8c55a';ctx.lineWidth=1.5;
+   ctx.setLineDash([2,5]);
+   ctx.beginPath();ctx.moveTo(0,ye);ctx.lineTo(W,ye);ctx.stroke();
+   ctx.restore();
+   const t=p.kind+' '+p.lot.toFixed(2)+'  '+p.e.toFixed(0);
+   ctx.font='bold 11px system-ui';
+   const w2=ctx.measureText(t).width+18;
+   ctx.fillStyle='#e8c55a';ctx.beginPath();
+   ctx.roundRect(W/2-w2/2,ye-12,w2,24,12);ctx.fill();
+   ctx.fillStyle='#0b1118';ctx.fillText(t,W/2-w2/2+9,ye+4);}}
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
@@ -617,15 +646,22 @@ function mtLot(dist){
 }
 function mtCalc(){
  if(!MT||!MS||!MS.px)return null;
- const px=MS.px,sl=MT.sl,tp=MT.tp;
+ const mkt=MS.px,ref=MT.entry||mkt,sl=MT.sl,tp=MT.tp;
  let d=0;
- if(tp>px&&sl<px)d=1; else if(tp<px&&sl>px)d=-1;
- const dist=Math.abs(px-sl),rew=Math.abs(tp-px);
+ if(tp>ref&&sl<ref)d=1; else if(tp<ref&&sl>ref)d=-1;
+ const dist=Math.abs(ref-sl),rew=Math.abs(tp-ref);
  const L=mtLot(dist);
- return{d:d,px:px,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
-  risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,
-  bad:(d===0?'glisse le SL et le TP de part et d’autre du prix'
-      :(dist<=(MS.s_min_dist||10)?'stop trop proche':''))};
+ let kind='MARCHE',bad='';
+ if(MT.entry){
+  const stopSide=(d===1)?(ref>mkt):(ref<mkt);
+  kind=(d===1?'BUY ':'SELL ')+(stopSide?'STOP':'LIMIT');
+  if(Math.abs(ref-mkt)<=(MS.s_min_dist||10))
+   bad='entree trop pres du marche';
+ }
+ if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
+      :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
+ return{d:d,px:ref,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
+  risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,kind:kind,bad:bad};
 }
 function mtRender(){
  const c=mtCalc();const i=document.getElementById('mtinfo');
@@ -635,7 +671,11 @@ function mtRender(){
   :'<b style="color:#e8c55a">?</b>');
  const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
  const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
- i.innerHTML='R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
+ const pnd=(MS.pending&&MS.pending.length)?MS.pending[0]:null;
+ i.innerHTML=(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b> &middot; ':'')+
+  (pnd?'<b style="color:#e8c55a">'+pnd.kind+' '+pnd.lot.toFixed(2)+
+   ' @ '+pnd.e.toFixed(0)+' en cours</b> &middot; ':'')+
+  'R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
   c.rr.toFixed(2)+'</b>'+
   (c.bul>0?' &middot; <span style="color:#8df0bb">+'+c.bul+' balle'+
    (c.bul>1?'s':'')+'</span>':'')+
@@ -647,20 +687,42 @@ function mtRender(){
  document.getElementById('mtgo').disabled=!!c.bad;
  document.getElementById('mtgo').style.opacity=c.bad?.45:1;
 }
-mtopen.onclick=()=>{
+mtopen.onclick=async()=>{
  if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}
  if(MS.open&&MS.open.length){alert('Une position est deja ouverte.');return;}
+ if(MS.pending&&MS.pending.length){
+  const p=MS.pending[0];
+  if(confirm('Ordre '+p.kind+' '+p.lot.toFixed(2)+' a '+p.e.toFixed(0)+
+             ' deja programme. OK = l’annuler, Annuler = le garder.')){
+   await fetch('/'+tok+'/manual_order',{method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'cancel=1'});}
+  return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  // open in the direction of the structure: bearish -> sell, bullish -> buy
  const d=(MS.trend===-1)?-1:1;
- MT=(d===1)?{sl:Math.round(px-a),tp:Math.round(px+a*0.8)}
-           :{sl:Math.round(px+a),tp:Math.round(px-a*0.8)};
+ MT=(d===1)?{sl:Math.round(px-a),tp:Math.round(px+a*0.8),entry:null}
+           :{sl:Math.round(px+a),tp:Math.round(px-a*0.8),entry:null};
+ const pb=document.getElementById('mtpend');
+ pb.textContent='⏲ En attente';pb.style.color='#e8c55a';
  mtbar.style.display='block';mtopen.style.display='none';mtRender();
+};
+document.getElementById('mtpend').onclick=()=>{
+ if(!MT||!MS||!MS.px)return;
+ const b=document.getElementById('mtpend');
+ if(MT.entry){MT.entry=null;b.textContent='⏲ En attente';
+  b.style.color='#e8c55a';}
+ else{const a=Math.max(40,(SCALE?(SCALE.hi-SCALE.lo)*0.04:80));
+  const d=(MT.tp>MS.px)?1:-1;
+  MT.entry=Math.round(MS.px+(d===1?a:-a));   // a stop, by default
+  b.textContent='⚡ Au marche';b.style.color='#8df0bb';}
+ mtRender();
 };
 document.getElementById('mtflip').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
  const px=MS.px;
- MT={sl:Math.round(px+(px-MT.sl)),tp:Math.round(px+(px-MT.tp))};
+ const e=MT.entry?Math.round(px+(px-MT.entry)):null;
+ MT={sl:Math.round(px+(px-MT.sl)),tp:Math.round(px+(px-MT.tp)),entry:e};
  mtRender();
 };
 document.getElementById('mtcancel').onclick=()=>{
@@ -672,7 +734,8 @@ document.getElementById('mtgo').onclick=async()=>{
  try{
   const r=await fetch('/'+tok+'/manual_order',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:'d='+c.d+'&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)});
+   body:'d='+c.d+'&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)+
+    (MT.entry?'&entry='+MT.entry.toFixed(2):'')});
   const j=await r.json();
   g.textContent=j.ok?'Envoye':'Refuse';
   if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';
@@ -686,9 +749,11 @@ cv.addEventListener('pointerdown',e=>{
  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
  const ys=p2y(MT.sl),yt=p2y(MT.tp);
  if(ys===null||yt===null)return;
- const ds=Math.abs(y-ys),dt2=Math.abs(y-yt);
- if(Math.min(ds,dt2)>MTGRAB)return;
- MTdrag=ds<dt2?'sl':'tp';
+ const cand=[['sl',Math.abs(y-ys)],['tp',Math.abs(y-yt)]];
+ if(MT.entry)cand.push(['entry',Math.abs(y-p2y(MT.entry))]);
+ cand.sort((a,b)=>a[1]-b[1]);
+ if(cand[0][1]>MTGRAB)return;
+ MTdrag=cand[0][0];
  drag=null;                      // cancel any pan the chart had started
  cv.setPointerCapture(e.pointerId);
  e.preventDefault();
