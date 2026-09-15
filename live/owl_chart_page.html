@@ -11,7 +11,11 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #back{text-decoration:none;color:#9fc2de;font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
 #hd h1{font-size:1rem;font-weight:700;letter-spacing:.01em}
-#meteo{font-size:.66rem;padding:3px 11px 3px 7px;font-weight:700}
+#hdrow{display:flex;align-items:center;gap:8px;flex:0 0 100%;
+ flex-wrap:nowrap;min-width:0}
+#hdrow .badge{white-space:nowrap;flex:0 0 auto}
+#meteo{font-size:.62rem;padding:3px 10px 3px 6px;font-weight:700;
+ min-width:0;overflow:hidden;text-overflow:ellipsis}
 #meteo i{font-style:normal;font-size:1.05rem;line-height:1;
  vertical-align:-2px;margin-right:5px;
  filter:drop-shadow(0 0 5px currentColor)}
@@ -65,8 +69,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <a id="back" href="#">&#8592;</a>
 <h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span>
-<span class="badge" id="trbadge" style="display:none"></span>
-<span class="badge" id="meteo" style="display:none"></span>
+<span id="hdrow"><span class="badge" id="trbadge"
+ style="display:none"></span><span class="badge" id="meteo"
+ style="display:none"></span></span>
 </div>
 <span id="px"></span>
 <div id="pnl"><b>--</b><span></span></div>
@@ -652,8 +657,7 @@ function ui(){
    :((mv>=3&&rv>=1.2)?['⚡️','agitee','255,150,120']
    :((mv>=2||rv>=1.2)?['🔥','active','141,240,187']
    :['☁️','calme','143,161,179']));
-  let txt=mv+' mvt'+(mv>1?'s':'')+'/2h · '+S[1];
-  if(mv===0&&rv>=1.2)txt+=' mais volatile';
+  let txt=mv+'/2h · '+S[1]+((mv===0&&rv>=1.2)?' · volatile':'');
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
   mb.className='badge'+(S[1]==='agitee'||S[1]==='active'?' busy':'');
@@ -783,8 +787,14 @@ mtopen.onclick=async()=>{
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  // open in the direction of the structure: bearish -> sell, bullish -> buy
  const d=(MS.trend===-1)?-1:1;
- MT=(d===1)?{sl:Math.round(px-a),tp:Math.round(px+a*0.8),entry:null}
-           :{sl:Math.round(px+a),tp:Math.round(px-a*0.8),entry:null};
+ // the stop defaults to the structure's invalidation level - the diamond
+ // line - when it sits on the correct side; otherwise a plain offset
+ let sl=(d===1)?px-a:px+a;
+ const inv=(D&&D.invalid)?D.invalid:null;
+ if(inv&&((d===1&&inv<px-10)||(d===-1&&inv>px+10)))sl=inv;
+ const risk=Math.abs(px-sl);
+ MT={sl:Math.round(sl*100)/100,
+     tp:Math.round((px+d*0.8*risk)*100)/100,entry:null};
  const pb=document.getElementById('mtpend');
  pb.textContent='⏲ En attente';pb.style.color='#e8c55a';
  mtbar.style.display='block';mtopen.style.display='none';
