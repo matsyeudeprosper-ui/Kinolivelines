@@ -636,9 +636,11 @@ function y2p(y){if(!SCALE)return null;
  return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
 function p2y(v){if(!SCALE)return null;
  return (SCALE.hi-v)/(SCALE.hi-SCALE.lo)*SCALE.plot+SCALE.top;}
-function mtLot(dist){
+function mtLot(dist,against){
  if(!MS)return{lot:0.02,bul:0};
  const base=MS.base_lot||0.02;
+ // against the structure: half the base lot, never any bullet
+ if(against)return{lot:(MS.counter_lot||0.01),bul:0,half:true};
  if(!(MS.debt>0.5)||!(dist>0))return{lot:base,bul:0};
  const r1=Math.max(dist*0.01,0.01);
  const bul=Math.min(MS.max_extra||3,Math.floor((MS.chest||0)/r1));
@@ -650,7 +652,8 @@ function mtCalc(){
  let d=0;
  if(tp>ref&&sl<ref)d=1; else if(tp<ref&&sl>ref)d=-1;
  const dist=Math.abs(ref-sl),rew=Math.abs(tp-ref);
- const L=mtLot(dist);
+ const against=(MS.trend!==0&&d!==0&&d!==MS.trend);
+ const L=mtLot(dist,against);
  let kind='MARCHE',bad='';
  if(MT.entry){
   const stopSide=(d===1)?(ref>mkt):(ref<mkt);
@@ -658,9 +661,12 @@ function mtCalc(){
   if(Math.abs(ref-mkt)<=(MS.s_min_dist||10))
    bad='entree trop pres du marche';
  }
+ if(!bad&&against&&MS.counter_ok===false)
+  bad='contre-tendance impossible a cette taille de lot';
  if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
  return{d:d,px:ref,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
+  against:against,half:!!L.half,
   risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,kind:kind,bad:bad};
 }
 function mtRender(){
@@ -682,11 +688,17 @@ function mtRender(){
   c.rr.toFixed(2)+'</b>'+
   ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
-  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
+  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance'+
+   (c.half?' (demi-lot)':'')+'</b>':'')+
   ' &middot; dette $'+(MS.debt||0).toFixed(2)+
   (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
  document.getElementById('mtgo').disabled=!!c.bad;
  document.getElementById('mtgo').style.opacity=c.bad?.45:1;
+ // no tool on screen may build a counter-trend trade when it is forbidden
+ const fb=document.getElementById('mtflip');
+ const blocked=(MS.counter_ok===false);
+ fb.style.display=blocked?'none':'';
+ fb.title=blocked?'contre-tendance indisponible':'';
 }
 mtopen.onclick=async()=>{
  if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}

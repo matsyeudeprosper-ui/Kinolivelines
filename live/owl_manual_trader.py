@@ -79,6 +79,19 @@ def rebuild_ledger():
                 trades=len(closes))
 
 
+LOT_STEP = 0.01
+
+
+def counter_lot():
+    """Owner 2026-09-15: a trade against the structure rides half the BASE
+    lot and never carries war-chest bullets. Returned value, and whether
+    such a trade is possible at all: if halving cannot produce something
+    strictly smaller than the base lot, counter-trend is forbidden."""
+    half = int((BASE_LOT / 2) / LOT_STEP) * LOT_STEP
+    half = round(max(LOT_MIN, half), 2)
+    return half, (half < BASE_LOT - 1e-9)
+
+
 def lot_for(dist, led):
     """The lot the debt system would use for a stop this far away."""
     lot = BASE_LOT
@@ -104,7 +117,7 @@ PEND_NAME = {(1, True): "BUY STOP", (1, False): "BUY LIMIT",
              (-1, True): "SELL STOP", (-1, False): "SELL LIMIT"}
 
 
-def place_pending(d, entry, sl, tp, tick, led):
+def place_pending(d, entry, sl, tp, tick, led, trend=0):
     """A pending order: the type follows from where the entry sits relative
     to the market, exactly as the chart shows it."""
     mkt = tick.ask if d == 1 else tick.bid
@@ -123,6 +136,12 @@ def place_pending(d, entry, sl, tp, tick, led):
     if pending_orders():
         cancel_pending()                 # one pending at a time
     lot, bullets = lot_for(dist, led)
+    against = (trend != 0 and d != trend)
+    if against:
+        half, ok = counter_lot()
+        if not ok:
+            return False, "contre-tendance impossible a cette taille de lot"
+        lot, bullets = half, 0
     otype = PEND[(d, stop_side)]
     name = PEND_NAME[(d, stop_side)]
     r = mt5.order_send({
@@ -153,7 +172,7 @@ def cancel_pending(ticket=None):
     return n
 
 
-def execute(req, led):
+def execute(req, led, trend=0):
     """Validate and place the order the chart asked for."""
     if req.get("cancel"):
         n = cancel_pending(int(req["cancel"]) if req["cancel"] != 1 else None)
@@ -172,7 +191,7 @@ def execute(req, led):
     if tick is None:
         return False, "pas de cotation"
     if entry > 0:
-        return place_pending(d, entry, sl, tp, tick, led)
+        return place_pending(d, entry, sl, tp, tick, led, trend)
     px = tick.ask if d == 1 else tick.bid
     if d == 1 and not (sl < px < tp):
         return False, f"achat: il faut SL < {px:.2f} < TP"
@@ -182,7 +201,13 @@ def execute(req, led):
     if dist <= B.S_MIN_DIST:
         return False, f"stop trop proche ({dist:.0f} pts)"
     lot, bullets = lot_for(dist, led)
-    if req.get("lot"):                      # the chart may pin a lot
+    against = (trend != 0 and d != trend)
+    if against:
+        half, ok = counter_lot()
+        if not ok:
+            return False, "contre-tendance impossible a cette taille de lot"
+        lot, bullets = half, 0
+    elif req.get("lot"):                    # the chart may pin a lot
         lot = max(LOT_MIN, min(LOT_MAX, round(float(req["lot"]), 2)))
     r = mt5.order_send({
         "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
@@ -196,7 +221,8 @@ def execute(req, led):
     risk = dist * lot
     say(f"ORDRE MANUEL {'ACHAT' if d == 1 else 'VENTE'} {lot} @ {r.price:.2f} "
         f"SL {sl:.2f} TP {tp:.2f} (risque ${risk:.2f}, {bullets} balle(s), "
-        f"dette ${led['debt']:.2f})")
+        f"dette ${led['debt']:.2f}"
+        + (", CONTRE-TENDANCE demi-lot" if against else "") + ")")
     push("Ordre place", f"{'Achat' if d == 1 else 'Vente'} {lot} lot a "
                         f"{r.price:.0f}, risque ${risk:.2f}")
     return True, dict(lot=lot, price=r.price, sl=sl, tp=tp, risk=round(risk, 2),
@@ -233,7 +259,7 @@ def main():
                 os.remove(REQ)
                 if req:
                     led = rebuild_ledger()
-                    ok, info = execute(req, led)
+                    ok, info = execute(req, led, eng.trend)
                     json.dump({"ok": ok, "info": info,
                                "t": time.time()}, open(RES, "w"))
                     if not ok:
@@ -273,6 +299,8 @@ def main():
                     "debt": led["debt"], "chest": led["chest"],
                     "trades": led["trades"],
                     "base_lot": BASE_LOT, "max_extra": MAX_EXTRA,
+                    "counter_lot": counter_lot()[0],
+                    "counter_ok": counter_lot()[1],
                     "lot_min": LOT_MIN, "lot_max": LOT_MAX,
                     "s_min_dist": B.S_MIN_DIST,
                     "trend": eng.trend, "choch": eng.choch,
