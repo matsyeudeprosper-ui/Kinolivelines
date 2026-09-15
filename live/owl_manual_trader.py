@@ -25,10 +25,24 @@ import MetaTrader5 as mt5
 
 import structure_bos_bot as B          # Struct engine + constants
 
+import sys as _sys
+
 DIR = os.path.dirname(os.path.abspath(__file__))
-TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
-LOGIN = 223995441
-SERVER = "Exness-MT5Real30"
+# 2026-09-15 (owner): any account in "manual" or "semi" mode gets its own
+# instance; full-automation accounts never run one. Usage:
+#   python owl_manual_trader.py <nest-user-id>      (default: bos)
+UID = _sys.argv[1] if len(_sys.argv) > 1 else "bos"
+_U = [x for x in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                encoding="utf-8")) if x.get("id") == UID]
+if not _U:
+    raise SystemExit(f"unknown nest user {UID}")
+_U = _U[0]
+if _U.get("mode") not in ("manual", "semi"):
+    raise SystemExit(f"{UID} is not in manual/semi mode - nothing to run")
+TERMINAL = _U["terminal"]
+LOGIN = int(_U.get("mt5_login") or _U["login"])
+SERVER = _U.get("mt5_server", "Exness-MT5Real30")
+PASSWORD = _U.get("mt5_password") or None
 SYMBOL = "BTCUSD"
 MAGIC = 909102                      # manual orders (909101 = the retired bot)
 COMMENT = "KL-MAN"
@@ -37,10 +51,10 @@ BASE_LOT = 0.02
 MAX_EXTRA = 3
 CHEST_CAP = 10.0
 LOT_MIN, LOT_MAX = 0.01, 0.10
-REQ = os.path.join(DIR, "manual_order.json")
-RES = os.path.join(DIR, "manual_order_result.json")
-STATE = os.path.join(DIR, "manual_state.json")
-LOG = os.path.join(DIR, "owl_manual_trader.log")
+REQ = os.path.join(DIR, f"manual_order_{UID}.json")
+RES = os.path.join(DIR, f"manual_order_result_{UID}.json")
+STATE = os.path.join(DIR, f"manual_state_{UID}.json")
+LOG = os.path.join(DIR, f"owl_manual_trader_{UID}.log")
 SEED_BARS = 3000
 REQ_MAX_AGE = 180                   # a request older than this is stale
 
@@ -53,7 +67,7 @@ def say(m):
 def push(title, body):
     try:
         import owl_push_notifier as P
-        P.send_all(title, body, kind="instant", only_uid="kino")
+        P.send_all(title, body, kind="instant", only_uid=UID)
         say(f"PUSH {title} | {body}")
     except Exception as e:
         say(f"push failed: {type(e).__name__}: {e}")
@@ -230,11 +244,12 @@ def execute(req, led, trend=0):
 
 
 def main():
-    assert mt5.initialize(path=TERMINAL, login=LOGIN, password=B.PASSWORD,
+    assert mt5.initialize(path=TERMINAL, login=LOGIN,
+                          password=PASSWORD or B.PASSWORD,
                           server=SERVER, timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
     led = rebuild_ledger()
-    say(f"MANUAL TRADER up on {ai.login} balance {ai.balance:.2f} | "
+    say(f"MANUAL TRADER [{UID}] up on {ai.login} balance {ai.balance:.2f} | "
         f"net {led['banked']:+.2f} dette {led['debt']:.2f} chest {led['chest']:.2f} "
         f"({led['trades']} trades) - AUCUNE entree automatique")
     eng = B.Struct()

@@ -49,10 +49,22 @@ $sb = Get-CimInstance Win32_Process |
 # bot is RETIRED on 223995441 - owl_manual_trader.py keeps the structure,
 # the CHoCH alerts and the debt ledger, and places only what the chart
 # explicitly confirms. Valere's dedicated instance is unaffected.
-if (-not (ProcRunning "owl_manual_trader.py")) {
-    Say "starting manual trader (live 223995441)"
-    Start-Process pythonw -ArgumentList "owl_manual_trader.py" `
-        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+# one instance per account in manual / semi mode; full-automation
+# accounts never get one (owner 2026-09-15)
+try {
+    $nu = Get-Content "C:\Projects\KinoliveLines\live\owl_nest_users.json" -Raw |
+        ConvertFrom-Json
+    foreach ($m in $nu) {
+        if ($m.mode -eq "manual" -or $m.mode -eq "semi") {
+            if (-not (ProcRunning ("owl_manual_trader.py " + $m.id))) {
+                Say ("starting manual trader " + $m.id)
+                Start-Process pythonw -ArgumentList "owl_manual_trader.py", $m.id `
+                    -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+            }
+        }
+    }
+} catch {
+    Say ("manual trader boot failed: " + $_)
 }
 if (-not ($sb | Where-Object { $_.CommandLine -match "sniper" })) {
     Say "starting STRUCTURE sniper (demo 476989735)"

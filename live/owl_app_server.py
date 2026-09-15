@@ -242,14 +242,14 @@ def is_admin(u):
                               or str(u.get("login")) == str(LOGIN))
 
 
-MANUAL_ACCT = 223995441        # the live account owl_manual_trader.py drives
+MANUAL_MODES = ("manual", "semi")
 
 
 def manual_ok(u):
-    """Who may drive the assisted manual trading: the owner's master pages
-    and the page of the traded account itself (2026-09-15)."""
-    return u is not None and (is_admin(u)
-                              or str(u.get("login")) == str(MANUAL_ACCT))
+    """2026-09-15 (owner): the trade tool belongs to the ACCOUNT's mode.
+    An account running full automation never gets it; one switched to
+    manual or semi-manual drives itself from its own page."""
+    return u is not None and u.get("mode") in MANUAL_MODES
 
 
 def master_pwd_ok(pw):
@@ -3291,7 +3291,8 @@ class H(BaseHTTPRequestHandler):
                        "ts": time.time(), "by": u.get("id")}
                 if req["cancel"]:
                     req["cancel"] = int(req["cancel"])
-                    with open(os.path.join(DIR, "manual_order.json"), "w") as f:
+                    with open(os.path.join(
+                            DIR, f"manual_order_{u['id']}.json"), "w") as f:
                         json.dump(req, f)
                     self._send(json.dumps({"ok": True}), "application/json")
                     return
@@ -3300,10 +3301,12 @@ class H(BaseHTTPRequestHandler):
                                "application/json")
                     return
                 try:
-                    os.remove(os.path.join(DIR, "manual_order_result.json"))
+                    os.remove(os.path.join(
+                        DIR, f"manual_order_result_{u['id']}.json"))
                 except Exception:
                     pass
-                with open(os.path.join(DIR, "manual_order.json"), "w") as f:
+                with open(os.path.join(
+                        DIR, f"manual_order_{u['id']}.json"), "w") as f:
                     json.dump(req, f)
                 self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
@@ -3545,13 +3548,16 @@ class H(BaseHTTPRequestHandler):
                 self.send_response(404)
                 self.end_headers()
                 return
+            _uid = user.get("id")
             try:
-                d = json.load(open(os.path.join(DIR, "manual_state.json")))
+                d = json.load(open(os.path.join(
+                    DIR, f"manual_state_{_uid}.json")))
             except Exception:
                 d = {}
+            d["mode"] = user.get("mode")
             try:
                 d["last_order"] = json.load(open(os.path.join(
-                    DIR, "manual_order_result.json")))
+                    DIR, f"manual_order_result_{_uid}.json")))
             except Exception:
                 pass
             self._send(json.dumps(d), "application/json")
