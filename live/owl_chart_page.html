@@ -71,6 +71,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  <div id="mtinfo" style="display:flex;gap:8px;flex-wrap:wrap;
   font-size:.72rem;color:#9fb6cc;margin-bottom:8px"></div>
  <div style="display:flex;gap:8px">
+  <button id="mtflip" style="flex:1;padding:11px;border-radius:12px;
+   border:1px solid #33475c;background:#16202c;color:#cfe3f5;
+   font-weight:700;font-size:.82rem">&#8645; Inverser</button>
   <button id="mtcancel" style="flex:1;padding:11px;border-radius:12px;
    border:1px solid #33475c;background:#16202c;color:#9fb6cc;
    font-weight:700;font-size:.82rem">Annuler</button>
@@ -594,6 +597,8 @@ function mtRender(){
  const dirTxt=c.d===1?'<b style="color:#2ecc71">ACHAT</b>'
   :(c.d===-1?'<b style="color:#ff5c5c">VENTE</b>'
   :'<b style="color:#e8c55a">?</b>');
+ const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
+ const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
  i.innerHTML=dirTxt+
   ' &middot; lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
   (c.bul>0?' <span style="color:#8df0bb">(+'+c.bul+' balle'+(c.bul>1?'s':'')+')</span>':'')+
@@ -603,6 +608,10 @@ function mtRender(){
   '<br>SL '+c.sl.toFixed(0)+' ('+c.dist.toFixed(0)+' pts) &middot; '+
   'TP '+c.tp.toFixed(0)+' ('+c.rew.toFixed(0)+' pts) &middot; '+
   'dette $'+(MS.debt||0).toFixed(2)+' &middot; chest $'+(MS.chest||0).toFixed(2)+
+  '<br>structure <b style="color:'+(MS.trend===1?'#2ecc71':
+   (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
+  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; tu vas '+
+   'a contre-tendance</b>':'')+
   (c.bad?'<br><span style="color:#ff9678">'+c.bad+'</span>':'');
  document.getElementById('mtgo').disabled=!!c.bad;
  document.getElementById('mtgo').style.opacity=c.bad?.45:1;
@@ -611,8 +620,17 @@ mtopen.onclick=()=>{
  if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}
  if(MS.open&&MS.open.length){alert('Une position est deja ouverte.');return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
- MT={sl:Math.round(px-a),tp:Math.round(px+a*0.8)};
+ // open in the direction of the structure: bearish -> sell, bullish -> buy
+ const d=(MS.trend===-1)?-1:1;
+ MT=(d===1)?{sl:Math.round(px-a),tp:Math.round(px+a*0.8)}
+           :{sl:Math.round(px+a),tp:Math.round(px-a*0.8)};
  mtbar.style.display='block';mtopen.style.display='none';mtRender();
+};
+document.getElementById('mtflip').onclick=()=>{
+ if(!MT||!MS||!MS.px)return;
+ const px=MS.px;
+ MT={sl:Math.round(px+(px-MT.sl)),tp:Math.round(px+(px-MT.tp))};
+ mtRender();
 };
 document.getElementById('mtcancel').onclick=()=>{
  MT=null;mtbar.style.display='none';mtopen.style.display='block';};
