@@ -715,7 +715,8 @@ function mtRender(){
  const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
  const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
  const pnd=(MS.pending&&MS.pending.length)?MS.pending[0]:null;
- i.innerHTML=(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b> &middot; ':'')+
+ i.innerHTML=(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b>'+
+  ' <span style="color:#7e93a8">sur cloture M1</span> &middot; ':'')+
   (pnd?'<b style="color:#e8c55a">'+pnd.kind+' '+pnd.lot.toFixed(2)+
    ' @ '+pnd.e.toFixed(0)+' en cours</b> &middot; ':'')+
   'lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+

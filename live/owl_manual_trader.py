@@ -54,6 +54,8 @@ LOT_MIN, LOT_MAX = 0.01, 0.10
 REQ = os.path.join(DIR, f"manual_order_{UID}.json")
 RES = os.path.join(DIR, f"manual_order_result_{UID}.json")
 STATE = os.path.join(DIR, f"manual_state_{UID}.json")
+VPEND = os.path.join(DIR, f"manual_pending_{UID}.json")
+VPEND_MAX_H = 24                    # a forgotten order expires
 LOG = os.path.join(DIR, f"owl_manual_trader_{UID}.log")
 SEED_BARS = 3000
 REQ_MAX_AGE = 180                   # a request older than this is stale
@@ -131,9 +133,28 @@ PEND_NAME = {(1, True): "BUY STOP", (1, False): "BUY LIMIT",
              (-1, True): "SELL STOP", (-1, False): "SELL LIMIT"}
 
 
+def load_vpend():
+    try:
+        return json.load(open(VPEND, encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def save_vpend(v):
+    if v is None:
+        try:
+            os.remove(VPEND)
+        except Exception:
+            pass
+    else:
+        json.dump(v, open(VPEND, "w"))
+
+
 def place_pending(d, entry, sl, tp, tick, led, trend=0):
-    """A pending order: the type follows from where the entry sits relative
-    to the market, exactly as the chart shows it."""
+    """Owner 2026-09-15: a programmed entry must NOT fire on a touch. MT5's
+    native pending orders trigger on price, so we hold the order here and
+    send it at market only once a completed M1 candle CLOSES beyond the
+    line, on the far side from where price sat when it was programmed."""
     mkt = tick.ask if d == 1 else tick.bid
     if d == 1 and not (sl < entry < tp):
         return False, "achat: il faut SL < entree < TP"
@@ -147,35 +168,80 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
     gap = (info.trade_stops_level * info.point) if info else 0.0
     if abs(entry - mkt) <= max(gap, B.S_MIN_DIST):
         return False, f"entree trop pres du marche ({abs(entry-mkt):.0f} pts)"
-    if pending_orders():
-        cancel_pending()                 # one pending at a time
+    cancel_pending()                     # one programmed entry at a time
+    name = PEND_NAME[(d, stop_side)]
+    # which side of the line must the close land on? the far side from
+    # where price sits right now - one rule for stops and limits alike
+    need = 1 if entry > mkt else -1      # +1 = close above, -1 = close below
+    v = dict(d=d, entry=round(entry, 2), sl=round(sl, 2), tp=round(tp, 2),
+             need=need, kind=name, placed=time.time(), trend=trend)
+    save_vpend(v)
+    lot, _ = lot_for(dist, led)
+    say(f"{name} ARME {lot} @ {entry:.2f} SL {sl:.2f} TP {tp:.2f} - "
+        f"attend une cloture M1 {'au-dessus' if need == 1 else 'en dessous'}")
+    push(f"{name} arme", f"a {entry:.0f}, se declenche sur cloture M1 "
+                         f"{'au-dessus' if need == 1 else 'en dessous'}")
+    return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
+                      risk=round(dist * lot, 2), armed=True)
+
+
+def vpend_check(close_px, led):
+    """Called on each completed M1 bar. Fires the armed entry at market
+    when the candle closes beyond the line."""
+    v = load_vpend()
+    if not v:
+        return
+    if (time.time() - v["placed"]) / 3600 > VPEND_MAX_H:
+        save_vpend(None)
+        say(f"{v['kind']} expire apres {VPEND_MAX_H} h sans declenchement")
+        push("Ordre expire", f"{v['kind']} a {v['entry']:.0f} annule")
+        return
+    if open_positions():
+        return
+    beyond = (close_px > v["entry"]) if v["need"] == 1 else (close_px < v["entry"])
+    if not beyond:
+        return
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return
+    d = v["d"]
+    px = tick.ask if d == 1 else tick.bid
+    dist = abs(px - v["sl"])
+    if dist <= B.S_MIN_DIST:
+        save_vpend(None)
+        say(f"{v['kind']} annule: la cloture laisse un stop de {dist:.0f} pts")
+        return
     lot, bullets = lot_for(dist, led)
-    against = (trend != 0 and d != trend)
-    if against:
+    if v.get("trend") and d != v["trend"]:
         half, ok = counter_lot()
         if not ok:
-            return False, "contre-tendance impossible a cette taille de lot"
+            save_vpend(None)
+            return
         lot, bullets = half, 0
-    otype = PEND[(d, stop_side)]
-    name = PEND_NAME[(d, stop_side)]
     r = mt5.order_send({
-        "action": mt5.TRADE_ACTION_PENDING, "symbol": SYMBOL, "volume": lot,
-        "type": otype, "price": round(entry, 2), "sl": round(sl, 2),
-        "tp": round(tp, 2), "deviation": 200, "magic": MAGIC,
-        "comment": COMMENT, "type_time": mt5.ORDER_TIME_GTC,
-        "type_filling": mt5.ORDER_FILLING_RETURN})
+        "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
+        "type": mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL,
+        "price": px, "sl": v["sl"], "tp": v["tp"], "deviation": 200,
+        "magic": MAGIC, "comment": COMMENT,
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC})
+    save_vpend(None)
     if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
-        return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
-    risk = dist * lot
-    say(f"{name} {lot} @ {entry:.2f} SL {sl:.2f} TP {tp:.2f} "
-        f"(risque ${risk:.2f}, {bullets} balle(s))")
-    push(f"{name} programme", f"{lot} lot a {entry:.0f}, risque ${risk:.2f}")
-    return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
-                      risk=round(risk, 2), bullets=bullets)
+        say(f"{v['kind']} declenche mais refuse: {getattr(r, 'retcode', '?')}")
+        push("Declenchement refuse", str(getattr(r, "comment", "")))
+        return
+    say(f"{v['kind']} DECLENCHE sur cloture {close_px:.2f}: {lot} @ {r.price:.2f} "
+        f"SL {v['sl']:.2f} TP {v['tp']:.2f} (risque ${dist * lot:.2f})")
+    push(f"{v['kind']} declenche",
+         f"{lot} lot a {r.price:.0f}, risque ${dist * lot:.2f}")
 
 
 def cancel_pending(ticket=None):
     n = 0
+    if load_vpend() is not None:
+        save_vpend(None)
+        n += 1
+        say("entree programmee annulee")
     for o in pending_orders():
         if ticket and o.ticket != ticket:
             continue
@@ -297,6 +363,7 @@ def main():
                         push(f"CHoCH {side}",
                              f"Changement de caractere a {px:.0f}. "
                              f"A toi de decider.")
+                    vpend_check(float(bar["close"]), rebuild_ledger())
                     last_choch = eng.choch
                     if eng.trend != prev_trend and eng.trend != 0:
                         say(f"FLIP: tendance {'haussiere' if eng.trend == 1 else 'baissiere'}")
@@ -324,12 +391,12 @@ def main():
                     "open": [{"lot": p.volume, "d": 1 if p.type == 0 else -1,
                               "e": p.price_open, "sl": p.sl, "tp": p.tp,
                               "pl": round(p.profit, 2)} for p in pos],
-                    "pending": [{"ticket": o.ticket, "lot": o.volume_current,
-                                 "e": o.price_open, "sl": o.sl, "tp": o.tp,
-                                 "kind": PEND_NAME.get(
-                                     (1 if o.type in (2, 4) else -1,
-                                      o.type in (4, 5)), "EN ATTENTE")}
-                                for o in pending_orders()],
+                    "pending": ([{
+                        "ticket": 1, "lot": lot_for(
+                            abs(_vp["entry"] - _vp["sl"]), led)[0],
+                        "e": _vp["entry"], "sl": _vp["sl"], "tp": _vp["tp"],
+                        "kind": _vp["kind"], "armed": True,
+                        "need": _vp["need"]}] if (_vp := load_vpend()) else []),
                     "updated": int(time.time()),
                 }, open(STATE, "w"))
         except Exception as e:
