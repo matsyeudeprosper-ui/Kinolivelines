@@ -91,13 +91,16 @@ const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
 let viewOff=0,cwG=7;
+let MT=null,MS=null,MTdrag=null,MSerr=null;   // assisted manual trading
 let drag=null;
 cv.addEventListener('pointerdown',e=>{
+ if(MTdrag)return;                 // a SL/TP line has the pointer
  e.preventDefault();
  drag={x:e.clientX,off:viewOff,v:0,px:e.clientX,
   t:performance.now()};
  cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointermove',e=>{
+ if(MTdrag){drag=null;return;}
  if(!drag)return;
  e.preventDefault();
  const now=performance.now();
@@ -105,6 +108,7 @@ cv.addEventListener('pointermove',e=>{
  drag.px=e.clientX;drag.t=now;
  viewOff=drag.off+(e.clientX-drag.x)/Math.max(3,cwG);});
 const endDrag=()=>{
+ if(MTdrag){drag=null;return;}
  if(!drag)return;
  let v=drag.v*16/Math.max(3,cwG);   // px/frame -> candles/frame
  drag=null;
@@ -452,18 +456,30 @@ function draw(){
    ctx.fillText(it[1]+' '+it[0].toFixed(0),W-lw+1,yl+3.5);
   });
  }
- if(typeof MT!=='undefined'&&MT){
-  [[MT.sl,'#ff5c5c','SL'],[MT.tp,'#2ecc71','TP']].forEach(([v,col,lb])=>{
+ if(MT){
+  [[MT.sl,'#ff5c5c','SL','sl'],[MT.tp,'#2ecc71','TP','tp']].forEach(
+   ([v,col,lb,key])=>{
    const y=px(v);if(y<2||y>Hh-2)return;
-   ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
-   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.restore();
+   const on=(MTdrag===key);
+   ctx.save();
+   ctx.fillStyle=col.replace(')',',.10)').replace('#','rgba(');
+   ctx.globalAlpha=on?.16:.07;ctx.fillStyle=col;
+   ctx.fillRect(0,y-19,W,38);        // the catch zone, faintly visible
+   ctx.globalAlpha=1;
+   ctx.strokeStyle=col;ctx.lineWidth=on?3:2;ctx.setLineDash(on?[]:[7,4]);
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   ctx.restore();
    ctx.fillStyle=col;ctx.beginPath();
-   ctx.roundRect(6,y-9,44,18,9);ctx.fill();
-   ctx.fillStyle='#0b1118';ctx.font='bold 10px system-ui';
-   ctx.fillText(lb,14,y+3.5);
-   ctx.fillStyle=col;ctx.font='bold 10px system-ui';
-   ctx.fillText(v.toFixed(0),54,y+3.5);
-   ctx.beginPath();ctx.arc(W-14,y,7,0,6.3);ctx.fill();});}
+   ctx.roundRect(6,y-10,50,20,10);ctx.fill();
+   ctx.fillStyle='#0b1118';ctx.font='bold 11px system-ui';
+   ctx.fillText(lb,15,y+4);
+   ctx.fillStyle=col;ctx.font='bold 11px system-ui';
+   ctx.fillText(v.toFixed(0),60,y+4);
+   ctx.fillStyle=col;
+   ctx.beginPath();ctx.arc(W-16,y,on?12:10,0,6.3);ctx.fill();
+   ctx.strokeStyle='#0b1118';ctx.lineWidth=2;ctx.beginPath();
+   ctx.moveTo(W-22,y-3);ctx.lineTo(W-10,y-3);ctx.moveTo(W-22,y+3);
+   ctx.lineTo(W-10,y+3);ctx.stroke();});}
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
@@ -527,7 +543,6 @@ load();setInterval(load,1500);
 requestAnimationFrame(frame);
 
 /* ---- assisted manual trading: drag SL / TP on the chart (2026-09-15) ---- */
-let MT=null,MS=null,MTdrag=null;
 const mtbar=document.getElementById('mtbar');
 const mtopen=document.getElementById('mtopen');
 function y2p(y){if(!SCALE)return null;
@@ -597,22 +612,36 @@ document.getElementById('mtgo').onclick=async()=>{
   else{alert(j.err||'refus');g.textContent='Confirmer';g.disabled=false;}
  }catch(e){g.textContent='Confirmer';g.disabled=false;alert('reseau');}
 };
+const MTGRAB=38;                 // finger-sized catch zone
 cv.addEventListener('pointerdown',e=>{
  if(!MT)return;
  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
- const ds=Math.abs(y-p2y(MT.sl)),dt2=Math.abs(y-p2y(MT.tp));
- if(Math.min(ds,dt2)<26){MTdrag=ds<dt2?'sl':'tp';
-  cv.setPointerCapture(e.pointerId);e.preventDefault();}
-});
+ const ys=p2y(MT.sl),yt=p2y(MT.tp);
+ if(ys===null||yt===null)return;
+ const ds=Math.abs(y-ys),dt2=Math.abs(y-yt);
+ if(Math.min(ds,dt2)>MTGRAB)return;
+ MTdrag=ds<dt2?'sl':'tp';
+ drag=null;                      // cancel any pan the chart had started
+ cv.setPointerCapture(e.pointerId);
+ e.preventDefault();
+ e.stopImmediatePropagation();   // the pan listener must not see this
+ mtRender();
+},true);
 cv.addEventListener('pointermove',e=>{
  if(!MT||!MTdrag)return;
  const r=cv.getBoundingClientRect(),v=y2p(e.clientY-r.top);
  if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}
  e.preventDefault();
-});
-cv.addEventListener('pointerup',e=>{MTdrag=null;});
-cv.addEventListener('pointercancel',e=>{MTdrag=null;});
-let MSerr=null;
+ e.stopImmediatePropagation();
+},true);
+const mtRelease=e=>{
+ if(!MTdrag)return;
+ MTdrag=null;drag=null;
+ try{cv.releasePointerCapture(e.pointerId);}catch(x){}
+ e.stopImmediatePropagation();
+};
+cv.addEventListener('pointerup',mtRelease,true);
+cv.addEventListener('pointercancel',mtRelease,true);
 async function mtLoad(){
  try{const r=await fetch('/'+tok+'/manual_state',{cache:'no-store'});
   if(r.status===404){MSerr='Cette page n’a pas le droit de trader ce compte.';
