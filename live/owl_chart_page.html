@@ -67,9 +67,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <canvas id="cv"></canvas>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
  background:linear-gradient(180deg,rgba(8,14,22,.92),rgba(8,14,22,.99));
- border-top:1px solid #1e3346;padding:8px 10px 12px;display:none">
+ border-top:1px solid #1e3346;padding:6px 10px 10px;display:none">
  <div id="mtinfo" style="display:flex;gap:8px;flex-wrap:wrap;
-  font-size:.72rem;color:#9fb6cc;margin-bottom:8px"></div>
+  font-size:.72rem;color:#9fb6cc;margin-bottom:6px;line-height:1.5"></div>
  <div style="display:flex;gap:8px">
   <button id="mtflip" style="flex:1;padding:11px;border-radius:12px;
    border:1px solid #33475c;background:#16202c;color:#cfe3f5;
@@ -466,26 +466,50 @@ function draw(){
   });
  }
  if(MT){
-  [[MT.sl,'#ff5c5c','SL','sl'],[MT.tp,'#2ecc71','TP','tp']].forEach(
-   ([v,col,lb,key])=>{
-   const y=px(v);if(y<2||y>Hh-2)return;
+  const mc=(typeof mtCalc==='function')?mtCalc():null;
+  // the numbers live ON the lines, so the panel stays small
+  [[MT.sl,'#ff5c5c','SL','sl',mc?('-$'+mc.risk.toFixed(2)):'',
+    mc?(mc.dist.toFixed(0)+' pts'):''],
+   [MT.tp,'#2ecc71','TP','tp',mc?('+$'+mc.gain.toFixed(2)):'',
+    mc?(mc.rew.toFixed(0)+' pts'):'']].forEach(
+   ([v,col,lb,key,money,pts])=>{
+   const y=px(v);if(y<2||y>TOPP+PLOT-2)return;
    const on=(MTdrag===key);
    ctx.save();
-   ctx.fillStyle=col.replace(')',',.10)').replace('#','rgba(');
    ctx.globalAlpha=on?.16:.07;ctx.fillStyle=col;
-   ctx.fillRect(0,y-19,W,38);        // the catch zone, faintly visible
+   ctx.fillRect(0,y-19,W,38);            // the catch zone
    ctx.globalAlpha=1;
    ctx.strokeStyle=col;ctx.lineWidth=on?3:2;ctx.setLineDash(on?[]:[7,4]);
    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
    ctx.restore();
+   // one tag: label, price, money, distance
+   ctx.font='bold 11px system-ui';
+   const wp=ctx.measureText(v.toFixed(0)).width;
+   ctx.font='bold 12px system-ui';
+   const wm=ctx.measureText(money).width;
+   ctx.font='10px system-ui';
+   const wq=ctx.measureText(pts).width;
+   const tw=30+wp+10+wm+8+wq+12;
+   ctx.fillStyle='rgba(8,14,22,.86)';
+   ctx.beginPath();ctx.roundRect(6,y-13,tw,26,13);ctx.fill();
+   ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
    ctx.fillStyle=col;ctx.beginPath();
-   ctx.roundRect(6,y-10,50,20,10);ctx.fill();
+   ctx.roundRect(6,y-13,30,26,13);ctx.fill();
    ctx.fillStyle='#0b1118';ctx.font='bold 11px system-ui';
-   ctx.fillText(lb,15,y+4);
-   ctx.fillStyle=col;ctx.font='bold 11px system-ui';
-   ctx.fillText(v.toFixed(0),60,y+4);
+   ctx.fillText(lb,13,y+4);
+   let cx=42;
+   ctx.fillStyle='#cfe3f5';ctx.font='bold 11px system-ui';
+   ctx.fillText(v.toFixed(0),cx,y+4);cx+=wp+10;
+   ctx.fillStyle=col;ctx.font='bold 12px system-ui';
+   ctx.fillText(money,cx,y+4);cx+=wm+8;
+   ctx.fillStyle='#7e93a8';ctx.font='10px system-ui';
+   ctx.fillText(pts,cx,y+4);
+   // grab handle
    ctx.fillStyle=col;
    ctx.beginPath();ctx.arc(W-16,y,on?12:10,0,6.3);ctx.fill();
+   ctx.strokeStyle='#0b1118';ctx.lineWidth=2;ctx.beginPath();
+   ctx.moveTo(W-22,y-3);ctx.lineTo(W-10,y-3);ctx.moveTo(W-22,y+3);
+   ctx.lineTo(W-10,y+3);ctx.stroke();
    if(on&&MTy!==null&&(MTy>TOPP+PLOT-80||MTy<80)){
     const up=MTy<80,ay=up?TOPP+22:TOPP+PLOT-22;
     ctx.save();ctx.globalAlpha=.85;ctx.fillStyle=col;
@@ -501,9 +525,21 @@ function draw(){
     ctx.fillText((up?'monte ':'descend ')+sp+' pts/s  -  '+
      'relache pour t’arreter',W/2-62,ay+(up?26:-18));
     ctx.restore();}
-   ctx.strokeStyle='#0b1118';ctx.lineWidth=2;ctx.beginPath();
-   ctx.moveTo(W-22,y-3);ctx.lineTo(W-10,y-3);ctx.moveTo(W-22,y+3);
-   ctx.lineTo(W-10,y+3);ctx.stroke();});}
+   });
+  // the entry tag rides the live price with the direction and the lot
+  if(mc&&mc.d!==0&&MS&&MS.px){
+   const ye=px(MS.px);
+   if(ye>2&&ye<TOPP+PLOT-2){
+    const ec=mc.d===1?'#2ecc71':'#ff5c5c';
+    const et=(mc.d===1?'ACHAT ':'VENTE ')+mc.lot.toFixed(2)+
+     (mc.bul>0?' +'+mc.bul:'');
+    ctx.font='bold 11px system-ui';
+    const ew=ctx.measureText(et).width+18;
+    ctx.fillStyle=ec;ctx.beginPath();
+    ctx.roundRect(W/2-ew/2,ye-12,ew,24,12);ctx.fill();
+    ctx.fillStyle='#0b1118';
+    ctx.fillText(et,W/2-ew/2+9,ye+4);}}
+ }
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
@@ -599,20 +635,15 @@ function mtRender(){
   :'<b style="color:#e8c55a">?</b>');
  const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
  const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
- i.innerHTML=dirTxt+
-  ' &middot; lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
-  (c.bul>0?' <span style="color:#8df0bb">(+'+c.bul+' balle'+(c.bul>1?'s':'')+')</span>':'')+
-  ' &middot; risque <b style="color:#ff9678">$'+c.risk.toFixed(2)+'</b>'+
-  ' &middot; gain <b style="color:#8df0bb">$'+c.gain.toFixed(2)+'</b>'+
-  ' &middot; R:R '+c.rr.toFixed(2)+
-  '<br>SL '+c.sl.toFixed(0)+' ('+c.dist.toFixed(0)+' pts) &middot; '+
-  'TP '+c.tp.toFixed(0)+' ('+c.rew.toFixed(0)+' pts) &middot; '+
-  'dette $'+(MS.debt||0).toFixed(2)+' &middot; chest $'+(MS.chest||0).toFixed(2)+
-  '<br>structure <b style="color:'+(MS.trend===1?'#2ecc71':
+ i.innerHTML='R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
+  c.rr.toFixed(2)+'</b>'+
+  (c.bul>0?' &middot; <span style="color:#8df0bb">+'+c.bul+' balle'+
+   (c.bul>1?'s':'')+'</span>':'')+
+  ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
-  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; tu vas '+
-   'a contre-tendance</b>':'')+
-  (c.bad?'<br><span style="color:#ff9678">'+c.bad+'</span>':'');
+  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
+  ' &middot; dette $'+(MS.debt||0).toFixed(2)+
+  (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
  document.getElementById('mtgo').disabled=!!c.bad;
  document.getElementById('mtgo').style.opacity=c.bad?.45:1;
 }
