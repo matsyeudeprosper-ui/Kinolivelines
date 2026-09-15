@@ -574,7 +574,7 @@ function mtRender(){
  document.getElementById('mtgo').style.opacity=c.bad?.45:1;
 }
 mtopen.onclick=()=>{
- if(!MS||!MS.px){alert('Donnees du compte indisponibles.');return;}
+ if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}
  if(MS.open&&MS.open.length){alert('Une position est deja ouverte.');return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  MT={sl:Math.round(px-a),tp:Math.round(px+a*0.8)};
@@ -612,11 +612,18 @@ cv.addEventListener('pointermove',e=>{
 });
 cv.addEventListener('pointerup',e=>{MTdrag=null;});
 cv.addEventListener('pointercancel',e=>{MTdrag=null;});
+let MSerr=null;
 async function mtLoad(){
  try{const r=await fetch('/'+tok+'/manual_state',{cache:'no-store'});
-  if(r.ok){MS=await r.json();if(MT)mtRender();
-   if(MS.acct)mtopen.style.display=MT?'none':'block';}
- }catch(e){}
+  if(r.status===404){MSerr='Cette page n’a pas le droit de trader ce compte.';
+   mtopen.style.display='none';return;}
+  if(r.ok){MS=await r.json();MSerr=null;
+   if(!MS.acct)MSerr='Le service de trading manuel est arrete.';
+   else if((Date.now()/1000-(MS.updated||0))>90)
+    MSerr='Donnees figees depuis '+Math.round(Date.now()/1000-MS.updated)+'s.';
+   if(MT)mtRender();
+   mtopen.style.display=MT?'none':'block';}
+ }catch(e){MSerr='Reseau indisponible.';}
 }
 mtLoad();setInterval(mtLoad,3000);
 </script></body></html>

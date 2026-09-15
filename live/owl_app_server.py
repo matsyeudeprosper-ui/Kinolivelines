@@ -242,6 +242,16 @@ def is_admin(u):
                               or str(u.get("login")) == str(LOGIN))
 
 
+MANUAL_ACCT = 223995441        # the live account owl_manual_trader.py drives
+
+
+def manual_ok(u):
+    """Who may drive the assisted manual trading: the owner's master pages
+    and the page of the traded account itself (2026-09-15)."""
+    return u is not None and (is_admin(u)
+                              or str(u.get("login")) == str(MANUAL_ACCT))
+
+
 def master_pwd_ok(pw):
     """Master actions always validate against the KINO record's
     broker password, whichever admin page they come from."""
@@ -3265,7 +3275,7 @@ class H(BaseHTTPRequestHandler):
             # the chart drags SL/TP and confirms; the daemon validates,
             # sizes from the debt ledger and sends it to the broker
             u = user_by_token(_parts[0])
-            if not is_admin(u):
+            if not manual_ok(u):
                 self.send_response(404)
                 self.end_headers()
                 return
@@ -3523,7 +3533,7 @@ class H(BaseHTTPRequestHandler):
                 self._send("{}", "application/json")
         elif sub == "manual_state":
             # assisted manual trading on the live account (2026-09-15)
-            if not is_admin(user):
+            if not manual_ok(user):
                 self.send_response(404)
                 self.end_headers()
                 return
