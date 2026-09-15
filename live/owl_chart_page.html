@@ -59,6 +59,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span>
 <span class="badge" id="trbadge" style="display:none"></span>
+<span class="badge" id="meteo" style="display:none"></span>
 </div>
 <span id="px"></span>
 <div id="pnl"><b>--</b><span></span></div>
@@ -631,6 +632,23 @@ function ui(){
    setTimeout(()=>{b.style.transform='none'},160);}
   lastPnl=tot;
  }else{pn.style.display='none';lastPnl=null;}
+ // market weather: how much structure has moved lately and how lively
+ // the candles are versus their own norm. An activity gauge, not a
+ // prediction - E013 found period quality is not forecastable.
+ const mb=document.getElementById('meteo');
+ if(D.moves_2h!==undefined&&D.vol_ref){
+  const mv=D.moves_2h,rv=D.vol_now/Math.max(D.vol_ref,1);
+  const S=(mv>=3&&rv>=1.2)?['⚡','agitee','255,150,120']
+   :((mv>=2||rv>=1.2)?['◑','active','141,240,187']
+   :((mv<=1&&rv<0.8)?['☾','endormie','95,113,133']
+   :['○','calme','143,161,179']));
+  let txt=S[0]+' '+mv+' mvt'+(mv>1?'s':'')+'/2h · '+S[1];
+  if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
+  mb.textContent=txt;mb.style.display='';
+  mb.style.color='rgb('+S[2]+')';
+  mb.style.borderColor='rgba('+S[2]+',.45)';
+  mb.style.background='rgba('+S[2]+',.12)';
+ }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
  tb.style.display='inline-block';
  const wound=D.choch?' · choc!':'';

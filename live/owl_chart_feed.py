@@ -327,8 +327,18 @@ def main():
                     dots = [d for d in dots if d[2] == -1]
                 dots = [d for d in dots if d[0] >= t0]
                 marks = [m for m in marks if m[0] >= t0]
+                _now = int(R[-1]["time"])
+                _mv2 = sum(1 for m in marks if m[0] >= _now - 7200)
+                _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]
+                _ref = [float(r["high"]) - float(r["low"]) for r in R[-1440:]]
+                _rng.sort(); _ref.sort()
+                _vn = _rng[len(_rng) // 2] if _rng else 0.0
+                _vr = _ref[len(_ref) // 2] if _ref else 0.0
                 json.dump(
                     {"updated": int(time.time()), "symbol": SYMBOL,
+                     "moves_2h": _mv2,
+                     "vol_now": round(_vn, 1), "vol_ref": round(_vr, 1),
+                     "spread": round(float(tick.ask - tick.bid), 2),
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
                      "marks": marks, "trend": trend, "choch": choch,

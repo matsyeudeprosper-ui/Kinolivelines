@@ -170,19 +170,41 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
         return False, f"entree trop pres du marche ({abs(entry-mkt):.0f} pts)"
     cancel_pending()                     # one programmed entry at a time
     name = PEND_NAME[(d, stop_side)]
-    # which side of the line must the close land on? the far side from
-    # where price sits right now - one rule for stops and limits alike
-    need = 1 if entry > mkt else -1      # +1 = close above, -1 = close below
-    v = dict(d=d, entry=round(entry, 2), sl=round(sl, 2), tp=round(tp, 2),
-             need=need, kind=name, placed=time.time(), trend=trend)
-    save_vpend(v)
-    lot, _ = lot_for(dist, led)
-    say(f"{name} ARME {lot} @ {entry:.2f} SL {sl:.2f} TP {tp:.2f} - "
-        f"attend une cloture M1 {'au-dessus' if need == 1 else 'en dessous'}")
-    push(f"{name} arme", f"a {entry:.0f}, se declenche sur cloture M1 "
-                         f"{'au-dessus' if need == 1 else 'en dessous'}")
+    against = (trend != 0 and d != trend)
+    lot, bullets = lot_for(dist, led)
+    if against:
+        half, ok = counter_lot()
+        if not ok:
+            return False, "contre-tendance impossible a cette taille de lot"
+        lot, bullets = half, 0
+        # owner 2026-09-15: only a trade AGAINST the structure has to be
+        # confirmed by a close. With the trend, a touch is enough.
+        need = 1 if entry > mkt else -1
+        save_vpend(dict(d=d, entry=round(entry, 2), sl=round(sl, 2),
+                        tp=round(tp, 2), need=need, kind=name,
+                        placed=time.time(), trend=trend))
+        say(f"{name} ARME (contre-tendance) {lot} @ {entry:.2f} "
+            f"SL {sl:.2f} TP {tp:.2f} - attend une cloture M1 "
+            f"{'au-dessus' if need == 1 else 'en dessous'}")
+        push(f"{name} arme", f"contre-tendance a {entry:.0f}, se declenche "
+                             f"sur cloture M1")
+        return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
+                          risk=round(dist * lot, 2), armed=True)
+    # with the trend: a real broker order, triggered on touch
+    r = mt5.order_send({
+        "action": mt5.TRADE_ACTION_PENDING, "symbol": SYMBOL, "volume": lot,
+        "type": PEND[(d, stop_side)], "price": round(entry, 2),
+        "sl": round(sl, 2), "tp": round(tp, 2), "deviation": 200,
+        "magic": MAGIC, "comment": COMMENT,
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_RETURN})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
+    say(f"{name} {lot} @ {entry:.2f} SL {sl:.2f} TP {tp:.2f} "
+        f"(risque ${dist * lot:.2f}, {bullets} balle(s), au contact)")
+    push(f"{name} programme", f"{lot} lot a {entry:.0f}, au contact")
     return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
-                      risk=round(dist * lot, 2), armed=True)
+                      risk=round(dist * lot, 2), bullets=bullets)
 
 
 def vpend_check(close_px, led):
@@ -392,11 +414,17 @@ def main():
                               "e": p.price_open, "sl": p.sl, "tp": p.tp,
                               "pl": round(p.profit, 2)} for p in pos],
                     "pending": ([{
-                        "ticket": 1, "lot": lot_for(
-                            abs(_vp["entry"] - _vp["sl"]), led)[0],
+                        "ticket": 1, "lot": counter_lot()[0],
                         "e": _vp["entry"], "sl": _vp["sl"], "tp": _vp["tp"],
                         "kind": _vp["kind"], "armed": True,
-                        "need": _vp["need"]}] if (_vp := load_vpend()) else []),
+                        "need": _vp["need"]}] if (_vp := load_vpend()) else
+                        [{"ticket": o.ticket, "lot": o.volume_current,
+                          "e": o.price_open, "sl": o.sl, "tp": o.tp,
+                          "armed": False,
+                          "kind": PEND_NAME.get(
+                              (1 if o.type in (2, 4) else -1,
+                               o.type in (4, 5)), "EN ATTENTE")}
+                         for o in pending_orders()]),
                     "updated": int(time.time()),
                 }, open(STATE, "w"))
         except Exception as e:
