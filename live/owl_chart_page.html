@@ -18,7 +18,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #cv{display:block;width:100vw;height:calc(100vh - 48px);
  touch-action:none;cursor:grab;overscroll-behavior:none}
-#backlive{position:fixed;right:14px;bottom:18px;z-index:5;
+#backlive{position:fixed;left:14px;bottom:18px;z-index:41;
  display:none;font-size:.72rem;font-weight:800;color:#0a111c;
  background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
  letter-spacing:.04em;box-shadow:0 4px 14px rgba(232,197,90,.35)}
@@ -681,7 +681,7 @@ function mtRender(){
  i.innerHTML=(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b> &middot; ':'')+
   (pnd?'<b style="color:#e8c55a">'+pnd.kind+' '+pnd.lot.toFixed(2)+
    ' @ '+pnd.e.toFixed(0)+' en cours</b> &middot; ':'')+
-  'lot <b style="color:#cfe3f5;font-size:.95rem">'+c.lot.toFixed(2)+'</b>'+
+  'lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
   (c.bul>0?' <span style="color:#8df0bb">+'+c.bul+' balle'+
    (c.bul>1?'s':'')+'</span>':'')+
   ' &middot; R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
@@ -718,7 +718,10 @@ mtopen.onclick=async()=>{
            :{sl:Math.round(px+a),tp:Math.round(px-a*0.8),entry:null};
  const pb=document.getElementById('mtpend');
  pb.textContent='⏲ En attente';pb.style.color='#e8c55a';
- mtbar.style.display='block';mtopen.style.display='none';mtRender();
+ mtbar.style.display='block';mtopen.style.display='none';
+ document.getElementById('backlive').style.bottom=
+  ((mtbar.offsetHeight||140)+14)+'px';
+ mtRender();
 };
 document.getElementById('mtpend').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
@@ -739,7 +742,8 @@ document.getElementById('mtflip').onclick=()=>{
  mtRender();
 };
 document.getElementById('mtcancel').onclick=()=>{
- MT=null;mtbar.style.display='none';mtopen.style.display='block';};
+ MT=null;mtbar.style.display='none';mtopen.style.display='block';
+ document.getElementById('backlive').style.bottom='18px';};
 document.getElementById('mtgo').onclick=async()=>{
  const c=mtCalc();if(!c||c.bad)return;
  const g=document.getElementById('mtgo');
@@ -752,7 +756,8 @@ document.getElementById('mtgo').onclick=async()=>{
   const j=await r.json();
   g.textContent=j.ok?'Envoye':'Refuse';
   if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';
-   mtopen.style.display='block';g.textContent='Confirmer';g.disabled=false;},1400);}
+   mtopen.style.display='block';g.textContent='Confirmer';g.disabled=false;
+   document.getElementById('backlive').style.bottom='18px';},1400);}
   else{alert(j.err||'refus');g.textContent='Confirmer';g.disabled=false;}
  }catch(e){g.textContent='Confirmer';g.disabled=false;alert('reseau');}
 };
