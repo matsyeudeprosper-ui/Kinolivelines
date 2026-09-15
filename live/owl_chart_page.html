@@ -85,7 +85,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
    Confirmer</button>
  </div>
 </div>
-<button id="mtopen" style="position:fixed;right:12px;bottom:14px;z-index:39;
+<button id="mtopen" style="display:none;position:fixed;right:12px;bottom:14px;z-index:39;
  padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
  font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
  &#128200; Trader</button>
@@ -820,11 +820,14 @@ async function mtLoad(){
   if(r.status===404){MSerr='Cette page n’a pas le droit de trader ce compte.';
    mtopen.style.display='none';return;}
   if(r.ok){MS=await r.json();MSerr=null;
-   if(!MS.acct)MSerr='Le service de trading manuel est arrete.';
-   else if((Date.now()/1000-(MS.updated||0))>90)
+   if(!MS.acct){MSerr='Le service de trading manuel est arrete.';
+    mtopen.style.display='none';return;}
+   if((Date.now()/1000-(MS.updated||0))>90)
     MSerr='Donnees figees depuis '+Math.round(Date.now()/1000-MS.updated)+'s.';
    if(MT)mtRender();
-   mtopen.style.display=MT?'none':'block';}
+   mtopen.style.display=MT?'none':'block';
+   return;}
+  mtopen.style.display='none';
  }catch(e){MSerr='Reseau indisponible.';}
 }
 mtLoad();setInterval(mtLoad,3000);
