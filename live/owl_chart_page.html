@@ -11,6 +11,13 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #back{text-decoration:none;color:#9fc2de;font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
 #hd h1{font-size:1rem;font-weight:700;letter-spacing:.01em}
+#meteo{font-size:.66rem;padding:3px 11px 3px 7px;font-weight:700}
+#meteo i{font-style:normal;font-size:1.05rem;line-height:1;
+ vertical-align:-2px;margin-right:5px;
+ filter:drop-shadow(0 0 5px currentColor)}
+#meteo.busy i{animation:mtp 1.6s ease-in-out infinite}
+@keyframes mtp{0%,100%{opacity:1;transform:scale(1)}
+ 50%{opacity:.55;transform:scale(1.18)}}
 .badge{font-size:.6rem;color:#7fb3e0;
  background:rgba(127,179,224,.08);
  border:1px solid rgba(127,179,224,.22);border-radius:99px;
@@ -638,13 +645,19 @@ function ui(){
  const mb=document.getElementById('meteo');
  if(D.moves_2h!==undefined&&D.vol_ref){
   const mv=D.moves_2h,rv=D.vol_now/Math.max(D.vol_ref,1);
-  const S=(mv>=3&&rv>=1.2)?['⚡','agitee','255,150,120']
-   :((mv>=2||rv>=1.2)?['◑','active','141,240,187']
-   :((mv<=1&&rv<0.8)?['☾','endormie','95,113,133']
-   :['○','calme','143,161,179']));
-  let txt=S[0]+' '+mv+' mvt'+(mv>1?'s':'')+'/2h · '+S[1];
+  // the badge must speak the same language as the bots: the awake gate
+  // calls a market ASLEEP when no flip happened in 2 h, whatever the
+  // candles are doing. Volatility alone never counts as activity.
+  const S=(mv===0)?['💤','endormie','95,113,133']
+   :((mv>=3&&rv>=1.2)?['⚡️','agitee','255,150,120']
+   :((mv>=2||rv>=1.2)?['🔥','active','141,240,187']
+   :['☁️','calme','143,161,179']));
+  let txt=mv+' mvt'+(mv>1?'s':'')+'/2h · '+S[1];
+  if(mv===0&&rv>=1.2)txt+=' mais volatile';
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
-  mb.textContent=txt;mb.style.display='';
+  mb.innerHTML='<i>'+S[0]+'</i>'+txt;
+  mb.className='badge'+(S[1]==='agitee'||S[1]==='active'?' busy':'');
+  mb.style.display='';
   mb.style.color='rgb('+S[2]+')';
   mb.style.borderColor='rgba('+S[2]+',.45)';
   mb.style.background='rgba('+S[2]+',.12)';
