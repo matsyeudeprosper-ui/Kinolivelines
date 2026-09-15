@@ -491,8 +491,12 @@ function draw(){
     ctx.lineTo(W/2-11,ay+(up?6:-6));
     ctx.lineTo(W/2+11,ay+(up?6:-6));
     ctx.closePath();ctx.fill();
-    ctx.font='bold 10px system-ui';ctx.fillText(
-     up?'le prix monte':'le prix descend',W/2-38,ay+(up?26:-18));
+    ctx.font='bold 10px system-ui';
+    const pb2=TOPP+PLOT;
+    const dp=Math.min(1,Math.max(0,up?(80-MTy)/80:(MTy-(pb2-80))/80));
+    const sp=Math.round((hi-lo)*(0.008+0.09*dp*dp));
+    ctx.fillText((up?'monte ':'descend ')+sp+' pts/s  -  '+
+     'relache pour t’arreter',W/2-62,ay+(up?26:-18));
     ctx.restore();}
    ctx.strokeStyle='#0b1118';ctx.lineWidth=2;ctx.beginPath();
    ctx.moveTo(W-22,y-3);ctx.lineTo(W-10,y-3);ctx.moveTo(W-22,y+3);
@@ -642,7 +646,8 @@ cv.addEventListener('pointerdown',e=>{
  e.stopImmediatePropagation();   // the pan listener must not see this
  mtRender();
 },true);
-const MTEDGE=80;                // hold here and the line keeps going
+const MTEDGE=64;                // hold here and the line keeps going
+let MTlast=0;                   // timestamp of the last push tick
 cv.addEventListener('pointermove',e=>{
  if(!MT||!MTdrag)return;
  const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
@@ -655,14 +660,19 @@ cv.addEventListener('pointermove',e=>{
  e.stopImmediatePropagation();
 },true);
 function mtEdgePush(){
+ const now=performance.now();
+ const dt=Math.min(50,now-(MTlast||now));MTlast=now;
  if(!MT||!MTdrag||MTy===null||!SCALE)return;
  let dir=0,depth=0;
  const pb=SCALE.top+SCALE.plot;
  if(MTy>pb-MTEDGE){dir=-1;depth=(MTy-(pb-MTEDGE))/MTEDGE;}
  else if(MTy<MTEDGE){dir=1;depth=(MTEDGE-MTy)/MTEDGE;}
  if(!dir)return;
- const step=(SCALE.hi-SCALE.lo)*0.012*Math.min(1,Math.max(0.15,depth));
- MT[MTdrag]=Math.round((MT[MTdrag]+dir*step)*100)/100;
+ depth=Math.min(1,Math.max(0,depth));
+ // points per SECOND, frame-rate independent, very gentle at the lip
+ // so the last few points can be placed exactly
+ const perSec=(SCALE.hi-SCALE.lo)*(0.008+0.09*depth*depth);
+ MT[MTdrag]=Math.round((MT[MTdrag]+dir*perSec*dt/1000)*100)/100;
  mtRender();
 }
 const mtRelease=e=>{
