@@ -3261,6 +3261,37 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "manual_order":
+            # the chart drags SL/TP and confirms; the daemon validates,
+            # sizes from the debt ledger and sends it to the broker
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upm
+                q = _upm.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                req = {"d": int(q.get("d", ["0"])[0]),
+                       "sl": float(q.get("sl", ["0"])[0]),
+                       "tp": float(q.get("tp", ["0"])[0]),
+                       "ts": time.time(), "by": u.get("id")}
+                if req["d"] not in (1, -1) or req["sl"] <= 0 or req["tp"] <= 0:
+                    self._send(json.dumps({"ok": False, "err": "champs invalides"}),
+                               "application/json")
+                    return
+                try:
+                    os.remove(os.path.join(DIR, "manual_order_result.json"))
+                except Exception:
+                    pass
+                with open(os.path.join(DIR, "manual_order.json"), "w") as f:
+                    json.dump(req, f)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "activate":
             # family member enters the one-time code from Kino
             u = user_by_token(_parts[0])
@@ -3490,6 +3521,22 @@ class H(BaseHTTPRequestHandler):
                     "application/json")
             except Exception:
                 self._send("{}", "application/json")
+        elif sub == "manual_state":
+            # assisted manual trading on the live account (2026-09-15)
+            if not is_admin(user):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                d = json.load(open(os.path.join(DIR, "manual_state.json")))
+            except Exception:
+                d = {}
+            try:
+                d["last_order"] = json.load(open(os.path.join(
+                    DIR, "manual_order_result.json")))
+            except Exception:
+                pass
+            self._send(json.dumps(d), "application/json")
         elif sub == "push_key":
             self._send(json.dumps(
                 {"key": (_VAPID or {}).get("public_key")}),

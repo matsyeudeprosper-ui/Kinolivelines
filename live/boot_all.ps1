@@ -45,9 +45,13 @@ if (-not ($fh | Where-Object { $_.CommandLine -like "*ETHUSD*" })) {
 # 2c) STRUCTURE bots: live (223995441) + demo variants
 $sb = Get-CimInstance Win32_Process |
     Where-Object { $_.CommandLine -like "*structure_bos_bot.py*" }
-if (-not ($sb | Where-Object { $_.CommandLine -notmatch "sniper|halfdebt" })) {
-    Say "starting STRUCTURE bot live (223995441)"
-    Start-Process pythonw -ArgumentList "structure_bos_bot.py" `
+# 2026-09-15 (owner): the LIVE account is half manual now. The auto BOS
+# bot is RETIRED on 223995441 - owl_manual_trader.py keeps the structure,
+# the CHoCH alerts and the debt ledger, and places only what the chart
+# explicitly confirms. Valere's dedicated instance is unaffected.
+if (-not (ProcRunning "owl_manual_trader.py")) {
+    Say "starting manual trader (live 223995441)"
+    Start-Process pythonw -ArgumentList "owl_manual_trader.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 if (-not ($sb | Where-Object { $_.CommandLine -match "sniper" })) {

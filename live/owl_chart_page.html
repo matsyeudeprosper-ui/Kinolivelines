@@ -65,13 +65,31 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <button id="backlive">&#9654; EN DIRECT</button>
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
+<div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
+ background:linear-gradient(180deg,rgba(8,14,22,.92),rgba(8,14,22,.99));
+ border-top:1px solid #1e3346;padding:8px 10px 12px;display:none">
+ <div id="mtinfo" style="display:flex;gap:8px;flex-wrap:wrap;
+  font-size:.72rem;color:#9fb6cc;margin-bottom:8px"></div>
+ <div style="display:flex;gap:8px">
+  <button id="mtcancel" style="flex:1;padding:11px;border-radius:12px;
+   border:1px solid #33475c;background:#16202c;color:#9fb6cc;
+   font-weight:700;font-size:.82rem">Annuler</button>
+  <button id="mtgo" style="flex:2;padding:11px;border-radius:12px;border:0;
+   background:#2563eb;color:#fff;font-weight:800;font-size:.82rem">
+   Confirmer</button>
+ </div>
+</div>
+<button id="mtopen" style="position:fixed;right:12px;bottom:14px;z-index:39;
+ padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
+ font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
+ &#128200; Trader</button>
 <script>
 const tok=location.pathname.split('/').filter(x=>x)[0];
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
-let D=null,lastPx=null;
+let D=null,lastPx=null,SCALE=null;
 let viewOff=0,cwG=7;
 let drag=null;
 cv.addEventListener('pointerdown',e=>{
@@ -176,6 +194,7 @@ function draw(){
  }
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  const px=v=>(hi-v)/(hi-lo)*(Hh-26)+8;
+ SCALE={hi:hi,lo:lo,Hh:Hh,W:W};
  const cw=W/(N+9);
  cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
@@ -433,6 +452,18 @@ function draw(){
    ctx.fillText(it[1]+' '+it[0].toFixed(0),W-lw+1,yl+3.5);
   });
  }
+ if(typeof MT!=='undefined'&&MT){
+  [[MT.sl,'#ff5c5c','SL'],[MT.tp,'#2ecc71','TP']].forEach(([v,col,lb])=>{
+   const y=px(v);if(y<2||y>Hh-2)return;
+   ctx.save();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.setLineDash([6,4]);
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.restore();
+   ctx.fillStyle=col;ctx.beginPath();
+   ctx.roundRect(6,y-9,44,18,9);ctx.fill();
+   ctx.fillStyle='#0b1118';ctx.font='bold 10px system-ui';
+   ctx.fillText(lb,14,y+3.5);
+   ctx.fillStyle=col;ctx.font='bold 10px system-ui';
+   ctx.fillText(v.toFixed(0),54,y+3.5);
+   ctx.beginPath();ctx.arc(W-14,y,7,0,6.3);ctx.fill();});}
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
@@ -494,4 +525,98 @@ async function load(){
 function frame(){draw();requestAnimationFrame(frame);}
 load();setInterval(load,1500);
 requestAnimationFrame(frame);
+
+/* ---- assisted manual trading: drag SL / TP on the chart (2026-09-15) ---- */
+let MT=null,MS=null,MTdrag=null;
+const mtbar=document.getElementById('mtbar');
+const mtopen=document.getElementById('mtopen');
+function y2p(y){if(!SCALE)return null;
+ return SCALE.hi-(y-8)/(SCALE.Hh-26)*(SCALE.hi-SCALE.lo);}
+function p2y(v){if(!SCALE)return null;
+ return (SCALE.hi-v)/(SCALE.hi-SCALE.lo)*(SCALE.Hh-26)+8;}
+function mtLot(dist){
+ if(!MS)return{lot:0.02,bul:0};
+ const base=MS.base_lot||0.02;
+ if(!(MS.debt>0.5)||!(dist>0))return{lot:base,bul:0};
+ const r1=Math.max(dist*0.01,0.01);
+ const bul=Math.min(MS.max_extra||3,Math.floor((MS.chest||0)/r1));
+ return{lot:Math.round((base+bul*0.01)*100)/100,bul:bul};
+}
+function mtCalc(){
+ if(!MT||!MS||!MS.px)return null;
+ const px=MS.px,sl=MT.sl,tp=MT.tp;
+ let d=0;
+ if(tp>px&&sl<px)d=1; else if(tp<px&&sl>px)d=-1;
+ const dist=Math.abs(px-sl),rew=Math.abs(tp-px);
+ const L=mtLot(dist);
+ return{d:d,px:px,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
+  risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,
+  bad:(d===0?'glisse le SL et le TP de part et d’autre du prix'
+      :(dist<=(MS.s_min_dist||10)?'stop trop proche':''))};
+}
+function mtRender(){
+ const c=mtCalc();const i=document.getElementById('mtinfo');
+ if(!c){i.textContent='en attente des donnees...';return;}
+ const dirTxt=c.d===1?'<b style="color:#2ecc71">ACHAT</b>'
+  :(c.d===-1?'<b style="color:#ff5c5c">VENTE</b>'
+  :'<b style="color:#e8c55a">?</b>');
+ i.innerHTML=dirTxt+
+  ' &middot; lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
+  (c.bul>0?' <span style="color:#8df0bb">(+'+c.bul+' balle'+(c.bul>1?'s':'')+')</span>':'')+
+  ' &middot; risque <b style="color:#ff9678">$'+c.risk.toFixed(2)+'</b>'+
+  ' &middot; gain <b style="color:#8df0bb">$'+c.gain.toFixed(2)+'</b>'+
+  ' &middot; R:R '+c.rr.toFixed(2)+
+  '<br>SL '+c.sl.toFixed(0)+' ('+c.dist.toFixed(0)+' pts) &middot; '+
+  'TP '+c.tp.toFixed(0)+' ('+c.rew.toFixed(0)+' pts) &middot; '+
+  'dette $'+(MS.debt||0).toFixed(2)+' &middot; chest $'+(MS.chest||0).toFixed(2)+
+  (c.bad?'<br><span style="color:#ff9678">'+c.bad+'</span>':'');
+ document.getElementById('mtgo').disabled=!!c.bad;
+ document.getElementById('mtgo').style.opacity=c.bad?.45:1;
+}
+mtopen.onclick=()=>{
+ if(!MS||!MS.px){alert('Donnees du compte indisponibles.');return;}
+ if(MS.open&&MS.open.length){alert('Une position est deja ouverte.');return;}
+ const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
+ MT={sl:Math.round(px-a),tp:Math.round(px+a*0.8)};
+ mtbar.style.display='block';mtopen.style.display='none';mtRender();
+};
+document.getElementById('mtcancel').onclick=()=>{
+ MT=null;mtbar.style.display='none';mtopen.style.display='block';};
+document.getElementById('mtgo').onclick=async()=>{
+ const c=mtCalc();if(!c||c.bad)return;
+ const g=document.getElementById('mtgo');
+ g.disabled=true;g.textContent='Envoi...';
+ try{
+  const r=await fetch('/'+tok+'/manual_order',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'d='+c.d+'&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)});
+  const j=await r.json();
+  g.textContent=j.ok?'Envoye':'Refuse';
+  if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';
+   mtopen.style.display='block';g.textContent='Confirmer';g.disabled=false;},1400);}
+  else{alert(j.err||'refus');g.textContent='Confirmer';g.disabled=false;}
+ }catch(e){g.textContent='Confirmer';g.disabled=false;alert('reseau');}
+};
+cv.addEventListener('pointerdown',e=>{
+ if(!MT)return;
+ const r=cv.getBoundingClientRect(),y=e.clientY-r.top;
+ const ds=Math.abs(y-p2y(MT.sl)),dt2=Math.abs(y-p2y(MT.tp));
+ if(Math.min(ds,dt2)<26){MTdrag=ds<dt2?'sl':'tp';
+  cv.setPointerCapture(e.pointerId);e.preventDefault();}
+});
+cv.addEventListener('pointermove',e=>{
+ if(!MT||!MTdrag)return;
+ const r=cv.getBoundingClientRect(),v=y2p(e.clientY-r.top);
+ if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}
+ e.preventDefault();
+});
+cv.addEventListener('pointerup',e=>{MTdrag=null;});
+cv.addEventListener('pointercancel',e=>{MTdrag=null;});
+async function mtLoad(){
+ try{const r=await fetch('/'+tok+'/manual_state',{cache:'no-store'});
+  if(r.ok){MS=await r.json();if(MT)mtRender();
+   if(MS.acct)mtopen.style.display=MT?'none':'block';}
+ }catch(e){}
+}
+mtLoad();setInterval(mtLoad,3000);
 </script></body></html>
