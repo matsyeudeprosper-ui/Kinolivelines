@@ -318,6 +318,28 @@ def main():
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
                 dots, marks, trend, choch, nxt, inv = engine(kept)
+                # INTERNAL STRUCTURE (owner 2026-09-16): between two main
+                # events the range can be wide enough for its own little
+                # BOS patterns. Run the SAME engine over the candles since
+                # the last main event only. It needs no kill switch: the
+                # moment price rejoins the main structure a new mark fires
+                # and this window restarts from there.
+                i_dots = i_marks = []
+                i_trend = 0
+                i_nxt = i_inv = None
+                if marks:
+                    _t0 = marks[-1][0]
+                    # RAW M1, not the silence-filtered candles: the filter
+                    # is what makes the MAIN structure coarse, so reusing
+                    # it here finds almost nothing inside a range.
+                    _inner = [[int(r["time"]), float(r["open"]),
+                               float(r["high"]), float(r["low"]),
+                               float(r["close"]),
+                               1 if r["close"] >= r["open"] else -1]
+                              for r in R[:-1] if int(r["time"]) > _t0]
+                    if len(_inner) >= 10:
+                        (i_dots, i_marks, i_trend, _ic,
+                         i_nxt, i_inv) = engine(_inner)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only
@@ -344,6 +366,11 @@ def main():
                      "marks": marks, "trend": trend, "choch": choch,
                      "next_bos": round(nxt, 2) if nxt else None,
                      "invalid": round(inv, 2) if inv else None,
+                     "int_trend": i_trend,
+                     "int_bos": round(i_nxt, 2) if i_nxt else None,
+                     "int_inv": round(i_inv, 2) if i_inv else None,
+                     "int_dots": [d for d in i_dots if d[0] >= t0],
+                     "int_since": marks[-1][0] if marks else None,
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))

@@ -626,6 +626,33 @@ function draw(){
     ctx.fillStyle='#0b1118';
     ctx.fillText(et,W/2-ew/2+9,ye+4);}}
  }
+ // INTERNAL STRUCTURE (owner 2026-09-16): inside a wide range the market
+ // builds its own smaller structure. Shown only when there is real room
+ // before the main boundaries, kept deliberately faint, and it dies on
+ // its own when price rejoins the main structure.
+ if(D.int_trend&&D.int_bos&&D.px&&D.next_bos&&D.invalid){
+  const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-D.invalid));
+  if(room>span0){
+   const ic=D.int_trend===1?'#9d8cff':'#c58cff';
+   (D.int_dots||[]).slice(-6).forEach(dd=>{
+    const x=xoft[dd[0]];if(x===undefined)return;
+    const y=px(dd[1]);if(y<TOPP||y>TOPP+PLOT)return;
+    ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle=ic;ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();ctx.restore();});
+   const yi=px(D.int_bos);
+   if(D.int_bos<=hi&&D.int_bos>=lo&&yi>TOPP+4&&yi<TOPP+PLOT-4){
+    ctx.save();ctx.strokeStyle=ic;ctx.globalAlpha=.55;ctx.lineWidth=1;
+    ctx.setLineDash([2,6]);
+    ctx.beginPath();ctx.moveTo(W*0.62,yi);ctx.lineTo(W-68,yi);ctx.stroke();
+    ctx.globalAlpha=1;ctx.setLineDash([]);
+    ctx.font='bold 8px system-ui';
+    const t='int '+D.int_bos.toFixed(0);
+    const w3=ctx.measureText(t).width+8;
+    ctx.fillStyle='rgba(8,14,22,.8)';
+    ctx.beginPath();ctx.roundRect(W-w3-66,yi-7,w3,14,7);ctx.fill();
+    ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=ic;ctx.fillText(t,W-w3-62,yi+3);
+    ctx.restore();}}}
  // where the next BOS would fire, and where the trend would break.
  // Deliberately small: a stub over the recent candles plus an edge tag,
  // so it never competes with the SL/TP lines.
