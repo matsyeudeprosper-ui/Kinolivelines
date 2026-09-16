@@ -895,16 +895,19 @@ function ledInfo(){
    'voulez &mdash; jamais plus.');
   r4=row(miniBalles,'Les balles &mdash; '+L.fill+' charg&eacute;e'+
    (L.fill>1?'s':''),
-   '1 balle = un trade de 0.01 d&eacute;j&agrave; pay&eacute; '+
-   'par vos gains. Magasin plein = carte dor&eacute;e : votre '+
-   'grand coup est pr&ecirc;t.');
+   '1 balle = +0.01 de lot, pay&eacute;e par la moiti&eacute; de '+
+   'vos gains. On en prend juste assez pour solder la dette, '+
+   'jamais plus. Le stop ne bouge pas &mdash; seul le lot '+
+   'change.');
  }else{
   r3=row(miniLot,'Prochain soldat : '+L.nl.toFixed(2)+' lot',
    'Le trade un peu plus gros que le robot pr&eacute;pare pour '+
    'rattraper la perte, pay&eacute; par la r&eacute;serve.');
   r4=row(miniBalles,'Les balles',
-   'Le soldat se remplit gain apr&egrave;s gain. Magasin plein '+
-   '= carte dor&eacute;e : il attaque au prochain signal.');
+   'La r&eacute;serve se remplit gain apr&egrave;s gain. Le robot '+
+   'prend le plus petit des deux : ce que la r&eacute;serve paie, '+
+   'et ce qu&#39;il faut pour solder la dette &mdash; jamais plus '+
+   'gros que n&eacute;cessaire. Le stop, lui, ne bouge jamais.');
  }
  sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
   '<p style="font-size:.78rem;color:#6f93b5;margin:0 0 6px">'+
@@ -912,18 +915,24 @@ function ledInfo(){
   row(miniDebt,'&Agrave; rattraper : '+F(L.debt),
    'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
    'Chaque gain fait baisser ce chiffre.')+
-  row(miniRes,'R&eacute;serve : '+F(L.chest),
-   (mode==='man'?'Vos gains':'Les gains')+' mis de '+
-   'c&ocirc;t&eacute; au lieu d&#39;&ecirc;tre risqu&eacute;s '+
-   '&agrave; nouveau &mdash; c&#39;est la munition du '+
-   'rattrapage.')+
+  row(miniRes,'R&eacute;serve : '+F(L.chest)+
+   (L.cap?' / '+F(L.cap):''),
+   'La moiti&eacute; de <b>chaque</b> gain vient ici &mdash; pas '+
+   'seulement les gains qui battent un record. C&#39;est ce qui '+
+   'autorise un lot plus gros pour rattraper : la r&eacute;serve '+
+   'est la munition, donc elle est faite pour &ecirc;tre '+
+   'risqu&eacute;e. Au plus la moiti&eacute; part sur un seul '+
+   'essai, pour qu&#39;il en reste toujours pour le suivant.')+
   r3+r4+
-  '<div style="background:rgba(46,204,113,.08);border:1px solid '+
-   'rgba(46,204,113,.2);border-radius:12px;padding:10px 12px;'+
-   'font-size:.8rem;color:#9fd4b5;line-height:1.45;margin:4px 0 '+
-   '10px">&#128737;&#65039; Si le coup rate, seule la '+
-   'r&eacute;serve paie &mdash; le compte ne descend pas plus '+
-   'bas. S&#39;il gagne, la dette fond.</div>'+
+  '<div style="background:rgba(232,197,90,.08);border:1px solid '+
+   'rgba(232,197,90,.25);border-radius:12px;padding:10px 12px;'+
+   'font-size:.8rem;color:#e8c55a;line-height:1.45;margin:4px 0 '+
+   '10px">&#9888;&#65039; Un trade de rattrapage est plus gros, '+
+   'donc il gagne plus <b>et il perd plus</b>. S&#39;il rate, le '+
+   'compte descend de toute la perte &mdash; la r&eacute;serve ne '+
+   'fait qu&#39;en compter la part suppl&eacute;mentaire. '+
+   'Garde-fou : jamais plus de 10&nbsp;% du solde sur un seul '+
+   'trade.</div>'+
   '<button class="shbtn shmain" onclick="_shDone(1)">'+
   'Compris&nbsp;!</button>');
 }
@@ -2305,11 +2314,22 @@ def user_stats(u):
                 _bsfx = f"_{_var}" if _var else ""
                 _bs = json.load(open(os.path.join(
                     DIR, f"bos_state{_bsfx}.json")))
+                # the recovery dials come from the bot's own state file,
+                # so the card can never describe a system the bot is not
+                # running (owner 2026-09-16)
+                _dbt = float(_bs.get("debt") or 0.0)
+                _jar = float(_bs.get("chest") or 0.0)
+                _bl0 = float(_bs.get("base_lot") or 0.02)
+                _mx = int(_bs.get("max_extra") or 3)
                 d["ledger"] = {
-                    "debt": float(_bs.get("debt") or 0.0),
-                    "chest": float(_bs.get("chest") or 0.0),
-                    "cap": 5.0, "bos": True,
-                    "next_lot": 0.05,
+                    "debt": _dbt, "chest": _jar, "bos": True,
+                    "cap": float(_bs.get("jar_cap") or 10.0),
+                    "jar": bool(_bs.get("jar")),
+                    "skim": float(_bs.get("jar_skim") or 0.5),
+                    "stake": float(_bs.get("jar_stake") or 0.5),
+                    "base_lot": _bl0, "max_extra": _mx,
+                    "rr": float(_bs.get("rr") or 0.8),
+                    "next_lot": round(_bl0 + _mx * 0.01, 2),
                     "need_min": 3.0}  # ~one bullet at typical stop
                 try:
                     d["meteo_struct"] = json.load(open(os.path.join(
@@ -2317,7 +2337,20 @@ def user_stats(u):
                     # live bullet price from the bot (stop distance)
                     _bl = d["meteo_struct"].get("bullet")
                     if _bl:
-                        d["ledger"]["need_min"] = float(_bl)
+                        _bl = float(_bl)
+                        d["ledger"]["need_min"] = _bl
+                        _L = d["ledger"]
+                        if _L["jar"] and _dbt > 0.5 and _bl > 0:
+                            import math as _m
+                            _byb = int((_jar * _L["stake"]) // _bl)
+                            _g1 = _L["rr"] * _bl / 0.01 * 0.01
+                            _byd = (int(_m.ceil(_dbt / _g1))
+                                    if _g1 > 0 else 0)
+                            _ex = max(0, min(_mx, _byb, _byd))
+                            _L["next_lot"] = round(_bl0 + _ex * 0.01, 2)
+                            _L["fill_n"] = _ex
+                        elif _dbt <= 0.5:
+                            _L["next_lot"] = _bl0
                 except Exception:
                     pass
         except Exception:

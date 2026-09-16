@@ -306,7 +306,29 @@ def day_blocked(st):
 
 
 def save_state(st):
-    json.dump(st, open(STATE_F, "w"))
+    # the app reads the recovery dials from here, so there is ONE source of
+    # truth for them instead of a copy in the server (owner 2026-09-16)
+    st["jar"] = JAR
+    st["jar_skim"] = JAR_SKIM
+    st["jar_stake"] = JAR_STAKE
+    st["jar_cap"] = round(max(JAR_FLOOR_CAP,
+                              JAR_DEBT_MULT * st.get("debt", 0.0)), 2)
+    st["base_lot"] = BASE_LOT
+    st["max_extra"] = MAX_EXTRA
+    st["rr"] = RR
+    tmp = STATE_F + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(st, fh)
+    for _ in range(12):
+        try:
+            os.replace(tmp, STATE_F)
+            return
+        except PermissionError:
+            time.sleep(0.05)
+    try:
+        os.replace(tmp, STATE_F)
+    except Exception:
+        pass
 
 
 def ensure_algo():
