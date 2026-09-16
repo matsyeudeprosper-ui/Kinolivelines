@@ -3289,7 +3289,20 @@ class H(BaseHTTPRequestHandler):
                        "entry": float(q.get("entry", ["0"])[0] or 0),
                        "cancel": q.get("cancel", [""])[0],
                        "modify": q.get("modify", [""])[0],
+                       "close": q.get("close", [""])[0],
                        "ts": time.time(), "by": u.get("id")}
+                if req["close"]:
+                    # close the running position at market, on demand
+                    try:
+                        os.remove(os.path.join(
+                            DIR, f"manual_order_result_{u['id']}.json"))
+                    except Exception:
+                        pass
+                    with open(os.path.join(
+                            DIR, f"manual_order_{u['id']}.json"), "w") as f:
+                        json.dump(req, f)
+                    self._send(json.dumps({"ok": True}), "application/json")
+                    return
                 if req["modify"]:
                     # moving the SL/TP of a position that is already open:
                     # only the two levels matter, direction and lot are the

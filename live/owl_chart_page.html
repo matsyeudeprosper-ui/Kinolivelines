@@ -90,6 +90,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
   <button id="mtflip" style="flex:1;padding:11px;border-radius:12px;
    border:1px solid #33475c;background:#16202c;color:#cfe3f5;
    font-weight:700;font-size:.82rem">&#8645; Inverser</button>
+  <button id="mtclose" style="display:none;flex:1;padding:11px;
+   border-radius:12px;border:1px solid #6d2230;background:#2a1116;
+   color:#ff8a8a;font-weight:800;font-size:.82rem">&#10005; Fermer</button>
   <button id="mtcancel" style="flex:1;padding:11px;border-radius:12px;
    border:1px solid #33475c;background:#16202c;color:#9fb6cc;
    font-weight:700;font-size:.82rem">Annuler</button>
@@ -957,6 +960,12 @@ function mtRender(){
  if(!go.dataset.busy)go.textContent=c.edit?'Modifier':'Confirmer';
  // an edit touches only the two levels: no pending, no flip
  document.getElementById('mtpend').style.display=c.edit?'none':'';
+ const cb=document.getElementById('mtclose');
+ const opos=(MS.open&&MS.open.length)?MS.open[0]:null;
+ cb.style.display=(c.edit&&opos)?'':'none';
+ if(c.edit&&opos)cb.innerHTML='&#10005; Fermer '+
+  '<b style="color:'+(opos.pl>=0?'#8df0bb':'#ff8a8a')+'">'+
+  (opos.pl>=0?'+':'')+'$'+opos.pl.toFixed(2)+'</b>';
  // no tool on screen may build a counter-trend trade when it is forbidden
  const fb=document.getElementById('mtflip');
  const blocked=c.edit||(MS.counter_ok===false);
@@ -1031,6 +1040,24 @@ document.getElementById('mtflip').onclick=()=>{
 document.getElementById('mtcancel').onclick=()=>{
  MT=null;mtbar.style.display='none';mtopen.style.display='block';
  document.getElementById('backlive').style.bottom='18px';};
+document.getElementById('mtclose').onclick=async()=>{
+ const p=(MS&&MS.open&&MS.open.length)?MS.open[0]:null;
+ if(!p)return;
+ if(!confirm('Fermer '+(p.d===1?'ACHAT ':'VENTE ')+p.lot.toFixed(2)+
+   ' au prix du marche ? P&L actuel '+(p.pl>=0?'+':'')+'$'+p.pl.toFixed(2)))
+  return;
+ const b=document.getElementById('mtclose');
+ b.disabled=true;b.textContent='Fermeture...';
+ try{
+  const r=await fetch('/'+tok+'/manual_order',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'close=1'});
+  const j=await r.json();
+  if(j.ok){MT=null;mtbar.style.display='none';mtopen.style.display='block';}
+  else alert(j.err||'refus');
+ }catch(e){alert('reseau');}
+ b.disabled=false;b.innerHTML='&#10005; Fermer';
+};
 document.getElementById('mtgo').onclick=async()=>{
  const c=mtCalc();if(!c||c.bad)return;
  const g=document.getElementById('mtgo');

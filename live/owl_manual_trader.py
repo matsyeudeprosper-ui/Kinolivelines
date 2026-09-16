@@ -391,8 +391,40 @@ def modify(req):
                       risk=round(new_risk, 2), modified=True)
 
 
+def close_now(req):
+    """Owner 2026-09-16: close the running position on demand, at market.
+    The ledger replays every closing deal on the symbol, so the debt and
+    the war chest follow on their own."""
+    pos = [p for p in open_positions() if p.magic == MAGIC]
+    if not pos:
+        return False, "aucune position ouverte"
+    p = pos[0]
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return False, "pas de cotation"
+    d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+    r = mt5.order_send({
+        "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+        "volume": p.volume, "position": p.ticket,
+        "type": mt5.ORDER_TYPE_SELL if d == 1 else mt5.ORDER_TYPE_BUY,
+        "price": tick.bid if d == 1 else tick.ask,
+        "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-X",
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
+    say(f"POSITION FERMEE A LA MAIN #{p.ticket} {p.volume} @ {r.price:.2f} "
+        f"(P&L flottant ${p.profit:.2f})")
+    push("Position fermee", f"{p.volume} lot a {r.price:.0f}, "
+                            f"P&L ${p.profit:.2f}")
+    return True, dict(ticket=p.ticket, lot=p.volume, price=r.price,
+                      pl=round(p.profit, 2), closed=True)
+
+
 def execute(req, led, trend=0):
     """Validate and place the order the chart asked for."""
+    if req.get("close"):
+        return close_now(req)
     if req.get("modify"):
         return modify(req)
     if req.get("cancel"):
