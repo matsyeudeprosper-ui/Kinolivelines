@@ -718,6 +718,31 @@ function draw(){
      ctx.lineTo(x+sg,y+dy3+(m[3]===1?sg*0.6:-sg*0.6));
      ctx.closePath();ctx.fill();}
     ctx.restore();});
+   // The LIVE internal invalidation: where the internal trend flips, and
+   // where the trade tool puts the stop. The main structure marks this with
+   // a dashed line and a diamond; so does the internal one now. The short
+   // marks above are event HISTORY - a different thing (owner 2026-09-16).
+   if(D.int_inv){
+    const yv=px(D.int_inv);
+    if(D.int_inv>hi||D.int_inv<lo){edgeMark(D.int_inv,ic,'int CHoCH');}
+    else if(yv>TOPP+4&&yv<TOPP+PLOT-4){
+     const xv=(D.int_inv_t!==undefined&&xnear(D.int_inv_t)!==undefined)
+      ?xnear(D.int_inv_t):0;
+     ctx.save();
+     ctx.strokeStyle=ic;ctx.globalAlpha=.45;ctx.lineWidth=1;
+     ctx.setLineDash([6,4]);
+     ctx.beginPath();ctx.moveTo(xv,yv);ctx.lineTo(W-24,yv);ctx.stroke();
+     ctx.setLineDash([]);ctx.globalAlpha=1;
+     // diamond set further in than the main one, so the two read as a
+     // hierarchy even when they land on the same row
+     ctx.fillStyle=ic;
+     ctx.beginPath();
+     ctx.moveTo(W-30,yv-4);ctx.lineTo(W-26,yv);
+     ctx.lineTo(W-30,yv+4);ctx.lineTo(W-34,yv);
+     ctx.closePath();ctx.fill();
+     ctx.shadowColor=ic;ctx.shadowBlur=6;
+     ctx.beginPath();ctx.arc(xv,yv,3.2,0,6.3);ctx.fill();
+     ctx.shadowBlur=0;ctx.restore();}}
    const yi=px(D.int_bos);
    // only anticipate the next break once price has pulled back from the
    // level - before that it is just the current extreme (owner 2026-09-16)
