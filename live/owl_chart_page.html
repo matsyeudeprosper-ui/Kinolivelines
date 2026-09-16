@@ -226,9 +226,15 @@ function draw(){
   if(t[2]>0){hi=Math.max(hi,t[2]);lo=Math.min(lo,t[2]);}
   [t[3],t[4]].forEach(v=>{if(v>0&&Math.abs(v-t[2])<span0*1.5){
    hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
- // the lines you are actively dragging always stay in view
- if(MT){hi=Math.max(hi,MT.sl,MT.tp);lo=Math.min(lo,MT.sl,MT.tp);
-  if(MT.entry){hi=Math.max(hi,MT.entry);lo=Math.min(lo,MT.entry);}}
+ // the lines you are dragging pull the view, but only up to a limit:
+ // they used to be free to stretch it, and since the edge push speed is
+ // a share of the visible range, the two fed each other and the scale
+ // ran away exponentially (2026-09-16).
+ const cmid=(hi+lo)/2,climb=Math.max(span0,1)*2.5;
+ if(MT){[MT.sl,MT.tp,MT.entry].forEach(v=>{
+  if(!v||!isFinite(v))return;
+  hi=Math.max(hi,Math.min(v,cmid+climb));
+  lo=Math.min(lo,Math.max(v,cmid-climb));});}
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  if(vzoom!==1){const mid=(hi+lo)/2,half=(hi-lo)/2*vzoom;
   hi=mid+half;lo=mid-half;}
@@ -237,7 +243,7 @@ function draw(){
  const TOPP=8,BOTP=MT?((mtbar.offsetHeight||140)+12):26;
  const PLOT=Math.max(60,Hh-TOPP-BOTP);
  const px=v=>(hi-v)/(hi-lo)*PLOT+TOPP;
- SCALE={hi:hi,lo:lo,Hh:Hh,W:W,top:TOPP,bot:BOTP,plot:PLOT};
+ SCALE={hi:hi,lo:lo,Hh:Hh,W:W,top:TOPP,bot:BOTP,plot:PLOT,span0:span0};
  const cw=W/(N+9);
  cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
@@ -533,7 +539,9 @@ function draw(){
    [MT.tp,'#2ecc71','TP','tp',mc?('+$'+mc.gain.toFixed(2)):'',
     mc?(mc.rew.toFixed(0)+' pts'):'']].forEach(
    ([v,col,lb,key,money,pts])=>{
-   const y=px(v);if(y<2||y>TOPP+PLOT-2)return;
+   const y=px(v);
+   if(v>hi||v<lo){edgeMark(v,col,lb);return;}
+   if(y<2||y>TOPP+PLOT-2)return;
    const on=(MTdrag===key);
    ctx.save();
    ctx.globalAlpha=on?.16:.07;ctx.fillStyle=col;
@@ -744,6 +752,11 @@ function y2p(y){if(!SCALE)return null;
  return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
 function p2y(v){if(!SCALE)return null;
  return (SCALE.hi-v)/(SCALE.hi-SCALE.lo)*SCALE.plot+SCALE.top;}
+function mtClamp(v){
+ if(!isFinite(v))return MS&&MS.px?MS.px:0;
+ const p=(MS&&MS.px)?MS.px:v;
+ return Math.round(Math.min(p*1.5,Math.max(p*0.5,v))*100)/100;
+}
 function mtLot(dist,against){
  if(!MS)return{lot:0.02,bul:0};
  const base=MS.base_lot||0.02;
@@ -917,7 +930,7 @@ cv.addEventListener('pointermove',e=>{
  const plotBot=SCALE?SCALE.top+SCALE.plot:0;
  const inEdge=SCALE&&(y>plotBot-MTEDGE||y<MTEDGE);
  if(!inEdge){const v=y2p(y);
-  if(v){MT[MTdrag]=Math.round(v*100)/100;mtRender();}}
+  if(v&&isFinite(v)){MT[MTdrag]=mtClamp(v);mtRender();}}
  e.preventDefault();
  e.stopImmediatePropagation();
 },true);
@@ -933,8 +946,9 @@ function mtEdgePush(){
  depth=Math.min(1,Math.max(0,depth));
  // points per SECOND, frame-rate independent, very gentle at the lip
  // so the last few points can be placed exactly
- const perSec=(SCALE.hi-SCALE.lo)*(0.008+0.09*depth*depth);
- MT[MTdrag]=Math.round((MT[MTdrag]+dir*perSec*dt/1000)*100)/100;
+ const base=Math.max(SCALE.span0||0,1);      // candles only, stable
+ const perSec=base*(0.05+0.55*depth*depth);
+ MT[MTdrag]=mtClamp(MT[MTdrag]+dir*perSec*dt/1000);
  mtRender();
 }
 const mtRelease=e=>{
