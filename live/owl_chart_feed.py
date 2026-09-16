@@ -346,9 +346,16 @@ def main():
                 i_trend = i_choch = 0
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
                 i_ready = False
-                _since = marks[-1][0] if marks else None
-                if marks:
-                    _t0 = marks[-1][0]
+                _since = inv_t if inv_t else (marks[-1][0] if marks else None)
+                # Owner 2026-09-16: "the internal structure is BOS, CHoCH
+                # that forms in between the space of a confirmed BOS and the
+                # glowing dot created by that BOS." So the window opens at
+                # the CURRENT protected dot, which moves on every break -
+                # continuations included. marks[] only records flips, so
+                # anchoring there left the window running for hours after a
+                # continuation had already opened a new space.
+                _t0 = inv_t if inv_t else (marks[-1][0] if marks else None)
+                if _t0:
                     # RAW M1. The silence filter was tried here on
                     # 2026-09-16 and reverted the same day: it left the
                     # internal structure existing only 24% of the time,

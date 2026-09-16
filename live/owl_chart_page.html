@@ -311,12 +311,27 @@ function draw(){
    g.addColorStop(1,'rgba(46,204,113,.11)');
    ctx.fillStyle=g;ctx.fillRect(0,a,W,b-a);}
  });
+ // The internal engine reads raw M1 while the chart draws the
+ // silence-filtered candles, so an internal dot or event often falls on a
+ // minute that is not drawn. Snap it to the nearest drawn candle instead of
+ // dropping it - 22 of 30 internal dots were vanishing (2026-09-16).
+ const xnear=t=>{
+  if(xoft[t]!==undefined)return xoft[t];
+  if(!xts.length)return undefined;
+  if(t<xts[0]||t>xts[xts.length-1])return undefined;
+  let lo=0,hi=xts.length-1;
+  while(lo<hi){const mid=(lo+hi)>>1;
+   if(xts[mid]<t)lo=mid+1;else hi=mid;}
+  const a=xts[Math.max(0,lo-1)],b=xts[lo];
+  return xoft[(t-a<=b-t)?a:b];
+ };
  // --- candles: rounded, depth fade, glow on the recent ---
  const xoft={};
+ const xts=[];                      // drawn candle times, ascending
  ctx.lineCap='round';
  cs.forEach((c,i)=>{
   const x=Math.round(cw*(i+1))+0.5;   // crisp pixel-centred wick
-  xoft[c[0]]=x;
+  xoft[c[0]]=x;xts.push(c[0]);
   const up=c[5]===1;
   const col=up?'#2ecc71':'#ff5c5c';
   const age=(cs.length-1-i)/Math.max(1,cs.length-1);
@@ -650,7 +665,7 @@ function draw(){
   if(mainRange>0&&room>mainRange*0.08){
    const ic=D.int_trend===1?'#9d8cff':'#c58cff';
    (D.int_dots||[]).slice(-6).forEach(dd=>{
-    const x=xoft[dd[0]];if(x===undefined)return;
+    const x=xnear(dd[0]);if(x===undefined)return;
     const y=px(dd[1]);if(y<TOPP||y>TOPP+PLOT)return;
     ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=ic;ctx.lineWidth=1.2;
     ctx.shadowColor=ic;ctx.shadowBlur=4;
@@ -663,7 +678,7 @@ function draw(){
    // language as the main one - a SHORT segment where an event happened,
    // solid for a BOS, dotted for a CHoCH. No full-width lines.
    (D.int_marks||[]).forEach(m=>{
-    const x=xoft[m[0]];
+    const x=xnear(m[0]);
     if(x===undefined)return;
     const y=px(m[1]);
     if(y<TOPP+3||y>TOPP+PLOT-3)return;
@@ -695,8 +710,8 @@ function draw(){
    else if(yi>TOPP+4&&yi<TOPP+PLOT-4){
     // anchored to the candle that set the level, so it reads as coming
     // from somewhere instead of floating (2026-09-16)
-    const xa=(D.int_bos_t!==undefined&&xoft[D.int_bos_t]!==undefined)
-     ?xoft[D.int_bos_t]:W*0.62;
+    const xa=(D.int_bos_t!==undefined&&xnear(D.int_bos_t)!==undefined)
+     ?xnear(D.int_bos_t):W*0.62;
     ctx.save();ctx.strokeStyle=ic;ctx.globalAlpha=.55;ctx.lineWidth=1;
     ctx.setLineDash([2,6]);
     ctx.beginPath();ctx.moveTo(xa,yi);ctx.lineTo(W,yi);ctx.stroke();

@@ -101,3 +101,41 @@ The open question is no longer the filter but the WINDOW: when the main
 structure is quiet the internal window reaches 19 h and 57% of the chart,
 which is what makes raw M1 so busy there. Capping it is the next lever if
 the internal structure ever feels too noisy.
+
+
+## 6. Why the internal engine reads raw candles — the actual mechanism
+Owner: "we don't change the filter because that is what makes the chart
+smooth... I don't understand why candles must go unfiltered."
+
+**The chart is still filtered.** Only the internal ENGINE reads raw M1.
+The candles drawn are `kept`, the silence-filtered series, exactly as
+before. Nothing about the chart's smoothness changed.
+
+**Why the engine cannot use the filtered series** (`int_why.py`): the
+filter and the swing rule do the same job twice. The filter keeps a candle
+only if its close commits beyond the previous kept candle's extreme. The
+engine confirms a swing from the candles sitting BETWEEN the reference and
+the break. Filtering removes precisely those in-between candles, so the
+span is empty and no dot can form.
+
+Measured over the same period and the same window:
+
+| series | candles | triggers | empty span | dots |
+|---|---|---|---|---|
+| raw M1 | 1425 | 13 | 69% | 4 |
+| silence-filtered | 562 | 13 | **92%** | 1 |
+
+Same number of trigger events either way. The filter does not hide breaks,
+it destroys the evidence needed to place the swing that the break confirms.
+
+## 7. Two real bugs this uncovered (fixed 2026-09-16)
+- **22 of 30 internal dots were never drawn.** The engine emits them on raw
+  minutes; the chart indexes x by drawn candle time, so a dot on a filtered
+  minute silently returned early. A nearest-drawn-candle lookup (`xnear`)
+  now snaps them. All 30 draw.
+- **The internal window was anchored to `marks[-1]`, which records only
+  flips.** The owner's definition is the space between a confirmed BOS and
+  the glowing dot it created, and that dot moves on every break including
+  continuations. The window now opens at `inv_t`, the current protected
+  dot, so a continuation genuinely restarts the nested space instead of
+  leaving it running for hours.
