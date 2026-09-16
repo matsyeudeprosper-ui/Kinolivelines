@@ -212,16 +212,21 @@ def engine(kept):
     # 2026-09-15: the two levels that decide what happens next -
     # hi_v/lo_v is the price a close must beat for the NEXT BOS,
     # prot_* is where the trend would break instead (CHoCH).
-    nxt = hi_v if trend == 1 else (lo_v if trend == -1 else None)
+    # Owner 2026-09-16: once a CHoCH has fired, the break that matters is
+    # the one that CONFIRMS it, not the next break of the trend that is
+    # already dying. Anticipate in the pending direction while a flip is
+    # armed, and fall back to the trend when none is.
+    _dir = choch if choch else trend
+    nxt = hi_v if _dir == 1 else (lo_v if _dir == -1 else None)
     inv = (prot_lo[1] if (trend == 1 and prot_lo) else
            (prot_hi[1] if (trend == -1 and prot_hi) else None))
     # the candle that SET each level, so the chart can anchor the line to
     # its origin instead of floating it (2026-09-16)
-    _ai = hi_i if trend == 1 else lo_i
+    _ai = hi_i if _dir == 1 else lo_i
     nxt_t = kept[_ai][0] if (nxt is not None and 0 <= _ai < len(kept)) else None
     inv_t = (prot_lo[0] if (trend == 1 and prot_lo) else
              (prot_hi[0] if (trend == -1 and prot_hi) else None))
-    return dots, marks, trend, choch, nxt, inv, nxt_t, inv_t
+    return dots, marks, trend, choch, nxt, inv, nxt_t, inv_t, _dir
 
 
 def trend_filter(cands):
@@ -346,7 +351,7 @@ def main():
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
                 (dots, marks, trend, choch, nxt, inv,
-                 nxt_t, inv_t) = engine(kept)
+                 nxt_t, inv_t, _mdir) = engine(kept)
                 # INTERNAL STRUCTURE (owner 2026-09-16): between two main
                 # events the range can be wide enough for its own little
                 # BOS patterns. Run the SAME engine over the candles since
@@ -354,7 +359,7 @@ def main():
                 # moment price rejoins the main structure a new mark fires
                 # and this window restarts from there.
                 i_dots = i_marks = []
-                i_trend = i_choch = 0
+                i_trend = i_choch = i_dir = 0
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
                 i_ready = False
                 _since = inv_t if inv_t else (marks[-1][0] if marks else None)
@@ -381,14 +386,15 @@ def main():
                               for r in R[:-1] if int(r["time"]) > _t0]
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
-                         i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
+                         i_nxt, i_inv, i_nxt_t, i_inv_t,
+                         i_dir) = engine(_inner)
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
                         # candle that set it. Before that the "next BOS" is
                         # just the current extreme and says nothing.
-                        if i_nxt_t and i_trend:
-                            _opp = -1 if i_trend == 1 else 1
+                        if i_nxt_t and i_dir:
+                            _opp = -1 if i_dir == 1 else 1
                             i_ready = any(
                                 r[5] == _opp for r in _inner
                                 if r[0] > i_nxt_t)
@@ -410,8 +416,8 @@ def main():
                 # next break under the same condition as the internal one -
                 # price must have pulled back from the level first
                 _ready = False
-                if nxt_t and trend:
-                    _o = -1 if trend == 1 else 1
+                if nxt_t and _mdir:
+                    _o = -1 if _mdir == 1 else 1
                     _ready = any(k[5] == _o for k in kept if k[0] > nxt_t)
                 _now = int(R[-1]["time"])
                 _mv2 = sum(1 for m in marks if m[0] >= _now - 7200)
@@ -438,6 +444,8 @@ def main():
                      "next_bos_t": nxt_t, "invalid_t": inv_t,
                      "int_since": _since,
                      "int_choch": i_choch,
+                     "bos_dir": _mdir,
+                     "int_bos_dir": i_dir,
                      "bos_ready": _ready,
                      "int_bos_ready": i_ready,
                      # the internal engine fires every few minutes; the

@@ -746,9 +746,10 @@ function draw(){
    const yi=px(D.int_bos);
    // only anticipate the next break once price has pulled back from the
    // level - before that it is just the current extreme (owner 2026-09-16)
+   const ibd=D.int_bos_dir||D.int_trend;
    if(!D.int_bos_ready){}
    else if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
-    (D.int_trend===1?'▲ ':(D.int_trend===-1?'▼ ':''))+'int BOS');}
+    (ibd===1?'▲ ':(ibd===-1?'▼ ':''))+'int BOS');}
    else if(yi>TOPP+4&&yi<TOPP+PLOT-4){
     // anchored to the candle that set the level, so it reads as coming
     // from somewhere instead of floating (2026-09-16)
@@ -761,13 +762,11 @@ function draw(){
     ctx.beginPath();ctx.arc(xa,yi,2.8,0,6.3);ctx.fill();   // its origin
     ctx.globalAlpha=1;
     ctx.font='bold 8px system-ui';
-    const ia=(D.int_trend===1?'▲ ':(D.int_trend===-1?'▼ ':''));
-    // a CHoCH against the internal trend has already fired and the engine
-    // is waiting for the BOS that confirms the flip - say so, because the
-    // arrow alone shows the trend that is about to die (owner 2026-09-16)
-    const flip=(D.int_choch&&D.int_choch!==D.int_trend)
-     ?(' · bascule '+(D.int_choch===1?'▲':'▼')):'';
-    const t=ia+'int BOS '+D.int_bos.toFixed(0)+flip;
+    // the arrow is the direction of the break being anticipated. After a
+    // CHoCH that is the confirming direction, so it already points the new
+    // way instead of the dying trend's (owner 2026-09-16).
+    const ia=(ibd===1?'▲ ':(ibd===-1?'▼ ':''));
+    const t=ia+'int BOS '+D.int_bos.toFixed(0);
     const w3=ctx.measureText(t).width+8;
     const b3=Math.max(2,Math.min(xa-w3-8,W-w3-24));
     ctx.fillStyle='rgba(8,14,22,.8)';

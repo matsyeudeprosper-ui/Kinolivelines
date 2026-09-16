@@ -14,7 +14,7 @@ f = lambda t: dt.datetime.utcfromtimestamp(t).strftime("%m-%d %H:%M")
 rows = [[int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]),
          float(r["close"]), 1 if r["close"] >= r["open"] else -1]
         for r in R[:-1] if int(r["time"]) > t0]
-d, m, tr, ch, nx, iv, nxt_t, iv_t = F.engine(rows)
+d, m, tr, ch, nx, iv, nxt_t, iv_t, _dir = F.engine(rows)
 print(f"fenetre interne depuis {f(t0)} : {len(rows)} bougies")
 print(f"resultat : tendance {tr:+d}, choch en attente {ch:+d}, "
       f"BOS {nx and round(nx,2)}, CHoCH {iv and round(iv,2)}")

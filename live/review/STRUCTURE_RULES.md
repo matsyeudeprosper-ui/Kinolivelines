@@ -89,3 +89,24 @@ the right answer, since the protected level should ratchet with the trend.
 That is frozen production and every experiment E011-E027 was run against
 the current rule, so changing it is a strategy change, not a display fix.
 Flagged for the owner's decision.
+
+## Correction 2026-09-16 (2) — what gets anticipated during a pending flip
+Owner: "the moment a CHoCH is created, and a pullback happens, we should
+already show the anticipated BOS; in this case a bearish BOS should have
+shown already."
+
+`nxt` was keyed to `trend`, so after a bearish CHoCH the chart still
+anticipated the BULLISH break of the trend that was already broken. The
+anticipated level now follows `choch` while a flip is armed and falls back
+to `trend` when none is. The arrow on the tag follows the same direction,
+so it points the new way instead of the dying one; the redundant
+"· bascule" suffix is gone from the tag (the panel line still names both).
+
+Verified by replay (`verify_pending.py`): at 22:14, trend +1 with a bearish
+CHoCH armed, the anticipated break reads bearish at 75302.68. Before the
+change it read the bullish level above.
+
+The pullback gate keeps its meaning. During a straight drop `lo_v` ratchets
+down every candle, so the level is only the current extreme and stays
+hidden; the first candle that does not extend it counts as the pullback and
+the level appears.
