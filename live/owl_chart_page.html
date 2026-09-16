@@ -668,15 +668,19 @@ function draw(){
     const y=px(m[1]);
     if(y<TOPP+3||y>TOPP+PLOT-3)return;
     const isC=(m[2]==='choch');
+    // like the main marks, the colour carries the EVENT's direction, not
+    // the trend - otherwise a CHoCH (a circle, no arrow) shows no direction
+    // at all. Two purples so they still read as internal.
+    const mc=(m[3]===1)?'#8f7cff':'#d97cff';
     ctx.save();
-    ctx.strokeStyle=ic;ctx.globalAlpha=.85;
+    ctx.strokeStyle=mc;ctx.globalAlpha=.85;
     ctx.lineWidth=isC?1:1.6;
     if(isC)ctx.setLineDash([3,3]);
     ctx.beginPath();ctx.moveTo(x-13,y);ctx.lineTo(x+13,y);ctx.stroke();
     ctx.setLineDash([]);
     if(isC){ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();}
     else{const sg=3.4,dy3=(m[3]===1)?-5:5;
-     ctx.fillStyle=ic;ctx.beginPath();
+     ctx.fillStyle=mc;ctx.beginPath();
      ctx.moveTo(x,y+dy3+(m[3]===1?-sg:sg));
      ctx.lineTo(x-sg,y+dy3+(m[3]===1?sg*0.6:-sg*0.6));
      ctx.lineTo(x+sg,y+dy3+(m[3]===1?sg*0.6:-sg*0.6));
