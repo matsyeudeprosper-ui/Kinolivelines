@@ -637,8 +637,41 @@ function draw(){
    (D.int_dots||[]).slice(-6).forEach(dd=>{
     const x=xoft[dd[0]];if(x===undefined)return;
     const y=px(dd[1]);if(y<TOPP||y>TOPP+PLOT)return;
-    ctx.save();ctx.globalAlpha=.5;ctx.strokeStyle=ic;ctx.lineWidth=1.2;
-    ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();ctx.restore();});
+    ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=ic;ctx.lineWidth=1.2;
+    ctx.shadowColor=ic;ctx.shadowBlur=4;
+    ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();
+    ctx.shadowBlur=0;ctx.restore();});
+   // the internal protected dot and its line: same vocabulary as the
+   // main structure (glowing dot + dashed line + diamond) but smaller
+   // and dimmer, so the hierarchy stays obvious at a glance
+   if(D.int_inv){
+    const yv=px(D.int_inv);
+    if(D.int_inv<=hi&&D.int_inv>=lo&&yv>TOPP+4&&yv<TOPP+PLOT-4){
+     const xv=(D.int_inv_t!==undefined&&xoft[D.int_inv_t]!==undefined)
+      ?xoft[D.int_inv_t]:W*0.62;
+     ctx.save();
+     ctx.strokeStyle=ic;ctx.globalAlpha=.4;ctx.lineWidth=1;
+     ctx.setLineDash([5,4]);
+     ctx.beginPath();ctx.moveTo(xv,yv);ctx.lineTo(W-68,yv);ctx.stroke();
+     ctx.setLineDash([]);ctx.globalAlpha=1;
+     // small diamond: the internal trend dies here
+     ctx.fillStyle=ic;
+     ctx.beginPath();
+     ctx.moveTo(W-62,yv-3.5);ctx.lineTo(W-58.5,yv);
+     ctx.lineTo(W-62,yv+3.5);ctx.lineTo(W-65.5,yv);
+     ctx.closePath();ctx.fill();
+     // the protected dot itself, with a soft glow
+     ctx.shadowColor=ic;ctx.shadowBlur=7;
+     ctx.beginPath();ctx.arc(xv,yv,3.4,0,6.3);ctx.fill();
+     ctx.shadowBlur=0;
+     ctx.font='bold 8px system-ui';
+     const tv='int CHoCH '+D.int_inv.toFixed(0);
+     const wv=ctx.measureText(tv).width+8;
+     ctx.fillStyle='rgba(8,14,22,.8)';
+     ctx.beginPath();ctx.roundRect(W-wv-70,yv-7,wv,14,7);ctx.fill();
+     ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
+     ctx.fillStyle=ic;ctx.fillText(tv,W-wv-66,yv+3);
+     ctx.restore();}}
    const yi=px(D.int_bos);
    if(D.int_bos<=hi&&D.int_bos>=lo&&yi>TOPP+4&&yi<TOPP+PLOT-4){
     // anchored to the candle that set the level, so it reads as coming
