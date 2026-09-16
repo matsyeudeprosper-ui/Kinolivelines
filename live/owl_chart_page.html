@@ -659,40 +659,34 @@ function draw(){
    // the internal protected dot and its line: same vocabulary as the
    // main structure (glowing dot + dashed line + diamond) but smaller
    // and dimmer, so the hierarchy stays obvious at a glance
-   if(D.int_inv){
-    const yv=px(D.int_inv);
-    if(D.int_inv>hi||D.int_inv<lo){edgeMark(D.int_inv,ic,'int CHoCH');}
-    else if(yv>TOPP+4&&yv<TOPP+PLOT-4){
-     const xv=(D.int_inv_t!==undefined&&xoft[D.int_inv_t]!==undefined)
-      ?xoft[D.int_inv_t]:W*0.62;
-     ctx.save();
-     // same vocabulary as the main CHoCH: the dashed line runs from the
-     // candle that set the level all the way to the right edge, with the
-     // diamond there. The label sits to the LEFT of the origin dot - put on
-     // the line it covered the line, which is why only a diamond showed.
-     ctx.strokeStyle=ic;ctx.globalAlpha=.5;ctx.lineWidth=1.1;
-     ctx.setLineDash([6,4]);
-     ctx.beginPath();ctx.moveTo(xv,yv);ctx.lineTo(W,yv);ctx.stroke();
-     ctx.setLineDash([]);ctx.globalAlpha=1;
-     ctx.fillStyle=ic;
-     ctx.beginPath();
-     ctx.moveTo(W-14,yv-4.5);ctx.lineTo(W-9.5,yv);
-     ctx.lineTo(W-14,yv+4.5);ctx.lineTo(W-18.5,yv);
-     ctx.closePath();ctx.fill();
-     ctx.shadowColor=ic;ctx.shadowBlur=7;
-     ctx.beginPath();ctx.arc(xv,yv,3.4,0,6.3);ctx.fill();
-     ctx.shadowBlur=0;
-     ctx.font='bold 8px system-ui';
-     const tv='int CHoCH '+D.int_inv.toFixed(0);
-     const wv=ctx.measureText(tv).width+8;
-     const bx=Math.max(2,Math.min(xv-wv-8,W-wv-24));
-     ctx.fillStyle='rgba(8,14,22,.8)';
-     ctx.beginPath();ctx.roundRect(bx,yv-7,wv,14,7);ctx.fill();
-     ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
-     ctx.fillStyle=ic;ctx.fillText(tv,bx+4,yv+3);
-     ctx.restore();}}
+   // Owner 2026-09-16: the internal structure speaks the same visual
+   // language as the main one - a SHORT segment where an event happened,
+   // solid for a BOS, dotted for a CHoCH. No full-width lines.
+   (D.int_marks||[]).forEach(m=>{
+    const x=xoft[m[0]];
+    if(x===undefined)return;
+    const y=px(m[1]);
+    if(y<TOPP+3||y>TOPP+PLOT-3)return;
+    const isC=(m[2]==='choch');
+    ctx.save();
+    ctx.strokeStyle=ic;ctx.globalAlpha=.85;
+    ctx.lineWidth=isC?1:1.6;
+    if(isC)ctx.setLineDash([3,3]);
+    ctx.beginPath();ctx.moveTo(x-13,y);ctx.lineTo(x+13,y);ctx.stroke();
+    ctx.setLineDash([]);
+    if(isC){ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();}
+    else{const sg=3.4,dy3=(m[3]===1)?-5:5;
+     ctx.fillStyle=ic;ctx.beginPath();
+     ctx.moveTo(x,y+dy3+(m[3]===1?-sg:sg));
+     ctx.lineTo(x-sg,y+dy3+(m[3]===1?sg*0.6:-sg*0.6));
+     ctx.lineTo(x+sg,y+dy3+(m[3]===1?sg*0.6:-sg*0.6));
+     ctx.closePath();ctx.fill();}
+    ctx.restore();});
    const yi=px(D.int_bos);
-   if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
+   // only anticipate the next break once price has pulled back from the
+   // level - before that it is just the current extreme (owner 2026-09-16)
+   if(!D.int_bos_ready){}
+   else if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
     (D.int_trend===1?'▲ ':(D.int_trend===-1?'▼ ':''))+'int BOS');}
    else if(yi>TOPP+4&&yi<TOPP+PLOT-4){
     // anchored to the candle that set the level, so it reads as coming

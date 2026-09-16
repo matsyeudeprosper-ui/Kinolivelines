@@ -345,6 +345,7 @@ def main():
                 i_dots = i_marks = []
                 i_trend = i_choch = 0
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
+                i_ready = False
                 _since = marks[-1][0] if marks else None
                 if marks:
                     _t0 = marks[-1][0]
@@ -359,6 +360,16 @@ def main():
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
+                        # owner 2026-09-16: do not anticipate the next break
+                        # until price has actually pulled back from the level
+                        # - at least one candle against the trend since the
+                        # candle that set it. Before that the "next BOS" is
+                        # just the current extreme and says nothing.
+                        if i_nxt_t and i_trend:
+                            _opp = -1 if i_trend == 1 else 1
+                            i_ready = any(
+                                r[5] == _opp for r in _inner
+                                if r[0] > i_nxt_t)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only
@@ -393,6 +404,11 @@ def main():
                      "next_bos_t": nxt_t, "invalid_t": inv_t,
                      "int_since": _since,
                      "int_choch": i_choch,
+                     "int_bos_ready": i_ready,
+                     # the internal engine fires every few minutes; the
+                     # whole history would out-number the candles, so only
+                     # the recent events are drawn
+                     "int_marks": [m for m in i_marks if m[0] >= t0][-10:],
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
