@@ -29,17 +29,20 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #cv{display:block;width:100vw;height:calc(100vh - 48px);
  touch-action:none;cursor:grab;overscroll-behavior:none}
-#backlive{position:fixed;left:14px;bottom:18px;z-index:41;
- display:none;font-size:.72rem;font-weight:800;color:#0a111c;
+#botbar{position:fixed;left:0;right:0;bottom:14px;z-index:41;
+ display:flex;align-items:center;gap:8px;padding:0 12px;
+ pointer-events:none}
+#botbar>*{pointer-events:auto;flex:none}
+#backlive{display:none;font-size:.72rem;font-weight:800;color:#0a111c;
  background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
  letter-spacing:.04em;box-shadow:0 4px 14px rgba(232,197,90,.35)}
-#pnl{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
- z-index:4;display:none;text-align:center;padding:9px 20px 7px;
+#pnl{flex:1 1 auto;min-width:0;
+ display:none;text-align:center;padding:7px 12px 5px;
  border-radius:18px;backdrop-filter:blur(10px);
  -webkit-backdrop-filter:blur(10px);
  background:rgba(13,22,36,.55);border:1px solid rgba(127,179,224,.2);
  transition:box-shadow .6s,border-color .6s}
-#pnl b{font-size:1.35rem;font-variant-numeric:tabular-nums;
+#pnl b{font-size:1.15rem;font-variant-numeric:tabular-nums;
  display:block;line-height:1.15;transition:transform .15s}
 #pnl span{font-size:.62rem;color:#5f7185;letter-spacing:.05em;
  text-transform:uppercase}
@@ -74,8 +77,13 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  style="display:none"></span></span>
 </div>
 <span id="px"></span>
+
+<div id="botbar"><button id="backlive">&#9654; EN DIRECT</button>
 <div id="pnl"><b>--</b><span></span></div>
-<button id="backlive">&#9654; EN DIRECT</button>
+<button id="mtopen" style="display:none;
+ padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
+ font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
+ &#128200; Trader</button></div>
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -112,10 +120,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
    Confirmer</button>
  </div>
 </div>
-<button id="mtopen" style="display:none;position:fixed;right:12px;bottom:14px;z-index:39;
- padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
- font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
- &#128200; Trader</button>
+
 <script>
 const tok=location.pathname.split('/').filter(x=>x)[0];
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
@@ -123,7 +128,8 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
-let viewOff=0,cwG=7,vzoom=1,vz=null,voff=0;  // voff = vertical pan
+let viewOff=0,cwG=7,vzoom=1,vz=null,voff=0;
+const SHOW_H1=false;   // owner 2026-09-16: hidden, to revisit later  // voff = vertical pan
 let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null,MTlock=null;  // assisted manual trading
 const mtbar=document.getElementById('mtbar');
 const mtopen=document.getElementById('mtopen');
@@ -541,7 +547,7 @@ function draw(){
  // --- previous H1 candle open/close (user 2026-09-13): two thin
  // blue hairlines across the chart, dotted = open, solid = close;
  // labels stacked so they never overlap each other or the price ---
- if(D.h1&&D.h1.length>=5){
+ if(SHOW_H1&&D.h1&&D.h1.length>=5){
   const items=[[D.h1[1],'H1 O',[3,4]],[D.h1[4],'H1 C',[]]];
   ctx.font='bold 9px system-ui';
   const lw=Math.max(...items.map(it=>ctx.measureText(it[1]+' '+it[0].toFixed(0)).width))+10;
@@ -858,7 +864,15 @@ async function load(){
   if(r.ok){D=await r.json();digest(D);ui();}
  }catch(e){}
 }
-function frame(){mtEdgePush();draw();requestAnimationFrame(frame);}
+// A throw inside draw() used to skip the next requestAnimationFrame, so
+// one bad frame froze the chart permanently and the P&L stopped updating.
+// The next frame is now always scheduled (owner 2026-09-16).
+let drawErrs=0;
+function frame(){
+ try{mtEdgePush();draw();}
+ catch(e){if(++drawErrs<=3)console.error('draw',e);}
+ requestAnimationFrame(frame);
+}
 load();setInterval(load,1500);
 requestAnimationFrame(frame);
 
@@ -1035,7 +1049,7 @@ mtopen.onclick=async()=>{
    if(!MT.sl)MT.sl=(p.d===1)?MS.px-a:MS.px+a;
    if(!MT.tp)MT.tp=(p.d===1)?MS.px+a*0.8:MS.px-a*0.8;}
   mtbar.style.display='block';mtopen.style.display='none';
-  document.getElementById('backlive').style.bottom=
+  document.getElementById('botbar').style.bottom=
    ((mtbar.offsetHeight||140)+14)+'px';
   mtRender();return;}
  if(MS.pending&&MS.pending.length){
@@ -1045,7 +1059,7 @@ mtopen.onclick=async()=>{
   const p=MS.pending[0];
   MT={sl:p.sl,tp:p.tp,entry:p.e,editPend:true};
   mtbar.style.display='block';mtopen.style.display='none';
-  document.getElementById('backlive').style.bottom=
+  document.getElementById('botbar').style.bottom=
    ((mtbar.offsetHeight||140)+14)+'px';
   mtRender();return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
@@ -1066,7 +1080,7 @@ mtopen.onclick=async()=>{
      tp:Math.round((px+d*mtRR()*risk)*100)/100,entry:null};
 ary_pend_reset();
  mtbar.style.display='block';mtopen.style.display='none';
- document.getElementById('backlive').style.bottom=
+ document.getElementById('botbar').style.bottom=
   ((mtbar.offsetHeight||140)+14)+'px';
  mtRender();
 };
@@ -1108,7 +1122,7 @@ document.getElementById('mtflip').onclick=()=>{
 };
 document.getElementById('mtcancel').onclick=()=>{
  MT=null;mtbar.style.display='none';mtopen.style.display='block';
- document.getElementById('backlive').style.bottom='18px';};
+ document.getElementById('botbar').style.bottom='18px';};
 document.getElementById('mtclose').onclick=async()=>{
  if(MT&&MT.editPend){
   const b=document.getElementById('mtclose');
@@ -1153,7 +1167,7 @@ document.getElementById('mtgo').onclick=async()=>{
   g.textContent=j.ok?'Envoye':'Refuse';
   if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';
    mtopen.style.display='block';delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;
-   document.getElementById('backlive').style.bottom='18px';},1400);}
+   document.getElementById('botbar').style.bottom='18px';},1400);}
   else{alert(j.err||'refus');delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;}
  }catch(e){delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;alert('reseau');}
 };
