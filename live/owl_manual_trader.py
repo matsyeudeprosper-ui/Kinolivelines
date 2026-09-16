@@ -557,6 +557,7 @@ def main():
                 ai = mt5.account_info()
                 json.dump({
                     "acct": LOGIN, "balance": round(ai.balance, 2),
+                    "rr": B.RR,          # the auto bot's target, shared
                     "max_risk_pct": MAX_RISK_PCT,
                     "max_risk": round(MAX_RISK_PCT * ai.balance, 2),
                     "equity": round(ai.equity, 2),

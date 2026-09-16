@@ -859,6 +859,7 @@ function mtClamp(v){
  const p=(MS&&MS.px)?MS.px:v;
  return Math.round(Math.min(p*1.5,Math.max(p*0.5,v))*100)/100;
 }
+function mtRR(){return (MS&&MS.rr>0)?MS.rr:0.8;}
 function intLevel(dd,px){
  // The internal structure's stop level for a trade in direction dd.
  // The protected dot (int_inv) when the engine still holds one; after a
@@ -1049,7 +1050,7 @@ mtopen.onclick=async()=>{
  if(!sl)sl=(d===1)?px-a:px+a;
  const risk=Math.abs(px-sl);
  MT={sl:Math.round(sl*100)/100,
-     tp:Math.round((px+d*0.8*risk)*100)/100,entry:null};
+     tp:Math.round((px+d*mtRR()*risk)*100)/100,entry:null};
 ary_pend_reset();
  mtbar.style.display='block';mtopen.style.display='none';
  document.getElementById('backlive').style.bottom=
@@ -1069,9 +1070,20 @@ function ary_pend_reset(){ary_pend_paint();}
 document.getElementById('mtpend').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
  if(MT.entry)MT.entry=null;
- else{const a=Math.max(40,(SCALE?(SCALE.hi-SCALE.lo)*0.04:80));
+ else{
   const d=(MT.tp>MS.px)?1:-1;
-  MT.entry=Math.round(MS.px+(d===1?a:-a));}  // a stop, by default
+  // the programmed entry belongs at the NEXT BREAK - the level the
+  // structure has to take out for the move to be real. Use the internal
+  // structure's break when the stop rides the internal structure, the
+  // main one otherwise, and a plain offset if neither is usable.
+  const c0=mtCalc();
+  const lvl=(c0&&c0.inner&&D&&D.int_bos)?D.int_bos:(D?D.next_bos:null);
+  const okE=lvl&&((d===1&&lvl>MS.px+10)||(d===-1&&lvl<MS.px-10));
+  const a=Math.max(40,(SCALE?(SCALE.hi-SCALE.lo)*0.04:80));
+  MT.entry=Math.round(okE?lvl:(MS.px+(d===1?a:-a)));
+  // the target is measured from the ENTRY, so re-aim it at the same R:R
+  const risk=Math.abs(MT.entry-MT.sl);
+  if(risk>0)MT.tp=Math.round((MT.entry+d*mtRR()*risk)*100)/100;}
  ary_pend_paint();mtRender();
 };
 document.getElementById('mtflip').onclick=()=>{
