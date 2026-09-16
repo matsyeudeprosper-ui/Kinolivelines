@@ -913,11 +913,13 @@ mtopen.onclick=async()=>{
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  // open in the direction of the structure: bearish -> sell, bullish -> buy
  const d=(MS.trend===-1)?-1:1;
- // the stop defaults to the structure's invalidation level - the diamond
- // line - when it sits on the correct side; otherwise a plain offset
+ // the stop defaults to an invalidation diamond when one sits on the
+ // correct side. The INTERNAL diamond wins when it exists: it is the
+ // nearer level, so the stop is tighter. The main one is the fallback.
  let sl=(d===1)?px-a:px+a;
- const inv=(D&&D.invalid)?D.invalid:null;
- if(inv&&((d===1&&inv<px-10)||(d===-1&&inv>px+10)))sl=inv;
+ const okSide=v=>v&&((d===1&&v<px-10)||(d===-1&&v>px+10));
+ if(okSide(D&&D.invalid))sl=D.invalid;
+ if(okSide(D&&D.int_inv))sl=D.int_inv;
  const risk=Math.abs(px-sl);
  MT={sl:Math.round(sl*100)/100,
      tp:Math.round((px+d*0.8*risk)*100)/100,entry:null};
