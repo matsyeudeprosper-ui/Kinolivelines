@@ -647,7 +647,8 @@ function draw(){
    // and dimmer, so the hierarchy stays obvious at a glance
    if(D.int_inv){
     const yv=px(D.int_inv);
-    if(D.int_inv<=hi&&D.int_inv>=lo&&yv>TOPP+4&&yv<TOPP+PLOT-4){
+    if(D.int_inv>hi||D.int_inv<lo){edgeMark(D.int_inv,ic,'int CHoCH');}
+    else if(yv>TOPP+4&&yv<TOPP+PLOT-4){
      const xv=(D.int_inv_t!==undefined&&xoft[D.int_inv_t]!==undefined)
       ?xoft[D.int_inv_t]:W*0.62;
      ctx.save();
@@ -674,7 +675,8 @@ function draw(){
      ctx.fillStyle=ic;ctx.fillText(tv,W-wv-66,yv+3);
      ctx.restore();}}
    const yi=px(D.int_bos);
-   if(D.int_bos<=hi&&D.int_bos>=lo&&yi>TOPP+4&&yi<TOPP+PLOT-4){
+   if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,'int BOS');}
+   else if(yi>TOPP+4&&yi<TOPP+PLOT-4){
     // anchored to the candle that set the level, so it reads as coming
     // from somewhere instead of floating (2026-09-16)
     const xa=(D.int_bos_t!==undefined&&xoft[D.int_bos_t]!==undefined)
@@ -686,7 +688,7 @@ function draw(){
     ctx.beginPath();ctx.arc(xa,yi,2.8,0,6.3);ctx.fill();   // its origin
     ctx.globalAlpha=1;
     ctx.font='bold 8px system-ui';
-    const t='int BOS '+D.int_bos.toFixed(0);
+    const t='int BOS '+D.int_bos.toFixed(0)+(D.int_inv?'':' · sans CHoCH');
     const w3=ctx.measureText(t).width+8;
     ctx.fillStyle='rgba(8,14,22,.8)';
     ctx.beginPath();ctx.roundRect(W-w3-66,yi-7,w3,14,7);ctx.fill();
