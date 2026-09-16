@@ -212,12 +212,18 @@ def engine(kept):
     # 2026-09-15: the two levels that decide what happens next -
     # hi_v/lo_v is the price a close must beat for the NEXT BOS,
     # prot_* is where the trend would break instead (CHoCH).
-    # Owner 2026-09-16: once a CHoCH has fired, the break that matters is
-    # the one that CONFIRMS it, not the next break of the trend that is
-    # already dying. Anticipate in the pending direction while a flip is
-    # armed, and fall back to the trend when none is.
-    _dir = choch if choch else trend
+    # Owner 2026-09-16: BOTH levels that decide the next event, because the
+    # owner needs both - the trend's own break for continuation trades, and
+    # the break that confirms a pending flip. They sit on opposite sides and
+    # neither can stand in for the other.
+    #   nxt  = the CONTINUATION level, in the trend's direction
+    #   flp  = the CONFIRMING level, only while a CHoCH is armed
+    _dir = trend
     nxt = hi_v if _dir == 1 else (lo_v if _dir == -1 else None)
+    _fdir = choch if (choch and choch != trend) else 0
+    flp = hi_v if _fdir == 1 else (lo_v if _fdir == -1 else None)
+    _fi = hi_i if _fdir == 1 else lo_i
+    flp_t = kept[_fi][0] if (flp is not None and 0 <= _fi < len(kept)) else None
     inv = (prot_lo[1] if (trend == 1 and prot_lo) else
            (prot_hi[1] if (trend == -1 and prot_hi) else None))
     # the candle that SET each level, so the chart can anchor the line to
@@ -226,7 +232,8 @@ def engine(kept):
     nxt_t = kept[_ai][0] if (nxt is not None and 0 <= _ai < len(kept)) else None
     inv_t = (prot_lo[0] if (trend == 1 and prot_lo) else
              (prot_hi[0] if (trend == -1 and prot_hi) else None))
-    return dots, marks, trend, choch, nxt, inv, nxt_t, inv_t, _dir
+    return (dots, marks, trend, choch, nxt, inv, nxt_t, inv_t, _dir,
+            flp, flp_t, _fdir)
 
 
 def trend_filter(cands):
@@ -351,7 +358,8 @@ def main():
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
                 (dots, marks, trend, choch, nxt, inv,
-                 nxt_t, inv_t, _mdir) = engine(kept)
+                 nxt_t, inv_t, _mdir,
+                 _mflp, _mflp_t, _mfdir) = engine(kept)
                 # INTERNAL STRUCTURE (owner 2026-09-16): between two main
                 # events the range can be wide enough for its own little
                 # BOS patterns. Run the SAME engine over the candles since
@@ -359,9 +367,10 @@ def main():
                 # moment price rejoins the main structure a new mark fires
                 # and this window restarts from there.
                 i_dots = i_marks = []
-                i_trend = i_choch = i_dir = 0
+                i_trend = i_choch = i_dir = i_fdir = 0
+                i_flp = i_flp_t = None
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
-                i_ready = False
+                i_ready = i_fready = False
                 _since = inv_t if inv_t else (marks[-1][0] if marks else None)
                 # Owner 2026-09-16: "the internal structure is BOS, CHoCH
                 # that forms in between the space of a confirmed BOS and the
@@ -386,8 +395,8 @@ def main():
                               for r in R[:-1] if int(r["time"]) > _t0]
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
-                         i_nxt, i_inv, i_nxt_t, i_inv_t,
-                         i_dir) = engine(_inner)
+                         i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
+                         i_flp, i_flp_t, i_fdir) = engine(_inner)
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
@@ -398,6 +407,11 @@ def main():
                             i_ready = any(
                                 r[5] == _opp for r in _inner
                                 if r[0] > i_nxt_t)
+                        if i_flp_t and i_fdir:
+                            _fop = -1 if i_fdir == 1 else 1
+                            i_fready = any(
+                                r[5] == _fop for r in _inner
+                                if r[0] > i_flp_t)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only.
@@ -415,6 +429,11 @@ def main():
                 # owner 2026-09-16: the main structure anticipates its
                 # next break under the same condition as the internal one -
                 # price must have pulled back from the level first
+                _fready = False
+                if _mflp_t and _mfdir:
+                    _fo = -1 if _mfdir == 1 else 1
+                    _fready = any(k[5] == _fo for k in kept
+                                  if k[0] > _mflp_t)
                 _ready = False
                 if nxt_t and _mdir:
                     _o = -1 if _mdir == 1 else 1
@@ -446,6 +465,12 @@ def main():
                      "int_choch": i_choch,
                      "bos_dir": _mdir,
                      "int_bos_dir": i_dir,
+                     "flip_bos": round(_mflp, 2) if _mflp else None,
+                     "flip_bos_t": _mflp_t, "flip_bos_dir": _mfdir,
+                     "flip_bos_ready": _fready,
+                     "int_flip_bos": round(i_flp, 2) if i_flp else None,
+                     "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
+                     "int_flip_bos_ready": i_fready,
                      "bos_ready": _ready,
                      "int_bos_ready": i_ready,
                      # the internal engine fires every few minutes; the

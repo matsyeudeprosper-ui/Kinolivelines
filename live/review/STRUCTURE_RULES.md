@@ -110,3 +110,23 @@ The pullback gate keeps its meaning. During a straight drop `lo_v` ratchets
 down every candle, so the level is only the current extreme and stays
 hidden; the first candle that does not extend it counts as the pullback and
 the level appears.
+
+## Correction 2026-09-16 (3) — BOTH anticipated levels, not one
+The two owner requests point at different keys and cannot both be served by
+a single level:
+
+| owner's state | wanted | that is |
+|---|---|---|
+| trend +1, CHoCH -1 armed | the level BELOW | the flip's confirming break |
+| trend -1, CHoCH +1 armed | the level BELOW | the trend's continuation break |
+
+Both levels are now published and drawn:
+- **continuation** — keyed to `trend`, the break that extends it. Labelled
+  `int BOS`. This is what continuation trades need.
+- **confirmation** — keyed to `choch`, only while a flip is armed and only
+  when it differs from the trend. Labelled `int flip`, drawn dimmer and
+  finer so the hierarchy is obvious.
+
+Each carries its own pullback gate, so a level stays hidden while it is
+merely the current extreme. The main structure publishes the same pair
+(`next_bos` / `flip_bos`).

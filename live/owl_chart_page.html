@@ -746,6 +746,32 @@ function draw(){
    const yi=px(D.int_bos);
    // only anticipate the next break once price has pulled back from the
    // level - before that it is just the current extreme (owner 2026-09-16)
+   // the level that CONFIRMS an armed flip, drawn alongside the trend's own
+   // continuation level: they sit on opposite sides and the owner trades
+   // both (2026-09-16)
+   if(D.int_flip_bos&&D.int_flip_bos_ready){
+    const yf=px(D.int_flip_bos),fd=D.int_flip_bos_dir;
+    const fa=(fd===1?'▲ ':'▼ ');
+    if(D.int_flip_bos>hi||D.int_flip_bos<lo){
+     edgeMark(D.int_flip_bos,ic,fa+'int flip');}
+    else if(yf>TOPP+4&&yf<TOPP+PLOT-4){
+     const xf=(D.int_flip_bos_t!==undefined&&xnear(D.int_flip_bos_t)!==undefined)
+      ?xnear(D.int_flip_bos_t):W*0.62;
+     ctx.save();ctx.strokeStyle=ic;ctx.globalAlpha=.34;ctx.lineWidth=1;
+     ctx.setLineDash([2,6]);
+     ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W,yf);ctx.stroke();
+     ctx.setLineDash([]);ctx.globalAlpha=.6;
+     ctx.fillStyle=ic;
+     ctx.beginPath();ctx.arc(xf,yf,2.4,0,6.3);ctx.fill();
+     ctx.globalAlpha=1;ctx.font='bold 8px system-ui';
+     const tf=fa+'int flip '+D.int_flip_bos.toFixed(0);
+     const wf=ctx.measureText(tf).width+8;
+     const bf=Math.max(2,Math.min(xf-wf-8,W-wf-24));
+     ctx.fillStyle='rgba(8,14,22,.8)';
+     ctx.beginPath();ctx.roundRect(bf,yf-7,wf,14,7);ctx.fill();
+     ctx.strokeStyle=ic;ctx.globalAlpha=.6;ctx.lineWidth=1;ctx.stroke();
+     ctx.globalAlpha=1;ctx.fillStyle=ic;ctx.fillText(tf,bf+4,yf+3);
+     ctx.restore();}}
    const ibd=D.int_bos_dir||D.int_trend;
    if(!D.int_bos_ready){}
    else if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
