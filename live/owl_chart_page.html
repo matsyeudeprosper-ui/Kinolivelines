@@ -655,27 +655,30 @@ function draw(){
      const xv=(D.int_inv_t!==undefined&&xoft[D.int_inv_t]!==undefined)
       ?xoft[D.int_inv_t]:W*0.62;
      ctx.save();
-     ctx.strokeStyle=ic;ctx.globalAlpha=.4;ctx.lineWidth=1;
-     ctx.setLineDash([5,4]);
-     ctx.beginPath();ctx.moveTo(xv,yv);ctx.lineTo(W-68,yv);ctx.stroke();
+     // same vocabulary as the main CHoCH: the dashed line runs from the
+     // candle that set the level all the way to the right edge, with the
+     // diamond there. The label sits to the LEFT of the origin dot - put on
+     // the line it covered the line, which is why only a diamond showed.
+     ctx.strokeStyle=ic;ctx.globalAlpha=.5;ctx.lineWidth=1.1;
+     ctx.setLineDash([6,4]);
+     ctx.beginPath();ctx.moveTo(xv,yv);ctx.lineTo(W,yv);ctx.stroke();
      ctx.setLineDash([]);ctx.globalAlpha=1;
-     // small diamond: the internal trend dies here
      ctx.fillStyle=ic;
      ctx.beginPath();
-     ctx.moveTo(W-62,yv-3.5);ctx.lineTo(W-58.5,yv);
-     ctx.lineTo(W-62,yv+3.5);ctx.lineTo(W-65.5,yv);
+     ctx.moveTo(W-14,yv-4.5);ctx.lineTo(W-9.5,yv);
+     ctx.lineTo(W-14,yv+4.5);ctx.lineTo(W-18.5,yv);
      ctx.closePath();ctx.fill();
-     // the protected dot itself, with a soft glow
      ctx.shadowColor=ic;ctx.shadowBlur=7;
      ctx.beginPath();ctx.arc(xv,yv,3.4,0,6.3);ctx.fill();
      ctx.shadowBlur=0;
      ctx.font='bold 8px system-ui';
      const tv='int CHoCH '+D.int_inv.toFixed(0);
      const wv=ctx.measureText(tv).width+8;
+     const bx=Math.max(2,Math.min(xv-wv-8,W-wv-24));
      ctx.fillStyle='rgba(8,14,22,.8)';
-     ctx.beginPath();ctx.roundRect(W-wv-70,yv-7,wv,14,7);ctx.fill();
+     ctx.beginPath();ctx.roundRect(bx,yv-7,wv,14,7);ctx.fill();
      ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
-     ctx.fillStyle=ic;ctx.fillText(tv,W-wv-66,yv+3);
+     ctx.fillStyle=ic;ctx.fillText(tv,bx+4,yv+3);
      ctx.restore();}}
    const yi=px(D.int_bos);
    if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
@@ -687,7 +690,7 @@ function draw(){
      ?xoft[D.int_bos_t]:W*0.62;
     ctx.save();ctx.strokeStyle=ic;ctx.globalAlpha=.55;ctx.lineWidth=1;
     ctx.setLineDash([2,6]);
-    ctx.beginPath();ctx.moveTo(xa,yi);ctx.lineTo(W-68,yi);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xa,yi);ctx.lineTo(W,yi);ctx.stroke();
     ctx.globalAlpha=.85;ctx.setLineDash([]);
     ctx.beginPath();ctx.arc(xa,yi,2.8,0,6.3);ctx.fill();   // its origin
     ctx.globalAlpha=1;
@@ -700,10 +703,11 @@ function draw(){
      ?(' · bascule '+(D.int_choch===1?'▲':'▼')):'';
     const t=ia+'int BOS '+D.int_bos.toFixed(0)+flip;
     const w3=ctx.measureText(t).width+8;
+    const b3=Math.max(2,Math.min(xa-w3-8,W-w3-24));
     ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(W-w3-66,yi-7,w3,14,7);ctx.fill();
+    ctx.beginPath();ctx.roundRect(b3,yi-7,w3,14,7);ctx.fill();
     ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=ic;ctx.fillText(t,W-w3-62,yi+3);
+    ctx.fillStyle=ic;ctx.fillText(t,b3+4,yi+3);
     ctx.restore();}}}
  // where the next BOS would fire, and where the trend would break.
  // Deliberately small: a stub over the recent candles plus an edge tag,
@@ -965,15 +969,20 @@ function mtRender(){
   (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
  const go=document.getElementById('mtgo');
  go.disabled=!!c.bad;go.style.opacity=c.bad?.45:1;
- if(!go.dataset.busy)go.textContent=c.edit?'Modifier':'Confirmer';
+ if(!go.dataset.busy)go.textContent=
+  c.edit?'Modifier':(MT.editPend?'Replacer':'Confirmer');
  // an edit touches only the two levels: no pending, no flip
  document.getElementById('mtpend').style.display=c.edit?'none':'';
  const cb=document.getElementById('mtclose');
  const opos=(MS.open&&MS.open.length)?MS.open[0]:null;
- cb.style.display=(c.edit&&opos)?'':'none';
- if(c.edit&&opos)cb.innerHTML='&#10005; Fermer '+
-  '<b style="color:'+(opos.pl>=0?'#8df0bb':'#ff8a8a')+'">'+
-  (opos.pl>=0?'+':'')+'$'+opos.pl.toFixed(2)+'</b>';
+ if(c.edit&&opos){
+  cb.style.display='';
+  cb.innerHTML='&#10005; Fermer '+
+   '<b style="color:'+(opos.pl>=0?'#8df0bb':'#ff8a8a')+'">'+
+   (opos.pl>=0?'+':'')+'$'+opos.pl.toFixed(2)+'</b>';}
+ else if(MT.editPend){
+  cb.style.display='';cb.innerHTML='&#10005; Annuler l’ordre';}
+ else cb.style.display='none';
  // no tool on screen may build a counter-trend trade when it is forbidden
  const fb=document.getElementById('mtflip');
  const blocked=c.edit||(MS.counter_ok===false);
@@ -997,13 +1006,15 @@ mtopen.onclick=async()=>{
    ((mtbar.offsetHeight||140)+14)+'px';
   mtRender();return;}
  if(MS.pending&&MS.pending.length){
+  // owner 2026-09-16: a programmed entry is editable like everything else -
+  // drag its entry, SL and TP, then Replacer. The daemon keeps one
+  // programmed entry at a time, so re-sending replaces it.
   const p=MS.pending[0];
-  if(confirm('Ordre '+p.kind+' '+p.lot.toFixed(2)+' a '+p.e.toFixed(0)+
-             ' deja programme. OK = l’annuler, Annuler = le garder.')){
-   await fetch('/'+tok+'/manual_order',{method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body:'cancel=1'});}
-  return;}
+  MT={sl:p.sl,tp:p.tp,entry:p.e,editPend:true};
+  mtbar.style.display='block';mtopen.style.display='none';
+  document.getElementById('backlive').style.bottom=
+   ((mtbar.offsetHeight||140)+14)+'px';
+  mtRender();return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  // The tool opens ON the internal structure when there is one: its
  // direction AND its diamond. The internal trend often opposes the main
@@ -1049,6 +1060,18 @@ document.getElementById('mtcancel').onclick=()=>{
  MT=null;mtbar.style.display='none';mtopen.style.display='block';
  document.getElementById('backlive').style.bottom='18px';};
 document.getElementById('mtclose').onclick=async()=>{
+ if(MT&&MT.editPend){
+  const b=document.getElementById('mtclose');
+  b.disabled=true;b.textContent='Annulation...';
+  try{
+   const r=await fetch('/'+tok+'/manual_order',{method:'POST',
+    headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'cancel=1'});
+   const j=await r.json();
+   if(j.ok){MT=null;mtbar.style.display='none';mtopen.style.display='block';}
+   else alert(j.err||'refus');
+  }catch(e){alert('reseau');}
+  b.disabled=false;b.innerHTML='&#10005; Annuler l’ordre';return;}
  const p=(MS&&MS.open&&MS.open.length)?MS.open[0]:null;
  if(!p)return;
  if(!confirm('Fermer '+(p.d===1?'ACHAT ':'VENTE ')+p.lot.toFixed(2)+
@@ -1175,7 +1198,9 @@ async function mtLoad(){
     MSerr='Donnees figees depuis '+Math.round(Date.now()/1000-MS.updated)+'s.';
    if(MT)mtRender();
    mtopen.innerHTML=(MS.open&&MS.open.length)
-    ?'&#9999;&#65039; Modifier SL/TP':'&#128200; Trader';
+    ?'&#9999;&#65039; Modifier SL/TP'
+    :((MS.pending&&MS.pending.length)
+      ?'&#9999;&#65039; Modifier l’ordre':'&#128200; Trader');
    mtopen.style.display=MT?'none':'block';
    return;}
   mtopen.style.display='none';
