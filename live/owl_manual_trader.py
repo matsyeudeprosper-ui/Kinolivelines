@@ -127,16 +127,31 @@ def risk_ok(dist, lot):
             f"ou attends un solde plus gros")
 
 
-def internal_trade(ref, sl):
+def int_level(d, direction):
+    """The internal structure's stop level for a trade in this direction:
+    the protected dot while the engine holds one, otherwise the most recent
+    internal dot on the stop side - a buy stops under a low dot, a sell
+    above a high one. Dots are [time, price, kind], kind +1 low / -1 high."""
+    if d.get("int_inv"):
+        return d["int_inv"]
+    want = 1 if direction == 1 else -1
+    for dot in reversed(d.get("int_dots") or []):
+        if len(dot) >= 3 and dot[2] == want:
+            return float(dot[1])
+    return None
+
+
+def internal_trade(ref, sl, direction):
     """Owner 2026-09-16: a trade riding the INTERNAL structure carries half
     the base lot, exactly like a counter-trend trade. The stop decides which
-    structure the trade belongs to: whichever invalidation diamond it sits
-    nearer to. No internal structure on screen means no internal trade."""
+    structure the trade belongs to: whichever level it sits nearer to, the
+    internal one or the main diamond."""
     try:
         d = json.load(open(CHART, encoding="utf-8"))
     except Exception:
         return False
-    inner, main = d.get("int_inv"), d.get("invalid")
+    main = d.get("invalid")
+    inner = int_level(d, direction)
     if not inner or not main:
         return False
     return abs(sl - inner) < abs(sl - main)
@@ -205,7 +220,7 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
     cancel_pending()                     # one programmed entry at a time
     name = PEND_NAME[(d, stop_side)]
     against = (trend != 0 and d != trend)
-    inner = internal_trade(entry, sl)
+    inner = internal_trade(entry, sl, d)
     lot, bullets = lot_for(dist, led)
     if against or inner:
         half, ok = counter_lot()
@@ -346,7 +361,7 @@ def execute(req, led, trend=0):
         return False, f"stop trop proche ({dist:.0f} pts)"
     lot, bullets = lot_for(dist, led)
     against = (trend != 0 and d != trend)
-    inner = internal_trade(px, sl)
+    inner = internal_trade(px, sl, d)
     if against or inner:
         half, ok = counter_lot()
         if not ok:

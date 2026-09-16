@@ -836,6 +836,21 @@ function mtClamp(v){
  const p=(MS&&MS.px)?MS.px:v;
  return Math.round(Math.min(p*1.5,Math.max(p*0.5,v))*100)/100;
 }
+function intLevel(dd,px){
+ // The internal structure's stop level for a trade in direction dd.
+ // The protected dot (int_inv) when the engine still holds one; after a
+ // CHoCH consumes it, the most recent internal dot on the stop side - a
+ // buy stops under a low dot, a sell above a high dot. Pass px to demand
+ // the level sit on the usable side of price.
+ const ok=v=>!!v&&(px===undefined||
+  ((dd===1&&v<px-10)||(dd===-1&&v>px+10)));
+ if(!D)return null;
+ if(ok(D.int_inv))return D.int_inv;
+ const ds=D.int_dots||[],want=(dd===1)?1:-1;
+ for(let i=ds.length-1;i>=0;i--)
+  if(ds[i][2]===want&&ok(ds[i][1]))return ds[i][1];
+ return null;
+}
 function mtLot(dist,against){
  if(!MS)return{lot:0.02,bul:0};
  const base=MS.base_lot||0.02;
@@ -854,9 +869,10 @@ function mtCalc(){
  const dist=Math.abs(ref-sl),rew=Math.abs(tp-ref);
  const against=(MS.trend!==0&&d!==0&&d!==MS.trend);
  // riding the INTERNAL structure: the stop sits nearer to the internal
- // diamond than to the main one. Half lot, same as counter-trend.
- const inner=!!(D&&D.int_inv&&D.invalid&&
-  Math.abs(sl-D.int_inv)<Math.abs(sl-D.invalid));
+ // level than to the main diamond. Half lot, same as counter-trend.
+ const ilv=(d!==0)?intLevel(d):null;
+ const inner=!!(ilv&&D&&D.invalid&&
+  Math.abs(sl-ilv)<Math.abs(sl-D.invalid));
  const L=mtLot(dist,against||inner);
  let kind='MARCHE',bad='';
  if(MT.entry){
@@ -934,8 +950,10 @@ mtopen.onclick=async()=>{
  // fall back to the far one. Otherwise: main direction, main diamond.
  const okSide=(v,dd)=>v&&((dd===1&&v<px-10)||(dd===-1&&v>px+10));
  let d=(MS.trend===-1)?-1:1,sl=null;
- if(D&&D.int_trend&&okSide(D.int_inv,D.int_trend)){d=D.int_trend;sl=D.int_inv;}
- else if(okSide(D&&D.invalid,d))sl=D.invalid;
+ if(D&&D.int_trend){
+  const v=intLevel(D.int_trend,px);
+  if(v){d=D.int_trend;sl=v;}}
+ if(!sl&&okSide(D&&D.invalid,d))sl=D.invalid;
  if(!sl)sl=(d===1)?px-a:px+a;
  const risk=Math.abs(px-sl);
  MT={sl:Math.round(sl*100)/100,
