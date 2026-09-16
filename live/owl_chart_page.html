@@ -998,9 +998,17 @@ function mtLot(dist,against){
  const base=MS.base_lot||0.02;
  // against the structure: half the base lot, never any bullet
  if(against)return{lot:(MS.counter_lot||0.01),bul:0,half:true};
- if(!(MS.debt>0.5)||!(dist>0))return{lot:base,bul:0};
+ if(!(MS.debt>0.5)||!(MS.chest>0.5)||!(dist>0))return{lot:base,bul:0};
  const r1=Math.max(dist*0.01,0.01);
- const bul=Math.min(MS.max_extra||3,Math.floor((MS.chest||0)/r1));
+ let bul;
+ if(MS.jar){
+  // the same arithmetic the desk uses: stake part of the jar, and never
+  // buy more recovery than the tab needs (owner 2026-09-16)
+  const byB=Math.floor((MS.chest*(MS.jar_stake||0.5))/r1);
+  const g1=(MS.rr||0.8)*dist*0.01;
+  const byD=g1>0?Math.ceil(MS.debt/g1):0;
+  bul=Math.max(0,Math.min(MS.max_extra||3,byB,byD));
+ }else bul=Math.min(MS.max_extra||3,Math.floor((MS.chest||0)/r1));
  return{lot:Math.round((base+bul*0.01)*100)/100,bul:bul};
 }
 function mtCalc(){
@@ -1096,7 +1104,9 @@ function mtRender(){
  if(MT.entry&&!c.edit)p2+=sep+'sur cloture M1';
  if(pnd&&!MT.editPend&&!c.edit)p2+=sep+
   '<span style="color:#e8c55a">'+pnd.kind+' @ '+pnd.e.toFixed(0)+' en cours</span>';
- p2+=sep+'dette $'+(MS.debt||0).toFixed(2);
+ p2+=sep+'ardoise $'+(MS.debt||0).toFixed(2)+
+  ' &middot; bocal <span style="color:#8df0bb">$'+
+  (MS.chest||0).toFixed(2)+'</span>';
  if(c.bad)p2=' <span style="color:#ff9678">&#9888;&#65039; '+c.bad+'</span>';
  l2.innerHTML=p2;
  // actions: one primary, and only the icons this state can use

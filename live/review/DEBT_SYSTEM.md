@@ -73,3 +73,35 @@ This is not an argument against the owner's design. The design is sound and
 is specified above ready to build. It is an argument about WHEN to arm it:
 a recovery multiplier is a lever on the edge, and the edge has to exist
 first.
+
+
+## 6. BUILT AND SWITCHED ON, 2026-09-16, on the owner's instruction
+The owner was shown section 4 twice and chose to deploy: "Build it and
+switch it on. For auto bot and manual trading."
+
+Live in `structure_bos_bot.py` (constants, shared) and `owl_manual_trader.py`
+(which imports them, so the two cannot drift):
+
+| constant | value | meaning |
+|---|---|---|
+| `JAR_SKIM` | 0.40 | share of EVERY win set aside |
+| `JAR_STAKE` | 0.50 | most of the jar stakeable on one attempt |
+| `JAR_DEBT_MULT` | 0.5 | jar may hold up to half the tab... |
+| `JAR_FLOOR_CAP` | 10.0 | ...never less headroom than the old cap |
+| `MAX_EXTRA` | 3 | hard ceiling on extra 0.01 lots |
+
+Sizing takes the **smaller** of what the stake affords and what the tab
+needs (`ceil(debt / (RR x dist x 0.01))`), so it never buys more recovery
+than is owed. The stop never moves. The 10% single-trade risk rule and
+`LOT_MAX` still bind on top and can veto a recovery outright.
+
+Immediate effect on the manual desk: jar went from **$0.00 to $10.00**
+against a $32.79 tab. At a 200-point stop that is lot 0.04, staking $4.00
+to take $3.20 off the tab.
+
+The auto bots book incrementally rather than replaying history, so their
+jars fill from new wins forward. `JAR = False` restores the old behaviour
+in one line if this is ever reversed.
+
+**The section 4 numbers still stand.** Deployment does not change them.
+Re-run `debt_sim.py` against the forward record before judging.

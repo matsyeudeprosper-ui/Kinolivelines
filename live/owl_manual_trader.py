@@ -17,6 +17,7 @@ Kill line: the ledger is reported but NOTHING is closed automatically.
 The owner is the decision maker now.
 """
 import json
+import math
 import os
 import time
 from datetime import datetime, timedelta, timezone
@@ -98,21 +99,36 @@ def push(title, body):
 
 def rebuild_ledger():
     """Replay every closed deal since the era start. Self-healing: manual
-    closes, app closes and bot closes all land in the same books."""
+    closes, app closes and bot closes all land in the same books.
+
+    THE TAB AND THE JAR (owner 2026-09-16). The tab is the drawdown from the
+    equity peak - what has been lost and not yet won back. The jar is the
+    recovery money, and it takes a slice of EVERY win, not only of wins that
+    make a new high. The old rule only filled it on a new high, so during a
+    drawdown - exactly when recovery is wanted - it never filled at all.
+    Constants are shared with the auto bot so the two cannot drift."""
     ds = mt5.history_deals_get(ERA_START, datetime.utcnow() + timedelta(days=1)) or []
     closes = sorted([d for d in ds if d.entry == 1 and d.symbol == SYMBOL],
                     key=lambda d: d.time)
-    banked = peak = chest = 0.0
+    banked = peak = jar = 0.0
     for d in closes:
         pnl = d.profit + d.swap + d.commission
+        if pnl > 0 and B.JAR:
+            jar += B.JAR_SKIM * pnl                 # a slice of every win
+        elif pnl < 0 and d.volume > BASE_LOT + 0.001:
+            # the jar staked the extra lots, so it pays their share
+            jar = max(0.0, jar + pnl * (1.0 - BASE_LOT / d.volume))
         banked = round(banked + pnl, 2)
-        if pnl < 0 and d.volume > BASE_LOT + 0.001:
-            chest = round(max(0.0, chest + pnl * (1.0 - BASE_LOT / d.volume)), 2)
         if banked > peak:
-            chest = round(min(CHEST_CAP, chest + banked - peak), 2)
+            if not B.JAR:
+                jar = round(min(CHEST_CAP, jar + banked - peak), 2)
             peak = banked
+        if B.JAR:
+            _debt = max(0.0, peak - banked)
+            jar = round(min(jar, max(B.JAR_FLOOR_CAP,
+                                     B.JAR_DEBT_MULT * _debt)), 2)
     debt = round(max(0.0, peak - banked), 2)
-    return dict(banked=banked, peak=peak, debt=debt, chest=chest,
+    return dict(banked=banked, peak=peak, debt=debt, chest=jar,
                 trades=len(closes))
 
 
@@ -194,13 +210,24 @@ def internal_trade(ref, sl, direction):
 
 
 def lot_for(dist, led):
-    """The lot the debt system would use for a stop this far away."""
+    """The lot the tab-and-jar system would use for a stop this far away.
+    Only the LOT moves - the stop never does."""
     lot = BASE_LOT
     bullets = 0
-    if led["debt"] > 0.5 and dist > 0:
-        risk001 = dist * 0.01
-        bullets = min(MAX_EXTRA, int(led["chest"] // max(risk001, 0.01)))
-        lot = round(BASE_LOT + bullets * 0.01, 2)
+    if led["debt"] > 0.5 and led["chest"] > 0.5 and dist > 0:
+        risk001 = dist * LOT_STEP
+        if B.JAR:
+            # stake only part of the jar, so one bad recovery cannot disarm
+            # the next; and never buy more recovery than the tab needs
+            by_budget = int((led["chest"] * B.JAR_STAKE) //
+                            max(risk001, 0.01))
+            gain001 = B.RR * dist * LOT_STEP
+            by_debt = (int(math.ceil(led["debt"] / gain001))
+                       if gain001 > 0 else 0)
+            bullets = max(0, min(MAX_EXTRA, by_budget, by_debt))
+        else:
+            bullets = min(MAX_EXTRA, int(led["chest"] // max(risk001, 0.01)))
+        lot = round(BASE_LOT + bullets * LOT_STEP, 2)
     return max(LOT_MIN, min(LOT_MAX, lot)), bullets
 
 
@@ -579,6 +606,8 @@ def main():
                 save_json(STATE, {
                     "acct": LOGIN, "balance": round(ai.balance, 2),
                     "rr": B.RR,          # the auto bot's target, shared
+                    "jar": B.JAR, "jar_skim": B.JAR_SKIM,
+                    "jar_stake": B.JAR_STAKE,
                     "max_risk_pct": MAX_RISK_PCT,
                     "max_risk": round(MAX_RISK_PCT * ai.balance, 2),
                     "equity": round(ai.equity, 2),

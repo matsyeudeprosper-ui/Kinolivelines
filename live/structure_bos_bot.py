@@ -38,6 +38,7 @@ picked on days 1-35 scored +116 blind on days 36-69 (scratchpad
 bt_chop*.py). Sleeping market = no fishing.
 """
 import json
+import math
 import os
 import time
 from datetime import datetime, timezone
@@ -61,6 +62,18 @@ RR = 0.8
 BASE_LOT = 0.02
 MAX_EXTRA = 3            # bullets that may ride along (0.01 each)
 CHEST_CAP = 10.0         # cap sweep 2026-09-09: $10 = sweet spot
+# --- RECOVERY JAR (owner 2026-09-16, switched on after review) ---------
+# The old chest only grew on a NEW EQUITY HIGH, so during a drawdown it
+# never filled - measured on the live account, 82 of 85 in-debt trades had
+# no ammunition at all. The jar now takes a slice of EVERY win.
+# Owner was shown the simulation (it loses more on the current record,
+# monotonically, because it multiplies a negative expectancy) and chose to
+# switch it on anyway. See live/review/DEBT_SYSTEM.md.
+JAR = True               # False = old behaviour (new-high overflow only)
+JAR_SKIM = 0.40          # share of each win set aside for recovery
+JAR_STAKE = 0.50         # most of the jar stakeable on ONE attempt
+JAR_DEBT_MULT = 0.5      # jar may hold up to half the debt...
+JAR_FLOOR_CAP = 10.0     # ...but never less headroom than the old cap
 KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
@@ -374,6 +387,8 @@ def book_closes(st, t_from):
                 extra_sh = pnl * (1.0 - BASE_LOT / lot)
                 st["chest"] = round(max(0.0,
                                         st["chest"] + extra_sh), 2)
+        if JAR and pnl > 0:
+            st["chest"] = round(st.get("chest", 0.0) + JAR_SKIM * pnl, 2)
         if DEBT_MODE == "half":
             # per-loss debt at 0.5x; wins pay it, overflow -> chest
             if pnl < 0:
@@ -392,6 +407,9 @@ def book_closes(st, t_from):
                 st["peak"] = st["banked"]
             st["debt"] = round(max(0.0, st.get("peak", 0.0)
                                    - st["banked"]), 2)
+        if JAR:
+            _cap = max(JAR_FLOOR_CAP, JAR_DEBT_MULT * st["debt"])
+            st["chest"] = round(min(st.get("chest", 0.0), _cap), 2)
         if not is_add:
             st["trades"] = st.get("trades", 0) + 1
         tag = "ADD" if is_add else ("WIN" if pnl > 0 else
@@ -464,13 +482,24 @@ def main():
         lot = BASE_LOT
         if st["debt"] > 0.5:
             risk001 = dist * 0.01
-            extra = min(MAX_EXTRA,
-                        int(st["chest"] // max(risk001, 0.01)))
+            if JAR:
+                # stake only part of the jar, so one bad recovery cannot
+                # disarm the next one; and never buy more recovery than the
+                # debt needs - one extra 0.01 wins RR * dist * 0.01
+                budget = st["chest"] * JAR_STAKE
+                by_budget = int(budget // max(risk001, 0.01))
+                gain001 = RR * dist * 0.01
+                by_debt = (int(math.ceil(st["debt"] / gain001))
+                           if gain001 > 0 else 0)
+                extra = max(0, min(MAX_EXTRA, by_budget, by_debt))
+            else:
+                extra = min(MAX_EXTRA,
+                            int(st["chest"] // max(risk001, 0.01)))
             lot = round(BASE_LOT + extra * 0.01, 2)
             if extra > 0:
-                say(f"FIGHTER: {extra} bullet(s) ride along -> "
-                    f"lot {lot:.2f} (chest ${st['chest']:.2f} "
-                    f"covers {extra} x ${risk001:.2f})")
+                say(f"RECUP: {extra} lot(s) de +0.01 -> lot {lot:.2f} "
+                    f"(dette ${st['debt']:.2f}, bocal ${st['chest']:.2f}, "
+                    f"mise ${extra * risk001:.2f})")
         # --- no single trade may risk more than 10% of the balance
         risk = dist * lot
         cap = MAX_RISK_PCT * ai2.balance
