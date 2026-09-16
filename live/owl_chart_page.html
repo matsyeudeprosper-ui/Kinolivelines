@@ -879,6 +879,22 @@ function mtCalc(){
  const mkt=MS.px,ref=MT.entry||mkt,sl=MT.sl,tp=MT.tp;
  let d=0;
  if(tp>ref&&sl<ref)d=1; else if(tp<ref&&sl>ref)d=-1;
+ if(MT.edit){
+  // editing an open position: direction and lot are the position's, the
+  // only question is whether the two new levels are legal
+  const dist=Math.abs(mkt-sl),rew=Math.abs(mkt-tp),L=MT.lot||0.01;
+  let bad='';
+  if(MT.d===1&&!(sl<mkt&&tp>mkt))bad='achat: SL sous le prix, TP au-dessus';
+  else if(MT.d===-1&&!(tp<mkt&&sl>mkt))bad='vente: TP sous le prix, SL au-dessus';
+  else if(Math.min(dist,rew)<=(MS.s_min_dist||10))bad='SL ou TP trop pres du marche';
+  const nr=Math.abs((MT.e0||mkt)-sl)*L,
+        or_=MT.sl0?Math.abs((MT.e0||mkt)-MT.sl0)*L:null;
+  if(!bad&&MS.max_risk>0&&nr>MS.max_risk&&(or_===null||nr>or_))
+   bad='risque $'+nr.toFixed(2)+' > '+Math.round((MS.max_risk_pct||0.1)*100)+
+       '% du solde ($'+MS.max_risk.toFixed(2)+')';
+  return{d:MT.d,px:mkt,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L,bul:0,
+   against:false,inner:false,half:false,edit:true,
+   risk:dist*L,gain:rew*L,rr:dist>0?rew/dist:0,kind:'MODIF',bad:bad};}
  const dist=Math.abs(ref-sl),rew=Math.abs(tp-ref);
  const against=(MS.trend!==0&&d!==0&&d!==MS.trend);
  // riding the INTERNAL structure: the stop sits nearer to the internal
@@ -936,17 +952,33 @@ function mtRender(){
   ((c.inner||against)&&c.half?' <b style="color:#cfe3f5">demi-lot</b>':'')+
   ' &middot; dette $'+(MS.debt||0).toFixed(2)+
   (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
- document.getElementById('mtgo').disabled=!!c.bad;
- document.getElementById('mtgo').style.opacity=c.bad?.45:1;
+ const go=document.getElementById('mtgo');
+ go.disabled=!!c.bad;go.style.opacity=c.bad?.45:1;
+ if(!go.dataset.busy)go.textContent=c.edit?'Modifier':'Confirmer';
+ // an edit touches only the two levels: no pending, no flip
+ document.getElementById('mtpend').style.display=c.edit?'none':'';
  // no tool on screen may build a counter-trend trade when it is forbidden
  const fb=document.getElementById('mtflip');
- const blocked=(MS.counter_ok===false);
+ const blocked=c.edit||(MS.counter_ok===false);
  fb.style.display=blocked?'none':'';
  fb.title=blocked?'contre-tendance indisponible':'';
 }
 mtopen.onclick=async()=>{
  if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}
- if(MS.open&&MS.open.length){alert('Une position est deja ouverte.');return;}
+ if(MS.open&&MS.open.length){
+  // owner 2026-09-16: a position already open is edited, not refused -
+  // drag its SL/TP and confirm
+  const p=MS.open[0];
+  MT={sl:p.sl||0,tp:p.tp||0,entry:null,edit:true,d:p.d,lot:p.lot,
+      sl0:p.sl||0,e0:p.e};
+  if(!MT.sl||!MT.tp){
+   const a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
+   if(!MT.sl)MT.sl=(p.d===1)?MS.px-a:MS.px+a;
+   if(!MT.tp)MT.tp=(p.d===1)?MS.px+a*0.8:MS.px-a*0.8;}
+  mtbar.style.display='block';mtopen.style.display='none';
+  document.getElementById('backlive').style.bottom=
+   ((mtbar.offsetHeight||140)+14)+'px';
+  mtRender();return;}
  if(MS.pending&&MS.pending.length){
   const p=MS.pending[0];
   if(confirm('Ordre '+p.kind+' '+p.lot.toFixed(2)+' a '+p.e.toFixed(0)+
@@ -1002,19 +1034,20 @@ document.getElementById('mtcancel').onclick=()=>{
 document.getElementById('mtgo').onclick=async()=>{
  const c=mtCalc();if(!c||c.bad)return;
  const g=document.getElementById('mtgo');
- g.disabled=true;g.textContent='Envoi...';
+ g.disabled=true;g.dataset.busy='1';g.textContent='Envoi...';
  try{
   const r=await fetch('/'+tok+'/manual_order',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:'d='+c.d+'&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)+
+   body:(c.edit?'modify=1':'d='+c.d)+
+    '&sl='+c.sl.toFixed(2)+'&tp='+c.tp.toFixed(2)+
     (MT.entry?'&entry='+MT.entry.toFixed(2):'')});
   const j=await r.json();
   g.textContent=j.ok?'Envoye':'Refuse';
   if(j.ok){MT=null;setTimeout(()=>{mtbar.style.display='none';
-   mtopen.style.display='block';g.textContent='Confirmer';g.disabled=false;
+   mtopen.style.display='block';delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;
    document.getElementById('backlive').style.bottom='18px';},1400);}
-  else{alert(j.err||'refus');g.textContent='Confirmer';g.disabled=false;}
- }catch(e){g.textContent='Confirmer';g.disabled=false;alert('reseau');}
+  else{alert(j.err||'refus');delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;}
+ }catch(e){delete g.dataset.busy;g.textContent='Confirmer';g.disabled=false;alert('reseau');}
 };
 const MTGRAB=38;                 // finger-sized catch zone
 const AXIS=64;                   // right strip = vertical zoom
@@ -1106,6 +1139,8 @@ async function mtLoad(){
    if((Date.now()/1000-(MS.updated||0))>90)
     MSerr='Donnees figees depuis '+Math.round(Date.now()/1000-MS.updated)+'s.';
    if(MT)mtRender();
+   mtopen.innerHTML=(MS.open&&MS.open.length)
+    ?'&#9999;&#65039; Modifier SL/TP':'&#128200; Trader';
    mtopen.style.display=MT?'none':'block';
    return;}
   mtopen.style.display='none';

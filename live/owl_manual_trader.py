@@ -346,8 +346,55 @@ def cancel_pending(ticket=None):
     return n
 
 
+def modify(req):
+    """Owner 2026-09-16: move the SL/TP of a position that is already open,
+    by dragging the lines on the chart. Nothing else about the position is
+    touched - not the lot, not the direction."""
+    pos = [p for p in open_positions() if p.magic == MAGIC]
+    if not pos:
+        return False, "aucune position a modifier"
+    p = pos[0]
+    sl, tp = float(req.get("sl", 0)), float(req.get("tp", 0))
+    if sl <= 0 or tp <= 0:
+        return False, "SL et TP requis"
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return False, "pas de cotation"
+    d = 1 if p.type == mt5.ORDER_TYPE_BUY else -1
+    px = tick.bid if d == 1 else tick.ask
+    if d == 1 and not (sl < px < tp):
+        return False, f"achat: il faut SL < {px:.2f} < TP"
+    if d == -1 and not (tp < px < sl):
+        return False, f"vente: il faut TP < {px:.2f} < SL"
+    info = mt5.symbol_info(SYMBOL)
+    gap = (info.trade_stops_level * info.point) if info else 0.0
+    if min(abs(px - sl), abs(px - tp)) <= max(gap, B.S_MIN_DIST):
+        return False, "SL ou TP trop pres du marche"
+    # the 10% rule still applies - but never block a move that REDUCES the
+    # risk, or a position already over the cap could not be tightened
+    new_risk = abs(p.price_open - sl) * p.volume
+    old_risk = abs(p.price_open - p.sl) * p.volume if p.sl else None
+    if old_risk is None or new_risk > old_risk:
+        bad = risk_ok(abs(p.price_open - sl), p.volume)
+        if bad:
+            return False, bad
+    r = mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "symbol": SYMBOL,
+                        "position": p.ticket, "sl": round(sl, 2),
+                        "tp": round(tp, 2), "magic": MAGIC})
+    if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
+        return False, f"broker: {getattr(r, 'retcode', '?')} {getattr(r, 'comment', '')}"
+    say(f"POSITION MODIFIEE #{p.ticket} {p.volume} "
+        f"SL {p.sl:.2f} -> {sl:.2f}  TP {p.tp:.2f} -> {tp:.2f} "
+        f"(risque ${new_risk:.2f})")
+    push("Position modifiee", f"SL {sl:.0f}  TP {tp:.0f}")
+    return True, dict(ticket=p.ticket, lot=p.volume, sl=sl, tp=tp,
+                      risk=round(new_risk, 2), modified=True)
+
+
 def execute(req, led, trend=0):
     """Validate and place the order the chart asked for."""
+    if req.get("modify"):
+        return modify(req)
     if req.get("cancel"):
         n = cancel_pending(int(req["cancel"]) if req["cancel"] != 1 else None)
         return (n > 0), (f"{n} ordre(s) annule(s)" if n else "rien a annuler")

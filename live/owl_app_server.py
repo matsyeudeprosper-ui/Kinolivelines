@@ -3288,7 +3288,27 @@ class H(BaseHTTPRequestHandler):
                        "tp": float(q.get("tp", ["0"])[0]),
                        "entry": float(q.get("entry", ["0"])[0] or 0),
                        "cancel": q.get("cancel", [""])[0],
+                       "modify": q.get("modify", [""])[0],
                        "ts": time.time(), "by": u.get("id")}
+                if req["modify"]:
+                    # moving the SL/TP of a position that is already open:
+                    # only the two levels matter, direction and lot are the
+                    # position's own
+                    if req["sl"] <= 0 or req["tp"] <= 0:
+                        self._send(json.dumps(
+                            {"ok": False, "err": "SL et TP requis"}),
+                            "application/json")
+                        return
+                    try:
+                        os.remove(os.path.join(
+                            DIR, f"manual_order_result_{u['id']}.json"))
+                    except Exception:
+                        pass
+                    with open(os.path.join(
+                            DIR, f"manual_order_{u['id']}.json"), "w") as f:
+                        json.dump(req, f)
+                    self._send(json.dumps({"ok": True}), "application/json")
+                    return
                 if req["cancel"]:
                     req["cancel"] = int(req["cancel"])
                     with open(os.path.join(
