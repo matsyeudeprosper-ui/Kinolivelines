@@ -130,3 +130,29 @@ Both levels are now published and drawn:
 Each carries its own pullback gate, so a level stays hidden while it is
 merely the current extreme. The main structure publishes the same pair
 (`next_bos` / `flip_bos`).
+
+## Taking the FIRST trade of a flip (2026-09-16)
+Owner: "at the anticipated level I'd like to take a buy, the first buy of a
+flip, but the panel is still VENTE, which is logical since bullish is not
+yet confirmed."
+
+The tool takes its direction from the trend, so during an armed flip it
+offers the dying trend's side. Inverting used to MIRROR the lines around
+price, which produced a setup with no structure behind it.
+
+Inverting now REBUILDS from the structure for the other side:
+- **entry** = the anticipated break on that side, as a programmed order, so
+  the trade only exists once the break actually happens;
+- **stop** = that side's structural level (internal first, then the main
+  diamond, then a plain offset);
+- **target** = the automation's own R:R.
+
+The rules already in place do the rest. A first-trade-of-a-flip runs against
+the main trend, so it is already half a lot and already waits for a candle
+to CLOSE beyond the line. That is "wait for the BOS to confirm the flip",
+expressed in rules written weeks earlier. Nothing new was needed to make the
+trade correct - only to stop mirroring and start reading the structure.
+
+The Inverser button turns purple and names the level whenever the other side
+has a confirmed anticipated break, so the opportunity is visible without
+opening anything.

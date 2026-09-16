@@ -947,6 +947,19 @@ function mtClamp(v){
  return Math.round(Math.min(p*1.5,Math.max(p*0.5,v))*100)/100;
 }
 function mtRR(){return (MS&&MS.rr>0)?MS.rr:0.8;}
+function antiLevel(dd){
+ // the anticipated break in direction dd, whichever structure offers one.
+ // Internal first: it is the nearer level. Only levels whose pullback is
+ // confirmed count - an unconfirmed one is just the current extreme.
+ if(!D)return null;
+ const c=[[D.int_bos,D.int_bos_dir,D.int_bos_ready],
+          [D.int_flip_bos,D.int_flip_bos_dir,D.int_flip_bos_ready],
+          [D.next_bos,D.bos_dir,D.bos_ready],
+          [D.flip_bos,D.flip_bos_dir,D.flip_bos_ready]];
+ for(let i=0;i<c.length;i++)
+  if(c[i][0]&&c[i][1]===dd&&c[i][2])return c[i][0];
+ return null;
+}
 function intLevel(dd,px){
  // The internal structure's stop level for a trade in direction dd.
  // The protected dot (int_inv) when the engine still holds one; after a
@@ -1085,6 +1098,12 @@ function mtRender(){
  const show=(id,on)=>{document.getElementById(id).style.display=on?'':'none';};
  show('mtpend',!c.edit&&!MT.editPend);ary_pend_paint();
  show('mtflip',!c.edit&&MS.counter_ok!==false);
+ {const fb=document.getElementById('mtflip');
+  const other=(c.d!==0)?antiLevel(-c.d):null;
+  fb.style.borderColor=other?'#6d5bbd':'#33475c';
+  fb.style.color=other?'#b98cff':'#cfe3f5';
+  fb.title=other?('Prendre la cassure a '+other.toFixed(0)+
+   ' dans l’autre sens'):'Inverser le sens';}
  const cb=document.getElementById('mtclose');
  const opos=(MS.open&&MS.open.length)?MS.open[0]:null;
  if(c.edit&&opos){
@@ -1175,10 +1194,30 @@ document.getElementById('mtpend').onclick=()=>{
 };
 document.getElementById('mtflip').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
- const px=MS.px;
- const e=MT.entry?Math.round(px+(px-MT.entry)):null;
- MT={sl:Math.round(px+(px-MT.sl)),tp:Math.round(px+(px-MT.tp)),entry:e};
- mtRender();
+ // Owner 2026-09-16: taking the first trade of a flip. Inverting used to
+ // mirror the lines around price, producing a setup with no structure
+ // behind it. It now REBUILDS from the structure for the other side:
+ //   entry  = the anticipated break on that side, as a programmed order,
+ //            so the trade only exists once the break actually happens;
+ //   stop   = that side's structural level;
+ //   target = the same R:R the automation aims for.
+ // Against the main trend this is already half a lot and already waits for
+ // a candle to CLOSE beyond the line - which is exactly "wait for the BOS
+ // to confirm the flip", expressed in rules that were already there.
+ const c0=mtCalc();
+ const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
+ const nd=(c0&&c0.d)?-c0.d:((MS.trend===-1)?1:-1);
+ const okS=v=>v&&((nd===1&&v<px-10)||(nd===-1&&v>px+10));
+ let sl=intLevel(nd,px);
+ if(!sl&&okS(D&&D.invalid))sl=D.invalid;
+ if(!sl)sl=(nd===1)?px-a:px+a;
+ let e=antiLevel(nd);
+ if(e&&!((nd===1&&e>px+10)||(nd===-1&&e<px-10)))e=null;
+ const ref=e||px,risk=Math.abs(ref-sl);
+ MT={sl:Math.round(sl*100)/100,
+     tp:Math.round((ref+nd*mtRR()*risk)*100)/100,
+     entry:e?Math.round(e*100)/100:null};
+ ary_pend_paint();mtRender();
 };
 document.getElementById('mtcancel').onclick=()=>{
  MT=null;mtbar.style.display='none';mtopen.style.display='block';
