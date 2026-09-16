@@ -70,7 +70,10 @@ CHEST_CAP = 10.0         # cap sweep 2026-09-09: $10 = sweet spot
 # monotonically, because it multiplies a negative expectancy) and chose to
 # switch it on anyway. See live/review/DEBT_SYSTEM.md.
 JAR = True               # False = old behaviour (new-high overflow only)
-JAR_SKIM = 0.40          # share of each win set aside for recovery
+JAR_SKIM = 0.50          # owner 2026-09-16: half of each win. The skim is
+                         # a PERMISSION dial, not a savings account - it
+                         # decides how fast you earn the right to size up,
+                         # so higher = faster recovery AND more variance.
 JAR_STAKE = 0.50         # most of the jar stakeable on ONE attempt
 JAR_DEBT_MULT = 0.5      # jar may hold up to half the debt...
 JAR_FLOOR_CAP = 10.0     # ...but never less headroom than the old cap
