@@ -109,7 +109,7 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
-let viewOff=0,cwG=7,vzoom=1,vz=null;   // vz = axis-drag in progress
+let viewOff=0,cwG=7,vzoom=1,vz=null,voff=0;  // voff = vertical pan
 let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null;  // assisted manual trading
 const mtbar=document.getElementById('mtbar');
 const mtopen=document.getElementById('mtopen');
@@ -118,7 +118,7 @@ cv.addEventListener('pointerdown',e=>{
  if(MTdrag)return;                 // a SL/TP line has the pointer
  e.preventDefault();
  drag={x:e.clientX,off:viewOff,v:0,px:e.clientX,
-  t:performance.now()};
+  y:e.clientY,voff:voff,t:performance.now()};
  cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointermove',e=>{
  if(MTdrag){drag=null;return;}
@@ -127,7 +127,9 @@ cv.addEventListener('pointermove',e=>{
  const now=performance.now();
  drag.v=(e.clientX-drag.px)/Math.max(8,now-drag.t);
  drag.px=e.clientX;drag.t=now;
- viewOff=drag.off+(e.clientX-drag.x)/Math.max(3,cwG);});
+ viewOff=drag.off+(e.clientX-drag.x)/Math.max(3,cwG);
+ if(SCALE){const ppp=(SCALE.hi-SCALE.lo)/Math.max(1,SCALE.plot);
+  voff=drag.voff+(e.clientY-drag.y)*ppp;}});
 const endDrag=()=>{
  if(MTdrag){drag=null;return;}
  if(!drag)return;
@@ -140,7 +142,7 @@ const endDrag=()=>{
  glide();};
 cv.addEventListener('pointerup',endDrag);
 cv.addEventListener('pointercancel',endDrag);
-document.getElementById('backlive').onclick=()=>{viewOff=0;};
+document.getElementById('backlive').onclick=()=>{viewOff=0;voff=0;vzoom=1;};
 let LA=null,LT=null;   // live candle: animated state + target
 const born={dot:{},bos:{},cand:{}};
 const seen={dot:new Set(),bos:new Set(),cand:0,first:true};
@@ -197,7 +199,7 @@ function draw(){
  const cs=D.candles.slice(Math.max(0,end-N),end);
  const atLive=viewOff<0.5;
  document.getElementById('backlive').style.display=
-  atLive?'none':'block';
+  (atLive&&!voff&&vzoom===1)?'none':'block';
  if(LA&&LT){
   const f=0.14;               // smooth fill, ~half-life 300ms
   LA.o=LT[1];
@@ -205,22 +207,26 @@ function draw(){
   LA.h+=(LT[2]-LA.h)*f;
   LA.l+=(LT[3]-LA.l)*f;
  }
+ // 2026-09-16: the scale fits the CANDLES. A far-away structure level
+ // used to be forced in, which squashed every candle into a strip at the
+ // bottom. Levels outside the window are shown as edge markers instead.
  let lo=Infinity,hi=-Infinity;
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
  if(LT&&atLive){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
- (D.trades||[]).forEach(t=>{[t[2],t[3],t[4]].forEach(v=>{
-  if(v>0){hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
- if(MT){hi=Math.max(hi,MT.sl,MT.tp);lo=Math.min(lo,MT.sl,MT.tp);}
- if(D.trend===1||D.trend===-1){
-  const tds0=(D.dots||[]).filter(x=>x[2]===(D.trend===1?1:-1));
-  if(tds0.length){
-   const pv=tds0[tds0.length-1][1];
-   hi=Math.max(hi,pv);lo=Math.min(lo,pv);
-  }
- }
+ const span0=hi-lo;
+ // an open position matters: its entry always, its stop/target only if
+ // they are not absurdly far compared with what price is doing
+ (D.trades||[]).forEach(t=>{
+  if(t[2]>0){hi=Math.max(hi,t[2]);lo=Math.min(lo,t[2]);}
+  [t[3],t[4]].forEach(v=>{if(v>0&&Math.abs(v-t[2])<span0*1.5){
+   hi=Math.max(hi,v);lo=Math.min(lo,v);}});});
+ // the lines you are actively dragging always stay in view
+ if(MT){hi=Math.max(hi,MT.sl,MT.tp);lo=Math.min(lo,MT.sl,MT.tp);
+  if(MT.entry){hi=Math.max(hi,MT.entry);lo=Math.min(lo,MT.entry);}}
  const pad=(hi-lo)*0.06||1;hi+=pad;lo-=pad;
  if(vzoom!==1){const mid=(hi+lo)/2,half=(hi-lo)/2*vzoom;
   hi=mid+half;lo=mid-half;}
+ if(voff){hi+=voff;lo+=voff;}
  // the trade panel is an opaque overlay: keep the plot above it
  const TOPP=8,BOTP=MT?((mtbar.offsetHeight||140)+12):26;
  const PLOT=Math.max(60,Hh-TOPP-BOTP);
@@ -355,6 +361,22 @@ function draw(){
      ctx.globalAlpha=1;}}
   }
  });
+ // a level outside the window is docked at the edge with its price and
+ // how far away it is, so nothing important disappears silently
+ const edgeMark=(v,col,lab)=>{
+  const top=v>hi,y=top?TOPP+9:TOPP+PLOT-9;
+  ctx.save();ctx.globalAlpha=.92;ctx.fillStyle=col;
+  ctx.beginPath();
+  ctx.moveTo(W-30,y+(top?4:-4));ctx.lineTo(W-22,y+(top?-5:5));
+  ctx.lineTo(W-38,y+(top?-5:5));ctx.closePath();ctx.fill();
+  ctx.font='bold 9px system-ui';
+  const t=lab+' '+v.toFixed(0);
+  const w2=ctx.measureText(t).width+10;
+  ctx.fillStyle='rgba(8,14,22,.85)';
+  ctx.beginPath();ctx.roundRect(W-w2-42,y-8,w2,16,8);ctx.fill();
+  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle=col;ctx.fillText(t,W-w2-37,y+3.5);
+  ctx.restore();};
  // --- FLIP LINE: the trend's protected dot = where the CHoCH
  //     fires; a close beyond this price wounds the trend ---
  if(D.trend===1||D.trend===-1){
@@ -364,6 +386,8 @@ function draw(){
    const pd=tds[tds.length-1];
    const y=px(pd[1]);
    const col=side===1?'#4fd8c8':'#ffb86b';
+   if(pd[1]>hi||pd[1]<lo){edgeMark(pd[1],col,'CHoCH');}
+   else{
    ctx.strokeStyle=col;
    ctx.globalAlpha=0.55;
    ctx.setLineDash([8,5]);
@@ -376,9 +400,13 @@ function draw(){
    ctx.beginPath();
    ctx.moveTo(W-14,y-5);ctx.lineTo(W-9,y);
    ctx.lineTo(W-14,y+5);ctx.lineTo(W-19,y);
-   ctx.closePath();ctx.fill();
+   ctx.closePath();ctx.fill();}
   }
  }
+ // an open position's stop or target, when the fit pushes it off screen
+ (D.trades||[]).forEach(t=>{
+  if(t[3]>0&&(t[3]>hi||t[3]<lo))edgeMark(t[3],'#ff5c5c','SL');
+  if(t[4]>0&&(t[4]>hi||t[4]<lo))edgeMark(t[4],'#2ecc71','TP');});
  // --- glowing dots with birth bloom ---
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
@@ -584,7 +612,9 @@ function draw(){
  // so it never competes with the SL/TP lines.
  if(D.next_bos){
   const yb=px(D.next_bos),up=D.trend===1;
-  if(yb>TOPP+6&&yb<TOPP+PLOT-6){
+  if(D.next_bos>hi||D.next_bos<lo){
+   edgeMark(D.next_bos,up?'#4fd8c8':'#ff9678','BOS');}
+  else if(yb>TOPP+6&&yb<TOPP+PLOT-6){
    const col=up?'#4fd8c8':'#ff9678';
    const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;
    ctx.save();
