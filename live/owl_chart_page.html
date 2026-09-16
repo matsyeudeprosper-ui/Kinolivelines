@@ -394,31 +394,29 @@ function draw(){
   ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
   ctx.fillStyle=col;ctx.fillText(t,W-w2-37,y+3.5);
   ctx.restore();};
- // --- FLIP LINE: the trend's protected dot = where the CHoCH
- //     fires; a close beyond this price wounds the trend ---
- if(D.trend===1||D.trend===-1){
-  const side=D.trend===1?1:-1;
-  const tds=(D.dots||[]).filter(x=>x[2]===side);
-  if(tds.length){
-   const pd=tds[tds.length-1];
-   const y=px(pd[1]);
-   const col=side===1?'#4fd8c8':'#ffb86b';
-   if(pd[1]>hi||pd[1]<lo){edgeMark(pd[1],col,'CHoCH');}
-   else{
+ // --- FLIP LINE: where a close kills the trend. Taken from the
+ //     published level, not from the dot list: that dot scrolls out of
+ //     the window and the whole line used to vanish with it (2026-09-16)
+ if(D.invalid&&(D.trend===1||D.trend===-1)){
+  const col=D.trend===1?'#4fd8c8':'#ffb86b';
+  if(D.invalid>hi||D.invalid<lo){edgeMark(D.invalid,col,'CHoCH');}
+  else{
+   const y=px(D.invalid);
+   const xv=(D.invalid_t!==undefined&&xoft[D.invalid_t]!==undefined)
+    ?xoft[D.invalid_t]:0;
    ctx.strokeStyle=col;
    ctx.globalAlpha=0.55;
    ctx.setLineDash([8,5]);
    ctx.lineWidth=1.2;
-   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(xv,y);ctx.lineTo(W,y);ctx.stroke();
    ctx.setLineDash([]);
    ctx.globalAlpha=1;
-   // small diamond at the right edge marks it as the trigger
    ctx.fillStyle=col;
+   ctx.beginPath();ctx.arc(xv,y,3.6,0,6.3);ctx.fill();
    ctx.beginPath();
    ctx.moveTo(W-14,y-5);ctx.lineTo(W-9,y);
    ctx.lineTo(W-14,y+5);ctx.lineTo(W-19,y);
    ctx.closePath();ctx.fill();}
-  }
  }
  // an open position's stop or target, when the fit pushes it off screen
  (D.trades||[]).forEach(t=>{
@@ -632,7 +630,10 @@ function draw(){
  // its own when price rejoins the main structure.
  if(D.int_trend&&D.int_bos&&D.px&&D.next_bos&&D.invalid){
   const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-D.invalid));
-  if(room>span0){
+  const mainRange=Math.abs(D.invalid-D.next_bos);
+  // a share of the MAIN range, so scrolling or zooming cannot make the
+  // internal structure blink in and out (2026-09-16)
+  if(mainRange>0&&room>mainRange*0.08){
    const ic=D.int_trend===1?'#9d8cff':'#c58cff';
    (D.int_dots||[]).slice(-6).forEach(dd=>{
     const x=xoft[dd[0]];if(x===undefined)return;
