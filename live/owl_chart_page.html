@@ -29,22 +29,32 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #cv{display:block;width:100vw;height:calc(100vh - 48px);
  touch-action:none;cursor:grab;overscroll-behavior:none}
+/* two rows, not one: the P&L sits above the buttons so its width never
+   competes with them. Measured: past $100 a single row pushed the trade
+   button off the edge (owner 2026-09-16). */
 #botbar{position:fixed;left:0;right:0;bottom:14px;z-index:41;
- display:flex;align-items:center;gap:8px;padding:0 12px;
- pointer-events:none}
-#botbar>*{pointer-events:auto;flex:none}
+ display:flex;flex-direction:column;align-items:center;gap:8px;
+ padding:0 12px;pointer-events:none}
+#botrow{display:flex;align-items:center;width:100%;pointer-events:none}
+#botrow>*{pointer-events:auto;flex:none}
+#botbar>*{pointer-events:auto}
+#mtopen{margin-left:auto}
 #backlive{display:none;font-size:.72rem;font-weight:800;color:#0a111c;
  background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
  letter-spacing:.04em;box-shadow:0 4px 14px rgba(232,197,90,.35)}
-#pnl{flex:1 1 auto;min-width:0;
- display:none;text-align:center;padding:7px 12px 5px;
- border-radius:18px;backdrop-filter:blur(10px);
- -webkit-backdrop-filter:blur(10px);
- background:rgba(13,22,36,.55);border:1px solid rgba(127,179,224,.2);
+/* one line, never wrapping. The number is the thing you must be able to
+   read, so it never shrinks or clips; the meta yields first and then
+   disappears entirely (owner 2026-09-16). */
+#pnl{max-width:100%;display:none;
+ align-items:baseline;justify-content:center;gap:7px;
+ padding:8px 13px;border-radius:14px;backdrop-filter:blur(10px);
+ -webkit-backdrop-filter:blur(10px);white-space:nowrap;
+ background:rgba(13,22,36,.6);border:1px solid rgba(127,179,224,.2);
  transition:box-shadow .6s,border-color .6s}
-#pnl b{font-size:1.15rem;font-variant-numeric:tabular-nums;
- display:block;line-height:1.15;transition:transform .15s}
-#pnl span{font-size:.62rem;color:#5f7185;letter-spacing:.05em;
+#pnl b{flex:none;font-size:1.05rem;font-variant-numeric:tabular-nums;
+ line-height:1.1;white-space:nowrap;transition:transform .15s}
+#pnl span{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;font-size:.6rem;color:#5f7185;letter-spacing:.04em;
  text-transform:uppercase}
 #pnl.win{border-color:rgba(46,204,113,.45);
  box-shadow:0 0 24px rgba(46,204,113,.22)}
@@ -78,12 +88,13 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 </div>
 <span id="px"></span>
 
-<div id="botbar"><button id="backlive">&#9654; EN DIRECT</button>
+<div id="botbar">
 <div id="pnl"><b>--</b><span></span></div>
+<div id="botrow"><button id="backlive">&#9654; EN DIRECT</button>
 <button id="mtopen" style="display:none;
  padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
  font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
- &#128200; Trader</button></div>
+ &#128200; Trader</button></div></div>
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -797,13 +808,12 @@ function ui(){
  if(ts.length){
   const tot=ts.reduce((a,t)=>a+t[5],0);
   const lots=ts.reduce((a,t)=>a+t[1],0);
-  pn.style.display='block';
+  pn.style.display='flex';
   pn.className=tot>=0?'win':'loss';
   const b=pn.querySelector('b');
   b.textContent=(tot>=0?'+$':'-$')+Math.abs(tot).toFixed(2);
   pn.querySelector('span').textContent=
-   ts.length+' position'+(ts.length>1?'s':'')+' · '+
-   lots.toFixed(2)+' lot';
+   ts.length+' pos · '+lots.toFixed(2);
   if(lastPnl!==null&&tot!==lastPnl){
    b.style.transform='scale(1.12)';
    setTimeout(()=>{b.style.transform='none'},160);}
