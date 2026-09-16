@@ -3536,12 +3536,45 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
         elif sub == "chart_data":
+            # 2026-09-16 (owner): the chart shows the positions of the
+            # account BEING VIEWED, never the terminal that happens to
+            # serve the candles. Works for every member, and keeps
+            # working if the demo account goes away.
             try:
-                self._send(open(os.path.join(
-                    DIR, "owl_chart_btc.json")).read(),
-                    "application/json")
+                d = json.load(open(os.path.join(DIR, "owl_chart_btc.json")))
             except Exception:
                 self._send("{}", "application/json")
+                return
+            tr = []
+            uid = user.get("id")
+            try:
+                ms = json.load(open(os.path.join(
+                    DIR, f"manual_state_{uid}.json")))
+                for p in (ms.get("open") or []):
+                    tr.append([int(p.get("d") or 1), float(p.get("lot") or 0),
+                               round(float(p.get("e") or 0), 2),
+                               round(float(p.get("sl") or 0), 2),
+                               round(float(p.get("tp") or 0), 2),
+                               round(float(p.get("pl") or 0), 2), "m"])
+                d["pending"] = ms.get("pending") or []
+            except Exception:
+                pass
+            if not tr:
+                try:
+                    nd = json.load(open(os.path.join(
+                        DIR, "nest_data", f"{uid}.json")))
+                    for p in (nd.get("open_list") or []):
+                        tr.append([1 if p.get("d") == "A" else -1,
+                                   float(p.get("lot") or 0),
+                                   round(float(p.get("e") or 0), 2),
+                                   round(float(p.get("sl") or 0), 2),
+                                   round(float(p.get("tp") or 0), 2),
+                                   round(float(p.get("pl") or 0), 2), "b"])
+                except Exception:
+                    pass
+            d["trades"] = tr
+            d["acct"] = user.get("login")
+            self._send(json.dumps(d), "application/json")
         elif sub == "manual_state":
             # assisted manual trading on the live account (2026-09-15)
             if not manual_ok(user):

@@ -260,10 +260,41 @@ def trend_filter(cands):
     return out, trend
 
 
+def candle_sources():
+    """Any terminal that can serve BTCUSD candles. The chart must survive
+    one account being closed, so the configured demo is merely the first
+    candidate and every nest terminal is a fallback (2026-09-16)."""
+    out = [(TERMINAL, LOGIN, SERVER, PASSWORD)]
+    try:
+        for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                encoding="utf-8")):
+            t = u.get("terminal")
+            if not t or t == TERMINAL or not os.path.exists(t):
+                continue
+            out.append((t, int(u.get("mt5_login") or u["login"]),
+                        u.get("mt5_server", SERVER),
+                        u.get("mt5_password") or PASSWORD))
+    except Exception:
+        pass
+    return out
+
+
+def connect():
+    for path, login, srv, pw in candle_sources():
+        try:
+            mt5.shutdown()
+        except Exception:
+            pass
+        if mt5.initialize(path=path, login=login, password=pw,
+                          server=srv, timeout=60000):
+            if mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 0, 2) is not None:
+                print(f"chart feed on {login}", flush=True)
+                return True
+    return False
+
+
 def main():
-    assert mt5.initialize(path=TERMINAL, login=LOGIN,
-                          password=PASSWORD, server=SERVER,
-                          timeout=60000), "MT5 init failed"
+    assert connect(), "no terminal could serve BTCUSD candles"
     print("chart feed up", flush=True)
     while True:
         try:
@@ -282,31 +313,11 @@ def main():
                           round(float(_b["close"]), 2)]
             except Exception:
                 h1 = None
+            # 2026-09-16 (owner): positions are NOT published here any
+            # more. This process is attached to whatever terminal serves
+            # the candles, which is not the account being traded. The app
+            # server injects the VIEWER's own positions instead.
             trades = []
-            for p in (mt5.positions_get(symbol=SYMBOL) or []):
-                trades.append([
-                    1 if p.type == mt5.POSITION_TYPE_BUY else -1,
-                    float(p.volume), round(p.price_open, 2),
-                    round(p.sl, 2), round(p.tp, 2),
-                    round(p.profit, 2), "b"])
-            # user 2026-09-08: the MANUAL account's open trades show
-            # on the chart too (from its nest worker publication -
-            # BTCUSDm quotes sit within cents of BTCUSD)
-            for _fn, _src in (("std.json", "m"), ("bos.json", "b")):
-                try:
-                    _nd = json.load(open(os.path.join(
-                        DIR, "nest_data", _fn)))
-                    for p in (_nd.get("open_list") or []):
-                        trades.append([
-                            1 if p.get("d") == "A" else -1,
-                            float(p.get("lot") or 0),
-                            round(float(p.get("e") or 0), 2),
-                            round(float(p.get("sl") or 0), 2),
-                            round(float(p.get("tp") or 0), 2),
-                            round(float(p.get("pl") or 0), 2),
-                            _src])
-                except Exception:
-                    pass
             if R is not None and len(R) > 1 and tick is not None:
                 kept = build(R[:-1])       # closed bars only
                 lv = R[-1]                 # the forming candle, live
@@ -377,7 +388,8 @@ def main():
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)
-            time.sleep(30)
+            time.sleep(15)
+            connect()                      # the source may have gone away
         # sync with the broker minute: wake right after each candle
         # close so the chart flips forming->closed with the broker,
         # ~1s ticks otherwise (user 2026-09-08)
