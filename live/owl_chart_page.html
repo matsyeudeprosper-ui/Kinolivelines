@@ -176,9 +176,15 @@ function draw(){
  const now=performance.now();
  const dpr=window.devicePixelRatio||1;
  const W=cv.clientWidth,Hh=cv.clientHeight;
- if(cv.width!==W*dpr){cv.width=W*dpr;cv.height=Hh*dpr;}
+ // 2026-09-16: the backing store was only resized when the WIDTH
+ // changed. On a phone the address bar hides and shows, which changes
+ // the HEIGHT only - the buffer kept its old size and the strip below
+ // the new height was never cleared, leaving a ghost of the previous
+ // frame (a second BOS tag at the bottom).
+ if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(Hh*dpr)){
+  cv.width=Math.round(W*dpr);cv.height=Math.round(Hh*dpr);}
  ctx.setTransform(dpr,0,0,dpr,0,0);
- ctx.clearRect(0,0,W,Hh);
+ ctx.clearRect(0,0,cv.width/dpr,cv.height/dpr);
  // --- trend atmosphere ---
  if(D.trend===1){
   const g=ctx.createLinearGradient(0,Hh,0,Hh*0.55);
