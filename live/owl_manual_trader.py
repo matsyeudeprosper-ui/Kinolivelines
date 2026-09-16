@@ -127,17 +127,32 @@ def risk_ok(dist, lot):
             f"ou attends un solde plus gros")
 
 
-def int_level(d, direction):
+def int_level(d, direction, px):
     """The internal structure's stop level for a trade in this direction:
-    the protected dot while the engine holds one, otherwise the most recent
-    internal dot on the stop side - a buy stops under a low dot, a sell
-    above a high one. Dots are [time, price, kind], kind +1 low / -1 high."""
-    if d.get("int_inv"):
-        return d["int_inv"]
+    the protected dot while the engine holds one, otherwise the protective
+    extreme of the CURRENT internal leg - the lowest low for a buy, the
+    highest high for a sell, since the last dot of the other kind. The most
+    recent dot is the wrong answer: it lands on a minor wiggle inside the
+    leg. Dots are [time, price, kind], kind +1 low / -1 high."""
     want = 1 if direction == 1 else -1
-    for dot in reversed(d.get("int_dots") or []):
-        if len(dot) >= 3 and dot[2] == want:
-            return float(dot[1])
+    ok = (lambda v: bool(v) and
+          (v < px - 10 if direction == 1 else v > px + 10))
+    if ok(d.get("int_inv")):
+        return d["int_inv"]
+    dots = [x for x in (d.get("int_dots") or []) if len(x) >= 3]
+    runs, prev = [], -2
+    for i, x in enumerate(dots):
+        if x[2] != want:
+            continue
+        if i == prev + 1:
+            runs[-1].append(float(x[1]))
+        else:
+            runs.append([float(x[1])])
+        prev = i
+    for run in reversed(runs):            # newest leg first
+        vals = [v for v in run if ok(v)]
+        if vals:
+            return min(vals) if want == 1 else max(vals)
     return None
 
 
@@ -151,7 +166,7 @@ def internal_trade(ref, sl, direction):
     except Exception:
         return False
     main = d.get("invalid")
-    inner = int_level(d, direction)
+    inner = int_level(d, direction, ref)
     if not inner or not main:
         return False
     return abs(sl - inner) < abs(sl - main)

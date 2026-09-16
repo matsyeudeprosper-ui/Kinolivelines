@@ -847,8 +847,21 @@ function intLevel(dd,px){
  if(!D)return null;
  if(ok(D.int_inv))return D.int_inv;
  const ds=D.int_dots||[],want=(dd===1)?1:-1;
- for(let i=ds.length-1;i>=0;i--)
-  if(ds[i][2]===want&&ok(ds[i][1]))return ds[i][1];
+ // The protective level of an internal LEG: the lowest low for a buy, the
+ // highest high for a sell. Dots of one kind sit in contiguous runs, one
+ // run per leg, so walk the runs newest first and take the first whose
+ // extreme is usable. The most recent single dot is the wrong answer - it
+ // lands on a minor wiggle inside the leg (owner 2026-09-16).
+ const runs=[];
+ for(let i=0;i<ds.length;i++){
+  if(ds[i][2]!==want)continue;
+  if(runs.length&&runs[runs.length-1].end===i-1){
+   runs[runs.length-1].end=i;runs[runs.length-1].v.push(ds[i][1]);}
+  else runs.push({end:i,v:[ds[i][1]]});}
+ for(let r=runs.length-1;r>=0;r--){
+  const v=runs[r].v.filter(ok);
+  if(!v.length)continue;
+  return (want===1)?Math.min.apply(null,v):Math.max.apply(null,v);}
  return null;
 }
 function mtLot(dist,against){
