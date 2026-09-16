@@ -44,3 +44,23 @@ The window runs from the last main event to now, uncapped. The main
 structure has not printed an event since 09-15 17:28, so the "internal"
 structure currently spans 1144 of 2000 candles — 57% of the chart. It is
 not nested inside anything at that size.
+
+## 4. The label showed the trend that was about to die (fixed 2026-09-16)
+Owner: "it will never turn bearish?" It turns bearish constantly. Replaying
+the internal engine over its window (`int_trace.py`) shows **55 events in
+19 hours**, a flip roughly every 20 minutes, including bearish BOS at
+10:24, 12:13 and 13:10 the same day.
+
+What the label hid: the engine had fired a bearish CHoCH at 13:20, two
+minutes after the bullish BOS at 13:18, and was waiting for the bearish BOS
+to confirm the flip. The tag showed the stale bullish arrow plus
+"sans CHoCH", which states a technical fact (the protected dot is consumed)
+instead of the useful one (a reversal is already under way).
+
+`int_choch` is now published and the tag reads `· bascule ▼` while a CHoCH
+against the internal trend is pending. `int_since` was also reading off the
+display-filtered marks, so it went null whenever the last main event
+scrolled out of view; it now reports the real value.
+
+The churn rate is itself evidence for divergence #1: 55 events in 19 hours
+is what raw M1 buys. The silence filter exists precisely to slow this down.

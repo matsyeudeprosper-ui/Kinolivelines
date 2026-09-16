@@ -693,7 +693,12 @@ function draw(){
     ctx.globalAlpha=1;
     ctx.font='bold 8px system-ui';
     const ia=(D.int_trend===1?'▲ ':(D.int_trend===-1?'▼ ':''));
-    const t=ia+'int BOS '+D.int_bos.toFixed(0)+(D.int_inv?'':' · sans CHoCH');
+    // a CHoCH against the internal trend has already fired and the engine
+    // is waiting for the BOS that confirms the flip - say so, because the
+    // arrow alone shows the trend that is about to die (owner 2026-09-16)
+    const flip=(D.int_choch&&D.int_choch!==D.int_trend)
+     ?(' · bascule '+(D.int_choch===1?'▲':'▼')):'';
+    const t=ia+'int BOS '+D.int_bos.toFixed(0)+flip;
     const w3=ctx.measureText(t).width+8;
     ctx.fillStyle='rgba(8,14,22,.8)';
     ctx.beginPath();ctx.roundRect(W-w3-66,yi-7,w3,14,7);ctx.fill();
@@ -950,7 +955,10 @@ function mtRender(){
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
   (c.inner?' &middot; <b style="color:#b98cff">interne '+
    (D&&D.int_trend===1?'&#9650; haussiere':
-    (D&&D.int_trend===-1?'&#9660; baissiere':''))+'</b>':'')+
+    (D&&D.int_trend===-1?'&#9660; baissiere':''))+
+   ((D&&D.int_choch&&D.int_choch!==D.int_trend)
+    ?' <span style="color:#e8c55a">bascule '+
+     (D.int_choch===1?'&#9650;':'&#9660;')+'</span>':'')+'</b>':'')+
   (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
   ((c.inner||against)&&c.half?' <b style="color:#cfe3f5">demi-lot</b>':'')+
   ' &middot; dette $'+(MS.debt||0).toFixed(2)+

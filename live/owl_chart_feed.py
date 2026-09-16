@@ -343,8 +343,9 @@ def main():
                 # moment price rejoins the main structure a new mark fires
                 # and this window restarts from there.
                 i_dots = i_marks = []
-                i_trend = 0
+                i_trend = i_choch = 0
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
+                _since = marks[-1][0] if marks else None
                 if marks:
                     _t0 = marks[-1][0]
                     # RAW M1, not the silence-filtered candles: the filter
@@ -356,7 +357,7 @@ def main():
                                1 if r["close"] >= r["open"] else -1]
                               for r in R[:-1] if int(r["time"]) > _t0]
                     if len(_inner) >= 10:
-                        (i_dots, i_marks, i_trend, _ic,
+                        (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
@@ -390,7 +391,8 @@ def main():
                      "int_dots": [d for d in i_dots if d[0] >= t0],
                      "int_bos_t": i_nxt_t, "int_inv_t": i_inv_t,
                      "next_bos_t": nxt_t, "invalid_t": inv_t,
-                     "int_since": marks[-1][0] if marks else None,
+                     "int_since": _since,
+                     "int_choch": i_choch,
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
                     open(OUT, "w"))
