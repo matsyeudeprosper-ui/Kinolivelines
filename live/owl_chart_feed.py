@@ -142,10 +142,17 @@ def engine(kept):
                 m = min(span, key=lambda x: x[3])
                 nd = [m[0], m[3], 1]
                 if choch == 1 and trend != 1:
-                    # first bullish BOS after a bullish CHoCH
+                    # first bullish BOS after a bullish CHoCH.
+                    # Owner 2026-09-16: the protected dot of a FRESH trend is
+                    # the leg's own extreme - the level that had been the
+                    # anticipated BOS on the other side - not the small
+                    # pullback extreme between the CHoCH and this break.
+                    # lo_v/lo_i still hold the leg's lowest low here: the
+                    # bullish CHoCH resets the HIGH reference, never the low.
                     marks.append([t, hi_v, "bos", 1])
                     trend = 1
                     choch = 0
+                    nd = [kept[lo_i][0], lo_v, 1]
                     dots.append(nd)
                     prot_lo = nd
                     up_st = dn_st = 0
@@ -174,9 +181,13 @@ def engine(kept):
                 m = max(span, key=lambda x: x[2])
                 nd = [m[0], m[2], -1]
                 if choch == -1 and trend != -1:
+                    # mirror of the bullish case above: hi_v/hi_i still hold
+                    # the leg's highest high, because a bearish CHoCH resets
+                    # the LOW reference and never the high
                     marks.append([t, lo_v, "bos", -1])
                     trend = -1
                     choch = 0
+                    nd = [kept[hi_i][0], hi_v, -1]
                     dots.append(nd)
                     prot_hi = nd
                     up_st = dn_st = 0
