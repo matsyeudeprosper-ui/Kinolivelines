@@ -108,6 +108,24 @@ def counter_lot():
     return half, (half < BASE_LOT - 1e-9)
 
 
+CHART = os.path.join(DIR, "owl_chart_btc.json")
+
+
+def internal_trade(ref, sl):
+    """Owner 2026-09-16: a trade riding the INTERNAL structure carries half
+    the base lot, exactly like a counter-trend trade. The stop decides which
+    structure the trade belongs to: whichever invalidation diamond it sits
+    nearer to. No internal structure on screen means no internal trade."""
+    try:
+        d = json.load(open(CHART, encoding="utf-8"))
+    except Exception:
+        return False
+    inner, main = d.get("int_inv"), d.get("invalid")
+    if not inner or not main:
+        return False
+    return abs(sl - inner) < abs(sl - main)
+
+
 def lot_for(dist, led):
     """The lot the debt system would use for a stop this far away."""
     lot = BASE_LOT
@@ -171,12 +189,15 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
     cancel_pending()                     # one programmed entry at a time
     name = PEND_NAME[(d, stop_side)]
     against = (trend != 0 and d != trend)
+    inner = internal_trade(entry, sl)
     lot, bullets = lot_for(dist, led)
-    if against:
+    if against or inner:
         half, ok = counter_lot()
         if not ok:
-            return False, "contre-tendance impossible a cette taille de lot"
+            why = "contre-tendance" if against else "structure interne"
+            return False, why + " impossible a cette taille de lot"
         lot, bullets = half, 0
+    if against:
         # owner 2026-09-15: only a trade AGAINST the structure has to be
         # confirmed by a close. With the trend, a touch is enough.
         need = 1 if entry > mkt else -1
@@ -190,7 +211,8 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
                              f"sur cloture M1")
         return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
                           risk=round(dist * lot, 2), armed=True)
-    # with the trend: a real broker order, triggered on touch
+    # with the trend: a real broker order, triggered on touch. An internal
+    # trade is NOT close-confirmed - only counter-trend is (owner 2026-09-15)
     r = mt5.order_send({
         "action": mt5.TRADE_ACTION_PENDING, "symbol": SYMBOL, "volume": lot,
         "type": PEND[(d, stop_side)], "price": round(entry, 2),
@@ -304,10 +326,13 @@ def execute(req, led, trend=0):
         return False, f"stop trop proche ({dist:.0f} pts)"
     lot, bullets = lot_for(dist, led)
     against = (trend != 0 and d != trend)
-    if against:
+    inner = internal_trade(px, sl)
+    if against or inner:
         half, ok = counter_lot()
         if not ok:
-            return False, "contre-tendance impossible a cette taille de lot"
+            why = "contre-tendance" if against else "structure interne"
+            return False, why + " impossible a cette taille de lot"
+        # half once, never twice: a trade that is both stays at half
         lot, bullets = half, 0
     elif req.get("lot"):                    # the chart may pin a lot
         lot = max(LOT_MIN, min(LOT_MAX, round(float(req["lot"]), 2)))
@@ -324,7 +349,8 @@ def execute(req, led, trend=0):
     say(f"ORDRE MANUEL {'ACHAT' if d == 1 else 'VENTE'} {lot} @ {r.price:.2f} "
         f"SL {sl:.2f} TP {tp:.2f} (risque ${risk:.2f}, {bullets} balle(s), "
         f"dette ${led['debt']:.2f}"
-        + (", CONTRE-TENDANCE demi-lot" if against else "") + ")")
+        + (", CONTRE-TENDANCE demi-lot" if against
+           else (", STRUCTURE INTERNE demi-lot" if inner else "")) + ")")
     push("Ordre place", f"{'Achat' if d == 1 else 'Vente'} {lot} lot a "
                         f"{r.price:.0f}, risque ${risk:.2f}")
     return True, dict(lot=lot, price=r.price, sl=sl, tp=tp, risk=round(risk, 2),

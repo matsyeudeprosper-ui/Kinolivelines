@@ -851,7 +851,11 @@ function mtCalc(){
  if(tp>ref&&sl<ref)d=1; else if(tp<ref&&sl>ref)d=-1;
  const dist=Math.abs(ref-sl),rew=Math.abs(tp-ref);
  const against=(MS.trend!==0&&d!==0&&d!==MS.trend);
- const L=mtLot(dist,against);
+ // riding the INTERNAL structure: the stop sits nearer to the internal
+ // diamond than to the main one. Half lot, same as counter-trend.
+ const inner=!!(D&&D.int_inv&&D.invalid&&
+  Math.abs(sl-D.int_inv)<Math.abs(sl-D.invalid));
+ const L=mtLot(dist,against||inner);
  let kind='MARCHE',bad='';
  if(MT.entry){
   const stopSide=(d===1)?(ref>mkt):(ref<mkt);
@@ -859,12 +863,13 @@ function mtCalc(){
   if(Math.abs(ref-mkt)<=(MS.s_min_dist||10))
    bad='entree trop pres du marche';
  }
- if(!bad&&against&&MS.counter_ok===false)
-  bad='contre-tendance impossible a cette taille de lot';
+ if(!bad&&(against||inner)&&MS.counter_ok===false)
+  bad=(against?'contre-tendance':'structure interne')+
+      ' impossible a cette taille de lot';
  if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
  return{d:d,px:ref,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
-  against:against,half:!!L.half,
+  against:against,inner:inner,half:!!L.half,
   risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,kind:kind,bad:bad};
 }
 function mtRender(){
@@ -888,7 +893,9 @@ function mtRender(){
   ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
   (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance'+
-   (c.half?' (demi-lot)':'')+'</b>':'')+
+   (c.half?' (demi-lot)':'')+'</b>'
+   :(c.inner?' &middot; <b style="color:#b98cff">structure interne'+
+     (c.half?' (demi-lot)':'')+'</b>':''))+
   ' &middot; dette $'+(MS.debt||0).toFixed(2)+
   (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
  document.getElementById('mtgo').disabled=!!c.bad;
