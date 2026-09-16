@@ -1599,12 +1599,20 @@ function render(d){
      const need=Math.max(d.ledger.need_min||0.01,0.01);
      const bos=!!d.ledger.bos;
      let nl=Math.max(d.ledger.next_lot||0.02,0.01);
-     let SL,prog,ok;
+     let SL,prog,ok,gain1=0;
      if(bos){
-      SL=3;                       // the 3 possible bullets
-      prog=Math.max(0,Math.min(SL,am/need));
-      nl=0.02+Math.min(3,Math.floor(prog+1e-9))*0.01;
-      ok=prog>=3;
+      SL=d.ledger.max_extra||3;   // the possible extra lots
+      // the jar stakes only PART of itself per attempt, and a recovery is
+      // never bigger than the tab needs - mirror the bot exactly instead of
+      // recomputing with the old whole-jar rule (owner 2026-09-16)
+      const stF=(d.ledger.stake!==undefined)?d.ledger.stake:1;
+      gain1=(d.ledger.rr||0.8)*need;         // what one extra 0.01 wins
+      const g1=gain1;
+      const byDebt=g1>0?Math.ceil(d.ledger.debt/g1):0;
+      prog=Math.max(0,Math.min(SL,am*stF/need));
+      prog=Math.min(prog,byDebt);
+      nl=(d.ledger.base_lot||0.02)+Math.min(SL,Math.floor(prog+1e-9))*0.01;
+      ok=prog>=SL;
      }else{
       SL=Math.max(2,Math.min(10,Math.round(nl/0.01)));
       prog=Math.max(0,Math.min(SL,am/need*SL));
@@ -1649,7 +1657,9 @@ function render(d){
          'Gains de c&ocirc;t&eacute;</div>'+
         '<b style="color:#f0d788;font-size:1.05rem;'+
          'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
-         am.toFixed(2)+'</span></b></div>'+
+         am.toFixed(2)+'</span></b>'+
+        (d.ledger.cap?'<span style="color:#8a7a45;font-size:.7rem">'+
+         ' / $'+fm(d.ledger.cap)+'</span>':'')+'</div>'+
       '</div>'+
       '<div style="text-align:center;margin:12px 0 4px">'+
        '<div style="font-size:.62rem;color:#7fb3e0;'+
@@ -1665,6 +1675,11 @@ function render(d){
       '</div>'+
       '<div style="text-align:center;margin-top:4px">'+pills+
       '</div>'+
+      (bos&&fillN>0
+       ?'<div style="text-align:center;font-size:.74rem;'+
+        'color:#8df0bb;margin-top:6px">Un gain enl&egrave;ve '+
+        '<b>$'+fm(fillN*gain1)+'</b> de l&#39;ardoise</div>'
+       :'')+
       '<div style="text-align:center;font-size:.68rem;'+
        'color:#5f7185;margin-top:4px">'+
        (bos
