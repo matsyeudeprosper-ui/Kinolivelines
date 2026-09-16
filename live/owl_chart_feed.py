@@ -109,7 +109,7 @@ def engine(kept):
       marks [[t, price, label, dir]]     label 'choch'|'bos'
     """
     if len(kept) < 3:
-        return [], [], 0, 0
+        return [], [], 0, 0, None, None, None, None
     dots = []
     marks = []
     hi_i, hi_v = 0, kept[0][2]
@@ -204,7 +204,13 @@ def engine(kept):
     nxt = hi_v if trend == 1 else (lo_v if trend == -1 else None)
     inv = (prot_lo[1] if (trend == 1 and prot_lo) else
            (prot_hi[1] if (trend == -1 and prot_hi) else None))
-    return dots, marks, trend, choch, nxt, inv
+    # the candle that SET each level, so the chart can anchor the line to
+    # its origin instead of floating it (2026-09-16)
+    _ai = hi_i if trend == 1 else lo_i
+    nxt_t = kept[_ai][0] if (nxt is not None and 0 <= _ai < len(kept)) else None
+    inv_t = (prot_lo[0] if (trend == 1 and prot_lo) else
+             (prot_hi[0] if (trend == -1 and prot_hi) else None))
+    return dots, marks, trend, choch, nxt, inv, nxt_t, inv_t
 
 
 def trend_filter(cands):
@@ -328,7 +334,8 @@ def main():
                         1 if lv["close"] >= lv["open"] else -1]
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
-                dots, marks, trend, choch, nxt, inv = engine(kept)
+                (dots, marks, trend, choch, nxt, inv,
+                 nxt_t, inv_t) = engine(kept)
                 # INTERNAL STRUCTURE (owner 2026-09-16): between two main
                 # events the range can be wide enough for its own little
                 # BOS patterns. Run the SAME engine over the candles since
@@ -337,7 +344,7 @@ def main():
                 # and this window restarts from there.
                 i_dots = i_marks = []
                 i_trend = 0
-                i_nxt = i_inv = None
+                i_nxt = i_inv = i_nxt_t = i_inv_t = None
                 if marks:
                     _t0 = marks[-1][0]
                     # RAW M1, not the silence-filtered candles: the filter
@@ -350,7 +357,7 @@ def main():
                               for r in R[:-1] if int(r["time"]) > _t0]
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, _ic,
-                         i_nxt, i_inv) = engine(_inner)
+                         i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only
@@ -381,6 +388,8 @@ def main():
                      "int_bos": round(i_nxt, 2) if i_nxt else None,
                      "int_inv": round(i_inv, 2) if i_inv else None,
                      "int_dots": [d for d in i_dots if d[0] >= t0],
+                     "int_bos_t": i_nxt_t, "int_inv_t": i_inv_t,
+                     "next_bos_t": nxt_t, "invalid_t": inv_t,
                      "int_since": marks[-1][0] if marks else None,
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},

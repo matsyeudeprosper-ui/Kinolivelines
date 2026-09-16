@@ -641,12 +641,18 @@ function draw(){
     ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();ctx.restore();});
    const yi=px(D.int_bos);
    if(D.int_bos<=hi&&D.int_bos>=lo&&yi>TOPP+4&&yi<TOPP+PLOT-4){
+    // anchored to the candle that set the level, so it reads as coming
+    // from somewhere instead of floating (2026-09-16)
+    const xa=(D.int_bos_t!==undefined&&xoft[D.int_bos_t]!==undefined)
+     ?xoft[D.int_bos_t]:W*0.62;
     ctx.save();ctx.strokeStyle=ic;ctx.globalAlpha=.55;ctx.lineWidth=1;
     ctx.setLineDash([2,6]);
-    ctx.beginPath();ctx.moveTo(W*0.62,yi);ctx.lineTo(W-68,yi);ctx.stroke();
-    ctx.globalAlpha=1;ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(xa,yi);ctx.lineTo(W-68,yi);ctx.stroke();
+    ctx.globalAlpha=.85;ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(xa,yi,2.8,0,6.3);ctx.fill();   // its origin
+    ctx.globalAlpha=1;
     ctx.font='bold 8px system-ui';
-    const t='int '+D.int_bos.toFixed(0);
+    const t='int BOS '+D.int_bos.toFixed(0);
     const w3=ctx.measureText(t).width+8;
     ctx.fillStyle='rgba(8,14,22,.8)';
     ctx.beginPath();ctx.roundRect(W-w3-66,yi-7,w3,14,7);ctx.fill();
@@ -663,11 +669,14 @@ function draw(){
   else if(yb>TOPP+6&&yb<TOPP+PLOT-6){
    const col=up?'#4fd8c8':'#ff9678';
    const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;
+   const xb=(D.next_bos_t!==undefined&&xoft[D.next_bos_t]!==undefined)
+    ?xoft[D.next_bos_t]:W*0.55;
    ctx.save();
    ctx.strokeStyle=col;ctx.globalAlpha=near?.95:.5;
    ctx.lineWidth=near?2:1;ctx.setLineDash([1,4]);
-   ctx.beginPath();ctx.moveTo(W*0.55,yb);ctx.lineTo(W-64,yb);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(xb,yb);ctx.lineTo(W-64,yb);ctx.stroke();
    ctx.setLineDash([]);
+   ctx.fillStyle=col;ctx.beginPath();ctx.arc(xb,yb,3,0,6.3);ctx.fill();
    // a caret pointing the way price must go to trigger it
    ctx.beginPath();
    ctx.moveTo(W-58,yb);ctx.lineTo(W-66,yb+(up?5:-5));
