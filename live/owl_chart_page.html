@@ -79,25 +79,36 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <div id="livedot"></div>
 <canvas id="cv"></canvas>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
- background:linear-gradient(180deg,rgba(8,14,22,.92),rgba(8,14,22,.99));
- border-top:1px solid #1e3346;padding:6px 10px 10px;display:none">
- <div id="mtinfo" style="display:flex;gap:8px;flex-wrap:wrap;
-  font-size:.72rem;color:#9fb6cc;margin-bottom:6px;line-height:1.5"></div>
- <div style="display:flex;gap:8px">
-  <button id="mtpend" style="flex:1;padding:11px;border-radius:12px;
-   border:1px solid #33475c;background:#16202c;color:#e8c55a;
-   font-weight:700;font-size:.82rem">&#9202; En attente</button>
-  <button id="mtflip" style="flex:1;padding:11px;border-radius:12px;
-   border:1px solid #33475c;background:#16202c;color:#cfe3f5;
-   font-weight:700;font-size:.82rem">&#8645; Inverser</button>
-  <button id="mtclose" style="display:none;flex:1;padding:11px;
-   border-radius:12px;border:1px solid #6d2230;background:#2a1116;
-   color:#ff8a8a;font-weight:800;font-size:.82rem">&#10005; Fermer</button>
-  <button id="mtcancel" style="flex:1;padding:11px;border-radius:12px;
-   border:1px solid #33475c;background:#16202c;color:#9fb6cc;
-   font-weight:700;font-size:.82rem">Annuler</button>
-  <button id="mtgo" style="flex:2;padding:11px;border-radius:12px;border:0;
-   background:#2563eb;color:#fff;font-weight:800;font-size:.82rem">
+ background:linear-gradient(180deg,rgba(8,14,22,.94),rgba(8,14,22,.995));
+ border-top:1px solid #1e3346;padding:8px 10px 10px;display:none">
+ <div style="display:flex;align-items:flex-start;gap:8px">
+  <div style="flex:1;min-width:0">
+   <div id="mtline1" style="font-size:.8rem;color:#cfe3f5;line-height:1.45;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+   <div id="mtline2" style="font-size:.68rem;color:#7e93a8;line-height:1.45;
+    margin-top:1px;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis"></div>
+  </div>
+  <button id="mtcancel" title="Fermer l'outil" style="flex:none;width:28px;
+   height:28px;padding:0;border-radius:9px;border:1px solid #27394c;
+   background:#121b25;color:#7e93a8;font-size:.9rem;line-height:1">
+   &#10005;</button>
+ </div>
+ <div style="display:flex;gap:7px;margin-top:8px;align-items:stretch">
+  <button id="mtpend" title="Programmer l'entree" style="flex:none;width:46px;
+   padding:11px 0;border-radius:12px;border:1px solid #33475c;
+   background:#16202c;color:#e8c55a;font-size:1rem;line-height:1">
+   &#9202;</button>
+  <button id="mtflip" title="Inverser le sens" style="flex:none;width:46px;
+   padding:11px 0;border-radius:12px;border:1px solid #33475c;
+   background:#16202c;color:#cfe3f5;font-size:1rem;line-height:1">
+   &#8645;</button>
+  <button id="mtclose" title="Fermer la position" style="display:none;
+   flex:none;width:46px;padding:11px 0;border-radius:12px;
+   border:1px solid #6d2230;background:#2a1116;color:#ff8a8a;
+   font-size:1rem;line-height:1">&#10005;</button>
+  <button id="mtgo" style="flex:1;padding:12px;border-radius:12px;border:0;
+   background:#2563eb;color:#fff;font-weight:800;font-size:.86rem">
    Confirmer</button>
  </div>
 </div>
@@ -938,56 +949,64 @@ function mtCalc(){
   risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,kind:kind,bad:bad};
 }
 function mtRender(){
- const c=mtCalc();const i=document.getElementById('mtinfo');
- if(!c){i.textContent='en attente des donnees...';return;}
- const dirTxt=c.d===1?'<b style="color:#2ecc71">ACHAT</b>'
-  :(c.d===-1?'<b style="color:#ff5c5c">VENTE</b>'
-  :'<b style="color:#e8c55a">?</b>');
- const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
- const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
+ const c=mtCalc();
+ const l1=document.getElementById('mtline1');
+ const l2=document.getElementById('mtline2');
+ if(!c){l1.textContent='en attente des donnees...';l2.textContent='';return;}
+ const chip=(txt,col,bg)=>'<span style="display:inline-block;padding:1px 6px;'+
+  'border-radius:6px;font-weight:800;font-size:.74rem;color:'+col+
+  ';background:'+bg+'">'+txt+'</span>';
+ const sep=' <span style="color:#3d5166">&middot;</span> ';
+ // line 1 - what will happen, in the order you need it
+ const dir=c.d===1?chip('ACHAT','#0b2417','#2ecc71')
+  :(c.d===-1?chip('VENTE','#2a0d0d','#ff5c5c'):chip('?','#2a2410','#e8c55a'));
  const pnd=(MS.pending&&MS.pending.length)?MS.pending[0]:null;
- i.innerHTML=dirTxt+' &middot; '+(MT.entry?'<b style="color:#e8c55a">'+c.kind+'</b>'+
-  ' <span style="color:#7e93a8">sur cloture M1</span> &middot; ':'')+
-  (pnd?'<b style="color:#e8c55a">'+pnd.kind+' '+pnd.lot.toFixed(2)+
-   ' @ '+pnd.e.toFixed(0)+' en cours</b> &middot; ':'')+
-  'lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
-  (c.bul>0?' <span style="color:#8df0bb">+'+c.bul+' balle'+
-   (c.bul>1?'s':'')+'</span>':'')+
-  ' &middot; R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
-  c.rr.toFixed(2)+'</b>'+
-  ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
-   (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
-  (c.inner?' &middot; <b style="color:#b98cff">interne '+
-   (D&&D.int_trend===1?'&#9650; haussiere':
-    (D&&D.int_trend===-1?'&#9660; baissiere':''))+
-   ((D&&D.int_choch&&D.int_choch!==D.int_trend)
-    ?' <span style="color:#e8c55a">bascule '+
-     (D.int_choch===1?'&#9650;':'&#9660;')+'</span>':'')+'</b>':'')+
-  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
-  ((c.inner||against)&&c.half?' <b style="color:#cfe3f5">demi-lot</b>':'')+
-  ' &middot; dette $'+(MS.debt||0).toFixed(2)+
-  (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
+ const mode=c.edit?chip('MODIF','#1a1206','#e8c55a')
+  :(MT.editPend?chip('ORDRE','#1a1206','#e8c55a'):'');
+ let p1=(mode?mode+' ':'')+dir;
+ if(MT.entry)p1+=sep+'<b style="color:#e8c55a">'+c.kind+'</b>';
+ p1+=sep+'lot <b style="color:#cfe3f5">'+c.lot.toFixed(2)+'</b>'+
+  (c.bul>0?' <span style="color:#8df0bb">+'+c.bul+'</span>':'')+
+  sep+'R:R <b style="color:'+(c.rr>=1?'#8df0bb':'#e8c55a')+'">'+
+  c.rr.toFixed(2)+'</b>';
+ l1.innerHTML=p1;
+ // line 2 - the context, dim and secondary
+ const tr=MS.trend===1?'haussiere':(MS.trend===-1?'baissiere':'indecise');
+ const trc=MS.trend===1?'#2ecc71':(MS.trend===-1?'#ff5c5c':'#e8c55a');
+ let p2='<span style="color:'+trc+'">'+tr+'</span>';
+ if(D&&D.int_trend)p2+=sep+'<span style="color:#b98cff">interne '+
+  (D.int_trend===1?'&#9650;':'&#9660;')+
+  ((D.int_choch&&D.int_choch!==D.int_trend)
+   ?' <span style="color:#e8c55a">bascule '+
+    (D.int_choch===1?'&#9650;':'&#9660;')+'</span>':'')+'</span>';
+ const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
+ if(against)p2+=sep+'<span style="color:#e8c55a">&#9888;&#65039; contre-tendance</span>';
+ else if(c.inner)p2+=sep+'<span style="color:#b98cff">structure interne</span>';
+ if(c.half)p2+=' <span style="color:#cfe3f5">demi-lot</span>';
+ if(MT.entry&&!c.edit)p2+=sep+'sur cloture M1';
+ if(pnd&&!MT.editPend&&!c.edit)p2+=sep+
+  '<span style="color:#e8c55a">'+pnd.kind+' @ '+pnd.e.toFixed(0)+' en cours</span>';
+ p2+=sep+'dette $'+(MS.debt||0).toFixed(2);
+ if(c.bad)p2=' <span style="color:#ff9678">&#9888;&#65039; '+c.bad+'</span>';
+ l2.innerHTML=p2;
+ // actions: one primary, and only the icons this state can use
  const go=document.getElementById('mtgo');
  go.disabled=!!c.bad;go.style.opacity=c.bad?.45:1;
  if(!go.dataset.busy)go.textContent=
   c.edit?'Modifier':(MT.editPend?'Replacer':'Confirmer');
- // an edit touches only the two levels: no pending, no flip
- document.getElementById('mtpend').style.display=c.edit?'none':'';
+ const show=(id,on)=>{document.getElementById(id).style.display=on?'':'none';};
+ show('mtpend',!c.edit&&!MT.editPend);ary_pend_paint();
+ show('mtflip',!c.edit&&MS.counter_ok!==false);
  const cb=document.getElementById('mtclose');
  const opos=(MS.open&&MS.open.length)?MS.open[0]:null;
  if(c.edit&&opos){
-  cb.style.display='';
-  cb.innerHTML='&#10005; Fermer '+
-   '<b style="color:'+(opos.pl>=0?'#8df0bb':'#ff8a8a')+'">'+
-   (opos.pl>=0?'+':'')+'$'+opos.pl.toFixed(2)+'</b>';}
+  cb.style.display='';cb.title='Fermer la position ('+
+   (opos.pl>=0?'+':'')+'$'+opos.pl.toFixed(2)+')';
+  cb.style.color=opos.pl>=0?'#8df0bb':'#ff8a8a';}
  else if(MT.editPend){
-  cb.style.display='';cb.innerHTML='&#10005; Annuler l’ordre';}
+  cb.style.display='';cb.title='Annuler l’ordre programme';
+  cb.style.color='#ff8a8a';}
  else cb.style.display='none';
- // no tool on screen may build a counter-trend trade when it is forbidden
- const fb=document.getElementById('mtflip');
- const blocked=c.edit||(MS.counter_ok===false);
- fb.style.display=blocked?'none':'';
- fb.title=blocked?'contre-tendance indisponible':'';
 }
 mtopen.onclick=async()=>{
  if(!MS||!MS.px){alert(MSerr||'Donnees du compte indisponibles.');return;}
@@ -1031,23 +1050,29 @@ mtopen.onclick=async()=>{
  const risk=Math.abs(px-sl);
  MT={sl:Math.round(sl*100)/100,
      tp:Math.round((px+d*0.8*risk)*100)/100,entry:null};
- const pb=document.getElementById('mtpend');
- pb.textContent='⏲ En attente';pb.style.color='#e8c55a';
+ary_pend_reset();
  mtbar.style.display='block';mtopen.style.display='none';
  document.getElementById('backlive').style.bottom=
   ((mtbar.offsetHeight||140)+14)+'px';
  mtRender();
 };
+// the pending toggle is icon-only: the glyph and its tint carry the state
+function ary_pend_paint(){
+ const b=document.getElementById('mtpend');
+ const on=!!(MT&&MT.entry);
+ b.innerHTML=on?'&#9889;':'&#9202;';
+ b.style.color=on?'#8df0bb':'#e8c55a';
+ b.style.borderColor=on?'#2e5c46':'#33475c';
+ b.title=on?'Revenir a une entree au marche':'Programmer l’entree';
+}
+function ary_pend_reset(){ary_pend_paint();}
 document.getElementById('mtpend').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
- const b=document.getElementById('mtpend');
- if(MT.entry){MT.entry=null;b.textContent='⏲ En attente';
-  b.style.color='#e8c55a';}
+ if(MT.entry)MT.entry=null;
  else{const a=Math.max(40,(SCALE?(SCALE.hi-SCALE.lo)*0.04:80));
   const d=(MT.tp>MS.px)?1:-1;
-  MT.entry=Math.round(MS.px+(d===1?a:-a));   // a stop, by default
-  b.textContent='⚡ Au marche';b.style.color='#8df0bb';}
- mtRender();
+  MT.entry=Math.round(MS.px+(d===1?a:-a));}  // a stop, by default
+ ary_pend_paint();mtRender();
 };
 document.getElementById('mtflip').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
@@ -1062,7 +1087,7 @@ document.getElementById('mtcancel').onclick=()=>{
 document.getElementById('mtclose').onclick=async()=>{
  if(MT&&MT.editPend){
   const b=document.getElementById('mtclose');
-  b.disabled=true;b.textContent='Annulation...';
+  b.disabled=true;b.style.opacity='.5';
   try{
    const r=await fetch('/'+tok+'/manual_order',{method:'POST',
     headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -1071,14 +1096,14 @@ document.getElementById('mtclose').onclick=async()=>{
    if(j.ok){MT=null;mtbar.style.display='none';mtopen.style.display='block';}
    else alert(j.err||'refus');
   }catch(e){alert('reseau');}
-  b.disabled=false;b.innerHTML='&#10005; Annuler l’ordre';return;}
+  b.disabled=false;b.style.opacity='1';return;}
  const p=(MS&&MS.open&&MS.open.length)?MS.open[0]:null;
  if(!p)return;
  if(!confirm('Fermer '+(p.d===1?'ACHAT ':'VENTE ')+p.lot.toFixed(2)+
    ' au prix du marche ? P&L actuel '+(p.pl>=0?'+':'')+'$'+p.pl.toFixed(2)))
   return;
  const b=document.getElementById('mtclose');
- b.disabled=true;b.textContent='Fermeture...';
+ b.disabled=true;b.style.opacity='.5';
  try{
   const r=await fetch('/'+tok+'/manual_order',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -1087,7 +1112,7 @@ document.getElementById('mtclose').onclick=async()=>{
   if(j.ok){MT=null;mtbar.style.display='none';mtopen.style.display='block';}
   else alert(j.err||'refus');
  }catch(e){alert('reseau');}
- b.disabled=false;b.innerHTML='&#10005; Fermer';
+ b.disabled=false;b.style.opacity='1';
 };
 document.getElementById('mtgo').onclick=async()=>{
  const c=mtCalc();if(!c||c.bad)return;
