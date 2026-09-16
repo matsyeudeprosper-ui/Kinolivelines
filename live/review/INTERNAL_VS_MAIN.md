@@ -86,6 +86,18 @@ stop falls back to the main diamond. Measured at the time of the change
 that was 1551 points away, $31.02 at 0.02 lot — **refused by the 10% risk
 rule**, and $15.51 at 0.01.
 
-This is the owner's call, made with the numbers in hand. If it proves too
-sparse the options are a lighter filter for the internal, or capping the
-internal window so it is a genuine sub-range rather than 19 hours.
+**Reverted the same day.** The owner: "bring back the internal... I want
+internal structure." The silence filter is OFF for the internal structure
+again; that single difference stands, deliberately and with the cost
+measured on both sides. Divergence #1 is therefore CLOSED as a decision,
+not as a defect.
+
+Still shared after the revert: the one-sided dot rule (divergence #2,
+fixed), the published internal events (divergence #3, fixed), and the
+pullback condition on the anticipated break, which was promoted from the
+internal structure to the main one.
+
+The open question is no longer the filter but the WINDOW: when the main
+structure is quiet the internal window reaches 19 h and 57% of the chart,
+which is what makes raw M1 so busy there. Capping it is the next lever if
+the internal structure ever feels too noisy.

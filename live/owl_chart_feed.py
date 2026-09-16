@@ -349,12 +349,18 @@ def main():
                 _since = marks[-1][0] if marks else None
                 if marks:
                     _t0 = marks[-1][0]
-                    # Owner 2026-09-16: ONE rule set. The internal
-                    # structure reads the same silence-filtered candles as
-                    # the main one - the filter was the last real rule
-                    # difference between them.
-                    _inner = build([r for r in R[:-1]
-                                    if int(r["time"]) > _t0])
+                    # RAW M1. The silence filter was tried here on
+                    # 2026-09-16 and reverted the same day: it left the
+                    # internal structure existing only 24% of the time,
+                    # because inside a range the filtered series rarely
+                    # produces the breaks the engine needs. The owner wants
+                    # the internal structure, so this stays raw. Every OTHER
+                    # rule is shared with the main structure.
+                    _inner = [[int(r["time"]), float(r["open"]),
+                               float(r["high"]), float(r["low"]),
+                               float(r["close"]),
+                               1 if r["close"] >= r["open"] else -1]
+                              for r in R[:-1] if int(r["time"]) > _t0]
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
