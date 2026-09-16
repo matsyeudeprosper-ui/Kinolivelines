@@ -109,6 +109,22 @@ def counter_lot():
 
 
 CHART = os.path.join(DIR, "owl_chart_btc.json")
+# owner 2026-09-15: no single trade may risk more than 10% of the balance.
+# The automated bot already enforces this; the manual desk does too.
+MAX_RISK_PCT = 0.10
+
+
+def risk_ok(dist, lot):
+    """None when the trade is allowed, otherwise the refusal message."""
+    ai = mt5.account_info()
+    if ai is None or ai.balance <= 0:
+        return None
+    risk, cap = dist * lot, MAX_RISK_PCT * ai.balance
+    if risk <= cap:
+        return None
+    return (f"risque ${risk:.2f} > {MAX_RISK_PCT:.0%} du solde "
+            f"${ai.balance:.2f} (${cap:.2f}) - rapproche le SL "
+            f"ou attends un solde plus gros")
 
 
 def internal_trade(ref, sl):
@@ -197,6 +213,10 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
             why = "contre-tendance" if against else "structure interne"
             return False, why + " impossible a cette taille de lot"
         lot, bullets = half, 0
+    bad = risk_ok(dist, lot)
+    if bad:
+        say(f"ORDRE PROGRAMME REFUSE: {bad}")
+        return False, bad
     if against:
         # owner 2026-09-15: only a trade AGAINST the structure has to be
         # confirmed by a close. With the trend, a touch is enough.
@@ -336,6 +356,10 @@ def execute(req, led, trend=0):
         lot, bullets = half, 0
     elif req.get("lot"):                    # the chart may pin a lot
         lot = max(LOT_MIN, min(LOT_MAX, round(float(req["lot"]), 2)))
+    bad = risk_ok(dist, lot)
+    if bad:
+        say(f"ORDRE REFUSE: {bad}")
+        return False, bad
     r = mt5.order_send({
         "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": lot,
         "type": mt5.ORDER_TYPE_BUY if d == 1 else mt5.ORDER_TYPE_SELL,
@@ -424,6 +448,8 @@ def main():
                 ai = mt5.account_info()
                 json.dump({
                     "acct": LOGIN, "balance": round(ai.balance, 2),
+                    "max_risk_pct": MAX_RISK_PCT,
+                    "max_risk": round(MAX_RISK_PCT * ai.balance, 2),
                     "equity": round(ai.equity, 2),
                     "net": led["banked"], "peak": led["peak"],
                     "debt": led["debt"], "chest": led["chest"],

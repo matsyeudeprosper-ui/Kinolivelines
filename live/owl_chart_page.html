@@ -868,6 +868,12 @@ function mtCalc(){
       ' impossible a cette taille de lot';
  if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
+ // the desk refuses a trade risking more than 10% of the balance - say so
+ // here rather than letting the refusal arrive after Confirmer
+ if(!bad&&MS.max_risk>0&&dist*L.lot>MS.max_risk)
+  bad='risque $'+(dist*L.lot).toFixed(2)+' > '+
+      Math.round((MS.max_risk_pct||0.1)*100)+'% du solde ($'+
+      MS.max_risk.toFixed(2)+') - rapproche le SL';
  return{d:d,px:ref,mkt:mkt,sl:sl,tp:tp,dist:dist,rew:rew,lot:L.lot,bul:L.bul,
   against:against,inner:inner,half:!!L.half,
   risk:dist*L.lot,gain:rew*L.lot,rr:dist>0?rew/dist:0,kind:kind,bad:bad};
@@ -892,10 +898,9 @@ function mtRender(){
   c.rr.toFixed(2)+'</b>'+
   ' &middot; structure <b style="color:'+(MS.trend===1?'#2ecc71':
    (MS.trend===-1?'#ff5c5c':'#e8c55a'))+'">'+tr+'</b>'+
-  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance'+
-   (c.half?' (demi-lot)':'')+'</b>'
-   :(c.inner?' &middot; <b style="color:#b98cff">structure interne'+
-     (c.half?' (demi-lot)':'')+'</b>':''))+
+  (c.inner?' &middot; <b style="color:#b98cff">structure interne</b>':'')+
+  (against?' &middot; <b style="color:#e8c55a">&#9888;&#65039; contre-tendance</b>':'')+
+  ((c.inner||against)&&c.half?' <b style="color:#cfe3f5">demi-lot</b>':'')+
   ' &middot; dette $'+(MS.debt||0).toFixed(2)+
   (c.bad?' &middot; <span style="color:#ff9678">'+c.bad+'</span>':'');
  document.getElementById('mtgo').disabled=!!c.bad;
@@ -918,15 +923,16 @@ mtopen.onclick=async()=>{
     body:'cancel=1'});}
   return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
- // open in the direction of the structure: bearish -> sell, bullish -> buy
- const d=(MS.trend===-1)?-1:1;
- // the stop defaults to an invalidation diamond when one sits on the
- // correct side. The INTERNAL diamond wins when it exists: it is the
- // nearer level, so the stop is tighter. The main one is the fallback.
- let sl=(d===1)?px-a:px+a;
- const okSide=v=>v&&((d===1&&v<px-10)||(d===-1&&v>px+10));
- if(okSide(D&&D.invalid))sl=D.invalid;
- if(okSide(D&&D.int_inv))sl=D.int_inv;
+ // The tool opens ON the internal structure when there is one: its
+ // direction AND its diamond. The internal trend often opposes the main
+ // one, and then the two diamonds sit on opposite sides of price - keeping
+ // the main direction would make the internal stop unusable and silently
+ // fall back to the far one. Otherwise: main direction, main diamond.
+ const okSide=(v,dd)=>v&&((dd===1&&v<px-10)||(dd===-1&&v>px+10));
+ let d=(MS.trend===-1)?-1:1,sl=null;
+ if(D&&D.int_trend&&okSide(D.int_inv,D.int_trend)){d=D.int_trend;sl=D.int_inv;}
+ else if(okSide(D&&D.invalid,d))sl=D.invalid;
+ if(!sl)sl=(d===1)?px-a:px+a;
  const risk=Math.abs(px-sl);
  MT={sl:Math.round(sl*100)/100,
      tp:Math.round((px+d*0.8*risk)*100)/100,entry:null};
