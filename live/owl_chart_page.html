@@ -721,7 +721,7 @@ function draw(){
  // where the next BOS would fire, and where the trend would break.
  // Deliberately small: a stub over the recent candles plus an edge tag,
  // so it never competes with the SL/TP lines.
- if(D.next_bos){
+ if(D.next_bos&&D.bos_ready!==false){
   const yb=px(D.next_bos),up=D.trend===1;
   if(D.next_bos>hi||D.next_bos<lo){
    edgeMark(D.next_bos,up?'#4fd8c8':'#ff9678','BOS');}

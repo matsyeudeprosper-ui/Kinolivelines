@@ -349,14 +349,12 @@ def main():
                 _since = marks[-1][0] if marks else None
                 if marks:
                     _t0 = marks[-1][0]
-                    # RAW M1, not the silence-filtered candles: the filter
-                    # is what makes the MAIN structure coarse, so reusing
-                    # it here finds almost nothing inside a range.
-                    _inner = [[int(r["time"]), float(r["open"]),
-                               float(r["high"]), float(r["low"]),
-                               float(r["close"]),
-                               1 if r["close"] >= r["open"] else -1]
-                              for r in R[:-1] if int(r["time"]) > _t0]
+                    # Owner 2026-09-16: ONE rule set. The internal
+                    # structure reads the same silence-filtered candles as
+                    # the main one - the filter was the last real rule
+                    # difference between them.
+                    _inner = build([r for r in R[:-1]
+                                    if int(r["time"]) > _t0])
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t) = engine(_inner)
@@ -372,13 +370,25 @@ def main():
                                 if r[0] > i_nxt_t)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
-                # uptrend displays lows only, downtrend highs only
+                # uptrend displays lows only, downtrend highs only.
+                # Owner 2026-09-16: the internal structure obeys it too.
+                if i_trend == 1:
+                    i_dots = [d for d in i_dots if d[2] == 1]
+                elif i_trend == -1:
+                    i_dots = [d for d in i_dots if d[2] == -1]
                 if trend == 1:
                     dots = [d for d in dots if d[2] == 1]
                 elif trend == -1:
                     dots = [d for d in dots if d[2] == -1]
                 dots = [d for d in dots if d[0] >= t0]
                 marks = [m for m in marks if m[0] >= t0]
+                # owner 2026-09-16: the main structure anticipates its
+                # next break under the same condition as the internal one -
+                # price must have pulled back from the level first
+                _ready = False
+                if nxt_t and trend:
+                    _o = -1 if trend == 1 else 1
+                    _ready = any(k[5] == _o for k in kept if k[0] > nxt_t)
                 _now = int(R[-1]["time"])
                 _mv2 = sum(1 for m in marks if m[0] >= _now - 7200)
                 _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]
@@ -404,6 +414,7 @@ def main():
                      "next_bos_t": nxt_t, "invalid_t": inv_t,
                      "int_since": _since,
                      "int_choch": i_choch,
+                     "bos_ready": _ready,
                      "int_bos_ready": i_ready,
                      # the internal engine fires every few minutes; the
                      # whole history would out-number the candles, so only
