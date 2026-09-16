@@ -523,6 +523,7 @@ function draw(){
   if(t[4]>0){const k='T'+t[4].toFixed(0);
    (lv[k]=lv[k]||['T',t[4],0])[2]+=Math.abs(t[4]-t[2])*t[1];}});
  Object.values(lv).forEach(([k,v,amt])=>{
+  if(MT&&MT.edit)return;   // the draggable lines supersede these
   const y=px(v);
   const isS=k==='S';
   ctx.strokeStyle=isS?'rgba(255,92,92,.75)':'rgba(46,204,113,.75)';
@@ -850,11 +851,14 @@ function draw(){
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
    ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);}}
 }
-let lastPnl=null;
+let lastPnl=null,pnMiss=0;
 function ui(){
  if(!D)return;
  const pn=document.getElementById('pnl');
  const ts=D.trades||[];
+ // a single empty poll is not proof the position is gone: the state file
+ // can be caught mid-write. Hide only after three in a row (2026-09-16).
+ if(!ts.length){pnMiss=(pnMiss||0)+1;} else {pnMiss=0;}
  if(ts.length){
   const tot=ts.reduce((a,t)=>a+t[5],0);
   const lots=ts.reduce((a,t)=>a+t[1],0);
@@ -868,7 +872,8 @@ function ui(){
    b.style.transform='scale(1.12)';
    setTimeout(()=>{b.style.transform='none'},160);}
   lastPnl=tot;
- }else{pn.style.display='none';lastPnl=null;}
+ }else if(pnMiss>=3){pn.style.display='none';lastPnl=null;}
+ // between 1 and 2 misses the last value simply stays on screen
  // market weather: how much structure has moved lately and how lively
  // the candles are versus their own norm. An activity gauge, not a
  // prediction - E013 found period quality is not forecastable.
@@ -1006,7 +1011,11 @@ function mtCalc(){
  if(MT.edit){
   // editing an open position: direction and lot are the position's, the
   // only question is whether the two new levels are legal
-  const dist=Math.abs(mkt-sl),rew=Math.abs(mkt-tp),L=MT.lot||0.01;
+  // measure from the position's ENTRY, which is what its own SL/TP tags
+  // use. Measuring from market made the two disagree by the open P&L
+  // (owner 2026-09-16).
+  const base=MT.e0||mkt;
+  const dist=Math.abs(base-sl),rew=Math.abs(base-tp),L=MT.lot||0.01;
   let bad='';
   if(MT.d===1&&!(sl<mkt&&tp>mkt))bad='achat: SL sous le prix, TP au-dessus';
   else if(MT.d===-1&&!(tp<mkt&&sl>mkt))bad='vente: TP sous le prix, SL au-dessus';

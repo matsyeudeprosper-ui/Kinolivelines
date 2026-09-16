@@ -54,6 +54,27 @@ LOT_MIN, LOT_MAX = 0.01, 0.10
 REQ = os.path.join(DIR, f"manual_order_{UID}.json")
 RES = os.path.join(DIR, f"manual_order_result_{UID}.json")
 STATE = os.path.join(DIR, f"manual_state_{UID}.json")
+
+
+def save_json(path, obj):
+    """Atomic publish. A plain json.dump(open(path,'w')) leaves the file
+    truncated for a few milliseconds, and any reader landing there gets
+    nothing - which made the chart's P&L badge blink out roughly once a
+    minute (owner 2026-09-16). Windows can refuse the replace while a
+    reader holds the handle, so retry briefly."""
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh)
+    for _ in range(12):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            time.sleep(0.05)
+    try:
+        os.replace(tmp, path)
+    except Exception:
+        pass
 VPEND = os.path.join(DIR, f"manual_pending_{UID}.json")
 VPEND_MAX_H = 24                    # a forgotten order expires
 LOG = os.path.join(DIR, f"owl_manual_trader_{UID}.log")
@@ -211,7 +232,7 @@ def save_vpend(v):
         except Exception:
             pass
     else:
-        json.dump(v, open(VPEND, "w"))
+        save_json(VPEND, v)
 
 
 def place_pending(d, entry, sl, tp, tick, led, trend=0):
@@ -522,8 +543,8 @@ def main():
                 if req:
                     led = rebuild_ledger()
                     ok, info = execute(req, led, eng.trend)
-                    json.dump({"ok": ok, "info": info,
-                               "t": time.time()}, open(RES, "w"))
+                    save_json(RES, {"ok": ok, "info": info,
+                                    "t": time.time()})
                     if not ok:
                         say(f"ordre refuse: {info}")
                         push("Ordre refuse", str(info))
@@ -555,7 +576,7 @@ def main():
                 tick = mt5.symbol_info_tick(SYMBOL)
                 pos = open_positions()
                 ai = mt5.account_info()
-                json.dump({
+                save_json(STATE, {
                     "acct": LOGIN, "balance": round(ai.balance, 2),
                     "rr": B.RR,          # the auto bot's target, shared
                     "max_risk_pct": MAX_RISK_PCT,
@@ -588,7 +609,7 @@ def main():
                                o.type in (4, 5)), "EN ATTENTE")}
                          for o in pending_orders()]),
                     "updated": int(time.time()),
-                }, open(STATE, "w"))
+                })
         except Exception as e:
             say(f"ERROR {type(e).__name__}: {e}")
             time.sleep(15)
