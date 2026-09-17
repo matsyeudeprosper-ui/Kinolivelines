@@ -88,10 +88,10 @@ def say(m):
         f.write(f"{datetime.now(timezone.utc).isoformat()} {m}\n")
 
 
-def push(title, body):
+def push(title, body, kind="instant"):
     try:
         import owl_push_notifier as P
-        P.send_all(title, body, kind="instant", only_uid=UID)
+        P.send_all(title, body, kind=kind, only_uid=UID)
         say(f"PUSH {title} | {body}")
     except Exception as e:
         say(f"push failed: {type(e).__name__}: {e}")
@@ -583,19 +583,60 @@ def main():
                 if bt != last_bar:
                     last_bar = bt
                     prev_trend = eng.trend
-                    eng.step(bt, float(bar["open"]), float(bar["high"]),
-                             float(bar["low"]), float(bar["close"]))
+                    sig = eng.step(bt, float(bar["open"]), float(bar["high"]),
+                                   float(bar["low"]), float(bar["close"]))
+                    _c = float(bar["close"])
                     if eng.choch != 0 and eng.choch != last_choch:
                         side = "haussier" if eng.choch == 1 else "baissier"
-                        px = float(bar["close"])
-                        say(f"CHoCH {side} a {px:.2f}")
-                        push(f"CHoCH {side}",
-                             f"Changement de caractere a {px:.0f}. "
-                             f"A toi de decider.")
-                    vpend_check(float(bar["close"]), rebuild_ledger())
+                        say(f"CHoCH {side} a {_c:.2f}")
+                        push(f"⚡ CHoCH {side}",
+                             f"Changement de caractere a {_c:.0f}. "
+                             f"La tendance peut basculer - attends le BOS "
+                             f"qui le confirme.", kind="batch")
+                    vpend_check(_c, rebuild_ledger())
                     last_choch = eng.choch
-                    if eng.trend != prev_trend and eng.trend != 0:
-                        say(f"FLIP: tendance {'haussiere' if eng.trend == 1 else 'baissiere'}")
+                    # owner 2026-09-17: notify the two moments worth acting
+                    # on, so the chart does not have to be watched. A FLIP is
+                    # rare and changes the side you trade; a BOS is the
+                    # actionable one and carries the stop with it.
+                    flip = eng.trend != prev_trend and eng.trend != 0
+                    if flip:
+                        w = "haussiere" if eng.trend == 1 else "baissiere"
+                        say(f"FLIP: tendance {w}")
+                        push(f"🔄 FLIP {w}",
+                             f"La structure a bascule a {_c:.0f}. "
+                             f"On trade desormais dans ce sens.")
+                    if sig:
+                        d_, slv = int(sig[0]), float(sig[1])
+                        dist = abs(_c - slv)
+                        led2 = rebuild_ledger()
+                        lot2, bul2 = lot_for(dist, led2)
+                        # a break you cannot act on is noise. Measured at 22
+                        # breaks a day, so silence the ones that are already
+                        # unavailable: a position open, an order armed, a
+                        # stop too tight, or a risk the 10% rule refuses.
+                        _blk = None
+                        if open_positions():
+                            _blk = "position deja ouverte"
+                        elif pending_orders() or load_vpend():
+                            _blk = "ordre deja programme"
+                        elif dist <= B.S_MIN_DIST:
+                            _blk = "stop trop proche"
+                        else:
+                            _blk = risk_ok(dist, lot2)
+                        if _blk:
+                            say(f"BOS non notifie ({_blk})")
+                            sig = None
+                    if sig:
+                        say(f"BOS {'haussier' if d_ == 1 else 'baissier'} "
+                            f"a {_c:.2f}, stop {slv:.2f}")
+                        push(("✅ BOS " +
+                              ("haussier" if d_ == 1 else "baissier") +
+                              (" (flip)" if flip else " (continuation)")),
+                             f"{'Achat' if d_ == 1 else 'Vente'} possible a "
+                             f"{_c:.0f}, stop {slv:.0f} ({dist:.0f} pts), "
+                             f"lot {lot2:.2f}"
+                             + (f" dont {bul2} de rattrapage" if bul2 else ""))
             # ---- publish state for the chart (every 10 s)
             if time.time() - last_led >= 10:
                 last_led = time.time()
