@@ -608,6 +608,8 @@ def main():
                     "rr": B.RR,          # the auto bot's target, shared
                     "jar": B.JAR, "jar_skim": B.JAR_SKIM,
                     "jar_stake": B.JAR_STAKE,
+                    "jar_cap": round(max(B.JAR_FLOOR_CAP,
+                                         B.JAR_DEBT_MULT * led["debt"]), 2),
                     "max_risk_pct": MAX_RISK_PCT,
                     "max_risk": round(MAX_RISK_PCT * ai.balance, 2),
                     "equity": round(ai.equity, 2),
