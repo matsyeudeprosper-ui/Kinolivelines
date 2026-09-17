@@ -1443,11 +1443,20 @@ function render(d){
       forming:['⏳','Ça se prépare','#8fa1b3',
                'Trop tôt. Laisse le marché se dessiner.'],
       none:['💤','Rien à faire','#6f8299',
-            'Le marché est calme. Les trades marchent moins bien comme ça.']};
-    const k=aw?(ms2.int_state||'none'):'none';
+            'Le marché est calme. Les trades marchent moins bien comme ça.'],
+      nervous:['🌀','Ça bouge trop','#e8c55a',
+               'Le marché s’agite plus que d’habitude. Mieux vaut '+
+               'laisser passer.']};
+    // TWO vetoes, not one. Activity can be there and nervosity still says
+    // no - above 1.0x its own daily norm was worse under both window
+    // anchors. The headline must never invite a trade that a measured veto
+    // refuses (owner 2026-09-17).
+    const nerv_bad=rv>1.0;
+    const k=(!aw)?'none':(nerv_bad?'nervous':(ms2.int_state||'none'));
     const S=ST[k]||ST.none;
     orb=S[0]; ti=S[1]; ln=S[3];
-    cls=aw?(k==='ready'?'mx-fish':'mx-sun'):'mx-sleep';
+    cls=(!aw)?'mx-sleep':(nerv_bad?'mx-cloud'
+         :(k==='ready'?'mx-fish':'mx-sun'));
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     const stat=(l,v,c)=>'<div style="min-width:0;padding:8px 10px;'+
      'border-radius:11px;background:rgba(255,255,255,.04);'+

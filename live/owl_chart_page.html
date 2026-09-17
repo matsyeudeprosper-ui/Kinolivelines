@@ -924,7 +924,10 @@ function ui(){
    const nb=D.int_brk_1h,aw=nb>=1;
    const W={ready:'prete',flip:'bascule',forming:'formation',
             none:'—'}[D.int_state]||'—';
-   txt+=' · int '+(aw?'⚡':'💤')+' '+nb+'/1h'+(aw?' '+W:'');
+   // nervosity is the second veto: activity alone is not permission
+   const nb2=rv>1.0;
+   txt+=' · int '+(!aw?'💤':(nb2?'🌀':'⚡'))+' '+nb+'/1h'+
+        (aw?(nb2?' trop nerveux':' '+W):'');
   }
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
