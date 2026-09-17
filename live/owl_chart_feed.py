@@ -48,6 +48,31 @@ def build(rates):
     return kept
 
 
+def pullback_since(kept, t0, brk_dir):
+    """Owner 2026-09-16: "pullback is opposite candle close below previous
+    candle in my filtered custom chart".
+
+    So it is judged on the SILENCE-FILTERED candles, not raw M1, and it is
+    not merely an opposite-coloured candle: the close has to commit beyond
+    the previous kept candle. Anticipating a break UP needs a candle that
+    closed BELOW the previous one's low; anticipating a break DOWN needs one
+    that closed ABOVE the previous one's high. Until that happens the level
+    is only the current extreme and must not be drawn.
+    """
+    if not t0 or not brk_dir:
+        return False
+    prev = None
+    for k in kept:
+        if prev is not None and k[0] > t0:
+            c = k[4]
+            if brk_dir == 1 and c < prev[3]:
+                return True
+            if brk_dir == -1 and c > prev[2]:
+                return True
+        prev = k
+    return False
+
+
 def swings(kept):
     """Swing markers (user 2026-09-08), computed on VISIBLE candles:
     - a new higher high confirms a SWING LOW = the lowest low
@@ -405,16 +430,8 @@ def main():
                         # - at least one candle against the trend since the
                         # candle that set it. Before that the "next BOS" is
                         # just the current extreme and says nothing.
-                        if i_nxt_t and i_dir:
-                            _opp = -1 if i_dir == 1 else 1
-                            i_ready = any(
-                                r[5] == _opp for r in _inner
-                                if r[0] > i_nxt_t)
-                        if i_flp_t and i_fdir:
-                            _fop = -1 if i_fdir == 1 else 1
-                            i_fready = any(
-                                r[5] == _fop for r in _inner
-                                if r[0] > i_flp_t)
+                        i_ready = pullback_since(kept, i_nxt_t, i_dir)
+                        i_fready = pullback_since(kept, i_flp_t, i_fdir)
                 # user 2026-09-08 (screenshot): NEVER show the
                 # opposite side's dots while a trend is confirmed -
                 # uptrend displays lows only, downtrend highs only.
@@ -432,15 +449,8 @@ def main():
                 # owner 2026-09-16: the main structure anticipates its
                 # next break under the same condition as the internal one -
                 # price must have pulled back from the level first
-                _fready = False
-                if _mflp_t and _mfdir:
-                    _fo = -1 if _mfdir == 1 else 1
-                    _fready = any(k[5] == _fo for k in kept
-                                  if k[0] > _mflp_t)
-                _ready = False
-                if nxt_t and _mdir:
-                    _o = -1 if _mdir == 1 else 1
-                    _ready = any(k[5] == _o for k in kept if k[0] > nxt_t)
+                _fready = pullback_since(kept, _mflp_t, _mfdir)
+                _ready = pullback_since(kept, nxt_t, _mdir)
                 _now = int(R[-1]["time"])
                 _mv2 = sum(1 for m in marks if m[0] >= _now - 7200)
                 _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]

@@ -185,3 +185,36 @@ shapes now, three meanings:
 
 And the count is genuinely high because raw M1 breaks often: 78 continuation
 breaks in this window. The chart draws only the last 6 dots.
+
+## Correction 2026-09-16 (4) — what a pullback actually is
+Owner: "pullback is opposite candle close below previous candle in my
+filtered custom chart. Until pullback is confirmed no anticipated BOS visual
+is possible." The sequence is flip (CHoCH) → pullback → BOS → pullback → BOS.
+
+My first implementation was wrong twice over. It asked for an opposite
+**coloured** candle, and it asked it of **raw M1**. The owner's rule is a
+**close that commits beyond the previous candle**, judged on the
+**silence-filtered** series the chart actually draws:
+
+- anticipating a break **up** → a kept candle closing **below** the previous
+  kept candle's low;
+- anticipating a break **down** → one closing **above** its high.
+
+That is the silence filter's own language, which is why it belongs on the
+filtered series: every kept candle is already a commit one way or the other,
+so a pullback is simply a commit against the break being anticipated.
+
+**Measured** (`pullback_diff.py`, 682 instants replayed across the internal
+window):
+
+| | |
+|---|---|
+| both rules draw the level | 510 |
+| old rule drew it, owner's rule forbids it | **99 (15%)** |
+| owner's rule draws it, old did not | 0 |
+| both hide it | 73 |
+
+So the old gate showed a level with no confirmed pullback about one minute
+in seven, and never hid one it should have shown. `pullback_since()` is now
+the single test, used by the main and internal structures and by both the
+continuation and flip levels.
