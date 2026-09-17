@@ -218,3 +218,25 @@ So the old gate showed a level with no confirmed pullback about one minute
 in seven, and never hid one it should have shown. `pullback_since()` is now
 the single test, used by the main and internal structures and by both the
 continuation and flip levels.
+
+## Correction 2026-09-16 (5) — a dot must sit on a candle you can see
+Owner: "the purple dots are placed at the wrong places. They are supposed to
+be the glowing dot rules of the main structure — placed after a BOS is
+confirmed, at the lower low between the previous high and the new high that
+just broke it."
+
+The rule was right; the SERIES was not. The internal engine reads raw M1, so
+the swing it finds often sits on a minute the silence filter removed. The
+price was a genuine raw low, but no drawn candle reaches it, so the dot
+floated between candles. Measured before the fix: **5 of 8 internal dots
+were on filtered-out minutes**.
+
+`engine()` now takes an optional `snap` series. The internal engine is given
+the drawn candles, and each dot is placed on the extreme of the SAME span
+among candles that are actually drawn. Where a span falls entirely inside
+filtered-out noise it snaps to the nearest drawn candle at or before the
+break rather than floating.
+
+After: **12 of 12 dots sit on the exact low or high of a visible candle.**
+The engine's own bookkeeping (hi_i/lo_i/hi_v/lo_v) still runs on raw, so
+break detection is unchanged - only where the dot is drawn moved.

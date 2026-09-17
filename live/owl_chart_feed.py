@@ -48,6 +48,29 @@ def build(rates):
     return kept
 
 
+def _snap_dot(snap, span, kind):
+    """The span's extreme among DRAWN candles, or None if the span covers
+    none. kind +1 = a low dot, -1 = a high dot."""
+    if not snap or not span:
+        return None
+    t_a, t_b = span[0][0], span[-1][0]
+    cand = [k for k in snap if t_a <= k[0] <= t_b]
+    if not cand:
+        # the whole span is inside filtered-out noise: there is no visible
+        # swing there. Fall back to the nearest drawn candle at or before
+        # the break, so the dot still lands on something the owner can see
+        # instead of floating between two candles.
+        before = [k for k in snap if k[0] <= t_b]
+        if not before:
+            return None
+        cand = [before[-1]]
+    if kind == 1:
+        k = min(cand, key=lambda x: x[3])
+        return [k[0], k[3], 1]
+    k = max(cand, key=lambda x: x[2])
+    return [k[0], k[2], -1]
+
+
 def pullback_since(kept, t0, brk_dir):
     """Owner 2026-09-16: "pullback is opposite candle close below previous
     candle in my filtered custom chart".
@@ -111,8 +134,16 @@ def swings(kept):
     return dots
 
 
-def engine(kept):
-    """Structure engine v5 (user 2026-09-08, CHoCH + BOS rules).
+def engine(kept, snap=None):
+    """`snap`: when the engine runs on RAW candles (the internal structure)
+    the swing it finds often sits on a minute the silence filter removed, so
+    the dot floats between drawn candles at a price no visible candle
+    reaches. Pass the filtered series here and each dot is placed on the
+    extreme of the SAME span among candles that are actually drawn - the
+    main structure's own dot rule, on the chart the owner is looking at
+    (owner 2026-09-16).
+
+    Structure engine v5 (user 2026-09-08, CHoCH + BOS rules).
 
     Swing dots as before: a candle CLOSING beyond the reference
     high/low confirms the span's swing low/high (needs one opposite-
@@ -165,7 +196,7 @@ def engine(kept):
             span = kept[hi_i + 1:i]
             if span and any(x[5] == -1 for x in span):
                 m = min(span, key=lambda x: x[3])
-                nd = [m[0], m[3], 1]
+                nd = _snap_dot(snap, span, 1) or [m[0], m[3], 1]
                 if choch == 1 and trend != 1:
                     # first bullish BOS after a bullish CHoCH.
                     # Owner 2026-09-16: the protected dot of a FRESH trend is
@@ -207,7 +238,7 @@ def engine(kept):
             span = kept[lo_i + 1:i]
             if span and any(x[5] == 1 for x in span):
                 m = max(span, key=lambda x: x[2])
-                nd = [m[0], m[2], -1]
+                nd = _snap_dot(snap, span, -1) or [m[0], m[2], -1]
                 if choch == -1 and trend != -1:
                     # mirror of the bullish case above: hi_v/hi_i still hold
                     # the leg's highest high, because a bearish CHoCH resets
@@ -424,7 +455,8 @@ def main():
                     if len(_inner) >= 10:
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                         i_flp, i_flp_t, i_fdir) = engine(_inner)
+                         i_flp, i_flp_t, i_fdir) = engine(
+                            _inner, snap=kept)
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
