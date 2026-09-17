@@ -146,6 +146,51 @@ def counter_lot():
 
 
 CHART = os.path.join(DIR, "owl_chart_btc.json")
+# Owner 2026-09-17: on THIS account "en pause" means MANUAL - the desk takes
+# no entry of its own. Switching it off means AUTO: the desk enters by
+# itself, on the internal structure and the main one, under the rules that
+# survived verification. The default with no file is MANUAL, because the
+# safe default on a real account is to do nothing.
+PAUSE_MASTER = os.path.join(DIR, "owl_trading_pause.json")
+PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{UID}.json")
+
+
+def manual_mode():
+    try:
+        if json.load(open(PAUSE_MASTER, encoding="utf-8")).get("paused"):
+            return True
+    except Exception:
+        pass
+    try:
+        return bool(json.load(open(PAUSE_OWN, encoding="utf-8"))
+                    .get("paused", True))
+    except Exception:
+        return True
+
+
+def chart():
+    try:
+        return json.load(open(CHART, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def gates(cj, need_int):
+    """The rules that survived being measured two ways. Both only ever
+    STOP a trade; neither was shown to make money. Returns None to allow,
+    or the reason to refuse."""
+    vn, vr = cj.get("vol_now"), cj.get("vol_ref")
+    if vn and vr:
+        nerv = vn / max(vr, 1)
+        if nerv > 1.0:
+            return f"trop nerveux ({nerv:.2f}x)"
+    if need_int:
+        if (cj.get("int_brk_1h") or 0) < 1:
+            return "aucun petit mouvement depuis 1 h"
+    else:
+        if (cj.get("moves_2h") or 0) < 1:
+            return "aucun grand mouvement depuis 2 h"
+    return None
 # owner 2026-09-15: no single trade may risk more than 10% of the balance.
 # The automated bot already enforces this; the manual desk does too.
 MAX_RISK_PCT = 0.10
@@ -538,6 +583,39 @@ def execute(req, led, trend=0):
                       bullets=bullets)
 
 
+def auto_enter(d, slv, why, cj):
+    """Take an entry at market. Everything that can refuse it - the stop
+    distance, the 10% risk rule, an open position, an armed order - already
+    lives in execute(), so this only adds the rules specific to auto."""
+    if open_positions():
+        return
+    if pending_orders() or load_vpend():
+        return
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return
+    px = tick.ask if d == 1 else tick.bid
+    dist = abs(px - slv)
+    if dist <= B.S_MIN_DIST:
+        say(f"AUTO refuse ({why}): stop trop proche ({dist:.0f} pts)")
+        return
+    tp = px + d * B.RR * dist
+    req = dict(d=d, sl=round(slv, 2), tp=round(tp, 2), entry=0,
+               ts=time.time(), by="auto")
+    ok, info = execute(req, rebuild_ledger(), eng_trend())
+    say(f"AUTO {why}: {'pris' if ok else 'refuse'} - {info}")
+    if ok:
+        push(f"🤖 Auto {'achat' if d == 1 else 'vente'}",
+             f"{why} a {px:.0f}, stop {slv:.0f}")
+
+
+_ENG = {"trend": 0}
+
+
+def eng_trend():
+    return _ENG["trend"]
+
+
 def main():
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD or B.PASSWORD,
@@ -546,13 +624,16 @@ def main():
     led = rebuild_ledger()
     say(f"MANUAL TRADER [{UID}] up on {ai.login} balance {ai.balance:.2f} | "
         f"net {led['banked']:+.2f} dette {led['debt']:.2f} chest {led['chest']:.2f} "
-        f"({led['trades']} trades) - AUCUNE entree automatique")
+        f"({led['trades']} trades) - "
+        + ("MANUEL, aucune entree automatique" if manual_mode()
+           else "AUTO, le bureau entre seul"))
     eng = B.Struct()
     R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, SEED_BARS)
     for r in (R if R is not None else []):
         eng.step(int(r["time"]), float(r["open"]), float(r["high"]),
                  float(r["low"]), float(r["close"]))
     last_bar = int(R[-1]["time"]) if R is not None and len(R) else 0
+    last_int = chart().get("int_inv_t")
     last_choch = eng.choch
     last_led = 0.0
     say(f"moteur amorce: tendance {eng.trend} choch {eng.choch}")
@@ -595,6 +676,7 @@ def main():
                              f"qui le confirme.", kind="batch")
                     vpend_check(_c, rebuild_ledger())
                     last_choch = eng.choch
+                    _ENG["trend"] = eng.trend
                     # owner 2026-09-17: notify the two moments worth acting
                     # on, so the chart does not have to be watched. A FLIP is
                     # rare and changes the side you trade; a BOS is the
@@ -606,6 +688,33 @@ def main():
                         push(f"🔄 FLIP {w}",
                              f"La structure a bascule a {_c:.0f}. "
                              f"On trade desormais dans ce sens.")
+                    # ---- AUTO mode: enter on our own (owner 2026-09-17)
+                    if not manual_mode():
+                        _cj = chart()
+                        # the internal structure first: its protected level
+                        # moves on every break, so a change means a break
+                        # just confirmed
+                        _iv, _ivt = _cj.get("int_inv"), _cj.get("int_inv_t")
+                        _itr = _cj.get("int_trend") or 0
+                        if (_iv and _ivt and _ivt != last_int
+                                and _itr and _itr == eng.trend):
+                            last_int = _ivt
+                            _g = gates(_cj, True)
+                            if _g:
+                                say(f"AUTO petite structure ignoree: {_g}")
+                            else:
+                                auto_enter(_itr, float(_iv),
+                                           "petite structure", _cj)
+                        elif _ivt:
+                            last_int = _ivt
+                        # then the main structure, on its own signal
+                        if sig:
+                            _g = gates(_cj, False)
+                            if _g:
+                                say(f"AUTO grande structure ignoree: {_g}")
+                            else:
+                                auto_enter(int(sig[0]), float(sig[1]),
+                                           "grande structure", _cj)
                     if sig:
                         d_, slv = int(sig[0]), float(sig[1])
                         dist = abs(_c - slv)

@@ -245,7 +245,10 @@ def is_admin(u):
 MANUAL_MODES = ("manual", "semi")
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
 # sees the row, locked.
-PAUSE_ALLOWED = ("kino", "bos")
+# Owner 2026-09-17: "only this account is allowed to desactive the
+# autotrading" - the live half-manual account. The master keeps its own
+# global switch, which is a different file.
+PAUSE_ALLOWED = ("bos",)
 
 
 def manual_ok(u):
@@ -949,16 +952,21 @@ window.addEventListener('load',()=>{
  if(pb)pb.onclick=async(e)=>{e.preventDefault();
   if(pauseLocked){await info('&#128274; <h3>R&eacute;serv&eacute; '+
    '&agrave; l&#39;administrateur</h3><p>Ce compte peut voir '+
-   'l&#39;interrupteur mais pas s&#39;en servir. Demandez &agrave; '+
-   'Kino d&#39;arr&ecirc;ter ou de relancer le robot.</p>');return;}
+   'l&#39;interrupteur mais pas s&#39;en servir. Seul le compte '+
+   'concern&eacute; peut basculer entre manuel et automatique.</p>');
+   return;}
   const pw=await askPwd(
-   isPaused?'Reprendre le trading ?':'Mettre le robot en pause ?',
+   isPaused?'Lancer le trading automatique ?':'Repasser en manuel ?',
    isPaused
-    ?'Le robot reprendra les nouveaux trades sur ce compte.'
-    :'Le robot ne prendra plus de nouveaux trades sur ce compte. '+
-     'Les trades ouverts gardent leur protection (SL/TP).',
-   isPaused?'&#9654;&#65039; Reprendre':'&#9208;&#65039; Mettre en pause',
-   !isPaused);
+    ?'Le robot entrera seul, sur la petite et la grande structure, '+
+     'uniquement quand les deux freins sont verts : un mouvement dans '+
+     'l’heure et une nervosité normale. Mesuré : ces '+
+     'règles limitent les pertes, elles n’ont pas montré '+
+     'de gain.'
+    :'Le robot n’entrera plus seul. Tu gardes la main depuis le '+
+     'graphique. Les trades ouverts gardent leur SL et leur TP.',
+   isPaused?'&#129302; Lancer l’automatique':'&#9995; Repasser en manuel',
+   isPaused);
   if(!pw)return;
   const r=await fetch(B+'pause',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -1877,17 +1885,21 @@ function render(d){
    const cv=document.getElementById('pause-chv');
    // everyone sees the switch; only two accounts may use it
    ic.innerHTML=pauseLocked?'&#128274;'
-    :(isPaused?'&#9654;&#65039;':'&#9208;&#65039;');
+    :(isPaused?'&#9995;':'&#129302;');
+   // Owner 2026-09-17: "en pause" meant nothing to read. On this account
+   // the two states are MANUAL and AUTO, and the label names the state you
+   // are IN, with the action underneath.
    lb.innerHTML=isPaused
-    ?'&#9654;&#65039; Reprendre le trading'
-    :'Mettre le robot en pause';
+    ?'&#9995; Mode manuel'
+    :'&#129302; Trading automatique';
    lb.style.color=pauseLocked?'#6f8299':'';
    sb.textContent=pauseLocked
-    ?(isPaused?'Robot en pause — seul l’administrateur '+
-      'peut le relancer'
-     :'Réservé à l’administrateur')
-    :(isPaused?'Aucun nouveau trade ne sera ouvert'
-     :'Les trades ouverts gardent leur SL et leur TP');
+    ?(isPaused?'Mode manuel — seul le proprietaire du compte '+
+      'peut lancer l’automatique'
+     :'Réservé au proprietaire du compte')
+    :(isPaused
+      ?'Toucher pour lancer le trading automatique'
+      :'Le robot entre seul. Toucher pour repasser en manuel.');
    cv.style.opacity=pauseLocked?'.25':'';
    document.getElementById('pausebtn').style.opacity=
     pauseLocked?'.6':'';
@@ -2597,9 +2609,11 @@ def user_stats(u):
             try:
                 d["trading_paused"] = bool(json.load(open(os.path.join(
                     DIR, f"owl_trading_pause_{u['id']}.json")))
-                    .get("paused"))
+                    .get("paused", u["id"] in PAUSE_ALLOWED))
             except Exception:
-                d["trading_paused"] = False
+                # no file: MANUAL on the accounts that may switch, which is
+                # the desk's own safe default
+                d["trading_paused"] = u["id"] in PAUSE_ALLOWED
         # follow the flag wherever it was set, not just on this path, so no
         # account can end up with an unlocked-looking switch
         if "trading_paused" in d:
