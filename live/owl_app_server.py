@@ -1517,187 +1517,61 @@ function render(d){
        (on?'box-shadow:0 0 6px rgba(232,197,90,.45);':'')+
        'transition:transform .3s"></span>';
      }
+     // Owner 2026-09-16 redesign. One hero (what is owed), one bar (how
+     // loaded the reserve is), one action row (what the next trade does).
+     // The old layout made the STAKE the biggest number on a card about
+     // recovery, and spent five accent colours on a small surface.
+     const jarPct=Math.max(0,Math.min(100,
+      100*am/Math.max(d.ledger.cap||1,0.01)));
+     const clears=fillN*gain1;
      lt2.innerHTML=
-      '<div style="display:grid;grid-template-columns:1fr 1fr;'+
-       'gap:8px">'+
-       '<div style="background:rgba(255,92,92,.08);border:1px '+
-        'solid rgba(255,92,92,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#ff9c9c;'+
+      '<div style="text-align:center;padding:2px 0 10px">'+
+       '<b style="color:#ffb3b3;font-size:2.4rem;line-height:1;'+
+        'font-variant-numeric:tabular-nums;letter-spacing:-.02em">'+
+        '$<span id="rz-debt">'+d.ledger.debt.toFixed(2)+'</span></b>'+
+       '<div style="font-size:.66rem;color:#7f93a8;margin-top:4px;'+
+        'text-transform:uppercase;letter-spacing:.1em">'+
+        '&agrave; rattraper</div>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;'+
+       'font-size:.7rem;color:#8fa1b3;margin-bottom:3px">'+
+       '<span style="flex:1">R&eacute;serve</span>'+
+       '<span style="font-variant-numeric:tabular-nums;'+
+        'color:#e8c55a">$<span id="rz-ammo">'+am.toFixed(2)+'</span>'+
+        '<span style="color:#6b5f38"> / $'+fm(d.ledger.cap||0)+
+        '</span></span>'+
+      '</div>'+
+      '<div style="background:rgba(255,255,255,.07);border-radius:99px;'+
+       'height:7px;overflow:hidden">'+
+       '<div style="height:7px;border-radius:99px;width:'+
+        jarPct.toFixed(0)+'%;background:linear-gradient(90deg,'+
+        '#b8963f,#e8c55a);transition:width .8s"></div>'+
+      '</div>'+
+      '<div style="margin-top:12px;background:rgba(127,179,224,.06);'+
+       'border:1px solid rgba(127,179,224,.16);border-radius:12px;'+
+       'padding:10px 12px">'+
+       '<div style="display:flex;align-items:baseline;gap:6px">'+
+        '<span style="flex:1;font-size:.7rem;color:#7f93a8;'+
          'text-transform:uppercase;letter-spacing:.08em">'+
-         '&Agrave; rattraper</div>'+
-        '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-debt">'+
-         d.ledger.debt.toFixed(2)+'</span></b></div>'+
-       '<div style="background:rgba(232,197,90,.07);border:1px '+
-        'solid rgba(232,197,90,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#e8c55a;'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         'Gains de c&ocirc;t&eacute;</div>'+
-        '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
-         am.toFixed(2)+'</span></b></div>'+
-      '</div>'+
-      '<div style="text-align:center;margin:12px 0 4px">'+
-       '<div style="font-size:.62rem;color:#7fb3e0;'+
-        'text-transform:uppercase;letter-spacing:.08em">'+
-        'Vous pouvez trader jusqu&#39;&agrave;</div>'+
-       '<b style="color:#7fd4a0;font-size:2.1rem;'+
-        'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
-        (ml>=0.01?ml.toFixed(2):'0.00')+'</span></b>'+
-       '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
-      '</div>'+
-      '<div style="text-align:center;margin-top:4px">'+pills+
-       (nb>SL?'<span style="color:#e8c55a;font-size:.78rem"> '+
-        '&times;'+nb+'</span>':'')+'</div>'+
-      '<div style="text-align:center;font-size:.68rem;'+
-       'color:#5f7185;margin-top:4px">'+
-       (nb>0
-        ?nb+' tir'+(nb>1?'s':'')+' pr&ecirc;t'+(nb>1?'s':'')+
-         ' &middot; 1 tir = 0.01 lot'
-        :'Aucun tir pr&ecirc;t &mdash; chaque gain remplit la '+
-         'r&eacute;serve')+'</div>';
-     lw.style.display='none';ls2.innerHTML='';
-     const full=nb>=SL;
-     lc.style.transition='box-shadow .8s,border-color .8s';
-     lc.style.boxShadow=full?'0 0 24px rgba(232,197,90,.3)':'';
-     lc.style.borderColor=full?'rgba(232,197,90,.55)':'#23405e';
-     const rz=window._rz||{};
-     const roll=(id,a,b)=>{
-      if(a===undefined||Math.abs(a-b)<0.005)return;
-      const el=lc.querySelector('#'+id);if(!el)return;
-      const t0=performance.now();
-      const st=t=>{const k=Math.min(1,(t-t0)/600);
-       el.textContent=(a+(b-a)*k).toFixed(2);
-       if(k<1)requestAnimationFrame(st);};
-      requestAnimationFrame(st);};
-     const fl=(id,a,b,good)=>{
-      if(a===undefined||Math.abs(a-b)<0.005)return;
-      const el=lc.querySelector('#'+id);if(!el)return;
-      el.style.transition='color .25s';
-      el.style.color=good?'#2ecc71':'#ff5c5c';
-      setTimeout(()=>{el.style.color='';},1100);};
-     roll('rz-debt',rz.d,d.ledger.debt);
-     fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
-     roll('rz-ammo',rz.a,am);
-     fl('rz-ammo',rz.a,am,am>rz.a);
-     roll('rz-lot',rz.m,ml);
-     fl('rz-lot',rz.m,ml,ml>rz.m);
-     window._ledD={mode:'man',debt:d.ledger.debt,chest:am,
-      need:rk*0.01,nl:ml,fill:nb};
-     window._rz={d:d.ledger.debt,a:am,m:ml};
-     if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
-      setTimeout(()=>{
-       const el=lc.querySelector('[data-bp="'+(nb-1)+'"]');
-       if(el){el.style.transform='scale(1.6)';
-        setTimeout(()=>{el.style.transform='';},450);}},60);
-     }
-     window._ammoB=nb;
-    }else{
-     const am=d.ledger.chest;
-     const need=Math.max(d.ledger.need_min||0.01,0.01);
-     const bos=!!d.ledger.bos;
-     let nl=Math.max(d.ledger.next_lot||0.02,0.01);
-     let SL,prog,ok,gain1=0;
-     if(bos){
-      SL=d.ledger.max_extra||3;   // the possible extra lots
-      // the jar stakes only PART of itself per attempt, and a recovery is
-      // never bigger than the tab needs - mirror the bot exactly instead of
-      // recomputing with the old whole-jar rule (owner 2026-09-16)
-      const stF=(d.ledger.stake!==undefined)?d.ledger.stake:1;
-      gain1=(d.ledger.rr||0.8)*need;         // what one extra 0.01 wins
-      const g1=gain1;
-      const byDebt=g1>0?Math.ceil(d.ledger.debt/g1):0;
-      prog=Math.max(0,Math.min(SL,am*stF/need));
-      prog=Math.min(prog,byDebt);
-      nl=(d.ledger.base_lot||0.02)+Math.min(SL,Math.floor(prog+1e-9))*0.01;
-      ok=prog>=SL;
-     }else{
-      SL=Math.max(2,Math.min(10,Math.round(nl/0.01)));
-      prog=Math.max(0,Math.min(SL,am/need*SL));
-      ok=am>=need-0.005;
-     }
-     const fillN=Math.floor(prog+1e-9);
-     const fr=prog-fillN;
-     const stake=(2+Math.min(3,fillN))*need;
-     const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
-     window._ledD={mode:bos?'bos':'bot',debt:d.ledger.debt,
-      chest:am,need:need,nl:nl,fill:fillN,stake:stake};
-     let pills='';
-     for(let i=0;i<SL;i++){
-      const on=i<fillN;
-      const g=(!on&&i===fillN&&fr>0.02)
-       ?'background:linear-gradient(90deg,#e8c55a '+
-        (fr*100).toFixed(0)+'%,rgba(255,255,255,.07) '+
-        (fr*100).toFixed(0)+'%);'
-       :'background:'+(on?'#e8c55a':'rgba(255,255,255,.07)')+';';
-      pills+='<span style="display:inline-block;width:13px;'+
-       'height:22px;border-radius:4px;margin:0 2px;'+g+
-       (on?'box-shadow:0 0 6px rgba(232,197,90,.45);':'')+
-       '"></span>';
-     }
-     lt2.innerHTML=
-      '<div style="display:grid;grid-template-columns:1fr 1fr;'+
-       'gap:8px">'+
-       '<div style="background:rgba(255,92,92,.08);border:1px '+
-        'solid rgba(255,92,92,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#ff9c9c;'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         '&Agrave; rattraper</div>'+
-        '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-debt">'+
-         d.ledger.debt.toFixed(2)+'</span></b></div>'+
-       '<div style="background:rgba(232,197,90,.07);border:1px '+
-        'solid rgba(232,197,90,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#e8c55a;'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         'Gains de c&ocirc;t&eacute;</div>'+
-        '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
-         am.toFixed(2)+'</span></b>'+
-        (d.ledger.cap?'<span style="color:#8a7a45;font-size:.7rem">'+
-         ' / $'+fm(d.ledger.cap)+'</span>':'')+'</div>'+
-      '</div>'+
-      '<div style="text-align:center;margin:12px 0 4px">'+
-       '<div style="font-size:.62rem;color:#7fb3e0;'+
-        'text-transform:uppercase;letter-spacing:.08em">'+
-        (bos?'Prochain combat : mise jusqu&#39;&agrave;'
-         :'Prochain soldat du robot')+'</div>'+
-       '<b style="color:#7fd4a0;font-size:2.1rem;'+
-        'font-variant-numeric:tabular-nums">'+(bos?'$':'')+
-        '<span id="rz-lot">'+
-        (bos?fm(stake):nl.toFixed(2))+'</span></b>'+
-       (bos?'':'<span style="color:#8fa1b3;font-size:.85rem">'+
-        ' lot</span>')+
-      '</div>'+
-      '<div style="text-align:center;margin-top:4px">'+pills+
-      '</div>'+
-      (bos&&fillN>0
-       ?'<div style="text-align:center;font-size:.74rem;'+
-        'color:#8df0bb;margin-top:6px">Un gain enl&egrave;ve '+
-        '<b>$'+fm(fillN*gain1)+'</b> de l&#39;ardoise</div>'
-       :'')+
-      '<div style="text-align:center;font-size:.68rem;'+
-       'color:#5f7185;margin-top:4px">'+
-       (bos
-        ?(fillN>0
-         ?'$'+fm(2*need)+' de base + '+fillN+' balle'+
-          (fillN>1?'s':'')+' de $'+fm(need)+' d&eacute;'+
-          'j&agrave; pay&eacute;e'+(fillN>1?'s':'')+' par la '+
-          'r&eacute;serve <span style="color:#44586d">('+
-          nl.toFixed(2)+' lot)</span>'
-         :'Mise de base $'+fm(2*need)+' &middot; chaque '+
-          'gain charge une balle de $'+fm(need)+' pour '+
-          'frapper plus fort <span style="color:#44586d">('+
-          nl.toFixed(2)+' lot)</span>')
-        :(ok
-        ?'Soldat financ&eacute; &mdash; il attaque au prochain '+
-         'signal'
-        :'Encore $'+(need-am).toFixed(2)+' de gains avant '+
-         'l&#39;attaque'))+'</div>';
+         'Prochain trade</span>'+
+        '<b style="color:#cfe3f5;font-size:1.15rem;'+
+         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
+         nl.toFixed(2)+'</span></b>'+
+        '<span style="font-size:.72rem;color:#7f93a8"> lot</span>'+
+       '</div>'+
+       '<div style="font-size:.72rem;color:#8fa1b3;margin-top:5px;'+
+        'line-height:1.45">'+
+        (fillN>0
+         ? 'Risque $'+fm(stake)+' &middot; un gain enl&egrave;ve '+
+           '<b style="color:#8df0bb">$'+fm(clears)+'</b> de '+
+           'l&#39;ardoise'
+         : (d.ledger.debt>0.5
+            ? 'Taille normale. Encore $'+
+              fm(Math.max(0,need/(d.ledger.stake||0.5)-am))+
+              ' de r&eacute;serve pour charger un lot de plus.'
+            : 'Rien &agrave; rattraper &mdash; taille normale.'))+
+       '</div>'+
+      '</div>';
      lw.style.display='none';ls2.innerHTML='';
      lc.style.transition='box-shadow .8s,border-color .8s';
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
@@ -2494,15 +2368,12 @@ def user_stats(u):
                 pass
         elif not u.get("trade"):
             d["activation_needed"] = True
-        if u.get("id") != "kino" and u.get("trade"):
-            # family member whose real account the bot trades: their
-            # own pause switch (2026-09-05)
-            try:
-                d["trading_paused"] = bool(json.load(open(os.path.join(
-                    DIR, f"owl_trading_pause_{u['id']}.json")))
-                    .get("paused"))
-            except Exception:
-                d["trading_paused"] = False
+        # Owner 2026-09-16: "for now only admin can switch off". A member
+        # whose account the bot trades used to get their own pause switch;
+        # the flag is what makes the switch appear, so it is no longer sent
+        # to them. The admin still has the master switch and the per-account
+        # toggles in the admin panel, and those now actually reach the bot
+        # (it used to read only the global file).
         return d
     except Exception:
         # fall back to the built-in kino stats while the worker warms up

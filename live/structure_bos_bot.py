@@ -151,7 +151,15 @@ else:
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_F = os.path.join(DIR, f"bos_state{_SFX}.json")
 LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
+# Two switches (owner 2026-09-16). The app writes a per-account file, and
+# the bot used to read only the global one - so the per-account pause
+# buttons did nothing and pausing "kino" silently stopped every variant.
+#   owl_trading_pause.json          = master switch, stops everything
+#   owl_trading_pause_<uid>.json    = this account only
+PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
+             "halfdebt": "half"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
+PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 
 
 def say(msg):
@@ -267,10 +275,13 @@ class Struct:
 
 
 def paused():
-    try:
-        return bool(json.load(open(PAUSE_F)).get("paused"))
-    except Exception:
-        return False
+    for _f in (PAUSE_F, PAUSE_OWN):
+        try:
+            if json.load(open(_f)).get("paused"):
+                return True
+        except Exception:
+            pass
+    return False
 
 
 def load_state():
