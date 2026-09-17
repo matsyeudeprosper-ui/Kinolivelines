@@ -363,3 +363,38 @@ decides what is drawn, never what a trade does. Live immediately after: the
 **And when there genuinely is none**, the chart now prints a small
 "pas de structure interne" tag near price instead of drawing nothing, which
 read exactly like a broken feature - the owner reported it as one.
+
+
+## 2026-09-17 — the real cause of the vanishing internal structure
+The owner: "the structures on the chart are gone again, or disappearing from
+time to time." The adaptive look-back was NOT the cause; that was a separate,
+real, but smaller problem.
+
+Diagnosis from the published feed, not from reading code: it showed
+`int_trend 0` together with `int_win 300`. Those two cannot both come out of
+the same pass - a 300-candle window is only ever chosen when a direction was
+found. So the block had not run at all and `_inner` was a stale value from an
+earlier cycle.
+
+`invalid_t` and `int_since` were both null. The window start is
+
+    _t0 = inv_t or (marks[-1][0] if marks else None)
+
+The feed held `RAW_BARS = 3000` M1 candles, about 50 hours. The main
+structure's last event was 09-15 17:35, about 48 hours old. As the window
+slid forward that mark fell out of range, `marks` emptied, `inv_t` was
+already null because a CHoCH had consumed the protected dot — so `_t0` was
+None and the **entire internal block was skipped**. Minutes later a new mark
+appeared and it came back. Hence "from time to time".
+
+Two fixes: `RAW_BARS = 8000` so the main structure always has events in
+range, and `_t0` falls back to the oldest held candle rather than being
+undefined. The look-back trims the window to size regardless, so the
+fallback costs nothing.
+
+Verified: 60 consecutive reads over 2 minutes, zero state changes, zero
+cycles without a structure.
+
+**Lesson:** the published artefact showed an impossible pair of values, and
+that is what located the bug. Reading the code first would not have found it,
+because the code is correct - it simply was not running.

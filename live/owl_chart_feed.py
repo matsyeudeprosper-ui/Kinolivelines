@@ -23,7 +23,12 @@ PASSWORD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)
                      "owl_secrets.json"), encoding="utf-8"))["mt5_password"]  # not in git
 SERVER = "Exness-MT5Trial9"
 SYMBOL = "BTCUSD"
-RAW_BARS = 3000
+RAW_BARS = 8000          # owner 2026-09-17: was 3000 (~50 h). The main
+                         # structure can go 2 days without an event, and
+                         # when its last mark slid out of the window the
+                         # internal window had no start and the whole
+                         # internal block was skipped - the structure
+                         # vanished from the chart at random.
 KEEP_LAST = 400
 
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -471,7 +476,13 @@ def main():
                 # continuations included. marks[] only records flips, so
                 # anchoring there left the window running for hours after a
                 # continuation had already opened a new space.
-                _t0 = inv_t if inv_t else (marks[-1][0] if marks else None)
+                # belt and braces: if the main structure has neither a
+                # protected dot nor a mark in range, open the internal
+                # window at the oldest candle instead of skipping it. The
+                # look-back below trims it to size anyway.
+                _t0 = (inv_t if inv_t
+                       else (marks[-1][0] if marks
+                             else (kept[0][0] if kept else None)))
                 if _t0:
                     # Owner 2026-09-17: the internal structure reads the
                     # CUSTOM CHART - the candles that close completely
