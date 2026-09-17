@@ -234,9 +234,18 @@ were on filtered-out minutes**.
 `engine()` now takes an optional `snap` series. The internal engine is given
 the drawn candles, and each dot is placed on the extreme of the SAME span
 among candles that are actually drawn. Where a span falls entirely inside
-filtered-out noise it snaps to the nearest drawn candle at or before the
-break rather than floating.
+filtered-out noise, **no dot is drawn at all**.
 
-After: **12 of 12 dots sit on the exact low or high of a visible candle.**
+That last clause was wrong on the first attempt. The fallback snapped to the
+nearest drawn candle at or before the break, which put the dot OUTSIDE its
+own span at a price that is not the span's extreme. The owner caught it
+immediately (`last_dot.py`): the dot shown at 76448.62 came from a raw span
+of 04:59-05:00 whose true low was 76432.39, and 04:58 - the candle it landed
+on - is not in that span. On this chart that swing does not exist, so the
+honest answer is to draw nothing.
+
+After: **every published dot sits on the exact low or high of a visible
+candle**, and the count drops (13 to 6 at the time of the fix) because the
+swings that only existed in filtered-out noise no longer produce one.
 The engine's own bookkeeping (hi_i/lo_i/hi_v/lo_v) still runs on raw, so
 break detection is unchanged - only where the dot is drawn moved.

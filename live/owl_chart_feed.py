@@ -56,14 +56,11 @@ def _snap_dot(snap, span, kind):
     t_a, t_b = span[0][0], span[-1][0]
     cand = [k for k in snap if t_a <= k[0] <= t_b]
     if not cand:
-        # the whole span is inside filtered-out noise: there is no visible
-        # swing there. Fall back to the nearest drawn candle at or before
-        # the break, so the dot still lands on something the owner can see
-        # instead of floating between two candles.
-        before = [k for k in snap if k[0] <= t_b]
-        if not before:
-            return None
-        cand = [before[-1]]
+        # the whole span sits inside filtered-out noise, so on THIS chart
+        # there is no swing between the two highs. Snapping to the nearest
+        # candle would put the dot OUTSIDE its own span, at a price that is
+        # not the span's extreme - so no dot is drawn at all.
+        return None
     if kind == 1:
         k = min(cand, key=lambda x: x[3])
         return [k[0], k[3], 1]
@@ -196,7 +193,9 @@ def engine(kept, snap=None):
             span = kept[hi_i + 1:i]
             if span and any(x[5] == -1 for x in span):
                 m = min(span, key=lambda x: x[3])
-                nd = _snap_dot(snap, span, 1) or [m[0], m[3], 1]
+                _vis = _snap_dot(snap, span, 1)
+                vis = snap is None or _vis is not None
+                nd = _vis or [m[0], m[3], 1]
                 if choch == 1 and trend != 1:
                     # first bullish BOS after a bullish CHoCH.
                     # Owner 2026-09-16: the protected dot of a FRESH trend is
@@ -209,11 +208,13 @@ def engine(kept, snap=None):
                     trend = 1
                     choch = 0
                     nd = [kept[lo_i][0], lo_v, 1]
-                    dots.append(nd)
+                    if vis:
+                        dots.append(nd)
                     prot_lo = nd
                     up_st = dn_st = 0
                 elif trend == 1:
-                    dots.append(nd)
+                    if vis:
+                        dots.append(nd)
                     prot_lo = nd
                     choch = 0    # new BOS up repairs a pending choc
                 elif trend == 0:
@@ -225,7 +226,8 @@ def engine(kept, snap=None):
                         if up_st >= 2:
                             trend = 1
                             prot_lo = nd
-                            dots.append(nd)
+                            if vis:
+                                dots.append(nd)
                             dn_st = 0
                     else:
                         up_st = 0
@@ -238,7 +240,9 @@ def engine(kept, snap=None):
             span = kept[lo_i + 1:i]
             if span and any(x[5] == 1 for x in span):
                 m = max(span, key=lambda x: x[2])
-                nd = _snap_dot(snap, span, -1) or [m[0], m[2], -1]
+                _vis = _snap_dot(snap, span, -1)
+                vis = snap is None or _vis is not None
+                nd = _vis or [m[0], m[2], -1]
                 if choch == -1 and trend != -1:
                     # mirror of the bullish case above: hi_v/hi_i still hold
                     # the leg's highest high, because a bearish CHoCH resets
@@ -247,11 +251,13 @@ def engine(kept, snap=None):
                     trend = -1
                     choch = 0
                     nd = [kept[hi_i][0], hi_v, -1]
-                    dots.append(nd)
+                    if vis:
+                        dots.append(nd)
                     prot_hi = nd
                     up_st = dn_st = 0
                 elif trend == -1:
-                    dots.append(nd)
+                    if vis:
+                        dots.append(nd)
                     prot_hi = nd
                     choch = 0    # new BOS down repairs a pending choc
                 elif trend == 0:
@@ -260,7 +266,8 @@ def engine(kept, snap=None):
                         if dn_st >= 2:
                             trend = -1
                             prot_hi = nd
-                            dots.append(nd)
+                            if vis:
+                                dots.append(nd)
                             up_st = 0
                     else:
                         dn_st = 0
