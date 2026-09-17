@@ -1472,11 +1472,19 @@ function render(d){
     chips.push(stat('grands mouvements',mv+'&thinsp;/&thinsp;2h',
      mv===0?'#6f8299':'#cfe3f5'));
     chips.push(stat('sens',ttxt,tcol));
-    chips.push(stat('nervosité',rv.toFixed(1)+'×',
-     rv>=1.2?'#e8c55a':'#cfe3f5'));
-    if(ms2.spread)chips.push(stat('coût d’entrée',
-     '$'+Number(ms2.spread).toFixed(0),
-     ms2.spread>12?'#ff9678':'#cfe3f5'));
+    // A count over a window explains itself; a bare multiplier and a
+    // dollar figure do not. Each gets its reference: the label says what it
+    // is compared WITH, the value carries a plain word (owner 2026-09-17).
+    const vw=rv>=1.2?['agité','#e8c55a']
+            :(rv<=0.8?['calme','#8fa1b3']:['normal','#cfe3f5']);
+    chips.push(stat('nervosité vs 24 h',
+     rv.toFixed(1)+'× '+vw[0], vw[1]));
+    if(ms2.spread){
+     const sp=Number(ms2.spread);
+     const sw=sp>12?['élevé','#ff9678']
+             :(sp<=8?['faible','#8df0bb']:['normal','#cfe3f5']);
+     chips.push(stat('coût pour entrer','$'+sp.toFixed(0)+' '+sw[0], sw[1]));
+    }
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
