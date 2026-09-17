@@ -544,7 +544,18 @@ def main():
                      "int_marks": [m for m in i_marks if m[0] >= t0][-10:],
                      "trades": trades, "h1": h1,
                      "px": round(float(tick.bid), 2)},
-                    open(OUT, "w"))
+                    open(OUT + ".tmp", "w"))
+                for _ in range(12):
+                    try:
+                        os.replace(OUT + ".tmp", OUT)
+                        break
+                    except PermissionError:
+                        time.sleep(0.05)
+                else:
+                    try:
+                        os.replace(OUT + ".tmp", OUT)
+                    except Exception:
+                        pass
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)

@@ -1421,25 +1421,40 @@ function render(d){
    const chips=[];
    if(d.meteo_struct){
     const ms2=d.meteo_struct;
-    if(ms2.awake){cls='mx-fish';orb='\\u{1F30A}';
-     ti='March\\u00e9 actif';
-     ln='La mer bouge, pleine d\\u2019\\u00e9nergie \\u2014 le '+
-      'hibou laisse son robot p\\u00eacher.';
-     if(ms2.flips_2h)chips.push(ms2.flips_2h+' retournement'+
-      (ms2.flips_2h>1?'s':'')+' / 2 h');}
-    else if(ms2.trend===1||ms2.trend===-1){cls='mx-sleep';
-     orb='\\u26f5';
-     ti='Tendance sans retournement';
-     ln='Courant trop fort, la mer file dans un seul sens '+
-      'depuis 2 h \\u2014 le hibou garde son robot au sec.';}
-    else{cls='mx-sleep';orb='\\u{1F634}';
-     ti='March\\u00e9 sans mouvement';
-     ln='Mer endormie, pas une vague depuis 2 heures \\u2014 '+
-      'le hibou veille, la canne rang\\u00e9e.';}
-    if(ms2.trend===1)chips.push(
-     '<span style="color:#8df0bb">tendance \\u25b2</span>');
-    else if(ms2.trend===-1)chips.push(
-     '<span style="color:#ffb3b3">tendance \\u25bc</span>');
+    // SAME four states, thresholds and words as the chart badge
+    // (owl_chart_page.html). Two screens, one vocabulary. Volatility alone
+    // is never activity: the bots call a market asleep when no flip
+    // happened in 2 h, whatever the candles are doing.
+    const mv=ms2.moves_2h!==undefined?ms2.moves_2h:(ms2.flips_2h||0);
+    const rv=(ms2.vol_now&&ms2.vol_ref)
+     ?ms2.vol_now/Math.max(ms2.vol_ref,1):1;
+    let S;
+    if(mv===0)S=['💤','Endormie','mx-sleep',
+     'Aucun retournement depuis 2 h. Le robot attend.'];
+    else if(mv>=3&&rv>=1.2)S=['⚡️','Agitée','mx-storm',
+     'Beaucoup de retournements et des bougies plus larges que d’habitude.'];
+    else if(mv>=2||rv>=1.2)S=['🔥','Active','mx-fish',
+     'La structure bouge assez pour travailler.'];
+    else S=['☁️','Calme','mx-sun',
+     'La structure bouge un peu, sans excès.'];
+    orb=S[0];ti=S[1];ln=S[3];cls=S[2];
+    const stat=(v,l,c)=>'<div style="flex:1;min-width:0;text-align:center;'+
+     'padding:7px 4px;border-radius:10px;background:rgba(255,255,255,.04);'+
+     'border:1px solid rgba(255,255,255,.07)">'+
+     '<b style="display:block;font-size:.95rem;color:'+(c||'#cfe3f5')+';'+
+     'font-variant-numeric:tabular-nums">'+v+'</b>'+
+     '<span style="font-size:.6rem;color:#7f93a8;text-transform:uppercase;'+
+     'letter-spacing:.07em">'+l+'</span></div>';
+    const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
+    const ttxt=ms2.trend===1?'▲ haussière'
+     :(ms2.trend===-1?'▼ baissière':'—');
+    chips.push('<div style="display:flex;gap:6px;width:100%">'+
+     stat(mv+'&thinsp;/&thinsp;2h','retournements')+
+     stat(rv.toFixed(1)+'×','volatilité',rv>=1.2?'#e8c55a':'#cfe3f5')+
+     stat(ttxt,'structure',tcol)+
+     (ms2.spread?stat('$'+Number(ms2.spread).toFixed(0),'spread',
+      ms2.spread>12?'#ff9678':'#cfe3f5'):'')+
+     '</div>');
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
@@ -1466,7 +1481,8 @@ function render(d){
    setH(document.getElementById('mx-title'),ti);
    setH(document.getElementById('mx-line'),ln);
    setH(document.getElementById('mx-chips'),
-    chips.map(c=>'<span class="mxc">'+c+'</span>').join(''));
+    chips.map(c=>c.indexOf('<div')===0?c
+     :'<span class="mxc">'+c+'</span>').join(''));
   }
   if(d.ftest){
    const ft=d.ftest;
@@ -2382,6 +2398,18 @@ def user_stats(u):
                 try:
                     d["meteo_struct"] = json.load(open(os.path.join(
                         DIR, "bos_weather.json")))
+                    # the card speaks the chart's language, so it must read
+                    # the chart's numbers - volatility and spread live in
+                    # the feed, not in the bot's weather file (2026-09-17)
+                    try:
+                        _cj = json.load(open(os.path.join(
+                            DIR, "owl_chart_btc.json")))
+                        for _k in ("moves_2h", "vol_now", "vol_ref",
+                                   "spread"):
+                            if _cj.get(_k) is not None:
+                                d["meteo_struct"][_k] = _cj[_k]
+                    except Exception:
+                        pass
                     # live bullet price from the bot (stop distance)
                     _bl = d["meteo_struct"].get("bullet")
                     if _bl:
