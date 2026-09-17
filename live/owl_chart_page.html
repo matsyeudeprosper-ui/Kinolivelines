@@ -114,6 +114,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
    &#10005;</button>
  </div>
  <div style="display:flex;gap:7px;margin-top:8px;align-items:stretch">
+  <!-- the destructive button keeps its distance from the primary one -->
   <button id="mtpend" title="Programmer l'entree" style="flex:none;width:46px;
    padding:11px 0;border-radius:12px;border:1px solid #33475c;
    background:#16202c;color:#e8c55a;font-size:1rem;line-height:1">
@@ -125,7 +126,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
   <button id="mtclose" title="Fermer la position" style="display:none;
    flex:none;width:46px;padding:11px 0;border-radius:12px;
    border:1px solid #6d2230;background:#2a1116;color:#ff8a8a;
-   font-size:1rem;line-height:1">&#10005;</button>
+   font-size:1rem;line-height:1;margin-right:9px">&#10005;</button>
   <button id="mtgo" style="flex:1;padding:12px;border-radius:12px;border:0;
    background:#2563eb;color:#fff;font-weight:800;font-size:.86rem">
    Confirmer</button>
@@ -1115,7 +1116,7 @@ function mtRender(){
  // actions: one primary, and only the icons this state can use
  const go=document.getElementById('mtgo');
  go.disabled=!!c.bad;go.style.opacity=c.bad?.45:1;
- if(!go.dataset.busy)go.textContent=
+ if(!go.dataset.busy&&!go.dataset.armed)go.textContent=
   c.edit?'Modifier':(MT.editPend?'Replacer':'Confirmer');
  const show=(id,on)=>{document.getElementById(id).style.display=on?'':'none';};
  show('mtpend',!c.edit&&!MT.editPend);ary_pend_paint();
@@ -1197,6 +1198,7 @@ function ary_pend_paint(){
 function ary_pend_reset(){ary_pend_paint();}
 document.getElementById('mtpend').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
+ mtDisarm();
  if(MT.entry)MT.entry=null;
  else{
   const d=(MT.tp>MS.px)?1:-1;
@@ -1216,6 +1218,7 @@ document.getElementById('mtpend').onclick=()=>{
 };
 document.getElementById('mtflip').onclick=()=>{
  if(!MT||!MS||!MS.px)return;
+ mtDisarm();
  // Owner 2026-09-16: taking the first trade of a flip. Inverting used to
  // mirror the lines around price, producing a setup with no structure
  // behind it. It now REBUILDS from the structure for the other side:
@@ -1274,9 +1277,32 @@ document.getElementById('mtclose').onclick=async()=>{
  }catch(e){alert('reseau');}
  b.disabled=false;b.style.opacity='1';
 };
+// Owner 2026-09-17: a trade was opened by accident, the blue button hit
+// while reaching for the red one. Anything that OPENS or ARMS an order now
+// takes two taps: the first turns the button amber and spells out what is
+// about to happen, the second sends it. It disarms itself after 4 s, and on
+// any change to the lines. Modifying an open position's SL/TP is unchanged,
+// since a mis-tap there cannot open anything.
+let armT=null;
+function mtDisarm(){
+ const g=document.getElementById('mtgo');
+ if(armT){clearTimeout(armT);armT=null;}
+ if(g.dataset.armed){delete g.dataset.armed;
+  g.style.background='#2563eb';g.style.color='#fff';
+  if(!g.dataset.busy)mtRender();}
+}
 document.getElementById('mtgo').onclick=async()=>{
  const c=mtCalc();if(!c||c.bad)return;
  const g=document.getElementById('mtgo');
+ if(!c.edit&&!g.dataset.armed){
+  g.dataset.armed='1';
+  g.style.background='#e8c55a';g.style.color='#0a111c';
+  g.textContent='Appuyer encore : '+(c.d===1?'ACHAT ':'VENTE ')+
+   c.lot.toFixed(2)+' · risque $'+c.risk.toFixed(2);
+  if(armT)clearTimeout(armT);
+  armT=setTimeout(mtDisarm,4000);
+  return;}
+ mtDisarm();
  g.disabled=true;g.dataset.busy='1';g.textContent='Envoi...';
  try{
   const r=await fetch('/'+tok+'/manual_order',{method:'POST',
