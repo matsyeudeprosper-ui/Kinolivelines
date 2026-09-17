@@ -48,7 +48,17 @@ def build(rates):
     return kept
 
 
-INT_MAX = 200            # chart candles the internal structure looks back
+# Owner 2026-09-17: a single look-back is unstable. At one moment 200 chart
+# candles finds nothing while 300 and 500 find a full structure, and at
+# another 200 works and 400 finds nothing. The cause is the engine's cold
+# start - it needs two consecutive higher lows to establish a direction, and
+# whether it gets them depends on where the window happens to begin, which
+# does not improve monotonically with length.
+# So try several lengths and take the first that yields a direction. This is
+# a DISPLAY choice, stated plainly: it decides what is drawn, never what a
+# trade does. If no length finds a structure, there genuinely is none.
+INT_WINDOWS = (200, 300, 400, 550)
+INT_MAX = INT_WINDOWS[-1]      # the most it will ever look back
 
 
 def _snap_dot(snap, span, kind):
@@ -481,13 +491,23 @@ def main():
                     # Swept 30/40/60/80/120/200/400: structure present
                     # 30/35/55/70/82/88/90% of samples, dots 0/0/2/4/4/13/0.
                     # 200 is the best of them (review/window_sweep.py).
-                    _inner = [k for k in kept if k[0] > _t0][-INT_MAX:]
-                    if len(_inner) >= 5:
-                        _ibrk = []
-                        (i_dots, i_marks, i_trend, i_choch,
-                         i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                         i_flp, i_flp_t, i_fdir) = engine(
-                            _inner, brk_out=_ibrk)
+                    _pool = [k for k in kept if k[0] > _t0]
+                    _inner, _ibrk = [], []
+                    for _w in INT_WINDOWS:
+                        _try = _pool[-_w:]
+                        if len(_try) < 5:
+                            continue
+                        _b = []
+                        _r = engine(_try, brk_out=_b)
+                        if _r[2] != 0:          # a direction was found
+                            _inner, _ibrk = _try, _b
+                            (i_dots, i_marks, i_trend, i_choch,
+                             i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
+                             i_flp, i_flp_t, i_fdir) = _r
+                            break
+                    else:
+                        _inner = _pool[-INT_WINDOWS[0]:]
+                    if i_trend != 0:
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
@@ -551,6 +571,7 @@ def main():
                      "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
                      "int_flip_bos_ready": i_fready,
                      "bos_ready": _ready,
+                     "int_win": len(_inner),
                      "int_brk_1h": i_brk1h,
                      "int_awake": i_brk1h >= 1,
                      "int_state": (

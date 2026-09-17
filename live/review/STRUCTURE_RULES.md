@@ -334,3 +334,32 @@ points from where the owner had placed his stop by eye.
 
 Lesson: a fix aimed at a symptom outlives the bug it was written for. When
 the root cause moved (raw to filtered), the workaround became the defect.
+
+
+## 2026-09-17 — the single look-back was unstable; the window is adaptive now
+The owner: "I have lost my internal structure indicator on the chart."
+
+Not a regression, a fragile constant. `INT_MAX = 200` was picked from a
+sweep taken at one moment. Measured again two days later on the same live
+window:
+
+| look-back | result |
+|---|---|
+| 100 chart candles | no direction |
+| **200 (the setting)** | **no direction** |
+| 300 | trend +1, 8 dots |
+| 500 | trend +1, 29 dots |
+| 1221 (all of it) | no direction |
+
+Not monotonic, and 200 had landed in a dead spot. The cause is the engine's
+cold start: it needs two consecutive higher lows to establish a direction,
+and whether it gets them depends on where the window happens to begin.
+
+`INT_WINDOWS = (200, 300, 400, 550)` — try each and take the first that
+yields a direction. Stated plainly in the code as a DISPLAY choice: it
+decides what is drawn, never what a trade does. Live immediately after: the
+300-candle window recovered the structure.
+
+**And when there genuinely is none**, the chart now prints a small
+"pas de structure interne" tag near price instead of drawing nothing, which
+read exactly like a broken feature - the owner reported it as one.
