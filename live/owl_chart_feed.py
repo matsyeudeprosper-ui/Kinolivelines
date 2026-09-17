@@ -208,16 +208,16 @@ def engine(kept, snap=None):
                 nd = _vis or [m[0], m[3], 1]
                 if choch == 1 and trend != 1:
                     # first bullish BOS after a bullish CHoCH.
-                    # Owner 2026-09-16: the protected dot of a FRESH trend is
-                    # the leg's own extreme - the level that had been the
-                    # anticipated BOS on the other side - not the small
-                    # pullback extreme between the CHoCH and this break.
-                    # lo_v/lo_i still hold the leg's lowest low here: the
-                    # bullish CHoCH resets the HIGH reference, never the low.
+                    # 2026-09-16 this took the LEG's extreme instead of the
+                    # pullback between the CHoCH and this break. That was a
+                    # workaround for the engine reading raw M1, where the
+                    # post-CHoCH span was 1-3 noise minutes and its extreme
+                    # meant nothing. Now that the engine reads the chart the
+                    # span is a real pullback, so the pullback's extreme is
+                    # the right protected dot again (owner 2026-09-17).
                     marks.append([t, hi_v, "bos", 1])
                     trend = 1
                     choch = 0
-                    nd = [kept[lo_i][0], lo_v, 1]
                     if vis:
                         dots.append(nd)
                     prot_lo = nd
@@ -254,13 +254,10 @@ def engine(kept, snap=None):
                 vis = snap is None or _vis is not None
                 nd = _vis or [m[0], m[2], -1]
                 if choch == -1 and trend != -1:
-                    # mirror of the bullish case above: hi_v/hi_i still hold
-                    # the leg's highest high, because a bearish CHoCH resets
-                    # the LOW reference and never the high
+                    # mirror of the bullish case above
                     marks.append([t, lo_v, "bos", -1])
                     trend = -1
                     choch = 0
-                    nd = [kept[hi_i][0], hi_v, -1]
                     if vis:
                         dots.append(nd)
                     prot_hi = nd

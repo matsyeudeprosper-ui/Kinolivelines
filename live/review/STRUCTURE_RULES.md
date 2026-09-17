@@ -308,3 +308,29 @@ to see LESS. Re-run the sweep before changing it.
 
 Live after the change: 8 dots, 9 events, and **8 of 8 dots sit on the exact
 low of a chart candle**.
+
+## 2026-09-17 — the leg-extreme workaround is withdrawn
+On 2026-09-16 the owner said a flip's protected dot belonged at the leg's
+extreme, not at the pullback between the CHoCH and the break. Today he said
+the opposite: the diamond should sit at the recent swing high, where his
+stop was.
+
+Both are right, and the reason is the series. On **raw M1** the post-CHoCH
+span was 1-3 noise minutes and its extreme was meaningless - which is what
+he was objecting to in September 16. Taking the leg extreme was a workaround
+for that. Now the engine reads the **chart**, and that same span is a real
+pullback: at the 08:15 bearish flip it covered 07:59-08:13, eight chart
+candles, topping at 76459.32.
+
+| rule | 04:07 flip | 08:15 flip |
+|---|---|---|
+| leg extreme (the workaround) | 76458.14 @ 03:33 | 76601.46 @ 07:06 |
+| pullback extreme (restored) | 76334.21 @ 04:06 | **76459.32 @ 08:04** |
+
+The workaround is withdrawn; the engine protects the pullback extreme again,
+as it always did before the raw detour. Live check: the diamond moved from
+76601.46 to **76459.32**, the exact high of the 08:04 chart candle, seven
+points from where the owner had placed his stop by eye.
+
+Lesson: a fix aimed at a symptom outlives the bug it was written for. When
+the root cause moved (raw to filtered), the workaround became the defect.
