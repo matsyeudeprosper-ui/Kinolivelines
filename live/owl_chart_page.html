@@ -11,20 +11,33 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #back{text-decoration:none;color:#9fc2de;font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
 #hd h1{font-size:1rem;font-weight:700;letter-spacing:.01em}
-#hdrow{display:flex;align-items:center;gap:8px;flex:0 0 100%;
- flex-wrap:nowrap;min-width:0}
-#hdrow .badge{white-space:nowrap;flex:0 0 auto}
-#meteo{font-size:.62rem;padding:3px 10px 3px 6px;font-weight:700;
- min-width:0;overflow:hidden;text-overflow:ellipsis}
-#meteo i{font-style:normal;font-size:1.05rem;line-height:1;
- vertical-align:-2px;margin-right:5px;
+/* Owner 2026-09-17: three separate pills spent ~80px on their own borders,
+   padding and gaps, and the last one was clipped on a 390px phone. One
+   strip, divided into segments: the chrome is paid for once. The weather
+   segment is the only one allowed to shrink. */
+/* #hdrow is the row: always its own line (basis 100%), and it claims back
+   the 96px the header reserves for the price, because the price sits on
+   the line ABOVE. #hdstrip is the visible pill and only as wide as its
+   contents. (owner 2026-09-17) */
+#hdrow{display:flex;flex:0 0 100%;min-width:0;margin-right:-82px}
+#hdstrip{display:inline-flex;align-items:stretch;min-width:0;max-width:100%;
+ border-radius:99px;overflow:hidden;
+ background:rgba(127,179,224,.06);
+ border:1px solid rgba(127,179,224,.18);
+ backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#hdstrip:empty,#hdrow:empty{display:none}
+#hdstrip .seg{display:flex;align-items:center;gap:5px;
+ padding:4px 10px;font-size:.6rem;font-weight:700;
+ letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;
+ flex:0 0 auto;border-left:1px solid rgba(127,179,224,.16)}
+#hdstrip .seg:first-child{border-left:0}
+#meteo{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+#autobadge{padding:4px 8px}
+#meteo i,#trbadge i{font-style:normal;font-size:1rem;line-height:1;
  filter:drop-shadow(0 0 5px currentColor)}
 #meteo.busy i{animation:mtp 1.6s ease-in-out infinite}
 @keyframes mtp{0%,100%{opacity:1;transform:scale(1)}
  50%{opacity:.55;transform:scale(1.18)}}
-#trbadge{flex:none}
-#meteo{min-width:0;overflow:hidden;text-overflow:ellipsis;
- white-space:nowrap}
 .badge{font-size:.6rem;color:#7fb3e0;
  background:rgba(127,179,224,.08);
  border:1px solid rgba(127,179,224,.22);border-radius:99px;
@@ -85,14 +98,12 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <a id="back" href="#">&#8592;</a>
 <h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span>
-<span id="hdrow" style="display:flex;align-items:center;gap:6px;
- min-width:0;overflow:hidden"><span class="badge" id="trbadge"
- style="display:none"></span><span class="badge" id="autobadge" style="display:none;color:#8df0bb;
- border-color:rgba(141,240,187,.45);background:rgba(141,240,187,.12);
- padding:3px 7px;flex:none"
- title="Mode automatique : le robot gere les entrees">&#129302;</span><span
- class="badge" id="meteo"
- style="display:none"></span></span>
+<span id="hdrow"><span id="hdstrip"><span class="seg" id="trbadge"
+ style="display:none"></span><span class="seg" id="autobadge"
+ style="display:none;color:#8df0bb"
+ title="Mode automatique : le robot gere les entrees"><i>&#129302;</i></span><span
+ class="seg" id="meteo"
+ style="display:none"></span></span></span>
 </div>
 <span id="px"></span>
 
@@ -883,6 +894,13 @@ function draw(){
    ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);}}
 }
 let lastPnl=null,pnMiss=0;
+// a strip whose segments are all hidden still paints its own border as a
+// 2px sliver, so the container is hidden with them (owner 2026-09-17)
+function hdstrip(){
+ const st=document.getElementById('hdstrip');if(!st)return;
+ const on=[...st.children].some(c=>c.style.display!=='none');
+ st.style.display=on?'inline-flex':'none';
+}
 function ui(){
  if(!D)return;
  const pn=document.getElementById('pnl');
@@ -941,27 +959,20 @@ function ui(){
   }
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
-  mb.className='badge'+(S[1]==='agitee'||S[1]==='active'?' busy':'');
-  mb.style.display='';
+  mb.className='seg'+(S[1]==='agitee'||S[1]==='active'?' busy':'');
+  mb.style.display='flex';
   mb.style.color='rgb('+S[2]+')';
-  mb.style.borderColor='rgba('+S[2]+',.45)';
-  mb.style.background='rgba('+S[2]+',.12)';
  }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
- tb.style.display='inline-block';
+ tb.style.display='flex';
  const wound=D.choch?' · choc!':'';
- if(D.trend===1){tb.textContent='▲ haussier'+wound;
-  tb.style.color='#2ecc71';
-  tb.style.borderColor='rgba(46,204,113,.45)';
-  tb.style.background='rgba(46,204,113,.1)';}
- else if(D.trend===-1){tb.textContent='▼ baissier'+wound;
-  tb.style.color='#ff5c5c';
-  tb.style.borderColor='rgba(255,92,92,.45)';
-  tb.style.background='rgba(255,92,92,.1)';}
- else{tb.textContent='‒ neutre'+wound;
-  tb.style.color='#8fa1b3';
-  tb.style.borderColor='rgba(143,161,179,.35)';
-  tb.style.background='rgba(143,161,179,.08)';}
+ // the arrow lives in <i> so it glows like the weather icon
+ if(D.trend===1){tb.innerHTML='<i>▲</i>haussier'+wound;
+  tb.style.color='#2ecc71';}
+ else if(D.trend===-1){tb.innerHTML='<i>▼</i>baissier'+wound;
+  tb.style.color='#ff5c5c';}
+ else{tb.innerHTML='<i>‒</i>neutre'+wound;tb.style.color='#8fa1b3';}
+ hdstrip();
  document.getElementById('aura').className=D.choch?'choc':'';
  const pe=document.getElementById('px');
  if(D.px){
@@ -1466,7 +1477,7 @@ async function mtLoad(){
    const canOpen=MS.auto?(hasPos||hasOrd):true;
    mtopen.style.display=(MT||!canOpen)?'none':'block';
    const ab=document.getElementById('autobadge');
-   if(ab){ab.style.display=MS.auto?'inline-block':'none';}
+   if(ab){ab.style.display=MS.auto?'flex':'none';hdstrip();}
    return;}
   mtopen.style.display='none';
  }catch(e){MSerr='Reseau indisponible.';}
