@@ -249,3 +249,26 @@ candle**, and the count drops (13 to 6 at the time of the fix) because the
 swings that only existed in filtered-out noise no longer produce one.
 The engine's own bookkeeping (hi_i/lo_i/hi_v/lo_v) still runs on raw, so
 break detection is unchanged - only where the dot is drawn moved.
+
+## Correction 2026-09-17 — the opposite candle must be VISIBLE too
+Owner: "a dot is always sitting between a previous high and a new high
+separated by at least one opposite candle."
+
+The engine already demanded that of the RAW span. It did not demand it of
+the drawn candles, so after snapping, a dot could land inside a run that
+shows no pullback at all on this chart. `_snap_dot()` now requires at least
+one opposite-colour candle among the visible candidates, and draws nothing
+otherwise.
+
+Full audit (`dot_audit.py`), 135 confirmed breaks in the internal window:
+
+| | |
+|---|---|
+| dots drawn | 65 |
+| suppressed (no visible swing, or no visible pullback) | 70 |
+| drawn dots satisfying the complete rule | **65 / 65** |
+
+The complete rule being checked: the visible span between the two highs
+contains at least one opposite candle, and the dot sits on that span's
+extreme. Roughly half of all breaks now produce no dot, which is correct -
+they happen inside noise the chart does not show.

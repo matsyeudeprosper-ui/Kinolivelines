@@ -61,6 +61,13 @@ def _snap_dot(snap, span, kind):
         # candle would put the dot OUTSIDE its own span, at a price that is
         # not the span's extreme - so no dot is drawn at all.
         return None
+    # Owner 2026-09-17: "a dot is always sitting between a previous high and
+    # a new high separated by at least one opposite candle." The engine
+    # already demands that of the RAW span; demand it of the VISIBLE span
+    # too, or a dot can land in a run of candles that shows no pullback at
+    # all on this chart.
+    if not any(k[5] == -kind for k in cand):
+        return None
     if kind == 1:
         k = min(cand, key=lambda x: x[3])
         return [k[0], k[3], 1]
