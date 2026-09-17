@@ -33,7 +33,20 @@ So the threshold moved from 1.2× to **1.0×**, where the measurement puts it.
 The 1.2 came from the main badge and had never been tested here. Only the bad
 side is flagged; the good side reads a neutral "normal".
 
-## Spread: kept, but reframed
+## Spread: REMOVED 2026-09-17
+The owner: "we should remove the spread because it doesn't help the météo."
+Correct. The card asks one question - trade now or not - and the spread
+cannot answer it, because whether a fixed cost hurts depends on the stop
+distance and the card has no access to the stop. It was the only figure on
+there with no bearing on the decision.
+
+It survives where it belongs: the trade panel on the chart, which shows the
+cost and the stop together, and the bot's own spread-zone veto.
+
+The freed space promotes the two brakes to an accented top row, with the two
+context figures plain underneath.
+
+### (superseded) Spread: kept, but reframed
 No historical spread is stored, so it can never be tested as a filter on past
 trades. It is however a real cost charged on every entry, and the bot has a
 spread-zone veto of its own. It stays on the card labelled "coût pour

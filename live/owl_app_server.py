@@ -1461,49 +1461,35 @@ function render(d){
     orb=S[0]; ti=S[1]; ln=S[3];
     cls=(!aw)?'mx-sleep':(nerv_bad?'mx-cloud'
          :(k==='ready'?'mx-fish':'mx-sun'));
+    // Measured on aligned internal trades, both window anchors: ABOVE its
+    // own daily norm is worse either way. Below 1.0 is not reliably good,
+    // so the break sits at 1.0 and only the bad side is flagged.
+    const vw=rv>1.0?['agité','#e8c55a']:['normal','#cfe3f5'];
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-    const stat=(l,v,c)=>'<div style="min-width:0;padding:8px 10px;'+
-     'border-radius:11px;background:rgba(255,255,255,.04);'+
-     'border:1px solid rgba(255,255,255,.07)">'+
-     '<div style="'+NW+'font-size:.58rem;color:#7f93a8;'+
-     'text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
+    // Owner 2026-09-17: the spread is gone. It is a cost judged against the
+    // stop, and this card cannot know the stop - it answered a different
+    // question. The space goes to the two figures that actually decide.
+    // Top row = the two brakes, accented. Bottom row = context, plain.
+    const cell=(l,v,c,acc)=>'<div style="min-width:0;padding:8px 10px;'+
+     'border-radius:11px;background:rgba('+(acc?'185,140,255,.10'
+      :'255,255,255,.04')+');border:1px solid rgba('+
+     (acc?'185,140,255,.30':'255,255,255,.07')+')">'+
+     '<div style="'+NW+'font-size:.58rem;color:'+(acc?'#b98cff':'#7f93a8')+
+     ';text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
      '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
      (c||'#cfe3f5')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
     const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
     const ttxt=ms2.trend===1?'▲ hausse'
      :(ms2.trend===-1?'▼ baisse':'—');
-    chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 12px;'+
-     'border-radius:11px;background:rgba(185,140,255,'+(aw?'.12':'.05')+');'+
-     'border:1px solid rgba(185,140,255,'+(aw?'.35':'.14')+');'+
-     'display:flex;align-items:baseline;gap:10px">'+
-     '<span style="'+NW+'flex:1;font-size:.6rem;color:#b98cff;'+
-     'text-transform:uppercase;letter-spacing:.08em">'+
-     'petits mouvements</span>'+
-     '<b style="'+NW+'font-size:1.15rem;font-variant-numeric:tabular-nums;'+
-     'color:'+(aw?'#cfb3ff':'#6f8299')+'">'+nb+'&thinsp;/&thinsp;1h</b>'+
-     '</div>');
-    chips.push(stat('grands mouvements',mv+'&thinsp;/&thinsp;2h',
-     mv===0?'#6f8299':'#cfe3f5'));
-    chips.push(stat('sens',ttxt,tcol));
-    // A count over a window explains itself; a bare multiplier and a
-    // dollar figure do not. Each gets its reference: the label says what it
-    // is compared WITH, the value carries a plain word (owner 2026-09-17).
-    // Measured on aligned internal trades, both window anchors: ABOVE its
-    // own daily norm is worse either way (1.0-1.2x gives -0.341/-0.235 and
-    // >1.2x gives -0.082/-0.100). Below 1.0 is not reliably good, so the
-    // break sits at 1.0 and only the bad side is flagged. The old 1.2
-    // threshold was inherited from the main badge, not measured.
-    const vw=rv>1.0?['agité','#e8c55a']:['normal','#cfe3f5'];
-    chips.push(stat('nervosité vs 24 h',
-     rv.toFixed(1)+'× '+vw[0], vw[1]));
-    if(ms2.spread){
-     const sp=Number(ms2.spread);
-     const sw=sp>12?['élevé','#ff9678']
-             :(sp<=8?['faible','#8df0bb']:['normal','#cfe3f5']);
-     // this one is a COST you pay, not a signal: no historical spread is
-     // stored so it has never been tested as a filter. Labelled as a cost.
-     chips.push(stat('coût pour entrer','$'+sp.toFixed(0)+' '+sw[0], sw[1]));
-    }
+    // the two brakes first
+    chips.push(cell('petits mouvements',nb+'&thinsp;/&thinsp;1h',
+     aw?'#cfb3ff':'#6f8299',true));
+    chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
+     vw[1],true));
+    // then the context
+    chips.push(cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
+     mv===0?'#6f8299':'#cfe3f5',false));
+    chips.push(cell('sens',ttxt,tcol,false));
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
