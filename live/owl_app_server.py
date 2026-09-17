@@ -1465,14 +1465,28 @@ function render(d){
               forming:['⏳ en formation','#8fa1b3'],
               none:['— rien à trader','#6f8299']};
     const is_=IS[ms2.int_state||'none']||IS.none;
-    chips.push('<div style="grid-column:1/-1;min-width:0;padding:8px 10px;'+
-     'border-radius:11px;background:rgba(185,140,255,.07);'+
-     'border:1px solid rgba(185,140,255,.2)">'+
-     '<div style="'+NW+'font-size:.58rem;color:#b98cff;'+
-     'text-transform:uppercase;letter-spacing:.08em">'+
-     'structure interne</div>'+
-     '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
-     is_[1]+'">'+is_[0]+'</b></div>');
+    // The gate. Measured over 42 days: at least one internal break in the
+    // last hour gives 63% wins and +0.133 R; none gives 46% and -0.167 R
+    // with both halves agreeing. So the gate leads, the state follows.
+    const nb=ms2.int_brk_1h||0, aw=nb>=1;
+    chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 11px;'+
+     'border-radius:11px;background:rgba(185,140,255,'+(aw?'.10':'.05')+');'+
+     'border:1px solid rgba(185,140,255,'+(aw?'.32':'.14')+')">'+
+     '<div style="display:flex;align-items:baseline;gap:7px">'+
+      '<span style="'+NW+'flex:1;font-size:.58rem;color:#b98cff;'+
+      'text-transform:uppercase;letter-spacing:.08em">'+
+      'structure interne</span>'+
+      '<b style="'+NW+'font-size:.82rem;font-variant-numeric:tabular-nums;'+
+      'color:'+(aw?'#cfb3ff':'#6f8299')+'">'+nb+'&thinsp;/&thinsp;1h</b>'+
+     '</div>'+
+     '<b style="display:block;'+NW+'font-size:1rem;margin-top:3px;color:'+
+     (aw?is_[1]:'#6f8299')+'">'+
+     (aw?is_[0]:(nb===0?'💤 aucune cassure depuis 1 h':is_[0]))+'</b>'+
+     '<div style="'+NW+'font-size:.64rem;margin-top:3px;color:'+
+     (aw?'#8fa1b3':'#7a6a4a')+'">'+
+     (aw?'Le moment est ouvert.'
+        :'⚠️ Mesure : sans cassure recente, 46% de reussite au lieu de 63%.')+
+     '</div></div>');
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
@@ -2424,7 +2438,8 @@ def user_stats(u):
                         _cj = json.load(open(os.path.join(
                             DIR, "owl_chart_btc.json")))
                         for _k in ("moves_2h", "vol_now", "vol_ref",
-                                   "spread", "int_state", "int_trend"):
+                                   "spread", "int_state", "int_trend",
+                                   "int_brk_1h", "int_awake"):
                             if _cj.get(_k) is not None:
                                 d["meteo_struct"][_k] = _cj[_k]
                     except Exception:

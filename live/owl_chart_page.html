@@ -897,8 +897,16 @@ function ui(){
   // (its window stops being reset), so this is the half that matters for a
   // half-manual trade. Measured over 13.4 days: a break in sight 7% of the
   // time, a flip armed 9%, forming 5% (review/int_state_dist.py).
-  const IS={ready:'· int 🎯 cassure',flip:'· int ⚖️ bascule'};
-  if(IS[D.int_state])txt+=' '+IS[D.int_state];
+  // The internal gate, in the SAME shape as the main one: a count over a
+  // window. Measured: with at least one internal break in the last hour,
+  // 63% win and +0.133 R; with none, 46% and -0.167 R with both halves of
+  // the sample agreeing (review/INTERNAL_GATE.md).
+  if(D.int_brk_1h!==undefined&&D.int_trend){
+   const nb=D.int_brk_1h,aw=nb>=1;
+   const W={ready:'prete',flip:'bascule',forming:'formation',
+            none:'—'}[D.int_state]||'—';
+   txt+=' · int '+(aw?'⚡':'💤')+' '+nb+'/1h'+(aw?' '+W:'');
+  }
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
   mb.className='badge'+(S[1]==='agitee'||S[1]==='active'?' busy':'');

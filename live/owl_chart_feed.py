@@ -141,7 +141,7 @@ def swings(kept):
     return dots
 
 
-def engine(kept, snap=None):
+def engine(kept, snap=None, brk_out=None):
     """`snap`: when the engine runs on RAW candles (the internal structure)
     the swing it finds often sits on a minute the silence filter removed, so
     the dot floats between drawn candles at a price no visible candle
@@ -220,11 +220,15 @@ def engine(kept, snap=None):
                     choch = 0
                     if vis:
                         dots.append(nd)
+                    if brk_out is not None:
+                        brk_out.append((t, 1))
                     prot_lo = nd
                     up_st = dn_st = 0
                 elif trend == 1:
                     if vis:
                         dots.append(nd)
+                    if brk_out is not None:
+                        brk_out.append((t, 1))
                     prot_lo = nd
                     choch = 0    # new BOS up repairs a pending choc
                 elif trend == 0:
@@ -260,11 +264,15 @@ def engine(kept, snap=None):
                     choch = 0
                     if vis:
                         dots.append(nd)
+                    if brk_out is not None:
+                        brk_out.append((t, -1))
                     prot_hi = nd
                     up_st = dn_st = 0
                 elif trend == -1:
                     if vis:
                         dots.append(nd)
+                    if brk_out is not None:
+                        brk_out.append((t, -1))
                     prot_hi = nd
                     choch = 0    # new BOS down repairs a pending choc
                 elif trend == 0:
@@ -444,6 +452,7 @@ def main():
                 i_flp = i_flp_t = None
                 i_nxt = i_inv = i_nxt_t = i_inv_t = None
                 i_ready = i_fready = False
+                i_brk1h = 0
                 _since = inv_t if inv_t else (marks[-1][0] if marks else None)
                 # Owner 2026-09-16: "the internal structure is BOS, CHoCH
                 # that forms in between the space of a confirmed BOS and the
@@ -474,14 +483,19 @@ def main():
                     # 200 is the best of them (review/window_sweep.py).
                     _inner = [k for k in kept if k[0] > _t0][-INT_MAX:]
                     if len(_inner) >= 5:
+                        _ibrk = []
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                         i_flp, i_flp_t, i_fdir) = engine(_inner)
+                         i_flp, i_flp_t, i_fdir) = engine(
+                            _inner, brk_out=_ibrk)
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
                         # candle that set it. Before that the "next BOS" is
                         # just the current extreme and says nothing.
+                        _nw = int(R[-1]["time"])
+                        i_brk1h = sum(1 for b in _ibrk
+                                      if b[0] > _nw - 3600)
                         i_ready = pullback_since(kept, i_nxt_t, i_dir)
                         i_fready = pullback_since(kept, i_flp_t, i_fdir)
                 # user 2026-09-08 (screenshot): NEVER show the
@@ -537,6 +551,8 @@ def main():
                      "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
                      "int_flip_bos_ready": i_fready,
                      "bos_ready": _ready,
+                     "int_brk_1h": i_brk1h,
+                     "int_awake": i_brk1h >= 1,
                      "int_state": (
                          "none" if not i_trend else
                          ("flip" if (i_choch and i_choch != i_trend) else
