@@ -1432,23 +1432,21 @@ function render(d){
     const rv=(ms2.vol_now&&ms2.vol_ref)
      ?ms2.vol_now/Math.max(ms2.vol_ref,1):1;
     const nb=ms2.int_brk_1h||0, aw=nb>=1;
-    const ST={ready:['🎯','Cassure en vue','#8df0bb',
-       'La structure interne a cassé récemment et un repli est confirmé.'],
-      flip:['⚖️','Bascule armée','#e8c55a',
-       'Un CHoCH interne est tombé. Attends la cassure qui le confirme.'],
-      forming:['⏳','Structure en formation','#8fa1b3',
-       'La structure interne se construit. Rien de décidable encore.'],
-      none:['💤','Rien à trader','#6f8299',
-       'Pas de structure interne exploitable pour le moment.']};
+    // Owner 2026-09-17: written for someone who has never heard of a
+    // "structure" or a "break". Plain words, one short line, no jargon.
+    // The long version belongs in the info sheet, not on the card.
+    const ST={
+      ready:['🎯','C’est le moment','#8df0bb',
+             'Le marché bouge. À toi de décider.'],
+      flip:['⚖️','Ça peut tourner','#e8c55a',
+            'Le sens change peut-être. Attends que ce soit confirmé.'],
+      forming:['⏳','Ça se prépare','#8fa1b3',
+               'Trop tôt. Laisse le marché se dessiner.'],
+      none:['💤','Rien à faire','#6f8299',
+            'Le marché est calme. Les trades marchent moins bien comme ça.']};
     const k=aw?(ms2.int_state||'none'):'none';
     const S=ST[k]||ST.none;
-    orb=S[0];
-    ti=aw?S[1]:'Rien à trader';
-    ln=aw?S[3]
-      :('Aucune cassure interne depuis 1 h. Sans cassure récente les '+
-        'trades ont tendance à moins bien marcher — ce n’est pas une '+
-        'mesure sûre, mais c’est le seul signal qui a tenu à la '+
-        'vérification.');
+    orb=S[0]; ti=S[1]; ln=S[3];
     cls=aw?(k==='ready'?'mx-fish':'mx-sun'):'mx-sleep';
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     const stat=(l,v,c)=>'<div style="min-width:0;padding:8px 10px;'+
@@ -1459,25 +1457,24 @@ function render(d){
      '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
      (c||'#cfe3f5')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
     const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
-    const ttxt=ms2.trend===1?'▲ haussière'
-     :(ms2.trend===-1?'▼ baissière':'—');
-    // the gate, full width, coloured by whether it is open
+    const ttxt=ms2.trend===1?'▲ hausse'
+     :(ms2.trend===-1?'▼ baisse':'—');
     chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 12px;'+
      'border-radius:11px;background:rgba(185,140,255,'+(aw?'.12':'.05')+');'+
      'border:1px solid rgba(185,140,255,'+(aw?'.35':'.14')+');'+
      'display:flex;align-items:baseline;gap:10px">'+
      '<span style="'+NW+'flex:1;font-size:.6rem;color:#b98cff;'+
      'text-transform:uppercase;letter-spacing:.08em">'+
-     'cassures internes</span>'+
+     'petits mouvements</span>'+
      '<b style="'+NW+'font-size:1.15rem;font-variant-numeric:tabular-nums;'+
      'color:'+(aw?'#cfb3ff':'#6f8299')+'">'+nb+'&thinsp;/&thinsp;1h</b>'+
      '</div>');
-    chips.push(stat('principale',mv+'&thinsp;/&thinsp;2h',
+    chips.push(stat('grands mouvements',mv+'&thinsp;/&thinsp;2h',
      mv===0?'#6f8299':'#cfe3f5'));
-    chips.push(stat('structure',ttxt,tcol));
-    chips.push(stat('volatilité',rv.toFixed(1)+'×',
+    chips.push(stat('sens',ttxt,tcol));
+    chips.push(stat('nervosité',rv.toFixed(1)+'×',
      rv>=1.2?'#e8c55a':'#cfe3f5'));
-    if(ms2.spread)chips.push(stat('spread',
+    if(ms2.spread)chips.push(stat('coût d’entrée',
      '$'+Number(ms2.spread).toFixed(0),
      ms2.spread>12?'#ff9678':'#cfe3f5'));
    }
@@ -1737,11 +1734,9 @@ function render(d){
        '<div style="font-size:.72rem;color:#8fa1b3;margin-top:5px;'+
         'line-height:1.45">'+
         (fillN>0
-         ? 'Risque $'+fm(stake)+' &middot; un gain enl&egrave;ve '+
-           '<b style="color:#8df0bb">$'+fm(clears)+'</b> de '+
-           'l&#39;ardoise'
-         : 'Taille normale. Encore $'+fm(stillNeed)+' de '+
-           'r&eacute;serve pour charger un lot de plus.')+
+         ? 'Risque $'+fm(stake)+' &middot; un gain en enl&egrave;ve '+
+           '<b style="color:#8df0bb">$'+fm(clears)+'</b>'
+         : 'Taille normale. Encore $'+fm(stillNeed)+' pour miser plus.')+
        '</div>'+
       '</div>';
      lw.style.display='none';ls2.innerHTML='';

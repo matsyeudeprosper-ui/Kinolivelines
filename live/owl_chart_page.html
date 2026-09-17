@@ -684,7 +684,7 @@ function draw(){
   if(mrange>0&&room>mrange*0.08){
    ctx.save();
    ctx.font='bold 9px system-ui';
-   const t0='pas de structure interne';
+   const t0='pas de petite structure';
    const w0=ctx.measureText(t0).width+14;
    const y0=px(D.px)-34;
    if(y0>TOPP+10&&y0<TOPP+PLOT-10){
@@ -1090,7 +1090,7 @@ function mtCalc(){
    bad='entree trop pres du marche';
  }
  if(!bad&&(against||inner)&&MS.counter_ok===false)
-  bad=(against?'contre-tendance':'structure interne')+
+  bad=(against?'à contre-sens':'petite structure')+
       ' impossible a cette taille de lot';
  if(!bad)bad=(d===0?'mets le SL et le TP de part et d’autre de l’entree'
       :(dist<=(MS.s_min_dist||10)?'stop trop proche':''));
@@ -1136,14 +1136,14 @@ function mtRender(){
    ?' <span style="color:#e8c55a">bascule '+
     (D.int_choch===1?'&#9650;':'&#9660;')+'</span>':'')+'</span>';
  const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
- if(against)p2+=sep+'<span style="color:#e8c55a">&#9888;&#65039; contre-tendance</span>';
- else if(c.inner)p2+=sep+'<span style="color:#b98cff">structure interne</span>';
+ if(against)p2+=sep+'<span style="color:#e8c55a">&#9888;&#65039; à contre-sens</span>';
+ else if(c.inner)p2+=sep+'<span style="color:#b98cff">petite structure</span>';
  if(c.half)p2+=' <span style="color:#cfe3f5">demi-lot</span>';
  if(MT.entry&&!c.edit)p2+=sep+'sur cloture M1';
  if(pnd&&!MT.editPend&&!c.edit)p2+=sep+
   '<span style="color:#e8c55a">'+pnd.kind+' @ '+pnd.e.toFixed(0)+' en cours</span>';
- p2+=sep+'ardoise $'+(MS.debt||0).toFixed(2)+
-  ' &middot; bocal <span style="color:#8df0bb">$'+
+ p2+=sep+'à rattraper $'+(MS.debt||0).toFixed(2)+
+  ' &middot; réserve <span style="color:#8df0bb">$'+
   (MS.chest||0).toFixed(2)+'</span>';
  if(c.bad)p2=' <span style="color:#ff9678">&#9888;&#65039; '+c.bad+'</span>';
  l2.innerHTML=p2;
