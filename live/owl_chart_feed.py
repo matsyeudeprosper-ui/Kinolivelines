@@ -163,10 +163,13 @@ def engine(kept):
                 elif trend == 0:
                     if last_lo is not None and m[3] > last_lo:
                         up_st += 1
-                        dots.append(nd)
+                        # owner 2026-09-16: a dot means a confirmed break.
+                        # While counting higher lows there is no break yet,
+                        # so nothing is marked until the trend is set.
                         if up_st >= 2:
                             trend = 1
                             prot_lo = nd
+                            dots.append(nd)
                             dn_st = 0
                     else:
                         up_st = 0
@@ -198,10 +201,10 @@ def engine(kept):
                 elif trend == 0:
                     if last_hi is not None and m[2] < last_hi:
                         dn_st += 1
-                        dots.append(nd)
                         if dn_st >= 2:
                             trend = -1
                             prot_hi = nd
+                            dots.append(nd)
                             up_st = 0
                     else:
                         dn_st = 0

@@ -156,3 +156,32 @@ trade correct - only to stop mirroring and start reading the structure.
 The Inverser button turns purple and names the level whenever the other side
 has a confirmed anticipated break, so the opportunity is visible without
 opening anything.
+
+## Correction 2026-09-16 (3) — a dot means a confirmed break, and only that
+Owner: "a dot should only be seen after a confirmed BOS (at the low of it if
+bullish, at the high of it if bearish)."
+
+Audited every dot in the internal window (`dot_origin.py`, which tags each
+append site in the real engine source rather than a copy):
+
+| origin | before | after |
+|---|---|---|
+| continuation break | 78 | 78 |
+| flip break | 26 | 27 |
+| **trend-0 bootstrap, no break at all** | **3** | **0** |
+
+So the rule was already honoured for 104 of 107 dots. The three strays came
+from the bootstrap, which counts higher lows / lower highs to establish a
+first direction and was marking each step. It now marks only the moment the
+trend is actually set.
+
+**The visual problem was the bigger one.** A CHoCH event mark was drawn as a
+small circle, identical to a dot, so every event read as another dot. Three
+shapes now, three meanings:
+
+- **disc** = a dot, a confirmed break's protected extreme
+- **diamond** = a CHoCH happened here
+- **triangle** = a BOS happened here
+
+And the count is genuinely high because raw M1 breaks often: 78 continuation
+breaks in this window. The chart draws only the last 6 dots.

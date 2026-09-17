@@ -685,9 +685,9 @@ function draw(){
    (D.int_dots||[]).slice(-6).forEach(dd=>{
     const x=xnear(dd[0]);if(x===undefined)return;
     const y=px(dd[1]);if(y<TOPP||y>TOPP+PLOT)return;
-    ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=ic;ctx.lineWidth=1.2;
-    ctx.shadowColor=ic;ctx.shadowBlur=4;
-    ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();
+    ctx.save();ctx.globalAlpha=.7;ctx.fillStyle=ic;
+    ctx.shadowColor=ic;ctx.shadowBlur=5;
+    ctx.beginPath();ctx.arc(x,y,2.4,0,6.3);ctx.fill();
     ctx.shadowBlur=0;ctx.restore();});
    // the internal protected dot and its line: same vocabulary as the
    // main structure (glowing dot + dashed line + diamond) but smaller
@@ -711,7 +711,10 @@ function draw(){
     if(isC)ctx.setLineDash([3,3]);
     ctx.beginPath();ctx.moveTo(x-13,y);ctx.lineTo(x+13,y);ctx.stroke();
     ctx.setLineDash([]);
-    if(isC){ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,2.6,0,6.3);ctx.stroke();}
+    if(isC){ctx.lineWidth=1;ctx.beginPath();
+     ctx.moveTo(x,y-3.6);ctx.lineTo(x+3.6,y);
+     ctx.lineTo(x,y+3.6);ctx.lineTo(x-3.6,y);
+     ctx.closePath();ctx.stroke();}
     else{const sg=3.4,dy3=(m[3]===1)?-5:5;
      ctx.fillStyle=mc;ctx.beginPath();
      ctx.moveTo(x,y+dy3+(m[3]===1?-sg:sg));
