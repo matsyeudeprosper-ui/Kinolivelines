@@ -486,17 +486,18 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  position:relative;overflow:hidden;text-align:left;padding:0;
  border-radius:18px">
  <div id="mx-wave"></div>
- <div style="position:relative;display:flex;align-items:center;
-  gap:14px;padding:15px 16px 12px">
-  <div id="mx-orb">&#9925;</div>
-  <div style="flex:1;min-width:0">
-   <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
-    ...</b>
-   <div id="mx-line" style="font-size:.8rem;color:#8fa1b3;
-    line-height:1.45;margin-top:2px"></div>
-   <div id="mx-chips" style="display:flex;gap:6px;flex-wrap:wrap;
-    margin-top:8px"></div>
+ <div style="position:relative;padding:15px 16px 13px">
+  <div style="display:flex;align-items:center;gap:13px">
+   <div id="mx-orb">&#9925;</div>
+   <div style="flex:1;min-width:0">
+    <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
+     ...</b>
+    <div id="mx-line" style="font-size:.78rem;color:#8fa1b3;
+     line-height:1.4;margin-top:2px"></div>
+   </div>
   </div>
+  <div id="mx-chips" style="display:grid;
+   grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
  <div id="st" style="position:relative;margin:0 16px;
   border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
@@ -1438,23 +1439,23 @@ function render(d){
     else S=['☁️','Calme','mx-sun',
      'La structure bouge un peu, sans excès.'];
     orb=S[0];ti=S[1];ln=S[3];cls=S[2];
-    const stat=(v,l,c)=>'<div style="flex:1;min-width:0;text-align:center;'+
-     'padding:7px 4px;border-radius:10px;background:rgba(255,255,255,.04);'+
+    const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    const stat=(v,l,c)=>'<div style="min-width:0;'+
+     'padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.04);'+
      'border:1px solid rgba(255,255,255,.07)">'+
-     '<b style="display:block;font-size:.95rem;color:'+(c||'#cfe3f5')+';'+
-     'font-variant-numeric:tabular-nums">'+v+'</b>'+
-     '<span style="font-size:.6rem;color:#7f93a8;text-transform:uppercase;'+
-     'letter-spacing:.07em">'+l+'</span></div>';
+     '<div style="'+NW+'font-size:.58rem;color:#7f93a8;'+
+     'text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
+     '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
+     (c||'#cfe3f5')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
     const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
     const ttxt=ms2.trend===1?'▲ haussière'
      :(ms2.trend===-1?'▼ baissière':'—');
-    chips.push('<div style="display:flex;gap:6px;width:100%">'+
-     stat(mv+'&thinsp;/&thinsp;2h','retournements')+
-     stat(rv.toFixed(1)+'×','volatilité',rv>=1.2?'#e8c55a':'#cfe3f5')+
-     stat(ttxt,'structure',tcol)+
-     (ms2.spread?stat('$'+Number(ms2.spread).toFixed(0),'spread',
-      ms2.spread>12?'#ff9678':'#cfe3f5'):'')+
-     '</div>');
+    chips.push(stat(mv+'&thinsp;/&thinsp;2h','retournements'));
+    chips.push(stat(rv.toFixed(1)+'×','volatilité',
+     rv>=1.2?'#e8c55a':'#cfe3f5'));
+    chips.push(stat(ttxt,'structure',tcol));
+    if(ms2.spread)chips.push(stat('$'+Number(ms2.spread).toFixed(0),
+     'spread',ms2.spread>12?'#ff9678':'#cfe3f5'));
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
@@ -1482,7 +1483,8 @@ function render(d){
    setH(document.getElementById('mx-line'),ln);
    setH(document.getElementById('mx-chips'),
     chips.map(c=>c.indexOf('<div')===0?c
-     :'<span class="mxc">'+c+'</span>').join(''));
+     :'<div style="grid-column:1/-1"><span class="mxc">'+c+
+      '</span></div>').join(''));
   }
   if(d.ftest){
    const ft=d.ftest;
