@@ -1475,14 +1475,20 @@ function render(d){
     // A count over a window explains itself; a bare multiplier and a
     // dollar figure do not. Each gets its reference: the label says what it
     // is compared WITH, the value carries a plain word (owner 2026-09-17).
-    const vw=rv>=1.2?['agité','#e8c55a']
-            :(rv<=0.8?['calme','#8fa1b3']:['normal','#cfe3f5']);
+    // Measured on aligned internal trades, both window anchors: ABOVE its
+    // own daily norm is worse either way (1.0-1.2x gives -0.341/-0.235 and
+    // >1.2x gives -0.082/-0.100). Below 1.0 is not reliably good, so the
+    // break sits at 1.0 and only the bad side is flagged. The old 1.2
+    // threshold was inherited from the main badge, not measured.
+    const vw=rv>1.0?['agité','#e8c55a']:['normal','#cfe3f5'];
     chips.push(stat('nervosité vs 24 h',
      rv.toFixed(1)+'× '+vw[0], vw[1]));
     if(ms2.spread){
      const sp=Number(ms2.spread);
      const sw=sp>12?['élevé','#ff9678']
              :(sp<=8?['faible','#8df0bb']:['normal','#cfe3f5']);
+     // this one is a COST you pay, not a signal: no historical spread is
+     // stored so it has never been tested as a filter. Labelled as a cost.
      chips.push(stat('coût pour entrer','$'+sp.toFixed(0)+' '+sw[0], sw[1]));
     }
    }
