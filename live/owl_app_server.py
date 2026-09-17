@@ -693,7 +693,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="panel" id="rob-card" style="display:none;padding:4px 14px">
  <div class="srow" id="pausebtn">
   <div class="sic" id="pause-ic">&#9208;&#65039;</div>
-  <div style="flex:1"><b id="pause-lbl">Mettre le robot en pause</b>
+  <div style="flex:1"><b id="pause-lbl">Mode manuel</b>
    <div class="ssub" id="pause-sub"></div></div>
   <span class="chv" id="pause-chv">&#8250;</span>
  </div>
@@ -1563,109 +1563,12 @@ function render(d){
    document.getElementById('led-hd').style.display=
     d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
-    if(d.trading_paused){
-     const am=d.ledger.chest;
-     let rk=50,rn=0,rs=0;
-     (d.trades||[]).forEach(x=>{
-      if(x.p<-0.005&&x.lot>0){rs+=Math.abs(x.p)/x.lot;rn++;}});
-     if(rn>=3)rk=rs/rn;
-     const bc=rk*0.01;
-     const nb=Math.floor(am/bc+1e-9);
-     const fr=(am-nb*bc)/bc;
-     const ml=nb*0.01;
-     const SL=Math.max(4,Math.min(10,
-      Math.floor((d.ledger.cap||5)/bc+1e-9)));
-     let pills='';
-     for(let i=0;i<SL;i++){
-      const on=i<nb;
-      const g=(!on&&i===nb&&fr>0.02)
-       ?'background:linear-gradient(90deg,#e8c55a '+
-        (fr*100).toFixed(0)+'%,rgba(255,255,255,.07) '+
-        (fr*100).toFixed(0)+'%);'
-       :'background:'+(on?'#e8c55a':'rgba(255,255,255,.07)')+';';
-      pills+='<span data-bp="'+i+'" style="display:inline-block;'+
-       'width:13px;height:22px;border-radius:4px;margin:0 2px;'+g+
-       (on?'box-shadow:0 0 6px rgba(232,197,90,.45);':'')+
-       'transition:transform .3s"></span>';
-     }
-     lt2.innerHTML=
-      '<div style="display:grid;grid-template-columns:1fr 1fr;'+
-       'gap:8px">'+
-       '<div style="background:rgba(255,92,92,.08);border:1px '+
-        'solid rgba(255,92,92,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#ff9c9c;'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         '&Agrave; rattraper</div>'+
-        '<b style="color:#ffb3b3;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-debt">'+
-         d.ledger.debt.toFixed(2)+'</span></b></div>'+
-       '<div style="background:rgba(232,197,90,.07);border:1px '+
-        'solid rgba(232,197,90,.22);border-radius:12px;'+
-        'padding:8px 10px;text-align:center">'+
-        '<div style="font-size:.62rem;color:#e8c55a;'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         'Gains de c&ocirc;t&eacute;</div>'+
-        '<b style="color:#f0d788;font-size:1.05rem;'+
-         'font-variant-numeric:tabular-nums">$<span id="rz-ammo">'+
-         am.toFixed(2)+'</span></b></div>'+
-      '</div>'+
-      '<div style="text-align:center;margin:12px 0 4px">'+
-       '<div style="font-size:.62rem;color:#7fb3e0;'+
-        'text-transform:uppercase;letter-spacing:.08em">'+
-        'Vous pouvez trader jusqu&#39;&agrave;</div>'+
-       '<b style="color:#7fd4a0;font-size:2.1rem;'+
-        'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
-        (ml>=0.01?ml.toFixed(2):'0.00')+'</span></b>'+
-       '<span style="color:#8fa1b3;font-size:.85rem"> lot</span>'+
-      '</div>'+
-      '<div style="text-align:center;margin-top:4px">'+pills+
-       (nb>SL?'<span style="color:#e8c55a;font-size:.78rem"> '+
-        '&times;'+nb+'</span>':'')+'</div>'+
-      '<div style="text-align:center;font-size:.68rem;'+
-       'color:#5f7185;margin-top:4px">'+
-       (nb>0
-        ?nb+' tir'+(nb>1?'s':'')+' pr&ecirc;t'+(nb>1?'s':'')+
-         ' &middot; 1 tir = 0.01 lot'
-        :'Aucun tir pr&ecirc;t &mdash; chaque gain remplit la '+
-         'r&eacute;serve')+'</div>';
-     lw.style.display='none';ls2.innerHTML='';
-     const full=nb>=SL;
-     lc.style.transition='box-shadow .8s,border-color .8s';
-     lc.style.boxShadow=full?'0 0 24px rgba(232,197,90,.3)':'';
-     lc.style.borderColor=full?'rgba(232,197,90,.55)':'#23405e';
-     const rz=window._rz||{};
-     const roll=(id,a,b)=>{
-      if(a===undefined||Math.abs(a-b)<0.005)return;
-      const el=lc.querySelector('#'+id);if(!el)return;
-      const t0=performance.now();
-      const st=t=>{const k=Math.min(1,(t-t0)/600);
-       el.textContent=(a+(b-a)*k).toFixed(2);
-       if(k<1)requestAnimationFrame(st);};
-      requestAnimationFrame(st);};
-     const fl=(id,a,b,good)=>{
-      if(a===undefined||Math.abs(a-b)<0.005)return;
-      const el=lc.querySelector('#'+id);if(!el)return;
-      el.style.transition='color .25s';
-      el.style.color=good?'#2ecc71':'#ff5c5c';
-      setTimeout(()=>{el.style.color='';},1100);};
-     roll('rz-debt',rz.d,d.ledger.debt);
-     fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
-     roll('rz-ammo',rz.a,am);
-     fl('rz-ammo',rz.a,am,am>rz.a);
-     roll('rz-lot',rz.m,ml);
-     fl('rz-lot',rz.m,ml,ml>rz.m);
-     window._ledD={mode:'man',debt:d.ledger.debt,chest:am,
-      need:rk*0.01,nl:ml,fill:nb};
-     window._rz={d:d.ledger.debt,a:am,m:ml};
-     if(window._ammoB!==undefined&&nb>window._ammoB&&nb<=SL){
-      setTimeout(()=>{
-       const el=lc.querySelector('[data-bp="'+(nb-1)+'"]');
-       if(el){el.style.transform='scale(1.6)';
-        setTimeout(()=>{el.style.transform='';},450);}},60);
-     }
-     window._ammoB=nb;
-    }else{
+    {
+     // Owner 2026-09-17: ONE design, manual or automatic. There used to be
+     // a second layout for the paused state, and once "paused" came to mean
+     // manual it became the one the owner saw every day - the old magazine
+     // look, not the redesign. The branch is gone.
+
      const am=d.ledger.chest;
      const need=Math.max(d.ledger.need_min||0.01,0.01);
      const bos=!!d.ledger.bos;
@@ -1920,8 +1823,8 @@ function render(d){
    location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
-   ? '&#9208;&#65039; <b>Robot en pause</b> (par vous) &mdash; aucun '+
-     'nouveau trade'
+   ? '&#9995; <b>Mode manuel</b>'+
+     (n>0?' &middot; '+n+' trade'+(n>1?'s':'')+' ouvert'+(n>1?'s':''):'')
    : (n>0
    ? '&#129302; Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
      ' en cours</b>'
