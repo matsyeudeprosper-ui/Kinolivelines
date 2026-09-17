@@ -503,18 +503,27 @@ _pause_last_log = [0.0]
 
 def trading_paused():
     """2026-09-05 user: the account owner can pause the robot from the
-    app (owl_trading_pause.json). Paused = NO new positions of any kind;
-    management of open trades (SL/TP, locks, journaling) continues."""
-    try:
-        if json.load(open(os.path.join(
-                DIR, "owl_trading_pause.json"))).get("paused"):
-            if time.time() - _pause_last_log[0] > 600:
-                _pause_last_log[0] = time.time()
-                say("TRADING PAUSED by the account owner (app switch) "
-                    "- no new positions")
-            return True
-    except Exception:
-        pass
+    app. Paused = NO new positions of any kind; management of open trades
+    (SL/TP, locks, journaling) continues.
+
+    Two files (owner 2026-09-17), same pattern as every other bot:
+      owl_trading_pause.json       = master switch, stops everything
+      owl_trading_pause_kino.json  = THIS account's auto/manual switch
+    This account used to read only the master, which meant its own switch
+    was also a stop-everything button for Valere and the demos.
+    """
+    for f, why in (("owl_trading_pause.json", "master switch"),
+                   ("owl_trading_pause_kino.json", "app switch")):
+        try:
+            if json.load(open(os.path.join(DIR, f),
+                              encoding="utf-8")).get("paused"):
+                if time.time() - _pause_last_log[0] > 600:
+                    _pause_last_log[0] = time.time()
+                    say(f"TRADING PAUSED by the account owner ({why})"
+                        " - no new positions")
+                return True
+        except Exception:
+            pass
     return False
 
 def open_at_market(direction, volume, comment):

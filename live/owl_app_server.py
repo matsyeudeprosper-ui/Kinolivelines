@@ -245,10 +245,23 @@ def is_admin(u):
 MANUAL_MODES = ("manual", "semi")
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
 # sees the row, locked.
-# Owner 2026-09-17: "only this account is allowed to desactive the
-# autotrading" - the live half-manual account. The master keeps its own
-# global switch, which is a different file.
-PAUSE_ALLOWED = ("bos",)
+# Owner 2026-09-17: the accounts whose owner may switch auto <-> manual.
+# "bos" = the live half-manual account. "kino" = the live Pro master,
+# added on the owner's request the same day.
+PAUSE_ALLOWED = ("bos", "kino")
+
+
+def pause_file(uid):
+    """The switch for ONE account.
+
+    Owner 2026-09-17: kino used to write owl_trading_pause.json - the file
+    EVERY bot reads as the master kill-all - so unlocking its switch would
+    have handed the owner a stop-everything button labelled "manual mode",
+    and pausing kino would silently have stopped Valere's real account.
+    Kino now has its own per-account file like everyone else; the master
+    file keeps its kill-all meaning and no card writes it.
+    """
+    return f"owl_trading_pause_{uid}.json"
 
 
 def acct_auto(u):
@@ -261,23 +274,25 @@ def acct_auto(u):
     Same defaults as the settings section: no file means auto, except on the
     accounts allowed to switch, where manual is the safe default.
     """
-    if u is None or not u.get("trade"):
+    if u is None:
         return False
     uid = u.get("id")
-    f = ("owl_trading_pause.json" if uid == "kino"
-         else f"owl_trading_pause_{uid}.json")
+    # the Pro master account trades through owl_manual_bot; its record has
+    # no "trade" flag because it is not a nest member
+    if not u.get("trade") and str(u.get("login")) != str(LOGIN):
+        return False
     try:
-        paused = bool(json.load(open(os.path.join(DIR, f),
+        paused = bool(json.load(open(os.path.join(DIR, pause_file(uid)),
                                      encoding="utf-8"))
                       .get("paused", uid in PAUSE_ALLOWED))
     except Exception:
-        paused = False if uid == "kino" else (uid in PAUSE_ALLOWED)
+        paused = uid in PAUSE_ALLOWED
     if paused:
         return False
-    # the master switch stops everyone
+    # the master file still stops everyone, whoever set it
     try:
-        if uid != "kino" and json.load(open(os.path.join(
-                DIR, "owl_trading_pause.json"), encoding="utf-8")).get("paused"):
+        if json.load(open(os.path.join(DIR, "owl_trading_pause.json"),
+                          encoding="utf-8")).get("paused"):
             return False
     except Exception:
         pass
@@ -2323,10 +2338,11 @@ def user_stats(u):
                 pass
             try:
                 d["trading_paused"] = bool(json.load(open(
-                    os.path.join(DIR, "owl_trading_pause.json")))
-                    .get("paused"))
+                    os.path.join(DIR, pause_file(u["id"])),
+                    encoding="utf-8"))
+                    .get("paused", u["id"] in PAUSE_ALLOWED))
             except Exception:
-                d["trading_paused"] = False
+                d["trading_paused"] = u["id"] in PAUSE_ALLOWED
         # per-account books (2026-09-07): std has its own ledger/
         # fights; family mirrors follow the master's
         _sfx = "_std" if u.get("id") == "std" else ""
@@ -2509,9 +2525,7 @@ def user_stats(u):
                         nd = json.load(open(_ndp))
                     except Exception:
                         nd = {}
-                    _ppf = ("owl_trading_pause.json"
-                            if x.get("id") == "kino"
-                            else f"owl_trading_pause_{x['id']}.json")
+                    _ppf = pause_file(x["id"])
                     try:
                         _pz = bool(json.load(open(os.path.join(
                             DIR, _ppf))).get("paused"))
@@ -3311,8 +3325,7 @@ class H(BaseHTTPRequestHandler):
                                            "err": "no such user"}),
                                "application/json")
                     return
-                _ppf = ("owl_trading_pause.json" if _uid == "kino"
-                        else f"owl_trading_pause_{_uid}.json")
+                _ppf = pause_file(_uid)
                 json.dump({"paused": _on, "by": "master",
                            "t": time.time()},
                           open(os.path.join(DIR, _ppf), "w"))
@@ -3519,9 +3532,7 @@ class H(BaseHTTPRequestHandler):
             # per-user pause file: the main account keeps the global
             # name (the live bot reads it); family bots read
             # owl_trading_pause_<uid>.json (2026-09-05, family real)
-            _pp = ("owl_trading_pause.json"
-                   if str(u.get("login")) == str(LOGIN)
-                   else f"owl_trading_pause_{u['id']}.json")
+            _pp = pause_file(u["id"])
             if _parts[1] == "pause":
                 # the lock is enforced HERE, not only in the UI: a hidden
                 # button is not a permission (owner 2026-09-16)
