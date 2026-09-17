@@ -22,6 +22,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #meteo.busy i{animation:mtp 1.6s ease-in-out infinite}
 @keyframes mtp{0%,100%{opacity:1;transform:scale(1)}
  50%{opacity:.55;transform:scale(1.18)}}
+#trbadge{flex:none}
+#meteo{min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap}
 .badge{font-size:.6rem;color:#7fb3e0;
  background:rgba(127,179,224,.08);
  border:1px solid rgba(127,179,224,.22);border-radius:99px;
@@ -82,8 +85,13 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <a id="back" href="#">&#8592;</a>
 <h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span>
-<span id="hdrow"><span class="badge" id="trbadge"
- style="display:none"></span><span class="badge" id="meteo"
+<span id="hdrow" style="display:flex;align-items:center;gap:6px;
+ min-width:0;overflow:hidden"><span class="badge" id="trbadge"
+ style="display:none"></span><span class="badge" id="autobadge" style="display:none;color:#8df0bb;
+ border-color:rgba(141,240,187,.45);background:rgba(141,240,187,.12);
+ padding:3px 7px;flex:none"
+ title="Mode automatique : le robot gere les entrees">&#129302;</span><span
+ class="badge" id="meteo"
  style="display:none"></span></span>
 </div>
 <span id="px"></span>
@@ -910,7 +918,9 @@ function ui(){
    :((mv>=3&&rv>=1.2)?['⚡️','agitee','255,150,120']
    :((mv>=2||rv>=1.2)?['🔥','active','141,240,187']
    :['☁️','calme','143,161,179']));
-  let txt=mv+'/2h · '+S[1]+((mv===0&&rv>=1.2)?' · volatile':'');
+  // the main weather keeps its icon and count; its word is dropped so the
+  // row fits beside the trend and auto markers (owner 2026-09-17)
+  let txt=mv+'/2h'+((mv===0&&rv>=1.2)?' · volatile':'');
   // the INTERNAL state, appended only when it has something to say. The
   // main gauge goes quiet precisely when the internal structure fills out
   // (its window stops being reset), so this is the half that matters for a
@@ -1445,11 +1455,18 @@ async function mtLoad(){
    if((Date.now()/1000-(MS.updated||0))>90)
     MSerr='Donnees figees depuis '+Math.round(Date.now()/1000-MS.updated)+'s.';
    if(MT)mtRender();
-   mtopen.innerHTML=(MS.open&&MS.open.length)
-    ?'&#9999;&#65039; Modifier SL/TP'
-    :((MS.pending&&MS.pending.length)
-      ?'&#9999;&#65039; Modifier l’ordre':'&#128200; Trader');
-   mtopen.style.display=MT?'none':'block';
+   // Owner 2026-09-17: in AUTO the robot owns the entries, so the tool
+   // that opens one is hidden - a hand entry would take the slot the robot
+   // is waiting for, and the desk refuses it anyway. Changing or closing a
+   // live trade stays available.
+   const hasPos=!!(MS.open&&MS.open.length);
+   const hasOrd=!!(MS.pending&&MS.pending.length);
+   mtopen.innerHTML=hasPos?'&#9999;&#65039; Modifier SL/TP'
+    :(hasOrd?'&#9999;&#65039; Modifier l’ordre':'&#128200; Trader');
+   const canOpen=MS.auto?(hasPos||hasOrd):true;
+   mtopen.style.display=(MT||!canOpen)?'none':'block';
+   const ab=document.getElementById('autobadge');
+   if(ab){ab.style.display=MS.auto?'inline-block':'none';}
    return;}
   mtopen.style.display='none';
  }catch(e){MSerr='Reseau indisponible.';}

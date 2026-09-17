@@ -516,6 +516,13 @@ def close_now(req):
 
 def execute(req, led, trend=0):
     """Validate and place the order the chart asked for."""
+    if (req.get("by") != "auto" and not manual_mode()
+            and not (req.get("close") or req.get("modify")
+                     or req.get("cancel"))):
+        # owner 2026-09-17: in AUTO the desk enters on its own. A hand entry
+        # here would take the one slot the robot is waiting for. Changing or
+        # closing a live trade stays allowed.
+        return False, "mode automatique : le robot gere les entrees"
     if req.get("close"):
         return close_now(req)
     if req.get("modify"):
@@ -609,7 +616,7 @@ def auto_enter(d, slv, why, cj):
              f"{why} a {px:.0f}, stop {slv:.0f}")
 
 
-_ENG = {"trend": 0}
+_ENG = {"trend": 0, "manual": None}
 
 
 def eng_trend():
@@ -677,6 +684,17 @@ def main():
                     vpend_check(_c, rebuild_ledger())
                     last_choch = eng.choch
                     _ENG["trend"] = eng.trend
+                    # owner 2026-09-17: every mode change is logged and
+                    # pushed. A flag that can start real trading must never
+                    # move without a trace.
+                    _mm = manual_mode()
+                    if _mm != _ENG.get("manual"):
+                        _ENG["manual"] = _mm
+                        say("MODE -> " + ("MANUEL, aucune entree automatique"
+                                          if _mm else "AUTO, le bureau entre seul"))
+                        push("Mode " + ("manuel" if _mm else "automatique"),
+                             "Le robot " + ("n'entre plus seul."
+                                            if _mm else "entre seul desormais."))
                     # owner 2026-09-17: notify the two moments worth acting
                     # on, so the chart does not have to be watched. A FLIP is
                     # rare and changes the side you trade; a BOS is the
@@ -755,6 +773,7 @@ def main():
                 ai = mt5.account_info()
                 save_json(STATE, {
                     "acct": LOGIN, "balance": round(ai.balance, 2),
+                    "auto": not manual_mode(),
                     "rr": B.RR,          # the auto bot's target, shared
                     "jar": B.JAR, "jar_skim": B.JAR_SKIM,
                     "jar_stake": B.JAR_STAKE,
