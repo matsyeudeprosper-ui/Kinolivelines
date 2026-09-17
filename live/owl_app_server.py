@@ -955,14 +955,14 @@ window.addEventListener('load',()=>{
    'l&#39;interrupteur mais pas s&#39;en servir. Seul le compte '+
    'concern&eacute; peut basculer entre manuel et automatique.</p>');
    return;}
+  // Owner 2026-09-17: do not spell the strategy out in the app. Say what
+  // changes for the user, nothing about which conditions are watched.
   const pw=await askPwd(
    isPaused?'Lancer le trading automatique ?':'Repasser en manuel ?',
    isPaused
-    ?'Le robot entrera seul, sur la petite et la grande structure, '+
-     'uniquement quand les deux freins sont verts : un mouvement dans '+
-     'l’heure et une nervosité normale. Mesuré : ces '+
-     'règles limitent les pertes, elles n’ont pas montré '+
-     'de gain.'
+    ?'Le robot prendra les trades tout seul, et seulement quand les '+
+     'conditions du marché sont favorables. Aucune performance '+
+     'garantie. Tu peux repasser en manuel à tout moment.'
     :'Le robot n’entrera plus seul. Tu gardes la main depuis le '+
      'graphique. Les trades ouverts gardent leur SL et leur TP.',
    isPaused?'&#129302; Lancer l’automatique':'&#9995; Repasser en manuel',
@@ -1449,13 +1449,13 @@ function render(d){
       // cannot deliver, so the headline says the brakes are off and leaves
       // the decision where it belongs.
       ready:['✅','Rien ne bloque','#8df0bb',
-             'Les deux freins sont verts. À toi de juger le reste.'],
+             'Conditions favorables. À toi de juger le reste.'],
       flip:['⚖️','Ça peut tourner','#e8c55a',
             'Le sens change peut-être. Attends que ce soit confirmé.'],
       forming:['⏳','Ça se prépare','#8fa1b3',
                'Trop tôt. Laisse le marché se dessiner.'],
       none:['💤','Rien à faire','#6f8299',
-            'Le marché est calme. Les trades marchent moins bien comme ça.'],
+            'Le marché est calme. Mieux vaut attendre.'],
       nervous:['🌀','Ça bouge trop','#e8c55a',
                'Le marché s’agite plus que d’habitude. Mieux vaut '+
                'laisser passer.']};
