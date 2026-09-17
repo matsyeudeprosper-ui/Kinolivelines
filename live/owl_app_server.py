@@ -1465,9 +1465,11 @@ function render(d){
               forming:['⏳ en formation','#8fa1b3'],
               none:['— rien à trader','#6f8299']};
     const is_=IS[ms2.int_state||'none']||IS.none;
-    // The gate. Measured over 42 days: at least one internal break in the
-    // last hour gives 63% wins and +0.133 R; none gives 46% and -0.167 R
-    // with both halves agreeing. So the gate leads, the state follows.
+    // The gate. NOTE 2026-09-17: the "+0.133 R when open" figure did NOT
+    // survive re-anchoring the internal window (see INTERNAL_GATE.md) - it
+    // flips to -0.088 R. What DOES hold under both anchors is the rejected
+    // side being worse. So this is shown as an activity reading with a soft
+    // caution, not as a measured edge.
     const nb=ms2.int_brk_1h||0, aw=nb>=1;
     chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 11px;'+
      'border-radius:11px;background:rgba(185,140,255,'+(aw?'.10':'.05')+');'+
@@ -1484,8 +1486,9 @@ function render(d){
      (aw?is_[0]:(nb===0?'💤 aucune cassure depuis 1 h':is_[0]))+'</b>'+
      '<div style="'+NW+'font-size:.64rem;margin-top:3px;color:'+
      (aw?'#8fa1b3':'#7a6a4a')+'">'+
-     (aw?'Le moment est ouvert.'
-        :'⚠️ Mesure : sans cassure recente, 46% de reussite au lieu de 63%.')+
+     (aw?'La structure interne bouge.'
+        :'⚠️ Sans cassure recente, les trades ont tendance a moins bien '+
+         'marcher. Ce n’est pas une mesure sure.')+
      '</div></div>');
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
