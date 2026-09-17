@@ -251,6 +251,39 @@ MANUAL_MODES = ("manual", "semi")
 PAUSE_ALLOWED = ("bos",)
 
 
+def acct_auto(u):
+    """Is this account trading by itself right now?
+
+    Owner 2026-09-17: the chart badge used to read manual_state, which only
+    exists for the half-manual desk - so Valere's account (mode=auto, driven
+    by structure_bos_bot) showed no robot badge even though it WAS in auto.
+    The pause file is the real switch for every account, so read that.
+    Same defaults as the settings section: no file means auto, except on the
+    accounts allowed to switch, where manual is the safe default.
+    """
+    if u is None or not u.get("trade"):
+        return False
+    uid = u.get("id")
+    f = ("owl_trading_pause.json" if uid == "kino"
+         else f"owl_trading_pause_{uid}.json")
+    try:
+        paused = bool(json.load(open(os.path.join(DIR, f),
+                                     encoding="utf-8"))
+                      .get("paused", uid in PAUSE_ALLOWED))
+    except Exception:
+        paused = False if uid == "kino" else (uid in PAUSE_ALLOWED)
+    if paused:
+        return False
+    # the master switch stops everyone
+    try:
+        if uid != "kino" and json.load(open(os.path.join(
+                DIR, "owl_trading_pause.json"), encoding="utf-8")).get("paused"):
+            return False
+    except Exception:
+        pass
+    return True
+
+
 def manual_ok(u):
     """2026-09-15 (owner): the trade tool belongs to the ACCOUNT's mode.
     An account running full automation never gets it; one switched to
@@ -3680,6 +3713,7 @@ class H(BaseHTTPRequestHandler):
                     pass
             d["trades"] = tr
             d["acct"] = user.get("login")
+            d["auto"] = acct_auto(user)
             self._send(json.dumps(d), "application/json")
         elif sub == "manual_state":
             # assisted manual trading on the live account (2026-09-15)

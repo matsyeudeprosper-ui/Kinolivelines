@@ -972,6 +972,11 @@ function ui(){
  else if(D.trend===-1){tb.innerHTML='<i>▼</i>baissier'+wound;
   tb.style.color='#ff5c5c';}
  else{tb.innerHTML='<i>‒</i>neutre'+wound;tb.style.color='#8fa1b3';}
+ // Owner 2026-09-17: the robot badge reads the chart feed, not the desk's
+ // manual_state - that file only exists for the half-manual account, so
+ // accounts driven by the bot (Valere) showed nothing while in auto.
+ const ab=document.getElementById('autobadge');
+ if(ab)ab.style.display=D.auto?'flex':'none';
  hdstrip();
  document.getElementById('aura').className=D.choch?'choc':'';
  const pe=document.getElementById('px');
@@ -1476,8 +1481,6 @@ async function mtLoad(){
     :(hasOrd?'&#9999;&#65039; Modifier l’ordre':'&#128200; Trader');
    const canOpen=MS.auto?(hasPos||hasOrd):true;
    mtopen.style.display=(MT||!canOpen)?'none':'block';
-   const ab=document.getElementById('autobadge');
-   if(ab){ab.style.display=MS.auto?'flex':'none';hdstrip();}
    return;}
   mtopen.style.display='none';
  }catch(e){MSerr='Reseau indisponible.';}
