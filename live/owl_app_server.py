@@ -1436,8 +1436,12 @@ function render(d){
     // "structure" or a "break". Plain words, one short line, no jargon.
     // The long version belongs in the info sheet, not on the card.
     const ST={
-      ready:['🎯','C’est le moment','#8df0bb',
-             'Le marché bouge. À toi de décider.'],
+      // Owner 2026-09-17: the two gates only ever STOP a trade - neither
+      // was shown to make money. "C’est le moment" promised something they
+      // cannot deliver, so the headline says the brakes are off and leaves
+      // the decision where it belongs.
+      ready:['✅','Rien ne bloque','#8df0bb',
+             'Les deux freins sont verts. À toi de juger le reste.'],
       flip:['⚖️','Ça peut tourner','#e8c55a',
             'Le sens change peut-être. Attends que ce soit confirmé.'],
       forming:['⏳','Ça se prépare','#8fa1b3',
