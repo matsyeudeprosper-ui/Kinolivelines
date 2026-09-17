@@ -243,6 +243,9 @@ def is_admin(u):
 
 
 MANUAL_MODES = ("manual", "semi")
+# who may actually switch the bot off (owner 2026-09-16). Everyone else
+# sees the row, locked.
+PAUSE_ALLOWED = ("kino", "bos")
 
 
 def manual_ok(u):
@@ -682,6 +685,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
  l&#8217;application &raquo;)<br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t sur votre
  t&eacute;l&eacute;phone !</div>
+<div class="sec" id="rob-sec" style="display:none">Le robot</div>
+<div class="panel" id="rob-card" style="display:none;padding:4px 14px">
+ <div class="srow" id="pausebtn">
+  <div class="sic" id="pause-ic">&#9208;&#65039;</div>
+  <div style="flex:1"><b id="pause-lbl">Mettre le robot en pause</b>
+   <div class="ssub" id="pause-sub"></div></div>
+  <span class="chv" id="pause-chv">&#8250;</span>
+ </div>
+</div>
 <div class="sec" id="adm-sec" style="display:none">Administration</div>
 <div class="panel" id="adm-card" style="display:none;padding:4px 14px">
  <div class="srow" id="goalbtn">
@@ -695,12 +707,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
    <div class="ssub">Pour activer le robot d&#39;un membre</div></div>
   <span class="chv">&#8250;</span>
  </div>
- <div class="srow" id="pausebtn" style="display:none">
-  <div class="sic">&#9208;&#65039;</div>
-  <div style="flex:1"><b id="pause-lbl">Mettre le robot en
-   pause</b></div>
-  <span class="chv">&#8250;</span>
- </div>
+
  <a class="srow" id="chartbtn" href="#"
   style="display:none;text-decoration:none;color:inherit">
   <div class="sic">&#128200;</div>
@@ -778,7 +785,7 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
  a.href=B+'icon192.png';document.head.appendChild(a);
 })();
 let lastOk=0;
-let isPaused=false;
+let isPaused=false,pauseLocked=false;
 function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
 function fdur(m){
  if(m==null)return '';
@@ -939,6 +946,10 @@ function ledInfo(){
 window.addEventListener('load',()=>{
  const pb=document.getElementById('pausebtn');
  if(pb)pb.onclick=async(e)=>{e.preventDefault();
+  if(pauseLocked){await info('&#128274; <h3>R&eacute;serv&eacute; '+
+   '&agrave; l&#39;administrateur</h3><p>Ce compte peut voir '+
+   'l&#39;interrupteur mais pas s&#39;en servir. Demandez &agrave; '+
+   'Kino d&#39;arr&ecirc;ter ou de relancer le robot.</p>');return;}
   const pw=await askPwd(
    isPaused?'Reprendre le trading ?':'Mettre le robot en pause ?',
    isPaused
@@ -1806,13 +1817,30 @@ function render(d){
   const n=d.open_positions;
   if(d.trading_paused!==undefined){
    isPaused=d.trading_paused;
-   const pb=document.getElementById('pausebtn');
-   pb.style.display='flex';
-   document.getElementById('adm-sec').style.display='block';
-   document.getElementById('adm-card').style.display='block';
-   document.getElementById('pause-lbl').innerHTML=isPaused
+   pauseLocked=!!d.pause_locked;
+   document.getElementById('rob-sec').style.display='block';
+   document.getElementById('rob-card').style.display='block';
+   document.getElementById('pausebtn').style.display='flex';
+   const lb=document.getElementById('pause-lbl');
+   const ic=document.getElementById('pause-ic');
+   const sb=document.getElementById('pause-sub');
+   const cv=document.getElementById('pause-chv');
+   // everyone sees the switch; only two accounts may use it
+   ic.innerHTML=pauseLocked?'&#128274;'
+    :(isPaused?'&#9654;&#65039;':'&#9208;&#65039;');
+   lb.innerHTML=isPaused
     ?'&#9654;&#65039; Reprendre le trading'
     :'Mettre le robot en pause';
+   lb.style.color=pauseLocked?'#6f8299':'';
+   sb.textContent=pauseLocked
+    ?(isPaused?'Robot en pause — seul l’administrateur '+
+      'peut le relancer'
+     :'Réservé à l’administrateur')
+    :(isPaused?'Aucun nouveau trade ne sera ouvert'
+     :'Les trades ouverts gardent leur SL et leur TP');
+   cv.style.opacity=pauseLocked?'.25':'';
+   document.getElementById('pausebtn').style.opacity=
+    pauseLocked?'.6':'';
   }
   document.getElementById('actcard').style.display=
    d.activation_needed?'block':'none';
@@ -2499,10 +2527,20 @@ def user_stats(u):
                 pass
         elif not u.get("trade"):
             d["activation_needed"] = True
-        # Owner 2026-09-16: "for now only admin can switch off". The flag is
-        # what renders the switch, so it is no longer sent to a member whose
-        # account the bot trades. The admin keeps the master switch and the
-        # per-account toggles, and those now actually reach the bot.
+        # Owner 2026-09-16: every trading account SEES the switch, but it is
+        # locked for everyone except the admin and the Structure account.
+        # The lock is enforced on the write route too, not just in the UI.
+        if u.get("id") != "kino" and u.get("trade"):
+            try:
+                d["trading_paused"] = bool(json.load(open(os.path.join(
+                    DIR, f"owl_trading_pause_{u['id']}.json")))
+                    .get("paused"))
+            except Exception:
+                d["trading_paused"] = False
+        # follow the flag wherever it was set, not just on this path, so no
+        # account can end up with an unlocked-looking switch
+        if "trading_paused" in d:
+            d["pause_locked"] = u.get("id") not in PAUSE_ALLOWED
         return d
     except Exception:
         # fall back to the built-in kino stats while the worker warms up
@@ -3472,6 +3510,13 @@ class H(BaseHTTPRequestHandler):
                    if str(u.get("login")) == str(LOGIN)
                    else f"owl_trading_pause_{u['id']}.json")
             if _parts[1] == "pause":
+                # the lock is enforced HERE, not only in the UI: a hidden
+                # button is not a permission (owner 2026-09-16)
+                if u.get("id") not in PAUSE_ALLOWED:
+                    self._send(json.dumps(
+                        {"ok": False, "err": "verrouille"}),
+                        "application/json")
+                    return
                 try:
                     on = (_form.get("on", ["1"])[0] == "1")
                     if (str(u.get("login")) == str(LOGIN)
