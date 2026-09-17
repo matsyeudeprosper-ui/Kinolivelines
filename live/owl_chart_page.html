@@ -892,6 +892,13 @@ function ui(){
    :((mv>=2||rv>=1.2)?['🔥','active','141,240,187']
    :['☁️','calme','143,161,179']));
   let txt=mv+'/2h · '+S[1]+((mv===0&&rv>=1.2)?' · volatile':'');
+  // the INTERNAL state, appended only when it has something to say. The
+  // main gauge goes quiet precisely when the internal structure fills out
+  // (its window stops being reset), so this is the half that matters for a
+  // half-manual trade. Measured over 13.4 days: a break in sight 7% of the
+  // time, a flip armed 9%, forming 5% (review/int_state_dist.py).
+  const IS={ready:'· int 🎯 cassure',flip:'· int ⚖️ bascule'};
+  if(IS[D.int_state])txt+=' '+IS[D.int_state];
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
   mb.className='badge'+(S[1]==='agitee'||S[1]==='active'?' busy':'');

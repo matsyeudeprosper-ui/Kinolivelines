@@ -537,6 +537,10 @@ def main():
                      "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
                      "int_flip_bos_ready": i_fready,
                      "bos_ready": _ready,
+                     "int_state": (
+                         "none" if not i_trend else
+                         ("flip" if (i_choch and i_choch != i_trend) else
+                          ("ready" if i_ready else "forming"))),
                      "int_bos_ready": i_ready,
                      # the internal engine fires every few minutes; the
                      # whole history would out-number the candles, so only

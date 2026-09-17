@@ -1456,6 +1456,23 @@ function render(d){
     chips.push(stat(ttxt,'structure',tcol));
     if(ms2.spread)chips.push(stat('$'+Number(ms2.spread).toFixed(0),
      'spread',ms2.spread>12?'#ff9678':'#cfe3f5'));
+    // The internal structure's own state, measured over 13.4 days:
+    // a break in sight 7%, a flip armed 9%, forming 5%, nothing 78%.
+    // It fills out exactly when the main gauge goes quiet, so on a
+    // half-manual account this is the half worth reading.
+    const IS={ready:['🎯 cassure en vue','#8df0bb'],
+              flip:['⚖️ bascule armée','#e8c55a'],
+              forming:['⏳ en formation','#8fa1b3'],
+              none:['— rien à trader','#6f8299']};
+    const is_=IS[ms2.int_state||'none']||IS.none;
+    chips.push('<div style="grid-column:1/-1;min-width:0;padding:8px 10px;'+
+     'border-radius:11px;background:rgba(185,140,255,.07);'+
+     'border:1px solid rgba(185,140,255,.2)">'+
+     '<div style="'+NW+'font-size:.58rem;color:#b98cff;'+
+     'text-transform:uppercase;letter-spacing:.08em">'+
+     'structure interne</div>'+
+     '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
+     is_[1]+'">'+is_[0]+'</b></div>');
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
@@ -2407,7 +2424,7 @@ def user_stats(u):
                         _cj = json.load(open(os.path.join(
                             DIR, "owl_chart_btc.json")))
                         for _k in ("moves_2h", "vol_now", "vol_ref",
-                                   "spread"):
+                                   "spread", "int_state", "int_trend"):
                             if _cj.get(_k) is not None:
                                 d["meteo_struct"][_k] = _cj[_k]
                     except Exception:
