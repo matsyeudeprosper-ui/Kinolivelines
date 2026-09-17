@@ -1422,26 +1422,37 @@ function render(d){
    const chips=[];
    if(d.meteo_struct){
     const ms2=d.meteo_struct;
-    // SAME four states, thresholds and words as the chart badge
-    // (owl_chart_page.html). Two screens, one vocabulary. Volatility alone
-    // is never activity: the bots call a market asleep when no flip
-    // happened in 2 h, whatever the candles are doing.
+    // Owner 2026-09-17, after the retraction: the card must say what the
+    // evidence says. Only ONE thing held under both anchors - when the
+    // internal structure has not broken recently, trades tend to go worse,
+    // and a busy MAIN structure does not rescue it. So the internal gate is
+    // the headline and everything else is context, which is the opposite of
+    // how this card used to be built.
     const mv=ms2.moves_2h!==undefined?ms2.moves_2h:(ms2.flips_2h||0);
     const rv=(ms2.vol_now&&ms2.vol_ref)
      ?ms2.vol_now/Math.max(ms2.vol_ref,1):1;
-    let S;
-    if(mv===0)S=['💤','Endormie','mx-sleep',
-     'Aucun retournement depuis 2 h. Le robot attend.'];
-    else if(mv>=3&&rv>=1.2)S=['⚡️','Agitée','mx-storm',
-     'Beaucoup de retournements et des bougies plus larges que d’habitude.'];
-    else if(mv>=2||rv>=1.2)S=['🔥','Active','mx-fish',
-     'La structure bouge assez pour travailler.'];
-    else S=['☁️','Calme','mx-sun',
-     'La structure bouge un peu, sans excès.'];
-    orb=S[0];ti=S[1];ln=S[3];cls=S[2];
+    const nb=ms2.int_brk_1h||0, aw=nb>=1;
+    const ST={ready:['🎯','Cassure en vue','#8df0bb',
+       'La structure interne a cassé récemment et un repli est confirmé.'],
+      flip:['⚖️','Bascule armée','#e8c55a',
+       'Un CHoCH interne est tombé. Attends la cassure qui le confirme.'],
+      forming:['⏳','Structure en formation','#8fa1b3',
+       'La structure interne se construit. Rien de décidable encore.'],
+      none:['💤','Rien à trader','#6f8299',
+       'Pas de structure interne exploitable pour le moment.']};
+    const k=aw?(ms2.int_state||'none'):'none';
+    const S=ST[k]||ST.none;
+    orb=S[0];
+    ti=aw?S[1]:'Rien à trader';
+    ln=aw?S[3]
+      :('Aucune cassure interne depuis 1 h. Sans cassure récente les '+
+        'trades ont tendance à moins bien marcher — ce n’est pas une '+
+        'mesure sûre, mais c’est le seul signal qui a tenu à la '+
+        'vérification.');
+    cls=aw?(k==='ready'?'mx-fish':'mx-sun'):'mx-sleep';
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-    const stat=(v,l,c)=>'<div style="min-width:0;'+
-     'padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.04);'+
+    const stat=(l,v,c)=>'<div style="min-width:0;padding:8px 10px;'+
+     'border-radius:11px;background:rgba(255,255,255,.04);'+
      'border:1px solid rgba(255,255,255,.07)">'+
      '<div style="'+NW+'font-size:.58rem;color:#7f93a8;'+
      'text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
@@ -1450,46 +1461,25 @@ function render(d){
     const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
     const ttxt=ms2.trend===1?'▲ haussière'
      :(ms2.trend===-1?'▼ baissière':'—');
-    chips.push(stat(mv+'&thinsp;/&thinsp;2h','retournements'));
-    chips.push(stat(rv.toFixed(1)+'×','volatilité',
+    // the gate, full width, coloured by whether it is open
+    chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 12px;'+
+     'border-radius:11px;background:rgba(185,140,255,'+(aw?'.12':'.05')+');'+
+     'border:1px solid rgba(185,140,255,'+(aw?'.35':'.14')+');'+
+     'display:flex;align-items:baseline;gap:10px">'+
+     '<span style="'+NW+'flex:1;font-size:.6rem;color:#b98cff;'+
+     'text-transform:uppercase;letter-spacing:.08em">'+
+     'cassures internes</span>'+
+     '<b style="'+NW+'font-size:1.15rem;font-variant-numeric:tabular-nums;'+
+     'color:'+(aw?'#cfb3ff':'#6f8299')+'">'+nb+'&thinsp;/&thinsp;1h</b>'+
+     '</div>');
+    chips.push(stat('principale',mv+'&thinsp;/&thinsp;2h',
+     mv===0?'#6f8299':'#cfe3f5'));
+    chips.push(stat('structure',ttxt,tcol));
+    chips.push(stat('volatilité',rv.toFixed(1)+'×',
      rv>=1.2?'#e8c55a':'#cfe3f5'));
-    chips.push(stat(ttxt,'structure',tcol));
-    if(ms2.spread)chips.push(stat('$'+Number(ms2.spread).toFixed(0),
-     'spread',ms2.spread>12?'#ff9678':'#cfe3f5'));
-    // The internal structure's own state, measured over 13.4 days:
-    // a break in sight 7%, a flip armed 9%, forming 5%, nothing 78%.
-    // It fills out exactly when the main gauge goes quiet, so on a
-    // half-manual account this is the half worth reading.
-    const IS={ready:['🎯 cassure en vue','#8df0bb'],
-              flip:['⚖️ bascule armée','#e8c55a'],
-              forming:['⏳ en formation','#8fa1b3'],
-              none:['— rien à trader','#6f8299']};
-    const is_=IS[ms2.int_state||'none']||IS.none;
-    // The gate. NOTE 2026-09-17: the "+0.133 R when open" figure did NOT
-    // survive re-anchoring the internal window (see INTERNAL_GATE.md) - it
-    // flips to -0.088 R. What DOES hold under both anchors is the rejected
-    // side being worse. So this is shown as an activity reading with a soft
-    // caution, not as a measured edge.
-    const nb=ms2.int_brk_1h||0, aw=nb>=1;
-    chips.push('<div style="grid-column:1/-1;min-width:0;padding:9px 11px;'+
-     'border-radius:11px;background:rgba(185,140,255,'+(aw?'.10':'.05')+');'+
-     'border:1px solid rgba(185,140,255,'+(aw?'.32':'.14')+')">'+
-     '<div style="display:flex;align-items:baseline;gap:7px">'+
-      '<span style="'+NW+'flex:1;font-size:.58rem;color:#b98cff;'+
-      'text-transform:uppercase;letter-spacing:.08em">'+
-      'structure interne</span>'+
-      '<b style="'+NW+'font-size:.82rem;font-variant-numeric:tabular-nums;'+
-      'color:'+(aw?'#cfb3ff':'#6f8299')+'">'+nb+'&thinsp;/&thinsp;1h</b>'+
-     '</div>'+
-     '<b style="display:block;'+NW+'font-size:1rem;margin-top:3px;color:'+
-     (aw?is_[1]:'#6f8299')+'">'+
-     (aw?is_[0]:(nb===0?'💤 aucune cassure depuis 1 h':is_[0]))+'</b>'+
-     '<div style="'+NW+'font-size:.64rem;margin-top:3px;color:'+
-     (aw?'#8fa1b3':'#7a6a4a')+'">'+
-     (aw?'La structure interne bouge.'
-        :'⚠️ Sans cassure recente, les trades ont tendance a moins bien '+
-         'marcher. Ce n’est pas une mesure sure.')+
-     '</div></div>');
+    if(ms2.spread)chips.push(stat('spread',
+     '$'+Number(ms2.spread).toFixed(0),
+     ms2.spread>12?'#ff9678':'#cfe3f5'));
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';orb='\\u26c8\\ufe0f';
