@@ -272,3 +272,39 @@ The complete rule being checked: the visible span between the two highs
 contains at least one opposite candle, and the dot sits on that span's
 extreme. Roughly half of all breaks now produce no dot, which is correct -
 they happen inside noise the chart does not show.
+
+## 2026-09-17 — the internal structure finally reads the chart itself
+Owner, third time: "the dots need to read the chart, that custom chart where
+candles considered are the ones which close completely beyond previous
+candles... a dot is the valley between two confirmed highs, and the valley's
+extreme holds the dot."
+
+Divergence #1 is now CLOSED the other way. The internal engine reads the
+**silence-filtered candles**, the same series the chart draws. Raw M1 and
+the snap patch on top of it are both gone, and with them the whole class of
+bug where a dot referred to a candle the owner could not see.
+
+**The cost that blocked this before was the WINDOW, not the filter.** With
+the window running from the main structure's protected dot, a quiet main
+structure stretches it to 14 h and 891 chart candles; the engine then tracks
+only the largest swings (`why_zero.py`: 14 breaks, 11 of them back-to-back,
+**0 dots**). That is what made the earlier attempt look like the filter's
+fault.
+
+Capping the window fixes it (`window_sweep.py`):
+
+| look-back, chart candles | structure present | dots now |
+|---|---|---|
+| 30 | 30% | 0 |
+| 60 | 55% | 2 |
+| 80 | 70% | 4 |
+| 120 | 82% | 4 |
+| **200** | **88%** | **13** |
+| 400 | 90% | 0 |
+
+`INT_MAX = 200` is a tuned constant, not a derived one, and 400 shows the
+result is not monotonic - the reference ratchet makes a longer window able
+to see LESS. Re-run the sweep before changing it.
+
+Live after the change: 8 dots, 9 events, and **8 of 8 dots sit on the exact
+low of a chart candle**.

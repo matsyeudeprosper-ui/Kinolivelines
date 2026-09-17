@@ -48,6 +48,9 @@ def build(rates):
     return kept
 
 
+INT_MAX = 200            # chart candles the internal structure looks back
+
+
 def _snap_dot(snap, span, kind):
     """The span's extreme among DRAWN candles, or None if the span covers
     none. kind +1 = a low dot, -1 = a high dot."""
@@ -454,23 +457,29 @@ def main():
                 # continuation had already opened a new space.
                 _t0 = inv_t if inv_t else (marks[-1][0] if marks else None)
                 if _t0:
-                    # RAW M1. The silence filter was tried here on
-                    # 2026-09-16 and reverted the same day: it left the
-                    # internal structure existing only 24% of the time,
-                    # because inside a range the filtered series rarely
-                    # produces the breaks the engine needs. The owner wants
-                    # the internal structure, so this stays raw. Every OTHER
-                    # rule is shared with the main structure.
-                    _inner = [[int(r["time"]), float(r["open"]),
-                               float(r["high"]), float(r["low"]),
-                               float(r["close"]),
-                               1 if r["close"] >= r["open"] else -1]
-                              for r in R[:-1] if int(r["time"]) > _t0]
-                    if len(_inner) >= 10:
+                    # Owner 2026-09-17: the internal structure reads the
+                    # CUSTOM CHART - the candles that close completely
+                    # beyond the previous one. Not raw M1, and not raw with
+                    # a snap patched on top. A dot is the valley between two
+                    # confirmed highs, and both the highs and the valley
+                    # have to be candles that exist on this chart.
+                    # This was tried on raw first and the snapping that
+                    # followed produced dots outside their own span; see
+                    # review/STRUCTURE_RULES.md.
+                    # ...and capped in length. When the main structure
+                    # goes quiet the window since its protected dot reaches
+                    # 14 h and 891 chart candles, and the engine then tracks
+                    # only the largest swings - 14 breaks, 11 of them back
+                    # to back, 0 dots. A cap keeps the references resetting
+                    # often enough to see structure INSIDE the range.
+                    # Swept 30/40/60/80/120/200/400: structure present
+                    # 30/35/55/70/82/88/90% of samples, dots 0/0/2/4/4/13/0.
+                    # 200 is the best of them (review/window_sweep.py).
+                    _inner = [k for k in kept if k[0] > _t0][-INT_MAX:]
+                    if len(_inner) >= 5:
                         (i_dots, i_marks, i_trend, i_choch,
                          i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                         i_flp, i_flp_t, i_fdir) = engine(
-                            _inner, snap=kept)
+                         i_flp, i_flp_t, i_fdir) = engine(_inner)
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level
                         # - at least one candle against the trend since the
