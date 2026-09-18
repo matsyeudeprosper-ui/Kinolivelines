@@ -744,6 +744,7 @@ function draw(){
   // as the main structure having vanished. When they overlap on screen the
   // internal one is skipped: the bigger picture wins.
   const hides=(v,m)=>(v!=null&&m!=null&&Math.abs(px(v)-px(m))<11);
+  const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-D.invalid));
   const mainRange=Math.abs(D.invalid-D.next_bos);
   // a share of the MAIN range, so scrolling or zooming cannot make the
   // internal structure blink in and out (2026-09-16)
@@ -1156,8 +1157,18 @@ async function load(){
 // The next frame is now always scheduled (owner 2026-09-16).
 let drawErrs=0;
 function frame(){
- try{mtEdgePush();draw();}
- catch(e){if(++drawErrs<=3)console.error('draw',e);}
+ // Owner 2026-09-18: a throw inside draw() aborts the rest of the frame,
+ // so everything drawn BEFORE it survives and everything after silently
+ // vanishes - which is exactly how the anticipated BOS disappeared while
+ // the protected dot kept showing. The console is unreachable on a phone,
+ // so the error is painted on the chart instead of swallowed.
+ try{mtEdgePush();draw();window.DERR=null;}
+ catch(e){window.DERR=(e&&e.message)||String(e);
+  if(++drawErrs<=3)console.error('draw',e);
+  try{const c2=cv.getContext('2d');
+   c2.save();c2.font='bold 10px system-ui';c2.fillStyle='#ff5c5c';
+   c2.fillText('dessin interrompu: '+window.DERR.slice(0,60),8,20);
+   c2.restore();}catch(x){}}
  requestAnimationFrame(frame);
 }
 load();setInterval(load,1500);
