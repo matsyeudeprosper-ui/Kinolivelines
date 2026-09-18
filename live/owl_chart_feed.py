@@ -483,6 +483,29 @@ def main():
                 _t0 = (inv_t if inv_t
                        else (marks[-1][0] if marks
                              else (kept[0][0] if kept else None)))
+                # Owner 2026-09-18: "the moment we touch either of the main
+                # structure's borders - the BOS level or the glowing dot -
+                # we stop all internal structure, we reset, and we follow
+                # the main structure again."
+                #
+                # The internal structure only means anything INSIDE the main
+                # range. Anchoring on the protected dot was not enough: a
+                # TOUCH is not a close, so price could reach a border, fail
+                # to confirm, and the internal structure would carry on
+                # across a boundary it had already crossed. The window now
+                # restarts at the last touch of either border.
+                if _t0 and kept:
+                    _lo_b = inv if inv is not None else None
+                    _hi_b = nxt if nxt is not None else None
+                    _touch = None
+                    for _k in kept:
+                        if _k[0] <= _t0:
+                            continue
+                        if ((_hi_b is not None and _k[2] >= _hi_b)
+                                or (_lo_b is not None and _k[3] <= _lo_b)):
+                            _touch = _k[0]
+                    if _touch and _touch > _t0:
+                        _t0 = _touch
                 if _t0:
                     # Owner 2026-09-17: the internal structure reads the
                     # CUSTOM CHART - the candles that close completely
