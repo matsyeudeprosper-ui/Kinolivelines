@@ -718,7 +718,13 @@ function draw(){
    ctx.restore();}
  }
  if(D.int_trend&&D.int_bos&&D.px&&D.next_bos&&D.invalid){
-  const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-D.invalid));
+  // Owner 2026-09-18: "it says int BOS but I can't see the main structure".
+  // The internal window is anchored on the main protected dot, so when the
+  // internal engine finds the SAME high, both levels land on the same price
+  // and the internal label is painted on top of the main one - which reads
+  // as the main structure having vanished. When they overlap on screen the
+  // internal one is skipped: the bigger picture wins.
+  const hides=(v,m)=>(v!=null&&m!=null&&Math.abs(px(v)-px(m))<11);
   const mainRange=Math.abs(D.invalid-D.next_bos);
   // a share of the MAIN range, so scrolling or zooming cannot make the
   // internal structure blink in and out (2026-09-16)
@@ -768,7 +774,7 @@ function draw(){
    // where the trade tool puts the stop. The main structure marks this with
    // a dashed line and a diamond; so does the internal one now. The short
    // marks above are event HISTORY - a different thing (owner 2026-09-16).
-   if(D.int_inv){
+   if(D.int_inv&&!hides(D.int_inv,D.invalid)){
     const yv=px(D.int_inv);
     if(D.int_inv>hi||D.int_inv<lo){edgeMark(D.int_inv,ic,'int CHoCH');}
     else if(yv>TOPP+4&&yv<TOPP+PLOT-4){
@@ -790,6 +796,7 @@ function draw(){
      ctx.beginPath();ctx.arc(xv,yv,3.2,0,6.3);ctx.fill();
      ctx.shadowBlur=0;ctx.restore();}}
    const yi=px(D.int_bos);
+   const bosDup=hides(D.int_bos,D.next_bos);
    // only anticipate the next break once price has pulled back from the
    // level - before that it is just the current extreme (owner 2026-09-16)
    // the level that CONFIRMS an armed flip, drawn alongside the trend's own
@@ -819,7 +826,7 @@ function draw(){
      ctx.globalAlpha=1;ctx.fillStyle=ic;ctx.fillText(tf,bf+4,yf+3);
      ctx.restore();}}
    const ibd=D.int_bos_dir||D.int_trend;
-   if(!D.int_bos_ready){}
+   if(!D.int_bos_ready||bosDup){}
    else if(D.int_bos>hi||D.int_bos<lo){edgeMark(D.int_bos,ic,
     (ibd===1?'▲ ':(ibd===-1?'▼ ':''))+'int BOS');}
    else if(yi>TOPP+4&&yi<TOPP+PLOT-4){
