@@ -17,7 +17,7 @@ Token = first line of owl_app_token.txt. Stats from MT5 deal history
 (trade deals only). Max DD = deepest peak-to-trough over the last 7 days,
 INCLUDING open-trade floating pain (sightings kept in _ddhist).
 """
-import json, os, time, secrets, struct, threading, zlib
+import json, os, sys, time, secrets, struct, threading, zlib
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
@@ -1432,6 +1432,60 @@ function shareWeek(){
   }
  },'image/png');
 }
+function panicCall(uid,pw,dry){
+ return fetch(B+'nest_panic',{method:'POST',
+  headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'uid='+encodeURIComponent(uid)+'&dry='+dry+'&pwd='+
+   encodeURIComponent(pw)}).then(r=>r.json()).catch(()=>null);
+}
+// Admin emergency stop (owner 2026-09-18). Two steps on purpose: the
+// first call is a DRY RUN that only looks, so the admin sees exactly
+// what is about to be closed before anything is sent to the broker.
+async function nestPanic(uid,name){
+ const pw=await askPwd('Arr&ecirc;t d&rsquo;urgence sur '+name+' ?',
+  'Je regarde d&rsquo;abord ce qui est ouvert. Rien ne sera ferm&eacute; '+
+  'sans ton accord.','&#128269; Regarder',true);
+ if(!pw)return;
+ const dry=await panicCall(uid,pw,'1');
+ if(!dry){await info('<h3>R&eacute;seau indisponible.</h3>');return;}
+ if(!dry.ok){await info('<h3>Impossible</h3><p>'+
+  (dry.err||'erreur inconnue')+'</p>');return;}
+ const P=dry.positions||[],O=dry.orders||[];
+ if(!P.length&&!O.length){
+  await info('<h3>Rien &agrave; fermer</h3><p>Compte '+(dry.acct||'')+
+   ' : aucun trade ouvert, aucun ordre en attente.</p>');return;}
+ let li='';
+ P.forEach(q=>{li+='<li>'+q.lot+' lot '+q.symbol+
+  ' &middot; P&amp;L '+(q.pl>=0?'+$':'-$')+Math.abs(q.pl).toFixed(2)+
+  '</li>';});
+ O.forEach(q=>{li+='<li>ordre en attente &middot; '+q.lot+' lot '+
+  q.symbol+'</li>';});
+ const go=await sheet('<h3>Tout fermer sur '+name+' ?</h3>'+
+  '<p>Compte '+dry.acct+'. Les trades seront ferm&eacute;s au prix du '+
+  'march&eacute;, et le compte passera en manuel pour que le robot ne '+
+  'rouvre rien.</p><ul style="margin:0 0 14px 18px;color:#c6d3df;'+
+  'font-size:.85rem;line-height:1.7">'+li+'</ul>'+
+  '<button class="shbtn shdanger" onclick="_shDone(1)">'+
+  '&#128721; Tout fermer maintenant</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler'+
+  '</button>');
+ if(!go)return;
+ const r=await panicCall(uid,pw,'0');
+ if(!r){await info('<h3>R&eacute;seau indisponible.</h3>'+
+  '<p>V&eacute;rifie le compte avant de recommencer.</p>');load();return;}
+ const nc=r.closed||0,na=r.cancelled||0,nf=r.failed||0;
+ let h=(nf?'<h3>&#9888;&#65039; Partiellement ferm&eacute;</h3>'
+          :'<h3>&#9989; Compte ferm&eacute;</h3>');
+ h+='<p>'+nc+' trade'+(nc>1?'s':'')+' ferm&eacute;'+(nc>1?'s':'')+
+    ', '+na+' ordre'+(na>1?'s':'')+' annul&eacute;'+(na>1?'s':'')+
+    '. Compte en manuel.</p>';
+ if(nf)h+='<p style="color:#ff9678">'+nf+' &eacute;chec(s). '+
+  ((r.left!=null)?r.left+' position(s) encore ouverte(s). ':'')+
+  'Regarde le compte directement.</p>';
+ if(r.err)h+='<p style="color:#ff9678">'+r.err+'</p>';
+ await info(h);
+ load();
+}
 async function nestPause(uid,on){
  const pw=await askPwd(
   on=='1'?'Mettre ce membre en pause ?':'Reprendre ce membre ?',
@@ -1999,6 +2053,13 @@ function render(d){
     'color:#c6d3df;border-radius:10px;padding:8px 13px;'+
     'font-size:.85rem">'+
     (x.paused?'&#9654;&#65039;':'&#9208;&#65039;')+'</button>':'')+
+    '<button data-u="'+x.id+'" data-n="'+x.name+
+    '" onclick="nestPanic(this.dataset.u,this.dataset.n)" '+
+    'title="Arret d&rsquo;urgence : tout fermer sur ce compte" '+
+    'style="border:1px solid rgba(255,92,92,.45);'+
+    'background:rgba(255,92,92,.12);color:#ff8c8c;'+
+    'border-radius:10px;padding:8px 11px;font-size:.85rem">'+
+    '&#128721;'+(x.pos?' '+x.pos:'')+'</button>'+
     '</span></div>';
    }).join('');
   }
@@ -2544,6 +2605,7 @@ def user_stats(u):
                         "today": nd.get("today"),
                         "err": bool(nd.get("error")),
                         "stale": _age > 60, "paused": _pz,
+                        "pos": nd.get("open_positions"),
                         "trade": bool(x.get("trade")
                                       or x.get("id") == "kino"),
                         "plan": x.get("plan")})
@@ -3295,6 +3357,62 @@ class H(BaseHTTPRequestHandler):
                 json.dump(_iv, open(_ipath, "w", encoding="utf-8"))
                 self._send(json.dumps({"ok": True, "code": _code}),
                            "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "nest_panic":
+            # ADMIN EMERGENCY STOP on ANY account (owner 2026-09-18).
+            # Pauses the account, cancels its pending orders and closes
+            # every open position. Admin only, master password, and the
+            # work is done by owl_panic.py because only that script holds
+            # the account's own terminal + credentials - the stats worker
+            # is read-only by construction.
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up9
+                _f9 = _up9.parse_qs(self.rfile.read(ln)
+                                    .decode("utf-8", "replace"))
+                _pw = (_f9.get("pwd", [""])[0] or "").strip()
+                _uid = (_f9.get("uid", [""])[0] or "").strip()
+                _dry = (_f9.get("dry", ["0"])[0] == "1")
+                if not master_pwd_ok(_pw):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "mot de passe incorrect"}),
+                               "application/json")
+                    return
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                if not any(x.get("id") == _uid for x in us):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "compte inconnu"}),
+                               "application/json")
+                    return
+                import subprocess as _sp
+                # the server runs under pythonw; use the console
+                # interpreter so the child's stdout is definitely captured
+                _exe = sys.executable
+                if _exe.lower().endswith("pythonw.exe"):
+                    _c = _exe[:-len("pythonw.exe")] + "python.exe"
+                    if os.path.exists(_c):
+                        _exe = _c
+                _cmd = [_exe, os.path.join(DIR, "owl_panic.py"), _uid]
+                if not _dry:
+                    _cmd.append("--armed")
+                _r = _sp.run(_cmd, cwd=DIR, capture_output=True,
+                             text=True, timeout=90)
+                _last = [x for x in (_r.stdout or "").splitlines() if x.strip()]
+                try:
+                    _out = json.loads(_last[-1])
+                except Exception:
+                    _out = {"ok": False,
+                            "err": "arret d'urgence illisible",
+                            "raw": ((_r.stderr or _r.stdout or "")[-400:])}
+                self._send(json.dumps(_out), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
