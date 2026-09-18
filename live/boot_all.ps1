@@ -1,4 +1,4 @@
-# boot_all.ps1 - revive the whole Kinolive stack after a reboot/logon.
+﻿# boot_all.ps1 - revive the whole Kinolive stack after a reboot/logon.
 # Idempotent: only starts what is not already running. Registered by the
 # USER as a scheduled task (auto-trading launch authority = user).
 $log = "C:\Projects\KinoliveLines\live\boot_all.log"
@@ -20,10 +20,14 @@ if (-not (ProcRunning "MT5-KinoliveTrader\terminal64.exe")) {
     Start-Sleep -Seconds 30
 }
 
-# 2) live Owl (KINO machine)
-if (-not (ProcRunning "owl_manual_bot.py")) {
-    Say "starting live Owl"
-    Start-Process python -ArgumentList "owl_manual_bot.py" `
+# 2) KINO account 223985697 - owner 2026-09-18: owl_manual_bot is
+# RETIRED here. The structure bot runs this account with the
+# nervosity brake OFF (package kino_sans_frein): a live A/B against
+# Valere, which keeps the brake. 41.7 days of replay could not say
+# whether that brake helps, so the two accounts answer it forward.
+if (-not (ProcRunning "structure_bos_bot.py kino")) {
+    Say "starting STRUCTURE kino (real 223985697, no nervosity)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "kino" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 
@@ -66,16 +70,11 @@ try {
 } catch {
     Say ("manual trader boot failed: " + $_)
 }
-if (-not ($sb | Where-Object { $_.CommandLine -match "sniper" })) {
-    Say "starting STRUCTURE sniper (demo 476989735)"
-    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "sniper" `
-        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
-}
-if (-not ($sb | Where-Object { $_.CommandLine -match "halfdebt" })) {
-    Say "starting STRUCTURE halfdebt (demo 476989740)"
-    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "halfdebt" `
-        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
-}
+# sniper and halfdebt both hit their kill lines on 2026-09-18, on
+# the SAME trade, and the owner retired them. Their accounts are
+# out of the nest. Do NOT revive: a killed variant that restarts
+# just re-reads its killed flag and sits there looking alive.
+
 # 2g) Valere's real account: its own instance of the frozen live config
 # (own debt ledger, own war-chest, own -$60 kill line). Owner 2026-09-14.
 if (-not (ProcRunning "structure_bos_bot.py valere")) {
@@ -181,13 +180,11 @@ if (-not (ProcRunning "owl_telegram.py")) {
 }
 
 # 4) demo fleet (each restart script brings its own terminal + bot)
+# owner 2026-09-18: CROC kept, the rest retired. demo2 sat below its
+# own $50 floor and could not enter at all.
 $demos = @(
     @{ script = "C:\Projects\KinoliveLines\live\restart_pro.ps1";
-       match = "owl_pro_bot.py" },
-    @{ script = "C:\Projects\KinoliveLines\live\restart_raw.ps1";
-       match = "owl_raw_bot.py" },
-    @{ script = "C:\Projects\KinoliveLines\live\restart_demo2.ps1";
-       match = "owl_demo2_bot.py" }
+       match = "owl_pro_bot.py" }
 )
 foreach ($d in $demos) {
     if (-not (ProcRunning $d.match)) {

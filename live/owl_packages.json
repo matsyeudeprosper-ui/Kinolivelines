@@ -17,7 +17,9 @@
     "kill_net       close everything and stop at this net loss.",
     "max_risk_pct   no single trade may risk more than this share of balance.",
     "debt_mode      'hwm' = debt is the drawdown from the peak.",
-    "               'half' = half of each loss is added to the debt."
+    "               'half' = half of each loss is added to the debt.",
+    "",
+    "nervosity  false = this account ignores the nervosity brake. Owner's live A/B of 2026-09-18: Valere keeps it, Kino runs without it, everything else identical. The only strategy dial allowed here."
   ],
   "packages": {
     "base": {
@@ -27,26 +29,25 @@
       "adds_on": true,
       "chest_cap": 10.0,
       "jar": true,
-      "jar_skim": 0.50,
-      "jar_stake": 0.50,
+      "jar_skim": 0.5,
+      "jar_stake": 0.5,
       "jar_debt_mult": 0.5,
       "jar_floor_cap": 10.0,
       "kill_net": -60.0,
       "min_balance": 20.0,
-      "max_risk_pct": 0.10,
+      "max_risk_pct": 0.1,
       "debt_mode": "hwm",
       "day_cap": null,
       "max_trades_day": null,
-      "week_target": null
+      "week_target": null,
+      "nervosity": true
     },
-
     "valere": {
       "extends": "base",
       "label": "Valere - $3 par jour",
       "day_cap": 3.0,
       "week_target": 20.0
     },
-
     "sniper": {
       "extends": "base",
       "label": "Sniper (essai, compte mort 2026-09-18)",
@@ -55,17 +56,20 @@
       "adds_on": false,
       "kill_net": -80.0
     },
-
     "halfdebt": {
       "extends": "base",
       "label": "Demi-dette (essai, compte mort 2026-09-18)",
       "debt_mode": "half"
+    },
+    "kino_sans_frein": {
+      "extends": "base",
+      "label": "Kino - sans frein nervosite (essai A/B)",
+      "nervosity": false
     }
   },
-
   "accounts": {
     "bos": "base",
-    "kino": "base",
+    "kino": "kino_sans_frein",
     "u224016179": "valere",
     "sniper": "sniper",
     "half": "halfdebt"

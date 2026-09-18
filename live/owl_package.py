@@ -28,17 +28,22 @@ TTL = 60.0
 
 # what a package may set. Anything not listed here is strategy and stays
 # in code, the same for every account.
+# Money management, plus ONE strategy dial. "nervosity" is here against the
+# rule that packages hold no strategy, because the owner asked for a live
+# A/B on 2026-09-18: the same bot on two real accounts, one with the
+# nervosity brake and one without, since 41.7 days of replay could not
+# settle it. Keep this the exception, not a precedent.
 FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "jar", "jar_skim", "jar_stake", "jar_debt_mult", "jar_floor_cap",
           "kill_net", "min_balance", "max_risk_pct", "debt_mode",
-          "day_cap", "max_trades_day", "week_target")
+          "day_cap", "max_trades_day", "week_target", "nervosity")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
         "jar_stake": 0.50, "jar_debt_mult": 0.5, "jar_floor_cap": 10.0,
         "kill_net": -60.0, "min_balance": 20.0, "max_risk_pct": 0.10,
         "debt_mode": "hwm", "day_cap": None, "max_trades_day": None,
-        "week_target": None}
+        "week_target": None, "nervosity": True}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

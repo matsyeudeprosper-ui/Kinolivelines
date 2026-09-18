@@ -112,6 +112,23 @@ elif VARIANT == "halfdebt":
     COMMENT = "KL-HALF"
     DEBT_MODE = "half"
     _SFX = "_half"
+elif VARIANT == "kino":
+    # 2026-09-18 (owner): the main bot moves onto the Pro real account, with
+    # the SAME rules as Valere except one - it ignores the nervosity brake.
+    # A live A/B: 41.7 days of replay could not tell whether that brake
+    # helps, so the two accounts answer it forward, side by side.
+    _ku = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == "kino"][0]
+    TERMINAL = _ku["terminal"]
+    LOGIN = int(_ku["mt5_login"])
+    SERVER = _ku["mt5_server"]
+    PASSWORD = _ku["mt5_password"]
+    MAGIC = 909501
+    COMMENT = "KL-BOS-K"
+    TOUCH_ENTRIES = False       # same candle-close rule as everywhere
+    _SFX = "_kino"
 elif VARIANT == "valere":
     # 2026-09-14 (owner): Valere's real account runs its OWN instance of
     # the frozen live config - identical rules, but its own debt ledger,
@@ -157,7 +174,7 @@ LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
 #   owl_trading_pause.json          = master switch, stops everything
 #   owl_trading_pause_<uid>.json    = this account only
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
-             "halfdebt": "half"}.get(VARIANT, "bos")
+             "halfdebt": "half", "kino": "kino"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 
@@ -191,6 +208,7 @@ DEBT_MODE = _P["debt_mode"]
 DAY_CAP = _P["day_cap"]
 MAX_TRADES_DAY = _P["max_trades_day"]
 WEEK_TARGET = _P["week_target"]
+NERVOSITY = _P.get("nervosity", True)
 
 
 def say(msg):
@@ -356,8 +374,10 @@ def weather_gate(need_int=False, cj=None):
     cj = cj if cj is not None else weather()
     if not cj:
         return None
+    # the nervosity half can be switched off PER ACCOUNT (owner 2026-09-18,
+    # live A/B). The movement rule always applies.
     vn, vr = cj.get("vol_now"), cj.get("vol_ref")
-    if vn and vr:
+    if NERVOSITY and vn and vr:
         nerv = vn / max(vr, 1)
         if nerv > 1.0:
             return f"trop nerveux ({nerv:.2f}x)"
