@@ -864,7 +864,7 @@ def main():
                            "bullet": _blt,
                            "updated": int(time.time())},
                           open(os.path.join(
-                              DIR, "bos_weather.json"), "w"))
+                              DIR, f"bos_weather{_SFX}.json"), "w"))
             except Exception:
                 pass
             save_state(st)

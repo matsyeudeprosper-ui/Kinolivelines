@@ -2532,12 +2532,18 @@ def user_stats(u):
         try:
             # war-chest books exist only on the kino/std accounts;
             # the fresh demo (harvest engine) has no ledger card
-            if u.get("id") in ("kino", "std") or str(
+            # Owner 2026-09-18: an account running its OWN structure
+            # instance is checked FIRST. kino used to be caught by the
+            # legacy branch below and shown the retired KINO bot's ledger,
+            # so it never reached the structure cards after the switch.
+            if u.get("dedicated") or u.get("id") == "bos":
+                pass                      # handled by the branch below
+            elif u.get("id") in ("kino", "std") or str(
                     u.get("login")) == str(LOGIN):
                 d["ledger"] = json.load(open(os.path.join(
                     DIR, f"owl_ledger{_sfx}.json")))
                 d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
-            elif u.get("id") == "bos" or u.get("dedicated"):
+            if u.get("id") == "bos" or u.get("dedicated"):
                 # the Structure Bot keeps its own debt/bullet books.
                 # 2026-09-14: a member running his OWN instance (field
                 # "dedicated" = "structure_bos_bot.py <variant>") gets
@@ -2577,8 +2583,12 @@ def user_stats(u):
                     "next_lot": round(_bl0 + _mx * 0.01, 2),
                     "need_min": 3.0}  # ~one bullet at typical stop
                 try:
-                    d["meteo_struct"] = json.load(open(os.path.join(
-                        DIR, "bos_weather.json")))
+                    try:
+                        d["meteo_struct"] = json.load(open(os.path.join(
+                            DIR, f"bos_weather{_bsfx}.json")))
+                    except Exception:
+                        d["meteo_struct"] = json.load(open(os.path.join(
+                            DIR, "bos_weather.json")))
                     # the card speaks the chart's language, so it must read
                     # the chart's numbers - volatility and spread live in
                     # the feed, not in the bot's weather file (2026-09-17)
