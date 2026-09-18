@@ -274,6 +274,17 @@ function draw(){
  for(const c of cs){if(c[2]>hi)hi=c[2];if(c[3]<lo)lo=c[3];}
  if(LT&&atLive){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  const span0=hi-lo;
+ // Owner 2026-09-18: "where is the BOS indicator gone on the chart". The
+ // range was built from the CANDLES alone, so the main structure's two
+ // borders could sit outside it and fall back to a small arrow at the
+ // edge - easy to miss, and the chart exists to show exactly those two
+ // levels. They now pull the view, under the same sanity limit used for a
+ // position's stop: a border more than 1.5 ranges away is left at the edge
+ // rather than squashing the candles into a line.
+ [D.next_bos,D.invalid].forEach(v=>{
+  if(!v||!isFinite(v))return;
+  if(Math.abs(v-(D.px||(hi+lo)/2))>span0*1.5)return;
+  hi=Math.max(hi,v);lo=Math.min(lo,v);});
  // an open position matters: its entry always, its stop/target only if
  // they are not absurdly far compared with what price is doing
  (D.trades||[]).forEach(t=>{
@@ -856,12 +867,33 @@ function draw(){
  // where the next BOS would fire, and where the trend would break.
  // Deliberately small: a stub over the recent candles plus an edge tag,
  // so it never competes with the SL/TP lines.
- if(D.next_bos&&D.bos_ready!==false){
+ // Owner 2026-09-18: "where is the BOS indicator gone". It had not gone -
+ // the level exists but is not ARMED: the owner's own rule says no
+ // anticipated BOS until price has pulled back from it first. Hiding it
+ // outright made a normal, expected state look like a failure. It is now
+ // drawn dimmed and labelled, so the difference between "no level" and
+ // "level waiting for its pullback" is visible instead of guessed.
+ if(D.next_bos){
+  const armed=D.bos_ready!==false;
   const yb=px(D.next_bos),up=D.trend===1;
   if(D.next_bos>hi||D.next_bos<lo){
-   edgeMark(D.next_bos,up?'#4fd8c8':'#ff9678','BOS');}
+   if(armed)edgeMark(D.next_bos,up?'#4fd8c8':'#ff9678','BOS');}
   else if(yb>TOPP+6&&yb<TOPP+PLOT-6){
    const col=up?'#4fd8c8':'#ff9678';
+   if(!armed){
+    ctx.save();ctx.globalAlpha=.30;ctx.strokeStyle=col;ctx.lineWidth=1;
+    ctx.setLineDash([1,7]);
+    ctx.beginPath();ctx.moveTo(W*0.55,yb);ctx.lineTo(W-64,yb);ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=.75;
+    ctx.font='bold 8px system-ui';
+    const tw='BOS '+D.next_bos.toFixed(0)+' · attend un repli';
+    const ww=ctx.measureText(tw).width+8;
+    ctx.fillStyle='rgba(8,14,22,.8)';
+    ctx.beginPath();ctx.roundRect(W-ww-70,yb-7,ww,14,7);ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=col;ctx.fillText(tw,W-ww-66,yb+3);
+    ctx.restore();}
+   else{
    const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;
    const xb=(D.next_bos_t!==undefined&&xoft[D.next_bos_t]!==undefined)
     ?xoft[D.next_bos_t]:W*0.55;
@@ -884,7 +916,7 @@ function draw(){
    if(!near){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();}
    ctx.fillStyle=near?'#0b1118':col;
    ctx.fillText(lbl,W-lw+1,yb+3.5);
-   ctx.restore();}}
+   ctx.restore();}}}
  if(!MT&&MS&&MS.pending&&MS.pending.length){
   const p=MS.pending[0],ye=px(p.e);
   if(ye>2&&ye<TOPP+PLOT-2){
