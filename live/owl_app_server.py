@@ -1561,15 +1561,24 @@ function render(d){
       nervous:['🌀','Ça bouge trop','#e8c55a',
                'Le marché s’agite plus que d’habitude. Mieux vaut '+
                'laisser passer.']};
-    // TWO vetoes, not one. Activity can be there and nervosity still says
-    // no - above 1.0x its own daily norm was worse under both window
-    // anchors. The headline must never invite a trade that a measured veto
-    // refuses (owner 2026-09-17).
+    // The card must say exactly what weather_gate() would say, in the same
+    // order, or it explains a refusal that is not the real one.
+    //
+    // Owner 2026-09-18 caught two mistakes here. (1) The small-move count
+    // was the headline even with NO internal structure, when the live rule
+    // falls back to the big-move count over 2 h - so the card judged on a
+    // number the bots were ignoring. (2) The "none" wording claimed the
+    // market was CALM while nervosity said 1.18x AGITATED: nervosity is
+    // checked first by the gate, so it must be checked first here too.
     const nerv_bad=rv>1.0;
-    const k=(!aw)?'none':(nerv_bad?'nervous':(ms2.int_state||'none'));
+    const hasInt=!!ms2.int_trend;          // 0 = no internal structure
+    const mvOk=hasInt?(nb>=1):(mv>=1);     // the rule that actually applies
+    const k=nerv_bad?'nervous'
+      :(!mvOk?'none'
+      :(hasInt?(ms2.int_state||'ready'):'ready'));
     const S=ST[k]||ST.none;
     orb=S[0]; ti=S[1]; ln=S[3];
-    cls=(!aw)?'mx-sleep':(nerv_bad?'mx-cloud'
+    cls=nerv_bad?'mx-cloud':(!mvOk?'mx-sleep'
          :(k==='ready'?'mx-fish':'mx-sun'));
     // Measured on aligned internal trades, both window anchors: ABOVE its
     // own daily norm is worse either way. Below 1.0 is not reliably good,
@@ -1591,14 +1600,22 @@ function render(d){
     const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
     const ttxt=ms2.trend===1?'▲ hausse'
      :(ms2.trend===-1?'▼ baisse':'—');
-    // the two brakes first
-    chips.push(cell('petits mouvements',nb+'&thinsp;/&thinsp;1h',
-     aw?'#cfb3ff':'#6f8299',true));
+    // Accent = the two figures that DECIDE right now. Which movement rule
+    // that is depends on whether there is an internal structure, so the
+    // accent moves with it instead of always sitting on the small count
+    // (owner 2026-09-18).
+    const small=cell('petits mouvements',
+     hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
+     hasInt?(aw?'#cfb3ff':'#6f8299'):'#5f7185',hasInt);
+    const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
+     hasInt?(mv===0?'#6f8299':'#cfe3f5')
+      :(mv>=1?'#cfb3ff':'#6f8299'),!hasInt);
+    // the deciding movement rule first, then nervosity - always a brake
+    chips.push(hasInt?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
      vw[1],true));
     // then the context
-    chips.push(cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
-     mv===0?'#6f8299':'#cfe3f5',false));
+    chips.push(hasInt?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
