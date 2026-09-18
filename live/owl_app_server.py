@@ -2142,15 +2142,21 @@ function render(d){
     const stc=noBot?'#5f7185'
      :(x.err||!x.botlive||x.blocked?'#ffb3b3'
      :(x.paused?'#8fa1b3':'#8df0bb'));
+    // Owner 2026-09-18: leading with the robot hid the owner's own
+    // accounts - "where is Valere?" - because the person's name had been
+    // demoted to small grey text. The NAME is what you scan for, so it
+    // leads again; the robot and the account number sit under it, which
+    // still answers "what is running here" without stealing the anchor.
     return '<div class="row"><span style="display:flex;'+
     'flex-direction:column;gap:3px;min-width:0"><span style="white-space:'+
     'nowrap;overflow:hidden;text-overflow:ellipsis"><span style="display:'+
     'inline-block;width:9px;height:9px;border-radius:50%;background:'+
-    dot+';margin-right:8px"></span><b>'+(x.bot||x.name)+'</b>'+
+    dot+';margin-right:8px"></span><b>'+x.name+'</b>'+
     '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
     '</span></span>'+
-    '<span style="font-size:.72rem;color:#5f7185;white-space:nowrap;'+
-    'overflow:hidden;text-overflow:ellipsis">'+x.name+
+    '<span style="font-size:.72rem;color:#7f93a8;white-space:nowrap;'+
+    'overflow:hidden;text-overflow:ellipsis">'+
+    (x.bot?'&#129302; '+x.bot:'&#8212;')+
     (x.login?' &middot; '+x.login:'')+'</span>'+
     '<span style="font-size:.8rem;color:#8fa1b3">'+
     (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
