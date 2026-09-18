@@ -25,6 +25,7 @@ from datetime import datetime, timedelta, timezone
 import MetaTrader5 as mt5
 
 import structure_bos_bot as B          # Struct engine + constants
+import owl_shadow as SHADOW            # the gate's refused trades
 
 import sys as _sys
 
@@ -268,6 +269,81 @@ def lot_for(dist, led):
 
 def open_positions():
     return [p for p in (mt5.positions_get(symbol=SYMBOL) or [])]
+
+
+def shadow_note(cj, d, slv, why):
+    """Write down a trade the NERVOSITY brake refused, and follow it
+    virtually (owner 2026-09-18). Only nervosity, and only when every
+    other rule would have allowed it - otherwise it is not the
+    counterfactual we are trying to measure. Places no order."""
+    if not why.startswith("trop nerveux"):
+        return
+    try:
+        # would it have passed with nervosity switched off?
+        if B.weather_gate(cj=dict(cj, vol_now=0, vol_ref=1)):
+            return
+        tick = mt5.symbol_info_tick(SYMBOL)
+        if tick is None:
+            return
+        e = tick.ask if d == 1 else tick.bid
+        dist = abs(e - slv)
+        if dist <= B.S_MIN_DIST:
+            return
+        SHADOW.open_trade(UID, d, e, slv, e + d * B.RR * dist, why, BASE_LOT)
+    except Exception:
+        pass
+
+
+def kill_check(led):
+    """The kill line, at last (owner 2026-09-18).
+
+    This desk was written when a human watched every trade, so its header
+    said the ledger is reported and nothing is closed automatically. That
+    stopped being true the day AUTO mode went on: the robot enters by
+    itself, so it must be able to stop by itself. The automated bot has
+    had KILL_NET since day one; 441 was the only account trading without
+    one.
+
+    net = realised + floating, the same definition structure_bos_bot uses.
+    Crossing the line closes everything, cancels the pending orders and
+    switches the account back to MANUAL, so nothing re-enters. It is a
+    one-way door: only the owner turns automatic back on.
+    """
+    if B.KILL_NET is None:
+        return False
+    pos = [p for p in open_positions() if p.magic == MAGIC]
+    floating = sum(p.profit + p.swap for p in pos)
+    net = led.get("banked", 0.0) + floating
+    if net > B.KILL_NET:
+        return False
+    say(f"LIGNE DE MORT: net {net:.2f} <= {B.KILL_NET} "
+        f"- fermeture de tout et passage en manuel")
+    for p in pos:
+        tick = mt5.symbol_info_tick(SYMBOL)
+        if tick is None:
+            continue
+        buy = p.type == mt5.ORDER_TYPE_BUY
+        mt5.order_send({
+            "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
+            "volume": p.volume, "position": p.ticket,
+            "type": mt5.ORDER_TYPE_SELL if buy else mt5.ORDER_TYPE_BUY,
+            "price": tick.bid if buy else tick.ask,
+            "deviation": 500, "magic": MAGIC, "comment": "KILL",
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": mt5.ORDER_FILLING_IOC})
+    cancel_pending()
+    try:
+        tmp = PAUSE_OWN + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"paused": True, "by": "kill",
+                       "note": f"ligne de mort {B.KILL_NET}",
+                       "t": time.time()}, f)
+        os.replace(tmp, PAUSE_OWN)
+    except Exception as e:
+        say(f"LIGNE DE MORT: passage en manuel echoue: {e}")
+    push("Robot arrete", f"Perte de ${abs(net):.2f} atteinte. Tout est "
+                         f"ferme, le compte est repasse en manuel.")
+    return True
 
 
 def pending_orders():
@@ -660,6 +736,9 @@ def main():
                 bt = int(bar["time"])
                 if bt != last_bar:
                     last_bar = bt
+                    # follow the trades the nervosity brake refused, on the
+                    # raw bar (owner 2026-09-18)
+                    SHADOW.settle(UID, float(bar["high"]), float(bar["low"]))
                     prev_trend = eng.trend
                     sig = eng.step(bt, float(bar["open"]), float(bar["high"]),
                                    float(bar["low"]), float(bar["close"]))
@@ -697,6 +776,11 @@ def main():
                              f"La structure a bascule a {_c:.0f}. "
                              f"On trade desormais dans ce sens.")
                     # ---- AUTO mode: enter on our own (owner 2026-09-17)
+                    # The kill line is checked BEFORE any entry and while a
+                    # position is running, so a losing trade cannot carry the
+                    # account past the line unnoticed (owner 2026-09-18).
+                    if not manual_mode() and kill_check(led):
+                        continue
                     if not manual_mode():
                         _cj = chart()
                         # the internal structure first: its protected level
@@ -710,6 +794,7 @@ def main():
                             _g = gates(_cj, True)
                             if _g:
                                 say(f"AUTO petite structure ignoree: {_g}")
+                                shadow_note(_cj, _itr, float(_iv), _g)
                             else:
                                 auto_enter(_itr, float(_iv),
                                            "petite structure", _cj)
@@ -720,6 +805,8 @@ def main():
                             _g = gates(_cj, False)
                             if _g:
                                 say(f"AUTO grande structure ignoree: {_g}")
+                                shadow_note(_cj, int(sig[0]),
+                                            float(sig[1]), _g)
                             else:
                                 auto_enter(int(sig[0]), float(sig[1]),
                                            "grande structure", _cj)

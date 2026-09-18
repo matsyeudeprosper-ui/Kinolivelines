@@ -172,6 +172,7 @@ PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 # review/package_parity.py proves this reproduces, value for value, what
 # the hardcoded variants did before.
 import owl_package as _PKG
+import owl_shadow as SHADOW
 _P = _PKG.for_account(PAUSE_UID)
 PACKAGE = _P["package"]
 BASE_LOT = _P["base_lot"]
@@ -588,6 +589,22 @@ def main():
         _wg = weather_gate()
         if _wg:
             say(f"{kind} refuse: {_wg}")
+            # Owner 2026-09-18: the nervosity brake could not be settled in
+            # 41.7 days, so every trade it refuses is written down and
+            # followed virtually. Only nervosity refusals, and only when the
+            # movement rule would have passed - that is the counterfactual.
+            if _wg.startswith("trop nerveux"):
+                _cjx = weather()
+                if _cjx and not weather_gate(
+                        cj=dict(_cjx, vol_now=0, vol_ref=1)):
+                    _tk = mt5.symbol_info_tick(SYMBOL)
+                    if _tk:
+                        _e = _tk.ask if d == 1 else _tk.bid
+                        _ds = abs(_e - slp)
+                        if _ds > S_MIN_DIST:
+                            SHADOW.open_trade(
+                                PAUSE_UID, d, _e, slp,
+                                _e + d * RR * _ds, _wg, BASE_LOT)
             return False
         _why = day_blocked(st)
         if _why:
@@ -796,6 +813,10 @@ def main():
             if bt == st.get("last_bar"):
                 continue
             st["last_bar"] = bt
+            # settle the virtual trades the nervosity brake refused, on the
+            # raw bar - they must be judged on every minute, not only on the
+            # candles the silence filter keeps (owner 2026-09-18)
+            SHADOW.settle(PAUSE_UID, float(bar["high"]), float(bar["low"]))
             _pt = eng.trend
             _hv, _lv = eng.hi_v, eng.lo_v
             sig = eng.step(bt, float(bar["open"]),
