@@ -30,6 +30,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE = os.path.dirname(HERE)
 sys.path.insert(0, LIVE)
+_ARGS = sys.argv[1:]            # keep the CLI before the reset below
 sys.argv = ["rr_sweep"]
 
 import MetaTrader5 as mt5              # noqa: E402
@@ -139,7 +140,7 @@ def summ(tr):
 
 
 def main():
-    spread = float(sys.argv[1]) if len(sys.argv) > 1 else 7.0
+    spread = float(_ARGS[0]) if _ARGS else 7.0
     sym, R = bars()
     days = len(R) / 60 / 24
     print(f"  {sym}  {len(R)} bougies M1 = {days:.1f} jours"
