@@ -79,6 +79,11 @@ def save_json(path, obj):
         pass
 VPEND = os.path.join(DIR, f"manual_pending_{UID}.json")
 VPEND_MAX_H = 24                    # a forgotten order expires
+# Owner 2026-09-18: a line placed ON a BOS level means "trade this break
+# once it CONFIRMS", not "trade the first touch of this price".
+AT_BOS_TOL = 12.0      # pts: within this of a BOS level = "on the level"
+RETURN_TOL = 15.0      # pts: close enough to the confirmation close to enter
+EXPIRE_FRAC = 0.5      # gone this share of the reward past it = missed
 LOG = os.path.join(DIR, f"owl_manual_trader_{UID}.log")
 SEED_BARS = 3000
 REQ_MAX_AGE = 180                   # a request older than this is stale
@@ -373,6 +378,23 @@ def save_vpend(v):
         save_json(VPEND, v)
 
 
+def bos_level_near(entry):
+    """(name, price) of the break level this entry sits on, else None.
+    Reads the chart feed - the same levels the yellow line snaps to."""
+    cj = chart()
+    best = None
+    for key, name in (("next_bos", "BOS"), ("flip_bos", "BOS de bascule"),
+                      ("int_bos", "BOS interne"),
+                      ("int_flip_bos", "bascule interne")):
+        v = cj.get(key)
+        if v is None:
+            continue
+        gap = abs(float(v) - entry)
+        if gap <= AT_BOS_TOL and (best is None or gap < best[2]):
+            best = (name, float(v), gap)
+    return (best[0], best[1]) if best else None
+
+
 def place_pending(d, entry, sl, tp, tick, led, trend=0):
     """Owner 2026-09-15: a programmed entry must NOT fire on a touch. MT5's
     native pending orders trigger on price, so we hold the order here and
@@ -406,20 +428,25 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
     if bad:
         say(f"ORDRE PROGRAMME REFUSE: {bad}")
         return False, bad
-    if against:
-        # owner 2026-09-15: only a trade AGAINST the structure has to be
-        # confirmed by a close. With the trend, a touch is enough.
+    # Owner 2026-09-18: is this line sitting ON a break level? Then the
+    # yellow line means "I want this trade when the BOS confirms" - not
+    # necessarily at that exact price, and never on a mere touch.
+    on_bos = bos_level_near(entry)
+    if against or on_bos:
         need = 1 if entry > mkt else -1
+        mode = "bos" if on_bos else "counter"
         save_vpend(dict(d=d, entry=round(entry, 2), sl=round(sl, 2),
-                        tp=round(tp, 2), need=need, kind=name,
-                        placed=time.time(), trend=trend))
-        say(f"{name} ARME (contre-tendance) {lot} @ {entry:.2f} "
-            f"SL {sl:.2f} TP {tp:.2f} - attend une cloture M1 "
+                        tp=round(tp, 2), need=need, kind=name, mode=mode,
+                        lvl=on_bos, placed=time.time(), trend=trend))
+        why = (f"sur le niveau {on_bos[0]} {on_bos[1]:.0f}" if on_bos
+               else "contre-tendance")
+        say(f"{name} ARME ({why}) {lot} @ {entry:.2f} SL {sl:.2f} "
+            f"TP {tp:.2f} - attend une cloture M1 "
             f"{'au-dessus' if need == 1 else 'en dessous'}")
-        push(f"{name} arme", f"contre-tendance a {entry:.0f}, se declenche "
-                             f"sur cloture M1")
+        push(f"{name} arme", f"{why} a {entry:.0f}, se declenche sur la "
+                             f"bougie de confirmation")
         return True, dict(kind=name, lot=lot, price=entry, sl=sl, tp=tp,
-                          risk=round(dist * lot, 2), armed=True)
+                          risk=round(dist * lot, 2), armed=True, mode=mode)
     # with the trend: a real broker order, triggered on touch. An internal
     # trade is NOT close-confirmed - only counter-trend is (owner 2026-09-15)
     r = mt5.order_send({
@@ -438,9 +465,22 @@ def place_pending(d, entry, sl, tp, tick, led, trend=0):
                       risk=round(dist * lot, 2), bullets=bullets)
 
 
-def vpend_check(close_px, led):
-    """Called on each completed M1 bar. Fires the armed entry at market
-    when the candle closes beyond the line."""
+def vpend_check(close_px, led, bar_hi=None, bar_lo=None):
+    """Called on each completed M1 bar.
+
+    Owner 2026-09-18, for a line placed ON a break level (mode "bos"):
+      1. ARMED     - wait for the CONFIRMATION candle: an M1 close beyond
+                     the level in the trade's direction. A touch is not it.
+      2. CONFIRMED - the close is the reference price. If the market is
+                     still near it, enter now at market.
+      3. RETURN    - if price has already run, do not chase: enter only
+                     when a later candle comes back to that close.
+      4. EXPIRED   - price has gone more than EXPIRE_FRAC of the reward
+                     past the close without returning: the entry is missed
+                     and the order is dropped, not filled late.
+    A counter-trend line ("counter") keeps its old behaviour: fire at
+    market on the first close beyond the line.
+    """
     v = load_vpend()
     if not v:
         return
@@ -451,14 +491,55 @@ def vpend_check(close_px, led):
         return
     if open_positions():
         return
-    beyond = (close_px > v["entry"]) if v["need"] == 1 else (close_px < v["entry"])
-    if not beyond:
-        return
+    d = v["d"]
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return
-    d = v["d"]
     px = tick.ask if d == 1 else tick.bid
+    if v.get("mode") == "bos":
+        conf = v.get("conf")
+        if conf is None:
+            beyond = ((close_px > v["entry"]) if v["need"] == 1
+                      else (close_px < v["entry"]))
+            if not beyond:
+                return                          # still waiting to confirm
+            v["conf"] = round(close_px, 2)
+            v["conf_t"] = time.time()
+            conf = v["conf"]
+            say(f"{v['kind']} CONFIRME: cloture {close_px:.2f} au-dela de "
+                f"{v['entry']:.2f} - reference {conf:.2f}")
+            if abs(px - conf) > RETURN_TOL:
+                save_vpend(v)
+                say(f"{v['kind']} le prix est deja a {px:.2f} - attend un "
+                    f"retour vers {conf:.2f}")
+                push(f"{v['kind']} confirme", f"le prix est parti, attend "
+                                              f"un retour vers {conf:.0f}")
+                return
+        else:
+            # already confirmed earlier: has price come back to the close?
+            hi = bar_hi if bar_hi is not None else close_px
+            lo = bar_lo if bar_lo is not None else close_px
+            reward = abs(v["tp"] - conf)
+            gone = (px - conf) * d              # how far past, in trade dir
+            if gone > EXPIRE_FRAC * reward:
+                save_vpend(None)
+                say(f"{v['kind']} EXPIRE: prix a {px:.2f}, "
+                    f"{gone:.0f} pts au-dela de la confirmation {conf:.2f} "
+                    f"({EXPIRE_FRAC:.0%} de la cible) - entree manquee")
+                push("Ordre expire", f"{v['kind']}: le prix est parti trop "
+                                     f"loin de {conf:.0f} sans revenir")
+                return
+            back = (lo <= conf + RETURN_TOL) if d == 1                 else (hi >= conf - RETURN_TOL)
+            if not back:
+                save_vpend(v)
+                return
+            say(f"{v['kind']} RETOUR sur la confirmation {conf:.2f} "
+                f"(bougie {lo:.2f}-{hi:.2f}) - entree")
+    else:
+        beyond = ((close_px > v["entry"]) if v["need"] == 1
+                  else (close_px < v["entry"]))
+        if not beyond:
+            return
     dist = abs(px - v["sl"])
     if dist <= B.S_MIN_DIST:
         save_vpend(None)
@@ -750,7 +831,8 @@ def main():
                              f"Changement de caractere a {_c:.0f}. "
                              f"La tendance peut basculer - attends le BOS "
                              f"qui le confirme.", kind="batch")
-                    vpend_check(_c, rebuild_ledger())
+                    vpend_check(_c, rebuild_ledger(),
+                                float(bar["high"]), float(bar["low"]))
                     last_choch = eng.choch
                     _ENG["trend"] = eng.trend
                     # owner 2026-09-17: every mode change is logged and
@@ -877,7 +959,9 @@ def main():
                         "ticket": 1, "lot": counter_lot()[0],
                         "e": _vp["entry"], "sl": _vp["sl"], "tp": _vp["tp"],
                         "kind": _vp["kind"], "armed": True,
-                        "need": _vp["need"]}] if (_vp := load_vpend()) else
+                        "need": _vp["need"], "mode": _vp.get("mode"),
+                        "conf": _vp.get("conf"),
+                        "lvl": _vp.get("lvl")}] if (_vp := load_vpend()) else
                         [{"ticket": o.ticket, "lot": o.volume_current,
                           "e": o.price_open, "sl": o.sl, "tp": o.tp,
                           "armed": False,

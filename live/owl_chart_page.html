@@ -1334,9 +1334,19 @@ function mtRender(){
  if(against)p2+=sep+'<span style="color:#e8c55a">&#9888;&#65039; à contre-sens</span>';
  else if(c.inner)p2+=sep+'<span style="color:#b98cff">petite structure</span>';
  if(c.half)p2+=' <span style="color:#cfe3f5">demi-lot</span>';
- if(MT.entry&&!c.edit)p2+=sep+'sur cloture M1';
+ // Owner 2026-09-18: a yellow line ON a break level means "when the BOS
+ // confirms", so say that - "sur cloture M1" was shown for every pending
+ // while only counter-trend ones actually waited for a close.
+ if(MT.entry&&!c.edit){
+  const L=[[D&&D.next_bos,'BOS'],[D&&D.flip_bos,'bascule'],
+           [D&&D.int_bos,'BOS interne'],[D&&D.int_flip_bos,'bascule interne']]
+   .find(x=>x[0]&&Math.abs(x[0]-MT.entry)<=12);
+  p2+=sep+(L?'<span style="color:#e8c55a">sur '+L[1]+' &middot; attend la '+
+   'bougie de confirmation</span>':'sur cloture M1');}
  if(pnd&&!MT.editPend&&!c.edit)p2+=sep+
-  '<span style="color:#e8c55a">'+pnd.kind+' @ '+pnd.e.toFixed(0)+' en cours</span>';
+  '<span style="color:#e8c55a">'+pnd.kind+' @ '+pnd.e.toFixed(0)+
+  (pnd.mode==='bos'?(pnd.conf?' &middot; confirm&eacute; '+pnd.conf.toFixed(0)+
+   ', attend un retour':' &middot; attend la confirmation'):' en cours')+'</span>';
  p2+=sep+'à rattraper $'+(MS.debt||0).toFixed(2)+
   ' &middot; réserve <span style="color:#8df0bb">$'+
   (MS.chest||0).toFixed(2)+'</span>';
