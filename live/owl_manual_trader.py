@@ -176,21 +176,11 @@ def chart():
 
 
 def gates(cj, need_int):
-    """The rules that survived being measured two ways. Both only ever
-    STOP a trade; neither was shown to make money. Returns None to allow,
-    or the reason to refuse."""
-    vn, vr = cj.get("vol_now"), cj.get("vol_ref")
-    if vn and vr:
-        nerv = vn / max(vr, 1)
-        if nerv > 1.0:
-            return f"trop nerveux ({nerv:.2f}x)"
-    if need_int:
-        if (cj.get("int_brk_1h") or 0) < 1:
-            return "aucun petit mouvement depuis 1 h"
-    else:
-        if (cj.get("moves_2h") or 0) < 1:
-            return "aucun grand mouvement depuis 2 h"
-    return None
+    """The entry brakes - ONE implementation, in the bot, shared by every
+    account (owner 2026-09-18). This desk used to carry its own copy, and
+    that is exactly how 441 and Valere ended up obeying different rules.
+    Kept as a thin wrapper so the desk's call sites read the same."""
+    return B.weather_gate(need_int=need_int, cj=cj)
 # owner 2026-09-15: no single trade may risk more than 10% of the balance.
 # The automated bot already enforces this; the manual desk does too.
 MAX_RISK_PCT = 0.10

@@ -1,0 +1,73 @@
+{
+  "_doc": [
+    "Money management per account (owner 2026-09-18). STRATEGY lives in",
+    "code and is the SAME for every account - only what is listed here may",
+    "differ. Change a number, and the bots pick it up within a minute; no",
+    "restart, no code edit.",
+    "",
+    "'extends' inherits every field of another package, so a new offer is",
+    "usually two lines. Add an account to 'accounts' to put it on a package;",
+    "an account that is not listed gets 'base'.",
+    "",
+    "day_cap        stop opening once today's REALISED profit reaches this",
+    "               (waived while the account owes money). null = no cap.",
+    "max_trades_day how many trades a day this package allows. null = no cap.",
+    "week_target    shown at startup, informational only.",
+    "base_lot       lot per signal.  max_extra: recovery bullets on top.",
+    "kill_net       close everything and stop at this net loss.",
+    "max_risk_pct   no single trade may risk more than this share of balance.",
+    "debt_mode      'hwm' = debt is the drawdown from the peak.",
+    "               'half' = half of each loss is added to the debt."
+  ],
+  "packages": {
+    "base": {
+      "label": "Standard",
+      "base_lot": 0.02,
+      "max_extra": 3,
+      "adds_on": true,
+      "chest_cap": 10.0,
+      "jar": true,
+      "jar_skim": 0.50,
+      "jar_stake": 0.50,
+      "jar_debt_mult": 0.5,
+      "jar_floor_cap": 10.0,
+      "kill_net": -60.0,
+      "min_balance": 20.0,
+      "max_risk_pct": 0.10,
+      "debt_mode": "hwm",
+      "day_cap": null,
+      "max_trades_day": null,
+      "week_target": null
+    },
+
+    "valere": {
+      "extends": "base",
+      "label": "Valere - $3 par jour",
+      "day_cap": 3.0,
+      "week_target": 20.0
+    },
+
+    "sniper": {
+      "extends": "base",
+      "label": "Sniper (essai, compte mort 2026-09-18)",
+      "base_lot": 0.06,
+      "max_extra": 0,
+      "adds_on": false,
+      "kill_net": -80.0
+    },
+
+    "halfdebt": {
+      "extends": "base",
+      "label": "Demi-dette (essai, compte mort 2026-09-18)",
+      "debt_mode": "half"
+    }
+  },
+
+  "accounts": {
+    "bos": "base",
+    "kino": "base",
+    "u224016179": "valere",
+    "sniper": "sniper",
+    "half": "halfdebt"
+  }
+}

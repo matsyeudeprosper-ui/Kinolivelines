@@ -75,6 +75,10 @@ study/signal_observer.csv
 live/owl_app_token.txt
 live/owl_*.json
 live/owl_*.csv
+# ...except the package catalogue: it is the product definition, not state
+# and not a credential - plain numbers, and it belongs in the record
+# (owner 2026-09-18). Check any new exception for secrets before adding it.
+!live/owl_packages.json
 live/nest_data/
 # one-shot patch scripts + terminal .ini files that embed credentials
 live/make_demo2.py

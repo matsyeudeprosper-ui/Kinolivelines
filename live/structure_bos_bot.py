@@ -161,6 +161,36 @@ PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 
+# --- MONEY MANAGEMENT comes from the account's PACKAGE -----------------
+# Owner 2026-09-18: "Valere's difference should just be the daily cut off
+# profit... new accounts may have different money management, package kind
+# of thing... make things easy for codes to go that route."
+#
+# So the STRATEGY above is identical on every account, and only the dials
+# below may differ. They live in owl_packages.json: a new offer is a few
+# lines of JSON, and retuning one costs no code change and no restart.
+# review/package_parity.py proves this reproduces, value for value, what
+# the hardcoded variants did before.
+import owl_package as _PKG
+_P = _PKG.for_account(PAUSE_UID)
+PACKAGE = _P["package"]
+BASE_LOT = _P["base_lot"]
+MAX_EXTRA = _P["max_extra"]
+ADDS_ON = _P["adds_on"]
+CHEST_CAP = _P["chest_cap"]
+JAR = _P["jar"]
+JAR_SKIM = _P["jar_skim"]
+JAR_STAKE = _P["jar_stake"]
+JAR_DEBT_MULT = _P["jar_debt_mult"]
+JAR_FLOOR_CAP = _P["jar_floor_cap"]
+KILL_NET = _P["kill_net"]
+MIN_BALANCE = _P["min_balance"]
+MAX_RISK_PCT = _P["max_risk_pct"]
+DEBT_MODE = _P["debt_mode"]
+DAY_CAP = _P["day_cap"]
+MAX_TRADES_DAY = _P["max_trades_day"]
+WEEK_TARGET = _P["week_target"]
+
 
 def say(msg):
     line = f"{datetime.now(timezone.utc).isoformat()} {msg}"
@@ -293,27 +323,87 @@ def load_state():
                 "open_lot": 0.0}
 
 
+CHART_F = os.path.join(DIR, "owl_chart_btc.json")
+
+
+def weather(max_age=180):
+    """The market-weather feed, or None when it is missing or stale."""
+    try:
+        st = os.stat(CHART_F)
+        if time.time() - st.st_mtime > max_age:
+            return None
+        with open(CHART_F, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def weather_gate(need_int=False, cj=None):
+    """Shared entry brakes. None allows, a string refuses.
+
+    Owner 2026-09-18: "every time we make a change in the main bot, update
+    the rest of the bots everywhere". These two rules lived only in the
+    manual desk, so account 441 obeyed them and Valere did not - Valere
+    entered at 05:01 in a 1.30x market that the desk refused at 05:31.
+    They are STRATEGY, so they belong here, shared by every account.
+
+    Both rules only ever STOP a trade; neither was shown to make money,
+    and they cut volume by roughly 90%. A missing or stale feed ALLOWS -
+    a brake that fires on its own silence would stop everything the moment
+    the feed hiccups.
+    """
+    cj = cj if cj is not None else weather()
+    if not cj:
+        return None
+    vn, vr = cj.get("vol_now"), cj.get("vol_ref")
+    if vn and vr:
+        nerv = vn / max(vr, 1)
+        if nerv > 1.0:
+            return f"trop nerveux ({nerv:.2f}x)"
+    if need_int:
+        if (cj.get("int_brk_1h") or 0) < 1:
+            return "aucun petit mouvement depuis 1 h"
+    else:
+        if (cj.get("moves_2h") or 0) < 1:
+            return "aucun grand mouvement depuis 2 h"
+    return None
+
+
 def day_key():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 def day_roll(st):
-    """Reset the daily counter when the UTC date changes."""
+    """Reset the daily counters when the UTC date changes."""
     if st.get("day_key") != day_key():
         st["day_key"] = day_key()
         st["day_pnl"] = 0.0
+        st["day_n"] = 0
         st["day_capped"] = False
     return st.get("day_pnl", 0.0)
 
 
 def day_blocked(st):
-    """True when today's realised profit reached the cap AND the
-    account owes nothing. Debt means catch-up: the cap is waived."""
+    """Why no new entry today, or None to allow.
+
+    Two different limits (owner 2026-09-18):
+      day_cap        a PROFIT target. Waived while the account owes money,
+                     because catching up must not be throttled.
+      max_trades_day a PACKAGE limit - how many trades this offer includes.
+                     Never waived: it is what the account signed up for.
+    """
+    pnl = day_roll(st)
+    cap = MAX_TRADES_DAY
+    if cap is not None and st.get("day_n", 0) >= cap:
+        return (f"{st.get('day_n', 0)}/{cap} trades du jour "
+                f"(forfait {PACKAGE})")
     if DAY_CAP is None:
-        return False
+        return None
     if st.get("debt", 0.0) > 0.5:
-        return False
-    return day_roll(st) >= DAY_CAP
+        return None
+    if pnl >= DAY_CAP:
+        return f"+{pnl:.2f} aujourd'hui (>= ${DAY_CAP:.2f}), sans dette"
+    return None
 
 
 def save_state(st):
@@ -495,13 +585,17 @@ def main():
             return False
         if paused():
             return False
-        if day_blocked(st):
+        _wg = weather_gate()
+        if _wg:
+            say(f"{kind} refuse: {_wg}")
+            return False
+        _why = day_blocked(st)
+        if _why:
             if not st.get("day_capped"):
                 st["day_capped"] = True
                 save_state(st)
-                say(f"DAY CAP: +{st.get('day_pnl', 0.0):.2f} today "
-                    f"(>= ${DAY_CAP:.2f}), no debt - no new entry until "
-                    f"the next UTC day")
+                say(f"LIMITE DU JOUR: {_why} - plus d'entree jusqu'au "
+                    f"prochain jour UTC")
             return False
         ai2 = mt5.account_info()
         if ai2 is None or ai2.balance < MIN_BALANCE:
@@ -564,6 +658,10 @@ def main():
             f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
             f"(risk ${dist * lot:.2f}, "
             f"trend {'up' if d == 1 else 'down'})")
+        # a package's trades-per-day limit counts ENTRIES, so it is spent
+        # when the trade is taken, not when it closes (owner 2026-09-18)
+        day_roll(st)
+        st["day_n"] = st.get("day_n", 0) + 1
         # arm the 50%-pullback add (user 2026-09-09, measured:
         # +343/+422 vs +263 without; chest-funded bullets only)
         if ADDS_ON:
