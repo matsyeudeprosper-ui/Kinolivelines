@@ -110,6 +110,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <div id="botbar">
 <div id="pnl"><b>--</b><span></span></div>
 <div id="botrow"><button id="backlive">&#9654; EN DIRECT</button>
+<button id="adstop" style="display:none;padding:11px 15px;border-radius:14px;
+ border:1px solid rgba(255,92,92,.5);background:rgba(255,92,92,.14);
+ color:#ff8c8c;font-weight:800;font-size:.8rem">&#128721;</button>
 <button id="mtopen" style="display:none;
  padding:11px 16px;border-radius:14px;border:0;background:#1f6feb;color:#fff;
  font-weight:800;font-size:.8rem;box-shadow:0 6px 18px rgba(31,111,235,.4)">
@@ -901,6 +904,99 @@ function hdstrip(){
  const on=[...st.children].some(c=>c.style.display!=='none');
  st.style.display=on?'inline-flex':'none';
 }
+/* ---- admin emergency stop, from the chart of ANY account ------------
+   Switching into an account makes this page speak with that account's
+   token, so the admin's own base path is remembered by the main app and
+   read back here. The request is sent AS the admin; the server still
+   checks is_admin and still demands the master password. */
+function admTok(){
+ try{const v=localStorage.getItem('owl_adm');
+  return (v&&v!==location.pathname&&v!==location.pathname+'/')?v:null;}
+ catch(e){return null;}
+}
+function adSheet(html){
+ return new Promise(res=>{
+  const bg=document.createElement('div');
+  bg.style.cssText='position:fixed;inset:0;z-index:90;background:rgba(4,8,13,.72);'+
+   'backdrop-filter:blur(3px);display:flex;align-items:flex-end';
+  const bx=document.createElement('div');
+  bx.style.cssText='width:100%;background:#0d151f;border-top:1px solid #23384c;'+
+   'border-radius:18px 18px 0 0;padding:18px 16px 22px;color:#cfe3f5;'+
+   'font-size:.86rem;line-height:1.55;max-height:84vh;overflow:auto';
+  bx.innerHTML=html;
+  bg.appendChild(bx);document.body.appendChild(bg);
+  const done=v=>{try{document.body.removeChild(bg)}catch(e){}res(v)};
+  window._adDone=done;
+  bg.onclick=e=>{if(e.target===bg)done(null)};
+ });
+}
+const AD_BTN='display:block;width:100%;margin-top:9px;padding:13px;'+
+ 'border-radius:12px;font-weight:800;font-size:.85rem;border:0;';
+function adCall(adm,uid,pw,dry){
+ return fetch(adm+'nest_panic',{method:'POST',
+  headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'uid='+encodeURIComponent(uid)+'&dry='+dry+'&pwd='+
+   encodeURIComponent(pw)}).then(r=>r.json()).catch(()=>null);
+}
+async function adStop(){
+ const adm=admTok(),uid=D&&D.uid;
+ if(!adm||!uid)return;
+ const pw=await adSheet('<h3 style="margin:0 0 8px">Arrêt d’urgence</h3>'+
+  '<p style="color:#9fb6cc;margin:0 0 12px">Je regarde d’abord ce qui est '+
+  'ouvert sur ce compte. Rien ne sera fermé sans ton accord.</p>'+
+  '<input id="adpw" type="password" placeholder="Mot de passe maître" '+
+  'style="width:100%;padding:12px;border-radius:12px;border:1px solid #2b4054;'+
+  'background:#0a111c;color:#cfe3f5;font-size:.9rem">'+
+  '<button style="'+AD_BTN+'background:#1f6feb;color:#fff" '+
+  'onclick="_adDone(document.getElementById(\'adpw\').value)">🔍 Regarder</button>'+
+  '<button style="'+AD_BTN+'background:#16202c;color:#9fb6cc" '+
+  'onclick="_adDone(null)">Annuler</button>');
+ if(!pw)return;
+ const dry=await adCall(adm,uid,pw,'1');
+ if(!dry){await adSheet('<h3>Réseau indisponible.</h3>'+
+  '<button style="'+AD_BTN+'background:#16202c;color:#9fb6cc" '+
+  'onclick="_adDone(1)">OK</button>');return;}
+ if(!dry.ok){await adSheet('<h3 style="margin:0 0 8px">Impossible</h3>'+
+  '<p style="color:#ff9678">'+(dry.err||'erreur')+'</p>'+
+  '<button style="'+AD_BTN+'background:#16202c;color:#9fb6cc" '+
+  'onclick="_adDone(1)">OK</button>');return;}
+ const P=dry.positions||[],O=dry.orders||[];
+ if(!P.length&&!O.length){
+  await adSheet('<h3 style="margin:0 0 8px">Rien à fermer</h3>'+
+   '<p style="color:#9fb6cc">Compte '+(dry.acct||'')+' : aucun trade, '+
+   'aucun ordre en attente.</p><button style="'+AD_BTN+
+   'background:#16202c;color:#9fb6cc" onclick="_adDone(1)">OK</button>');
+  return;}
+ let li='';
+ P.forEach(q=>{li+='<li>'+q.lot+' lot '+q.symbol+' · P&L '+
+  (q.pl>=0?'+$':'-$')+Math.abs(q.pl).toFixed(2)+'</li>';});
+ O.forEach(q=>{li+='<li>ordre en attente · '+q.lot+' lot '+q.symbol+'</li>';});
+ const go=await adSheet('<h3 style="margin:0 0 8px">Tout fermer sur le '+
+  dry.acct+' ?</h3><p style="color:#9fb6cc;margin:0 0 10px">Fermeture au '+
+  'prix du marché. Le compte passera en manuel pour que le robot ne '+
+  'rouvre rien.</p><ul style="margin:0 0 4px 18px;color:#c6d3df">'+li+'</ul>'+
+  '<button style="'+AD_BTN+'background:#c0392b;color:#fff" '+
+  'onclick="_adDone(1)">🛑 Tout fermer maintenant</button>'+
+  '<button style="'+AD_BTN+'background:#16202c;color:#9fb6cc" '+
+  'onclick="_adDone(null)">Annuler</button>');
+ if(!go)return;
+ const r=await adCall(adm,uid,pw,'0');
+ let h;
+ if(!r){h='<h3>Réseau indisponible.</h3><p style="color:#ff9678">'+
+  'Vérifie le compte avant de recommencer.</p>';}
+ else{const nc=r.closed||0,na=r.cancelled||0,nf=r.failed||0;
+  h=(nf?'<h3 style="margin:0 0 8px">⚠️ Partiellement fermé</h3>'
+      :'<h3 style="margin:0 0 8px">✅ Compte fermé</h3>')+
+   '<p style="color:#9fb6cc">'+nc+' trade(s) fermé(s), '+na+
+   ' ordre(s) annulé(s). Compte en manuel.</p>';
+  if(nf)h+='<p style="color:#ff9678">'+nf+' échec(s)'+
+   (r.left!=null?', '+r.left+' position(s) encore ouverte(s)':'')+
+   '. Regarde le compte directement.</p>';
+  if(r.err)h+='<p style="color:#ff9678">'+r.err+'</p>';}
+ await adSheet(h+'<button style="'+AD_BTN+
+  'background:#16202c;color:#9fb6cc" onclick="_adDone(1)">OK</button>');
+}
+document.getElementById('adstop').onclick=adStop;
 function ui(){
  if(!D)return;
  const pn=document.getElementById('pnl');
@@ -923,6 +1019,14 @@ function ui(){
   lastPnl=tot;
  }else if(pnMiss>=3){pn.style.display='none';lastPnl=null;}
  // between 1 and 2 misses the last value simply stays on screen
+ // Admin emergency stop (owner 2026-09-18). Shown only in the browser
+ // that has opened the admin's own page, and only when there is
+ // something to close. The call goes out with the ADMIN's token, so the
+ // route's admin check is untouched; the master password still gates it.
+ const as=document.getElementById('adstop');
+ if(as){const adm=admTok();
+  as.style.display=(adm&&ts.length)?'block':'none';
+  as.textContent='\u{1F6D1} '+ts.length;}
  // market weather: how much structure has moved lately and how lively
  // the candles are versus their own norm. An activity gauge, not a
  // prediction - E013 found period quality is not forecastable.

@@ -1998,6 +1998,12 @@ function render(d){
   window._c7=d.curve||[];window._c30=d.curve30||[];
   drawSpark();
   if(d.is_master&&d.nest){
+   // Owner 2026-09-18: remember the ADMIN's own base path in this
+   // browser. Switching into another account makes every page speak with
+   // that account's token, so the chart of any account uses this to call
+   // the emergency stop as the admin. The route still checks is_admin and
+   // still demands the master password - nothing here grants anything.
+   try{localStorage.setItem('owl_adm',B);}catch(e){}
    document.getElementById('tb-nid').style.display='flex';
    const asw=document.getElementById('acctsw');
    asw.style.display='block';
@@ -3842,6 +3848,7 @@ class H(BaseHTTPRequestHandler):
                     pass
             d["trades"] = tr
             d["acct"] = user.get("login")
+            d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)
             self._send(json.dumps(d), "application/json")
         elif sub == "manual_state":
