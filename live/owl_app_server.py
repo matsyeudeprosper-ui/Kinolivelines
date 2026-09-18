@@ -732,9 +732,6 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" id="statx-sec" style="display:none">Statistiques
  &middot; 30 derniers trades</div>
 <div class="panel" id="statx" style="display:none"></div>
-<div class="sec" id="fights-sec" style="display:none">&#9876;&#65039;
- Combats des soldats</div>
-<div class="panel" id="fights" style="display:none"></div>
 <div class="sec">Derniers trades</div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
@@ -2286,45 +2283,6 @@ function render(d){
      sw>=slo?'pos':'neg')+
     SR('Meilleure s&eacute;rie',bs+' gains de suite','pos'));
   }
-  if(d.fights&&d.fights.length){
-   const f0=d.fights[0];
-   if(window._lf===undefined){window._lf=f0.t;}
-   else if(f0.t>window._lf){window._lf=f0.t;
-    if(f0.res==='gagne'){
-     confetti(['âš”ï¸','ðŸ†','âœ¨',
-      'ðŸª™']);}}
-   document.getElementById('fights-sec').style.display='block';
-   const fe=document.getElementById('fights');
-   fe.style.display='block';
-   fe.innerHTML=d.fights.map(x=>{
-    const dt=new Date(x.t*1000);
-    const when=String(dt.getDate()).padStart(2,'0')+'/'+
-     String(dt.getMonth()+1).padStart(2,'0')+' '+
-     String(dt.getHours()).padStart(2,'0')+':'+
-     String(dt.getMinutes()).padStart(2,'0');
-    const badge=x.res==='gagne'
-     ?'<span style="background:rgba(46,204,113,.18);color:#8df0bb;'+
-      'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
-      'font-weight:700">GAGN&Eacute;</span>'
-     :(x.res==='perdu'
-      ?'<span style="background:rgba(255,92,92,.16);color:#ff9c9c;'+
-       'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
-       'font-weight:700">PERDU</span>'
-      :'<span style="background:rgba(255,255,255,.1);color:#9fb2c4;'+
-       'padding:2px 9px;border-radius:99px;font-size:.72rem;'+
-       'font-weight:700">NUL</span>');
-    const after=x.book<=0.5
-     ?'<span style="color:#8df0bb">livre sold&eacute; &#10024;</span>'
-     :'reste $'+x.book.toFixed(2)+' &agrave; rattraper';
-    return '<div class="row"><span style="display:flex;'+
-     'flex-direction:column;gap:3px"><span>'+badge+
-     ' <span style="color:#6f93b5;font-size:.82rem">'+
-     x.lot.toFixed(2)+' lot &middot; '+when+'</span></span>'+
-     '<span style="font-size:.75rem;color:#5f7185">'+after+
-     '</span></span><b class="'+(x.pnl>=0?'pos':'neg')+'">'+
-     (x.pnl>=0?'+$':'-$')+Math.abs(x.pnl).toFixed(2)+'</b></div>';
-   }).join('');
-  }
   if(d.trades&&!d.trades.length){
    document.getElementById('hist').innerHTML=
     '<div class="empty"><i>&#129417;</i>'+
@@ -2495,13 +2453,12 @@ def user_stats(u):
         if plan == "trial":
             d["trial_days_left"] = max(0, int(left // 86400) + 1)
         if u.get("id") == "kino":
-            try:
-                _wx = json.load(open(os.path.join(
-                    DIR, "owl_weather.json")))
-                d["meteo"] = _wx.get("mode")
-                d["meteo_since"] = _wx.get("since")
-            except Exception:
-                pass
+            # Owner 2026-09-18: the legacy sun/sea weather came from
+            # owl_weather.json, written by the retired KINO bot and last
+            # touched 2026-09-07. It was kino-only and it is what made this
+            # account's page look different from every other one. Gone; the
+            # account reads the measured card like the other structure
+            # accounts.
             try:
                 _ms = json.load(open(os.path.join(
                     DIR, "owl_milestone.json")))
@@ -2652,16 +2609,11 @@ def user_stats(u):
                 "wr_pass": _ft.get("wr_pass", 0.66)}
         except Exception:
             pass
-        try:
-            # war-chest fight history belongs to kino/std only -
-            # other accounts (fresh, bos, family) have their own
-            # systems and must not inherit the master's fights
-            if u.get("id") in ("kino", "std") or str(
-                    u.get("login")) == str(LOGIN):
-                d["fights"] = json.load(open(os.path.join(
-                    DIR, f"owl_fight_history{_sfx}.json")))[-12:][::-1]
-        except Exception:
-            pass
+        # Owner 2026-09-18: "the UI must be uniform, same for all accounts."
+        # The "combats des soldats" card existed on kino/std alone and was
+        # fed by the retired KINO bot's fight history, so it showed trades
+        # from 2026-09-07 on an account whose books had just been cleared.
+        # Removed rather than generalised: no other account has that data.
         if u.get("id") == "std":
             try:
                 d["trading_paused"] = bool(json.load(open(
