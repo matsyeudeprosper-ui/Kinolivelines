@@ -299,6 +299,67 @@ def acct_auto(u):
     return True
 
 
+# account -> (robot's name, the file it keeps fresh, its log)
+# The 4th field is how long this robot may stay silent before it counts as
+# stopped. They do not all breathe at the same rate: the structure bots
+# write every minute, Harvest works on H1 logic and can go ~7 min between
+# writes - a single 5-minute rule declared it dead while it was fine
+# (owner 2026-09-18).
+BOT_OF = {
+    "kino":       ("KINO", "owl_manual_state.json", "owl_manual.log", 300),
+    "luc":        ("CROC", "owl_pro_alive.json", "owl_pro.log", 300),
+    "fresh":      ("Harvest H1", "harvest_fresh_state.json",
+                   "harvest_fresh.log", 1800),
+    "bos":        ("Structure · bureau", "manual_state_bos.json",
+                   "owl_manual_trader_bos.log", 300),
+    "u224016179": ("Structure", "bos_state_valere.json",
+                   "bos_bot_valere.log", 300),
+}
+# the broker refusals that mean "alive but cannot trade"
+BLOCKED = {"10027": "AutoTrading &eacute;teint", "10019": "solde insuffisant"}
+
+
+def bot_blocked(log):
+    """A robot can be running and still be unable to place a single order.
+    CROC looked 'actif' for 7 days while the terminal refused all 1295 of
+    its entries (owner 2026-09-18). Read the tail of its log and say so."""
+    try:
+        p = os.path.join(DIR, log)
+        if time.time() - os.path.getmtime(p) > 3600:
+            return None                     # not even trying lately
+        with open(p, "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - 2048))
+            tail = f.read().decode("utf-8", "replace")
+        for code, why in BLOCKED.items():
+            if f"retcode={code}" in tail or f"code {code}" in tail:
+                return why
+    except Exception:
+        pass
+    return None
+
+
+def bot_on(uid):
+    """Which robot runs this account, is it alive, and can it trade?
+
+    Owner 2026-09-18: the nest list showed people's names, so "Luc" was
+    really the CROC bot and "Kino (manuel)" had no robot at all - the list
+    could not tell you what was left after the cleanup. Liveness is read
+    from the file each bot publishes, never from a hardcoded table, so a
+    bot that dies shows as dead instead of quietly looking fine.
+    """
+    m = BOT_OF.get(uid)
+    if not m:
+        return None, False, None
+    label, f, log, max_age = m
+    try:
+        live = (time.time() - os.path.getmtime(
+            os.path.join(DIR, f))) < max_age
+    except Exception:
+        live = False
+    return label, live, (bot_blocked(log) if live else None)
+
+
 def manual_ok(u):
     """2026-09-15 (owner): the trade tool belongs to the ACCOUNT's mode.
     An account running full automation never gets it; one switched to
@@ -2065,16 +2126,32 @@ function render(d){
     (tt>=0?'pos':'neg')+'">auj. '+(tt>=0?'+$':'-$')+
     Math.abs(tt).toFixed(2)+'</span></span></div>';
    document.getElementById('nest').innerHTML=hdr+d.nest.map(x=>{
-    const dot=x.err||x.stale?'#e6a028':(x.paused?'#8fa1b3':'#2ecc71');
-    const st=x.err?'probl&egrave;me':(x.stale?'hors ligne'
-     :(x.paused?'en pause':'actif'));
+    // Owner 2026-09-18: the list showed people's names and their plan, so
+    // it could not answer "what is still running here". Now each row says
+    // which ROBOT holds the account and whether that robot is alive - an
+    // account with no robot says so instead of pretending to be paused.
+    // The plan is gone: it is billing, not state.
+    const noBot=!x.bot;
+    const dot=noBot?'#4a5a6b'
+     :(x.err||x.stale?'#e6a028':(x.paused?'#8fa1b3':'#2ecc71'));
+    const st=noBot?'aucun robot'
+     :(x.err?'probl&egrave;me':(x.stale?'hors ligne'
+     :(!x.botlive?'robot arr&ecirc;t&eacute;'
+     :(x.blocked?x.blocked
+     :(x.paused?'en pause':'actif')))));
+    const stc=noBot?'#5f7185'
+     :(x.err||!x.botlive||x.blocked?'#ffb3b3'
+     :(x.paused?'#8fa1b3':'#8df0bb'));
     return '<div class="row"><span style="display:flex;'+
-    'flex-direction:column;gap:3px"><span><span style="display:'+
+    'flex-direction:column;gap:3px;min-width:0"><span style="white-space:'+
+    'nowrap;overflow:hidden;text-overflow:ellipsis"><span style="display:'+
     'inline-block;width:9px;height:9px;border-radius:50%;background:'+
-    dot+';margin-right:8px"></span><b>'+x.name+'</b> '+
-    '<span style="color:#5f7185;font-size:.75rem">'+st+
-    (x.plan?' &middot; '+x.plan:'')+
-    (x.login?' &middot; '+x.login:'')+'</span></span>'+
+    dot+';margin-right:8px"></span><b>'+(x.bot||x.name)+'</b>'+
+    '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
+    '</span></span>'+
+    '<span style="font-size:.72rem;color:#5f7185;white-space:nowrap;'+
+    'overflow:hidden;text-overflow:ellipsis">'+x.name+
+    (x.login?' &middot; '+x.login:'')+'</span>'+
     '<span style="font-size:.8rem;color:#8fa1b3">'+
     (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
     (x.today!=null?' &middot; auj. <span class="'+
@@ -2635,6 +2712,7 @@ def user_stats(u):
                         _age = time.time() - os.path.getmtime(_ndp)
                     except Exception:
                         _age = 9e9
+                    _bot, _live, _blk = bot_on(x["id"])
                     _rows.append({
                         "id": x["id"],
                         "name": x.get("name", x["id"]),
@@ -2645,6 +2723,7 @@ def user_stats(u):
                         "err": bool(nd.get("error")),
                         "stale": _age > 60, "paused": _pz,
                         "pos": nd.get("open_positions"),
+                        "bot": _bot, "botlive": _live, "blocked": _blk,
                         "trade": bool(x.get("trade")
                                       or x.get("id") == "kino"),
                         "plan": x.get("plan")})
