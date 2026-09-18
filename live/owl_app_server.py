@@ -3883,10 +3883,13 @@ class H(BaseHTTPRequestHandler):
             # aura redesign 2026-09-08 lives in its own file; the
             # inline constant is only the fallback
             try:
-                self._send(open(os.path.join(
-                    DIR, "owl_chart_page.html"),
-                    encoding="utf-8").read(),
-                    "text/html; charset=utf-8")
+                _cp = os.path.join(DIR, "owl_chart_page.html")
+                _html = open(_cp, encoding="utf-8").read()
+                # stamp the build so a stale page on a phone is obvious
+                _st = time.strftime("%m%d.%H%M",
+                                    time.localtime(os.path.getmtime(_cp)))
+                self._send(_html.replace("%%BUILD%%", _st),
+                           "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
         elif sub == "chart_data":
