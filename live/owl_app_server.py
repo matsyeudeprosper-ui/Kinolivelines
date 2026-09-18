@@ -1558,9 +1558,14 @@ function render(d){
                'Trop tôt. Laisse le marché se dessiner.'],
       none:['💤','Rien à faire','#6f8299',
             'Le marché est calme. Mieux vaut attendre.'],
-      nervous:['🌀','Ça bouge trop','#e8c55a',
-               'Le marché s’agite plus que d’habitude. Mieux vaut '+
-               'laisser passer.']};
+      // the common case, just over the line - saying "ça bouge trop" here
+      // overstated it (owner 2026-09-18)
+      brisk:['🍃','Marché vif','#e8c55a',
+             'Ça va un peu plus vite que d’habitude. Le robot laisse '+
+             'passer celui-là.'],
+      nervous:['🌀','Ça bouge trop','#ff9678',
+               'Le marché s’agite beaucoup plus que d’habitude. Mieux '+
+               'vaut laisser passer.']};
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
     //
@@ -1573,17 +1578,28 @@ function render(d){
     const nerv_bad=rv>1.0;
     const hasInt=!!ms2.int_trend;          // 0 = no internal structure
     const mvOk=hasInt?(nb>=1):(mv>=1);     // the rule that actually applies
-    const k=nerv_bad?'nervous'
+    const k=nerv_bad?(rv<1.30?'brisk':'nervous')
       :(!mvOk?'none'
       :(hasInt?(ms2.int_state||'ready'):'ready'));
     const S=ST[k]||ST.none;
     orb=S[0]; ti=S[1]; ln=S[3];
     cls=nerv_bad?'mx-cloud':(!mvOk?'mx-sleep'
          :(k==='ready'?'mx-fish':'mx-sun'));
-    // Measured on aligned internal trades, both window anchors: ABOVE its
-    // own daily norm is worse either way. Below 1.0 is not reliably good,
-    // so the break sits at 1.0 and only the bad side is flagged.
-    const vw=rv>1.0?['agité','#e8c55a']:['normal','#cfe3f5'];
+    // The GATE stays at 1.0 - that is the measured line, the only one that
+    // held under both window anchors. These are only the WORDS.
+    //
+    // Owner 2026-09-18: "so most of the time it's agitated?" No - 47%. The
+    // threshold sits on the median (0.98 over 41.7 days), so "agité" was
+    // lighting up on a coin flip and stopped meaning anything. 1.18x, which
+    // the card called agitated, is the 68th percentile: brisk, not a storm.
+    // Measured bands, so each word matches how often it is true:
+    //   < 1.00  calme        53% of the time
+    //   < 1.30  vif          22%   (68th-75th percentile territory)
+    //   < 1.85  agité        15%   (1 hour in 4 is above 1.31)
+    //   >=1.85  très agité   10%   (1 hour in 10)
+    const vw=rv<1.0?['calme','#cfe3f5']
+      :(rv<1.30?['vif','#e8c55a']
+      :(rv<1.85?['agité','#ff9678']:['très agité','#ff5c5c']));
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     // Owner 2026-09-17: the spread is gone. It is a cost judged against the
     // stop, and this card cannot know the stop - it answered a different

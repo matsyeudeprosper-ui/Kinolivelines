@@ -1056,10 +1056,14 @@ function ui(){
    const nb=D.int_brk_1h,aw=nb>=1;
    const W={ready:'rien ne bloque',flip:'bascule',forming:'formation',
             none:'—'}[D.int_state]||'—';
-   // nervosity is the second veto: activity alone is not permission
+   // nervosity is the second veto: activity alone is not permission.
+   // Same wording bands as the weather card - the threshold sits on the
+   // median, so "trop nerveux" was firing on a coin flip and stopped
+   // meaning anything (owner 2026-09-18).
    const nb2=rv>1.0;
-   txt+=' · int '+(!aw?'💤':(nb2?'🌀':'⚡'))+' '+nb+'/1h'+
-        (aw?(nb2?' trop nerveux':' '+W):'');
+   const nw=rv<1.30?'vif':(rv<1.85?'agité':'très agité');
+   txt+=' · int '+(!aw?'💤':(nb2?(rv<1.30?'🍃':'🌀'):'⚡'))+' '+nb+'/1h'+
+        (aw?(nb2?' '+nw:' '+W):'');
   }
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
   mb.innerHTML='<i>'+S[0]+'</i>'+txt;
