@@ -196,6 +196,7 @@ def engine(kept, snap=None, brk_out=None):
     choch = 0            # pending direction after a CHoCH, else 0
     last_lo = last_hi = None
     up_st = dn_st = 0
+    first_lo = first_hi = None   # the founding dot, drawn with the second
     prot_lo = prot_hi = None     # the trend's newest glowing dot
     for i in range(1, len(kept)):
         t, o, h, l, c, d = kept[i]
@@ -247,19 +248,29 @@ def engine(kept, snap=None, brk_out=None):
                     prot_lo = nd
                     choch = 0    # new BOS up repairs a pending choc
                 elif trend == 0:
-                    if last_lo is not None and m[3] > last_lo:
-                        up_st += 1
-                        # owner 2026-09-16: a dot means a confirmed break.
-                        # While counting higher lows there is no break yet,
-                        # so nothing is marked until the trend is set.
-                        if up_st >= 2:
-                            trend = 1
-                            prot_lo = nd
-                            if vis:
-                                dots.append(nd)
-                            dn_st = 0
-                    else:
-                        up_st = 0
+                    # Owner 2026-09-19: "if 2 glowing dots form, we already
+                    # have a structure - a trend forming is enough". The old
+                    # bootstrap wanted two CONSECUTIVE HIGHER lows, and the
+                    # first confirmed low never counted at all (last_lo was
+                    # still None) - so a window that swung down, up, up sat
+                    # at "no structure" for hours. Now: two confirmed low
+                    # dots = uptrend, whatever their prices. A high dot in
+                    # between resets the count, so alternating low/high
+                    # cannot bootstrap a direction.
+                    up_st += 1
+                    dn_st = 0
+                    if up_st == 1:
+                        first_lo = nd if vis else None
+                    if up_st >= 2:
+                        trend = 1
+                        prot_lo = nd
+                        # both founding dots are drawn, not only the second:
+                        # a trend the chart shows with one dot reads as a
+                        # one-dot trend, which the rule never was
+                        if first_lo is not None:
+                            dots.append(first_lo)
+                        if vis:
+                            dots.append(nd)
                 last_lo = m[3]
                 lo_i = kept.index(m)
                 lo_v = m[3]
@@ -291,16 +302,18 @@ def engine(kept, snap=None, brk_out=None):
                     prot_hi = nd
                     choch = 0    # new BOS down repairs a pending choc
                 elif trend == 0:
-                    if last_hi is not None and m[2] < last_hi:
-                        dn_st += 1
-                        if dn_st >= 2:
-                            trend = -1
-                            prot_hi = nd
-                            if vis:
-                                dots.append(nd)
-                            up_st = 0
-                    else:
-                        dn_st = 0
+                    # mirror of the bullish bootstrap (owner 2026-09-19)
+                    dn_st += 1
+                    up_st = 0
+                    if dn_st == 1:
+                        first_hi = nd if vis else None
+                    if dn_st >= 2:
+                        trend = -1
+                        prot_hi = nd
+                        if first_hi is not None:
+                            dots.append(first_hi)
+                        if vis:
+                            dots.append(nd)
                 last_hi = m[2]
                 hi_i = kept.index(m)
                 hi_v = m[2]
