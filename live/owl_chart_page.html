@@ -485,6 +485,25 @@ function draw(){
  // --- FLIP LINE: where a close kills the trend. Taken from the
  //     published level, not from the dot list: that dot scrolls out of
  //     the window and the whole line used to vanish with it (2026-09-16)
+ // Owner 2026-09-19: "the hline at the protected dot is not there". After
+ // a CHoCH the engine CONSUMES the dot (invalid = null) until the next
+ // confirmed BOS - that is the rule, not a bug. But an invisible state
+ // reads as a broken feature, so the consumed level is drawn faded from
+ // the last CHoCH mark, labelled as consumed, until a new dot exists.
+ if(!D.invalid&&D.choch&&(D.trend===1||D.trend===-1)){
+  const cm=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
+  if(cm&&cm[1]>lo&&cm[1]<hi){
+   const y=px(cm[1]),col=D.trend===1?'#4fd8c8':'#ffb86b';
+   ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.28;ctx.lineWidth=1;
+   ctx.setLineDash([3,7]);
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+   ctx.setLineDash([]);ctx.globalAlpha=.7;ctx.font='bold 8px system-ui';
+   const t2='CHoCH '+cm[1].toFixed(0)+' · point consommé';
+   const w2=ctx.measureText(t2).width+8;
+   ctx.fillStyle='rgba(8,14,22,.8)';
+   ctx.beginPath();ctx.roundRect(8,y-7,w2,14,7);ctx.fill();
+   ctx.strokeStyle=col;ctx.stroke();ctx.fillStyle=col;
+   ctx.fillText(t2,12,y+3);ctx.restore();}}
  if(D.invalid&&(D.trend===1||D.trend===-1)){
   const col=D.trend===1?'#4fd8c8':'#ffb86b';
   if(D.invalid>hi||D.invalid<lo){edgeMark(D.invalid,col,'CHoCH');}
@@ -882,6 +901,31 @@ function draw(){
  // outright made a normal, expected state look like a failure. It is now
  // drawn dimmed and labelled, so the difference between "no level" and
  // "level waiting for its pullback" is visible instead of guessed.
+ // Owner 2026-09-19: the main structure's FLIP level was never drawn -
+ // only the internal one was. After a CHoCH it is the line that decides
+ // whether the trend actually turns, so it is the one to watch.
+ if(D.flip_bos&&D.flip_bos!==D.next_bos){
+  const fd=D.flip_bos_dir||-D.trend,fcol=fd===1?'#2ecc71':'#ff5c5c';
+  const farm=D.flip_bos_ready!==false,yf=px(D.flip_bos);
+  if(D.flip_bos>hi||D.flip_bos<lo){
+   if(farm)edgeMark(D.flip_bos,fcol,(fd===1?'▲ ':'▼ ')+'bascule');}
+  else if(yf>TOPP+6&&yf<TOPP+PLOT-6){
+   const xf=(D.flip_bos_t!==undefined&&xoft[D.flip_bos_t]!==undefined)
+    ?xoft[D.flip_bos_t]:W*0.55;
+   ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
+   ctx.lineWidth=1;ctx.setLineDash(farm?[1,4]:[1,7]);
+   ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W-64,yf);ctx.stroke();
+   ctx.setLineDash([]);
+   if(farm){ctx.fillStyle=fcol;ctx.globalAlpha=.85;
+    ctx.beginPath();ctx.arc(xf,yf,3,0,6.3);ctx.fill();}
+   ctx.globalAlpha=farm?1:.75;ctx.font='bold 8px system-ui';
+   const tf=(fd===1?'▲ ':'▼ ')+'BOS de bascule '+D.flip_bos.toFixed(0)+
+    (farm?'':' · attend un repli');
+   const wf=ctx.measureText(tf).width+8;
+   ctx.fillStyle='rgba(8,14,22,.8)';
+   ctx.beginPath();ctx.roundRect(W-wf-70,yf-7,wf,14,7);ctx.fill();
+   ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
+   ctx.fillStyle=fcol;ctx.fillText(tf,W-wf-66,yf+3);ctx.restore();}}
  if(D.next_bos){
   const armed=D.bos_ready!==false;
   const yb=px(D.next_bos),up=D.trend===1;
