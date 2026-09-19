@@ -190,6 +190,23 @@ PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 # the hardcoded variants did before.
 import owl_package as _PKG
 import owl_shadow as SHADOW
+_KB = []          # the last 3 closed M1 bars, refreshed every loop
+
+
+def fvg_pts(d):
+    """Fair-value gap left by the confirming candle, in points, or 0.
+    bullish: low[i] > high[i-2]; bearish: high[i] < low[i-2].
+    Owner 2026-09-19: replayed, a gap split BOS into +0.108 R (with) vs
+    -0.050 (without) on 6/6 anchors - but the two halves disagreed and the
+    shuffle gave p = 0.076, so it is NOT deployed. Every qualifying signal
+    is tagged with its gap and followed virtually instead (book "fvg"),
+    so the forward record can re-run those two controls with more data."""
+    if len(_KB) < 3:
+        return 0.0
+    c1, c3 = _KB[-3], _KB[-1]
+    if d == 1:
+        return max(0.0, float(c3["low"]) - float(c1["high"]))
+    return max(0.0, float(c1["low"]) - float(c3["high"]))
 _P = _PKG.for_account(PAUSE_UID)
 PACKAGE = _P["package"]
 BASE_LOT = _P["base_lot"]
@@ -676,6 +693,11 @@ def main():
                 f"(${cap:.2f})")
             return False
         tp = e_ref + d * RR * dist
+        # forward record for the FVG filter: this signal passed every rule
+        # the bot has, so it is exactly what the replay counted. Virtual,
+        # settled on raw bars by SHADOW.settle(..., book="fvg").
+        SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp,
+                          f"fvg={fvg_pts(d):.0f} {kind}", BASE_LOT, book="fvg")
         req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
                "volume": lot,
                "type": (mt5.ORDER_TYPE_BUY if d == 1
@@ -824,10 +846,13 @@ def main():
                             save_state(st)
                             if not SNIPER or st["ord"] == 2:
                                 enter(-1, m[2], "TOUCH")
+            # 3 closed bars, not 2: the fair-value-gap tag needs the bar
+            # two before the confirming one (owner 2026-09-19, forward test)
             kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
-                                         1, 2)
-            if kb is None or len(kb) < 2:
+                                         1, 3)
+            if kb is None or len(kb) < 3:
                 continue
+            _KB[:] = list(kb)
             bar = kb[-1]
             bt = int(bar["time"])
             if bt == st.get("last_bar"):
@@ -837,6 +862,8 @@ def main():
             # raw bar - they must be judged on every minute, not only on the
             # candles the silence filter keeps (owner 2026-09-18)
             SHADOW.settle(PAUSE_UID, float(bar["high"]), float(bar["low"]))
+            SHADOW.settle(PAUSE_UID, float(bar["high"]), float(bar["low"]),
+                          book="fvg")
             _pt = eng.trend
             _hv, _lv = eng.hi_v, eng.lo_v
             sig = eng.step(bt, float(bar["open"]),

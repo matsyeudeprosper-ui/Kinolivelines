@@ -31,13 +31,16 @@ MAX_OPEN = 40            # a runaway list would mean settle() is not running
 MAX_DONE = 2000
 
 
-def _path(uid):
-    return os.path.join(DIR, f"owl_shadow_{uid}.json")
+def _path(uid, book=""):
+    # book "" = the nervosity counterfactual (original file name kept);
+    # any other name = a separate forward record, e.g. "fvg"
+    sfx = f"_{book}" if book else ""
+    return os.path.join(DIR, f"owl_shadow_{uid}{sfx}.json")
 
 
-def _load(uid):
+def _load(uid, book=""):
     try:
-        with open(_path(uid), encoding="utf-8") as f:
+        with open(_path(uid, book), encoding="utf-8") as f:
             d = json.load(f)
         d.setdefault("open", [])
         d.setdefault("done", [])
@@ -46,9 +49,9 @@ def _load(uid):
         return {"open": [], "done": [], "started": int(time.time())}
 
 
-def _save(uid, d):
+def _save(uid, d, book=""):
     try:
-        p = _path(uid)
+        p = _path(uid, book)
         tmp = p + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(d, f)
@@ -57,10 +60,13 @@ def _save(uid, d):
         pass
 
 
-def open_trade(uid, d, entry, sl, tp, why, lot=0.02):
-    """Note a trade the gate refused. Returns nothing; never raises."""
+def open_trade(uid, d, entry, sl, tp, why, lot=0.02, book=""):
+    """Note a virtual trade. Returns nothing; never raises.
+    book="" is the nervosity counterfactual; book="fvg" records EVERY
+    qualifying signal tagged with its fair-value gap (owner 2026-09-19),
+    so the FVG filter can be judged forward without touching a trade."""
     try:
-        st = _load(uid)
+        st = _load(uid, book)
         if len(st["open"]) >= MAX_OPEN:
             return
         st["open"].append({"t": int(time.time()), "d": int(d),
@@ -68,12 +74,12 @@ def open_trade(uid, d, entry, sl, tp, why, lot=0.02):
                            "sl": round(float(sl), 2),
                            "tp": round(float(tp), 2),
                            "lot": lot, "why": why})
-        _save(uid, st)
+        _save(uid, st, book)
     except Exception:
         pass
 
 
-def settle(uid, high, low):
+def settle(uid, high, low, book=""):
     """Close any virtual trade this bar's range would have finished.
 
     A bar that spans BOTH the stop and the target counts as a LOSS - the
@@ -81,7 +87,7 @@ def settle(uid, high, low):
     it exists to test.
     """
     try:
-        st = _load(uid)
+        st = _load(uid, book)
         if not st["open"]:
             return
         high, low = float(high), float(low)
@@ -104,14 +110,14 @@ def settle(uid, high, low):
         if closed:
             st["open"] = still
             del st["done"][:-MAX_DONE]
-            _save(uid, st)
+            _save(uid, st, book)
     except Exception:
         pass
 
 
-def summary(uid):
+def summary(uid, book=""):
     try:
-        st = _load(uid)
+        st = _load(uid, book)
         dn = st["done"]
         n = len(dn)
         if not n:
@@ -129,8 +135,40 @@ def summary(uid):
                 "wr": None, "since": None}
 
 
+def fvg_report(uid):
+    """The forward record of the FVG filter: every qualifying signal, split
+    by whether its confirming candle left a gap. This is the data the two
+    failed controls (halves, shuffle) need more of."""
+    st = _load(uid, "fvg")
+    dn = st["done"]
+    def _g(x):
+        try:
+            return float(str(x.get("why", "")).split("fvg=")[1].split()[0])
+        except Exception:
+            return 0.0
+    rows = []
+    for lab, f in (("avec gap", lambda x: _g(x) > 0),
+                   ("sans gap", lambda x: _g(x) <= 0)):
+        sub = [x for x in dn if f(x)]
+        if sub:
+            w = sum(1 for x in sub if x["win"])
+            rows.append((lab, len(sub), 100 * w / len(sub),
+                         sum(x["R"] for x in sub) / len(sub)))
+        else:
+            rows.append((lab, 0, 0.0, 0.0))
+    return rows, len(st["open"])
+
+
 if __name__ == "__main__":
     import sys
+    if "--fvg" in sys.argv:
+        for uid in [a for a in sys.argv[1:] if a != "--fvg"] or ["kino", "u224016179"]:
+            rows, op = fvg_report(uid)
+            print(f"  {uid:<14} FVG forward - {op} en cours")
+            for lab, n, wr, per in rows:
+                print(f"    {lab:<10} {n:>4} termines  {wr:5.1f}%  {per:+.3f} R/trade")
+            print("    il faut les deux moities d'accord et p < 0.01 avant d'y croire")
+        raise SystemExit
     ids = sys.argv[1:] or ["bos", "u224016179"]
     print("  Trades refuses pour nervosite, suivis virtuellement")
     print("  (ce que le compte aurait fait SANS ce frein)\n")
