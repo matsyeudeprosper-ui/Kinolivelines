@@ -910,22 +910,29 @@ function draw(){
   if(D.flip_bos>hi||D.flip_bos<lo){
    if(farm)edgeMark(D.flip_bos,fcol,(fd===1?'▲ ':'▼ ')+'bascule');}
   else if(yf>TOPP+6&&yf<TOPP+PLOT-6){
-   const xf=(D.flip_bos_t!==undefined&&xoft[D.flip_bos_t]!==undefined)
-    ?xoft[D.flip_bos_t]:W*0.55;
-   ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
-   ctx.lineWidth=1;ctx.setLineDash(farm?[1,4]:[1,7]);
-   ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W-64,yf);ctx.stroke();
-   ctx.setLineDash([]);
-   if(farm){ctx.fillStyle=fcol;ctx.globalAlpha=.85;
-    ctx.beginPath();ctx.arc(xf,yf,3,0,6.3);ctx.fill();}
-   ctx.globalAlpha=farm?1:.75;ctx.font='bold 8px system-ui';
+   // Owner 2026-09-19: "pas de ligne continue comme les deux autres". The
+   // line used to start mid-screen (origin candle off-screen) and end
+   // UNDER the label box, so only a stub showed. It now runs from the
+   // origin candle if visible - else the left edge - right up to the
+   // label, which sits at the far right like the anticipated BOS.
+   const xo=(D.flip_bos_t!==undefined&&xoft[D.flip_bos_t]!==undefined)
+    ?xoft[D.flip_bos_t]:null;
+   const xf=xo!==null?xo:0;
+   ctx.font='bold 8px system-ui';
    const tf=(fd===1?'▲ ':'▼ ')+'BOS de bascule '+D.flip_bos.toFixed(0)+
     (farm?'':' · attend un repli');
    const wf=ctx.measureText(tf).width+8;
+   ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
+   ctx.lineWidth=1;ctx.setLineDash(farm?[1,4]:[1,7]);
+   ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W-wf-8,yf);ctx.stroke();
+   ctx.setLineDash([]);
+   if(farm&&xo!==null){ctx.fillStyle=fcol;ctx.globalAlpha=.85;
+    ctx.beginPath();ctx.arc(xo,yf,3,0,6.3);ctx.fill();}
+   ctx.globalAlpha=farm?1:.75;
    ctx.fillStyle='rgba(8,14,22,.8)';
-   ctx.beginPath();ctx.roundRect(W-wf-70,yf-7,wf,14,7);ctx.fill();
+   ctx.beginPath();ctx.roundRect(W-wf-4,yf-7,wf,14,7);ctx.fill();
    ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
-   ctx.fillStyle=fcol;ctx.fillText(tf,W-wf-66,yf+3);ctx.restore();}}
+   ctx.fillStyle=fcol;ctx.fillText(tf,W-wf,yf+3);ctx.restore();}}
  if(D.next_bos){
   const armed=D.bos_ready!==false;
   const yb=px(D.next_bos),up=D.trend===1;
