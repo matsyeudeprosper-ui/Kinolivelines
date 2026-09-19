@@ -2510,6 +2510,16 @@ def user_stats(u):
             # instance is checked FIRST. kino used to be caught by the
             # legacy branch below and shown the retired KINO bot's ledger,
             # so it never reached the structure cards after the switch.
+            # Owner 2026-09-19: "the UI must be uniform". Both Kino (09-18)
+            # and the demo (today) got the OLD cards because their record
+            # lacked the "dedicated" field the structure branch keys on. An
+            # account the bot table says runs a structure instance IS one,
+            # whether or not the record says so - derive it.
+            _bo = BOT_OF.get(u.get("id"))
+            if (not u.get("dedicated") and _bo
+                    and _bo[1].startswith("bos_state_")):
+                u["dedicated"] = ("structure_bos_bot.py "
+                                  + _bo[1][len("bos_state_"):-len(".json")])
             if u.get("dedicated") or u.get("id") == "bos":
                 pass                      # handled by the branch below
             elif u.get("id") in ("kino", "std") or str(
