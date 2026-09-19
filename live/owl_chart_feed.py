@@ -494,9 +494,19 @@ def main():
                 # to confirm, and the internal structure would carry on
                 # across a boundary it had already crossed. The window now
                 # restarts at the last touch of either border.
+                # 2026-09-19 fix: the first version assumed next_bos was the
+                # UPPER border and the dot the LOWER one - true in an uptrend,
+                # reversed in a downtrend. There, every candle whose high sat
+                # above the (lower) BOS level counted as a touch, the window
+                # restarted on every bar, and no internal structure could ever
+                # form while the main trend was down. The borders are now the
+                # min and max of whatever main levels exist - the BOS level,
+                # the dot, and the flip level that stands in for the dot once
+                # a CHoCH has consumed it - with no assumption about sides.
                 if _t0 and kept:
-                    _lo_b = inv if inv is not None else None
-                    _hi_b = nxt if nxt is not None else None
+                    _bs = [v for v in (nxt, inv, _mflp) if v is not None]
+                    _hi_b = max(_bs) if _bs else None
+                    _lo_b = min(_bs) if _bs else None
                     _touch = None
                     for _k in kept:
                         if _k[0] <= _t0:
