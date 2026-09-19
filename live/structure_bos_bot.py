@@ -617,13 +617,18 @@ def main():
     say(f"seeded {len(R)} bars: trend {eng.trend} "
         f"choch {eng.choch} kept {len(eng.kept)}")
 
-    def enter(d, slp, kind):
-        """Shared entry executor (close-BOS, flip-BOS and touch)."""
+    def enter(d, slp, kind, internal=False):
+        """Shared entry executor (close-BOS, flip-BOS, touch, and - owner
+        2026-09-19 - the INTERNAL structure: "the bot is main and internal
+        structure both, wherever it is used, same code for all accounts").
+        An internal entry follows the desk's approved rules: the 1 h
+        small-move brake instead of the 2 h one, half the base lot, no
+        recovery bullets."""
         if my_positions():
             return False
         if paused():
             return False
-        _wg = weather_gate()
+        _wg = weather_gate(need_int=internal)
         if _wg:
             say(f"{kind} refuse: {_wg}")
             # Owner 2026-09-18: the nervosity brake could not be settled in
@@ -684,6 +689,15 @@ def main():
                 say(f"RECUP: {extra} lot(s) de +0.01 -> lot {lot:.2f} "
                     f"(dette ${st['debt']:.2f}, bocal ${st['chest']:.2f}, "
                     f"mise ${extra * risk001:.2f})")
+        if internal:
+            # half the base lot, never bullets - the desk's rule for a trade
+            # on the small structure (owner 2026-09-15). If halving cannot
+            # produce something strictly smaller, the trade is not possible.
+            _half = round(max(0.01, int((BASE_LOT / 2) / 0.01) * 0.01), 2)
+            if not _half < BASE_LOT - 1e-9:
+                say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
+                return False
+            lot = _half
         # --- no single trade may risk more than 10% of the balance
         risk = dist * lot
         cap = MAX_RISK_PCT * ai2.balance
@@ -895,6 +909,23 @@ def main():
             except Exception:
                 pass
             save_state(st)
+            # ---- INTERNAL structure (owner 2026-09-19): mirrors the desk.
+            # The chart feed is the one implementation of the internal
+            # engine; its protected level moves on every internal break, so
+            # a changed int_inv_t is a break just confirmed. Entered only in
+            # the direction of the MAIN trend, and only once per level -
+            # the last level is persisted so a restart cannot replay it.
+            _cj = weather()
+            if _cj:
+                _iv, _ivt = _cj.get("int_inv"), _cj.get("int_inv_t")
+                _itr = _cj.get("int_trend") or 0
+                if (_iv and _ivt and _ivt != st.get("int_last_t")
+                        and _itr and _itr == eng.trend):
+                    st["int_last_t"] = _ivt
+                    save_state(st)
+                    enter(_itr, float(_iv), "INT", internal=True)
+                elif _ivt and _ivt != st.get("int_last_t"):
+                    st["int_last_t"] = _ivt      # against the trend: noted, not traded
             if sig is None:
                 continue
             if not awake:
