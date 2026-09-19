@@ -314,6 +314,8 @@ BOT_OF = {
                    "owl_manual_trader_bos.log", 300),
     "u224016179": ("Structure", "bos_state_valere.json",
                    "bos_bot_valere.log", 300),
+    "demo":       ("Structure · démo publique", "bos_state_demo.json",
+                   "bos_bot_demo.log", 300),
 }
 # the broker refusals that mean "alive but cannot trade"
 BLOCKED = {"10027": "AutoTrading &eacute;teint", "10019": "solde insuffisant"}
@@ -358,6 +360,19 @@ def bot_on(uid):
     except Exception:
         live = False
     return label, live, (bot_blocked(log) if live else None)
+
+
+def public_user():
+    """The showcase account (owner 2026-09-19): opened from the front door
+    without a password, so everyone can watch the bot work. None if no
+    record carries public=True."""
+    try:
+        for x in json.load(open(USERS_FILE, encoding="utf-8")):
+            if x.get("public") and x.get("token"):
+                return x
+    except Exception:
+        pass
+    return None
 
 
 def manual_ok(u):
@@ -1969,6 +1984,8 @@ function render(d){
    if(pc>=100&&!window._conf){window._conf=1;confetti();}
   }
   const n=d.open_positions;
+  if(d.public){const db=document.getElementById('delbtn');
+   if(db)db.style.display='none';}
   if(d.trading_paused!==undefined){
    isPaused=d.trading_paused;
    pauseLocked=!!d.pause_locked;
@@ -2716,6 +2733,11 @@ def user_stats(u):
         # account can end up with an unlocked-looking switch
         if "trading_paused" in d:
             d["pause_locked"] = u.get("id") not in PAUSE_ALLOWED
+        if u.get("public"):
+            # view-only: no switch, no settings that change anything
+            d["public"] = True
+            d.pop("trading_paused", None)
+            d.pop("pause_locked", None)
         return d
     except Exception:
         # fall back to the built-in kino stats while the worker warms up
@@ -3079,6 +3101,9 @@ jour et nuit. Vous, vous regardez.</div>
 </div>
 <button class="bigbtn b1" onclick="show('v-login')">
 Se connecter</button>
+<a class="bigbtn b2" href="/demo" style="display:block;margin-top:12px;
+ text-decoration:none;text-align:center">&#128065;&#65039; Voir le compte
+ d&eacute;mo en direct</a>
 <button class="bigbtn b2" id="inst2" onclick="inst2()"
  style="margin-top:12px">&#128241; Installer l&#8217;application</button>
 <div id="howto2" style="display:none;margin-top:12px;background:#141c28;
@@ -3364,6 +3389,18 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        # Owner 2026-09-19: the public showcase is view-only. Its token is
+        # in everyone's hands, so EVERY action on it is refused here, on the
+        # server, before any password check - a hidden button is not a
+        # permission. Only notification prefs stay open: watching is the
+        # point.
+        if len(_parts) == 2 and _parts[1] not in ("push_pref", "push_sub"):
+            _pu = user_by_token(_parts[0])
+            if _pu is not None and _pu.get("public"):
+                self._send(json.dumps({"ok": False,
+                                       "err": "compte demo: lecture seule"}),
+                           "application/json")
+                return
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
         if len(_parts) == 2 and _parts[1] == "set_goal":
@@ -3863,6 +3900,18 @@ class H(BaseHTTPRequestHandler):
             return
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
+            return
+        if parts and parts[0] == "demo":
+            # front door to the showcase: no password, straight to the
+            # public account's page (owner 2026-09-19)
+            pu = public_user()
+            if pu is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            self.send_response(302)
+            self.send_header("Location", f"/{pu['token']}/")
+            self.end_headers()
             return
         if not parts or parts[0] == "join":
             # front door: no token -> the welcome/sign-up screen

@@ -129,6 +129,22 @@ elif VARIANT == "kino":
     COMMENT = "KL-BOS-K"
     TOUCH_ENTRIES = False       # same candle-close rule as everywhere
     _SFX = "_kino"
+elif VARIANT == "demo":
+    # 2026-09-19 (owner): the public SHOWCASE account - "a demo account for
+    # all to view, so they may see how the bot performs". Same bot, same
+    # rules, base package, auto. Credentials from the nest record.
+    _du = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == "demo"][0]
+    TERMINAL = _du["terminal"]
+    LOGIN = int(_du["mt5_login"])
+    SERVER = _du["mt5_server"]
+    PASSWORD = _du["mt5_password"]
+    MAGIC = 909601
+    COMMENT = "KL-BOS-D"
+    TOUCH_ENTRIES = False
+    _SFX = "_demo"
 elif VARIANT == "valere":
     # 2026-09-14 (owner): Valere's real account runs its OWN instance of
     # the frozen live config - identical rules, but its own debt ledger,
@@ -174,7 +190,8 @@ LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
 #   owl_trading_pause.json          = master switch, stops everything
 #   owl_trading_pause_<uid>.json    = this account only
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
-             "halfdebt": "half", "kino": "kino"}.get(VARIANT, "bos")
+             "halfdebt": "half", "kino": "kino",
+             "demo": "demo"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 
@@ -498,13 +515,26 @@ def ensure_algo():
                 hwnds.append(hh)
             return True
 
-        user32.EnumWindows(cb, 0)
-        for hh in hwnds:
-            user32.PostMessageW(hh, 0x0111, 32851, 0)
-        time.sleep(3)
-        ti = mt5.terminal_info()
-        ok = ti is not None and ti.trade_allowed
-        say(f"ensure_algo -> trade_allowed={ok}")
+        # 2026-09-19: on the public demo the first attempt ran seconds
+        # after the terminal was launched, found NO windows yet, posted
+        # nothing and reported False - the same toggle by PID worked on
+        # the first try once the terminal was up. So wait for a window,
+        # up to 30 s, and re-enumerate before posting.
+        ok = False
+        for _try in range(6):
+            hwnds.clear()
+            user32.EnumWindows(cb, 0)
+            if not hwnds:
+                time.sleep(5)
+                continue
+            for hh in hwnds:
+                user32.PostMessageW(hh, 0x0111, 32851, 0)
+            time.sleep(3)
+            ti = mt5.terminal_info()
+            ok = ti is not None and ti.trade_allowed
+            if ok:
+                break
+        say(f"ensure_algo -> trade_allowed={ok} (windows {len(hwnds)})")
         return ok
     except Exception as e:
         say(f"ensure_algo FAILED {type(e).__name__}: {e}")

@@ -75,6 +75,14 @@ try {
 # out of the nest. Do NOT revive: a killed variant that restarts
 # just re-reads its killed flag and sits there looking alive.
 
+# 2h) the PUBLIC showcase account 296378359 (owner 2026-09-19): same bot,
+# base package, auto. Anyone can watch it from the front door; the server
+# refuses every action on its token.
+if (-not (ProcRunning "structure_bos_bot.py demo")) {
+    Say "starting STRUCTURE demo (public showcase 296378359)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "demo" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2g) Valere's real account: its own instance of the frozen live config
 # (own debt ledger, own war-chest, own -$60 kill line). Owner 2026-09-14.
 if (-not (ProcRunning "structure_bos_bot.py valere")) {
