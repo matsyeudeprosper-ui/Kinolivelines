@@ -738,10 +738,23 @@ function draw(){
  // its own when price rejoins the main structure.
  // Owner 2026-09-17: when there is no internal structure the chart used to
  // draw nothing at all, which reads exactly like a broken feature. Say it.
+ // Owner 2026-09-19: "the internal marks flash - appear, disappear after
+ // a few seconds, again and again". The whole internal block was gated on
+ // room > 8% of the main range, where room is measured from the LIVE
+ // price, which moves every second. Price hovering at that threshold
+ // toggled the entire structure on and off with every poll. The gate now
+ // has hysteresis: it opens above 8% and only closes again below 3%, so
+ // a wobble around the line cannot flap it.
+ const intRoom=(room,range)=>{
+  if(!(range>0))return false;
+  const f=room/range;
+  if(window._intRoomOn){if(f<0.03)window._intRoomOn=false;}
+  else{if(f>0.08)window._intRoomOn=true;}
+  return !!window._intRoomOn;};
  if(!D.int_trend&&D.px&&D.next_bos&&D.invalid){
   const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-D.invalid));
   const mrange=Math.abs(D.invalid-D.next_bos);
-  if(mrange>0&&room>mrange*0.08){
+  if(intRoom(room,mrange)){
    ctx.save();
    ctx.font='bold 9px system-ui';
    const t0='pas de petite structure';
@@ -767,7 +780,7 @@ function draw(){
   const mainRange=Math.abs(D.invalid-D.next_bos);
   // a share of the MAIN range, so scrolling or zooming cannot make the
   // internal structure blink in and out (2026-09-16)
-  if(mainRange>0&&room>mainRange*0.08){
+  if(intRoom(room,mainRange)){
    const ic=D.int_trend===1?'#9d8cff':'#c58cff';
    (D.int_dots||[]).slice(-6).forEach(dd=>{
     const x=xnear(dd[0]);if(x===undefined)return;
