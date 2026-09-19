@@ -293,16 +293,19 @@ class Struct:
                     self.choch = 0
                     sig = (1, m[3])
                 elif self.trend == 0:
-                    if (self.last_lo is not None
-                            and m[3] > self.last_lo):
-                        self.up_st += 1
-                        if self.up_st >= 2:
-                            self.trend = 1
-                            self.prot_lo = nd
-                            self.dn_st = 0
-                            sig = (1, m[3])
-                    else:
-                        self.up_st = 0
+                    # Owner 2026-09-19: "two glowing dots = a structure, a
+                    # trend forming is enough" - and "internal trades follow
+                    # the SAME rules as main trades". The chart engine was
+                    # aligned first; this is the same change here, so the
+                    # bot cannot sit on a structure the chart already shows.
+                    # Old locks removed: the 2nd dot no longer has to be
+                    # higher, and the 1st confirmed dot now counts.
+                    self.up_st += 1
+                    self.dn_st = 0
+                    if self.up_st >= 2:
+                        self.trend = 1
+                        self.prot_lo = nd
+                        sig = (1, m[3])
                 self.last_lo = m[3]
                 self.lo_i = k.index(m)
                 self.lo_v = m[3]
@@ -323,16 +326,13 @@ class Struct:
                     self.choch = 0
                     sig = (-1, m[2])
                 elif self.trend == 0:
-                    if (self.last_hi is not None
-                            and m[2] < self.last_hi):
-                        self.dn_st += 1
-                        if self.dn_st >= 2:
-                            self.trend = -1
-                            self.prot_hi = nd
-                            self.up_st = 0
-                            sig = (-1, m[2])
-                    else:
-                        self.dn_st = 0
+                    # mirror of the bullish bootstrap (owner 2026-09-19)
+                    self.dn_st += 1
+                    self.up_st = 0
+                    if self.dn_st >= 2:
+                        self.trend = -1
+                        self.prot_hi = nd
+                        sig = (-1, m[2])
                 self.last_hi = m[2]
                 self.hi_i = k.index(m)
                 self.hi_v = m[2]
