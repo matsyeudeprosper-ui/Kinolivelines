@@ -521,11 +521,17 @@ def main():
                     _hi_b = max(_bs) if _bs else None
                     _lo_b = min(_bs) if _bs else None
                     _touch = None
+                    # Owner 2026-09-19: "touching the border lines is not
+                    # enough to cancel the internal structure - a CLOSE
+                    # beyond those lines is what confirms it." Same standard
+                    # as every other confirmation in this engine: the close
+                    # commits, a wick does not. So the window restarts on the
+                    # last candle that CLOSED strictly beyond a main border.
                     for _k in kept:
                         if _k[0] <= _t0:
                             continue
-                        if ((_hi_b is not None and _k[2] >= _hi_b)
-                                or (_lo_b is not None and _k[3] <= _lo_b)):
+                        if ((_hi_b is not None and _k[4] > _hi_b)
+                                or (_lo_b is not None and _k[4] < _lo_b)):
                             _touch = _k[0]
                     if _touch and _touch > _t0:
                         _t0 = _touch
