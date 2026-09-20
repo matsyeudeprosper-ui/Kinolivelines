@@ -243,6 +243,7 @@ DAY_CAP = _P["day_cap"]
 MAX_TRADES_DAY = _P["max_trades_day"]
 WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
+MOVEMENT = _P.get("movement", True)
 
 
 def say(msg):
@@ -408,13 +409,18 @@ def weather_gate(need_int=False, cj=None):
     cj = cj if cj is not None else weather()
     if not cj:
         return None
-    # the nervosity half can be switched off PER ACCOUNT (owner 2026-09-18,
-    # live A/B). The movement rule always applies.
+    # BOTH halves can now be switched off per account. nervosity: owner
+    # 2026-09-18 live A/B. movement: owner 2026-09-20, "trade all signals,
+    # no gates, good weather or bad". Turning a brake off is not an edge
+    # claim - neither brake was ever shown to make money (see the packages
+    # memo), so an account with both off is the honest control arm.
     vn, vr = cj.get("vol_now"), cj.get("vol_ref")
     if NERVOSITY and vn and vr:
         nerv = vn / max(vr, 1)
         if nerv > 1.0:
             return f"trop nerveux ({nerv:.2f}x)"
+    if not MOVEMENT:
+        return None
     if need_int:
         if (cj.get("int_brk_1h") or 0) < 1:
             return "aucun petit mouvement depuis 1 h"

@@ -22,6 +22,7 @@ from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
 import MetaTrader5 as mt5
+import owl_package as PKG
 
 DIR = r"C:\Projects\KinoliveLines\live"
 TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
@@ -1651,7 +1652,13 @@ function render(d){
              'passer celui-là.'],
       nervous:['🌀','Ça bouge trop','#ff9678',
                'Le marché s’agite beaucoup plus que d’habitude. Mieux '+
-               'vaut laisser passer.']};
+               'vaut laisser passer.'],
+      // owner 2026-09-20, package "special": an account with both brakes
+      // off takes every signal. Saying "conditions favorables" in a 2x
+      // market would be a lie, and "mieux vaut attendre" describes a
+      // refusal that will not happen - so it gets its own honest line.
+      nogate:['⚡','Aucun frein','#b98cff',
+              'Ce compte prend tous les signaux, calme ou agité.']};
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
     //
@@ -1661,12 +1668,17 @@ function render(d){
     // number the bots were ignoring. (2) The "none" wording claimed the
     // market was CALM while nervosity said 1.18x AGITATED: nervosity is
     // checked first by the gate, so it must be checked first here too.
-    const nerv_bad=rv>1.0;
+    // each half is a per-account dial now (owner 2026-09-20). A brake this
+    // account does not run must not appear in the headline at all.
+    const gN=!(d.gates&&d.gates.nervosity===false);
+    const gM=!(d.gates&&d.gates.movement===false);
+    const nerv_bad=gN&&rv>1.0;
     const hasInt=!!ms2.int_trend;          // 0 = no internal structure
-    const mvOk=hasInt?(nb>=1):(mv>=1);     // the rule that actually applies
-    const k=nerv_bad?(rv<1.30?'brisk':'nervous')
+    const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
+    const k=(!gN&&!gM)?'nogate'
+      :(nerv_bad?(rv<1.30?'brisk':'nervous')
       :(!mvOk?'none'
-      :(hasInt?(ms2.int_state||'ready'):'ready'));
+      :(hasInt?(ms2.int_state||'ready'):'ready')));
     const S=ST[k]||ST.none;
     orb=S[0]; ti=S[1]; ln=S[3];
     cls=nerv_bad?'mx-cloud':(!mvOk?'mx-sleep'
@@ -1708,14 +1720,14 @@ function render(d){
     // (owner 2026-09-18).
     const small=cell('petits mouvements',
      hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
-     hasInt?(aw?'#cfb3ff':'#6f8299'):'#5f7185',hasInt);
+     hasInt?(aw?'#cfb3ff':'#6f8299'):'#5f7185',hasInt&&gM);
     const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
      hasInt?(mv===0?'#6f8299':'#cfe3f5')
-      :(mv>=1?'#cfb3ff':'#6f8299'),!hasInt);
+      :(mv>=1?'#cfb3ff':'#6f8299'),(!hasInt)&&gM);
     // the deciding movement rule first, then nervosity - always a brake
     chips.push(hasInt?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
-     vw[1],true));
+     vw[1],gN));
     // then the context
     chips.push(hasInt?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
@@ -2544,6 +2556,19 @@ def user_stats(u):
                     DIR, f"owl_ledger{_sfx}.json")))
                 d["ledger"]["cap"] = 5.0  # CHEST_FUND_MAX in the bots
             if u.get("id") == "bos" or u.get("dedicated"):
+                # the weather card must say what weather_gate() would say,
+                # and both halves are now per-account dials (owner
+                # 2026-09-20, package "special"). Without this the card
+                # would explain a refusal that never happened.
+                try:
+                    _pk = PKG.for_account(u.get("id") or "")
+                    d["gates"] = {"nervosity": bool(_pk.get("nervosity",
+                                                            True)),
+                                  "movement": bool(_pk.get("movement",
+                                                           True)),
+                                  "package": _pk.get("package", "")}
+                except Exception:
+                    pass                  # a broken file must not blank the card
                 # the Structure Bot keeps its own debt/bullet books.
                 # 2026-09-14: a member running his OWN instance (field
                 # "dedicated" = "structure_bos_bot.py <variant>") gets

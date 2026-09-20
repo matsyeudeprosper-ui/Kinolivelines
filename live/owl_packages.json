@@ -19,7 +19,14 @@
     "debt_mode      'hwm' = debt is the drawdown from the peak.",
     "               'half' = half of each loss is added to the debt.",
     "",
-    "nervosity  false = this account ignores the nervosity brake. Owner's live A/B of 2026-09-18: Valere keeps it, Kino runs without it, everything else identical. The only strategy dial allowed here."
+    "nervosity  false = this account ignores the nervosity brake. Owner's live A/B of 2026-09-18: Valere keeps it, Kino runs without it, everything else identical.",
+    "movement   false = this account ignores the movement brake too (no big move in 2 h / no small move in 1 h).",
+    "",
+    "nervosity and movement are the ONLY two strategy dials allowed in this",
+    "file, and both exist for the same reason: neither brake has ever been",
+    "shown to make money, so switching them off is a control arm, not a new",
+    "strategy. Everything else about the structure rules stays in code and",
+    "is identical on every account."
   ],
   "packages": {
     "base": {
@@ -69,6 +76,12 @@
     "demo": {
       "extends": "valere",
       "label": "Compte demo public - $3 par jour"
+    },
+    "special": {
+      "extends": "base",
+      "label": "Special - tous les signaux, aucun frein",
+      "nervosity": false,
+      "movement": false
     }
   },
   "accounts": {
