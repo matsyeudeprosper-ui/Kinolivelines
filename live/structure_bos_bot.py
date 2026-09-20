@@ -1,4 +1,4 @@
-"""structure_bos_bot.py - the user's STRUCTURE rules, LIVE on real
+﻿"""structure_bos_bot.py - the user's STRUCTURE rules, LIVE on real
 account 223995441 (Exness-MT5Real30, BTCUSD, $7 spread).
 
 DEPLOYED 2026-09-08 ON THE USER'S EXPLICIT DECISION with the
@@ -725,8 +725,19 @@ def main():
         # forward record for the FVG filter: this signal passed every rule
         # the bot has, so it is exactly what the replay counted. Virtual,
         # settled on raw bars by SHADOW.settle(..., book="fvg").
+        # selector forward record (owner 2026-09-20). "after each virtual
+        # loss" is a slice of this book's own outcomes, so it needs nothing
+        # stored; "the 2nd trade of a trend" needs the ordinal, which only
+        # the bot knows. Internal trades carry ord=i - they are a separate
+        # sequence and the replay never had them. Tag only: nothing filters.
+        if internal:
+            _ordt = "i"
+        else:
+            st["tord"] = st.get("tord", 0) + 1
+            _ordt = str(st["tord"])
         SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp,
-                          f"fvg={fvg_pts(d):.0f} {kind}", BASE_LOT, book="fvg")
+                          f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt}",
+                          BASE_LOT, book="fvg")
         req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
                "volume": lot,
                "type": (mt5.ORDER_TYPE_BUY if d == 1
@@ -982,6 +993,7 @@ def main():
             flip = eng.trend != _pt
             if flip:
                 st["ord"] = 1
+                st["tord"] = 0     # taken-trade ordinal, for the shadow tag
                 save_state(st)
                 if SNIPER:
                     continue      # sniper skips the flip trade
