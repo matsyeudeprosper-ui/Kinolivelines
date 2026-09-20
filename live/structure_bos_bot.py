@@ -825,8 +825,23 @@ def main():
                             else tk3.bid >= _ad["lvl"])
                     if _hit:
                         _ad["done"] = True
-                        _n = min(2, int(st["chest"]
-                                        // max(_ad["risk001"], 0.01)))
+                        # Owner 2026-09-20: "make sure we don't add up at the
+                        # pullback when the market is not calm." Calm = the
+                        # weather card's own word: nervosity below 1.00x.
+                        # Applied on EVERY account, even one whose package
+                        # turns the nervosity brake off for entries - this is
+                        # about sizing up a position that is already open.
+                        _cjw = weather()
+                        _vn, _vr = ((_cjw or {}).get("vol_now"),
+                                    (_cjw or {}).get("vol_ref"))
+                        _nerv = (_vn / max(_vr, 1)) if (_vn and _vr) else None
+                        if _nerv is not None and _nerv > 1.0:
+                            say(f"PULLBACK ADD skipped: market not calm "
+                                f"({_nerv:.2f}x) - no bullets on this one")
+                            _n = 0
+                        else:
+                            _n = min(2, int(st["chest"]
+                                            // max(_ad["risk001"], 0.01)))
                         if _n > 0:
                             _al = round(_n * 0.01, 2)
                             _r3 = mt5.order_send({
