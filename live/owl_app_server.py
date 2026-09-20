@@ -1008,18 +1008,24 @@ function ledInfo(){
    'creuser le compte';
  let r3,r4;
  if(mode==='bos'){
-  r3=row(miniLot,'Prochain combat : mise jusqu&#39;&agrave; '+
-   '$'+fm(L.stake||0),
-   'La mise = ce que le trade risque si son stop est touch&eacute;. '+
-   'Base : $'+fm(2*(L.need||0))+'. Tant qu&#39;il y a '+
-   'une dette, chaque balle pay&eacute;e ajoute '+
-   '$'+fm(L.need||0)+' de frappe (maximum 3 balles).');
+  // Owner 2026-09-20: the reinforcement moved OFF the first entry. The
+  // trade opens at the normal lot; bullets only arrive if price comes
+  // back to the midpoint, and only in a calm market. The card said the
+  // opposite - "each bullet adds strike from the start" - which is a
+  // bigger opening trade than the bot will ever place.
+  r3=row(miniLot,'Renfort au mi-chemin : +'+
+   (Math.min(3,L.fill)*0.01).toFixed(2)+' lot',
+   'Le trade s&#39;ouvre au lot normal et risque $'+fm(4*(L.need||0))+'. '+
+   'Si le prix redescend &agrave; mi-chemin de son stop, le robot '+
+   'ajoute ce renfort &mdash; pay&eacute; par la r&eacute;serve, et '+
+   'seulement si le march&eacute; est calme. Mise totale possible : '+
+   '$'+fm(L.stake||0)+'.');
   r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
-   'Une balle co&ucirc;te le prix du stop du moment &mdash; '+
-   '$'+fm(L.need||0)+' aujourd&#39;hui &mdash; pay&eacute;e '+
-   'd&#39;avance par la r&eacute;serve. Balle perdue = la '+
-   'r&eacute;serve paie. Trade gagn&eacute; = la dette fond '+
-   'directement.');
+   'Une balle co&ucirc;te $'+fm(L.need||0)+' &mdash; moiti&eacute; '+
+   'moins qu&#39;&agrave; la cassure, parce qu&#39;au mi-chemin le '+
+   'stop est deux fois plus proche. La r&eacute;serve la paie '+
+   'd&#39;avance. Balle perdue = la r&eacute;serve paie. Trade '+
+   'gagn&eacute; = la dette fond directement.');
  }else if(mode==='man'){
   r3=row(miniLot,'Votre plafond : '+L.nl.toFixed(2)+' lot',
    'Le plus gros trade que votre r&eacute;serve paie '+
@@ -1809,7 +1815,10 @@ function render(d){
      }
      const fillN=Math.floor(prog+1e-9);
      const fr=prog-fillN;
-     const stake=(2+Math.min(3,fillN))*need;
+     // the trade opens at the BASE lot and risks its full stop: that is
+     // 2 bullets priced at the full stop = 4 midpoint-bullets. Each
+     // reinforcement that can still fire adds one more (owner 2026-09-20).
+     const stake=(4+Math.min(SL,fillN))*need;
      const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
      window._ledD={mode:bos?'bos':'bot',debt:d.ledger.debt,
       chest:am,need:need,nl:nl,fill:fillN,stake:stake};
@@ -2598,7 +2607,12 @@ def user_stats(u):
                     # live bullet price from the bot (stop distance)
                     _bl = d["meteo_struct"].get("bullet")
                     if _bl:
-                        _bl = float(_bl)
+                        # Owner 2026-09-20: bullets are fired at the MIDPOINT
+                        # now, where the stop is half as far, so one costs
+                        # half what the bot's "bullet" figure says (that one
+                        # is priced at the full stop). Halve it here and every
+                        # number the card derives follows.
+                        _bl = float(_bl) / 2.0
                         d["ledger"]["need_min"] = _bl
                         _L = d["ledger"]
                         if _L["jar"] and _dbt > 0.5 and _bl > 0:

@@ -65,6 +65,10 @@
       "extends": "base",
       "label": "Kino - sans frein nervosite (essai A/B)",
       "nervosity": false
+    },
+    "demo": {
+      "extends": "valere",
+      "label": "Compte demo public - $3 par jour"
     }
   },
   "accounts": {
@@ -73,6 +77,6 @@
     "u224016179": "valere",
     "sniper": "sniper",
     "half": "halfdebt",
-    "demo": "base"
+    "demo": "demo"
   }
 }
