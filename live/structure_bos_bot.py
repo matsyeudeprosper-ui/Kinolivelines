@@ -627,8 +627,16 @@ def main():
     ai = mt5.account_info()
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
     mt5.symbol_select(SYMBOL, True)
+    # name the package and the two brakes. A package reaches a bot only at
+    # import, so the log line is the only place that can prove WHICH dials
+    # this process is actually running (owner 2026-09-20).
+    _br = ([] if NERVOSITY and MOVEMENT else
+           ["AUCUN FREIN - tous les signaux"] if not (NERVOSITY or MOVEMENT)
+           else ["sans frein nervosite"] if not NERVOSITY
+           else ["sans frein mouvement"])
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
-        f"base {BASE_LOT} RR {RR} kill {KILL_NET}"
+        f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
+        + ("".join(f" | {x}" for x in _br))
         + (f" | day cap +${DAY_CAP:.2f} (waived while in debt), "
            f"target ${WEEK_TARGET:.0f}/week" if DAY_CAP else ""))
     ensure_algo()
