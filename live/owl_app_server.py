@@ -1032,9 +1032,16 @@ function ledInfo(){
    'jamais plus. Le stop ne bouge pas &mdash; seul le lot '+
    'change.');
  }else{
-  r3=row(miniLot,'Prochain soldat : '+L.nl.toFixed(2)+' lot',
-   'Le trade un peu plus gros que le robot pr&eacute;pare pour '+
-   'rattraper la perte, pay&eacute; par la r&eacute;serve.');
+  // Owner 2026-09-20: the bullets moved off the first entry. The trade
+  // opens at the normal lot; the reinforcement only arrives if price
+  // comes back to the midpoint. Say that, or the card promises a bigger
+  // first trade than the bot will ever place.
+  r3=row(miniLot,'Renfort pr&eacute;vu : +'+
+   Math.max(0,(L.nl-(L.base_lot||0.02))).toFixed(2)+' lot',
+   'Le trade s&#39;ouvre au lot normal. Si le prix revient &agrave; '+
+   'mi-chemin de son stop, le robot ajoute ce renfort, pay&eacute; '+
+   'par la r&eacute;serve &mdash; et seulement si le march&eacute; '+
+   'est calme.');
   r4=row(miniBalles,'Les balles',
    'La r&eacute;serve se remplit gain apr&egrave;s gain. Le robot '+
    'prend le plus petit des deux : ce que la r&eacute;serve paie, '+
@@ -2563,6 +2570,8 @@ def user_stats(u):
                     "skim": float(_bs.get("jar_skim") or 0.5),
                     "stake": float(_bs.get("jar_stake") or 0.5),
                     "base_lot": _bl0, "max_extra": _mx,
+                    # the page needs it to show the reinforcement alone
+                    "opening_lot": _bl0,
                     "rr": float(_bs.get("rr") or 0.8),
                     "next_lot": round(_bl0 + _mx * 0.01, 2),
                     "need_min": 3.0}  # ~one bullet at typical stop
@@ -2599,6 +2608,13 @@ def user_stats(u):
                             _byd = (int(_m.ceil(_dbt / _g1))
                                     if _g1 > 0 else 0)
                             _ex = max(0, min(_mx, _byb, _byd))
+                            # 2026-09-20: this is the MIDPOINT reinforcement
+                            # now, not the opening lot. A bullet there risks
+                            # half as much, so the same jar buys more.
+                            _byb2 = int((_jar * _L["stake"]) // max(_bl / 2, 0.01))
+                            _g2 = _L["rr"] * max(_bl / 2, 0.01)
+                            _byd2 = (int(_m.ceil(_dbt / _g2)) if _g2 > 0 else 0)
+                            _ex = max(0, min(_mx, _byb2, _byd2))
                             _L["next_lot"] = round(_bl0 + _ex * 0.01, 2)
                             _L["fill_n"] = _ex
                         elif _dbt <= 0.5:

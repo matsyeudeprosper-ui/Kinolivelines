@@ -698,27 +698,12 @@ def main():
             say(f"{kind} skipped: dot {dist:.0f}pts inside the "
                 f"spread zone")
             return False
+        # Owner 2026-09-20: "at the BOS level it's a normal lot. If price
+        # pulls back to the midpoint we introduce the combat bullets there,
+        # if the economy allows, as always." So the recovery bullets no
+        # longer ride the first entry - they wait for the 50% pullback,
+        # where the stop is half as far and each bullet costs half as much.
         lot = BASE_LOT
-        if st["debt"] > 0.5:
-            risk001 = dist * 0.01
-            if JAR:
-                # stake only part of the jar, so one bad recovery cannot
-                # disarm the next one; and never buy more recovery than the
-                # debt needs - one extra 0.01 wins RR * dist * 0.01
-                budget = st["chest"] * JAR_STAKE
-                by_budget = int(budget // max(risk001, 0.01))
-                gain001 = RR * dist * 0.01
-                by_debt = (int(math.ceil(st["debt"] / gain001))
-                           if gain001 > 0 else 0)
-                extra = max(0, min(MAX_EXTRA, by_budget, by_debt))
-            else:
-                extra = min(MAX_EXTRA,
-                            int(st["chest"] // max(risk001, 0.01)))
-            lot = round(BASE_LOT + extra * 0.01, 2)
-            if extra > 0:
-                say(f"RECUP: {extra} lot(s) de +0.01 -> lot {lot:.2f} "
-                    f"(dette ${st['debt']:.2f}, bocal ${st['chest']:.2f}, "
-                    f"mise ${extra * risk001:.2f})")
         if internal:
             # half the base lot, never bullets - the desk's rule for a trade
             # on the small structure (owner 2026-09-15). If halving cannot
@@ -835,13 +820,28 @@ def main():
                         _vn, _vr = ((_cjw or {}).get("vol_now"),
                                     (_cjw or {}).get("vol_ref"))
                         _nerv = (_vn / max(_vr, 1)) if (_vn and _vr) else None
+                        _r001 = max(_ad["risk001"], 0.01)
                         if _nerv is not None and _nerv > 1.0:
-                            say(f"PULLBACK ADD skipped: market not calm "
-                                f"({_nerv:.2f}x) - no bullets on this one")
+                            say(f"COMBAT skipped: marche pas calme "
+                                f"({_nerv:.2f}x) - pas de balles ici")
                             _n = 0
+                        elif st["debt"] <= 0.5:
+                            _n = 0        # nothing to recover, no fighters
+                        elif JAR:
+                            # the BOS entry's economy, now applied at the
+                            # midpoint: stake only part of the jar, and never
+                            # buy more recovery than the debt needs. A bullet
+                            # here risks half of what it did at the BOS, so
+                            # the same jar buys more of them.
+                            _gain001 = RR * _r001
+                            _by_budget = int((st["chest"] * JAR_STAKE)
+                                             // _r001)
+                            _by_debt = (int(math.ceil(st["debt"] / _gain001))
+                                        if _gain001 > 0 else 0)
+                            _n = max(0, min(MAX_EXTRA, _by_budget, _by_debt))
                         else:
-                            _n = min(2, int(st["chest"]
-                                            // max(_ad["risk001"], 0.01)))
+                            _n = min(MAX_EXTRA,
+                                     int(st["chest"] // _r001))
                         if _n > 0:
                             _al = round(_n * 0.01, 2)
                             _r3 = mt5.order_send({
@@ -863,10 +863,11 @@ def main():
                                 st.setdefault("add_ids", [])\
                                     .append(_r3.order)
                                 del st["add_ids"][:-40]
-                                say(f"PULLBACK ADD: {_al} bullet"
-                                    f"{'s' if _n > 1 else ''} at "
-                                    f"50% ({_ad['lvl']:.2f}), same "
-                                    f"SL/TP - chest covers "
+                                say(f"COMBAT: {_n} balle"
+                                    f"{'s' if _n > 1 else ''} de 0.01 au "
+                                    f"mi-chemin ({_ad['lvl']:.2f}), meme "
+                                    f"SL/TP - dette ${st['debt']:.2f}, "
+                                    f"bocal ${st['chest']:.2f}, mise "
                                     f"${_n * _ad['risk001']:.2f}")
                             else:
                                 say(f"ADD FAILED retcode="
