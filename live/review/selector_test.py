@@ -68,7 +68,7 @@ def replay(R, spread, rr=0.8, lot=0.02, balance=230.0):
         o, h, l, c = (float(bar["open"]), float(bar["high"]),
                       float(bar["low"]), float(bar["close"]))
         if pos:
-            d, e, sl, tp, oi, od = pos
+            d, e, sl, tp, oi, od, om = pos
             hit_sl = (l <= sl) if d == 1 else (h >= sl)
             hit_tp = (h >= tp) if d == 1 else (l <= tp)
             if hit_sl or hit_tp:
@@ -76,7 +76,8 @@ def replay(R, spread, rr=0.8, lot=0.02, balance=230.0):
                 win = bool(hit_tp and not hit_sl)
                 pts = ((tp - e) * d - spread) if win else -(risk + spread)
                 trades.append({"R": pts / risk, "win": win,
-                               "usd": pts * lot, "ord": od, "t": t})
+                               "usd": pts * lot, "ord": od, "t": t,
+                               "mv2": om})
                 pos = None
         hv, lv = eng.hi_v, eng.lo_v
         sig = eng.step(t, o, h, l, c)
@@ -100,11 +101,11 @@ def replay(R, spread, rr=0.8, lot=0.02, balance=230.0):
                 used_hi = lvl
             else:
                 used_lo = lvl
+        mv2 = (bisect.bisect_left(marks, t)
+               - bisect.bisect_left(marks, t - 7200))
         if i >= 1440:
             nv = (sorted(rng[i - 60:i])[30]
                   / max(sorted(rng[i - 1440:i])[720], 1e-9))
-            mv2 = (bisect.bisect_left(marks, t)
-                   - bisect.bisect_left(marks, t - 7200))
             if nv > 1.0 or mv2 < 1:
                 continue
         if pos:
@@ -113,7 +114,7 @@ def replay(R, spread, rr=0.8, lot=0.02, balance=230.0):
         if risk <= B.S_MIN_DIST or risk * lot > B.MAX_RISK_PCT * balance:
             continue
         ordn += 1
-        pos = (d, c, slp, c + d * rr * risk, i, ordn)
+        pos = (d, c, slp, c + d * rr * risk, i, ordn, mv2)
     return trades
 
 
