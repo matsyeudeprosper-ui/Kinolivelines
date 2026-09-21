@@ -26,7 +26,9 @@
     "               'half' = half of each loss is added to the debt.",
     "",
     "nervosity  false = this account ignores the nervosity brake. Owner's live A/B of 2026-09-18: Valere keeps it, Kino runs without it, everything else identical.",
-    "movement   false = this account ignores the movement brake too (no big move in 2 h / no small move in 1 h).",
+    "movement   false = this account ignores the movement brake too (no big move in 2 h / no small move in 1 h). Owner 2026-09-21: kept TRUE everywhere after review/move_gate_test.py - it never lost on any cut and costs ~4% of volume, unlike nervosity.",
+    "",
+    "NEITHER dial can switch off the >= 1.85x 'tres agite' exception. That is a floor in code (NERV_STORM), not a setting.",
     "",
     "nervosity and movement are the ONLY two strategy dials allowed in this",
     "file, and both exist for the same reason: neither brake has ever been",
@@ -85,13 +87,13 @@
     },
     "special": {
       "extends": "base",
-      "label": "Special - tous les signaux, aucun frein",
+      "label": "Special - sans frein nervosite",
       "nervosity": false,
-      "movement": false
+      "movement": true
     },
     "special_10": {
       "extends": "special",
-      "label": "Special - tous les signaux, pause a +$10/jour",
+      "label": "Special - sans frein nervosite, pause a +$10/jour",
       "day_cap": 10.0
     }
   },
