@@ -1,4 +1,4 @@
-"""owl_chart_feed.py - data feed for the custom BTC chart page
+﻿"""owl_chart_feed.py - data feed for the custom BTC chart page
 (user 2026-09-08). Step 1: M1 candles with the NOISE-SILENCE filter:
 a closed candle is shown only if it makes a HIGHER HIGH or a LOWER
 LOW than the last SHOWN candle; inside candles are silenced. The
@@ -62,8 +62,22 @@ def build(rates):
 # So try several lengths and take the first that yields a direction. This is
 # a DISPLAY choice, stated plainly: it decides what is drawn, never what a
 # trade does. If no length finds a structure, there genuinely is none.
-INT_WINDOWS = (200, 300, 400, 550)
-INT_MAX = INT_WINDOWS[-1]      # the most it will ever look back
+# Tried IN ORDER; the first one that finds a direction wins, so appending
+# is safe - an entry can only rescue a case the earlier ones failed.
+#
+# Owner 2026-09-21: "why no internal structure yet, I can see lower lows and
+# higher highs now already inside that range." Because after a one-way run
+# the engine's references sit at the two ENDS of it - lo_v at the window's
+# first candle, hi_v at the top - and nothing in between can confirm a dot.
+# The window was 56 candles and EVERY entry below took all 56, so there was
+# nothing shorter to fall back to: the "adaptive" list was trying the same
+# slice four times (the real pool has a median of 58 kept candles, while the
+# smallest entry was 200). The short tails re-seed the references near price.
+# Measured, review/int_window_stuck.py, 5.6 days / 221 samples:
+#   structure found today 52.5%  ->  66.5%,  +14.0 points, and by
+#   construction never a different answer where one already existed.
+INT_WINDOWS = (200, 300, 400, 550, 120, 80, 50, 30, 20)
+INT_MAX = max(INT_WINDOWS)     # the most it will ever look back
 
 
 def _snap_dot(snap, span, kind):
