@@ -88,10 +88,15 @@
       "label": "Special - tous les signaux, aucun frein",
       "nervosity": false,
       "movement": false
+    },
+    "special_10": {
+      "extends": "special",
+      "label": "Special - tous les signaux, pause a +$10/jour",
+      "day_cap": 10.0
     }
   },
   "accounts": {
-    "bos": "base",
+    "bos": "special_10",
     "kino": "special",
     "u224016179": "valere",
     "sniper": "sniper",

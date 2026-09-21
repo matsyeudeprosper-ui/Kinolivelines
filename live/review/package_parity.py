@@ -30,7 +30,9 @@ _BASE = {"base_lot": 0.02, "max_extra": 3, "adds_on": True,
 # copied by hand from structure_bos_bot.py as it stood on 2026-09-17,
 # before money management moved into owl_packages.json
 FROZEN = {
-    "bos": dict(_BASE),
+    # owner 2026-09-20: 441 moved to "special_10" - no brakes, and the
+    # desk stops opening at +$10 realised for the day. Deliberate.
+    "bos": dict(_BASE, day_cap=10.0),
     "kino": dict(_BASE),
     "u224016179": dict(_BASE, day_cap=3.0, week_target=20.0),
     "sniper": dict(_BASE, base_lot=0.06, max_extra=0, adds_on=False,

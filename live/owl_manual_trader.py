@@ -1,4 +1,4 @@
-"""owl_manual_trader.py - assisted manual trading on the LIVE account
+﻿"""owl_manual_trader.py - assisted manual trading on the LIVE account
 (owner 2026-09-15, after the auto BOS bot was stopped on 223995441).
 
 It NEVER opens a trade on its own. What it does:
@@ -139,6 +139,42 @@ def rebuild_ledger():
 
 
 LOT_STEP = 0.01
+
+
+def day_pnl():
+    """Today's REALISED profit (UTC), from the same deal history the ledger
+    replays - no new state file, and it self-heals like rebuild_ledger():
+    a manual close, an app close and a bot close all count the same.
+
+    Owner 2026-09-20: "like in Valere, pause trading when profit of the day
+    is >= 10". Valere gets this from the package's day_cap inside
+    structure_bos_bot; 441 runs THIS desk, which had no daily cap at all -
+    so the dial would have been dead data without it.
+    """
+    start = datetime.utcnow().replace(hour=0, minute=0, second=0,
+                                      microsecond=0)
+    ds = mt5.history_deals_get(start,
+                               datetime.utcnow() + timedelta(days=1)) or []
+    return round(sum(d.profit + d.swap + d.commission for d in ds
+                     if d.entry == 1 and d.symbol == SYMBOL), 2)
+
+
+def day_capped(led):
+    """None when trading may continue, otherwise the reason.
+
+    Same rule as the bot: the cap is a PROFIT target and is WAIVED while the
+    account owes money, so a good day cannot be locked in before the tab is
+    paid. It stops the ROBOT only - the owner's own yellow-line orders are
+    deliberate and are never blocked by it.
+    """
+    if B.DAY_CAP is None:
+        return None
+    if (led or {}).get("debt", 0.0) > 0.5:
+        return None
+    got = day_pnl()
+    if got < B.DAY_CAP:
+        return None
+    return f"objectif du jour atteint (+{got:.2f} >= {B.DAY_CAP:.2f})"
 
 
 def counter_lot():
@@ -745,6 +781,10 @@ def auto_enter(d, slv, why, cj):
         return
     if pending_orders() or load_vpend():
         return
+    _cap = day_capped(rebuild_ledger())
+    if _cap:
+        say(f"AUTO refuse ({why}): {_cap}")
+        return
     tick = mt5.symbol_info_tick(SYMBOL)
     if tick is None:
         return
@@ -776,9 +816,21 @@ def main():
                           server=SERVER, timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
     led = rebuild_ledger()
+    # name the package and its dials. This desk gets them INDIRECTLY, from
+    # the structure_bos_bot module it imports, which resolves them once at
+    # import - so the log is the only place that can show what this process
+    # is really running (owner 2026-09-20).
+    _br = ("aucun frein" if not (B.NERVOSITY or B.MOVEMENT)
+           else "sans frein nervosite" if not B.NERVOSITY
+           else "sans frein mouvement" if not B.MOVEMENT
+           else "freins complets")
     say(f"MANUAL TRADER [{UID}] up on {ai.login} balance {ai.balance:.2f} | "
         f"net {led['banked']:+.2f} dette {led['debt']:.2f} chest {led['chest']:.2f} "
-        f"({led['trades']} trades) - "
+        f"({led['trades']} trades) | paquet {B.PACKAGE} | {_br}"
+        + (f" | pause a +${B.DAY_CAP:.2f}/jour"
+           f" ({'ACTIVE' if led['debt'] <= 0.5 else 'en veille: dette'})"
+           if B.DAY_CAP else "")
+        + " - "
         + ("MANUEL, aucune entree automatique" if manual_mode()
            else "AUTO, le bureau entre seul"))
     eng = B.Struct()
