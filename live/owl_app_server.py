@@ -1672,13 +1672,19 @@ function render(d){
     // account does not run must not appear in the headline at all.
     const gN=!(d.gates&&d.gates.nervosity===false);
     const gM=!(d.gates&&d.gates.movement===false);
-    const nerv_bad=gN&&rv>1.0;
+    // the "tres agite" exception outranks every dial (owner 2026-09-21):
+    // NO account trades here, so a no-brakes account must not be told it
+    // takes every signal. 1.85 is NERV_STORM in structure_bos_bot.py and
+    // the "tres agite" band boundary below - change the three together.
+    const storm=rv>=1.85;
+    const nerv_bad=storm||(gN&&rv>1.0);
     const hasInt=!!ms2.int_trend;          // 0 = no internal structure
     const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
-    const k=(!gN&&!gM)?'nogate'
+    const k=storm?'nervous'
+      :((!gN&&!gM)?'nogate'
       :(nerv_bad?(rv<1.30?'brisk':'nervous')
       :(!mvOk?'none'
-      :(hasInt?(ms2.int_state||'ready'):'ready')));
+      :(hasInt?(ms2.int_state||'ready'):'ready'))));
     const S=ST[k]||ST.none;
     orb=S[0]; ti=S[1]; ln=S[3];
     cls=nerv_bad?'mx-cloud':(!mvOk?'mx-sleep'
@@ -1727,7 +1733,7 @@ function render(d){
     // the deciding movement rule first, then nervosity - always a brake
     chips.push(hasInt?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
-     vw[1],gN));
+     vw[1],gN||storm));
     // then the context
     chips.push(hasInt?big:small);
     chips.push(cell('sens',ttxt,tcol,false));

@@ -77,10 +77,18 @@ JAR_SKIM = 0.50          # owner 2026-09-16: half of each win. The skim is
 JAR_STAKE = 0.50         # most of the jar stakeable on ONE attempt
 JAR_DEBT_MULT = 0.5      # jar may hold up to half the debt...
 JAR_FLOOR_CAP = 10.0     # ...but never less headroom than the old cap
+NERV_STORM = 1.85       # see S_MIN_DIST block above
 KILL_NET = -60.0
 MIN_BALANCE = 20.0
 SEED_BARS = 3000
 S_MIN_DIST = 10.0        # dot inside the spread zone = no trade
+# HARD CEILING, owner 2026-09-21: "although I asked the main bot to trade
+# with no gate on the accounts I asked for, make sure they don't trade the
+# nervosite tres agite as an exception." 1.85 is the "tres agite" band on
+# the weather card - the top ~10% of hours, measured over 41.7 days. This
+# is NOT a package dial: a no-brakes account still refuses here, which is
+# the whole point of calling it an exception. The card carries the same
+# number as its band boundary; change both together.
 # 2026-09-15 (owner, after a 1478-pt stop risked $31): one rule, no
 # single trade may risk more than this share of the account balance.
 MAX_RISK_PCT = 0.10
@@ -415,9 +423,12 @@ def weather_gate(need_int=False, cj=None):
     # claim - neither brake was ever shown to make money (see the packages
     # memo), so an account with both off is the honest control arm.
     vn, vr = cj.get("vol_now"), cj.get("vol_ref")
-    if NERVOSITY and vn and vr:
+    if vn and vr:
         nerv = vn / max(vr, 1)
-        if nerv > 1.0:
+        # the exception that outranks every dial (owner 2026-09-21)
+        if nerv >= NERV_STORM:
+            return f"tres agite ({nerv:.2f}x) - exception, personne ne trade"
+        if NERVOSITY and nerv > 1.0:
             return f"trop nerveux ({nerv:.2f}x)"
     if not MOVEMENT:
         return None
