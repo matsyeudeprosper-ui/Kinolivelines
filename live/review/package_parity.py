@@ -21,7 +21,9 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIVE = os.path.dirname(HERE)
 
-_BASE = {"base_lot": 0.02, "max_extra": 3, "adds_on": True,
+# owner 2026-09-21: sizing moved from a flat 0.02 lot to a $5 ceiling per
+# signal (risk_usd). Deliberate; the stop now picks the lot.
+_BASE = {"base_lot": 0.02, "risk_usd": 5.0, "max_extra": 3, "adds_on": True,
          "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
          "jar_stake": 0.50, "jar_debt_mult": 0.5, "jar_floor_cap": 10.0,
          "kill_net": -60.0, "min_balance": 20.0, "max_risk_pct": 0.10,

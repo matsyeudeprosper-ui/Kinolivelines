@@ -1043,9 +1043,14 @@ function ledInfo(){
   // opens at the normal lot; the reinforcement only arrives if price
   // comes back to the midpoint. Say that, or the card promises a bigger
   // first trade than the bot will ever place.
+  // owner 2026-09-21: the first trade is no longer a flat lot - the stop
+  // picks it, for a fixed budget. Saying "lot normal" would describe a
+  // rule the bot stopped following.
+  const _rb=L.risk_usd?('au lot calcul&eacute; pour risquer au maximum '
+   +(+L.risk_usd).toFixed(0)+'&nbsp;$'):'au lot normal';
   r3=row(miniLot,'Renfort pr&eacute;vu : +'+
    Math.max(0,(L.nl-(L.base_lot||0.02))).toFixed(2)+' lot',
-   'Le trade s&#39;ouvre au lot normal. Si le prix revient &agrave; '+
+   'Le trade s&#39;ouvre '+_rb+'. Si le prix revient &agrave; '+
    'mi-chemin de son stop, le robot ajoute ce renfort, pay&eacute; '+
    'par la r&eacute;serve &mdash; et seulement si le march&eacute; '+
    'est calme.');
@@ -2604,6 +2609,7 @@ def user_stats(u):
                     "skim": float(_bs.get("jar_skim") or 0.5),
                     "stake": float(_bs.get("jar_stake") or 0.5),
                     "base_lot": _bl0, "max_extra": _mx,
+                    "risk_usd": _bs.get("risk_usd"),
                     # the page needs it to show the reinforcement alone
                     "opening_lot": _bl0,
                     "rr": float(_bs.get("rr") or 0.8),

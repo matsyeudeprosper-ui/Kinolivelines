@@ -227,6 +227,7 @@ def fvg_pts(d):
 _P = _PKG.for_account(PAUSE_UID)
 PACKAGE = _P["package"]
 BASE_LOT = _P["base_lot"]
+RISK_USD = _P.get("risk_usd")
 MAX_EXTRA = _P["max_extra"]
 ADDS_ON = _P["adds_on"]
 CHEST_CAP = _P["chest_cap"]
@@ -392,6 +393,36 @@ def weather(max_age=180):
         return None
 
 
+def lot_for_risk(dist, internal=False):
+    """The lot a stop this far away deserves, or None when even the minimum
+    costs more than the budget. ONE implementation, shared by the bot and
+    the 441 desk - the brakes were duplicated once and the two accounts
+    promptly diverged (owner 2026-09-18), so sizing does not repeat that.
+
+    Owner 2026-09-21: "whatever the risk distance points are we always
+    spend a max 5 dollars, so the system figures out the lot required each
+    time." risk = dist * lot on this symbol, so lot = budget / dist,
+    rounded DOWN - the budget is a ceiling, not an average.
+
+    Returns BASE_LOT unchanged when the account has no risk_usd, so a
+    fixed-lot package keeps behaving exactly as it did.
+    """
+    if not RISK_USD or dist <= 0:
+        return BASE_LOT
+    budget = (RISK_USD / 2.0) if internal else RISK_USD
+    lot = round(math.floor((budget / dist) / 0.01) * 0.01, 2)
+    if lot < 0.01 and internal and dist * 0.01 <= RISK_USD:
+        # An internal trade takes HALF the budget, the share it had as a
+        # half lot. But half of $5 cannot buy 0.01 lot beyond ~250 pts, and
+        # refusing there would quietly drop a quarter of the internal
+        # trades - the opposite of "the bot is main and internal structure
+        # both, wherever it is used". So the half is a TARGET and the full
+        # budget is the ceiling: fall back to the minimum while it still
+        # fits in $5, and only then refuse.
+        return 0.01
+    return lot if lot >= 0.01 else None
+
+
 def weather_gate(need_int=False, cj=None):
     """Shared entry brakes. None allows, a string refuses.
 
@@ -476,6 +507,7 @@ def save_state(st):
     st["jar_cap"] = round(max(JAR_FLOOR_CAP,
                               JAR_DEBT_MULT * st.get("debt", 0.0)), 2)
     st["base_lot"] = BASE_LOT
+    st["risk_usd"] = RISK_USD      # None = fixed-lot account
     st["max_extra"] = MAX_EXTRA
     st["rr"] = RR
     tmp = STATE_F + ".tmp"
@@ -635,7 +667,9 @@ def main():
            else ["sans frein nervosite"] if not NERVOSITY
            else ["sans frein mouvement"])
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
-        f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
+        + (f"risque max ${RISK_USD:.2f}/signal (le stop choisit le lot)"
+           if RISK_USD else f"base {BASE_LOT}")
+        + f" RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
         + ("".join(f" | {x}" for x in _br))
         + (f" | day cap +${DAY_CAP:.2f} (waived while in debt), "
            f"target ${WEEK_TARGET:.0f}/week" if DAY_CAP else ""))
@@ -717,16 +751,31 @@ def main():
         # if the economy allows, as always." So the recovery bullets no
         # longer ride the first entry - they wait for the 50% pullback,
         # where the stop is half as far and each bullet costs half as much.
-        lot = BASE_LOT
-        if internal:
-            # half the base lot, never bullets - the desk's rule for a trade
-            # on the small structure (owner 2026-09-15). If halving cannot
-            # produce something strictly smaller, the trade is not possible.
-            _half = round(max(0.01, int((BASE_LOT / 2) / 0.01) * 0.01), 2)
-            if not _half < BASE_LOT - 1e-9:
-                say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
+        # CONSTANT RISK (owner 2026-09-21): "whatever the risk distance
+        # points are we always spend a max 5 dollars, so the system figures
+        # out the lot required each time." The stop decides the lot, not the
+        # other way round. risk = dist * lot on this symbol ($1 per point
+        # per lot), so lot = budget / dist, rounded DOWN so the budget is a
+        # ceiling and never an average. The midpoint bullets are untouched -
+        # they belong to the debt system, which pays for them out of the jar.
+        if RISK_USD:
+            lot = lot_for_risk(dist, internal)
+            if lot is None:
+                _b = (RISK_USD / 2.0) if internal else RISK_USD
+                say(f"{kind} refuse: stop {dist:.0f}pts - meme 0.01 lot "
+                    f"risque ${dist * 0.01:.2f} > ${_b:.2f}")
                 return False
-            lot = _half
+        else:
+            lot = BASE_LOT
+            if internal:
+                # half the base lot, never bullets - the desk's rule for a
+                # trade on the small structure (owner 2026-09-15). If halving
+                # cannot produce something strictly smaller, no trade.
+                _half = round(max(0.01, int((BASE_LOT / 2) / 0.01) * 0.01), 2)
+                if not _half < BASE_LOT - 1e-9:
+                    say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
+                    return False
+                lot = _half
         # --- no single trade may risk more than 10% of the balance
         risk = dist * lot
         cap = MAX_RISK_PCT * ai2.balance
