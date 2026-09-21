@@ -289,10 +289,7 @@ def internal_trade(ref, sl, direction):
 def lot_for(dist, led):
     """The lot the tab-and-jar system would use for a stop this far away.
     Only the LOT moves - the stop never does."""
-    # the base lot now comes from the shared sizing rule (owner
-    # 2026-09-21). Bullets are NOT resized: "that doesn't apply to the add
-    # up at midpoint, because that is part of the debt system."
-    lot = B.lot_for_risk(dist) or BASE_LOT
+    lot = BASE_LOT
     bullets = 0
     if led["debt"] > 0.5 and led["chest"] > 0.5 and dist > 0:
         risk001 = dist * LOT_STEP
@@ -307,7 +304,7 @@ def lot_for(dist, led):
             bullets = max(0, min(MAX_EXTRA, by_budget, by_debt))
         else:
             bullets = min(MAX_EXTRA, int(led["chest"] // max(risk001, 0.01)))
-        lot = round(lot + bullets * LOT_STEP, 2)
+        lot = round(BASE_LOT + bullets * LOT_STEP, 2)
     return max(LOT_MIN, min(LOT_MAX, lot)), bullets
 
 
@@ -795,13 +792,6 @@ def auto_enter(d, slv, why, cj):
     dist = abs(px - slv)
     if dist <= B.S_MIN_DIST:
         say(f"AUTO refuse ({why}): stop trop proche ({dist:.0f} pts)")
-        return
-    # the automatic path refuses an unaffordable stop exactly as the bot
-    # does, so 441 and the bot accounts cannot diverge (owner 2026-09-21).
-    # The manual yellow-line orders are untouched - the owner's own.
-    if B.lot_for_risk(dist) is None:
-        say(f"AUTO refuse ({why}): stop {dist:.0f}pts - meme 0.01 lot "
-            f"risque ${dist * LOT_STEP:.2f} > ${B.RISK_USD:.2f}")
         return
     tp = px + d * B.RR * dist
     req = dict(d=d, sl=round(slv, 2), tp=round(tp, 2), entry=0,
