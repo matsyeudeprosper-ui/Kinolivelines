@@ -77,6 +77,20 @@ def build(rates):
 #   structure found today 52.5%  ->  66.5%,  +14.0 points, and by
 #   construction never a different answer where one already existed.
 INT_WINDOWS = (200, 300, 400, 550, 120, 80, 50, 30, 20)
+# Owner 2026-09-22: "why does the internal structure keep showing and
+# disappearing, it was there a few minutes ago and now gone." Because the
+# short tails above are re-sliced every candle: a 20-candle window holds
+# different candles each minute, so the answer changed each minute. Measured
+# over the last 250 kept candles: sliding tails gave 41% availability but 11
+# ON<->OFF switches, against 22% / 6 before the tails existed.
+#
+# Fix: once a window FINDS a structure, PIN its first candle and keep using
+# that origin, letting the window grow, until the structure genuinely dies or
+# the main anchor moves. Same engine, same rules, still recomputed every tick
+# - so the dots, the breaks and the 1 h internal move count all stay live.
+# Measured: 43% availability with 7 switches - the availability of the tails
+# at the stability of the long windows (review/int_stability.py).
+_INT_PIN = {"t0": None, "start": None}
 INT_MAX = max(INT_WINDOWS)     # the most it will ever look back
 
 
@@ -570,7 +584,25 @@ def main():
                     # 200 is the best of them (review/window_sweep.py).
                     _pool = [k for k in kept if k[0] > _t0]
                     _inner, _ibrk = [], []
-                    for _w in INT_WINDOWS:
+                    # a new main anchor is a new window - drop the pin
+                    if _INT_PIN["t0"] != _t0:
+                        _INT_PIN["t0"] = _t0
+                        _INT_PIN["start"] = None
+                    # keep the window that already works, grown to today
+                    if _INT_PIN["start"] is not None:
+                        _try = [k for k in _pool
+                                if k[0] >= _INT_PIN["start"]]
+                        if len(_try) >= 5:
+                            _b = []
+                            _r = engine(_try, brk_out=_b)
+                            if _r[2] != 0:
+                                _inner, _ibrk = _try, _b
+                                (i_dots, i_marks, i_trend, i_choch,
+                                 i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
+                                 i_flp, i_flp_t, i_fdir) = _r
+                        if i_trend == 0:
+                            _INT_PIN["start"] = None   # it really is over
+                    for _w in (() if i_trend else INT_WINDOWS):
                         _try = _pool[-_w:]
                         if len(_try) < 5:
                             continue
@@ -581,9 +613,14 @@ def main():
                             (i_dots, i_marks, i_trend, i_choch,
                              i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
                              i_flp, i_flp_t, i_fdir) = _r
+                            _INT_PIN["start"] = _try[0][0]   # pin it
                             break
                     else:
-                        _inner = _pool[-INT_WINDOWS[0]:]
+                        # for-else also fires when the loop body never ran,
+                        # i.e. when the PINNED window already succeeded - do
+                        # not overwrite the window that produced the dots
+                        if i_trend == 0:
+                            _inner = _pool[-INT_WINDOWS[0]:]
                     if i_trend != 0:
                         # owner 2026-09-16: do not anticipate the next break
                         # until price has actually pulled back from the level

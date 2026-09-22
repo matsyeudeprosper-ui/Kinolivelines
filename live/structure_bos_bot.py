@@ -84,8 +84,11 @@ SEED_BARS = 3000
 S_MIN_DIST = 10.0        # dot inside the spread zone = no trade
 # HARD CEILING, owner 2026-09-21: "although I asked the main bot to trade
 # with no gate on the accounts I asked for, make sure they don't trade the
-# nervosite tres agite as an exception." 1.85 is the "tres agite" band on
-# the weather card - the top ~10% of hours, measured over 41.7 days. This
+# nervosite tres agite as an exception." 1.85 is the top band on the weather
+# card - the top ~10% of hours, measured over 41.7 days. Owner called it
+# "tres agite"; the card now says "tres rapide" because the number tracks
+# DISTANCE walked (+0.64) not chop (+0.13, and positive - these hours are
+# slightly STRAIGHTER). Same line, honest name. This
 # is NOT a package dial: a no-brakes account still refuses here, which is
 # the whole point of calling it an exception. The card carries the same
 # number as its band boundary; change both together.
@@ -427,7 +430,8 @@ def weather_gate(need_int=False, cj=None):
         nerv = vn / max(vr, 1)
         # the exception that outranks every dial (owner 2026-09-21)
         if nerv >= NERV_STORM:
-            return f"tres agite ({nerv:.2f}x) - exception, personne ne trade"
+            return (f"marche tres rapide ({nerv:.2f}x) - exception, "
+                    f"personne ne trade")
         if NERVOSITY and nerv > 1.0:
             return f"trop nerveux ({nerv:.2f}x)"
     if not MOVEMENT:

@@ -1647,18 +1647,21 @@ function render(d){
             'Le marché est calme. Mieux vaut attendre.'],
       // the common case, just over the line - saying "ça bouge trop" here
       // overstated it (owner 2026-09-18)
-      brisk:['🍃','Marché vif','#e8c55a',
-             'Ça va un peu plus vite que d’habitude. Le robot laisse '+
-             'passer celui-là.'],
-      nervous:['🌀','Ça bouge trop','#ff9678',
-               'Le marché s’agite beaucoup plus que d’habitude. Mieux '+
-               'vaut laisser passer.'],
+      brisk:['🍃','Marché soutenu','#e8c55a',
+             'Les bougies sont un peu plus grandes que d’habitude. Le '+
+             'robot laisse passer celui-là.'],
+      // not "ca bouge trop" - measured, these hours travel 2.5x further
+      // and go slightly STRAIGHTER. Big, not messy. The robot still steps
+      // aside, but the card no longer gives the wrong reason.
+      nervous:['🌀','Marché rapide','#ff9678',
+               'Les mouvements sont beaucoup plus grands que d’habitude. '+
+               'Le robot préfère s’écarter.'],
       // owner 2026-09-20, package "special": an account with both brakes
       // off takes every signal. Saying "conditions favorables" in a 2x
       // market would be a lie, and "mieux vaut attendre" describes a
       // refusal that will not happen - so it gets its own honest line.
       nogate:['⚡','Aucun frein','#b98cff',
-              'Ce compte prend tous les signaux, calme ou agité.']};
+              'Ce compte prend tous les signaux, marché calme ou rapide.']};
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
     //
@@ -1699,11 +1702,18 @@ function render(d){
     // Measured bands, so each word matches how often it is true:
     //   < 1.00  calme        53% of the time
     //   < 1.30  vif          22%   (68th-75th percentile territory)
-    //   < 1.85  agité        15%   (1 hour in 4 is above 1.31)
-    //   >=1.85  très agité   10%   (1 hour in 10)
+    //   < 1.85  rapide       15%   (1 hour in 4 is above 1.31)
+    //   >=1.85  tres rapide  10%   (1 hour in 10)
+    // Owner 2026-09-22 (measured, review/chop_vs_nerv.py): this number
+    // correlates +0.64 with the DISTANCE price walks in the hour and only
+    // +0.13 with chop - and that sign is POSITIVE, so the top band is the
+    // most DIRECTIONAL state in the sample, not the messiest (efficiency
+    // 0.099 calme -> 0.131 top band; distance walked 1080 -> 2697 pts/h).
+    // "agité" told the owner the market was messy when it was simply big,
+    // so the words now say size. The 1.0 / 1.30 / 1.85 lines are unchanged.
     const vw=rv<1.0?['calme','#cfe3f5']
-      :(rv<1.30?['vif','#e8c55a']
-      :(rv<1.85?['agité','#ff9678']:['très agité','#ff5c5c']));
+      :(rv<1.30?['soutenu','#e8c55a']
+      :(rv<1.85?['rapide','#ff9678']:['très rapide','#ff5c5c']));
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     // Owner 2026-09-17: the spread is gone. It is a cost judged against the
     // stop, and this card cannot know the stop - it answered a different
