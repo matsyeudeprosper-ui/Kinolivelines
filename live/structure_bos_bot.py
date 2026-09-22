@@ -140,6 +140,23 @@ elif VARIANT == "kino":
     COMMENT = "KL-BOS-K"
     TOUCH_ENTRIES = False       # same candle-close rule as everywhere
     _SFX = "_kino"
+elif VARIANT == "infinity":
+    _SFX = "_infinity"
+    # 2026-09-22 (owner): "add this new account of my cousin and let the
+    # main bot run it with the same exact package as Valere." Same bot,
+    # same code - only the package differs, which is the whole point of
+    # the package split. Credentials from the nest record.
+    _iu = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == "infinity"][0]
+    TERMINAL = _iu["terminal"]
+    LOGIN = int(_iu["mt5_login"])
+    SERVER = _iu["mt5_server"]
+    PASSWORD = _iu["mt5_password"]
+    MAGIC = 909701
+    COMMENT = "KL-BOS"
+    TOUCH_ENTRIES = False
 elif VARIANT == "demo":
     # 2026-09-19 (owner): the public SHOWCASE account - "a demo account for
     # all to view, so they may see how the bot performs". Same bot, same
@@ -202,7 +219,7 @@ LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
 #   owl_trading_pause_<uid>.json    = this account only
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
              "halfdebt": "half", "kino": "kino",
-             "demo": "demo"}.get(VARIANT, "bos")
+             "demo": "demo", "infinity": "infinity"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 

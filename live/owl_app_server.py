@@ -307,7 +307,12 @@ def acct_auto(u):
 # writes - a single 5-minute rule declared it dead while it was fine
 # (owner 2026-09-18).
 BOT_OF = {
-    "kino":       ("KINO", "owl_manual_state.json", "owl_manual.log", 300),
+    # 2026-09-22: this pointed at the RETIRED KINO bot (owl_manual.log,
+    # last written 09-18), so the nest list showed Kino as bot KINO / not
+    # live while its structure bot was trading all night. Kino has run
+    # structure_bos_bot.py kino since 09-18.
+    "kino":       ("Structure", "bos_state_kino.json",
+                   "bos_bot_kino.log", 300),
     "luc":        ("CROC", "owl_pro_alive.json", "owl_pro.log", 300),
     "fresh":      ("Harvest H1", "harvest_fresh_state.json",
                    "harvest_fresh.log", 1800),
@@ -317,6 +322,8 @@ BOT_OF = {
                    "bos_bot_valere.log", 300),
     "demo":       ("Structure · démo publique", "bos_state_demo.json",
                    "bos_bot_demo.log", 300),
+    "infinity":   ("Structure", "bos_state_infinity.json",
+                   "bos_bot_infinity.log", 300),
 }
 # the broker refusals that mean "alive but cannot trade"
 BLOCKED = {"10027": "AutoTrading &eacute;teint", "10019": "solde insuffisant"}
