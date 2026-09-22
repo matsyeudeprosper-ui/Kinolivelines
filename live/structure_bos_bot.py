@@ -733,10 +733,20 @@ def main():
         # longer ride the first entry - they wait for the 50% pullback,
         # where the stop is half as far and each bullet costs half as much.
         lot = BASE_LOT
-        if internal:
-            # half the base lot, never bullets - the desk's rule for a trade
-            # on the small structure (owner 2026-09-15). If halving cannot
-            # produce something strictly smaller, the trade is not possible.
+        # Owner 2026-09-22: "equal the lot of the internal structure to be
+        # same as the main structure except for counter trend trade. Same
+        # direction as main structure gets the usual main structure base
+        # lot." The half lot was a caution from 2026-09-15 taken before
+        # there was any evidence; 37 forward internal trades since show
+        # 59% wins and +$5.27 net - indistinguishable from the main
+        # structure, so an aligned internal trade no longer rides smaller.
+        #
+        # NOTE: the counter-trend branch below is UNREACHABLE today. The
+        # loop only calls enter(..., internal=True) when the internal trend
+        # EQUALS the main trend; a counter-trend internal break is recorded
+        # and skipped. It is written so the rule is complete if that ever
+        # opens up, not because it runs now.
+        if internal and d != eng.trend:
             _half = round(max(0.01, int((BASE_LOT / 2) / 0.01) * 0.01), 2)
             if not _half < BASE_LOT - 1e-9:
                 say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
