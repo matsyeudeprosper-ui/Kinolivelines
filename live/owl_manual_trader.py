@@ -151,10 +151,15 @@ def day_pnl():
     structure_bos_bot; 441 runs THIS desk, which had no daily cap at all -
     so the dial would have been dead data without it.
     """
-    start = datetime.utcnow().replace(hour=0, minute=0, second=0,
-                                      microsecond=0)
-    ds = mt5.history_deals_get(start,
-                               datetime.utcnow() + timedelta(days=1)) or []
+    # TIMEZONE-AWARE, and this is not cosmetic: mt5.history_deals_get()
+    # returns ZERO deals for a naive datetime on this terminal. Written
+    # naive on 2026-09-21, which made day_pnl() always 0.00 and the daily
+    # cap dead code - caught 2026-09-22 only because the app's hero banner
+    # said +$16.46 while this said +$0.00. Test a gate against MT5 itself,
+    # never against a monkeypatched stand-in.
+    now = datetime.now(timezone.utc)
+    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    ds = mt5.history_deals_get(start, now + timedelta(days=1)) or []
     return round(sum(d.profit + d.swap + d.commission for d in ds
                      if d.entry == 1 and d.symbol == SYMBOL), 2)
 
