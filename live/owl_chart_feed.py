@@ -628,8 +628,10 @@ def main():
                         # candle that set it. Before that the "next BOS" is
                         # just the current extreme and says nothing.
                         _nw = int(R[-1]["time"])
+                        # same strict window as moves_2h above - an internal
+                        # break must not authorise itself either
                         i_brk1h = sum(1 for b in _ibrk
-                                      if b[0] > _nw - 3600)
+                                      if _nw - 3600 < b[0] < _nw)
                         i_ready = pullback_since(kept, i_nxt_t, i_dir)
                         i_fready = pullback_since(kept, i_flp_t, i_fdir)
                 # user 2026-09-08 (screenshot): NEVER show the
@@ -651,8 +653,20 @@ def main():
                 # price must have pulled back from the level first
                 _fready = pullback_since(kept, _mflp_t, _mfdir)
                 _ready = pullback_since(kept, nxt_t, _mdir)
+                # STRICT WINDOW (owner-visible bug 2026-09-22 13:59): the
+                # three bots refused a flip for "aucun grand mouvement depuis
+                # 2 h" and the 441 desk took it 3.5 s later, because by then
+                # this count had gone 0 -> 1 - it had counted the flip's OWN
+                # break. A signal was authorising itself through the gate
+                # that is supposed to ask whether the market moved BEFORE it.
+                # Measured over 41.7 days / 643 breaks: inclusive passes
+                # 100.0% of them (the gate never blocks by rule, only by
+                # losing a race with this file), strict passes 80.2%. The
+                # replay that measured this brake has always used the strict
+                # window, so live now matches what was measured.
                 _now = int(R[-1]["time"])
-                _mv2 = sum(1 for m in marks if m[0] >= _now - 7200)
+                _mv2 = sum(1 for m in marks
+                           if _now - 7200 <= m[0] < _now)
                 _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]
                 _ref = [float(r["high"]) - float(r["low"]) for r in R[-1440:]]
                 _rng.sort(); _ref.sort()
