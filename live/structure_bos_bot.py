@@ -1038,7 +1038,20 @@ def main():
                     save_state(st)
                     enter(_itr, float(_iv), "INT", internal=True)
                 elif _ivt and _ivt != st.get("int_last_t"):
-                    st["int_last_t"] = _ivt      # against the trend: noted, not traded
+                    # noted, not traded. This used to be SILENT, which made
+                    # account divergences impossible to diagnose after the
+                    # fact (owner 2026-09-22: Infinity took an internal trade
+                    # that Kino and the demo, both flat and ungated, did not -
+                    # and no log line anywhere said why). Say which rule
+                    # declined it.
+                    _why = ("pas de tendance interne" if not _itr
+                            else f"contre la tendance principale "
+                                 f"(interne {'haut' if _itr == 1 else 'bas'}, "
+                                 f"principale "
+                                 f"{'haut' if eng.trend == 1 else 'bas'})")
+                    say(f"INT note, pas pris: {_why}")
+                    st["int_last_t"] = _ivt
+                    save_state(st)
             if sig is None:
                 continue
             if not awake:
