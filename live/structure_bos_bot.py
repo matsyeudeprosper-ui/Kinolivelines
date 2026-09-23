@@ -272,6 +272,7 @@ MAX_TRADES_DAY = _P["max_trades_day"]
 WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
 MOVEMENT = _P.get("movement", True)
+DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 
 
 def say(msg):
@@ -492,10 +493,15 @@ def day_blocked(st):
                 f"(forfait {PACKAGE})")
     if DAY_CAP is None:
         return None
-    if st.get("debt", 0.0) > 0.5:
+    # owner 2026-09-23, 441 only: at a $10 cap "always binds" earned MORE
+    # than "waived in debt" at the SAME drawdown (review/cap_waiver_test.py:
+    # $35.35 vs $31.61, DD -23.59 both) - the waiver only pays at small
+    # caps like Valere's $3, where it stays on by default.
+    if DAY_CAP_WAIVED and st.get("debt", 0.0) > 0.5:
         return None
     if pnl >= DAY_CAP:
-        return f"+{pnl:.2f} aujourd'hui (>= ${DAY_CAP:.2f}), sans dette"
+        _tag = "sans dette" if st.get("debt", 0.0) <= 0.5 else "dette active"
+        return f"+{pnl:.2f} aujourd'hui (>= ${DAY_CAP:.2f}), {_tag}"
     return None
 
 
@@ -676,7 +682,9 @@ def main():
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
         f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
         + ("".join(f" | {x}" for x in _br))
-        + (f" | day cap +${DAY_CAP:.2f} (waived while in debt)"
+        + ((f" | day cap +${DAY_CAP:.2f} "
+            + ("(waived while in debt)" if DAY_CAP_WAIVED
+               else "(always enforced)"))
            if DAY_CAP else "")
         # week_target is optional - special_10 has a day cap and no weekly
         # one, which crashed this line the first time 441 ran as a bot

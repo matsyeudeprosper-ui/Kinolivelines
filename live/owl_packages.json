@@ -30,7 +30,14 @@
     "",
     "NEITHER dial can switch off the >= 1.85x 'tres agite' exception. That is a floor in code (NERV_STORM), not a setting.",
     "",
-    "nervosity and movement are the ONLY two strategy dials allowed in this",
+    "day_cap_waived  true (default) = the day_cap is WAIVED while the account",
+    "                owes money, so a good day cannot be locked in before the",
+    "                tab is paid - right for small caps like Valere/demo/",
+    "                Infinity's $3. false = the cap ALWAYS binds. Owner",
+    "                2026-09-23, 441 only: at a $10 cap this earns MORE at",
+    "                the SAME drawdown (review/cap_waiver_test.py).",
+    "",
+    "nervosity, movement and day_cap_waived are the ONLY strategy dials allowed in this",
     "file, and both exist for the same reason: neither brake has ever been",
     "shown to make money, so switching them off is a control arm, not a new",
     "strategy. Everything else about the structure rules stays in code and",
@@ -93,7 +100,8 @@
     "special_10": {
       "extends": "special",
       "label": "Special - sans frein nervosite, pause a +$10/jour",
-      "day_cap": 10.0
+      "day_cap": 10.0,
+      "day_cap_waived": false
     }
   },
   "accounts": {
