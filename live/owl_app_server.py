@@ -250,6 +250,10 @@ MANUAL_MODES = ("manual", "semi")
 # "bos" = the live half-manual account. "kino" = the live Pro master,
 # added on the owner's request the same day.
 PAUSE_ALLOWED = ("bos", "kino")
+# 2026-09-23: the ONLY account that has ever supported manual
+# (hand-placed) trading - the other four are pure-auto by design
+# with no desk process to swap to. See owl_mode_switch.py.
+MODE_SWITCH_ALLOWED = ("bos",)
 
 
 def pause_file(uid):
@@ -3879,6 +3883,23 @@ class H(BaseHTTPRequestHandler):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
                                   open(os.path.join(DIR, _pp), "w"))
+                    # 2026-09-23 (owner): "we switch from manual to auto in
+                    # the reglage page" - this IS that switch. For the one
+                    # account that has a manual desk to hand off to, pausing
+                    # must also swap WHICH PROCESS runs the account: the
+                    # trade tool only works when the desk (not the bot) is
+                    # running, and having both live at once risks two
+                    # processes trading the same account under different
+                    # magic numbers. owl_mode_switch.py performs the actual
+                    # swap; this only records the request.
+                    if u.get("id") in MODE_SWITCH_ALLOWED:
+                        _want = "semi" if on else "auto"
+                        _mtmp = os.path.join(
+                            DIR, "owl_mode_switch_request.json.tmp")
+                        json.dump({"uid": u["id"], "want": _want,
+                                  "t": time.time()}, open(_mtmp, "w"))
+                        os.replace(_mtmp, os.path.join(
+                            DIR, "owl_mode_switch_request.json"))
                     self._send(json.dumps({"ok": True, "paused": on}),
                                "application/json")
                 except Exception as e:
