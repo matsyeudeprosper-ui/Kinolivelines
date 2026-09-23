@@ -595,19 +595,33 @@ def main():
                         if len(_try) >= 5:
                             _b = []
                             _r = engine(_try, brk_out=_b)
-                            if _r[2] != 0:
+                            if _r[2] != 0 and _r[6] != nxt_t:
                                 _inner, _ibrk = _try, _b
                                 (i_dots, i_marks, i_trend, i_choch,
                                  i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
                                  i_flp, i_flp_t, i_fdir) = _r
                         if i_trend == 0:
-                            _INT_PIN["start"] = None   # it really is over
+                            # over, OR it grew until it duplicated the main
+                            # structure - either way this pin is finished
+                            _INT_PIN["start"] = None
                     for _w in (() if i_trend else INT_WINDOWS):
                         _try = _pool[-_w:]
                         if len(_try) < 5:
                             continue
                         _b = []
                         _r = engine(_try, brk_out=_b)
+                        # Owner 2026-09-23: "we are already trading main
+                        # structure, why are internal marks still on the
+                        # chart?" Because when the pool is short every long
+                        # window slices ALL of it, so the internal engine
+                        # re-finds the MAIN swing and reports the main BOS as
+                        # an internal one (measured: pool 64 candles, windows
+                        # 200/120/80 all returned the main bos 85415.51 to the
+                        # point and the same break time). A structure that
+                        # breaks at the same candle as the main structure is
+                        # not internal - skip it and keep looking shorter.
+                        if _r[2] != 0 and _r[6] == nxt_t:
+                            continue
                         if _r[2] != 0:          # a direction was found
                             _inner, _ibrk = _try, _b
                             (i_dots, i_marks, i_trend, i_choch,
