@@ -94,6 +94,194 @@ _INT_PIN = {"t0": None, "start": None}
 INT_MAX = max(INT_WINDOWS)     # the most it will ever look back
 
 
+
+def internal_structure(kept, nxt, inv, inv_t, _mflp, marks, nxt_t, now_t,
+                       pin=None):
+    """The internal-structure computation, factored out of the live loop
+    2026-09-23 so a backtest can call the EXACT code the feed runs instead
+    of a separate copy that can drift from it - which is what happened
+    2026-09-23 morning: int_sl_extreme_test.py reimplemented this block
+    without the duplicate-of-main guard added the same day, so it silently
+    tested a structure that was never really internal.
+
+    kept/nxt/inv/inv_t/mflp/marks/nxt_t: the main engine's own return
+    values for this instant, exactly as engine(kept) produces them.
+    now_t: the current bar's epoch time (was R[-1]["time"] inline).
+    pin: the {"t0", "start"} dict carried between calls so a working
+    window is not re-sliced every candle (see the 2026-09-22 flapping
+    fix). Pass the SAME dict back in on every call for a stateful trail -
+    the live loop uses the module-level pin; a backtest replaying
+    several independent anchors must give each anchor its OWN dict, or
+    they corrupt each other's pin.
+
+    Returns a dict: i_dots, i_marks, i_trend, i_choch, i_nxt, i_inv,
+    i_nxt_t, i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
+    i_fready, since (the anchor before border-touch adjustment, published
+    as int_since).
+    """
+    if pin is None:
+        pin = {"t0": None, "start": None}
+    i_dots = i_marks = []
+    i_trend = i_choch = i_dir = i_fdir = 0
+    i_flp = i_flp_t = None
+    i_nxt = i_inv = i_nxt_t = i_inv_t = None
+    i_ready = i_fready = False
+    i_brk1h = 0
+    _since = inv_t if inv_t else (marks[-1][0] if marks else None)
+    # Owner 2026-09-16: "the internal structure is BOS, CHoCH
+    # that forms in between the space of a confirmed BOS and the
+    # glowing dot created by that BOS." So the window opens at
+    # the CURRENT protected dot, which moves on every break -
+    # continuations included. marks[] only records flips, so
+    # anchoring there left the window running for hours after a
+    # continuation had already opened a new space.
+    # belt and braces: if the main structure has neither a
+    # protected dot nor a mark in range, open the internal
+    # window at the oldest candle instead of skipping it. The
+    # look-back below trims it to size anyway.
+    _t0 = (inv_t if inv_t
+           else (marks[-1][0] if marks
+                 else (kept[0][0] if kept else None)))
+    # Owner 2026-09-18: "the moment we touch either of the main
+    # structure's borders - the BOS level or the glowing dot -
+    # we stop all internal structure, we reset, and we follow
+    # the main structure again."
+    #
+    # The internal structure only means anything INSIDE the main
+    # range. Anchoring on the protected dot was not enough: a
+    # TOUCH is not a close, so price could reach a border, fail
+    # to confirm, and the internal structure would carry on
+    # across a boundary it had already crossed. The window now
+    # restarts at the last touch of either border.
+    # 2026-09-19 fix: the first version assumed next_bos was the
+    # UPPER border and the dot the LOWER one - true in an uptrend,
+    # reversed in a downtrend. There, every candle whose high sat
+    # above the (lower) BOS level counted as a touch, the window
+    # restarted on every bar, and no internal structure could ever
+    # form while the main trend was down. The borders are now the
+    # min and max of whatever main levels exist - the BOS level,
+    # the dot, and the flip level that stands in for the dot once
+    # a CHoCH has consumed it - with no assumption about sides.
+    if _t0 and kept:
+        _bs = [v for v in (nxt, inv, _mflp) if v is not None]
+        _hi_b = max(_bs) if _bs else None
+        _lo_b = min(_bs) if _bs else None
+        _touch = None
+        # Owner 2026-09-19: "touching the border lines is not
+        # enough to cancel the internal structure - a CLOSE
+        # beyond those lines is what confirms it." Same standard
+        # as every other confirmation in this engine: the close
+        # commits, a wick does not. So the window restarts on the
+        # last candle that CLOSED strictly beyond a main border.
+        for _k in kept:
+            if _k[0] <= _t0:
+                continue
+            if ((_hi_b is not None and _k[4] > _hi_b)
+                    or (_lo_b is not None and _k[4] < _lo_b)):
+                _touch = _k[0]
+        if _touch and _touch > _t0:
+            _t0 = _touch
+    if _t0:
+        # Owner 2026-09-17: the internal structure reads the
+        # CUSTOM CHART - the candles that close completely
+        # beyond the previous one. Not raw M1, and not raw with
+        # a snap patched on top. A dot is the valley between two
+        # confirmed highs, and both the highs and the valley
+        # have to be candles that exist on this chart.
+        # This was tried on raw first and the snapping that
+        # followed produced dots outside their own span; see
+        # review/STRUCTURE_RULES.md.
+        # ...and capped in length. When the main structure
+        # goes quiet the window since its protected dot reaches
+        # 14 h and 891 chart candles, and the engine then tracks
+        # only the largest swings - 14 breaks, 11 of them back
+        # to back, 0 dots. A cap keeps the references resetting
+        # often enough to see structure INSIDE the range.
+        # Swept 30/40/60/80/120/200/400: structure present
+        # 30/35/55/70/82/88/90% of samples, dots 0/0/2/4/4/13/0.
+        # 200 is the best of them (review/window_sweep.py).
+        _pool = [k for k in kept if k[0] > _t0]
+        _inner, _ibrk = [], []
+        # a new main anchor is a new window - drop the pin
+        if pin["t0"] != _t0:
+            pin["t0"] = _t0
+            pin["start"] = None
+        # keep the window that already works, grown to today
+        if pin["start"] is not None:
+            _try = [k for k in _pool
+                    if k[0] >= pin["start"]]
+            if len(_try) >= 5:
+                _b = []
+                _r = engine(_try, brk_out=_b)
+                if _r[2] != 0 and _r[6] != nxt_t:
+                    _inner, _ibrk = _try, _b
+                    (i_dots, i_marks, i_trend, i_choch,
+                     i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
+                     i_flp, i_flp_t, i_fdir) = _r
+            if i_trend == 0:
+                # over, OR it grew until it duplicated the main
+                # structure - either way this pin is finished
+                pin["start"] = None
+        for _w in (() if i_trend else INT_WINDOWS):
+            _try = _pool[-_w:]
+            if len(_try) < 5:
+                continue
+            _b = []
+            _r = engine(_try, brk_out=_b)
+            # Owner 2026-09-23: "we are already trading main
+            # structure, why are internal marks still on the
+            # chart?" Because when the pool is short every long
+            # window slices ALL of it, so the internal engine
+            # re-finds the MAIN swing and reports the main BOS as
+            # an internal one (measured: pool 64 candles, windows
+            # 200/120/80 all returned the main bos 85415.51 to the
+            # point and the same break time). A structure that
+            # breaks at the same candle as the main structure is
+            # not internal - skip it and keep looking shorter.
+            if _r[2] != 0 and _r[6] == nxt_t:
+                continue
+            if _r[2] != 0:          # a direction was found
+                _inner, _ibrk = _try, _b
+                (i_dots, i_marks, i_trend, i_choch,
+                 i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
+                 i_flp, i_flp_t, i_fdir) = _r
+                pin["start"] = _try[0][0]   # pin it
+                break
+        else:
+            # for-else also fires when the loop body never ran,
+            # i.e. when the PINNED window already succeeded - do
+            # not overwrite the window that produced the dots
+            if i_trend == 0:
+                _inner = _pool[-INT_WINDOWS[0]:]
+        if i_trend != 0:
+            # owner 2026-09-16: do not anticipate the next break
+            # until price has actually pulled back from the level
+            # - at least one candle against the trend since the
+            # candle that set it. Before that the "next BOS" is
+            # just the current extreme and says nothing.
+            _nw = now_t
+            # same strict window as moves_2h above - an internal
+            # break must not authorise itself either
+            i_brk1h = sum(1 for b in _ibrk
+                          if _nw - 3600 < b[0] < _nw)
+            i_ready = pullback_since(kept, i_nxt_t, i_dir)
+            i_fready = pullback_since(kept, i_flp_t, i_fdir)
+    # user 2026-09-08 (screenshot): NEVER show the
+    # opposite side's dots while a trend is confirmed -
+    # uptrend displays lows only, downtrend highs only.
+    # Owner 2026-09-16: the internal structure obeys it too.
+    if i_trend == 1:
+        i_dots = [d for d in i_dots if d[2] == 1]
+    elif i_trend == -1:
+        i_dots = [d for d in i_dots if d[2] == -1]
+    return dict(i_dots=i_dots, i_marks=i_marks, i_trend=i_trend,
+                i_choch=i_choch, i_nxt=i_nxt, i_inv=i_inv,
+                i_nxt_t=i_nxt_t, i_inv_t=i_inv_t, i_dir=i_dir,
+                i_flp=i_flp, i_flp_t=i_flp_t, i_fdir=i_fdir,
+                i_brk1h=i_brk1h, i_ready=i_ready, i_fready=i_fready,
+                since=_since, win_len=len(_inner))
+
+
 def _snap_dot(snap, span, kind):
     """The span's extreme among DRAWN candles, or None if the span covers
     none. kind +1 = a low dot, -1 = a high dot."""
@@ -503,159 +691,18 @@ def main():
                 # the last main event only. It needs no kill switch: the
                 # moment price rejoins the main structure a new mark fires
                 # and this window restarts from there.
-                i_dots = i_marks = []
-                i_trend = i_choch = i_dir = i_fdir = 0
-                i_flp = i_flp_t = None
-                i_nxt = i_inv = i_nxt_t = i_inv_t = None
-                i_ready = i_fready = False
-                i_brk1h = 0
-                _since = inv_t if inv_t else (marks[-1][0] if marks else None)
-                # Owner 2026-09-16: "the internal structure is BOS, CHoCH
-                # that forms in between the space of a confirmed BOS and the
-                # glowing dot created by that BOS." So the window opens at
-                # the CURRENT protected dot, which moves on every break -
-                # continuations included. marks[] only records flips, so
-                # anchoring there left the window running for hours after a
-                # continuation had already opened a new space.
-                # belt and braces: if the main structure has neither a
-                # protected dot nor a mark in range, open the internal
-                # window at the oldest candle instead of skipping it. The
-                # look-back below trims it to size anyway.
-                _t0 = (inv_t if inv_t
-                       else (marks[-1][0] if marks
-                             else (kept[0][0] if kept else None)))
-                # Owner 2026-09-18: "the moment we touch either of the main
-                # structure's borders - the BOS level or the glowing dot -
-                # we stop all internal structure, we reset, and we follow
-                # the main structure again."
-                #
-                # The internal structure only means anything INSIDE the main
-                # range. Anchoring on the protected dot was not enough: a
-                # TOUCH is not a close, so price could reach a border, fail
-                # to confirm, and the internal structure would carry on
-                # across a boundary it had already crossed. The window now
-                # restarts at the last touch of either border.
-                # 2026-09-19 fix: the first version assumed next_bos was the
-                # UPPER border and the dot the LOWER one - true in an uptrend,
-                # reversed in a downtrend. There, every candle whose high sat
-                # above the (lower) BOS level counted as a touch, the window
-                # restarted on every bar, and no internal structure could ever
-                # form while the main trend was down. The borders are now the
-                # min and max of whatever main levels exist - the BOS level,
-                # the dot, and the flip level that stands in for the dot once
-                # a CHoCH has consumed it - with no assumption about sides.
-                if _t0 and kept:
-                    _bs = [v for v in (nxt, inv, _mflp) if v is not None]
-                    _hi_b = max(_bs) if _bs else None
-                    _lo_b = min(_bs) if _bs else None
-                    _touch = None
-                    # Owner 2026-09-19: "touching the border lines is not
-                    # enough to cancel the internal structure - a CLOSE
-                    # beyond those lines is what confirms it." Same standard
-                    # as every other confirmation in this engine: the close
-                    # commits, a wick does not. So the window restarts on the
-                    # last candle that CLOSED strictly beyond a main border.
-                    for _k in kept:
-                        if _k[0] <= _t0:
-                            continue
-                        if ((_hi_b is not None and _k[4] > _hi_b)
-                                or (_lo_b is not None and _k[4] < _lo_b)):
-                            _touch = _k[0]
-                    if _touch and _touch > _t0:
-                        _t0 = _touch
-                if _t0:
-                    # Owner 2026-09-17: the internal structure reads the
-                    # CUSTOM CHART - the candles that close completely
-                    # beyond the previous one. Not raw M1, and not raw with
-                    # a snap patched on top. A dot is the valley between two
-                    # confirmed highs, and both the highs and the valley
-                    # have to be candles that exist on this chart.
-                    # This was tried on raw first and the snapping that
-                    # followed produced dots outside their own span; see
-                    # review/STRUCTURE_RULES.md.
-                    # ...and capped in length. When the main structure
-                    # goes quiet the window since its protected dot reaches
-                    # 14 h and 891 chart candles, and the engine then tracks
-                    # only the largest swings - 14 breaks, 11 of them back
-                    # to back, 0 dots. A cap keeps the references resetting
-                    # often enough to see structure INSIDE the range.
-                    # Swept 30/40/60/80/120/200/400: structure present
-                    # 30/35/55/70/82/88/90% of samples, dots 0/0/2/4/4/13/0.
-                    # 200 is the best of them (review/window_sweep.py).
-                    _pool = [k for k in kept if k[0] > _t0]
-                    _inner, _ibrk = [], []
-                    # a new main anchor is a new window - drop the pin
-                    if _INT_PIN["t0"] != _t0:
-                        _INT_PIN["t0"] = _t0
-                        _INT_PIN["start"] = None
-                    # keep the window that already works, grown to today
-                    if _INT_PIN["start"] is not None:
-                        _try = [k for k in _pool
-                                if k[0] >= _INT_PIN["start"]]
-                        if len(_try) >= 5:
-                            _b = []
-                            _r = engine(_try, brk_out=_b)
-                            if _r[2] != 0 and _r[6] != nxt_t:
-                                _inner, _ibrk = _try, _b
-                                (i_dots, i_marks, i_trend, i_choch,
-                                 i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                                 i_flp, i_flp_t, i_fdir) = _r
-                        if i_trend == 0:
-                            # over, OR it grew until it duplicated the main
-                            # structure - either way this pin is finished
-                            _INT_PIN["start"] = None
-                    for _w in (() if i_trend else INT_WINDOWS):
-                        _try = _pool[-_w:]
-                        if len(_try) < 5:
-                            continue
-                        _b = []
-                        _r = engine(_try, brk_out=_b)
-                        # Owner 2026-09-23: "we are already trading main
-                        # structure, why are internal marks still on the
-                        # chart?" Because when the pool is short every long
-                        # window slices ALL of it, so the internal engine
-                        # re-finds the MAIN swing and reports the main BOS as
-                        # an internal one (measured: pool 64 candles, windows
-                        # 200/120/80 all returned the main bos 85415.51 to the
-                        # point and the same break time). A structure that
-                        # breaks at the same candle as the main structure is
-                        # not internal - skip it and keep looking shorter.
-                        if _r[2] != 0 and _r[6] == nxt_t:
-                            continue
-                        if _r[2] != 0:          # a direction was found
-                            _inner, _ibrk = _try, _b
-                            (i_dots, i_marks, i_trend, i_choch,
-                             i_nxt, i_inv, i_nxt_t, i_inv_t, i_dir,
-                             i_flp, i_flp_t, i_fdir) = _r
-                            _INT_PIN["start"] = _try[0][0]   # pin it
-                            break
-                    else:
-                        # for-else also fires when the loop body never ran,
-                        # i.e. when the PINNED window already succeeded - do
-                        # not overwrite the window that produced the dots
-                        if i_trend == 0:
-                            _inner = _pool[-INT_WINDOWS[0]:]
-                    if i_trend != 0:
-                        # owner 2026-09-16: do not anticipate the next break
-                        # until price has actually pulled back from the level
-                        # - at least one candle against the trend since the
-                        # candle that set it. Before that the "next BOS" is
-                        # just the current extreme and says nothing.
-                        _nw = int(R[-1]["time"])
-                        # same strict window as moves_2h above - an internal
-                        # break must not authorise itself either
-                        i_brk1h = sum(1 for b in _ibrk
-                                      if _nw - 3600 < b[0] < _nw)
-                        i_ready = pullback_since(kept, i_nxt_t, i_dir)
-                        i_fready = pullback_since(kept, i_flp_t, i_fdir)
-                # user 2026-09-08 (screenshot): NEVER show the
-                # opposite side's dots while a trend is confirmed -
-                # uptrend displays lows only, downtrend highs only.
-                # Owner 2026-09-16: the internal structure obeys it too.
-                if i_trend == 1:
-                    i_dots = [d for d in i_dots if d[2] == 1]
-                elif i_trend == -1:
-                    i_dots = [d for d in i_dots if d[2] == -1]
+                _res = internal_structure(kept, nxt, inv, inv_t, _mflp, marks,
+                                          nxt_t, int(R[-1]["time"]),
+                                          pin=_INT_PIN)
+                (i_dots, i_marks, i_trend, i_choch, i_nxt, i_inv, i_nxt_t,
+                 i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
+                 i_fready, _since, _win_len) = (
+                    _res["i_dots"], _res["i_marks"], _res["i_trend"],
+                    _res["i_choch"], _res["i_nxt"], _res["i_inv"],
+                    _res["i_nxt_t"], _res["i_inv_t"], _res["i_dir"],
+                    _res["i_flp"], _res["i_flp_t"], _res["i_fdir"],
+                    _res["i_brk1h"], _res["i_ready"], _res["i_fready"],
+                    _res["since"], _res["win_len"])
                 if trend == 1:
                     dots = [d for d in dots if d[2] == 1]
                 elif trend == -1:
@@ -713,7 +760,7 @@ def main():
                      "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
                      "int_flip_bos_ready": i_fready,
                      "bos_ready": _ready,
-                     "int_win": len(_inner),
+                     "int_win": _win_len,
                      "int_brk_1h": i_brk1h,
                      "int_awake": i_brk1h >= 1,
                      "int_state": (
