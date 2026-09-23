@@ -612,6 +612,13 @@ def book_closes(st, t_from):
         # the peak is reclaimed. Chest fills from new-high overflow
         # (cap $10) and pays every bullet's losses.
         is_add = d.position_id in (st.get("add_ids") or [])
+        if not is_add:
+            # consecutive losing MAIN trades. Owner 2026-09-23: bullets do
+            # not fire during a bad run - measured +$26 and the same
+            # drawdown over 41.7 days, better on 6/6 anchors, both halves
+            # and every spread, and proven to be SELECTION not size
+            # (review/bullet_tune_test.py streak_rule()).
+            st["loss_streak"] = 0 if pnl > 0 else st.get("loss_streak", 0) + 1
         if pnl < 0:
             if is_add:
                 st["chest"] = round(max(0.0, st["chest"] + pnl), 2)
@@ -891,6 +898,11 @@ def main():
                         if _nerv is not None and _nerv > 1.0:
                             say(f"COMBAT skipped: marche pas calme "
                                 f"({_nerv:.2f}x) - pas de balles ici")
+                            _n = 0
+                        elif st.get("loss_streak", 0) >= 2:
+                            say(f"COMBAT skipped: "
+                                f"{st['loss_streak']} pertes de suite - "
+                                f"pas de balles dans une mauvaise serie")
                             _n = 0
                         elif st["debt"] <= 0.5:
                             _n = 0        # nothing to recover, no fighters
