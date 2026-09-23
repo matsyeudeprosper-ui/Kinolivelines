@@ -173,5 +173,70 @@ def main():
     print()
 
 
+
+
+def streak_rule():
+    """THE FINDING (owner 2026-09-23): keep the trades, but do not fire a
+    bullet after 2 straight losses. Better on BOTH axes - and the last
+    block proves it is SELECTION, not merely firing fewer bullets.
+    """
+    sym, R = bars()
+    tr = trades_with_path(R, SPREAD)
+
+    def sim(t, mode, K=2, nb=3.0, sp=SPREAD):
+        run = pk = dd = 0.0
+        streak = 0
+        lots = 0.0
+        for x in t:
+            d = x['dist']
+            debt = max(0.0, pk - run)
+            go = ((debt > 0.5) if mode == 'debt'
+                  else (debt > 0.5 and streak < K))
+            run += ((B.RR * d - sp) if x['win'] else -(d + sp)) * LOT
+            if go and x['mid']:
+                lots += nb
+                run += (((1.3 * d - sp) if x['win']
+                         else -(d / 2.0 + sp))) * BLOT * nb
+            streak = 0 if x['win'] else streak + 1
+            pk = max(pk, run)
+            dd = min(dd, run - pk)
+        return run, dd, lots
+
+    print()
+    print('  THE STREAK RULE')
+    print('  rule                              net $   max DD   ratio')
+    for mode, K, lab in (('debt', 0, 'fire when in debt (today)'),
+                         ('streak', 2, 'in debt, NOT after 2 losses'),
+                         ('streak', 3, 'in debt, NOT after 3 losses')):
+        n, dd, _ = sim(tr, mode, K)
+        print(f'  {lab:<32}{n:>9.2f}{dd:>9.2f}'
+              f'{(n/abs(dd) if dd else 0):>8.2f}')
+
+    print()
+    print('  ANCHORS')
+    for mode, lab in (('debt', 'today'), ('streak', 'NOT after 2')):
+        vals = []
+        for a in range(6):
+            sub = R[a * 600:]
+            if len(sub) < 20000:
+                break
+            vals.append(sim(trades_with_path(sub, SPREAD), mode)[0])
+        print(f'    {lab:<14}' + ''.join(f'{v:>9.2f}' for v in vals)
+              + f'   mean {sum(vals)/len(vals):.2f}')
+
+    print()
+    print('  SELECTION, NOT SIZE - same total bullet volume')
+    n1, d1, l1 = sim(tr, 'streak', 2, 3.0)
+    lfull = sim(tr, 'debt', 0, 3.0)[2]
+    eq = 3.0 * l1 / lfull
+    n2, d2, _ = sim(tr, 'debt', 0, eq)
+    print(f'    NOT after 2, 3 bullets   ${n1:8.2f}   DD {d1:8.2f}')
+    print(f'    today, size matched      ${n2:8.2f}   DD {d2:8.2f}'
+          f'   (nb={eq:.2f})')
+    print(f'    selection alone worth    ${n1-n2:+8.2f}   DD {d1-d2:+8.2f}')
+    print()
+
+
 if __name__ == "__main__":
     main()
+    streak_rule()
