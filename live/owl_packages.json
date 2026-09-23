@@ -100,8 +100,7 @@
     "special_10": {
       "extends": "special",
       "label": "Special - sans frein nervosite, pause a +$10/jour",
-      "day_cap": 10.0,
-      "day_cap_waived": false
+      "day_cap": 10.0
     }
   },
   "accounts": {
