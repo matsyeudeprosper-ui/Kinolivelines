@@ -64,10 +64,14 @@ def load(path, spread):
                 ordt = tok[4:]
         if ordt is None and " INT" in f" {why} ":
             ordt = "i"          # records written before the tag existed
+        storm = None
+        for tok in why.split():
+            if tok.startswith("storm="):
+                storm = tok[6:]
         out.append({"t": x["t"], "win": bool(x["win"]), "R": r,
                     "usd": r * (x["usd"] / (x["R"] * 0.02)) * 0.02
                            if x["R"] else 0.0,
-                    "ord": ordt, "why": why})
+                    "ord": ordt, "storm": storm, "why": why})
     out.sort(key=lambda z: z["t"])
     return out
 
@@ -125,5 +129,36 @@ def main():
     print("  it did not in the replay ($39.28 vs $50.60).\n")
 
 
+def report_storm(books):
+    # owner 2026-09-23: "keep records of skip or not skip... remember how
+    # we are doing with that data until we decide." The replay found
+    # +$34/41.7d but p=0.053 - too close to call from the replay alone;
+    # forward is the tiebreaker. storm=1 is the first MAIN trade after
+    # nervosity crossed back under 1.85x since the last trade; storm=0 is
+    # every other trade. Only meaningful on MAIN trades (ord != i) - the
+    # pattern was never tested on internal trades.
+    print("  FORWARD: first trade after a storm ends, vs every other trade")
+    print("  (replay: skip-rule +$33.68/41.7d, 6/6 anchors, "
+          "permutation p=0.053 - borderline)")
+    print()
+    for p in books:
+        uid = os.path.basename(p)[len("owl_shadow_"):-len("_fvg.json")]
+        tr = load(p, SPREAD)
+        main_tr = [x for x in tr if x["ord"] not in (None, "i")]
+        days = ((tr[-1]["t"] - tr[0]["t"]) / 86400) if len(tr) > 1 else 0
+        print(f"  --- {uid} ---")
+        print(f"  {'rule':<26}{'trades':>7}{'/day':>7}{'win%':>8}"
+              f"{'R/trade':>10}{'95% interval':>20}{'$':>9}")
+        line("storm=1 (first after)",
+             [x for x in main_tr if x["storm"] == "1"], days)
+        line("storm=0 (everything else)",
+             [x for x in main_tr if x["storm"] == "0"], days)
+        print()
+
+
 if __name__ == "__main__":
     main()
+    print("=" * 60)
+    _books = sorted(glob.glob(os.path.join(LIVE, "owl_shadow_*_fvg.json")))
+    if _books:
+        report_storm(_books)

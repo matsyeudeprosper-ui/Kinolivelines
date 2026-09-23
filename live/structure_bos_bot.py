@@ -809,8 +809,11 @@ def main():
         else:
             st["tord"] = st.get("tord", 0) + 1
             _ordt = str(st["tord"])
+        _storm = "1" if st.get("storm_seen") else "0"
+        st["storm_seen"] = False       # this trade consumes the flag
         SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp,
-                          f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt}",
+                          f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt} "
+                          f"storm={_storm}",
                           BASE_LOT, book="fvg")
         req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
                "volume": lot,
@@ -1053,6 +1056,16 @@ def main():
             # the last level is persisted so a restart cannot replay it.
             _cj = weather()
             if _cj:
+                # forward-tracking (owner 2026-09-23): "keep records of
+                # skip or not skip in the virtual trades." storm_seen turns
+                # on the moment nervosity hits the >=1.85x floor and stays
+                # on until the next REAL entry consumes it (tagged below) -
+                # exactly the definition review/post_storm_test.py measured
+                # ($+34 over 41.7 days, but p=0.053 - too close to call from
+                # the replay alone, hence tracking it live instead).
+                _vn2, _vr2 = _cj.get("vol_now"), _cj.get("vol_ref")
+                if _vn2 and _vr2 and (_vn2 / max(_vr2, 1)) >= NERV_STORM:
+                    st["storm_seen"] = True
                 _iv, _ivt = _cj.get("int_inv"), _cj.get("int_inv_t")
                 _itr = _cj.get("int_trend") or 0
                 if (_iv and _ivt and _ivt != st.get("int_last_t")
