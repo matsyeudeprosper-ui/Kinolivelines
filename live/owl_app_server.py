@@ -403,6 +403,53 @@ def master_pwd_ok(pw):
     return k is not None and pwd_ok(k, pw)
 
 
+# 2026-09-23 (owner): "the nid menu must not exist for all but me."
+# is_master was tied to WHICH ACCOUNT's page is open (Kino's own token),
+# not to WHO is looking - so viewing any other member's page hid Le Nid
+# even for the owner. This is a real access control on other people's
+# balances (Valere, Infinity, ... are not the owner), so unlocking it is
+# a SERVER-VERIFIED secret, not a client-side flag anyone could set on
+# their own account's page.
+ADMIN_TOKENS_FILE = os.path.join(DIR, "owl_admin_tokens.json")
+ADMIN_COOKIE = "owl_admin"
+ADMIN_MAX_AGE = 180 * 86400        # 180 days
+
+
+def _admin_tokens():
+    try:
+        return json.load(open(ADMIN_TOKENS_FILE, encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def issue_admin_cookie():
+    toks = _admin_tokens()
+    secret = secrets.token_urlsafe(24)
+    toks[secret] = time.time()
+    # prune anything already expired so this file cannot grow forever
+    toks = {k: v for k, v in toks.items() if time.time() - v < ADMIN_MAX_AGE}
+    toks[secret] = time.time()
+    tmp = ADMIN_TOKENS_FILE + ".tmp"
+    json.dump(toks, open(tmp, "w", encoding="utf-8"))
+    os.replace(tmp, ADMIN_TOKENS_FILE)
+    return secret
+
+
+def admin_cookie_ok(headers):
+    raw = headers.get("Cookie") or ""
+    secret = None
+    for part in raw.split(";"):
+        part = part.strip()
+        if part.startswith(ADMIN_COOKIE + "="):
+            secret = part[len(ADMIN_COOKIE) + 1:]
+            break
+    if not secret:
+        return False
+    toks = _admin_tokens()
+    issued = toks.get(secret)
+    return issued is not None and (time.time() - issued) < ADMIN_MAX_AGE
+
+
 def pwd_ok(u, pw):
     """Broker-password check with 5-fails-per-10-min lockout."""
     key = ("pwd", u.get("id"))
@@ -833,6 +880,21 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
   <span class="chv" id="pause-chv">&#8250;</span>
  </div>
 </div>
+<!-- Owner 2026-09-23: "the nid menu must not exist for all but me" - this
+     is how the owner unlocks it from whichever account's page is open,
+     without going back to Kino. Password-verified server-side
+     (admin_unlock), never a client-side flag; hidden the moment this
+     browser is already recognised as admin. -->
+<div class="sec" id="adminlock-sec">Acc&egrave;s</div>
+<div class="panel" id="adminlock-card" style="padding:4px 14px">
+ <div class="srow" id="adminlockbtn">
+  <div class="sic">&#128274;</div>
+  <div style="flex:1"><b>D&eacute;verrouiller Le Nid</b>
+   <div class="ssub">R&eacute;serv&eacute; &agrave;
+    l&#39;administrateur</div></div>
+  <span class="chv">&#8250;</span>
+ </div>
+</div>
 <div class="sec" id="adm-sec" style="display:none">Administration</div>
 <div class="panel" id="adm-card" style="display:none;padding:4px 14px">
  <div class="srow" id="goalbtn">
@@ -1096,6 +1158,20 @@ function ledInfo(){
   'Compris&nbsp;!</button>');
 }
 window.addEventListener('load',()=>{
+ const alb=document.getElementById('adminlockbtn');
+ if(alb)alb.onclick=async(e)=>{e.preventDefault();
+  const pw=await askPwd('D&eacute;verrouiller Le Nid ?',
+   'Mot de passe administrateur. Une fois entr&eacute;, Le Nid reste '+
+   'visible sur cet appareil, quel que soit le compte affich&eacute;.',
+   '&#128274; D&eacute;verrouiller',false);
+  if(!pw)return;
+  const r=await fetch(B+'admin_unlock',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
+  let j=null;try{j=await r.json();}catch(e2){}
+  if(!j||!j.ok){await info('&#10060; <h3>Mot de passe incorrect.'+
+   '</h3>');return;}
+  location.reload();};
  const pb=document.getElementById('pausebtn');
  if(pb)pb.onclick=async(e)=>{e.preventDefault();
   if(pauseLocked){await info('&#128274; <h3>R&eacute;serv&eacute; '+
@@ -2076,6 +2152,10 @@ function render(d){
   }
   document.getElementById('actcard').style.display=
    d.activation_needed?'block':'none';
+  document.getElementById('adminlock-sec').style.display=
+   d.is_master?'none':'block';
+  document.getElementById('adminlock-card').style.display=
+   d.is_master?'none':'block';
   if(d.is_master){
    document.getElementById('adm-sec').style.display='block';
    document.getElementById('adm-card').style.display='block';
@@ -2506,7 +2586,7 @@ def user_by_token(tok):
     return None
 
 
-def user_stats(u):
+def user_stats(u, admin_override=False):
     plan = u.get("plan", "premium")
     if plan == "trial":
         try:
@@ -2770,7 +2850,8 @@ def user_stats(u):
         except Exception:
             pass
         if (u.get("id") in ("kino", "std")
-                or str(u.get("login")) == str(LOGIN)):
+                or str(u.get("login")) == str(LOGIN)
+                or admin_override):
             d["is_master"] = True
             # v2 Le Nid: one row per member for the master console
             try:
@@ -3823,6 +3904,44 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "admin_unlock":
+            # 2026-09-23 (owner): "the nid menu must not exist for all but
+            # me." Works from ANY account's page (that is the point - the
+            # owner should not have to go back to Kino), so this only
+            # requires a valid token to route through, not a master one.
+            # The password is what proves identity, checked fresh here
+            # exactly like every other master action.
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(ln).decode("utf-8", "replace")
+                import urllib.parse as _up
+                pw = (_up.parse_qs(body).get("pwd", [""])[0] or "")
+                if not master_pwd_ok(pw):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                secret = issue_admin_cookie()
+                body_out = json.dumps({"ok": True}).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header(
+                    "Set-Cookie",
+                    f"{ADMIN_COOKIE}={secret}; Path=/; Max-Age="
+                    f"{ADMIN_MAX_AGE}; HttpOnly; SameSite=Lax")
+                self.send_header("Content-Length", str(len(body_out)))
+                self.end_headers()
+                self.wfile.write(body_out)
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "actcode":
             # the master generates a fresh one-time code (password-gated)
             u = user_by_token(_parts[0])
@@ -4038,7 +4157,8 @@ class H(BaseHTTPRequestHandler):
             page = PAGE.replace("%%NAME%%", user.get("name", ""))
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
-            self._send(json.dumps(user_stats(user)), "application/json")
+            self._send(json.dumps(user_stats(
+                user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "chart":
             # aura redesign 2026-09-08 lives in its own file; the
             # inline constant is only the fallback
