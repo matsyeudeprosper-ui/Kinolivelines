@@ -676,8 +676,11 @@ def main():
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
         f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
         + ("".join(f" | {x}" for x in _br))
-        + (f" | day cap +${DAY_CAP:.2f} (waived while in debt), "
-           f"target ${WEEK_TARGET:.0f}/week" if DAY_CAP else ""))
+        + (f" | day cap +${DAY_CAP:.2f} (waived while in debt)"
+           if DAY_CAP else "")
+        # week_target is optional - special_10 has a day cap and no weekly
+        # one, which crashed this line the first time 441 ran as a bot
+        + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else ""))
     ensure_algo()
 
     eng = Struct()

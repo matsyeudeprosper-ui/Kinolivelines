@@ -316,8 +316,10 @@ BOT_OF = {
     "luc":        ("CROC", "owl_pro_alive.json", "owl_pro.log", 300),
     "fresh":      ("Harvest H1", "harvest_fresh_state.json",
                    "harvest_fresh.log", 1800),
-    "bos":        ("Structure · bureau", "manual_state_bos.json",
-                   "owl_manual_trader_bos.log", 300),
+    # 2026-09-23 (owner): "make 441 behave exactly like the rest, only
+    # its daily target differs". It now runs structure_bos_bot.py like
+    # Valere and Infinity, so it reads the bot's files, not the desk's.
+    "bos":        ("Structure", "bos_state.json", "bos_bot.log", 300),
     "u224016179": ("Structure", "bos_state_valere.json",
                    "bos_bot_valere.log", 300),
     "demo":       ("Structure · démo publique", "bos_state_demo.json",
