@@ -649,12 +649,46 @@ def debt_recoverable(st):
     return s[mid] if n % 2 else (s[mid - 1] + s[mid]) / 2.0
 
 
+def effective_cap_today(st):
+    """What actually stops a new entry today, in dollars - or None if
+    unrestricted. THE single source of truth for the day's own stopping
+    point: day_blocked() below calls this to decide, and also persists
+    the result to st["cap_today"] so the app can show the account's REAL
+    enforced number instead of a reconstruction that can silently drift
+    (owner 2026-09-24 asked for exactly this after a staleness bug was
+    caught here: Mike's package changed but its cached sized_day_cap did
+    not get recomputed on restart, so day_blocked() was quietly enforcing
+    the wrong number for a while - single source of truth fixes the class
+    of bug, not just that one instance).
+
+    owner 2026-09-23/24: a flat cap that always binds loses to a waiver
+    once midpoint bullets are modelled properly
+    (review/day_cap_always_binds_test.py); but an UNLIMITED waiver lets a
+    big debt sit open for a week or more with no brake at all
+    (review/debt_resolution_time_test.py: a $50+ debt took up to 6 days,
+    once never resolved in a 5.5-week window). The middle ground that
+    actually measures better on BOTH money and risk: size each debt-day's
+    cap off what debt-days have realistically made before
+    (debt_recoverable()), always binding, recomputed daily.
+    """
+    _cap = sized_day_cap(st)
+    if _cap is None:
+        return None
+    if DAY_CAP_WAIVED and st.get("debt", 0.0) > 0.5:
+        _rec = debt_recoverable(st)
+        if _rec is None:
+            return None          # not enough history yet - unrestricted,
+                                  # same as the old behaviour until then
+        _bonus = min(max(0.0, _rec), DEBT_CAP_BONUS_MULT * _cap)
+        return _cap + _bonus
+    return _cap
+
+
 def day_blocked(st):
     """Why no new entry today, or None to allow.
 
     Two different limits (owner 2026-09-18):
-      day_cap        a PROFIT target. Waived while the account owes money,
-                     because catching up must not be throttled.
+      day_cap        a PROFIT target, sized by effective_cap_today().
       max_trades_day a PACKAGE limit - how many trades this offer includes.
                      Never waived: it is what the account signed up for.
     """
@@ -663,32 +697,14 @@ def day_blocked(st):
     if cap is not None and st.get("day_n", 0) >= cap:
         return (f"{st.get('day_n', 0)}/{cap} trades du jour "
                 f"(forfait {PACKAGE})")
-    _cap = sized_day_cap(st)
-    if _cap is None:
+    _adaptive = effective_cap_today(st)
+    st["cap_today"] = _adaptive if _adaptive is not None else ""
+    if _adaptive is None:
         return None
-    # owner 2026-09-23/24: a flat cap that always binds loses to a
-    # waiver once midpoint bullets are modelled properly
-    # (review/day_cap_always_binds_test.py); but an UNLIMITED waiver
-    # lets a big debt sit open for a week or more with no brake at all
-    # (review/debt_resolution_time_test.py: a $50+ debt took up to 6
-    # days, once never resolved in a 5.5-week window). The middle
-    # ground that actually measures better on BOTH money and risk: size
-    # each debt-day's cap off what debt-days have realistically made
-    # before (debt_recoverable()), always binding, recomputed daily.
-    if DAY_CAP_WAIVED and st.get("debt", 0.0) > 0.5:
-        _rec = debt_recoverable(st)
-        if _rec is None:
-            return None          # not enough history yet - unrestricted,
-                                  # same as the old behaviour until then
-        _bonus = min(max(0.0, _rec), DEBT_CAP_BONUS_MULT * _cap)
-        _adaptive = _cap + _bonus
-        if pnl >= _adaptive:
-            return (f"+{pnl:.2f} aujourd'hui (>= ${_adaptive:.2f} cible "
-                    f"adaptative, dette ${st.get('debt', 0.0):.2f})")
-        return None
-    if pnl >= _cap:
-        _tag = "sans dette" if st.get("debt", 0.0) <= 0.5 else "dette active"
-        return f"+{pnl:.2f} aujourd'hui (>= ${_cap:.2f}), {_tag}"
+    if pnl >= _adaptive:
+        _tag = ("dette active" if st.get("debt", 0.0) > 0.5
+                else "sans dette")
+        return f"+{pnl:.2f} aujourd'hui (>= ${_adaptive:.2f}), {_tag}"
     return None
 
 
@@ -1123,6 +1139,14 @@ def main():
                 last_house = time.time()
                 book_closes(st, last_book - 30)
                 last_book = time.time()
+                # Owner 2026-09-24: day_blocked() (and the cap_today it
+                # persists for the app to show) used to update only when
+                # an actual signal triggered an entry attempt - same
+                # latency class as the day_roll() bug found earlier
+                # today. Called here on the same ~10s housekeeping tick
+                # so the displayed number never lags behind what the bot
+                # would really enforce right now.
+                day_blocked(st)
                 save_state(st)
             net = st.get("banked", 0.0) + floating()
             if net <= KILL_NET:

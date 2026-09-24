@@ -2122,12 +2122,26 @@ function render(d){
   }
   const dtc=document.getElementById('daytargetchip');
   const _lg2=d.ledger||{};
-  const _cap2=_lg2.scale_active?_lg2.sized_day_cap:_lg2.scale_base_cap;
   if(dtc){
-   if(_lg2.bos&&typeof _cap2==='number'){
+   if(_lg2.bos&&typeof _lg2.cap_today==='number'){
+    const _pnl=_lg2.day_pnl_bot||0,_cap=_lg2.cap_today;
+    const _pct=Math.max(0,Math.min(100,_cap>0?(100*_pnl/_cap):0));
+    const _done=!!_lg2.day_capped||_pnl>=_cap;
     dtc.style.display='inline-block';
-    dtc.innerHTML='Cible du jour : $'+_cap2.toFixed(2)+
-     (_lg2.scale_active?' &#9889;':'');
+    dtc.style.background=_done
+     ?'rgba(46,204,113,.22)'
+     :'linear-gradient(90deg,rgba(232,197,90,.32) '+_pct.toFixed(0)+
+      '%,rgba(255,255,255,.07) '+_pct.toFixed(0)+'%)';
+    dtc.style.color=_done?'#8df0bb':'#e8c55a';
+    dtc.innerHTML=_done
+     ?'&#9989; Objectif atteint : $'+_pnl.toFixed(2)
+     :'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui'
+      +(_lg2.scale_active?' &#9889;':'');
+   }else if(_lg2.bos&&(_lg2.debt||0)>0.5){
+    dtc.style.display='inline-block';
+    dtc.style.background='rgba(127,179,224,.13)';
+    dtc.style.color='#9fc2de';
+    dtc.innerHTML='En rattrapage &mdash; pas de limite pour l\\u2019instant';
    }else{dtc.style.display='none';}
   }
   const lvE=document.getElementById('lv'),
@@ -2800,6 +2814,17 @@ def user_stats(u, admin_override=False):
                 if _bs.get("sized_day_cap") is not None:
                     d["ledger"]["sized_day_cap"] = float(
                         _bs["sized_day_cap"])
+                # 2026-09-24: the REAL number stopping (or not stopping)
+                # entries today, straight from effective_cap_today() via
+                # the bot's own state - never reconstructed here, so the
+                # card can't drift from what the bot actually enforces
+                # (a staleness bug in exactly that gap was caught and
+                # fixed the same day).
+                _ct = _bs.get("cap_today")
+                if isinstance(_ct, (int, float)):
+                    d["ledger"]["cap_today"] = float(_ct)
+                d["ledger"]["day_pnl_bot"] = float(_bs.get("day_pnl") or 0.0)
+                d["ledger"]["day_capped"] = bool(_bs.get("day_capped"))
                 d["ledger"]["scale_opt_out"] = bool(u.get("scale_opt_out"))
                 try:
                     d["ledger"]["scale_can_toggle"] = (
