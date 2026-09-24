@@ -282,6 +282,14 @@ SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
 # recent debt-days, so the number tracks the account's CURRENT form.
 DEBT_CAP_MIN_SAMPLES = 3
 DEBT_CAP_WINDOW = 40
+# owner 2026-09-24: "what if the picked amount is too huge, should it be
+# realistic?" The median already resists ONE lucky day, but not several
+# good days clustered together (the best single debt-day seen in
+# testing was +$53.75) - so the extra room on top of the normal target
+# is capped here too. Checked against real history: even a tight 3x
+# ceiling never actually bound in review/day_cap_always_binds_test.py's
+# data, so this costs nothing in practice and is pure insurance.
+DEBT_CAP_BONUS_MULT = 5
 
 
 def say(msg):
@@ -639,7 +647,8 @@ def day_blocked(st):
         if _rec is None:
             return None          # not enough history yet - unrestricted,
                                   # same as the old behaviour until then
-        _adaptive = max(_cap, max(0.0, _rec) + _cap)
+        _bonus = min(max(0.0, _rec), DEBT_CAP_BONUS_MULT * _cap)
+        _adaptive = _cap + _bonus
         if pnl >= _adaptive:
             return (f"+{pnl:.2f} aujourd'hui (>= ${_adaptive:.2f} cible "
                     f"adaptative, dette ${st.get('debt', 0.0):.2f})")
