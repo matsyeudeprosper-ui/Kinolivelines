@@ -492,12 +492,40 @@ def day_roll(st):
     BASE_LOT it replaces, just no longer frozen at whatever the balance
     was when the package was written).
     """
-    if st.get("day_key") != day_key():
+    _new_day = st.get("day_key") != day_key()
+    if _new_day:
         st["day_key"] = day_key()
         st["day_pnl"] = 0.0
         st["day_n"] = 0
         st["day_capped"] = False
-        if SCALE_WITH_BALANCE:
+    # Owner 2026-09-24: "give a professional opt in/out... default opted
+    # in". scale_with_balance (above) is the PACKAGE's own capability
+    # switch (code-level, same for every account on that package);
+    # scale_opt_out is the ACCOUNT HOLDER'S own choice, set from the app
+    # (owl_app_server.py /scale_pref) and read fresh once a day, same
+    # cadence as the resize itself. Deliberately its OWN condition, not
+    # bundled into "if _new_day" above: a process that has never resolved
+    # it yet (st["scale_active"] missing - e.g. right after this feature
+    # shipped, mid-day) must not have to wait for the next UTC rollover to
+    # pick it up, and doing that must never touch the real day counters.
+    if _new_day or st.get("scale_active") is None:
+        _opt_out = False
+        try:
+            _nu = json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                 encoding="utf-8"))
+            _me = next((x for x in _nu if x.get("id") == PAUSE_UID), None)
+            _opt_out = bool(_me and _me.get("scale_opt_out"))
+        except Exception:
+            pass
+        _active = SCALE_WITH_BALANCE and not _opt_out
+        if st.get("scale_active") is not None and st["scale_active"] != _active:
+            say("balance scaling " + ("ON" if _active else "OFF")
+                + " (account holder preference changed)")
+        st["scale_active"] = _active
+        st["scale_ref_balance"] = SCALE_REF_BALANCE
+        st["scale_base_lot"] = BASE_LOT
+        st["scale_base_cap"] = DAY_CAP
+        if _active:
             try:
                 _ai = mt5.account_info()
                 if _ai is not None and SCALE_REF_BALANCE > 0:
@@ -514,22 +542,26 @@ def day_roll(st):
                            if DAY_CAP is not None else ""))
             except Exception:
                 pass
+        else:
+            st.pop("sized_lot", None)
+            st.pop("sized_day_cap", None)
     return st.get("day_pnl", 0.0)
 
 
 def sized_lot(st):
     """The lot to trade with right now - the balance-scaled one if the
-    package opted in and today's rollover has computed it, else the
-    package's own flat BASE_LOT."""
-    if SCALE_WITH_BALANCE and st.get("sized_lot"):
+    package allows it AND the account holder has not opted out (both
+    folded into st["scale_active"] by day_roll()), else the package's
+    own flat BASE_LOT."""
+    if st.get("scale_active") and st.get("sized_lot"):
         return st["sized_lot"]
     return BASE_LOT
 
 
 def sized_day_cap(st):
-    """The day target to enforce right now - scaled if opted in and
+    """The day target to enforce right now - scaled if active and
     computed, else the package's own flat DAY_CAP (which may be None)."""
-    if SCALE_WITH_BALANCE and DAY_CAP is not None and st.get("sized_day_cap"):
+    if st.get("scale_active") and DAY_CAP is not None and st.get("sized_day_cap"):
         return st["sized_day_cap"]
     return DAY_CAP
 
@@ -654,6 +686,15 @@ def floating():
 
 def book_closes(st, t_from):
     """Ledger bookkeeping for deals closed since t_from."""
+    # Owner 2026-09-24 (bug found while verifying the scale toggle):
+    # day_roll() used to fire ONLY from a closing deal or a new entry, so
+    # a quiet account (no trade around UTC midnight) could carry
+    # yesterday's day counters and stale scaled lot/cap for hours past
+    # the rollover. This runs it here unconditionally, on the same ~10s
+    # housekeeping cadence as everything else in this function, so the
+    # day (and the balance resize) never depends on a trade happening to
+    # occur near the boundary.
+    day_roll(st)
     ds = mt5.history_deals_get(
         datetime.fromtimestamp(t_from, tz=timezone.utc),
         datetime.now(timezone.utc)) or []

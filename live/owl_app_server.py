@@ -17,7 +17,7 @@ Token = first line of owl_app_token.txt. Stats from MT5 deal history
 (trade deals only). Max DD = deepest peak-to-trough over the last 7 days,
 INCLUDING open-trade floating pain (sightings kept in _ddhist).
 """
-import json, os, sys, time, secrets, struct, threading, zlib
+import json, math, os, sys, time, secrets, struct, threading, zlib
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
@@ -254,6 +254,11 @@ PAUSE_ALLOWED = ("bos", "kino")
 # (hand-placed) trading - the other four are pure-auto by design
 # with no desk process to swap to. See owl_mode_switch.py.
 MODE_SWITCH_ALLOWED = ("bos",)
+# 2026-09-24: every account running its own structure_bos_bot.py
+# instance - the only ones with a lot/day-cap to scale in the first
+# place. The public demo is separately refused ALL actions above
+# (view-only), so this only ever matters for the other four in practice.
+SCALE_TOGGLE_ALLOWED = ("bos", "kino", "u224016179", "demo", "infinity")
 
 
 def pause_file(uid):
@@ -657,6 +662,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe">&nbsp;</div>
 <span id="daychip"></span>
+<span id="daytargetchip" style="display:none;margin-left:6px;padding:3px 10px;
+ border-radius:99px;font-size:.72rem;font-weight:600;
+ background:rgba(127,179,224,.13);color:#9fc2de"></span>
 <div class="bankline" id="bank">&nbsp;</div>
 <div id="acctline" style="margin-top:8px;font-size:.72rem;
  color:#5f7185">&nbsp;</div>
@@ -878,6 +886,13 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
   <div style="flex:1"><b id="pause-lbl">Mode manuel</b>
    <div class="ssub" id="pause-sub"></div></div>
   <span class="chv" id="pause-chv">&#8250;</span>
+ </div>
+ <div class="srow" id="scalebtn" style="display:none">
+  <div class="sic" id="scale-ic">&#128200;</div>
+  <div style="flex:1"><b id="scale-lbl">Mise &agrave; l&#39;&eacute;chelle
+   du solde</b>
+   <div class="ssub" id="scale-sub"></div></div>
+  <span class="chv">&#8250;</span>
  </div>
 </div>
 <!-- Owner 2026-09-23: "the nid menu must not exist for all but me" - this
@@ -1195,6 +1210,27 @@ window.addEventListener('load',()=>{
   const r=await fetch(B+'pause',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
    body:'on='+(isPaused?'0':'1')+'&pwd='+encodeURIComponent(pw)}
+   ).catch(()=>null);
+  try{const j=await r.json();
+   if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
+    return;}}catch(e2){}
+  load();};
+ const scb=document.getElementById('scalebtn');
+ if(scb)scb.onclick=async(e)=>{e.preventDefault();
+  const on=!!window._scaleOn;
+  const pw=await askPwd(
+   on?'D&eacute;sactiver la mise &agrave; l&#39;&eacute;chelle ?'
+     :'Activer la mise &agrave; l&#39;&eacute;chelle ?',
+   on?'Le lot et la cible du jour redeviendront fixes, quel que soit '+
+      'le solde du compte.'
+     :'Le lot et la cible du jour du compte suivront d&eacute;sormais '+
+      'le solde (m&ecirc;me formule que Val&egrave;re). Le changement '+
+      'prend effet au prochain reset quotidien (00:00 UTC).',
+   on?'D&eacute;sactiver':'&#9889; Activer',on);
+  if(!pw)return;
+  const r=await fetch(B+'scale_pref',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'on='+(on?'0':'1')+'&pwd='+encodeURIComponent(pw)}
    ).catch(()=>null);
   try{const j=await r.json();
    if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
@@ -2084,6 +2120,16 @@ function render(d){
     :'rgba(255,92,92,.16)';
    dc.style.color=up?'#8df0bb':'#ffb3b3';
   }
+  const dtc=document.getElementById('daytargetchip');
+  const _lg2=d.ledger||{};
+  const _cap2=_lg2.scale_active?_lg2.sized_day_cap:_lg2.scale_base_cap;
+  if(dtc){
+   if(_lg2.bos&&typeof _cap2==='number'){
+    dtc.style.display='inline-block';
+    dtc.innerHTML='Cible du jour : $'+_cap2.toFixed(2)+
+     (_lg2.scale_active?' &#9889;':'');
+   }else{dtc.style.display='none';}
+  }
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
@@ -2109,7 +2155,10 @@ function render(d){
     (d.equity-pb0)/(d.palier-pb0)*100));
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
-    (d.palier_def
+    (d.palier_kind==='scale'
+     ?'Solde pour $'+d.palier_next_cap.toFixed(0)+'/jour : $'+
+      d.palier.toFixed(0)
+     :d.palier_def
      ?'Objectif de la semaine : +$'+(d.palier_step||50).toFixed(0)
      :'Objectif : $'+d.palier.toFixed(0))+
     ' &middot; '+pc.toFixed(0)+'&nbsp;%';
@@ -2149,6 +2198,24 @@ function render(d){
    cv.style.opacity=pauseLocked?'.25':'';
    document.getElementById('pausebtn').style.opacity=
     pauseLocked?'.6':'';
+  }
+  // 2026-09-24: the balance-scaling opt in/out. Shown for every account
+  // running its own structure bot (not only the two pause-capable ones
+  // above), independent of the pause switch.
+  const _lg3=d.ledger||{};
+  if(_lg3.bos&&_lg3.scale_can_toggle){
+   document.getElementById('rob-sec').style.display='block';
+   document.getElementById('rob-card').style.display='block';
+   document.getElementById('scalebtn').style.display='flex';
+   window._scaleOn=!_lg3.scale_opt_out;
+   const _capTxt=(typeof _lg3.scale_base_cap==='number')
+    ?'$'+_lg3.scale_base_cap.toFixed(2)+'/jour fixe'
+    :'la taille fixe';
+   document.getElementById('scale-sub').innerHTML=window._scaleOn
+    ?'Activ&eacute;e (par d&eacute;faut) &mdash; le lot et la cible du '+
+     'jour suivent le solde. Toucher pour revenir &agrave; '+_capTxt+'.'
+    :'D&eacute;sactiv&eacute;e &mdash; '+_capTxt+', quel que soit le '+
+     'solde. Toucher pour activer la mise &agrave; l&#39;&eacute;chelle.';
   }
   document.getElementById('actcard').style.display=
    d.activation_needed?'block':'none';
@@ -2718,6 +2785,28 @@ def user_stats(u, admin_override=False):
                     "rr": float(_bs.get("rr") or 0.8),
                     "next_lot": round(_bl0 + _mx * 0.01, 2),
                     "need_min": 3.0}  # ~one bullet at typical stop
+                # 2026-09-24: balance scaling, read from the bot's own
+                # state so the card can never describe a target the bot
+                # is not actually enforcing (same discipline as the
+                # recovery dials above).
+                d["ledger"]["scale_active"] = bool(_bs.get("scale_active"))
+                d["ledger"]["scale_ref_balance"] = float(
+                    _bs.get("scale_ref_balance") or 0.0)
+                d["ledger"]["scale_base_lot"] = float(
+                    _bs.get("scale_base_lot") or _bl0)
+                if _bs.get("scale_base_cap") is not None:
+                    d["ledger"]["scale_base_cap"] = float(
+                        _bs["scale_base_cap"])
+                if _bs.get("sized_day_cap") is not None:
+                    d["ledger"]["sized_day_cap"] = float(
+                        _bs["sized_day_cap"])
+                d["ledger"]["scale_opt_out"] = bool(u.get("scale_opt_out"))
+                try:
+                    d["ledger"]["scale_can_toggle"] = (
+                        u.get("id") in SCALE_TOGGLE_ALLOWED
+                        and not u.get("public"))
+                except Exception:
+                    pass
                 try:
                     try:
                         d["meteo_struct"] = json.load(open(os.path.join(
@@ -2834,6 +2923,32 @@ def user_stats(u, admin_override=False):
                 u["id"], "all")
         except Exception:
             d["push_level"] = "all"
+        # 2026-09-24 (owner): "the objective feature must be used to
+        # reflect the next account balance to reach the next $/day
+        # target". On an account whose lot/day-cap scale with balance,
+        # the Objectif bar's own default now chases THAT balance instead
+        # of the generic weekly step - it is a much more concrete number
+        # ("$X more unlocks $Y/day") and reuses the exact bar the master
+        # can already override by hand (goalbtn, below, unchanged).
+        try:
+            _lg = d.get("ledger") or {}
+            if (not d.get("palier") and not d.get("palier_off")
+                    and d.get("balance") is not None
+                    and _lg.get("scale_active")
+                    and _lg.get("scale_base_cap")
+                    and _lg.get("scale_ref_balance")):
+                _base_cap = float(_lg["scale_base_cap"])
+                _ref_bal = float(_lg["scale_ref_balance"])
+                _now_cap = float(_lg.get("sized_day_cap") or _base_cap)
+                if _base_cap > 0 and _ref_bal > 0:
+                    _next_cap = math.floor(_now_cap) + 1
+                    d["palier"] = round(_ref_bal * _next_cap / _base_cap, 2)
+                    d["palier_base"] = round(float(d["balance"]), 2)
+                    d["palier_def"] = True
+                    d["palier_kind"] = "scale"
+                    d["palier_next_cap"] = _next_cap
+        except Exception:
+            pass
         # default weekly objective (+$50 from Monday's balance) so the
         # bar is always alive unless explicitly disabled (2026-09-08)
         try:
@@ -4042,6 +4157,51 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                 self._send(json.dumps({"ok": True}),
+                           "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "scale_pref":
+            # Owner 2026-09-24: "a professional opt in/out... default
+            # opted in" for the balance-scaling dial deployed the same
+            # day. Self-service, gated the same way as /pause - the
+            # account's OWN broker password, not the admin one - because
+            # it is that account's own risk setting, not a master action.
+            # Read fresh by the bot once a day (structure_bos_bot.py
+            # day_roll()), so the switch takes effect at the next UTC
+            # rollover, same cadence as the resize itself.
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            if u.get("id") not in SCALE_TOGGLE_ALLOWED:
+                self._send(json.dumps({"ok": False,
+                                       "err": "pas disponible sur ce compte"}),
+                           "application/json")
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up6
+                _f6 = _up6.parse_qs(self.rfile.read(ln)
+                                    .decode("utf-8", "replace"))
+                _pwd6 = (_f6.get("pwd", [""])[0] or "").strip()
+                if not pwd_ok(u, _pwd6):
+                    self._send(json.dumps({"ok": False,
+                                           "err": "bad password"}),
+                               "application/json")
+                    return
+                _on = (_f6.get("on", ["1"])[0] == "1")
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                for x in us:
+                    if x.get("token") == u.get("token"):
+                        x["scale_opt_out"] = not _on
+                _tmp = USERS_FILE + ".tmp"
+                json.dump(us, open(_tmp, "w", encoding="utf-8"), indent=2)
+                os.replace(_tmp, USERS_FILE)
+                _users_cache["t"] = 0.0
+                self._send(json.dumps({"ok": True, "scale_on": _on}),
                            "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
