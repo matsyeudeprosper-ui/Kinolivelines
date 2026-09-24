@@ -275,6 +275,13 @@ MOVEMENT = _P.get("movement", True)
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
+# owner 2026-09-24: the debt-day cap needs its own recent track record
+# before it can be trusted - below this many samples, day_blocked() falls
+# back to the old unlimited-while-in-debt behaviour rather than sizing a
+# cap off 1-2 noisy data points. WINDOW bounds the history to the most
+# recent debt-days, so the number tracks the account's CURRENT form.
+DEBT_CAP_MIN_SAMPLES = 3
+DEBT_CAP_WINDOW = 40
 
 
 def say(msg):
@@ -494,6 +501,17 @@ def day_roll(st):
     """
     _new_day = st.get("day_key") != day_key()
     if _new_day:
+        # owner 2026-09-24: "assign a realistic recoverable debt amount
+        # for the day... recompute every debt-day." Record what
+        # YESTERDAY (the day now ending) actually made, if it OPENED in
+        # debt, before its own counters are wiped below - this is the
+        # account's own growing history, and day_blocked() sizes
+        # tomorrow's debt-day cap off it (debt_recoverable()).
+        if st.get("debt_at_day_open", 0.0) > 0.5:
+            st.setdefault("debt_day_pnls", []).append(
+                st.get("day_pnl", 0.0))
+            del st["debt_day_pnls"][:-DEBT_CAP_WINDOW]
+        st["debt_at_day_open"] = st.get("debt", 0.0)
         st["day_key"] = day_key()
         st["day_pnl"] = 0.0
         st["day_n"] = 0
@@ -566,6 +584,30 @@ def sized_day_cap(st):
     return DAY_CAP
 
 
+def debt_recoverable(st):
+    """Median of what THIS account's own debt-days have actually made,
+    from the growing history day_roll() records, or None if there are
+    fewer than DEBT_CAP_MIN_SAMPLES yet to trust.
+
+    Owner 2026-09-24: "we keep need a realistic daily debt that could
+    likely be resolved based on data stats we have... compute this
+    regularly." The live bot has to start from zero and build this up -
+    unlike a backtest that can look at a whole period at once, there is
+    no history on day one. review/debt_realistic_cap_online_test.py
+    simulated exactly that (starts empty, unlimited-waiver fallback
+    until 3 real samples exist, median of the most recent 40 after
+    that): net +$58 vs the old unlimited-forever waiver, WITH a lower
+    worst-case debt and max drawdown at the same time - both halves of
+    the data, spreads 5/7/10 all agree."""
+    vals = st.get("debt_day_pnls") or []
+    if len(vals) < DEBT_CAP_MIN_SAMPLES:
+        return None
+    s = sorted(vals)
+    n = len(s)
+    mid = n // 2
+    return s[mid] if n % 2 else (s[mid - 1] + s[mid]) / 2.0
+
+
 def day_blocked(st):
     """Why no new entry today, or None to allow.
 
@@ -583,11 +625,24 @@ def day_blocked(st):
     _cap = sized_day_cap(st)
     if _cap is None:
         return None
-    # owner 2026-09-23, 441 only: at a $10 cap "always binds" earned MORE
-    # than "waived in debt" at the SAME drawdown (review/cap_waiver_test.py:
-    # $35.35 vs $31.61, DD -23.59 both) - the waiver only pays at small
-    # caps like Valere's $3, where it stays on by default.
+    # owner 2026-09-23/24: a flat cap that always binds loses to a
+    # waiver once midpoint bullets are modelled properly
+    # (review/day_cap_always_binds_test.py); but an UNLIMITED waiver
+    # lets a big debt sit open for a week or more with no brake at all
+    # (review/debt_resolution_time_test.py: a $50+ debt took up to 6
+    # days, once never resolved in a 5.5-week window). The middle
+    # ground that actually measures better on BOTH money and risk: size
+    # each debt-day's cap off what debt-days have realistically made
+    # before (debt_recoverable()), always binding, recomputed daily.
     if DAY_CAP_WAIVED and st.get("debt", 0.0) > 0.5:
+        _rec = debt_recoverable(st)
+        if _rec is None:
+            return None          # not enough history yet - unrestricted,
+                                  # same as the old behaviour until then
+        _adaptive = max(_cap, max(0.0, _rec) + _cap)
+        if pnl >= _adaptive:
+            return (f"+{pnl:.2f} aujourd'hui (>= ${_adaptive:.2f} cible "
+                    f"adaptative, dette ${st.get('debt', 0.0):.2f})")
         return None
     if pnl >= _cap:
         _tag = "sans dette" if st.get("debt", 0.0) <= 0.5 else "dette active"
@@ -795,7 +850,8 @@ def main():
         f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
         + ("".join(f" | {x}" for x in _br))
         + ((f" | day cap +${DAY_CAP:.2f} "
-            + ("(waived while in debt)" if DAY_CAP_WAIVED
+            + ("(adaptive while in debt, needs "
+               f"{DEBT_CAP_MIN_SAMPLES}+ debt-days seen)" if DAY_CAP_WAIVED
                else "(always enforced)"))
            if DAY_CAP else "")
         # week_target is optional - special_10 has a day cap and no weekly
