@@ -30,12 +30,19 @@
     "",
     "NEITHER dial can switch off the >= 1.85x 'tres agite' exception. That is a floor in code (NERV_STORM), not a setting.",
     "",
-    "day_cap_waived  true (default) = the day_cap is WAIVED while the account",
-    "                owes money, so a good day cannot be locked in before the",
-    "                tab is paid - right for small caps like Valere/demo/",
-    "                Infinity's $3. false = the cap ALWAYS binds. Owner",
-    "                2026-09-23, 441 only: at a $10 cap this earns MORE at",
-    "                the SAME drawdown (review/cap_waiver_test.py).",
+    "day_cap_waived  true (default, EVERY account, since 2026-09-24) = the",
+    "                day_cap is WAIVED while the account owes money, so it",
+    "                keeps taking full trades (not just recovery bullets)",
+    "                until the debt clears, then the cap binds again. false",
+    "                = the cap ALWAYS stops the account at target, debt or",
+    "                not. Owner 2026-09-23 measured false winning for 441 at",
+    "                a $10 cap - but that test (cap_waiver_test.py) never",
+    "                modelled the midpoint bullets that ACTUALLY run during",
+    "                debt. Redone 2026-09-24 with bullets included: true",
+    "                (today's default) wins at every cap tested, $3/$5/$10,",
+    "                by $10-$39 (review/day_cap_always_binds_test.py) - the",
+    "                full-size trades waiving unlocks are worth more than",
+    "                the bullets alone. 441 moved back to true the same day.",
     "",
     "nervosity, movement and day_cap_waived are the ONLY strategy dials allowed in this",
     "file, and both exist for the same reason: neither brake has ever been",
@@ -116,9 +123,8 @@
     },
     "special_10": {
       "extends": "special",
-      "label": "Special - sans frein nervosite, pause a +$10/jour",
-      "day_cap": 10.0,
-      "day_cap_waived": false
+      "label": "Special - meme regles que les autres comptes ($3/jour)",
+      "day_cap": 3.0
     }
   },
   "accounts": {

@@ -32,7 +32,11 @@ _BASE = {"base_lot": 0.02, "max_extra": 3, "adds_on": True,
 FROZEN = {
     # owner 2026-09-20: 441 moved to "special_10" - no brakes, and the
     # desk stops opening at +$10 realised for the day. Deliberate.
-    "bos": dict(_BASE, day_cap=10.0),
+    # owner 2026-09-24: "switch dad to match other four... must also obey
+    # the 1.5% target a day just like the rest" - $10 -> $3, day_cap_waived
+    # back to true (review/day_cap_always_binds_test.py showed waived wins
+    # once midpoint bullets are modelled, reversing the 2026-09-20 call).
+    "bos": dict(_BASE, day_cap=3.0),
     "kino": dict(_BASE),
     "u224016179": dict(_BASE, day_cap=3.0, week_target=20.0),
     "sniper": dict(_BASE, base_lot=0.06, max_extra=0, adds_on=False,
