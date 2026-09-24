@@ -37,6 +37,7 @@ vs all-negative random controls (5 seeds), walk-forward winner
 picked on days 1-35 scored +116 blind on days 36-69 (scratchpad
 bt_chop*.py). Sleeping market = no fishing.
 """
+import csv
 import json
 import math
 import os
@@ -212,6 +213,7 @@ else:
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_F = os.path.join(DIR, f"bos_state{_SFX}.json")
 LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
+JOURNAL_F = os.path.join(DIR, f"bos_journal{_SFX}.csv")
 # Two switches (owner 2026-09-16). The app writes a per-account file, and
 # the bot used to read only the global one - so the per-account pause
 # buttons did nothing and pausing "kino" silently stopped every variant.
@@ -297,6 +299,37 @@ def say(msg):
     print(line, flush=True)
     with open(LOG_F, "a", encoding="utf-8") as f:
         f.write(line + "\n")
+
+
+# Owner 2026-09-24: "we should know what was the ATR, what was the
+# nervosity, the movement indicator... we need to record them so that,
+# with more data, we can figure out what works." One row per closed
+# trade - the market context the BOT ITSELF actually used to decide,
+# not a reconstruction after the fact, so it can never drift from what
+# really happened (same discipline as internal_structure() being a
+# shared function - see [[mt5_owl_packages]] extraction note).
+JOURNAL_COLS = [
+    "account", "ticket", "kind", "internal", "is_add", "direction",
+    "entry_time_utc", "entry_price", "sl", "tp", "dist_pts", "lot",
+    "nervosity", "vol_now", "vol_ref", "movement_count", "trend",
+    "day_n_at_entry", "debt_at_entry", "balance_at_entry", "storm",
+    "exit_time_utc", "outcome", "duration_min", "profit_usd",
+]
+
+
+def journal_write_row(row):
+    """Append one trade to this account's CSV journal, writing the
+    header on first use. Never let a logging problem take down a live
+    trading loop - same "must not raise" contract as say()."""
+    try:
+        is_new = not os.path.exists(JOURNAL_F)
+        with open(JOURNAL_F, "a", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=JOURNAL_COLS)
+            if is_new:
+                w.writeheader()
+            w.writerow({k: row.get(k, "") for k in JOURNAL_COLS})
+    except Exception as e:
+        say(f"journal write failed: {type(e).__name__}: {e}")
 
 
 class Struct:
@@ -826,6 +859,26 @@ def book_closes(st, t_from):
             f"${st['debt']:.2f} (peak {st.get('peak', 0.0):+.2f}), "
             f"chest ${st['chest']:.2f} - bot net "
             f"{st['banked']:+.2f} ({st.get('trades', 0)} trades)")
+        # Owner 2026-09-24: one journal row per closed deal, always - even
+        # a bullet/add or a trade from before this feature existed gets a
+        # row (blank entry-context columns), so the CSV is a complete
+        # ledger, not just the trades that happened to have context saved.
+        _ctx = (st.get("open_ctx") or {}).pop(str(d.position_id), None) or {}
+        _exit_t = datetime.fromtimestamp(d.time, tz=timezone.utc)
+        _dur = ""
+        if _ctx.get("entry_time_utc"):
+            try:
+                _entry_t = datetime.fromisoformat(_ctx["entry_time_utc"])
+                _dur = round((_exit_t - _entry_t).total_seconds() / 60.0, 1)
+            except Exception:
+                pass
+        journal_write_row(dict(
+            _ctx, account=PAUSE_UID, ticket=d.position_id,
+            is_add=is_add, lot=_ctx.get("lot", lot),
+            direction=_ctx.get("direction") or (
+                "BUY" if d.type == mt5.DEAL_TYPE_SELL else "SELL"),
+            exit_time_utc=_exit_t.isoformat(), outcome=tag,
+            duration_min=_dur, profit_usd=round(pnl, 2)))
 
 
 def main():
@@ -900,7 +953,8 @@ def main():
             return False
         if paused():
             return False
-        _wg = weather_gate(need_int=internal)
+        _cj0 = weather()          # captured once, reused for the gate
+        _wg = weather_gate(need_int=internal, cj=_cj0)
         if _wg:
             say(f"{kind} refuse: {_wg}")
             # Owner 2026-09-18: the nervosity brake could not be settled in
@@ -1012,6 +1066,31 @@ def main():
             f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
             f"(risk ${dist * lot:.2f}, "
             f"trend {'up' if d == 1 else 'down'})")
+        # Owner 2026-09-24: the market context this trade ACTUALLY decided
+        # on, stashed against its own ticket so book_closes() can attach it
+        # to the matching close and write one full journal row - never
+        # recomputed after the fact, so it can't drift from the real gate.
+        _vn0, _vr0 = (_cj0 or {}).get("vol_now"), (_cj0 or {}).get("vol_ref")
+        st.setdefault("open_ctx", {})[str(r.order)] = {
+            "kind": kind, "internal": internal,
+            "direction": "BUY" if d == 1 else "SELL",
+            "entry_time_utc": datetime.now(timezone.utc).isoformat(),
+            "entry_price": round(e_ref, 2), "sl": round(slp, 2),
+            "tp": round(tp, 2), "dist_pts": round(dist, 1), "lot": lot,
+            "nervosity": (round(_vn0 / max(_vr0, 1e-9), 3)
+                         if _vn0 and _vr0 else ""),
+            "vol_now": _vn0 or "", "vol_ref": _vr0 or "",
+            "movement_count": ((_cj0 or {}).get("int_brk_1h") if internal
+                               else (_cj0 or {}).get("moves_2h")) or "",
+            "trend": "up" if eng.trend == 1 else "down",
+            "day_n_at_entry": st.get("day_n", 0),
+            "debt_at_entry": st.get("debt", 0.0),
+            "balance_at_entry": round(ai2.balance, 2),
+            "storm": _storm,
+        }
+        del_keys = list(st["open_ctx"])[:-20]
+        for _k in del_keys:
+            del st["open_ctx"][_k]
         # a package's trades-per-day limit counts ENTRIES, so it is spent
         # when the trade is taken, not when it closes (owner 2026-09-18)
         day_roll(st)
