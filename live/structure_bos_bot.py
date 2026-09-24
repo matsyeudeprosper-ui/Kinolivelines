@@ -273,6 +273,8 @@ WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
 MOVEMENT = _P.get("movement", True)
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
+SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
+SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
 
 
 def say(msg):
@@ -468,13 +470,68 @@ def day_key():
 
 
 def day_roll(st):
-    """Reset the daily counters when the UTC date changes."""
+    """Reset the daily counters when the UTC date changes.
+
+    Owner 2026-09-24: "can we make lots update progressively with
+    balance" - after noticing Valere's $3/day target works well and is
+    close to 1.5% of a $200 balance. Chose ONCE A DAY over every trade,
+    "steadier - avoids the lot changing mid-trend": the lot and the day
+    target are recomputed here, at the moment this account's UTC day
+    rolls over, from THAT MORNING'S balance - not touched again until
+    tomorrow's rollover, so two trades of the same trend always match.
+
+    lot = BASE_LOT * (balance / SCALE_REF_BALANCE), floored at 0.01
+    day_cap = DAY_CAP * (balance / SCALE_REF_BALANCE)
+
+    This changes ONLY the size of the flat lot and the size of the day
+    target - it does not touch stop-distance-based sizing at all, which
+    is the version that was tested and rolled back the same day (that
+    one derived the lot from EACH TRADE'S OWN stop, which shrank the
+    wide-stop trades that carry this system's profit; this one derives
+    one flat lot from the account's balance, exactly like the fixed
+    BASE_LOT it replaces, just no longer frozen at whatever the balance
+    was when the package was written).
+    """
     if st.get("day_key") != day_key():
         st["day_key"] = day_key()
         st["day_pnl"] = 0.0
         st["day_n"] = 0
         st["day_capped"] = False
+        if SCALE_WITH_BALANCE:
+            try:
+                _ai = mt5.account_info()
+                if _ai is not None and SCALE_REF_BALANCE > 0:
+                    _ratio = _ai.balance / SCALE_REF_BALANCE
+                    _lot = round(
+                        math.floor((BASE_LOT * _ratio) / 0.01) * 0.01, 2)
+                    st["sized_lot"] = max(0.01, _lot)
+                    if DAY_CAP is not None:
+                        st["sized_day_cap"] = round(DAY_CAP * _ratio, 2)
+                    say(f"lot resized to {st['sized_lot']} "
+                        f"(balance ${_ai.balance:.2f} vs "
+                        f"${SCALE_REF_BALANCE:.0f} reference)"
+                        + (f", day cap now ${st['sized_day_cap']:.2f}"
+                           if DAY_CAP is not None else ""))
+            except Exception:
+                pass
     return st.get("day_pnl", 0.0)
+
+
+def sized_lot(st):
+    """The lot to trade with right now - the balance-scaled one if the
+    package opted in and today's rollover has computed it, else the
+    package's own flat BASE_LOT."""
+    if SCALE_WITH_BALANCE and st.get("sized_lot"):
+        return st["sized_lot"]
+    return BASE_LOT
+
+
+def sized_day_cap(st):
+    """The day target to enforce right now - scaled if opted in and
+    computed, else the package's own flat DAY_CAP (which may be None)."""
+    if SCALE_WITH_BALANCE and DAY_CAP is not None and st.get("sized_day_cap"):
+        return st["sized_day_cap"]
+    return DAY_CAP
 
 
 def day_blocked(st):
@@ -491,7 +548,8 @@ def day_blocked(st):
     if cap is not None and st.get("day_n", 0) >= cap:
         return (f"{st.get('day_n', 0)}/{cap} trades du jour "
                 f"(forfait {PACKAGE})")
-    if DAY_CAP is None:
+    _cap = sized_day_cap(st)
+    if _cap is None:
         return None
     # owner 2026-09-23, 441 only: at a $10 cap "always binds" earned MORE
     # than "waived in debt" at the SAME drawdown (review/cap_waiver_test.py:
@@ -499,9 +557,9 @@ def day_blocked(st):
     # caps like Valere's $3, where it stays on by default.
     if DAY_CAP_WAIVED and st.get("debt", 0.0) > 0.5:
         return None
-    if pnl >= DAY_CAP:
+    if pnl >= _cap:
         _tag = "sans dette" if st.get("debt", 0.0) <= 0.5 else "dette active"
-        return f"+{pnl:.2f} aujourd'hui (>= ${DAY_CAP:.2f}), {_tag}"
+        return f"+{pnl:.2f} aujourd'hui (>= ${_cap:.2f}), {_tag}"
     return None
 
 
@@ -628,8 +686,8 @@ def book_closes(st, t_from):
         if pnl < 0:
             if is_add:
                 st["chest"] = round(max(0.0, st["chest"] + pnl), 2)
-            elif lot > BASE_LOT + 0.001:
-                extra_sh = pnl * (1.0 - BASE_LOT / lot)
+            elif lot > sized_lot(st) + 0.001:
+                extra_sh = pnl * (1.0 - sized_lot(st) / lot)
                 st["chest"] = round(max(0.0,
                                         st["chest"] + extra_sh), 2)
         if JAR and pnl > 0:
@@ -679,6 +737,19 @@ def main():
            ["AUCUN FREIN - tous les signaux"] if not (NERVOSITY or MOVEMENT)
            else ["sans frein nervosite"] if not NERVOSITY
            else ["sans frein mouvement"])
+    # scaling recomputes at each UTC rollover from st (owner 2026-09-23);
+    # this preview uses today's balance directly since st isn't loaded yet
+    # at banner time, just to prove the dial is on
+    _scale_line = ""
+    if SCALE_WITH_BALANCE and SCALE_REF_BALANCE > 0:
+        _ratio0 = ai.balance / SCALE_REF_BALANCE
+        _lot0 = max(0.01, round(
+            math.floor((BASE_LOT * _ratio0) / 0.01) * 0.01, 2))
+        _scale_line = (f" | scaling ON (ref ${SCALE_REF_BALANCE:.0f}, "
+                       f"now -> lot {_lot0:.2f}")
+        if DAY_CAP:
+            _scale_line += f", cap ${DAY_CAP * _ratio0:.2f}"
+        _scale_line += ")"
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
         f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
         + ("".join(f" | {x}" for x in _br))
@@ -688,7 +759,8 @@ def main():
            if DAY_CAP else "")
         # week_target is optional - special_10 has a day cap and no weekly
         # one, which crashed this line the first time 441 ran as a bot
-        + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else ""))
+        + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else "")
+        + _scale_line)
     ensure_algo()
 
     eng = Struct()
@@ -767,7 +839,7 @@ def main():
         # if the economy allows, as always." So the recovery bullets no
         # longer ride the first entry - they wait for the 50% pullback,
         # where the stop is half as far and each bullet costs half as much.
-        lot = BASE_LOT
+        lot = sized_lot(st)
         # Owner 2026-09-22: "equal the lot of the internal structure to be
         # same as the main structure except for counter trend trade. Same
         # direction as main structure gets the usual main structure base

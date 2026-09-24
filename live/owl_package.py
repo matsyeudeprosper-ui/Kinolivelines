@@ -37,7 +37,8 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "jar", "jar_skim", "jar_stake", "jar_debt_mult", "jar_floor_cap",
           "kill_net", "min_balance", "max_risk_pct", "debt_mode",
           "day_cap", "max_trades_day", "week_target",
-          "nervosity", "movement", "day_cap_waived")
+          "nervosity", "movement", "day_cap_waived",
+          "scale_with_balance", "scale_ref_balance")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -45,7 +46,8 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "kill_net": -60.0, "min_balance": 20.0, "max_risk_pct": 0.10,
         "debt_mode": "hwm", "day_cap": None, "max_trades_day": None,
         "week_target": None, "nervosity": True, "movement": True,
-        "day_cap_waived": True}
+        "day_cap_waived": True, "scale_with_balance": False,
+        "scale_ref_balance": 200.0}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

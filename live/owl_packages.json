@@ -41,7 +41,22 @@
     "file, and both exist for the same reason: neither brake has ever been",
     "shown to make money, so switching them off is a control arm, not a new",
     "strategy. Everything else about the structure rules stays in code and",
-    "is identical on every account."
+    "is identical on every account.",
+    "",
+    "scale_with_balance  true = base_lot and day_cap are recomputed ONCE PER",
+    "                    UTC DAY from the account's own balance that morning:",
+    "                    lot = base_lot * (balance/scale_ref_balance), floored",
+    "                    at 0.01; day_cap scales the same way. Owner",
+    "                    2026-09-23: 'Valere is a good example... can we make",
+    "                    a formula such that lots update progressively with",
+    "                    balance?' - Valere's $3/day on $200 IS the reference",
+    "                    ratio, so every account (Dad's $10 target included,",
+    "                    by owner decision) now scales off the same $200",
+    "                    anchor instead of staying frozen at whatever the",
+    "                    balance was when the package was written.",
+    "scale_ref_balance   the balance at which base_lot/day_cap are exactly",
+    "                    the numbers written below. 200.0 = Valere's own",
+    "                    balance when the $3/day ratio was set."
   ],
   "packages": {
     "base": {
@@ -62,7 +77,9 @@
       "day_cap": null,
       "max_trades_day": null,
       "week_target": null,
-      "nervosity": false
+      "nervosity": false,
+      "scale_with_balance": true,
+      "scale_ref_balance": 200.0
     },
     "valere": {
       "extends": "base",
