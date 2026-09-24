@@ -190,10 +190,12 @@ if (-not (ProcRunning "owl_telegram.py")) {
 # 4) demo fleet (each restart script brings its own terminal + bot)
 # owner 2026-09-18: CROC kept, the rest retired. demo2 sat below its
 # own $50 floor and could not enter at all.
-$demos = @(
-    @{ script = "C:\Projects\KinoliveLines\live\restart_pro.ps1";
-       match = "owl_pro_bot.py" }
-)
+# owner 2026-09-24: CROC retired too - -$163 (-33%) over ~30 days on a
+# 64% win rate, because it has no stop-loss by design and its avg loss
+# ($2.51) runs about 2x its avg win ($1.25), a ratio that 64% cannot
+# clear. Positions closed flat, bot stopped. Empty on purpose - do NOT
+# revive: same reasoning as sniper/halfdebt below.
+$demos = @()
 foreach ($d in $demos) {
     if (-not (ProcRunning $d.match)) {
         Say ("starting " + $d.match)
