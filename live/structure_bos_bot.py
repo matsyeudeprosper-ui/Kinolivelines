@@ -969,6 +969,21 @@ def main():
             return False
         if paused():
             return False
+        # Owner 2026-09-24: "only did flip BOS during recovery" - tested
+        # three ways before deploying (review/recovery_flip_only_test.py:
+        # backtest, both halves, spreads 5/7/10; recovery_flip_only_
+        # control.py: 150 random-same-size trials, beats 90% of them on
+        # worst-case debt; recovery_flip_real_check.py: REAL trade
+        # history - plain BOS taken while in debt has actually LOST real
+        # money, -$20.59 at 42% win, while FLIP-BOS taken in the same
+        # debt stretches held roughly even at 67% win). Strategy-level,
+        # not a package dial - same rule for every account, like every
+        # other structure rule. TOUCH and INT are untouched: the tested
+        # rule only ever covered the BOS/FLIP-BOS signal path.
+        if kind == "BOS" and st.get("debt", 0.0) > 0.5:
+            say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
+                f"seul FLIP-BOS pendant la reprise")
+            return False
         _cj0 = weather()          # captured once, reused for the gate
         _wg = weather_gate(need_int=internal, cj=_cj0)
         if _wg:
