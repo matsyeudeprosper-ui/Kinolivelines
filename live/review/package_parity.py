@@ -37,7 +37,11 @@ FROZEN = {
     # back to true (review/day_cap_always_binds_test.py showed waived wins
     # once midpoint bullets are modelled, reversing the 2026-09-20 call).
     "bos": dict(_BASE, day_cap=3.0),
-    "kino": dict(_BASE),
+    # owner 2026-09-24: "make Mike behave exactly like the other four...
+    # that same 1.5% account daily profit like every other accounts" -
+    # Mike had no day cap at all until now (the "special"/no-brakes A/B
+    # test account). Moved onto the same package as Valere/demo/Infinity.
+    "kino": dict(_BASE, day_cap=3.0, week_target=20.0),
     "u224016179": dict(_BASE, day_cap=3.0, week_target=20.0),
     "sniper": dict(_BASE, base_lot=0.06, max_extra=0, adds_on=False,
                    kill_net=-80.0),
