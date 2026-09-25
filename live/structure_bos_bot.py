@@ -978,11 +978,25 @@ def main():
         # money, -$20.59 at 42% win, while FLIP-BOS taken in the same
         # debt stretches held roughly even at 67% win). Strategy-level,
         # not a package dial - same rule for every account, like every
-        # other structure rule. TOUCH and INT are untouched: the tested
-        # rule only ever covered the BOS/FLIP-BOS signal path.
+        # other structure rule.
         if kind == "BOS" and st.get("debt", 0.0) > 0.5:
             say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
                 f"seul FLIP-BOS pendant la reprise")
+            return False
+        # Owner 2026-09-25: internal structure was demo's single biggest
+        # REAL loss source (-$21.99, the largest of any entry type) - the
+        # rule above never covered it. Tested narrowing internal to
+        # calm-market-only vs pausing it outright while in debt
+        # (review/internal_recovery_pause_vs_narrow_test.py, both spreads
+        # 7/10): narrowing barely moved either number; pausing turned a
+        # LOSING period into a WINNING one (-$17..-$23 -> +$11) and cut
+        # the worst-case debt by more than half ($61-68 -> $26-28).
+        # Internal trades simply are not reliable enough to keep in any
+        # reduced form during recovery. TOUCH is untouched - neither
+        # tested rule ever covered it.
+        if internal and st.get("debt", 0.0) > 0.5:
+            say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
+                f"structure interne en pause pendant la reprise")
             return False
         _cj0 = weather()          # captured once, reused for the gate
         _wg = weather_gate(need_int=internal, cj=_cj0)
