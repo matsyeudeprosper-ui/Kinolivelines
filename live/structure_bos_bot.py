@@ -979,10 +979,30 @@ def main():
         # debt stretches held roughly even at 67% win). Strategy-level,
         # not a package dial - same rule for every account, like every
         # other structure rule.
-        if kind == "BOS" and st.get("debt", 0.0) > 0.5:
-            say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
-                f"seul FLIP-BOS pendant la reprise")
-            return False
+        #
+        # Owner 2026-09-25: "we also consider the first BOS in the same
+        # direction after a flip... take that first trade continuation
+        # happening after a flip" - loosened the same day, from "FLIP-BOS
+        # only" to "FLIP-BOS, plus the ONE continuation right after it".
+        # A flip always resets the allowance; the next plain BOS consumes
+        # it; anything after that is refused until the next flip.
+        # review/recovery_flip_plus_first_continuation_test.py: more net
+        # money in 5/6 half-splits (sometimes much more, $74->$172 full
+        # period at spread 7) but a deeper worst-case debt in all 6 - a
+        # real tradeoff, not a clean win. Matches independent 2026-09-19
+        # research (flip_test.py) that found "first continuation" the
+        # STRONGEST slice of any ordinal position - different lens, same
+        # direction. Owner: "take the extra profit with bigger worse
+        # case swing" - deliberate, informed choice.
+        if kind == "FLIP-BOS":
+            st["cont_used_since_flip"] = False
+        elif kind == "BOS" and st.get("debt", 0.0) > 0.5:
+            if not st.get("cont_used_since_flip", True):
+                st["cont_used_since_flip"] = True
+            else:
+                say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
+                    f"FLIP-BOS + 1 continuation deja pris pendant la reprise")
+                return False
         # Owner 2026-09-25: internal structure was demo's single biggest
         # REAL loss source (-$21.99, the largest of any entry type) - the
         # rule above never covered it. Tested narrowing internal to
