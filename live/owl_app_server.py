@@ -147,7 +147,21 @@ def _png(arr):
             + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b""))
 
 
-def owl_icon(n):
+def owl_icon(n, maskable=False):
+    if maskable:
+        # maskable icons must keep their subject inside the inner 80%
+        # "safe zone"; draw the owl at 68% and centre it on the background
+        m = int(n * 0.68)
+        inner = _owl_arr(m)
+        a = np.zeros((n, n, 3), np.uint8)
+        a[:, :] = (13, 17, 23)
+        o = (n - m) // 2
+        a[o:o + m, o:o + m] = inner
+        return _png(np.ascontiguousarray(a))
+    return _png(_owl_arr(n))
+
+
+def _owl_arr(n):
     a = np.zeros((n, n, 3), np.uint8)
     a[:, :] = (13, 17, 23)
     yy, xx = np.mgrid[0:n, 0:n]
@@ -158,11 +172,12 @@ def owl_icon(n):
     beak = ((abs(xx - n * 0.5) < (yy - n * 0.50) * 0.38)
             & (yy > n * 0.50) & (yy < n * 0.70))
     a[beak] = (200, 120, 40)
-    return _png(np.ascontiguousarray(a))
+    return np.ascontiguousarray(a)
 
 
 ICON192 = owl_icon(192)
 ICON512 = owl_icon(512)
+ICON512M = owl_icon(512, maskable=True)
 
 MANIFEST = json.dumps({
     "name": "OwlNest",
@@ -176,10 +191,13 @@ MANIFEST = json.dumps({
     "icons": [
         {"src": "icon192.png", "sizes": "192x192", "type": "image/png"},
         {"src": "icon512.png", "sizes": "512x512", "type": "image/png"},
+        {"src": "icon512m.png", "sizes": "512x512", "type": "image/png",
+         "purpose": "maskable"},
     ],
 })
 
 SW = (
+    "const OFF='<!doctype html><html lang=fr><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>OwlNest</title><style>body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}b{display:block;font-size:1.2rem;margin-bottom:8px}p{color:#8a9bb0;font-size:.95rem;line-height:1.5;margin:0 0 18px}a{display:inline-block;background:#3b82f6;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:700}</style></head><body><div><b>Pas de connexion</b><p>Le hibou n\\'arrive pas &agrave; joindre le serveur. V&eacute;rifiez votre r&eacute;seau, puis r&eacute;essayez.</p><a href=\"javascript:location.reload()\">R&eacute;essayer</a></div></body></html>';"
     "self.addEventListener('install',e=>self.skipWaiting());"
     "self.addEventListener('activate',e=>e.waitUntil("
     "clients.claim()));"
@@ -188,7 +206,8 @@ SW = (
     "e.respondWith(fetch(e.request).then(r=>{"
     "const cp=r.clone();"
     "caches.open('owl1').then(c=>c.put(e.request,cp));"
-    "return r;}).catch(()=>caches.match(e.request)));}});"
+    "return r;}).catch(()=>caches.match(e.request).then(m=>m||"
+    "new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}}))));}});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
     "e.waitUntil(self.registration.showNotification("
@@ -470,6 +489,12 @@ PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0f2740">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OwlNest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>OwlNest</title>
 <style>
 :root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
@@ -478,9 +503,26 @@ PAGE = """<!doctype html><html lang="fr"><head>
  --accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
  --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;
  --warn:#e8c55a;--r:16px;--r-lg:24px;--hero1:#0f2740;--hero2:#123a63}
+:root{--tile-bg:rgba(255,255,255,.035);--tile-bd:rgba(255,255,255,.07);
+ --tabbar:rgba(14,20,29,.92)}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#ffffff;--surface2:#f6f8fb;
+ --surface3:#e6ecf4;--border:#dde4ed;--border2:#c7d2df;
+ --hl:inset 0 1px 0 rgba(255,255,255,.7);--text:#0f172a;--text2:#33415a;
+ --text3:#46556b;--muted:#5f6f85;--muted2:#4c5b70;--accent:#2563eb;
+ --accent-soft:#1d4ed8;--accent-bg:rgba(37,99,235,.10);--up:#15803d;
+ --up-soft:#166534;--down:#dc2626;--down-soft:#b91c1c;--warn:#a16207;
+ --tile-bg:rgba(15,23,42,.035);--tile-bd:rgba(15,23,42,.08);
+ --tabbar:rgba(255,255,255,.9)}
+:root[data-theme=light] .hero{--text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;
+ --muted:#8a9bb0;--muted2:#a9b8c8;--up:#2ecc71;--up-soft:#8df0bb;
+ --down-soft:#ff9a9a;--warn:#e8c55a;--accent-soft:#8fc6ff}
+:root[data-theme=light] .skel{background:#dfe6ef!important}
+:root[data-theme=light] #sheetbg,:root[data-theme=light] #tourbg{
+ background:rgba(15,23,42,.45)}
 *{box-sizing:border-box;margin:0}
 body{background:var(--bg);color:var(--text);padding:0 0 96px;
- font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+ font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+ font-feature-settings:'tnum' 1,'cv11' 1;
  -webkit-font-smoothing:antialiased}
 .ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
  stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
@@ -501,7 +543,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  transition:none!important}}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;
  display:flex;max-width:480px;margin:0 auto;
- background:rgba(14,20,29,.92);backdrop-filter:blur(14px);
+ background:var(--tabbar);backdrop-filter:blur(14px);
  -webkit-backdrop-filter:blur(14px);
  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
  padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
@@ -575,7 +617,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 .mx-cloud{--mxg:rgba(230,160,40,.14)}
 .mxc{font-size:.68rem;font-weight:700;padding:3px 10px;
  border-radius:99px;border:1px solid rgba(255,255,255,.12);
- background:rgba(255,255,255,.05);color:var(--muted2);
+ background:var(--tile-bg);color:var(--muted2);
  letter-spacing:.03em}
 .empty{text-align:center;padding:26px 10px;color:var(--muted)}
 .empty i{font-style:normal;font-size:1.7rem;display:block}
@@ -643,7 +685,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 #sheet p{color:var(--text3);font-size:.9rem;line-height:1.55;
  margin-bottom:14px}
 #sheet input{width:100%;padding:13px;border-radius:12px;
- border:1px solid var(--border2);background:var(--bg);color:#fff;
+ border:1px solid var(--border2);background:var(--bg);color:var(--text);
  font-size:1rem;margin-bottom:6px}
 #sheet input:focus{outline:none;border-color:var(--accent)}
 .shbtn{width:100%;border:0;border-radius:13px;padding:14px;
@@ -659,7 +701,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  background:var(--surface2);border:1px solid rgba(143,198,255,.35);
  border-radius:18px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.6);
  max-width:420px;margin:0 auto}
-#tourbx p{color:#dbe7f3;font-size:1rem;line-height:1.6;margin:0}
+#tourbx p{color:var(--text);font-size:1rem;line-height:1.6;margin:0}
 #tourdots{margin-top:12px;display:flex;align-items:center}
 .tourhl{position:relative;z-index:52;border-radius:16px;
  box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(59,130,246,.65)!important}
@@ -667,12 +709,15 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  background .15s,color .15s,border-color .15s}
 .tb:active,.srow:active,.shbtn:active,#sharebtn:active,#inst:active,.cvc:active,
 #actbtn:active,#invbtn:active{transform:scale(.97)}
-.srow:active{background:rgba(255,255,255,.03)}
+.srow:active{background:var(--tile-bg)}
+:focus-visible{outline:2px solid var(--accent-soft);outline-offset:2px}
+button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pill{display:inline-block;padding:1px 7px;border-radius:99px;font-size:.66rem;
  font-weight:700;letter-spacing:.03em;background:rgba(255,255,255,.07);
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
 </style></head><body>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -706,7 +751,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 <div class="hero">
 <div class="topline"><span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
 <span style="display:flex;align-items:center;gap:10px">
-<a id="chartlink" href="#" title="Graphique en direct"
+<a id="chartlink" href="#" title="Graphique en direct" aria-label="Graphique en direct"
  style="text-decoration:none;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);
  border:1px solid rgba(255,255,255,.14);
@@ -714,7 +759,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 <span class="live" id="lv"><span class="dot" id="lvd"></span><span
  id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
- line-height:1" title="Sortir">&#10162;</a></span></div>
+ line-height:1" title="Sortir" aria-label="Sortir">&#10162;</a></span></div>
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe" style="display:none"></div>
@@ -744,7 +789,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
    <div style="flex:1;min-width:0">
     <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
      ...</b>
-    <div id="mx-line" style="font-size:.78rem;color:#8fa1b3;
+    <div id="mx-line" style="font-size:.78rem;color:var(--muted2);
      line-height:1.4;margin-top:2px"></div>
    </div>
   </div>
@@ -753,82 +798,82 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  </div>
  <div id="st" style="position:relative;margin:0 16px;
   border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
-  font-size:.8rem;color:#7d90a5">Connexion...</div>
+  font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
- background:#251d07;border:1px solid #4a3c12;border-radius:14px;
- padding:10px;color:#e8c55a;font-size:.9rem"></div>
+ background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
+ padding:10px;color:var(--warn);font-size:.9rem"></div>
 <div id="ftcard" style="display:none;margin-top:12px;
- background:linear-gradient(150deg,#132036,#101c2b);
- border:1px solid #2a5a80;border-radius:16px;padding:14px;
- color:#cfe3f5;font-size:.9rem;line-height:1.5">
- <div style="font-size:.7rem;color:#7fb3e0;text-transform:uppercase;
+ background:linear-gradient(150deg,var(--surface3),var(--surface2));
+ border:1px solid var(--border2);border-radius:16px;padding:14px;
+ color:var(--text2);font-size:.9rem;line-height:1.5">
+ <div style="font-size:.7rem;color:var(--accent-soft);text-transform:uppercase;
   letter-spacing:.08em;margin-bottom:6px">&#129514; Le grand test
   de la strat&eacute;gie</div>
  <div id="ft-txt"></div>
  <div style="background:rgba(255,255,255,.15);border-radius:99px;
   height:8px;margin-top:8px"><div id="ft-bar" style="height:8px;
-  border-radius:99px;width:0%;background:#7fb0ff"></div></div>
- <div id="ft-sub" style="font-size:.76rem;color:#6f93b5;
+  border-radius:99px;width:0%;background:var(--accent-soft)"></div></div>
+ <div id="ft-sub" style="font-size:.76rem;color:var(--muted);
   margin-top:6px"></div>
 </div>
 <div id="ledcard" style="display:none;position:relative;margin-top:12px;
- background:#101c2b;border:1px solid #23405e;border-radius:16px;
- padding:14px;color:#cfe3f5;font-size:.92rem;line-height:1.5">
+ background:var(--surface2);border:1px solid var(--border2);border-radius:16px;
+ padding:14px;color:var(--text2);font-size:.92rem;line-height:1.5">
  <button onclick="ledInfo()" aria-label="explications" style="
   position:absolute;right:10px;top:10px;width:26px;height:26px;
   border-radius:50%;border:1px solid rgba(127,179,224,.4);
-  background:rgba(127,179,224,.12);color:#7fb3e0;font-size:.8rem;
+  background:rgba(127,179,224,.12);color:var(--accent-soft);font-size:.8rem;
   font-weight:700;font-style:italic;font-family:Georgia,serif;
   cursor:pointer;animation:ipulse 2.6s ease-out infinite">i</button>
- <div id="led-hd" style="font-size:.7rem;color:#6f93b5;
+ <div id="led-hd" style="font-size:.7rem;color:var(--muted);
   text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">
   Le rattrapage</div>
  <div id="led-txt"></div>
  <div id="led-barwrap" style="display:none;
   background:rgba(255,255,255,.15);border-radius:99px;height:8px;
-  margin-top:8px"><div id="led-bar" style="background:#e8c55a;
+  margin-top:8px"><div id="led-bar" style="background:var(--warn);
   height:8px;border-radius:99px;width:0%"></div></div>
- <div id="led-sub" style="font-size:.78rem;color:#6f93b5;margin-top:6px">
+ <div id="led-sub" style="font-size:.78rem;color:var(--muted);margin-top:6px">
  </div>
 </div>
-<div id="actcard" style="display:none;margin-top:12px;background:#0f2740;
- border:1px solid #2a5a80;border-radius:16px;
+<div id="actcard" style="display:none;margin-top:12px;background:var(--surface3);
+ border:1px solid var(--border2);border-radius:16px;
  padding:16px;text-align:center">
  <div style="font-size:1rem;color:var(--text2);display:flex;
   align-items:center;justify-content:center;gap:8px"><svg class="ic"><use href="#i-key"/></svg> <b>Activer le
   robot</b></div>
- <div style="font-size:.86rem;color:#9fc2de;margin-top:6px;line-height:1.5">
+ <div style="font-size:.86rem;color:var(--text3);margin-top:6px;line-height:1.5">
   Demandez votre code d&#8217;activation &agrave; <b>Kino sur
   Telegram</b>, puis entrez-le ici.</div>
  <input id="actcode" inputmode="text" autocapitalize="characters"
   maxlength="6" placeholder="CODE"
   style="margin-top:10px;width:60%;padding:12px;font-size:1.3rem;
   text-align:center;letter-spacing:.3em;border-radius:12px;border:1px
-  solid #2a5a80;background:#0b1826;color:#fff;text-transform:uppercase">
+  solid var(--border2);background:var(--bg);color:var(--text);text-transform:uppercase">
  <br><button id="actbtn" style="margin-top:10px;background:var(--accent);
   color:#fff;border:0;border-radius:12px;padding:12px 26px;
   font-size:1rem;font-weight:700">Activer</button>
- <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:#ff9c9c">
+ <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:var(--down-soft)">
  </div>
 </div>
 <div id="battles-sec" style="display:none">
 <div class="panel" style="margin-top:24px;
- background:linear-gradient(135deg,#0f2740,#151d29);
- border:1px solid #2a5a80;box-shadow:0 6px 22px rgba(37,99,235,.28)">
+ background:linear-gradient(135deg,var(--surface3),var(--surface2));
+ border:1px solid var(--border2);box-shadow:0 6px 22px rgba(37,99,235,.28)">
  <div style="display:flex;justify-content:space-between;
   align-items:center;margin-bottom:6px">
-  <span style="font-size:.7rem;color:#7fb3e0;text-transform:uppercase;
+  <span style="font-size:.7rem;color:var(--accent-soft);text-transform:uppercase;
    letter-spacing:.08em;font-weight:700;display:inline-flex;
    align-items:center;gap:6px"><svg class="ic ic-s"><use href="#i-wave"/></svg>En plein
    combat</span>
-  <span style="font-size:.66rem;color:#8df0bb;font-weight:800;
+  <span style="font-size:.66rem;color:var(--up-soft);font-weight:800;
    letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
  </div>
  <div id="battles"></div>
  <a id="batchart" href="#" style="display:flex;align-items:center;
   justify-content:center;gap:7px;margin-top:10px;padding:9px;
-  border-radius:12px;text-decoration:none;color:#9fd4ff;
+  border-radius:12px;text-decoration:none;color:var(--accent-soft);
   font-size:.8rem;font-weight:700;
   background:rgba(127,179,224,.1);
   border:1px solid rgba(127,179,224,.3)"><svg class="ic ic-s"><use href="#i-chart"/></svg> Suivre sur le
@@ -901,10 +946,10 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  <div id="nprefs" style="display:none;padding:2px 0 14px 51px">
   <div style="display:flex;gap:8px">
    <button class="npc" data-l="all" style="flex:1;border:1px solid
-    #2a5a80;background:#1d3350;color:#cfe3f5;border-radius:10px;
+    var(--border2);background:var(--surface3);color:var(--text2);border-radius:10px;
     padding:9px;font-size:.82rem;font-weight:700">Tout</button>
    <button class="npc" data-l="important" style="flex:1;border:1px
-    solid #263341;background:#0f1620;color:#8fa1b3;
+    solid var(--border);background:transparent;color:var(--muted2);
     border-radius:10px;padding:9px;font-size:.82rem;
     font-weight:700">Important seulement</button>
   </div>
@@ -918,6 +963,18 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
    <div class="ssub">Une ic&ocirc;ne sur votre &eacute;cran
     d&#39;accueil</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="themerow" style="cursor:default">
+  <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
+  <div style="flex:1"><b>Apparence</b>
+   <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="thc" data-t="dark" style="flex:1;border:1px solid var(--border2);
+     background:var(--surface3);color:var(--text2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">Sombre</button>
+    <button class="thc" data-t="light" style="flex:1;border:1px solid var(--border);
+     background:transparent;color:var(--muted2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">Clair</button>
+   </div></div>
  </div>
  <div class="srow" id="infobtn">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
@@ -1001,8 +1058,8 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
  <div class="srow" id="delbtn">
-  <div class="sic" style="background:#2a1518;color:#ff9a9a"><svg class="ic"><use href="#i-trash"/></svg></div>
-  <div style="flex:1"><b style="color:#ff9c9c">Retirer mon compte
+  <div class="sic" style="background:rgba(255,92,92,.14);color:var(--down-soft)"><svg class="ic"><use href="#i-trash"/></svg></div>
+  <div style="flex:1"><b style="color:var(--down-soft)">Retirer mon compte
    du robot</b></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
@@ -1013,15 +1070,15 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 <div class="sec" style="margin-top:26px">Le Nid &middot; tous les
  comptes</div>
 <div id="acctsw" style="display:none;margin-bottom:12px;
- background:#151d29;border:1px solid #263341;border-radius:14px;
+ background:var(--surface2);border:1px solid var(--border);border-radius:14px;
  padding:12px">
- <div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">
+ <div style="font-size:.78rem;color:var(--muted2);margin-bottom:8px">
   Changer de vue (admin)</div>
  <div id="acctsw-b" style="display:flex;gap:8px;flex-wrap:wrap"></div>
 </div>
 <div class="panel" id="nest">...</div>
 <button id="invbtn" style="width:100%;margin-top:14px;
- background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
+ background:var(--surface3);color:var(--text2);border:1px solid var(--border2);
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700">
  <svg class="ic"><use href="#i-ticket"/></svg> Code d&#39;invitation (compte r&eacute;el)</button>
 </div>
@@ -1039,7 +1096,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 <div id="tourbx"><p id="tourtxt"></p>
  <div style="display:flex;justify-content:space-between;
   align-items:center;margin-top:14px">
-  <a href="#" id="tourskip" style="color:#5f7185;font-size:.85rem;
+  <a href="#" id="tourskip" style="color:var(--muted);font-size:.85rem;
    text-decoration:none">Passer</a>
   <span id="tourdots"></span>
   <button id="tournext" class="shbtn shmain" style="width:auto;
@@ -1051,6 +1108,23 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
+function setTheme(t,save){const L=(t==='light');
+ document.documentElement.dataset.theme=L?'light':'';
+ if(save){try{localStorage.setItem('owlTheme',L?'light':'dark')}catch(e){}}
+ document.querySelectorAll('.thc').forEach(b=>{const on=b.dataset.t===(L?'light':'dark');
+  b.style.background=on?'var(--surface3)':'transparent';
+  b.style.borderColor=on?'var(--border2)':'var(--border)';
+  b.style.color=on?'var(--text2)':'var(--muted2)';});}
+window.addEventListener('load',()=>{let t='dark';
+ try{t=localStorage.getItem('owlTheme')||'dark'}catch(e){}
+ setTheme(t,false);
+ document.querySelectorAll('.thc').forEach(b=>b.onclick=()=>setTheme(b.dataset.t,true));
+ // a11y: clickable rows behave like buttons for keyboards/screen readers
+ document.querySelectorAll('.srow').forEach(el=>{if(el.tagName==='A'||el.id==='themerow')return;
+  if(!el.getAttribute('onclick')&&!el.id)return;
+  el.setAttribute('role','button');el.tabIndex=0;
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();el.click();}});});
+});
 const ORB=(()=>{const o=(n,c)=>'<svg class="ic" style="width:26px;height:26px;color:'+c+'"><use href="#'+n+'"/></svg>';
  return {'mx-sun':o('i-sun','#e8c55a'),'mx-fish':o('i-wave','var(--up-soft)'),
   'mx-sleep':o('i-moon','#9fb0d0'),'mx-storm':o('i-bolt','var(--down-soft)'),
@@ -1428,9 +1502,9 @@ async function notifSetup(){
   window._plvl=b.dataset.l;npcPaint();};});
  function npcPaint(){document.querySelectorAll('.npc').forEach(b=>{
   const on=b.dataset.l===(window._plvl||'all');
-  b.style.background=on?'#1d3350':'#0f1620';
-  b.style.borderColor=on?'#2a5a80':'#263341';
-  b.style.color=on?'#cfe3f5':'#8fa1b3';});}
+  b.style.background=on?'var(--surface3)':'transparent';
+  b.style.borderColor=on?'var(--border2)':'var(--border)';
+  b.style.color=on?'var(--text2)':'var(--muted2)';});}
  window.npcPaint=npcPaint;npcPaint();
  nb.onclick=async()=>{
   if(nb.dataset.on==='1'){
@@ -1545,8 +1619,9 @@ window.addEventListener('load',()=>{
 function tab(n,el){
  document.querySelectorAll('.tab').forEach(x=>
   x.classList.toggle('on',x.id==='tab-'+n));
- document.querySelectorAll('.tb').forEach(x=>
-  x.classList.toggle('on',x===el));
+ document.querySelectorAll('.tb').forEach(x=>{
+  x.classList.toggle('on',x===el);
+  x.setAttribute('aria-current',x===el?'page':'false');});
  try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}
  window.scrollTo({top:0});
 }
@@ -1585,7 +1660,7 @@ function drawSpark(){
   ?window._c30:(window._c7||[]);
  const el=document.getElementById('spark');
  if(c.length<2){
-  el.innerHTML='<text x="150" y="44" text-anchor="middle" fill="#6b7d92" '+
+  el.innerHTML='<text x="150" y="44" text-anchor="middle" style="fill:var(--muted)" '+
    'font-size="11">La courbe se dessinera apr\\u00e8s quelques trades</text>';
   return;}
  const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
@@ -1605,7 +1680,7 @@ function drawSpark(){
  const iMx=c.indexOf(mx),iMn=c.indexOf(mn);
  const lab=(i,v,above)=>'<text x="'+Math.min(280,Math.max(20,X(i))).toFixed(1)+
   '" y="'+(Y(v)+(above?-6:12)).toFixed(1)+'" text-anchor="middle" '+
-  'fill="#8a9bb0" font-size="9" font-weight="600">'+fm(v)+'</text>';
+  'style="fill:var(--muted)" font-size="9" font-weight="600">'+fm(v)+'</text>';
  el.innerHTML=
   '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".32"/>'+
@@ -1922,23 +1997,23 @@ function render(d){
     // 0.099 calme -> 0.131 top band; distance walked 1080 -> 2697 pts/h).
     // "agité" told the owner the market was messy when it was simply big,
     // so the words now say size. The 1.0 / 1.30 / 1.85 lines are unchanged.
-    const vw=rv<1.0?['calme','#cfe3f5']
-      :(rv<1.30?['soutenu','#e8c55a']
-      :(rv<1.85?['rapide','#ff9678']:['très rapide','#ff5c5c']));
+    const vw=rv<1.0?['calme','var(--text)']
+      :(rv<1.30?['soutenu','var(--warn)']
+      :(rv<1.85?['rapide','#e8743b']:['très rapide','var(--down)']));
     const NW='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     // Owner 2026-09-17: the spread is gone. It is a cost judged against the
     // stop, and this card cannot know the stop - it answered a different
     // question. The space goes to the two figures that actually decide.
     // Top row = the two brakes, accented. Bottom row = context, plain.
     const cell=(l,v,c,acc)=>'<div style="min-width:0;padding:8px 10px;'+
-     'border-radius:12px;background:rgba('+(acc?'59,130,246,.12'
-      :'255,255,255,.035')+');border:1px solid rgba('+
-     (acc?'59,130,246,.38':'255,255,255,.07')+')">'+
+     'border-radius:12px;background:'+(acc?'rgba(59,130,246,.12)'
+      :'var(--tile-bg)')+';border:1px solid '+
+     (acc?'rgba(59,130,246,.38)':'var(--tile-bd)')+'">'+
      '<div style="'+NW+'font-size:.58rem;color:'+(acc?'var(--accent-soft)':'var(--muted2)')+
      ';text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
      '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
-     (c||'#cfe3f5')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
-    const tcol=ms2.trend===1?'#8df0bb':(ms2.trend===-1?'#ffb3b3':'#8fa1b3');
+     (c||'var(--text)')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
+    const tcol=ms2.trend===1?'var(--up-soft)':(ms2.trend===-1?'var(--down-soft)':'var(--muted2)');
     const ttxt=ms2.trend===1?'▲ hausse'
      :(ms2.trend===-1?'▼ baisse':'—');
     // Accent = the two figures that DECIDE right now. Which movement rule
@@ -1947,10 +2022,10 @@ function render(d){
     // (owner 2026-09-18).
     const small=cell('petits mouvements',
      hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
-     hasInt?(aw?'var(--accent-soft)':'#6f8299'):'#5f7185',hasInt&&gM);
+     hasInt?(aw?'var(--accent-soft)':'var(--muted)'):'var(--muted)',hasInt&&gM);
     const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
-     hasInt?(mv===0?'#6f8299':'#cfe3f5')
-      :(mv>=1?'var(--accent-soft)':'#6f8299'),(!hasInt)&&gM);
+     hasInt?(mv===0?'var(--muted)':'var(--text)')
+      :(mv>=1?'var(--accent-soft)':'var(--muted)'),(!hasInt)&&gM);
     // the deciding movement rule first, then nervosity - always a brake
     chips.push(hasInt?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
@@ -2555,7 +2630,19 @@ function render(d){
    const y=now.getUTCFullYear(),m=now.getUTCMonth();
    const nd=new Date(Date.UTC(y,m+1,0)).getUTCDate();
    const off=(new Date(Date.UTC(y,m,1)).getUTCDay()+6)%7;
-   let h='<div style="display:grid;'+
+   const _bv=[];for(let q=1;q<=nd;q++){const kk=y+'-'+String(m+1).padStart(2,'0')+
+    '-'+String(q).padStart(2,'0');_bv.push([kk,md[kk]]);}
+   const _mx=Math.max(1,..._bv.map(x=>Math.abs(x[1]||0)));const _bw=300/nd;
+   let h='<svg viewBox="0 0 300 64" style="width:100%;height:64px;display:block;'+
+    'margin:2px 0 10px"><line x1="0" y1="32" x2="300" y2="32" '+
+    'stroke="rgba(128,128,128,.3)" stroke-width="1"/>'+
+    _bv.map((x,i)=>{const v=x[1];if(v===undefined||Math.abs(v)<0.005)return '';
+     const hh=Math.max(2,Math.abs(v)/_mx*28),yy=v>0?32-hh:32;
+     return '<rect x="'+(i*_bw+_bw*0.2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+
+      (_bw*0.6).toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="1.5" style="fill:var(--'+
+      (v>0?'up':'down')+');cursor:pointer" onclick="dayx(\\''+x[0]+'\\')"><title>'+
+      x[0]+' '+(v>=0?'+$':'-$')+Math.abs(v).toFixed(2)+'</title></rect>';}).join('')+
+    '</svg><div style="display:grid;'+
     'grid-template-columns:repeat(7,1fr);gap:6px">';
    ['L','M','M','J','V','S','D'].forEach(w=>h+=
     '<div style="text-align:center;font-size:.62rem;'+
@@ -2564,16 +2651,16 @@ function render(d){
    for(let dd2=1;dd2<=nd;dd2++){
     const k=y+'-'+String(m+1).padStart(2,'0')+'-'+
      String(dd2).padStart(2,'0');
-    const p=md[k];let bg='transparent',fg='#55657a',
-     bd='rgba(255,255,255,.05)';
+    const p=md[k];let bg='transparent',fg='var(--muted)',
+     bd='var(--tile-bd)';
     if(p!==undefined){
      if(p>0.005){bg='rgba(46,204,113,'+
-      Math.min(.42,.14+p/12).toFixed(2)+')';fg='#9df2c4';
+      Math.min(.42,.14+p/12).toFixed(2)+')';fg='var(--up-soft)';
       bd='rgba(46,204,113,.35)';}
      else if(p<-0.005){bg='rgba(255,92,92,'+
-      Math.min(.42,.14-p/12).toFixed(2)+')';fg='#ffb0b0';
+      Math.min(.42,.14-p/12).toFixed(2)+')';fg='var(--down-soft)';
       bd='rgba(255,92,92,.35)';}
-     else{bg='rgba(255,255,255,.06)';fg='#9fb2c4';bd='rgba(255,255,255,.08)';}
+     else{bg='var(--tile-bg)';fg='var(--muted2)';bd='var(--tile-bd)';}
     }
     const isT=(dd2===now.getUTCDate());
     h+='<div style="aspect-ratio:1;border-radius:10px;background:'+bg+
@@ -3391,17 +3478,28 @@ JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="theme-color" content="#0b0f14">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="OwlNest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>OwlNest</title>
 <style>
 :root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--border:#1f2a38;
  --border2:#2b3a4d;--text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;--muted:#8a9bb0;
  --accent:#3b82f6;--accent-soft:#8fc6ff;--up:#2ecc71;--r:16px;--r-lg:24px}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#ffffff;--surface2:#f6f8fb;
+ --border:#dde4ed;--border2:#c7d2df;--text:#0f172a;--text2:#33415a;--text3:#46556b;
+ --muted:#5f6f85;--accent:#2563eb;--accent-soft:#1d4ed8;--up:#15803d}
+:root[data-theme=light] .blob{opacity:.18}
 *{box-sizing:border-box;margin:0}
 .ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
  stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
 .ic-l{width:24px;height:24px}
 body{background:var(--bg);color:var(--text);padding:0 0 44px;overflow-x:hidden;
- font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
+ font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+ font-feature-settings:'tnum' 1,'cv11' 1}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
 .blob{position:absolute;width:420px;height:420px;border-radius:50%;
  filter:blur(90px);opacity:.35}
@@ -3482,6 +3580,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
  display:flex;align-items:center;justify-content:center;gap:6px}
 .pfoot img{width:16px;height:16px;border-radius:4px}
 </style></head><body>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -4493,6 +4592,9 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
             return
+        if parts and parts[0] == "icon512m.png":
+            self._send(ICON512M, "image/png")
+            return
         if parts and parts[0] == "demo":
             # front door to the showcase: no password, straight to the
             # public account's page (owner 2026-09-19)
@@ -4607,6 +4709,8 @@ class H(BaseHTTPRequestHandler):
             self._send(ICON192, "image/png")
         elif sub == "icon512.png":
             self._send(ICON512, "image/png")
+        elif sub == "icon512m.png":
+            self._send(ICON512M, "image/png")
         else:
             self.send_response(404)
             self.end_headers()
