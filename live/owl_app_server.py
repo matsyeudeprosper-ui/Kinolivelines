@@ -656,12 +656,11 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 #tourbg{position:fixed;inset:0;background:rgba(4,8,14,.72);
  display:none;z-index:51}
 #tourbx{position:fixed;left:16px;right:16px;z-index:53;display:none;
- background:var(--surface2);border:1px solid var(--border2);
+ background:var(--surface2);border:1px solid rgba(143,198,255,.35);
  border-radius:18px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.6);
  max-width:420px;margin:0 auto}
 #tourbx p{color:#dbe7f3;font-size:1rem;line-height:1.6;margin:0}
-#tourdots{margin-top:12px;color:var(--muted);letter-spacing:.35em;
- font-size:.8rem}
+#tourdots{margin-top:12px;display:flex;align-items:center}
 .tourhl{position:relative;z-index:52;border-radius:16px;
  box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(59,130,246,.65)!important}
 .tb,.srow,.shbtn,#sharebtn,#inst,.cvc,#actbtn,#invbtn{transition:transform .12s ease,
@@ -1496,9 +1495,12 @@ function tourStep(i){
  bx.style.display='block';
  document.getElementById('tourtxt').innerHTML=txt;
  document.getElementById('tourdots').innerHTML=
-  TOUR.map((_,k)=>k===i?'&#9679;':'&#9675;').join('');
+  TOUR.map((_,k)=>'<span style="display:inline-block;width:'+(k===i?'18px':'6px')+
+   ';height:6px;border-radius:99px;margin:0 3px;background:'+
+   (k===i?'var(--accent-soft)':'rgba(255,255,255,.25)')+
+   ';transition:width .25s"></span>').join('');
  document.getElementById('tournext').textContent=
-  i===TOUR.length-1?'Câ€™est parti !':'Suivant';
+  i===TOUR.length-1?'C\\u2019est parti !':'Suivant';
  if(el){
   el.classList.add('tourhl');
   try{el.scrollIntoView({block:'center',behavior:'smooth'})}
@@ -1554,15 +1556,12 @@ function tab(n,el){
   :((h>=12&&h<18)?'Bon apr&egrave;s-midi':'Bonsoir');
  const he=document.getElementById('hello');
  he.innerHTML=he.innerHTML.replace('Bonjour',g)
-  .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;')
-  .replace('ðŸ‘‹',(h>=20||h<5)?'ðŸŒ™'
-   :'ðŸ‘‹');
+  .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;');
 })();
 function confetti(em){
  for(let i=0;i<44;i++){
   const s=document.createElement('div');
-  s.textContent=(em||['ðŸŽ‰','âœ¨','ðŸ’š',
-   'ðŸ†'])[i%4];
+  s.textContent=(em||['\\u{1F389}','\\u2728','\\u{1F49A}','\\u{1F3C6}'])[i%4];
   s.style.cssText='position:fixed;z-index:60;top:-30px;left:'+
    (Math.random()*100)+'vw;font-size:'+(14+Math.random()*16)+
    'px;transition:transform 2.8s ease-in,opacity 2.8s;'+
@@ -1636,11 +1635,14 @@ function tradeSheet(i){
  const x=(window._tr||[])[i];
  if(!x)return;
  const L=(a,b)=>'<div style="display:flex;justify-content:'+
-  'space-between;padding:9px 2px;border-bottom:1px solid #1e2937;'+
+  'space-between;padding:10px 2px;border-bottom:1px solid var(--border);'+
   'font-size:.95rem"><span style="color:var(--muted2)">'+a+
   '</span><b>'+b+'</b></div>';
- sheet('<h3>'+(x.dir==='A'?'&#128200; Achat':'&#128201; Vente')+
-  (x.k?' &middot; '+(x.k==='page'?'normal':x.k):'')+'</h3>'+
+ sheet('<h3 style="display:flex;align-items:center;gap:8px">'+
+  (x.dir==='A'?'<span style="color:var(--up)">&#9650;</span> Achat'
+   :'<span style="color:var(--down)">&#9660;</span> Vente')+
+  (x.k&&x.k!=='page'?'<span class="pill'+(x.k==='soldat'?' pill-w':'')+
+   '">'+x.k+'</span>':'')+'</h3>'+
   L('R&eacute;sultat','<span class="'+(sgn(x.p))+'">'+
    (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
@@ -1684,9 +1686,9 @@ function shareWeek(){
  g.fillStyle=gr;g.fillRect(0,0,720,940);
  g.textAlign='center';
  g.fillStyle='#cfe3f5';g.font='bold 46px sans-serif';
- g.fillText('ðŸ¦‰ OwlNest',360,92);
+ g.fillText('OwlNest',360,92);
  g.fillStyle='#7d9cb8';g.font='26px sans-serif';
- g.fillText('Ma semaine Â· '+(d.name||''),360,138);
+ g.fillText('Ma semaine \\u00b7 '+(d.name||''),360,138);
  const wk=d.week||0;
  g.fillStyle=wk>=0?'#2ecc71':'#ff5c5c';
  g.font='bold 92px sans-serif';
@@ -1699,12 +1701,15 @@ function shareWeek(){
    const x=80+(i/(cv.length-1))*560;
    const y=470-((v-mn)/sp)*150;
    i?g.lineTo(x,y):g.moveTo(x,y);});
-  g.strokeStyle=cv[cv.length-1]>=0?'#2ecc71':'#ff5c5c';
-  g.lineWidth=5;g.lineJoin='round';g.stroke();
+  const up=cv[cv.length-1]>=0;
+  g.strokeStyle=up?'#2ecc71':'#ff5c5c';
+  g.lineWidth=5;g.lineJoin='round';g.lineCap='round';g.stroke();
+  g.lineTo(640,480);g.lineTo(80,480);g.closePath();
+  g.fillStyle=up?'rgba(46,204,113,.16)':'rgba(255,92,92,.16)';g.fill();
  }
  let y=560;
  (d.days||[]).slice(0,7).forEach(x=>{
-  g.textAlign='left';g.fillStyle='#8fa1b3';
+  g.textAlign='left';g.fillStyle='#a9b8c8';
   g.font='26px sans-serif';
   g.fillText(x.d,110,y);
   g.textAlign='right';
@@ -1712,7 +1717,7 @@ function shareWeek(){
   g.font='bold 26px sans-serif';
   g.fillText((x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2),610,y);
   y+=44;});
- g.textAlign='center';g.fillStyle='#5f7185';
+ g.textAlign='center';g.fillStyle='#8a9bb0';
  g.font='22px sans-serif';
  g.fillText('Le robot Owl trade pour vous, jour et nuit.',360,898);
  c.toBlob(async b=>{

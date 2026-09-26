@@ -33,7 +33,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #hdstrip .seg:first-child{border-left:0}
 #meteo{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
 #autobadge{padding:4px 8px}
-#meteo i,#trbadge i{font-style:normal;font-size:1rem;line-height:1;
+#meteo i,#trbadge i{font-style:normal;font-size:1rem;line-height:1;display:inline-flex;align-items:center;
  filter:drop-shadow(0 0 5px currentColor)}
 #meteo.busy i{animation:mtp 1.6s ease-in-out infinite}
 @keyframes mtp{0%,100%{opacity:1;transform:scale(1)}
@@ -101,7 +101,7 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 <span id="hdrow"><span id="hdstrip"><span class="seg" id="trbadge"
  style="display:none"></span><span class="seg" id="autobadge"
  style="display:none;color:#8df0bb"
- title="Mode automatique : le robot gere les entrees"><i>&#129302;</i></span><span
+ title="Mode automatique : le robot gere les entrees"><i><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg></i></span><span
  class="seg" id="meteo"
  style="display:none"></span></span></span>
 </div>
@@ -1155,14 +1155,21 @@ function ui(){
  // prediction - E013 found period quality is not forecastable.
  const mb=document.getElementById('meteo');
  if(D.moves_2h!==undefined&&D.vol_ref){
+  const SVI=p=>'<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">'+p+'</svg>';
+  const IC_MOON=SVI('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
+   IC_BOLT=SVI('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
+   IC_WAVE=SVI('<path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/>'),
+   IC_CLOUD=SVI('<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/>'),
+   IC_LEAF=SVI('<path d="M4 20c0-8 5-14 16-14-1 10-6 14-14 14"/><path d="M4 20c3-4 6-7 10-9"/>');
+
   const mv=D.moves_2h,rv=D.vol_now/Math.max(D.vol_ref,1);
   // the badge must speak the same language as the bots: the awake gate
   // calls a market ASLEEP when no flip happened in 2 h, whatever the
   // candles are doing. Volatility alone never counts as activity.
-  const S=(mv===0)?['💤','endormie','95,113,133']
-   :((mv>=3&&rv>=1.2)?['⚡️','agitee','255,150,120']
-   :((mv>=2||rv>=1.2)?['🔥','active','141,240,187']
-   :['☁️','calme','143,161,179']));
+  const S=(mv===0)?[IC_MOON,'endormie','95,113,133']
+   :((mv>=3&&rv>=1.2)?[IC_BOLT,'agitee','255,150,120']
+   :((mv>=2||rv>=1.2)?[IC_WAVE,'active','141,240,187']
+   :[IC_CLOUD,'calme','143,161,179']));
   // the main weather keeps its icon and count; its word is dropped so the
   // row fits beside the trend and auto markers (owner 2026-09-17)
   let txt=mv+'/2h'+((mv===0&&rv>=1.2)?' · volatile':'');
@@ -1185,7 +1192,7 @@ function ui(){
    // meaning anything (owner 2026-09-18).
    const nb2=rv>1.0;
    const nw=rv<1.30?'vif':(rv<1.85?'agité':'très agité');
-   txt+=' · int '+(!aw?'💤':(nb2?(rv<1.30?'🍃':'🌀'):'⚡'))+' '+nb+'/1h'+
+   txt+=' · int '+(!aw?IC_MOON:(nb2?(rv<1.30?IC_LEAF:IC_BOLT):IC_WAVE))+' '+nb+'/1h'+
         (aw?(nb2?' '+nw:' '+W):'');
   }
   if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
