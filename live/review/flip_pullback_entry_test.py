@@ -1,25 +1,32 @@
 """Owner 2026-09-25: "After a flip (choc) when price breaks the protected
 glowing dot, we wait 2 consecutive reversal candles and enter the trade,
 SL at the pick or deep just created by that reversal, for a 1:1 or 1:1.5
-RR."
+RR." CORRECTED same day: "we don't enter in the direction of the flip but
+in the same direction of the reversal. So choc happens downwards for
+example, 2 bull candles show up, I enter buy at the second close bull
+candle. SL = at the low of the 3 candles below."
 
-This is a NEW entry mechanism for the flip/CHoCH trade specifically (not
-plain-BOS continuations, not internal structure) - a candidate REPLACEMENT
-for how the bot enters when eng.trend flips:
+So this is a fade-the-choc / judas-swing idea: the choc's break is treated
+as a possible stop-hunt, and the 2-candle reversal is the confirmation to
+trade AGAINST the choc's own new trend, not with it.
 
-  A  today (live): enter immediately at the flip bar, SL at the broken
-     structure level (slp from the signal), RR = B.RR (0.8 live)
+  A  today (live): enter WITH the flip, immediately at the flip bar, SL
+     at the broken structure level (slp from the signal), RR = B.RR
+     (0.8 live)
   B  candidate: after the flip, wait for the first 2 CONSECUTIVE candles
-     that move against the new trend (the pullback/reversal). Enter at
-     the close of the 2nd one. SL = the low (bull) / high (bear) made by
-     those 2 candles. RR tested at 1.0 and 1.5.
+     that move against the new trend. Enter AGAINST the flip (same
+     direction as those 2 candles) at the close of the 2nd one. SL = the
+     extreme of all 3 candles - the choc bar plus both reversal candles
+     (lowest low for a buy, highest high for a sell). RR tested at 1.0
+     and 1.5.
 
 "2 consecutive" resets on any candle that breaks the streak - only an
-unbroken pair counts. One attempt per flip: if a new flip happens before
-the pullback completes, the pending setup is dropped and replaced by the
-new flip's. If no pullback completes within AWAKE_WIN (2h), the setup
-expires with no trade (same staleness window the live bot already uses
-for continuations).
+unbroken pair counts, and the SL base resets back to just the choc bar
+each time the streak breaks. One attempt per flip: if a new flip happens
+before the pullback completes, the pending setup is dropped and replaced
+by the new flip's. If no pullback completes within AWAKE_WIN (2h), the
+setup expires with no trade (same staleness window the live bot already
+uses for continuations).
 
 Real B.Struct()/weather_gate() generator, same dedupe/awake/risk-filter
 machinery as every other entry test this project has run.
@@ -130,23 +137,29 @@ def simulate(R, spread, mode, rr):
                             pos = (d, c, float(slp), tp, dist)
                             trades += 1
                             dist_sum += dist
-        else:  # pullback candidate
+        else:  # pullback candidate - enter WITH the 2 reversal candles,
+               # i.e. AGAINST the flip's own new trend (owner correction
+               # 2026-09-25: choc down + 2 bull candles = BUY, not sell).
+               # SL = extreme of 3 candles: the choc bar + both reversal
+               # candles (low of all 3 for a buy, high of all 3 for a sell).
             if flip_now:
                 wait_dir, wait_since = eng.trend, t
-                rev_count, rev_extreme = 0, None
+                rev_count = 0
+                # seed with the choc candle's own extreme (low if the
+                # eventual entry is a buy [wait_dir==-1], high if a sell)
+                rev_extreme = l if wait_dir == -1 else h
             elif wait_dir is not None:
                 if t - wait_since > B.AWAKE_WIN:
                     wait_dir = None
                 else:
                     is_rev = (c < o) if wait_dir == 1 else (c > o)
                     if is_rev:
-                        ext = l if wait_dir == 1 else h
-                        rev_extreme = (ext if rev_count == 0 else
-                                       (min(rev_extreme, ext) if wait_dir == 1
-                                        else max(rev_extreme, ext)))
+                        ext = l if wait_dir == -1 else h
+                        rev_extreme = (min(rev_extreme, ext) if wait_dir == -1
+                                       else max(rev_extreme, ext))
                         rev_count += 1
                         if rev_count >= 2:
-                            d, entry, sl = wait_dir, c, rev_extreme
+                            d, entry, sl = -wait_dir, c, rev_extreme
                             dist = abs(entry - sl)
                             if (not pos and nv is not None
                                     and dist > B.S_MIN_DIST
@@ -160,7 +173,8 @@ def simulate(R, spread, mode, rr):
                                     dist_sum += dist
                             wait_dir = None   # one attempt per flip
                     else:
-                        rev_count, rev_extreme = 0, None
+                        rev_count = 0
+                        rev_extreme = l if wait_dir == -1 else h
 
     dd = 0.0
     pk2 = 0.0
@@ -182,8 +196,8 @@ def run_for(R, label):
     print(f"  {'rule':<40}{'trades':>7}{'win%':>7}{'avgSL':>8}"
           f"{'net $':>9}{'worst debt':>11}")
     for lab, r in ((f"A  live: enter at flip, RR={B.RR}", a),
-                   ("B  wait 2 reversal candles, RR=1.0", b1),
-                   ("B  wait 2 reversal candles, RR=1.5", b2)):
+                   ("B   2 reversal candles, trade the reversal, RR=1.0", b1),
+                   ("B  2 reversal candles, trade the reversal, RR=1.5", b2)):
         print(f"  {lab:<40}{r['trades']:>7}{r['wr']:>6.1f}%"
               f"{r['avg_dist']:>8.1f}{r['net']:>9.2f}{r['worst_debt']:>11.2f}")
 
