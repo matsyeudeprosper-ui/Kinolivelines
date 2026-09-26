@@ -1,9 +1,9 @@
 // review/ui_shots.mjs - headless Edge (CDP) renders of the OwlNest app at
 // phone size with the first-visit tour dismissed: home / history / settings /
 // landing, plus an overflow report (elements wider than the viewport).
-// Usage: node review/ui_shots.mjs <output-dir>   (Node 22+, Edge installed)
-// Written 2026-09-26 for the UI batches; re-run after any UI change and
-// compare the PNGs before/after.
+// Usage: node review/ui_shots.mjs <output-dir> [prefix] [light]
+//   prefix  -> file name prefix (default b5_);  light -> render the opt-in light theme
+// Node 22+ (built-in WebSocket) + Edge; re-run after any UI change and compare PNGs.
 // Drive headless Edge over CDP: dismiss the tour, screenshot each tab at
 // phone size (full page), and report elements wider than the viewport.
 import { spawn } from "node:child_process";
@@ -13,7 +13,7 @@ const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 const OUT = process.argv[2];
 const BASE = "http://127.0.0.1:8787";
 const TOKEN = "F61w0YMMyBiH";
-const PORT = 9333;
+const PORT = 9333; const PFX = process.argv[3] || "b5_"; const LIGHT = process.argv[4] === "light";
 
 const edge = spawn(EDGE, ["--headless=new", "--disable-gpu", "--no-first-run",
   "--no-default-browser-check", `--remote-debugging-port=${PORT}`,
@@ -70,12 +70,12 @@ const overflow = async (label) => {
 // ---- account page, tour dismissed
 await setViewport(390, 844);
 await nav(`${BASE}/${TOKEN}/`);
-await evalJs("localStorage.setItem('owlTourDone','1'); 1");
+await evalJs("localStorage.setItem('owlTourDone','1'); " + (LIGHT ? "localStorage.setItem('owlTheme','light');" : "localStorage.removeItem('owlTheme');") + " 1");
 await nav(`${BASE}/${TOKEN}/`);
 await sleep(7000);   // first data poll
 await overflow("account/home 390");
-await shot("home_390", 390);
-for (const [t, idx, name] of [["hist", 1, "hist_390"], ["set", 3, "set_390"]]) {
+await shot(PFX+"home_390", 390);
+for (const [t, idx, name] of [["hist", 1, PFX+"hist_390"], ["set", 3, PFX+"set_390"]]) {
   await evalJs(`tab('${t}', document.querySelectorAll('.tb')[${idx}]); 1`);
   await sleep(1200);
   await overflow(`account/${t} 390`);
@@ -92,7 +92,7 @@ await overflow("account/home 375");
 await setViewport(390, 844);
 await nav(`${BASE}/join`); await sleep(1500);
 await overflow("join 390");
-await shot("join_390", 390);
+await shot(PFX+"join_390", 390);
 // ---- chart page
 await nav(`${BASE}/${TOKEN}/chart`); await sleep(4000);
 await overflow("chart 390");
