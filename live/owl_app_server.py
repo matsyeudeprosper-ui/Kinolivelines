@@ -972,6 +972,25 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     border-radius:10px;padding:9px;font-size:.82rem;
     font-weight:700">Important seulement</button>
   </div>
+  <button id="quietbtn" style="margin-top:8px;width:100%;display:flex;
+   align-items:center;justify-content:space-between;border:1px solid
+   var(--border);background:transparent;color:var(--muted2);
+   border-radius:10px;padding:9px 12px;font-size:.82rem;font-weight:700">
+   <span style="display:inline-flex;align-items:center;gap:6px"><svg
+    class="ic ic-s"><use href="#i-moon"/></svg>Silence la nuit
+    (22 h &ndash; 7 h)</span><span id="quiet-st">Non</span></button>
+  <div style="margin-top:12px;font-size:.68rem;color:var(--muted);
+   text-transform:uppercase;letter-spacing:.08em">Exemple</div>
+  <div style="margin-top:6px;display:flex;gap:10px;align-items:flex-start;
+   background:var(--surface2);border:1px solid var(--border);
+   border-radius:14px;padding:10px 12px"><img src="icon192.png" alt=""
+   style="width:28px;height:28px;border-radius:8px;flex:none">
+   <div style="min-width:0;flex:1"><div style="font-size:.7rem;
+    color:var(--muted);display:flex;justify-content:space-between">
+    <span>OwlNest</span><span>maintenant</span></div>
+    <b style="font-size:.86rem">Objectif du jour atteint : +$3.20</b>
+    <div style="font-size:.78rem;color:var(--muted2)">Le robot a
+     termin&eacute; sa journ&eacute;e. &Agrave; demain.</div></div></div>
  </div>
 </div>
 <div class="sec">Application</div>
@@ -1526,6 +1545,18 @@ async function notifSetup(){
   b.style.borderColor=on?'var(--border2)':'var(--border)';
   b.style.color=on?'var(--text2)':'var(--muted2)';});}
  window.npcPaint=npcPaint;npcPaint();
+ const qb=document.getElementById('quietbtn');
+ function qPaint(){if(!qb)return;const on=!!window._pquiet;
+  document.getElementById('quiet-st').textContent=on?'Oui':'Non';
+  qb.style.borderColor=on?'var(--border2)':'var(--border)';
+  qb.style.background=on?'var(--surface3)':'transparent';
+  qb.style.color=on?'var(--text2)':'var(--muted2)';}
+ window.qPaint=qPaint;qPaint();
+ if(qb)qb.onclick=async()=>{window._pquiet=!window._pquiet;qPaint();
+  await fetch(B+'push_pref',{method:'POST',
+   headers:{'Content-Type':'application/x-www-form-urlencoded'},
+   body:'quiet='+(window._pquiet?'1':'0')+'&tz='+
+    new Date().getTimezoneOffset()}).catch(()=>null);};
  nb.onclick=async()=>{
   if(nb.dataset.on==='1'){
    const s=await reg.pushManager.getSubscription().catch(()=>null);
@@ -1814,6 +1845,19 @@ function tradeSheet(i){
   (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
   (x.dur!=null?L('Dur&eacute;e',fdur(x.dur)):'')+
   L('Quand',x.w)+
+  (function(){const m=/^(\d\d)\/(\d\d) (\d\d):(\d\d)$/.exec(x.w||'');
+   if(!m)return '';const n=new Date();let y=n.getUTCFullYear();
+   if(parseInt(m[2])>n.getUTCMonth()+1)y--;
+   // x.w is the CLOSE time of the deal; the entry is dur minutes earlier
+   const tx=Math.round(Date.UTC(y,parseInt(m[2])-1,parseInt(m[1]),
+    parseInt(m[3]),parseInt(m[4]))/1000);
+   const t=(x.dur!=null)?tx-Math.round(x.dur*60):tx;
+   const q=B+'chart?t='+t+'&x='+tx+
+    (x.ep!=null?'&ep='+x.ep:'')+(x.xp!=null?'&xp='+x.xp:'')+
+    '&d='+encodeURIComponent(x.dir||'')+'&p='+x.p;
+   return '<a class="shbtn shghost" style="display:flex;align-items:center;'+
+    'justify-content:center;gap:8px;text-decoration:none" href="'+q+'">'+
+    '<svg class="ic ic-s"><use href="#i-chart"/></svg>Voir sur le graphique</a>';})()+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
 window.addEventListener('load',()=>{
@@ -2349,6 +2393,8 @@ function render(d){
     if(k<1)requestAnimationFrame(stepA);})(t0);
   }
   eqEl.dataset.v=d.equity;
+  if(d.push_quiet!==undefined&&window._pquiet===undefined){
+   window._pquiet=!!d.push_quiet;if(window.qPaint)window.qPaint();}
   if(d.push_level&&window._plvl===undefined){
    window._plvl=d.push_level;
    if(window.npcPaint)window.npcPaint();
@@ -3287,10 +3333,13 @@ def user_stats(u, admin_override=False):
             except Exception:
                 pass
         try:
-            d["push_level"] = json.load(open(PUSH_PREFS_FILE)).get(
-                u["id"], "all")
+            _pp = json.load(open(PUSH_PREFS_FILE))
+            d["push_level"] = _pp.get(u["id"], "all")
+            d["push_quiet"] = bool((_pp.get("_quiet") or {})
+                                   .get(u["id"], {}).get("on"))
         except Exception:
             d["push_level"] = "all"
+            d["push_quiet"] = False
         # 2026-09-24 (owner): "the objective feature must be used to
         # reflect the next account balance to reach the next $/day
         # target". On an account whose lot/day-cap scale with balance,
@@ -3695,7 +3744,10 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
  border-radius:999px;padding:5px 12px}
 .pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
  align-items:center;justify-content:center;gap:7px}
-.feats{margin-top:34px}
+.feats{margin-top:30px}
+.how{margin:0 4px 6px;font-size:.68rem;font-weight:700;color:var(--muted);
+ text-transform:uppercase;letter-spacing:.09em}
+.fi.stp{font-weight:800;font-size:1rem;color:var(--accent-soft)}
 .fr{display:flex;align-items:center;gap:14px;background:var(--surface);
  border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;
  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
@@ -3802,18 +3854,19 @@ jour et nuit. Vous, vous regardez.</div>
  pour vous</span></div>
 </div>
 <div class="feats">
-<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-bot"/></svg></div>
-<div class="ft"><b>L&#8217;Owl trade pour vous</b>
-<span>Vous connectez votre compte, le robot fait tout : entr&eacute;es,
- sorties, protections. Z&eacute;ro effort.</span></div></div>
-<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-chart"/></svg></div>
-<div class="ft"><b>Vous regardez tout en direct</b>
-<span>Solde, gains du jour, combats du robot &mdash; mis &agrave; jour
- toutes les 5 secondes.</span></div></div>
-<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-gift"/></svg></div>
-<div class="ft"><b>7 jours d&#8217;essai, z&eacute;ro risque</b>
-<span>L&#8217;essai se fait sur un compte d&eacute;mo : argent fictif,
- vraies performances.</span></div></div>
+<div class="how">Comment &ccedil;a marche</div>
+<div class="fr"><div class="fi stp">1</div>
+<div class="ft"><b>Connectez votre compte</b>
+<span>Un num&eacute;ro de compte MT5 et son mot de passe. Rien &agrave;
+ installer sur l&#8217;ordinateur.</span></div></div>
+<div class="fr"><div class="fi stp">2</div>
+<div class="ft"><b>Le robot veille, jour et nuit</b>
+<span>Il surveille le march&eacute; en continu et n&#8217;agit que lorsque
+ ses conditions sont r&eacute;unies.</span></div></div>
+<div class="fr"><div class="fi stp">3</div>
+<div class="ft"><b>Vous suivez tout, en direct</b>
+<span>Solde, gains, trades du jour &mdash; mis &agrave; jour toutes les
+ 5 secondes, sur votre t&eacute;l&eacute;phone.</span></div></div>
 </div>
 <button class="bigbtn b1" onclick="show('v-login')">
 Se connecter</button>
@@ -3822,6 +3875,9 @@ Se connecter</button>
  d&eacute;mo en direct</a>
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
  style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
+<div style="margin-top:14px;text-align:center;font-size:.8rem;color:var(--muted);
+ line-height:1.5">7 jours d&#8217;essai sur un compte d&eacute;mo &mdash;
+ argent fictif, vraies performances.</div>
 <div id="howto2" style="display:none;margin-top:12px;background:#141c28;
  border:1px solid #1f2c3d;border-radius:14px;padding:14px;
  font-size:.9rem;color:#c6d3df;line-height:1.6;text-align:left">
@@ -3890,8 +3946,10 @@ const PV_LIVE=true;
   ch.style.color=up?'#2ecc71':'#ff5c5c';
   const n=(d.trades||[]).length;$('pv-chip2').textContent=n+' trade'+(n>1?'s':'');
   const wk=d.week||0;
+  let nt=0;try{const dt=d.day_trades||{};const lim=Date.now()-7*86400e3;
+   Object.keys(dt).forEach(k=>{if(new Date(k+'T00:00:00Z').getTime()>=lim)nt+=(dt[k]||[]).length;});}catch(e){}
   $('pv-bot-t').textContent='Cette semaine : '+(wk>=0?'+':'-')+'$'+
-   Math.abs(wk).toFixed(2)+' \\u00b7 vrai compte, vrais trades';
+   Math.abs(wk).toFixed(2)+(nt?' \\u00b7 '+nt+' trade'+(nt>1?'s':''):'')+' \\u00b7 vrai compte';
   const c=d.curve||[];
   if(c.length>1){const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
    const P=(v,i)=>((i/(c.length-1))*260).toFixed(1)+','+
@@ -4336,16 +4394,25 @@ class H(BaseHTTPRequestHandler):
             try:
                 ln = int(self.headers.get("Content-Length", 0))
                 import urllib.parse as _up2
-                lvl = _up2.parse_qs(
-                    self.rfile.read(ln).decode("utf-8", "replace")
-                ).get("level", ["all"])[0]
-                if lvl not in ("all", "important"):
-                    lvl = "all"
+                qs = _up2.parse_qs(
+                    self.rfile.read(ln).decode("utf-8", "replace"))
                 try:
                     prefs = json.load(open(PUSH_PREFS_FILE))
                 except Exception:
                     prefs = {}
-                prefs[u["id"]] = lvl
+                if "level" in qs:
+                    lvl = qs.get("level", ["all"])[0]
+                    if lvl not in ("all", "important"):
+                        lvl = "all"
+                    prefs[u["id"]] = lvl
+                if "quiet" in qs:
+                    # 2026-09-26: silence 22h-7h in the phone's timezone
+                    try:
+                        _tz = int(qs.get("tz", ["0"])[0])
+                    except Exception:
+                        _tz = 0
+                    prefs.setdefault("_quiet", {})[u["id"]] = {
+                        "on": qs["quiet"][0] == "1", "tz": _tz}
                 json.dump(prefs, open(PUSH_PREFS_FILE, "w"))
                 self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:

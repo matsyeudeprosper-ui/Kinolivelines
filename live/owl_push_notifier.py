@@ -53,6 +53,13 @@ def send_all(title, body, kind="instant", only_uid=None,
             continue
         if kind == "batch" and prefs.get(uid) == "important":
             continue    # this user only wants the big events
+        # 2026-09-26: "silence la nuit" - 22:00-07:00 in the PHONE's own
+        # timezone (the app sends its UTC offset with the preference)
+        q = (prefs.get("_quiet") or {}).get(uid) if isinstance(prefs, dict) else None
+        if q and q.get("on"):
+            lh = int(((time.time() - int(q.get("tz") or 0) * 60) // 3600) % 24)
+            if lh >= 22 or lh < 7:
+                continue
         keep = []
         for s in lst:
             try:

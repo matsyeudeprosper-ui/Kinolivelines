@@ -163,6 +163,14 @@ document.getElementById('back').onclick=(e)=>{e.preventDefault();
 const cv=document.getElementById('cv');
 const ctx=cv.getContext('2d');
 let D=null,lastPx=null,SCALE=null;
+// 2026-09-26: a closed trade opened from the history tab. The page is
+// centred on it once, then the user is free to pan away.
+const TRQ=(()=>{try{const q=new URLSearchParams(location.search);
+ const t=parseInt(q.get('t')||'0');if(!t)return null;
+ return {t:t,x:parseInt(q.get('x')||'0')||null,
+  ep:parseFloat(q.get('ep')||'0')||null,xp:parseFloat(q.get('xp')||'0')||null,
+  d:q.get('d')||'',p:parseFloat(q.get('p')||'0')||0,centered:false};}
+ catch(e){return null;}})();
 let viewOff=0,cwG=7,vzoom=1,vz=null,voff=0;
 const SHOW_H1=false;   // owner 2026-09-16: hidden, to revisit later  // voff = vertical pan
 let MT=null,MS=null,MTdrag=null,MSerr=null,MTy=null,MTlock=null;  // assisted manual trading
@@ -254,6 +262,11 @@ function draw(){
  }
  const N=Math.min(D.candles.length,Math.max(60,Math.floor(W/7)));
  const maxOff=Math.max(0,D.candles.length-N);
+ if(TRQ&&!TRQ.centered&&D.candles.length){TRQ.centered=true;
+  const tt=TRQ.x?Math.round((TRQ.t+TRQ.x)/2):TRQ.t;let idx=-1;
+  for(let i=D.candles.length-1;i>=0;i--){if(D.candles[i][0]<=tt){idx=i;break;}}
+  if(idx>=0&&D.candles[D.candles.length-1][0]>=TRQ.t)
+   viewOff=Math.max(0,D.candles.length-idx-Math.round(N*0.5));}
  if(viewOff>maxOff)viewOff=maxOff;
  if(viewOff<0)viewOff=0;
  const end=D.candles.length-Math.round(viewOff);
@@ -419,6 +432,46 @@ function draw(){
   ctx.shadowBlur=0;
   ctx.globalAlpha=1;
  });
+ // --- the trade opened from the history tab (2026-09-26) ---
+ if(TRQ&&TRQ.ep){
+  let xe=xnear(TRQ.t),xx=TRQ.x?xnear(TRQ.x):undefined;
+  // an end just outside the visible window is clamped to the edge; the
+  // notice is for a trade older than everything the chart has loaded
+  const t0v=xts.length?xts[0]:0,t1v=xts.length?xts[xts.length-1]:0;
+  const loaded=D.candles.length&&TRQ.t>=D.candles[0][0]-3600;
+  if(loaded&&xe===undefined&&TRQ.t<t0v&&(TRQ.x||TRQ.t)>=t0v)xe=xoft[t0v];
+  if(loaded&&xe!==undefined&&TRQ.x&&xx===undefined&&TRQ.x>t1v)xx=xoft[t1v];
+  const col=TRQ.p>=0?'#2ecc71':'#ff5c5c';
+  ctx.save();
+  if(xe!==undefined){
+   const x2=(xx!==undefined?xx:Math.min(W-6,xe+cw*8)),ye=px(TRQ.ep);
+   ctx.setLineDash([4,4]);ctx.lineWidth=1;
+   ctx.strokeStyle='rgba(255,255,255,.6)';
+   ctx.beginPath();ctx.moveTo(xe,ye);ctx.lineTo(x2,ye);ctx.stroke();
+   if(TRQ.xp){const yx=px(TRQ.xp);
+    ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(xe,yx);ctx.lineTo(x2,yx);ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=.10;ctx.fillStyle=col;
+    ctx.fillRect(xe,Math.min(ye,yx),Math.max(1,x2-xe),Math.abs(yx-ye));
+    ctx.globalAlpha=1;
+    if(xx!==undefined){ctx.fillStyle=col;ctx.beginPath();ctx.arc(xx,yx,4,0,Math.PI*2);ctx.fill();}}
+   ctx.setLineDash([]);
+   ctx.fillStyle='#fff';ctx.beginPath();
+   if(TRQ.d==='A'){ctx.moveTo(xe,ye+7);ctx.lineTo(xe-5,ye+15);ctx.lineTo(xe+5,ye+15);}
+   else{ctx.moveTo(xe,ye-7);ctx.lineTo(xe-5,ye-15);ctx.lineTo(xe+5,ye-15);}
+   ctx.closePath();ctx.fill();
+   ctx.font='bold 10px system-ui';
+   const lab=(TRQ.d==='A'?'Achat ':'Vente ')+(TRQ.p>=0?'+$':'-$')+Math.abs(TRQ.p).toFixed(2);
+   const lw=ctx.measureText(lab).width+12;
+   const lx=Math.max(4,Math.min(W-lw-4,xe-lw/2)),ly=(TRQ.d==='A'?ye+20:ye-34);
+   ctx.fillStyle='rgba(10,17,28,.92)';ctx.beginPath();ctx.roundRect(lx,ly,lw,18,9);ctx.fill();
+   ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
+   ctx.fillStyle=col;ctx.fillText(lab,lx+6,ly+13);
+  }else{
+   ctx.font='bold 11px system-ui';ctx.fillStyle='#e8c55a';
+   ctx.fillText('Ce trade est plus ancien que la fen\u00eatre du graphique',8,TOPP+14);
+  }
+  ctx.restore();
+ }
  // --- structure spine through the dots ---
  const dpts=(D.dots||[]).map(d=>({x:xoft[d[0]],y:px(d[1])}))
   .filter(p=>p.x!==undefined);
