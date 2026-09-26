@@ -573,6 +573,23 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  font-variant-numeric:tabular-nums}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
  margin-top:12px}
+.glass{position:relative;overflow:hidden;border-radius:var(--r-lg);
+ background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ border:1px solid rgba(255,255,255,.14);
+ box-shadow:0 12px 34px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.14);
+ transition:transform .12s ease}
+.glass:active{transform:scale(.99)}
+.glass .sheen{position:absolute;left:-20%;top:-60%;width:140%;height:120%;
+ background:radial-gradient(ellipse at 30% 0,rgba(143,198,255,.20),transparent 55%);
+ pointer-events:none}
+.orbsm{width:44px;height:44px;border-radius:50%;flex:none;display:flex;
+ align-items:center;justify-content:center;
+ background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.16),rgba(255,255,255,.04));
+ border:1px solid rgba(255,255,255,.12)}
+:root[data-theme=light] .glass{background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,255,255,.55));
+ border-color:rgba(15,23,42,.08);box-shadow:0 12px 30px rgba(15,23,42,.10),inset 0 1px 0 #fff}
+:root[data-theme=light] .orbsm{background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.1)}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
@@ -749,6 +766,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
 <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
 <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="hero">
@@ -776,38 +794,27 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
-<div id="meteo" class="status mx-sun" style="margin-top:26px;
- position:relative;overflow:hidden;text-align:left;padding:0;
- border-radius:18px">
- <div id="mx-wave"></div>
- <div style="position:relative;padding:15px 16px 13px">
-  <div style="display:flex;align-items:center;gap:13px">
-   <div id="mx-orb">&#9925;</div>
-   <div style="flex:1;min-width:0">
-    <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
-     ...</b>
-    <div id="mx-line" style="font-size:.78rem;color:var(--muted2);
-     line-height:1.4;margin-top:2px"></div>
-   </div>
+<div class="glass" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
+ style="margin-top:26px;padding:16px 16px 14px;cursor:pointer"
+ onclick="tab('marche',document.getElementById('tb-marche'))">
+ <div class="sheen"></div>
+ <div style="position:relative;display:flex;align-items:center;gap:12px">
+  <div id="mxs-orb" class="orbsm"></div>
+  <div style="flex:1;min-width:0">
+   <div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.08em">Le march&eacute;</div>
+   <b id="mxs-title" style="font-size:1.02rem;display:block;margin-top:2px">
+    ...</b>
+   <div id="mxs-sub" style="font-size:.78rem;color:var(--muted2);margin-top:2px;
+    line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden"></div>
   </div>
-  <svg id="mx-nerv" viewBox="0 0 300 56" style="width:100%;height:56px;
-   display:none;margin-top:10px"></svg>
-  <div id="mx-chips" style="display:grid;
-   grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
- <div id="st" style="position:relative;margin:0 16px;
-  border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
-  font-size:.8rem;color:var(--muted)">Connexion...</div>
-</div>
-<div class="panel" id="daycard" style="display:none;margin-top:12px">
- <div class="lbl" style="display:flex;justify-content:space-between;
-  align-items:center"><span>Fil du jour</span>
-  <span class="sub" style="margin:0;text-transform:none;letter-spacing:0;
-   font-weight:500">&#9679; trade &nbsp;&#9675; signal ignor&eacute;
-   &nbsp;&#9646; tr&egrave;s agit&eacute;</span></div>
- <svg id="dayline" viewBox="0 0 300 54" style="width:100%;height:54px;
-  display:block;margin-top:6px"></svg>
- <div class="sub" id="day-note" style="margin-top:2px"></div>
+ <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;
+  height:40px;display:none;margin-top:10px"></svg>
+ <div id="mxs-day" style="position:relative;font-size:.76rem;color:var(--muted);
+  margin-top:8px"></div>
 </div>
 <div class="panel" id="palier" style="display:none;margin-top:12px">
  <div class="lbl">Croissance</div>
@@ -924,6 +931,46 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 80"
  style="width:100%;height:80px;display:block"></svg></div>
+</div>
+<div class="tab" id="tab-marche">
+<div class="sec" style="margin-top:26px">Le march&eacute; <span class="hint">&middot; ce que le robot voit</span></div>
+<div id="meteo" class="status mx-sun" style="margin-top:12px;
+ position:relative;overflow:hidden;text-align:left;padding:0;
+ border-radius:18px">
+ <div id="mx-wave"></div>
+ <div style="position:relative;padding:15px 16px 13px">
+  <div style="display:flex;align-items:center;gap:13px">
+   <div id="mx-orb">&#9925;</div>
+   <div style="flex:1;min-width:0">
+    <b id="mx-title" style="font-size:1.02rem;letter-spacing:.01em">
+     ...</b>
+    <div id="mx-line" style="font-size:.78rem;color:var(--muted2);
+     line-height:1.4;margin-top:2px"></div>
+   </div>
+  </div>
+  <svg id="mx-nerv" viewBox="0 0 300 120" style="width:100%;height:120px;
+   display:none;margin-top:10px"></svg>
+  <div id="mx-chips" style="display:grid;
+   grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
+ </div>
+ <div id="st" style="position:relative;margin:0 16px;
+  border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
+  font-size:.8rem;color:var(--muted)">Connexion...</div>
+</div>
+<div class="panel" id="daycard" style="display:none;margin-top:12px">
+ <div class="lbl" style="display:flex;justify-content:space-between;
+  align-items:center"><span>Fil du jour</span>
+  <span class="sub" style="margin:0;text-transform:none;letter-spacing:0;
+   font-weight:500">&#9679; trade &nbsp;&#9675; signal ignor&eacute;
+   &nbsp;&#9646; tr&egrave;s agit&eacute;</span></div>
+ <svg id="dayline" viewBox="0 0 300 84" style="width:100%;height:84px;
+  display:block;margin-top:6px"></svg>
+ <div class="sub" id="day-note" style="margin-top:2px"></div>
+</div>
+<div class="panel" id="daylist-card" style="display:none;margin-top:12px">
+ <div class="lbl">&Eacute;v&eacute;nements du jour</div>
+ <div id="day-list" style="margin-top:4px"></div>
+</div>
 </div>
 <div class="tab" id="tab-hist">
 <div class="sec" style="margin-top:26px">Jour par jour
@@ -1123,6 +1170,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="tabbar">
 <button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Accueil</button>
+<button class="tb" id="tb-marche" onclick="tab('marche',this)"><svg class="ic"><use href="#i-activity"/></svg>March&eacute;</button>
 <button class="tb" onclick="tab('hist',this)"><svg class="ic"><use href="#i-calendar"/></svg>Historique</button>
 <button class="tb" id="tb-nid" style="display:none"
  onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
@@ -1592,13 +1640,13 @@ window.addEventListener('load',notifSetup);
 const TOUR=[
  ['eq','&#128176; &Ccedil;a, c&#39;est votre argent. Il se met '+
   '&agrave; jour tout seul, toutes les 5 secondes.'],
- ['meteo','&#127782;&#65039; La m&eacute;t&eacute;o du robot : '+
+ ['mxsum','&#127782;&#65039; La m&eacute;t&eacute;o du robot : '+
   'soleil = il travaille tranquillement, orage = il se met &agrave; '+
-  'l&#39;abri et attend.'],
+  'l&#39;abri et attend. Touchez la carte pour tout voir.'],
  ['ledcard','&#9876;&#65039; Quand le robot perd un peu, il '+
   '&eacute;conomise ses petits gains, puis envoie un soldat '+
   'rattraper la perte. Tout se suit ici.'],
- [null,'&#128197; En bas : l&#39;Accueil, l&#39;Historique jour par '+
+ [null,'&#128197; En bas : l&#39;Accueil, le March&eacute;, l&#39;Historique jour par '+
   'jour, et les R&eacute;glages &mdash; pensez &agrave; activer '+
   'les notifications !']];
 let _ti=-1;
@@ -1707,33 +1755,62 @@ function dayx(l){
 }
 window._cvz='7';
 function drawNerv(){
- const D=window._day,el=document.getElementById('mx-nerv');
- if(!el||!D)return;const pts=(D.nerv||[]).slice(-1440);
- if(pts.length<5){el.style.display='none';return;}
+ const D=window._day,el=document.getElementById('mx-nerv'),
+  ms=document.getElementById('mxs-spark');
+ if(!D)return;const pts=(D.nerv||[]).slice(-1440);
+ if(pts.length<5){if(el)el.style.display='none';if(ms)ms.style.display='none';return;}
  const t0=pts[0][0],t1=pts[pts.length-1][0],sp=Math.max(1,t1-t0);
  const mx=Math.max(2.2,...pts.map(p=>p[1]));
- const X=t=>(6+(t-t0)/sp*288),Y=v=>(48-(v/mx)*40);
- let dp='';pts.forEach((p,i)=>{dp+=(i?' L':'M')+X(p[0]).toFixed(1)+','+
-  Y(p[1]).toFixed(1);});
- let bands='',st=null;
- pts.forEach((p,i)=>{if(p[1]>=1.85&&st===null)st=p[0];
-  if((p[1]<1.85||i===pts.length-1)&&st!==null){
-   bands+='<rect x="'+X(st).toFixed(1)+'" y="6" width="'+
-    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="42" style="fill:var(--down);'+
-    'opacity:.14"/>';st=null;}});
- const band=(v,c,l)=>'<line x1="6" y1="'+Y(v).toFixed(1)+'" x2="294" y2="'+
-  Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-width="1" '+
-  'stroke-dasharray="3 4"/><text x="294" y="'+(Y(v)-3).toFixed(1)+
-  '" text-anchor="end" font-size="8" style="fill:'+c+'">'+l+'</text>';
- el.style.display='block';
- el.innerHTML=bands+band(1.0,'var(--muted)','1,0\\u00d7')+
-  band(1.85,'var(--down)','1,85\\u00d7')+
-  '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" '+
-  'stroke-width="1.8" stroke-linejoin="round"/>'+
-  '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(pts[pts.length-1][1]).toFixed(1)+
-  '" r="2.8" style="fill:var(--accent-soft)"/>'+
-  '<text x="6" y="54" font-size="8" style="fill:var(--muted)">nervosit\\u00e9 \\u00b7 24 h</text>'+
-  '<text x="294" y="54" text-anchor="end" font-size="8" style="fill:var(--muted)">maintenant</text>';
+ const X=t=>(6+(t-t0)/sp*288);
+ const bands=(Y,top,hgt)=>{let o='',st=null;
+  pts.forEach((p,i)=>{if(p[1]>=1.85&&st===null)st=p[0];
+   if((p[1]<1.85||i===pts.length-1)&&st!==null){
+    o+='<rect x="'+X(st).toFixed(1)+'" y="'+top+'" width="'+
+     Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="'+hgt+'" style="fill:var(--down);'+
+     'opacity:.14"/>';st=null;}});return o;};
+ const path=Y=>{let d='';pts.forEach((p,i)=>{d+=(i?' L':'M')+X(p[0]).toFixed(1)+','+
+  Y(p[1]).toFixed(1);});return d;};
+ const last=pts[pts.length-1][1];
+ if(el){
+  const Y=v=>(100-(v/mx)*84);
+  const band=(v,c,l)=>'<line x1="6" y1="'+Y(v).toFixed(1)+'" x2="294" y2="'+
+   Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-width="1" '+
+   'stroke-dasharray="3 4"/><text x="8" y="'+(Y(v)-3).toFixed(1)+
+   '" font-size="8" style="fill:'+c+'">'+l+'</text>';
+  let ticks='';for(let k=0;k<=4;k++){const t=t0+sp*k/4,x=X(t).toFixed(1);
+   const h=new Date(t*1000).getHours();
+   ticks+='<line x1="'+x+'" y1="102" x2="'+x+'" y2="106" style="stroke:var(--border2)"/>'+
+    '<text x="'+x+'" y="117" text-anchor="'+(k===0?'start':(k===4?'end':'middle'))+
+    '" font-size="8" style="fill:var(--muted)">'+(k===4?'maintenant':h+'h')+'</text>';}
+  const dp=path(Y);
+  el.style.display='block';
+  el.innerHTML='<defs><linearGradient id="ng" x1="0" y1="0" x2="0" y2="1">'+
+   '<stop offset="0" stop-color="#8fc6ff" stop-opacity=".28"/>'+
+   '<stop offset="1" stop-color="#8fc6ff" stop-opacity="0"/></linearGradient></defs>'+
+   '<rect x="6" y="'+Y(mx).toFixed(1)+'" width="288" height="'+(Y(1.85)-Y(mx)).toFixed(1)+
+   '" style="fill:var(--down);opacity:.05"/>'+
+   bands(Y,6,96)+band(1.0,'var(--muted)','1,0\\u00d7 calme')+
+   band(1.85,'var(--down)','1,85\\u00d7 tr\\u00e8s agit\\u00e9')+
+   '<line x1="6" y1="102" x2="294" y2="102" style="stroke:var(--border2)"/>'+ticks+
+   '<path d="'+dp+' L'+X(t1).toFixed(1)+',102 L6,102 Z" fill="url(#ng)"/>'+
+   '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.9" '+
+   'stroke-linejoin="round"/>'+
+   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="6" style="fill:var(--accent-soft);opacity:.25"/>'+
+   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3" style="fill:var(--accent-soft)"/>'+
+   '<text x="'+Math.min(262,X(t1)-8).toFixed(1)+'" y="'+(Y(last)-9).toFixed(1)+
+   '" text-anchor="end" font-size="9" font-weight="700" style="fill:var(--accent-soft)">'+
+   last.toFixed(2).replace('.',',')+'\\u00d7</text>';
+ }
+ if(ms){
+  const Ym=v=>(36-(v/mx)*30),dm=path(Ym);
+  ms.style.display='block';
+  ms.innerHTML=bands(Ym,2,36)+'<line x1="6" y1="'+Ym(1).toFixed(1)+'" x2="294" y2="'+
+   Ym(1).toFixed(1)+'" style="stroke:var(--muted);opacity:.4" stroke-dasharray="3 4"/>'+
+   '<path d="'+dm+' L'+X(t1).toFixed(1)+',40 L6,40 Z" style="fill:var(--accent-soft);opacity:.12"/>'+
+   '<path d="'+dm+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.6" '+
+   'stroke-linejoin="round"/>'+
+   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Ym(last).toFixed(1)+'" r="2.6" style="fill:var(--accent-soft)"/>';
+ }
 }
 function drawDay(){
  const D=window._day,el=document.getElementById('dayline'),
@@ -1743,35 +1820,51 @@ function drawDay(){
  const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/1000,
   d1=d0+86400;
  const X=t=>(8+Math.max(0,Math.min(1,(t-d0)/86400))*284);
+ const hm=t=>{const d=new Date(t*1000);return String(d.getHours()).padStart(2,'0')+':'+
+  String(d.getMinutes()).padStart(2,'0');};
  let s='';
- for(let h=0;h<=24;h+=6){const x=X(d0+h*3600).toFixed(1);
-  s+='<line x1="'+x+'" y1="30" x2="'+x+'" y2="36" style="stroke:var(--border2)"/>'+
-   '<text x="'+x+'" y="48" text-anchor="'+(h===0?'start':(h===24?'end':'middle'))+
-   '" font-size="8" style="fill:var(--muted)">'+h+'h</text>';}
- s+='<line x1="8" y1="33" x2="292" y2="33" style="stroke:var(--border2)"/>';
+ for(let h=0;h<=24;h+=3){const x=X(d0+h*3600).toFixed(1),big=h%6===0;
+  s+='<line x1="'+x+'" y1="52" x2="'+x+'" y2="'+(big?58:55)+'" style="stroke:var(--border2)"/>'+
+   (big?'<text x="'+x+'" y="70" text-anchor="'+(h===0?'start':(h===24?'end':'middle'))+
+   '" font-size="8" style="fill:var(--muted)">'+h+'h</text>':'');}
+ s+='<line x1="8" y1="52" x2="292" y2="52" style="stroke:var(--border2)"/>';
  let st=null;(D.nerv||[]).forEach((p,i,a)=>{if(p[0]<d0)return;
   if(p[1]>=1.85&&st===null)st=p[0];
   if((p[1]<1.85||i===a.length-1)&&st!==null){
-   s+='<rect x="'+X(st).toFixed(1)+'" y="12" width="'+
-    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="21" rx="2" '+
+   s+='<rect x="'+X(st).toFixed(1)+'" y="18" width="'+
+    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="34" rx="2" '+
     'style="fill:var(--down);opacity:.16"/>';st=null;}});
- (D.ignored||[]).forEach(g=>{if(g[0]<d0||g[0]>d1)return;
-  s+='<circle cx="'+X(g[0]).toFixed(1)+'" cy="22" r="3.2" fill="none" '+
-   'stroke-width="1.4" style="stroke:'+(g[1]==='meteo'?'var(--warn)':'var(--muted)')+
+ const ev=[];
+ (D.ignored||[]).forEach(g=>{if(g[0]<d0||g[0]>d1)return;ev.push({t:g[0],k:'ign',m:g[1]});
+  s+='<circle cx="'+X(g[0]).toFixed(1)+'" cy="36" r="4" fill="none" '+
+   'stroke-width="1.6" style="stroke:'+(g[1]==='meteo'?'var(--warn)':'var(--muted)')+
    '"><title>Signal ignor\\u00e9 \\u00b7 '+(g[1]==='meteo'?'m\\u00e9t\\u00e9o':'robot')+
    '</title></circle>';});
  let n=0;(D.trades||[]).forEach(t=>{if(!t.t||t.t<d0||t.t>d1)return;n++;
-  s+='<circle cx="'+X(t.t).toFixed(1)+'" cy="22" r="4.2" style="fill:var(--'+
+  ev.push({t:t.t,k:'tr',p:t.p,d:t.d});
+  s+='<circle cx="'+X(t.t).toFixed(1)+'" cy="36" r="5.2" style="fill:var(--'+
    (t.p>=0?'up':'down')+')"><title>'+(t.d==='BUY'?'Achat':'Vente')+' \\u00b7 '+
    (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</title></circle>';});
  const xn=X(now.getTime()/1000).toFixed(1);
- s+='<line x1="'+xn+'" y1="8" x2="'+xn+'" y2="38" style="stroke:var(--accent-soft)" '+
-  'stroke-width="1.2"/>';
+ s+='<line x1="'+xn+'" y1="14" x2="'+xn+'" y2="58" style="stroke:var(--accent-soft)" '+
+  'stroke-width="1.2"/><text x="'+xn+'" y="10" text-anchor="middle" font-size="8" '+
+  'style="fill:var(--accent-soft)">maintenant</text>';
  el.innerHTML=s;card.style.display='block';
- const ig=(D.ignored||[]).filter(g=>g[0]>=d0).length;
- document.getElementById('day-note').textContent=
-  (n?n+' trade'+(n>1?'s':''):'Aucun trade pour l\\u2019instant')+
+ const ig=ev.filter(e=>e.k==='ign').length;
+ const note=(n?n+' trade'+(n>1?'s':''):'Aucun trade pour l\\u2019instant')+
   (ig?' \\u00b7 '+ig+(ig>1?' signaux ignor\\u00e9s':' signal ignor\\u00e9'):'');
+ document.getElementById('day-note').textContent=note;
+ const md=document.getElementById('mxs-day');if(md)md.textContent=note;
+ const lc=document.getElementById('daylist-card'),ll=document.getElementById('day-list');
+ if(lc&&ll){ev.sort((a,b)=>b.t-a.t);
+  if(!ev.length){lc.style.display='none';}
+  else{lc.style.display='block';
+   setH(ll,ev.slice(0,10).map(e=>e.k==='tr'
+    ?'<div class="row"><span class="rowt">'+hm(e.t)+' \\u00b7 '+(e.d==='BUY'?'Achat':'Vente')+
+     '</span><b class="'+sgn(e.p)+'">'+(e.p>=0?'+$':'-$')+Math.abs(e.p).toFixed(2)+'</b></div>'
+    :'<div class="row"><span class="rowt">'+hm(e.t)+' \\u00b7 Signal ignor\\u00e9</span>'+
+     '<span class="pill'+(e.m==='meteo'?' pill-w':'')+'">'+(e.m==='meteo'?'m\\u00e9t\\u00e9o':'robot')+
+     '</span></div>').join(''));}}
 }
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
@@ -2195,6 +2288,10 @@ function render(d){
     chips.map(c=>c.indexOf('<div')===0?c
      :'<div style="grid-column:1/-1"><span class="mxc">'+c+
       '</span></div>').join(''));
+   const _so=document.getElementById('mxs-orb');
+   if(_so){_so.innerHTML=ORB[cls]||ORB['mx-sun'];
+    setH(document.getElementById('mxs-title'),ti);
+    setH(document.getElementById('mxs-sub'),ln);}
   }
   if(d.ftest){
    const ft=d.ftest;
@@ -3820,6 +3917,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
 <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
 <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="bg"><div class="blob bl1"></div><div class="blob bl2"></div></div>
