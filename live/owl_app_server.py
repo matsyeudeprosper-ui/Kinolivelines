@@ -813,7 +813,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <span id="daytargetchip" style="display:none;padding:4px 11px;
  border-radius:99px;font-size:.72rem;font-weight:700;
  background:rgba(127,179,224,.13);color:var(--text3)"></span>
-<span id="tradeschip" class="hchip" style="display:none"></span></div>
+<span id="tradeschip" class="hchip" style="display:none"></span>
+<span id="tradepill" class="hchip" style="display:none"></span></div>
 <div class="bankline" id="bank">&nbsp;</div>
 <div id="acctline" style="margin-top:10px;font-size:.72rem"></div>
 </div>
@@ -969,6 +970,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
  </div>
  <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
+ <div id="jprog" style="display:none;margin-top:10px"></div>
 </div>
 <div id="meteo" class="status mx-sun" style="margin-top:12px;
  position:relative;overflow:hidden;text-align:left;padding:0;
@@ -1008,6 +1010,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="panel" id="days" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none">R&eacute;sum&eacute;
  du mois</div>
+<div class="panel" id="msum-verdict" style="display:none;margin-bottom:10px;
+ font-size:.95rem;line-height:1.5;color:var(--text)"></div>
 <div class="grid" id="msum" style="display:none;margin-top:2px"></div>
 <div class="sec" id="cal-sec" style="display:none">Calendrier du mois
 </div>
@@ -1670,15 +1674,15 @@ window.addEventListener('load',notifSetup);
 const TOUR=[
  ['eq','&#128176; &Ccedil;a, c&#39;est votre argent. Il se met '+
   '&agrave; jour tout seul, toutes les 5 secondes.'],
- ['mxsum','&#127782;&#65039; La m&eacute;t&eacute;o du robot : '+
-  'soleil = il travaille tranquillement, orage = il se met &agrave; '+
-  'l&#39;abri et attend. Touchez la carte pour tout voir.'],
- ['ledcard','&#9876;&#65039; Quand le robot perd un peu, il '+
-  '&eacute;conomise ses petits gains, puis envoie un soldat '+
-  'rattraper la perte. Tout se suit ici.'],
- [null,'&#128197; En bas : l&#39;Accueil, le March&eacute;, l&#39;Historique jour par '+
-  'jour, et les R&eacute;glages &mdash; pensez &agrave; activer '+
-  'les notifications !']];
+ ['mxsum','&#127782;&#65039; Ici, le robot vous dit ce qu&#39;il voit : '+
+  'march&eacute; calme ou agit&eacute;, et ce qu&#39;il a fait aujourd&#39;hui. '+
+  'Touchez la carte pour la page March&eacute;.'],
+ ['ledcard','&#128737;&#65039; Quand le robot perd un peu, il met une '+
+  'partie de chaque gain de c&ocirc;t&eacute; pour se rattraper, sans '+
+  'risquer plus. Tout se suit ici.'],
+ [null,'&#128197; En bas : l&#39;Accueil, le March&eacute;, l&#39;Historique '+
+  'jour par jour (touchez un jour pour son histoire), et les '+
+  'R&eacute;glages &mdash; pensez &agrave; activer les notifications !']];
 let _ti=-1;
 function tourStep(i){
  document.querySelectorAll('.tourhl').forEach(x=>
@@ -1780,8 +1784,23 @@ function confetti(em){
 }
 window.openDay=null;
 function dayx(l){
- window.openDay=(window.openDay===l?null:l);
- load();
+ const tr=((window._dtr||{})[l]||[]).slice();
+ const row=(window._days||[]).find(x=>x.d===l);
+ const p=row?row.p:tr.reduce((a,t)=>a+t.p,0);
+ const won=tr.filter(t=>t.p>0.005).length,lost=tr.filter(t=>t.p<-0.005).length;
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
+ let sum;
+ if(!tr.length)sum='Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.';
+ else sum='Ce jour-l\u00e0 : '+tr.length+' trade'+(tr.length>1?'s':'')+
+  (tr.length>1?' \u2014 '+won+' gagn\u00e9'+(won>1?'s':'')+', '+lost+' perdu'+(lost>1?'s':''):'')+
+  '. R\u00e9sultat : <b class="'+sgn(p)+'">'+money(p)+'</b>.';
+ const rows=tr.map(t=>'<div class="srow-ev">'+(t.p>=0?ico('i-check','var(--up)'):ico('i-x','var(--down)'))+
+  '<div style="flex:1">'+(t.p>=0?'Le robot a <b class="pos">gagn\u00e9 '+money(t.p)+'</b>.'
+   :'Le robot a <b class="neg">perdu $'+Math.abs(t.p).toFixed(2)+'</b>.')+'</div>'+
+  '<span class="evt">'+t.t+'</span></div>').join('');
+ sheet('<h3>'+l+'</h3><p style="color:var(--text)">'+sum+'</p>'+rows+
+  '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
 window._cvz='7';
 function drawNerv(){
@@ -1936,6 +1955,19 @@ function drawJourney(d){
    :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Le robot pr\u00e9f\u00e8re attendre.'
    :'Le march\u00e9 est calme. Le robot observe et attend une occasion.');}
  if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, il est un peu plus prudent.';
+ const jp=document.getElementById('jprog');
+ if(jp){if(step===3&&open.length){const p=open[0];
+   const e=parseFloat(p.e)||0,tp=parseFloat(p.tp)||0,lot=parseFloat(p.lot)||0,pl=parseFloat(p.pl)||0;
+   let pct=null;if(e&&tp&&lot&&tp!==e){const px=e+(pl/lot)*(p.d==='A'?1:-1);
+    pct=Math.max(0,Math.min(100,100*(px-e)/(tp-e)));}
+   jp.style.display='block';
+   jp.innerHTML='<div style="display:flex;justify-content:space-between;font-size:.72rem;'+
+    'color:var(--muted2);margin-bottom:5px"><span>Chemin vers l\u2019objectif</span><span>'+
+    (pct===null?'\u2014':pct.toFixed(0)+' %')+'</span></div>'+
+    '<div style="background:var(--surface3);border-radius:99px;height:7px;overflow:hidden">'+
+    '<div style="height:7px;border-radius:99px;width:'+(pct===null?0:pct.toFixed(0))+'%;'+
+    'background:linear-gradient(90deg,var(--accent),var(--up));transition:width .8s"></div></div>';}
+  else jp.style.display='none';}
  el.querySelectorAll('.js').forEach(x=>{const i=parseInt(x.dataset.i);
   x.classList.toggle('on',i===step);x.classList.toggle('done',false);});
  setH(msg,txt);
@@ -2053,48 +2085,58 @@ window.addEventListener('load',()=>{
 function shareWeek(){
  const d=window._d;
  if(!d)return;
- const c=document.createElement('canvas');
- c.width=720;c.height=940;
+ const W=720,H=1120,c=document.createElement('canvas');
+ c.width=W;c.height=H;
  const g=c.getContext('2d');
- const gr=g.createLinearGradient(0,0,0,940);
- gr.addColorStop(0,'#0f2740');gr.addColorStop(1,'#0b0f14');
- g.fillStyle=gr;g.fillRect(0,0,720,940);
- g.textAlign='center';
- g.fillStyle='#cfe3f5';g.font='bold 46px sans-serif';
- g.fillText('OwlNest',360,92);
- g.fillStyle='#7d9cb8';g.font='26px sans-serif';
- g.fillText('Ma semaine \\u00b7 '+(d.name||''),360,138);
- const wk=d.week||0;
- g.fillStyle=wk>=0?'#2ecc71':'#ff5c5c';
- g.font='bold 92px sans-serif';
- g.fillText((wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2),360,252);
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect(x,y,w,h,r);};
+ const bg=g.createLinearGradient(0,0,0,H);
+ bg.addColorStop(0,'#0f2740');bg.addColorStop(.45,'#0b0f14');bg.addColorStop(1,'#0b0f14');
+ g.fillStyle=bg;g.fillRect(0,0,W,H);
+ // brand mark: the owl icon, drawn
+ rr(56,52,60,60,16);g.fillStyle='#0d1117';g.fill();
+ [76,96].forEach(cx=>{g.beginPath();g.arc(cx,76,9.5,0,Math.PI*2);g.fillStyle='#f0b43c';g.fill();
+  g.beginPath();g.arc(cx,76,4,0,Math.PI*2);g.fillStyle='#121212';g.fill();});
+ g.beginPath();g.moveTo(86,84);g.lineTo(80,98);g.lineTo(92,98);g.closePath();g.fillStyle='#c87828';g.fill();
+ g.textAlign='left';g.fillStyle='#e8eef4';g.font='bold 34px Inter, system-ui, sans-serif';
+ g.fillText('OwlNest',132,84);
+ g.fillStyle='#8a9bb0';g.font='22px Inter, system-ui, sans-serif';
+ g.fillText('Ma semaine \u00b7 '+(d.name||''),132,112);
+ // week result
+ const wk=d.week||0,up=wk>=0;
+ g.textAlign='center';g.fillStyle=up?'#2ecc71':'#ff5c5c';
+ g.font='bold 104px Inter, system-ui, sans-serif';
+ g.fillText((up?'+$':'-$')+Math.abs(wk).toFixed(2),W/2,246);
+ g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText('depuis lundi',W/2,280);
+ // curve card
+ rr(48,318,W-96,240,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.lineWidth=1.5;g.stroke();
  const cv=d.curve||[];
  if(cv.length>1){
   const mn=Math.min(...cv,0),mx=Math.max(...cv,0),sp=(mx-mn)||1;
-  g.beginPath();
-  cv.forEach((v,i)=>{
-   const x=80+(i/(cv.length-1))*560;
-   const y=470-((v-mn)/sp)*150;
-   i?g.lineTo(x,y):g.moveTo(x,y);});
-  const up=cv[cv.length-1]>=0;
-  g.strokeStyle=up?'#2ecc71':'#ff5c5c';
-  g.lineWidth=5;g.lineJoin='round';g.lineCap='round';g.stroke();
-  g.lineTo(640,480);g.lineTo(80,480);g.closePath();
+  const X=i=>84+(i/(cv.length-1))*(W-168),Y=v=>522-((v-mn)/sp)*170;
+  g.beginPath();cv.forEach((v,i)=>{i?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));});
+  g.strokeStyle=up?'#2ecc71':'#ff5c5c';g.lineWidth=5;g.lineJoin='round';g.lineCap='round';g.stroke();
+  g.lineTo(X(cv.length-1),530);g.lineTo(84,530);g.closePath();
   g.fillStyle=up?'rgba(46,204,113,.16)':'rgba(255,92,92,.16)';g.fill();
+  const y0=Y(0);g.setLineDash([6,8]);g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=1.5;
+  g.beginPath();g.moveTo(84,y0);g.lineTo(W-84,y0);g.stroke();g.setLineDash([]);
  }
- let y=560;
- (d.days||[]).slice(0,7).forEach(x=>{
-  g.textAlign='left';g.fillStyle='#a9b8c8';
-  g.font='26px sans-serif';
-  g.fillText(x.d,110,y);
-  g.textAlign='right';
-  g.fillStyle=x.p>=0?'#2ecc71':'#ff5c5c';
-  g.font='bold 26px sans-serif';
-  g.fillText((x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2),610,y);
-  y+=44;});
- g.textAlign='center';g.fillStyle='#8a9bb0';
- g.font='22px sans-serif';
- g.fillText('Le robot Owl trade pour vous, jour et nuit.',360,898);
+ // days card
+ const days=(d.days||[]).slice(0,7);
+ const dh=44,top=590;
+ rr(48,top,W-96,40+days.length*dh+18,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.stroke();
+ g.textAlign='left';g.fillStyle='#8a9bb0';g.font='bold 16px Inter, system-ui, sans-serif';
+ g.fillText('JOUR PAR JOUR',80,top+34);
+ const amax=Math.max(1,...days.map(x=>Math.abs(x.p||0)));
+ days.forEach((x,i)=>{const y=top+58+i*dh;
+  g.textAlign='left';g.fillStyle='#c6d3df';g.font='22px Inter, system-ui, sans-serif';
+  g.fillText(x.d,80,y+14);
+  const w=Math.max(4,(Math.abs(x.p||0)/amax)*180);
+  rr(300,y+2,w,14,7);g.fillStyle=x.p>=0?'rgba(46,204,113,.55)':'rgba(255,92,92,.55)';g.fill();
+  g.textAlign='right';g.fillStyle=x.p>=0?'#2ecc71':'#ff5c5c';g.font='bold 22px Inter, system-ui, sans-serif';
+  g.fillText((x.p>=0?'+$':'-$')+Math.abs(x.p||0).toFixed(2),W-80,y+14);});
+ g.textAlign='center';g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText('Le robot Owl trade pour vous, jour et nuit.',W/2,H-56);
  c.toBlob(async b=>{
   const f=new File([b],'owlnest-semaine.png',{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){
@@ -2464,6 +2506,10 @@ function render(d){
      const clears=fillN*gain1;
      const stillNeed=Math.max(0,need/(d.ledger.stake||0.5)-am);
      lt2.innerHTML=
+      '<div style="font-size:.95rem;color:var(--text);line-height:1.5;'+
+       'margin-bottom:12px">Il reste <b>$'+d.ledger.debt.toFixed(2)+'</b> \u00e0 '+
+       'rattraper. Le robot met une partie de chaque gain de c\u00f4t\u00e9 pour y '+
+       'arriver, sans jamais risquer plus de <b>$'+fm(stake)+'</b> sur un trade.</div>'+
       '<div style="text-align:center;padding:2px 0 10px">'+
        '<b style="color:var(--down-soft);font-size:2.4rem;line-height:1;'+
         'font-variant-numeric:tabular-nums;letter-spacing:-.02em">'+
@@ -2623,6 +2669,14 @@ function render(d){
    const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
    _tc.style.display=_n?'inline-flex':'none';
    _tc.textContent=_n+' trade'+(_n>1?'s':'')+' aujourd\\u2019hui';}
+  const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
+  if(_tp){if(_ol.length){const _pl=_ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+    _tp.style.display='inline-flex';
+    _tp.innerHTML='<span class="dot" style="width:7px;height:7px;background:currentColor"></span>'+
+     'Trade en cours \u00b7 '+(_pl>=0?'+$':'-$')+Math.abs(_pl).toFixed(2);
+    _tp.style.background=_pl>=0?'rgba(46,204,113,.18)':'rgba(255,92,92,.18)';
+    _tp.style.color=_pl>=0?'var(--up-soft)':'var(--down-soft)';}
+   else _tp.style.display='none';}
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
@@ -2909,10 +2963,10 @@ function render(d){
   }
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
-   window._dtr=d.day_trades||{};
+   window._dtr=d.day_trades||{};window._days=d.days;
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
-    const open=window.openDay===x.d&&tr.length;
+    const open=false;   // 2026-09-26: a day opens as a story sheet
     return '<div class="row" style="cursor:pointer" data-l="'+x.d+
     '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
     (tr.length?'<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px;'+
@@ -2946,13 +3000,21 @@ function render(d){
      rr+'</span>','neu','verts / rouges')+
     cell('Meilleur jour',f(best),'pos','le plus gagnant')+
     cell('Pire jour',f(worst),sgn(worst),'le plus dur'));
+   const _mv=document.getElementById('msum-verdict');
+   if(_mv){const _dbt=((d.ledger||{}).debt||0)>0.5;_mv.style.display='block';
+    _mv.innerHTML='Ce mois : <b class="'+sgn(net)+'">'+f(net)+'</b>, '+g+' jour'+(g>1?'s':'')+
+     ' vert'+(g>1?'s':'')+' sur '+(g+rr)+'. '+(net>=0?'Le robot avance.'
+     :(_dbt?'Le robot est en train de se rattraper \u2014 il avance prudemment.'
+     :'Un mois difficile ; le robot continue.'));}
    const md={};d.month_days.forEach(x=>md[x.d]=x.p);
    const now=new Date();
    const y=now.getUTCFullYear(),m=now.getUTCMonth();
    const nd=new Date(Date.UTC(y,m+1,0)).getUTCDate();
    const off=(new Date(Date.UTC(y,m,1)).getUTCDay()+6)%7;
    const _bv=[];for(let q=1;q<=nd;q++){const kk=y+'-'+String(m+1).padStart(2,'0')+
-    '-'+String(q).padStart(2,'0');_bv.push([kk,md[kk]]);}
+    '-'+String(q).padStart(2,'0');_bv.push([kk,md[kk],
+    ['dim','lun','mar','mer','jeu','ven','sam'][new Date(kk+'T00:00:00Z').getUTCDay()]+' '+
+    String(q).padStart(2,'0')+'/'+String(m+1).padStart(2,'0')]);}
    const _mx=Math.max(1,..._bv.map(x=>Math.abs(x[1]||0)));const _bw=300/nd;
    let h='<svg viewBox="0 0 300 64" style="width:100%;height:64px;display:block;'+
     'margin:2px 0 10px"><line x1="0" y1="32" x2="300" y2="32" '+
@@ -2961,7 +3023,7 @@ function render(d){
      const hh=Math.max(2,Math.abs(v)/_mx*28),yy=v>0?32-hh:32;
      return '<rect x="'+(i*_bw+_bw*0.2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+
       (_bw*0.6).toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="1.5" style="fill:var(--'+
-      (v>0?'up':'down')+');cursor:pointer" onclick="dayx(\\''+x[0]+'\\')"><title>'+
+      (v>0?'up':'down')+');cursor:pointer" onclick="dayx(\\''+x[2]+'\\')"><title>'+
       x[0]+' '+(v>=0?'+$':'-$')+Math.abs(v).toFixed(2)+'</title></rect>';}).join('')+
     '</svg><div style="display:grid;'+
     'grid-template-columns:repeat(7,1fr);gap:6px">';
