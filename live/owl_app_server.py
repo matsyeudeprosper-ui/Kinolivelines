@@ -664,6 +664,15 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  font-size:.8rem}
 .tourhl{position:relative;z-index:52;border-radius:16px;
  box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(59,130,246,.65)!important}
+.tb,.srow,.shbtn,#sharebtn,#inst,.cvc,#actbtn,#invbtn{transition:transform .12s ease,
+ background .15s,color .15s,border-color .15s}
+.tb:active,.srow:active,.shbtn:active,#sharebtn:active,#inst:active,.cvc:active,
+#actbtn:active,#invbtn:active{transform:scale(.97)}
+.srow:active{background:rgba(255,255,255,.03)}
+.pill{display:inline-block;padding:1px 7px;border-radius:99px;font-size:.66rem;
+ font-weight:700;letter-spacing:.03em;background:rgba(255,255,255,.07);
+ color:var(--muted2);vertical-align:1px}
+.pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
 </style></head><body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
@@ -811,7 +820,8 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  <div style="display:flex;justify-content:space-between;
   align-items:center;margin-bottom:6px">
   <span style="font-size:.7rem;color:#7fb3e0;text-transform:uppercase;
-   letter-spacing:.08em;font-weight:700">&#9876;&#65039; En plein
+   letter-spacing:.08em;font-weight:700;display:inline-flex;
+   align-items:center;gap:6px"><svg class="ic ic-s"><use href="#i-wave"/></svg>En plein
    combat</span>
   <span style="font-size:.66rem;color:#8df0bb;font-weight:800;
    letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
@@ -2323,12 +2333,12 @@ function render(d){
    location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
-   ? '&#9995; <b>Mode manuel</b>'+
+   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg><b>Mode manuel</b>'+
      (n>0?' &middot; '+n+' trade'+(n>1?'s':'')+' ouvert'+(n>1?'s':''):'')
    : (n>0
-   ? '&#129302; Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
+   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-bot"/></svg>Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
      ' en cours</b>'
-   : '&#127747; March&eacute; sous surveillance &mdash; aucun trade ouvert');
+   : '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-eye"/></svg>March&eacute; sous surveillance &mdash; aucun trade ouvert');
   const bs=document.getElementById('battles-sec');
   const met=document.getElementById('meteo');
   const lc0=document.getElementById('ledcard');
@@ -2363,7 +2373,8 @@ function render(d){
     return '<div class="row" style="border-bottom-color:var(--surface3);'+
     'border-bottom:0">'+
     '<span style="display:flex;align-items:center;gap:8px">'+
-    (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
+    (x.d=='A'?'<span style="color:var(--up)">&#9650;</span> <b>Achat</b>'
+     :'<span style="color:var(--down)">&#9660;</span> <b>Vente</b>')+
     ' <span style="color:var(--muted);font-size:.85rem">'+
     (x.sl>0
      ?(m=>'mise $'+(m<10?m.toFixed(1):m.toFixed(0))+
@@ -2373,7 +2384,7 @@ function render(d){
     '</span>'+(x.k=='s'?' <span style="background:'+
     'rgba(232,197,90,.15);color:var(--warn);padding:2px 8px;'+
     'border-radius:99px;font-size:.68rem;font-weight:700">'+
-    '&#9876;&#65039; soldat</span>':'')+
+    'soldat</span>':'')+
     '</span><b style="font-size:1.12rem" class="'+
     (sgn(x.pl))+'">'+
     (x.pl>=0?'+$':'-$')+Math.abs(x.pl).toFixed(2)+'</b></div>'+bar;
@@ -2491,7 +2502,7 @@ function render(d){
   }
   if(d.days&&!d.days.length){
    const de=document.getElementById('days');de.style.display='block';
-   de.innerHTML='<div class="empty"><i>&#129417;</i>'+
+   de.innerHTML='<div class="empty"><i><img src="icon192.png" alt="" style="width:34px;height:34px;border-radius:9px;opacity:.85"></i>'+
     '<p>Le hibou surveille la mer &mdash; vos journ&eacute;es '+
     'appara&icirc;tront ici</p></div>';
   }
@@ -2600,7 +2611,7 @@ function render(d){
   }
   if(d.trades&&!d.trades.length){
    document.getElementById('hist').innerHTML=
-    '<div class="empty"><i>&#129417;</i>'+
+    '<div class="empty"><i><img src="icon192.png" alt="" style="width:34px;height:34px;border-radius:9px;opacity:.85"></i>'+
     '<p>Aucun trade encore &mdash; le hibou attend la bonne '+
     'vague</p></div>';
   }
@@ -2611,8 +2622,8 @@ function render(d){
     d.trades.slice(0,N).map((x,i)=>
     '<div class="row" style="cursor:pointer" data-i="'+i+
     '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
-    (x.k?' &middot; '+(x.k==='soldat'?'&#9876;&#65039; soldat'
-     :(x.k==='page'?'normal':x.k)):'')+
+    (x.k==='soldat'?' <span class="pill pill-w">soldat</span>'
+     :(x.k&&x.k!=='page'?' <span class="pill">'+x.k+'</span>':''))+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
     '</span><b class="'+
     (sgn(x.p))+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
@@ -3408,7 +3419,7 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
  var(--surface2) 0%,var(--surface) 100%);border:1px solid var(--border2);
  border-radius:var(--r-lg);padding:20px 18px;
  box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05);
- transform:rotate(-1.6deg);max-width:340px;text-align:center}
+ max-width:360px;text-align:center}
 .pv-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;
  letter-spacing:.1em}
 .pv-money{font-size:2.2rem;font-weight:800;margin-top:5px}
@@ -3439,6 +3450,10 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
  box-shadow:0 10px 26px rgba(59,130,246,.35);margin-top:32px}
 .b2{background:var(--surface);color:var(--text2);border:1px solid var(--border2);
  display:flex;align-items:center;justify-content:center;gap:9px}
+.b3{background:none;border:0;color:var(--muted);font-size:.95rem;
+ font-weight:600;padding:12px;box-shadow:none;display:flex;
+ align-items:center;justify-content:center;gap:8px}
+.b3:hover{color:var(--text2)}
 .view{display:none}
 .view.on{display:block}
 .card{background:var(--surface);border:1px solid var(--border);
@@ -3502,25 +3517,25 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 jour et nuit. Vous, vous regardez.</div>
 </div>
 <div class="preview">
-<div class="pv-lbl">Aper&ccedil;u en direct</div>
-<div class="pv-money">$1 234,56</div>
-<div class="pv-eur">&asymp; 1 062 &euro;</div>
+<div class="pv-lbl" id="pv-lbl">Aper&ccedil;u en direct</div>
+<div class="pv-money" id="pv-money">$1 234,56</div>
+<div class="pv-eur" id="pv-eur">&asymp; 1 062 &euro;</div>
 <svg viewBox="0 0 260 44" style="width:100%;height:44px;margin-top:10px">
 <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
-<stop offset="0%" stop-color="#2ecc71" stop-opacity=".35"/>
-<stop offset="100%" stop-color="#2ecc71" stop-opacity="0"/>
+<stop id="pv-g1" offset="0%" stop-color="#2ecc71" stop-opacity=".35"/>
+<stop id="pv-g2" offset="100%" stop-color="#2ecc71" stop-opacity="0"/>
 </linearGradient></defs>
-<polygon fill="url(#pg)" points="0,44 0,34 30,30 60,33 90,24 120,27
+<polygon id="pv-area" fill="url(#pg)" points="0,44 0,34 30,30 60,33 90,24 120,27
  150,18 180,21 210,12 240,15 260,7 260,44"/>
-<polyline fill="none" stroke="#2ecc71" stroke-width="2.5"
+<polyline id="pv-line" fill="none" stroke="#2ecc71" stroke-width="2.5"
  stroke-linecap="round" stroke-linejoin="round"
  points="0,34 30,30 60,33 90,24 120,27 150,18 180,21 210,12 240,15 260,7"/>
 </svg>
-<div class="pv-row"><span class="pv-chip">&#9650; +23,40 $
+<div class="pv-row"><span class="pv-chip" id="pv-chip">&#9650; +23,40 $
  aujourd&#8217;hui</span>
-<span class="pv-chip2">2 trades</span></div>
-<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> L&#8217;Owl vient de gagner un trade
- pour vous</div>
+<span class="pv-chip2" id="pv-chip2">2 trades</span></div>
+<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">L&#8217;Owl vient de gagner un trade
+ pour vous</span></div>
 </div>
 <div class="feats">
 <div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-bot"/></svg></div>
@@ -3541,8 +3556,8 @@ Se connecter</button>
 <a class="bigbtn b2" href="/demo" style="display:block;margin-top:12px;
  text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le compte
  d&eacute;mo en direct</a>
-<button class="bigbtn b2" id="inst2" onclick="inst2()"
- style="margin-top:12px"><svg class="ic"><use href="#i-download"/></svg> Installer l&#8217;application</button>
+<button class="bigbtn b3" id="inst2" onclick="inst2()"
+ style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
 <div id="howto2" style="display:none;margin-top:12px;background:#141c28;
  border:1px solid #1f2c3d;border-radius:14px;padding:14px;
  font-size:.9rem;color:#c6d3df;line-height:1.6;text-align:left">
@@ -3589,6 +3604,41 @@ function inst2(){
   h.style.display=(h.style.display==='block')?'none':'block';}}
 window.addEventListener('appinstalled',()=>{
  document.getElementById('inst2').style.display='none';});
+// 2026-09-26: the preview shows the PUBLIC demo account for real - its
+// balance, today's result, its 7-day curve. Falls back to the static
+// mock if the fetch fails. Set PV_LIVE=false to go back to the mock.
+const PV_LIVE=true;
+(async function(){
+ if(!PV_LIVE)return;
+ try{
+  const r=await fetch('/demo',{redirect:'follow'});if(!r.ok)return;
+  const base=new URL(r.url).pathname.replace(/\\/+$/,'')+'/';
+  const d=await (await fetch(base+'api')).json();
+  if(!d||typeof d.equity!=='number')return;
+  const $=id=>document.getElementById(id);
+  $('pv-money').textContent='$'+d.equity.toFixed(2);
+  $('pv-eur').innerHTML=d.eurusd?('&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;')
+   :'compte d\\u00e9mo public';
+  const t=d.today||0,up=t>=0,ch=$('pv-chip');
+  ch.innerHTML=(t>0?'&#9650; ':(t<0?'&#9660; ':''))+(up?'+':'-')+'$'+
+   Math.abs(t).toFixed(2)+' aujourd\\u2019hui';
+  ch.style.background=up?'rgba(46,204,113,.12)':'rgba(255,92,92,.12)';
+  ch.style.color=up?'#2ecc71':'#ff5c5c';
+  const n=(d.trades||[]).length;$('pv-chip2').textContent=n+' trade'+(n>1?'s':'');
+  const wk=d.week||0;
+  $('pv-bot-t').textContent='Cette semaine : '+(wk>=0?'+':'-')+'$'+
+   Math.abs(wk).toFixed(2)+' \\u00b7 vrai compte, vrais trades';
+  const c=d.curve||[];
+  if(c.length>1){const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
+   const P=(v,i)=>((i/(c.length-1))*260).toFixed(1)+','+
+    (40-((v-mn)/sp*34)).toFixed(1);
+   const pts=c.map(P).join(' '),col=c[c.length-1]>=0?'#2ecc71':'#ff5c5c';
+   $('pv-line').setAttribute('points',pts);$('pv-line').setAttribute('stroke',col);
+   $('pv-area').setAttribute('points','0,44 '+pts+' 260,44');
+   $('pv-g1').setAttribute('stop-color',col);$('pv-g2').setAttribute('stop-color',col);}
+  $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 en direct';
+ }catch(e){}
+})();
 </script></body></html>"""
 
 
