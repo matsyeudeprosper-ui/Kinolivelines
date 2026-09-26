@@ -472,9 +472,21 @@ PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="theme-color" content="#0f2740">
 <title>OwlNest</title>
 <style>
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
+ --border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
+ --text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;--muted:#8a9bb0;--muted2:#a9b8c8;
+ --accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;
+ --warn:#e8c55a;--r:16px;--r-lg:24px;--hero1:#0f2740;--hero2:#123a63}
 *{box-sizing:border-box;margin:0}
-body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
- font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
+body{background:var(--bg);color:var(--text);padding:0 0 96px;
+ font-family:-apple-system,'Segoe UI',Roboto,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
+ stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
+.ic-s{width:16px;height:16px}
+.brandmk{width:22px;height:22px;border-radius:6px;vertical-align:-5px;
+ margin-right:6px}
 .tab{display:none}
 .tab.on{display:block;animation:tfade .25s ease}
 @keyframes tfade{0%{opacity:0;transform:translateY(6px)}
@@ -485,59 +497,60 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .grid .card:nth-child(4){animation-delay:.18s}
 @keyframes cin{0%{opacity:0;transform:translateY(10px)}
  100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;
+ transition:none!important}}
 .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;
  display:flex;max-width:480px;margin:0 auto;
- background:rgba(15,22,32,.94);backdrop-filter:blur(12px);
- border-top:1px solid #1e2937;border-radius:18px 18px 0 0;
+ background:rgba(14,20,29,.92);backdrop-filter:blur(14px);
+ -webkit-backdrop-filter:blur(14px);
+ border-top:1px solid var(--border);border-radius:20px 20px 0 0;
  padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
-.tb{flex:1;background:none;border:0;color:#5f7185;font-size:.68rem;
- font-weight:600;display:flex;flex-direction:column;
- align-items:center;gap:3px;padding:6px 0;border-radius:12px}
-.tb span{font-size:1.3rem;line-height:1}
-.tb.on{color:#8fc6ff;background:rgba(127,179,224,.12)}
-.srow{display:flex;align-items:center;gap:13px;padding:13px 2px;
- border-bottom:1px solid #1e2937;cursor:pointer;color:#e8eef4}
+.tb{flex:1;background:none;border:0;color:var(--muted);font-size:.72rem;
+ font-weight:600;display:flex;flex-direction:column;min-height:48px;
+ align-items:center;justify-content:center;gap:4px;padding:6px 0;
+ border-radius:12px;cursor:pointer;transition:color .15s,background .15s}
+.tb .ic{width:22px;height:22px}
+.tb.on{color:var(--accent-soft);background:var(--accent-bg)}
+.srow{display:flex;align-items:center;gap:13px;padding:14px 2px;
+ min-height:56px;border-bottom:1px solid var(--border);cursor:pointer;
+ color:var(--text)}
 .srow:last-child{border-bottom:0}
 .srow b{font-weight:600;font-size:.97rem}
-.sic{width:38px;height:38px;border-radius:11px;background:#0f2740;
- display:flex;align-items:center;justify-content:center;
- font-size:1.15rem;flex:none}
-.chv{color:#3d4c5c;font-size:1.3rem;line-height:1}
-.ssub{font-size:.76rem;color:#5f7185;margin-top:2px}
-.hero{background:linear-gradient(165deg,#0f2740 0%,#14406b 100%);
- color:#fff;padding:22px 22px 38px;border-radius:0 0 30px 30px;
- text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.35);
- position:relative;overflow:hidden}
+.sic{width:38px;height:38px;border-radius:10px;background:var(--surface3);
+ color:var(--accent-soft);display:flex;align-items:center;
+ justify-content:center;font-size:1.15rem;flex:none}
+.chv{color:var(--muted);width:18px;height:18px}
+.ssub{font-size:.78rem;color:var(--muted);margin-top:2px}
+.hero{background:linear-gradient(165deg,var(--hero1) 0%,var(--hero2) 100%);
+ color:#fff;padding:22px 22px 38px;border-radius:0 0 28px 28px;
+ text-align:center;position:relative;overflow:hidden;
+ box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
 .hero>*{position:relative}
 #daychip{display:none;margin-top:8px;font-size:.74rem;
  font-weight:700;padding:4px 12px;border-radius:99px;
  font-variant-numeric:tabular-nums}
 .topline{display:flex;justify-content:space-between;align-items:center}
-.brand{font-weight:700;color:#cfe3f5;font-size:1.02rem}
+.brand{font-weight:700;color:#dbe9f7;font-size:1.02rem;display:inline-flex;
+ align-items:center}
 .live{display:inline-flex;align-items:center;gap:6px;
- background:rgba(46,204,113,.16);color:#8df0bb;font-size:.7rem;
- font-weight:700;padding:4px 11px;border-radius:999px;
+ background:rgba(46,204,113,.14);color:var(--up-soft);font-size:.7rem;
+ font-weight:700;padding:5px 11px;border-radius:999px;
  letter-spacing:.06em}
-.dot{width:8px;height:8px;border-radius:50%;background:#2ecc71;
+.dot{width:8px;height:8px;border-radius:50%;background:var(--up);
  animation:p 1.8s infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
-.hello{color:#9fc2de;font-size:.95rem;margin-top:16px}
+.hello{color:var(--text3);font-size:.95rem;margin-top:16px}
 .money{font-size:3.5rem;font-weight:800;margin-top:6px;
- letter-spacing:-1px}
-.eur{color:#9fc2de;font-size:1.2rem;margin-top:2px}
-.bankline{color:#7d9cb8;font-size:.85rem;margin-top:9px}
+ letter-spacing:-1.5px;line-height:1.05}
+.eur{color:var(--text3);font-size:1.2rem;margin-top:2px}
+.bankline{color:#8fb0cc;font-size:.85rem;margin-top:9px}
 .wrap{max-width:440px;margin:-20px auto 0;padding:0 16px}
-.status{background:linear-gradient(160deg,#131e2e,#101927);
- border:1px solid #1f3145;border-radius:18px;padding:16px;
- text-align:center;font-size:1.04rem;color:#c6d3df;
- box-shadow:0 6px 18px rgba(0,0,0,.3)}
-.panel{background:linear-gradient(160deg,#131e2e,#101927);
- border:1px solid #1f3145;border-radius:18px;padding:16px;
- box-shadow:0 6px 18px rgba(0,0,0,.3)}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.card{background:linear-gradient(160deg,#131e2e,#101927);
- border:1px solid #1f3145;border-radius:18px;padding:18px 10px 15px;
- text-align:center;box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.status,.panel,.card{background:var(--surface);border:1px solid var(--border);
+ border-radius:var(--r);box-shadow:var(--hl)}
+.status{padding:16px;text-align:center;font-size:1.04rem;color:var(--text2)}
+.panel{padding:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.card{padding:18px 10px 15px;text-align:center}
 #mx-orb{width:52px;height:52px;border-radius:50%;flex:none;
  display:flex;align-items:center;justify-content:center;
  font-size:1.65rem;background:radial-gradient(circle at 35% 30%,
@@ -560,41 +573,42 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .mx-cloud{--mxg:rgba(230,160,40,.14)}
 .mxc{font-size:.68rem;font-weight:700;padding:3px 10px;
  border-radius:99px;border:1px solid rgba(255,255,255,.12);
- background:rgba(255,255,255,.05);color:#a9bccf;
+ background:rgba(255,255,255,.05);color:var(--muted2);
  letter-spacing:.03em}
-.empty{text-align:center;padding:26px 10px;color:#4d5f73}
+.empty{text-align:center;padding:26px 10px;color:var(--muted)}
 .empty i{font-style:normal;font-size:1.7rem;display:block}
 .empty p{font-size:.85rem;margin-top:7px}
-.lbl{font-size:.74rem;color:#8fa1b3;text-transform:uppercase;
- letter-spacing:.06em;font-weight:600}
+.lbl{font-size:.72rem;color:var(--muted2);text-transform:uppercase;
+ letter-spacing:.07em;font-weight:600}
 .val{font-size:1.45rem;font-weight:800;margin-top:8px;
- white-space:nowrap}
-.sub{font-size:.72rem;color:#5f7185;margin-top:6px}
-.pos{color:#2ecc71}.neg{color:#ff5c5c}.neu{color:#e8eef4}
-.sec{margin:26px 8px 10px;color:#5f7185;font-weight:700;
+ white-space:nowrap;letter-spacing:-.3px}
+.sub{font-size:.74rem;color:var(--muted);margin-top:6px}
+.pos{color:var(--up)}.neg{color:var(--down)}.neu{color:var(--text)}
+.sec{margin:26px 8px 10px;color:var(--muted);font-weight:700;
  font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;
  text-align:left}
-.sec .hint{opacity:.65;letter-spacing:.02em;text-transform:none;
+.sec .hint{opacity:.7;letter-spacing:.02em;text-transform:none;
  font-weight:500}
 .row{display:flex;justify-content:space-between;align-items:center;
- padding:11px 4px;border-bottom:1px solid #1e2937;font-size:1rem}
+ padding:12px 4px;min-height:44px;border-bottom:1px solid var(--border);
+ font-size:1rem}
 .row:last-child{border-bottom:0}
 @keyframes livepulse{0%{opacity:1;transform:scale(1)}
  50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}}
 .livedot{display:inline-block;width:8px;height:8px;border-radius:50%;
- background:#2ecc71;margin-right:6px;vertical-align:middle;
+ background:var(--up);margin-right:6px;vertical-align:middle;
  animation:livepulse 1.6s infinite}
-.rowt{color:#8fa1b3;font-size:.92rem}
+.rowt{color:var(--muted2);font-size:.92rem}
 .bd{display:inline-block;width:8px;height:8px;border-radius:50%;
  margin-right:8px;animation:p 1.8s infinite}
-#inst{width:100%;margin-top:24px;background:#2563eb;
+#inst{width:100%;margin-top:24px;background:var(--accent);
  color:#fff;border:0;border-radius:14px;padding:16px;font-size:1.06rem;
  font-weight:700}
-#howto{display:none;margin-top:12px;background:#151d29;border:1px solid
- #263341;border-radius:14px;padding:14px;font-size:.9rem;color:#c6d3df;
- line-height:1.6;text-align:left}
-.foot{margin-top:20px;text-align:center;font-size:.8rem;color:#5f7185}
-.exit{display:block;margin-top:14px;text-align:center;color:#5f7185;
+#howto{display:none;margin-top:12px;background:var(--surface2);
+ border:1px solid var(--border2);border-radius:14px;padding:14px;
+ font-size:.9rem;color:var(--text2);line-height:1.6;text-align:left}
+.foot{margin-top:20px;text-align:center;font-size:.8rem;color:var(--muted)}
+.exit{display:block;margin-top:14px;text-align:center;color:var(--muted);
  font-size:.82rem;text-decoration:none}
 .money,.val{font-variant-numeric:tabular-nums}
 @supports(padding:env(safe-area-inset-top)){
@@ -606,7 +620,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 .flash-up{animation:fup .9s ease}
 .flash-dn{animation:fdn .9s ease}
 .skel{position:relative;overflow:hidden;color:transparent!important;
- background:#1a2432!important;border-radius:8px}
+ background:var(--surface3)!important;border-radius:8px}
 .skel::after{content:'';position:absolute;inset:0;
  background:linear-gradient(90deg,transparent,
  rgba(255,255,255,.08),transparent);animation:shim 1.2s infinite}
@@ -615,45 +629,73 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 @keyframes ipulse{0%{box-shadow:0 0 0 0 rgba(127,179,224,.45)}
  70%{box-shadow:0 0 0 8px rgba(127,179,224,0)}
  100%{box-shadow:0 0 0 0 rgba(127,179,224,0)}}
-#sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.55);
+#sheetbg{position:fixed;inset:0;background:rgba(0,0,0,.6);
  display:none;z-index:40;opacity:0;transition:opacity .2s}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;
- background:#151d29;border-radius:22px 22px 0 0;
+ background:var(--surface2);border:1px solid var(--border);border-bottom:0;
+ border-radius:var(--r-lg) var(--r-lg) 0 0;
  padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
  transform:translateY(105%);transition:transform .25s ease;
  box-shadow:0 -10px 40px rgba(0,0,0,.5);max-width:480px;margin:0 auto}
-#sheet h3{font-size:1.08rem;margin-bottom:8px;color:#e8eef4}
-#sheet p{color:#9fc2de;font-size:.9rem;line-height:1.55;
+#sheet h3{font-size:1.08rem;margin-bottom:8px;color:var(--text)}
+#sheet p{color:var(--text3);font-size:.9rem;line-height:1.55;
  margin-bottom:14px}
 #sheet input{width:100%;padding:13px;border-radius:12px;
- border:1px solid #2a3a4e;background:#0b1420;color:#fff;
+ border:1px solid var(--border2);background:var(--bg);color:#fff;
  font-size:1rem;margin-bottom:6px}
+#sheet input:focus{outline:none;border-color:var(--accent)}
 .shbtn{width:100%;border:0;border-radius:13px;padding:14px;
- font-size:1rem;font-weight:700;margin-top:8px}
-.shmain{background:#2563eb;color:#fff}
+ font-size:1rem;font-weight:700;margin-top:8px;min-height:48px}
+.shmain{background:var(--accent);color:#fff}
 .shdanger{background:#a03030;color:#fff}
-.shghost{background:#1e2937;color:#c6d3df}
-.grab{width:38px;height:4px;border-radius:99px;background:#2a3a4e;
+.shghost{background:var(--surface3);color:var(--text2)}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--border2);
  margin:0 auto 14px}
 #tourbg{position:fixed;inset:0;background:rgba(4,8,14,.72);
  display:none;z-index:51}
 #tourbx{position:fixed;left:16px;right:16px;z-index:53;display:none;
- background:#16202e;border:1px solid #2a5a80;border-radius:18px;
- padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.6);
+ background:var(--surface2);border:1px solid var(--border2);
+ border-radius:18px;padding:18px;box-shadow:0 14px 40px rgba(0,0,0,.6);
  max-width:420px;margin:0 auto}
 #tourbx p{color:#dbe7f3;font-size:1rem;line-height:1.6;margin:0}
-#tourdots{margin-top:12px;color:#5f7185;letter-spacing:.35em;
+#tourdots{margin-top:12px;color:var(--muted);letter-spacing:.35em;
  font-size:.8rem}
 .tourhl{position:relative;z-index:52;border-radius:16px;
- box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(37,99,235,.65)!important}
+ box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(59,130,246,.65)!important}
 </style></head><body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.3c3 .2 6 2.3 6 5.7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 15l5-5 4 4 7-8"/><path d="M16 6h4v4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><path d="M11 11 20 2M16 6l3 3M18 4l2 2"/></symbol>
+<symbol id="i-switch" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
+<symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+</svg>
 <div class="hero">
-<div class="topline"><span class="brand">&#129417; OwlNest</span>
+<div class="topline"><span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
 <span style="display:flex;align-items:center;gap:10px">
 <a id="chartlink" href="#" title="Graphique en direct"
- style="text-decoration:none;font-size:.95rem;line-height:1;
- background:rgba(232,197,90,.1);border:1px solid rgba(232,197,90,.35);
- border-radius:99px;padding:4px 9px">&#128200;</a>
+ style="text-decoration:none;line-height:1;display:inline-flex;
+ color:#dbe9f7;background:rgba(255,255,255,.08);
+ border:1px solid rgba(255,255,255,.14);
+ border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-chart"/></svg></a>
 <span class="live" id="lv"><span class="dot" id="lvd"></span><span
  id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
@@ -739,7 +781,8 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div id="actcard" style="display:none;margin-top:12px;background:#0f2740;
  border:1px solid #2a5a80;border-radius:16px;
  padding:16px;text-align:center">
- <div style="font-size:1rem;color:#cfe3f5">&#128273; <b>Activer le
+ <div style="font-size:1rem;color:var(--text2);display:flex;
+  align-items:center;justify-content:center;gap:8px"><svg class="ic"><use href="#i-key"/></svg> <b>Activer le
   robot</b></div>
  <div style="font-size:.86rem;color:#9fc2de;margin-top:6px;line-height:1.5">
   Demandez votre code d&#8217;activation &agrave; <b>Kino sur
@@ -749,7 +792,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
   style="margin-top:10px;width:60%;padding:12px;font-size:1.3rem;
   text-align:center;letter-spacing:.3em;border-radius:12px;border:1px
   solid #2a5a80;background:#0b1826;color:#fff;text-transform:uppercase">
- <br><button id="actbtn" style="margin-top:10px;background:#2563eb;
+ <br><button id="actbtn" style="margin-top:10px;background:var(--accent);
   color:#fff;border:0;border-radius:12px;padding:12px 26px;
   font-size:1rem;font-weight:700">Activer</button>
  <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:#ff9c9c">
@@ -773,7 +816,7 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
   border-radius:12px;text-decoration:none;color:#9fd4ff;
   font-size:.8rem;font-weight:700;
   background:rgba(127,179,224,.1);
-  border:1px solid rgba(127,179,224,.3)">&#128200; Suivre sur le
+  border:1px solid rgba(127,179,224,.3)"><svg class="ic ic-s"><use href="#i-chart"/></svg> Suivre sur le
   graphique en direct</a>
 </div>
 </div>
@@ -793,11 +836,11 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <div class="sec" style="display:flex;justify-content:space-between;
  align-items:center">Progression
- <span><button class="cvc" data-c="7" style="border:1px solid #2a5a80;
-  background:#1d3350;color:#cfe3f5;border-radius:99px;padding:4px 12px;
+ <span><button class="cvc" data-c="7" style="border:1px solid var(--border2);
+  background:var(--surface3);color:var(--text2);border-radius:99px;padding:5px 12px;
   font-size:.72rem;font-weight:700">7 j</button>
- <button class="cvc" data-c="30" style="border:1px solid #263341;
-  background:#0f1620;color:#8fa1b3;border-radius:99px;padding:4px 12px;
+ <button class="cvc" data-c="30" style="border:1px solid var(--border);
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
   font-size:.72rem;font-weight:700;margin-left:6px">30 j</button></span>
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 70"
@@ -825,19 +868,20 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="row"><span class="skel" style="width:46%">&nbsp;</span>
 <span class="skel" style="width:16%">&nbsp;</span></div></div>
 <button id="sharebtn" onclick="shareWeek()" style="width:100%;
- margin-top:18px;background:linear-gradient(135deg,#2563eb,#5b3fd4);
+ margin-top:18px;background:var(--accent);
+ box-shadow:0 8px 22px rgba(59,130,246,.3);
  color:#fff;border:0;border-radius:14px;padding:15px;font-size:1rem;
- font-weight:700">&#128228; Partager ma semaine</button>
+ font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px"><svg class="ic"><use href="#i-share"/></svg> Partager ma semaine</button>
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">Notifications</div>
 <div class="panel" style="padding:4px 14px">
  <div class="srow" id="notifbtn" style="display:none">
-  <div class="sic">&#128276;</div>
+  <div class="sic"><svg class="ic"><use href="#i-bell"/></svg></div>
   <div style="flex:1"><b id="notif-lbl">Notifications</b>
    <div class="ssub">Gains, orages et soldats sur votre
     t&eacute;l&eacute;phone</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div id="nprefs" style="display:none;padding:2px 0 14px 51px">
   <div style="display:flex;gap:8px">
@@ -854,21 +898,21 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec">Application</div>
 <div class="panel" style="padding:4px 14px">
  <div class="srow" onclick="inst()">
-  <div class="sic">&#128241;</div>
+  <div class="sic"><svg class="ic"><use href="#i-phone"/></svg></div>
   <div style="flex:1"><b>Installer l&#39;application</b>
    <div class="ssub">Une ic&ocirc;ne sur votre &eacute;cran
     d&#39;accueil</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="infobtn">
-  <div class="sic">&#8505;&#65039;</div>
+  <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
   <div style="flex:1"><b>Ce qu&#39;il faut savoir</b></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="tourbtn">
-  <div class="sic">&#127891;</div>
+  <div class="sic"><svg class="ic"><use href="#i-book"/></svg></div>
   <div style="flex:1"><b>Revoir le guide</b></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
 </div>
 <div id="howto" style="margin-top:10px">&#128241;
@@ -885,14 +929,14 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
   <div class="sic" id="pause-ic">&#9208;&#65039;</div>
   <div style="flex:1"><b id="pause-lbl">Mode manuel</b>
    <div class="ssub" id="pause-sub"></div></div>
-  <span class="chv" id="pause-chv">&#8250;</span>
+  <svg class="ic chv" id="pause-chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="scalebtn" style="display:none">
-  <div class="sic" id="scale-ic">&#128200;</div>
+  <div class="sic" id="scale-ic"><svg class="ic"><use href="#i-chart"/></svg></div>
   <div style="flex:1"><b id="scale-lbl">Mise &agrave; l&#39;&eacute;chelle
    du solde</b>
    <div class="ssub" id="scale-sub"></div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
 </div>
 <!-- Owner 2026-09-23: "the nid menu must not exist for all but me" - this
@@ -903,49 +947,49 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <div class="sec" id="adminlock-sec">Acc&egrave;s</div>
 <div class="panel" id="adminlock-card" style="padding:4px 14px">
  <div class="srow" id="adminlockbtn">
-  <div class="sic">&#128274;</div>
+  <div class="sic"><svg class="ic"><use href="#i-lock"/></svg></div>
   <div style="flex:1"><b>D&eacute;verrouiller Le Nid</b>
    <div class="ssub">R&eacute;serv&eacute; &agrave;
     l&#39;administrateur</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
 </div>
 <div class="sec" id="adm-sec" style="display:none">Administration</div>
 <div class="panel" id="adm-card" style="display:none;padding:4px 14px">
  <div class="srow" id="goalbtn">
-  <div class="sic">&#127919;</div>
+  <div class="sic"><svg class="ic"><use href="#i-target"/></svg></div>
   <div style="flex:1"><b>D&eacute;finir l&#39;objectif</b></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="codebtn">
-  <div class="sic">&#128273;</div>
+  <div class="sic"><svg class="ic"><use href="#i-key"/></svg></div>
   <div style="flex:1"><b>Code d&#39;activation</b>
    <div class="ssub">Pour activer le robot d&#39;un membre</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
 
  <a class="srow" id="chartbtn" href="#"
   style="display:none;text-decoration:none;color:inherit">
-  <div class="sic">&#128200;</div>
+  <div class="sic"><svg class="ic"><use href="#i-chart"/></svg></div>
   <div style="flex:1"><b>Graphique custom (BTC)</b>
    <div class="ssub">M1 filtr&eacute; &mdash; labo du
     ma&icirc;tre</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
 </div>
 <div class="sec">Compte</div>
 <div class="panel" style="padding:4px 14px">
  <a class="srow" href="../" style="text-decoration:none">
-  <div class="sic">&#8618;</div>
+  <div class="sic"><svg class="ic"><use href="#i-switch"/></svg></div>
   <div style="flex:1"><b>Changer de compte</b>
    <div class="ssub">Ou cr&eacute;er un nouveau nid</div></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
  <div class="srow" id="delbtn">
-  <div class="sic" style="background:#2a1518">&#128465;</div>
+  <div class="sic" style="background:#2a1518;color:#ff9a9a"><svg class="ic"><use href="#i-trash"/></svg></div>
   <div style="flex:1"><b style="color:#ff9c9c">Retirer mon compte
    du robot</b></div>
-  <span class="chv">&#8250;</span>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
 </div>
 <div class="foot" id="upd">chargement...</div>
@@ -964,18 +1008,15 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 <button id="invbtn" style="width:100%;margin-top:14px;
  background:#1d3350;color:#cfe3f5;border:1px solid #2a5a80;
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700">
- &#127915; Code d&#39;invitation (compte r&eacute;el)</button>
+ <svg class="ic"><use href="#i-ticket"/></svg> Code d&#39;invitation (compte r&eacute;el)</button>
 </div>
 </div>
 <div class="tabbar">
-<button class="tb on" onclick="tab('home',this)"><span>&#127968;
-</span>Accueil</button>
-<button class="tb" onclick="tab('hist',this)"><span>&#128197;
-</span>Historique</button>
+<button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Accueil</button>
+<button class="tb" onclick="tab('hist',this)"><svg class="ic"><use href="#i-calendar"/></svg>Historique</button>
 <button class="tb" id="tb-nid" style="display:none"
- onclick="tab('nid',this)"><span>&#129417;</span>Le Nid</button>
-<button class="tb" onclick="tab('set',this)"><span>&#9881;&#65039;
-</span>R&eacute;glages</button>
+ onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
+<button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>R&eacute;glages</button>
 </div>
 <div id="sheetbg"></div>
 <div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
@@ -992,6 +1033,9 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 96px;
 </div>
 <script>
 const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
+function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
+function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
+function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
 (function(){
  const m=document.createElement('link');m.rel='manifest';
  m.href=B+'manifest.json';document.head.appendChild(m);
@@ -1067,7 +1111,7 @@ function ledInfo(){
   '<div style="flex:0 0 44px;display:flex;align-items:center;'+
    'justify-content:center">'+ic+'</div>'+
   '<div style="min-width:0"><b style="font-size:.86rem">'+t+
-   '</b><div style="font-size:.79rem;color:#8fa1b3;'+
+   '</b><div style="font-size:.79rem;color:var(--muted2);'+
    'line-height:1.45">'+s+'</div></div></div>';
  const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
  const F=x=>'$'+x.toFixed(2);
@@ -1146,7 +1190,7 @@ function ledInfo(){
    'gros que n&eacute;cessaire. Le stop, lui, ne bouge jamais.');
  }
  sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
-  '<p style="font-size:.78rem;color:#6f93b5;margin:0 0 6px">'+
+  '<p style="font-size:.78rem;color:var(--muted);margin:0 0 6px">'+
   sub+'</p>'+
   row(miniDebt,'&Agrave; rattraper : '+F(L.debt),
    'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
@@ -1162,7 +1206,7 @@ function ledInfo(){
   r3+r4+
   '<div style="background:rgba(232,197,90,.08);border:1px solid '+
    'rgba(232,197,90,.25);border-radius:12px;padding:10px 12px;'+
-   'font-size:.8rem;color:#e8c55a;line-height:1.45;margin:4px 0 '+
+   'font-size:.8rem;color:var(--warn);line-height:1.45;margin:4px 0 '+
    '10px">&#9888;&#65039; Un trade de rattrapage est plus gros, '+
    'donc il gagne plus <b>et il perd plus</b>. S&#39;il rate, le '+
    'compte descend de toute la perte &mdash; la r&eacute;serve ne '+
@@ -1248,9 +1292,9 @@ window.addEventListener('load',()=>{
   ab.disabled=false;ab.textContent='Activer';
   try{const j=await r.json();
    if(j.ok){document.getElementById('actcard').innerHTML=
-    '<div style="font-size:1.05rem;color:#8df0bb">&#127881; '+
+    '<div style="font-size:1.05rem;color:var(--up-soft)">&#127881; '+
     '<b>Robot activ&eacute; !</b><br><span style="font-size:.85rem;'+
-    'color:#9fc2de">Le robot copie maintenant les trades sur votre '+
+    'color:var(--text3)">Le robot copie maintenant les trades sur votre '+
     'compte.</span></div>';setTimeout(load,1500);}
    else{msg.textContent='Code invalide ou expir&eacute;. Demandez un '+
     'nouveau code &agrave; Kino.';}}
@@ -1265,12 +1309,12 @@ window.addEventListener('load',()=>{
    Math.ceil(b0+a)+'\\'">+$'+a+'</button>').join('');
   const v=await sheet('<h3>&#127919; Objectif</h3>'+
    '<div style="display:flex;justify-content:space-between;'+
-   'align-items:center;background:#0b1420;border-radius:12px;'+
+   'align-items:center;background:var(--bg);border-radius:12px;'+
    'padding:12px 14px;margin-bottom:12px">'+
-   '<span style="color:#8fa1b3;font-size:.85rem">Solde actuel'+
+   '<span style="color:var(--muted2);font-size:.85rem">Solde actuel'+
    '</span><b style="font-size:1.1rem">$'+b0.toFixed(2)+
    '</b></div>'+
-   '<div style="font-size:.78rem;color:#8fa1b3;margin-bottom:8px">'+
+   '<div style="font-size:.78rem;color:var(--muted2);margin-bottom:8px">'+
    'Choix rapide &mdash; ou entrez votre montant :</div>'+
    '<div style="display:flex;gap:8px;margin-bottom:10px">'+chips+
    '</div>'+
@@ -1283,7 +1327,7 @@ window.addEventListener('load',()=>{
    '[document.getElementById(\\'goalamt\\').value,'+
    'document.getElementById(\\'shpw\\').value])">'+
    '&#127919; Enregistrer l&#39;objectif</button>'+
-   '<button class="shbtn shghost" style="color:#ff9c9c" '+
+   '<button class="shbtn shghost" style="color:var(--down-soft)" '+
    'onclick="_shDone([\\'0\\','+
    'document.getElementById(\\'shpw\\').value])">D&eacute;sactiver '+
    'la barre</button>'+
@@ -1316,8 +1360,8 @@ window.addEventListener('load',()=>{
   try{const j=await r.json();
    if(j.ok){await sheet('<h3>Code d&#39;activation</h3>'+
     '<div style="font-size:2rem;font-weight:800;letter-spacing:.3em;'+
-    'text-align:center;background:#0b1420;border-radius:14px;'+
-    'padding:18px 6px;margin:6px 0 10px;color:#8df0bb">'+j.code+
+    'text-align:center;background:var(--bg);border-radius:14px;'+
+    'padding:18px 6px;margin:6px 0 10px;color:var(--up-soft)">'+j.code+
     '</div><p>Valable 24 h &middot; usage unique</p>'+
     '<button class="shbtn shmain" onclick="navigator.clipboard&&'+
     'navigator.clipboard.writeText(\\''+j.code+'\\');_shDone(1)">'+
@@ -1339,11 +1383,11 @@ window.addEventListener('load',()=>{
    if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
     return;}}catch(e2){}
   if(r&&r.ok){document.body.innerHTML=
-   '<div style="padding:48px 24px;text-align:center;color:#c6d3df;'+
+   '<div style="padding:48px 24px;text-align:center;color:var(--text2);'+
    'font-family:sans-serif;line-height:1.7">&#128075; <b>Compte '+
    'retir&eacute;.</b><br>Le robot ne trade plus ce compte.<br>Pour '+
    'revenir : inscrivez-vous &agrave; nouveau.<br><br>'+
-   '<a href="../" style="color:#2563eb">Accueil</a></div>';}};
+   '<a href="../" style="color:var(--accent)">Accueil</a></div>';}};
 });
 async function notifSetup(){
  const nb=document.getElementById('notifbtn');
@@ -1455,7 +1499,7 @@ window.addEventListener('load',()=>{
  const ib2=document.getElementById('infobtn');
  if(ib2)ib2.onclick=(e)=>{e.preventDefault();
   info('<h3>&#8505;&#65039; Ce qu&#39;il faut savoir</h3>'+
-   '<div style="text-align:left;font-size:.92rem;color:#c6d3df;'+
+   '<div style="text-align:left;font-size:.92rem;color:var(--text2);'+
    'line-height:1.7">'+
    '&#128176; Le robot travaille avec de l&#39;argent '+
    'r&eacute;el. Il peut gagner <b>et</b> perdre.<br>'+
@@ -1556,11 +1600,11 @@ function tradeSheet(i){
  if(!x)return;
  const L=(a,b)=>'<div style="display:flex;justify-content:'+
   'space-between;padding:9px 2px;border-bottom:1px solid #1e2937;'+
-  'font-size:.95rem"><span style="color:#8fa1b3">'+a+
+  'font-size:.95rem"><span style="color:var(--muted2)">'+a+
   '</span><b>'+b+'</b></div>';
  sheet('<h3>'+(x.dir==='A'?'&#128200; Achat':'&#128201; Vente')+
   (x.k?' &middot; '+(x.k==='page'?'normal':x.k):'')+'</h3>'+
-  L('R&eacute;sultat','<span class="'+(x.p>=0?'pos':'neg')+'">'+
+  L('R&eacute;sultat','<span class="'+(sgn(x.p))+'">'+
    (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
   (x.ep!=null?L('Entr&eacute;e',x.ep.toFixed(2)):'')+
@@ -1582,8 +1626,8 @@ window.addEventListener('load',()=>{
   try{const j=await r.json();
    if(j.ok){await sheet('<h3>Code d&#39;invitation</h3>'+
     '<div style="font-size:2rem;font-weight:800;letter-spacing:.3em;'+
-    'text-align:center;background:#0b1420;border-radius:14px;'+
-    'padding:18px 6px;margin:6px 0 10px;color:#7fb0ff">'+j.code+
+    'text-align:center;background:var(--bg);border-radius:14px;'+
+    'padding:18px 6px;margin:6px 0 10px;color:var(--accent-soft)">'+j.code+
     '</div><p>Usage unique &middot; &agrave; entrer &agrave; '+
     'l&#39;inscription avec un compte r&eacute;el</p>'+
     '<button class="shbtn shmain" onclick="navigator.clipboard&&'+
@@ -1675,7 +1719,7 @@ async function nestPanic(uid,name){
  const go=await sheet('<h3>Tout fermer sur '+name+' ?</h3>'+
   '<p>Compte '+dry.acct+'. Les trades seront ferm&eacute;s au prix du '+
   'march&eacute;, et le compte passera en manuel pour que le robot ne '+
-  'rouvre rien.</p><ul style="margin:0 0 14px 18px;color:#c6d3df;'+
+  'rouvre rien.</p><ul style="margin:0 0 14px 18px;color:var(--text2);'+
   'font-size:.85rem;line-height:1.7">'+li+'</ul>'+
   '<button class="shbtn shdanger" onclick="_shDone(1)">'+
   '&#128721; Tout fermer maintenant</button>'+
@@ -1733,8 +1777,8 @@ function render(d){
   if(d.stale){lv.style.background='rgba(230,160,40,.16)';
    lv.style.color='#ffd27a';lvd.style.background='#e6a028';
    lvt.textContent='RECONNEXION';}
-  else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='#8df0bb';
-   lvd.style.background='#2ecc71';lvt.textContent='EN DIRECT';}
+  else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='var(--up-soft)';
+   lvd.style.background='var(--up)';lvt.textContent='EN DIRECT';}
   {
    const mc=document.getElementById('meteo');
    let cls='mx-sun',orb='\\u2600\\ufe0f',
@@ -1911,11 +1955,11 @@ function render(d){
     :(wr>=ft.wr_pass?'#2ecc71':(wr>=0.60?'#e8c55a':'#ff5c5c'));
    document.getElementById('ft-txt').innerHTML=
     'Trade <b>'+ft.n+'</b> sur '+ft.target+' &middot; '+
-    '<span style="color:#8df0bb">'+ft.w+' gagn&eacute;s</span> / '+
-    '<span style="color:#ff9c9c">'+ft.l+' perdus</span>'+
+    '<span style="color:var(--up-soft)">'+ft.w+' gagn&eacute;s</span> / '+
+    '<span style="color:var(--down-soft)">'+ft.l+' perdus</span>'+
     ((ft.w+ft.l)?' (<b style="color:'+col+'">'+
      Math.round(wr*100)+'&nbsp;%</b>)':'')+
-    ' &middot; <b class="'+(ft.net>=0?'pos':'neg')+'">'+
+    ' &middot; <b class="'+(sgn(ft.net))+'">'+
     (ft.net>=0?'+$':'-$')+Math.abs(ft.net).toFixed(2)+'</b>';
    const pb=document.getElementById('ft-bar');
    pb.style.width=Math.min(100,ft.n/ft.target*100)+'%';
@@ -1933,7 +1977,7 @@ function render(d){
     ls2=document.getElementById('led-sub');
    lc.style.padding=d.ledger.debt>0.5?'14px':'8px 14px';
    lc.style.fontSize=d.ledger.debt>0.5?'.92rem':'.8rem';
-   lc.style.boxShadow='';lc.style.borderColor='#23405e';
+   lc.style.boxShadow='';lc.style.borderColor='var(--border2)';
    document.getElementById('led-hd').style.display=
     d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
@@ -1999,17 +2043,17 @@ function render(d){
      const stillNeed=Math.max(0,need/(d.ledger.stake||0.5)-am);
      lt2.innerHTML=
       '<div style="text-align:center;padding:2px 0 10px">'+
-       '<b style="color:#ffb3b3;font-size:2.4rem;line-height:1;'+
+       '<b style="color:var(--down-soft);font-size:2.4rem;line-height:1;'+
         'font-variant-numeric:tabular-nums;letter-spacing:-.02em">'+
         '$<span id="rz-debt">'+d.ledger.debt.toFixed(2)+'</span></b>'+
-       '<div style="font-size:.66rem;color:#7f93a8;margin-top:4px;'+
+       '<div style="font-size:.66rem;color:var(--muted2);margin-top:4px;'+
         'text-transform:uppercase;letter-spacing:.1em">'+
         '&agrave; rattraper</div>'+
       '</div>'+
       '<div style="display:flex;align-items:center;gap:8px;'+
-       'font-size:.7rem;color:#8fa1b3;margin-bottom:3px">'+
+       'font-size:.7rem;color:var(--muted2);margin-bottom:3px">'+
        '<span style="flex:1">R&eacute;serve</span>'+
-       '<span style="font-variant-numeric:tabular-nums;color:#e8c55a">'+
+       '<span style="font-variant-numeric:tabular-nums;color:var(--warn)">'+
         '$<span id="rz-ammo">'+am.toFixed(2)+'</span>'+
         '<span style="color:#6b5f38"> / $'+fm(d.ledger.cap||0)+
         '</span></span>'+
@@ -2024,19 +2068,19 @@ function render(d){
        'border:1px solid rgba(127,179,224,.16);border-radius:12px;'+
        'padding:10px 12px">'+
        '<div style="display:flex;align-items:baseline;gap:6px">'+
-        '<span style="flex:1;font-size:.7rem;color:#7f93a8;'+
+        '<span style="flex:1;font-size:.7rem;color:var(--muted2);'+
          'text-transform:uppercase;letter-spacing:.08em">'+
          'Prochain trade</span>'+
-        '<b style="color:#cfe3f5;font-size:1.15rem;'+
+        '<b style="color:var(--text2);font-size:1.15rem;'+
          'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
          nl.toFixed(2)+'</span></b>'+
-        '<span style="font-size:.72rem;color:#7f93a8"> lot</span>'+
+        '<span style="font-size:.72rem;color:var(--muted2)"> lot</span>'+
        '</div>'+
-       '<div style="font-size:.72rem;color:#8fa1b3;margin-top:5px;'+
+       '<div style="font-size:.72rem;color:var(--muted2);margin-top:5px;'+
         'line-height:1.45">'+
         (fillN>0
          ? 'Risque $'+fm(stake)+' &middot; un gain en enl&egrave;ve '+
-           '<b style="color:#8df0bb">$'+fm(clears)+'</b>'
+           '<b style="color:var(--up-soft)">$'+fm(clears)+'</b>'
          : 'Taille normale. Encore $'+fm(stillNeed)+' pour miser plus.')+
        '</div>'+
       '</div>';
@@ -2072,7 +2116,7 @@ function render(d){
     lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
      'rattraper.'+(d.ledger.chest>0
      ?'<br>&#128176; Gard&eacute; pour les jours difficiles : '+
-      '<b style="color:#e8c55a">$'+d.ledger.chest.toFixed(2)+
+      '<b style="color:var(--warn)">$'+d.ledger.chest.toFixed(2)+
       '</b>':'');
     lw.style.display='none';ls2.innerHTML='';
    }
@@ -2140,7 +2184,7 @@ function render(d){
    }else if(_lg2.bos&&(_lg2.debt||0)>0.5){
     dtc.style.display='inline-block';
     dtc.style.background='rgba(127,179,224,.13)';
-    dtc.style.color='#9fc2de';
+    dtc.style.color='var(--text3)';
     dtc.innerHTML='En rattrapage &mdash; pas de limite pour l\\u2019instant';
    }else{dtc.style.display='none';}
   }
@@ -2193,14 +2237,14 @@ function render(d){
    const sb=document.getElementById('pause-sub');
    const cv=document.getElementById('pause-chv');
    // everyone sees the switch; only two accounts may use it
-   ic.innerHTML=pauseLocked?'&#128274;'
-    :(isPaused?'&#9995;':'&#129302;');
+   ic.innerHTML=pauseLocked?SVGI('i-lock')
+    :(isPaused?SVGI('i-pause'):SVGI('i-bot'));
    // Owner 2026-09-17: "en pause" meant nothing to read. On this account
    // the two states are MANUAL and AUTO, and the label names the state you
    // are IN, with the action underneath.
    lb.innerHTML=isPaused
-    ?'&#9995; Mode manuel'
-    :'&#129302; Trading automatique';
+    ?'Mode manuel'
+    :'Trading automatique';
    lb.style.color=pauseLocked?'#6f8299':'';
    sb.textContent=pauseLocked
     ?(isPaused?'Mode manuel — seul le proprietaire du compte '+
@@ -2279,47 +2323,47 @@ function render(d){
       'margin:2px 4px 12px">'+
       '<div style="position:absolute;top:-2px;left:calc('+
       ep.toFixed(1)+'% - 1px);width:2px;height:10px;'+
-      'background:#8fa1b3"></div>'+
+      'background:var(--muted2)"></div>'+
       '<div style="position:absolute;top:-3px;left:calc('+
       cp.toFixed(1)+'% - 6px);width:12px;height:12px;'+
       'border-radius:50%;background:'+col+';box-shadow:0 0 8px '+col+
       '"></div></div>'+
       '<div style="display:flex;justify-content:space-between;'+
-      'margin:-8px 4px 8px;font-size:.6rem;color:#5f7185">'+
+      'margin:-8px 4px 8px;font-size:.6rem;color:var(--muted)">'+
       '<span>mur</span><span>cible</span></div>';
     }
-    return '<div class="row" style="border-bottom-color:#1d3350;'+
+    return '<div class="row" style="border-bottom-color:var(--surface3);'+
     'border-bottom:0">'+
     '<span style="display:flex;align-items:center;gap:8px">'+
     (x.d=='A'?'&#128200; <b>Achat</b>':'&#128201; <b>Vente</b>')+
-    ' <span style="color:#6f93b5;font-size:.85rem">'+
+    ' <span style="color:var(--muted);font-size:.85rem">'+
     (x.sl>0
      ?(m=>'mise $'+(m<10?m.toFixed(1):m.toFixed(0))+
        ' <span style="font-size:.72rem;color:#51687e">('+
        x.lot.toFixed(2)+' lot)</span>')(Math.abs(x.e-x.sl)*x.lot)
      :x.lot.toFixed(2)+' lot')+
     '</span>'+(x.k=='s'?' <span style="background:'+
-    'rgba(232,197,90,.15);color:#e8c55a;padding:2px 8px;'+
+    'rgba(232,197,90,.15);color:var(--warn);padding:2px 8px;'+
     'border-radius:99px;font-size:.68rem;font-weight:700">'+
     '&#9876;&#65039; soldat</span>':'')+
     '</span><b style="font-size:1.12rem" class="'+
-    (x.pl>=0?'pos':'neg')+'">'+
+    (sgn(x.pl))+'">'+
     (x.pl>=0?'+$':'-$')+Math.abs(x.pl).toFixed(2)+'</b></div>'+bar;
    }).join('');
   }else{bs.style.display='none';met.style.display='block';
    if(lc0)lc0.style.marginTop='12px';}
   const t=document.getElementById('today');
-  t.innerHTML=(d.today>=0?'&#9650; ':'&#9660; ')+f(d.today);
-  t.className='val '+(d.today>=0?'pos':'neg');
+  t.innerHTML=arw(d.today)+f(d.today);
+  t.className='val '+(sgn(d.today));
   const w=document.getElementById('week');
-  w.innerHTML=(d.week>=0?'&#9650; ':'&#9660; ')+f(d.week);
-  w.className='val '+(d.week>=0?'pos':'neg');
+  w.innerHTML=arw(d.week)+f(d.week);
+  w.className='val '+(sgn(d.week));
   const dv=d.max_dd_7d.toFixed(0);
   document.getElementById('dd').textContent=(dv==0?'$0':'-$'+dv);
   if(d.month!==undefined){
    const mo=document.getElementById('month');
-   mo.innerHTML=(d.month>=0?'&#9650; ':'&#9660; ')+f(d.month);
-   mo.className='val '+(d.month>=0?'pos':'neg');
+   mo.innerHTML=arw(d.month)+f(d.month);
+   mo.className='val '+(sgn(d.month));
   }
   window._c7=d.curve||[];window._c30=d.curve30||[];
   drawSpark();
@@ -2351,11 +2395,11 @@ function render(d){
    const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
    const hdr='<div class="row" style="border-bottom:2px solid '+
     '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
-    'color:#5f7185;font-size:.75rem">'+d.nest.length+
+    'color:var(--muted);font-size:.75rem">'+d.nest.length+
     ' compte'+(d.nest.length>1?'s':'')+'</span></span>'+
     '<span style="text-align:right"><b>$'+tb.toFixed(2)+'</b>'+
     '<span style="display:block;font-size:.78rem" class="'+
-    (tt>=0?'pos':'neg')+'">auj. '+(tt>=0?'+$':'-$')+
+    (sgn(tt))+'">auj. '+(tt>=0?'+$':'-$')+
     Math.abs(tt).toFixed(2)+'</span></span></div>';
    document.getElementById('nest').innerHTML=hdr+d.nest.map(x=>{
     // Owner 2026-09-18: the list showed people's names and their plan, so
@@ -2386,25 +2430,25 @@ function render(d){
     dot+';margin-right:8px"></span><b>'+x.name+'</b>'+
     '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
     '</span></span>'+
-    '<span style="font-size:.72rem;color:#7f93a8;white-space:nowrap;'+
+    '<span style="font-size:.72rem;color:var(--muted2);white-space:nowrap;'+
     'overflow:hidden;text-overflow:ellipsis">'+
     (x.bot?'&#129302; '+x.bot:'&#8212;')+
     (x.login?' &middot; '+x.login:'')+'</span>'+
-    '<span style="font-size:.8rem;color:#8fa1b3">'+
+    '<span style="font-size:.8rem;color:var(--muted2)">'+
     (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
     (x.today!=null?' &middot; auj. <span class="'+
-     (x.today>=0?'pos':'neg')+'">'+(x.today>=0?'+$':'-$')+
+     (sgn(x.today))+'">'+(x.today>=0?'+$':'-$')+
      Math.abs(x.today).toFixed(2)+'</span>':'')+'</span></span>'+
     '<span style="display:flex;gap:6px">'+
     (x.tok?'<a href="/'+x.tok+'/" target="_blank" '+
-    'style="border:1px solid #263341;background:#0f1620;'+
-    'color:#c6d3df;border-radius:10px;padding:8px 11px;'+
+    'style="border:1px solid #263341;background:var(--surface);'+
+    'color:var(--text2);border-radius:10px;padding:8px 11px;'+
     'font-size:.85rem;text-decoration:none">&#128065;&#65039;'+
     '</a>':'')+
     (x.trade?'<button data-u="'+x.id+'" data-o="'+(x.paused?0:1)+
     '" onclick="nestPause(this.dataset.u,this.dataset.o)" '+
-    'style="border:1px solid #263341;background:#0f1620;'+
-    'color:#c6d3df;border-radius:10px;padding:8px 13px;'+
+    'style="border:1px solid #263341;background:var(--surface);'+
+    'color:var(--text2);border-radius:10px;padding:8px 13px;'+
     'font-size:.85rem">'+
     (x.paused?'&#9654;&#65039;':'&#9208;&#65039;')+'</button>':'')+
     '<button data-u="'+x.id+'" data-n="'+x.name+
@@ -2432,12 +2476,12 @@ function render(d){
     return '<div class="row" style="cursor:pointer" data-l="'+x.d+
     '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
     (tr.length?(open?'&#9662; ':'&#9656; '):'&nbsp;&nbsp;')+x.d+
-    '</span><b class="'+(x.p>=0?'pos':'neg')+'">'+
+    '</span><b class="'+(sgn(x.p))+'">'+
     (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b></div>'+
     (open?'<div style="padding:0 0 6px 18px;border-bottom:1px solid '+
     '#1e2937">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
     'padding:6px 4px;border-bottom:0"><span class="rowt">'+t.t+
-    '</span><span class="'+(t.p>=0?'pos':'neg')+'">'+
+    '</span><span class="'+(sgn(t.p))+'">'+
     (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</span></div>')
     .join('')+'</div>':'');
    }).join('');
@@ -2455,11 +2499,11 @@ function render(d){
    const ms=document.getElementById('msum');
    ms.style.display='grid';
    setH(ms,
-    cell('Net du mois',f(net),net>=0?'pos':'neg','depuis le 1er')+
+    cell('Net du mois',f(net),sgn(net),'depuis le 1er')+
     cell('Jours','<span class="pos">'+g+'</span> / <span class="neg">'+
      rr+'</span>','neu','verts / rouges')+
     cell('Meilleur jour',f(best),'pos','le plus gagnant')+
-    cell('Pire jour',f(worst),worst>=0?'pos':'neg','le plus dur'));
+    cell('Pire jour',f(worst),sgn(worst),'le plus dur'));
    const md={};d.month_days.forEach(x=>md[x.d]=x.p);
    const now=new Date();
    const y=now.getUTCFullYear(),m=now.getUTCMonth();
@@ -2469,7 +2513,7 @@ function render(d){
     'grid-template-columns:repeat(7,1fr);gap:6px">';
    ['L','M','M','J','V','S','D'].forEach(w=>h+=
     '<div style="text-align:center;font-size:.62rem;'+
-    'color:#5f7185">'+w+'</div>');
+    'color:var(--muted)">'+w+'</div>');
    for(let i=0;i<off;i++)h+='<div></div>';
    for(let dd2=1;dd2<=nd;dd2++){
     const k=y+'-'+String(m+1).padStart(2,'0')+'-'+
@@ -2535,11 +2579,11 @@ function render(d){
      :(x.k==='page'?'normal':x.k)):'')+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
     '</span><b class="'+
-    (x.p>=0?'pos':'neg')+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
+    (sgn(x.p))+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
     '</b></div>').join('')+
     (d.trades.length>N
     ?'<div class="row" style="cursor:pointer;justify-content:center;'+
-     'color:#7fb0ff;font-size:.9rem" onclick="window._trN=99;load()">'+
+     'color:var(--accent-soft);font-size:.9rem" onclick="window._trN=99;load()">'+
      'Voir plus ('+d.trades.length+')</div>':''));
   }
 }
@@ -3297,8 +3341,14 @@ JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <link rel="icon" href="/icon192.png">
 <title>OwlNest</title>
 <style>
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--border:#1f2a38;
+ --border2:#2b3a4d;--text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;--muted:#8a9bb0;
+ --accent:#3b82f6;--accent-soft:#8fc6ff;--up:#2ecc71;--r:16px;--r-lg:24px}
 *{box-sizing:border-box;margin:0}
-body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;overflow-x:hidden;
+.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;
+ stroke-linecap:round;stroke-linejoin:round;flex:none;vertical-align:-4px}
+.ic-l{width:24px;height:24px}
+body{background:var(--bg);color:var(--text);padding:0 0 44px;overflow-x:hidden;
  font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
 .blob{position:absolute;width:420px;height:420px;border-radius:50%;
@@ -3317,64 +3367,95 @@ body{background:#0b0f14;color:#e8eef4;padding:0 0 44px;overflow-x:hidden;
  animation:fl 3.4s ease-in-out infinite}
 @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
-.tag{color:#9fc2de;font-size:1rem;margin-top:8px;line-height:1.6}
+.tag{color:var(--text3);font-size:1rem;margin-top:8px;line-height:1.6}
 .preview{margin:30px auto 0;background:linear-gradient(150deg,
- #16202e 0%,#121a26 100%);border:1px solid #24344a;border-radius:22px;
- padding:20px 18px;box-shadow:0 18px 44px rgba(0,0,0,.5);
+ var(--surface2) 0%,var(--surface) 100%);border:1px solid var(--border2);
+ border-radius:var(--r-lg);padding:20px 18px;
+ box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05);
  transform:rotate(-1.6deg);max-width:340px;text-align:center}
-.pv-lbl{font-size:.68rem;color:#6f93b5;text-transform:uppercase;
+.pv-lbl{font-size:.68rem;color:var(--muted);text-transform:uppercase;
  letter-spacing:.1em}
 .pv-money{font-size:2.2rem;font-weight:800;margin-top:5px}
-.pv-eur{color:#9fc2de;font-size:.95rem}
+.pv-eur{color:var(--text3);font-size:.95rem}
 .pv-row{display:flex;justify-content:space-around;margin-top:12px;
  font-size:.85rem}
 .pv-chip{background:rgba(46,204,113,.12);color:#2ecc71;font-weight:700;
  border-radius:999px;padding:5px 12px}
-.pv-chip2{background:rgba(37,99,235,.14);color:#7fb0ff;font-weight:700;
+.pv-chip2{background:rgba(59,130,246,.14);color:var(--accent-soft);font-weight:700;
  border-radius:999px;padding:5px 12px}
-.pv-bot{margin-top:13px;font-size:.82rem;color:#c6d3df}
+.pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
+ align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:34px}
-.fr{display:flex;align-items:center;gap:14px;background:#141c28;
- border:1px solid #1f2c3d;border-radius:16px;padding:14px 16px;
+.fr{display:flex;align-items:center;gap:14px;background:var(--surface);
+ border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
  margin-top:12px}
 .fi{width:42px;height:42px;border-radius:12px;display:flex;flex:none;
  align-items:center;justify-content:center;font-size:1.3rem;
- background:#0f2740}
+ background:#1d2a3b;color:var(--accent-soft)}
 .ft b{display:block;font-size:.98rem}
-.ft span{font-size:.8rem;color:#8fa1b3;line-height:1.45}
+.ft span{font-size:.8rem;color:var(--muted);line-height:1.45}
 .bigbtn{display:block;width:100%;margin-top:16px;border:0;
  border-radius:16px;padding:19px;font-size:1.12rem;font-weight:700;
  text-align:center;cursor:pointer}
 .bigbtn:active{transform:scale(.98)}
-.b1{background:linear-gradient(135deg,#2563eb,#5b3fd4);color:#fff;
- box-shadow:0 10px 26px rgba(37,99,235,.35);margin-top:32px}
-.b2{background:#151d29;color:#c6d3df;border:1.5px solid #263341}
+.b1{background:var(--accent);color:#fff;
+ box-shadow:0 10px 26px rgba(59,130,246,.35);margin-top:32px}
+.b2{background:var(--surface);color:var(--text2);border:1px solid var(--border2);
+ display:flex;align-items:center;justify-content:center;gap:9px}
 .view{display:none}
 .view.on{display:block}
-.card{background:#151d29;border-radius:20px;padding:22px 18px;
- box-shadow:0 6px 18px rgba(0,0,0,.35);margin-top:22px}
-.back{color:#5f7185;text-decoration:none;font-size:.95rem;
+.card{background:var(--surface);border:1px solid var(--border);
+ border-radius:20px;padding:22px 18px;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.04);margin-top:22px}
+.back{color:var(--muted);text-decoration:none;font-size:.95rem;
  display:inline-block;margin:18px 0 0 4px;cursor:pointer}
 h2{font-size:1.25rem;margin-bottom:4px}
-label{display:block;margin:16px 0 7px;color:#9db0c2;font-size:.92rem;
+label{display:block;margin:16px 0 7px;color:var(--text3);font-size:.92rem;
  font-weight:600}
-input{width:100%;padding:15px;border-radius:12px;border:1.5px solid
- #263341;background:#0f1620;color:#e8eef4;font-size:1.05rem}
-input:focus{outline:none;border-color:#2563eb}
-button.go{width:100%;margin-top:24px;background:#2563eb;color:#fff;
+input{width:100%;padding:15px;border-radius:12px;border:1px solid
+ var(--border2);background:var(--bg);color:var(--text);font-size:1.05rem}
+input:focus{outline:none;border-color:var(--accent)}
+button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
  border:0;border-radius:14px;padding:17px;font-size:1.1rem;
  font-weight:700}
 .note{background:#0d2417;border:1px solid #1d4a2f;border-radius:14px;
  padding:14px;font-size:.88rem;color:#7fd6a0;margin-top:18px;
  line-height:1.5}
-.pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:#3d4c5c}
+.pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
+ display:flex;align-items:center;justify-content:center;gap:6px}
+.pfoot img{width:16px;height:16px;border-radius:4px}
 </style></head><body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.3c3 .2 6 2.3 6 5.7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 15l5-5 4 4 7-8"/><path d="M16 6h4v4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><path d="M11 11 20 2M16 6l3 3M18 4l2 2"/></symbol>
+<symbol id="i-switch" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
+<symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+</svg>
 <div class="bg"><div class="blob bl1"></div><div class="blob bl2"></div></div>
 <div class="wrap">
 
 <div class="view on" id="v-home">
 <div class="hero">
-<div class="ring">&#129417;</div>
+<div class="ring"><img src="/icon192.png" alt="" style="width:64px;height:64px;border-radius:16px"></div>
 <h1>OwlNest</h1>
 <div class="tag">Le robot Owl trade pour vous,<br>
 jour et nuit. Vous, vous regardez.</div>
@@ -3397,19 +3478,19 @@ jour et nuit. Vous, vous regardez.</div>
 <div class="pv-row"><span class="pv-chip">&#9650; +23,40 $
  aujourd&#8217;hui</span>
 <span class="pv-chip2">2 trades</span></div>
-<div class="pv-bot">&#129302; L&#8217;Owl vient de gagner un trade
+<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> L&#8217;Owl vient de gagner un trade
  pour vous</div>
 </div>
 <div class="feats">
-<div class="fr"><div class="fi">&#129302;</div>
+<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-bot"/></svg></div>
 <div class="ft"><b>L&#8217;Owl trade pour vous</b>
 <span>Vous connectez votre compte, le robot fait tout : entr&eacute;es,
  sorties, protections. Z&eacute;ro effort.</span></div></div>
-<div class="fr"><div class="fi">&#128200;</div>
+<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-chart"/></svg></div>
 <div class="ft"><b>Vous regardez tout en direct</b>
 <span>Solde, gains du jour, combats du robot &mdash; mis &agrave; jour
  toutes les 5 secondes.</span></div></div>
-<div class="fr"><div class="fi">&#127873;</div>
+<div class="fr"><div class="fi"><svg class="ic ic-l"><use href="#i-gift"/></svg></div>
 <div class="ft"><b>7 jours d&#8217;essai, z&eacute;ro risque</b>
 <span>L&#8217;essai se fait sur un compte d&eacute;mo : argent fictif,
  vraies performances.</span></div></div>
@@ -3417,10 +3498,10 @@ jour et nuit. Vous, vous regardez.</div>
 <button class="bigbtn b1" onclick="show('v-login')">
 Se connecter</button>
 <a class="bigbtn b2" href="/demo" style="display:block;margin-top:12px;
- text-decoration:none;text-align:center">&#128065;&#65039; Voir le compte
+ text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le compte
  d&eacute;mo en direct</a>
 <button class="bigbtn b2" id="inst2" onclick="inst2()"
- style="margin-top:12px">&#128241; Installer l&#8217;application</button>
+ style="margin-top:12px"><svg class="ic"><use href="#i-download"/></svg> Installer l&#8217;application</button>
 <div id="howto2" style="display:none;margin-top:12px;background:#141c28;
  border:1px solid #1f2c3d;border-radius:14px;padding:14px;
  font-size:.9rem;color:#c6d3df;line-height:1.6;text-align:left">
@@ -3429,7 +3510,7 @@ Se connecter</button>
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b><br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
-<div class="pfoot">&#129417; OwlNest &middot; fait avec amour
+<div class="pfoot"><img src="/icon192.png" alt="">OwlNest &middot; fait avec amour
  par la famille Kino</div>
 </div>
 
@@ -3437,7 +3518,7 @@ Se connecter</button>
 <a class="back" onclick="show('v-home')">&#8592; Retour</a>
 <form class="card" method="POST" action="login">
 <h2>Se connecter</h2>
-<div style="color:#9aa7b4;font-size:.85rem">Compte connu : vous entrez
+<div style="color:var(--muted);font-size:.85rem">Compte connu : vous entrez
  directement. Nouveau compte : on vous demande juste une info de plus.
 </div>
 <label>Num&eacute;ro de compte MT5</label>
@@ -3476,7 +3557,7 @@ def _join_result(title, body_html):
             "initial-scale=1\"><title>OwlNest</title>"
             "<style>body{background:#0b0f14;color:#e8eef4;margin:0;"
             "padding:40px 20px;font-family:-apple-system,'Segoe UI',Roboto,"
-            "sans-serif;text-align:center}a{color:#2563eb;font-size:1.15rem;"
+            "sans-serif;text-align:center}a{color:#3b82f6;font-size:1.15rem;"
             "word-break:break-all}.k{background:#151d29;border-radius:20px;"
             "box-shadow:0 6px 18px rgba(0,0,0,.35);padding:26px 20px;"
             "max-width:420px;margin:0 auto;line-height:1.6}"
@@ -3501,7 +3582,7 @@ def _step2_page(login, pwd):
             "box-sizing:border-box;padding:15px;border-radius:12px;"
             "border:1.5px solid #263341;background:#0f1620;color:"
             "#e8eef4;font-size:1.05rem}button{width:100%;margin-top:"
-            "22px;background:#2563eb;color:#fff;border:0;border-radius:"
+            "22px;background:#3b82f6;color:#fff;border:0;border-radius:"
             "14px;padding:17px;font-size:1.1rem;font-weight:700}"
             "</style></head><body><div class=\"k\">"
             "<h2>&#129417; Nouveau compte !</h2>"
