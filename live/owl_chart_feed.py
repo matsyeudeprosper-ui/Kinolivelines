@@ -635,6 +635,31 @@ def trend_filter(cands):
     return out, trend
 
 
+NHF = os.path.join(DIR, "owl_nerv_hist.json")
+_NH = {"m": None, "pts": None}
+
+
+def nerv_history_tick(vn, vr):
+    """Append one (minute, nervosity) point per minute, keep 24 h. The app's
+    weather line and day timeline read this file (2026-09-26)."""
+    mn = int(time.time()) // 60
+    if _NH["m"] == mn:
+        return
+    _NH["m"] = mn
+    if _NH["pts"] is None:
+        try:
+            _NH["pts"] = json.load(open(NHF))
+        except Exception:
+            _NH["pts"] = []
+    _NH["pts"].append([mn * 60, round(vn / max(vr, 1), 3)])
+    _NH["pts"] = [p for p in _NH["pts"] if p[0] > mn * 60 - 86400][-1500:]
+    try:
+        json.dump(_NH["pts"], open(NHF + ".tmp", "w"))
+        os.replace(NHF + ".tmp", NHF)
+    except Exception:
+        pass
+
+
 def candle_sources():
     """Any terminal that can serve BTCUSD candles. The chart must survive
     one account being closed, so the configured demo is merely the first
@@ -810,6 +835,7 @@ def main():
                         os.replace(OUT + ".tmp", OUT)
                     except Exception:
                         pass
+                nerv_history_tick(_vn, _vr)
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)

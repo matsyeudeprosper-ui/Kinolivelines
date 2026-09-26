@@ -573,6 +573,9 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  font-variant-numeric:tabular-nums}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
  margin-top:12px}
+.hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
+ font-weight:700;padding:4px 11px;border-radius:99px;
+ background:rgba(255,255,255,.1);color:#dbe9f7}
 .topline{display:flex;justify-content:space-between;align-items:center}
 .brand{font-weight:700;color:#dbe9f7;font-size:1.02rem;display:inline-flex;
  align-items:center}
@@ -766,16 +769,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="chips"><span id="daychip"></span>
 <span id="daytargetchip" style="display:none;padding:4px 11px;
  border-radius:99px;font-size:.72rem;font-weight:700;
- background:rgba(127,179,224,.13);color:var(--text3)"></span></div>
+ background:rgba(127,179,224,.13);color:var(--text3)"></span>
+<span id="tradeschip" class="hchip" style="display:none"></span></div>
 <div class="bankline" id="bank">&nbsp;</div>
 <div id="acctline" style="margin-top:10px;font-size:.72rem"></div>
-<div id="palier" style="display:none;margin-top:14px;text-align:left">
- <div style="font-size:.78rem;color:#9fc2de" id="palier-lbl"></div>
- <div style="background:rgba(255,255,255,.12);border-radius:99px;
-  height:6px;margin-top:7px"><div id="palier-bar" style="
-  transition:width .9s cubic-bezier(.2,.8,.2,1);background:
-  var(--up);height:6px;border-radius:99px;width:0%"></div></div>
-</div>
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
@@ -793,12 +790,34 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
      line-height:1.4;margin-top:2px"></div>
    </div>
   </div>
+  <svg id="mx-nerv" viewBox="0 0 300 56" style="width:100%;height:56px;
+   display:none;margin-top:10px"></svg>
   <div id="mx-chips" style="display:grid;
    grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
  <div id="st" style="position:relative;margin:0 16px;
   border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
   font-size:.8rem;color:var(--muted)">Connexion...</div>
+</div>
+<div class="panel" id="daycard" style="display:none;margin-top:12px">
+ <div class="lbl" style="display:flex;justify-content:space-between;
+  align-items:center"><span>Fil du jour</span>
+  <span class="sub" style="margin:0;text-transform:none;letter-spacing:0;
+   font-weight:500">&#9679; trade &nbsp;&#9675; signal ignor&eacute;
+   &nbsp;&#9646; tr&egrave;s agit&eacute;</span></div>
+ <svg id="dayline" viewBox="0 0 300 54" style="width:100%;height:54px;
+  display:block;margin-top:6px"></svg>
+ <div class="sub" id="day-note" style="margin-top:2px"></div>
+</div>
+<div class="panel" id="palier" style="display:none;margin-top:12px">
+ <div class="lbl">Croissance</div>
+ <div style="font-size:.92rem;color:var(--text2);margin-top:8px"
+  id="palier-lbl"></div>
+ <div style="background:var(--surface3);border-radius:99px;height:6px;
+  margin-top:8px"><div id="palier-bar" style="
+  transition:width .9s cubic-bezier(.2,.8,.2,1);background:
+  var(--up);height:6px;border-radius:99px;width:0%"></div></div>
+ <div class="sub" id="grow-lot"></div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
@@ -1119,6 +1138,7 @@ window.addEventListener('load',()=>{let t='dark';
  try{t=localStorage.getItem('owlTheme')||'dark'}catch(e){}
  setTheme(t,false);
  document.querySelectorAll('.thc').forEach(b=>b.onclick=()=>setTheme(b.dataset.t,true));
+ loadDay();setInterval(loadDay,60000);
  // a11y: clickable rows behave like buttons for keyboards/screen readers
  document.querySelectorAll('.srow').forEach(el=>{if(el.tagName==='A'||el.id==='themerow')return;
   if(!el.getAttribute('onclick')&&!el.id)return;
@@ -1655,6 +1675,75 @@ function dayx(l){
  load();
 }
 window._cvz='7';
+function drawNerv(){
+ const D=window._day,el=document.getElementById('mx-nerv');
+ if(!el||!D)return;const pts=(D.nerv||[]).slice(-1440);
+ if(pts.length<5){el.style.display='none';return;}
+ const t0=pts[0][0],t1=pts[pts.length-1][0],sp=Math.max(1,t1-t0);
+ const mx=Math.max(2.2,...pts.map(p=>p[1]));
+ const X=t=>(6+(t-t0)/sp*288),Y=v=>(48-(v/mx)*40);
+ let dp='';pts.forEach((p,i)=>{dp+=(i?' L':'M')+X(p[0]).toFixed(1)+','+
+  Y(p[1]).toFixed(1);});
+ let bands='',st=null;
+ pts.forEach((p,i)=>{if(p[1]>=1.85&&st===null)st=p[0];
+  if((p[1]<1.85||i===pts.length-1)&&st!==null){
+   bands+='<rect x="'+X(st).toFixed(1)+'" y="6" width="'+
+    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="42" style="fill:var(--down);'+
+    'opacity:.14"/>';st=null;}});
+ const band=(v,c,l)=>'<line x1="6" y1="'+Y(v).toFixed(1)+'" x2="294" y2="'+
+  Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-width="1" '+
+  'stroke-dasharray="3 4"/><text x="294" y="'+(Y(v)-3).toFixed(1)+
+  '" text-anchor="end" font-size="8" style="fill:'+c+'">'+l+'</text>';
+ el.style.display='block';
+ el.innerHTML=bands+band(1.0,'var(--muted)','1,0\\u00d7')+
+  band(1.85,'var(--down)','1,85\\u00d7')+
+  '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" '+
+  'stroke-width="1.8" stroke-linejoin="round"/>'+
+  '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(pts[pts.length-1][1]).toFixed(1)+
+  '" r="2.8" style="fill:var(--accent-soft)"/>'+
+  '<text x="6" y="54" font-size="8" style="fill:var(--muted)">nervosit\\u00e9 \\u00b7 24 h</text>'+
+  '<text x="294" y="54" text-anchor="end" font-size="8" style="fill:var(--muted)">maintenant</text>';
+}
+function drawDay(){
+ const D=window._day,el=document.getElementById('dayline'),
+  card=document.getElementById('daycard');
+ if(!el||!card||!D)return;
+ const now=new Date();
+ const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/1000,
+  d1=d0+86400;
+ const X=t=>(8+Math.max(0,Math.min(1,(t-d0)/86400))*284);
+ let s='';
+ for(let h=0;h<=24;h+=6){const x=X(d0+h*3600).toFixed(1);
+  s+='<line x1="'+x+'" y1="30" x2="'+x+'" y2="36" style="stroke:var(--border2)"/>'+
+   '<text x="'+x+'" y="48" text-anchor="'+(h===0?'start':(h===24?'end':'middle'))+
+   '" font-size="8" style="fill:var(--muted)">'+h+'h</text>';}
+ s+='<line x1="8" y1="33" x2="292" y2="33" style="stroke:var(--border2)"/>';
+ let st=null;(D.nerv||[]).forEach((p,i,a)=>{if(p[0]<d0)return;
+  if(p[1]>=1.85&&st===null)st=p[0];
+  if((p[1]<1.85||i===a.length-1)&&st!==null){
+   s+='<rect x="'+X(st).toFixed(1)+'" y="12" width="'+
+    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="21" rx="2" '+
+    'style="fill:var(--down);opacity:.16"/>';st=null;}});
+ (D.ignored||[]).forEach(g=>{if(g[0]<d0||g[0]>d1)return;
+  s+='<circle cx="'+X(g[0]).toFixed(1)+'" cy="22" r="3.2" fill="none" '+
+   'stroke-width="1.4" style="stroke:'+(g[1]==='meteo'?'var(--warn)':'var(--muted)')+
+   '"><title>Signal ignor\\u00e9 \\u00b7 '+(g[1]==='meteo'?'m\\u00e9t\\u00e9o':'robot')+
+   '</title></circle>';});
+ let n=0;(D.trades||[]).forEach(t=>{if(!t.t||t.t<d0||t.t>d1)return;n++;
+  s+='<circle cx="'+X(t.t).toFixed(1)+'" cy="22" r="4.2" style="fill:var(--'+
+   (t.p>=0?'up':'down')+')"><title>'+(t.d==='BUY'?'Achat':'Vente')+' \\u00b7 '+
+   (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</title></circle>';});
+ const xn=X(now.getTime()/1000).toFixed(1);
+ s+='<line x1="'+xn+'" y1="8" x2="'+xn+'" y2="38" style="stroke:var(--accent-soft)" '+
+  'stroke-width="1.2"/>';
+ el.innerHTML=s;card.style.display='block';
+ const ig=(D.ignored||[]).filter(g=>g[0]>=d0).length;
+ document.getElementById('day-note').textContent=
+  (n?n+' trade'+(n>1?'s':''):'Aucun trade pour l\\u2019instant')+
+  (ig?' \\u00b7 '+ig+(ig>1?' signaux ignor\\u00e9s':' signal ignor\\u00e9'):'');
+}
+async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
+ window._day=await r.json();drawDay();drawNerv();}catch(e){}}
 function drawSpark(){
  const c=(window._cvz==='30'&&window._c30&&window._c30.length>1)
   ?window._c30:(window._c7||[]);
@@ -2289,16 +2378,18 @@ function render(d){
     const _pnl=_lg2.day_pnl_bot||0,_cap=_lg2.cap_today;
     const _pct=Math.max(0,Math.min(100,_cap>0?(100*_pnl/_cap):0));
     const _done=!!_lg2.day_capped||_pnl>=_cap;
-    dtc.style.display='inline-block';
-    dtc.style.background=_done
-     ?'rgba(46,204,113,.22)'
-     :'linear-gradient(90deg,rgba(232,197,90,.32) '+_pct.toFixed(0)+
-      '%,rgba(255,255,255,.07) '+_pct.toFixed(0)+'%)';
-    dtc.style.color=_done?'#8df0bb':'#e8c55a';
-    dtc.innerHTML=_done
-     ?'&#9989; Objectif atteint : $'+_pnl.toFixed(2)
-     :'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui'
-      +(_lg2.scale_active?' &#9889;':'');
+    dtc.style.display='inline-flex';dtc.style.alignItems='center';
+    dtc.style.gap='7px';
+    dtc.style.background=_done?'rgba(46,204,113,.22)':'rgba(255,255,255,.1)';
+    dtc.style.color=_done?'var(--up-soft)':'#dbe9f7';
+    const _off=(94.2*(1-_pct/100)).toFixed(1);
+    dtc.innerHTML='<svg width="16" height="16" viewBox="0 0 36 36" style="flex:none">'+
+     '<circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="6"/>'+
+     '<circle cx="18" cy="18" r="15" fill="none" stroke="'+(_done?'var(--up)':'var(--warn)')+
+     '" stroke-width="6" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="'+
+     _off+'" transform="rotate(-90 18 18)"/></svg>'+
+     (_done?'Objectif atteint \\u00b7 $'+_pnl.toFixed(2)
+      :'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui');
    }else if(_lg2.bos&&(_lg2.debt||0)>0.5){
     dtc.style.display='inline-block';
     dtc.style.background='rgba(127,179,224,.13)';
@@ -2306,6 +2397,13 @@ function render(d){
     dtc.innerHTML='En rattrapage &mdash; pas de limite pour l\\u2019instant';
    }else{dtc.style.display='none';}
   }
+  const _tc=document.getElementById('tradeschip');
+  if(_tc&&d.trades){const _td=new Date();
+   const _k=String(_td.getUTCDate()).padStart(2,'0')+'/'+
+    String(_td.getUTCMonth()+1).padStart(2,'0');
+   const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
+   _tc.style.display=_n?'inline-flex':'none';
+   _tc.textContent=_n+' trade'+(_n>1?'s':'')+' aujourd\\u2019hui';}
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
@@ -2339,6 +2437,10 @@ function render(d){
      :'Objectif : $'+d.palier.toFixed(0))+
     ' &middot; '+pc.toFixed(0)+'&nbsp;%';
    document.getElementById('palier-bar').style.width=pc+'%';
+   const _gl=document.getElementById('grow-lot'),_lg3=d.ledger||{};
+   if(_gl){const _lot=_lg3.scale_base_lot||_lg3.base_lot;
+    _gl.textContent=(_lot?'Lot de base actuel : '+Number(_lot).toFixed(2)+' lot'
+     +(_lg3.scale_active?' \\u00b7 mise \\u00e0 l\\u2019\\u00e9chelle active':''):'');}
    if(pc>=100&&!window._conf){window._conf=1;confetti();}
   }
   const n=d.open_positions;
@@ -2841,6 +2943,64 @@ def users():
             pass
         _users_cache["t"] = time.time()
     return _users_cache["users"]
+
+
+def day_payload(user):
+    """Today, for the account being viewed: nervosity history (24 h, from
+    the chart feed), closed trades from the bot's own journal, and the
+    signals the bot ignored - COARSE on purpose (meteo / robot), never the
+    rule that fired (owner 2026-09-26: the strategy stays private)."""
+    out = {"nerv": [], "trades": [], "ignored": [], "now": int(time.time())}
+    try:
+        pts = json.load(open(os.path.join(DIR, "owl_nerv_hist.json")))
+        cut = time.time() - 86400
+        out["nerv"] = [[int(p[0]), float(p[1])] for p in pts if p[0] >= cut]
+    except Exception:
+        pass
+    bot = BOT_OF.get(user.get("id"))
+    if not bot or not bot[1].startswith("bos_state"):
+        return out
+    sfx = bot[1][len("bos_state"):-len(".json")]
+    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    def _ep(x):
+        try:
+            return int(datetime.fromisoformat(x.replace("Z", "+00:00")).timestamp())
+        except Exception:
+            return None
+    try:
+        import csv as _csv
+        with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
+                  encoding="utf-8", errors="replace") as jf:
+            for r in _csv.DictReader(jf):
+                et = r.get("entry_time_utc") or ""
+                xt = r.get("exit_time_utc") or ""
+                if not (et.startswith(day) or xt.startswith(day)):
+                    continue
+                out["trades"].append({"t": _ep(et), "x": _ep(xt),
+                                      "p": float(r.get("profit_usd") or 0),
+                                      "d": r.get("direction") or ""})
+    except Exception:
+        pass
+    try:
+        with open(os.path.join(DIR, bot[2]), "rb") as lf:
+            lf.seek(0, 2)
+            n = lf.tell()
+            lf.seek(max(0, n - 400000))
+            raw = lf.read().decode("utf-8", "replace")
+        for line in raw.splitlines():
+            if not line.startswith(day) or " refuse: " not in line:
+                continue
+            t = _ep(line.split(" ", 1)[0])
+            if t is None:
+                continue
+            low = line.lower()
+            kind = ("meteo" if ("nerveux" in low or "rapide" in low
+                                or "mouvement" in low) else "robot")
+            out["ignored"].append([t, kind])
+    except Exception:
+        pass
+    return out
 
 
 def user_by_token(tok):
@@ -4623,6 +4783,8 @@ class H(BaseHTTPRequestHandler):
         elif sub == "api":
             self._send(json.dumps(user_stats(
                 user, admin_cookie_ok(self.headers))), "application/json")
+        elif sub == "day":
+            self._send(json.dumps(day_payload(user)), "application/json")
         elif sub == "chart":
             # aura redesign 2026-09-08 lives in its own file; the
             # inline constant is only the fallback
