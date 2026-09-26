@@ -590,6 +590,29 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 :root[data-theme=light] .glass{background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(255,255,255,.55));
  border-color:rgba(15,23,42,.08);box-shadow:0 12px 30px rgba(15,23,42,.10),inset 0 1px 0 #fff}
 :root[data-theme=light] .orbsm{background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.1)}
+.jsteps{position:relative;display:flex;justify-content:space-between;
+ margin-top:14px;padding:0 6px}
+.jsteps .jl{position:absolute;left:28px;right:28px;top:19px;height:2px;
+ background:var(--border2);border-radius:2px}
+.js{position:relative;display:flex;flex-direction:column;align-items:center;
+ gap:7px;width:60px;font-size:.7rem;font-weight:600;color:var(--muted)}
+.js .jc{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+ justify-content:center;background:var(--surface3);border:1px solid var(--border2);
+ color:var(--muted2);transition:all .25s}
+.js.on{color:var(--accent-soft)}
+.js.on .jc{background:var(--accent);border-color:var(--accent);color:#fff;
+ box-shadow:0 0 0 0 rgba(59,130,246,.5);animation:jp 2.2s ease-out infinite}
+@keyframes jp{0%{box-shadow:0 0 0 0 rgba(59,130,246,.45)}
+ 70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
+.js.done .jc{color:var(--up)}
+.srow-ev{display:flex;align-items:flex-start;gap:11px;padding:10px 2px;
+ border-bottom:1px solid var(--border);font-size:.92rem;line-height:1.4}
+.srow-ev:last-child{border-bottom:0}
+.srow-ev .evi{width:30px;height:30px;border-radius:9px;flex:none;display:flex;
+ align-items:center;justify-content:center;background:var(--tile-bg);
+ border:1px solid var(--tile-bd)}
+.srow-ev .evt{flex:none;font-size:.74rem;color:var(--muted);margin-top:3px;
+ font-variant-numeric:tabular-nums}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
@@ -767,6 +790,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
 <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
 <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="hero">
@@ -934,6 +959,17 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="tab" id="tab-marche">
 <div class="sec" style="margin-top:26px">Le march&eacute; <span class="hint">&middot; ce que le robot voit</span></div>
+<div class="panel" id="jcard" style="margin-top:12px">
+ <div class="lbl">Le robot en ce moment</div>
+ <div class="jsteps" id="jsteps">
+  <div class="jl"></div>
+  <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
+  <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
+  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
+  <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
+ </div>
+ <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
+</div>
 <div id="meteo" class="status mx-sun" style="margin-top:12px;
  position:relative;overflow:hidden;text-align:left;padding:0;
  border-radius:18px">
@@ -958,18 +994,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
 <div class="panel" id="daycard" style="display:none;margin-top:12px">
- <div class="lbl" style="display:flex;justify-content:space-between;
-  align-items:center"><span>Fil du jour</span>
-  <span class="sub" style="margin:0;text-transform:none;letter-spacing:0;
-   font-weight:500">&#9679; trade &nbsp;&#9675; signal ignor&eacute;
-   &nbsp;&#9646; tr&egrave;s agit&eacute;</span></div>
- <svg id="dayline" viewBox="0 0 300 84" style="width:100%;height:84px;
-  display:block;margin-top:6px"></svg>
- <div class="sub" id="day-note" style="margin-top:2px"></div>
-</div>
-<div class="panel" id="daylist-card" style="display:none;margin-top:12px">
- <div class="lbl">&Eacute;v&eacute;nements du jour</div>
- <div id="day-list" style="margin-top:4px"></div>
+ <div class="lbl">La journ&eacute;e du robot</div>
+ <div id="day-sum" style="font-size:.95rem;color:var(--text);line-height:1.5;
+  margin-top:8px"></div>
+ <svg id="daybar" viewBox="0 0 300 34" style="width:100%;height:34px;
+  display:block;margin-top:12px"></svg>
+ <div id="day-list" style="margin-top:6px"></div>
 </div>
 </div>
 <div class="tab" id="tab-hist">
@@ -1813,58 +1843,102 @@ function drawNerv(){
  }
 }
 function drawDay(){
- const D=window._day,el=document.getElementById('dayline'),
-  card=document.getElementById('daycard');
- if(!el||!card||!D)return;
+ const D=window._day,card=document.getElementById('daycard');
+ if(!card||!D)return;
  const now=new Date();
  const d0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime()/1000,
   d1=d0+86400;
- const X=t=>(8+Math.max(0,Math.min(1,(t-d0)/86400))*284);
  const hm=t=>{const d=new Date(t*1000);return String(d.getHours()).padStart(2,'0')+':'+
   String(d.getMinutes()).padStart(2,'0');};
- let s='';
- for(let h=0;h<=24;h+=3){const x=X(d0+h*3600).toFixed(1),big=h%6===0;
-  s+='<line x1="'+x+'" y1="52" x2="'+x+'" y2="'+(big?58:55)+'" style="stroke:var(--border2)"/>'+
-   (big?'<text x="'+x+'" y="70" text-anchor="'+(h===0?'start':(h===24?'end':'middle'))+
-   '" font-size="8" style="fill:var(--muted)">'+h+'h</text>':'');}
- s+='<line x1="8" y1="52" x2="292" y2="52" style="stroke:var(--border2)"/>';
- let st=null;(D.nerv||[]).forEach((p,i,a)=>{if(p[0]<d0)return;
-  if(p[1]>=1.85&&st===null)st=p[0];
-  if((p[1]<1.85||i===a.length-1)&&st!==null){
-   s+='<rect x="'+X(st).toFixed(1)+'" y="18" width="'+
-    Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="34" rx="2" '+
-    'style="fill:var(--down);opacity:.16"/>';st=null;}});
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const ev=[];
- (D.ignored||[]).forEach(g=>{if(g[0]<d0||g[0]>d1)return;ev.push({t:g[0],k:'ign',m:g[1]});
-  s+='<circle cx="'+X(g[0]).toFixed(1)+'" cy="36" r="4" fill="none" '+
-   'stroke-width="1.6" style="stroke:'+(g[1]==='meteo'?'var(--warn)':'var(--muted)')+
-   '"><title>Signal ignor\\u00e9 \\u00b7 '+(g[1]==='meteo'?'m\\u00e9t\\u00e9o':'robot')+
-   '</title></circle>';});
- let n=0;(D.trades||[]).forEach(t=>{if(!t.t||t.t<d0||t.t>d1)return;n++;
-  ev.push({t:t.t,k:'tr',p:t.p,d:t.d});
-  s+='<circle cx="'+X(t.t).toFixed(1)+'" cy="36" r="5.2" style="fill:var(--'+
-   (t.p>=0?'up':'down')+')"><title>'+(t.d==='BUY'?'Achat':'Vente')+' \\u00b7 '+
-   (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</title></circle>';});
- const xn=X(now.getTime()/1000).toFixed(1);
- s+='<line x1="'+xn+'" y1="14" x2="'+xn+'" y2="58" style="stroke:var(--accent-soft)" '+
-  'stroke-width="1.2"/><text x="'+xn+'" y="10" text-anchor="middle" font-size="8" '+
-  'style="fill:var(--accent-soft)">maintenant</text>';
- el.innerHTML=s;card.style.display='block';
- const ig=ev.filter(e=>e.k==='ign').length;
- const note=(n?n+' trade'+(n>1?'s':''):'Aucun trade pour l\\u2019instant')+
-  (ig?' \\u00b7 '+ig+(ig>1?' signaux ignor\\u00e9s':' signal ignor\\u00e9'):'');
- document.getElementById('day-note').textContent=note;
- const md=document.getElementById('mxs-day');if(md)md.textContent=note;
- const lc=document.getElementById('daylist-card'),ll=document.getElementById('day-list');
- if(lc&&ll){ev.sort((a,b)=>b.t-a.t);
-  if(!ev.length){lc.style.display='none';}
-  else{lc.style.display='block';
-   setH(ll,ev.slice(0,10).map(e=>e.k==='tr'
-    ?'<div class="row"><span class="rowt">'+hm(e.t)+' \\u00b7 '+(e.d==='BUY'?'Achat':'Vente')+
-     '</span><b class="'+sgn(e.p)+'">'+(e.p>=0?'+$':'-$')+Math.abs(e.p).toFixed(2)+'</b></div>'
-    :'<div class="row"><span class="rowt">'+hm(e.t)+' \\u00b7 Signal ignor\\u00e9</span>'+
-     '<span class="pill'+(e.m==='meteo'?' pill-w':'')+'">'+(e.m==='meteo'?'m\\u00e9t\\u00e9o':'robot')+
-     '</span></div>').join(''));}}
+ (D.ignored||[]).forEach(g=>{if(g[0]>=d0&&g[0]<=d1)ev.push({t:g[0],k:'ign',m:g[1]});});
+ (D.trades||[]).forEach(t=>{if(t.t&&t.t>=d0&&t.t<=d1)ev.push({t:t.x||t.t,k:'tr',p:t.p,d:t.d});});
+ const tr=ev.filter(e=>e.k==='tr'),ig=ev.filter(e=>e.k==='ign');
+ const won=tr.filter(e=>e.p>0.005).length,tot=tr.reduce((a,e)=>a+e.p,0);
+ // --- the summary, in plain words ---
+ let sum;
+ if(!tr.length&&!ig.length){
+  sum='Depuis ce matin, le robot surveille le march\u00e9 et n\u2019a rien trouv\u00e9 \u00e0 faire. '+
+   'C\u2019est normal : il n\u2019agit que quand tout est r\u00e9uni.';
+ }else{
+  const parts=[];
+  if(tr.length)parts.push(tr.length+' trade'+(tr.length>1?'s':'')+
+   (tr.length>1?' (dont '+won+' gagn\u00e9'+(won>1?'s':'')+')':(won?' (gagn\u00e9)':' (perdu)')));
+  if(ig.length)parts.push(ig.length+' occasion'+(ig.length>1?'s':'')+' laiss\u00e9e'+(ig.length>1?'s':'')+' passer');
+  sum='Depuis ce matin : '+parts.join(' et ')+'.'+
+   (tr.length?' Total du jour : <b class="'+sgn(tot)+'">'+money(tot)+'</b>.':'')+
+   (!tr.length?' Le robot continue de surveiller.':'');
+ }
+ setH(document.getElementById('day-sum'),sum);
+ // --- the day bar: morning / noon / evening, sun at "now" ---
+ const X=t=>(10+Math.max(0,Math.min(1,(t-d0)/86400))*280);
+ const xn=X(now.getTime()/1000);
+ let bar='<defs><linearGradient id="dg" x1="0" y1="0" x2="1" y2="0">'+
+  '<stop offset="0" stop-color="#5b6b8a" stop-opacity=".35"/>'+
+  '<stop offset=".3" stop-color="#e8c55a" stop-opacity=".45"/>'+
+  '<stop offset=".7" stop-color="#e8c55a" stop-opacity=".45"/>'+
+  '<stop offset="1" stop-color="#5b6b8a" stop-opacity=".35"/></linearGradient></defs>'+
+  '<rect x="10" y="14" width="280" height="6" rx="3" fill="url(#dg)"/>'+
+  '<rect x="10" y="14" width="'+(xn-10).toFixed(1)+'" height="6" rx="3" style="fill:var(--accent-soft);opacity:.55"/>';
+ ev.forEach(e=>{bar+='<circle cx="'+X(e.t).toFixed(1)+'" cy="17" r="3.2" style="fill:'+
+  (e.k==='tr'?(e.p>=0?'var(--up)':'var(--down)'):'var(--muted)')+'"/>';});
+ bar+='<circle cx="'+xn.toFixed(1)+'" cy="17" r="7" style="fill:var(--surface);stroke:var(--warn);stroke-width:2"/>'+
+  '<circle cx="'+xn.toFixed(1)+'" cy="17" r="2.5" style="fill:var(--warn)"/>';
+ [['matin',7],['midi',13],['soir',20]].forEach(([l,h])=>{bar+='<text x="'+X(d0+h*3600).toFixed(1)+
+  '" y="32" text-anchor="middle" font-size="8" style="fill:var(--muted)">'+l+'</text>';});
+ document.getElementById('daybar').innerHTML=bar;
+ // --- the story, newest first ---
+ const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
+ ev.sort((a,b)=>b.t-a.t);
+ setH(document.getElementById('day-list'),ev.slice(0,12).map(e=>{
+  let i,txt;
+  if(e.k==='tr'){const buy=e.d==='BUY';
+   if(e.p>=0){i=ico('i-check','var(--up)');
+    txt='Le robot a '+(buy?'achet\u00e9':'vendu')+' et a <b class="pos">gagn\u00e9 '+money(e.p)+'</b>.';}
+   else{i=ico('i-x','var(--down)');
+    txt='Le robot a '+(buy?'achet\u00e9':'vendu')+' et a <b class="neg">perdu $'+Math.abs(e.p).toFixed(2)+
+     '</b>. \u00c7a arrive \u2014 il continue.';}}
+  else if(e.m==='meteo'){i=ico('i-cloud','var(--warn)');
+   txt='Le march\u00e9 bougeait trop. Le robot a pr\u00e9f\u00e9r\u00e9 laisser passer.';}
+  else{i=ico('i-eye','var(--muted2)');
+   txt='Le robot a vu une occasion, mais tout n\u2019\u00e9tait pas r\u00e9uni. Il a attendu.';}
+  return '<div class="srow-ev">'+i+'<div style="flex:1;min-width:0">'+txt+'</div>'+
+   '<span class="evt">'+hm(e.t)+'</span></div>';}).join('')||
+  '<div class="sub" style="margin-top:4px">Rien \u00e0 raconter pour l\u2019instant.</div>');
+ card.style.display='block';
+ const md=document.getElementById('mxs-day');
+ if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):'Aucun trade pour l\u2019instant')+
+  (ig.length?' \u00b7 '+ig.length+(ig.length>1?' occasions laiss\u00e9es passer':' occasion laiss\u00e9e passer'):'');
+ drawJourney(window._lastd);
+}
+function drawJourney(d){
+ const el=document.getElementById('jsteps'),msg=document.getElementById('jmsg');
+ if(!el||!msg||!d)return;
+ const k=window._mxk||'none',D=window._day||{},now=Date.now()/1000;
+ const open=d.open_list||[];
+ const recent=(D.trades||[]).filter(t=>t.x&&now-t.x<1800).sort((a,b)=>b.x-a.x)[0];
+ let step=1,txt='';
+ if(d.trading_paused){step=1;
+  txt='Mode manuel : le robot observe le march\u00e9, mais ne trade pas tout seul.';}
+ else if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+  txt='Un trade est en cours'+(Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+
+   (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'. Le robot le surveille jusqu\u2019au bout.';}
+ else if(recent){step=4;
+  txt=recent.p>=0?'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +$'+recent.p.toFixed(2)+'</b>. Le robot repart en observation.'
+   :'Dernier trade termin\u00e9 : <b class="neg">perdu $'+Math.abs(recent.p).toFixed(2)+'</b>. \u00c7a arrive \u2014 le robot repart en observation.';}
+ else if(k==='ready'||k==='flip'||k==='forming'||k==='nogate'){step=2;
+  txt=k==='forming'?'Quelque chose se dessine sur le march\u00e9. Le robot attend une confirmation avant d\u2019agir.'
+   :(k==='flip'?'Le march\u00e9 h\u00e9site sur sa direction. Le robot attend que ce soit clair.'
+   :'Les conditions se rapprochent. Le robot attend le bon moment pour entrer.');}
+ else{step=1;
+  txt=k==='storm'?'Le march\u00e9 est tr\u00e8s agit\u00e9. Le robot reste \u00e0 l\u2019abri et attend que \u00e7a se calme.'
+   :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Le robot pr\u00e9f\u00e8re attendre.'
+   :'Le march\u00e9 est calme. Le robot observe et attend une occasion.');}
+ if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, il est un peu plus prudent.';
+ el.querySelectorAll('.js').forEach(x=>{const i=parseInt(x.dataset.i);
+  x.classList.toggle('on',i===step);x.classList.toggle('done',false);});
+ setH(msg,txt);
 }
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
@@ -2201,6 +2275,7 @@ function render(d){
       :(!mvOk?'none'
       :(hasInt?(ms2.int_state||'ready'):'ready'))));
     const S=ST[k]||ST.none;
+    window._mxk=k;
     orb=S[0]; ti=S[1]; ln=S[3];
     cls=nerv_bad?'mx-cloud':(!mvOk?'mx-sleep'
          :(k==='ready'?'mx-fish':'mx-sun'));
@@ -2261,17 +2336,17 @@ function render(d){
     chips.push(cell('sens',ttxt,tcol,false));
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
-    cls='mx-storm';orb='\\u26c8\\ufe0f';
+    cls='mx-storm';window._mxk='storm';orb='\\u26c8\\ufe0f';
     ti='March\\u00e9 tr\\u00e8s agit\\u00e9';
     ln='Gros orage sur la mer \\u2014 le hibou met son robot '+
      '\\u00e0 l\\u2019abri et attend.';}
    else if(d.meteo==='floor'){
-    cls='mx-cloud';orb='\\u{1F326}\\ufe0f';
+    cls='mx-cloud';window._mxk='nervous';orb='\\u{1F326}\\ufe0f';
     ti='March\\u00e9 nerveux';
     ln='Temps couvert \\u2014 le hibou ne laisse passer que de '+
      'petits trades, prudemment.';}
    else if(d.meteo==='clear'){
-    cls='mx-sun';orb='\\u{1F324}\\ufe0f';
+    cls='mx-sun';window._mxk='ready';orb='\\u{1F324}\\ufe0f';
     ti='Retour au calme';
     ln='\\u00c9claircie sur la mer \\u2014 le hibou renvoie son '+
      'robot travailler.';}
@@ -2490,6 +2565,7 @@ function render(d){
     if(k<1)requestAnimationFrame(stepA);})(t0);
   }
   eqEl.dataset.v=d.equity;
+  window._lastd=d;drawJourney(d);
   if(d.push_quiet!==undefined&&window._pquiet===undefined){
    window._pquiet=!!d.push_quiet;if(window.qPaint)window.qPaint();}
   if(d.push_level&&window._plvl===undefined){
@@ -3918,6 +3994,8 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
 <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
 <symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="bg"><div class="blob bl1"></div><div class="blob bl2"></div></div>
