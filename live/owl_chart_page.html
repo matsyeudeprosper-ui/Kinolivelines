@@ -329,10 +329,12 @@ function draw(){
  // Owner 2026-09-18: a build stamp, bottom-left. Twice today we argued
  // about whether an indicator was broken when the phone was simply running
  // an older page. Now both of us can see which one it is at a glance.
- ctx.save();ctx.globalAlpha=.45;ctx.font='9px system-ui';
- ctx.fillStyle='#5f7185';
- ctx.fillText('v'+(window.BUILD||'?'),6,TOPP+PLOT-6);
- ctx.restore();
+ // 2026-09-26: admin-only - members should not see a debug stamp.
+ let _adm=false;try{_adm=!!localStorage.getItem('owl_adm');}catch(e){}
+ if(_adm){ctx.save();ctx.globalAlpha=.45;ctx.font='9px system-ui';
+  ctx.fillStyle='#5f7185';
+  ctx.fillText('v'+(window.BUILD||'?'),6,TOPP+PLOT-6);
+  ctx.restore();}
  // --- price ticks, right edge only ---
  ctx.font='10px system-ui';
  for(let g2=0;g2<5;g2++){

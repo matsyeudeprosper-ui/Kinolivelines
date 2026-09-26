@@ -526,9 +526,11 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  text-align:center;position:relative;overflow:hidden;
  box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
 .hero>*{position:relative}
-#daychip{display:none;margin-top:8px;font-size:.74rem;
- font-weight:700;padding:4px 12px;border-radius:99px;
+#daychip{display:none;font-size:.72rem;
+ font-weight:700;padding:4px 11px;border-radius:99px;
  font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
+ margin-top:12px}
 .topline{display:flex;justify-content:space-between;align-items:center}
 .brand{font-weight:700;color:#dbe9f7;font-size:1.02rem;display:inline-flex;
  align-items:center}
@@ -686,6 +688,11 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
 <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="hero">
@@ -702,20 +709,19 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  line-height:1" title="Sortir">&#10162;</a></span></div>
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
-<div class="eur" id="eqe">&nbsp;</div>
-<span id="daychip"></span>
-<span id="daytargetchip" style="display:none;margin-left:6px;padding:3px 10px;
- border-radius:99px;font-size:.72rem;font-weight:600;
- background:rgba(127,179,224,.13);color:#9fc2de"></span>
+<div class="eur" id="eqe" style="display:none"></div>
+<div class="chips"><span id="daychip"></span>
+<span id="daytargetchip" style="display:none;padding:4px 11px;
+ border-radius:99px;font-size:.72rem;font-weight:700;
+ background:rgba(127,179,224,.13);color:var(--text3)"></span></div>
 <div class="bankline" id="bank">&nbsp;</div>
-<div id="acctline" style="margin-top:8px;font-size:.72rem;
- color:#5f7185">&nbsp;</div>
+<div id="acctline" style="margin-top:10px;font-size:.72rem"></div>
 <div id="palier" style="display:none;margin-top:14px;text-align:left">
  <div style="font-size:.78rem;color:#9fc2de" id="palier-lbl"></div>
- <div style="background:rgba(255,255,255,.15);border-radius:99px;
-  height:8px;margin-top:6px"><div id="palier-bar" style="
+ <div style="background:rgba(255,255,255,.12);border-radius:99px;
+  height:6px;margin-top:7px"><div id="palier-bar" style="
   transition:width .9s cubic-bezier(.2,.8,.2,1);background:
-  #2ecc71;height:8px;border-radius:99px;width:0%"></div></div>
+  var(--up);height:6px;border-radius:99px;width:0%"></div></div>
 </div>
 </div>
 <div class="wrap">
@@ -843,8 +849,8 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
   background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
   font-size:.72rem;font-weight:700;margin-left:6px">30 j</button></span>
 </div>
-<div class="panel"><svg id="spark" viewBox="0 0 300 70"
- style="width:100%;height:70px"></svg></div>
+<div class="panel"><svg id="spark" viewBox="0 0 300 80"
+ style="width:100%;height:80px;display:block"></svg></div>
 </div>
 <div class="tab" id="tab-hist">
 <div class="sec" style="margin-top:26px">Jour par jour
@@ -1036,6 +1042,10 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
+const ORB=(()=>{const o=(n,c)=>'<svg class="ic" style="width:26px;height:26px;color:'+c+'"><use href="#'+n+'"/></svg>';
+ return {'mx-sun':o('i-sun','#e8c55a'),'mx-fish':o('i-wave','var(--up-soft)'),
+  'mx-sleep':o('i-moon','#9fb0d0'),'mx-storm':o('i-bolt','var(--down-soft)'),
+  'mx-cloud':o('i-cloud','#ffd27a')};})();
 (function(){
  const m=document.createElement('link');m.rel='manifest';
  m.href=B+'manifest.json';document.head.appendChild(m);
@@ -1564,36 +1574,53 @@ window._cvz='7';
 function drawSpark(){
  const c=(window._cvz==='30'&&window._c30&&window._c30.length>1)
   ?window._c30:(window._c7||[]);
+ const el=document.getElementById('spark');
  if(c.length<2){
-  document.getElementById('spark').innerHTML=
-   '<text x="150" y="40" text-anchor="middle" fill="#4d5f73" '+
-   'font-size="11">La courbe se dessinera aprÃ¨s quelques '+
-   'trades</text>';
+  el.innerHTML='<text x="150" y="44" text-anchor="middle" fill="#6b7d92" '+
+   'font-size="11">La courbe se dessinera apr\\u00e8s quelques trades</text>';
   return;}
  const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
- const P=(v,i)=>((i/(c.length-1))*300).toFixed(1)+','+
-   (62-((v-mn)/sp*54)).toFixed(1);
- const pts=c.map((v,i)=>P(v,i)).join(' ');
- const col=c[c.length-1]>=0?'#2ecc71':'#ff5c5c';
- const y0=(62-((0-mn)/sp*54)).toFixed(1);
- document.getElementById('spark').innerHTML=
+ const X=i=>(12+(i/(c.length-1))*276),Y=v=>(66-((v-mn)/sp*50));
+ const pts=c.map((v,i)=>[X(i),Y(v)]);
+ let dp='M'+pts[0][0].toFixed(1)+','+pts[0][1].toFixed(1);
+ for(let i=0;i<pts.length-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],
+  p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+  const c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,
+   c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+  dp+=' C'+c1x.toFixed(1)+','+c1y.toFixed(1)+' '+c2x.toFixed(1)+','+
+   c2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);}
+ const last=c[c.length-1],col=last>=0?'#2ecc71':'#ff5c5c';
+ const y0=Y(0).toFixed(1),ex=pts[pts.length-1][0].toFixed(1),
+  ey=pts[pts.length-1][1].toFixed(1);
+ const fm=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);
+ const iMx=c.indexOf(mx),iMn=c.indexOf(mn);
+ const lab=(i,v,above)=>'<text x="'+Math.min(280,Math.max(20,X(i))).toFixed(1)+
+  '" y="'+(Y(v)+(above?-6:12)).toFixed(1)+'" text-anchor="middle" '+
+  'fill="#8a9bb0" font-size="9" font-weight="600">'+fm(v)+'</text>';
+ el.innerHTML=
   '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
-  '<stop offset="0%" stop-color="'+col+'" stop-opacity=".35"/>'+
+  '<stop offset="0%" stop-color="'+col+'" stop-opacity=".32"/>'+
   '<stop offset="100%" stop-color="'+col+'" stop-opacity="0"/>'+
-  '</linearGradient></defs>'+
-  '<line x1="0" y1="'+y0+'" x2="300" y2="'+y0+'" stroke="#3a4a5c"'+
-  ' stroke-width="1" stroke-dasharray="4 4"/>'+
-  '<polygon points="0,70 '+pts+' 300,70" fill="url(#g)"/>'+
-  '<polyline points="'+pts+'" fill="none" stroke="'+col+
-  '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
+  '</linearGradient><filter id="gl" x="-50%" y="-50%" width="200%" '+
+  'height="200%"><feGaussianBlur stdDeviation="2.4"/></filter></defs>'+
+  '<line x1="12" y1="'+y0+'" x2="288" y2="'+y0+'" '+
+  'stroke="rgba(255,255,255,.14)" stroke-width="1" stroke-dasharray="3 5"/>'+
+  '<path d="'+dp+' L'+ex+',80 L12,80 Z" fill="url(#g)"/>'+
+  '<path d="'+dp+'" fill="none" stroke="'+col+'" stroke-width="2.4" '+
+  'stroke-linejoin="round" stroke-linecap="round"/>'+
+  '<circle cx="'+ex+'" cy="'+ey+'" r="6" fill="'+col+'" opacity=".4" '+
+  'filter="url(#gl)"/>'+
+  '<circle cx="'+ex+'" cy="'+ey+'" r="3.2" fill="'+col+'" stroke="#121a25" '+
+  'stroke-width="1.5"/>'+
+  (mx>0.005?lab(iMx,mx,true):'')+(mn<-0.005?lab(iMn,mn,false):'');
 }
 document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
  window._cvz=b.dataset.c;
  document.querySelectorAll('.cvc').forEach(x=>{
   const on=x.dataset.c===window._cvz;
-  x.style.background=on?'#1d3350':'#0f1620';
-  x.style.borderColor=on?'#2a5a80':'#263341';
-  x.style.color=on?'#cfe3f5':'#8fa1b3';});
+  x.style.background=on?'var(--surface3)':'transparent';
+  x.style.borderColor=on?'var(--border2)':'var(--border)';
+  x.style.color=on?'var(--text2)':'var(--muted2)';});
  drawSpark();};});
 function tradeSheet(i){
  const x=(window._tr||[])[i];
@@ -1889,10 +1916,10 @@ function render(d){
     // question. The space goes to the two figures that actually decide.
     // Top row = the two brakes, accented. Bottom row = context, plain.
     const cell=(l,v,c,acc)=>'<div style="min-width:0;padding:8px 10px;'+
-     'border-radius:11px;background:rgba('+(acc?'185,140,255,.10'
-      :'255,255,255,.04')+');border:1px solid rgba('+
-     (acc?'185,140,255,.30':'255,255,255,.07')+')">'+
-     '<div style="'+NW+'font-size:.58rem;color:'+(acc?'#b98cff':'#7f93a8')+
+     'border-radius:12px;background:rgba('+(acc?'59,130,246,.12'
+      :'255,255,255,.035')+');border:1px solid rgba('+
+     (acc?'59,130,246,.38':'255,255,255,.07')+')">'+
+     '<div style="'+NW+'font-size:.58rem;color:'+(acc?'var(--accent-soft)':'var(--muted2)')+
      ';text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
      '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
      (c||'#cfe3f5')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
@@ -1905,10 +1932,10 @@ function render(d){
     // (owner 2026-09-18).
     const small=cell('petits mouvements',
      hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
-     hasInt?(aw?'#cfb3ff':'#6f8299'):'#5f7185',hasInt&&gM);
+     hasInt?(aw?'var(--accent-soft)':'#6f8299'):'#5f7185',hasInt&&gM);
     const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
      hasInt?(mv===0?'#6f8299':'#cfe3f5')
-      :(mv>=1?'#cfb3ff':'#6f8299'),(!hasInt)&&gM);
+      :(mv>=1?'var(--accent-soft)':'#6f8299'),(!hasInt)&&gM);
     // the deciding movement rule first, then nervosity - always a brake
     chips.push(hasInt?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
@@ -1938,7 +1965,7 @@ function render(d){
     const hh=Math.floor(s/3600),mm=Math.floor((s%3600)/60);
     chips.push('\\u23f8 depuis '+(hh>0?hh+' h ':'')+mm+' min');}
    mc.className='status '+cls;
-   document.getElementById('mx-orb').textContent=orb;
+   document.getElementById('mx-orb').innerHTML=ORB[cls]||ORB['mx-sun'];
    setH(document.getElementById('mx-title'),ti);
    setH(document.getElementById('mx-line'),ln);
    setH(document.getElementById('mx-chips'),
@@ -2147,7 +2174,8 @@ function render(d){
    window._plvl=d.push_level;
    if(window.npcPaint)window.npcPaint();
   }
-  if(d.eurusd){document.getElementById('eqe').innerHTML=
+  if(d.eurusd){const _eqe=document.getElementById('eqe');
+   _eqe.style.display='block';_eqe.innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   const bk=document.getElementById('bank');
   if(Math.abs(d.equity-d.balance)<0.005){bk.style.display='none';}
@@ -2199,11 +2227,11 @@ function render(d){
   }
   if(d.acct){
    document.getElementById('acctline').innerHTML=
-    '<span style="background:'+
-    (d.real?'rgba(46,204,113,.13)':'rgba(230,160,40,.13)')+
-    ';color:'+(d.real?'#8df0bb':'#ffd27a')+
-    ';padding:3px 10px;border-radius:99px;font-weight:700;'+
-    'font-size:.64rem;letter-spacing:.05em">'+
+    '<span style="display:inline-flex;align-items:center;gap:6px;'+
+    'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;'+
+    'font-size:.66rem;letter-spacing:.06em;color:rgba(255,255,255,.5)">'+
+    '<span style="width:6px;height:6px;border-radius:50%;background:'+
+    (d.real?'var(--up)':'var(--warn)')+'"></span>'+
     (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct+'</span>';
   }
   if(d.palier&&d.equity){
@@ -2214,8 +2242,8 @@ function render(d){
    document.getElementById('palier').style.display='block';
    document.getElementById('palier-lbl').innerHTML=
     (d.palier_kind==='scale'
-     ?'Solde pour $'+d.palier_next_cap.toFixed(0)+'/jour : $'+
-      d.palier.toFixed(0)
+     ?'Prochain palier $'+d.palier.toFixed(0)+' &rarr; $'+
+      d.palier_next_cap.toFixed(0)+'/jour'
      :d.palier_def
      ?'Objectif de la semaine : +$'+(d.palier_step||50).toFixed(0)
      :'Objectif : $'+d.palier.toFixed(0))+
@@ -2475,11 +2503,13 @@ function render(d){
     const open=window.openDay===x.d&&tr.length;
     return '<div class="row" style="cursor:pointer" data-l="'+x.d+
     '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
-    (tr.length?(open?'&#9662; ':'&#9656; '):'&nbsp;&nbsp;')+x.d+
+    (tr.length?'<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px;'+
+     'color:var(--muted);transform:rotate('+(open?'90':'0')+'deg)">'+
+     '<use href="#i-chev"/></svg>':'<span style="display:inline-block;width:21px"></span>')+x.d+
     '</span><b class="'+(sgn(x.p))+'">'+
     (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b></div>'+
     (open?'<div style="padding:0 0 6px 18px;border-bottom:1px solid '+
-    '#1e2937">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
+    'var(--border)">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
     'padding:6px 4px;border-bottom:0"><span class="rowt">'+t.t+
     '</span><span class="'+(sgn(t.p))+'">'+
     (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</span></div>')
@@ -2518,17 +2548,23 @@ function render(d){
    for(let dd2=1;dd2<=nd;dd2++){
     const k=y+'-'+String(m+1).padStart(2,'0')+'-'+
      String(dd2).padStart(2,'0');
-    const p=md[k];let bg='#141c28',fg='#4c5c6f';
+    const p=md[k];let bg='transparent',fg='#55657a',
+     bd='rgba(255,255,255,.05)';
     if(p!==undefined){
      if(p>0.005){bg='rgba(46,204,113,'+
-      Math.min(.85,.28+p/4).toFixed(2)+')';fg='#eafff3';}
+      Math.min(.42,.14+p/12).toFixed(2)+')';fg='#9df2c4';
+      bd='rgba(46,204,113,.35)';}
      else if(p<-0.005){bg='rgba(255,92,92,'+
-      Math.min(.85,.28-p/4).toFixed(2)+')';fg='#ffecec';}
-     else{bg='#22303f';fg='#9fb2c4';}
+      Math.min(.42,.14-p/12).toFixed(2)+')';fg='#ffb0b0';
+      bd='rgba(255,92,92,.35)';}
+     else{bg='rgba(255,255,255,.06)';fg='#9fb2c4';bd='rgba(255,255,255,.08)';}
     }
-    h+='<div style="aspect-ratio:1;border-radius:9px;background:'+bg+
+    const isT=(dd2===now.getUTCDate());
+    h+='<div style="aspect-ratio:1;border-radius:10px;background:'+bg+
+     ';border:1px solid '+bd+
+     (isT?';box-shadow:inset 0 0 0 1.5px var(--accent-soft)':'')+
      ';display:flex;align-items:center;justify-content:center;'+
-     'font-size:.7rem;font-weight:600;color:'+fg+'" title="'+
+     'font-size:.72rem;font-weight:600;color:'+fg+'" title="'+
      (p===undefined?'':((p>=0?'+$':'-$')+Math.abs(p).toFixed(2)))+
      '">'+dd2+'</div>';
    }
@@ -3448,6 +3484,11 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="bg"><div class="blob bl1"></div><div class="blob bl2"></div></div>
