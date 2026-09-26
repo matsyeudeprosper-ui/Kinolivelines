@@ -96,7 +96,7 @@ INT_MAX = max(INT_WINDOWS)     # the most it will ever look back
 
 
 def internal_structure(kept, nxt, inv, inv_t, _mflp, marks, nxt_t, now_t,
-                       pin=None):
+                       pin=None, brk_t=None):
     """The internal-structure computation, factored out of the live loop
     2026-09-23 so a backtest can call the EXACT code the feed runs instead
     of a separate copy that can drift from it - which is what happened
@@ -118,6 +118,10 @@ def internal_structure(kept, nxt, inv, inv_t, _mflp, marks, nxt_t, now_t,
     i_nxt_t, i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
     i_fready, since (the anchor before border-touch adjustment, published
     as int_since).
+    brk_t: epoch of the main engine's LATEST break (flip or continuation
+    BOS, either side) - the last entry of engine(kept, brk_out=...). The
+    live loop passes it; a caller that omits it gets it computed here
+    from the same kept, so a replay stays faithful without knowing.
     """
     if pin is None:
         pin = {"t0": None, "start": None}
@@ -127,7 +131,26 @@ def internal_structure(kept, nxt, inv, inv_t, _mflp, marks, nxt_t, now_t,
     i_nxt = i_inv = i_nxt_t = i_inv_t = None
     i_ready = i_fready = False
     i_brk1h = 0
-    _since = inv_t if inv_t else (marks[-1][0] if marks else None)
+    if brk_t is None and kept:
+        _mb = []
+        engine(kept, brk_out=_mb)
+        brk_t = _mb[-1][0] if _mb else None
+    # Owner 2026-09-26: "once price returns to the main structure's
+    # borders (breakout by flip or BOS) the internal marks disappear."
+    # The dot alone cannot do that: after a break the protected dot is
+    # the pullback low/high that formed BEFORE the break, so a window
+    # opened at the dot still contains the leg that produced the break,
+    # and the internal engine keeps finding "structure" in it. The
+    # close-beyond-border reset below cannot catch a BOS either: the
+    # main engine raises next_bos to the running extreme the moment it
+    # is exceeded, so no close is ever strictly beyond it at recompute
+    # time (proved live 2026-09-26 08:32, BOS at 84186.58: internal dots
+    # from 22:54/00:08 the night before survived it). So the anchor is
+    # the NEWEST main event of the three the engine records - protected
+    # dot, mark (CHoCH / flip BOS), break (any BOS) - whichever is last.
+    _ev = [x for x in (inv_t, (marks[-1][0] if marks else None), brk_t)
+           if x is not None]
+    _since = max(_ev) if _ev else None
     # Owner 2026-09-16: "the internal structure is BOS, CHoCH
     # that forms in between the space of a confirmed BOS and the
     # glowing dot created by that BOS." So the window opens at
@@ -139,9 +162,7 @@ def internal_structure(kept, nxt, inv, inv_t, _mflp, marks, nxt_t, now_t,
     # protected dot nor a mark in range, open the internal
     # window at the oldest candle instead of skipping it. The
     # look-back below trims it to size anyway.
-    _t0 = (inv_t if inv_t
-           else (marks[-1][0] if marks
-                 else (kept[0][0] if kept else None)))
+    _t0 = _since if _since else (kept[0][0] if kept else None)
     # Owner 2026-09-18: "the moment we touch either of the main
     # structure's borders - the BOS level or the glowing dot -
     # we stop all internal structure, we reset, and we follow
@@ -682,18 +703,21 @@ def main():
                         1 if lv["close"] >= lv["open"] else -1]
                 win = kept[-KEEP_LAST:]
                 t0 = win[0][0] if win else 0
+                _mbrk = []
                 (dots, marks, trend, choch, nxt, inv,
                  nxt_t, inv_t, _mdir,
-                 _mflp, _mflp_t, _mfdir) = engine(kept)
+                 _mflp, _mflp_t, _mfdir) = engine(kept, brk_out=_mbrk)
                 # INTERNAL STRUCTURE (owner 2026-09-16): between two main
                 # events the range can be wide enough for its own little
                 # BOS patterns. Run the SAME engine over the candles since
-                # the last main event only. It needs no kill switch: the
-                # moment price rejoins the main structure a new mark fires
-                # and this window restarts from there.
+                # the last main event only. The window restarts on the
+                # newest main event - dot, mark or break (2026-09-26: marks
+                # alone only cover flips, and the dot precedes its break).
                 _res = internal_structure(kept, nxt, inv, inv_t, _mflp, marks,
                                           nxt_t, int(R[-1]["time"]),
-                                          pin=_INT_PIN)
+                                          pin=_INT_PIN,
+                                          brk_t=(_mbrk[-1][0] if _mbrk
+                                                 else None))
                 (i_dots, i_marks, i_trend, i_choch, i_nxt, i_inv, i_nxt_t,
                  i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
                  i_fready, _since, _win_len) = (
