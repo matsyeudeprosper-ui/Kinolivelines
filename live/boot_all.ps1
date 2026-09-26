@@ -90,6 +90,25 @@ if (-not (ProcRunning "structure_bos_bot.py valere")) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "valere" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2i) Infinity's real account. Owner 2026-09-19/24 addition - found
+# 2026-09-25 that this block never existed (only kino/demo/valere were
+# ever wired in here), so a real reboot would NOT have revived it.
+if (-not (ProcRunning "structure_bos_bot.py infinity")) {
+    Say "starting BOS bot (infinity)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "infinity" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+# 2j) Dad's real account: the DEFAULT instance, no argv (own debt ledger,
+# package special_10). Same gap as Infinity above - never had a launch
+# block, found and fixed the same day, before it was ever tested by a
+# real restart. Must match the bare ".py" ending exactly, or this would
+# also match kino/demo/valere/infinity's command lines.
+if (-not (Get-CimInstance Win32_Process |
+        Where-Object { $_.CommandLine -like "*structure_bos_bot.py" })) {
+    Say "starting BOS bot (bos / Dad, default account)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2e) forward-observation ledger (narrow-stop flag + rolling-20 shadow state, informational)
 if (-not (Get-CimInstance Win32_Process |
         Where-Object { $_.CommandLine -like "*bos_forward_observer.py*" })) {
