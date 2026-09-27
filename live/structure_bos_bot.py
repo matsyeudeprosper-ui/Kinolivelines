@@ -985,7 +985,9 @@ def main():
         # happening after a flip" - loosened the same day, from "FLIP-BOS
         # only" to "FLIP-BOS, plus the ONE continuation right after it".
         # A flip always resets the allowance; the next plain BOS consumes
-        # it; anything after that is refused until the next flip.
+        # it; anything after that is refused until the next flip - or, since
+        # 2026-09-26, until the next TOUCH of the protected dot (see the bar
+        # loop: the wick reaches the dot, the close holds).
         # review/recovery_flip_plus_first_continuation_test.py: more net
         # money in 5/6 half-splits (sometimes much more, $74->$172 full
         # period at spread 7) but a deeper worst-case debt in all 6 - a
@@ -1349,6 +1351,28 @@ def main():
                           book="fvg")
             _pt = eng.trend
             _hv, _lv = eng.hi_v, eng.lo_v
+            # Owner 2026-09-26: a TOUCH of the protected dot re-arms the one
+            # recovery continuation, the same one-shot allowance a FLIP-BOS
+            # re-arms. Touch = this RAW bar's wick reaches the dot in force
+            # while the close stays on the trend's side (a close beyond it is
+            # the engine's own CHoCH, which leads to a flip). Replayed in
+            # review/recovery_touch_rearm_test.py: +$45 (spread 7) / +$48
+            # (spread 10) over 41.7 d, better in both halves, worst-case debt
+            # $12-15 deeper in every split; 24-26 of 357 touches became a
+            # trade. Owner: "yes deploy". Logged once per episode (the flag
+            # must be spent before a new touch can re-arm it).
+            _pdot = (eng.prot_lo if eng.trend == 1
+                     else eng.prot_hi if eng.trend == -1 else None)
+            if _pdot is not None:
+                _bl, _bh, _bc = (float(bar["low"]), float(bar["high"]),
+                                 float(bar["close"]))
+                _touch = ((_bl <= _pdot[1] <= _bc) if eng.trend == 1
+                          else (_bc <= _pdot[1] <= _bh))
+                if _touch and st.get("cont_used_since_flip", True):
+                    st["cont_used_since_flip"] = False
+                    save_state(st)
+                    say(f"TOUCH du point protege ({_pdot[1]:.2f}) - "
+                        f"continuation re-armee pour la reprise")
             sig = eng.step(bt, float(bar["open"]),
                            float(bar["high"]), float(bar["low"]),
                            float(bar["close"]))
