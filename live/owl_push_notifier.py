@@ -166,6 +166,92 @@ def instant_event(line):
 
 
 WEEKLY_MARK = os.path.join(DIR, "owl_push_weekly.json")
+SIGNAL_MARK = os.path.join(DIR, "owl_push_signal.json")
+CHART_F = os.path.join(DIR, "owl_chart_btc.json")
+
+
+def _package_gates(uid):
+    """The two brakes of this account's package (owl_packages.json,
+    'extends' chain); both default to on."""
+    try:
+        p = json.load(open(os.path.join(DIR, "owl_packages.json"),
+                           encoding="utf-8"))
+        name = (p.get("accounts") or {}).get(uid, "base")
+        out, seen = {}, set()
+        chain = []
+        while name and name not in seen:
+            seen.add(name)
+            pk = (p.get("packages") or {}).get(name) or {}
+            chain.append(pk)
+            name = pk.get("extends") or ("base" if name != "base" else None)
+        for pk in reversed(chain):
+            out.update(pk)
+        return bool(out.get("nervosity", True)), bool(out.get("movement", True))
+    except Exception:
+        return True, True
+
+
+def maybe_signal():
+    """2026-09-27 (owner): in manual mode the app is a signal service, so it
+    must RING when the market card turns 'Feu vert' - and say when it is
+    over. Same reading as the app's weather card (storm > brakes > movement
+    > internal state), per account, one push per 30 min at most."""
+    try:
+        if time.time() - os.path.getmtime(CHART_F) > 180:
+            return
+        cj = json.load(open(CHART_F, encoding="utf-8"))
+    except Exception:
+        return
+    vn, vr = cj.get("vol_now") or 0, cj.get("vol_ref") or 0
+    rv = (vn / max(vr, 1)) if vn and vr else 1.0
+    storm = rv >= 1.85
+    has_int = bool(cj.get("int_trend"))
+    int_ok = (not has_int) or (cj.get("int_state") in (None, "ready"))
+    try:
+        st = json.load(open(SIGNAL_MARK, encoding="utf-8"))
+    except Exception:
+        st = {}
+    try:
+        subs = json.load(open(SUBS))
+    except Exception:
+        return
+    changed = False
+    for uid in subs:
+        if not is_manual(uid):
+            continue
+        gN, gM = _package_gates(uid)
+        nerv_bad = storm or (gN and rv > 1.0)
+        mv_ok = True if not gM else (
+            (cj.get("int_brk_1h") or 0) >= 1 if has_int
+            else (cj.get("moves_2h") or 0) >= 1)
+        ready = (not nerv_bad) and mv_ok and int_ok
+        rec = st.get(uid) or {}
+        prev = rec.get("ready")
+        if prev is None:
+            st[uid] = {"ready": ready, "t": 0}
+            changed = True
+            continue
+        if ready == prev:
+            continue
+        st[uid] = {"ready": ready, "t": rec.get("t", 0)}
+        changed = True
+        if time.time() - (rec.get("t") or 0) < 1800:
+            continue        # one push per half hour, the state still moves
+        st[uid]["t"] = time.time()
+        if ready:
+            send_all("\U0001f7e2 Signal jouable",
+                     "Les conditions sont r\u00e9unies. Ouvrez le graphique "
+                     "pour d\u00e9cider.", kind="instant", only_uid=uid)
+        else:
+            send_all("\u26aa Signal termin\u00e9",
+                     "Le feu vert est pass\u00e9 \u2014 mieux vaut attendre "
+                     "le prochain.", kind="instant", only_uid=uid)
+    if changed:
+        try:
+            json.dump(st, open(SIGNAL_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+
 
 
 def maybe_weekly():
@@ -353,6 +439,7 @@ def main():
         _bf = None
     _wk_last = 0.0
     _mb_last = 0.0
+    _sg_last = 0.0
     while True:
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
@@ -362,6 +449,9 @@ def main():
         if time.time() - _mb_last > 12:
             _mb_last = time.time()
             member_trades()
+        if time.time() - _sg_last > 60:
+            _sg_last = time.time()
+            maybe_signal()
         if _bf is not None:
             while True:
                 bl = _bf.readline()

@@ -879,6 +879,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
 <span id="acctline"></span></span>
 <span style="display:flex;align-items:center;gap:10px">
+<button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:6px;
+ color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+ border-radius:99px;padding:5px 10px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
 <a id="chartlink" href="#" title="Graphique en direct" aria-label="Graphique en direct"
  style="text-decoration:none;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);
@@ -896,7 +899,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
      running trade (plus the day-objective ring when a daily cap is on).
      Account identity lives under the brand; "en rattrapage" moved to the
      rattrapage card; the closed balance is one tap on the trade pill. -->
-<div class="dayline" id="dayline">&nbsp;</div>
+<div class="dayline" id="dayline" role="button" tabindex="0" aria-label="Partager ma journ&eacute;e" style="cursor:pointer" onclick="shareDay()">&nbsp;</div>
 <div class="chips" id="chips"><span id="daytargetchip" style="display:none;padding:5px 12px;
  border-radius:99px;font-size:.72rem;font-weight:700;
  background:rgba(127,179,224,.13);color:var(--text3)"></span>
@@ -1163,6 +1166,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="panel" id="statx" style="display:none"></div>
 <div class="sec">Derniers trades</div>
 <div id="tfilt"><button class="tfc on" data-f="all">Tous</button><button class="tfc" data-f="won">Gagn&eacute;s</button><button class="tfc" data-f="lost">Perdus</button><button class="tfc" data-f="week">Cette semaine</button></div>
+<div id="tgo" style="display:flex;gap:8px;align-items:center;margin:0 0 10px">
+ <input type="date" id="tdate" aria-label="Aller &agrave; un jour" style="flex:1;min-width:0;border:1px solid var(--border2);
+  background:var(--surface2);color:var(--text);border-radius:12px;padding:9px 12px;font-size:.88rem;font-family:inherit">
+ <button onclick="goDay()" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);
+  border-radius:12px;padding:9px 14px;font-size:.82rem;font-weight:700;white-space:nowrap">Voir ce jour</button>
+</div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
 <span class="skel" style="width:18%">&nbsp;</span></div>
@@ -2019,15 +2028,16 @@ function dayx(l){
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
  let sum;
- if(!tr.length)sum='Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.';
+ if(!tr.length)sum=MAN()?'Ce jour-l\u00e0, aucun trade.':'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.';
  else sum='Ce jour-l\u00e0 : '+tr.length+' trade'+(tr.length>1?'s':'')+
   (tr.length>1?' \u2014 '+won+' gagn\u00e9'+(won>1?'s':'')+', '+lost+' perdu'+(lost>1?'s':''):'')+
   '. R\u00e9sultat : <b class="'+sgn(p)+'">'+money(p)+'</b>.';
+ const who=MAN()?'Vous avez ':'Le robot a ';
  const rows=tr.map(t=>'<div class="srow-ev">'+(t.p>=0?ico('i-check','var(--up)'):ico('i-x','var(--down)'))+
-  '<div style="flex:1">'+(t.p>=0?'Le robot a <b class="pos">gagn\u00e9 '+money(t.p)+'</b>.'
-   :'Le robot a <b class="neg">perdu $'+Math.abs(t.p).toFixed(2)+'</b>.')+'</div>'+
+  '<div style="flex:1">'+(t.p>=0?who+'<b class="pos">gagn\u00e9 '+money(t.p)+'</b>.'
+   :who+'<b class="neg">perdu $'+Math.abs(t.p).toFixed(2)+'</b>.')+'</div>'+
   '<span class="evt">'+t.t+'</span></div>').join('');
- sheet('<h3>'+l+'</h3><p style="color:var(--text)">'+sum+'</p>'+rows+
+ sheet('<h3>'+l+'</h3><p style="color:var(--text)">'+sum+'</p>'+daySpark(tr)+rows+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
 window._cvz='7';
@@ -2422,6 +2432,7 @@ function stepsSheet(){
  sh.addEventListener('touchend',()=>{if(y0==null)return;sh.style.transition='';
   if(dy>90&&window._shOpen)window._shDone(null);else sh.style.transform='translateY(0)';y0=null;dy=0;});})();
 function tradeSheet(i){
+ if(window._lpFired){window._lpFired=0;return;}   // a long-press copied the row, no sheet
  const x=(window._tr||[])[i];
  if(!x)return;
  const L=(a,b)=>'<div style="display:flex;justify-content:'+
@@ -2438,6 +2449,7 @@ function tradeSheet(i){
    '">'+x.k+'</span>':'')+'</h3>'+
   '<div id="tstory" style="font-size:.92rem;line-height:1.5;color:var(--text);margin:6px 0 12px">'+
   '<span style="color:var(--muted)">Un instant\u2026</span></div>'+
+  '<svg id="tspark" viewBox="0 0 300 80" style="width:100%;height:80px;display:none;margin:-4px 0 10px"></svg>'+
   L('R&eacute;sultat','<span class="'+(sgn(x.p))+'">'+
    (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
@@ -2460,6 +2472,138 @@ function tradeSheet(i){
     '<svg class="ic ic-s"><use href="#i-chart"/></svg>Voir sur le graphique</a>';})()+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
  tradeStory(_tx,x);
+ tradeSpark(_tx,x);
+}
+// ---- batch 18 (2026-09-27) ----
+// long-press on a trade row copies its one-line summary
+function lpStart(ev,el){lpEnd();window._lpT=setTimeout(()=>{
+ const x=(window._tr||[])[el.dataset.i];if(!x)return;
+ const txt=(x.dir==='A'?'Achat':'Vente')+(x.lot?' '+x.lot.toFixed(2)+' lot':'')+' \u00b7 '+
+  (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+' \u00b7 '+x.w+' UTC';
+ window._lpFired=1;
+ try{navigator.vibrate&&navigator.vibrate(14);}catch(e){}
+ (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(
+  ()=>toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">Copi\u00e9 : '+txt+'</div>',2600),
+  ()=>toast(txt,3200));},550);}
+function lpEnd(){if(window._lpT){clearTimeout(window._lpT);window._lpT=null;}}
+const FRD=['dim','lun','mar','mer','jeu','ven','sam'];
+function dayLabel(dt){return FRD[dt.getUTCDay()]+' '+String(dt.getUTCDate()).padStart(2,'0')+'/'+String(dt.getUTCMonth()+1).padStart(2,'0');}
+function goDay(){
+ const v=(document.getElementById('tdate')||{}).value;if(!v){toast('Choisissez une date',1800);return;}
+ const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(v);if(!m)return;
+ const lab=dayLabel(new Date(Date.UTC(+m[1],+m[2]-1,+m[3])));
+ const has=((window._dtr||{})[lab]||[]).length||(window._days||[]).some(x=>x.d===lab);
+ if(has)dayx(lab);else toast('Aucun trade le '+m[3]+'/'+m[2]+'.',2200);
+}
+// tiny cumulative curve of one day's trades (day sheet)
+function daySpark(tr){
+ if(!tr||tr.length<2)return '';
+ let c=0;const pts=tr.map(t=>{c+=t.p;return c;});
+ const mn=Math.min(0,...pts),mx=Math.max(0,...pts),sp=(mx-mn)||1;
+ const X=i=>10+(i/(pts.length-1))*280,Y=v=>52-((v-mn)/sp)*40;
+ const col=c>=0?'var(--up)':'var(--down)';
+ let d='M10,'+Y(0).toFixed(1);pts.forEach((v,i)=>{d+=' L'+X(i).toFixed(1)+','+Y(v).toFixed(1);});
+ return '<svg viewBox="0 0 300 64" style="width:100%;height:64px;display:block;margin:0 0 6px">'+
+  '<line x1="10" y1="'+Y(0).toFixed(1)+'" x2="290" y2="'+Y(0).toFixed(1)+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/>'+
+  '<path d="'+d+'" fill="none" style="stroke:'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
+  pts.map((v,i)=>'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="3" style="fill:'+(tr[i].p>=0?'var(--up)':'var(--down)')+'"/>').join('')+
+  '<text x="10" y="62" font-size="8" style="fill:var(--muted)">'+tr[0].t+'</text>'+
+  '<text x="290" y="62" font-size="8" text-anchor="end" style="fill:var(--muted)">'+tr[tr.length-1].t+'</text></svg>';
+}
+// price path of one trade (trade sheet), from the chart feed's kept candles
+async function tradeSpark(tx,x){
+ const el=document.getElementById('tspark');if(!el||!tx)return;
+ const t0=(x.dur!=null)?tx-Math.round(x.dur*60):tx-600;
+ let D=null;try{const r=await fetch(B+'chart_data');if(r.ok)D=await r.json();}catch(e){return;}
+ const C=((D&&D.candles)||[]).filter(k=>k[0]>=t0-120&&k[0]<=tx+120);
+ if(C.length<3)return;
+ const ys=C.map(k=>k[4]);const lo=Math.min(...ys,x.ep||Infinity,x.xp||Infinity),hi=Math.max(...ys,x.ep||-Infinity,x.xp||-Infinity),sp=(hi-lo)||1;
+ const X=i=>10+(i/(C.length-1))*280,Y=v=>66-((v-lo)/sp)*52;
+ const col=x.p>=0?'var(--up)':'var(--down)';
+ let d='';C.forEach((k,i)=>{d+=(i?' L':'M')+X(i).toFixed(1)+','+Y(k[4]).toFixed(1);});
+ const hl=(v,lab,c)=>(v==null?'':'<line x1="10" y1="'+Y(v).toFixed(1)+'" x2="290" y2="'+Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-dasharray="3 4"/>'+
+  '<text x="290" y="'+(Y(v)-3).toFixed(1)+'" font-size="8" text-anchor="end" style="fill:'+c+'">'+lab+'</text>');
+ el.innerHTML='<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>'+
+  hl(x.ep,'entr\u00e9e','var(--muted2)')+hl(x.xp,'sortie',col)+
+  '<path d="'+d+' L'+X(C.length-1).toFixed(1)+',80 L10,80 Z" fill="url(#tg)" style="color:'+col+'"/>'+
+  '<path d="'+d+'" fill="none" style="stroke:'+col+'" stroke-width="2" stroke-linejoin="round"/>'+
+  '<circle cx="10" cy="'+Y(C[0][4]).toFixed(1)+'" r="3" style="fill:var(--muted2)"/>'+
+  '<circle cx="290" cy="'+Y(C[C.length-1][4]).toFixed(1)+'" r="3.4" style="fill:'+col+'"/>';
+ el.style.display='block';
+}
+// "Ma journee" share image
+function shareDay(){
+ const d=window._d;if(!d)return;
+ const lab=dayLabel(new Date());const tr=((window._dtr||{})[lab]||[]).slice(-12);
+ const today=(typeof d.today==='number')?d.today:0,up=today>=0;
+ const W=720,H=900,c=document.createElement('canvas');c.width=W;c.height=H;
+ const g=c.getContext('2d');
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect(x,y,w,h,r);};
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0f2740');bg.addColorStop(.45,'#0b0f14');bg.addColorStop(1,'#0b0f14');
+ g.fillStyle=bg;g.fillRect(0,0,W,H);
+ rr(56,52,60,60,16);g.fillStyle='#0d1117';g.fill();
+ [76,96].forEach(cx=>{g.beginPath();g.arc(cx,76,9.5,0,Math.PI*2);g.fillStyle='#f0b43c';g.fill();
+  g.beginPath();g.arc(cx,76,4,0,Math.PI*2);g.fillStyle='#121212';g.fill();});
+ g.beginPath();g.moveTo(86,84);g.lineTo(80,98);g.lineTo(92,98);g.closePath();g.fillStyle='#c87828';g.fill();
+ g.textAlign='left';g.fillStyle='#e8eef4';g.font='bold 34px Inter, system-ui, sans-serif';g.fillText('OwlNest',132,84);
+ g.fillStyle='#8a9bb0';g.font='22px Inter, system-ui, sans-serif';g.fillText('Ma journ\u00e9e \u00b7 '+lab+' \u00b7 '+(d.name||''),132,112);
+ g.textAlign='center';g.fillStyle=Math.abs(today)<0.005?'#c6d3df':(up?'#2ecc71':'#ff5c5c');
+ g.font='bold 104px Inter, system-ui, sans-serif';g.fillText((up?'+$':'-$')+Math.abs(today).toFixed(2),W/2,246);
+ g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText(tr.length?(tr.length+' trade'+(tr.length>1?'s':'')+' aujourd\u2019hui'):'aucun trade aujourd\u2019hui',W/2,280);
+ // curve card
+ rr(48,318,W-96,200,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.lineWidth=1.5;g.stroke();
+ if(tr.length>=2){let cum=0;const pts=tr.map(t=>{cum+=t.p;return cum;});
+  const mn=Math.min(0,...pts),mx=Math.max(0,...pts),sp=(mx-mn)||1;
+  const X=i=>84+(i/(pts.length-1))*(W-168),Y=v=>488-((v-mn)/sp)*130;
+  g.beginPath();g.moveTo(84,Y(0));pts.forEach((v,i)=>g.lineTo(X(i),Y(v)));
+  g.strokeStyle=up?'#2ecc71':'#ff5c5c';g.lineWidth=5;g.lineJoin='round';g.lineCap='round';g.stroke();
+  g.setLineDash([6,8]);g.strokeStyle='rgba(255,255,255,.18)';g.lineWidth=1.5;g.beginPath();g.moveTo(84,Y(0));g.lineTo(W-84,Y(0));g.stroke();g.setLineDash([]);
+  pts.forEach((v,i)=>{g.beginPath();g.arc(X(i),Y(v),7,0,Math.PI*2);g.fillStyle=tr[i].p>=0?'#2ecc71':'#ff5c5c';g.fill();});}
+ else{g.textAlign='center';g.fillStyle='#5f7185';g.font='20px Inter, system-ui, sans-serif';g.fillText(tr.length?'Un seul trade aujourd\u2019hui':'La courbe se dessine avec les trades',W/2,425);}
+ // trades card
+ const top=550,dh=44,n=Math.min(tr.length,6);
+ rr(48,top,W-96,40+Math.max(1,n)*dh+18,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.stroke();
+ g.textAlign='left';g.fillStyle='#8a9bb0';g.font='bold 16px Inter, system-ui, sans-serif';g.fillText('LES TRADES DU JOUR',80,top+34);
+ if(!n){g.fillStyle='#5f7185';g.font='20px Inter, system-ui, sans-serif';g.fillText('Rien pour l\u2019instant.',80,top+74);}
+ tr.slice(-6).forEach((t,i)=>{const y=top+58+i*dh;
+  g.textAlign='left';g.fillStyle='#c6d3df';g.font='22px Inter, system-ui, sans-serif';g.fillText(t.t+' UTC',80,y+14);
+  g.textAlign='right';g.fillStyle=t.p>=0?'#2ecc71':'#ff5c5c';g.font='bold 22px Inter, system-ui, sans-serif';
+  g.fillText((t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2),W-80,y+14);});
+ g.textAlign='center';g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText(MAN()?'OwlNest \u2014 vos signaux, vos d\u00e9cisions.':'Le robot Owl trade pour vous, jour et nuit.',W/2,H-56);
+ c.toBlob(async b=>{const f=new File([b],'owlnest-journee.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Ma journ\u00e9e OwlNest'});}catch(e){}}
+  else{try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}}},'image/png');
+}
+// owner: account switcher sheet (the header chip); Le Nid stays the console
+function acctSheet(){
+ const N=window._nest||[],d=window._d||{};if(!N.length)return;
+ const tb=N.reduce((a,x)=>a+(x.bal||0),0),tt=N.reduce((a,x)=>a+(x.today||0),0);
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const st=x=>{const noBot=!x.bot;
+  if(noBot)return[x.paused?'manuel':'sans robot','var(--muted)','#4a5a6b'];
+  if(x.err)return['probl\u00e8me','var(--down-soft)','var(--down)'];
+  if(x.stale)return['hors ligne','var(--warn)','var(--warn)'];
+  if(!x.botlive)return['robot arr\u00eat\u00e9','var(--down-soft)','var(--down)'];
+  if(x.blocked)return[x.blocked,'var(--warn)','var(--warn)'];
+  return x.paused?['manuel','var(--text3)','#8fa1b3']:['auto','var(--up-soft)','var(--up)'];};
+ const rows=N.filter(x=>x.tok).map(x=>{const cur=(x.login&&d.acct&&String(x.login)===String(d.acct));const S=st(x);
+  const ini=(x.name||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  return '<div class="srow" role="button" tabindex="0" onclick="location.href=\\'/'+x.tok+'/\\'" style="'+(cur?'background:rgba(59,130,246,.08);border-radius:12px;':'')+'">'+
+   '<div class="sic" style="font-weight:800;font-size:.8rem;color:var(--text2);position:relative">'+ini+
+    '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
+   '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
+    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+'</div></div>'+
+   '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
+    '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>';}).join('');
+ sheet('<h3>Vos comptes</h3>'+
+  '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 2px 10px;border-bottom:1px solid var(--border);margin-bottom:4px">'+
+   '<span style="color:var(--muted2);font-size:.84rem">'+N.length+' compte'+(N.length>1?'s':'')+' \u00b7 total</span>'+
+   '<span style="text-align:right"><b style="font-size:1.05rem">$'+tb.toFixed(2)+'</b> <span class="'+sgn(tt)+'" style="font-size:.8rem;margin-left:6px">'+money(tt)+' auj.</span></span></div>'+
+  '<div style="max-height:56vh;overflow-y:auto;margin:0 -6px;padding:0 6px">'+rows+'</div>'+
+  '<button class="shbtn shghost" onclick="_shDone(1);tab(\\'nid\\',document.getElementById(\\'tb-nid\\'))">Ouvrir Le Nid</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
 async function tradePillTap(){
  const d=window._d||{},ol=d.open_list||[];
@@ -3390,6 +3534,9 @@ function render(d){
    // still demands the master password - nothing here grants anything.
    try{localStorage.setItem('owl_adm',B);}catch(e){}
    document.getElementById('tb-nid').style.display='flex';
+   window._nest=d.nest;
+   (function(){const ch=document.getElementById('acctchip');if(!ch)return;ch.style.display='inline-flex';
+    document.getElementById('acctchip-n').textContent=d.nest.length;})();
    const asw=document.getElementById('acctsw');
    asw.style.display='block';
    document.getElementById('acctsw-b').innerHTML=d.nest
@@ -3656,8 +3803,8 @@ function render(d){
    setH(document.getElementById('hist'),
     (L.length?'':'<div class="empty"><p>Aucun trade dans cette s\u00e9lection</p></div>')+
     L.slice(0,N).map(([x,i])=>
-    '<div class="row" style="cursor:pointer" data-i="'+i+
-    '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
+    '<div class="row" style="cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none" data-i="'+i+
+    '" onclick="tradeSheet(this.dataset.i)" onpointerdown="lpStart(event,this)" onpointerup="lpEnd()" onpointercancel="lpEnd()" onpointerleave="lpEnd()" oncontextmenu="return false"><span class="rowt">'+x.w+
     (x.k==='soldat'?' <span class="pill pill-w">soldat</span>'
      :(x.k&&x.k!=='page'?' <span class="pill">'+x.k+'</span>':''))+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
