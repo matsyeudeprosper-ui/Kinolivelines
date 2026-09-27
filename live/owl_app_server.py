@@ -1320,115 +1320,59 @@ function askPwd(title,desc,btn,danger){return sheet(
 function info(html){return sheet(html+
  '<button class="shbtn shmain" onclick="_shDone(1)">OK</button>');}
 function ledInfo(){
- const row=(ic,t,s)=>'<div style="display:flex;gap:12px;'+
-  'align-items:center;margin:13px 0">'+
-  '<div style="flex:0 0 44px;display:flex;align-items:center;'+
-   'justify-content:center">'+ic+'</div>'+
-  '<div style="min-width:0"><b style="font-size:.86rem">'+t+
-   '</b><div style="font-size:.79rem;color:var(--muted2);'+
-   'line-height:1.45">'+s+'</div></div></div>';
  const L=window._ledD||{mode:'bot',debt:0,chest:0,nl:0.02,fill:0};
- const F=x=>'$'+x.toFixed(2);
+ const F=x=>'$'+(x||0).toFixed(2);
  const fm=v=>v<10?v.toFixed(1):v.toFixed(0);
- // popup icons = miniatures of the REAL card elements
- const tile=(v,c)=>'<span style="display:inline-flex;'+
-  'align-items:center;justify-content:center;width:44px;'+
-  'height:30px;border-radius:9px;font-weight:800;'+
-  'font-size:.68rem;background:rgba('+c+',.1);border:1px solid '+
-  'rgba('+c+',.35);color:rgb('+c+')">$'+v.toFixed(0)+
-  '</span>';
- const miniDebt=tile(L.debt,'255,150,150');
- const miniRes=tile(L.chest,'240,215,136');
- const miniLot='<span style="color:#7fd4a0;font-weight:800;'+
-  'font-size:1.1rem;font-variant-numeric:tabular-nums">'+
-  (L.mode==='bos'?'$'+fm(L.stake||0)
-   :L.nl.toFixed(2))+'</span>';
- let mp='';
- for(let i=0;i<3;i++){
-  mp+='<span style="display:inline-block;width:7px;height:16px;'+
-   'border-radius:3px;margin:0 1.5px;background:'+
-   (i<Math.min(3,L.fill)?'#e8c55a':'rgba(255,255,255,.09)')+
-   '"></span>';}
- const miniBalles='<span>'+mp+'</span>';
- const mode=L.mode;
- const sub=mode==='man'
-  ?'Votre plan de r&eacute;cup&eacute;ration, comme celui du robot'
-  :'Comment le robot r&eacute;cup&egrave;re ses pertes, sans '+
-   'creuser le compte';
- let r3,r4;
- if(mode==='bos'){
-  // Owner 2026-09-20: the reinforcement moved OFF the first entry. The
-  // trade opens at the normal lot; bullets only arrive if price comes
-  // back to the midpoint, and only in a calm market. The card said the
-  // opposite - "each bullet adds strike from the start" - which is a
-  // bigger opening trade than the bot will ever place.
-  r3=row(miniLot,'Renfort au mi-chemin : +'+
-   (Math.min(3,L.fill)*0.01).toFixed(2)+' lot',
-   'Le trade s&#39;ouvre au lot normal et risque $'+fm(4*(L.need||0))+'. '+
-   'Si le prix redescend &agrave; mi-chemin de son stop, le robot '+
-   'ajoute ce renfort &mdash; pay&eacute; par la r&eacute;serve, et '+
-   'seulement si le march&eacute; est calme. Mise totale possible : '+
-   '$'+fm(L.stake||0)+'.');
-  r4=row(miniBalles,'Les balles &mdash; '+L.fill+' sur 3',
-   'Une balle co&ucirc;te $'+fm(L.need||0)+' &mdash; moiti&eacute; '+
-   'moins qu&#39;&agrave; la cassure, parce qu&#39;au mi-chemin le '+
-   'stop est deux fois plus proche. La r&eacute;serve la paie '+
-   'd&#39;avance. Balle perdue = la r&eacute;serve paie. Trade '+
-   'gagn&eacute; = la dette fond directement.');
- }else if(mode==='man'){
-  r3=row(miniLot,'Votre plafond : '+L.nl.toFixed(2)+' lot',
-   'Le plus gros trade que votre r&eacute;serve paie '+
-   'enti&egrave;rement aujourd&#39;hui. Prenez moins si vous '+
-   'voulez &mdash; jamais plus.');
-  r4=row(miniBalles,'Les balles &mdash; '+L.fill+' charg&eacute;e'+
-   (L.fill>1?'s':''),
-   '1 balle = +0.01 de lot, pay&eacute;e par la moiti&eacute; de '+
-   'vos gains. On en prend juste assez pour solder la dette, '+
-   'jamais plus. Le stop ne bouge pas &mdash; seul le lot '+
-   'change.');
- }else{
-  // Owner 2026-09-20: the bullets moved off the first entry. The trade
-  // opens at the normal lot; the reinforcement only arrives if price
-  // comes back to the midpoint. Say that, or the card promises a bigger
-  // first trade than the bot will ever place.
-  r3=row(miniLot,'Renfort pr&eacute;vu : +'+
-   Math.max(0,(L.nl-(L.base_lot||0.02))).toFixed(2)+' lot',
-   'Le trade s&#39;ouvre au lot normal. Si le prix revient &agrave; '+
-   'mi-chemin de son stop, le robot ajoute ce renfort, pay&eacute; '+
-   'par la r&eacute;serve &mdash; et seulement si le march&eacute; '+
-   'est calme.');
-  r4=row(miniBalles,'Les balles',
-   'La r&eacute;serve se remplit gain apr&egrave;s gain. Le robot '+
-   'prend le plus petit des deux : ce que la r&eacute;serve paie, '+
-   'et ce qu&#39;il faut pour solder la dette &mdash; jamais plus '+
-   'gros que n&eacute;cessaire. Le stop, lui, ne bouge jamais.');
- }
- sheet('<h3 style="margin:0 0 2px">Le rattrapage</h3>'+
-  '<p style="font-size:.78rem;color:var(--muted);margin:0 0 6px">'+
-  sub+'</p>'+
-  row(miniDebt,'&Agrave; rattraper : '+F(L.debt),
-   'Les pertes pas encore r&eacute;cup&eacute;r&eacute;es. '+
-   'Chaque gain fait baisser ce chiffre.')+
-  row(miniRes,'R&eacute;serve : '+F(L.chest)+
-   (L.cap?' / '+F(L.cap):''),
-   'La moiti&eacute; de <b>chaque</b> gain vient ici &mdash; pas '+
-   'seulement les gains qui battent un record. C&#39;est ce qui '+
-   'autorise un lot plus gros pour rattraper : la r&eacute;serve '+
-   'est la munition, donc elle est faite pour &ecirc;tre '+
-   'risqu&eacute;e. Au plus la moiti&eacute; part sur un seul '+
-   'essai, pour qu&#39;il en reste toujours pour le suivant.')+
-  r3+r4+
-  '<div style="background:rgba(232,197,90,.08);border:1px solid '+
-   'rgba(232,197,90,.25);border-radius:12px;padding:10px 12px;'+
-   'font-size:.8rem;color:var(--warn);line-height:1.45;margin:4px 0 '+
-   '10px">&#9888;&#65039; Un trade de rattrapage est plus gros, '+
-   'donc il gagne plus <b>et il perd plus</b>. S&#39;il rate, le '+
-   'compte descend de toute la perte &mdash; la r&eacute;serve ne '+
-   'fait qu&#39;en compter la part suppl&eacute;mentaire. '+
-   'Garde-fou : jamais plus de 10&nbsp;% du solde sur un seul '+
-   'trade.</div>'+
-  '<button class="shbtn shmain" onclick="_shDone(1)">'+
-  'Compris&nbsp;!</button>');
+ const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s">'+
+  '<use href="#'+n+'"/></svg></div>';
+ const row=(i,t,x)=>'<div class="srow-ev">'+i+'<div style="flex:1;min-width:0">'+
+  '<b style="font-size:.92rem">'+t+'</b><div style="font-size:.84rem;'+
+  'color:var(--muted2);line-height:1.45;margin-top:2px">'+x+'</div></div></div>';
+ const cap=L.cap||0,pct=cap?Math.max(0,Math.min(100,100*(L.chest||0)/cap)):0;
+ const manual=L.mode==='man';
+ const intro=manual
+  ?'Il reste <b>'+F(L.debt)+'</b> &agrave; rattraper. Une partie de chaque gain '+
+   'est mise de c&ocirc;t&eacute; pour y arriver, sans jamais risquer plus que pr&eacute;vu.'
+  :'Il reste <b>'+F(L.debt)+'</b> &agrave; rattraper. Le robot met une partie de '+
+   'chaque gain de c&ocirc;t&eacute; pour y arriver, sans jamais risquer plus de '+
+   '<b>$'+fm(L.stake||0)+'</b> sur un trade.';
+ const cell=(l,v,c,sub)=>'<div class="card" style="flex:1;padding:12px 8px 10px">'+
+  '<div class="lbl">'+l+'</div><div class="val" style="font-size:1.35rem;color:'+c+'">'+
+  v+'</div><div class="sub">'+sub+'</div></div>';
+ sheet('<h3 style="margin:0 0 4px">Le rattrapage</h3>'+
+  '<p style="color:var(--text);font-size:.95rem;line-height:1.5;margin:0 0 12px">'+
+  intro+'</p>'+
+  '<div style="display:flex;gap:10px;margin-bottom:10px">'+
+   cell('&Agrave; rattraper',F(L.debt),'var(--down-soft)','baisse &agrave; chaque gain')+
+   cell('R&eacute;serve',F(L.chest),'var(--warn)',cap?'sur $'+fm(cap)+' max':'mise de c&ocirc;t&eacute;')+
+  '</div>'+
+  (cap?'<div style="background:var(--surface3);border-radius:99px;height:6px;'+
+   'overflow:hidden;margin-bottom:12px"><div style="height:6px;border-radius:99px;'+
+   'width:'+pct.toFixed(0)+'%;background:linear-gradient(90deg,#b8963f,#e8c55a)">'+
+   '</div></div>':'')+
+  row(ico('i-target','var(--down-soft)'),'La dette',
+   'Ce sont les pertes pas encore r&eacute;cup&eacute;r&eacute;es. Chaque trade '+
+   'gagn&eacute; en efface une partie'+(L.clears>0.005?' &mdash; le prochain gain en '+
+   'enl&egrave;verait environ <b>$'+fm(L.clears)+'</b>':'')+'.')+
+  row(ico('i-lock','var(--warn)'),'La r&eacute;serve',
+   'Une partie de chaque gain est mise de c&ocirc;t&eacute; ici, en plus de votre '+
+   'solde. C&#39;est elle qui permet au robot de rattraper un peu plus vite.')+
+  row(ico('i-chart','var(--accent-soft)'),
+   manual?'Votre plafond : '+L.nl.toFixed(2)+' lot':'Le prochain trade : '+L.nl.toFixed(2)+' lot',
+   manual?'Le plus gros trade que votre r&eacute;serve paie enti&egrave;rement '+
+    'aujourd&#39;hui. Prenez moins si vous voulez &mdash; jamais plus.'
+   :'Le robot adapte la taille de son prochain trade &agrave; ce qu&#39;il a en '+
+    'r&eacute;serve'+(L.fill>0?', sans d&eacute;passer <b>$'+fm(L.stake||0)+
+    '</b> de risque':'. Pour l&#39;instant, il garde la taille normale')+'.')+
+  row(ico('i-check','var(--up)'),'Quand c&#39;est fini',
+   'Une fois la dette &agrave; z&eacute;ro, le robot repasse en mode normal. '+
+   'Rien &agrave; faire de votre c&ocirc;t&eacute;.')+
+  '<div style="background:rgba(232,197,90,.08);border:1px solid rgba(232,197,90,.25);'+
+   'border-radius:12px;padding:10px 12px;font-size:.82rem;color:var(--warn);'+
+   'line-height:1.45;margin:12px 0 10px">&Agrave; savoir : un trade de rattrapage '+
+   'est un peu plus gros, donc il gagne plus <b>et il perd plus</b>. Garde-fou : '+
+   'jamais plus de 10&nbsp;% du solde sur un seul trade.</div>'+
+  '<button class="shbtn shmain" onclick="_shDone(1)">Compris&nbsp;!</button>');
 }
 window.addEventListener('load',()=>{
  const alb=document.getElementById('adminlockbtn');
@@ -2505,11 +2449,9 @@ function render(d){
       100*am/Math.max(d.ledger.cap||1,0.01)));
      const clears=fillN*gain1;
      const stillNeed=Math.max(0,need/(d.ledger.stake||0.5)-am);
+     Object.assign(window._ledD,{clears:clears,stillNeed:stillNeed,
+      cap:d.ledger.cap,base_lot:d.ledger.base_lot});
      lt2.innerHTML=
-      '<div style="font-size:.95rem;color:var(--text);line-height:1.5;'+
-       'margin-bottom:12px">Il reste <b>$'+d.ledger.debt.toFixed(2)+'</b> \u00e0 '+
-       'rattraper. Le robot met une partie de chaque gain de c\u00f4t\u00e9 pour y '+
-       'arriver, sans jamais risquer plus de <b>$'+fm(stake)+'</b> sur un trade.</div>'+
       '<div style="text-align:center;padding:2px 0 10px">'+
        '<b style="color:var(--down-soft);font-size:2.4rem;line-height:1;'+
         'font-variant-numeric:tabular-nums;letter-spacing:-.02em">'+
