@@ -890,7 +890,10 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
  border-radius:var(--r-lg) var(--r-lg) 0 0;
  padding:20px 20px calc(24px + env(safe-area-inset-bottom,0px));
  transform:translateY(105%);transition:transform .25s ease;
- box-shadow:0 -10px 40px rgba(0,0,0,.5);max-width:480px;margin:0 auto}
+ box-shadow:0 -10px 40px rgba(0,0,0,.5);max-width:480px;margin:0 auto;
+ max-height:calc(100vh - 28px - env(safe-area-inset-top,0px));overflow-y:auto;
+ -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#sheet .grab{position:sticky;top:0;z-index:1}
 #sheet h3{font-size:1.08rem;margin-bottom:8px;color:var(--text)}
 #sheet p{color:var(--text3);font-size:.9rem;line-height:1.55;
  margin-bottom:14px}
@@ -2851,6 +2854,7 @@ function stepsSheet(){
 // swipe down on a sheet closes it (only when its content is not scrolled)
 (function(){const sh=document.getElementById('sheet');if(!sh)return;let y0=null,dy=0;
  sh.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;
+  if(sh.scrollTop>0){y0=null;return;}   // 2026-09-27: the sheet scrolls itself now
   let el=e.target;while(el&&el!==sh){if(el.scrollTop>0){y0=null;break;}el=el.parentElement;}},{passive:true});
  sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;
   if(dy>0){sh.style.transition='none';sh.style.transform='translateY('+dy+'px)';}},{passive:true});
