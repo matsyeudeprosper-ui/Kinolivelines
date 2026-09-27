@@ -1044,6 +1044,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div style="flex:1"><b>Les notifications</b><div style="font-size:.84rem;color:var(--muted2)">Activez-les dans les R&eacute;glages pour &ecirc;tre pr&eacute;venu.</div></div></div>
  </div>
 </div>
+<div class="panel" id="renewcard" style="display:none;margin-top:26px;border-color:rgba(232,197,90,.4)">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--warn);background:rgba(232,197,90,.12)"><svg class="ic"><use href="#i-key"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="renew-t" style="font-size:.98rem"></b>
+   <div id="renew-s" style="font-size:.82rem;color:var(--muted2);line-height:1.4;margin-top:2px"></div></div>
+  <button id="renew-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
+ </div>
+</div>
 <div class="panel" id="sigcard" style="display:none;margin-top:12px;border-width:1.5px">
  <div style="display:flex;justify-content:space-between;align-items:center">
   <div class="lbl" id="sig-lbl">Signal</div><span id="sig-when" style="font-size:.72rem;color:var(--muted)"></span></div>
@@ -1317,6 +1325,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="sec" style="margin-top:20px">Jour par jour
  <span class="hint">&middot; touchez un jour</span></div>
 <div class="panel" id="days" style="display:none"></div>
+<div class="sec" id="sig-sec" style="display:none">Signaux <span class="hint">&middot; ce que le service vous a envoy&eacute;</span></div>
+<div class="panel" id="siglist" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none;display:flex;justify-content:space-between;
  align-items:center"><span>R&eacute;sum&eacute; du mois</span>
  <button onclick="monthReport()" style="border:1px solid var(--border2);background:var(--surface3);
@@ -1615,6 +1625,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div style="font-size:.78rem;color:var(--muted2);margin-bottom:8px">
   Changer de vue (admin)</div>
  <div id="acctsw-b" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
+<div class="panel" id="revcard" style="display:none;margin-bottom:12px">
+ <div class="lbl">Revenus</div>
+ <div id="rev-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
+ <div id="rev-due" style="font-size:.82rem;color:var(--muted2);line-height:1.5;margin-top:10px"></div>
+ <div id="rev-pay" style="margin-top:8px"></div>
 </div>
 <div class="panel" id="nest">...</div>
 <button id="invbtn" style="width:100%;margin-top:14px;
@@ -3168,6 +3184,7 @@ async function acctSheet(){
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
     '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
+    (x.family_until?'<button onclick="event.stopPropagation();_shDone(1);nestCodeFor(&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-key"/></svg>Code</button>':'')+
     (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
     '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
     '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
@@ -3633,7 +3650,7 @@ function renderPlan(d){
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
  const sg=ms&&ms.signal;const en=LANG()==='en';
- if(!sg||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
+ if(!sg||sg.done||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
  const buy=sg.dir===1,col=sg.ok?(buy?'var(--up)':'var(--down)'):'var(--muted)';
  el.style.display='block';el.style.borderColor=sg.ok?col:'var(--border2)';el.style.opacity=sg.ok?'1':'.75';
  document.getElementById('sig-lbl').textContent=sg.ok?(en?'Signal':'Signal'):(en?'Signal set aside':'Signal \u00e9cart\u00e9');
@@ -3642,8 +3659,10 @@ function renderSignal(ms){
  const dd=document.getElementById('sig-dir');dd.textContent=(buy?'\u25b2 ':'\u25bc ')+(buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'));dd.style.color=col;
  const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center"><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span><b style="font-size:.86rem;font-variant-numeric:tabular-nums">'+v+'</b></div>';
  setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')));
- setH(document.getElementById('sig-note'),sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
-  :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. Kino\u2019s robot would not take it either.':'. Le robot de Kino ne le prendrait pas non plus.')));
+ const far=(ms&&typeof ms.px==='number'&&sg.e)?Math.abs(ms.px-sg.e)/sg.e:0;
+ const farTxt=far>0.0025?('<div style="color:var(--warn);margin-bottom:4px">\u26a0 '+(en?'The price has moved '+(far*100).toFixed(2)+'% from the entry \u2014 careful, the risk is no longer the same.':'Le prix s\u2019est \u00e9loign\u00e9 de l\u2019entr\u00e9e ('+(far*100).toFixed(2)+'\u202f%) \u2014 prudence, le risque n\u2019est plus le m\u00eame.')+'</div>'):'';
+ setH(document.getElementById('sig-note'),farTxt+(sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
+  :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. Kino\u2019s robot would not take it either.':'. Le robot de Kino ne le prendrait pas non plus.'))));
  const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
  window._sig=sg;
 }
@@ -3654,6 +3673,60 @@ async function pollSignal(){
  const d=window._d;if(!d||!MAN()||OBS())return;
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
  try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}renderSignal(await r.json());}catch(e){}
+}
+// ---- batch 26 ----
+function renewBanner(d){
+ const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
+ const en=LANG()==='en',now=Date.now()/1000;let best=null;
+ [['family',P.family_until,en?'Automatic':'Automatique'],['strategy',P.strategy_until,en?'Strategy':'Strat\u00e9gie'],['manual',P.manual_until,en?'Manual':'Manuel']].forEach(([k,u,l])=>{
+  if(u&&u>now&&(u-now)<=5*86400&&(!best||u<best.u))best={k,u,l};});
+ if(!best||(best.k==='manual'&&P.strategy_until>now)){el.style.display='none';return;}
+ const days=Math.max(0,Math.ceil((best.u-now)/86400));
+ document.getElementById('renew-t').textContent=best.l+(en?' ends in ':' expire dans ')+days+(en?' day'+(days>1?'s':''):' jour'+(days>1?'s':''));
+ const b=document.getElementById('renew-b');
+ if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with Kino, then enter the code he sends you.':'R\u00e9glez Kino, puis entrez le code qu\u2019il vous envoie.';
+  b.textContent=en?'Enter the code':'Entrer le code';b.onclick=()=>{window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();}};}
+ else{document.getElementById('renew-s').textContent=en?'Renewing adds 30 days from the current end \u2014 no interruption.':'Renouveler ajoute 30 jours \u00e0 la fin actuelle \u2014 sans coupure.';
+  b.textContent=en?'Renew':'Renouveler';b.onclick=()=>buyPkg(best.k);}
+ el.style.display='block';
+}
+async function loadSignals(){
+ const sec=document.getElementById('sig-sec'),el=document.getElementById('siglist');if(!sec||!el)return;
+ const d=window._d||{},P=d.plan||{};
+ if(!(P.manual||P.family)||d.public){sec.style.display='none';el.style.display='none';return;}
+ if(window._sgT&&Date.now()-window._sgT<30000)return;window._sgT=Date.now();
+ let it=[];try{const r=await fetch(B+'signals?t='+Date.now(),{cache:'no-store'});if(r.ok)it=(await r.json()).items||[];}catch(e){}
+ const en=LANG()==='en';
+ if(!it.length){sec.style.display='block';el.style.display='block';el.innerHTML='<div class="empty"><p>'+(en?'No signal yet. They will appear here as they come.':'Aucun signal pour l\u2019instant. Ils appara\u00eetront ici au fil de l\u2019eau.')+'</p></div>';return;}
+ const hm=t=>{const x=new Date(t*1000);return String(x.getUTCDate()).padStart(2,'0')+'/'+String(x.getUTCMonth()+1).padStart(2,'0')+' '+String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0');};
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ el.innerHTML=it.slice(0,40).map(x=>{const buy=x.dir===1;
+  let st,c;
+  if(!x.ok){st=(en?'set aside':'\u00e9cart\u00e9')+' \u00b7 '+(x.why||'');c='var(--muted)';}
+  else if(x.taken){st=(en?'taken':'pris')+(typeof x.result==='number'?' \u00b7 '+money(x.result):'');c=typeof x.result==='number'?(x.result>=0?'var(--up-soft)':'var(--down-soft)'):'var(--accent-soft)';}
+  else if(x.done){st=en?'not taken':'non pris';c='var(--muted2)';}
+  else{st=en?'live':'en cours';c='var(--up-soft)';}
+  return '<div class="row"><span class="rowt"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span> '+hm(x.t)+' \u00b7 ~'+Number(x.e).toFixed(0)+' \u00b7 '+Number(x.lot).toFixed(2)+'</span><b style="color:'+c+';font-size:.8rem;text-align:right;max-width:52%">'+st+'</b></div>';}).join('');
+ sec.style.display='block';el.style.display='block';
+}
+function renderRevenue(d){
+ const el=document.getElementById('revcard'),R=d.revenue;if(!el)return;if(!d.is_master||!R){el.style.display='none';return;}
+ const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center"><b style="display:block;font-size:1.05rem">'+v+'</b><span style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ setH(document.getElementById('rev-g'),cell('Auto',R.active.family)+cell('Manuel',R.active.manual)+cell('Strat\u00e9gie',R.active.strategy)+cell('MRR','$'+Math.round(R.mrr)));
+ setH(document.getElementById('rev-due'),(R.due.length?'<b>\u00c0 renouveler sous 7 j :</b> '+R.due.map(x=>x.name+' ('+x.pkg+', '+x.days+' j)').join(' \u00b7 '):'Aucun renouvellement sous 7 jours.')+(R.family_usd?'':' <span style="color:var(--muted)">\u00b7 prix Automatique non d\u00e9fini (Paiements & MQL5)</span>'));
+ setH(document.getElementById('rev-pay'),R.payments.length?R.payments.map(p=>{const x=new Date(p.t*1000);return '<div class="row" style="padding:6px 0;font-size:.82rem"><span class="rowt">'+String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+' \u00b7 '+(p.order||'').split('|')[0]+' \u00b7 '+p.granted+'</span><b class="pos">+$'+Number(p.amount||0).toFixed(0)+'</b></div>';}).join(''):'<div style="font-size:.78rem;color:var(--muted)">Aucun paiement NOWPayments encore.</div>');
+ el.style.display='block';
+}
+async function nestCodeFor(name){
+ const pw=await askPwd('Code pour '+name,'Code de renouvellement / activation, valable 24 h, usage unique.','🔑 G\u00e9n\u00e9rer');if(!pw)return;
+ const r=await fetch(AB()+'actcode',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
+ const msg='Bonjour '+name+', votre code OwlNest : '+j.code+' (valable 24 h). Dans l\u2019app : R\u00e9glages \u203a Abonnement \u203a \u00ab J\u2019ai un code de renouvellement \u00bb.';
+ sheet('<h3>Code pour '+name+'</h3><div style="font-size:2rem;font-weight:800;letter-spacing:.3em;text-align:center;background:var(--bg);border-radius:14px;padding:18px 6px;margin:6px 0 10px;color:var(--up-soft)">'+j.code+'</div>'+
+  '<p style="font-size:.86rem;color:var(--muted2)">'+msg+'</p>'+
+  '<button class="shbtn shmain" onclick="(navigator.clipboard?navigator.clipboard.writeText('+JSON.stringify(msg).replace(/"/g,'&quot;')+'):Promise.reject()).then(()=>toast(&#39;Message copi\u00e9&#39;,2000),()=>toast(&#39;Copie impossible&#39;,2000))">Copier le message</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
 function observerView(d){
  const obs=OBS();
@@ -3743,12 +3816,13 @@ async function payCfg(){
  const v=await sheet('<h3>Paiements &amp; MQL5</h3><p>Cl\u00e9s NOWPayments (compte marchand), secret IPN (m\u00eame valeur que dans NOWPayments \u203a IPN), et le lien du signal MQL5 pour le trading automatique. Laissez vide pour ne pas changer.</p>'+
   '<div style="font-size:.8rem;color:var(--muted2);margin:-4px 0 10px">\u00c9tat : '+(P.np_key_tail?'cl\u00e9 API enregistr\u00e9e (\u2026'+P.np_key_tail+')':'cl\u00e9 API absente')+' \u00b7 secret IPN '+(P.np_secret_set?'enregistr\u00e9':'absent')+(P.np_sandbox?' \u00b7 mode test':'')+'</div>'+
   inp('shnpk','Cl\u00e9 API NOWPayments','', 'password')+inp('shnps','Secret IPN','', 'password')+inp('shmq','https://www.mql5.com/fr/signals/...',d.plan&&d.plan.mql5_url||'')+
+  inp('shfam','Prix Automatique (famille) en $ / 30 j, pour le calcul des revenus',(d.revenue&&d.revenue.family_usd)||'', 'number')+
   '<label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted2);margin:2px 0 10px"><input id="shsbx" type="checkbox"'+(P.np_sandbox?' checked':'')+'> Mode test (sandbox NOWPayments)</label>'+
-  '<button class="shbtn shmain" onclick="_shDone({k:document.getElementById(&#39;shnpk&#39;).value,s:document.getElementById(&#39;shnps&#39;).value,m:document.getElementById(&#39;shmq&#39;).value,b:document.getElementById(&#39;shsbx&#39;).checked})">Enregistrer</button>'+
+  '<button class="shbtn shmain" onclick="_shDone({k:document.getElementById(&#39;shnpk&#39;).value,s:document.getElementById(&#39;shnps&#39;).value,m:document.getElementById(&#39;shmq&#39;).value,b:document.getElementById(&#39;shsbx&#39;).checked,f:document.getElementById(&#39;shfam&#39;).value})">Enregistrer</button>'+
   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
  if(!v)return;
  const pw=await askPwd('Enregistrer ?','Mot de passe ma\u00eetre.','Enregistrer');if(!pw)return;
- let body='pwd='+encodeURIComponent(pw)+'&mql5_url='+encodeURIComponent(v.m||'')+'&np_sandbox='+(v.b?'1':'0');
+ let body='pwd='+encodeURIComponent(pw)+'&mql5_url='+encodeURIComponent(v.m||'')+'&np_sandbox='+(v.b?'1':'0')+(v.f!==''&&v.f!=null?'&family_usd='+encodeURIComponent(v.f):'');
  if(v.k)body+='&np_api_key='+encodeURIComponent(v.k);if(v.s)body+='&np_ipn_secret='+encodeURIComponent(v.s);
  const r=await fetch(AB()+'nest_config',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
@@ -4469,7 +4543,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);renderRevenue(d);loadSignals();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5643,6 +5717,33 @@ def user_stats(u, admin_override=False):
                         "family_until": int((ent(x["id"]) or {}).get("family_until") or 0),
                         "plan": x.get("plan")})
                 d["nest"] = _rows
+                # 2026-09-28: the owner's "Revenus" card
+                try:
+                    _E = _ents()
+                    _now = time.time()
+                    _act = {"family": 0, "manual": 0, "strategy": 0}
+                    _due = []
+                    _names = {x["id"]: x.get("name", x["id"]) for x in json.load(open(USERS_FILE, encoding="utf-8"))}
+                    for _uid, _e in _E.items():
+                        if _uid in OWNER_UIDS or not isinstance(_e, dict):
+                            continue
+                        for _k, _lab in (("family_until", "family"), ("manual_until", "manual"), ("strategy_until", "strategy")):
+                            _u = float(_e.get(_k) or 0)
+                            if _u > _now:
+                                _act[_lab] += 1
+                                if _u - _now < 7 * 86400:
+                                    _due.append({"name": _names.get(_uid, _uid), "pkg": _lab, "days": int((_u - _now) // 86400)})
+                    try:
+                        _pays = [p for p in json.load(open(PAY_FILE, encoding="utf-8")) if p.get("granted") in PACKAGES][-10:][::-1]
+                    except Exception:
+                        _pays = []
+                    _cfg = nest_config()
+                    _fam_usd = float(_cfg.get("family_usd") or 0)
+                    d["revenue"] = {"active": _act, "due": _due, "payments": _pays,
+                                    "mrr": _act["manual"] * PACKAGES["manual"]["usd"] + _act["strategy"] * PACKAGES["strategy"]["usd"] + _act["family"] * _fam_usd,
+                                    "family_usd": _fam_usd}
+                except Exception:
+                    pass
             except Exception:
                 pass
         elif not u.get("trade"):
@@ -6816,6 +6917,11 @@ class H(BaseHTTPRequestHandler):
                 for k in ("np_api_key", "np_ipn_secret", "mql5_url"):
                     if k in _fc:
                         cfg[k] = (_fc.get(k, [""])[0] or "").strip()[:200]
+                if "family_usd" in _fc:
+                    try:
+                        cfg["family_usd"] = float(_fc.get("family_usd", ["0"])[0] or 0)
+                    except Exception:
+                        pass
                 if "np_sandbox" in _fc:
                     cfg["np_sandbox"] = _fc.get("np_sandbox", ["0"])[0] == "1"
                 json.dump(cfg, open(CONFIG_FILE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
@@ -7565,6 +7671,15 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "signals":
+            # 2026-09-28: the signals the member's desk emitted (last 100)
+            try:
+                lst = json.load(open(os.path.join(DIR, f"owl_signals_{user.get('id')}.json"), encoding="utf-8"))
+                _era = era_ts(user)
+                lst = [x for x in lst if isinstance(x, dict) and (not _era or x.get("t", 0) >= _era)]
+                self._send(json.dumps({"items": lst[-100:][::-1]}), "application/json")
+            except Exception:
+                self._send(json.dumps({"items": []}), "application/json")
         elif sub == "inbox":
             self._send(json.dumps(inbox_items(user)), "application/json")
         elif sub == "export.csv":

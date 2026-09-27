@@ -100,6 +100,48 @@ def say(m):
         f.write(f"{datetime.now(timezone.utc).isoformat()} {m}\n")
 
 
+SIGF = os.path.join(DIR, f"owl_signals_{UID}.json")
+
+
+def lang():
+    """2026-09-28: the member's language (push_pref lang=), fr by default."""
+    try:
+        import owl_push_notifier as P
+        return P.lang_of(UID)
+    except Exception:
+        return "fr"
+
+
+def _t(fr, en):
+    return en if lang() == "en" else fr
+
+
+def sig_log(sig):
+    """Keep the last 200 signals of this account (taken / result filled later)."""
+    try:
+        try:
+            lst = json.load(open(SIGF, encoding="utf-8"))
+            if not isinstance(lst, list):
+                lst = []
+        except Exception:
+            lst = []
+        lst = [x for x in lst if x.get("t") != sig.get("t")] + [dict(sig)]
+        save_json(SIGF, lst[-200:])
+    except Exception as e:
+        say(f"signal log failed: {type(e).__name__}: {e}")
+
+
+def sig_update(t, **kw):
+    try:
+        lst = json.load(open(SIGF, encoding="utf-8"))
+        for x in lst:
+            if x.get("t") == t:
+                x.update(kw)
+        save_json(SIGF, lst)
+    except Exception:
+        pass
+
+
 def push(title, body, kind="instant"):
     try:
         import owl_push_notifier as P
@@ -898,9 +940,11 @@ def main():
                         side = "haussier" if eng.choch == 1 else "baissier"
                         say(f"CHoCH {side} a {_c:.2f}")
                         # 2026-09-27: plain words for members, no jargon
-                        push("\u26a1 Le sens peut changer",
-                             f"Vers le {'haut' if eng.choch == 1 else 'bas'}, autour de {_c:.0f}. "
-                             "Attendez la confirmation avant d'entrer.", kind="batch")
+                        push(_t("\u26a1 Le sens peut changer", "\u26a1 The direction may change"),
+                             _t(f"Vers le {'haut' if eng.choch == 1 else 'bas'}, autour de {_c:.0f}. "
+                                "Attendez la confirmation avant d'entrer.",
+                                f"To the {'upside' if eng.choch == 1 else 'downside'}, around {_c:.0f}. "
+                                "Wait for confirmation before entering."), kind="batch")
                     vpend_check(_c, rebuild_ledger(),
                                 float(bar["high"]), float(bar["low"]))
                     last_choch = eng.choch
@@ -925,9 +969,12 @@ def main():
                         w = "haussiere" if eng.trend == 1 else "baissiere"
                         say(f"FLIP: tendance {w}")
                         _ENG["cont_used"] = False      # a new trend re-arms the one continuation
-                        push("\U0001f504 Nouvelle tendance " + w,
-                             f"Bascule autour de {_c:.0f}. Les prochains signaux seront des "
-                             f"{'achats' if eng.trend == 1 else 'ventes'}.")
+                        push(_t("\U0001f504 Nouvelle tendance " + w,
+                                "\U0001f504 New " + ("bullish" if eng.trend == 1 else "bearish") + " trend"),
+                             _t(f"Bascule autour de {_c:.0f}. Les prochains signaux seront des "
+                                f"{'achats' if eng.trend == 1 else 'ventes'}.",
+                                f"Flip around {_c:.0f}. The next signals will be "
+                                f"{'buys' if eng.trend == 1 else 'sells'}."))
                     # ---- AUTO mode: enter on our own (owner 2026-09-17)
                     # The kill line is checked BEFORE any entry and while a
                     # position is running, so a losing trade cannot carry the
@@ -1005,12 +1052,17 @@ def main():
                                           "bul": bul2, "kind": "flip" if flip else "cont",
                                           "ok": not _why, "why": _why or "",
                                           "expires": int(time.time()) + 1800}
+                        sig_log(_ENG["signal"])
                         if manual_mode() and not _why:
-                            push(("\U0001f7e2 ACHAT" if d_ == 1 else "\U0001f534 VENTE") + f" {SYMBOL}",
-                                 f"Entr\u00e9e ~{_c:.0f} \u00b7 stop {slv:.0f} \u00b7 cible {_tp:.0f} "
-                                 f"\u00b7 lot {lot2:.2f}"
-                                 + (f" (+{bul2} rattrapage)" if bul2 else "")
-                                 + " \u00b7 valable 30 min")
+                            _en = lang() == "en"
+                            push(("\U0001f7e2 " + ("BUY" if _en else "ACHAT") if d_ == 1
+                                  else "\U0001f534 " + ("SELL" if _en else "VENTE")) + f" {SYMBOL}",
+                                 (f"Entry ~{_c:.0f} \u00b7 stop {slv:.0f} \u00b7 target {_tp:.0f} \u00b7 lot {lot2:.2f}"
+                                  + (f" (+{bul2} catch-up)" if bul2 else "") + " \u00b7 valid 30 min") if _en else
+                                 (f"Entr\u00e9e ~{_c:.0f} \u00b7 stop {slv:.0f} \u00b7 cible {_tp:.0f} "
+                                  f"\u00b7 lot {lot2:.2f}"
+                                  + (f" (+{bul2} rattrapage)" if bul2 else "")
+                                  + " \u00b7 valable 30 min"))
                         elif manual_mode():
                             say(f"signal non conseille: {_why}")
             # ---- publish state for the chart (every 10 s)
@@ -1018,6 +1070,50 @@ def main():
                 last_led = time.time()
                 led = rebuild_ledger()
                 tick = mt5.symbol_info_tick(SYMBOL)
+                # 2026-09-28: the live signal - taken? invalidated? over?
+                _sg = _ENG.get("signal")
+                if _sg and not _sg.get("done"):
+                    _now = time.time()
+                    _px = float(tick.bid) if tick else None
+                    if _sg.get("ok") and not _sg.get("taken"):
+                        for _p in open_positions():
+                            if ((_p.type == 0) == (_sg["dir"] == 1)) and _p.time >= _sg["t"] - 60:
+                                _sg["taken"] = int(_p.ticket)
+                                sig_update(_sg["t"], taken=int(_p.ticket), taken_t=int(_p.time))
+                                say(f"signal pris (ticket {_p.ticket})")
+                                break
+                    _hit = _px is not None and ((_sg["dir"] == 1 and _px <= _sg["sl"]) or
+                                                (_sg["dir"] == -1 and _px >= _sg["sl"]))
+                    if _now > _sg.get("expires", 0) or _hit:
+                        _sg["done"] = True
+                        _sg["expires"] = int(_now)
+                        sig_update(_sg["t"], done=True, ended=int(_now),
+                                   end="stop" if _hit else "time")
+                        if manual_mode() and _sg.get("ok") and not _sg.get("taken"):
+                            push(_t("\u26aa Signal termin\u00e9", "\u26aa Signal over"),
+                                 _t("Le niveau est pass\u00e9 \u2014 attendez le prochain."
+                                    if _hit else "30 minutes \u00e9coul\u00e9es \u2014 attendez le prochain.",
+                                    "The level was crossed \u2014 wait for the next one."
+                                    if _hit else "30 minutes elapsed \u2014 wait for the next one."),
+                                 kind="batch")
+                # results of taken signals (every minute)
+                if int(time.time()) % 60 < 10:
+                    try:
+                        _lst = json.load(open(SIGF, encoding="utf-8"))
+                        _pend = [x for x in _lst if x.get("taken") and "result" not in x][-10:]
+                        if _pend:
+                            _t0 = min(x["t"] for x in _pend)
+                            _ds = mt5.history_deals_get(datetime.fromtimestamp(_t0, tz=timezone.utc),
+                                                        datetime.now(timezone.utc) + timedelta(days=1)) or []
+                            _by = {}
+                            for _dl in _ds:
+                                if _dl.entry == 1:
+                                    _by[_dl.position_id] = _by.get(_dl.position_id, 0.0) + _dl.profit + _dl.swap + _dl.commission
+                            for x in _pend:
+                                if x["taken"] in _by:
+                                    sig_update(x["t"], result=round(_by[x["taken"]], 2))
+                    except Exception:
+                        pass
                 pos = open_positions()
                 ai = mt5.account_info()
                 save_json(STATE, {
