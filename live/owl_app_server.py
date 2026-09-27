@@ -804,6 +804,19 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  font-weight:700;letter-spacing:.03em;background:rgba(255,255,255,.07);
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
+.tfc{border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;
+ padding:6px 13px;font-size:.74rem;font-weight:700;white-space:nowrap;flex:none}
+.tfc.on{background:var(--surface3);border-color:var(--border2);color:var(--text2)}
+#tfilt{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+#tfilt::-webkit-scrollbar{display:none}
+#ptr{position:fixed;left:50%;transform:translate(-50%,-90px);top:calc(58px + env(safe-area-inset-top,0px));
+ z-index:44;background:var(--surface3);border:1px solid var(--border2);color:var(--text2);
+ border-radius:99px;padding:7px 14px;font-size:.78rem;font-weight:700;transition:transform .25s;
+ display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#ptr.on{transform:translate(-50%,0)}
+.gbar{height:8px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:12px}
+.gbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up));transition:width .6s}
+.ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -865,6 +878,15 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
+<div id="ptr"><svg class="ic ic-s"><use href="#i-activity"/></svg>Actualisation...</div>
+<div class="panel" id="firstfail" style="display:none;margin-top:26px;text-align:center">
+ <div style="color:var(--muted2);margin:6px auto 0;width:44px;height:44px;border-radius:13px;
+  background:var(--surface3);display:flex;align-items:center;justify-content:center"><svg class="ic"><use href="#i-cloud"/></svg></div>
+ <b style="display:block;margin-top:10px;font-size:1rem">Impossible de joindre le robot</b>
+ <div style="font-size:.86rem;color:var(--muted2);margin-top:4px;line-height:1.45">V&eacute;rifiez votre
+  connexion. Le robot, lui, continue de travailler.</div>
+ <button class="shbtn shmain" style="margin-top:14px" onclick="retryLoad()">R&eacute;essayer</button>
+</div>
 <div class="panel" id="welcome" style="display:none;margin-top:26px">
  <div class="lbl">Bienvenue</div>
  <div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:8px">
@@ -1007,6 +1029,17 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="val skel" id="month">--</div>
 <div class="sub">depuis le 1er</div></div>
 </div>
+<div class="panel" id="pgoal" style="display:none;margin-top:12px;cursor:pointer" role="button"
+ tabindex="0" onclick="myGoal()" aria-label="Mon objectif">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--accent-soft)"><svg class="ic"><use href="#i-target"/></svg></div>
+  <div style="flex:1;min-width:0"><div class="lbl">Mon objectif</div>
+   <b id="pgoal-t" style="font-size:1rem;display:block;margin-top:2px"></b></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="gbar"><i id="pgoal-bar" style="width:0%"></i></div>
+ <div id="pgoal-s" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
+</div>
 <div class="sec" style="display:flex;justify-content:space-between;
  align-items:center">Progression
  <span><button class="cvc" data-c="7" style="border:1px solid var(--border2);
@@ -1014,7 +1047,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   font-size:.72rem;font-weight:700">7 j</button>
  <button class="cvc" data-c="30" style="border:1px solid var(--border);
   background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
-  font-size:.72rem;font-weight:700;margin-left:6px">30 j</button></span>
+  font-size:.72rem;font-weight:700;margin-left:6px">30 j</button>
+ <button class="cvc" data-c="90" style="border:1px solid var(--border);
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
+  font-size:.72rem;font-weight:700;margin-left:6px">3 mois</button></span>
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 80"
  style="width:100%;height:80px;display:block"></svg></div>
@@ -1095,6 +1131,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  &middot; 30 derniers trades</div>
 <div class="panel" id="statx" style="display:none"></div>
 <div class="sec">Derniers trades</div>
+<div id="tfilt"><button class="tfc on" data-f="all">Tous</button><button class="tfc" data-f="won">Gagn&eacute;s</button><button class="tfc" data-f="lost">Perdus</button><button class="tfc" data-f="week">Cette semaine</button></div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
 <span class="skel" style="width:18%">&nbsp;</span></div>
@@ -1190,6 +1227,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div class="ssub">Fichier CSV &middot; date, sens, lot, entr&eacute;e, sortie, r&eacute;sultat</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
+ <div class="srow" id="inboxbtn" onclick="inboxSheet()">
+  <div class="sic"><svg class="ic"><use href="#i-bell"/></svg></div>
+  <div style="flex:1"><b>Messages<span class="ibdot" id="inbox-dot" style="display:none"></span></b>
+   <div class="ssub" id="inbox-sub">Les derni&egrave;res notifications re&ccedil;ues</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="mygoalbtn" onclick="myGoal()">
+  <div class="sic"><svg class="ic"><use href="#i-target"/></svg></div>
+  <div style="flex:1"><b>Mon objectif</b>
+   <div class="ssub" id="mygoal-sub">Choisir un solde &agrave; atteindre</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
  <div class="srow" id="infobtn">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
   <div style="flex:1"><b>Ce qu&#39;il faut savoir</b></div>
@@ -1473,6 +1522,7 @@ document.addEventListener('touchmove',e=>{
     &&e.touches[0].clientY-_pty>80){
   _pty=null;
   document.getElementById('upd').textContent='actualisation...';
+  ptrShow();loadDay();loadInbox();
   window._lastS=null;load();
   try{navigator.vibrate&&navigator.vibrate(8)}catch(x){}}},
  {passive:true});
@@ -2100,8 +2150,8 @@ function drawJourney(d){
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
 function drawSpark(){
- const c=(window._cvz==='30'&&window._c30&&window._c30.length>1)
-  ?window._c30:(window._c7||[]);
+ const c=(window._cvz==='90'&&window._c90&&window._c90.length>1)?window._c90
+  :(window._cvz==='30'&&window._c30&&window._c30.length>1)?window._c30:(window._c7||[]);
  const el=document.getElementById('spark');
  if(c.length<2){
   el.innerHTML='<text x="150" y="44" text-anchor="middle" style="fill:var(--muted)" '+
@@ -2150,6 +2200,77 @@ document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
   x.style.borderColor=on?'var(--border2)':'var(--border)';
   x.style.color=on?'var(--text2)':'var(--muted2)';});
  drawSpark();};});
+document.querySelectorAll('.tfc').forEach(b=>{b.onclick=()=>{window._trF=b.dataset.f;window._trN=10;
+ document.querySelectorAll('.tfc').forEach(x=>x.classList.toggle('on',x===b));
+ if(window._d)render(window._d);};});
+// 2026-09-27: pull-to-refresh indicator, honest first-load failure, a
+// personal goal (this phone only) and the Messages inbox.
+function ptrShow(){const p=document.getElementById('ptr');if(!p)return;p.classList.add('on');
+ clearTimeout(window._ptrT);window._ptrT=setTimeout(()=>p.classList.remove('on'),1100);}
+function retryLoad(){const b=document.querySelector('#firstfail button');
+ if(b){b.textContent='Connexion...';b.disabled=true;}
+ window._offFail=0;load().then(()=>{if(b){b.textContent='R\u00e9essayer';b.disabled=false;}});}
+function goalKey(){return 'owlGoal:'+B;}
+function drawGoal(d){
+ let g=0;try{g=parseFloat(localStorage.getItem(goalKey())||'0')||0;}catch(e){}
+ const el=document.getElementById('pgoal'),sub=document.getElementById('mygoal-sub');
+ if(!el)return;
+ if(!(g>0)){el.style.display='none';if(sub)sub.textContent='Choisir un solde \u00e0 atteindre';return;}
+ const eq=d.equity||0,pc=Math.max(0,Math.min(100,eq/g*100));
+ el.style.display='block';
+ document.getElementById('pgoal-bar').style.width=pc.toFixed(1)+'%';
+ if(eq>=g){document.getElementById('pgoal-t').textContent='Objectif atteint : $'+g.toFixed(0)+' \U0001f389';
+  document.getElementById('pgoal-s').textContent='Bravo. Touchez pour en choisir un nouveau.';}
+ else{document.getElementById('pgoal-t').textContent=Math.round(pc)+' % du chemin vers $'+g.toFixed(0);
+  document.getElementById('pgoal-s').textContent='$'+eq.toFixed(2)+' aujourd\u2019hui \u00b7 il reste $'+(g-eq).toFixed(2);}
+ if(sub)sub.textContent='$'+g.toFixed(0)+' \u00b7 '+Math.round(pc)+' % atteint';
+}
+async function myGoal(){
+ let g=0;try{g=parseFloat(localStorage.getItem(goalKey())||'0')||0;}catch(e){}
+ const v=await sheet('<h3>Mon objectif</h3><p>Un solde que vous aimeriez atteindre. Il reste sur ce t\u00e9l\u00e9phone ; personne d\u2019autre ne le voit.</p>'+
+  '<input id="shgoal" type="number" inputmode="decimal" min="1" step="1" placeholder="Par exemple 500" value="'+(g>0?g:'')+'" '+
+  'style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:1.05rem;margin-bottom:10px">'+
+  '<button class="shbtn shmain" onclick="_shDone(document.getElementById(&#39;shgoal&#39;).value)">Enregistrer</button>'+
+  (g>0?'<button class="shbtn shghost" onclick="_shDone(&#39;0&#39;)">Retirer l\u2019objectif</button>':'')+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(v===null)return;
+ const n=parseFloat(v)||0;
+ try{if(n>0)localStorage.setItem(goalKey(),String(n));else localStorage.removeItem(goalKey());}catch(e){}
+ if(window._d)drawGoal(window._d);
+ toast(n>0?'Objectif enregistr\u00e9 : $'+n.toFixed(0):'Objectif retir\u00e9',2200);
+}
+function inboxKey(){return 'owlInboxSeen:'+B;}
+function inboxWhen(t){const d=new Date(t*1000),n=new Date();
+ const hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+ const dd=Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/86400000);
+ return (dd===0?'aujourd\u2019hui':dd===1?'hier':String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))+' '+hm;}
+async function loadInbox(){
+ try{const r=await fetch(B+'inbox');if(!r.ok)return;const j=await r.json();window._inbox=j.items||[];}catch(e){return;}
+ let seen=0;try{seen=parseInt(localStorage.getItem(inboxKey())||'0',10)||0;}catch(e){}
+ const it=window._inbox,nw=it.filter(x=>x.t>seen).length;
+ const sub=document.getElementById('inbox-sub'),dot=document.getElementById('inbox-dot');
+ if(!sub)return;
+ if(!it.length)sub.textContent='Aucun message pour l\u2019instant';
+ else sub.textContent=(nw?nw+' nouveau'+(nw>1?'x':'')+' \u00b7 ':'')+'dernier : '+inboxWhen(it[0].t);
+ if(dot)dot.style.display=nw?'inline-block':'none';
+}
+function inboxSheet(){
+ const it=window._inbox||[];
+ const ic=k=>k==='batch'?['i-calendar','var(--accent-soft)']:k==='weekly'?['i-book','var(--accent-soft)']:['i-bell','var(--warn)'];
+ const esc=x=>String(x||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+ let h='<h3>Messages</h3>';
+ if(!it.length)h+='<div class="empty"><p>Aucun message pour l\u2019instant. Activez les notifications pour recevoir le bilan du jour.</p></div>';
+ else h+='<div style="max-height:60vh;overflow-y:auto;margin:0 -2px">'+it.map(x=>{const [n,c]=ic(x.kind);
+  return '<div class="srow-ev"><div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>'+
+  '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">'+
+  '<b style="font-size:.9rem">'+esc(x.title)+'</b><span style="font-size:.7rem;color:var(--muted);white-space:nowrap">'+inboxWhen(x.t)+'</span></div>'+
+  '<div style="font-size:.84rem;color:var(--muted2);line-height:1.4;margin-top:2px">'+esc(x.body)+'</div></div></div>';}).join('')+'</div>';
+ h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
+ try{if(it.length)localStorage.setItem(inboxKey(),String(it[0].t));}catch(e){}
+ sheet(h);
+ const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';
+ const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent='dernier : '+inboxWhen(it[0].t);
+}
 function tradeSheet(i){
  const x=(window._tr||[])[i];
  if(!x)return;
@@ -3095,7 +3216,11 @@ function render(d){
    mo.className='val '+(sgn(d.month));
   }
   window._c7=d.curve||[];window._c30=d.curve30||[];
-  drawSpark();
+  // 2026-09-27: 3-month curve built from the worker's day-by-day months
+  (function(){const M=d.months||{};
+   const ds=[].concat(...Object.keys(M).sort().map(k=>M[k]||[])).sort((a,b)=>a.d<b.d?-1:1);
+   let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});})();
+  drawSpark();drawGoal(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -3357,8 +3482,18 @@ function render(d){
   if(d.trades&&d.trades.length){
    window._tr=d.trades;
    const N=window._trN||10;
+   // 2026-09-27: filter chips (Tous / Gagnes / Perdus / Cette semaine);
+   // data-i stays the index in d.trades so tradeSheet() keeps working.
+   const F=window._trF||'all';
+   const wk=(()=>{const n=new Date();const m=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()));
+    m.setUTCDate(m.getUTCDate()-((m.getUTCDay()+6)%7));return m.getTime();})();
+   const inWeek=x=>{const m=/^(\d\d)\/(\d\d)/.exec(x.w||'');if(!m)return false;const n=new Date();
+    let y=n.getUTCFullYear();if(parseInt(m[2],10)-1>n.getUTCMonth())y--;
+    return Date.UTC(y,parseInt(m[2],10)-1,parseInt(m[1],10))>=wk;};
+   const L=d.trades.map((x,i)=>[x,i]).filter(([x])=>F==='won'?x.p>0.005:F==='lost'?x.p<-0.005:F==='week'?inWeek(x):true);
    setH(document.getElementById('hist'),
-    d.trades.slice(0,N).map((x,i)=>
+    (L.length?'':'<div class="empty"><p>Aucun trade dans cette s\u00e9lection</p></div>')+
+    L.slice(0,N).map(([x,i])=>
     '<div class="row" style="cursor:pointer" data-i="'+i+
     '" onclick="tradeSheet(this.dataset.i)"><span class="rowt">'+x.w+
     (x.k==='soldat'?' <span class="pill pill-w">soldat</span>'
@@ -3367,10 +3502,10 @@ function render(d){
     '</span><b class="'+
     (sgn(x.p))+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
     '</b></div>').join('')+
-    (d.trades.length>N
+    (L.length>N
     ?'<div class="row" style="cursor:pointer;justify-content:center;'+
-     'color:var(--accent-soft);font-size:.9rem" onclick="window._trN=99;load()">'+
-     'Voir plus ('+d.trades.length+')</div>':''));
+     'color:var(--accent-soft);font-size:.9rem" onclick="window._trN=99;render(window._d)">'+
+     'Voir plus ('+L.length+')</div>':''));
   }
 }
 async function load(){
@@ -3382,6 +3517,7 @@ async function load(){
   if(s!==window._lastS){
    window._lastS=s;
    render(d);
+   (function(){const ff=document.getElementById('firstfail');if(ff)ff.style.display='none';})();
    try{localStorage.setItem('owlLast:'+B,s)}catch(e){}
   }
   lastOk=Date.now();ago();
@@ -3394,10 +3530,11 @@ async function load(){
   if(!window._offR){window._offR=1;
    try{const c=JSON.parse(
     localStorage.getItem('owlLast:'+B)||'null');
-    if(c){render(c);
+    if(c){render(c);window._cached=1;
      document.getElementById('st').innerHTML='&#128244; '+
       '<b>Hors ligne</b> &mdash; derni&egrave;res donn&eacute;es '+
       'connues';}}catch(e2){}}
+  if(!window._lastS&&!window._cached){const ff=document.getElementById('firstfail');if(ff)ff.style.display='block';}
  }
 }
 // 2026-09-27: an honest offline state - a banner with the retry countdown
@@ -3418,12 +3555,12 @@ function offlineUI(on){
  tick();window._offT=setInterval(tick,500);
 }
 const POLL_MS=5000;
-load();
+load();loadInbox();
 let pollT=setInterval(load,POLL_MS);
 setInterval(ago,1000);
 document.addEventListener('visibilitychange',()=>{
  clearInterval(pollT);pollT=null;
- if(!document.hidden){load();loadDay();pollT=setInterval(load,POLL_MS);}
+ if(!document.hidden){load();loadDay();loadInbox();pollT=setInterval(load,POLL_MS);}
 });
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register(B+'sw.js',{scope:B}).catch(()=>{});}
@@ -3567,6 +3704,22 @@ def day_payload(user):
     except Exception:
         pass
     return out
+
+
+INBOX_FILE = os.path.join(DIR, "owl_push_inbox.json")
+
+
+def inbox_items(user):
+    """2026-09-27: the member's last notifications, newest first (written by
+    owl_push_notifier.send_all) - so a missed push is never lost."""
+    try:
+        allx = json.load(open(INBOX_FILE, encoding="utf-8"))
+    except Exception:
+        allx = {}
+    lst = allx.get(str(user.get("id")), []) if isinstance(allx, dict) else []
+    lst = [x for x in lst if isinstance(x, dict)]
+    lst.sort(key=lambda x: x.get("t", 0), reverse=True)
+    return {"items": lst[:30]}
 
 
 def trade_story(user, t_close):
@@ -5504,6 +5657,8 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 _t = 0
             self._send(json.dumps(trade_story(user, _t)), "application/json")
+        elif sub == "inbox":
+            self._send(json.dumps(inbox_items(user)), "application/json")
         elif sub == "export.csv":
             # 2026-09-27: member-safe columns only, from the account's journal
             self._send(export_csv(user), "text/csv; charset=utf-8")

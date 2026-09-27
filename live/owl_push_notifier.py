@@ -16,6 +16,7 @@ from pywebpush import webpush, WebPushException
 DIR = r"C:\Projects\KinoliveLines\live"
 LOG = os.path.join(DIR, "owl_manual.log")
 SUBS = os.path.join(DIR, "owl_push_subs.json")
+INBOX = os.path.join(DIR, "owl_push_inbox.json")
 VAPID_JSON = os.path.join(DIR, "owl_push_vapid.json")
 VAPID_PEM = os.path.join(DIR, "owl_push_vapid.pem")
 MYLOG = os.path.join(DIR, "owl_push_notifier.log")
@@ -33,6 +34,29 @@ if not os.path.exists(VAPID_PEM):
     open(VAPID_PEM, "w").write(pem)
 
 
+def _inbox_write(new):
+    """2026-09-27: keep the last 30 notifications per member for the app's
+    'Messages' screen - including the ones 'silence la nuit' held back."""
+    if not new:
+        return
+    try:
+        cur = json.load(open(INBOX, encoding="utf-8"))
+        if not isinstance(cur, dict):
+            cur = {}
+    except Exception:
+        cur = {}
+    for uid, items in new.items():
+        lst = [x for x in cur.get(uid, []) if isinstance(x, dict)] + items
+        cur[uid] = lst[-30:]
+    try:
+        tmp = INBOX + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(cur, f, ensure_ascii=False)
+        os.replace(tmp, INBOX)
+    except Exception:
+        pass
+
+
 def send_all(title, body, kind="instant", only_uid=None,
              skip_uids=None):
     try:
@@ -46,6 +70,7 @@ def send_all(title, body, kind="instant", only_uid=None,
         prefs = {}
     changed = False
     total = 0
+    _ib = {}
     for uid, lst in list(subs.items()):
         if only_uid is not None and uid != only_uid:
             continue
@@ -55,6 +80,8 @@ def send_all(title, body, kind="instant", only_uid=None,
             continue    # this user only wants the big events
         # 2026-09-26: "silence la nuit" - 22:00-07:00 in the PHONE's own
         # timezone (the app sends its UTC offset with the preference)
+        _ib.setdefault(str(uid), []).append({"t": int(time.time()), "kind": kind,
+                                           "title": title, "body": body})
         q = (prefs.get("_quiet") or {}).get(uid) if isinstance(prefs, dict) else None
         if q and q.get("on"):
             lh = int(((time.time() - int(q.get("tz") or 0) * 60) // 3600) % 24)
@@ -82,6 +109,7 @@ def send_all(title, body, kind="instant", only_uid=None,
             except Exception:
                 keep.append(s)
         subs[uid] = keep
+    _inbox_write(_ib)
     if changed:
         try:
             json.dump(subs, open(SUBS, "w"))
