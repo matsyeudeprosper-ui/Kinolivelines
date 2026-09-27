@@ -112,6 +112,61 @@ def maybe_health():
             pass
 
 
+DEMO_MARK = os.path.join(DIR, "owl_demo_reset.json")
+
+
+def maybe_demo_reset():
+    """2026-09-27 (owner): the public demo is the shop window. When its robot
+    hits the kill line: tell the owner, and 24 h later ask the mode-switch
+    watcher to reset it (archive, era, restart from zero). Public accounts
+    only - never a real member."""
+    now = time.time()
+    try:
+        users = json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))
+    except Exception:
+        return
+    try:
+        st = json.load(open(DEMO_MARK, encoding="utf-8"))
+    except Exception:
+        st = {}
+    changed = False
+    for u in users:
+        if not u.get("public"):
+            continue
+        uid = u["id"]
+        try:
+            killed = bool(json.load(open(os.path.join(DIR, f"bos_state_{uid}.json"))).get("killed"))
+        except Exception:
+            continue
+        rec = st.get(uid) or {}
+        if killed:
+            if not rec.get("killed_since") and now - float(rec.get("last_reset") or 0) > 600:
+                rec["killed_since"] = now
+                changed = True
+                send_all("\U0001f501 D\u00e9mo \u00e0 sa limite",
+                         "Le robot de la d\u00e9mo s'est arr\u00eat\u00e9 (limite de s\u00e9curit\u00e9). "
+                         "Red\u00e9marrage automatique dans 24 h.", kind="instant", only_uid="kino")
+            elif now - float(rec["killed_since"]) > 86400 and now - float(rec.get("last_reset") or 0) > 86400:
+                tmp = os.path.join(DIR, "owl_reset_request.json.tmp")
+                json.dump({"uid": uid, "t": now, "by": "watchdog"}, open(tmp, "w"))
+                os.replace(tmp, os.path.join(DIR, "owl_reset_request.json"))
+                rec["last_reset"] = now
+                rec["killed_since"] = None
+                changed = True
+                send_all("\U0001f501 D\u00e9mo r\u00e9initialis\u00e9e",
+                         "24 h apr\u00e8s sa limite, la d\u00e9mo repart de z\u00e9ro (ancien livre archiv\u00e9).",
+                         kind="instant", only_uid="kino")
+        elif rec.get("killed_since"):
+            rec["killed_since"] = None
+            changed = True
+        st[uid] = rec
+    if changed:
+        try:
+            json.dump(st, open(DEMO_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -563,6 +618,7 @@ def main():
             _sg_last = time.time()
             maybe_signal()
             maybe_health()
+            maybe_demo_reset()
         if _bf is not None:
             while True:
                 bl = _bf.readline()

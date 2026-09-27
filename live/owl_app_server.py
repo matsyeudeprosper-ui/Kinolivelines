@@ -200,15 +200,27 @@ MANIFEST = json.dumps({
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
         {"name": "Historique", "url": "./#hist",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
+        {"name": "Résumé du jour", "url": "./#resume",
+         "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
     ],
+    # 2026-09-27: OwlNest can be a share destination (a screenshot, a note)
+    "share_target": {"action": "share", "method": "POST",
+                     "enctype": "multipart/form-data",
+                     "params": {"title": "title", "text": "text", "url": "url",
+                                "files": [{"name": "media",
+                                           "accept": ["image/*"]}]}},
 })
 
 SW = (
     "const OFF='<!doctype html><html lang=fr><head><meta charset=utf-8><meta name=viewport content=\"width=device-width,initial-scale=1\"><title>OwlNest</title><style>body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px}b{display:block;font-size:1.2rem;margin-bottom:8px}p{color:#8a9bb0;font-size:.95rem;line-height:1.5;margin:0 0 18px}a{display:inline-block;background:#3b82f6;color:#fff;text-decoration:none;padding:12px 22px;border-radius:12px;font-weight:700}</style></head><body><div><b>Pas de connexion</b><p>Le hibou n\\'arrive pas &agrave; joindre le serveur. V&eacute;rifiez votre r&eacute;seau, puis r&eacute;essayez.</p><a href=\"javascript:location.reload()\">R&eacute;essayer</a></div></body></html>';"
-    "self.addEventListener('install',e=>self.skipWaiting());"
+    "self.addEventListener('install',e=>{self.skipWaiting();"
+    "e.waitUntil(caches.open('owl1').then(c=>Promise.allSettled(['./','chart','manifest.json','icon192.png','/fonts/inter.woff2']"
+    ".map(u=>fetch(u).then(r=>{if(r&&r.ok)return c.put(u,r);}).catch(()=>{})))));});"
     "self.addEventListener('activate',e=>e.waitUntil("
     "clients.claim()));"
     "self.addEventListener('fetch',e=>{"
+    "if(e.request.method==='GET'&&(/\\/fonts\\//.test(e.request.url)||/icon\\d+m?\\.png$/.test(e.request.url))){"
+    "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl1').then(c=>c.put(e.request,cp));}return r;})));return;}"
     "if(e.request.mode==='navigate'){"
     "e.respondWith(caches.match(e.request).then(m=>{"
     "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
@@ -854,39 +866,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .sincegrid b{display:block;font-size:1rem}.sincegrid span{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
-<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
-<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
-<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></symbol>
-<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.3c3 .2 6 2.3 6 5.7"/></symbol>
-<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 15l5-5 4 4 7-8"/><path d="M16 6h4v4"/></symbol>
-<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
-<symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
-<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
-<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
-<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
-<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
-<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
-<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><path d="M11 11 20 2M16 6l3 3M18 4l2 2"/></symbol>
-<symbol id="i-switch" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
-<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
-<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
-<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
-<symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
-<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
-<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
-<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
-<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
-<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
-<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
-<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
-<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
-<symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
-<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
-<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
-<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
-</svg>
+
 <div class="hero">
 <div class="topline"><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px">
 <span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
@@ -1548,9 +1528,10 @@ window.addEventListener('load',()=>{let t='dark';
   try{localStorage.setItem('owlBig',on?'1':'0')}catch(e){}_tsp(on);});
  loadDay();setInterval(loadDay,60000);
  try{const _h=(location.hash||'').slice(1);
-  if(_h==='marche'||_h==='hist'||_h==='set'){
+  if(_h==='marche'||_h==='hist'||_h==='set'||_h==='resume'){
    const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_h+"'")>=0);
    if(_b)tab(_h,_b);
+   if(_h==='resume')setTimeout(resumeShare,2500);
    if(_h==='hist')setTimeout(()=>{const w=document.getElementById('weekcard');if(w&&w.style.display!=='none'){
     w.classList.add('hl');w.scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>w.classList.remove('hl'),3200);}},900);}}catch(e){}
  pinInit();
@@ -1616,6 +1597,7 @@ const VOICE={
   since:'Avec le robot depuis le <b>',
   toast_lost:' \u2014 \u00e7a arrive, il continue.',toast_debt_done:'le robot repasse en mode normal.',
   st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',st_killed:'Robot arr\u00eat\u00e9 \u2014 limite de s\u00e9curit\u00e9 atteinte',
+  cmp_pick:'Jour choisi : {d} \u2014 appuyez longuement sur un autre jour pour comparer.',cmp_title:'Deux jours c\u00f4te \u00e0 c\u00f4te',cmp_best:'meilleur',cmp_worst:'pire',cmp_even:'Les deux jours se valent.',cmp_better:'{a} a fait mieux, de {x}.',
   mvm_lbl:'Ce mois vs le mois dernier',mvm_same:'\u00e0 la m\u00eame date',mvm_better:'Mieux que le mois dernier \u00e0 la m\u00eame date.',mvm_worse:'Un peu en dessous du mois dernier \u00e0 la m\u00eame date.',mvm_even:'Au m\u00eame niveau que le mois dernier.',mvm_none:'Pas encore de mois pr\u00e9c\u00e9dent \u00e0 comparer.',
   dayx_empty:'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.',dayx_who:'Le robot a ',
   ts_who:'Le robot a ',ts_buy:'achet\u00e9',ts_sell:'vendu',ts_on:' le ',ts_at:' \u00e0 ',ts_in:', dans un march\u00e9 ',ts_in2:'',ts_risk:' Il a risqu\u00e9 au plus <b>$',
@@ -1689,6 +1671,7 @@ const VOICE_EN={
   since:'With the robot since <b>',
   toast_lost:' \u2014 it happens, it carries on.',toast_debt_done:'the robot is back to normal mode.',
   st_manual:'<b>Manual mode</b> &mdash; you decide',st_killed:'Robot stopped \u2014 safety limit reached',
+  cmp_pick:'Day picked: {d} \u2014 long-press another day to compare.',cmp_title:'Two days side by side',cmp_best:'best',cmp_worst:'worst',cmp_even:'The two days are level.',cmp_better:'{a} did better, by {x}.',
   mvm_lbl:'This month vs last month',mvm_same:'same date',mvm_better:'Better than last month at the same date.',mvm_worse:'A little below last month at the same date.',mvm_even:'Level with last month.',mvm_none:'No previous month to compare yet.',
   dayx_empty:'That day, the robot watched the market without trading.',dayx_who:'The robot ',
   ts_who:'The robot ',ts_buy:'bought',ts_sell:'sold',ts_on:' on ',ts_at:' at ',ts_in:', in a ',ts_in2:' market',ts_risk:' It risked at most <b>$',
@@ -2311,6 +2294,7 @@ function confetti(em){
 window.openDay=null;
 function calNav(k){window._calOff=Math.max(0,Math.min(2,(window._calOff||0)+k));window._lastS=null;load();}
 function dayx(l){
+ if(window._lpFired){window._lpFired=0;return;}
  const tr=((window._dtr||{})[l]||[]).slice();
  const row=(window._days||[]).find(x=>x.d===l);
  const p=row?row.p:tr.reduce((a,t)=>a+t.p,0);
@@ -2746,6 +2730,42 @@ function lpStart(ev,el){lpEnd();window._lpT=setTimeout(()=>{
   ()=>toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">Copi\u00e9 : '+txt+'</div>',2600),
   ()=>toast(txt,3200));},550);}
 function lpEnd(){if(window._lpT){clearTimeout(window._lpT);window._lpT=null;}}
+// 2026-09-27: long-press two days to compare them side by side
+function lpDayStart(ev,lab){lpEnd();window._lpT=setTimeout(()=>{window._lpFired=1;
+ try{navigator.vibrate&&navigator.vibrate(14);}catch(e){}daySelect(lab);},550);}
+function daySelect(lab){
+ if(!window._cmpA||window._cmpA===lab){window._cmpA=lab;
+  toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-calendar"/></svg></div><div style="flex:1">'+T('cmp_pick').replace('{d}','<b>'+lab+'</b>')+'</div>',4200);return;}
+ const a=window._cmpA;window._cmpA=null;compareDays(a,lab);
+}
+function compareDays(a,b){
+ const S=l=>{const tr=((window._dtr||{})[l]||[]);const row=(window._days||[]).find(x=>x.d===l);
+  const p=row?row.p:tr.reduce((s,t)=>s+t.p,0);const won=tr.filter(t=>t.p>0.005).length;
+  const best=tr.length?Math.max(...tr.map(t=>t.p)):null,worst=tr.length?Math.min(...tr.map(t=>t.p)):null;
+  return {l,p,n:tr.length,won,best,worst};};
+ const A=S(a),Bq=S(b),money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const col=(x)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 10px;text-align:center">'+
+  '<div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+x.l+'</div>'+
+  '<b style="display:block;font-size:1.35rem;margin:4px 0" class="'+sgn(x.p)+'">'+money(x.p)+'</b>'+
+  '<div style="font-size:.8rem;color:var(--muted2);line-height:1.5">'+x.n+' trade'+(x.n>1?'s':'')+(x.n?' \u00b7 '+x.won+' \u2713':'')+
+  (x.best!=null?'<br>'+T('cmp_best')+' <span class="'+sgn(x.best)+'">'+money(x.best)+'</span>':'')+
+  (x.worst!=null&&x.n>1?'<br>'+T('cmp_worst')+' <span class="'+sgn(x.worst)+'">'+money(x.worst)+'</span>':'')+'</div></div>';
+ const diff=A.p-Bq.p;
+ const verdict=Math.abs(diff)<0.5?T('cmp_even'):(diff>0?T('cmp_better'):T('cmp_better')).replace('{a}','<b>'+(diff>0?A.l:Bq.l)+'</b>').replace('{x}','<b>$'+Math.abs(diff).toFixed(2)+'</b>');
+ sheet('<h3>'+T('cmp_title')+'</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 12px">'+col(A)+col(Bq)+'</div>'+
+  '<p style="color:var(--text)">'+verdict+'</p><button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
+}
+// "Resume du jour" shortcut: today's line as text, shared or copied
+function resumeShare(){
+ const d=window._d;if(!d)return;const en=LANG()==='en';
+ const lab=dayLabel(new Date()),tr=((window._dtr||{})[lab]||[]);
+ const t=(typeof d.today==='number')?d.today:0;
+ const txt='OwlNest \u00b7 '+lab+' \u00b7 '+(t>=0?'+$':'-$')+Math.abs(t).toFixed(2)+(en?' today':' aujourd\u2019hui')+' \u00b7 '+tr.length+' trade'+(tr.length>1?'s':'')+' \u00b7 $'+(d.equity||0).toFixed(2);
+ const go=async()=>{try{if(navigator.share){await navigator.share({text:txt});return;}}catch(e){}
+  try{await navigator.clipboard.writeText(txt);toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3000);}catch(e){toast(txt,5000);}};
+ toast('<div style="flex:1">'+txt+'</div><button class="shbtn shmain" style="width:auto;margin:0;padding:8px 12px;font-size:.82rem;min-height:0" onclick="(window._rsGo||function(){})()">'+(en?'Share':'Partager')+'</button>',12000);
+ window._rsGo=go;
+}
 const FRD=['dim','lun','mar','mer','jeu','ven','sam'];
 function dayLabel(dt){return FRD[dt.getUTCDay()]+' '+String(dt.getUTCDate()).padStart(2,'0')+'/'+String(dt.getUTCMonth()+1).padStart(2,'0');}
 function goDay(){
@@ -4035,8 +4055,8 @@ function render(d){
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
     const open=false;   // 2026-09-26: a day opens as a story sheet
-    return '<div class="row" style="cursor:pointer" data-l="'+x.d+
-    '" onclick="dayx(this.dataset.l)"><span class="rowt">'+
+    return '<div class="row" style="cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none" data-l="'+x.d+
+    '" onclick="dayx(this.dataset.l)" onpointerdown="lpDayStart(event,this.dataset.l)" onpointerup="lpEnd()" onpointercancel="lpEnd()" onpointerleave="lpEnd()" oncontextmenu="return false"><span class="rowt">'+
     (tr.length?'<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px;'+
      'color:var(--muted);transform:rotate('+(open?'90':'0')+'deg)">'+
      '<use href="#i-chev"/></svg>':'<span style="display:inline-block;width:21px"></span>')+x.d+
@@ -4130,7 +4150,7 @@ function render(d){
     const isT=(_off===0&&dd2===now.getUTCDate());
     const _lab=['dim','lun','mar','mer','jeu','ven','sam'][new Date(k+'T00:00:00Z').getUTCDay()]+
      ' '+String(dd2).padStart(2,'0')+'/'+String(m+1).padStart(2,'0');
-    h+='<div'+(p!==undefined?' onclick="dayx(\\''+_lab+'\\')" role="button"':'')+
+    h+='<div'+(p!==undefined?' onclick="dayx(\\''+_lab+'\\')" onpointerdown="lpDayStart(event,\\''+_lab+'\\')" onpointerup="lpEnd()" onpointercancel="lpEnd()" onpointerleave="lpEnd()" oncontextmenu="return false" role="button"':'')+
      ' style="cursor:'+(p!==undefined?'pointer':'default')+';aspect-ratio:1;border-radius:10px;background:'+bg+
      ';border:1px solid '+bd+
      (isT?';box-shadow:inset 0 0 0 1.5px var(--accent-soft)':'')+
@@ -4283,7 +4303,41 @@ function inst(){
 window.addEventListener('appinstalled',()=>{
  document.getElementById('inst').style.display='none';
  document.getElementById('howto').style.display='none';});
-</script></body></html>"""
+</script>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+<symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.5"/><circle cx="9" cy="17" r="2.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.3c3 .2 6 2.3 6 5.7"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M4 15l5-5 4 4 7-8"/><path d="M16 6h4v4"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18h2"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-2-1.5-4.5-2-8-2v14c3.5 0 6 .5 8 2 2-1.5 4.5-2 8-2V4c-3.5 0-6 .5-8 2z"/><path d="M12 6v14"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+<symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><path d="M11 11 20 2M16 6l3 3M18 4l2 2"/></symbol>
+<symbol id="i-switch" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
+<symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
+<symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/></symbol>
+<symbol id="i-bolt" viewBox="0 0 24 24"><path d="M7 15h9.5a3.5 3.5 0 0 0 .4-7A5.5 5.5 0 0 0 6.3 9 3 3 0 0 0 7 15z"/><path d="M12.5 13l-2.5 4h4l-2.5 4"/></symbol>
+<symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/></symbol>
+<symbol id="i-activity" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
+</svg>
+</body></html>"""
 
 
 USERS_FILE = os.path.join(DIR, "owl_nest_users.json")
@@ -4601,6 +4655,7 @@ def user_stats(u, admin_override=False):
                     .get("paused", u["id"] in PAUSE_ALLOWED))
             except Exception:
                 d["trading_paused"] = u["id"] in PAUSE_ALLOWED
+        d["era_start"] = u.get("era_start")
         # per-account books (2026-09-07): std has its own ledger/
         # fights; family mirrors follow the master's
         _sfx = "_std" if u.get("id") == "std" else ""
@@ -5182,6 +5237,14 @@ JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0b0f14">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OwlNest">
+<meta property="og:description" content="Le robot Owl trade pour vous, jour et nuit. Vous, vous regardez.">
+<meta property="og:image" content="%%ORIGIN%%/shots/shot_home.png">
+<meta property="og:url" content="%%ORIGIN%%/join">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="OwlNest">
+<meta name="twitter:image" content="%%ORIGIN%%/shots/shot_home.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5290,6 +5353,11 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .fq summary::after{content:'+';color:var(--muted);font-size:1.25rem;line-height:1;flex:none}
 .fq[open] summary::after{content:'−'}
 .fq p{padding:0 0 14px;font-size:.88rem;color:var(--muted);line-height:1.55}
+.shots{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shots::-webkit-scrollbar{display:none}
+.shots figure{flex:0 0 68%;scroll-snap-align:center;margin:0}
+.shots img{width:100%;display:block;border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.shots figcaption{text-align:center;font-size:.74rem;color:var(--muted);margin-top:8px}
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
  display:flex;align-items:center;justify-content:center;gap:6px}
 .pfoot img{width:16px;height:16px;border-radius:4px}
@@ -5357,6 +5425,14 @@ jour et nuit. Vous, vous regardez.</div>
 <span class="pv-chip2" id="pv-chip2">2 trades</span></div>
 <div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">L&#8217;Owl vient de gagner un trade
  pour vous</span></div>
+</div>
+<div class="feats" id="shots-sec">
+<div class="how">Ce que vous verrez</div>
+<div class="shots" id="shots">
+ <figure><img src="/shots/shot_home.png" alt="Accueil OwlNest" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>Accueil &middot; solde et journ&eacute;e</figcaption></figure>
+ <figure><img src="/shots/shot_marche.png" alt="March&eacute;" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>March&eacute; &middot; ce que le robot voit</figcaption></figure>
+ <figure><img src="/shots/shot_hist.png" alt="Historique" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>Historique &middot; jour par jour</figcaption></figure>
+</div>
 </div>
 <div class="feats">
 <div class="how">Comment &ccedil;a marche</div>
@@ -5494,6 +5570,8 @@ const PV_LIVE=true;
    $('pv-g1').setAttribute('stop-color',col);$('pv-g2').setAttribute('stop-color',col);}
   $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct');
   if(d.bot_killed){$('pv-bot-t').textContent='La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
+  else if(d.era_start){const es=new Date(d.era_start);if(!isNaN(es)&&Date.now()-es.getTime()<7*86400e3){
+   $('pv-bot-t').textContent='D\\u00e9mo red\\u00e9marr\\u00e9e le '+String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0')+' \\u00b7 elle repart de z\\u00e9ro';}}
  }catch(e){}
 })();
 </script></body></html>"""
@@ -6011,6 +6089,57 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "share":
+            # 2026-09-27: Web Share Target - a note or an image lands in the
+            # member's Messages (image kept in nest_data, <= 3 MB)
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                raw = self.rfile.read(min(ln, 3_500_000))
+                ctype = self.headers.get("Content-Type", "")
+                from email.parser import BytesParser
+                from email.policy import default as _pol
+                msg = BytesParser(policy=_pol).parsebytes(
+                    b"Content-Type: " + ctype.encode() + b"\r\n\r\n" + raw)
+                text, title, img = "", "", None
+                for part in msg.walk():
+                    if part.get_content_maintype() == "multipart":
+                        continue
+                    nm = part.get_param("name", header="content-disposition")
+                    fn = part.get_filename()
+                    pay = part.get_payload(decode=True) or b""
+                    if fn and nm == "media" and pay[:4] in (b"\x89PNG", b"\xff\xd8\xff\xe0", b"\xff\xd8\xff\xe1", b"\xff\xd8\xff\xdb"):
+                        img = (pay, ".png" if pay[:4] == b"\x89PNG" else ".jpg")
+                    elif nm == "text":
+                        text = pay.decode("utf-8", "replace").strip()[:500]
+                    elif nm == "title":
+                        title = pay.decode("utf-8", "replace").strip()[:120]
+                if img and len(img[0]) <= 3_000_000:
+                    os.makedirs(NEST_DATA, exist_ok=True)
+                    with open(os.path.join(NEST_DATA, f"share_{u['id']}_{int(time.time())}{img[1]}"), "wb") as f:
+                        f.write(img[0])
+                try:
+                    ib = json.load(open(INBOX_FILE, encoding="utf-8"))
+                    if not isinstance(ib, dict):
+                        ib = {}
+                except Exception:
+                    ib = {}
+                lst = [x for x in ib.get(u["id"], []) if isinstance(x, dict)]
+                lst.append({"t": int(time.time()), "kind": "share",
+                            "title": "\U0001f4ce " + (title or "Re\u00e7u"),
+                            "body": text or ("Image re\u00e7ue." if img else "Partage re\u00e7u.")})
+                ib[u["id"]] = lst[-30:]
+                json.dump(ib, open(INBOX_FILE, "w", encoding="utf-8"), ensure_ascii=False)
+            except Exception:
+                pass
+            self.send_response(303)
+            self.send_header("Location", f"/{u['token']}/#hist")
+            self.end_headers()
+            return
         if len(_parts) == 2 and _parts[1] == "week_img":
             # 2026-09-27: the member's own week card, drawn by the app,
             # kept for the Sunday push (PNG only, <= 600 KB)
@@ -6435,6 +6564,15 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
             return
+        if parts and parts[0] == "shots" and len(parts) == 2 and parts[1] in ("shot_home.png", "shot_marche.png", "shot_hist.png"):
+            # 2026-09-27: landing screenshots, regenerated by review/landing_shots.mjs
+            _sp = os.path.join(DIR, "static", parts[1])
+            if not os.path.exists(_sp):
+                self.send_response(404)
+                self.end_headers()
+                return
+            self._send_static(_sp, "image/png")
+            return
         if parts and parts[0] == "fonts" and len(parts) == 2 and parts[1] == "inter.woff2":
             self._send_static(os.path.join(DIR, "static", "InterVariable.woff2"), "font/woff2")
             return
@@ -6455,7 +6593,11 @@ class H(BaseHTTPRequestHandler):
             return
         if not parts or parts[0] == "join":
             # front door: no token -> the welcome/sign-up screen
-            self._send(JOIN_PAGE, "text/html; charset=utf-8")
+            _host = self.headers.get("Host") or "owlnest.local"
+            _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
+                                 or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
+            self._send(JOIN_PAGE.replace("%%ORIGIN%%", f"{_proto}://{_host}"),
+                       "text/html; charset=utf-8")
             return
         user = user_by_token(parts[0])
         if user is None:
