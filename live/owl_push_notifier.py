@@ -614,6 +614,23 @@ def main():
         if time.time() - _mb_last > 12:
             _mb_last = time.time()
             member_trades()
+            # 2026-09-27: pushes queued by the app server (e.g. a payment activated)
+            _qf = os.path.join(DIR, "owl_push_queue.json")
+            try:
+                _q = json.load(open(_qf, encoding="utf-8"))
+            except Exception:
+                _q = []
+            if _q:
+                try:
+                    os.remove(_qf)
+                except Exception:
+                    pass
+                for it in _q:
+                    try:
+                        send_all(it.get("title") or "OwlNest", it.get("body") or "",
+                                 kind="instant", only_uid=it.get("uid"))
+                    except Exception:
+                        pass
         if time.time() - _sg_last > 60:
             _sg_last = time.time()
             maybe_signal()
