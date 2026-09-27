@@ -75,7 +75,8 @@ def compute():
     month_start = midnight.replace(day=1)
     val = lambda d: d.profit + d.commission + d.swap
     d30_start = utcnow - timedelta(days=30)
-    base_from = min(month_start, monday, week_ago, d30_start)
+    m3_start = (month_start - timedelta(days=62)).replace(day=1)   # 3 months
+    base_from = min(month_start, monday, week_ago, d30_start, m3_start)
     alldeals, ins_map = out_deals(base_from, horizon)
     alldeals = sorted(alldeals, key=lambda d: d.time)
     _since = lambda t0: [d for d in alldeals
@@ -191,6 +192,15 @@ def compute():
         _mm[_k] = _mm.get(_k, 0.0) + val(d)
     month_days = [{"d": k, "p": round(v, 2)}
                   for k, v in sorted(_mm.items())]
+    # 2026-09-27: the app can browse the previous months' calendars
+    _m3 = {}
+    for d in _since(m3_start):
+        _dt = datetime.fromtimestamp(d.time, tz=timezone.utc)
+        _m3.setdefault(_dt.strftime("%Y-%m"), {})
+        _k = _dt.strftime("%Y-%m-%d")
+        _m3[_dt.strftime("%Y-%m")][_k] = _m3[_dt.strftime("%Y-%m")].get(_k, 0.0) + val(d)
+    months = {ym: [{"d": k, "p": round(v, 2)} for k, v in sorted(dd.items())]
+              for ym, dd in _m3.items()}
     return {
         "name": u.get("name", uid),
         "acct": ai.login,
@@ -209,6 +219,7 @@ def compute():
         "days": days,
         "day_trades": _dtr,
         "month_days": month_days,
+        "months": months,
         "curve": curve[-120:],
         "curve30": curve30,
         "updated_utc": utcnow.isoformat(timespec="seconds"),

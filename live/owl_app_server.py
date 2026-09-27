@@ -194,6 +194,12 @@ MANIFEST = json.dumps({
         {"src": "icon512m.png", "sizes": "512x512", "type": "image/png",
          "purpose": "maskable"},
     ],
+    "shortcuts": [
+        {"name": "Marché", "url": "./#marche",
+         "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
+        {"name": "Historique", "url": "./#hist",
+         "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
+    ],
 })
 
 SW = (
@@ -496,11 +502,10 @@ PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OwlNest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>OwlNest</title>
 <style>
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');
+ font-weight:100 900;font-style:normal;font-display:swap}
 :root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
  --border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
  --text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;--muted:#8a9bb0;--muted2:#a9b8c8;
@@ -625,6 +630,24 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  transform:translateY(16px);opacity:0;pointer-events:none;
  transition:transform .25s ease,opacity .25s ease}
 #toast.on{transform:none;opacity:1;pointer-events:auto}
+#offline{position:fixed;left:16px;right:16px;top:calc(10px + env(safe-area-inset-top,0px));
+ z-index:46;max-width:448px;margin:0 auto;display:none;align-items:center;gap:9px;
+ background:rgba(232,197,90,.14);border:1px solid rgba(232,197,90,.4);
+ color:var(--warn);border-radius:14px;padding:10px 13px;font-size:.84rem;font-weight:600;
+ backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+#offline.on{display:flex}
+#lock{position:fixed;inset:0;z-index:70;background:var(--bg);display:none;
+ flex-direction:column;align-items:center;justify-content:center;padding:24px}
+html.locked #lock{display:flex}
+html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
+#lock .kp{display:grid;grid-template-columns:repeat(3,72px);gap:12px}
+#lock .kp button{height:64px;border-radius:50%;border:1px solid var(--border2);
+ background:var(--surface2);color:var(--text);font-size:1.4rem;font-weight:600}
+#lock .kp button:active{background:var(--surface3)}
+#lock .ld{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}
+#lock .ld.on{background:var(--accent-soft);border-color:var(--accent-soft)}
+#lock.shake #lock-dots{animation:shk .4s}
+@keyframes shk{0%,100%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
@@ -778,7 +801,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
 </style></head><body>
-<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked')}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -1057,7 +1080,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="panel" id="msum-verdict" style="display:none;margin-bottom:10px;
  font-size:.95rem;line-height:1.5;color:var(--text)"></div>
 <div class="grid" id="msum" style="display:none;margin-top:2px"></div>
-<div class="sec" id="cal-sec" style="display:none">Calendrier du mois
+<div class="sec" id="cal-sec" style="display:none;display:flex;justify-content:space-between;align-items:center"><span>Calendrier</span><span style="display:inline-flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0"><button id="cal-prev" onclick="calNav(1)" aria-label="Mois pr&eacute;c&eacute;dent" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:99px;width:30px;height:30px;font-size:1rem">&#8249;</button><span id="cal-ym" style="font-size:.78rem;font-weight:700;color:var(--text2);min-width:110px;text-align:center"></span><button id="cal-next" onclick="calNav(-1)" aria-label="Mois suivant" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:99px;width:30px;height:30px;font-size:1rem">&#8250;</button></span>
 </div>
 <div class="panel" id="cal" style="display:none"></div>
 <div class="sec" id="statx-sec" style="display:none">Statistiques
@@ -1135,6 +1158,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
      padding:9px;font-size:.82rem;font-weight:700">Clair</button>
    </div></div>
  </div>
+ <div class="srow" id="pinbtn" onclick="pinSetup()">
+  <div class="sic"><svg class="ic"><use href="#i-lock"/></svg></div>
+  <div style="flex:1"><b>Code d&#39;acc&egrave;s</b>
+   <div class="ssub" id="pin-sub">Prot&eacute;ger cette page avec 4 chiffres</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <a class="srow" href="export.csv" download="owlnest-trades.csv" style="text-decoration:none;color:inherit">
+  <div class="sic"><svg class="ic"><use href="#i-download"/></svg></div>
+  <div style="flex:1"><b>T&eacute;l&eacute;charger mes trades</b>
+   <div class="ssub">Fichier CSV &middot; date, sens, lot, entr&eacute;e, sortie, r&eacute;sultat</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </a>
  <div class="srow" id="infobtn">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
   <div style="flex:1"><b>Ce qu&#39;il faut savoir</b></div>
@@ -1250,6 +1285,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
 <button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>R&eacute;glages</button>
 </div>
+<div id="lock" aria-label="Code d&#39;acc&egrave;s">
+ <img src="icon192.png" alt="" style="width:56px;height:56px;border-radius:16px">
+ <div style="font-weight:700;font-size:1.05rem;margin-top:14px">Code d&#39;acc&egrave;s</div>
+ <div id="lock-dots" style="display:flex;gap:12px;margin:16px 0 22px"></div>
+ <div class="kp" id="lock-kp"></div>
+ <a href="../" style="margin-top:22px;color:var(--muted);font-size:.85rem;text-decoration:none">Code oubli&eacute; ? Changer de compte</a>
+</div>
+<div id="offline" role="status"><svg class="ic ic-s"><use href="#i-cloud"/></svg><span id="offline-t">Connexion perdue</span></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="sheetbg"></div>
 <div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
@@ -1270,6 +1313,48 @@ const APP_BUILD='%%BUILD%%';
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
+async function sha(t){const b=new TextEncoder().encode(t);
+ const h=await crypto.subtle.digest('SHA-256',b);
+ return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function pinKey(){return 'owlPin:'+location.pathname;}
+function pinInit(){
+ const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots');
+ if(!kp||kp.children.length)return;
+ let buf='';
+ const paint=()=>{dots.innerHTML=[0,1,2,3].map(i=>'<span class="ld'+(i<buf.length?' on':'')+'"></span>').join('');};
+ paint();
+ [1,2,3,4,5,6,7,8,9,'',0,'\u232b'].forEach(k=>{const b=document.createElement('button');
+  b.textContent=k;if(k==='')b.style.visibility='hidden';
+  b.onclick=async()=>{if(k==='\u232b'){buf=buf.slice(0,-1);paint();return;}
+   if(buf.length>=4)return;buf+=k;paint();
+   if(buf.length===4){const ok=(await sha(buf))===localStorage.getItem(pinKey());
+    if(ok){document.documentElement.classList.remove('locked');buf='';paint();
+     try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}}
+    else{const L=document.getElementById('lock');L.classList.add('shake');
+     setTimeout(()=>L.classList.remove('shake'),450);buf='';paint();
+     try{navigator.vibrate&&navigator.vibrate([40,30,40])}catch(e){}}}};
+  kp.appendChild(b);});
+}
+async function pinSetup(){
+ const has=!!localStorage.getItem(pinKey());
+ const v=await sheet('<h3>Code d&#39;acc&egrave;s</h3>'+
+  '<p>'+(has?'Un code prot&egrave;ge d&eacute;j&agrave; cette page. Entrez un nouveau code &agrave; 4 chiffres, ou retirez-le.'
+   :'4 chiffres demand&eacute;s &agrave; chaque ouverture de l&#39;application, sur ce t&eacute;l&eacute;phone seulement.')+'</p>'+
+  '<input id="shpw" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="4 chiffres" '+
+  'style="text-align:center;letter-spacing:.4em;font-size:1.3rem">'+
+  '<button class="shbtn shmain" onclick="_shDone(document.getElementById(\\'shpw\\').value)">Enregistrer</button>'+
+  (has?'<button class="shbtn shdanger" onclick="_shDone(\\'__off__\\')">Retirer le code</button>':'')+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(v==null)return;
+ if(v==='__off__'){try{localStorage.removeItem(pinKey())}catch(e){}
+  toast('<div class="evi" style="color:var(--muted2)"><svg class="ic ic-s"><use href="#i-lock"/></svg></div><div style="flex:1">Code d\u2019acc\u00e8s retir\u00e9.</div>');pinRow();return;}
+ if(!/^\d{4}$/.test(v)){await info('<h3>4 chiffres, s&#39;il vous pla&icirc;t.</h3>');return;}
+ try{localStorage.setItem(pinKey(),await sha(v))}catch(e){}
+ toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-lock"/></svg></div><div style="flex:1">Code d\u2019acc\u00e8s enregistr\u00e9.</div>');
+ pinRow();
+}
+function pinRow(){const e=document.getElementById('pin-sub');if(e)e.textContent=
+ localStorage.getItem(pinKey())?'Activ\u00e9 \u2014 demand\u00e9 \u00e0 l\u2019ouverture':'Prot\u00e9ger cette page avec 4 chiffres';}
 function toast(html,ms){const t=document.getElementById('toast');if(!t)return;
  t.innerHTML=html;t.classList.add('on');clearTimeout(window._toastT);
  window._toastT=setTimeout(()=>t.classList.remove('on'),ms||4500);}
@@ -1282,9 +1367,14 @@ function setTheme(t,save){const L=(t==='light');
   b.style.color=on?'var(--text2)':'var(--muted2)';});}
 window.addEventListener('load',()=>{let t='dark';
  try{t=localStorage.getItem('owlTheme')||'dark'}catch(e){}
- setTheme(t,false);
+ setTheme(t,false);pinRow();
  document.querySelectorAll('.thc').forEach(b=>b.onclick=()=>setTheme(b.dataset.t,true));
  loadDay();setInterval(loadDay,60000);
+ try{const _h=(location.hash||'').slice(1);
+  if(_h==='marche'||_h==='hist'||_h==='set'){
+   const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_h+"'")>=0);
+   if(_b)tab(_h,_b);}}catch(e){}
+ pinInit();
  // a11y: clickable rows behave like buttons for keyboards/screen readers
  document.querySelectorAll('.srow').forEach(el=>{if(el.tagName==='A'||el.id==='themerow')return;
   if(!el.getAttribute('onclick')&&!el.id)return;
@@ -1782,6 +1872,7 @@ function confetti(em){
  try{navigator.vibrate&&navigator.vibrate([40,60,40])}catch(e){}
 }
 window.openDay=null;
+function calNav(k){window._calOff=Math.max(0,Math.min(2,(window._calOff||0)+k));window._lastS=null;load();}
 function dayx(l){
  const tr=((window._dtr||{})[l]||[]).slice();
  const row=(window._days||[]).find(x=>x.d===l);
@@ -3020,7 +3111,18 @@ function render(d){
    }).join('');
   }
   if(d.month_days&&d.month_days.length){
-   const vals=d.month_days.map(x=>x.p);
+   const _off=window._calOff||0,_n0=new Date();
+   const _bm=new Date(Date.UTC(_n0.getUTCFullYear(),_n0.getUTCMonth()-_off,1));
+   const _ym=_bm.getUTCFullYear()+'-'+String(_bm.getUTCMonth()+1).padStart(2,'0');
+   const _src=(_off===0)?d.month_days:(((d.months||{})[_ym])||[]);
+   const _MN=['janvier','f\u00e9vrier','mars','avril','mai','juin','juillet','ao\u00fbt',
+    'septembre','octobre','novembre','d\u00e9cembre'];
+   const _cy=document.getElementById('cal-ym');
+   if(_cy)_cy.textContent=_MN[_bm.getUTCMonth()]+' '+_bm.getUTCFullYear();
+   const _cp=document.getElementById('cal-prev'),_cn=document.getElementById('cal-next');
+   if(_cp)_cp.style.visibility=(_off>=2)?'hidden':'visible';
+   if(_cn)_cn.style.visibility=(_off<=0)?'hidden':'visible';
+   const vals=_src.length?_src.map(x=>x.p):[0];
    const net=vals.reduce((a,b)=>a+b,0);
    const g=vals.filter(v=>v>0.005).length,
     rr=vals.filter(v=>v<-0.005).length;
@@ -3032,20 +3134,20 @@ function render(d){
    const ms=document.getElementById('msum');
    ms.style.display='grid';
    setH(ms,
-    cell('Net du mois',f(net),sgn(net),'depuis le 1er')+
+    cell(_off?'Net du mois':'Net du mois',f(net),sgn(net),_off?_MN[_bm.getUTCMonth()]:'depuis le 1er')+
     cell('Jours','<span class="pos">'+g+'</span> / <span class="neg">'+
      rr+'</span>','neu','verts / rouges')+
     cell('Meilleur jour',f(best),'pos','le plus gagnant')+
     cell('Pire jour',f(worst),sgn(worst),'le plus dur'));
    const _mv=document.getElementById('msum-verdict');
    if(_mv){const _dbt=((d.ledger||{}).debt||0)>0.5;_mv.style.display='block';
-    _mv.innerHTML='Ce mois : <b class="'+sgn(net)+'">'+f(net)+'</b>, '+g+' jour'+(g>1?'s':'')+
+    _mv.innerHTML=(_off?'En '+_MN[_bm.getUTCMonth()]+' : ':'Ce mois : ')+'<b class="'+sgn(net)+'">'+f(net)+'</b>, '+g+' jour'+(g>1?'s':'')+
      ' vert'+(g>1?'s':'')+' sur '+(g+rr)+'. '+(net>=0?'Le robot avance.'
      :(_dbt?'Le robot est en train de se rattraper \u2014 il avance prudemment.'
      :'Un mois difficile ; le robot continue.'));}
-   const md={};d.month_days.forEach(x=>md[x.d]=x.p);
+   const md={};_src.forEach(x=>md[x.d]=x.p);
    const now=new Date();
-   const y=now.getUTCFullYear(),m=now.getUTCMonth();
+   const y=_bm.getUTCFullYear(),m=_bm.getUTCMonth();
    const nd=new Date(Date.UTC(y,m+1,0)).getUTCDate();
    const off=(new Date(Date.UTC(y,m,1)).getUTCDay()+6)%7;
    const _bv=[];for(let q=1;q<=nd;q++){const kk=y+'-'+String(m+1).padStart(2,'0')+
@@ -3082,7 +3184,7 @@ function render(d){
       bd='rgba(255,92,92,.35)';}
      else{bg='var(--tile-bg)';fg='var(--muted2)';bd='var(--tile-bd)';}
     }
-    const isT=(dd2===now.getUTCDate());
+    const isT=(_off===0&&dd2===now.getUTCDate());
     const _lab=['dim','lun','mar','mer','jeu','ven','sam'][new Date(k+'T00:00:00Z').getUTCDay()]+
      ' '+String(dd2).padStart(2,'0')+'/'+String(m+1).padStart(2,'0');
     h+='<div'+(p!==undefined?' onclick="dayx(\\''+_lab+'\\')" role="button"':'')+
@@ -3152,6 +3254,7 @@ function render(d){
 async function load(){
  try{
   const r=await fetch(B+'api?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw new Error('http '+r.status);
   const d=await r.json();
   const s=JSON.stringify(d);
   if(s!==window._lastS){
@@ -3160,9 +3263,12 @@ async function load(){
    try{localStorage.setItem('owlLast:'+B,s)}catch(e){}
   }
   lastOk=Date.now();ago();
+  window._offFail=0;offlineUI(false);
  }catch(e){
+  window._offFail=(window._offFail||0)+1;
   document.getElementById('upd').textContent=
    'hors ligne - nouvel essai...';
+  if(window._offFail>=2)offlineUI(true);
   if(!window._offR){window._offR=1;
    try{const c=JSON.parse(
     localStorage.getItem('owlLast:'+B)||'null');
@@ -3172,13 +3278,30 @@ async function load(){
       'connues';}}catch(e2){}}
  }
 }
+// 2026-09-27: an honest offline state - a banner with the retry countdown
+// and the time of the last good update; polling pauses entirely while the
+// app is hidden and resumes with an immediate refresh when it comes back.
+function offlineUI(on){
+ const el=document.getElementById('offline');if(!el)return;
+ el.classList.toggle('on',!!on);
+ if(!on){clearInterval(window._offT);window._offT=null;return;}
+ if(window._offT)return;
+ window._offNext=Date.now()+POLL_MS;
+ const tick=()=>{const s=Math.max(0,Math.ceil((window._offNext-Date.now())/1000));
+  const la=lastOk?new Date(lastOk):null;
+  document.getElementById('offline-t').textContent='Connexion perdue \u2014 nouvel essai dans '+
+   s+' s'+(la?' \u00b7 derni\u00e8re mise \u00e0 jour '+String(la.getHours()).padStart(2,'0')+':'+
+   String(la.getMinutes()).padStart(2,'0'):'');
+  if(s<=0)window._offNext=Date.now()+POLL_MS;};
+ tick();window._offT=setInterval(tick,500);
+}
+const POLL_MS=5000;
 load();
-let pollT=setInterval(load,5000);
+let pollT=setInterval(load,POLL_MS);
 setInterval(ago,1000);
 document.addEventListener('visibilitychange',()=>{
- clearInterval(pollT);
- if(document.hidden){pollT=setInterval(load,30000);}
- else{load();pollT=setInterval(load,5000);}
+ clearInterval(pollT);pollT=null;
+ if(!document.hidden){load();loadDay();pollT=setInterval(load,POLL_MS);}
 });
 if('serviceWorker' in navigator){
  navigator.serviceWorker.register(B+'sw.js',{scope:B}).catch(()=>{});}
@@ -3322,6 +3445,33 @@ def day_payload(user):
     except Exception:
         pass
     return out
+
+
+def export_csv(user):
+    """date,heure,sens,lot,entree,sortie,duree_min,resultat - nothing from
+    the journal's strategy columns (kind, nervosity, gates...)."""
+    import csv as _csv
+    import io as _io
+    out = _io.StringIO()
+    wr = _csv.writer(out, lineterminator="\n")
+    wr.writerow(["date", "heure", "sens", "lot", "entree", "sortie",
+                 "duree_min", "resultat_usd"])
+    bot = BOT_OF.get(user.get("id"))
+    if bot and bot[1].startswith("bos_state"):
+        sfx = bot[1][len("bos_state"):-len(".json")]
+        try:
+            with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
+                      encoding="utf-8", errors="replace") as jf:
+                for r in _csv.DictReader(jf):
+                    xt = (r.get("exit_time_utc") or r.get("entry_time_utc") or "")
+                    wr.writerow([xt[:10], xt[11:16],
+                                 "achat" if (r.get("direction") or "") == "BUY" else "vente",
+                                 r.get("lot") or "", r.get("entry_price") or "",
+                                 r.get("tp") if (r.get("outcome") or "") == "WIN" else r.get("sl") or "",
+                                 r.get("duration_min") or "", r.get("profit_usd") or ""])
+        except Exception:
+            pass
+    return "\ufeff" + out.getvalue()
 
 
 def user_by_token(tok):
@@ -3966,11 +4116,10 @@ JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OwlNest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>OwlNest</title>
 <style>
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');
+ font-weight:100 900;font-style:normal;font-display:swap}
 :root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--border:#1f2a38;
  --border2:#2b3a4d;--text:#e8eef4;--text2:#c6d3df;--text3:#9fc2de;--muted:#8a9bb0;
  --accent:#3b82f6;--accent-soft:#8fc6ff;--up:#2ecc71;--r:16px;--r-lg:24px}
@@ -4068,7 +4217,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
  display:flex;align-items:center;justify-content:center;gap:6px}
 .pfoot img{width:16px;height:16px;border-radius:4px}
 </style></head><body>
-<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light'}catch(e){}</script>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked')}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -4463,6 +4612,20 @@ def handle_join(form):
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
+
+    def _send_static(self, path, ctype):
+        try:
+            body = open(path, "rb").read()
+        except Exception:
+            self.send_response(404)
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _send(self, body, ctype):
         if isinstance(body, str):
@@ -5098,6 +5261,9 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
             return
+        if parts and parts[0] == "fonts" and len(parts) == 2 and parts[1] == "inter.woff2":
+            self._send_static(os.path.join(DIR, "static", "InterVariable.woff2"), "font/woff2")
+            return
         if parts and parts[0] == "icon512m.png":
             self._send(ICON512M, "image/png")
             return
@@ -5132,6 +5298,9 @@ class H(BaseHTTPRequestHandler):
                 user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "day":
             self._send(json.dumps(day_payload(user)), "application/json")
+        elif sub == "export.csv":
+            # 2026-09-27: member-safe columns only, from the account's journal
+            self._send(export_csv(user), "text/csv; charset=utf-8")
         elif sub == "chart":
             # aura redesign 2026-09-08 lives in its own file; the
             # inline constant is only the fallback
