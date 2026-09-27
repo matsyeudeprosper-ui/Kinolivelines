@@ -624,7 +624,11 @@ def main():
                 bl = _bf.readline()
                 if not bl:
                     break
-                if "starting" in bl:
+                if "UI CHECK FAILED" in bl:
+                    send_all("\u26a0\ufe0f V\u00e9rification de l'app",
+                             "La v\u00e9rification automatique a \u00e9chou\u00e9 apr\u00e8s le "
+                             "d\u00e9marrage - voir owl_ui_check.log.", kind="instant", only_uid="kino")
+                elif "starting" in bl:
                     send_all("⚠️ Redémarrage",
                              "Le gardien a relancé : "
                              + bl.split("starting", 1)[-1].strip())

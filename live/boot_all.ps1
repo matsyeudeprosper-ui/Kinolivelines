@@ -144,10 +144,34 @@ if (-not (ProcRunning "owl_chart_feed.py")) {
 #     desk instead, started by the mode/manual block above. Do not revive.
 
 # 3) OwlNest app server
+# 2026-09-27: checked on its PORT, not only its process - a hung server
+#     still has a process. No answer within 15 s -> stop it and start again.
+$appStarted = $false
+$appOk = $false
+if (ProcRunning "owl_app_server.py") {
+    try { $r = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:8787/join" -TimeoutSec 15; $appOk = ($r.StatusCode -eq 200) } catch { $appOk = $false }
+    if (-not $appOk) {
+        Say "OwlNest not answering on 8787 - restarting it"
+        Get-CimInstance Win32_Process | Where-Object { $_.Name -like "python*" -and $_.CommandLine -like "*owl_app_server.py*" } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -Confirm:$false }
+        Start-Sleep -Seconds 2
+    }
+}
 if (-not (ProcRunning "owl_app_server.py")) {
     Say "starting OwlNest"
     Start-Process python -ArgumentList "owl_app_server.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+    $appStarted = $true
+}
+# ui_check after a (re)start, and at most every 6 h; a failure lands in this
+# log where the notifier pushes it to the owner
+$uiMark = "C:\Projects\KinoliveLines\live\owl_ui_check.log"
+$uiDue = $appStarted -or (-not (Test-Path $uiMark)) -or (((Get-Date) - (Get-Item $uiMark).LastWriteTime).TotalHours -gt 6)
+if ($uiDue) {
+    if ($appStarted) { Start-Sleep -Seconds 12 }
+    try {
+        $p = Start-Process node -ArgumentList "review\ui_check.mjs" -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden -RedirectStandardOutput $uiMark -PassThru -Wait
+        if ($p.ExitCode -ne 0) { Say ("UI CHECK FAILED (exit " + $p.ExitCode + ") - see owl_ui_check.log") } else { Say "ui_check OK" }
+    } catch { Say ("ui_check could not run: " + $_) }
 }
 
 # 3b) OwlNest worker manager (one stats worker per registered user)
