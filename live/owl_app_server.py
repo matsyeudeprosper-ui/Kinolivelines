@@ -1140,6 +1140,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="since-t" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:8px"></div>
  <div class="sincegrid" id="since-g"></div>
 </div>
+<div class="panel" id="tl" style="display:none;margin-top:12px">
+ <div class="lbl" id="tl-lbl">Votre parcours</div>
+ <div id="tl-list" style="margin-top:8px;position:relative"></div>
+</div>
 <div class="panel" id="weekcard" style="display:none;margin-top:12px">
  <div class="lbl">Ma semaine</div>
  <div id="week-sum" style="font-size:.95rem;color:var(--text);line-height:1.5;
@@ -2891,12 +2895,14 @@ async function acctSheet(){
    '<div class="sic" style="font-weight:800;font-size:.8rem;color:var(--text2);position:relative">'+ini+
     '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
+    (x.note?'<div style="font-size:.74rem;color:var(--warn);line-height:1.35;margin-top:2px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>':'')+
     '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+'</div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
     '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
     (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
+    '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
     '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
    '</div>';}).join('');
  sheet('<h3>Vos comptes</h3>'+
@@ -2943,6 +2949,43 @@ function nudgeDone(){try{localStorage.setItem('owlNudgeDone','1');}catch(e){}con
 setInterval(nudgeCheck,15000);setTimeout(nudgeCheck,4000);
 // ---- batch 20: Nid actions reachable from any page (owner) ----
 function AB(){try{return localStorage.getItem('owl_adm')||B;}catch(e){return B;}}
+// 2026-09-27: the member's journey - start, first trade, milestones, fresh starts
+function renderTimeline(d){
+ const el=document.getElementById('tl');if(!el)return;const en=LANG()==='en';
+ const ev=[];const S=d.since_start||{};
+ const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?(m[3]+'/'+m[2]+'/'+m[1]):null;};
+ const ts=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?Date.UTC(+m[1],+m[2]-1,+m[3])/1000:0;};
+ if(d.era_start){ev.push({t:ts(d.era_start),ic:'i-home',c:'var(--accent-soft)',l:en?'Start with OwlNest':'D\u00e9but avec OwlNest',s:fd(d.era_start)});}
+ (d.era_prev||[]).forEach(st=>{const m=/^(\d{4})(\d\d)(\d\d)/.exec(st);if(m){const k=m[1]+'-'+m[2]+'-'+m[3];
+  ev.push({t:ts(k),ic:'i-activity',c:'var(--warn)',l:en?'Fresh start':'Nouveau d\u00e9part',s:fd(k)});}});
+ if(S.first){ev.push({t:ts(S.first)+1,ic:'i-chart',c:'var(--up)',l:en?'First trade':'Premier trade',s:fd(S.first)});}
+ const bd=window._badges||{};const BN={t10:['10 trades','10 trades'],t50:['50 trades','50 trades'],t100:['100 trades','100 trades'],gweek:['Semaine verte','Green week'],goal:['Objectif atteint','Goal reached'],d30:['30 jours','30 days'],d100:['100 jours','100 days']};
+ Object.keys(bd).forEach(k=>{if(!BN[k])return;const dt=new Date(bd[k]*1000);
+  ev.push({t:bd[k],ic:'i-check',c:'var(--up)',l:BN[k][en?1:0],s:String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()});});
+ if(ev.length<2){el.style.display='none';return;}
+ ev.sort((a,b)=>b.t-a.t);
+ document.getElementById('tl-lbl').textContent=en?'Your journey':'Votre parcours';
+ setH(document.getElementById('tl-list'),'<div style="position:absolute;left:14px;top:12px;bottom:12px;width:2px;background:var(--border2)"></div>'+
+  ev.map(e=>'<div style="display:flex;align-items:center;gap:12px;padding:7px 0;position:relative"><div class="evi" style="color:'+e.c+';background:var(--surface);border:1px solid var(--border2);z-index:1"><svg class="ic ic-s"><use href="#'+e.ic+'"/></svg></div>'+
+   '<div style="flex:1"><b style="font-size:.9rem">'+e.l+'</b><div style="font-size:.74rem;color:var(--muted)">'+(e.s||'')+'</div></div></div>').join(''));
+ el.style.display='block';
+}
+// 2026-09-27: after a reset or for a new member, cards say what comes next
+function renderEmpty(d){
+ const en=LANG()==='en',M=MAN();
+ const S=d.since_start||{},sc=document.getElementById('since'),st=document.getElementById('since-t'),sg=document.getElementById('since-g');
+ if(sc&&(!S.n)&&d.era_start){sc.style.display='block';
+  setH(st,en?'Your story starts here. The first trade will appear on this page.':'Votre histoire commence ici. Le premier trade appara\u00eetra sur cette page.');
+  setH(sg,'');}
+ const wk=document.getElementById('weekcard'),ws=document.getElementById('week-sum'),sb=document.getElementById('sharebtn');
+ if(wk&&!(d.days||[]).length){wk.style.display='block';
+  setH(ws,en?'This week is just starting \u2014 '+(M?'your first signal':'the robot\u2019s first trade')+' will show up here.':'Cette semaine commence \u2014 '+(M?'votre premier signal':'le premier trade du robot')+' appara\u00eetra ici.');
+  if(sb)sb.style.display='none';}
+ else if(sb)sb.style.display='';
+ const mv=document.getElementById('msum-verdict');
+ if(mv&&!(d.month_days||[]).length&&!(d.days||[]).length){mv.style.display='block';document.getElementById('msum-sec').style.display='flex';
+  setH(mv,en?'This month is just starting.':'Ce mois commence.');}
+}
 // 2026-09-27: this month so far against last month up to the same day
 function renderMvM(d){
  const el=document.getElementById('mvm');if(!el)return;
@@ -3243,6 +3286,18 @@ async function nestPanic(uid,name){
  load();
 }
 async function nestReset(uid,name){
+ // 2026-09-27: show what will be archived and what stays, before the password
+ let pv=null;try{const r=await fetch(AB()+'nest_reset_preview?uid='+encodeURIComponent(uid)+'&t='+Date.now(),{cache:'no-store'});if(r.ok)pv=await r.json();}catch(e){}
+ if(pv){const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?m[3]+'/'+m[2]:'\u2014';};
+  const col=(t,c,items)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px"><div style="font-size:.66rem;color:'+c+';text-transform:uppercase;letter-spacing:.06em;font-weight:700">'+t+'</div>'+
+   '<div style="font-size:.84rem;color:var(--text2);line-height:1.55;margin-top:4px">'+items.map(x=>'\u2022 '+x).join('<br>')+'</div></div>';
+  const ok=await sheet('<h3>Avant de r\u00e9initialiser '+name+'</h3>'+
+   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 12px">'+
+   col('Archiv\u00e9','var(--down-soft)',[pv.trades+' trade'+(pv.trades>1?'s':'')+' depuis le '+fd(pv.first||pv.era_start),pv.days+' jour'+(pv.days>1?'s':'')+' d\u2019historique',(pv.state?'le livre de comptes du robot':'aucun livre (robot absent)'),pv.journal_rows+' ligne'+(pv.journal_rows>1?'s':'')+' de journal'])+
+   col('Conserv\u00e9','var(--up-soft)',['le compte et son lien','les notifications et la langue','les messages re\u00e7us','les anciens fichiers, archiv\u00e9s (.bak)'])+'</div>'+
+   '<p style="color:var(--muted2);font-size:.84rem">Le robot s\u2019arr\u00eate, repart de z\u00e9ro, et l\u2019app recommence son histoire aujourd\u2019hui. Refus\u00e9 si un trade est ouvert.</p>'+
+   '<button class="shbtn shmain" onclick="_shDone(1)">Continuer</button><button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+  if(!ok)return;}
  const pw=await askPwd('R\u00e9initialiser '+name+' ?',
   'Le robot s\u2019arr\u00eate, son livre de comptes est archiv\u00e9 (jamais effac\u00e9), l\u2019historique de l\u2019app repart d\u2019aujourd\u2019hui, puis le robot red\u00e9marre de z\u00e9ro. Refus\u00e9 si un trade est ouvert.',
   '\u21bb R\u00e9initialiser',true);
@@ -3252,6 +3307,22 @@ async function nestReset(uid,name){
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
  toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">R\u00e9initialisation lanc\u00e9e \u2014 le robot repart de z\u00e9ro dans ~30 s.</div>',6000);
+}
+async function nestNote(uid,name){
+ const cur=((window._nest||[]).find(x=>x.id===uid)||{}).note||'';
+ const v=await sheet('<h3>Note \u00b7 '+name+'</h3><p>Priv\u00e9e, visible seulement par vous, dans Le Nid et Vos comptes.</p>'+
+  '<textarea id="shnote" maxlength="300" rows="3" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:10px 12px;font-size:.95rem;font-family:inherit;resize:vertical">'+cur.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</textarea>'+
+  '<button class="shbtn shmain" onclick="_shDone(document.getElementById(&#39;shnote&#39;).value)">Enregistrer</button>'+
+  (cur?'<button class="shbtn shghost" onclick="_shDone(&#39;&#39;)">Effacer la note</button>':'')+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(v===null)return;
+ const pw=await askPwd('Enregistrer la note ?','Mot de passe ma\u00eetre.','Enregistrer');if(!pw)return;
+ const r=await fetch(AB()+'nest_note',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'uid='+encodeURIComponent(uid)+'&text='+encodeURIComponent(v)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
+ const n=(window._nest||[]).find(x=>x.id===uid);if(n)n.note=v;
+ toast('Note enregistr\u00e9e',2000);
 }
 async function nestPause(uid,on){
  const pw=await askPwd(
@@ -3912,7 +3983,7 @@ function render(d){
     Object.keys(localStorage||{}).filter(k=>k.indexOf('owlDayDone:')===0).forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
     window._badges=null;toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">'+(LANG()==='en'?'Fresh start \u2014 the history restarts from today.':'Nouveau d\u00e9part \u2014 l\u2019historique repart d\u2019aujourd\u2019hui.')+'</div>',6000);}
    try{localStorage.setItem('owlEra:'+B,d.era_start);}catch(e){}}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -4001,6 +4072,7 @@ function render(d){
     'nowrap;overflow:hidden;text-overflow:ellipsis"><span style="display:'+
     'inline-block;width:9px;height:9px;border-radius:50%;background:'+
     dot+';margin-right:8px"></span><b>'+x.name+'</b>'+
+    (x.note?'<span style="display:block;font-size:.72rem;color:var(--warn);white-space:normal;margin:2px 0 0 17px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</span>':'')+
     '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
     '</span></span>'+
     '<span style="font-size:.72rem;color:var(--muted2);white-space:nowrap;'+
@@ -4472,6 +4544,45 @@ def day_payload(user):
 INBOX_FILE = os.path.join(DIR, "owl_push_inbox.json")
 
 
+NOTES_FILE = os.path.join(DIR, "owl_nest_notes.json")
+
+
+def reset_preview(uid):
+    """What a reset would archive and what it keeps, for the owner's sheet."""
+    out = {"uid": uid, "trades": 0, "days": 0, "first": None, "journal_rows": 0,
+           "state": False, "era_start": None}
+    try:
+        u = next(x for x in json.load(open(USERS_FILE, encoding="utf-8")) if x.get("id") == uid)
+    except Exception:
+        return out
+    out["era_start"] = u.get("era_start")
+    try:
+        nd = json.load(open(os.path.join(NEST_DATA, uid + ".json")))
+        out["trades"] = int((nd.get("since_start") or {}).get("n") or 0)
+        out["days"] = int((nd.get("since_start") or {}).get("days") or 0)
+        out["first"] = (nd.get("since_start") or {}).get("first")
+    except Exception:
+        pass
+    bot = BOT_OF.get(uid)
+    if bot and bot[1].startswith("bos_state"):
+        out["state"] = os.path.exists(os.path.join(DIR, bot[1]))
+        sfx = bot[1][len("bos_state"):-len(".json")]
+        try:
+            import csv as _csv
+            _era = era_ts(u)
+            with open(os.path.join(DIR, f"bos_journal{sfx}.csv"), encoding="utf-8", errors="replace") as jf:
+                for r in _csv.DictReader(jf):
+                    try:
+                        xt = int(datetime.fromisoformat((r.get("exit_time_utc") or "").replace("Z", "+00:00")).timestamp())
+                    except Exception:
+                        xt = 0
+                    if not _era or xt >= _era:
+                        out["journal_rows"] += 1
+        except Exception:
+            pass
+    return out
+
+
 def era_ts(user):
     """The member's era start as epoch (0 if none) - every journal reader
     skips rows closed before it, so a reset gives a clean history even if
@@ -4683,6 +4794,7 @@ def user_stats(u, admin_override=False):
             except Exception:
                 d["trading_paused"] = u["id"] in PAUSE_ALLOWED
         d["era_start"] = u.get("era_start")
+        d["era_prev"] = u.get("era_prev") or []
         # per-account books (2026-09-07): std has its own ledger/
         # fights; family mirrors follow the master's
         _sfx = "_std" if u.get("id") == "std" else ""
@@ -4966,6 +5078,10 @@ def user_stats(u, admin_override=False):
             # v2 Le Nid: one row per member for the master console
             try:
                 _rows = []
+                try:
+                    _notes = json.load(open(NOTES_FILE, encoding="utf-8"))
+                except Exception:
+                    _notes = {}
                 for x in json.load(open(USERS_FILE, encoding="utf-8")):
                     _ndp = os.path.join(NEST_DATA, x["id"] + ".json")
                     try:
@@ -4997,6 +5113,7 @@ def user_stats(u, admin_override=False):
                         "trade": bool(x.get("trade")
                                       or x.get("id") == "kino"),
                         "days": (nd.get("days") or [])[:7],
+                        "note": (_notes.get(x["id"]) or {}).get("text", ""),
                         "plan": x.get("plan")})
                 d["nest"] = _rows
             except Exception:
@@ -6009,6 +6126,40 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "nest_note":
+            # 2026-09-27: a private note per account, for the owner (master pwd)
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upn
+                _fn = _upn.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                _pw = (_fn.get("pwd", [""])[0] or "").strip()
+                _uid = (_fn.get("uid", [""])[0] or "").strip()
+                _txt = (_fn.get("text", [""])[0] or "").strip()[:300]
+                if not master_pwd_ok(_pw):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                try:
+                    notes = json.load(open(NOTES_FILE, encoding="utf-8"))
+                    if not isinstance(notes, dict):
+                        notes = {}
+                except Exception:
+                    notes = {}
+                if _txt:
+                    notes[_uid] = {"text": _txt, "t": int(time.time())}
+                else:
+                    notes.pop(_uid, None)
+                _tmpn = NOTES_FILE + ".tmp"
+                json.dump(notes, open(_tmpn, "w", encoding="utf-8"), ensure_ascii=False)
+                os.replace(_tmpn, NOTES_FILE)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_reset":
             # 2026-09-27: restart an account's robot from zero (master pwd);
             # owl_mode_switch.py does the stop / archive / era / start
@@ -6650,6 +6801,15 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 _t = 0
             self._send(json.dumps(trade_story(user, _t)), "application/json")
+        elif sub == "nest_reset_preview":
+            if not is_admin(user):
+                self.send_response(404)
+                self.end_headers()
+                return
+            import urllib.parse as _upv
+            _q = _upv.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            self._send(json.dumps(reset_preview((_q.get("uid", [""])[0] or "").strip())),
+                       "application/json")
         elif sub == "week.png":
             _wp = os.path.join(NEST_DATA, f"week_{user.get('id')}.png")
             try:

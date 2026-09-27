@@ -218,4 +218,11 @@ foreach ($d in $demos) {
         powershell -NoProfile -ExecutionPolicy Bypass -File $d.script
     }
 }
+# 2026-09-27: the landing carousel shows REAL renders of the demo - refresh
+#     them once a day (needs the app server up; ~20 s of headless Edge)
+$shot = "C:\Projects\KinoliveLines\live\static\shot_home.png"
+if (-not (Test-Path $shot) -or ((Get-Date) - (Get-Item $shot).LastWriteTime).TotalHours -gt 24) {
+    Say "refreshing landing screenshots"
+    try { Start-Process node -ArgumentList "review\landing_shots.mjs" -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden } catch { Say ("landing shots failed: " + $_) }
+}
 Say "boot_all done"
