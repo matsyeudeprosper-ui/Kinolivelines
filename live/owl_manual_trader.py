@@ -897,10 +897,10 @@ def main():
                     if eng.choch != 0 and eng.choch != last_choch:
                         side = "haussier" if eng.choch == 1 else "baissier"
                         say(f"CHoCH {side} a {_c:.2f}")
-                        push(f"⚡ CHoCH {side}",
-                             f"Changement de caractere a {_c:.0f}. "
-                             f"La tendance peut basculer - attends le BOS "
-                             f"qui le confirme.", kind="batch")
+                        # 2026-09-27: plain words for members, no jargon
+                        push("\u26a1 Le sens peut changer",
+                             f"Vers le {'haut' if eng.choch == 1 else 'bas'}, autour de {_c:.0f}. "
+                             "Attendez la confirmation avant d'entrer.", kind="batch")
                     vpend_check(_c, rebuild_ledger(),
                                 float(bar["high"]), float(bar["low"]))
                     last_choch = eng.choch
@@ -924,9 +924,10 @@ def main():
                     if flip:
                         w = "haussiere" if eng.trend == 1 else "baissiere"
                         say(f"FLIP: tendance {w}")
-                        push(f"🔄 FLIP {w}",
-                             f"La structure a bascule a {_c:.0f}. "
-                             f"On trade desormais dans ce sens.")
+                        _ENG["cont_used"] = False      # a new trend re-arms the one continuation
+                        push("\U0001f504 Nouvelle tendance " + w,
+                             f"Bascule autour de {_c:.0f}. Les prochains signaux seront des "
+                             f"{'achats' if eng.trend == 1 else 'ventes'}.")
                     # ---- AUTO mode: enter on our own (owner 2026-09-17)
                     # The kill line is checked BEFORE any entry and while a
                     # position is running, so a losing trade cannot carry the
@@ -986,13 +987,32 @@ def main():
                     if sig:
                         say(f"BOS {'haussier' if d_ == 1 else 'baissier'} "
                             f"a {_c:.2f}, stop {slv:.2f}")
-                        push(("✅ BOS " +
-                              ("haussier" if d_ == 1 else "baissier") +
-                              (" (flip)" if flip else " (continuation)")),
-                             f"{'Achat' if d_ == 1 else 'Vente'} possible a "
-                             f"{_c:.0f}, stop {slv:.0f} ({dist:.0f} pts), "
-                             f"lot {lot2:.2f}"
-                             + (f" dont {bul2} de rattrapage" if bul2 else ""))
+                        # 2026-09-27: the SIGNAL, gated exactly like the robot
+                        # (weather brakes, then the recovery allowance), kept
+                        # in the state for the app and the chart, pushed in
+                        # the simplest format a signal consumer wants.
+                        _cj2 = chart()
+                        _why = gates(_cj2, False) if _cj2 else None
+                        _dbt = led2["debt"] > 0.5
+                        if not _why and _dbt and not flip:
+                            if _ENG.get("cont_used"):
+                                _why = "rattrapage : une seule continuation par tendance"
+                            else:
+                                _ENG["cont_used"] = True
+                        _tp = round(_c + d_ * B.RR * dist, 2)
+                        _ENG["signal"] = {"t": int(time.time()), "dir": d_, "e": round(_c, 2),
+                                          "sl": round(slv, 2), "tp": _tp, "lot": round(lot2, 2),
+                                          "bul": bul2, "kind": "flip" if flip else "cont",
+                                          "ok": not _why, "why": _why or "",
+                                          "expires": int(time.time()) + 1800}
+                        if manual_mode() and not _why:
+                            push(("\U0001f7e2 ACHAT" if d_ == 1 else "\U0001f534 VENTE") + f" {SYMBOL}",
+                                 f"Entr\u00e9e ~{_c:.0f} \u00b7 stop {slv:.0f} \u00b7 cible {_tp:.0f} "
+                                 f"\u00b7 lot {lot2:.2f}"
+                                 + (f" (+{bul2} rattrapage)" if bul2 else "")
+                                 + " \u00b7 valable 30 min")
+                        elif manual_mode():
+                            say(f"signal non conseille: {_why}")
             # ---- publish state for the chart (every 10 s)
             if time.time() - last_led >= 10:
                 last_led = time.time()
@@ -1020,6 +1040,8 @@ def main():
                     "lot_min": LOT_MIN, "lot_max": LOT_MAX,
                     "s_min_dist": B.S_MIN_DIST,
                     "trend": eng.trend, "choch": eng.choch,
+                    "signal": (_ENG.get("signal") if _ENG.get("signal")
+                               and _ENG["signal"].get("expires", 0) > time.time() else None),
                     "px": round(float(tick.bid), 2) if tick else None,
                     "spread": round(float(tick.ask - tick.bid), 2) if tick else None,
                     "open": [{"lot": p.volume, "d": 1 if p.type == 0 else -1,

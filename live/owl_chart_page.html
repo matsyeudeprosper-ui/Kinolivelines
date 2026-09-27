@@ -171,7 +171,8 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
 const tok=location.pathname.split('/').filter(x=>x)[0];
 // 2026-09-26 (owner): members see candles, their own trades and a soft
 // zone; the annotated structure is for the admin's browser only.
-const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})()||%%FULL%%;   // 2026-09-27: strategy members get the full view from the server
+const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})()||%%FULL%%;
+const TIER='%%TIER%%';   // observer: no structure hints at all   // 2026-09-27: strategy members get the full view from the server
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');
@@ -385,7 +386,7 @@ function draw(){
   const s=v.toFixed(0);
   ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);}
  // --- trade zones (behind candles) ---
- if(!FULL){const zo=(D.invalid!=null)?D.invalid:D.flip_bos;
+ if(!FULL&&TIER!=='observer'){const zo=(D.invalid!=null)?D.invalid:D.flip_bos;
   if(D.next_bos&&zo!=null){const y1=px(D.next_bos),y2=px(zo);
    const gz=ctx.createLinearGradient(0,Math.min(y1,y2),0,Math.max(y1,y2));
    gz.addColorStop(0,'rgba(143,198,255,.10)');gz.addColorStop(1,'rgba(143,198,255,.02)');
@@ -1613,6 +1614,13 @@ mtopen.onclick=async()=>{
  // fall back to the far one. Otherwise: main direction, main diamond.
  const okSide=(v,dd)=>v&&((dd===1&&v<px-10)||(dd===-1&&v>px+10));
  let d=(MS.trend===-1)?-1:1,sl=null;
+ // 2026-09-27: opened from the app's signal card -> the tool is the signal
+ const _sg=MS.signal;
+ if(_sg&&_sg.ok&&Date.now()/1000<(_sg.expires||0)&&/[?&]sig=1/.test(location.search)){
+  MT={sl:_sg.sl,tp:_sg.tp,entry:null};ary_pend_reset();
+  mtbar.style.display='block';mtopen.style.display='none';
+  document.getElementById('botbar').style.bottom=((mtbar.offsetHeight||140)+14)+'px';
+  mtRender();return;}
  if(D&&D.int_trend){
   const v=intLevel(D.int_trend,px);
   if(v){d=D.int_trend;sl=v;}}
@@ -1861,6 +1869,7 @@ async function mtLoad(){
    mtopen.innerHTML=hasPos?_pen+' Modifier SL/TP'
     :(hasOrd?_pen+' Modifier l’ordre':_ch+' Trader');
    window._MANUAL=!MS.auto;
+   if(window._MANUAL&&/[?&]sig=1/.test(location.search)&&!window._sigOpened&&MS.signal){window._sigOpened=true;setTimeout(()=>mtopen.click(),600);}
    const canOpen=MS.auto?(hasPos||hasOrd):true;
    mtopen.style.display=(MT||!canOpen)?'none':'block';
    return;}

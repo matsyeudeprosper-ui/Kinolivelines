@@ -1019,6 +1019,29 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div style="flex:1"><b>Les notifications</b><div style="font-size:.84rem;color:var(--muted2)">Activez-les dans les R&eacute;glages pour &ecirc;tre pr&eacute;venu.</div></div></div>
  </div>
 </div>
+<div class="panel" id="sigcard" style="display:none;margin-top:12px;border-width:1.5px">
+ <div style="display:flex;justify-content:space-between;align-items:center">
+  <div class="lbl" id="sig-lbl">Signal</div><span id="sig-when" style="font-size:.72rem;color:var(--muted)"></span></div>
+ <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+  <div id="sig-dir" style="font-size:1.35rem;font-weight:800;letter-spacing:-.01em"></div>
+  <div id="sig-sym" style="font-size:.8rem;color:var(--muted2)">BTCUSD</div></div>
+ <div id="sig-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
+ <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
+ <div style="display:flex;gap:8px;margin-top:12px">
+  <a id="sig-chart" href="#" class="shbtn shmain" style="flex:1;margin:0;padding:11px;text-align:center;text-decoration:none;font-size:.88rem">Prendre sur le graphique</a>
+  <button id="sig-copy" class="shbtn shghost" style="flex:none;margin:0;padding:11px 14px;font-size:.88rem" onclick="sigCopy()">Copier</button>
+ </div>
+</div>
+<div class="panel" id="kinocard" style="display:none;margin-top:12px">
+ <div class="lbl">Le robot de Kino &middot; r&eacute;sultats</div>
+ <div id="kino-g" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px"></div>
+ <svg id="kino-spark" viewBox="0 0 300 44" style="width:100%;height:44px;display:none;margin-top:10px"></svg>
+ <div id="kino-s" style="font-size:.78rem;color:var(--muted2);margin-top:8px"></div>
+ <div style="display:flex;gap:8px;margin-top:12px">
+  <a id="kino-link" href="/demo" class="shbtn shghost" style="flex:1;margin:0;padding:10px;text-align:center;text-decoration:none;font-size:.86rem">Voir en direct</a>
+  <button class="shbtn shmain" style="flex:1;margin:0;padding:10px;font-size:.86rem" onclick="offersSheet()">Les offres</button>
+ </div>
+</div>
 <div class="glass" id="offercard" role="button" tabindex="0" style="display:none;margin-top:26px;padding:14px 16px;cursor:pointer" onclick="offersSheet()">
  <div class="sheen"></div>
  <div style="position:relative;display:flex;align-items:center;gap:12px">
@@ -1868,7 +1891,33 @@ const VOICE_EN={
   st_manual:'<b>Manual mode</b> &mdash; you decide',
   dayx_empty:'That day, no trade.',dayx_who:'You ',ts_who:'You ',ts_risk:' Maximum risk: <b>$'}};
 function LANG(){try{return localStorage.getItem('owlLang')==='en'?'en':'fr';}catch(e){return 'fr';}}
-function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const v=Lb[MAN()?'manual':'auto'];
+// 2026-09-27: the member's tier decides what is shown
+function TIER(){const d=window._d||{},P=d.plan||{};if(d.public)return 'demo';if(P.family)return 'family';if(P.strategy)return 'strategy';if(P.manual)return 'manual';return 'observer';}
+function OBS(){return TIER()==='observer';}
+// observers watch Kino's robot: the market card speaks about HIS robot
+VOICE.observer={
+ wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies. Le robot de Kino entrera dès que le signal se confirme.'],
+     flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot de Kino attend la confirmation.'],
+     forming:['⏳','Ça se prépare','#8fa1b3','Trop tôt. Le robot de Kino laisse le marché se dessiner.'],
+     none:['💤','Rien à faire','#6f8299','Le marché est calme. Le robot de Kino attend une occasion.'],
+     brisk:['🍃','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot de Kino laisse passer.'],
+     nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot de Kino s’écarte.'],
+     nogate:['⚡','Marché rapide','#b98cff','Le robot de Kino travaille quand même — à ses risques.']},
+ mx_hint:'&middot; ce que voit le robot de Kino',day_lbl:'Votre journ\u00e9e',
+ day_empty:'Aucun trade sur votre compte aujourd\u2019hui. Le robot de Kino, lui, travaille : ses r\u00e9sultats sont plus bas.',
+ since:'Avec OwlNest depuis le <b>'};
+VOICE_EN.observer={
+ wx:{ready:['✅','Green light','#8df0bb','Conditions are met. Kino\u2019s robot will enter as soon as the signal confirms.'],
+     flip:['⚖️','It may turn','#e8c55a','The direction may be changing. Kino\u2019s robot waits for confirmation.'],
+     forming:['⏳','Setting up','#8fa1b3','Too early. Kino\u2019s robot lets the market take shape.'],
+     none:['💤','Nothing to do','#6f8299','The market is calm. Kino\u2019s robot waits for an opportunity.'],
+     brisk:['🍃','Lively market','#e8c55a','Candles are a bit larger than usual. Kino\u2019s robot lets it go.'],
+     nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. Kino\u2019s robot steps aside.'],
+     nogate:['⚡','Fast market','#b98cff','Kino\u2019s robot works anyway \u2014 at its own risk.']},
+ mx_hint:'&middot; what Kino\u2019s robot sees',day_lbl:'Your day',
+ day_empty:'No trade on your account today. Kino\u2019s robot is working: its results are below.',
+ since:'With OwlNest since <b>'};
+function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OBS()?'observer':'auto');const v=Lb[_vo]||Lb.auto;
  if(v[k]!==undefined)return v[k];if(Lb.auto[k]!==undefined)return Lb.auto[k];
  const f=VOICE[MAN()?'manual':'auto'];return f[k]!==undefined?f[k]:VOICE.auto[k];}
 // Static chrome: a French -> English dictionary applied to text nodes and a
@@ -3112,13 +3161,15 @@ function onboard(i){
     :'Il n\u2019agit que quand tout est r\u00e9uni, il s\u2019abrite quand le march\u00e9 devient m\u00e9chant, et apr\u00e8s une perte il se rattrape prudemment. Tout se lit sur l\u2019Accueil.'],
   ['i-calendar','var(--warn)','Ce que vous recevrez','Chaque trade termin\u00e9, le bilan du soir et votre semaine le dimanche. L\u2019Historique garde tout, jour par jour.'],
   ['i-bell','var(--accent-soft)','Les notifications','Pour \u00eatre pr\u00e9venu sur votre t\u00e9l\u00e9phone, m\u00eame l\u2019app ferm\u00e9e. Vous pourrez couper la nuit dans les R\u00e9glages.']];
+ if(OBS())C.push(['i-key','var(--warn)','Choisissez votre offre','Regarder est gratuit. Pour trader la strat\u00e9gie vous-m\u00eame avec les signaux et l\u2019outil du graphique, ou tout comprendre, une offre \u00e0 30 jours suffit.']);
  const n=C.length;i=Math.max(0,Math.min(n-1,i||0));const c=C[i];
  const dots=C.map((_,k)=>'<i style="display:inline-block;width:'+(k===i?18:6)+'px;height:6px;border-radius:99px;margin:0 2px;background:'+(k===i?'var(--accent)':'var(--border2)')+';transition:width .2s"></i>').join('');
  const last=i===n-1;
  const nb=document.getElementById('notifbtn');const canNotif=!!(nb&&nb.style.display!=='none'&&nb.dataset.on!=='1');
  sheet('<div style="text-align:center;padding:6px 0 2px"><div class="sic" style="margin:0 auto;width:56px;height:56px;border-radius:18px;color:'+c[1]+'"><svg class="ic" style="width:26px;height:26px"><use href="#'+c[0]+'"/></svg></div>'+
   '<h3 style="margin:14px 0 6px">'+c[2]+'</h3><p style="color:var(--text);font-size:.95rem;line-height:1.55">'+c[3]+'</p><div style="margin:6px 0 14px">'+dots+'</div></div>'+
-  (last?(canNotif?'<button class="shbtn shmain" onclick="_shDone(1);document.getElementById(&#39;notifbtn&#39;).click();try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Activer les notifications</button>'
+  (last?(OBS()?'<button class="shbtn shmain" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){};offersSheet()">Voir les offres</button>'
+      :canNotif?'<button class="shbtn shmain" onclick="_shDone(1);document.getElementById(&#39;notifbtn&#39;).click();try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Activer les notifications</button>'
       :'<button class="shbtn shmain" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Terminer</button>')
       +'<button class="shbtn shghost" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Plus tard</button>'
    :'<button class="shbtn shmain" onclick="_shDone(1);onboard('+(i+1)+')">Suivant</button>'+
@@ -3515,7 +3566,7 @@ function renderPlan(d){
  const t=document.getElementById('plan-t'),sub=document.getElementById('plan-s'),bt=document.getElementById('plan-btns'),nt=document.getElementById('plan-note'),ic=document.getElementById('plan-ic');
  if(d.public){el.style.display='none';document.getElementById('plan-sec').style.display='none';return;}
  let title,txt,color='var(--accent-soft)';
- if(P.family){title=en?'Famille':'Famille';txt=en?'Everything is open: manual, automatic, the strategy.':'Tout est ouvert : manuel, automatique, la strat\u00e9gie.';color='var(--warn)';}
+ if(P.family){title=en?'Full access':'Acc\u00e8s complet';txt=en?'Everything is open: manual, automatic, the strategy. Offered.':'Tout est ouvert : manuel, automatique, la strat\u00e9gie. Offert.';color='var(--warn)';}
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'Manual + the full view, until ':'Manuel + la vue compl\u00e8te, jusqu\u2019au ')+fd(P.strategy_until)+'.';color='var(--warn)';}
  else if(P.manual){title=en?'Manual':'Manuel';txt=(en?'Signals and the trade tool, until ':'Signaux et outil de trading, jusqu\u2019au ')+fd(P.manual_until)+'.';color='var(--up-soft)';}
  else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
@@ -3529,9 +3580,13 @@ function renderPlan(d){
  (function(){let o=document.getElementById('plan-offers');if(!o){o=document.createElement('button');o.id='plan-offers';o.className='shbtn shghost';o.style.cssText='margin:10px 0 0;padding:11px;font-size:.9rem';o.onclick=offersSheet;bt.parentNode.insertBefore(o,nt);}
   o.textContent=en?'See the plans in detail':'Voir les offres en d\u00e9tail';o.style.display=P.family?'none':'block';})();
  (function(){const oc=document.getElementById('offercard');if(!oc)return;let hid=0;try{hid=parseInt(localStorage.getItem('owlOfferHide:'+B)||'0',10);}catch(e){}
-  const show=!d.public&&!P.family&&!P.manual&&(Date.now()-hid>7*86400000);oc.style.display=show?'block':'none';
+  const show=!d.public&&!P.family&&!P.manual&&(Date.now()-hid>3*86400000);oc.style.display=show?'block':'none';
   if(show){document.getElementById('offercard-t').textContent=en?'Trade the strategy yourself':'Tradez la strat\u00e9gie vous-m\u00eame';
    document.getElementById('offercard-s').textContent=en?'Signals + the Trader tool on your account, from $'+(pk.manual||{}).usd+' / 30 days.':'Signaux + l\u2019outil Trader sur votre compte, d\u00e8s $'+(pk.manual||{}).usd+' / 30 jours.';}})();
+ (function(){let a=document.getElementById('plan-act');if(!a){a=document.createElement('a');a.id='plan-act';a.href='#';a.style.cssText='display:block;text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px;text-decoration:none';
+   a.onclick=e=>{e.preventDefault();window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';tab('home',document.querySelector('.tb'));setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}};
+   nt.parentNode.insertBefore(a,nt.nextSibling);}
+  a.textContent=en?'I have an activation code':'J\u2019ai un code d\u2019activation';a.style.display=(!P.family&&d.activation_needed)?'block':'none';})();
  nt.textContent=P.family?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
   :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
  const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
@@ -3540,6 +3595,52 @@ function renderPlan(d){
 }
 // The offers, in full - one screen, both languages. What is INCLUDED is
 // only what the app really does today; nothing promised beyond that.
+// Observers: results and the app, never the gates. Kino's robot = the public demo account.
+// Manual members: the current signal (from their desk), plain and complete.
+function renderSignal(ms){
+ const el=document.getElementById('sigcard');if(!el)return;
+ const sg=ms&&ms.signal;const en=LANG()==='en';
+ if(!sg||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
+ const buy=sg.dir===1,col=sg.ok?(buy?'var(--up)':'var(--down)'):'var(--muted)';
+ el.style.display='block';el.style.borderColor=sg.ok?col:'var(--border2)';el.style.opacity=sg.ok?'1':'.75';
+ document.getElementById('sig-lbl').textContent=sg.ok?(en?'Signal':'Signal'):(en?'Signal set aside':'Signal \u00e9cart\u00e9');
+ const age=Math.max(0,Math.round((Date.now()/1000-sg.t)/60));const exp=new Date(sg.expires*1000);
+ document.getElementById('sig-when').textContent=(age<1?(en?'just now':'\u00e0 l\u2019instant'):(en?age+' min ago':'il y a '+age+' min'))+' \u00b7 '+(en?'until ':'valable jusqu\u2019\u00e0 ')+String(exp.getHours()).padStart(2,'0')+':'+String(exp.getMinutes()).padStart(2,'0');
+ const dd=document.getElementById('sig-dir');dd.textContent=(buy?'\u25b2 ':'\u25bc ')+(buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'));dd.style.color=col;
+ const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center"><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span><b style="font-size:.86rem;font-variant-numeric:tabular-nums">'+v+'</b></div>';
+ setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')));
+ setH(document.getElementById('sig-note'),sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
+  :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. Kino\u2019s robot would not take it either.':'. Le robot de Kino ne le prendrait pas non plus.')));
+ const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
+ window._sig=sg;
+}
+function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
+ const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' \u00b7 lot '+sg.lot.toFixed(2)+' \u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
+ (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
+async function pollSignal(){
+ const d=window._d;if(!d||!MAN()||OBS())return;
+ if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
+ try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}renderSignal(await r.json());}catch(e){}
+}
+function observerView(d){
+ const obs=OBS();
+ ['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=obs?'none':'';});
+ const kc=document.getElementById('kinocard');if(!kc)return;
+ if(!obs){kc.style.display='none';return;}
+ kc.style.display='block';
+ if(window._kinoT&&Date.now()-window._kinoT<60000)return;window._kinoT=Date.now();
+ (async()=>{try{const r=await fetch('/demo',{redirect:'follow'});if(!r.ok)return;const base=new URL(r.url).pathname.replace(/\/+$/,'')+'/';
+  const k=await (await fetch(base+'api?t='+Date.now(),{cache:'no-store'})).json();if(!k||typeof k.equity!=='number')return;
+  const en=LANG()==='en',money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2),S=k.since_start||{};
+  const cell=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center"><b style="display:block;font-size:1.05rem" class="'+c+'">'+v+'</b><span style="font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+l+'</span></div>';
+  setH(document.getElementById('kino-g'),cell(en?'today':'aujourd\u2019hui',money(k.today||0),sgn(k.today||0))+cell(en?'this week':'cette semaine',money(k.week||0),sgn(k.week||0))+cell(en?'this month':'ce mois',money(k.month||0),sgn(k.month||0)));
+  setH(document.getElementById('kino-s'),(S.n?(S.n+' trade'+(S.n>1?'s':'')+' \u00b7 '+Math.round(S.won/Math.max(1,S.n)*100)+'\u202f% '+(en?'won':'gagn\u00e9s')+' \u00b7 '):'')+(en?'live public account':'compte public en direct'));
+  const c=k.curve||[],sv=document.getElementById('kino-spark');
+  if(c.length>1&&sv){const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;const X=i=>(i/(c.length-1))*300,Y=v=>40-((v-mn)/sp*34);
+   const col=c[c.length-1]>=0?'var(--up)':'var(--down)';let p='';c.forEach((v,i)=>{p+=(i?' L':'M')+X(i).toFixed(1)+','+Y(v).toFixed(1);});
+   sv.innerHTML='<path d="'+p+'" fill="none" style="stroke:'+col+'" stroke-width="2"/>';sv.style.display='block';}
+  const a=document.getElementById('kino-link');if(a)a.href=base;}catch(e){}})();
+}
 function offersSheet(){
  const P=(window._d||{}).plan||{},en=LANG()==='en',pk=P.packages||{manual:{usd:29},strategy:{usd:49}};
  const T2=(fr,e)=>en?e:fr;
@@ -4213,8 +4314,10 @@ function render(d){
     :'D&eacute;sactiv&eacute;e &mdash; '+_capTxt+', quel que soit le '+
      'solde. Toucher pour activer la mise &agrave; l&#39;&eacute;chelle.';
   }
+  // 2026-09-27: the activation code is for the owner's circle - never a
+  // prompt on the home; a discreet link under the plan card shows the box
   document.getElementById('actcard').style.display=
-   d.activation_needed?'block':'none';
+   (d.activation_needed&&window._showAct)?'block':'none';
   document.getElementById('adminlock-sec').style.display=
    d.is_master?'none':'block';
   document.getElementById('adminlock-card').style.display=
@@ -4329,7 +4432,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -4702,6 +4805,7 @@ setTimeout(acctChipInit,1500);
  applyLang();i18nWatch();})();
 load();loadInbox();
 let pollT=setInterval(load,POLL_MS);
+setInterval(pollSignal,10000);
 setInterval(ago,1000);
 document.addEventListener('visibilitychange',()=>{
  clearInterval(pollT);pollT=null;
@@ -7426,7 +7530,10 @@ class H(BaseHTTPRequestHandler):
                                     time.localtime(os.path.getmtime(_cp)))
                 _full = "true" if (admin_cookie_ok(self.headers)
                                    or has(user.get("id"), "strategy")) else "false"
-                self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full),
+                _tier = ("member" if (admin_cookie_ok(self.headers) or is_admin(user)
+                                      or has(user.get("id"), "manual")) else "observer")
+                self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full)
+                           .replace("%%TIER%%", _tier),
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
