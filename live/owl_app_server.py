@@ -923,6 +923,13 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div style="flex:1"><b>Les notifications</b><div style="font-size:.84rem;color:var(--muted2)">Activez-les dans les R&eacute;glages pour &ecirc;tre pr&eacute;venu.</div></div></div>
  </div>
 </div>
+<div class="panel" id="daydone" style="display:none;margin-top:26px;border-color:rgba(46,204,113,.35)">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--up);background:rgba(46,204,113,.12)"><svg class="ic"><use href="#i-check"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="daydone-t" style="font-size:1rem"></b>
+   <div id="daydone-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px"></div></div>
+ </div>
+</div>
 <div class="panel" id="nudge" style="display:none;margin-top:26px">
  <div style="display:flex;align-items:flex-start;gap:12px">
   <div class="sic" style="color:var(--warn)"><svg class="ic"><use href="#i-bell"/></svg></div>
@@ -1292,6 +1299,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div class="ssub">Fichier CSV &middot; date, sens, lot, entr&eacute;e, sortie, r&eacute;sultat</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
+ <a class="srow" id="contactrow" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;color:inherit">
+  <div class="sic"><svg class="ic"><use href="#i-users"/></svg></div>
+  <div style="flex:1"><b id="contact-lbl">Contacter Kino</b>
+   <div class="ssub">Une question, un souci : un message suffit</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </a>
  <div class="srow" id="inboxbtn" onclick="inboxSheet()">
   <div class="sic"><svg class="ic"><use href="#i-bell"/></svg></div>
   <div style="flex:1"><b>Messages<span class="ibdot" id="inbox-dot" style="display:none"></span></b>
@@ -1371,6 +1384,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div class="srow" id="goalbtn">
   <div class="sic"><svg class="ic"><use href="#i-target"/></svg></div>
   <div style="flex:1"><b>D&eacute;finir l&#39;objectif</b></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="contactcfg" onclick="contactCfg()">
+  <div class="sic"><svg class="ic"><use href="#i-users"/></svg></div>
+  <div style="flex:1"><b>Lien de contact</b>
+   <div class="ssub" id="contactcfg-sub">WhatsApp, Telegram ou e-mail, montr&eacute; &agrave; chaque membre</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="codebtn">
@@ -1774,7 +1793,7 @@ const I18N_EN=new Map(Object.entries({
  'Vert = frais, orange = en retard, rouge = figé ou arrêté.':'Green = fresh, amber = late, red = stale or stopped.',
  'Lot de base actuel :':'Current base lot:','mise à l\u2019échelle active':'scaling on','Aucun trade pour l\u2019instant':'No trade yet','Rien à raconter pour l\u2019instant.':'Nothing to tell yet.'
 }));
-const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+) → \$(\d+)\/jour · (\d+) %$/,'Next step $$$1 → $$$2/day · $3 %'],
+const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+)\s*→\s*\$(\d+)\/jour\s*·\s*(\d+)\s*%$/,'Next step $$$1 → $$$2/day · $3 %'],[/^Objectif : \$(\d+)\s*·\s*(\d+)\s*%$/,'Goal: $$$1 · $2 %'],
  [/^Lot de base actuel : ([\d.]+) lot · mise à l\u2019échelle active$/,'Current base lot: $1 lot · scaling on'],[/^Trade en cours · (.+)$/,'Running trade · $1'],
  [/^(\d+) trades? · (\d+) (occasions? laissées? passer|signa(?:l|ux) écartés?)$/,'$1 trades · $2 set aside'],[/^ aujourd\u2019hui$/,' today'],[/^(\d+) sur (\d+) étapes$/,'$1 of $2 milestones'],
  [/^(\d+) comptes? · total$/,'$1 accounts · total'],[/^Bonjour (.+)$/,'Good morning $1'],[/^Bon après-midi (.+)$/,'Good afternoon $1'],[/^Bonsoir (.+)$/,'Good evening $1']];
@@ -2591,22 +2610,42 @@ async function loadInbox(){
  if(dot)dot.style.display=nw?'inline-block':'none';
  try{if(navigator.setAppBadge){if(nw)navigator.setAppBadge(nw);else if(navigator.clearAppBadge)navigator.clearAppBadge();}}catch(e){}
 }
-function inboxSheet(){
- const it=window._inbox||[];
- const ic=k=>k==='batch'?['i-calendar','var(--accent-soft)']:k==='weekly'?['i-book','var(--accent-soft)']:['i-bell','var(--warn)'];
+function inboxKind(x){const t=(x.title||'')+' '+(x.body||'');
+ if(/signal/i.test(t))return 'sig';if(/trade (termin|closed)/i.test(t))return 'tr';if(/bilan|semaine|your week|daily review/i.test(t))return 'bil';return 'oth';}
+function inboxList(){
+ const it=window._inbox||[],f=window._ibF||'all',q=(window._ibQ||'').toLowerCase();
+ const en=LANG()==='en';
+ const ic=k=>k==='bil'?['i-calendar','var(--accent-soft)']:k==='sig'?['i-activity','var(--up)']:k==='tr'?['i-chart','var(--text3)']:['i-bell','var(--warn)'];
  const esc=x=>String(x||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
- let h='<h3>Messages</h3>';
- if(!it.length)h+='<div class="empty"><p>Aucun message pour l\u2019instant. Activez les notifications pour recevoir le bilan du jour.</p></div>';
- else h+='<div style="max-height:60vh;overflow-y:auto;margin:0 -2px">'+it.map(x=>{const [n,c]=ic(x.kind);
-  return '<div class="srow-ev"><div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>'+
+ const L=it.filter(x=>(f==='all'||inboxKind(x)===f)&&(!q||((x.title||'')+' '+(x.body||'')).toLowerCase().indexOf(q)>=0));
+ const el=document.getElementById('ib-list');if(!el)return;
+ el.innerHTML=L.length?L.map(x=>{const [n,c]=ic(inboxKind(x));
+  return '<div class="srow-ev" style="align-items:flex-start"><div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>'+
   '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">'+
   '<b style="font-size:.9rem">'+esc(x.title)+'</b><span style="font-size:.7rem;color:var(--muted);white-space:nowrap">'+inboxWhen(x.t)+'</span></div>'+
-  '<div style="font-size:.84rem;color:var(--muted2);line-height:1.4;margin-top:2px">'+esc(x.body)+'</div></div></div>';}).join('')+'</div>';
+  '<div style="font-size:.84rem;color:var(--muted2);line-height:1.4;margin-top:2px">'+esc(x.body)+'</div></div>'+
+  '<button onclick="inboxDel('+x.t+')" aria-label="'+(en?'Delete':'Supprimer')+'" style="flex:none;border:0;background:transparent;color:var(--muted);padding:2px 4px;font-size:1rem;line-height:1">\u00d7</button></div>';}).join('')
+  :'<div class="empty"><p>'+(en?'Nothing here.':'Rien ici.')+'</p></div>';
+ document.querySelectorAll('.ibf').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+}
+async function inboxDel(t){
+ try{await fetch(B+'inbox_del',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'t='+t});}catch(e){}
+ window._inbox=(window._inbox||[]).filter(x=>x.t!==t);inboxList();
+}
+function inboxSheet(){
+ const it=window._inbox||[],en=LANG()==='en';
+ const F=[['all',en?'All':'Tous'],['tr','Trades'],['bil',en?'Reviews':'Bilans'],['sig',en?'Signals':'Signaux']];
+ let h='<h3>Messages</h3>';
+ if(!it.length)h+='<div class="empty"><p>'+(en?'No message yet. Enable notifications to receive the daily review.':'Aucun message pour l\u2019instant. Activez les notifications pour recevoir le bilan du jour.')+'</p></div>';
+ else h+='<div style="display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none">'+F.map(([k,l])=>'<button class="tfc ibf'+(k===(window._ibF||'all')?' on':'')+'" data-f="'+k+'" onclick="window._ibF=this.dataset.f;inboxList()">'+l+'</button>').join('')+'</div>'+
+  '<input id="ib-q" type="search" placeholder="'+(en?'Search\u2026':'Rechercher\u2026')+'" oninput="window._ibQ=this.value;inboxList()" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:9px 12px;font-size:.9rem;margin-bottom:6px">'+
+  '<div id="ib-list" style="max-height:52vh;overflow-y:auto;margin:0 -2px"></div>';
  h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  try{if(it.length)localStorage.setItem(inboxKey(),String(it[0].t));}catch(e){}
- sheet(h);
+ window._ibF='all';window._ibQ='';
+ sheet(h);inboxList();
  const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';
- const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent='dernier : '+inboxWhen(it[0].t);
+ const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent=(en?'last: ':'dernier : ')+inboxWhen(it[0].t);
  try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(e){}
 }
 // 2026-09-27: "Depuis le debut" (worker since_start) and the gentle badges.
@@ -2796,24 +2835,30 @@ function daySpark(tr){
 }
 // price path of one trade (trade sheet), from the chart feed's kept candles
 async function tradeSpark(tx,x){
+ // 2026-09-27: 30 min around the trade as real candles, entry/exit marked
  const el=document.getElementById('tspark');if(!el||!tx)return;
- const t0=(x.dur!=null)?tx-Math.round(x.dur*60):tx-600;
+ const t0=((x.dur!=null)?tx-Math.round(x.dur*60):tx-600)-900,t1=tx+900;
  let D=null;try{const r=await fetch(B+'chart_data');if(r.ok)D=await r.json();}catch(e){return;}
- const C=((D&&D.candles)||[]).filter(k=>k[0]>=t0-120&&k[0]<=tx+120);
- if(C.length<3)return;
- const ys=C.map(k=>k[4]);const lo=Math.min(...ys,x.ep||Infinity,x.xp||Infinity),hi=Math.max(...ys,x.ep||-Infinity,x.xp||-Infinity),sp=(hi-lo)||1;
- const X=i=>10+(i/(C.length-1))*280,Y=v=>66-((v-lo)/sp)*52;
- const col=x.p>=0?'var(--up)':'var(--down)';
- let d='';C.forEach((k,i)=>{d+=(i?' L':'M')+X(i).toFixed(1)+','+Y(k[4]).toFixed(1);});
- const hl=(v,lab,c)=>(v==null?'':'<line x1="10" y1="'+Y(v).toFixed(1)+'" x2="290" y2="'+Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-dasharray="3 4"/>'+
+ const C=((D&&D.candles)||[]).filter(k=>k[0]>=t0&&k[0]<=t1);
+ if(C.length<4)return;
+ const te=(x.dur!=null)?tx-Math.round(x.dur*60):tx;
+ const lo=Math.min(...C.map(k=>k[3]),x.ep||Infinity,x.xp||Infinity),hi=Math.max(...C.map(k=>k[2]),x.ep||-Infinity,x.xp||-Infinity),sp=(hi-lo)||1;
+ const X=t=>10+((t-C[0][0])/Math.max(1,C[C.length-1][0]-C[0][0]))*280,Y=v=>68-((v-lo)/sp)*56;
+ const w=Math.max(1.6,Math.min(6,280/C.length*0.62));
+ const up=x.p>=0,col=up?'var(--up)':'var(--down)';
+ let h='';
+ C.forEach(k=>{const cx=X(k[0]),o=k[1],c=k[4],g=c>=o;
+  h+='<line x1="'+cx.toFixed(1)+'" y1="'+Y(k[2]).toFixed(1)+'" x2="'+cx.toFixed(1)+'" y2="'+Y(k[3]).toFixed(1)+'" style="stroke:'+(g?'var(--up)':'var(--down)')+';opacity:.7" stroke-width="1"/>'+
+   '<rect x="'+(cx-w/2).toFixed(1)+'" y="'+Y(Math.max(o,c)).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+Math.max(1,Y(Math.min(o,c))-Y(Math.max(o,c))).toFixed(1)+'" rx="1" style="fill:'+(g?'var(--up)':'var(--down)')+';opacity:.85"/>';});
+ const hl=(v,lab,c)=>(v==null?'':'<line x1="10" y1="'+Y(v).toFixed(1)+'" x2="290" y2="'+Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.5" stroke-dasharray="3 4"/>'+
   '<text x="290" y="'+(Y(v)-3).toFixed(1)+'" font-size="8" text-anchor="end" style="fill:'+c+'">'+lab+'</text>');
- el.innerHTML='<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs>'+
-  hl(x.ep,'entr\u00e9e','var(--muted2)')+hl(x.xp,'sortie',col)+
-  '<path d="'+d+' L'+X(C.length-1).toFixed(1)+',80 L10,80 Z" fill="url(#tg)" style="color:'+col+'"/>'+
-  '<path d="'+d+'" fill="none" style="stroke:'+col+'" stroke-width="2" stroke-linejoin="round"/>'+
-  '<circle cx="10" cy="'+Y(C[0][4]).toFixed(1)+'" r="3" style="fill:var(--muted2)"/>'+
-  '<circle cx="290" cy="'+Y(C[C.length-1][4]).toFixed(1)+'" r="3.4" style="fill:'+col+'"/>';
- el.style.display='block';
+ const xe=X(Math.max(C[0][0],te)),xx=X(Math.min(C[C.length-1][0],tx));
+ h+=hl(x.ep,LANG()==='en'?'entry':'entr\u00e9e','var(--muted2)')+hl(x.xp,LANG()==='en'?'exit':'sortie',col);
+ if(x.ep!=null&&x.xp!=null){h+='<line x1="'+xe.toFixed(1)+'" y1="'+Y(x.ep).toFixed(1)+'" x2="'+xx.toFixed(1)+'" y2="'+Y(x.xp).toFixed(1)+'" style="stroke:'+col+'" stroke-width="1.6" stroke-dasharray="4 4"/>'+
+  '<circle cx="'+xe.toFixed(1)+'" cy="'+Y(x.ep).toFixed(1)+'" r="3.2" style="fill:var(--text)"/><circle cx="'+xx.toFixed(1)+'" cy="'+Y(x.xp).toFixed(1)+'" r="3.6" style="fill:'+col+'"/>';}
+ const ft=t=>{const d=new Date(t*1000);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');};
+ h+='<text x="10" y="79" font-size="8" style="fill:var(--muted)">'+ft(C[0][0])+'</text><text x="290" y="79" font-size="8" text-anchor="end" style="fill:var(--muted)">'+ft(C[C.length-1][0])+' UTC</text>';
+ el.innerHTML=h;el.style.display='block';
 }
 // "Ma journee" share image
 function shareDay(){
@@ -2896,7 +2941,7 @@ async function acctSheet(){
     '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
     (x.note?'<div style="font-size:.74rem;color:var(--warn);line-height:1.35;margin-top:2px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>':'')+
-    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+'</div></div>'+
+    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
@@ -3307,6 +3352,37 @@ async function nestReset(uid,name){
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
  toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">R\u00e9initialisation lanc\u00e9e \u2014 le robot repart de z\u00e9ro dans ~30 s.</div>',6000);
+}
+// 2026-09-27: the daily objective reached -> one calm card, in the phone's clock
+function dayDone(d){
+ const el=document.getElementById('daydone');if(!el)return;
+ const lg=d.ledger||{};const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&(lg.day_pnl_bot||0)>=lg.cap_today);
+ if(!lg.bos||!done||MAN()){el.style.display='none';return;}
+ const en=LANG()==='en';const n=new Date();const nxt=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+1,0,0,0));
+ const hm=String(nxt.getHours()).padStart(2,'0')+':'+String(nxt.getMinutes()).padStart(2,'0');
+ const pnl=lg.day_pnl_bot||0;
+ document.getElementById('daydone-t').textContent=(en?'\u2713 Day complete \u00b7 ':'\u2713 Journ\u00e9e termin\u00e9e \u00b7 ')+(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
+ document.getElementById('daydone-s').textContent=en?('The robot resumes tomorrow at 00:00 UTC ('+hm+' on your phone).'):('Le robot reprend demain \u00e0 00:00 UTC ('+hm+' chez vous).');
+ el.style.display='block';
+ const dtc=document.getElementById('daytargetchip');if(dtc)dtc.style.display='none';
+}
+function agoTxt(ts){if(!ts)return LANG()==='en'?'never seen':'jamais vu';const s=Math.max(0,Date.now()/1000-ts),en=LANG()==='en';
+ if(s<120)return en?'seen just now':'vu \u00e0 l\u2019instant';if(s<3600)return (en?'seen ':'vu il y a ')+Math.round(s/60)+' min'+(en?' ago':'');
+ if(s<86400)return (en?'seen ':'vu il y a ')+Math.round(s/3600)+' h'+(en?' ago':'');return (en?'seen ':'vu il y a ')+Math.round(s/86400)+(en?' d ago':' j');}
+async function contactCfg(){
+ const d=window._d||{};
+ const v=await sheet('<h3>Lien de contact</h3><p>Montr\u00e9 dans les R\u00e9glages de chaque membre (\u00ab Contacter Kino \u00bb). WhatsApp : https://wa.me/33612345678 \u00b7 Telegram : https://t.me/votrenom \u00b7 ou mailto:</p>'+
+  '<input id="shcurl" type="url" placeholder="https://wa.me/..." value="'+String(d.contact_url||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:.95rem;margin-bottom:8px">'+
+  '<input id="shclbl" type="text" maxlength="60" placeholder="Libell\u00e9 (Contacter Kino)" value="'+String(d.contact_label||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:.95rem;margin-bottom:10px">'+
+  '<button class="shbtn shmain" onclick="_shDone({u:document.getElementById(&#39;shcurl&#39;).value,l:document.getElementById(&#39;shclbl&#39;).value})">Enregistrer</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(!v)return;
+ const pw=await askPwd('Enregistrer le lien ?','Mot de passe ma\u00eetre.','Enregistrer');if(!pw)return;
+ const r=await fetch(AB()+'nest_config',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'contact_url='+encodeURIComponent(v.u||'')+'&contact_label='+encodeURIComponent(v.l||'')+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':(j&&j.err==='bad url'?'Lien invalide (https://, mailto: ou tel:).':'Impossible pour l\u2019instant.'))+'</h3>');return;}
+ toast('Lien enregistr\u00e9',2000);window._lastS=null;load();
 }
 async function nestNote(uid,name){
  const cur=((window._nest||[]).find(x=>x.id===uid)||{}).note||'';
@@ -3983,7 +4059,11 @@ function render(d){
     Object.keys(localStorage||{}).filter(k=>k.indexOf('owlDayDone:')===0).forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
     window._badges=null;toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">'+(LANG()==='en'?'Fresh start \u2014 the history restarts from today.':'Nouveau d\u00e9part \u2014 l\u2019historique repart d\u2019aujourd\u2019hui.')+'</div>',6000);}
    try{localStorage.setItem('owlEra:'+B,d.era_start);}catch(e){}}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);
+  (function(){const cr=document.getElementById('contactrow');if(!cr)return;
+   if(d.contact_url){cr.style.display='flex';cr.href=d.contact_url;if(d.contact_label)document.getElementById('contact-lbl').textContent=d.contact_label;}
+   else cr.style.display='none';
+   const cs=document.getElementById('contactcfg-sub');if(cs&&d.contact_url)cs.textContent=d.contact_url;})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -4073,6 +4153,7 @@ function render(d){
     'inline-block;width:9px;height:9px;border-radius:50%;background:'+
     dot+';margin-right:8px"></span><b>'+x.name+'</b>'+
     (x.note?'<span style="display:block;font-size:.72rem;color:var(--warn);white-space:normal;margin:2px 0 0 17px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</span>':'')+
+    '<span style="display:block;font-size:.7rem;color:var(--muted);margin:1px 0 0 17px">'+agoTxt(x.seen)+'</span>'+
     '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
     '</span></span>'+
     '<span style="font-size:.72rem;color:var(--muted2);white-space:nowrap;'+
@@ -4545,6 +4626,37 @@ INBOX_FILE = os.path.join(DIR, "owl_push_inbox.json")
 
 
 NOTES_FILE = os.path.join(DIR, "owl_nest_notes.json")
+CONFIG_FILE = os.path.join(DIR, "owl_nest_config.json")
+SEEN_FILE = os.path.join(DIR, "owl_last_seen.json")
+_seen_mem = {}
+
+
+def nest_config():
+    try:
+        c = json.load(open(CONFIG_FILE, encoding="utf-8"))
+        return c if isinstance(c, dict) else {}
+    except Exception:
+        return {}
+
+
+def touch_seen(uid):
+    """2026-09-27: when a member's page polls, remember it (once a minute)."""
+    now = time.time()
+    if now - _seen_mem.get(uid, 0) < 60:
+        return
+    _seen_mem[uid] = now
+    try:
+        try:
+            d = json.load(open(SEEN_FILE, encoding="utf-8"))
+            if not isinstance(d, dict):
+                d = {}
+        except Exception:
+            d = {}
+        d[uid] = int(now)
+        json.dump(d, open(SEEN_FILE + ".tmp", "w", encoding="utf-8"))
+        os.replace(SEEN_FILE + ".tmp", SEEN_FILE)
+    except Exception:
+        pass
 
 
 def reset_preview(uid):
@@ -4794,6 +4906,8 @@ def user_stats(u, admin_override=False):
             except Exception:
                 d["trading_paused"] = u["id"] in PAUSE_ALLOWED
         d["era_start"] = u.get("era_start")
+        d["contact_url"] = nest_config().get("contact_url") or ""
+        d["contact_label"] = nest_config().get("contact_label") or ""
         d["era_prev"] = u.get("era_prev") or []
         # per-account books (2026-09-07): std has its own ledger/
         # fights; family mirrors follow the master's
@@ -5082,6 +5196,10 @@ def user_stats(u, admin_override=False):
                     _notes = json.load(open(NOTES_FILE, encoding="utf-8"))
                 except Exception:
                     _notes = {}
+                try:
+                    _seen = json.load(open(SEEN_FILE, encoding="utf-8"))
+                except Exception:
+                    _seen = {}
                 for x in json.load(open(USERS_FILE, encoding="utf-8")):
                     _ndp = os.path.join(NEST_DATA, x["id"] + ".json")
                     try:
@@ -5114,6 +5232,7 @@ def user_stats(u, admin_override=False):
                                       or x.get("id") == "kino"),
                         "days": (nd.get("days") or [])[:7],
                         "note": (_notes.get(x["id"]) or {}).get("text", ""),
+                        "seen": _seen.get(x["id"]),
                         "plan": x.get("plan")})
                 d["nest"] = _rows
             except Exception:
@@ -6126,6 +6245,33 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "nest_config":
+            # 2026-09-27: owner settings shared by every member page (contact link)
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upc
+                _fc = _upc.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                if not master_pwd_ok((_fc.get("pwd", [""])[0] or "").strip()):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                cfg = nest_config()
+                _url = (_fc.get("contact_url", [""])[0] or "").strip()[:300]
+                if _url and not (_url.startswith("https://") or _url.startswith("http://") or _url.startswith("mailto:") or _url.startswith("tel:")):
+                    self._send(json.dumps({"ok": False, "err": "bad url"}), "application/json")
+                    return
+                cfg["contact_url"] = _url
+                cfg["contact_label"] = (_fc.get("contact_label", [""])[0] or "").strip()[:60]
+                json.dump(cfg, open(CONFIG_FILE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
+                os.replace(CONFIG_FILE + ".tmp", CONFIG_FILE)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_note":
             # 2026-09-27: a private note per account, for the owner (master pwd)
             u = user_by_token(_parts[0])
@@ -6317,6 +6463,24 @@ class H(BaseHTTPRequestHandler):
             self.send_response(303)
             self.send_header("Location", f"/{u['token']}/#hist")
             self.end_headers()
+            return
+        if len(_parts) == 2 and _parts[1] == "inbox_del":
+            # 2026-09-27: the member removes one of their own messages (by time)
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upd
+                _t = int((_upd.parse_qs(self.rfile.read(ln).decode("utf-8", "replace")).get("t", ["0"])[0]) or 0)
+                ib = json.load(open(INBOX_FILE, encoding="utf-8"))
+                ib[u["id"]] = [x for x in ib.get(u["id"], []) if not (isinstance(x, dict) and x.get("t") == _t)]
+                json.dump(ib, open(INBOX_FILE, "w", encoding="utf-8"), ensure_ascii=False)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "week_img":
             # 2026-09-27: the member's own week card, drawn by the app,
@@ -6788,6 +6952,7 @@ class H(BaseHTTPRequestHandler):
                     .replace("%%BUILD%%", APP_BUILD))
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
+            touch_seen(user.get("id"))
             self._send(json.dumps(user_stats(
                 user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "day":

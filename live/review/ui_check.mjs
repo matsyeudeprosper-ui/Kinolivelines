@@ -58,6 +58,21 @@ for (const [manual, lang] of [[false, "fr"], [true, "fr"], [false, "en"], [true,
   await setState(manual, lang); const r = await report();
   console.log(`\n[${manual ? "MANUAL" : "AUTO"} / ${lang}]`); for (const k of Object.keys(r)) console.log(`  ${k}: ${r[k]}`);
 }
+// ---- guardrails (2026-09-27): every T() key in all four tables; no French left in EN ----
+const keyGaps = await evalJs(`(()=>{const a=Object.keys(VOICE.auto),m=Object.keys(VOICE.manual);const out=[];
+ a.forEach(k=>{if(VOICE_EN.auto[k]===undefined)out.push('en.auto:'+k);});
+ m.forEach(k=>{if(VOICE_EN.manual[k]===undefined)out.push('en.manual:'+k);});return JSON.stringify(out);})()`);
+const gaps = JSON.parse(keyGaps || "[]");
+console.log(`\nT() keys missing in English: ${gaps.length}${gaps.length ? " -> " + gaps.slice(0, 8).join(", ") : ""}`);
+failures += gaps.length;
+await setState(false, "en");
+const frLeft = JSON.parse(await evalJs(`(()=>{const rx=/\\b(aujourd|le robot|march\u00e9|r\u00e9glages|accueil|historique|semaine|mois|jour|depuis|aucun|trade en cours|gagn\u00e9|perdu)\\b/i;const out=[];
+ for(const id of ['tab-home','tab-marche','tab-hist','tab-set']){const root=document.getElementById(id);if(!root)continue;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){const p=n.parentNode;if(!p||/^(SCRIPT|STYLE)$/.test(p.nodeName))continue;
+   if(!p.offsetParent&&p.tagName!=='BODY')continue;const t=n.nodeValue.trim();if(t.length>3&&rx.test(t))out.push(id+': '+t.slice(0,60));}}
+ return JSON.stringify(out.slice(0,40));})()`) || "[]");
+console.log(`French left in EN mode (visible text): ${frLeft.length}${frLeft.length ? "\n  " + frLeft.slice(0, 10).join("\n  ") : ""}`);
+if (frLeft.length > 8) failures++;
 await evalJs("localStorage.removeItem('owlLang'); 1");
 console.log(`\nruntime exceptions: ${errors.length}`); errors.slice(0, 5).forEach(e => console.log("  ", String(e).slice(0, 200)));
 failures += errors.length;
