@@ -313,10 +313,26 @@ def ent(uid):
     return _ents().get(uid) or {}
 
 
+FAMILY_DAYS = 30
+OWNER_UIDS = ("kino", "std")
+
+
+def family_active(e, now=None):
+    """2026-09-27 (owner): family = the Automatique package settled with the
+    owner directly, 30 days at a time, renewed with a code. An old boolean
+    'family' record still counts (grandfathered until it is dated)."""
+    now = now or time.time()
+    if e.get("family_until"):
+        return float(e["family_until"]) > now
+    return bool(e.get("family"))
+
+
 def has(uid, key):
     """family covers everything; strategy covers manual; dates are epochs."""
+    if uid in OWNER_UIDS:
+        return True
     e = ent(uid)
-    if e.get("family"):
+    if family_active(e):
         return True
     now = time.time()
     if key == "manual":
@@ -336,6 +352,8 @@ def ent_grant(uid, pkg, days, src):
     r[k] = int(base + days * 86400)
     if pkg == "strategy":
         r["manual_until"] = max(int(r.get("manual_until") or 0), r[k])
+    if pkg == "family":
+        r["family"] = True           # legacy flag, kept in step with the date
     r["updated"] = int(time.time())
     r["src"] = src
     e[uid] = r
@@ -345,9 +363,13 @@ def ent_grant(uid, pkg, days, src):
 
 
 def ent_family(uid, on=True):
+    """Revoke (on=False) or grant a family period (on=True -> +FAMILY_DAYS)."""
+    if on:
+        return ent_grant(uid, "family", FAMILY_DAYS, "code")
     e = _ents()
     r = e.get(uid) or {}
-    r["family"] = bool(on)
+    r["family"] = False
+    r["family_until"] = 0
     r["updated"] = int(time.time())
     e[uid] = r
     json.dump(e, open(ENT_FILE + ".tmp", "w", encoding="utf-8"), indent=1)
@@ -371,7 +393,9 @@ def can_switch(u):
 def plan_of(u):
     e = ent(u.get("id"))
     cfg = nest_config()
-    return {"family": bool(e.get("family")),
+    return {"family": family_active(e) or u.get("id") in OWNER_UIDS,
+            "family_until": int(e.get("family_until") or 0),
+            "family_expired": bool(e.get("family_until")) and float(e["family_until"]) <= time.time(),
             "manual": has(u.get("id"), "manual"),
             "strategy": has(u.get("id"), "strategy"),
             "manual_until": int(e.get("manual_until") or 0),
@@ -3125,6 +3149,9 @@ async function acctSheet(){
   if(!x.botlive)return['robot arr\u00eat\u00e9','var(--down-soft)','var(--down)'];
   if(x.blocked)return[x.blocked,'var(--warn)','var(--warn)'];
   return x.paused?['manuel','var(--text3)','#8fa1b3']:['auto','var(--up-soft)','var(--up)'];};
+ const fu=x=>{if(!x.family_until)return '';const dl=Math.ceil((x.family_until-Date.now()/1000)/86400);const dt=new Date(x.family_until*1000);
+  const ds=String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');
+  return ' \u00b7 <span style="color:'+(dl<=0?'var(--down-soft)':dl<=5?'var(--warn)':'var(--muted)')+'">'+(dl<=0?'expir\u00e9 le '+ds:'jusqu\u2019au '+ds+(dl<=5?' ('+dl+' j)':''))+'</span>';};
  const rows=N.filter(x=>x.tok).map(x=>{const cur=(x.login&&d.acct&&String(x.login)===String(d.acct));const S=st(x);
   const ini=(x.name||'?').trim().split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
   return '<div class="srow" role="button" tabindex="0" onclick="location.href=\\'/'+x.tok+'/\\'" style="'+(cur?'background:rgba(59,130,246,.08);border-radius:12px;':'')+'">'+
@@ -3132,7 +3159,7 @@ async function acctSheet(){
     '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
     (x.note?'<div style="font-size:.74rem;color:var(--warn);line-height:1.35;margin-top:2px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>':'')+
-    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
+    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+fu(x)+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
@@ -3566,7 +3593,8 @@ function renderPlan(d){
  const t=document.getElementById('plan-t'),sub=document.getElementById('plan-s'),bt=document.getElementById('plan-btns'),nt=document.getElementById('plan-note'),ic=document.getElementById('plan-ic');
  if(d.public){el.style.display='none';document.getElementById('plan-sec').style.display='none';return;}
  let title,txt,color='var(--accent-soft)';
- if(P.family){title=en?'Full access':'Acc\u00e8s complet';txt=en?'Everything is open: manual, automatic, the strategy. Offered.':'Tout est ouvert : manuel, automatique, la strat\u00e9gie. Offert.';color='var(--warn)';}
+ if(P.family){title=en?'Automatic':'Automatique';txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with Kino, then enter the code.':' \u2014 renouvelez aupr\u00e8s de Kino, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
+ else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with Kino and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'Manual + the full view, until ':'Manuel + la vue compl\u00e8te, jusqu\u2019au ')+fd(P.strategy_until)+'.';color='var(--warn)';}
  else if(P.manual){title=en?'Manual':'Manuel';txt=(en?'Signals and the trade tool, until ':'Signaux et outil de trading, jusqu\u2019au ')+fd(P.manual_until)+'.';color='var(--up-soft)';}
  else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
@@ -3586,7 +3614,7 @@ function renderPlan(d){
  (function(){let a=document.getElementById('plan-act');if(!a){a=document.createElement('a');a.id='plan-act';a.href='#';a.style.cssText='display:block;text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px;text-decoration:none';
    a.onclick=e=>{e.preventDefault();window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';tab('home',document.querySelector('.tb'));setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
-  a.textContent=en?'I have an activation code':'J\u2019ai un code d\u2019activation';a.style.display=(!P.family&&d.activation_needed)?'block':'none';})();
+  a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
  nt.textContent=P.family?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
   :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
  const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
@@ -4317,7 +4345,10 @@ function render(d){
   // 2026-09-27: the activation code is for the owner's circle - never a
   // prompt on the home; a discreet link under the plan card shows the box
   document.getElementById('actcard').style.display=
-   (d.activation_needed&&window._showAct)?'block':'none';
+   ((d.activation_needed&&window._showAct)||d.family_expired)?'block':'none';
+  (function(){const t=document.querySelector('#actcard .lbl'),x=document.querySelector('#actcard div[style*="line-height:1.5"]');if(!t||!x)return;
+   if(d.family_expired){t.textContent='Renouveler l\u2019acc\u00e8s';x.innerHTML='Votre acc\u00e8s Automatique a expir\u00e9 le <b>'+d.family_expired+'</b>. Le robot est en pause sur votre compte. R\u00e9glez Kino, puis entrez le code re\u00e7u :';}
+   else{t.textContent='Activer le robot';x.innerHTML='Votre compte est connect\u00e9. Il reste un code \u00e0 entrer : demandez-le \u00e0 <b>Kino sur Telegram</b>.';}})();
   document.getElementById('adminlock-sec').style.display=
    d.is_master?'none':'block';
   document.getElementById('adminlock-card').style.display=
@@ -4464,14 +4495,14 @@ function render(d){
    const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
    const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
    // 2026-09-27: alerts strip + family week bars above the list
-   const _al=d.nest.filter(x=>x.err||x.stale||(x.bot&&!x.botlive)||x.blocked);
+   const _al=d.nest.filter(x=>x.err||x.stale||(x.bot&&!x.botlive)||x.blocked||(x.family_until&&x.family_until-Date.now()/1000<5*86400));
    const _man=d.nest.filter(x=>!x.bot&&x.paused).length;
    const _alh=_al.length
     ?'<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;'+
      'background:rgba(232,197,90,.08);border:1px solid rgba(232,197,90,.28);margin-bottom:10px">'+
      '<div class="evi" style="color:var(--warn);flex:none"><svg class="ic ic-s"><use href="#i-cloud"/></svg></div>'+
      '<div style="flex:1;min-width:0;font-size:.86rem;line-height:1.4"><b>'+_al.length+' compte'+(_al.length>1?'s':'')+' &agrave; surveiller</b><br>'+
-     '<span style="color:var(--muted2)">'+_al.map(x=>x.name+' \u00b7 '+(x.err?'probl\u00e8me':x.stale?'hors ligne':x.blocked?x.blocked:'robot arr\u00eat\u00e9')).join(' \u00b7 ')+'</span></div></div>'
+     '<span style="color:var(--muted2)">'+_al.map(x=>x.name+' \u00b7 '+(x.err?'probl\u00e8me':x.stale?'hors ligne':x.blocked?x.blocked:(x.bot&&!x.botlive)?'robot arr\u00eat\u00e9':(x.family_until-Date.now()/1000<=0?'acc\u00e8s expir\u00e9':'expire dans '+Math.max(0,Math.ceil((x.family_until-Date.now()/1000)/86400))+' j'))).join(' \u00b7 ')+'</span></div></div>'
     :'<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;'+
      'background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.22);margin-bottom:10px;font-size:.86rem">'+
      '<div class="evi" style="color:var(--up);flex:none"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
@@ -5603,12 +5634,18 @@ def user_stats(u, admin_override=False):
                         "days": (nd.get("days") or [])[:7],
                         "note": (_notes.get(x["id"]) or {}).get("text", ""),
                         "seen": _seen.get(x["id"]),
+                        "family_until": int((ent(x["id"]) or {}).get("family_until") or 0),
                         "plan": x.get("plan")})
                 d["nest"] = _rows
             except Exception:
                 pass
         elif not u.get("trade"):
             d["activation_needed"] = True
+        _ef = ent(u.get("id"))
+        if _ef.get("family_until") and float(_ef["family_until"]) <= time.time() \
+                and u.get("id") not in OWNER_UIDS:
+            d["activation_needed"] = True
+            d["family_expired"] = time.strftime("%d/%m", time.gmtime(float(_ef["family_until"])))
         # Owner 2026-09-16: every trading account SEES the switch, but it is
         # locked for everyone except the admin and the Structure account.
         # The lock is enforced on the write route too, not just in the UI.
@@ -7136,7 +7173,15 @@ class H(BaseHTTPRequestHandler):
                 json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
                           indent=2)
                 _users_cache["t"] = 0.0
-                ent_family(u["id"], True)      # 2026-09-27: family = everything
+                ent_family(u["id"], True)      # 2026-09-27: +30 days of the family package
+                try:
+                    _pf = os.path.join(DIR, pause_file(u["id"]))
+                    _pz = json.load(open(_pf, encoding="utf-8"))
+                    if _pz.get("by") == "expiry":
+                        json.dump({"paused": False, "by": "renewal", "t": time.time()},
+                                  open(_pf, "w"))
+                except Exception:
+                    pass
                 start_copier(u["id"])
                 self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:

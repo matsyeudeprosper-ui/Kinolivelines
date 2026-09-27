@@ -167,6 +167,91 @@ def maybe_demo_reset():
             pass
 
 
+RENEW_MARK = os.path.join(DIR, "owl_renew_marks.json")
+
+
+def maybe_renewals():
+    """2026-09-27 (owner): every dated package (family = Automatique settled
+    with the owner, manual, strategy) gets a reminder 5 days and 2 days
+    before its end and a notice at expiry. A family package that expires
+    pauses the robot on that account (by="expiry"; the renewal code lifts
+    it). One push per step per period."""
+    now = time.time()
+    try:
+        ents = json.load(open(os.path.join(DIR, "owl_entitlements.json"), encoding="utf-8"))
+    except Exception:
+        return
+    try:
+        marks = json.load(open(RENEW_MARK, encoding="utf-8"))
+    except Exception:
+        marks = {}
+    try:
+        users = {u["id"]: u for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))}
+    except Exception:
+        users = {}
+    changed = False
+    for uid, e in ents.items():
+        if uid in ("kino", "std") or not isinstance(e, dict):
+            continue
+        en = lang_of(uid) == "en"
+        for key, label_fr, label_en in (("family_until", "Automatique", "Automatic"),
+                                       ("strategy_until", "Strat\u00e9gie", "Strategy"),
+                                       ("manual_until", "Manuel", "Manual")):
+            until = float(e.get(key) or 0)
+            if not until:
+                continue
+            if key == "manual_until" and float(e.get("strategy_until") or 0) > now:
+                continue          # covered by the strategy package
+            left = (until - now) / 86400.0
+            step = "0" if left <= 0 else "2" if left <= 2 else "5" if left <= 5 else None
+            if step is None:
+                continue
+            mk = marks.setdefault(uid, {}).setdefault(key, {})
+            if mk.get(step) == int(until):
+                continue
+            mk[step] = int(until)
+            changed = True
+            fam = key == "family_until"
+            if step == "0":
+                if fam:
+                    try:
+                        json.dump({"paused": True, "by": "expiry", "t": now},
+                                  open(os.path.join(DIR, f"owl_trading_pause_{uid}.json"), "w"))
+                    except Exception:
+                        pass
+                    send_all("\u23f8 " + ("Access expired" if en else "Acc\u00e8s expir\u00e9"),
+                             ("The robot is paused on your account. Settle with Kino and enter the renewal code in the app."
+                              if en else "Le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement dans l'app."),
+                             kind="instant", only_uid=uid)
+                    send_all("\u23f8 Acc\u00e8s expir\u00e9 \u00b7 " + users.get(uid, {}).get("name", uid),
+                             "Robot mis en pause. Envoyez un code de renouvellement quand c'est r\u00e9gl\u00e9.",
+                             kind="instant", only_uid="kino")
+                else:
+                    send_all("\u23f8 " + ("Subscription ended" if en else "Abonnement termin\u00e9"),
+                             ((label_en + " has ended. Renew in Settings \u203a Subscription to keep the signals.")
+                              if en else (label_fr + " est termin\u00e9. Renouvelez dans R\u00e9glages \u203a Abonnement pour garder les signaux.")),
+                             kind="instant", only_uid=uid)
+            else:
+                d_ = int(step)
+                if fam:
+                    send_all("\u23f3 " + (f"{label_en} ends in {d_} days" if en else f"{label_fr} expire dans {d_} jours"),
+                             ("Settle with Kino now, then enter the code he sends you, to avoid an interruption."
+                              if en else "R\u00e9glez Kino d\u00e8s maintenant, puis entrez le code qu'il vous enverra, pour \u00e9viter une coupure."),
+                             kind="instant", only_uid=uid)
+                    send_all("\u23f3 " + users.get(uid, {}).get("name", uid) + f" \u00b7 expire dans {d_} j",
+                             "Pensez au r\u00e8glement et au code de renouvellement.", kind="instant", only_uid="kino")
+                else:
+                    send_all("\u23f3 " + (f"{label_en} ends in {d_} days" if en else f"{label_fr} expire dans {d_} jours"),
+                             ("Renew in Settings \u203a Subscription to keep the signals without a break."
+                              if en else "Renouvelez dans R\u00e9glages \u203a Abonnement pour garder les signaux sans coupure."),
+                             kind="instant", only_uid=uid)
+    if changed:
+        try:
+            json.dump(marks, open(RENEW_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -636,6 +721,7 @@ def main():
             maybe_signal()
             maybe_health()
             maybe_demo_reset()
+            maybe_renewals()
         if _bf is not None:
             while True:
                 bl = _bf.readline()
