@@ -87,6 +87,13 @@ def ps(cmd, timeout=30):
     return r.stdout.strip(), r.stderr.strip()
 
 
+def stop_matching_any(pattern):
+    """python.exe AND pythonw.exe (the nest workers run under python.exe)."""
+    ps("Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and "
+       f"$_.CommandLine -match '{pattern}' }} | "
+       "ForEach-Object { Stop-Process -Id $_.ProcessId -Force -Confirm:$false }")
+
+
 def stop_matching(pattern):
     ps("Get-CimInstance Win32_Process -Filter \"Name='pythonw.exe'\" | "
        f"Where-Object {{ $_.CommandLine -match '{pattern}' }} | "
@@ -238,12 +245,22 @@ def handle_reset(uid):
     src = os.path.join(DIR, sf)
     if os.path.exists(src):
         os.replace(src, os.path.join(DIR, f"{sf}.{stamp}.bak"))
+    # 2026-09-27 (owner): a clean start on the UI too - the journal (the
+    # app's day stories / trade stories / CSV read it) is archived as well;
+    # the bot writes a fresh header on its next trade.
+    jf = "bos_journal" + sf[len("bos_state"):-len(".json")] + ".csv"
+    jp = os.path.join(DIR, jf)
+    if os.path.exists(jp):
+        os.replace(jp, os.path.join(DIR, f"{jf}.{stamp}.bak"))
     us = load(USERS, [])
     for u in us:
         if u.get("id") == uid:
             u["era_start"] = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
             u["era_prev"] = (u.get("era_prev") or []) + [stamp]
     save_atomic(USERS, us)
+    # the stats worker bakes era_start in at start - kill it, the manager
+    # respawns it within 30 s with the new era (history restarts in the app)
+    stop_matching_any(r"owl_nest_worker\.py\s+" + uid + r"\s*$")
     time.sleep(1)
     start(cfg["bot_args"])
     time.sleep(4)

@@ -3906,6 +3906,12 @@ function render(d){
   (function(){const M=d.months||{};
    const ds=[].concat(...Object.keys(M).sort().map(k=>M[k]||[])).sort((a,b)=>a.d<b.d?-1:1);
    let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});})();
+  // 2026-09-27: a reset (new era_start) clears this phone's own marks too
+  if(d.era_start){let prev=null;try{prev=localStorage.getItem('owlEra:'+B);}catch(e){}
+   if(prev&&prev!==d.era_start){['owlBadges:'+B,'owlInboxSeen:'+B,'owlWeekImg:'+B].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+    Object.keys(localStorage||{}).filter(k=>k.indexOf('owlDayDone:')===0).forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+    window._badges=null;toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">'+(LANG()==='en'?'Fresh start \u2014 the history restarts from today.':'Nouveau d\u00e9part \u2014 l\u2019historique repart d\u2019aujourd\u2019hui.')+'</div>',6000);}
+   try{localStorage.setItem('owlEra:'+B,d.era_start);}catch(e){}}
   drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
@@ -4429,10 +4435,13 @@ def day_payload(user):
         import csv as _csv
         with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
                   encoding="utf-8", errors="replace") as jf:
+            _era = era_ts(user)
             for r in _csv.DictReader(jf):
                 et = r.get("entry_time_utc") or ""
                 xt = r.get("exit_time_utc") or ""
                 if not (et.startswith(day) or xt.startswith(day)):
+                    continue
+                if _era and (_ep(xt) or _ep(et) or 0) < _era:
                     continue
                 out["trades"].append({"t": _ep(et), "x": _ep(xt),
                                       "p": float(r.get("profit_usd") or 0),
@@ -4461,6 +4470,17 @@ def day_payload(user):
 
 
 INBOX_FILE = os.path.join(DIR, "owl_push_inbox.json")
+
+
+def era_ts(user):
+    """The member's era start as epoch (0 if none) - every journal reader
+    skips rows closed before it, so a reset gives a clean history even if
+    an old journal is still around."""
+    try:
+        return int(datetime.fromisoformat(
+            str(user.get("era_start")).replace("Z", "+00:00")).timestamp())
+    except Exception:
+        return 0
 
 
 def service_health():
@@ -4530,9 +4550,10 @@ def trade_story(user, t_close):
     try:
         with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
                   encoding="utf-8", errors="replace") as jf:
+            _era = era_ts(user)
             for r in _csv.DictReader(jf):
                 xt = _ep(r.get("exit_time_utc") or "")
-                if xt is None:
+                if xt is None or (_era and xt < _era):
                     continue
                 dd = abs(xt - t_close)
                 if dd <= 180 and (best is None or dd < best[0]):
@@ -4585,8 +4606,14 @@ def export_csv(user):
         try:
             with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
                       encoding="utf-8", errors="replace") as jf:
+                _era = era_ts(user)
                 for r in _csv.DictReader(jf):
                     xt = (r.get("exit_time_utc") or r.get("entry_time_utc") or "")
+                    try:
+                        if _era and int(datetime.fromisoformat(xt.replace("Z", "+00:00")).timestamp()) < _era:
+                            continue
+                    except Exception:
+                        pass
                     wr.writerow([xt[:10], xt[11:16],
                                  "achat" if (r.get("direction") or "") == "BUY" else "vente",
                                  r.get("lot") or "", r.get("entry_price") or "",
