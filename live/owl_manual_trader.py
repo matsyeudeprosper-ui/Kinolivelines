@@ -45,10 +45,16 @@ TERMINAL = _U["terminal"]
 LOGIN = int(_U.get("mt5_login") or _U["login"])
 SERVER = _U.get("mt5_server", "Exness-MT5Real30")
 PASSWORD = _U.get("mt5_password") or None
-SYMBOL = "BTCUSD"
+# 2026-09-27: the desk serves any account in manual/semi mode, so the symbol
+# and the ledger start come from the nest record (441 keeps its own era
+# start so its tab/jar history does not move).
+SYMBOL = _U.get("symbol") or "BTCUSD"
 MAGIC = 909102                      # manual orders (909101 = the retired bot)
 COMMENT = "KL-MAN"
 ERA_START = datetime(2026, 9, 8, 19, 0)
+if UID != "bos" and _U.get("era_start"):
+    ERA_START = (datetime.fromisoformat(_U["era_start"])
+                 .astimezone(timezone.utc).replace(tzinfo=None))
 BASE_LOT = 0.02
 MAX_EXTRA = 3
 CHEST_CAP = 10.0
@@ -816,10 +822,17 @@ def eng_trend():
 
 
 def main():
-    assert mt5.initialize(path=TERMINAL, login=LOGIN,
-                          password=PASSWORD or B.PASSWORD,
-                          server=SERVER, timeout=60000), "MT5 init failed"
+    if PASSWORD or UID == "bos":
+        assert mt5.initialize(path=TERMINAL, login=LOGIN,
+                              password=PASSWORD or B.PASSWORD,
+                              server=SERVER, timeout=60000), "MT5 init failed"
+    else:
+        # no password on record (Kino 778): the terminal is already logged
+        # in - attach to it and refuse to run on any other account
+        assert mt5.initialize(path=TERMINAL, timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
+    assert ai is not None and int(ai.login) == LOGIN, \
+        f"terminal is on {getattr(ai, 'login', None)}, not {LOGIN} - refusing"
     led = rebuild_ledger()
     # name the package and its dials. This desk gets them INDIRECTLY, from
     # the structure_bos_bot module it imports, which resolves them once at

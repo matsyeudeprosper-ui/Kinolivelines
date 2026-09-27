@@ -278,11 +278,16 @@ MANUAL_MODES = ("manual", "semi")
 # Owner 2026-09-17: the accounts whose owner may switch auto <-> manual.
 # "bos" = the live half-manual account. "kino" = the live Pro master,
 # added on the owner's request the same day.
-PAUSE_ALLOWED = ("bos", "kino")
+# 2026-09-27: "std" = Kino 778, the owner's hand-traded account.
+PAUSE_ALLOWED = ("bos", "kino", "std")
 # 2026-09-23: the ONLY account that has ever supported manual
 # (hand-placed) trading - the other four are pure-auto by design
 # with no desk process to swap to. See owl_mode_switch.py.
-MODE_SWITCH_ALLOWED = ("bos",)
+# 2026-09-27 (owner): "accounts in manual trading mode always have the
+# trade tool" - the swap is generic in owl_mode_switch.py now (a desk per
+# account; an account without a bot simply runs nothing in auto), so every
+# account whose owner may pause it may also switch it.
+MODE_SWITCH_ALLOWED = PAUSE_ALLOWED
 # 2026-09-24: every account running its own structure_bos_bot.py
 # instance - the only ones with a lot/day-cap to scale in the first
 # place. The public demo is separately refused ALL actions above
@@ -5545,7 +5550,8 @@ class H(BaseHTTPRequestHandler):
                 try:
                     on = (_form.get("on", ["1"])[0] == "1")
                     if (str(u.get("login")) == str(LOGIN)
-                            or u.get("trade")):
+                            or u.get("trade")
+                            or u.get("id") in MODE_SWITCH_ALLOWED):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
                                   open(os.path.join(DIR, _pp), "w"))

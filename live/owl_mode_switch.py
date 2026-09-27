@@ -41,24 +41,37 @@ LOG = os.path.join(DIR, "owl_mode_switch.log")
 PY = (r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311"
       r"\pythonw.exe")
 
-ACCOUNTS = {
-    "bos": {
-        # -match (regex), NOT -like: proven live 2026-09-23 that Windows
-        # records this command line with a TRAILING SPACE
-        # ("structure_bos_bot.py "), which silently failed to match
-        # '*structure_bos_bot.py' (no trailing wildcard) - so a swap
-        # detected the desk fine (its pattern already had a trailing *)
-        # but never saw the bot as running, skipped stopping it, and left
-        # TWO live processes on the same real account for several
-        # minutes before this was caught. \s*$ tolerates the trailing
-        # space either way. End-anchored so this never matches
-        # "structure_bos_bot.py valere/kino/demo/infinity".
-        "bot_match": r"structure_bos_bot\.py\s*$",
-        "desk_match": r"owl_manual_trader\.py bos\s*$",
-        "bot_args": "structure_bos_bot.py",
-        "desk_args": "owl_manual_trader.py bos",
-    },
+# 2026-09-27 (owner): "make sure accounts in manual trading mode always have
+# the trade tool in the chart" - the swap is generic now. Every nest account
+# gets a desk (owl_manual_trader.py <uid>); the bot to stop/start is the one
+# in BOT_ARGS, or nothing at all for an account that has no bot (Kino 778:
+# "auto" simply means no process on it).
+BOT_ARGS = {
+    "bos": "structure_bos_bot.py",
+    "kino": "structure_bos_bot.py kino",
+    "demo": "structure_bos_bot.py demo",
+    "infinity": "structure_bos_bot.py infinity",
+    "u224016179": "structure_bos_bot.py valere",
 }
+
+
+def cfg_for(uid):
+    """-match (regex), NOT -like: proven live 2026-09-23 that Windows records
+    a command line with a TRAILING SPACE ("structure_bos_bot.py "), which
+    silently failed a '*...py' -like. A trailing "backslash-s star dollar" tolerates it and end-anchors, so
+    the bare bot never matches "structure_bos_bot.py valere/kino/demo"."""
+    import re as _re
+    bot = BOT_ARGS.get(uid)
+    return {
+        "bot_match": (_re.escape(bot) + r"\s*$") if bot else None,
+        "desk_match": _re.escape(f"owl_manual_trader.py {uid}") + r"\s*$",
+        "bot_args": bot,
+        "desk_args": f"owl_manual_trader.py {uid}",
+    }
+
+
+def known_uids():
+    return [u.get("id") for u in (load(USERS, []) or []) if u.get("id")]
 
 
 def say(m):
@@ -110,7 +123,7 @@ def save_atomic(p, obj):
             time.sleep(0.3)
 
 
-def positions_open():
+def positions_open(uid="bos"):
     """The bot and the desk use DIFFERENT magic numbers (909101 vs 909102),
     so swapping which one is running while a position is open would leave
     it unmanaged by whichever process starts next - it could not see the
@@ -118,15 +131,20 @@ def positions_open():
     a short-lived subprocess so this watcher never holds its own MT5
     session. Returns None if the check itself could not be completed
     (treated as "cannot confirm flat" - the caller aborts either way)."""
-    r = subprocess.run(
-        [PY.replace("pythonw.exe", "python.exe"), "-c",
-         "import sys; sys.argv=['x']; sys.path.insert(0,'.'); "
-         "import structure_bos_bot as B; import MetaTrader5 as mt5; "
-         "ok=mt5.initialize(path=B.TERMINAL, login=B.LOGIN, "
-         "password=B.PASSWORD, server=B.SERVER, timeout=30000); "
-         "print(len(mt5.positions_get() or []) if ok else -1); "
-         "mt5.shutdown() if ok else None"],
-        cwd=DIR, capture_output=True, text=True, timeout=45)
+    # 2026-09-27: per account, from the nest record (a record without a
+    # password attaches to its already-logged-in terminal, like the desk)
+    code = (
+        "import sys, json; sys.argv=['x']; import MetaTrader5 as mt5; "
+        f"u=[x for x in json.load(open(r'{USERS}', encoding='utf-8')) if x.get('id')=='{uid}'][0]; "
+        "login=int(u.get('mt5_login') or u['login']); "
+        "ok=(mt5.initialize(path=u['terminal'], login=login, password=u['mt5_password'], "
+        "server=u.get('mt5_server') or 'Exness-MT5Real30', timeout=30000) if u.get('mt5_password') "
+        "else mt5.initialize(path=u['terminal'], timeout=30000)); "
+        "ai=mt5.account_info() if ok else None; "
+        "print(len(mt5.positions_get() or []) if (ai and int(ai.login)==login) else -1); "
+        "mt5.shutdown() if ok else None")
+    r = subprocess.run([PY.replace("pythonw.exe", "python.exe"), "-c", code],
+                       cwd=DIR, capture_output=True, text=True, timeout=45)
     try:
         return int(r.stdout.strip().splitlines()[-1])
     except Exception:
@@ -134,9 +152,9 @@ def positions_open():
 
 
 def handle(uid, want):
-    cfg = ACCOUNTS[uid]
+    cfg = cfg_for(uid)
     say(f"request: {uid} -> {want}")
-    n = positions_open()
+    n = positions_open(uid)
     if n is None or n > 0:
         say(f"REFUSED: {uid} has {n} open position(s) or the check failed "
             "- a swap now could leave one unmanaged")
@@ -145,12 +163,13 @@ def handle(uid, want):
                              "err": "position ouverte - bascule refusee, "
                                     "reessayer une fois le compte plat"})
         return
-    for like in (cfg["bot_match"], cfg["desk_match"]):
+    pats = [x for x in (cfg["bot_match"], cfg["desk_match"]) if x]
+    for like in pats:
         if is_running(like):
             stop_matching(like)
     stopped_ok = True
     for _ in range(15):
-        if not is_running(cfg["bot_match"]) and not is_running(cfg["desk_match"]):
+        if not any(is_running(x) for x in pats):
             break
         time.sleep(1)
     else:
@@ -166,9 +185,14 @@ def handle(uid, want):
     save_atomic(USERS, us)
 
     time.sleep(1)
-    start(cfg["desk_args"] if want == "semi" else cfg["bot_args"])
-    time.sleep(4)
-    live = is_running(cfg["desk_match"] if want == "semi" else cfg["bot_match"])
+    want_args = cfg["desk_args"] if want == "semi" else cfg["bot_args"]
+    if want_args:
+        start(want_args)
+        time.sleep(4)
+        live = is_running(cfg["desk_match"] if want == "semi" else cfg["bot_match"])
+    else:
+        # an account with no bot: "auto" means nothing runs on it
+        live = True
     save_atomic(STATUS, {"uid": uid, "mode": want, "t": time.time(),
                          "ok": bool(stopped_ok and live),
                          "running": live})
@@ -177,11 +201,16 @@ def handle(uid, want):
 
 def main():
     say("mode-switch watcher starting")
-    last_t = 0.0
+    # 2026-09-27: start from the request already on disk - a fresh watcher
+    # used to replay the last request (seen live today: a restart replayed
+    # "bos -> auto" from four days earlier and bounced the live bot).
+    last_t = float((load(REQ) or {}).get("t", 0) or 0)
+    if last_t:
+        say(f"ignoring the request already handled before this start (t={last_t:.0f})")
     while True:
         try:
             req = load(REQ)
-            if req and req.get("t", 0) > last_t and req.get("uid") in ACCOUNTS \
+            if req and req.get("t", 0) > last_t and req.get("uid") in known_uids() \
                     and req.get("want") in ("semi", "auto"):
                 last_t = req["t"]
                 handle(req["uid"], req["want"])
