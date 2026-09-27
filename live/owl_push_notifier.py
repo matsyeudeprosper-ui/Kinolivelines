@@ -95,26 +95,26 @@ RX_EXIT = re.compile(r"EXIT logged: ticket \d+ (\w+) "
 
 
 def instant_event(line):
+    # 2026-09-27: the app's voice - no "soldat", no mechanics
     if "WEATHER: storm detected" in line:
-        return ("\u26c8\ufe0f Orage", "Le march\u00e9 s'agite trop - "
-                "le robot se met \u00e0 l'abri et attend.")
+        return ("\u26c8\ufe0f March\u00e9 tr\u00e8s agit\u00e9",
+                "Le robot reste \u00e0 l'abri et attend que \u00e7a se calme.")
     if "WEATHER CLEAR" in line:
-        return ("\U0001f324\ufe0f L'orage est pass\u00e9",
+        return ("\U0001f324\ufe0f Le calme revient",
                 "Le robot reprend le travail.")
     if "FUNDED FIGHTER:" in line:
-        return ("\u2694\ufe0f Un soldat part au combat",
-                "Sa tentative est d\u00e9j\u00e0 pay\u00e9e d'avance "
-                "par les petits gains.")
+        return ("\U0001f6e1\ufe0f Rattrapage en cours",
+                "Le robot tente de r\u00e9cup\u00e9rer une partie des pertes.")
     if "FIGHTER WON" in line:
         if "EMPTY" in line:
-            return ("\U0001f3c6 Le soldat a gagn\u00e9 !",
-                    "Toutes les pertes sont rattrap\u00e9es.")
-        return ("\u2694\ufe0f Le soldat a gagn\u00e9",
-                "Une partie des pertes est rattrap\u00e9e.")
+            return ("\U0001f3c6 Rattrapage termin\u00e9",
+                    "Toutes les pertes sont r\u00e9cup\u00e9r\u00e9es. "
+                    "Le robot repasse en mode normal.")
+        return ("\u2705 Une partie des pertes est rattrap\u00e9e",
+                "Le robot continue.")
     if "FIGHTER lost" in line:
-        return ("\U0001f6e1\ufe0f Le soldat a perdu",
-                "Pas de panique : le coup \u00e9tait pay\u00e9 "
-                "d'avance. On recommence \u00e0 \u00e9conomiser.")
+        return ("\u274c La tentative n'a pas march\u00e9",
+                "\u00c7a arrive \u2014 le robot continue.")
     return None
 
 
@@ -148,7 +148,9 @@ def maybe_weekly():
             send_all(f"\U0001f4ca Votre semaine : {week:+.2f} $",
                      f"{g} jour{'s' if g > 1 else ''} vert"
                      f"{'s' if g > 1 else ''}, {r} rouge"
-                     f"{'s' if r > 1 else ''}. Bonne semaine !",
+                     f"{'s' if r > 1 else ''}. "
+                     + ("Le robot avance." if week >= 0 else "Le robot se rattrape.")
+                     + " Bonne semaine !",
                      only_uid=uid)
         json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
     except Exception as e:
@@ -186,9 +188,9 @@ def maybe_morning():
                 continue
         if not parts:
             return
-        send_all("☀️ Bonjour ! Pendant la nuit :",
-                 " · ".join(parts)
-                 + ". Bonne journée !")
+        send_all("\u2600\ufe0f Bonjour !",
+                 "Pendant la nuit : " + " \u00b7 ".join(parts)
+                 + ". Bonne journ\u00e9e !")
         json.dump({"sent": day}, open(MORNING_MARK, "w"))
     except Exception as e:
         mylog(f"morning failed: {e}")
@@ -266,10 +268,12 @@ def member_trades():
         delta = round(t - prev, 2)
         if abs(delta) < 0.01 or (t == 0 and abs(prev) > 0.01):
             continue    # no change, or day rollover
-        title = (f"\U0001f4b0 +{delta:.2f} $" if delta > 0
-                 else f"\U0001f6e1️ {delta:.2f} $")
-        send_all(title, f"Aujourd'hui : {t:+.2f} $ (votre compte)",
-                 kind="batch", only_uid=uid)
+        # 2026-09-27: same voice as the app's toast
+        title = (f"\u2705 Trade termin\u00e9 \u00b7 +{delta:.2f} $" if delta > 0
+                 else f"\u274c Trade termin\u00e9 \u00b7 {delta:.2f} $")
+        body = (f"Aujourd'hui : {t:+.2f} $. Bien jou\u00e9." if delta > 0
+                else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue.")
+        send_all(title, body, kind="batch", only_uid=uid)
 
 
 def main():

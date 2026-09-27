@@ -334,6 +334,10 @@ def acct_auto(u):
 # write every minute, Harvest works on H1 logic and can go ~7 min between
 # writes - a single 5-minute rule declared it dead while it was fine
 # (owner 2026-09-18).
+# 2026-09-27: build id = this file's mtime; the page compares it with the
+# one /api reports and offers a reload when they differ.
+APP_BUILD = time.strftime("%m%d.%H%M", time.localtime(os.path.getmtime(__file__)))
+
 BOT_OF = {
     # 2026-09-22: this pointed at the RETIRED KINO bot (owl_manual.log,
     # last written 09-18), so the nest list showed Kino as bot KINO / not
@@ -620,7 +624,7 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  color:var(--text);box-shadow:0 12px 34px rgba(0,0,0,.4);
  transform:translateY(16px);opacity:0;pointer-events:none;
  transition:transform .25s ease,opacity .25s ease}
-#toast.on{transform:none;opacity:1}
+#toast.on{transform:none;opacity:1;pointer-events:auto}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
@@ -761,6 +765,12 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 .tb:active,.srow:active,.shbtn:active,#sharebtn:active,#inst:active,.cvc:active,
 #actbtn:active,#invbtn:active{transform:scale(.97)}
 .srow:active{background:var(--tile-bg)}
+.sw{width:44px;height:26px;border-radius:99px;background:var(--surface3);
+ border:1px solid var(--border2);position:relative;flex:none;transition:background .2s}
+.sw .swk{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;
+ background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.sw.on{background:var(--up);border-color:var(--up)}
+.sw.on .swk{left:21px}
 :focus-visible{outline:2px solid var(--accent-soft);outline-offset:2px}
 button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pill{display:inline-block;padding:1px 7px;border-radius:99px;font-size:.66rem;
@@ -911,25 +921,27 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="led-sub" style="font-size:.78rem;color:var(--muted);margin-top:6px">
  </div>
 </div>
-<div id="actcard" style="display:none;margin-top:12px;background:var(--surface3);
- border:1px solid var(--border2);border-radius:16px;
- padding:16px;text-align:center">
- <div style="font-size:1rem;color:var(--text2);display:flex;
-  align-items:center;justify-content:center;gap:8px"><svg class="ic"><use href="#i-key"/></svg> <b>Activer le
-  robot</b></div>
- <div style="font-size:.86rem;color:var(--text3);margin-top:6px;line-height:1.5">
-  Demandez votre code d&#8217;activation &agrave; <b>Kino sur
-  Telegram</b>, puis entrez-le ici.</div>
- <input id="actcode" inputmode="text" autocapitalize="characters"
-  maxlength="6" placeholder="CODE"
-  style="margin-top:10px;width:60%;padding:12px;font-size:1.3rem;
-  text-align:center;letter-spacing:.3em;border-radius:12px;border:1px
-  solid var(--border2);background:var(--bg);color:var(--text);text-transform:uppercase">
- <br><button id="actbtn" style="margin-top:10px;background:var(--accent);
-  color:#fff;border:0;border-radius:12px;padding:12px 26px;
-  font-size:1rem;font-weight:700">Activer</button>
- <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:var(--down-soft)">
+<div id="actcard" class="panel" style="display:none;margin-top:12px">
+ <div class="lbl">Activer le robot</div>
+ <div class="jsteps" style="margin-top:12px"><div class="jl"></div>
+  <div class="js done" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Compte</span></div>
+  <div class="js on" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-key"/></svg></div><span>Code</span></div>
+  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-bot"/></svg></div><span>Pr&ecirc;t</span></div>
  </div>
+ <div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px">
+  Votre compte est connect&eacute;. Il reste un code &agrave; entrer :
+  demandez-le &agrave; <b>Kino sur Telegram</b>.</div>
+ <div style="display:flex;gap:8px;margin-top:12px">
+  <input id="actcode" inputmode="text" autocapitalize="characters"
+   maxlength="6" placeholder="CODE" aria-label="Code d&#39;activation"
+   style="flex:1;min-width:0;padding:12px;font-size:1.25rem;text-align:center;
+   letter-spacing:.3em;border-radius:12px;border:1px solid var(--border2);
+   background:var(--bg);color:var(--text);text-transform:uppercase">
+  <button id="actbtn" style="background:var(--accent);color:#fff;border:0;
+   border-radius:12px;padding:12px 20px;font-size:1rem;font-weight:700;
+   flex:none">Activer</button>
+ </div>
+ <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:var(--down-soft)"></div>
 </div>
 <div id="battles-sec" style="display:none">
 <div class="panel" style="margin-top:24px;
@@ -1148,14 +1160,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div class="sic" id="pause-ic">&#9208;&#65039;</div>
   <div style="flex:1"><b id="pause-lbl">Mode manuel</b>
    <div class="ssub" id="pause-sub"></div></div>
-  <svg class="ic chv" id="pause-chv"><use href="#i-chev"/></svg>
+  <span class="sw" id="pause-sw" aria-hidden="true"><span class="swk"></span></span>
  </div>
  <div class="srow" id="scalebtn" style="display:none">
   <div class="sic" id="scale-ic"><svg class="ic"><use href="#i-chart"/></svg></div>
   <div style="flex:1"><b id="scale-lbl">Mise &agrave; l&#39;&eacute;chelle
    du solde</b>
    <div class="ssub" id="scale-sub"></div></div>
-  <svg class="ic chv"><use href="#i-chev"/></svg>
+  <span class="sw" id="scale-sw" aria-hidden="true"><span class="swk"></span></span>
  </div>
 </div>
 <!-- Owner 2026-09-23: "the nid menu must not exist for all but me" - this
@@ -1254,6 +1266,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <script>
 const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
+const APP_BUILD='%%BUILD%%';
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
@@ -1482,10 +1495,14 @@ window.addEventListener('load',()=>{
   ab.disabled=false;ab.textContent='Activer';
   try{const j=await r.json();
    if(j.ok){document.getElementById('actcard').innerHTML=
-    '<div style="font-size:1.05rem;color:var(--up-soft)">&#127881; '+
-    '<b>Robot activ&eacute; !</b><br><span style="font-size:.85rem;'+
-    'color:var(--text3)">Le robot copie maintenant les trades sur votre '+
-    'compte.</span></div>';setTimeout(load,1500);}
+    '<div class="lbl">Activer le robot</div>'+
+    '<div class="jsteps" style="margin-top:12px"><div class="jl"></div>'+
+    '<div class="js done"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Compte</span></div>'+
+    '<div class="js done"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Code</span></div>'+
+    '<div class="js on"><div class="jc"><svg class="ic ic-s"><use href="#i-bot"/></svg></div><span>Pr&ecirc;t</span></div></div>'+
+    '<div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px">'+
+    '<b>Robot activ&eacute; !</b> Il surveille maintenant le march&eacute; pour vous.</div>';
+    try{confetti();}catch(e2){}setTimeout(load,1500);}
    else{msg.textContent='Code invalide ou expir&eacute;. Demandez un '+
     'nouveau code &agrave; Kino.';}}
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
@@ -2635,6 +2652,11 @@ function render(d){
      _off+'" transform="rotate(-90 18 18)"/></svg>'+
      (_done?'Objectif atteint \\u00b7 $'+_pnl.toFixed(2)
       :'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui');
+    if(_done){const _dk='owlDayDone:'+new Date().toISOString().slice(0,10)+':'+B;
+     let _seen=false;try{_seen=!!localStorage.getItem(_dk);localStorage.setItem(_dk,'1');}catch(e){}
+     if(!_seen){toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
+      '<div style="flex:1">Objectif du jour atteint \\u00b7 <b class="pos">+$'+_pnl.toFixed(2)+'</b> \\u2014 le robot a fini sa journ\\u00e9e.</div>',7000);
+      try{confetti();}catch(e){}}}
    }else if(_lg2.bos&&(_lg2.debt||0)>0.5){
     dtc.style.display='inline-block';
     dtc.style.background='rgba(127,179,224,.13)';
@@ -2649,6 +2671,11 @@ function render(d){
    const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
    _tc.style.display=_n?'inline-flex':'none';
    _tc.textContent=_n+' trade'+(_n>1?'s':'')+' aujourd\\u2019hui';}
+  if(d.build&&d.build!==APP_BUILD&&!window._newBuildShown){window._newBuildShown=true;
+   toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-download"/></svg></div>'+
+    '<div style="flex:1">Nouvelle version disponible</div>'+
+    '<button class="shbtn shmain" style="width:auto;margin:0;padding:8px 12px;font-size:.82rem;min-height:0" '+
+    'onclick="location.reload()">Actualiser</button>',600000);}
   const _k0=(d.trades&&d.trades[0])?(d.trades[0].w+'|'+d.trades[0].p):'';
   if(window._lastTradeKey!==undefined&&_k0&&_k0!==window._lastTradeKey){
    const x=d.trades[0],up=x.p>=0;
@@ -2660,6 +2687,12 @@ function render(d){
   window._lastTradeKey=_k0;
   const _wc=document.getElementById('welcome');
   if(_wc)_wc.style.display=(!(d.trades||[]).length&&!(d.days||[]).length)?'block':'none';
+  const _dbtNow=((d.ledger||{}).debt||0);
+  if(window._prevDebt!==undefined&&window._prevDebt>0.5&&_dbtNow<=0.5){
+   toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
+    '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 le robot repasse en mode normal.</div>',8000);
+   try{confetti();}catch(e){}}
+  window._prevDebt=_dbtNow;
   const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
   if(_tp){if(_ol.length){const _pl=_ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
     _tp.style.display='inline-flex';
@@ -2719,7 +2752,7 @@ function render(d){
    const lb=document.getElementById('pause-lbl');
    const ic=document.getElementById('pause-ic');
    const sb=document.getElementById('pause-sub');
-   const cv=document.getElementById('pause-chv');
+   const cv=document.getElementById('pause-sw');
    // everyone sees the switch; only two accounts may use it
    ic.innerHTML=pauseLocked?SVGI('i-lock')
     :(isPaused?SVGI('i-pause'):SVGI('i-bot'));
@@ -2735,9 +2768,9 @@ function render(d){
       'peut lancer l’automatique'
      :'Réservé au proprietaire du compte')
     :(isPaused
-      ?'Toucher pour lancer le trading automatique'
-      :'Le robot entre seul. Toucher pour repasser en manuel.');
-   cv.style.opacity=pauseLocked?'.25':'';
+      ?'Le robot n\u2019entre pas seul. Touchez pour le lancer.'
+      :'Le robot entre seul. Touchez pour repasser en manuel.');
+   cv.classList.toggle('on',!isPaused);cv.style.opacity=pauseLocked?'.35':'';
    document.getElementById('pausebtn').style.opacity=
     pauseLocked?'.6':'';
   }
@@ -2750,6 +2783,7 @@ function render(d){
    document.getElementById('rob-card').style.display='block';
    document.getElementById('scalebtn').style.display='flex';
    window._scaleOn=!_lg3.scale_opt_out;
+   {const _ss=document.getElementById('scale-sw');if(_ss)_ss.classList.toggle('on',!!window._scaleOn);}
    const _capTxt=(typeof _lg3.scale_base_cap==='number')
     ?'$'+_lg3.scale_base_cap.toFixed(2)+'/jour fixe'
     :'la taille fixe';
@@ -3049,7 +3083,10 @@ function render(d){
      else{bg='var(--tile-bg)';fg='var(--muted2)';bd='var(--tile-bd)';}
     }
     const isT=(dd2===now.getUTCDate());
-    h+='<div style="aspect-ratio:1;border-radius:10px;background:'+bg+
+    const _lab=['dim','lun','mar','mer','jeu','ven','sam'][new Date(k+'T00:00:00Z').getUTCDay()]+
+     ' '+String(dd2).padStart(2,'0')+'/'+String(m+1).padStart(2,'0');
+    h+='<div'+(p!==undefined?' onclick="dayx(\\''+_lab+'\\')" role="button"':'')+
+     ' style="cursor:'+(p!==undefined?'pointer':'default')+';aspect-ratio:1;border-radius:10px;background:'+bg+
      ';border:1px solid '+bd+
      (isT?';box-shadow:inset 0 0 0 1.5px var(--accent-soft)':'')+
      ';display:flex;align-items:center;justify-content:center;'+
@@ -3573,6 +3610,7 @@ def user_stats(u, admin_override=False):
         try:
             _pp = json.load(open(PUSH_PREFS_FILE))
             d["push_level"] = _pp.get(u["id"], "all")
+            d["build"] = APP_BUILD
             d["push_quiet"] = bool((_pp.get("_quiet") or {})
                                    .get(u["id"], {}).get("on"))
         except Exception:
@@ -5086,7 +5124,8 @@ class H(BaseHTTPRequestHandler):
             return
         sub = parts[1] if len(parts) > 1 else ""
         if sub == "":
-            page = PAGE.replace("%%NAME%%", user.get("name", ""))
+            page = (PAGE.replace("%%NAME%%", user.get("name", ""))
+                    .replace("%%BUILD%%", APP_BUILD))
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
             self._send(json.dumps(user_stats(
