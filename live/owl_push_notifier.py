@@ -57,6 +57,25 @@ def _inbox_write(new):
         pass
 
 
+def is_manual(uid):
+    """2026-09-27 (owner): two voices. An account in manual mode (its own
+    pause file says paused, or its nest record is manual/semi) gets the
+    signal-service voice; everyone else gets the robot's."""
+    try:
+        if json.load(open(os.path.join(DIR, f"owl_trading_pause_{uid}.json"),
+                          encoding="utf-8")).get("paused"):
+            return True
+    except Exception:
+        pass
+    try:
+        us = json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                            encoding="utf-8"))
+        return any(u.get("id") == uid and u.get("mode") in ("manual", "semi")
+                   for u in us)
+    except Exception:
+        return False
+
+
 def send_all(title, body, kind="instant", only_uid=None,
              skip_uids=None):
     try:
@@ -177,7 +196,9 @@ def maybe_weekly():
                      f"{g} jour{'s' if g > 1 else ''} vert"
                      f"{'s' if g > 1 else ''}, {r} rouge"
                      f"{'s' if r > 1 else ''}. "
-                     + ("Le robot avance." if week >= 0 else "Le robot se rattrape.")
+                     + (("Le compte avance." if week >= 0 else "Vous vous rattrapez.")
+                        if is_manual(uid) else
+                        ("Le robot avance." if week >= 0 else "Le robot se rattrape."))
                      + " Bonne semaine !",
                      only_uid=uid)
         json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
@@ -257,15 +278,17 @@ def maybe_evening():
             tr = (d.get("day_trades") or {}).get(label) or []
             n = len(tr)
             g = sum(1 for x in tr if float(x.get("p") or 0) > 0.005)
+            man = is_manual(uid)
             if n == 0:
-                body = ("Aujourd'hui, le robot a surveill\u00e9 le march\u00e9 "
+                body = ("Aujourd'hui, aucun signal confirm\u00e9. \u00c0 demain !" if man else
+                        "Aujourd'hui, le robot a surveill\u00e9 le march\u00e9 "
                         "sans trader. \u00c0 demain !")
             else:
                 body = (f"Aujourd'hui : {today:+.2f} $ \u00b7 {n} trade"
                         f"{'s' if n > 1 else ''}"
                         + (f", dont {g} gagn\u00e9{'s' if g > 1 else ''}" if n > 1 else
                            (" (gagn\u00e9)" if g else " (perdu)"))
-                        + ". Le robot a fini sa journ\u00e9e.")
+                        + (". Bonne soir\u00e9e !" if man else ". Le robot a fini sa journ\u00e9e."))
             send_all("\U0001f319 Bilan du jour", body, kind="batch", only_uid=uid)
         json.dump({"sent": day}, open(EVENING_MARK, "w"))
     except Exception as e:
@@ -300,7 +323,8 @@ def member_trades():
         title = (f"\u2705 Trade termin\u00e9 \u00b7 +{delta:.2f} $" if delta > 0
                  else f"\u274c Trade termin\u00e9 \u00b7 {delta:.2f} $")
         body = (f"Aujourd'hui : {t:+.2f} $. Bien jou\u00e9." if delta > 0
-                else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue.")
+                else (f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive." if is_manual(uid)
+                      else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue."))
         send_all(title, body, kind="batch", only_uid=uid)
 
 

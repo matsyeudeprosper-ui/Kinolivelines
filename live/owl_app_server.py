@@ -1082,9 +1082,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  style="width:100%;height:80px;display:block"></svg></div>
 </div>
 <div class="tab" id="tab-marche">
-<div class="sec" style="margin-top:26px">Le march&eacute; <span class="hint">&middot; ce que le robot voit</span></div>
+<div class="sec" style="margin-top:26px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
 <div class="panel" id="jcard" style="margin-top:12px">
- <div class="lbl">Le robot en ce moment</div>
+ <div class="lbl" id="jcard-lbl">Le robot en ce moment</div>
  <div class="jsteps" id="jsteps">
   <div class="jl"></div>
   <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
@@ -1119,7 +1119,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
 <div class="panel" id="daycard" style="display:none;margin-top:12px">
- <div class="lbl">La journ&eacute;e du robot</div>
+ <div class="lbl" id="day-lbl">La journ&eacute;e du robot</div>
  <div id="day-sum" style="font-size:.95rem;color:var(--text);line-height:1.5;
   margin-top:8px"></div>
  <svg id="daybar" viewBox="0 0 300 34" style="width:100%;height:34px;
@@ -1517,6 +1517,11 @@ const ORB=(()=>{const o=(n,c)=>'<svg class="ic" style="width:26px;height:26px;co
 let lastOk=0;
 let isPaused=false,pauseLocked=false;
 function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
+// 2026-09-27 (owner): two voices. AUTO = the robot is in charge and says
+// what it does / will do. MANUAL = the app is a signal service: it says what
+// the signal is and leaves the decision to the member. Every sentence that
+// names an actor goes through MAN().
+function MAN(){return !!(window._d&&window._d.trading_paused);}
 function fdur(m){
  if(m==null)return '';
  m=Math.round(m);
@@ -1586,7 +1591,7 @@ function ledInfo(){
   '<b style="font-size:.92rem">'+t+'</b><div style="font-size:.84rem;'+
   'color:var(--muted2);line-height:1.45;margin-top:2px">'+x+'</div></div></div>';
  const cap=L.cap||0,pct=cap?Math.max(0,Math.min(100,100*(L.chest||0)/cap)):0;
- const manual=L.mode==='man';
+ const manual=MAN();   // 2026-09-27: _ledD never carried 'man' - the manual branch was dead
  const intro=manual
   ?'Il reste <b>'+F(L.debt)+'</b> &agrave; rattraper. Une partie de chaque gain '+
    'est mise de c&ocirc;t&eacute; pour y arriver, sans jamais risquer plus que pr&eacute;vu.'
@@ -1622,7 +1627,8 @@ function ledInfo(){
     'r&eacute;serve'+(L.fill>0?', sans d&eacute;passer <b>$'+fm(L.stake||0)+
     '</b> de risque':'. Pour l&#39;instant, il garde la taille normale')+'.')+
   row(ico('i-check','var(--up)'),'Quand c&#39;est fini',
-   'Une fois la dette &agrave; z&eacute;ro, le robot repasse en mode normal. '+
+   manual?'Une fois la dette &agrave; z&eacute;ro, le lot conseill&eacute; redevient le lot normal.'
+   :'Une fois la dette &agrave; z&eacute;ro, le robot repasse en mode normal. '+
    'Rien &agrave; faire de votre c&ocirc;t&eacute;.')+
   '<div style="background:rgba(232,197,90,.08);border:1px solid rgba(232,197,90,.25);'+
    'border-radius:12px;padding:10px 12px;font-size:.82rem;color:var(--warn);'+
@@ -1876,20 +1882,26 @@ async function notifSetup(){
  };
 }
 window.addEventListener('load',notifSetup);
-const TOUR=[
+function tourList(){const M=MAN();return [
  ['eq','&#128176; &Ccedil;a, c&#39;est votre argent. Il se met '+
   '&agrave; jour tout seul, toutes les 5 secondes.'],
- ['mxsum','&#127782;&#65039; Ici, le robot vous dit ce qu&#39;il voit : '+
+ ['mxsum',M?'&#127782;&#65039; Ici, l&#39;app vous dit ce que fait le march&eacute; '+
+  'et si un signal est jouable. Touchez la carte pour la page March&eacute;.'
+  :'&#127782;&#65039; Ici, le robot vous dit ce qu&#39;il voit : '+
   'march&eacute; calme ou agit&eacute;, et ce qu&#39;il a fait aujourd&#39;hui. '+
   'Touchez la carte pour la page March&eacute;.'],
- ['ledcard','&#128737;&#65039; Quand le robot perd un peu, il met une '+
+ ['ledcard',M?'&#128737;&#65039; Apr&egrave;s une perte, une partie de chaque gain '+
+  'est mise de c&ocirc;t&eacute; et l&#39;app vous conseille le lot. Tout se suit ici.'
+  :'&#128737;&#65039; Quand le robot perd un peu, il met une '+
   'partie de chaque gain de c&ocirc;t&eacute; pour se rattraper, sans '+
   'risquer plus. Tout se suit ici.'],
  [null,'&#128197; En bas : l&#39;Accueil, le March&eacute;, l&#39;Historique '+
   'jour par jour (touchez un jour pour son histoire), et les '+
-  'R&eacute;glages &mdash; pensez &agrave; activer les notifications !']];
+  'R&eacute;glages &mdash; pensez &agrave; activer les notifications !']];}
+let TOUR=tourList();
 let _ti=-1;
 function tourStep(i){
+ if(i===0)TOUR=tourList();
  document.querySelectorAll('.tourhl').forEach(x=>
   x.classList.remove('tourhl'));
  if(i>=TOUR.length){
@@ -1939,11 +1951,15 @@ window.addEventListener('load',()=>{
    sheet('<h3 style="margin:0 0 4px">Ce qu&#39;il faut savoir</h3>'+
     '<p style="color:var(--text);font-size:.95rem;line-height:1.5;margin:0 0 10px">'+
     'Six choses simples, &agrave; garder en t&ecirc;te.</p>'+
-    row(ico('i-chart','var(--accent-soft)'),'Le robot travaille avec de '+
+    row(ico('i-chart','var(--accent-soft)'),MAN()?'Vous tradez avec de l&#39;argent '+
+     'r&eacute;el, sur vos propres d&eacute;cisions. On peut gagner <b>et</b> perdre.'
+     :'Le robot travaille avec de '+
      'l&#39;argent r&eacute;el. Il peut gagner <b>et</b> perdre.')+
     row(ico('i-lock','var(--warn)'),'Chaque trade ne risque qu&#39;une petite '+
      'part du compte &mdash; jamais tout d&#39;un coup.')+
-    row(ico('i-cloud','var(--muted2)'),'Quand le march&eacute; devient '+
+    row(ico('i-cloud','var(--muted2)'),MAN()?'Quand le march&eacute; devient '+
+     'm&eacute;chant, l&#39;app vous le dit : mieux vaut s&#39;abriter.'
+     :'Quand le march&eacute; devient '+
      'm&eacute;chant, le robot s&#39;abrite tout seul et attend.')+
     row(ico('i-target','var(--down-soft)'),'Ne confiez que de l&#39;argent que '+
      'vous pouvez laisser travailler longtemps, sans en avoir besoin.')+
@@ -2089,17 +2105,21 @@ function drawDay(){
  const won=tr.filter(e=>e.p>0.005).length,tot=tr.reduce((a,e)=>a+e.p,0);
  // --- the summary, in plain words ---
  let sum;
+ const M=MAN();
+ (function(){const lb=document.getElementById('day-lbl');if(lb)lb.textContent=M?'Votre journ\u00e9e':'La journ\u00e9e du robot';})();
  if(!tr.length&&!ig.length){
-  sum='Depuis ce matin, le robot surveille le march\u00e9 et n\u2019a rien trouv\u00e9 \u00e0 faire. '+
+  sum=M?'Depuis ce matin, aucun signal confirm\u00e9. L\u2019app veille et vous pr\u00e9vient d\u00e8s qu\u2019il y en a un.'
+   :'Depuis ce matin, le robot surveille le march\u00e9 et n\u2019a rien trouv\u00e9 \u00e0 faire. '+
    'C\u2019est normal : il n\u2019agit que quand tout est r\u00e9uni.';
  }else{
   const parts=[];
   if(tr.length)parts.push(tr.length+' trade'+(tr.length>1?'s':'')+
    (tr.length>1?' (dont '+won+' gagn\u00e9'+(won>1?'s':'')+')':(won?' (gagn\u00e9)':' (perdu)')));
-  if(ig.length)parts.push(ig.length+' occasion'+(ig.length>1?'s':'')+' laiss\u00e9e'+(ig.length>1?'s':'')+' passer');
+  if(ig.length)parts.push(M?(ig.length+' signa'+(ig.length>1?'ux':'l')+' \u00e9cart\u00e9'+(ig.length>1?'s':''))
+   :(ig.length+' occasion'+(ig.length>1?'s':'')+' laiss\u00e9e'+(ig.length>1?'s':'')+' passer'));
   sum='Depuis ce matin : '+parts.join(' et ')+'.'+
    (tr.length?' Total du jour : <b class="'+sgn(tot)+'">'+money(tot)+'</b>.':'')+
-   (!tr.length?' Le robot continue de surveiller.':'');
+   (!tr.length?(M?' L\u2019app continue de veiller.':' Le robot continue de surveiller.'):'');
  }
  setH(document.getElementById('day-sum'),sum);
  // --- the day bar: morning / noon / evening, sun at "now" ---
@@ -2124,23 +2144,24 @@ function drawDay(){
  ev.sort((a,b)=>b.t-a.t);
  setH(document.getElementById('day-list'),ev.slice(0,12).map(e=>{
   let i,txt;
+  const who=M?'Vous avez ':'Le robot a ';
   if(e.k==='tr'){const buy=e.d==='BUY';
    if(e.p>=0){i=ico('i-check','var(--up)');
-    txt='Le robot a '+(buy?'achet\u00e9':'vendu')+' et a <b class="pos">gagn\u00e9 '+money(e.p)+'</b>.';}
+    txt=who+(buy?'achet\u00e9':'vendu')+' et '+(M?'gagn\u00e9':'a gagn\u00e9')+' <b class="pos">'+money(e.p)+'</b>.';}
    else{i=ico('i-x','var(--down)');
-    txt='Le robot a '+(buy?'achet\u00e9':'vendu')+' et a <b class="neg">perdu $'+Math.abs(e.p).toFixed(2)+
-     '</b>. \u00c7a arrive \u2014 il continue.';}}
+    txt=who+(buy?'achet\u00e9':'vendu')+' et '+(M?'perdu':'a perdu')+' <b class="neg">$'+Math.abs(e.p).toFixed(2)+
+     '</b>. \u00c7a arrive'+(M?'.':' \u2014 il continue.');}}
   else if(e.m==='meteo'){i=ico('i-cloud','var(--warn)');
-   txt='Le march\u00e9 bougeait trop. Le robot a pr\u00e9f\u00e9r\u00e9 laisser passer.';}
+   txt=M?'Le march\u00e9 bougeait trop. Signal \u00e9cart\u00e9.':'Le march\u00e9 bougeait trop. Le robot a pr\u00e9f\u00e9r\u00e9 laisser passer.';}
   else{i=ico('i-eye','var(--muted2)');
-   txt='Le robot a vu une occasion, mais tout n\u2019\u00e9tait pas r\u00e9uni. Il a attendu.';}
+   txt=M?'Un signal est apparu, mais tout n\u2019\u00e9tait pas r\u00e9uni. \u00c9cart\u00e9.':'Le robot a vu une occasion, mais tout n\u2019\u00e9tait pas r\u00e9uni. Il a attendu.';}
   return '<div class="srow-ev">'+i+'<div style="flex:1;min-width:0">'+txt+'</div>'+
    '<span class="evt">'+hm(e.t)+'</span></div>';}).join('')||
   '<div class="sub" style="margin-top:4px">Rien \u00e0 raconter pour l\u2019instant.</div>');
  card.style.display='block';
  const md=document.getElementById('mxs-day');
  if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):'Aucun trade pour l\u2019instant')+
-  (ig.length?' \u00b7 '+ig.length+(ig.length>1?' occasions laiss\u00e9es passer':' occasion laiss\u00e9e passer'):'');
+  (ig.length?' \u00b7 '+ig.length+(M?(ig.length>1?' signaux \u00e9cart\u00e9s':' signal \u00e9cart\u00e9'):(ig.length>1?' occasions laiss\u00e9es passer':' occasion laiss\u00e9e passer')):'');
  drawJourney(window._lastd);
 }
 function drawJourney(d){
@@ -2150,8 +2171,28 @@ function drawJourney(d){
  const open=d.open_list||[];
  const recent=(D.trades||[]).filter(t=>t.x&&now-t.x<1800).sort((a,b)=>b.x-a.x)[0];
  let step=1,txt='';
- if(d.trading_paused){step=1;
-  txt='Mode manuel : le robot observe le march\u00e9, mais ne trade pas tout seul.';}
+ const M=MAN();
+ (function(){const lb=document.getElementById('jcard-lbl');if(lb)lb.textContent=M?'Le signal en ce moment':'Le robot en ce moment';
+  const names=M?['Veille','Signal','Trade','Bilan']:['Observe','Occasion','Trade','Bilan'];
+  el.querySelectorAll('.js span').forEach((sp,i)=>{if(names[i]&&sp.textContent!==names[i])sp.textContent=names[i];});})();
+ if(M){
+  // signal-service voice: what the signal is, what to do with it
+  if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+   txt='Votre trade est en cours'+(Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+
+    (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'. G\u00e9rez-le depuis le graphique.';}
+  else if(recent){step=4;
+   txt=recent.p>=0?'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +$'+recent.p.toFixed(2)+'</b>. Bien jou\u00e9 \u2014 l\u2019app veille pour le prochain signal.'
+    :'Dernier trade termin\u00e9 : <b class="neg">perdu $'+Math.abs(recent.p).toFixed(2)+'</b>. \u00c7a arrive \u2014 l\u2019app veille pour le prochain signal.';}
+  else if(k==='ready'||k==='nogate'){step=2;
+   txt='<b>Signal jouable</b> : les conditions sont r\u00e9unies. Ouvrez le graphique pour d\u00e9cider.';}
+  else if(k==='flip'){step=2;txt='Le march\u00e9 h\u00e9site sur sa direction. Attendez la confirmation avant d\u2019entrer.';}
+  else if(k==='forming'){step=2;txt='Un signal se pr\u00e9pare. Trop t\u00f4t pour entrer \u2014 l\u2019app vous pr\u00e9vient.';}
+  else{step=1;
+   txt=k==='storm'?'March\u00e9 tr\u00e8s agit\u00e9 : pas de signal fiable. Mieux vaut s\u2019\u00e9carter.'
+    :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Un signal ici serait \u00e0 prendre avec prudence.'
+    :'Aucun signal pour l\u2019instant. L\u2019app veille et vous pr\u00e9vient.');}
+  if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, la r\u00e9serve conseille un lot plus petit.';
+ }
  else if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
   txt='Un trade est en cours'+(Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+
    (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'. Le robot le surveille jusqu\u2019au bout.';}
@@ -2161,12 +2202,12 @@ function drawJourney(d){
  else if(k==='ready'||k==='flip'||k==='forming'||k==='nogate'){step=2;
   txt=k==='forming'?'Quelque chose se dessine sur le march\u00e9. Le robot attend une confirmation avant d\u2019agir.'
    :(k==='flip'?'Le march\u00e9 h\u00e9site sur sa direction. Le robot attend que ce soit clair.'
-   :'Les conditions se rapprochent. Le robot attend le bon moment pour entrer.');}
+   :'Les conditions sont r\u00e9unies. Le robot entrera d\u00e8s que le signal se confirme.');}
  else{step=1;
   txt=k==='storm'?'Le march\u00e9 est tr\u00e8s agit\u00e9. Le robot reste \u00e0 l\u2019abri et attend que \u00e7a se calme.'
    :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Le robot pr\u00e9f\u00e8re attendre.'
    :'Le march\u00e9 est calme. Le robot observe et attend une occasion.');}
- if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, il est un peu plus prudent.';
+ if(!M&&((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, il est un peu plus prudent.';
  const jp=document.getElementById('jprog');
  if(jp){if(step===3&&open.length){const p=open[0];
    const e=parseFloat(p.e)||0,tp=parseFloat(p.tp)||0,lot=parseFloat(p.lot)||0,pl=parseFloat(p.pl)||0;
@@ -2319,7 +2360,7 @@ function renderSince(d){
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?parseInt(m[3],10)+' '+MON[parseInt(m[2],10)-1]+' '+m[1]:k;};
  const bm=S.best_month;
- setH(document.getElementById('since-t'),'Avec le robot depuis le <b>'+fd(S.first||S.era)+'</b>'+(S.days>1?' \u2014 '+S.days+' jours':'')+
+ setH(document.getElementById('since-t'),(MAN()?'Avec OwlNest depuis le <b>':'Avec le robot depuis le <b>')+fd(S.first||S.era)+'</b>'+(S.days>1?' \u2014 '+S.days+' jours':'')+
   '. R\u00e9sultat depuis le d\u00e9but : <b class="'+sgn(S.net)+'">'+money(S.net)+'</b>.');
  setH(document.getElementById('since-g'),
   '<div><b>'+S.n+'</b><span>trade'+(S.n>1?'s':'')+'</span></div>'+
@@ -2435,14 +2476,15 @@ async function tradeStory(tx,x){
  const buy=(st&&st.found?st.dir==='BUY':x.dir==='A');
  const p=(st&&st.found)?st.p:x.p;
  let t='';
+ const M=MAN();
  if(st&&st.found){const d=new Date(st.t*1000);
-  t='Le robot a '+(buy?'achet\u00e9':'vendu')+' le '+String(d.getUTCDate()).padStart(2,'0')+'/'+
+  t=(M?'Vous avez ':'Le robot a ')+(buy?'achet\u00e9':'vendu')+' le '+String(d.getUTCDate()).padStart(2,'0')+'/'+
    String(d.getUTCMonth()+1).padStart(2,'0')+' \u00e0 '+String(d.getUTCHours()).padStart(2,'0')+':'+
    String(d.getUTCMinutes()).padStart(2,'0')+(st.band?', dans un march\u00e9 '+st.band:'')+'.'+
-   (st.risk?' Il a risqu\u00e9 au plus <b>$'+st.risk.toFixed(1)+'</b>.':'')+
+   (st.risk?(M?' Risque maximum : <b>$':' Il a risqu\u00e9 au plus <b>$')+st.risk.toFixed(1)+'</b>.':'')+
    ' Le trade a dur\u00e9 '+fd(st.dur_min)+' et s\u2019est termin\u00e9 par '+
-   (p>=0?'un <b class="pos">gain de '+money(p)+'</b>. Bien jou\u00e9.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>. \u00c7a arrive \u2014 il continue.');}
- else{t='Le robot a '+(buy?'achet\u00e9':'vendu')+(x.dur!=null?' et gard\u00e9 le trade '+fd(x.dur):'')+
+   (p>=0?'un <b class="pos">gain de '+money(p)+'</b>. Bien jou\u00e9.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>. \u00c7a arrive'+(M?'.':' \u2014 il continue.'));}
+ else{t=(M?'Vous avez ':'Le robot a ')+(buy?'achet\u00e9':'vendu')+(x.dur!=null?' et gard\u00e9 le trade '+fd(x.dur):'')+
    ', termin\u00e9 par '+(p>=0?'un <b class="pos">gain de '+money(p)+'</b>.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>.');}
  setH(el,t);
 }
@@ -2476,7 +2518,7 @@ function monthReport(){
  const bd=R.src.find(x=>x.p===R.best),wd=R.src.find(x=>x.p===R.worst);
  const st=R.stats;
  let t='<p style="color:var(--text)">En <b>'+R.name+'</b>'+
-  (st?', le robot a pris <b>'+st.n+' trade'+(st.n>1?'s':'')+'</b>'+(st.n?' (dont '+st.won+' gagn\u00e9'+(st.won>1?'s':'')+')':''):'')+
+  (st?(MAN()?', vous avez pris <b>':', le robot a pris <b>')+st.n+' trade'+(st.n>1?'s':'')+'</b>'+(st.n?' (dont '+st.won+' gagn\u00e9'+(st.won>1?'s':'')+')':''):'')+
   '. R\u00e9sultat : <b class="'+sgn(R.net)+'">'+money(R.net)+'</b>.</p>';
  const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
  const row=(i,h)=>'<div class="srow-ev">'+i+'<div style="flex:1">'+h+'</div></div>';
@@ -2484,7 +2526,8 @@ function monthReport(){
  if(bd&&R.best>0.005)t+=row(ico('i-check','var(--up)'),'Meilleur jour : le '+lab(bd.d)+', <b class="pos">'+money(R.best)+'</b>.');
  if(wd&&R.worst<-0.005)t+=row(ico('i-x','var(--down)'),'Jour le plus dur : le '+lab(wd.d)+', <b class="neg">'+money(R.worst)+'</b>.');
  if(st&&st.streak>1)t+=row(ico('i-activity','var(--up)'),'Plus longue s\u00e9rie : <b>'+st.streak+' gains de suite</b>.');
- t+='<p style="color:var(--text);margin-top:10px">'+(R.net>=0?'Le robot avance.':(R.debt?'Le robot est en train de se rattraper \u2014 il avance prudemment.':'Un mois difficile ; le robot continue.'))+'</p>';
+ t+='<p style="color:var(--text);margin-top:10px">'+(MAN()?(R.net>=0?'Le compte avance.':(R.debt?'Vous \u00eates en train de vous rattraper \u2014 restez prudent.':'Un mois difficile ; on continue.'))
+  :(R.net>=0?'Le robot avance.':(R.debt?'Le robot est en train de se rattraper \u2014 il avance prudemment.':'Un mois difficile ; le robot continue.')))+'</p>';
  sheet('<h3>Rapport du mois</h3>'+t+
   '<button class="shbtn shmain" style="display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareMonth()"><svg class="ic ic-s"><use href="#i-share"/></svg>Partager ce rapport</button>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
@@ -2706,19 +2749,35 @@ function render(d){
     // Owner 2026-09-17: written for someone who has never heard of a
     // "structure" or a "break". Plain words, one short line, no jargon.
     // The long version belongs in the info sheet, not on the card.
-    const ST={
-      // Owner 2026-09-17: the two gates only ever STOP a trade - neither
-      // was shown to make money. "C’est le moment" promised something they
-      // cannot deliver, so the headline says the brakes are off and leaves
-      // the decision where it belongs.
-      ready:['✅','Rien ne bloque','#8df0bb',
-             'Conditions favorables. À toi de juger le reste.'],
+    // Owner 2026-09-27: two voices. AUTO - the robot is in charge and says
+    // what it will do. MANUAL - the app is a signal service and leaves the
+    // decision to the member. The two gates only ever STOP a trade (owner
+    // 2026-09-17), so "feu vert" means "nothing holds it back", never a
+    // promise of profit.
+    const ST=MAN()?{
+      ready:['✅','Feu vert','#8df0bb',
+             'Les conditions sont réunies : le prochain signal est jouable. À vous de décider.'],
       flip:['⚖️','Ça peut tourner','#e8c55a',
-            'Le sens change peut-être. Attends que ce soit confirmé.'],
+            'Le sens change peut-être. Attendez la confirmation avant d’entrer.'],
       forming:['⏳','Ça se prépare','#8fa1b3',
-               'Trop tôt. Laisse le marché se dessiner.'],
+               'Trop tôt pour entrer. Laissez le marché se dessiner.'],
+      none:['💤','Pas de signal','#6f8299',
+            'Le marché est calme. Mieux vaut attendre le prochain signal.'],
+      brisk:['🍃','Marché soutenu','#e8c55a',
+             'Les bougies sont un peu plus grandes que d’habitude. Signal à prendre avec prudence.'],
+      nervous:['🌀','Marché rapide','#ff9678',
+               'Les mouvements sont beaucoup plus grands que d’habitude. Mieux vaut s’écarter.'],
+      nogate:['⚡','Aucun frein','#b98cff',
+              'Tous les signaux sont affichés, marché calme ou rapide.']}
+    :{
+      ready:['✅','Feu vert','#8df0bb',
+             'Les conditions sont réunies. Le robot entrera dès que le signal se confirme.'],
+      flip:['⚖️','Ça peut tourner','#e8c55a',
+            'Le sens change peut-être. Le robot attend la confirmation avant d’agir.'],
+      forming:['⏳','Ça se prépare','#8fa1b3',
+               'Trop tôt. Le robot laisse le marché se dessiner.'],
       none:['💤','Rien à faire','#6f8299',
-            'Le marché est calme. Mieux vaut attendre.'],
+            'Le marché est calme. Le robot attend une occasion.'],
       // the common case, just over the line - saying "ça bouge trop" here
       // overstated it (owner 2026-09-18)
       brisk:['🍃','Marché soutenu','#e8c55a',
@@ -2736,6 +2795,8 @@ function render(d){
       // refusal that will not happen - so it gets its own honest line.
       nogate:['⚡','Aucun frein','#b98cff',
               'Ce compte prend tous les signaux, marché calme ou rapide.']};
+    (function(){const hh=document.getElementById('mx-hint');
+     if(hh)setH(hh,MAN()?'&middot; ce que le signal dit':'&middot; ce que le robot voit');})();
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
     //
@@ -2997,7 +3058,7 @@ function render(d){
        '</div>'+
       '</div>';
      lw.style.display='none';
-     ls2.innerHTML=(bos&&typeof d.ledger.cap_today!=='number')?
+     ls2.innerHTML=(bos&&!MAN()&&typeof d.ledger.cap_today!=='number')?
       'Pas de limite journali\u00e8re pendant le rattrapage.':'';
      lc.style.transition='box-shadow .8s,border-color .8s';
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
@@ -3117,7 +3178,7 @@ function render(d){
    toast('<div class="evi" style="color:'+(up?'var(--up)':'var(--down)')+'"><svg class="ic ic-s">'+
     '<use href="#'+(up?'i-check':'i-x')+'"/></svg></div><div style="flex:1">Trade termin\u00e9 \u00b7 '+
     '<b class="'+(up?'pos':'neg')+'">'+(up?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b>'+
-    (up?' \u2014 bien jou\u00e9.':' \u2014 \u00e7a arrive, il continue.')+'</div>');
+    (up?' \u2014 bien jou\u00e9.':(MAN()?' \u2014 \u00e7a arrive.':' \u2014 \u00e7a arrive, il continue.'))+'</div>');
    try{navigator.vibrate&&navigator.vibrate(up?[20,40,20]:[40])}catch(e){}}
   window._lastTradeKey=_k0;
   const _wc=document.getElementById('welcome');
@@ -3125,7 +3186,7 @@ function render(d){
   const _dbtNow=((d.ledger||{}).debt||0);
   if(window._prevDebt!==undefined&&window._prevDebt>0.5&&_dbtNow<=0.5){
    toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
-    '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 le robot repasse en mode normal.</div>',8000);
+    '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 '+(MAN()?'lot normal \\u00e0 nouveau.':'le robot repasse en mode normal.')+'</div>',8000);
    try{confetti();}catch(e){}}
   window._prevDebt=_dbtNow;
   const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
@@ -3244,7 +3305,7 @@ function render(d){
    location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
-   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg><b>Mode manuel</b>'+
+   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg><b>Mode manuel</b> &mdash; vous d&eacute;cidez'+
      (n>0?' &middot; '+n+' trade'+(n>1?'s':'')+' ouvert'+(n>1?'s':''):'')
    : (n>0
    ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-bot"/></svg>Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
@@ -3434,7 +3495,8 @@ function render(d){
     const wk=d.week||0,_dbt=((d.ledger||{}).debt||0)>0.5;
     _wks.innerHTML='Cette semaine : <b class="'+sgn(wk)+'">'+(wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2)+
      '</b>'+((_g||_r)?' \u2014 '+_g+' jour'+(_g>1?'s':'')+' vert'+(_g>1?'s':'')+', '+_r+' rouge'+(_r>1?'s':''):'')+
-     '. '+(wk>=0?'Le robot avance.':(_dbt?'Le robot se rattrape.':'Semaine difficile ; le robot continue.'));
+     '. '+(MAN()?(wk>=0?'Le compte avance.':(_dbt?'Vous vous rattrapez \u2014 restez prudent.':'Semaine difficile ; on continue.'))
+      :(wk>=0?'Le robot avance.':(_dbt?'Le robot se rattrape.':'Semaine difficile ; le robot continue.')));
     _wkc.style.display='block';}
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
