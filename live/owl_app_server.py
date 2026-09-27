@@ -297,7 +297,7 @@ MANUAL_MODES = ("manual", "semi")
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
 PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Manuel"},
-            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}
+            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
 MANUAL_CAP = 10          # one MT5 terminal per manual member on this VPS
 
 
@@ -328,16 +328,19 @@ def family_active(e, now=None):
 
 
 def has(uid, key):
-    """family covers everything; strategy covers manual; dates are epochs."""
+    """2026-09-28 (owner): three separate keys.
+    family   = the Automatique package (robot on the account) -> also manual
+    manual   = signals + trade tool
+    strategy = the full chart + the method - its own package, never
+               included in family or manual, and not including them."""
     if uid in OWNER_UIDS:
         return True
     e = ent(uid)
-    if family_active(e):
-        return True
     now = time.time()
+    if key == "family":
+        return family_active(e, now)
     if key == "manual":
-        return (float(e.get("manual_until") or 0) > now
-                or float(e.get("strategy_until") or 0) > now)
+        return family_active(e, now) or float(e.get("manual_until") or 0) > now
     if key == "strategy":
         return float(e.get("strategy_until") or 0) > now
     return False
@@ -350,8 +353,6 @@ def ent_grant(uid, pkg, days, src):
     k = pkg + "_until"
     base = max(time.time(), float(r.get(k) or 0))
     r[k] = int(base + days * 86400)
-    if pkg == "strategy":
-        r["manual_until"] = max(int(r.get("manual_until") or 0), r[k])
     if pkg == "family":
         r["family"] = True           # legacy flag, kept in step with the date
     r["updated"] = int(time.time())
@@ -1917,7 +1918,8 @@ const VOICE_EN={
 function LANG(){try{return localStorage.getItem('owlLang')==='en'?'en':'fr';}catch(e){return 'fr';}}
 // 2026-09-27: the member's tier decides what is shown
 function TIER(){const d=window._d||{},P=d.plan||{};if(d.public)return 'demo';if(P.family)return 'family';if(P.strategy)return 'strategy';if(P.manual)return 'manual';return 'observer';}
-function OBS(){return TIER()==='observer';}
+function OBS(){const t=TIER();return t==='observer'||t==='strategy';}   // no robot on the account
+function HIDEGAUGES(){return TIER()==='observer';}
 // observers watch Kino's robot: the market card speaks about HIS robot
 VOICE.observer={
  wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies. Le robot de Kino entrera dès que le signal se confirme.'],
@@ -3593,20 +3595,22 @@ function renderPlan(d){
  const t=document.getElementById('plan-t'),sub=document.getElementById('plan-s'),bt=document.getElementById('plan-btns'),nt=document.getElementById('plan-note'),ic=document.getElementById('plan-ic');
  if(d.public){el.style.display='none';document.getElementById('plan-sec').style.display='none';return;}
  let title,txt,color='var(--accent-soft)';
- if(P.family){title=en?'Automatic':'Automatique';txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with Kino, then enter the code.':' \u2014 renouvelez aupr\u00e8s de Kino, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
+ const plusS=P.strategy?(en?' + Strategy':' + Strat\u00e9gie'):'';
+ if(P.family){title=(en?'Automatic':'Automatique')+plusS;txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with Kino, then enter the code.':' \u2014 renouvelez aupr\u00e8s de Kino, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
  else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with Kino and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
- else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'Manual + the full view, until ':'Manuel + la vue compl\u00e8te, jusqu\u2019au ')+fd(P.strategy_until)+'.';color='var(--warn)';}
- else if(P.manual){title=en?'Manual':'Manuel';txt=(en?'Signals and the trade tool, until ':'Signaux et outil de trading, jusqu\u2019au ')+fd(P.manual_until)+'.';color='var(--up-soft)';}
+ else if(P.manual){title=(en?'Manual':'Manuel')+plusS;txt=(en?'Signals and the trade tool, until ':'Signaux et outil de trading, jusqu\u2019au ')+fd(P.manual_until)+(P.strategy?(en?' \u00b7 full view until ':' \u00b7 vue compl\u00e8te jusqu\u2019au ')+fd(P.strategy_until):'')+'.';color='var(--up-soft)';}
+ else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
  else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
  const pk=P.packages||{};
  const btn=(k,lab,price,dis,sub2)=>'<button '+(dis?'disabled ':'')+'onclick="buyPkg(&#39;'+k+'&#39;)" style="border:1px solid var(--border2);background:'+(dis?'var(--surface2)':'var(--surface3)')+';color:'+(dis?'var(--muted)':'var(--text2)')+';border-radius:12px;padding:10px 8px;font-size:.84rem;font-weight:700;line-height:1.35">'+lab+'<span style="display:block;font-size:.72rem;font-weight:600;color:var(--muted2)">'+price+(sub2?' \u00b7 '+sub2:'')+'</span></button>';
  const full=(P.seats_left<=0&&!P.manual);
- bt.innerHTML=P.family?'':(btn('manual',(en?'Manual':'Manuel')+(P.manual&&!P.strategy?' \u2713':''),'$'+(pk.manual||{}).usd+' / 30 j',!P.pay_ready||full,full?(en?'full':'complet'):'')+
-  btn('strategy',(en?'Strategy':'Strat\u00e9gie')+(P.strategy?' \u2713':''),'$'+(pk.strategy||{}).usd+' / 30 j',!P.pay_ready,''));
+ bt.innerHTML=(P.family?'':btn('manual',(en?'Manual':'Manuel')+(P.manual?' \u2713':''),'$'+(pk.manual||{}).usd+' / 30 j',!P.pay_ready||full,full?(en?'full':'complet'):''))+
+  btn('strategy',(en?'Strategy':'Strat\u00e9gie')+(P.strategy?' \u2713':''),'$'+(pk.strategy||{}).usd+' / 30 j',!P.pay_ready,'');
+ bt.style.gridTemplateColumns=P.family?'1fr':'1fr 1fr';
  bt.insertAdjacentHTML('afterend','');
  (function(){let o=document.getElementById('plan-offers');if(!o){o=document.createElement('button');o.id='plan-offers';o.className='shbtn shghost';o.style.cssText='margin:10px 0 0;padding:11px;font-size:.9rem';o.onclick=offersSheet;bt.parentNode.insertBefore(o,nt);}
-  o.textContent=en?'See the plans in detail':'Voir les offres en d\u00e9tail';o.style.display=P.family?'none':'block';})();
+  o.textContent=en?'See the plans in detail':'Voir les offres en d\u00e9tail';o.style.display='block';})();
  (function(){const oc=document.getElementById('offercard');if(!oc)return;let hid=0;try{hid=parseInt(localStorage.getItem('owlOfferHide:'+B)||'0',10);}catch(e){}
   const show=!d.public&&!P.family&&!P.manual&&(Date.now()-hid>3*86400000);oc.style.display=show?'block':'none';
   if(show){document.getElementById('offercard-t').textContent=en?'Trade the strategy yourself':'Tradez la strat\u00e9gie vous-m\u00eame';
@@ -3615,7 +3619,7 @@ function renderPlan(d){
    a.onclick=e=>{e.preventDefault();window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';tab('home',document.querySelector('.tb'));setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
   a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
- nt.textContent=P.family?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
+ nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
   :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
  const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
  const sr=document.getElementById('stratrow');if(sr)sr.style.display=P.strategy?'flex':'none';
@@ -3652,7 +3656,7 @@ async function pollSignal(){
 }
 function observerView(d){
  const obs=OBS();
- ['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=obs?'none':'';});
+ const hide=HIDEGAUGES();['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=hide?'none':'';});
  const kc=document.getElementById('kinocard');if(!kc)return;
  if(!obs){kc.style.display='none';return;}
  kc.style.display='block';
@@ -3689,9 +3693,10 @@ function offersSheet(){
    [T2('Notification \u00ab Signal jouable \u00bb quand les conditions sont r\u00e9unies, et quand c\u2019est fini','\u201cPlayable signal\u201d push when conditions are met, and when it is over'),T2('L\u2019outil Trader sur le graphique : lot conseill\u00e9 par votre r\u00e9serve, stop et cible pr\u00e9-plac\u00e9s, sur votre compte','The Trader tool on the chart: lot advised by your reserve, stop and target pre-placed, on your account'),T2('\u00ab Prochain signal ici \u00bb sur le graphique, la carte March\u00e9 en mode signal','\u201cNext signal here\u201d on the chart, the Market card in signal mode'),T2('Le rattrapage et le lot conseill\u00e9 apr\u00e8s une perte','Catch-up and the advised lot after a loss')],
    [T2('Le robot ne trade pas \u00e0 votre place','The robot does not trade for you'),T2('Les r\u00e8gles restent priv\u00e9es (voir Strat\u00e9gie)','The rules stay private (see Strategy)')],
    P.family||P.manual?'':btn('manual',full?T2('Places compl\u00e8tes pour l\u2019instant','No place left for now'):T2('Choisir Manuel','Choose Manual'),!P.pay_ready||full),'var(--up-soft)')+
-  tier(T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+' / 30 j',T2('Manuel + tout comprendre','Manual + understand everything'),
-   [T2('Tout Manuel','Everything in Manual'),T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)')],
-   [],P.family||P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready),'var(--warn)')+
+  tier(T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+' / 30 j',T2('Tout comprendre \u2014 un paquet \u00e0 part, qui se combine','Understand everything \u2014 a separate package that combines'),
+   [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Manuel ou Automatique','Combines with Manual or Automatic')],
+   [T2('Sans les signaux ni l\u2019outil Trader (voir Manuel)','Without the signals or the Trader tool (see Manual)')],
+   P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready),'var(--warn)')+
   tier(T2('Automatique','Automatic'),T2('via MQL5','via MQL5'),T2('Votre compte copie celui de Kino','Your account copies Kino\u2019s'),
    [T2('Abonnement au signal MQL5 de Kino : vos trades suivent les siens, sans rien faire','Subscribe to Kino\u2019s MQL5 signal: your trades follow his, hands-free'),T2('L\u2019app OwlNest reste votre tableau de bord','The OwlNest app stays your dashboard')],
    [T2('Le prix et le paiement sont ceux de MQL5, pas d\u2019OwlNest','Price and payment are MQL5\u2019s, not OwlNest\u2019s')],
@@ -4345,7 +4350,7 @@ function render(d){
   // 2026-09-27: the activation code is for the owner's circle - never a
   // prompt on the home; a discreet link under the plan card shows the box
   document.getElementById('actcard').style.display=
-   ((d.activation_needed&&window._showAct)||d.family_expired)?'block':'none';
+   (window._showAct||d.family_expired)?'block':'none';   // 2026-09-28: stays once opened
   (function(){const t=document.querySelector('#actcard .lbl'),x=document.querySelector('#actcard div[style*="line-height:1.5"]');if(!t||!x)return;
    if(d.family_expired){t.textContent='Renouveler l\u2019acc\u00e8s';x.innerHTML='Votre acc\u00e8s Automatique a expir\u00e9 le <b>'+d.family_expired+'</b>. Le robot est en pause sur votre compte. R\u00e9glez Kino, puis entrez le code re\u00e7u :';}
    else{t.textContent='Activer le robot';x.innerHTML='Votre compte est connect\u00e9. Il reste un code \u00e0 entrer : demandez-le \u00e0 <b>Kino sur Telegram</b>.';}})();
@@ -6153,7 +6158,7 @@ Se connecter</button>
 <span>Les signaux sur votre t&eacute;l&eacute;phone et l&#39;outil Trader sur le graphique, sur votre propre compte.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
 <div class="ft"><b>Strat&eacute;gie &middot; 30 jours</b>
-<span>Manuel + le graphique complet et la m&eacute;thode expliqu&eacute;e.</span></div></div>
+<span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Manuel ou Automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#8635;</div>
 <div class="ft"><b>Automatique &middot; via MQL5</b>
 <span>Votre compte copie celui de Kino. Prix et paiement sur MQL5.</span></div></div>
