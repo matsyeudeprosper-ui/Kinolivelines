@@ -935,6 +935,17 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div style="flex:1"><b>Les notifications</b><div style="font-size:.84rem;color:var(--muted2)">Activez-les dans les R&eacute;glages pour &ecirc;tre pr&eacute;venu.</div></div></div>
  </div>
 </div>
+<div class="panel" id="nudge" style="display:none;margin-top:26px">
+ <div style="display:flex;align-items:flex-start;gap:12px">
+  <div class="sic" style="color:var(--warn)"><svg class="ic"><use href="#i-bell"/></svg></div>
+  <div style="flex:1;min-width:0"><b>Les notifications</b>
+   <div style="font-size:.86rem;color:var(--muted2);line-height:1.45;margin-top:2px">Vous n&#39;avez rien manqu&eacute; pour l&#39;instant. Activez-les pour &ecirc;tre pr&eacute;venu des trades et du bilan du soir.</div>
+   <div style="display:flex;gap:8px;margin-top:10px">
+    <button class="shbtn shmain" style="margin:0;padding:10px 14px;width:auto;font-size:.86rem" onclick="nudgeGo()">Activer</button>
+    <button class="shbtn shghost" style="margin:0;padding:10px 14px;width:auto;font-size:.86rem" onclick="nudgeDone()">Plus tard</button>
+   </div></div>
+ </div>
+</div>
 <div class="glass" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
  style="margin-top:26px;padding:16px 16px 14px;cursor:pointer"
  onclick="tab('marche',document.getElementById('tb-marche'))">
@@ -1248,6 +1259,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
      padding:9px;font-size:.82rem;font-weight:700">Clair</button>
    </div></div>
  </div>
+ <div class="srow" id="langrow" style="cursor:default">
+  <div class="sic"><svg class="ic"><use href="#i-book"/></svg></div>
+  <div style="flex:1"><b>Langue</b>
+   <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="lgc" data-l="fr" onclick="setLang('fr')" style="flex:1;border:1px solid var(--border2);
+     background:var(--surface3);color:var(--text2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">Fran&ccedil;ais</button>
+    <button class="lgc" data-l="en" onclick="setLang('en')" style="flex:1;border:1px solid var(--border);
+     background:transparent;color:var(--muted2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">English</button>
+   </div></div>
+ </div>
  <div class="srow" id="textrow" style="cursor:default">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
   <div style="flex:1"><b>Taille du texte</b>
@@ -1288,6 +1311,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div class="sic"><svg class="ic"><use href="#i-check"/></svg></div>
   <div style="flex:1"><b>Mes &eacute;tapes</b>
    <div class="ssub" id="steps-sub">Vos premiers pas avec le robot</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="healthrow" onclick="healthSheet()" style="display:none">
+  <div class="sic"><svg class="ic"><use href="#i-activity"/></svg></div>
+  <div style="flex:1"><b>Le service</b>
+   <div class="ssub" id="health-sub">Flux, robots, notifications</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="infobtn">
@@ -1574,7 +1603,11 @@ const VOICE={
   since:'Avec le robot depuis le <b>',
   toast_lost:' \u2014 \u00e7a arrive, il continue.',toast_debt_done:'le robot repasse en mode normal.',
   st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',
-  dayx_empty:'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.',dayx_who:'Le robot a '},
+  dayx_empty:'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.',dayx_who:'Le robot a ',
+  ts_who:'Le robot a ',ts_buy:'achet\u00e9',ts_sell:'vendu',ts_on:' le ',ts_at:' \u00e0 ',ts_in:', dans un march\u00e9 ',ts_in2:'',ts_risk:' Il a risqu\u00e9 au plus <b>$',
+  ts_dur:' Le trade a dur\u00e9 ',ts_end:' et s\u2019est termin\u00e9 par ',ts_gain:'un <b class="pos">gain de ',ts_gain_tail:'</b>. Bien jou\u00e9.',ts_loss:'une <b class="neg">perte de $',ts_loss_tail:'</b>. \u00c7a arrive',
+  ts_kept:' et gard\u00e9 le trade ',ts_ended:', termin\u00e9 par ',
+  day_since:'Depuis ce matin : ',day_of:' (dont ',day_won:' gagn\u00e9',day_1won:' (gagn\u00e9)',day_1lost:' (perdu)',day_and:' et ',day_total:' Total du jour : '},
  manual:{
   wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies : le prochain signal est jouable. À vous de décider.'],
       flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Attendez la confirmation avant d’entrer.'],
@@ -1607,8 +1640,153 @@ const VOICE={
   since:'Avec OwlNest depuis le <b>',
   toast_lost:' \u2014 \u00e7a arrive.',toast_debt_done:'lot normal \u00e0 nouveau.',
   st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',
-  dayx_empty:'Ce jour-l\u00e0, aucun trade.',dayx_who:'Vous avez '}};
-function T(k){const v=VOICE[MAN()?'manual':'auto'];return (v[k]!==undefined?v[k]:VOICE.auto[k]);}
+  dayx_empty:'Ce jour-l\u00e0, aucun trade.',dayx_who:'Vous avez ',ts_who:'Vous avez ',ts_risk:' Risque maximum : <b>$'}};
+// 2026-09-27: English - the same keys, the same two voices.
+const VOICE_EN={
+ auto:{
+  wx:{ready:['✅','Green light','#8df0bb','Conditions are met. The robot will enter as soon as the signal confirms.'],
+      flip:['⚖️','It may turn','#e8c55a','The direction may be changing. The robot waits for confirmation before acting.'],
+      forming:['⏳','Setting up','#8fa1b3','Too early. The robot lets the market take shape.'],
+      none:['💤','Nothing to do','#6f8299','The market is calm. The robot waits for an opportunity.'],
+      brisk:['🍃','Lively market','#e8c55a','Candles are a bit larger than usual. The robot lets this one go.'],
+      nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. The robot prefers to step aside.'],
+      nogate:['⚡','No brakes','#b98cff','This account takes every signal, calm or fast market.']},
+  mx_hint:'&middot; what the robot sees',
+  jcard:'The robot right now',jsteps:['Watching','Opportunity','Trade','Review'],
+  j_open:'A trade is running{pl}. The robot watches it to the end.',
+  j_won:'Last trade closed: <b class="pos">won +${p}</b>. The robot is back to watching.',
+  j_lost:'Last trade closed: <b class="neg">lost ${p}</b>. It happens \u2014 the robot is back to watching.',
+  j_forming:'Something is taking shape. The robot waits for confirmation before acting.',
+  j_flip:'The market is hesitating on its direction. The robot waits until it is clear.',
+  j_ready:'Conditions are met. The robot will enter as soon as the signal confirms.',
+  j_storm:'The market is very agitated. The robot stays sheltered until it calms down.',
+  j_nervous:'The market is moving a lot. The robot prefers to wait.',
+  j_none:'The market is calm. The robot watches and waits for an opportunity.',
+  j_debt:' After a loss, it is a little more careful.',
+  day_lbl:'The robot\u2019s day',
+  day_empty:'Since this morning the robot has watched the market and found nothing to do. That is normal: it only acts when everything lines up.',
+  day_ign:['opportunity let go','opportunities let go'],
+  day_cont:' The robot keeps watching.',
+  who:'The robot ',won_v:'won',lost_v:'lost',lost_tail:' \u2014 it carries on.',
+  ev_meteo:'The market was moving too much. The robot preferred to let it go.',
+  ev_eye:'The robot saw an opportunity, but not everything lined up. It waited.',
+  wk_up:'The robot is moving forward.',wk_debt:'The robot is catching up.',wk_down:'A hard week; the robot carries on.',
+  mo_n:', the robot took <b>',mo_up:'The robot is moving forward.',mo_debt:'The robot is catching up \u2014 carefully.',mo_down:'A hard month; the robot carries on.',
+  since:'With the robot since <b>',
+  toast_lost:' \u2014 it happens, it carries on.',toast_debt_done:'the robot is back to normal mode.',
+  st_manual:'<b>Manual mode</b> &mdash; you decide',
+  dayx_empty:'That day, the robot watched the market without trading.',dayx_who:'The robot ',
+  ts_who:'The robot ',ts_buy:'bought',ts_sell:'sold',ts_on:' on ',ts_at:' at ',ts_in:', in a ',ts_in2:' market',ts_risk:' It risked at most <b>$',
+  ts_dur:' The trade lasted ',ts_end:' and ended with ',ts_gain:'a <b class="pos">gain of ',ts_gain_tail:'</b>. Well played.',ts_loss:'a <b class="neg">loss of $',ts_loss_tail:'</b>. It happens',
+  ts_kept:' and kept the trade ',ts_ended:', ended with ',
+  day_since:'Since this morning: ',day_of:' (',day_won:' won',day_1won:' (won)',day_1lost:' (lost)',day_and:' and ',day_total:' Total for the day: '},
+ manual:{
+  wx:{ready:['✅','Green light','#8df0bb','Conditions are met: the next signal is playable. Your call.'],
+      flip:['⚖️','It may turn','#e8c55a','The direction may be changing. Wait for confirmation before entering.'],
+      forming:['⏳','Setting up','#8fa1b3','Too early to enter. Let the market take shape.'],
+      none:['💤','No signal','#6f8299','The market is calm. Better to wait for the next signal.'],
+      brisk:['🍃','Lively market','#e8c55a','Candles are a bit larger than usual. Take any signal with care.'],
+      nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. Better to step aside.'],
+      nogate:['⚡','No brakes','#b98cff','Every signal is shown, calm or fast market.']},
+  mx_hint:'&middot; what the signal says',
+  jcard:'The signal right now',jsteps:['Watch','Signal','Trade','Review'],
+  j_open:'Your trade is running{pl}. Manage it from the chart.',
+  j_won:'Last trade closed: <b class="pos">won +${p}</b>. Well played \u2014 the app watches for the next signal.',
+  j_lost:'Last trade closed: <b class="neg">lost ${p}</b>. It happens \u2014 the app watches for the next signal.',
+  j_forming:'A signal is setting up. Too early to enter \u2014 the app will tell you.',
+  j_flip:'The market is hesitating on its direction. Wait for confirmation before entering.',
+  j_ready:'<b>Playable signal</b>: conditions are met. Open the chart to decide.',
+  j_storm:'Very agitated market: no reliable signal. Better to step aside.',
+  j_nervous:'The market is moving a lot. A signal here would need care.',
+  j_none:'No signal for now. The app watches and will tell you.',
+  j_debt:' After a loss, the reserve suggests a smaller lot.',
+  day_lbl:'Your day',
+  day_empty:'No confirmed signal since this morning. The app watches and will tell you as soon as there is one.',
+  day_ign:['signal set aside','signals set aside'],
+  day_cont:' The app keeps watching.',
+  who:'You ',won_v:'won',lost_v:'lost',lost_tail:'.',
+  ev_meteo:'The market was moving too much. Signal set aside.',
+  ev_eye:'A signal appeared, but not everything lined up. Set aside.',
+  wk_up:'The account is moving forward.',wk_debt:'You are catching up \u2014 stay careful.',wk_down:'A hard week; we carry on.',
+  mo_n:', you took <b>',mo_up:'The account is moving forward.',mo_debt:'You are catching up \u2014 stay careful.',mo_down:'A hard month; we carry on.',
+  since:'With OwlNest since <b>',
+  toast_lost:' \u2014 it happens.',toast_debt_done:'normal lot again.',
+  st_manual:'<b>Manual mode</b> &mdash; you decide',
+  dayx_empty:'That day, no trade.',dayx_who:'You ',ts_who:'You ',ts_risk:' Maximum risk: <b>$'}};
+function LANG(){try{return localStorage.getItem('owlLang')==='en'?'en':'fr';}catch(e){return 'fr';}}
+function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const v=Lb[MAN()?'manual':'auto'];
+ if(v[k]!==undefined)return v[k];if(Lb.auto[k]!==undefined)return Lb.auto[k];
+ const f=VOICE[MAN()?'manual':'auto'];return f[k]!==undefined?f[k]:VOICE.auto[k];}
+// Static chrome: a French -> English dictionary applied to text nodes and a
+// few attributes; the original French is kept on the node so switching
+// back is exact. Regex entries handle counted words.
+const I18N_EN=new Map(Object.entries({
+ 'Accueil':'Home','Marché':'Market','Historique':'History','Réglages':'Settings','Le Nid':'The Nest',
+ 'Le marché':'The market','Croissance':'Growth','Le rattrapage':'Catching up','À rattraper':'to catch up','Réserve':'Reserve',
+ 'Prochain trade':'Next trade','Ma semaine':'My week','Jour par jour':'Day by day','· touchez un jour':'· tap a day',
+ 'Résumé du mois':'Month summary','Calendrier':'Calendar','Statistiques · 30 derniers trades':'Statistics · last 30 trades',
+ 'Derniers trades':'Latest trades','Tous':'All','Gagnés':'Won','Perdus':'Lost','Cette semaine':'This week','Voir ce jour':'Open that day',
+ 'Depuis le début':'Since the start','Rapport':'Report','Partager ma semaine':'Share my week','Partager ce rapport':'Share this report',
+ 'Notifications':'Notifications','Activer les notifications':'Enable notifications','Tout':'All','Important seulement':'Important only',
+ 'Application':'App','Installer l\u2019application':'Install the app','Installer l\\'application':'Install the app',
+ 'Une icône sur votre écran d\\'accueil':'An icon on your home screen','Une icône sur votre écran d\u2019accueil':'An icon on your home screen',
+ 'Apparence':'Appearance','Sombre':'Dark','Clair':'Light','Taille du texte':'Text size','Normal':'Normal','Plus grand':'Larger',
+ 'Langue':'Language','Code d\\'accès':'Passcode','Code d\u2019accès':'Passcode','Protéger cette page avec 4 chiffres':'Protect this page with 4 digits',
+ 'Télécharger mes trades':'Download my trades','Fichier CSV · date, sens, lot, entrée, sortie, résultat':'CSV file · date, side, lot, entry, exit, result',
+ 'Messages':'Messages','Les dernières notifications reçues':'Latest notifications received','Mon objectif':'My goal','Choisir un solde à atteindre':'Pick a balance to reach',
+ 'Mes étapes':'My milestones','Vos premiers pas avec le robot':'Your first steps with the robot','Ce qu\\'il faut savoir':'Good to know','Ce qu\u2019il faut savoir':'Good to know',
+ 'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
+ 'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
+ 'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
+ 'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
+ 'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
+ 'Grands mouvements':'Big moves','Nervosité vs 24 h':'Nervousness vs 24 h','Petits mouvements':'Small moves',
+ 'Mode manuel':'Manual mode','Mode automatique':'Automatic mode','Mise à l\\'échelle du solde':'Scale with balance','Mise à l\u2019échelle du solde':'Scale with balance',
+ 'Bienvenue':'Welcome','Votre premier trade':'Your first trade','Les notifications':'Notifications','Aujourd\\'hui':'Today','Aujourd\u2019hui':'Today',
+ 'gains du jour':'today\u2019s result','depuis lundi':'since Monday','7 derniers jours':'last 7 days','depuis le 1er':'since the 1st','Pire creux':'Worst dip','Ce mois':'This month',
+ 'Progression':'Progress','3 mois':'3 months','Impossible de joindre le robot':'Cannot reach the robot','Réessayer':'Retry',
+ 'Vérifiez votre connexion. Le robot, lui, continue de travailler.':'Check your connection. The robot keeps working.',
+ 'Passer':'Skip','Suivant':'Next','Compris !':'Got it!','Compris\u00a0!':'Got it!','Terminer':'Finish','Plus tard':'Later',
+ 'Un instant…':'One moment…','Un instant\u2026':'One moment…','Aucun message pour l\u2019instant':'No message yet','dernier :':'last:',
+ 'aujourd\u2019hui':'today','Marché sous surveillance — aucun trade ouvert':'Market under watch — no open trade','Le robot travaille — ':'The robot is working — ',
+ 'à rattraper':'to catch up','Solde des trades terminés :':'Closed-trades balance:','Trade en cours':'Running trade','En rattrapage':'Catching up',
+ 'Lot de base actuel :':'Current base lot:','mise à l\u2019échelle active':'scaling on','Aucun trade pour l\u2019instant':'No trade yet','Rien à raconter pour l\u2019instant.':'Nothing to tell yet.'
+}));
+const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+) → \$(\d+)\/jour · (\d+) %$/,'Next step $$$1 → $$$2/day · $3 %'],
+ [/^Lot de base actuel : ([\d.]+) lot · mise à l\u2019échelle active$/,'Current base lot: $1 lot · scaling on'],[/^Trade en cours · (.+)$/,'Running trade · $1'],
+ [/^(\d+) trades? · (\d+) (occasions? laissées? passer|signa(?:l|ux) écartés?)$/,'$1 trades · $2 set aside'],[/^ aujourd\u2019hui$/,' today'],[/^(\d+) sur (\d+) étapes$/,'$1 of $2 milestones'],
+ [/^(\d+) comptes? · total$/,'$1 accounts · total'],[/^Bonjour (.+)$/,'Good morning $1'],[/^Bon après-midi (.+)$/,'Good afternoon $1'],[/^Bonsoir (.+)$/,'Good evening $1']];
+function _i18nText(fr){const k=fr.trim();if(!k)return null;
+ if(I18N_EN.has(k))return fr.replace(k,I18N_EN.get(k));
+ for(const [rx,to] of I18N_RX){if(rx.test(k))return fr.replace(k,k.replace(rx,to));}
+ return null;}
+function applyLang(root){
+ const en=LANG()==='en';root=root||document.body;if(!root)return;
+ try{document.documentElement.lang=en?'en':'fr';}catch(e){}
+ const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{const p=n.parentNode;
+  if(!p||/^(SCRIPT|STYLE|SVG|INPUT|TEXTAREA)$/i.test(p.nodeName))return NodeFilter.FILTER_REJECT;
+  return NodeFilter.FILTER_ACCEPT;}});
+ const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+ nodes.forEach(n=>{
+  if(en){const fr=(n.__fr!==undefined)?n.__fr:n.nodeValue;const t=_i18nText(fr);
+   if(t!==null&&n.nodeValue!==t){if(n.__fr===undefined)n.__fr=fr;n.nodeValue=t;}}
+  else if(n.__fr!==undefined&&n.nodeValue!==n.__fr){n.nodeValue=n.__fr;}});
+ root.querySelectorAll('[aria-label],[title],[placeholder]').forEach(el=>['aria-label','title','placeholder'].forEach(a=>{
+  const v=el.getAttribute(a);if(!v)return;const key='__fr_'+a;
+  if(en){const fr=el[key]!==undefined?el[key]:v;const t=_i18nText(fr);if(t!==null&&v!==t){if(el[key]===undefined)el[key]=fr;el.setAttribute(a,t);}}
+  else if(el[key]!==undefined&&v!==el[key])el.setAttribute(a,el[key]);}));
+}
+let _i18nT=null;
+function i18nWatch(){if(!window.MutationObserver||window._i18nMO)return;
+ window._i18nMO=new MutationObserver(()=>{clearTimeout(_i18nT);_i18nT=setTimeout(()=>applyLang(),60);});
+ window._i18nMO.observe(document.body,{childList:true,subtree:true,characterData:true});}
+function setLang(l){try{localStorage.setItem('owlLang',l);}catch(e){}
+ document.querySelectorAll('.lgc').forEach(b=>{const on=b.dataset.l===l;
+  b.style.background=on?'var(--surface3)':'transparent';b.style.borderColor=on?'var(--border2)':'var(--border)';b.style.color=on?'var(--text2)':'var(--muted2)';});
+ applyLang();if(window._d){window._lastS=null;render(window._d);loadDay();}
+ fetch(B+'push_pref',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'lang='+l}).catch(()=>null);}
 function fdur(m){
  if(m==null)return '';
  m=Math.round(m);
@@ -2058,9 +2236,10 @@ window.addEventListener('load',()=>{
     'Compris&nbsp;!</button>');}};
  const tb=document.getElementById('tourbtn');
  if(tb)tb.onclick=(e)=>{e.preventDefault();
-  tab('home',document.querySelector('.tb'));tourStep(0);};
+  tab('home',document.querySelector('.tb'));onboard(0);};
  setTimeout(()=>{try{
-  if(!localStorage.getItem('owlTourDone'))tourStep(0);
+  if(!localStorage.getItem('owlTourDone'))onboard(0);
+  if(!localStorage.getItem('owlFirstSeen'))localStorage.setItem('owlFirstSeen',String(Date.now()));
  }catch(e){}},1500);
 });
 function tab(n,el){
@@ -2198,12 +2377,12 @@ function drawDay(){
  if(!tr.length&&!ig.length){
   sum=T('day_empty');
  }else{
-  const parts=[];
+  const parts=[],EN=LANG()==='en';
   if(tr.length)parts.push(tr.length+' trade'+(tr.length>1?'s':'')+
-   (tr.length>1?' (dont '+won+' gagn\u00e9'+(won>1?'s':'')+')':(won?' (gagn\u00e9)':' (perdu)')));
+   (tr.length>1?T('day_of')+won+T('day_won')+(won>1&&!EN?'s':'')+')':(won?T('day_1won'):T('day_1lost'))));
   if(ig.length)parts.push(ig.length+' '+T('day_ign')[ig.length>1?1:0]);
-  sum='Depuis ce matin : '+parts.join(' et ')+'.'+
-   (tr.length?' Total du jour : <b class="'+sgn(tot)+'">'+money(tot)+'</b>.':'')+
+  sum=T('day_since')+parts.join(T('day_and'))+'.'+
+   (tr.length?T('day_total')+'<b class="'+sgn(tot)+'">'+money(tot)+'</b>.':'')+
    (!tr.length?T('day_cont'):'');
  }
  setH(document.getElementById('day-sum'),sum);
@@ -2661,7 +2840,12 @@ async function acctSheet(){
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
     '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+'</div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
-    '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>';}).join('');
+    '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
+   '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
+    '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
+    (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
+    '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
+   '</div>';}).join('');
  sheet('<h3>Vos comptes</h3>'+
   '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 2px 10px;border-bottom:1px solid var(--border);margin-bottom:4px">'+
    '<span style="color:var(--muted2);font-size:.84rem">'+N.length+' compte'+(N.length>1?'s':'')+' \u00b7 total</span>'+
@@ -2670,6 +2854,60 @@ async function acctSheet(){
   ((function(){let adm=null;try{adm=localStorage.getItem('owl_adm');}catch(e){}
     return (adm&&adm!==B)?'<a class="shbtn shmain" style="display:block;text-align:center;text-decoration:none" href="'+adm+'">Retour \\u00e0 mon compte</a>':'';})())+
   (d.is_master?'<button class="shbtn shghost" onclick="_shDone(1);tab(\\'nid\\',document.getElementById(\\'tb-nid\\'))">Ouvrir Le Nid</button>':'')+
+  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
+}
+// ---- batch 20: onboarding cards + notification nudge ----
+function onboard(i){
+ const M=MAN();
+ const C=[
+  ['i-eye','var(--accent-soft)','Bienvenue sur OwlNest',M?'Votre compte est en mode manuel : l\u2019app lit le march\u00e9 pour vous et vous dit quand un signal est jouable. Vous d\u00e9cidez, l\u2019app veille.'
+    :'Le robot Owl trade pour vous, jour et nuit. Vous, vous regardez : solde, trades et march\u00e9, mis \u00e0 jour toutes les 5 secondes.'],
+  ['i-activity','var(--up)',M?'Le signal':'Le robot',M?'La carte March\u00e9 dit ce que fait le march\u00e9 et si un signal est jouable. Le graphique montre o\u00f9, et l\u2019outil Trader vous laisse d\u00e9cider.'
+    :'Il n\u2019agit que quand tout est r\u00e9uni, il s\u2019abrite quand le march\u00e9 devient m\u00e9chant, et apr\u00e8s une perte il se rattrape prudemment. Tout se lit sur l\u2019Accueil.'],
+  ['i-calendar','var(--warn)','Ce que vous recevrez','Chaque trade termin\u00e9, le bilan du soir et votre semaine le dimanche. L\u2019Historique garde tout, jour par jour.'],
+  ['i-bell','var(--accent-soft)','Les notifications','Pour \u00eatre pr\u00e9venu sur votre t\u00e9l\u00e9phone, m\u00eame l\u2019app ferm\u00e9e. Vous pourrez couper la nuit dans les R\u00e9glages.']];
+ const n=C.length;i=Math.max(0,Math.min(n-1,i||0));const c=C[i];
+ const dots=C.map((_,k)=>'<i style="display:inline-block;width:'+(k===i?18:6)+'px;height:6px;border-radius:99px;margin:0 2px;background:'+(k===i?'var(--accent)':'var(--border2)')+';transition:width .2s"></i>').join('');
+ const last=i===n-1;
+ const nb=document.getElementById('notifbtn');const canNotif=!!(nb&&nb.style.display!=='none'&&nb.dataset.on!=='1');
+ sheet('<div style="text-align:center;padding:6px 0 2px"><div class="sic" style="margin:0 auto;width:56px;height:56px;border-radius:18px;color:'+c[1]+'"><svg class="ic" style="width:26px;height:26px"><use href="#'+c[0]+'"/></svg></div>'+
+  '<h3 style="margin:14px 0 6px">'+c[2]+'</h3><p style="color:var(--text);font-size:.95rem;line-height:1.55">'+c[3]+'</p><div style="margin:6px 0 14px">'+dots+'</div></div>'+
+  (last?(canNotif?'<button class="shbtn shmain" onclick="_shDone(1);document.getElementById(&#39;notifbtn&#39;).click();try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Activer les notifications</button>'
+      :'<button class="shbtn shmain" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Terminer</button>')
+      +'<button class="shbtn shghost" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Plus tard</button>'
+   :'<button class="shbtn shmain" onclick="_shDone(1);onboard('+(i+1)+')">Suivant</button>'+
+    '<button class="shbtn shghost" onclick="_shDone(1);try{localStorage.setItem(&#39;owlTourDone&#39;,&#39;1&#39;)}catch(e){}">Passer</button>'));
+}
+function nudgeCheck(){
+ const el=document.getElementById('nudge');if(!el)return;
+ let fs=0,done=0;try{fs=parseInt(localStorage.getItem('owlFirstSeen')||'0',10);done=localStorage.getItem('owlNudgeDone')?1:0;}catch(e){}
+ const nb=document.getElementById('notifbtn');
+ const need=nb&&nb.style.display!=='none'&&nb.dataset.on!=='1'&&window.Notification&&Notification.permission!=='granted';
+ el.style.display=(need&&!done&&fs&&Date.now()-fs>3*86400000)?'block':'none';
+}
+function nudgeGo(){nudgeDone();const nb=document.getElementById('notifbtn');if(nb)nb.click();}
+function nudgeDone(){try{localStorage.setItem('owlNudgeDone','1');}catch(e){}const el=document.getElementById('nudge');if(el)el.style.display='none';}
+setInterval(nudgeCheck,15000);setTimeout(nudgeCheck,4000);
+// ---- batch 20: Nid actions reachable from any page (owner) ----
+function AB(){try{return localStorage.getItem('owl_adm')||B;}catch(e){return B;}}
+async function healthSheet(){
+ let h=null;try{const r=await fetch(AB()+'health?t='+Date.now(),{cache:'no-store'});if(r.ok)h=await r.json();}catch(e){}
+ if(!h){toast('Service injoignable',2500);return;}
+ const en=LANG()==='en';
+ const fa=(a,warn,bad)=>{if(a==null)return['\u2014','var(--muted)'];const m=Math.round(a/60);const t=a<90?(a+' s'):(m<120?m+' min':Math.round(m/60)+' h');
+  return[t,a>bad?'var(--down-soft)':(a>warn?'var(--warn)':'var(--up-soft)')];};
+ const row=(l,v,c,sub)=>'<div class="row"><span class="rowt">'+l+(sub?'<span style="display:block;font-size:.72rem;color:var(--muted)">'+sub+'</span>':'')+'</span><b style="color:'+c+'">'+v+'</b></div>';
+ let t='';
+ let f=fa(h.chart_feed,120,300);t+=row(en?'Chart feed':'Flux graphique',f[0],f[1],en?'age of the last write':'\u00e2ge de la derni\u00e8re \u00e9criture');
+ f=fa(h.nerv_hist,180,600);t+=row(en?'Nervousness history':'Historique nervosit\u00e9',f[0],f[1]);
+ f=fa(h.notifier_log,3600,7200);t+=row(en?'Notifier':'Notificateur',f[0],f[1],(h.push_subs||0)+(en?' devices subscribed':' appareils abonn\u00e9s'));
+ Object.keys(h.workers||{}).forEach(u=>{const w=fa(h.workers[u],90,300);const b=(h.bots||{})[u];const dk=(h.desks||{})[u];
+  const st=b?(b.live?(b.blocked?'\u26a0 '+b.blocked:(en?'robot alive':'robot actif')):(en?'robot STOPPED':'robot ARR\u00caT\u00c9')):(dk!==undefined?(dk!=null&&dk<120?(en?'desk alive':'bureau actif'):(en?'desk STOPPED':'bureau ARR\u00caT\u00c9')):(en?'no robot':'sans robot'));
+  const bad=(b&&!b.live)||(dk!==undefined&&!(dk!=null&&dk<120));
+  t+=row(u,w[0],bad?'var(--down-soft)':w[1],st);});
+ sheet('<h3>'+(en?'Service health':'Le service')+'</h3><p>'+(en?'Green = fresh, amber = late, red = stale or stopped.':'Vert = frais, orange = en retard, rouge = fig\u00e9 ou arr\u00eat\u00e9.')+'</p>'+
+  '<div style="max-height:60vh;overflow-y:auto">'+t+'</div>'+
+  '<div style="font-size:.72rem;color:var(--muted);margin-top:8px">build '+(h.build||'')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
 async function tradePillTap(){
@@ -2687,16 +2925,27 @@ async function tradeStory(tx,x){
  const buy=(st&&st.found?st.dir==='BUY':x.dir==='A');
  const p=(st&&st.found)?st.p:x.p;
  let t='';
- const M=MAN();
+ const EN=LANG()==='en';
+ const BAND={'calme':'calm','soutenu':'lively','rapide':'fast','tr\u00e8s rapide':'very fast'};
+ const band=(st&&st.band)?(EN?(BAND[st.band]||st.band):st.band):'';
+ const who=T('ts_who'),act=buy?T('ts_buy'):T('ts_sell');
  if(st&&st.found){const d=new Date(st.t*1000);
-  t=(M?'Vous avez ':'Le robot a ')+(buy?'achet\u00e9':'vendu')+' le '+String(d.getUTCDate()).padStart(2,'0')+'/'+
-   String(d.getUTCMonth()+1).padStart(2,'0')+' \u00e0 '+String(d.getUTCHours()).padStart(2,'0')+':'+
-   String(d.getUTCMinutes()).padStart(2,'0')+(st.band?', dans un march\u00e9 '+st.band:'')+'.'+
-   (st.risk?(M?' Risque maximum : <b>$':' Il a risqu\u00e9 au plus <b>$')+st.risk.toFixed(1)+'</b>.':'')+
-   ' Le trade a dur\u00e9 '+fd(st.dur_min)+' et s\u2019est termin\u00e9 par '+
-   (p>=0?'un <b class="pos">gain de '+money(p)+'</b>. Bien jou\u00e9.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>. \u00c7a arrive'+(M?'.':' \u2014 il continue.'));}
- else{t=(M?'Vous avez ':'Le robot a ')+(buy?'achet\u00e9':'vendu')+(x.dur!=null?' et gard\u00e9 le trade '+fd(x.dur):'')+
-   ', termin\u00e9 par '+(p>=0?'un <b class="pos">gain de '+money(p)+'</b>.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>.');}
+  const dd=String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0'),
+   hh=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');
+  t=who+act+T('ts_on')+dd+T('ts_at')+hh+(band?T('ts_in')+band+T('ts_in2'):'')+'.'+
+   (st.risk?T('ts_risk')+st.risk.toFixed(1)+'</b>.':'')+
+   T('ts_dur')+fd(st.dur_min)+T('ts_end')+
+   (p>=0?T('ts_gain')+money(p)+T('ts_gain_tail'):T('ts_loss')+Math.abs(p).toFixed(2)+T('ts_loss_tail')+T('lost_tail'));}
+ else{t=who+act+(x.dur!=null?T('ts_kept')+fd(x.dur):'')+T('ts_ended')+
+   (p>=0?T('ts_gain')+money(p)+'</b>.':T('ts_loss')+Math.abs(p).toFixed(2)+'</b>.');}
+ if(st&&st.found&&(st.plan_gain||st.risk)){const en=LANG()==='en';const oc=st.outcome||'';
+  const how=(/win|tp|target/.test(oc))?(en?'target reached':'objectif atteint')
+   :(/loss|sl|stop/.test(oc))?(en?'stopped at the stop':'arr\u00eat\u00e9 au stop')
+   :(en?'closed before the end':'sorti avant la fin');
+  t+='<div style="margin-top:8px;padding:9px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:.86rem;color:var(--muted2);line-height:1.45">'+
+   '<b style="color:var(--text)">'+(en?'And the plan?':'Et le plan ?')+'</b> '+
+   (en?'Risk ':'Risque ')+(st.risk?'<b>$'+st.risk.toFixed(2)+'</b>':'\u2014')+(st.plan_gain?(en?' to win ':' pour gagner ')+'<b>$'+st.plan_gain.toFixed(2)+'</b>':'')+
+   ' \u00b7 '+(en?'Result: ':'R\u00e9sultat : ')+'<b>'+how+'</b> (<span class="'+sgn(p)+'">'+money(p)+'</span>).</div>';}
  setH(el,t);
 }
 window.addEventListener('load',()=>{
@@ -2847,7 +3096,7 @@ function shareWeek(){
  },'image/png');
 }
 function panicCall(uid,pw,dry){
- return fetch(B+'nest_panic',{method:'POST',
+ return fetch(AB()+'nest_panic',{method:'POST',
   headers:{'Content-Type':'application/x-www-form-urlencoded'},
   body:'uid='+encodeURIComponent(uid)+'&dry='+dry+'&pwd='+
    encodeURIComponent(pw)}).then(r=>r.json()).catch(()=>null);
@@ -2908,7 +3157,7 @@ async function nestPause(uid,on){
   on=='1'?'&#9208;&#65039; Mettre en pause':'&#9654;&#65039; Reprendre',
   on=='1');
  if(!pw)return;
- const r=await fetch(B+'nest_pause',{method:'POST',
+ const r=await fetch(AB()+'nest_pause',{method:'POST',
   headers:{'Content-Type':'application/x-www-form-urlencoded'},
   body:'uid='+encodeURIComponent(uid)+'&on='+on+'&pwd='+
    encodeURIComponent(pw)}).catch(()=>null);
@@ -3561,6 +3810,7 @@ function render(d){
    try{localStorage.setItem('owl_adm',B);}catch(e){}
    document.getElementById('tb-nid').style.display='flex';
    window._nest=d.nest;
+   (function(){const hr=document.getElementById('healthrow');if(hr)hr.style.display='flex';})();
    (function(){const ch=document.getElementById('acctchip');if(!ch)return;ch.style.display='inline-flex';
     document.getElementById('acctchip-n').textContent=d.nest.length;})();
    const asw=document.getElementById('acctsw');
@@ -3913,6 +4163,9 @@ function offlineUI(on){
 }
 const POLL_MS=5000;
 setTimeout(acctChipInit,1500);
+(function(){const l=LANG();document.querySelectorAll('.lgc').forEach(b=>{const on=b.dataset.l===l;
+ b.style.background=on?'var(--surface3)':'transparent';b.style.borderColor=on?'var(--border2)':'var(--border)';b.style.color=on?'var(--text2)':'var(--muted2)';});
+ applyLang();i18nWatch();})();
 load();loadInbox();
 let pollT=setInterval(load,POLL_MS);
 setInterval(ago,1000);
@@ -4067,6 +4320,39 @@ def day_payload(user):
 INBOX_FILE = os.path.join(DIR, "owl_push_inbox.json")
 
 
+def service_health():
+    """Ages (s) of every file the service lives on, plus who is alive."""
+    now = time.time()
+
+    def age(p):
+        try:
+            return int(now - os.path.getmtime(os.path.join(DIR, p)))
+        except Exception:
+            return None
+    out = {"t": int(now), "build": APP_BUILD,
+           "chart_feed": age("owl_chart_btc.json"),
+           "nerv_hist": age("owl_nerv_hist.json"),
+           "notifier_log": age("owl_push_notifier.log"),
+           "mode_switch_log": age("owl_mode_switch.log"),
+           "workers": {}, "bots": {}, "desks": {}, "push_subs": 0}
+    try:
+        for x in json.load(open(USERS_FILE, encoding="utf-8")):
+            uid = x.get("id")
+            out["workers"][uid] = age(os.path.join("nest_data", uid + ".json"))
+            lab, live, blk = bot_on(uid)
+            if lab:
+                out["bots"][uid] = {"label": lab, "live": bool(live), "blocked": blk}
+            if x.get("mode") in MANUAL_MODES:
+                out["desks"][uid] = age(f"manual_state_{uid}.json")
+    except Exception:
+        pass
+    try:
+        out["push_subs"] = sum(len(v) for v in json.load(open(PUSH_SUBS_FILE)).values())
+    except Exception:
+        pass
+    return out
+
+
 def inbox_items(user):
     """2026-09-27: the member's last notifications, newest first (written by
     owl_push_notifier.send_all) - so a missed push is never lost."""
@@ -4128,9 +4414,17 @@ def trade_story(user, t_close):
         p = float(r.get("profit_usd") or 0)
     except Exception:
         p = 0.0
+    # 2026-09-27: the plan vs what happened - words only in the app
+    try:
+        _ep, _sl, _tp, _lot = (float(r.get("entry_price") or 0), float(r.get("sl") or 0),
+                               float(r.get("tp") or 0), float(r.get("lot") or 0))
+        plan_gain = round(abs(_tp - _ep) * _lot, 2) if _tp and _ep else None
+    except Exception:
+        plan_gain = None
     return {"found": True, "dir": r.get("direction") or "", "t": et, "x": xt,
             "dur_min": round((xt - et) / 60), "risk": risk, "band": band,
-            "p": p}
+            "p": p, "outcome": (r.get("outcome") or "").lower(),
+            "plan_gain": plan_gain}
 
 
 def export_csv(user):
@@ -5575,6 +5869,11 @@ class H(BaseHTTPRequestHandler):
                     if lvl not in ("all", "important"):
                         lvl = "all"
                     prefs[u["id"]] = lvl
+                if "lang" in qs:
+                    # 2026-09-27: the pushes follow the phone's language
+                    _lg = qs.get("lang", ["fr"])[0]
+                    prefs.setdefault("_lang", {})[u["id"]] = (
+                        "en" if _lg == "en" else "fr")
                 if "quiet" in qs:
                     # 2026-09-26: silence 22h-7h in the phone's timezone
                     try:
@@ -6036,6 +6335,15 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 _t = 0
             self._send(json.dumps(trade_story(user, _t)), "application/json")
+        elif sub == "health":
+            # 2026-09-27: the owner's service page - ages of every feed
+            if not (user.get("id") in ("kino", "std")
+                    or str(user.get("login")) == str(LOGIN)
+                    or admin_cookie_ok(self.headers)):
+                self.send_response(404)
+                self.end_headers()
+                return
+            self._send(json.dumps(service_health()), "application/json")
         elif sub == "inbox":
             self._send(json.dumps(inbox_items(user)), "application/json")
         elif sub == "export.csv":

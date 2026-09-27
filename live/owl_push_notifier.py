@@ -57,6 +57,61 @@ def _inbox_write(new):
         pass
 
 
+def lang_of(uid):
+    """2026-09-27: the phone's language (push_pref lang=), default fr."""
+    try:
+        return (json.load(open(os.path.join(DIR, "owl_push_prefs.json")))
+                .get("_lang") or {}).get(uid, "fr")
+    except Exception:
+        return "fr"
+
+
+HEALTH_MARK = os.path.join(DIR, "owl_push_health.json")
+
+
+def maybe_health():
+    """2026-09-27: tell the owner when a feed goes stale (> 5 min), once per
+    half hour per feed. The chart feed and every trading account's worker."""
+    now = time.time()
+    try:
+        st = json.load(open(HEALTH_MARK, encoding="utf-8"))
+    except Exception:
+        st = {}
+    late = []
+
+    def age(p):
+        try:
+            return now - os.path.getmtime(os.path.join(DIR, p))
+        except Exception:
+            return None
+    a = age("owl_chart_btc.json")
+    if a is None or a > 300:
+        late.append(("flux graphique", a))
+    try:
+        for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8")):
+            if not (u.get("trade") or u.get("id") == "kino"):
+                continue
+            a = age(os.path.join("nest_data", u["id"] + ".json"))
+            if a is None or a > 300:
+                late.append((f"compte {u.get('name', u['id'])}", a))
+    except Exception:
+        pass
+    changed = False
+    for name, a in late:
+        if now - float(st.get(name, 0) or 0) < 1800:
+            continue
+        st[name] = now
+        changed = True
+        mins = "inconnu" if a is None else f"{int(a // 60)} min"
+        send_all("\u26a0\ufe0f Service", f"{name} : en retard de {mins}.",
+                 kind="instant", only_uid="kino")
+    if changed:
+        try:
+            json.dump(st, open(HEALTH_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -239,14 +294,17 @@ def maybe_signal():
         if time.time() - (rec.get("t") or 0) < 1800:
             continue        # one push per half hour, the state still moves
         st[uid]["t"] = time.time()
+        en = lang_of(uid) == "en"
         if ready:
-            send_all("\U0001f7e2 Signal jouable",
-                     "Les conditions sont r\u00e9unies. Ouvrez le graphique "
-                     "pour d\u00e9cider.", kind="instant", only_uid=uid)
+            send_all("\U0001f7e2 " + ("Playable signal" if en else "Signal jouable"),
+                     ("Conditions are met. Open the chart to decide." if en else
+                      "Les conditions sont r\u00e9unies. Ouvrez le graphique "
+                      "pour d\u00e9cider."), kind="instant", only_uid=uid)
         else:
-            send_all("\u26aa Signal termin\u00e9",
-                     "Le feu vert est pass\u00e9 \u2014 mieux vaut attendre "
-                     "le prochain.", kind="instant", only_uid=uid)
+            send_all("\u26aa " + ("Signal over" if en else "Signal termin\u00e9"),
+                     ("The green light has passed \u2014 better wait for the next one." if en else
+                      "Le feu vert est pass\u00e9 \u2014 mieux vaut attendre "
+                      "le prochain."), kind="instant", only_uid=uid)
     if changed:
         try:
             json.dump(st, open(SIGNAL_MARK, "w", encoding="utf-8"))
@@ -292,6 +350,15 @@ def maybe_weekly():
             days = d.get("days") or []
             g = sum(1 for x in days if x.get("p", 0) > 0)
             r = sum(1 for x in days if x.get("p", 0) < 0)
+            if lang_of(uid) == "en":
+                send_all(f"\U0001f4ca Your week: {week:+.2f} $",
+                         f"{g} green day{'s' if g > 1 else ''}, {r} red. "
+                         + (("The account is moving forward." if week >= 0 else "You are catching up.")
+                            if is_manual(uid) else
+                            ("The robot is moving forward." if week >= 0 else "The robot is catching up."))
+                         + " Tap to share your week.",
+                         only_uid=uid, url=_hist_url(uid))
+                continue
             send_all(f"\U0001f4ca Votre semaine : {week:+.2f} $",
                      f"{g} jour{'s' if g > 1 else ''} vert"
                      f"{'s' if g > 1 else ''}, {r} rouge"
@@ -379,17 +446,24 @@ def maybe_evening():
             n = len(tr)
             g = sum(1 for x in tr if float(x.get("p") or 0) > 0.005)
             man = is_manual(uid)
+            en = lang_of(uid) == "en"
             if n == 0:
-                body = ("Aujourd'hui, aucun signal confirm\u00e9. \u00c0 demain !" if man else
+                body = (("No confirmed signal today. See you tomorrow!" if man else
+                         "Today the robot watched the market without trading. See you tomorrow!") if en else
+                        ("Aujourd'hui, aucun signal confirm\u00e9. \u00c0 demain !" if man else
                         "Aujourd'hui, le robot a surveill\u00e9 le march\u00e9 "
-                        "sans trader. \u00c0 demain !")
+                        "sans trader. \u00c0 demain !"))
+            elif en:
+                body = (f"Today: {today:+.2f} $ \u00b7 {n} trade{'s' if n > 1 else ''}"
+                        + (f", {g} won" if n > 1 else (" (won)" if g else " (lost)"))
+                        + (". Good evening!" if man else ". The robot is done for the day."))
             else:
                 body = (f"Aujourd'hui : {today:+.2f} $ \u00b7 {n} trade"
                         f"{'s' if n > 1 else ''}"
                         + (f", dont {g} gagn\u00e9{'s' if g > 1 else ''}" if n > 1 else
                            (" (gagn\u00e9)" if g else " (perdu)"))
                         + (". Bonne soir\u00e9e !" if man else ". Le robot a fini sa journ\u00e9e."))
-            send_all("\U0001f319 Bilan du jour", body, kind="batch", only_uid=uid)
+            send_all("\U0001f319 " + ("Daily review" if en else "Bilan du jour"), body, kind="batch", only_uid=uid)
         json.dump({"sent": day}, open(EVENING_MARK, "w"))
     except Exception as e:
         mylog(f"evening failed: {e}")
@@ -420,11 +494,18 @@ def member_trades():
         if abs(delta) < 0.01 or (t == 0 and abs(prev) > 0.01):
             continue    # no change, or day rollover
         # 2026-09-27: same voice as the app's toast
-        title = (f"\u2705 Trade termin\u00e9 \u00b7 +{delta:.2f} $" if delta > 0
-                 else f"\u274c Trade termin\u00e9 \u00b7 {delta:.2f} $")
-        body = (f"Aujourd'hui : {t:+.2f} $. Bien jou\u00e9." if delta > 0
-                else (f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive." if is_manual(uid)
-                      else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue."))
+        if lang_of(uid) == "en":
+            title = (f"\u2705 Trade closed \u00b7 +{delta:.2f} $" if delta > 0
+                     else f"\u274c Trade closed \u00b7 {delta:.2f} $")
+            body = (f"Today: {t:+.2f} $. Well played." if delta > 0
+                    else (f"Today: {t:+.2f} $. It happens." if is_manual(uid)
+                          else f"Today: {t:+.2f} $. It happens \u2014 the robot carries on."))
+        else:
+            title = (f"\u2705 Trade termin\u00e9 \u00b7 +{delta:.2f} $" if delta > 0
+                     else f"\u274c Trade termin\u00e9 \u00b7 {delta:.2f} $")
+            body = (f"Aujourd'hui : {t:+.2f} $. Bien jou\u00e9." if delta > 0
+                    else (f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive." if is_manual(uid)
+                          else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue."))
         send_all(title, body, kind="batch", only_uid=uid)
 
 
@@ -466,6 +547,7 @@ def main():
         if time.time() - _sg_last > 60:
             _sg_last = time.time()
             maybe_signal()
+            maybe_health()
         if _bf is not None:
             while True:
                 bl = _bf.readline()
