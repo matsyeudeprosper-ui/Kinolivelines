@@ -132,7 +132,7 @@ def is_manual(uid):
 
 
 def send_all(title, body, kind="instant", only_uid=None,
-             skip_uids=None, url=None):
+             skip_uids=None, url=None, image=None):
     try:
         subs = json.load(open(SUBS))
     except Exception:
@@ -167,7 +167,8 @@ def send_all(title, body, kind="instant", only_uid=None,
                 resp = webpush(s, json.dumps({"title": title,
                                               "body": body,
                                               "tag": "owl",
-                                              "url": url or ""}),
+                                              "url": url or "",
+                                              "image": image or ""}),
                                vapid_private_key=VAPID_PEM,
                                vapid_claims=dict(CLAIMS), timeout=10)
                 mylog(f"  {uid}: HTTP "
@@ -313,6 +314,20 @@ def maybe_signal():
 
 
 
+def _week_image(uid):
+    """2026-09-27: the week card the member's phone uploaded this week."""
+    try:
+        for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                encoding="utf-8")):
+            if u.get("id") == uid and u.get("token"):
+                p = os.path.join(DIR, "nest_data", f"week_{uid}.png")
+                if time.time() - os.path.getmtime(p) < 8 * 86400:
+                    return f"/{u['token']}/week.png"
+    except Exception:
+        pass
+    return None
+
+
 def _hist_url(uid):
     """2026-09-27: the weekly push opens the member's Historique (the week
     card lights up there)."""
@@ -357,7 +372,7 @@ def maybe_weekly():
                             if is_manual(uid) else
                             ("The robot is moving forward." if week >= 0 else "The robot is catching up."))
                          + " Tap to share your week.",
-                         only_uid=uid, url=_hist_url(uid))
+                         only_uid=uid, url=_hist_url(uid), image=_week_image(uid))
                 continue
             send_all(f"\U0001f4ca Votre semaine : {week:+.2f} $",
                      f"{g} jour{'s' if g > 1 else ''} vert"
@@ -367,7 +382,7 @@ def maybe_weekly():
                         if is_manual(uid) else
                         ("Le robot avance." if week >= 0 else "Le robot se rattrape."))
                      + " Touchez pour partager votre semaine.",
-                     only_uid=uid, url=_hist_url(uid))
+                     only_uid=uid, url=_hist_url(uid), image=_week_image(uid))
         json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
     except Exception as e:
         mylog(f"weekly failed: {e}")

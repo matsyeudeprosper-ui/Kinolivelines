@@ -23,6 +23,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
 import MetaTrader5 as mt5
 import owl_package as PKG
+import re
 
 DIR = r"C:\Projects\KinoliveLines\live"
 TERMINAL = r"C:\Projects\MT5-KinoliveTrader\terminal64.exe"
@@ -223,7 +224,7 @@ SW = (
     "e.waitUntil(self.registration.showNotification("
     "d.title||'OwlNest',{body:d.body||'',icon:'icon192.png',"
     "badge:'icon192.png',tag:d.tag||'owl',renotify:true,"
-    "data:{url:d.url||''},"
+    "data:{url:d.url||''},image:d.image||undefined,"
     "vibrate:[80,40,80]}));});"
     "self.addEventListener('notificationclick',e=>{"
     "e.notification.close();"
@@ -418,6 +419,13 @@ def bot_on(uid):
             os.path.join(DIR, f))) < max_age
     except Exception:
         live = False
+    # 2026-09-27: a robot at its kill line is alive but will never trade
+    # again - say so instead of "actif" (the demo sat like that for hours)
+    try:
+        if json.load(open(os.path.join(DIR, f))).get("killed"):
+            return label, live, "limite de s\u00e9curit\u00e9"
+    except Exception:
+        pass
     return label, live, (bot_blocked(log) if live else None)
 
 
@@ -1174,6 +1182,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="panel" id="msum-verdict" style="display:none;margin-bottom:10px;
  font-size:.95rem;line-height:1.5;color:var(--text)"></div>
 <div class="grid" id="msum" style="display:none;margin-top:2px"></div>
+<div class="panel" id="mvm" style="display:none;margin-top:10px">
+ <div class="lbl" id="mvm-lbl">Ce mois vs le mois dernier</div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px" id="mvm-g"></div>
+ <div id="mvm-t" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:10px"></div>
+</div>
 <div class="sec" id="cal-sec" style="display:none;display:flex;justify-content:space-between;align-items:center"><span>Calendrier</span><span style="display:inline-flex;align-items:center;gap:6px;text-transform:none;letter-spacing:0"><button id="cal-prev" onclick="calNav(1)" aria-label="Mois pr&eacute;c&eacute;dent" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:99px;width:30px;height:30px;font-size:1rem">&#8249;</button><span id="cal-ym" style="font-size:.78rem;font-weight:700;color:var(--text2);min-width:110px;text-align:center"></span><button id="cal-next" onclick="calNav(-1)" aria-label="Mois suivant" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:99px;width:30px;height:30px;font-size:1rem">&#8250;</button></span>
 </div>
 <div class="panel" id="cal" style="display:none"></div>
@@ -1602,7 +1615,8 @@ const VOICE={
   mo_n:', le robot a pris <b>',mo_up:'Le robot avance.',mo_debt:'Le robot est en train de se rattraper \u2014 il avance prudemment.',mo_down:'Un mois difficile ; le robot continue.',
   since:'Avec le robot depuis le <b>',
   toast_lost:' \u2014 \u00e7a arrive, il continue.',toast_debt_done:'le robot repasse en mode normal.',
-  st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',
+  st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',st_killed:'Robot arr\u00eat\u00e9 \u2014 limite de s\u00e9curit\u00e9 atteinte',
+  mvm_lbl:'Ce mois vs le mois dernier',mvm_same:'\u00e0 la m\u00eame date',mvm_better:'Mieux que le mois dernier \u00e0 la m\u00eame date.',mvm_worse:'Un peu en dessous du mois dernier \u00e0 la m\u00eame date.',mvm_even:'Au m\u00eame niveau que le mois dernier.',mvm_none:'Pas encore de mois pr\u00e9c\u00e9dent \u00e0 comparer.',
   dayx_empty:'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.',dayx_who:'Le robot a ',
   ts_who:'Le robot a ',ts_buy:'achet\u00e9',ts_sell:'vendu',ts_on:' le ',ts_at:' \u00e0 ',ts_in:', dans un march\u00e9 ',ts_in2:'',ts_risk:' Il a risqu\u00e9 au plus <b>$',
   ts_dur:' Le trade a dur\u00e9 ',ts_end:' et s\u2019est termin\u00e9 par ',ts_gain:'un <b class="pos">gain de ',ts_gain_tail:'</b>. Bien jou\u00e9.',ts_loss:'une <b class="neg">perte de $',ts_loss_tail:'</b>. \u00c7a arrive',
@@ -1674,7 +1688,8 @@ const VOICE_EN={
   mo_n:', the robot took <b>',mo_up:'The robot is moving forward.',mo_debt:'The robot is catching up \u2014 carefully.',mo_down:'A hard month; the robot carries on.',
   since:'With the robot since <b>',
   toast_lost:' \u2014 it happens, it carries on.',toast_debt_done:'the robot is back to normal mode.',
-  st_manual:'<b>Manual mode</b> &mdash; you decide',
+  st_manual:'<b>Manual mode</b> &mdash; you decide',st_killed:'Robot stopped \u2014 safety limit reached',
+  mvm_lbl:'This month vs last month',mvm_same:'same date',mvm_better:'Better than last month at the same date.',mvm_worse:'A little below last month at the same date.',mvm_even:'Level with last month.',mvm_none:'No previous month to compare yet.',
   dayx_empty:'That day, the robot watched the market without trading.',dayx_who:'The robot ',
   ts_who:'The robot ',ts_buy:'bought',ts_sell:'sold',ts_on:' on ',ts_at:' at ',ts_in:', in a ',ts_in2:' market',ts_risk:' It risked at most <b>$',
   ts_dur:' The trade lasted ',ts_end:' and ended with ',ts_gain:'a <b class="pos">gain of ',ts_gain_tail:'</b>. Well played.',ts_loss:'a <b class="neg">loss of $',ts_loss_tail:'</b>. It happens',
@@ -1752,6 +1767,24 @@ const I18N_EN=new Map(Object.entries({
  'Un instant…':'One moment…','Un instant\u2026':'One moment…','Aucun message pour l\u2019instant':'No message yet','dernier :':'last:',
  'aujourd\u2019hui':'today','Marché sous surveillance — aucun trade ouvert':'Market under watch — no open trade','Le robot travaille — ':'The robot is working — ',
  'à rattraper':'to catch up','Solde des trades terminés :':'Closed-trades balance:','Trade en cours':'Running trade','En rattrapage':'Catching up',
+ 'Le robot travaille avec de l\\'argent réel. Il peut gagner':'The robot works with real money. It can win','et':'and','perdre.':'lose.',
+ 'Vous tradez avec de l\\'argent réel, sur vos propres décisions. On peut gagner':'You trade with real money, on your own decisions. One can win',
+ 'La dette':'The debt','La réserve':'The reserve','Quand c\u2019est fini':'When it is over','Quand c\\'est fini':'When it is over',
+ 'Ce sont les pertes pas encore récupérées. Chaque trade gagné en efface une partie':'These are the losses not yet recovered. Each winning trade erases part of them',
+ 'Une partie de chaque gain est mise de côté ici, en plus de votre solde. C\\'est elle qui permet au robot de rattraper un peu plus vite.':'Part of every win is set aside here, on top of your balance. It lets the robot catch up a little faster.',
+ 'Une fois la dette à zéro, le robot repasse en mode normal. Rien à faire de votre côté.':'Once the debt is at zero, the robot is back to normal mode. Nothing to do on your side.',
+ 'Six choses simples, à garder en tête.':'Six simple things to keep in mind.',
+ 'Chaque trade ne risque qu\\'une petite part du compte — jamais tout d\\'un coup.':'Each trade risks only a small part of the account — never all at once.',
+ 'Ne confiez que de l\\'argent que vous pouvez laisser travailler longtemps, sans en avoir besoin.':'Only entrust money you can leave working for a long time without needing it.',
+ 'Vous pouvez mettre en pause ou retirer votre compte à tout moment, ici dans les Réglages.':'You can pause or withdraw your account at any time, here in Settings.',
+ 'Les résultats passés ne promettent jamais l\\'avenir.':'Past results never promise the future.',
+ 'Premier trade':'First trade','10 trades':'10 trades','50 trades':'50 trades','100 trades':'100 trades','Semaine verte':'Green week','Objectif atteint':'Goal reached','30 jours':'30 days','100 jours':'100 days',
+ 'Le robot a agi pour vous':'The robot acted for you','Le rythme est pris':'The rhythm is set','Une vraie habitude':'A real habit','Un cap':'A milestone','Une semaine terminée dans le vert':'A week closed in the green',
+ 'Votre objectif personnel':'Your personal goal','Un mois avec le robot':'A month with the robot','Une saison avec le robot':'A season with the robot',
+ 'Un solde que vous aimeriez atteindre. Il reste sur ce téléphone ; personne d’autre ne le voit.':'A balance you would like to reach. It stays on this phone; nobody else sees it.',
+ 'Retirer l’objectif':'Remove the goal','Objectif atteint :':'Goal reached:','du chemin vers':'of the way to','il reste':'left',
+ 'Ouvrir Le Nid':'Open The Nest','Graphique':'Chart','Pause':'Pause','Reprendre':'Resume','Urgence':'Emergency','Réinitialiser':'Reset',
+ 'Vert = frais, orange = en retard, rouge = figé ou arrêté.':'Green = fresh, amber = late, red = stale or stopped.',
  'Lot de base actuel :':'Current base lot:','mise à l\u2019échelle active':'scaling on','Aucun trade pour l\u2019instant':'No trade yet','Rien à raconter pour l\u2019instant.':'Nothing to tell yet.'
 }));
 const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+) → \$(\d+)\/jour · (\d+) %$/,'Next step $$$1 → $$$2/day · $3 %'],
@@ -2890,6 +2923,30 @@ function nudgeDone(){try{localStorage.setItem('owlNudgeDone','1');}catch(e){}con
 setInterval(nudgeCheck,15000);setTimeout(nudgeCheck,4000);
 // ---- batch 20: Nid actions reachable from any page (owner) ----
 function AB(){try{return localStorage.getItem('owl_adm')||B;}catch(e){return B;}}
+// 2026-09-27: this month so far against last month up to the same day
+function renderMvM(d){
+ const el=document.getElementById('mvm');if(!el)return;
+ const M=d.months||{};const n=new Date();const dom=n.getUTCDate();
+ const ym=n.getUTCFullYear()+'-'+String(n.getUTCMonth()+1).padStart(2,'0');
+ const pv=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth()-1,1));
+ const pym=pv.getUTCFullYear()+'-'+String(pv.getUTCMonth()+1).padStart(2,'0');
+ const cut=a=>(a||[]).filter(x=>parseInt((x.d||'').slice(8,10),10)<=dom);
+ const cur=cut(M[ym]),prev=cut(M[pym]);
+ if(!prev.length&&!cur.length){el.style.display='none';return;}
+ const sum=a=>a.reduce((s,x)=>s+(x.p||0),0),g=a=>a.filter(x=>x.p>0.005).length;
+ const cs=sum(cur),ps=sum(prev);
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ document.getElementById('mvm-lbl').textContent=T('mvm_lbl');
+ const cell=(l,v,c,sub)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 12px">'+
+  '<div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+l+'</div>'+
+  '<b style="display:block;font-size:1.15rem;margin-top:2px" class="'+c+'">'+v+'</b><span style="font-size:.72rem;color:var(--muted2)">'+sub+'</span></div>';
+ const MON=LANG()==='en'?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']:['janv.','f\u00e9vr.','mars','avr.','mai','juin','juil.','ao\u00fbt','sept.','oct.','nov.','d\u00e9c.'];
+ setH(document.getElementById('mvm-g'),
+  cell(MON[n.getUTCMonth()]+' 1\u2013'+dom,money(cs),sgn(cs),cur.length+' j \u00b7 '+g(cur)+' \u2713')+
+  cell(MON[pv.getUTCMonth()]+' 1\u2013'+dom,prev.length?money(ps):'\u2014',prev.length?sgn(ps):'neu',prev.length?(prev.length+' j \u00b7 '+g(prev)+' \u2713'):''));
+ setH(document.getElementById('mvm-t'),!prev.length?T('mvm_none'):(cs-ps>0.5?T('mvm_better'):(ps-cs>0.5?T('mvm_worse'):T('mvm_even'))));
+ el.style.display='block';
+}
 async function healthSheet(){
  let h=null;try{const r=await fetch(AB()+'health?t='+Date.now(),{cache:'no-store'});if(r.ok)h=await r.json();}catch(e){}
  if(!h){toast('Service injoignable',2500);return;}
@@ -3030,9 +3087,9 @@ function shareMonth(){
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Mon mois OwlNest'});}catch(e){}}
   else{try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}}},'image/png');
 }
-function shareWeek(){
+function weekCanvas(){
  const d=window._d;
- if(!d)return;
+ if(!d)return null;
  const W=720,H=1120,c=document.createElement('canvas');
  c.width=W;c.height=H;
  const g=c.getContext('2d');
@@ -3085,6 +3142,22 @@ function shareWeek(){
   g.fillText((x.p>=0?'+$':'-$')+Math.abs(x.p||0).toFixed(2),W-80,y+14);});
  g.textAlign='center';g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
  g.fillText('Le robot Owl trade pour vous, jour et nuit.',W/2,H-56);
+ return c;
+}
+// 2026-09-27: the Sunday push carries this image - the phone draws it (no
+// image library on the server) and uploads it when the week changes
+function weekUpload(){
+ const d=window._d;if(!d||!d.days||!d.days.length)return;
+ const key=(new Date()).toISOString().slice(0,10)+'|'+(d.week||0).toFixed(2);
+ let last=null;try{last=localStorage.getItem('owlWeekImg:'+B);}catch(e){}
+ if(last===key)return;
+ const c=weekCanvas();if(!c)return;
+ c.toBlob(b=>{if(!b||b.size>600000)return;
+  fetch(B+'week_img',{method:'POST',headers:{'Content-Type':'image/png'},body:b}).then(r=>{
+   if(r&&r.ok){try{localStorage.setItem('owlWeekImg:'+B,key);}catch(e){}}}).catch(()=>{});},'image/png');
+}
+function shareWeek(){
+ const c=weekCanvas();if(!c)return;
  c.toBlob(async b=>{
   const f=new File([b],'owlnest-semaine.png',{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){
@@ -3148,6 +3221,17 @@ async function nestPanic(uid,name){
  if(r.err)h+='<p style="color:#ff9678">'+r.err+'</p>';
  await info(h);
  load();
+}
+async function nestReset(uid,name){
+ const pw=await askPwd('R\u00e9initialiser '+name+' ?',
+  'Le robot s\u2019arr\u00eate, son livre de comptes est archiv\u00e9 (jamais effac\u00e9), l\u2019historique de l\u2019app repart d\u2019aujourd\u2019hui, puis le robot red\u00e9marre de z\u00e9ro. Refus\u00e9 si un trade est ouvert.',
+  '\u21bb R\u00e9initialiser',true);
+ if(!pw)return;
+ const r=await fetch(AB()+'nest_reset',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'uid='+encodeURIComponent(uid)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
+ toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">R\u00e9initialisation lanc\u00e9e \u2014 le robot repart de z\u00e9ro dans ~30 s.</div>',6000);
 }
 async function nestPause(uid,on){
  const pw=await askPwd(
@@ -3726,7 +3810,9 @@ function render(d){
    (d.trading_paused)
    ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg>'+T('st_manual')+
      (n>0?' &middot; '+n+' trade'+(n>1?'s':'')+' ouvert'+(n>1?'s':''):'')
-   : (n>0
+   : (d.bot_killed
+   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-stop"/></svg><b>'+T('st_killed')+'</b>'
+   : n>0
    ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-bot"/></svg>Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
      ' en cours</b>'
    : '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-eye"/></svg>March&eacute; sous surveillance &mdash; aucun trade ouvert');
@@ -3800,7 +3886,7 @@ function render(d){
   (function(){const M=d.months||{};
    const ds=[].concat(...Object.keys(M).sort().map(k=>M[k]||[])).sort((a,b)=>a.d<b.d?-1:1);
    let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -3919,6 +4005,9 @@ function render(d){
     'background:rgba(255,92,92,.12);color:#ff8c8c;'+
     'border-radius:10px;padding:8px 11px;font-size:.85rem">'+
     '&#128721;'+(x.pos?' '+x.pos:'')+'</button>'+
+    (x.bot?'<button data-u="'+x.id+'" data-n="'+x.name+'" onclick="nestReset(this.dataset.u,this.dataset.n)" '+
+    'title="R&eacute;initialiser : le robot repart de z&eacute;ro" style="border:1px solid var(--border2);'+
+    'background:var(--surface);color:var(--text2);border-radius:10px;padding:8px 11px;font-size:.85rem">&#8635;</button>':'')+
     '</span></div>';
    }).join('');
   }
@@ -3942,7 +4031,7 @@ function render(d){
     _wks.innerHTML='Cette semaine : <b class="'+sgn(wk)+'">'+(wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2)+
      '</b>'+((_g||_r)?' \u2014 '+_g+' jour'+(_g>1?'s':'')+' vert'+(_g>1?'s':'')+', '+_r+' rouge'+(_r>1?'s':''):'')+
      '. '+(wk>=0?T('wk_up'):(_dbt?T('wk_debt'):T('wk_down')));
-    _wkc.style.display='block';}
+    _wkc.style.display='block';setTimeout(weekUpload,1500);}
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
     const open=false;   // 2026-09-26: a day opens as a story sheet
@@ -4619,6 +4708,7 @@ def user_stats(u, admin_override=False):
                     d["ledger"]["cap_today"] = float(_ct)
                 d["ledger"]["day_pnl_bot"] = float(_bs.get("day_pnl") or 0.0)
                 d["ledger"]["day_capped"] = bool(_bs.get("day_capped"))
+                d["bot_killed"] = bool(_bs.get("killed"))
                 d["ledger"]["scale_opt_out"] = bool(u.get("scale_opt_out"))
                 try:
                     d["ledger"]["scale_can_toggle"] = (
@@ -5402,7 +5492,8 @@ const PV_LIVE=true;
    $('pv-line').setAttribute('points',pts);$('pv-line').setAttribute('stroke',col);
    $('pv-area').setAttribute('points','0,44 '+pts+' 260,44');
    $('pv-g1').setAttribute('stop-color',col);$('pv-g2').setAttribute('stop-color',col);}
-  $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 en direct';
+  $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct');
+  if(d.bot_killed){$('pv-bot-t').textContent='La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
  }catch(e){}
 })();
 </script></body></html>"""
@@ -5813,6 +5904,38 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "nest_reset":
+            # 2026-09-27: restart an account's robot from zero (master pwd);
+            # owl_mode_switch.py does the stop / archive / era / start
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upr
+                _fr = _upr.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                _pw = (_fr.get("pwd", [""])[0] or "").strip()
+                _uid = (_fr.get("uid", [""])[0] or "").strip()
+                if not master_pwd_ok(_pw):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}),
+                               "application/json")
+                    return
+                us = json.load(open(USERS_FILE, encoding="utf-8"))
+                if not any(x.get("id") == _uid for x in us):
+                    self._send(json.dumps({"ok": False, "err": "no such user"}),
+                               "application/json")
+                    return
+                _tmp = os.path.join(DIR, "owl_reset_request.json.tmp")
+                json.dump({"uid": _uid, "t": time.time(), "by": u.get("id")},
+                          open(_tmp, "w"))
+                os.replace(_tmp, os.path.join(DIR, "owl_reset_request.json"))
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}),
+                           "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_pause":
             # master pauses/resumes any member (master pwd gated)
             u = user_by_token(_parts[0])
@@ -5887,6 +6010,29 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "week_img":
+            # 2026-09-27: the member's own week card, drawn by the app,
+            # kept for the Sunday push (PNG only, <= 600 KB)
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(min(ln, 700000))
+                if ln > 600000 or not body.startswith(b"\x89PNG\r\n\x1a\n"):
+                    self._send(json.dumps({"ok": False}), "application/json")
+                    return
+                os.makedirs(NEST_DATA, exist_ok=True)
+                _wp = os.path.join(NEST_DATA, f"week_{u['id']}.png")
+                with open(_wp + ".tmp", "wb") as f:
+                    f.write(body)
+                os.replace(_wp + ".tmp", _wp)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] in ("push_sub", "push_unsub"):
             u = user_by_token(_parts[0])
@@ -6335,6 +6481,20 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 _t = 0
             self._send(json.dumps(trade_story(user, _t)), "application/json")
+        elif sub == "week.png":
+            _wp = os.path.join(NEST_DATA, f"week_{user.get('id')}.png")
+            try:
+                data = open(_wp, "rb").read()
+            except Exception:
+                self.send_response(404)
+                self.end_headers()
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
         elif sub == "health":
             # 2026-09-27: the owner's service page - ages of every feed
             if not (user.get("id") in ("kino", "std")
@@ -6400,6 +6560,26 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             d["trades"] = tr
+            # 2026-09-27: the member's closed trades (entry -> exit arrows)
+            try:
+                nd2 = json.load(open(os.path.join(DIR, "nest_data", f"{uid}.json")))
+                _cl = []
+                _now = datetime.now(timezone.utc)
+                for p in (nd2.get("trades") or [])[:40]:
+                    _mw = re.match(r"^(\d\d)/(\d\d) (\d\d):(\d\d)$", p.get("w") or "")
+                    if not _mw or p.get("ep") is None or p.get("xp") is None:
+                        continue
+                    _y = _now.year - (1 if int(_mw.group(2)) > _now.month else 0)
+                    _xt = int(datetime(_y, int(_mw.group(2)), int(_mw.group(1)),
+                                       int(_mw.group(3)), int(_mw.group(4)),
+                                       tzinfo=timezone.utc).timestamp())
+                    _et = _xt - int(round(float(p.get("dur") or 0) * 60))
+                    _cl.append([_et, _xt, float(p["ep"]), float(p["xp"]),
+                                round(float(p.get("p") or 0), 2),
+                                1 if p.get("d") == "A" else -1])
+                d["closed"] = _cl
+            except Exception:
+                d["closed"] = []
             d["acct"] = user.get("login")
             d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)

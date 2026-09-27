@@ -37,6 +37,8 @@ DIR = r"C:\Projects\KinoliveLines\live"
 USERS = os.path.join(DIR, "owl_nest_users.json")
 REQ = os.path.join(DIR, "owl_mode_switch_request.json")
 STATUS = os.path.join(DIR, "owl_mode_switch_status.json")
+RESET_REQ = os.path.join(DIR, "owl_reset_request.json")
+RESET_STATUS = os.path.join(DIR, "owl_reset_status.json")
 LOG = os.path.join(DIR, "owl_mode_switch.log")
 PY = (r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311"
       r"\pythonw.exe")
@@ -199,6 +201,58 @@ def handle(uid, want):
     say(f"done: {uid} now {want}, running={live}, ok={stopped_ok and live}")
 
 
+def state_file_for(bot_args):
+    """structure_bos_bot.py [variant] -> its state file (see _SFX in the bot)."""
+    parts = (bot_args or "").split()
+    if not parts or parts[0] != "structure_bos_bot.py":
+        return None
+    v = parts[1] if len(parts) > 1 else ""
+    sfx = {"": "", "sniper": "_sniper", "halfdebt": "_half"}.get(v, "_" + v if v else "")
+    return f"bos_state{sfx}.json"
+
+
+def handle_reset(uid):
+    """2026-09-27 (owner): restart an account's robot from zero - the demo
+    died at its kill line and the shop window must not stay dark. Stop the
+    bot, archive its ledger/state (never delete), move the member's
+    era_start to now (the app's history restarts too), start the bot."""
+    cfg = cfg_for(uid)
+    sf = state_file_for(cfg["bot_args"])
+    say(f"reset request: {uid}")
+    if not sf:
+        save_atomic(RESET_STATUS, {"uid": uid, "t": time.time(), "ok": False,
+                                   "err": "pas de robot a reinitialiser"})
+        return
+    n = positions_open(uid)
+    if n is None or n > 0:
+        save_atomic(RESET_STATUS, {"uid": uid, "t": time.time(), "ok": False,
+                                   "err": "position ouverte - reinitialisation refusee"})
+        return
+    if is_running(cfg["bot_match"]):
+        stop_matching(cfg["bot_match"])
+    for _ in range(15):
+        if not is_running(cfg["bot_match"]):
+            break
+        time.sleep(1)
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    src = os.path.join(DIR, sf)
+    if os.path.exists(src):
+        os.replace(src, os.path.join(DIR, f"{sf}.{stamp}.bak"))
+    us = load(USERS, [])
+    for u in us:
+        if u.get("id") == uid:
+            u["era_start"] = time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime())
+            u["era_prev"] = (u.get("era_prev") or []) + [stamp]
+    save_atomic(USERS, us)
+    time.sleep(1)
+    start(cfg["bot_args"])
+    time.sleep(4)
+    live = is_running(cfg["bot_match"])
+    save_atomic(RESET_STATUS, {"uid": uid, "t": time.time(), "ok": bool(live),
+                               "running": live, "archived": f"{sf}.{stamp}.bak"})
+    say(f"reset done: {uid} running={live} archived {sf}.{stamp}.bak")
+
+
 def main():
     say("mode-switch watcher starting")
     # 2026-09-27: start from the request already on disk - a fresh watcher
@@ -207,8 +261,13 @@ def main():
     last_t = float((load(REQ) or {}).get("t", 0) or 0)
     if last_t:
         say(f"ignoring the request already handled before this start (t={last_t:.0f})")
+    last_r = float((load(RESET_REQ) or {}).get("t", 0) or 0)
     while True:
         try:
+            rq = load(RESET_REQ)
+            if rq and rq.get("t", 0) > last_r and rq.get("uid") in known_uids():
+                last_r = rq["t"]
+                handle_reset(rq["uid"])
             req = load(REQ)
             if req and req.get("t", 0) > last_t and req.get("uid") in known_uids() \
                     and req.get("want") in ("semi", "auto"):
