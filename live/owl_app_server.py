@@ -817,6 +817,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .gbar{height:8px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:12px}
 .gbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up));transition:width .6s}
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.bdg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:6px 0 4px}
+.stpi{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px}
+.stpi .stpc{width:34px;height:34px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--accent-soft-bg,rgba(59,130,246,.14));color:var(--accent-soft)}
+.stpi b{display:block;font-size:.84rem;line-height:1.25}
+.stpi span{font-size:.7rem;color:var(--muted2)}
+.stpi.off{opacity:.45}.stpi.off .stpc{background:var(--surface3);color:var(--muted)}
+.sincegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sincegrid>div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 8px;text-align:center}
+.sincegrid b{display:block;font-size:1rem}.sincegrid span{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -1102,7 +1112,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 </div>
 <div class="tab" id="tab-hist">
-<div class="panel" id="weekcard" style="display:none;margin-top:26px">
+<div class="panel" id="since" style="display:none;margin-top:26px">
+ <div class="lbl">Depuis le d&eacute;but</div>
+ <div id="since-t" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:8px"></div>
+ <div class="sincegrid" id="since-g"></div>
+</div>
+<div class="panel" id="weekcard" style="display:none;margin-top:12px">
  <div class="lbl">Ma semaine</div>
  <div id="week-sum" style="font-size:.95rem;color:var(--text);line-height:1.5;
   margin-top:8px"></div>
@@ -1237,6 +1252,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div class="sic"><svg class="ic"><use href="#i-target"/></svg></div>
   <div style="flex:1"><b>Mon objectif</b>
    <div class="ssub" id="mygoal-sub">Choisir un solde &agrave; atteindre</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="stepsbtn" onclick="stepsSheet()">
+  <div class="sic"><svg class="ic"><use href="#i-check"/></svg></div>
+  <div style="flex:1"><b>Mes &eacute;tapes</b>
+   <div class="ssub" id="steps-sub">Vos premiers pas avec le robot</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="infobtn">
@@ -2253,6 +2274,7 @@ async function loadInbox(){
  if(!it.length)sub.textContent='Aucun message pour l\u2019instant';
  else sub.textContent=(nw?nw+' nouveau'+(nw>1?'x':'')+' \u00b7 ':'')+'dernier : '+inboxWhen(it[0].t);
  if(dot)dot.style.display=nw?'inline-block':'none';
+ try{if(navigator.setAppBadge){if(nw)navigator.setAppBadge(nw);else if(navigator.clearAppBadge)navigator.clearAppBadge();}}catch(e){}
 }
 function inboxSheet(){
  const it=window._inbox||[];
@@ -2270,7 +2292,78 @@ function inboxSheet(){
  sheet(h);
  const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';
  const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent='dernier : '+inboxWhen(it[0].t);
+ try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(e){}
 }
+// 2026-09-27: "Depuis le debut" (worker since_start) and the gentle badges.
+const MON=['janv.','f\u00e9vr.','mars','avr.','mai','juin','juil.','ao\u00fbt','sept.','oct.','nov.','d\u00e9c.'];
+function renderSince(d){
+ const S=d.since_start,el=document.getElementById('since');if(!el)return;
+ if(!S||!S.n){el.style.display='none';return;}
+ el.style.display='block';
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?parseInt(m[3],10)+' '+MON[parseInt(m[2],10)-1]+' '+m[1]:k;};
+ const bm=S.best_month;
+ setH(document.getElementById('since-t'),'Avec le robot depuis le <b>'+fd(S.first||S.era)+'</b>'+(S.days>1?' \u2014 '+S.days+' jours':'')+
+  '. R\u00e9sultat depuis le d\u00e9but : <b class="'+sgn(S.net)+'">'+money(S.net)+'</b>.');
+ setH(document.getElementById('since-g'),
+  '<div><b>'+S.n+'</b><span>trade'+(S.n>1?'s':'')+'</span></div>'+
+  '<div><b>'+Math.round(S.won/Math.max(1,S.n)*100)+'\u202f%</b><span>gagn\u00e9s</span></div>'+
+  '<div><b class="'+(bm?sgn(bm.p):'neu')+'">'+(bm?money(bm.p):'\u2014')+'</b><span>'+(bm?'meilleur mois \u00b7 '+MON[parseInt(bm.ym.slice(5,7),10)-1]:'meilleur mois')+'</span></div>');
+}
+const BADGES=[
+ ['first','Premier trade','Le robot a agi pour vous','i-chart'],
+ ['t10','10 trades','Le rythme est pris','i-activity'],
+ ['t50','50 trades','Une vraie habitude','i-activity'],
+ ['t100','100 trades','Un cap','i-activity'],
+ ['gweek','Semaine verte','Une semaine termin\u00e9e dans le vert','i-check'],
+ ['goal','Objectif atteint','Votre objectif personnel','i-target'],
+ ['d30','30 jours','Un mois avec le robot','i-calendar'],
+ ['d100','100 jours','Une saison avec le robot','i-calendar']];
+function badgeKey(){return 'owlBadges:'+B;}
+function unlockedNow(d){
+ const S=d.since_start||{},n=S.n||0,u={};
+ if(n>=1)u.first=1;if(n>=10)u.t10=1;if(n>=50)u.t50=1;if(n>=100)u.t100=1;
+ if((S.days||0)>=30)u.d30=1;if((S.days||0)>=100)u.d100=1;
+ let g=0;try{g=parseFloat(localStorage.getItem(goalKey())||'0')||0;}catch(e){}
+ if(g>0&&(d.equity||0)>=g)u.goal=1;
+ const M=d.months||{},wk={};
+ Object.keys(M).forEach(k=>(M[k]||[]).forEach(x=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(x.d||'');if(!m)return;
+  const t=new Date(Date.UTC(+m[1],+m[2]-1,+m[3]));t.setUTCDate(t.getUTCDate()-((t.getUTCDay()+6)%7));
+  const key=t.toISOString().slice(0,10);wk[key]=(wk[key]||0)+(x.p||0);}));
+ const now=new Date(),cw=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()));cw.setUTCDate(cw.getUTCDate()-((cw.getUTCDay()+6)%7));
+ if(Object.keys(wk).some(k=>k<cw.toISOString().slice(0,10)&&wk[k]>0.005))u.gweek=1;
+ return u;
+}
+function checkBadges(d){
+ const u=unlockedNow(d);let st=null;
+ try{st=JSON.parse(localStorage.getItem(badgeKey())||'null');}catch(e){}
+ const first=!st;st=st||{};let fresh=[];
+ Object.keys(u).forEach(k=>{if(!st[k]){st[k]=Math.floor(Date.now()/1000);if(!first)fresh.push(k);}});
+ try{localStorage.setItem(badgeKey(),JSON.stringify(st));}catch(e){}
+ window._badges=st;
+ const sub=document.getElementById('steps-sub');
+ if(sub)sub.textContent=Object.keys(st).length+' sur '+BADGES.length+' \u00e9tapes';
+ if(fresh.length){const b=BADGES.find(x=>x[0]===fresh[0]);
+  if(b)toast('Nouvelle \u00e9tape : <b>'+b[1]+'</b> \U0001f389',3200);
+  try{navigator.vibrate&&navigator.vibrate([10,40,10]);}catch(e){}}
+}
+function stepsSheet(){
+ const st=window._badges||{};
+ const fd=t=>{const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
+ const n=Object.keys(st).length;
+ let h='<h3>Mes \u00e9tapes</h3><p>'+(n?n+' \u00e9tape'+(n>1?'s':'')+' sur '+BADGES.length+'. Les autres viendront avec le temps.':'Vos premi\u00e8res \u00e9tapes appara\u00eetront ici d\u00e8s que le robot aura agi pour vous.')+'</p>';
+ h+='<div class="bdg">'+BADGES.map(([k,l,dsc,ic])=>'<div class="stpi'+(st[k]?'':' off')+'"><div class="stpc"><svg class="ic ic-s"><use href="#'+ic+'"/></svg></div><div style="min-width:0"><b>'+l+'</b><span>'+(st[k]?'le '+fd(st[k]):dsc)+'</span></div></div>').join('')+'</div>';
+ h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
+ sheet(h);
+}
+// swipe down on a sheet closes it (only when its content is not scrolled)
+(function(){const sh=document.getElementById('sheet');if(!sh)return;let y0=null,dy=0;
+ sh.addEventListener('touchstart',e=>{y0=e.touches[0].clientY;dy=0;
+  let el=e.target;while(el&&el!==sh){if(el.scrollTop>0){y0=null;break;}el=el.parentElement;}},{passive:true});
+ sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;
+  if(dy>0){sh.style.transition='none';sh.style.transform='translateY('+dy+'px)';}},{passive:true});
+ sh.addEventListener('touchend',()=>{if(y0==null)return;sh.style.transition='';
+  if(dy>90&&window._shOpen)window._shDone(null);else sh.style.transform='translateY(0)';y0=null;dy=0;});})();
 function tradeSheet(i){
  const x=(window._tr||[])[i];
  if(!x)return;
@@ -3220,7 +3313,7 @@ function render(d){
   (function(){const M=d.months||{};
    const ds=[].concat(...Object.keys(M).sort().map(k=>M[k]||[])).sort((a,b)=>a.d<b.d?-1:1);
    let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});})();
-  drawSpark();drawGoal(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -4541,6 +4634,12 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .note{background:#0d2417;border:1px solid #1d4a2f;border-radius:14px;
  padding:14px;font-size:.88rem;color:#7fd6a0;margin-top:18px;
  line-height:1.5}
+.fq{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;padding:0 14px}
+.fq summary{cursor:pointer;padding:13px 0;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fq summary::-webkit-details-marker{display:none}
+.fq summary::after{content:'+';color:var(--muted);font-size:1.25rem;line-height:1;flex:none}
+.fq[open] summary::after{content:'−'}
+.fq p{padding:0 0 14px;font-size:.88rem;color:var(--muted);line-height:1.55}
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
  display:flex;align-items:center;justify-content:center;gap:6px}
 .pfoot img{width:16px;height:16px;border-radius:4px}
@@ -4642,8 +4741,21 @@ Se connecter</button>
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b><br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
+<div class="feats" id="faq">
+<div class="how">Questions fr&eacute;quentes</div>
+<details class="fq"><summary>Dois-je installer quelque chose sur mon ordinateur ?</summary>
+<p>Non. Le robot tourne sur nos serveurs, jour et nuit. Vous, vous ouvrez cette page sur votre t&eacute;l&eacute;phone.</p></details>
+<details class="fq"><summary>O&ugrave; est mon argent ?</summary>
+<p>Sur votre propre compte MT5, chez votre courtier. Le robot y passe les ordres ; il ne peut ni retirer ni d&eacute;placer votre argent.</p></details>
+<details class="fq"><summary>Et si le robot perd ?</summary>
+<p>&Ccedil;a arrive. Il garde alors une petite r&eacute;serve de c&ocirc;t&eacute; et avance prudemment jusqu&#39;&agrave; se rattraper. Vous le voyez dans l&#39;application.</p></details>
+<details class="fq"><summary>Puis-je arr&ecirc;ter quand je veux ?</summary>
+<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte.</p></details>
+<details class="fq"><summary>Puis-je suivre depuis plusieurs t&eacute;l&eacute;phones ?</summary>
+<p>Oui. Votre lien personnel fonctionne partout ; vous pouvez le prot&eacute;ger avec un code &agrave; 4 chiffres.</p></details>
+</div>
 <div class="pfoot"><img src="/icon192.png" alt="">OwlNest &middot; fait avec amour
- par la famille Kino</div>
+ par la famille Kino<br><span style="display:block;margin-top:8px;opacity:.75;line-height:1.5">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
 </div>
 
 <div class="view" id="v-login">

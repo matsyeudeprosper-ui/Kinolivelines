@@ -92,7 +92,12 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 @keyframes chocp{
  0%,100%{box-shadow:inset 0 0 16px 0 rgba(232,197,90,.05)}
  50%{box-shadow:inset 0 0 28px 3px rgba(232,197,90,.13)}}
+/* 2026-09-27: the app's light theme reaches the chart - the canvas keeps its
+   dark palette and is inverted with the hue preserved (greens stay green). */
+body.light{filter:invert(.93) hue-rotate(180deg);background:#fff}
+body.light img{filter:invert(1) hue-rotate(180deg)}
 </style></head><body>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
 <div id="hd">
 <a id="back" href="#">&#8592;</a>

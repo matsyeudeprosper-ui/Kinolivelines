@@ -215,6 +215,24 @@ def compute():
             st["_cur"] = 0
     month_stats = {k: {"n": v["n"], "won": v["won"], "streak": v["streak"]}
                    for k, v in _ms.items()}
+    # 2026-09-27: "Depuis le debut" - the whole era of this member
+    _alls, _ = out_deals(ERA, horizon)
+    _alls = sorted(_alls, key=lambda d: d.time)
+    _bm = {}
+    for d in _alls:
+        _k = datetime.fromtimestamp(d.time, tz=timezone.utc).strftime("%Y-%m")
+        _bm[_k] = _bm.get(_k, 0.0) + val(d)
+    _best = max(_bm.items(), key=lambda kv: kv[1]) if _bm else None
+    since_start = {
+        "first": (datetime.fromtimestamp(_alls[0].time, tz=timezone.utc)
+                  .strftime("%Y-%m-%d") if _alls else None),
+        "era": ERA.strftime("%Y-%m-%d"),
+        "days": max(0, (utcnow - ERA).days),
+        "n": len(_alls),
+        "won": sum(1 for d in _alls if val(d) > 0.005),
+        "net": round(sum(val(d) for d in _alls), 2),
+        "best_month": ({"ym": _best[0], "p": round(_best[1], 2)} if _best else None),
+    }
     return {
         "name": u.get("name", uid),
         "acct": ai.login,
@@ -235,6 +253,7 @@ def compute():
         "month_days": month_days,
         "months": months,
         "month_stats": month_stats,
+        "since_start": since_start,
         "curve": curve[-120:],
         "curve30": curve30,
         "updated_utc": utcnow.isoformat(timespec="seconds"),
