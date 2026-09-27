@@ -223,13 +223,15 @@ SW = (
     "e.waitUntil(self.registration.showNotification("
     "d.title||'OwlNest',{body:d.body||'',icon:'icon192.png',"
     "badge:'icon192.png',tag:d.tag||'owl',renotify:true,"
+    "data:{url:d.url||''},"
     "vibrate:[80,40,80]}));});"
     "self.addEventListener('notificationclick',e=>{"
     "e.notification.close();"
+    "const u=(e.notification.data&&e.notification.data.url)||'';"
     "e.waitUntil(clients.matchAll({type:'window',"
     "includeUncontrolled:true}).then(cs=>{"
-    "for(const c of cs){if('focus' in c)return c.focus();}"
-    "return clients.openWindow('.');}));});")
+    "for(const c of cs){if('focus' in c){if(u&&c.navigate){return c.navigate(u).then(w=>w&&w.focus()).catch(()=>c.focus());}return c.focus();}}"
+    "return clients.openWindow(u||'.');}));});")
 
 VAPID_FILE = os.path.join(DIR, "owl_push_vapid.json")
 PUSH_SUBS_FILE = os.path.join(DIR, "owl_push_subs.json")
@@ -830,6 +832,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .gbar{height:8px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:12px}
 .gbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up));transition:width .6s}
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
+.hl{animation:hlp 1.6s ease-in-out 2}
+@keyframes hlp{0%,100%{box-shadow:var(--hl)}50%{box-shadow:0 0 0 2px var(--accent),0 0 28px rgba(59,130,246,.45)}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .bdg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:6px 0 4px}
 .stpi{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 12px}
@@ -1504,7 +1508,9 @@ window.addEventListener('load',()=>{let t='dark';
  try{const _h=(location.hash||'').slice(1);
   if(_h==='marche'||_h==='hist'||_h==='set'){
    const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_h+"'")>=0);
-   if(_b)tab(_h,_b);}}catch(e){}
+   if(_b)tab(_h,_b);
+   if(_h==='hist')setTimeout(()=>{const w=document.getElementById('weekcard');if(w&&w.style.display!=='none'){
+    w.classList.add('hl');w.scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>w.classList.remove('hl'),3200);}},900);}}catch(e){}
  pinInit();
  // a11y: clickable rows behave like buttons for keyboards/screen readers
  document.querySelectorAll('.srow').forEach(el=>{if(el.tagName==='A'||el.id==='themerow')return;
@@ -1532,6 +1538,77 @@ function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
 // the signal is and leaves the decision to the member. Every sentence that
 // names an actor goes through MAN().
 function MAN(){return !!(window._d&&window._d.trading_paused);}
+// 2026-09-27: every sentence that carries a voice lives HERE, once per voice.
+// T(key) picks the current voice; a missing manual key falls back to auto.
+// This is also the i18n seam: a language is one more table.
+const VOICE={
+ auto:{
+  wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies. Le robot entrera dès que le signal se confirme.'],
+      flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot attend la confirmation avant d’agir.'],
+      forming:['⏳','Ça se prépare','#8fa1b3','Trop tôt. Le robot laisse le marché se dessiner.'],
+      none:['💤','Rien à faire','#6f8299','Le marché est calme. Le robot attend une occasion.'],
+      brisk:['🍃','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot laisse passer celui-là.'],
+      nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot préfère s’écarter.'],
+      nogate:['⚡','Aucun frein','#b98cff','Ce compte prend tous les signaux, marché calme ou rapide.']},
+  mx_hint:'&middot; ce que le robot voit',
+  jcard:'Le robot en ce moment',jsteps:['Observe','Occasion','Trade','Bilan'],
+  j_open:'Un trade est en cours{pl}. Le robot le surveille jusqu\u2019au bout.',
+  j_won:'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +${p}</b>. Le robot repart en observation.',
+  j_lost:'Dernier trade termin\u00e9 : <b class="neg">perdu ${p}</b>. \u00c7a arrive \u2014 le robot repart en observation.',
+  j_forming:'Quelque chose se dessine sur le march\u00e9. Le robot attend une confirmation avant d\u2019agir.',
+  j_flip:'Le march\u00e9 h\u00e9site sur sa direction. Le robot attend que ce soit clair.',
+  j_ready:'Les conditions sont r\u00e9unies. Le robot entrera d\u00e8s que le signal se confirme.',
+  j_storm:'Le march\u00e9 est tr\u00e8s agit\u00e9. Le robot reste \u00e0 l\u2019abri et attend que \u00e7a se calme.',
+  j_nervous:'Le march\u00e9 bouge beaucoup. Le robot pr\u00e9f\u00e8re attendre.',
+  j_none:'Le march\u00e9 est calme. Le robot observe et attend une occasion.',
+  j_debt:' Apr\u00e8s une perte, il est un peu plus prudent.',
+  day_lbl:'La journ\u00e9e du robot',
+  day_empty:'Depuis ce matin, le robot surveille le march\u00e9 et n\u2019a rien trouv\u00e9 \u00e0 faire. C\u2019est normal : il n\u2019agit que quand tout est r\u00e9uni.',
+  day_ign:['occasion laiss\u00e9e passer','occasions laiss\u00e9es passer'],
+  day_cont:' Le robot continue de surveiller.',
+  who:'Le robot a ',won_v:'a gagn\u00e9',lost_v:'a perdu',lost_tail:' \u2014 il continue.',
+  ev_meteo:'Le march\u00e9 bougeait trop. Le robot a pr\u00e9f\u00e9r\u00e9 laisser passer.',
+  ev_eye:'Le robot a vu une occasion, mais tout n\u2019\u00e9tait pas r\u00e9uni. Il a attendu.',
+  wk_up:'Le robot avance.',wk_debt:'Le robot se rattrape.',wk_down:'Semaine difficile ; le robot continue.',
+  mo_n:', le robot a pris <b>',mo_up:'Le robot avance.',mo_debt:'Le robot est en train de se rattraper \u2014 il avance prudemment.',mo_down:'Un mois difficile ; le robot continue.',
+  since:'Avec le robot depuis le <b>',
+  toast_lost:' \u2014 \u00e7a arrive, il continue.',toast_debt_done:'le robot repasse en mode normal.',
+  st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',
+  dayx_empty:'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.',dayx_who:'Le robot a '},
+ manual:{
+  wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies : le prochain signal est jouable. À vous de décider.'],
+      flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Attendez la confirmation avant d’entrer.'],
+      forming:['⏳','Ça se prépare','#8fa1b3','Trop tôt pour entrer. Laissez le marché se dessiner.'],
+      none:['💤','Pas de signal','#6f8299','Le marché est calme. Mieux vaut attendre le prochain signal.'],
+      brisk:['🍃','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Signal à prendre avec prudence.'],
+      nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Mieux vaut s’écarter.'],
+      nogate:['⚡','Aucun frein','#b98cff','Tous les signaux sont affichés, marché calme ou rapide.']},
+  mx_hint:'&middot; ce que le signal dit',
+  jcard:'Le signal en ce moment',jsteps:['Veille','Signal','Trade','Bilan'],
+  j_open:'Votre trade est en cours{pl}. G\u00e9rez-le depuis le graphique.',
+  j_won:'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +${p}</b>. Bien jou\u00e9 \u2014 l\u2019app veille pour le prochain signal.',
+  j_lost:'Dernier trade termin\u00e9 : <b class="neg">perdu ${p}</b>. \u00c7a arrive \u2014 l\u2019app veille pour le prochain signal.',
+  j_forming:'Un signal se pr\u00e9pare. Trop t\u00f4t pour entrer \u2014 l\u2019app vous pr\u00e9vient.',
+  j_flip:'Le march\u00e9 h\u00e9site sur sa direction. Attendez la confirmation avant d\u2019entrer.',
+  j_ready:'<b>Signal jouable</b> : les conditions sont r\u00e9unies. Ouvrez le graphique pour d\u00e9cider.',
+  j_storm:'March\u00e9 tr\u00e8s agit\u00e9 : pas de signal fiable. Mieux vaut s\u2019\u00e9carter.',
+  j_nervous:'Le march\u00e9 bouge beaucoup. Un signal ici serait \u00e0 prendre avec prudence.',
+  j_none:'Aucun signal pour l\u2019instant. L\u2019app veille et vous pr\u00e9vient.',
+  j_debt:' Apr\u00e8s une perte, la r\u00e9serve conseille un lot plus petit.',
+  day_lbl:'Votre journ\u00e9e',
+  day_empty:'Depuis ce matin, aucun signal confirm\u00e9. L\u2019app veille et vous pr\u00e9vient d\u00e8s qu\u2019il y en a un.',
+  day_ign:['signal \u00e9cart\u00e9','signaux \u00e9cart\u00e9s'],
+  day_cont:' L\u2019app continue de veiller.',
+  who:'Vous avez ',won_v:'gagn\u00e9',lost_v:'perdu',lost_tail:'.',
+  ev_meteo:'Le march\u00e9 bougeait trop. Signal \u00e9cart\u00e9.',
+  ev_eye:'Un signal est apparu, mais tout n\u2019\u00e9tait pas r\u00e9uni. \u00c9cart\u00e9.',
+  wk_up:'Le compte avance.',wk_debt:'Vous vous rattrapez \u2014 restez prudent.',wk_down:'Semaine difficile ; on continue.',
+  mo_n:', vous avez pris <b>',mo_up:'Le compte avance.',mo_debt:'Vous \u00eates en train de vous rattraper \u2014 restez prudent.',mo_down:'Un mois difficile ; on continue.',
+  since:'Avec OwlNest depuis le <b>',
+  toast_lost:' \u2014 \u00e7a arrive.',toast_debt_done:'lot normal \u00e0 nouveau.',
+  st_manual:'<b>Mode manuel</b> &mdash; vous d&eacute;cidez',
+  dayx_empty:'Ce jour-l\u00e0, aucun trade.',dayx_who:'Vous avez '}};
+function T(k){const v=VOICE[MAN()?'manual':'auto'];return (v[k]!==undefined?v[k]:VOICE.auto[k]);}
 function fdur(m){
  if(m==null)return '';
  m=Math.round(m);
@@ -2029,11 +2106,11 @@ function dayx(l){
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
  let sum;
- if(!tr.length)sum=MAN()?'Ce jour-l\u00e0, aucun trade.':'Ce jour-l\u00e0, le robot a surveill\u00e9 le march\u00e9 sans trader.';
+ if(!tr.length)sum=T('dayx_empty');
  else sum='Ce jour-l\u00e0 : '+tr.length+' trade'+(tr.length>1?'s':'')+
   (tr.length>1?' \u2014 '+won+' gagn\u00e9'+(won>1?'s':'')+', '+lost+' perdu'+(lost>1?'s':''):'')+
   '. R\u00e9sultat : <b class="'+sgn(p)+'">'+money(p)+'</b>.';
- const who=MAN()?'Vous avez ':'Le robot a ';
+ const who=T('dayx_who');
  const rows=tr.map(t=>'<div class="srow-ev">'+(t.p>=0?ico('i-check','var(--up)'):ico('i-x','var(--down)'))+
   '<div style="flex:1">'+(t.p>=0?who+'<b class="pos">gagn\u00e9 '+money(t.p)+'</b>.'
    :who+'<b class="neg">perdu $'+Math.abs(t.p).toFixed(2)+'</b>.')+'</div>'+
@@ -2117,20 +2194,17 @@ function drawDay(){
  // --- the summary, in plain words ---
  let sum;
  const M=MAN();
- (function(){const lb=document.getElementById('day-lbl');if(lb)lb.textContent=M?'Votre journ\u00e9e':'La journ\u00e9e du robot';})();
+ (function(){const lb=document.getElementById('day-lbl');if(lb)lb.textContent=T('day_lbl');})();
  if(!tr.length&&!ig.length){
-  sum=M?'Depuis ce matin, aucun signal confirm\u00e9. L\u2019app veille et vous pr\u00e9vient d\u00e8s qu\u2019il y en a un.'
-   :'Depuis ce matin, le robot surveille le march\u00e9 et n\u2019a rien trouv\u00e9 \u00e0 faire. '+
-   'C\u2019est normal : il n\u2019agit que quand tout est r\u00e9uni.';
+  sum=T('day_empty');
  }else{
   const parts=[];
   if(tr.length)parts.push(tr.length+' trade'+(tr.length>1?'s':'')+
    (tr.length>1?' (dont '+won+' gagn\u00e9'+(won>1?'s':'')+')':(won?' (gagn\u00e9)':' (perdu)')));
-  if(ig.length)parts.push(M?(ig.length+' signa'+(ig.length>1?'ux':'l')+' \u00e9cart\u00e9'+(ig.length>1?'s':''))
-   :(ig.length+' occasion'+(ig.length>1?'s':'')+' laiss\u00e9e'+(ig.length>1?'s':'')+' passer'));
+  if(ig.length)parts.push(ig.length+' '+T('day_ign')[ig.length>1?1:0]);
   sum='Depuis ce matin : '+parts.join(' et ')+'.'+
    (tr.length?' Total du jour : <b class="'+sgn(tot)+'">'+money(tot)+'</b>.':'')+
-   (!tr.length?(M?' L\u2019app continue de veiller.':' Le robot continue de surveiller.'):'');
+   (!tr.length?T('day_cont'):'');
  }
  setH(document.getElementById('day-sum'),sum);
  // --- the day bar: morning / noon / evening, sun at "now" ---
@@ -2155,24 +2229,22 @@ function drawDay(){
  ev.sort((a,b)=>b.t-a.t);
  setH(document.getElementById('day-list'),ev.slice(0,12).map(e=>{
   let i,txt;
-  const who=M?'Vous avez ':'Le robot a ';
+  const who=T('who');
   if(e.k==='tr'){const buy=e.d==='BUY';
    if(e.p>=0){i=ico('i-check','var(--up)');
-    txt=who+(buy?'achet\u00e9':'vendu')+' et '+(M?'gagn\u00e9':'a gagn\u00e9')+' <b class="pos">'+money(e.p)+'</b>.';}
+    txt=who+(buy?'achet\u00e9':'vendu')+' et '+T('won_v')+' <b class="pos">'+money(e.p)+'</b>.';}
    else{i=ico('i-x','var(--down)');
-    txt=who+(buy?'achet\u00e9':'vendu')+' et '+(M?'perdu':'a perdu')+' <b class="neg">$'+Math.abs(e.p).toFixed(2)+
-     '</b>. \u00c7a arrive'+(M?'.':' \u2014 il continue.');}}
-  else if(e.m==='meteo'){i=ico('i-cloud','var(--warn)');
-   txt=M?'Le march\u00e9 bougeait trop. Signal \u00e9cart\u00e9.':'Le march\u00e9 bougeait trop. Le robot a pr\u00e9f\u00e9r\u00e9 laisser passer.';}
-  else{i=ico('i-eye','var(--muted2)');
-   txt=M?'Un signal est apparu, mais tout n\u2019\u00e9tait pas r\u00e9uni. \u00c9cart\u00e9.':'Le robot a vu une occasion, mais tout n\u2019\u00e9tait pas r\u00e9uni. Il a attendu.';}
+    txt=who+(buy?'achet\u00e9':'vendu')+' et '+T('lost_v')+' <b class="neg">$'+Math.abs(e.p).toFixed(2)+
+     '</b>. \u00c7a arrive'+T('lost_tail');}}
+  else if(e.m==='meteo'){i=ico('i-cloud','var(--warn)');txt=T('ev_meteo');}
+  else{i=ico('i-eye','var(--muted2)');txt=T('ev_eye');}
   return '<div class="srow-ev">'+i+'<div style="flex:1;min-width:0">'+txt+'</div>'+
    '<span class="evt">'+hm(e.t)+'</span></div>';}).join('')||
   '<div class="sub" style="margin-top:4px">Rien \u00e0 raconter pour l\u2019instant.</div>');
  card.style.display='block';
  const md=document.getElementById('mxs-day');
  if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):'Aucun trade pour l\u2019instant')+
-  (ig.length?' \u00b7 '+ig.length+(M?(ig.length>1?' signaux \u00e9cart\u00e9s':' signal \u00e9cart\u00e9'):(ig.length>1?' occasions laiss\u00e9es passer':' occasion laiss\u00e9e passer')):'');
+  (ig.length?' \u00b7 '+ig.length+' '+T('day_ign')[ig.length>1?1:0]:'');
  drawJourney(window._lastd);
 }
 function drawJourney(d){
@@ -2183,42 +2255,17 @@ function drawJourney(d){
  const recent=(D.trades||[]).filter(t=>t.x&&now-t.x<1800).sort((a,b)=>b.x-a.x)[0];
  let step=1,txt='';
  const M=MAN();
- (function(){const lb=document.getElementById('jcard-lbl');if(lb)lb.textContent=M?'Le signal en ce moment':'Le robot en ce moment';
-  const names=M?['Veille','Signal','Trade','Bilan']:['Observe','Occasion','Trade','Bilan'];
+ (function(){const lb=document.getElementById('jcard-lbl');if(lb)lb.textContent=T('jcard');
+  const names=T('jsteps');
   el.querySelectorAll('.js span').forEach((sp,i)=>{if(names[i]&&sp.textContent!==names[i])sp.textContent=names[i];});})();
- if(M){
-  // signal-service voice: what the signal is, what to do with it
-  if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
-   txt='Votre trade est en cours'+(Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+
-    (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'. G\u00e9rez-le depuis le graphique.';}
-  else if(recent){step=4;
-   txt=recent.p>=0?'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +$'+recent.p.toFixed(2)+'</b>. Bien jou\u00e9 \u2014 l\u2019app veille pour le prochain signal.'
-    :'Dernier trade termin\u00e9 : <b class="neg">perdu $'+Math.abs(recent.p).toFixed(2)+'</b>. \u00c7a arrive \u2014 l\u2019app veille pour le prochain signal.';}
-  else if(k==='ready'||k==='nogate'){step=2;
-   txt='<b>Signal jouable</b> : les conditions sont r\u00e9unies. Ouvrez le graphique pour d\u00e9cider.';}
-  else if(k==='flip'){step=2;txt='Le march\u00e9 h\u00e9site sur sa direction. Attendez la confirmation avant d\u2019entrer.';}
-  else if(k==='forming'){step=2;txt='Un signal se pr\u00e9pare. Trop t\u00f4t pour entrer \u2014 l\u2019app vous pr\u00e9vient.';}
-  else{step=1;
-   txt=k==='storm'?'March\u00e9 tr\u00e8s agit\u00e9 : pas de signal fiable. Mieux vaut s\u2019\u00e9carter.'
-    :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Un signal ici serait \u00e0 prendre avec prudence.'
-    :'Aucun signal pour l\u2019instant. L\u2019app veille et vous pr\u00e9vient.');}
-  if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, la r\u00e9serve conseille un lot plus petit.';
- }
- else if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
-  txt='Un trade est en cours'+(Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+
-   (pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'. Le robot le surveille jusqu\u2019au bout.';}
- else if(recent){step=4;
-  txt=recent.p>=0?'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +$'+recent.p.toFixed(2)+'</b>. Le robot repart en observation.'
-   :'Dernier trade termin\u00e9 : <b class="neg">perdu $'+Math.abs(recent.p).toFixed(2)+'</b>. \u00c7a arrive \u2014 le robot repart en observation.';}
+ const fmtP=v=>Math.abs(v).toFixed(2);
+ if(open.length){step=3;const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+  txt=T('j_open').replace('{pl}',Math.abs(pl)>0.005?' \u00b7 pour l\u2019instant <b class="'+sgn(pl)+'">'+(pl>=0?'+$':'-$')+fmtP(pl)+'</b>':'');}
+ else if(recent){step=4;txt=(recent.p>=0?T('j_won'):T('j_lost')).replace('{p}',fmtP(recent.p));}
  else if(k==='ready'||k==='flip'||k==='forming'||k==='nogate'){step=2;
-  txt=k==='forming'?'Quelque chose se dessine sur le march\u00e9. Le robot attend une confirmation avant d\u2019agir.'
-   :(k==='flip'?'Le march\u00e9 h\u00e9site sur sa direction. Le robot attend que ce soit clair.'
-   :'Les conditions sont r\u00e9unies. Le robot entrera d\u00e8s que le signal se confirme.');}
- else{step=1;
-  txt=k==='storm'?'Le march\u00e9 est tr\u00e8s agit\u00e9. Le robot reste \u00e0 l\u2019abri et attend que \u00e7a se calme.'
-   :((k==='nervous'||k==='brisk')?'Le march\u00e9 bouge beaucoup. Le robot pr\u00e9f\u00e8re attendre.'
-   :'Le march\u00e9 est calme. Le robot observe et attend une occasion.');}
- if(!M&&((d.ledger||{}).debt||0)>0.5&&step<3)txt+=' Apr\u00e8s une perte, il est un peu plus prudent.';
+  txt=k==='forming'?T('j_forming'):(k==='flip'?T('j_flip'):T('j_ready'));}
+ else{step=1;txt=k==='storm'?T('j_storm'):((k==='nervous'||k==='brisk')?T('j_nervous'):T('j_none'));}
+ if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=T('j_debt');
  const jp=document.getElementById('jprog');
  if(jp){if(step===3&&open.length){const p=open[0];
    const e=parseFloat(p.e)||0,tp=parseFloat(p.tp)||0,lot=parseFloat(p.lot)||0,pl=parseFloat(p.pl)||0;
@@ -2371,7 +2418,7 @@ function renderSince(d){
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?parseInt(m[3],10)+' '+MON[parseInt(m[2],10)-1]+' '+m[1]:k;};
  const bm=S.best_month;
- setH(document.getElementById('since-t'),(MAN()?'Avec OwlNest depuis le <b>':'Avec le robot depuis le <b>')+fd(S.first||S.era)+'</b>'+(S.days>1?' \u2014 '+S.days+' jours':'')+
+ setH(document.getElementById('since-t'),T('since')+fd(S.first||S.era)+'</b>'+(S.days>1?' \u2014 '+S.days+' jours':'')+
   '. R\u00e9sultat depuis le d\u00e9but : <b class="'+sgn(S.net)+'">'+money(S.net)+'</b>.');
  setH(document.getElementById('since-g'),
   '<div><b>'+S.n+'</b><span>trade'+(S.n>1?'s':'')+'</span></div>'+
@@ -2682,7 +2729,7 @@ function monthReport(){
  const bd=R.src.find(x=>x.p===R.best),wd=R.src.find(x=>x.p===R.worst);
  const st=R.stats;
  let t='<p style="color:var(--text)">En <b>'+R.name+'</b>'+
-  (st?(MAN()?', vous avez pris <b>':', le robot a pris <b>')+st.n+' trade'+(st.n>1?'s':'')+'</b>'+(st.n?' (dont '+st.won+' gagn\u00e9'+(st.won>1?'s':'')+')':''):'')+
+  (st?T('mo_n')+st.n+' trade'+(st.n>1?'s':'')+'</b>'+(st.n?' (dont '+st.won+' gagn\u00e9'+(st.won>1?'s':'')+')':''):'')+
   '. R\u00e9sultat : <b class="'+sgn(R.net)+'">'+money(R.net)+'</b>.</p>';
  const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
  const row=(i,h)=>'<div class="srow-ev">'+i+'<div style="flex:1">'+h+'</div></div>';
@@ -2690,8 +2737,7 @@ function monthReport(){
  if(bd&&R.best>0.005)t+=row(ico('i-check','var(--up)'),'Meilleur jour : le '+lab(bd.d)+', <b class="pos">'+money(R.best)+'</b>.');
  if(wd&&R.worst<-0.005)t+=row(ico('i-x','var(--down)'),'Jour le plus dur : le '+lab(wd.d)+', <b class="neg">'+money(R.worst)+'</b>.');
  if(st&&st.streak>1)t+=row(ico('i-activity','var(--up)'),'Plus longue s\u00e9rie : <b>'+st.streak+' gains de suite</b>.');
- t+='<p style="color:var(--text);margin-top:10px">'+(MAN()?(R.net>=0?'Le compte avance.':(R.debt?'Vous \u00eates en train de vous rattraper \u2014 restez prudent.':'Un mois difficile ; on continue.'))
-  :(R.net>=0?'Le robot avance.':(R.debt?'Le robot est en train de se rattraper \u2014 il avance prudemment.':'Un mois difficile ; le robot continue.')))+'</p>';
+ t+='<p style="color:var(--text);margin-top:10px">'+(R.net>=0?T('mo_up'):(R.debt?T('mo_debt'):T('mo_down')))+'</p>';
  sheet('<h3>Rapport du mois</h3>'+t+
   '<button class="shbtn shmain" style="display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareMonth()"><svg class="ic ic-s"><use href="#i-share"/></svg>Partager ce rapport</button>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
@@ -2918,49 +2964,9 @@ function render(d){
     // decision to the member. The two gates only ever STOP a trade (owner
     // 2026-09-17), so "feu vert" means "nothing holds it back", never a
     // promise of profit.
-    const ST=MAN()?{
-      ready:['✅','Feu vert','#8df0bb',
-             'Les conditions sont réunies : le prochain signal est jouable. À vous de décider.'],
-      flip:['⚖️','Ça peut tourner','#e8c55a',
-            'Le sens change peut-être. Attendez la confirmation avant d’entrer.'],
-      forming:['⏳','Ça se prépare','#8fa1b3',
-               'Trop tôt pour entrer. Laissez le marché se dessiner.'],
-      none:['💤','Pas de signal','#6f8299',
-            'Le marché est calme. Mieux vaut attendre le prochain signal.'],
-      brisk:['🍃','Marché soutenu','#e8c55a',
-             'Les bougies sont un peu plus grandes que d’habitude. Signal à prendre avec prudence.'],
-      nervous:['🌀','Marché rapide','#ff9678',
-               'Les mouvements sont beaucoup plus grands que d’habitude. Mieux vaut s’écarter.'],
-      nogate:['⚡','Aucun frein','#b98cff',
-              'Tous les signaux sont affichés, marché calme ou rapide.']}
-    :{
-      ready:['✅','Feu vert','#8df0bb',
-             'Les conditions sont réunies. Le robot entrera dès que le signal se confirme.'],
-      flip:['⚖️','Ça peut tourner','#e8c55a',
-            'Le sens change peut-être. Le robot attend la confirmation avant d’agir.'],
-      forming:['⏳','Ça se prépare','#8fa1b3',
-               'Trop tôt. Le robot laisse le marché se dessiner.'],
-      none:['💤','Rien à faire','#6f8299',
-            'Le marché est calme. Le robot attend une occasion.'],
-      // the common case, just over the line - saying "ça bouge trop" here
-      // overstated it (owner 2026-09-18)
-      brisk:['🍃','Marché soutenu','#e8c55a',
-             'Les bougies sont un peu plus grandes que d’habitude. Le '+
-             'robot laisse passer celui-là.'],
-      // not "ca bouge trop" - measured, these hours travel 2.5x further
-      // and go slightly STRAIGHTER. Big, not messy. The robot still steps
-      // aside, but the card no longer gives the wrong reason.
-      nervous:['🌀','Marché rapide','#ff9678',
-               'Les mouvements sont beaucoup plus grands que d’habitude. '+
-               'Le robot préfère s’écarter.'],
-      // owner 2026-09-20, package "special": an account with both brakes
-      // off takes every signal. Saying "conditions favorables" in a 2x
-      // market would be a lie, and "mieux vaut attendre" describes a
-      // refusal that will not happen - so it gets its own honest line.
-      nogate:['⚡','Aucun frein','#b98cff',
-              'Ce compte prend tous les signaux, marché calme ou rapide.']};
+    const ST=T('wx');
     (function(){const hh=document.getElementById('mx-hint');
-     if(hh)setH(hh,MAN()?'&middot; ce que le signal dit':'&middot; ce que le robot voit');})();
+     if(hh)setH(hh,T('mx_hint'));})();
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
     //
@@ -3342,7 +3348,7 @@ function render(d){
    toast('<div class="evi" style="color:'+(up?'var(--up)':'var(--down)')+'"><svg class="ic ic-s">'+
     '<use href="#'+(up?'i-check':'i-x')+'"/></svg></div><div style="flex:1">Trade termin\u00e9 \u00b7 '+
     '<b class="'+(up?'pos':'neg')+'">'+(up?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b>'+
-    (up?' \u2014 bien jou\u00e9.':(MAN()?' \u2014 \u00e7a arrive.':' \u2014 \u00e7a arrive, il continue.'))+'</div>');
+    (up?' \u2014 bien jou\u00e9.':T('toast_lost'))+'</div>');
    try{navigator.vibrate&&navigator.vibrate(up?[20,40,20]:[40])}catch(e){}}
   window._lastTradeKey=_k0;
   const _wc=document.getElementById('welcome');
@@ -3350,7 +3356,7 @@ function render(d){
   const _dbtNow=((d.ledger||{}).debt||0);
   if(window._prevDebt!==undefined&&window._prevDebt>0.5&&_dbtNow<=0.5){
    toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
-    '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 '+(MAN()?'lot normal \\u00e0 nouveau.':'le robot repasse en mode normal.')+'</div>',8000);
+    '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 '+T('toast_debt_done')+'</div>',8000);
    try{confetti();}catch(e){}}
   window._prevDebt=_dbtNow;
   const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
@@ -3469,7 +3475,7 @@ function render(d){
    location.pathname.replace(/\\/+$/,'')+'/chart';
   document.getElementById('st').innerHTML =
    (d.trading_paused)
-   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg><b>Mode manuel</b> &mdash; vous d&eacute;cidez'+
+   ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-pause"/></svg>'+T('st_manual')+
      (n>0?' &middot; '+n+' trade'+(n>1?'s':'')+' ouvert'+(n>1?'s':''):'')
    : (n>0
    ? '<svg class="ic ic-s" style="vertical-align:-3px;margin-right:5px"><use href="#i-bot"/></svg>Le robot travaille &mdash; <b>'+n+' trade'+(n>1?'s':'')+
@@ -3575,7 +3581,30 @@ function render(d){
   if(d.is_master&&d.nest){
    const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
    const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
-   const hdr='<div class="row" style="border-bottom:2px solid '+
+   // 2026-09-27: alerts strip + family week bars above the list
+   const _al=d.nest.filter(x=>x.err||x.stale||(x.bot&&!x.botlive)||x.blocked);
+   const _man=d.nest.filter(x=>!x.bot&&x.paused).length;
+   const _alh=_al.length
+    ?'<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;'+
+     'background:rgba(232,197,90,.08);border:1px solid rgba(232,197,90,.28);margin-bottom:10px">'+
+     '<div class="evi" style="color:var(--warn);flex:none"><svg class="ic ic-s"><use href="#i-cloud"/></svg></div>'+
+     '<div style="flex:1;min-width:0;font-size:.86rem;line-height:1.4"><b>'+_al.length+' compte'+(_al.length>1?'s':'')+' &agrave; surveiller</b><br>'+
+     '<span style="color:var(--muted2)">'+_al.map(x=>x.name+' \u00b7 '+(x.err?'probl\u00e8me':x.stale?'hors ligne':x.blocked?x.blocked:'robot arr\u00eat\u00e9')).join(' \u00b7 ')+'</span></div></div>'
+    :'<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;'+
+     'background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.22);margin-bottom:10px;font-size:.86rem">'+
+     '<div class="evi" style="color:var(--up);flex:none"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
+     '<div>Tout roule \u00b7 '+d.nest.filter(x=>x.bot&&x.botlive&&!x.paused).length+' robot'+(d.nest.filter(x=>x.bot&&x.botlive&&!x.paused).length>1?'s':'')+' actif'+(d.nest.filter(x=>x.bot&&x.botlive&&!x.paused).length>1?'s':'')+(_man?' \u00b7 '+_man+' en manuel':'')+'</div></div>';
+   const _fam={};d.nest.forEach(x=>(x.days||[]).forEach(y=>{_fam[y.d]=(_fam[y.d]||0)+(y.p||0);}));
+   const _pd=k=>{const m=/(\d\d)\/(\d\d)$/.exec(k||'');return m?(parseInt(m[2])*100+parseInt(m[1])):0;};
+   const _fk=Object.keys(_fam).sort((a,b)=>_pd(a)-_pd(b)).slice(-7);
+   const _fmx=Math.max(1,..._fk.map(k=>Math.abs(_fam[k])));
+   const _famh=_fk.length?'<div style="padding:8px 4px 12px"><div class="lbl">Famille \u00b7 7 jours</div>'+
+    '<svg viewBox="0 0 300 70" style="width:100%;height:70px;display:block;margin-top:6px">'+
+    '<line x1="6" y1="40" x2="294" y2="40" style="stroke:var(--border2)"/>'+
+    _fk.map((k,i)=>{const v=_fam[k],h=Math.max(2,Math.abs(v)/_fmx*30),x=6+i*(288/_fk.length)+6,w=288/_fk.length-12;
+     return '<rect x="'+x.toFixed(1)+'" y="'+(v>=0?40-h:40).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="3" style="fill:'+(v>=0?'var(--up)':'var(--down)')+';opacity:.85"/>'+
+      '<text x="'+(x+w/2).toFixed(1)+'" y="64" text-anchor="middle" font-size="8" style="fill:var(--muted)">'+k.slice(-5)+'</text>';}).join('')+'</svg></div>':'';
+   const hdr=_alh+_famh+'<div class="row" style="border-bottom:2px solid '+
     '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
     'color:var(--muted);font-size:.75rem">'+d.nest.length+
     ' compte'+(d.nest.length>1?'s':'')+'</span></span>'+
@@ -3662,8 +3691,7 @@ function render(d){
     const wk=d.week||0,_dbt=((d.ledger||{}).debt||0)>0.5;
     _wks.innerHTML='Cette semaine : <b class="'+sgn(wk)+'">'+(wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2)+
      '</b>'+((_g||_r)?' \u2014 '+_g+' jour'+(_g>1?'s':'')+' vert'+(_g>1?'s':'')+', '+_r+' rouge'+(_r>1?'s':''):'')+
-     '. '+(MAN()?(wk>=0?'Le compte avance.':(_dbt?'Vous vous rattrapez \u2014 restez prudent.':'Semaine difficile ; on continue.'))
-      :(wk>=0?'Le robot avance.':(_dbt?'Le robot se rattrape.':'Semaine difficile ; le robot continue.')));
+     '. '+(wk>=0?T('wk_up'):(_dbt?T('wk_debt'):T('wk_down')));
     _wkc.style.display='block';}
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
@@ -4502,6 +4530,7 @@ def user_stats(u, admin_override=False):
                         "bot": _bot, "botlive": _live, "blocked": _blk,
                         "trade": bool(x.get("trade")
                                       or x.get("id") == "kino"),
+                        "days": (nd.get("days") or [])[:7],
                         "plan": x.get("plan")})
                 d["nest"] = _rows
             except Exception:

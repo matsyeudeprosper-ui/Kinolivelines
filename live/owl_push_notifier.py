@@ -77,7 +77,7 @@ def is_manual(uid):
 
 
 def send_all(title, body, kind="instant", only_uid=None,
-             skip_uids=None):
+             skip_uids=None, url=None):
     try:
         subs = json.load(open(SUBS))
     except Exception:
@@ -111,7 +111,8 @@ def send_all(title, body, kind="instant", only_uid=None,
             try:
                 resp = webpush(s, json.dumps({"title": title,
                                               "body": body,
-                                              "tag": "owl"}),
+                                              "tag": "owl",
+                                              "url": url or ""}),
                                vapid_private_key=VAPID_PEM,
                                vapid_claims=dict(CLAIMS), timeout=10)
                 mylog(f"  {uid}: HTTP "
@@ -254,6 +255,19 @@ def maybe_signal():
 
 
 
+def _hist_url(uid):
+    """2026-09-27: the weekly push opens the member's Historique (the week
+    card lights up there)."""
+    try:
+        for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                encoding="utf-8")):
+            if u.get("id") == uid and u.get("token"):
+                return f"/{u['token']}/#hist"
+    except Exception:
+        pass
+    return None
+
+
 def maybe_weekly():
     """Sunday >= 20:00 UTC: one weekly report push."""
     t = time.gmtime()
@@ -285,8 +299,8 @@ def maybe_weekly():
                      + (("Le compte avance." if week >= 0 else "Vous vous rattrapez.")
                         if is_manual(uid) else
                         ("Le robot avance." if week >= 0 else "Le robot se rattrape."))
-                     + " Bonne semaine !",
-                     only_uid=uid)
+                     + " Touchez pour partager votre semaine.",
+                     only_uid=uid, url=_hist_url(uid))
         json.dump({"sent": wk}, open(WEEKLY_MARK, "w"))
     except Exception as e:
         mylog(f"weekly failed: {e}")

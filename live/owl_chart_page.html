@@ -4,13 +4,18 @@
 <title>Graphique custom</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a111c;color:#cfe3f5;overflow:hidden;
- font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+/* 2026-09-27: the chart joins the app's design system - same tokens, same
+   Inter, SVG chrome, one accent. The canvas palette is untouched. */
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1c2836;--border:#1f2a38;--border2:#2a3a4d;
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent:#3b82f6;--accent-soft:#8fc6ff;--up:#2ecc71;--down:#ff5c5c;--warn:#e8c55a}
+body{background:var(--bg);color:var(--text2);overflow:hidden;
+ font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 #hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
  padding:12px 96px 6px 14px;position:relative;z-index:3}
-#back{text-decoration:none;color:#9fc2de;font-size:1.35rem;
+#back{text-decoration:none;color:var(--accent-soft);font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
-#hd h1{font-size:1rem;font-weight:700;letter-spacing:.01em}
+#hd h1{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--text)}
 /* Owner 2026-09-17: three separate pills spent ~80px on their own borders,
    padding and gaps, and the last one was clipped on a 390px phone. One
    strip, divided into segments: the chrome is paid for once. The weather
@@ -55,9 +60,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #botrow>*{pointer-events:auto;flex:none}
 #botbar>*{pointer-events:auto}
 #mtopen{margin-left:auto}
-#backlive{display:none;font-size:.72rem;font-weight:800;color:#0a111c;
- background:#e8c55a;border:0;border-radius:99px;padding:8px 14px;
- letter-spacing:.04em;box-shadow:0 4px 14px rgba(232,197,90,.35)}
+#backlive{display:none;font-size:.72rem;font-weight:800;color:#fff;
+ background:var(--accent);border:0;border-radius:99px;padding:8px 14px;
+ letter-spacing:.04em;box-shadow:0 4px 14px rgba(59,130,246,.35)}
 /* one line, never wrapping. The number is the thing you must be able to
    read, so it never shrinks or clips; the meta yields first and then
    disappears entirely (owner 2026-09-16). */
@@ -78,14 +83,14 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 #pnl.loss{border-color:rgba(255,92,92,.45);
  box-shadow:0 0 24px rgba(255,92,92,.22)}
 #pnl.loss b{color:#ff5c5c}
-#px{position:fixed;top:12px;right:14px;font-size:1rem;z-index:4;
- font-variant-numeric:tabular-nums;color:#e8c55a;font-weight:800;
+#px{position:fixed;top:12px;right:14px;font-size:1.02rem;z-index:4;
+ font-variant-numeric:tabular-nums;color:var(--text);font-weight:800;letter-spacing:-.01em;
  transition:transform .18s ease,color .18s ease}
 #livedot{position:fixed;width:10px;height:10px;border-radius:50%;
- background:#e8c55a;display:none;pointer-events:none;z-index:2;
+ background:var(--accent-soft);display:none;pointer-events:none;z-index:2;
  animation:ldp 1.2s ease-out infinite}
-@keyframes ldp{0%{box-shadow:0 0 0 0 rgba(232,197,90,.55)}
- 100%{box-shadow:0 0 0 12px rgba(232,197,90,0)}}
+@keyframes ldp{0%{box-shadow:0 0 0 0 rgba(143,198,255,.55)}
+ 100%{box-shadow:0 0 0 12px rgba(143,198,255,0)}}
 #aura{position:fixed;inset:0;pointer-events:none;z-index:1;
  opacity:0;transition:opacity 1s}
 #aura.choc{opacity:1;animation:chocp 2.4s ease-in-out infinite}
@@ -136,27 +141,28 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
     margin-top:1px;white-space:nowrap;overflow:hidden;
     text-overflow:ellipsis"></div>
   </div>
-  <button id="mtcancel" title="Fermer l'outil" style="flex:none;width:28px;
-   height:28px;padding:0;border-radius:9px;border:1px solid #27394c;
-   background:#121b25;color:#7e93a8;font-size:.9rem;line-height:1">
-   &#10005;</button>
+  <button id="mtcancel" title="Fermer l'outil" aria-label="Fermer l'outil" style="flex:none;width:28px;
+   height:28px;padding:0;border-radius:9px;border:1px solid var(--border2);
+   background:var(--surface2);color:var(--muted);display:inline-flex;align-items:center;justify-content:center">
+   <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
  </div>
  <div style="display:flex;gap:7px;margin-top:8px;align-items:stretch">
   <!-- the destructive button keeps its distance from the primary one -->
-  <button id="mtpend" title="Programmer l'entree" style="flex:none;width:46px;
-   padding:11px 0;border-radius:12px;border:1px solid #33475c;
-   background:#16202c;color:#e8c55a;font-size:1rem;line-height:1">
-   &#9202;</button>
-  <button id="mtflip" title="Inverser le sens" style="flex:none;width:46px;
-   padding:11px 0;border-radius:12px;border:1px solid #33475c;
-   background:#16202c;color:#cfe3f5;font-size:1rem;line-height:1">
-   &#8645;</button>
-  <button id="mtclose" title="Fermer la position" style="display:none;
+  <button id="mtpend" title="Programmer l'entree" aria-label="Programmer l'entree" style="flex:none;width:46px;
+   padding:11px 0;border-radius:12px;border:1px solid var(--border2);
+   background:var(--surface2);color:var(--warn);display:inline-flex;align-items:center;justify-content:center">
+   <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></button>
+  <button id="mtflip" title="Inverser le sens" aria-label="Inverser le sens" style="flex:none;width:46px;
+   padding:11px 0;border-radius:12px;border:1px solid var(--border2);
+   background:var(--surface2);color:var(--text2);display:inline-flex;align-items:center;justify-content:center">
+   <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M7 4v16M7 20l-3-3M7 20l3-3M17 20V4M17 4l-3 3M17 4l3 3"/></svg></button>
+  <button id="mtclose" title="Fermer la position" aria-label="Fermer la position" style="display:none;
    flex:none;width:46px;padding:11px 0;border-radius:12px;
-   border:1px solid #6d2230;background:#2a1116;color:#ff8a8a;
-   font-size:1rem;line-height:1;margin-right:9px">&#10005;</button>
+   border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;
+   margin-right:9px;align-items:center;justify-content:center">
+   <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   <button id="mtgo" style="flex:1;padding:12px;border-radius:12px;border:0;
-   background:#2563eb;color:#fff;font-weight:800;font-size:.86rem">
+   background:var(--accent);color:#fff;font-weight:800;font-size:.86rem;box-shadow:0 6px 18px rgba(59,130,246,.3)">
    Confirmer</button>
  </div>
 </div>
@@ -383,6 +389,12 @@ function draw(){
   ctx.fillStyle=bg;
   ctx.beginPath();ctx.roundRect(W-w-4,y-8,w,16,8);ctx.fill();
   ctx.fillStyle=col;ctx.fillText(txt,W-w+1,y+3.5);};
+ // 2026-09-27 (owner): in manual mode the chart is a signal service - the
+ // anticipated break, when its pullback is confirmed, is named on the chart.
+ if(!FULL&&window._MANUAL){
+  const dd=(D.int_trend||D.trend||0)===-1?-1:1;
+  const lv=antiLevel(dd)||antiLevel(-dd);
+  if(lv)tag(px(lv),'\u25B6 prochain signal ici','#0b2417','#8df0bb');}
  (D.trades||[]).forEach(t=>{
   const yE=px(t[2]);
   if(t[3]>0){const y=px(t[3]);
@@ -1295,7 +1307,7 @@ function ui(){
    const up=D.px>lastPx;
    pe.style.color=up?'#2ecc71':'#ff5c5c';
    pe.style.transform='translateY('+(up?'-3px':'3px')+')';
-   setTimeout(()=>{pe.style.color='#e8c55a';
+   setTimeout(()=>{pe.style.color='';
     pe.style.transform='none';},240);}
   lastPx=D.px;}
 }
@@ -1483,6 +1495,10 @@ function mtRender(){
   ((D.int_choch&&D.int_choch!==D.int_trend)
    ?' <span style="color:#e8c55a">bascule '+
     (D.int_choch===1?'&#9650;':'&#9660;')+'</span>':'')+'</span>';
+ const _rv=(D&&D.vol_now&&D.vol_ref)?D.vol_now/Math.max(D.vol_ref,1):1;
+ if(_rv>=1.85)p2=chip('MARCHÉ TRÈS AGITÉ '+_rv.toFixed(2)+'x','#2a0d0d','#ff5c5c')+sep+p2;
+ else if(window._MANUAL&&!c.edit&&!MT.editPend){const _al=antiLevel(c.d);
+  if(_al)p2+=sep+'<span style="color:#8df0bb">signal @ '+_al.toFixed(0)+'</span>';}
  const against=(MS.trend===1&&c.d===-1)||(MS.trend===-1&&c.d===1);
  if(against)p2+=sep+'<span style="color:#e8c55a">&#9888;&#65039; à contre-sens</span>';
  else if(c.inner)p2+=sep+'<span style="color:#b98cff">petite structure</span>';
@@ -1556,6 +1572,14 @@ mtopen.onclick=async()=>{
   document.getElementById('botbar').style.bottom=
    ((mtbar.offsetHeight||140)+14)+'px';
   mtRender();return;}
+ const _rv0=(D&&D.vol_now&&D.vol_ref)?D.vol_now/Math.max(D.vol_ref,1):1;
+ if(_rv0>=1.85){
+  const ok=await adSheet('<h3 style="margin:0 0 8px">Marché très agité ('+_rv0.toFixed(2)+'x)</h3>'+
+   '<p style="color:#9fb6cc;margin:0 0 12px">Les mouvements sont bien plus grands que d’habitude : '+
+   'personne ne trade ici, pas même le robot. Ouvrir l’outil quand même ?</p>'+
+   '<button style="'+AD_BTN+'background:#c0392b;color:#fff" onclick="_adDone(1)">Ouvrir quand même</button>'+
+   '<button style="'+AD_BTN+'background:#16202c;color:#9fb6cc" onclick="_adDone(null)">Attendre</button>');
+  if(!ok)return;}
  const px=MS.px,a=Math.max(60,(SCALE?(SCALE.hi-SCALE.lo)*0.12:150));
  // The tool opens ON the internal structure when there is one: its
  // direction AND its diamond. The internal trend often opposes the main
@@ -1806,8 +1830,12 @@ async function mtLoad(){
    // live trade stays available.
    const hasPos=!!(MS.open&&MS.open.length);
    const hasOrd=!!(MS.pending&&MS.pending.length);
-   mtopen.innerHTML=hasPos?'&#9999;&#65039; Modifier SL/TP'
-    :(hasOrd?'&#9999;&#65039; Modifier l’ordre':'&#128200; Trader');
+   const _svg=p=>'<svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">'+p+'</svg>';
+   const _pen=_svg('<path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13 7l4 4"/>'),
+    _ch=_svg('<path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>');
+   mtopen.innerHTML=hasPos?_pen+' Modifier SL/TP'
+    :(hasOrd?_pen+' Modifier l’ordre':_ch+' Trader');
+   window._MANUAL=!MS.auto;
    const canOpen=MS.auto?(hasPos||hasOrd):true;
    mtopen.style.display=(MT||!canOpen)?'none':'block';
    return;}
