@@ -1,4 +1,4 @@
-﻿# boot_all.ps1 - revive the whole Kinolive stack after a reboot/logon.
+# boot_all.ps1 - revive the whole Kinolive stack after a reboot/logon.
 # Idempotent: only starts what is not already running. Registered by the
 # USER as a scheduled task (auto-trading launch authority = user).
 $log = "C:\Projects\KinoliveLines\live\boot_all.log"
@@ -104,7 +104,7 @@ if (-not (ProcRunning "structure_bos_bot.py infinity")) {
 # real restart. Must match the bare ".py" ending exactly, or this would
 # also match kino/demo/valere/infinity's command lines.
 if (-not (Get-CimInstance Win32_Process |
-        Where-Object { $_.CommandLine -like "*structure_bos_bot.py" })) {
+        Where-Object { $_.CommandLine -match "structure_bos_bot\.py\s*$" })) {
     Say "starting BOS bot (bos / Dad, default account)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
