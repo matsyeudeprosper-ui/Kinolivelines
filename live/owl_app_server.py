@@ -1472,8 +1472,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  </div>
  <div class="srow" id="stepsbtn" onclick="stepsSheet()">
   <div class="sic"><svg class="ic"><use href="#i-check"/></svg></div>
-  <div style="flex:1"><b>Mes &eacute;tapes</b>
-   <div class="ssub" id="steps-sub">Vos premiers pas avec le robot</div></div>
+  <div style="flex:1"><b>Mon parcours</b>
+   <div class="ssub" id="steps-sub">&Eacute;tapes et moments avec OwlNest</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="healthrow" onclick="healthSheet()" style="display:none">
@@ -1963,7 +1963,7 @@ const I18N_EN=new Map(Object.entries({
  'Langue':'Language','Code d\\'accès':'Passcode','Code d\u2019accès':'Passcode','Protéger cette page avec 4 chiffres':'Protect this page with 4 digits',
  'Télécharger mes trades':'Download my trades','Fichier CSV · date, sens, lot, entrée, sortie, résultat':'CSV file · date, side, lot, entry, exit, result',
  'Messages':'Messages','Les dernières notifications reçues':'Latest notifications received','Mon objectif':'My goal','Choisir un solde à atteindre':'Pick a balance to reach',
- 'Mes étapes':'My milestones','Vos premiers pas avec le robot':'Your first steps with the robot','Ce qu\\'il faut savoir':'Good to know','Ce qu\u2019il faut savoir':'Good to know',
+ 'Mes étapes':'My milestones','Mon parcours':'My journey','Étapes et moments avec OwlNest':'Milestones and moments with OwlNest','Vos premiers pas avec le robot':'Your first steps with the robot','Ce qu\\'il faut savoir':'Good to know','Ce qu\u2019il faut savoir':'Good to know',
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
@@ -2921,8 +2921,10 @@ function stepsSheet(){
  const st=window._badges||{};
  const fd=t=>{const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
  const n=Object.keys(st).length;
- let h='<h3>Mes \u00e9tapes</h3><p>'+(n?n+' \u00e9tape'+(n>1?'s':'')+' sur '+BADGES.length+'. Les autres viendront avec le temps.':'Vos premi\u00e8res \u00e9tapes appara\u00eetront ici d\u00e8s que le robot aura agi pour vous.')+'</p>';
+ const en=LANG()==='en';
+ let h='<h3>'+(en?'My journey':'Mon parcours')+'</h3><p>'+(n?n+' \u00e9tape'+(n>1?'s':'')+' sur '+BADGES.length+'. Les autres viendront avec le temps.':'Vos premi\u00e8res \u00e9tapes appara\u00eetront ici d\u00e8s que le robot aura agi pour vous.')+'</p>';
  h+='<div class="bdg">'+BADGES.map(([k,l,dsc,ic])=>'<div class="stpi'+(st[k]?'':' off')+'"><div class="stpc"><svg class="ic ic-s"><use href="#'+ic+'"/></svg></div><div style="min-width:0"><b>'+l+'</b><span>'+(st[k]?'le '+fd(st[k]):dsc)+'</span></div></div>').join('')+'</div>';
+ if(window._tlHtml)h+='<div class="lbl" style="margin:16px 0 6px">'+(en?'Moments':'Les moments')+'</div>'+window._tlHtml;
  h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  sheet(h);
 }
@@ -3229,13 +3231,12 @@ function renderTimeline(d){
  const bd=window._badges||{};const BN={t10:['10 trades','10 trades'],t50:['50 trades','50 trades'],t100:['100 trades','100 trades'],gweek:['Semaine verte','Green week'],goal:['Objectif atteint','Goal reached'],d30:['30 jours','30 days'],d100:['100 jours','100 days']};
  Object.keys(bd).forEach(k=>{if(!BN[k])return;const dt=new Date(bd[k]*1000);
   ev.push({t:bd[k],ic:'i-check',c:'var(--up)',l:BN[k][en?1:0],s:String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')+'/'+dt.getFullYear()});});
- if(ev.length<2){el.style.display='none';return;}
+ el.style.display='none';   // 2026-09-28 (owner): the journey lives in Reglages > Mon parcours, not in Historique
+ if(ev.length<2){window._tlHtml='';return;}
  ev.sort((a,b)=>b.t-a.t);
- document.getElementById('tl-lbl').textContent=en?'Your journey':'Votre parcours';
- setH(document.getElementById('tl-list'),'<div style="position:absolute;left:14px;top:12px;bottom:12px;width:2px;background:var(--border2)"></div>'+
+ window._tlHtml='<div style="position:relative"><div style="position:absolute;left:14px;top:12px;bottom:12px;width:2px;background:var(--border2)"></div>'+
   ev.map(e=>'<div style="display:flex;align-items:center;gap:12px;padding:7px 0;position:relative"><div class="evi" style="color:'+e.c+';background:var(--surface);border:1px solid var(--border2);z-index:1"><svg class="ic ic-s"><use href="#'+e.ic+'"/></svg></div>'+
-   '<div style="flex:1"><b style="font-size:.9rem">'+e.l+'</b><div style="font-size:.74rem;color:var(--muted)">'+(e.s||'')+'</div></div></div>').join(''));
- el.style.display='block';
+   '<div style="flex:1"><b style="font-size:.9rem">'+e.l+'</b><div style="font-size:.74rem;color:var(--muted)">'+(e.s||'')+'</div></div></div>').join('')+'</div>';
 }
 // 2026-09-27: after a reset or for a new member, cards say what comes next
 function renderEmpty(d){
