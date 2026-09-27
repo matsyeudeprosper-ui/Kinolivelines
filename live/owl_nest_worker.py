@@ -201,6 +201,20 @@ def compute():
         _m3[_dt.strftime("%Y-%m")][_k] = _m3[_dt.strftime("%Y-%m")].get(_k, 0.0) + val(d)
     months = {ym: [{"d": k, "p": round(v, 2)} for k, v in sorted(dd.items())]
               for ym, dd in _m3.items()}
+    # monthly report figures: trades, wins, longest winning streak
+    _ms = {}
+    for d in _since(m3_start):
+        _ym = datetime.fromtimestamp(d.time, tz=timezone.utc).strftime("%Y-%m")
+        st = _ms.setdefault(_ym, {"n": 0, "won": 0, "streak": 0, "_cur": 0})
+        st["n"] += 1
+        if val(d) > 0.005:
+            st["won"] += 1
+            st["_cur"] += 1
+            st["streak"] = max(st["streak"], st["_cur"])
+        elif val(d) < -0.005:
+            st["_cur"] = 0
+    month_stats = {k: {"n": v["n"], "won": v["won"], "streak": v["streak"]}
+                   for k, v in _ms.items()}
     return {
         "name": u.get("name", uid),
         "acct": ai.login,
@@ -220,6 +234,7 @@ def compute():
         "day_trades": _dtr,
         "month_days": month_days,
         "months": months,
+        "month_stats": month_stats,
         "curve": curve[-120:],
         "curve30": curve30,
         "updated_utc": utcnow.isoformat(timespec="seconds"),

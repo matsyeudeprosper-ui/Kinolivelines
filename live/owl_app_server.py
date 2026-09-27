@@ -209,11 +209,15 @@ SW = (
     "clients.claim()));"
     "self.addEventListener('fetch',e=>{"
     "if(e.request.mode==='navigate'){"
-    "e.respondWith(fetch(e.request).then(r=>{"
-    "const cp=r.clone();"
-    "caches.open('owl1').then(c=>c.put(e.request,cp));"
-    "return r;}).catch(()=>caches.match(e.request).then(m=>m||"
-    "new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}}))));}});"
+    "e.respondWith(caches.match(e.request).then(m=>{"
+    "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
+    "caches.open('owl1').then(c=>c.put(e.request,cp));}return r;}).catch(()=>null);"
+    "if(m){net.catch(()=>{});return m;}"
+    "return net.then(r=>r||new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}}));}));}});"
+    "self.addEventListener('message',e=>{if(e.data&&e.data.type==='refresh'){"
+    "e.waitUntil(fetch(e.data.url,{cache:'no-store'}).then(r=>{if(r&&r.ok){"
+    "return caches.open('owl1').then(c=>c.put(e.data.url,r.clone()));}}).catch(()=>{})"
+    ".then(()=>{if(e.source)e.source.postMessage({type:'refreshed'});}));}});"
     "self.addEventListener('push',e=>{let d={};"
     "try{d=e.data.json()}catch(x){}"
     "e.waitUntil(self.registration.showNotification("
@@ -801,7 +805,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
 </style></head><body>
-<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked')}catch(e){}</script>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -1075,8 +1079,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="sec" style="margin-top:20px">Jour par jour
  <span class="hint">&middot; touchez un jour</span></div>
 <div class="panel" id="days" style="display:none"></div>
-<div class="sec" id="msum-sec" style="display:none">R&eacute;sum&eacute;
- du mois</div>
+<div class="sec" id="msum-sec" style="display:none;display:flex;justify-content:space-between;
+ align-items:center"><span>R&eacute;sum&eacute; du mois</span>
+ <button onclick="monthReport()" style="border:1px solid var(--border2);background:var(--surface3);
+  color:var(--text2);border-radius:99px;padding:5px 12px;font-size:.72rem;font-weight:700;
+  text-transform:none;letter-spacing:0;display:inline-flex;align-items:center;gap:6px">
+  <svg class="ic ic-s"><use href="#i-book"/></svg>Rapport</button></div>
 <div class="panel" id="msum-verdict" style="display:none;margin-bottom:10px;
  font-size:.95rem;line-height:1.5;color:var(--text)"></div>
 <div class="grid" id="msum" style="display:none;margin-top:2px"></div>
@@ -1156,6 +1164,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     <button class="thc" data-t="light" style="flex:1;border:1px solid var(--border);
      background:transparent;color:var(--muted2);border-radius:10px;
      padding:9px;font-size:.82rem;font-weight:700">Clair</button>
+   </div></div>
+ </div>
+ <div class="srow" id="textrow" style="cursor:default">
+  <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
+  <div style="flex:1"><b>Taille du texte</b>
+   <div style="display:flex;gap:8px;margin-top:8px">
+    <button class="tsc" data-b="0" style="flex:1;border:1px solid var(--border2);
+     background:var(--surface3);color:var(--text2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">Normal</button>
+    <button class="tsc" data-b="1" style="flex:1;border:1px solid var(--border);
+     background:transparent;color:var(--muted2);border-radius:10px;
+     padding:9px;font-size:.82rem;font-weight:700">Plus grand</button>
    </div></div>
  </div>
  <div class="srow" id="pinbtn" onclick="pinSetup()">
@@ -1355,6 +1375,14 @@ async function pinSetup(){
 }
 function pinRow(){const e=document.getElementById('pin-sub');if(e)e.textContent=
  localStorage.getItem(pinKey())?'Activ\u00e9 \u2014 demand\u00e9 \u00e0 l\u2019ouverture':'Prot\u00e9ger cette page avec 4 chiffres';}
+function appRefresh(){
+ let done=false;const go=()=>{if(done)return;done=true;location.reload();};
+ const c=navigator.serviceWorker&&navigator.serviceWorker.controller;
+ if(!c){go();return;}
+ navigator.serviceWorker.addEventListener('message',ev=>{if(ev.data&&ev.data.type==='refreshed')go();});
+ c.postMessage({type:'refresh',url:location.href.split('#')[0]});
+ setTimeout(go,4000);
+}
 function toast(html,ms){const t=document.getElementById('toast');if(!t)return;
  t.innerHTML=html;t.classList.add('on');clearTimeout(window._toastT);
  window._toastT=setTimeout(()=>t.classList.remove('on'),ms||4500);}
@@ -1369,6 +1397,13 @@ window.addEventListener('load',()=>{let t='dark';
  try{t=localStorage.getItem('owlTheme')||'dark'}catch(e){}
  setTheme(t,false);pinRow();
  document.querySelectorAll('.thc').forEach(b=>b.onclick=()=>setTheme(b.dataset.t,true));
+ const _big=(()=>{try{return localStorage.getItem('owlBig')==='1'}catch(e){return false}})();
+ const _tsp=on=>{document.documentElement.style.fontSize=on?'112.5%':'';
+  document.querySelectorAll('.tsc').forEach(b=>{const a=(b.dataset.b==='1')===on;
+   b.style.background=a?'var(--surface3)':'transparent';b.style.borderColor=a?'var(--border2)':'var(--border)';
+   b.style.color=a?'var(--text2)':'var(--muted2)';});};
+ _tsp(_big);document.querySelectorAll('.tsc').forEach(b=>b.onclick=()=>{const on=b.dataset.b==='1';
+  try{localStorage.setItem('owlBig',on?'1':'0')}catch(e){}_tsp(on);});
  loadDay();setInterval(loadDay,60000);
  try{const _h=(location.hash||'').slice(1);
   if(_h==='marche'||_h==='hist'||_h==='set'){
@@ -2122,11 +2157,16 @@ function tradeSheet(i){
   'space-between;padding:10px 2px;border-bottom:1px solid var(--border);'+
   'font-size:.95rem"><span style="color:var(--muted2)">'+a+
   '</span><b>'+b+'</b></div>';
+ const _m2=/^(\d\d)\/(\d\d) (\d\d):(\d\d)$/.exec(x.w||'');let _tx=0;
+ if(_m2){const n=new Date();let y=n.getUTCFullYear();if(parseInt(_m2[2])>n.getUTCMonth()+1)y--;
+  _tx=Math.round(Date.UTC(y,parseInt(_m2[2])-1,parseInt(_m2[1]),parseInt(_m2[3]),parseInt(_m2[4]))/1000);}
  sheet('<h3 style="display:flex;align-items:center;gap:8px">'+
   (x.dir==='A'?'<span style="color:var(--up)">&#9650;</span> Achat'
    :'<span style="color:var(--down)">&#9660;</span> Vente')+
   (x.k&&x.k!=='page'?'<span class="pill'+(x.k==='soldat'?' pill-w':'')+
    '">'+x.k+'</span>':'')+'</h3>'+
+  '<div id="tstory" style="font-size:.92rem;line-height:1.5;color:var(--text);margin:6px 0 12px">'+
+  '<span style="color:var(--muted)">Un instant\u2026</span></div>'+
   L('R&eacute;sultat','<span class="'+(sgn(x.p))+'">'+
    (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</span>')+
   (x.lot?L('Taille',x.lot.toFixed(2)+' lot'):'')+
@@ -2148,6 +2188,26 @@ function tradeSheet(i){
     'justify-content:center;gap:8px;text-decoration:none" href="'+q+'">'+
     '<svg class="ic ic-s"><use href="#i-chart"/></svg>Voir sur le graphique</a>';})()+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
+ tradeStory(_tx,x);
+}
+async function tradeStory(tx,x){
+ const el=document.getElementById('tstory');if(!el)return;
+ let st=null;try{const r=await fetch(B+'trade?t='+tx);if(r.ok)st=await r.json();}catch(e){}
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const fd=m=>{m=Math.round(m||0);return m>=60?Math.floor(m/60)+' h '+String(m%60).padStart(2,'0'):m+' min';};
+ const buy=(st&&st.found?st.dir==='BUY':x.dir==='A');
+ const p=(st&&st.found)?st.p:x.p;
+ let t='';
+ if(st&&st.found){const d=new Date(st.t*1000);
+  t='Le robot a '+(buy?'achet\u00e9':'vendu')+' le '+String(d.getDate()).padStart(2,'0')+'/'+
+   String(d.getMonth()+1).padStart(2,'0')+' \u00e0 '+String(d.getHours()).padStart(2,'0')+':'+
+   String(d.getMinutes()).padStart(2,'0')+(st.band?', dans un march\u00e9 '+st.band:'')+'.'+
+   (st.risk?' Il a risqu\u00e9 au plus <b>$'+st.risk.toFixed(1)+'</b>.':'')+
+   ' Le trade a dur\u00e9 '+fd(st.dur_min)+' et s\u2019est termin\u00e9 par '+
+   (p>=0?'un <b class="pos">gain de '+money(p)+'</b>. Bien jou\u00e9.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>. \u00c7a arrive \u2014 il continue.');}
+ else{t='Le robot a '+(buy?'achet\u00e9':'vendu')+(x.dur!=null?' et gard\u00e9 le trade '+fd(x.dur):'')+
+   ', termin\u00e9 par '+(p>=0?'un <b class="pos">gain de '+money(p)+'</b>.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>.');}
+ setH(el,t);
 }
 window.addEventListener('load',()=>{
  const ib=document.getElementById('invbtn');
@@ -2172,6 +2232,65 @@ window.addEventListener('load',()=>{
    else{await info('&#10060; <h3>Mot de passe incorrect.</h3>');}}
   catch(e2){await info('<h3>Petit souci, r&eacute;essayez.</h3>');}};
 });
+function monthReport(){
+ const R=window._mrep;if(!R)return;
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const lab=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?m[3]+'/'+m[2]:k;};
+ const bd=R.src.find(x=>x.p===R.best),wd=R.src.find(x=>x.p===R.worst);
+ const st=R.stats;
+ let t='<p style="color:var(--text)">En <b>'+R.name+'</b>'+
+  (st?', le robot a pris <b>'+st.n+' trade'+(st.n>1?'s':'')+'</b>'+(st.n?' (dont '+st.won+' gagn\u00e9'+(st.won>1?'s':'')+')':''):'')+
+  '. R\u00e9sultat : <b class="'+sgn(R.net)+'">'+money(R.net)+'</b>.</p>';
+ const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>';
+ const row=(i,h)=>'<div class="srow-ev">'+i+'<div style="flex:1">'+h+'</div></div>';
+ t+=row(ico('i-calendar','var(--accent-soft)'),'<b>'+R.g+' jour'+(R.g>1?'s':'')+' vert'+(R.g>1?'s':'')+'</b>, <b>'+R.rr+' rouge'+(R.rr>1?'s':'')+'</b>.');
+ if(bd&&R.best>0.005)t+=row(ico('i-check','var(--up)'),'Meilleur jour : le '+lab(bd.d)+', <b class="pos">'+money(R.best)+'</b>.');
+ if(wd&&R.worst<-0.005)t+=row(ico('i-x','var(--down)'),'Jour le plus dur : le '+lab(wd.d)+', <b class="neg">'+money(R.worst)+'</b>.');
+ if(st&&st.streak>1)t+=row(ico('i-activity','var(--up)'),'Plus longue s\u00e9rie : <b>'+st.streak+' gains de suite</b>.');
+ t+='<p style="color:var(--text);margin-top:10px">'+(R.net>=0?'Le robot avance.':(R.debt?'Le robot est en train de se rattraper \u2014 il avance prudemment.':'Un mois difficile ; le robot continue.'))+'</p>';
+ sheet('<h3>Rapport du mois</h3>'+t+
+  '<button class="shbtn shmain" style="display:flex;align-items:center;justify-content:center;gap:8px" onclick="shareMonth()"><svg class="ic ic-s"><use href="#i-share"/></svg>Partager ce rapport</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
+}
+function shareMonth(){
+ const R=window._mrep,d=window._d;if(!R||!d)return;
+ const W=720,H=980,c=document.createElement('canvas');c.width=W;c.height=H;
+ const g=c.getContext('2d');
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect(x,y,w,h,r);};
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0f2740');bg.addColorStop(.45,'#0b0f14');bg.addColorStop(1,'#0b0f14');
+ g.fillStyle=bg;g.fillRect(0,0,W,H);
+ rr(56,52,60,60,16);g.fillStyle='#0d1117';g.fill();
+ [76,96].forEach(cx=>{g.beginPath();g.arc(cx,76,9.5,0,Math.PI*2);g.fillStyle='#f0b43c';g.fill();
+  g.beginPath();g.arc(cx,76,4,0,Math.PI*2);g.fillStyle='#121212';g.fill();});
+ g.beginPath();g.moveTo(86,84);g.lineTo(80,98);g.lineTo(92,98);g.closePath();g.fillStyle='#c87828';g.fill();
+ g.textAlign='left';g.fillStyle='#e8eef4';g.font='bold 34px Inter, system-ui, sans-serif';g.fillText('OwlNest',132,84);
+ g.fillStyle='#8a9bb0';g.font='22px Inter, system-ui, sans-serif';g.fillText('Mon mois \u00b7 '+R.name+' \u00b7 '+(d.name||''),132,112);
+ const up=R.net>=0;g.textAlign='center';g.fillStyle=up?'#2ecc71':'#ff5c5c';
+ g.font='bold 104px Inter, system-ui, sans-serif';g.fillText((up?'+$':'-$')+Math.abs(R.net).toFixed(2),W/2,246);
+ g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';g.fillText(R.name,W/2,280);
+ // day strip: one bar per day of the month
+ rr(48,318,W-96,180,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.lineWidth=1.5;g.stroke();
+ const days=R.src||[];const n=Math.max(28,days.length?parseInt(days[days.length-1].d.slice(-2)):30);
+ const amax=Math.max(1,...days.map(x=>Math.abs(x.p)));const bw=(W-160)/n;
+ g.strokeStyle='rgba(255,255,255,.12)';g.beginPath();g.moveTo(80,408);g.lineTo(W-80,408);g.stroke();
+ days.forEach(x=>{const i=parseInt(x.d.slice(-2))-1;const h=Math.max(3,Math.abs(x.p)/amax*70);
+  rr(80+i*bw+bw*.2,x.p>=0?408-h:408,Math.max(3,bw*.6),h,3);g.fillStyle=x.p>=0?'#2ecc71':'#ff5c5c';g.fill();});
+ // stats rows
+ const st=R.stats;const rows=[];
+ if(st)rows.push(['Trades',st.n+(st.n?' \u00b7 '+st.won+' gagn\u00e9'+(st.won>1?'s':''):'')]);
+ rows.push(['Jours verts / rouges',R.g+' / '+R.rr]);
+ if(R.best>0.005)rows.push(['Meilleur jour','+$'+R.best.toFixed(2)]);
+ if(R.worst<-0.005)rows.push(['Jour le plus dur','-$'+Math.abs(R.worst).toFixed(2)]);
+ if(st&&st.streak>1)rows.push(['Plus longue s\u00e9rie',st.streak+' gains de suite']);
+ const top=530,dh=46;rr(48,top,W-96,30+rows.length*dh+14,26);g.fillStyle='#121a25';g.fill();g.strokeStyle='#1f2a38';g.stroke();
+ rows.forEach((r,i)=>{const y=top+50+i*dh;g.textAlign='left';g.fillStyle='#a9b8c8';g.font='22px Inter, system-ui, sans-serif';g.fillText(r[0],80,y);
+  g.textAlign='right';g.fillStyle='#e8eef4';g.font='bold 22px Inter, system-ui, sans-serif';g.fillText(r[1],W-80,y);});
+ g.textAlign='center';g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText('Le robot Owl trade pour vous, jour et nuit.',W/2,H-56);
+ c.toBlob(async b=>{const f=new File([b],'owlnest-mois.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Mon mois OwlNest'});}catch(e){}}
+  else{try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}}},'image/png');
+}
 function shareWeek(){
  const d=window._d;
  if(!d)return;
@@ -2766,7 +2885,7 @@ function render(d){
    toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-download"/></svg></div>'+
     '<div style="flex:1">Nouvelle version disponible</div>'+
     '<button class="shbtn shmain" style="width:auto;margin:0;padding:8px 12px;font-size:.82rem;min-height:0" '+
-    'onclick="location.reload()">Actualiser</button>',600000);}
+    'onclick="appRefresh()">Actualiser</button>',600000);}
   const _k0=(d.trades&&d.trades[0])?(d.trades[0].w+'|'+d.trades[0].p):'';
   if(window._lastTradeKey!==undefined&&_k0&&_k0!==window._lastTradeKey){
    const x=d.trades[0],up=x.p>=0;
@@ -3139,6 +3258,9 @@ function render(d){
      rr+'</span>','neu','verts / rouges')+
     cell('Meilleur jour',f(best),'pos','le plus gagnant')+
     cell('Pire jour',f(worst),sgn(worst),'le plus dur'));
+   window._mrep={ym:_ym,name:_MN[_bm.getUTCMonth()]+' '+_bm.getUTCFullYear(),net:net,g:g,rr:rr,
+    best:best,worst:worst,src:_src,stats:((d.month_stats||{})[_ym])||null,
+    debt:((d.ledger||{}).debt||0)>0.5};
    const _mv=document.getElementById('msum-verdict');
    if(_mv){const _dbt=((d.ledger||{}).debt||0)>0.5;_mv.style.display='block';
     _mv.innerHTML=(_off?'En '+_MN[_bm.getUTCMonth()]+' : ':'Ce mois : ')+'<b class="'+sgn(net)+'">'+f(net)+'</b>, '+g+' jour'+(g>1?'s':'')+
@@ -3445,6 +3567,59 @@ def day_payload(user):
     except Exception:
         pass
     return out
+
+
+def trade_story(user, t_close):
+    """Find the journal row whose exit is within 3 min of t_close and
+    return plain-words material: direction, times, duration, max risk in
+    dollars, how the market felt at entry (calme / soutenu / rapide /
+    tres rapide), the result. No levels, no rule names."""
+    out = {"found": False}
+    bot = BOT_OF.get(user.get("id"))
+    if not (bot and bot[1].startswith("bos_state") and t_close):
+        return out
+    sfx = bot[1][len("bos_state"):-len(".json")]
+    import csv as _csv
+
+    def _ep(x):
+        try:
+            return int(datetime.fromisoformat(x.replace("Z", "+00:00")).timestamp())
+        except Exception:
+            return None
+    best = None
+    try:
+        with open(os.path.join(DIR, f"bos_journal{sfx}.csv"),
+                  encoding="utf-8", errors="replace") as jf:
+            for r in _csv.DictReader(jf):
+                xt = _ep(r.get("exit_time_utc") or "")
+                if xt is None:
+                    continue
+                dd = abs(xt - t_close)
+                if dd <= 180 and (best is None or dd < best[0]):
+                    best = (dd, r, xt)
+    except Exception:
+        return out
+    if best is None:
+        return out
+    r, xt = best[1], best[2]
+    et = _ep(r.get("entry_time_utc") or "") or xt
+    try:
+        nv = float(r.get("nervosity") or 0)
+    except Exception:
+        nv = 0.0
+    band = ("calme" if nv < 1.0 else "soutenu" if nv < 1.30
+            else "rapide" if nv < 1.85 else "tr\u00e8s rapide") if nv else ""
+    try:
+        risk = round(float(r.get("dist_pts") or 0) * float(r.get("lot") or 0), 2)
+    except Exception:
+        risk = None
+    try:
+        p = float(r.get("profit_usd") or 0)
+    except Exception:
+        p = 0.0
+    return {"found": True, "dir": r.get("direction") or "", "t": et, "x": xt,
+            "dur_min": round((xt - et) / 60), "risk": risk, "band": band,
+            "p": p}
 
 
 def export_csv(user):
@@ -4217,7 +4392,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
  display:flex;align-items:center;justify-content:center;gap:6px}
 .pfoot img{width:16px;height:16px;border-radius:4px}
 </style></head><body>
-<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked')}catch(e){}</script>
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
@@ -4325,15 +4500,31 @@ Se connecter</button>
 <div style="color:var(--muted);font-size:.85rem">Compte connu : vous entrez
  directement. Nouveau compte : on vous demande juste une info de plus.
 </div>
-<label>Num&eacute;ro de compte MT5</label>
-<input name="login" required inputmode="numeric" placeholder="12345678">
-<label>Mot de passe du compte</label>
-<input name="password" required placeholder="votre mot de passe">
-<button class="go">Continuer &#10142;</button>
+<label for="lg">Num&eacute;ro de compte MT5</label>
+<input id="lg" name="login" required inputmode="numeric" autocomplete="username"
+ placeholder="12345678">
+<label for="pw">Mot de passe du compte</label>
+<div style="position:relative">
+ <input id="pw" name="password" type="password" required
+  autocomplete="current-password" placeholder="votre mot de passe"
+  style="padding-right:52px">
+ <button type="button" id="pweye" aria-label="Afficher le mot de passe"
+  onclick="const p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.style.opacity=p.type==='text'?'1':'.6'"
+  style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  width:40px;height:40px;border:0;background:transparent;color:var(--text3);
+  opacity:.6;display:flex;align-items:center;justify-content:center">
+  <svg class="ic"><use href="#i-eye"/></svg></button>
+</div>
+<button class="go" id="gobtn">Continuer &#10142;</button>
+<div style="margin-top:12px;font-size:.8rem;color:var(--muted);line-height:1.5">
+ Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre
+ compte. Ils ne sont jamais partag&eacute;s.</div>
 </form>
 </div>
 
 </div><script>
+document.addEventListener('submit',e=>{const b=document.getElementById('gobtn');
+ if(b&&e.target.contains(b)){b.disabled=true;b.textContent='Un instant\u2026';}});
 function show(id){
  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
  document.getElementById(id).classList.add('on');
@@ -4396,12 +4587,13 @@ def _join_result(title, body_html):
     return ("<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,"
             "initial-scale=1\"><title>OwlNest</title>"
-            "<style>body{background:#0b0f14;color:#e8eef4;margin:0;"
-            "padding:40px 20px;font-family:-apple-system,'Segoe UI',Roboto,"
-            "sans-serif;text-align:center}a{color:#3b82f6;font-size:1.15rem;"
-            "word-break:break-all}.k{background:#151d29;border-radius:20px;"
-            "box-shadow:0 6px 18px rgba(0,0,0,.35);padding:26px 20px;"
-            "max-width:420px;margin:0 auto;line-height:1.6}"
+            "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}body{background:#0b0f14;color:#e8eef4;margin:0;"
+            "padding:40px 20px;font-family:'Inter',-apple-system,'Segoe UI',Roboto,"
+            "sans-serif;text-align:center}a{color:#8fc6ff;font-size:1rem;"
+            "word-break:break-all}.k{background:#121a25;border:1px solid #1f2a38;border-radius:24px;"
+            "box-shadow:inset 0 1px 0 rgba(255,255,255,.04);padding:26px 20px;"
+            "max-width:420px;margin:0 auto;line-height:1.6}h2{font-size:1.2rem;margin:0 0 8px}"
+            "p{color:#c6d3df;font-size:.95rem;margin:8px 0}"
             "</style></head><body><div class=\"k\">"
             f"<h2>{title}</h2>{body_html}</div></body></html>")
 
@@ -4413,18 +4605,22 @@ def _step2_page(login, pwd):
     return ("<!doctype html><html lang=\"fr\"><head>"
             "<meta charset=\"utf-8\"><meta name=\"viewport\" "
             "content=\"width=device-width,initial-scale=1\">"
-            "<title>OwlNest</title><style>body{background:#0b0f14;"
-            "color:#e8eef4;margin:0;padding:34px 20px;font-family:"
+            "<title>OwlNest</title><style>@font-face{font-family:'Inter';"
+            "src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;"
+            "font-display:swap}body{background:#0b0f14;"
+            "color:#e8eef4;margin:0;padding:34px 20px;font-family:'Inter',"
             "-apple-system,'Segoe UI',Roboto,sans-serif}.k{background:"
-            "#151d29;border-radius:20px;padding:24px 20px;max-width:"
-            "420px;margin:0 auto;box-shadow:0 6px 18px rgba(0,0,0,.35)}"
-            "label{display:block;margin:16px 0 7px;color:#9db0c2;"
+            "#121a25;border:1px solid #1f2a38;border-radius:24px;padding:24px 20px;"
+            "max-width:420px;margin:0 auto;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}"
+            "h2{font-size:1.2rem;margin:0 0 6px}"
+            "label{display:block;margin:16px 0 7px;color:#9fc2de;"
             "font-size:.92rem;font-weight:600}input{width:100%;"
             "box-sizing:border-box;padding:15px;border-radius:12px;"
-            "border:1.5px solid #263341;background:#0f1620;color:"
-            "#e8eef4;font-size:1.05rem}button{width:100%;margin-top:"
+            "border:1px solid #2b3a4d;background:#0b0f14;color:"
+            "#e8eef4;font-size:1.05rem}input:focus{outline:none;border-color:#3b82f6}"
+            "button{width:100%;margin-top:"
             "22px;background:#3b82f6;color:#fff;border:0;border-radius:"
-            "14px;padding:17px;font-size:1.1rem;font-weight:700}"
+            "14px;padding:16px;font-size:1.05rem;font-weight:700}"
             "</style></head><body><div class=\"k\">"
             "<h2>&#129417; Nouveau compte !</h2>"
             "<p style=\"color:#9aa7b4;font-size:.9rem;line-height:1.5\">"
@@ -4475,8 +4671,9 @@ def handle_login(form):
         return ("page", _join_result(
             "&#128274; Mot de passe incorrect",
             "<p>Ce compte existe d&eacute;j&agrave; dans le nid, mais "
-            "le mot de passe ne correspond pas.</p>"
-            "<p><a href=\"/\">R&eacute;essayer</a></p>"))
+            "le mot de passe ne correspond pas. V&eacute;rifiez-le dans "
+            "votre application MT5, puis r&eacute;essayez.</p>"
+            "<p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
     return ("page", _step2_page(login, pwd))
 
 
@@ -5298,6 +5495,15 @@ class H(BaseHTTPRequestHandler):
                 user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "day":
             self._send(json.dumps(day_payload(user)), "application/json")
+        elif sub == "trade":
+            # 2026-09-27: the story of one closed trade, member-safe words
+            try:
+                import urllib.parse as _up3
+                _q = _up3.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _t = int(_q.get("t", ["0"])[0])
+            except Exception:
+                _t = 0
+            self._send(json.dumps(trade_story(user, _t)), "application/json")
         elif sub == "export.csv":
             # 2026-09-27: member-safe columns only, from the account's journal
             self._send(export_csv(user), "text/csv; charset=utf-8")
