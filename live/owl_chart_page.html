@@ -171,7 +171,7 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
 const tok=location.pathname.split('/').filter(x=>x)[0];
 // 2026-09-26 (owner): members see candles, their own trades and a soft
 // zone; the annotated structure is for the admin's browser only.
-const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})();
+const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})()||%%FULL%%;   // 2026-09-27: strategy members get the full view from the server
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');

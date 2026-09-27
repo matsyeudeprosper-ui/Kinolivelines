@@ -288,6 +288,98 @@ def is_admin(u):
 
 
 MANUAL_MODES = ("manual", "semi")
+
+# ---- 2026-09-27: the commercial model (owner, decisions delegated) ----
+# family    : the owner's circle - everything, no payment (activation code)
+# manual    : the signal service + the trade tool, 30 days (NOWPayments)
+# strategy  : manual + the full chart view + the method in words, 30 days
+# auto      : copy of the owner's account on MQL5 Signals (link only)
+ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
+PAY_FILE = os.path.join(DIR, "owl_payments.json")
+PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Manuel"},
+            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}
+MANUAL_CAP = 10          # one MT5 terminal per manual member on this VPS
+
+
+def _ents():
+    try:
+        e = json.load(open(ENT_FILE, encoding="utf-8"))
+        return e if isinstance(e, dict) else {}
+    except Exception:
+        return {}
+
+
+def ent(uid):
+    return _ents().get(uid) or {}
+
+
+def has(uid, key):
+    """family covers everything; strategy covers manual; dates are epochs."""
+    e = ent(uid)
+    if e.get("family"):
+        return True
+    now = time.time()
+    if key == "manual":
+        return (float(e.get("manual_until") or 0) > now
+                or float(e.get("strategy_until") or 0) > now)
+    if key == "strategy":
+        return float(e.get("strategy_until") or 0) > now
+    return False
+
+
+def ent_grant(uid, pkg, days, src):
+    """Extend from the later of now / the current end (a renewal adds)."""
+    e = _ents()
+    r = e.get(uid) or {}
+    k = pkg + "_until"
+    base = max(time.time(), float(r.get(k) or 0))
+    r[k] = int(base + days * 86400)
+    if pkg == "strategy":
+        r["manual_until"] = max(int(r.get("manual_until") or 0), r[k])
+    r["updated"] = int(time.time())
+    r["src"] = src
+    e[uid] = r
+    json.dump(e, open(ENT_FILE + ".tmp", "w", encoding="utf-8"), indent=1)
+    os.replace(ENT_FILE + ".tmp", ENT_FILE)
+    return r
+
+
+def ent_family(uid, on=True):
+    e = _ents()
+    r = e.get(uid) or {}
+    r["family"] = bool(on)
+    r["updated"] = int(time.time())
+    e[uid] = r
+    json.dump(e, open(ENT_FILE + ".tmp", "w", encoding="utf-8"), indent=1)
+    os.replace(ENT_FILE + ".tmp", ENT_FILE)
+
+
+def manual_seats():
+    """Accounts running (or entitled to run) a desk right now."""
+    try:
+        us = json.load(open(USERS_FILE, encoding="utf-8"))
+    except Exception:
+        us = []
+    return sum(1 for u in us if u.get("mode") in MANUAL_MODES)
+
+
+def can_switch(u):
+    """May this account switch auto <-> manual (and use the trade tool)?"""
+    return u is not None and (is_admin(u) or has(u.get("id"), "manual"))
+
+
+def plan_of(u):
+    e = ent(u.get("id"))
+    cfg = nest_config()
+    return {"family": bool(e.get("family")),
+            "manual": has(u.get("id"), "manual"),
+            "strategy": has(u.get("id"), "strategy"),
+            "manual_until": int(e.get("manual_until") or 0),
+            "strategy_until": int(e.get("strategy_until") or 0),
+            "packages": PACKAGES,
+            "seats_left": max(0, MANUAL_CAP - manual_seats()),
+            "pay_ready": bool(cfg.get("np_api_key")),
+            "mql5_url": cfg.get("mql5_url") or ""}
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
 # sees the row, locked.
 # Owner 2026-09-17: the accounts whose owner may switch auto <-> manual.
@@ -458,7 +550,8 @@ def manual_ok(u):
     """2026-09-15 (owner): the trade tool belongs to the ACCOUNT's mode.
     An account running full automation never gets it; one switched to
     manual or semi-manual drives itself from its own page."""
-    return u is not None and u.get("mode") in MANUAL_MODES
+    return (u is not None and u.get("mode") in MANUAL_MODES
+            and (is_admin(u) or has(u.get("id"), "manual")))
 
 
 def master_pwd_ok(pw):
@@ -1348,6 +1441,28 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  l&#8217;application &raquo;)<br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t sur votre
  t&eacute;l&eacute;phone !</div>
+<div class="sec" id="plan-sec">Abonnement</div>
+<div class="panel" id="plan-card" style="padding:14px">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" id="plan-ic" style="color:var(--accent-soft)"><svg class="ic"><use href="#i-key"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="plan-t" style="font-size:1rem">Observateur</b>
+   <div id="plan-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px"></div></div>
+ </div>
+ <div id="plan-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
+ <div id="plan-note" style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.45"></div>
+</div>
+<a class="srow" id="mql5row" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;color:inherit;margin-top:10px">
+ <div class="sic"><svg class="ic"><use href="#i-bot"/></svg></div>
+ <div style="flex:1"><b>Trading automatique</b>
+  <div class="ssub">Copier le compte de Kino via MQL5 &middot; ouvrir le signal</div></div>
+ <svg class="ic chv"><use href="#i-chev"/></svg>
+</a>
+<div class="srow" id="stratrow" onclick="stratSheet()" style="display:none;margin-top:10px">
+ <div class="sic" style="color:var(--warn)"><svg class="ic"><use href="#i-eye"/></svg></div>
+ <div style="flex:1"><b>La strat&eacute;gie</b>
+  <div class="ssub">La m&eacute;thode en mots simples &middot; le graphique complet</div></div>
+ <svg class="ic chv"><use href="#i-chev"/></svg>
+</div>
 <div class="sec" id="rob-sec" style="display:none">Le robot</div>
 <div class="panel" id="rob-card" style="display:none;padding:4px 14px">
  <div class="srow" id="pausebtn">
@@ -1384,6 +1499,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div class="srow" id="goalbtn">
   <div class="sic"><svg class="ic"><use href="#i-target"/></svg></div>
   <div style="flex:1"><b>D&eacute;finir l&#39;objectif</b></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="paycfg" onclick="payCfg()">
+  <div class="sic"><svg class="ic"><use href="#i-key"/></svg></div>
+  <div style="flex:1"><b>Paiements &amp; MQL5</b>
+   <div class="ssub" id="paycfg-sub">Cl&eacute; NOWPayments, secret IPN, lien du signal MQL5</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="contactcfg" onclick="contactCfg()">
@@ -3366,6 +3487,66 @@ function dayDone(d){
  el.style.display='block';
  const dtc=document.getElementById('daytargetchip');if(dtc)dtc.style.display='none';
 }
+// ---- 2026-09-27: the commercial model in the app ----
+function renderPlan(d){
+ const P=d.plan,el=document.getElementById('plan-card');if(!P||!el)return;
+ const en=LANG()==='en';const fd=ts=>{const x=new Date(ts*1000);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0');};
+ const t=document.getElementById('plan-t'),sub=document.getElementById('plan-s'),bt=document.getElementById('plan-btns'),nt=document.getElementById('plan-note'),ic=document.getElementById('plan-ic');
+ if(d.public){el.style.display='none';document.getElementById('plan-sec').style.display='none';return;}
+ let title,txt,color='var(--accent-soft)';
+ if(P.family){title=en?'Famille':'Famille';txt=en?'Everything is open: manual, automatic, the strategy.':'Tout est ouvert : manuel, automatique, la strat\u00e9gie.';color='var(--warn)';}
+ else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'Manual + the full view, until ':'Manuel + la vue compl\u00e8te, jusqu\u2019au ')+fd(P.strategy_until)+'.';color='var(--warn)';}
+ else if(P.manual){title=en?'Manual':'Manuel';txt=(en?'Signals and the trade tool, until ':'Signaux et outil de trading, jusqu\u2019au ')+fd(P.manual_until)+'.';color='var(--up-soft)';}
+ else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
+ t.textContent=title;sub.textContent=txt;ic.style.color=color;
+ const pk=P.packages||{};
+ const btn=(k,lab,price,dis,sub2)=>'<button '+(dis?'disabled ':'')+'onclick="buyPkg(&#39;'+k+'&#39;)" style="border:1px solid var(--border2);background:'+(dis?'var(--surface2)':'var(--surface3)')+';color:'+(dis?'var(--muted)':'var(--text2)')+';border-radius:12px;padding:10px 8px;font-size:.84rem;font-weight:700;line-height:1.35">'+lab+'<span style="display:block;font-size:.72rem;font-weight:600;color:var(--muted2)">'+price+(sub2?' \u00b7 '+sub2:'')+'</span></button>';
+ const full=(P.seats_left<=0&&!P.manual);
+ bt.innerHTML=P.family?'':(btn('manual',(en?'Manual':'Manuel')+(P.manual&&!P.strategy?' \u2713':''),'$'+(pk.manual||{}).usd+' / 30 j',!P.pay_ready||full,full?(en?'full':'complet'):'')+
+  btn('strategy',(en?'Strategy':'Strat\u00e9gie')+(P.strategy?' \u2713':''),'$'+(pk.strategy||{}).usd+' / 30 j',!P.pay_ready,''));
+ nt.textContent=P.family?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
+  :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
+ const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
+ const sr=document.getElementById('stratrow');if(sr)sr.style.display=P.strategy?'flex':'none';
+ const pb=document.getElementById('pausebtn');if(pb&&d.pause_locked&&!d.public){const ps=document.getElementById('pause-sub');if(ps&&!P.manual)ps.textContent=en?'Manual trading needs the Manual plan.':'Le trading manuel demande l\u2019abonnement Manuel.';}
+}
+async function buyPkg(k){
+ const en=LANG()==='en';
+ const r=await fetch(B+'buy',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pkg='+encodeURIComponent(k)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(j&&j.err==='complet'?(en?'No place left for now.':'Plus de place pour l\u2019instant.'):(j&&j.err==='not ready'?(en?'Payments open soon.':'Paiements bient\u00f4t disponibles.'):(en?'Cannot create the invoice right now.':'Impossible de cr\u00e9er la facture pour l\u2019instant.')),3500);return;}
+ try{window.open(j.url,'_blank');}catch(e){location.href=j.url;}
+}
+function stratSheet(){
+ const en=LANG()==='en';
+ const row=(ic,c,t,x)=>'<div class="srow-ev"><div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+ic+'"/></svg></div><div style="flex:1;min-width:0"><b style="font-size:.92rem">'+t+'</b><div style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px">'+x+'</div></div></div>';
+ const F=[
+  ['i-activity','var(--accent-soft)','La structure du march\u00e9','Le robot lit les hauts et les bas du march\u00e9 sur 1 minute. Un <b>point prot\u00e9g\u00e9</b> (le point sur le graphique) est le dernier creux ou sommet qui tient la tendance.'],
+  ['i-chart','var(--up)','Les trois entr\u00e9es','<b>Bascule</b> : le prix casse le point prot\u00e9g\u00e9, la tendance change, on entre dans le nouveau sens. <b>Continuation</b> : dans une tendance en cours, le prix casse le dernier sommet (ou creux) : on entre dans le sens de la tendance, une fois par niveau. <b>Toucher</b> : le prix vient toucher le point prot\u00e9g\u00e9 sans le casser et repart.'],
+  ['i-lock','var(--warn)','Le stop et la cible','Le stop est plac\u00e9 au niveau de la structure (pas sur la bougie). La cible vaut 0,8 fois le risque : le robot gagne un peu plus souvent qu\u2019il ne perd, et c\u2019est la fr\u00e9quence qui paie.'],
+  ['i-cloud','var(--muted2)','Les freins','Nervosit\u00e9 : la taille des bougies de l\u2019heure compar\u00e9e aux 24 h. Au-dessus de 1,85\u00d7 (\u00ab tr\u00e8s agit\u00e9 \u00bb) personne ne trade. Mouvement : sans grand mouvement depuis 2 h, on attend. Une petite structure interne existe aussi, avec ses propres r\u00e8gles, plus prudente.'],
+  ['i-target','var(--down-soft)','Le rattrapage','Apr\u00e8s une perte, le robot ne prend que la bascule et <b>une</b> continuation apr\u00e8s elle (ou apr\u00e8s un toucher). La petite structure est en pause. Une r\u00e9serve, aliment\u00e9e par une part de chaque gain, permet un lot un peu plus gros \u2014 jamais plus de 10 % du solde sur un trade.'],
+  ['i-stop','var(--down)','Les limites','Objectif par jour selon le solde ; ligne de s\u00e9curit\u00e9 \u00e0 \u2212$60 net : le robot s\u2019arr\u00eate seul. Le graphique complet vous montre tout \u00e7a en direct : points, cassures, niveaux attendus.']];
+ sheet('<h3>'+(en?'The strategy':'La strat\u00e9gie')+'</h3><p style="color:var(--text)">'+(en?'The method, in plain words. The full chart shows it live.':'La m\u00e9thode, en mots simples. Le graphique complet la montre en direct.')+'</p>'+F.map(f=>row(f[0],f[1],f[2],f[3])).join('')+
+  '<a class="shbtn shmain" style="display:block;text-align:center;text-decoration:none;margin-top:12px" href="'+B+'chart">'+(en?'Open the full chart':'Ouvrir le graphique complet')+'</a><button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
+}
+async function payCfg(){
+ const d=window._d||{};
+ const inp=(id,ph,val,type)=>'<input id="'+id+'" type="'+(type||'text')+'" placeholder="'+ph+'" value="'+String(val||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:11px 14px;font-size:.92rem;margin-bottom:8px">';
+ const v=await sheet('<h3>Paiements &amp; MQL5</h3><p>Cl\u00e9s NOWPayments (compte marchand), secret IPN (m\u00eame valeur que dans NOWPayments \u203a IPN), et le lien du signal MQL5 pour le trading automatique. Laissez vide pour ne pas changer.</p>'+
+  inp('shnpk','Cl\u00e9 API NOWPayments','', 'password')+inp('shnps','Secret IPN','', 'password')+inp('shmq','https://www.mql5.com/fr/signals/...',d.plan&&d.plan.mql5_url||'')+
+  '<label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted2);margin:2px 0 10px"><input id="shsbx" type="checkbox"> Mode test (sandbox NOWPayments)</label>'+
+  '<button class="shbtn shmain" onclick="_shDone({k:document.getElementById(&#39;shnpk&#39;).value,s:document.getElementById(&#39;shnps&#39;).value,m:document.getElementById(&#39;shmq&#39;).value,b:document.getElementById(&#39;shsbx&#39;).checked})">Enregistrer</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(!v)return;
+ const pw=await askPwd('Enregistrer ?','Mot de passe ma\u00eetre.','Enregistrer');if(!pw)return;
+ let body='pwd='+encodeURIComponent(pw)+'&mql5_url='+encodeURIComponent(v.m||'')+'&np_sandbox='+(v.b?'1':'0');
+ if(v.k)body+='&np_api_key='+encodeURIComponent(v.k);if(v.s)body+='&np_ipn_secret='+encodeURIComponent(v.s);
+ const r=await fetch(AB()+'nest_config',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
+ toast('Enregistr\u00e9',2000);window._lastS=null;load();
+}
 function agoTxt(ts){if(!ts)return LANG()==='en'?'never seen':'jamais vu';const s=Math.max(0,Date.now()/1000-ts),en=LANG()==='en';
  if(s<120)return en?'seen just now':'vu \u00e0 l\u2019instant';if(s<3600)return (en?'seen ':'vu il y a ')+Math.round(s/60)+' min'+(en?' ago':'');
  if(s<86400)return (en?'seen ':'vu il y a ')+Math.round(s/3600)+' h'+(en?' ago':'');return (en?'seen ':'vu il y a ')+Math.round(s/86400)+(en?' d ago':' j');}
@@ -4063,7 +4244,7 @@ function render(d){
    if(d.contact_url){cr.style.display='flex';cr.href=d.contact_url;if(d.contact_label)document.getElementById('contact-lbl').textContent=d.contact_label;}
    else cr.style.display='none';
    const cs=document.getElementById('contactcfg-sub');if(cs&&d.contact_url)cs.textContent=d.contact_url;})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5254,7 +5435,8 @@ def user_stats(u, admin_override=False):
         # follow the flag wherever it was set, not just on this path, so no
         # account can end up with an unlocked-looking switch
         if "trading_paused" in d:
-            d["pause_locked"] = u.get("id") not in PAUSE_ALLOWED
+            d["pause_locked"] = not can_switch(u)
+        d["plan"] = plan_of(u)
         if u.get("public"):
             # view-only: no switch, no settings that change anything
             d["public"] = True
@@ -6245,6 +6427,98 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 1 and _parts[0] == "np_ipn":
+            # 2026-09-27: NOWPayments IPN - HMAC-SHA512 of the JSON with keys
+            # sorted, hex, in x-nowpayments-sig. A finished payment grants
+            # the package named in order_id "uid|pkg|ts". Never trusts the
+            # body without the signature.
+            import hmac as _hmac
+            import hashlib as _hashlib
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                raw = self.rfile.read(min(ln, 200000))
+                secret = (nest_config().get("np_ipn_secret") or "").encode()
+                sig = self.headers.get("x-nowpayments-sig") or ""
+                data = json.loads(raw.decode("utf-8", "replace"))
+                canon = json.dumps(data, sort_keys=True, separators=(",", ":"))
+                good = secret and _hmac.compare_digest(
+                    _hmac.new(secret, canon.encode(), _hashlib.sha512).hexdigest(), sig)
+                rec = {"t": int(time.time()), "sig_ok": bool(good),
+                       "status": data.get("payment_status"), "order": data.get("order_id"),
+                       "amount": data.get("price_amount"), "pay_amount": data.get("pay_amount"),
+                       "currency": data.get("pay_currency"), "id": data.get("payment_id")}
+                if good and data.get("payment_status") in ("finished", "confirmed"):
+                    try:
+                        _uid, _pkg, _ts = str(data.get("order_id")).split("|")[:3]
+                        if _pkg in PACKAGES:
+                            paid = float(data.get("price_amount") or 0)
+                            if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
+                                ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
+                                          f"nowpayments:{data.get('payment_id')}")
+                                rec["granted"] = _pkg
+                            else:
+                                rec["granted"] = "short"
+                    except Exception as e:
+                        rec["err"] = str(e)
+                try:
+                    pays = json.load(open(PAY_FILE, encoding="utf-8"))
+                    if not isinstance(pays, list):
+                        pays = []
+                except Exception:
+                    pays = []
+                pays.append(rec)
+                json.dump(pays[-500:], open(PAY_FILE, "w", encoding="utf-8"), indent=1)
+                self._send("ok" if good else "bad signature", "text/plain")
+            except Exception as e:
+                self._send("error " + str(e), "text/plain")
+            return
+        if len(_parts) == 2 and _parts[1] == "buy":
+            # 2026-09-27: create a NOWPayments invoice for a package
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upb
+                import urllib.request as _urq
+                _fb = _upb.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                pkg = (_fb.get("pkg", [""])[0] or "").strip()
+                cfg = nest_config()
+                if pkg not in PACKAGES:
+                    self._send(json.dumps({"ok": False, "err": "bad pkg"}), "application/json")
+                    return
+                if not cfg.get("np_api_key"):
+                    self._send(json.dumps({"ok": False, "err": "not ready"}), "application/json")
+                    return
+                if pkg == "manual" and not has(u["id"], "manual") and manual_seats() >= MANUAL_CAP:
+                    self._send(json.dumps({"ok": False, "err": "complet"}), "application/json")
+                    return
+                host = self.headers.get("Host") or "owlnest.local"
+                proto = "https" if ("127.0.0.1" not in host and "localhost" not in host) else "http"
+                origin = f"{proto}://{host}"
+                api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
+                body = json.dumps({
+                    "price_amount": PACKAGES[pkg]["usd"], "price_currency": "usd",
+                    "order_id": f"{u['id']}|{pkg}|{int(time.time())}",
+                    "order_description": f"OwlNest {PACKAGES[pkg]['label']} - {PACKAGES[pkg]['days']} jours",
+                    "ipn_callback_url": f"{origin}/np_ipn",
+                    "success_url": f"{origin}/{u['token']}/#set",
+                    "cancel_url": f"{origin}/{u['token']}/#set"}).encode()
+                req = _urq.Request(api + "/v1/invoice", data=body, method="POST",
+                                   headers={"x-api-key": cfg["np_api_key"],
+                                            "Content-Type": "application/json"})
+                with _urq.urlopen(req, timeout=20) as r:
+                    inv = json.loads(r.read().decode("utf-8", "replace"))
+                url = inv.get("invoice_url")
+                if not url:
+                    self._send(json.dumps({"ok": False, "err": "no invoice"}), "application/json")
+                    return
+                self._send(json.dumps({"ok": True, "url": url}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:120]}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_config":
             # 2026-09-27: owner settings shared by every member page (contact link)
             u = user_by_token(_parts[0])
@@ -6260,12 +6534,18 @@ class H(BaseHTTPRequestHandler):
                     self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
                     return
                 cfg = nest_config()
-                _url = (_fc.get("contact_url", [""])[0] or "").strip()[:300]
+                _url = (_fc.get("contact_url", [cfg.get("contact_url", "")])[0] or "").strip()[:300]
                 if _url and not (_url.startswith("https://") or _url.startswith("http://") or _url.startswith("mailto:") or _url.startswith("tel:")):
                     self._send(json.dumps({"ok": False, "err": "bad url"}), "application/json")
                     return
                 cfg["contact_url"] = _url
                 cfg["contact_label"] = (_fc.get("contact_label", [""])[0] or "").strip()[:60]
+                # 2026-09-27: payments + MQL5 (only the keys that were sent)
+                for k in ("np_api_key", "np_ipn_secret", "mql5_url"):
+                    if k in _fc:
+                        cfg[k] = (_fc.get(k, [""])[0] or "").strip()[:200]
+                if "np_sandbox" in _fc:
+                    cfg["np_sandbox"] = _fc.get("np_sandbox", ["0"])[0] == "1"
                 json.dump(cfg, open(CONFIG_FILE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
                 os.replace(CONFIG_FILE + ".tmp", CONFIG_FILE)
                 self._send(json.dumps({"ok": True}), "application/json")
@@ -6627,6 +6907,7 @@ class H(BaseHTTPRequestHandler):
                 json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
                           indent=2)
                 _users_cache["t"] = 0.0
+                ent_family(u["id"], True)      # 2026-09-27: family = everything
                 start_copier(u["id"])
                 self._send(json.dumps({"ok": True}), "application/json")
             except Exception as e:
@@ -6719,16 +7000,22 @@ class H(BaseHTTPRequestHandler):
             if _parts[1] == "pause":
                 # the lock is enforced HERE, not only in the UI: a hidden
                 # button is not a permission (owner 2026-09-16)
-                if u.get("id") not in PAUSE_ALLOWED:
+                if not can_switch(u):
                     self._send(json.dumps(
                         {"ok": False, "err": "verrouille"}),
                         "application/json")
                     return
                 try:
                     on = (_form.get("on", ["1"])[0] == "1")
+                    # seat cap: a switch INTO manual needs a free terminal
+                    if (on and u.get("mode") not in MANUAL_MODES
+                            and not is_admin(u) and manual_seats() >= MANUAL_CAP):
+                        self._send(json.dumps({"ok": False, "err": "complet"}),
+                                   "application/json")
+                        return
                     if (str(u.get("login")) == str(LOGIN)
                             or u.get("trade")
-                            or u.get("id") in MODE_SWITCH_ALLOWED):
+                            or can_switch(u)):
                         json.dump({"paused": on, "by": u["id"],
                                    "t": time.time()},
                                   open(os.path.join(DIR, _pp), "w"))
@@ -6741,7 +7028,7 @@ class H(BaseHTTPRequestHandler):
                     # processes trading the same account under different
                     # magic numbers. owl_mode_switch.py performs the actual
                     # swap; this only records the request.
-                    if u.get("id") in MODE_SWITCH_ALLOWED:
+                    if can_switch(u):
                         _want = "semi" if on else "auto"
                         _mtmp = os.path.join(
                             DIR, "owl_mode_switch_request.json.tmp")
@@ -7012,7 +7299,9 @@ class H(BaseHTTPRequestHandler):
                 # stamp the build so a stale page on a phone is obvious
                 _st = time.strftime("%m%d.%H%M",
                                     time.localtime(os.path.getmtime(_cp)))
-                self._send(_html.replace("%%BUILD%%", _st),
+                _full = "true" if (admin_cookie_ok(self.headers)
+                                   or has(user.get("id"), "strategy")) else "false"
+                self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full),
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
