@@ -1956,8 +1956,14 @@ function fdur(m){
  const j=Math.floor(h/24);
  return j+' j '+(h%24)+' h';}
 function sheet(html){return new Promise(res=>{
+ // 2026-09-27: wait for a just-closed sheet's history.back() to land before
+ // opening the next one (the form -> password chain used to lose the
+ // password sheet), and cancel its pending hide timer
+ const _w=Math.max(0,(window._shClosedAt||0)+450-Date.now());
+ setTimeout(()=>{
  const bg=document.getElementById('sheetbg'),
   sh=document.getElementById('sheet');
+ clearTimeout(window._shHideT);
  document.getElementById('sheet-c').innerHTML=html;
  bg.style.display='block';
  requestAnimationFrame(()=>{bg.style.opacity='1';
@@ -1969,7 +1975,8 @@ function sheet(html){return new Promise(res=>{
   window._shOpen=false;
   bg.style.opacity='0';
   sh.style.transform='translateY(105%)';
-  setTimeout(()=>{bg.style.display='none'},250);
+  window._shClosedAt=Date.now();
+  window._shHideT=setTimeout(()=>{bg.style.display='none'},250);
   try{if(history.state&&history.state.sh)history.back()}catch(e){}
   res(v)};
  bg.onclick=()=>window._shDone(null);
@@ -1977,6 +1984,7 @@ function sheet(html){return new Promise(res=>{
  if(inp){setTimeout(()=>inp.focus(),280);
   inp.onkeydown=(ev)=>{if(ev.key==='Enter'){
    const m=sh.querySelector('.shmain');if(m)m.click();}};}
+ },_w);
 });}
 window.addEventListener('popstate',()=>{
  if(window._shOpen)window._shDone(null);});
@@ -3533,9 +3541,11 @@ function stratSheet(){
 async function payCfg(){
  const d=window._d||{};
  const inp=(id,ph,val,type)=>'<input id="'+id+'" type="'+(type||'text')+'" placeholder="'+ph+'" value="'+String(val||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:11px 14px;font-size:.92rem;margin-bottom:8px">';
+ const P=d.plan||{};
  const v=await sheet('<h3>Paiements &amp; MQL5</h3><p>Cl\u00e9s NOWPayments (compte marchand), secret IPN (m\u00eame valeur que dans NOWPayments \u203a IPN), et le lien du signal MQL5 pour le trading automatique. Laissez vide pour ne pas changer.</p>'+
+  '<div style="font-size:.8rem;color:var(--muted2);margin:-4px 0 10px">\u00c9tat : '+(P.np_key_tail?'cl\u00e9 API enregistr\u00e9e (\u2026'+P.np_key_tail+')':'cl\u00e9 API absente')+' \u00b7 secret IPN '+(P.np_secret_set?'enregistr\u00e9':'absent')+(P.np_sandbox?' \u00b7 mode test':'')+'</div>'+
   inp('shnpk','Cl\u00e9 API NOWPayments','', 'password')+inp('shnps','Secret IPN','', 'password')+inp('shmq','https://www.mql5.com/fr/signals/...',d.plan&&d.plan.mql5_url||'')+
-  '<label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted2);margin:2px 0 10px"><input id="shsbx" type="checkbox"> Mode test (sandbox NOWPayments)</label>'+
+  '<label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted2);margin:2px 0 10px"><input id="shsbx" type="checkbox"'+(P.np_sandbox?' checked':'')+'> Mode test (sandbox NOWPayments)</label>'+
   '<button class="shbtn shmain" onclick="_shDone({k:document.getElementById(&#39;shnpk&#39;).value,s:document.getElementById(&#39;shnps&#39;).value,m:document.getElementById(&#39;shmq&#39;).value,b:document.getElementById(&#39;shsbx&#39;).checked})">Enregistrer</button>'+
   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
  if(!v)return;
@@ -4243,7 +4253,9 @@ function render(d){
   (function(){const cr=document.getElementById('contactrow');if(!cr)return;
    if(d.contact_url){cr.style.display='flex';cr.href=d.contact_url;if(d.contact_label)document.getElementById('contact-lbl').textContent=d.contact_label;}
    else cr.style.display='none';
-   const cs=document.getElementById('contactcfg-sub');if(cs&&d.contact_url)cs.textContent=d.contact_url;})();
+   const cs=document.getElementById('contactcfg-sub');if(cs&&d.contact_url)cs.textContent=d.contact_url;
+   const ps=document.getElementById('paycfg-sub'),P=d.plan||{};
+   if(ps&&d.is_master)ps.textContent=(P.np_key_tail?'Cl\u00e9 API \u2026'+P.np_key_tail:'Cl\u00e9 API : non d\u00e9finie')+' \u00b7 secret IPN '+(P.np_secret_set?'\u2713':'\u2717')+(P.np_sandbox?' \u00b7 sandbox':'')+(P.mql5_url?' \u00b7 MQL5 \u2713':'');})();
   drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
@@ -5437,6 +5449,11 @@ def user_stats(u, admin_override=False):
         if "trading_paused" in d:
             d["pause_locked"] = not can_switch(u)
         d["plan"] = plan_of(u)
+        if d.get("is_master"):
+            _c = nest_config()
+            d["plan"]["np_key_tail"] = (_c.get("np_api_key") or "")[-4:]
+            d["plan"]["np_secret_set"] = bool(_c.get("np_ipn_secret"))
+            d["plan"]["np_sandbox"] = bool(_c.get("np_sandbox"))
         if u.get("public"):
             # view-only: no switch, no settings that change anything
             d["public"] = True
@@ -6540,6 +6557,12 @@ class H(BaseHTTPRequestHandler):
                     return
                 cfg["contact_url"] = _url
                 cfg["contact_label"] = (_fc.get("contact_label", [""])[0] or "").strip()[:60]
+                try:
+                    with open(os.path.join(DIR, "owl_admin_actions.log"), "a", encoding="utf-8") as _al:
+                        _al.write(time.strftime("%Y-%m-%dT%H:%M:%S") + f" nest_config by {u.get('id')}: keys="
+                                  + ",".join(k for k in ("np_api_key", "np_ipn_secret", "mql5_url", "contact_url") if _fc.get(k, [""])[0]) + "\n")
+                except Exception:
+                    pass
                 # 2026-09-27: payments + MQL5 (only the keys that were sent)
                 for k in ("np_api_key", "np_ipn_secret", "mql5_url"):
                     if k in _fc:
