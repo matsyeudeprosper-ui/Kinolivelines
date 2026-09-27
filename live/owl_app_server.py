@@ -658,10 +658,11 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
-.topline{display:flex;justify-content:space-between;align-items:center}
+.topline{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.topline>span:last-child{flex:none}
 .brand{font-weight:700;color:#dbe9f7;font-size:1.02rem;display:inline-flex;
  align-items:center}
-.live{display:inline-flex;align-items:center;gap:6px;
+.live{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none;
  background:rgba(46,204,113,.14);color:var(--up-soft);font-size:.7rem;
  font-weight:700;padding:5px 11px;border-radius:999px;
  letter-spacing:.06em}
@@ -677,7 +678,7 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .dayline .sep{opacity:.45;margin:0 6px}
 #acctline{display:inline-flex;align-items:center;gap:6px;
  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
- font-size:.62rem;letter-spacing:.06em;color:rgba(255,255,255,.5);line-height:1}
+ font-size:.62rem;letter-spacing:.06em;color:rgba(255,255,255,.5);line-height:1;white-space:nowrap}
 #acctline i{width:6px;height:6px;border-radius:50%;display:inline-block}
 #tradepill{cursor:pointer;padding:6px 13px;font-size:.76rem}
 .eur{color:var(--text3);font-size:1.2rem;margin-top:2px}
@@ -2577,8 +2578,25 @@ function shareDay(){
   else{try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}}},'image/png');
 }
 // owner: account switcher sheet (the header chip); Le Nid stays the console
-function acctSheet(){
- const N=window._nest||[],d=window._d||{};if(!N.length)return;
+// Owner 2026-09-27: "once you have switched there is no way to go back" -
+// another member's page is not master, so it has no nest list. The owner's
+// browser remembers the owner's own page (owl_adm, set on the master page);
+// that page's /api still answers with the list, so any page can show the chip.
+async function nestFromAdmin(){
+ if(window._nest&&window._nest.length)return window._nest;
+ let adm=null;try{adm=localStorage.getItem('owl_adm');}catch(e){}
+ if(!adm)return null;
+ try{const r=await fetch(adm+'api?t='+Date.now(),{cache:'no-store'});if(!r.ok)return null;
+  const j=await r.json();if(j&&j.is_master&&j.nest){window._nest=j.nest;window._admName=j.name||'';return j.nest;}}catch(e){}
+ return null;
+}
+async function acctChipInit(){
+ if(window._d&&window._d.is_master)return;
+ const N=await nestFromAdmin();const ch=document.getElementById('acctchip');
+ if(N&&N.length&&ch){ch.style.display='inline-flex';document.getElementById('acctchip-n').textContent=N.length;}
+}
+async function acctSheet(){
+ const N=(await nestFromAdmin())||[],d=window._d||{};if(!N.length)return;
  const tb=N.reduce((a,x)=>a+(x.bal||0),0),tt=N.reduce((a,x)=>a+(x.today||0),0);
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const st=x=>{const noBot=!x.bot;
@@ -2602,7 +2620,9 @@ function acctSheet(){
    '<span style="color:var(--muted2);font-size:.84rem">'+N.length+' compte'+(N.length>1?'s':'')+' \u00b7 total</span>'+
    '<span style="text-align:right"><b style="font-size:1.05rem">$'+tb.toFixed(2)+'</b> <span class="'+sgn(tt)+'" style="font-size:.8rem;margin-left:6px">'+money(tt)+' auj.</span></span></div>'+
   '<div style="max-height:56vh;overflow-y:auto;margin:0 -6px;padding:0 6px">'+rows+'</div>'+
-  '<button class="shbtn shghost" onclick="_shDone(1);tab(\\'nid\\',document.getElementById(\\'tb-nid\\'))">Ouvrir Le Nid</button>'+
+  ((function(){let adm=null;try{adm=localStorage.getItem('owl_adm');}catch(e){}
+    return (adm&&adm!==B)?'<a class="shbtn shmain" style="display:block;text-align:center;text-decoration:none" href="'+adm+'">Retour \\u00e0 mon compte</a>':'';})())+
+  (d.is_master?'<button class="shbtn shghost" onclick="_shDone(1);tab(\\'nid\\',document.getElementById(\\'tb-nid\\'))">Ouvrir Le Nid</button>':'')+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
 async function tradePillTap(){
@@ -3864,6 +3884,7 @@ function offlineUI(on){
  tick();window._offT=setInterval(tick,500);
 }
 const POLL_MS=5000;
+setTimeout(acctChipInit,1500);
 load();loadInbox();
 let pollT=setInterval(load,POLL_MS);
 setInterval(ago,1000);
