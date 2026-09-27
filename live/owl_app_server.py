@@ -2199,9 +2199,9 @@ async function tradeStory(tx,x){
  const p=(st&&st.found)?st.p:x.p;
  let t='';
  if(st&&st.found){const d=new Date(st.t*1000);
-  t='Le robot a '+(buy?'achet\u00e9':'vendu')+' le '+String(d.getDate()).padStart(2,'0')+'/'+
-   String(d.getMonth()+1).padStart(2,'0')+' \u00e0 '+String(d.getHours()).padStart(2,'0')+':'+
-   String(d.getMinutes()).padStart(2,'0')+(st.band?', dans un march\u00e9 '+st.band:'')+'.'+
+  t='Le robot a '+(buy?'achet\u00e9':'vendu')+' le '+String(d.getUTCDate()).padStart(2,'0')+'/'+
+   String(d.getUTCMonth()+1).padStart(2,'0')+' \u00e0 '+String(d.getUTCHours()).padStart(2,'0')+':'+
+   String(d.getUTCMinutes()).padStart(2,'0')+(st.band?', dans un march\u00e9 '+st.band:'')+'.'+
    (st.risk?' Il a risqu\u00e9 au plus <b>$'+st.risk.toFixed(1)+'</b>.':'')+
    ' Le trade a dur\u00e9 '+fd(st.dur_min)+' et s\u2019est termin\u00e9 par '+
    (p>=0?'un <b class="pos">gain de '+money(p)+'</b>. Bien jou\u00e9.':'une <b class="neg">perte de $'+Math.abs(p).toFixed(2)+'</b>. \u00c7a arrive \u2014 il continue.');}
