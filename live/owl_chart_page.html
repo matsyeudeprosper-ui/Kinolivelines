@@ -158,6 +158,9 @@ body{background:#0a111c;color:#cfe3f5;overflow:hidden;
 
 <script>
 const tok=location.pathname.split('/').filter(x=>x)[0];
+// 2026-09-26 (owner): members see candles, their own trades and a soft
+// zone; the annotated structure is for the admin's browser only.
+const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})();
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');
@@ -359,6 +362,11 @@ function draw(){
   const s=v.toFixed(0);
   ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);}
  // --- trade zones (behind candles) ---
+ if(!FULL){const zo=(D.invalid!=null)?D.invalid:D.flip_bos;
+  if(D.next_bos&&zo!=null){const y1=px(D.next_bos),y2=px(zo);
+   const gz=ctx.createLinearGradient(0,Math.min(y1,y2),0,Math.max(y1,y2));
+   gz.addColorStop(0,'rgba(143,198,255,.10)');gz.addColorStop(1,'rgba(143,198,255,.02)');
+   ctx.fillStyle=gz;ctx.fillRect(0,Math.min(y1,y2),W,Math.abs(y1-y2));}}
  const usedY=[];
  const tag=(y0,txt,col,bg)=>{
   let y=Math.max(12,Math.min(Hh-12,y0));
@@ -472,6 +480,8 @@ function draw(){
   }
   ctx.restore();
  }
+ let edgeMark=null;
+ if(FULL){
  // --- structure spine through the dots ---
  const dpts=(D.dots||[]).map(d=>({x:xoft[d[0]],y:px(d[1])}))
   .filter(p=>p.x!==undefined);
@@ -523,7 +533,7 @@ function draw(){
  });
  // a level outside the window is docked at the edge with its price and
  // how far away it is, so nothing important disappears silently
- const edgeMark=(v,col,lab)=>{
+ edgeMark=(v,col,lab)=>{
   const top=v>hi,y=top?TOPP+9:TOPP+PLOT-9;
   ctx.save();ctx.globalAlpha=.92;ctx.fillStyle=col;
   ctx.beginPath();
@@ -607,6 +617,7 @@ function draw(){
   ctx.beginPath();ctx.arc(x,y,1.2*sc,0,6.3);ctx.fill();
   ctx.globalAlpha=1;
  });
+ }
  // --- trade entry ribbons + tags ---
  (D.trades||[]).forEach(t=>{
   const man=t[6]==='m';
@@ -800,6 +811,7 @@ function draw(){
  // toggled the entire structure on and off with every poll. The gate now
  // has hysteresis: it opens above 8% and only closes again below 3%, so
  // a wobble around the line cannot flap it.
+ if(FULL){
  const intRoom=(room,range)=>{
   if(!(range>0))return false;
   const f=room/range;
@@ -1054,6 +1066,7 @@ function draw(){
    ctx.fillStyle=near?'#0b1118':col;
    ctx.fillText(lbl,W-lw+1,yb+3.5);
    ctx.restore();}}}
+ }
  if(!MT&&MS&&MS.pending&&MS.pending.length){
   const p=MS.pending[0],ye=px(p.e);
   if(ye>2&&ye<TOPP+PLOT-2){
@@ -1235,7 +1248,7 @@ function ui(){
   // window. Measured: with at least one internal break in the last hour,
   // 63% win and +0.133 R; with none, 46% and -0.167 R with both halves of
   // the sample agreeing (review/INTERNAL_GATE.md).
-  if(D.int_brk_1h!==undefined&&D.int_trend){
+  if(FULL&&D.int_brk_1h!==undefined&&D.int_trend){
    const nb=D.int_brk_1h,aw=nb>=1;
    const W={ready:'rien ne bloque',flip:'bascule',forming:'formation',
             none:'—'}[D.int_state]||'—';
@@ -1256,7 +1269,7 @@ function ui(){
  }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
  tb.style.display='flex';
- const wound=D.choch?' · choc!':'';
+ const wound=(FULL&&D.choch)?' · choc!':'';
  // the arrow lives in <i> so it glows like the weather icon
  if(D.trend===1){tb.innerHTML='<i>▲</i>haussier'+wound;
   tb.style.color='#2ecc71';}
@@ -1269,7 +1282,7 @@ function ui(){
  const ab=document.getElementById('autobadge');
  if(ab)ab.style.display=D.auto?'flex':'none';
  hdstrip();
- document.getElementById('aura').className=D.choch?'choc':'';
+ document.getElementById('aura').className=(FULL&&D.choch)?'choc':'';
  const pe=document.getElementById('px');
  if(D.px){
   pe.textContent='$'+D.px.toFixed(0);

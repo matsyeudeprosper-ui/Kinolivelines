@@ -613,6 +613,14 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
  border:1px solid var(--tile-bd)}
 .srow-ev .evt{flex:none;font-size:.74rem;color:var(--muted);margin-top:3px;
  font-variant-numeric:tabular-nums}
+#toast{position:fixed;left:16px;right:16px;z-index:45;max-width:448px;
+ margin:0 auto;bottom:calc(88px + env(safe-area-inset-bottom,0px));
+ background:var(--surface2);border:1px solid var(--border2);border-radius:16px;
+ padding:12px 14px;display:flex;align-items:center;gap:11px;font-size:.92rem;
+ color:var(--text);box-shadow:0 12px 34px rgba(0,0,0,.4);
+ transform:translateY(16px);opacity:0;pointer-events:none;
+ transition:transform .25s ease,opacity .25s ease}
+#toast.on{transform:none;opacity:1}
 .hchip{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;
  font-weight:700;padding:4px 11px;border-radius:99px;
  background:rgba(255,255,255,.1);color:#dbe9f7}
@@ -820,6 +828,20 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
+<div class="panel" id="welcome" style="display:none;margin-top:26px">
+ <div class="lbl">Bienvenue</div>
+ <div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:8px">
+  Le robot commence &agrave; surveiller le march&eacute; pour vous. Voici ce
+  qui va appara&icirc;tre ici :</div>
+ <div style="margin-top:6px">
+  <div class="srow-ev"><div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-eye"/></svg></div>
+   <div style="flex:1"><b>Le march&eacute;</b><div style="font-size:.84rem;color:var(--muted2)">Ce que le robot voit, et ce qu&#39;il fait aujourd&#39;hui.</div></div></div>
+  <div class="srow-ev"><div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-chart"/></svg></div>
+   <div style="flex:1"><b>Votre premier trade</b><div style="font-size:.84rem;color:var(--muted2)">D&egrave;s que le robot agit, il s&#39;affiche ici et dans l&#39;Historique.</div></div></div>
+  <div class="srow-ev"><div class="evi" style="color:var(--warn)"><svg class="ic ic-s"><use href="#i-bell"/></svg></div>
+   <div style="flex:1"><b>Les notifications</b><div style="font-size:.84rem;color:var(--muted2)">Activez-les dans les R&eacute;glages pour &ecirc;tre pr&eacute;venu.</div></div></div>
+ </div>
+</div>
 <div class="glass" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
  style="margin-top:26px;padding:16px 16px 14px;cursor:pointer"
  onclick="tab('marche',document.getElementById('tb-marche'))">
@@ -1005,7 +1027,17 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 </div>
 <div class="tab" id="tab-hist">
-<div class="sec" style="margin-top:26px">Jour par jour
+<div class="panel" id="weekcard" style="display:none;margin-top:26px">
+ <div class="lbl">Ma semaine</div>
+ <div id="week-sum" style="font-size:.95rem;color:var(--text);line-height:1.5;
+  margin-top:8px"></div>
+ <button id="sharebtn" onclick="shareWeek()" style="width:100%;margin-top:12px;
+  background:var(--accent);box-shadow:0 8px 22px rgba(59,130,246,.3);color:#fff;
+  border:0;border-radius:14px;padding:13px;font-size:.95rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px">
+  <svg class="ic"><use href="#i-share"/></svg> Partager ma semaine</button>
+</div>
+<div class="sec" style="margin-top:20px">Jour par jour
  <span class="hint">&middot; touchez un jour</span></div>
 <div class="panel" id="days" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none">R&eacute;sum&eacute;
@@ -1027,11 +1059,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <span class="skel" style="width:22%">&nbsp;</span></div>
 <div class="row"><span class="skel" style="width:46%">&nbsp;</span>
 <span class="skel" style="width:16%">&nbsp;</span></div></div>
-<button id="sharebtn" onclick="shareWeek()" style="width:100%;
- margin-top:18px;background:var(--accent);
- box-shadow:0 8px 22px rgba(59,130,246,.3);
- color:#fff;border:0;border-radius:14px;padding:15px;font-size:1rem;
- font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px"><svg class="ic"><use href="#i-share"/></svg> Partager ma semaine</button>
+
 </div>
 <div class="tab" id="tab-set">
 <div class="sec" style="margin-top:26px">Notifications</div>
@@ -1210,6 +1238,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
 <button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>R&eacute;glages</button>
 </div>
+<div id="toast" role="status" aria-live="polite"></div>
 <div id="sheetbg"></div>
 <div id="sheet"><div class="grab"></div><div id="sheet-c"></div></div>
 <div id="tourbg"></div>
@@ -1228,6 +1257,9 @@ const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
+function toast(html,ms){const t=document.getElementById('toast');if(!t)return;
+ t.innerHTML=html;t.classList.add('on');clearTimeout(window._toastT);
+ window._toastT=setTimeout(()=>t.classList.remove('on'),ms||4500);}
 function setTheme(t,save){const L=(t==='light');
  document.documentElement.dataset.theme=L?'light':'';
  if(save){try{localStorage.setItem('owlTheme',L?'light':'dark')}catch(e){}}
@@ -1671,21 +1703,27 @@ window.addEventListener('load',()=>{
   e.preventDefault();tourStep(TOUR.length);};
  const ib2=document.getElementById('infobtn');
  if(ib2)ib2.onclick=(e)=>{e.preventDefault();
-  info('<h3>&#8505;&#65039; Ce qu&#39;il faut savoir</h3>'+
-   '<div style="text-align:left;font-size:.92rem;color:var(--text2);'+
-   'line-height:1.7">'+
-   '&#128176; Le robot travaille avec de l&#39;argent '+
-   'r&eacute;el. Il peut gagner <b>et</b> perdre.<br>'+
-   '&#128737;&#65039; Chaque trade ne risque qu&#39;une toute '+
-   'petite part du compte &mdash; jamais tout d&#39;un coup.<br>'+
-   '&#9928;&#65039; Quand le march&eacute; devient m&eacute;chant, '+
-   'le robot s&#39;abrite tout seul et attend.<br>'+
-   '&#128184; Ne confiez que de l&#39;argent que vous pouvez '+
-   'laisser travailler longtemps, sans en avoir besoin.<br>'+
-   '&#9208;&#65039; Vous pouvez mettre en pause ou retirer votre '+
-   'compte &agrave; tout moment, ici dans les R&eacute;glages.<br>'+
-   '&#128200; Les r&eacute;sultats pass&eacute;s ne promettent '+
-   'jamais l&#39;avenir.</div>');};
+  {const ico=(n,c)=>'<div class="evi" style="color:'+c+'"><svg class="ic ic-s">'+
+    '<use href="#'+n+'"/></svg></div>';
+   const row=(i,t)=>'<div class="srow-ev">'+i+'<div style="flex:1;min-width:0;'+
+    'font-size:.92rem;line-height:1.45">'+t+'</div></div>';
+   sheet('<h3 style="margin:0 0 4px">Ce qu&#39;il faut savoir</h3>'+
+    '<p style="color:var(--text);font-size:.95rem;line-height:1.5;margin:0 0 10px">'+
+    'Six choses simples, &agrave; garder en t&ecirc;te.</p>'+
+    row(ico('i-chart','var(--accent-soft)'),'Le robot travaille avec de '+
+     'l&#39;argent r&eacute;el. Il peut gagner <b>et</b> perdre.')+
+    row(ico('i-lock','var(--warn)'),'Chaque trade ne risque qu&#39;une petite '+
+     'part du compte &mdash; jamais tout d&#39;un coup.')+
+    row(ico('i-cloud','var(--muted2)'),'Quand le march&eacute; devient '+
+     'm&eacute;chant, le robot s&#39;abrite tout seul et attend.')+
+    row(ico('i-target','var(--down-soft)'),'Ne confiez que de l&#39;argent que '+
+     'vous pouvez laisser travailler longtemps, sans en avoir besoin.')+
+    row(ico('i-switch','var(--text3)'),'Vous pouvez mettre en pause ou retirer '+
+     'votre compte &agrave; tout moment, ici dans les R&eacute;glages.')+
+    row(ico('i-activity','var(--up)'),'Les r&eacute;sultats pass&eacute;s ne '+
+     'promettent jamais l&#39;avenir.')+
+    '<button class="shbtn shmain" style="margin-top:14px" onclick="_shDone(1)">'+
+    'Compris&nbsp;!</button>');}};
  const tb=document.getElementById('tourbtn');
  if(tb)tb.onclick=(e)=>{e.preventDefault();
   tab('home',document.querySelector('.tb'));tourStep(0);};
@@ -2611,6 +2649,17 @@ function render(d){
    const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
    _tc.style.display=_n?'inline-flex':'none';
    _tc.textContent=_n+' trade'+(_n>1?'s':'')+' aujourd\\u2019hui';}
+  const _k0=(d.trades&&d.trades[0])?(d.trades[0].w+'|'+d.trades[0].p):'';
+  if(window._lastTradeKey!==undefined&&_k0&&_k0!==window._lastTradeKey){
+   const x=d.trades[0],up=x.p>=0;
+   toast('<div class="evi" style="color:'+(up?'var(--up)':'var(--down)')+'"><svg class="ic ic-s">'+
+    '<use href="#'+(up?'i-check':'i-x')+'"/></svg></div><div style="flex:1">Trade termin\u00e9 \u00b7 '+
+    '<b class="'+(up?'pos':'neg')+'">'+(up?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b>'+
+    (up?' \u2014 bien jou\u00e9.':' \u2014 \u00e7a arrive, il continue.')+'</div>');
+   try{navigator.vibrate&&navigator.vibrate(up?[20,40,20]:[40])}catch(e){}}
+  window._lastTradeKey=_k0;
+  const _wc=document.getElementById('welcome');
+  if(_wc)_wc.style.display=(!(d.trades||[]).length&&!(d.days||[]).length)?'block':'none';
   const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
   if(_tp){if(_ol.length){const _pl=_ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
     _tp.style.display='inline-flex';
@@ -2906,6 +2955,18 @@ function render(d){
   if(d.days&&d.days.length){
    const de=document.getElementById('days');de.style.display='block';
    window._dtr=d.day_trades||{};window._days=d.days;
+   const _wkc=document.getElementById('weekcard'),_wks=document.getElementById('week-sum');
+   if(_wkc&&_wks){const _n=new Date();const _mon=new Date(_n);
+    _mon.setDate(_n.getDate()-((_n.getDay()+6)%7));_mon.setHours(0,0,0,0);
+    let _g=0,_r=0;d.days.forEach(x=>{const m=/(\d\d)\/(\d\d)$/.exec(x.d||'');if(!m)return;
+     const dt=new Date(_n.getFullYear(),parseInt(m[2])-1,parseInt(m[1]));
+     if(dt>_n)dt.setFullYear(dt.getFullYear()-1);
+     if(dt>=_mon){if(x.p>0.005)_g++;else if(x.p<-0.005)_r++;}});
+    const wk=d.week||0,_dbt=((d.ledger||{}).debt||0)>0.5;
+    _wks.innerHTML='Cette semaine : <b class="'+sgn(wk)+'">'+(wk>=0?'+$':'-$')+Math.abs(wk).toFixed(2)+
+     '</b>'+((_g||_r)?' \u2014 '+_g+' jour'+(_g>1?'s':'')+' vert'+(_g>1?'s':'')+', '+_r+' rouge'+(_r>1?'s':''):'')+
+     '. '+(wk>=0?'Le robot avance.':(_dbt?'Le robot se rattrape.':'Semaine difficile ; le robot continue.'));
+    _wkc.style.display='block';}
    de.innerHTML=d.days.map(x=>{
     const tr=window._dtr[x.d]||[];
     const open=false;   // 2026-09-26: a day opens as a story sheet

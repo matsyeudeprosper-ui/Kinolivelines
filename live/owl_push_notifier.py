@@ -195,6 +195,52 @@ def maybe_morning():
 
 
 _member_today = {}
+EVENING_MARK = os.path.join(DIR, "owl_push_evening.json")
+
+
+def maybe_evening():
+    """Owner 2026-09-26: one 'Bilan du jour' push per member, in the plain
+    voice of the app, between 18:30 and 23:00 UTC. Routine (kind=batch), so
+    members on 'important seulement' don't get it."""
+    t = time.gmtime()
+    if not (t.tm_hour > 18 or (t.tm_hour == 18 and t.tm_min >= 30)):
+        return
+    if t.tm_hour >= 23:
+        return
+    day = time.strftime("%Y-%m-%d", t)
+    try:
+        if json.load(open(EVENING_MARK)).get("sent") == day:
+            return
+    except Exception:
+        pass
+    try:
+        subs = json.load(open(SUBS))
+        label = (["lun", "mar", "mer", "jeu", "ven", "sam", "dim"][t.tm_wday]
+                 + " " + time.strftime("%d/%m", t))
+        for uid in subs:
+            src = "kino" if uid in ("kino", "std") else uid
+            try:
+                d = json.load(open(os.path.join(DIR, "nest_data", src + ".json")))
+            except Exception:
+                continue
+            today = float(d.get("today") or 0.0)
+            tr = (d.get("day_trades") or {}).get(label) or []
+            n = len(tr)
+            g = sum(1 for x in tr if float(x.get("p") or 0) > 0.005)
+            if n == 0:
+                body = ("Aujourd'hui, le robot a surveill\u00e9 le march\u00e9 "
+                        "sans trader. \u00c0 demain !")
+            else:
+                body = (f"Aujourd'hui : {today:+.2f} $ \u00b7 {n} trade"
+                        f"{'s' if n > 1 else ''}"
+                        + (f", dont {g} gagn\u00e9{'s' if g > 1 else ''}" if n > 1 else
+                           (" (gagn\u00e9)" if g else " (perdu)"))
+                        + ". Le robot a fini sa journ\u00e9e.")
+            send_all("\U0001f319 Bilan du jour", body, kind="batch", only_uid=uid)
+        json.dump({"sent": day}, open(EVENING_MARK, "w"))
+    except Exception as e:
+        mylog(f"evening failed: {e}")
+
 
 
 def member_trades():
@@ -256,6 +302,7 @@ def main():
             _wk_last = time.time()
             maybe_weekly()
             maybe_morning()
+            maybe_evening()
         if time.time() - _mb_last > 12:
             _mb_last = time.time()
             member_trades()
