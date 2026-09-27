@@ -582,15 +582,13 @@ body{background:var(--bg);color:var(--text);padding:0 0 96px;
 .chv{color:var(--muted);width:18px;height:18px}
 .ssub{font-size:.78rem;color:var(--muted);margin-top:2px}
 .hero{background:linear-gradient(165deg,var(--hero1) 0%,var(--hero2) 100%);
- color:#fff;padding:22px 22px 38px;border-radius:0 0 28px 28px;
+ color:#fff;padding:20px 22px 40px;border-radius:0 0 28px 28px;
  text-align:center;position:relative;overflow:hidden;
  box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
 .hero>*{position:relative}
-#daychip{display:none;font-size:.72rem;
- font-weight:700;padding:4px 11px;border-radius:99px;
- font-variant-numeric:tabular-nums}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;
  margin-top:12px}
+.chips:empty{display:none}
 .glass{position:relative;overflow:hidden;border-radius:var(--r-lg);
  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
@@ -670,9 +668,18 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--up);
  animation:p 1.8s infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
-.hello{color:var(--text3);font-size:.95rem;margin-top:16px}
-.money{font-size:3.5rem;font-weight:800;margin-top:6px;
- letter-spacing:-1.5px;line-height:1.05}
+.hello{color:rgba(219,233,247,.62);font-size:.86rem;margin-top:22px;letter-spacing:.01em}
+.money{font-size:3.7rem;font-weight:800;margin-top:6px;
+ letter-spacing:-2px;line-height:1.05}
+.dayline{margin-top:10px;font-size:.92rem;color:rgba(219,233,247,.72);font-weight:600;
+ font-variant-numeric:tabular-nums;min-height:1.3em}
+.dayline b{font-weight:700}
+.dayline .sep{opacity:.45;margin:0 6px}
+#acctline{display:inline-flex;align-items:center;gap:6px;
+ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+ font-size:.62rem;letter-spacing:.06em;color:rgba(255,255,255,.5);line-height:1}
+#acctline i{width:6px;height:6px;border-radius:50%;display:inline-block}
+#tradepill{cursor:pointer;padding:6px 13px;font-size:.76rem}
 .eur{color:var(--text3);font-size:1.2rem;margin-top:2px}
 .bankline{color:#8fb0cc;font-size:.85rem;margin-top:9px}
 .wrap{max-width:440px;margin:-20px auto 0;padding:0 16px}
@@ -868,7 +875,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="hero">
-<div class="topline"><span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
+<div class="topline"><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px">
+<span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
+<span id="acctline"></span></span>
 <span style="display:flex;align-items:center;gap:10px">
 <a id="chartlink" href="#" title="Graphique en direct" aria-label="Graphique en direct"
  style="text-decoration:none;line-height:1;display:inline-flex;
@@ -882,14 +891,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe" style="display:none"></div>
-<div class="chips"><span id="daychip"></span>
-<span id="daytargetchip" style="display:none;padding:4px 11px;
+<!-- 2026-09-27 (owner: "the hero looks busy"): one line under the number
+     - today's result and the trade count - then at most one pill for the
+     running trade (plus the day-objective ring when a daily cap is on).
+     Account identity lives under the brand; "en rattrapage" moved to the
+     rattrapage card; the closed balance is one tap on the trade pill. -->
+<div class="dayline" id="dayline">&nbsp;</div>
+<div class="chips" id="chips"><span id="daytargetchip" style="display:none;padding:5px 12px;
  border-radius:99px;font-size:.72rem;font-weight:700;
  background:rgba(127,179,224,.13);color:var(--text3)"></span>
-<span id="tradeschip" class="hchip" style="display:none"></span>
-<span id="tradepill" class="hchip" style="display:none"></span></div>
-<div class="bankline" id="bank">&nbsp;</div>
-<div id="acctline" style="margin-top:10px;font-size:.72rem"></div>
+<span id="tradepill" class="hchip" role="button" tabindex="0" style="display:none" onclick="tradePillTap()"></span></div>
 </div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
@@ -2409,6 +2420,13 @@ function tradeSheet(i){
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
  tradeStory(_tx,x);
 }
+async function tradePillTap(){
+ const d=window._d||{},ol=d.open_list||[];
+ const pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+ toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div>'+
+  '<div style="flex:1">Solde des trades termin\u00e9s : <b>$'+(typeof window._bal==='number'?window._bal.toFixed(2):'\u2014')+'</b>'+
+  (ol.length?' \u00b7 trade en cours <b class="'+(pl>=0?'pos':'neg')+'">'+(pl>=0?'+$':'-$')+Math.abs(pl).toFixed(2)+'</b>':'')+'</div>',4200);
+}
 async function tradeStory(tx,x){
  const el=document.getElementById('tstory');if(!el)return;
  let st=null;try{const r=await fetch(B+'trade?t='+tx);if(r.ok)st=await r.json();}catch(e){}
@@ -2978,7 +2996,9 @@ function render(d){
          : 'Taille normale. Encore $'+fm(stillNeed)+' pour miser plus.')+
        '</div>'+
       '</div>';
-     lw.style.display='none';ls2.innerHTML='';
+     lw.style.display='none';
+     ls2.innerHTML=(bos&&typeof d.ledger.cap_today!=='number')?
+      'Pas de limite journali\u00e8re pendant le rattrapage.':'';
      lc.style.transition='box-shadow .8s,border-color .8s';
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
      lc.style.borderColor=ok?'rgba(232,197,90,.55)':'#23405e';
@@ -3047,21 +3067,19 @@ function render(d){
   if(d.eurusd){const _eqe=document.getElementById('eqe');
    _eqe.style.display='block';_eqe.innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
-  const bk=document.getElementById('bank');
-  if(Math.abs(d.equity-d.balance)<0.005){bk.style.display='none';}
-  else{bk.style.display='block';
-   bk.innerHTML='Solde des trades termin&eacute;s : '+
-    '$'+d.balance.toFixed(2);}
-  const dc=document.getElementById('daychip');
-  if(typeof d.today==='number'){
-   dc.style.display='inline-block';
-   const up=d.today>=0;
-   dc.textContent=(up?'+$':'-$')+Math.abs(d.today).toFixed(2)+
-    ' aujourd\\u2019hui';
-   dc.style.background=up?'rgba(46,204,113,.16)'
-    :'rgba(255,92,92,.16)';
-   dc.style.color=up?'#8df0bb':'#ffb3b3';
-  }
+  // 2026-09-27: one line under the number - today's result and the trade
+  // count; the closed balance is one tap on the running-trade pill
+  window._bal=d.balance;
+  (function(){const dl=document.getElementById('dayline');if(!dl)return;
+   let h='';
+   if(typeof d.today==='number'){const up=d.today>=0,z=Math.abs(d.today)<0.005;
+    h+='<b style="color:'+(z?'rgba(219,233,247,.72)':up?'#8df0bb':'#ffb3b3')+'">'+
+     (z?'$0.00':(up?'+$':'-$')+Math.abs(d.today).toFixed(2))+'</b> aujourd\u2019hui';}
+   if(d.trades){const _td=new Date();
+    const _k=String(_td.getUTCDate()).padStart(2,'0')+'/'+String(_td.getUTCMonth()+1).padStart(2,'0');
+    const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
+    if(_n)h+=(h?'<span class="sep">\u00b7</span>':'')+_n+' trade'+(_n>1?'s':'');}
+   setH(dl,h||'&nbsp;');})();
   const dtc=document.getElementById('daytargetchip');
   const _lg2=d.ledger||{};
   if(dtc){
@@ -3086,20 +3104,8 @@ function render(d){
      if(!_seen){toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
       '<div style="flex:1">Objectif du jour atteint \\u00b7 <b class="pos">+$'+_pnl.toFixed(2)+'</b> \\u2014 le robot a fini sa journ\\u00e9e.</div>',7000);
       try{confetti();}catch(e){}}}
-   }else if(_lg2.bos&&(_lg2.debt||0)>0.5){
-    dtc.style.display='inline-block';
-    dtc.style.background='rgba(127,179,224,.13)';
-    dtc.style.color='var(--text3)';
-    dtc.innerHTML='En rattrapage &mdash; pas de limite pour l\\u2019instant';
-   }else{dtc.style.display='none';}
+   }else{dtc.style.display='none';}   // "en rattrapage" lives on the rattrapage card now
   }
-  const _tc=document.getElementById('tradeschip');
-  if(_tc&&d.trades){const _td=new Date();
-   const _k=String(_td.getUTCDate()).padStart(2,'0')+'/'+
-    String(_td.getUTCMonth()+1).padStart(2,'0');
-   const _n=d.trades.filter(x=>(x.w||'').startsWith(_k)).length;
-   _tc.style.display=_n?'inline-flex':'none';
-   _tc.textContent=_n+' trade'+(_n>1?'s':'')+' aujourd\\u2019hui';}
   if(d.build&&d.build!==APP_BUILD&&!window._newBuildShown){window._newBuildShown=true;
    toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-download"/></svg></div>'+
     '<div style="flex:1">Nouvelle version disponible</div>'+
@@ -3140,13 +3146,9 @@ function render(d){
     lvE.style.background='';lvE.style.color='';}
   }
   if(d.acct){
-   document.getElementById('acctline').innerHTML=
-    '<span style="display:inline-flex;align-items:center;gap:6px;'+
-    'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;'+
-    'font-size:.66rem;letter-spacing:.06em;color:rgba(255,255,255,.5)">'+
-    '<span style="width:6px;height:6px;border-radius:50%;background:'+
-    (d.real?'var(--up)':'var(--warn)')+'"></span>'+
-    (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct+'</span>';
+   setH(document.getElementById('acctline'),
+    '<i style="background:'+(d.real?'var(--up)':'var(--warn)')+'"></i>'+
+    (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct);
   }
   if(d.palier&&d.equity){
    const pb0=(d.palier_base&&d.palier_base<d.palier)
