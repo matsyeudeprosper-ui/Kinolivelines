@@ -2057,14 +2057,22 @@ async function rbFetch(){try{const r=await fetch('/'+tok+'/api?t='+Date.now(),{c
 async function rbOpen(){rbRender();await rbFetch();rbRender();
  clearInterval(rbTimer);rbTimer=setInterval(async()=>{if(oshCur!=='rb'){clearInterval(rbTimer);return;}await rbFetch();rbRender();},10000);}
 function rbRender(){
- const auto=!!(D&&D.auto),obs=(TIER==='observer'&&!FULL);
- const col=auto?'#8df0bb':'#9fb0d0';
+ // 2026-09-28 (owner): "make sure they are upgrading package if they don't
+ // qualify". What the sheet says depends on the PACKAGE, not only on the
+ // switch: a robot only exists on Automatique (family) accounts and the
+ // owner's own; a Manuel member in "auto" runs nothing.
+ const P=(RB&&RB.plan)||{},adminAcct=!!(RB&&RB.is_master),fam=!!P.family||adminAcct,man=!!P.manual;
+ const obs=(TIER==='observer'&&!FULL),auto=!!(D&&D.auto),hasBot=!!(D&&D.bot),live=!!(D&&D.bot_live);
+ const robot=auto&&live;
+ const col=robot?'#8df0bb':(auto&&hasBot?'#ff8c8c':(auto?'#e8c55a':'#9fb0d0'));
  const el=document.getElementById('rb');el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
  document.getElementById('rb-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'">'+(auto?RBI.bot:RBI.hand)+'</svg>';
- document.getElementById('rb-t').textContent=auto?(obs?'Le robot de Kino travaille':'Le robot travaille'):(obs?'Kino garde la main':'Vous gardez la main');
- document.getElementById('rb-l').textContent=auto
-  ?'Il prend les trades tout seul, seulement quand les conditions sont réunies. Aucune performance garantie.'
-  :'Le robot n’entre pas seul. Les trades se prennent depuis le graphique ; ceux en cours gardent leur stop et leur cible.';
+ let t,l;
+ if(robot){t=obs?'Le robot de Kino travaille':'Le robot travaille';l='Il prend les trades tout seul, seulement quand les conditions sont réunies. Aucune performance garantie.';}
+ else if(auto&&hasBot){t='Le robot est arrêté';l='Le robot de ce compte ne tourne pas en ce moment. Kino est prévenu automatiquement.';}
+ else if(auto){t='Rien ne tourne';l=man?'Aucun robot sur ce compte. Passez en mode manuel pour recevoir les signaux et l’outil de trading.':'Aucun robot sur ce compte. Le trading demande un paquet : Manuel pour trader vous-même, Automatique pour le robot.';}
+ else{t=obs?'Kino garde la main':'Vous gardez la main';l='Le robot n’entre pas seul. Les trades se prennent depuis le graphique ; ceux en cours gardent leur stop et leur cible.';}
+ document.getElementById('rb-t').textContent=t;document.getElementById('rb-l').textContent=l;
  const tr=(D&&D.trades)||[];const fl=tr.reduce((a,t)=>a+(+t[5]||0),0);
  const today=RB&&typeof RB.today==='number'?RB.today:null,bal=RB&&typeof RB.balance==='number'?RB.balance:null;
  document.getElementById('rb-chips').innerHTML=
@@ -2073,18 +2081,26 @@ function rbRender(){
   chipH('aujourd’hui',today===null?'—':money(today),today===null?'var(--muted)':(today>=0?'#8df0bb':'#ff8c8c'),false)+
   chipH('solde',bal===null?'—':'$'+bal.toFixed(2),'var(--text)',false);
  const L=RB&&RB.ledger,led=document.getElementById('rb-led');
- if(L&&!obs&&typeof L.debt==='number'){
+ if(L&&!obs&&typeof L.debt==='number'&&(fam||man)){
   const debt=L.debt>0.5;
   led.innerHTML='<div class="lbl"><span>Le rattrapage</span><b style="color:'+(debt?'#ff8c8c':'#8df0bb')+'">'+(debt?'$'+L.debt.toFixed(2)+' à rattraper':'rien à rattraper')+'</b></div>'+
    '<div class="chips">'+chipH('réserve','$'+(+L.chest||0).toFixed(2)+(L.cap?' / $'+(+L.cap).toFixed(0):''),'var(--text)',false)+
    chipH('prochain lot',(L.next_lot||L.base_lot||0.02).toFixed(2)+' lot',debt?'var(--warn)':'var(--text)',debt)+'</div>'+
    (debt?'<div class="note">Après une perte, le robot ajoute au plus '+(L.max_extra||3)+' × 0,01 lot, financés par la réserve, jusqu’à effacer la dette.</div>':'');
  }else led.innerHTML='';
+ // the mode section: never rebuilt while the password box is open
  const sw=document.getElementById('rb-sw');
- if(RB&&'trading_paused' in RB&&!RB.pause_locked&&!obs){
-  const paused=!!RB.trading_paused;
-  sw.innerHTML='<div class="lbl"><span>Le mode</span></div><button class="btn '+(paused?'ok':'warn')+'" onclick="rbAsk('+(paused?0:1)+')">'+(paused?'Lancer l’automatique':'Repasser en manuel')+'</button><div id="rb-pw"></div>';
- }else sw.innerHTML='';
+ if(!document.getElementById('rb-pwd')){
+  let h='';
+  if(RB&&'trading_paused' in RB){
+   const paused=!!RB.trading_paused,locked=!!RB.pause_locked;
+   const offers='<a class="btn ghost" style="text-align:center;text-decoration:none" href="/'+tok+'/#set">Voir les offres</a>'+(P.mql5_url?'<a class="btn ghost" style="text-align:center;text-decoration:none" href="'+P.mql5_url+'" target="_blank" rel="noopener">Ouvrir le signal MQL5 de Kino</a>':'');
+   if(obs||locked){h='<div class="lbl"><span>Le mode</span></div><div class="note">Le trading sur votre compte demande un paquet : <b>Manuel</b> pour trader vous-même avec les signaux et l’outil, <b>Automatique</b> (réglé avec Kino) ou la copie du compte de Kino sur MQL5 pour le robot.</div>'+offers;}
+   else if(paused&&!fam){h='<div class="lbl"><span>Le mode</span></div><div class="note">Vous êtes en manuel, c’est votre paquet. Le trading automatique, c’est le paquet <b>Automatique</b>, réglé avec Kino, ou la copie du compte de Kino sur MQL5.</div>'+offers;}
+   else{h='<div class="lbl"><span>Le mode</span></div><button class="btn '+(paused?'ok':'warn')+'" onclick="rbAsk('+(paused?0:1)+')">'+(paused?'Lancer l’automatique':'Repasser en manuel')+'</button><div id="rb-pw"></div>';}
+  }
+  if(sw.dataset.h!==h){sw.innerHTML=h;sw.dataset.h=h;}
+ }
  document.getElementById('rb-upd').textContent=rbT?'Mis à jour il y a '+Math.max(0,Math.round((Date.now()-rbT)/1000))+' s':'';
 }
 function rbAsk(on){const box=document.getElementById('rb-pw');if(!box)return;
@@ -2096,7 +2112,7 @@ async function rbGo(on){const i=document.getElementById('rb-pwd');const pw=i?i.v
  let j=null;try{const r=await fetch('/'+tok+'/pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+on+'&pwd='+encodeURIComponent(pw)});j=await r.json();}catch(e){}
  if(!j||!j.ok){box.innerHTML='<div class="note w">'+(j&&j.err==='complet'?'Plus de place pour l’instant.':(j&&j.err==='verrouille'?'Ce compte ne peut pas changer de mode.':'Mot de passe incorrect.'))+'</div>';return;}
  box.innerHTML='<div class="note" style="color:#8df0bb">✓ Demande envoyée — le changement prend quelques secondes.</div>';
- setTimeout(async()=>{await rbFetch();rbRender();},4000);}
+ setTimeout(async()=>{const b2=document.getElementById('rb-pw');if(b2)b2.innerHTML='';document.getElementById('rb-sw').dataset.h='';await rbFetch();rbRender();},4000);}
 document.getElementById('autobadge').onclick=()=>oshShow('rb',oshCur!=='rb');
 // ---- Le signal (manual members): the chip pulses while a signal is live ----
 function sgLive(){const s=MS&&MS.signal;if(!s||!window._MANUAL||!s.ok||s.done||s.skipped)return null;if(s.expires&&Date.now()/1000>s.expires)return null;return s;}

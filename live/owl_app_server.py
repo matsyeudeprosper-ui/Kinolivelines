@@ -2310,15 +2310,30 @@ window.addEventListener('load',()=>{
    return;}
   // Owner 2026-09-17: do not spell the strategy out in the app. Say what
   // changes for the user, nothing about which conditions are watched.
+  // 2026-09-28 (owner): a Manuel-only member has NO robot on their account -
+  // "launching the automatic" would just stop the desk and run nothing.
+  // Automatic trading is the Automatique package (settled with Kino) or the
+  // copy of Kino's account on MQL5: say so and point at the offers.
+  const _P=(window._d&&window._d.plan)||{};
+  if(isPaused&&!_P.family&&!(window._d&&window._d.is_master)){
+   const en=LANG()==='en';
+   const v=await sheet('<h3>'+(en?'Automatic trading':'Trading automatique')+'</h3><p>'+(en
+    ?'The robot does not run on your account with the Manual plan. Automatic trading is either the <b>Automatic</b> plan, settled with Kino, or the copy of Kino\u2019s account on <b>MQL5</b>. Manual mode stays yours: signals and the trade tool.'
+    :'Le robot ne tourne pas sur votre compte avec le paquet Manuel. Le trading automatique, c\u2019est le paquet <b>Automatique</b>, r\u00e9gl\u00e9 avec Kino, ou la copie du compte de Kino sur <b>MQL5</b>. Le mode manuel reste le v\u00f4tre : signaux et outil de trading.')+'</p>'+
+    '<button class="shbtn shmain" onclick="_shDone({o:1})">'+(en?'See the plans':'Voir les offres')+'</button>'+
+    (_P.mql5_url?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none" href="'+_P.mql5_url+'" target="_blank" rel="noopener">'+(en?'Open Kino\u2019s MQL5 signal':'Ouvrir le signal MQL5 de Kino')+'</a>':'')+
+    '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Close':'Fermer')+'</button>');
+   if(v&&v.o)setTimeout(offersSheet,500);
+   return;}
   const pw=await askPwd(
    isPaused?'Lancer le trading automatique ?':'Repasser en manuel ?',
    isPaused
     ?'Le robot prendra les trades tout seul, et seulement quand les '+
-     'conditions du marché sont favorables. Aucune performance '+
-     'garantie. Tu peux repasser en manuel à tout moment.'
-    :'Le robot n’entrera plus seul. Tu gardes la main depuis le '+
+     'conditions du march\u00e9 sont favorables. Aucune performance '+
+     'garantie. Vous pouvez repasser en manuel \u00e0 tout moment.'
+    :'Le robot n\u2019entrera plus seul. Vous gardez la main depuis le '+
      'graphique. Les trades ouverts gardent leur SL et leur TP.',
-   isPaused?'&#129302; Lancer l’automatique':'&#9995; Repasser en manuel',
+   isPaused?'&#129302; Lancer l\u2019automatique':'&#9995; Repasser en manuel',
    isPaused);
   if(!pw)return;
   const r=await fetch(B+'pause',{method:'POST',
@@ -8068,6 +8083,15 @@ class H(BaseHTTPRequestHandler):
             d["acct"] = user.get("login")
             d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)
+            # 2026-09-28: the chart's Robot sheet must not say "the robot works"
+            # on an account that has no robot (a Manuel member in "auto" runs
+            # nothing) - same liveness read as Le Nid
+            try:
+                _b, _l, _k = bot_on(user.get("id"))
+                d["bot"] = bool(_b)
+                d["bot_live"] = bool(_l)
+            except Exception:
+                pass
             # 2026-09-28: the chart's Meteo panel must say what weather_gate()
             # says for THIS account (both brakes are per-account dials)
             try:
