@@ -1410,6 +1410,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
 </div>
+<div class="panel" id="mhcard" style="display:none;margin-top:12px">
+ <div class="lbl">Les heures du march&eacute; <span class="hint" id="mh-hint"></span></div>
+ <div id="mh-grid" style="margin-top:10px"></div>
+ <div id="mh-leg" style="font-size:.68rem;color:var(--muted);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"></div>
+</div>
 </div>
 <div id="mx-robot" style="display:none">
 <div class="sec" style="margin-top:14px">Le robot <span class="hint" id="rb-hint">&middot; sur ce compte</span></div>
@@ -1424,9 +1429,15 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  </div>
  <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
  <div id="jprog" style="display:none;margin-top:10px"></div>
+ <div id="rb-next" style="display:none;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--tile-bg);border:1px solid var(--tile-bd);font-size:.88rem;color:var(--text);line-height:1.45"></div>
  <div id="st" style="position:relative;margin:12px 0 0;
   border-top:1px solid rgba(255,255,255,.06);padding:10px 0 2px;
   font-size:.8rem;color:var(--muted)">Connexion...</div>
+</div>
+<div class="panel" id="whycard" style="display:none;margin-top:12px">
+ <div class="lbl">Le robot explique <span class="hint">&middot; les occasions laiss&eacute;es passer</span></div>
+ <div id="why-sum" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:8px"></div>
+ <div id="why-bars" style="margin-top:10px"></div>
 </div>
 <div class="panel" id="daycard" style="display:none;margin-top:12px">
  <div class="lbl" id="day-lbl">La journ&eacute;e du robot</div>
@@ -1435,6 +1446,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <svg id="daybar" viewBox="0 0 300 34" style="width:100%;height:34px;
   display:block;margin-top:12px"></svg>
  <div id="day-list" style="margin-top:6px"></div>
+</div>
+<div class="panel" id="rjcard" style="display:none;margin-top:12px">
+ <div class="lbl">Journal du robot <span class="hint">&middot; les 20 derniers trades</span></div>
+ <div id="rj-list" style="margin-top:6px"></div>
 </div>
 </div>
 </div>
@@ -2136,7 +2151,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -3895,6 +3910,79 @@ async function pollSignal(){
   const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
   renderSignal(ms);}catch(e){}
 }
+// ---- batch 33: the two spaces grow - market hours, next action, the robot explains, journal ----
+async function loadMarketHours(d){const el=document.getElementById('mhcard');if(!el)return;
+ if(HIDEGAUGES()||d.public){el.style.display='none';return;}
+ if(window._mhT&&Date.now()-window._mhT<600000)return;window._mhT=Date.now();
+ let j=null;try{const r=await fetch(B+'market_hours?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err){el.style.display='none';return;}
+ const en=LANG()==='en';
+ // UTC cells -> the phone's local weekday/hour
+ const M=new Map();(j.cells||[]).forEach(c=>{const dt=new Date(Date.UTC(2024,0,1+c.wd,c.h));const k=((dt.getDay()+6)%7)+'_'+dt.getHours();M.set(k,c);});
+ const DN=en?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lun','mar','mer','jeu','ven','sam','dim'];
+ const col=v=>v<1?'var(--muted)':(v<1.3?'var(--warn)':(v<1.85?'#e8743b':'var(--down)'));
+ let h='<div style="display:grid;grid-template-columns:34px repeat(24,1fr);gap:2px;align-items:center">';
+ h+='<span></span>'+[0,6,12,18].map((x,i)=>'<span style="grid-column:'+(2+x)+' / span 6;font-size:.6rem;color:var(--muted)">'+x+'h</span>').join('');
+ for(let w=0;w<7;w++){h+='<span style="font-size:.64rem;color:var(--muted)">'+DN[w]+'</span>';
+  for(let hh=0;hh<24;hh++){const c=M.get(w+'_'+hh);const op=c?Math.min(1,0.25+c.n/40):0;
+   h+='<i title="'+DN[w]+' '+hh+'h'+(c?' \u00b7 '+c.med.toFixed(2)+'\u00d7 ('+c.n+')':'')+'" style="display:block;height:11px;border-radius:3px;background:'+(c?col(c.med):'var(--surface3)')+';opacity:'+(c?op:0.35)+'"></i>';}}
+ h+='</div>';
+ setH(document.getElementById('mh-grid'),h);
+ const leg=(c,l)=>'<span style="display:inline-flex;align-items:center;gap:4px"><i style="width:10px;height:10px;border-radius:3px;background:'+c+'"></i>'+l+'</span>';
+ setH(document.getElementById('mh-leg'),leg('var(--muted)',en?'calm':'calme')+leg('var(--warn)',en?'brisk':'soutenu')+leg('#e8743b',en?'fast':'rapide')+leg('var(--down)',en?'very fast':'tr\u00e8s rapide')+'<span style="margin-left:auto">'+(en?'your local time':'heure locale')+'</span>');
+ document.getElementById('mh-hint').textContent='\u00b7 '+(j.days||0)+' '+(en?'day'+(j.days>1?'s':'')+' of memory':'jour'+(j.days>1?'s':'')+' de m\u00e9moire');
+ el.style.display='block';
+}
+function renderNext(d){const el=document.getElementById('rb-next');if(!el)return;const en=LANG()==='en';
+ const ms=d.meteo_struct;if(!ms||HIDEGAUGES()||d.public){el.style.display='none';return;}
+ const full=!!(ms.next_bos!==undefined||ms.invalid!==undefined);
+ const rv=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):1;
+ const debt=d.ledger&&d.ledger.debt>0.5,open=(d.open_positions||0)>0,tr=ms.trend;
+ const lvl=v=>(full&&typeof v==='number')?' ('+(en?'level ':'niveau ')+v.toFixed(0)+')':'';
+ let t;
+ if(d.trading_paused)t=en?'Manual mode: the robot does not enter. The service sends you the next playable signal.':'Mode manuel : le robot n\u2019entre pas. Le service vous enverra le prochain signal jouable.';
+ else if(open)t=en?'A trade is open: the robot follows it to the stop or the target, nothing else.':'Un trade est en cours : le robot le suit jusqu\u2019au stop ou \u00e0 la cible, rien d\u2019autre.';
+ else if(rv>=1.85)t=en?'Very fast market: the robot does nothing until it calms down.':'March\u00e9 tr\u00e8s rapide : le robot ne fait rien tant que \u00e7a ne se calme pas.';
+ else if(ms.flip_bos_ready)t=(en?'The direction may change: it waits for the confirmation before entering the other way':'Le sens peut changer : il attend la confirmation avant d\u2019entrer dans l\u2019autre sens')+lvl(ms.flip_bos)+'.';
+ else if(tr===1||tr===-1){const up=tr===1;
+  t=(debt?(en?'Catching up: one continuation at most, then it waits for the next flip. ':'En rattrapage : une continuation au plus, puis il attend la prochaine bascule. '):'')+
+   (ms.bos_ready?(en?'It waits for a break '+(up?'upwards':'downwards'):'Il attend une cassure vers le '+(up?'haut':'bas'))+lvl(ms.next_bos)+(en?' to enter with the trend.':' pour entrer dans le sens de la tendance.')
+    :(en?'It waits for the '+(up?'up':'down')+'trend to form its next level.':'Il attend que la tendance '+(up?'haussi\u00e8re':'baissi\u00e8re')+' forme son prochain niveau.'));}
+ else t=en?'No trend yet: it waits for a structure to form.':'Pas de tendance pour l\u2019instant : il attend qu\u2019une structure se dessine.';
+ setH(el,'<span style="font-size:.6rem;color:var(--accent-soft);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">'+(en?'Next action':'Prochaine action')+'</span>'+t);
+ el.style.display='block';
+}
+async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
+ if(HIDEGAUGES()||d.public){el.style.display='none';return;}
+ if(window._whyT&&Date.now()-window._whyT<300000)return;window._whyT=Date.now();
+ let j=null;try{const r=await fetch(B+'robot_why?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err||j.src==='none'){el.style.display='none';return;}
+ const en=LANG()==='en';
+ const L={meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],rattrapage:[en?'the catch-up pause':'la pause du rattrapage','var(--accent-soft)'],tendance:[en?'against the trend':'contre la tendance','var(--muted2)'],limite:[en?'level already taken':'niveau d\u00e9j\u00e0 pris','var(--text3)'],autre:[en?'other':'autre','var(--muted)']};
+ const T=j.today||{},W=j.week||{};
+ const parts=Object.keys(L).filter(k=>T[k]).sort((a,b)=>T[b]-T[a]).map(k=>T[k]+' '+(en?'for ':'pour ')+L[k][0]);
+ document.getElementById('why-sum').innerHTML=(j.total_today?(en?'Today the robot let <b>'+j.total_today+'</b> opportunit'+(j.total_today>1?'ies':'y')+' go: ':'Aujourd\u2019hui, le robot a laiss\u00e9 passer <b>'+j.total_today+'</b> occasion'+(j.total_today>1?'s':'')+' : ')+parts.join(', ')+'.':(en?'No opportunity let go today.':'Aucune occasion laiss\u00e9e passer aujourd\u2019hui.'))+
+  ' <span style="color:var(--muted2)">'+(en?'This week: ':'Cette semaine : ')+(j.total_week||0)+'.</span>';
+ const mx=Math.max(1,...Object.keys(L).map(k=>W[k]||0));
+ document.getElementById('why-bars').innerHTML=Object.keys(L).filter(k=>W[k]).map(k=>'<div style="display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.78rem"><span style="width:150px;color:var(--muted2)">'+L[k][0]+'</span><span style="flex:1;height:7px;border-radius:99px;background:var(--surface3);overflow:hidden;position:relative"><i style="position:absolute;left:0;top:0;bottom:0;width:'+Math.round((W[k]||0)/mx*100)+'%;background:'+L[k][1]+';border-radius:99px;opacity:.85"></i></span><b style="width:52px;text-align:right">'+(T[k]||0)+' / '+(W[k]||0)+'</b></div>').join('')+
+  '<div style="font-size:.66rem;color:var(--muted);margin-top:6px;text-align:right">'+(en?'today / 7 days':'aujourd\u2019hui / 7 jours')+'</div>';
+ el.style.display='block';
+}
+async function loadJournal(d){const el=document.getElementById('rjcard');if(!el)return;
+ if(HIDEGAUGES()||d.public){el.style.display='none';return;}
+ if(window._rjT&&Date.now()-window._rjT<120000)return;window._rjT=Date.now();
+ let j=null;try{const r=await fetch(B+'robot_journal?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ const it=(j&&j.items)||[];const en=LANG()==='en';
+ if(!it.length){el.style.display='none';return;}
+ const bandL={calme:[en?'calm':'calme','var(--muted)'],soutenu:[en?'brisk':'soutenu','var(--warn)'],rapide:[en?'fast':'rapide','#e8743b'],'tres rapide':[en?'very fast':'tr\u00e8s rapide','var(--down)']};
+ const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ document.getElementById('rj-list').innerHTML=it.map(x=>{const buy=(x.dir||'').toUpperCase().startsWith('A')||(x.dir||'').toUpperCase()==='BUY';const up=(+x.p||0)>=0;const b=x.band?bandL[x.band]||[x.band,'var(--muted)']:null;
+  const q=B+'chart?t='+x.t+'&x='+x.x+(x.ep!=null?'&ep='+x.ep:'')+(x.xp!=null?'&xp='+x.xp:'')+'&d='+encodeURIComponent(x.dir||'')+'&p='+x.p;
+  return '<a href="'+q+'" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;font-size:.82rem"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span><span style="width:78px;color:var(--muted)">'+(x.w||'')+'</span>'+
+   (b?'<span style="font-size:.62rem;font-weight:700;color:'+b[1]+';border:1px solid '+b[1]+';border-radius:99px;padding:1px 7px;opacity:.9">'+b[0]+'</span>':'<span></span>')+
+   '<span style="flex:1;color:var(--muted2);text-align:right;font-size:.74rem">'+(x.dur!=null?Math.round(x.dur)+' min':'')+'</span><b style="width:64px;text-align:right;color:'+(up?'var(--up-soft)':'var(--down-soft)')+'">'+mn(+x.p||0)+'</b></a>';}).join('');
+ el.style.display='block';
+}
 // ---- batch 32: "Ce que j'ai manque" (after a day away) + "Vous et le robot" ----
 function missedCard(d){const el=document.getElementById('missedcard');if(!el)return;const en=LANG()==='en';
  const now=Date.now();
@@ -3936,7 +4024,7 @@ async function loadCompare(d){const sec=document.getElementById('cmp-sec'),el=do
  sec.style.display='block';el.style.display='block';
 }
 // ---- batch 29: "Quoi de neuf" - one card per update, dismissed once ----
-const NEWS_V='2026-09-28c';
+const NEWS_V='2026-09-28d';
 const NEWS=[
  {fr:'<b>M\u00e9t\u00e9o sur le graphique</b> \u2014 touchez la puce m\u00e9t\u00e9o en haut, le d\u00e9tail glisse sans quitter le graphique.',en:'<b>Weather on the chart</b> \u2014 tap the weather chip at the top, the detail slides up without leaving the chart.'},
  {fr:'<b>Le robot en un tap</b> \u2014 la puce robot ouvre son \u00e9tat : trades en cours, rattrapage, et le changement de mode.',en:'<b>The robot in one tap</b> \u2014 the robot chip opens its state: open trades, catch-up, and the mode switch.',need:'switch'},
@@ -3952,7 +4040,11 @@ const NEWS=[
  {fr:'<b>Une journ\u00e9e pass\u00e9e</b> sur le graphique \u2014 le calendrier en bas, choisissez un jour.',en:'<b>A past day</b> on the chart \u2014 the calendar at the bottom, pick a day.'},
  {fr:'<b>La r\u00e8gle</b> sur le graphique \u2014 deux touches, la distance en points et en dollars.',en:'<b>The ruler</b> on the chart \u2014 two taps, the distance in points and dollars.'},
  {fr:'<b>Vous et le robot</b> \u2014 votre mois face au sien, dans Historique.',en:'<b>You and the robot</b> \u2014 your month against its, in History.',need:'manual'},
- {fr:'<b>Raccourcis</b> \u2014 Graphique, Signal, Historique depuis l\u2019ic\u00f4ne de l\u2019app (appui long).',en:'<b>Shortcuts</b> \u2014 Chart, Signal, History from the app icon (long press).'}];
+ {fr:'<b>Raccourcis</b> \u2014 Graphique, Signal, Historique depuis l\u2019ic\u00f4ne de l\u2019app (appui long).',en:'<b>Shortcuts</b> \u2014 Chart, Signal, History from the app icon (long press).'},
+ {fr:'<b>Deux espaces</b> dans March\u00e9 \u2014 le march\u00e9 d\u2019un c\u00f4t\u00e9, le robot de l\u2019autre.',en:'<b>Two spaces</b> in Market \u2014 the market on one side, the robot on the other.'},
+ {fr:'<b>Les heures du march\u00e9</b> \u2014 calme ou rapide, heure par heure, se remplit avec les jours.',en:'<b>Market hours</b> \u2014 calm or fast, hour by hour, fills in with the days.'},
+ {fr:'<b>Le robot explique</b> \u2014 les occasions laiss\u00e9es passer, par raison, et sa prochaine action.',en:'<b>The robot explains</b> \u2014 the opportunities let go, by reason, and its next action.'},
+ {fr:'<b>Journal du robot</b> \u2014 ses 20 derniers trades, touchez-en un pour le voir sur le graphique.',en:'<b>Robot journal</b> \u2014 its last 20 trades, tap one to see it on the chart.'}];
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
@@ -4051,6 +4143,7 @@ async function nestCodeFor(name){
 function observerView(d){
  const obs=OBS();
  const hide=HIDEGAUGES();['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=hide?'none':'';});
+ if(hide)['mhcard','whycard','rjcard','rb-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
  const kc=document.getElementById('kinocard');if(!kc)return;
  if(!obs){kc.style.display='none';return;}
  kc.style.display='block';
@@ -4883,7 +4976,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5675,6 +5768,140 @@ def user_by_token(tok):
     return None
 
 
+MKT_DIR = os.path.join(DIR, "mkt_mem")
+_MH_CACHE = {"t": 0.0, "data": None}
+
+
+def market_hours(days=30):
+    """Weekday x hour (UTC) medians of the nervosity ratio from mkt_mem."""
+    if _MH_CACHE["data"] is not None and time.time() - _MH_CACHE["t"] < 600:
+        return _MH_CACHE["data"]
+    import statistics as _st
+    cells = {}
+    ndays = 0
+    cut = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+    try:
+        files = sorted(f for f in os.listdir(MKT_DIR) if f.endswith(".jsonl") and f[:10] >= cut)
+    except Exception:
+        files = []
+    for fn in files:
+        ndays += 1
+        try:
+            for line in open(os.path.join(MKT_DIR, fn), encoding="utf-8"):
+                try:
+                    r = json.loads(line)
+                except Exception:
+                    continue
+                if r.get("nerv") is None:
+                    continue
+                g = time.gmtime(int(r["t"]))
+                cells.setdefault((g.tm_wday, g.tm_hour), []).append(float(r["nerv"]))
+        except Exception:
+            continue
+    out = {"days": ndays, "cells": [{"wd": k[0], "h": k[1], "n": len(v), "med": round(_st.median(v), 3)}
+                                    for k, v in cells.items()],
+           "updated": int(time.time())}
+    _MH_CACHE.update(t=time.time(), data=out)
+    return out
+
+
+def _why_family(text):
+    l = text.lower()
+    if "dette active" in l or "rattrapage" in l:
+        return "rattrapage"
+    if "contre la tendance" in l:
+        return "tendance"
+    if ("nerveux" in l or "tres rapide" in l or "pas calme" in l or "mouvement" in l
+            or "asleep" in l or "agit" in l or "storm" in l):
+        return "meteo"
+    if "deja pris" in l or "continuation" in l or "limite du jour" in l or "un seul" in l or "niveau" in l:
+        return "limite"
+    return "autre"
+
+
+def robot_why(user):
+    """Refusals of the account's robot (or its desk's signals) by family,
+    today and the last 7 days (UTC)."""
+    uid = user.get("id")
+    now = time.time()
+    today = time.strftime("%Y-%m-%d", time.gmtime(now))
+    week0 = now - 7 * 86400
+    fams = ("meteo", "rattrapage", "tendance", "limite", "autre")
+    T = {k: 0 for k in fams}
+    W = {k: 0 for k in fams}
+    src = None
+    m = BOT_OF.get(uid)
+    if m and m[2]:
+        src = "robot"
+        try:
+            lines = open(os.path.join(DIR, m[2]), encoding="utf-8", errors="replace").readlines()[-6000:]
+        except Exception:
+            lines = []
+        for ln in lines:
+            if not (" refuse: " in ln or "skipped" in ln or "pas pris" in ln or "LIMITE DU JOUR" in ln):
+                continue
+            try:
+                ts = datetime.fromisoformat(ln[:32].split(" ")[0]).timestamp()
+            except Exception:
+                continue
+            if ts < week0:
+                continue
+            f = _why_family(ln)
+            W[f] += 1
+            if ln[:10] == today:
+                T[f] += 1
+    if user.get("mode") in MANUAL_MODES or src is None:
+        try:
+            for x in json.load(open(os.path.join(DIR, f"owl_signals_{uid}.json"), encoding="utf-8")):
+                if x.get("ok") or float(x.get("t") or 0) < week0:
+                    continue
+                f = _why_family(x.get("why") or "")
+                W[f] += 1
+                if time.strftime("%Y-%m-%d", time.gmtime(float(x["t"]))) == today:
+                    T[f] += 1
+            src = src or "desk"
+        except Exception:
+            pass
+    return {"today": T, "week": W, "total_today": sum(T.values()), "total_week": sum(W.values()),
+            "src": src or "none"}
+
+
+def robot_journal(user, n=20):
+    """The account's last n closed trades with the story trade_story() tells."""
+    uid = user.get("id")
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", f"{uid}.json")))
+    except Exception:
+        return {"items": []}
+    _now = datetime.now(timezone.utc)
+    _era = era_ts(user)
+    out = []
+    for p in (nd.get("trades") or [])[:n]:
+        mw = re.match(r"^(\d\d)/(\d\d) (\d\d):(\d\d)$", p.get("w") or "")
+        if not mw:
+            continue
+        y = _now.year - (1 if int(mw.group(2)) > _now.month else 0)
+        try:
+            xt = int(datetime(y, int(mw.group(2)), int(mw.group(1)), int(mw.group(3)), int(mw.group(4)),
+                              tzinfo=timezone.utc).timestamp())
+        except Exception:
+            continue
+        et = xt - int(round(float(p.get("dur") or 0) * 60))
+        if _era and xt < _era:
+            continue
+        st = {}
+        try:
+            st = trade_story(user, xt) or {}
+        except Exception:
+            st = {}
+        out.append({"w": p.get("w"), "p": p.get("p"), "dir": p.get("dir"), "lot": p.get("lot"),
+                    "ep": p.get("ep"), "xp": p.get("xp"), "dur": p.get("dur"), "t": et, "x": xt,
+                    "band": st.get("band") if st.get("found") else None,
+                    "risk": st.get("risk") if st.get("found") else None,
+                    "kind": p.get("k")})
+    return {"items": out}
+
+
 def user_stats(u, admin_override=False):
     plan = u.get("plan", "premium")
     if plan == "trial":
@@ -5863,6 +6090,13 @@ def user_stats(u, admin_override=False):
                                    "int_brk_1h", "int_awake"):
                             if _cj.get(_k) is not None:
                                 d["meteo_struct"][_k] = _cj[_k]
+                        # 2026-09-28: "Prochaine action" - the readiness flags for
+                        # everyone, the LEVELS only for Strategie members and the admin
+                        for _k in ("bos_ready", "flip_bos_ready", "int_bos_ready", "int_flip_bos_ready", "trend", "choch"):
+                            d["meteo_struct"][_k] = _cj.get(_k)
+                        if is_admin(u) or has(u.get("id"), "strategy"):
+                            for _k in ("next_bos", "flip_bos", "invalid", "int_bos", "int_inv", "int_flip_bos"):
+                                d["meteo_struct"][_k] = _cj.get(_k)
                     except Exception:
                         pass
                     # live bullet price from the bot (stop distance)
@@ -8097,6 +8331,28 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "market_hours":
+            # 2026-09-28: the market memory folded into weekday x hour (UTC)
+            try:
+                if not (is_admin(user) or has(user.get("id"), "manual") or family_active(ent(user.get("id")))):
+                    self._send(json.dumps({"err": "observer"}), "application/json")
+                    return
+                self._send(json.dumps(market_hours()), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "robot_why":
+            # 2026-09-28: the occasions the robot let go, by FAMILY of reason
+            # (weather / catch-up / against the trend / limit) - never the rule
+            try:
+                self._send(json.dumps(robot_why(user)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "robot_journal":
+            # 2026-09-28: the last 20 closed trades with their plain-words story
+            try:
+                self._send(json.dumps(robot_journal(user)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100], "items": []}), "application/json")
         elif sub == "chart_day":
             # 2026-09-28 (owner): "voir une journee passee" - that UTC day's
             # candles (same silence filter), its main structure (same engine

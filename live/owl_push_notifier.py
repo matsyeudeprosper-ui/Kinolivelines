@@ -302,6 +302,62 @@ def maybe_waitlist():
     mylog(f"waitlist: {free} free, told {names}")
 
 
+MKT_DIR = os.path.join(DIR, "mkt_mem")
+_MEM = {"last": 0, "day": None}
+
+
+def market_memory_tick():
+    """2026-09-28 (owner): the market analysis space grows on data. One row
+    per minute from the feed's published state - nervosity ratio and its two
+    halves, big moves in 2 h, trend, internal state, spread, price - in
+    mkt_mem/YYYY-MM-DD.jsonl (UTC day), kept 90 days. Read-only elsewhere."""
+    try:
+        cj = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8"))
+    except Exception:
+        return
+    t = int(cj.get("updated") or 0)
+    if not t or time.time() - t > 180:
+        return                                  # stale feed: no row
+    m = t - t % 60
+    if m == _MEM["last"]:
+        return
+    _MEM["last"] = m
+    vn, vr = cj.get("vol_now"), cj.get("vol_ref")
+    row = {"t": m, "nerv": (round(vn / max(vr, 1), 3) if vn and vr else None), "vn": vn, "vr": vr,
+           "mv2": cj.get("moves_2h"), "trend": cj.get("trend"), "int": cj.get("int_state"),
+           "it": cj.get("int_trend"), "brk1h": cj.get("int_brk_1h"), "spread": cj.get("spread"),
+           "px": cj.get("px")}
+    try:
+        os.makedirs(MKT_DIR, exist_ok=True)
+        day = time.strftime("%Y-%m-%d", time.gmtime(m))
+        fn = os.path.join(MKT_DIR, day + ".jsonl")
+        if _MEM["day"] is None and not os.path.exists(fn):
+            # first run: seed the last 24 h of nervosity from the feed's own history
+            try:
+                for p in json.load(open(os.path.join(DIR, "owl_nerv_hist.json"))):
+                    tt = int(p[0]) - int(p[0]) % 60
+                    if tt >= m:
+                        continue
+                    dd = time.strftime("%Y-%m-%d", time.gmtime(tt))
+                    with open(os.path.join(MKT_DIR, dd + ".jsonl"), "a", encoding="utf-8") as f:
+                        f.write(json.dumps({"t": tt, "nerv": round(float(p[1]), 3), "seed": 1}, separators=(",", ":")) + "\n")
+            except Exception:
+                pass
+        with open(fn, "a", encoding="utf-8") as f:
+            f.write(json.dumps(row, separators=(",", ":")) + "\n")
+        if day != _MEM["day"]:
+            _MEM["day"] = day
+            cut = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 90 * 86400))
+            for old in os.listdir(MKT_DIR):
+                if old.endswith(".jsonl") and old[:10] < cut:
+                    try:
+                        os.remove(os.path.join(MKT_DIR, old))
+                    except Exception:
+                        pass
+    except Exception as e:
+        mylog(f"market memory: {type(e).__name__}: {e}")
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -887,6 +943,7 @@ def main():
             maybe_demo_reset()
             maybe_renewals()
             maybe_waitlist()
+            market_memory_tick()
         if _bf is not None:
             while True:
                 bl = _bf.readline()
