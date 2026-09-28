@@ -2111,7 +2111,7 @@ Object.assign(EN,{'▶ EN DIRECT':'▶ LIVE',
  'Le robot de Kino travaille quand même — à ses risques.':'Kino’s robot works anyway — at its own risk.',
  'Modifier l’ordre':'Edit the order','semaine':'week'});
 const tx=s=>(CL&&EN[s])||s;
-const RX=CL?[[/^il y a (\d+) min$/,'$1 min ago'],[/^Mis à jour il y a (\d+) s$/,'Updated $1 s ago'],[/^Mis à jour il y a (\d+) min$/,'Updated $1 min ago'],[/^(.*) · jusqu’à (\d\d:\d\d)$/,'$1 · until $2'],
+const RX=CL?[[/^([\d,]+)× (calme|soutenu|rapide|très rapide)$/,(m,a,b)=>a.replace(',','.')+'× '+(EN[b]||b)],[/^il y a (\d+) min$/,'$1 min ago'],[/^Mis à jour il y a (\d+) s$/,'Updated $1 s ago'],[/^Mis à jour il y a (\d+) min$/,'Updated $1 min ago'],[/^(.*) · jusqu’à (\d\d:\d\d)$/,'$1 · until $2'],
  [/^(\d+) \/ 1 h$/,'$1 / 1 h'],[/^(\d+) trades?$/,'$1 trade(s)'],[/^Point protégé posé à (\d\d:\d\d)\. (.*)$/,(m,a,b)=>'Protected point set at '+a+'. '+(EN[b]||b)],[/^\$([\d.]+) à rattraper$/,'$$$1 to catch up'],[/^(\d+) min$/,'$1 min'],
  [/^Après une perte, le robot ajoute au plus (\d+) × 0,01 lot, financés par la réserve, jusqu’à effacer la dette\.$/,'After a loss the robot adds at most $1 × 0.01 lot, funded by the reserve, until the debt is cleared.'],
  [/^Votre lot pour \$(\d+) : $/,'Your lot for $$$1: '],[/^Lot calculé pour un compte de \$(\d+) · risque ~\$([\d.]+)\. $/,'Lot sized for a $$$1 account · risk ~$$$2. '],[/^ · risque ~\$([\d.]+) · $/,' · risk ~$$$1 · '],
