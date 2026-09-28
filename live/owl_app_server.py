@@ -1410,6 +1410,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
 </div>
+<div class="sec" id="lrn-sec" style="display:none">Ce que le march&eacute; nous apprend <span class="hint" id="lrn-hint"></span></div>
+<div id="lrn-list" style="display:none"></div>
+<div class="panel" id="lrn-next" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)"></div>
 <div class="panel" id="mhcard" style="display:none;margin-top:12px">
  <div class="lbl">Les heures du march&eacute; <span class="hint" id="mh-hint"></span></div>
  <div id="mh-grid" style="margin-top:10px"></div>
@@ -2151,7 +2154,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -3910,6 +3913,31 @@ async function pollSignal(){
   const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
   renderSignal(ms);}catch(e){}
 }
+// ---- batch 33b (owner): the market space shows the PATTERNS being established,
+// each with its evidence, its confidence and whether the robot uses it ----
+async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list=document.getElementById('lrn-list'),nx=document.getElementById('lrn-next');if(!sec||!list)return;
+ if(HIDEGAUGES()||d.public){sec.style.display='none';list.style.display='none';nx.style.display='none';return;}
+ if(window._lrnT&&Date.now()-window._lrnT<600000)return;window._lrnT=Date.now();
+ let j=null;try{const r=await fetch(B+'patterns?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err){sec.style.display='none';list.style.display='none';nx.style.display='none';return;}
+ const en=LANG()==='en';
+ const ST={confirme:[en?'Confirmed':'Confirm\u00e9','var(--up-soft)','rgba(46,204,113,.14)'],vivant:[en?'Live':'Vivant','var(--accent-soft)','rgba(59,130,246,.14)'],observation:[en?'Watching':'En observation','var(--warn)','rgba(232,197,90,.14)'],candidat:[en?'Candidate':'Candidat','#b98cff','rgba(185,140,255,.14)'],rejete:[en?'Tested, no':'Test\u00e9, non','var(--muted2)','rgba(255,255,255,.06)']};
+ const RB={oui:[en?'the robot uses it':'le robot s\u2019en sert','var(--up-soft)'],candidat:[en?'robot: candidate':'robot : candidat','#b98cff'],non:[en?'robot: no':'robot : non','var(--muted)']};
+ const chip=(t,c,bg)=>'<span style="display:inline-flex;align-items:center;font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:'+c+';background:'+bg+';border-radius:99px;padding:3px 8px">'+t+'</span>';
+ list.innerHTML=(j.cards||[]).map(c=>{const st=ST[c.status]||ST.observation,rb=RB[c.robot]||RB.non;
+  return '<div class="panel" style="margin-top:12px">'+
+   '<div style="display:flex;gap:12px;align-items:flex-start"><div class="sic" style="color:'+st[1]+';background:'+st[2]+'"><svg class="ic"><use href="#'+(c.icon||'i-activity')+'"/></svg></div>'+
+   '<div style="flex:1;min-width:0"><b style="font-size:.98rem;line-height:1.3">'+(en?c.title_en:c.title)+'</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+chip(st[0],st[1],st[2])+chip(rb[0],rb[1],'rgba(255,255,255,.05)')+'</div></div></div>'+
+   '<div style="display:flex;align-items:baseline;gap:8px;margin-top:12px"><b style="font-size:1.6rem;letter-spacing:-.02em;color:'+st[1]+'">'+c.fig+'</b><span style="font-size:.78rem;color:var(--muted2)">'+(en?c.fig_l_en:c.fig_l)+'</span></div>'+
+   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'Live':'En live')+'</span><br>'+(en?c.live_en:c.live)+'</div>'+
+   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'Replay':'Replay')+'</span><br>'+(en?c.back_en:c.back)+'</div>'+
+   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'The robot':'Le robot')+'</span><br>'+(en?c.robot_note_en:c.robot_note)+'</div>'+
+   '<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:var(--tile-bg);border:1px solid var(--tile-bd);font-size:.82rem;color:var(--text);line-height:1.45"><span style="color:var(--accent-soft);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:2px">'+(en?'For a manual trader':'Pour un trader manuel')+'</span>'+(en?c.manual_en:c.manual)+'</div>'+
+   '</div>';}).join('');
+ document.getElementById('lrn-hint').textContent='\u00b7 '+(j.live_trades||0)+' '+(en?'live trades':'trades en live')+' \u00b7 '+(j.memory_days||0)+' '+(en?'days of memory':'jours de m\u00e9moire');
+ setH(nx,'<div class="lbl">'+(en?'Where this is heading':'O\u00f9 on va')+'</div><div style="font-size:.9rem;color:var(--text);line-height:1.5;margin-top:6px">'+(en?j.next.en:j.next.fr)+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'The cards refresh every 10 minutes with the new trades and the market memory. A live figure under 30 trades stays "watching".':'Les cartes se mettent \u00e0 jour toutes les 10 minutes avec les nouveaux trades et la m\u00e9moire du march\u00e9. Un chiffre en live sous 30 trades reste \u00ab en observation \u00bb.')+'</div>');
+ sec.style.display='block';list.style.display='block';nx.style.display='block';
+}
 // ---- batch 33: the two spaces grow - market hours, next action, the robot explains, journal ----
 async function loadMarketHours(d){const el=document.getElementById('mhcard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
@@ -4143,7 +4171,7 @@ async function nestCodeFor(name){
 function observerView(d){
  const obs=OBS();
  const hide=HIDEGAUGES();['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=hide?'none':'';});
- if(hide)['mhcard','whycard','rjcard','rb-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+ if(hide)['mhcard','whycard','rjcard','rb-next','lrn-sec','lrn-list','lrn-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
  const kc=document.getElementById('kinocard');if(!kc)return;
  if(!obs){kc.style.display='none';return;}
  kc.style.display='block';
@@ -4976,7 +5004,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5900,6 +5928,167 @@ def robot_journal(user, n=20):
                     "risk": st.get("risk") if st.get("found") else None,
                     "kind": p.get("k")})
     return {"items": out}
+
+
+_PAT_CACHE = {"t": 0.0, "data": None}
+
+
+def _journal_unique():
+    """Every closed main trade across the bot journals, each entry counted
+    once (the accounts take the same entries)."""
+    import csv as _csv, glob as _glob
+    seen = {}
+    for f in _glob.glob(os.path.join(DIR, "bos_journal*.csv")):
+        try:
+            for r in _csv.DictReader(open(f, encoding="utf-8", errors="replace")):
+                o = (r.get("outcome") or "").lower()
+                if o not in ("win", "loss") or r.get("is_add") == "True":
+                    continue
+                k = ((r.get("entry_time_utc") or "")[:16], r.get("direction"))
+                if k in seen:
+                    continue
+                try:
+                    et = datetime.fromisoformat(r["entry_time_utc"]).timestamp()
+                    xt = datetime.fromisoformat(r["exit_time_utc"]).timestamp() if r.get("exit_time_utc") else et
+                except Exception:
+                    continue
+                seen[k] = {"t": et, "x": xt, "win": o == "win", "p": float(r.get("profit_usd") or 0),
+                           "nerv": float(r["nervosity"]) if r.get("nervosity") else None,
+                           "kind": r.get("kind") or "", "internal": r.get("internal") == "True"}
+        except Exception:
+            continue
+    return sorted(seen.values(), key=lambda x: x["t"])
+
+
+def _wr(rows):
+    n = len(rows)
+    return {"n": n, "win": (round(100 * sum(1 for r in rows if r["win"]) / n) if n else None),
+            "net": round(sum(r["p"] for r in rows), 2)}
+
+
+def _pct(rows):
+    w = _wr(rows)["win"]
+    return "—" if w is None else f"{w} %"
+
+
+def patterns():
+    """2026-09-28 (owner): the market space must show the PATTERNS being
+    established - each with its evidence, how sure we are, and whether the
+    robot already uses it. Backtest figures are the published replays
+    (review/*.md); live figures are recomputed here from the journals and
+    the market memory. A live number under 30 trades is 'en observation'."""
+    if _PAT_CACHE["data"] is not None and time.time() - _PAT_CACHE["t"] < 600:
+        return _PAT_CACHE["data"]
+    J = _journal_unique()
+    # --- market memory shares ---
+    shares = {"calme": 0, "soutenu": 0, "rapide": 0, "tres_rapide": 0}
+    mdays = 0
+    try:
+        for fn in sorted(os.listdir(MKT_DIR)):
+            if not fn.endswith(".jsonl"):
+                continue
+            mdays += 1
+            for line in open(os.path.join(MKT_DIR, fn), encoding="utf-8"):
+                try:
+                    v = json.loads(line).get("nerv")
+                except Exception:
+                    continue
+                if v is None:
+                    continue
+                shares["calme" if v < 1.0 else ("soutenu" if v < 1.3 else ("rapide" if v < 1.85 else "tres_rapide"))] += 1
+    except Exception:
+        pass
+    tot = sum(shares.values()) or 1
+    shares_pct = {k: round(100 * v / tot) for k, v in shares.items()}
+    # --- live cuts ---
+    calm = [r for r in J if r["nerv"] is not None and r["nerv"] < 1.0]
+    hot = [r for r in J if r["nerv"] is not None and r["nerv"] >= 1.0]
+    flips = [r for r in J if r["kind"] == "FLIP-BOS"]
+    conts = [r for r in J if r["kind"] == "BOS"]
+    quick, slow = [], []
+    for i, r in enumerate(J):
+        prev = J[i - 1] if i else None
+        (quick if (prev and r["t"] - prev["x"] < 1800) else slow).append(r)
+    sess = {"asie": [], "europe": [], "us": []}
+    for r in J:
+        h = time.gmtime(r["t"]).tm_hour
+        sess["asie" if h < 8 else ("europe" if h < 16 else "us")].append(r)
+    live_n = len(J)
+
+    def conf(n, min_n=30):
+        return "observation" if n < min_n else "vivant"
+
+    cards = [
+        {"id": "calm", "icon": "i-cloud",
+         "title": "Le march\u00e9 calme paie, le march\u00e9 nerveux non",
+         "title_en": "Calm markets pay, nervous ones do not",
+         "fig": _pct(calm),
+         "fig_l": "de r\u00e9ussite sous 1,0\u00d7 en live", "fig_l_en": "win rate under 1.0\u00d7 live",
+         "live": f"{_wr(calm)['n']} trades calmes ({_pct(calm)}) contre {_wr(hot)['n']} au-dessus de 1,0\u00d7 ({_pct(hot)})",
+         "live_en": f"{_wr(calm)['n']} calm trades ({_pct(calm)}) vs {_wr(hot)['n']} above 1.0\u00d7 ({_pct(hot)})",
+         "back": "Replay 42 j : 64 % entre 0,8 et 1,0\u00d7, 37 % entre 1,0 et 1,2\u00d7. Le pire se voit au-dessus de la ligne, pas le meilleur en dessous.",
+         "back_en": "42-day replay: 64 % between 0.8 and 1.0\u00d7, 37 % between 1.0 and 1.2\u00d7. The line names bad trades, not good ones.",
+         "status": "confirme", "robot": "oui", "robot_note": "frein nervosit\u00e9 \u00e0 1,0\u00d7 (r\u00e9glable par compte) ; ligne d\u2019orage \u00e0 1,85\u00d7 pour tous",
+         "robot_note_en": "nervosity brake at 1.0\u00d7 (per-account dial); storm line at 1.85\u00d7 for everyone",
+         "manual": "Un signal re\u00e7u au-dessus de 1,0\u00d7 m\u00e9rite une taille r\u00e9duite ou un passage.",
+         "manual_en": "A signal received above 1.0\u00d7 deserves a smaller size or a pass."},
+        {"id": "shares", "icon": "i-wave",
+         "title": "Le march\u00e9 est calme la plupart du temps", "title_en": "The market is calm most of the time",
+         "fig": f"{shares_pct['calme']} %", "fig_l": f"du temps sous 1,0\u00d7 ({mdays} j de m\u00e9moire)", "fig_l_en": f"of the time under 1.0\u00d7 ({mdays} d of memory)",
+         "live": f"soutenu {shares_pct['soutenu']} % \u00b7 rapide {shares_pct['rapide']} % \u00b7 tr\u00e8s rapide {shares_pct['tres_rapide']} %",
+         "live_en": f"brisk {shares_pct['soutenu']} % \u00b7 fast {shares_pct['rapide']} % \u00b7 very fast {shares_pct['tres_rapide']} %",
+         "back": "Mesur\u00e9 sur 41,7 j : calme 53 %, soutenu 22 %, rapide 15 %, tr\u00e8s rapide 10 %. Les mots des bandes viennent de l\u00e0.",
+         "back_en": "Measured over 41.7 d: calm 53 %, brisk 22 %, fast 15 %, very fast 10 %. The band words come from there.",
+         "status": "vivant" if mdays >= 7 else "observation", "robot": "oui", "robot_note": "les bandes calme / soutenu / rapide / tr\u00e8s rapide de la m\u00e9t\u00e9o",
+         "robot_note_en": "the calm / brisk / fast / very fast bands of the weather",
+         "manual": "Les heures rapides se r\u00e9p\u00e8tent : la grille des heures montre lesquelles.",
+         "manual_en": "Fast hours repeat: the hours grid shows which ones."},
+        {"id": "flip", "icon": "i-switch",
+         "title": "La bascule, puis une continuation \u2014 pas plus", "title_en": "The flip, then one continuation, no more",
+         "fig": _pct(flips), "fig_l": "de r\u00e9ussite sur les bascules en live", "fig_l_en": "win rate on flips live",
+         "live": f"bascules {_wr(flips)['n']} ({_pct(flips)}) \u00b7 continuations {_wr(conts)['n']} ({_pct(conts)})",
+         "live_en": f"flips {_wr(flips)['n']} ({_pct(flips)}) \u00b7 continuations {_wr(conts)['n']} ({_pct(conts)})",
+         "back": "Replay 42 j : bascule + 1 continuation +$164 ; bascule seule +$83 ; 2 ou 3 continuations \u2212$52 / \u2212$58.",
+         "back_en": "42-day replay: flip + 1 continuation +$164; flip only +$83; 2 or 3 continuations \u2212$52 / \u2212$58.",
+         "status": "confirme", "robot": "oui", "robot_note": "en rattrapage : une continuation par tendance, r\u00e9arm\u00e9e par la bascule ou le toucher du point prot\u00e9g\u00e9",
+         "robot_note_en": "in catch-up: one continuation per trend, re-armed by the flip or a touch of the protected point",
+         "manual": "Le premier signal apr\u00e8s un changement de sens est le plus solide ; le troisi\u00e8me de suite l\u2019est rarement.",
+         "manual_en": "The first signal after a change of direction is the strongest; the third in a row rarely is."},
+        {"id": "quick", "icon": "i-bolt",
+         "title": "Les trades rapproch\u00e9s perdent plus \u2014 mais les \u00e9viter co\u00fbte", "title_en": "Quick follow-ups lose more \u2014 but avoiding them costs",
+         "fig": _pct(quick), "fig_l": "de r\u00e9ussite \u00e0 moins de 30 min du pr\u00e9c\u00e9dent", "fig_l_en": "win rate within 30 min of the previous",
+         "live": f"rapproch\u00e9s {_wr(quick)['n']} ({_pct(quick)}) \u00b7 espac\u00e9s {_wr(slow)['n']} ({_pct(slow)})",
+         "live_en": f"quick {_wr(quick)['n']} ({_pct(quick)}) \u00b7 spaced {_wr(slow)['n']} ({_pct(slow)})",
+         "back": "Replay 42 j : attendre 30 min apr\u00e8s une cl\u00f4ture perd $106 et creuse la dette. Les suites rapides sont le rattrapage qui travaille.",
+         "back_en": "42-day replay: waiting 30 min after a close loses $106 and deepens the debt. Quick follow-ups are the catch-up doing its job.",
+         "status": "rejete", "robot": "non", "robot_note": "test\u00e9, pas retenu", "robot_note_en": "tested, not adopted",
+         "manual": "Un signal juste apr\u00e8s une perte n\u2019est pas mauvais en soi \u2014 c\u2019est la taille qui compte.",
+         "manual_en": "A signal right after a loss is not bad in itself \u2014 size is what matters."},
+        {"id": "target", "icon": "i-target",
+         "title": "Une cible plus courte lisse la route sans changer l\u2019arriv\u00e9e", "title_en": "A shorter target smooths the road without changing the destination",
+         "fig": "\u221238 %", "fig_l": "de pire dette avec une cible \u00e0 0,4\u00d7 le risque", "fig_l_en": "worst debt with a 0.4\u00d7 target",
+         "live": "Valère depuis le 14/09 : 0,8\u00d7 +$24 (24 gagn\u00e9s / 14 perdus) \u00b7 0,4\u00d7 +$27 (33 / 5)", "live_en": "Valère since 14/09: 0.8\u00d7 +$24 (24 won / 14 lost) \u00b7 0.4\u00d7 +$27 (33 / 5)",
+         "back": "Replay 42 j : 0,4\u00d7 = m\u00eame argent (\u2212$16), pire dette 63 \u2192 39 dans les deux moiti\u00e9s ; 0,6\u00d7 = +$45 mais les moiti\u00e9s divergent.",
+         "back_en": "42-day replay: 0.4\u00d7 = same money (\u2212$16), worst debt 63 \u2192 39 in both halves; 0.6\u00d7 = +$45 but the halves disagree.",
+         "status": "candidat", "robot": "candidat", "robot_note": "\u00e0 observer sur la d\u00e9mo avant tout compte r\u00e9el", "robot_note_en": "to observe on the demo before any real account",
+         "manual": "Prendre la moiti\u00e9 de la cible du signal donne le m\u00eame r\u00e9sultat avec bien moins de rouge.",
+         "manual_en": "Taking half the signal's target gives the same result with far less red."},
+        {"id": "session", "icon": "i-sun",
+         "title": "Les sessions ne se valent pas encore", "title_en": "Sessions do not differ yet",
+         "fig": "\u2014", "fig_l": "trop t\u00f4t pour trancher", "fig_l_en": "too early to call",
+         "live": " \u00b7 ".join(f"{k} {_wr(v)['n']} ({_pct(v)})" for k, v in sess.items() if _wr(v)["n"]),
+         "live_en": " \u00b7 ".join(f"{ {'asie':'asia','europe':'europe','us':'us'}[k] } {_wr(v)['n']} ({_pct(v)})" for k, v in sess.items() if _wr(v)["n"]),
+         "back": "Replay : Londres 07\u201312 h 65 % sur 65 trades, mais les moiti\u00e9s divergent. Pas une r\u00e8gle.",
+         "back_en": "Replay: London 07\u201312 h 65 % on 65 trades, but the halves disagree. Not a rule.",
+         "status": "observation", "robot": "non", "robot_note": "aucune r\u00e8gle d\u2019heure", "robot_note_en": "no hour rule",
+         "manual": "Rien \u00e0 en faire pour l\u2019instant ; la grille des heures se remplit.",
+         "manual_en": "Nothing to act on yet; the hours grid fills in."},
+    ]
+    out = {"cards": cards, "live_trades": live_n, "memory_days": mdays, "updated": int(time.time()),
+           "next": {"fr": "Prochaines \u00e9tapes : 40 trades par compte pour trancher la nervosit\u00e9 en live, 30 jours de m\u00e9moire pour les heures, puis la cible 0,6\u00d7 en observation sur la d\u00e9mo.",
+                    "en": "Next steps: 40 trades per account to settle nervosity live, 30 days of memory for the hours, then the 0.6\u00d7 target under observation on the demo."}}
+    _PAT_CACHE.update(t=time.time(), data=out)
+    return out
 
 
 def user_stats(u, admin_override=False):
@@ -8331,6 +8520,15 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "patterns":
+            # 2026-09-28: the patterns the market space stands on
+            try:
+                if not (is_admin(user) or has(user.get("id"), "manual") or family_active(ent(user.get("id")))):
+                    self._send(json.dumps({"err": "observer"}), "application/json")
+                    return
+                self._send(json.dumps(patterns()), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "market_hours":
             # 2026-09-28: the market memory folded into weekday x hour (UTC)
             try:
