@@ -112,40 +112,72 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
 #wxbk{position:fixed;inset:0;z-index:60;background:rgba(4,8,13,.5);
  opacity:0;pointer-events:none;transition:opacity .28s ease}
 #wxbk.on{opacity:1;pointer-events:auto}
-#wx{position:fixed;left:0;right:0;bottom:0;z-index:61;max-height:88vh;overflow:auto;overscroll-behavior:contain;
+.osh{position:fixed;left:0;right:0;bottom:0;z-index:61;max-height:88vh;overflow:auto;overscroll-behavior:contain;
  background:linear-gradient(180deg,rgba(23,33,48,.97),rgba(11,15,20,.99));
  border:1px solid rgba(127,179,224,.2);border-bottom:0;border-radius:26px 26px 0 0;
  box-shadow:0 -24px 60px rgba(0,0,0,.55);
  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
  padding:10px 18px calc(18px + env(safe-area-inset-bottom));
  transform:translateY(104%);transition:transform .38s cubic-bezier(.22,.9,.3,1);touch-action:pan-y}
-#wx.on{transform:translateY(0)}
-#wx.drag{transition:none}
-#wx .aur{position:absolute;left:0;right:0;top:0;height:170px;pointer-events:none;border-radius:26px 26px 0 0;
+.osh.on{transform:translateY(0)}
+.osh.drag{transition:none}
+.osh .aur{position:absolute;left:0;right:0;top:0;height:170px;pointer-events:none;border-radius:26px 26px 0 0;
  background:radial-gradient(120% 90% at 50% 0%,var(--wxa,rgba(143,198,255,.16)),transparent 70%);transition:background .5s ease}
-#wx .grip{position:relative;width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.16);margin:2px auto 16px}
-#wx .hdr{position:relative;display:flex;align-items:center;gap:14px;padding-right:38px}
-#wx .orb{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex:none;
+.osh .grip{position:relative;width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.16);margin:2px auto 16px}
+.osh .hdr{position:relative;display:flex;align-items:center;gap:14px;padding-right:38px}
+.osh .orb{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex:none;
  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);box-shadow:0 0 22px var(--wxg,transparent)}
-#wx .orb svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px currentColor)}
-#wx h2{font-size:1.14rem;font-weight:800;letter-spacing:-.01em;color:var(--text);line-height:1.2}
-#wx .ln{font-size:.84rem;color:var(--text2);line-height:1.45;margin-top:3px}
-#wx .lbl{position:relative;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
-#wx .lbl b{font-size:.8rem;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
-#wx .gz{position:relative;width:100%;height:124px;display:block}
-#wx .chips{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px}
-#wx .chip{min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
-#wx .chip.acc{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.38)}
-#wx .chip small{display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#wx .chip.acc small{color:var(--accent-soft)}
-#wx .chip b{display:block;font-size:1.02rem;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
-#wx .ft{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;font-size:.72rem;color:var(--muted)}
-#wx .ft a{color:var(--accent-soft);text-decoration:none;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;gap:6px;
+.osh .orb svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px currentColor)}
+.osh h2{font-size:1.14rem;font-weight:800;letter-spacing:-.01em;color:var(--text);line-height:1.2}
+.osh .ln{font-size:.84rem;color:var(--text2);line-height:1.45;margin-top:3px}
+.osh .lbl{position:relative;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+.osh .lbl b{font-size:.8rem;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+.osh .gz{position:relative;width:100%;height:124px;display:block}
+.osh .chips{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.osh .chip{min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+.osh .chip.acc{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.38)}
+.osh .chip small{display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osh .chip.acc small{color:var(--accent-soft)}
+.osh .chip b{display:block;font-size:1.02rem;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.osh .ft{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;font-size:.72rem;color:var(--muted)}
+.osh .ft a{color:var(--accent-soft);text-decoration:none;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;gap:6px;
  padding:9px 14px;border-radius:99px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);white-space:nowrap}
-#wx .x{position:absolute;right:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
+.osh .x{position:absolute;right:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
  background:rgba(255,255,255,.05);color:var(--muted);font-size:.95rem;display:flex;align-items:center;justify-content:center}
-body.light{filter:invert(.93) hue-rotate(180deg);background:#fff}
-body.light img{filter:invert(1) hue-rotate(180deg)}
+.osh .row{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-top:1px solid rgba(255,255,255,.06);font-size:.86rem;color:var(--text2)}
+.osh .row b{color:var(--text);font-variant-numeric:tabular-nums}
+.osh .btn{display:block;width:100%;border:0;border-radius:14px;padding:13px;font-size:.92rem;font-weight:800;color:#fff;background:var(--accent);box-shadow:0 6px 18px rgba(59,130,246,.3);margin-top:12px}
+.osh .btn.ghost{background:rgba(255,255,255,.05);color:var(--text2);border:1px solid rgba(255,255,255,.1);box-shadow:none}
+.osh .btn.ok{background:rgba(46,204,113,.14);color:#8df0bb;border:1px solid rgba(46,204,113,.35);box-shadow:none}
+.osh .btn.warn{background:rgba(232,197,90,.14);color:#e8c55a;border:1px solid rgba(232,197,90,.35);box-shadow:none}
+.osh .two{display:flex;gap:8px}.osh .two .btn{flex:1}
+.osh input{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.25);color:var(--text);border-radius:12px;padding:12px 14px;font-size:1rem;margin-top:10px}
+.osh .note{position:relative;font-size:.78rem;color:var(--muted);line-height:1.45;margin-top:10px}
+.osh .note.w{color:var(--warn)}
+#sigseg{cursor:pointer}#sigseg.busy i{animation:mtp 1.6s ease-in-out infinite}
+#autobadge,#trbadge{cursor:pointer;-webkit-tap-highlight-color:transparent}
+/* ---- 2026-09-28 light theme done properly: real tokens for the chrome,
+   the canvas keeps its inversion (its palette is drawn, not styled) ---- */
+body.light{--bg:#eef2f7;--surface:#fff;--surface2:#f6f8fb;--surface3:#e6ecf4;--border:#dde4ed;--border2:#c7d2df;
+ --text:#0f172a;--text2:#33415a;--muted:#5f6f85;--accent:#2563eb;--accent-soft:#1d4ed8;--up:#15803d;--down:#dc2626;--warn:#a16207;background:var(--bg)}
+body.light #cv{filter:invert(.93) hue-rotate(180deg)}
+body.light #hdstrip{background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.14)}
+body.light #hdstrip .seg{border-left-color:rgba(15,23,42,.12)}
+body.light #meteo,body.light #autobadge,body.light #trbadge,body.light #sigseg{filter:brightness(.62) saturate(1.3)}
+body.light .badge{color:#1d4ed8;background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.25)}
+body.light #pnl{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.14)}
+body.light #pnl span{color:#5f6f85}
+body.light #wxbk{background:rgba(15,23,42,.35)}
+body.light .osh{background:linear-gradient(180deg,rgba(255,255,255,.97),rgba(238,242,247,.995));border-color:rgba(15,23,42,.14);box-shadow:0 -24px 60px rgba(15,23,42,.18)}
+body.light .osh .grip{background:rgba(15,23,42,.18)}
+body.light .osh .orb,body.light .osh .x,body.light .osh .btn.ghost{background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.1)}
+body.light .osh .chip{background:rgba(15,23,42,.035);border-color:rgba(15,23,42,.08)}
+body.light .osh .row{border-top-color:rgba(15,23,42,.08)}
+body.light .osh input{background:#fff;border-color:#c7d2df}
+body.light .osh .btn.ok{color:#15803d}body.light .osh .btn.warn{color:#a16207}
+body.light #mtbar{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(238,242,247,.995)) !important;border-top-color:#c7d2df !important}
+body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !important}
+body.light #gotoday{color:#33415a !important;background:#fff !important;border-color:#c7d2df !important}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
@@ -158,12 +190,12 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
  style="display:none;color:#8df0bb"
  title="Mode automatique : le robot gere les entrees"><i><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg></i></span><span
  class="seg" id="meteo"
- style="display:none"></span></span></span>
+ style="display:none"></span><span class="seg" id="sigseg" style="display:none"></span></span></span>
 </div>
 <span id="px"></span>
 
 <div id="wxbk"></div>
-<div id="wx" role="dialog" aria-label="M&eacute;t&eacute;o du march&eacute;">
+<div id="wx" class="osh" role="dialog" aria-label="M&eacute;t&eacute;o du march&eacute;">
  <div class="aur"></div>
  <div class="grip"></div>
  <div class="hdr">
@@ -174,6 +206,36 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
  <div id="wx-gsec"><div class="lbl"><span>Nervosit&eacute; &middot; 24 h</span><b id="wx-nv"></b></div><svg class="gz" id="wx-g" viewBox="0 0 300 120"></svg></div>
  <div id="wx-csec"><div class="lbl"><span>Ce que le robot regarde</span></div><div class="chips" id="wx-chips"></div></div>
  <div class="ft"><span id="wx-upd"></span><a id="wx-full" href="#">M&eacute;t&eacute;o compl&egrave;te <span>&#8250;</span></a></div>
+</div>
+<div id="rb" class="osh" role="dialog" aria-label="Le robot">
+ <div class="aur"></div><div class="grip"></div>
+ <div class="hdr"><div class="orb" id="rb-orb"></div>
+  <div style="flex:1;min-width:0"><h2 id="rb-t">Le robot</h2><div class="ln" id="rb-l"></div></div>
+  <button class="x" onclick="oshShow('rb',false)" aria-label="Fermer">&#10005;</button></div>
+ <div class="lbl"><span>En ce moment</span></div><div class="chips" id="rb-chips"></div>
+ <div id="rb-led"></div>
+ <div id="rb-sw"></div>
+ <div class="ft"><span id="rb-upd"></span><a id="rb-set" href="#">R&eacute;glages <span>&#8250;</span></a></div>
+</div>
+<div id="sg" class="osh" role="dialog" aria-label="Signal">
+ <div class="aur"></div><div class="grip"></div>
+ <div class="hdr"><div class="orb" id="sg-orb"></div>
+  <div style="flex:1;min-width:0"><h2 id="sg-t">Signal</h2><div class="ln" id="sg-l"></div></div>
+  <button class="x" onclick="oshShow('sg',false)" aria-label="Fermer">&#10005;</button></div>
+ <div class="lbl" style="margin-top:14px"><span>Le signal</span><b id="sg-when"></b></div><div class="chips" id="sg-chips" style="grid-template-columns:repeat(4,1fr)"></div>
+ <div class="note" id="sg-lot"></div>
+ <div class="note w" id="sg-far" style="display:none"></div>
+ <div id="sg-act"></div>
+ <div class="ft"><span>Le stop est le niveau qui invalide le signal ; la cible vaut 0,8&times; le risque.</span></div>
+</div>
+<div id="st" class="osh" role="dialog" aria-label="La structure">
+ <div class="aur"></div><div class="grip"></div>
+ <div class="hdr"><div class="orb" id="st-orb"></div>
+  <div style="flex:1;min-width:0"><h2 id="st-t">La structure</h2><div class="ln" id="st-l"></div></div>
+  <button class="x" onclick="oshShow('st',false)" aria-label="Fermer">&#10005;</button></div>
+ <div class="lbl"><span>Structure principale</span></div><div class="chips" id="st-main"></div>
+ <div class="lbl"><span>Structure interne</span></div><div class="chips" id="st-int"></div>
+ <div class="ft"><span>R&eacute;serv&eacute; au paquet Strat&eacute;gie &middot; les niveaux sont trac&eacute;s en direct sur le graphique.</span></div>
 </div>
 <div id="botbar">
 <div id="pnl"><b>--</b><span></span></div>
@@ -1345,7 +1407,12 @@ function ui(){
  // manual_state - that file only exists for the half-manual account, so
  // accounts driven by the bot (Valere) showed nothing while in auto.
  const ab=document.getElementById('autobadge');
- if(ab)ab.style.display=D.auto?'flex':'none';
+ // 2026-09-28: the robot chip is always there (auto or manual) and opens
+ // the Robot sheet; observers keep it only while a robot runs
+ if(ab){const showRb=D.auto||!(TIER==='observer'&&!FULL);ab.style.display=showRb?'flex':'none';
+  ab.style.color=D.auto?'#8df0bb':'#9fb0d0';ab.title=D.auto?'Mode automatique : le robot gère les entrées':'Mode manuel : vous gardez la main';
+  ab.querySelector('i').innerHTML='<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">'+(D.auto?RBI.bot:RBI.hand)+'</svg>';}
+ if(oshCur==='rb')rbRender();if(oshCur==='st')stRender();
  hdstrip();
  document.getElementById('aura').className=(FULL&&D.choch)?'choc':'';
  const pe=document.getElementById('px');
@@ -1638,7 +1705,8 @@ mtopen.onclick=async()=>{
  let d=(MS.trend===-1)?-1:1,sl=null;
  // 2026-09-27: opened from the app's signal card -> the tool is the signal
  const _sg=MS.signal;
- if(_sg&&_sg.ok&&Date.now()/1000<(_sg.expires||0)&&/[?&]sig=1/.test(location.search)){
+ if(_sg&&_sg.ok&&Date.now()/1000<(_sg.expires||0)&&(window._sigWant||/[?&]sig=1/.test(location.search))){
+  window._sigWant=false;
   MT={sl:_sg.sl,tp:_sg.tp,entry:null};ary_pend_reset();
   mtbar.style.display='block';mtopen.style.display='none';
   document.getElementById('botbar').style.bottom=((mtbar.offsetHeight||140)+14)+'px';
@@ -1891,7 +1959,8 @@ async function mtLoad(){
    mtopen.innerHTML=hasPos?_pen+' Modifier SL/TP'
     :(hasOrd?_pen+' Modifier l’ordre':_ch+' Trader');
    window._MANUAL=!MS.auto;
-   if(window._MANUAL&&/[?&]sig=1/.test(location.search)&&!window._sigOpened&&MS.signal){window._sigOpened=true;setTimeout(()=>mtopen.click(),600);}
+   if(window._MANUAL&&/[?&]sig=1/.test(location.search)&&!window._sigOpened&&MS.signal){window._sigOpened=true;window._sigWant=true;setTimeout(()=>mtopen.click(),600);}
+   try{sgChip();}catch(e){}
    const canOpen=MS.auto?(hasPos||hasOrd):true;
    mtopen.style.display=(MT||!canOpen)?'none':'block';
    return;}
@@ -1951,22 +2020,140 @@ function wxState(){
  const vw=rv<1.0?['calme','var(--text)']:(rv<1.30?['soutenu','var(--warn)']:(rv<1.85?['rapide','#e8743b']:['très rapide','var(--down)']));
  return {k,S,mv,rv,nb,gN,gM,storm,hasInt,mvOk,vw,voice};
 }
-let wxOpen=false,wxDay=null,wxDayT=0;
+// ---- 2026-09-28 batch 29: one sheet manager for Meteo / Robot / Signal /
+// Structure. One sheet open at a time; backdrop, X, Escape or a pull-down
+// closes it; each re-renders on its own data tick while open.
+let wxOpen=false,wxDay=null,wxDayT=0,oshCur=null;
 const wxEl=document.getElementById('wx'),wxBk=document.getElementById('wxbk');
-function wxShow(on){wxOpen=on;wxEl.classList.toggle('on',on);wxBk.classList.toggle('on',on);
- if(on){const W=wxState();if(W)wxRender(W);wxDayLoad();}}
-document.getElementById('meteo').onclick=()=>wxShow(!wxOpen);
-wxBk.onclick=()=>wxShow(false);
-document.getElementById('wxx').onclick=()=>wxShow(false);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wxOpen)wxShow(false);});
+const OSH={wx:()=>{const W=wxState();if(W)wxRender(W);wxDayLoad();},rb:()=>rbOpen(),sg:()=>sgRender(),st:()=>stRender()};
+function oshShow(id,on){
+ if(on&&oshCur&&oshCur!==id)oshShow(oshCur,false);
+ const el=document.getElementById(id);if(!el)return;
+ el.classList.toggle('on',on);wxBk.classList.toggle('on',on);
+ oshCur=on?id:null;if(id==='wx')wxOpen=on;
+ if(on&&OSH[id])OSH[id]();
+}
+function wxShow(on){oshShow('wx',on);}
+document.getElementById('meteo').onclick=()=>oshShow('wx',oshCur!=='wx');
+wxBk.onclick=()=>{if(oshCur)oshShow(oshCur,false);};
+document.getElementById('wxx').onclick=()=>oshShow('wx',false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&oshCur)oshShow(oshCur,false);});
 document.getElementById('wx-full').href='/'+tok+'/#marche';
-// pull down to close (only when the sheet is scrolled to its top)
-(function(){let y0=null;
- wxEl.addEventListener('touchstart',e=>{y0=(wxEl.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
- wxEl.addEventListener('touchmove',e=>{if(y0===null)return;const dy=e.touches[0].clientY-y0;
-  if(dy>0){wxEl.classList.add('drag');wxEl.style.transform='translateY('+dy+'px)';}},{passive:true});
- wxEl.addEventListener('touchend',e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;
-  wxEl.classList.remove('drag');wxEl.style.transform='';if(dy>90)wxShow(false);y0=null;});})();
+document.getElementById('rb-set').href='/'+tok+'/#set';
+['wx','rb','sg','st'].forEach(id=>{const el=document.getElementById(id);let y0=null;
+ el.addEventListener('touchstart',e=>{y0=(el.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
+ el.addEventListener('touchmove',e=>{if(y0===null)return;const dy=e.touches[0].clientY-y0;
+  if(dy>0){el.classList.add('drag');el.style.transform='translateY('+dy+'px)';}},{passive:true});
+ el.addEventListener('touchend',e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;
+  el.classList.remove('drag');el.style.transform='';if(dy>90)oshShow(id,false);y0=null;});});
+const fmtHM=t=>{const x=new Date(t*1000);return String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0');};
+const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+const chipH=(l,v,col,acc)=>'<div class="chip'+(acc?' acc':'')+'"><small>'+l+'</small><b style="color:'+(col||'var(--text)')+'">'+v+'</b></div>';
+// ---- Le robot (behind the robot chip) ----
+let RB=null,rbT=0,rbTimer=null;
+const RBI={bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/>',
+ hand:'<path d="M18 11V6a2 2 0 0 0-4 0v5M14 10V4a2 2 0 0 0-4 0v6M10 10.5V6a2 2 0 0 0-4 0v8a8 8 0 0 0 16 0v-4a2 2 0 0 0-4 0"/>'};
+async function rbFetch(){try{const r=await fetch('/'+tok+'/api?t='+Date.now(),{cache:'no-store'});if(r.ok){RB=await r.json();rbT=Date.now();}}catch(e){}}
+async function rbOpen(){rbRender();await rbFetch();rbRender();
+ clearInterval(rbTimer);rbTimer=setInterval(async()=>{if(oshCur!=='rb'){clearInterval(rbTimer);return;}await rbFetch();rbRender();},10000);}
+function rbRender(){
+ const auto=!!(D&&D.auto),obs=(TIER==='observer'&&!FULL);
+ const col=auto?'#8df0bb':'#9fb0d0';
+ const el=document.getElementById('rb');el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
+ document.getElementById('rb-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'">'+(auto?RBI.bot:RBI.hand)+'</svg>';
+ document.getElementById('rb-t').textContent=auto?(obs?'Le robot de Kino travaille':'Le robot travaille'):(obs?'Kino garde la main':'Vous gardez la main');
+ document.getElementById('rb-l').textContent=auto
+  ?'Il prend les trades tout seul, seulement quand les conditions sont réunies. Aucune performance garantie.'
+  :'Le robot n’entre pas seul. Les trades se prennent depuis le graphique ; ceux en cours gardent leur stop et leur cible.';
+ const tr=(D&&D.trades)||[];const fl=tr.reduce((a,t)=>a+(+t[5]||0),0);
+ const today=RB&&typeof RB.today==='number'?RB.today:null,bal=RB&&typeof RB.balance==='number'?RB.balance:null;
+ document.getElementById('rb-chips').innerHTML=
+  chipH('en cours',tr.length?tr.length+' trade'+(tr.length>1?'s':''):'aucun',tr.length?'var(--accent-soft)':'var(--muted)',tr.length>0)+
+  chipH('flottant',tr.length?money(fl):'—',tr.length?(fl>=0?'#8df0bb':'#ff8c8c'):'var(--muted)',false)+
+  chipH('aujourd’hui',today===null?'—':money(today),today===null?'var(--muted)':(today>=0?'#8df0bb':'#ff8c8c'),false)+
+  chipH('solde',bal===null?'—':'$'+bal.toFixed(2),'var(--text)',false);
+ const L=RB&&RB.ledger,led=document.getElementById('rb-led');
+ if(L&&!obs&&typeof L.debt==='number'){
+  const debt=L.debt>0.5;
+  led.innerHTML='<div class="lbl"><span>Le rattrapage</span><b style="color:'+(debt?'#ff8c8c':'#8df0bb')+'">'+(debt?'$'+L.debt.toFixed(2)+' à rattraper':'rien à rattraper')+'</b></div>'+
+   '<div class="chips">'+chipH('réserve','$'+(+L.chest||0).toFixed(2)+(L.cap?' / $'+(+L.cap).toFixed(0):''),'var(--text)',false)+
+   chipH('prochain lot',(L.next_lot||L.base_lot||0.02).toFixed(2)+' lot',debt?'var(--warn)':'var(--text)',debt)+'</div>'+
+   (debt?'<div class="note">Après une perte, le robot ajoute au plus '+(L.max_extra||3)+' × 0,01 lot, financés par la réserve, jusqu’à effacer la dette.</div>':'');
+ }else led.innerHTML='';
+ const sw=document.getElementById('rb-sw');
+ if(RB&&'trading_paused' in RB&&!RB.pause_locked&&!obs){
+  const paused=!!RB.trading_paused;
+  sw.innerHTML='<div class="lbl"><span>Le mode</span></div><button class="btn '+(paused?'ok':'warn')+'" onclick="rbAsk('+(paused?0:1)+')">'+(paused?'Lancer l’automatique':'Repasser en manuel')+'</button><div id="rb-pw"></div>';
+ }else sw.innerHTML='';
+ document.getElementById('rb-upd').textContent=rbT?'Mis à jour il y a '+Math.max(0,Math.round((Date.now()-rbT)/1000))+' s':'';
+}
+function rbAsk(on){const box=document.getElementById('rb-pw');if(!box)return;
+ box.innerHTML='<div class="note">'+(on?'Le robot n’entrera plus seul. Vous gardez la main depuis le graphique.':'Le robot prendra les trades tout seul, quand les conditions sont favorables. Aucune performance garantie.')+'</div>'+
+  '<input id="rb-pwd" type="password" autocomplete="current-password" placeholder="Mot de passe du compte"><div class="two"><button class="btn" onclick="rbGo('+on+')">Confirmer</button><button class="btn ghost" onclick="document.getElementById(\'rb-pw\').innerHTML=\'\'">Annuler</button></div>';
+ setTimeout(()=>{const i=document.getElementById('rb-pwd');if(i)i.focus();},50);}
+async function rbGo(on){const i=document.getElementById('rb-pwd');const pw=i?i.value:'';if(!pw)return;
+ const box=document.getElementById('rb-pw');box.innerHTML='<div class="note">Envoi…</div>';
+ let j=null;try{const r=await fetch('/'+tok+'/pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+on+'&pwd='+encodeURIComponent(pw)});j=await r.json();}catch(e){}
+ if(!j||!j.ok){box.innerHTML='<div class="note w">'+(j&&j.err==='complet'?'Plus de place pour l’instant.':(j&&j.err==='verrouille'?'Ce compte ne peut pas changer de mode.':'Mot de passe incorrect.'))+'</div>';return;}
+ box.innerHTML='<div class="note" style="color:#8df0bb">✓ Demande envoyée — le changement prend quelques secondes.</div>';
+ setTimeout(async()=>{await rbFetch();rbRender();},4000);}
+document.getElementById('autobadge').onclick=()=>oshShow('rb',oshCur!=='rb');
+// ---- Le signal (manual members): the chip pulses while a signal is live ----
+function sgLive(){const s=MS&&MS.signal;if(!s||!window._MANUAL||!s.ok||s.done||s.skipped)return null;if(s.expires&&Date.now()/1000>s.expires)return null;return s;}
+function sgChip(){const seg=document.getElementById('sigseg');if(!seg)return;const s=sgLive();
+ if(!s){seg.style.display='none';if(oshCur==='sg')oshShow('sg',false);return;}
+ const buy=s.dir===1,col=buy?'#8df0bb':'#ff8c8c';
+ seg.innerHTML='<i>'+(buy?'▲':'▼')+'</i>'+(s.taken?'✓ pris':(buy?'achat':'vente'));
+ seg.className='seg'+(s.taken?'':' busy');seg.style.color=col;seg.style.display='flex';hdstrip();
+ if(oshCur==='sg')sgRender();}
+document.getElementById('sigseg').onclick=()=>oshShow('sg',oshCur!=='sg');
+function sgRender(){const s=sgLive();if(!s){oshShow('sg',false);return;}
+ const buy=s.dir===1,col=buy?'#8df0bb':'#ff8c8c',el=document.getElementById('sg');
+ el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
+ document.getElementById('sg-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'">'+(buy?'<path d="M12 19V5M5 12l7-7 7 7"/>':'<path d="M12 5v14M5 12l7 7 7-7"/>')+'</svg>';
+ document.getElementById('sg-t').textContent=(buy?'Achat':'Vente')+' BTCUSD';
+ const age=Math.max(0,Math.round((Date.now()/1000-s.t)/60));
+ document.getElementById('sg-l').textContent='À prendre au marché tant que le prix est proche de l’entrée.';
+ document.getElementById('sg-when').textContent=(age<1?'à l’instant':'il y a '+age+' min')+' · jusqu’à '+fmtHM(s.expires);
+ document.getElementById('sg-chips').innerHTML=chipH('entrée','~'+(+s.e).toFixed(0),'var(--text)',true)+chipH('stop',(+s.sl).toFixed(0),'#ff8c8c',false)+chipH('cible',(+s.tp).toFixed(0),'#8df0bb',false)+chipH('lot',(+s.lot).toFixed(2)+(s.bul?'+'+s.bul:''),'var(--text)',false);
+ let my=0;try{my=parseFloat(localStorage.getItem('owlMyBal:/'+tok+'/')||'0');}catch(e){}
+ const lt=document.getElementById('sg-lot');
+ if(s.bal&&s.risk){if(my>0){const k=my/s.bal;lt.innerHTML='Votre lot pour $'+my.toFixed(0)+' : <b style="color:var(--text)">'+Math.max(0.01,Math.round(s.lot*k*100)/100).toFixed(2)+'</b> · risque ~$'+(s.risk*k).toFixed(2)+' · <a href="#" onclick="event.preventDefault();sgBal()" style="color:var(--muted)">modifier</a>';}
+  else lt.innerHTML='Lot calculé pour un compte de $'+(+s.bal).toFixed(0)+' · risque ~$'+(+s.risk).toFixed(2)+'. <a href="#" onclick="event.preventDefault();sgBal()" style="color:var(--accent-soft)">Autre broker ? Entrez votre solde</a>';}
+ else lt.innerHTML='';
+ const px=MS&&MS.px,far=(typeof px==='number'&&s.e)?Math.abs(px-s.e)/s.e:0,fe=document.getElementById('sg-far');
+ fe.style.display=far>0.0025?'block':'none';fe.textContent=far>0.0025?'⚠ Le prix s’est éloigné de l’entrée ('+(far*100).toFixed(2)+' %) — prudence, le risque n’est plus le même.':'';
+ const act=document.getElementById('sg-act');
+ if(s.taken){act.innerHTML='<div class="note" style="color:#8df0bb">✓ Pris'+(s.taken_manual?'':' (détecté sur votre compte)')+(typeof s.result==='number'?' · '+money(s.result):'')+'</div>'+
+   (s.taken_manual&&typeof s.result!=='number'?'<input id="sg-res" inputmode="decimal" placeholder="résultat en $, ex. +12,5"><button class="btn ghost" onclick="sgMark(1,document.getElementById(\'sg-res\').value)">Enregistrer le résultat</button>':'');}
+ else act.innerHTML='<button class="btn" onclick="sgTake()">Prendre sur le graphique</button><div class="note">Vous le tradez chez un autre broker ? Dites-le à l’app :</div><div class="two"><button class="btn ok" onclick="sgMark(1)">✓ J’ai pris</button><button class="btn ghost" onclick="sgMark(0)">Pas pris</button></div>';
+}
+function sgTake(){oshShow('sg',false);window._sigWant=true;setTimeout(()=>mtopen.click(),350);}
+async function sgMark(tk,res){const s=MS&&MS.signal;if(!s)return;
+ let j=null;try{const r=await fetch('/'+tok+'/sigmark',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'t='+s.t+'&taken='+tk+(res?'&result='+encodeURIComponent(res):'')});j=await r.json();}catch(e){}
+ if(!j||!j.ok){alert('Pas enregistré, réessayez.');return;}
+ if(tk===1){s.taken=s.taken||'manual';s.taken_manual=true;if(j.mark&&typeof j.mark.result==='number')s.result=j.mark.result;}else s.skipped=true;
+ sgChip();if(oshCur==='sg')sgRender();}
+function sgBal(){let my='';try{my=localStorage.getItem('owlMyBal:/'+tok+'/')||'';}catch(e){}
+ const v=prompt('Le solde du compte sur lequel vous tradez les signaux (gardé sur ce téléphone) :',my);if(v===null)return;
+ const n=parseFloat(String(v).replace(',','.'));try{if(n>0)localStorage.setItem('owlMyBal:/'+tok+'/',String(n));else localStorage.removeItem('owlMyBal:/'+tok+'/');}catch(e){}
+ sgRender();}
+// ---- La structure (behind the trend chip, Strategie members and admin) ----
+document.getElementById('trbadge').onclick=()=>{if(!FULL)return;oshShow('st',oshCur!=='st');};
+function stRender(){if(!D||!FULL)return;
+ const up=D.trend===1,dn=D.trend===-1,col=up?'#8df0bb':(dn?'#ff8c8c':'#9fb0d0'),el=document.getElementById('st');
+ el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
+ document.getElementById('st-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'">'+(up?'<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>':(dn?'<path d="M3 7l6 6 4-4 8 8M15 17h6v-6"/>':'<path d="M3 12h18"/>'))+'</svg>';
+ const since=(D.dots&&D.dots.length)?D.dots[D.dots.length-1][0]:null;
+ document.getElementById('st-t').textContent=up?'Tendance haussière':(dn?'Tendance baissière':'Sans tendance');
+ document.getElementById('st-l').textContent=(since?'Point protégé posé à '+fmtHM(since)+'. ':'')+(up?'Tant que le point protégé tient, le robot cherche des achats.':(dn?'Tant que le point protégé tient, le robot cherche des ventes.':'Le robot attend qu’une structure se dessine.'));
+ const f=v=>(typeof v==='number'&&v>0)?v.toFixed(0):'—';
+ document.getElementById('st-main').innerHTML=chipH('point protégé',f(D.invalid),'#e8c55a',true)+chipH('prochaine cassure',f(D.next_bos)+(D.bos_ready?' · prête':''),D.bos_ready?'var(--accent-soft)':'var(--text)',!!D.bos_ready)+
+  chipH('bascule',D.flip_bos?f(D.flip_bos)+(D.flip_bos_ready?' · armée':''):'—',D.flip_bos_ready?'var(--warn)':'var(--muted)',!!D.flip_bos_ready)+chipH('choc',D.choch?'oui':'non',D.choch?'var(--warn)':'var(--muted)',false);
+ const it=D.int_trend,W={ready:'rien ne bloque',flip:'bascule possible',forming:'en formation',none:'—'};
+ document.getElementById('st-int').innerHTML=it?(chipH('sens interne',(it===1?'▲ hausse':'▼ baisse')+' · '+(W[D.int_state]||'—'),it===1?'#8df0bb':'#ff8c8c',true)+chipH('cassure interne',f(D.int_bos),D.int_bos_ready?'var(--accent-soft)':'var(--text)',!!D.int_bos_ready)+
+  chipH('invalidation',f(D.int_inv),'#e8c55a',false)+chipH('petits mouvements',(D.int_brk_1h||0)+' / 1 h',(D.int_brk_1h||0)>=1?'var(--accent-soft)':'var(--muted)',false)):chipH('structure interne','aucune pour l’instant','var(--muted)',false);
+}
 async function wxDayLoad(){
  if((TIER==='observer'&&!FULL)||Date.now()-wxDayT<60000)return;wxDayT=Date.now();
  try{const r=await fetch('/'+tok+'/day',{cache:'no-store'});

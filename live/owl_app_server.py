@@ -1139,6 +1139,15 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <button id="renew-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
 </div>
+<div class="panel" id="newscard" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--accent-soft);background:rgba(59,130,246,.12)"><svg class="ic"><use href="#i-gift"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="news-t" style="font-size:.98rem"></b>
+   <div id="news-s" style="font-size:.78rem;color:var(--muted2);margin-top:2px"></div></div>
+ </div>
+ <div id="news-list" style="margin-top:10px;font-size:.84rem;color:var(--text2);line-height:1.5"></div>
+ <button id="news-b" class="shbtn shghost" style="margin:10px 0 0;padding:10px;font-size:.86rem"></button>
+</div>
 <div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(255,92,92,.45)">
  <div style="display:flex;align-items:center;gap:12px">
   <div class="sic" style="color:var(--down-soft);background:rgba(255,92,92,.12)"><svg class="ic"><use href="#i-bell"/></svg></div>
@@ -3805,6 +3814,27 @@ async function pollSignal(){
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
  try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}renderSignal(await r.json());}catch(e){}
 }
+// ---- batch 29: "Quoi de neuf" - one card per update, dismissed once ----
+const NEWS_V='2026-09-28';
+const NEWS=[
+ {fr:'<b>M\u00e9t\u00e9o sur le graphique</b> \u2014 touchez la puce m\u00e9t\u00e9o en haut, le d\u00e9tail glisse sans quitter le graphique.',en:'<b>Weather on the chart</b> \u2014 tap the weather chip at the top, the detail slides up without leaving the chart.'},
+ {fr:'<b>Le robot en un tap</b> \u2014 la puce robot ouvre son \u00e9tat : trades en cours, rattrapage, et le changement de mode.',en:'<b>The robot in one tap</b> \u2014 the robot chip opens its state: open trades, catch-up, and the mode switch.',need:'switch'},
+ {fr:'<b>Signal sur le graphique</b> \u2014 une puce ACHAT / VENTE clignote tant qu\u2019un signal est valable ; tout se fait depuis l\u00e0.',en:'<b>Signal on the chart</b> \u2014 a BUY / SELL chip pulses while a signal is live; everything happens from there.',need:'manual'},
+ {fr:'<b>Votre lot</b> \u2014 entrez votre solde une fois, le signal s\u2019adapte \u00e0 votre compte.',en:'<b>Your lot</b> \u2014 enter your balance once, the signal scales to your account.',need:'manual'},
+ {fr:'<b>J\u2019ai pris / Pas pris</b> \u2014 et l\u2019historique des signaux dans Historique.',en:'<b>Taken / Not taken</b> \u2014 and the signal history in History.',need:'manual'},
+ {fr:'<b>Mes paiements</b> \u2014 vos re\u00e7us et vos dates de fin, dans R\u00e9glages.',en:'<b>My payments</b> \u2014 your receipts and end dates, in Settings.'},
+ {fr:'<b>Mode clair</b> \u2014 le graphique suit maintenant le th\u00e8me de l\u2019app.',en:'<b>Light mode</b> \u2014 the chart now follows the app theme.'}];
+function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
+ let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
+ const P=d.plan||{};
+ if(seen===NEWS_V){el.style.display='none';return;}
+ const items=NEWS.filter(n=>!n.need||(n.need==='manual'&&(P.manual||P.family))||(n.need==='switch'&&!d.pause_locked));
+ document.getElementById('news-t').textContent=en?'What\u2019s new':'Quoi de neuf';
+ document.getElementById('news-s').textContent=en?'Since your last visit':'Depuis votre derni\u00e8re visite';
+ setH(document.getElementById('news-list'),items.map(n=>'<div style="display:flex;gap:8px;margin-top:6px"><span style="color:var(--accent-soft);flex:none">\u2022</span><span>'+(en?n.en:n.fr)+'</span></div>').join(''));
+ const b=document.getElementById('news-b');b.textContent=en?'Got it':'Compris';
+ b.onclick=()=>{try{localStorage.setItem('owlNewsSeen:'+B,NEWS_V);}catch(e){}el.style.display='none';};
+ el.style.display='block';}
 // ---- batch 28 ----
 function noPushBanner(d){const el=document.getElementById('nopushcard');if(!el)return;const en=LANG()==='en';
  const show=!d.public&&MAN()&&!OBS()&&!d.push_on&&!window._pushLocal;
@@ -4724,7 +4754,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);renderRevenue(d);loadSignals();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);renderRevenue(d);loadSignals();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
