@@ -3958,8 +3958,13 @@ function labTab(k){window._labTab=k;labRender();}
 async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)seg.style.display=labAllowed()?'':'none';
  if(!labAllowed()){return;}
  if(window._labT&&Date.now()-window._labT<120000){return;}window._labT=Date.now();
- let j=null;try{const r=await fetch(B+'lab?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
- if(!j||j.err)return;window._lab=j;labRender();}
+ // 2026-09-28 (owner): from the admin's phone the lab is read through the
+ // ADMIN link - a member's link has no Strategie access and the panel stayed blank
+ let adm='';try{adm=localStorage.getItem('owl_adm')||'';}catch(e){}
+ const base=(adm&&adm.indexOf('/')===0&&adm!==B)?(adm.endsWith('/')?adm:adm+'/'):B;
+ let j=null;try{const r=await fetch(base+'lab?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err){const en=LANG()==='en';setH(document.getElementById('lab-body'),'<div class="panel labintro" style="margin-top:12px"><b style="font-size:.95rem">'+(en?'The lab is part of the Strategy plan':'Le labo fait partie du paquet Stratégie')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'It shows the ideas we test to make the robot better, what worked, and what did not. Settings › Subscription to add it.':'Il montre les idées qu’on teste pour rendre le robot meilleur, ce qui a marché et ce qui n’a pas marché. Réglages › Abonnement pour l’ajouter.')+'</div></div>');return;}
+ window._lab=j;labRender();}
 function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const C=j.counts||{};const n=k=>C[k]||0;
  const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
