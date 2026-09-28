@@ -1053,6 +1053,30 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  border-radius:11px;padding:10px 8px;font-size:.86rem;font-weight:700;letter-spacing:.01em;transition:background .18s,color .18s}
 .mxs.on{background:var(--surface);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.28),var(--hl,none)}
 .mxs .ic-s{width:16px;height:16px}
+/* 2026-09-28 polish (owner): the switch never wraps, the lab reads like a
+   magazine - one card grammar (.lc), one row grammar (.kv), one chip (.pchip) */
+.mxs{font-size:.8rem;padding:9px 6px;white-space:nowrap;gap:6px}
+.mxs .ic-s{width:15px;height:15px}
+.labstat{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px;padding-bottom:2px}
+.labstat::-webkit-scrollbar{display:none}
+.labstat .ls{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 11px 6px 9px;font-size:.7rem;color:var(--muted2);font-weight:600;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+.labstat .ls b{font-size:.95rem;font-variant-numeric:tabular-nums;letter-spacing:0}
+.lc{padding:14px 40px 12px 14px;margin-top:10px;position:relative;cursor:pointer}
+.lc .lct{display:flex;align-items:flex-start;gap:11px}
+.lc .lcb{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem}
+.lc h4{margin:0;font-size:.95rem;font-weight:700;line-height:1.3;color:var(--text);letter-spacing:-.005em}
+.lc .lcc{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.lc .lcn{font-size:.8rem;color:var(--muted2);line-height:1.5;margin-top:9px}
+.lc .lcm{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.66rem;color:var(--muted);margin-top:9px;font-variant-numeric:tabular-nums}
+.lc .chv{position:absolute;right:12px;top:16px;color:var(--muted)}
+.kv{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--border);font-size:.8rem}
+.kv:first-child{border-top:0}
+.kv .kvt{flex:1;min-width:0}.kv .kvt b{display:block;font-size:.86rem;color:var(--text);line-height:1.3}.kv .kvt span{display:block;color:var(--muted2);font-size:.74rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.pchip{display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:3px 8px;white-space:nowrap}
+.prow{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:.8rem;color:var(--text2);line-height:1.5}
+.prow .pk{flex:none;width:58px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
+.pman{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--accent-bg,rgba(59,130,246,.10));border:1px solid rgba(59,130,246,.28);font-size:.84rem;color:var(--text);line-height:1.5}
+.pman .pk{display:block;color:var(--accent-soft);font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
 .tfc{border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;
  padding:6px 13px;font-size:.74rem;font-weight:700;white-space:nowrap;flex:none}
 .tfc.on{background:var(--surface3);border-color:var(--border2);color:var(--text2)}
@@ -1385,9 +1409,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
      feed sees, to grow into a real analysis space) and the ROBOT (what
      it does on this account, to grow with AI). No extra tab. -->
 <div class="mxseg" id="mxseg" role="tablist">
- <button class="mxs on" id="mxs-market" role="tab" aria-selected="true" onclick="mxView('market')"><svg class="ic ic-s"><use href="#i-wave"/></svg><span>Le march&eacute;</span></button>
- <button class="mxs" id="mxs-robot" role="tab" aria-selected="false" onclick="mxView('robot')"><svg class="ic ic-s"><use href="#i-bot"/></svg><span>Le robot</span></button>
- <button class="mxs" id="mxs-lab" role="tab" aria-selected="false" onclick="mxView('lab')" style="display:none"><svg class="ic ic-s"><use href="#i-target"/></svg><span>Le labo</span></button>
+ <button class="mxs on" id="mxs-market" role="tab" aria-selected="true" onclick="mxView('market')"><svg class="ic ic-s"><use href="#i-wave"/></svg><span>March&eacute;</span></button>
+ <button class="mxs" id="mxs-robot" role="tab" aria-selected="false" onclick="mxView('robot')"><svg class="ic ic-s"><use href="#i-bot"/></svg><span>Robot</span></button>
+ <button class="mxs" id="mxs-lab" role="tab" aria-selected="false" onclick="mxView('lab')" style="display:none"><svg class="ic ic-s"><use href="#i-target"/></svg><span>Labo</span></button>
 </div>
 <div id="mx-market">
 <div class="sec" style="margin-top:14px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
@@ -2161,7 +2185,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -3933,7 +3957,8 @@ async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)se
  if(!j||j.err)return;window._lab=j;labRender();}
 function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const C=j.counts||{};const n=k=>C[k]||0;
- const tile=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:1.05rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+l+'</span></div>';
+ const tile=(l,v,c)=>'<span class="ls"><b style="color:'+c+'">'+v+'</b>'+l+'</span>';
+ document.getElementById('lab-stats').className='labstat';document.getElementById('lab-stats').style.cssText='';
  setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)')+tile(en?'candidates':'candidats',n('candidate')+n('planned'),'#b98cff')+tile(en?'forward':'en cours',n('forward'),'var(--accent-soft)')+tile(en?'deployed':'d\u00e9ploy\u00e9',n('deployed'),'var(--up-soft)')+tile(en?'rejected':'rejet\u00e9',n('rejected'),'var(--muted2)'));
  const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Tests':'Tests'],['forward',en?'In progress':'En cours'],['decisions',en?'Decisions':'D\u00e9cisions']];
  setH(document.getElementById('lab-tabs'),T.map(([k,l])=>'<button class="tfc'+(window._labTab===k?' on':'')+'" style="flex:none" onclick="labTab(&#39;'+k+'&#39;)">'+l+'</button>').join(''));
@@ -3941,18 +3966,20 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const FAM={structure:[en?'structure':'structure','var(--accent-soft)'],meteo:[en?'weather':'m\u00e9t\u00e9o','var(--warn)'],cible:[en?'target':'cible','#b98cff'],rythme:[en?'rhythm':'rythme','#e8743b'],argent:[en?'money':'argent','var(--up-soft)'],donnees:[en?'data':'donn\u00e9es','var(--muted2)']};
  const VB={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']};
  const ST={deployed:[en?'Deployed':'D\u00e9ploy\u00e9','var(--up-soft)'],candidate:[en?'Candidate':'Candidat','#b98cff'],planned:[en?'To start':'\u00c0 lancer','#b98cff'],forward:[en?'Forward':'En cours','var(--accent-soft)'],observation:[en?'Watching':'En observation','var(--warn)'],idea:[en?'Idea':'Id\u00e9e','var(--warn)'],rejected:[en?'Rejected':'Rejet\u00e9','var(--muted2)']};
- const chip=(t,c,bg)=>'<span style="display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+';border-radius:99px;padding:3px 8px">'+t+'</span>';
+ const chip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+'">'+t+'</span>';
  const esc=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
  const item=it=>{const f=FAM[it.family]||FAM.donnees,v=VB[it.verdict],st=ST[it.status]||ST.idea;
-  return '<div class="panel" style="margin-top:10px;padding:12px 14px" onclick="labItem(&#39;'+it.id+'&#39;)" role="button" tabindex="0">'+
-   '<div style="display:flex;align-items:flex-start;gap:10px">'+(v?'<span style="flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span style="flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);color:'+st[1]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>')+
-   '<div style="flex:1;min-width:0"><b style="font-size:.92rem;line-height:1.3">'+esc(en?it.title_en:it.title_fr)+'</b><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+chip(st[0],st[1])+chip(f[0],f[1])+(it.robot==='oui'?chip(en?'robot: yes':'robot : oui','var(--up-soft)'):'')+'</div>'+
-   '<div style="font-size:.78rem;color:var(--muted2);margin-top:6px;line-height:1.4">'+esc(en?it.note_en:it.note_fr)+'</div><div style="font-size:.66rem;color:var(--muted);margin-top:4px">'+esc(it.date||'')+'</div></div><svg class="ic chv" style="flex:none;margin-top:8px"><use href="#i-chev"/></svg></div></div>';};
+  const badge=v?'<span class="lcb" style="color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span class="lcb" style="background:rgba(255,255,255,.05);color:'+st[1]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>';
+  return '<div class="panel lc" onclick="labItem(&#39;'+it.id+'&#39;)" role="button" tabindex="0"><div class="lct">'+badge+'<div style="flex:1;min-width:0"><h4>'+esc(en?it.title_en:it.title_fr)+'</h4>'+
+   '<div class="lcc">'+chip(st[0],st[1])+chip(f[0],f[1])+(it.robot==='oui'?chip(en?'robot: yes':'robot : oui','var(--up-soft)'):(it.robot==='candidat'?chip(en?'robot: candidate':'robot : candidat','#b98cff'):''))+'</div></div></div>'+
+   '<div class="lcn">'+esc(en?it.note_en:it.note_fr)+'</div><div class="lcm"><span>'+esc(it.date||'')+'</span><span style="max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(it.src||'')+'</span></div><svg class="ic chv"><use href="#i-chev"/></svg></div>';};
  const items=j.items||[];let h='';const k=window._labTab;
  if(k==='ideas'){
   const L={trop_tot:[en?'too early':'trop t\u00f4t','var(--muted)'],a_tester:[en?'worth a replay':'\u00e0 rejouer','var(--up-soft)'],divergent:[en?'halves disagree':'moiti\u00e9s divergentes','var(--warn)']};
   h+='<div class="sec" style="margin:14px 8px 8px">'+(en?'Found in the live journals':'Trouv\u00e9 dans les journaux en live')+' <span class="hint">\u00b7 '+(en?'each cut against the rest, halves in time':'chaque coupe contre le reste, moiti\u00e9s dans le temps')+'</span></div>';
-  h+='<div class="panel" style="padding:6px 14px">'+(j.candidates||[]).map(c=>{const l=L[c.label]||L.trop_tot;return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--border);font-size:.8rem"><div style="flex:1;min-width:0"><b style="display:block;font-size:.84rem">'+esc(en?c.name_en:c.name_fr)+'</b><span style="color:var(--muted2)">'+c.n+' trades \u00b7 '+(c.win===null?'\u2014':c.win+' %')+' '+(en?'vs':'contre')+' '+(c.rest_win===null?'\u2014':c.rest_win+' %')+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+(c.h1===null?'\u2014':c.h1+' %')+' / '+(c.h2===null?'\u2014':c.h2+' %')+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
+  const pc=v=>v===null||v===undefined?'\u2014':v+'\u202f%';
+  h+='<div class="panel" style="padding:4px 14px">'+(j.candidates||[]).map(c=>{const l=L[c.label]||L.trop_tot;const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
+   return '<div class="kv"><div class="kvt"><b>'+esc(en?c.name_en:c.name_fr)+'</b><span>'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'vs':'contre')+' '+pc(c.rest_win)+(d===null?'':' <b style="display:inline;font-size:.74rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+pc(c.h1)+' / '+pc(c.h2)+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
   h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas and observations':'Id\u00e9es et observations')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
  }else if(k==='tests'){
   h+='<div style="font-size:.76rem;color:var(--muted);margin:12px 8px 4px;line-height:1.45">'+(en?'Every replay runs on 41.7 days of M1 with the real engine, both halves independently, against the deployed rule. A = better in both halves. B = one side better, the other not worse. C = rejected.':'Chaque replay tourne sur 41,7 jours de M1 avec le vrai moteur, les deux moiti\u00e9s s\u00e9par\u00e9ment, contre la r\u00e8gle en place. A = meilleur dans les deux moiti\u00e9s. B = un c\u00f4t\u00e9 meilleur, l\u2019autre pas pire. C = rejet\u00e9.')+'</div>';
@@ -3965,7 +3992,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
   const days=tw.since?Math.max(1,Math.round((Date.now()/1000-tw.since)/86400)):0;
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Paper twin \u00b7 flip + touch, no brakes':'Jumeau papier \u00b7 bascule + toucher, sans freins')+'</div>'+
    '<div style="font-size:.8rem;color:var(--muted2);margin-top:4px;line-height:1.45">'+(en?'Takes every flip and every touch, virtually, since '+days+' days. What the brakes cost and earn.':'Prend chaque bascule et chaque toucher, en virtuel, depuis '+days+' jours. Ce que les freins co\u00fbtent et rapportent.')+'</div>'+
-   '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',tw.trades||0)+cell(en?'win':'gagn\u00e9s',tw.win===null||tw.win===undefined?'\u2014':tw.win+' %')+cell('net',mn(tw.net||0),(tw.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(tw.rolling20||0),(tw.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+spark(tw.curve)+
+   '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',tw.trades||0)+cell(en?'win':'gagn\u00e9s',tw.win===null||tw.win===undefined?'\u2014':tw.win+' %')+cell('net',mn(tw.net||0),(tw.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(tw.rolling20||0),(tw.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+spark(tw.curve)+'<div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;display:flex;justify-content:space-between"><span>'+(en?'net, last 60 trades':'net cumul\u00e9, 60 derniers trades')+'</span><span>'+(tw.since?(en?'since ':'depuis le ')+new Date(tw.since*1000).toLocaleDateString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'}):'')+'</span></div>'+
    '<div style="font-size:.74rem;color:var(--muted);margin-top:6px">'+(en?'Real robot on the live account since the same era: ':'Vrai robot sur le compte r\u00e9el depuis la m\u00eame \u00e9poque : ')+(lv.trades||0)+' trades \u00b7 '+mn(lv.net||0)+' \u00b7 '+(en?'last 20':'20 derniers')+' '+mn(lv.rolling20||0)+'</div></div>';
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">E017 \u00b7 '+(en?'forced selling, blind stream':'ventes forc\u00e9es, flux en aveugle')+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+cell(en?'events':'\u00e9v\u00e9nements',e.events||0)+cell(en?'needed':'n\u00e9cessaires',e.need||30)+cell(en?'fills kept':'fills gard\u00e9s',e.fills||0)+'</div><div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+(en?'The rule is frozen and the stream is recorded without looking. The verdict comes only after 30 events, never retuned.':'La r\u00e8gle est gel\u00e9e et le flux s\u2019enregistre sans regarder. Le verdict ne vient qu\u2019apr\u00e8s 30 \u00e9v\u00e9nements, jamais r\u00e9gl\u00e9 en route.')+'</div></div>';
   h+=items.filter(it=>it.status==='planned').map(item).join('');
@@ -3990,16 +4017,15 @@ async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list
  const en=LANG()==='en';
  const ST={confirme:[en?'Confirmed':'Confirm\u00e9','var(--up-soft)','rgba(46,204,113,.14)'],vivant:[en?'Live':'Vivant','var(--accent-soft)','rgba(59,130,246,.14)'],observation:[en?'Watching':'En observation','var(--warn)','rgba(232,197,90,.14)'],candidat:[en?'Candidate':'Candidat','#b98cff','rgba(185,140,255,.14)'],rejete:[en?'Tested, no':'Test\u00e9, non','var(--muted2)','rgba(255,255,255,.06)']};
  const RB={oui:[en?'the robot uses it':'le robot s\u2019en sert','var(--up-soft)'],candidat:[en?'robot: candidate':'robot : candidat','#b98cff'],non:[en?'robot: no':'robot : non','var(--muted)']};
- const chip=(t,c,bg)=>'<span style="display:inline-flex;align-items:center;font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:'+c+';background:'+bg+';border-radius:99px;padding:3px 8px">'+t+'</span>';
+ const chip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+bg+'">'+t+'</span>';
  list.innerHTML=(j.cards||[]).map(c=>{const st=ST[c.status]||ST.observation,rb=RB[c.robot]||RB.non;
-  return '<div class="panel" style="margin-top:12px">'+
-   '<div style="display:flex;gap:12px;align-items:flex-start"><div class="sic" style="color:'+st[1]+';background:'+st[2]+'"><svg class="ic"><use href="#'+(c.icon||'i-activity')+'"/></svg></div>'+
-   '<div style="flex:1;min-width:0"><b style="font-size:.98rem;line-height:1.3">'+(en?c.title_en:c.title)+'</b><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">'+chip(st[0],st[1],st[2])+chip(rb[0],rb[1],'rgba(255,255,255,.05)')+'</div></div></div>'+
-   '<div style="display:flex;align-items:baseline;gap:8px;margin-top:12px"><b style="font-size:1.6rem;letter-spacing:-.02em;color:'+st[1]+'">'+c.fig+'</b><span style="font-size:.78rem;color:var(--muted2)">'+(en?c.fig_l_en:c.fig_l)+'</span></div>'+
-   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'Live':'En live')+'</span><br>'+(en?c.live_en:c.live)+'</div>'+
-   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'Replay':'Replay')+'</span><br>'+(en?c.back_en:c.back)+'</div>'+
-   '<div style="font-size:.8rem;color:var(--text2);margin-top:6px;line-height:1.45"><span style="color:var(--muted);text-transform:uppercase;font-size:.6rem;letter-spacing:.08em">'+(en?'The robot':'Le robot')+'</span><br>'+(en?c.robot_note_en:c.robot_note)+'</div>'+
-   '<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:var(--tile-bg);border:1px solid var(--tile-bd);font-size:.82rem;color:var(--text);line-height:1.45"><span style="color:var(--accent-soft);font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:2px">'+(en?'For a manual trader':'Pour un trader manuel')+'</span>'+(en?c.manual_en:c.manual)+'</div>'+
+  const row=(k,t)=>'<div class="prow"><span class="pk">'+k+'</span><span style="flex:1;min-width:0">'+t+'</span></div>';
+  return '<div class="panel pcard" style="margin-top:10px;padding:14px">'+
+   '<div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:'+st[1]+';background:'+st[2]+';width:36px;height:36px"><svg class="ic ic-s"><use href="#'+(c.icon||'i-activity')+'"/></svg></div>'+
+   '<div style="flex:1;min-width:0"><h4 style="margin:0;font-size:.95rem;font-weight:700;line-height:1.3;color:var(--text)">'+(en?c.title_en:c.title)+'</h4><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">'+chip(st[0],st[1],st[2])+chip(rb[0],rb[1],'rgba(255,255,255,.05)')+'</div></div></div>'+
+   '<div style="display:flex;align-items:baseline;gap:8px;margin:12px 0 4px"><b style="font-size:1.7rem;letter-spacing:-.02em;color:'+st[1]+';font-variant-numeric:tabular-nums">'+c.fig+'</b><span style="font-size:.76rem;color:var(--muted2);line-height:1.3">'+(en?c.fig_l_en:c.fig_l)+'</span></div>'+
+   row(en?'Live':'En live',(en?c.live_en:c.live))+row('Replay',(en?c.back_en:c.back))+row(en?'Robot':'Robot',(en?c.robot_note_en:c.robot_note))+
+   '<div class="pman"><span class="pk">'+(en?'For a manual trader':'Pour un trader manuel')+'</span>'+(en?c.manual_en:c.manual)+'</div>'+
    '</div>';}).join('');
  document.getElementById('lrn-hint').textContent='\u00b7 '+(j.live_trades||0)+' '+(en?'live trades':'trades en live')+' \u00b7 '+(j.memory_days||0)+' '+(en?'days of memory':'jours de m\u00e9moire');
  setH(nx,'<div class="lbl">'+(en?'Where this is heading':'O\u00f9 on va')+'</div><div style="font-size:.9rem;color:var(--text);line-height:1.5;margin-top:6px">'+(en?j.next.en:j.next.fr)+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'The cards refresh every 10 minutes with the new trades and the market memory. A live figure under 30 trades stays "watching".':'Les cartes se mettent \u00e0 jour toutes les 10 minutes avec les nouveaux trades et la m\u00e9moire du march\u00e9. Un chiffre en live sous 30 trades reste \u00ab en observation \u00bb.')+'</div>');
