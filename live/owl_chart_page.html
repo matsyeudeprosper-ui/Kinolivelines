@@ -661,8 +661,13 @@ function draw(){
  // 2026-09-27: closed trades as soft entry -> exit arrows with the result
  HITS.length=0;
  (D.trades||[]).forEach(t=>{HITS.push({kind:'open',y:px(t[2]),t:t});});
+ // 2026-09-28: a trade that starts before the window or ends after it is
+ // drawn clamped to the edge instead of vanishing (only fully-outside ones skip)
+ const clampX=t=>{const v=xnear(t);if(v!==undefined)return v;if(!xts.length)return undefined;
+  if(t<xts[0])return xoft[xts[0]];if(t>xts[xts.length-1])return xoft[xts[xts.length-1]];return undefined;};
  (D.closed||[]).forEach(t=>{
-  const xe=xnear(t[0]),xx=xnear(t[1]);if(xe===undefined||xx===undefined)return;
+  if(!xts.length||t[1]<xts[0]||t[0]>xts[xts.length-1])return;
+  const xe=clampX(t[0]),xx=clampX(t[1]);if(xe===undefined||xx===undefined)return;
   const ye=px(t[2]),yx=px(t[3]),up=t[4]>=0,col=up?'#2ecc71':'#ff5c5c';
   HITS.push({kind:'closed',x:xx,y:yx,t:t});HITS.push({kind:'closed',x:xe,y:ye,t:t});
   ctx.save();ctx.globalAlpha=.85;ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.setLineDash([4,4]);
