@@ -252,6 +252,56 @@ def maybe_renewals():
             pass
 
 
+WAIT_FILE = os.path.join(DIR, "owl_waitlist.json")
+MANUAL_CAP = 10     # keep in step with owl_app_server.MANUAL_CAP
+
+
+def maybe_waitlist():
+    """2026-09-28: a manual seat freed up -> tell the waiting members
+    (once each, first come first served) and the owner."""
+    try:
+        w = json.load(open(WAIT_FILE, encoding="utf-8"))
+    except Exception:
+        return
+    if not isinstance(w, dict) or not w:
+        return
+    try:
+        us = json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))
+    except Exception:
+        return
+    seats = sum(1 for u in us if u.get("mode") in ("manual", "semi"))
+    free = MANUAL_CAP - seats
+    if free <= 0:
+        return
+    names = []
+    for uid, it in list(w.items()):
+        en = lang_of(uid) == "en"
+        try:
+            send_all("\U0001f7e2 " + ("A place is free" if en else "Une place est libre"),
+                     ("Manual trading is open again \u2014 Settings \u203a Subscription \u203a Manual. "
+                      "First come, first served." if en else
+                      "Le trading manuel est de nouveau ouvert \u2014 R\u00e9glages \u203a Abonnement \u203a Manuel. "
+                      "Premier arriv\u00e9, premier servi."),
+                     kind="instant", only_uid=uid)
+        except Exception:
+            pass
+        names.append((it or {}).get("name") or uid)
+        w.pop(uid, None)
+    try:
+        json.dump(w, open(WAIT_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
+    if names:
+        for _o in ("kino", "std"):
+            try:
+                send_all("\U0001f4cb Liste d\u2019attente",
+                         f"{free} place(s) libre(s) \u2014 pr\u00e9venu(s) : " + ", ".join(names),
+                         kind="instant", only_uid=_o)
+            except Exception:
+                pass
+    mylog(f"waitlist: {free} free, told {names}")
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -722,6 +772,7 @@ def main():
             maybe_health()
             maybe_demo_reset()
             maybe_renewals()
+            maybe_waitlist()
         if _bf is not None:
             while True:
                 bl = _bf.readline()

@@ -386,6 +386,84 @@ def manual_seats():
     return sum(1 for u in us if u.get("mode") in MANUAL_MODES)
 
 
+SIGMARK_FILE = lambda uid: os.path.join(DIR, f"owl_sigmarks_{uid}.json")
+WAIT_FILE = os.path.join(DIR, "owl_waitlist.json")
+
+
+def sig_marks(uid):
+    try:
+        m = json.load(open(SIGMARK_FILE(uid), encoding="utf-8"))
+        return m if isinstance(m, dict) else {}
+    except Exception:
+        return {}
+
+
+def sig_merge(uid, lst):
+    """2026-09-28: apply the member's own marks (J'ai pris / Pas pris /
+    result) - kept in a separate file so the desk never overwrites them.
+    Members trading on another broker have no MT5 account here, so the
+    desk cannot detect their trades: this is the only way their signals
+    get a result."""
+    m = sig_marks(uid)
+    for x in lst:
+        mk = m.get(str(x.get("t")))
+        if not isinstance(mk, dict):
+            continue
+        if mk.get("taken"):
+            x["taken"] = x.get("taken") or "manual"
+            x["taken_manual"] = True
+        elif mk.get("taken") is False:
+            x["skipped"] = True
+        if mk.get("result") is not None and "result" not in x:
+            x["result"] = mk["result"]
+    return lst
+
+
+def sig_score(uid, era=0):
+    """This month's signal numbers for one manual member (UTC month)."""
+    try:
+        import calendar as _cal
+        lst = json.load(open(os.path.join(DIR, f"owl_signals_{uid}.json"), encoding="utf-8"))
+        lst = sig_merge(uid, [x for x in lst if isinstance(x, dict) and (not era or x.get("t", 0) >= era)])
+        _g = time.gmtime()
+        m0 = _cal.timegm((_g.tm_year, _g.tm_mon, 1, 0, 0, 0, 0, 0, 0))
+        sc = {"sent": 0, "taken": 0, "wins": 0, "losses": 0, "net": 0.0}
+        for x in lst:
+            if not x.get("ok") or x.get("t", 0) < m0:
+                continue
+            sc["sent"] += 1
+            if x.get("taken"):
+                sc["taken"] += 1
+                r = x.get("result")
+                if isinstance(r, (int, float)):
+                    sc["net"] += float(r)
+                    if r >= 0:
+                        sc["wins"] += 1
+                    else:
+                        sc["losses"] += 1
+        sc["net"] = round(sc["net"], 2)
+        return sc
+    except Exception:
+        return None
+
+
+def waitlist():
+    try:
+        w = json.load(open(WAIT_FILE, encoding="utf-8"))
+        return w if isinstance(w, dict) else {}
+    except Exception:
+        return {}
+
+
+def member_lang(uid):
+    """The phone's language (push_pref lang=), default fr."""
+    try:
+        return (json.load(open(os.path.join(DIR, "owl_push_prefs.json"), encoding="utf-8"))
+                .get("_lang") or {}).get(uid, "fr")
+    except Exception:
+        return "fr"
+
+
 def can_switch(u):
     """May this account switch auto <-> manual (and use the trade tool)?"""
     return u is not None and (is_admin(u) or has(u.get("id"), "manual"))
@@ -403,6 +481,7 @@ def plan_of(u):
             "strategy_until": int(e.get("strategy_until") or 0),
             "packages": PACKAGES,
             "seats_left": max(0, MANUAL_CAP - manual_seats()),
+            "waitlisted": u.get("id") in waitlist(),
             "pay_ready": bool(cfg.get("np_api_key")),
             "mql5_url": cfg.get("mql5_url") or ""}
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
@@ -1060,6 +1139,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div id="sig-sym" style="font-size:.8rem;color:var(--muted2)">BTCUSD</div></div>
  <div id="sig-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
  <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
+ <div id="sig-mark" style="display:none;margin-top:10px"></div>
  <div style="display:flex;gap:8px;margin-top:12px">
   <a id="sig-chart" href="#" class="shbtn shmain" style="flex:1;margin:0;padding:11px;text-align:center;text-decoration:none;font-size:.88rem">Prendre sur le graphique</a>
   <button id="sig-copy" class="shbtn shghost" style="flex:none;margin:0;padding:11px 14px;font-size:.88rem" onclick="sigCopy()">Copier</button>
@@ -1326,6 +1406,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <span class="hint">&middot; touchez un jour</span></div>
 <div class="panel" id="days" style="display:none"></div>
 <div class="sec" id="sig-sec" style="display:none">Signaux <span class="hint">&middot; ce que le service vous a envoy&eacute;</span></div>
+<div class="panel" id="sigscore" style="display:none"></div>
 <div class="panel" id="siglist" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none;display:flex;justify-content:space-between;
  align-items:center"><span>R&eacute;sum&eacute; du mois</span>
@@ -1527,6 +1608,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div class="ssub">Copier le compte de Kino via MQL5 &middot; ouvrir le signal</div></div>
  <svg class="ic chv"><use href="#i-chev"/></svg>
 </a>
+<div class="srow" id="payrow" onclick="paySheet()" style="display:none;margin-top:10px">
+ <div class="sic"><svg class="ic"><use href="#i-ticket"/></svg></div>
+ <div style="flex:1"><b>Mes paiements</b>
+  <div class="ssub">Vos re&ccedil;us et vos dates de fin</div></div>
+ <svg class="ic chv"><use href="#i-chev"/></svg>
+</div>
 <div class="srow" id="stratrow" onclick="stratSheet()" style="display:none;margin-top:10px">
  <div class="sic" style="color:var(--warn)"><svg class="ic"><use href="#i-eye"/></svg></div>
  <div style="flex:1"><b>La strat&eacute;gie</b>
@@ -1983,7 +2070,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -3164,6 +3251,7 @@ async function acctSheet(){
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const st=x=>{const noBot=!x.bot;
   if(noBot)return[x.paused?'manuel':'sans robot','var(--muted)','#4a5a6b'];
+  if(x.observer&&!x.botlive)return['observateur','var(--muted)','#4a5a6b'];
   if(x.err)return['probl\u00e8me','var(--down-soft)','var(--down)'];
   if(x.stale)return['hors ligne','var(--warn)','var(--warn)'];
   if(!x.botlive)return['robot arr\u00eat\u00e9','var(--down-soft)','var(--down)'];
@@ -3179,7 +3267,7 @@ async function acctSheet(){
     '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
     (x.note?'<div style="font-size:.74rem;color:var(--warn);line-height:1.35;margin-top:2px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>':'')+
-    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+fu(x)+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
+    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+fu(x)+(x.sigs&&x.sigs.sent?' \u00b7 <span style="color:var(--accent-soft)">'+x.sigs.taken+'/'+x.sigs.sent+' signaux '+money(x.sigs.net)+'</span>':'')+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
@@ -3640,6 +3728,11 @@ function renderPlan(d){
  nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
   :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
  const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
+ const pr=document.getElementById('payrow');if(pr)pr.style.display=d.public?'none':'flex';
+ // 2026-09-28: waiting list when the manual seats are full
+ (function(){let w=document.getElementById('plan-wait');if(!w){w=document.createElement('button');w.id='plan-wait';w.className='shbtn shghost';w.style.cssText='margin:10px 0 0;padding:11px;font-size:.9rem';bt.parentNode.insertBefore(w,nt);}
+  const showW=full&&!P.family;w.style.display=showW?'block':'none';
+  if(showW){w.textContent=P.waitlisted?(en?'\u2713 On the waiting list \u00b7 tap to leave':'\u2713 Sur la liste d\u2019attente \u00b7 toucher pour retirer'):(en?'Tell me when a place frees up':'Me pr\u00e9venir quand une place se lib\u00e8re');w.onclick=()=>waitlistToggle(!P.waitlisted);}})();
  const sr=document.getElementById('stratrow');if(sr)sr.style.display=P.strategy?'flex':'none';
  const pb=document.getElementById('pausebtn');if(pb&&d.pause_locked&&!d.public){const ps=document.getElementById('pause-sub');if(ps&&!P.manual)ps.textContent=en?'Manual trading needs the Manual plan.':'Le trading manuel demande l\u2019abonnement Manuel.';}
 }
@@ -3650,7 +3743,8 @@ function renderPlan(d){
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
  const sg=ms&&ms.signal;const en=LANG()==='en';
- if(!sg||sg.done||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
+ if(!sg||sg.done||sg.skipped||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
+ window._sigMs=ms;
  const buy=sg.dir===1,col=sg.ok?(buy?'var(--up)':'var(--down)'):'var(--muted)';
  el.style.display='block';el.style.borderColor=sg.ok?col:'var(--border2)';el.style.opacity=sg.ok?'1':'.75';
  document.getElementById('sig-lbl').textContent=sg.ok?(en?'Signal':'Signal'):(en?'Signal set aside':'Signal \u00e9cart\u00e9');
@@ -3665,7 +3759,25 @@ function renderSignal(ms){
   :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. Kino\u2019s robot would not take it either.':'. Le robot de Kino ne le prendrait pas non plus.'))));
  const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
  window._sig=sg;
+ // 2026-09-28: members trading on another broker tell the app themselves
+ const mk=document.getElementById('sig-mark');
+ if(mk){const bs='border:1px solid var(--border2);background:var(--surface3);border-radius:10px;padding:9px;font-size:.84rem;font-weight:700;flex:1;';
+  if(!sg.ok){mk.style.display='none';}
+  else if(sg.taken){mk.style.display='block';
+   setH(mk,'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--up-soft);font-weight:700;font-size:.84rem">\u2713 '+(en?'Taken':'Pris')+(sg.taken_manual?'':(en?' (detected on your account)':' (d\u00e9tect\u00e9 sur votre compte)'))+(typeof sg.result==='number'?' \u00b7 '+(sg.result>=0?'+$':'-$')+Math.abs(sg.result).toFixed(2):'')+'</span>'+
+    (sg.taken_manual&&typeof sg.result!=='number'?'<input id="sig-res" inputmode="decimal" placeholder="'+(en?'result in $, e.g. +12.5':'r\u00e9sultat en $, ex. +12,5')+'" style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:8px 10px;color:var(--text);font-size:.84rem"><button onclick="sigMarkRes()" style="'+bs+'flex:none;color:var(--text2)">'+(en?'Save':'Enregistrer')+'</button>':'')+'</div>');}
+  else{mk.style.display='block';
+   setH(mk,'<div style="font-size:.74rem;color:var(--muted);margin-bottom:6px">'+(en?'Trading it on another broker? Tell the app, so your history stays right:':'Vous le tradez chez un autre broker ? Dites-le \u00e0 l\u2019app, pour un historique juste :')+'</div><div style="display:flex;gap:8px"><button onclick="sigMark(1)" style="'+bs+'color:var(--up-soft)">\u2713 '+(en?'I took it':'J\u2019ai pris')+'</button><button onclick="sigMark(0)" style="'+bs+'color:var(--text2)">'+(en?'Not taken':'Pas pris')+'</button></div>');}}
 }
+async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
+ const r=await fetch(B+'sigmark',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'t='+sg.t+'&taken='+tk+(res!==undefined&&res!==''?'&result='+encodeURIComponent(res):'')}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(en?'Not saved, try again.':'Pas enregistr\u00e9, r\u00e9essayez.',2500);return;}
+ if(tk===1){sg.taken=sg.taken||'manual';sg.taken_manual=true;if(j.mark&&typeof j.mark.result==='number')sg.result=j.mark.result;toast(typeof sg.result==='number'?(en?'Saved.':'Enregistr\u00e9.'):(en?'Noted: taken. Enter the result once closed.':'Not\u00e9 : pris. Entrez le r\u00e9sultat une fois ferm\u00e9.'),2500);}
+ else{sg.skipped=true;toast(en?'Noted: not taken. The next signal shows here.':'Not\u00e9 : pas pris. Le prochain signal s\u2019affiche ici.',2500);}
+ renderSignal(Object.assign({},window._sigMs||{},{signal:sg}));window._sgT=0;loadSignals();
+}
+function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.value:'');}
 function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
  const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' \u00b7 lot '+sg.lot.toFixed(2)+' \u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
@@ -3693,10 +3805,16 @@ function renewBanner(d){
 async function loadSignals(){
  const sec=document.getElementById('sig-sec'),el=document.getElementById('siglist');if(!sec||!el)return;
  const d=window._d||{},P=d.plan||{};
- if(!(P.manual||P.family)||d.public){sec.style.display='none';el.style.display='none';return;}
+ const scEl=document.getElementById('sigscore');
+ if(!(P.manual||P.family)||d.public){sec.style.display='none';el.style.display='none';if(scEl)scEl.style.display='none';return;}
  if(window._sgT&&Date.now()-window._sgT<30000)return;window._sgT=Date.now();
- let it=[];try{const r=await fetch(B+'signals?t='+Date.now(),{cache:'no-store'});if(r.ok)it=(await r.json()).items||[];}catch(e){}
+ let it=[],sc=null;try{const r=await fetch(B+'signals?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();it=j.items||[];sc=j.score||null;}}catch(e){}
  const en=LANG()==='en';
+ // 2026-09-28: the month's scorecard (same numbers the owner sees in Le Nid)
+ if(scEl){if(sc&&sc.sent){const cell=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 4px;text-align:center"><b style="display:block;font-size:1.05rem;'+(c?'color:'+c:'')+'">'+v+'</b><span style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+   const dec=sc.wins+sc.losses,mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+   setH(scEl,'<div class="lbl">'+(en?'This month':'Ce mois')+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px">'+cell(en?'signals':'signaux',sc.sent)+cell(en?'taken':'pris',sc.taken)+cell(en?'wins':'gagn\u00e9s',dec?Math.round(100*sc.wins/dec)+'\u202f%':'\u2014')+cell('net',mn(sc.net),sc.net>=0?'var(--up-soft)':'var(--down-soft)')+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.45">'+(en?'Net = the results recorded on taken signals, by your desk or by you.':'Net = les r\u00e9sultats enregistr\u00e9s sur les signaux pris, par votre poste ou par vous.')+'</div>');scEl.style.display='block';}
+  else scEl.style.display='none';}
  if(!it.length){sec.style.display='block';el.style.display='block';el.innerHTML='<div class="empty"><p>'+(en?'No signal yet. They will appear here as they come.':'Aucun signal pour l\u2019instant. Ils appara\u00eetront ici au fil de l\u2019eau.')+'</p></div>';return;}
  const hm=t=>{const x=new Date(t*1000);return String(x.getUTCDate()).padStart(2,'0')+'/'+String(x.getUTCMonth()+1).padStart(2,'0')+' '+String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0');};
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
@@ -3704,7 +3822,7 @@ async function loadSignals(){
   let st,c;
   if(!x.ok){st=(en?'set aside':'\u00e9cart\u00e9')+' \u00b7 '+(x.why||'');c='var(--muted)';}
   else if(x.taken){st=(en?'taken':'pris')+(typeof x.result==='number'?' \u00b7 '+money(x.result):'');c=typeof x.result==='number'?(x.result>=0?'var(--up-soft)':'var(--down-soft)'):'var(--accent-soft)';}
-  else if(x.done){st=en?'not taken':'non pris';c='var(--muted2)';}
+  else if(x.skipped||x.done){st=en?'not taken':'non pris';c='var(--muted2)';}
   else{st=en?'live':'en cours';c='var(--up-soft)';}
   return '<div class="row"><span class="rowt"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span> '+hm(x.t)+' \u00b7 ~'+Number(x.e).toFixed(0)+' \u00b7 '+Number(x.lot).toFixed(2)+'</span><b style="color:'+c+';font-size:.8rem;text-align:right;max-width:52%">'+st+'</b></div>';}).join('');
  sec.style.display='block';el.style.display='block';
@@ -3789,11 +3907,31 @@ function offersSheet(){
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  sheet(h);
 }
+async function waitlistToggle(on){const en=LANG()==='en';
+ const r=await fetch(B+'waitlist',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+(on?1:0)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(en?'Not saved, try again.':'Pas enregistr\u00e9, r\u00e9essayez.',2500);return;}
+ if(window._d&&window._d.plan){window._d.plan.waitlisted=!!j.waitlisted;renderPlan(window._d);}
+ toast(j.waitlisted?(en?'Noted. You get a notification when a place frees up.':'Not\u00e9. Vous recevrez une notification quand une place se lib\u00e8re.'):(en?'Removed from the waiting list.':'Retir\u00e9 de la liste d\u2019attente.'),3000);
+}
+async function paySheet(){const en=LANG()==='en';
+ let j={items:[],ends:{}};try{const r=await fetch(B+'payments?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ const fd=ts=>{const x=new Date(ts*1000);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+'/'+x.getFullYear();};
+ const now=Date.now()/1000,E=j.ends||{},L={family:en?'Automatic':'Automatique',manual:en?'Manual':'Manuel',strategy:en?'Strategy':'Strat\u00e9gie'};
+ const ends=Object.keys(L).filter(k=>E[k]).map(k=>'<div class="row"><span class="rowt">'+L[k]+'</span><b style="color:'+(E[k]>now?'var(--up-soft)':'var(--down-soft)')+'">'+(E[k]>now?(en?'until ':'jusqu\u2019au ')+fd(E[k]):(en?'ended ':'termin\u00e9 le ')+fd(E[k]))+'</b></div>').join('');
+ const rows=(j.items||[]).map(p=>{const ok=p.granted&&p.granted!=='short';const st=ok?(en?'activated':'activ\u00e9'):((p.status==='finished'||p.status==='confirmed')?(en?'amount short':'montant insuffisant'):(p.status||'\u2014'));
+  return '<div class="row"><span class="rowt">'+fd(p.t)+' \u00b7 '+(L[p.pkg]||p.pkg||'')+'</span><b style="color:'+(ok?'var(--up-soft)':'var(--muted2)')+'">$'+Number(p.amount||0).toFixed(0)+' \u00b7 '+st+'</b></div>';}).join('');
+ sheet('<h3>'+(en?'My payments':'Mes paiements')+'</h3>'+
+  '<div class="lbl" style="margin-top:4px">'+(en?'Current access':'Acc\u00e8s en cours')+'</div>'+(ends||'<p style="color:var(--muted2)">'+(en?'No paid package yet.':'Aucun paquet pay\u00e9 pour l\u2019instant.')+'</p>')+
+  '<div class="lbl" style="margin-top:14px">'+(en?'Receipts (NOWPayments)':'Re\u00e7us (NOWPayments)')+'</div>'+(rows||'<p style="color:var(--muted2)">'+(en?'No crypto payment recorded. Packages settled with Kino directly do not appear here.':'Aucun paiement crypto enregistr\u00e9. Les paquets r\u00e9gl\u00e9s directement aupr\u00e8s de Kino n\u2019apparaissent pas ici.')+'</p>')+
+  '<p style="font-size:.78rem;color:var(--muted)">'+(en?'A payment activates the package by itself, minutes after confirmation. If a receipt is missing, contact Kino with the date.':'Un paiement active le paquet tout seul, quelques minutes apr\u00e8s confirmation. S\u2019il manque un re\u00e7u, contactez Kino avec la date.')+'</p>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');
+}
 async function buyPkg(k){
  const en=LANG()==='en';
  const r=await fetch(B+'buy',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pkg='+encodeURIComponent(k)}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
- if(!j||!j.ok){toast(j&&j.err==='complet'?(en?'No place left for now.':'Plus de place pour l\u2019instant.'):(j&&j.err==='not ready'?(en?'Payments open soon.':'Paiements bient\u00f4t disponibles.'):(en?'Cannot create the invoice right now.':'Impossible de cr\u00e9er la facture pour l\u2019instant.')),3500);return;}
+ if(!j||!j.ok){toast(j&&j.err==='complet'?(en?'No place left for now \u2014 use \u201cTell me when a place frees up\u201d.':'Plus de place pour l\u2019instant \u2014 utilisez \u00ab Me pr\u00e9venir quand une place se lib\u00e8re \u00bb.'):(j&&j.err==='not ready'?(en?'Payments open soon.':'Paiements bient\u00f4t disponibles.'):(en?'Cannot create the invoice right now.':'Impossible de cr\u00e9er la facture pour l\u2019instant.')),3500);return;}
  try{window.open(j.url,'_blank');}catch(e){location.href=j.url;}
 }
 function stratSheet(){
@@ -4575,7 +4713,7 @@ function render(d){
    const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
    const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
    // 2026-09-27: alerts strip + family week bars above the list
-   const _al=d.nest.filter(x=>x.err||x.stale||(x.bot&&!x.botlive)||x.blocked||(x.family_until&&x.family_until-Date.now()/1000<5*86400));
+   const _al=d.nest.filter(x=>!x.observer&&(x.err||x.stale||(x.bot&&!x.botlive)||x.blocked)||(x.family_until&&x.family_until-Date.now()/1000<5*86400));
    const _man=d.nest.filter(x=>!x.bot&&x.paused).length;
    const _alh=_al.length
     ?'<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:12px;'+
@@ -5715,7 +5853,12 @@ def user_stats(u, admin_override=False):
                         "note": (_notes.get(x["id"]) or {}).get("text", ""),
                         "seen": _seen.get(x["id"]),
                         "family_until": int((ent(x["id"]) or {}).get("family_until") or 0),
-                        "plan": x.get("plan")})
+                        "plan": x.get("plan"),
+                        # 2026-09-28: an observer (no Automatique, no Manuel) has no
+                        # robot to run - not a fault, so Le Nid must not flag it
+                        "observer": (x["id"] not in OWNER_UIDS and not x.get("public")
+                                     and not has(x["id"], "manual")),
+                        "sigs": (sig_score(x["id"], era_ts(x)) if x.get("mode") in MANUAL_MODES else None)})
                 d["nest"] = _rows
                 # 2026-09-28: the owner's "Revenus" card
                 try:
@@ -5734,7 +5877,7 @@ def user_stats(u, admin_override=False):
                                 if _u - _now < 7 * 86400:
                                     _due.append({"name": _names.get(_uid, _uid), "pkg": _lab, "days": int((_u - _now) // 86400)})
                     try:
-                        _pays = [p for p in json.load(open(PAY_FILE, encoding="utf-8")) if p.get("granted") in PACKAGES][-10:][::-1]
+                        _pays = [p for p in json.load(open(PAY_FILE, encoding="utf-8")) if p.get("granted") in PACKAGES and not p.get("test")][-10:][::-1]
                     except Exception:
                         _pays = []
                     _cfg = nest_config()
@@ -6807,9 +6950,11 @@ class H(BaseHTTPRequestHandler):
                         if _pkg in PACKAGES:
                             paid = float(data.get("price_amount") or 0)
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
-                                ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
-                                          f"nowpayments:{data.get('payment_id')}")
+                                _r = ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
+                                               f"nowpayments:{data.get('payment_id')}")
                                 rec["granted"] = _pkg
+                                _end = time.strftime("%d/%m", time.gmtime(float(_r.get(_pkg + "_until") or time.time())))
+                                _en = member_lang(_uid) == "en"
                                 try:
                                     _qf = os.path.join(DIR, "owl_push_queue.json")
                                     try:
@@ -6817,9 +6962,11 @@ class H(BaseHTTPRequestHandler):
                                     except Exception:
                                         _q = []
                                     _q.append({"uid": _uid, "t": int(time.time()),
-                                               "title": "\u2705 Abonnement activ\u00e9",
-                                               "body": f"{PACKAGES[_pkg]['label']} pour {PACKAGES[_pkg]['days']} jours. "
-                                                       "R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer."})
+                                               "title": ("\u2705 Subscription activated" if _en else "\u2705 Abonnement activ\u00e9"),
+                                               "body": ((f"{PACKAGES[_pkg]['label']} \u00b7 {PACKAGES[_pkg]['days']} days \u00b7 until {_end} \u00b7 ${paid:.0f}. "
+                                                         "Receipt in Settings \u203a My payments.") if _en else
+                                                        (f"{PACKAGES[_pkg]['label']} \u00b7 {PACKAGES[_pkg]['days']} jours \u00b7 jusqu\u2019au {_end} \u00b7 ${paid:.0f}. "
+                                                         "Re\u00e7u dans R\u00e9glages \u203a Mes paiements."))})
                                     json.dump(_q, open(_qf, "w", encoding="utf-8"), ensure_ascii=False)
                                 except Exception:
                                     pass
@@ -6838,6 +6985,69 @@ class H(BaseHTTPRequestHandler):
                 self._send("ok" if good else "bad signature", "text/plain")
             except Exception as e:
                 self._send("error " + str(e), "text/plain")
+            return
+        if len(_parts) == 2 and _parts[1] == "sigmark":
+            # 2026-09-28: "J'ai pris / Pas pris" + result, for members who
+            # trade the signals on another broker
+            u = user_by_token(_parts[0])
+            if u is None or not (is_admin(u) or has(u["id"], "manual")):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upm
+                _fm = _upm.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                _t = int(float(_fm.get("t", ["0"])[0] or 0))
+                _tk = (_fm.get("taken", [""])[0] or "").strip()
+                _rs = (_fm.get("result", [""])[0] or "").strip().replace(",", ".").replace("$", "").replace("+", "").replace(" ", "")
+                if not _t:
+                    self._send(json.dumps({"ok": False, "err": "bad t"}), "application/json")
+                    return
+                m = sig_marks(u["id"])
+                r = m.get(str(_t)) or {}
+                if _tk == "1":
+                    r["taken"] = True
+                elif _tk == "0":
+                    r["taken"] = False
+                if _rs != "":
+                    try:
+                        r["result"] = round(max(-100000.0, min(100000.0, float(_rs))), 2)
+                    except Exception:
+                        pass
+                r["mt"] = int(time.time())
+                m[str(_t)] = r
+                m = dict(list(m.items())[-300:])
+                _f = SIGMARK_FILE(u["id"])
+                json.dump(m, open(_f + ".tmp", "w", encoding="utf-8"))
+                os.replace(_f + ".tmp", _f)
+                self._send(json.dumps({"ok": True, "mark": r}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "waitlist":
+            # 2026-09-28: "Me prevenir" when the manual seats are full; the
+            # notifier tells the waiting members when one frees up
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upw
+                _fw = _upw.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                on = (_fw.get("on", ["1"])[0] == "1")
+                w = waitlist()
+                if on:
+                    w[u["id"]] = {"t": int(time.time()), "name": u.get("name", u["id"])}
+                else:
+                    w.pop(u["id"], None)
+                json.dump(w, open(WAIT_FILE + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                os.replace(WAIT_FILE + ".tmp", WAIT_FILE)
+                self._send(json.dumps({"ok": True, "waitlisted": on, "pos": len(w)}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "buy":
             # 2026-09-27: create a NOWPayments invoice for a package
@@ -7676,10 +7886,28 @@ class H(BaseHTTPRequestHandler):
             try:
                 lst = json.load(open(os.path.join(DIR, f"owl_signals_{user.get('id')}.json"), encoding="utf-8"))
                 _era = era_ts(user)
-                lst = [x for x in lst if isinstance(x, dict) and (not _era or x.get("t", 0) >= _era)]
-                self._send(json.dumps({"items": lst[-100:][::-1]}), "application/json")
+                lst = sig_merge(user.get("id"), [x for x in lst if isinstance(x, dict) and (not _era or x.get("t", 0) >= _era)])
+                self._send(json.dumps({"items": lst[-100:][::-1], "score": sig_score(user.get("id"), _era)}), "application/json")
             except Exception:
-                self._send(json.dumps({"items": []}), "application/json")
+                self._send(json.dumps({"items": [], "score": None}), "application/json")
+        elif sub == "payments":
+            # 2026-09-28: "Mes paiements" - this member's NOWPayments records + end dates
+            try:
+                _uid = user.get("id")
+                try:
+                    _pl = json.load(open(PAY_FILE, encoding="utf-8"))
+                except Exception:
+                    _pl = []
+                items = [{"t": p.get("t"), "pkg": (str(p.get("order") or "").split("|") + ["", ""])[1],
+                          "granted": p.get("granted"), "status": p.get("status"),
+                          "amount": p.get("amount"), "currency": p.get("currency"), "id": p.get("id")}
+                         for p in _pl if isinstance(p, dict) and not p.get("test") and str(p.get("order") or "").startswith(str(_uid) + "|")][-30:][::-1]
+                e = ent(_uid)
+                self._send(json.dumps({"items": items,
+                                       "ends": {k: int(float(e.get(k + "_until") or 0)) for k in ("family", "manual", "strategy")}}),
+                           "application/json")
+            except Exception:
+                self._send(json.dumps({"items": [], "ends": {}}), "application/json")
         elif sub == "inbox":
             self._send(json.dumps(inbox_items(user)), "application/json")
         elif sub == "export.csv":
@@ -7778,6 +8006,11 @@ class H(BaseHTTPRequestHandler):
             except Exception:
                 d = {}
             d["mode"] = user.get("mode")
+            try:
+                if isinstance(d.get("signal"), dict):
+                    sig_merge(_uid, [d["signal"]])   # 2026-09-28: the member's own marks
+            except Exception:
+                pass
             try:
                 d["last_order"] = json.load(open(os.path.join(
                     DIR, f"manual_order_result_{_uid}.json")))
