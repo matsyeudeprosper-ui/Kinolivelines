@@ -1387,6 +1387,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="mxseg" id="mxseg" role="tablist">
  <button class="mxs on" id="mxs-market" role="tab" aria-selected="true" onclick="mxView('market')"><svg class="ic ic-s"><use href="#i-wave"/></svg><span>Le march&eacute;</span></button>
  <button class="mxs" id="mxs-robot" role="tab" aria-selected="false" onclick="mxView('robot')"><svg class="ic ic-s"><use href="#i-bot"/></svg><span>Le robot</span></button>
+ <button class="mxs" id="mxs-lab" role="tab" aria-selected="false" onclick="mxView('lab')" style="display:none"><svg class="ic ic-s"><use href="#i-target"/></svg><span>Le labo</span></button>
 </div>
 <div id="mx-market">
 <div class="sec" style="margin-top:14px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
@@ -1418,6 +1419,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="mh-grid" style="margin-top:10px"></div>
  <div id="mh-leg" style="font-size:.68rem;color:var(--muted);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"></div>
 </div>
+</div>
+<div id="mx-lab" style="display:none">
+<div class="sec" style="margin-top:14px">Le labo <span class="hint" id="lab-hint">&middot; id&eacute;es, tests, observations, d&eacute;cisions</span></div>
+<div id="lab-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px"></div>
+<div id="lab-tabs" style="display:flex;gap:6px;margin-top:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px"></div>
+<div id="lab-body" style="margin-top:4px"></div>
 </div>
 <div id="mx-robot" style="display:none">
 <div class="sec" style="margin-top:14px">Le robot <span class="hint" id="rb-hint">&middot; sur ce compte</span></div>
@@ -2154,7 +2161,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -2707,10 +2714,12 @@ window.addEventListener('load',()=>{
   if(!localStorage.getItem('owlFirstSeen'))localStorage.setItem('owlFirstSeen',String(Date.now()));
  }catch(e){}},1500);
 });
-function mxView(v,quiet){v=(v==='robot')?'robot':'market';
- const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot');if(!m||!r)return;
- m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';
- [['mxs-market','market'],['mxs-robot','robot']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',v===k);b.setAttribute('aria-selected',v===k?'true':'false');}});
+function labAllowed(){const d=window._d||{};let adm=false;try{adm=!!localStorage.getItem('owl_adm');}catch(e){}return !!(d.is_master||adm||TIER()==='strategy');}
+function mxView(v,quiet){v=(v==='robot')?'robot':(v==='lab'&&labAllowed()?'lab':'market');
+ const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab');if(!m||!r)return;
+ m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';if(l)l.style.display=v==='lab'?'':'none';
+ if(v==='lab'){window._labT=0;loadLab(window._d||{});}
+ [['mxs-market','market'],['mxs-robot','robot'],['mxs-lab','lab']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',v===k);b.setAttribute('aria-selected',v===k?'true':'false');}});
  try{localStorage.setItem('owlMxView:'+B,v);}catch(e){}
  if(!quiet){try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}window.scrollTo({top:0});}}
 (function(){let v='market';try{v=localStorage.getItem('owlMxView:'+B)||'market';}catch(e){}window.addEventListener('load',()=>mxView(v,true));})();
@@ -3913,6 +3922,64 @@ async function pollSignal(){
   const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
   renderSignal(ms);}catch(e){}
 }
+// ---- the lab (owner 2026-09-28): ideas, replays, forward observations, decisions -
+// what the auto-evolving bot stands on. Strategie members and the admin. ----
+window._labTab='ideas';
+function labTab(k){window._labTab=k;labRender();}
+async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)seg.style.display=labAllowed()?'':'none';
+ if(!labAllowed()){return;}
+ if(window._labT&&Date.now()-window._labT<120000){return;}window._labT=Date.now();
+ let j=null;try{const r=await fetch(B+'lab?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err)return;window._lab=j;labRender();}
+function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
+ const C=j.counts||{};const n=k=>C[k]||0;
+ const tile=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:1.05rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+l+'</span></div>';
+ setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)')+tile(en?'candidates':'candidats',n('candidate')+n('planned'),'#b98cff')+tile(en?'forward':'en cours',n('forward'),'var(--accent-soft)')+tile(en?'deployed':'d\u00e9ploy\u00e9',n('deployed'),'var(--up-soft)')+tile(en?'rejected':'rejet\u00e9',n('rejected'),'var(--muted2)'));
+ const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Tests':'Tests'],['forward',en?'In progress':'En cours'],['decisions',en?'Decisions':'D\u00e9cisions']];
+ setH(document.getElementById('lab-tabs'),T.map(([k,l])=>'<button class="tfc'+(window._labTab===k?' on':'')+'" style="flex:none" onclick="labTab(&#39;'+k+'&#39;)">'+l+'</button>').join(''));
+ document.getElementById('lab-hint').textContent='\u00b7 '+(j.live_trades||0)+' '+(en?'live trades':'trades en live')+' \u00b7 '+(en?'registry':'registre')+' '+(j.registry_updated||'');
+ const FAM={structure:[en?'structure':'structure','var(--accent-soft)'],meteo:[en?'weather':'m\u00e9t\u00e9o','var(--warn)'],cible:[en?'target':'cible','#b98cff'],rythme:[en?'rhythm':'rythme','#e8743b'],argent:[en?'money':'argent','var(--up-soft)'],donnees:[en?'data':'donn\u00e9es','var(--muted2)']};
+ const VB={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']};
+ const ST={deployed:[en?'Deployed':'D\u00e9ploy\u00e9','var(--up-soft)'],candidate:[en?'Candidate':'Candidat','#b98cff'],planned:[en?'To start':'\u00c0 lancer','#b98cff'],forward:[en?'Forward':'En cours','var(--accent-soft)'],observation:[en?'Watching':'En observation','var(--warn)'],idea:[en?'Idea':'Id\u00e9e','var(--warn)'],rejected:[en?'Rejected':'Rejet\u00e9','var(--muted2)']};
+ const chip=(t,c,bg)=>'<span style="display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+';border-radius:99px;padding:3px 8px">'+t+'</span>';
+ const esc=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+ const item=it=>{const f=FAM[it.family]||FAM.donnees,v=VB[it.verdict],st=ST[it.status]||ST.idea;
+  return '<div class="panel" style="margin-top:10px;padding:12px 14px" onclick="labItem(&#39;'+it.id+'&#39;)" role="button" tabindex="0">'+
+   '<div style="display:flex;align-items:flex-start;gap:10px">'+(v?'<span style="flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem;color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span style="flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);color:'+st[1]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>')+
+   '<div style="flex:1;min-width:0"><b style="font-size:.92rem;line-height:1.3">'+esc(en?it.title_en:it.title_fr)+'</b><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">'+chip(st[0],st[1])+chip(f[0],f[1])+(it.robot==='oui'?chip(en?'robot: yes':'robot : oui','var(--up-soft)'):'')+'</div>'+
+   '<div style="font-size:.78rem;color:var(--muted2);margin-top:6px;line-height:1.4">'+esc(en?it.note_en:it.note_fr)+'</div><div style="font-size:.66rem;color:var(--muted);margin-top:4px">'+esc(it.date||'')+'</div></div><svg class="ic chv" style="flex:none;margin-top:8px"><use href="#i-chev"/></svg></div></div>';};
+ const items=j.items||[];let h='';const k=window._labTab;
+ if(k==='ideas'){
+  const L={trop_tot:[en?'too early':'trop t\u00f4t','var(--muted)'],a_tester:[en?'worth a replay':'\u00e0 rejouer','var(--up-soft)'],divergent:[en?'halves disagree':'moiti\u00e9s divergentes','var(--warn)']};
+  h+='<div class="sec" style="margin:14px 8px 8px">'+(en?'Found in the live journals':'Trouv\u00e9 dans les journaux en live')+' <span class="hint">\u00b7 '+(en?'each cut against the rest, halves in time':'chaque coupe contre le reste, moiti\u00e9s dans le temps')+'</span></div>';
+  h+='<div class="panel" style="padding:6px 14px">'+(j.candidates||[]).map(c=>{const l=L[c.label]||L.trop_tot;return '<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--border);font-size:.8rem"><div style="flex:1;min-width:0"><b style="display:block;font-size:.84rem">'+esc(en?c.name_en:c.name_fr)+'</b><span style="color:var(--muted2)">'+c.n+' trades \u00b7 '+(c.win===null?'\u2014':c.win+' %')+' '+(en?'vs':'contre')+' '+(c.rest_win===null?'\u2014':c.rest_win+' %')+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+(c.h1===null?'\u2014':c.h1+' %')+' / '+(c.h2===null?'\u2014':c.h2+' %')+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
+  h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas and observations':'Id\u00e9es et observations')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
+ }else if(k==='tests'){
+  h+='<div style="font-size:.76rem;color:var(--muted);margin:12px 8px 4px;line-height:1.45">'+(en?'Every replay runs on 41.7 days of M1 with the real engine, both halves independently, against the deployed rule. A = better in both halves. B = one side better, the other not worse. C = rejected.':'Chaque replay tourne sur 41,7 jours de M1 avec le vrai moteur, les deux moiti\u00e9s s\u00e9par\u00e9ment, contre la r\u00e8gle en place. A = meilleur dans les deux moiti\u00e9s. B = un c\u00f4t\u00e9 meilleur, l\u2019autre pas pire. C = rejet\u00e9.')+'</div>';
+  h+=items.filter(it=>it.status==='candidate'||it.status==='planned').map(item).join('')+'<div class="sec" style="margin:18px 8px 8px">'+(en?'Tested and rejected':'Test\u00e9 et rejet\u00e9')+'</div>'+items.filter(it=>it.status==='rejected').map(item).join('');
+ }else if(k==='forward'){
+  const tw=j.twin||{},fw=j.forward||{},lv=fw.live||{},e=j.e017||{};
+  const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+  const spark=(cv)=>{if(!cv||cv.length<2)return '';const mx=Math.max(...cv),mnv=Math.min(...cv),sp=Math.max(1e-6,mx-mnv);const pts=cv.map((v,i)=>((i/(cv.length-1))*296+2).toFixed(1)+','+(40-((v-mnv)/sp)*36+2).toFixed(1)).join(' ');const z=(40-((0-mnv)/sp)*36+2).toFixed(1);return '<svg viewBox="0 0 300 44" style="width:100%;height:44px;display:block;margin-top:8px"><line x1="2" y1="'+z+'" x2="298" y2="'+z+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/><polyline points="'+pts+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.6"/></svg>';};
+  const cell=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:1rem;'+(c?'color:'+c:'')+'">'+v+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+  const days=tw.since?Math.max(1,Math.round((Date.now()/1000-tw.since)/86400)):0;
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Paper twin \u00b7 flip + touch, no brakes':'Jumeau papier \u00b7 bascule + toucher, sans freins')+'</div>'+
+   '<div style="font-size:.8rem;color:var(--muted2);margin-top:4px;line-height:1.45">'+(en?'Takes every flip and every touch, virtually, since '+days+' days. What the brakes cost and earn.':'Prend chaque bascule et chaque toucher, en virtuel, depuis '+days+' jours. Ce que les freins co\u00fbtent et rapportent.')+'</div>'+
+   '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',tw.trades||0)+cell(en?'win':'gagn\u00e9s',tw.win===null||tw.win===undefined?'\u2014':tw.win+' %')+cell('net',mn(tw.net||0),(tw.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(tw.rolling20||0),(tw.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+spark(tw.curve)+
+   '<div style="font-size:.74rem;color:var(--muted);margin-top:6px">'+(en?'Real robot on the live account since the same era: ':'Vrai robot sur le compte r\u00e9el depuis la m\u00eame \u00e9poque : ')+(lv.trades||0)+' trades \u00b7 '+mn(lv.net||0)+' \u00b7 '+(en?'last 20':'20 derniers')+' '+mn(lv.rolling20||0)+'</div></div>';
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">E017 \u00b7 '+(en?'forced selling, blind stream':'ventes forc\u00e9es, flux en aveugle')+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+cell(en?'events':'\u00e9v\u00e9nements',e.events||0)+cell(en?'needed':'n\u00e9cessaires',e.need||30)+cell(en?'fills kept':'fills gard\u00e9s',e.fills||0)+'</div><div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+(en?'The rule is frozen and the stream is recorded without looking. The verdict comes only after 30 events, never retuned.':'La r\u00e8gle est gel\u00e9e et le flux s\u2019enregistre sans regarder. Le verdict ne vient qu\u2019apr\u00e8s 30 \u00e9v\u00e9nements, jamais r\u00e9gl\u00e9 en route.')+'</div></div>';
+  h+=items.filter(it=>it.status==='planned').map(item).join('');
+ }else{
+  h+='<div class="sec" style="margin:14px 8px 8px">'+(en?'In the robot today':'Dans le robot aujourd\u2019hui')+'</div>'+items.filter(it=>it.status==='deployed').map(item).join('');
+  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a rule gets in':'Comment une r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.55;margin-top:6px">'+(en?'1. Found in the journals or proposed here. 2. Replayed on 41.7 days, both halves, against the rule in place. 3. Observed as a paper twin next to the real robot. 4. Promoted on the demo, then on real accounts as a per-account dial, on Kino\u2019s decision. 5. Watched by its own rolling result and rolled back if it degrades.':'1. Trouv\u00e9e dans les journaux ou propos\u00e9e ici. 2. Rejou\u00e9e sur 41,7 jours, les deux moiti\u00e9s, contre la r\u00e8gle en place. 3. Observ\u00e9e en jumeau papier \u00e0 c\u00f4t\u00e9 du vrai robot. 4. Promue sur la d\u00e9mo, puis sur les comptes r\u00e9els comme r\u00e9glage par compte, sur d\u00e9cision de Kino. 5. Surveill\u00e9e par son propre r\u00e9sultat glissant et retir\u00e9e si elle se d\u00e9grade.')+'</div></div>';
+ }
+ setH(document.getElementById('lab-body'),h);
+}
+function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).find(x=>x.id===id);if(!it)return;const en=LANG()==='en';
+ sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3><p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
+  '<div class="lbl" style="margin-top:8px">'+(en?'Numbers':'Les chiffres')+'</div><p style="font-size:.86rem;color:var(--text2)">'+(en?it.nums_en:it.nums_fr)+'</p>'+
+  '<div class="lbl" style="margin-top:8px">'+(en?'Where':'O\u00f9')+'</div><p style="font-size:.8rem;color:var(--muted2)">'+(it.src||'-')+' \u00b7 '+(it.date||'')+' \u00b7 '+(en?'verdict':'verdict')+' '+(it.verdict||'\u2014')+' \u00b7 '+(en?'robot':'robot')+' : '+(it.robot||'non')+'</p>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 // ---- batch 33b (owner): the market space shows the PATTERNS being established,
 // each with its evidence, its confidence and whether the robot uses it ----
 async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list=document.getElementById('lrn-list'),nx=document.getElementById('lrn-next');if(!sec||!list)return;
@@ -4052,7 +4119,7 @@ async function loadCompare(d){const sec=document.getElementById('cmp-sec'),el=do
  sec.style.display='block';el.style.display='block';
 }
 // ---- batch 29: "Quoi de neuf" - one card per update, dismissed once ----
-const NEWS_V='2026-09-28d';
+const NEWS_V='2026-09-28e';
 const NEWS=[
  {fr:'<b>M\u00e9t\u00e9o sur le graphique</b> \u2014 touchez la puce m\u00e9t\u00e9o en haut, le d\u00e9tail glisse sans quitter le graphique.',en:'<b>Weather on the chart</b> \u2014 tap the weather chip at the top, the detail slides up without leaving the chart.'},
  {fr:'<b>Le robot en un tap</b> \u2014 la puce robot ouvre son \u00e9tat : trades en cours, rattrapage, et le changement de mode.',en:'<b>The robot in one tap</b> \u2014 the robot chip opens its state: open trades, catch-up, and the mode switch.',need:'switch'},
@@ -4072,12 +4139,14 @@ const NEWS=[
  {fr:'<b>Deux espaces</b> dans March\u00e9 \u2014 le march\u00e9 d\u2019un c\u00f4t\u00e9, le robot de l\u2019autre.',en:'<b>Two spaces</b> in Market \u2014 the market on one side, the robot on the other.'},
  {fr:'<b>Les heures du march\u00e9</b> \u2014 calme ou rapide, heure par heure, se remplit avec les jours.',en:'<b>Market hours</b> \u2014 calm or fast, hour by hour, fills in with the days.'},
  {fr:'<b>Le robot explique</b> \u2014 les occasions laiss\u00e9es passer, par raison, et sa prochaine action.',en:'<b>The robot explains</b> \u2014 the opportunities let go, by reason, and its next action.'},
- {fr:'<b>Journal du robot</b> \u2014 ses 20 derniers trades, touchez-en un pour le voir sur le graphique.',en:'<b>Robot journal</b> \u2014 its last 20 trades, tap one to see it on the chart.'}];
+ {fr:'<b>Journal du robot</b> \u2014 ses 20 derniers trades, touchez-en un pour le voir sur le graphique.',en:'<b>Robot journal</b> \u2014 its last 20 trades, tap one to see it on the chart.'},
+ {fr:'<b>Ce que le march\u00e9 nous apprend</b> \u2014 les patterns, leur preuve, et ce que le robot en fait.',en:'<b>What the market teaches us</b> \u2014 the patterns, their evidence, and what the robot does with them.'},
+ {fr:'<b>Le labo</b> \u2014 id\u00e9es, replays, observations en cours et d\u00e9cisions, dans March\u00e9.',en:'<b>The lab</b> \u2014 ideas, replays, observations in progress and decisions, in Market.',need:'strategy'}];
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
  if(seen===NEWS_V){el.style.display='none';return;}
- const items=NEWS.filter(n=>!n.need||(n.need==='manual'&&(P.manual||P.family))||(n.need==='switch'&&!d.pause_locked));
+ const items=NEWS.filter(n=>!n.need||(n.need==='manual'&&(P.manual||P.family))||(n.need==='switch'&&!d.pause_locked)||(n.need==='strategy'&&(P.strategy||d.is_master)));
  document.getElementById('news-t').textContent=en?'What\u2019s new':'Quoi de neuf';
  document.getElementById('news-s').textContent=en?'Since your last visit':'Depuis votre derni\u00e8re visite';
  setH(document.getElementById('news-list'),items.map(n=>'<div style="display:flex;gap:8px;margin-top:6px"><span style="color:var(--accent-soft);flex:none">\u2022</span><span>'+(en?n.en:n.fr)+'</span></div>').join(''));
@@ -5004,7 +5073,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labAllowed()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5954,7 +6023,8 @@ def _journal_unique():
                     continue
                 seen[k] = {"t": et, "x": xt, "win": o == "win", "p": float(r.get("profit_usd") or 0),
                            "nerv": float(r["nervosity"]) if r.get("nervosity") else None,
-                           "kind": r.get("kind") or "", "internal": r.get("internal") == "True"}
+                           "kind": r.get("kind") or "", "internal": r.get("internal") == "True",
+                           "dir": (r.get("direction") or "").upper()}
         except Exception:
             continue
     return sorted(seen.values(), key=lambda x: x["t"])
@@ -6088,6 +6158,102 @@ def patterns():
            "next": {"fr": "Prochaines \u00e9tapes : 40 trades par compte pour trancher la nervosit\u00e9 en live, 30 jours de m\u00e9moire pour les heures, puis la cible 0,6\u00d7 en observation sur la d\u00e9mo.",
                     "en": "Next steps: 40 trades per account to settle nervosity live, 30 days of memory for the hours, then the 0.6\u00d7 target under observation on the demo."}}
     _PAT_CACHE.update(t=time.time(), data=out)
+    return out
+
+
+LAB_REG = os.path.join(DIR, "lab", "registry.json")
+_LAB_CACHE = {"t": 0.0, "data": None}
+
+
+def lab_candidates(J):
+    """Automatic hypotheses from the live journals: each cut against the rest,
+    with the chronological halves. n < 30 = too early; halves that agree =
+    worth a replay; halves that disagree = noise for now."""
+    if not J:
+        return []
+    mid = J[len(J) // 2]["t"]
+    def prev_gap(i):
+        return (J[i]["t"] - J[i - 1]["x"]) if i else 1e9
+    cuts = [
+        ("calm", "March\u00e9 calme (< 1,0\u00d7)", "Calm market (< 1.0\u00d7)", lambda i, r: r["nerv"] is not None and r["nerv"] < 1.0),
+        ("hot", "March\u00e9 nerveux (\u2265 1,0\u00d7)", "Nervous market (\u2265 1.0\u00d7)", lambda i, r: r["nerv"] is not None and r["nerv"] >= 1.0),
+        ("flip", "Bascules", "Flips", lambda i, r: r["kind"] == "FLIP-BOS"),
+        ("cont", "Continuations", "Continuations", lambda i, r: r["kind"] == "BOS"),
+        ("int", "Structure interne", "Internal structure", lambda i, r: r["kind"] == "INT"),
+        ("quick", "Moins de 30 min apr\u00e8s le pr\u00e9c\u00e9dent", "Within 30 min of the previous", lambda i, r: prev_gap(i) < 1800),
+        ("weekend", "Samedi et dimanche", "Saturday and Sunday", lambda i, r: time.gmtime(r["t"]).tm_wday >= 5),
+        ("asia", "Session Asie (00\u201308 h UTC)", "Asia session (00\u201308 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour < 8),
+        ("europe", "Session Europe (08\u201316 h UTC)", "Europe session (08\u201316 UTC)", lambda i, r: 8 <= time.gmtime(r["t"]).tm_hour < 16),
+        ("us", "Session US (16\u201324 h UTC)", "US session (16\u201324 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour >= 16),
+        ("long", "Achats", "Buys", lambda i, r: r["p"] is not None and r.get("dir", "") == "BUY"),
+    ]
+    out = []
+    for cid, fr, en, pred in cuts:
+        rows = [r for i, r in enumerate(J) if pred(i, r)]
+        rest = [r for i, r in enumerate(J) if not pred(i, r)]
+        if not rows:
+            continue
+        w = _wr(rows); wr = _wr(rest)
+        h1 = [r for r in rows if r["t"] < mid]; h2 = [r for r in rows if r["t"] >= mid]
+        r1 = [r for r in rest if r["t"] < mid]; r2 = [r for r in rest if r["t"] >= mid]
+        def diff(a, b):
+            wa, wb = _wr(a)["win"], _wr(b)["win"]
+            return None if (wa is None or wb is None or len(a) < 5 or len(b) < 5) else (wa - wb)
+        d1, d2 = diff(h1, r1), diff(h2, r2)
+        agree = (d1 is not None and d2 is not None and ((d1 > 0) == (d2 > 0)))
+        label = "trop_tot" if w["n"] < 30 else ("a_tester" if agree else "divergent")
+        out.append({"id": cid, "name_fr": fr, "name_en": en, "n": w["n"], "win": w["win"], "net": w["net"],
+                    "rest_n": wr["n"], "rest_win": wr["win"], "h1": _wr(h1)["win"], "h2": _wr(h2)["win"],
+                    "h1n": len(h1), "h2n": len(h2), "agree": agree, "label": label})
+    return out
+
+
+def lab_payload():
+    if _LAB_CACHE["data"] is not None and time.time() - _LAB_CACHE["t"] < 120:
+        return _LAB_CACHE["data"]
+    try:
+        reg = json.load(open(LAB_REG, encoding="utf-8"))
+    except Exception:
+        reg = {"items": []}
+    J = _journal_unique()
+    for r in J:                     # direction for the long/short cut
+        r.setdefault("dir", "")
+    # the paper twin (flip + touch, no brakes)
+    twin = {}
+    try:
+        st = json.load(open(os.path.join(DIR, "bos_paper_touch_state.json"), encoding="utf-8"))
+        tr = [t for t in (st.get("trades") or []) if isinstance(t, dict) and t.get("t_close")]
+        wins = sum(1 for t in tr if (t.get("pnl") or 0) > 0)
+        cum, acc = [], 0.0
+        for t in tr[-60:]:
+            acc += float(t.get("pnl") or 0); cum.append(round(acc, 2))
+        twin = {"trades": len(tr), "wins": wins, "win": (round(100 * wins / len(tr)) if tr else None),
+                "net": round(float(st.get("net") or 0), 2), "since": int(tr[0]["t_open"]) if tr else None,
+                "last": int(tr[-1]["t_close"]) if tr else None, "curve": cum,
+                "rolling20": round(sum(float(t.get("pnl") or 0) for t in tr[-20:]), 2),
+                "open": bool(st.get("pos"))}
+    except Exception:
+        pass
+    try:
+        fwd = json.load(open(os.path.join(DIR, "bos_forward_observer.json"), encoding="utf-8"))
+    except Exception:
+        fwd = {}
+    e017 = {}
+    try:
+        st = json.load(open(os.path.join(DIR, "liq_shadow_state.json"), encoding="utf-8"))
+        with open(os.path.join(DIR, "liq_shadow_events.csv"), encoding="utf-8", errors="replace") as f:
+            ev = max(0, sum(1 for _ in f) - 1)
+        e017 = {"events": ev, "fills": st.get("fills"), "alive": st.get("alive"), "need": 30}
+    except Exception:
+        pass
+    items = reg.get("items") or []
+    counts = {}
+    for it in items:
+        counts[it.get("status")] = counts.get(it.get("status"), 0) + 1
+    out = {"items": items, "counts": counts, "candidates": lab_candidates(J), "live_trades": len(J),
+           "twin": twin, "forward": fwd, "e017": e017, "updated": int(time.time()),
+           "registry_updated": reg.get("updated")}
+    _LAB_CACHE.update(t=time.time(), data=out)
     return out
 
 
@@ -8520,6 +8686,15 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "lab":
+            # 2026-09-28: the lab - Strategie members and the admin
+            try:
+                if not (is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)):
+                    self._send(json.dumps({"err": "strategy"}), "application/json")
+                    return
+                self._send(json.dumps(lab_payload()), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "patterns":
             # 2026-09-28: the patterns the market space stands on
             try:
