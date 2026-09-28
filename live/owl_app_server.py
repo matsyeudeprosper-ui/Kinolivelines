@@ -2744,7 +2744,8 @@ window.addEventListener('load',()=>{
  }catch(e){}},1500);
 });
 function labAllowed(){const d=window._d||{};let adm=false;try{adm=!!localStorage.getItem('owl_adm');}catch(e){}return !!(d.is_master||adm||TIER()==='strategy');}
-function mxView(v,quiet){v=(v==='robot')?'robot':(v==='lab'&&labAllowed()?'lab':'market');
+function labVisible(){const d=window._d||{};return !d.public;}
+function mxView(v,quiet){v=(v==='robot')?'robot':(v==='lab'&&labVisible()?'lab':'market');
  const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab');if(!m||!r)return;
  m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';if(l)l.style.display=v==='lab'?'':'none';
  if(v==='lab'){window._labT=0;loadLab(window._d||{});}
@@ -3955,8 +3956,9 @@ async function pollSignal(){
 // what the auto-evolving bot stands on. Strategie members and the admin. ----
 window._labTab='ideas';
 function labTab(k){window._labTab=k;labRender();}
-async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)seg.style.display=labAllowed()?'':'none';
- if(!labAllowed()){return;}
+async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)seg.style.display=labVisible()?'':'none';
+ if(!labVisible())return;
+ if(!labAllowed()){labPeek();return;}
  if(window._labT&&Date.now()-window._labT<120000){return;}window._labT=Date.now();
  // 2026-09-28 (owner): from the admin's phone the lab is read through the
  // ADMIN link - a member's link has no Strategie access and the panel stayed blank
@@ -3965,6 +3967,26 @@ async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)se
  let j=null;try{const r=await fetch(base+'lab?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){const en=LANG()==='en';setH(document.getElementById('lab-body'),'<div class="panel labintro" style="margin-top:12px"><b style="font-size:.95rem">'+(en?'The lab is part of the Strategy plan':'Le labo fait partie du paquet Stratégie')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'It shows the ideas we test to make the robot better, what worked, and what did not. Settings › Subscription to add it.':'Il montre les idées qu’on teste pour rendre le robot meilleur, ce qui a marché et ce qui n’a pas marché. Réglages › Abonnement pour l’ajouter.')+'</div></div>');return;}
  window._lab=j;labRender();}
+async function labPeek(){
+ if(window._peekT&&Date.now()-window._peekT<300000)return;window._peekT=Date.now();
+ const en=LANG()==='en';let j=null;try{const r=await fetch(B+'lab_peek?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err)return;const C=j.counts||{},n=k=>C[k]||0;
+ const tile=(l,v,c)=>'<span class="ls"><b style="color:'+c+'">'+v+'</b>'+l+'</span>';
+ document.getElementById('lab-stats').className='labstat';document.getElementById('lab-stats').style.cssText='';
+ setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.n_ideas||0)+n('idea')+n('observation'),'var(--warn)')+tile(en?'to try':'\u00e0 essayer',n('candidate')+n('planned'),'#b98cff')+tile(en?'watching':'en observation',n('forward'),'var(--accent-soft)')+tile(en?'in the robot':'dans le robot',n('deployed'),'var(--up-soft)')+tile(en?'said no':'\u00e9cart\u00e9es',n('rejected'),'var(--muted2)'));
+ setH(document.getElementById('lab-tabs'),'');
+ document.getElementById('lab-hint').textContent='\u00b7 '+(en?'a glance':'un aper\u00e7u');
+ const it=j.sample;
+ const esc=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+ const chip=(t,c)=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.05)">'+t+'</span>';
+ const sample=it?'<div class="panel lc" style="cursor:default"><div class="lct"><span class="lcb" style="color:var(--up-soft);background:rgba(46,204,113,.14)">A</span><div style="flex:1;min-width:0"><h4>'+esc(en?it.title_en:it.title_fr)+'</h4><div class="lcc">'+chip(en?'In the robot':'Dans le robot','var(--up-soft)')+chip(en?'the weather':'la m\u00e9t\u00e9o','var(--warn)')+'</div></div></div><div class="lcn">'+esc(en?it.note_en:it.note_fr)+'</div><div class="lcm"><span>'+esc(it.date||'')+'</span><span>'+(en?'one of the rules':'une des r\u00e8gles')+'</span></div></div>':'';
+ const ghost=(t)=>'<div class="panel lc" style="cursor:default;filter:blur(4px);opacity:.55;pointer-events:none;user-select:none" aria-hidden="true"><div class="lct"><span class="lcb" style="color:var(--warn);background:rgba(232,197,90,.14)">B</span><div style="flex:1"><h4>'+t+'</h4><div class="lcc">'+chip('\u2022\u2022\u2022','var(--muted)')+chip('\u2022\u2022\u2022\u2022','var(--muted)')+'</div></div></div><div class="lcn">'+(en?'Same money at the end, a smaller hole along the way, on both halves of the period. To watch on the demo first.':'M\u00eame argent \u00e0 la fin, un trou moins profond en chemin, sur les deux moiti\u00e9s de la p\u00e9riode. \u00c0 observer sur la d\u00e9mo d\u2019abord.')+'</div></div>';
+ setH(document.getElementById('lab-body'),
+  '<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The lab, in one minute':'Le labo, en une minute')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Here we look for ways to make the robot better over time. Every idea goes through three steps before it touches an account: checked on the past, watched live for pretend, then put in the robot or dropped.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e passe par trois \u00e9tapes avant de toucher \u00e0 un compte : v\u00e9rifi\u00e9e sur le pass\u00e9, observ\u00e9e en direct pour de faux, puis mise dans le robot ou \u00e9cart\u00e9e.')+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(j.live_trades||0)+' '+(en?'real trades studied so far':'vrais trades \u00e9tudi\u00e9s jusqu\u2019ici')+'</div></div>'+
+  '<div class="sec" style="margin:16px 8px 8px">'+(en?'One rule the robot follows today':'Une r\u00e8gle que le robot suit aujourd\u2019hui')+'</div>'+sample+
+  '<div class="sec" style="margin:16px 8px 8px">'+(en?'And in the full lab':'Et dans le labo complet')+'</div>'+ghost(en?'Aim for a smaller gain on each trade':'Viser un gain plus petit \u00e0 chaque trade')+ghost(en?'Do not enter right after a big run':'Ne pas entrer juste apr\u00e8s une grosse envol\u00e9e')+
+  '<div class="panel" style="margin-top:10px;border-color:rgba(59,130,246,.35)"><b style="font-size:.95rem">'+(en?'The full lab comes with the Strategy plan':'Le labo complet vient avec le paquet Strat\u00e9gie')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Every idea found in the real trades, every check on the past with its verdict, the robots playing for pretend, and the decisions - updated all the time. Plus the full chart with the levels.':'Toutes les id\u00e9es trouv\u00e9es dans les vrais trades, chaque v\u00e9rification sur le pass\u00e9 avec son verdict, les robots qui jouent pour de faux, et les d\u00e9cisions \u2014 mis \u00e0 jour en continu. Avec le graphique complet et ses niveaux.')+'</div><button class="shbtn shmain" style="margin-top:12px" onclick="offersSheet()">'+(en?'See the Strategy plan':'Voir l\u2019offre Strat\u00e9gie')+'</button></div>');
+}
 function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const C=j.counts||{};const n=k=>C[k]||0;
  const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
@@ -5116,7 +5138,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labAllowed()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -8733,6 +8755,20 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "lab_peek":
+            # 2026-09-28 (owner): every package gets a glance at the lab -
+            # the counts, one rule already in the robot, and the invitation
+            try:
+                if user.get("public"):
+                    self._send(json.dumps({"err": "public"}), "application/json")
+                    return
+                _lp = lab_payload()
+                _sample = next((it for it in _lp.get("items", []) if it.get("id") == "storm"), None)
+                self._send(json.dumps({"counts": _lp.get("counts", {}), "sample": _sample,
+                                       "n_ideas": len([c for c in _lp.get("candidates", []) if c.get("label") == "a_tester"]),
+                                       "live_trades": _lp.get("live_trades", 0)}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "lab":
             # 2026-09-28: the lab - Strategie members and the admin
             try:
