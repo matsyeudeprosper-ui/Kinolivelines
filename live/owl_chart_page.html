@@ -99,6 +99,47 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
  50%{box-shadow:inset 0 0 28px 3px rgba(232,197,90,.13)}}
 /* 2026-09-27: the app's light theme reaches the chart - the canvas keeps its
    dark palette and is inverted with the hue preserved (greens stay green). */
+/* ---- 2026-09-28 Meteo panel (owner): the weather chip in the strip is
+   the indicator; tapping it slides a glass sheet up with the state, the
+   24 h nervosity gauge and the four figures - no trip back to the app. */
+#meteo{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#meteo .wxv{font-weight:800;font-variant-numeric:tabular-nums;opacity:.9;letter-spacing:0;text-transform:none;margin-left:2px}
+#meteo .wxc{width:10px;height:10px;opacity:.55;flex:none}
+#wxbk{position:fixed;inset:0;z-index:60;background:rgba(4,8,13,.5);
+ opacity:0;pointer-events:none;transition:opacity .28s ease}
+#wxbk.on{opacity:1;pointer-events:auto}
+#wx{position:fixed;left:0;right:0;bottom:0;z-index:61;max-height:88vh;overflow:auto;overscroll-behavior:contain;
+ background:linear-gradient(180deg,rgba(23,33,48,.97),rgba(11,15,20,.99));
+ border:1px solid rgba(127,179,224,.2);border-bottom:0;border-radius:26px 26px 0 0;
+ box-shadow:0 -24px 60px rgba(0,0,0,.55);
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ padding:10px 18px calc(18px + env(safe-area-inset-bottom));
+ transform:translateY(104%);transition:transform .38s cubic-bezier(.22,.9,.3,1);touch-action:pan-y}
+#wx.on{transform:translateY(0)}
+#wx.drag{transition:none}
+#wx .aur{position:absolute;left:0;right:0;top:0;height:170px;pointer-events:none;border-radius:26px 26px 0 0;
+ background:radial-gradient(120% 90% at 50% 0%,var(--wxa,rgba(143,198,255,.16)),transparent 70%);transition:background .5s ease}
+#wx .grip{position:relative;width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.16);margin:2px auto 16px}
+#wx .hdr{position:relative;display:flex;align-items:center;gap:14px;padding-right:38px}
+#wx .orb{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex:none;
+ background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);box-shadow:0 0 22px var(--wxg,transparent)}
+#wx .orb svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px currentColor)}
+#wx h2{font-size:1.14rem;font-weight:800;letter-spacing:-.01em;color:var(--text);line-height:1.2}
+#wx .ln{font-size:.84rem;color:var(--text2);line-height:1.45;margin-top:3px}
+#wx .lbl{position:relative;font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px;display:flex;justify-content:space-between;align-items:baseline}
+#wx .lbl b{font-size:.8rem;letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+#wx .gz{position:relative;width:100%;height:124px;display:block}
+#wx .chips{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#wx .chip{min-width:0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+#wx .chip.acc{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.38)}
+#wx .chip small{display:block;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#wx .chip.acc small{color:var(--accent-soft)}
+#wx .chip b{display:block;font-size:1.02rem;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+#wx .ft{position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:18px;font-size:.72rem;color:var(--muted)}
+#wx .ft a{color:var(--accent-soft);text-decoration:none;font-weight:700;font-size:.8rem;display:inline-flex;align-items:center;gap:6px;
+ padding:9px 14px;border-radius:99px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);white-space:nowrap}
+#wx .x{position:absolute;right:0;top:-2px;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.1);
+ background:rgba(255,255,255,.05);color:var(--muted);font-size:.95rem;display:flex;align-items:center;justify-content:center}
 body.light{filter:invert(.93) hue-rotate(180deg);background:#fff}
 body.light img{filter:invert(1) hue-rotate(180deg)}
 </style></head><body>
@@ -117,6 +158,19 @@ body.light img{filter:invert(1) hue-rotate(180deg)}
 </div>
 <span id="px"></span>
 
+<div id="wxbk"></div>
+<div id="wx" role="dialog" aria-label="M&eacute;t&eacute;o du march&eacute;">
+ <div class="aur"></div>
+ <div class="grip"></div>
+ <div class="hdr">
+  <div class="orb" id="wx-orb"></div>
+  <div style="flex:1;min-width:0"><h2 id="wx-t">M&eacute;t&eacute;o</h2><div class="ln" id="wx-l"></div></div>
+  <button class="x" id="wxx" aria-label="Fermer">&#10005;</button>
+ </div>
+ <div id="wx-gsec"><div class="lbl"><span>Nervosit&eacute; &middot; 24 h</span><b id="wx-nv"></b></div><svg class="gz" id="wx-g" viewBox="0 0 300 120"></svg></div>
+ <div id="wx-csec"><div class="lbl"><span>Ce que le robot regarde</span></div><div class="chips" id="wx-chips"></div></div>
+ <div class="ft"><span id="wx-upd"></span><a id="wx-full" href="#">M&eacute;t&eacute;o compl&egrave;te <span>&#8250;</span></a></div>
+</div>
 <div id="botbar">
 <div id="pnl"><b>--</b><span></span></div>
 <div id="botrow"><button id="gotoday" title="Aller au début de la journée" style="font-size:.72rem;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:8px 12px;margin-right:6px">Aujourd’hui</button><button id="backlive">&#9654; EN DIRECT</button>
@@ -1262,53 +1316,17 @@ function ui(){
  // market weather: how much structure has moved lately and how lively
  // the candles are versus their own norm. An activity gauge, not a
  // prediction - E013 found period quality is not forecastable.
+ // market weather: the chip is the indicator, the sheet has the detail
+ // (2026-09-28). Same words as the app's "Le marche" card, same order as
+ // weather_gate(): storm > nervosity > movement > internal state.
  const mb=document.getElementById('meteo');
- if(D.moves_2h!==undefined&&D.vol_ref){
-  const SVI=p=>'<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">'+p+'</svg>';
-  const IC_MOON=SVI('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'),
-   IC_BOLT=SVI('<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>'),
-   IC_WAVE=SVI('<path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/>'),
-   IC_CLOUD=SVI('<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/>'),
-   IC_LEAF=SVI('<path d="M4 20c0-8 5-14 16-14-1 10-6 14-14 14"/><path d="M4 20c3-4 6-7 10-9"/>');
-
-  const mv=D.moves_2h,rv=D.vol_now/Math.max(D.vol_ref,1);
-  // the badge must speak the same language as the bots: the awake gate
-  // calls a market ASLEEP when no flip happened in 2 h, whatever the
-  // candles are doing. Volatility alone never counts as activity.
-  const S=(mv===0)?[IC_MOON,'endormie','95,113,133']
-   :((mv>=3&&rv>=1.2)?[IC_BOLT,'agitee','255,150,120']
-   :((mv>=2||rv>=1.2)?[IC_WAVE,'active','141,240,187']
-   :[IC_CLOUD,'calme','143,161,179']));
-  // the main weather keeps its icon and count; its word is dropped so the
-  // row fits beside the trend and auto markers (owner 2026-09-17)
-  let txt=mv+'/2h'+((mv===0&&rv>=1.2)?' · volatile':'');
-  // the INTERNAL state, appended only when it has something to say. The
-  // main gauge goes quiet precisely when the internal structure fills out
-  // (its window stops being reset), so this is the half that matters for a
-  // half-manual trade. Measured over 13.4 days: a break in sight 7% of the
-  // time, a flip armed 9%, forming 5% (review/int_state_dist.py).
-  // The internal gate, in the SAME shape as the main one: a count over a
-  // window. Measured: with at least one internal break in the last hour,
-  // 63% win and +0.133 R; with none, 46% and -0.167 R with both halves of
-  // the sample agreeing (review/INTERNAL_GATE.md).
-  if(FULL&&D.int_brk_1h!==undefined&&D.int_trend){
-   const nb=D.int_brk_1h,aw=nb>=1;
-   const W={ready:'rien ne bloque',flip:'bascule',forming:'formation',
-            none:'—'}[D.int_state]||'—';
-   // nervosity is the second veto: activity alone is not permission.
-   // Same wording bands as the weather card - the threshold sits on the
-   // median, so "trop nerveux" was firing on a coin flip and stopped
-   // meaning anything (owner 2026-09-18).
-   const nb2=rv>1.0;
-   const nw=rv<1.30?'vif':(rv<1.85?'agité':'très agité');
-   txt+=' · int '+(!aw?IC_MOON:(nb2?(rv<1.30?IC_LEAF:IC_BOLT):IC_WAVE))+' '+nb+'/1h'+
-        (aw?(nb2?' '+nw:' '+W):'');
-  }
-  if(D.spread&&D.spread>12)txt+=' · spread $'+D.spread.toFixed(0);
-  mb.innerHTML='<i>'+S[0]+'</i>'+txt;
-  mb.className='seg'+(S[1]==='agitee'||S[1]==='active'?' busy':'');
-  mb.style.display='flex';
-  mb.style.color='rgb('+S[2]+')';
+ const W=wxState();
+ if(W){
+  mb.innerHTML='<i>'+WXS(W.S[0],W.S[2],15)+'</i>'+W.S[1]+'<span class="wxv" style="color:'+W.vw[1]+'">'+W.rv.toFixed(2).replace('.',',')+'×</span>'+
+   '<svg class="wxc" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M9 6l6 6-6 6"/></svg>';
+  mb.className='seg'+((W.k==='nervous'||W.k==='brisk')?' busy':'');
+  mb.style.display='flex';mb.style.color=W.S[2];
+  if(wxOpen){wxRender(W);wxDayLoad();}
  }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
  tb.style.display='flex';
@@ -1877,4 +1895,123 @@ async function mtLoad(){
  }catch(e){MSerr='Reseau indisponible.';}
 }
 mtLoad();setInterval(mtLoad,3000);
+// ---- 2026-09-28 Meteo panel ------------------------------------------
+// The weather chip in the strip is the indicator; tapping it slides this
+// sheet up. Same words as the app's "Le marche" card (three voices: the
+// robot narrates, the signal service advises, the observer watches Kino's
+// robot), same order as weather_gate(). Observers get the headline only:
+// the gauge and the figures are strategy hints (owner 2026-09-27).
+const WXI={sun:'<path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/>',
+ wave:'<path d="M3 10c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/><path d="M3 16c2-3 4-3 6 0s4 3 6 0 4-3 6 0"/>',
+ moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
+ bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+ cloud:'<path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11.5 3.5 3.5 0 0 0 7 18z"/>',
+ leaf:'<path d="M4 20c0-8 5-14 16-14-1 10-6 14-14 14"/><path d="M4 20c3-4 6-7 10-9"/>',
+ scale:'<path d="M12 3v18M4 7h16M6 7l-3 7a3 3 0 0 0 6 0zM18 7l-3 7a3 3 0 0 0 6 0z"/>',
+ clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>'};
+const WXS=(n,col,sz)=>'<svg viewBox="0 0 24 24" style="color:'+col+(sz?';width:'+sz+'px;height:'+sz+'px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round':'')+'">'+(WXI[n]||WXI.cloud)+'</svg>';
+const WXV={
+ auto:{ready:['check','Feu vert','#8df0bb','Les conditions sont réunies. Le robot entrera dès que le signal se confirme.'],
+  flip:['scale','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot attend la confirmation avant d’agir.'],
+  forming:['clock','Ça se prépare','#9fb0d0','Trop tôt. Le robot laisse le marché se dessiner.'],
+  none:['moon','Rien à faire','#9fb0d0','Le marché est calme. Le robot attend une occasion.'],
+  brisk:['leaf','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot laisse passer celui-là.'],
+  nervous:['bolt','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot préfère s’écarter.'],
+  nogate:['bolt','Aucun frein','#b98cff','Ce compte prend tous les signaux, marché calme ou rapide.']},
+ manual:{ready:['check','Feu vert','#8df0bb','Les conditions sont réunies : le prochain signal est jouable. À vous de décider.'],
+  flip:['scale','Ça peut tourner','#e8c55a','Le sens change peut-être. Attendez la confirmation avant d’entrer.'],
+  forming:['clock','Ça se prépare','#9fb0d0','Trop tôt pour entrer. Laissez le marché se dessiner.'],
+  none:['moon','Pas de signal','#9fb0d0','Le marché est calme. Mieux vaut attendre le prochain signal.'],
+  brisk:['leaf','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Signal à prendre avec prudence.'],
+  nervous:['bolt','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Mieux vaut s’écarter.'],
+  nogate:['bolt','Aucun frein','#b98cff','Tous les signaux sont affichés, marché calme ou rapide.']},
+ observer:{ready:['check','Feu vert','#8df0bb','Les conditions sont réunies. Le robot de Kino entrera dès que le signal se confirme.'],
+  flip:['scale','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot de Kino attend la confirmation.'],
+  forming:['clock','Ça se prépare','#9fb0d0','Trop tôt. Le robot de Kino laisse le marché se dessiner.'],
+  none:['moon','Rien à faire','#9fb0d0','Le marché est calme. Le robot de Kino attend une occasion.'],
+  brisk:['leaf','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot de Kino laisse passer.'],
+  nervous:['bolt','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot de Kino s’écarte.'],
+  nogate:['bolt','Marché rapide','#b98cff','Le robot de Kino travaille quand même — à ses risques.']}};
+function wxState(){
+ if(!D||D.moves_2h===undefined||!D.vol_ref)return null;
+ const mv=D.moves_2h,rv=D.vol_now/Math.max(D.vol_ref,1),nb=D.int_brk_1h||0;
+ const G=D.gates||{},gN=G.nervosity!==false,gM=G.movement!==false;
+ // 1.85 is NERV_STORM in structure_bos_bot.py - change the two together
+ const storm=rv>=1.85,nervBad=storm||(gN&&rv>1.0),hasInt=!!D.int_trend;
+ const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
+ const k=storm?'nervous':((!gN&&!gM)?'nogate':(nervBad?(rv<1.30?'brisk':'nervous'):(!mvOk?'none':(hasInt?(D.int_state||'ready'):'ready'))));
+ const voice=TIER==='observer'?'observer':(window._MANUAL?'manual':'auto');
+ const S=(WXV[voice]||WXV.auto)[k]||WXV.auto.none;
+ // measured bands (review/chop_vs_nerv.py): the number says SIZE, not mess
+ const vw=rv<1.0?['calme','var(--text)']:(rv<1.30?['soutenu','var(--warn)']:(rv<1.85?['rapide','#e8743b']:['très rapide','var(--down)']));
+ return {k,S,mv,rv,nb,gN,gM,storm,hasInt,mvOk,vw,voice};
+}
+let wxOpen=false,wxDay=null,wxDayT=0;
+const wxEl=document.getElementById('wx'),wxBk=document.getElementById('wxbk');
+function wxShow(on){wxOpen=on;wxEl.classList.toggle('on',on);wxBk.classList.toggle('on',on);
+ if(on){const W=wxState();if(W)wxRender(W);wxDayLoad();}}
+document.getElementById('meteo').onclick=()=>wxShow(!wxOpen);
+wxBk.onclick=()=>wxShow(false);
+document.getElementById('wxx').onclick=()=>wxShow(false);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&wxOpen)wxShow(false);});
+document.getElementById('wx-full').href='/'+tok+'/#marche';
+// pull down to close (only when the sheet is scrolled to its top)
+(function(){let y0=null;
+ wxEl.addEventListener('touchstart',e=>{y0=(wxEl.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
+ wxEl.addEventListener('touchmove',e=>{if(y0===null)return;const dy=e.touches[0].clientY-y0;
+  if(dy>0){wxEl.classList.add('drag');wxEl.style.transform='translateY('+dy+'px)';}},{passive:true});
+ wxEl.addEventListener('touchend',e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;
+  wxEl.classList.remove('drag');wxEl.style.transform='';if(dy>90)wxShow(false);y0=null;});})();
+async function wxDayLoad(){
+ if(TIER==='observer'||Date.now()-wxDayT<60000)return;wxDayT=Date.now();
+ try{const r=await fetch('/'+tok+'/day',{cache:'no-store'});
+  if(r.ok){wxDay=await r.json();const W=wxState();if(W&&wxOpen)wxRender(W);}}catch(e){}
+}
+function wxRender(W){
+ const S=W.S;
+ wxEl.style.setProperty('--wxa',S[2]+'2e');wxEl.style.setProperty('--wxg',S[2]+'40');
+ document.getElementById('wx-orb').innerHTML=WXS(S[0],S[2]);
+ document.getElementById('wx-t').textContent=S[1];
+ document.getElementById('wx-l').textContent=S[3];
+ const hide=TIER==='observer';
+ document.getElementById('wx-gsec').style.display=hide?'none':'block';
+ document.getElementById('wx-csec').style.display=hide?'none':'block';
+ if(!hide){
+  const nv=document.getElementById('wx-nv');nv.textContent=W.rv.toFixed(2).replace('.',',')+'× '+W.vw[0];nv.style.color=W.vw[1];
+  wxGauge();
+  const chip=(l,v,col,acc)=>'<div class="chip'+(acc?' acc':'')+'"><small>'+l+'</small><b style="color:'+(col||'var(--text)')+'">'+v+'</b></div>';
+  const tcol=D.trend===1?'#8df0bb':(D.trend===-1?'#ff8c8c':'var(--muted)'),ttxt=D.trend===1?'▲ hausse':(D.trend===-1?'▼ baisse':'—');
+  // accent = the two figures that DECIDE right now (same rule as the app)
+  const small=chip('petits mouvements',W.hasInt?(W.nb+' / 1 h'):'—',W.hasInt?(W.nb>=1?'var(--accent-soft)':'var(--muted)'):'var(--muted)',W.hasInt&&W.gM);
+  const big=chip('grands mouvements',W.mv+' / 2 h',W.hasInt?(W.mv===0?'var(--muted)':'var(--text)'):(W.mv>=1?'var(--accent-soft)':'var(--muted)'),(!W.hasInt)&&W.gM);
+  document.getElementById('wx-chips').innerHTML=(W.hasInt?small:big)+chip('nervosité vs 24 h',W.rv.toFixed(2).replace('.',',')+'× '+W.vw[0],W.vw[1],W.gN||W.storm)+(W.hasInt?big:small)+chip('sens',ttxt,tcol,false);
+ }
+ const age=D.updated?Math.max(0,Math.round(Date.now()/1000-D.updated)):null;
+ document.getElementById('wx-upd').textContent=age===null?'':('Mis à jour il y a '+(age<60?age+' s':Math.round(age/60)+' min'));
+}
+function wxGauge(){
+ const el=document.getElementById('wx-g');const pts=((wxDay&&wxDay.nerv)||[]).slice(-1440);
+ if(pts.length<5){el.innerHTML='<text x="150" y="64" text-anchor="middle" font-size="10" style="fill:var(--muted)">Historique en cours de chargement…</text>';return;}
+ const t0=pts[0][0],t1=pts[pts.length-1][0],sp=Math.max(1,t1-t0);
+ const mx=Math.max(2.2,...pts.map(p=>p[1]));
+ const X=t=>(6+(t-t0)/sp*288),Y=v=>(100-(v/mx)*84);
+ let bands='',st=null;
+ pts.forEach((p,i)=>{if(p[1]>=1.85&&st===null)st=p[0];
+  if((p[1]<1.85||i===pts.length-1)&&st!==null){bands+='<rect x="'+X(st).toFixed(1)+'" y="6" width="'+Math.max(1.5,X(p[0])-X(st)).toFixed(1)+'" height="96" style="fill:var(--down);opacity:.14"/>';st=null;}});
+ let dp='';pts.forEach((p,i)=>{dp+=(i?' L':'M')+X(p[0]).toFixed(1)+','+Y(p[1]).toFixed(1);});
+ const last=pts[pts.length-1][1];
+ const band=(v,col,l)=>'<line x1="6" y1="'+Y(v).toFixed(1)+'" x2="294" y2="'+Y(v).toFixed(1)+'" style="stroke:'+col+';opacity:.55" stroke-width="1" stroke-dasharray="3 4"/><text x="8" y="'+(Y(v)-3).toFixed(1)+'" font-size="8" style="fill:'+col+'">'+l+'</text>';
+ let ticks='';for(let k=0;k<=4;k++){const t=t0+sp*k/4,x=X(t).toFixed(1);const h=new Date(t*1000).getHours();
+  ticks+='<line x1="'+x+'" y1="102" x2="'+x+'" y2="106" style="stroke:var(--border2)"/><text x="'+x+'" y="117" text-anchor="'+(k===0?'start':(k===4?'end':'middle'))+'" font-size="8" style="fill:var(--muted)">'+(k===4?'maintenant':h+'h')+'</text>';}
+ el.innerHTML='<defs><linearGradient id="wxng" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc6ff" stop-opacity=".28"/><stop offset="1" stop-color="#8fc6ff" stop-opacity="0"/></linearGradient></defs>'+
+  '<rect x="6" y="'+Y(mx).toFixed(1)+'" width="288" height="'+(Y(1.85)-Y(mx)).toFixed(1)+'" style="fill:var(--down);opacity:.05"/>'+bands+
+  band(1.0,'var(--muted)','1,0× calme')+band(1.85,'var(--down)','1,85× très rapide')+
+  '<line x1="6" y1="102" x2="294" y2="102" style="stroke:var(--border2)"/>'+ticks+
+  '<path d="'+dp+' L'+X(t1).toFixed(1)+',102 L6,102 Z" fill="url(#wxng)"/>'+
+  '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.9" stroke-linejoin="round"/>'+
+  '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="6" style="fill:var(--accent-soft);opacity:.25"/>'+
+  '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3" style="fill:var(--accent-soft)"/>'+
+  '<text x="'+Math.min(262,X(t1)-8).toFixed(1)+'" y="'+(Y(last)-9).toFixed(1)+'" text-anchor="end" font-size="9" font-weight="700" style="fill:var(--accent-soft)">'+last.toFixed(2).replace('.',',')+'×</text>';
+}
 </script></body></html>

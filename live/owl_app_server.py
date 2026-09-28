@@ -2711,7 +2711,7 @@ function drawNerv(){
    '<rect x="6" y="'+Y(mx).toFixed(1)+'" width="288" height="'+(Y(1.85)-Y(mx)).toFixed(1)+
    '" style="fill:var(--down);opacity:.05"/>'+
    bands(Y,6,96)+band(1.0,'var(--muted)','1,0\\u00d7 calme')+
-   band(1.85,'var(--down)','1,85\\u00d7 tr\\u00e8s agit\\u00e9')+
+   band(1.85,'var(--down)','1,85\\u00d7 tr\\u00e8s rapide')+
    '<line x1="6" y1="102" x2="294" y2="102" style="stroke:var(--border2)"/>'+ticks+
    '<path d="'+dp+' L'+X(t1).toFixed(1)+',102 L6,102 Z" fill="url(#ng)"/>'+
    '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.9" '+
@@ -8038,6 +8038,14 @@ class H(BaseHTTPRequestHandler):
             d["acct"] = user.get("login")
             d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)
+            # 2026-09-28: the chart's Meteo panel must say what weather_gate()
+            # says for THIS account (both brakes are per-account dials)
+            try:
+                _pk = PKG.for_account(user.get("id") or "")
+                d["gates"] = {"nervosity": bool(_pk.get("nervosity", True)),
+                              "movement": bool(_pk.get("movement", True))}
+            except Exception:
+                pass
             self._send(json.dumps(d), "application/json")
         elif sub == "manual_state":
             # assisted manual trading on the live account (2026-09-15)
