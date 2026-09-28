@@ -1,5 +1,6 @@
 <!doctype html><html lang="fr"><head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Graphique custom</title>
 <style>
@@ -1941,7 +1942,7 @@ function wxState(){
  const storm=rv>=1.85,nervBad=storm||(gN&&rv>1.0),hasInt=!!D.int_trend;
  const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
  const k=storm?'nervous':((!gN&&!gM)?'nogate':(nervBad?(rv<1.30?'brisk':'nervous'):(!mvOk?'none':(hasInt?(D.int_state||'ready'):'ready'))));
- const voice=TIER==='observer'?'observer':(window._MANUAL?'manual':'auto');
+ const voice=(TIER==='observer'&&!FULL)?'observer':(window._MANUAL?'manual':'auto');
  const S=(WXV[voice]||WXV.auto)[k]||WXV.auto.none;
  // measured bands (review/chop_vs_nerv.py): the number says SIZE, not mess
  const vw=rv<1.0?['calme','var(--text)']:(rv<1.30?['soutenu','var(--warn)']:(rv<1.85?['rapide','#e8743b']:['très rapide','var(--down)']));
@@ -1964,7 +1965,7 @@ document.getElementById('wx-full').href='/'+tok+'/#marche';
  wxEl.addEventListener('touchend',e=>{if(y0===null)return;const dy=e.changedTouches[0].clientY-y0;
   wxEl.classList.remove('drag');wxEl.style.transform='';if(dy>90)wxShow(false);y0=null;});})();
 async function wxDayLoad(){
- if(TIER==='observer'||Date.now()-wxDayT<60000)return;wxDayT=Date.now();
+ if((TIER==='observer'&&!FULL)||Date.now()-wxDayT<60000)return;wxDayT=Date.now();
  try{const r=await fetch('/'+tok+'/day',{cache:'no-store'});
   if(r.ok){wxDay=await r.json();const W=wxState();if(W&&wxOpen)wxRender(W);}}catch(e){}
 }
@@ -1974,7 +1975,7 @@ function wxRender(W){
  document.getElementById('wx-orb').innerHTML=WXS(S[0],S[2]);
  document.getElementById('wx-t').textContent=S[1];
  document.getElementById('wx-l').textContent=S[3];
- const hide=TIER==='observer';
+ const hide=TIER==='observer'&&!FULL;   // the admin sees everything on every account
  document.getElementById('wx-gsec').style.display=hide?'none':'block';
  document.getElementById('wx-csec').style.display=hide?'none':'block';
  if(!hide){
