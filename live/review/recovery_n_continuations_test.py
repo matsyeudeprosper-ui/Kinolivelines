@@ -166,12 +166,13 @@ def run_for(R, label):
     print(f"  {'rule':<40}{'trades':>7}{'win%':>7}{'net $':>9}{'max DD':>9}"
           f"{'worst debt':>11}{'cont@debt':>10}{'refused':>8}")
     base = None
-    for n in (1, 2, 3):
+    for n in (1, 0, 2, 3):
         r = simulate(R, SPREAD, n)
         if base is None:
             base = r
         lab = ("A  deployed: flip + 1 continuation" if n == 1
-               else f"B  flip + {n} continuations")
+               else ("C  flip only, no continuation in debt" if n == 0
+                     else f"B  flip + {n} continuations"))
         print(f"  {lab:<40}{r['trades']:>7}{r['wr']:>6.1f}%{r['net']:>9.2f}"
               f"{r['maxdd']:>9.2f}{r['worst_debt']:>11.2f}{r['debt_cont']:>10}"
               f"{r['refused']:>8}"
