@@ -464,6 +464,14 @@ def member_lang(uid):
         return "fr"
 
 
+def _push_subs():
+    try:
+        m = json.load(open(PUSH_SUBS_FILE, encoding="utf-8"))
+        return m if isinstance(m, dict) else {}
+    except Exception:
+        return {}
+
+
 def can_switch(u):
     """May this account switch auto <-> manual (and use the trade tool)?"""
     return u is not None and (is_admin(u) or has(u.get("id"), "manual"))
@@ -1131,6 +1139,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <button id="renew-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
 </div>
+<div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(255,92,92,.45)">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--down-soft);background:rgba(255,92,92,.12)"><svg class="ic"><use href="#i-bell"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="nopush-t" style="font-size:.98rem"></b>
+   <div id="nopush-s" style="font-size:.82rem;color:var(--muted2);line-height:1.4;margin-top:2px"></div></div>
+  <button id="nopush-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
+ </div>
+</div>
 <div class="panel" id="sigcard" style="display:none;margin-top:12px;border-width:1.5px">
  <div style="display:flex;justify-content:space-between;align-items:center">
   <div class="lbl" id="sig-lbl">Signal</div><span id="sig-when" style="font-size:.72rem;color:var(--muted)"></span></div>
@@ -1138,6 +1154,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div id="sig-dir" style="font-size:1.35rem;font-weight:800;letter-spacing:-.01em"></div>
   <div id="sig-sym" style="font-size:.8rem;color:var(--muted2)">BTCUSD</div></div>
  <div id="sig-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
+ <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45"></div>
  <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
  <div id="sig-mark" style="display:none;margin-top:10px"></div>
  <div style="display:flex;gap:8px;margin-top:12px">
@@ -2498,6 +2515,7 @@ async function notifSetup(){
    'appareil.</h3>');return;}
   await fetch(B+'push_sub',{method:'POST',body:JSON.stringify(s)})
    .catch(()=>null);
+  window._pushLocal=true;const _np=document.getElementById('nopushcard');if(_np)_np.style.display='none';
   await info('&#128276; <h3>Notifications activ&eacute;es !</h3>'+
    '<p>Vous recevrez les gains, les orages et les victoires des '+
    'soldats &mdash; m&ecirc;me app ferm&eacute;e.</p>');
@@ -3267,7 +3285,7 @@ async function acctSheet(){
     '<i style="position:absolute;right:-2px;bottom:-2px;width:9px;height:9px;border-radius:50%;background:'+S[2]+';border:2px solid var(--surface)"></i></div>'+
    '<div style="flex:1;min-width:0"><b style="display:flex;align-items:center;gap:6px">'+x.name+(cur?'<svg class="ic ic-s" style="color:var(--accent-soft)"><use href="#i-check"/></svg>':'')+'</b>'+
     (x.note?'<div style="font-size:.74rem;color:var(--warn);line-height:1.35;margin-top:2px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>':'')+
-    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+fu(x)+(x.sigs&&x.sigs.sent?' \u00b7 <span style="color:var(--accent-soft)">'+x.sigs.taken+'/'+x.sigs.sent+' signaux '+money(x.sigs.net)+'</span>':'')+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
+    '<div class="ssub"><span style="color:'+S[1]+';font-weight:700">'+S[0]+'</span>'+(x.login?' \u00b7 '+x.login:'')+(x.pos?' \u00b7 '+x.pos+' en cours':'')+fu(x)+(x.sigs&&x.sigs.sent?' \u00b7 <span style="color:var(--accent-soft)">'+x.sigs.taken+'/'+x.sigs.sent+' signaux '+money(x.sigs.net)+'</span>':'')+(x.push===false&&x.paused?' \u00b7 <span style="color:var(--down-soft)">pas de notif</span>':'')+' \u00b7 <span style="color:var(--muted)">'+agoTxt(x.seen)+'</span></div></div>'+
    '<div style="text-align:right;flex:none"><b style="font-variant-numeric:tabular-nums">'+(typeof x.bal==='number'?'$'+x.bal.toFixed(2):'\u2014')+'</b>'+
     '<div style="font-size:.74rem" class="'+sgn(x.today||0)+'">'+(typeof x.today==='number'?money(x.today):'')+'</div></div></div>'+
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
@@ -3753,6 +3771,7 @@ function renderSignal(ms){
  const dd=document.getElementById('sig-dir');dd.textContent=(buy?'\u25b2 ':'\u25bc ')+(buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'));dd.style.color=col;
  const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center"><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span><b style="font-size:.86rem;font-variant-numeric:tabular-nums">'+v+'</b></div>';
  setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')));
+ myLotLine(sg,en);
  const far=(ms&&typeof ms.px==='number'&&sg.e)?Math.abs(ms.px-sg.e)/sg.e:0;
  const farTxt=far>0.0025?('<div style="color:var(--warn);margin-bottom:4px">\u26a0 '+(en?'The price has moved '+(far*100).toFixed(2)+'% from the entry \u2014 careful, the risk is no longer the same.':'Le prix s\u2019est \u00e9loign\u00e9 de l\u2019entr\u00e9e ('+(far*100).toFixed(2)+'\u202f%) \u2014 prudence, le risque n\u2019est plus le m\u00eame.')+'</div>'):'';
  setH(document.getElementById('sig-note'),farTxt+(sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
@@ -3786,6 +3805,30 @@ async function pollSignal(){
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
  try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}renderSignal(await r.json());}catch(e){}
 }
+// ---- batch 28 ----
+function noPushBanner(d){const el=document.getElementById('nopushcard');if(!el)return;const en=LANG()==='en';
+ const show=!d.public&&MAN()&&!OBS()&&!d.push_on&&!window._pushLocal;
+ if(!show){el.style.display='none';return;}
+ const nb=document.getElementById('notifbtn');const can=!!(nb&&nb.style.display!=='none');
+ document.getElementById('nopush-t').textContent=en?'Your signals will not reach you':'Vos signaux ne vous arriveront pas';
+ document.getElementById('nopush-s').textContent=can?(en?'Notifications are off on this phone. A signal is pushed the second it appears.':'Les notifications sont d\u00e9sactiv\u00e9es sur ce t\u00e9l\u00e9phone. Un signal est envoy\u00e9 \u00e0 la seconde o\u00f9 il appara\u00eet.')
+  :(en?'Install the app first (Settings \u203a Install), then enable notifications.':'Installez d\u2019abord l\u2019app (R\u00e9glages \u203a Installer), puis activez les notifications.');
+ const b=document.getElementById('nopush-b');b.textContent=can?(en?'Enable':'Activer'):(en?'How':'Comment');
+ b.onclick=()=>{if(can){nb.click();}else{tab('set',document.querySelectorAll('.tb')[3]);}};
+ el.style.display='block';}
+async function myBalSet(){const en=LANG()==='en';let my='';try{my=localStorage.getItem('owlMyBal:'+B)||'';}catch(e){}
+ const v=await sheet('<h3>'+(en?'Your balance':'Votre solde')+'</h3><p>'+(en?'The balance of the account you trade the signals on. Kept on this phone only. The lot is scaled in proportion; the stop and target do not change.':'Le solde du compte sur lequel vous tradez les signaux. Gard\u00e9 sur ce t\u00e9l\u00e9phone seulement. Le lot est mis \u00e0 l\u2019\u00e9chelle en proportion ; le stop et la cible ne changent pas.')+'</p>'+
+  '<input id="shbal" inputmode="decimal" value="'+String(my).replace(/"/g,'')+'" placeholder="500" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:1rem;margin-bottom:8px">'+
+  '<button class="shbtn shmain" onclick="_shDone({b:document.getElementById(&#39;shbal&#39;).value})">'+(en?'Save':'Enregistrer')+'</button><button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
+ if(!v)return;const nn=parseFloat(String(v.b||'').replace(',','.'));try{if(nn>0)localStorage.setItem('owlMyBal:'+B,String(nn));else localStorage.removeItem('owlMyBal:'+B);}catch(e){}
+ if(window._sigMs)renderSignal(window._sigMs);}
+function myLotLine(sg,en){const lt=document.getElementById('sig-mylot');if(!lt)return;
+ if(!sg.ok||!sg.bal||!sg.risk){lt.style.display='none';return;}
+ let my=0;try{my=parseFloat(localStorage.getItem('owlMyBal:'+B)||'0');}catch(e){}
+ lt.style.display='block';
+ if(my>0){const k=my/sg.bal;const l=Math.max(0.01,Math.round(sg.lot*k*100)/100);
+  setH(lt,'<span>'+(en?'Your lot for $':'Votre lot pour $')+my.toFixed(0)+' : <b style="color:var(--text)">'+l.toFixed(2)+'</b> \u00b7 '+(en?'risk ~$':'risque ~$')+(sg.risk*k).toFixed(2)+'</span> \u00b7 <a href="#" onclick="event.preventDefault();myBalSet()" style="color:var(--muted);text-decoration:none">'+(en?'change':'modifier')+'</a>');}
+ else setH(lt,'<span>'+(en?'Lot sized for a $':'Lot calcul\u00e9 pour un compte de $')+sg.bal.toFixed(0)+(en?' account \u00b7 risk ~$':' \u00b7 risque ~$')+sg.risk.toFixed(2)+'.</span> <a href="#" onclick="event.preventDefault();myBalSet()" style="color:var(--accent-soft);text-decoration:none">'+(en?'Another broker? Enter your balance':'Autre broker ? Entrez votre solde')+'</a>');}
 // ---- batch 26 ----
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
@@ -3816,7 +3859,7 @@ async function loadSignals(){
    setH(scEl,'<div class="lbl">'+(en?'This month':'Ce mois')+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px">'+cell(en?'signals':'signaux',sc.sent)+cell(en?'taken':'pris',sc.taken)+cell(en?'wins':'gagn\u00e9s',dec?Math.round(100*sc.wins/dec)+'\u202f%':'\u2014')+cell('net',mn(sc.net),sc.net>=0?'var(--up-soft)':'var(--down-soft)')+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.45">'+(en?'Net = the results recorded on taken signals, by your desk or by you.':'Net = les r\u00e9sultats enregistr\u00e9s sur les signaux pris, par votre poste ou par vous.')+'</div>');scEl.style.display='block';}
   else scEl.style.display='none';}
  if(!it.length){sec.style.display='block';el.style.display='block';el.innerHTML='<div class="empty"><p>'+(en?'No signal yet. They will appear here as they come.':'Aucun signal pour l\u2019instant. Ils appara\u00eetront ici au fil de l\u2019eau.')+'</p></div>';return;}
- const hm=t=>{const x=new Date(t*1000);return String(x.getUTCDate()).padStart(2,'0')+'/'+String(x.getUTCMonth()+1).padStart(2,'0')+' '+String(x.getUTCHours()).padStart(2,'0')+':'+String(x.getUTCMinutes()).padStart(2,'0');};
+ const hm=t=>{const x=new Date(t*1000),n0=new Date();const same=x.toDateString()===n0.toDateString();return (same?'':String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+' ')+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0');};
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  el.innerHTML=it.slice(0,40).map(x=>{const buy=x.dir===1;
   let st,c;
@@ -4681,7 +4724,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);renderRevenue(d);loadSignals();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);renderRevenue(d);loadSignals();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -5854,6 +5897,7 @@ def user_stats(u, admin_override=False):
                         "seen": _seen.get(x["id"]),
                         "family_until": int((ent(x["id"]) or {}).get("family_until") or 0),
                         "plan": x.get("plan"),
+                        "push": bool(_push_subs().get(x["id"])),
                         # 2026-09-28: an observer (no Automatique, no Manuel) has no
                         # robot to run - not a fault, so Le Nid must not flag it
                         "observer": (x["id"] not in OWNER_UIDS and not x.get("public")
@@ -5913,6 +5957,8 @@ def user_stats(u, admin_override=False):
         if "trading_paused" in d:
             d["pause_locked"] = not can_switch(u)
         d["plan"] = plan_of(u)
+        # 2026-09-28: a manual member without a push subscription gets no signal
+        d["push_on"] = bool(_push_subs().get(u.get("id")))
         if d.get("is_master"):
             _c = nest_config()
             d["plan"]["np_key_tail"] = (_c.get("np_api_key") or "")[-4:]

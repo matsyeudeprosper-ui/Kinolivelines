@@ -39,6 +39,8 @@ _U = [x for x in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
 if not _U:
     raise SystemExit(f"unknown nest user {UID}")
 _U = _U[0]
+# 2026-09-28: the signal push opens the chart with the signal pre-filled
+SIG_URL = f"/{_U.get('token', '')}/chart?sig=1"
 if _U.get("mode") not in ("manual", "semi"):
     raise SystemExit(f"{UID} is not in manual/semi mode - nothing to run")
 TERMINAL = _U["terminal"]
@@ -142,10 +144,10 @@ def sig_update(t, **kw):
         pass
 
 
-def push(title, body, kind="instant"):
+def push(title, body, kind="instant", url=None):
     try:
         import owl_push_notifier as P
-        P.send_all(title, body, kind=kind, only_uid=UID)
+        P.send_all(title, body, kind=kind, only_uid=UID, url=url)
         say(f"PUSH {title} | {body}")
     except Exception as e:
         say(f"push failed: {type(e).__name__}: {e}")
@@ -1047,10 +1049,19 @@ def main():
                             else:
                                 _ENG["cont_used"] = True
                         _tp = round(_c + d_ * B.RR * dist, 2)
+                        # 2026-09-28: the desk's balance and the $ at the stop, so a
+                        # member on another broker can scale the lot to their account
+                        try:
+                            _bal = round(float(mt5.account_info().balance), 2)
+                            _cs = float(getattr(mt5.symbol_info(SYMBOL), "trade_contract_size", 1) or 1)
+                            _risk = round(dist * lot2 * _cs, 2)
+                        except Exception:
+                            _bal, _risk = None, None
                         _ENG["signal"] = {"t": int(time.time()), "dir": d_, "e": round(_c, 2),
                                           "sl": round(slv, 2), "tp": _tp, "lot": round(lot2, 2),
                                           "bul": bul2, "kind": "flip" if flip else "cont",
                                           "ok": not _why, "why": _why or "",
+                                          "bal": _bal, "risk": _risk,
                                           "expires": int(time.time()) + 1800}
                         sig_log(_ENG["signal"])
                         if manual_mode() and not _why:
@@ -1062,7 +1073,7 @@ def main():
                                  (f"Entr\u00e9e ~{_c:.0f} \u00b7 stop {slv:.0f} \u00b7 cible {_tp:.0f} "
                                   f"\u00b7 lot {lot2:.2f}"
                                   + (f" (+{bul2} rattrapage)" if bul2 else "")
-                                  + " \u00b7 valable 30 min"))
+                                  + " \u00b7 valable 30 min"), url=SIG_URL)
                         elif manual_mode():
                             say(f"signal non conseille: {_why}")
             # ---- publish state for the chart (every 10 s)

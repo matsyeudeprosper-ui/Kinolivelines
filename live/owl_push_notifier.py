@@ -490,7 +490,8 @@ def maybe_signal():
             send_all("\U0001f7e2 " + ("Playable signal" if en else "Signal jouable"),
                      ("Conditions are met. Open the chart to decide." if en else
                       "Les conditions sont r\u00e9unies. Ouvrez le graphique "
-                      "pour d\u00e9cider."), kind="instant", only_uid=uid)
+                      "pour d\u00e9cider."), kind="instant", only_uid=uid,
+                     url=_tok_url(uid, "chart"))
         else:
             send_all("\u26aa " + ("Signal over" if en else "Signal termin\u00e9"),
                      ("The green light has passed \u2014 better wait for the next one." if en else
@@ -516,6 +517,118 @@ def _week_image(uid):
     except Exception:
         pass
     return None
+
+
+def _tok_url(uid, suffix=""):
+    """2026-09-28: a push that opens one member's page (chart, Le Nid...)."""
+    try:
+        for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                                encoding="utf-8")):
+            if u.get("id") == uid and u.get("token"):
+                return f"/{u['token']}/{suffix}"
+    except Exception:
+        pass
+    return None
+
+
+DIGEST_MARK = os.path.join(DIR, "owl_push_digest.json")
+PKG_USD = {"manual": 29, "strategy": 49}    # keep in step with owl_app_server.PACKAGES
+
+
+def digest_body(now=None):
+    """2026-09-28: the owner's Monday digest - packages, money, signals,
+    renewals, waiting list. Pure: reads the data files, returns the text."""
+    now = now or time.time()
+    W = 7 * 86400
+    try:
+        ents = json.load(open(os.path.join(DIR, "owl_entitlements.json"), encoding="utf-8"))
+    except Exception:
+        ents = {}
+    try:
+        names = {u["id"]: u.get("name", u["id"]) for u in
+                 json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))}
+    except Exception:
+        names = {}
+    act = {"family": 0, "manual": 0, "strategy": 0}
+    due, new = [], 0
+    for uid, e in ents.items():
+        if uid in ("kino", "std") or not isinstance(e, dict):
+            continue
+        if float(e.get("updated") or 0) > now - W:
+            new += 1
+        for k in act:
+            u_ = float(e.get(k + "_until") or 0)
+            if u_ > now:
+                act[k] += 1
+                if u_ - now < W:
+                    due.append(f"{names.get(uid, uid)} ({int((u_ - now) // 86400)} j)")
+    try:
+        cfg = json.load(open(os.path.join(DIR, "owl_nest_config.json"), encoding="utf-8"))
+    except Exception:
+        cfg = {}
+    mrr = (act["manual"] * PKG_USD["manual"] + act["strategy"] * PKG_USD["strategy"]
+           + act["family"] * float(cfg.get("family_usd") or 0))
+    paid_n, paid_usd = 0, 0.0
+    try:
+        for p in json.load(open(os.path.join(DIR, "owl_payments.json"), encoding="utf-8")):
+            if (isinstance(p, dict) and p.get("granted") in PKG_USD and not p.get("test")
+                    and float(p.get("t") or 0) > now - W):
+                paid_n += 1
+                paid_usd += float(p.get("amount") or 0)
+    except Exception:
+        pass
+    sent = taken = 0
+    import glob as _gl
+    for f in _gl.glob(os.path.join(DIR, "owl_signals_*.json")):
+        uid = os.path.basename(f)[len("owl_signals_"):-5]
+        try:
+            lst = json.load(open(f, encoding="utf-8"))
+        except Exception:
+            continue
+        try:
+            marks = json.load(open(os.path.join(DIR, f"owl_sigmarks_{uid}.json"), encoding="utf-8"))
+        except Exception:
+            marks = {}
+        for x in lst:
+            if not isinstance(x, dict) or not x.get("ok") or float(x.get("t") or 0) < now - W:
+                continue
+            sent += 1
+            if x.get("taken") or (marks.get(str(x.get("t"))) or {}).get("taken"):
+                taken += 1
+    try:
+        wl = len(json.load(open(os.path.join(DIR, "owl_waitlist.json"), encoding="utf-8")) or {})
+    except Exception:
+        wl = 0
+    return (f"Actifs : {act['family']} auto \u00b7 {act['manual']} manuel \u00b7 {act['strategy']} strat\u00e9gie "
+            f"\u00b7 MRR ${mrr:.0f}. 7 jours : {new} activation(s), {paid_n} paiement(s) ${paid_usd:.0f}, "
+            f"{sent} signaux / {taken} pris. "
+            + (("\u00c0 renouveler sous 7 j : " + ", ".join(due) + ". ") if due else "Aucun renouvellement sous 7 j. ")
+            + (f"Liste d\u2019attente : {wl}." if wl else "")).strip()
+
+
+def maybe_digest():
+    """Monday >= 07:00 UTC: one digest push to the owner (kino + std)."""
+    t = time.gmtime()
+    if t.tm_wday != 0 or t.tm_hour < 7:
+        return
+    wk = time.strftime("%Y-%W", t)
+    try:
+        if json.load(open(DIGEST_MARK)).get("sent") == wk:
+            return
+    except Exception:
+        pass
+    body = digest_body()
+    for o in ("kino", "std"):
+        try:
+            send_all("\U0001f4ca Lundi \u00b7 OwlNest", body, kind="instant", only_uid=o,
+                     url=_tok_url(o, "#nid"))
+        except Exception:
+            pass
+    try:
+        json.dump({"sent": wk, "t": int(time.time())}, open(DIGEST_MARK, "w"))
+    except Exception:
+        pass
+    mylog("digest sent: " + body)
 
 
 def _hist_url(uid):
@@ -744,6 +857,7 @@ def main():
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
+            maybe_digest()
             maybe_morning()
             maybe_evening()
         if time.time() - _mb_last > 12:
