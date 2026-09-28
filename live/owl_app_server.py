@@ -2799,7 +2799,7 @@ function drawDay(){
   '<div class="sub" style="margin-top:4px">Rien \u00e0 raconter pour l\u2019instant.</div>');
  card.style.display='block';
  const md=document.getElementById('mxs-day');
- if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):'Aucun trade pour l\u2019instant')+
+ if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):(LANG()==='en'?'No trade yet':'Aucun trade pour l\u2019instant'))+
   (ig.length?' \u00b7 '+ig.length+' '+T('day_ign')[ig.length>1?1:0]:'');
  drawJourney(window._lastd);
 }
