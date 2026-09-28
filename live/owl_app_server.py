@@ -195,12 +195,13 @@ MANIFEST = json.dumps({
         {"src": "icon512m.png", "sizes": "512x512", "type": "image/png",
          "purpose": "maskable"},
     ],
+    # 2026-09-28 (owner): Graphique / Signal / Historique from the launcher
     "shortcuts": [
-        {"name": "Marché", "url": "./#marche",
+        {"name": "Graphique", "url": "./chart",
+         "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
+        {"name": "Signal", "url": "./chart?sig=1",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
         {"name": "Historique", "url": "./#hist",
-         "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
-        {"name": "Résumé du jour", "url": "./#resume",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
     ],
     # 2026-09-27: OwlNest can be a share destination (a screenshot, a note)
@@ -1083,6 +1084,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:6px;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
  border-radius:99px;padding:5px 10px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
+<button id="hbell" onclick="inboxSheet()" title="Messages" aria-label="Messages" style="position:relative;line-height:1;display:inline-flex;
+ color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-bell"/></svg><span id="hbell-n" style="display:none;position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;border-radius:99px;background:var(--down);color:#fff;font-size:.6rem;font-weight:800;align-items:center;justify-content:center;padding:0 4px;border:2px solid #0e1a2b"></span></button>
 <a id="chartlink" href="#" title="Graphique en direct" aria-label="Graphique en direct"
  style="text-decoration:none;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);
@@ -1138,6 +1141,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <div id="renew-s" style="font-size:.82rem;color:var(--muted2);line-height:1.4;margin-top:2px"></div></div>
   <button id="renew-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
+</div>
+<div class="panel" id="missedcard" style="display:none;margin-top:12px">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--accent-soft);background:rgba(59,130,246,.12)"><svg class="ic"><use href="#i-calendar"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="missed-t" style="font-size:.98rem"></b>
+   <div id="missed-s" style="font-size:.78rem;color:var(--muted2);margin-top:2px"></div></div>
+  <button onclick="window._missedDone=true;document.getElementById('missedcard').style.display='none'" aria-label="Fermer" style="border:1px solid var(--border2);background:var(--surface3);color:var(--muted);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center"><svg class="ic ic-s"><use href="#i-x"/></svg></button>
+ </div>
+ <div id="missed-g" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px"></div>
+ <div id="missed-sig" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
 </div>
 <div class="panel" id="newscard" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)">
  <div style="display:flex;align-items:center;gap:12px">
@@ -1434,6 +1447,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="sec" id="sig-sec" style="display:none">Signaux <span class="hint">&middot; ce que le service vous a envoy&eacute;</span></div>
 <div class="panel" id="sigscore" style="display:none"></div>
 <div class="panel" id="siglist" style="display:none"></div>
+<div class="sec" id="cmp-sec" style="display:none">Vous et le robot <span class="hint">&middot; m&ecirc;me p&eacute;riode</span></div>
+<div class="panel" id="cmpcard" style="display:none"></div>
 <div class="sec" id="msum-sec" style="display:none;display:flex;justify-content:space-between;
  align-items:center"><span>R&eacute;sum&eacute; du mois</span>
  <button onclick="monthReport()" style="border:1px solid var(--border2);background:var(--surface3);
@@ -2102,7 +2117,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -2982,6 +2997,7 @@ async function loadInbox(){
  if(!it.length)sub.textContent='Aucun message pour l\u2019instant';
  else sub.textContent=(nw?nw+' nouveau'+(nw>1?'x':'')+' \u00b7 ':'')+'dernier : '+inboxWhen(it[0].t);
  if(dot)dot.style.display=nw?'inline-block':'none';
+ const hb=document.getElementById('hbell-n');if(hb){hb.textContent=nw>9?'9+':String(nw);hb.style.display=nw?'flex':'none';}
  try{if(navigator.setAppBadge){if(nw)navigator.setAppBadge(nw);else if(navigator.clearAppBadge)navigator.clearAppBadge();}}catch(e){}
 }
 function inboxKind(x){const t=(x.title||'')+' '+(x.body||'');
@@ -3018,7 +3034,7 @@ function inboxSheet(){
  try{if(it.length)localStorage.setItem(inboxKey(),String(it[0].t));}catch(e){}
  window._ibF='all';window._ibQ='';
  sheet(h);inboxList();
- const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';
+ const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';const hb2=document.getElementById('hbell-n');if(hb2)hb2.style.display='none';
  const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent=(en?'last: ':'dernier : ')+inboxWhen(it[0].t);
  try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(e){}
 }
@@ -3849,8 +3865,48 @@ async function pollSignal(){
   const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
   renderSignal(ms);}catch(e){}
 }
+// ---- batch 32: "Ce que j'ai manque" (after a day away) + "Vous et le robot" ----
+function missedCard(d){const el=document.getElementById('missedcard');if(!el)return;const en=LANG()==='en';
+ const now=Date.now();
+ if(window._lastVisit===undefined){let lv=0;try{lv=parseInt(localStorage.getItem('owlLastVisit:'+B)||'0',10)||0;}catch(e){}window._lastVisit=lv;}
+ try{localStorage.setItem('owlLastVisit:'+B,String(now));}catch(e){}
+ const lv=window._lastVisit;
+ if(!lv||now-lv<86400000||d.public||window._missedDone){el.style.display='none';return;}
+ const y=new Date().getUTCFullYear();let n=0,net=0;
+ (d.trades||[]).forEach(x=>{const m=/^(\d\d)\/(\d\d) (\d\d):(\d\d)$/.exec(x.w||'');if(!m)return;let t=Date.UTC(y,+m[2]-1,+m[1],+m[3],+m[4]);if(t>now+86400000)t=Date.UTC(y-1,+m[2]-1,+m[1],+m[3],+m[4]);if(t>lv){n++;net+=(+x.p||0);}});
+ const days=Math.max(1,Math.round((now-lv)/86400000));
+ const robot=d.trading_paused?(en?'manual mode':'mode manuel'):(en?'robot on':'robot en marche');
+ document.getElementById('missed-t').textContent=en?'While you were away':'Ce que vous avez manqu\u00e9';
+ document.getElementById('missed-s').textContent=en?(days+' day'+(days>1?'s':'')+' away'):(days+' jour'+(days>1?'s':'')+' sans passer');
+ const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const cell=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center"><b style="display:block;font-size:1rem;'+(c?'color:'+c:'')+'">'+v+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ setH(document.getElementById('missed-g'),cell('trades',n)+cell('net',n?mn(net):'\u2014',n?(net>=0?'var(--up-soft)':'var(--down-soft)'):'')+cell(en?'now':'maintenant',robot));
+ el.style.display='block';
+ const P=d.plan||{};
+ if((P.manual||P.family)&&!window._missedSigT){window._missedSigT=1;fetch(B+'signals?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(j=>{const c=(j.items||[]).filter(x=>x.ok&&x.t*1000>lv).length;const sg=document.getElementById('missed-sig');if(sg)sg.textContent=c?(en?c+' signal'+(c>1?'s':'')+' sent since':c+' signal'+(c>1?'s':'')+' envoy\u00e9'+(c>1?'s':'')+' depuis'):'';}).catch(()=>{});}
+}
+async function loadCompare(d){const sec=document.getElementById('cmp-sec'),el=document.getElementById('cmpcard');if(!sec||!el)return;
+ const P=d.plan||{};
+ if(!P.manual||P.family||d.public){sec.style.display='none';el.style.display='none';return;}
+ if(window._cmpT&&Date.now()-window._cmpT<60000)return;window._cmpT=Date.now();
+ let j=null;try{const r=await fetch(B+'compare?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err){sec.style.display='none';el.style.display='none';return;}
+ const en=LANG()==='en',me=j.me||[],rb=j.robot||[];
+ const mm=new Map(me.map(x=>[x.d,+x.p||0])),rm=new Map(rb.map(x=>[x.d,+x.p||0]));
+ const days=[...new Set([...mm.keys(),...rm.keys()])].sort();
+ const tme=me.reduce((a,x)=>a+(+x.p||0),0),trb=days.reduce((a,dd)=>a+(mm.has(dd)?(rm.get(dd)||0):0),0);
+ const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const big=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center"><b style="display:block;font-size:1.25rem;color:'+c+'">'+v+'</b><span style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em">'+l+'</span></div>';
+ const mx=Math.max(1,...days.map(dd=>Math.max(Math.abs(mm.get(dd)||0),Math.abs(rm.get(dd)||0))));
+ const bar=(v)=>'<span style="flex:1;height:7px;border-radius:99px;background:var(--surface3);position:relative;overflow:hidden"><i style="position:absolute;left:0;top:0;bottom:0;width:'+Math.round(Math.abs(v)/mx*100)+'%;background:'+(v>=0?'var(--up)':'var(--down)')+';border-radius:99px;opacity:.85"></i></span>';
+ const rows=days.slice(-14).map(dd=>{const a=mm.has(dd)?mm.get(dd):null,b=rm.get(dd)||0;return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--border);font-size:.78rem"><span style="width:44px;color:var(--muted)">'+dd.slice(8,10)+'/'+dd.slice(5,7)+'</span>'+bar(a||0)+'<b style="width:58px;text-align:right;color:'+(a===null?'var(--muted)':(a>=0?'var(--up-soft)':'var(--down-soft)'))+'">'+(a===null?'\u2014':mn(a))+'</b>'+bar(b)+'<b style="width:58px;text-align:right;color:'+(b>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(b)+'</b></div>';}).join('');
+ setH(el,'<div style="display:flex;gap:8px">'+big(en?'You':'Vous',mn(tme),tme>=0?'var(--up-soft)':'var(--down-soft)')+big(j.robot_name||(en?'Kino\u2019s robot':'Le robot de Kino'),mn(trb),trb>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+  '<div style="font-size:.74rem;color:var(--muted);margin:8px 0 2px">'+(en?'Same days, this month. Left: you. Right: the robot on its public account.':'M\u00eames jours, ce mois. \u00c0 gauche vous, \u00e0 droite le robot sur son compte public.')+'</div>'+rows+
+  (days.length?'':'<div class="empty"><p>'+(en?'No day yet this month.':'Aucun jour ce mois pour l\u2019instant.')+'</p></div>'));
+ sec.style.display='block';el.style.display='block';
+}
 // ---- batch 29: "Quoi de neuf" - one card per update, dismissed once ----
-const NEWS_V='2026-09-28b';
+const NEWS_V='2026-09-28c';
 const NEWS=[
  {fr:'<b>M\u00e9t\u00e9o sur le graphique</b> \u2014 touchez la puce m\u00e9t\u00e9o en haut, le d\u00e9tail glisse sans quitter le graphique.',en:'<b>Weather on the chart</b> \u2014 tap the weather chip at the top, the detail slides up without leaving the chart.'},
  {fr:'<b>Le robot en un tap</b> \u2014 la puce robot ouvre son \u00e9tat : trades en cours, rattrapage, et le changement de mode.',en:'<b>The robot in one tap</b> \u2014 the robot chip opens its state: open trades, catch-up, and the mode switch.',need:'switch'},
@@ -3862,7 +3918,11 @@ const NEWS=[
  {fr:'<b>Le graphique en anglais</b> \u2014 il suit la langue de l\u2019app.',en:'<b>The chart in English</b> \u2014 it follows the app language.'},
  {fr:'<b>Touchez un trade</b> sur le graphique \u2014 ses chiffres et son histoire.',en:'<b>Tap a trade</b> on the chart \u2014 its figures and its story.'},
  {fr:'<b>La semaine</b> \u2014 une puce sur le graphique, le d\u00e9tail jour par jour.',en:'<b>The week</b> \u2014 a chip on the chart, day by day.'},
- {fr:'<b>Son et vibration</b> \u00e0 chaque signal \u2014 \u00e0 activer dans Notifications.',en:'<b>Sound and vibration</b> on every signal \u2014 enable it in Notifications.',need:'manual'}];
+ {fr:'<b>Son et vibration</b> \u00e0 chaque signal \u2014 \u00e0 activer dans Notifications.',en:'<b>Sound and vibration</b> on every signal \u2014 enable it in Notifications.',need:'manual'},
+ {fr:'<b>Une journ\u00e9e pass\u00e9e</b> sur le graphique \u2014 le calendrier en bas, choisissez un jour.',en:'<b>A past day</b> on the chart \u2014 the calendar at the bottom, pick a day.'},
+ {fr:'<b>La r\u00e8gle</b> sur le graphique \u2014 deux touches, la distance en points et en dollars.',en:'<b>The ruler</b> on the chart \u2014 two taps, the distance in points and dollars.'},
+ {fr:'<b>Vous et le robot</b> \u2014 votre mois face au sien, dans Historique.',en:'<b>You and the robot</b> \u2014 your month against its, in History.',need:'manual'},
+ {fr:'<b>Raccourcis</b> \u2014 Graphique, Signal, Historique depuis l\u2019ic\u00f4ne de l\u2019app (appui long).',en:'<b>Shortcuts</b> \u2014 Chart, Signal, History from the app icon (long press).'}];
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
@@ -4793,7 +4853,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);renderRevenue(d);loadSignals();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -8007,6 +8067,88 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "chart_day":
+            # 2026-09-28 (owner): "voir une journee passee" - that UTC day's
+            # candles (same silence filter), its main structure (same engine
+            # as the feed) and the member's trades of the day
+            try:
+                import urllib.parse as _upd
+                _q = _upd.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _ds = (_q.get("d", [""])[0] or "").strip()
+                _day = datetime.strptime(_ds, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            except Exception:
+                self._send(json.dumps({"err": "bad date"}), "application/json")
+                return
+            _nowu = datetime.now(timezone.utc)
+            if _day > _nowu or (_nowu - _day).days > 60:
+                self._send(json.dumps({"err": "out of range"}), "application/json")
+                return
+            try:
+                import owl_chart_feed as _F
+                # the server's own terminal (initialize() never switches an
+                # already-attached process); the Pro terminal names it BTCUSDm
+                with _lock:
+                    if not mt5.initialize(path=TERMINAL):
+                        raise RuntimeError("mt5 init")
+                    _sym = "BTCUSD" if mt5.symbol_info("BTCUSD") else "BTCUSDm"
+                    mt5.symbol_select(_sym, True)
+                    _rt = mt5.copy_rates_range(_sym, mt5.TIMEFRAME_M1,
+                                               _day - timedelta(hours=8), _day + timedelta(days=1))
+                    _err = mt5.last_error()
+                if _rt is None or len(_rt) == 0:
+                    raise RuntimeError("no history for that day " + str(_err))
+                _kept = _F.build(_rt)
+                _res = _F.engine(_kept)
+                _t0 = int(_day.timestamp())
+                _t1 = _t0 + 86400
+                _cands = [k for k in _kept if _t0 <= k[0] < _t1]
+                d = {"updated": int(time.time()), "symbol": "BTCUSD", "day": _ds, "past": True,
+                     "candles": _cands, "live": None,
+                     "dots": [x for x in _res[0] if _t0 - 8 * 3600 <= x[0] < _t1],
+                     "marks": [x for x in _res[1] if _t0 - 8 * 3600 <= x[0] < _t1],
+                     "int_dots": [], "int_marks": [], "trend": _res[2], "choch": 0,
+                     "next_bos": None, "invalid": None, "int_trend": 0, "h1": [],
+                     "px": (_cands[-1][4] if _cands else None), "trades": [], "pending": [],
+                     "moves_2h": 0, "vol_now": 0, "vol_ref": 0, "closed": []}
+                try:
+                    nd2 = json.load(open(os.path.join(DIR, "nest_data", f"{user.get('id')}.json")))
+                    for p in (nd2.get("trades") or []):
+                        _mw = re.match(r"^(\d\d)/(\d\d) (\d\d):(\d\d)$", p.get("w") or "")
+                        if not _mw or p.get("ep") is None or p.get("xp") is None:
+                            continue
+                        _y = _day.year if int(_mw.group(2)) <= _nowu.month else _day.year - 1
+                        _xt = int(datetime(_y, int(_mw.group(2)), int(_mw.group(1)),
+                                           int(_mw.group(3)), int(_mw.group(4)), tzinfo=timezone.utc).timestamp())
+                        _et = _xt - int(round(float(p.get("dur") or 0) * 60))
+                        if _t0 <= _xt < _t1 or _t0 <= _et < _t1:
+                            d["closed"].append([_et, _xt, float(p["ep"]), float(p["xp"]), float(p.get("p") or 0)])
+                except Exception:
+                    pass
+                d["acct"] = user.get("login")
+                d["uid"] = user.get("id")
+                d["auto"] = acct_auto(user)
+                self._send(json.dumps(d), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "compare":
+            # 2026-09-28: a manual member's month against the robot's (public
+            # demo account), day by day, same period
+            try:
+                _uid = user.get("id")
+                if not (is_admin(user) or has(_uid, "manual")):
+                    self._send(json.dumps({"err": "manual only"}), "application/json")
+                    return
+                _pub = public_user()
+                _me = json.load(open(os.path.join(DIR, "nest_data", f"{_uid}.json"))).get("month_days") or []
+                _rb = (json.load(open(os.path.join(DIR, "nest_data", f"{_pub.get('id')}.json"))).get("month_days") or []) if _pub else []
+                _era = era_ts(user)
+                if _era:
+                    _e0 = time.strftime("%Y-%m-%d", time.gmtime(_era))
+                    _me = [x for x in _me if x.get("d", "") >= _e0]
+                self._send(json.dumps({"me": _me, "robot": _rb, "robot_name": (_pub or {}).get("name", "Le robot de Kino"),
+                                       "month": time.strftime("%Y-%m", time.gmtime())}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100], "me": [], "robot": []}), "application/json")
         elif sub == "signals":
             # 2026-09-28: the signals the member's desk emitted (last 100)
             try:
