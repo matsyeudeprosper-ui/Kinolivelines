@@ -1,0 +1,28 @@
+{
+ "proposals": [
+  {
+   "id": "rr06_nosun",
+   "title_fr": "Viser 0,6× le risque et ne pas trader le dimanche",
+   "title_en": "Aim for 0.6x the risk and skip Sunday",
+   "family": "cible",
+   "why_fr": "Les deux reviennent en B pour la deuxième nuit de suite : viser 0,6 au lieu de 0,8 (+$34 ce soir, trou 63 -> 45) et sauter le dimanche (+$15, trou un peu plus petit). On essaie les deux ensemble.",
+   "why_en": "Both came back as B for the second night running: aiming for 0.6 instead of 0.8 (+$34 tonight, hole 63 -> 45) and skipping Sunday (+$15, slightly smaller hole). Trying the two together.",
+   "by": "chercheur",
+   "date": "2026-09-28",
+   "status": "pending",
+   "cfg": {"rr": 0.6, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [6], "skip_hours": [], "size_hot": 1.0, "nerv_gate": false, "bullets": 3, "k_streak": 2}
+  },
+  {
+   "id": "nervbul2",
+   "title_fr": "Deux renforts au lieu de trois, et rien quand le marché est nerveux",
+   "title_en": "Two boosts instead of three, and nothing when the market is nervous",
+   "family": "argent",
+   "why_fr": "Dans les pertes de Valère : la moitié arrivaient alors que le compte était déjà dans le rouge (contre un tiers des gains), et 43% arrivaient dans un marché nerveux (contre un quart des gains). On coupe les deux à la fois : moins de renforts après une perte, et rien de nouveau si le marché est nerveux.",
+   "why_en": "In Valère's losses: half happened while the account was already in the red (vs a third of the wins), and 43% happened in a nervous market (vs a quarter of the wins). Cutting both at once: fewer boosts after a loss, and nothing new when the market is nervous.",
+   "by": "chercheur",
+   "date": "2026-09-28",
+   "status": "pending",
+   "cfg": {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 1.0, "nerv_gate": true, "bullets": 2, "k_streak": 2}
+  }
+ ]
+}

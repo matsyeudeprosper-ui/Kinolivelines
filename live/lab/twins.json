@@ -1,0 +1,29 @@
+{
+ "twins": [
+  {
+   "id": "nomon",
+   "title_fr": "Ne pas trader le lundi",
+   "title_en": "No trading on Monday",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     0
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "verdict": "A",
+   "started": "2026-09-28T22:14:17+00:00",
+   "status": "running",
+   "by": "chercheur"
+  }
+ ]
+}

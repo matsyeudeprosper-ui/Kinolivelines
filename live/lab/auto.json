@@ -1,0 +1,1445 @@
+{
+ "updated": "2026-09-28T22:14:58+00:00",
+ "symbol": "BTCUSDm",
+ "days": 41.7,
+ "base": {
+  "full": {
+   "net": 166.74,
+   "maxdd": -63.26,
+   "worst_debt": 63.26,
+   "trades": 255,
+   "wr": 60.8,
+   "blocked": 0
+  },
+  "h1": {
+   "net": 169.96,
+   "maxdd": -61.15,
+   "worst_debt": 61.15,
+   "trades": 147,
+   "wr": 64.6,
+   "blocked": 0
+  },
+  "h2": {
+   "net": -5.25,
+   "maxdd": -63.26,
+   "worst_debt": 63.26,
+   "trades": 109,
+   "wr": 56.0,
+   "blocked": 0
+  }
+ },
+ "variants": [
+  {
+   "id": "rr04",
+   "title_fr": "Viser un gain de 0,4 fois le risque",
+   "title_en": "Aim for a gain of 0.4 times the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 0.4,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 147.79,
+    "maxdd": -38.82,
+    "worst_debt": 38.82,
+    "trades": 336,
+    "wr": 74.1,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 106.48,
+    "maxdd": -33.1,
+    "worst_debt": 33.1,
+    "trades": 212,
+    "wr": 75.9,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 39.65,
+    "maxdd": -38.82,
+    "worst_debt": 38.82,
+    "trades": 123,
+    "wr": 70.7,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -18.95,
+   "diff_worst": -24.44
+  },
+  {
+   "id": "rr05",
+   "title_fr": "Viser un gain de 0,5 fois le risque",
+   "title_en": "Aim for a gain of 0.5 times the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 0.5,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 166.52,
+    "maxdd": -44.11,
+    "worst_debt": 44.11,
+    "trades": 321,
+    "wr": 70.4,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 120.78,
+    "maxdd": -39.9,
+    "worst_debt": 39.9,
+    "trades": 200,
+    "wr": 72.0,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 44.02,
+    "maxdd": -44.11,
+    "worst_debt": 44.11,
+    "trades": 121,
+    "wr": 67.8,
+    "blocked": 0
+   },
+   "verdict": "B",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -0.22,
+   "diff_worst": -19.15
+  },
+  {
+   "id": "rr06",
+   "title_fr": "Viser un gain de 0,6 fois le risque",
+   "title_en": "Aim for a gain of 0.6 times the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 200.35,
+    "maxdd": -44.72,
+    "worst_debt": 44.72,
+    "trades": 303,
+    "wr": 66.0,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 143.26,
+    "maxdd": -36.98,
+    "worst_debt": 36.98,
+    "trades": 187,
+    "wr": 67.9,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 55.03,
+    "maxdd": -44.72,
+    "worst_debt": 44.72,
+    "trades": 116,
+    "wr": 62.9,
+    "blocked": 0
+   },
+   "verdict": "B",
+   "prev_verdict": "B",
+   "src": "battery",
+   "diff_net": 33.61,
+   "diff_worst": -18.54
+  },
+  {
+   "id": "rr07",
+   "title_fr": "Viser un gain de 0,7 fois le risque",
+   "title_en": "Aim for a gain of 0.7 times the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 0.7,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 149.23,
+    "maxdd": -64.96,
+    "worst_debt": 64.96,
+    "trades": 280,
+    "wr": 63.2,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 128.51,
+    "maxdd": -47.64,
+    "worst_debt": 47.64,
+    "trades": 168,
+    "wr": 64.9,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 18.32,
+    "maxdd": -64.96,
+    "worst_debt": 64.96,
+    "trades": 112,
+    "wr": 60.7,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -17.51,
+   "diff_worst": 1.7
+  },
+  {
+   "id": "rr10",
+   "title_fr": "Viser un gain égal au risque",
+   "title_en": "Aim for a gain equal to the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 161.85,
+    "maxdd": -62.4,
+    "worst_debt": 62.4,
+    "trades": 215,
+    "wr": 57.2,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 178.61,
+    "maxdd": -62.4,
+    "worst_debt": 62.4,
+    "trades": 129,
+    "wr": 62.8,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -19.27,
+    "maxdd": -45.11,
+    "worst_debt": 45.11,
+    "trades": 87,
+    "wr": 49.4,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -4.89,
+   "diff_worst": -0.86
+  },
+  {
+   "id": "rr12",
+   "title_fr": "Viser un gain de 1,2 fois le risque",
+   "title_en": "Aim for a gain of 1.2 times the risk",
+   "family": "cible",
+   "cfg": {
+    "rr": 1.2,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": -73.83,
+    "maxdd": -97.61,
+    "worst_debt": 97.61,
+    "trades": 206,
+    "wr": 44.7,
+    "blocked": 0
+   },
+   "h1": {
+    "net": -33.76,
+    "maxdd": -89.02,
+    "worst_debt": 89.02,
+    "trades": 124,
+    "wr": 44.4,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -46.74,
+    "maxdd": -44.44,
+    "worst_debt": 44.44,
+    "trades": 83,
+    "wr": 45.8,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -240.57,
+   "diff_worst": 34.35
+  },
+  {
+   "id": "cont0",
+   "title_fr": "Après une perte, aucun trade de plus dans le même sens",
+   "title_en": "After a loss, no extra same-direction trade",
+   "family": "structure",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 0,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 80.07,
+    "maxdd": -42.78,
+    "worst_debt": 42.78,
+    "trades": 167,
+    "wr": 62.3,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 47.75,
+    "maxdd": -42.78,
+    "worst_debt": 42.78,
+    "trades": 104,
+    "wr": 60.6,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 14.36,
+    "maxdd": -32.12,
+    "worst_debt": 32.12,
+    "trades": 74,
+    "wr": 62.2,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -86.67,
+   "diff_worst": -20.48
+  },
+  {
+   "id": "cont2",
+   "title_fr": "Après une perte, deux trades de plus dans le même sens",
+   "title_en": "After a loss, two extra same-direction trades",
+   "family": "structure",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 2,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 91.03,
+    "maxdd": -74.37,
+    "worst_debt": 74.37,
+    "trades": 279,
+    "wr": 59.1,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 158.96,
+    "maxdd": -74.37,
+    "worst_debt": 74.37,
+    "trades": 164,
+    "wr": 62.8,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -69.96,
+    "maxdd": -71.86,
+    "worst_debt": 71.86,
+    "trades": 116,
+    "wr": 54.3,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -75.71,
+   "diff_worst": 11.11
+  },
+  {
+   "id": "wait10",
+   "title_fr": "Attendre 10 minutes après chaque trade",
+   "title_en": "Wait 10 minutes after each trade",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 10,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 126.69,
+    "maxdd": -95.84,
+    "worst_debt": 95.84,
+    "trades": 224,
+    "wr": 61.2,
+    "blocked": 59
+   },
+   "h1": {
+    "net": 166.03,
+    "maxdd": -53.57,
+    "worst_debt": 53.57,
+    "trades": 134,
+    "wr": 65.7,
+    "blocked": 34
+   },
+   "h2": {
+    "net": -42.08,
+    "maxdd": -95.84,
+    "worst_debt": 95.84,
+    "trades": 90,
+    "wr": 54.4,
+    "blocked": 26
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -40.05,
+   "diff_worst": 32.58
+  },
+  {
+   "id": "wait20",
+   "title_fr": "Attendre 20 minutes après chaque trade",
+   "title_en": "Wait 20 minutes after each trade",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 20,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 73.04,
+    "maxdd": -87.52,
+    "worst_debt": 87.52,
+    "trades": 211,
+    "wr": 62.6,
+    "blocked": 97
+   },
+   "h1": {
+    "net": 138.63,
+    "maxdd": -44.66,
+    "worst_debt": 44.66,
+    "trades": 127,
+    "wr": 66.9,
+    "blocked": 62
+   },
+   "h2": {
+    "net": -72.18,
+    "maxdd": -87.52,
+    "worst_debt": 87.52,
+    "trades": 84,
+    "wr": 54.8,
+    "blocked": 36
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -93.7,
+   "diff_worst": 24.26
+  },
+  {
+   "id": "wait30",
+   "title_fr": "Attendre 30 minutes après chaque trade",
+   "title_en": "Wait 30 minutes after each trade",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 30,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 62.04,
+    "maxdd": -91.37,
+    "worst_debt": 91.37,
+    "trades": 196,
+    "wr": 61.2,
+    "blocked": 117
+   },
+   "h1": {
+    "net": 122.62,
+    "maxdd": -44.87,
+    "worst_debt": 44.87,
+    "trades": 120,
+    "wr": 65.8,
+    "blocked": 70
+   },
+   "h2": {
+    "net": -61.19,
+    "maxdd": -91.37,
+    "worst_debt": 91.37,
+    "trades": 77,
+    "wr": 54.5,
+    "blocked": 47
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -104.7,
+   "diff_worst": 28.11
+  },
+  {
+   "id": "ext300",
+   "title_fr": "Ne pas entrer après une envolée de 300 points",
+   "title_en": "No entry after a 300-point run",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 300,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 140.89,
+    "maxdd": -61.58,
+    "worst_debt": 61.58,
+    "trades": 225,
+    "wr": 61.3,
+    "blocked": 80
+   },
+   "h1": {
+    "net": 109.31,
+    "maxdd": -61.58,
+    "worst_debt": 61.58,
+    "trades": 129,
+    "wr": 65.1,
+    "blocked": 43
+   },
+   "h2": {
+    "net": 29.54,
+    "maxdd": -18.94,
+    "worst_debt": 18.94,
+    "trades": 97,
+    "wr": 56.7,
+    "blocked": 37
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -25.85,
+   "diff_worst": -1.68
+  },
+  {
+   "id": "ext400",
+   "title_fr": "Ne pas entrer après une envolée de 400 points",
+   "title_en": "No entry after a 400-point run",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 400,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 149.85,
+    "maxdd": -55.57,
+    "worst_debt": 55.57,
+    "trades": 240,
+    "wr": 61.3,
+    "blocked": 47
+   },
+   "h1": {
+    "net": 133.98,
+    "maxdd": -55.57,
+    "worst_debt": 55.57,
+    "trades": 135,
+    "wr": 65.9,
+    "blocked": 30
+   },
+   "h2": {
+    "net": 13.83,
+    "maxdd": -44.23,
+    "worst_debt": 44.23,
+    "trades": 106,
+    "wr": 55.7,
+    "blocked": 17
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -16.89,
+   "diff_worst": -7.69
+  },
+  {
+   "id": "ext500",
+   "title_fr": "Ne pas entrer après une envolée de 500 points",
+   "title_en": "No entry after a 500-point run",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 500,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 166.32,
+    "maxdd": -49.71,
+    "worst_debt": 49.71,
+    "trades": 252,
+    "wr": 60.7,
+    "blocked": 21
+   },
+   "h1": {
+    "net": 140.53,
+    "maxdd": -49.71,
+    "worst_debt": 49.71,
+    "trades": 143,
+    "wr": 64.3,
+    "blocked": 12
+   },
+   "h2": {
+    "net": 23.76,
+    "maxdd": -35.19,
+    "worst_debt": 35.19,
+    "trades": 110,
+    "wr": 56.4,
+    "blocked": 9
+   },
+   "verdict": "B",
+   "prev_verdict": "B",
+   "src": "battery",
+   "diff_net": -0.42,
+   "diff_worst": -13.55
+  },
+  {
+   "id": "ext700",
+   "title_fr": "Ne pas entrer après une envolée de 700 points",
+   "title_en": "No entry after a 700-point run",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 164.78,
+    "maxdd": -59.91,
+    "worst_debt": 59.91,
+    "trades": 253,
+    "wr": 60.9,
+    "blocked": 7
+   },
+   "h1": {
+    "net": 164.65,
+    "maxdd": -49.71,
+    "worst_debt": 49.71,
+    "trades": 145,
+    "wr": 64.8,
+    "blocked": 4
+   },
+   "h2": {
+    "net": -1.91,
+    "maxdd": -59.91,
+    "worst_debt": 59.91,
+    "trades": 109,
+    "wr": 56.0,
+    "blocked": 3
+   },
+   "verdict": "B",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -1.96,
+   "diff_worst": -3.35
+  },
+  {
+   "id": "nosun",
+   "title_fr": "Ne pas trader le dimanche",
+   "title_en": "No trading on Sunday",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 181.57,
+    "maxdd": -61.15,
+    "worst_debt": 61.15,
+    "trades": 209,
+    "wr": 61.7,
+    "blocked": 75
+   },
+   "h1": {
+    "net": 143.96,
+    "maxdd": -61.15,
+    "worst_debt": 61.15,
+    "trades": 126,
+    "wr": 64.3,
+    "blocked": 36
+   },
+   "h2": {
+    "net": 35.58,
+    "maxdd": -49.6,
+    "worst_debt": 49.6,
+    "trades": 84,
+    "wr": 58.3,
+    "blocked": 39
+   },
+   "verdict": "B",
+   "prev_verdict": "B",
+   "src": "battery",
+   "diff_net": 14.83,
+   "diff_worst": -2.11
+  },
+  {
+   "id": "nowe",
+   "title_fr": "Ne pas trader le week-end",
+   "title_en": "No trading on weekends",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     5,
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 138.97,
+    "maxdd": -71.12,
+    "worst_debt": 71.12,
+    "trades": 184,
+    "wr": 61.4,
+    "blocked": 130
+   },
+   "h1": {
+    "net": 108.85,
+    "maxdd": -71.12,
+    "worst_debt": 71.12,
+    "trades": 105,
+    "wr": 63.8,
+    "blocked": 81
+   },
+   "h2": {
+    "net": 28.08,
+    "maxdd": -49.6,
+    "worst_debt": 49.6,
+    "trades": 80,
+    "wr": 58.8,
+    "blocked": 49
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -27.77,
+   "diff_worst": 7.86
+  },
+  {
+   "id": "nomon",
+   "title_fr": "Ne pas trader le lundi",
+   "title_en": "No trading on Monday",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     0
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 199.28,
+    "maxdd": -51.25,
+    "worst_debt": 51.25,
+    "trades": 215,
+    "wr": 62.8,
+    "blocked": 69
+   },
+   "h1": {
+    "net": 183.02,
+    "maxdd": -49.71,
+    "worst_debt": 49.71,
+    "trades": 123,
+    "wr": 66.7,
+    "blocked": 46
+   },
+   "h2": {
+    "net": 14.23,
+    "maxdd": -51.25,
+    "worst_debt": 51.25,
+    "trades": 93,
+    "wr": 58.1,
+    "blocked": 23
+   },
+   "verdict": "A",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": 32.54,
+   "diff_worst": -12.01
+  },
+  {
+   "id": "nonight",
+   "title_fr": "Ne pas trader la nuit (00–08 h UTC)",
+   "title_en": "No trading at night (00–08 UTC)",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 83.83,
+    "maxdd": -81.31,
+    "worst_debt": 81.31,
+    "trades": 184,
+    "wr": 59.8,
+    "blocked": 124
+   },
+   "h1": {
+    "net": 104.39,
+    "maxdd": -63.85,
+    "worst_debt": 63.85,
+    "trades": 108,
+    "wr": 62.0,
+    "blocked": 70
+   },
+   "h2": {
+    "net": -20.57,
+    "maxdd": -81.31,
+    "worst_debt": 81.31,
+    "trades": 76,
+    "wr": 56.6,
+    "blocked": 53
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -82.91,
+   "diff_worst": 18.05
+  },
+  {
+   "id": "noday",
+   "title_fr": "Ne pas trader en journée (08–16 h UTC)",
+   "title_en": "No trading during the day (08–16 UTC)",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 172.85,
+    "maxdd": -24.87,
+    "worst_debt": 24.87,
+    "trades": 187,
+    "wr": 60.4,
+    "blocked": 149
+   },
+   "h1": {
+    "net": 154.36,
+    "maxdd": -17.57,
+    "worst_debt": 17.57,
+    "trades": 111,
+    "wr": 64.0,
+    "blocked": 92
+   },
+   "h2": {
+    "net": 16.45,
+    "maxdd": -24.87,
+    "worst_debt": 24.87,
+    "trades": 77,
+    "wr": 55.8,
+    "blocked": 57
+   },
+   "verdict": "B",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": 6.11,
+   "diff_worst": -38.39
+  },
+  {
+   "id": "noeve",
+   "title_fr": "Ne pas trader en soirée (16–24 h UTC)",
+   "title_en": "No trading in the evening (16–24 UTC)",
+   "family": "rythme",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 52.09,
+    "maxdd": -94.82,
+    "worst_debt": 94.82,
+    "trades": 184,
+    "wr": 60.3,
+    "blocked": 144
+   },
+   "h1": {
+    "net": 104.92,
+    "maxdd": -48.81,
+    "worst_debt": 48.81,
+    "trades": 107,
+    "wr": 64.5,
+    "blocked": 88
+   },
+   "h2": {
+    "net": -54.86,
+    "maxdd": -94.82,
+    "worst_debt": 94.82,
+    "trades": 78,
+    "wr": 55.1,
+    "blocked": 56
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -114.65,
+   "diff_worst": 31.56
+  },
+  {
+   "id": "hothalf",
+   "title_fr": "Miser moitié moins quand le marché est nerveux",
+   "title_en": "Bet half when the market is nervous",
+   "family": "meteo",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 0.5,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 146.61,
+    "maxdd": -50.55,
+    "worst_debt": 50.55,
+    "trades": 260,
+    "wr": 60.8,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 146.93,
+    "maxdd": -45.63,
+    "worst_debt": 45.63,
+    "trades": 151,
+    "wr": 64.9,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -1.11,
+    "maxdd": -50.55,
+    "worst_debt": 50.55,
+    "trades": 110,
+    "wr": 55.5,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": "C",
+   "src": "battery",
+   "diff_net": -20.13,
+   "diff_worst": -12.71
+  },
+  {
+   "id": "nervgate",
+   "title_fr": "Ne rien prendre quand le marché est nerveux",
+   "title_en": "Take nothing when the market is nervous",
+   "family": "meteo",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": true,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 115.04,
+    "maxdd": -25.05,
+    "worst_debt": 25.05,
+    "trades": 164,
+    "wr": 62.8,
+    "blocked": 206
+   },
+   "h1": {
+    "net": 83.12,
+    "maxdd": -15.48,
+    "worst_debt": 15.48,
+    "trades": 105,
+    "wr": 64.8,
+    "blocked": 113
+   },
+   "h2": {
+    "net": 33.86,
+    "maxdd": -25.05,
+    "worst_debt": 25.05,
+    "trades": 68,
+    "wr": 60.3,
+    "blocked": 79
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -51.7,
+   "diff_worst": -38.21
+  },
+  {
+   "id": "bul2",
+   "title_fr": "Deux renforts au lieu de trois après une perte",
+   "title_en": "Two boosts instead of three after a loss",
+   "family": "argent",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 2,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 137.53,
+    "maxdd": -59.33,
+    "worst_debt": 59.33,
+    "trades": 254,
+    "wr": 61.4,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 152.27,
+    "maxdd": -52.92,
+    "worst_debt": 52.92,
+    "trades": 146,
+    "wr": 65.1,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -16.77,
+    "maxdd": -59.33,
+    "worst_debt": 59.33,
+    "trades": 109,
+    "wr": 56.9,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -29.21,
+   "diff_worst": -3.93
+  },
+  {
+   "id": "bul4",
+   "title_fr": "Quatre renforts au lieu de trois après une perte",
+   "title_en": "Four boosts instead of three after a loss",
+   "family": "argent",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 4,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 200.48,
+    "maxdd": -69.37,
+    "worst_debt": 69.37,
+    "trades": 256,
+    "wr": 60.9,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 192.92,
+    "maxdd": -69.37,
+    "worst_debt": 69.37,
+    "trades": 148,
+    "wr": 64.9,
+    "blocked": 0
+   },
+   "h2": {
+    "net": 5.52,
+    "maxdd": -68.24,
+    "worst_debt": 68.24,
+    "trades": 109,
+    "wr": 56.0,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": 33.74,
+   "diff_worst": 6.11
+  },
+  {
+   "id": "bul0",
+   "title_fr": "Aucun renfort après une perte",
+   "title_en": "No boost after a loss",
+   "family": "argent",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 0,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 69.02,
+    "maxdd": -48.3,
+    "worst_debt": 48.3,
+    "trades": 252,
+    "wr": 61.1,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 100.06,
+    "maxdd": -36.46,
+    "worst_debt": 36.46,
+    "trades": 145,
+    "wr": 64.8,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -33.08,
+    "maxdd": -48.3,
+    "worst_debt": 48.3,
+    "trades": 108,
+    "wr": 56.5,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -97.72,
+   "diff_worst": -14.96
+  },
+  {
+   "id": "k1",
+   "title_fr": "Un seul renfort de suite, puis on attend un gain",
+   "title_en": "One boost in a row, then wait for a win",
+   "family": "argent",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 1,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 132.3,
+    "maxdd": -59.79,
+    "worst_debt": 59.79,
+    "trades": 254,
+    "wr": 61.4,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 168.98,
+    "maxdd": -53.57,
+    "worst_debt": 53.57,
+    "trades": 147,
+    "wr": 65.3,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -38.71,
+    "maxdd": -59.79,
+    "worst_debt": 59.79,
+    "trades": 108,
+    "wr": 56.5,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -34.44,
+   "diff_worst": -3.47
+  },
+  {
+   "id": "k3",
+   "title_fr": "Jusqu’à trois renforts de suite",
+   "title_en": "Up to three boosts in a row",
+   "family": "argent",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 3,
+    "lot": 0.02
+   },
+   "full": {
+    "net": 132.96,
+    "maxdd": -72.54,
+    "worst_debt": 72.54,
+    "trades": 252,
+    "wr": 61.1,
+    "blocked": 0
+   },
+   "h1": {
+    "net": 151.26,
+    "maxdd": -70.79,
+    "worst_debt": 70.79,
+    "trades": 144,
+    "wr": 65.3,
+    "blocked": 0
+   },
+   "h2": {
+    "net": -20.33,
+    "maxdd": -72.54,
+    "worst_debt": 72.54,
+    "trades": 109,
+    "wr": 56.0,
+    "blocked": 0
+   },
+   "verdict": "C",
+   "prev_verdict": null,
+   "src": "battery",
+   "diff_net": -33.78,
+   "diff_worst": 9.28
+  }
+ ],
+ "counts": {
+  "C": 21,
+  "B": 6,
+  "A": 1
+ },
+ "minutes": 2.0
+}
