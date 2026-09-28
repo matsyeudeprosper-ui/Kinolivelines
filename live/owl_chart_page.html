@@ -1898,7 +1898,9 @@ cv.addEventListener('pointerdown',e=>{
  const nearLine=MT&&SCALE&&Math.min(
    Math.abs(y0-p2y(MT.sl)),Math.abs(y0-p2y(MT.tp)),
    MT.entry?Math.abs(y0-p2y(MT.entry)):1e9)<=MTGRAB;
- if(!nearLine&&x0>cv.clientWidth-AXIS){
+ // 2026-09-28: a trade marker sitting in the axis zone is still a tap target
+ const onMarker=HITS.some(h=>h.kind==='closed'&&Math.hypot(h.x-x0,h.y-y0)<=18);
+ if(!nearLine&&!onMarker&&x0>cv.clientWidth-AXIS){
   vz={y:y0,z:vzoom,t:performance.now()};
   drag=null;cv.setPointerCapture(e.pointerId);
   e.preventDefault();e.stopImmediatePropagation();return;}
