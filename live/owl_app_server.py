@@ -1048,6 +1048,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  font-weight:700;letter-spacing:.03em;background:rgba(255,255,255,.07);
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
+.mxseg{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:4px;margin:16px 0 0}
+.mxs{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;color:var(--muted2);
+ border-radius:11px;padding:10px 8px;font-size:.86rem;font-weight:700;letter-spacing:.01em;transition:background .18s,color .18s}
+.mxs.on{background:var(--surface);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.28),var(--hl,none)}
+.mxs .ic-s{width:16px;height:16px}
 .tfc{border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;
  padding:6px 13px;font-size:.74rem;font-weight:700;white-space:nowrap;flex:none}
 .tfc.on{background:var(--surface3);border-color:var(--border2);color:var(--text2)}
@@ -1223,7 +1228,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 </div>
 <div class="glass" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
  style="margin-top:26px;padding:16px 16px 14px;cursor:pointer"
- onclick="tab('marche',document.getElementById('tb-marche'))">
+ onclick="tab('marche',document.getElementById('tb-marche'));mxView('market',true)">
  <div class="sheen"></div>
  <div style="position:relative;display:flex;align-items:center;gap:12px">
   <div id="mxs-orb" class="orbsm"></div>
@@ -1376,19 +1381,15 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  style="width:100%;height:80px;display:block"></svg></div>
 </div>
 <div class="tab" id="tab-marche">
-<div class="sec" style="margin-top:26px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
-<div class="panel" id="jcard" style="margin-top:12px">
- <div class="lbl" id="jcard-lbl">Le robot en ce moment</div>
- <div class="jsteps" id="jsteps">
-  <div class="jl"></div>
-  <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
-  <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
-  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
-  <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
- </div>
- <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
- <div id="jprog" style="display:none;margin-top:10px"></div>
+<!-- 2026-09-28 (owner): two spaces, one switch - the MARKET (what the
+     feed sees, to grow into a real analysis space) and the ROBOT (what
+     it does on this account, to grow with AI). No extra tab. -->
+<div class="mxseg" id="mxseg" role="tablist">
+ <button class="mxs on" id="mxs-market" role="tab" aria-selected="true" onclick="mxView('market')"><svg class="ic ic-s"><use href="#i-wave"/></svg><span>Le march&eacute;</span></button>
+ <button class="mxs" id="mxs-robot" role="tab" aria-selected="false" onclick="mxView('robot')"><svg class="ic ic-s"><use href="#i-bot"/></svg><span>Le robot</span></button>
 </div>
+<div id="mx-market">
+<div class="sec" style="margin-top:14px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
 <div id="meteo" class="status mx-sun" style="margin-top:12px;
  position:relative;overflow:hidden;text-align:left;padding:0;
  border-radius:18px">
@@ -1408,8 +1409,23 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div id="mx-chips" style="display:grid;
    grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
- <div id="st" style="position:relative;margin:0 16px;
-  border-top:1px solid rgba(255,255,255,.06);padding:9px 0 11px;
+</div>
+</div>
+<div id="mx-robot" style="display:none">
+<div class="sec" style="margin-top:14px">Le robot <span class="hint" id="rb-hint">&middot; sur ce compte</span></div>
+<div class="panel" id="jcard" style="margin-top:12px">
+ <div class="lbl" id="jcard-lbl">Le robot en ce moment</div>
+ <div class="jsteps" id="jsteps">
+  <div class="jl"></div>
+  <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
+  <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
+  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
+  <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
+ </div>
+ <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
+ <div id="jprog" style="display:none;margin-top:10px"></div>
+ <div id="st" style="position:relative;margin:12px 0 0;
+  border-top:1px solid rgba(255,255,255,.06);padding:10px 0 2px;
   font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
 <div class="panel" id="daycard" style="display:none;margin-top:12px">
@@ -1419,6 +1435,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <svg id="daybar" viewBox="0 0 300 34" style="width:100%;height:34px;
   display:block;margin-top:12px"></svg>
  <div id="day-list" style="margin-top:6px"></div>
+</div>
 </div>
 </div>
 <div class="tab" id="tab-hist">
@@ -1882,9 +1899,11 @@ window.addEventListener('load',()=>{let t='dark';
   try{localStorage.setItem('owlBig',on?'1':'0')}catch(e){}_tsp(on);});
  loadDay();setInterval(loadDay,60000);
  try{const _h=(location.hash||'').slice(1);
-  if(_h==='marche'||_h==='hist'||_h==='set'||_h==='resume'){
-   const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_h+"'")>=0);
-   if(_b)tab(_h,_b);
+  if(_h==='marche'||_h==='robot'||_h==='hist'||_h==='set'||_h==='resume'){
+   const _hh=(_h==='robot')?'marche':_h;
+   const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_hh+"'")>=0);
+   if(_b)tab(_hh,_b);
+   if(_h==='robot')setTimeout(()=>mxView('robot',true),50);if(_h==='marche')setTimeout(()=>mxView('market',true),50);
    if(_h==='resume')setTimeout(resumeShare,2500);
    if(_h==='hist')setTimeout(()=>{const w=document.getElementById('weekcard');if(w&&w.style.display!=='none'){
     w.classList.add('hl');w.scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>w.classList.remove('hl'),3200);}},900);}}catch(e){}
@@ -2117,7 +2136,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -2670,6 +2689,13 @@ window.addEventListener('load',()=>{
   if(!localStorage.getItem('owlFirstSeen'))localStorage.setItem('owlFirstSeen',String(Date.now()));
  }catch(e){}},1500);
 });
+function mxView(v,quiet){v=(v==='robot')?'robot':'market';
+ const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot');if(!m||!r)return;
+ m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';
+ [['mxs-market','market'],['mxs-robot','robot']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',v===k);b.setAttribute('aria-selected',v===k?'true':'false');}});
+ try{localStorage.setItem('owlMxView:'+B,v);}catch(e){}
+ if(!quiet){try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}window.scrollTo({top:0});}}
+(function(){let v='market';try{v=localStorage.getItem('owlMxView:'+B)||'market';}catch(e){}window.addEventListener('load',()=>mxView(v,true));})();
 function tab(n,el){
  document.querySelectorAll('.tab').forEach(x=>
   x.classList.toggle('on',x.id==='tab-'+n));
@@ -3033,7 +3059,11 @@ function inboxSheet(){
  h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  try{if(it.length)localStorage.setItem(inboxKey(),String(it[0].t));}catch(e){}
  window._ibF='all';window._ibQ='';
- sheet(h);inboxList();
+ sheet(h);
+ // 2026-09-28 (owner): "Tous is selected but no data" - sheet() renders
+ // asynchronously (it waits after a previous close), so the list must be
+ // filled once #ib-list exists, not right away
+ (function tryList(n){if(document.getElementById('ib-list'))inboxList();else if(n>0)setTimeout(()=>tryList(n-1),120);})(15);
  const dot=document.getElementById('inbox-dot');if(dot)dot.style.display='none';const hb2=document.getElementById('hbell-n');if(hb2)hb2.style.display='none';
  const sub=document.getElementById('inbox-sub');if(sub&&it.length)sub.textContent=(en?'last: ':'dernier : ')+inboxWhen(it[0].t);
  try{if(navigator.clearAppBadge)navigator.clearAppBadge();}catch(e){}
