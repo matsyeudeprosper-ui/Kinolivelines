@@ -106,3 +106,8 @@ live/backups/
 live/owl_nest_users.json
 live/owl_activation_codes.json
 live/owl_invites.json
+
+# the lab twins state and logs, the researcher logs - regenerate
+live/lab/twin_*_state.json
+live/lab/twin_*_state.json.tmp
+live/lab/*.log

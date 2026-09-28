@@ -123,6 +123,18 @@ if (-not (Get-CimInstance Win32_Process |
     Start-Process pythonw -ArgumentList "liq_shadow.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2c) the lab's variant twins (2026-09-28): every running entry in lab/twins.json
+try {
+    $tw = Get-Content "lab	wins.json" -Raw -ErrorAction Stop | ConvertFrom-Json
+    foreach ($t in $tw.twins) {
+        if ($t.status -ne "running") { continue }
+        $pat = "*bos_paper_variant.py*" + $t.id + "*"
+        if (-not (Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like $pat })) {
+            Say ("starting lab twin " + $t.id)
+            Start-Process pythonw -ArgumentList "bos_paper_variant.py", $t.id -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
+        }
+    }
+} catch {}
 # 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
 if (-not (Get-CimInstance Win32_Process |
         Where-Object { $_.CommandLine -like "*bos_paper_touch.py*" })) {

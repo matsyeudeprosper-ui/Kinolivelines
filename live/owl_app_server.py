@@ -3991,7 +3991,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const C=j.counts||{};const n=k=>C[k]||0;
  const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
  document.getElementById('lab-stats').className='labstat';document.getElementById('lab-stats').style.cssText='';
- setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)','ideas')+tile(en?'to try':'\u00e0 essayer',n('candidate')+n('planned'),'#b98cff','tests')+tile(en?'watching':'en observation',n('forward'),'var(--accent-soft)','forward')+tile(en?'in the robot':'dans le robot',n('deployed'),'var(--up-soft)','decisions')+tile(en?'said no':'\u00e9cart\u00e9es',n('rejected'),'var(--muted2)','tests'));
+ setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)','ideas')+tile(en?'to try':'\u00e0 essayer',n('candidate')+n('planned')+(C.auto_ab||0),'#b98cff','tests')+tile(en?'watching':'en observation',n('forward'),'var(--accent-soft)','forward')+tile(en?'in the robot':'dans le robot',n('deployed'),'var(--up-soft)','decisions')+tile(en?'said no':'\u00e9cart\u00e9es',n('rejected'),'var(--muted2)','tests'));
  const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Checked on the past':'V\u00e9rifi\u00e9 sur le pass\u00e9'],['forward',en?'Watching live':'Observ\u00e9 en direct'],['decisions',en?'In the robot':'Dans le robot']];
  setH(document.getElementById('lab-tabs'),T.map(([k,l])=>'<button class="tfc'+(window._labTab===k?' on':'')+'" style="flex:none" onclick="labTab(&#39;'+k+'&#39;)">'+l+'</button>').join(''));
  document.getElementById('lab-hint').textContent='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend');
@@ -4010,6 +4010,12 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
   const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The lab, in one minute':'Le labo, en une minute')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Here we look for ways to make the robot better over time. Every idea goes through three steps before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e passe par trois \u00e9tapes avant de toucher \u00e0 votre compte.')+'</div>'+
    '<div class="st"><div><b>1</b>'+(en?'Checked on the past':'V\u00e9rifi\u00e9e sur le pass\u00e9')+'</div><div><b>2</b>'+(en?'Watched live, no real money':'Observ\u00e9e en direct, sans argent r\u00e9el')+'</div><div><b>3</b>'+(en?'Put in the robot, or dropped':'Mise dans le robot, ou \u00e9cart\u00e9e')+'</div></div></div>';
+  const N=j.note||{};
+  if(N.date){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'The chercheur\u2019s notebook':'Le carnet du chercheur')+' <span class="hint">\u00b7 '+esc(N.date)+'</span></div>'+
+   '<div class="panel" style="border-color:rgba(185,140,255,.35)"><div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14)"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><b style="font-size:.95rem;line-height:1.3">'+esc(en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en))+'</b><div style="font-size:.7rem;color:var(--muted);margin-top:3px">'+(en?'Written every night by the chercheur, a Claude session that reads the data and challenges the robot. It proposes; it never decides.':'\u00c9crit chaque nuit par le chercheur, une session Claude qui lit les donn\u00e9es et bouscule le robot. Il propose ; il ne d\u00e9cide jamais.')+'</div></div></div>'+
+   '<div style="font-size:.84rem;color:var(--text);line-height:1.55;margin-top:10px;white-space:pre-line">'+esc(en?(N.en||N.fr):(N.fr||N.en))+'</div></div>';}
+  const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
+  if(PR.length){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the chercheur wants to try next':'Ce que le chercheur veut essayer ensuite')+' <span class="hint">\u00b7 '+(en?'replayed tonight':'rejou\u00e9 cette nuit')+'</span></div><div class="panel" style="padding:4px 14px">'+PR.map(p=>'<div class="kv"><div class="kvt"><b>'+esc(en?p.title_en:p.title_fr)+'</b><span>'+esc(en?(p.why_en||''):(p.why_fr||''))+'</span></div>'+chip(en?'to replay':'\u00e0 rejouer','#b98cff')+'</div>').join('')+'</div>';}
   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the real trades say so far':'Ce que disent les vrais trades pour l\u2019instant')+' <span class="hint">\u00b7 '+(en?'how often the robot won in each situation':'combien de fois le robot a gagn\u00e9 dans chaque situation')+'</span></div>';
   const pc=v=>v===null||v===undefined?'\u2014':v+'\u202f%';
   h+='<div class="panel" style="padding:4px 14px">'+(j.candidates||[]).map(c=>{const l=L[c.label]||L.trop_tot;const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
@@ -4019,6 +4025,13 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  }else if(k==='tests'){
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We replay the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On rejoue les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
    '<div class="st"><div><b style="color:var(--up-soft)">A</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">C</b>'+(en?'no':'non')+'</div></div></div>';
+  const AU=j.auto||{},AV=AU.variants||[];
+  if(AV.length){const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VB2={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)'],'=':['=','var(--muted)','rgba(255,255,255,.05)']};
+   const order={A:0,B:1,'=':2,C:3};const sorted=[...AV].sort((a,b)=>(order[a.verdict]??9)-(order[b.verdict]??9)||(b.diff_net||0)-(a.diff_net||0));
+   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Replayed last night by the chercheur':'Rejou\u00e9 cette nuit par le chercheur')+' <span class="hint">\u00b7 '+AV.length+' '+(en?'what-ifs':'\u00ab et si \u00bb')+(AU.days?' \u00b7 '+AU.days+' '+(en?'days':'jours'):'')+'</span></div>';
+   h+='<div class="panel" style="padding:4px 14px">'+sorted.map(v=>{const b=VB2[v.verdict]||VB2['='];const bt=AU.base||{};
+    return '<div class="kv"><span class="lcb" style="width:30px;height:30px;font-size:.9rem;color:'+b[1]+';background:'+b[2]+'">'+b[0]+'</span><div class="kvt"><b>'+esc(en?v.title_en:v.title_fr)+'</b><span>'+(v.verdict==='='?(en?'no real change':'pas de vrai changement'):(en?'money ':'argent ')+mn(v.diff_net||0)+' \u00b7 '+(en?'biggest hole ':'plus gros trou ')+mn(v.diff_worst||0)+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+mn(((v.h1||{}).net||0)-(((AU.base||{}).h1||{}).net||0))+' / '+mn(((v.h2||{}).net||0)-(((AU.base||{}).h2||{}).net||0)))+(v.src==='chercheur'?' \u00b7 '+(en?'proposed by the chercheur':'propos\u00e9 par le chercheur'):'')+'</span></div></div>';}).join('')+'</div>';
+   h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'A: more money on both halves of the period. B: a smaller hole without losing money, or more money with one half agreeing. C: no. =: nothing changed.':'A : plus d\u2019argent sur les deux moiti\u00e9s de la p\u00e9riode. B : un trou moins profond sans perdre d\u2019argent, ou plus d\u2019argent avec une moiti\u00e9 d\u2019accord. C : non. = : rien ne change.')+'</div>';}
   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Worth trying':'\u00c0 essayer')+'</div>'+items.filter(it=>it.status==='candidate'||it.status==='planned').map(item).join('')+'<div class="sec" style="margin:18px 8px 8px">'+(en?'We said no':'On a dit non')+' <span class="hint">\u00b7 '+(en?'kept here so nobody proposes them again':'gard\u00e9es ici pour ne pas les reproposer')+'</span></div>'+items.filter(it=>it.status==='rejected').map(item).join('');
  }else if(k==='forward'){
   const tw=j.twin||{},fw=j.forward||{},lv=fw.live||{},e=j.e017||{};
@@ -4032,6 +4045,8 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',tw.trades||0)+cell(en?'win':'gagn\u00e9s',tw.win===null||tw.win===undefined?'\u2014':tw.win+' %')+cell('net',mn(tw.net||0),(tw.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(tw.rolling20||0),(tw.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+spark(tw.curve)+'<div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;display:flex;justify-content:space-between"><span>'+(en?'net, last 60 trades':'net cumul\u00e9, 60 derniers trades')+'</span><span>'+(tw.since?(en?'since ':'depuis le ')+new Date(tw.since*1000).toLocaleDateString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'}):'')+'</span></div>'+
    '<div style="font-size:.74rem;color:var(--muted);margin-top:6px">'+(en?'The real robot, with its brakes, over the same period: ':'Le vrai robot, avec ses freins, sur la m\u00eame p\u00e9riode : ')+(lv.trades||0)+' trades \u00b7 '+mn(lv.net||0)+' \u00b7 '+(en?'last 20':'20 derniers')+' '+mn(lv.rolling20||0)+'</div></div>';
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'When people are forced to sell all at once':'Quand des gens sont forc\u00e9s de vendre d\u2019un coup')+'</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px">'+cell(en?'cases recorded':'cas enregistr\u00e9s',e.events||0)+cell(en?'cases needed to judge':'cas n\u00e9cessaires pour juger',e.need||30)+'</div><div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+(en?'Does the price bounce after that? We record each case without looking at the result, so we do not fool ourselves. We judge after 30 cases.':'Le prix rebondit-il apr\u00e8s \u00e7a ? On note chaque cas sans regarder le r\u00e9sultat, pour ne pas se raconter d\u2019histoires. On jugera apr\u00e8s 30 cas.')+'</div></div>';
+  const TW=j.twins||[];
+  if(TW.length){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Twins started by the chercheur':'Jumeaux lanc\u00e9s par le chercheur')+'</div>'+TW.map(t=>'<div class="panel" style="margin-top:10px"><div class="lbl">'+esc(en?t.title_en:t.title_fr)+'</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',t.trades||0)+cell(en?'win':'gagn\u00e9s',t.win===null||t.win===undefined?'\u2014':t.win+' %')+cell('net',mn(t.net||0),(t.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(t.rolling20||0),(t.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div><div style="font-size:.72rem;color:var(--muted);margin-top:8px">'+(en?'since ':'depuis le ')+esc((t.started||'').slice(0,10))+' \u00b7 '+(t.alive?(en?'running':'en marche'):(en?'stopped':'arr\u00eat\u00e9'))+' \u00b7 '+(en?'playing for pretend':'joue pour de faux')+'</div></div>').join('');}
   h+=items.filter(it=>it.status==='planned').map(item).join('');
  }else{
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The rules the robot follows today':'Les r\u00e8gles que le robot suit aujourd\u2019hui')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each one earned its place through the three steps. Tap a card to see why.':'Chacune a gagn\u00e9 sa place en passant les trois \u00e9tapes. Touchez une carte pour voir pourquoi.')+'</div></div>';
@@ -6319,9 +6334,35 @@ def lab_payload():
     counts = {}
     for it in items:
         counts[it.get("status")] = counts.get(it.get("status"), 0) + 1
+    # 2026-09-28: the chercheur's outputs (nightly researcher + the Claude session)
+    def _lj(p, d):
+        try:
+            return json.load(open(os.path.join(DIR, "lab", p), encoding="utf-8"))
+        except Exception:
+            return d
+    auto = _lj("auto.json", {})
+    note = _lj("chercheur_latest.json", {})
+    props = _lj("proposals.json", {}).get("proposals", [])
+    twins_reg = _lj("twins.json", {}).get("twins", [])
+    twins = []
+    for tw in twins_reg:
+        st = _lj(f"twin_{tw.get('id')}_state.json", {})
+        tr = [t for t in (st.get("trades") or []) if isinstance(t, dict)]
+        wins = sum(1 for t in tr if (t.get("pnl") or 0) > 0)
+        twins.append({"id": tw.get("id"), "title_fr": tw.get("title_fr"), "title_en": tw.get("title_en"),
+                      "cfg": tw.get("cfg"), "verdict": tw.get("verdict"), "started": tw.get("started"),
+                      "status": tw.get("status"), "trades": len(tr), "wins": wins,
+                      "win": (round(100 * wins / len(tr)) if tr else None), "net": round(float(st.get("net") or 0), 2),
+                      "rolling20": round(sum(float(t.get("pnl") or 0) for t in tr[-20:]), 2),
+                      "alive": bool(st.get("last_bar") and time.time() - int(st.get("last_bar")) < 900)})
+    counts["auto_ab"] = sum(1 for v in auto.get("variants", []) if v.get("verdict") in ("A", "B"))
+    counts["pending"] = sum(1 for p in props if p.get("status", "pending") == "pending")
     out = {"items": items, "counts": counts, "candidates": lab_candidates(J), "live_trades": len(J),
            "twin": twin, "forward": fwd, "e017": e017, "updated": int(time.time()),
-           "registry_updated": reg.get("updated")}
+           "registry_updated": reg.get("updated"),
+           "auto": {"updated": auto.get("updated"), "days": auto.get("days"), "counts": auto.get("counts", {}),
+                    "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes")},
+           "note": note, "proposals": props[-20:], "twins": twins}
     _LAB_CACHE.update(t=time.time(), data=out)
     return out
 
