@@ -2105,11 +2105,18 @@ function rbRender(){
 }
 function rbAsk(on){const box=document.getElementById('rb-pw');if(!box)return;
  box.innerHTML='<div class="note">'+(on?'Le robot n’entrera plus seul. Vous gardez la main depuis le graphique.':'Le robot prendra les trades tout seul, quand les conditions sont favorables. Aucune performance garantie.')+'</div>'+
-  '<input id="rb-pwd" type="password" autocomplete="current-password" placeholder="Mot de passe du compte"><div class="two"><button class="btn" onclick="rbGo('+on+')">Confirmer</button><button class="btn ghost" onclick="document.getElementById(\'rb-pw\').innerHTML=\'\'">Annuler</button></div>';
+  '<input id="rb-pwd" type="password" autocomplete="current-password" placeholder="'+(admTok()?'Mot de passe administrateur':'Mot de passe du compte')+'"><div class="two"><button class="btn" onclick="rbGo('+on+')">Confirmer</button><button class="btn ghost" onclick="document.getElementById(\'rb-pw\').innerHTML=\'\'">Annuler</button></div>';
  setTimeout(()=>{const i=document.getElementById('rb-pwd');if(i)i.focus();},50);}
 async function rbGo(on){const i=document.getElementById('rb-pwd');const pw=i?i.value:'';if(!pw)return;
  const box=document.getElementById('rb-pw');box.innerHTML='<div class="note">Envoi…</div>';
- let j=null;try{const r=await fetch('/'+tok+'/pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+on+'&pwd='+encodeURIComponent(pw)});j=await r.json();}catch(e){}
+ // 2026-09-28 (owner): viewed from the admin's phone, the switch goes
+ // through the admin route with the ADMIN password (the member route
+ // checks the viewed account's own password, which the admin does not type)
+ const adm=admTok();
+ let j=null;try{const r=adm&&D&&D.uid
+   ?await fetch(adm+'nest_pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(D.uid)+'&on='+on+'&pwd='+encodeURIComponent(pw)})
+   :await fetch('/'+tok+'/pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+on+'&pwd='+encodeURIComponent(pw)});
+  j=await r.json();}catch(e){}
  if(!j||!j.ok){box.innerHTML='<div class="note w">'+(j&&j.err==='complet'?'Plus de place pour l’instant.':(j&&j.err==='verrouille'?'Ce compte ne peut pas changer de mode.':'Mot de passe incorrect.'))+'</div>';return;}
  box.innerHTML='<div class="note" style="color:#8df0bb">✓ Demande envoyée — le changement prend quelques secondes.</div>';
  setTimeout(async()=>{const b2=document.getElementById('rb-pw');if(b2)b2.innerHTML='';document.getElementById('rb-sw').dataset.h='';await rbFetch();rbRender();},4000);}

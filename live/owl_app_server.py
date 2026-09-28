@@ -7327,6 +7327,17 @@ class H(BaseHTTPRequestHandler):
                 json.dump({"paused": _on, "by": "master",
                            "t": time.time()},
                           open(os.path.join(DIR, _ppf), "w"))
+                # 2026-09-28: same swap as the member's own switch - an
+                # account that can run a desk gets it started / stopped
+                try:
+                    _tu = next((x for x in us if x.get("id") == _uid), None)
+                    if _tu is not None and can_switch(_tu):
+                        _mtmp = os.path.join(DIR, "owl_mode_switch_request.json.tmp")
+                        json.dump({"uid": _uid, "want": "semi" if _on else "auto",
+                                   "t": time.time()}, open(_mtmp, "w"))
+                        os.replace(_mtmp, os.path.join(DIR, "owl_mode_switch_request.json"))
+                except Exception:
+                    pass
                 self._send(json.dumps({"ok": True, "paused": _on}),
                            "application/json")
             except Exception as e:
