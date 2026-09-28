@@ -1498,6 +1498,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    <span style="display:inline-flex;align-items:center;gap:6px"><svg
     class="ic ic-s"><use href="#i-moon"/></svg>Silence la nuit
     (22 h &ndash; 7 h)</span><span id="quiet-st">Non</span></button>
+  <button id="chimebtn" style="margin-top:8px;width:100%;display:flex;
+   align-items:center;justify-content:space-between;border:1px solid
+   var(--border);background:transparent;color:var(--muted2);
+   border-radius:10px;padding:9px 12px;font-size:.82rem;font-weight:700">
+   <span style="display:inline-flex;align-items:center;gap:6px"><svg
+    class="ic ic-s"><use href="#i-bolt"/></svg>Son et vibration &agrave; chaque signal</span><span id="chime-st">Non</span></button>
   <div style="margin-top:12px;font-size:.68rem;color:var(--muted);
    text-transform:uppercase;letter-spacing:.08em">Exemple</div>
   <div style="margin-top:6px;display:flex;gap:10px;align-items:flex-start;
@@ -2085,7 +2091,7 @@ const I18N_EN=new Map(Object.entries({
  'Résumé du mois':'Month summary','Calendrier':'Calendar','Statistiques · 30 derniers trades':'Statistics · last 30 trades',
  'Derniers trades':'Latest trades','Tous':'All','Gagnés':'Won','Perdus':'Lost','Cette semaine':'This week','Voir ce jour':'Open that day',
  'Depuis le début':'Since the start','Rapport':'Report','Partager ma semaine':'Share my week','Partager ce rapport':'Share this report',
- 'Notifications':'Notifications','Activer les notifications':'Enable notifications','Tout':'All','Important seulement':'Important only',
+ 'Notifications':'Notifications','Son et vibration à chaque signal':'Sound and vibration on every signal','Activer les notifications':'Enable notifications','Tout':'All','Important seulement':'Important only',
  'Application':'App','Installer l\u2019application':'Install the app','Installer l\\'application':'Install the app',
  'Une icône sur votre écran d\\'accueil':'An icon on your home screen','Une icône sur votre écran d\u2019accueil':'An icon on your home screen',
  'Apparence':'Appearance','Sombre':'Dark','Clair':'Light','Taille du texte':'Text size','Normal':'Normal','Plus grand':'Larger',
@@ -2509,6 +2515,13 @@ async function notifSetup(){
   qb.style.background=on?'var(--surface3)':'transparent';
   qb.style.color=on?'var(--text2)':'var(--muted2)';}
  window.qPaint=qPaint;qPaint();
+ // 2026-09-28: opt-in chime + vibration when a NEW signal shows while the app is open
+ const cb=document.getElementById('chimebtn');
+ function cPaint(){if(!cb)return;let on=false;try{on=localStorage.getItem('owlChime')==='1';}catch(e){}
+  document.getElementById('chime-st').textContent=on?(LANG()==='en'?'Yes':'Oui'):(LANG()==='en'?'No':'Non');
+  cb.style.borderColor=on?'var(--border2)':'var(--border)';cb.style.background=on?'var(--surface3)':'transparent';cb.style.color=on?'var(--text2)':'var(--muted2)';}
+ cPaint();
+ if(cb)cb.onclick=()=>{let on=false;try{on=localStorage.getItem('owlChime')==='1';localStorage.setItem('owlChime',on?'0':'1');}catch(e){}cPaint();if(!on){try{window._ac=window._ac||new (window.AudioContext||window.webkitAudioContext)();}catch(e){}chime(true);}};
  if(qb)qb.onclick=async()=>{window._pquiet=!window._pquiet;qPaint();
   await fetch(B+'push_pref',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
@@ -3824,13 +3837,20 @@ function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.v
 function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
  const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' \u00b7 lot '+sg.lot.toFixed(2)+' \u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
+function chime(force){try{if(!force&&localStorage.getItem('owlChime')!=='1')return;}catch(e){return;}
+ try{if(navigator.vibrate)navigator.vibrate([120,60,120]);}catch(e){}
+ try{const A=window._ac||(window._ac=new (window.AudioContext||window.webkitAudioContext)());const t0=A.currentTime;
+  [[880,0],[1175,.16]].forEach(([f,dd])=>{const o=A.createOscillator(),g=A.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t0+dd);g.gain.exponentialRampToValueAtTime(0.25,t0+dd+.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dd+.28);o.connect(g);g.connect(A.destination);o.start(t0+dd);o.stop(t0+dd+.3);});}catch(e){}}
+document.addEventListener('pointerdown',()=>{try{if(localStorage.getItem('owlChime')==='1'&&!window._ac)window._ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 async function pollSignal(){
  const d=window._d;if(!d||!MAN()||OBS())return;
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
- try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}renderSignal(await r.json());}catch(e){}
+ try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}const ms=await r.json();
+  const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
+  renderSignal(ms);}catch(e){}
 }
 // ---- batch 29: "Quoi de neuf" - one card per update, dismissed once ----
-const NEWS_V='2026-09-28';
+const NEWS_V='2026-09-28b';
 const NEWS=[
  {fr:'<b>M\u00e9t\u00e9o sur le graphique</b> \u2014 touchez la puce m\u00e9t\u00e9o en haut, le d\u00e9tail glisse sans quitter le graphique.',en:'<b>Weather on the chart</b> \u2014 tap the weather chip at the top, the detail slides up without leaving the chart.'},
  {fr:'<b>Le robot en un tap</b> \u2014 la puce robot ouvre son \u00e9tat : trades en cours, rattrapage, et le changement de mode.',en:'<b>The robot in one tap</b> \u2014 the robot chip opens its state: open trades, catch-up, and the mode switch.',need:'switch'},
@@ -3838,7 +3858,11 @@ const NEWS=[
  {fr:'<b>Votre lot</b> \u2014 entrez votre solde une fois, le signal s\u2019adapte \u00e0 votre compte.',en:'<b>Your lot</b> \u2014 enter your balance once, the signal scales to your account.',need:'manual'},
  {fr:'<b>J\u2019ai pris / Pas pris</b> \u2014 et l\u2019historique des signaux dans Historique.',en:'<b>Taken / Not taken</b> \u2014 and the signal history in History.',need:'manual'},
  {fr:'<b>Mes paiements</b> \u2014 vos re\u00e7us et vos dates de fin, dans R\u00e9glages.',en:'<b>My payments</b> \u2014 your receipts and end dates, in Settings.'},
- {fr:'<b>Mode clair</b> \u2014 le graphique suit maintenant le th\u00e8me de l\u2019app.',en:'<b>Light mode</b> \u2014 the chart now follows the app theme.'}];
+ {fr:'<b>Mode clair</b> \u2014 le graphique suit maintenant le th\u00e8me de l\u2019app.',en:'<b>Light mode</b> \u2014 the chart now follows the app theme.'},
+ {fr:'<b>Le graphique en anglais</b> \u2014 il suit la langue de l\u2019app.',en:'<b>The chart in English</b> \u2014 it follows the app language.'},
+ {fr:'<b>Touchez un trade</b> sur le graphique \u2014 ses chiffres et son histoire.',en:'<b>Tap a trade</b> on the chart \u2014 its figures and its story.'},
+ {fr:'<b>La semaine</b> \u2014 une puce sur le graphique, le d\u00e9tail jour par jour.',en:'<b>The week</b> \u2014 a chip on the chart, day by day.'},
+ {fr:'<b>Son et vibration</b> \u00e0 chaque signal \u2014 \u00e0 activer dans Notifications.',en:'<b>Sound and vibration</b> on every signal \u2014 enable it in Notifications.',need:'manual'}];
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
