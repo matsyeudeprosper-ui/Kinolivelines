@@ -25,7 +25,9 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
    the 96px the header reserves for the price, because the price sits on
    the line ABOVE. #hdstrip is the visible pill and only as wide as its
    contents. (owner 2026-09-17) */
-#hdrow{display:flex;flex:0 0 100%;min-width:0;margin-right:-82px}
+#hdrow{display:flex;flex:0 0 calc(100% + 82px);min-width:0;margin-right:-82px}
+/* 2026-09-28: the row really is 82px wider (a negative margin alone never
+   widened it), so the weather chip keeps its number on a 390px phone */
 #hdstrip{display:inline-flex;align-items:stretch;min-width:0;max-width:100%;
  border-radius:99px;overflow:hidden;
  background:rgba(127,179,224,.06);
@@ -104,7 +106,8 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
    the indicator; tapping it slides a glass sheet up with the state, the
    24 h nervosity gauge and the four figures - no trip back to the app. */
 #meteo{cursor:pointer;-webkit-tap-highlight-color:transparent}
-#meteo .wxv{font-weight:800;font-variant-numeric:tabular-nums;opacity:.9;letter-spacing:0;text-transform:none;margin-left:2px}
+#meteo .wxt{min-width:0;overflow:hidden;text-overflow:ellipsis}
+#meteo .wxv{flex:none;font-weight:800;font-variant-numeric:tabular-nums;opacity:.9;letter-spacing:0;text-transform:none;margin-left:2px}
 #meteo .wxc{width:10px;height:10px;opacity:.55;flex:none}
 #wxbk{position:fixed;inset:0;z-index:60;background:rgba(4,8,13,.5);
  opacity:0;pointer-events:none;transition:opacity .28s ease}
@@ -1323,7 +1326,7 @@ function ui(){
  const mb=document.getElementById('meteo');
  const W=wxState();
  if(W){
-  mb.innerHTML='<i>'+WXS(W.S[0],W.S[2],15)+'</i>'+W.S[1]+'<span class="wxv" style="color:'+W.vw[1]+'">'+W.rv.toFixed(2).replace('.',',')+'×</span>'+
+  mb.innerHTML='<i>'+WXS(W.S[0],W.S[2],15)+'</i><span class="wxt">'+W.S[1]+'</span><span class="wxv" style="color:'+W.vw[1]+'">'+W.rv.toFixed(2).replace('.',',')+'×</span>'+
    '<svg class="wxc" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M9 6l6 6-6 6"/></svg>';
   mb.className='seg'+((W.k==='nervous'||W.k==='brisk')?' busy':'');
   mb.style.display='flex';mb.style.color=W.S[2];
