@@ -1059,7 +1059,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .mxs .ic-s{width:15px;height:15px}
 .labstat{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px;padding-bottom:2px}
 .labstat::-webkit-scrollbar{display:none}
-.labstat .ls{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 11px 6px 9px;font-size:.7rem;color:var(--muted2);font-weight:600;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em}
+.labstat .ls{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 11px 6px 9px;font-size:.7rem;color:var(--muted2);font-weight:600;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.labstat .ls.on{background:var(--surface3);border-color:var(--border2);color:var(--text)}
+.labintro{margin-top:10px;padding:14px;border-color:rgba(59,130,246,.3)}
+.labintro .st{display:flex;gap:8px;margin-top:10px}
+.labintro .st div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 8px;text-align:center;font-size:.72rem;color:var(--text2);line-height:1.35}
+.labintro .st b{display:block;font-size:.95rem;color:var(--accent-soft);margin-bottom:2px}
 .labstat .ls b{font-size:.95rem;font-variant-numeric:tabular-nums;letter-spacing:0}
 .lc{padding:14px 40px 12px 14px;margin-top:10px;position:relative;cursor:pointer}
 .lc .lct{display:flex;align-items:flex-start;gap:11px}
@@ -1074,7 +1079,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .kv .kvt{flex:1;min-width:0}.kv .kvt b{display:block;font-size:.86rem;color:var(--text);line-height:1.3}.kv .kvt span{display:block;color:var(--muted2);font-size:.74rem;font-variant-numeric:tabular-nums;margin-top:2px}
 .pchip{display:inline-flex;align-items:center;font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:3px 8px;white-space:nowrap}
 .prow{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:.8rem;color:var(--text2);line-height:1.5}
-.prow .pk{flex:none;width:58px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
+.prow .pk{flex:none;width:66px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
 .pman{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--accent-bg,rgba(59,130,246,.10));border:1px solid rgba(59,130,246,.28);font-size:.84rem;color:var(--text);line-height:1.5}
 .pman .pk{display:block;color:var(--accent-soft);font-size:.58rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
 .tfc{border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;
@@ -2185,7 +2190,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What the market teaches us','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What we learn from the market','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -3957,15 +3962,15 @@ async function loadLab(d){const seg=document.getElementById('mxs-lab');if(seg)se
  if(!j||j.err)return;window._lab=j;labRender();}
 function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const C=j.counts||{};const n=k=>C[k]||0;
- const tile=(l,v,c)=>'<span class="ls"><b style="color:'+c+'">'+v+'</b>'+l+'</span>';
+ const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
  document.getElementById('lab-stats').className='labstat';document.getElementById('lab-stats').style.cssText='';
- setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)')+tile(en?'candidates':'candidats',n('candidate')+n('planned'),'#b98cff')+tile(en?'forward':'en cours',n('forward'),'var(--accent-soft)')+tile(en?'deployed':'d\u00e9ploy\u00e9',n('deployed'),'var(--up-soft)')+tile(en?'rejected':'rejet\u00e9',n('rejected'),'var(--muted2)'));
- const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Tests':'Tests'],['forward',en?'In progress':'En cours'],['decisions',en?'Decisions':'D\u00e9cisions']];
+ setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)','ideas')+tile(en?'to try':'\u00e0 essayer',n('candidate')+n('planned'),'#b98cff','tests')+tile(en?'watching':'en observation',n('forward'),'var(--accent-soft)','forward')+tile(en?'in the robot':'dans le robot',n('deployed'),'var(--up-soft)','decisions')+tile(en?'said no':'\u00e9cart\u00e9es',n('rejected'),'var(--muted2)','tests'));
+ const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Checked on the past':'V\u00e9rifi\u00e9 sur le pass\u00e9'],['forward',en?'Watching live':'Observ\u00e9 en direct'],['decisions',en?'In the robot':'Dans le robot']];
  setH(document.getElementById('lab-tabs'),T.map(([k,l])=>'<button class="tfc'+(window._labTab===k?' on':'')+'" style="flex:none" onclick="labTab(&#39;'+k+'&#39;)">'+l+'</button>').join(''));
- document.getElementById('lab-hint').textContent='\u00b7 '+(j.live_trades||0)+' '+(en?'live trades':'trades en live')+' \u00b7 '+(en?'registry':'registre')+' '+(j.registry_updated||'');
- const FAM={structure:[en?'structure':'structure','var(--accent-soft)'],meteo:[en?'weather':'m\u00e9t\u00e9o','var(--warn)'],cible:[en?'target':'cible','#b98cff'],rythme:[en?'rhythm':'rythme','#e8743b'],argent:[en?'money':'argent','var(--up-soft)'],donnees:[en?'data':'donn\u00e9es','var(--muted2)']};
+ document.getElementById('lab-hint').textContent='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend');
+ const FAM={structure:[en?'how it enters':'comment il entre','var(--accent-soft)'],meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],cible:[en?'gain and loss limits':'gain et limite de perte','#b98cff'],rythme:[en?'when it trades':'quand il trade','#e8743b'],argent:[en?'the money':'l\u2019argent','var(--up-soft)'],donnees:[en?'the data':'les donn\u00e9es','var(--muted2)']};
  const VB={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']};
- const ST={deployed:[en?'Deployed':'D\u00e9ploy\u00e9','var(--up-soft)'],candidate:[en?'Candidate':'Candidat','#b98cff'],planned:[en?'To start':'\u00c0 lancer','#b98cff'],forward:[en?'Forward':'En cours','var(--accent-soft)'],observation:[en?'Watching':'En observation','var(--warn)'],idea:[en?'Idea':'Id\u00e9e','var(--warn)'],rejected:[en?'Rejected':'Rejet\u00e9','var(--muted2)']};
+ const ST={deployed:[en?'In the robot':'Dans le robot','var(--up-soft)'],candidate:[en?'To try':'\u00c0 essayer','#b98cff'],planned:[en?'To start':'\u00c0 lancer','#b98cff'],forward:[en?'Watching live':'Observ\u00e9 en direct','var(--accent-soft)'],observation:[en?'Not sure yet':'Pas encore s\u00fbr','var(--warn)'],idea:[en?'Idea':'Id\u00e9e','var(--warn)'],rejected:[en?'Said no':'\u00c9cart\u00e9e','var(--muted2)']};
  const chip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+'">'+t+'</span>';
  const esc=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
  const item=it=>{const f=FAM[it.family]||FAM.donnees,v=VB[it.verdict],st=ST[it.status]||ST.idea;
@@ -3975,30 +3980,36 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
    '<div class="lcn">'+esc(en?it.note_en:it.note_fr)+'</div><div class="lcm"><span>'+esc(it.date||'')+'</span><span style="max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(it.src||'')+'</span></div><svg class="ic chv"><use href="#i-chev"/></svg></div>';};
  const items=j.items||[];let h='';const k=window._labTab;
  if(k==='ideas'){
-  const L={trop_tot:[en?'too early':'trop t\u00f4t','var(--muted)'],a_tester:[en?'worth a replay':'\u00e0 rejouer','var(--up-soft)'],divergent:[en?'halves disagree':'moiti\u00e9s divergentes','var(--warn)']};
-  h+='<div class="sec" style="margin:14px 8px 8px">'+(en?'Found in the live journals':'Trouv\u00e9 dans les journaux en live')+' <span class="hint">\u00b7 '+(en?'each cut against the rest, halves in time':'chaque coupe contre le reste, moiti\u00e9s dans le temps')+'</span></div>';
+  const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};
+  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The lab, in one minute':'Le labo, en une minute')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Here we look for ways to make the robot better over time. Every idea goes through three steps before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e passe par trois \u00e9tapes avant de toucher \u00e0 votre compte.')+'</div>'+
+   '<div class="st"><div><b>1</b>'+(en?'Checked on the past':'V\u00e9rifi\u00e9e sur le pass\u00e9')+'</div><div><b>2</b>'+(en?'Watched live, no real money':'Observ\u00e9e en direct, sans argent r\u00e9el')+'</div><div><b>3</b>'+(en?'Put in the robot, or dropped':'Mise dans le robot, ou \u00e9cart\u00e9e')+'</div></div></div>';
+  h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the real trades say so far':'Ce que disent les vrais trades pour l\u2019instant')+' <span class="hint">\u00b7 '+(en?'how often the robot won in each situation':'combien de fois le robot a gagn\u00e9 dans chaque situation')+'</span></div>';
   const pc=v=>v===null||v===undefined?'\u2014':v+'\u202f%';
   h+='<div class="panel" style="padding:4px 14px">'+(j.candidates||[]).map(c=>{const l=L[c.label]||L.trop_tot;const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
-   return '<div class="kv"><div class="kvt"><b>'+esc(en?c.name_en:c.name_fr)+'</b><span>'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'vs':'contre')+' '+pc(c.rest_win)+(d===null?'':' <b style="display:inline;font-size:.74rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+pc(c.h1)+' / '+pc(c.h2)+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
-  h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas and observations':'Id\u00e9es et observations')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
+   return '<div class="kv"><div class="kvt"><b>'+esc(en?c.name_en:c.name_fr)+'</b><span>'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'won, against':'gagn\u00e9s, contre')+' '+pc(c.rest_win)+' '+(en?'for the others':'pour les autres')+(d===null?'':' <b style="display:inline;font-size:.74rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
+  h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'Under 30 trades a number means little; it is shown so you can watch it grow.':'Sous 30 trades, un chiffre veut dire peu de chose ; on le montre pour le voir grandir.')+'</div>';
+  h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas on the table':'Id\u00e9es sur la table')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
  }else if(k==='tests'){
-  h+='<div style="font-size:.76rem;color:var(--muted);margin:12px 8px 4px;line-height:1.45">'+(en?'Every replay runs on 41.7 days of M1 with the real engine, both halves independently, against the deployed rule. A = better in both halves. B = one side better, the other not worse. C = rejected.':'Chaque replay tourne sur 41,7 jours de M1 avec le vrai moteur, les deux moiti\u00e9s s\u00e9par\u00e9ment, contre la r\u00e8gle en place. A = meilleur dans les deux moiti\u00e9s. B = un c\u00f4t\u00e9 meilleur, l\u2019autre pas pire. C = rejet\u00e9.')+'</div>';
-  h+=items.filter(it=>it.status==='candidate'||it.status==='planned').map(item).join('')+'<div class="sec" style="margin:18px 8px 8px">'+(en?'Tested and rejected':'Test\u00e9 et rejet\u00e9')+'</div>'+items.filter(it=>it.status==='rejected').map(item).join('');
+  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We replay the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On rejoue les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
+   '<div class="st"><div><b style="color:var(--up-soft)">A</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">C</b>'+(en?'no':'non')+'</div></div></div>';
+  h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Worth trying':'\u00c0 essayer')+'</div>'+items.filter(it=>it.status==='candidate'||it.status==='planned').map(item).join('')+'<div class="sec" style="margin:18px 8px 8px">'+(en?'We said no':'On a dit non')+' <span class="hint">\u00b7 '+(en?'kept here so nobody proposes them again':'gard\u00e9es ici pour ne pas les reproposer')+'</span></div>'+items.filter(it=>it.status==='rejected').map(item).join('');
  }else if(k==='forward'){
   const tw=j.twin||{},fw=j.forward||{},lv=fw.live||{},e=j.e017||{};
   const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
   const spark=(cv)=>{if(!cv||cv.length<2)return '';const mx=Math.max(...cv),mnv=Math.min(...cv),sp=Math.max(1e-6,mx-mnv);const pts=cv.map((v,i)=>((i/(cv.length-1))*296+2).toFixed(1)+','+(40-((v-mnv)/sp)*36+2).toFixed(1)).join(' ');const z=(40-((0-mnv)/sp)*36+2).toFixed(1);return '<svg viewBox="0 0 300 44" style="width:100%;height:44px;display:block;margin-top:8px"><line x1="2" y1="'+z+'" x2="298" y2="'+z+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/><polyline points="'+pts+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.6"/></svg>';};
   const cell=(l,v,c)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:1rem;'+(c?'color:'+c:'')+'">'+v+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
   const days=tw.since?Math.max(1,Math.round((Date.now()/1000-tw.since)/86400)):0;
-  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Paper twin \u00b7 flip + touch, no brakes':'Jumeau papier \u00b7 bascule + toucher, sans freins')+'</div>'+
-   '<div style="font-size:.8rem;color:var(--muted2);margin-top:4px;line-height:1.45">'+(en?'Takes every flip and every touch, virtually, since '+days+' days. What the brakes cost and earn.':'Prend chaque bascule et chaque toucher, en virtuel, depuis '+days+' jours. Ce que les freins co\u00fbtent et rapportent.')+'</div>'+
+  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'Robots that play for pretend':'Des robots qui jouent pour de faux')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Before an idea touches a real account, a copy of the robot runs it on paper, next to the real one, with no money. We compare them over weeks.':'Avant qu\u2019une id\u00e9e touche un vrai compte, une copie du robot l\u2019essaie sur papier, \u00e0 c\u00f4t\u00e9 du vrai, sans argent. On les compare pendant des semaines.')+'</div></div>';
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'The twin without brakes':'Le jumeau sans freins')+'</div>'+
+   '<div style="font-size:.8rem;color:var(--muted2);margin-top:4px;line-height:1.45">'+(en?'Takes every trade, never stops for the weather or after a loss. Playing for pretend since '+days+' days. It shows what the brakes cost and what they avoid.':'Prend tous les trades, ne s\u2019arr\u00eate jamais pour la m\u00e9t\u00e9o ni apr\u00e8s une perte. Joue pour de faux depuis '+days+' jours. Il montre ce que les freins co\u00fbtent et ce qu\u2019ils \u00e9vitent.')+'</div>'+
    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px">'+cell('trades',tw.trades||0)+cell(en?'win':'gagn\u00e9s',tw.win===null||tw.win===undefined?'\u2014':tw.win+' %')+cell('net',mn(tw.net||0),(tw.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'last 20':'20 derniers',mn(tw.rolling20||0),(tw.rolling20||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+spark(tw.curve)+'<div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;display:flex;justify-content:space-between"><span>'+(en?'net, last 60 trades':'net cumul\u00e9, 60 derniers trades')+'</span><span>'+(tw.since?(en?'since ':'depuis le ')+new Date(tw.since*1000).toLocaleDateString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'}):'')+'</span></div>'+
-   '<div style="font-size:.74rem;color:var(--muted);margin-top:6px">'+(en?'Real robot on the live account since the same era: ':'Vrai robot sur le compte r\u00e9el depuis la m\u00eame \u00e9poque : ')+(lv.trades||0)+' trades \u00b7 '+mn(lv.net||0)+' \u00b7 '+(en?'last 20':'20 derniers')+' '+mn(lv.rolling20||0)+'</div></div>';
-  h+='<div class="panel" style="margin-top:12px"><div class="lbl">E017 \u00b7 '+(en?'forced selling, blind stream':'ventes forc\u00e9es, flux en aveugle')+'</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+cell(en?'events':'\u00e9v\u00e9nements',e.events||0)+cell(en?'needed':'n\u00e9cessaires',e.need||30)+cell(en?'fills kept':'fills gard\u00e9s',e.fills||0)+'</div><div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+(en?'The rule is frozen and the stream is recorded without looking. The verdict comes only after 30 events, never retuned.':'La r\u00e8gle est gel\u00e9e et le flux s\u2019enregistre sans regarder. Le verdict ne vient qu\u2019apr\u00e8s 30 \u00e9v\u00e9nements, jamais r\u00e9gl\u00e9 en route.')+'</div></div>';
+   '<div style="font-size:.74rem;color:var(--muted);margin-top:6px">'+(en?'The real robot, with its brakes, over the same period: ':'Le vrai robot, avec ses freins, sur la m\u00eame p\u00e9riode : ')+(lv.trades||0)+' trades \u00b7 '+mn(lv.net||0)+' \u00b7 '+(en?'last 20':'20 derniers')+' '+mn(lv.rolling20||0)+'</div></div>';
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'When people are forced to sell all at once':'Quand des gens sont forc\u00e9s de vendre d\u2019un coup')+'</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:10px">'+cell(en?'cases recorded':'cas enregistr\u00e9s',e.events||0)+cell(en?'cases needed to judge':'cas n\u00e9cessaires pour juger',e.need||30)+'</div><div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+(en?'Does the price bounce after that? We record each case without looking at the result, so we do not fool ourselves. We judge after 30 cases.':'Le prix rebondit-il apr\u00e8s \u00e7a ? On note chaque cas sans regarder le r\u00e9sultat, pour ne pas se raconter d\u2019histoires. On jugera apr\u00e8s 30 cas.')+'</div></div>';
   h+=items.filter(it=>it.status==='planned').map(item).join('');
  }else{
-  h+='<div class="sec" style="margin:14px 8px 8px">'+(en?'In the robot today':'Dans le robot aujourd\u2019hui')+'</div>'+items.filter(it=>it.status==='deployed').map(item).join('');
-  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a rule gets in':'Comment une r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.55;margin-top:6px">'+(en?'1. Found in the journals or proposed here. 2. Replayed on 41.7 days, both halves, against the rule in place. 3. Observed as a paper twin next to the real robot. 4. Promoted on the demo, then on real accounts as a per-account dial, on Kino\u2019s decision. 5. Watched by its own rolling result and rolled back if it degrades.':'1. Trouv\u00e9e dans les journaux ou propos\u00e9e ici. 2. Rejou\u00e9e sur 41,7 jours, les deux moiti\u00e9s, contre la r\u00e8gle en place. 3. Observ\u00e9e en jumeau papier \u00e0 c\u00f4t\u00e9 du vrai robot. 4. Promue sur la d\u00e9mo, puis sur les comptes r\u00e9els comme r\u00e9glage par compte, sur d\u00e9cision de Kino. 5. Surveill\u00e9e par son propre r\u00e9sultat glissant et retir\u00e9e si elle se d\u00e9grade.')+'</div></div>';
+  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The rules the robot follows today':'Les r\u00e8gles que le robot suit aujourd\u2019hui')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each one earned its place through the three steps. Tap a card to see why.':'Chacune a gagn\u00e9 sa place en passant les trois \u00e9tapes. Touchez une carte pour voir pourquoi.')+'</div></div>';
+  h+=items.filter(it=>it.status==='deployed').map(item).join('');
+  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a new rule gets in':'Comment une nouvelle r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.6;margin-top:6px">'+(en?'1. An idea comes from the real trades or from Kino.<br>2. We replay it on the last 42 days of the market.<br>3. A copy of the robot tries it for pretend, next to the real one.<br>4. It goes on the demo account first, then on real accounts, one at a time, on Kino\u2019s decision.<br>5. We keep watching it; if it starts losing, we take it out.':'1. Une id\u00e9e vient des vrais trades ou de Kino.<br>2. On la rejoue sur les 42 derniers jours du march\u00e9.<br>3. Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.<br>4. Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes, un par un, sur d\u00e9cision de Kino.<br>5. On continue de la surveiller ; si elle se met \u00e0 perdre, on la retire.')+'</div></div>';
  }
  setH(document.getElementById('lab-body'),h);
 }
@@ -4015,8 +4026,8 @@ async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list
  let j=null;try{const r=await fetch(B+'patterns?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){sec.style.display='none';list.style.display='none';nx.style.display='none';return;}
  const en=LANG()==='en';
- const ST={confirme:[en?'Confirmed':'Confirm\u00e9','var(--up-soft)','rgba(46,204,113,.14)'],vivant:[en?'Live':'Vivant','var(--accent-soft)','rgba(59,130,246,.14)'],observation:[en?'Watching':'En observation','var(--warn)','rgba(232,197,90,.14)'],candidat:[en?'Candidate':'Candidat','#b98cff','rgba(185,140,255,.14)'],rejete:[en?'Tested, no':'Test\u00e9, non','var(--muted2)','rgba(255,255,255,.06)']};
- const RB={oui:[en?'the robot uses it':'le robot s\u2019en sert','var(--up-soft)'],candidat:[en?'robot: candidate':'robot : candidat','#b98cff'],non:[en?'robot: no':'robot : non','var(--muted)']};
+ const ST={confirme:[en?'Sure':'S\u00fbr','var(--up-soft)','rgba(46,204,113,.14)'],vivant:[en?'Measured live':'Mesur\u00e9 en direct','var(--accent-soft)','rgba(59,130,246,.14)'],observation:[en?'Not sure yet':'Pas encore s\u00fbr','var(--warn)','rgba(232,197,90,.14)'],candidat:[en?'To try':'\u00c0 essayer','#b98cff','rgba(185,140,255,.14)'],rejete:[en?'Checked: no':'V\u00e9rifi\u00e9 : non','var(--muted2)','rgba(255,255,255,.06)']};
+ const RB={oui:[en?'the robot does this':'le robot le fait','var(--up-soft)'],candidat:[en?'the robot may, later':'le robot, peut-\u00eatre plus tard','#b98cff'],non:[en?'the robot does not':'le robot ne le fait pas','var(--muted)']};
  const chip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+bg+'">'+t+'</span>';
  list.innerHTML=(j.cards||[]).map(c=>{const st=ST[c.status]||ST.observation,rb=RB[c.robot]||RB.non;
   const row=(k,t)=>'<div class="prow"><span class="pk">'+k+'</span><span style="flex:1;min-width:0">'+t+'</span></div>';
@@ -4024,11 +4035,12 @@ async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list
    '<div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:'+st[1]+';background:'+st[2]+';width:36px;height:36px"><svg class="ic ic-s"><use href="#'+(c.icon||'i-activity')+'"/></svg></div>'+
    '<div style="flex:1;min-width:0"><h4 style="margin:0;font-size:.95rem;font-weight:700;line-height:1.3;color:var(--text)">'+(en?c.title_en:c.title)+'</h4><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">'+chip(st[0],st[1],st[2])+chip(rb[0],rb[1],'rgba(255,255,255,.05)')+'</div></div></div>'+
    '<div style="display:flex;align-items:baseline;gap:8px;margin:12px 0 4px"><b style="font-size:1.7rem;letter-spacing:-.02em;color:'+st[1]+';font-variant-numeric:tabular-nums">'+c.fig+'</b><span style="font-size:.76rem;color:var(--muted2);line-height:1.3">'+(en?c.fig_l_en:c.fig_l)+'</span></div>'+
-   row(en?'Live':'En live',(en?c.live_en:c.live))+row('Replay',(en?c.back_en:c.back))+row(en?'Robot':'Robot',(en?c.robot_note_en:c.robot_note))+
-   '<div class="pman"><span class="pk">'+(en?'For a manual trader':'Pour un trader manuel')+'</span>'+(en?c.manual_en:c.manual)+'</div>'+
+   row(en?'For real':'En vrai',(en?c.live_en:c.live))+row(en?'On the past':'Sur le pass\u00e9',(en?c.back_en:c.back))+row(en?'The robot':'Le robot',(en?c.robot_note_en:c.robot_note))+
+   '<div class="pman"><span class="pk">'+(en?'If you trade yourself':'Si vous tradez vous-m\u00eame')+'</span>'+(en?c.manual_en:c.manual)+'</div>'+
    '</div>';}).join('');
- document.getElementById('lrn-hint').textContent='\u00b7 '+(j.live_trades||0)+' '+(en?'live trades':'trades en live')+' \u00b7 '+(j.memory_days||0)+' '+(en?'days of memory':'jours de m\u00e9moire');
- setH(nx,'<div class="lbl">'+(en?'Where this is heading':'O\u00f9 on va')+'</div><div style="font-size:.9rem;color:var(--text);line-height:1.5;margin-top:6px">'+(en?j.next.en:j.next.fr)+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'The cards refresh every 10 minutes with the new trades and the market memory. A live figure under 30 trades stays "watching".':'Les cartes se mettent \u00e0 jour toutes les 10 minutes avec les nouveaux trades et la m\u00e9moire du march\u00e9. Un chiffre en live sous 30 trades reste \u00ab en observation \u00bb.')+'</div>');
+ document.getElementById('lrn-hint').textContent='\u00b7 '+(en?'what we have learned so far':'ce qu\u2019on a appris jusqu\u2019ici');
+ list.insertAdjacentHTML('afterbegin','<div class="panel labintro"><b style="font-size:.95rem">'+(en?'Read this like a notebook':'\u00c0 lire comme un carnet')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each card is one thing we noticed about the market. It says how sure we are, what the real trades show, what the past showed, and what the robot does with it. Numbers under 30 trades are just a start.':'Chaque carte est une chose qu\u2019on a remarqu\u00e9e sur le march\u00e9. Elle dit \u00e0 quel point on en est s\u00fbr, ce que montrent les vrais trades, ce que montrait le pass\u00e9, et ce que le robot en fait. Sous 30 trades, un chiffre n\u2019est qu\u2019un d\u00e9but.')+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(j.live_trades||0)+' '+(en?'real trades':'vrais trades')+' \u00b7 '+(j.memory_days||0)+' '+(en?'days of market memory':'jours de m\u00e9moire du march\u00e9')+'</div></div>');
+ setH(nx,'<div class="lbl">'+(en?'What comes next':'La suite')+'</div><div style="font-size:.9rem;color:var(--text);line-height:1.5;margin-top:6px">'+(en?j.next.en:j.next.fr)+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'The cards refresh every 10 minutes with the new trades and the market memory.':'Les cartes se mettent \u00e0 jour toutes les 10 minutes avec les nouveaux trades et la m\u00e9moire du march\u00e9.')+'</div>');
  sec.style.display='block';list.style.display='block';nx.style.display='block';
 }
 // ---- batch 33: the two spaces grow - market hours, next action, the robot explains, journal ----
@@ -6062,6 +6074,10 @@ def _wr(rows):
             "net": round(sum(r["p"] for r in rows), 2)}
 
 
+_SN_FR = {"asie": "nuit (00–08 h)", "europe": "journée (08–16 h)", "us": "soirée (16–24 h)"}
+_SN_EN = {"asie": "night (00–08)", "europe": "day (08–16)", "us": "evening (16–24)"}
+
+
 def _pct(rows):
     w = _wr(rows)["win"]
     return "—" if w is None else f"{w} %"
@@ -6116,73 +6132,73 @@ def patterns():
 
     cards = [
         {"id": "calm", "icon": "i-cloud",
-         "title": "Le march\u00e9 calme paie, le march\u00e9 nerveux non",
-         "title_en": "Calm markets pay, nervous ones do not",
+         "title": "Quand le march\u00e9 est calme, le robot gagne plus souvent",
+         "title_en": "When the market is calm, the robot wins more often",
          "fig": _pct(calm),
-         "fig_l": "de r\u00e9ussite sous 1,0\u00d7 en live", "fig_l_en": "win rate under 1.0\u00d7 live",
-         "live": f"{_wr(calm)['n']} trades calmes ({_pct(calm)}) contre {_wr(hot)['n']} au-dessus de 1,0\u00d7 ({_pct(hot)})",
-         "live_en": f"{_wr(calm)['n']} calm trades ({_pct(calm)}) vs {_wr(hot)['n']} above 1.0\u00d7 ({_pct(hot)})",
-         "back": "Replay 42 j : 64 % entre 0,8 et 1,0\u00d7, 37 % entre 1,0 et 1,2\u00d7. Le pire se voit au-dessus de la ligne, pas le meilleur en dessous.",
-         "back_en": "42-day replay: 64 % between 0.8 and 1.0\u00d7, 37 % between 1.0 and 1.2\u00d7. The line names bad trades, not good ones.",
-         "status": "confirme", "robot": "oui", "robot_note": "frein nervosit\u00e9 \u00e0 1,0\u00d7 (r\u00e9glable par compte) ; ligne d\u2019orage \u00e0 1,85\u00d7 pour tous",
-         "robot_note_en": "nervosity brake at 1.0\u00d7 (per-account dial); storm line at 1.85\u00d7 for everyone",
-         "manual": "Un signal re\u00e7u au-dessus de 1,0\u00d7 m\u00e9rite une taille r\u00e9duite ou un passage.",
-         "manual_en": "A signal received above 1.0\u00d7 deserves a smaller size or a pass."},
+         "fig_l": "de trades gagn\u00e9s en march\u00e9 calme, en vrai", "fig_l_en": "of trades won in a calm market, for real",
+         "live": f"{_wr(calm)['n']} trades en march\u00e9 calme ({_pct(calm)} gagn\u00e9s) contre {_wr(hot)['n']} en march\u00e9 nerveux ({_pct(hot)} gagn\u00e9s)",
+         "live_en": f"{_wr(calm)['n']} trades in a calm market ({_pct(calm)} won) vs {_wr(hot)['n']} in a nervous one ({_pct(hot)} won)",
+         "back": "Sur 42 jours de pass\u00e9 rejou\u00e9s : 64 % de gagn\u00e9s quand le march\u00e9 \u00e9tait juste sous la normale, 37 % juste au-dessus. Le nerveux fait perdre ; le calme ne garantit rien.",
+         "back_en": "Over 42 replayed days: 64 % won when the market was just below normal, 37 % just above. Nervous loses; calm guarantees nothing.",
+         "status": "confirme", "robot": "oui", "robot_note": "Il laisse passer les trades quand le march\u00e9 est plus nerveux que d\u2019habitude (r\u00e9glable par compte), et personne ne trade en plein orage.",
+         "robot_note_en": "It lets trades go when the market is more nervous than usual (per-account setting), and nobody trades in a storm.",
+         "manual": "Si le signal arrive alors que le march\u00e9 est nerveux, misez moins, ou laissez passer.",
+         "manual_en": "If the signal comes while the market is nervous, bet less, or let it go."},
         {"id": "shares", "icon": "i-wave",
          "title": "Le march\u00e9 est calme la plupart du temps", "title_en": "The market is calm most of the time",
-         "fig": f"{shares_pct['calme']} %", "fig_l": f"du temps sous 1,0\u00d7 ({mdays} j de m\u00e9moire)", "fig_l_en": f"of the time under 1.0\u00d7 ({mdays} d of memory)",
-         "live": f"soutenu {shares_pct['soutenu']} % \u00b7 rapide {shares_pct['rapide']} % \u00b7 tr\u00e8s rapide {shares_pct['tres_rapide']} %",
-         "live_en": f"brisk {shares_pct['soutenu']} % \u00b7 fast {shares_pct['rapide']} % \u00b7 very fast {shares_pct['tres_rapide']} %",
-         "back": "Mesur\u00e9 sur 41,7 j : calme 53 %, soutenu 22 %, rapide 15 %, tr\u00e8s rapide 10 %. Les mots des bandes viennent de l\u00e0.",
-         "back_en": "Measured over 41.7 d: calm 53 %, brisk 22 %, fast 15 %, very fast 10 %. The band words come from there.",
-         "status": "vivant" if mdays >= 7 else "observation", "robot": "oui", "robot_note": "les bandes calme / soutenu / rapide / tr\u00e8s rapide de la m\u00e9t\u00e9o",
-         "robot_note_en": "the calm / brisk / fast / very fast bands of the weather",
-         "manual": "Les heures rapides se r\u00e9p\u00e8tent : la grille des heures montre lesquelles.",
-         "manual_en": "Fast hours repeat: the hours grid shows which ones."},
+         "fig": f"{shares_pct['calme']} %", "fig_l": f"du temps en march\u00e9 calme (sur {mdays} jour{'s' if mdays > 1 else ''} de m\u00e9moire)", "fig_l_en": f"of the time in a calm market (over {mdays} day{'s' if mdays > 1 else ''} of memory)",
+         "live": f"un peu agit\u00e9 {shares_pct['soutenu']} % \u00b7 rapide {shares_pct['rapide']} % \u00b7 orage {shares_pct['tres_rapide']} %",
+         "live_en": f"a bit brisk {shares_pct['soutenu']} % \u00b7 fast {shares_pct['rapide']} % \u00b7 storm {shares_pct['tres_rapide']} %",
+         "back": "Sur 42 jours : calme 53 % du temps, un peu agit\u00e9 22 %, rapide 15 %, orage 10 %. Les mots de la m\u00e9t\u00e9o viennent de l\u00e0.",
+         "back_en": "Over 42 days: calm 53 % of the time, a bit brisk 22 %, fast 15 %, storm 10 %. The weather words come from there.",
+         "status": "vivant" if mdays >= 7 else "observation", "robot": "oui", "robot_note": "C\u2019est la m\u00e9t\u00e9o que vous voyez sur la carte : calme, soutenu, rapide, tr\u00e8s rapide.",
+         "robot_note_en": "It is the weather you see on the card: calm, brisk, fast, very fast.",
+         "manual": "Les heures agit\u00e9es reviennent souvent aux m\u00eames moments : regardez la grille des heures plus bas.",
+         "manual_en": "Busy hours tend to come back at the same times: look at the hours grid below."},
         {"id": "flip", "icon": "i-switch",
-         "title": "La bascule, puis une continuation \u2014 pas plus", "title_en": "The flip, then one continuation, no more",
-         "fig": _pct(flips), "fig_l": "de r\u00e9ussite sur les bascules en live", "fig_l_en": "win rate on flips live",
-         "live": f"bascules {_wr(flips)['n']} ({_pct(flips)}) \u00b7 continuations {_wr(conts)['n']} ({_pct(conts)})",
-         "live_en": f"flips {_wr(flips)['n']} ({_pct(flips)}) \u00b7 continuations {_wr(conts)['n']} ({_pct(conts)})",
-         "back": "Replay 42 j : bascule + 1 continuation +$164 ; bascule seule +$83 ; 2 ou 3 continuations \u2212$52 / \u2212$58.",
-         "back_en": "42-day replay: flip + 1 continuation +$164; flip only +$83; 2 or 3 continuations \u2212$52 / \u2212$58.",
-         "status": "confirme", "robot": "oui", "robot_note": "en rattrapage : une continuation par tendance, r\u00e9arm\u00e9e par la bascule ou le toucher du point prot\u00e9g\u00e9",
-         "robot_note_en": "in catch-up: one continuation per trend, re-armed by the flip or a touch of the protected point",
-         "manual": "Le premier signal apr\u00e8s un changement de sens est le plus solide ; le troisi\u00e8me de suite l\u2019est rarement.",
-         "manual_en": "The first signal after a change of direction is the strongest; the third in a row rarely is."},
+         "title": "Le premier trade apr\u00e8s un changement de sens vaut mieux que les suivants", "title_en": "The first trade after a change of direction is worth more than the next ones",
+         "fig": _pct(flips), "fig_l": "de gagn\u00e9s sur les changements de sens, en vrai", "fig_l_en": "won on changes of direction, for real",
+         "live": f"changements de sens {_wr(flips)['n']} ({_pct(flips)} gagn\u00e9s) \u00b7 trades dans le m\u00eame sens ensuite {_wr(conts)['n']} ({_pct(conts)} gagn\u00e9s)",
+         "live_en": f"changes of direction {_wr(flips)['n']} ({_pct(flips)} won) \u00b7 same-direction follow-ups {_wr(conts)['n']} ({_pct(conts)} won)",
+         "back": "Sur 42 jours rejou\u00e9s : le changement de sens plus un seul trade de plus donne +$164. Sans trade de plus, +$83. Avec deux ou trois de plus, on perd.",
+         "back_en": "Over 42 replayed days: the change of direction plus one more trade gives +$164. With none, +$83. With two or three more, it loses.",
+         "status": "confirme", "robot": "oui", "robot_note": "Apr\u00e8s une perte, il prend le changement de sens et un seul trade de plus dans ce sens.",
+         "robot_note_en": "After a loss it takes the change of direction and only one more trade that way.",
+         "manual": "Le premier signal apr\u00e8s que le march\u00e9 a chang\u00e9 de sens est le plus s\u00fbr. Le troisi\u00e8me de suite l\u2019est rarement.",
+         "manual_en": "The first signal after the market changes direction is the safest. The third in a row rarely is."},
         {"id": "quick", "icon": "i-bolt",
-         "title": "Les trades rapproch\u00e9s perdent plus \u2014 mais les \u00e9viter co\u00fbte", "title_en": "Quick follow-ups lose more \u2014 but avoiding them costs",
-         "fig": _pct(quick), "fig_l": "de r\u00e9ussite \u00e0 moins de 30 min du pr\u00e9c\u00e9dent", "fig_l_en": "win rate within 30 min of the previous",
-         "live": f"rapproch\u00e9s {_wr(quick)['n']} ({_pct(quick)}) \u00b7 espac\u00e9s {_wr(slow)['n']} ({_pct(slow)})",
-         "live_en": f"quick {_wr(quick)['n']} ({_pct(quick)}) \u00b7 spaced {_wr(slow)['n']} ({_pct(slow)})",
-         "back": "Replay 42 j : attendre 30 min apr\u00e8s une cl\u00f4ture perd $106 et creuse la dette. Les suites rapides sont le rattrapage qui travaille.",
-         "back_en": "42-day replay: waiting 30 min after a close loses $106 and deepens the debt. Quick follow-ups are the catch-up doing its job.",
-         "status": "rejete", "robot": "non", "robot_note": "test\u00e9, pas retenu", "robot_note_en": "tested, not adopted",
-         "manual": "Un signal juste apr\u00e8s une perte n\u2019est pas mauvais en soi \u2014 c\u2019est la taille qui compte.",
-         "manual_en": "A signal right after a loss is not bad in itself \u2014 size is what matters."},
+         "title": "Les trades qui s\u2019encha\u00eenent vite perdent plus souvent \u2014 mais les \u00e9viter co\u00fbte cher", "title_en": "Trades that follow quickly lose more often \u2014 but avoiding them is costly",
+         "fig": _pct(quick), "fig_l": "de gagn\u00e9s quand le trade arrive moins de 30 min apr\u00e8s le pr\u00e9c\u00e9dent", "fig_l_en": "won when the trade comes less than 30 min after the previous one",
+         "live": f"trades rapproch\u00e9s {_wr(quick)['n']} ({_pct(quick)} gagn\u00e9s) \u00b7 trades espac\u00e9s {_wr(slow)['n']} ({_pct(slow)} gagn\u00e9s)",
+         "live_en": f"quick follow-ups {_wr(quick)['n']} ({_pct(quick)} won) \u00b7 spaced trades {_wr(slow)['n']} ({_pct(slow)} won)",
+         "back": "Sur 42 jours rejou\u00e9s : faire une pause de 30 minutes apr\u00e8s chaque trade perd $106. Les trades rapproch\u00e9s sont ceux qui rattrapent les pertes.",
+         "back_en": "Over 42 replayed days: a 30-minute break after each trade loses $106. The quick follow-ups are the ones that recover the losses.",
+         "status": "rejete", "robot": "non", "robot_note": "Test\u00e9, pas retenu : le robot ne fait pas de pause apr\u00e8s un trade.", "robot_note_en": "Tested, not kept: the robot takes no break after a trade.",
+         "manual": "Un signal juste apr\u00e8s une perte n\u2019est pas mauvais en soi. Ce qui compte, c\u2019est de ne pas miser plus gros pour se refaire.",
+         "manual_en": "A signal right after a loss is not bad in itself. What matters is not betting bigger to get even."},
         {"id": "target", "icon": "i-target",
-         "title": "Une cible plus courte lisse la route sans changer l\u2019arriv\u00e9e", "title_en": "A shorter target smooths the road without changing the destination",
-         "fig": "\u221238 %", "fig_l": "de pire dette avec une cible \u00e0 0,4\u00d7 le risque", "fig_l_en": "worst debt with a 0.4\u00d7 target",
-         "live": "Valère depuis le 14/09 : 0,8\u00d7 +$24 (24 gagn\u00e9s / 14 perdus) \u00b7 0,4\u00d7 +$27 (33 / 5)", "live_en": "Valère since 14/09: 0.8\u00d7 +$24 (24 won / 14 lost) \u00b7 0.4\u00d7 +$27 (33 / 5)",
-         "back": "Replay 42 j : 0,4\u00d7 = m\u00eame argent (\u2212$16), pire dette 63 \u2192 39 dans les deux moiti\u00e9s ; 0,6\u00d7 = +$45 mais les moiti\u00e9s divergent.",
-         "back_en": "42-day replay: 0.4\u00d7 = same money (\u2212$16), worst debt 63 \u2192 39 in both halves; 0.6\u00d7 = +$45 but the halves disagree.",
-         "status": "candidat", "robot": "candidat", "robot_note": "\u00e0 observer sur la d\u00e9mo avant tout compte r\u00e9el", "robot_note_en": "to observe on the demo before any real account",
-         "manual": "Prendre la moiti\u00e9 de la cible du signal donne le m\u00eame r\u00e9sultat avec bien moins de rouge.",
-         "manual_en": "Taking half the signal's target gives the same result with far less red."},
+         "title": "Viser un gain plus petit rend la route plus douce, sans changer l\u2019arriv\u00e9e", "title_en": "Aiming for a smaller gain makes the road smoother, without changing the destination",
+         "fig": "\u221238 %", "fig_l": "de profondeur pour le plus gros trou, en visant moiti\u00e9 moins", "fig_l_en": "depth for the biggest hole, aiming for half",
+         "live": "Val\u00e8re depuis le 14/09 : en visant comme aujourd\u2019hui +$24 (24 gagn\u00e9s, 14 perdus) \u00b7 en visant moiti\u00e9 moins +$27 (33 gagn\u00e9s, 5 perdus)", "live_en": "Val\u00e8re since 14/09: aiming as today +$24 (24 won, 14 lost) \u00b7 aiming for half +$27 (33 won, 5 lost)",
+         "back": "Sur 42 jours rejou\u00e9s : m\u00eame argent \u00e0 la fin, mais le plus gros trou passe de 63 \u00e0 39 dollars, sur les deux moiti\u00e9s de la p\u00e9riode.",
+         "back_en": "Over 42 replayed days: same money at the end, but the biggest hole goes from 63 to 39 dollars, on both halves of the period.",
+         "status": "candidat", "robot": "candidat", "robot_note": "Pas encore dans le robot. \u00c0 observer d\u2019abord sur la d\u00e9mo, sans argent r\u00e9el.", "robot_note_en": "Not in the robot yet. To watch on the demo first, no real money.",
+         "manual": "Prendre la moiti\u00e9 de la cible du signal donne le m\u00eame r\u00e9sultat avec bien moins de trades perdus.",
+         "manual_en": "Taking half of the signal's target gives the same result with far fewer losing trades."},
         {"id": "session", "icon": "i-sun",
-         "title": "Les sessions ne se valent pas encore", "title_en": "Sessions do not differ yet",
-         "fig": "\u2014", "fig_l": "trop t\u00f4t pour trancher", "fig_l_en": "too early to call",
-         "live": " \u00b7 ".join(f"{k} {_wr(v)['n']} ({_pct(v)})" for k, v in sess.items() if _wr(v)["n"]),
-         "live_en": " \u00b7 ".join(f"{ {'asie':'asia','europe':'europe','us':'us'}[k] } {_wr(v)['n']} ({_pct(v)})" for k, v in sess.items() if _wr(v)["n"]),
-         "back": "Replay : Londres 07\u201312 h 65 % sur 65 trades, mais les moiti\u00e9s divergent. Pas une r\u00e8gle.",
-         "back_en": "Replay: London 07\u201312 h 65 % on 65 trades, but the halves disagree. Not a rule.",
-         "status": "observation", "robot": "non", "robot_note": "aucune r\u00e8gle d\u2019heure", "robot_note_en": "no hour rule",
-         "manual": "Rien \u00e0 en faire pour l\u2019instant ; la grille des heures se remplit.",
-         "manual_en": "Nothing to act on yet; the hours grid fills in."},
+         "title": "Y a-t-il un meilleur moment de la journ\u00e9e ? On ne sait pas encore", "title_en": "Is there a better time of day? We do not know yet",
+         "fig": "\u2014", "fig_l": "trop t\u00f4t pour le dire", "fig_l_en": "too early to say",
+         "live": " \u00b7 ".join(_SN_FR[k] + f" {_wr(v)['n']} trades ({_pct(v)} gagn\u00e9s)" for k, v in sess.items() if _wr(v)["n"]),
+         "live_en": " \u00b7 ".join(_SN_EN[k] + f" {_wr(v)['n']} trades ({_pct(v)} won)" for k, v in sess.items() if _wr(v)["n"]),
+         "back": "Sur le pass\u00e9, la matin\u00e9e europ\u00e9enne a l\u2019air un peu meilleure (65 % de gagn\u00e9s sur 65 trades), mais pas sur les deux moiti\u00e9s de la p\u00e9riode. Donc pas de r\u00e8gle.",
+         "back_en": "On the past the European morning looks a bit better (65 % won on 65 trades), but not on both halves of the period. So no rule.",
+         "status": "observation", "robot": "non", "robot_note": "Le robot ne regarde pas l\u2019heure.", "robot_note_en": "The robot does not look at the clock.",
+         "manual": "Rien \u00e0 en faire pour l\u2019instant. La grille des heures se remplit jour apr\u00e8s jour.",
+         "manual_en": "Nothing to act on yet. The hours grid fills in day after day."},
     ]
     out = {"cards": cards, "live_trades": live_n, "memory_days": mdays, "updated": int(time.time()),
-           "next": {"fr": "Prochaines \u00e9tapes : 40 trades par compte pour trancher la nervosit\u00e9 en live, 30 jours de m\u00e9moire pour les heures, puis la cible 0,6\u00d7 en observation sur la d\u00e9mo.",
-                    "en": "Next steps: 40 trades per account to settle nervosity live, 30 days of memory for the hours, then the 0.6\u00d7 target under observation on the demo."}}
+           "next": {"fr": "La suite : attendre 40 trades par compte pour \u00eatre s\u00fbr de l\u2019effet du march\u00e9 calme en vrai, 30 jours de m\u00e9moire pour conna\u00eetre les heures, puis essayer \u00ab viser plus petit \u00bb sur la d\u00e9mo, sans argent r\u00e9el.",
+                    "en": "Next: wait for 40 trades per account to be sure of the calm-market effect for real, 30 days of memory to know the hours, then try \u201caim smaller\u201d on the demo, no real money."}}
     _PAT_CACHE.update(t=time.time(), data=out)
     return out
 
@@ -6201,17 +6217,17 @@ def lab_candidates(J):
     def prev_gap(i):
         return (J[i]["t"] - J[i - 1]["x"]) if i else 1e9
     cuts = [
-        ("calm", "March\u00e9 calme (< 1,0\u00d7)", "Calm market (< 1.0\u00d7)", lambda i, r: r["nerv"] is not None and r["nerv"] < 1.0),
-        ("hot", "March\u00e9 nerveux (\u2265 1,0\u00d7)", "Nervous market (\u2265 1.0\u00d7)", lambda i, r: r["nerv"] is not None and r["nerv"] >= 1.0),
-        ("flip", "Bascules", "Flips", lambda i, r: r["kind"] == "FLIP-BOS"),
-        ("cont", "Continuations", "Continuations", lambda i, r: r["kind"] == "BOS"),
-        ("int", "Structure interne", "Internal structure", lambda i, r: r["kind"] == "INT"),
-        ("quick", "Moins de 30 min apr\u00e8s le pr\u00e9c\u00e9dent", "Within 30 min of the previous", lambda i, r: prev_gap(i) < 1800),
-        ("weekend", "Samedi et dimanche", "Saturday and Sunday", lambda i, r: time.gmtime(r["t"]).tm_wday >= 5),
-        ("asia", "Session Asie (00\u201308 h UTC)", "Asia session (00\u201308 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour < 8),
-        ("europe", "Session Europe (08\u201316 h UTC)", "Europe session (08\u201316 UTC)", lambda i, r: 8 <= time.gmtime(r["t"]).tm_hour < 16),
-        ("us", "Session US (16\u201324 h UTC)", "US session (16\u201324 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour >= 16),
-        ("long", "Achats", "Buys", lambda i, r: r["p"] is not None and r.get("dir", "") == "BUY"),
+        ("calm", "Quand le march\u00e9 est calme", "When the market is calm", lambda i, r: r["nerv"] is not None and r["nerv"] < 1.0),
+        ("hot", "Quand le march\u00e9 est nerveux", "When the market is nervous", lambda i, r: r["nerv"] is not None and r["nerv"] >= 1.0),
+        ("flip", "Juste apr\u00e8s un changement de sens", "Right after a change of direction", lambda i, r: r["kind"] == "FLIP-BOS"),
+        ("cont", "Un trade de plus dans le m\u00eame sens", "One more trade the same way", lambda i, r: r["kind"] == "BOS"),
+        ("int", "Sur les petits mouvements", "On the small moves", lambda i, r: r["kind"] == "INT"),
+        ("quick", "Moins de 30 min apr\u00e8s le trade d\u2019avant", "Less than 30 min after the previous trade", lambda i, r: prev_gap(i) < 1800),
+        ("weekend", "Le week-end", "On weekends", lambda i, r: time.gmtime(r["t"]).tm_wday >= 5),
+        ("asia", "La nuit (00\u201308 h UTC)", "At night (00\u201308 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour < 8),
+        ("europe", "En journ\u00e9e (08\u201316 h UTC)", "During the day (08\u201316 UTC)", lambda i, r: 8 <= time.gmtime(r["t"]).tm_hour < 16),
+        ("us", "En soir\u00e9e (16\u201324 h UTC)", "In the evening (16\u201324 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour >= 16),
+        ("long", "Quand le robot ach\u00e8te", "When the robot buys", lambda i, r: r["p"] is not None and r.get("dir", "") == "BUY"),
     ]
     out = []
     for cid, fr, en, pred in cuts:
