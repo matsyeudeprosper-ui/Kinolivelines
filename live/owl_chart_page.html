@@ -158,8 +158,28 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
 #autobadge,#trbadge{cursor:pointer;-webkit-tap-highlight-color:transparent}
 /* ---- 2026-09-28 light theme done properly: real tokens for the chrome,
    the canvas keeps its inversion (its palette is drawn, not styled) ---- */
-#ruler.on{background:var(--accent) !important;color:#fff !important;border-color:var(--accent) !important}
-#pickday.on{background:rgba(232,197,90,.18) !important;color:#e8c55a !important;border-color:rgba(232,197,90,.5) !important}
+/* 2026-09-28 (owner: "the new tools are fighting for space"): the three
+   secondary tools live behind ONE round button; the menu opens above it.
+   Only EN DIRECT and Trader stay on the row. */
+#toolswrap{position:relative;margin-right:8px}
+#tools{width:40px;height:40px;border-radius:50%;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);
+ display:inline-flex;align-items:center;justify-content:center;position:relative;-webkit-tap-highlight-color:transparent}
+#tools[aria-expanded="true"]{background:var(--surface3);color:var(--text)}
+#tools-dot{position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:var(--accent-soft);border:2px solid var(--bg);display:none}
+#toolsmenu{position:absolute;left:0;bottom:calc(100% + 10px);display:none;flex-direction:column;gap:6px;padding:8px;min-width:200px;
+ background:linear-gradient(180deg,rgba(23,33,48,.97),rgba(11,15,20,.99));border:1px solid rgba(127,179,224,.2);border-radius:18px;
+ box-shadow:0 14px 40px rgba(0,0,0,.5);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+ transform-origin:bottom left;animation:tmenu .18s ease-out}
+#toolsmenu.on{display:flex}
+@keyframes tmenu{from{opacity:0;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}
+#toolsmenu .tb{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid transparent;background:transparent;color:var(--text2);
+ border-radius:12px;padding:10px 12px;font-size:.84rem;font-weight:700;-webkit-tap-highlight-color:transparent}
+#toolsmenu .tb svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#toolsmenu .tb:active{background:rgba(255,255,255,.06)}
+#toolsmenu .tb.on{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.4);color:var(--accent-soft)}
+#pickday.on{background:rgba(232,197,90,.14) !important;border-color:rgba(232,197,90,.45) !important;color:#e8c55a !important}
+body.light #toolsmenu{background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(238,242,247,.99));border-color:rgba(15,23,42,.14);box-shadow:0 14px 40px rgba(15,23,42,.18)}
+body.light #toolsmenu .tb:active{background:rgba(15,23,42,.05)}
 body.light{--bg:#eef2f7;--surface:#fff;--surface2:#f6f8fb;--surface3:#e6ecf4;--border:#dde4ed;--border2:#c7d2df;
  --text:#0f172a;--text2:#33415a;--muted:#5f6f85;--accent:#2563eb;--accent-soft:#1d4ed8;--up:#15803d;--down:#dc2626;--warn:#a16207;background:var(--bg)}
 body.light #cv{filter:invert(.93) hue-rotate(180deg)}
@@ -179,7 +199,6 @@ body.light .osh input{background:#fff;border-color:#c7d2df}
 body.light .osh .btn.ok{color:#15803d}body.light .osh .btn.warn{color:#a16207}
 body.light #mtbar{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(238,242,247,.995)) !important;border-top-color:#c7d2df !important}
 body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !important}
-body.light #gotoday{color:#33415a !important;background:#fff !important;border-color:#c7d2df !important}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
@@ -259,7 +278,12 @@ body.light #gotoday{color:#33415a !important;background:#fff !important;border-c
 </div>
 <div id="botbar">
 <div id="pnl"><b>--</b><span></span></div>
-<div id="botrow"><button id="gotoday" title="Aller au début de la journée" style="font-size:.72rem;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:8px 12px;margin-right:6px">Aujourd’hui</button><button id="pickday" title="Voir une journ&eacute;e pass&eacute;e" aria-label="Voir une journ&eacute;e pass&eacute;e" style="font-size:.72rem;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:7px 10px;margin-right:6px;display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button><input id="dayinp" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"><button id="ruler" title="R&egrave;gle : deux touches" aria-label="R&egrave;gle" style="font-size:.72rem;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:7px 10px;margin-right:6px;display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg></button><button id="backlive">&#9654; EN DIRECT</button>
+<div id="botrow"><div id="toolswrap"><button id="tools" title="Outils" aria-label="Outils" aria-expanded="false"><svg viewBox="0 0 24 24" style="width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><i id="tools-dot"></i></button>
+<div id="toolsmenu" role="menu">
+ <button id="gotoday" class="tb" title="Aller au d&eacute;but de la journ&eacute;e"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Aujourd&rsquo;hui</span></button>
+ <button id="pickday" class="tb" title="Voir une journ&eacute;e pass&eacute;e"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Journ&eacute;e pass&eacute;e</span></button>
+ <button id="ruler" class="tb" title="R&egrave;gle : deux touches"><svg viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg><span>R&egrave;gle</span></button>
+</div></div><input id="dayinp" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"><button id="backlive">&#9654; EN DIRECT</button>
 <button id="adstop" style="display:none;padding:11px 15px;border-radius:14px;
  border:1px solid rgba(255,92,92,.5);background:rgba(255,92,92,.14);
  color:#ff8c8c;font-weight:800;font-size:.8rem;display:inline-flex;align-items:center"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg></button>
@@ -361,7 +385,12 @@ function xToT(x){const xts=window._xts||[],xo=window._xoft||{};let bt=null,bd=1e
 function yToP(y){if(!SCALE)return null;return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
 function rulerTap(x,y){const t=xToT(x),p=yToP(y);if(t===null||p===null)return;
  if(!RULER.a||RULER.b){RULER.a={t,p};RULER.b=null;}else RULER.b={t,p};}
-document.getElementById('ruler').onclick=()=>{RULER.on=!RULER.on;if(!RULER.on){RULER.a=RULER.b=null;}document.getElementById('ruler').classList.toggle('on',RULER.on);};
+document.getElementById('ruler').onclick=()=>{RULER.on=!RULER.on;if(!RULER.on){RULER.a=RULER.b=null;}document.getElementById('ruler').classList.toggle('on',RULER.on);toolsMenu(false);toolsDot();};
+function toolsMenu(on){const m=document.getElementById('toolsmenu'),b=document.getElementById('tools');if(on===undefined)on=!m.classList.contains('on');m.classList.toggle('on',on);b.setAttribute('aria-expanded',on?'true':'false');}
+function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST)?'block':'none';}
+document.getElementById('tools').onclick=e=>{e.stopPropagation();toolsMenu();};
+document.addEventListener('pointerdown',e=>{const w=document.getElementById('toolswrap');if(w&&!w.contains(e.target))toolsMenu(false);},true);
+(function(){const g=document.getElementById('gotoday');const _g=g.onclick;g.onclick=function(){if(_g)_g.apply(this,arguments);toolsMenu(false);};})();
 function drawRuler(){if(!RULER.a||!SCALE)return;const xo=window._xoft||{};
  const ax=xo[RULER.a.t],ay=p2y(RULER.a.p);if(ax===undefined)return;
  const b=RULER.b||null;const bx=b?xo[b.t]:null,by=b?p2y(b.p):null;
@@ -383,13 +412,13 @@ async function loadDay(ds){const bar=document.getElementById('pastbar');
   if(!j||j.err||!(j.candles||[]).length){alert(CL?'No data for that day.':'Pas de donn\u00e9es pour ce jour.');return;}
   PAST=ds;D=j;seen.first=true;digest(D);ui();viewOff=0;voff=0;
   const dd=new Date(ds+'T00:00:00Z');bar.textContent=(CL?'Day of ':'Journ\u00e9e du ')+String(dd.getUTCDate()).padStart(2,'0')+'/'+String(dd.getUTCMonth()+1).padStart(2,'0')+' \u00b7 '+(CL?'tap LIVE to return':'EN DIRECT pour revenir');
-  bar.style.display='block';document.getElementById('pickday').classList.add('on');
+  bar.style.display='block';document.getElementById('pickday').classList.add('on');toolsMenu(false);toolsDot();
   document.getElementById('backlive').style.display='inline-block';mtopen.style.display='none';
  }catch(e){alert(CL?'Network unavailable.':'R\u00e9seau indisponible.');}}
-function pastExit(){PAST=null;document.getElementById('pastbar').style.display='none';document.getElementById('pickday').classList.remove('on');seen.first=true;load();}
+function pastExit(){PAST=null;document.getElementById('pastbar').style.display='none';document.getElementById('pickday').classList.remove('on');seen.first=true;load();toolsDot();}
 (function(){const b=document.getElementById('pickday'),i=document.getElementById('dayinp');
  const today=new Date();i.max=today.toISOString().slice(0,10);const mn=new Date(today.getTime()-60*86400000);i.min=mn.toISOString().slice(0,10);
- b.onclick=()=>{if(PAST){pastExit();return;}try{i.showPicker();}catch(e){i.click();}};
+ b.onclick=()=>{toolsMenu(false);if(PAST){pastExit();return;}try{i.showPicker();}catch(e){i.click();}};
  i.onchange=()=>{if(i.value)loadDay(i.value);};})();
 cv.addEventListener('pointermove',e=>{
  if(MTdrag){drag=null;return;}
@@ -2135,7 +2164,7 @@ const EN={'Aujourd’hui':'Today','EN DIRECT':'LIVE','Trader':'Trade','filtre si
  'Tant que le point protégé tient, le robot cherche des achats.':'As long as the protected point holds, the robot looks for buys.','Tant que le point protégé tient, le robot cherche des ventes.':'As long as the protected point holds, the robot looks for sells.','Le robot attend qu’une structure se dessine.':'The robot waits for a structure to form.',
  'Le trade':'The trade','Les chiffres':'The numbers','Trade en cours':'Open trade','Trade gagné':'Winning trade','Trade perdu':'Losing trade','Historique':'History','sortie':'exit','résultat':'result','durée':'duration','ouvert':'opened','fermé':'closed','Modifier sur le graphique':'Edit on the chart','Ouvert par le robot.':'Opened by the robot.','Ouvert à la main.':'Opened by hand.',
  'Cette semaine':'This week','Jour par jour':'Day by day','Aucun trade cette semaine.':'No trade this week.','jour vert':'green day','jours verts':'green days','Semaine':'Week','sem.':'wk','Données du compte indisponibles.':'Account data unavailable.','Pas enregistré, réessayez.':'Not saved, try again.'};
-Object.assign(EN,{'▶ EN DIRECT':'▶ LIVE','Voir une journée passée':'See a past day','Règle : deux touches':'Ruler: two taps','Règle':'Ruler',
+Object.assign(EN,{'▶ EN DIRECT':'▶ LIVE','Voir une journée passée':'See a past day','Règle : deux touches':'Ruler: two taps','Règle':'Ruler','Journée passée':'Past day','Outils':'Tools','Aller au début de la journée':'Go to the start of the day',
  'Les conditions sont réunies. Le robot entrera dès que le signal se confirme.':'Conditions are met. The robot will enter as soon as the signal confirms.',
  'Le sens change peut-être. Le robot attend la confirmation avant d’agir.':'The direction may change. The robot waits for confirmation before acting.',
  'Trop tôt. Le robot laisse le marché se dessiner.':'Too early. The robot lets the market take shape.',
