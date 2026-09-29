@@ -50,7 +50,14 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # "flip" = only the change of direction, "cont" = only the trades
             # that follow it. The flip still registers (it sets the direction
             # and refills the recovery allowance), it is simply not traded.
-            "only_kind": ""}
+            "only_kind": "",
+            # 2026-09-29 (owner): "my stop should stay inside the average loss,
+            # and two wins of $5 should be what buys me the right to risk $5".
+            # risk_max = a hard cap in dollars on one trade's risk.
+            # bank_mult = the risk allowed is (BANK0 + profit so far) divided by
+            # this, so the account has to earn the right to risk more.
+            "risk_max": 0.0, "bank_mult": 0.0}
+BANK0 = 10.0    # the starting allowance for bank_mult, about two average losses
 CFG_KEYS = list(CFG_BASE.keys())
 # 2026-09-29 (owner): "does the break's own character say whether it will
 # run?" Set TRACE to a list to record one dict per trade: the power of the
@@ -245,6 +252,13 @@ def simulate(R, spread, cfg):
             continue
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
         if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
+            continue
+        _risk = dist * lot
+        if c["risk_max"] and _risk > float(c["risk_max"]):
+            blocked += 1
+            continue
+        if c["bank_mult"] and _risk > (BANK0 + max(0.0, run)) / float(c["bank_mult"]):
+            blocked += 1
             continue
         tp = cl + d * rr * dist
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)

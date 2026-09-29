@@ -92,7 +92,7 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
          "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200,
          "minute_win": [0-59, 0-59], "one_per_hour": true|false,
-         "only_kind": ""|"flip"|"cont"}}
+         "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4}}
 ```
 `debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
 only when the account is still in the red AND the market is nervous.
@@ -118,6 +118,22 @@ the same day against the mirror window, and the answer is no:
 The FIRST half of the hour is the WEAKER half, the opposite of the idea, and
 even the better window loses money once it halves the number of trades. Do
 not re-propose a minute window on its own.
+
+`risk_max` (a hard cap in dollars on one trade's risk) and `bank_mult` (the
+risk allowed is (10 + profit so far) / bank_mult, so the account earns the
+right to risk more) were built by Kino 2026-09-29, after a single -$11.95
+trade with a 594-point stop. Tested the same day:
+  MONEY IS NOISE. Caps 9, 10, 12, 14, 16 all score B on 42 days but cap 11
+  scores C, and on 69 days caps 9-11 turn into C while 12 stays B. A number
+  that flips sign between neighbouring doses is not a mechanism.
+  THE HOLE IS REAL. Every cap from 9 to 12 cuts the worst hole from 80 to
+  about 50 dollars on BOTH windows. Use `risk_max` as a safety belt, never
+  as a profit idea, and say so when you propose it.
+  TOO TIGHT IS EXPENSIVE. Cap 5, which is about the average loss, costs
+  -$89 on 42 days; cap 4 costs -$152. E009 already found the best trades
+  have the widest stops, and a cap at 8 cuts a +$7.80 winner.
+  `bank_mult` DOES NOT WORK: x2 and x3 are C. x1 only looks positive because
+  the starting allowance makes it inactive once the account is ahead.
 
 `only_kind` ("flip" = only the change of direction, "cont" = only the trades
 that follow it) was built by Kino (2026-09-29) to ask "wait for the flip, do

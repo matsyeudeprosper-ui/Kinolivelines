@@ -39,7 +39,8 @@ CFG = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip
        # 2026-09-29: unknown keys are dropped by the merge below, so every
        # dial the harness knows must exist here or a twin would ignore it
        "cost_max": 0.0, "min_range": 0.0, "minute_win": [], "one_per_hour": False,
-       "only_kind": ""}
+       "only_kind": "", "risk_max": 0.0, "bank_mult": 0.0}
+BANK0 = 10.0    # starting allowance for bank_mult, same constant as lab/harness.py
 try:
     for t in json.load(open(os.path.join(LAB, "twins.json"), encoding="utf-8")).get("twins", []):
         if t.get("id") == VID:
@@ -111,6 +112,14 @@ def main():
         dist = abs(e - slp)
         if dist <= B.S_MIN_DIST:
             say(f"VT {kind} skipped: dot {dist:.0f}pts inside the spread zone")
+            return
+        # 2026-09-29: a hard cap in dollars on one trade's risk, and the
+        # "earn the right to risk more" version, same rules as lab/harness.py
+        if CFG.get("risk_max") and dist * lot > float(CFG["risk_max"]):
+            say(f"VT {kind} refuse: risque {dist*lot:.2f}$ > {CFG['risk_max']}$")
+            return
+        if CFG.get("bank_mult") and dist * lot > (BANK0 + max(0.0, st["net"])) / float(CFG["bank_mult"]):
+            say(f"VT {kind} refuse: risque {dist*lot:.2f}$ non couvert par la banque")
             return
         # 2026-09-29: the cost dial, same rule as lab/harness.py - the spread
         # is fixed here, so what varies is the bite it takes out of the target
