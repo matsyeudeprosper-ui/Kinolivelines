@@ -4038,9 +4038,16 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  const tabs=document.getElementById('lab-tabs');if(tabs){tabs.innerHTML='';tabs.style.display='none';}
  document.getElementById('lab-hint').innerHTML='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend')+' <span onclick="labStage(&#39;how&#39;)" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:99px;background:var(--surface3);color:var(--accent-soft);font-weight:800;cursor:pointer;margin-left:4px">?</span>';
  let h='';const N=j.note||{};const esc=_escS;
- if(N.date){const cc=(j.auto||{}).counts||{};const RQn=(j.requests||[]).length;const headline=en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en);
-  h+='<div class="panel" style="border-color:rgba(185,140,255,.35);padding:12px 14px;cursor:pointer" onclick="labStory()" role="button" tabindex="0"><div style="display:flex;gap:10px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#b98cff">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date)+'</div><b style="font-size:.92rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px">'+esc(headline)+'</b></div></div>'+
-   '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"><span class="ls" style="cursor:default"><b>'+(cc.A||0)+' A \u00b7 '+(cc.B||0)+' B \u00b7 '+(cc.C||0)+' C</b><span style="margin-left:6px">'+(en?'tonight':'cette nuit')+'</span></span>'+(RQn?'<span class="ls" style="cursor:default"><b style="color:var(--warn)">'+RQn+'</b>'+(en?(RQn>1?'requests':'request'):(RQn>1?'demandes':'demande'))+'</span>':'')+'<button class="shbtn shmain" style="margin:0 0 0 auto;padding:9px 14px;font-size:.84rem;width:auto" onclick="event.stopPropagation();labStory()">'+(en?'Read the night':'Lire la nuit')+' \u203a</button></div></div>';}
+ if(N.date){const AU=j.auto||{};const cc=AU.counts||{};const RQn=(j.requests||[]).length;const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
+  const headline=en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en);const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
+  const cell=(n,l,c,bg)=>'<div style="flex:1;background:'+bg+';border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center"><b style="display:block;font-size:1.15rem;color:'+c+';line-height:1">'+n+'</b><span style="display:block;font-size:.6rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:5px;line-height:1.2">'+l+'</span></div>';
+  h+='<div class="panel" style="border-color:rgba(185,140,255,.35);padding:14px;cursor:pointer" onclick="labStory()" role="button" tabindex="0">'+
+   '<div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#b98cff">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date)+'</div><b style="font-size:.95rem;line-height:1.38;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px">'+esc(headline)+'</b></div></div>'+
+   (tot?'<div style="font-size:.78rem;color:var(--text2);margin-top:12px;line-height:1.45">'+(en?'Tonight it replayed <b>'+tot+' ideas</b> on the last 42 days of the market:':'Cette nuit, il a rejou\u00e9 <b>'+tot+' id\u00e9es</b> sur les 42 derniers jours du march\u00e9 :')+'</div>'+
+   '<div style="display:flex;gap:6px;margin-top:8px">'+cell(cc.A||0,en?'clearly better':'nettement meilleures','var(--up-soft)','rgba(46,204,113,.08)')+cell(cc.B||0,en?'a little better':'un peu mieux','var(--warn)','rgba(232,197,90,.08)')+cell((cc.C||0)+(cc['=']||0),en?'no':'non','var(--down-soft)','rgba(255,92,92,.06)')+'</div>':'')+
+   ((PRn||RQn)?'<div style="font-size:.78rem;color:var(--text2);margin-top:10px;line-height:1.45">'+(PRn?'<b style="color:#b98cff">'+PRn+'</b> '+(en?(PRn>1?'new ideas to try':'new idea to try'):(PRn>1?'nouvelles id\u00e9es \u00e0 essayer':'nouvelle id\u00e9e \u00e0 essayer')):'')+(PRn&&RQn?' \u00b7 ':'')+(RQn?'<b style="color:var(--warn)">'+RQn+'</b> '+(en?(RQn>1?'dials it asks us to build':'dial it asks us to build'):(RQn>1?'r\u00e9glages qu\u2019il nous demande de construire':'r\u00e9glage qu\u2019il nous demande de construire')):'')+'</div>':'')+
+   '<button class="shbtn shmain" style="margin:12px 0 0;padding:11px;font-size:.9rem" onclick="event.stopPropagation();labStory()">'+(en?'Read the night, slide by slide':'Lire la nuit, page par page')+' \u203a</button>'+
+   '<div style="font-size:.68rem;color:var(--muted);margin-top:8px;line-height:1.4">'+(en?'The chercheur is a Claude session that reads the data every night and challenges the robot. It proposes; it never decides.':'Le chercheur est une session Claude qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; il ne d\u00e9cide jamais.')+'</div></div>';}
  h+=labBoard(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
@@ -5283,8 +5290,8 @@ function render(d){
   const met=document.getElementById('meteo');
   const lc0=document.getElementById('ledcard');
   if(d.open_list&&d.open_list.length){
-   met.style.display='none';
-   if(lc0)lc0.style.marginTop='0px';
+   // 2026-09-29 (owner): the weather card and its nervosity gauge stay
+   // visible while a trade is open - they live in the Marche space now
    bs.style.display='block';
    document.getElementById('battles').innerHTML=d.open_list.map(x=>{
     let bar='';
