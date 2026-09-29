@@ -4210,13 +4210,15 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
  if(j.kind==='battery')chips+=lchip(en?'asked every night':'question de chaque nuit','var(--muted2)');
+ if(j.stale)chips+=lchip(en?'to re-check':'\u00e0 rev\u00e9rifier','var(--warn)');
+ if(j.archived)chips+=lchip(en?'set aside':'mise de c\u00f4t\u00e9','var(--muted2)');
  if(j.reference)chips+=lchip(en?'yardstick · never for the robot':'étalon · jamais pour le robot','var(--muted2)');
  if(j.col==='decided'&&d.d==='yes')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
  const note=en?(j.note_en||j.note_fr):(j.note_fr||j.note_en);
  const mn=x=>(x>=0?'+$':'-$')+Math.abs(x||0).toFixed(0);
  const tile=(l,x,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
- const tiles=(r.diff_net!==undefined&&j.col!=='live')?'<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(r.diff_net),(r.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(r.diff_worst),(r.diff_worst||0)<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',mn(r.h1)+' / '+mn(r.h2),((r.h1||0)>0&&(r.h2||0)>0)?'var(--up-soft)':'var(--text)')+'</div>':'';
+ const tiles=(r.diff_net!==undefined&&j.col!=='live'&&!j.stale)?'<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(r.diff_net),(r.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(r.diff_worst),(r.diff_worst||0)<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',mn(r.h1)+' / '+mn(r.h2),((r.h1||0)>0&&(r.h2||0)>0)?'var(--up-soft)':'var(--text)')+'</div>':'';
  const line=(j.col==='test'||j.col==='decided'||j.col==='live')?'<div style="font-size:.76rem;color:var(--text2);margin-top:8px;line-height:1.45">'+jLine(j,en)+'</div>':'';
  return '<div class="panel lc" style="padding-right:14px" onclick="labJourney(&#39;'+esc(j.id)+'&#39;)" role="button" tabindex="0"><div class="lct">'+badge+'<div style="flex:1;min-width:0"><h4>'+esc(en?j.title_en:j.title_fr)+'</h4><div class="lcc">'+chips+'</div></div></div>'+
   (note?'<div class="lcn" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(note)+'</div>':'')+tiles+(tiles?xTiles(r,en):'')+line+
@@ -4230,11 +4232,11 @@ function jCol(){let i=window._jcol;if(i===undefined){try{i=parseInt(localStorage
 function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.col===k).length+(k==='idea'?labSeeds(j).length:0);}
 function jRail(en){const cur=jCol();
  return '<div class="jrail" id="jrail">'+JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<div class="jn'+(i===cur?' on':'')+(i<cur?' past':'')+'" onclick="jGo('+i+')" role="tab" aria-selected="'+(i===cur?'true':'false')+'" style="--jc:'+c+'"><i>'+jCount(k)+'</i><span>'+(en?es:fs)+'</span></div>').join('')+'</div>';}
-function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];const L=J.filter(x=>x.col===k);const seeds=k==='idea'?labSeeds(j):[];
+function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];let L=J.filter(x=>x.col===k);const seeds=k==='idea'?labSeeds(j):[];
  let cards;
- if(k==='replay'){const VO={A:0,B:1,'=':2,C:3};const vd=x=>((x.steps||{}).replay||{}).verdict||'';const S2=[...L].sort((a,b)=>((VO[vd(a)]??2)-(VO[vd(b)]??2))||((((b.steps||{}).replay||{}).diff_net||0)-(((a.steps||{}).replay||{}).diff_net||0)));
+ if(k==='replay'){const VO={A:0,B:1,'=':2,C:3};const AR=L.filter(x=>x.archived);L=L.filter(x=>!x.archived);const vd=x=>((x.steps||{}).replay||{}).verdict||'';const S2=[...L].sort((a,b)=>((VO[vd(a)]??2)-(VO[vd(b)]??2))||((((b.steps||{}).replay||{}).diff_net||0)-(((a.steps||{}).replay||{}).diff_net||0)));
   const keep=S2.filter(x=>vd(x)!=='C'),no=S2.filter(x=>vd(x)==='C');
-  cards=keep.map(x=>jCard(x,en)).join('')+(no.length?'<button class="tfc" style="width:100%;margin-top:12px;padding:11px;justify-content:center" onclick="const f=document.getElementById(&#39;jfold&#39;);f.hidden=!f.hidden;this.textContent=(f.hidden?&#39;\u25b8 &#39;:&#39;\u25be &#39;)+this.textContent.slice(2)">\u25b8 '+no.length+' '+(en?(no.length>1?'ideas said no last night':'idea said no last night'):(no.length>1?'id\u00e9es ont dit non cette nuit':'id\u00e9e a dit non cette nuit'))+'</button><div id="jfold" hidden>'+no.map(x=>jCard(x,en)).join('')+'</div>':'');}
+  cards=keep.map(x=>jCard(x,en)).join('')+(AR.length?'<div class="pf-cap" style="margin-top:10px">'+AR.length+' '+(en?(AR.length>1?'ideas set aside after three nights of no':'idea set aside after three nights of no'):(AR.length>1?'id\u00e9es mises de c\u00f4t\u00e9 apr\u00e8s trois nuits de non':'id\u00e9e mise de c\u00f4t\u00e9 apr\u00e8s trois nuits de non'))+'. '+(en?'The chercheur still knows about them.':'Le chercheur les conna\u00eet toujours.')+'</div>':'')+(no.length?'<button class="tfc" style="width:100%;margin-top:12px;padding:11px;justify-content:center" onclick="const f=document.getElementById(&#39;jfold&#39;);f.hidden=!f.hidden;this.textContent=(f.hidden?&#39;\u25b8 &#39;:&#39;\u25be &#39;)+this.textContent.slice(2)">\u25b8 '+no.length+' '+(en?(no.length>1?'ideas said no last night':'idea said no last night'):(no.length>1?'id\u00e9es ont dit non cette nuit':'id\u00e9e a dit non cette nuit'))+'</button><div id="jfold" hidden>'+no.map(x=>jCard(x,en)).join('')+'</div>':'');}
  else cards=L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join('');
  const sub={idea:[en?'Where ideas are born: the real trades, Kino, the chercheur.':'L\u00e0 o\u00f9 les id\u00e9es naissent : les vrais trades, Kino, le chercheur.'],replay:[en?'Replayed on the last 42 days of the market, against the robot as it is.':'Rejou\u00e9es sur les 42 derniers jours du march\u00e9, contre le robot tel qu\u2019il est.'],test:[en?'A copy of the robot tries them for pretend, next to the real one.':'Une copie du robot les essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.'],decided:[en?'Kino said yes or no.':'Kino a dit oui ou non.'],live:[en?'The rules the robot follows today.':'Les r\u00e8gles que le robot suit aujourd\u2019hui.']}[k][0];
  return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+(L.length+seeds.length)+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
@@ -6859,7 +6861,8 @@ def _lab_hist():
     return rows
 
 
-def lab_journeys(items, props, twins, auto, decisions):
+def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
+    arch_on = arch_on or {}
     hist = _lab_hist()
     by_id = {}
     for r in hist:
@@ -6898,7 +6901,8 @@ def lab_journeys(items, props, twins, auto, decisions):
                   "trades": last.get("trades")}
             v = next((av[k] for k in keys if k in av), None)
             if v:
-                rp.update({"diff_net": v.get("diff_net"), "diff_worst": v.get("diff_worst"),
+                rp.update({"engine": v.get("engine"), "byref": v.get("byref"),
+                       "diff_net": v.get("diff_net"), "diff_worst": v.get("diff_worst"),
                            "h1": round(((v.get("h1") or {}).get("net") or 0) - ((base.get("h1") or {}).get("net") or 0), 2),
                            "h2": round(((v.get("h2") or {}).get("net") or 0) - ((base.get("h2") or {}).get("net") or 0), 2),
                            "long": v.get("long"), "real": v.get("real")})
@@ -6975,7 +6979,9 @@ def lab_journeys(items, props, twins, auto, decisions):
                     "date": date, "steps": st, "step": step, "col": col, "events": ev,
                     "cfg": (prop or {}).get("cfg") or (t or {}).get("cfg"),
                     "reg_status": (reg or {}).get("status"), "robot": (reg or {}).get("robot"),
-                    "reference": bool((reg or {}).get("reference"))})
+                    "reference": bool((reg or {}).get("reference")),
+                    "archived": (jid in arch_on) or any(k in arch_on for k in keys),
+                    "stale": bool(rp and rp.get("engine") and rp.get("engine") != auto.get("engine"))})
         seen.update(keys)
 
     for it in items:
@@ -7367,6 +7373,10 @@ def lab_payload():
     props = _lj("proposals.json", {}).get("proposals", [])
     twins_reg = _lj("twins.json", {}).get("twins", [])
     requests = [r for r in _lj("requests.json", {}).get("requests", []) if r.get("status", "open") == "open"][-10:]
+    # 2026-09-29 (owner): ideas that went three nights at C leave the board but
+    # stay in the archive, so the chercheur keeps knowing they were tried
+    archive = _lj("archive.json", {})
+    arch_on = {k: v for k, v in (archive.get("archived") or {}).items() if v.get("since")}
     def _duel(tw):
         try:
             sys.path.insert(0, os.path.join(DIR, "lab"))
@@ -7396,9 +7406,10 @@ def lab_payload():
                     "days_long": auto.get("days_long"), "real_n": auto.get("real_n"),
                     "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes")},
            "note": note, "proposals": props[-20:], "twins": twins, "requests": requests,
+           "engine": auto.get("engine"), "archive": arch_on,
            "asks": _lj("asks.json", {}).get("asks", [])[-40:]}
     try:
-        out["journeys"] = lab_journeys(items, props, twins, auto, _lj("decisions.json", {}))
+        out["journeys"] = lab_journeys(items, props, twins, auto, _lj("decisions.json", {}), arch_on)
     except Exception as e:
         out["journeys"] = []; out["journeys_err"] = str(e)[:100]
     _LAB_CACHE.update(t=time.time(), data=out)

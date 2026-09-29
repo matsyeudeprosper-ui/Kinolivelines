@@ -42,6 +42,7 @@ HIST = os.path.join(LAB, "auto_history.jsonl")
 def _slim(d):
     return {k: val for k, val in d.items() if k not in ("curve", "pnls")}
 REQ = os.path.join(LAB, "requests.json")
+ARCH = os.path.join(LAB, "archive.json")
 PROP = os.path.join(LAB, "proposals.json")
 TWINS = os.path.join(LAB, "twins.json")
 LOG = os.path.join(LAB, "researcher.log")
@@ -137,8 +138,16 @@ def main():
     t0 = time.time()
     sym, R = H.bars()
     say(f"researcher start: {sym} {len(R)/1440:.1f} days, {'quick' if quick else 'full battery'}")
-    base = H.run_cfg(R, 7.0, {})
-    say(f"base: {base['full']['trades']} trades net {base['full']['net']:+.2f} worst {base['full']['worst_debt']:.2f}")
+    # 2026-09-29 (owner): one answer for a generic account is a fiction - the
+    # daily cap changes it. Every what-if is judged against BOTH shapes a real
+    # account has, and only counts as an A when both agree.
+    REF = {}
+    for _r in H.REFS:
+        _c = H.package_cfg(_r, {"balance": 252.0} if _r == "valere" else {})
+        REF[_r] = (_c, H.run_cfg(R, 7.0, _c))
+        say(f"reference {_r}: {REF[_r][1]['full']['trades']} trades "
+            f"net {REF[_r][1]['full']['net']:+.2f} worst {REF[_r][1]['full']['worst_debt']:.2f}")
+    base = REF["base"][1]
     # 2026-09-29 (owner): the long window and the real trades, as two more
     # views - the 42-day verdict stays the verdict; a weaker long-window or
     # real-trade result is a caution, never a drop
@@ -159,6 +168,12 @@ def main():
     if baseT:
         say(f"real trades: {len(T)} entries since the journal began, base net {baseT['net']:+.2f} (actual {baseT['actual']:+.2f})")
     prev = load_json(AUTO, {"variants": []})
+    # a verdict from an older engine cannot vouch for tonight's: the two A's
+    # rule must not be satisfied by a number we no longer believe
+    if prev.get("engine") != H.ENGINE:
+        say(f"previous run was engine {prev.get('engine')}, this is {H.ENGINE} - "
+            "yesterday's verdicts are not counted towards a twin")
+        prev = {"variants": []}
     prev_by = {v["id"]: v for v in prev.get("variants", [])}
     items = [b for b in BATTERY if (not quick or b[0] in QUICK)]
     props = load_json(PROP, {"proposals": []})
@@ -169,14 +184,24 @@ def main():
     hist = open(HIST, "a", encoding="utf-8")
     for vid, fr, en, fam, cfg in items:
         try:
-            v = H.run_cfg(R, 7.0, cfg)
+            byref = {}
+            for _r, (_c, _b) in REF.items():
+                _v = H.run_cfg(R, 7.0, H.package_cfg(_r, dict(cfg, **({"balance": 252.0} if _r == "valere" else {}))))
+                byref[_r] = {"verdict": H.verdict(_v, _b),
+                             "diff_net": round(_v["full"]["net"] - _b["full"]["net"], 2),
+                             "diff_worst": round(_v["full"]["worst_debt"] - _b["full"]["worst_debt"], 2)}
+            v = H.run_cfg(R, 7.0, H.package_cfg("base", cfg))
             vd = H.verdict(v, base)
+            # an A has to hold on an account WITH the daily cap as well
+            if vd == "A" and byref.get("valere", {}).get("verdict") != "A":
+                vd = "B"
         except Exception as e:
             say(f"{vid}: ERROR {type(e).__name__}: {e}")
             continue
         prevv = (prev_by.get(vid) or {}).get("verdict")
         rec = {"id": vid, "title_fr": fr, "title_en": en, "family": fam, "cfg": H.cfg_of(cfg), "full": _slim(v["full"]),
                "h1": _slim(v["h1"]), "h2": _slim(v["h2"]), "verdict": vd, "prev_verdict": prevv,
+               "engine": H.ENGINE, "byref": byref,
                "src": "chercheur" if any(p.get("id") == vid for p in props.get("proposals", [])) else "battery",
                "diff_net": round(v["full"]["net"] - base["full"]["net"], 2),
                "diff_worst": round(v["full"]["worst_debt"] - base["full"]["worst_debt"], 2)}
@@ -246,11 +271,54 @@ def main():
             save_json(REQ, rq)
     except Exception as e:
         say(f"requests lifecycle: {e}")
+    # 2026-09-29 (owner): "auto remove the ones no longer relevant, or archive
+    # them so the chercheur stays aware". An idea leaves the board after three
+    # nights of C in a row on the CURRENT engine. It keeps living in
+    # lab/archive.json, which the chercheur must read before proposing.
+    try:
+        arch = load_json(ARCH, {"archived": {}, "engine": H.ENGINE})
+        if arch.get("engine") != H.ENGINE:
+            arch = {"archived": {}, "engine": H.ENGINE}   # a new engine re-opens every case
+            say("engine changed: archive cleared, every idea gets a fresh hearing")
+        A = arch.setdefault("archived", {})
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        protected = set()
+        try:
+            for it in json.load(open(os.path.join(LAB, "registry.json"), encoding="utf-8")).get("items", []):
+                if it.get("status") in ("deployed", "forward", "candidate") or it.get("reference"):
+                    protected.add(it["id"])
+            for t in load_json(TWINS, {"twins": []}).get("twins", []):
+                protected.add(t.get("id"))
+        except Exception:
+            pass
+        for r in out:
+            vid = r["id"]
+            if vid in protected:
+                A.pop(vid, None)
+                continue
+            e = A.setdefault(vid, {"c": 0, "title_fr": r["title_fr"], "title_en": r["title_en"]})
+            e["title_fr"], e["title_en"] = r["title_fr"], r["title_en"]
+            if r["verdict"] == "C":
+                e["c"] = int(e.get("c") or 0) + 1
+                if e["c"] >= 3 and not e.get("since"):
+                    e["since"] = today
+                    e["why_fr"] = f"trois nuits de suite à C ({r['diff_net']:+.0f} $ la dernière)"
+                    e["why_en"] = f"three nights of C in a row ({r['diff_net']:+.0f} $ on the last one)"
+                    say(f"{vid}: archived after 3 nights of C")
+            else:
+                if e.get("since"):
+                    say(f"{vid}: back on the board, it scored {r['verdict']}")
+                e["c"] = 0
+                e.pop("since", None)
+        save_json(ARCH, arch)
+    except Exception as e:
+        say(f"archive: {e}")
     counts = {}
     for r in out:
         counts[r["verdict"]] = counts.get(r["verdict"], 0) + 1
     save_json(AUTO, {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "symbol": sym,
                      "days": round(len(R) / 1440, 1), "base": base, "variants": out, "counts": counts,
+                     "engine": H.ENGINE, "refs": {k: _slim(vv["full"]) for k, (cc, vv) in REF.items()},
                      "days_long": (round(len(RL) / 1440) if RL is not None else None), "base_long": baseL,
                      "base_real": baseT, "real_n": (len(T) if T else 0),
                      "minutes": round((time.time() - t0) / 60, 1)})

@@ -88,6 +88,17 @@ CHEST_CAP = getattr(B, "CHEST_CAP", 10.0)
 BANK0 = 10.0    # the starting allowance for bank_mult, about two average losses
 BAL0 = 230.0    # the reference balance, the same one structure_bos_bot uses
 CFG_KEYS = list(CFG_BASE.keys())
+# 2026-09-29 (owner): bump this whenever a change makes old numbers wrong.
+# Anything stored under an older stamp is shown as "to be re-checked" and is
+# never compared against a number from this one.
+#   2026-09-29a  the original engine: no jar, no day cap, no kill line, a flat
+#                0.02 lot for every account, and the midpoint bullet priced at
+#                1.3 x distance (which silently assumed rr = 0.8)
+#   2026-09-29b  jar, day cap, kill line, per-account lot and cap, bullet at
+#                (0.5 + rr) x distance
+ENGINE = "2026-09-29b"
+# the two shapes every real account has: with a daily cap and without
+REFS = ("base", "valere")
 # 2026-09-29 (owner): "does the break's own character say whether it will
 # run?" Set TRACE to a list to record one dict per trade: the power of the
 # breaking candle, the age of the level it broke, how often that level had

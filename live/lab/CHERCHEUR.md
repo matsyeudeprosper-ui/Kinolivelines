@@ -79,6 +79,27 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
    A twin with `"status":"stopped"` and `"reason":"duel_lost"` lost against
    the real robot over the same period: do not re-propose that exact dial.
 6b. `lab/asks.json` — the seeds people asked you to look at (see above).
+6c. `lab/archive.json` — ideas that left the board after THREE nights of C in
+   a row. They are still tried every night, they are simply not shown to
+   members any more. Read it before proposing: do not re-propose one of them
+   at the same dose without a reason, and say the reason. The archive is
+   cleared whenever the engine stamp changes, because every case deserves a
+   fresh hearing on a corrected engine.
+
+## The engine stamp (read this before trusting any number)
+`lab/harness.py` carries `ENGINE`. On 2026-09-29 it went from `2026-09-29a`
+to `2026-09-29b`, and everything measured before that is WRONG:
+  * the midpoint bullet was priced at 1.3 x the distance, which silently
+    assumed a 0.8 target, so every other target was mispriced;
+  * the jar, the daily cap and the kill line were not modelled at all;
+  * every account was replayed with a flat 0.02 lot, when the live bot
+    resizes the lot AND the daily cap by balance / 200.
+Consequences you must not forget: the 0.6 target was an artifact and is now
+C; a 1.0 target looked like an A on the generic account and is C on every
+real one. `auto.json` carries `engine` and each variant carries `byref` with
+its verdict on BOTH shapes of account (`base` = no daily cap, `valere` = with
+one). An A now requires both to agree. NEVER quote a verdict without saying
+which account shape and which balance it is for.
 7. `python review/valere_loss_profile.py` — what the last losses share
    (and read the winners' side of the same table).
 8. `mkt_mem/` — one row per minute of market state, if you need it.
