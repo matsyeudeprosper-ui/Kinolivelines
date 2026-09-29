@@ -36,6 +36,13 @@ decide and never deploy; the engine judges with fixed rules, Kino promotes.
 
 ## What you may write (nothing else)
 - `lab/proposals.json` — append new what-ifs (see grammar). Never delete.
+- `lab/asks.json` — members and Kino can tap "Demander au chercheur" on a
+  seed (a cut of the real trades). Each entry `{"id","seed","seed_fr",
+  "by","date","note","status":"open"}` MUST get an answer the same night:
+  either a proposal whose `"ask"` field carries the ask id (then set the
+  ask's `"status":"proposed"` and `"proposal"` = its id), or, if the seed
+  cannot become a dial yet, `"answer_fr"`/`"answer_en"` (plain words, two
+  sentences, honest) and `"status":"answered"`. Change only those fields.
 - `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials the menu lacks. Append only.
 - `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],
   "sections":[{"title_fr","title_en","fr","en"}, ...]}` — the `sections` are the
@@ -69,6 +76,9 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
    re-propose an idea that is there with verdict C at the SAME dose; a
    different dose or company is fair game if you say why.
 6. `lab/twins.json` and `lab/twin_*_state.json` — the paper twins running.
+   A twin with `"status":"stopped"` and `"reason":"duel_lost"` lost against
+   the real robot over the same period: do not re-propose that exact dial.
+6b. `lab/asks.json` — the seeds people asked you to look at (see above).
 7. `python review/valere_loss_profile.py` — what the last losses share
    (and read the winners' side of the same table).
 8. `mkt_mem/` — one row per minute of market state, if you need it.

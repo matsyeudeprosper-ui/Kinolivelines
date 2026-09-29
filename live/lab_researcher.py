@@ -196,7 +196,15 @@ def main():
             if p.get("id") == vid and p.get("status", "pending") == "pending":
                 p["status"] = "done"; p["verdict"] = vd; p["done"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         if vd == "A":
-            ensure_twin(vid, fr, en, H.cfg_of(cfg), vd)
+            if ensure_twin(vid, fr, en, H.cfg_of(cfg), vd):
+                try:
+                    import twin_judge as TJ      # 2026-09-29: tell Kino + the Strategie members
+                    TJ.emit("twin_started", ("\U0001f9ea Le labo : un jumeau démarre",
+                                             f"« {fr} » a eu un A cette nuit. Une copie du robot l’essaie pour de faux à partir de maintenant."),
+                            ("\U0001f9ea The lab: a twin starts",
+                             f"“{en}” scored an A tonight. A copy of the robot tries it for pretend from now on."), members=True)
+                except Exception as e:
+                    say(f"event failed: {e}")
     hist.close()
     save_json(PROP, props)
     # the dials built on the chercheur's requests retire by themselves after

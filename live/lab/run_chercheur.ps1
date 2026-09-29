@@ -27,7 +27,10 @@ try {
 } catch { Say ("chercheur session failed: " + $_.Exception.Message) }
 try {
     python lab/pretest_fill.py *> (Join-Path $lab "pretest_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/chercheur_latest.json lab/notes 2>$null
+    # 2026-09-29: judge the twins (retire the losers, flag the winners) and
+    # send the night's events (new dial requests, answered asks)
+    python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null
