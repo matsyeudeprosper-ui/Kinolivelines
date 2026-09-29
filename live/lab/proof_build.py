@@ -62,7 +62,18 @@ def sources():
 def main():
     t0 = time.time()
     sym, R = H.bars()
-    base = H.run_cfg(R, 7.0, {})
+    # 2026-09-29 (owner): the test now runs with each account's OWN rules.
+    # The generic run stays as `base` for anything that has no package.
+    base = H.run_cfg(R, 7.0, H.package_cfg("base"))
+    packages = {}
+    for pk in ("base", "valere", "special_10", "kino_sans_frein", "demo", "special"):
+        try:
+            cfg = H.package_cfg(pk)
+            v = H.run_cfg(R, 7.0, cfg)
+            packages[pk] = {"full": v["full"], "h1": v["h1"], "h2": v["h2"],
+                            "day_cap": cfg["day_cap"], "jar": cfg["jar"], "kill_net": cfg["kill_net"]}
+        except Exception as e:
+            print("package", pk, "failed:", e)
     _, RL = H.bars_long()
     base_long = H.run_cfg(RL, 7.0, {}) if RL is not None and len(RL) > len(R) + 7 * 1440 else None
     T = H.real_entries()
@@ -95,7 +106,7 @@ def main():
     out = {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "symbol": sym,
            "days": round(len(R) / 1440, 1), "base": base, "days_long": (round(len(RL) / 1440) if RL is not None else None),
            "base_long": base_long, "expected": expected, "sources": src, "union": union, "rules": rules,
-           "seconds": round(time.time() - t0, 1)}
+           "packages": packages, "seconds": round(time.time() - t0, 1)}
     tmp = OUT + ".tmp"
     io.open(tmp, "w", encoding="utf-8").write(json.dumps(out, ensure_ascii=False))
     os.replace(tmp, OUT)

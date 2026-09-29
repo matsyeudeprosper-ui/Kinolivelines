@@ -19,6 +19,7 @@ Verdict rules (fixed, never tuned):
 import argparse
 import bisect
 import json
+import math
 import os
 import sys
 from datetime import datetime, timezone
@@ -61,7 +62,23 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # balance". risk_pct is the share of the account one trade may
             # risk, and it is what should ever be deployed; risk_max stays as
             # the absolute version used to find the level in the first place.
-            "risk_pct": 0.0}
+            "risk_pct": 0.0,
+            # 2026-09-29 (owner: "does the backtest include the rattrapage and
+            # the daily caps?"). It did not. These three close the gap:
+            #   jar      model the real bullet economy - the jar has to pay for
+            #            the extra lots, it never buys more recovery than the
+            #            debt needs, and it fires only when the market is calm
+            #   day_cap  stop taking trades once the day's realised profit
+            #            reaches this (waived while still in the red, like live)
+            #   kill_net stop for good once the account is this far down
+            # All default to OFF so every earlier measurement stays comparable.
+            "jar": False, "day_cap": 0.0, "kill_net": 0.0}
+# the live bot's own numbers, read from it so the two cannot drift apart
+JAR_SKIM = getattr(B, "JAR_SKIM", 0.50)
+JAR_STAKE = getattr(B, "JAR_STAKE", 0.50)
+JAR_DEBT_MULT = getattr(B, "JAR_DEBT_MULT", 0.5)
+JAR_FLOOR_CAP = getattr(B, "JAR_FLOOR_CAP", 10.0)
+CHEST_CAP = getattr(B, "CHEST_CAP", 10.0)
 BANK0 = 10.0    # the starting allowance for bank_mult, about two average losses
 BAL0 = 230.0    # the reference balance, the same one structure_bos_bot uses
 CFG_KEYS = list(CFG_BASE.keys())
@@ -82,6 +99,37 @@ def bars(n=60000):
     R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 0, n)
     mt5.shutdown()
     return sym, R
+
+
+def package_cfg(name, over=None):
+    """2026-09-29 (owner): test an idea with ONE account's own rules, not a
+    generic account. Reads live/owl_packages.json and follows `extends`, so
+    the test and the bot cannot drift apart."""
+    try:
+        P = json.load(open(os.path.join(LIVE, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        return cfg_of(over)
+    pk = P.get("packages") or P
+    chain, seen, cur = [], set(), name
+    while cur and cur in pk and cur not in seen:
+        seen.add(cur)
+        chain.append(pk[cur])
+        cur = pk[cur].get("extends")
+    merged = {}
+    for layer in reversed(chain):
+        merged.update(layer)
+    c = dict(CFG_BASE)
+    c["jar"] = bool(merged.get("jar", True))
+    c["day_cap"] = float(merged.get("day_cap") or 0.0)
+    c["kill_net"] = float(merged.get("kill_net") or 0.0)
+    c["lot"] = float(merged.get("base_lot") or CFG_BASE["lot"])
+    c["bullets"] = float(merged.get("max_extra", CFG_BASE["bullets"]))
+    if merged.get("nervosity") is False:
+        c["storm"] = 1.85        # the hard ceiling stays even with no gate
+    for k, v in (over or {}).items():
+        if k in CFG_BASE:
+            c[k] = v
+    return c
 
 
 def cfg_of(over=None):
@@ -116,6 +164,9 @@ def simulate(R, spread, cfg):
     blocked = 0
     last_hour = None
     pnls = []
+    chest = 0.0
+    day_profit = 0.0
+    dead = False
     cur_tr = None
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
@@ -127,6 +178,7 @@ def simulate(R, spread, cfg):
         dk = g.strftime("%Y-%m-%d")
         if dk != day_key:
             day_key = dk
+            day_profit = 0.0
             curve.append(run)
         if pos:
             d, e, sl, tp, dist, mid, hit_mid, lot = pos
@@ -141,10 +193,37 @@ def simulate(R, spread, cfg):
                 debt = max(0.0, pk - run)
                 before = run
                 run += pts * lot
-                fire = debt > 0.5 and streak < K
-                if fire and hit_mid and NB > 0:
-                    bpts = ((1.3 * dist - spread) if win else -(dist / 2.0 + spread))
-                    run += bpts * BLOT * NB
+                nb = 0
+                if debt > 0.5 and streak < K and hit_mid and NB > 0:
+                    if c["jar"]:
+                        # the live bot's own arithmetic: stake part of the jar,
+                        # never buy more recovery than the debt needs, and take
+                        # nothing when the market is not calm. `nv` is the
+                        # reading at entry, the closest we have to the midpoint.
+                        r001 = dist * BLOT
+                        gain001 = rr * r001
+                        by_budget = int((chest * JAR_STAKE) // r001) if r001 > 0 else 0
+                        by_debt = int(math.ceil(debt / gain001)) if gain001 > 0 else 0
+                        nb = 0 if nv > 1.0 else max(0, min(int(NB), by_budget, by_debt))
+                    else:
+                        nb = int(NB)
+                bpts = 0.0
+                if nb:
+                    # the bullet enters at the midpoint, so it walks (0.5 + rr)
+                    # of the distance to the target. This was hardcoded to 1.3,
+                    # which silently assumed rr = 0.8 and mispriced every other
+                    # target we tested.
+                    bpts = (((0.5 + rr) * dist - spread) if win else -(dist / 2.0 + spread))
+                    run += bpts * BLOT * nb
+                if c["jar"]:
+                    if nb and bpts < 0:
+                        chest = max(0.0, chest + bpts * BLOT * nb)
+                    if win:
+                        chest += JAR_SKIM * (pts * lot)
+                    if run > pk:
+                        chest = min(CHEST_CAP, chest + (run - pk))
+                    chest = min(chest, max(JAR_FLOOR_CAP, JAR_DEBT_MULT * max(0.0, pk - run)))
+                day_profit += run - before
                 pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(win)
@@ -187,6 +266,11 @@ def simulate(R, spread, cfg):
         if touched and last_flip_t is not None and cont_left < c["n_cont"]:
             cont_left = min(int(c["n_cont"]), cont_left + 1)
         if sig is None or pos:
+            continue
+        if dead:
+            continue
+        if c["kill_net"] and run <= float(c["kill_net"]):
+            dead = True          # the live bot closes, stops and says KILL
             continue
         if not any(f > t - B.AWAKE_WIN for f in flips):
             continue
@@ -234,6 +318,10 @@ def simulate(R, spread, cfg):
                 cont_left -= 1
             else:
                 continue
+        # the daily profit stop, waived while still in the red like the live bot
+        if c["day_cap"] and day_profit >= float(c["day_cap"]) and debt_now <= 0.5:
+            blocked += 1
+            continue
         if c["only_kind"] == "flip" and not flip:
             blocked += 1
             continue

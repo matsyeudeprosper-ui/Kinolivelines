@@ -7037,22 +7037,25 @@ def lab_decide(jid, d, note):
         except Exception as e:
             return False, str(e)[:80]
     _LAB_CACHE.update(t=0.0, data=None)
+    _PROOF_CACHE.clear()
     return True, "ok"
 
 # ---- 2026-09-29 (owner): "La preuve" - the replay of the whole strategy,
 # the real trades against it, and whether to stay in. Numbers come from
 # lab/proof.json (lab/proof_build.py, nightly); the twins come live. ----
-_PROOF_CACHE = {"t": 0.0, "data": None}
+_PROOF_CACHE = {}
 
 
-def proof_payload():
-    if _PROOF_CACHE["data"] is not None and time.time() - _PROOF_CACHE["t"] < 300:
-        return _PROOF_CACHE["data"]
+def proof_payload(pkg="base"):
+    _c = _PROOF_CACHE.get(pkg)
+    if _c and time.time() - _c[0] < 300:
+        return _c[1]
     try:
         p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
     except Exception:
         p = {}
-    base = (p.get("base") or {})
+    # each account is tested with its own rules; fall back to the generic run
+    base = ((p.get("packages") or {}).get(pkg)) or (p.get("base") or {})
     full, h1, h2 = base.get("full") or {}, base.get("h1") or {}, base.get("h2") or {}
     days = round(p.get("days") or 0)
     lights = []
@@ -7144,8 +7147,9 @@ def proof_payload():
                       "net": t.get("net"), "real_net": ((t.get("duel") or {}).get("real") or {}).get("net")} for t in twins],
            "band": (proof_band(full.get("pnls"), (un.get("trades") or 0)) if un else None),
            "stats": proof_stats(full, days), "stats_long": proof_stats((p.get("base_long") or {}).get("full"), p.get("days_long") or 0),
-           "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]}}
-    _PROOF_CACHE.update(t=time.time(), data=out)
+           "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]},
+           "package": pkg, "day_cap": base.get("day_cap"), "jar": base.get("jar")}
+    _PROOF_CACHE[pkg] = (time.time(), out)
     return out
 
 
@@ -9852,7 +9856,11 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-29: "La preuve" - every member; the public showcase reads it
             # too (owner: the best sales page we have), without the personal block
             try:
-                _pp = dict(proof_payload())
+                try:
+                    _pkg = (PKG.for_account(user.get("id") or "") or {}).get("package") or "base"
+                except Exception:
+                    _pkg = "base"
+                _pp = dict(proof_payload(_pkg))
                 _pp["mine"] = None if user.get("public") else proof_mine(user.get("id") or "")
                 _pp["history"] = proof_history(_pp)
                 self._send(json.dumps(_pp), "application/json")
