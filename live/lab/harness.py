@@ -182,8 +182,21 @@ def simulate(R, spread, cfg):
         pk2 = max(pk2, v)
         dd = min(dd, v - pk2)
         worst = max(worst, pk2 - v)
+    # 2026-09-29 (proof page): the daily curve with its dates - `curve[i]`
+    # is the running net at the START of day i, so pair it with day keys
+    days = []
+    if len(R):
+        seen = set()
+        for r in R:
+            k = datetime.fromtimestamp(int(r["time"]), tz=timezone.utc).strftime("%Y-%m-%d")
+            if k not in seen:
+                seen.add(k)
+                days.append(k)
+    dated = [[days[i], round(v, 2)] for i, v in enumerate(curve) if i < len(days)]
+    if days:
+        dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked}
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "curve": dated}
 
 
 def run_cfg(R, spread, cfg):

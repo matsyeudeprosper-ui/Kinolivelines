@@ -1515,6 +1515,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   border-top:1px solid rgba(255,255,255,.06);padding:10px 0 2px;
   font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
+<div class="panel" id="proofcard" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)">
+ <div class="lbl" id="proof-lbl">La preuve <span class="hint">&middot; en direct</span></div>
+ <div id="proof-lights" style="margin-top:10px"></div>
+ <button class="shbtn shmain" style="margin:12px 0 0;padding:11px;font-size:.9rem" onclick="proofPage()">Voir la preuve &rsaquo;</button>
+</div>
 <div class="panel" id="whycard" style="display:none;margin-top:12px">
  <div class="lbl">Le robot explique <span class="hint">&middot; les occasions laiss&eacute;es passer</span></div>
  <div id="why-sum" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:8px"></div>
@@ -4388,6 +4393,51 @@ function renderNext(d){const el=document.getElementById('rb-next');if(!el)return
  setH(el,'<span style="font-size:.6rem;color:var(--accent-soft);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">'+(en?'Next action':'Prochaine action')+'</span>'+t);
  el.style.display='block';
 }
+// ---- 2026-09-29 (owner): "La preuve" - the replay of the whole strategy,
+// the real trades against it, and whether to stay in ----
+const PL={green:['var(--up-soft)','\u2713'],amber:['var(--warn)','!'],red:['var(--down-soft)','\u00d7'],grey:['var(--muted)','\u2026']};
+function proofDot(c){const x=PL[c]||PL.grey;return '<i style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:'+x[0]+';color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">'+x[1]+'</i>';}
+async function loadProof(d){const el=document.getElementById('proofcard');if(!el)return;
+ if(d.public){el.style.display='none';return;}
+ if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
+ let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ if(!j||j.err){el.style.display='none';return;}
+ window._proof=j;const en=LANG()==='en';const Q={replay:en?'The replay still makes money':'Le rejeu gagne encore',track:en?'The real trades follow it':'Le direct suit le rejeu',lab:en?'No twin beats it':'Aucun jumeau ne fait mieux'};
+ document.getElementById('proof-lbl').innerHTML=(en?'The proof':'La preuve')+' <span class="hint">\u00b7 '+(en?'live':'en direct')+'</span>';
+ setH(document.getElementById('proof-lights'),(j.lights||[]).map(l=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.88rem;color:var(--text)">'+proofDot(l.c)+'<span>'+(Q[l.k]||l.k)+'</span></div>').join('')+
+  '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)"><b style="font-size:1rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><span style="font-size:.72rem;color:var(--muted);margin-left:auto">'+(en?'Should we stay?':'Faut-il rester ?')+'</span></div>');
+ el.querySelector('.shbtn').textContent=(en?'See the proof':'Voir la preuve')+' \u203a';el.style.display='';}
+function proofCurve(cv,rules,en){if(!cv||cv.length<2)return '';const ys=cv.map(p=>p[1]).concat([0]);const mx=Math.max(...ys),mnv=Math.min(...ys),sp=Math.max(1e-6,mx-mnv);const n=cv.length;
+ const X=i=>(6+i/(n-1)*288).toFixed(1),Y=v=>(8+(1-(v-mnv)/sp)*74).toFixed(1);const pts=cv.map((p,i)=>X(i)+','+Y(p[1])).join(' ');
+ const idx={};cv.forEach((p,i)=>{idx[p[0]]=i;});const marks=(rules||[]).map((r,k)=>{const i=idx[r.date];if(i===undefined)return '';return '<line x1="'+X(i)+'" y1="4" x2="'+X(i)+'" y2="90" style="stroke:var(--warn);opacity:.55" stroke-dasharray="2 3"/><text x="'+X(i)+'" y="98" text-anchor="middle" style="font-size:7px;fill:var(--warn)">'+(k+1)+'</text>';}).join('');
+ const last=cv[n-1][1];
+ return '<svg viewBox="0 0 300 102" style="width:100%;height:118px;display:block;margin-top:8px"><line x1="6" y1="'+Y(0)+'" x2="294" y2="'+Y(0)+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/>'+marks+'<polyline points="'+pts+'" fill="none" style="stroke:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'" stroke-width="2" stroke-linejoin="round"/><circle cx="'+X(n-1)+'" cy="'+Y(last)+'" r="3" style="fill:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'"/><text x="6" y="'+(parseFloat(Y(0))-3)+'" style="font-size:7px;fill:var(--muted)">0</text><text x="6" y="100" style="font-size:7px;fill:var(--muted)">'+_escS(cv[0][0].slice(5))+'</text><text x="294" y="100" text-anchor="end" style="font-size:7px;fill:var(--muted)">'+_escS(cv[n-1][0].slice(5))+'</text></svg>';}
+function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';const esc=_escS;const mn=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+$':'-$')+Math.abs(v).toFixed(0));
+ const tile=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.95rem;color:'+(c||'var(--text)')+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;line-height:1.2;display:block;margin-top:3px">'+l+'</span></div>';
+ const F=j.base.full||{},H1=j.base.h1||{},H2=j.base.h2||{},L=(j.base_long||{}).full||null;
+ let h='<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft)">'+(en?'The proof \u00b7 updated ':'La preuve \u00b7 mise \u00e0 jour ')+esc((j.updated||'').slice(0,16).replace('T',' '))+' UTC</div><h3 style="margin:6px 0 4px">'+(en?'Is the strategy still worth staying in?':'La strat\u00e9gie vaut-elle encore qu\u2019on reste ?')+'</h3>'+
+  '<div style="font-size:.84rem;color:var(--text2);line-height:1.5">'+(en?'Three questions, answered by the same engine every night, with the rules of judgement fixed and public.':'Trois questions, tranch\u00e9es par le m\u00eame moteur chaque nuit, avec des r\u00e8gles de jugement fixes et publiques.')+'</div>';
+ // 1 - the replay
+ h+='<div class="lbl" style="margin-top:16px">1 \u00b7 '+(en?'What does the replay say?':'Que dit le rejeu ?')+'</div><div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'The robot exactly as it is today, replayed on the last '+Math.round(j.days)+' days of the market, one lot of 0.02, spread counted.':'Le robot exactement tel qu\u2019il est aujourd\u2019hui, rejou\u00e9 sur les '+Math.round(j.days)+' derniers jours du march\u00e9, un lot de 0,02, spread compt\u00e9.')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(F.net),(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(-(F.worst_debt||0)),'var(--down-soft)')+tile('trades',F.trades||0)+tile(en?'won':'gagn\u00e9s',(F.wr||0)+'\u202f%')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'first half':'1\u00e8re moiti\u00e9',mn(H1.net),(H1.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'second half':'2e moiti\u00e9',mn(H2.net),(H2.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+(L?tile((en?'over ':'sur ')+j.days_long+(en?' days':' jours'),mn(L.net),(L.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile((en?'hole, ':'trou, ')+j.days_long+(en?' d':' j'),mn(-(L.worst_debt||0)),'var(--down-soft)'):'')+'</div>'+
+  proofCurve(F.curve,j.rules,en)+
+  (j.rules&&j.rules.length?'<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.5">'+(en?'Dashed lines: the day a rule entered the robot. ':'Traits pointill\u00e9s : le jour o\u00f9 une r\u00e8gle est entr\u00e9e dans le robot. ')+j.rules.map((r,k)=>'<b style="color:var(--warn)">'+(k+1)+'</b> '+esc((r.date||'').slice(5))+' '+esc(en?r.title_en:r.title_fr)).join(' \u00b7 ')+'</div>':'');
+ // 2 - the real trades
+ const U=j.union,E=j.expected,RS=j.replay_same;
+ h+='<div class="lbl" style="margin-top:18px">2 \u00b7 '+(en?'Do the real trades follow the replay?':'Le direct suit-il le rejeu ?')+'</div>';
+ if(U){h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'All the real entries the robot took since '+esc(U.since)+', the same signal counted once across accounts, against what the replay expected over the same dates.':'Toutes les vraies entr\u00e9es prises par le robot depuis le '+esc(U.since)+', un m\u00eame signal compt\u00e9 une fois entre les comptes, contre ce que le rejeu attendait sur les m\u00eames dates.')+'</div>'+
+   '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'real, money':'r\u00e9el, argent',mn(U.net),(U.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'replay, same dates':'rejeu, m\u00eames dates',mn(E?E.net:null),(E&&E.net>=0)?'var(--up-soft)':'var(--down-soft)')+tile(en?'replay, same entries':'rejeu, m\u00eames entr\u00e9es',mn(RS?RS.net:null),(RS&&RS.net>=0)?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+   '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'real trades':'vrais trades',U.trades||0)+tile(en?'won':'gagn\u00e9s',(U.wr===null||U.wr===undefined?'\u2014':U.wr+'\u202f%'))+tile(en?'replay, won':'rejeu, gagn\u00e9s',(F.wr||0)+'\u202f%')+'</div>'+
+   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.45">'+(en?'Under 30 real trades the gap can still be luck. The replay uses 0.02 lots; accounts trade their own size.':'Sous 30 vrais trades, l\u2019\u00e9cart peut encore \u00eatre de la chance. Le rejeu joue 0,02 lot ; chaque compte joue sa propre taille.')+'</div>';
+  const A=(j.accounts||[]).filter(a=>!a.demo);if(A.length)h+='<div class="panel" style="padding:4px 14px;margin-top:10px">'+A.map(a=>'<div class="kv"><div class="kvt"><b>'+esc(a.name)+'</b><span>'+a.trades+' trades'+(a.adds?' + '+a.adds+(en?' boosts':' renforts'):'')+' \u00b7 '+(a.wr===null?'\u2014':a.wr+'\u202f%')+' '+(en?'won':'gagn\u00e9s')+' \u00b7 '+(en?'since ':'depuis le ')+esc((a.since||'').slice(5))+'</span></div><b style="color:'+((a.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(a.net)+'</b></div>').join('')+'</div>';}
+ else h+='<div style="font-size:.84rem;color:var(--muted);margin-top:6px">'+(en?'No real trades in the journal yet.':'Pas encore de vrais trades dans le journal.')+'</div>';
+ // 3 - stay?
+ h+='<div class="lbl" style="margin-top:18px">3 \u00b7 '+(en?'Should we stay?':'Faut-il rester ?')+'</div><div style="margin-top:6px">'+(j.lights||[]).map(l=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:.86rem;line-height:1.5;color:var(--text)">'+proofDot(l.c)+'<div>'+esc(en?l.en:l.fr)+'</div></div>').join('')+'</div>'+
+  '<div class="panel" style="margin-top:10px;padding:12px 14px;border-color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'"><b style="font-size:1.05rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><div style="font-size:.74rem;color:var(--muted);margin-top:4px;line-height:1.45">'+(en?'Green: all three say yes. Amber: one asks for watching. Red: one says no. The rules never move; the numbers do, every night.':'Vert : les trois disent oui. Orange : l\u2019un demande de surveiller. Rouge : l\u2019un dit non. Les r\u00e8gles ne bougent jamais ; les chiffres, si, chaque nuit.')+'</div></div>';
+ if((j.twins||[]).length)h+='<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.5">'+(en?'Twins in the duel: ':'Jumeaux en duel : ')+j.twins.map(t=>esc(en?t.title_en:t.title_fr)+' ('+(t.trades||0)+' trades, '+({ahead:en?'ahead':'devant',behind:en?'behind':'derri\u00e8re',even:en?'even':'\u00e9galit\u00e9',early:en?'too early':'trop t\u00f4t'}[t.status]||'')+')').join(' \u00b7 ')+'. '+(en?'Details in the lab.':'D\u00e9tails dans le labo.')+'</div>';
+ h+='<div style="font-size:.7rem;color:var(--muted);margin-top:12px;line-height:1.5">'+(en?'Replays use MetaTrader 5 one-minute candles of '+esc(j.symbol||'BTCUSD')+'. A: better on both halves and overall. B: a little better. C: no. These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published in the open.':'Les rejeux utilisent les bougies d\u2019une minute MetaTrader 5 de '+esc(j.symbol||'BTCUSD')+'. A : mieux sur les deux moiti\u00e9s et au total. B : un peu mieux. C : non. Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s en clair.')+'</div>';
+ sheet('<div style="max-height:78vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
  if(window._whyT&&Date.now()-window._whyT<300000)return;window._whyT=Date.now();
@@ -5414,7 +5464,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -6804,6 +6854,102 @@ def lab_decide(jid, d, note):
             return False, str(e)[:80]
     _LAB_CACHE.update(t=0.0, data=None)
     return True, "ok"
+
+# ---- 2026-09-29 (owner): "La preuve" - the replay of the whole strategy,
+# the real trades against it, and whether to stay in. Numbers come from
+# lab/proof.json (lab/proof_build.py, nightly); the twins come live. ----
+_PROOF_CACHE = {"t": 0.0, "data": None}
+
+
+def proof_payload():
+    if _PROOF_CACHE["data"] is not None and time.time() - _PROOF_CACHE["t"] < 300:
+        return _PROOF_CACHE["data"]
+    try:
+        p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
+    except Exception:
+        p = {}
+    base = (p.get("base") or {})
+    full, h1, h2 = base.get("full") or {}, base.get("h1") or {}, base.get("h2") or {}
+    lights = []
+    # 1 - the replay still makes money
+    if full.get("net") is None:
+        lights.append({"k": "replay", "c": "grey", "fr": "Pas encore de rejeu cette nuit.", "en": "No replay yet tonight."})
+    elif full["net"] > 0 and h1.get("net", 0) > 0 and h2.get("net", 0) > 0:
+        lights.append({"k": "replay", "c": "green", "fr": f"Sur les {round(p.get('days') or 0)} derniers jours rejou\u00e9s, le robot gagne ({full['net']:+.0f} $) et les deux moiti\u00e9s de la p\u00e9riode gagnent aussi.",
+                       "en": f"Over the last {round(p.get('days') or 0)} days replayed, the robot makes money ({full['net']:+.0f} $) and both halves of the period do too."})
+    elif full["net"] > 0:
+        lights.append({"k": "replay", "c": "amber", "fr": f"Le rejeu gagne au total ({full['net']:+.0f} $) mais une moiti\u00e9 de la p\u00e9riode perd ({h1.get('net',0):+.0f} $ puis {h2.get('net',0):+.0f} $). \u00c0 surveiller.",
+                       "en": f"The replay wins overall ({full['net']:+.0f} $) but one half of the period loses ({h1.get('net',0):+.0f} $ then {h2.get('net',0):+.0f} $). Watch it."})
+    else:
+        lights.append({"k": "replay", "c": "red", "fr": f"Le rejeu des {round(p.get('days') or 0)} derniers jours perd ({full['net']:+.0f} $). La strat\u00e9gie est en question.",
+                       "en": f"The replay of the last {round(p.get('days') or 0)} days loses ({full['net']:+.0f} $). The strategy is in question."})
+    # 2 - the real trades follow the replay
+    ex, un = p.get("expected") or {}, p.get("union") or {}
+    if not un or not ex:
+        lights.append({"k": "track", "c": "grey", "fr": "Pas encore assez de vrais trades.", "en": "Not enough real trades yet."})
+    else:
+        n = un.get("trades") or 0
+        rs = ((un.get("replay_same_entries") or {}).get("net"))
+        gap = abs((un.get("net") or 0) - (ex.get("net") or 0))
+        tol = 0.5 * abs(ex.get("net") or 0) + 20
+        same_sign = ((un.get("net") or 0) >= 0) == ((ex.get("net") or 0) >= 0)
+        if n < 30:
+            c = "amber"
+            fr = f"{n} vrais trades depuis le {un.get('since')} : trop peu pour juger. Sur les m\u00eames dates, le rejeu attendait {ex.get('net',0):+.0f} $, les comptes ont fait {un.get('net',0):+.0f} $."
+            en = f"{n} real trades since {un.get('since')}: too few to judge. Over the same dates the replay expected {ex.get('net',0):+.0f} $, the accounts made {un.get('net',0):+.0f} $."
+        elif same_sign or gap <= tol:
+            c = "green"
+            fr = f"Les {n} vrais trades suivent le rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus sur les m\u00eames dates."
+            en = f"The {n} real trades follow the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected over the same dates."
+        elif gap <= 2 * tol:
+            c = "amber"
+            fr = f"Les vrais trades s\u2019\u00e9cartent du rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus. \u00c0 surveiller."
+            en = f"The real trades drift from the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected. Watch it."
+        else:
+            c = "red"
+            fr = f"Les vrais trades ne suivent pas le rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus."
+            en = f"The real trades do not follow the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected."
+        if rs is not None:
+            fr += f" Rejou\u00e9s sur les m\u00eames entr\u00e9es : {rs:+.0f} $."
+            en += f" Replayed on the exact same entries: {rs:+.0f} $."
+        lights.append({"k": "track", "c": c, "fr": fr, "en": en})
+    # 3 - no twin beats the robot
+    twins = []
+    try:
+        twins = [t for t in (lab_payload().get("twins") or []) if t.get("status") == "running"]
+    except Exception:
+        pass
+    ahead = [t for t in twins if ((t.get("duel") or {}).get("status") == "ahead")]
+    ready = [t for t in ahead if (t.get("duel") or {}).get("ready")]
+    if ready:
+        t = ready[0]
+        lights.append({"k": "lab", "c": "red", "fr": f"Un jumeau fait mieux que le robot apr\u00e8s 30 trades : \u00ab {t.get('title_fr')} \u00bb. Kino doit d\u00e9cider.",
+                       "en": f"A twin beats the robot after 30 trades: \u201c{t.get('title_en')}\u201d. Kino must decide."})
+    elif ahead:
+        t = ahead[0]
+        lights.append({"k": "lab", "c": "amber", "fr": f"Un jumeau est devant le robot, trop t\u00f4t pour conclure ({(t.get('duel') or {}).get('twin', {}).get('trades', 0)} trades sur 30) : \u00ab {t.get('title_fr')} \u00bb.",
+                       "en": f"A twin is ahead of the robot, too early to conclude ({(t.get('duel') or {}).get('twin', {}).get('trades', 0)} of 30 trades): \u201c{t.get('title_en')}\u201d."})
+    else:
+        lights.append({"k": "lab", "c": "green", "fr": f"Aucun des {len(twins)} jumeaux ne fait mieux que le robot pour l\u2019instant. Le robot reste notre meilleure version.",
+                       "en": f"None of the {len(twins)} twins beats the robot for now. The robot is still our best version."})
+    rank = {"green": 0, "grey": 1, "amber": 2, "red": 3}
+    worst = max(lights, key=lambda l: rank[l["c"]])["c"]
+    overall = {"green": ("Oui, on reste.", "Yes, we stay."), "grey": ("Trop t\u00f4t pour dire.", "Too early to say."),
+               "amber": ("On reste, en surveillant.", "We stay, and watch."), "red": ("En question.", "In question.")}[worst]
+    out = {"updated": p.get("updated"), "days": p.get("days"), "days_long": p.get("days_long"), "symbol": p.get("symbol"),
+           "base": {"full": full, "h1": {k: h1.get(k) for k in ("net", "worst_debt", "trades", "wr")},
+                    "h2": {k: h2.get(k) for k in ("net", "worst_debt", "trades", "wr")}},
+           "base_long": {"full": {k: v for k, v in ((p.get("base_long") or {}).get("full") or {}).items() if k != "curve"}} if p.get("base_long") else None,
+           "expected": ex, "union": {k: v for k, v in un.items() if k != "replay_same_entries"} if un else None,
+           "replay_same": (un.get("replay_same_entries") if un else None),
+           "accounts": p.get("accounts") or [], "rules": p.get("rules") or [],
+           "twins": [{"id": t.get("id"), "title_fr": t.get("title_fr"), "title_en": t.get("title_en"),
+                      "status": (t.get("duel") or {}).get("status"), "trades": t.get("trades"),
+                      "net": t.get("net"), "real_net": ((t.get("duel") or {}).get("real") or {}).get("net")} for t in twins],
+           "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]},
+           "lot": (base and 0.02)}
+    _PROOF_CACHE.update(t=time.time(), data=out)
+    return out
 
 
 def lab_payload():
@@ -9392,6 +9538,15 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             self._send(json.dumps(service_health()), "application/json")
+        elif sub == "proof":
+            # 2026-09-29: "La preuve" - every member, not the public showcase
+            try:
+                if user.get("public"):
+                    self._send(json.dumps({"err": "public"}), "application/json")
+                    return
+                self._send(json.dumps(proof_payload()), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "lab_peek":
             # 2026-09-28 (owner): every package gets a glance at the lab -
             # the counts, one rule already in the robot, and the invitation
