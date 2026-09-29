@@ -4013,7 +4013,10 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
   const N=j.note||{};
   if(N.date){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'The chercheur\u2019s notebook':'Le carnet du chercheur')+' <span class="hint">\u00b7 '+esc(N.date)+'</span></div>'+
    '<div class="panel" style="border-color:rgba(185,140,255,.35)"><div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14)"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><b style="font-size:.95rem;line-height:1.3">'+esc(en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en))+'</b><div style="font-size:.7rem;color:var(--muted);margin-top:3px">'+(en?'Written every night by the chercheur, a Claude session that reads the data and challenges the robot. It proposes; it never decides.':'\u00c9crit chaque nuit par le chercheur, une session Claude qui lit les donn\u00e9es et bouscule le robot. Il propose ; il ne d\u00e9cide jamais.')+'</div></div></div>'+
-   '<div style="font-size:.84rem;color:var(--text);line-height:1.55;margin-top:10px;white-space:pre-line">'+esc(en?(N.en||N.fr):(N.fr||N.en))+'</div></div>';}
+   '<div style="font-size:.84rem;color:var(--text);line-height:1.55;margin-top:10px;white-space:pre-line">'+esc(en?(N.en||N.fr):(N.fr||N.en))+'</div>'+
+   ((N.beliefs||[]).length?'<div class="lbl" style="margin-top:12px">'+(en?'What it believes, and why':'Ce qu\u2019il croit, et pourquoi')+'</div>'+(N.beliefs||[]).map(b=>'<div class="kv"><div class="kvt"><b>'+esc(en?(b.en||b.fr):(b.fr||b.en))+'</b><span>'+esc(b.evidence||'')+'</span></div></div>').join(''):'')+'</div>';}
+  const RQ=j.requests||[];
+  if(RQ.length){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the chercheur asks us to build':'Ce que le chercheur nous demande de construire')+' <span class="hint">\u00b7 '+(en?'dials the lab does not have yet':'des r\u00e9glages que le labo n\u2019a pas encore')+'</span></div><div class="panel" style="padding:4px 14px">'+RQ.map(r=>'<div class="kv"><div class="kvt"><b>'+esc(en?r.title_en:r.title_fr)+'</b><span>'+esc(en?(r.why_en||r.what_en||''):(r.why_fr||r.what_fr||''))+'</span></div>'+chip(en?'to build':'\u00e0 construire','var(--warn)')+'</div>').join('')+'</div>';}
   const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
   if(PR.length){h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the chercheur wants to try next':'Ce que le chercheur veut essayer ensuite')+' <span class="hint">\u00b7 '+(en?'replayed tonight':'rejou\u00e9 cette nuit')+'</span></div><div class="panel" style="padding:4px 14px">'+PR.map(p=>'<div class="kv"><div class="kvt"><b>'+esc(en?p.title_en:p.title_fr)+'</b><span>'+esc(en?(p.why_en||''):(p.why_fr||''))+'</span></div>'+chip(en?'to replay':'\u00e0 rejouer','#b98cff')+'</div>').join('')+'</div>';}
   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'What the real trades say so far':'Ce que disent les vrais trades pour l\u2019instant')+' <span class="hint">\u00b7 '+(en?'how often the robot won in each situation':'combien de fois le robot a gagn\u00e9 dans chaque situation')+'</span></div>';
@@ -6344,6 +6347,7 @@ def lab_payload():
     note = _lj("chercheur_latest.json", {})
     props = _lj("proposals.json", {}).get("proposals", [])
     twins_reg = _lj("twins.json", {}).get("twins", [])
+    requests = [r for r in _lj("requests.json", {}).get("requests", []) if r.get("status", "open") == "open"][-10:]
     twins = []
     for tw in twins_reg:
         st = _lj(f"twin_{tw.get('id')}_state.json", {})
@@ -6362,7 +6366,7 @@ def lab_payload():
            "registry_updated": reg.get("updated"),
            "auto": {"updated": auto.get("updated"), "days": auto.get("days"), "counts": auto.get("counts", {}),
                     "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes")},
-           "note": note, "proposals": props[-20:], "twins": twins}
+           "note": note, "proposals": props[-20:], "twins": twins, "requests": requests}
     _LAB_CACHE.update(t=time.time(), data=out)
     return out
 
