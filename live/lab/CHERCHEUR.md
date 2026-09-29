@@ -66,8 +66,15 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
  "why_fr": "one sentence from the data", "why_en": "...", "by": "chercheur", "date": "YYYY-MM-DD",
  "status": "pending",
  "cfg": {"rr": 0.3-1.5, "n_cont": 0-3, "wait_min": 0-120, "ext_pts": 0-1500, "skip_wd": [0-6],
-         "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4}}
+         "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
+         "debt_nerv_gate": true|false}}
 ```
+`debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
+only when the account is still in the red AND the market is nervous. Every
+dial you request and Kino approves gets built and appears here; check
+`lab/requests.json` for their status (`open` = not built yet, `built` =
+usable with its `key`, `retired` = it scored C three nights in a row and
+was dropped - do not propose it again). Use built dials in your proposals.
 Combine at most three keys per proposal. Aim for 5 proposals a night, at
 least 1 out of the box. Each must come from something you saw, and
 `why_*` must say what.

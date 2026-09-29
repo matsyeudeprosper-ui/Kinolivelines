@@ -9,7 +9,10 @@
    "what_en": "Today's « take nothing when the market is nervous » dial (nerv_gate) blocks ALL new trades as soon as the market is nervous, healthy account or not. We would like a dial that only blocks trades taken AFTER a loss, AND only if the market is nervous at the same time - not the normal trades of a healthy account.",
    "why_fr": "Chez Valère (39 trades réels) : les 4 pertes arrivées alors que le compte était déjà dans le rouge avaient TOUTES un marché nerveux au même moment (100%). Mais le frein nerv_gate testé seul coûte trop cher (-$50 sur le passé) car il coupe aussi de bons trades pris avec un compte sain. Le vrai signal semble être la combinaison des deux états, pas la nervosité seule - et le menu actuel ne permet pas de tester juste ça.",
    "why_en": "On Valère (39 real trades): all 4 losses that happened while the account was already in the red ALSO had a nervous market at the same time (100%). But the nerv_gate brake tested alone costs too much (-$50 on the past) because it also cuts good trades taken by a healthy account. The real signal seems to be the combination of both states, not nervousness alone - and the current menu cannot test just that.",
-   "status": "open"
+   "status": "built",
+   "key": "debt_nerv_gate",
+   "built": "2026-09-29",
+   "c_nights": 0
   }
  ]
 }

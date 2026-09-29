@@ -35,7 +35,7 @@ LOGIN = 476954287
 SERVER = "Exness-MT5Trial9"
 SYMBOL = B.SYMBOL
 CFG = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
-       "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02}
+       "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02, "debt_nerv_gate": False}
 try:
     for t in json.load(open(os.path.join(LAB, "twins.json"), encoding="utf-8")).get("twins", []):
         if t.get("id") == VID:
@@ -201,6 +201,8 @@ def main():
                 continue
             if CFG["nerv_gate"] and nv > 1.0:
                 say(f"VT refuse: nerveux ({nv:.2f}x)"); continue
+            if CFG["debt_nerv_gate"] and nv > 1.0 and max(0.0, st.get("peak", 0.0) - st["net"]) > 0.5:
+                say(f"VT refuse: dans le rouge ET nerveux ({nv:.2f}x)"); continue
             g = datetime.fromtimestamp(bt, tz=timezone.utc)
             if CFG["wait_min"] and st.get("last_close") and time.time() - st["last_close"] < CFG["wait_min"] * 60:
                 say("VT refuse: pause apres le trade precedent"); continue

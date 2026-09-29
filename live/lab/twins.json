@@ -24,6 +24,29 @@
    "started": "2026-09-28T22:14:17+00:00",
    "status": "running",
    "by": "chercheur"
+  },
+  {
+   "id": "rr06",
+   "title_fr": "Viser un gain de 0,6 fois le risque",
+   "title_en": "Aim for a gain of 0.6 times the risk",
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02
+   },
+   "verdict": "B",
+   "started": "2026-09-29T02:10:00+00:00",
+   "status": "running",
+   "by": "owner"
   }
  ]
 }

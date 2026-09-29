@@ -36,6 +36,7 @@ import harness as H                    # noqa: E402
 
 AUTO = os.path.join(LAB, "auto.json")
 HIST = os.path.join(LAB, "auto_history.jsonl")
+REQ = os.path.join(LAB, "requests.json")
 PROP = os.path.join(LAB, "proposals.json")
 TWINS = os.path.join(LAB, "twins.json")
 LOG = os.path.join(LAB, "researcher.log")
@@ -75,6 +76,7 @@ BATTERY = [
     ("noeve", "Ne pas trader en soirée (16–24 h UTC)", "No trading in the evening (16–24 UTC)", "rythme", {"skip_hours": list(range(16, 24))}),
     ("hothalf", "Miser moitié moins quand le marché est nerveux", "Bet half when the market is nervous", "meteo", {"size_hot": 0.5}),
     ("nervgate", "Ne rien prendre quand le marché est nerveux", "Take nothing when the market is nervous", "meteo", {"nerv_gate": True}),
+    ("debtnerv", "Ne rien prendre quand on est encore dans le rouge ET que le marché est nerveux", "Take nothing when still in the red AND the market is nervous", "meteo", {"debt_nerv_gate": True}),
     ("bul2", "Deux renforts au lieu de trois après une perte", "Two boosts instead of three after a loss", "argent", {"bullets": 2}),
     ("bul4", "Quatre renforts au lieu de trois après une perte", "Four boosts instead of three after a loss", "argent", {"bullets": 4}),
     ("bul0", "Aucun renfort après une perte", "No boost after a loss", "argent", {"bullets": 0}),
@@ -160,6 +162,30 @@ def main():
             ensure_twin(vid, fr, en, H.cfg_of(cfg), vd)
     hist.close()
     save_json(PROP, props)
+    # the dials built on the chercheur's requests retire by themselves after
+    # three nights where every what-if using them scores C (owner 2026-09-29)
+    try:
+        rq = load_json(REQ, {"requests": []})
+        changed = False
+        for r in rq.get("requests", []):
+            key = r.get("key")
+            if r.get("status") != "built" or not key:
+                continue
+            used = [v for v in out if v["cfg"].get(key) not in (None, False, 0, [], H.CFG_BASE.get(key))]
+            if not used:
+                continue
+            if all(v["verdict"] == "C" for v in used):
+                r["c_nights"] = int(r.get("c_nights") or 0) + 1
+            else:
+                r["c_nights"] = 0
+            if r["c_nights"] >= 3:
+                r["status"] = "retired"; r["retired"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                say(f"dial {key} retired after 3 nights of C")
+            changed = True
+        if changed:
+            save_json(REQ, rq)
+    except Exception as e:
+        say(f"requests lifecycle: {e}")
     counts = {}
     for r in out:
         counts[r["verdict"]] = counts.get(r["verdict"], 0) + 1

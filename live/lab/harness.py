@@ -34,7 +34,8 @@ import structure_bos_bot as B          # noqa: E402
 B.say = lambda *a, **k: None
 
 CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
-            "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02}
+            "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02,
+            "debt_nerv_gate": False}   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
 CFG_KEYS = list(CFG_BASE.keys())
 BLOT = 0.01
 
@@ -144,6 +145,9 @@ def simulate(R, spread, cfg):
             if c["nerv_gate"] and nv > 1.0:
                 blocked += 1
                 continue
+            if c["debt_nerv_gate"] and nv > 1.0 and max(0.0, pk - run) > 0.5:
+                blocked += 1
+                continue
         # ---- the what-if brakes ----
         if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
             blocked += 1
@@ -214,6 +218,7 @@ def main():
     ap.add_argument("--skip-hours", type=str, help="UTC hours to skip, e.g. 0-8 or 0,1,2")
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--nerv-gate", action="store_true")
+    ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
     ap.add_argument("--bullets", type=float)
     ap.add_argument("--k-streak", type=int)
     ap.add_argument("--spread", type=float, default=7.0)
@@ -235,6 +240,7 @@ def main():
         over["skip_hours"] = sorted(hs)
     if a.size_hot is not None: over["size_hot"] = a.size_hot
     if a.nerv_gate: over["nerv_gate"] = True
+    if a.debt_nerv_gate: over["debt_nerv_gate"] = True
     if a.bullets is not None: over["bullets"] = a.bullets
     if a.k_streak is not None: over["k_streak"] = a.k_streak
     sym, R = bars()
