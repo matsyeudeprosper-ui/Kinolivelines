@@ -36,6 +36,11 @@ import harness as H                    # noqa: E402
 
 AUTO = os.path.join(LAB, "auto.json")
 HIST = os.path.join(LAB, "auto_history.jsonl")
+# 2026-09-29: simulate() also returns the daily curve and the per-trade money
+# (the proof page needs them). auto.json and the app payload keep the scalars
+# only, or every night's file would carry ~100 kB of arrays per variant.
+def _slim(d):
+    return {k: val for k, val in d.items() if k not in ("curve", "pnls")}
 REQ = os.path.join(LAB, "requests.json")
 PROP = os.path.join(LAB, "proposals.json")
 TWINS = os.path.join(LAB, "twins.json")
@@ -77,6 +82,12 @@ BATTERY = [
     ("hothalf", "Miser moitié moins quand le marché est nerveux", "Bet half when the market is nervous", "meteo", {"size_hot": 0.5}),
     ("nervgate", "Ne rien prendre quand le marché est nerveux", "Take nothing when the market is nervous", "meteo", {"nerv_gate": True}),
     ("debtnerv", "Ne rien prendre quand on est encore dans le rouge ET que le marché est nerveux", "Take nothing when still in the red AND the market is nervous", "meteo", {"debt_nerv_gate": True}),
+    # 2026-09-29 (owner): the fixed 7-pt spread is 1.2 % of a wide trade and
+    # 8.7 % of a tight one, and nervosity is a ratio that hides a tiny market.
+    # Solo doses all scored C on 2026-09-29; kept so the chercheur can combine.
+    ("cost6", "Ne pas entrer quand les frais dépassent 6 % de ce qu’on vise", "No entry when costs exceed 6 % of the target", "argent", {"cost_max": 6}),
+    ("cost8", "Ne pas entrer quand les frais dépassent 8 % de ce qu’on vise", "No entry when costs exceed 8 % of the target", "argent", {"cost_max": 8}),
+    ("minrange40", "Ne pas entrer quand les bougies font moins de 40 points", "No entry when candles are under 40 points", "meteo", {"min_range": 40}),
     ("bul2", "Deux renforts au lieu de trois après une perte", "Two boosts instead of three after a loss", "argent", {"bullets": 2}),
     ("bul4", "Quatre renforts au lieu de trois après une perte", "Four boosts instead of three after a loss", "argent", {"bullets": 4}),
     ("bul0", "Aucun renfort après une perte", "No boost after a loss", "argent", {"bullets": 0}),
@@ -165,8 +176,8 @@ def main():
             say(f"{vid}: ERROR {type(e).__name__}: {e}")
             continue
         prevv = (prev_by.get(vid) or {}).get("verdict")
-        rec = {"id": vid, "title_fr": fr, "title_en": en, "family": fam, "cfg": H.cfg_of(cfg), "full": v["full"],
-               "h1": v["h1"], "h2": v["h2"], "verdict": vd, "prev_verdict": prevv,
+        rec = {"id": vid, "title_fr": fr, "title_en": en, "family": fam, "cfg": H.cfg_of(cfg), "full": _slim(v["full"]),
+               "h1": _slim(v["h1"]), "h2": _slim(v["h2"]), "verdict": vd, "prev_verdict": prevv,
                "src": "chercheur" if any(p.get("id") == vid for p in props.get("proposals", [])) else "battery",
                "diff_net": round(v["full"]["net"] - base["full"]["net"], 2),
                "diff_worst": round(v["full"]["worst_debt"] - base["full"]["worst_debt"], 2)}

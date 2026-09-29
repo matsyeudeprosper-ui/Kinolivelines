@@ -35,7 +35,10 @@ LOGIN = 476954287
 SERVER = "Exness-MT5Trial9"
 SYMBOL = B.SYMBOL
 CFG = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
-       "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02, "debt_nerv_gate": False}
+       "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02, "debt_nerv_gate": False,
+       # 2026-09-29: unknown keys are dropped by the merge below, so every
+       # dial the harness knows must exist here or a twin would ignore it
+       "cost_max": 0.0, "min_range": 0.0}
 try:
     for t in json.load(open(os.path.join(LAB, "twins.json"), encoding="utf-8")).get("twins", []):
         if t.get("id") == VID:
@@ -108,6 +111,13 @@ def main():
         if dist <= B.S_MIN_DIST:
             say(f"VT {kind} skipped: dot {dist:.0f}pts inside the spread zone")
             return
+        # 2026-09-29: the cost dial, same rule as lab/harness.py - the spread
+        # is fixed here, so what varies is the bite it takes out of the target
+        if CFG.get("cost_max"):
+            _sp = abs(tick.ask - tick.bid)
+            if dist > 0 and (_sp / dist) * 100.0 > float(CFG["cost_max"]):
+                say(f"VT {kind} refuse: frais {(_sp/dist)*100:.1f}% > {CFG['cost_max']}% de la cible")
+                return
         tp = e + d * RR * dist
         st["pos"] = {"d": d, "e": e, "sl": round(slp, 2), "tp": round(tp, 2), "kind": kind, "t": time.time(), "lot": lot}
         save_state(st)
@@ -211,6 +221,9 @@ def main():
             if CFG["skip_wd"] and g.weekday() in CFG["skip_wd"]:
                 continue
             if CFG["skip_hours"] and g.hour in CFG["skip_hours"]:
+                continue
+            if CFG.get("min_range") and (cj.get("vol_now") or 0) < float(CFG["min_range"]):
+                say(f"VT refuse: bougies {cj.get('vol_now')}pts < {CFG['min_range']}pts")
                 continue
             debt = max(0.0, st.get("peak", 0.0) - st["net"])
             if flip:

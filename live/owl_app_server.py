@@ -5095,6 +5095,18 @@ function render(d){
     // then the context
     chips.push(hasInt?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
+    // 2026-09-29 (owner): two market facts the robot does not use yet.
+    // The spread is fixed at 7 pts on this broker, so what changes is how
+    // big a bite it takes out of a candle; and nervosity is a ratio, so a
+    // market can look normal while being tiny in absolute points.
+    const _vn=+(ms2.vol_now||0),_sp=+(ms2.spread||0);
+    if(_vn>0&&_sp>0){
+     const _sh=Math.round(_sp/_vn*100);
+     chips.push(cell('prix du ticket',_sp.toFixed(0)+' pts \u00b7 '+_sh+'\u202f% d\u2019une bougie',
+      _sh>=22?'var(--warn)':'var(--muted2)',false));
+     const _cal=_vn<32?['tr\u00e8s calme','var(--warn)']:(_vn<45?['calme','var(--muted2)']:(_vn<58?['normal','var(--text)']:['ample','var(--up-soft)']));
+     chips.push(cell('taille des bougies',_vn.toFixed(0)+' pts \u00b7 '+_cal[0],_cal[1],false));
+    }
    }
    else if(d.meteo==='storm'||d.meteo==='shelter'){
     cls='mx-storm';window._mxk='storm';orb='\\u26c8\\ufe0f';

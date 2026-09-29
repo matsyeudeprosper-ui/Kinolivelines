@@ -90,10 +90,19 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
  "status": "pending",
  "cfg": {"rr": 0.3-1.5, "n_cont": 0-3, "wait_min": 0-120, "ext_pts": 0-1500, "skip_wd": [0-6],
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
-         "debt_nerv_gate": true|false}}
+         "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200}}
 ```
 `debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
-only when the account is still in the red AND the market is nervous. Every
+only when the account is still in the red AND the market is nervous.
+`cost_max` and `min_range` were built by Kino (2026-09-29). The spread is
+FIXED at 7 points on this broker, so it never varies - but it is 1.2 % of a
+wide trade and 8.7 % of a tight one. `cost_max` refuses an entry whose
+spread eats more than X % of the stop distance; `min_range` refuses one when
+the median 60-minute candle is under X points (nervosity is a ratio and
+hides a market that is simply tiny). Every solo dose scored C on 2026-09-29
+(cost 3/4/5/6/8 %, range 40/60/80/120 pts): cutting tight trades costs more
+than the spread saves. They stay in the menu for you to COMBINE - do not
+re-propose a solo dose, and say so if you think a combination deserves one. Every
 dial you request and Kino approves gets built and appears here; check
 `lab/requests.json` for their status (`open` = not built yet, `built` =
 usable with its `key`, `retired` = it scored C three nights in a row and

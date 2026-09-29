@@ -35,7 +35,11 @@ B.say = lambda *a, **k: None
 
 CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
             "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02,
-            "debt_nerv_gate": False}   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
+            "debt_nerv_gate": False,   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
+            # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
+            # eats more than X % of the stop distance; min_range refuses one
+            # when the median 60-min candle range is under X points
+            "cost_max": 0.0, "min_range": 0.0}
 CFG_KEYS = list(CFG_BASE.keys())
 BLOT = 0.01
 
@@ -174,6 +178,15 @@ def simulate(R, spread, cfg):
             else:
                 continue
         dist = abs(cl - slp)
+        # 2026-09-29 (owner): the spread is fixed at 7 pts on this broker, but
+        # that is 1.2 % of a wide trade and 8.7 % of a tight one - and a market
+        # too small to move cannot pay for it at all
+        if c["min_range"] and i >= 60 and sorted(rng[i-60:i])[30] < float(c["min_range"]):
+            blocked += 1
+            continue
+        if c["cost_max"] and dist > 0 and (spread / dist) * 100.0 > float(c["cost_max"]):
+            blocked += 1
+            continue
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
         if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
@@ -338,6 +351,9 @@ def simulate_real(T, R, spread, cfg):
                 blocked += 1
                 continue
         d, ent, sl, dist = e["d"], e["e"], e["sl"], e["dist"]
+        if c["cost_max"] and dist > 0 and (spread / dist) * 100.0 > float(c["cost_max"]):
+            blocked += 1
+            continue
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
         tp = ent + d * rr * dist
         mid = ent - d * dist / 2.0
@@ -386,6 +402,8 @@ def main():
     ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
     ap.add_argument("--bullets", type=float)
     ap.add_argument("--k-streak", type=int)
+    ap.add_argument("--cost-max", type=float, help="refuse an entry whose spread is over X %% of the stop distance")
+    ap.add_argument("--min-range", type=float, help="refuse an entry when the median 60-min candle range is under X points")
     ap.add_argument("--spread", type=float, default=7.0)
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(_ARGV)
@@ -408,6 +426,8 @@ def main():
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
     if a.bullets is not None: over["bullets"] = a.bullets
     if a.k_streak is not None: over["k_streak"] = a.k_streak
+    if a.cost_max is not None: over["cost_max"] = a.cost_max
+    if a.min_range is not None: over["min_range"] = a.min_range
     sym, R = bars()
     base = run_cfg(R, a.spread, {})
     v = run_cfg(R, a.spread, over)
