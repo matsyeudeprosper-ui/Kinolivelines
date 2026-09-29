@@ -80,6 +80,7 @@ def simulate(R, spread, cfg):
     cont_left = 0
     n_trades = wins = 0
     blocked = 0
+    pnls = []
     for i, bar in enumerate(R):
         t = int(bar["time"])
         o, h, l, cl = (float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"]))
@@ -99,11 +100,13 @@ def simulate(R, spread, cfg):
                 win = bool(hit_tp and not hit_sl)
                 pts = (rr * dist - spread) if win else -(dist + spread)
                 debt = max(0.0, pk - run)
+                before = run
                 run += pts * lot
                 fire = debt > 0.5 and streak < K
                 if fire and hit_mid and NB > 0:
                     bpts = ((1.3 * dist - spread) if win else -(dist / 2.0 + spread))
                     run += bpts * BLOT * NB
+                pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
@@ -196,7 +199,7 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "curve": dated}
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "curve": dated, "pnls": pnls}
 
 
 def run_cfg(R, spread, cfg):

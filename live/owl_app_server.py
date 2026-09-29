@@ -4471,7 +4471,6 @@ function pfWeeks(cv){if(!cv||cv.length<8)return [];const W=[];let wk=null,start=
  cv.forEach(p=>{const d=new Date(p[0]+'T00:00:00Z');const mon=new Date(d);mon.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));const k=mon.toISOString().slice(0,10);if(k!==wk){if(wk!==null)W.push([wk,last-start]);wk=k;start=last===null?p[1]:last;}last=p[1];});
  if(wk!==null)W.push([wk,last-start]);return W;}
 async function loadProof(d){const el=document.getElementById('proofcard');if(!el)return;
- if(d.public){el.style.display='none';return;}
  if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
  let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){el.style.display='none';return;}
@@ -4508,6 +4507,12 @@ function pfRead(e){const svg=document.getElementById('pf-svg'),cv=window._pfcv,g
 function pfRule(ks){const j=window._proof;if(!j)return;const en=LANG()==='en';const tip=document.getElementById('pf-tip');if(!tip)return;
  tip.innerHTML=ks.map(k=>{const r=(j.rules||[])[k];if(!r)return '';return '<div style="margin-top:3px"><b style="color:var(--warn)">'+(k+1)+'</b> '+_escS((r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7))+' \u00b7 '+_escS(en?r.title_en:r.title_fr)+(r.verdict?' <span style="color:var(--muted)">('+(en?'graded ':'not\u00e9e ')+_escS(r.verdict)+(en?' on the past':' sur le pass\u00e9')+')</span>':'')+'</div>';}).join('');}
 function pfKpi(el){el.classList.toggle('open');}
+// the normal-range band: where the real result sits among what the test
+// calls normal for that many trades
+function pfBand(b,v,en,who){if(!b)return '';const lo=Math.min(b.lo,v,0),hi=Math.max(b.hi,v,0);const sp=Math.max(1e-6,hi-lo);const P=x=>((x-lo)/sp*100).toFixed(1);const inside=v>=b.lo&&v<=b.hi;
+ return '<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--muted2)"><span>'+(en?'Normal range for '+b.n+' trades':'Fourchette normale pour '+b.n+' trades')+'</span><span>'+pfMn(b.lo)+' \u2192 '+pfMn(b.hi)+'</span></div>'+
+  '<div style="position:relative;height:14px;margin-top:6px"><div style="position:absolute;left:0;right:0;top:5px;height:4px;border-radius:99px;background:var(--surface3)"></div><div style="position:absolute;top:5px;height:4px;border-radius:99px;background:var(--accent-soft);opacity:.55;left:'+P(b.lo)+'%;width:'+(P(b.hi)-P(b.lo)).toFixed(1)+'%"></div><div style="position:absolute;top:0;width:14px;height:14px;border-radius:99px;background:'+(inside?'var(--up-soft)':'var(--down-soft)')+';border:2px solid var(--surface);left:calc('+P(v)+'% - 7px)"></div><div style="position:absolute;top:2px;width:1px;height:10px;background:var(--muted);left:'+P(0)+'%"></div></div>'+
+  '<div style="font-size:.74rem;color:var(--text);margin-top:4px;line-height:1.45">'+(inside?(en?(who||'The result')+' ('+pfMn(v)+') is <b style="color:var(--up-soft)">inside</b> what the test calls normal for so few trades.':(who||'Le r\u00e9sultat')+' ('+pfMn(v)+') est <b style="color:var(--up-soft)">dans</b> ce que le test consid\u00e8re normal pour si peu de trades.'):(en?(who||'The result')+' ('+pfMn(v)+') is <b style="color:var(--down-soft)">outside</b> the normal range: watch closely.':(who||'Le r\u00e9sultat')+' ('+pfMn(v)+') est <b style="color:var(--down-soft)">en dehors</b> de la fourchette normale : \u00e0 surveiller de pr\u00e8s.'))+'</div></div>';}
 function pfWeekBars(cv,en){const W=pfWeeks(cv);if(W.length<2)return '';const w=320,h=92,L=6,T=12,B=20;const mx=Math.max(...W.map(x=>Math.abs(x[1])),1);const bw=(w-L*2)/W.length;const Y0=T+(h-T-B)/2;const sc=(h-T-B)/2/mx;
  return '<svg viewBox="0 0 '+w+' '+h+'"><line x1="'+L+'" y1="'+Y0+'" x2="'+(w-L)+'" y2="'+Y0+'" stroke="var(--border2)"/>'+W.map((x,i)=>{const v=x[1],c=v>=0?'var(--up-soft)':'var(--down-soft)';const bh=Math.abs(v)*sc;const y=v>=0?Y0-bh:Y0;return '<rect x="'+(L+i*bw+bw*.18).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*.64).toFixed(1)+'" height="'+Math.max(1.5,bh).toFixed(1)+'" rx="3" fill="'+c+'" opacity=".9"/><text x="'+(L+i*bw+bw/2).toFixed(1)+'" y="'+(v>=0?y-3:y+bh+8).toFixed(1)+'" text-anchor="middle" font-size="6.5" font-weight="800" fill="'+c+'">'+(v>=0?'+':'\u2212')+Math.abs(v).toFixed(0)+'</text><text x="'+(L+i*bw+bw/2).toFixed(1)+'" y="'+(h-4)+'" text-anchor="middle" font-size="6.5" fill="var(--muted)">'+_escS(x[0].slice(5))+'</text>';}).join('')+'</svg>';}
 function pfBars(rows,en){const mx=Math.max(...rows.map(r=>Math.abs(r[1]||0)),1);return rows.map(r=>{const v=r[1]||0,c=v>=0?'var(--up-soft)':'var(--down-soft)';const pct=Math.abs(v)/mx*100;return '<div class="pf-bar"><div class="l">'+r[0]+'</div><div class="b"><i style="background:'+c+';left:0;width:'+pct.toFixed(0)+'%"></i></div><div class="v" style="color:'+c+'">'+pfMn(v)+'</div></div>';}).join('');}
@@ -4532,10 +4537,10 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
  h+='<div class="pf-sec" id="pf-s2"><div class="pf-k">2 \u00b7 '+(en?'In real life, since the start':'En vrai, depuis le d\u00e9but')+'</div><div class="pf-h">'+(en?'Do the real trades match the test?':'Les vrais trades ressemblent-ils au test ?')+'</div>';
  if(M){h+='<div class="pf-mine"><div style="display:flex;align-items:center;gap:8px"><i style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:var(--accent-soft);color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">\u2605</i><b style="font-size:.92rem">'+(en?'On your account':'Sur votre compte')+'</b><span style="margin-left:auto;font-size:.72rem;color:var(--muted2)">'+(en?'since ':'depuis le ')+dmy(M.since)+'</span></div>'+
    '<div style="display:flex;gap:6px;margin-top:10px">'+['<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem;color:'+((M.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(M.net)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'your result':'votre r\u00e9sultat')+'</span></div>',(M.expected!==undefined?'<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem;color:'+((M.expected||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(M.expected)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'test, same days':'test, m\u00eames jours')+'</span></div>':''),'<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem">'+(M.trades||0)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">trades</span></div>','<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem">'+(M.wr===null||M.wr===undefined?'\u2014':M.wr+'\u202f%')+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'won':'gagn\u00e9s')+'</span></div>'].join('')+'</div>'+
-   '<div class="pf-cap">'+(en?'Your own robot journal, boosts included, against what the test expected over your days at your stake ('+M.lot+' lot).'+((M.trades||0)<30?' Under 30 trades, luck still weighs a lot.':''):'Votre propre journal du robot, renforts compris, contre ce que le test attendait sur vos jours avec votre mise ('+String(M.lot).replace('.',',')+' lot).'+((M.trades||0)<30?' Sous 30 trades, la chance p\u00e8se encore beaucoup.':''))+'</div></div>';}
+   pfBand(M.band,M.net,en,en?'Your result':'Votre r\u00e9sultat')+'<div class="pf-cap">'+(en?'Your own robot journal, boosts included, against what the test expected over your days at your stake ('+M.lot+' lot).'+((M.trades||0)<30?' Under 30 trades, luck still weighs a lot.':''):'Votre propre journal du robot, renforts compris, contre ce que le test attendait sur vos jours avec votre mise ('+String(M.lot).replace('.',',')+' lot).'+((M.trades||0)<30?' Sous 30 trades, la chance p\u00e8se encore beaucoup.':''))+'</div></div>';}
  if(U){h+='<div class="pf-p" style="margin-top:12px">'+(en?'All accounts together: the robot\u2019s real trades since '+dmy(U.since)+', on accounts where nobody ever stepped in by hand, each signal counted once. Compared with what the test expected over the same days, and with the test run on exactly the same entries.':'Tous les comptes ensemble : les vrais trades du robot depuis le '+dmy(U.since)+', sur des comptes o\u00f9 personne n\u2019est jamais intervenu \u00e0 la main, chaque signal compt\u00e9 une fois. Compar\u00e9s \u00e0 ce que le test attendait sur les m\u00eames jours, et au test sur exactement les m\u00eames entr\u00e9es.')+'</div>'+
    '<div class="pf-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected, same days':'Attendu, m\u00eames jours',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',RS?RS.net:null]],en)+
-   '<div style="height:1px;background:var(--border);margin:12px 0 4px"></div>'+pfPct([[en?'Won in real life':'Gagn\u00e9s en vrai',U.wr,'var(--accent-soft)'],[en?'Won in the test':'Gagn\u00e9s au test',F.wr,'var(--muted2)']])+'</div>'+
+   pfBand(j.band,U.net,en,en?'The real result':'Le r\u00e9sultat r\u00e9el')+'<div style="height:1px;background:var(--border);margin:12px 0 4px"></div>'+pfPct([[en?'Won in real life':'Gagn\u00e9s en vrai',U.wr,'var(--accent-soft)'],[en?'Won in the test':'Gagn\u00e9s au test',F.wr,'var(--muted2)']])+'</div>'+
    '<div class="pf-prog"><div style="display:flex;justify-content:space-between;font-size:.78rem"><b>'+(U.trades||0)+' / 30 '+(en?'real trades':'vrais trades')+'</b><span style="color:var(--muted2)">'+(en?'before we judge':'avant de juger')+'</span></div><div class="b"><i style="width:'+Math.min(100,(U.trades||0)/30*100).toFixed(0)+'%"></i></div><div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.45">'+(en?'Under 30 real trades the gap can still be luck; the light stays amber until then.':'Sous 30 vrais trades, l\u2019\u00e9cart peut encore \u00eatre de la chance ; le voyant reste orange jusque-l\u00e0.')+'</div></div>'+
    '<div class="pf-cap">'+(en?'Sources: '+(SRC.real_accounts||0)+' real account'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' and 1 demo account':'')+', never touched by hand. Names are not shown.':'Sources : '+(SRC.real_accounts||0)+' compte'+((SRC.real_accounts||0)>1?'s':'')+' r\u00e9el'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' et 1 compte d\u00e9mo':'')+', jamais touch\u00e9s \u00e0 la main. Les noms ne sont pas montr\u00e9s.')+(SRC.demo?' '+(en?'The demo account on its own: ':'Le compte d\u00e9mo seul : ')+(SRC.demo.trades||0)+' trades, '+(SRC.demo.wr===null?'\u2014':SRC.demo.wr+'\u202f%')+(en?' won, ':' gagn\u00e9s, ')+pfMn(SRC.demo.net)+(en?' since ':' depuis le ')+dmy(SRC.demo.since)+'.':'')+'</div>';}
  else h+='<div class="pf-p" style="color:var(--muted)">'+(en?'No real trades in the journal yet.':'Pas encore de vrais trades dans le journal.')+'</div>';
@@ -7010,10 +7015,15 @@ def proof_payload():
         same_sign = ((un.get("net") or 0) >= 0) == ((ex.get("net") or 0) >= 0)
         since = (un.get("since") or "")
         since_fr = since[8:10] + "/" + since[5:7] if len(since) >= 10 else since
+        band = proof_band(full.get("pnls"), n)
+        inside = bool(band and band["lo"] <= (un.get("net") or 0) <= band["hi"])
         if n < 30:
             c = "amber"
             fr = f"{n} vrais trades depuis le {since_fr} : trop peu pour juger. Sur les m\u00eames jours, le test attendait {ex.get('net',0):+.0f} $ ; en vrai, {un.get('net',0):+.0f} $."
             en = f"{n} real trades since {since}: too few to judge. Over the same days the test expected {ex.get('net',0):+.0f} $; in real life, {un.get('net',0):+.0f} $."
+            if band:
+                fr += (f" Pour {n} trades, le test consid\u00e8re normal tout r\u00e9sultat entre {band['lo']:+.0f} et {band['hi']:+.0f} $ : " + ("on est dedans." if inside else "on est en dehors, \u00e0 surveiller de pr\u00e8s."))
+                en += (f" For {n} trades the test calls normal anything between {band['lo']:+.0f} and {band['hi']:+.0f} $: " + ("we are inside." if inside else "we are outside, watch closely."))
         elif same_sign or gap <= tol:
             c = "green"
             fr = f"Les {n} vrais trades suivent le test : {un.get('net',0):+.0f} $ en vrai, {ex.get('net',0):+.0f} $ attendus sur les m\u00eames jours."
@@ -7064,9 +7074,26 @@ def proof_payload():
            "twins": [{"id": t.get("id"), "title_fr": t.get("title_fr"), "title_en": t.get("title_en"),
                       "status": (t.get("duel") or {}).get("status"), "trades": t.get("trades"),
                       "net": t.get("net"), "real_net": ((t.get("duel") or {}).get("real") or {}).get("net")} for t in twins],
+           "band": (proof_band(full.get("pnls"), (un.get("trades") or 0)) if un else None),
            "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]}}
     _PROOF_CACHE.update(t=time.time(), data=out)
     return out
+
+
+def proof_band(pnls, n, lot_ratio=1.0):
+    """What the test calls normal for n trades: 2000 draws of n trades
+    from the replay's own trades (with replacement), 5th to 95th percent
+    of the sum. Deterministic seed so the page does not flicker."""
+    if not pnls or not n or n < 1:
+        return None
+    import random
+    rng = random.Random(7 + n)
+    sums = []
+    for _ in range(2000):
+        sums.append(sum(rng.choice(pnls) for _ in range(n)) * lot_ratio)
+    sums.sort()
+    return {"n": n, "lo": round(sums[int(0.05 * len(sums))], 2), "hi": round(sums[int(0.95 * len(sums)) - 1], 2),
+            "mid": round(sums[len(sums) // 2], 2)}
 
 
 def proof_mine(uid):
@@ -7092,10 +7119,12 @@ def proof_mine(uid):
            "wr": (round(100 * wins / len(base)) if base else None), "since": since, "lot": lot}
     try:
         p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
-        cv = ((p.get("base") or {}).get("full") or {}).get("curve") or []
+        full = ((p.get("base") or {}).get("full") or {})
+        cv = full.get("curve") or []
         start = next((v for d, v in cv if d >= since), None)
         if start is not None and cv:
             out["expected"] = round((cv[-1][1] - start) * (lot / 0.02 if lot else 1), 2)
+        out["band"] = proof_band(full.get("pnls"), len(base), (lot / 0.02 if lot else 1))
     except Exception:
         pass
     return out
@@ -9727,13 +9756,11 @@ class H(BaseHTTPRequestHandler):
                 return
             self._send(json.dumps(service_health()), "application/json")
         elif sub == "proof":
-            # 2026-09-29: "La preuve" - every member, not the public showcase
+            # 2026-09-29: "La preuve" - every member; the public showcase reads it
+            # too (owner: the best sales page we have), without the personal block
             try:
-                if user.get("public"):
-                    self._send(json.dumps({"err": "public"}), "application/json")
-                    return
                 _pp = dict(proof_payload())
-                _pp["mine"] = proof_mine(user.get("id") or "")
+                _pp["mine"] = None if user.get("public") else proof_mine(user.get("id") or "")
                 _pp["history"] = proof_history(_pp)
                 self._send(json.dumps(_pp), "application/json")
             except Exception as e:
