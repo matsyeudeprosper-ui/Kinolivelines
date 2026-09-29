@@ -1120,6 +1120,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pf-kpi{cursor:pointer;position:relative}
 .pf-kpi .x{display:none;font-size:.74rem;color:var(--text);line-height:1.45;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);text-transform:none;letter-spacing:0}
 .pf-kpi.open .x{display:block}
+.pf-st b{font-size:1.15rem;margin-top:2px}
+.pf-st span{margin-top:0}
+.pf-st small{color:var(--muted2)}
+.pf-sech{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin:18px 2px 0}
 .pf-kpi::after{content:"?";position:absolute;top:8px;right:10px;width:16px;height:16px;border-radius:99px;background:var(--surface3);color:var(--muted2);font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center}
 .pf-dots{display:flex;gap:5px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .pf-lot{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;font-size:.74rem;color:var(--muted2)}
@@ -4472,7 +4476,7 @@ const PL={green:['var(--up-soft)','\u2713'],amber:['var(--warn)','!'],red:['var(
 window._pfLot=0.02;
 const pfK=()=>(window._pfLot||0.02)/0.02;   // every replay amount is for 0.02 lot; the reader picks their stake
 const pfMn=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+':'\u2212')+Math.abs(v*pfK()).toFixed(0)+'\u202f$');
-const pfMn2=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+':'\u2212')+Math.abs(v*pfK()).toFixed(2)+'\u202f$');
+const pfMn2=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+':'\u2212')+(LANG()==='en'?Math.abs(v*pfK()).toFixed(2):Math.abs(v*pfK()).toFixed(2).replace('.',','))+'\u202f$');
 const pfRaw=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+':'\u2212')+Math.abs(v).toFixed(0)+'\u202f$');
 function pfSetLot(l){window._pfLot=l;try{localStorage.setItem('owlPfLot',String(l));}catch(e){}proofPage();}
 function pfRef(){return 250*pfK();}
@@ -4574,23 +4578,23 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
  // method
  h+='<div class="pf-sec"><div class="pf-k">'+(en?'How we judge':'Comment on juge')+'</div><div class="pf-steps"><div><b>A</b>'+(en?'better on both halves and overall':'mieux sur les deux moiti\u00e9s et au total')+'</div><div><b>B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b>C</b>'+(en?'no':'non')+'</div></div><div class="pf-cap">'+(en?'Tests use one-minute price candles from MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published.':'Les tests utilisent les bougies d\u2019une minute de MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s.')+'</div></div></div>';
  sheet('<div id="pf-scroll" style="max-height:80vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
-function lotFrX(){return String(window._pfLot||0.02).replace('.',LANG()==='en'?'.':',');}
 function pfBandRaw(b,v,en,who){if(!b)return '';const k=pfK();return pfBand({n:b.n,lo:b.lo/k,hi:b.hi/k,mid:b.mid/k},v/k,en,who);}
-function pfTraders(j,en){const S=j.stats,Lg=j.stats_long;if(!S)return '';const D=Math.round(j.days||0);
- const row=(l,sm,a,b)=>'<tr><td>'+l+(sm?'<small>'+sm+'</small>':'')+'</td><td>'+a+'</td><td>'+(Lg?b:'')+'</td></tr>';
- const pc=v=>(v===null||v===undefined)?'\u2014':v.toFixed(1)+'\u202f%';const x=v=>(v===null||v===undefined)?'\u2014':v.toFixed(2);
- const ddp=dd=>pfMn(-(dd||0))+' <span style="color:var(--muted)">('+Math.abs((dd||0)/250*100).toFixed(0)+'\u202f%)</span>';
- return '<div class="pf-chart" style="margin-top:10px"><div style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)">'+(en?'For traders \u00b7 the standard numbers':'Pour les traders \u00b7 les chiffres classiques')+'</div>'+
-  '<table class="pf-tbl"><tr><th></th><th>'+D+' '+(en?'days':'jours')+'</th><th>'+(Lg?(j.days_long+' '+(en?'days':'jours')):'')+'</th></tr>'+
-  row(en?'Win rate':'Taux de r\u00e9ussite',en?'trades that ended in profit':'trades finis en gain',pc(S.wr),Lg&&pc(Lg.wr))+
-  row(en?'Profit factor':'Profit factor',en?'money won divided by money lost; above 1 = profitable':'gains divis\u00e9s par pertes ; au-dessus de 1 = rentable',x(S.pf),Lg&&x(Lg.pf))+
-  row(en?'Max drawdown':'Drawdown maximum',en?'biggest fall from a high, measured trade by trade (the tile above measures it day by day), in $ and as % of a '+pfRef().toFixed(0)+' $ account':'plus grosse chute depuis un sommet, mesur\u00e9e trade par trade (la tuile plus haut la mesure jour par jour), en $ et en % d\u2019un compte de '+pfRef().toFixed(0)+' $',ddp(S.maxdd),Lg&&ddp(Lg.maxdd))+
-  row(en?'Average win / loss':'Gain moyen / perte moyenne',en?'per trade, costs counted':'par trade, frais compt\u00e9s',pfMn2(S.avg_win)+' / '+pfMn2(S.avg_loss),Lg&&(pfMn2(Lg.avg_win)+' / '+pfMn2(Lg.avg_loss)))+
-  row(en?'Expectancy':'Esp\u00e9rance par trade',en?'average money per trade, wins and losses mixed':'argent moyen par trade, gains et pertes m\u00eal\u00e9s',pfMn2(S.expectancy),Lg&&pfMn2(Lg.expectancy))+
-  row(en?'Best / worst trade':'Meilleur / pire trade','',pfMn2(S.best)+' / '+pfMn2(S.worst),Lg&&(pfMn2(Lg.best)+' / '+pfMn2(Lg.worst)))+
-  row(en?'Longest losing streak':'Plus longue s\u00e9rie de pertes',en?'losses in a row you would have had to sit through':'pertes d\u2019affil\u00e9e qu\u2019il aurait fallu encaisser',S.max_streak+'',Lg&&(Lg.max_streak+''))+
-  row(en?'Activity':'Activit\u00e9',en?'trades per week':'trades par semaine',S.per_week+'',Lg&&(Lg.per_week+''))+
-  '</table><div class="pf-cap">'+(en?'Fixed stake of '+lotFrX()+' lot, broker costs counted, no compounding. The '+D+'-day column is the mark; the long column is a second look. Percentages assume an account of '+pfRef().toFixed(0)+' $ at that stake.':'Mise fixe de '+lotFrX()+' lot, frais du courtier compt\u00e9s, sans int\u00e9r\u00eats compos\u00e9s. La colonne '+D+' jours donne la note ; la colonne longue est un second regard. Les pourcentages supposent un compte de '+pfRef().toFixed(0)+' $ \u00e0 cette mise.')+'</div></div>';}
+function pfTraders(j,en){const S=j.stats,Lg=j.stats_long;if(!S)return '';const D=Math.round(j.days||0);const LD=j.days_long;
+ const nf=(v,d)=>(v===null||v===undefined)?'\u2014':(en?v.toFixed(d):v.toFixed(d).replace('.',','));
+ const st=(l,v,sec,x,c)=>'<div class="pf-kpi pf-st" onclick="pfKpi(this)"><span>'+l+'</span><b style="color:'+(c||'var(--text)')+'">'+v+'</b>'+(sec?'<small>'+sec+'</small>':'')+'<div class="x">'+x+'</div></div>';
+ const on=(v)=>Lg?((en?LD+' days: ':LD+' jours : ')+v):'';
+ return '<div class="pf-sech">'+(en?'For traders \u00b7 the standard numbers':'Pour les traders \u00b7 les chiffres classiques')+'</div>'+
+  '<div class="pf-grid">'+
+  st(en?'Win rate':'Taux de r\u00e9ussite',nf(S.wr,1)+'\u202f%',on(nf(Lg&&Lg.wr,1)+'\u202f%'),en?'Out of '+S.trades+' trades over '+D+' days, this share ended in profit. A high win rate alone proves nothing: what matters is it together with the size of wins and losses.':'Sur '+S.trades+' trades en '+D+' jours, cette part s\u2019est termin\u00e9e en gain. Un taux \u00e9lev\u00e9 ne prouve rien tout seul : ce qui compte, c\u2019est lui avec la taille des gains et des pertes.','var(--up-soft)')+
+  st(en?'Profit factor':'Profit factor',nf(S.pf,2),on(nf(Lg&&Lg.pf,2)),en?'Money won divided by money lost. Above 1 the strategy earns; at 1.31 it brings in 1.31 $ for every 1 $ it loses.':'L\u2019argent gagn\u00e9 divis\u00e9 par l\u2019argent perdu. Au-dessus de 1, la strat\u00e9gie rapporte ; \u00e0 '+nf(S.pf,2)+', elle rentre '+nf(S.pf,2)+' $ pour 1 $ perdu.',(S.pf&&S.pf>1)?'var(--up-soft)':'var(--down-soft)')+
+  st(en?'Max drawdown':'Drawdown maximum',pfMn(-(S.maxdd||0)),(en?'\u2248 ':'\u2248 ')+Math.abs((S.maxdd||0)/250*100).toFixed(0)+'\u202f% '+(en?'of a '+pfRef().toFixed(0)+' $ account':'d\u2019un compte de '+pfRef().toFixed(0)+' $'),en?'The biggest fall from a high, counted trade by trade, so it is deeper than the day-by-day tile higher up. This is the worst stretch you would have had to sit through.':'La plus grosse chute depuis un sommet, compt\u00e9e trade par trade : elle est donc plus profonde que la tuile jour par jour plus haut. C\u2019est le pire passage qu\u2019il aurait fallu traverser.','var(--down-soft)')+
+  st(en?'Average win':'Gain moyen',pfMn2(S.avg_win),(en?'average loss ':'perte moyenne ')+pfMn2(S.avg_loss),en?'Per trade, broker costs counted. Losses are bigger than wins here, which is normal for this strategy: it wins more often than it loses.':'Par trade, frais du courtier compt\u00e9s. Ici les pertes sont plus grosses que les gains, et c\u2019est normal pour cette strat\u00e9gie : elle gagne plus souvent qu\u2019elle ne perd.','var(--up-soft)')+
+  st(en?'Per trade':'Par trade',pfMn2(S.expectancy),on(pfMn2(Lg&&Lg.expectancy)),en?'What one trade brings on average, wins and losses mixed. Multiply it by the number of trades to get the result.':'Ce que rapporte un trade en moyenne, gains et pertes m\u00eal\u00e9s. Multipliez-le par le nombre de trades pour retrouver le r\u00e9sultat.',(S.expectancy>=0)?'var(--up-soft)':'var(--down-soft)')+
+  st(en?'Best trade':'Meilleur trade',pfMn2(S.best),(en?'worst ':'pire ')+pfMn2(S.worst),en?'The two extremes over the period. No single trade should decide the result; if it did, the strategy would be fragile.':'Les deux extr\u00eames de la p\u00e9riode. Aucun trade seul ne doit faire le r\u00e9sultat ; sinon la strat\u00e9gie serait fragile.')+
+  st(en?'Losing streak':'S\u00e9rie de pertes',S.max_streak+'',en?'losses in a row':'pertes d\u2019affil\u00e9e',en?'The longest run of losses in a row over '+D+' days. Expect to live through one like it: it is part of the strategy, not a breakdown.':'La plus longue suite de pertes en '+D+' jours. Il faut s\u2019attendre \u00e0 en vivre une pareille : \u00e7a fait partie de la strat\u00e9gie, ce n\u2019est pas une panne.','var(--warn)')+
+  st(en?'Activity':'Activit\u00e9',nf(S.per_week,1),en?'trades per week':'trades par semaine',en?'How busy the robot is. '+S.trades+' trades over '+D+' days.':'\u00c0 quel point le robot travaille. '+S.trades+' trades en '+D+' jours.')+
+  '</div><div class="pf-cap">'+(en?'Fixed stake of '+lotFrX()+' lot, broker costs counted, no compounding. Figures are for the last '+D+' days; where a second line shows, it is the longer '+LD+'-day look. Percentages assume an account of '+pfRef().toFixed(0)+' $.':'Mise fixe de '+lotFrX()+' lot, frais du courtier compt\u00e9s, sans int\u00e9r\u00eats compos\u00e9s. Les chiffres portent sur les '+D+' derniers jours ; quand une seconde ligne appara\u00eet, c\u2019est le regard long de '+LD+' jours. Les pourcentages supposent un compte de '+pfRef().toFixed(0)+' $.')+'</div>';}
+function lotFrX(){return String(window._pfLot||0.02).replace('.',LANG()==='en'?'.':',');}
 function pfGo(n){const sc=document.getElementById('pf-scroll'),el=document.getElementById('pf-s'+n);if(!sc||!el)return;sc.scrollTo({top:el.offsetTop-sc.offsetTop-52,behavior:'smooth'});}
 async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
