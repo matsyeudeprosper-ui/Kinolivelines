@@ -129,6 +129,25 @@ def main():
     say(f"researcher start: {sym} {len(R)/1440:.1f} days, {'quick' if quick else 'full battery'}")
     base = H.run_cfg(R, 7.0, {})
     say(f"base: {base['full']['trades']} trades net {base['full']['net']:+.2f} worst {base['full']['worst_debt']:.2f}")
+    # 2026-09-29 (owner): the long window and the real trades, as two more
+    # views - the 42-day verdict stays the verdict; a weaker long-window or
+    # real-trade result is a caution, never a drop
+    RL = None
+    baseL = None
+    try:
+        _, RL = H.bars_long()
+        if RL is not None and len(RL) >= len(R) + 7 * 1440:
+            baseL = H.run_cfg(RL, 7.0, {})
+            say(f"long window: {len(RL)/1440:.1f} days, base net {baseL['full']['net']:+.2f} worst {baseL['full']['worst_debt']:.2f}")
+        else:
+            RL = None
+    except Exception as e:
+        say(f"long window unavailable: {e}")
+        RL = None
+    T = H.real_entries()
+    baseT = H.simulate_real(T, R, 7.0, {}) if T else None
+    if baseT:
+        say(f"real trades: {len(T)} entries since the journal began, base net {baseT['net']:+.2f} (actual {baseT['actual']:+.2f})")
     prev = load_json(AUTO, {"variants": []})
     prev_by = {v["id"]: v for v in prev.get("variants", [])}
     items = [b for b in BATTERY if (not quick or b[0] in QUICK)]
@@ -151,6 +170,24 @@ def main():
                "src": "chercheur" if any(p.get("id") == vid for p in props.get("proposals", [])) else "battery",
                "diff_net": round(v["full"]["net"] - base["full"]["net"], 2),
                "diff_worst": round(v["full"]["worst_debt"] - base["full"]["worst_debt"], 2)}
+        if RL is not None and baseL is not None:
+            try:
+                vL = H.run_cfg(RL, 7.0, cfg)
+                rec["long"] = {"days": round(len(RL) / 1440), "verdict": H.verdict(vL, baseL),
+                               "diff_net": round(vL["full"]["net"] - baseL["full"]["net"], 2),
+                               "diff_worst": round(vL["full"]["worst_debt"] - baseL["full"]["worst_debt"], 2),
+                               "h1": round(vL["h1"]["net"] - baseL["h1"]["net"], 2), "h2": round(vL["h2"]["net"] - baseL["h2"]["net"], 2),
+                               "net": vL["full"]["net"], "worst": vL["full"]["worst_debt"], "trades": vL["full"]["trades"]}
+            except Exception as e:
+                say(f"{vid}: long window ERROR {e}")
+        if baseT:
+            try:
+                vT = H.simulate_real(T, R, 7.0, cfg)
+                rec["real"] = {"n_real": len(T), "trades": vT["trades"], "blocked": vT["blocked"], "net": vT["net"],
+                               "worst": vT["worst_debt"], "diff_net": round(vT["net"] - baseT["net"], 2),
+                               "diff_worst": round(vT["worst_debt"] - baseT["worst_debt"], 2)}
+            except Exception as e:
+                say(f"{vid}: real trades ERROR {e}")
         out.append(rec)
         hist.write(json.dumps({"d": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "id": vid, "verdict": vd,
                                "net": v["full"]["net"], "worst": v["full"]["worst_debt"], "trades": v["full"]["trades"]}) + "\n")
@@ -191,6 +228,8 @@ def main():
         counts[r["verdict"]] = counts.get(r["verdict"], 0) + 1
     save_json(AUTO, {"updated": datetime.now(timezone.utc).isoformat(timespec="seconds"), "symbol": sym,
                      "days": round(len(R) / 1440, 1), "base": base, "variants": out, "counts": counts,
+                     "days_long": (round(len(RL) / 1440) if RL is not None else None), "base_long": baseL,
+                     "base_real": baseT, "real_n": (len(T) if T else 0),
                      "minutes": round((time.time() - t0) / 60, 1)})
     say(f"researcher done: {len(out)} what-ifs in {(time.time()-t0)/60:.1f} min - {counts}")
 

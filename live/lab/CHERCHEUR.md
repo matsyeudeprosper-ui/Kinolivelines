@@ -50,6 +50,14 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
 1. `lab/auto.json` — last night's verdicts: `variants[]` with `verdict`
    (A better in both halves; B smaller hole or partial gain; C no; = no
    effect), `diff_net`, `diff_worst`, `h1`/`h2`, `prev_verdict`, `blocked`.
+   Since 2026-09-29 each variant also carries two more views: `long`
+   (the longest window the terminal gives, `days`, its own `verdict`,
+   `diff_net`, `diff_worst`) and `real` (the idea replayed on the bot's
+   REAL entries since the journal began: `n_real`, `trades`, `diff_net`,
+   `diff_worst`). The 42-day verdict stays THE verdict. OWNER RULE: an
+   idea that is weaker on the long window or on the real trades is NOT
+   dropped for that - say it as a caution, keep pushing if the 42 days
+   say yes. Under 30 real trades, say "trop peu de trades".
 2. `lab/auto_history.jsonl` — the same ids night after night: a B that
    keeps coming back matters more than a one-off; an A that appears once
    is a lead, not a fact.

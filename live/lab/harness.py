@@ -208,6 +208,147 @@ def verdict(v, base):
     return "C"
 
 
+# ---- 2026-09-29 (owner): two more views on every idea -------------------
+# 1) the LONG window: the most M1 history the terminal gives. Its "Max bars
+#    in chart" setting caps it (100000 today = ~69 days); raise the setting
+#    and this grows by itself. A weaker result here is a caution, never a
+#    reason to drop an idea (owner rule 2026-09-29).
+# 2) the REAL trades: the entries the bot really took (bos_journal*.csv,
+#    deduplicated across accounts), replayed with the idea's rules on the
+#    real M1 path after each entry - the same money and exit code as above.
+def bars_long():
+    u = next(x for x in json.load(open(os.path.join(LIVE, "owl_nest_users.json"), encoding="utf-8")) if x["id"] == "std")
+    if not mt5.initialize(path=u["terminal"]):
+        return None, None
+    sym = "BTCUSD" if mt5.symbol_info("BTCUSD") else "BTCUSDm"
+    R = None
+    for n in (499000, 299000, 199000, 149000, 99000, 90000, 80000, 70000):
+        try:
+            R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 0, n)
+        except Exception:
+            R = None
+        if R is not None and len(R) >= n:
+            break
+        R = None
+    mt5.shutdown()
+    return sym, R
+
+
+def real_entries():
+    import csv
+    import glob
+    uniq = {}
+    for f in sorted(glob.glob(os.path.join(LIVE, "bos_journal*.csv"))):
+        try:
+            with open(f, encoding="utf-8", errors="replace") as fh:
+                for r in csv.DictReader(fh):
+                    if r.get("is_add") == "True" or not r.get("exit_time_utc") or not r.get("entry_price"):
+                        continue
+                    key = (r["entry_time_utc"][:16], r["direction"])
+                    if key in uniq:
+                        continue
+                    t = datetime.fromisoformat(r["entry_time_utc"].replace("Z", "+00:00")).timestamp()
+                    e, sl = float(r["entry_price"]), float(r["sl"])
+                    dist = float(r.get("dist_pts") or abs(e - sl))
+                    uniq[key] = {"t": int(t), "d": 1 if r["direction"] == "BUY" else -1, "e": e, "sl": sl, "dist": dist,
+                                 "nerv": float(r.get("nervosity") or 1.0), "flip": r.get("kind") == "FLIP-BOS",
+                                 "kind": r.get("kind"), "pnl": float(r.get("profit_usd") or 0)}
+        except Exception:
+            continue
+    return sorted(uniq.values(), key=lambda x: x["t"])
+
+
+def simulate_real(T, R, spread, cfg):
+    """The idea's rules on the bot's REAL entries: filters decide which of
+    them it would have taken, the target and the money rules decide what
+    they would have paid, walking the real M1 path after each entry."""
+    c = cfg_of(cfg)
+    rr, LOT = float(c["rr"]), float(c["lot"])
+    NB, K = float(c["bullets"]), int(c["k_streak"])
+    skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
+    times = [int(r["time"]) for r in R]
+    closes = [float(r["close"]) for r in R]
+    run = pk = worst = 0.0
+    streak = 0
+    last_close_t = last_flip_t = None
+    cont_left = 0
+    n_trades = wins = blocked = 0
+    open_until = -1
+    for e in T:
+        t = e["t"]
+        if not times or t < times[0]:
+            continue
+        i = bisect.bisect_left(times, t)
+        if i >= len(times) or i < open_until:
+            continue
+        g = datetime.fromtimestamp(t, tz=timezone.utc)
+        nv = e["nerv"]
+        if nv >= float(c["storm"]):
+            continue
+        if c["nerv_gate"] and nv > 1.0:
+            blocked += 1
+            continue
+        if c["debt_nerv_gate"] and nv > 1.0 and max(0.0, pk - run) > 0.5:
+            blocked += 1
+            continue
+        if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
+            blocked += 1
+            continue
+        if c["ext_pts"] and i >= 61 and abs(closes[i-1] - closes[i-61]) > c["ext_pts"]:
+            blocked += 1
+            continue
+        if skip_wd and g.weekday() in skip_wd:
+            blocked += 1
+            continue
+        if skip_h and g.hour in skip_h:
+            blocked += 1
+            continue
+        debt_now = max(0.0, pk - run)
+        if e["flip"]:
+            last_flip_t = t
+            cont_left = int(c["n_cont"])
+        elif debt_now > 0.5:
+            if cont_left > 0 and last_flip_t is not None:
+                cont_left -= 1
+            else:
+                blocked += 1
+                continue
+        d, ent, sl, dist = e["d"], e["e"], e["sl"], e["dist"]
+        lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
+        tp = ent + d * rr * dist
+        mid = ent - d * dist / 2.0
+        hit_mid = False
+        win = None
+        j = i
+        while j < len(R):
+            h, l = float(R[j]["high"]), float(R[j]["low"])
+            if not hit_mid and ((l <= mid) if d == 1 else (h >= mid)):
+                hit_mid = True
+            hit_sl = (l <= sl) if d == 1 else (h >= sl)
+            hit_tp = (h >= tp) if d == 1 else (l <= tp)
+            if hit_sl or hit_tp:
+                win = bool(hit_tp and not hit_sl)
+                break
+            j += 1
+        if win is None:
+            continue
+        open_until = j
+        pts = (rr * dist - spread) if win else -(dist + spread)
+        debt = max(0.0, pk - run)
+        run += pts * lot
+        if debt > 0.5 and streak < K and hit_mid and NB > 0:
+            run += ((1.3 * dist - spread) if win else -(dist / 2.0 + spread)) * BLOT * NB
+        streak = 0 if win else streak + 1
+        wins += 1 if win else 0
+        pk = max(pk, run)
+        worst = max(worst, pk - run)
+        last_close_t = times[j]
+        n_trades += 1
+    return {"net": round(run, 2), "worst_debt": round(worst, 2), "trades": n_trades,
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "n_real": len(T),
+            "actual": round(sum(x["pnl"] for x in T), 2)}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rr", type=float)
