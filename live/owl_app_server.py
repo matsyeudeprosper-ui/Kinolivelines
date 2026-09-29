@@ -9904,10 +9904,17 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-29: "La preuve" - every member; the public showcase reads it
             # too (owner: the best sales page we have), without the personal block
             try:
+                # the account's own run if we have one, else its package
+                _uid = user.get("id") or ""
                 try:
-                    _pkg = (PKG.for_account(user.get("id") or "") or {}).get("package") or "base"
+                    _pkg = (PKG.for_account(_uid) or {}).get("package") or "base"
                 except Exception:
                     _pkg = "base"
+                try:
+                    if _uid in (json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8")).get("packages") or {}):
+                        _pkg = _uid
+                except Exception:
+                    pass
                 _pp = dict(proof_payload(_pkg))
                 _pp["mine"] = None if user.get("public") else proof_mine(user.get("id") or "")
                 _pp["history"] = proof_history(_pp)

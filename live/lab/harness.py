@@ -72,7 +72,13 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             #            reaches this (waived while still in the red, like live)
             #   kill_net stop for good once the account is this far down
             # All default to OFF so every earlier measurement stays comparable.
-            "jar": False, "day_cap": 0.0, "kill_net": 0.0}
+            "jar": False, "day_cap": 0.0, "kill_net": 0.0,
+            # 2026-09-29 (owner: "each account has a different balance, so not
+            # the same risk"). The live bot resizes the lot AND the daily cap
+            # by balance / scale_ref, rounding the lot down to 0.01. With
+            # balance = 0 the old flat lot is used, so nothing already measured
+            # moves. Real balances today run 122 to 356, i.e. lots 0.01 to 0.03.
+            "balance": 0.0, "scale_ref": 200.0}
 # the live bot's own numbers, read from it so the two cannot drift apart
 JAR_SKIM = getattr(B, "JAR_SKIM", 0.50)
 JAR_STAKE = getattr(B, "JAR_STAKE", 0.50)
@@ -124,6 +130,9 @@ def package_cfg(name, over=None):
     c["kill_net"] = float(merged.get("kill_net") or 0.0)
     c["lot"] = float(merged.get("base_lot") or CFG_BASE["lot"])
     c["bullets"] = float(merged.get("max_extra", CFG_BASE["bullets"]))
+    c["scale_ref"] = float(merged.get("scale_ref_balance") or CFG_BASE["scale_ref"])
+    if not merged.get("scale_with_balance", True):
+        c["balance"] = 0.0          # this package keeps the flat lot
     if merged.get("nervosity") is False:
         c["storm"] = 1.85        # the hard ceiling stays even with no gate
     for k, v in (over or {}).items():
@@ -143,6 +152,13 @@ def cfg_of(over=None):
 def simulate(R, spread, cfg):
     c = cfg_of(cfg)
     rr, LOT = float(c["rr"]), float(c["lot"])
+    # the account's own size: same arithmetic as structure_bos_bot.day_roll()
+    bal = float(c["balance"] or 0.0)
+    ratio = (bal / float(c["scale_ref"])) if (bal > 0 and float(c["scale_ref"]) > 0) else 1.0
+    if bal > 0:
+        LOT = max(0.01, math.floor((LOT * ratio) / 0.01) * 0.01)
+    day_cap_eff = float(c["day_cap"]) * ratio
+    bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     eng = B.Struct()
@@ -319,7 +335,7 @@ def simulate(R, spread, cfg):
             else:
                 continue
         # the daily profit stop, waived while still in the red like the live bot
-        if c["day_cap"] and day_profit >= float(c["day_cap"]) and debt_now <= 0.5:
+        if day_cap_eff and day_profit >= day_cap_eff and debt_now <= 0.5:
             blocked += 1
             continue
         if c["only_kind"] == "flip" and not flip:
@@ -356,7 +372,7 @@ def simulate(R, spread, cfg):
         # not grow with profit; a cap that did grow would simply stop binding
         # once the account was ahead - which is exactly when the deep holes
         # happen. Tested both ways on 2026-09-29, see lab/CHERCHEUR.md.
-        if c["risk_pct"] and _risk > BAL0 * float(c["risk_pct"]) / 100.0:
+        if c["risk_pct"] and _risk > bal_ref * float(c["risk_pct"]) / 100.0:
             blocked += 1
             continue
         if c["bank_mult"] and _risk > (BANK0 + max(0.0, run)) / float(c["bank_mult"]):
@@ -483,6 +499,13 @@ def simulate_real(T, R, spread, cfg):
     they would have paid, walking the real M1 path after each entry."""
     c = cfg_of(cfg)
     rr, LOT = float(c["rr"]), float(c["lot"])
+    # the account's own size: same arithmetic as structure_bos_bot.day_roll()
+    bal = float(c["balance"] or 0.0)
+    ratio = (bal / float(c["scale_ref"])) if (bal > 0 and float(c["scale_ref"]) > 0) else 1.0
+    if bal > 0:
+        LOT = max(0.01, math.floor((LOT * ratio) / 0.01) * 0.01)
+    day_cap_eff = float(c["day_cap"]) * ratio
+    bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     times = [int(r["time"]) for r in R]

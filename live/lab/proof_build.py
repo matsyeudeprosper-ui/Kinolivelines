@@ -65,13 +65,43 @@ def main():
     # 2026-09-29 (owner): the test now runs with each account's OWN rules.
     # The generic run stays as `base` for anything that has no package.
     base = H.run_cfg(R, 7.0, H.package_cfg("base"))
+    # 2026-09-29 (owner): "each account may not have the same balance, so not
+    # the same risk". The live bot resizes the lot AND the daily cap by
+    # balance / 200, so every account is a different test. One run per account.
+    import math
     packages = {}
-    for pk in ("base", "valere", "special_10", "kino_sans_frein", "demo", "special"):
+    try:
+        sys.path.insert(0, LIVE)
+        import owl_app_server as S
+        us = json.load(io.open(os.path.join(LIVE, "owl_nest_users.json"), encoding="utf-8"))
+    except Exception:
+        us = []
+    for u in us:
+        uid = u.get("id")
+        try:
+            bal = float(json.load(io.open(os.path.join(LIVE, "nest_data", uid + ".json"), encoding="utf-8")).get("balance") or 0)
+        except Exception:
+            bal = 0.0
+        if bal <= 0:
+            continue
+        try:
+            pk = (S.PKG.for_account(uid) or {}).get("package") or "base"
+            cfg = H.package_cfg(pk, {"balance": bal})
+            ratio = bal / cfg["scale_ref"] if cfg["scale_ref"] else 1.0
+            v = H.run_cfg(R, 7.0, cfg)
+            packages[uid] = {"full": v["full"], "h1": v["h1"], "h2": v["h2"],
+                             "day_cap": round(cfg["day_cap"] * ratio, 2), "jar": cfg["jar"],
+                             "kill_net": cfg["kill_net"], "balance": round(bal, 2),
+                             "lot": max(0.01, math.floor((cfg["lot"] * ratio) / 0.01) * 0.01)}
+        except Exception as e:
+            print("account", uid, "failed:", e)
+    for pk in ("base", "valere"):
         try:
             cfg = H.package_cfg(pk)
             v = H.run_cfg(R, 7.0, cfg)
             packages[pk] = {"full": v["full"], "h1": v["h1"], "h2": v["h2"],
-                            "day_cap": cfg["day_cap"], "jar": cfg["jar"], "kill_net": cfg["kill_net"]}
+                            "day_cap": cfg["day_cap"], "jar": cfg["jar"], "kill_net": cfg["kill_net"],
+                            "lot": cfg["lot"]}
         except Exception as e:
             print("package", pk, "failed:", e)
     _, RL = H.bars_long()
