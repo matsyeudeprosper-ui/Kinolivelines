@@ -4128,6 +4128,7 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
  let chips=lchip(f[0],f[1]);
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
+ if(j.kind==='battery')chips+=lchip(en?'asked every night':'question de chaque nuit','var(--muted2)');
  if(j.reference)chips+=lchip(en?'yardstick · never for the robot':'étalon · jamais pour le robot','var(--muted2)');
  if(j.col==='decided'&&d.d==='yes')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
@@ -4149,7 +4150,11 @@ function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.c
 function jRail(en){const cur=jCol();
  return '<div class="jrail" id="jrail">'+JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<div class="jn'+(i===cur?' on':'')+(i<cur?' past':'')+'" onclick="jGo('+i+')" role="tab" aria-selected="'+(i===cur?'true':'false')+'" style="--jc:'+c+'"><i>'+jCount(k)+'</i><span>'+(en?es:fs)+'</span></div>').join('')+'</div>';}
 function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];const L=J.filter(x=>x.col===k);const seeds=k==='idea'?labSeeds(j):[];
- const cards=L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join('');
+ let cards;
+ if(k==='replay'){const VO={A:0,B:1,'=':2,C:3};const vd=x=>((x.steps||{}).replay||{}).verdict||'';const S2=[...L].sort((a,b)=>((VO[vd(a)]??2)-(VO[vd(b)]??2))||((((b.steps||{}).replay||{}).diff_net||0)-(((a.steps||{}).replay||{}).diff_net||0)));
+  const keep=S2.filter(x=>vd(x)!=='C'),no=S2.filter(x=>vd(x)==='C');
+  cards=keep.map(x=>jCard(x,en)).join('')+(no.length?'<button class="tfc" style="width:100%;margin-top:12px;padding:11px;justify-content:center" onclick="const f=document.getElementById(&#39;jfold&#39;);f.hidden=!f.hidden;this.textContent=(f.hidden?&#39;\u25b8 &#39;:&#39;\u25be &#39;)+this.textContent.slice(2)">\u25b8 '+no.length+' '+(en?(no.length>1?'ideas said no last night':'idea said no last night'):(no.length>1?'id\u00e9es ont dit non cette nuit':'id\u00e9e a dit non cette nuit'))+'</button><div id="jfold" hidden>'+no.map(x=>jCard(x,en)).join('')+'</div>':'');}
+ else cards=L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join('');
  const sub={idea:[en?'Where ideas are born: the real trades, Kino, the chercheur.':'L\u00e0 o\u00f9 les id\u00e9es naissent : les vrais trades, Kino, le chercheur.'],replay:[en?'Replayed on the last 42 days of the market, against the robot as it is.':'Rejou\u00e9es sur les 42 derniers jours du march\u00e9, contre le robot tel qu\u2019il est.'],test:[en?'A copy of the robot tries them for pretend, next to the real one.':'Une copie du robot les essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.'],decided:[en?'Kino said yes or no.':'Kino a dit oui ou non.'],live:[en?'The rules the robot follows today.':'Les r\u00e8gles que le robot suit aujourd\u2019hui.']}[k][0];
  return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+(L.length+seeds.length)+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
   '<div class="jcards" id="jcards">'+(cards||'<div class="panel" style="text-align:center;padding:26px 14px;color:var(--muted);font-size:.86rem">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>'+
@@ -6588,9 +6593,9 @@ def lab_journeys(items, props, twins, auto, decisions):
         ev = []
         st = {"idea": {"date": date, "src": src}}
         who_fr = {"registry": "Une id\u00e9e de Kino ou des vrais trades", "proposal": "Propos\u00e9e par le chercheur",
-                  "twin": "Lanc\u00e9e par le chercheur apr\u00e8s un A"}
+                  "twin": "Lanc\u00e9e par le chercheur apr\u00e8s un A", "battery": "Une question que le moteur pose chaque nuit"}
         who_en = {"registry": "An idea from Kino or the real trades", "proposal": "Proposed by the chercheur",
-                  "twin": "Started by the chercheur after an A"}
+                  "twin": "Started by the chercheur after an A", "battery": "A question the engine asks every night"}
         ev.append({"d": date or "", "fr": who_fr.get(kind, ""), "en": who_en.get(kind, ""), "k": "idea"})
         # 2 - replayed on the past
         rows = []
@@ -6705,6 +6710,15 @@ def lab_journeys(items, props, twins, auto, decisions):
             continue
         build(t["id"], [t["id"]], t.get("title_fr"), t.get("title_en"), "twin", "rythme", "", "", "", "", "chercheur",
               (t.get("started") or "")[:10])
+    # 2026-09-29 (owner): everything replayed is a card - the standing menu
+    # of nightly questions too; the page folds the C's
+    for v in (auto.get("variants") or []):
+        vid = v.get("id")
+        if not vid or vid in seen:
+            continue
+        first = min((r.get("d", "") for r in by_id.get(vid, []) if r.get("d")), default=(auto.get("updated") or "")[:10])
+        build(vid, [vid], v.get("title_fr"), v.get("title_en"), "battery", v.get("family"), "", "", "", "", "battery", first,
+              prop={"cfg": v.get("cfg")})
     order = {"live": 0, "decided": 1, "test": 2, "replay": 3, "idea": 4}
     out.sort(key=lambda j: (order.get(j["col"], 9), j.get("date") or ""), reverse=False)
     return out
