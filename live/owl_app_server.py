@@ -1112,6 +1112,21 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pf-steps{display:flex;gap:6px;margin-top:10px}
 .pf-steps div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 6px;font-size:.66rem;color:var(--text2);line-height:1.3;text-align:center}
 .pf-steps b{display:block;font-size:.9rem;color:var(--accent-soft);margin-bottom:2px}
+.pf-ring b{font-size:.72rem;letter-spacing:.02em;text-transform:uppercase;text-align:center;line-height:1.1;padding:0 8px}
+.pf-ring.big{width:92px;height:92px}.pf-ring.big svg{width:92px;height:92px}.pf-ring.big b{font-size:.8rem}
+.pf-nav{position:sticky;top:-2px;z-index:3;display:flex;gap:6px;padding:8px 0 10px;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:6px}
+.pf-nav button{flex:1;border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:99px;padding:7px 4px;font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
+.pf-nav button b{color:var(--accent-soft);margin-right:3px}
+.pf-kpi{cursor:pointer;position:relative}
+.pf-kpi .x{display:none;font-size:.74rem;color:var(--text);line-height:1.45;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);text-transform:none;letter-spacing:0}
+.pf-kpi.open .x{display:block}
+.pf-kpi::after{content:"?";position:absolute;top:8px;right:10px;width:16px;height:16px;border-radius:99px;background:var(--surface3);color:var(--muted2);font-size:.62rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pf-dots{display:flex;gap:5px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.pf-dots i{width:14px;height:14px;border-radius:99px;display:inline-block;border:2px solid transparent}
+.pf-dots i.today{border-color:var(--text)}
+.pf-tip{min-height:18px;font-size:.74rem;color:var(--text);margin-top:6px;font-variant-numeric:tabular-nums}
+.pf-mine{margin-top:12px;border-radius:16px;padding:12px 14px;border:1px solid var(--accent-soft);background:linear-gradient(180deg,rgba(59,130,246,.10),transparent)}
+
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
 .jrail .jn{flex:1;text-align:center;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -4444,10 +4459,12 @@ function renderNext(d){const el=document.getElementById('rb-next');if(!el)return
 // week by week, real vs test, progress to the 30-trade judgement, verdicts.
 const PL={green:['var(--up-soft)','\u2713'],amber:['var(--warn)','!'],red:['var(--down-soft)','\u00d7'],grey:['var(--muted)','\u2026']};
 const pfMn=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+':'\u2212')+Math.abs(v).toFixed(0)+'\u202f$');
-function pfRing(lights,c){const n=lights.length||3;const R=30,C=2*Math.PI*R,seg=C/n,gap=6;
- const arcs=lights.map((l,i)=>'<circle cx="37" cy="37" r="'+R+'" fill="none" stroke="'+(PL[l.c]||PL.grey)[0]+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(seg-gap).toFixed(1)+' '+(C-(seg-gap)).toFixed(1)+'" stroke-dashoffset="'+(-(i*seg)).toFixed(1)+'" transform="rotate(-90 37 37)"/>').join('');
- const ok=lights.filter(l=>l.c==='green').length;
- return '<div class="pf-ring"><svg viewBox="0 0 74 74"><circle cx="37" cy="37" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="7"/>'+arcs+'</svg><b>'+ok+'/'+n+'</b></div>';}
+function pfRing(lights,c,word,big){const n=lights.length||3;const R=big?36:30,cx=big?46:37,C=2*Math.PI*R,seg=C/n,gap=6;
+ const arcs=lights.map((l,i)=>'<circle cx="'+cx+'" cy="'+cx+'" r="'+R+'" fill="none" stroke="'+(PL[l.c]||PL.grey)[0]+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+(seg-gap).toFixed(1)+' '+(C-(seg-gap)).toFixed(1)+'" stroke-dashoffset="'+(-(i*seg)).toFixed(1)+'" transform="rotate(-90 '+cx+' '+cx+')"/>').join('');
+ return '<div class="pf-ring'+(big?' big':'')+'"><svg viewBox="0 0 '+(cx*2)+' '+(cx*2)+'"><circle cx="'+cx+'" cy="'+cx+'" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="7"/>'+arcs+'</svg><b style="color:'+c+'">'+word+'</b></div>';}
+function pfWord(c,en,big){return (big?{green:en?'Yes':'Oui',amber:en?'Watch':'Surveiller',red:en?'No':'Non',grey:en?'Soon':'Bient\u00f4t'}:{green:en?'Yes':'Oui',amber:en?'Watch':'\u00c0 voir',red:en?'No':'Non',grey:en?'Soon':'Bient\u00f4t'})[c]||'';}
+function pfGreen(lights,en){const ok=lights.filter(l=>l.c==='green').length;return en?ok+' of '+lights.length+' green':ok+' sur '+lights.length+' au vert';}
+function pfDots(hist,en){if(!hist||!(hist.nights||[]).length)return '';const N=hist.nights;return '<div class="pf-dots">'+N.map((r,i)=>'<i class="'+(i===N.length-1?'today':'')+'" style="background:'+(PL[r.o]||PL.grey)[0]+'" title="'+_escS(r.d)+'"></i>').join('')+'<span style="font-size:.72rem;color:var(--muted2);margin-left:4px">'+(hist.streak>1?(en?'the verdict has not moved for '+hist.streak+' nights':'le verdict n\u2019a pas boug\u00e9 depuis '+hist.streak+' nuits'):(N.length>1?(en?'last '+N.length+' nights':N.length+' derni\u00e8res nuits'):(en?'first night recorded':'premi\u00e8re nuit enregistr\u00e9e')))+'</span></div>';}
 function pfSpark(cv,c){if(!cv||cv.length<2)return '';const ys=cv.map(p=>p[1]);const mx=Math.max(...ys,0),mn=Math.min(...ys,0),sp=Math.max(1e-6,mx-mn);const n=cv.length;
  const pts=cv.map((p,i)=>(1+i/(n-1)*54).toFixed(1)+','+(20-((p[1]-mn)/sp)*18).toFixed(1)).join(' ');return '<svg viewBox="0 0 56 22"><polyline points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round"/></svg>';}
 function pfWeeks(cv){if(!cv||cv.length<8)return [];const W=[];let wk=null,start=null,last=null;
@@ -4458,15 +4475,17 @@ async function loadProof(d){const el=document.getElementById('proofcard');if(!el
  if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
  let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){el.style.display='none';return;}
- window._proof=j;const en=LANG()==='en';const F=j.base.full||{},U=j.union||{},oc=(PL[(j.overall||{}).c]||PL.grey)[0];el.style.setProperty('--pfc',oc);el.style.borderColor=oc;
+ window._proof=j;const en=LANG()==='en';const F=j.base.full||{},U=j.union||{},M=j.mine,oc=(PL[(j.overall||{}).c]||PL.grey)[0];el.style.setProperty('--pfc',oc);el.style.borderColor=oc;
  const L=j.lights||[];const by=k=>L.find(l=>l.k===k)||{c:'grey'};
  document.getElementById('proof-lbl').innerHTML=(en?'The proof':'La preuve')+' <span class="hint">\u00b7 '+(en?'checked every night':'v\u00e9rifi\u00e9e chaque nuit')+'</span>';
  const ahead=(j.twins||[]).filter(t=>t.status==='ahead').length;
- setH(document.getElementById('proof-lights'),'<div class="pf-hero">'+pfRing(L,oc)+'<div style="flex:1;min-width:0"><div class="pf-verdict">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</div><div class="pf-sub">'+(en?'Is this strategy still worth staying with? Three checks, redone every night by the same engine.':'Cette strat\u00e9gie vaut-elle encore qu\u2019on reste ? Trois v\u00e9rifications, refaites chaque nuit par le m\u00eame moteur.')+'</div></div></div>'+
+ setH(document.getElementById('proof-lights'),'<div class="pf-hero">'+pfRing(L,oc,pfWord((j.overall||{}).c,en))+'<div style="flex:1;min-width:0"><div class="pf-verdict">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</div><div class="pf-sub">'+pfGreen(L,en)+' \u00b7 '+(en?'is this strategy still worth staying with? Three checks, redone every night.':'cette strat\u00e9gie vaut-elle encore qu\u2019on reste ? Trois v\u00e9rifications, refaites chaque nuit.')+'</div></div></div>'+
+  pfDots(j.history,en)+
   '<div class="pf-rows">'+
   '<div class="pf-row">'+proofDot(by('replay').c)+'<div class="t"><b>'+(en?'On the past, it makes money':'Sur le pass\u00e9, elle gagne')+'</b><span>'+(en?'last '+Math.round(j.days)+' days, replayed':'les '+Math.round(j.days)+' derniers jours, rejou\u00e9s')+'</span></div>'+pfSpark(F.curve,(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'<div class="v" style="color:'+((F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(F.net)+'</div></div>'+
   '<div class="pf-row">'+proofDot(by('track').c)+'<div class="t"><b>'+(en?'In real life, it follows the test':'En vrai, elle suit le test')+'</b><span>'+(U.trades||0)+' '+(en?'real trades since ':'vrais trades depuis le ')+_escS((U.since||'').slice(8,10)+'/'+(U.since||'').slice(5,7))+'</span></div><div class="v" style="color:'+((U.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(U.net)+'</div></div>'+
-  '<div class="pf-row" style="border-bottom:0">'+proofDot(by('lab').c)+'<div class="t"><b>'+(en?'No trial copy does better':'Aucune copie d\u2019essai ne fait mieux')+'</b><span>'+(j.twins||[]).length+' '+(en?'copies in the duel':'copies en duel')+'</span></div><div class="v">'+ahead+' '+(en?'ahead':'devant')+'</div></div></div>');
+  '<div class="pf-row'+(M?'':' last')+'"'+(M?'':' style="border-bottom:0"')+'>'+proofDot(by('lab').c)+'<div class="t"><b>'+(en?'No trial copy does better':'Aucune copie d\u2019essai ne fait mieux')+'</b><span>'+(j.twins||[]).length+' '+(en?'copies in the duel':'copies en duel')+'</span></div><div class="v">'+ahead+' '+(en?'ahead':'devant')+'</div></div>'+
+  (M?'<div class="pf-row" style="border-bottom:0"><i style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:var(--accent-soft);color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">\u2605</i><div class="t"><b>'+(en?'On your account':'Sur votre compte')+'</b><span>'+(M.trades||0)+' trades'+(M.expected!==undefined?' \u00b7 '+(en?'test expected ':'le test attendait ')+pfMn(M.expected):'')+'</span></div><div class="v" style="color:'+((M.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(M.net)+'</div></div>':'')+'</div>');
  el.querySelector('.shbtn').textContent=(en?'Read the full report':'Lire le rapport complet')+' \u203a';el.style.display='';}
 function proofDot(c){const x=PL[c]||PL.grey;return '<i style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:'+x[0]+';color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">'+x[1]+'</i>';}
 function pfArea(cv,rules,en){if(!cv||cv.length<2)return '';const W=320,H=150,L=34,Rr=8,T=10,Bt=26;const ys=cv.map(p=>p[1]).concat([0]);const mx=Math.max(...ys),mn=Math.min(...ys),sp=Math.max(1e-6,mx-mn);const n=cv.length;
@@ -4474,33 +4493,47 @@ function pfArea(cv,rules,en){if(!cv||cv.length<2)return '';const W=320,H=150,L=3
  const last=cv[n-1][1],col=last>=0?'var(--up-soft)':'var(--down-soft)';
  const grid=[mx,(mx+mn)/2,mn].map(v=>'<line x1="'+L+'" y1="'+Y(v).toFixed(1)+'" x2="'+(W-Rr)+'" y2="'+Y(v).toFixed(1)+'" stroke="var(--border)" stroke-width="1"/><text x="'+(L-4)+'" y="'+(Y(v)+3).toFixed(1)+'" text-anchor="end" font-size="7" fill="var(--muted)">'+(v>=0?'+':'\u2212')+Math.abs(v).toFixed(0)+'</text>').join('');
  const mid=Math.floor(n/2);const half='<rect x="'+X(mid).toFixed(1)+'" y="'+T+'" width="'+(X(n-1)-X(mid)).toFixed(1)+'" height="'+(H-T-Bt)+'" fill="var(--accent-soft)" opacity=".05"/><text x="'+((X(0)+X(mid))/2).toFixed(1)+'" y="'+(H-Bt+9)+'" text-anchor="middle" font-size="6.5" fill="var(--muted)">'+(en?'first half':'1\u00e8re moiti\u00e9')+'</text><text x="'+((X(mid)+X(n-1))/2).toFixed(1)+'" y="'+(H-Bt+9)+'" text-anchor="middle" font-size="6.5" fill="var(--muted)">'+(en?'second half':'2e moiti\u00e9')+'</text>';
- const idx={};cv.forEach((p,i)=>{idx[p[0]]=i;});const G={};(rules||[]).forEach((r,k)=>{const i=idx[r.date];if(i!==undefined)(G[i]=G[i]||[]).push(k+1);});
- const marks=Object.keys(G).map(i=>{i=+i;const lab=G[i].length>1?G[i][0]+'–'+G[i][G[i].length-1]:String(G[i][0]);const w=lab.length>1?14:10;return '<line x1="'+X(i).toFixed(1)+'" y1="'+T+'" x2="'+X(i).toFixed(1)+'" y2="'+(H-Bt)+'" stroke="var(--warn)" opacity=".6" stroke-dasharray="2 3"/><rect x="'+(X(i)-w/2).toFixed(1)+'" y="'+(H-Bt+11)+'" width="'+w+'" height="10" rx="5" fill="var(--warn)"/><text x="'+X(i).toFixed(1)+'" y="'+(H-Bt+18.5)+'" text-anchor="middle" font-size="6.5" font-weight="800" fill="#0b1020">'+lab+'</text>';}).join('');
- return '<svg viewBox="0 0 '+W+' '+H+'"><defs><linearGradient id="pfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".35"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'+half+grid+
+ const idx={};cv.forEach((p,i)=>{idx[p[0]]=i;});const G={};(rules||[]).forEach((r,k)=>{const i=idx[r.date];if(i!==undefined)(G[i]=G[i]||[]).push(k);});
+ const marks=Object.keys(G).map(i=>{i=+i;const ks=G[i];const lab=ks.length>1?(ks[0]+1)+'\u2013'+(ks[ks.length-1]+1):String(ks[0]+1);const w=lab.length>1?14:10;return '<g style="cursor:pointer" onclick="pfRule(['+ks.join(',')+'])"><line x1="'+X(i).toFixed(1)+'" y1="'+T+'" x2="'+X(i).toFixed(1)+'" y2="'+(H-Bt)+'" stroke="var(--warn)" opacity=".6" stroke-dasharray="2 3"/><rect x="'+(X(i)-w/2-4).toFixed(1)+'" y="'+(H-Bt+8)+'" width="'+(w+8)+'" height="16" rx="8" fill="transparent"/><rect x="'+(X(i)-w/2).toFixed(1)+'" y="'+(H-Bt+11)+'" width="'+w+'" height="10" rx="5" fill="var(--warn)"/><text x="'+X(i).toFixed(1)+'" y="'+(H-Bt+18.5)+'" text-anchor="middle" font-size="6.5" font-weight="800" fill="#0b1020">'+lab+'</text></g>';}).join('');
+ window._pfcv=cv;window._pfgeo={L,W,Rr,n};
+ return '<svg id="pf-svg" viewBox="0 0 '+W+' '+H+'" style="touch-action:pan-y" onpointerdown="pfRead(event)" onpointermove="pfRead(event)"><defs><linearGradient id="pfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".35"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>'+half+grid+
   '<line x1="'+L+'" y1="'+Y(0).toFixed(1)+'" x2="'+(W-Rr)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--border2)" stroke-dasharray="3 4"/>'+
   '<polygon points="'+X(0).toFixed(1)+','+Y(0).toFixed(1)+' '+pts.join(' ')+' '+X(n-1).toFixed(1)+','+Y(0).toFixed(1)+'" fill="url(#pfg)"/>'+marks+
-  '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3.5" fill="'+col+'"/><rect x="'+(X(n-1)-34).toFixed(1)+'" y="'+(Y(last)-16).toFixed(1)+'" width="30" height="12" rx="6" fill="'+col+'"/><text x="'+(X(n-1)-19).toFixed(1)+'" y="'+(Y(last)-7.3).toFixed(1)+'" text-anchor="middle" font-size="7" font-weight="800" fill="#0b1020">'+(last>=0?'+':'\u2212')+Math.abs(last).toFixed(0)+'</text>'+
-  '<text x="'+L+'" y="'+(H-2)+'" font-size="7" fill="var(--muted)">'+_escS(cv[0][0].slice(5))+'</text><text x="'+(W-Rr)+'" y="'+(H-2)+'" text-anchor="end" font-size="7" fill="var(--muted)">'+_escS(cv[n-1][0].slice(5))+'</text></svg>';}
+  '<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round"/><line id="pf-cur" x1="0" y1="'+T+'" x2="0" y2="'+(H-Bt)+'" stroke="var(--text)" opacity="0"/><circle id="pf-dot" cx="0" cy="0" r="3.5" fill="var(--text)" opacity="0"/><circle cx="'+X(n-1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3.5" fill="'+col+'"/><rect x="'+(X(n-1)-34).toFixed(1)+'" y="'+(Y(last)-16).toFixed(1)+'" width="30" height="12" rx="6" fill="'+col+'"/><text x="'+(X(n-1)-19).toFixed(1)+'" y="'+(Y(last)-7.3).toFixed(1)+'" text-anchor="middle" font-size="7" font-weight="800" fill="#0b1020">'+(last>=0?'+':'\u2212')+Math.abs(last).toFixed(0)+'</text>'+
+  '<text x="'+L+'" y="'+(H-2)+'" font-size="7" fill="var(--muted)">'+_escS(cv[0][0].slice(5))+'</text><text x="'+(W-Rr)+'" y="'+(H-2)+'" text-anchor="end" font-size="7" fill="var(--muted)">'+_escS(cv[n-1][0].slice(5))+'</text></svg><div class="pf-tip" id="pf-tip">'+(en?'Touch the curve to read a day. Tap a number to read the rule.':'Touchez la courbe pour lire un jour. Touchez un num\u00e9ro pour lire la r\u00e8gle.')+'</div>';}
+function pfRead(e){const svg=document.getElementById('pf-svg'),cv=window._pfcv,g=window._pfgeo;if(!svg||!cv||!g)return;if(e.type==='pointermove'&&e.pointerType==='mouse'&&e.buttons===0)return;
+ const r=svg.getBoundingClientRect();const x=(e.clientX-r.left)/r.width*g.W;let i=Math.round((x-g.L)/(g.W-g.L-g.Rr)*(g.n-1));i=Math.max(0,Math.min(g.n-1,i));
+ const pl=svg.querySelector('polyline');const pt=pl.points.getItem(i);const cur=document.getElementById('pf-cur'),dot=document.getElementById('pf-dot');cur.setAttribute('x1',pt.x);cur.setAttribute('x2',pt.x);cur.setAttribute('opacity','.5');dot.setAttribute('cx',pt.x);dot.setAttribute('cy',pt.y);dot.setAttribute('opacity','1');
+ const en=LANG()==='en';const d=cv[i][0];const tip=document.getElementById('pf-tip');if(tip)tip.innerHTML='<b>'+(en?d.slice(5):d.slice(8,10)+'/'+d.slice(5,7))+'</b> \u00b7 '+(en?'the account was at ':'le compte \u00e9tait \u00e0 ')+'<b style="color:'+(cv[i][1]>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(cv[i][1])+'</b>';}
+function pfRule(ks){const j=window._proof;if(!j)return;const en=LANG()==='en';const tip=document.getElementById('pf-tip');if(!tip)return;
+ tip.innerHTML=ks.map(k=>{const r=(j.rules||[])[k];if(!r)return '';return '<div style="margin-top:3px"><b style="color:var(--warn)">'+(k+1)+'</b> '+_escS((r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7))+' \u00b7 '+_escS(en?r.title_en:r.title_fr)+(r.verdict?' <span style="color:var(--muted)">('+(en?'graded ':'not\u00e9e ')+_escS(r.verdict)+(en?' on the past':' sur le pass\u00e9')+')</span>':'')+'</div>';}).join('');}
+function pfKpi(el){el.classList.toggle('open');}
 function pfWeekBars(cv,en){const W=pfWeeks(cv);if(W.length<2)return '';const w=320,h=92,L=6,T=12,B=20;const mx=Math.max(...W.map(x=>Math.abs(x[1])),1);const bw=(w-L*2)/W.length;const Y0=T+(h-T-B)/2;const sc=(h-T-B)/2/mx;
  return '<svg viewBox="0 0 '+w+' '+h+'"><line x1="'+L+'" y1="'+Y0+'" x2="'+(w-L)+'" y2="'+Y0+'" stroke="var(--border2)"/>'+W.map((x,i)=>{const v=x[1],c=v>=0?'var(--up-soft)':'var(--down-soft)';const bh=Math.abs(v)*sc;const y=v>=0?Y0-bh:Y0;return '<rect x="'+(L+i*bw+bw*.18).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw*.64).toFixed(1)+'" height="'+Math.max(1.5,bh).toFixed(1)+'" rx="3" fill="'+c+'" opacity=".9"/><text x="'+(L+i*bw+bw/2).toFixed(1)+'" y="'+(v>=0?y-3:y+bh+8).toFixed(1)+'" text-anchor="middle" font-size="6.5" font-weight="800" fill="'+c+'">'+(v>=0?'+':'\u2212')+Math.abs(v).toFixed(0)+'</text><text x="'+(L+i*bw+bw/2).toFixed(1)+'" y="'+(h-4)+'" text-anchor="middle" font-size="6.5" fill="var(--muted)">'+_escS(x[0].slice(5))+'</text>';}).join('')+'</svg>';}
 function pfBars(rows,en){const mx=Math.max(...rows.map(r=>Math.abs(r[1]||0)),1);return rows.map(r=>{const v=r[1]||0,c=v>=0?'var(--up-soft)':'var(--down-soft)';const pct=Math.abs(v)/mx*100;return '<div class="pf-bar"><div class="l">'+r[0]+'</div><div class="b"><i style="background:'+c+';left:0;width:'+pct.toFixed(0)+'%"></i></div><div class="v" style="color:'+c+'">'+pfMn(v)+'</div></div>';}).join('');}
 function pfPct(rows){return rows.map(r=>'<div class="pf-bar"><div class="l">'+r[0]+'</div><div class="b"><i style="background:'+r[2]+';left:0;width:'+Math.max(0,Math.min(100,r[1]||0))+'%"></i></div><div class="v">'+(r[1]===null||r[1]===undefined?'\u2014':r[1]+'\u202f%')+'</div></div>').join('');}
 function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';const esc=_escS;const dmy=d=>d?(en?d.slice(5):d.slice(8,10)+'/'+d.slice(5,7)):'';
- const F=j.base.full||{},H1=j.base.h1||{},H2=j.base.h2||{},Lg=(j.base_long||{}).full||null;const D=Math.round(j.days||0);const oc=(PL[(j.overall||{}).c]||PL.grey)[0];const L=j.lights||[];
- const kpi=(v,l,sm,c)=>'<div class="pf-kpi"><b style="color:'+(c||'var(--text)')+'">'+v+'</b><span>'+l+'</span>'+(sm?'<small>'+sm+'</small>':'')+'</div>';
- let h='<div class="pf" style="--pfc:'+oc+'"><div class="pf-k">'+(en?'The proof \u00b7 checked ':'La preuve \u00b7 v\u00e9rifi\u00e9e le ')+esc((j.updated||'').slice(0,16).replace('T',' '))+' UTC</div>'+
-  '<div class="pf-hero" style="margin-top:8px">'+pfRing(L,oc)+'<div style="flex:1;min-width:0"><div class="pf-verdict" style="font-size:1.2rem">'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</div><div class="pf-sub">'+(en?'Three simple questions about the strategy. The same engine answers them every night, with rules of judgement that never change.':'Trois questions simples sur la strat\u00e9gie. Le m\u00eame moteur y r\u00e9pond chaque nuit, avec des r\u00e8gles de jugement qui ne changent jamais.')+'</div></div></div>';
+ const F=j.base.full||{},H1=j.base.h1||{},H2=j.base.h2||{},Lg=(j.base_long||{}).full||null;const D=Math.round(j.days||0);const oc=(PL[(j.overall||{}).c]||PL.grey)[0];const L=j.lights||[];const M=j.mine;
+ const kpi=(v,l,sm,c,x)=>'<div class="pf-kpi" onclick="pfKpi(this)"><b style="color:'+(c||'var(--text)')+'">'+v+'</b><span>'+l+'</span>'+(sm?'<small>'+sm+'</small>':'')+'<div class="x">'+x+'</div></div>';
+ let h='<div class="pf" style="--pfc:'+oc+'"><div class="pf-nav"><button onclick="pfGo(1)"><b>1</b>'+(en?'Past':'Pass\u00e9')+'</button><button onclick="pfGo(2)"><b>2</b>'+(en?'Real life':'En vrai')+'</button><button onclick="pfGo(3)"><b>3</b>'+(en?'Stay?':'Rester ?')+'</button></div>'+
+  '<div class="pf-k">'+(en?'The proof \u00b7 checked ':'La preuve \u00b7 v\u00e9rifi\u00e9e le ')+esc((j.updated||'').slice(0,16).replace('T',' '))+' UTC</div>'+
+  '<div class="pf-hero" style="margin-top:8px">'+pfRing(L,oc,pfWord((j.overall||{}).c,en,true),true)+'<div style="flex:1;min-width:0"><div class="pf-verdict" style="font-size:1.2rem">'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</div><div class="pf-sub">'+pfGreen(L,en)+'. '+(en?'Three simple questions about the strategy, answered every night by the same engine with rules that never change.':'Trois questions simples sur la strat\u00e9gie, tranch\u00e9es chaque nuit par le m\u00eame moteur avec des r\u00e8gles qui ne changent jamais.')+'</div></div></div>'+pfDots(j.history,en);
  // 1 - tested on the past
- h+='<div class="pf-sec"><div class="pf-k">1 \u00b7 '+(en?'Tested on the past':'Test\u00e9e sur le pass\u00e9')+'</div><div class="pf-h">'+(en?'What the robot, as it is today, would have earned':'Ce que le robot, tel qu\u2019il est aujourd\u2019hui, aurait gagn\u00e9')+'</div><div class="pf-p">'+(en?'We make it replay the last '+D+' days of the market as if it had been there: same stake every time, broker costs counted.':'On lui fait rejouer les '+D+' derniers jours du march\u00e9 comme s\u2019il y avait \u00e9t\u00e9 : m\u00eame mise \u00e0 chaque fois, frais du courtier compt\u00e9s.')+'</div>'+
-  '<div class="pf-grid">'+kpi(pfMn(F.net),en?'result over '+D+' days':'r\u00e9sultat sur '+D+' jours',en?(F.trades||0)+' trades \u00b7 '+(F.wr||0)+'% won':(F.trades||0)+' trades \u00b7 '+(F.wr||0)+'\u202f% gagn\u00e9s',(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+kpi(pfMn(-(F.worst_debt||0)),en?'biggest dip':'plus grosse baisse',en?'the deepest the account went below its best':'le plus bas du compte sous son meilleur niveau','var(--down-soft)')+kpi(pfMn(H1.net),en?'first half':'1\u00e8re moiti\u00e9',en?'both halves must win':'les deux moiti\u00e9s doivent gagner',(H1.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+kpi(pfMn(H2.net),en?'second half':'2e moiti\u00e9',en?'the recent one':'la r\u00e9cente',(H2.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+ h+='<div class="pf-sec" id="pf-s1"><div class="pf-k">1 \u00b7 '+(en?'Tested on the past':'Test\u00e9e sur le pass\u00e9')+'</div><div class="pf-h">'+(en?'What the robot, as it is today, would have earned':'Ce que le robot, tel qu\u2019il est aujourd\u2019hui, aurait gagn\u00e9')+'</div><div class="pf-p">'+(en?'We make it replay the last '+D+' days of the market as if it had been there: same stake every time, broker costs counted. Tap a tile to read what it means.':'On lui fait rejouer les '+D+' derniers jours du march\u00e9 comme s\u2019il y avait \u00e9t\u00e9 : m\u00eame mise \u00e0 chaque fois, frais du courtier compt\u00e9s. Touchez une tuile pour lire ce qu\u2019elle veut dire.')+'</div>'+
+  '<div class="pf-grid">'+kpi(pfMn(F.net),en?'result over '+D+' days':'r\u00e9sultat sur '+D+' jours',en?(F.trades||0)+' trades \u00b7 '+(F.wr||0)+'% won':(F.trades||0)+' trades \u00b7 '+(F.wr||0)+'\u202f% gagn\u00e9s',(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)',en?'If the robot had run these '+D+' days with a fixed stake of 0.02 lot, the account would have ended '+pfMn(F.net)+' from where it started, all costs counted.':'Si le robot avait tourn\u00e9 ces '+D+' jours avec une mise fixe de 0,02 lot, le compte aurait fini \u00e0 '+pfMn(F.net)+' de son point de d\u00e9part, tous frais compt\u00e9s.')+
+  kpi(pfMn(-(F.worst_debt||0)),en?'biggest dip':'plus grosse baisse',en?'from the best level to the low that followed':'du meilleur niveau au creux qui a suivi','var(--down-soft)',en?'Had you started at the worst moment, you would have watched the account go down by '+Math.abs(F.worst_debt||0).toFixed(0)+' $ before it climbed back. That is the patience this strategy asks for.':'Si vous aviez commenc\u00e9 au pire moment, vous auriez vu le compte descendre de '+Math.abs(F.worst_debt||0).toFixed(0)+' $ avant de remonter. C\u2019est la patience que demande cette strat\u00e9gie.')+
+  kpi(pfMn(H1.net),en?'first half':'1\u00e8re moiti\u00e9',en?'the older '+Math.round(D/2)+' days':'les '+Math.round(D/2)+' jours les plus anciens',(H1.net||0)>=0?'var(--up-soft)':'var(--down-soft)',en?'We cut the period in two. A strategy that only wins on one half may just have been lucky once. Both halves must win for the green light.':'On coupe la p\u00e9riode en deux. Une strat\u00e9gie qui ne gagne que sur une moiti\u00e9 a peut-\u00eatre juste eu de la chance une fois. Les deux moiti\u00e9s doivent gagner pour le voyant vert.')+
+  kpi(pfMn(H2.net),en?'second half':'2e moiti\u00e9',en?'the recent '+Math.round(D/2)+' days':'les '+Math.round(D/2)+' jours r\u00e9cents',(H2.net||0)>=0?'var(--up-soft)':'var(--down-soft)',en?'The most recent half. It tells you whether the strategy still works in today\u2019s market, not only in last month\u2019s.':'La moiti\u00e9 la plus r\u00e9cente. Elle dit si la strat\u00e9gie marche encore dans le march\u00e9 d\u2019aujourd\u2019hui, pas seulement dans celui du mois dernier.')+'</div>'+
   '<div class="pf-chart">'+pfArea(F.curve,j.rules,en)+'<div class="pf-leg"><span><i style="background:'+((F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'"></i>'+(en?'the account, day after day':'le compte, jour apr\u00e8s jour')+'</span><span><i style="background:var(--warn)"></i>'+(en?'a rule entered the robot':'une r\u00e8gle est entr\u00e9e dans le robot')+'</span></div></div>'+
-  (j.rules&&j.rules.length?'<div class="pf-cap">'+j.rules.map((r,k)=>'<b style="color:var(--warn)">'+(k+1)+'</b> '+dmy(r.date)+' \u00b7 '+esc(en?r.title_en:r.title_fr)).join('<br>')+'</div>':'')+
-  '<div class="pf-chart" style="margin-top:10px"><div style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)">'+(en?'Week by week':'Semaine par semaine')+'</div>'+pfWeekBars(F.curve,en)+'</div>'+
-  (Lg?'<div class="pf-grid" style="margin-top:10px">'+kpi(pfMn(Lg.net),(en?'over ':'sur ')+j.days_long+(en?' days':' jours'),en?'all the history the terminal keeps':'tout l\u2019historique que le terminal garde',(Lg.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+kpi(pfMn(-(Lg.worst_debt||0)),(en?'biggest dip, ':'plus grosse baisse, ')+j.days_long+(en?' d':' j'),(Lg.trades||0)+' trades','var(--down-soft)')+'</div>':'')+'</div>';
+  '<div class="pf-chart" style="margin-top:10px"><div style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2)">'+(en?'Week by week':'Semaine par semaine')+'</div>'+pfWeekBars(F.curve,en)+'<div class="pf-cap" style="margin-top:2px">'+(en?'Green weeks and red weeks are both normal. What matters is the sum over time.':'Des semaines vertes et des semaines rouges, c\u2019est normal. Ce qui compte, c\u2019est la somme dans le temps.')+'</div></div>'+
+  (Lg?'<div class="pf-grid" style="margin-top:10px">'+kpi(pfMn(Lg.net),(en?'over ':'sur ')+j.days_long+(en?' days':' jours'),en?'all the history the terminal keeps':'tout l\u2019historique que le terminal garde',(Lg.net||0)>=0?'var(--up-soft)':'var(--down-soft)',en?'A longer look, '+j.days_long+' days. It grows as the history grows. A weaker result here is a caution, not a no.':'Un regard plus long, '+j.days_long+' jours. Il grandit avec l\u2019historique. Un r\u00e9sultat plus faible ici est une prudence, pas un non.')+kpi(pfMn(-(Lg.worst_debt||0)),(en?'biggest dip, ':'plus grosse baisse, ')+j.days_long+(en?' d':' j'),(Lg.trades||0)+' trades','var(--down-soft)',en?'The deepest dip over the long look.':'La plus grosse baisse sur le regard long.')+'</div>':'')+'</div>';
  // 2 - in real life
  const U=j.union,E=j.expected,RS=j.replay_same,SRC=j.sources||{};
- h+='<div class="pf-sec"><div class="pf-k">2 \u00b7 '+(en?'In real life, since the start':'En vrai, depuis le d\u00e9but')+'</div><div class="pf-h">'+(en?'Do the real trades match the test?':'Les vrais trades ressemblent-ils au test ?')+'</div>';
- if(U){h+='<div class="pf-p">'+(en?'The robot\u2019s real trades since '+dmy(U.since)+', on accounts where nobody ever stepped in by hand, each signal counted once. We compare them with what the test expected over the same days, and with the test run on exactly the same entries.':'Les vrais trades du robot depuis le '+dmy(U.since)+', sur des comptes o\u00f9 personne n\u2019est jamais intervenu \u00e0 la main, chaque signal compt\u00e9 une fois. On les compare \u00e0 ce que le test attendait sur les m\u00eames jours, et au test sur exactement les m\u00eames entr\u00e9es.')+'</div>'+
+ h+='<div class="pf-sec" id="pf-s2"><div class="pf-k">2 \u00b7 '+(en?'In real life, since the start':'En vrai, depuis le d\u00e9but')+'</div><div class="pf-h">'+(en?'Do the real trades match the test?':'Les vrais trades ressemblent-ils au test ?')+'</div>';
+ if(M){h+='<div class="pf-mine"><div style="display:flex;align-items:center;gap:8px"><i style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:var(--accent-soft);color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">\u2605</i><b style="font-size:.92rem">'+(en?'On your account':'Sur votre compte')+'</b><span style="margin-left:auto;font-size:.72rem;color:var(--muted2)">'+(en?'since ':'depuis le ')+dmy(M.since)+'</span></div>'+
+   '<div style="display:flex;gap:6px;margin-top:10px">'+['<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem;color:'+((M.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(M.net)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'your result':'votre r\u00e9sultat')+'</span></div>',(M.expected!==undefined?'<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem;color:'+((M.expected||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(M.expected)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'test, same days':'test, m\u00eames jours')+'</span></div>':''),'<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem">'+(M.trades||0)+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">trades</span></div>','<div style="flex:1;text-align:center"><b style="display:block;font-size:1.15rem">'+(M.wr===null||M.wr===undefined?'\u2014':M.wr+'\u202f%')+'</b><span style="font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'won':'gagn\u00e9s')+'</span></div>'].join('')+'</div>'+
+   '<div class="pf-cap">'+(en?'Your own robot journal, boosts included, against what the test expected over your days at your stake ('+M.lot+' lot).'+((M.trades||0)<30?' Under 30 trades, luck still weighs a lot.':''):'Votre propre journal du robot, renforts compris, contre ce que le test attendait sur vos jours avec votre mise ('+String(M.lot).replace('.',',')+' lot).'+((M.trades||0)<30?' Sous 30 trades, la chance p\u00e8se encore beaucoup.':''))+'</div></div>';}
+ if(U){h+='<div class="pf-p" style="margin-top:12px">'+(en?'All accounts together: the robot\u2019s real trades since '+dmy(U.since)+', on accounts where nobody ever stepped in by hand, each signal counted once. Compared with what the test expected over the same days, and with the test run on exactly the same entries.':'Tous les comptes ensemble : les vrais trades du robot depuis le '+dmy(U.since)+', sur des comptes o\u00f9 personne n\u2019est jamais intervenu \u00e0 la main, chaque signal compt\u00e9 une fois. Compar\u00e9s \u00e0 ce que le test attendait sur les m\u00eames jours, et au test sur exactement les m\u00eames entr\u00e9es.')+'</div>'+
    '<div class="pf-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected, same days':'Attendu, m\u00eames jours',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',RS?RS.net:null]],en)+
    '<div style="height:1px;background:var(--border);margin:12px 0 4px"></div>'+pfPct([[en?'Won in real life':'Gagn\u00e9s en vrai',U.wr,'var(--accent-soft)'],[en?'Won in the test':'Gagn\u00e9s au test',F.wr,'var(--muted2)']])+'</div>'+
    '<div class="pf-prog"><div style="display:flex;justify-content:space-between;font-size:.78rem"><b>'+(U.trades||0)+' / 30 '+(en?'real trades':'vrais trades')+'</b><span style="color:var(--muted2)">'+(en?'before we judge':'avant de juger')+'</span></div><div class="b"><i style="width:'+Math.min(100,(U.trades||0)/30*100).toFixed(0)+'%"></i></div><div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.45">'+(en?'Under 30 real trades the gap can still be luck; the light stays amber until then.':'Sous 30 vrais trades, l\u2019\u00e9cart peut encore \u00eatre de la chance ; le voyant reste orange jusque-l\u00e0.')+'</div></div>'+
@@ -4509,12 +4542,13 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
  h+='</div>';
  // 3 - stay?
  const TT={replay:[en?'On the past, it makes money':'Sur le pass\u00e9, elle gagne'],track:[en?'In real life, it follows the test':'En vrai, elle suit le test'],lab:[en?'No trial copy does better':'Aucune copie d\u2019essai ne fait mieux']};
- h+='<div class="pf-sec"><div class="pf-k">3 \u00b7 '+(en?'Should we stay?':'Faut-il rester ?')+'</div><div class="pf-h">'+(en?'The three answers, in plain words':'Les trois r\u00e9ponses, en mots simples')+'</div>'+L.map(l=>'<div class="pf-ans"><div class="d" style="background:'+(PL[l.c]||PL.grey)[0]+'">'+(PL[l.c]||PL.grey)[1]+'</div><div><b>'+(TT[l.k]||[l.k])[0]+'</b><p>'+esc(en?l.en:l.fr)+'</p></div></div>').join('')+
-  '<div class="pf-final"><b>'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><p>'+(en?'Green: all three say yes. Amber: one asks us to keep watching. Red: one says no. The rules never move; the numbers do, every night.':'Vert : les trois disent oui. Orange : l\u2019une demande de surveiller. Rouge : l\u2019une dit non. Les r\u00e8gles ne bougent jamais ; les chiffres, si, chaque nuit.')+'</p></div>'+
+ h+='<div class="pf-sec" id="pf-s3"><div class="pf-k">3 \u00b7 '+(en?'Should we stay?':'Faut-il rester ?')+'</div><div class="pf-h">'+(en?'The three answers, in plain words':'Les trois r\u00e9ponses, en mots simples')+'</div>'+L.map(l=>'<div class="pf-ans"><div class="d" style="background:'+(PL[l.c]||PL.grey)[0]+'">'+(PL[l.c]||PL.grey)[1]+'</div><div><b>'+(TT[l.k]||[l.k])[0]+'</b><p>'+esc(en?l.en:l.fr)+'</p></div></div>').join('')+
+  '<div class="pf-final"><b>'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><p>'+(en?'Green: all three say yes. Amber: one asks us to keep watching. Red: one says no. The rules never move; the numbers do, every night.':'Vert : les trois disent oui. Orange : l\u2019une demande de surveiller. Rouge : l\u2019une dit non. Les r\u00e8gles ne bougent jamais ; les chiffres, si, chaque nuit.')+'</p>'+pfDots(j.history,en)+'</div>'+
   ((j.twins||[]).length?'<div class="pf-cap">'+(en?'Trial copies running now: ':'Copies d\u2019essai en cours : ')+j.twins.map(t=>esc(en?t.title_en:t.title_fr)+' ('+(t.trades||0)+' trades, '+({ahead:en?'ahead':'devant',behind:en?'behind':'derri\u00e8re',even:en?'even':'\u00e9galit\u00e9',early:en?'too early':'trop t\u00f4t'}[t.status]||'')+')').join(' \u00b7 ')+'. '+(en?'Details in the lab.':'D\u00e9tails dans le labo.')+'</div>':'')+'</div>';
  // method
  h+='<div class="pf-sec"><div class="pf-k">'+(en?'How we judge':'Comment on juge')+'</div><div class="pf-steps"><div><b>A</b>'+(en?'better on both halves and overall':'mieux sur les deux moiti\u00e9s et au total')+'</div><div><b>B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b>C</b>'+(en?'no':'non')+'</div></div><div class="pf-cap">'+(en?'Tests use one-minute price candles from MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published.':'Les tests utilisent les bougies d\u2019une minute de MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s.')+'</div></div></div>';
- sheet('<div style="max-height:80vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
+ sheet('<div id="pf-scroll" style="max-height:80vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
+function pfGo(n){const sc=document.getElementById('pf-scroll'),el=document.getElementById('pf-s'+n);if(!sc||!el)return;sc.scrollTo({top:el.offsetTop-sc.offsetTop-52,behavior:'smooth'});}
 async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
  if(window._whyT&&Date.now()-window._whyT<300000)return;window._whyT=Date.now();
@@ -7033,6 +7067,77 @@ def proof_payload():
            "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]}}
     _PROOF_CACHE.update(t=time.time(), data=out)
     return out
+
+
+def proof_mine(uid):
+    """The member's own robot journal against the strategy's test over the
+    same days (owner 2026-09-29: 'make it personal'). Names never leave."""
+    import csv as _csv
+    cand = {"u224016179": "bos_journal_valere.csv", "bos": "bos_journal.csv"}.get(uid, f"bos_journal_{uid}.csv")
+    f = os.path.join(DIR, cand)
+    if not os.path.exists(f):
+        return None
+    try:
+        rows = [r for r in _csv.DictReader(open(f, encoding="utf-8", errors="replace")) if r.get("exit_time_utc")]
+    except Exception:
+        return None
+    if not rows:
+        return None
+    base = [r for r in rows if r.get("is_add") != "True"]
+    wins = sum(1 for r in base if float(r.get("profit_usd") or 0) > 0)
+    lots = sorted(float(r.get("lot") or 0) for r in base if r.get("lot"))
+    lot = lots[len(lots) // 2] if lots else 0.02
+    since = min([r["entry_time_utc"][:10] for r in rows if r.get("entry_time_utc")] or [""])
+    out = {"trades": len(base), "adds": len(rows) - len(base), "net": round(sum(float(r.get("profit_usd") or 0) for r in rows), 2),
+           "wr": (round(100 * wins / len(base)) if base else None), "since": since, "lot": lot}
+    try:
+        p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
+        cv = ((p.get("base") or {}).get("full") or {}).get("curve") or []
+        start = next((v for d, v in cv if d >= since), None)
+        if start is not None and cv:
+            out["expected"] = round((cv[-1][1] - start) * (lot / 0.02 if lot else 1), 2)
+    except Exception:
+        pass
+    return out
+
+
+def proof_history(current):
+    """One line per night in lab/proof_history.jsonl (keyed by the proof's
+    build time); returns the last 14 for the dots strip."""
+    hp = os.path.join(DIR, "lab", "proof_history.jsonl")
+    rows = []
+    try:
+        with open(hp, encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    rows.append(json.loads(ln))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    key = current.get("updated")
+    if key and not any(r.get("k") == key for r in rows):
+        rec = {"k": key, "d": key[:10], "c": {l["k"]: l["c"] for l in current.get("lights", [])}, "o": (current.get("overall") or {}).get("c")}
+        rows.append(rec)
+        try:
+            with open(hp, "a", encoding="utf-8") as f:
+                f.write(json.dumps(rec) + "\n")
+        except Exception:
+            pass
+    # one per day, the last of each day
+    byday = {}
+    for r in rows:
+        byday[r.get("d")] = r
+    hist = [byday[d] for d in sorted(byday)][-14:]
+    streak = 0
+    if hist:
+        last = hist[-1].get("o")
+        for r in reversed(hist):
+            if r.get("o") == last:
+                streak += 1
+            else:
+                break
+    return {"nights": hist, "streak": streak}
 
 
 def lab_payload():
@@ -9627,7 +9732,10 @@ class H(BaseHTTPRequestHandler):
                 if user.get("public"):
                     self._send(json.dumps({"err": "public"}), "application/json")
                     return
-                self._send(json.dumps(proof_payload()), "application/json")
+                _pp = dict(proof_payload())
+                _pp["mine"] = proof_mine(user.get("id") or "")
+                _pp["history"] = proof_history(_pp)
+                self._send(json.dumps(_pp), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "lab_peek":
