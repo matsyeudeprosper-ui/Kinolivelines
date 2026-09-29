@@ -4128,6 +4128,7 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
  let chips=lchip(f[0],f[1]);
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
+ if(j.reference)chips+=lchip(en?'yardstick · never for the robot':'étalon · jamais pour le robot','var(--muted2)');
  if(j.col==='decided'&&d.d==='yes')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
  const note=en?(j.note_en||j.note_fr):(j.note_fr||j.note_en);
@@ -4220,7 +4221,8 @@ function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';con
  const ev=(j.events||[]).map(e=>'<div class="jev"><span>'+_escS(String(e.d||'').slice(5))+'</span><div>'+_escS(en?e.en:e.fr)+'</div></div>').join('');
  let adm=false;try{adm=!!((window._d||{}).is_master||localStorage.getItem('owl_adm'));}catch(e){}
  let btns='';
- if(adm&&j.col!=='live'){const dec=S.decision||{};const canTwin=(j.col==='replay'||j.col==='idea')&&!!j.cfg||(j.col==='replay'&&j.kind!=='registry');
+ if(j.reference){btns='<div style="font-size:.78rem;color:var(--muted2);margin-top:14px;line-height:1.5">'+(en?'A yardstick. It measures the brakes; there is no decision to take on it.':'Un étalon. Il mesure les freins ; il n’y a pas de décision à prendre dessus.')+'</div>';}
+ else if(adm&&j.col!=='live'){const dec=S.decision||{};const canTwin=(j.col==='replay'||j.col==='idea')&&!!j.cfg||(j.col==='replay'&&j.kind!=='registry');
   btns='<div class="lbl" style="margin-top:14px">'+(en?'Your call, Kino':'\u00c0 vous, Kino')+'</div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
    (canTwin&&!S.test?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;twin&#39;)">'+(en?'Start a twin':'Lancer un jumeau')+'</button>':'')+
    (dec.d!=='yes'?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px;background:var(--up-soft);color:#08120c" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;yes&#39;)">'+(en?'Approve for the robot':'Approuver pour le robot')+'</button>':'')+
@@ -6685,7 +6687,8 @@ def lab_journeys(items, props, twins, auto, decisions):
                     "note_fr": note_fr, "note_en": note_en, "nums_fr": nums_fr, "nums_en": nums_en, "src": src,
                     "date": date, "steps": st, "step": step, "col": col, "events": ev,
                     "cfg": (prop or {}).get("cfg") or (t or {}).get("cfg"),
-                    "reg_status": (reg or {}).get("status"), "robot": (reg or {}).get("robot")})
+                    "reg_status": (reg or {}).get("status"), "robot": (reg or {}).get("robot"),
+                    "reference": bool((reg or {}).get("reference"))})
         seen.update(keys)
 
     for it in items:

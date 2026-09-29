@@ -191,11 +191,12 @@
    "robot": "non",
    "title_fr": "Le jumeau sans freins",
    "title_en": "The twin without brakes",
-   "note_fr": "Un robot imaginaire qui prend tous les trades, sans jamais s’arrêter pour la météo ni après une perte. Il ne joue pas d’argent réel. En le comparant au vrai robot, on voit ce que les freins coûtent et ce qu’ils évitent.",
-   "note_en": "An imaginary robot that takes every trade, never stopping for the weather or after a loss. It plays no real money. Comparing it with the real robot shows what the brakes cost and what they avoid.",
+   "note_fr": "Un étalon, pas une idée pour le robot : le même robot sans aucun frein, pour mesurer ce que les freins coûtent et ce qu’ils évitent. Il joue pour de faux depuis le 11 septembre.",
+   "note_en": "A yardstick, not an idea for the robot: the same robot with every brake removed, to measure what the brakes cost and what they avoid. Playing for pretend since 11 September.",
    "nums_fr": "Chiffres en direct ci-dessus.",
    "nums_en": "Live figures above.",
-   "src": "bos_paper_touch.py"
+   "src": "bos_paper_touch.py",
+   "reference": true
   },
   {
    "id": "e017",
