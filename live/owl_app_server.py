@@ -6727,7 +6727,8 @@ def lab_payload():
         wins = sum(1 for t in tr if (t.get("pnl") or 0) > 0)
         twins.append({"id": tw.get("id"), "title_fr": tw.get("title_fr"), "title_en": tw.get("title_en"),
                       "cfg": tw.get("cfg"), "verdict": tw.get("verdict"), "started": tw.get("started"),
-                      "status": tw.get("status"), "trades": len(tr), "wins": wins,
+                      "status": tw.get("status"), "by": tw.get("by"), "stopped": tw.get("stopped"),
+                      "trades": len(tr), "wins": wins,
                       "win": (round(100 * wins / len(tr)) if tr else None), "net": round(float(st.get("net") or 0), 2),
                       "rolling20": round(sum(float(t.get("pnl") or 0) for t in tr[-20:]), 2),
                       "alive": bool(st.get("last_bar") and time.time() - int(st.get("last_bar")) < 900)})
