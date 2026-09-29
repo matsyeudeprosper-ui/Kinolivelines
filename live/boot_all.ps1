@@ -140,6 +140,11 @@ try {
 # 2k) daemons found missing from this file on 2026-09-29 (owner: "make sure
 #     the setup can survive a VPS restart"): the auto/manual mode switch
 #     watcher, the harvest journal, the brick-size watch.
+# 2026-09-29: the hourly proof refresh is a scheduled task (OwlProofRefresh);
+# make sure it exists after a rebuild of the box
+if (-not (Get-ScheduledTask -TaskName "OwlProofRefresh" -ErrorAction SilentlyContinue)) {
+    Say "OwlProofRefresh task missing - see lab/proof_refresh.py"
+}
 foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py", "brick_watch.py")) {
     if (-not (ProcRunning $extra)) {
         Say ("starting " + $extra)

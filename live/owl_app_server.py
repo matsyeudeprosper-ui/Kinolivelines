@@ -4591,7 +4591,9 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   ((j.twins||[]).length?'<div class="pf-cap">'+(en?'Trial copies running now: ':'Copies d\u2019essai en cours : ')+j.twins.map(t=>esc(en?t.title_en:t.title_fr)+' ('+(t.trades||0)+' trades, '+({ahead:en?'ahead':'devant',behind:en?'behind':'derri\u00e8re',even:en?'even':'\u00e9galit\u00e9',early:en?'too early':'trop t\u00f4t'}[t.status]||'')+')').join(' \u00b7 ')+'. '+(en?'Details in the lab.':'D\u00e9tails dans le labo.')+'</div>':'')+'</div>';
  // method
  h+='<div class="pf-sec"><div class="pf-k">'+(en?'How we judge':'Comment on juge')+'</div><div class="pf-steps"><div><b>A</b>'+(en?'better on both halves and overall':'mieux sur les deux moiti\u00e9s et au total')+'</div><div><b>B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b>C</b>'+(en?'no':'non')+'</div></div><div class="pf-cap">'+(en?'Tests use one-minute price candles from MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published.':'Les tests utilisent les bougies d\u2019une minute de MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s.')+'</div></div></div>';
- sheet('<div id="pf-scroll" style="max-height:80vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
+ sheet('<div id="pf-scroll" style="max-height:80vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div>'+
+  '<div style="display:flex;gap:8px"><button class="shbtn shmain" style="flex:1;margin:0" onclick="pfShare()">'+(en?'Share':'Partager')+'</button>'+
+  '<button class="shbtn shghost" style="flex:1;margin:0" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button></div>');}
 function pfBandRaw(b,v,en,who){if(!b)return '';const k=pfK();return pfBand({n:b.n,lo:b.lo/k,hi:b.hi/k,mid:b.mid/k},v/k,en,who);}
 function pfTraders(j,en){const S=j.stats,Lg=j.stats_long;if(!S)return '';const D=Math.round(j.days||0);const LD=j.days_long;
  const nf=(v,d)=>(v===null||v===undefined)?'\u2014':(en?v.toFixed(d):v.toFixed(d).replace('.',','));
@@ -4609,6 +4611,52 @@ function pfTraders(j,en){const S=j.stats,Lg=j.stats_long;if(!S)return '';const D
   st(en?'Activity':'Activit\u00e9',nf(S.per_week,1),en?'trades per week':'trades par semaine',en?'How busy the robot is. '+S.trades+' trades over '+D+' days.':'\u00c0 quel point le robot travaille. '+S.trades+' trades en '+D+' jours.')+
   '</div><div class="pf-cap">'+(en?'Fixed stake of '+lotFrX()+' lot, broker costs counted, no compounding. Figures are for the last '+D+' days; where a second line shows, it is the longer '+LD+'-day look. Percentages assume an account of '+pfRef().toFixed(0)+' $.':'Mise fixe de '+lotFrX()+' lot, frais du courtier compt\u00e9s, sans int\u00e9r\u00eats compos\u00e9s. Les chiffres portent sur les '+D+' derniers jours ; quand une seconde ligne appara\u00eet, c\u2019est le regard long de '+LD+' jours. Les pourcentages supposent un compte de '+pfRef().toFixed(0)+' $.')+'</div>';}
 function lotFrX(){return String(window._pfLot||0.02).replace('.',LANG()==='en'?'.':',');}
+function pfShare(){const j=window._proof;if(!j)return;const en=LANG()==='en';
+ const F=j.base.full||{},U=j.union||{},S=j.stats||{};const oc=(PL[(j.overall||{}).c]||PL.grey)[0];
+ const col=c=>({'var(--up-soft)':'#2ecc71','var(--warn)':'#e8c55a','var(--down-soft)':'#ff5c5c','var(--muted)':'#8a9bb0'})[c]||'#e8eef4';
+ const W=720,H=1000,c=document.createElement('canvas');c.width=W;c.height=H;
+ const g=c.getContext('2d');
+ const rr=(x,y,w,h,r)=>{g.beginPath();g.roundRect(x,y,w,h,r);};
+ const bg=g.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#0f2740');bg.addColorStop(.45,'#0b0f14');bg.addColorStop(1,'#0b0f14');
+ g.fillStyle=bg;g.fillRect(0,0,W,H);
+ rr(56,52,60,60,16);g.fillStyle='#0d1117';g.fill();
+ [76,96].forEach(cx=>{g.beginPath();g.arc(cx,76,9.5,0,Math.PI*2);g.fillStyle='#f0b43c';g.fill();
+  g.beginPath();g.arc(cx,76,4,0,Math.PI*2);g.fillStyle='#121212';g.fill();});
+ g.beginPath();g.moveTo(86,84);g.lineTo(80,98);g.lineTo(92,98);g.closePath();g.fillStyle='#c87828';g.fill();
+ g.textAlign='left';g.fillStyle='#e8eef4';g.font='bold 34px Inter, system-ui, sans-serif';g.fillText('OwlNest',132,84);
+ g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
+ g.fillText(en?'The proof, checked every night':'La preuve, v\u00e9rifi\u00e9e chaque nuit',132,112);
+ // the verdict
+ g.textAlign='center';g.fillStyle=col(oc);g.font='bold 46px Inter, system-ui, sans-serif';
+ g.fillText(_escS(en?(j.overall||{}).en:(j.overall||{}).fr).slice(0,28),W/2,210);
+ g.fillStyle='#8a9bb0';g.font='22px Inter, system-ui, sans-serif';
+ g.fillText(pfGreen(j.lights||[],en),W/2,246);
+ // four numbers
+ const D=Math.round(j.days||0);
+ const cells=[[en?'tested on '+D+' days':'test\u00e9e sur '+D+' jours',(F.net>=0?'+':'\u2212')+Math.abs(F.net||0).toFixed(0)+' $',F.net>=0?'#2ecc71':'#ff5c5c'],
+              [en?'trades won':'trades gagn\u00e9s',(F.wr||0).toFixed(0)+' %','#e8eef4'],
+              [en?'biggest dip':'plus grosse baisse','\u2212'+Math.abs(F.worst_debt||0).toFixed(0)+' $','#ff5c5c'],
+              [en?'real trades':'vrais trades',(U.trades||0)+'','#e8eef4']];
+ cells.forEach((cl,i)=>{const x=56+(i%2)*(W-112)/2,y=300+Math.floor(i/2)*150;
+  rr(x,y,(W-112)/2-16,130,20);g.fillStyle='#121a24';g.fill();
+  g.textAlign='left';g.fillStyle=cl[2];g.font='bold 40px Inter, system-ui, sans-serif';g.fillText(cl[1],x+24,y+62);
+  g.fillStyle='#8a9bb0';g.font='19px Inter, system-ui, sans-serif';g.fillText(cl[0],x+24,y+96);});
+ // the curve
+ const cv=F.curve||[];
+ if(cv.length>2){const x0=56,x1=W-56,y0=620,y1=810;const ys=cv.map(p=>p[1]).concat([0]);
+  const mx=Math.max(...ys),mn=Math.min(...ys),sp=Math.max(1e-6,mx-mn);
+  const X=i=>x0+i/(cv.length-1)*(x1-x0),Y=v=>y1-((v-mn)/sp)*(y1-y0);
+  g.strokeStyle='#243244';g.lineWidth=1;g.beginPath();g.moveTo(x0,Y(0));g.lineTo(x1,Y(0));g.stroke();
+  g.strokeStyle=F.net>=0?'#2ecc71':'#ff5c5c';g.lineWidth=3;g.beginPath();
+  cv.forEach((p,i)=>{if(i)g.lineTo(X(i),Y(p[1]));else g.moveTo(X(i),Y(p[1]));});g.stroke();}
+ g.textAlign='center';g.fillStyle='#8a9bb0';g.font='19px Inter, system-ui, sans-serif';
+ g.fillText(en?'What the account would have done, day after day':'Ce que le compte aurait fait, jour apr\u00e8s jour',W/2,846);
+ g.fillStyle='#5f6f82';g.font='17px Inter, system-ui, sans-serif';
+ g.fillText(en?'An example for one stake, on our broker. Not a promise.':'Un exemple pour une mise, chez notre courtier. Pas une promesse.',W/2,900);
+ g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';g.fillText('owltrader.duckdns.org',W/2,944);
+ c.toBlob(async b=>{const f=new File([b],'owlnest-preuve.png',{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:en?'The proof':'La preuve'});}catch(e){}}
+  else{try{window.open(URL.createObjectURL(b),'_blank');}catch(e){}}},'image/png');}
 function pfGo(n){const sc=document.getElementById('pf-scroll'),el=document.getElementById('pf-s'+n);if(!sc||!el)return;sc.scrollTo({top:el.offsetTop-sc.offsetTop-52,behavior:'smooth'});}
 async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
