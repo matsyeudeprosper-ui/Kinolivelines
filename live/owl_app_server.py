@@ -4264,10 +4264,12 @@ function labStory(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);if(PR.length)S.push({t:en?'What it wants to try next':'Ce qu\u2019il veut essayer ensuite',list:PR.map(p=>[en?p.title_en:p.title_fr,en?(p.why_en||''):(p.why_fr||'')])});
  const RQ=j.requests||[];if(RQ.length)S.push({t:en?'What it asks us to build':'Ce qu\u2019il nous demande de construire',list:RQ.map(r=>[en?r.title_en:r.title_fr,en?(r.why_en||r.what_en||''):(r.why_fr||r.what_fr||'')])});
  if(!S.length)return;
- window._story={S,i:0,date:N.date||''};
- sheet('<div id="story"></div>');
- (function paint(n){if(!document.getElementById('story')){if(n>0)setTimeout(()=>paint(n-1),120);return;}storyPaint();})(15);}
-function storyPaint(){const st=window._story;if(!st)return;const en=LANG()==='en';const s=st.S[st.i];const el=document.getElementById('story');if(!el||!s)return;
+ // 2026-09-29: a fresh id per opening - the closed sheet keeps its old
+ // content, and painting into it made the second opening come up empty
+ const sid='story'+Date.now();window._story={S,i:0,date:N.date||'',sid};
+ sheet('<div id="'+sid+'"></div>');
+ (function paint(n){if(!document.getElementById(sid)){if(n>0)setTimeout(()=>paint(n-1),120);return;}storyPaint();})(25);}
+function storyPaint(){const st=window._story;if(!st)return;const en=LANG()==='en';const s=st.S[st.i];const el=document.getElementById(st.sid||'story');if(!el||!s)return;
  const dots=st.S.map((x,k)=>'<i style="display:inline-block;width:'+(k===st.i?18:6)+'px;height:6px;border-radius:99px;background:'+(k===st.i?'#b98cff':'var(--border2)')+';transition:width .2s"></i>').join('');
  const body=s.list?'<div style="max-height:52vh;overflow-y:auto">'+s.list.map(([a,b])=>'<div class="kv"><div class="kvt"><b>'+_escS(a)+'</b><span>'+_escS(b)+'</span></div></div>').join('')+'</div>':'<p style="font-size:1.02rem;line-height:1.65;color:var(--text);margin:0;max-height:52vh;overflow-y:auto">'+_escS(s.b)+'</p>';
  el.innerHTML='<div style="display:flex;align-items:center;gap:8px;color:#b98cff;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+_escS(st.date)+'<span style="margin-left:auto;color:var(--muted)">'+(st.i+1)+' / '+st.S.length+'</span></div>'+
