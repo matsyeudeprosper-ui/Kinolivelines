@@ -1,0 +1,28 @@
+{
+ "asks": [
+  {
+   "id": "ask_1790670647",
+   "seed": "calm",
+   "seed_fr": "Quand le marché est calme",
+   "seed_en": "When the market is calm",
+   "by": "std",
+   "date": "2026-09-29",
+   "note": "Pourquoi ça vous intéresse ?",
+   "status": "answered",
+   "answer_fr": "Sur les 19 vrais trades, seulement 5 sont arrivés quand le marché était calme, avec 60 % de gains - trop peu pour être sûr, et les deux moitiés de la période ne racontent pas tout à fait la même chose (50 % puis 67 %). On a déjà testé ne trader QUE quand c'est calme (couper tout le reste) : ça a coûté environ 42 dollars sur 42 jours rejoués, car ça coupe aussi de bons trades sains, donc le calme seul ne suffit pas comme filtre pour l'instant.",
+   "answer_en": "Out of the 19 real trades, only 5 happened when the market was calm, with 60% wins - too few to be sure, and the two halves of the period don't quite agree (50% then 67%). We already tested trading ONLY when it's calm (cutting everything else): it cost about $42 over the 42 days replayed, because it also cuts good, healthy trades - so calm alone isn't enough as a filter for now."
+  },
+  {
+   "id": "ask_1790670744",
+   "seed": "hot",
+   "seed_fr": "Quand le marché est nerveux",
+   "seed_en": "When the market is nervous",
+   "by": "std",
+   "date": "2026-09-29",
+   "note": "",
+   "status": "answered",
+   "answer_fr": "Sur les 19 vrais trades, 14 sont arrivés marché nerveux, avec seulement 29 % de gains contre 60 % le reste du temps - un vrai signal, mais les deux moitiés de la période ne sont pas d'accord (14 % puis 43 %), donc trop tôt pour trancher avec si peu de trades. On pousse déjà une version plus fine, née d'une de mes demandes : ne rien prendre quand on est nerveux ET encore dans le rouge - elle gagne dans le rejeu et je continue à la défendre.",
+   "answer_en": "Out of the 19 real trades, 14 happened in a nervous market, with only 29% wins versus 60% the rest of the time - a real signal, but the two halves of the period disagree (14% then 43%), so it's too early to decide with so few trades. We're already pushing a finer version, born from one of my own requests: take nothing when nervous AND still in the red - it wins in the replay and I keep defending it."
+  }
+ ]
+}

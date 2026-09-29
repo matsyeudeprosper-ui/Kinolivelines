@@ -61,7 +61,7 @@
    "why_en": "The two strongest dials of the week, never tried together: aiming for 0.6 (B three nights running) and skipping Monday (A two nights running). Tried with the harness: +$244 instead of +$168, both halves of the period winning (+$164 and +$90 - the second half stopped losing), and the biggest hole drops from 80 to 38 dollars. This is the best full-period result seen this month.",
    "by": "chercheur",
    "date": "2026-09-29",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.6,
     "n_cont": 1,
@@ -77,18 +77,32 @@
     "k_streak": 2
    },
    "pretest": {
-    "net": 238.46,
+    "net": 256.72,
     "worst": 37.83,
-    "h1": 164.0,
-    "h2": 74.46,
-    "base_net": 159.22,
+    "h1": 172.15,
+    "h2": 84.95,
+    "base_net": 178.1,
     "base_worst": 80.29,
-    "base_h1": 174.5,
-    "base_h2": -15.28,
+    "base_h1": 184.07,
+    "base_h2": 1.92,
     "verdict": "B",
-    "trades": 264,
-    "at": "2026-09-28 21:51"
-   }
+    "trades": 263,
+    "at": "2026-09-29 02:38",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 68.7,
+     "diff_worst": -42.46
+    },
+    "real": {
+     "n_real": 19,
+     "trades": 12,
+     "diff_net": -0.34,
+     "diff_worst": -2.9
+    }
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   },
   {
    "id": "rr06_bullets4",
@@ -99,7 +113,7 @@
    "why_en": "Out of the box: nobody had combined the target with the money dial. With a smaller gain, wins come more often, so the boosts after a loss pay themselves back faster - so why not offer one more? Tried: +$247, the highest figure of the night, both halves winning (+$175 and +$86), hole at 47 instead of 80.",
    "by": "chercheur",
    "date": "2026-09-29",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.6,
     "n_cont": 1,
@@ -113,18 +127,32 @@
     "k_streak": 2
    },
    "pretest": {
-    "net": 236.97,
+    "net": 258.49,
     "worst": 46.51,
-    "h1": 174.42,
-    "h2": 62.55,
-    "base_net": 159.22,
+    "h1": 181.74,
+    "h2": 76.26,
+    "base_net": 178.1,
     "base_worst": 80.29,
-    "base_h1": 174.5,
-    "base_h2": -15.28,
+    "base_h1": 184.07,
+    "base_h2": 1.92,
     "verdict": "B",
-    "trades": 302,
-    "at": "2026-09-28 21:51"
-   }
+    "trades": 301,
+    "at": "2026-09-29 02:38",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 88.94,
+     "diff_worst": -33.78
+    },
+    "real": {
+     "n_real": 19,
+     "trades": 14,
+     "diff_net": -18.57,
+     "diff_worst": 15.32
+    }
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   },
   {
    "id": "rr06_kstreak3",
@@ -135,7 +163,7 @@
    "why_en": "Same family as rr06_bullets4 but a different money dose: let the boost chain run up to three in a row instead of adding one more boost. Tried: +$201, both halves winning (+$139 and +$73), hole at 51 instead of 80. Weaker than the extra boost, but useful to compare the two ways of dosing the money with a smaller target.",
    "by": "chercheur",
    "date": "2026-09-29",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.6,
     "n_cont": 1,
@@ -149,18 +177,32 @@
     "k_streak": 3
    },
    "pretest": {
-    "net": 192.49,
+    "net": 210.76,
     "worst": 50.73,
-    "h1": 138.41,
-    "h2": 54.08,
-    "base_net": 159.22,
+    "h1": 146.56,
+    "h2": 64.57,
+    "base_net": 178.1,
     "base_worst": 80.29,
-    "base_h1": 174.5,
-    "base_h2": -15.28,
+    "base_h1": 184.07,
+    "base_h2": 1.92,
     "verdict": "B",
-    "trades": 298,
-    "at": "2026-09-28 21:51"
-   }
+    "trades": 297,
+    "at": "2026-09-29 02:39",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 24.79,
+     "diff_worst": -29.56
+    },
+    "real": {
+     "n_real": 19,
+     "trades": 14,
+     "diff_net": 4.07,
+     "diff_worst": 5.2
+    }
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   },
   {
    "id": "rr05_nomon",
@@ -171,7 +213,7 @@
    "why_en": "To find out whether 0.6 is the right dose with Monday removed, or whether a bit less would do better still. Tried: +$186, both halves winning (+$127 and +$69), hole at 49. A bit weaker than 0.6 + Monday (+$244, hole 38): aiming for 0.6 remains the best dose found so far with this Monday rule.",
    "by": "chercheur",
    "date": "2026-09-29",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.5,
     "n_cont": 1,
@@ -187,18 +229,32 @@
     "k_streak": 2
    },
    "pretest": {
-    "net": 183.03,
+    "net": 195.77,
     "worst": 49.27,
-    "h1": 128.6,
-    "h2": 54.43,
-    "base_net": 159.22,
+    "h1": 130.82,
+    "h2": 64.51,
+    "base_net": 178.1,
     "base_worst": 80.29,
-    "base_h1": 174.5,
-    "base_h2": -15.28,
+    "base_h1": 184.07,
+    "base_h2": 1.92,
     "verdict": "B",
-    "trades": 277,
-    "at": "2026-09-28 21:51"
-   }
+    "trades": 276,
+    "at": "2026-09-29 02:39",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 0.06,
+     "diff_worst": -31.02
+    },
+    "real": {
+     "n_real": 19,
+     "trades": 12,
+     "diff_net": 16.47,
+     "diff_worst": -14.26
+    }
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   },
   {
    "id": "ext500_nomon",
@@ -209,7 +265,7 @@
    "why_en": "Two rhythm brakes never combined: the 500-point run (B two nights running) and Monday removed (A two nights running). Tried: +$189, both halves winning (+$146 and +$55), hole at 50 instead of 80. Good, but weaker than the smaller target + Monday: tonight's real gain comes from the target dose, not from this brake.",
    "by": "chercheur",
    "date": "2026-09-29",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.8,
     "n_cont": 1,
@@ -225,18 +281,32 @@
     "k_streak": 2
    },
    "pretest": {
-    "net": 183.18,
+    "net": 189.8,
     "worst": 49.71,
-    "h1": 144.69,
-    "h2": 38.49,
-    "base_net": 159.22,
+    "h1": 154.25,
+    "h2": 43.65,
+    "base_net": 178.1,
     "base_worst": 80.29,
-    "base_h1": 174.5,
-    "base_h2": -15.28,
+    "base_h1": 184.07,
+    "base_h2": 1.92,
     "verdict": "B",
-    "trades": 212,
-    "at": "2026-09-28 21:51"
-   }
+    "trades": 209,
+    "at": "2026-09-29 02:39",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 6.19,
+     "diff_worst": -30.58
+    },
+    "real": {
+     "n_real": 19,
+     "trades": 11,
+     "diff_net": -5.83,
+     "diff_worst": -1.79
+    }
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   }
  ]
 }

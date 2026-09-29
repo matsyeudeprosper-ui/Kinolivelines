@@ -1,30 +1,30 @@
 {
- "updated": "2026-09-29T01:43:42+00:00",
+ "updated": "2026-09-29T08:38:20+00:00",
  "symbol": "BTCUSDm",
  "days": 41.7,
  "base": {
   "full": {
-   "net": 168.24,
+   "net": 175.35,
    "maxdd": -80.29,
    "worst_debt": 80.29,
-   "trades": 254,
-   "wr": 61.0,
+   "trades": 252,
+   "wr": 61.1,
    "blocked": 0
   },
   "h1": {
-   "net": 175.36,
+   "net": 181.32,
    "maxdd": -61.15,
    "worst_debt": 61.15,
    "trades": 149,
-   "wr": 65.1,
+   "wr": 65.8,
    "blocked": 0
   },
   "h2": {
-   "net": 5.06,
+   "net": -20.61,
    "maxdd": -80.29,
    "worst_debt": 80.29,
-   "trades": 107,
-   "wr": 55.1,
+   "trades": 92,
+   "wr": 53.3,
    "blocked": 0
   }
  },
@@ -46,37 +46,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 146.95,
+    "net": 152.45,
     "maxdd": -38.82,
     "worst_debt": 38.82,
-    "trades": 334,
-    "wr": 74.0,
+    "trades": 331,
+    "wr": 73.7,
     "blocked": 0
    },
    "h1": {
-    "net": 107.17,
+    "net": 109.91,
     "maxdd": -33.1,
     "worst_debt": 33.1,
-    "trades": 215,
-    "wr": 75.8,
+    "trades": 214,
+    "wr": 75.7,
     "blocked": 0
    },
    "h2": {
-    "net": 40.17,
+    "net": 45.32,
     "maxdd": -38.82,
     "worst_debt": 38.82,
-    "trades": 122,
-    "wr": 70.5,
+    "trades": 117,
+    "wr": 70.9,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -21.29,
-   "diff_worst": -41.47
+   "diff_net": -22.9,
+   "diff_worst": -41.47,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -29.35,
+    "diff_worst": -41.47,
+    "h1": -38.99,
+    "h2": -6.23,
+    "net": 169.26,
+    "worst": 38.82,
+    "trades": 495
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -31.83,
+    "worst": 43.65,
+    "diff_net": 0.7,
+    "diff_worst": -1.59
+   }
   },
   {
    "id": "rr05",
@@ -95,37 +116,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 168.56,
+    "net": 161.29,
     "maxdd": -44.11,
     "worst_debt": 44.11,
-    "trades": 321,
-    "wr": 70.7,
+    "trades": 318,
+    "wr": 70.8,
     "blocked": 0
    },
    "h1": {
-    "net": 124.91,
+    "net": 127.53,
     "maxdd": -39.9,
     "worst_debt": 39.9,
-    "trades": 204,
-    "wr": 72.5,
+    "trades": 203,
+    "wr": 72.9,
     "blocked": 0
    },
    "h2": {
-    "net": 53.95,
+    "net": 27.89,
     "maxdd": -44.11,
     "worst_debt": 44.11,
-    "trades": 119,
-    "wr": 67.2,
+    "trades": 103,
+    "wr": 68.0,
     "blocked": 0
    },
-   "verdict": "B",
-   "prev_verdict": "B",
+   "verdict": "C",
+   "prev_verdict": "C",
    "src": "battery",
-   "diff_net": 0.32,
-   "diff_worst": -36.18
+   "diff_net": -14.06,
+   "diff_worst": -36.18,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": -9.59,
+    "diff_worst": -36.18,
+    "h1": -23.86,
+    "h2": -6.55,
+    "net": 189.02,
+    "worst": 44.11,
+    "trades": 480
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -27.55,
+    "worst": 42.46,
+    "diff_net": 4.98,
+    "diff_worst": -2.78
+   }
   },
   {
    "id": "rr06",
@@ -144,37 +186,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 201.98,
+    "net": 195.65,
     "maxdd": -44.72,
     "worst_debt": 44.72,
-    "trades": 302,
-    "wr": 66.2,
+    "trades": 300,
+    "wr": 66.3,
     "blocked": 0
    },
    "h1": {
-    "net": 147.82,
+    "net": 151.78,
     "maxdd": -36.98,
     "worst_debt": 36.98,
     "trades": 190,
-    "wr": 68.4,
+    "wr": 68.9,
     "blocked": 0
    },
    "h2": {
-    "net": 65.09,
+    "net": 40.11,
     "maxdd": -44.72,
     "worst_debt": 44.72,
-    "trades": 114,
-    "wr": 62.3,
+    "trades": 99,
+    "wr": 62.6,
     "blocked": 0
    },
    "verdict": "B",
    "prev_verdict": "B",
    "src": "battery",
-   "diff_net": 33.74,
-   "diff_worst": -35.57
+   "diff_net": 20.3,
+   "diff_worst": -35.57,
+   "long": {
+    "days": 69,
+    "verdict": "A",
+    "diff_net": 60.91,
+    "diff_worst": -35.57,
+    "h1": 9.65,
+    "h2": 30.72,
+    "net": 259.52,
+    "worst": 44.72,
+    "trades": 465
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -43.92,
+    "worst": 53.38,
+    "diff_net": -11.39,
+    "diff_worst": 8.14
+   }
   },
   {
    "id": "rr07",
@@ -193,37 +256,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 150.8,
+    "net": 157.31,
     "maxdd": -64.96,
     "worst_debt": 64.96,
-    "trades": 279,
-    "wr": 63.4,
+    "trades": 277,
+    "wr": 63.5,
     "blocked": 0
    },
    "h1": {
-    "net": 133.84,
+    "net": 138.8,
     "maxdd": -47.64,
     "worst_debt": 47.64,
     "trades": 171,
-    "wr": 65.5,
+    "wr": 66.1,
     "blocked": 0
    },
    "h2": {
-    "net": 28.51,
+    "net": 20.34,
     "maxdd": -64.96,
     "worst_debt": 64.96,
-    "trades": 110,
+    "trades": 95,
     "wr": 60.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -17.44,
-   "diff_worst": -15.33
+   "diff_net": -18.04,
+   "diff_worst": -15.33,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": -0.15,
+    "diff_worst": -15.33,
+    "h1": -8.91,
+    "h2": -0.68,
+    "net": 198.46,
+    "worst": 64.96,
+    "trades": 438
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -43.46,
+    "worst": 54.55,
+    "diff_net": -10.93,
+    "diff_worst": 9.31
+   }
   },
   {
    "id": "rr10",
@@ -242,37 +326,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 161.33,
+    "net": 166.82,
     "maxdd": -62.4,
     "worst_debt": 62.4,
-    "trades": 212,
-    "wr": 57.5,
+    "trades": 210,
+    "wr": 56.7,
     "blocked": 0
    },
    "h1": {
-    "net": 188.81,
+    "net": 190.71,
     "maxdd": -62.4,
     "worst_debt": 62.4,
     "trades": 129,
-    "wr": 63.6,
+    "wr": 62.0,
     "blocked": 0
    },
    "h2": {
-    "net": -41.67,
+    "net": -9.72,
     "maxdd": -61.91,
     "worst_debt": 61.91,
-    "trades": 84,
-    "wr": 47.6,
+    "trades": 73,
+    "wr": 47.9,
     "blocked": 0
    },
-   "verdict": "C",
+   "verdict": "A",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -6.91,
-   "diff_worst": -17.89
+   "diff_net": -8.53,
+   "diff_worst": -17.89,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": 6.21,
+    "diff_worst": -17.89,
+    "h1": -62.29,
+    "h2": 33.65,
+    "net": 204.82,
+    "worst": 62.4,
+    "trades": 353
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -27.41,
+    "worst": 43.37,
+    "diff_net": 5.12,
+    "diff_worst": -1.87
+   }
   },
   {
    "id": "rr12",
@@ -291,10 +396,11 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": -87.98,
+    "net": -80.63,
     "maxdd": -110.95,
     "worst_debt": 110.95,
     "trades": 203,
@@ -302,26 +408,46 @@
     "blocked": 0
    },
    "h1": {
-    "net": -37.1,
+    "net": -44.56,
     "maxdd": -89.02,
     "worst_debt": 89.02,
     "trades": 124,
-    "wr": 45.2,
+    "wr": 44.4,
     "blocked": 0
    },
    "h2": {
-    "net": -42.7,
+    "net": -20.98,
     "maxdd": -57.78,
     "worst_debt": 57.78,
-    "trades": 81,
-    "wr": 45.7,
+    "trades": 71,
+    "wr": 45.1,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -256.22,
-   "diff_worst": 30.66
+   "diff_net": -255.98,
+   "diff_worst": 30.66,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -317.63,
+    "diff_worst": 50.35,
+    "h1": -159.47,
+    "h2": -176.42,
+    "net": -119.02,
+    "worst": 130.64,
+    "trades": 331
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 13,
+    "blocked": 3,
+    "net": -40.85,
+    "worst": 48.55,
+    "diff_net": -8.32,
+    "diff_worst": 3.31
+   }
   },
   {
    "id": "cont0",
@@ -340,37 +466,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 79.94,
+    "net": 75.91,
     "maxdd": -42.78,
     "worst_debt": 42.78,
-    "trades": 166,
-    "wr": 62.0,
+    "trades": 167,
+    "wr": 62.9,
     "blocked": 0
    },
    "h1": {
-    "net": 51.07,
+    "net": 57.0,
     "maxdd": -42.78,
     "worst_debt": 42.78,
-    "trades": 104,
-    "wr": 60.6,
+    "trades": 106,
+    "wr": 63.2,
     "blocked": 0
    },
    "h2": {
-    "net": 19.0,
+    "net": 7.47,
     "maxdd": -32.12,
     "worst_debt": 32.12,
-    "trades": 72,
-    "wr": 62.5,
+    "trades": 69,
+    "wr": 59.4,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -88.3,
-   "diff_worst": -37.51
+   "diff_net": -99.44,
+   "diff_worst": -37.51,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -153.61,
+    "diff_worst": -37.51,
+    "h1": -38.76,
+    "h2": -135.97,
+    "net": 45.0,
+    "worst": 42.78,
+    "trades": 262
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 9,
+    "blocked": 10,
+    "net": -14.4,
+    "worst": 28.11,
+    "diff_net": 18.13,
+    "diff_worst": -17.13
+   }
   },
   {
    "id": "cont2",
@@ -389,37 +536,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 92.09,
+    "net": 88.17,
     "maxdd": -113.66,
     "worst_debt": 113.66,
-    "trades": 277,
-    "wr": 59.2,
+    "trades": 274,
+    "wr": 59.5,
     "blocked": 0
    },
    "h1": {
-    "net": 163.92,
+    "net": 171.1,
     "maxdd": -74.37,
     "worst_debt": 74.37,
-    "trades": 165,
-    "wr": 63.0,
+    "trades": 164,
+    "wr": 64.0,
     "blocked": 0
    },
    "h2": {
-    "net": -59.65,
+    "net": -94.51,
     "maxdd": -113.66,
     "worst_debt": 113.66,
-    "trades": 114,
-    "wr": 53.5,
+    "trades": 98,
+    "wr": 52.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -76.15,
-   "diff_worst": 33.37
+   "diff_net": -87.18,
+   "diff_worst": 33.37,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -54.97,
+    "diff_worst": 33.37,
+    "h1": 13.71,
+    "h2": -77.82,
+    "net": 143.64,
+    "worst": 113.66,
+    "trades": 449
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 17,
+    "blocked": 1,
+    "net": -41.87,
+    "worst": 67.1,
+    "diff_net": -9.34,
+    "diff_worst": 21.86
+   }
   },
   {
    "id": "wait10",
@@ -438,37 +606,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 124.12,
+    "net": 132.15,
     "maxdd": -117.13,
     "worst_debt": 117.13,
     "trades": 222,
     "wr": 61.3,
-    "blocked": 60
+    "blocked": 58
    },
    "h1": {
-    "net": 165.21,
+    "net": 172.1,
     "maxdd": -53.57,
     "worst_debt": 53.57,
-    "trades": 134,
-    "wr": 65.7,
-    "blocked": 36
+    "trades": 136,
+    "wr": 66.2,
+    "blocked": 34
    },
    "h2": {
-    "net": -36.21,
+    "net": -55.0,
     "maxdd": -117.13,
     "worst_debt": 117.13,
-    "trades": 89,
-    "wr": 55.1,
-    "blocked": 25
+    "trades": 78,
+    "wr": 52.6,
+    "blocked": 20
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -44.12,
-   "diff_worst": 36.84
+   "diff_net": -43.2,
+   "diff_worst": 36.84,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -22.65,
+    "diff_worst": 36.84,
+    "h1": 26.74,
+    "h2": -54.78,
+    "net": 175.96,
+    "worst": 117.13,
+    "trades": 361
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 4,
+    "net": -8.01,
+    "worst": 40.91,
+    "diff_net": 24.52,
+    "diff_worst": -4.33
+   }
   },
   {
    "id": "wait20",
@@ -487,37 +676,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 72.29,
+    "net": 77.58,
     "maxdd": -108.8,
     "worst_debt": 108.8,
     "trades": 208,
     "wr": 62.5,
-    "blocked": 99
+    "blocked": 97
    },
    "h1": {
-    "net": 143.48,
+    "net": 147.63,
     "maxdd": -44.66,
     "worst_debt": 44.66,
-    "trades": 126,
-    "wr": 67.5,
-    "blocked": 65
+    "trades": 128,
+    "wr": 68.0,
+    "blocked": 63
    },
    "h2": {
-    "net": -66.31,
+    "net": -78.08,
     "maxdd": -108.8,
     "worst_debt": 108.8,
-    "trades": 83,
-    "wr": 55.4,
-    "blocked": 35
+    "trades": 73,
+    "wr": 52.1,
+    "blocked": 29
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -95.95,
-   "diff_worst": 28.51
+   "diff_net": -97.77,
+   "diff_worst": 28.51,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -50.64,
+    "diff_worst": 28.51,
+    "h1": 28.62,
+    "h2": -92.38,
+    "net": 147.97,
+    "worst": 108.8,
+    "trades": 342
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 12,
+    "blocked": 6,
+    "net": -3.0,
+    "worst": 35.9,
+    "diff_net": 29.53,
+    "diff_worst": -9.34
+   }
   },
   {
    "id": "wait30",
@@ -536,37 +746,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 59.96,
+    "net": 63.7,
     "maxdd": -108.29,
     "worst_debt": 108.29,
-    "trades": 194,
-    "wr": 61.3,
-    "blocked": 117
+    "trades": 192,
+    "wr": 60.9,
+    "blocked": 115
    },
    "h1": {
-    "net": 124.0,
+    "net": 126.6,
     "maxdd": -44.87,
     "worst_debt": 44.87,
     "trades": 119,
     "wr": 66.4,
-    "blocked": 72
+    "blocked": 70
    },
    "h2": {
-    "net": -63.66,
+    "net": -72.02,
     "maxdd": -108.29,
     "worst_debt": 108.29,
-    "trades": 77,
-    "wr": 53.2,
-    "blocked": 48
+    "trades": 67,
+    "wr": 50.7,
+    "blocked": 38
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -108.28,
-   "diff_worst": 28.0
+   "diff_net": -111.65,
+   "diff_worst": 28.0,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -86.25,
+    "diff_worst": 28.0,
+    "h1": 0.61,
+    "h2": -95.09,
+    "net": 112.36,
+    "worst": 108.29,
+    "trades": 315
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 12,
+    "blocked": 6,
+    "net": -3.0,
+    "worst": 35.9,
+    "diff_net": 29.53,
+    "diff_worst": -9.34
+   }
   },
   {
    "id": "ext300",
@@ -585,37 +816,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 142.39,
+    "net": 149.49,
     "maxdd": -61.58,
     "worst_debt": 61.58,
-    "trades": 224,
-    "wr": 61.6,
+    "trades": 222,
+    "wr": 61.7,
     "blocked": 80
    },
    "h1": {
-    "net": 114.27,
+    "net": 120.23,
     "maxdd": -61.58,
     "worst_debt": 61.58,
     "trades": 129,
-    "wr": 65.9,
+    "wr": 66.7,
     "blocked": 45
    },
    "h2": {
-    "net": 27.08,
+    "net": 41.41,
     "maxdd": -30.89,
     "worst_debt": 30.89,
-    "trades": 99,
-    "wr": 54.5,
-    "blocked": 36
+    "trades": 93,
+    "wr": 53.8,
+    "blocked": 33
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -25.85,
-   "diff_worst": -18.71
+   "diff_net": -25.86,
+   "diff_worst": -18.71,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -15.96,
+    "diff_worst": -18.71,
+    "h1": -23.43,
+    "h2": 15.82,
+    "net": 182.65,
+    "worst": 61.58,
+    "trades": 368
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 11,
+    "blocked": 8,
+    "net": -38.36,
+    "worst": 43.45,
+    "diff_net": -5.83,
+    "diff_worst": -1.79
+   }
   },
   {
    "id": "ext400",
@@ -634,37 +886,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 151.35,
+    "net": 158.46,
     "maxdd": -61.26,
     "worst_debt": 61.26,
-    "trades": 239,
-    "wr": 61.5,
+    "trades": 237,
+    "wr": 61.6,
     "blocked": 47
    },
    "h1": {
-    "net": 141.08,
+    "net": 147.04,
     "maxdd": -55.57,
     "worst_debt": 55.57,
     "trades": 136,
-    "wr": 66.9,
+    "wr": 67.6,
     "blocked": 31
    },
    "h2": {
-    "net": 22.45,
+    "net": 12.58,
     "maxdd": -61.26,
     "worst_debt": 61.26,
-    "trades": 105,
-    "wr": 54.3,
-    "blocked": 16
+    "trades": 102,
+    "wr": 52.0,
+    "blocked": 15
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
    "diff_net": -16.89,
-   "diff_worst": -19.03
+   "diff_worst": -19.03,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -20.63,
+    "diff_worst": -19.03,
+    "h1": -34.1,
+    "h2": 6.82,
+    "net": 177.98,
+    "worst": 61.26,
+    "trades": 386
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 11,
+    "blocked": 8,
+    "net": -38.36,
+    "worst": 43.45,
+    "diff_net": -5.83,
+    "diff_worst": -1.79
+   }
   },
   {
    "id": "ext500",
@@ -683,37 +956,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 167.82,
+    "net": 174.93,
     "maxdd": -52.22,
     "worst_debt": 52.22,
-    "trades": 251,
+    "trades": 249,
     "wr": 61.0,
     "blocked": 21
    },
    "h1": {
-    "net": 145.92,
+    "net": 151.88,
     "maxdd": -49.71,
     "worst_debt": 49.71,
     "trades": 145,
-    "wr": 64.8,
+    "wr": 65.5,
     "blocked": 12
    },
    "h2": {
-    "net": 34.08,
+    "net": 24.2,
     "maxdd": -52.22,
     "worst_debt": 52.22,
-    "trades": 108,
-    "wr": 55.6,
-    "blocked": 9
+    "trades": 105,
+    "wr": 53.3,
+    "blocked": 8
    },
    "verdict": "B",
    "prev_verdict": "B",
    "src": "battery",
    "diff_net": -0.42,
-   "diff_worst": -28.07
+   "diff_worst": -28.07,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -2.81,
+    "diff_worst": -28.07,
+    "h1": -22.95,
+    "h2": 13.35,
+    "net": 195.8,
+    "worst": 52.22,
+    "trades": 399
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 11,
+    "blocked": 8,
+    "net": -38.36,
+    "worst": 43.45,
+    "diff_net": -5.83,
+    "diff_worst": -1.79
+   }
   },
   {
    "id": "ext700",
@@ -732,37 +1026,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 166.28,
+    "net": 173.39,
     "maxdd": -76.94,
     "worst_debt": 76.94,
-    "trades": 252,
-    "wr": 61.1,
+    "trades": 250,
+    "wr": 61.2,
     "blocked": 7
    },
    "h1": {
-    "net": 170.05,
+    "net": 176.01,
     "maxdd": -49.71,
     "worst_debt": 49.71,
     "trades": 147,
-    "wr": 65.3,
+    "wr": 66.0,
     "blocked": 4
    },
    "h2": {
-    "net": 8.41,
+    "net": -17.26,
     "maxdd": -76.94,
     "worst_debt": 76.94,
-    "trades": 107,
-    "wr": 55.1,
+    "trades": 92,
+    "wr": 53.3,
     "blocked": 3
    },
    "verdict": "B",
    "prev_verdict": "B",
    "src": "battery",
    "diff_net": -1.96,
-   "diff_worst": -3.35
+   "diff_worst": -3.35,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -4.35,
+    "diff_worst": -3.35,
+    "h1": -3.01,
+    "h2": -8.13,
+    "net": 194.26,
+    "worst": 76.94,
+    "trades": 400
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -32.53,
+    "worst": 45.24,
+    "diff_net": 0.0,
+    "diff_worst": 0.0
+   }
   },
   {
    "id": "nosun",
@@ -783,37 +1098,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 183.07,
+    "net": 190.18,
     "maxdd": -61.15,
     "worst_debt": 61.15,
-    "trades": 208,
-    "wr": 62.0,
+    "trades": 206,
+    "wr": 62.1,
     "blocked": 75
    },
    "h1": {
-    "net": 149.35,
+    "net": 155.31,
     "maxdd": -61.15,
     "worst_debt": 61.15,
     "trades": 128,
-    "wr": 64.8,
+    "wr": 65.6,
     "blocked": 36
    },
    "h2": {
-    "net": 45.9,
+    "net": 20.23,
     "maxdd": -49.6,
     "worst_debt": 49.6,
-    "trades": 82,
-    "wr": 57.3,
+    "trades": 67,
+    "wr": 55.2,
     "blocked": 39
    },
    "verdict": "B",
    "prev_verdict": "B",
    "src": "battery",
    "diff_net": 14.83,
-   "diff_worst": -19.14
+   "diff_worst": -19.14,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": 15.29,
+    "diff_worst": -19.14,
+    "h1": 12.93,
+    "h2": -2.42,
+    "net": 213.9,
+    "worst": 61.15,
+    "trades": 339
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 7,
+    "blocked": 12,
+    "net": 13.19,
+    "worst": 12.04,
+    "diff_net": 45.72,
+    "diff_worst": -33.2
+   }
   },
   {
    "id": "nowe",
@@ -835,37 +1171,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 140.47,
+    "net": 147.57,
     "maxdd": -71.12,
     "worst_debt": 71.12,
-    "trades": 183,
-    "wr": 61.7,
+    "trades": 181,
+    "wr": 61.9,
     "blocked": 130
    },
    "h1": {
-    "net": 114.25,
+    "net": 120.21,
     "maxdd": -71.12,
     "worst_debt": 71.12,
     "trades": 107,
-    "wr": 64.5,
+    "wr": 65.4,
     "blocked": 81
    },
    "h2": {
-    "net": 38.4,
+    "net": 12.73,
     "maxdd": -49.6,
     "worst_debt": 49.6,
-    "trades": 78,
-    "wr": 57.7,
+    "trades": 63,
+    "wr": 55.6,
     "blocked": 49
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -27.77,
-   "diff_worst": -9.17
+   "diff_net": -27.78,
+   "diff_worst": -9.17,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -26.07,
+    "diff_worst": -9.17,
+    "h1": -20.7,
+    "h2": -23.91,
+    "net": 172.54,
+    "worst": 71.12,
+    "trades": 310
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 7,
+    "blocked": 12,
+    "net": 13.19,
+    "worst": 12.04,
+    "diff_net": 45.72,
+    "diff_worst": -33.2
+   }
   },
   {
    "id": "nomon",
@@ -886,37 +1243,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 200.78,
+    "net": 199.19,
     "maxdd": -64.9,
     "worst_debt": 64.9,
-    "trades": 214,
-    "wr": 63.1,
+    "trades": 212,
+    "wr": 63.2,
     "blocked": 69
    },
    "h1": {
-    "net": 188.41,
+    "net": 194.37,
     "maxdd": -49.71,
     "worst_debt": 49.71,
     "trades": 125,
-    "wr": 67.2,
+    "wr": 68.0,
     "blocked": 46
    },
    "h2": {
-    "net": 24.55,
+    "net": -9.82,
     "maxdd": -64.9,
     "worst_debt": 64.9,
-    "trades": 91,
-    "wr": 57.1,
+    "trades": 76,
+    "wr": 55.3,
     "blocked": 23
    },
    "verdict": "A",
    "prev_verdict": "A",
    "src": "battery",
-   "diff_net": 32.54,
-   "diff_worst": -15.39
+   "diff_net": 23.84,
+   "diff_worst": -15.39,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": 17.67,
+    "diff_worst": -15.39,
+    "h1": -7.5,
+    "h2": 6.13,
+    "net": 216.28,
+    "worst": 64.9,
+    "trades": 337
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 12,
+    "blocked": 7,
+    "net": -30.73,
+    "worst": 43.45,
+    "diff_net": 1.8,
+    "diff_worst": -1.79
+   }
   },
   {
    "id": "nonight",
@@ -944,37 +1322,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 85.51,
+    "net": 80.75,
     "maxdd": -98.34,
     "worst_debt": 98.34,
-    "trades": 183,
-    "wr": 60.1,
-    "blocked": 124
+    "trades": 178,
+    "wr": 59.6,
+    "blocked": 128
    },
    "h1": {
-    "net": 106.07,
+    "net": 108.07,
     "maxdd": -63.85,
     "worst_debt": 63.85,
-    "trades": 107,
-    "wr": 62.6,
-    "blocked": 75
+    "trades": 105,
+    "wr": 61.9,
+    "blocked": 78
    },
    "h2": {
-    "net": -20.57,
+    "net": -25.11,
     "maxdd": -98.34,
     "worst_debt": 98.34,
-    "trades": 76,
-    "wr": 56.6,
-    "blocked": 54
+    "trades": 69,
+    "wr": 55.1,
+    "blocked": 37
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -82.73,
-   "diff_worst": 18.05
+   "diff_net": -94.6,
+   "diff_worst": 18.05,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -106.01,
+    "diff_worst": 18.05,
+    "h1": -37.73,
+    "h2": -81.54,
+    "net": 92.6,
+    "worst": 98.34,
+    "trades": 295
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 11,
+    "blocked": 8,
+    "net": -16.66,
+    "worst": 24.28,
+    "diff_net": 15.87,
+    "diff_worst": -20.96
+   }
   },
   {
    "id": "noday",
@@ -1002,37 +1401,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 172.67,
+    "net": 183.8,
     "maxdd": -24.87,
     "worst_debt": 24.87,
-    "trades": 187,
-    "wr": 60.4,
-    "blocked": 146
+    "trades": 192,
+    "wr": 60.9,
+    "blocked": 136
    },
    "h1": {
-    "net": 158.08,
+    "net": 161.31,
     "maxdd": -17.57,
     "worst_debt": 17.57,
-    "trades": 114,
-    "wr": 64.0,
-    "blocked": 89
+    "trades": 118,
+    "wr": 65.3,
+    "blocked": 82
    },
    "h2": {
-    "net": 26.77,
+    "net": 34.31,
     "maxdd": -24.87,
     "worst_debt": 24.87,
-    "trades": 75,
-    "wr": 54.7,
-    "blocked": 57
+    "trades": 74,
+    "wr": 54.1,
+    "blocked": 54
    },
    "verdict": "B",
    "prev_verdict": "B",
    "src": "battery",
-   "diff_net": 4.43,
-   "diff_worst": -55.42
+   "diff_net": 8.45,
+   "diff_worst": -55.42,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -35.53,
+    "diff_worst": -50.46,
+    "h1": -2.92,
+    "h2": -40.35,
+    "net": 163.08,
+    "worst": 29.83,
+    "trades": 270
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 7,
+    "blocked": 12,
+    "net": -30.21,
+    "worst": 35.29,
+    "diff_net": 2.32,
+    "diff_worst": -9.95
+   }
   },
   {
    "id": "noeve",
@@ -1060,37 +1480,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 53.58,
+    "net": 61.42,
     "maxdd": -94.82,
     "worst_debt": 94.82,
-    "trades": 183,
-    "wr": 60.7,
-    "blocked": 144
+    "trades": 179,
+    "wr": 60.9,
+    "blocked": 148
    },
    "h1": {
-    "net": 110.31,
+    "net": 117.0,
     "maxdd": -48.81,
     "worst_debt": 48.81,
-    "trades": 109,
-    "wr": 65.1,
-    "blocked": 88
+    "trades": 107,
+    "wr": 66.4,
+    "blocked": 92
    },
    "h2": {
-    "net": -44.55,
+    "net": -72.8,
     "maxdd": -94.82,
     "worst_debt": 94.82,
-    "trades": 76,
-    "wr": 53.9,
-    "blocked": 56
+    "trades": 66,
+    "wr": 51.5,
+    "blocked": 48
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -114.66,
-   "diff_worst": 14.53
+   "diff_net": -113.93,
+   "diff_worst": 14.53,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -65.84,
+    "diff_worst": 14.53,
+    "h1": 36.58,
+    "h2": -100.97,
+    "net": 132.77,
+    "worst": 94.82,
+    "trades": 300
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 10,
+    "blocked": 9,
+    "net": -29.67,
+    "worst": 42.38,
+    "diff_net": 2.86,
+    "diff_worst": -2.86
+   }
   },
   {
    "id": "hothalf",
@@ -1109,37 +1550,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 148.26,
+    "net": 155.45,
     "maxdd": -62.02,
     "worst_debt": 62.02,
-    "trades": 259,
-    "wr": 60.6,
+    "trades": 256,
+    "wr": 60.9,
     "blocked": 0
    },
    "h1": {
-    "net": 150.53,
+    "net": 150.63,
     "maxdd": -45.63,
     "worst_debt": 45.63,
-    "trades": 153,
-    "wr": 64.7,
+    "trades": 152,
+    "wr": 65.8,
     "blocked": 0
    },
    "h2": {
-    "net": 4.76,
+    "net": -15.13,
     "maxdd": -62.02,
     "worst_debt": 62.02,
-    "trades": 108,
-    "wr": 54.6,
+    "trades": 92,
+    "wr": 53.3,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -19.98,
-   "diff_worst": -18.27
+   "diff_net": -19.9,
+   "diff_worst": -18.27,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": -7.1,
+    "diff_worst": -18.27,
+    "h1": 4.71,
+    "h2": -24.13,
+    "net": 191.51,
+    "worst": 62.02,
+    "trades": 407
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -23.52,
+    "worst": 32.42,
+    "diff_net": 9.01,
+    "diff_worst": -12.82
+   }
   },
   {
    "id": "nervgate",
@@ -1158,37 +1620,128 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 118.4,
+    "net": 133.67,
     "maxdd": -25.05,
     "worst_debt": 25.05,
-    "trades": 165,
-    "wr": 63.0,
-    "blocked": 203
+    "trades": 162,
+    "wr": 63.6,
+    "blocked": 204
    },
    "h1": {
-    "net": 86.48,
+    "net": 85.16,
     "maxdd": -15.48,
     "worst_debt": 15.48,
-    "trades": 106,
-    "wr": 65.1,
-    "blocked": 115
+    "trades": 103,
+    "wr": 66.0,
+    "blocked": 118
    },
    "h2": {
-    "net": 44.18,
-    "maxdd": -25.05,
-    "worst_debt": 25.05,
-    "trades": 66,
-    "wr": 59.1,
-    "blocked": 79
+    "net": 9.88,
+    "maxdd": -27.7,
+    "worst_debt": 27.7,
+    "trades": 49,
+    "wr": 59.2,
+    "blocked": 80
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -49.84,
-   "diff_worst": -55.24
+   "diff_net": -41.68,
+   "diff_worst": -55.24,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -79.05,
+    "diff_worst": -49.14,
+    "h1": -61.46,
+    "h2": -35.58,
+    "net": 119.56,
+    "worst": 31.15,
+    "trades": 240
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 3,
+    "blocked": 16,
+    "net": -17.34,
+    "worst": 17.34,
+    "diff_net": 15.19,
+    "diff_worst": -27.9
+   }
+  },
+  {
+   "id": "debtnerv",
+   "title_fr": "Ne rien prendre quand on est encore dans le rouge ET que le marché est nerveux",
+   "title_en": "Take nothing when still in the red AND the market is nervous",
+   "family": "meteo",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02,
+    "debt_nerv_gate": true
+   },
+   "full": {
+    "net": 183.42,
+    "maxdd": -25.05,
+    "worst_debt": 25.05,
+    "trades": 168,
+    "wr": 63.7,
+    "blocked": 181
+   },
+   "h1": {
+    "net": 130.32,
+    "maxdd": -15.48,
+    "worst_debt": 15.48,
+    "trades": 107,
+    "wr": 65.4,
+    "blocked": 100
+   },
+   "h2": {
+    "net": 9.88,
+    "maxdd": -27.7,
+    "worst_debt": 27.7,
+    "trades": 49,
+    "wr": 59.2,
+    "blocked": 80
+   },
+   "verdict": "B",
+   "prev_verdict": "B",
+   "src": "battery",
+   "diff_net": 8.07,
+   "diff_worst": -55.24,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -69.3,
+    "diff_worst": -50.38,
+    "h1": -60.21,
+    "h2": -27.08,
+    "net": 129.31,
+    "worst": 29.91,
+    "trades": 249
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 4,
+    "blocked": 15,
+    "net": -9.71,
+    "worst": 17.34,
+    "diff_net": 22.82,
+    "diff_worst": -27.9
+   }
   },
   {
    "id": "bul2",
@@ -1207,37 +1760,58 @@
     "storm": 1.85,
     "bullets": 2,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 139.08,
+    "net": 144.52,
     "maxdd": -74.39,
     "worst_debt": 74.39,
-    "trades": 253,
-    "wr": 61.7,
+    "trades": 251,
+    "wr": 61.8,
     "blocked": 0
    },
    "h1": {
-    "net": 157.72,
+    "net": 164.91,
     "maxdd": -52.92,
     "worst_debt": 52.92,
     "trades": 148,
-    "wr": 65.5,
+    "wr": 66.2,
     "blocked": 0
    },
    "h2": {
-    "net": -9.72,
+    "net": -29.39,
     "maxdd": -74.39,
     "worst_debt": 74.39,
-    "trades": 107,
-    "wr": 56.1,
+    "trades": 92,
+    "wr": 54.3,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -29.16,
-   "diff_worst": -5.9
+   "diff_net": -30.83,
+   "diff_worst": -5.9,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -33.62,
+    "diff_worst": -5.9,
+    "h1": -6.94,
+    "h2": -36.21,
+    "net": 164.99,
+    "worst": 74.39,
+    "trades": 402
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -30.25,
+    "worst": 42.96,
+    "diff_net": 2.28,
+    "diff_worst": -2.28
+   }
   },
   {
    "id": "bul4",
@@ -1256,37 +1830,58 @@
     "storm": 1.85,
     "bullets": 4,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 201.48,
+    "net": 210.26,
     "maxdd": -87.24,
     "worst_debt": 87.24,
-    "trades": 254,
-    "wr": 61.0,
+    "trades": 252,
+    "wr": 61.1,
     "blocked": 0
    },
    "h1": {
-    "net": 197.82,
+    "net": 202.56,
     "maxdd": -69.37,
     "worst_debt": 69.37,
     "trades": 149,
-    "wr": 65.1,
+    "wr": 65.8,
     "blocked": 0
    },
    "h2": {
-    "net": 19.1,
+    "net": -12.57,
     "maxdd": -87.24,
     "worst_debt": 87.24,
-    "trades": 107,
-    "wr": 55.1,
+    "trades": 92,
+    "wr": 53.3,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": 33.24,
-   "diff_worst": 6.95
+   "diff_net": 34.91,
+   "diff_worst": 6.95,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": 39.08,
+    "diff_worst": 6.95,
+    "h1": 8.3,
+    "h2": 33.59,
+    "net": 237.69,
+    "worst": 87.24,
+    "trades": 404
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -34.81,
+    "worst": 47.52,
+    "diff_net": -2.28,
+    "diff_worst": 2.28
+   }
   },
   {
    "id": "bul0",
@@ -1305,37 +1900,58 @@
     "storm": 1.85,
     "bullets": 0,
     "k_streak": 2,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 70.69,
+    "net": 72.78,
     "maxdd": -59.43,
     "worst_debt": 59.43,
-    "trades": 251,
+    "trades": 249,
     "wr": 61.4,
     "blocked": 0
    },
    "h1": {
-    "net": 105.63,
+    "net": 115.27,
     "maxdd": -36.46,
     "worst_debt": 36.46,
     "trades": 147,
-    "wr": 65.3,
+    "wr": 66.0,
     "blocked": 0
    },
    "h2": {
-    "net": -32.56,
+    "net": -40.23,
     "maxdd": -59.43,
     "worst_debt": 59.43,
-    "trades": 106,
-    "wr": 55.7,
+    "trades": 91,
+    "wr": 53.8,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -97.55,
-   "diff_worst": -20.86
+   "diff_net": -102.57,
+   "diff_worst": -20.86,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -109.11,
+    "diff_worst": -20.86,
+    "h1": -18.96,
+    "h2": -101.81,
+    "net": 89.5,
+    "worst": 59.43,
+    "trades": 401
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -25.69,
+    "worst": 38.41,
+    "diff_net": 6.84,
+    "diff_worst": -6.83
+   }
   },
   {
    "id": "k1",
@@ -1354,37 +1970,58 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 1,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 133.54,
+    "net": 129.75,
     "maxdd": -70.91,
     "worst_debt": 70.91,
-    "trades": 252,
-    "wr": 61.5,
+    "trades": 250,
+    "wr": 61.6,
     "blocked": 0
    },
    "h1": {
-    "net": 174.11,
+    "net": 181.42,
     "maxdd": -53.57,
     "worst_debt": 53.57,
     "trades": 148,
-    "wr": 65.5,
+    "wr": 66.2,
     "blocked": 0
    },
    "h2": {
-    "net": -38.19,
+    "net": -43.5,
     "maxdd": -70.91,
     "worst_debt": 70.91,
-    "trades": 106,
-    "wr": 55.7,
+    "trades": 91,
+    "wr": 53.8,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
-   "diff_net": -34.7,
-   "diff_worst": -9.38
+   "diff_net": -45.6,
+   "diff_worst": -9.38,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -49.19,
+    "diff_worst": -9.38,
+    "h1": -1.28,
+    "h2": -48.4,
+    "net": 149.42,
+    "worst": 70.91,
+    "trades": 401
+   },
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -34.99,
+    "worst": 47.7,
+    "diff_net": -2.46,
+    "diff_worst": 2.46
+   }
   },
   {
    "id": "k3",
@@ -1403,143 +2040,101 @@
     "storm": 1.85,
     "bullets": 3,
     "k_streak": 3,
-    "lot": 0.02
+    "lot": 0.02,
+    "debt_nerv_gate": false
    },
    "full": {
-    "net": 135.59,
+    "net": 142.7,
     "maxdd": -95.37,
     "worst_debt": 95.37,
-    "trades": 251,
+    "trades": 249,
     "wr": 61.4,
     "blocked": 0
    },
    "h1": {
-    "net": 157.79,
+    "net": 163.75,
     "maxdd": -70.79,
     "worst_debt": 70.79,
     "trades": 146,
-    "wr": 65.8,
+    "wr": 66.4,
     "blocked": 0
    },
    "h2": {
-    "net": -10.01,
+    "net": -35.69,
     "maxdd": -95.37,
     "worst_debt": 95.37,
-    "trades": 107,
-    "wr": 55.1,
+    "trades": 92,
+    "wr": 53.3,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
    "src": "battery",
    "diff_net": -32.65,
-   "diff_worst": 15.08
-  },
-  {
-   "id": "rr06_nosun",
-   "title_fr": "Viser 0,6× le risque et ne pas trader le dimanche",
-   "title_en": "Aim for 0.6x the risk and skip Sunday",
-   "family": "cible",
-   "cfg": {
-    "rr": 0.6,
-    "n_cont": 1,
-    "wait_min": 0,
-    "ext_pts": 0,
-    "skip_wd": [
-     6
-    ],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02
+   "diff_worst": 15.08,
+   "long": {
+    "days": 69,
+    "verdict": "C",
+    "diff_net": -38.13,
+    "diff_worst": 15.08,
+    "h1": -12.77,
+    "h2": -23.44,
+    "net": 160.48,
+    "worst": 95.37,
+    "trades": 399
    },
-   "full": {
-    "net": 177.06,
-    "maxdd": -36.98,
-    "worst_debt": 36.98,
-    "trades": 245,
-    "wr": 66.1,
-    "blocked": 76
-   },
-   "h1": {
-    "net": 114.07,
-    "maxdd": -36.98,
-    "worst_debt": 36.98,
-    "trades": 161,
-    "wr": 68.3,
-    "blocked": 37
-   },
-   "h2": {
-    "net": 73.91,
-    "maxdd": -31.41,
-    "worst_debt": 31.41,
-    "trades": 86,
-    "wr": 61.6,
-    "blocked": 39
-   },
-   "verdict": "B",
-   "prev_verdict": null,
-   "src": "chercheur",
-   "diff_net": 8.82,
-   "diff_worst": -43.31
-  },
-  {
-   "id": "nervbul2",
-   "title_fr": "Deux renforts au lieu de trois, et rien quand le marché est nerveux",
-   "title_en": "Two boosts instead of three, and nothing when the market is nervous",
-   "family": "argent",
-   "cfg": {
-    "rr": 0.8,
-    "n_cont": 1,
-    "wait_min": 0,
-    "ext_pts": 0,
-    "skip_wd": [],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": true,
-    "storm": 1.85,
-    "bullets": 2,
-    "k_streak": 2,
-    "lot": 0.02
-   },
-   "full": {
-    "net": 94.64,
-    "maxdd": -21.66,
-    "worst_debt": 21.66,
-    "trades": 165,
-    "wr": 63.0,
-    "blocked": 203
-   },
-   "h1": {
-    "net": 74.47,
-    "maxdd": -12.94,
-    "worst_debt": 12.94,
-    "trades": 106,
-    "wr": 65.1,
-    "blocked": 115
-   },
-   "h2": {
-    "net": 28.23,
-    "maxdd": -21.66,
-    "worst_debt": 21.66,
-    "trades": 66,
-    "wr": 59.1,
-    "blocked": 79
-   },
-   "verdict": "C",
-   "prev_verdict": null,
-   "src": "chercheur",
-   "diff_net": -73.6,
-   "diff_worst": -58.63
+   "real": {
+    "n_real": 19,
+    "trades": 14,
+    "blocked": 5,
+    "net": -21.63,
+    "worst": 46.87,
+    "diff_net": 10.9,
+    "diff_worst": 1.63
+   }
   }
  ],
  "counts": {
-  "C": 22,
-  "B": 7,
-  "A": 1
+  "C": 21,
+  "B": 6,
+  "A": 2
  },
- "minutes": 3.7
+ "days_long": 69,
+ "base_long": {
+  "full": {
+   "net": 198.61,
+   "maxdd": -80.29,
+   "worst_debt": 80.29,
+   "trades": 403,
+   "wr": 60.0,
+   "blocked": 0
+  },
+  "h1": {
+   "net": 64.3,
+   "maxdd": -31.6,
+   "worst_debt": 31.6,
+   "trades": 186,
+   "wr": 60.2,
+   "blocked": 0
+  },
+  "h2": {
+   "net": 141.78,
+   "maxdd": -80.29,
+   "worst_debt": 80.29,
+   "trades": 220,
+   "wr": 59.1,
+   "blocked": 0
+  }
+ },
+ "base_real": {
+  "net": -32.53,
+  "worst_debt": 45.24,
+  "trades": 14,
+  "wr": 35.7,
+  "blocked": 5,
+  "n_real": 19,
+  "actual": -24.56
+ },
+ "real_n": 19,
+ "minutes": 8.2
 }

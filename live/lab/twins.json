@@ -47,6 +47,30 @@
    "started": "2026-09-29T02:10:00+00:00",
    "status": "running",
    "by": "owner"
+  },
+  {
+   "id": "rr10",
+   "title_fr": "Viser un gain égal au risque",
+   "title_en": "Aim for a gain equal to the risk",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02,
+    "debt_nerv_gate": false
+   },
+   "verdict": "A",
+   "started": "2026-09-29T08:31:53+00:00",
+   "status": "running",
+   "by": "chercheur"
   }
  ]
 }
