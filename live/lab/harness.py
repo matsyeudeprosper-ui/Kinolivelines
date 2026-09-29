@@ -52,6 +52,12 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # and refills the recovery allowance), it is simply not traded.
             "only_kind": ""}
 CFG_KEYS = list(CFG_BASE.keys())
+# 2026-09-29 (owner): "does the break's own character say whether it will
+# run?" Set TRACE to a list to record one dict per trade: the power of the
+# breaking candle, the age of the level it broke, how often that level had
+# been approached, and the outcome. None by default, so the nightly battery
+# pays nothing. Used by review/bos_break_character.py.
+TRACE = None
 BLOT = 0.01
 
 
@@ -97,6 +103,10 @@ def simulate(R, spread, cfg):
     blocked = 0
     last_hour = None
     pnls = []
+    cur_tr = None
+    prev_hi_v = prev_lo_v = None
+    hi_since = lo_since = 0.0        # wall time the level value last changed
+    hi_touch = lo_touch = 0
     for i, bar in enumerate(R):
         t = int(bar["time"])
         o, h, l, cl = (float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"]))
@@ -123,6 +133,10 @@ def simulate(R, spread, cfg):
                     bpts = ((1.3 * dist - spread) if win else -(dist / 2.0 + spread))
                     run += bpts * BLOT * NB
                 pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
+                if TRACE is not None and cur_tr is not None:
+                    cur_tr["win"] = bool(win)
+                    cur_tr["pnl"] = round(run - before, 2)
+                    cur_tr = None
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
@@ -133,6 +147,24 @@ def simulate(R, spread, cfg):
             touched = l <= eng.prot_lo[1] <= cl
         elif eng.trend == -1 and eng.prot_hi is not None:
             touched = cl <= eng.prot_hi[1] <= h
+        if TRACE is not None:
+            # The level as it stands BEFORE this bar is judged: step() moves it
+            # on the very bar that breaks it, so reading it after would always
+            # give an age of zero. The engine's own hi_i/lo_i are NOT usable
+            # here: it counts Renko bricks, not minutes, so subtracting them
+            # from a minute index mixes two clocks. Age is taken from the wall
+            # time at which the level value last changed.
+            p_hi_v, p_lo_v = eng.hi_v, eng.lo_v
+            if i >= 60:
+                _med = sorted(rng[i-60:i])[30]
+                if p_hi_v != prev_hi_v:
+                    prev_hi_v, hi_touch, hi_since = p_hi_v, 0, t
+                elif p_hi_v is not None and p_hi_v - 0.10 * _med <= h < p_hi_v:
+                    hi_touch += 1
+                if p_lo_v != prev_lo_v:
+                    prev_lo_v, lo_touch, lo_since = p_lo_v, 0, t
+                elif p_lo_v is not None and p_lo_v < l <= p_lo_v + 0.10 * _med:
+                    lo_touch += 1
         sig = eng.step(t, o, h, l, cl)
         if eng.trend != prev and eng.trend != 0:
             flips.append(t)
@@ -218,6 +250,15 @@ def simulate(R, spread, cfg):
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
         last_hour = t // 3600
         n_trades += 1
+        if TRACE is not None:
+            _m = sorted(rng[i-60:i])[30] if i >= 60 else 0.0
+            cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),
+                      "med": round(_m, 1), "nerv": round(nv, 2),
+                      "power": (round(rng[i] / _m, 2) if _m > 0 else None),
+                      "age": int((t - (hi_since if d == 1 else lo_since)) // 60),
+                      "touch": (hi_touch if d == 1 else lo_touch),
+                      "win": None, "pnl": None}
+            TRACE.append(cur_tr)
     dd = pk2 = worst = 0.0
     for v in curve:
         pk2 = max(pk2, v)
