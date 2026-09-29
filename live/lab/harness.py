@@ -201,7 +201,11 @@ def verdict(v, base):
     w = f["worst_debt"] - b["worst_debt"]
     w1 = v["h1"]["worst_debt"] - base["h1"]["worst_debt"]
     w2 = v["h2"]["worst_debt"] - base["h2"]["worst_debt"]
-    if d1 > 0 and d2 > 0 and w <= 0.5:
+    # 2026-09-29: an A must also make more money over the FULL period - the
+    # halves are simulated on their own (each starts with no debt), so both
+    # can be up while the full run, path-dependent, is down (rr10 tonight:
+    # halves +, full -8.53 -> it was called A and a twin started)
+    if d1 > 0 and d2 > 0 and dn > 0 and w <= 0.5:
         return "A"
     if (dn >= -0.05 * abs(b["net"]) and w1 < 0 and w2 < 0) or (dn > 0 and (d1 > 0 or d2 > 0) and w <= 0.5):
         return "B"
