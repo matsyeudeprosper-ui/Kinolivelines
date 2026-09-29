@@ -37,7 +37,12 @@ decide and never deploy; the engine judges with fixed rules, Kino promotes.
 ## What you may write (nothing else)
 - `lab/proposals.json` — append new what-ifs (see grammar). Never delete.
 - `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials the menu lacks. Append only.
-- `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}]}`.
+- `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],
+  "sections":[{"title_fr","title_en","fr","en"}, ...]}` — the `sections` are the
+  night told as 5 to 7 SLIDES a member pages through on a phone: each has a
+  short title and at most 70 words per language (Ce soir / Les verdicts /
+  Ce que les trades apprennent / Ce que je crois / Ce que je propose /
+  Ce que je demande). `fr`/`en` keep the full note for the record.
 - `lab/notes/YYYY-MM-DD.md` — your note of the night, French then English.
 Do NOT edit any other file. Do NOT run git. Do NOT start processes.
 
@@ -77,7 +82,11 @@ usable with its `key`, `retired` = it scored C three nights in a row and
 was dropped - do not propose it again). Use built dials in your proposals.
 Combine at most three keys per proposal. Aim for 5 proposals a night, at
 least 1 out of the box. Each must come from something you saw, and
-`why_*` must say what.
+`why_*` must say what - in at most 60 words per language (the card shows
+two lines, the rest opens on tap). When you ran the engine on it, add
+`"pretest": {"net": <variant net>, "worst": <variant worst debt>, "h1": <net gain vs base, first half>,
+"h2": <net gain vs base, second half>, "base_net": <base net>, "base_worst": <base worst debt>}`
+so the card can show the numbers as tiles instead of prose.
 
 ## Your own replay runs (up to 8 a night, ~1 s each)
 `python lab/harness.py --json --rr 0.6 --ext 500` prints the verdict of one

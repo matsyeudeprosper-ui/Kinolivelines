@@ -26,6 +26,7 @@ try {
     Say ("chercheur session done, " + $out.Length + " chars")
 } catch { Say ("chercheur session failed: " + $_.Exception.Message) }
 try {
+    python lab/pretest_fill.py *> (Join-Path $lab "pretest_last.log")
     git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
