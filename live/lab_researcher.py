@@ -205,7 +205,12 @@ def main():
         for p in props.get("proposals", []):
             if p.get("id") == vid and p.get("status", "pending") == "pending":
                 p["status"] = "done"; p["verdict"] = vd; p["done"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-        if vd == "A":
+        # 2026-09-29 (owner): an A on ONE night is not enough to start a paper
+        # copy. With 34 what-ifs a night, noise produces an A sooner or later;
+        # two nights in a row costs one day and removes most false starts.
+        if vd == "A" and prevv != "A":
+            say(f"{vid}: A held back, waiting for a second A tomorrow")
+        if vd == "A" and prevv == "A":
             if ensure_twin(vid, fr, en, H.cfg_of(cfg), vd):
                 try:
                     import twin_judge as TJ      # 2026-09-29: tell Kino + the Strategie members

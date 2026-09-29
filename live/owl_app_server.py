@@ -4485,6 +4485,20 @@ function pfRing(lights,c,word,big){const n=lights.length||3;const R=big?36:30,cx
  return '<div class="pf-ring'+(big?' big':'')+'"><svg viewBox="0 0 '+(cx*2)+' '+(cx*2)+'"><circle cx="'+cx+'" cy="'+cx+'" r="'+R+'" fill="none" stroke="var(--surface3)" stroke-width="7"/>'+arcs+'</svg><b style="color:'+c+'">'+word+'</b></div>';}
 function pfWord(c,en,big){return (big?{green:en?'Yes':'Oui',amber:en?'Watch':'Surveiller',red:en?'No':'Non',grey:en?'Soon':'Bient\u00f4t'}:{green:en?'Yes':'Oui',amber:en?'Watch':'\u00c0 voir',red:en?'No':'Non',grey:en?'Soon':'Bient\u00f4t'})[c]||'';}
 function pfGreen(lights,en){const ok=lights.filter(l=>l.c==='green').length;return en?ok+' of '+lights.length+' green':ok+' sur '+lights.length+' au vert';}
+function pfSince(j,en){
+ let seen=0;try{seen=parseInt(localStorage.getItem('owlPfSeen:'+B)||'0')||0;}catch(e){}
+ const day=t=>new Date(t).toISOString().slice(0,10);
+ if(!seen){try{localStorage.setItem('owlPfSeen:'+B,String(Date.now()));}catch(e){}return '';}
+ const since=day(seen);const news=[];
+ (j.rules||[]).forEach(r=>{if((r.date||'')>since)news.push((en?'a new rule entered the robot: ':'une nouvelle r\u00e8gle est entr\u00e9e dans le robot : ')+_escS(en?r.title_en:r.title_fr));});
+ (j.twins||[]).forEach(t=>{const st=(t.started||'').slice(0,10);if(st>since)news.push((en?'a trial copy started: ':'une copie d\u2019essai a d\u00e9marr\u00e9 : ')+_escS(en?t.title_en:t.title_fr));});
+ const N=((j.history||{}).nights)||[];const after=N.filter(r=>(r.d||'')>since);
+ if(after.length){const before=N.filter(r=>(r.d||'')<=since).pop();const now=after[after.length-1];
+  if(before&&now&&before.o!==now.o){const W={green:en?'yes':'oui',amber:en?'watch':'\u00e0 surveiller',red:en?'no':'non',grey:'\u2026'};
+   news.push((en?'the verdict changed to ':'le verdict est pass\u00e9 \u00e0 ')+'<b style="color:'+(PL[now.o]||PL.grey)[0]+'">'+(W[now.o]||'')+'</b>');}}
+ try{localStorage.setItem('owlPfSeen:'+B,String(Date.now()));}catch(e){}
+ if(!news.length)return '';
+ return '<div style="margin-top:10px;padding:9px 11px;border-radius:12px;background:var(--surface2);border:1px solid var(--accent-soft);font-size:.78rem;line-height:1.5;color:var(--text)"><b style="color:var(--accent-soft);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:3px">'+(en?'Since your last visit':'Depuis votre derni\u00e8re visite')+'</b>'+news.slice(0,3).map(x=>'\u00b7 '+x).join('<br>')+'</div>';}
 function pfDots(hist,en){if(!hist||!(hist.nights||[]).length)return '';const N=hist.nights;return '<div class="pf-dots">'+N.map((r,i)=>'<i class="'+(i===N.length-1?'today':'')+'" style="background:'+(PL[r.o]||PL.grey)[0]+'" title="'+_escS(r.d)+'"></i>').join('')+'<span style="font-size:.72rem;color:var(--muted2);margin-left:4px">'+(hist.streak>1?(en?'the verdict has not moved for '+hist.streak+' nights':'le verdict n\u2019a pas boug\u00e9 depuis '+hist.streak+' nuits'):(N.length>1?(en?'last '+N.length+' nights':N.length+' derni\u00e8res nuits'):(en?'first night recorded':'premi\u00e8re nuit enregistr\u00e9e')))+'</span></div>';}
 function pfSpark(cv,c){if(!cv||cv.length<2)return '';const ys=cv.map(p=>p[1]);const mx=Math.max(...ys,0),mn=Math.min(...ys,0),sp=Math.max(1e-6,mx-mn);const n=cv.length;
  const pts=cv.map((p,i)=>(1+i/(n-1)*54).toFixed(1)+','+(20-((p[1]-mn)/sp)*18).toFixed(1)).join(' ');return '<svg viewBox="0 0 56 22"><polyline points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="1.6" stroke-linejoin="round"/></svg>';}
@@ -4500,7 +4514,7 @@ async function loadProof(d){const el=document.getElementById('proofcard');if(!el
  document.getElementById('proof-lbl').innerHTML=(en?'The proof':'La preuve')+' <span class="hint">\u00b7 '+(en?'checked every night':'v\u00e9rifi\u00e9e chaque nuit')+'</span>';
  const ahead=(j.twins||[]).filter(t=>t.status==='ahead').length;
  setH(document.getElementById('proof-lights'),'<div class="pf-hero">'+pfRing(L,oc,pfWord((j.overall||{}).c,en))+'<div style="flex:1;min-width:0"><div class="pf-verdict">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</div><div class="pf-sub">'+pfGreen(L,en)+' \u00b7 '+(en?'is this strategy still worth staying with? Three checks, redone every night.':'cette strat\u00e9gie vaut-elle encore qu\u2019on reste ? Trois v\u00e9rifications, refaites chaque nuit.')+'</div></div></div>'+
-  pfDots(j.history,en)+
+  pfDots(j.history,en)+pfSince(j,en)+
   '<div class="pf-rows">'+
   '<div class="pf-row">'+proofDot(by('replay').c)+'<div class="t"><b>'+(en?'On the past, it makes money':'Sur le pass\u00e9, elle gagne')+'</b><span>'+(en?'last '+Math.round(j.days)+' days, replayed':'les '+Math.round(j.days)+' derniers jours, rejou\u00e9s')+'</span></div>'+pfSpark(F.curve,(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'<div class="v" style="color:'+((F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(F.net)+'</div></div>'+
   '<div class="pf-row">'+proofDot(by('track').c)+'<div class="t"><b>'+(en?'In real life, it follows the test':'En vrai, elle suit le test')+'</b><span>'+(U.trades||0)+' '+(en?'real trades since ':'vrais trades depuis le ')+_escS((U.since||'').slice(8,10)+'/'+(U.since||'').slice(5,7))+'</span></div><div class="v" style="color:'+((U.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+pfMn(U.net)+'</div></div>'+

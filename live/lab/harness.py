@@ -56,8 +56,14 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # risk_max = a hard cap in dollars on one trade's risk.
             # bank_mult = the risk allowed is (BANK0 + profit so far) divided by
             # this, so the account has to earn the right to risk more.
-            "risk_max": 0.0, "bank_mult": 0.0}
+            "risk_max": 0.0, "bank_mult": 0.0,
+            # 2026-09-29 (owner): "use a percentage, the cap depends on the
+            # balance". risk_pct is the share of the account one trade may
+            # risk, and it is what should ever be deployed; risk_max stays as
+            # the absolute version used to find the level in the first place.
+            "risk_pct": 0.0}
 BANK0 = 10.0    # the starting allowance for bank_mult, about two average losses
+BAL0 = 230.0    # the reference balance, the same one structure_bos_bot uses
 CFG_KEYS = list(CFG_BASE.keys())
 # 2026-09-29 (owner): "does the break's own character say whether it will
 # run?" Set TRACE to a list to record one dict per trade: the power of the
@@ -255,6 +261,14 @@ def simulate(R, spread, cfg):
             continue
         _risk = dist * lot
         if c["risk_max"] and _risk > float(c["risk_max"]):
+            blocked += 1
+            continue
+        # NOTE: against the balance the account STARTED with, not the running
+        # one. This strategy trades a fixed lot, so the risk per trade does
+        # not grow with profit; a cap that did grow would simply stop binding
+        # once the account was ahead - which is exactly when the deep holes
+        # happen. Tested both ways on 2026-09-29, see lab/CHERCHEUR.md.
+        if c["risk_pct"] and _risk > BAL0 * float(c["risk_pct"]) / 100.0:
             blocked += 1
             continue
         if c["bank_mult"] and _risk > (BANK0 + max(0.0, run)) / float(c["bank_mult"]):

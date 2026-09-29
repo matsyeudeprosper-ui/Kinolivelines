@@ -747,6 +747,57 @@ def maybe_weekly():
         mylog(f"weekly failed: {e}")
 
 
+PROOF_MARK = os.path.join(DIR, "owl_push_proof.json")
+
+
+def maybe_proof_weekly():
+    """Sunday >= 20:30 UTC: the week's proof in four numbers (owner 2026-09-29).
+    Read-only from lab/proof.json, which the nightly run rebuilds."""
+    t = time.gmtime()
+    if t.tm_wday != 6 or t.tm_hour < 20 or (t.tm_hour == 20 and t.tm_min < 30):
+        return
+    wk = time.strftime("%Y-%W", t)
+    try:
+        if json.load(open(PROOF_MARK)).get("sent") == wk:
+            return
+    except Exception:
+        pass
+    try:
+        p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
+    except Exception:
+        return
+    full = (p.get("base") or {}).get("full") or {}
+    un = p.get("union") or {}
+    days = round(p.get("days") or 0)
+    if not full.get("trades"):
+        return
+    try:
+        subs = json.load(open(SUBS))
+    except Exception:
+        return
+    sent = 0
+    for uid in list(subs):
+        try:
+            if lang_of(uid) == "en":
+                title = "\U0001f4d0 The week's proof"
+                body = (f"Tested on the past: {full['net']:+.0f} $ over {days} days, "
+                        f"{full.get('wr', 0):.0f} % of trades won. "
+                        f"In real life: {un.get('trades', 0)} trades, {un.get('net', 0):+.0f} $. "
+                        "Tap to read the full report.")
+            else:
+                title = "\U0001f4d0 La preuve de la semaine"
+                body = (f"Testée sur le passé : {full['net']:+.0f} $ sur {days} jours, "
+                        f"{full.get('wr', 0):.0f} % de trades gagnés. "
+                        f"En vrai : {un.get('trades', 0)} trades, {un.get('net', 0):+.0f} $. "
+                        "Touchez pour lire le rapport complet.")
+            send_all(title, body, kind="batch", only_uid=uid, url=_tok_url(uid, "#robot"))
+            sent += 1
+        except Exception:
+            continue
+    json.dump({"sent": wk}, open(PROOF_MARK, "w"))
+    mylog(f"proof weekly -> {sent} member(s)")
+
+
 MORNING_MARK = os.path.join(DIR, "owl_push_morning.json")
 
 
@@ -913,6 +964,7 @@ def main():
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
+            maybe_proof_weekly()
             maybe_digest()
             maybe_morning()
             maybe_evening()
