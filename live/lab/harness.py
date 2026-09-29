@@ -39,7 +39,12 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
-            "cost_max": 0.0, "min_range": 0.0}
+            "cost_max": 0.0, "min_range": 0.0,
+            # 2026-09-29 (owner): "what if we take only the first trade of a
+            # new hour, between minute 1 and 29?" minute_win = [lo, hi] keeps
+            # entries whose minute of the hour is in that window; one_per_hour
+            # allows at most one entry per clock hour.
+            "minute_win": [], "one_per_hour": False}
 CFG_KEYS = list(CFG_BASE.keys())
 BLOT = 0.01
 
@@ -84,6 +89,7 @@ def simulate(R, spread, cfg):
     cont_left = 0
     n_trades = wins = 0
     blocked = 0
+    last_hour = None
     pnls = []
     for i, bar in enumerate(R):
         t = int(bar["time"])
@@ -177,6 +183,12 @@ def simulate(R, spread, cfg):
                 cont_left -= 1
             else:
                 continue
+        if c["minute_win"] and not (int(c["minute_win"][0]) <= g.minute <= int(c["minute_win"][1])):
+            blocked += 1
+            continue
+        if c["one_per_hour"] and last_hour == t // 3600:
+            blocked += 1
+            continue
         dist = abs(cl - slp)
         # 2026-09-29 (owner): the spread is fixed at 7 pts on this broker, but
         # that is 1.2 % of a wide trade and 8.7 % of a tight one - and a market
@@ -192,6 +204,7 @@ def simulate(R, spread, cfg):
             continue
         tp = cl + d * rr * dist
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
+        last_hour = t // 3600
         n_trades += 1
     dd = pk2 = worst = 0.0
     for v in curve:

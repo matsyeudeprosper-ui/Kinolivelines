@@ -90,7 +90,8 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
  "status": "pending",
  "cfg": {"rr": 0.3-1.5, "n_cont": 0-3, "wait_min": 0-120, "ext_pts": 0-1500, "skip_wd": [0-6],
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
-         "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200}}
+         "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200,
+         "minute_win": [0-59, 0-59], "one_per_hour": true|false}}
 ```
 `debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
 only when the account is still in the red AND the market is nervous.
@@ -102,7 +103,22 @@ the median 60-minute candle is under X points (nervosity is a ratio and
 hides a market that is simply tiny). Every solo dose scored C on 2026-09-29
 (cost 3/4/5/6/8 %, range 40/60/80/120 pts): cutting tight trades costs more
 than the spread saves. They stay in the menu for you to COMBINE - do not
-re-propose a solo dose, and say so if you think a combination deserves one. Every
+re-propose a solo dose, and say so if you think a combination deserves one.
+
+`minute_win` ([lo, hi], the minute of the hour) and `one_per_hour` (at most
+one entry per clock hour) were built by Kino (2026-09-29) to ask "what if we
+take only the first trade of a new hour, between minute 1 and 29?". Tested
+the same day against the mirror window, and the answer is no:
+  minutes 1-29 only      C, net +15 instead of +175, win rate 56.2 %
+  minutes 30-59 (mirror) C, net +130, win rate 64.4 %
+  first of the hour only C, net +76 (one trade per hour removes the recovery
+                            trades, which is where part of the profit is)
+  1-29 AND first         C, net +18, and the two halves disagree (-159 / +8)
+The FIRST half of the hour is the WEAKER half, the opposite of the idea, and
+even the better window loses money once it halves the number of trades. Do
+not re-propose a minute window on its own. None of these four dials are in
+the nightly battery, on purpose: re-running proven losers every night only
+gives noise more chances to produce a false A. Every
 dial you request and Kino approves gets built and appears here; check
 `lab/requests.json` for their status (`open` = not built yet, `built` =
 usable with its `key`, `retired` = it scored C three nights in a row and

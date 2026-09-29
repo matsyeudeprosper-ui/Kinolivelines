@@ -82,12 +82,11 @@ BATTERY = [
     ("hothalf", "Miser moitié moins quand le marché est nerveux", "Bet half when the market is nervous", "meteo", {"size_hot": 0.5}),
     ("nervgate", "Ne rien prendre quand le marché est nerveux", "Take nothing when the market is nervous", "meteo", {"nerv_gate": True}),
     ("debtnerv", "Ne rien prendre quand on est encore dans le rouge ET que le marché est nerveux", "Take nothing when still in the red AND the market is nervous", "meteo", {"debt_nerv_gate": True}),
-    # 2026-09-29 (owner): the fixed 7-pt spread is 1.2 % of a wide trade and
-    # 8.7 % of a tight one, and nervosity is a ratio that hides a tiny market.
-    # Solo doses all scored C on 2026-09-29; kept so the chercheur can combine.
-    ("cost6", "Ne pas entrer quand les frais dépassent 6 % de ce qu’on vise", "No entry when costs exceed 6 % of the target", "argent", {"cost_max": 6}),
-    ("cost8", "Ne pas entrer quand les frais dépassent 8 % de ce qu’on vise", "No entry when costs exceed 8 % of the target", "argent", {"cost_max": 8}),
-    ("minrange40", "Ne pas entrer quand les bougies font moins de 40 points", "No entry when candles are under 40 points", "meteo", {"min_range": 40}),
+    # 2026-09-29: cost_max, min_range, minute_win and one_per_hour exist as
+    # dials but are NOT in the nightly battery. Every dose was tested and
+    # scored C (see lab/CHERCHEUR.md). Re-running proven losers 34 times a
+    # night only gives noise more chances to produce a false A; the chercheur
+    # can still combine them in a proposal when it has a reason.
     ("bul2", "Deux renforts au lieu de trois après une perte", "Two boosts instead of three after a loss", "argent", {"bullets": 2}),
     ("bul4", "Quatre renforts au lieu de trois après une perte", "Four boosts instead of three after a loss", "argent", {"bullets": 4}),
     ("bul0", "Aucun renfort après une perte", "No boost after a loss", "argent", {"bullets": 0}),

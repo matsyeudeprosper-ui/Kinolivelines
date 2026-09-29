@@ -38,7 +38,7 @@ CFG = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip
        "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02, "debt_nerv_gate": False,
        # 2026-09-29: unknown keys are dropped by the merge below, so every
        # dial the harness knows must exist here or a twin would ignore it
-       "cost_max": 0.0, "min_range": 0.0}
+       "cost_max": 0.0, "min_range": 0.0, "minute_win": [], "one_per_hour": False}
 try:
     for t in json.load(open(os.path.join(LAB, "twins.json"), encoding="utf-8")).get("twins", []):
         if t.get("id") == VID:
@@ -120,6 +120,7 @@ def main():
                 return
         tp = e + d * RR * dist
         st["pos"] = {"d": d, "e": e, "sl": round(slp, 2), "tp": round(tp, 2), "kind": kind, "t": time.time(), "lot": lot}
+        st["last_hour"] = int(time.time() // 3600)
         save_state(st)
         say(f"VT {kind} ENTRY: {'BUY' if d == 1 else 'SELL'} {lot} @ ~{e:.2f} SL {slp:.2f} TP {tp:.2f} (risk ${dist * lot:.2f})")
 
@@ -224,6 +225,11 @@ def main():
                 continue
             if CFG.get("min_range") and (cj.get("vol_now") or 0) < float(CFG["min_range"]):
                 say(f"VT refuse: bougies {cj.get('vol_now')}pts < {CFG['min_range']}pts")
+                continue
+            if CFG.get("minute_win") and not (int(CFG["minute_win"][0]) <= g.minute <= int(CFG["minute_win"][1])):
+                continue
+            if CFG.get("one_per_hour") and st.get("last_hour") == int(bt // 3600):
+                say("VT refuse: un trade par heure, deja pris")
                 continue
             debt = max(0.0, st.get("peak", 0.0) - st["net"])
             if flip:
