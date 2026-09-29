@@ -251,11 +251,15 @@ def bars_long():
     return sym, R
 
 
-def real_entries():
+# the accounts whose journals count as "the real trades": never touched by
+# hand (owner 2026-09-29). Names never leave the server.
+REAL_SOURCES = ["bos_journal_valere.csv", "bos_journal_infinity.csv"]   # the demo runs on another broker feed: shown apart
+
+
+def real_entries(files=None):
     import csv
-    import glob
     uniq = {}
-    for f in sorted(glob.glob(os.path.join(LIVE, "bos_journal*.csv"))):
+    for f in [os.path.join(LIVE, x) for x in (files or REAL_SOURCES)]:
         try:
             with open(f, encoding="utf-8", errors="replace") as fh:
                 for r in csv.DictReader(fh):

@@ -4393,8 +4393,9 @@ function renderNext(d){const el=document.getElementById('rb-next');if(!el)return
  setH(el,'<span style="font-size:.6rem;color:var(--accent-soft);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">'+(en?'Next action':'Prochaine action')+'</span>'+t);
  el.style.display='block';
 }
-// ---- 2026-09-29 (owner): "La preuve" - the replay of the whole strategy,
-// the real trades against it, and whether to stay in ----
+// ---- 2026-09-29 (owner): "La preuve" - the strategy tested on the past,
+// the real trades against that test, and whether to stay. Plain words:
+// a member who has never traded must know what they are looking at. ----
 const PL={green:['var(--up-soft)','\u2713'],amber:['var(--warn)','!'],red:['var(--down-soft)','\u00d7'],grey:['var(--muted)','\u2026']};
 function proofDot(c){const x=PL[c]||PL.grey;return '<i style="flex:none;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;background:'+x[0]+';color:#0b1020;font-style:normal;font-weight:900;font-size:.72rem">'+x[1]+'</i>';}
 async function loadProof(d){const el=document.getElementById('proofcard');if(!el)return;
@@ -4402,41 +4403,41 @@ async function loadProof(d){const el=document.getElementById('proofcard');if(!el
  if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
  let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){el.style.display='none';return;}
- window._proof=j;const en=LANG()==='en';const Q={replay:en?'The replay still makes money':'Le rejeu gagne encore',track:en?'The real trades follow it':'Le direct suit le rejeu',lab:en?'No twin beats it':'Aucun jumeau ne fait mieux'};
- document.getElementById('proof-lbl').innerHTML=(en?'The proof':'La preuve')+' <span class="hint">\u00b7 '+(en?'live':'en direct')+'</span>';
- setH(document.getElementById('proof-lights'),(j.lights||[]).map(l=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.88rem;color:var(--text)">'+proofDot(l.c)+'<span>'+(Q[l.k]||l.k)+'</span></div>').join('')+
-  '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)"><b style="font-size:1rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><span style="font-size:.72rem;color:var(--muted);margin-left:auto">'+(en?'Should we stay?':'Faut-il rester ?')+'</span></div>');
- el.querySelector('.shbtn').textContent=(en?'See the proof':'Voir la preuve')+' \u203a';el.style.display='';}
+ window._proof=j;const en=LANG()==='en';const Q={replay:en?'On the past, the strategy makes money':'Sur le pass\u00e9, la strat\u00e9gie gagne',track:en?'In real life, it follows the test':'En vrai, elle suit le test',lab:en?'No trial copy does better':'Aucune copie d\u2019essai ne fait mieux'};
+ document.getElementById('proof-lbl').innerHTML=(en?'The proof':'La preuve')+' <span class="hint">\u00b7 '+(en?'checked every night':'v\u00e9rifi\u00e9e chaque nuit')+'</span>';
+ setH(document.getElementById('proof-lights'),'<div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-bottom:6px">'+(en?'Is this strategy still worth staying with? Three checks, in plain words.':'Cette strat\u00e9gie vaut-elle encore qu\u2019on reste ? Trois v\u00e9rifications, en mots simples.')+'</div>'+(j.lights||[]).map(l=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:.88rem;color:var(--text)">'+proofDot(l.c)+'<span>'+(Q[l.k]||l.k)+'</span></div>').join('')+
+  '<div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)"><b style="font-size:1rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+_escS(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b></div>');
+ el.querySelector('.shbtn').textContent=(en?'See the full proof':'Voir la preuve compl\u00e8te')+' \u203a';el.style.display='';}
 function proofCurve(cv,rules,en){if(!cv||cv.length<2)return '';const ys=cv.map(p=>p[1]).concat([0]);const mx=Math.max(...ys),mnv=Math.min(...ys),sp=Math.max(1e-6,mx-mnv);const n=cv.length;
  const X=i=>(6+i/(n-1)*288).toFixed(1),Y=v=>(8+(1-(v-mnv)/sp)*74).toFixed(1);const pts=cv.map((p,i)=>X(i)+','+Y(p[1])).join(' ');
  const idx={};cv.forEach((p,i)=>{idx[p[0]]=i;});const marks=(rules||[]).map((r,k)=>{const i=idx[r.date];if(i===undefined)return '';return '<line x1="'+X(i)+'" y1="4" x2="'+X(i)+'" y2="90" style="stroke:var(--warn);opacity:.55" stroke-dasharray="2 3"/><text x="'+X(i)+'" y="98" text-anchor="middle" style="font-size:7px;fill:var(--warn)">'+(k+1)+'</text>';}).join('');
  const last=cv[n-1][1];
- return '<svg viewBox="0 0 300 102" style="width:100%;height:118px;display:block;margin-top:8px"><line x1="6" y1="'+Y(0)+'" x2="294" y2="'+Y(0)+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/>'+marks+'<polyline points="'+pts+'" fill="none" style="stroke:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'" stroke-width="2" stroke-linejoin="round"/><circle cx="'+X(n-1)+'" cy="'+Y(last)+'" r="3" style="fill:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'"/><text x="6" y="'+(parseFloat(Y(0))-3)+'" style="font-size:7px;fill:var(--muted)">0</text><text x="6" y="100" style="font-size:7px;fill:var(--muted)">'+_escS(cv[0][0].slice(5))+'</text><text x="294" y="100" text-anchor="end" style="font-size:7px;fill:var(--muted)">'+_escS(cv[n-1][0].slice(5))+'</text></svg>';}
-function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';const esc=_escS;const mn=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+$':'-$')+Math.abs(v).toFixed(0));
+ return '<svg viewBox="0 0 300 102" style="width:100%;height:118px;display:block;margin-top:8px"><line x1="6" y1="'+Y(0)+'" x2="294" y2="'+Y(0)+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/>'+marks+'<polyline points="'+pts+'" fill="none" style="stroke:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'" stroke-width="2" stroke-linejoin="round"/><circle cx="'+X(n-1)+'" cy="'+Y(last)+'" r="3" style="fill:'+(last>=0?'var(--up-soft)':'var(--down-soft)')+'"/><text x="6" y="'+(parseFloat(Y(0))-3)+'" style="font-size:7px;fill:var(--muted)">0 $</text><text x="6" y="100" style="font-size:7px;fill:var(--muted)">'+_escS(cv[0][0].slice(5))+'</text><text x="294" y="100" text-anchor="end" style="font-size:7px;fill:var(--muted)">'+_escS(cv[n-1][0].slice(5))+'</text></svg>';}
+function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';const esc=_escS;const mn=v=>(v===null||v===undefined)?'\u2014':((v>=0?'+$':'-$')+Math.abs(v).toFixed(0));const dmy=d=>d?(en?d.slice(5):d.slice(8,10)+'/'+d.slice(5,7)):'';
  const tile=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.95rem;color:'+(c||'var(--text)')+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;line-height:1.2;display:block;margin-top:3px">'+l+'</span></div>';
- const F=j.base.full||{},H1=j.base.h1||{},H2=j.base.h2||{},L=(j.base_long||{}).full||null;
- let h='<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft)">'+(en?'The proof \u00b7 updated ':'La preuve \u00b7 mise \u00e0 jour ')+esc((j.updated||'').slice(0,16).replace('T',' '))+' UTC</div><h3 style="margin:6px 0 4px">'+(en?'Is the strategy still worth staying in?':'La strat\u00e9gie vaut-elle encore qu\u2019on reste ?')+'</h3>'+
-  '<div style="font-size:.84rem;color:var(--text2);line-height:1.5">'+(en?'Three questions, answered by the same engine every night, with the rules of judgement fixed and public.':'Trois questions, tranch\u00e9es par le m\u00eame moteur chaque nuit, avec des r\u00e8gles de jugement fixes et publiques.')+'</div>';
- // 1 - the replay
- h+='<div class="lbl" style="margin-top:16px">1 \u00b7 '+(en?'What does the replay say?':'Que dit le rejeu ?')+'</div><div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'The robot exactly as it is today, replayed on the last '+Math.round(j.days)+' days of the market, one lot of 0.02, spread counted.':'Le robot exactement tel qu\u2019il est aujourd\u2019hui, rejou\u00e9 sur les '+Math.round(j.days)+' derniers jours du march\u00e9, un lot de 0,02, spread compt\u00e9.')+'</div>'+
-  '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(F.net),(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(-(F.worst_debt||0)),'var(--down-soft)')+tile('trades',F.trades||0)+tile(en?'won':'gagn\u00e9s',(F.wr||0)+'\u202f%')+'</div>'+
-  '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'first half':'1\u00e8re moiti\u00e9',mn(H1.net),(H1.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'second half':'2e moiti\u00e9',mn(H2.net),(H2.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+(L?tile((en?'over ':'sur ')+j.days_long+(en?' days':' jours'),mn(L.net),(L.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile((en?'hole, ':'trou, ')+j.days_long+(en?' d':' j'),mn(-(L.worst_debt||0)),'var(--down-soft)'):'')+'</div>'+
+ const F=j.base.full||{},H1=j.base.h1||{},H2=j.base.h2||{},L=(j.base_long||{}).full||null;const D=Math.round(j.days||0);
+ let h='<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-soft)">'+(en?'The proof \u00b7 checked ':'La preuve \u00b7 v\u00e9rifi\u00e9e le ')+esc((j.updated||'').slice(0,16).replace('T',' '))+' UTC</div><h3 style="margin:6px 0 4px">'+(en?'Is this strategy still worth staying with?':'Cette strat\u00e9gie vaut-elle encore qu\u2019on reste ?')+'</h3>'+
+  '<div style="font-size:.84rem;color:var(--text2);line-height:1.5">'+(en?'Three simple questions. The same engine answers them every night, with rules of judgement that never change.':'Trois questions simples. Le m\u00eame moteur y r\u00e9pond chaque nuit, avec des r\u00e8gles de jugement qui ne changent jamais.')+'</div>';
+ // 1 - tested on the past
+ h+='<div class="lbl" style="margin-top:16px">1 \u00b7 '+(en?'Tested on the past':'Test\u00e9e sur le pass\u00e9')+'</div><div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'We make the robot, exactly as it is today, replay the last '+D+' days of the market as if it had been there. Same stake every time, broker costs counted.':'On fait rejouer au robot, exactement tel qu\u2019il est aujourd\u2019hui, les '+D+' derniers jours du march\u00e9, comme s\u2019il y avait \u00e9t\u00e9. M\u00eame mise \u00e0 chaque fois, frais du courtier compt\u00e9s.')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'result':'r\u00e9sultat',mn(F.net),(F.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest dip':'plus grosse baisse',mn(-(F.worst_debt||0)),'var(--down-soft)')+tile('trades',F.trades||0)+tile(en?'won':'gagn\u00e9s',(F.wr||0)+'\u202f%')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'first half':'1\u00e8re moiti\u00e9',mn(H1.net),(H1.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'second half':'2e moiti\u00e9',mn(H2.net),(H2.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+(L?tile((en?'over ':'sur ')+j.days_long+(en?' days':' jours'),mn(L.net),(L.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile((en?'dip, ':'baisse, ')+j.days_long+(en?' d':' j'),mn(-(L.worst_debt||0)),'var(--down-soft)'):'')+'</div>'+
   proofCurve(F.curve,j.rules,en)+
-  (j.rules&&j.rules.length?'<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.5">'+(en?'Dashed lines: the day a rule entered the robot. ':'Traits pointill\u00e9s : le jour o\u00f9 une r\u00e8gle est entr\u00e9e dans le robot. ')+j.rules.map((r,k)=>'<b style="color:var(--warn)">'+(k+1)+'</b> '+esc((r.date||'').slice(5))+' '+esc(en?r.title_en:r.title_fr)).join(' \u00b7 ')+'</div>':'');
- // 2 - the real trades
- const U=j.union,E=j.expected,RS=j.replay_same;
- h+='<div class="lbl" style="margin-top:18px">2 \u00b7 '+(en?'Do the real trades follow the replay?':'Le direct suit-il le rejeu ?')+'</div>';
- if(U){h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'All the real entries the robot took since '+esc(U.since)+', the same signal counted once across accounts, against what the replay expected over the same dates.':'Toutes les vraies entr\u00e9es prises par le robot depuis le '+esc(U.since)+', un m\u00eame signal compt\u00e9 une fois entre les comptes, contre ce que le rejeu attendait sur les m\u00eames dates.')+'</div>'+
-   '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'real, money':'r\u00e9el, argent',mn(U.net),(U.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'replay, same dates':'rejeu, m\u00eames dates',mn(E?E.net:null),(E&&E.net>=0)?'var(--up-soft)':'var(--down-soft)')+tile(en?'replay, same entries':'rejeu, m\u00eames entr\u00e9es',mn(RS?RS.net:null),(RS&&RS.net>=0)?'var(--up-soft)':'var(--down-soft)')+'</div>'+
-   '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'real trades':'vrais trades',U.trades||0)+tile(en?'won':'gagn\u00e9s',(U.wr===null||U.wr===undefined?'\u2014':U.wr+'\u202f%'))+tile(en?'replay, won':'rejeu, gagn\u00e9s',(F.wr||0)+'\u202f%')+'</div>'+
-   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.45">'+(en?'Under 30 real trades the gap can still be luck. The replay uses 0.02 lots; accounts trade their own size.':'Sous 30 vrais trades, l\u2019\u00e9cart peut encore \u00eatre de la chance. Le rejeu joue 0,02 lot ; chaque compte joue sa propre taille.')+'</div>';
-  const A=(j.accounts||[]).filter(a=>!a.demo);if(A.length)h+='<div class="panel" style="padding:4px 14px;margin-top:10px">'+A.map(a=>'<div class="kv"><div class="kvt"><b>'+esc(a.name)+'</b><span>'+a.trades+' trades'+(a.adds?' + '+a.adds+(en?' boosts':' renforts'):'')+' \u00b7 '+(a.wr===null?'\u2014':a.wr+'\u202f%')+' '+(en?'won':'gagn\u00e9s')+' \u00b7 '+(en?'since ':'depuis le ')+esc((a.since||'').slice(5))+'</span></div><b style="color:'+((a.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(a.net)+'</b></div>').join('')+'</div>';}
+  '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.5">'+(en?'What the account would have done, day after day. ':'Ce que le compte aurait fait, jour apr\u00e8s jour. ')+(j.rules&&j.rules.length?(en?'Dashed lines: the day a rule entered the robot. ':'Traits pointill\u00e9s : le jour o\u00f9 une r\u00e8gle est entr\u00e9e dans le robot. ')+j.rules.map((r,k)=>'<b style="color:var(--warn)">'+(k+1)+'</b> '+dmy(r.date)+' '+esc(en?r.title_en:r.title_fr)).join(' \u00b7 '):'')+'</div>';
+ // 2 - in real life
+ const U=j.union,E=j.expected,RS=j.replay_same,SRC=j.sources||{};
+ h+='<div class="lbl" style="margin-top:18px">2 \u00b7 '+(en?'In real life, since the start':'En vrai, depuis le d\u00e9but')+'</div>';
+ if(U){h+='<div style="font-size:.8rem;color:var(--text2);line-height:1.45;margin-top:4px">'+(en?'The robot\u2019s real trades since '+dmy(U.since)+', on accounts where nobody ever stepped in by hand. The same signal is counted once. We compare them with what the test expected over the same days.':'Les vrais trades du robot depuis le '+dmy(U.since)+', sur des comptes o\u00f9 personne n\u2019est jamais intervenu \u00e0 la main. Le m\u00eame signal est compt\u00e9 une seule fois. On les compare \u00e0 ce que le test attendait sur les m\u00eames jours.')+'</div>'+
+   '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'in real life':'en vrai',mn(U.net),(U.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'expected, same days':'attendu, m\u00eames jours',mn(E?E.net:null),(E&&E.net>=0)?'var(--up-soft)':'var(--down-soft)')+tile(en?'test, same entries':'test, m\u00eames entr\u00e9es',mn(RS?RS.net:null),(RS&&RS.net>=0)?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+   '<div style="display:flex;gap:6px;margin-top:6px">'+tile(en?'real trades':'vrais trades',U.trades||0)+tile(en?'won in real life':'gagn\u00e9s en vrai',(U.wr===null||U.wr===undefined?'\u2014':U.wr+'\u202f%'))+tile(en?'won in the test':'gagn\u00e9s au test',(F.wr||0)+'\u202f%')+'</div>'+
+   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.45">'+(en?'Sources: '+(SRC.real_accounts||0)+' real account'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' and 1 demo account':'')+', never touched by hand. Names are not shown. Under 30 real trades the gap can still be luck.':'Sources : '+(SRC.real_accounts||0)+' compte'+((SRC.real_accounts||0)>1?'s':'')+' r\u00e9el'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' et 1 compte d\u00e9mo':'')+', jamais touch\u00e9s \u00e0 la main. Les noms ne sont pas montr\u00e9s. Sous 30 vrais trades, l\u2019\u00e9cart peut encore \u00eatre de la chance.')+'</div>';
+  if(SRC.demo)h+='<div style="font-size:.78rem;color:var(--text2);margin-top:8px;line-height:1.45">'+(en?'The demo account on its own: ':'Le compte d\u00e9mo seul : ')+(SRC.demo.trades||0)+' trades, '+(SRC.demo.wr===null?'\u2014':SRC.demo.wr+'\u202f%')+' '+(en?'won, ':'gagn\u00e9s, ')+'<b style="color:'+((SRC.demo.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(SRC.demo.net)+'</b>'+(en?' since ':' depuis le ')+dmy(SRC.demo.since)+'.</div>';}
  else h+='<div style="font-size:.84rem;color:var(--muted);margin-top:6px">'+(en?'No real trades in the journal yet.':'Pas encore de vrais trades dans le journal.')+'</div>';
  // 3 - stay?
  h+='<div class="lbl" style="margin-top:18px">3 \u00b7 '+(en?'Should we stay?':'Faut-il rester ?')+'</div><div style="margin-top:6px">'+(j.lights||[]).map(l=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border);font-size:.86rem;line-height:1.5;color:var(--text)">'+proofDot(l.c)+'<div>'+esc(en?l.en:l.fr)+'</div></div>').join('')+'</div>'+
-  '<div class="panel" style="margin-top:10px;padding:12px 14px;border-color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'"><b style="font-size:1.05rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><div style="font-size:.74rem;color:var(--muted);margin-top:4px;line-height:1.45">'+(en?'Green: all three say yes. Amber: one asks for watching. Red: one says no. The rules never move; the numbers do, every night.':'Vert : les trois disent oui. Orange : l\u2019un demande de surveiller. Rouge : l\u2019un dit non. Les r\u00e8gles ne bougent jamais ; les chiffres, si, chaque nuit.')+'</div></div>';
- if((j.twins||[]).length)h+='<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.5">'+(en?'Twins in the duel: ':'Jumeaux en duel : ')+j.twins.map(t=>esc(en?t.title_en:t.title_fr)+' ('+(t.trades||0)+' trades, '+({ahead:en?'ahead':'devant',behind:en?'behind':'derri\u00e8re',even:en?'even':'\u00e9galit\u00e9',early:en?'too early':'trop t\u00f4t'}[t.status]||'')+')').join(' \u00b7 ')+'. '+(en?'Details in the lab.':'D\u00e9tails dans le labo.')+'</div>';
- h+='<div style="font-size:.7rem;color:var(--muted);margin-top:12px;line-height:1.5">'+(en?'Replays use MetaTrader 5 one-minute candles of '+esc(j.symbol||'BTCUSD')+'. A: better on both halves and overall. B: a little better. C: no. These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published in the open.':'Les rejeux utilisent les bougies d\u2019une minute MetaTrader 5 de '+esc(j.symbol||'BTCUSD')+'. A : mieux sur les deux moiti\u00e9s et au total. B : un peu mieux. C : non. Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s en clair.')+'</div>';
+  '<div class="panel" style="margin-top:10px;padding:12px 14px;border-color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'"><b style="font-size:1.05rem;color:'+(PL[(j.overall||{}).c]||PL.grey)[0]+'">'+esc(en?(j.overall||{}).en:(j.overall||{}).fr)+'</b><div style="font-size:.74rem;color:var(--muted);margin-top:4px;line-height:1.45">'+(en?'Green: all three say yes. Amber: one asks us to keep watching. Red: one says no. The rules never move; the numbers do, every night.':'Vert : les trois disent oui. Orange : l\u2019une demande de surveiller. Rouge : l\u2019une dit non. Les r\u00e8gles ne bougent jamais ; les chiffres, si, chaque nuit.')+'</div></div>';
+ if((j.twins||[]).length)h+='<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.5">'+(en?'Trial copies running now: ':'Copies d\u2019essai en cours : ')+j.twins.map(t=>esc(en?t.title_en:t.title_fr)+' ('+(t.trades||0)+' trades, '+({ahead:en?'ahead':'devant',behind:en?'behind':'derri\u00e8re',even:en?'even':'\u00e9galit\u00e9',early:en?'too early':'trop t\u00f4t'}[t.status]||'')+')').join(' \u00b7 ')+'. '+(en?'Details in the lab.':'D\u00e9tails dans le labo.')+'</div>';
+ h+='<div style="font-size:.7rem;color:var(--muted);margin-top:12px;line-height:1.5">'+(en?'The tests use one-minute price candles from MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). An idea is marked A when it does better on both halves of the period and overall, B when it does a little better, C otherwise. These rules have not changed since 28 September 2026. The engine and every night\u2019s results are published.':'Les tests utilisent les bougies d\u2019une minute de MetaTrader 5 ('+esc(j.symbol||'BTCUSD')+'). Une id\u00e9e est not\u00e9e A quand elle fait mieux sur les deux moiti\u00e9s de la p\u00e9riode et au total, B quand elle fait un peu mieux, C sinon. Ces r\u00e8gles n\u2019ont pas chang\u00e9 depuis le 28 septembre 2026. Le moteur et les r\u00e9sultats de chaque nuit sont publi\u00e9s.')+'</div>';
  sheet('<div style="max-height:78vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+h+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 async function loadWhy(d){const el=document.getElementById('whycard');if(!el)return;
  if(HIDEGAUGES()||d.public){el.style.display='none';return;}
@@ -6870,20 +6871,24 @@ def proof_payload():
         p = {}
     base = (p.get("base") or {})
     full, h1, h2 = base.get("full") or {}, base.get("h1") or {}, base.get("h2") or {}
+    days = round(p.get("days") or 0)
     lights = []
-    # 1 - the replay still makes money
+    # 1 - on the past, the strategy makes money
     if full.get("net") is None:
-        lights.append({"k": "replay", "c": "grey", "fr": "Pas encore de rejeu cette nuit.", "en": "No replay yet tonight."})
+        lights.append({"k": "replay", "c": "grey", "fr": "Pas encore de test cette nuit.", "en": "No test yet tonight."})
     elif full["net"] > 0 and h1.get("net", 0) > 0 and h2.get("net", 0) > 0:
-        lights.append({"k": "replay", "c": "green", "fr": f"Sur les {round(p.get('days') or 0)} derniers jours rejou\u00e9s, le robot gagne ({full['net']:+.0f} $) et les deux moiti\u00e9s de la p\u00e9riode gagnent aussi.",
-                       "en": f"Over the last {round(p.get('days') or 0)} days replayed, the robot makes money ({full['net']:+.0f} $) and both halves of the period do too."})
+        lights.append({"k": "replay", "c": "green",
+                       "fr": f"Sur les {days} derniers jours, la strat\u00e9gie gagne ({full['net']:+.0f} $), et elle gagne sur chacune des deux moiti\u00e9s de la p\u00e9riode.",
+                       "en": f"Over the last {days} days the strategy makes money ({full['net']:+.0f} $), and it does so on each half of the period."})
     elif full["net"] > 0:
-        lights.append({"k": "replay", "c": "amber", "fr": f"Le rejeu gagne au total ({full['net']:+.0f} $) mais une moiti\u00e9 de la p\u00e9riode perd ({h1.get('net',0):+.0f} $ puis {h2.get('net',0):+.0f} $). \u00c0 surveiller.",
-                       "en": f"The replay wins overall ({full['net']:+.0f} $) but one half of the period loses ({h1.get('net',0):+.0f} $ then {h2.get('net',0):+.0f} $). Watch it."})
+        lights.append({"k": "replay", "c": "amber",
+                       "fr": f"Sur les {days} derniers jours, la strat\u00e9gie gagne au total ({full['net']:+.0f} $) mais perd sur une moiti\u00e9 de la p\u00e9riode ({h1.get('net',0):+.0f} $ puis {h2.get('net',0):+.0f} $). \u00c0 surveiller.",
+                       "en": f"Over the last {days} days the strategy wins overall ({full['net']:+.0f} $) but loses on one half of the period ({h1.get('net',0):+.0f} $ then {h2.get('net',0):+.0f} $). Watch it."})
     else:
-        lights.append({"k": "replay", "c": "red", "fr": f"Le rejeu des {round(p.get('days') or 0)} derniers jours perd ({full['net']:+.0f} $). La strat\u00e9gie est en question.",
-                       "en": f"The replay of the last {round(p.get('days') or 0)} days loses ({full['net']:+.0f} $). The strategy is in question."})
-    # 2 - the real trades follow the replay
+        lights.append({"k": "replay", "c": "red",
+                       "fr": f"Sur les {days} derniers jours, la strat\u00e9gie perd ({full['net']:+.0f} $). Elle est en question.",
+                       "en": f"Over the last {days} days the strategy loses ({full['net']:+.0f} $). It is in question."})
+    # 2 - in real life, it follows the test
     ex, un = p.get("expected") or {}, p.get("union") or {}
     if not un or not ex:
         lights.append({"k": "track", "c": "grey", "fr": "Pas encore assez de vrais trades.", "en": "Not enough real trades yet."})
@@ -6893,27 +6898,29 @@ def proof_payload():
         gap = abs((un.get("net") or 0) - (ex.get("net") or 0))
         tol = 0.5 * abs(ex.get("net") or 0) + 20
         same_sign = ((un.get("net") or 0) >= 0) == ((ex.get("net") or 0) >= 0)
+        since = (un.get("since") or "")
+        since_fr = since[8:10] + "/" + since[5:7] if len(since) >= 10 else since
         if n < 30:
             c = "amber"
-            fr = f"{n} vrais trades depuis le {un.get('since')} : trop peu pour juger. Sur les m\u00eames dates, le rejeu attendait {ex.get('net',0):+.0f} $, les comptes ont fait {un.get('net',0):+.0f} $."
-            en = f"{n} real trades since {un.get('since')}: too few to judge. Over the same dates the replay expected {ex.get('net',0):+.0f} $, the accounts made {un.get('net',0):+.0f} $."
+            fr = f"{n} vrais trades depuis le {since_fr} : trop peu pour juger. Sur les m\u00eames jours, le test attendait {ex.get('net',0):+.0f} $ ; en vrai, {un.get('net',0):+.0f} $."
+            en = f"{n} real trades since {since}: too few to judge. Over the same days the test expected {ex.get('net',0):+.0f} $; in real life, {un.get('net',0):+.0f} $."
         elif same_sign or gap <= tol:
             c = "green"
-            fr = f"Les {n} vrais trades suivent le rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus sur les m\u00eames dates."
-            en = f"The {n} real trades follow the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected over the same dates."
+            fr = f"Les {n} vrais trades suivent le test : {un.get('net',0):+.0f} $ en vrai, {ex.get('net',0):+.0f} $ attendus sur les m\u00eames jours."
+            en = f"The {n} real trades follow the test: {un.get('net',0):+.0f} $ in real life, {ex.get('net',0):+.0f} $ expected over the same days."
         elif gap <= 2 * tol:
             c = "amber"
-            fr = f"Les vrais trades s\u2019\u00e9cartent du rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus. \u00c0 surveiller."
-            en = f"The real trades drift from the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected. Watch it."
+            fr = f"Les vrais trades s\u2019\u00e9loignent du test : {un.get('net',0):+.0f} $ en vrai, {ex.get('net',0):+.0f} $ attendus. \u00c0 surveiller."
+            en = f"The real trades drift from the test: {un.get('net',0):+.0f} $ in real life, {ex.get('net',0):+.0f} $ expected. Watch it."
         else:
             c = "red"
-            fr = f"Les vrais trades ne suivent pas le rejeu : {un.get('net',0):+.0f} $ contre {ex.get('net',0):+.0f} $ attendus."
-            en = f"The real trades do not follow the replay: {un.get('net',0):+.0f} $ against {ex.get('net',0):+.0f} $ expected."
+            fr = f"Les vrais trades ne suivent pas le test : {un.get('net',0):+.0f} $ en vrai, {ex.get('net',0):+.0f} $ attendus."
+            en = f"The real trades do not follow the test: {un.get('net',0):+.0f} $ in real life, {ex.get('net',0):+.0f} $ expected."
         if rs is not None:
-            fr += f" Rejou\u00e9s sur les m\u00eames entr\u00e9es : {rs:+.0f} $."
-            en += f" Replayed on the exact same entries: {rs:+.0f} $."
+            fr += f" Le test sur exactement les m\u00eames entr\u00e9es : {rs:+.0f} $."
+            en += f" The test on exactly the same entries: {rs:+.0f} $."
         lights.append({"k": "track", "c": c, "fr": fr, "en": en})
-    # 3 - no twin beats the robot
+    # 3 - no trial copy beats the robot
     twins = []
     try:
         twins = [t for t in (lab_payload().get("twins") or []) if t.get("status") == "running"]
@@ -6923,31 +6930,31 @@ def proof_payload():
     ready = [t for t in ahead if (t.get("duel") or {}).get("ready")]
     if ready:
         t = ready[0]
-        lights.append({"k": "lab", "c": "red", "fr": f"Un jumeau fait mieux que le robot apr\u00e8s 30 trades : \u00ab {t.get('title_fr')} \u00bb. Kino doit d\u00e9cider.",
-                       "en": f"A twin beats the robot after 30 trades: \u201c{t.get('title_en')}\u201d. Kino must decide."})
+        lights.append({"k": "lab", "c": "red", "fr": f"Une copie d\u2019essai fait mieux que le robot apr\u00e8s 30 trades : \u00ab {t.get('title_fr')} \u00bb. Kino doit d\u00e9cider.",
+                       "en": f"A trial copy beats the robot after 30 trades: \u201c{t.get('title_en')}\u201d. Kino must decide."})
     elif ahead:
         t = ahead[0]
-        lights.append({"k": "lab", "c": "amber", "fr": f"Un jumeau est devant le robot, trop t\u00f4t pour conclure ({(t.get('duel') or {}).get('twin', {}).get('trades', 0)} trades sur 30) : \u00ab {t.get('title_fr')} \u00bb.",
-                       "en": f"A twin is ahead of the robot, too early to conclude ({(t.get('duel') or {}).get('twin', {}).get('trades', 0)} of 30 trades): \u201c{t.get('title_en')}\u201d."})
+        k = ((t.get("duel") or {}).get("twin") or {}).get("trades", 0)
+        lights.append({"k": "lab", "c": "amber", "fr": f"Une copie d\u2019essai est devant le robot, mais c\u2019est trop t\u00f4t pour conclure ({k} trades sur 30) : \u00ab {t.get('title_fr')} \u00bb.",
+                       "en": f"A trial copy is ahead of the robot, but it is too early to conclude ({k} of 30 trades): \u201c{t.get('title_en')}\u201d."})
     else:
-        lights.append({"k": "lab", "c": "green", "fr": f"Aucun des {len(twins)} jumeaux ne fait mieux que le robot pour l\u2019instant. Le robot reste notre meilleure version.",
-                       "en": f"None of the {len(twins)} twins beats the robot for now. The robot is still our best version."})
+        lights.append({"k": "lab", "c": "green", "fr": f"Aucune des {len(twins)} copies d\u2019essai ne fait mieux que le robot pour l\u2019instant. Le robot reste notre meilleure version.",
+                       "en": f"None of the {len(twins)} trial copies beats the robot for now. The robot is still our best version."})
     rank = {"green": 0, "grey": 1, "amber": 2, "red": 3}
     worst = max(lights, key=lambda l: rank[l["c"]])["c"]
     overall = {"green": ("Oui, on reste.", "Yes, we stay."), "grey": ("Trop t\u00f4t pour dire.", "Too early to say."),
-               "amber": ("On reste, en surveillant.", "We stay, and watch."), "red": ("En question.", "In question.")}[worst]
-    out = {"updated": p.get("updated"), "days": p.get("days"), "days_long": p.get("days_long"), "symbol": p.get("symbol"),
+               "amber": ("On reste, en surveillant.", "We stay, and keep watching."), "red": ("En question.", "In question.")}[worst]
+    out = {"updated": p.get("updated"), "days": days, "days_long": p.get("days_long"), "symbol": p.get("symbol"),
            "base": {"full": full, "h1": {k: h1.get(k) for k in ("net", "worst_debt", "trades", "wr")},
                     "h2": {k: h2.get(k) for k in ("net", "worst_debt", "trades", "wr")}},
            "base_long": {"full": {k: v for k, v in ((p.get("base_long") or {}).get("full") or {}).items() if k != "curve"}} if p.get("base_long") else None,
            "expected": ex, "union": {k: v for k, v in un.items() if k != "replay_same_entries"} if un else None,
            "replay_same": (un.get("replay_same_entries") if un else None),
-           "accounts": p.get("accounts") or [], "rules": p.get("rules") or [],
+           "sources": p.get("sources") or {}, "rules": p.get("rules") or [],
            "twins": [{"id": t.get("id"), "title_fr": t.get("title_fr"), "title_en": t.get("title_en"),
                       "status": (t.get("duel") or {}).get("status"), "trades": t.get("trades"),
                       "net": t.get("net"), "real_net": ((t.get("duel") or {}).get("real") or {}).get("net")} for t in twins],
-           "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]},
-           "lot": (base and 0.02)}
+           "lights": lights, "overall": {"c": worst, "fr": overall[0], "en": overall[1]}}
     _PROOF_CACHE.update(t=time.time(), data=out)
     return out
 
