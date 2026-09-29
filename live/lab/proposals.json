@@ -9,8 +9,23 @@
    "why_en": "Both came back as B for the second night running: aiming for 0.6 instead of 0.8 (+$34 tonight, hole 63 -> 45) and skipping Sunday (+$15, slightly smaller hole). Trying the two together.",
    "by": "chercheur",
    "date": "2026-09-28",
-   "status": "pending",
-   "cfg": {"rr": 0.6, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [6], "skip_hours": [], "size_hot": 1.0, "nerv_gate": false, "bullets": 3, "k_streak": 2}
+   "status": "done",
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "verdict": "B",
+   "done": "2026-09-29"
   },
   {
    "id": "nervbul2",
@@ -21,8 +36,142 @@
    "why_en": "In Valère's losses: half happened while the account was already in the red (vs a third of the wins), and 43% happened in a nervous market (vs a quarter of the wins). Cutting both at once: fewer boosts after a loss, and nothing new when the market is nervous.",
    "by": "chercheur",
    "date": "2026-09-28",
+   "status": "done",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": true,
+    "bullets": 2,
+    "k_streak": 2
+   },
+   "verdict": "C",
+   "done": "2026-09-29"
+  },
+  {
+   "id": "rr06_nomon",
+   "title_fr": "Viser 0,6× le risque et ne pas trader le lundi",
+   "title_en": "Aim for 0.6x the risk and skip Monday",
+   "family": "cible",
+   "why_fr": "Les deux dials les plus solides de la semaine, jamais essayés ensemble : viser 0,6 (B trois nuits de suite) et sauter le lundi (A deux nuits de suite). À l'essai avec le harnais : +$244 au lieu de +$168, les deux moitiés de la période gagnantes (+$164 et +$90 - la seconde moitié ne perdait plus), et le plus gros trou tombe de 80 à 38 dollars. C'est le meilleur résultat plein-période vu ce mois-ci.",
+   "why_en": "The two strongest dials of the week, never tried together: aiming for 0.6 (B three nights running) and skipping Monday (A two nights running). Tried with the harness: +$244 instead of +$168, both halves of the period winning (+$164 and +$90 - the second half stopped losing), and the biggest hole drops from 80 to 38 dollars. This is the best full-period result seen this month.",
+   "by": "chercheur",
+   "date": "2026-09-29",
    "status": "pending",
-   "cfg": {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 1.0, "nerv_gate": true, "bullets": 2, "k_streak": 2}
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     0
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   }
+  },
+  {
+   "id": "rr06_bullets4",
+   "title_fr": "Viser 0,6× le risque et quatre renforts au lieu de trois après une perte",
+   "title_en": "Aim for 0.6x the risk and four boosts instead of three after a loss",
+   "family": "cible",
+   "why_fr": "Sortie du cadre : personne n'avait combiné la cible avec l'argent. Avec un gain plus petit, on gagne plus souvent, donc les renforts après une perte se remboursent plus vite - alors pourquoi pas en offrir un de plus ? À l'essai : +$247, le plus haut chiffre de la nuit, les deux moitiés gagnantes (+$175 et +$86), trou à 47 au lieu de 80.",
+   "why_en": "Out of the box: nobody had combined the target with the money dial. With a smaller gain, wins come more often, so the boosts after a loss pay themselves back faster - so why not offer one more? Tried: +$247, the highest figure of the night, both halves winning (+$175 and +$86), hole at 47 instead of 80.",
+   "by": "chercheur",
+   "date": "2026-09-29",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   }
+  },
+  {
+   "id": "rr06_kstreak3",
+   "title_fr": "Viser 0,6× le risque et jusqu'à trois renforts de suite",
+   "title_en": "Aim for 0.6x the risk and up to three boosts in a row",
+   "family": "cible",
+   "why_fr": "Même famille que rr06_bullets4 mais un autre dosage argent : laisser la chaîne de renforts aller jusqu'à trois d'affilée plutôt que d'en ajouter un de plus. À l'essai : +$201, les deux moitiés gagnantes (+$139 et +$73), trou à 51 au lieu de 80. Moins bon que le renfort en plus, mais utile pour comparer les deux façons de doser l'argent avec une cible plus petite.",
+   "why_en": "Same family as rr06_bullets4 but a different money dose: let the boost chain run up to three in a row instead of adding one more boost. Tried: +$201, both halves winning (+$139 and +$73), hole at 51 instead of 80. Weaker than the extra boost, but useful to compare the two ways of dosing the money with a smaller target.",
+   "by": "chercheur",
+   "date": "2026-09-29",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.6,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   }
+  },
+  {
+   "id": "rr05_nomon",
+   "title_fr": "Viser 0,5× le risque et ne pas trader le lundi",
+   "title_en": "Aim for 0.5x the risk and skip Monday",
+   "family": "cible",
+   "why_fr": "Pour savoir si 0,6 est le bon dosage avec le lundi en moins, ou si un peu moins encore ferait mieux. À l'essai : +$186, les deux moitiés gagnantes (+$127 et +$69), trou à 49. Un peu moins bon que 0,6 + lundi (+$244, trou 38) : viser 0,6 reste le meilleur dosage trouvé jusqu'ici avec cette règle du lundi.",
+   "why_en": "To find out whether 0.6 is the right dose with Monday removed, or whether a bit less would do better still. Tried: +$186, both halves winning (+$127 and +$69), hole at 49. A bit weaker than 0.6 + Monday (+$244, hole 38): aiming for 0.6 remains the best dose found so far with this Monday rule.",
+   "by": "chercheur",
+   "date": "2026-09-29",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.5,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     0
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   }
+  },
+  {
+   "id": "ext500_nomon",
+   "title_fr": "Ne pas entrer après une envolée de 500 points, et ne pas trader le lundi",
+   "title_en": "No entry after a 500-point run, and skip Monday",
+   "family": "rythme",
+   "why_fr": "Deux freins du rythme jamais combinés : l'envolée de 500 points (B deux nuits de suite) et le lundi en moins (A deux nuits de suite). À l'essai : +$189, les deux moitiés gagnantes (+$146 et +$55), trou à 50 au lieu de 80. Bon, mais moins fort que la cible plus petite + lundi : le vrai gain de cette nuit vient du dosage de la cible, pas de ce frein-ci.",
+   "why_en": "Two rhythm brakes never combined: the 500-point run (B two nights running) and Monday removed (A two nights running). Tried: +$189, both halves winning (+$146 and +$55), hole at 50 instead of 80. Good, but weaker than the smaller target + Monday: tonight's real gain comes from the target dose, not from this brake.",
+   "by": "chercheur",
+   "date": "2026-09-29",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 500,
+    "skip_wd": [
+     0
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   }
   }
  ]
 }
