@@ -91,7 +91,8 @@ Do NOT edit any other file. Do NOT run git. Do NOT start processes.
  "cfg": {"rr": 0.3-1.5, "n_cont": 0-3, "wait_min": 0-120, "ext_pts": 0-1500, "skip_wd": [0-6],
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
          "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200,
-         "minute_win": [0-59, 0-59], "one_per_hour": true|false}}
+         "minute_win": [0-59, 0-59], "one_per_hour": true|false,
+         "only_kind": ""|"flip"|"cont"}}
 ```
 `debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
 only when the account is still in the red AND the market is nervous.
@@ -116,9 +117,22 @@ the same day against the mirror window, and the answer is no:
   1-29 AND first         C, net +18, and the two halves disagree (-159 / +8)
 The FIRST half of the hour is the WEAKER half, the opposite of the idea, and
 even the better window loses money once it halves the number of trades. Do
-not re-propose a minute window on its own. None of these four dials are in
-the nightly battery, on purpose: re-running proven losers every night only
-gives noise more chances to produce a false A. Every
+not re-propose a minute window on its own.
+
+`only_kind` ("flip" = only the change of direction, "cont" = only the trades
+that follow it) was built by Kino (2026-09-29) to ask "wait for the flip, do
+not take it, then take the continuations after it". Tested the same day:
+  base, both kinds  +168   248 trades, 60.5 % won
+  conts only        C  +116, BOTH halves down (-21 / -25), 57.0 % won
+  flips only        C   +46, 62.7 % won   <- already rejected in the registry
+THE STRUCTURAL FINDING: the two kinds need each other. The flip sets the
+direction and refills the recovery allowance; the continuations harvest it.
+Either half alone destroys the edge, and the split is not even clean -
+dropping the flips leaves 151 trades, not 98, because the recovery state
+changes and more continuations qualify. Do not re-propose taking one kind
+only. None of these five dials are in the nightly battery, on purpose:
+re-running proven losers every night only gives noise more chances to
+produce a false A. Every
 dial you request and Kino approves gets built and appears here; check
 `lab/requests.json` for their status (`open` = not built yet, `built` =
 usable with its `key`, `retired` = it scored C three nights in a row and

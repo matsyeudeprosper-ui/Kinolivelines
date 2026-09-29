@@ -38,7 +38,8 @@ CFG = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip
        "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "lot": 0.02, "debt_nerv_gate": False,
        # 2026-09-29: unknown keys are dropped by the merge below, so every
        # dial the harness knows must exist here or a twin would ignore it
-       "cost_max": 0.0, "min_range": 0.0, "minute_win": [], "one_per_hour": False}
+       "cost_max": 0.0, "min_range": 0.0, "minute_win": [], "one_per_hour": False,
+       "only_kind": ""}
 try:
     for t in json.load(open(os.path.join(LAB, "twins.json"), encoding="utf-8")).get("twins", []):
         if t.get("id") == VID:
@@ -239,6 +240,12 @@ def main():
                     st["cont_left"] -= 1
                 else:
                     say("VT refuse: dette active, continuation deja prise"); continue
+            # the flip above still registers the direction and refills the
+            # recovery allowance even when only_kind says not to trade it
+            if CFG.get("only_kind") == "flip" and not flip:
+                continue
+            if CFG.get("only_kind") == "cont" and flip:
+                say("VT refuse: changement de sens non trade (only_kind=cont)"); continue
             lot = round(LOT * (float(CFG["size_hot"]) if nv >= 1.0 else 1.0), 2)
             tk = mt5.symbol_info_tick(SYMBOL)
             if tk is not None:

@@ -44,7 +44,13 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # new hour, between minute 1 and 29?" minute_win = [lo, hi] keeps
             # entries whose minute of the hour is in that window; one_per_hour
             # allows at most one entry per clock hour.
-            "minute_win": [], "one_per_hour": False}
+            "minute_win": [], "one_per_hour": False,
+            # 2026-09-29 (owner): "wait for the flip, do not take it, then take
+            # the continuations that follow it". only_kind "" = every entry,
+            # "flip" = only the change of direction, "cont" = only the trades
+            # that follow it. The flip still registers (it sets the direction
+            # and refills the recovery allowance), it is simply not traded.
+            "only_kind": ""}
 CFG_KEYS = list(CFG_BASE.keys())
 BLOT = 0.01
 
@@ -183,6 +189,12 @@ def simulate(R, spread, cfg):
                 cont_left -= 1
             else:
                 continue
+        if c["only_kind"] == "flip" and not flip:
+            blocked += 1
+            continue
+        if c["only_kind"] == "cont" and flip:
+            blocked += 1
+            continue
         if c["minute_win"] and not (int(c["minute_win"][0]) <= g.minute <= int(c["minute_win"][1])):
             blocked += 1
             continue
