@@ -1066,6 +1066,30 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .labintro .st div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 8px;text-align:center;font-size:.72rem;color:var(--text2);line-height:1.35}
 .labintro .st b{display:block;font-size:.95rem;color:var(--accent-soft);margin-bottom:2px}
 .labstat .ls b{font-size:.95rem;font-variant-numeric:tabular-nums;letter-spacing:0}
+.jb{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 0 10px;margin-top:10px}
+.jb::-webkit-scrollbar{display:none}
+.jcol{flex:0 0 84%;scroll-snap-align:start;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:10px 10px 6px;min-height:120px}
+.jch{display:flex;align-items:center;gap:8px;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);padding:2px 4px 8px}
+.jch i{width:8px;height:8px;border-radius:99px;display:inline-block}
+.jch b{margin-left:auto;font-size:.8rem;color:var(--text)}
+.jcard{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.jcard h5{margin:0;font-size:.86rem;line-height:1.3;font-weight:700;color:var(--text)}
+.jcard .jl{font-size:.72rem;color:var(--muted2);margin-top:5px;line-height:1.4}
+.jcard .jl b{font-weight:800}
+.jnav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px}
+.jst{display:flex;align-items:flex-start;margin:12px 0 4px;position:relative}
+.jst>div{flex:1;text-align:center;position:relative;font-size:.58rem;color:var(--muted);line-height:1.25;text-transform:uppercase;letter-spacing:.04em}
+.jst>div:not(:last-child)::after{content:"";position:absolute;top:11px;left:50%;width:100%;height:2px;background:var(--border2)}
+.jst>div.done:not(:last-child)::after{background:var(--accent-soft)}
+.jst>div.no:not(:last-child)::after{background:var(--border2)}
+.jst i{display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:99px;margin:0 auto 6px;background:var(--surface3);border:2px solid var(--border2);font-style:normal;font-weight:800;font-size:.66rem;color:var(--muted);position:relative;z-index:1}
+.jst>div.done i{background:var(--accent-soft);border-color:var(--accent-soft);color:#fff}
+.jst>div.now i{box-shadow:0 0 0 4px rgba(59,130,246,.22)}
+.jst>div.no i{background:var(--down-soft);border-color:var(--down-soft);color:#fff}
+.jst>div.done,.jst>div.now{color:var(--text2)}
+.jst small{display:block;font-size:.56rem;color:var(--muted);text-transform:none;letter-spacing:0;margin-top:2px}
+.jev{border-top:1px solid var(--border);padding:8px 0;display:flex;gap:10px;font-size:.8rem;line-height:1.45}
+.jev span{flex:none;width:44px;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.7rem;padding-top:2px}
 .lc{padding:14px 40px 12px 14px;margin-top:10px;position:relative;cursor:pointer}
 .lc .lct{display:flex;align-items:flex-start;gap:11px}
 .lc .lcb{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1rem}
@@ -3992,7 +4016,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
  document.getElementById('lab-stats').className='labstat';document.getElementById('lab-stats').style.cssText='';
  setH(document.getElementById('lab-stats'),tile(en?'ideas':'id\u00e9es',(j.candidates||[]).filter(c=>c.label==='a_tester').length+n('idea')+n('observation'),'var(--warn)','ideas')+tile(en?'to try':'\u00e0 essayer',n('candidate')+n('planned')+(C.auto_ab||0),'#b98cff','tests')+tile(en?'watching':'en observation',n('forward'),'var(--accent-soft)','forward')+tile(en?'in the robot':'dans le robot',n('deployed'),'var(--up-soft)','decisions')+tile(en?'said no':'\u00e9cart\u00e9es',n('rejected'),'var(--muted2)','tests'));
- const T=[['ideas',en?'Ideas':'Id\u00e9es'],['tests',en?'Checked on the past':'V\u00e9rifi\u00e9 sur le pass\u00e9'],['forward',en?'Watching live':'Observ\u00e9 en direct'],['decisions',en?'In the robot':'Dans le robot']];
+ const T=[['ideas',en?'Ideas':'Id\u00e9es'],['board',en?'Board':'Tableau'],['tests',en?'Checked on the past':'V\u00e9rifi\u00e9 sur le pass\u00e9'],['forward',en?'Watching live':'Observ\u00e9 en direct'],['decisions',en?'In the robot':'Dans le robot']];
  setH(document.getElementById('lab-tabs'),T.map(([k,l])=>'<button class="tfc'+(window._labTab===k?' on':'')+'" style="flex:none" onclick="labTab(&#39;'+k+'&#39;)">'+l+'</button>').join(''));
  document.getElementById('lab-hint').textContent='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend');
  const FAM={structure:[en?'how it enters':'comment il entre','var(--accent-soft)'],meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],cible:[en?'gain and loss limits':'gain et limite de perte','#b98cff'],rythme:[en?'when it trades':'quand il trade','#e8743b'],argent:[en?'the money':'l\u2019argent','var(--up-soft)'],donnees:[en?'the data':'les donn\u00e9es','var(--muted2)']};
@@ -4028,6 +4052,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
    return '<div class="kv"><div class="kvt"><b>'+esc(en?c.name_en:c.name_fr)+'</b><span>'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'won, against':'gagn\u00e9s, contre')+' '+pc(c.rest_win)+' '+(en?'for the others':'pour les autres')+(d===null?'':' <b style="display:inline;font-size:.74rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+'</span></div>'+chip(l[0],l[1])+'</div>';}).join('')+'</div>';
   h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'Under 30 trades a number means little; it is shown so you can watch it grow.':'Sous 30 trades, un chiffre veut dire peu de chose ; on le montre pour le voir grandir.')+'</div>';
   h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas on the table':'Id\u00e9es sur la table')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
+ }else if(k==='board'){h+=labBoard(en);
  }else if(k==='tests'){
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We replay the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On rejoue les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
    '<div class="st"><div><b style="color:var(--up-soft)">A</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">C</b>'+(en?'no':'non')+'</div></div></div>';
@@ -4061,6 +4086,60 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';
  }
  setH(document.getElementById('lab-body'),h);
 }
+// ---- 2026-09-29 (owner): the story board - where every idea stands ----
+const JCOLS=[['idea','Id\u00e9es','Ideas','var(--warn)'],['replay','Rejou\u00e9es sur le pass\u00e9','Replayed on the past','#b98cff'],['test','En test pour de faux','Tested for pretend','var(--accent-soft)'],['decided','D\u00e9cid\u00e9es','Decided','var(--text2)'],['live','Dans le robot','In the robot','var(--up-soft)']];
+function jGet(id){return ((window._lab||{}).journeys||[]).find(j=>j.id===id||(j.keys||[]).indexOf(id)>=0)||null;}
+function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
+ if(j.col==='live')return (en?'in the robot since ':'dans le robot depuis le ')+_escS((S.live||{}).date||'');
+ if(j.col==='decided'){const d=S.decision||{};return (d.d==='yes'?(en?'<b style="color:var(--up-soft)">yes</b>, waiting to go in the robot':'<b style="color:var(--up-soft)">oui</b>, en attente d\u2019entrer dans le robot'):(en?'<b style="color:var(--down-soft)">no</b>, kept so nobody proposes it again':'<b style="color:var(--down-soft)">non</b>, gard\u00e9e pour ne pas la reproposer'))+(d.date?' \u00b7 '+_escS(d.date):'');}
+ if(j.col==='test'){const t=S.test||{};if(t.forward)return en?'watched live, no money':'observ\u00e9e en direct, sans argent';return (t.status==='stopped'?(en?'twin stopped':'jumeau arr\u00eat\u00e9'):(en?'twin playing for pretend':'jumeau qui joue pour de faux'))+' \u00b7 '+(t.days||0)+' '+(en?'d':'j')+' \u00b7 '+(t.trades||0)+' trades \u00b7 <b style="color:'+((t.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(t.net)+'</b>';}
+ if(j.col==='replay'){const r=S.replay||{};const c={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)'}[r.verdict]||'var(--muted)';return '<b style="color:'+c+'">'+_escS(r.verdict||'\u2014')+'</b>'+(r.streak>1?' '+r.streak+(en?' nights in a row':' nuits de suite'):(r.nights?' '+(en?'last night':'cette nuit'):(r.hand?(en?' by hand':' \u00e0 la main'):(en?' pre-test':' pr\u00e9-test'))))+(r.diff_net!==undefined?' \u00b7 '+(en?'money ':'argent ')+mn(r.diff_net)+' \u00b7 '+(en?'hole ':'trou ')+mn(r.diff_worst):'');}
+ return en?'waiting for a replay':'attend d\u2019\u00eatre rejou\u00e9e';}
+function labBoard(en){const J=(window._lab||{}).journeys||[];
+ let h='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'Where every idea stands':'O\u00f9 en est chaque id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Five columns, left to right: an idea is born, we replay it on the past, a twin tries it for pretend, Kino decides, it goes in the robot. Swipe to move between columns; tap a card for its story.':'Cinq colonnes, de gauche \u00e0 droite : une id\u00e9e na\u00eet, on la rejoue sur le pass\u00e9, un jumeau l\u2019essaie pour de faux, Kino d\u00e9cide, elle entre dans le robot. Glissez pour changer de colonne ; touchez une carte pour son histoire.')+'</div></div>';
+ h+='<div class="jnav">'+JCOLS.map(([k,fr,eg,c],i)=>'<button class="tfc" style="flex:none" onclick="jGo('+i+')"><i style="display:inline-block;width:7px;height:7px;border-radius:99px;background:'+c+';margin-right:6px"></i>'+(en?eg:fr)+' <b>'+J.filter(j=>j.col===k).length+'</b></button>').join('')+'</div>';
+ h+='<div class="jb" id="jb">'+JCOLS.map(([k,fr,eg,c])=>{const L=J.filter(j=>j.col===k);
+  return '<div class="jcol"><div class="jch"><i style="background:'+c+'"></i>'+(en?eg:fr)+'<b>'+L.length+'</b></div>'+(L.length?L.map(j=>'<div class="jcard" onclick="labJourney(&#39;'+_escS(j.id)+'&#39;)" role="button" tabindex="0"><h5>'+_escS(en?j.title_en:j.title_fr)+'</h5><div class="jl">'+jLine(j,en)+'</div></div>').join(''):'<div style="font-size:.76rem;color:var(--muted);padding:6px 4px 10px">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>';}).join('')+'</div>';
+ // open on the first column that has something in it
+ const first=JCOLS.findIndex(([k])=>J.some(j=>j.col===k));if(first>0)setTimeout(()=>{const b=document.getElementById('jb');const c=b&&b.children[first];if(c)b.scrollLeft=c.offsetLeft-b.offsetLeft;},60);
+ return h;}
+function jGo(i){const b=document.getElementById('jb');if(!b)return;const c=b.children[i];if(c)b.scrollTo({left:c.offsetLeft-b.offsetLeft,behavior:'smooth'});}
+function jStrip(j,en){const S=j.steps||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Replayed':'Rejou\u00e9e',(S.replay||{}).last],['test',en?'Tested':'En test',(S.test||{}).started],['decided',en?'Decided':'D\u00e9cid\u00e9e',(S.decision||{}).date],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
+ const idx={idea:1,replay:2,test:3,decided:4,live:5};const cur=idx[j.col]||1;const no=(S.decision||{}).d==='no';
+ return '<div class="jst">'+N.map(([k,l,d],i)=>{const n=i+1;const done=n<=cur;const cls=(done?'done':'')+(n===cur?' now':'')+(no&&n===4?' no':'')+(no&&n===5?' no':'');
+  return '<div class="'+cls+'"><i>'+(no&&n===4?'\u00d7':(done&&n<cur?'\u2713':n))+'</i>'+l+'<small>'+(d?_escS(String(d).slice(5)):'\u00a0')+'</small></div>';}).join('')+'</div>';}
+function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
+ const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];
+ const chips=(j.cfg?dialChips(j.cfg,en):[]).map(([t,c])=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);margin:0 4px 4px 0">'+_escS(t)+'</span>').join('');
+ const r=S.replay||{};const tile=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const tiles=(r.diff_net!==undefined)?'<div style="display:flex;gap:6px;margin-top:8px">'+tile(en?'money':'argent',mn(r.diff_net),(r.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(r.diff_worst),(r.diff_worst||0)<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',mn(r.h1)+' / '+mn(r.h2),((r.h1||0)>0&&(r.h2||0)>0)?'var(--up-soft)':'var(--text)')+'</div>':'';
+ const note=en?(j.note_en||j.note_fr||''):(j.note_fr||j.note_en||'');const nums=en?(j.nums_en||''):(j.nums_fr||'');
+ const ev=(j.events||[]).map(e=>'<div class="jev"><span>'+_escS(String(e.d||'').slice(5))+'</span><div>'+_escS(en?e.en:e.fr)+'</div></div>').join('');
+ let adm=false;try{adm=!!((window._d||{}).is_master||localStorage.getItem('owl_adm'));}catch(e){}
+ let btns='';
+ if(adm&&j.col!=='live'){const dec=S.decision||{};const canTwin=(j.col==='replay'||j.col==='idea')&&!!j.cfg||(j.col==='replay'&&j.kind!=='registry');
+  btns='<div class="lbl" style="margin-top:14px">'+(en?'Your call, Kino':'\u00c0 vous, Kino')+'</div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
+   (canTwin&&!S.test?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;twin&#39;)">'+(en?'Start a twin':'Lancer un jumeau')+'</button>':'')+
+   (dec.d!=='yes'?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px;background:var(--up-soft);color:#08120c" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;yes&#39;)">'+(en?'Approve for the robot':'Approuver pour le robot')+'</button>':'')+
+   (dec.d!=='no'?'<button class="shbtn shghost" style="flex:1;margin:0;padding:11px;color:var(--down-soft)" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;no&#39;)">'+(en?'Reject':'Rejeter')+'</button>':'')+'</div>'+
+   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.4">'+(en?'Approve = the developer puts it in the robot, demo first. Reject = its twin stops and the idea is kept as a no.':'Approuver = le d\u00e9veloppeur la met dans le robot, d\u00e9mo d\u2019abord. Rejeter = son jumeau s\u2019arr\u00eate et l\u2019id\u00e9e est gard\u00e9e comme un non.')+'</div>';}
+ sheet('<div style="display:flex;align-items:center;gap:8px;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:'+col[3]+'"><i style="display:inline-block;width:8px;height:8px;border-radius:99px;background:'+col[3]+'"></i>'+(en?col[2]:col[1])+'<span style="margin-left:auto;color:var(--muted)">'+_escS(j.date||'')+'</span></div>'+
+  '<h3 style="margin:6px 0 2px">'+_escS(en?j.title_en:j.title_fr)+'</h3>'+jStrip(j,en)+
+  (chips?'<div class="lbl" style="margin-top:10px">'+(en?'What changes':'Ce qui change')+'</div><div style="margin-top:6px">'+chips+'</div>':'')+
+  (tiles?'<div class="lbl" style="margin-top:10px">'+(en?'Against the robot as it is':'Contre le robot tel qu\u2019il est')+'</div>'+tiles:'')+
+  (note?'<div class="lbl" style="margin-top:12px">'+(en?'The idea':'L\u2019id\u00e9e')+'</div><p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:6px 0 0">'+_escS(note)+'</p>':'')+
+  (nums?'<p style="font-size:.8rem;color:var(--text2);margin:6px 0 0;line-height:1.5">'+_escS(nums)+'</p>':'')+
+  '<div class="lbl" style="margin-top:12px">'+(en?'Its story':'Son histoire')+'</div><div style="max-height:34vh;overflow-y:auto;margin-top:4px">'+(ev||'<div class="jev"><span></span><div>'+(en?'Nothing yet.':'Rien encore.')+'</div></div>')+'</div>'+btns+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
+async function labDecide(id,d){const en=LANG()==='en';const j=jGet(id)||{};const t=en?(j.title_en||id):(j.title_fr||id);
+ const Q={twin:[en?'Start a twin?':'Lancer un jumeau ?',en?'A copy of the robot will try this idea for pretend, next to the real one, from now on.':'Une copie du robot essaiera cette id\u00e9e pour de faux, \u00e0 c\u00f4t\u00e9 du vrai, \u00e0 partir de maintenant.',en?'Start':'Lancer'],
+  yes:[en?'Approve for the robot?':'Approuver pour le robot ?',en?'It goes to the developer to put in the robot, demo account first.':'Elle part chez le d\u00e9veloppeur pour entrer dans le robot, compte d\u00e9mo d\u2019abord.',en?'Approve':'Approuver'],
+  no:[en?'Reject this idea?':'Rejeter cette id\u00e9e ?',en?'Its twin stops. The idea stays in the lab as a no.':'Son jumeau s\u2019arr\u00eate. L\u2019id\u00e9e reste dans le labo comme un non.',en?'Reject':'Rejeter']}[d];
+ const pw=await askPwd(Q[0],'<b>'+_escS(t)+'</b><br>'+Q[1],Q[2],d==='no');if(!pw)return;
+ const r=await fetch(AB()+'lab_decide',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(id)+'&d='+d+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let ok=false,msg='';try{const x=await r.json();ok=!!x.ok;msg=x.err||x.msg||'';}catch(e){}
+ if(!ok){await info('&#10060; <h3>'+(msg==='bad password'?(en?'Wrong password.':'Mot de passe incorrect.'):_escS(msg||(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.')))+'</h3>');return;}
+ toast(en?'Saved':'Enregistr\u00e9',1800);window._labT=0;await loadLab(window._d||{});labJourney(id);}
 // a proposal as a card: what changes (dial chips), why in two lines, the
 // pre-test tiles when the chercheur ran the engine, tap for the full text
 const DIAL_BASE={rr:0.8,n_cont:1,wait_min:0,ext_pts:0,size_hot:1.0,nerv_gate:false,debt_nerv_gate:false,bullets:3,k_streak:2};
@@ -4087,7 +4166,8 @@ function propCard(p,en){const esc=_escS;const chips=dialChips(p.cfg,en).map(([t,
   '<div class="lcm"><span>'+esc(p.date||'')+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Read':'Lire')+' \u203a</span></div></div>';}
 function labProp(id){const j=window._lab;if(!j)return;const p=(j.proposals||[]).find(x=>x.id===id);if(!p)return;const en=LANG()==='en';const esc=_escS;
  const chips=dialChips(p.cfg,en).map(([t,c])=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);margin:0 4px 4px 0">'+esc(t)+'</span>').join('');
- sheet('<div style="color:#b98cff;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase">'+(en?'The chercheur proposes':'Le chercheur propose')+' \u00b7 '+esc(p.date||'')+'</div><h3 style="margin:6px 0 10px">'+esc(en?p.title_en:p.title_fr)+'</h3>'+
+ const _jj=jGet(id);
+ sheet('<div style="color:#b98cff;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase">'+(en?'The chercheur proposes':'Le chercheur propose')+' \u00b7 '+esc(p.date||'')+'</div><h3 style="margin:6px 0 4px">'+esc(en?p.title_en:p.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+esc(id)+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+
   '<div class="lbl">'+(en?'What changes':'Ce qui change')+'</div><div style="margin:6px 0 12px">'+chips+'</div>'+
   '<div class="lbl">'+(en?'Why':'Pourquoi')+'</div><p style="font-size:.95rem;line-height:1.6;color:var(--text);margin:6px 0 0;max-height:46vh;overflow-y:auto">'+esc(en?(p.why_en||''):(p.why_fr||''))+'</p>'+
   '<div style="font-size:.74rem;color:var(--muted);margin-top:10px">'+(en?'Replayed tonight by the engine, with the fixed rules. Its mark shows tomorrow under \u201cV\u00e9rifi\u00e9 sur le pass\u00e9\u201d.':'Rejou\u00e9 cette nuit par le moteur, avec les r\u00e8gles fixes. Sa note appara\u00eet demain sous \u00ab V\u00e9rifi\u00e9 sur le pass\u00e9 \u00bb.')+'</div>'+
@@ -4118,7 +4198,8 @@ function storyPaint(){const st=window._story;if(!st)return;const en=LANG()==='en
   '<div style="display:flex;gap:8px"><button class="shbtn shghost" style="flex:1;margin:0" '+(st.i===0?'disabled':'')+' onclick="window._story.i--;storyPaint()">'+(en?'Back':'Retour')+'</button>'+(st.i<st.S.length-1?'<button class="shbtn shmain" style="flex:1;margin:0" onclick="window._story.i++;storyPaint()">'+(en?'Next':'Suivant')+'</button>':'<button class="shbtn shmain" style="flex:1;margin:0" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>')+'</div>';
  let x0=null;el.ontouchstart=e=>{x0=e.touches[0].clientX;};el.ontouchend=e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(dx<-50&&st.i<st.S.length-1){st.i++;storyPaint();}else if(dx>50&&st.i>0){st.i--;storyPaint();}};}
 function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).find(x=>x.id===id);if(!it)return;const en=LANG()==='en';
- sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3><p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
+ const _jj=jGet(id);
+ sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+id+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+'<p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
   '<div class="lbl" style="margin-top:8px">'+(en?'Numbers':'Les chiffres')+'</div><p style="font-size:.86rem;color:var(--text2)">'+(en?it.nums_en:it.nums_fr)+'</p>'+
   '<div class="lbl" style="margin-top:8px">'+(en?'Where':'O\u00f9')+'</div><p style="font-size:.8rem;color:var(--muted2)">'+(it.src||'-')+' \u00b7 '+(it.date||'')+' \u00b7 '+(en?'verdict':'verdict')+' '+(it.verdict||'\u2014')+' \u00b7 '+(en?'robot':'robot')+' : '+(it.robot||'non')+'</p>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
@@ -6353,6 +6434,238 @@ def lab_candidates(J):
                     "h1n": len(h1), "h2n": len(h2), "agree": agree, "label": label})
     return out
 
+# ---- 2026-09-29 (owner): "is there a way to see how an idea is doing, has
+# it moved to testing, was it approved, is it live in the bot now, is there
+# a story board?" One journey per idea, derived from the files that already
+# exist (registry, proposals, auto_history, twins) plus lab/decisions.json
+# written by the owner's Approuver / Rejeter. Five steps:
+#   1 idea -> 2 replayed on the past -> 3 tested for pretend -> 4 decided -> 5 in the robot
+LAB_ALIAS = {"twin_06": "rr06", "half_tp": "rr04", "sunday": "nosun", "weekend": "nowe",
+             "wait": "wait30", "sizehot": "hothalf"}
+LAB_DEC = os.path.join(DIR, "lab", "decisions.json")
+
+
+def _lab_hist():
+    rows = []
+    try:
+        with open(os.path.join(DIR, "lab", "auto_history.jsonl"), encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    rows.append(json.loads(ln))
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    return rows
+
+
+def lab_journeys(items, props, twins, auto, decisions):
+    hist = _lab_hist()
+    by_id = {}
+    for r in hist:
+        by_id.setdefault(r.get("id"), []).append(r)
+    av = {v.get("id"): v for v in (auto.get("variants") or [])}
+    tw = {t.get("id"): t for t in twins}
+    dec = decisions.get("decisions", {}) if isinstance(decisions, dict) else {}
+    base = auto.get("base") or {}
+    out = []
+    seen = set()
+
+    def build(jid, keys, title_fr, title_en, kind, fam, note_fr, note_en, nums_fr, nums_en, src, date, reg=None, prop=None):
+        ev = []
+        st = {"idea": {"date": date, "src": src}}
+        who_fr = {"registry": "Une id\u00e9e de Kino ou des vrais trades", "proposal": "Propos\u00e9e par le chercheur",
+                  "twin": "Lanc\u00e9e par le chercheur apr\u00e8s un A"}
+        who_en = {"registry": "An idea from Kino or the real trades", "proposal": "Proposed by the chercheur",
+                  "twin": "Started by the chercheur after an A"}
+        ev.append({"d": date or "", "fr": who_fr.get(kind, ""), "en": who_en.get(kind, ""), "k": "idea"})
+        # 2 - replayed on the past
+        rows = []
+        for k in keys:
+            rows += by_id.get(k, [])
+        rows.sort(key=lambda r: r.get("d", ""))
+        rp = None
+        if rows:
+            last = rows[-1]
+            streak = 0
+            for r in reversed(rows):
+                if r.get("verdict") == last.get("verdict"):
+                    streak += 1
+                else:
+                    break
+            nights = len({r.get("d") for r in rows})
+            rp = {"verdict": last.get("verdict"), "nights": nights, "streak": streak, "last": last.get("d"),
+                  "trades": last.get("trades")}
+            v = next((av[k] for k in keys if k in av), None)
+            if v:
+                rp.update({"diff_net": v.get("diff_net"), "diff_worst": v.get("diff_worst"),
+                           "h1": round(((v.get("h1") or {}).get("net") or 0) - ((base.get("h1") or {}).get("net") or 0), 2),
+                           "h2": round(((v.get("h2") or {}).get("net") or 0) - ((base.get("h2") or {}).get("net") or 0), 2)})
+            first = rows[0]
+            ev.append({"d": first.get("d", ""), "fr": "Rejou\u00e9e sur le pass\u00e9 pour la premi\u00e8re fois : " + str(first.get("verdict")),
+                       "en": "Replayed on the past for the first time: " + str(first.get("verdict")), "k": "replay"})
+            if nights > 1:
+                ev.append({"d": last.get("d", ""), "fr": "Derni\u00e8re nuit : " + str(last.get("verdict")) + (" (" + str(streak) + " nuits de suite)" if streak > 1 else ""),
+                           "en": "Last night: " + str(last.get("verdict")) + (" (" + str(streak) + " nights in a row)" if streak > 1 else ""), "k": "replay"})
+        elif prop and prop.get("pretest"):
+            pt = prop["pretest"]
+            rp = {"verdict": pt.get("verdict"), "nights": 0, "streak": 0, "last": (pt.get("at") or "")[:10], "pretest": True,
+                  "diff_net": round((pt.get("net") or 0) - (pt.get("base_net") or 0), 2),
+                  "diff_worst": round((pt.get("worst") or 0) - (pt.get("base_worst") or 0), 2),
+                  "h1": round((pt.get("h1") or 0) - (pt.get("base_h1") or 0), 2), "h2": round((pt.get("h2") or 0) - (pt.get("base_h2") or 0), 2)}
+            ev.append({"d": max((pt.get("at") or "")[:10], date or ""), "fr": "Pr\u00e9-test du chercheur : " + str(pt.get("verdict")),
+                       "en": "The chercheur\u2019s pre-test: " + str(pt.get("verdict")), "k": "replay"})
+        elif reg and reg.get("verdict") in ("A", "B", "C"):
+            rp = {"verdict": reg.get("verdict"), "nights": 0, "streak": 0, "last": reg.get("date"), "hand": True}
+            ev.append({"d": reg.get("date", ""), "fr": "V\u00e9rifi\u00e9e \u00e0 la main sur le pass\u00e9 : " + reg.get("verdict"),
+                       "en": "Checked by hand on the past: " + reg.get("verdict"), "k": "replay"})
+        if rp:
+            st["replay"] = rp
+        # 3 - tested for pretend
+        t = next((tw[k] for k in keys if k in tw), None)
+        if t:
+            started = (t.get("started") or "")[:10]
+            days = 0
+            try:
+                days = max(0, int((time.time() - datetime.fromisoformat(t["started"]).timestamp()) / 86400))
+            except Exception:
+                pass
+            st["test"] = {"started": started, "days": days, "trades": t.get("trades"), "net": t.get("net"),
+                          "win": t.get("win"), "alive": t.get("alive"), "status": t.get("status"), "by": t.get("by")}
+            ev.append({"d": started, "fr": "Un jumeau joue pour de faux" + (" (lanc\u00e9 par Kino)" if t.get("by") == "owner" else " (lanc\u00e9 par le chercheur)"),
+                       "en": "A twin plays for pretend" + (" (started by Kino)" if t.get("by") == "owner" else " (started by the chercheur)"), "k": "test"})
+            if t.get("status") == "stopped":
+                ev.append({"d": (t.get("stopped") or "")[:10], "fr": "Jumeau arr\u00eat\u00e9", "en": "Twin stopped", "k": "test"})
+        elif reg and reg.get("status") == "forward":
+            st["test"] = {"started": reg.get("date"), "days": None, "forward": True}
+            ev.append({"d": reg.get("date", ""), "fr": "Observ\u00e9e en direct, sans argent", "en": "Watched live, no money", "k": "test"})
+        # 4 - decided
+        d = next((dec[k] for k in keys if k in dec), None)
+        if d:
+            st["decision"] = {"d": d.get("d"), "date": d.get("date"), "note": d.get("note", ""), "by": "Kino"}
+            ev.append({"d": d.get("date", ""), "fr": ("Kino a dit oui" if d.get("d") == "yes" else "Kino a dit non") + ((" : " + d.get("note")) if d.get("note") else ""),
+                       "en": ("Kino said yes" if d.get("d") == "yes" else "Kino said no") + ((": " + d.get("note")) if d.get("note") else ""), "k": "decision"})
+        elif reg and reg.get("status") == "rejected":
+            st["decision"] = {"d": "no", "date": reg.get("date"), "by": "Kino"}
+            ev.append({"d": reg.get("date", ""), "fr": "\u00c9cart\u00e9e : les chiffres ont dit non", "en": "Dropped: the numbers said no", "k": "decision"})
+        elif reg and reg.get("status") == "deployed":
+            st["decision"] = {"d": "yes", "date": reg.get("date"), "by": "Kino"}
+        # 5 - in the robot
+        if reg and reg.get("status") == "deployed":
+            st["live"] = {"date": reg.get("date")}
+            ev.append({"d": reg.get("date", ""), "fr": "Dans le robot", "en": "In the robot", "k": "live"})
+        # where it stands
+        if "live" in st:
+            step, col = 5, "live"
+        elif "decision" in st:
+            step, col = 4, "decided"
+        elif "test" in st:
+            step, col = 3, "test"
+        elif "replay" in st:
+            step, col = 2, "replay"
+        else:
+            step, col = 1, "idea"
+        ev = [e for e in ev if e.get("fr")]
+        ev.sort(key=lambda e: (0 if e.get("k") == "idea" else 1, e.get("d") or ""))
+        out.append({"id": jid, "keys": keys, "title_fr": title_fr, "title_en": title_en, "kind": kind, "family": fam,
+                    "note_fr": note_fr, "note_en": note_en, "nums_fr": nums_fr, "nums_en": nums_en, "src": src,
+                    "date": date, "steps": st, "step": step, "col": col, "events": ev,
+                    "cfg": (prop or {}).get("cfg") or (t or {}).get("cfg"),
+                    "reg_status": (reg or {}).get("status"), "robot": (reg or {}).get("robot")})
+        seen.update(keys)
+
+    for it in items:
+        keys = [it["id"]] + ([LAB_ALIAS[it["id"]]] if it["id"] in LAB_ALIAS else [])
+        build(it["id"], keys, it.get("title_fr"), it.get("title_en"), "registry", it.get("family"), it.get("note_fr"), it.get("note_en"),
+              it.get("nums_fr"), it.get("nums_en"), it.get("src"), it.get("date"), reg=it)
+    for p in props:
+        if p.get("id") in seen:
+            continue
+        build(p["id"], [p["id"]], p.get("title_fr"), p.get("title_en"), "proposal", p.get("family"), p.get("why_fr"), p.get("why_en"),
+              "", "", "chercheur", p.get("date"), prop=p)
+    for t in twins:
+        if t.get("id") in seen:
+            continue
+        build(t["id"], [t["id"]], t.get("title_fr"), t.get("title_en"), "twin", "rythme", "", "", "", "", "chercheur",
+              (t.get("started") or "")[:10])
+    order = {"live": 0, "decided": 1, "test": 2, "replay": 3, "idea": 4}
+    out.sort(key=lambda j: (order.get(j["col"], 9), j.get("date") or ""), reverse=False)
+    return out
+
+
+def _lab_cfg_for(jid):
+    """The dial config behind an idea id: a proposal, a twin, or a battery line."""
+    try:
+        for p in json.load(open(os.path.join(DIR, "lab", "proposals.json"), encoding="utf-8")).get("proposals", []):
+            if p.get("id") == jid and isinstance(p.get("cfg"), dict):
+                return p.get("title_fr"), p.get("title_en"), p["cfg"]
+    except Exception:
+        pass
+    try:
+        sys.path.insert(0, DIR)
+        import lab_researcher as LR
+        for vid, fr, en, fam, cfg in LR.BATTERY:
+            if vid == jid:
+                return fr, en, cfg
+    except Exception:
+        pass
+    return None
+
+
+def lab_decide(jid, d, note):
+    """Owner's Approuver / Rejeter / Lancer un jumeau. Returns (ok, msg)."""
+    jid = LAB_ALIAS.get(jid, jid) if d == "twin" else jid
+    try:
+        dec = json.load(open(LAB_DEC, encoding="utf-8"))
+    except Exception:
+        dec = {"decisions": {}}
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if d in ("yes", "no"):
+        dec.setdefault("decisions", {})[jid] = {"d": d, "date": today, "note": (note or "")[:200], "by": "owner"}
+        tmp = LAB_DEC + ".tmp"
+        json.dump(dec, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp, LAB_DEC)
+    if d == "no":
+        # a rejected idea's twin stops (owner 2026-09-29: auto-delete what failed)
+        try:
+            twp = os.path.join(DIR, "lab", "twins.json")
+            tw = json.load(open(twp, encoding="utf-8"))
+            hit = False
+            for t in tw.get("twins", []):
+                if t.get("id") in (jid, LAB_ALIAS.get(jid)) and t.get("status") == "running":
+                    t["status"] = "stopped"; t["stopped"] = today; hit = True
+                    subprocess.Popen(["powershell", "-NoProfile", "-Command",
+                                      "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*bos_paper_variant.py " + t["id"] + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"],
+                                     creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            if hit:
+                tmp = twp + ".tmp"
+                json.dump(tw, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                os.replace(tmp, twp)
+        except Exception:
+            pass
+    if d == "twin":
+        got = _lab_cfg_for(jid)
+        if not got:
+            return False, "no dials for this idea"
+        fr, en, cfg = got
+        try:
+            sys.path.insert(0, DIR)
+            import lab_researcher as LR
+            import harness as H
+            ok = LR.ensure_twin(jid, fr, en, H.cfg_of(cfg), "owner")
+            if ok:
+                tw = json.load(open(os.path.join(DIR, "lab", "twins.json"), encoding="utf-8"))
+                for t in tw.get("twins", []):
+                    if t.get("id") == jid:
+                        t["by"] = "owner"
+                tmp = os.path.join(DIR, "lab", "twins.json.tmp")
+                json.dump(tw, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                os.replace(tmp, os.path.join(DIR, "lab", "twins.json"))
+        except Exception as e:
+            return False, str(e)[:80]
+    _LAB_CACHE.update(t=0.0, data=None)
+    return True, "ok"
+
 
 def lab_payload():
     if _LAB_CACHE["data"] is not None and time.time() - _LAB_CACHE["t"] < 120:
@@ -6426,6 +6739,10 @@ def lab_payload():
            "auto": {"updated": auto.get("updated"), "days": auto.get("days"), "counts": auto.get("counts", {}),
                     "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes")},
            "note": note, "proposals": props[-20:], "twins": twins, "requests": requests}
+    try:
+        out["journeys"] = lab_journeys(items, props, twins, auto, _lj("decisions.json", {}))
+    except Exception as e:
+        out["journeys"] = []; out["journeys_err"] = str(e)[:100]
     _LAB_CACHE.update(t=time.time(), data=out)
     return out
 
@@ -8172,6 +8489,32 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "lab_decide":
+            # 2026-09-29: the owner's Approuver / Rejeter / Lancer un jumeau on an idea
+            u = user_by_token(_parts[0])
+            if not (is_admin(u) or admin_cookie_ok(self.headers)):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _up9
+                _f9 = _up9.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                _pw = (_f9.get("pwd", [""])[0] or "").strip()
+                _id = (_f9.get("id", [""])[0] or "").strip()[:40]
+                _d = (_f9.get("d", [""])[0] or "").strip()
+                _note = (_f9.get("note", [""])[0] or "").strip()
+                if not master_pwd_ok(_pw):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                if _d not in ("yes", "no", "twin") or not _id:
+                    self._send(json.dumps({"ok": False, "err": "bad request"}), "application/json")
+                    return
+                ok, msg = lab_decide(_id, _d, _note)
+                self._send(json.dumps({"ok": ok, "msg": msg}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "nest_pause":
             # master pauses/resumes any member (master pwd gated)
