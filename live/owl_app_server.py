@@ -1066,6 +1066,24 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .labintro .st div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 8px;text-align:center;font-size:.72rem;color:var(--text2);line-height:1.35}
 .labintro .st b{display:block;font-size:.95rem;color:var(--accent-soft);margin-bottom:2px}
 .labstat .ls b{font-size:.95rem;font-variant-numeric:tabular-nums;letter-spacing:0}
+.jboard{padding:14px 12px 12px;margin-top:12px}
+.jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
+.jrail .jn{flex:1;text-align:center;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.jrail .jn:not(:last-child)::after{content:"";position:absolute;top:15px;left:50%;width:100%;height:2px;background:var(--border2);z-index:0}
+.jrail .jn.past:not(:last-child)::after{background:var(--jc);opacity:.55}
+.jrail .jn i{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;margin:0 auto;border-radius:99px;background:var(--surface2);border:2px solid var(--border2);font-style:normal;font-weight:800;font-size:.8rem;color:var(--muted2);transition:transform .2s,background .2s,color .2s,border-color .2s}
+.jrail .jn.past i{border-color:var(--jc);color:var(--jc)}
+.jrail .jn.on i{background:var(--jc);border-color:var(--jc);color:#0b1020;transform:scale(1.18);box-shadow:0 0 0 5px rgba(255,255,255,.08)}
+.jrail .jn span{display:block;margin-top:7px;font-size:.56rem;line-height:1.2;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:0 2px}
+.jrail .jn.on span{color:var(--text);font-weight:800}
+.jhead{display:flex;align-items:center;gap:10px;margin:14px 2px 2px}
+.jht{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.jht b{color:var(--text);margin-left:4px}
+.jhs{font-size:.78rem;color:var(--muted2);line-height:1.4;margin-top:2px}
+.jcards .lc{margin-top:10px}
+.jcards .lc:first-child{margin-top:12px}
+.jfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.jfoot .tfc{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .jb{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 0 10px;margin-top:10px}
 .jb::-webkit-scrollbar{display:none}
 .jcol{flex:0 0 84%;scroll-snap-align:start;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:10px 10px 6px;min-height:120px}
@@ -4016,14 +4034,13 @@ async function labPeek(){
 // chercheur feeds it from the top; the big cards keep their design ----
 function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';const J=j.journeys||[];const seeds=labSeeds(j);
  const cnt=k=>J.filter(x=>x.col===k).length+(k==='idea'?seeds.length:0);
- const st=document.getElementById('lab-stats');st.className='labstat';st.style.cssText='';
- setH(st,JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<button class="ls" id="lsp-'+k+'" onclick="jGo('+i+')"><i style="display:inline-block;width:7px;height:7px;border-radius:99px;background:'+c+'"></i><b style="color:'+c+'">'+cnt(k)+'</b>'+(en?es:fs)+'</button>').join(''));
+ const st=document.getElementById('lab-stats');st.innerHTML='';st.style.display='none';
  const tabs=document.getElementById('lab-tabs');if(tabs){tabs.innerHTML='';tabs.style.display='none';}
  document.getElementById('lab-hint').innerHTML='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend')+' <span onclick="labStage(&#39;how&#39;)" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:99px;background:var(--surface3);color:var(--accent-soft);font-weight:800;cursor:pointer;margin-left:4px">?</span>';
  let h='';const N=j.note||{};const esc=_escS;
  if(N.date){const cc=(j.auto||{}).counts||{};const RQn=(j.requests||[]).length;const headline=en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en);
   h+='<div class="panel" style="border-color:rgba(185,140,255,.35);padding:12px 14px;cursor:pointer" onclick="labStory()" role="button" tabindex="0"><div style="display:flex;gap:10px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#b98cff">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date)+'</div><b style="font-size:.92rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px">'+esc(headline)+'</b></div></div>'+
-   '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"><span class="ls" style="cursor:default"><b>'+(cc.A||0)+' A \u00b7 '+(cc.B||0)+' B \u00b7 '+(cc.C||0)+' C</b><span>'+(en?'tonight':'cette nuit')+'</span></span>'+(RQn?'<span class="ls" style="cursor:default"><b style="color:var(--warn)">'+RQn+'</b>'+(en?(RQn>1?'requests':'request'):(RQn>1?'demandes':'demande'))+'</span>':'')+'<button class="shbtn shmain" style="margin:0 0 0 auto;padding:9px 14px;font-size:.84rem;width:auto" onclick="event.stopPropagation();labStory()">'+(en?'Read the night':'Lire la nuit')+' \u203a</button></div></div>';}
+   '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap"><span class="ls" style="cursor:default"><b>'+(cc.A||0)+' A \u00b7 '+(cc.B||0)+' B \u00b7 '+(cc.C||0)+' C</b><span style="margin-left:6px">'+(en?'tonight':'cette nuit')+'</span></span>'+(RQn?'<span class="ls" style="cursor:default"><b style="color:var(--warn)">'+RQn+'</b>'+(en?(RQn>1?'requests':'request'):(RQn>1?'demandes':'demande'))+'</span>':'')+'<button class="shbtn shmain" style="margin:0 0 0 auto;padding:9px 14px;font-size:.84rem;width:auto" onclick="event.stopPropagation();labStory()">'+(en?'Read the night':'Lire la nuit')+' \u203a</button></div></div>';}
  h+=labBoard(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
@@ -4100,10 +4117,10 @@ function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v
 function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];const S=j.steps||{};const r=S.replay||{};const v=M.VB[r.verdict];const esc=_escS;
  const badge=v?'<span class="lcb" style="color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span class="lcb" style="background:rgba(255,255,255,.05);color:'+col[3]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>';
  const f=M.FAM[j.family]||M.FAM.donnees;const d=S.decision||{};
- let chips=lchip(en?col[2]:col[1],col[3])+lchip(f[0],f[1]);
+ let chips=lchip(f[0],f[1]);
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
- if(j.col==='decided')chips+=d.d==='yes'?lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)'):lchip(en?'no':'non','var(--down-soft)');
+ if(j.col==='decided'&&d.d==='yes')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
  const note=en?(j.note_en||j.note_fr):(j.note_fr||j.note_en);
  const mn=x=>(x>=0?'+$':'-$')+Math.abs(x||0).toFixed(0);
@@ -4118,15 +4135,26 @@ function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de tra
  return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'seed':'graine','var(--warn)')+lchip(l[0],l[1])+'</div></div></div>'+
   '<div class="lcn">'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'won, against':'gagn\u00e9s, contre')+' '+pc(c.rest_win)+' '+(en?'for the others':'pour les autres')+(d===null?'':' <b style="font-size:.78rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+'</div>'+
   '<div class="lcm"><span>'+(en?'seen in the real trades':'vu dans les vrais trades')+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Details':'D\u00e9tails')+' \u203a</span></div></div>';}
-function labBoard(en){const j=window._lab||{};const J=j.journeys||[];const seeds=labSeeds(j);
- let h='<div class="jb" id="jb" onscroll="jSync()">'+JCOLS.map(([k,fr,eg,c])=>{const L=J.filter(x=>x.col===k);const n=L.length+(k==='idea'?seeds.length:0);
-  return '<div class="jcol"><div class="jch" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)" role="button" tabindex="0" style="cursor:pointer"><i style="background:'+c+'"></i>'+(en?eg:fr)+'<b>'+n+'</b><svg class="ic ic-s" style="color:var(--muted);margin-left:2px"><use href="#i-chev"/></svg></div>'+
-   (k==='idea'?L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join(''):L.map(x=>jCard(x,en)).join(''))+(n?'':'<div style="font-size:.76rem;color:var(--muted);padding:6px 4px 10px">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>';}).join('')+'</div>';
- h+='<div style="font-size:.72rem;color:var(--muted);margin:2px 8px 0;line-height:1.45">'+(en?'Swipe to move between columns. Tap a column title for the details of that stage; tap a card for its story.':'Glissez pour changer de colonne. Touchez le titre d\u2019une colonne pour le d\u00e9tail de l\u2019\u00e9tape ; touchez une carte pour son histoire.')+'</div>';
- const first=JCOLS.findIndex(([k])=>J.some(x=>x.col===k)||(k==='idea'&&seeds.length));setTimeout(()=>{const b=document.getElementById('jb');if(!b)return;const c=b.children[Math.max(0,first)];if(c)b.scrollLeft=c.offsetLeft-b.offsetLeft;jSync();},60);
- return h;}
-function jSync(){const b=document.getElementById('jb');if(!b||b.children.length<2)return;const w=b.children[1].offsetLeft-b.children[0].offsetLeft;const i=Math.max(0,Math.min(JCOLS.length-1,Math.round(b.scrollLeft/Math.max(1,w))));
- JCOLS.forEach(([k],n)=>{const p=document.getElementById('lsp-'+k);if(p)p.classList.toggle('on',n===i);});}
+function jCol(){let i=window._jcol;if(i===undefined){try{i=parseInt(localStorage.getItem('owlLabCol'));}catch(e){}}if(!(i>=0&&i<JCOLS.length)){const j=window._lab||{};const J=j.journeys||[];const seeds=labSeeds(j);i=JCOLS.findIndex(([k])=>J.some(x=>x.col===k)||(k==='idea'&&seeds.length));if(i<0)i=0;}return i;}
+function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.col===k).length+(k==='idea'?labSeeds(j).length:0);}
+function jRail(en){const cur=jCol();
+ return '<div class="jrail" id="jrail">'+JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<div class="jn'+(i===cur?' on':'')+(i<cur?' past':'')+'" onclick="jGo('+i+')" role="tab" aria-selected="'+(i===cur?'true':'false')+'" style="--jc:'+c+'"><i>'+jCount(k)+'</i><span>'+(en?es:fs)+'</span></div>').join('')+'</div>';}
+function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];const L=J.filter(x=>x.col===k);const seeds=k==='idea'?labSeeds(j):[];
+ const cards=L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join('');
+ const sub={idea:[en?'Where ideas are born: the real trades, Kino, the chercheur.':'L\u00e0 o\u00f9 les id\u00e9es naissent : les vrais trades, Kino, le chercheur.'],replay:[en?'Replayed on the last 42 days of the market, against the robot as it is.':'Rejou\u00e9es sur les 42 derniers jours du march\u00e9, contre le robot tel qu\u2019il est.'],test:[en?'A copy of the robot tries them for pretend, next to the real one.':'Une copie du robot les essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.'],decided:[en?'Kino said yes or no.':'Kino a dit oui ou non.'],live:[en?'The rules the robot follows today.':'Les r\u00e8gles que le robot suit aujourd\u2019hui.']}[k][0];
+ return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+(L.length+seeds.length)+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
+  '<div class="jcards" id="jcards">'+(cards||'<div class="panel" style="text-align:center;padding:26px 14px;color:var(--muted);font-size:.86rem">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>'+
+  '<div class="jfoot">'+(cur>0?'<button class="tfc" onclick="jGo('+(cur-1)+')">\u2039 '+(en?JCOLS[cur-1][5]:JCOLS[cur-1][4])+'</button>':'<span></span>')+(cur<JCOLS.length-1?'<button class="tfc" onclick="jGo('+(cur+1)+')">'+(en?JCOLS[cur+1][5]:JCOLS[cur+1][4])+' \u203a</button>':'<span></span>')+'</div>';}
+function labBoard(en){setTimeout(jSwipe,80);return '<div class="panel jboard" id="jb">'+jRail(en)+'<div id="jstage">'+jStage(en)+'</div></div>';}
+function jGo(i){if(!(i>=0&&i<JCOLS.length))return;const dir=i>jCol()?1:-1;window._jcol=i;try{localStorage.setItem('owlLabCol',String(i));}catch(e){}
+ const en=LANG()==='en';const r=document.getElementById('jrail');if(r)r.outerHTML=jRail(en);const st=document.getElementById('jstage');if(!st)return;
+ st.style.transition='none';st.style.opacity='0';st.style.transform='translateX('+(dir*18)+'px)';st.innerHTML=jStage(en);
+ requestAnimationFrame(()=>{st.style.transition='opacity .22s ease,transform .22s ease';st.style.opacity='1';st.style.transform='translateX(0)';});
+ const top=document.getElementById('jb');if(top&&top.getBoundingClientRect().top<0)window.scrollTo({top:top.getBoundingClientRect().top+window.scrollY-70,behavior:'smooth'});}
+function jSwipe(){const b=document.getElementById('jb');if(!b||b._sw)return;b._sw=1;let x0=null,y0=null;
+ b.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+ b.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){jGo(jCol()+(dx<0?1:-1));}},{passive:true});}
+function jSync(){}
 function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>x.id===id);if(!c)return;const en=LANG()==='en';const esc=_escS;const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';
  const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)',en?'Under 30 trades, a number can still be luck. We show it so you can watch it grow.':'Sous 30 trades, un chiffre peut encore \u00eatre de la chance. On le montre pour le voir grandir.'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)',en?'The first half and the second half of the period say the same thing. The chercheur can turn it into an idea to replay.':'La premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose. Le chercheur peut en faire une id\u00e9e \u00e0 rejouer.'],divergent:[en?'not clear':'pas net','var(--warn)',en?'The two halves of the period disagree. Noise for now.':'Les deux moiti\u00e9s de la p\u00e9riode ne sont pas d\u2019accord. Du bruit pour l\u2019instant.']};const l=L[c.label]||L.trop_tot;
  const cell=(lb,x)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+lb+'</span></div>';
@@ -4147,7 +4175,6 @@ function labStage(k){const en=LANG()==='en';let title='',body='';
    '<div class="sec" style="margin:14px 8px 8px">'+(en?'No':'Non')+'</div>'+J.filter(x=>(x.steps.decision||{}).d!=='yes').map(x=>jCard(x,en)).join('');}
  else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Replayed on the past':'Rejou\u00e9es sur le pass\u00e9'],forward:[en?'Tested for pretend':'En test pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
-function jGo(i){const b=document.getElementById('jb');if(!b)return;const c=b.children[i];if(c)b.scrollTo({left:c.offsetLeft-b.offsetLeft,behavior:'smooth'});}
 function jStrip(j,en){const S=j.steps||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Replayed':'Rejou\u00e9e',(S.replay||{}).last],['test',en?'Tested':'En test',(S.test||{}).started],['decided',en?'Decided':'D\u00e9cid\u00e9e',(S.decision||{}).date],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
  const idx={idea:1,replay:2,test:3,decided:4,live:5};const cur=idx[j.col]||1;const no=(S.decision||{}).d==='no';
  return '<div class="jst">'+N.map(([k,l,d],i)=>{const n=i+1;const done=n<=cur;const cls=(done?'done':'')+(n===cur?' now':'')+(no&&n===4?' no':'')+(no&&n===5?' no':'');
