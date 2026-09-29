@@ -125,7 +125,9 @@ if (-not (Get-CimInstance Win32_Process |
 }
 # 2c) the lab's variant twins (2026-09-28): every running entry in lab/twins.json
 try {
-    $tw = Get-Content "lab	wins.json" -Raw -ErrorAction Stop | ConvertFrom-Json
+    # (2026-09-29: the path used to hold a TAB instead of a backslash, so this
+    #  block silently never ran - fixed, verified with a parse + Test-Path)
+    $tw = Get-Content (Join-Path $PSScriptRoot "lab/twins.json") -Raw -ErrorAction Stop | ConvertFrom-Json
     foreach ($t in $tw.twins) {
         if ($t.status -ne "running") { continue }
         $pat = "*bos_paper_variant.py*" + $t.id + "*"
@@ -135,6 +137,15 @@ try {
         }
     }
 } catch {}
+# 2k) daemons found missing from this file on 2026-09-29 (owner: "make sure
+#     the setup can survive a VPS restart"): the auto/manual mode switch
+#     watcher, the harvest journal, the brick-size watch.
+foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py", "brick_watch.py")) {
+    if (-not (ProcRunning $extra)) {
+        Say ("starting " + $extra)
+        Start-Process pythonw -ArgumentList $extra -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
+    }
+}
 # 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
 if (-not (Get-CimInstance Win32_Process |
         Where-Object { $_.CommandLine -like "*bos_paper_touch.py*" })) {
