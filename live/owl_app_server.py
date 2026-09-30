@@ -315,7 +315,7 @@ def ent(uid):
 
 
 FAMILY_DAYS = 30
-OWNER_UIDS = ("kino", "std")
+OWNER_UIDS = ("kino", "std", "expenses")
 
 
 def family_active(e, now=None):
@@ -593,6 +593,11 @@ BOT_OF = {
                    "bos_bot_demo.log", 300),
     "infinity":   ("Structure", "bos_state_infinity.json",
                    "bos_bot_infinity.log", 300),
+    # 2026-09-30 (owner): the Expenses account - the profit from this one is
+    # the money he takes out to spend, so it is kept apart from the accounts
+    # that compound. Same bot, same Valere package.
+    "expenses":   ("Structure", "bos_state_expenses.json",
+                   "bos_bot_expenses.log", 300),
 }
 # the broker refusals that mean "alive but cannot trade"
 BLOCKED = {"10027": "AutoTrading &eacute;teint", "10019": "solde insuffisant"}

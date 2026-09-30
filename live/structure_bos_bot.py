@@ -158,6 +158,25 @@ elif VARIANT == "infinity":
     MAGIC = 909701
     COMMENT = "KL-BOS"
     TOUCH_ENTRIES = False
+elif VARIANT == "expenses":
+    _SFX = "_expenses"
+    # 2026-09-30 (owner): "create a new account available on nid. Call it
+    # Expenses [...] the same main bot must be activated and running on it."
+    # The profit from this one is the money he takes out to spend, so it is
+    # kept apart from the accounts that compound. Same bot, same code, the
+    # Valere package - only the ledger, the war chest and the kill line are
+    # its own. Credentials from the nest record.
+    _xu = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == "expenses"][0]
+    TERMINAL = _xu["terminal"]
+    LOGIN = int(_xu["mt5_login"])
+    SERVER = _xu["mt5_server"]
+    PASSWORD = _xu["mt5_password"]
+    MAGIC = 909801
+    COMMENT = "KL-BOS-X"
+    TOUCH_ENTRIES = False
 elif VARIANT == "demo":
     # 2026-09-19 (owner): the public SHOWCASE account - "a demo account for
     # all to view, so they may see how the bot performs". Same bot, same
@@ -221,7 +240,8 @@ JOURNAL_F = os.path.join(DIR, f"bos_journal{_SFX}.csv")
 #   owl_trading_pause_<uid>.json    = this account only
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
              "halfdebt": "half", "kino": "kino",
-             "demo": "demo", "infinity": "infinity"}.get(VARIANT, "bos")
+             "demo": "demo", "infinity": "infinity",
+             "expenses": "expenses"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 

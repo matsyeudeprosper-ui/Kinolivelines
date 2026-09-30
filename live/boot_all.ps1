@@ -98,6 +98,11 @@ if (-not (ProcRunning "structure_bos_bot.py infinity")) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "infinity" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+if (-not (ProcRunning "structure_bos_bot.py expenses")) {
+    Say "starting BOS bot (expenses)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "expenses" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2j) Dad's real account: the DEFAULT instance, no argv (own debt ledger,
 # package special_10). Same gap as Infinity above - never had a launch
 # block, found and fixed the same day, before it was ever tested by a
