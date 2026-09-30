@@ -63,6 +63,13 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # risk, and it is what should ever be deployed; risk_max stays as
             # the absolute version used to find the level in the first place.
             "risk_pct": 0.0,
+            # 2026-09-30: cap the MONEY, not the trade. risk_fit is a
+            # share of the balance, risk_fit_abs a dollar figure; the
+            # lot is reduced to fit and the trade is only skipped when
+            # 0.01 lot still risks more than the cap. E009 found the
+            # widest stops are the BEST trades, so skipping them has to
+            # be the last resort, not the first move.
+            "risk_fit": 0.0, "risk_fit_abs": 0.0,
             # 2026-09-29 (owner: "does the backtest include the rattrapage and
             # the daily caps?"). It did not. These three close the gap:
             #   jar      model the real bullet economy - the jar has to pay for
@@ -389,6 +396,19 @@ def simulate(R, spread, cfg):
         if c["bank_mult"] and _risk > (BANK0 + max(0.0, run)) / float(c["bank_mult"]):
             blocked += 1
             continue
+        # cap the money by shrinking the lot, keeping the trade
+        _fit = 0.0
+        if c["risk_fit"]:
+            _fit = bal_ref * float(c["risk_fit"]) / 100.0
+        if c["risk_fit_abs"]:
+            _a = float(c["risk_fit_abs"])
+            _fit = _a if not _fit else min(_fit, _a)
+        if _fit and _risk > _fit:
+            lot = math.floor((_fit / dist) / 0.01) * 0.01
+            if lot < 0.01:
+                blocked += 1
+                continue
+            _risk = dist * lot
         tp = cl + d * rr * dist
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
         last_hour = t // 3600

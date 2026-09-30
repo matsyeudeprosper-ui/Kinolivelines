@@ -1,0 +1,374 @@
+{
+ "engine": "2026-09-29b",
+ "bars": 99000,
+ "accounts": {
+  "Valere": {
+   "base": {
+    "net": 148.55,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 266,
+    "wr": 62.4,
+    "blocked": 290,
+    "worst_trade": -10.87,
+    "n_loss": 100
+   },
+   "skip3": {
+    "net": 119.25,
+    "maxdd": -29.04,
+    "worst_debt": 29.04,
+    "trades": 264,
+    "wr": 62.5,
+    "blocked": 272,
+    "worst_trade": -9.26,
+    "n_loss": 99
+   },
+   "fit3": {
+    "net": 135.66,
+    "maxdd": -31.55,
+    "worst_debt": 31.55,
+    "trades": 262,
+    "wr": 62.6,
+    "blocked": 288,
+    "worst_trade": -8.2,
+    "n_loss": 98
+   },
+   "skip5": {
+    "net": 146.92,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 267,
+    "wr": 62.5,
+    "blocked": 281,
+    "worst_trade": -10.87,
+    "n_loss": 100
+   },
+   "fit5": {
+    "net": 145.73,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 265,
+    "wr": 62.6,
+    "blocked": 290,
+    "worst_trade": -10.87,
+    "n_loss": 99
+   },
+   "skip8": {
+    "net": 148.55,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 266,
+    "wr": 62.4,
+    "blocked": 290,
+    "worst_trade": -10.87,
+    "n_loss": 100
+   },
+   "fit8": {
+    "net": 148.55,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 266,
+    "wr": 62.4,
+    "blocked": 290,
+    "worst_trade": -10.87,
+    "n_loss": 100
+   },
+   "skip12usd": {
+    "net": 146.92,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 267,
+    "wr": 62.5,
+    "blocked": 281,
+    "worst_trade": -10.87,
+    "n_loss": 100
+   },
+   "fit12usd": {
+    "net": 145.73,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 265,
+    "wr": 62.6,
+    "blocked": 290,
+    "worst_trade": -10.87,
+    "n_loss": 99
+   }
+  },
+  "Dad 441": {
+   "base": {
+    "net": 221.6,
+    "maxdd": -46.45,
+    "worst_debt": 46.45,
+    "trades": 272,
+    "wr": 62.9,
+    "blocked": 275,
+    "worst_trade": -16.3,
+    "n_loss": 101
+   },
+   "skip3": {
+    "net": 189.43,
+    "maxdd": -29.86,
+    "worst_debt": 29.86,
+    "trades": 261,
+    "wr": 62.5,
+    "blocked": 288,
+    "worst_trade": -12.95,
+    "n_loss": 98
+   },
+   "fit3": {
+    "net": 204.31,
+    "maxdd": -36.93,
+    "worst_debt": 36.93,
+    "trades": 267,
+    "wr": 62.9,
+    "blocked": 285,
+    "worst_trade": -11.38,
+    "n_loss": 99
+   },
+   "skip5": {
+    "net": 217.08,
+    "maxdd": -46.45,
+    "worst_debt": 46.45,
+    "trades": 273,
+    "wr": 63.0,
+    "blocked": 266,
+    "worst_trade": -16.3,
+    "n_loss": 101
+   },
+   "fit5": {
+    "net": 220.25,
+    "maxdd": -46.45,
+    "worst_debt": 46.45,
+    "trades": 271,
+    "wr": 63.1,
+    "blocked": 275,
+    "worst_trade": -16.3,
+    "n_loss": 100
+   },
+   "skip8": {
+    "net": 221.6,
+    "maxdd": -46.45,
+    "worst_debt": 46.45,
+    "trades": 272,
+    "wr": 62.9,
+    "blocked": 275,
+    "worst_trade": -16.3,
+    "n_loss": 101
+   },
+   "fit8": {
+    "net": 221.6,
+    "maxdd": -46.45,
+    "worst_debt": 46.45,
+    "trades": 272,
+    "wr": 62.9,
+    "blocked": 275,
+    "worst_trade": -16.3,
+    "n_loss": 101
+   },
+   "skip12usd": {
+    "net": 171.3,
+    "maxdd": -30.1,
+    "worst_debt": 30.1,
+    "trades": 259,
+    "wr": 62.2,
+    "blocked": 286,
+    "worst_trade": -12.95,
+    "n_loss": 98
+   },
+   "fit12usd": {
+    "net": 196.48,
+    "maxdd": -40.89,
+    "worst_debt": 40.89,
+    "trades": 267,
+    "wr": 62.9,
+    "blocked": 285,
+    "worst_trade": -11.88,
+    "n_loss": 99
+   }
+  },
+  "Depenses": {
+   "base": {
+    "net": 100.27,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 330,
+    "wr": 61.2,
+    "blocked": 165,
+    "worst_trade": -13.33,
+    "n_loss": 128
+   },
+   "skip3": {
+    "net": 96.56,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 331,
+    "wr": 60.7,
+    "blocked": 171,
+    "worst_trade": -5.43,
+    "n_loss": 130
+   },
+   "fit3": {
+    "net": 96.56,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 331,
+    "wr": 60.7,
+    "blocked": 171,
+    "worst_trade": -5.43,
+    "n_loss": 130
+   },
+   "skip5": {
+    "net": 96.74,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 329,
+    "wr": 60.8,
+    "blocked": 180,
+    "worst_trade": -5.43,
+    "n_loss": 129
+   },
+   "fit5": {
+    "net": 96.74,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 329,
+    "wr": 60.8,
+    "blocked": 180,
+    "worst_trade": -5.43,
+    "n_loss": 129
+   },
+   "skip8": {
+    "net": 100.27,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 330,
+    "wr": 61.2,
+    "blocked": 165,
+    "worst_trade": -13.33,
+    "n_loss": 128
+   },
+   "fit8": {
+    "net": 100.27,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 330,
+    "wr": 61.2,
+    "blocked": 165,
+    "worst_trade": -13.33,
+    "n_loss": 128
+   },
+   "skip12usd": {
+    "net": 103.29,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 322,
+    "wr": 61.2,
+    "blocked": 180,
+    "worst_trade": -5.43,
+    "n_loss": 125
+   },
+   "fit12usd": {
+    "net": 103.29,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 322,
+    "wr": 61.2,
+    "blocked": 180,
+    "worst_trade": -5.43,
+    "n_loss": 125
+   }
+  },
+  "Infinity": {
+   "base": {
+    "net": 91.14,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 322,
+    "wr": 60.9,
+    "blocked": 174,
+    "worst_trade": -13.33,
+    "n_loss": 126
+   },
+   "skip3": {
+    "net": 83.86,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 331,
+    "wr": 60.1,
+    "blocked": 169,
+    "worst_trade": -5.57,
+    "n_loss": 132
+   },
+   "fit3": {
+    "net": 83.86,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 331,
+    "wr": 60.1,
+    "blocked": 169,
+    "worst_trade": -5.57,
+    "n_loss": 132
+   },
+   "skip5": {
+    "net": 87.61,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 321,
+    "wr": 60.4,
+    "blocked": 189,
+    "worst_trade": -5.43,
+    "n_loss": 127
+   },
+   "fit5": {
+    "net": 87.61,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 321,
+    "wr": 60.4,
+    "blocked": 189,
+    "worst_trade": -5.43,
+    "n_loss": 127
+   },
+   "skip8": {
+    "net": 91.14,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 322,
+    "wr": 60.9,
+    "blocked": 174,
+    "worst_trade": -13.33,
+    "n_loss": 126
+   },
+   "fit8": {
+    "net": 91.14,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 322,
+    "wr": 60.9,
+    "blocked": 174,
+    "worst_trade": -13.33,
+    "n_loss": 126
+   },
+   "skip12usd": {
+    "net": 94.16,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 314,
+    "wr": 60.8,
+    "blocked": 189,
+    "worst_trade": -5.43,
+    "n_loss": 123
+   },
+   "fit12usd": {
+    "net": 94.16,
+    "maxdd": -20.4,
+    "worst_debt": 20.4,
+    "trades": 314,
+    "wr": 60.8,
+    "blocked": 189,
+    "worst_trade": -5.43,
+    "n_loss": 123
+   }
+  }
+ }
+}
