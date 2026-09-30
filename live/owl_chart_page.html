@@ -13,7 +13,12 @@
 body{background:var(--bg);color:var(--text2);overflow:hidden;
  font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 #hd{display:flex;align-items:center;gap:9px;flex-wrap:wrap;
- padding:12px 96px 6px 14px;position:relative;z-index:3}
+ padding:12px 96px 6px 14px;position:relative;z-index:6}
+/* z-index 6, not 3: the header chips (tendance, robot, feu vert) float over
+   the chart, and the two-timeframe panel is ALSO z-index 3 - so it won on
+   DOM order and swallowed every tap on them. Reported 2026-09-30: "the
+   click on feu vert and haussier is not working anymore, no panels showing".
+   6 keeps them under the sheets (60/61) and the settings sheet (90). */
 #back{text-decoration:none;color:var(--accent-soft);font-size:1.35rem;
  line-height:1;padding:2px 8px 2px 0}
 #hd h1{font-size:1rem;font-weight:700;letter-spacing:-.01em;color:var(--text)}
