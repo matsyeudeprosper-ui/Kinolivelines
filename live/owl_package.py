@@ -40,7 +40,12 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "nervosity", "movement", "day_cap_waived",
           "scale_with_balance", "scale_ref_balance",
           # 2026-09-30: per-trade risk ceiling, share of balance, 0=off
-          "risk_fit_pct")
+          "risk_fit_pct",
+          # 2026-09-30: internal-structure entries. Default FALSE, so
+          # every account stops taking them unless it opts back in.
+          # Measured -42.8% / -56.1% of net and never positive in any
+          # split - review/INTERNAL_BOS.md.
+          "internal_entries")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -49,7 +54,8 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "debt_mode": "hwm", "day_cap": None, "max_trades_day": None,
         "week_target": None, "nervosity": True, "movement": True,
         "day_cap_waived": True, "scale_with_balance": False,
-        "scale_ref_balance": 200.0, "risk_fit_pct": 0.0}
+        "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
+        "internal_entries": False}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

@@ -296,6 +296,11 @@ MAX_RISK_PCT = _P["max_risk_pct"]
 # (review/RISK_CAP.md). It can still refuse, but only when even
 # the smallest lot the broker allows would exceed the ceiling.
 RISK_FIT_PCT = float(_P.get("risk_fit_pct") or 0.0)
+# 2026-09-30 (owner): "switch off the internal trades on all accounts
+# for now." Off by default in the package, so this is False everywhere
+# until an account opts back in. The signal is still computed and still
+# logged - we keep seeing them, we just stop trading them.
+INTERNAL_ENTRIES = bool(_P.get("internal_entries", False))
 DEBT_MODE = _P["debt_mode"]
 DAY_CAP = _P["day_cap"]
 MAX_TRADES_DAY = _P["max_trades_day"]
@@ -1469,7 +1474,7 @@ def main():
                     st["storm_seen"] = True
                 _iv, _ivt = _cj.get("int_inv"), _cj.get("int_inv_t")
                 _itr = _cj.get("int_trend") or 0
-                if (_iv and _ivt and _ivt != st.get("int_last_t")
+                if (INTERNAL_ENTRIES and _iv and _ivt and _ivt != st.get("int_last_t")
                         and _itr and _itr == eng.trend):
                     st["int_last_t"] = _ivt
                     save_state(st)
@@ -1481,7 +1486,7 @@ def main():
                     # that Kino and the demo, both flat and ungated, did not -
                     # and no log line anywhere said why). Say which rule
                     # declined it.
-                    _why = ("pas de tendance interne" if not _itr
+                    _why = ("entrees internes desactivees" if (not INTERNAL_ENTRIES and _itr and _itr == eng.trend) else "pas de tendance interne" if not _itr
                             else f"contre la tendance principale "
                                  f"(interne {'haut' if _itr == 1 else 'bas'}, "
                                  f"principale "
