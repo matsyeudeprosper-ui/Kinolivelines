@@ -1,0 +1,120 @@
+{
+ "engine": "2026-09-29b",
+ "bars": 99000,
+ "accounts": {
+  "Valere": {
+   "main only": {
+    "net": 146.43,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 265,
+    "wr": 62.6,
+    "blocked": 296,
+    "internal": 0,
+    "h1_net": 55.83,
+    "h2_net": 72.41
+   },
+   "internal, no guard": {
+    "net": 83.52,
+    "maxdd": -43.63,
+    "worst_debt": 43.63,
+    "trades": 372,
+    "wr": 59.7,
+    "blocked": 216,
+    "internal": 408,
+    "h1_net": 55.59,
+    "h2_net": 16.03
+   },
+   "internal, tighter than main": {
+    "net": 90.53,
+    "maxdd": -43.63,
+    "worst_debt": 43.63,
+    "trades": 370,
+    "wr": 60.0,
+    "blocked": 221,
+    "internal": 407,
+    "h1_net": 55.59,
+    "h2_net": 23.04
+   },
+   "internal, stop < 3x median": {
+    "net": 103.52,
+    "maxdd": -34.19,
+    "worst_debt": 34.19,
+    "trades": 327,
+    "wr": 60.9,
+    "blocked": 528,
+    "internal": 172,
+    "h1_net": 58.05,
+    "h2_net": 31.99
+   },
+   "internal, stop < 2x median": {
+    "net": 126.56,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 304,
+    "wr": 62.2,
+    "blocked": 633,
+    "internal": 65,
+    "h1_net": 38.54,
+    "h2_net": 69.84
+   }
+  },
+  "Depenses": {
+   "main only": {
+    "net": 101.18,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 330,
+    "wr": 61.5,
+    "blocked": 165,
+    "internal": 0,
+    "h1_net": 13.9,
+    "h2_net": 67.62
+   },
+   "internal, no guard": {
+    "net": 44.24,
+    "maxdd": -35.77,
+    "worst_debt": 35.77,
+    "trades": 398,
+    "wr": 59.8,
+    "blocked": 140,
+    "internal": 407,
+    "h1_net": 13.39,
+    "h2_net": 14.57
+   },
+   "internal, tighter than main": {
+    "net": 47.41,
+    "maxdd": -35.77,
+    "worst_debt": 35.77,
+    "trades": 398,
+    "wr": 60.1,
+    "blocked": 141,
+    "internal": 404,
+    "h1_net": 13.39,
+    "h2_net": 17.75
+   },
+   "internal, stop < 3x median": {
+    "net": 62.54,
+    "maxdd": -32.82,
+    "worst_debt": 32.82,
+    "trades": 391,
+    "wr": 60.1,
+    "blocked": 387,
+    "internal": 167,
+    "h1_net": 16.54,
+    "h2_net": 27.01
+   },
+   "internal, stop < 2x median": {
+    "net": 98.14,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 346,
+    "wr": 62.1,
+    "blocked": 550,
+    "internal": 65,
+    "h1_net": 13.52,
+    "h2_net": 64.96
+   }
+  }
+ }
+}

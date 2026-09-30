@@ -78,6 +78,14 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # with the main one), 2 = also counter-trend, which the
             # bot logs and refuses today.
             "internal": 0,
+            # 2026-09-30: an internal entry is meant to be the SMALL
+            # structure, yet the one that cost real money carried a
+            # 594pt stop against a 214pt main median. int_max_stop
+            # refuses an internal entry whose stop is wider than this
+            # multiple of the recent median candle range; int_tighter
+            # refuses one wider than the MAIN structure's own stop.
+            # 0 = off for both.
+            "int_max_stop": 0.0, "int_tighter": 0,
             # 2026-09-29 (owner: "does the backtest include the rattrapage and
             # the daily caps?"). It did not. These three close the gap:
             #   jar      model the real bullet economy - the jar has to pay for
@@ -369,6 +377,24 @@ def simulate(R, spread, cfg):
                 i_inv = float(_new_inv)
                 if i_trend and (i_on == 2 or i_trend == eng.trend):
                     i_fire = True
+        if i_fire and sig is None and not pos and not dead:
+            # the wide-stop guards. cl is this bar's close, so the
+            # internal stop distance is what the trade would really risk.
+            _idist = abs(cl - i_inv)
+            _med60 = sorted(rng[i-60:i])[30] if i >= 60 else 0.0
+            if c["int_max_stop"] and _med60 > 0 and \
+                    _idist > float(c["int_max_stop"]) * _med60:
+                i_fire = False
+                blocked += 1
+            elif c["int_tighter"]:
+                _mdist = None
+                if eng.trend == 1 and eng.prot_lo:
+                    _mdist = abs(cl - eng.prot_lo[1])
+                elif eng.trend == -1 and eng.prot_hi:
+                    _mdist = abs(cl - eng.prot_hi[1])
+                if _mdist and _idist > _mdist:
+                    i_fire = False
+                    blocked += 1
         if i_fire and sig is None and not pos and not dead:
             sig = (i_trend, i_inv)
         if touched and last_flip_t is not None and cont_left < c["n_cont"]:
