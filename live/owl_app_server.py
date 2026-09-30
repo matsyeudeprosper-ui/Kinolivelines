@@ -1607,6 +1607,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div id="mx-lab" style="display:none">
 <div class="sec" style="margin-top:14px">Le labo <span class="hint" id="lab-hint">&middot; id&eacute;es, tests, observations, d&eacute;cisions</span></div>
 <div id="lab-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px"></div>
+<div id="lab-parity" style="display:none;margin-top:10px;padding:8px 11px;
+ background:var(--surface2);border-radius:10px;font-size:.76rem;line-height:1.45"></div>
 <div id="lab-tabs" style="display:flex;gap:6px;margin-top:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px"></div>
 <div id="lab-body" style="margin-top:4px"></div>
 </div>
@@ -4177,6 +4179,19 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  const cnt=k=>J.filter(x=>x.col===k).length+(k==='idea'?seeds.length:0);
  const st=document.getElementById('lab-stats');st.innerHTML='';st.style.display='none';
  const tabs=document.getElementById('lab-tabs');if(tabs){tabs.innerHTML='';tabs.style.display='none';}
+ (function(){const P=(j.auto||{}).parity;const el=document.getElementById('lab-parity');
+  if(!el)return;
+  if(!P){el.style.display='none';return;}
+  el.style.display='block';
+  el.style.borderLeft='2px solid '+(P.drift?'var(--down)':'var(--up)');
+  el.innerHTML=P.drift
+   ?'<b style="color:var(--down)">'+(en?'The test no longer matches the robot'
+     :'Le test ne correspond plus au robot')+'</b><div style="color:var(--muted2);margin-top:3px">'+
+     (en?'Everything below describes a strategy that may not be the one running. Fix before trusting a number.'
+       :'Tout ce qui suit d\u00e9crit une strat\u00e9gie qui n\u2019est peut-\u00eatre pas celle qui tourne. \u00c0 corriger avant de croire un chiffre.')+'</div>'
+   :'<span style="color:var(--muted)">'+(en?'Checked last night: the test still matches the robot rule for rule.'
+     :'V\u00e9rifi\u00e9 cette nuit : le test correspond toujours au robot, r\u00e8gle par r\u00e8gle.')+'</span>';
+ })();
  document.getElementById('lab-hint').innerHTML='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend')+' <span onclick="labStage(&#39;how&#39;)" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:99px;background:var(--surface3);color:var(--accent-soft);font-weight:800;cursor:pointer;margin-left:4px">?</span>';
  let h='';const N=j.note||{};const esc=_escS;
  if(N.date){const AU=j.auto||{};const cc=AU.counts||{};const RQn=(j.requests||[]).length;const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
@@ -7601,7 +7616,12 @@ def lab_payload():
            "registry_updated": reg.get("updated"),
            "auto": {"updated": auto.get("updated"), "days": auto.get("days"), "counts": auto.get("counts", {}),
                     "days_long": auto.get("days_long"), "real_n": auto.get("real_n"),
-                    "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes")},
+                    "base": auto.get("base") or {}, "variants": auto.get("variants", []), "minutes": auto.get("minutes"),
+                    # 2026-09-30: does the backtest still describe the
+                    # bot? It runs every night before the battery; if it
+                    # drifts, the verdicts above are about a strategy
+                    # nobody runs, and the lab has to say so out loud.
+                    "parity": auto.get("parity")},
            "note": note, "proposals": props[-20:], "twins": twins, "requests": requests,
            "engine": auto.get("engine"), "archive": arch_on,
            "asks": _lj("asks.json", {}).get("asks", [])[-40:]}

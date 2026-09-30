@@ -379,6 +379,47 @@ def main():
                      "base_real": baseT, "real_n": (len(T) if T else 0),
                      "minutes": round((time.time() - t0) / 60, 1),
                      "parity": parity})
+    # 2026-09-30 (owner): the risk ceiling is on Depenses only, with
+    # Infinity left uncapped as its control. Two accounts on the same
+    # rules and the same signals, one capped - that answers in ~50
+    # trades what two months of bars could not. A reminder in a commit
+    # message is a reminder nobody reads, so the nightly run watches the
+    # count itself and reports BOTH sides when it arrives.
+    try:
+        import csv as _csv
+
+        def _tally(fn):
+            n = 0
+            net = 0.0
+            try:
+                with open(os.path.join(LIVE, fn), encoding='utf-8',
+                          errors='replace') as fh:
+                    for r in _csv.DictReader(fh):
+                        if (r.get('is_add') or '') == 'True':
+                            continue
+                        try:
+                            net += float(r.get('profit_usd') or '')
+                        except Exception:
+                            continue
+                        n += 1
+            except Exception:
+                return None
+            return n, round(net, 2)
+
+        _cap = _tally('bos_journal_expenses.csv')
+        _ctl = _tally('bos_journal_infinity.csv')
+        if _cap and _ctl:
+            _n = _cap[0]
+            _line = (f'risk-ceiling watch: Depenses (3% cap) {_cap[0]} trades {_cap[1]:+.2f}, '
+                     f'Infinity (no cap) {_ctl[0]} trades {_ctl[1]:+.2f}')
+            if _n >= 50:
+                say('DECISION DUE - ' + _line + ' - 50 trades reached, the pair can be compared now (review/RISK_CAP.md)')
+            elif _n >= 25:
+                say(_line + f' - {50 - _n} trades to go before the comparison is worth reading')
+            else:
+                say(_line)
+    except Exception as _e:
+        say(f'risk-ceiling watch unavailable: {_e}')
     say(f"researcher done: {len(out)} what-ifs in {(time.time()-t0)/60:.1f} min - {counts}")
 
 

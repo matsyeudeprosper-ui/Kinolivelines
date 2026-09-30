@@ -59,6 +59,32 @@ def sources():
     return {"real_accounts": len(real), "demo": demo, "since": since or None}
 
 
+def rule_change(T):
+    """The honest note about a rule that ran live but was never in the test.
+
+    Lives here, and is called by BOTH writers - proof_build at night and
+    proof_refresh every hour. It used to be computed inline in main(), so
+    the hourly refresh rebuilt `sources` without it and the note vanished
+    from the page within the hour (found by review/ui_smoke.mjs).
+    """
+    ints = [x for x in (T or []) if x.get("internal")]
+    return {"what": "internal", "off_since": "2026-09-30",
+            "live_trades": len(ints),
+            "live_net": round(sum(x.get("pnl") or 0.0 for x in ints), 2),
+            "of_total": len(T or []), "in_backtest": False}
+
+
+def clean_union(T):
+    """the same forward record WITHOUT the retired rule, or None when the
+    two are identical"""
+    t2 = [x for x in (T or []) if not x.get("internal")]
+    if not T or len(t2) == len(T):
+        return None
+    return {"trades": len(t2),
+            "net": round(sum(x["pnl"] for x in t2), 2),
+            "wr": _wr([{"pnl": x["pnl"]} for x in t2])}
+
+
 def main():
     t0 = time.time()
     sym, R = H.bars()
@@ -113,18 +139,10 @@ def main():
     # The rule is off now (owl_package internal_entries=False) and the
     # two match from here. The trades that already happened are NOT
     # deleted - they really cost that money - they are labelled.
-    _int = [x for x in T if x.get("internal")]
-    rule_change = {
-        "what": "internal",
-        "off_since": "2026-09-30",
-        "live_trades": len(_int),
-        "live_net": round(sum(x.get("pnl") or 0.0 for x in _int), 2),
-        "of_total": len(T),
-        "in_backtest": False,
-    }
+    _rc = rule_change(T)
     real_replay = H.simulate_real(T, R, 7.0, {}) if T else None
     src = sources()
-    src["rule_change"] = rule_change
+    src["rule_change"] = _rc
     since = src.get("since")
     # what the replay expected over the same dates (lot 0.02, the replay's lot)
     expected = None
@@ -142,15 +160,10 @@ def main():
         # test that never contained internal entries, so the two were
         # not measuring the same robot. Both are published; the page
         # shows the clean one beside it rather than instead of it.
-        _T2 = [x for x in T if not x.get("internal")]
-        _pn2 = [{"pnl": x["pnl"]} for x in _T2]
 
         union = {"trades": len(T), "net": round(sum(x["pnl"] for x in T), 2), "wr": _wr(pn), "since": time.strftime("%Y-%m-%d", time.gmtime(T[0]["t"])),
                  "replay_same_entries": real_replay,
-                 "clean": ({"trades": len(_T2),
-                            "net": round(sum(x["pnl"] for x in _T2), 2),
-                            "wr": _wr(_pn2)}
-                           if len(_T2) != len(T) else None)}
+                 "clean": clean_union(T)}
     rules = []
     try:
         reg = json.load(open(os.path.join(LAB, "registry.json"), encoding="utf-8"))

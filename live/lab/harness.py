@@ -252,6 +252,7 @@ def simulate(R, spread, cfg):
     last_hour = None
     pnls = []
     chest = 0.0
+    debt_led = 0.0   # the 'half' ledger; unused under hwm
     day_profit = 0.0
     day_n = 0
     dead = False
@@ -279,7 +280,7 @@ def simulate(R, spread, cfg):
             if hit_sl or hit_tp:
                 win = bool(hit_tp and not hit_sl)
                 pts = (rr * dist - spread) if win else -(dist + spread)
-                debt = max(0.0, pk - run)
+                debt = (debt_led if c["debt_mode"] == "half"                        else max(0.0, pk - run))
                 before = run
                 run += pts * lot
                 nb = 0
@@ -312,6 +313,15 @@ def simulate(R, spread, cfg):
                     if run > pk:
                         chest = min(CHEST_CAP, chest + (run - pk))
                     chest = min(chest, max(JAR_FLOOR_CAP, JAR_DEBT_MULT * max(0.0, pk - run)))
+                if c["debt_mode"] == "half":
+                    _pl = run - before
+                    if _pl < 0:
+                        debt_led = round(debt_led + 0.5 * (-_pl), 2)
+                    elif _pl > 0:
+                        _pay = min(debt_led, _pl)
+                        debt_led = round(debt_led - _pay, 2)
+                        chest = round(min(CHEST_CAP,
+                                          chest + _pl - _pay), 2)
                 day_profit += run - before
                 pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
                 if TRACE is not None and cur_tr is not None:
@@ -440,7 +450,7 @@ def simulate(R, spread, cfg):
             if c["nerv_gate"] and nv > 1.0:
                 blocked += 1
                 continue
-            if c["debt_nerv_gate"] and nv > 1.0 and max(0.0, pk - run) > 0.5:
+            _dbt = (debt_led if c["debt_mode"] == "half"                    else max(0.0, pk - run))            if c["debt_nerv_gate"] and nv > 1.0 and _dbt > 0.5:
                 blocked += 1
                 continue
         # ---- the what-if brakes ----
@@ -456,7 +466,7 @@ def simulate(R, spread, cfg):
         if skip_h and g.hour in skip_h:
             blocked += 1
             continue
-        debt_now = max(0.0, pk - run)
+        debt_now = (debt_led if c["debt_mode"] == "half"                    else max(0.0, pk - run))
         if flip:
             last_flip_t = t
             cont_left = int(c["n_cont"])
@@ -738,7 +748,7 @@ def simulate_real(T, R, spread, cfg):
         worst = max(worst, pk - run)
         last_close_t = times[j]
         n_trades += 1
-    return {"net": round(run, 2), "worst_debt": round(worst, 2), "trades": n_trades,
+    return {"debt_mode_modelled": "hwm",  # this path has no chest, so it cannot run "half"            "net": round(run, 2), "worst_debt": round(worst, 2), "trades": n_trades,
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "n_real": len(T),
             "actual": round(sum(x["pnl"] for x in T), 2)}
 

@@ -41,8 +41,10 @@ def main():
                  "wr": PB._wr(pn), "since": time.strftime("%Y-%m-%d", time.gmtime(T[0]["t"])),
                  # the replay of the same entries needs the price history, so it
                  # is left as the nightly build computed it and marked as such
-                 "replay_same_entries": (p.get("union") or {}).get("replay_same_entries")}
+                 "replay_same_entries": (p.get("union") or {}).get("replay_same_entries"),
+                 "clean": PB.clean_union(T)}
         p["union"] = union
+    src["rule_change"] = PB.rule_change(T)
     p["sources"] = src
     # what the replay expected over the same days, from the stored daily curve
     cv = ((p.get("base") or {}).get("full") or {}).get("curve") or []
