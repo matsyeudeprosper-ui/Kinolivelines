@@ -1584,6 +1584,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
  </div>
 </div>
+<div class="panel" id="tfcard" style="display:none;margin-top:12px">
+ <div class="lbl">Les temps du march&eacute; <span class="hint" id="tf-hint"></span></div>
+ <div id="tf-head" style="margin-top:11px"></div>
+ <div id="tf-rows" style="margin-top:13px"></div>
+ <div id="tf-foot" style="margin-top:12px"></div>
+</div>
 <div class="sec" id="lrn-sec" style="display:none">Ce que le march&eacute; nous apprend <span class="hint" id="lrn-hint"></span></div>
 <div id="lrn-list" style="display:none"></div>
 <div class="panel" id="lrn-next" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)"></div>
@@ -4478,6 +4484,75 @@ async function loadMarketHours(d){const el=document.getElementById('mhcard');if(
  document.getElementById('mh-hint').textContent='\u00b7 '+(j.days||0)+' '+(en?'day'+(j.days>1?'s':'')+' of memory':'jour'+(j.days>1?'s':'')+' de m\u00e9moire');
  el.style.display='block';
 }
+function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
+ const a=d.tf_align;
+ if(!a||!a.rows||!a.rows.length||HIDEGAUGES()||d.public){el.style.display='none';return;}
+ const en=LANG()==='en';
+ const UP='var(--up)',DN='var(--down)',FLAT='var(--muted2)';
+ const col=t=>t===1?UP:t===-1?DN:FLAT;
+ const word=t=>t===1?(en?'up':'hausse'):t===-1?(en?'down':'baisse'):(en?'flat':'sans tendance');
+ const arrow=t=>t===1?'\u25b2':t===-1?'\u25bc':'\u2014';
+ // the whole ladder, biggest first - the same order as the chart, where the
+ // higher timeframe always sits first
+ const all=a.rows.concat([{k:'M1',trend:a.m1,int:a.m1_int,me:true}]);
+ // ---- verdict -------------------------------------------------------
+ const n=a.n,ag=a.agree,big=(a.up===n)?1:(a.dn===n)?-1:0;
+ let head,say,hc;
+ if(!a.m1){head=en?'The minute has no trend yet':'La minute n\u2019a pas encore de tendance';
+  say=en?'It is waiting for a structure to form.':'Elle attend qu\u2019une structure se dessine.';hc=FLAT;}
+ else if(ag===n&&big){head=en?'Everything points the same way':'Tout va dans le m\u00eame sens';
+  say=en?'The big timeframes and the minute agree.':'Les grands temps et la minute sont d\u2019accord.';hc=col(a.m1);}
+ else if(ag===0&&big){head=en?'The minute goes against the big picture':'La minute va contre les grands temps';
+  say=en?'Often a pullback inside the bigger move.':'Souvent un repli \u00e0 l\u2019int\u00e9rieur du grand mouvement.';hc='var(--warn)';}
+ else if(!big){head=en?'The big timeframes disagree':'Les grands temps ne sont pas d\u2019accord';
+  say=en?'No single direction above the minute.':'Aucun sens unique au-dessus de la minute.';hc='var(--warn)';}
+ else{head=(en?ag+' of '+n+' agree with the minute':ag+' temps sur '+n+' d\u2019accord avec la minute');
+  say=en?'Mixed picture.':'Image partag\u00e9e.';hc='var(--warn)';}
+ setH(document.getElementById('tf-head'),
+  '<div style="display:flex;align-items:center;gap:12px">'+
+   '<div style="width:44px;height:44px;border-radius:14px;flex:none;display:flex;'+
+    'align-items:center;justify-content:center;font-size:1.05rem;font-weight:800;'+
+    'color:'+col(big||a.m1)+';background:color-mix(in srgb,'+hc+' 14%,transparent);'+
+    'border:1px solid color-mix(in srgb,'+hc+' 34%,transparent)">'+arrow(big||a.m1)+'</div>'+
+   '<div style="flex:1;min-width:0">'+
+    '<b style="font-size:1.0rem;letter-spacing:.01em;display:block">'+head+'</b>'+
+    '<div style="font-size:.78rem;color:var(--muted2);line-height:1.4;margin-top:2px">'+say+'</div>'+
+   '</div></div>');
+ // ---- the ladder ----------------------------------------------------
+ // one diverging bar per timeframe: it grows right when the structure is
+ // rising and left when it is falling, so agreement is a shape, not a word
+ let h='';
+ all.forEach((r,i)=>{
+  const c=col(r.trend),pct=r.trend?50:6;
+  const dot=(r.int&&r.trend&&r.int!==r.trend)
+   ? '<i title="'+(en?'inner structure the other way':'petite structure en sens inverse')+'" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9d8cff;box-shadow:0 0 6px rgba(157,140,255,.7)"></i>'
+   : (r.int?'<i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+col(r.int)+';opacity:.55"></i>'
+          :'<i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--surface3)"></i>');
+  h+='<div style="display:grid;grid-template-columns:40px 1fr 74px 12px;align-items:center;gap:9px;'+
+   'padding:7px 0'+(r.me?';border-top:1px solid var(--surface3);margin-top:5px;padding-top:11px':'')+'">'+
+   '<span style="font-size:.66rem;font-weight:800;letter-spacing:.06em;color:'+(r.me?'var(--fg)':'var(--muted)')+'">'+r.k+'</span>'+
+   '<span style="position:relative;display:block;height:8px;border-radius:99px;background:var(--surface3);overflow:hidden">'+
+    '<i style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:rgba(255,255,255,.14)"></i>'+
+    '<i style="position:absolute;top:0;bottom:0;'+(r.trend===-1?'right:50%':'left:50%')+';width:'+pct+'%;'+
+     'background:linear-gradient(90deg,color-mix(in srgb,'+c+' 45%,transparent),'+c+');'+
+     'border-radius:99px"></i></span>'+
+   '<span style="font-size:.74rem;font-weight:700;color:'+c+'">'+word(r.trend)+'</span>'+
+   dot+'</div>';});
+ setH(document.getElementById('tf-rows'),h);
+ // ---- footer --------------------------------------------------------
+ setH(document.getElementById('tf-foot'),
+  (()=>{const lg=(c,t)=>'<span style="display:inline-flex;align-items:center;gap:5px">'+
+    '<i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+c+'"></i>'+t+'</span>';
+   return '<div style="display:flex;flex-wrap:wrap;gap:13px;font-size:.64rem;color:var(--muted)">'+
+    '<span style="width:100%;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted2);margin-bottom:-4px">'+
+     (en?'the dot: the small structure inside':'le point : la petite structure \u00e0 l\u2019int\u00e9rieur')+'</span>'+
+    lg('#9d8cff',en?'other way':'sens inverse')+
+    lg('var(--up)',en?'same way':'m\u00eame sens')+
+    lg('var(--surface3)',en?'none':'aucune')+'</div>';})());
+ document.getElementById('tf-hint').textContent='\u00b7 '+
+  (a.age<90?(en?'live':'en direct'):(en?'updated '+Math.round(a.age/60)+' min ago':'il y a '+Math.round(a.age/60)+' min'));
+ el.style.display='block';
+}
 function renderNext(d){const el=document.getElementById('rb-next');if(!el)return;const en=LANG()==='en';
  const ms=d.meteo_struct;if(!ms||HIDEGAUGES()||d.public){el.style.display='none';return;}
  const full=!!(ms.next_bos!==undefined||ms.invalid!==undefined);
@@ -5731,6 +5806,7 @@ function render(d){
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
+  try{tfPaint(d);}catch(e){}
   drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
@@ -7675,6 +7751,36 @@ def user_stats(u, admin_override=False):
                         if is_admin(u) or has(u.get("id"), "strategy"):
                             for _k in ("next_bos", "flip_bos", "invalid", "int_bos", "int_inv", "int_flip_bos"):
                                 d["meteo_struct"][_k] = _cj.get(_k)
+                    except Exception:
+                        pass
+                    # 2026-09-30 (owner): the Marche tab reads the higher
+                    # timeframes against the minute one. Directions only -
+                    # no price leaves this block, so there is no tier to
+                    # gate and nothing to leak.
+                    try:
+                        _hf = json.load(open(os.path.join(
+                            DIR, "owl_chart_htf.json")))
+                        _rows = []
+                        for _k in ("H4", "H1", "M15"):
+                            _t = (_hf.get("tf") or {}).get(_k)
+                            if not _t:
+                                continue
+                            _rows.append({
+                                "k": _k,
+                                "trend": int(_t.get("trend") or 0),
+                                "int": int(_t.get("int_trend") or 0)})
+                        _m1t = int(_cj.get("trend") or 0)
+                        d["tf_align"] = {
+                            "rows": _rows,
+                            "m1": _m1t,
+                            "m1_int": int(_cj.get("int_trend") or 0),
+                            "agree": sum(1 for _r in _rows
+                                         if _r["trend"] and _r["trend"] == _m1t),
+                            "n": len(_rows),
+                            "up": sum(1 for _r in _rows if _r["trend"] == 1),
+                            "dn": sum(1 for _r in _rows if _r["trend"] == -1),
+                            "age": max(0, int(time.time())
+                                       - int(_hf.get("updated") or 0))}
                     except Exception:
                         pass
                     # live bullet price from the bot (stop distance)
