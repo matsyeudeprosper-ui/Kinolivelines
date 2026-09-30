@@ -156,13 +156,20 @@ foreach ($extra in @("owl_mode_switch.py", "harvest_journal.py", "brick_watch.py
         Start-Process pythonw -ArgumentList $extra -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
     }
 }
-# 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
-if (-not (Get-CimInstance Win32_Process |
-        Where-Object { $_.CommandLine -like "*bos_paper_touch.py*" })) {
-    Say "starting BOS paper twin (flip+touch, virtual)"
-    Start-Process pythonw -ArgumentList "bos_paper_touch.py" `
-        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
-}
+# 2026-09-30 (owner): RETIRED - "just kill it". The flip+TOUCH twin
+# reached -$90.41 over 118 trades, 61W/57L: it wins slightly more
+# often than it loses and still bleeds, because its losers are wider.
+# That confirms the 2026-09-11 tick audit (touch alone ~$0 net) with a
+# real forward sample, which is all it was ever there to do.
+# Do NOT revive: re-enabling it re-opens a question already answered
+# twice. See review/ and the memory note mt5-bos-execution-audit.
+# # 2d) paper twin of the flip+TOUCH rule (2026-09-11 audit comparison)
+# if (-not (Get-CimInstance Win32_Process |
+#         Where-Object { $_.CommandLine -like "*bos_paper_touch.py*" })) {
+#     Say "starting BOS paper twin (flip+touch, virtual)"
+#     Start-Process pythonw -ArgumentList "bos_paper_touch.py" `
+#         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+# }
 
 # 2d) chart feed (aura chart data)
 if (-not (ProcRunning "owl_chart_feed.py")) {

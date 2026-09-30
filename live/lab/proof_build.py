@@ -107,8 +107,24 @@ def main():
     _, RL = H.bars_long()
     base_long = H.run_cfg(RL, 7.0, {}) if RL is not None and len(RL) > len(R) + 7 * 1440 else None
     T = H.real_entries()
+    # 2026-09-30: honesty block. Until today the bot took
+    # internal-structure entries and this test never modelled one, so
+    # the backtest and the live record were not the same strategy.
+    # The rule is off now (owl_package internal_entries=False) and the
+    # two match from here. The trades that already happened are NOT
+    # deleted - they really cost that money - they are labelled.
+    _int = [x for x in T if x.get("internal")]
+    rule_change = {
+        "what": "internal",
+        "off_since": "2026-09-30",
+        "live_trades": len(_int),
+        "live_net": round(sum(x.get("pnl") or 0.0 for x in _int), 2),
+        "of_total": len(T),
+        "in_backtest": False,
+    }
     real_replay = H.simulate_real(T, R, 7.0, {}) if T else None
     src = sources()
+    src["rule_change"] = rule_change
     since = src.get("since")
     # what the replay expected over the same dates (lot 0.02, the replay's lot)
     expected = None

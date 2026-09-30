@@ -4728,6 +4728,25 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   '<div class="pv-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected':'Attendu',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',(j.replay_same||{}).net]],en)+
    pfBand(j.band,U.net,en,en?'The real result':'Le r\u00e9sultat r\u00e9el')+'</div>'+
   '<div class="pf-prog" style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:.78rem"><b>'+(U.trades||0)+' / 30 '+(en?'real trades':'vrais trades')+'</b><span style="color:var(--muted2)">'+(en?'before we judge':'avant de juger')+'</span></div><div class="b"><i style="width:'+Math.min(100,(U.trades||0)/30*100).toFixed(0)+'%"></i></div></div>'+
+  (function(){var RC=SRC.rule_change;
+   if(!RC||!RC.live_trades)return '';
+   return '<div class="pv-note" style="border-left:2px solid var(--warn);'+
+    'padding-left:9px;margin-bottom:8px;color:var(--muted2)">'+
+    (en?('Honest note: until '+RC.off_since+' the robot also traded the small '+
+         'inner structure, and this test never included that rule. '+
+         RC.live_trades+' of the '+RC.of_total+' real trades below came from '+
+         'it, for '+(RC.live_net>=0?'+$':'-$')+Math.abs(RC.live_net).toFixed(2)+
+         '. The rule is switched off since '+RC.off_since+', so the test and '+
+         'the real trades follow the same rules from that date.')
+       :('Note honn\u00eate : jusqu\u2019au '+RC.off_since+', le robot tradait '+
+         'aussi la petite structure interne, et ce test n\u2019a jamais '+
+         'inclus cette r\u00e8gle. '+RC.live_trades+' des '+RC.of_total+
+         ' vrais trades ci-dessous en '+(RC.live_trades>1?'viennent':'vient')+
+         ', pour '+
+         (RC.live_net>=0?'+$':'-$')+Math.abs(RC.live_net).toFixed(2)+
+         '. La r\u00e8gle est coup\u00e9e depuis le '+RC.off_since+
+         ', donc le test et les vrais trades suivent les m\u00eames '+
+         'r\u00e8gles \u00e0 partir de cette date.'))+'</div>';})()+
   '<div class="pv-note">'+(en?'Sources: '+(SRC.real_accounts||0)+' real account'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' and one demo':'')+', never touched by hand. Names are not shown.':'Sources : '+(SRC.real_accounts||0)+' compte'+((SRC.real_accounts||0)>1?'s':'')+' r\u00e9el'+((SRC.real_accounts||0)>1?'s':'')+(SRC.demo?' et un d\u00e9mo':'')+', jamais touch\u00e9s \u00e0 la main. Les noms ne sont pas montr\u00e9s.')+'</div>')
    :('<div class="pv-p" style="color:var(--muted);margin-top:10px">'+(en?'No real trades in the journal yet.':'Pas encore de vrais trades dans le journal.')+'</div>'))});
  // 5 - your account

@@ -620,7 +620,8 @@ def real_entries(files=None):
                     dist = float(r.get("dist_pts") or abs(e - sl))
                     uniq[key] = {"t": int(t), "d": 1 if r["direction"] == "BUY" else -1, "e": e, "sl": sl, "dist": dist,
                                  "nerv": float(r.get("nervosity") or 1.0), "flip": r.get("kind") == "FLIP-BOS",
-                                 "kind": r.get("kind"), "pnl": float(r.get("profit_usd") or 0)}
+                                 "kind": r.get("kind"), "pnl": float(r.get("profit_usd") or 0),
+                                 "internal": (r.get("internal") == "True")}
         except Exception:
             continue
     return sorted(uniq.values(), key=lambda x: x["t"])
