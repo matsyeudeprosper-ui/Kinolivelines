@@ -596,6 +596,38 @@ function htDraw(){
    g.setLineDash([]);g.globalAlpha=1;
    if(xb!==undefined){g.fillStyle=col;g.beginPath();g.arc(xb,y,3,0,6.3);g.fill();}
    pill(y,'BOS '+Math.round(d.next_bos),col,true);}}
+ // the BOS this timeframe last crossed, kept as a level for the same
+ // reason as on the minute panel: it is where price leaned last.
+ {const lb=(d.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
+  if(lb){const y=py(lb[1]);
+   if(!inView(y)){
+    // docked at the edge it came from, with its price and how far away
+    const up2=lb[3]===1,c3=up2?'#2ecc71':'#ff5c5c';
+    // clear of the two things that live in those corners: the "pts a
+    // faire" chip at the top left and the timeframe tag at the bottom left
+    const yd=(y<TOP)?TOP+26:TOP+plot-34;
+    const t4=(y<TOP?'\u25b2 ':'\u25bc ')+(CL?'last BOS ':'dernier BOS ')+Math.round(lb[1]);
+    g.font='700 8px Inter, system-ui, sans-serif';g.textAlign='left';
+    const w4=g.measureText(t4).width+9;
+    g.globalAlpha=.85;
+    g.fillStyle='rgba(10,17,28,.86)';
+    g.beginPath();g.roundRect(3,yd-6.5,w4,13,6);g.fill();
+    g.strokeStyle=c3;g.globalAlpha=.45;g.lineWidth=1;g.stroke();
+    g.globalAlpha=.9;g.fillStyle=c3;g.fillText(t4,7.5,yd+2.6);
+    g.globalAlpha=1;}
+   else{const up=lb[3]===1,c2=up?'#2ecc71':'#ff5c5c',xb=htX(lb[0]);
+    g.strokeStyle=c2;g.globalAlpha=.30;g.lineWidth=1;g.setLineDash([7,5]);
+    g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-3,y);g.stroke();
+    g.setLineDash([]);
+    if(xb!==undefined){g.globalAlpha=.85;g.fillStyle=c2;g.fillRect(xb-2.5,y-2.5,5,5);}
+    g.globalAlpha=1;
+    g.font='700 8px Inter, system-ui, sans-serif';g.textAlign='left';
+    const t3=(CL?'last BOS ':'dernier BOS ')+Math.round(lb[1]);
+    const w3=g.measureText(t3).width+9;
+    g.fillStyle='rgba(10,17,28,.86)';
+    g.beginPath();g.roundRect(3,y-6.5,w3,13,6);g.fill();
+    g.strokeStyle=c2;g.globalAlpha=.5;g.lineWidth=1;g.stroke();
+    g.globalAlpha=1;g.fillStyle=c2;g.fillText(t3,7.5,y+2.6);}}}
  // INTERNAL STRUCTURE: the smaller structure building inside the main one.
  // Violet, dimmer and smaller, so the hierarchy is obvious at a glance. A
  // level landing on the same row as a main one is skipped - the bigger
@@ -1251,11 +1283,24 @@ function draw(){
  // a level outside the window is docked at the edge with its price and
  // how far away it is, so nothing important disappears silently
  edgeMark=(v,col,lab)=>{
-  const top=v>hi,y=top?TOPP+9:TOPP+PLOT-9;
+  // the plot runs a few pixels past the canvas bottom, so a label docked
+  // there had its lower half cut off. Clamp it inside, whatever PLOT says.
+  const top=v>hi;
+  // measured 2026-09-30: the canvas is 32px TALLER than the viewport (it
+  // is sized 100vh-48px but starts at 80px, because the chips row grew the
+  // header), so its own height is not a safe floor. Clamp to what is
+  // actually on screen.
+  const _vis=window.innerHeight-cv.getBoundingClientRect().top;
+  const y=top?TOPP+9:Math.min(TOPP+PLOT-9,_vis-12);
   ctx.save();ctx.globalAlpha=.92;ctx.fillStyle=col;
   ctx.beginPath();
-  ctx.moveTo(W-30,y+(top?4:-4));ctx.lineTo(W-22,y+(top?-5:5));
-  ctx.lineTo(W-38,y+(top?-5:5));ctx.closePath();ctx.fill();
+  // 2026-09-30: the apex was on the wrong side, so a level docked at the
+  // TOP because it is above the window drew an arrow pointing DOWN, and one
+  // docked at the bottom pointed UP. On a price chart that is not a cosmetic
+  // detail - it says the opposite of where the level is. Apex now on the
+  // off-screen side: up at the top, down at the bottom.
+  ctx.moveTo(W-30,y+(top?-5:5));ctx.lineTo(W-22,y+(top?4:-4));
+  ctx.lineTo(W-38,y+(top?4:-4));ctx.closePath();ctx.fill();
   ctx.font='bold 9px system-ui';
   const t=lab+' '+v.toFixed(0);
   const w2=ctx.measureText(t).width+10;
@@ -1739,6 +1784,29 @@ function draw(){
    ctx.beginPath();ctx.roundRect(W-wf-4,yf-7,wf,14,7);ctx.fill();
    ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
    ctx.fillStyle=fcol;ctx.fillText(tf,W-wf,yf+3);ctx.restore();}}
+ {const lb=(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
+  if(lb){
+   const v=lb[1],up=lb[3]===1,col=up?'#2ecc71':'#ff5c5c';
+   const lab=(CL?'last BOS ':'dernier BOS ')+v.toFixed(0);
+   const yL=px(v);
+   if(v>hi||v<lo||yL<=TOPP+9||yL>=TOPP+PLOT-9){
+    edgeMark(v,col,CL?'last BOS':'dernier BOS');}
+   else{
+    const y=yL,x0=xoft[lb[0]];
+    ctx.save();
+    ctx.strokeStyle=col;ctx.globalAlpha=.30;ctx.lineWidth=1;
+    ctx.setLineDash([7,5]);
+    ctx.beginPath();ctx.moveTo(x0!==undefined?x0:0,y);ctx.lineTo(W,y);
+    ctx.stroke();ctx.setLineDash([]);
+    if(x0!==undefined){ctx.globalAlpha=.85;ctx.fillStyle=col;
+     ctx.fillRect(x0-2.5,y-2.5,5,5);}
+    ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
+    const w3=ctx.measureText(lab).width+10;
+    ctx.fillStyle='rgba(8,14,22,.8)';
+    ctx.beginPath();ctx.roundRect(4,y-7,w3,14,7);ctx.fill();
+    ctx.strokeStyle=col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.stroke();
+    ctx.globalAlpha=1;ctx.fillStyle=col;ctx.fillText(lab,9,y+3.5);
+    ctx.restore();}}}
  if(D.next_bos){
   const armed=D.bos_ready!==false;
   const yb=px(D.next_bos),up=D.trend===1;
