@@ -421,6 +421,31 @@ def main():
     except Exception as _e:
         say(f'risk-ceiling watch unavailable: {_e}')
     say(f"researcher done: {len(out)} what-ifs in {(time.time()-t0)/60:.1f} min - {counts}")
+    # 2026-09-30 (owner): the screen test, every night. It drives the
+    # real pages and asserts what they PAINT, which is how the proof
+    # page's honest note was caught being wiped by the hourly refresh.
+    # LAST, after the battery: a browser that will not start must never
+    # cost us the night's research.
+    if not quick:
+        try:
+            import subprocess as _sp
+            _out = os.path.join(LAB, 'ui_smoke')
+            _r = _sp.run(['node',
+                          os.path.join(os.path.dirname(LIVE), 'review',
+                                       'ui_smoke.mjs'), _out],
+                         capture_output=True, text=True, timeout=900)
+            _txt = (_r.stdout or '') + (_r.stderr or '')
+            _last = [l for l in _txt.split(chr(10))
+                     if l.startswith('UI SMOKE:')]
+            if _r.returncode == 0:
+                say('screen test ok - ' + (_last[-1] if _last else 'passed'))
+            else:
+                say('SCREEN TEST FAILED - something the app draws is not what it should be:')
+                for _l in _txt.split(chr(10)):
+                    if 'FAIL' in _l:
+                        say('  ' + _l.strip())
+        except Exception as _e:
+            say(f'screen test unavailable: {_e}')
 
 
 if __name__ == "__main__":

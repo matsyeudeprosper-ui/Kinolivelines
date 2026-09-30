@@ -45,6 +45,12 @@ def main():
                  "clean": PB.clean_union(T)}
         p["union"] = union
     src["rule_change"] = PB.rule_change(T)
+    # the replay itself needs price history, so the hourly pass reuses
+    # the nightly one - but the drag row is still re-dated and kept
+    src["drag"] = (PB.drag((p.get("union") or {}).get("replay_same_entries"),
+                           os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        "drag_history.json"))
+                   or (p.get("sources") or {}).get("drag"))
     p["sources"] = src
     # what the replay expected over the same days, from the stored daily curve
     cv = ((p.get("base") or {}).get("full") or {}).get("curve") or []

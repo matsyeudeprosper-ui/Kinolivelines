@@ -59,6 +59,44 @@ def sources():
     return {"real_accounts": len(real), "demo": demo, "since": since or None}
 
 
+def drag(replay, hist_path):
+    """Execution drag: replay of the bot's own entries vs what they really
+    paid. Appended to a dated history so it can be read as a trend.
+
+    Not alarmed on. A dozen trades cannot support a threshold, and a
+    threshold invented to look responsible is the same fitting this desk
+    refuses everywhere else.
+    """
+    if not replay or not replay.get("trades"):
+        return None
+    exp = float(replay.get("net") or 0.0)
+    act = float(replay.get("actual") or 0.0)
+    n = int(replay.get("trades") or 0)
+    row = {"d": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+           "trades": n, "expected": round(exp, 2), "actual": round(act, 2),
+           "gap": round(act - exp, 2),
+           "per_trade": round((act - exp) / n, 3) if n else None}
+    try:
+        h = json.load(open(hist_path, encoding="utf-8"))
+        if not isinstance(h, list):
+            h = []
+    except Exception:
+        h = []
+    h = [x for x in h if x.get("d") != row["d"]]
+    h.append(row)
+    h = h[-180:]
+    try:
+        json.dump(h, open(hist_path, "w"), indent=1)
+    except Exception:
+        pass
+    # a COPY, not the list itself: h already contains `row`, so handing
+    # back the live list made row.history contain row and json.dump
+    # raised "Circular reference detected". The copies are taken before
+    # row gains its own history key, so they are clean.
+    row["history"] = [dict(x) for x in h[-30:]]
+    return row
+
+
 def rule_change(T):
     """The honest note about a rule that ran live but was never in the test.
 
@@ -143,6 +181,8 @@ def main():
     real_replay = H.simulate_real(T, R, 7.0, {}) if T else None
     src = sources()
     src["rule_change"] = _rc
+    src["drag"] = drag(real_replay,
+                       os.path.join(LAB, "drag_history.json"))
     since = src.get("since")
     # what the replay expected over the same dates (lot 0.02, the replay's lot)
     expected = None

@@ -4766,6 +4766,31 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   '<div class="pv-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected':'Attendu',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',(j.replay_same||{}).net]],en)+
    pfBand(j.band,U.net,en,en?'The real result':'Le r\u00e9sultat r\u00e9el')+'</div>'+
   '<div class="pf-prog" style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:.78rem"><b>'+(U.trades||0)+' / 30 '+(en?'real trades':'vrais trades')+'</b><span style="color:var(--muted2)">'+(en?'before we judge':'avant de juger')+'</span></div><div class="b"><i style="width:'+Math.min(100,(U.trades||0)/30*100).toFixed(0)+'%"></i></div></div>'+
+  (function(){var DG=SRC.drag;
+   if(!DG||!DG.trades)return '';
+   var per=(DG.per_trade==null?null:DG.per_trade);
+   var h=(DG.history||[]).filter(function(x){return x.per_trade!=null;});
+   var trend='';
+   if(h.length>=3){
+    var a=h[0].per_trade, b=h[h.length-1].per_trade;
+    trend=(en?' Over '+h.length+' readings it has gone from '
+             :' Sur '+h.length+' relev\u00e9s, il est pass\u00e9 de ')
+       +a.toFixed(2)+(en?' to ':' \u00e0 ')+b.toFixed(2)+'.';}
+   return '<div class="pv-note" style="border-left:2px solid var(--muted2);'+
+    'padding-left:9px;margin-bottom:8px;color:var(--muted2)">'+
+    (en?('Cost of trading: the test says these '+DG.trades+' entries should '+
+         'have made '+(DG.expected>=0?'+$':'-$')+Math.abs(DG.expected).toFixed(2)+
+         ' and they made '+(DG.actual>=0?'+$':'-$')+Math.abs(DG.actual).toFixed(2)+
+         '. The '+(DG.gap>=0?'+$':'-$')+Math.abs(DG.gap).toFixed(2)+' difference is '+
+         'spread and fills'+(per==null?'':', about $'+Math.abs(per).toFixed(2)+' a trade')+
+         '.'+trend)
+      :('Ce que trader co\u00fbte : le test dit que ces '+DG.trades+' entr\u00e9es '+
+        'auraient d\u00fb faire '+(DG.expected>=0?'+$':'-$')+Math.abs(DG.expected).toFixed(2)+
+        ', elles ont fait '+(DG.actual>=0?'+$':'-$')+Math.abs(DG.actual).toFixed(2)+
+        '. L\u2019\u00e9cart de '+(DG.gap>=0?'+$':'-$')+Math.abs(DG.gap).toFixed(2)+
+        ' vient du spread et des ex\u00e9cutions'+
+        (per==null?'':', environ $'+Math.abs(per).toFixed(2)+' par trade')+'.'+trend))+
+    '</div>';})()+
   (function(){var RC=SRC.rule_change;
    if(!RC||!RC.live_trades)return '';
    return '<div class="pv-note" style="border-left:2px solid var(--warn);'+
