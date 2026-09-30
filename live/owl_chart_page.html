@@ -308,7 +308,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
 <div id="toolsmenu" role="menu">
  <button id="gotoday" class="tb" title="Aller au d&eacute;but de la journ&eacute;e"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Aujourd&rsquo;hui</span></button>
  <button id="pickday" class="tb" title="Voir une journ&eacute;e pass&eacute;e"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Journ&eacute;e pass&eacute;e</span></button>
- <button id="htfbtn" class="tb" title="Deux temps : M15, H1 ou H4 au-dessus"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg></button>
+ <button id="htfbtn" class="tb" title="Deux temps : M15, H1 ou H4 au-dessus"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg><span>Deux temps</span></button>
  <button id="ruler" class="tb" title="R&egrave;gle : deux touches"><svg viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg><span>R&egrave;gle</span></button>
 </div></div><input id="dayinp" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"><button id="backlive">&#9654; EN DIRECT</button>
 <button id="adstop" style="display:none;padding:11px 15px;border-radius:14px;
@@ -469,7 +469,7 @@ function htDraw(){
  g.fillStyle='rgba(255,255,255,.012)';g.fillRect(0,0,W,H);
  if(!d||!d.candles||d.candles.length<3){
   g.fillStyle='#5f6f82';g.font='500 12px Inter, system-ui, sans-serif';g.textAlign='center';
-  g.fillText(CL()==='en'?'loading '+HT.tf+'...':'chargement '+HT.tf+'\u2026',W/2,H/2);return;}
+  g.fillText(CL?'loading '+HT.tf+'...':'chargement '+HT.tf+'\u2026',W/2,H/2);return;}
  const PAD=52,TOP=26,BOT=16;
  // a higher timeframe is there for CONTEXT: show a long stretch, so the
  // swings and the breaks are inside the view instead of behind the edge
@@ -549,8 +549,8 @@ function htDraw(){
    [[ax,RULER.a.p],[bx,RULER.b.p]].forEach(q=>{g.fillStyle='#e8c55a';
     g.beginPath();g.arc(q[0],py(q[1]),2.6,0,Math.PI*2);g.fill();});}}
  const sub=document.getElementById('htfsub');
- if(sub)sub.textContent=(d.trend===1?(CL()==='en'?'up':'hausse'):d.trend===-1?(CL()==='en'?'down':'baisse'):'\u2014')
-  +(d.next_bos?' \u00b7 '+(CL()==='en'?'break at ':'cassure \u00e0 ')+Math.round(d.next_bos):'');
+ if(sub)sub.textContent=(d.trend===1?(CL?'up':'hausse'):d.trend===-1?(CL?'down':'baisse'):'\u2014')
+  +(d.next_bos?' \u00b7 '+(CL?'break at ':'cassure \u00e0 ')+Math.round(d.next_bos):'');
 }
 function htNear(t){let b,bd=1e18;for(const k of HT.xts){const dd=Math.abs(k-t);if(dd<bd){bd=dd;b=k;}}
  return b===undefined?undefined:HT.xoft[b];}
@@ -577,22 +577,27 @@ function htX(t){if(!HT.xts.length)return undefined;
    document.documentElement.style.setProperty('--htf-r',HT.r);htDraw();try{draw();}catch(err){}});
   grip.addEventListener('pointerup',()=>{if(st){st=null;htSave();}});}
 })();
-function htSheet(){const en=CL()==='en';
- const row=(lab,val,cur,fn)=>'<button class="tfc'+(cur?' on':'')+'" style="flex:1" onclick="'+fn+'">'+lab+'</button>';
- sheet('<h3 style="margin:0 0 4px">'+(en?'Two timeframes':'Deux temps')+'</h3>'+
-  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 12px">'+
-   (en?'The same market read at two speeds. The higher one sits first and is drawn in greys, because up or down does not matter there: what matters is the structure.':'Le m\u00eame march\u00e9 lu \u00e0 deux vitesses. Le plus grand passe en premier et se dessine en gris, parce que hausse ou baisse n\u2019y change rien : ce qui compte, c\u2019est la structure.')+'</p>'+
-  '<div class="lbl">'+(en?'Higher timeframe':'Temps sup\u00e9rieur')+'</div>'+
-  '<div style="display:flex;gap:6px;margin-top:6px">'+['M15','H1','H4'].map(t=>row(t,'',HT.on&&HT.tf===t,"htPick('"+t+"')")).join('')+'</div>'+
-  '<div class="lbl" style="margin-top:14px">'+(en?'Split':'Partage')+'</div>'+
-  '<div style="display:flex;gap:6px;margin-top:6px">'+
-   row(en?'Top and bottom':'Haut et bas','',HT.split==='v',"htSplit('v')")+
-   row(en?'Side by side':'C\u00f4te \u00e0 c\u00f4te','',HT.split==='h',"htSplit('h')")+'</div>'+
-  '<button class="shbtn '+(HT.on?'shghost':'shmain')+'" style="margin-top:16px" onclick="htOff()">'+
-   (HT.on?(en?'One timeframe only':'Un seul temps'):(en?'Close':'Fermer'))+'</button>');}
-function htPick(t){HT.tf=t;HT.on=true;HT.data=null;htSave();htApply();htLoad(true);toolsDot();}
+function htSheet(){
+ const B='display:block;width:100%;margin-top:8px;padding:12px;border-radius:12px;'+
+  'font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5;';
+ const ON='border-color:#3b82f6;background:rgba(59,130,246,.18);color:#dbeafe;';
+ const cell=(lab,on,fn)=>'<button style="'+B+(on?ON:'')+'margin-top:0;flex:1" onclick="'+fn+'">'+lab+'</button>';
+ adSheet(
+  '<div style="font-size:1.05rem;font-weight:800;color:#e8eef4;margin-bottom:4px">'+(CL?'Two timeframes':'Deux temps')+'</div>'+
+  '<div style="color:#8fa6bd;font-size:.84rem;line-height:1.5;margin-bottom:14px">'+
+   (CL?'The same market read at two speeds. The higher one sits first and is drawn in greys, because up or down does not matter there: what matters is the structure.'
+      :'Le m\u00eame march\u00e9 lu \u00e0 deux vitesses. Le plus grand passe en premier et se dessine en gris, parce que hausse ou baisse n\u2019y change rien : ce qui compte, c\u2019est la structure.')+'</div>'+
+  '<div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d92a8">'+(CL?'Higher timeframe':'Temps sup\u00e9rieur')+'</div>'+
+  '<div style="display:flex;gap:8px;margin-top:8px">'+['M15','H1','H4'].map(t=>cell(t,HT.on&&HT.tf===t,"htPick('"+t+"')")).join('')+'</div>'+
+  '<div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d92a8;margin-top:16px">'+(CL?'Split':'Partage')+'</div>'+
+  '<div style="display:flex;gap:8px;margin-top:8px">'+
+   cell(CL?'Top and bottom':'Haut et bas',HT.split==='v',"htSplit('v')")+
+   cell(CL?'Side by side':'C\u00f4te \u00e0 c\u00f4te',HT.split==='h',"htSplit('h')")+'</div>'+
+  '<button style="'+B+'margin-top:18px" onclick="htOff()">'+
+   (HT.on?(CL?'One timeframe only':'Un seul temps'):(CL?'Close':'Fermer'))+'</button>');}
+function htPick(t){HT.tf=t;HT.on=true;HT.data=null;htSave();htApply();htLoad(true);toolsDot();try{window._adDone(1);}catch(e){}}
 function htSplit(v){HT.split=v;htSave();htApply();setTimeout(htDraw,60);}
-function htOff(){HT.on=false;htSave();htApply();toolsDot();_shDone(1);}
+function htOff(){HT.on=false;htSave();htApply();toolsDot();try{window._adDone(1);}catch(e){}}
 setInterval(()=>{if(HT.on)htLoad(false);},20000);
 window.addEventListener('resize',()=>{if(HT.on)setTimeout(htDraw,80);});
 
