@@ -700,7 +700,12 @@ def connect():
 # speeds. Published to owl_chart_htf.json; the app only serves the file, it
 # never touches MetaTrader itself.
 HTF = {"M15": None, "H1": None, "H4": None}
-HTF_BARS = {"M15": 2600, "H1": 1400, "H4": 900}
+HTF_BARS = {"M15": 3200, "H1": 4000, "H4": 2600}
+HTF_KEEP = 800              # published candles per timeframe (was 260)
+# upgrade 5: when each timeframe last CHANGED direction, so the card can
+# say how long it has held it. Seeded from the file on the first tick so a
+# restart does not reset every age to "just now".
+_HTF_SINCE = {}
 _HTF_LAST = 0.0
 _HTF_PIN = {"M15": {"t0": None, "start": None},
             "H1": {"t0": None, "start": None},
@@ -715,6 +720,10 @@ def htf_tick():
     if time.time() - _HTF_LAST < 55:
         return
     _HTF_LAST = time.time()
+    try:
+        _prev = json.load(open(HTFF))
+    except Exception:
+        _prev = {}
     out = {"updated": int(time.time()), "symbol": SYMBOL, "tf": {}}
     for name, code in (("M15", mt5.TIMEFRAME_M15), ("H1", mt5.TIMEFRAME_H1),
                        ("H4", mt5.TIMEFRAME_H4)):
@@ -727,7 +736,22 @@ def htf_tick():
                 continue
             (dots, marks, trend, choch, nxt, inv, nxt_t, inv_t,
              _d, flp, flp_t, _fd) = engine(kept)
-            win = kept[-260:]
+            _pv = _HTF_SINCE.get(name)
+            if _pv is None:
+                _old = (_prev.get("tf") or {}).get(name) or {}
+                if _old.get("trend") == trend and _old.get("since"):
+                    _pv = {"trend": trend, "since": int(_old["since"]),
+                           "exact": bool(_old.get("since_exact"))}
+                else:
+                    _pv = {"trend": trend, "since": int(time.time()),
+                           "exact": False}
+                _HTF_SINCE[name] = _pv
+            elif _pv.get("trend") != trend:
+                # we watched it turn, so from here the age is a measurement
+                _pv = {"trend": trend, "since": int(time.time()),
+                       "exact": True}
+                _HTF_SINCE[name] = _pv
+            win = kept[-HTF_KEEP:]
             t0 = win[0][0] if win else 0
             # Owner 2026-09-30: "I still don't see the main structure and
             # internal (structure if any) on the higher timeframe." The main
@@ -745,6 +769,8 @@ def htf_tick():
                 out.setdefault("ierr", {})[name] = f"{type(e).__name__}: {e}"
             out["tf"][name] = {
                 "candles": win, "raw": len(R), "kept": len(kept),
+                "since": _pv["since"],
+                "since_exact": bool(_pv.get("exact")),
                 "dots": [d for d in dots if d[0] >= t0],
                 "marks": [m for m in marks if m[0] >= t0],
                 "trend": trend, "choch": choch,

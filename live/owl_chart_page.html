@@ -252,7 +252,8 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
 <a id="back" href="#">&#8592;</a>
 <h1>BTCUSD &middot; M1</h1>
 <span class="badge">filtre silence</span>
-<span id="hdrow"><span id="hdstrip"><span class="seg" id="trbadge"
+<span id="hdrow"><span id="hdstrip"><span class="seg" id="tfdots"
+ title="Les temps du march&eacute;" style="display:none;gap:4px;padding:0 9px"></span><span class="seg" id="trbadge"
  style="display:none"></span><span class="seg" id="autobadge"
  style="display:none;color:#8df0bb"
  title="Mode automatique : le robot gere les entrees"><i><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg></i></span><span
@@ -633,6 +634,45 @@ function htDraw(){
     if(xb!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xb,y,2.6,0,6.3);g.fill();}
     pill(y,(d.int_bos_dir===1?'\u25b2 ':'\u25bc ')+'int BOS '+Math.round(d.int_bos),ic,false);}}
  }
+ // YOUR TRADE, in the bigger picture (upgrade 3). Same three prices as
+ // the minute panel, thinner, and only when they are inside the view.
+ const lv={};
+ (D.trades||[]).forEach(t=>{
+  if(t[3]>0){const k='S'+t[3].toFixed(0);(lv[k]=lv[k]||['S',t[3]]);}
+  if(t[4]>0){const k='T'+t[4].toFixed(0);(lv[k]=lv[k]||['T',t[4]]);}
+  if(t[2]>0){const k='E'+t[2].toFixed(0);(lv[k]=lv[k]||['E',t[2]]);}});
+ Object.values(lv).forEach(q=>{const k=q[0],v=q[1],y=py(v);
+  if(!inView(y))return;
+  const c=k==='S'?'rgba(255,92,92,.8)':k==='T'?'rgba(46,204,113,.8)':'rgba(143,198,255,.8)';
+  g.strokeStyle=c;g.lineWidth=1;g.setLineDash(k==='E'?[5,4]:[]);
+  g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();g.setLineDash([]);
+  g.font='800 8px Inter, system-ui, sans-serif';g.textAlign='left';
+  const lab=k==='S'?'SL':k==='T'?'TP':(CL?'entry':'entr\u00e9e');
+  const w=g.measureText(lab).width+8;
+  g.fillStyle='rgba(10,17,28,.9)';g.beginPath();g.roundRect(3,y-6.5,w,13,6);g.fill();
+  g.fillStyle=c;g.fillText(lab,6,y+2.6);});
+ // WHERE PRICE IS (upgrade 2): the live line, and what is left to run
+ // before this timeframe breaks. A level you cannot measure yourself
+ // against is only half a level.
+ if(D.px){const y=py(D.px);
+  if(inView(y)){
+   g.strokeStyle='rgba(255,255,255,.34)';g.lineWidth=1;g.setLineDash([2,3]);
+   g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();g.setLineDash([]);
+   const px0=Math.round(D.px);
+   g.font='800 8.5px Inter, system-ui, sans-serif';g.textAlign='left';
+   const w=g.measureText(px0).width+10;
+   g.fillStyle='#e8eef4';g.beginPath();g.roundRect(W-PAD-w-3,y-7,w,14,7);g.fill();
+   g.fillStyle='#0b1118';g.fillText(px0,W-PAD-w+2,y+3);}
+  if(d.next_bos){const left=Math.round(Math.abs(d.next_bos-D.px));
+   const up=d.trend===1;
+   g.font='700 9px Inter, system-ui, sans-serif';g.textAlign='left';
+   const t2=(CL?'':'')+left+(CL?' pts to go':' pts \u00e0 faire');
+   const w2=g.measureText(t2).width+12;
+   g.fillStyle='rgba(10,17,28,.86)';
+   g.beginPath();g.roundRect(6,TOP+4,w2,15,7);g.fill();
+   g.strokeStyle=up?'rgba(79,216,200,.45)':'rgba(255,150,120,.45)';
+   g.lineWidth=1;g.stroke();
+   g.fillStyle=up?'#4fd8c8':'#ff9678';g.fillText(t2,12,TOP+15);}}
  // where the minute chart is looking, so the two panels stay tied together
  const xw=window._xts||[];
  if(xw.length&&HT.xts.length){
@@ -788,6 +828,30 @@ function htOff(){HT.on=false;htSave();htApply();toolsDot();try{window._adDone(1)
 // The ratio is set first, so it never flashes at the default share.
 if(HT.on){document.documentElement.style.setProperty('--htf-r',HT.r);
  setTimeout(()=>{try{htApply();}catch(e){}try{toolsDot();}catch(e){}},0);}
+// The four dots: H4, H1, M15 and the minute, so the alignment is there
+// while you watch the chart instead of a tab away. Directions only, one
+// small call a minute.
+let TFS=null;
+function tfDotsPaint(){
+ const el=document.getElementById('tfdots');if(!el||!TFS)return;
+  const S=TFS;const ks=['H4','H1','M15'];
+  if(!ks.some(k=>S[k])){el.style.display='none';return;}
+  const col=t=>t===1?'#2ecc71':t===-1?'#ff5c5c':'#5f6f82';
+  let h='';
+  ks.forEach(k=>{const t=(S[k]||{}).trend||0;
+   h+='<i title="'+k+'" style="width:7px;height:7px;border-radius:50%;background:'+col(t)+
+      ';box-shadow:0 0 5px '+col(t)+'66"></i>';});
+  const m1=(D&&D.trend)||0;
+  h+='<i style="width:1px;height:11px;background:rgba(255,255,255,.18);margin:0 1px"></i>'+
+     '<i title="M1" style="width:7px;height:7px;border-radius:50%;background:'+col(m1)+
+     ';box-shadow:0 0 5px '+col(m1)+'66"></i>';
+  el.innerHTML=h;el.style.display='inline-flex';el.style.alignItems='center';}
+// the three higher dots come from the feed once a minute; the minute dot is
+// whatever the chart is showing right now, so it is repainted far more often
+async function tfDots(){
+ try{const r=await fetch('chart_htf?tf=all&t='+Date.now(),{cache:'no-store'});
+  if(!r.ok)return;const j=await r.json();TFS=(j&&j.tf)||null;tfDotsPaint();}catch(e){}}
+tfDots();setInterval(tfDots,60000);setInterval(tfDotsPaint,4000);
 setInterval(()=>{if(HT.on)htLoad(false);},20000);
 window.addEventListener('resize',()=>{if(HT.on)setTimeout(htDraw,80);});
 

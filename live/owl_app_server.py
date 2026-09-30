@@ -4492,6 +4492,11 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
  const col=t=>t===1?UP:t===-1?DN:FLAT;
  const word=t=>t===1?(en?'up':'hausse'):t===-1?(en?'down':'baisse'):(en?'flat':'sans tendance');
  const arrow=t=>t===1?'\u25b2':t===-1?'\u25bc':'\u2014';
+ // plain ages: a number nobody has to convert
+ const dur=sec=>{const m=Math.round(sec/60);
+  if(m<60)return m+' min';
+  const h=Math.round(m/60);if(h<48)return h+' h';
+  return Math.round(h/24)+(en?' d':' j');};
  // the whole ladder, biggest first - the same order as the chart, where the
  // higher timeframe always sits first
  const all=a.rows.concat([{k:'M1',trend:a.m1,int:a.m1_int,me:true}]);
@@ -4501,7 +4506,10 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
  if(!a.m1){head=en?'The minute has no trend yet':'La minute n\u2019a pas encore de tendance';
   say=en?'It is waiting for a structure to form.':'Elle attend qu\u2019une structure se dessine.';hc=FLAT;}
  else if(ag===n&&big){head=en?'Everything points the same way':'Tout va dans le m\u00eame sens';
-  say=en?'The big timeframes and the minute agree.':'Les grands temps et la minute sont d\u2019accord.';hc=col(a.m1);}
+  say=(en?'The big timeframes and the minute agree.':'Les grands temps et la minute sont d\u2019accord.')+
+   (a.together&&(a.together_exact||a.together>=1800)
+     ?(en?' Together for '+(a.together_exact?'':'over ')+dur(a.together)+'.'
+        :' Ensemble depuis '+(a.together_exact?'':'plus de ')+dur(a.together)+'.'):'');hc=col(a.m1);}
  else if(ag===0&&big){head=en?'The minute goes against the big picture':'La minute va contre les grands temps';
   say=en?'Often a pullback inside the bigger move.':'Souvent un repli \u00e0 l\u2019int\u00e9rieur du grand mouvement.';hc='var(--warn)';}
  else if(!big){head=en?'The big timeframes disagree':'Les grands temps ne sont pas d\u2019accord';
@@ -4536,7 +4544,9 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
     '<i style="position:absolute;top:0;bottom:0;'+(r.trend===-1?'right:50%':'left:50%')+';width:'+pct+'%;'+
      'background:linear-gradient(90deg,color-mix(in srgb,'+c+' 45%,transparent),'+c+');'+
      'border-radius:99px"></i></span>'+
-   '<span style="font-size:.74rem;font-weight:700;color:'+c+'">'+word(r.trend)+'</span>'+
+   '<span style="font-size:.74rem;font-weight:700;color:'+c+'">'+word(r.trend)+
+    ((r.held!=null&&r.trend&&(r.exact||r.held>=1800))?'<span style="display:block;font-size:.6rem;font-weight:600;color:var(--muted);margin-top:1px">'+(r.exact?'':(en?'over ':'plus de '))+dur(r.held)+'</span>':'')+
+   '</span>'+
    dot+'</div>';});
  setH(document.getElementById('tf-rows'),h);
  // ---- footer --------------------------------------------------------
@@ -7768,7 +7778,11 @@ def user_stats(u, admin_override=False):
                             _rows.append({
                                 "k": _k,
                                 "trend": int(_t.get("trend") or 0),
-                                "int": int(_t.get("int_trend") or 0)})
+                                "int": int(_t.get("int_trend") or 0),
+                                "held": (max(0, int(time.time())
+                                             - int(_t["since"]))
+                                         if _t.get("since") else None),
+                                "exact": bool(_t.get("since_exact"))})
                         _m1t = int(_cj.get("trend") or 0)
                         d["tf_align"] = {
                             "rows": _rows,
@@ -7780,7 +7794,15 @@ def user_stats(u, admin_override=False):
                             "up": sum(1 for _r in _rows if _r["trend"] == 1),
                             "dn": sum(1 for _r in _rows if _r["trend"] == -1),
                             "age": max(0, int(time.time())
-                                       - int(_hf.get("updated") or 0))}
+                                       - int(_hf.get("updated") or 0)),
+                            "together": (min([_r["held"] for _r in _rows
+                                              if _r["held"] is not None] or [0])
+                                         if _rows and len(set(
+                                             _r["trend"] for _r in _rows)) == 1
+                                         and _rows[0]["trend"] else None),
+                            "together_exact": all(_r.get("exact")
+                                                  for _r in _rows) if _rows
+                            else False}
                     except Exception:
                         pass
                     # live bullet price from the bot (stop distance)
@@ -10296,6 +10318,21 @@ class H(BaseHTTPRequestHandler):
                 import urllib.parse as _uph
                 _qh = _uph.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
                 _tf = (_qh.get("tf", ["H1"])[0] or "H1").upper()
+                if _tf == "ALL":
+                    _h = json.load(open(os.path.join(
+                        DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                    _sum = {}
+                    for _k in ("M15", "H1", "H4"):
+                        _t = (_h.get("tf") or {}).get(_k) or {}
+                        if not _t:
+                            continue
+                        _sum[_k] = {"trend": _t.get("trend") or 0,
+                                    "int": _t.get("int_trend") or 0,
+                                    "since": _t.get("since") or 0}
+                    self._send(json.dumps({"tf": _sum,
+                                           "updated": _h.get("updated")}),
+                               "application/json")
+                    return
                 if _tf not in ("M15", "H1", "H4"):
                     _tf = "H1"
                 _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
