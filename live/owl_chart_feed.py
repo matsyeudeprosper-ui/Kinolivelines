@@ -693,6 +693,60 @@ def connect():
     return False
 
 
+# --- higher timeframes (owner 2026-09-30) ------------------------------
+# The chart can show a second panel above the minute chart: M15, H1 or H4.
+# They are built with the SAME silence filter and the SAME structure engine
+# as the minute chart, so the two panels are the same language read at two
+# speeds. Published to owl_chart_htf.json; the app only serves the file, it
+# never touches MetaTrader itself.
+HTF = {"M15": None, "H1": None, "H4": None}
+HTF_BARS = {"M15": 2600, "H1": 1400, "H4": 900}
+_HTF_LAST = 0.0
+HTFF = os.path.join(DIR, "owl_chart_htf.json")
+
+
+def htf_tick():
+    """Rebuild the higher timeframes at most once a minute: an M15 candle
+    only closes every fifteen."""
+    global _HTF_LAST
+    if time.time() - _HTF_LAST < 55:
+        return
+    _HTF_LAST = time.time()
+    out = {"updated": int(time.time()), "symbol": SYMBOL, "tf": {}}
+    for name, code in (("M15", mt5.TIMEFRAME_M15), ("H1", mt5.TIMEFRAME_H1),
+                       ("H4", mt5.TIMEFRAME_H4)):
+        try:
+            R = mt5.copy_rates_from_pos(SYMBOL, code, 0, HTF_BARS[name])
+            if R is None or len(R) < 60:
+                continue
+            kept = build(R)
+            if len(kept) < 20:
+                continue
+            (dots, marks, trend, choch, nxt, inv, nxt_t, inv_t,
+             _d, flp, flp_t, _fd) = engine(kept)
+            win = kept[-260:]
+            t0 = win[0][0] if win else 0
+            out["tf"][name] = {
+                "candles": win, "raw": len(R), "kept": len(kept),
+                "dots": [d for d in dots if d[0] >= t0],
+                "marks": [m for m in marks if m[0] >= t0],
+                "trend": trend, "choch": choch,
+                "next_bos": round(nxt, 2) if nxt else None,
+                "invalid": round(inv, 2) if inv else None,
+                "next_bos_t": nxt_t, "invalid_t": inv_t,
+                "live": [int(R[-1]["time"]), round(float(R[-1]["open"]), 2),
+                         round(float(R[-1]["high"]), 2), round(float(R[-1]["low"]), 2),
+                         round(float(R[-1]["close"]), 2)],
+            }
+        except Exception as e:
+            out.setdefault("err", {})[name] = f"{type(e).__name__}: {e}"
+    try:
+        json.dump(out, open(HTFF + ".tmp", "w"))
+        os.replace(HTFF + ".tmp", HTFF)
+    except Exception:
+        pass
+
+
 def main():
     assert connect(), "no terminal could serve BTCUSD candles"
     print("chart feed up", flush=True)
@@ -836,6 +890,7 @@ def main():
                     except Exception:
                         pass
                 nerv_history_tick(_vn, _vr)
+                htf_tick()
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)

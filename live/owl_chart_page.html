@@ -53,6 +53,32 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #cv{display:block;width:100vw;height:calc(100vh - 48px);
  touch-action:none;cursor:grab;overscroll-behavior:none}
+/* 2026-09-30 (owner): the same market read at two speeds. The higher
+   timeframe is ALWAYS first - on top when the split is stacked, on the left
+   when it is side by side. Both panels use the same silence filter; only the
+   colours differ, because on the higher one we are reading structure, not
+   direction. */
+#htfwrap{display:none;position:fixed;left:0;top:48px;z-index:3;
+ background:transparent;pointer-events:auto}
+body.htf-v #htfwrap{display:block;width:100vw;height:calc((100vh - 48px) * var(--htf-r, .42))}
+body.htf-v #cv{height:calc((100vh - 48px) * (1 - var(--htf-r, .42)));
+ margin-top:calc((100vh - 48px) * var(--htf-r, .42))}
+body.htf-h #htfwrap{display:block;width:calc(100vw * var(--htf-r, .42));height:calc(100vh - 48px)}
+body.htf-h #cv{width:calc(100vw * (1 - var(--htf-r, .42)));margin-left:calc(100vw * var(--htf-r, .42))}
+#cvh{display:block;width:100%;height:100%;touch-action:none}
+#htfwrap .tag{position:absolute;left:10px;bottom:10px;z-index:2;
+ display:flex;align-items:center;gap:6px;pointer-events:none}
+#htfwrap .tag b{background:rgba(10,17,28,.82);border:1px solid rgba(255,255,255,.10);
+ border-radius:99px;padding:4px 10px;font-size:.62rem;font-weight:800;letter-spacing:.08em;
+ color:#c8d3e0;text-transform:uppercase}
+#htfwrap .tag i{font-style:normal;font-size:.58rem;color:#8a9bb0;letter-spacing:.06em}
+#htfgrip{position:absolute;z-index:5;background:transparent}
+body.htf-v #htfgrip{left:0;right:0;bottom:-7px;height:14px;cursor:row-resize}
+body.htf-h #htfgrip{top:0;bottom:0;right:-7px;width:14px;cursor:col-resize}
+#htfgrip::after{content:"";position:absolute;background:rgba(255,255,255,.14);border-radius:99px}
+body.htf-v #htfgrip::after{left:50%;margin-left:-22px;top:6px;width:44px;height:3px}
+body.htf-h #htfgrip::after{top:50%;margin-top:-22px;left:6px;width:3px;height:44px}
+body.light #cvh{filter:invert(.93) hue-rotate(180deg)}
 /* two rows, not one: the P&L sits above the buttons so its width never
    competes with them. Measured: past $100 a single row pushed the trade
    button off the edge (owner 2026-09-16). */
@@ -282,6 +308,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
 <div id="toolsmenu" role="menu">
  <button id="gotoday" class="tb" title="Aller au d&eacute;but de la journ&eacute;e"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Aujourd&rsquo;hui</span></button>
  <button id="pickday" class="tb" title="Voir une journ&eacute;e pass&eacute;e"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Journ&eacute;e pass&eacute;e</span></button>
+ <button id="htfbtn" class="tb" title="Deux temps : M15, H1 ou H4 au-dessus"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg></button>
  <button id="ruler" class="tb" title="R&egrave;gle : deux touches"><svg viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg><span>R&egrave;gle</span></button>
 </div></div><input id="dayinp" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"><button id="backlive">&#9654; EN DIRECT</button>
 <button id="adstop" style="display:none;padding:11px 15px;border-radius:14px;
@@ -293,6 +320,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
  display:inline-flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M3 20h18"/><path d="M4 15l5-5 4 4 7-8"/><path d="M16 6h4v4"/></svg> Trader</button></div></div>
 <div id="pastbar" style="display:none;position:fixed;left:50%;transform:translateX(-50%);top:92px;z-index:5;background:rgba(232,197,90,.14);border:1px solid rgba(232,197,90,.45);color:#e8c55a;border-radius:99px;padding:6px 12px;font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap"></div>
 <div id="livedot"></div>
+<div id="htfwrap"><canvas id="cvh"></canvas><div class="tag"><b id="htftag">H1</b><i id="htfsub"></i></div><div id="htfgrip"></div></div>
 <canvas id="cv"></canvas>
 <script>window.BUILD='%%BUILD%%';</script>
 <div id="mtbar" style="position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -386,8 +414,9 @@ function yToP(y){if(!SCALE)return null;return SCALE.hi-(y-SCALE.top)/SCALE.plot*
 function rulerTap(x,y){const t=xToT(x),p=yToP(y);if(t===null||p===null)return;
  if(!RULER.a||RULER.b){RULER.a={t,p};RULER.b=null;}else RULER.b={t,p};}
 document.getElementById('ruler').onclick=()=>{RULER.on=!RULER.on;if(!RULER.on){RULER.a=RULER.b=null;}document.getElementById('ruler').classList.toggle('on',RULER.on);toolsMenu(false);toolsDot();};
+document.getElementById('htfbtn').onclick=()=>{toolsMenu(false);htSheet();};
 function toolsMenu(on){const m=document.getElementById('toolsmenu'),b=document.getElementById('tools');if(on===undefined)on=!m.classList.contains('on');m.classList.toggle('on',on);b.setAttribute('aria-expanded',on?'true':'false');}
-function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST)?'block':'none';}
+function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST||HT.on)?'block':'none';}
 document.getElementById('tools').onclick=e=>{e.stopPropagation();toolsMenu();};
 document.addEventListener('pointerdown',e=>{const w=document.getElementById('toolswrap');if(w&&!w.contains(e.target))toolsMenu(false);},true);
 (function(){const g=document.getElementById('gotoday');const _g=g.onclick;g.onclick=function(){if(_g)_g.apply(this,arguments);toolsMenu(false);};})();
@@ -406,7 +435,167 @@ function drawRuler(){if(!RULER.a||!SCALE)return;const xo=window._xoft||{};
   ctx.strokeStyle='rgba(143,198,255,.5)';ctx.lineWidth=1;ctx.stroke();
   ctx.fillStyle='#cfe3f5';ctx.fillText(lab,lx+7,(ly<8?Math.max(ay,by)+10:ly)+14);}
  ctx.restore();}
-const _draw0=draw;draw=function(){_draw0.apply(this,arguments);try{drawRuler();}catch(e){}};
+const _draw0=draw;draw=function(){_draw0.apply(this,arguments);try{drawRuler();}catch(e){}try{if(HT.on)htDraw();}catch(e){}};
+// ---- 2026-09-30 (owner): the higher timeframe panel ------------------
+// One market, two speeds. Same silence filter, same structure engine; the
+// higher panel is drawn in greys on purpose - up or down candle does not
+// matter there, what matters is that the main and internal structure stand
+// out. Anything drawn on one panel is anchored in TIME, so it appears on
+// the other by itself.
+const HT={on:false,tf:'H1',split:'v',r:0.42,data:null,t:0,xoft:{},xts:[],scale:null};
+try{const sv=JSON.parse(localStorage.getItem('owlHTF')||'null');
+ if(sv){HT.on=!!sv.on;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}}catch(e){}
+function htSave(){try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
+function htApply(){document.body.classList.toggle('htf-v',HT.on&&HT.split==='v');
+ document.body.classList.toggle('htf-h',HT.on&&HT.split==='h');
+ document.documentElement.style.setProperty('--htf-r',HT.r);
+ const tg=document.getElementById('htftag');if(tg)tg.textContent=HT.tf;
+ if(HT.on)htLoad(true);
+ try{draw();}catch(e){}}
+async function htLoad(force){
+ if(!HT.on)return;
+ if(!force&&Date.now()-HT.t<45000)return;HT.t=Date.now();
+ try{const r=await fetch('chart_htf?tf='+HT.tf+'&t='+Date.now(),{cache:'no-store'});
+  if(r.ok){const j=await r.json();if(j&&j.candles)HT.data=j;}}catch(e){}
+ htDraw();}
+function htDraw(){
+ const wrap=document.getElementById('htfwrap');const c=document.getElementById('cvh');
+ if(!HT.on||!c||!wrap)return;
+ const d=HT.data;const g=c.getContext('2d');
+ const dpr=window.devicePixelRatio||1,W=c.clientWidth,H=c.clientHeight;
+ if(!W||!H)return;
+ if(c.width!==Math.round(W*dpr)||c.height!==Math.round(H*dpr)){c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);}
+ g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ g.fillStyle='rgba(255,255,255,.012)';g.fillRect(0,0,W,H);
+ if(!d||!d.candles||d.candles.length<3){
+  g.fillStyle='#5f6f82';g.font='500 12px Inter, system-ui, sans-serif';g.textAlign='center';
+  g.fillText(CL()==='en'?'loading '+HT.tf+'...':'chargement '+HT.tf+'\u2026',W/2,H/2);return;}
+ const PAD=52,TOP=26,BOT=16;
+ // a higher timeframe is there for CONTEXT: show a long stretch, so the
+ // swings and the breaks are inside the view instead of behind the edge
+ // the whole published window: a higher timeframe is there for context,
+ // and every swing it found has to be inside the view, not behind the edge
+ const N=d.candles.length;
+ const cs=d.candles.slice(-N);
+ let hi=-1e18,lo=1e18;
+ cs.forEach(k=>{if(k[2]>hi)hi=k[2];if(k[3]<lo)lo=k[3];});
+ let marks=(d.marks||[]).filter(m=>m[0]>=cs[0][0]);
+
+ let dots=(d.dots||[]).filter(x=>x[0]>=cs[0][0]);
+
+ dots.forEach(x=>{if(x[1]>hi)hi=x[1];if(x[1]<lo)lo=x[1];});
+ if(d.next_bos){hi=Math.max(hi,d.next_bos);lo=Math.min(lo,d.next_bos);}
+ const pad=(hi-lo)*0.10||1;hi+=pad;lo-=pad;
+ const plot=H-TOP-BOT;
+ const py=v=>TOP+(hi-v)/(hi-lo)*plot;
+ const cw=(W-PAD)/(N+2);
+ const bw=Math.max(2,Math.min(10,cw*0.6));
+ HT.xoft={};HT.xts=[];HT.scale={hi:hi,lo:lo,top:TOP,plot:plot,py:py};
+ // price grid, quiet
+ g.strokeStyle='rgba(255,255,255,.05)';g.lineWidth=1;
+ for(let k=0;k<=3;k++){const y=TOP+plot*k/3;g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD+6,y);g.stroke();
+  g.fillStyle='#5f6f82';g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';
+  g.fillText((hi-(hi-lo)*k/3).toFixed(0),W-PAD+10,y+3);}
+ // candles, all grey: here we read structure, not direction
+ cs.forEach((k,i)=>{
+  const x=Math.round(cw*(i+1))+0.5;HT.xoft[k[0]]=x;HT.xts.push(k[0]);
+  const age=(cs.length-1-i)/Math.max(1,cs.length-1);
+  g.globalAlpha=1-age*0.45;
+  g.strokeStyle='#7d8b9e';g.lineWidth=1;
+  g.beginPath();g.moveTo(x,py(k[2]));g.lineTo(x,py(k[3]));g.stroke();
+  const y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
+  const hgt=Math.max(1.5,y2-y1);
+  const gb=g.createLinearGradient(0,y1,0,y1+hgt);
+  gb.addColorStop(0,'#aeb9c7');gb.addColorStop(1,'#78849a');
+  g.fillStyle=gb;g.beginPath();g.roundRect(x-bw/2,y1,bw,hgt,Math.min(2,bw/3));g.fill();
+  g.globalAlpha=1;});
+ // the structure is the point: dots first, then the breaks
+ dots.forEach(x=>{const xx=HT.xoft[x[0]]!==undefined?HT.xoft[x[0]]:(x[0]>=HT.xts[0]?htNear(x[0]):undefined);
+  if(xx===undefined)return;const y=py(x[1]);
+  g.fillStyle=x[2]===1?'rgba(46,204,113,.95)':'rgba(255,92,92,.95)';
+  g.beginPath();g.arc(xx,y,3.1,0,Math.PI*2);g.fill();
+  g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=.8;g.stroke();});
+ // only the last few breaks carry a label: on M15 they cluster and the
+ // words end up on top of each other. The older ones keep their level.
+ const LBL=Math.max(0,marks.length-3);
+ marks.forEach((m,mi)=>{const xx=HT.xoft[m[0]]!==undefined?HT.xoft[m[0]]:(m[0]>=HT.xts[0]?htNear(m[0]):undefined);
+  if(xx===undefined)return;const y=py(m[1]);const up=m[3]===1;
+  const col=m[2]==='choch'?'#e8c55a':(up?'#2ecc71':'#ff5c5c');
+  g.strokeStyle=col;g.globalAlpha=.55;g.lineWidth=1;g.setLineDash([3,3]);
+  g.beginPath();g.moveTo(xx,y);g.lineTo(W-PAD+2,y);g.stroke();
+  g.setLineDash([]);g.globalAlpha=1;
+  if(mi<LBL)return;
+  const lab=(m[2]==='choch'?'CHoCH':'BOS');
+  g.font='800 8.5px Inter, system-ui, sans-serif';const tw=g.measureText(lab).width+10;
+  g.fillStyle='rgba(10,17,28,.9)';g.beginPath();g.roundRect(xx-tw/2,y-14,tw,12,6);g.fill();
+  g.fillStyle=col;g.textAlign='center';g.fillText(lab,xx,y-5);});
+ // the level the higher timeframe is aiming at
+ if(d.next_bos){const y=py(d.next_bos);
+  g.strokeStyle='rgba(122,162,255,.55)';g.lineWidth=1;g.setLineDash([6,4]);
+  g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD+2,y);g.stroke();g.setLineDash([]);}
+ // where the minute chart is looking, so the two panels stay tied together
+ const xw=window._xts||[];
+ if(xw.length&&HT.xts.length){
+  const a=htX(xw[0]),b=htX(xw[xw.length-1]);
+  if(a!==undefined&&b!==undefined){
+   g.fillStyle='rgba(122,162,255,.07)';g.fillRect(Math.min(a,b)-cw/2,TOP,Math.max(3,Math.abs(b-a)+cw),plot);
+   g.strokeStyle='rgba(122,162,255,.30)';g.lineWidth=1;
+   g.strokeRect(Math.min(a,b)-cw/2,TOP,Math.max(3,Math.abs(b-a)+cw),plot);}}
+ // the same ruler, anchored in time, so a measure taken below shows here
+ if(RULER.a&&RULER.b){const ax=htX(RULER.a.t),bx=htX(RULER.b.t);
+  if(ax!==undefined&&bx!==undefined){
+   g.strokeStyle='#e8c55a';g.lineWidth=1.2;g.setLineDash([4,3]);
+   g.beginPath();g.moveTo(ax,py(RULER.a.p));g.lineTo(bx,py(RULER.b.p));g.stroke();g.setLineDash([]);
+   [[ax,RULER.a.p],[bx,RULER.b.p]].forEach(q=>{g.fillStyle='#e8c55a';
+    g.beginPath();g.arc(q[0],py(q[1]),2.6,0,Math.PI*2);g.fill();});}}
+ const sub=document.getElementById('htfsub');
+ if(sub)sub.textContent=(d.trend===1?(CL()==='en'?'up':'hausse'):d.trend===-1?(CL()==='en'?'down':'baisse'):'\u2014')
+  +(d.next_bos?' \u00b7 '+(CL()==='en'?'break at ':'cassure \u00e0 ')+Math.round(d.next_bos):'');
+}
+function htNear(t){let b,bd=1e18;for(const k of HT.xts){const dd=Math.abs(k-t);if(dd<bd){bd=dd;b=k;}}
+ return b===undefined?undefined:HT.xoft[b];}
+function htX(t){if(!HT.xts.length)return undefined;
+ if(t<HT.xts[0])return HT.xoft[HT.xts[0]];
+ if(t>HT.xts[HT.xts.length-1])return HT.xoft[HT.xts[HT.xts.length-1]];
+ return htNear(t);}
+// a tap on the higher panel measures on the same ruler as the lower one
+(function(){const c=document.getElementById('cvh');if(!c)return;
+ c.addEventListener('pointerdown',e=>{if(!RULER.on||!HT.scale)return;
+  const r=c.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
+  let bt=null,bd=1e18;for(const k of HT.xts){const dd=Math.abs(HT.xoft[k]-x);if(dd<bd){bd=dd;bt=k;}}
+  if(bt===null)return;
+  const S=HT.scale;const p=S.hi-(y-S.top)/S.plot*(S.hi-S.lo);
+  if(!RULER.a||RULER.b){RULER.a={t:bt,p:p};RULER.b=null;}else{RULER.b={t:bt,p:p};}
+  htDraw();try{draw();}catch(err){}});
+ const grip=document.getElementById('htfgrip');
+ if(grip){let st=null;
+  grip.addEventListener('pointerdown',e=>{st={x:e.clientX,y:e.clientY,r:HT.r};grip.setPointerCapture(e.pointerId);e.preventDefault();});
+  grip.addEventListener('pointermove',e=>{if(!st)return;
+   const tot=HT.split==='v'?(window.innerHeight-48):window.innerWidth;
+   const dd=HT.split==='v'?(e.clientY-st.y):(e.clientX-st.x);
+   HT.r=Math.max(0.2,Math.min(0.72,st.r+dd/tot));
+   document.documentElement.style.setProperty('--htf-r',HT.r);htDraw();try{draw();}catch(err){}});
+  grip.addEventListener('pointerup',()=>{if(st){st=null;htSave();}});}
+})();
+function htSheet(){const en=CL()==='en';
+ const row=(lab,val,cur,fn)=>'<button class="tfc'+(cur?' on':'')+'" style="flex:1" onclick="'+fn+'">'+lab+'</button>';
+ sheet('<h3 style="margin:0 0 4px">'+(en?'Two timeframes':'Deux temps')+'</h3>'+
+  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 12px">'+
+   (en?'The same market read at two speeds. The higher one sits first and is drawn in greys, because up or down does not matter there: what matters is the structure.':'Le m\u00eame march\u00e9 lu \u00e0 deux vitesses. Le plus grand passe en premier et se dessine en gris, parce que hausse ou baisse n\u2019y change rien : ce qui compte, c\u2019est la structure.')+'</p>'+
+  '<div class="lbl">'+(en?'Higher timeframe':'Temps sup\u00e9rieur')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:6px">'+['M15','H1','H4'].map(t=>row(t,'',HT.on&&HT.tf===t,"htPick('"+t+"')")).join('')+'</div>'+
+  '<div class="lbl" style="margin-top:14px">'+(en?'Split':'Partage')+'</div>'+
+  '<div style="display:flex;gap:6px;margin-top:6px">'+
+   row(en?'Top and bottom':'Haut et bas','',HT.split==='v',"htSplit('v')")+
+   row(en?'Side by side':'C\u00f4te \u00e0 c\u00f4te','',HT.split==='h',"htSplit('h')")+'</div>'+
+  '<button class="shbtn '+(HT.on?'shghost':'shmain')+'" style="margin-top:16px" onclick="htOff()">'+
+   (HT.on?(en?'One timeframe only':'Un seul temps'):(en?'Close':'Fermer'))+'</button>');}
+function htPick(t){HT.tf=t;HT.on=true;HT.data=null;htSave();htApply();htLoad(true);toolsDot();}
+function htSplit(v){HT.split=v;htSave();htApply();setTimeout(htDraw,60);}
+function htOff(){HT.on=false;htSave();htApply();toolsDot();_shDone(1);}
+setInterval(()=>{if(HT.on)htLoad(false);},20000);
+window.addEventListener('resize',()=>{if(HT.on)setTimeout(htDraw,80);});
+
 async function loadDay(ds){const bar=document.getElementById('pastbar');
  try{const r=await fetch('/'+tok+'/chart_day?d='+encodeURIComponent(ds),{cache:'no-store'});const j=await r.json();
   if(!j||j.err||!(j.candles||[]).length){alert(CL?'No data for that day.':'Pas de donn\u00e9es pour ce jour.');return;}

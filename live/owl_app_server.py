@@ -10182,6 +10182,24 @@ class H(BaseHTTPRequestHandler):
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
+        elif sub == "chart_htf":
+            # 2026-09-30 (owner): the higher timeframe panel. The chart feed
+            # builds M15/H1/H4 with the SAME silence filter and the SAME
+            # structure engine as the minute chart; the app only serves it.
+            try:
+                import urllib.parse as _uph
+                _qh = _uph.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _tf = (_qh.get("tf", ["H1"])[0] or "H1").upper()
+                if _tf not in ("M15", "H1", "H4"):
+                    _tf = "H1"
+                _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                _d = dict((_h.get("tf") or {}).get(_tf) or {})
+                _d["tf"] = _tf
+                _d["updated"] = _h.get("updated")
+                _d["symbol"] = _h.get("symbol")
+                self._send(json.dumps(_d), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "chart_data":
             # 2026-09-16 (owner): the chart shows the positions of the
             # account BEING VIEWED, never the terminal that happens to
