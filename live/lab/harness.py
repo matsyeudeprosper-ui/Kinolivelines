@@ -70,6 +70,14 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # widest stops are the BEST trades, so skipping them has to
             # be the last resort, not the first move.
             "risk_fit": 0.0, "risk_fit_abs": 0.0,
+            # 2026-09-30 (owner): internal-structure entries. The BOT
+            # takes these live and this harness did not model them at
+            # all, so every backtest number excluded a trade type that
+            # really trades. 0 = off (unchanged behaviour),
+            # 1 = the live rule (only when the internal trend agrees
+            # with the main one), 2 = also counter-trend, which the
+            # bot logs and refuses today.
+            "internal": 0,
             # 2026-09-29 (owner: "does the backtest include the rattrapage and
             # the daily caps?"). It did not. These three close the gap:
             #   jar      model the real bullet economy - the jar has to pay for
@@ -112,6 +120,23 @@ REFS = ("base", "valere")
 # been approached, and the outcome. None by default, so the nightly battery
 # pays nothing. Used by review/bos_break_character.py.
 TRACE = None
+# the internal-structure engine lives in the chart feed, factored out
+# of its live loop exactly so other callers can use it. Imported here
+# lazily: a harness run with internal=0 must not pay for it, and must
+# not fail if the feed module cannot be imported.
+_FEED = None
+
+
+def _feed():
+    global _FEED
+    if _FEED is None:
+        import importlib.util
+        _p = os.path.join(LIVE, 'owl_chart_feed.py')
+        _sp = importlib.util.spec_from_file_location('owl_chart_feed', _p)
+        _m = importlib.util.module_from_spec(_sp)
+        _sp.loader.exec_module(_m)
+        _FEED = _m
+    return _FEED
 BLOT = 0.01
 
 
@@ -180,6 +205,17 @@ def simulate(R, spread, cfg):
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     eng = B.Struct()
+    # internal structure: its own pin per simulate() call, never a
+    # module-level one - the docstring on internal_structure is
+    # explicit that two anchors sharing a pin corrupt each other, and
+    # run_cfg calls this three times (full, h1, h2).
+    i_on = int(c["internal"] or 0)
+    i_pin = {"t0": None, "start": None}
+    i_kept_n = 0
+    i_last_t = None
+    i_trend = 0
+    i_inv = None
+    n_int = 0
     eng.quiet = True
     rng = [float(r["high"]) - float(r["low"]) for r in R]
     closes = [float(r["close"]) for r in R]
@@ -297,6 +333,44 @@ def simulate(R, spread, cfg):
             prev = eng.trend
         if sig is not None:
             marks.append(t)
+        # ---- internal structure ----------------------------------
+        # Recomputed only when a candle actually survived the silence
+        # filter, which is the only moment it can change. The main
+        # engine's levels are read off the incremental Struct exactly
+        # the way the feed's batch engine derives them (see its return
+        # block: nxt = hi_v/lo_v, inv = prot_lo/prot_hi).
+        i_fire = False
+        if i_on and len(eng.kept) != i_kept_n:
+            i_kept_n = len(eng.kept)
+            _up = eng.trend == 1
+            _nx = eng.hi_v if _up else (eng.lo_v if eng.trend == -1 else None)
+            _pv = eng.prot_lo if _up else eng.prot_hi
+            _iv = _pv[1] if (eng.trend and _pv) else None
+            _ivt = _pv[0] if (eng.trend and _pv) else None
+            _ai = eng.hi_i if _up else eng.lo_i
+            _nxt_t = (eng.kept[_ai][0]
+                      if (_nx is not None and 0 <= _ai < len(eng.kept))
+                      else None)
+            _fd = eng.choch if (eng.choch and eng.choch != eng.trend) else 0
+            _flp = eng.hi_v if _fd == 1 else (eng.lo_v if _fd == -1 else None)
+            # internal_structure only ever reads marks[-1][0]
+            _mk = [[marks[-1]]] if marks else []
+            try:
+                _r = _feed().internal_structure(
+                    eng.kept, _nx, _iv, _ivt, _flp, _mk, _nxt_t, t,
+                    pin=i_pin, brk_t=(marks[-1] if marks else None))
+                i_trend = int(_r["i_trend"] or 0)
+                _new_inv, _new_t = _r["i_inv"], _r["i_inv_t"]
+            except Exception:
+                i_trend, _new_inv, _new_t = 0, None, None
+            # the live trigger: the internal protected level MOVED
+            if _new_inv and _new_t and _new_t != i_last_t:
+                i_last_t = _new_t
+                i_inv = float(_new_inv)
+                if i_trend and (i_on == 2 or i_trend == eng.trend):
+                    i_fire = True
+        if i_fire and sig is None and not pos and not dead:
+            sig = (i_trend, i_inv)
         if touched and last_flip_t is not None and cont_left < c["n_cont"]:
             cont_left = min(int(c["n_cont"]), cont_left + 1)
         if sig is None or pos:
@@ -306,11 +380,13 @@ def simulate(R, spread, cfg):
         if c["kill_net"] and run <= float(c["kill_net"]):
             dead = True          # the live bot closes, stops and says KILL
             continue
-        if not any(f > t - B.AWAKE_WIN for f in flips):
+        if not i_fire and not any(f > t - B.AWAKE_WIN for f in flips):
             continue
         d, slp = sig
         flip = bool(flips) and flips[-1] == t
-        if not flip:
+        if i_fire:
+            n_int += 1
+        if not flip and not i_fire:
             lvl = eng.hi_v if d == 1 else eng.lo_v
             if (d == 1 and used_hi == lvl) or (d == -1 and used_lo == lvl):
                 continue
@@ -441,7 +517,7 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "curve": dated, "pnls": pnls}
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls}
 
 
 def run_cfg(R, spread, cfg):

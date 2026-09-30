@@ -1,0 +1,76 @@
+{
+ "engine": "2026-09-29b",
+ "bars": 99000,
+ "accounts": {
+  "Valere": {
+   "main only": {
+    "net": 147.07,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 266,
+    "wr": 62.8,
+    "blocked": 296,
+    "internal": 0,
+    "h1_net": 56.47,
+    "h2_net": 82.84
+   },
+   "+ internal aligned": {
+    "net": 84.16,
+    "maxdd": -43.63,
+    "worst_debt": 43.63,
+    "trades": 373,
+    "wr": 59.8,
+    "blocked": 216,
+    "internal": 404,
+    "h1_net": 56.23,
+    "h2_net": 25.11
+   },
+   "+ internal both": {
+    "net": 49.19,
+    "maxdd": -64.27,
+    "worst_debt": 64.27,
+    "trades": 454,
+    "wr": 55.9,
+    "blocked": 263,
+    "internal": 1081,
+    "h1_net": 35.27,
+    "h2_net": 32.46
+   }
+  },
+  "Depenses": {
+   "main only": {
+    "net": 101.5,
+    "maxdd": -33.73,
+    "worst_debt": 33.73,
+    "trades": 331,
+    "wr": 61.6,
+    "blocked": 165,
+    "internal": 0,
+    "h1_net": 14.22,
+    "h2_net": 76.31
+   },
+   "+ internal aligned": {
+    "net": 44.56,
+    "maxdd": -35.77,
+    "worst_debt": 35.77,
+    "trades": 399,
+    "wr": 59.9,
+    "blocked": 140,
+    "internal": 403,
+    "h1_net": 13.71,
+    "h2_net": 29.38
+   },
+   "+ internal both": {
+    "net": 30.75,
+    "maxdd": -34.46,
+    "worst_debt": 34.46,
+    "trades": 490,
+    "wr": 56.7,
+    "blocked": 108,
+    "internal": 1049,
+    "h1_net": 0.12,
+    "h2_net": 43.88
+   }
+  }
+ }
+}
