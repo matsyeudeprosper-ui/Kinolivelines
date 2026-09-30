@@ -1,0 +1,17 @@
+{
+ "engine": "2026-09-29b",
+ "symbol": "BTCUSDm",
+ "bars": 99000,
+ "trades": 287,
+ "losses": 112,
+ "median_against": 2.93,
+ "median_aligned": 2.47,
+ "p95_against": 8.44,
+ "p95_aligned": 7.59,
+ "gap": 0.45999999999999996,
+ "control_p95": 0.75,
+ "control_pctile": 80.0,
+ "half1": -0.20000000000000018,
+ "half2": 0.8600000000000003,
+ "verdict": "C"
+}
