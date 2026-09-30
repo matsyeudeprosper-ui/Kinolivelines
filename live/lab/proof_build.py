@@ -137,8 +137,20 @@ def main():
     union = None
     if T:
         pn = [{"pnl": x["pnl"]} for x in T]
+        # 2026-09-30: the same record WITHOUT the rule that no longer
+        # exists. The headline win rate was being compared against a
+        # test that never contained internal entries, so the two were
+        # not measuring the same robot. Both are published; the page
+        # shows the clean one beside it rather than instead of it.
+        _T2 = [x for x in T if not x.get("internal")]
+        _pn2 = [{"pnl": x["pnl"]} for x in _T2]
+
         union = {"trades": len(T), "net": round(sum(x["pnl"] for x in T), 2), "wr": _wr(pn), "since": time.strftime("%Y-%m-%d", time.gmtime(T[0]["t"])),
-                 "replay_same_entries": real_replay}
+                 "replay_same_entries": real_replay,
+                 "clean": ({"trades": len(_T2),
+                            "net": round(sum(x["pnl"] for x in _T2), 2),
+                            "wr": _wr(_pn2)}
+                           if len(_T2) != len(T) else None)}
     rules = []
     try:
         reg = json.load(open(os.path.join(LAB, "registry.json"), encoding="utf-8"))

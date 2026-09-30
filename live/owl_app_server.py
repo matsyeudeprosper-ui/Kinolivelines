@@ -1773,6 +1773,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     d&#39;accueil</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
+ <!-- 2026-09-30 (owner): the robot stopped trading the inner
+      structure today, but the chart still draws it. Somebody reading the
+      chart would reasonably assume the robot acts on it. This switch lets
+      the marks be turned off; it is a DISPLAY setting, stored in this
+      browser, and changes nothing the robot does. -->
+ <div class="srow" id="intmkrow">
+  <div class="sic"><svg class="ic"><use href="#i-chart"/></svg></div>
+  <div style="flex:1"><b id="intmk-lbl">Petite structure sur le graphique</b>
+   <div class="ssub" id="intmk-sub">Le robot ne la trade plus &mdash;
+    affichage seulement</div></div>
+  <span class="sw" id="intmk-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
  <div class="srow" id="themerow" style="cursor:default">
   <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
   <div style="flex:1"><b>Apparence</b>
@@ -2598,6 +2610,17 @@ window.addEventListener('load',()=>{
    if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
     return;}}catch(e2){}
   load();};
+(function(){const r=document.getElementById('intmkrow');if(!r)return;
+  const sw=document.getElementById('intmk-sw');
+  const rd=()=>{try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}};
+  const paint=()=>{const on=rd();sw.classList.toggle('on',on);
+   const en=LANG()==='en';
+   document.getElementById('intmk-lbl').textContent=en?'Inner structure on the chart':'Petite structure sur le graphique';
+   document.getElementById('intmk-sub').textContent=on
+    ?(en?'The robot no longer trades it - shown for reading only':'Le robot ne la trade plus \u2014 affichage seulement')
+    :(en?'Hidden on the chart':'Masqu\u00e9e sur le graphique');};
+  r.onclick=()=>{try{localStorage.setItem('owlIntMarks',rd()?'0':'1');}catch(e){}paint();};
+  paint();})();
  const scb=document.getElementById('scalebtn');
  if(scb)scb.onclick=async(e)=>{e.preventDefault();
   const on=!!window._scaleOn;
@@ -4723,7 +4746,7 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   (U.trades?('<div class="pv-p">'+(en?'Every real trade the robot took since '+dmy(U.since)+', on accounts nobody has touched by hand.':'Tous les vrais trades pris par le robot depuis le '+dmy(U.since)+', sur des comptes que personne n\u2019a touch\u00e9s \u00e0 la main.')+'</div>'+
   '<div class="pv-g">'+
    pvCard((U.trades||0)+'',en?'real trades':'vrais trades',(en?'since ':'depuis le ')+dmy(U.since))+
-   pvCard((U.wr===null||U.wr===undefined?'\u2014':U.wr+'\u202f%'),en?'won in real life':'gagn\u00e9s en vrai',(en?'the test says ':'le test dit ')+(S.wr||0).toFixed(0)+'\u202f%',(U.wr>=(S.wr||0)-8)?up:'var(--warn)')+
+   pvCard((U.wr===null||U.wr===undefined?'\u2014':U.wr+'\u202f%'),en?'won in real life':'gagn\u00e9s en vrai',(en?'the test says ':'le test dit ')+(S.wr||0).toFixed(0)+'\u202f%'+(U.clean?(en?' \u00b7 '+U.clean.wr.toFixed(0)+'\u202f% without the retired rule':' \u00b7 '+U.clean.wr.toFixed(0)+'\u202f% sans la r\u00e8gle retir\u00e9e'):''),(U.wr>=(S.wr||0)-8)?up:'var(--warn)')+
   '</div>'+
   '<div class="pv-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected':'Attendu',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',(j.replay_same||{}).net]],en)+
    pfBand(j.band,U.net,en,en?'The real result':'Le r\u00e9sultat r\u00e9el')+'</div>'+

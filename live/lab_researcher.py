@@ -163,6 +163,37 @@ def main():
     t0 = time.time()
     sym, R = H.bars()
     say(f"researcher start: {sym} {len(R)/1440:.1f} days, {'quick' if quick else 'full battery'}")
+    # 2026-09-30: does the harness still describe the bot? This runs
+    # FIRST, because a battery scored by a harness that has drifted is
+    # worse than no battery - it produces confident numbers about a
+    # strategy nobody is running. That is exactly what happened with
+    # internal entries: the bot took them for weeks and the harness had
+    # never modelled one, and nothing noticed because nothing looked.
+    parity = None
+    try:
+        import importlib.util as _iu
+        _pp = os.path.join(os.path.dirname(LIVE), 'review',
+                           'bot_harness_parity.py')
+        _sp = _iu.spec_from_file_location('parity', _pp)
+        _pm = _iu.module_from_spec(_sp)
+        _sp.loader.exec_module(_pm)
+        import io as _io, contextlib as _cl
+        _buf = _io.StringIO()
+        with _cl.redirect_stdout(_buf):
+            _rc = _pm.main()
+        parity = {'drift': _rc != 0, 'report': _buf.getvalue()}
+        if parity['drift']:
+            say('PARITY DRIFT - the harness no longer describes the bot. '
+                'Tonight''s verdicts describe a strategy that may not be '
+                'the one running. Details in review/bot_harness_parity.json')
+            for _l in _buf.getvalue().split(chr(10)):
+                if 'DRIFT' in _l or 'NOT IN HARNESS' in _l:
+                    say('  ' + _l.strip())
+        else:
+            say('parity ok: every rule the bot reads has a dial, every '
+                'live trade kind can be produced, entry rates agree')
+    except Exception as _e:
+        say(f'parity check unavailable: {_e}')
     # 2026-09-29 (owner): one answer for a generic account is a fiction - the
     # daily cap changes it. Every what-if is judged against BOTH shapes a real
     # account has, and only counts as an A when both agree.
@@ -346,7 +377,8 @@ def main():
                      "engine": H.ENGINE, "refs": {k: _slim(vv["full"]) for k, (cc, vv) in REF.items()},
                      "days_long": (round(len(RL) / 1440) if RL is not None else None), "base_long": baseL,
                      "base_real": baseT, "real_n": (len(T) if T else 0),
-                     "minutes": round((time.time() - t0) / 60, 1)})
+                     "minutes": round((time.time() - t0) / 60, 1),
+                     "parity": parity})
     say(f"researcher done: {len(out)} what-ifs in {(time.time()-t0)/60:.1f} min - {counts}")
 
 

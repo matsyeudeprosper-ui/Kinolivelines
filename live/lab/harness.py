@@ -86,6 +86,15 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             # refuses one wider than the MAIN structure's own stop.
             # 0 = off for both.
             "int_max_stop": 0.0, "int_tighter": 0,
+            # 2026-09-30: the three rules the parity check found the bot
+            # reads and this harness could not express. They were harmless
+            # only because every account happened to use the value assumed
+            # here; set one differently and the backtest silently stops
+            # describing the bot again.
+            #   max_trades_day - hard cap on entries per UTC day
+            #   movement       - the "has the market moved" brake
+            #   debt_mode      - "hwm" (peak) or "half" (0.5x a loss)
+            "max_trades_day": 0, "movement": 1, "debt_mode": "hwm",
             # 2026-09-29 (owner: "does the backtest include the rattrapage and
             # the daily caps?"). It did not. These three close the gap:
             #   jar      model the real bullet economy - the jar has to pay for
@@ -244,6 +253,7 @@ def simulate(R, spread, cfg):
     pnls = []
     chest = 0.0
     day_profit = 0.0
+    day_n = 0
     dead = False
     cur_tr = None
     prev_hi_v = prev_lo_v = None
@@ -257,6 +267,7 @@ def simulate(R, spread, cfg):
         if dk != day_key:
             day_key = dk
             day_profit = 0.0
+            day_n = 0
             curve.append(run)
         if pos:
             d, e, sl, tp, dist, mid, hit_mid, lot = pos
@@ -424,7 +435,7 @@ def simulate(R, spread, cfg):
         if i >= 1440:
             nv = (sorted(rng[i-60:i])[30] / max(sorted(rng[i-1440:i])[720], 1e-9))
             mv2 = (bisect.bisect_left(marks, t) - bisect.bisect_left(marks, t - 7200))
-            if nv >= float(c["storm"]) or mv2 < 1:
+            if nv >= float(c["storm"]) or (c["movement"] and mv2 < 1):
                 continue
             if c["nerv_gate"] and nv > 1.0:
                 blocked += 1
@@ -455,6 +466,9 @@ def simulate(R, spread, cfg):
             else:
                 continue
         # the daily profit stop, waived while still in the red like the live bot
+        if c["max_trades_day"] and day_n >= int(c["max_trades_day"]):
+            blocked += 1
+            continue
         if day_cap_eff and day_profit >= day_cap_eff and debt_now <= 0.5:
             blocked += 1
             continue
@@ -515,6 +529,7 @@ def simulate(R, spread, cfg):
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
         last_hour = t // 3600
         n_trades += 1
+        day_n += 1
         if TRACE is not None:
             _m = sorted(rng[i-60:i])[30] if i >= 60 else 0.0
             cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),

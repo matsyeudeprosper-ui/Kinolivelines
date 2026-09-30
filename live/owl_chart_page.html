@@ -1573,7 +1573,12 @@ function draw(){
  // toggled the entire structure on and off with every poll. The gate now
  // has hysteresis: it opens above 8% and only closes again below 3%, so
  // a wobble around the line cannot flap it.
- if(FULL){
+ // 2026-09-30 (owner): a display switch in Reglages. The robot no
+ // longer trades the inner structure, so a member may want it off the
+ // chart entirely. Read every draw, so flipping it in the other tab shows
+ // up here on the next frame without a reload.
+ const INTMK=(()=>{try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}})();
+ if(FULL&&INTMK){
  const intRoom=(room,range)=>{
   if(!(range>0))return false;
   const f=room/range;
