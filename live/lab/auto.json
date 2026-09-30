@@ -1,31 +1,921 @@
 {
- "updated": "2026-09-29T08:38:20+00:00",
+ "updated": "2026-09-30T08:56:24+00:00",
  "symbol": "BTCUSDm",
  "days": 41.7,
  "base": {
   "full": {
-   "net": 175.35,
-   "maxdd": -80.29,
-   "worst_debt": 80.29,
-   "trades": 252,
-   "wr": 61.1,
-   "blocked": 0
+   "net": 107.08,
+   "maxdd": -50.23,
+   "worst_debt": 50.23,
+   "trades": 257,
+   "wr": 60.7,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-08-19",
+     0.0
+    ],
+    [
+     "2026-08-20",
+     9.17
+    ],
+    [
+     "2026-08-21",
+     11.72
+    ],
+    [
+     "2026-08-22",
+     11.72
+    ],
+    [
+     "2026-08-23",
+     15.17
+    ],
+    [
+     "2026-08-24",
+     26.69
+    ],
+    [
+     "2026-08-25",
+     47.24
+    ],
+    [
+     "2026-08-26",
+     13.83
+    ],
+    [
+     "2026-08-27",
+     15.57
+    ],
+    [
+     "2026-08-28",
+     10.39
+    ],
+    [
+     "2026-08-29",
+     -0.77
+    ],
+    [
+     "2026-08-30",
+     16.71
+    ],
+    [
+     "2026-08-31",
+     25.73
+    ],
+    [
+     "2026-09-01",
+     12.8
+    ],
+    [
+     "2026-09-02",
+     54.94
+    ],
+    [
+     "2026-09-03",
+     65.89
+    ],
+    [
+     "2026-09-04",
+     68.75
+    ],
+    [
+     "2026-09-05",
+     96.76
+    ],
+    [
+     "2026-09-06",
+     95.92
+    ],
+    [
+     "2026-09-07",
+     109.31
+    ],
+    [
+     "2026-09-08",
+     116.29
+    ],
+    [
+     "2026-09-09",
+     113.93
+    ],
+    [
+     "2026-09-10",
+     126.92
+    ],
+    [
+     "2026-09-11",
+     134.29
+    ],
+    [
+     "2026-09-12",
+     150.11
+    ],
+    [
+     "2026-09-13",
+     151.03
+    ],
+    [
+     "2026-09-14",
+     153.95
+    ],
+    [
+     "2026-09-15",
+     153.29
+    ],
+    [
+     "2026-09-16",
+     150.46
+    ],
+    [
+     "2026-09-17",
+     150.46
+    ],
+    [
+     "2026-09-18",
+     150.46
+    ],
+    [
+     "2026-09-19",
+     145.84
+    ],
+    [
+     "2026-09-20",
+     145.84
+    ],
+    [
+     "2026-09-21",
+     132.73
+    ],
+    [
+     "2026-09-22",
+     127.17
+    ],
+    [
+     "2026-09-23",
+     139.53
+    ],
+    [
+     "2026-09-24",
+     114.57
+    ],
+    [
+     "2026-09-25",
+     122.08
+    ],
+    [
+     "2026-09-26",
+     122.08
+    ],
+    [
+     "2026-09-27",
+     122.08
+    ],
+    [
+     "2026-09-28",
+     114.84
+    ],
+    [
+     "2026-09-29",
+     103.72
+    ],
+    [
+     "2026-09-30",
+     111.94
+    ],
+    [
+     "2026-09-30",
+     107.08
+    ]
+   ],
+   "pnls": [
+    3.25,
+    3.27,
+    5.5,
+    3.25,
+    8.43,
+    -14.53,
+    -18.57,
+    12.37,
+    -6.2,
+    6.47,
+    -11.46,
+    6.96,
+    8.66,
+    4.31,
+    -12.45,
+    10.04,
+    -6.57,
+    3.6,
+    4.33,
+    10.49,
+    -5.98,
+    3.02,
+    2.15,
+    6.35,
+    7.79,
+    -3.5,
+    2.87,
+    3.07,
+    10.31,
+    -12.51,
+    -8.15,
+    -9.57,
+    -7.92,
+    3.2,
+    1.55,
+    4.67,
+    3.36,
+    1.4,
+    1.02,
+    -7.03,
+    1.41,
+    -5.15,
+    2.07,
+    -5.19,
+    1.74,
+    -4.5,
+    -3.02,
+    -3.0,
+    3.17,
+    -3.56,
+    6.59,
+    2.04,
+    -3.36,
+    1.19,
+    -8.44,
+    2.15,
+    4.73,
+    3.68,
+    -4.39,
+    3.79,
+    0.34,
+    0.81,
+    6.36,
+    -2.26,
+    0.45,
+    1.72,
+    1.98,
+    4.31,
+    2.82,
+    -9.32,
+    -6.15,
+    -6.43,
+    -8.2,
+    4.18,
+    7.42,
+    -6.13,
+    9.94,
+    1.75,
+    1.48,
+    0.54,
+    7.74,
+    10.04,
+    2.23,
+    3.91,
+    -2.84,
+    -3.02,
+    1.41,
+    9.66,
+    6.29,
+    -6.95,
+    7.18,
+    3.14,
+    -5.3,
+    2.07,
+    4.56,
+    1.3,
+    4.02,
+    -3.89,
+    -1.8,
+    4.14,
+    5.12,
+    -4.62,
+    6.66,
+    9.01,
+    1.87,
+    -3.39,
+    1.84,
+    3.23,
+    -2.87,
+    -6.84,
+    16.53,
+    11.48,
+    1.36,
+    -2.93,
+    -1.65,
+    1.13,
+    1.25,
+    5.43,
+    -3.04,
+    0.7,
+    9.27,
+    2.01,
+    -2.79,
+    3.18,
+    -0.88,
+    -3.1,
+    2.61,
+    1.32,
+    1.5,
+    -3.16,
+    -1.29,
+    -3.67,
+    1.94,
+    -3.94,
+    1.86,
+    2.28,
+    4.66,
+    -2.69,
+    5.01,
+    3.17,
+    1.26,
+    3.46,
+    -1.7,
+    2.14,
+    1.16,
+    6.12,
+    0.64,
+    -4.78,
+    2.81,
+    -7.45,
+    -3.06,
+    1.27,
+    1.83,
+    -6.05,
+    6.61,
+    -2.41,
+    0.93,
+    -2.87,
+    -3.0,
+    2.39,
+    -3.49,
+    2.78,
+    6.79,
+    2.6,
+    4.18,
+    -4.95,
+    3.42,
+    -10.87,
+    5.89,
+    -3.16,
+    4.0,
+    -1.98,
+    1.96,
+    1.92,
+    9.61,
+    0.72,
+    2.25,
+    -1.61,
+    1.54,
+    -3.81,
+    1.93,
+    1.93,
+    6.45,
+    1.8,
+    -2.84,
+    7.48,
+    -1.18,
+    3.7,
+    -1.6,
+    1.54,
+    0.93,
+    2.7,
+    -2.25,
+    -1.22,
+    -2.27,
+    -2.61,
+    -2.63,
+    2.54,
+    3.2,
+    2.33,
+    3.57,
+    -1.97,
+    6.13,
+    -4.12,
+    0.73,
+    5.18,
+    -6.72,
+    -5.63,
+    -4.62,
+    4.57,
+    -2.25,
+    3.09,
+    -4.36,
+    0.73,
+    1.91,
+    1.24,
+    -4.89,
+    -4.23,
+    0.4,
+    0.61,
+    0.61,
+    -7.22,
+    -6.86,
+    3.54,
+    3.66,
+    1.24,
+    -1.77,
+    1.55,
+    -2.3,
+    -6.62,
+    -1.85,
+    0.54,
+    8.52,
+    3.84,
+    -22.32,
+    -5.17,
+    2.54,
+    7.51,
+    -2.97,
+    -2.11,
+    -2.47,
+    1.08,
+    -2.14,
+    8.89,
+    -7.52,
+    -7.74,
+    -7.59,
+    4.2,
+    -4.61,
+    13.14,
+    -2.49,
+    1.22,
+    3.44,
+    -2.48,
+    -7.85,
+    2.99
+   ]
   },
   "h1": {
-   "net": 181.32,
-   "maxdd": -61.15,
-   "worst_debt": 61.15,
-   "trades": 149,
-   "wr": 65.8,
-   "blocked": 0
+   "net": 121.68,
+   "maxdd": -48.0,
+   "worst_debt": 48.0,
+   "trades": 163,
+   "wr": 64.4,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-08-19",
+     0.0
+    ],
+    [
+     "2026-08-20",
+     9.17
+    ],
+    [
+     "2026-08-21",
+     11.72
+    ],
+    [
+     "2026-08-22",
+     11.72
+    ],
+    [
+     "2026-08-23",
+     15.17
+    ],
+    [
+     "2026-08-24",
+     26.69
+    ],
+    [
+     "2026-08-25",
+     47.24
+    ],
+    [
+     "2026-08-26",
+     13.83
+    ],
+    [
+     "2026-08-27",
+     15.57
+    ],
+    [
+     "2026-08-28",
+     10.39
+    ],
+    [
+     "2026-08-29",
+     -0.77
+    ],
+    [
+     "2026-08-30",
+     16.71
+    ],
+    [
+     "2026-08-31",
+     25.73
+    ],
+    [
+     "2026-09-01",
+     12.8
+    ],
+    [
+     "2026-09-02",
+     54.94
+    ],
+    [
+     "2026-09-03",
+     65.89
+    ],
+    [
+     "2026-09-04",
+     68.75
+    ],
+    [
+     "2026-09-05",
+     96.76
+    ],
+    [
+     "2026-09-06",
+     95.92
+    ],
+    [
+     "2026-09-07",
+     109.31
+    ],
+    [
+     "2026-09-08",
+     116.29
+    ],
+    [
+     "2026-09-09",
+     113.93
+    ],
+    [
+     "2026-09-09",
+     121.68
+    ]
+   ],
+   "pnls": [
+    3.25,
+    3.27,
+    5.5,
+    3.25,
+    8.43,
+    -14.53,
+    -18.57,
+    12.37,
+    -6.2,
+    6.47,
+    -11.46,
+    6.96,
+    8.66,
+    4.31,
+    -12.45,
+    10.04,
+    -6.57,
+    3.6,
+    4.33,
+    10.49,
+    -5.98,
+    3.02,
+    2.15,
+    6.35,
+    7.79,
+    -3.5,
+    2.87,
+    3.07,
+    10.31,
+    -12.51,
+    -8.15,
+    -9.57,
+    -7.92,
+    3.2,
+    1.55,
+    4.67,
+    3.36,
+    1.4,
+    1.02,
+    -7.03,
+    1.41,
+    -5.15,
+    2.07,
+    -5.19,
+    1.74,
+    -4.5,
+    -3.02,
+    -3.0,
+    3.17,
+    -3.56,
+    6.59,
+    2.04,
+    -3.36,
+    1.19,
+    -8.44,
+    2.15,
+    4.73,
+    3.68,
+    -4.39,
+    3.79,
+    0.34,
+    0.81,
+    6.36,
+    -2.26,
+    0.45,
+    1.72,
+    1.98,
+    4.31,
+    2.82,
+    -9.32,
+    -6.15,
+    -6.43,
+    -8.2,
+    4.18,
+    7.42,
+    -6.13,
+    9.94,
+    1.75,
+    1.48,
+    0.54,
+    7.74,
+    10.04,
+    2.23,
+    3.91,
+    -2.84,
+    -3.02,
+    1.41,
+    9.66,
+    6.29,
+    -6.95,
+    7.18,
+    3.14,
+    -5.3,
+    2.07,
+    4.56,
+    1.3,
+    4.02,
+    -3.89,
+    -1.8,
+    4.14,
+    5.12,
+    -4.62,
+    6.66,
+    9.01,
+    1.87,
+    -3.39,
+    1.84,
+    3.23,
+    -2.87,
+    -6.84,
+    16.53,
+    11.48,
+    1.36,
+    -2.93,
+    -1.65,
+    1.13,
+    1.25,
+    5.43,
+    -3.04,
+    0.7,
+    9.27,
+    2.01,
+    -2.79,
+    3.18,
+    -0.88,
+    -3.1,
+    2.61,
+    1.32,
+    1.5,
+    -3.16,
+    -1.29,
+    -3.67,
+    1.94,
+    -3.94,
+    1.86,
+    2.28,
+    4.66,
+    -2.69,
+    5.01,
+    3.17,
+    1.26,
+    3.46,
+    -1.7,
+    2.14,
+    1.16,
+    6.12,
+    0.64,
+    -4.78,
+    2.81,
+    -7.45,
+    -3.06,
+    1.27,
+    1.83,
+    -6.05,
+    6.61,
+    -2.41,
+    0.93,
+    -2.87,
+    -3.0,
+    2.39,
+    -3.49,
+    2.78,
+    6.79
+   ]
   },
   "h2": {
-   "net": -20.61,
-   "maxdd": -80.29,
-   "worst_debt": 80.29,
-   "trades": 92,
-   "wr": 53.3,
-   "blocked": 0
+   "net": -34.69,
+   "maxdd": -50.23,
+   "worst_debt": 50.23,
+   "trades": 100,
+   "wr": 53.0,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-09-09",
+     0.0
+    ],
+    [
+     "2026-09-10",
+     -5.96
+    ],
+    [
+     "2026-09-11",
+     -5.51
+    ],
+    [
+     "2026-09-12",
+     8.34
+    ],
+    [
+     "2026-09-13",
+     9.26
+    ],
+    [
+     "2026-09-14",
+     12.18
+    ],
+    [
+     "2026-09-15",
+     11.52
+    ],
+    [
+     "2026-09-16",
+     8.69
+    ],
+    [
+     "2026-09-17",
+     8.69
+    ],
+    [
+     "2026-09-18",
+     8.69
+    ],
+    [
+     "2026-09-19",
+     4.07
+    ],
+    [
+     "2026-09-20",
+     4.07
+    ],
+    [
+     "2026-09-21",
+     -9.04
+    ],
+    [
+     "2026-09-22",
+     -14.61
+    ],
+    [
+     "2026-09-23",
+     -2.25
+    ],
+    [
+     "2026-09-24",
+     -27.2
+    ],
+    [
+     "2026-09-25",
+     -19.69
+    ],
+    [
+     "2026-09-26",
+     -19.69
+    ],
+    [
+     "2026-09-27",
+     -19.69
+    ],
+    [
+     "2026-09-28",
+     -26.94
+    ],
+    [
+     "2026-09-29",
+     -38.06
+    ],
+    [
+     "2026-09-30",
+     -29.83
+    ],
+    [
+     "2026-09-30",
+     -34.69
+    ]
+   ],
+   "pnls": [
+    1.8,
+    1.76,
+    4.18,
+    -9.81,
+    8.44,
+    -4.89,
+    -5.9,
+    -4.95,
+    3.42,
+    -7.17,
+    -10.87,
+    6.14,
+    -3.16,
+    4.0,
+    -1.98,
+    1.96,
+    1.92,
+    9.61,
+    0.72,
+    2.25,
+    -1.61,
+    1.54,
+    -5.79,
+    1.93,
+    1.93,
+    6.45,
+    1.8,
+    -2.84,
+    7.48,
+    -1.18,
+    3.7,
+    -1.6,
+    1.54,
+    0.93,
+    2.7,
+    -2.25,
+    -1.22,
+    -2.27,
+    -2.61,
+    -2.63,
+    2.54,
+    3.2,
+    2.33,
+    3.57,
+    -1.97,
+    6.13,
+    -4.12,
+    0.73,
+    5.18,
+    -6.72,
+    -5.63,
+    -4.62,
+    4.57,
+    -2.25,
+    3.09,
+    -4.36,
+    0.73,
+    1.91,
+    1.24,
+    -4.89,
+    -4.23,
+    0.4,
+    0.61,
+    0.61,
+    -7.22,
+    -6.86,
+    3.54,
+    3.66,
+    1.24,
+    -1.77,
+    1.55,
+    -2.3,
+    -6.62,
+    -1.85,
+    0.54,
+    8.52,
+    3.84,
+    -22.32,
+    -5.17,
+    2.54,
+    7.51,
+    -2.97,
+    -2.11,
+    -2.47,
+    1.08,
+    -2.14,
+    8.89,
+    -7.52,
+    -7.74,
+    -7.59,
+    4.2,
+    -4.61,
+    13.14,
+    -2.49,
+    1.22,
+    3.44,
+    -2.48,
+    -7.85,
+    2.99
+   ]
   }
  },
  "variants": [
@@ -47,56 +937,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 152.45,
-    "maxdd": -38.82,
-    "worst_debt": 38.82,
-    "trades": 331,
-    "wr": 73.7,
+    "net": 22.54,
+    "maxdd": -41.76,
+    "worst_debt": 41.76,
+    "trades": 328,
+    "wr": 74.4,
     "blocked": 0
    },
    "h1": {
-    "net": 109.91,
-    "maxdd": -33.1,
-    "worst_debt": 33.1,
-    "trades": 214,
-    "wr": 75.7,
+    "net": 26.45,
+    "maxdd": -34.78,
+    "worst_debt": 34.78,
+    "trades": 216,
+    "wr": 75.0,
     "blocked": 0
    },
    "h2": {
-    "net": 45.32,
-    "maxdd": -38.82,
-    "worst_debt": 38.82,
-    "trades": 117,
-    "wr": 70.9,
+    "net": -22.69,
+    "maxdd": -52.9,
+    "worst_debt": 52.9,
+    "trades": 119,
+    "wr": 71.4,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -84.54,
+     "diff_worst": -8.47
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -53.87,
+     "diff_worst": -13.21
+    }
+   },
    "src": "battery",
-   "diff_net": -22.9,
-   "diff_worst": -41.47,
+   "diff_net": -84.54,
+   "diff_worst": -8.47,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -29.35,
-    "diff_worst": -41.47,
-    "h1": -38.99,
-    "h2": -6.23,
-    "net": 169.26,
-    "worst": 38.82,
-    "trades": 495
+    "diff_net": -160.41,
+    "diff_worst": -32.06,
+    "h1": -77.72,
+    "h2": -30.39,
+    "net": 79.3,
+    "worst": 48.23,
+    "trades": 492
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
-    "blocked": 5,
-    "net": -31.83,
-    "worst": 43.65,
-    "diff_net": 0.7,
-    "diff_worst": -1.59
+    "n_real": 16,
+    "trades": 16,
+    "blocked": 0,
+    "net": 13.17,
+    "worst": 13.9,
+    "diff_net": 44.2,
+    "diff_worst": -22.22
    }
   },
   {
@@ -117,56 +1033,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 161.29,
-    "maxdd": -44.11,
-    "worst_debt": 44.11,
-    "trades": 318,
-    "wr": 70.8,
+    "net": 91.77,
+    "maxdd": -39.92,
+    "worst_debt": 39.92,
+    "trades": 332,
+    "wr": 71.7,
     "blocked": 0
    },
    "h1": {
-    "net": 127.53,
-    "maxdd": -39.9,
-    "worst_debt": 39.9,
-    "trades": 203,
-    "wr": 72.9,
+    "net": 70.97,
+    "maxdd": -35.29,
+    "worst_debt": 35.29,
+    "trades": 220,
+    "wr": 72.3,
     "blocked": 0
    },
    "h2": {
-    "net": 27.89,
-    "maxdd": -44.11,
-    "worst_debt": 44.11,
-    "trades": 103,
-    "wr": 68.0,
+    "net": -9.15,
+    "maxdd": -55.84,
+    "worst_debt": 55.84,
+    "trades": 114,
+    "wr": 67.5,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -15.31,
+     "diff_worst": -10.31
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -30.9,
+     "diff_worst": -4.28
+    }
+   },
    "src": "battery",
-   "diff_net": -14.06,
-   "diff_worst": -36.18,
+   "diff_net": -15.31,
+   "diff_worst": -10.31,
    "long": {
     "days": 69,
-    "verdict": "B",
-    "diff_net": -9.59,
-    "diff_worst": -36.18,
-    "h1": -23.86,
-    "h2": -6.55,
-    "net": 189.02,
-    "worst": 44.11,
-    "trades": 480
+    "verdict": "C",
+    "diff_net": -81.06,
+    "diff_worst": -29.17,
+    "h1": -39.02,
+    "h2": 8.57,
+    "net": 158.65,
+    "worst": 51.12,
+    "trades": 493
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
-    "blocked": 5,
-    "net": -27.55,
-    "worst": 42.46,
-    "diff_net": 4.98,
-    "diff_worst": -2.78
+    "n_real": 16,
+    "trades": 12,
+    "blocked": 4,
+    "net": -15.43,
+    "worst": 28.3,
+    "diff_net": 15.6,
+    "diff_worst": -7.82
    }
   },
   {
@@ -187,56 +1129,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 195.65,
-    "maxdd": -44.72,
-    "worst_debt": 44.72,
-    "trades": 300,
-    "wr": 66.3,
+    "net": 107.78,
+    "maxdd": -36.76,
+    "worst_debt": 36.76,
+    "trades": 308,
+    "wr": 66.6,
     "blocked": 0
    },
    "h1": {
-    "net": 151.78,
-    "maxdd": -36.98,
-    "worst_debt": 36.98,
-    "trades": 190,
-    "wr": 68.9,
+    "net": 78.23,
+    "maxdd": -34.67,
+    "worst_debt": 34.67,
+    "trades": 205,
+    "wr": 67.8,
     "blocked": 0
    },
    "h2": {
-    "net": 40.11,
-    "maxdd": -44.72,
-    "worst_debt": 44.72,
-    "trades": 99,
-    "wr": 62.6,
+    "net": -0.95,
+    "maxdd": -42.91,
+    "worst_debt": 42.91,
+    "trades": 108,
+    "wr": 62.0,
     "blocked": 0
    },
    "verdict": "B",
-   "prev_verdict": "B",
+   "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": 0.7,
+     "diff_worst": -13.47
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -4.73,
+     "diff_worst": -4.91
+    }
+   },
    "src": "battery",
-   "diff_net": 20.3,
-   "diff_worst": -35.57,
+   "diff_net": 0.7,
+   "diff_worst": -13.47,
    "long": {
     "days": 69,
-    "verdict": "A",
-    "diff_net": 60.91,
-    "diff_worst": -35.57,
-    "h1": 9.65,
-    "h2": 30.72,
-    "net": 259.52,
-    "worst": 44.72,
-    "trades": 465
+    "verdict": "B",
+    "diff_net": 11.84,
+    "diff_worst": -30.82,
+    "h1": -20.38,
+    "h2": 50.46,
+    "net": 251.55,
+    "worst": 49.47,
+    "trades": 463
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -43.92,
-    "worst": 53.38,
-    "diff_net": -11.39,
-    "diff_worst": 8.14
+    "net": -30.49,
+    "worst": 34.27,
+    "diff_net": 0.54,
+    "diff_worst": -1.85
    }
   },
   {
@@ -257,55 +1225,81 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 157.31,
-    "maxdd": -64.96,
-    "worst_debt": 64.96,
-    "trades": 277,
-    "wr": 63.5,
+    "net": 67.7,
+    "maxdd": -46.71,
+    "worst_debt": 46.71,
+    "trades": 283,
+    "wr": 62.9,
     "blocked": 0
    },
    "h1": {
-    "net": 138.8,
-    "maxdd": -47.64,
-    "worst_debt": 47.64,
-    "trades": 171,
-    "wr": 66.1,
+    "net": 66.24,
+    "maxdd": -39.75,
+    "worst_debt": 39.75,
+    "trades": 184,
+    "wr": 64.7,
     "blocked": 0
    },
    "h2": {
-    "net": 20.34,
-    "maxdd": -64.96,
-    "worst_debt": 64.96,
-    "trades": 95,
-    "wr": 60.0,
+    "net": -22.12,
+    "maxdd": -46.71,
+    "worst_debt": 46.71,
+    "trades": 105,
+    "wr": 58.1,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -39.38,
+     "diff_worst": -3.52
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 1.48,
+     "diff_worst": -8.67
+    }
+   },
    "src": "battery",
-   "diff_net": -18.04,
-   "diff_worst": -15.33,
+   "diff_net": -39.38,
+   "diff_worst": -3.52,
    "long": {
     "days": 69,
-    "verdict": "B",
-    "diff_net": -0.15,
-    "diff_worst": -15.33,
-    "h1": -8.91,
-    "h2": -0.68,
-    "net": 198.46,
-    "worst": 64.96,
-    "trades": 438
+    "verdict": "C",
+    "diff_net": -56.08,
+    "diff_worst": -12.05,
+    "h1": -35.8,
+    "h2": -0.37,
+    "net": 183.63,
+    "worst": 68.24,
+    "trades": 439
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -43.46,
-    "worst": 54.55,
-    "diff_net": -10.93,
+    "net": -41.0,
+    "worst": 45.43,
+    "diff_net": -9.97,
     "diff_worst": 9.31
    }
   },
@@ -327,56 +1321,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 166.82,
-    "maxdd": -62.4,
-    "worst_debt": 62.4,
-    "trades": 210,
-    "wr": 56.7,
+    "net": 154.01,
+    "maxdd": -35.5,
+    "worst_debt": 35.5,
+    "trades": 219,
+    "wr": 55.7,
     "blocked": 0
    },
    "h1": {
-    "net": 190.71,
-    "maxdd": -62.4,
-    "worst_debt": 62.4,
-    "trades": 129,
-    "wr": 62.0,
+    "net": 161.13,
+    "maxdd": -35.5,
+    "worst_debt": 35.5,
+    "trades": 142,
+    "wr": 59.9,
     "blocked": 0
    },
    "h2": {
-    "net": -9.72,
-    "maxdd": -61.91,
-    "worst_debt": 61.91,
-    "trades": 73,
-    "wr": 47.9,
+    "net": -24.24,
+    "maxdd": -33.83,
+    "worst_debt": 33.83,
+    "trades": 83,
+    "wr": 45.8,
     "blocked": 0
    },
-   "verdict": "A",
-   "prev_verdict": "C",
+   "verdict": "B",
+   "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "A",
+     "diff_net": 46.93,
+     "diff_worst": -14.73
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -52.3,
+     "diff_worst": 0.6
+    }
+   },
    "src": "battery",
-   "diff_net": -8.53,
-   "diff_worst": -17.89,
+   "diff_net": 46.93,
+   "diff_worst": -14.73,
    "long": {
     "days": 69,
     "verdict": "B",
-    "diff_net": 6.21,
+    "diff_net": 30.6,
     "diff_worst": -17.89,
-    "h1": -62.29,
-    "h2": 33.65,
-    "net": 204.82,
+    "h1": -53.21,
+    "h2": 67.62,
+    "net": 270.31,
     "worst": 62.4,
-    "trades": 353
+    "trades": 355
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -27.41,
-    "worst": 43.37,
-    "diff_net": 5.12,
-    "diff_worst": -1.87
+    "net": -27.85,
+    "worst": 34.24,
+    "diff_net": 3.18,
+    "diff_worst": -1.88
    }
   },
   {
@@ -397,56 +1417,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": -80.63,
-    "maxdd": -110.95,
-    "worst_debt": 110.95,
-    "trades": 203,
-    "wr": 44.8,
+    "net": 36.83,
+    "maxdd": -47.42,
+    "worst_debt": 47.42,
+    "trades": 213,
+    "wr": 45.1,
     "blocked": 0
    },
    "h1": {
-    "net": -44.56,
-    "maxdd": -89.02,
-    "worst_debt": 89.02,
-    "trades": 124,
-    "wr": 44.4,
+    "net": 27.43,
+    "maxdd": -47.42,
+    "worst_debt": 47.42,
+    "trades": 138,
+    "wr": 44.9,
     "blocked": 0
    },
    "h2": {
-    "net": -20.98,
-    "maxdd": -57.78,
-    "worst_debt": 57.78,
-    "trades": 71,
-    "wr": 45.1,
+    "net": -6.57,
+    "maxdd": -29.71,
+    "worst_debt": 29.71,
+    "trades": 81,
+    "wr": 43.2,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -70.25,
+     "diff_worst": -2.81
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -30.82,
+     "diff_worst": 12.52
+    }
+   },
    "src": "battery",
-   "diff_net": -255.98,
-   "diff_worst": 30.66,
+   "diff_net": -70.25,
+   "diff_worst": -2.81,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -317.63,
-    "diff_worst": 50.35,
-    "h1": -159.47,
-    "h2": -176.42,
-    "net": -119.02,
-    "worst": 130.64,
-    "trades": 331
+    "diff_net": -199.43,
+    "diff_worst": 4.63,
+    "h1": -113.43,
+    "h2": -97.41,
+    "net": 40.28,
+    "worst": 84.92,
+    "trades": 339
    },
    "real": {
-    "n_real": 19,
-    "trades": 13,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 3,
-    "net": -40.85,
-    "worst": 48.55,
-    "diff_net": -8.32,
-    "diff_worst": 3.31
+    "net": -33.91,
+    "worst": 41.6,
+    "diff_net": -2.88,
+    "diff_worst": 5.48
    }
   },
   {
@@ -467,56 +1513,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 75.91,
-    "maxdd": -42.78,
-    "worst_debt": 42.78,
-    "trades": 167,
-    "wr": 62.9,
+    "net": 26.64,
+    "maxdd": -22.44,
+    "worst_debt": 22.44,
+    "trades": 169,
+    "wr": 61.5,
     "blocked": 0
    },
    "h1": {
-    "net": 57.0,
-    "maxdd": -42.78,
-    "worst_debt": 42.78,
-    "trades": 106,
-    "wr": 63.2,
+    "net": 32.62,
+    "maxdd": -22.44,
+    "worst_debt": 22.44,
+    "trades": 109,
+    "wr": 63.3,
     "blocked": 0
    },
    "h2": {
-    "net": 7.47,
-    "maxdd": -32.12,
-    "worst_debt": 32.12,
-    "trades": 69,
-    "wr": 59.4,
+    "net": -23.66,
+    "maxdd": -22.9,
+    "worst_debt": 22.9,
+    "trades": 60,
+    "wr": 56.7,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -80.44,
+     "diff_worst": -27.79
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -103.12,
+     "diff_worst": -6.04
+    }
+   },
    "src": "battery",
-   "diff_net": -99.44,
-   "diff_worst": -37.51,
+   "diff_net": -80.44,
+   "diff_worst": -27.79,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -153.61,
+    "diff_net": -211.62,
     "diff_worst": -37.51,
-    "h1": -38.76,
-    "h2": -135.97,
-    "net": 45.0,
+    "h1": -85.96,
+    "h2": -124.32,
+    "net": 28.09,
     "worst": 42.78,
     "trades": 262
    },
    "real": {
-    "n_real": 19,
-    "trades": 9,
-    "blocked": 10,
-    "net": -14.4,
-    "worst": 28.11,
-    "diff_net": 18.13,
-    "diff_worst": -17.13
+    "n_real": 16,
+    "trades": 7,
+    "blocked": 9,
+    "net": -15.87,
+    "worst": 21.95,
+    "diff_net": 15.16,
+    "diff_worst": -14.17
    }
   },
   {
@@ -537,55 +1609,81 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 88.17,
-    "maxdd": -113.66,
-    "worst_debt": 113.66,
-    "trades": 274,
-    "wr": 59.5,
+    "net": 65.16,
+    "maxdd": -69.68,
+    "worst_debt": 69.68,
+    "trades": 284,
+    "wr": 58.8,
     "blocked": 0
    },
    "h1": {
-    "net": 171.1,
-    "maxdd": -74.37,
-    "worst_debt": 74.37,
-    "trades": 164,
-    "wr": 64.0,
+    "net": 116.07,
+    "maxdd": -59.41,
+    "worst_debt": 59.41,
+    "trades": 182,
+    "wr": 62.1,
     "blocked": 0
    },
    "h2": {
-    "net": -94.51,
-    "maxdd": -113.66,
-    "worst_debt": 113.66,
-    "trades": 98,
-    "wr": 52.0,
+    "net": -61.24,
+    "maxdd": -62.44,
+    "worst_debt": 62.44,
+    "trades": 96,
+    "wr": 52.1,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -41.92,
+     "diff_worst": 19.45
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -19.24,
+     "diff_worst": 9.97
+    }
+   },
    "src": "battery",
-   "diff_net": -87.18,
-   "diff_worst": 33.37,
+   "diff_net": -41.92,
+   "diff_worst": 19.45,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -54.97,
-    "diff_worst": 33.37,
-    "h1": 13.71,
-    "h2": -77.82,
-    "net": 143.64,
-    "worst": 113.66,
-    "trades": 449
+    "diff_net": -79.56,
+    "diff_worst": 37.39,
+    "h1": -8.97,
+    "h2": -57.75,
+    "net": 160.15,
+    "worst": 117.68,
+    "trades": 447
    },
    "real": {
-    "n_real": 19,
-    "trades": 17,
+    "n_real": 16,
+    "trades": 15,
     "blocked": 1,
-    "net": -41.87,
-    "worst": 67.1,
-    "diff_net": -9.34,
+    "net": -38.49,
+    "worst": 57.98,
+    "diff_net": -7.46,
     "diff_worst": 21.86
    }
   },
@@ -607,54 +1705,80 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 132.15,
-    "maxdd": -117.13,
-    "worst_debt": 117.13,
-    "trades": 222,
-    "wr": 61.3,
-    "blocked": 58
+    "net": 89.43,
+    "maxdd": -66.55,
+    "worst_debt": 66.55,
+    "trades": 229,
+    "wr": 59.8,
+    "blocked": 59
    },
    "h1": {
-    "net": 172.1,
-    "maxdd": -53.57,
-    "worst_debt": 53.57,
-    "trades": 136,
-    "wr": 66.2,
-    "blocked": 34
+    "net": 126.74,
+    "maxdd": -43.05,
+    "worst_debt": 43.05,
+    "trades": 148,
+    "wr": 64.2,
+    "blocked": 40
    },
    "h2": {
-    "net": -55.0,
-    "maxdd": -117.13,
-    "worst_debt": 117.13,
-    "trades": 78,
-    "wr": 52.6,
-    "blocked": 20
+    "net": -64.88,
+    "maxdd": -64.88,
+    "worst_debt": 64.88,
+    "trades": 65,
+    "wr": 50.8,
+    "blocked": 18
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -17.65,
+     "diff_worst": 16.32
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": -3.41,
+     "diff_worst": -7.14
+    }
+   },
    "src": "battery",
-   "diff_net": -43.2,
-   "diff_worst": 36.84,
+   "diff_net": -17.65,
+   "diff_worst": 16.32,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -22.65,
+    "diff_net": -47.18,
     "diff_worst": 36.84,
-    "h1": 26.74,
-    "h2": -54.78,
-    "net": 175.96,
+    "h1": 0.8,
+    "h2": -45.71,
+    "net": 192.53,
     "worst": 117.13,
-    "trades": 361
+    "trades": 362
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
-    "blocked": 4,
-    "net": -8.01,
-    "worst": 40.91,
+    "n_real": 16,
+    "trades": 11,
+    "blocked": 5,
+    "net": -6.51,
+    "worst": 31.79,
     "diff_net": 24.52,
     "diff_worst": -4.33
    }
@@ -677,56 +1801,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 77.58,
-    "maxdd": -108.8,
-    "worst_debt": 108.8,
-    "trades": 208,
-    "wr": 62.5,
-    "blocked": 97
+    "net": 69.17,
+    "maxdd": -56.2,
+    "worst_debt": 56.2,
+    "trades": 215,
+    "wr": 60.9,
+    "blocked": 101
    },
    "h1": {
-    "net": 147.63,
-    "maxdd": -44.66,
-    "worst_debt": 44.66,
-    "trades": 128,
-    "wr": 68.0,
-    "blocked": 63
+    "net": 99.76,
+    "maxdd": -36.13,
+    "worst_debt": 36.13,
+    "trades": 139,
+    "wr": 66.2,
+    "blocked": 70
    },
    "h2": {
-    "net": -78.08,
-    "maxdd": -108.8,
-    "worst_debt": 108.8,
-    "trades": 73,
-    "wr": 52.1,
-    "blocked": 29
+    "net": -62.52,
+    "maxdd": -62.52,
+    "worst_debt": 62.52,
+    "trades": 71,
+    "wr": 49.3,
+    "blocked": 31
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -37.91,
+     "diff_worst": 5.97
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 12.55,
+     "diff_worst": -12.65
+    }
+   },
    "src": "battery",
-   "diff_net": -97.77,
-   "diff_worst": 28.51,
+   "diff_net": -37.91,
+   "diff_worst": 5.97,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -50.64,
+    "diff_net": -96.96,
     "diff_worst": 28.51,
-    "h1": 28.62,
-    "h2": -92.38,
-    "net": 147.97,
+    "h1": -12.75,
+    "h2": -79.04,
+    "net": 142.75,
     "worst": 108.8,
-    "trades": 342
+    "trades": 340
    },
    "real": {
-    "n_real": 19,
-    "trades": 12,
-    "blocked": 6,
-    "net": -3.0,
-    "worst": 35.9,
-    "diff_net": 29.53,
-    "diff_worst": -9.34
+    "n_real": 16,
+    "trades": 11,
+    "blocked": 5,
+    "net": -6.51,
+    "worst": 31.79,
+    "diff_net": 24.52,
+    "diff_worst": -4.33
    }
   },
   {
@@ -747,56 +1897,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 63.7,
-    "maxdd": -108.29,
-    "worst_debt": 108.29,
-    "trades": 192,
-    "wr": 60.9,
-    "blocked": 115
+    "net": 42.09,
+    "maxdd": -59.64,
+    "worst_debt": 59.64,
+    "trades": 197,
+    "wr": 59.4,
+    "blocked": 122
    },
    "h1": {
-    "net": 126.6,
-    "maxdd": -44.87,
-    "worst_debt": 44.87,
-    "trades": 119,
-    "wr": 66.4,
-    "blocked": 70
+    "net": 82.74,
+    "maxdd": -34.96,
+    "worst_debt": 34.96,
+    "trades": 127,
+    "wr": 64.6,
+    "blocked": 82
    },
    "h2": {
-    "net": -72.02,
-    "maxdd": -108.29,
-    "worst_debt": 108.29,
-    "trades": 67,
-    "wr": 50.7,
-    "blocked": 38
+    "net": -62.47,
+    "maxdd": -62.47,
+    "worst_debt": 62.47,
+    "trades": 64,
+    "wr": 48.4,
+    "blocked": 41
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -64.99,
+     "diff_worst": 9.41
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": -0.81,
+     "diff_worst": -12.03
+    }
+   },
    "src": "battery",
-   "diff_net": -111.65,
-   "diff_worst": 28.0,
+   "diff_net": -64.99,
+   "diff_worst": 9.41,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -86.25,
+    "diff_net": -123.48,
     "diff_worst": 28.0,
-    "h1": 0.61,
-    "h2": -95.09,
-    "net": 112.36,
+    "h1": -31.66,
+    "h2": -89.53,
+    "net": 116.23,
     "worst": 108.29,
-    "trades": 315
+    "trades": 314
    },
    "real": {
-    "n_real": 19,
-    "trades": 12,
-    "blocked": 6,
-    "net": -3.0,
-    "worst": 35.9,
-    "diff_net": 29.53,
-    "diff_worst": -9.34
+    "n_real": 16,
+    "trades": 11,
+    "blocked": 5,
+    "net": -6.51,
+    "worst": 31.79,
+    "diff_net": 24.52,
+    "diff_worst": -4.33
    }
   },
   {
@@ -817,56 +1993,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 149.49,
-    "maxdd": -61.58,
-    "worst_debt": 61.58,
-    "trades": 222,
-    "wr": 61.7,
-    "blocked": 80
+    "net": 105.36,
+    "maxdd": -38.59,
+    "worst_debt": 38.59,
+    "trades": 221,
+    "wr": 61.1,
+    "blocked": 92
    },
    "h1": {
-    "net": 120.23,
-    "maxdd": -61.58,
-    "worst_debt": 61.58,
-    "trades": 129,
-    "wr": 66.7,
-    "blocked": 45
+    "net": 109.48,
+    "maxdd": -38.59,
+    "worst_debt": 38.59,
+    "trades": 138,
+    "wr": 65.2,
+    "blocked": 57
    },
    "h2": {
-    "net": 41.41,
-    "maxdd": -30.89,
-    "worst_debt": 30.89,
-    "trades": 93,
-    "wr": 53.8,
-    "blocked": 33
+    "net": -10.33,
+    "maxdd": -25.9,
+    "worst_debt": 25.9,
+    "trades": 87,
+    "wr": 54.0,
+    "blocked": 36
    },
-   "verdict": "C",
+   "verdict": "B",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": -1.72,
+     "diff_worst": -11.64
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -20.54,
+     "diff_worst": 4.11
+    }
+   },
    "src": "battery",
-   "diff_net": -25.86,
-   "diff_worst": -18.71,
+   "diff_net": -1.72,
+   "diff_worst": -11.64,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -15.96,
+    "diff_net": -21.19,
     "diff_worst": -18.71,
-    "h1": -23.43,
-    "h2": 15.82,
-    "net": 182.65,
+    "h1": -35.87,
+    "h2": 32.42,
+    "net": 218.52,
     "worst": 61.58,
-    "trades": 368
+    "trades": 370
    },
    "real": {
-    "n_real": 19,
-    "trades": 11,
-    "blocked": 8,
-    "net": -38.36,
-    "worst": 43.45,
-    "diff_net": -5.83,
-    "diff_worst": -1.79
+    "n_real": 16,
+    "trades": 9,
+    "blocked": 7,
+    "net": -29.24,
+    "worst": 34.32,
+    "diff_net": 1.79,
+    "diff_worst": -1.8
    }
   },
   {
@@ -887,56 +2089,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 158.46,
-    "maxdd": -61.26,
-    "worst_debt": 61.26,
-    "trades": 237,
-    "wr": 61.6,
-    "blocked": 47
+    "net": 150.93,
+    "maxdd": -39.96,
+    "worst_debt": 39.96,
+    "trades": 239,
+    "wr": 61.5,
+    "blocked": 56
    },
    "h1": {
-    "net": 147.04,
-    "maxdd": -55.57,
-    "worst_debt": 55.57,
-    "trades": 136,
-    "wr": 67.6,
-    "blocked": 31
+    "net": 152.07,
+    "maxdd": -36.48,
+    "worst_debt": 36.48,
+    "trades": 148,
+    "wr": 66.2,
+    "blocked": 40
    },
    "h2": {
-    "net": 12.58,
-    "maxdd": -61.26,
-    "worst_debt": 61.26,
-    "trades": 102,
-    "wr": 52.0,
+    "net": -18.63,
+    "maxdd": -39.96,
+    "worst_debt": 39.96,
+    "trades": 98,
+    "wr": 53.1,
     "blocked": 15
    },
-   "verdict": "C",
-   "prev_verdict": "C",
+   "verdict": "B",
+   "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "A",
+     "diff_net": 43.85,
+     "diff_worst": -10.27
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -49.48,
+     "diff_worst": 3.5
+    }
+   },
    "src": "battery",
-   "diff_net": -16.89,
-   "diff_worst": -19.03,
+   "diff_net": 43.85,
+   "diff_worst": -10.27,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -20.63,
+    "diff_net": -13.58,
     "diff_worst": -19.03,
-    "h1": -34.1,
-    "h2": 6.82,
-    "net": 177.98,
+    "h1": -37.68,
+    "h2": 34.48,
+    "net": 226.13,
     "worst": 61.26,
-    "trades": 386
+    "trades": 391
    },
    "real": {
-    "n_real": 19,
-    "trades": 11,
-    "blocked": 8,
-    "net": -38.36,
-    "worst": 43.45,
-    "diff_net": -5.83,
-    "diff_worst": -1.79
+    "n_real": 16,
+    "trades": 9,
+    "blocked": 7,
+    "net": -29.24,
+    "worst": 34.32,
+    "diff_net": 1.79,
+    "diff_worst": -1.8
    }
   },
   {
@@ -957,56 +2185,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 174.93,
-    "maxdd": -52.22,
-    "worst_debt": 52.22,
-    "trades": 249,
-    "wr": 61.0,
-    "blocked": 21
+    "net": 139.13,
+    "maxdd": -35.97,
+    "worst_debt": 35.97,
+    "trades": 253,
+    "wr": 60.9,
+    "blocked": 28
    },
    "h1": {
-    "net": 151.88,
-    "maxdd": -49.71,
-    "worst_debt": 49.71,
-    "trades": 145,
-    "wr": 65.5,
-    "blocked": 12
+    "net": 143.55,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 158,
+    "wr": 64.6,
+    "blocked": 20
    },
    "h2": {
-    "net": 24.2,
-    "maxdd": -52.22,
-    "worst_debt": 52.22,
-    "trades": 105,
-    "wr": 53.3,
-    "blocked": 8
+    "net": -24.51,
+    "maxdd": -35.97,
+    "worst_debt": 35.97,
+    "trades": 101,
+    "wr": 53.5,
+    "blocked": 9
    },
    "verdict": "B",
    "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "A",
+     "diff_net": 32.05,
+     "diff_worst": -14.26
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -17.94,
+     "diff_worst": 0.0
+    }
+   },
    "src": "battery",
-   "diff_net": -0.42,
-   "diff_worst": -28.07,
+   "diff_net": 32.05,
+   "diff_worst": -14.26,
    "long": {
     "days": 69,
-    "verdict": "C",
-    "diff_net": -2.81,
+    "verdict": "B",
+    "diff_net": -7.59,
     "diff_worst": -28.07,
-    "h1": -22.95,
-    "h2": 13.35,
-    "net": 195.8,
+    "h1": -27.74,
+    "h2": 31.38,
+    "net": 232.12,
     "worst": 52.22,
-    "trades": 399
+    "trades": 405
    },
    "real": {
-    "n_real": 19,
-    "trades": 11,
-    "blocked": 8,
-    "net": -38.36,
-    "worst": 43.45,
-    "diff_net": -5.83,
-    "diff_worst": -1.79
+    "n_real": 16,
+    "trades": 9,
+    "blocked": 7,
+    "net": -29.24,
+    "worst": 34.32,
+    "diff_net": 1.79,
+    "diff_worst": -1.8
    }
   },
   {
@@ -1027,54 +2281,80 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 173.39,
-    "maxdd": -76.94,
-    "worst_debt": 76.94,
-    "trades": 250,
-    "wr": 61.2,
-    "blocked": 7
+    "net": 128.51,
+    "maxdd": -46.89,
+    "worst_debt": 46.89,
+    "trades": 256,
+    "wr": 60.9,
+    "blocked": 11
    },
    "h1": {
-    "net": 176.01,
-    "maxdd": -49.71,
-    "worst_debt": 49.71,
-    "trades": 147,
-    "wr": 66.0,
-    "blocked": 4
+    "net": 139.76,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 162,
+    "wr": 64.8,
+    "blocked": 8
    },
    "h2": {
-    "net": -17.26,
-    "maxdd": -76.94,
-    "worst_debt": 76.94,
-    "trades": 92,
-    "wr": 53.3,
+    "net": -31.34,
+    "maxdd": -46.89,
+    "worst_debt": 46.89,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 3
    },
    "verdict": "B",
-   "prev_verdict": "B",
+   "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "A",
+     "diff_net": 21.43,
+     "diff_worst": -3.34
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -0.38,
+     "diff_worst": 0.0
+    }
+   },
    "src": "battery",
-   "diff_net": -1.96,
-   "diff_worst": -3.35,
+   "diff_net": 21.43,
+   "diff_worst": -3.34,
    "long": {
     "days": 69,
-    "verdict": "C",
-    "diff_net": -4.35,
+    "verdict": "B",
+    "diff_net": -3.2,
     "diff_worst": -3.35,
-    "h1": -3.01,
-    "h2": -8.13,
-    "net": 194.26,
+    "h1": -1.86,
+    "h2": 9.9,
+    "net": 236.51,
     "worst": 76.94,
-    "trades": 400
+    "trades": 408
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -32.53,
-    "worst": 45.24,
+    "net": -31.03,
+    "worst": 36.12,
     "diff_net": 0.0,
     "diff_worst": 0.0
    }
@@ -1099,56 +2379,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 190.18,
-    "maxdd": -61.15,
-    "worst_debt": 61.15,
-    "trades": 206,
-    "wr": 62.1,
+    "net": 105.21,
+    "maxdd": -48.0,
+    "worst_debt": 48.0,
+    "trades": 213,
+    "wr": 61.0,
     "blocked": 75
    },
    "h1": {
-    "net": 155.31,
-    "maxdd": -61.15,
-    "worst_debt": 61.15,
-    "trades": 128,
-    "wr": 65.6,
+    "net": 88.84,
+    "maxdd": -48.0,
+    "worst_debt": 48.0,
+    "trades": 144,
+    "wr": 63.2,
     "blocked": 36
    },
    "h2": {
-    "net": 20.23,
-    "maxdd": -49.6,
-    "worst_debt": 49.6,
-    "trades": 67,
-    "wr": 55.2,
+    "net": -3.72,
+    "maxdd": -27.91,
+    "worst_debt": 27.91,
+    "trades": 75,
+    "wr": 54.7,
     "blocked": 39
    },
-   "verdict": "B",
+   "verdict": "C",
    "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -1.87,
+     "diff_worst": -2.23
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 14.97,
+     "diff_worst": 0.0
+    }
+   },
    "src": "battery",
-   "diff_net": 14.83,
-   "diff_worst": -19.14,
+   "diff_net": -1.87,
+   "diff_worst": -2.23,
    "long": {
     "days": 69,
-    "verdict": "B",
-    "diff_net": 15.29,
+    "verdict": "A",
+    "diff_net": 14.86,
     "diff_worst": -19.14,
-    "h1": 12.93,
-    "h2": -2.42,
-    "net": 213.9,
+    "h1": 12.49,
+    "h2": 0.47,
+    "net": 254.57,
     "worst": 61.15,
-    "trades": 339
+    "trades": 344
    },
    "real": {
-    "n_real": 19,
-    "trades": 7,
-    "blocked": 12,
-    "net": 13.19,
+    "n_real": 16,
+    "trades": 8,
+    "blocked": 8,
+    "net": 10.3,
     "worst": 12.04,
-    "diff_net": 45.72,
-    "diff_worst": -33.2
+    "diff_net": 41.33,
+    "diff_worst": -24.08
    }
   },
   {
@@ -1172,56 +2478,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 147.57,
-    "maxdd": -71.12,
-    "worst_debt": 71.12,
-    "trades": 181,
-    "wr": 61.9,
+    "net": 82.54,
+    "maxdd": -58.79,
+    "worst_debt": 58.79,
+    "trades": 188,
+    "wr": 60.6,
     "blocked": 130
    },
    "h1": {
-    "net": 120.21,
-    "maxdd": -71.12,
-    "worst_debt": 71.12,
-    "trades": 107,
-    "wr": 65.4,
+    "net": 68.63,
+    "maxdd": -58.79,
+    "worst_debt": 58.79,
+    "trades": 123,
+    "wr": 62.6,
     "blocked": 81
    },
    "h2": {
-    "net": 12.73,
-    "maxdd": -49.6,
-    "worst_debt": 49.6,
-    "trades": 63,
-    "wr": 55.6,
+    "net": -6.18,
+    "maxdd": -27.91,
+    "worst_debt": 27.91,
+    "trades": 71,
+    "wr": 54.9,
     "blocked": 49
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -24.54,
+     "diff_worst": 8.56
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -10.68,
+     "diff_worst": 10.78
+    }
+   },
    "src": "battery",
-   "diff_net": -27.78,
-   "diff_worst": -9.17,
+   "diff_net": -24.54,
+   "diff_worst": 8.56,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -26.07,
+    "diff_net": -28.48,
     "diff_worst": -9.17,
-    "h1": -20.7,
-    "h2": -23.91,
-    "net": 172.54,
+    "h1": -23.12,
+    "h2": -30.67,
+    "net": 211.23,
     "worst": 71.12,
-    "trades": 310
+    "trades": 315
    },
    "real": {
-    "n_real": 19,
-    "trades": 7,
-    "blocked": 12,
-    "net": 13.19,
+    "n_real": 16,
+    "trades": 8,
+    "blocked": 8,
+    "net": 10.3,
     "worst": 12.04,
-    "diff_net": 45.72,
-    "diff_worst": -33.2
+    "diff_net": 41.33,
+    "diff_worst": -24.08
    }
   },
   {
@@ -1244,56 +2576,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 199.19,
-    "maxdd": -64.9,
-    "worst_debt": 64.9,
-    "trades": 212,
-    "wr": 63.2,
+    "net": 113.5,
+    "maxdd": -36.96,
+    "worst_debt": 36.96,
+    "trades": 218,
+    "wr": 62.4,
     "blocked": 69
    },
    "h1": {
-    "net": 194.37,
-    "maxdd": -49.71,
-    "worst_debt": 49.71,
-    "trades": 125,
-    "wr": 68.0,
+    "net": 122.99,
+    "maxdd": -34.48,
+    "worst_debt": 34.48,
+    "trades": 140,
+    "wr": 65.7,
     "blocked": 46
    },
    "h2": {
-    "net": -9.82,
-    "maxdd": -64.9,
-    "worst_debt": 64.9,
-    "trades": 76,
-    "wr": 55.3,
+    "net": -29.59,
+    "maxdd": -36.96,
+    "worst_debt": 36.96,
+    "trades": 84,
+    "wr": 54.8,
     "blocked": 23
    },
-   "verdict": "A",
-   "prev_verdict": "A",
+   "verdict": "B",
+   "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "A",
+     "diff_net": 6.42,
+     "diff_worst": -13.27
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -10.54,
+     "diff_worst": 0.0
+    }
+   },
    "src": "battery",
-   "diff_net": 23.84,
-   "diff_worst": -15.39,
+   "diff_net": 6.42,
+   "diff_worst": -13.27,
    "long": {
     "days": 69,
     "verdict": "B",
-    "diff_net": 17.67,
-    "diff_worst": -15.39,
-    "h1": -7.5,
-    "h2": 6.13,
-    "net": 216.28,
-    "worst": 64.9,
-    "trades": 337
+    "diff_net": 12.23,
+    "diff_worst": -11.52,
+    "h1": -12.94,
+    "h2": 18.38,
+    "net": 251.94,
+    "worst": 68.77,
+    "trades": 343
    },
    "real": {
-    "n_real": 19,
-    "trades": 12,
+    "n_real": 16,
+    "trades": 9,
     "blocked": 7,
-    "net": -30.73,
-    "worst": 43.45,
-    "diff_net": 1.8,
-    "diff_worst": -1.79
+    "net": -29.24,
+    "worst": 34.32,
+    "diff_net": 1.79,
+    "diff_worst": -1.8
    }
   },
   {
@@ -1323,54 +2681,80 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 80.75,
-    "maxdd": -98.34,
-    "worst_debt": 98.34,
-    "trades": 178,
-    "wr": 59.6,
-    "blocked": 128
+    "net": 58.73,
+    "maxdd": -59.08,
+    "worst_debt": 59.08,
+    "trades": 189,
+    "wr": 59.8,
+    "blocked": 125
    },
    "h1": {
-    "net": 108.07,
-    "maxdd": -63.85,
-    "worst_debt": 63.85,
-    "trades": 105,
-    "wr": 61.9,
-    "blocked": 78
+    "net": 83.54,
+    "maxdd": -50.71,
+    "worst_debt": 50.71,
+    "trades": 117,
+    "wr": 62.4,
+    "blocked": 86
    },
    "h2": {
-    "net": -25.11,
-    "maxdd": -98.34,
-    "worst_debt": 98.34,
-    "trades": 69,
-    "wr": 55.1,
-    "blocked": 37
+    "net": -26.69,
+    "maxdd": -59.08,
+    "worst_debt": 59.08,
+    "trades": 77,
+    "wr": 55.8,
+    "blocked": 40
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -48.35,
+     "diff_worst": 8.85
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -45.64,
+     "diff_worst": 21.57
+    }
+   },
    "src": "battery",
-   "diff_net": -94.6,
-   "diff_worst": 18.05,
+   "diff_net": -48.35,
+   "diff_worst": 8.85,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -106.01,
-    "diff_worst": 18.05,
-    "h1": -37.73,
-    "h2": -81.54,
-    "net": 92.6,
-    "worst": 98.34,
-    "trades": 295
+    "diff_net": -109.16,
+    "diff_worst": 22.29,
+    "h1": -42.27,
+    "h2": -60.92,
+    "net": 130.55,
+    "worst": 102.58,
+    "trades": 304
    },
    "real": {
-    "n_real": 19,
-    "trades": 11,
+    "n_real": 16,
+    "trades": 8,
     "blocked": 8,
-    "net": -16.66,
-    "worst": 24.28,
+    "net": -15.16,
+    "worst": 15.16,
     "diff_net": 15.87,
     "diff_worst": -20.96
    }
@@ -1402,56 +2786,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 183.8,
-    "maxdd": -24.87,
-    "worst_debt": 24.87,
-    "trades": 192,
-    "wr": 60.9,
-    "blocked": 136
+    "net": 88.09,
+    "maxdd": -15.37,
+    "worst_debt": 15.37,
+    "trades": 190,
+    "wr": 61.6,
+    "blocked": 144
    },
    "h1": {
-    "net": 161.31,
-    "maxdd": -17.57,
-    "worst_debt": 17.57,
-    "trades": 118,
-    "wr": 65.3,
-    "blocked": 82
+    "net": 81.76,
+    "maxdd": -12.35,
+    "worst_debt": 12.35,
+    "trades": 127,
+    "wr": 65.4,
+    "blocked": 88
    },
    "h2": {
-    "net": 34.31,
-    "maxdd": -24.87,
-    "worst_debt": 24.87,
-    "trades": 74,
-    "wr": 54.1,
-    "blocked": 54
+    "net": -11.66,
+    "maxdd": -20.08,
+    "worst_debt": 20.08,
+    "trades": 66,
+    "wr": 51.5,
+    "blocked": 60
    },
-   "verdict": "B",
-   "prev_verdict": "B",
+   "verdict": "C",
+   "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -18.99,
+     "diff_worst": -34.86
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -1.21,
+     "diff_worst": -19.11
+    }
+   },
    "src": "battery",
-   "diff_net": 8.45,
-   "diff_worst": -55.42,
+   "diff_net": -18.99,
+   "diff_worst": -34.86,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -35.53,
-    "diff_worst": -50.46,
-    "h1": -2.92,
-    "h2": -40.35,
-    "net": 163.08,
-    "worst": 29.83,
+    "diff_net": -78.75,
+    "diff_worst": -50.91,
+    "h1": -45.29,
+    "h2": -24.23,
+    "net": 160.96,
+    "worst": 29.38,
     "trades": 270
    },
    "real": {
-    "n_real": 19,
-    "trades": 7,
-    "blocked": 12,
-    "net": -30.21,
-    "worst": 35.29,
-    "diff_net": 2.32,
-    "diff_worst": -9.95
+    "n_real": 16,
+    "trades": 5,
+    "blocked": 11,
+    "net": -20.47,
+    "worst": 25.56,
+    "diff_net": 10.56,
+    "diff_worst": -10.56
    }
   },
   {
@@ -1481,56 +2891,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 61.42,
-    "maxdd": -94.82,
-    "worst_debt": 94.82,
-    "trades": 179,
-    "wr": 60.9,
-    "blocked": 148
+    "net": 41.0,
+    "maxdd": -51.27,
+    "worst_debt": 51.27,
+    "trades": 181,
+    "wr": 59.7,
+    "blocked": 157
    },
    "h1": {
-    "net": 117.0,
-    "maxdd": -48.81,
-    "worst_debt": 48.81,
-    "trades": 107,
-    "wr": 66.4,
-    "blocked": 92
+    "net": 71.67,
+    "maxdd": -37.25,
+    "worst_debt": 37.25,
+    "trades": 114,
+    "wr": 63.2,
+    "blocked": 104
    },
    "h2": {
-    "net": -72.8,
-    "maxdd": -94.82,
-    "worst_debt": 94.82,
-    "trades": 66,
-    "wr": 51.5,
-    "blocked": 48
+    "net": -30.17,
+    "maxdd": -50.37,
+    "worst_debt": 50.37,
+    "trades": 70,
+    "wr": 54.3,
+    "blocked": 55
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -66.08,
+     "diff_worst": 1.04
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -83.39,
+     "diff_worst": 16.79
+    }
+   },
    "src": "battery",
-   "diff_net": -113.93,
-   "diff_worst": 14.53,
+   "diff_net": -66.08,
+   "diff_worst": 1.04,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -65.84,
+    "diff_net": -98.85,
     "diff_worst": 14.53,
-    "h1": 36.58,
-    "h2": -100.97,
-    "net": 132.77,
+    "h1": 3.17,
+    "h2": -106.74,
+    "net": 140.86,
     "worst": 94.82,
     "trades": 300
    },
    "real": {
-    "n_real": 19,
-    "trades": 10,
-    "blocked": 9,
-    "net": -29.67,
-    "worst": 42.38,
-    "diff_net": 2.86,
-    "diff_worst": -2.86
+    "n_real": 16,
+    "trades": 8,
+    "blocked": 8,
+    "net": -35.25,
+    "worst": 40.33,
+    "diff_net": -4.22,
+    "diff_worst": 4.21
    }
   },
   {
@@ -1551,56 +2987,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 155.45,
-    "maxdd": -62.02,
-    "worst_debt": 62.02,
-    "trades": 256,
-    "wr": 60.9,
+    "net": 89.47,
+    "maxdd": -30.04,
+    "worst_debt": 30.04,
+    "trades": 262,
+    "wr": 60.3,
     "blocked": 0
    },
    "h1": {
-    "net": 150.63,
-    "maxdd": -45.63,
-    "worst_debt": 45.63,
-    "trades": 152,
-    "wr": 65.8,
+    "net": 99.17,
+    "maxdd": -30.04,
+    "worst_debt": 30.04,
+    "trades": 167,
+    "wr": 64.1,
     "blocked": 0
    },
    "h2": {
-    "net": -15.13,
-    "maxdd": -62.02,
-    "worst_debt": 62.02,
-    "trades": 92,
-    "wr": 53.3,
+    "net": -11.44,
+    "maxdd": -26.3,
+    "worst_debt": 26.3,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -17.61,
+     "diff_worst": -20.19
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -46.85,
+     "diff_worst": -7.21
+    }
+   },
    "src": "battery",
-   "diff_net": -19.9,
-   "diff_worst": -18.27,
+   "diff_net": -17.61,
+   "diff_worst": -20.19,
    "long": {
     "days": 69,
-    "verdict": "B",
-    "diff_net": -7.1,
+    "verdict": "C",
+    "diff_net": -20.4,
     "diff_worst": -18.27,
-    "h1": 4.71,
-    "h2": -24.13,
-    "net": 191.51,
+    "h1": -11.7,
+    "h2": -12.5,
+    "net": 219.31,
     "worst": 62.02,
-    "trades": 407
+    "trades": 414
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -23.52,
-    "worst": 32.42,
-    "diff_net": 9.01,
-    "diff_worst": -12.82
+    "net": -22.77,
+    "worst": 27.86,
+    "diff_net": 8.26,
+    "diff_worst": -8.26
    }
   },
   {
@@ -1621,56 +3083,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 133.67,
-    "maxdd": -25.05,
-    "worst_debt": 25.05,
-    "trades": 162,
-    "wr": 63.6,
-    "blocked": 204
+    "net": 68.04,
+    "maxdd": -18.6,
+    "worst_debt": 18.6,
+    "trades": 163,
+    "wr": 63.8,
+    "blocked": 208
    },
    "h1": {
-    "net": 85.16,
-    "maxdd": -15.48,
-    "worst_debt": 15.48,
-    "trades": 103,
-    "wr": 66.0,
-    "blocked": 118
+    "net": 59.7,
+    "maxdd": -18.37,
+    "worst_debt": 18.37,
+    "trades": 113,
+    "wr": 65.5,
+    "blocked": 123
    },
    "h2": {
-    "net": 9.88,
-    "maxdd": -27.7,
-    "worst_debt": 27.7,
-    "trades": 49,
-    "wr": 59.2,
-    "blocked": 80
+    "net": 0.89,
+    "maxdd": -19.29,
+    "worst_debt": 19.29,
+    "trades": 59,
+    "wr": 59.3,
+    "blocked": 79
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -39.04,
+     "diff_worst": -31.63
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -33.86,
+     "diff_worst": -13.11
+    }
+   },
    "src": "battery",
-   "diff_net": -41.68,
-   "diff_worst": -55.24,
+   "diff_net": -39.04,
+   "diff_worst": -31.63,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -79.05,
+    "diff_net": -86.34,
     "diff_worst": -49.14,
-    "h1": -61.46,
-    "h2": -35.58,
-    "net": 119.56,
+    "h1": -71.99,
+    "h2": -25.13,
+    "net": 153.37,
     "worst": 31.15,
-    "trades": 240
+    "trades": 245
    },
    "real": {
-    "n_real": 19,
+    "n_real": 16,
     "trades": 3,
-    "blocked": 16,
+    "blocked": 13,
     "net": -17.34,
     "worst": 17.34,
-    "diff_net": 15.19,
-    "diff_worst": -27.9
+    "diff_net": 13.69,
+    "diff_worst": -18.78
    }
   },
   {
@@ -1691,56 +3179,82 @@
     "bullets": 3,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": true
+    "debt_nerv_gate": true,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 183.42,
-    "maxdd": -25.05,
-    "worst_debt": 25.05,
-    "trades": 168,
-    "wr": 63.7,
-    "blocked": 181
+    "net": 64.44,
+    "maxdd": -18.6,
+    "worst_debt": 18.6,
+    "trades": 169,
+    "wr": 62.1,
+    "blocked": 200
    },
    "h1": {
-    "net": 130.32,
-    "maxdd": -15.48,
-    "worst_debt": 15.48,
-    "trades": 107,
-    "wr": 65.4,
-    "blocked": 100
+    "net": 56.1,
+    "maxdd": -18.37,
+    "worst_debt": 18.37,
+    "trades": 119,
+    "wr": 63.0,
+    "blocked": 115
    },
    "h2": {
-    "net": 9.88,
-    "maxdd": -27.7,
-    "worst_debt": 27.7,
-    "trades": 49,
-    "wr": 59.2,
-    "blocked": 80
+    "net": 0.89,
+    "maxdd": -19.29,
+    "worst_debt": 19.29,
+    "trades": 59,
+    "wr": 59.3,
+    "blocked": 79
    },
-   "verdict": "B",
-   "prev_verdict": "B",
+   "verdict": "C",
+   "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -42.64,
+     "diff_worst": -31.63
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -35.27,
+     "diff_worst": -10.54
+    }
+   },
    "src": "battery",
-   "diff_net": 8.07,
-   "diff_worst": -55.24,
+   "diff_net": -42.64,
+   "diff_worst": -31.63,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -69.3,
+    "diff_net": -80.27,
     "diff_worst": -50.38,
-    "h1": -60.21,
-    "h2": -27.08,
-    "net": 129.31,
+    "h1": -68.51,
+    "h2": -31.4,
+    "net": 159.44,
     "worst": 29.91,
-    "trades": 249
+    "trades": 258
    },
    "real": {
-    "n_real": 19,
-    "trades": 4,
-    "blocked": 15,
-    "net": -9.71,
+    "n_real": 16,
+    "trades": 3,
+    "blocked": 13,
+    "net": -17.34,
     "worst": 17.34,
-    "diff_net": 22.82,
-    "diff_worst": -27.9
+    "diff_net": 13.69,
+    "diff_worst": -18.78
    }
   },
   {
@@ -1761,55 +3275,81 @@
     "bullets": 2,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 144.52,
-    "maxdd": -74.39,
-    "worst_debt": 74.39,
-    "trades": 251,
-    "wr": 61.8,
+    "net": 109.62,
+    "maxdd": -51.23,
+    "worst_debt": 51.23,
+    "trades": 257,
+    "wr": 60.7,
     "blocked": 0
    },
    "h1": {
-    "net": 164.91,
-    "maxdd": -52.92,
-    "worst_debt": 52.92,
-    "trades": 148,
-    "wr": 66.2,
+    "net": 124.07,
+    "maxdd": -45.11,
+    "worst_debt": 45.11,
+    "trades": 163,
+    "wr": 64.4,
     "blocked": 0
    },
    "h2": {
-    "net": -29.39,
-    "maxdd": -74.39,
-    "worst_debt": 74.39,
-    "trades": 92,
-    "wr": 54.3,
+    "net": -34.55,
+    "maxdd": -51.23,
+    "worst_debt": 51.23,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": 2.54,
+     "diff_worst": 1.0
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -0.4,
+     "diff_worst": -1.87
+    }
+   },
    "src": "battery",
-   "diff_net": -30.83,
-   "diff_worst": -5.9,
+   "diff_net": 2.54,
+   "diff_worst": 1.0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -33.62,
+    "diff_net": -42.27,
     "diff_worst": -5.9,
-    "h1": -6.94,
-    "h2": -36.21,
-    "net": 164.99,
+    "h1": -16.26,
+    "h2": -27.23,
+    "net": 197.44,
     "worst": 74.39,
-    "trades": 402
+    "trades": 410
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -30.25,
-    "worst": 42.96,
-    "diff_net": 2.28,
+    "net": -28.76,
+    "worst": 33.84,
+    "diff_net": 2.27,
     "diff_worst": -2.28
    }
   },
@@ -1831,54 +3371,80 @@
     "bullets": 4,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 210.26,
-    "maxdd": -87.24,
-    "worst_debt": 87.24,
-    "trades": 252,
-    "wr": 61.1,
+    "net": 107.71,
+    "maxdd": -48.46,
+    "worst_debt": 48.46,
+    "trades": 257,
+    "wr": 60.7,
     "blocked": 0
    },
    "h1": {
-    "net": 202.56,
-    "maxdd": -69.37,
-    "worst_debt": 69.37,
-    "trades": 149,
-    "wr": 65.8,
+    "net": 121.1,
+    "maxdd": -48.46,
+    "worst_debt": 48.46,
+    "trades": 163,
+    "wr": 64.4,
     "blocked": 0
    },
    "h2": {
-    "net": -12.57,
-    "maxdd": -87.24,
-    "worst_debt": 87.24,
-    "trades": 92,
-    "wr": 53.3,
+    "net": -33.49,
+    "maxdd": -47.89,
+    "worst_debt": 47.89,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
-   "verdict": "C",
-   "prev_verdict": "C",
+   "verdict": "B",
+   "prev_verdict": "B",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": 0.63,
+     "diff_worst": -1.77
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -5.92,
+     "diff_worst": 0.45
+    }
+   },
    "src": "battery",
-   "diff_net": 34.91,
-   "diff_worst": 6.95,
+   "diff_net": 0.63,
+   "diff_worst": -1.77,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": 39.08,
+    "diff_net": 47.74,
     "diff_worst": 6.95,
-    "h1": 8.3,
-    "h2": 33.59,
-    "net": 237.69,
+    "h1": 17.63,
+    "h2": 26.57,
+    "net": 287.45,
     "worst": 87.24,
-    "trades": 404
+    "trades": 412
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -34.81,
-    "worst": 47.52,
+    "net": -33.31,
+    "worst": 38.4,
     "diff_net": -2.28,
     "diff_worst": 2.28
    }
@@ -1901,56 +3467,82 @@
     "bullets": 0,
     "k_streak": 2,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 72.78,
+    "net": 53.31,
     "maxdd": -59.43,
     "worst_debt": 59.43,
-    "trades": 249,
-    "wr": 61.4,
+    "trades": 256,
+    "wr": 60.5,
     "blocked": 0
    },
    "h1": {
-    "net": 115.27,
+    "net": 94.81,
     "maxdd": -36.46,
     "worst_debt": 36.46,
-    "trades": 147,
-    "wr": 66.0,
+    "trades": 162,
+    "wr": 64.2,
     "blocked": 0
    },
    "h2": {
-    "net": -40.23,
+    "net": -55.13,
     "maxdd": -59.43,
     "worst_debt": 59.43,
-    "trades": 91,
-    "wr": 53.8,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -53.77,
+     "diff_worst": 9.2
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -81.38,
+     "diff_worst": 24.95
+    }
+   },
    "src": "battery",
-   "diff_net": -102.57,
-   "diff_worst": -20.86,
+   "diff_net": -53.77,
+   "diff_worst": 9.2,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -109.11,
+    "diff_net": -135.43,
     "diff_worst": -20.86,
-    "h1": -18.96,
-    "h2": -101.81,
-    "net": 89.5,
+    "h1": -47.3,
+    "h2": -71.73,
+    "net": 104.28,
     "worst": 59.43,
-    "trades": 401
+    "trades": 405
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -25.69,
-    "worst": 38.41,
-    "diff_net": 6.84,
-    "diff_worst": -6.83
+    "net": -24.2,
+    "worst": 29.28,
+    "diff_net": 6.83,
+    "diff_worst": -6.84
    }
   },
   {
@@ -1971,54 +3563,80 @@
     "bullets": 3,
     "k_streak": 1,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 129.75,
-    "maxdd": -70.91,
-    "worst_debt": 70.91,
-    "trades": 250,
-    "wr": 61.6,
+    "net": 73.38,
+    "maxdd": -58.53,
+    "worst_debt": 58.53,
+    "trades": 257,
+    "wr": 60.7,
     "blocked": 0
    },
    "h1": {
-    "net": 181.42,
-    "maxdd": -53.57,
-    "worst_debt": 53.57,
-    "trades": 148,
-    "wr": 66.2,
+    "net": 108.0,
+    "maxdd": -46.65,
+    "worst_debt": 46.65,
+    "trades": 163,
+    "wr": 64.4,
     "blocked": 0
    },
    "h2": {
-    "net": -43.5,
-    "maxdd": -70.91,
-    "worst_debt": 70.91,
-    "trades": 91,
-    "wr": 53.8,
+    "net": -55.0,
+    "maxdd": -59.31,
+    "worst_debt": 59.31,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
    "verdict": "C",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "C",
+     "diff_net": -33.7,
+     "diff_worst": 8.3
+    },
+    "valere": {
+     "verdict": "C",
+     "diff_net": -4.91,
+     "diff_worst": -1.36
+    }
+   },
    "src": "battery",
-   "diff_net": -45.6,
-   "diff_worst": -9.38,
+   "diff_net": -33.7,
+   "diff_worst": 8.3,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -49.19,
-    "diff_worst": -9.38,
-    "h1": -1.28,
-    "h2": -48.4,
-    "net": 149.42,
-    "worst": 70.91,
-    "trades": 401
+    "diff_net": -55.18,
+    "diff_worst": -1.95,
+    "h1": -10.7,
+    "h2": -29.18,
+    "net": 184.53,
+    "worst": 78.34,
+    "trades": 408
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -34.99,
-    "worst": 47.7,
+    "net": -33.49,
+    "worst": 38.58,
     "diff_net": -2.46,
     "diff_worst": 2.46
    }
@@ -2041,100 +3659,1559 @@
     "bullets": 3,
     "k_streak": 3,
     "lot": 0.02,
-    "debt_nerv_gate": false
+    "debt_nerv_gate": false,
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "balance": 0.0,
+    "scale_ref": 200.0
    },
    "full": {
-    "net": 142.7,
-    "maxdd": -95.37,
-    "worst_debt": 95.37,
-    "trades": 249,
-    "wr": 61.4,
+    "net": 111.69,
+    "maxdd": -50.61,
+    "worst_debt": 50.61,
+    "trades": 257,
+    "wr": 60.7,
     "blocked": 0
    },
    "h1": {
-    "net": 163.75,
-    "maxdd": -70.79,
-    "worst_debt": 70.79,
-    "trades": 146,
-    "wr": 66.4,
+    "net": 119.25,
+    "maxdd": -48.79,
+    "worst_debt": 48.79,
+    "trades": 163,
+    "wr": 64.4,
     "blocked": 0
    },
    "h2": {
-    "net": -35.69,
-    "maxdd": -95.37,
-    "worst_debt": 95.37,
-    "trades": 92,
-    "wr": 53.3,
+    "net": -28.42,
+    "maxdd": -50.61,
+    "worst_debt": 50.61,
+    "trades": 100,
+    "wr": 53.0,
     "blocked": 0
    },
-   "verdict": "C",
+   "verdict": "B",
    "prev_verdict": "C",
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": 4.61,
+     "diff_worst": 0.38
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 3.5,
+     "diff_worst": -0.65
+    }
+   },
    "src": "battery",
-   "diff_net": -32.65,
-   "diff_worst": 15.08,
+   "diff_net": 4.61,
+   "diff_worst": 0.38,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -38.13,
+    "diff_net": -29.94,
     "diff_worst": 15.08,
-    "h1": -12.77,
-    "h2": -23.44,
-    "net": 160.48,
+    "h1": -12.0,
+    "h2": -24.6,
+    "net": 209.77,
     "worst": 95.37,
-    "trades": 399
+    "trades": 407
    },
    "real": {
-    "n_real": 19,
-    "trades": 14,
+    "n_real": 16,
+    "trades": 11,
     "blocked": 5,
-    "net": -21.63,
-    "worst": 46.87,
-    "diff_net": 10.9,
-    "diff_worst": 1.63
+    "net": -20.14,
+    "worst": 37.74,
+    "diff_net": 10.89,
+    "diff_worst": 1.62
    }
   }
  ],
  "counts": {
-  "C": 21,
-  "B": 6,
-  "A": 2
+  "C": 20,
+  "B": 9
+ },
+ "engine": "2026-09-29b",
+ "refs": {
+  "base": {
+   "net": 107.08,
+   "maxdd": -50.23,
+   "worst_debt": 50.23,
+   "trades": 257,
+   "wr": 60.7,
+   "blocked": 0
+  },
+  "valere": {
+   "net": 90.64,
+   "maxdd": -34.48,
+   "worst_debt": 34.48,
+   "trades": 183,
+   "wr": 60.7,
+   "blocked": 169
+  }
  },
  "days_long": 69,
  "base_long": {
   "full": {
-   "net": 198.61,
+   "net": 239.71,
    "maxdd": -80.29,
    "worst_debt": 80.29,
-   "trades": 403,
-   "wr": 60.0,
-   "blocked": 0
+   "trades": 411,
+   "wr": 60.6,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-07-23",
+     0.0
+    ],
+    [
+     "2026-07-24",
+     -5.9
+    ],
+    [
+     "2026-07-25",
+     11.13
+    ],
+    [
+     "2026-07-26",
+     9.36
+    ],
+    [
+     "2026-07-27",
+     14.85
+    ],
+    [
+     "2026-07-28",
+     23.77
+    ],
+    [
+     "2026-07-29",
+     23.77
+    ],
+    [
+     "2026-07-30",
+     39.78
+    ],
+    [
+     "2026-07-31",
+     48.95
+    ],
+    [
+     "2026-08-01",
+     50.3
+    ],
+    [
+     "2026-08-02",
+     50.3
+    ],
+    [
+     "2026-08-03",
+     55.59
+    ],
+    [
+     "2026-08-04",
+     63.88
+    ],
+    [
+     "2026-08-05",
+     66.19
+    ],
+    [
+     "2026-08-06",
+     72.81
+    ],
+    [
+     "2026-08-07",
+     60.92
+    ],
+    [
+     "2026-08-08",
+     55.42
+    ],
+    [
+     "2026-08-09",
+     55.42
+    ],
+    [
+     "2026-08-10",
+     56.33
+    ],
+    [
+     "2026-08-11",
+     66.25
+    ],
+    [
+     "2026-08-12",
+     62.26
+    ],
+    [
+     "2026-08-13",
+     59.59
+    ],
+    [
+     "2026-08-14",
+     65.8
+    ],
+    [
+     "2026-08-15",
+     67.99
+    ],
+    [
+     "2026-08-16",
+     68.84
+    ],
+    [
+     "2026-08-17",
+     69.03
+    ],
+    [
+     "2026-08-18",
+     71.12
+    ],
+    [
+     "2026-08-19",
+     77.15
+    ],
+    [
+     "2026-08-20",
+     79.3
+    ],
+    [
+     "2026-08-21",
+     99.23
+    ],
+    [
+     "2026-08-22",
+     106.8
+    ],
+    [
+     "2026-08-23",
+     121.37
+    ],
+    [
+     "2026-08-24",
+     129.69
+    ],
+    [
+     "2026-08-25",
+     150.23
+    ],
+    [
+     "2026-08-26",
+     114.5
+    ],
+    [
+     "2026-08-27",
+     116.25
+    ],
+    [
+     "2026-08-28",
+     107.07
+    ],
+    [
+     "2026-08-29",
+     89.09
+    ],
+    [
+     "2026-08-30",
+     106.57
+    ],
+    [
+     "2026-08-31",
+     126.23
+    ],
+    [
+     "2026-09-01",
+     114.11
+    ],
+    [
+     "2026-09-02",
+     157.96
+    ],
+    [
+     "2026-09-03",
+     180.07
+    ],
+    [
+     "2026-09-04",
+     185.7
+    ],
+    [
+     "2026-09-05",
+     213.71
+    ],
+    [
+     "2026-09-06",
+     214.7
+    ],
+    [
+     "2026-09-07",
+     232.03
+    ],
+    [
+     "2026-09-08",
+     241.71
+    ],
+    [
+     "2026-09-09",
+     243.95
+    ],
+    [
+     "2026-09-10",
+     279.59
+    ],
+    [
+     "2026-09-11",
+     293.01
+    ],
+    [
+     "2026-09-12",
+     311.16
+    ],
+    [
+     "2026-09-13",
+     313.24
+    ],
+    [
+     "2026-09-14",
+     320.04
+    ],
+    [
+     "2026-09-15",
+     318.36
+    ],
+    [
+     "2026-09-16",
+     313.12
+    ],
+    [
+     "2026-09-17",
+     313.12
+    ],
+    [
+     "2026-09-18",
+     313.12
+    ],
+    [
+     "2026-09-19",
+     308.5
+    ],
+    [
+     "2026-09-20",
+     308.5
+    ],
+    [
+     "2026-09-21",
+     289.69
+    ],
+    [
+     "2026-09-22",
+     287.99
+    ],
+    [
+     "2026-09-23",
+     308.04
+    ],
+    [
+     "2026-09-24",
+     262.25
+    ],
+    [
+     "2026-09-25",
+     269.76
+    ],
+    [
+     "2026-09-26",
+     269.76
+    ],
+    [
+     "2026-09-27",
+     269.76
+    ],
+    [
+     "2026-09-28",
+     256.79
+    ],
+    [
+     "2026-09-29",
+     239.76
+    ],
+    [
+     "2026-09-30",
+     244.57
+    ],
+    [
+     "2026-09-30",
+     239.71
+    ]
+   ],
+   "pnls": [
+    1.52,
+    -5.92,
+    -1.94,
+    -1.0,
+    1.43,
+    -3.69,
+    3.91,
+    13.6,
+    3.21,
+    -2.51,
+    0.73,
+    3.62,
+    0.39,
+    1.03,
+    -1.23,
+    0.83,
+    1.38,
+    1.22,
+    -1.76,
+    2.13,
+    1.96,
+    1.92,
+    1.49,
+    1.57,
+    0.88,
+    0.68,
+    0.49,
+    -2.07,
+    2.98,
+    -5.6,
+    2.48,
+    0.95,
+    2.74,
+    -4.26,
+    9.55,
+    0.84,
+    -2.65,
+    4.47,
+    -7.27,
+    11.64,
+    -1.94,
+    6.52,
+    1.17,
+    1.83,
+    1.59,
+    1.24,
+    0.57,
+    0.48,
+    1.34,
+    0.78,
+    -0.75,
+    -2.08,
+    -1.92,
+    -2.0,
+    3.71,
+    -3.15,
+    -1.53,
+    -1.76,
+    -1.02,
+    1.14,
+    -1.8,
+    5.13,
+    5.19,
+    3.08,
+    3.09,
+    1.13,
+    -4.16,
+    6.66,
+    1.56,
+    1.09,
+    1.94,
+    -5.07,
+    8.55,
+    -4.2,
+    6.62,
+    -1.42,
+    1.78,
+    1.83,
+    -1.67,
+    0.69,
+    -4.54,
+    -4.44,
+    1.79,
+    -2.45,
+    -3.48,
+    -4.5,
+    -2.18,
+    0.81,
+    -2.52,
+    -3.5,
+    2.15,
+    1.96,
+    -1.96,
+    2.7,
+    0.69,
+    0.84,
+    0.91,
+    -2.14,
+    7.44,
+    6.9,
+    1.36,
+    2.66,
+    -6.29,
+    0.91,
+    1.71,
+    -1.73,
+    2.16,
+    -3.7,
+    1.31,
+    -3.53,
+    1.69,
+    3.65,
+    -5.07,
+    -1.93,
+    0.54,
+    2.13,
+    -3.42,
+    -5.05,
+    -2.25,
+    -1.16,
+    0.87,
+    2.52,
+    1.23,
+    2.46,
+    2.47,
+    -2.22,
+    0.72,
+    2.24,
+    2.98,
+    -3.61,
+    1.82,
+    0.66,
+    2.15,
+    -2.31,
+    3.49,
+    2.57,
+    -1.72,
+    -2.25,
+    -1.09,
+    0.79,
+    2.74,
+    -1.29,
+    -1.3,
+    0.64,
+    -2.97,
+    7.0,
+    5.91,
+    -1.66,
+    0.8,
+    -3.64,
+    -2.11,
+    -1.37,
+    1.35,
+    0.29,
+    3.23,
+    3.22,
+    -1.2,
+    3.45,
+    -1.59,
+    0.41,
+    1.08,
+    6.96,
+    8.66,
+    4.31,
+    7.57,
+    -9.93,
+    19.08,
+    -4.34,
+    3.6,
+    4.33,
+    5.76,
+    -3.94,
+    -3.2,
+    3.02,
+    2.15,
+    6.35,
+    7.79,
+    -3.5,
+    2.87,
+    3.07,
+    10.31,
+    -12.51,
+    -14.37,
+    -9.57,
+    -7.92,
+    3.2,
+    5.45,
+    4.67,
+    3.36,
+    1.4,
+    1.02,
+    -7.03,
+    1.41,
+    -5.15,
+    2.07,
+    -9.18,
+    1.74,
+    -4.5,
+    -3.02,
+    -3.0,
+    3.17,
+    -6.34,
+    6.59,
+    2.04,
+    -5.98,
+    1.19,
+    -9.87,
+    2.15,
+    4.73,
+    3.68,
+    -4.39,
+    3.79,
+    0.34,
+    0.81,
+    6.36,
+    -2.26,
+    0.45,
+    1.72,
+    1.98,
+    14.95,
+    2.82,
+    -16.42,
+    -7.2,
+    -6.43,
+    -8.2,
+    4.18,
+    7.42,
+    -6.13,
+    18.89,
+    1.75,
+    1.48,
+    0.54,
+    7.74,
+    10.04,
+    2.23,
+    3.91,
+    -5.07,
+    -3.02,
+    1.41,
+    18.36,
+    -4.76,
+    6.29,
+    -6.95,
+    7.18,
+    3.14,
+    -5.3,
+    2.07,
+    4.56,
+    1.3,
+    4.02,
+    -3.89,
+    -3.25,
+    4.14,
+    17.74,
+    -4.62,
+    6.66,
+    9.01,
+    1.87,
+    -3.39,
+    1.84,
+    11.24,
+    -2.87,
+    -12.07,
+    16.53,
+    11.48,
+    1.36,
+    -2.93,
+    -2.99,
+    1.13,
+    4.42,
+    1.54,
+    -3.04,
+    0.7,
+    17.63,
+    2.01,
+    -2.79,
+    3.18,
+    -0.88,
+    -3.63,
+    2.61,
+    1.32,
+    5.28,
+    -3.16,
+    -2.35,
+    -3.67,
+    1.94,
+    -3.94,
+    1.86,
+    2.28,
+    4.66,
+    -2.69,
+    5.01,
+    3.17,
+    1.26,
+    3.46,
+    -1.7,
+    2.14,
+    1.16,
+    6.12,
+    0.64,
+    -4.78,
+    9.8,
+    -7.45,
+    -5.45,
+    1.27,
+    1.83,
+    -6.05,
+    12.59,
+    -2.41,
+    0.93,
+    -2.87,
+    -3.0,
+    2.39,
+    -3.49,
+    2.78,
+    23.46,
+    2.6,
+    4.18,
+    -4.95,
+    3.42,
+    -19.12,
+    20.37,
+    -3.16,
+    4.0,
+    -1.98,
+    -7.98,
+    1.96,
+    6.74,
+    12.6,
+    0.72,
+    2.25,
+    -1.61,
+    1.54,
+    -3.81,
+    1.93,
+    1.93,
+    6.45,
+    1.8,
+    -2.84,
+    9.81,
+    -1.18,
+    4.86,
+    -1.6,
+    5.42,
+    0.93,
+    2.7,
+    -2.25,
+    -2.24,
+    -2.27,
+    -2.61,
+    -2.63,
+    2.54,
+    3.2,
+    2.33,
+    3.57,
+    -1.97,
+    8.04,
+    -4.12,
+    0.73,
+    5.18,
+    -6.72,
+    -9.96,
+    -4.62,
+    4.57,
+    -4.05,
+    10.76,
+    -7.74,
+    0.73,
+    1.91,
+    1.24,
+    -4.89,
+    -4.23,
+    0.4,
+    0.61,
+    0.61,
+    -10.17,
+    -12.11,
+    3.54,
+    12.72,
+    4.39,
+    -3.21,
+    1.55,
+    -4.14,
+    -11.7,
+    -1.85,
+    0.54,
+    16.21,
+    3.84,
+    -39.16,
+    -9.16,
+    2.54,
+    7.51,
+    -5.31,
+    -3.8,
+    -2.47,
+    1.08,
+    -3.85,
+    8.89,
+    -7.52,
+    -13.65,
+    -7.59,
+    4.2,
+    -8.16,
+    17.22,
+    -4.46,
+    1.22,
+    3.44,
+    -4.44,
+    -7.85,
+    2.99
+   ]
   },
   "h1": {
-   "net": 64.3,
-   "maxdd": -31.6,
-   "worst_debt": 31.6,
-   "trades": 186,
-   "wr": 60.2,
-   "blocked": 0
+   "net": 114.18,
+   "maxdd": -35.73,
+   "worst_debt": 35.73,
+   "trades": 194,
+   "wr": 62.4,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-07-23",
+     0.0
+    ],
+    [
+     "2026-07-24",
+     -5.9
+    ],
+    [
+     "2026-07-25",
+     11.13
+    ],
+    [
+     "2026-07-26",
+     9.36
+    ],
+    [
+     "2026-07-27",
+     14.85
+    ],
+    [
+     "2026-07-28",
+     23.77
+    ],
+    [
+     "2026-07-29",
+     23.77
+    ],
+    [
+     "2026-07-30",
+     39.78
+    ],
+    [
+     "2026-07-31",
+     48.95
+    ],
+    [
+     "2026-08-01",
+     50.3
+    ],
+    [
+     "2026-08-02",
+     50.3
+    ],
+    [
+     "2026-08-03",
+     55.59
+    ],
+    [
+     "2026-08-04",
+     63.88
+    ],
+    [
+     "2026-08-05",
+     66.19
+    ],
+    [
+     "2026-08-06",
+     72.81
+    ],
+    [
+     "2026-08-07",
+     60.92
+    ],
+    [
+     "2026-08-08",
+     55.42
+    ],
+    [
+     "2026-08-09",
+     55.42
+    ],
+    [
+     "2026-08-10",
+     56.33
+    ],
+    [
+     "2026-08-11",
+     66.25
+    ],
+    [
+     "2026-08-12",
+     62.26
+    ],
+    [
+     "2026-08-13",
+     59.59
+    ],
+    [
+     "2026-08-14",
+     65.8
+    ],
+    [
+     "2026-08-15",
+     67.99
+    ],
+    [
+     "2026-08-16",
+     68.84
+    ],
+    [
+     "2026-08-17",
+     69.03
+    ],
+    [
+     "2026-08-18",
+     71.12
+    ],
+    [
+     "2026-08-19",
+     77.15
+    ],
+    [
+     "2026-08-20",
+     79.3
+    ],
+    [
+     "2026-08-21",
+     99.23
+    ],
+    [
+     "2026-08-22",
+     106.8
+    ],
+    [
+     "2026-08-23",
+     121.37
+    ],
+    [
+     "2026-08-24",
+     129.69
+    ],
+    [
+     "2026-08-25",
+     150.23
+    ],
+    [
+     "2026-08-26",
+     114.5
+    ],
+    [
+     "2026-08-26",
+     114.18
+    ]
+   ],
+   "pnls": [
+    1.52,
+    -5.92,
+    -1.94,
+    -1.0,
+    1.43,
+    -3.69,
+    3.91,
+    13.6,
+    3.21,
+    -2.51,
+    0.73,
+    3.62,
+    0.39,
+    1.03,
+    -1.23,
+    0.83,
+    1.38,
+    1.22,
+    -1.76,
+    2.13,
+    1.96,
+    1.92,
+    1.49,
+    1.57,
+    0.88,
+    0.68,
+    0.49,
+    -2.07,
+    2.98,
+    -5.6,
+    2.48,
+    0.95,
+    2.74,
+    -4.26,
+    9.55,
+    0.84,
+    -2.65,
+    4.47,
+    -7.27,
+    11.64,
+    -1.94,
+    6.52,
+    1.17,
+    1.83,
+    1.59,
+    1.24,
+    0.57,
+    0.48,
+    1.34,
+    0.78,
+    -0.75,
+    -2.08,
+    -1.92,
+    -2.0,
+    3.71,
+    -3.15,
+    -1.53,
+    -1.76,
+    -1.02,
+    1.14,
+    -1.8,
+    5.13,
+    5.19,
+    3.08,
+    3.09,
+    1.13,
+    -4.16,
+    6.66,
+    1.56,
+    1.09,
+    1.94,
+    -5.07,
+    8.55,
+    -4.2,
+    6.62,
+    -1.42,
+    1.78,
+    1.83,
+    -1.67,
+    0.69,
+    -4.54,
+    -4.44,
+    1.79,
+    -2.45,
+    -3.48,
+    -4.5,
+    -2.18,
+    0.81,
+    -2.52,
+    -3.5,
+    2.15,
+    1.96,
+    -1.96,
+    2.7,
+    0.69,
+    0.84,
+    0.91,
+    -2.14,
+    7.44,
+    6.9,
+    1.36,
+    2.66,
+    -6.29,
+    0.91,
+    1.71,
+    -1.73,
+    2.16,
+    -3.7,
+    1.31,
+    -3.53,
+    1.69,
+    3.65,
+    -5.07,
+    -1.93,
+    0.54,
+    2.13,
+    -3.42,
+    -5.05,
+    -2.25,
+    -1.16,
+    0.87,
+    2.52,
+    1.23,
+    2.46,
+    2.47,
+    -2.22,
+    0.72,
+    2.24,
+    2.98,
+    -3.61,
+    1.82,
+    0.66,
+    2.15,
+    -2.31,
+    3.49,
+    2.57,
+    -1.72,
+    -2.25,
+    -1.09,
+    0.79,
+    2.74,
+    -1.29,
+    -1.3,
+    0.64,
+    -2.97,
+    7.0,
+    5.91,
+    -1.66,
+    0.8,
+    -3.64,
+    -2.11,
+    -1.37,
+    1.35,
+    0.29,
+    3.23,
+    3.22,
+    -1.2,
+    3.45,
+    -1.59,
+    0.41,
+    1.08,
+    6.96,
+    8.66,
+    4.31,
+    7.57,
+    -9.93,
+    19.08,
+    -4.34,
+    3.6,
+    4.33,
+    5.76,
+    -3.94,
+    -3.2,
+    3.02,
+    2.15,
+    6.35,
+    7.79,
+    -3.5,
+    2.87,
+    3.07,
+    10.31,
+    -12.51,
+    -14.37,
+    -9.57,
+    -7.92,
+    3.2,
+    5.45,
+    4.67,
+    3.36,
+    1.4,
+    1.02,
+    -7.03,
+    1.41,
+    -5.15
+   ]
   },
   "h2": {
-   "net": 141.78,
+   "net": 111.4,
    "maxdd": -80.29,
    "worst_debt": 80.29,
-   "trades": 220,
-   "wr": 59.1,
-   "blocked": 0
+   "trades": 224,
+   "wr": 58.9,
+   "blocked": 0,
+   "curve": [
+    [
+     "2026-08-26",
+     0.0
+    ],
+    [
+     "2026-08-27",
+     0.0
+    ],
+    [
+     "2026-08-28",
+     -28.04
+    ],
+    [
+     "2026-08-29",
+     -46.02
+    ],
+    [
+     "2026-08-30",
+     -28.54
+    ],
+    [
+     "2026-08-31",
+     -8.88
+    ],
+    [
+     "2026-09-01",
+     -21.0
+    ],
+    [
+     "2026-09-02",
+     29.65
+    ],
+    [
+     "2026-09-03",
+     51.76
+    ],
+    [
+     "2026-09-04",
+     57.39
+    ],
+    [
+     "2026-09-05",
+     85.4
+    ],
+    [
+     "2026-09-06",
+     86.39
+    ],
+    [
+     "2026-09-07",
+     103.72
+    ],
+    [
+     "2026-09-08",
+     113.4
+    ],
+    [
+     "2026-09-09",
+     115.64
+    ],
+    [
+     "2026-09-10",
+     151.28
+    ],
+    [
+     "2026-09-11",
+     164.7
+    ],
+    [
+     "2026-09-12",
+     182.85
+    ],
+    [
+     "2026-09-13",
+     184.93
+    ],
+    [
+     "2026-09-14",
+     191.73
+    ],
+    [
+     "2026-09-15",
+     190.05
+    ],
+    [
+     "2026-09-16",
+     184.81
+    ],
+    [
+     "2026-09-17",
+     184.81
+    ],
+    [
+     "2026-09-18",
+     184.81
+    ],
+    [
+     "2026-09-19",
+     180.19
+    ],
+    [
+     "2026-09-20",
+     180.19
+    ],
+    [
+     "2026-09-21",
+     161.38
+    ],
+    [
+     "2026-09-22",
+     159.68
+    ],
+    [
+     "2026-09-23",
+     179.72
+    ],
+    [
+     "2026-09-24",
+     133.94
+    ],
+    [
+     "2026-09-25",
+     141.45
+    ],
+    [
+     "2026-09-26",
+     141.45
+    ],
+    [
+     "2026-09-27",
+     141.45
+    ],
+    [
+     "2026-09-28",
+     128.47
+    ],
+    [
+     "2026-09-29",
+     111.44
+    ],
+    [
+     "2026-09-30",
+     116.26
+    ],
+    [
+     "2026-09-30",
+     111.4
+    ]
+   ],
+   "pnls": [
+    1.63,
+    -5.88,
+    -3.46,
+    4.87,
+    2.59,
+    -15.54,
+    7.65,
+    -19.9,
+    1.74,
+    -4.5,
+    -3.02,
+    -3.01,
+    3.17,
+    -6.34,
+    6.59,
+    2.04,
+    -5.98,
+    1.19,
+    -9.87,
+    2.15,
+    4.73,
+    3.68,
+    -4.39,
+    3.79,
+    0.34,
+    0.81,
+    6.36,
+    -2.26,
+    0.45,
+    1.72,
+    1.98,
+    14.95,
+    2.82,
+    -16.42,
+    -7.2,
+    -6.43,
+    -8.2,
+    4.18,
+    7.42,
+    -6.13,
+    18.89,
+    1.75,
+    1.48,
+    0.54,
+    7.74,
+    10.04,
+    2.23,
+    3.91,
+    4.56,
+    -2.84,
+    -3.02,
+    1.41,
+    18.36,
+    -4.76,
+    6.29,
+    -6.95,
+    7.18,
+    3.14,
+    -5.3,
+    2.07,
+    4.56,
+    1.3,
+    4.02,
+    -3.89,
+    -3.25,
+    4.14,
+    17.74,
+    -4.62,
+    6.66,
+    9.01,
+    1.87,
+    -3.39,
+    1.84,
+    11.24,
+    -2.87,
+    -12.07,
+    16.53,
+    11.48,
+    1.36,
+    -2.93,
+    -2.99,
+    1.13,
+    4.42,
+    1.54,
+    -3.04,
+    0.7,
+    17.63,
+    2.01,
+    -2.79,
+    3.18,
+    -0.88,
+    -3.63,
+    2.61,
+    1.32,
+    5.28,
+    -3.16,
+    -2.35,
+    -3.67,
+    1.94,
+    -3.94,
+    1.86,
+    2.28,
+    4.66,
+    -2.69,
+    5.01,
+    3.17,
+    1.26,
+    3.46,
+    -1.7,
+    2.14,
+    1.16,
+    6.12,
+    0.64,
+    -4.78,
+    9.8,
+    -7.45,
+    -5.45,
+    1.27,
+    1.83,
+    -6.05,
+    12.59,
+    -2.41,
+    0.93,
+    -2.87,
+    -3.0,
+    2.39,
+    -3.49,
+    2.78,
+    23.46,
+    2.6,
+    4.18,
+    -4.95,
+    3.42,
+    -19.12,
+    20.37,
+    -3.16,
+    4.0,
+    -1.98,
+    -7.98,
+    1.96,
+    6.74,
+    12.6,
+    0.72,
+    2.25,
+    -1.61,
+    1.54,
+    -3.81,
+    1.93,
+    1.93,
+    6.45,
+    1.8,
+    -2.84,
+    9.81,
+    -1.18,
+    4.86,
+    -1.6,
+    5.42,
+    0.93,
+    2.7,
+    -2.25,
+    -2.24,
+    -2.27,
+    -2.61,
+    -2.63,
+    2.54,
+    3.2,
+    2.33,
+    3.57,
+    -1.97,
+    8.04,
+    -4.12,
+    0.73,
+    5.18,
+    -6.72,
+    -9.96,
+    -4.62,
+    4.57,
+    -4.05,
+    10.76,
+    -7.74,
+    0.73,
+    1.91,
+    1.24,
+    -4.89,
+    -4.23,
+    0.4,
+    0.61,
+    0.61,
+    -10.17,
+    -12.11,
+    3.54,
+    12.72,
+    4.39,
+    -3.21,
+    1.55,
+    -4.14,
+    -11.7,
+    -1.85,
+    0.54,
+    16.21,
+    3.84,
+    -39.16,
+    -9.16,
+    2.54,
+    7.51,
+    -5.31,
+    -3.8,
+    -2.47,
+    1.08,
+    -3.85,
+    8.89,
+    -7.52,
+    -13.65,
+    -7.59,
+    4.2,
+    -8.16,
+    17.22,
+    -4.46,
+    1.22,
+    3.44,
+    -4.44,
+    -7.85,
+    2.99
+   ]
   }
  },
  "base_real": {
-  "net": -32.53,
-  "worst_debt": 45.24,
-  "trades": 14,
-  "wr": 35.7,
+  "net": -31.03,
+  "worst_debt": 36.12,
+  "trades": 11,
+  "wr": 36.4,
   "blocked": 5,
-  "n_real": 19,
-  "actual": -24.56
+  "n_real": 16,
+  "actual": -24.46
  },
- "real_n": 19,
- "minutes": 8.2
+ "real_n": 16,
+ "minutes": 26.2
 }

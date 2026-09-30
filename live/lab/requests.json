@@ -12,7 +12,18 @@
    "status": "built",
    "key": "debt_nerv_gate",
    "built": "2026-09-29",
-   "c_nights": 0
+   "c_nights": 2
+  },
+  {
+   "id": "cap_fit_target",
+   "date": "2026-09-30",
+   "title_fr": "Sur un compte avec plafond du jour, viser juste ce qui manque pour l'atteindre",
+   "title_en": "On an account with a daily cap, aim for exactly what is missing to reach it",
+   "what_fr": "Un dial qui, sur un compte avec plafond de gain du jour, réduit la cible d'un trade au montant qui manque encore pour atteindre ce plafond, sans jamais dépasser la cible normale. Exemple : plafond 3,78 $, déjà +2,50 $ gagnés aujourd'hui, la cible vise 1,28 $ et pas 2,80 $.",
+   "what_en": "A dial that, on an account with a daily profit cap, shrinks one trade's target to the amount still missing to reach that cap, never above the normal target. Example: cap $3.78, already +$2.50 today, the target aims for $1.28, not $2.80.",
+   "why_fr": "Depuis la correction du moteur, les deux formes de compte tirent en sens opposé : viser plus gros (0,9 ou 1,0 fois le risque) gagne +47 $ sans plafond et perd chez Valère (-7 à -52 $). Avec plafond, la journée est une course vers 3,78 $ : tout gain au-delà est jeté, et une cible plus courte gagne plus souvent. Le menu ne peut pas viser le reste du plafond.",
+   "why_en": "Since the engine was corrected, the two account shapes pull opposite ways: aiming bigger (0.9 or 1.0 times the risk) earns +$47 without a cap and loses on Valère (-$7 to -$52). With a cap, the day is a race to $3.78: any gain beyond it is thrown away, and a shorter target wins more often. The menu cannot aim for what is left of the cap.",
+   "status": "open"
   }
  ]
 }

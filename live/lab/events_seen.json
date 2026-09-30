@@ -1,6 +1,7 @@
 {
  "requests": [
-  "nerv_gate_debt_only"
+  "nerv_gate_debt_only",
+  "cap_fit_target"
  ],
  "asks_answered": [
   "ask_1790670647",

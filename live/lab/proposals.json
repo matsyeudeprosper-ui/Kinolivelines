@@ -307,6 +307,205 @@
    },
    "verdict": "B",
    "done": "2026-09-29"
+  },
+  {
+   "id": "ext700_k3",
+   "title_fr": "Ne pas entrer après une envolée de 700 points, et jusqu'à trois renforts de suite",
+   "title_en": "No entry after a 700-point run, and up to three boosts in a row",
+   "family": "rythme",
+   "why_fr": "Les deux seules idées de ce soir qui ne perdent rien chez Valère. Ensemble, rejoué sur 42 jours : compte sans plafond A (+27 $, les deux moitiés gagnent), compte avec plafond du jour (Valère, 252 $) B (+3 $, trou à peine plus petit). La première idée positive sur les deux formes de compte depuis la correction du moteur.",
+   "why_en": "The only two ideas tonight that lose nothing on Valère. Together, replayed over 42 days: account without a daily cap A (+$27, both halves win), account with a daily cap (Valère, $252) B (+$3, hole barely smaller). The first idea positive on both account shapes since the engine was corrected.",
+   "by": "chercheur",
+   "date": "2026-09-30",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 131.3,
+    "worst": 47.26,
+    "h1": 17.08,
+    "h2": 10.39,
+    "base_net": 103.83,
+    "base_worst": 50.23,
+    "verdict": "A",
+    "trades": 255,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {"verdict": "A", "diff_net": 27.47, "diff_worst": -2.97},
+     "valere": {"verdict": "B", "diff_net": 3.12, "diff_worst": -0.65}
+    }
+   }
+  },
+  {
+   "id": "nosun_ext700",
+   "title_fr": "Ne pas trader le dimanche, et ne pas entrer après une envolée de 700 points",
+   "title_en": "Skip Sunday, and no entry after a 700-point run",
+   "family": "rythme",
+   "why_fr": "Le dimanche en moins gagne chez Valère (+15 $) mais pas sur le compte sans plafond ; l'envolée de 700 points, c'est l'inverse. Ensemble ils coupent des trades différents et s'additionnent : B sur les deux comptes (+28 $ sans plafond, +8 $ chez Valère à 252 $), le plus gros trou passe de 50 à 34 $ sans plafond.",
+   "why_en": "Skipping Sunday wins on Valère (+$15) but not on the uncapped account; the 700-point run is the reverse. Together they cut different trades and add up: B on both accounts (+$28 uncapped, +$8 on Valère at $252), the biggest hole drops from 50 to 34 dollars uncapped.",
+   "by": "chercheur",
+   "date": "2026-09-30",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 131.45,
+    "worst": 34.48,
+    "h1": -6.7,
+    "h2": 34.31,
+    "base_net": 103.83,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 210,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {"verdict": "B", "diff_net": 27.62, "diff_worst": -15.75},
+     "valere": {"verdict": "B", "diff_net": 8.5, "diff_worst": 0.0}
+    }
+   }
+  },
+  {
+   "id": "nosun_risk12",
+   "title_fr": "Ceinture de sécurité : risque d'un trade plafonné à 12 $, et pas de dimanche",
+   "title_en": "Safety belt: one trade's risk capped at $12, and no Sunday",
+   "family": "argent",
+   "why_fr": "Une ceinture, pas une idée pour gagner : la perte de -11,95 $ du 25/09 avait un stop de 597 points. Avec le dimanche en moins, rejoué : B sur les deux comptes (+37 $ sans plafond, +12 $ chez Valère à 252 $), trou 50 → 34 $ sans plafond. L'argent en plus peut être du bruit ; le trou plus petit revient à chaque essai.",
+   "why_en": "A belt, not a profit idea: the -$11.95 loss of 25/09 had a 597-point stop. With Sunday removed, replayed: B on both accounts (+$37 uncapped, +$12 on Valère at $252), hole 50 -> 34 dollars uncapped. The extra money may be noise; the smaller hole comes back on every test.",
+   "by": "chercheur",
+   "date": "2026-09-30",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "risk_max": 12
+   },
+   "pretest": {
+    "net": 141.28,
+    "worst": 34.48,
+    "h1": -17.45,
+    "h2": 54.9,
+    "base_net": 103.83,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 220,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {"verdict": "B", "diff_net": 37.45, "diff_worst": -15.75},
+     "valere": {"verdict": "B", "diff_net": 12.4, "diff_worst": 0.0}
+    }
+   }
+  },
+  {
+   "id": "nosun_ext700_k3",
+   "title_fr": "Pas de dimanche, pas d'entrée après 700 points d'envolée, et trois renforts de suite",
+   "title_en": "No Sunday, no entry after a 700-point run, and three boosts in a row",
+   "family": "rythme",
+   "why_fr": "Les trois ensemble, pour savoir si le renfort en plus ajoute quelque chose aux deux freins. Rejoué : B sur les deux comptes, mais un peu moins que sans lui (+26 $ / +7 $ contre +28 $ / +8 $). Le renfort de plus aide seul, pas quand le dimanche est déjà coupé. Je le garde pour trancher entre les deux.",
+   "why_en": "All three together, to see whether the extra boost adds anything to the two brakes. Replayed: B on both accounts, but slightly less than without it (+$26 / +$7 versus +$28 / +$8). The extra boost helps alone, not once Sunday is already cut. Kept to settle between the two.",
+   "by": "chercheur",
+   "date": "2026-09-30",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 129.77,
+    "worst": 33.83,
+    "h1": -8.15,
+    "h2": 34.09,
+    "base_net": 103.83,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 210,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {"verdict": "B", "diff_net": 25.94, "diff_worst": -16.4},
+     "valere": {"verdict": "B", "diff_net": 6.75, "diff_worst": -0.65}
+    }
+   }
+  },
+  {
+   "id": "nosun_wait20",
+   "title_fr": "Souffler 20 minutes après chaque trade, et pas de dimanche",
+   "title_en": "Pause 20 minutes after each trade, and no Sunday",
+   "family": "rythme",
+   "why_fr": "Sortie du cadre, née des vrais trades : les pertes arrivent en médiane 23 minutes après le trade d'avant, les gains 220 minutes. Rejoué chez Valère (252 $) : B, le plus gros trou passe de 34 à 22 $. Sans plafond du jour c'est C (-32 $) : une idée pour les comptes avec plafond seulement, je le dis franchement.",
+   "why_en": "Out of the box, born from the real trades: losses come a median 23 minutes after the previous trade, wins 220 minutes. Replayed on Valère ($252): B, the biggest hole drops from 34 to 22 dollars. Without a daily cap it is C (-$32): an idea for capped accounts only, said plainly.",
+   "by": "chercheur",
+   "date": "2026-09-30",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 20,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 72.18,
+    "worst": 38.0,
+    "h1": -34.86,
+    "h2": 6.3,
+    "base_net": 103.83,
+    "base_worst": 50.23,
+    "verdict": "C",
+    "trades": 182,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {"verdict": "C", "diff_net": -31.65, "diff_worst": -12.23},
+     "valere": {"verdict": "B", "diff_net": 4.62, "diff_worst": -12.27}
+    }
+   }
   }
  ]
 }
