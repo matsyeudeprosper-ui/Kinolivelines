@@ -633,7 +633,7 @@ function htDraw(){
  // level landing on the same row as a main one is skipped - the bigger
  // picture wins, the same rule the minute panel follows.
  const hides=(v,m)=>(v!=null&&m!=null&&Math.abs(py(v)-py(m))<11);
- if(d.int_trend){
+ if(INTMK()&&d.int_trend){
   const ic=d.int_trend===1?'#9d8cff':'#c58cff';
   (d.int_dots||[]).slice(-8).forEach(q=>{const x=htX(q[0]);if(x===undefined)return;
    const y=py(q[1]);if(!inView(y))return;
@@ -723,9 +723,9 @@ function htDraw(){
  const sub=document.getElementById('htfsub');
  if(sub)sub.textContent=(d.trend===1?(CL?'up':'hausse'):d.trend===-1?(CL?'down':'baisse'):'\u2014')
   +(d.next_bos?' \u00b7 BOS '+Math.round(d.next_bos):'')
-  +' \u00b7 '+(d.int_trend
+  +(!INTMK()?'':' \u00b7 '+(d.int_trend
     ? (CL?'inner ':'interne ')+(d.int_trend===1?'\u25b2':'\u25bc')
-    : (CL?'no inner':'sans interne'))
+    : (CL?'no inner':'sans interne')))
   +(HT.vz!==1?' \u00b7 x'+(1/HT.vz).toFixed(1):'');
 }
 function htNear(t){let b,bd=1e18;for(const k of HT.xts){const dd=Math.abs(k-t);if(dd<bd){bd=dd;b=k;}}
@@ -1577,8 +1577,7 @@ function draw(){
  // longer trades the inner structure, so a member may want it off the
  // chart entirely. Read every draw, so flipping it in the other tab shows
  // up here on the next frame without a reload.
- const INTMK=(()=>{try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}})();
- if(FULL&&INTMK){
+ if(FULL){
  const intRoom=(room,range)=>{
   if(!(range>0))return false;
   const f=room/range;
@@ -1594,7 +1593,7 @@ function draw(){
  // when the main structure was wounded. The flip BOS is the other boundary in
  // that state (it is already drawn, "BOS de bascule"), so fall back to it.
  const _mOther=(D.invalid!=null)?D.invalid:D.flip_bos;
- if(!D.int_trend&&D.px&&D.next_bos&&_mOther!=null){
+ if(INTMK()&&!D.int_trend&&D.px&&D.next_bos&&_mOther!=null){
   const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-_mOther));
   const mrange=Math.abs(_mOther-D.next_bos);
   if(intRoom(room,mrange)){
@@ -1611,7 +1610,7 @@ function draw(){
     ctx.fillText(t0,W-w0-19,y0+3.5);}
    ctx.restore();}
  }
- if(D.int_trend&&D.int_bos&&D.px&&D.next_bos&&_mOther!=null){
+ if(INTMK()&&D.int_trend&&D.int_bos&&D.px&&D.next_bos&&_mOther!=null){
   // Owner 2026-09-18: "it says int BOS but I can't see the main structure".
   // The internal window is anchored on the main protected dot, so when the
   // internal engine finds the SAME high, both levels land on the same price
@@ -2659,6 +2658,11 @@ function wxState(){
 // nodes of a rendered block, so static markup and rendered strings share
 // the table. Canvas labels (BOS, int flip...) are jargon and stay.
 const CL=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
+// 2026-09-30 (owner): the Reglages switch for the inner structure. Read
+// on every draw, NOT cached, so flipping it in the app tab shows up on
+// the next frame here. It hides the INNER marks only - the main
+// structure is a different thing and must never ride on this.
+function INTMK(){try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}}
 const EN={'Aujourd’hui':'Today','EN DIRECT':'LIVE','Trader':'Trade','filtre silence':'quiet filter','Fermer':'Close','Fermer l\'outil':'Close the tool',
  'haussier':'bullish','baissier':'bearish','neutre':'neutral','choc!':'shock!','achat':'buy','vente':'sell','pris':'taken',
  'Feu vert':'Green light','Ça peut tourner':'It may turn','Ça se prépare':'Getting ready','Rien à faire':'Nothing to do','Pas de signal':'No signal','Marché soutenu':'Brisk market','Marché rapide':'Fast market','Aucun frein':'No brakes',
