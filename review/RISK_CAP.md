@@ -98,3 +98,25 @@ and it costs no extra wall-clock. Revisit after about 50 trades each.
 
 Whether the cap helps or hurts over a year. Two months of bars cannot say,
 and the halves prove it. The live pairing above is how that gets answered.
+
+## 7. Addendum 2026-09-30: the lot step makes the cap nearly binary
+
+Found while smoke-testing the nightly battery. With a **0.02 base lot** and
+a 0.01 minimum step, a percentage ceiling has only three possible outcomes
+on any single trade:
+
+* the risk already fits — nothing happens;
+* it does not fit but 0.01 lot does — the lot halves to 0.01;
+* even 0.01 lot exceeds the ceiling — the trade is refused.
+
+There is no in-between, because there is no lot between 0.02 and 0.01. That
+is why 5 % and 8 % produced **identical** results on the generic reference
+(both shrink the same trades to the same 0.01), while 3 % differed (it
+crosses into "refuse" on the widest stops).
+
+Consequence for choosing a number: the exact percentage matters far less
+than **where it puts the refuse threshold**. On a 0.02 lot the ceiling is
+really answering one question — how wide a stop is too wide to trade at all.
+On an account already at 0.01 the middle outcome does not exist either, so
+the ceiling is purely a refusal rule. That is the case on Dépenses and
+Infinity, and it is why shrink and refuse measured identically there.

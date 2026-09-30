@@ -93,6 +93,31 @@ BATTERY = [
     ("bul0", "Aucun renfort après une perte", "No boost after a loss", "argent", {"bullets": 0}),
     ("k1", "Un seul renfort de suite, puis on attend un gain", "One boost in a row, then wait for a win", "argent", {"k_streak": 1}),
     ("k3", "Jusqu’à trois renforts de suite", "Up to three boosts in a row", "argent", {"k_streak": 3}),
+    # 2026-09-30: the per-trade risk ceiling (review/RISK_CAP.md). It
+    # SHRINKS the lot to fit and only refuses when even 0.01 would
+    # exceed the cap - refusing outright costs about twice as much,
+    # because the widest stops are the best trades (E009). Measured once
+    # over two months, the cost came out somewhere between nothing and
+    # 9% and the two halves disagreed, so it is in the battery to be
+    # RE-MEASURED as the sample grows, not because it is settled.
+    ("fit3", "Ne jamais risquer plus de 3 % du compte sur un trade",
+     "Never risk more than 3% of the account on one trade", "argent",
+     {"risk_fit": 3.0}),
+    ("fit5", "Ne jamais risquer plus de 5 % du compte sur un trade",
+     "Never risk more than 5% of the account on one trade", "argent",
+     {"risk_fit": 5.0}),
+    ("fit8", "Ne jamais risquer plus de 8 % du compte sur un trade",
+     "Never risk more than 8% of the account on one trade", "argent",
+     {"risk_fit": 8.0}),
+    # NOT in the battery, on purpose: `internal` (and with it
+    # int_max_stop / int_tighter). Internal-structure entries were
+    # measured on 2026-09-30 and were worse in EVERY split on two
+    # accounts - review/INTERNAL_BOS.md - and no stop guard rescued them
+    # - review/INTERNAL_WIDESTOP.md. They are switched off live. Running
+    # a proven loser 34 times a night only gives noise more chances to
+    # produce a false A, which is the same reason cost_max and friends
+    # are kept out above. The chercheur can still propose it if it ever
+    # has a reason.
 ]
 QUICK = {"rr06", "ext500", "hothalf", "nosun"}
 
