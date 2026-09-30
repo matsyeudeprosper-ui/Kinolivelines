@@ -288,6 +288,14 @@ JAR_FLOOR_CAP = _P["jar_floor_cap"]
 KILL_NET = _P["kill_net"]
 MIN_BALANCE = _P["min_balance"]
 MAX_RISK_PCT = _P["max_risk_pct"]
+# 2026-09-30 (owner): per-trade risk ceiling as a share of the
+# balance. 0 = off, which is every account that does not set it.
+# It SHRINKS the lot to fit rather than refusing the trade -
+# E009 found the widest stops are the best trades, and measured
+# 2026-09-30 shrinking costs about half what refusing costs
+# (review/RISK_CAP.md). It can still refuse, but only when even
+# the smallest lot the broker allows would exceed the ceiling.
+RISK_FIT_PCT = float(_P.get("risk_fit_pct") or 0.0)
 DEBT_MODE = _P["debt_mode"]
 DAY_CAP = _P["day_cap"]
 MAX_TRADES_DAY = _P["max_trades_day"]
@@ -946,6 +954,7 @@ def main():
         _scale_line += ")"
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
         f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
+        + (f" | plafond {RISK_FIT_PCT:.0f}% par trade" if RISK_FIT_PCT else "")
         + ("".join(f" | {x}" for x in _br))
         + ((f" | day cap +${DAY_CAP:.2f} "
             + ("(adaptive while in debt, needs "
@@ -1106,6 +1115,24 @@ def main():
                 say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
                 return False
             lot = _half
+        # --- shrink to the per-trade ceiling before anything else
+        if RISK_FIT_PCT > 0 and ai2.balance > 0:
+            _fit = RISK_FIT_PCT / 100.0 * ai2.balance
+            if dist * lot > _fit:
+                _sml = round(max(0.0, int((_fit / dist) / 0.01)
+                                 * 0.01), 2)
+                # 0.01 is the floor used everywhere else in
+                # this file (see the balance scaling), not a
+                # broker field that is not in scope here
+                if _sml < 0.01 - 1e-9:
+                    say(f"{kind} SKIPPED: even 0.01 lot risks "
+                        f"${dist*0.01:.2f} > {RISK_FIT_PCT:.0f}% of "
+                        f"${ai2.balance:.2f} (${_fit:.2f})")
+                    return False
+                say(f"{kind} lot {lot:.2f} -> {_sml:.2f} to keep the "
+                    f"risk under {RISK_FIT_PCT:.0f}% of "
+                    f"${ai2.balance:.2f} (${_fit:.2f})")
+                lot = _sml
         # --- no single trade may risk more than 10% of the balance
         risk = dist * lot
         cap = MAX_RISK_PCT * ai2.balance

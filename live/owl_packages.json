@@ -133,6 +133,11 @@
    "extends": "special",
    "label": "Special - meme regles que les autres comptes ($3/jour)",
    "day_cap": 3.0
+  },
+  "valere_cap3": {
+   "extends": "valere",
+   "label": "Valere + plafond 3% par trade",
+   "risk_fit_pct": 3.0
   }
  },
  "accounts": {
@@ -143,6 +148,6 @@
   "half": "halfdebt",
   "demo": "demo",
   "infinity": "valere",
-  "expenses": "valere"
+  "expenses": "valere_cap3"
  }
 }
