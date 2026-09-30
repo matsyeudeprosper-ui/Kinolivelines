@@ -702,6 +702,9 @@ def connect():
 HTF = {"M15": None, "H1": None, "H4": None}
 HTF_BARS = {"M15": 2600, "H1": 1400, "H4": 900}
 _HTF_LAST = 0.0
+_HTF_PIN = {"M15": {"t0": None, "start": None},
+            "H1": {"t0": None, "start": None},
+            "H4": {"t0": None, "start": None}}
 HTFF = os.path.join(DIR, "owl_chart_htf.json")
 
 
@@ -726,6 +729,20 @@ def htf_tick():
              _d, flp, flp_t, _fd) = engine(kept)
             win = kept[-260:]
             t0 = win[0][0] if win else 0
+            # Owner 2026-09-30: "I still don't see the main structure and
+            # internal (structure if any) on the higher timeframe." The main
+            # levels were computed and never published whole, and the
+            # internal engine was never run here at all. Both now are.
+            # Its own try: a failure must cost the internal block, never the
+            # candles - a blank panel is worse than a panel without inner
+            # structure.
+            ist = {}
+            try:
+                ist = internal_structure(
+                    kept, nxt, inv, inv_t, flp, marks, nxt_t,
+                    int(R[-1]["time"]), pin=_HTF_PIN[name])
+            except Exception as e:
+                out.setdefault("ierr", {})[name] = f"{type(e).__name__}: {e}"
             out["tf"][name] = {
                 "candles": win, "raw": len(R), "kept": len(kept),
                 "dots": [d for d in dots if d[0] >= t0],
@@ -734,6 +751,23 @@ def htf_tick():
                 "next_bos": round(nxt, 2) if nxt else None,
                 "invalid": round(inv, 2) if inv else None,
                 "next_bos_t": nxt_t, "invalid_t": inv_t,
+                "bos_dir": _d,
+                "flip_bos": round(flp, 2) if flp else None,
+                "flip_bos_t": flp_t, "flip_bos_dir": _fd,
+                "int_trend": ist.get("i_trend", 0),
+                "int_choch": ist.get("i_choch", 0),
+                "int_bos": (round(ist["i_nxt"], 2)
+                            if ist.get("i_nxt") else None),
+                "int_inv": (round(ist["i_inv"], 2)
+                            if ist.get("i_inv") else None),
+                "int_bos_t": ist.get("i_nxt_t"),
+                "int_inv_t": ist.get("i_inv_t"),
+                "int_bos_dir": ist.get("i_dir", 0),
+                "int_bos_ready": ist.get("i_ready", False),
+                "int_dots": [q for q in (ist.get("i_dots") or [])
+                             if q[0] >= t0],
+                "int_marks": [m for m in (ist.get("i_marks") or [])
+                              if m[0] >= t0][-10:],
                 "live": [int(R[-1]["time"]), round(float(R[-1]["open"]), 2),
                          round(float(R[-1]["high"]), 2), round(float(R[-1]["low"]), 2),
                          round(float(R[-1]["close"]), 2)],

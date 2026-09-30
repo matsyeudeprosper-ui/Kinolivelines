@@ -74,7 +74,7 @@ body.htf-h #cv{width:calc(100vw * (1 - var(--htf-r, .42)));margin-left:calc(100v
 #htfwrap .tag i{font-style:normal;font-size:.58rem;color:#8a9bb0;letter-spacing:.06em;
  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}
 body.htf-h #htfwrap .tag i{max-width:34vw}
-#htfback{display:none;position:absolute;right:58px;bottom:10px;z-index:6;
+#htfback{display:none;position:absolute;right:58px;bottom:34px;z-index:6;
  font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
  color:#fff;background:var(--accent);border:0;border-radius:99px;padding:6px 12px;
  box-shadow:0 4px 14px rgba(59,130,246,.35);cursor:pointer}
@@ -547,10 +547,80 @@ function htDraw(){
   g.font='800 8.5px Inter, system-ui, sans-serif';const tw=g.measureText(lab).width+10;
   g.fillStyle='rgba(10,17,28,.9)';g.beginPath();g.roundRect(xx-tw/2,y-14,tw,12,6);g.fill();
   g.fillStyle=col;g.textAlign='center';g.fillText(lab,xx,y-5);});
- // the level the higher timeframe is aiming at
+ // MAIN STRUCTURE (owner 2026-09-30: "I still don't see the main structure
+ // and internal (structure if any) on the higher timeframe"). Same reading
+ // as the minute panel: the level it must not lose, and the level it is
+ // aiming at, each with its price on it.
+ const inView=y=>y>TOP+5&&y<TOP+plot-5;
+ const pill=(y,txt,col,fill)=>{
+  g.font='800 8.5px Inter, system-ui, sans-serif';g.textAlign='left';
+  const w=g.measureText(txt).width+10;
+  const x=Math.max(2,W-PAD-w-3);
+  g.fillStyle=fill?col:'rgba(10,17,28,.88)';
+  g.beginPath();g.roundRect(x,y-7,w,14,7);g.fill();
+  if(!fill){g.strokeStyle=col;g.lineWidth=1;g.stroke();}
+  g.fillStyle=fill?'#0b1118':col;g.fillText(txt,x+5,y+3);};
+ if(d.invalid!=null){const y=py(d.invalid);
+  if(inView(y)){const col=d.trend===1?'#ff5c5c':'#2ecc71';
+   const xv=htX(d.invalid_t);
+   g.strokeStyle=col;g.globalAlpha=.45;g.lineWidth=1;g.setLineDash([6,4]);
+   g.beginPath();g.moveTo(xv!==undefined?xv:0,y);g.lineTo(W-PAD-3,y);g.stroke();
+   g.setLineDash([]);g.globalAlpha=1;
+   if(xv!==undefined){g.fillStyle=col;g.beginPath();g.arc(xv,y,3,0,6.3);g.fill();}
+   pill(y,'CHoCH '+Math.round(d.invalid),col,false);}}
+ if(d.flip_bos!=null&&Math.abs(py(d.flip_bos)-py(d.invalid!=null?d.invalid:-1e9))>11){
+  const y=py(d.flip_bos);
+  if(inView(y)){const col='#e8c55a',xf=htX(d.flip_bos_t);
+   g.strokeStyle=col;g.globalAlpha=.40;g.lineWidth=1;g.setLineDash([1,6]);
+   g.beginPath();g.moveTo(xf!==undefined?xf:0,y);g.lineTo(W-PAD-3,y);g.stroke();
+   g.setLineDash([]);g.globalAlpha=1;
+   pill(y,(d.flip_bos_dir===1?'\u25b2 ':'\u25bc ')+(CL?'flip ':'bascule ')+Math.round(d.flip_bos),col,false);}}
  if(d.next_bos){const y=py(d.next_bos);
-  g.strokeStyle='rgba(122,162,255,.55)';g.lineWidth=1;g.setLineDash([6,4]);
-  g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD+2,y);g.stroke();g.setLineDash([]);}
+  if(inView(y)){const up=d.trend===1,col=up?'#4fd8c8':'#ff9678';
+   const xb=htX(d.next_bos_t);
+   g.strokeStyle=col;g.globalAlpha=.9;g.lineWidth=1.4;g.setLineDash([1,4]);
+   g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-3,y);g.stroke();
+   g.setLineDash([]);g.globalAlpha=1;
+   if(xb!==undefined){g.fillStyle=col;g.beginPath();g.arc(xb,y,3,0,6.3);g.fill();}
+   pill(y,'BOS '+Math.round(d.next_bos),col,true);}}
+ // INTERNAL STRUCTURE: the smaller structure building inside the main one.
+ // Violet, dimmer and smaller, so the hierarchy is obvious at a glance. A
+ // level landing on the same row as a main one is skipped - the bigger
+ // picture wins, the same rule the minute panel follows.
+ const hides=(v,m)=>(v!=null&&m!=null&&Math.abs(py(v)-py(m))<11);
+ if(d.int_trend){
+  const ic=d.int_trend===1?'#9d8cff':'#c58cff';
+  (d.int_dots||[]).slice(-8).forEach(q=>{const x=htX(q[0]);if(x===undefined)return;
+   const y=py(q[1]);if(!inView(y))return;
+   g.globalAlpha=.8;g.fillStyle=ic;
+   g.beginPath();g.arc(x,y,2.4,0,6.3);g.fill();g.globalAlpha=1;});
+  (d.int_marks||[]).slice(-6).forEach(m=>{const x=htX(m[0]);if(x===undefined)return;
+   const y=py(m[1]);if(!inView(y))return;
+   const isC=(m[2]==='choch'),mc=(m[3]===1)?'#8f7cff':'#d97cff';
+   g.strokeStyle=mc;g.globalAlpha=.85;g.lineWidth=isC?1:1.6;
+   if(isC)g.setLineDash([3,3]);
+   g.beginPath();g.moveTo(x-10,y);g.lineTo(x+10,y);g.stroke();
+   g.setLineDash([]);
+   if(!isC){const sg=3,dy=(m[3]===1)?-5:5;g.fillStyle=mc;
+    g.beginPath();g.moveTo(x,y+dy+(m[3]===1?-sg:sg));
+    g.lineTo(x-sg,y+dy+(m[3]===1?sg*0.6:-sg*0.6));
+    g.lineTo(x+sg,y+dy+(m[3]===1?sg*0.6:-sg*0.6));
+    g.closePath();g.fill();}
+   g.globalAlpha=1;});
+  if(d.int_inv!=null&&!hides(d.int_inv,d.invalid)){const y=py(d.int_inv);
+   if(inView(y)){const xv=htX(d.int_inv_t);
+    g.strokeStyle=ic;g.globalAlpha=.40;g.lineWidth=1;g.setLineDash([6,4]);
+    g.beginPath();g.moveTo(xv!==undefined?xv:0,y);g.lineTo(W-PAD-14,y);g.stroke();
+    g.setLineDash([]);g.globalAlpha=1;
+    if(xv!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xv,y,2.6,0,6.3);g.fill();}}}
+  if(d.int_bos!=null&&!hides(d.int_bos,d.next_bos)){const y=py(d.int_bos);
+   if(inView(y)){const xb=htX(d.int_bos_t);
+    g.strokeStyle=ic;g.globalAlpha=.7;g.lineWidth=1;g.setLineDash([2,4]);
+    g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-14,y);g.stroke();
+    g.setLineDash([]);g.globalAlpha=1;
+    if(xb!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xb,y,2.6,0,6.3);g.fill();}
+    pill(y,(d.int_bos_dir===1?'\u25b2 ':'\u25bc ')+'int BOS '+Math.round(d.int_bos),ic,false);}}
+ }
  // where the minute chart is looking, so the two panels stay tied together
  const xw=window._xts||[];
  if(xw.length&&HT.xts.length){
@@ -568,7 +638,10 @@ function htDraw(){
     g.beginPath();g.arc(q[0],py(q[1]),2.6,0,Math.PI*2);g.fill();});}}
  const sub=document.getElementById('htfsub');
  if(sub)sub.textContent=(d.trend===1?(CL?'up':'hausse'):d.trend===-1?(CL?'down':'baisse'):'\u2014')
-  +(d.next_bos?' \u00b7 '+(CL?'break at ':'cassure \u00e0 ')+Math.round(d.next_bos):'')
+  +(d.next_bos?' \u00b7 BOS '+Math.round(d.next_bos):'')
+  +' \u00b7 '+(d.int_trend
+    ? (CL?'inner ':'interne ')+(d.int_trend===1?'\u25b2':'\u25bc')
+    : (CL?'no inner':'sans interne'))
   +(HT.vz!==1?' \u00b7 x'+(1/HT.vz).toFixed(1):'');
 }
 function htNear(t){let b,bd=1e18;for(const k of HT.xts){const dd=Math.abs(k-t);if(dd<bd){bd=dd;b=k;}}
