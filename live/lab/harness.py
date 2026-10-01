@@ -108,6 +108,26 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             #       win for 1 could just mean "getting out early is
             #       good" rather than "waiting for green is good".
             "storm_exit": 0,
+            # 2026-10-01 (owner): "I'm in a buy trade taking long to hit
+            # tp and then before it hits tp it's flipped trend and now
+            # makes the first BOS on the opposite direction."
+            #
+            # This can genuinely happen with the original stop intact:
+            # the protected level RATCHETS UP on every continuation
+            # break, so a close below the LATEST protected low can
+            # confirm a bearish CHoCH while the entry's own stop still
+            # sits lower and untouched.
+            #
+            # Today the bot does two things here, both by omission:
+            # `if sig is None or pos: continue` drops any signal while a
+            # position is open, so it keeps the now-wrong-way trade AND
+            # misses the new flip entry.
+            #   0 = that, unchanged
+            #   1 = close the trade when the opposing flip BOS confirms,
+            #       and stand aside
+            #   2 = close it AND take the reversal, which is what a
+            #       person watching the chart would do
+            "flip_exit": 0,
             # 2026-10-01 (owner): "move the SL to the next glowing
             # protected level that will come (if it comes)". The
             # stop follows the structure instead of sitting at the
@@ -296,6 +316,7 @@ def simulate(R, spread, cfg):
     dead = False
     cur_tr = None
     n_storm_exit = 0     # trades closed because the weather turned
+    n_flip_exit = 0      # trades closed because the trend flipped against them
     n_trail = 0          # trades whose stop was moved at least once
     n_trail_exit = 0     # ... and that were then closed by that stop
     trail_gain = 0.0     # points the moved stop saved, vs the first one
@@ -540,6 +561,47 @@ def simulate(R, spread, cfg):
             sig = (i_trend, i_inv)
         if touched and last_flip_t is not None and cont_left < c["n_cont"]:
             cont_left = min(int(c["n_cont"]), cont_left + 1)
+        # ---- the trend flips against an open trade ----------------------
+        # Runs AFTER eng.step for this bar, so the engine has already seen
+        # the candle and no `continue` below can starve it.
+        if pos is not None and sig is not None and c["flip_exit"]:
+            _d0, _e0, _sl0, _tp0, _dist0, _mid0, _hm0, _lot0 = pos
+            if sig[0] == -_d0 and flips and flips[-1] == t:
+                # The accounting is deliberately its own block rather than
+                # shared with the storm branch above: that branch's numbers
+                # are already published (E028) and refactoring it would put
+                # them at risk. If either is ever changed, change both.
+                _pts = _d0 * (cl - _e0) - spread
+                _win = _pts > 0        # the live bot calls a win by profit
+                n_flip_exit += 1
+                _before = run
+                run += _pts * _lot0
+                if c["debt_mode"] == "half":
+                    _pl = _pts * _lot0
+                    if _pl < 0:
+                        debt_led = round(debt_led + 0.5 * (-_pl), 2)
+                    elif _pl > 0:
+                        _pay = min(debt_led, _pl)
+                        debt_led = round(debt_led - _pay, 2)
+                        chest = round(min(CHEST_CAP,
+                                          chest + _pl - _pay), 2)
+                day_profit += run - _before
+                pnls.append(round(run - _before, 2))
+                if TRACE is not None and cur_tr is not None:
+                    cur_tr["win"] = bool(_win)
+                    cur_tr["pnl"] = round(run - _before, 2)
+                    cur_tr["flip_exit"] = True
+                    cur_tr = None
+                streak = 0 if _win else streak + 1
+                wins += 1 if _win else 0
+                pk = max(pk, run)
+                pos = None
+                pos_trailed = False
+                last_close_t = t
+                if int(c["flip_exit"]) == 1:
+                    continue       # stand aside, do not take the reversal
+                # flip_exit 2 falls through: the reversal is now considered
+                # like any other entry, every later gate still applying
         if sig is None or pos:
             continue
         if dead:
@@ -697,7 +759,7 @@ def simulate(R, spread, cfg):
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
-            "storm_exits": n_storm_exit}
+            "storm_exits": n_storm_exit, "flip_exits": n_flip_exit}
 
 
 def run_cfg(R, spread, cfg):
