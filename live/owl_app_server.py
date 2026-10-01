@@ -1130,6 +1130,10 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
    screen - but it stops costing 22px of the first fold. */
 /* back to its old size - the tighter margin stays, the text does
    not need to be smaller to save that space */
+/* 2026-10-01: a compact hero away from Home was tried and REVERTED the
+   same hour - the owner: "the hero is not supposed to be affected, just
+   the content below". It is the app's anchor and it reads the same on
+   every tab by design. Do not shrink it again. */
 .hello{color:rgba(219,233,247,.6);font-size:.86rem;margin-top:16px;
  letter-spacing:.01em}
 .money{font-size:3.7rem;font-weight:800;margin-top:6px;
@@ -1160,10 +1164,16 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
  animation:orbp 3.2s ease-in-out infinite}
 @keyframes orbp{0%,100%{box-shadow:0 0 0 0 var(--mxg)}
  50%{box-shadow:0 0 22px 3px var(--mxg)}}
+/* 2026-10-01 (owner): this ran a 7s infinite gradient the whole time the
+   tab was open - a permanent repaint on a phone for a decorative sheen.
+   It animates only while the Marche tab is actually showing, and not at
+   all for a reader who has asked for less motion. */
 #mx-wave{position:absolute;inset:0;pointer-events:none;
  background:linear-gradient(115deg,transparent 30%,var(--mxg) 50%,
- transparent 70%);background-size:280% 100%;opacity:.5;
- animation:wv 7s linear infinite}
+ transparent 70%);background-size:280% 100%;opacity:.5}
+#tab-marche.on #mx-wave{animation:wv 7s linear infinite}
+@media (prefers-reduced-motion:reduce){
+ #tab-marche.on #mx-wave{animation:none}}
 @keyframes wv{0%{background-position:120% 0}
  100%{background-position:-60% 0}}
 .mx-sun{--mxg:rgba(232,197,90,.12)}
@@ -1332,8 +1342,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  color:var(--muted2);vertical-align:1px}
 .pill-w{background:rgba(232,197,90,.14);color:var(--warn)}
 .mxseg{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:4px;margin:16px 0 0}
+/* 2026-10-01 (owner): 33px, under the floor set on the other tabs. */
 .mxs{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;background:transparent;color:var(--muted2);
- border-radius:11px;padding:10px 8px;font-size:.86rem;font-weight:700;letter-spacing:.01em;transition:background .18s,color .18s}
+ border-radius:11px;padding:13px 8px;min-height:44px;font-size:.86rem;font-weight:700;letter-spacing:.01em;transition:background .18s,color .18s}
 .mxs.on{background:var(--surface);color:var(--text);box-shadow:0 2px 10px rgba(0,0,0,.28),var(--hl,none)}
 .mxs .ic-s{width:16px;height:16px}
 /* 2026-09-28 polish (owner): the switch never wraps, the lab reads like a
@@ -2005,8 +2016,22 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   display:block;margin-top:12px"></svg>
  <div id="day-list" style="margin-top:6px"></div>
 </div>
-<div class="panel" id="rjcard" style="display:none;margin-top:12px">
- <div class="lbl">Journal du robot <span class="hint">&middot; les 20 derniers trades</span></div>
+<!-- 2026-10-01 (owner): this list rendered 1050px inline, 42% of the
+     Robot view - the same thing the changelog was doing on Home. The card
+     stays, the list opens in a sheet. The block is MOVED and moved back,
+     never cloned: two elements with one id and a renderer that writes by
+     id is how the copy on screen goes stale. -->
+<div class="panel" id="rjcard" style="display:none;margin-top:12px;
+ cursor:pointer" role="button" tabindex="0" onclick="rjOpen()">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic"><svg class="ic"><use href="#i-calendar"/></svg></div>
+  <div style="flex:1;min-width:0">
+   <div class="lbl">Journal du robot</div>
+   <b id="rj-sub" style="font-size:.95rem;display:block;margin-top:2px"></b></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+</div>
+<div id="rj-wrap" style="display:none">
  <div id="rj-list" style="margin-top:6px"></div>
 </div>
 </div>
@@ -5111,6 +5136,22 @@ function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).fin
 // alternative - cloning its HTML - gives two elements with the same id, and
 // loadPatterns writes by id, so the copy on screen would freeze while the
 // hidden original kept updating.
+// 2026-10-01 (owner): same pattern as the lessons card - the real block
+// travels into the sheet and back, so nothing is ever duplicated.
+function rjOpen(){
+ const w=document.getElementById('rj-wrap');
+ if(!w)return;
+ const mark=document.createElement('span');
+ mark.style.display='none';
+ w.parentElement.insertBefore(mark,w);
+ const p=sheet('<div class="lbl">Journal du robot</div>'+
+  '<div id="rj-host"></div>');
+ setTimeout(()=>{const h=document.getElementById('rj-host');
+  if(h){h.appendChild(w);w.style.display='block';}},60);
+ p.then(()=>{w.style.display='none';
+  if(mark.parentElement){mark.parentElement.insertBefore(w,mark);mark.remove();}
+  else{const r=document.getElementById('mx-robot');if(r)r.appendChild(w);}});
+}
 function lrnOpen(){
  const w=document.getElementById('lrn-wrap');
  if(!w)return;
@@ -5169,7 +5210,12 @@ async function loadMarketHours(d){const el=document.getElementById('mhcard');if(
  const col=v=>v<1?'var(--muted)':(v<1.3?'var(--warn)':(v<1.85?'#e8743b':'var(--down)'));
  let h='<div style="display:grid;grid-template-columns:34px repeat(24,1fr);gap:2px;align-items:center">';
  h+='<span></span>'+[0,6,12,18].map((x,i)=>'<span style="grid-column:'+(2+x)+' / span 6;font-size:.6rem;color:var(--muted)">'+x+'h</span>').join('');
- for(let w=0;w<7;w++){h+='<span style="font-size:.64rem;color:var(--muted)">'+DN[w]+'</span>';
+ // 2026-10-01 (owner): a day the five-day memory has not reached drew a
+ // row of empty cells, which reads as broken rather than as not-yet.
+ const seen=new Set();(j.cells||[]).forEach(c=>{const dt=new Date(
+  Date.UTC(2024,0,1+c.wd,c.h));seen.add((dt.getDay()+6)%7);});
+ for(let w=0;w<7;w++){h+='<span style="font-size:.64rem;color:var(--muted)'+
+  (seen.has(w)?'':';opacity:.45')+'">'+DN[w]+'</span>';
   for(let hh=0;hh<24;hh++){const c=M.get(w+'_'+hh);const op=c?Math.min(1,0.25+c.n/40):0;
    h+='<i title="'+DN[w]+' '+hh+'h'+(c?' \u00b7 '+c.med.toFixed(2)+'\u00d7 ('+c.n+')':'')+'" style="display:block;height:11px;border-radius:3px;background:'+(c?col(c.med):'var(--surface3)')+';opacity:'+(c?op:0.35)+'"></i>';}}
  h+='</div>';
@@ -5555,6 +5601,14 @@ async function loadJournal(d){const el=document.getElementById('rjcard');if(!el)
  if(!it.length){el.style.display='none';return;}
  const bandL={calme:[en?'calm':'calme','var(--muted)'],soutenu:[en?'brisk':'soutenu','var(--warn)'],rapide:[en?'fast':'rapide','#e8743b'],'tres rapide':[en?'very fast':'tr\u00e8s rapide','var(--down)']};
  const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ // 2026-10-01 (owner): the card is what shows on the page now; the
+ // list itself opens in a sheet. Say how many and how they went, so
+ // the card is worth a tap rather than a mystery.
+ {const sb=document.getElementById('rj-sub');
+  if(sb){const w=it.filter(x=>(+x.p||0)>0).length;
+   sb.textContent=(en
+    ?it.length+' last trades · '+w+' won'
+    :it.length+' derniers trades · '+w+' gagné'+(w>1?'s':''));}}
  document.getElementById('rj-list').innerHTML=it.map(x=>{const buy=(x.dir||'').toUpperCase().startsWith('A')||(x.dir||'').toUpperCase()==='BUY';const up=(+x.p||0)>=0;const b=x.band?bandL[x.band]||[x.band,'var(--muted)']:null;
   const q=B+'chart?t='+x.t+'&x='+x.x+(x.ep!=null?'&ep='+x.ep:'')+(x.xp!=null?'&xp='+x.xp:'')+'&d='+encodeURIComponent(x.dir||'')+'&p='+x.p;
   return '<a href="'+q+'" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;font-size:.82rem"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span><span style="width:78px;color:var(--muted)">'+(x.w||'')+'</span>'+
@@ -5991,7 +6045,8 @@ function render(d){
                 ['lrn-card',en?'Lessons':'Le\u00e7ons']];
    J.innerHTML=items.map(it=>'<button data-go="'+it[0]+'" style="flex:none;'+
     'border:1px solid var(--border);background:var(--surface2);color:var(--muted2);'+
-    'border-radius:99px;padding:6px 12px;font-size:.72rem;font-weight:700">'+it[1]+
+    'border-radius:99px;padding:11px 14px;min-height:40px;'+
+    'font-size:.78rem;font-weight:700">'+it[1]+
     '</button>').join('');
    J.querySelectorAll('button').forEach(b=>{b.onclick=()=>{
     const t=document.getElementById(b.dataset.go);
@@ -6079,8 +6134,11 @@ function render(d){
     // that is depends on whether there is an internal structure, so the
     // accent moves with it instead of always sitting on the small count
     // (owner 2026-09-18).
+    // 2026-10-01 (owner): with no internal structure this drew a full row
+    // containing a dash. Say what is actually true instead of nothing.
     const small=cell('petits mouvements',
-     hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
+     hasInt?(nb+'&thinsp;/&thinsp;1h')
+      :(LANG()==='en'?'none right now':'aucune pour l\u2019instant'),
      intRule?(aw?'var(--accent-soft)':'var(--muted)'):'var(--muted)',intRule&&gM);
     const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
      intRule?(mv===0?'var(--muted)':'var(--text)')
