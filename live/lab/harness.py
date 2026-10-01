@@ -95,6 +95,17 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             #   movement       - the "has the market moved" brake
             #   debt_mode      - "hwm" (peak) or "half" (0.5x a loss)
             "max_trades_day": 0, "movement": 1, "debt_mode": "hwm",
+            # 2026-10-01 (owner): "move the SL to the next glowing
+            # protected level that will come (if it comes)". The
+            # stop follows the structure instead of sitting at the
+            # level the trade was born on.
+            #   0 = off, the stop never moves (unchanged)
+            #   1 = move it to every new protected level, which can
+            #       carry it past the entry and lock a gain
+            #   2 = only once the level is past the entry, so the
+            #       trade is never stopped for less than it risked
+            #       but also never protected early
+            "trail_prot": 0,
             # 2026-09-29 (owner: "does the backtest include the rattrapage and
             # the daily caps?"). It did not. These three close the gap:
             #   jar      model the real bullet economy - the jar has to pay for
@@ -257,6 +268,10 @@ def simulate(R, spread, cfg):
     day_n = 0
     dead = False
     cur_tr = None
+    n_trail = 0          # trades whose stop was moved at least once
+    n_trail_exit = 0     # ... and that were then closed by that stop
+    trail_gain = 0.0     # points the moved stop saved, vs the first one
+    pos_trailed = False
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
@@ -272,6 +287,23 @@ def simulate(R, spread, cfg):
             curve.append(run)
         if pos:
             d, e, sl, tp, dist, mid, hit_mid, lot = pos
+            # The stop follows the structure. This runs BEFORE
+            # eng.step() for this bar, so the level it reads already
+            # existed when the bar opened - no lookahead.
+            if c["trail_prot"] and eng.trend == d:
+                _lv = (eng.prot_lo[1] if (d == 1 and eng.prot_lo)
+                       else (eng.prot_hi[1] if (d == -1
+                                                and eng.prot_hi)
+                             else None))
+                if _lv is not None and d * (_lv - sl) > 0 \
+                        and d * (_lv - o) < 0 \
+                        and (int(c["trail_prot"]) == 1
+                             or d * (_lv - e) > 0):
+                    sl = _lv
+                    pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
+                    if not pos_trailed:
+                        pos_trailed = True
+                        n_trail += 1
             if not hit_mid and ((l <= mid) if d == 1 else (h >= mid)):
                 hit_mid = True
                 pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
@@ -279,7 +311,15 @@ def simulate(R, spread, cfg):
             hit_tp = (h >= tp) if d == 1 else (l <= tp)
             if hit_sl or hit_tp:
                 win = bool(hit_tp and not hit_sl)
-                pts = (rr * dist - spread) if win else -(dist + spread)
+                # priced at the stop as it stands, not at the one the
+                # trade was born with. With the trail off the original
+                # expression is used verbatim: the two are the same
+                # number in algebra but not always in the last bit of
+                # a float, and `run` carries that bit into every later
+                # trade's rounded money.
+                pts = ((rr * dist - spread) if win
+                       else ((d * (sl - e) - spread) if c["trail_prot"]
+                             else -(dist + spread)))
                 debt = (debt_led if c["debt_mode"] == "half"                        else max(0.0, pk - run))
                 before = run
                 run += pts * lot
@@ -303,7 +343,10 @@ def simulate(R, spread, cfg):
                     # of the distance to the target. This was hardcoded to 1.3,
                     # which silently assumed rr = 0.8 and mispriced every other
                     # target we tested.
-                    bpts = (((0.5 + rr) * dist - spread) if win else -(dist / 2.0 + spread))
+                    bpts = (((0.5 + rr) * dist - spread) if win
+                            else ((d * (sl - mid) - spread)
+                                  if c["trail_prot"]
+                                  else -(dist / 2.0 + spread)))
                     run += bpts * BLOT * nb
                 if c["jar"]:
                     if nb and bpts < 0:
@@ -331,7 +374,14 @@ def simulate(R, spread, cfg):
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
+                if pos_trailed and not win:
+                    n_trail_exit += 1
+                    # what the move was worth on this trade: the old
+                    # stop would have paid -(dist), this one paid
+                    # d*(sl-e). Positive means the trail helped.
+                    trail_gain += (d * (sl - e)) + dist
                 pos = None
+                pos_trailed = False
                 last_close_t = t
         touched = False
         if eng.trend == 1 and eng.prot_lo is not None:
@@ -537,6 +587,7 @@ def simulate(R, spread, cfg):
             _risk = dist * lot
         tp = cl + d * rr * dist
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
+        pos_trailed = False
         last_hour = t // 3600
         n_trades += 1
         day_n += 1
@@ -568,7 +619,9 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls}
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls,
+            "trailed": n_trail, "trail_exits": n_trail_exit,
+            "trail_gain_pts": round(trail_gain, 1)}
 
 
 def run_cfg(R, spread, cfg):
@@ -669,6 +722,21 @@ def simulate_real(T, R, spread, cfg):
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     times = [int(r["time"]) for r in R]
     closes = [float(r["close"]) for r in R]
+    # This path replays the bot's REAL entries and runs no structure
+    # engine of its own, so the trail needs the protected level as it
+    # stood BEFORE each bar. Built once, read by index.
+    _prot = None
+    if c["trail_prot"]:
+        _pe = B.Struct()
+        _pe.quiet = True
+        _prot = []
+        for _r in R:
+            _prot.append((_pe.trend,
+                          _pe.prot_lo[1] if _pe.prot_lo else None,
+                          _pe.prot_hi[1] if _pe.prot_hi else None))
+            _pe.step(int(_r["time"]), float(_r["open"]),
+                     float(_r["high"]), float(_r["low"]),
+                     float(_r["close"]))
     run = pk = worst = 0.0
     streak = 0
     last_close_t = last_flip_t = None
@@ -726,6 +794,15 @@ def simulate_real(T, R, spread, cfg):
         j = i
         while j < len(R):
             h, l = float(R[j]["high"]), float(R[j]["low"])
+            if _prot is not None:
+                _tr, _plo, _phi = _prot[j]
+                if _tr == d:
+                    _lv = _plo if d == 1 else _phi
+                    if _lv is not None and d * (_lv - sl) > 0 \
+                            and d * (_lv - float(R[j]["open"])) < 0 \
+                            and (int(c["trail_prot"]) == 1
+                                 or d * (_lv - ent) > 0):
+                        sl = _lv
             if not hit_mid and ((l <= mid) if d == 1 else (h >= mid)):
                 hit_mid = True
             hit_sl = (l <= sl) if d == 1 else (h >= sl)
@@ -737,11 +814,15 @@ def simulate_real(T, R, spread, cfg):
         if win is None:
             continue
         open_until = j
-        pts = (rr * dist - spread) if win else -(dist + spread)
+        pts = ((rr * dist - spread) if win
+               else ((d * (sl - ent) - spread) if c["trail_prot"]
+                     else -(dist + spread)))
         debt = max(0.0, pk - run)
         run += pts * lot
         if debt > 0.5 and streak < K and hit_mid and NB > 0:
-            run += ((1.3 * dist - spread) if win else -(dist / 2.0 + spread)) * BLOT * NB
+            run += ((1.3 * dist - spread) if win
+                    else ((d * (sl - mid) - spread) if c["trail_prot"]
+                          else -(dist / 2.0 + spread))) * BLOT * NB
         streak = 0 if win else streak + 1
         wins += 1 if win else 0
         pk = max(pk, run)
@@ -756,6 +837,9 @@ def simulate_real(T, R, spread, cfg):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--rr", type=float)
+    ap.add_argument("--trail-prot", type=int,
+                    help="move the stop to each new protected level:"
+                         " 1 = always, 2 = only past the entry")
     ap.add_argument("--n-cont", type=int)
     ap.add_argument("--wait", type=int, help="minutes after a close")
     ap.add_argument("--ext", type=float, help="no entry after this many points in the last hour")
