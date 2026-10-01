@@ -41,6 +41,7 @@ import csv
 import json
 import math
 import os
+import shutil
 import time
 from datetime import datetime, timezone
 
@@ -347,7 +348,45 @@ JOURNAL_COLS = [
     "nervosity", "vol_now", "vol_ref", "movement_count", "trend",
     "day_n_at_entry", "debt_at_entry", "balance_at_entry", "storm",
     "exit_time_utc", "outcome", "duration_min", "profit_usd",
+    # 2026-10-01 (owner): the multi-timeframe picture at the moment
+    # of the entry and again at the exit, for pattern work later.
+    "htf_entry", "htf_exit",
 ]
+
+
+def htf_snap():
+    """The higher timeframes as they stand RIGHT NOW, as a JSON
+    string, or "" if the feed cannot be read. Never raises: a
+    logging helper must not be able to stop a trading loop."""
+    try:
+        _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"),
+                            encoding="utf-8"))
+        _m = weather() or {}
+        now = int(time.time())
+        out = {}
+        for k in ("M15", "H1", "H4"):
+            t = (_h.get("tf") or {}).get(k) or {}
+            if not t:
+                continue
+            out[k.lower()] = {
+                "t": int(t.get("trend") or 0),
+                "i": int(t.get("int_trend") or 0),
+                # h = seconds it has held this direction, he = whether the
+                # feed actually WATCHED the turn. Keeping the floor rather
+                # than throwing it away: "at least 22 h" is real
+                # information for pattern work, it just is not exact.
+                "h": ((now - int(t["since"])) if t.get("since") else None),
+                "he": bool(t.get("since_exact"))}
+        m1t = int(_m.get("trend") or 0)
+        out["m1"] = {"t": m1t, "i": int(_m.get("int_trend") or 0)}
+        hi = [v["t"] for k, v in out.items() if k != "m1"]
+        out["agree"] = sum(1 for v in hi if v and v == m1t)
+        out["up"] = sum(1 for v in hi if v == 1)
+        out["dn"] = sum(1 for v in hi if v == -1)
+        out["age"] = max(0, now - int(_h.get("updated") or 0))
+        return json.dumps(out, separators=(",", ":"))
+    except Exception:
+        return ""
 
 
 def journal_write_row(row):
@@ -356,6 +395,38 @@ def journal_write_row(row):
     trading loop - same "must not raise" contract as say()."""
     try:
         is_new = not os.path.exists(JOURNAL_F)
+        # A journal written before a column was added still has the
+        # OLD header. DictWriter writes values in fieldnames order,
+        # so appending columns without fixing the header produces
+        # rows with more fields than the header names - a quietly
+        # corrupt file that still parses. Rewrite the header once,
+        # keeping every existing row (2026-10-01).
+        if not is_new:
+            try:
+                with open(JOURNAL_F, newline="",
+                          encoding="utf-8") as _f:
+                    _rd = csv.reader(_f)
+                    _hdr = next(_rd, [])
+                if _hdr and _hdr != JOURNAL_COLS:
+                    with open(JOURNAL_F, newline="",
+                              encoding="utf-8") as _f:
+                        _old = list(csv.DictReader(_f))
+                    _bak = JOURNAL_F + ".prehdr.bak"
+                    if not os.path.exists(_bak):
+                        shutil.copy2(JOURNAL_F, _bak)
+                    with open(JOURNAL_F, "w", newline="",
+                              encoding="utf-8") as _f:
+                        _w = csv.DictWriter(_f,
+                                            fieldnames=JOURNAL_COLS)
+                        _w.writeheader()
+                        for _r in _old:
+                            _w.writerow({k: (_r.get(k) or "")
+                                         for k in JOURNAL_COLS})
+                    say(f"journal header updated "
+                        f"({len(_hdr)} -> {len(JOURNAL_COLS)} columns, "
+                        f"{len(_old)} rows kept, backup .prehdr.bak)")
+            except Exception as _e:
+                say(f"journal header check failed: {_e}")
         with open(JOURNAL_F, "a", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=JOURNAL_COLS)
             if is_new:
@@ -933,7 +1004,8 @@ def book_closes(st, t_from):
             direction=_ctx.get("direction") or (
                 "BUY" if d.type == mt5.DEAL_TYPE_SELL else "SELL"),
             exit_time_utc=_exit_t.isoformat(), outcome=tag,
-            duration_min=_dur, profit_usd=round(pnl, 2)))
+            duration_min=_dur, profit_usd=round(pnl, 2),
+            htf_exit=htf_snap()))
 
 
 def main():
@@ -1212,6 +1284,7 @@ def main():
             "debt_at_entry": st.get("debt", 0.0),
             "balance_at_entry": round(ai2.balance, 2),
             "storm": _storm,
+            "htf_entry": htf_snap(),
         }
         del_keys = list(st["open_ctx"])[:-20]
         for _k in del_keys:
