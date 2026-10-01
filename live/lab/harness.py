@@ -95,6 +95,19 @@ CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], 
             #   movement       - the "has the market moved" brake
             #   debt_mode      - "hwm" (peak) or "half" (0.5x a loss)
             "max_trades_day": 0, "movement": 1, "debt_mode": "hwm",
+            # 2026-10-01 (owner): "I enter in calm weather, then tres
+            # agite arrives while I am still in the trade - cut at the
+            # next positive P&L, or let it run to SL/TP?" Today the bot
+            # does NOTHING: nervosity gates entries only, so an open
+            # trade runs to its target or its stop whatever the weather.
+            #   0 = that, unchanged
+            #   1 = once nervosity >= storm, leave at the first close
+            #       that is not negative (the owner's suggestion)
+            #   2 = leave at the first close after the storm arrives,
+            #       whatever the P&L. This is the CONTROL: without it a
+            #       win for 1 could just mean "getting out early is
+            #       good" rather than "waiting for green is good".
+            "storm_exit": 0,
             # 2026-10-01 (owner): "move the SL to the next glowing
             # protected level that will come (if it comes)". The
             # stop follows the structure instead of sitting at the
@@ -246,6 +259,20 @@ def simulate(R, spread, cfg):
     n_int = 0
     eng.quiet = True
     rng = [float(r["high"]) - float(r["low"]) for r in R]
+    # Nervosity for EVERY bar, not just the ones an entry lands on, so an
+    # open trade can be judged against the weather. Same definition the bot
+    # uses - the 31st of the last 60 ranges over the 721st of the last 1440
+    # - taken with np.partition so it is the identical element, not a true
+    # median, which for an even window is not the same number.
+    _nvs = None
+    if c["storm_exit"]:
+        import numpy as _np
+        _ra = _np.asarray(rng, dtype=float)
+        _nvs = [0.0] * len(rng)
+        for _i in range(1440, len(rng)):
+            _m60 = _np.partition(_ra[_i-60:_i], 30)[30]
+            _mrf = _np.partition(_ra[_i-1440:_i], 720)[720]
+            _nvs[_i] = _m60 / max(_mrf, 1e-9)
     closes = [float(r["close"]) for r in R]
     flips, marks = [], []
     prev = 0
@@ -268,6 +295,7 @@ def simulate(R, spread, cfg):
     day_n = 0
     dead = False
     cur_tr = None
+    n_storm_exit = 0     # trades closed because the weather turned
     n_trail = 0          # trades whose stop was moved at least once
     n_trail_exit = 0     # ... and that were then closed by that stop
     trail_gain = 0.0     # points the moved stop saved, vs the first one
@@ -309,7 +337,49 @@ def simulate(R, spread, cfg):
                 pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
             hit_sl = (l <= sl) if d == 1 else (h >= sl)
             hit_tp = (h >= tp) if d == 1 else (l <= tp)
-            if hit_sl or hit_tp:
+            # The weather turning bad while the trade is open. Only
+            # considered when the stop and the target both survived this
+            # bar, so a storm exit never pre-empts a real hit. Note there
+            # is no `continue` anywhere below: the structure engine must
+            # still step on this bar, and skipping it would corrupt every
+            # level from here on.
+            storm_px = None
+            if (_nvs is not None and not hit_sl and not hit_tp
+                    and _nvs[i] >= float(c["storm"])):
+                if int(c["storm_exit"]) == 2 or d * (cl - e) - spread >= 0:
+                    storm_px = cl
+            if storm_px is not None:
+                # priced at the close the decision was taken on, with the
+                # spread charged: the bot polls once a bar has closed and
+                # sends a market order within the second.
+                pts = d * (storm_px - e) - spread
+                win = pts > 0        # the live bot calls a win by profit
+                n_storm_exit += 1
+                before = run
+                run += pts * lot
+                if c["debt_mode"] == "half":
+                    _pl = pts * lot
+                    if _pl < 0:
+                        debt_led = round(debt_led + 0.5 * (-_pl), 2)
+                    elif _pl > 0:
+                        _pay = min(debt_led, _pl)
+                        debt_led = round(debt_led - _pay, 2)
+                        chest = round(min(CHEST_CAP,
+                                          chest + _pl - _pay), 2)
+                day_profit += run - before
+                pnls.append(round(run - before, 2))
+                if TRACE is not None and cur_tr is not None:
+                    cur_tr["win"] = bool(win)
+                    cur_tr["pnl"] = round(run - before, 2)
+                    cur_tr["storm_exit"] = True
+                    cur_tr = None
+                streak = 0 if win else streak + 1
+                wins += 1 if win else 0
+                pk = max(pk, run)
+                pos = None
+                pos_trailed = False
+                last_close_t = t
+            elif hit_sl or hit_tp:
                 win = bool(hit_tp and not hit_sl)
                 # priced at the stop as it stands, not at the one the
                 # trade was born with. With the trail off the original
@@ -626,7 +696,8 @@ def simulate(R, spread, cfg):
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
-            "trail_gain_pts": round(trail_gain, 1)}
+            "trail_gain_pts": round(trail_gain, 1),
+            "storm_exits": n_storm_exit}
 
 
 def run_cfg(R, spread, cfg):
