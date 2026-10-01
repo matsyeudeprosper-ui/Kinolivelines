@@ -1156,12 +1156,34 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .panel{padding:16px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .card{padding:18px 10px 15px;text-align:center}
-#mx-orb{width:52px;height:52px;border-radius:50%;flex:none;
+/* 2026-10-01 (owner): "professional, premium, modern". Restraint, not
+   more colour - one accent, one glow, hairlines, and alignment that
+   holds. The orb stops pulsing: a permanent animation next to a live
+   graph competes with the thing that is actually moving. */
+#mx-orb{width:44px;height:44px;border-radius:50%;flex:none;
  display:flex;align-items:center;justify-content:center;
- font-size:1.65rem;background:radial-gradient(circle at 35% 30%,
+ font-size:1.35rem;background:radial-gradient(circle at 35% 30%,
  rgba(255,255,255,.14),rgba(255,255,255,.03));
- border:1px solid rgba(255,255,255,.1);
- animation:orbp 3.2s ease-in-out infinite}
+ border:1px solid rgba(255,255,255,.1)}
+#meteo{background:linear-gradient(180deg,
+ rgba(255,255,255,.045),rgba(255,255,255,0) 42%),var(--surface)}
+#meteo::before{content:"";position:absolute;left:14px;right:14px;top:0;
+ height:1px;background:linear-gradient(90deg,transparent,
+ rgba(255,255,255,.22),transparent);pointer-events:none}
+/* the reading the whole card is about */
+#mx-now{text-align:right;flex:none;line-height:1}
+#mx-now b{display:block;font-size:1.7rem;font-weight:800;
+ font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+#mx-now span{display:block;font-size:.66rem;color:var(--muted);
+ text-transform:uppercase;letter-spacing:.09em;margin-top:3px}
+/* 2026-10-01: this grid has NEVER laid out in two columns. The layout
+   was declared inline as display:grid, and the show/hide pass does
+   `el.style.display=''` to reveal it - which deletes the inline display
+   and drops the element back to block. So the rule has to live here,
+   where clearing an inline style cannot reach it. minmax(0,1fr) on top:
+   a track will not shrink below its content, and the labels are nowrap. */
+#mx-chips{display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 @keyframes orbp{0%,100%{box-shadow:0 0 0 0 var(--mxg)}
  50%{box-shadow:0 0 22px 3px var(--mxg)}}
 /* 2026-10-01 (owner): this ran a 7s infinite gradient the whole time the
@@ -1931,11 +1953,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     <div id="mx-line" style="font-size:.78rem;color:var(--muted2);
      line-height:1.4;margin-top:2px"></div>
    </div>
+   <!-- 2026-10-01 (owner): the card's headline figure was buried in the
+        third tile. It belongs where the eye lands first. -->
+   <div id="mx-now" style="display:none"><b></b><span></span></div>
   </div>
-  <svg id="mx-nerv" viewBox="0 0 300 120" style="width:100%;height:120px;
-   display:none;margin-top:10px"></svg>
-  <div id="mx-chips" style="display:grid;
-   grid-template-columns:1fr 1fr;gap:7px;margin-top:12px"></div>
+  <svg id="mx-nerv" viewBox="0 0 300 132" style="width:100%;height:132px;
+   display:none;margin-top:14px"></svg>
+  <!-- 2026-10-01 (owner): minmax(0,1fr), not 1fr - a grid track will not
+       shrink below its content, so the nowrap labels forced each track
+       full width and this silently rendered as ONE column. -->
+  <div id="mx-chips" style="gap:8px;margin-top:14px"></div>
  </div>
 </div>
 <div class="panel" id="tfcard" style="display:none;margin-top:12px">
@@ -3426,15 +3453,22 @@ function drawNerv(){
   Y(p[1]).toFixed(1);});return d;};
  const last=pts[pts.length-1][1];
  if(el){
-  const Y=v=>(100-(v/mx)*84);
+  // 2026-10-01: written for the taller viewBox - baseline 112, 96px of
+  // drawing above it, the tick labels on the 20 below.
+  const Y=v=>(112-(v/mx)*96);
+  // 2026-10-01 (owner): the two captions used to sit ON the data at the
+  // left edge, where the curve usually is. The reference line stays - a
+  // reader needs to know where calm is - but its label moves to the right
+  // margin, out of the way of the line it describes.
   const band=(v,c,l)=>'<line x1="6" y1="'+Y(v).toFixed(1)+'" x2="294" y2="'+
-   Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.55" stroke-width="1" '+
-   'stroke-dasharray="3 4"/><text x="8" y="'+(Y(v)-3).toFixed(1)+
-   '" font-size="8" style="fill:'+c+'">'+l+'</text>';
+   Y(v).toFixed(1)+'" style="stroke:'+c+';opacity:.4" stroke-width="1" '+
+   'stroke-dasharray="2 5"/><text x="294" y="'+(Y(v)-4).toFixed(1)+
+   '" text-anchor="end" font-size="7.5" style="fill:'+c+';opacity:.85">'+
+   l+'</text>';
   let ticks='';for(let k=0;k<=4;k++){const t=t0+sp*k/4,x=X(t).toFixed(1);
    const h=new Date(t*1000).getHours();
-   ticks+='<line x1="'+x+'" y1="102" x2="'+x+'" y2="106" style="stroke:var(--border2)"/>'+
-    '<text x="'+x+'" y="117" text-anchor="'+(k===0?'start':(k===4?'end':'middle'))+
+   ticks+='<line x1="'+x+'" y1="112" x2="'+x+'" y2="116" style="stroke:var(--border2)"/>'+
+    '<text x="'+x+'" y="128" text-anchor="'+(k===0?'start':(k===4?'end':'middle'))+
     '" font-size="8" style="fill:var(--muted)">'+(k===4?'maintenant':h+'h')+'</text>';}
   const dp=path(Y);
   el.style.display='block';
@@ -3443,17 +3477,18 @@ function drawNerv(){
    '<stop offset="1" stop-color="#8fc6ff" stop-opacity="0"/></linearGradient></defs>'+
    '<rect x="6" y="'+Y(mx).toFixed(1)+'" width="288" height="'+(Y(1.85)-Y(mx)).toFixed(1)+
    '" style="fill:var(--down);opacity:.05"/>'+
-   bands(Y,6,96)+band(1.0,'var(--muted)','1,0\\u00d7 calme')+
+   bands(Y,6,106)+band(1.0,'var(--muted)','1,0\\u00d7 calme')+
    band(1.85,'var(--down)','1,85\\u00d7 tr\\u00e8s rapide')+
-   '<line x1="6" y1="102" x2="294" y2="102" style="stroke:var(--border2)"/>'+ticks+
-   '<path d="'+dp+' L'+X(t1).toFixed(1)+',102 L6,102 Z" fill="url(#ng)"/>'+
+   '<line x1="6" y1="112" x2="294" y2="112" style="stroke:var(--border2)"/>'+ticks+
+   '<path d="'+dp+' L'+X(t1).toFixed(1)+',112 L6,112 Z" fill="url(#ng)"/>'+
    '<path d="'+dp+'" fill="none" style="stroke:var(--accent-soft)" stroke-width="1.9" '+
    'stroke-linejoin="round"/>'+
    '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="6" style="fill:var(--accent-soft);opacity:.25"/>'+
-   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3" style="fill:var(--accent-soft)"/>'+
-   '<text x="'+Math.min(262,X(t1)-8).toFixed(1)+'" y="'+(Y(last)-9).toFixed(1)+
-   '" text-anchor="end" font-size="9" font-weight="700" style="fill:var(--accent-soft)">'+
-   last.toFixed(2).replace('.',',')+'\\u00d7</text>';
+   // 2026-10-01: the dot marks WHERE, the header readout says WHAT.
+   // Printing the same figure twice inside 80px is noise, not emphasis.
+   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+
+   '" r="3" style="fill:var(--accent-soft)" stroke="var(--surface)" '+
+   'stroke-width="1.5"/>';
  }
  if(ms){
   const Ym=v=>(36-(v/mx)*30),dm=path(Ym);
@@ -6119,14 +6154,27 @@ function render(d){
     // stop, and this card cannot know the stop - it answered a different
     // question. The space goes to the two figures that actually decide.
     // Top row = the two brakes, accented. Bottom row = context, plain.
-    const cell=(l,v,c,acc)=>'<div style="min-width:0;padding:8px 10px;'+
-     'border-radius:12px;background:'+(acc?'rgba(59,130,246,.12)'
-      :'var(--tile-bg)')+';border:1px solid '+
-     (acc?'rgba(59,130,246,.38)':'var(--tile-bd)')+'">'+
-     '<div style="'+NW+'font-size:.58rem;color:'+(acc?'var(--accent-soft)':'var(--muted2)')+
-     ';text-transform:uppercase;letter-spacing:.08em">'+l+'</div>'+
-     '<b style="display:block;'+NW+'font-size:1rem;margin-top:2px;color:'+
-     (c||'var(--text)')+';font-variant-numeric:tabular-nums">'+v+'</b></div>';
+    // 2026-10-01 (owner): two real columns. The grid was already
+    // 1fr 1fr, but a track will not shrink below its content and every
+    // label carried white-space:nowrap - so "GRANDS MOUVEMENTS" forced
+    // each track full width and the grid collapsed to one column. The
+    // label wraps now; only the figure stays on one line. The accented
+    // tile gets a left bar rather than a blue wash: emphasis without
+    // shouting.
+    const cell=(l,v,c,acc)=>'<div style="min-width:0;padding:9px 11px;'+
+     'border-radius:13px;background:var(--tile-bg);border:1px solid '+
+     (acc?'rgba(59,130,246,.34)':'var(--tile-bd)')+
+     (acc?';box-shadow:inset 3px 0 0 var(--accent-soft)':'')+'">'+
+     '<div style="font-size:.62rem;line-height:1.25;color:'+
+     (acc?'var(--accent-soft)':'var(--muted2)')+
+     ';text-transform:uppercase;letter-spacing:.07em">'+l+'</div>'+
+     // 2026-10-01: the value WRAPS. Some of these are figures ("0 / 1h")
+     // and some are short phrases ("7 pts - 26 % d'une bougie"); nowrap
+     // ellipsised the phrases mid-word in a half-width tile. Grid rows
+     // stretch to the tallest cell, so a pair stays aligned either way.
+     '<b style="display:block;font-size:1.02rem;margin-top:3px;'+
+     'line-height:1.3;color:'+(c||'var(--text)')+
+     ';font-variant-numeric:tabular-nums">'+v+'</b></div>';
     const tcol=ms2.trend===1?'var(--up-soft)':(ms2.trend===-1?'var(--down-soft)':'var(--muted2)');
     const ttxt=ms2.trend===1?'▲ hausse'
      :(ms2.trend===-1?'▼ baisse':'—');
@@ -6145,8 +6193,19 @@ function render(d){
       :(mv>=1?'var(--accent-soft)':'var(--muted)'),(!intRule)&&gM);
     // the deciding movement rule first, then nervosity - always a brake
     chips.push(intRule?small:big);
-    chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
-     vw[1],gN||storm));
+    // 2026-10-01: the same figure, promoted to the header. It stays in
+    // the tiles too - the tile gives it its name, the header gives it
+    // the size it deserves.
+    {const nw=document.getElementById('mx-now');
+     if(nw){nw.querySelector('b').textContent=rv.toFixed(2)+'\u00d7';
+      nw.querySelector('b').style.color=vw[1];
+      nw.querySelector('span').textContent=vw[0];
+      nw.style.display='block';}}
+    // 2026-10-01: the nervosity TILE is gone. The header readout above is
+    // the same figure at 1.7rem, and seeing them rendered together made
+    // the duplication obvious - "0.58x CALME" and "0.58x calme" inside
+    // 300px is not emphasis. The header carries it; the tiles carry what
+    // it does not say.
     // then the context
     chips.push(intRule?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
@@ -6187,10 +6246,17 @@ function render(d){
    document.getElementById('mx-orb').innerHTML=ORB[cls]||ORB['mx-sun'];
    setH(document.getElementById('mx-title'),ti);
    setH(document.getElementById('mx-line'),ln);
-   setH(document.getElementById('mx-chips'),
-    chips.map(c=>c.indexOf('<div')===0?c
+   // 2026-10-01: with two real columns an odd count leaves the last tile
+   // half width with a gap beside it. It spans instead.
+   {const _tiles=chips.map(c=>c.indexOf('<div')===0?c
      :'<div style="grid-column:1/-1"><span class="mxc">'+c+
-      '</span></div>').join(''));
+      '</span></div>');
+    const _n=_tiles.filter(c=>c.indexOf('grid-column')<0).length;
+    if(_n%2===1){for(let i=_tiles.length-1;i>=0;i--){
+     if(_tiles[i].indexOf('grid-column')<0){
+      _tiles[i]=_tiles[i].replace('<div style="','<div style="grid-column:1 / -1;');
+      break;}}}
+    setH(document.getElementById('mx-chips'),_tiles.join(''));}
    const _so=document.getElementById('mxs-orb');
    if(_so){_so.innerHTML=ORB[cls]||ORB['mx-sun'];
     setH(document.getElementById('mxs-title'),ti);
