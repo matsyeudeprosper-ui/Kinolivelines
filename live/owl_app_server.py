@@ -5298,12 +5298,19 @@ function render(d){
     const storm=rv>=1.85;
     const nerv_bad=storm||(gN&&rv>1.0);
     const hasInt=!!ms2.int_trend;          // 0 = no internal structure
-    const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
+    // 2026-10-01 (owner): "it should only consider the big structure right?"
+    // Yes. The inner movement rule is only ever applied to an INNER entry,
+    // and those are switched off, so the deciding rule is the big one. This
+    // follows the FLAG rather than today's answer, so it comes back by
+    // itself if an account ever re-enables inner entries.
+    const intOn=!!ms2.internal_entries;
+    const intRule=hasInt&&intOn;          // is the inner rule the one deciding?
+    const mvOk=gM?(intRule?(nb>=1):(mv>=1)):true;
     const k=storm?'nervous'
       :((!gN&&!gM)?'nogate'
       :(nerv_bad?(rv<1.30?'brisk':'nervous')
       :(!mvOk?'none'
-      :(hasInt?(ms2.int_state||'ready'):'ready'))));
+      :(intRule?(ms2.int_state||'ready'):'ready'))));
     const S=ST[k]||ST.none;
     window._mxk=k;
     orb=S[0]; ti=S[1]; ln=S[3];
@@ -5353,16 +5360,16 @@ function render(d){
     // (owner 2026-09-18).
     const small=cell('petits mouvements',
      hasInt?(nb+'&thinsp;/&thinsp;1h'):'—',
-     hasInt?(aw?'var(--accent-soft)':'var(--muted)'):'var(--muted)',hasInt&&gM);
+     intRule?(aw?'var(--accent-soft)':'var(--muted)'):'var(--muted)',intRule&&gM);
     const big=cell('grands mouvements',mv+'&thinsp;/&thinsp;2h',
-     hasInt?(mv===0?'var(--muted)':'var(--text)')
-      :(mv>=1?'var(--accent-soft)':'var(--muted)'),(!hasInt)&&gM);
+     intRule?(mv===0?'var(--muted)':'var(--text)')
+      :(mv>=1?'var(--accent-soft)':'var(--muted)'),(!intRule)&&gM);
     // the deciding movement rule first, then nervosity - always a brake
-    chips.push(hasInt?small:big);
+    chips.push(intRule?small:big);
     chips.push(cell('nervosité vs 24 h',rv.toFixed(2)+'× '+vw[0],
      vw[1],gN||storm));
     // then the context
-    chips.push(hasInt?big:small);
+    chips.push(intRule?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
     // 2026-09-29 (owner): two market facts the robot does not use yet.
     // The spread is fixed at 7 pts on this broker, so what changes is how
@@ -7848,6 +7855,16 @@ def user_stats(u, admin_override=False):
                                 d["meteo_struct"][_k] = _cj[_k]
                         # 2026-09-28: "Prochaine action" - the readiness flags for
                         # everyone, the LEVELS only for Strategie members and the admin
+                        # 2026-10-01: which movement rule decides. The bot
+                        # only applies the inner one to an INNER entry, and
+                        # those are off, so the card must stop choosing the
+                        # inner rule just because an inner structure exists.
+                        try:
+                            d["meteo_struct"]["internal_entries"] = bool(
+                                PKG.for_account(u["id"]).get(
+                                    "internal_entries", False))
+                        except Exception:
+                            d["meteo_struct"]["internal_entries"] = False
                         for _k in ("bos_ready", "flip_bos_ready", "int_bos_ready", "int_flip_bos_ready", "trend", "choch"):
                             d["meteo_struct"][_k] = _cj.get(_k)
                         if is_admin(u) or has(u.get("id"), "strategy"):
