@@ -76,6 +76,18 @@ split. **The cost in profit is not precisely knowable from this data.** It
 is somewhere between zero and about 9 %, and no tighter statement is
 honest.
 
+> **SUPERSEDED 2026-10-01 — see `RISK_CAP_COST.md` (E027).** The sentence
+> above was true of the method used here, not of the question. Comparing
+> two ~400-trade nets buries a signal that lives in the ~30 trades where
+> the cap actually binds. Measured on those trades directly, the cost *is*
+> determined: it equals the expectancy of the wide-stop trades, so it
+> charges in stretches where they pay and refunds in stretches where they
+> do not. On 92 real trades the 3 % cap would have **gained $31.88**
+> [+12.78 … +48.58]; on the simulated window it costs, and once the
+> debt-path effects are included that cost is roughly **double** the direct
+> arithmetic — about 7 % of net on Valère's shape, about 31 % on `base`. So
+> "up to 9 %" is an underestimate for anything but Valère's own package.
+
 ## 5. Recommendation
 
 - Deploy the **shrink** mechanism, never the refuse one.

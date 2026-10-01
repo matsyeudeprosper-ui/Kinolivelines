@@ -593,7 +593,12 @@ def simulate(R, spread, cfg):
         day_n += 1
         if TRACE is not None:
             _m = sorted(rng[i-60:i])[30] if i >= 60 else 0.0
+            # 2026-10-01: lot and risk recorded so a study can tell whether a
+            # money cap BOUND on this trade without reconstructing the lot
+            # from the balance and the nervosity. A reconstruction that
+            # drifts from this line would quietly mismeasure the cap.
             cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),
+                      "lot": round(lot, 2), "risk": round(dist * lot, 2),
                       "med": round(_m, 1), "nerv": round(nv, 2),
                       "power": (round(rng[i] / _m, 2) if _m > 0 else None),
                       "age": int((t - (hi_since if d == 1 else lo_since)) // 60),

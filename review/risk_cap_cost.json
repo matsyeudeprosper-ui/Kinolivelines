@@ -1,0 +1,119 @@
+{
+ "boot": 20000,
+ "spread": 7.0,
+ "real": {
+  "3.0": {
+   "n": 92,
+   "binding": 10,
+   "cost": 31.88,
+   "lo": 12.78,
+   "hi": 48.58,
+   "per_trade": 3.188,
+   "refusals": 3,
+   "worst_before": -11.95,
+   "worst_after": -5.97,
+   "exp_binding": -5.499,
+   "exp_others": 0.298,
+   "excludes_zero": true
+  },
+  "5.0": {
+   "n": 92,
+   "binding": 1,
+   "cost": 5.97,
+   "lo": 5.97,
+   "hi": 5.97,
+   "per_trade": 5.975,
+   "refusals": 0,
+   "worst_before": -11.95,
+   "worst_after": -11.95,
+   "exp_binding": -11.95,
+   "exp_others": -0.204,
+   "excludes_zero": false
+  }
+ },
+ "sim": {
+  "base": {
+   "3.0": {
+    "n": 403,
+    "binding": 37,
+    "cost": -28.79,
+    "lo": -88.78,
+    "hi": 35.26,
+    "per_trade": -0.778,
+    "refusals": 3,
+    "worst_before": -22.32,
+    "worst_after": -6.95,
+    "exp_binding": 1.402,
+    "exp_others": 0.187,
+    "excludes_zero": false
+   },
+   "5.0": {
+    "n": 403,
+    "binding": 5,
+    "cost": -1.75,
+    "lo": -30.64,
+    "hi": 29.08,
+    "per_trade": -0.35,
+    "refusals": 0,
+    "worst_before": -22.32,
+    "worst_after": -11.16,
+    "exp_binding": 0.699,
+    "exp_others": 0.293,
+    "excludes_zero": false
+   }
+  },
+  "valere": {
+   "3.0": {
+    "n": 275,
+    "binding": 18,
+    "cost": -1.6,
+    "lo": -30.56,
+    "hi": 26.82,
+    "per_trade": -0.089,
+    "refusals": 0,
+    "worst_before": -10.87,
+    "worst_after": -7.59,
+    "exp_binding": 0.178,
+    "exp_others": 0.405,
+    "excludes_zero": false
+   },
+   "5.0": {
+    "n": 275,
+    "binding": 1,
+    "cost": -5.74,
+    "lo": -5.74,
+    "hi": -5.74,
+    "per_trade": -5.74,
+    "refusals": 0,
+    "worst_before": -10.87,
+    "worst_after": -10.87,
+    "exp_binding": 11.479,
+    "exp_others": 0.349,
+    "excludes_zero": false
+   }
+  }
+ },
+ "path": {
+  "base_3.0": {
+   "paired": -28.79,
+   "resim": -59.3,
+   "path": -30.51
+  },
+  "base_5.0": {
+   "paired": -1.75,
+   "resim": -11.58,
+   "path": -9.83
+  },
+  "valere_3.0": {
+   "paired": -1.6,
+   "resim": -11.08,
+   "path": -9.48
+  },
+  "valere_5.0": {
+   "paired": -5.74,
+   "resim": -2.82,
+   "path": 2.92
+  }
+ },
+ "verdict": "MEASURED - the sign is period-dependent; the real sample saved, the simulated one paid"
+}
