@@ -1599,13 +1599,30 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="tf-rows" style="margin-top:13px"></div>
  <div id="tf-foot" style="margin-top:12px"></div>
 </div>
-<div class="sec" id="lrn-sec" style="display:none">Ce que le march&eacute; nous apprend <span class="hint" id="lrn-hint"></span></div>
-<div id="lrn-list" style="display:none"></div>
-<div class="panel" id="lrn-next" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)"></div>
+<!-- 2026-10-01 (owner): the main Marche page is the market's STATE, in
+     time order - the weather now, the timeframes, then the hours. The
+     lessons are a reference, not state, so they live behind a card. -->
 <div class="panel" id="mhcard" style="display:none;margin-top:12px">
  <div class="lbl">Les heures du march&eacute; <span class="hint" id="mh-hint"></span></div>
  <div id="mh-grid" style="margin-top:10px"></div>
  <div id="mh-leg" style="font-size:.68rem;color:var(--muted);margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"></div>
+</div>
+<div class="panel" id="lrn-card" style="display:none;margin-top:12px;cursor:pointer"
+ role="button" tabindex="0" onclick="lrnOpen()">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic"><svg class="ic"><use href="#i-book"/></svg></div>
+  <div style="flex:1;min-width:0">
+   <b id="lrn-card-t">Ce que le march&eacute; nous apprend</b>
+   <div class="ssub" id="lrn-card-s"></div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+</div>
+<!-- the lesson block keeps its ids and its renderer; it is MOVED into the
+     sheet on open and moved back on close, so nothing is ever duplicated -->
+<div id="lrn-wrap" style="display:none">
+<div class="sec" id="lrn-sec" style="display:none">Ce que le march&eacute; nous apprend <span class="hint" id="lrn-hint"></span></div>
+<div id="lrn-list" style="display:none"></div>
+<div class="panel" id="lrn-next" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)"></div>
 </div>
 </div>
 <div id="mx-lab" style="display:none">
@@ -4506,11 +4523,28 @@ function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).fin
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 // ---- batch 33b (owner): the market space shows the PATTERNS being established,
 // each with its evidence, its confidence and whether the robot uses it ----
+// 2026-10-01: move the real block into the sheet, then put it back. The
+// alternative - cloning its HTML - gives two elements with the same id, and
+// loadPatterns writes by id, so the copy on screen would freeze while the
+// hidden original kept updating.
+function lrnOpen(){
+ const w=document.getElementById('lrn-wrap');
+ if(!w)return;
+ const mark=document.createElement('span');
+ mark.style.display='none';
+ w.parentElement.insertBefore(mark,w);
+ const p=sheet('<div id="lrn-host"></div>');
+ setTimeout(()=>{const h=document.getElementById('lrn-host');
+  if(h){h.appendChild(w);w.style.display='block';}},60);
+ p.then(()=>{w.style.display='none';
+  if(mark.parentElement){mark.parentElement.insertBefore(w,mark);mark.remove();}
+  else{document.getElementById('mx-market').appendChild(w);}});
+}
 async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list=document.getElementById('lrn-list'),nx=document.getElementById('lrn-next');if(!sec||!list)return;
- if(HIDEGAUGES()||d.public){sec.style.display='none';list.style.display='none';nx.style.display='none';return;}
+ if(HIDEGAUGES()||d.public){sec.style.display='none';list.style.display='none';nx.style.display='none';{const cd=document.getElementById('lrn-card');if(cd)cd.style.display='none';}return;}
  if(window._lrnT&&Date.now()-window._lrnT<600000)return;window._lrnT=Date.now();
  let j=null;try{const r=await fetch(B+'patterns?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
- if(!j||j.err){sec.style.display='none';list.style.display='none';nx.style.display='none';return;}
+ if(!j||j.err){sec.style.display='none';list.style.display='none';nx.style.display='none';{const cd=document.getElementById('lrn-card');if(cd)cd.style.display='none';}return;}
  const en=LANG()==='en';
  const ST={confirme:[en?'Sure':'S\u00fbr','var(--up-soft)','rgba(46,204,113,.14)'],vivant:[en?'Measured live':'Mesur\u00e9 en direct','var(--accent-soft)','rgba(59,130,246,.14)'],observation:[en?'Not sure yet':'Pas encore s\u00fbr','var(--warn)','rgba(232,197,90,.14)'],candidat:[en?'To try':'\u00c0 essayer','#b98cff','rgba(185,140,255,.14)'],rejete:[en?'Checked: no':'V\u00e9rifi\u00e9 : non','var(--muted2)','rgba(255,255,255,.06)']};
  const RB={oui:[en?'the robot does this':'le robot le fait','var(--up-soft)'],candidat:[en?'the robot may, later':'le robot, peut-\u00eatre plus tard','#b98cff'],non:[en?'the robot does not':'le robot ne le fait pas','var(--muted)']};
@@ -4528,6 +4562,15 @@ async function loadPatterns(d){const sec=document.getElementById('lrn-sec'),list
  list.insertAdjacentHTML('afterbegin','<div class="panel labintro"><b style="font-size:.95rem">'+(en?'Read this like a notebook':'\u00c0 lire comme un carnet')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each card is one thing we noticed about the market. It says how sure we are, what the real trades show, what the past showed, and what the robot does with it. Numbers under 30 trades are just a start.':'Chaque carte est une chose qu\u2019on a remarqu\u00e9e sur le march\u00e9. Elle dit \u00e0 quel point on en est s\u00fbr, ce que montrent les vrais trades, ce que montrait le pass\u00e9, et ce que le robot en fait. Sous 30 trades, un chiffre n\u2019est qu\u2019un d\u00e9but.')+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(j.live_trades||0)+' '+(en?'real trades':'vrais trades')+' \u00b7 '+(j.memory_days||0)+' '+(en?'days of market memory':'jours de m\u00e9moire du march\u00e9')+'</div></div>');
  setH(nx,'<div class="lbl">'+(en?'What comes next':'La suite')+'</div><div style="font-size:.9rem;color:var(--text);line-height:1.5;margin-top:6px">'+(en?j.next.en:j.next.fr)+'</div><div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'The cards refresh every 10 minutes with the new trades and the market memory.':'Les cartes se mettent \u00e0 jour toutes les 10 minutes avec les nouveaux trades et la m\u00e9moire du march\u00e9.')+'</div>');
  sec.style.display='block';list.style.display='block';nx.style.display='block';
+ // the card is what the member actually sees on the main page
+ {const cd=document.getElementById('lrn-card');
+  if(cd){const n=(j.cards||[]).length;
+   document.getElementById('lrn-card-t').textContent=en
+    ?'What the market teaches us':'Ce que le march\u00e9 nous apprend';
+   document.getElementById('lrn-card-s').textContent=en
+    ?(n+' observation'+(n>1?'s':'')+' \u00b7 what we have learned so far')
+    :(n+' observation'+(n>1?'s':'')+' \u00b7 ce qu\u2019on a appris jusqu\u2019ici');
+   cd.style.display=n?'block':'none';}}
 }
 // ---- batch 33: the two spaces grow - market hours, next action, the robot explains, journal ----
 async function loadMarketHours(d){const el=document.getElementById('mhcard');if(!el)return;
@@ -5097,7 +5140,7 @@ async function nestCodeFor(name){
 function observerView(d){
  const obs=OBS();
  const hide=HIDEGAUGES();['mx-chips','mx-nerv','jcard'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=hide?'none':'';});
- if(hide)['mhcard','whycard','rjcard','rb-next','lrn-sec','lrn-list','lrn-next'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+ if(hide)['mhcard','whycard','rjcard','rb-next','lrn-sec','lrn-list','lrn-next','lrn-card'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
  const kc=document.getElementById('kinocard');if(!kc)return;
  if(!obs){kc.style.display='none';return;}
  kc.style.display='block';
@@ -5325,8 +5368,8 @@ function render(d){
   if(J&&!J.dataset.on){J.dataset.on='1';
    const items=[['meteo',en?'Weather':'M\u00e9t\u00e9o'],
                 ['tfcard',en?'Timeframes':'Les temps'],
-                ['lrn-sec',en?'Lessons':'Le\u00e7ons'],
-                ['mhcard',en?'Hours':'Heures']];
+                ['mhcard',en?'Hours':'Heures'],
+                ['lrn-card',en?'Lessons':'Le\u00e7ons']];
    J.innerHTML=items.map(it=>'<button data-go="'+it[0]+'" style="flex:none;'+
     'border:1px solid var(--border);background:var(--surface2);color:var(--muted2);'+
     'border-radius:99px;padding:6px 12px;font-size:.72rem;font-weight:700">'+it[1]+
