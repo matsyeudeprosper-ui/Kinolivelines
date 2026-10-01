@@ -1596,8 +1596,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <div style="flex:1;min-width:0"><b id="news-t" style="font-size:.98rem"></b>
    <div id="news-s" style="font-size:.78rem;color:var(--muted2);margin-top:2px"></div></div>
  </div>
- <div id="news-list" style="margin-top:10px;font-size:.84rem;color:var(--text2);line-height:1.5"></div>
- <button id="news-b" class="shbtn shghost" style="margin:10px 0 0;padding:10px;font-size:.86rem"></button>
+ <!-- 2026-10-01 (owner): this list was 1121px of a 2541px page - 44%,
+      above the member's own day. It opens in a sheet now; the card keeps
+      one line. -->
+ <div id="news-list" style="display:none"></div>
+ <div style="display:flex;gap:8px;margin-top:10px">
+  <button id="news-open" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem"></button>
+  <button id="news-b" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem"></button>
+ </div>
 </div>
 <div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(255,92,92,.45)">
  <div style="display:flex;align-items:center;gap:12px">
@@ -1644,7 +1650,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <!-- 2026-10-01 (owner): "Pourquoi rien aujourd'hui". The robot has
      always written the reason in its log and the app never showed it, so a
      quiet day and a broken day looked the same from the phone. -->
-<!-- 2026-10-01 (owner): the day that just closed, once per day. -->
+<!-- 2026-10-01 (owner): the day that just closed, once per day. It sits
+     BELOW the day-done card on purpose - this one is yesterday, and
+     yesterday must not lead today. -->
 <div class="panel" id="recap" style="display:none;margin-top:26px;
  border-color:rgba(59,130,246,.3)">
  <div style="display:flex;align-items:flex-start;gap:12px">
@@ -1795,20 +1803,23 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   graphique en direct</a>
 </div>
 </div>
+<!-- 2026-10-01 (owner): this was a 2x2. "Aujourd'hui" repeated the hero
+     figure word for word, and "Pire creux" was the only red tile among
+     greens - the eye landed on it first - while the same number was
+     already labelled on the chart below. Today is the hero; the worst dip
+     belongs to the chart. What is left is the pair that says something
+     the hero does not. #today and #dd stay in the DOM, hidden, because
+     render() writes to them every tick. -->
 <div class="grid">
-<div class="card"><div class="lbl">Aujourd&#8217;hui</div>
-<div class="val skel" id="today">--</div>
-<div class="sub">gains du jour</div></div>
 <div class="card"><div class="lbl">Cette semaine</div>
 <div class="val skel" id="week">--</div>
 <div class="sub">depuis lundi</div></div>
-<div class="card"><div class="lbl">Pire creux</div>
-<div class="val neg skel" id="dd">--</div>
-<div class="sub">7 derniers jours</div></div>
 <div class="card"><div class="lbl">Ce mois</div>
 <div class="val skel" id="month">--</div>
 <div class="sub">depuis le 1er</div></div>
 </div>
+<div id="today" style="display:none"></div>
+<div id="dd" style="display:none"></div>
 <div class="panel" id="pgoal" style="display:none;margin-top:12px;cursor:pointer" role="button"
  tabindex="0" onclick="myGoal()" aria-label="Mon objectif">
  <div style="display:flex;align-items:center;gap:12px">
@@ -1833,7 +1844,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   font-size:.72rem;font-weight:700;margin-left:6px">3 mois</button></span>
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 80"
- style="width:100%;height:80px;display:block"></svg></div>
+ style="width:100%;height:80px;display:block"></svg>
+ <!-- 2026-10-01 (owner): the worst dip, next to the line that shows it,
+      and only on the 7-day view it actually measures. -->
+ <div id="ddcap" style="display:none;font-size:.78rem;color:var(--muted2);
+  margin-top:8px"></div></div>
 </div>
 <div class="tab" id="tab-marche">
 <!-- 2026-09-28 (owner): two spaces, one switch - the MARKET (what the
@@ -3542,7 +3557,7 @@ document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
   x.style.background=on?'var(--surface3)':'transparent';
   x.style.borderColor=on?'var(--border2)':'var(--border)';
   x.style.color=on?'var(--text2)':'var(--muted2)';});
- drawSpark();};});
+ drawSpark();ddCap(window._d);};});
 document.querySelectorAll('.tfc').forEach(b=>{b.onclick=()=>{window._trF=b.dataset.f;window._trN=10;
  document.querySelectorAll('.tfc').forEach(x=>x.classList.toggle('on',x===b));
  if(window._d)render(window._d);};});
@@ -4549,6 +4564,11 @@ function whyIdle(d){
 // 2026-09-27: the daily objective reached -> one calm card, in the phone's clock
 function dayDone(d){
  const el=document.getElementById('daydone');if(!el)return;
+ // 2026-10-01 (owner): yesterday's recap was rendering ABOVE today's
+ // result, which reads backwards. Today leads; the recap follows it.
+ {const rc=document.getElementById('recap');
+  if(rc&&el.parentElement&&rc.nextElementSibling!==el)
+   el.parentElement.insertBefore(rc,el.nextElementSibling);}
  const lg=d.ledger||{};const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&(lg.day_pnl_bot||0)>=lg.cap_today);
  if(!lg.bos||!done||MAN()){el.style.display='none';return;}
  const en=LANG()==='en';const n=new Date();const nxt=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+1,0,0,0));
@@ -5541,6 +5561,20 @@ const NEWS=[
  {fr:'<b>Journal du robot</b> \u2014 ses 20 derniers trades, touchez-en un pour le voir sur le graphique.',en:'<b>Robot journal</b> \u2014 its last 20 trades, tap one to see it on the chart.'},
  {fr:'<b>Ce que le march\u00e9 nous apprend</b> \u2014 les patterns, leur preuve, et ce que le robot en fait.',en:'<b>What the market teaches us</b> \u2014 the patterns, their evidence, and what the robot does with them.'},
  {fr:'<b>Le labo</b> \u2014 id\u00e9es, replays, observations en cours et d\u00e9cisions, dans March\u00e9.',en:'<b>The lab</b> \u2014 ideas, replays, observations in progress and decisions, in Market.',need:'strategy'}];
+// 2026-10-01 (owner): the worst dip reads under the chart that draws it,
+// and ONLY on the 7-day range - it is a 7-day figure and would be a lie
+// over 30 days or 3 months. Its own function so the range chips can
+// refresh it without re-rendering the whole page.
+function ddCap(d){
+ const dc=document.getElementById('ddcap');
+ if(!dc||!d||d.max_dd_7d===undefined)return;
+ if(String(window._cvz||'7')!=='7'){dc.style.display='none';return;}
+ const dv=Number(d.max_dd_7d).toFixed(0);
+ dc.textContent=(LANG()==='en'
+  ?'Worst dip over these 7 days: '+(dv==0?'$0':'-$'+dv)
+  :'Pire passage sur ces 7 jours : '+(dv==0?'$0':'-$'+dv));
+ dc.style.display='block';
+}
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
@@ -5548,7 +5582,19 @@ function newsCard(d){const el=document.getElementById('newscard');if(!el)return;
  const items=NEWS.filter(n=>!n.need||(n.need==='manual'&&(P.manual||P.family))||(n.need==='switch'&&!d.pause_locked)||(n.need==='strategy'&&(P.strategy||d.is_master)));
  document.getElementById('news-t').textContent=en?'What\u2019s new':'Quoi de neuf';
  document.getElementById('news-s').textContent=en?'Since your last visit':'Depuis votre derni\u00e8re visite';
- setH(document.getElementById('news-list'),items.map(n=>'<div style="display:flex;gap:8px;margin-top:6px"><span style="color:var(--accent-soft);flex:none">\u2022</span><span>'+(en?n.en:n.fr)+'</span></div>').join(''));
+ // 2026-10-01 (owner): the list lives in a sheet; the card says how
+ // many there are. A changelog is a reference, and the home screen
+ // answers "how am I doing".
+ const _nh=items.map(n=>'<div style="display:flex;gap:8px;margin-top:10px"><span style="color:var(--accent-soft);flex:none">\u2022</span><span>'+(en?n.en:n.fr)+'</span></div>').join('');
+ setH(document.getElementById('news-list'),_nh);
+ document.getElementById('news-s').textContent=
+  (en?items.length+' new thing'+(items.length>1?'s':'')+' since your last visit'
+     :items.length+' nouveaut\u00e9'+(items.length>1?'s':'')+' depuis votre derni\u00e8re visite');
+ const ob=document.getElementById('news-open');
+ ob.textContent=en?'See them':'Les voir';
+ ob.onclick=()=>{sheet('<div class="lbl">'+(en?'What\u2019s new':'Quoi de neuf')+
+  '</div><div style="font-size:.9rem;color:var(--text2);line-height:1.55">'+
+  _nh+'</div>');};
  const b=document.getElementById('news-b');b.textContent=en?'Got it':'Compris';
  b.onclick=()=>{try{localStorage.setItem('owlNewsSeen:'+B,NEWS_V);}catch(e){}el.style.display='none';};
  el.style.display='block';}
@@ -6189,11 +6235,18 @@ function render(d){
      window._rz={d:d.ledger.debt,a:am,m:bigV};
     }
    }else{
-    lt2.innerHTML='&#128522; Tout va bien &mdash; rien &agrave; '+
-     'rattraper.'+(d.ledger.chest>0
-     ?'<br>&#128176; Gard&eacute; pour les jours difficiles : '+
-      '<b style="color:var(--warn)">$'+d.ledger.chest.toFixed(2)+
-      '</b>':'');
+    // 2026-10-01 (owner): the last two emoji on the home screen. They
+    // sat directly under cards using the stroked set, and the mismatch
+    // got more visible once everything else was converted, not less.
+    lt2.innerHTML='<span style="display:inline-flex;align-items:center;'+
+     'gap:7px"><svg class="ic ic-s" style="color:var(--up)">'+
+     '<use href="#i-check"/></svg>Tout va bien &mdash; rien &agrave; '+
+     'rattraper.</span>'+(d.ledger.chest>0
+     ?'<br><span style="display:inline-flex;align-items:center;gap:7px">'+
+      '<svg class="ic ic-s" style="color:var(--warn)">'+
+      '<use href="#i-lock"/></svg>Gard&eacute; pour les jours '+
+      'difficiles : <b style="color:var(--warn)">$'+
+      d.ledger.chest.toFixed(2)+'</b></span>':'');
     lw.style.display='none';ls2.innerHTML='';
    }
   }
@@ -6483,6 +6536,7 @@ function render(d){
   w.className='val '+(sgn(d.week));
   const dv=d.max_dd_7d.toFixed(0);
   document.getElementById('dd').textContent=(dv==0?'$0':'-$'+dv);
+  ddCap(d);
   if(d.month!==undefined){
    const mo=document.getElementById('month');
    mo.innerHTML=arw(d.month)+f(d.month);
@@ -8703,7 +8757,16 @@ def user_stats(u, admin_override=False):
                 if _base_cap > 0 and _ref_bal > 0:
                     _next_cap = math.floor(_now_cap) + 1
                     d["palier"] = round(_ref_bal * _next_cap / _base_cap, 2)
-                    d["palier_base"] = round(float(d["balance"]), 2)
+                    # 2026-10-01: this was the CURRENT balance, which makes
+                    # the bar (bal - bal) / (target - bal) = 0% forever -
+                    # it has never moved on any account. The honest base is
+                    # the balance the CURRENT daily cap started at, so the
+                    # bar shows the distance actually travelled between one
+                    # step and the next.
+                    _prev_cap = math.floor(_now_cap)
+                    d["palier_base"] = (
+                        round(_ref_bal * _prev_cap / _base_cap, 2)
+                        if _prev_cap >= 1 else 0.0)
                     d["palier_def"] = True
                     d["palier_kind"] = "scale"
                     d["palier_next_cap"] = _next_cap
