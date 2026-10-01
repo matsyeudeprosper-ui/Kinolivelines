@@ -150,6 +150,11 @@ def compute():
                         and _in.type == mt5.DEAL_TYPE_BUY else "V"),
                 "ep": round(_in.price, 2) if _in is not None else None,
                 "xp": round(d.price, 2),
+                # 2026-10-01: journal rows are keyed on position_id
+                # (the bot writes ticket=d.position_id), so carrying
+                # it here lets the app attach the multi-timeframe
+                # snapshot by an exact match, not a guess on time.
+                "pid": d.position_id,
                 "dur": (round((d.time - _in.time) / 60)
                         if _in is not None else None)}
     trades = [_trow(d) for d in d7[-30:]][::-1]

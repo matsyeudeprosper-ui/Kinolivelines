@@ -623,6 +623,141 @@ def bot_blocked(log):
     return None
 
 
+def htf_of(uid):
+    """The multi-timeframe snapshot per trade, keyed by position id.
+
+    Recorded since 2026-10-01 for pattern work and never shown; the owner
+    asked for it on the history row. Only the three higher timeframes and
+    the agreement count are kept - the app does not need the levels.
+    """
+    m = BOT_OF.get(uid)
+    if not m or not m[1].startswith("bos_state"):
+        return {}
+    import csv as _csv          # csv is not imported at module level here
+    sfx = m[1][len("bos_state"):-len(".json")]
+    f = os.path.join(DIR, "bos_journal" + sfx + ".csv")
+    out = {}
+    try:
+        with open(f, newline="", encoding="utf-8", errors="replace") as fh:
+            for r in _csv.DictReader(fh):
+                tk = (r.get("ticket") or "").strip()
+                if not tk:
+                    continue
+                row = {}
+                for side, col in (("e", "htf_entry"), ("x", "htf_exit")):
+                    try:
+                        v = json.loads(r.get(col) or "")
+                    except Exception:
+                        continue
+                    if not isinstance(v, dict):
+                        continue
+                    row[side] = {
+                        "m15": (v.get("m15") or {}).get("t"),
+                        "h1": (v.get("h1") or {}).get("t"),
+                        "h4": (v.get("h4") or {}).get("t"),
+                        "agree": v.get("agree"),
+                    }
+                if row:
+                    out[tk] = row
+    except Exception:
+        return {}
+    return out
+
+
+def day_state(uid):
+    """Has this account finished its day, and where is it against its own
+    target? (owner 2026-10-01: "all accounts done for the day?")
+
+    day_capped is the bot's own sticky flag, set the first time the daily
+    limit refuses an entry and cleared at the UTC day roll. cap_today is
+    the ADAPTIVE cap the bot computed for today, which is not the package
+    number: it scales with the balance and widens while the account is
+    catching up. Both come straight from the bot's state file, so this
+    cannot drift from what the bot actually did.
+    """
+    m = BOT_OF.get(uid)
+    if not m or not m[1].startswith("bos_state"):
+        return None
+    try:
+        st = json.load(open(os.path.join(DIR, m[1]), encoding="utf-8"))
+    except Exception:
+        return None
+    cap = st.get("cap_today")
+    cap = float(cap) if isinstance(cap, (int, float)) else None
+    pnl = float(st.get("day_pnl") or 0.0)
+    return {"pnl": round(pnl, 2), "cap": cap, "n": st.get("day_n") or 0,
+            "done": bool(st.get("day_capped")
+                         or (cap is not None and cap > 0 and pnl >= cap)),
+            "killed": bool(st.get("killed")),
+            "debt": round(float(st.get("debt") or 0.0), 2)}
+
+
+# Every one of these strings is copied from structure_bos_bot.py, not
+# guessed. Order matters: the first match wins, so the specific ones come
+# before the general. `kind` is the bucket shown to a member; two patterns
+# can share a bucket.
+IDLE_WHY = (
+    ("market asleep", "asleep"),
+    ("LIMITE DU JOUR", "daycap"),
+    ("tres rapide", "storm"),
+    ("trop nerveux", "nervous"),
+    ("even 0.01 lot risks", "toobig"),
+    ("SKIPPED: risk", "toobig"),
+    ("structure interne en pause", "recovery"),
+    ("demi-lot impossible", "toobig"),
+)
+IDLE_TXT = {
+    "asleep": ("le march\u00e9 dormait \u2014 pas de nouveau mouvement",
+               "the market was asleep \u2014 no new move"),
+    "daycap": ("l\u2019objectif du jour \u00e9tait atteint",
+               "the day\u2019s target was already reached"),
+    "storm": ("le march\u00e9 \u00e9tait trop rapide",
+              "the market was moving too fast"),
+    "nervous": ("le march\u00e9 \u00e9tait nerveux",
+                "the market was nervous"),
+    "toobig": ("le risque d\u00e9passait le plafond du compte",
+               "the risk was over the account ceiling"),
+    "recovery": ("la petite structure est en pause pendant la reprise",
+                 "the small structure pauses during catch-up"),
+}
+
+
+def why_idle(uid, day=None):
+    """What stopped the robot today, counted from its own log.
+
+    Owner 2026-10-01: "Pourquoi rien aujourd'hui". The bot has always
+    written the reason and the app has never shown it, so a quiet day and
+    a broken day looked identical from the phone.
+    """
+    m = BOT_OF.get(uid)
+    if not m:
+        return None
+    day = day or time.strftime("%Y-%m-%d", time.gmtime())
+    counts, inner, took = {}, 0, 0
+    try:
+        with open(os.path.join(DIR, m[2]), encoding="utf-8",
+                  errors="replace") as f:
+            for ln in f:
+                if not ln.startswith(day):
+                    continue
+                if "ENTRY:" in ln:
+                    took += 1
+                    continue
+                if "INT note, pas pris" in ln:
+                    inner += 1
+                    continue
+                for pat, kind in IDLE_WHY:
+                    if pat in ln:
+                        counts[kind] = counts.get(kind, 0) + 1
+                        break
+    except Exception:
+        return None
+    top = sorted(counts.items(), key=lambda kv: -kv[1])
+    return {"took": took, "inner": inner,
+            "why": [{"k": k, "n": n} for k, n in top[:3]],
+            "total": sum(counts.values())}
+
+
 def bot_on(uid):
     """Which robot runs this account, is it alive, and can it trade?
 
@@ -1386,6 +1521,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
   <button onclick="event.stopPropagation();try{localStorage.setItem('owlOfferHide:'+B,String(Date.now()))}catch(e){};this.closest('#offercard').style.display='none'" aria-label="Fermer" style="border:0;background:transparent;color:var(--muted);font-size:1.1rem;padding:4px">&times;</button>
  </div>
 </div>
+<!-- 2026-10-01 (owner): "Pourquoi rien aujourd'hui". The robot has
+     always written the reason in its log and the app never showed it, so a
+     quiet day and a broken day looked the same from the phone. -->
+<div class="panel" id="whyidle" style="display:none;margin-top:26px">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="whyidle-t" style="font-size:1rem"></b>
+   <div id="whyidle-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px"></div></div>
+ </div>
+</div>
 <div class="panel" id="daydone" style="display:none;margin-top:26px;border-color:rgba(46,204,113,.35)">
  <div style="display:flex;align-items:center;gap:12px">
   <div class="sic" style="color:var(--up);background:rgba(46,204,113,.12)"><svg class="ic"><use href="#i-check"/></svg></div>
@@ -1743,6 +1888,13 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 
 </div>
 <div class="tab" id="tab-set">
+<!-- 2026-10-01 (owner): accounts really differ now - a 3% per-trade
+     ceiling here, none there - and the only way to see which was to read
+     owl_packages.json. A member should be able to see their own worst
+     case without asking anybody. -->
+<div class="sec" id="arules-sec"
+ style="margin-top:26px;display:none">Vos r&egrave;gles</div>
+<div class="panel" id="arules" style="display:none;padding:4px 14px"></div>
 <div class="sec" style="margin-top:26px">Notifications</div>
 <div class="panel" style="padding:4px 14px">
  <div class="srow" id="notifbtn" style="display:none">
@@ -2454,6 +2606,26 @@ function setLang(l){try{localStorage.setItem('owlLang',l);}catch(e){}
   b.style.background=on?'var(--surface3)':'transparent';b.style.borderColor=on?'var(--border2)':'var(--border)';b.style.color=on?'var(--text2)':'var(--muted2)';});
  applyLang();if(window._d){window._lastS=null;render(window._d);loadDay();}
  fetch(B+'push_pref',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'lang='+l}).catch(()=>null);}
+// 2026-10-01 (owner): the multi-timeframe snapshot taken at entry, as
+// three dots - M15, H1, H4. Green when that timeframe pointed the way the
+// trade went, red when it pointed against, grey when it had no trend yet.
+// Nothing is drawn for trades older than the recording - which is most of
+// them today - rather than three grey dots that mean "no data" but read
+// as "no trend".
+function tfSide(t,dir){
+ if(t==null||t===0)return '#4a5a6b';
+ return (t===dir)?'var(--up)':'var(--down)';
+}
+function tfDots(x){
+ const s=(x.tf||{}).e;if(!s)return '';
+ const dir=(x.dir==='A')?1:-1;
+ const d=['m15','h1','h4'].map(k=>
+  '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;'+
+  'background:'+tfSide(s[k],dir)+'"></span>').join('');
+ return ' <span title="M15 H1 H4 au moment de l\u2019entr\u00e9e" '+
+  'style="display:inline-flex;gap:3px;align-items:center;'+
+  'margin-left:6px;vertical-align:middle">'+d+'</span>';
+}
 function fdur(m){
  if(m==null)return '';
  m=Math.round(m);
@@ -3432,6 +3604,19 @@ function tradeSheet(i){
   (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
   (x.dur!=null?L('Dur&eacute;e',fdur(x.dur)):'')+
   L('Quand',x.w)+
+  (function(){
+   // 2026-10-01: the big picture at entry AND at exit. The interesting
+   // case is when they differ - the trade outlived the context it was
+   // taken in - so both lines show rather than only the entry.
+   const tf=x.tf;if(!tf)return '';
+   const dir=(x.dir==='A')?1:-1;
+   const nm={'1':'haut','-1':'bas','0':'\u2014'};
+   const line=s=>['m15','h1','h4'].map(k=>k.toUpperCase()+' '+
+    '<span style="color:'+tfSide(s[k],dir)+'">'+
+    (nm[String(s[k]==null?0:s[k])])+'</span>').join(' \u00b7 ');
+   let h=tf.e?L('Grandes unit\u00e9s \u00e0 l\u2019entr\u00e9e',line(tf.e)):'';
+   if(tf.x)h+=L('\u2026 \u00e0 la sortie',line(tf.x));
+   return h;})()+
   (function(){const m=/^(\d\d)\/(\d\d) (\d\d):(\d\d)$/.exec(x.w||'');
    if(!m)return '';const n=new Date();let y=n.getUTCFullYear();
    if(parseInt(m[2])>n.getUTCMonth()+1)y--;
@@ -3979,6 +4164,30 @@ function panicCall(uid,pw,dry){
 // Admin emergency stop (owner 2026-09-18). Two steps on purpose: the
 // first call is a DRY RUN that only looks, so the admin sees exactly
 // what is about to be closed before anything is sent to the broker.
+// 2026-10-01 (owner): one line per Nid row - is this account's day
+// finished, and what is the most it can risk on one trade. The ceiling is
+// the package percentage applied to the balance we last saw, which is the
+// same arithmetic the bot does at entry (risk_fit_pct x balance), so the
+// number on screen is the number the robot uses.
+function dayTxt(x){
+ const dy=x.day,r=x.rules||{};
+ const bits=[];
+ if(dy){
+  if(dy.killed)bits.push('<span style="color:#ffb3b3">arr\u00eat de s\u00e9curit\u00e9</span>');
+  else if(dy.done)bits.push('<span style="color:var(--up-soft)">\u2713 journ\u00e9e faite</span>'+
+   (typeof dy.cap==='number'?' <span style="color:var(--muted)">(cible $'+dy.cap.toFixed(2)+')</span>':''));
+  else if(typeof dy.cap==='number'&&dy.cap>0)
+   bits.push('$'+dy.pnl.toFixed(2)+' / $'+dy.cap.toFixed(2)+' du jour');
+  if(dy.debt>0.5)bits.push('<span style="color:var(--warn)">reprise $'+dy.debt.toFixed(2)+'</span>');
+ }
+ if(r.risk_fit_pct>0){
+  const cap=(x.bal!=null)?(' \u2248 $'+(x.bal*r.risk_fit_pct/100).toFixed(2)):'';
+  bits.push('plafond '+r.risk_fit_pct+'%/trade'+cap);
+ }
+ if(!bits.length)return '';
+ return '<span style="display:block;font-size:.72rem;color:var(--muted2);'+
+  'white-space:normal;margin-top:2px">'+bits.join(' <span class="sep">\u00b7</span> ')+'</span>';
+}
 async function nestPanic(uid,name){
  const pw=await askPwd('Arr&ecirc;t d&rsquo;urgence sur '+name+' ?',
   'Je regarde d&rsquo;abord ce qui est ouvert. Rien ne sera ferm&eacute; '+
@@ -4046,6 +4255,74 @@ async function nestReset(uid,name){
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
  toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">R\u00e9initialisation lanc\u00e9e \u2014 le robot repart de z\u00e9ro dans ~30 s.</div>',6000);
+}
+// 2026-10-01 (owner): "Pourquoi rien aujourd'hui" - with the real reason,
+// counted from the robot's own log rather than guessed from the market.
+const WHYTXT={
+ asleep:['le march\u00e9 dormait \u2014 aucun nouveau mouvement \u00e0 suivre',
+         'the market was asleep \u2014 no new move to follow'],
+ daycap:['l\u2019objectif du jour \u00e9tait d\u00e9j\u00e0 atteint',
+         'the day\u2019s target was already reached'],
+ storm:['le march\u00e9 allait trop vite',
+        'the market was moving too fast'],
+ nervous:['le march\u00e9 \u00e9tait nerveux',
+          'the market was nervous'],
+ toobig:['le risque d\u00e9passait le plafond du compte',
+         'the risk was over the account ceiling'],
+ recovery:['la petite structure se met en pause pendant la reprise',
+           'the small structure pauses during catch-up']};
+// 2026-10-01 (owner): the member's own rules, in Reglages. The ceiling is
+// the package percentage applied to the balance, which is the same
+// arithmetic the bot does at entry, so this is the number the robot uses.
+function acctRules(d){
+ const el=document.getElementById('arules');
+ const sec=document.getElementById('arules-sec');
+ if(!el)return;
+ const r=d.acct_rules||{};const en=LANG()==='en';
+ const bal=(d.ledger||{}).balance||d.balance||0;
+ const rows=[];
+ if(r.risk_fit_pct>0){
+  const cap=bal>0?('≈ $'+(bal*r.risk_fit_pct/100).toFixed(2)):'';
+  rows.push([ 'i-lock',
+   (en?'Most one trade can risk: ':'Au plus par trade : ')+r.risk_fit_pct+'% '+cap,
+   en?'The robot shrinks its lot to stay under this. It is your worst case on a single trade.'
+     :'Le robot réduit sa taille pour rester dessous. C’est votre pire cas sur un seul trade.']);
+ }else{
+  rows.push([ 'i-lock',
+   en?'No per-trade ceiling':'Pas de plafond par trade',
+   en?'Only the 10% safety limit applies. A wide stop can risk more than usual.'
+     :'Seule la limite de sécurité de 10% s’applique. Un stop large peut risquer plus que d’habitude.']);
+ }
+ if(r.day_cap)rows.push(['i-check',
+  (en?'Daily target: ':'Objectif du jour : ')+'$'+Number(r.day_cap).toFixed(2),
+  en?'Once reached the robot stops opening until the next day.'
+    :'Atteint, le robot n’ouvre plus jusqu’au lendemain.']);
+ if(!rows.length){el.style.display='none';if(sec)sec.style.display='none';return;}
+ setH(el,rows.map(x=>'<div class="srow" style="cursor:default">'+
+  '<div class="sic"><svg class="ic"><use href="#'+x[0]+'"/></svg></div>'+
+  '<div style="flex:1"><b>'+x[1]+'</b><div class="ssub">'+x[2]+'</div></div>'+
+  '</div>').join(''));
+ el.style.display='block';if(sec)sec.style.display='block';
+}
+function whyIdle(d){
+ const el=document.getElementById('whyidle');if(!el)return;
+ const w=d.why_idle;const en=LANG()==='en';
+ if(!w||MAN()||d.public||!(d.ledger||{}).bos){el.style.display='none';return;}
+ // it took trades today: the card is about a quiet day, not a busy one
+ if(w.took>0||!(w.why||[]).length){el.style.display='none';return;}
+ const first=WHYTXT[w.why[0].k];
+ if(!first){el.style.display='none';return;}
+ document.getElementById('whyidle-t').textContent=
+  en?'Why nothing today':'Pourquoi rien aujourd\u2019hui';
+ let txt=(en?'The robot looked and stayed out: ':'Le robot a regard\u00e9 et n\u2019est pas entr\u00e9 : ')
+  +first[en?1:0]+' ('+w.why[0].n+'\u00d7).';
+ const rest=(w.why||[]).slice(1).filter(x=>WHYTXT[x.k]);
+ if(rest.length)txt+=(en?' Also: ':' Aussi : ')
+  +rest.map(x=>WHYTXT[x.k][en?1:0]+' ('+x.n+'\u00d7)').join(', ')+'.';
+ if(w.inner)txt+=(en?' It also saw '+w.inner+' small-structure chances and left them alone, as set.'
+                    :' Il a aussi vu '+w.inner+' occasions de petite structure et les a laiss\u00e9es, comme r\u00e9gl\u00e9.');
+ document.getElementById('whyidle-s').textContent=txt;
+ el.style.display='block';
 }
 // 2026-09-27: the daily objective reached -> one calm card, in the phone's clock
 function dayDone(d){
@@ -6013,7 +6290,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -6067,6 +6344,15 @@ function render(d){
     _fk.map((k,i)=>{const v=_fam[k],h=Math.max(2,Math.abs(v)/_fmx*30),x=6+i*(288/_fk.length)+6,w=288/_fk.length-12;
      return '<rect x="'+x.toFixed(1)+'" y="'+(v>=0?40-h:40).toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="3" style="fill:'+(v>=0?'var(--up)':'var(--down)')+';opacity:.85"/>'+
       '<text x="'+(x+w/2).toFixed(1)+'" y="64" text-anchor="middle" font-size="8" style="fill:var(--muted)">'+k.slice(-5)+'</text>';}).join('')+'</svg></div>':'';
+   // 2026-10-01: the day line for one row, and the family tally.
+   const _dn=d.nest.filter(x=>x.day&&x.day.done).length;
+   const _dt=d.nest.filter(x=>x.day).length;
+   const _dayh=_dt?('<div class="row" style="border-bottom:1px solid '+
+    '#24344a"><span style="color:var(--muted2);font-size:.82rem">'+
+    'Journ\u00e9e</span><span style="font-size:.82rem;color:'+
+    (_dn>=_dt?'var(--up-soft)':'var(--muted2)')+'">'+
+    (_dn>=_dt?'\u2713 tous ont fini \u00b7 '+_dn+'/'+_dt
+     :_dn+'/'+_dt+' ont fini leur journ\u00e9e')+'</span></div>'):'';
    const hdr=_alh+_famh+'<div class="row" style="border-bottom:2px solid '+
     '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
     'color:var(--muted);font-size:.75rem">'+d.nest.length+
@@ -6074,7 +6360,7 @@ function render(d){
     '<span style="text-align:right"><b>$'+tb.toFixed(2)+'</b>'+
     '<span style="display:block;font-size:.78rem" class="'+
     (sgn(tt))+'">auj. '+(tt>=0?'+$':'-$')+
-    Math.abs(tt).toFixed(2)+'</span></span></div>';
+    Math.abs(tt).toFixed(2)+'</span></span></div>'+_dayh;
    document.getElementById('nest').innerHTML=hdr+d.nest.map(x=>{
     // Owner 2026-09-18: the list showed people's names and their plan, so
     // it could not answer "what is still running here". Now each row says
@@ -6114,7 +6400,12 @@ function render(d){
     (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
     (x.today!=null?' &middot; auj. <span class="'+
      (sgn(x.today))+'">'+(x.today>=0?'+$':'-$')+
-     Math.abs(x.today).toFixed(2)+'</span>':'')+'</span></span>'+
+     Math.abs(x.today).toFixed(2)+'</span>':'')+'</span>'+
+    // 2026-10-01 (owner): "all accounts done for the day?" - the answer
+    // belongs on the row, not in a conversation. And the per-trade
+    // ceiling, which differs account to account now and was only
+    // readable in a config file.
+    (dayTxt(x)||'')+'</span>'+
     '<span style="display:flex;gap:6px">'+
     (x.tok?'<a href="/'+x.tok+'/" target="_blank" '+
     'style="border:1px solid #263341;background:var(--surface);'+
@@ -6324,6 +6615,7 @@ function render(d){
     (x.k==='soldat'?' <span class="pill pill-w">soldat</span>'
      :(x.k&&x.k!=='page'?' <span class="pill">'+x.k+'</span>':''))+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
+    tfDots(x)+
     '</span><b class="'+
     (sgn(x.p))+'">'+(x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+
     '</b></div>').join('')+
@@ -7818,6 +8110,25 @@ def user_stats(u, admin_override=False):
                     .get("paused", u["id"] in PAUSE_ALLOWED))
             except Exception:
                 d["trading_paused"] = u["id"] in PAUSE_ALLOWED
+        # 2026-10-01 (owner): "Pourquoi rien aujourd'hui" and the account's
+        # own per-trade ceiling. Both already existed - in the robot's log
+        # and in owl_packages.json - and neither reached the phone.
+        d["why_idle"] = why_idle(u["id"])
+        # 2026-10-01 (owner): the snapshot was stored and never seen
+        try:
+            _hf = htf_of(u["id"])
+            if _hf:
+                for _t in (d.get("trades") or []):
+                    _k = str(_t.get("pid") or "")
+                    if _k in _hf:
+                        _t["tf"] = _hf[_k]
+        except Exception:
+            pass
+        d["acct_rules"] = (lambda _p: {
+            "package": _p.get("package"),
+            "risk_fit_pct": _p.get("risk_fit_pct") or 0,
+            "day_cap": _p.get("day_cap"),
+        })(PKG.for_account(u["id"]))
         d["era_start"] = u.get("era_start")
         d["contact_url"] = nest_config().get("contact_url") or ""
         d["contact_label"] = nest_config().get("contact_label") or ""
@@ -8200,6 +8511,11 @@ def user_stats(u, admin_override=False):
                         "stale": _age > 60, "paused": _pz,
                         "pos": nd.get("open_positions"),
                         "bot": _bot, "botlive": _live, "blocked": _blk,
+                        # 2026-10-01 (owner): "all accounts done for the
+                        # day?" - he had to ask a person, because only the
+                        # single-account home card knew.
+                        "day": day_state(x["id"]),
+                        "why": why_idle(x["id"]),
                         "trade": bool(x.get("trade")
                                       or x.get("id") == "kino"),
                         "days": (nd.get("days") or [])[:7],

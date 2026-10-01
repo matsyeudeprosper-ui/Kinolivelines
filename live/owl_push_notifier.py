@@ -934,6 +934,78 @@ def member_trades():
         send_all(title, body, kind="batch", only_uid=uid)
 
 
+DAYDONE_MARK = os.path.join(DIR, "owl_push_dayclose.json")
+# Which state file belongs to which account. There is NO rule to derive
+# this: the first live bot writes bos_state.json with no suffix, and
+# Valere's account id is u224016179 while its bot variant is "valere". An
+# earlier draft guessed with a fallback chain and would have pushed one
+# account's day to another member - so the map is explicit, and it mirrors
+# BOT_OF in owl_app_server.py. Add an account there, add it here.
+DAY_STATE_OF = {
+    "kino": "bos_state_kino.json",
+    "bos": "bos_state.json",
+    "u224016179": "bos_state_valere.json",
+    "demo": "bos_state_demo.json",
+    "infinity": "bos_state_infinity.json",
+    "expenses": "bos_state_expenses.json",
+}
+
+
+def maybe_day_close():
+    """One push per account per day, the moment the robot stops for the day.
+
+    Owner 2026-10-01: silence and a dead bot look identical on a phone, so
+    the end of a good day should say so. `day_capped` is the bot's own
+    flag - set when the daily limit actually refused an entry, cleared at
+    the UTC day roll - so this fires on the event the robot acted on, with
+    the adaptive cap included rather than the package number.
+    """
+    try:
+        subs = json.load(open(SUBS))
+    except Exception:
+        return
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    try:
+        mark = json.load(open(DAYDONE_MARK, encoding="utf-8"))
+    except Exception:
+        mark = {}
+    if mark.get("day") != day:
+        mark = {"day": day, "sent": []}
+    changed = False
+    for uid in subs:
+        if uid in mark["sent"]:
+            continue
+        name = DAY_STATE_OF.get(uid)
+        if not name:
+            continue          # no structure bot on this account
+        f = os.path.join(DIR, name)
+        try:
+            st = json.load(open(f, encoding="utf-8"))
+        except Exception:
+            continue
+        if st.get("day_key") != day or not st.get("day_capped"):
+            continue
+        if st.get("killed"):
+            continue          # the kill has its own alarm; not a good day
+        pnl = float(st.get("day_pnl") or 0.0)
+        if lang_of(uid) == "en":
+            title = f"\u2705 Day complete \u00b7 {pnl:+.2f} $"
+            body = ("Target reached \u2014 the robot is done for today. "
+                    "It starts again at 00:00 UTC.")
+        else:
+            title = f"\u2705 Journ\u00e9e termin\u00e9e \u00b7 {pnl:+.2f} $"
+            body = ("Objectif atteint \u2014 le robot a fini sa journ\u00e9e. "
+                    "\u00c0 demain \u00e0 00:00 UTC.")
+        send_all(title, body, kind="batch", only_uid=uid)
+        mark["sent"].append(uid)
+        changed = True
+    if changed:
+        try:
+            json.dump(mark, open(DAYDONE_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+
+
 def main():
     mylog("notifier started")
     # two live accounts (2026-09-07): Pro (flagship, no prefix) and
@@ -995,6 +1067,7 @@ def main():
             maybe_demo_reset()
             maybe_renewals()
             maybe_waitlist()
+            maybe_day_close()
             market_memory_tick()
         if _bf is not None:
             while True:
