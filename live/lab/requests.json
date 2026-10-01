@@ -9,10 +9,11 @@
    "what_en": "Today's « take nothing when the market is nervous » dial (nerv_gate) blocks ALL new trades as soon as the market is nervous, healthy account or not. We would like a dial that only blocks trades taken AFTER a loss, AND only if the market is nervous at the same time - not the normal trades of a healthy account.",
    "why_fr": "Chez Valère (39 trades réels) : les 4 pertes arrivées alors que le compte était déjà dans le rouge avaient TOUTES un marché nerveux au même moment (100%). Mais le frein nerv_gate testé seul coûte trop cher (-$50 sur le passé) car il coupe aussi de bons trades pris avec un compte sain. Le vrai signal semble être la combinaison des deux états, pas la nervosité seule - et le menu actuel ne permet pas de tester juste ça.",
    "why_en": "On Valère (39 real trades): all 4 losses that happened while the account was already in the red ALSO had a nervous market at the same time (100%). But the nerv_gate brake tested alone costs too much (-$50 on the past) because it also cuts good trades taken by a healthy account. The real signal seems to be the combination of both states, not nervousness alone - and the current menu cannot test just that.",
-   "status": "built",
+   "status": "retired",
    "key": "debt_nerv_gate",
    "built": "2026-09-29",
-   "c_nights": 2
+   "c_nights": 3,
+   "retired": "2026-10-01"
   },
   {
    "id": "cap_fit_target",
@@ -23,6 +24,17 @@
    "what_en": "A dial that, on an account with a daily profit cap, shrinks one trade's target to the amount still missing to reach that cap, never above the normal target. Example: cap $3.78, already +$2.50 today, the target aims for $1.28, not $2.80.",
    "why_fr": "Depuis la correction du moteur, les deux formes de compte tirent en sens opposé : viser plus gros (0,9 ou 1,0 fois le risque) gagne +47 $ sans plafond et perd chez Valère (-7 à -52 $). Avec plafond, la journée est une course vers 3,78 $ : tout gain au-delà est jeté, et une cible plus courte gagne plus souvent. Le menu ne peut pas viser le reste du plafond.",
    "why_en": "Since the engine was corrected, the two account shapes pull opposite ways: aiming bigger (0.9 or 1.0 times the risk) earns +$47 without a cap and loses on Valère (-$7 to -$52). With a cap, the day is a race to $3.78: any gain beyond it is thrown away, and a shorter target wins more often. The menu cannot aim for what is left of the cap.",
+   "status": "open"
+  },
+  {
+   "id": "chase_dir",
+   "date": "2026-10-01",
+   "title_fr": "Ne pas courir après le prix : refuser une entrée quand la dernière heure est déjà partie dans le sens du trade",
+   "title_en": "Do not chase the price: refuse an entry when the last hour already moved the trade's way",
+   "what_fr": "Un dial (en points) qui refuse une entrée quand le prix a déjà monté de plus de X points dans la dernière heure pour un achat (ou baissé de plus de X pour une vente). Le frein « envolée » actuel (ext_pts) ne regarde que la taille du mouvement, pas son sens : il coupe aussi les entrées après un recul.",
+   "what_en": "A dial (in points) that refuses an entry when the price already rose more than X points in the last hour for a buy (or fell more than X for a sell). Today's 'run' brake (ext_pts) only looks at the size of the move, not its direction: it also cuts entries made after a pullback.",
+   "why_fr": "Sur les 45 vrais trades de Valère : aucune des 15 pertes n'est entrée après une heure partie contre le trade, contre 5 gains sur 30 (17 %). La taille du mouvement, elle, ne sépare rien (127 contre 155 points). C'est peu de trades, mais le sens semble compter plus que la taille, et le menu ne peut pas le tester.",
+   "why_en": "On Valère's 45 real trades: none of the 15 losses entered after an hour that went against the trade, versus 5 of 30 wins (17%). The size of the move separates nothing (127 versus 155 points). Few trades, but the direction seems to matter more than the size, and the menu cannot test it.",
    "status": "open"
   }
  ]
