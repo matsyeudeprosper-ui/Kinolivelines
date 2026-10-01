@@ -130,8 +130,14 @@ await paint();
 const off = await ev(LABELS) || [];
 const isInner = (t) => /int /i.test(t) || /petite structure/i.test(t)
                     || /inner/i.test(t);
-const mainOn = on.filter(t => !isInner(t)).sort();
-const mainOff = off.filter(t => !isInner(t)).sort();
+// An open trade's floating P&L is painted into its labels and ticks while
+// the test runs, so comparing the raw strings reports a difference that has
+// nothing to do with the switch. It did, once. Compare with the money
+// blanked out: the switch must not add or remove a label, and the live
+// number is not the switch's business.
+const noMoney = (t) => t.replace(/[-+−]?\$[0-9.,]+/g, "$");
+const mainOn = [...new Set(on.filter(t => !isInner(t)).map(noMoney))].sort();
+const mainOff = [...new Set(off.filter(t => !isInner(t)).map(noMoney))].sort();
 if (mainOn.length === 0 && mainOff.length === 0)
   skip("the switch leaves every non-inner label alone",
        "no level labels in view right now - quiet market, nothing to compare");
@@ -144,7 +150,44 @@ check("the switch does remove the inner labels when there are any",
       on.some(isInner) ? off.filter(isInner).join(" | ")
                        : "none in view right now");
 await ev("localStorage.setItem('owlIntMarks','1'); 1");
+
+// 2026-10-01: "dernier BOS" showed the last MARK, and marks hold only the
+// breaks that TURN the trend - so after a continuation break the glowing
+// protected dot moved and the label did not. It was 27 days stale on H4.
+// The invariant: if the label is painted, its number is the newest break.
+//
+// The annotated structure is gated on FULL, which is the owner's view, so
+// the check has to ask for it - run as a plain member it finds no label at
+// all and skips, which is how the first version of this check quietly
+// tested nothing.
+await ev("try{localStorage.setItem('owl_adm','1');}catch(e){} location.reload(); 1");
+await sleep(9000);
+await ev(SPY);
+check("the annotated structure view is on for this check",
+      (await ev("FULL")) === true);
+await ev("window.__labels=[]; 1"); await paint();
+const painted = (await ev(LABELS) || []).filter(t => /(dernier|last) BOS/i.test(t));
+const newest = await ev(
+  "(function(){var b=(D&&D.breaks||[]).slice(-1)[0];return b?b[2]:null;})()");
+const lastMark = await ev("(function(){var m=(D&&D.marks||[])"
+  + ".filter(function(x){return x[2]==='bos';}).slice(-1)[0];"
+  + "return m?m[1]:null;})()");
+const differ = newest !== null && lastMark !== null
+            && Math.round(newest) !== Math.round(lastMark);
+if (!painted.length || newest === null)
+  skip("\"dernier BOS\" shows the newest break",
+       newest === null ? "no break in the window yet"
+                       : "no label in view - off-screen or merged");
+else
+  check("\"dernier BOS\" shows the newest break",
+        painted.some(t => t.indexOf(String(Math.round(newest))) >= 0),
+        `painted [${painted.join(" | ")}]  newest break ${newest}`
+        + `  last mark ${lastMark}`
+        + (differ ? "  (they differ now, so this check has teeth)" : ""));
 await shot("smoke_chart");
+// back to the member view for everything below
+await ev("try{localStorage.removeItem('owl_adm');}catch(e){} location.reload(); 1");
+await sleep(8000);
 
 // the two-timeframe panel still opens from the menu
 await ev("document.getElementById('tools').click(); 1"); await sleep(600);

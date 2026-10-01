@@ -474,14 +474,14 @@ def engine(kept, snap=None, brk_out=None):
                     if vis:
                         dots.append(nd)
                     if brk_out is not None:
-                        brk_out.append((t, 1))
+                        brk_out.append((t, 1, hi_v))
                     prot_lo = nd
                     up_st = dn_st = 0
                 elif trend == 1:
                     if vis:
                         dots.append(nd)
                     if brk_out is not None:
-                        brk_out.append((t, 1))
+                        brk_out.append((t, 1, hi_v))
                     prot_lo = nd
                     choch = 0    # new BOS up repairs a pending choc
                 elif trend == 0:
@@ -528,14 +528,14 @@ def engine(kept, snap=None, brk_out=None):
                     if vis:
                         dots.append(nd)
                     if brk_out is not None:
-                        brk_out.append((t, -1))
+                        brk_out.append((t, -1, lo_v))
                     prot_hi = nd
                     up_st = dn_st = 0
                 elif trend == -1:
                     if vis:
                         dots.append(nd)
                     if brk_out is not None:
-                        brk_out.append((t, -1))
+                        brk_out.append((t, -1, lo_v))
                     prot_hi = nd
                     choch = 0    # new BOS down repairs a pending choc
                 elif trend == 0:
@@ -734,8 +734,9 @@ def htf_tick():
             kept = build(R)
             if len(kept) < 20:
                 continue
+            _hb = []
             (dots, marks, trend, choch, nxt, inv, nxt_t, inv_t,
-             _d, flp, flp_t, _fd) = engine(kept)
+             _d, flp, flp_t, _fd) = engine(kept, brk_out=_hb)
             _pv = _HTF_SINCE.get(name)
             if _pv is None:
                 _old = (_prev.get("tf") or {}).get(name) or {}
@@ -773,6 +774,8 @@ def htf_tick():
                 "since_exact": bool(_pv.get("exact")),
                 "dots": [d for d in dots if d[0] >= t0],
                 "marks": [m for m in marks if m[0] >= t0],
+                "breaks": [[b[0], b[1], round(b[2], 2)] for b in _hb
+                           if len(b) > 2 and b[0] >= t0][-12:],
                 "trend": trend, "choch": choch,
                 "next_bos": round(nxt, 2) if nxt else None,
                 "invalid": round(inv, 2) if inv else None,
@@ -904,6 +907,14 @@ def main():
                      "raw": len(R) - 1, "kept": len(kept),
                      "candles": win, "live": live, "dots": dots,
                      "marks": marks, "trend": trend, "choch": choch,
+                     # 2026-10-01 (owner): EVERY break, continuations
+                     # included, as [time, direction, level broken].
+                     # `marks` deliberately stays flips-only because
+                     # moves_2h counts it and the movement brake reads
+                     # that - see review/MOVEMENT_BRAKE.md.
+                     "breaks": [[b[0], b[1], round(b[2], 2)]
+                                for b in _mbrk
+                                if len(b) > 2 and b[0] >= t0][-12:],
                      "next_bos": round(nxt, 2) if nxt else None,
                      "invalid": round(inv, 2) if inv else None,
                      "int_trend": i_trend,

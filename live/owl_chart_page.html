@@ -652,7 +652,9 @@ function htDraw(){
     g.beginPath();g.roundRect(3,y-6.5,w5,13,6);g.fill();
     g.strokeStyle=c4;g.globalAlpha=.4;g.lineWidth=1;g.stroke();
     g.globalAlpha=.9;g.fillStyle=c4;g.fillText(t5,7.5,y+2.6);g.globalAlpha=1;}}}
- {const lb=(d.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
+ {const _bk=(d.breaks||[]).slice(-1)[0];
+  const lb=_bk?[_bk[0],_bk[2],'bos',_bk[1]]
+             :(d.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
   if(lb){const y=py(lb[1]);
    if(!inView(y)){
     // docked at the edge it came from, with its price and how far away
@@ -1888,7 +1890,13 @@ function draw(){
     ctx.strokeStyle=col;ctx.globalAlpha=.42;ctx.lineWidth=1;ctx.stroke();
     ctx.globalAlpha=.92;ctx.fillStyle=col;ctx.fillText(lab,9,ly4+3.5);
     ctx.restore();}}}
- {const lb=(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
+ // 2026-10-01: `breaks` is EVERY break including continuations;
+ // `marks` is flips only, which is why this label used to go stale
+ // while a new glowing dot appeared. Falls back to marks so an older
+ // feed file still shows something rather than nothing.
+ {const _bk=(D.breaks||[]).slice(-1)[0];
+  const lb=_bk?[_bk[0],_bk[2],'bos',_bk[1]]
+             :(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
   if(lb&&!dupLvl(lb[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lb[1],up=lb[3]===1,col=up?'#2ecc71':'#ff5c5c';
    const lab=(CL?'last BOS ':'dernier BOS ')+v.toFixed(0);
