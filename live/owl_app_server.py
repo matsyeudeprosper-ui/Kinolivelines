@@ -629,6 +629,83 @@ def bot_blocked(log):
     return None
 
 
+def recap_yesterday(uid, days, trades):
+    """What the robot did on the UTC day that just closed.
+
+    Owner 2026-10-01: a recap on the first open of a new day. Every number
+    here already existed, scattered over three tabs - the day's money in
+    the Nid, the trades in the history, and the refusals only in a log
+    file nobody reads.
+    """
+    y = datetime.now(timezone.utc) - timedelta(days=1)
+    key = y.strftime("%Y-%m-%d")
+    short = y.strftime("%d/%m")
+    net = None
+    for row in (days or []):
+        # the worker writes "jeu 01/10", so match the date part only
+        if isinstance(row, dict) and str(row.get("d", "")).endswith(short):
+            net = row.get("p")
+            break
+    if net is None:
+        return None
+    n = sum(1 for t in (trades or [])
+            if str(t.get("w", "")).startswith(short))
+    return {"day": short, "net": round(float(net), 2), "n": n,
+            "why": why_idle(uid, key)}
+
+
+# 2026-10-01 (owner): the multi-timeframe payoff. He picked it knowing it
+# is not measurable yet, so it is GATED rather than guessed - a verdict
+# only once the sample can carry one, a countdown before that. Two cells of
+# four trades would make a headline that means nothing, and this desk has
+# been wrong twice this week by believing a first half.
+HTF_MIN_N = 20        # trades carrying a snapshot
+HTF_MIN_CELL = 8      # ... and at least this many on each side of the split
+
+
+def htf_payoff(uid):
+    """Did the trades the big timeframes agreed with actually do better?"""
+    m = BOT_OF.get(uid)
+    if not m or not m[1].startswith("bos_state"):
+        return None
+    import csv as _csv
+    sfx = m[1][len("bos_state"):-len(".json")]
+    f = os.path.join(DIR, "bos_journal" + sfx + ".csv")
+    cells = {"all": [], "some": []}
+    try:
+        with open(f, newline="", encoding="utf-8", errors="replace") as fh:
+            for r in _csv.DictReader(fh):
+                try:
+                    v = json.loads(r.get("htf_entry") or "")
+                    pnl = float(r.get("profit_usd"))
+                except Exception:
+                    continue
+                if not isinstance(v, dict):
+                    continue
+                d = 1 if (r.get("direction") == "BUY") else -1
+                ts = [(v.get(k) or {}).get("t") for k in ("m15", "h1", "h4")]
+                ts = [t for t in ts if t is not None]
+                if len(ts) < 3:
+                    continue
+                with_me = sum(1 for t in ts if t == d)
+                cells["all" if with_me == 3 else "some"].append(pnl)
+    except Exception:
+        return None
+    n = len(cells["all"]) + len(cells["some"])
+    if (n < HTF_MIN_N
+            or min(len(cells["all"]), len(cells["some"])) < HTF_MIN_CELL):
+        return {"ready": False, "n": n, "need": HTF_MIN_N,
+                "all_n": len(cells["all"]), "some_n": len(cells["some"]),
+                "need_cell": HTF_MIN_CELL}
+
+    def side(v):
+        return {"n": len(v),
+                "win": round(sum(1 for p in v if p > 0) / len(v) * 100, 1),
+                "avg": round(sum(v) / len(v), 2)}
+    return {"ready": True, "n": n,
+            "all": side(cells["all"]), "some": side(cells["some"])}
+
+
 def htf_of(uid):
     """The multi-timeframe snapshot per trade, keyed by position id.
 
@@ -1132,10 +1209,14 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .nchip-b{background:rgba(255,92,92,.1);color:#ff8c8c;
  border-color:rgba(255,92,92,.32)}
 .nr-a{display:flex;gap:5px;margin-left:auto}
+/* 2026-10-01 (owner): 44px is the accepted minimum for a thumb, and one
+   of these four closes every position on an account. It asks for a
+   password and shows a dry run first, so a mis-tap is not a disaster -
+   but it should not be easy to hit by accident either. */
 .nact{border:1px solid var(--border);background:transparent;
- color:var(--muted);border-radius:9px;padding:6px 9px;
+ color:var(--muted);border-radius:10px;padding:0 10px;
  text-decoration:none;display:inline-flex;align-items:center;
- justify-content:center;min-width:34px}
+ justify-content:center;min-width:44px;min-height:44px}
 .nact .ic{vertical-align:0}
 .nact:active{background:var(--surface3)}
 .nact-b{border-color:rgba(255,92,92,.38);color:#ff8c8c}
@@ -1563,6 +1644,18 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <!-- 2026-10-01 (owner): "Pourquoi rien aujourd'hui". The robot has
      always written the reason in its log and the app never showed it, so a
      quiet day and a broken day looked the same from the phone. -->
+<!-- 2026-10-01 (owner): the day that just closed, once per day. -->
+<div class="panel" id="recap" style="display:none;margin-top:26px;
+ border-color:rgba(59,130,246,.3)">
+ <div style="display:flex;align-items:flex-start;gap:12px">
+  <div class="sic" style="color:var(--accent-soft)"><svg class="ic"><use href="#i-moon"/></svg></div>
+  <div style="flex:1;min-width:0"><b id="recap-t" style="font-size:1rem"></b>
+   <div id="recap-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:3px"></div></div>
+  <button id="recap-x" onclick="recapHide()" aria-label="Fermer"
+   style="flex:none;border:0;background:transparent;color:var(--muted);
+   min-width:40px;min-height:40px;font-size:1rem">&times;</button>
+ </div>
+</div>
 <div class="panel" id="whyidle" style="display:none;margin-top:26px">
  <div style="display:flex;align-items:center;gap:12px">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
@@ -1917,6 +2010,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <button onclick="goDay()" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);
   border-radius:12px;padding:9px 14px;font-size:.82rem;font-weight:700;white-space:nowrap">Voir ce jour</button>
 </div>
+<!-- 2026-10-01 (owner): did the big timeframes agreeing actually pay?
+     Recording began today, so this shows a countdown until the sample can
+     answer, and the answer the moment it can. -->
+<div class="panel" id="tfpay" style="display:none;margin-bottom:12px"></div>
 <div class="panel" id="hist">
 <div class="row"><span class="skel" style="width:42%">&nbsp;</span>
 <span class="skel" style="width:18%">&nbsp;</span></div>
@@ -4344,12 +4441,90 @@ function acctRules(d){
   (en?'Daily target: ':'Objectif du jour : ')+'$'+Number(r.day_cap).toFixed(2),
   en?'Once reached the robot stops opening until the next day.'
     :'Atteint, le robot n’ouvre plus jusqu’au lendemain.']);
+ // 2026-10-01 (owner): the panel should say EVERYTHING the robot
+ // will do with the money, not the half that happens to be new
+ if(r.lot)rows.push(['i-chart',
+  (en?'Size per trade: ':'Taille par trade : ')+Number(r.lot).toFixed(2)+' lot',
+  en?'It grows with the balance unless you switch that off in Settings.'
+    :'Elle suit le solde, sauf si vous la désactivez dans Réglages.']);
+ if(r.kill)rows.push(['i-stop',
+  // the kill line is negative, so the sign goes BEFORE the dollar:
+  // "$-60.00" is not how money is written
+  (en?'Hard stop: ':'Arrêt total : ')+(r.kill<0?'-$':'$')
+  +Math.abs(Number(r.kill)).toFixed(2),
+  en?'If the robot is ever this far down overall, it closes everything and stops for good.'
+    :'Si le robot descend jusque-là au total, il ferme tout et s’arrête définitivement.']);
  if(!rows.length){el.style.display='none';if(sec)sec.style.display='none';return;}
  setH(el,rows.map(x=>'<div class="srow" style="cursor:default">'+
   '<div class="sic"><svg class="ic"><use href="#'+x[0]+'"/></svg></div>'+
   '<div style="flex:1"><b>'+x[1]+'</b><div class="ssub">'+x[2]+'</div></div>'+
   '</div>').join(''));
  el.style.display='block';if(sec)sec.style.display='block';
+}
+// 2026-10-01 (owner): "pendant votre nuit" - the day that just closed,
+// once per UTC day. Everything in it already existed and was spread over
+// three tabs; the refusals existed only in a log file nobody reads.
+function recapHide(){
+ const el=document.getElementById('recap');if(el)el.style.display='none';
+ try{localStorage.setItem('owlRecap:'+B,(d=>d)(new Date().toISOString().slice(0,10)));}catch(e){}
+}
+function showRecap(d){
+ const el=document.getElementById('recap');if(!el)return;
+ const r=d.recap;const en=LANG()==='en';
+ if(!r||MAN()||d.public){el.style.display='none';return;}
+ let seen=null;try{seen=localStorage.getItem('owlRecap:'+B);}catch(e){}
+ const today=new Date().toISOString().slice(0,10);
+ if(seen===today){el.style.display='none';return;}
+ document.getElementById('recap-t').textContent=
+  (en?'While you slept':'Pendant votre nuit');
+ const money=(r.net>=0?'+$':'-$')+Math.abs(r.net).toFixed(2);
+ let txt=(en?'Yesterday ('+r.day+'): ':'Hier ('+r.day+') : ')+money+
+  (r.n?(en?' over '+r.n+' trade'+(r.n>1?'s':''):' en '+r.n+' trade'+(r.n>1?'s':'')):'')+'.';
+ const w=r.why||{};
+ if((w.why||[]).length&&WHYTXT[w.why[0].k])
+  txt+=(en?' It also stood aside '+w.why[0].n+' time'+(w.why[0].n>1?'s':'')+': '
+          :' Il s\u2019est aussi abstenu '+w.why[0].n+' fois : ')
+      +WHYTXT[w.why[0].k][en?1:0]+'.';
+ document.getElementById('recap-s').textContent=txt;
+ el.style.display='block';
+}
+// 2026-10-01 (owner): the multi-timeframe payoff. Until the sample can
+// carry a verdict this shows how far off it is, because a win rate off
+// four trades is a number that reverses itself.
+function tfPayoff(d){
+ const el=document.getElementById('tfpay');if(!el)return;
+ const p=d.htf_payoff;const en=LANG()==='en';
+ if(!p||MAN()||d.public){el.style.display='none';return;}
+ const ttl=en?'When the big timeframes agreed'
+             :'Quand les grandes unit\u00e9s \u00e9taient d\u2019accord';
+ if(!p.ready){
+  const left=Math.max(0,(p.need||0)-(p.n||0));
+  setH(el,'<div class="lbl">'+ttl+'</div>'+
+   '<div style="font-size:.84rem;color:var(--muted2);line-height:1.5;'+
+   'margin-top:6px">'+(en
+    ?('We started recording the big picture on every trade on 1 October. '+
+      'With '+p.n+' so far, it is too early to say - '+left+' more to go, '+
+      'and at least '+p.need_cell+' on each side.')
+    :('On enregistre la grande image \u00e0 chaque trade depuis le 1er '+
+      'octobre. Avec '+p.n+' pour l\u2019instant, c\u2019est trop t\u00f4t pour '+
+      'le dire \u2014 encore '+left+', et au moins '+p.need_cell+' de chaque '+
+      'c\u00f4t\u00e9.'))+'</div>');
+  el.style.display='block';return;
+ }
+ const row=(lab,c)=>'<div class="row" style="padding:9px 0"><span style="'+
+  'color:var(--muted2);font-size:.86rem">'+lab+'</span><span><b>'+
+  c.win.toFixed(0)+'%</b> <span style="color:var(--muted);font-size:.78rem">'+
+  (en?'won, ':'gagn\u00e9s, ')+(c.avg>=0?'+$':'-$')+Math.abs(c.avg).toFixed(2)+
+  (en?' each (':' chacun (')+c.n+')</span></span></div>';
+ setH(el,'<div class="lbl">'+ttl+'</div>'+
+  row(en?'All three agreed':'Les trois d\u2019accord',p.all)+
+  row(en?'They did not':'Pas toutes',p.some)+
+  '<div style="font-size:.76rem;color:var(--muted);line-height:1.45;'+
+  'margin-top:4px">'+(en?'From '+p.n+' trades with a recorded snapshot. '+
+   'Past results are not a promise.':'Sur '+p.n+' trades avec une photo '+
+   'enregistr\u00e9e. Les r\u00e9sultats pass\u00e9s ne sont pas une promesse.')+
+  '</div>');
+ el.style.display='block';
 }
 function whyIdle(d){
  const el=document.getElementById('whyidle');if(!el)return;
@@ -6337,7 +6512,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -8196,7 +8371,20 @@ def user_stats(u, admin_override=False):
             "package": _p.get("package"),
             "risk_fit_pct": _p.get("risk_fit_pct") or 0,
             "day_cap": _p.get("day_cap"),
+            # 2026-10-01 (owner): one panel that says everything the robot
+            # will ever do with the money, not half of it
+            "lot": _p.get("base_lot"),
+            "kill": _p.get("kill_net"),
         })(PKG.for_account(u["id"]))
+        try:
+            d["recap"] = recap_yesterday(u["id"], d.get("days"),
+                                         d.get("trades"))
+        except Exception:
+            d["recap"] = None
+        try:
+            d["htf_payoff"] = htf_payoff(u["id"])
+        except Exception:
+            d["htf_payoff"] = None
         d["era_start"] = u.get("era_start")
         d["contact_url"] = nest_config().get("contact_url") or ""
         d["contact_label"] = nest_config().get("contact_label") or ""
