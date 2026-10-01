@@ -1021,7 +1021,7 @@ body{background:var(--bg);color:var(--text);
  -webkit-backdrop-filter:blur(14px);
  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
  padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
-.tb{flex:1;background:none;border:0;color:var(--muted);font-size:.72rem;
+.tb{flex:1;background:none;border:0;color:var(--muted);font-size:.76rem;
  font-weight:600;display:flex;flex-direction:column;min-height:48px;
  align-items:center;justify-content:center;gap:4px;padding:6px 0;
  border-radius:12px;cursor:pointer;transition:color .15s,background .15s}
@@ -1036,7 +1036,7 @@ body{background:var(--bg);color:var(--text);
  color:var(--accent-soft);display:flex;align-items:center;
  justify-content:center;font-size:1.15rem;flex:none}
 .chv{color:var(--muted);width:18px;height:18px}
-.ssub{font-size:.78rem;color:var(--muted);margin-top:2px}
+.ssub{font-size:.82rem;color:var(--muted);margin-top:2px}
 .hero{background:linear-gradient(165deg,var(--hero1) 0%,var(--hero2) 100%);
  color:#fff;padding:20px 22px 40px;border-radius:0 0 28px 28px;
  text-align:center;position:relative;overflow:hidden;
@@ -1128,7 +1128,9 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 /* 2026-10-01 (owner): a whole hero-sized row that tells the member
    nothing they do not know. Kept - it is the only warm line on the
    screen - but it stops costing 22px of the first fold. */
-.hello{color:rgba(219,233,247,.55);font-size:.78rem;margin-top:12px;
+/* back to its old size - the tighter margin stays, the text does
+   not need to be smaller to save that space */
+.hello{color:rgba(219,233,247,.6);font-size:.86rem;margin-top:16px;
  letter-spacing:.01em}
 .money{font-size:3.7rem;font-weight:800;margin-top:6px;
  letter-spacing:-2px;line-height:1.05}
@@ -1177,14 +1179,20 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .empty{text-align:center;padding:26px 10px;color:var(--muted)}
 .empty i{font-style:normal;font-size:1.7rem;display:block}
 .empty p{font-size:.85rem;margin-top:7px}
-.lbl{font-size:.72rem;color:var(--muted2);text-transform:uppercase;
+.lbl{font-size:.78rem;color:var(--muted2);text-transform:uppercase;
  letter-spacing:.07em;font-weight:600}
 .val{font-size:1.45rem;font-weight:800;margin-top:8px;
  white-space:nowrap;letter-spacing:-.3px}
-.sub{font-size:.74rem;color:var(--muted);margin-top:6px}
+.sub{font-size:.8rem;color:var(--muted);margin-top:6px}
 .pos{color:var(--up)}.neg{color:var(--down)}.neu{color:var(--text)}
+/* 2026-10-01 (owner): "the text is so little". These were already
+   under a sane floor - .sec 10.9px, .lbl 11.5px, .sub 11.8px, .tb
+   11.5px - and once the changelog and two tiles came off the home
+   screen, three times as much of that smallest text landed in one
+   screenful. Nothing had shrunk; a lot more of it became visible.
+   ~12.2px is the floor now. */
 .sec{margin:26px 8px 10px;color:var(--muted);font-weight:700;
- font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;
+ font-size:.76rem;text-transform:uppercase;letter-spacing:.09em;
  text-align:left}
 .sec .hint{opacity:.7;letter-spacing:.02em;text-transform:none;
  font-weight:500}
@@ -1205,10 +1213,10 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .nr-bal{white-space:nowrap;font-weight:700;font-size:.98rem;
  color:var(--text2)}
 .nr-mt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
- white-space:nowrap;font-size:.73rem;color:var(--muted)}
+ white-space:nowrap;font-size:.78rem;color:var(--muted)}
 .nr-td{white-space:nowrap;font-size:.8rem;font-weight:700}
 .nr-b{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px}
-.nchip{font-size:.69rem;padding:3px 9px;border-radius:99px;
+.nchip{font-size:.74rem;padding:4px 10px;border-radius:99px;
  background:var(--surface3);color:var(--muted2);
  border:1px solid var(--border);white-space:nowrap}
 .nchip-ok{background:rgba(46,204,113,.12);color:var(--up-soft);
@@ -1300,6 +1308,12 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 #tourdots{margin-top:12px;display:flex;align-items:center}
 .tourhl{position:relative;z-index:52;border-radius:16px;
  box-shadow:0 0 0 3px #7fb0ff,0 0 28px rgba(59,130,246,.65)!important}
+/* 2026-10-01: these were a 24px pill with a transparent 44px overlay.
+   The overlay did not hit-test reliably - a press 8px above the pill
+   still missed - and a target the eye cannot find is worse than one that
+   is honestly the right size. They grow instead. */
+.cvc{position:relative;min-height:40px;font-size:.78rem!important;
+ padding:9px 14px!important}
 .tb,.srow,.shbtn,#sharebtn,#inst,.cvc,#actbtn,#invbtn{transition:transform .12s ease,
  background .15s,color .15s,border-color .15s}
 .tb:active,.srow:active,.shbtn:active,#sharebtn:active,#inst:active,.cvc:active,
@@ -1507,6 +1521,15 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #ptr.on{transform:translate(-50%,0)}
 .gbar{height:8px;border-radius:99px;background:var(--surface3);overflow:hidden;margin-top:12px}
 .gbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up));transition:width .6s}
+/* 2026-10-01 (owner): eight controls on the home screen measured under
+   44px - the header pills at 28, the chart range chips at 24, the ledger
+   info at 26. The Nid buttons were raised this morning; these are the
+   same standard. What grows is the HIT AREA, through a transparent
+   overlay, because a 44px-tall "7 j" chip would look absurd. The pills
+   keep their size and the thumb gets its target. */
+.tap44{position:relative}
+.tap44::after{content:"";position:absolute;left:50%;top:50%;
+ transform:translate(-50%,-50%);width:100%;height:44px;min-width:44px}
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
 .hl{animation:hlp 1.6s ease-in-out 2}
 @keyframes hlp{0%,100%{box-shadow:var(--hl)}50%{box-shadow:0 0 0 2px var(--accent),0 0 28px rgba(59,130,246,.45)}}
@@ -1531,9 +1554,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:6px;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
  border-radius:99px;padding:5px 10px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
-<button id="hbell" onclick="inboxSheet()" title="Messages" aria-label="Messages" style="position:relative;line-height:1;display:inline-flex;
+<button id="hbell" class="tap44" onclick="inboxSheet()" title="Messages" aria-label="Messages" style="position:relative;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-bell"/></svg><span id="hbell-n" style="display:none;position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;border-radius:99px;background:var(--down);color:#fff;font-size:.6rem;font-weight:800;align-items:center;justify-content:center;padding:0 4px;border:2px solid #0e1a2b"></span></button>
-<a id="chartlink" href="#" title="Graphique en direct" aria-label="Graphique en direct"
+<a id="chartlink" class="tap44" href="#" title="Graphique en direct" aria-label="Graphique en direct"
  style="text-decoration:none;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);
  border:1px solid rgba(255,255,255,.14);
@@ -1543,7 +1566,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
  line-height:1;display:inline-flex;align-items:center;
  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
- border-radius:99px;padding:5px 9px" title="Sortir"
+ border-radius:99px;padding:5px 9px" class="tap44" title="Sortir"
  aria-label="Sortir"><svg class="ic ic-s"><use href="#i-exit"/></svg></a></span></div>
 <!-- 2026-10-01 (owner): the wave was the last emoji in the hero. -->
 <div class="hello" id="hello">Bonjour %%NAME%%</div>
@@ -1754,7 +1777,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div id="ledcard" style="display:none;position:relative;margin-top:12px;
  background:var(--surface2);border:1px solid var(--border2);border-radius:16px;
  padding:14px;color:var(--text2);font-size:.92rem;line-height:1.5">
- <button onclick="ledInfo()" aria-label="explications" style="
+ <button onclick="ledInfo()" aria-label="explications" class="tap44" style="
   position:absolute;right:10px;top:10px;width:26px;height:26px;
   border-radius:50%;border:1px solid rgba(127,179,224,.4);
   background:rgba(127,179,224,.12);color:var(--accent-soft);font-size:.8rem;
@@ -1863,6 +1886,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  style="width:100%;height:80px;display:block"></svg>
  <!-- 2026-10-01 (owner): the worst dip, next to the line that shows it,
       and only on the 7-day view it actually measures. -->
+ <!-- 2026-10-01 (owner): the curve said how much and never WHEN. -->
+ <div id="spkdates" style="display:none;justify-content:space-between;
+  font-size:.74rem;color:var(--muted);margin-top:4px"></div>
  <div id="ddcap" style="display:none;font-size:.78rem;color:var(--muted2);
   margin-top:8px"></div></div>
 </div>
@@ -3528,6 +3554,8 @@ function drawSpark(){
   :(window._cvz==='30'&&window._c30&&window._c30.length>1)?window._c30:(window._c7||[]);
  const el=document.getElementById('spark');
  if(c.length<2){
+  // no curve, so no dates to put under it
+  {const sd=document.getElementById('spkdates');if(sd)sd.style.display='none';}
   el.innerHTML='<text x="150" y="44" text-anchor="middle" style="fill:var(--muted)" '+
    'font-size="11">La courbe se dessinera apr\\u00e8s quelques trades</text>';
   return;}
@@ -3541,6 +3569,15 @@ function drawSpark(){
    c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
   dp+=' C'+c1x.toFixed(1)+','+c1y.toFixed(1)+' '+c2x.toFixed(1)+','+
    c2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);}
+ // 2026-10-01 (owner): the dates the curve actually covers. Derived
+ // from its own length - one point per day - so an account younger than
+ // the selected range still gets true dates instead of a flattering one.
+ {const sd=document.getElementById('spkdates');
+  if(sd){const f=n=>{const x=new Date();x.setDate(x.getDate()-n);
+    return String(x.getDate()).padStart(2,'0')+'/'+
+      String(x.getMonth()+1).padStart(2,'0');};
+   sd.innerHTML='<span>'+f(c.length-1)+'</span><span>'+f(0)+'</span>';
+   sd.style.display='flex';}}
  const last=c[c.length-1],col=last>=0?'#2ecc71':'#ff5c5c';
  const y0=Y(0).toFixed(1),ex=pts[pts.length-1][0].toFixed(1),
   ey=pts[pts.length-1][1].toFixed(1);
@@ -5615,9 +5652,14 @@ function newsCard(d){const el=document.getElementById('newscard');if(!el)return;
  // answers "how am I doing".
  const _nh=items.map(n=>'<div style="display:flex;gap:8px;margin-top:10px"><span style="color:var(--accent-soft);flex:none">\u2022</span><span>'+(en?n.en:n.fr)+'</span></div>').join('');
  setH(document.getElementById('news-list'),_nh);
+ // 2026-10-01 (owner): "since your last visit" is wrong for somebody
+ // who has never visited - and the absence of the key says exactly that.
  document.getElementById('news-s').textContent=
-  (en?items.length+' new thing'+(items.length>1?'s':'')+' since your last visit'
-     :items.length+' nouveaut\u00e9'+(items.length>1?'s':'')+' depuis votre derni\u00e8re visite');
+  (seen===''
+   ?(en?items.length+' thing'+(items.length>1?'s':'')+' this app can do'
+       :items.length+' choses que l\u2019app sait faire')
+   :(en?items.length+' new thing'+(items.length>1?'s':'')+' since your last visit'
+       :items.length+' nouveaut\u00e9'+(items.length>1?'s':'')+' depuis votre derni\u00e8re visite'));
  const ob=document.getElementById('news-open');
  ob.textContent=en?'See them':'Les voir';
  ob.onclick=()=>{sheet('<div class="lbl">'+(en?'What\u2019s new':'Quoi de neuf')+
@@ -5898,7 +5940,11 @@ function render(d){
    'Petit souci technique, r&eacute;essai automatique...');return}
   const lv=document.getElementById('lv'),lvd=document.getElementById('lvd'),
    lvt=document.getElementById('lvt');
-  if(d.stale){lv.style.background='rgba(230,160,40,.16)';
+  // 2026-10-01: while the offline banner is up it owns the chip - this
+  // render may be the CACHED payload being redrawn, and saying EN DIRECT
+  // over "Connexion perdue" is how the contradiction happened.
+  if(window._offNow){/* the banner has it */}
+  else if(d.stale){lv.style.background='rgba(230,160,40,.16)';
    lv.style.color='#ffd27a';lvd.style.background='#e6a028';
    lvt.textContent='RECONNEXION';}
   else{lv.style.background='rgba(46,204,113,.16)';lv.style.color='var(--up-soft)';
@@ -6216,7 +6262,7 @@ function render(d){
          jarPct.toFixed(0)+'%;background:linear-gradient(90deg,'+
          '#b8963f,#e8c55a);transition:width .8s"></div>'+
         '</div>'
-       :'<div style="font-size:.7rem;color:var(--muted);line-height:1.4">'+
+       :'<div style="font-size:.76rem;color:var(--muted);line-height:1.45">'+
         'Elle se remplit sur les gains, puis paie les trades de '+
         'rattrapage.</div>')+
       '<div style="margin-top:12px;background:rgba(127,179,224,.06);'+
@@ -6998,6 +7044,21 @@ async function load(){
 function offlineUI(on){
  const el=document.getElementById('offline');if(!el)return;
  el.classList.toggle('on',!!on);
+ // 2026-10-01 (owner): the banner used to say "Connexion perdue" while
+ // the chip a few pixels above still said EN DIRECT in green. The chip
+ // only ever turned to RECONNEXION when the SERVER reported itself
+ // stale - and when the phone cannot reach the server at all, render()
+ // never runs. While the banner is up, the chip belongs to it.
+ window._offNow=!!on;
+ {const lv=document.getElementById('lv'),lvd=document.getElementById('lvd'),
+   lvt=document.getElementById('lvt');
+  if(lv&&lvd&&lvt){
+   if(on){lv.style.background='rgba(230,160,40,.16)';
+    lv.style.color='#ffd27a';lvd.style.background='#e6a028';
+    lvt.textContent=LANG()==='en'?'OFFLINE':'HORS LIGNE';}
+   else if(window._d){lv.style.background='rgba(46,204,113,.16)';
+    lv.style.color='var(--up-soft)';lvd.style.background='var(--up)';
+    lvt.textContent='EN DIRECT';}}}
  if(!on){clearInterval(window._offT);window._offT=null;return;}
  if(window._offT)return;
  window._offNext=Date.now()+POLL_MS;
