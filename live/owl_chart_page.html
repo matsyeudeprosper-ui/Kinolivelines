@@ -2684,13 +2684,20 @@ function wxState(){
  const G=D.gates||{},gN=G.nervosity!==false,gM=G.movement!==false;
  // 1.85 is NERV_STORM in structure_bos_bot.py - change the two together
  const storm=rv>=1.85,nervBad=storm||(gN&&rv>1.0),hasInt=!!D.int_trend;
- const mvOk=gM?(hasInt?(nb>=1):(mv>=1)):true;
- const k=storm?'nervous':((!gN&&!gM)?'nogate':(nervBad?(rv<1.30?'brisk':'nervous'):(!mvOk?'none':(hasInt?(D.int_state||'ready'):'ready'))));
+ // 2026-10-01 (owner): the deciding movement rule follows the FLAG, not
+ // the mere presence of an inner structure. The bot only applies the inner
+ // rule to an inner entry and those are switched off, so the big rule is
+ // the live one. Mirrors owl_app_server's weather card exactly - if these
+ // two ever disagree again, one of them is lying to the member.
+ const intOn=!!D.internal_entries;
+ const intRule=hasInt&&intOn;
+ const mvOk=gM?(intRule?(nb>=1):(mv>=1)):true;
+ const k=storm?'nervous':((!gN&&!gM)?'nogate':(nervBad?(rv<1.30?'brisk':'nervous'):(!mvOk?'none':(intRule?(D.int_state||'ready'):'ready'))));
  const voice=(TIER==='observer'&&!FULL)?'observer':(window._MANUAL?'manual':'auto');
  const S=(WXV[voice]||WXV.auto)[k]||WXV.auto.none;
  // measured bands (review/chop_vs_nerv.py): the number says SIZE, not mess
  const vw=rv<1.0?['calme','var(--text)']:(rv<1.30?['soutenu','var(--warn)']:(rv<1.85?['rapide','#e8743b']:['très rapide','var(--down)']));
- return {k,S,mv,rv,nb,gN,gM,storm,hasInt,mvOk,vw,voice};
+ return {k,S,mv,rv,nb,gN,gM,storm,hasInt,intRule,mvOk,vw,voice};
 }
 // ---- 2026-09-28 batch 30: the chart follows the app's language --------
 // One dictionary keyed by the French text; the walker translates the text

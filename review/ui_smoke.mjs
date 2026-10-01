@@ -162,6 +162,34 @@ check("header chips still reachable with the panel open",
 await shot("smoke_htf");
 await ev("try{localStorage.removeItem('owlHTF');}catch(e){} 1");
 
+// ---------- the two weather verdicts must agree -----------------------
+// This has broken TWICE in two days: the card and the chart each chose the
+// movement rule on "does an inner structure exist", which stopped being the
+// bot's rule the moment inner entries were switched off. They are two
+// renderings of ONE rule and the member can see both within two taps.
+console.log("");
+console.log("weather agreement");
+const chartWx = await ev(`(function(){
+  var w=(typeof wxState==='function')?wxState():null;
+  return w?{k:w.k,mv:w.mv,nb:w.nb,intRule:w.intRule,mvOk:w.mvOk}:null;})()`);
+check("the chart can state a weather verdict", !!chartWx,
+      chartWx ? `${chartWx.k} (mv ${chartWx.mv}, nb ${chartWx.nb})` : "none");
+await nav("about:blank"); await nav(`${BASE}/${VAL}/#marche`); await sleep(11000);
+const cardTitle = await ev("(document.getElementById('mx-title')||{}).textContent");
+const chartTitle = chartWx ? null : null;
+// compare the DECISION, not the wording: both compute mvOk the same way, so
+// a disagreement shows up as one saying "nothing to do" and the other not.
+const cardSleep = /Rien .{0,3} faire|Nothing to do/i.test(cardTitle || "");
+const chartSleep = chartWx ? (chartWx.k === "none") : null;
+if (chartWx === null)
+  skip("chart and card agree on movement", "the chart gave no verdict");
+else
+  check("chart and card agree on movement", cardSleep === chartSleep,
+        `chart "${chartWx.k}" (sleep=${chartSleep}) vs card "${cardTitle}" (sleep=${cardSleep})`);
+check("the chart uses the rule the bot runs",
+      chartWx ? (chartWx.intRule === false) : true,
+      chartWx ? `intRule=${chartWx.intRule} - inner entries are off, so the big rule must decide` : "");
+
 // ---------- settings --------------------------------------------------
 console.log("");
 console.log("settings");

@@ -10528,6 +10528,12 @@ class H(BaseHTTPRequestHandler):
                 _pk = PKG.for_account(user.get("id") or "")
                 d["gates"] = {"nervosity": bool(_pk.get("nervosity", True)),
                               "movement": bool(_pk.get("movement", True))}
+                # 2026-10-01: which movement rule decides. The inner rule is
+                # only ever applied to an INNER entry, and those are off, so
+                # the chart must stop choosing it just because an inner
+                # structure exists - same fix as the Marche card.
+                d["internal_entries"] = bool(
+                    _pk.get("internal_entries", False))
             except Exception:
                 pass
             self._send(json.dumps(d), "application/json")
