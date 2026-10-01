@@ -989,7 +989,12 @@ PAGE = """<!doctype html><html lang="fr"><head>
 :root[data-theme=light] #sheetbg,:root[data-theme=light] #tourbg{
  background:rgba(15,23,42,.45)}
 *{box-sizing:border-box;margin:0}
-body{background:var(--bg);color:var(--text);padding:0 0 96px;
+/* 2026-10-01: the tab bar measures 65px and adds its own
+   env(safe-area-inset-bottom). A fixed 96px was 31px too much on a
+   flat screen and ~3px too LITTLE on a phone with a home indicator,
+   where the bar grows to ~99px and clips the last card. Track it. */
+body{background:var(--bg);color:var(--text);
+ padding:0 0 calc(78px + env(safe-area-inset-bottom,0px));
  font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
  font-feature-settings:'tnum' 1,'cv11' 1;
  -webkit-font-smoothing:antialiased}
@@ -1120,7 +1125,11 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--up);
  animation:p 1.8s infinite}
 @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
-.hello{color:rgba(219,233,247,.62);font-size:.86rem;margin-top:22px;letter-spacing:.01em}
+/* 2026-10-01 (owner): a whole hero-sized row that tells the member
+   nothing they do not know. Kept - it is the only warm line on the
+   screen - but it stops costing 22px of the first fold. */
+.hello{color:rgba(219,233,247,.55);font-size:.78rem;margin-top:12px;
+ letter-spacing:.01em}
 .money{font-size:3.7rem;font-weight:800;margin-top:6px;
  letter-spacing:-2px;line-height:1.05}
 .dayline{margin-top:10px;font-size:.92rem;color:rgba(219,233,247,.72);font-weight:600;
@@ -1532,8 +1541,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <span class="live" id="lv"><span class="dot" id="lvd"></span><span
  id="lvt">EN DIRECT</span></span>
 <a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
- line-height:1" title="Sortir" aria-label="Sortir">&#10162;</a></span></div>
-<div class="hello" id="hello">Bonjour %%NAME%% &#128075;</div>
+ line-height:1;display:inline-flex;align-items:center;
+ background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+ border-radius:99px;padding:5px 9px" title="Sortir"
+ aria-label="Sortir"><svg class="ic ic-s"><use href="#i-exit"/></svg></a></span></div>
+<!-- 2026-10-01 (owner): the wave was the last emoji in the hero. -->
+<div class="hello" id="hello">Bonjour %%NAME%%</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
 <div class="eur" id="eqe" style="display:none"></div>
 <!-- 2026-09-27 (owner: "the hero looks busy"): one line under the number
@@ -1816,7 +1829,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="sub">depuis lundi</div></div>
 <div class="card"><div class="lbl">Ce mois</div>
 <div class="val skel" id="month">--</div>
-<div class="sub">depuis le 1er</div></div>
+<!-- 2026-10-01 (owner): on the 1st this tile sits beside a full week and
+     reads as a collapse, in either direction. It says which day it is
+     while that still explains the gap. -->
+<div class="sub" id="monthsub">depuis le 1er</div></div>
 </div>
 <div id="today" style="display:none"></div>
 <div id="dd" style="display:none"></div>
@@ -3298,8 +3314,8 @@ function tab(n,el){
  const g=(h>=5&&h<12)?'Bonjour'
   :((h>=12&&h<18)?'Bon apr&egrave;s-midi':'Bonsoir');
  const he=document.getElementById('hello');
- he.innerHTML=he.innerHTML.replace('Bonjour',g)
-  .replace('&#128075;',(h>=20||h<5)?'&#127769;':'&#128075;');
+ // 2026-10-01: the wave is gone, so only the greeting word changes
+ he.innerHTML=he.innerHTML.replace('Bonjour',g);
 })();
 function confetti(em){
  for(let i=0;i<44;i++){
@@ -3530,9 +3546,10 @@ function drawSpark(){
   ey=pts[pts.length-1][1].toFixed(1);
  const fm=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);
  const iMx=c.indexOf(mx),iMn=c.indexOf(mn);
- const lab=(i,v,above)=>'<text x="'+Math.min(280,Math.max(20,X(i))).toFixed(1)+
+ const lab=(i,v,above,mk)=>'<text x="'+Math.min(280,Math.max(20,X(i))).toFixed(1)+
   '" y="'+(Y(v)+(above?-6:12)).toFixed(1)+'" text-anchor="middle" '+
-  'style="fill:var(--muted)" font-size="9" font-weight="600">'+fm(v)+'</text>';
+  'style="fill:var(--muted)" font-size="9" font-weight="600">'+
+  (mk||'')+fm(v)+'</text>';
  el.innerHTML=
   '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'+
   '<stop offset="0%" stop-color="'+col+'" stop-opacity=".32"/>'+
@@ -3548,7 +3565,18 @@ function drawSpark(){
   'filter="url(#gl)"/>'+
   '<circle cx="'+ex+'" cy="'+ey+'" r="3.2" fill="'+col+'" stroke="#121a25" '+
   'stroke-width="1.5"/>'+
-  (mx>0.005?lab(iMx,mx,true):'')+(mn<-0.005?lab(iMn,mn,false):'');
+  // 2026-10-01 (owner): the two labels were the PEAK and the TROUGH,
+  // while the colour came from the END - so a red curve could shout
+  // "+$13" (its high) at a member who is down, and the one number they
+  // wanted, where they stand now, was the one not written. The end value
+  // is labelled at the dot in the line's colour; the extremes are marked
+  // with arrows so they read as extremes, and are dropped when they are
+  // the end point anyway.
+  (mx>0.005&&iMx<c.length-1?lab(iMx,mx,true,'\u2191'):'')+
+  (mn<-0.005&&iMn<c.length-1?lab(iMn,mn,false,'\u2193'):'')+
+  '<text x="'+Math.min(286,Math.max(24,+ex)).toFixed(1)+'" y="'+
+  (+ey-9).toFixed(1)+'" text-anchor="middle" style="fill:'+col+
+  '" font-size="11" font-weight="800">'+fm(last)+'</text>';
 }
 document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
  window._cvz=b.dataset.c;
@@ -6178,12 +6206,19 @@ function render(d){
         '<span style="color:#6b5f38"> / $'+fm(d.ledger.cap||0)+
         '</span></span>'+
       '</div>'+
-      '<div style="background:rgba(255,255,255,.07);border-radius:99px;'+
-       'height:7px;overflow:hidden">'+
-       '<div style="height:7px;border-radius:99px;width:'+
-        jarPct.toFixed(0)+'%;background:linear-gradient(90deg,'+
-        '#b8963f,#e8c55a);transition:width .8s"></div>'+
-      '</div>'+
+      // 2026-10-01 (owner): an empty track reads as broken rather than
+      // as "not started" - the same complaint that turned out to be a
+      // real bug on the growth bar. At zero, say what fills it.
+      (am>0.005
+       ?'<div style="background:rgba(255,255,255,.07);border-radius:99px;'+
+        'height:7px;overflow:hidden">'+
+        '<div style="height:7px;border-radius:99px;width:'+
+         jarPct.toFixed(0)+'%;background:linear-gradient(90deg,'+
+         '#b8963f,#e8c55a);transition:width .8s"></div>'+
+        '</div>'
+       :'<div style="font-size:.7rem;color:var(--muted);line-height:1.4">'+
+        'Elle se remplit sur les gains, puis paie les trades de '+
+        'rattrapage.</div>')+
       '<div style="margin-top:12px;background:rgba(127,179,224,.06);'+
        'border:1px solid rgba(127,179,224,.16);border-radius:12px;'+
        'padding:10px 12px">'+
@@ -6537,6 +6572,13 @@ function render(d){
   const dv=d.max_dd_7d.toFixed(0);
   document.getElementById('dd').textContent=(dv==0?'$0':'-$'+dv);
   ddCap(d);
+  // 2026-10-01: a one-day-old month next to a seven-day week is not a
+  // comparison, and the tiles sit side by side. Say so while it matters.
+  {const ms=document.getElementById('monthsub');
+   if(ms){const dn=new Date().getUTCDate();const en=LANG()==='en';
+    ms.textContent=(dn<=4
+     ?(en?'since the 1st \u00b7 day '+dn:'depuis le 1er \u00b7 jour '+dn)
+     :(en?'since the 1st':'depuis le 1er'));}}
   if(d.month!==undefined){
    const mo=document.getElementById('month');
    mo.innerHTML=arw(d.month)+f(d.month);
@@ -7021,6 +7063,7 @@ window.addEventListener('appinstalled',()=>{
 <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
 <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
 <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-exit" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
 <symbol id="i-reset" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></symbol>
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
@@ -9318,6 +9361,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
 <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
 <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-exit" viewBox="0 0 24 24"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l-4-4 4-4M6 12h10"/></symbol>
 <symbol id="i-reset" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></symbol>
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
