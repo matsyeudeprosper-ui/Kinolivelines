@@ -302,7 +302,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
   <div style="flex:1;min-width:0"><h2 id="st-t">La structure</h2><div class="ln" id="st-l"></div></div>
   <button class="x" onclick="oshShow('st',false)" aria-label="Fermer">&#10005;</button></div>
  <div class="lbl"><span>Structure principale</span></div><div class="chips" id="st-main"></div>
- <div class="lbl"><span>Structure interne</span></div><div class="chips" id="st-int"></div>
+ <div class="lbl"><span>Structure interne</span></div><div id="st-int-note" style="margin:-2px 0 7px"></div><div class="chips" id="st-int"></div>
  <div class="ft"><span>R&eacute;serv&eacute; au paquet Strat&eacute;gie &middot; les niveaux sont trac&eacute;s en direct sur le graphique.</span></div>
 </div>
 <div id="tr" class="osh" role="dialog" aria-label="Le trade">
@@ -3000,6 +3000,17 @@ function stRender(){if(!D||!FULL)return;
  document.getElementById('st-main').innerHTML=chipH('point protégé',f(D.invalid),'#e8c55a',true)+chipH('prochaine cassure',f(D.next_bos)+(D.bos_ready?' · prête':''),D.bos_ready?'var(--accent-soft)':'var(--text)',!!D.bos_ready)+
   chipH('bascule',D.flip_bos?f(D.flip_bos)+(D.flip_bos_ready?' · armée':''):'—',D.flip_bos_ready?'var(--warn)':'var(--muted)',!!D.flip_bos_ready)+chipH('choc',D.choch?'oui':'non',D.choch?'var(--warn)':'var(--muted)',false);
  const it=D.int_trend,W={ready:'rien ne bloque',flip:'bascule possible',forming:'en formation',none:'—'};
+ // 2026-10-01 (owner sweep): this panel presented the inner structure as
+ // live information with nothing saying the robot stopped acting on it.
+ // Reads the same flag the weather logic reads, so it corrects itself if
+ // an account ever turns inner entries back on.
+ {const _ie=document.getElementById('st-int-note');
+  if(_ie)_ie.innerHTML=(D.internal_entries
+   ?''
+   :'<span style="color:var(--muted);font-size:.72rem">'+
+     (CL?'The robot no longer trades this. Shown so you can read the market.'
+        :'Le robot ne la trade plus. Affichée pour lire le marché.')+
+    '</span>');}
  document.getElementById('st-int').innerHTML=it?(chipH('sens interne',(it===1?'▲ hausse':'▼ baisse')+' · '+(W[D.int_state]||'—'),it===1?'#8df0bb':'#ff8c8c',true)+chipH('cassure interne',f(D.int_bos),D.int_bos_ready?'var(--accent-soft)':'var(--text)',!!D.int_bos_ready)+
   chipH('invalidation',f(D.int_inv),'#e8c55a',false)+chipH('petits mouvements',(D.int_brk_1h||0)+' / 1 h',(D.int_brk_1h||0)>=1?'var(--accent-soft)':'var(--muted)',false)):chipH('structure interne','aucune pour l’instant','var(--muted)',false);
 }

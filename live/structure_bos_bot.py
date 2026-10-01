@@ -924,6 +924,12 @@ def book_closes(st, t_from):
         journal_write_row(dict(
             _ctx, account=PAUSE_UID, ticket=d.position_id,
             is_add=is_add, lot=_ctx.get("lot", lot),
+            # 2026-10-01 (owner): a reinforcement has no entry kind of
+            # its own, so `kind` came out blank and a blank is
+            # ambiguous - missing data or a real absence? Say ADD. The
+            # row keeps is_add too; this only makes the column readable
+            # without cross-checking another one.
+            kind=(_ctx.get("kind") or ("ADD" if is_add else "")),
             direction=_ctx.get("direction") or (
                 "BUY" if d.type == mt5.DEAL_TYPE_SELL else "SELL"),
             exit_time_utc=_exit_t.isoformat(), outcome=tag,

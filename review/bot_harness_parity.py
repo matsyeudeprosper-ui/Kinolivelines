@@ -70,7 +70,10 @@ JOURNALS = ("bos_journal_valere.csv", "bos_journal_infinity.csv",
             "bos_journal.csv", "bos_journal_kino.csv",
             "bos_journal_demo.csv")
 # the kinds the harness can produce today
-HARNESS_KINDS = {"FLIP-BOS", "BOS", "CONT", "INT", ""}
+# "ADD" is a reinforcement, not a signal kind - the harness models adds
+# inside a trade rather than as entries of their own, so it belongs in
+# the known set rather than being reported as a missing trade type.
+HARNESS_KINDS = {"FLIP-BOS", "BOS", "CONT", "INT", "ADD", ""}
 
 
 def check_rules():

@@ -1607,6 +1607,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div id="mx-lab" style="display:none">
 <div class="sec" style="margin-top:14px">Le labo <span class="hint" id="lab-hint">&middot; id&eacute;es, tests, observations, d&eacute;cisions</span></div>
 <div id="lab-stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px"></div>
+<div id="lab-stale" style="display:none;margin-top:10px;padding:8px 11px;
+ background:var(--surface2);border-radius:10px;font-size:.76rem;line-height:1.45"></div>
 <div id="lab-parity" style="display:none;margin-top:10px;padding:8px 11px;
  background:var(--surface2);border-radius:10px;font-size:.76rem;line-height:1.45"></div>
 <div id="lab-tabs" style="display:flex;gap:6px;margin-top:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px"></div>
@@ -4179,6 +4181,25 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  const cnt=k=>J.filter(x=>x.col===k).length+(k==='idea'?seeds.length:0);
  const st=document.getElementById('lab-stats');st.innerHTML='';st.style.display='none';
  const tabs=document.getElementById('lab-tabs');if(tabs){tabs.innerHTML='';tabs.style.display='none';}
+ // 2026-10-01 (owner): if the nightly job dies, every check built this
+ // week quietly stops running and nothing says so. The lab already had the
+ // timestamp and never looked at it. 36 h, not 24: one missed night is a
+ // hiccup, two is a broken job.
+ (function(){const u=(j.auto||{}).updated;const el=document.getElementById('lab-stale');
+  if(!el)return;
+  if(!u){el.style.display='block';el.style.borderLeft='2px solid var(--down)';
+   el.innerHTML='<b style="color:var(--down)">'+(en?'The night run has never reported'
+     :'La s\u00e9ance de nuit n\u2019a jamais rendu de r\u00e9sultat')+'</b>';return;}
+  const hrs=(Date.now()-new Date(u).getTime())/3600000;
+  if(hrs<36){el.style.display='none';return;}
+  el.style.display='block';el.style.borderLeft='2px solid var(--down)';
+  el.innerHTML='<b style="color:var(--down)">'+
+   (en?'The night run has not finished for '+Math.round(hrs)+' h'
+     :'La s\u00e9ance de nuit n\u2019a pas tourn\u00e9 depuis '+Math.round(hrs)+' h')+
+   '</b><div style="color:var(--muted2);margin-top:3px">'+
+   (en?'The checks that watch the robot are not running. Everything below is that old.'
+     :'Les v\u00e9rifications qui surveillent le robot ne tournent plus. Tout ce qui suit date d\u2019autant.')+
+   '</div>';})();
  (function(){const P=(j.auto||{}).parity;const el=document.getElementById('lab-parity');
   if(!el)return;
   if(!P){el.style.display='none';return;}
@@ -4602,6 +4623,20 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
     lg('#9d8cff',en?'other way':'sens inverse')+
     lg('var(--up)',en?'same way':'m\u00eame sens')+
     lg('var(--surface3)',en?'none':'aucune')+'</div>';})());
+ // 2026-10-01 (owner): this card looks like advice. It is not. Alignment
+ // was measured twice and predicts neither the outcome of a trade (E012)
+ // nor the size of a loss (E025). Say so on the card, or a member reads
+ // "everything agrees" as "a better trade".
+ setH(document.getElementById('tf-foot'),
+  (document.getElementById('tf-foot').innerHTML||'')+
+  '<div style="margin-top:9px;padding-top:8px;border-top:1px solid var(--surface3);'+
+   'font-size:.68rem;color:var(--muted);line-height:1.45">'+
+   (en?'This is the market\u2019s shape, not a trading signal. We measured it twice: '+
+       'whether the timeframes agree does not predict whether a trade wins, '+
+       'nor how big a loss will be.'
+     :'C\u2019est la forme du march\u00e9, pas un signal de trade. Mesur\u00e9 deux fois : '+
+      'que les temps soient d\u2019accord ne pr\u00e9dit ni si un trade gagne, '+
+      'ni la taille d\u2019une perte.')+'</div>');
  document.getElementById('tf-hint').textContent='\u00b7 '+
   (a.age<90?(en?'live':'en direct'):(en?'updated '+Math.round(a.age/60)+' min ago':'il y a '+Math.round(a.age/60)+' min'));
  el.style.display='block';
@@ -8105,6 +8140,21 @@ def user_stats(u, admin_override=False):
                         "seen": _seen.get(x["id"]),
                         "family_until": int((ent(x["id"]) or {}).get("family_until") or 0),
                         "plan": x.get("plan"),
+                        # 2026-10-01 (owner): accounts really differ now -
+                        # a 3% per-trade ceiling here, none there, another
+                        # package on 441 - and the only way to see it was to
+                        # read a config file.
+                        "rules": (lambda _p: {
+                            "package": _p.get("package"),
+                            "label": _p.get("label"),
+                            "lot": _p.get("base_lot"),
+                            "day_cap": _p.get("day_cap"),
+                            "kill": _p.get("kill_net"),
+                            "risk_fit_pct": _p.get("risk_fit_pct") or 0,
+                            "internal": bool(_p.get("internal_entries")),
+                            "nervosity": bool(_p.get("nervosity", True)),
+                            "movement": bool(_p.get("movement", True)),
+                        })(PKG.for_account(x["id"])),
                         "push": bool(_push_subs().get(x["id"])),
                         # 2026-09-28: an observer (no Automatique, no Manuel) has no
                         # robot to run - not a fault, so Le Nid must not flag it
