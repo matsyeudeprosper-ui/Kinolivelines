@@ -581,8 +581,14 @@ BOT_OF = {
     "kino":       ("Structure", "bos_state_kino.json",
                    "bos_bot_kino.log", 300),
     "luc":        ("CROC", "owl_pro_alive.json", "owl_pro.log", 300),
+    # 2026-10-01: this one is an HOURLY bot. Its loop polls every 30 s but
+    # only writes state when a new H1 bar closes, so a perfectly healthy
+    # Harvest H1 looked "robot arrete" for up to half of every hour and the
+    # header counted 6 robots instead of 7. 70 minutes is just over its
+    # natural cadence. The cost is honest: without a heartbeat you cannot
+    # detect an hourly bot dying any faster than it normally speaks.
     "fresh":      ("Harvest H1", "harvest_fresh_state.json",
-                   "harvest_fresh.log", 1800),
+                   "harvest_fresh.log", 4200),
     # 2026-09-23 (owner): "make 441 behave exactly like the rest, only
     # its daily target differs". It now runs structure_bos_bot.py like
     # Valere and Infinity, so it reads the bot's files, not the desk's.
@@ -1100,6 +1106,39 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
  padding:12px 4px;min-height:44px;border-bottom:1px solid var(--border);
  font-size:1rem}
 .row:last-child{border-bottom:0}
+/* 2026-10-01 (owner): Le Nid rows. The old row was one flex with the text
+   on the left and four buttons on the right, centred - so the buttons sat
+   in the MIDDLE of a five-line block and squeezed the text until it
+   truncated mid-word on a phone. These lay the row out in three bands
+   instead, with the money right-aligned so it reads as a column. */
+.nrow{padding:13px 4px;border-bottom:1px solid var(--border)}
+.nrow:last-child{border-bottom:0}
+.nr-l{display:flex;align-items:baseline;gap:10px}
+.nr-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;font-weight:700;font-size:.98rem}
+.nr-bal{white-space:nowrap;font-weight:700;font-size:.98rem;
+ color:var(--text2)}
+.nr-mt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;font-size:.73rem;color:var(--muted)}
+.nr-td{white-space:nowrap;font-size:.8rem;font-weight:700}
+.nr-b{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:9px}
+.nchip{font-size:.69rem;padding:3px 9px;border-radius:99px;
+ background:var(--surface3);color:var(--muted2);
+ border:1px solid var(--border);white-space:nowrap}
+.nchip-ok{background:rgba(46,204,113,.12);color:var(--up-soft);
+ border-color:rgba(46,204,113,.3)}
+.nchip-w{background:rgba(232,197,90,.1);color:var(--warn);
+ border-color:rgba(232,197,90,.3)}
+.nchip-b{background:rgba(255,92,92,.1);color:#ff8c8c;
+ border-color:rgba(255,92,92,.32)}
+.nr-a{display:flex;gap:5px;margin-left:auto}
+.nact{border:1px solid var(--border);background:transparent;
+ color:var(--muted);border-radius:9px;padding:6px 9px;
+ text-decoration:none;display:inline-flex;align-items:center;
+ justify-content:center;min-width:34px}
+.nact .ic{vertical-align:0}
+.nact:active{background:var(--surface3)}
+.nact-b{border-color:rgba(255,92,92,.38);color:#ff8c8c}
 @keyframes livepulse{0%{opacity:1;transform:scale(1)}
  50%{opacity:.35;transform:scale(.75)}100%{opacity:1;transform:scale(1)}}
 .livedot{display:inline-block;width:8px;height:8px;border-radius:50%;
@@ -3798,7 +3837,10 @@ async function acctChipInit(){
 }
 async function acctSheet(){
  const N=(await nestFromAdmin())||[],d=window._d||{};if(!N.length)return;
- const tb=N.reduce((a,x)=>a+(x.bal||0),0),tt=N.reduce((a,x)=>a+(x.today||0),0);
+ // 2026-10-01 (owner): real money only here too - the same figure
+ // shown in a second place must not disagree with the first
+ const _R=N.filter(x=>x.real===true);
+ const tb=_R.reduce((a,x)=>a+(x.bal||0),0),tt=_R.reduce((a,x)=>a+(x.today||0),0);
  const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
  const st=x=>{const noBot=!x.bot;
   if(noBot)return[x.paused?'manuel':'sans robot','var(--muted)','#4a5a6b'];
@@ -4169,24 +4211,29 @@ function panicCall(uid,pw,dry){
 // the package percentage applied to the balance we last saw, which is the
 // same arithmetic the bot does at entry (risk_fit_pct x balance), so the
 // number on screen is the number the robot uses.
-function dayTxt(x){
- const dy=x.day,r=x.rules||{};
- const bits=[];
+// 2026-10-01 (owner): the day state and the per-trade ceiling as CHIPS.
+// They were one run-on line with parentheses - "journee faite (cible
+// $5.22) - reprise $4.95" - which read as a sentence nobody finishes.
+// Chips wrap on a narrow phone instead of pushing the row around, and
+// each fact can carry its own colour.
+function dayChips(x){
+ const dy=x.day,r=x.rules||{},out=[];
  if(dy){
-  if(dy.killed)bits.push('<span style="color:#ffb3b3">arr\u00eat de s\u00e9curit\u00e9</span>');
-  else if(dy.done)bits.push('<span style="color:var(--up-soft)">\u2713 journ\u00e9e faite</span>'+
-   (typeof dy.cap==='number'?' <span style="color:var(--muted)">(cible $'+dy.cap.toFixed(2)+')</span>':''));
-  else if(typeof dy.cap==='number'&&dy.cap>0)
-   bits.push('$'+dy.pnl.toFixed(2)+' / $'+dy.cap.toFixed(2)+' du jour');
-  if(dy.debt>0.5)bits.push('<span style="color:var(--warn)">reprise $'+dy.debt.toFixed(2)+'</span>');
+  if(dy.killed)out.push('<span class="nchip nchip-b">arr\u00eat de s\u00e9curit\u00e9</span>');
+  else if(dy.done){
+   out.push('<span class="nchip nchip-ok">\u2713 journ\u00e9e faite</span>');
+   if(typeof dy.cap==='number')
+    out.push('<span class="nchip">cible $'+dy.cap.toFixed(2)+'</span>');
+  }else if(typeof dy.cap==='number'&&dy.cap>0)
+   out.push('<span class="nchip">$'+dy.pnl.toFixed(2)+' / $'+
+    dy.cap.toFixed(2)+' du jour</span>');
+  if(dy.debt>0.5)out.push('<span class="nchip nchip-w">reprise $'+
+   dy.debt.toFixed(2)+'</span>');
  }
- if(r.risk_fit_pct>0){
-  const cap=(x.bal!=null)?(' \u2248 $'+(x.bal*r.risk_fit_pct/100).toFixed(2)):'';
-  bits.push('plafond '+r.risk_fit_pct+'%/trade'+cap);
- }
- if(!bits.length)return '';
- return '<span style="display:block;font-size:.72rem;color:var(--muted2);'+
-  'white-space:normal;margin-top:2px">'+bits.join(' <span class="sep">\u00b7</span> ')+'</span>';
+ if(r.risk_fit_pct>0)out.push('<span class="nchip">plafond '+
+  r.risk_fit_pct+'%'+(x.bal!=null?' \u2248 $'+
+  (x.bal*r.risk_fit_pct/100).toFixed(2):'')+'</span>');
+ return out;
 }
 async function nestPanic(uid,name){
  const pw=await askPwd('Arr&ecirc;t d&rsquo;urgence sur '+name+' ?',
@@ -6319,8 +6366,13 @@ function render(d){
     }).join('');
   }
   if(d.is_master&&d.nest){
-   const tb=d.nest.reduce((a,x)=>a+(x.bal||0),0);
-   const tt=d.nest.reduce((a,x)=>a+(x.today||0),0);
+   // 2026-10-01 (owner): real money only. A missing flag counts as
+   // NOT real - a total that quietly includes an unknown is the bug
+   // being fixed here.
+   const _rl=d.nest.filter(x=>x.real===true);
+   const tb=_rl.reduce((a,x)=>a+(x.bal||0),0);
+   const tt=_rl.reduce((a,x)=>a+(x.today||0),0);
+   const _dm=d.nest.length-_rl.length;
    // 2026-09-27: alerts strip + family week bars above the list
    const _al=d.nest.filter(x=>!x.observer&&(x.err||x.stale||(x.bot&&!x.botlive)||x.blocked)||(x.family_until&&x.family_until-Date.now()/1000<5*86400));
    const _man=d.nest.filter(x=>!x.bot&&x.paused).length;
@@ -6355,8 +6407,10 @@ function render(d){
      :_dn+'/'+_dt+' ont fini leur journ\u00e9e')+'</span></div>'):'';
    const hdr=_alh+_famh+'<div class="row" style="border-bottom:2px solid '+
     '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
-    'color:var(--muted);font-size:.75rem">'+d.nest.length+
-    ' compte'+(d.nest.length>1?'s':'')+'</span></span>'+
+    'color:var(--muted);font-size:.75rem">'+_rl.length+
+    ' compte'+(_rl.length>1?'s':'')+' r\u00e9el'+(_rl.length>1?'s':'')+
+    (_dm?' <span style="color:#5f7185">(+'+_dm+' d\u00e9mo non '+
+     'compt\u00e9'+(_dm>1?'s':'')+')</span>':'')+'</span></span>'+
     '<span style="text-align:right"><b>$'+tb.toFixed(2)+'</b>'+
     '<span style="display:block;font-size:.78rem" class="'+
     (sgn(tt))+'">auj. '+(tt>=0?'+$':'-$')+
@@ -6383,52 +6437,65 @@ function render(d){
     // demoted to small grey text. The NAME is what you scan for, so it
     // leads again; the robot and the account number sit under it, which
     // still answers "what is running here" without stealing the anchor.
-    return '<div class="row"><span style="display:flex;'+
-    'flex-direction:column;gap:3px;min-width:0"><span style="white-space:'+
-    'nowrap;overflow:hidden;text-overflow:ellipsis"><span style="display:'+
-    'inline-block;width:9px;height:9px;border-radius:50%;background:'+
-    dot+';margin-right:8px"></span><b>'+x.name+'</b>'+
-    (x.note?'<span style="display:block;font-size:.72rem;color:var(--warn);white-space:normal;margin:2px 0 0 17px">\u270e '+String(x.note).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</span>':'')+
-    '<span style="display:block;font-size:.7rem;color:var(--muted);margin:1px 0 0 17px">'+agoTxt(x.seen)+'</span>'+
-    '<span style="color:'+stc+';font-size:.7rem"> &middot; '+st+
-    '</span></span>'+
-    '<span style="font-size:.72rem;color:var(--muted2);white-space:nowrap;'+
-    'overflow:hidden;text-overflow:ellipsis">'+
+    // 2026-10-01 (owner): three bands, not one squeezed flex. The name
+    // and the balance share a baseline so the money reads as a column
+    // down the list; the robot/account string is the one allowed to
+    // truncate; the day state and the ceiling are chips, which wrap
+    // instead of shoving the layout about; and the actions sit at the end
+    // of the chip line, small and quiet.
+    const esc=t=>String(t).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+    const chips=[];
+    // the status word only when it is NOT the ordinary case - a green dot
+    // already says "actif", and saying it on every row was noise
+    if(st!=='actif')chips.push('<span class="nchip '+
+     (noBot||x.paused?'':(x.err||!x.botlive||x.blocked?'nchip-b':'nchip-w'))+
+     '">'+st+'</span>');
+    chips.push(...dayChips(x));
+    return '<div class="nrow">'+
+    '<div class="nr-l">'+
+    '<span style="display:inline-block;width:8px;height:8px;flex:none;'+
+    'border-radius:50%;background:'+dot+'"></span>'+
+    '<span class="nr-nm">'+x.name+'</span>'+
+    '<span class="nr-bal">'+(x.bal!=null?'$'+x.bal.toFixed(2):'--')+
+    '</span></div>'+
+    '<div class="nr-l" style="margin-top:2px">'+
+    '<span class="nr-mt" style="padding-left:18px">'+
     (x.bot?'&#129302; '+x.bot:'&#8212;')+
-    (x.login?' &middot; '+x.login:'')+'</span>'+
-    '<span style="font-size:.8rem;color:var(--muted2)">'+
-    (x.bal!=null?'$'+x.bal.toFixed(2):'--')+
-    (x.today!=null?' &middot; auj. <span class="'+
-     (sgn(x.today))+'">'+(x.today>=0?'+$':'-$')+
-     Math.abs(x.today).toFixed(2)+'</span>':'')+'</span>'+
-    // 2026-10-01 (owner): "all accounts done for the day?" - the answer
-    // belongs on the row, not in a conversation. And the per-trade
-    // ceiling, which differs account to account now and was only
-    // readable in a config file.
-    (dayTxt(x)||'')+'</span>'+
-    '<span style="display:flex;gap:6px">'+
-    (x.tok?'<a href="/'+x.tok+'/" target="_blank" '+
-    'style="border:1px solid #263341;background:var(--surface);'+
-    'color:var(--text2);border-radius:10px;padding:8px 11px;'+
-    'font-size:.85rem;text-decoration:none">&#128065;&#65039;'+
-    '</a>':'')+
-    (x.trade?'<button data-u="'+x.id+'" data-o="'+(x.paused?0:1)+
-    '" onclick="nestPause(this.dataset.u,this.dataset.o)" '+
-    'style="border:1px solid #263341;background:var(--surface);'+
-    'color:var(--text2);border-radius:10px;padding:8px 13px;'+
-    'font-size:.85rem">'+
-    (x.paused?'&#9654;&#65039;':'&#9208;&#65039;')+'</button>':'')+
-    '<button data-u="'+x.id+'" data-n="'+x.name+
+    (x.login?' &middot; '+x.login:'')+
+    (x.seen?' &middot; '+agoTxt(x.seen).replace(/^vu /,''):'')+'</span>'+
+    (x.today!=null?'<span class="nr-td '+(sgn(x.today))+'">'+
+     (x.today>=0?'+$':'-$')+Math.abs(x.today).toFixed(2)+'</span>':'')+
+    '</div>'+
+    (x.note?'<div style="font-size:.72rem;color:var(--warn);'+
+     'margin:6px 0 0 18px;line-height:1.4">\u270e '+esc(x.note)+'</div>':'')+
+    '<div class="nr-b">'+chips.join('')+
+    '<span class="nr-a">'+
+    // the app's own stroked icons, not emoji: the row reads as
+    // typography and should not end in four multi-coloured pictograms
+    // that outshout the numbers. Danger is still red - by border and
+    // colour, which is enough.
+    (x.tok?'<a class="nact" href="/'+x.tok+'/" target="_blank" '+
+     'title="Ouvrir ce compte" aria-label="Ouvrir ce compte">'+
+     '<svg class="ic ic-s"><use href="#i-eye"/></svg></a>':'')+
+    (x.trade?'<button class="nact" data-u="'+x.id+'" data-o="'+
+     (x.paused?0:1)+'" onclick="nestPause(this.dataset.u,this.dataset.o)" '+
+     'title="'+(x.paused?'Reprendre':'Mettre en pause')+'" '+
+     'aria-label="'+(x.paused?'Reprendre':'Mettre en pause')+'">'+
+     '<svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+
+     '"/></svg></button>':'')+
+    '<button class="nact nact-b" data-u="'+x.id+'" data-n="'+x.name+
     '" onclick="nestPanic(this.dataset.u,this.dataset.n)" '+
     'title="Arret d&rsquo;urgence : tout fermer sur ce compte" '+
-    'style="border:1px solid rgba(255,92,92,.45);'+
-    'background:rgba(255,92,92,.12);color:#ff8c8c;'+
-    'border-radius:10px;padding:8px 11px;font-size:.85rem">'+
-    '&#128721;'+(x.pos?' '+x.pos:'')+'</button>'+
-    (x.bot?'<button data-u="'+x.id+'" data-n="'+x.name+'" onclick="nestReset(this.dataset.u,this.dataset.n)" '+
-    'title="R&eacute;initialiser : le robot repart de z&eacute;ro" style="border:1px solid var(--border2);'+
-    'background:var(--surface);color:var(--text2);border-radius:10px;padding:8px 11px;font-size:.85rem">&#8635;</button>':'')+
-    '</span></div>';
+    'aria-label="Arret d urgence">'+
+    '<svg class="ic ic-s"><use href="#i-stop"/></svg>'+
+    (x.pos?'<span style="margin-left:4px;font-size:.72rem;'+
+     'font-weight:700">'+x.pos+'</span>':'')+'</button>'+
+    (x.bot?'<button class="nact" data-u="'+x.id+'" data-n="'+x.name+
+     '" onclick="nestReset(this.dataset.u,this.dataset.n)" '+
+     'title="R&eacute;initialiser : le robot repart de z&eacute;ro" '+
+     'aria-label="Reinitialiser">'+
+     '<svg class="ic ic-s"><use href="#i-reset"/></svg></button>':'')+
+    '</span></div></div>';
    }).join('');
   }
   if(d.days&&!d.days.length){
@@ -6725,6 +6792,7 @@ window.addEventListener('appinstalled',()=>{
 <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
 <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
 <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></symbol>
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
@@ -8505,6 +8573,10 @@ def user_stats(u, admin_override=False):
                         "name": x.get("name", x["id"]),
                         "login": x.get("login"),
                         "tok": x.get("token"),
+                        # 2026-10-01 (owner): "only real accounts count"
+                        # - the broker's own trade_mode, already computed by
+                        # the worker, never passed on until now
+                        "real": nd.get("real"),
                         "bal": nd.get("balance"),
                         "today": nd.get("today"),
                         "err": bool(nd.get("error")),
@@ -8995,6 +9067,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 13v6h14v-6"/></symbol>
 <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 9V6h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4z"/><path d="M10 6v12"/></symbol>
 <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></symbol>
+<symbol id="i-reset" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4v4h-4"/></symbol>
 <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
 <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="4"/><path d="M5 13v8h14v-8M12 9v12"/><path d="M12 9c-2-4-6-4-6-1.5S12 9 12 9zM12 9c2-4 6-4 6-1.5S12 9 12 9z"/></symbol>
 <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
