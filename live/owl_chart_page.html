@@ -39,6 +39,16 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
  border:1px solid rgba(127,179,224,.18);
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #hdstrip:empty,#hdrow:empty{display:none}
+/* 2026-10-01 (owner UX): measured on a 320px phone, the weather segment
+   read "FEU" instead of "FEU VERT 0,99x". The strip BOX fits - which is why
+   a width measurement said nothing was wrong - but `overflow:hidden` was
+   quietly chopping the last segment's text. On a narrow screen the four
+   timeframe dots give way: they are the newest element, and the same
+   reading is on the Marche card, while a truncated verdict is unreadable. */
+@media (max-width:370px){
+ #hdstrip .seg{padding:4px 7px;letter-spacing:.02em}
+ #tfdots{display:none !important}
+}
 #hdstrip .seg{display:flex;align-items:center;gap:5px;
  padding:4px 10px;font-size:.6rem;font-weight:700;
  letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;
@@ -427,8 +437,36 @@ cv.addEventListener('pointerup',e=>{
  let best=null,bd=1e9;
  HITS.forEach(h=>{const d=h.kind==='closed'?Math.hypot(h.x-x,h.y-y):(Math.abs(h.y-y)<=10?Math.abs(h.y-y):1e9);if(d<bd){bd=d;best=h;}});
  if(RULER.on){rulerTap(x,y);return;}
- if(best&&bd<=(best.kind==='closed'?18:10)){trOpen(best);}});
+ if(best&&bd<=(best.kind==='closed'?18:10)){trOpen(best);return;}
+ // UX 5: nothing of the member's own was tapped - was it a level?
+ lvlTap(y);});
 // ---- 2026-09-28 batch 32: the ruler (two taps) and a past day ----
+const LVLHIT=[];
+// UX 5 (owner 2026-10-01): the chart is full of words a member has never
+// met. Tapping one now explains it in the plainest language that is still
+// true. Short on purpose: this is a tooltip, not a lesson.
+const LVLDOC={
+ 'next-bos':['La prochaine cassure','Le niveau que le prix doit d\u00e9passer pour que la tendance continue. Tant qu\u2019il n\u2019est pas franchi, le robot attend.'],
+ 'last-bos':['La derni\u00e8re cassure','Le dernier niveau que le prix a vraiment franchi. Il sert souvent d\u2019appui ensuite, c\u2019est pour \u00e7a qu\u2019il reste affich\u00e9.'],
+ 'last-choch':['Le dernier changement','L\u2019endroit o\u00f9 la tendance s\u2019est retourn\u00e9e la derni\u00e8re fois. C\u2019est l\u00e0 que le mouvement actuel a commenc\u00e9.'],
+ 'no-inner':['Pas de petite structure','\u00c0 l\u2019int\u00e9rieur du grand mouvement, le march\u00e9 n\u2019a pas form\u00e9 de structure plus petite en ce moment. Le robot ne la trade plus de toute fa\u00e7on.']};
+const LVLDOC_EN={
+ 'next-bos':['The next break','The level price must clear for the trend to carry on. Until it is taken, the robot waits.'],
+ 'last-bos':['The last break','The last level price actually went through. It often becomes support afterwards, which is why it stays on the chart.'],
+ 'last-choch':['The last turn','Where the trend last reversed. That is where the current move began.'],
+ 'no-inner':['No small structure','Inside the big move, the market has not formed a smaller structure right now. The robot no longer trades it anyway.']};
+function lvlTap(y){
+ let best=null,bd=1e9;
+ LVLHIT.forEach(h=>{const d=Math.abs(h.y-y);if(d<bd){bd=d;best=h;}});
+ if(!best||bd>16)return false;
+ const T=(CL?LVLDOC_EN:LVLDOC)[best.k];
+ if(!T)return false;
+ adSheet('<div style="font-size:1.05rem;font-weight:800;color:#e8eef4;margin-bottom:6px">'+T[0]+'</div>'+
+  '<div style="color:#8fa6bd;font-size:.86rem;line-height:1.55">'+T[1]+'</div>'+
+  '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;'+
+  'font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" '+
+  'onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');
+ return true;}
 const RULER={on:false,a:null,b:null};
 function xToT(x){const xts=window._xts||[],xo=window._xoft||{};let bt=null,bd=1e9;for(const t of xts){const d=Math.abs((xo[t]||0)-x);if(d<bd){bd=d;bt=t;}}return bt;}
 function yToP(y){if(!SCALE)return null;return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
@@ -1091,6 +1129,7 @@ function draw(){
   ctx.restore();}
  // --- price ticks, right edge only ---
  ctx.font='10px system-ui';
+ const _axisY=[];
  for(let g2=0;g2<5;g2++){
   const v=lo+pad+(hi-lo-2*pad)*g2/4;
   const y=px(v);
@@ -1098,14 +1137,35 @@ function draw(){
   ctx.beginPath();ctx.moveTo(W-5,y);ctx.lineTo(W,y);ctx.stroke();
   ctx.fillStyle='#55677d';
   const s=v.toFixed(0);
-  ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);}
+  ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);
+  _axisY.push(y-3);}
  // --- trade zones (behind candles) ---
  if(!FULL&&TIER!=='observer'){const zo=(D.invalid!=null)?D.invalid:D.flip_bos;
   if(D.next_bos&&zo!=null){const y1=px(D.next_bos),y2=px(zo);
    const gz=ctx.createLinearGradient(0,Math.min(y1,y2),0,Math.max(y1,y2));
    gz.addColorStop(0,'rgba(143,198,255,.10)');gz.addColorStop(1,'rgba(143,198,255,.02)');
    ctx.fillStyle=gz;ctx.fillRect(0,Math.min(y1,y2),W,Math.abs(y1-y2));}}
- const usedY=[];
+ // 2026-10-01 (owner UX): the price-scale numbers are reserved FIRST,
+ // so a level pill can never be placed under them.
+ const usedY=_axisY.slice();
+ // nearest free slot, down first then up. The LINE stays at the true
+ // price; only the LABEL moves.
+ // UX 5: what was drawn, and where, so a tap can explain it
+ LVLHIT.length=0;
+ const lvlY=(y0,key)=>{
+  const fits=(y)=>!usedY.some(u=>Math.abs(u-y)<17);
+  const y=Math.max(12,Math.min(Hh-12,y0));
+  if(fits(y)){usedY.push(y);if(key)LVLHIT.push({y:y,k:key});return y;}
+  for(let k=1;k<=8;k++){
+   const dn=y+k*17,up=y-k*17;
+   if(dn<=Hh-12&&fits(dn)){usedY.push(dn);if(key)LVLHIT.push({y:dn,k:key});return dn;}
+   if(up>=12&&fits(up)){usedY.push(up);if(key)LVLHIT.push({y:up,k:key});return up;}}
+  usedY.push(y);if(key)LVLHIT.push({y:y,k:key});return y;};
+ // a memory label that repeats a live level is not drawn at all: the
+ // live one already says that price, and two pills saying the same
+ // thing is worse than one.
+ const dupLvl=(v,...o)=>o.some(
+  x=>(x!==null&&x!==undefined&&Math.abs(px(v)-px(x))<11));
  const tag=(y0,txt,col,bg)=>{
   let y=Math.max(12,Math.min(Hh-12,y0));
   while(usedY.some(u=>Math.abs(u-y)<17))y+=17;
@@ -1617,7 +1677,7 @@ function draw(){
    ctx.font='bold 9px system-ui';
    const t0='pas de petite structure';
    const w0=ctx.measureText(t0).width+14;
-   const y0=px(D.px)-34;
+   const y0=lvlY(px(D.px)-34,'no-inner');
    if(y0>TOPP+10&&y0<TOPP+PLOT-10){
     ctx.fillStyle='rgba(8,14,22,.72)';
     ctx.beginPath();ctx.roundRect(W-w0-26,y0-8,w0,16,8);ctx.fill();
@@ -1805,7 +1865,7 @@ function draw(){
    ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
    ctx.fillStyle=fcol;ctx.fillText(tf,W-wf,yf+3);ctx.restore();}}
  {const lc=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
-  if(lc){
+  if(lc&&!dupLvl(lc[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lc[1],col='#e8c55a';
    const lab=(CL?'last CHoCH ':'dernier CHoCH ')+v.toFixed(0);
    const yL=px(v);
@@ -1822,13 +1882,14 @@ function draw(){
      ctx.beginPath();ctx.arc(x0,y,2.6,0,6.3);ctx.fill();}
     ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
     const w4=ctx.measureText(lab).width+10;
+    const ly4=lvlY(y,'last-choch');
     ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(4,y-7,w4,14,7);ctx.fill();
+    ctx.beginPath();ctx.roundRect(4,ly4-7,w4,14,7);ctx.fill();
     ctx.strokeStyle=col;ctx.globalAlpha=.42;ctx.lineWidth=1;ctx.stroke();
-    ctx.globalAlpha=.92;ctx.fillStyle=col;ctx.fillText(lab,9,y+3.5);
+    ctx.globalAlpha=.92;ctx.fillStyle=col;ctx.fillText(lab,9,ly4+3.5);
     ctx.restore();}}}
  {const lb=(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
-  if(lb){
+  if(lb&&!dupLvl(lb[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lb[1],up=lb[3]===1,col=up?'#2ecc71':'#ff5c5c';
    const lab=(CL?'last BOS ':'dernier BOS ')+v.toFixed(0);
    const yL=px(v);
@@ -1845,10 +1906,11 @@ function draw(){
      ctx.fillRect(x0-2.5,y-2.5,5,5);}
     ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
     const w3=ctx.measureText(lab).width+10;
+    const ly3=lvlY(y,'last-bos');
     ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(4,y-7,w3,14,7);ctx.fill();
+    ctx.beginPath();ctx.roundRect(4,ly3-7,w3,14,7);ctx.fill();
     ctx.strokeStyle=col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.stroke();
-    ctx.globalAlpha=1;ctx.fillStyle=col;ctx.fillText(lab,9,y+3.5);
+    ctx.globalAlpha=1;ctx.fillStyle=col;ctx.fillText(lab,9,ly3+3.5);
     ctx.restore();}}}
  if(D.next_bos){
   const armed=D.bos_ready!==false;
@@ -1866,9 +1928,10 @@ function draw(){
     const tw='BOS '+D.next_bos.toFixed(0)+' · attend un repli';
     const ww=ctx.measureText(tw).width+8;
     ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(W-ww-70,yb-7,ww,14,7);ctx.fill();
+    const lyw=lvlY(yb,'next-bos');
+    ctx.beginPath();ctx.roundRect(W-ww-70,lyw-7,ww,14,7);ctx.fill();
     ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=col;ctx.fillText(tw,W-ww-66,yb+3);
+    ctx.fillStyle=col;ctx.fillText(tw,W-ww-66,lyw+3);
     ctx.restore();}
    else{
    const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;

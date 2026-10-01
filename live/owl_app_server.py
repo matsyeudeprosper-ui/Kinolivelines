@@ -1568,6 +1568,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <button class="mxs" id="mxs-lab" role="tab" aria-selected="false" onclick="mxView('lab')" style="display:none"><svg class="ic ic-s"><use href="#i-target"/></svg><span>Labo</span></button>
 </div>
 <div id="mx-market">
+<!-- 2026-10-01 (owner UX): the Marche tab is four stacked sections and
+     the one you want is often the last. A jump row costs one line. -->
+<div id="mx-jump" style="display:flex;gap:6px;margin-top:12px;overflow-x:auto;
+ scrollbar-width:none;padding-bottom:2px"></div>
 <div class="sec" style="margin-top:14px">Le march&eacute; <span class="hint" id="mx-hint">&middot; ce que le robot voit</span></div>
 <div id="meteo" class="status mx-sun" style="margin-top:12px;
  position:relative;overflow:hidden;text-align:left;padding:0;
@@ -5311,7 +5315,27 @@ function render(d){
     // 2026-09-17), so "feu vert" means "nothing holds it back", never a
     // promise of profit.
     const ST=T('wx');
-    (function(){const hh=document.getElementById('mx-hint');
+    (function(){const J=document.getElementById('mx-jump');
+  // 2026-10-01: `en` is NOT in scope in render(). Every nearby use of
+  // it is inside a NESTED function that declares its own. Assuming it
+  // was there threw a ReferenceError right after dataset.on had been
+  // set - which is why the row existed with zero buttons and nothing
+  // in the error list.
+  const en=LANG()==='en';
+  if(J&&!J.dataset.on){J.dataset.on='1';
+   const items=[['meteo',en?'Weather':'M\u00e9t\u00e9o'],
+                ['tfcard',en?'Timeframes':'Les temps'],
+                ['lrn-sec',en?'Lessons':'Le\u00e7ons'],
+                ['mhcard',en?'Hours':'Heures']];
+   J.innerHTML=items.map(it=>'<button data-go="'+it[0]+'" style="flex:none;'+
+    'border:1px solid var(--border);background:var(--surface2);color:var(--muted2);'+
+    'border-radius:99px;padding:6px 12px;font-size:.72rem;font-weight:700">'+it[1]+
+    '</button>').join('');
+   J.querySelectorAll('button').forEach(b=>{b.onclick=()=>{
+    const t=document.getElementById(b.dataset.go);
+    if(t&&getComputedStyle(t).display!=='none')t.scrollIntoView({behavior:'smooth',block:'start'});};});}
+  })();
+ (function(){const hh=document.getElementById('mx-hint');
      if(hh)setH(hh,T('mx_hint'));})();
     // The card must say exactly what weather_gate() would say, in the same
     // order, or it explains a refusal that is not the real one.
