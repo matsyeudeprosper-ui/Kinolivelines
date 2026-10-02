@@ -5391,6 +5391,12 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  const bel=N.beliefs||[];
  const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
  const RQ=j.requests||[];
+ const JJ0=j.journeys||[];const titleOf=id=>{const x=JJ0.find(y=>y.id===id||(y.keys||[]).indexOf(id)>=0);return x?(en?(x.title_en||x.title_fr):(x.title_fr||x.title_en)):id;};
+ const CRQ=(j.critiques||[]).slice(-8).reverse();
+ const BLD=(j.builds||[]).slice(-6).reverse();
+ const VW={passe:[en?'could not break it':'n\u2019a pas r\u00e9ussi \u00e0 la casser','var(--up-soft)','rgba(46,204,113,.14)'],doute:[en?'a doubt':'un doute','var(--warn)','rgba(232,197,90,.14)'],bloque:[en?'said no':'a dit non','var(--down-soft)','rgba(255,92,92,.12)']};
+ const BW={built:[en?'delivered':'livr\u00e9','var(--up-soft)','rgba(46,204,113,.14)'],declined:[en?'declined':'d\u00e9clin\u00e9','var(--warn)','rgba(232,197,90,.14)'],failed:[en?'could not':'n\u2019y arrive pas','var(--down-soft)','rgba(255,92,92,.12)']};
+ const chip=(w)=>w?'<span class="nt-chip" style="color:'+w[1]+';background:'+w[2]+'">'+w[0]+'</span>':'';
  // the night's own "what I believe / propose / ask" sections say what
  // sections 3-5 below say, structured - so they are not shown twice
  const dup=x=>{const t=(x.title_fr||x.title_en||'');
@@ -5402,6 +5408,8 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  if(tot)parts.push(['res',en?'The results':'Les r\u00e9sultats']);
  const DAY=(j.veille||[]).filter(v=>v.kind!=='rien').slice(-6).reverse();
  if(DAY.length)parts.push(['day',en?'During the day':'Dans la journ\u00e9e']);
+ if(CRQ.length)parts.push(['crit',en?'The critic':'Le critique']);
+ if(BLD.length)parts.push(['build',en?'The builder':'Le constructeur']);
  if(secs.length||(!secs.length&&(N.fr||N.en)))parts.push(['ret',en?'To remember':'\u00c0 retenir']);
  if(bel.length)parts.push(['bel',en?'What it believes':'Ce qu\u2019il croit']);
  if(PR.length)parts.push(['try',en?'To try next':'\u00c0 essayer']);
@@ -5421,6 +5429,13 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  if(num('day')){h+=sh('day',en?'What Kino num\u00e9rique saw while watching the robot today.':'Ce que Kino num\u00e9rique a vu en surveillant le robot aujourd\u2019hui.')+
   DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
    return '<div class="nt-card"><span class="nt-w" style="display:block;margin:0 0 4px;color:var(--muted)">'+esc(hm)+'</span>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</div>';}).join('')+'</div>';}
+ if(num('crit')){h+=sh('crit',en?'A second AI tries to break every idea that scored better on both halves, before it can earn a twin.':'Une seconde intelligence artificielle essaie de casser chaque id\u00e9e mieux sur les deux moiti\u00e9s, avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau.')+
+  CRQ.map(c=>{const jn=jGet(c.id);const cl=jn?JCOLS.find(x=>x[0]===jn.col):null;
+   return '<div class="nt-card">'+chip(VW[c.verdict])+'<b>'+esc(titleOf(c.id))+'</b><span class="nt-w">'+esc(en?(c.en||c.fr):(c.fr||c.en))+'</span>'+
+    (jn&&cl?'<button class="tfc nt-go" onclick="ntIdea(&#39;'+esc(jn.id)+'&#39;)">'+(en?'See it on the board':'La voir sur le tableau')+' \u00b7 '+esc(en?cl[2]:cl[1])+' \u203a</button>':'')+'</div>';}).join('')+'</div>';}
+ if(num('build')){h+=sh('build',en?'A third AI builds what the researcher asks for - a dial for the test, a fact, a tool - behind the gates. Nothing changes in the robot until an idea wins its duel.':'Une troisi\u00e8me intelligence artificielle construit ce que le chercheur demande \u2014 un r\u00e9glage pour le test, un fait, un outil \u2014 derri\u00e8re les contr\u00f4les. Rien ne change dans le robot tant qu\u2019une id\u00e9e n\u2019a pas gagn\u00e9 son duel.')+
+  BLD.map(b=>{const t=en?(b.title_en||b.title_fr):(b.title_fr||b.title_en);const note=b.status==='built'?(en?(b.built_note_en||b.built_note_fr):(b.built_note_fr||b.built_note_en)):(b.status==='declined'?(en?(b.decline_en||b.decline_fr):(b.decline_fr||b.decline_en)):(b.build_error||''));
+   return '<div class="nt-card">'+chip(BW[b.status])+'<b>'+esc(t)+'</b>'+(note?'<span class="nt-w">'+esc(note)+'</span>':'')+(b.built_date||b.date?'<span class="nt-w" style="color:var(--muted)">'+esc(b.built_date||b.date)+'</span>':'')+'</div>';}).join('')+'</div>';}
  if(num('ret')){h+=sh('ret');
   if(secs.length)h+=secs.map((x,i)=>'<details class="nt-fold"'+(i===0?' open':'')+'><summary>'+esc(en?(x.title_en||x.title_fr):(x.title_fr||x.title_en))+'<svg class="ic chv"><use href="#i-chev"/></svg></summary><div class="nt-b">'+paras(en?(x.en||x.fr):(x.fr||x.en))+'</div></details>').join('');
   else h+='<div class="nt-card">'+paras(en?(N.en||N.fr):(N.fr||N.en))+'</div>';
@@ -5439,7 +5454,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  if(num('try')){const JJ=j.journeys||[];
   h+=sh('try',en?'New ideas from the researcher. Each one already had a first test; it is on the board, and the button shows you where.':'Les nouvelles id\u00e9es du chercheur. Chacune a d\u00e9j\u00e0 eu un premier test : elle est sur le tableau, et le bouton vous montre o\u00f9.')+PR.map(p=>{
    const jn=JJ.find(x=>x.id===p.id);const cl=jn?JCOLS.find(c=>c[0]===jn.col):null;
-   return '<div class="nt-card"><b>'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</b>'+((en?p.why_en:p.why_fr)?'<span class="nt-w">'+esc(en?p.why_en:p.why_fr)+'</span>':'')+
+   return '<div class="nt-card">'+(jn&&jn.critique?chip(VW[jn.critique.verdict]):'')+'<b>'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</b>'+((en?p.why_en:p.why_fr)?'<span class="nt-w">'+esc(en?p.why_en:p.why_fr)+'</span>':'')+
     (jn&&cl?'<button class="tfc nt-go" onclick="ntIdea(&#39;'+esc(jn.id)+'&#39;)">'+(en?'See it on the board':'La voir sur le tableau')+' \u00b7 '+esc(en?cl[2]:cl[1])+' \u203a</button>':'')+'</div>';}).join('')+'</div>';}
  if(num('ask'))h+=sh('ask',en?'Things it cannot do alone and asks us to build.':'Ce qu\u2019il ne peut pas faire seul et nous demande de construire.')+RQ.map(r=>'<div class="nt-card"><b>'+esc(en?(r.title_en||r.title_fr):(r.title_fr||r.title_en))+'</b>'+((en?(r.why_en||r.what_en):(r.why_fr||r.what_fr))?'<span class="nt-w">'+esc(en?(r.why_en||r.what_en):(r.why_fr||r.what_fr))+'</span>':'')+'</div>').join('')+'</div>';
  h+='<button class="shbtn shghost" style="margin-top:18px" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>';
@@ -8242,6 +8257,17 @@ CUT_SEED = [
 _CUTS_CACHE = {"m": None, "cuts": None}
 
 
+def _critiques_recent(n=10):
+    """The critic's last n verdicts, oldest first, with the idea's title."""
+    try:
+        d = json.load(open(os.path.join(DIR, "lab", "critiques.json"), encoding="utf-8"))
+        lst = d if isinstance(d, list) else d.get("critiques", [])
+        lst = sorted([c for c in lst if isinstance(c, dict) and c.get("id")], key=lambda c: c.get("date", ""))[-n:]
+        return [{k: c.get(k) for k in ("id", "date", "verdict", "fr", "en")} for c in lst]
+    except Exception:
+        return []
+
+
 def _veille(n=8):
     """The last n lines of lab/veille.jsonl, newest last."""
     out = []
@@ -9042,7 +9068,12 @@ def lab_payload():
            "asks": _lj("asks.json", {}).get("asks", [])[-40:],
            # 2026-10-02 (owner): Kino numerique watches during the day; the
            # members see his last words and when he last looked
-           "veille": _veille(8), "veille_last": (_lj("veille_state.json", {}) or {}).get("last_wake")}
+           "veille": _veille(8), "veille_last": (_lj("veille_state.json", {}) or {}).get("last_wake"),
+           # 2026-10-02 (owner): the night report shows the whole cast
+           "critiques": _critiques_recent(10),
+           "builds": [{k: r.get(k) for k in ("id", "date", "title_fr", "title_en", "status", "key", "built_date", "built_note_fr", "built_note_en", "decline_fr", "decline_en", "build_error", "by")}
+                      for r in sorted((r for r in _lj("requests.json", {}).get("requests", []) if r.get("status") in ("built", "declined", "failed")),
+                                      key=lambda r: r.get("built_date") or r.get("date") or "")[-8:]]}
     try:
         out["journeys"] = lab_journeys(items, props, twins, auto, _lj("decisions.json", {}), arch_on)
     except Exception as e:

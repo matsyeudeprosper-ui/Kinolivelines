@@ -4473,8 +4473,8 @@
   },
   {
    "id": "k3",
-   "title_fr": "Jusqu’à se rattraper jusqu’à trois pertes de suite",
-   "title_en": "Up to keep catching up until three losses in a row",
+   "title_fr": "Se rattraper jusqu’à trois pertes de suite",
+   "title_en": "Keep catching up until three losses in a row",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
