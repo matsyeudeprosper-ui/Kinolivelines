@@ -5109,7 +5109,8 @@ const lchip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||
 function labSeeds(j){return (j.candidates||[]).map(c=>Object.assign({sid:'seed_'+c.id},c));}
 function jGet(id){return ((window._lab||{}).journeys||[]).find(j=>j.id===id||(j.keys||[]).indexOf(id)>=0)||null;}
 function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
- if(j.col==='live')return (en?'in the robot since ':'dans le robot depuis le ')+_escS((S.live||{}).date||'')+((S.live||{}).labo?' \u00b7 '+(en?'the lab\u2019s robot':'robot du labo'):'');
+ if(j.col==='live'){const w=(S.live||{}).watch;const wl=w&&w.labo?' \u00b7 '+(en?'watched: ':'surveill\u00e9e : ')+(w.labo.trades||0)+' / '+(w.need||30)+' trades \u00b7 '+(en?'lab ':'labo ')+'<b style="color:'+((w.labo.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(w.labo.net)+'</b> \u00b7 '+(en?'real robot ':'vrai robot ')+'<b>'+mn(w.real.net)+'</b>':'';
+  return (en?'in the robot since ':'dans le robot depuis le ')+_escS((S.live||{}).date||'')+((S.live||{}).labo?' \u00b7 '+(en?'the lab\u2019s robot':'robot du labo'):'')+wl;}
  if(j.col==='test'){const t=S.test||{};if(t.forward)return en?'watched live, no money':'observ\u00e9e en direct, sans argent';const d=t.duel;const du=d&&d.twin?' \u00b7 '+(en?'robot ':'robot ')+'<b style="color:'+((d.real.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(d.real.net)+'</b> '+(en?'same period':'m\u00eame p\u00e9riode'):'';return (t.status==='stopped'?(en?'twin stopped':'jumeau arr\u00eat\u00e9'):(en?'twin playing for pretend':'jumeau qui joue pour de faux'))+' \u00b7 '+(t.trades||0)+' / '+((d&&d.need)||30)+' trades \u00b7 '+(en?'twin ':'jumeau ')+'<b style="color:'+((t.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(t.net)+'</b>'+du;}
  if(j.col==='replay'){const r=S.replay||{};const dd=S.decision||{};
   if(!r.verdict&&dd.d)return (dd.d==='yes'?'<b style="color:var(--up-soft)">'+(en?'yes':'oui')+'</b>':'<b style="color:var(--down-soft)">'+(en?'no':'non')+'</b> \u00b7 '+(en?'the numbers said no':'les chiffres ont dit non'))+(dd.date?' \u00b7 '+_escS(dd.date):'');
@@ -5190,7 +5191,7 @@ function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCo
   const keep=S2.filter(x=>vd(x)!=='C'),no=S2.filter(x=>vd(x)==='C');
   cards=keep.map(x=>jCard(x,en)).join('')+(AR.length?'<div class="pf-cap" style="margin-top:10px">'+AR.length+' '+(en?(AR.length>1?'ideas set aside after three nights of no':'idea set aside after three nights of no'):(AR.length>1?'id\u00e9es mises de c\u00f4t\u00e9 apr\u00e8s trois nuits de non':'id\u00e9e mise de c\u00f4t\u00e9 apr\u00e8s trois nuits de non'))+'. '+(en?'The chercheur still knows about them.':'Le chercheur les conna\u00eet toujours.')+'</div>':'')+
    jFold('jfold',no.length+' '+(en?(no.length>1?'ideas said no':'idea said no'):(no.length>1?'id\u00e9es ont dit non':'id\u00e9e a dit non')),no,en);}
- else if(k==='test'){const off=x=>['stopped','retired'].indexOf((ST(x).test||{}).status)>=0;const on=L.filter(x=>!off(x)),no=L.filter(off);
+ else if(k==='test'){const off=x=>['stopped','retired','reverted'].indexOf((ST(x).test||{}).status)>=0;const on=L.filter(x=>!off(x)),no=L.filter(off);
   cards=on.map(x=>jCard(x,en)).join('')+jFold('jfold2',no.length+' '+(en?(no.length>1?'twins stopped':'twin stopped'):(no.length>1?'jumeaux arr\u00eat\u00e9s':'jumeau arr\u00eat\u00e9')),no,en);}
  else if(k==='idea'){cards=[...L].sort((a,b)=>(VO[(ST(a).replay||{}).verdict]??2)-(VO[(ST(b).replay||{}).verdict]??2)).map(x=>jCard(x,en)).join('');}
  else cards=L.map(x=>jCard(x,en)).join('');
@@ -5286,7 +5287,7 @@ function labStage(k){const en=LANG()==='en';let title='',body='';
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function jStrip(j,en){const S=j.steps||{};const r=S.replay||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Tested':'Test\u00e9e',r.pretest?'':(r.last||(S.decision||{}).date)],['test',en?'For pretend':'Pour de faux',(S.test||{}).started],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
  const idx={idea:1,replay:2,test:3,live:4};const cur=idx[j.col]||1;
- const no=(S.decision||{}).d==='no'||['stopped','retired'].indexOf((S.test||{}).status)>=0;
+ const no=(S.decision||{}).d==='no'||['stopped','retired','reverted'].indexOf((S.test||{}).status)>=0;
  return '<div class="jst">'+N.map(([k,l,d],i)=>{const n=i+1;const done=n<=cur;const cls=(done?'done':'')+(n===cur?' now':'')+(no&&n===cur?' no':'');
   return '<div class="'+cls+'"><i>'+(no&&n===cur?'\u00d7':(done&&n<cur?'\u2713':n))+'</i>'+l+'<small>'+(d?_escS(String(d).slice(5)):'\u00a0')+'</small></div>';}).join('')+'</div>';}
 function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
@@ -8357,6 +8358,20 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                 st["live"] = {"date": (t.get("deployed") or ""), "labo": True}
                 ev.append({"d": t.get("deployed") or "", "fr": "Entr\u00e9e toute seule dans le robot du labo",
                            "en": "Went into the lab\u2019s robot by itself", "k": "live"})
+                # 2026-10-02: the lab's robot is watched after the deploy
+                # (lab/twin_judge.py watch_deployed); the card shows where it stands
+                try:
+                    _pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))["packages"]["labo"]
+                    if (_pk.get("_watch") or {}).get("id") == t.get("id"):
+                        st["live"]["watch"] = _pk["_watch"]
+                    if _pk.get("_confirmed"):
+                        ev.append({"d": _pk["_confirmed"], "fr": "Confirm\u00e9e dans le robot du labo : devant le vrai robot sur 30 trades",
+                                   "en": "Confirmed in the lab\u2019s robot: ahead of the real robot over 30 trades", "k": "live"})
+                except Exception:
+                    pass
+            if t.get("status") == "reverted":
+                ev.append({"d": t.get("reverted") or "", "fr": "Ressortie du robot du labo : derri\u00e8re le vrai robot une fois dedans",
+                           "en": "Came back out of the lab\u2019s robot: behind the real robot once inside", "k": "test"})
         elif reg and reg.get("status") == "forward":
             st["test"] = {"started": reg.get("date"), "days": None, "forward": True}
             ev.append({"d": reg.get("date", ""), "fr": "Observ\u00e9e en direct, sans argent", "en": "Watched live, no money", "k": "test"})

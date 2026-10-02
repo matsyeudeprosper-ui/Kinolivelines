@@ -222,6 +222,14 @@ def deploy(tid, cfg, fr, en):
         pk[TO_PKG[k]] = v
     _sj(PKG_FILE, raw)
     # a bot resolves its package ONCE at import, so a restart is the deploy
+    err = _restart_labo()
+    if err:
+        return False, f"redemarrage: {err}"
+    return True, ", ".join(f"{TO_PKG[k]} {v}" for k, v in sorted(diff.items()))
+
+
+def _restart_labo():
+    """Stop the lab's bot and start it again; '' or the error."""
     try:
         subprocess.Popen(["powershell", "-NoProfile", "-Command",
                           "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*structure_bos_bot.py " + LABO_VARIANT + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"],
@@ -233,8 +241,103 @@ def deploy(tid, cfg, fr, en):
         subprocess.Popen([exe, os.path.join(LIVE, "structure_bos_bot.py"), LABO_VARIANT],
                          cwd=LIVE, creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
     except Exception as e:
-        return False, f"redemarrage: {e}"
-    return True, ", ".join(f"{TO_PKG[k]} {v}" for k, v in sorted(diff.items()))
+        return str(e)
+    return ""
+
+
+LABO_JOURNAL = os.path.join(LIVE, "bos_journal_labo.csv")
+LOT_REF = 0.02
+
+
+def _rows_of(path, since_ts):
+    """Closed base trades of one journal since `since_ts`, money scaled to
+    LOT_REF so a 0.01 bot and a 0.02 bot compare fairly."""
+    out = []
+    try:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            for r in csv.DictReader(fh):
+                if r.get("is_add") == "True" or not r.get("exit_time_utc"):
+                    continue
+                tx = datetime.fromisoformat(r["exit_time_utc"].replace("Z", "+00:00")).timestamp()
+                if tx < since_ts:
+                    continue
+                lot = float(r.get("lot") or LOT_REF) or LOT_REF
+                out.append({"t": tx, "pnl": float(r.get("profit_usd") or 0) * LOT_REF / lot, "lot": lot})
+    except Exception:
+        pass
+    return sorted(out, key=lambda x: x["t"])
+
+
+def watch_deployed(tw, dec, today):
+    """2026-10-02 (owner): after a deploy, the lab's robot is judged the way
+    its twin was - against the real robot, same period, 30 trades. Behind
+    on money and deeper in its hole = the previous dials come back. Ahead =
+    confirmed, said once. Returns True when twins/decisions changed."""
+    raw = _lj(PKG_FILE, None)
+    pk = ((raw or {}).get("packages") or {}).get(LABO_PKG)
+    dep = (pk or {}).get("_deployed")
+    if not dep:
+        return False
+    try:
+        since = datetime.strptime(dep.get("date", today), "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp()
+    except Exception:
+        since = 0
+    L = _rows_of(LABO_JOURNAL, since)
+    R = _real_rows(since)
+    for r in R:
+        r["pnl"] = r["pnl"] * LOT_REF / r["lot"]
+    T, Rc = _curve(L), _curve(R)
+    ready = T["trades"] >= NEED and Rc["trades"] >= NEED_REAL
+    if T["trades"] == 0:
+        status = "early"
+    elif T["net"] > Rc["net"] and T["worst"] <= Rc["worst"] + 0.5:
+        status = "ahead"
+    elif T["net"] < Rc["net"] and T["worst"] > Rc["worst"] + 0.5:
+        status = "behind"
+    else:
+        status = "even"
+    slim = lambda c: {k: v for k, v in c.items() if k != "curve"}
+    watch = {"since": dep.get("date"), "id": dep.get("id"), "labo": slim(T), "real": slim(Rc),
+             "need": NEED, "need_real": NEED_REAL, "ready": ready, "status": status}
+    tid, fr, en = dep.get("id"), dep.get("title_fr") or dep.get("id"), dep.get("title_en") or dep.get("id")
+    t = next((x for x in tw.get("twins", []) if x.get("id") == tid), None)
+    changed = False
+    if ready and status == "behind":
+        for k, v in (pk.get("_previous") or {}).items():
+            pk[k] = v
+        pk["_reverted"] = {"id": tid, "date": today, "title_fr": fr, "title_en": en,
+                           "labo": slim(T), "real": slim(Rc)}
+        pk.pop("_deployed", None)
+        pk.pop("_previous", None)
+        pk.pop("_confirmed", None)
+        pk.pop("_watch", None)
+        _sj(PKG_FILE, raw)
+        _restart_labo()
+        if t is not None:
+            t["status"] = "reverted"
+            t["reverted"] = today
+        dec.setdefault("decisions", {})[tid] = {
+            "d": "no", "date": today, "by": "lab",
+            "note": f"dans le robot du labo, derriere le vrai robot sur {T['trades']} trades ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $, trou {T['worst']:.0f} contre {Rc['worst']:.0f}) : les reglages d'avant sont revenus"}
+        emit("twin_reverted",
+             ("\u21a9\ufe0f Le labo : une idée est ressortie du robot",
+              f"« {fr} » a fait moins bien que le vrai robot une fois dans le robot du labo ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $ sur {T['trades']} trades, trou plus profond). Les réglages d’avant sont revenus, tout seuls. Gardée comme un non."),
+             ("\u21a9\ufe0f The lab: an idea came back out of the robot",
+              f"“{en}” did worse than the real robot once inside the lab’s robot ({T['net']:+.0f} $ vs {Rc['net']:+.0f} $ over {T['trades']} trades, deeper hole). The previous dials are back, by themselves. Kept as a no."),
+             members=True)
+        return True
+    pk["_watch"] = watch
+    if ready and status == "ahead" and not pk.get("_confirmed"):
+        pk["_confirmed"] = today
+        changed = True
+        emit("twin_confirmed",
+             ("\u2705 Le labo : une idée confirmée dans le robot",
+              f"« {fr} » tient ses promesses dans le robot du labo : {T['net']:+.0f} $ contre {Rc['net']:+.0f} $ pour le vrai robot sur {T['trades']} trades, trou pas plus profond. Elle reste."),
+             ("\u2705 The lab: an idea confirmed in the robot",
+              f"“{en}” keeps its promise in the lab’s robot: {T['net']:+.0f} $ vs {Rc['net']:+.0f} $ for the real robot over {T['trades']} trades, hole no deeper. It stays."),
+             members=True)
+    _sj(PKG_FILE, raw)
+    return changed
 
 
 def _kill_twin(tid):
@@ -304,6 +407,8 @@ def judge():
                      ("\U0001f6e0 The lab: an idea won but cannot go in",
                       f"“{en}” beat the robot ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $) but cannot be applied: {how}."),
                      members=False)
+    if watch_deployed(tw, dec, today):
+        changed = True
     if changed:
         _sj(TWINS, tw)
         _sj(DEC, dec)
