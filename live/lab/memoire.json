@@ -1,0 +1,23 @@
+{
+ "_doc": [
+  "The chercheur's continuous mind (owner 2026-10-02). It reads this FIRST",
+  "every night and writes it LAST. Nothing here is overwritten by the app;",
+  "only the chercheur edits it. Members never see this file directly - the",
+  "night report's beliefs are the top of `hypotheses`, in plain words.",
+  "",
+  "hypotheses: what it believes, with a status (nouveau / en test / renforce /",
+  "  affaibli / rejete / dans le robot), the evidence trail (one line per night",
+  "  it moved), and what would settle it next.",
+  "tried: every what-if it ran or proposed, the result, so it never repeats",
+  "  a look without new data.",
+  "scrutiny_log: which facts/piles it examined on which night, and what it saw.",
+  "lessons: things it learned about the data itself (traps, noise floors).",
+  "open: questions it has not answered yet, ranked."
+ ],
+ "updated": null,
+ "hypotheses": [],
+ "tried": [],
+ "scrutiny_log": [],
+ "lessons": [],
+ "open": []
+}

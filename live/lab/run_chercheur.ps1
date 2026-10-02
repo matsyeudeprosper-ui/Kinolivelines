@@ -22,11 +22,17 @@ try {
     Say ("auto_ask exit " + $LASTEXITCODE)
 } catch { Say ("auto_ask failed: " + $_.Exception.Message) }
 try {
+    # 2026-10-02 (owner): the chercheur's eyes - the night's ledger of the
+    # real trades, written before the session reads it
+    python lab/scrutiny.py --write *> (Join-Path $lab "scrutiny_last.log")
+    Say ("scrutiny exit " + $LASTEXITCODE)
+} catch { Say ("scrutiny failed: " + $_.Exception.Message) }
+try {
     New-Item -ItemType Directory -Force (Join-Path $lab "notes") | Out-Null
     $claude = "$env:USERPROFILE\.local\bin\claude.exe"
     $mission = Get-Content (Join-Path $lab "CHERCHEUR.md") -Raw
     $mission += "`n`nToday is " + (Get-Date -Format "yyyy-MM-dd") + ". Begin."
-    $out = & $claude -p $mission --output-format text --max-turns 90 `
+    $out = & $claude -p $mission --output-format text --max-turns 140 `
         --allowedTools "Bash(python *)","Read","Write","Edit","Glob","Grep" 2>&1 | Out-String
     Set-Content -Path (Join-Path $lab "chercheur_last.log") -Value $out -Encoding utf8
     Say ("chercheur session done, " + $out.Length + " chars")
@@ -38,7 +44,7 @@ try {
     python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/memoire.json lab/metrics.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null
