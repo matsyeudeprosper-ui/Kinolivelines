@@ -1563,6 +1563,30 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .tap44{position:relative}
 .tap44::after{content:"";position:absolute;left:50%;top:50%;
  transform:translate(-50%,-50%);width:100%;height:44px;min-width:44px}
+/* 2026-10-02 (owner): the Labo landing - three doors answering the only
+   three questions anyone has, before the pipeline rail drops them into
+   the middle of it. Restraint, as on the weather card: a number that
+   leads, a hairline, one accent each, and a real 44px target. */
+.labdoors{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.labdoor{display:flex;align-items:center;gap:13px;width:100%;
+ background:var(--surface);border:1px solid var(--border);
+ border-radius:15px;padding:14px 14px;min-height:60px;text-align:left;
+ color:var(--text);cursor:pointer}
+.labdoor:active{background:var(--surface2)}
+.labdn{font-size:1.5rem;font-weight:800;line-height:1;min-width:34px;
+ font-variant-numeric:tabular-nums;text-align:center;flex:none}
+.labdt{font-weight:700;font-size:.97rem;flex:none}
+.labds{flex:1;min-width:0;font-size:.78rem;color:var(--muted);
+ line-height:1.3}
+.labdoor .chv{flex:none;color:var(--muted);width:17px;height:17px}
+.labseedline{display:flex;align-items:center;gap:8px;width:100%;
+ margin-top:8px;background:transparent;border:1px dashed var(--border2);
+ border-radius:13px;padding:12px 14px;min-height:46px;text-align:left;
+ color:var(--text2);font-size:.82rem;line-height:1.35;cursor:pointer}
+.labseedline b{font-variant-numeric:tabular-nums}
+.labseedline .chv{flex:none;margin-left:auto;color:var(--muted);
+ width:16px;height:16px}
+@media(max-width:360px){.labdt{font-size:.9rem}.labds{display:none}}
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
 .hl{animation:hlp 1.6s ease-in-out 2}
 @keyframes hlp{0%,100%{box-shadow:var(--hl)}50%{box-shadow:0 0 0 2px var(--accent),0 0 28px rgba(59,130,246,.45)}}
@@ -5014,9 +5038,32 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
 function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};const l=L[c.label]||L.trop_tot;const esc=_escS;
  const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
  return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'seed':'graine','var(--warn)')+lchip(l[0],l[1])+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
-  '<div class="lcn">'+c.n+' trades \u00b7 '+pc(c.win)+' '+(en?'won, against':'gagn\u00e9s, contre')+' '+pc(c.rest_win)+' '+(en?'for the others':'pour les autres')+(d===null?'':' <b style="font-size:.78rem;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">('+(d>=0?'+':'')+d+')</b>')+'</div>'+
-  '<div class="lcm"><span>'+(en?'seen in the real trades':'vu dans les vrais trades')+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Details':'D\u00e9tails')+' \u203a</span></div></div>';}
-function jCol(){let i=window._jcol;if(i===undefined){try{i=parseInt(localStorage.getItem('owlLabCol'));}catch(e){}}if(!(i>=0&&i<JCOLS.length)){const j=window._lab||{};const J=j.journeys||[];const seeds=labSeeds(j);i=JCOLS.findIndex(([k])=>J.some(x=>x.col===k)||(k==='idea'&&seeds.length));if(i<0)i=0;}return i;}
+ // 2026-10-02 (owner): under 30 trades this printed a confident
+ // comparison - "10 trades, 20 % contre 67 % (-47)" - which reads as
+ // a finding and is noise. Same gate as the multi-timeframe payoff
+ // card: say how far off it is, show the figure when it earns it.
+ // (the line above already ends in '+', so this must NOT start with one:
+ //  '...' + +('<div>') is unary plus on a string, which is NaN)
+ ((c.n||0)>=LAB_MIN_N
+   ? '<div class="lcn">'+c.n+' trades \u00b7 '+pc(c.win)+' '+
+     (en?'won, against':'gagn\u00e9s, contre')+' '+pc(c.rest_win)+' '+
+     (en?'for the others':'pour les autres')+(d===null?'':
+      ' <b style="color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+
+      '">('+(d>=0?'+':'')+d+')</b>')+'</div>'
+   : '<div class="lcn" style="color:var(--muted)">'+(c.n||0)+
+     ' trades \u00b7 '+(en
+       ? 'still '+(LAB_MIN_N-(c.n||0))+' to go before this says anything'
+       : 'encore '+(LAB_MIN_N-(c.n||0))+
+         ' avant de pouvoir se prononcer')+'</div>')+
+ '<div class="lcm"><span>'+(en?'seen in the real trades':'vu dans les vrais trades')+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Details':'D\u00e9tails')+' \u203a</span></div></div>';}
+// 2026-10-02 (owner): a first visit used to land on IDEAS - eleven seeds
+// that all say "not enough trades". Land on what is settled instead; the
+// rail is right there for anyone who wants the rest.
+function jCol(){let i=window._jcol;if(i===undefined){try{i=parseInt(localStorage.getItem('owlLabCol'));}catch(e){}}if(!(i>=0&&i<JCOLS.length)){const j=window._lab||{};const J=j.journeys||[];const seeds=labSeeds(j);// prefer the settled end of the pipeline: what is IN the robot,
+ // else what is being watched, else wherever there is anything.
+ const pref=['live','test','decided','replay','idea'];
+ i=-1;for(const k of pref){if(J.some(x=>x.col===k)||(k==='idea'&&seeds.length)){i=JCOLS.findIndex(c=>c[0]===k);break;}}
+ if(i<0)i=0;}return i;}
 function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.col===k).length+(k==='idea'?labSeeds(j).length:0);}
 function jRail(en){const cur=jCol();
  return '<div class="jrail" id="jrail">'+JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<div class="jn'+(i===cur?' on':'')+(i<cur?' past':'')+'" onclick="jGo('+i+')" role="tab" aria-selected="'+(i===cur?'true':'false')+'" style="--jc:'+c+'"><i>'+jCount(k)+'</i><span>'+(en?es:fs)+'</span></div>').join('')+'</div>';}
@@ -5030,7 +5077,59 @@ function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCo
  return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+(L.length+seeds.length)+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
   '<div class="jcards" id="jcards">'+(cards||'<div class="panel" style="text-align:center;padding:26px 14px;color:var(--muted);font-size:.86rem">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>'+
   '<div class="jfoot">'+(cur>0?'<button class="tfc" onclick="jGo('+(cur-1)+')">\u2039 '+(en?JCOLS[cur-1][5]:JCOLS[cur-1][4])+'</button>':'<span></span>')+(cur<JCOLS.length-1?'<button class="tfc" onclick="jGo('+(cur+1)+')">'+(en?JCOLS[cur+1][5]:JCOLS[cur+1][4])+' \u203a</button>':'<span></span>')+'</div>';}
-function labBoard(en){setTimeout(jSwipe,80);return '<div class="panel jboard" id="jb">'+jRail(en)+'<div id="jstage">'+jStage(en)+'</div></div>';}
+// 2026-10-02 (owner): "even grandma should navigate it without getting
+// lost". The pipeline rail is good and stays; what was missing is a
+// landing that answers the three questions anyone actually has before
+// dropping them into the middle of it. Each door jumps to its column.
+const LAB_MIN_N = 30;   // trades before a seed figure is worth printing
+function labDoors(en){
+ const j=window._lab||{};
+ const cnt=k=>(j.journeys||[]).filter(x=>x.col===k).length;
+ const seeds=labSeeds(j);
+ const idx=k=>JCOLS.findIndex(c=>c[0]===k);
+ const door=(k,n,title,sub,col)=>'<button class="labdoor" onclick="jGo('+
+  idx(k)+')"><span class="labdn" style="color:'+col+'">'+n+'</span>'+
+  '<span class="labdt">'+title+'</span>'+
+  '<span class="labds">'+sub+'</span>'+
+  '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
+ let h='<div class="labdoors">'+
+  door('live',cnt('live'),
+   en?'In the robot':'Dans le robot',
+   en?'rules it follows today':'les r\u00e8gles qu\u2019il suit aujourd\u2019hui',
+   'var(--up-soft)')+
+  door('test',cnt('test'),
+   en?'Being watched':'En observation',
+   en?'playing live, for pretend, no money':'en direct, pour de faux, sans argent',
+   'var(--accent-soft)')+
+  door('decided',cnt('decided'),
+   en?'Decided':'Tranch\u00e9es',
+   en?'said yes or no, and why':'oui ou non, et pourquoi',
+   '#b98cff')+
+  '</div>';
+ // the seeds get ONE line, not eleven cards shouting the same thing
+ if(seeds.length){
+  const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
+  // one flex child for the whole sentence, as the doors do - handing
+  // flex three children turned it into three columns.
+  h+='<button class="labseedline" onclick="jGo('+idx('idea')+')">'+
+   '<span class="labdn" style="font-size:1.15rem;color:var(--warn)">'+
+   seeds.length+'</span>'+
+   '<span style="flex:1;min-width:0">'+
+   (en?'trails found in your real trades':
+       'pistes trouv\u00e9es dans vos vrais trades')+
+   ' \u00b7 <span style="color:var(--muted)">'+
+   (ready?(en?ready+' ready to read':ready+' lisibles')
+        :(en?'none has enough trades to read yet'
+            :'aucune n\u2019a encore assez de trades'))+
+   '</span></span>'+
+   '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
+ }
+ return h;
+}
+function labBoard(en){setTimeout(jSwipe,80);
+ return labDoors(en)+
+  '<div class="panel jboard" id="jb">'+jRail(en)+
+  '<div id="jstage">'+jStage(en)+'</div></div>';}
 function jGo(i){if(!(i>=0&&i<JCOLS.length))return;const dir=i>jCol()?1:-1;window._jcol=i;try{localStorage.setItem('owlLabCol',String(i));}catch(e){}
  const en=LANG()==='en';const r=document.getElementById('jrail');if(r)r.outerHTML=jRail(en);const st=document.getElementById('jstage');if(!st)return;
  st.style.transition='none';st.style.opacity='0';st.style.transform='translateX('+(dir*18)+'px)';st.innerHTML=jStage(en);
