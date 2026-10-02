@@ -1623,6 +1623,19 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  text-transform:uppercase}
 .nt-go{margin-top:10px;min-height:44px;width:100%;justify-content:center}
 .nt-none{font-size:.84rem;color:var(--muted);padding:4px 0}
+.labnewbox{margin:0 0 12px}
+.labnewh{font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+ color:#b98cff;margin:0 0 7px}
+.labnew{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+ background:var(--surface);border:1px solid rgba(185,140,255,.3);border-radius:14px;
+ padding:12px 13px;margin:0 0 7px;color:var(--text);font:inherit;cursor:pointer}
+.labnew:active{background:var(--surface2)}
+.labnew .chv{flex:none;color:var(--muted);width:17px;height:17px}
+.labnt{display:block;font-weight:700;font-size:.92rem;line-height:1.35}
+.labnv{display:block;font-size:.7rem;font-weight:800;letter-spacing:.04em;
+ text-transform:uppercase;margin-top:3px}
+.labnw{display:block;font-size:.78rem;color:var(--muted2);margin-top:3px;line-height:1.4;
+ overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .labnight{display:flex;align-items:center;gap:11px;width:100%;
  margin-top:8px;background:var(--surface);
  border:1px solid rgba(185,140,255,.3);border-radius:14px;
@@ -5001,6 +5014,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  // chercheur's night was a 389px card sitting above them - a dense report
  // standing between a reader and the navigation. Same treatment as "Quoi
  // de neuf" on the home: one line, opening the full thing.
+ h+=labNew(en);
  h+=labDoors(en);
  if(N.date){const AU=j.auto||{};const cc=AU.counts||{};
   const RQn=(j.requests||[]).length;
@@ -5026,6 +5040,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
      (RQn?RQn+' '+(en?'asked of us':'demande'+(RQn>1?'s':'')):'')+
      '</span>':'')+
    '</span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
+ h+=labSeedLine(en);
  h+=labBoard(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
@@ -5214,6 +5229,14 @@ function labDoors(en){
    en?'said yes or no, and why':'oui ou non, et pourquoi',
    '#b98cff')+
   '</div>';
+ return h;
+}
+// 2026-10-02 (owner): the clues used to sit above the night. They are a
+// waiting room - not one of them has ever become an idea - so they go
+// last, and the night's new ideas take the top.
+function labSeedLine(en){
+ const j=window._lab||{};const seeds=labSeeds(j);
+ const idx=k=>JCOLS.findIndex(c=>c[0]===k);let h='';
  // the seeds get ONE line, not eleven cards shouting the same thing
  if(seeds.length){
   const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
@@ -5233,6 +5256,37 @@ function labDoors(en){
    '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
  }
  return h;
+}
+// The newest thing the chercheur produced, at the top where it belongs.
+// Three at most: past that it is a list, and a list is what the night
+// report is for.
+function labNew(en){
+ const j=window._lab||{};
+ const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
+ if(!PR.length)return '';
+ const esc=_escS;
+ // best first: leading the page with an idea the replay said no to is
+ // the opposite of putting the find in front
+ const VO={A:0,B:1,'=':2,C:3};
+ const vOf=p=>(((jGet(p.id)||{}).steps||{}).replay||{}).verdict||'';
+ PR.sort((a,b)=>(VO[vOf(a)]??2)-(VO[vOf(b)]??2));
+ const row=p=>{const jn=jGet(p.id)||{};
+  const v=((jn.steps||{}).replay||{}).verdict||'';
+  const vc={A:'var(--up-soft)','B':'var(--accent-soft)','=':'var(--muted)',C:'var(--down-soft)'}[v]||'var(--muted)';
+  const why=String((en?p.why_en:p.why_fr)||'').split('.')[0];
+  return '<button class="labnew" onclick="labJourney(&#39;'+esc(p.id)+'&#39;)">'+
+   '<span style="flex:1;min-width:0">'+
+   '<span class="labnt">'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</span>'+
+   (v?'<span class="labnv" style="color:'+vc+'">'+esc(vWord(v,en))+'</span>':'')+
+   (why?'<span class="labnw">'+esc(why)+'</span>':'')+
+   '</span><svg class="ic chv"><use href="#i-chev"/></svg></button>';};
+ return '<div class="labnewbox">'+
+  '<div class="labnewh">'+(en?'New tonight \u00b7 what the researcher found':
+    'Nouveau cette nuit \u00b7 ce que le chercheur a trouv\u00e9')+'</div>'+
+  PR.slice(0,3).map(row).join('')+
+  (PR.length>3?'<button class="tfc" style="width:100%;margin-top:8px;padding:10px;justify-content:center" onclick="labNight()">'+
+    (PR.length-3)+' '+(en?'more in the night report':'autres dans le rapport de la nuit')+' \u203a</button>':'')+
+  '</div>';
 }
 // the doors are emitted by labRender, above the night line - not here
 function labBoard(en){setTimeout(jSwipe,80);
