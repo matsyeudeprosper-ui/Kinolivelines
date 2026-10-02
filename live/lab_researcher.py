@@ -88,11 +88,11 @@ BATTERY = [
     # scored C (see lab/CHERCHEUR.md). Re-running proven losers 34 times a
     # night only gives noise more chances to produce a false A; the chercheur
     # can still combine them in a proposal when it has a reason.
-    ("bul2", "Deux renforts au lieu de trois après une perte", "Two boosts instead of three after a loss", "argent", {"bullets": 2}),
-    ("bul4", "Quatre renforts au lieu de trois après une perte", "Four boosts instead of three after a loss", "argent", {"bullets": 4}),
-    ("bul0", "Aucun renfort après une perte", "No boost after a loss", "argent", {"bullets": 0}),
-    ("k1", "Un seul renfort de suite, puis on attend un gain", "One boost in a row, then wait for a win", "argent", {"k_streak": 1}),
-    ("k3", "Jusqu’à trois renforts de suite", "Up to three boosts in a row", "argent", {"k_streak": 3}),
+    ("bul2", "Deux trades de rattrapage au lieu de trois après une perte", "Two catch-up trades instead of three after a loss", "argent", {"bullets": 2}),
+    ("bul4", "Quatre trades de rattrapage au lieu de trois après une perte", "Four catch-up trades instead of three after a loss", "argent", {"bullets": 4}),
+    ("bul0", "Aucun trade de rattrapage après une perte", "No catch-up trade after a loss", "argent", {"bullets": 0}),
+    ("k1", "Se rattraper une seule fois, puis attendre un gain", "Catch up once, then wait for a win", "argent", {"k_streak": 1}),
+    ("k3", "Se rattraper jusqu’à trois pertes de suite", "Keep catching up until three losses in a row", "argent", {"k_streak": 3}),
     # 2026-09-30: the per-trade risk ceiling (review/RISK_CAP.md). It
     # SHRINKS the lot to fit and only refuses when even 0.01 would
     # exceed the cap - refusing outright costs about twice as much,
@@ -296,9 +296,9 @@ def main():
                 try:
                     import twin_judge as TJ      # 2026-09-29: tell Kino + the Strategie members
                     TJ.emit("twin_started", ("\U0001f9ea Le labo : un jumeau démarre",
-                                             f"« {fr} » a eu un A cette nuit. Une copie du robot l’essaie pour de faux à partir de maintenant."),
+                                             f"« {fr} » a été mieux sur les deux moitiés cette nuit. Une copie du robot l’essaie pour de faux à partir de maintenant."),
                             ("\U0001f9ea The lab: a twin starts",
-                             f"“{en}” scored an A tonight. A copy of the robot tries it for pretend from now on."), members=True)
+                             f"“{en}” was better on both halves tonight. A copy of the robot tries it for pretend from now on."), members=True)
                 except Exception as e:
                     say(f"event failed: {e}")
     hist.close()

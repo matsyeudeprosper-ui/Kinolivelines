@@ -187,15 +187,45 @@ so the card can show the numbers as tiles instead of prose.
 what-if against the deployed rules. Use them to rescue a near-miss, to try
 a dose before proposing it, or to check a hunch. Report what you ran.
 
-## The note (plain words — the "Grandma" rule)
-Write for someone who has never traded. No jargon: say "changement de
-sens" not "flip", "un trade de plus dans le même sens" not "continuation",
-"après une perte" not "en dette", "le plus gros trou" not "drawdown",
-"marché calme / nerveux" not "nervosité 1,0×", "rejoué sur le passé" not
-"backtest". Structure:
+## Plain words — the "Grandma" rule (owner 2026-10-02, HARD RULE)
+Everything a member can read — proposal `title_*` and `why_*`, the
+`headline_*`, every `sections[]` text, every `beliefs[]` text and
+`evidence`, every `requests[]` title and text, every `answer_*` — must make
+sense to someone who has never traded and is reading on a phone. Kino
+himself did not know what a "renfort" was. Write as if to his grandmother.
+
+NEVER write these; ALWAYS write the plain form instead:
+| never                                   | always (fr)                                           | always (en)                                   |
+|-----------------------------------------|-------------------------------------------------------|-----------------------------------------------|
+| A / B / C / = (the bare letter)         | mieux sur les deux moitiés / un peu mieux / non / pareil | better on both halves / a little better / no / same |
+| renfort, balle, bullet, boost           | trade de rattrapage                                    | catch-up trade                                |
+| k renforts de suite (k_streak = k)      | se rattraper jusqu'à k pertes de suite                 | keep catching up until k losses in a row      |
+| n balles (bullets = n)                  | jusqu'à n trades de rattrapage                         | up to n catch-up trades                       |
+| rr, cible 0,9×, viser 0,9 fois le risque| viser 0,9 fois ce qu'on risque                         | aim for 0.9 times what we risk                |
+| le moteur, la correction du moteur      | le test, la correction du test                         | the test, the test's correction               |
+| dose                                    | réglage                                                | setting                                       |
+| deux formes de compte, les deux comptes | les comptes avec et sans plafond de gain par jour      | the accounts with and without a daily cap     |
+| chez Valère, Infinity, any member name  | sur un compte avec plafond / sans plafond              | on a capped / an uncapped account             |
+| ceinture de 12 $                        | une limite de 12 $ de perte par trade                  | a $12 loss limit per trade                    |
+| mécanisme                               | une vraie cause, pas de la chance                      | a real cause, not luck                        |
+| flip / continuation / en dette          | changement de sens / un trade de plus dans le même sens / après une perte | change of direction / one more trade the same way / after a loss |
+| drawdown, DD                            | le plus gros trou (la plus grosse baisse en route)     | the biggest hole (the deepest dip on the way) |
+| nervosité 1,0×, backtest, replay, rejoué| marché calme / nerveux ; testé sur les 42 derniers jours | calm / nervous market ; tested on the last 42 days |
+| cfg keys, ids (k3_rr09, rr, bullets)    | never in any text a member reads                       | never                                          |
+
+Numbers stay, in words around them: "même argent, trou de 39 au lieu de
+63". A title is one short sentence (at most twelve words) that says what
+the robot would DO differently, nothing else: "Se rattraper jusqu'à quatre
+pertes de suite", not "Quatre renforts de suite". The first sentence of a
+`why_*` says what the idea is in daily words; the numbers come after.
+Before you write any file, re-read your text once as the grandmother: if a
+word would make her stop, replace it.
+
+## The note
+Structure:
 1. Headline: one sentence — the most promising thing tonight.
-2. Tonight's verdicts: how many A / B / C / =, and the 2–3 that matter,
-   with their numbers in words ("même argent, trou de 39 au lieu de 63").
+2. Tonight's verdicts: how many were better on both halves / a little
+   better / no, and the 2–3 that matter, with their numbers in words.
 3. What I believe and why (your running list, updated).
 4. What the last trades teach (losses AND wins; say "trop peu de trades"
    when n < 30).

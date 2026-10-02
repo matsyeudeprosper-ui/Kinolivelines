@@ -3973,8 +3973,8 @@
   },
   {
    "id": "bul2",
-   "title_fr": "Deux renforts au lieu de trois après une perte",
-   "title_en": "Two boosts instead of three after a loss",
+   "title_fr": "Deux rattrapages au lieu de trois après une perte",
+   "title_en": "Two catch-ups instead of three after a loss",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
@@ -4098,8 +4098,8 @@
   },
   {
    "id": "bul4",
-   "title_fr": "Quatre renforts au lieu de trois après une perte",
-   "title_en": "Four boosts instead of three after a loss",
+   "title_fr": "Quatre rattrapages au lieu de trois après une perte",
+   "title_en": "Four catch-ups instead of three after a loss",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
@@ -4223,8 +4223,8 @@
   },
   {
    "id": "bul0",
-   "title_fr": "Aucun renfort après une perte",
-   "title_en": "No boost after a loss",
+   "title_fr": "Aucun rattrapage après une perte",
+   "title_en": "No catch-up after a loss",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
@@ -4348,8 +4348,8 @@
   },
   {
    "id": "k1",
-   "title_fr": "Un seul renfort de suite, puis on attend un gain",
-   "title_en": "One boost in a row, then wait for a win",
+   "title_fr": "Un se rattraper jusqu’à seul pertes de suite, puis on attend un gain",
+   "title_en": "keep catching up until One losses in a row, then wait for a win",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
@@ -4473,8 +4473,8 @@
   },
   {
    "id": "k3",
-   "title_fr": "Jusqu’à trois renforts de suite",
-   "title_en": "Up to three boosts in a row",
+   "title_fr": "Jusqu’à se rattraper jusqu’à trois pertes de suite",
+   "title_en": "Up to keep catching up until three losses in a row",
    "family": "argent",
    "cfg": {
     "rr": 0.8,
@@ -4973,8 +4973,8 @@
   },
   {
    "id": "rr10_k3",
-   "title_fr": "Viser un gain égal au risque, avec jusqu'à trois renforts de suite",
-   "title_en": "Aim for a gain equal to the risk, with up to three boosts in a row",
+   "title_fr": "Viser un gain égal au risque, avec jusqu'à se rattraper jusqu’à trois pertes de suite",
+   "title_en": "Aim for a gain equal to the risk, with up to keep catching up until three losses in a row",
    "family": "cible",
    "cfg": {
     "rr": 1.0,
@@ -5473,8 +5473,8 @@
   },
   {
    "id": "ext700_k3_b",
-   "title_fr": "Pas d'entrée après une envolée de 700 points, et trois renforts de suite (deuxième audience)",
-   "title_en": "No entry after a 700-point run, and three boosts in a row (second hearing)",
+   "title_fr": "Pas d'entrée après une envolée de 700 points, et se rattraper jusqu’à trois pertes de suite (deuxième audience)",
+   "title_en": "No entry after a 700-point run, and keep catching up until three losses in a row (second hearing)",
    "family": "rythme",
    "cfg": {
     "rr": 0.8,

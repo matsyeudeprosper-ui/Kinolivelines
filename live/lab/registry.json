@@ -1,6 +1,6 @@
 {
  "updated": "2026-09-28",
- "note": "The lab's curated registry, written for someone who has never traded: every idea the robot has faced, what we found, and what was decided. Live figures come from the journals and the twins; this file holds what was TESTED and DECIDED. Add an entry when a replay is published in review/; never edit a verdict without a new replay.",
+ "note": "The lab's curated registry, written for someone who has never traded: every idea the robot has faced, what we found, and what was decided. Live figures come from the journals and the twins; this file holds what was TESTED and DECIDED. Add an entry when a test is published in review/; never edit a verdict without a new test.",
  "items": [
   {
    "id": "flip1",
@@ -13,8 +13,8 @@
    "title_en": "After a loss: one trade, then only one more",
    "note_fr": "Quand le robot est dans le rouge, il attend que le marché change de sens, prend ce trade, puis un seul dans le même sens. Pas plus. On a vérifié : en prendre deux ou trois fait perdre de l’argent, n’en prendre aucun divise les gains par deux.",
    "note_en": "When the robot is in the red, it waits for the market to change direction, takes that trade, then only one more the same way. No more. We checked: taking two or three loses money, taking none halves the gains.",
-   "nums_fr": "Sur 42 jours rejoués : +$164 avec cette règle, +$83 sans le trade de plus, −$52 avec deux, −$58 avec trois.",
-   "nums_en": "Over 42 replayed days: +$164 with this rule, +$83 without the extra trade, −$52 with two, −$58 with three.",
+   "nums_fr": "Sur 42 jours testés : +$164 avec cette règle, +$83 sans le trade de plus, −$52 avec deux, −$58 avec trois.",
+   "nums_en": "Over 42 tested days: +$164 with this rule, +$83 without the extra trade, −$52 with two, −$58 with three.",
    "src": "review/recovery_n_continuations_test.py"
   },
   {
@@ -73,8 +73,8 @@
    "title_en": "When the market is more nervous than usual, the robot lets it go",
    "note_fr": "On compare la taille des bougies de l’heure à celle des dernières 24 heures. Au-dessus de la normale, les trades vont moins bien. En dessous, ce n’est pas forcément mieux. C’est un frein, pas une promesse. Chaque compte peut l’activer ou non.",
    "note_en": "We compare the candle size of the hour with the last 24 hours. Above normal, trades go worse. Below, not necessarily better. It is a brake, not a promise. Each account can turn it on or off.",
-   "nums_fr": "Sur le passé : 37 % de trades gagnés juste au-dessus de la normale, 64 % juste en dessous. Chez Valère en vrai : 70 % de gagnés en marché calme.",
-   "nums_en": "On the past: 37 % of trades won just above normal, 64 % just below. On Valère for real: 70 % won in a calm market.",
+   "nums_fr": "Sur le passé : 37 % de trades gagnés juste au-dessus de la normale, 64 % juste en dessous. Chez le compte avec plafond en vrai : 70 % de gagnés en marché calme.",
+   "nums_en": "On the past: 37 % of trades won just above normal, 64 % just below. On the capped account for real: 70 % won in a calm market.",
    "src": "review/nerv_test.py, review/valere_calm_only.py"
   },
   {
@@ -86,8 +86,8 @@
    "robot": "oui",
    "title_fr": "La tirelire : une partie des gains sert à se refaire après une perte",
    "title_en": "The jar: part of the wins pays to recover after a loss",
-   "note_fr": "À chaque gain, 40 % vont dans une tirelire. Après une perte, la tirelire paie un petit renfort sur le trade suivant, au plus trois fois. Choix de Kino, même si la simulation était un peu moins bonne.",
-   "note_en": "On every win, 40 % goes into a jar. After a loss, the jar pays a small boost on the next trade, at most three times. Kino’s choice, even though the simulation was a bit worse.",
+   "note_fr": "À chaque gain, 40 % vont dans une tirelire. Après une perte, la tirelire paie un petit rattrapage sur le trade suivant, au plus trois fois. Choix de Kino, même si la simulation était un peu moins bonne.",
+   "note_en": "On every win, 40 % goes into a jar. After a loss, the jar pays a small catch-up on the next trade, at most three times. Kino’s choice, even though the simulation was a bit worse.",
    "nums_fr": "Détail dans review/DEBT_SYSTEM.md.",
    "nums_en": "Details in review/DEBT_SYSTEM.md.",
    "src": "review/DEBT_SYSTEM.md"
@@ -133,8 +133,8 @@
    "title_en": "Aim for a smaller gain on each trade",
    "note_fr": "Aujourd’hui le robot vise un gain égal à 0,8 fois ce qu’il risque. Avec la moitié, on gagne plus souvent, on finit avec le même argent, et les mauvaises passes font un tiers de mal en moins. Pas plus riche, mais moins de peur. À observer d’abord sur la démo.",
    "note_en": "Today the robot aims for a gain equal to 0.8 times what it risks. With half of that, it wins more often, ends with the same money, and the bad stretches hurt a third less. Not richer, but less fear. To watch on the demo first.",
-   "nums_fr": "Sur 42 jours rejoués : même argent (−$16), plus gros trou 39 au lieu de 63. Chez Valère en vrai : +$24 avec 24 gagnés et 14 perdus, contre +$27 avec 33 gagnés et 5 perdus.",
-   "nums_en": "Over 42 replayed days: same money (−$16), biggest hole 39 instead of 63. On Valère for real: +$24 with 24 won and 14 lost, vs +$27 with 33 won and 5 lost.",
+   "nums_fr": "Sur 42 jours testés : même argent (−$16), plus gros trou 39 au lieu de 63. Chez le compte avec plafond en vrai : +$24 avec 24 gagnés et 14 perdus, contre +$27 avec 33 gagnés et 5 perdus.",
+   "nums_en": "Over 42 tested days: same money (−$16), biggest hole 39 instead of 63. On the capped account for real: +$24 with 24 won and 14 lost, vs +$27 with 33 won and 5 lost.",
    "src": "review/half_tp_test.py"
   },
   {
@@ -148,8 +148,8 @@
    "title_en": "Do not enter right after a big run",
    "note_fr": "Si le prix a déjà bougé de plus de 500 points dans l’heure, le robot laisserait passer. Même argent, un trou un peu moins profond. Ça ne concerne que 20 trades sur 260 : trop peu pour décider. On regarde à nouveau mi-octobre.",
    "note_en": "If price already moved more than 500 points in the hour, the robot would let it go. Same money, a slightly shallower hole. Only 20 trades out of 260: too few to decide. We look again mid-October.",
-   "nums_fr": "Sur 42 jours rejoués : même argent, plus gros trou 50 au lieu de 63.",
-   "nums_en": "Over 42 replayed days: same money, biggest hole 50 instead of 63.",
+   "nums_fr": "Sur 42 jours testés : même argent, plus gros trou 50 au lieu de 63.",
+   "nums_en": "Over 42 tested days: same money, biggest hole 50 instead of 63.",
    "src": "review/LOSS_PROFILE_GATES.md"
   },
   {
@@ -163,8 +163,8 @@
    "title_en": "Is Sunday a bad day?",
    "note_fr": "Un seul mauvais dimanche en vrai pour l’instant. Sur le passé, sauter le dimanche gagne un peu sur l’ensemble, mais pas sur les deux moitiés de la période. Donc on ne sait pas encore.",
    "note_en": "Only one bad Sunday for real so far. On the past, skipping Sunday gains a little overall, but not on both halves of the period. So we do not know yet.",
-   "nums_fr": "Sur 42 jours rejoués : +$15 en tout, mais −$26 sur la première moitié et +$41 sur la seconde.",
-   "nums_en": "Over 42 replayed days: +$15 overall, but −$26 on the first half and +$41 on the second.",
+   "nums_fr": "Sur 42 jours testés : +$15 en tout, mais −$26 sur la première moitié et +$41 sur la seconde.",
+   "nums_en": "Over 42 tested days: +$15 overall, but −$26 on the first half and +$41 on the second.",
    "src": "review/LOSS_PROFILE_GATES.md"
   },
   {
@@ -239,8 +239,8 @@
    "title_en": "Take a 30 or 60 minute break after each trade",
    "note_fr": "On perd les deux tiers des gains et les mauvaises passes sont plus profondes. Les trades qui s’enchaînent vite sont justement ceux qui rattrapent les pertes.",
    "note_en": "Two thirds of the gains are lost and the bad stretches get deeper. The trades that follow quickly are exactly the ones that recover the losses.",
-   "nums_fr": "Sur 42 jours rejoués : −$106 avec 30 min, −$107 avec 60 min.",
-   "nums_en": "Over 42 replayed days: −$106 with 30 min, −$107 with 60 min.",
+   "nums_fr": "Sur 42 jours testés : −$106 avec 30 min, −$107 avec 60 min.",
+   "nums_en": "Over 42 tested days: −$106 with 30 min, −$107 with 60 min.",
    "src": "review/LOSS_PROFILE_GATES.md"
   },
   {
@@ -254,8 +254,8 @@
    "title_en": "No trading on weekends",
    "note_fr": "Moins d’argent à la fin et des passes plus dures.",
    "note_en": "Less money at the end and harder stretches.",
-   "nums_fr": "Sur 42 jours rejoués : −$28.",
-   "nums_en": "Over 42 replayed days: −$28.",
+   "nums_fr": "Sur 42 jours testés : −$28.",
+   "nums_en": "Over 42 tested days: −$28.",
    "src": "review/LOSS_PROFILE_GATES.md"
   },
   {
@@ -269,8 +269,8 @@
    "title_en": "Do not enter after a 300-point run",
    "note_fr": "Moins d’argent, et les deux moitiés de la période ne sont pas d’accord.",
    "note_en": "Less money, and the two halves of the period disagree.",
-   "nums_fr": "Sur 42 jours rejoués : −$26.",
-   "nums_en": "Over 42 replayed days: −$26.",
+   "nums_fr": "Sur 42 jours testés : −$26.",
+   "nums_en": "Over 42 tested days: −$26.",
    "src": "review/LOSS_PROFILE_GATES.md"
   },
   {
@@ -284,8 +284,8 @@
    "title_en": "After a loss, take two or three more trades the same way",
    "note_fr": "À peine plus de trades, moins d’argent, et la deuxième moitié de la période passe au rouge.",
    "note_en": "Barely more trades, less money, and the second half of the period turns red.",
-   "nums_fr": "Sur 42 jours rejoués : −$52 avec deux, −$58 avec trois.",
-   "nums_en": "Over 42 replayed days: −$52 with two, −$58 with three.",
+   "nums_fr": "Sur 42 jours testés : −$52 avec deux, −$58 avec trois.",
+   "nums_en": "Over 42 tested days: −$52 with two, −$58 with three.",
    "src": "review/recovery_n_continuations_test.py"
   },
   {
@@ -299,8 +299,8 @@
    "title_en": "After a loss, take only the change of direction, nothing else",
    "note_fr": "Moitié moins d’argent pour des passes un peu moins dures. Les deux moitiés de la période ne sont pas d’accord.",
    "note_en": "Half the money for slightly softer stretches. The two halves of the period disagree.",
-   "nums_fr": "Sur 42 jours rejoués : +$83 au lieu de +$164.",
-   "nums_en": "Over 42 replayed days: +$83 instead of +$164.",
+   "nums_fr": "Sur 42 jours testés : +$83 au lieu de +$164.",
+   "nums_en": "Over 42 tested days: +$83 instead of +$164.",
    "src": "review/recovery_n_continuations_test.py"
   },
   {

@@ -5033,7 +5033,7 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
  const C=j.counts||{};const n=k=>C[k]||0;
  const tile=(l,v,c,k)=>'<button class="ls'+(window._labTab===k?' on':'')+'" onclick="labTab(&#39;'+k+'&#39;)"><b style="color:'+c+'">'+v+'</b>'+l+'</button>';
  const FAM={structure:[en?'how it enters':'comment il entre','var(--accent-soft)'],meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],cible:[en?'gain and loss limits':'gain et limite de perte','#b98cff'],rythme:[en?'when it trades':'quand il trade','#e8743b'],argent:[en?'the money':'l\u2019argent','var(--up-soft)'],donnees:[en?'the data':'les donn\u00e9es','var(--muted2)']};
- const VB={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']};
+ const VB={A:['\u2713\u2713','var(--up-soft)','rgba(46,204,113,.14)'],B:['\u2713','var(--warn)','rgba(232,197,90,.14)'],C:['\u2717','var(--down-soft)','rgba(255,92,92,.12)']};
  const ST={deployed:[en?'In the robot':'Dans le robot','var(--up-soft)'],candidate:[en?'To try':'\u00c0 essayer','#b98cff'],planned:[en?'To start':'\u00c0 lancer','#b98cff'],forward:[en?'Watching live':'Observ\u00e9 en direct','var(--accent-soft)'],observation:[en?'Not sure yet':'Pas encore s\u00fbr','var(--warn)'],idea:[en?'Idea':'Id\u00e9e','var(--warn)'],rejected:[en?'Said no':'\u00c9cart\u00e9e','var(--muted2)']};
  const chip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+'">'+t+'</span>';
  const esc=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
@@ -5053,15 +5053,15 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
   h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas on the table':'Id\u00e9es sur la table')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
  }else if(k==='tests'){
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We rerun the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On refait les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
-   '<div class="st"><div><b style="color:var(--up-soft)">A</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">C</b>'+(en?'no':'non')+'</div></div>'+
+   '<div class="st"><div><b style="color:var(--up-soft)">\u2713\u2713</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">\u2713</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">\u2717</b>'+(en?'no':'non')+'</div></div>'+
    '<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-top:10px">'+(en?'Three looks at every idea. <b>42 days</b> gives the mark. <b>The long window</b> is all the history the terminal holds ('+(((j.auto||{}).days_long)||'\u2014')+' days today; it grows when the history grows). <b>The real trades</b> replay the idea on the exact entries the robot took since the journal began ('+(((j.auto||{}).real_n)||0)+' so far). Weaker on the last two is a caution, never a reason to drop an idea.':'Trois regards sur chaque id\u00e9e. <b>42 jours</b> donne la note. <b>La fen\u00eatre longue</b>, c\u2019est tout l\u2019historique que le terminal garde ('+(((j.auto||{}).days_long)||'\u2014')+' jours aujourd\u2019hui ; elle grandit avec l\u2019historique). <b>Les vrais trades</b> testent l\u2019id\u00e9e sur les entr\u00e9es exactes que le robot a prises depuis le d\u00e9but du journal ('+(((j.auto||{}).real_n)||0)+' pour l\u2019instant). Plus faible sur ces deux-l\u00e0, c\u2019est une prudence, jamais une raison d\u2019\u00e9carter une id\u00e9e.')+'</div></div>';
   const AU=j.auto||{},AV=AU.variants||[];
-  if(AV.length){const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VB2={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)'],'=':['=','var(--muted)','rgba(255,255,255,.05)']};
+  if(AV.length){const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VB2={A:['\u2713\u2713','var(--up-soft)','rgba(46,204,113,.14)'],B:['\u2713','var(--warn)','rgba(232,197,90,.14)'],C:['\u2717','var(--down-soft)','rgba(255,92,92,.12)'],'=':['=','var(--muted)','rgba(255,255,255,.05)']};
    const order={A:0,B:1,'=':2,C:3};const sorted=[...AV].sort((a,b)=>(order[a.verdict]??9)-(order[b.verdict]??9)||(b.diff_net||0)-(a.diff_net||0));
    h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Tested last night by the chercheur':'Test\u00e9 cette nuit par le chercheur')+' <span class="hint">\u00b7 '+AV.length+' '+(en?'what-ifs':'\u00ab et si \u00bb')+(AU.days?' \u00b7 '+AU.days+' '+(en?'days':'jours'):'')+'</span></div>';
    h+='<div class="panel" style="padding:4px 14px">'+sorted.map(v=>{const b=VB2[v.verdict]||VB2['='];const bt=AU.base||{};
     return '<div class="kv"><span class="lcb" style="width:30px;height:30px;font-size:.9rem;color:'+b[1]+';background:'+b[2]+'">'+b[0]+'</span><div class="kvt"><b>'+esc(en?v.title_en:v.title_fr)+'</b><span>'+(v.verdict==='='?(en?'no real change':'pas de vrai changement'):(en?'money ':'argent ')+mn(v.diff_net||0)+' \u00b7 '+(en?'biggest hole ':'plus gros trou ')+mn(v.diff_worst||0)+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+mn(((v.h1||{}).net||0)-(((AU.base||{}).h1||{}).net||0))+' / '+mn(((v.h2||{}).net||0)-(((AU.base||{}).h2||{}).net||0)))+(v.long?' \u00b7 '+v.long.days+(en?' days: ':' jours : ')+v.long.verdict+' '+mn(v.long.diff_net||0):'')+(v.real?' \u00b7 '+(en?'real trades ':'vrais trades ')+mn(v.real.diff_net||0)+' ('+v.real.n_real+')':'')+(v.src==='chercheur'?' \u00b7 '+(en?'proposed by the chercheur':'propos\u00e9 par le chercheur'):'')+'</span></div></div>';}).join('')+'</div>';
-   h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'A: more money on both halves of the period. B: a smaller hole without losing money, or more money with one half agreeing. C: no. =: nothing changed.':'A : plus d\u2019argent sur les deux moiti\u00e9s de la p\u00e9riode. B : un trou moins profond sans perdre d\u2019argent, ou plus d\u2019argent avec une moiti\u00e9 d\u2019accord. C : non. = : rien ne change.')+'</div>';}
+   h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'\u2713\u2713 more money on both halves of the period. \u2713 a smaller hole without losing money, or more money with one half agreeing. \u2717 no. = nothing changed.':'\u2713\u2713 plus d\u2019argent sur les deux moiti\u00e9s de la p\u00e9riode. \u2713 un trou moins profond sans perdre d\u2019argent, ou plus d\u2019argent avec une moiti\u00e9 d\u2019accord. C : non. = : rien ne change.')+'</div>';}
   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Worth trying':'\u00c0 essayer')+'</div>'+items.filter(it=>it.status==='candidate'||it.status==='planned').map(item).join('')+'<div class="sec" style="margin:18px 8px 8px">'+(en?'We said no':'On a dit non')+' <span class="hint">\u00b7 '+(en?'kept here so nobody proposes them again':'gard\u00e9es ici pour ne pas les reproposer')+'</span></div>'+items.filter(it=>it.status==='rejected').map(item).join('');
  }else if(k==='forward'){
   const tw=j.twin||{},fw=j.forward||{},lv=fw.live||{},e=j.e017||{};
@@ -5092,6 +5092,10 @@ const JCOLS=[['idea','Id\u00e9es','Ideas','#d2b8ff','id\u00e9es','ideas'],['repl
 const JSTAGE={idea:'ideas',replay:'tests',test:'forward',live:'decisions'};
 // 2026-10-02 (owner): the letter alone taught nobody anything. These are
 // the same three verdicts in words, used on the cards beside it.
+// 2026-10-02 (owner): no bare letter anywhere a member looks. The mark
+// is what a card wears; the word is what a tile or a sentence says.
+function vMark(v){return {A:'\u2713\u2713',B:'\u2713',C:'\u2717','=':'='}[v]||'';}
+function vShort(v,en){return {A:en?'better':'mieux',B:en?'a bit':'un peu',C:en?'no':'non','=':en?'same':'pareil'}[v]||'';}
 function vWord(v,en){
  if(v==='A')return en?'better on both halves':'mieux sur les deux moiti\u00e9s';
  if(v==='B')return en?'a little better':'un peu mieux';
@@ -5100,7 +5104,7 @@ function vWord(v,en){
  return '';
 }
 function labMaps(en){return {FAM:{structure:[en?'how it enters':'comment il entre','var(--accent-soft)'],meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],cible:[en?'gain and loss limits':'gain et limite de perte','#b98cff'],rythme:[en?'when it trades':'quand il trade','#e8743b'],argent:[en?'the money':'l\u2019argent','var(--up-soft)'],donnees:[en?'the data':'les donn\u00e9es','var(--muted2)']},
- VB:{A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']}};}
+ VB:{A:['\u2713\u2713','var(--up-soft)','rgba(46,204,113,.14)'],B:['\u2713','var(--warn)','rgba(232,197,90,.14)'],C:['\u2717','var(--down-soft)','rgba(255,92,92,.12)']}};}
 const lchip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+'">'+t+'</span>';
 function labSeeds(j){return (j.candidates||[]).map(c=>Object.assign({sid:'seed_'+c.id},c));}
 function jGet(id){return ((window._lab||{}).journeys||[]).find(j=>j.id===id||(j.keys||[]).indexOf(id)>=0)||null;}
@@ -5109,7 +5113,7 @@ function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v
  if(j.col==='test'){const t=S.test||{};if(t.forward)return en?'watched live, no money':'observ\u00e9e en direct, sans argent';const d=t.duel;const du=d&&d.twin?' \u00b7 '+(en?'robot ':'robot ')+'<b style="color:'+((d.real.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(d.real.net)+'</b> '+(en?'same period':'m\u00eame p\u00e9riode'):'';return (t.status==='stopped'?(en?'twin stopped':'jumeau arr\u00eat\u00e9'):(en?'twin playing for pretend':'jumeau qui joue pour de faux'))+' \u00b7 '+(t.trades||0)+' / '+((d&&d.need)||30)+' trades \u00b7 '+(en?'twin ':'jumeau ')+'<b style="color:'+((t.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(t.net)+'</b>'+du;}
  if(j.col==='replay'){const r=S.replay||{};const dd=S.decision||{};
   if(!r.verdict&&dd.d)return (dd.d==='yes'?'<b style="color:var(--up-soft)">'+(en?'yes':'oui')+'</b>':'<b style="color:var(--down-soft)">'+(en?'no':'non')+'</b> \u00b7 '+(en?'the numbers said no':'les chiffres ont dit non'))+(dd.date?' \u00b7 '+_escS(dd.date):'');
-  const c={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)'}[r.verdict]||'var(--muted)';return '<b style="color:'+c+'">'+_escS(r.verdict||'\u2014')+'</b>'+(r.streak>1?' '+r.streak+(en?' nights in a row':' nuits de suite'):(r.nights?' '+(en?'last night':'cette nuit'):(r.hand?(en?' by hand':' \u00e0 la main'):(en?' first test':' premier test'))))+(r.diff_net!==undefined?' \u00b7 '+(en?'money ':'argent ')+mn(r.diff_net)+' \u00b7 '+(en?'hole ':'trou ')+mn(r.diff_worst):'');}
+  const c={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)'}[r.verdict]||'var(--muted)';return '<b style="color:'+c+'">'+(vShort(r.verdict,en)||'\u2014')+'</b>'+(r.streak>1?' '+r.streak+(en?' nights in a row':' nuits de suite'):(r.nights?' '+(en?'last night':'cette nuit'):(r.hand?(en?' by hand':' \u00e0 la main'):(en?' first test':' premier test'))))+(r.diff_net!==undefined?' \u00b7 '+(en?'money ':'argent ')+mn(r.diff_net)+' \u00b7 '+(en?'hole ':'trou ')+mn(r.diff_worst):'');}
  return en?'waiting for its first night of testing':'attend sa premi\u00e8re nuit de test';}
 function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];const S=j.steps||{};const r=S.replay||{};const v=M.VB[r.verdict];const esc=_escS;
  const badge=v?'<span class="lcb" style="color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span class="lcb" style="background:rgba(255,255,255,.05);color:'+col[3]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>';
@@ -5122,7 +5126,7 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
   chips+=lchip(vWord(r.verdict,en),v?v[1]:'var(--muted)',
    v?v[2]:'rgba(255,255,255,.05)');
  chips+=lchip(f[0],f[1]);
- if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
+ if(r.verdict&&r.streak>1)chips+=lchip(r.streak+(en?' nights in a row':' nuits de suite'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal'&&j.col!=='idea')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
  if(j.kind==='battery')chips+=lchip(en?'asked every night':'question de chaque nuit','var(--muted2)');
  if(j.stale)chips+=lchip(en?'to re-check':'\u00e0 rev\u00e9rifier','var(--warn)');
@@ -5276,7 +5280,7 @@ function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>
 function labStage(k){const en=LANG()==='en';let title='',body='';
  if(k==='how'){title=en?'The lab, in one minute':'Le labo, en une minute';
   body='<p style="font-size:.92rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Here we look for ways to make the robot better over time. Every idea travels left to right through four columns before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e voyage de gauche \u00e0 droite, par quatre colonnes, avant de toucher \u00e0 votre compte.')+'</p>'+
-   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from Kino, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, de Kino, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. A: better on both halves. B: a little better. C: no.':'On la teste sur les 42 derniers jours du march\u00e9. A : mieux sur les deux moiti\u00e9s. B : un peu mieux. C : non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are Kino\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
+   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from Kino, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, de Kino, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. Three possible answers: better on both halves, a little better, or no.':'On la teste sur les 42 derniers jours du march\u00e9. Trois r\u00e9ponses possibles : mieux sur les deux moiti\u00e9s, un peu mieux, ou non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are Kino\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
    '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; the tests decide.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; ce sont les tests qui d\u00e9cident.')+'</div>';}
  else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Tested':'Test\u00e9es'],forward:[en?'For pretend':'Pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
@@ -5323,7 +5327,7 @@ async function labDecide(id,d){const en=LANG()==='en';const j=jGet(id)||{};const
 // pre-test tiles when the chercheur ran the engine, tap for the full text
 const DIAL_BASE={rr:0.8,n_cont:1,wait_min:0,ext_pts:0,size_hot:1.0,nerv_gate:false,debt_nerv_gate:false,bullets:3,k_streak:2};
 function dialChips(cfg,en){const c=cfg||{};const out=[];const DN=en?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
- if(c.rr!==undefined&&c.rr!==DIAL_BASE.rr)out.push([(en?'aim ':'cible ')+String(c.rr).replace('.',en?'.':',')+'\u00d7','#b98cff']);
+ if(c.rr!==undefined&&c.rr!==DIAL_BASE.rr)out.push([(en?'aim for ':'viser ')+String(c.rr).replace('.',en?'.':',')+(en?'\u00d7 what we risk':'\u00d7 ce qu\u2019on risque'),'#b98cff']);
  if(c.n_cont!==undefined&&c.n_cont!==DIAL_BASE.n_cont)out.push([c.n_cont+(en?' extra trade'+(c.n_cont>1?'s':''):' trade'+(c.n_cont>1?'s':'')+' de plus'),'var(--accent-soft)']);
  if(c.wait_min)out.push([(en?'wait ':'pause ')+c.wait_min+' min','#e8743b']);
  if(c.ext_pts)out.push([(en?'not after ':'pas apr\u00e8s ')+c.ext_pts+' pts','#e8743b']);
@@ -5332,15 +5336,15 @@ function dialChips(cfg,en){const c=cfg||{};const out=[];const DN=en?['Mon','Tue'
  if(c.size_hot!==undefined&&c.size_hot!==DIAL_BASE.size_hot)out.push([(en?'stake \u00d7':'mise \u00d7')+c.size_hot+(en?' nervous':' nerveux'),'var(--warn)']);
  if(c.nerv_gate)out.push([en?'nothing if nervous':'rien si nerveux','var(--warn)']);
  if(c.debt_nerv_gate)out.push([en?'nothing if red + nervous':'rien si rouge + nerveux','var(--warn)']);
- if(c.bullets!==undefined&&c.bullets!==DIAL_BASE.bullets)out.push([c.bullets+(en?' boosts':' renforts'),'var(--up-soft)']);
- if(c.k_streak!==undefined&&c.k_streak!==DIAL_BASE.k_streak)out.push([c.k_streak+(en?' boosts in a row':' renforts de suite'),'var(--up-soft)']);
+ if(c.bullets!==undefined&&c.bullets!==DIAL_BASE.bullets)out.push([(en?'up to '+c.bullets+' catch-up trade'+(c.bullets>1?'s':''):'jusqu\u2019\u00e0 '+c.bullets+' trade'+(c.bullets>1?'s':'')+' de rattrapage'),'var(--up-soft)']);
+ if(c.k_streak!==undefined&&c.k_streak!==DIAL_BASE.k_streak)out.push([(en?'catch up until '+c.k_streak+' loss'+(c.k_streak>1?'es':'')+' in a row':'se rattraper jusqu\u2019\u00e0 '+c.k_streak+' perte'+(c.k_streak>1?'s':'')+' de suite'),'var(--up-soft)']);
  return out;}
 function propAuto(id){const v=(((window._lab||{}).auto||{}).variants||[]).find(x=>x.id===id);if(!v)return null;return {net:v.diff_net||0,worst:v.diff_worst||0,h1:(v.h1||{}).net||0,h2:(v.h2||{}).net||0,base_net:0,base_worst:0,long:v.long,real:v.real};}
 // 2026-09-29 (owner): two more views under the 42-day tiles - the long
 // window and the real trades. Weaker here = a caution, never a drop.
 function xTiles(r,en){const L=r&&r.long,T=r&&r.real;if(!L&&!T)return '';const mn=v=>Math.abs(v||0)<0.5?'$0':(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VC={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)','=':'var(--muted)'};
  const tile=(l,x,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.88rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
- return '<div style="display:flex;gap:6px;margin-top:6px">'+(L?tile((en?'over ':'sur ')+(L.days||'')+(en?' days':' jours'),'<span style="color:'+(VC[L.verdict]||'var(--text)')+'">'+_escS(L.verdict||'')+'</span> '+mn(L.diff_net),'var(--text)'):'')+(T?tile((en?'real trades (':'vrais trades (')+(T.n_real||0)+')',mn(T.diff_net),(T.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)'):'')+'</div>';}
+ return '<div style="display:flex;gap:6px;margin-top:6px">'+(L?tile((en?'over ':'sur ')+(L.days||'')+(en?' days':' jours'),'<span style="color:'+(VC[L.verdict]||'var(--text)')+'">'+vShort(L.verdict,en)+'</span> '+mn(L.diff_net),'var(--text)'):'')+(T?tile((en?'real trades (':'vrais trades (')+(T.n_real||0)+')',mn(T.diff_net),(T.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)'):'')+'</div>';}
 function propCard(p,en){const esc=_escS;const chips=dialChips(p.cfg,en).map(([t,c])=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">'+esc(t)+'</span>').join('');
  const why=esc(en?(p.why_en||''):(p.why_fr||''));const pt=p.pretest||propAuto(p.id);const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);
  const tile=(l,v,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
@@ -5427,7 +5431,7 @@ function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).fin
  const _jj=jGet(id);
  sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+id+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+'<p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
   '<div class="lbl" style="margin-top:8px">'+(en?'Numbers':'Les chiffres')+'</div><p style="font-size:.86rem;color:var(--text2)">'+(en?it.nums_en:it.nums_fr)+'</p>'+
-  '<div class="lbl" style="margin-top:8px">'+(en?'Where':'O\u00f9')+'</div><p style="font-size:.8rem;color:var(--muted2)">'+(it.src||'-')+' \u00b7 '+(it.date||'')+' \u00b7 '+(en?'verdict':'verdict')+' '+(it.verdict||'\u2014')+' \u00b7 '+(en?'robot':'robot')+' : '+(it.robot||'non')+'</p>'+
+  '<div class="lbl" style="margin-top:8px">'+(en?'Where':'O\u00f9')+'</div><p style="font-size:.8rem;color:var(--muted2)">'+(it.src||'-')+' \u00b7 '+(it.date||'')+' \u00b7 '+(en?'verdict':'verdict')+' '+(vWord(it.verdict,en)||'\u2014')+' \u00b7 '+(en?'robot':'robot')+' : '+(it.robot||'non')+'</p>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 // ---- batch 33b (owner): the market space shows the PATTERNS being established,
 // each with its evidence, its confidence and whether the robot uses it ----
@@ -8242,6 +8246,13 @@ def lab_candidates(J):
 LAB_ALIAS = {"twin_06": "rr06", "half_tp": "rr04", "sunday": "nosun", "weekend": "nowe",
              "wait": "wait30", "sizehot": "hothalf"}
 LAB_DEC = os.path.join(DIR, "lab", "decisions.json")
+# 2026-10-02 (owner): a story line never shows the bare letter
+VW_FR = {"A": "mieux sur les deux moiti\u00e9s", "B": "un peu mieux", "C": "non", "=": "pareil"}
+VW_EN = {"A": "better on both halves", "B": "a little better", "C": "no", "=": "same"}
+
+
+def _vw(v, en=False):
+    return (VW_EN if en else VW_FR).get(str(v or ""), str(v or ""))
 
 
 def _lab_hist():
@@ -8304,11 +8315,11 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                            "h2": round(((v.get("h2") or {}).get("net") or 0) - ((base.get("h2") or {}).get("net") or 0), 2),
                            "long": v.get("long"), "real": v.get("real")})
             first = rows[0]
-            ev.append({"d": first.get("d", ""), "fr": "Test\u00e9e pour la premi\u00e8re fois : " + str(first.get("verdict")),
-                       "en": "Tested for the first time: " + str(first.get("verdict")), "k": "replay"})
+            ev.append({"d": first.get("d", ""), "fr": "Test\u00e9e pour la premi\u00e8re fois : " + _vw(first.get("verdict")),
+                       "en": "Tested for the first time: " + _vw(first.get("verdict"), True), "k": "replay"})
             if nights > 1:
-                ev.append({"d": last.get("d", ""), "fr": "Derni\u00e8re nuit : " + str(last.get("verdict")) + (" (" + str(streak) + " nuits de suite)" if streak > 1 else ""),
-                           "en": "Last night: " + str(last.get("verdict")) + (" (" + str(streak) + " nights in a row)" if streak > 1 else ""), "k": "replay"})
+                ev.append({"d": last.get("d", ""), "fr": "Derni\u00e8re nuit : " + _vw(last.get("verdict")) + (" (" + str(streak) + " nuits de suite)" if streak > 1 else ""),
+                           "en": "Last night: " + _vw(last.get("verdict"), True) + (" (" + str(streak) + " nights in a row)" if streak > 1 else ""), "k": "replay"})
         elif prop and prop.get("pretest"):
             pt = prop["pretest"]
             rp = {"verdict": pt.get("verdict"), "nights": 0, "streak": 0, "last": (pt.get("at") or "")[:10], "pretest": True,
@@ -8316,12 +8327,12 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                   "diff_worst": round((pt.get("worst") or 0) - (pt.get("base_worst") or 0), 2),
                   "h1": round((pt.get("h1") or 0) - (pt.get("base_h1") or 0), 2), "h2": round((pt.get("h2") or 0) - (pt.get("base_h2") or 0), 2),
                   "long": pt.get("long"), "real": pt.get("real")}
-            ev.append({"d": max((pt.get("at") or "")[:10], date or ""), "fr": "Premier test, par le chercheur : " + str(pt.get("verdict")),
-                       "en": "First test, by the chercheur: " + str(pt.get("verdict")), "k": "replay"})
+            ev.append({"d": max((pt.get("at") or "")[:10], date or ""), "fr": "Premier test, par le chercheur : " + _vw(pt.get("verdict")),
+                       "en": "First test, by the chercheur: " + _vw(pt.get("verdict"), True), "k": "replay"})
         elif reg and reg.get("verdict") in ("A", "B", "C"):
             rp = {"verdict": reg.get("verdict"), "nights": 0, "streak": 0, "last": reg.get("date"), "hand": True}
-            ev.append({"d": reg.get("date", ""), "fr": "V\u00e9rifi\u00e9e \u00e0 la main : " + reg.get("verdict"),
-                       "en": "Checked by hand: " + reg.get("verdict"), "k": "replay"})
+            ev.append({"d": reg.get("date", ""), "fr": "V\u00e9rifi\u00e9e \u00e0 la main : " + _vw(reg.get("verdict")),
+                       "en": "Checked by hand: " + _vw(reg.get("verdict"), True), "k": "replay"})
         if rp:
             st["replay"] = rp
         # 3 - tested for pretend
