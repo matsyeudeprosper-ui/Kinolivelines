@@ -1630,55 +1630,77 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  100%{box-shadow:0 0 0 12px rgba(127,179,224,0)}}
 .jland{animation:jland .9s ease-out 1;border-radius:var(--r-lg)}
 /* 2026-10-02 (owner): the night report - one page read top to bottom. */
-.nt-eye{font-size:.62rem;font-weight:800;letter-spacing:.1em;
+.nt-eye{font-size:.62rem;font-weight:700;letter-spacing:.12em;
  text-transform:uppercase;color:#b98cff}
-#sheet h3.nt-h{font-size:1.18rem;line-height:1.32;margin:6px 0 12px}
-.nt-nav{position:sticky;top:0;z-index:2;display:flex;gap:6px;
- overflow-x:auto;margin:0 -20px 4px;padding:8px 20px;
- background:var(--surface2);border-bottom:1px solid var(--border);
- scrollbar-width:none}
+#sheet h3.nt-h{font-size:1.2rem;line-height:1.36;font-weight:650;
+ letter-spacing:-.015em;margin:8px 0 12px;color:var(--text)}
+.nt-cast{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+.nt-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 9px;
+ border-radius:99px;background:var(--surface2);border:1px solid var(--border);
+ font-size:.74rem;font-weight:600;color:var(--text2);font:inherit;cursor:pointer}
+.nt-pill i{width:7px;height:7px;border-radius:99px;flex:none}
+.nt-nav{position:sticky;top:0;z-index:2;display:flex;gap:2px;overflow-x:auto;
+ margin:0 -20px 4px;padding:8px 16px;scrollbar-width:none;
+ background:rgba(18,26,37,.86);backdrop-filter:blur(12px);
+ -webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+:root[data-theme=light] .nt-nav{background:rgba(255,255,255,.86)}
 .nt-nav::-webkit-scrollbar{display:none}
-.nt-nav button{flex:none;min-height:40px;padding:0 13px;border-radius:99px;
- border:1px solid var(--border2);background:var(--surface);
- color:var(--text2);font-size:.8rem;font-weight:600;white-space:nowrap}
-.nt-nav button:active{background:var(--surface3)}
-.nt-sec{scroll-margin-top:60px;padding-top:18px}
-.nt-sh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.nt-sh i{flex:none;width:26px;height:26px;border-radius:50%;
- background:rgba(185,140,255,.16);color:#b98cff;font-style:normal;
- font-size:.8rem;font-weight:800;display:flex;align-items:center;
- justify-content:center}
-.nt-sh b{font-size:1.02rem;color:var(--text)}
-.nt-sub{font-size:.8rem;color:var(--muted2);line-height:1.45;margin:-4px 0 10px}
-.nt-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.nt-tile{background:var(--surface);border:1px solid var(--border);
- border-radius:13px;padding:12px 8px;text-align:center}
-.nt-tile b{display:block;font-size:1.6rem;line-height:1;font-weight:800;
+.nt-nav button{flex:none;min-height:36px;padding:0 10px;border:0;border-radius:9px;
+ background:transparent;color:var(--muted);font-size:.78rem;font-weight:600;
+ white-space:nowrap;font:inherit;cursor:pointer}
+.nt-nav button i{font-style:normal;font-size:.66rem;opacity:.7;margin-right:5px;
  font-variant-numeric:tabular-nums}
-.nt-tile span{display:block;margin-top:6px;font-size:.72rem;line-height:1.3;
- color:var(--text2)}
-.nt-fold{background:var(--surface);border:1px solid var(--border);
- border-radius:13px;margin-bottom:8px;overflow:hidden}
+.nt-nav button.on{color:var(--text);background:var(--surface2)}
+.nt-sec{scroll-margin-top:56px;padding-top:24px}
+.nt-sh{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.nt-sh i{font-style:normal;font-size:.64rem;font-weight:700;letter-spacing:.1em;
+ color:#b98cff;font-variant-numeric:tabular-nums}
+.nt-sh b{font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+ color:var(--muted2)}
+.nt-sh::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+.nt-sub{font-size:.84rem;color:var(--muted2);line-height:1.5;margin:4px 0 12px}
+.nt-cap{font-size:.72rem;color:var(--muted);margin:10px 2px 0;text-align:right}
+.nt-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nt-tile{background:var(--tile-bg);border:1px solid var(--tile-bd);
+ border-radius:14px;padding:14px 8px 12px;text-align:center}
+.nt-tile b{display:block;font-size:1.7rem;line-height:1;font-weight:700;
+ letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.nt-tile span{display:block;margin-top:7px;font-size:.68rem;line-height:1.3;
+ color:var(--muted2)}
+.nt-fold{background:transparent;border:0;border-top:1px solid var(--border);
+ border-radius:0;margin:0;overflow:hidden}
+.nt-fold:last-of-type{border-bottom:1px solid var(--border)}
 .nt-fold summary{list-style:none;display:flex;align-items:center;gap:10px;
- min-height:48px;padding:10px 14px;font-weight:700;font-size:.92rem;
+ min-height:46px;padding:12px 2px;font-weight:600;font-size:.92rem;
  color:var(--text);cursor:pointer}
 .nt-fold summary::-webkit-details-marker{display:none}
 .nt-fold summary .chv{margin-left:auto;flex:none;width:16px;height:16px;
  color:var(--muted);transition:transform .2s}
 .nt-fold[open] summary .chv{transform:rotate(90deg)}
-.nt-fold .nt-b{padding:0 14px 14px;font-size:.92rem;line-height:1.6;
- color:var(--text2)}
+.nt-fold .nt-b{padding:0 2px 14px;font-size:.92rem;line-height:1.6;color:var(--text2)}
 .nt-fold .nt-b p{margin:0 0 9px;font-size:.92rem;color:var(--text2)}
 .nt-fold .nt-b p:last-child{margin-bottom:0}
-.nt-card{background:var(--surface);border:1px solid var(--border);
- border-radius:13px;padding:12px 14px;margin-bottom:8px}
-.nt-card b{display:block;font-size:.92rem;line-height:1.4;color:var(--text)}
-.nt-card span.nt-w{display:block;margin-top:5px;font-size:.8rem;
- line-height:1.5;color:var(--muted2)}
-.nt-chip{display:inline-block;margin-bottom:6px;padding:2px 9px;
- border-radius:99px;font-size:.62rem;font-weight:800;letter-spacing:.06em;
- text-transform:uppercase}
-.nt-go{margin-top:10px;min-height:44px;width:100%;justify-content:center}
+.nt-card{background:var(--tile-bg);border:1px solid var(--tile-bd);
+ border-radius:14px;padding:13px 14px;margin-bottom:8px}
+.nt-card b{display:block;font-size:.93rem;font-weight:600;line-height:1.4;
+ letter-spacing:-.005em;color:var(--text)}
+.nt-card span.nt-w{display:block;margin-top:6px;font-size:.82rem;line-height:1.55;
+ color:var(--text2)}
+.nt-chip{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:0;
+ border-radius:0;font-size:.62rem;font-weight:700;letter-spacing:.1em;
+ text-transform:uppercase;background:transparent!important}
+.nt-chip::before{content:"";width:6px;height:6px;border-radius:99px;background:currentColor}
+.nt-go{margin-top:12px;min-height:40px;width:auto;padding:0 14px;font-size:.78rem}
+.nt-day{position:relative;padding-left:18px;margin:4px 0 0}
+.nt-day::before{content:"";position:absolute;left:5px;top:8px;bottom:10px;width:1px;
+ background:var(--border2)}
+.nt-ev{position:relative;padding:0 0 16px}
+.nt-ev:last-child{padding-bottom:4px}
+.nt-dot{position:absolute;left:-18px;top:5px;width:11px;height:11px;border-radius:99px;
+ background:var(--surface);border:2px solid var(--accent-soft)}
+.nt-ev time{display:block;font-size:.66rem;color:var(--muted);letter-spacing:.06em;
+ margin-bottom:3px;font-variant-numeric:tabular-nums}
+.nt-ev p{margin:0;font-size:.9rem;line-height:1.55;color:var(--text)}
 .nt-none{font-size:.84rem;color:var(--muted);padding:4px 0}
 /* no media query hiding anything: the column stacks on its own, and a
    door without its sentence is a door nobody can read. */
@@ -5416,19 +5438,22 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  if(RQ.length)parts.push(['ask',en?'To build':'\u00c0 construire']);
  if(!parts.length&&!head)return;
  const num=k=>parts.findIndex(x=>x[0]===k)+1;
- const sh=(k,sub)=>'<div class="nt-sec" id="nt-'+k+'"><div class="nt-sh"><i>'+num(k)+'</i><b>'+esc(parts[num(k)-1][1])+'</b></div>'+(sub?'<div class="nt-sub">'+sub+'</div>':'');
+ const sh=(k,sub)=>'<div class="nt-sec" id="nt-'+k+'"><div class="nt-sh"><i>'+('0'+num(k)).slice(-2)+'</i><b>'+esc(parts[num(k)-1][1])+'</b></div>'+(sub?'<div class="nt-sub">'+sub+'</div>':'');
  let h='<div class="nt-eye">'+(en?'The researcher \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date||'')+'</div>';
  if(head)h+='<h3 class="nt-h">'+esc(head)+'</h3>';
- if(parts.length>1)h+='<div class="nt-nav">'+parts.map(x=>'<button onclick="ntGo(&#39;'+x[0]+'&#39;)">'+num(x[0])+' \u00b7 '+esc(x[1])+'</button>').join('')+'</div>';
+ // the cast of the night, one pill each, only those who did something
+ const CAST=[['day','Kino num\u00e9rique','var(--accent-soft)'],['crit',en?'The critic':'Le critique','#b98cff'],['build',en?'The builder':'Le constructeur','var(--up-soft)']].filter(c=>num(c[0]));
+ if(CAST.length)h+='<div class="nt-cast">'+CAST.map(c=>'<button class="nt-pill" onclick="ntGo(&#39;'+c[0]+'&#39;)"><i style="background:'+c[2]+'"></i>'+c[1]+'</button>').join('')+'</div>';
+ if(parts.length>1)h+='<div class="nt-nav">'+parts.map((x,i)=>'<button data-k="'+x[0]+'"'+(i===0?' class="on"':'')+' onclick="ntGo(&#39;'+x[0]+'&#39;)"><i>'+('0'+num(x[0])).slice(-2)+'</i>'+esc(x[1])+'</button>').join('')+'</div>';
  if(tot){h+=sh('res',en?'Every idea is tested on the last 42 days of the market, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est test\u00e9e sur les 42 derniers jours du march\u00e9, coup\u00e9s en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
   '<div class="nt-tiles">'+
   '<div class="nt-tile"><b style="color:var(--up-soft)">'+(cc.A||0)+'</b><span>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--accent-soft)">'+(cc.B||0)+'</b><span>'+(en?'a little better':'un peu mieux')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--muted)">'+((cc.C||0)+(cc['=']||0))+'</b><span>'+(en?'no':'non')+'</span></div></div>'+
-  '<div class="nt-sub" style="margin:10px 0 0">'+tot+' '+(en?'ideas tested in all.':'id\u00e9es test\u00e9es en tout.')+'</div></div>';}
+  '<div class="nt-cap">'+tot+' '+(en?'ideas tested in all':'id\u00e9es test\u00e9es en tout')+'</div></div>';}
  if(num('day')){h+=sh('day',en?'What Kino num\u00e9rique saw while watching the robot today.':'Ce que Kino num\u00e9rique a vu en surveillant le robot aujourd\u2019hui.')+
-  DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
-   return '<div class="nt-card"><span class="nt-w" style="display:block;margin:0 0 4px;color:var(--muted)">'+esc(hm)+'</span>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</div>';}).join('')+'</div>';}
+  '<div class="nt-day">'+DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
+   return '<div class="nt-ev"><span class="nt-dot"></span><time>'+esc(hm)+'</time><p>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</p></div>';}).join('')+'</div></div>';}
  if(num('crit')){h+=sh('crit',en?'A second AI tries to break every idea that scored better on both halves, before it can earn a twin.':'Une seconde intelligence artificielle essaie de casser chaque id\u00e9e mieux sur les deux moiti\u00e9s, avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau.')+
   CRQ.map(c=>{const jn=jGet(c.id);const cl=jn?JCOLS.find(x=>x[0]===jn.col):null;
    return '<div class="nt-card">'+chip(VW[c.verdict])+'<b>'+esc(titleOf(c.id))+'</b><span class="nt-w">'+esc(en?(c.en||c.fr):(c.fr||c.en))+'</span>'+
@@ -5464,7 +5489,8 @@ function ntIdea(id){const j=jGet(id);if(!j)return;const i=JCOLS.findIndex(c=>c[0
  setTimeout(()=>{jGo(i,1);setTimeout(()=>{const e=document.querySelector('[data-jid="'+id+'"]');
   const f=e&&e.closest('div[hidden]');if(f&&f.previousElementSibling)f.previousElementSibling.click();
   if(e){e.scrollIntoView({behavior:'smooth',block:'center'});e.classList.remove('jland');void e.offsetWidth;e.classList.add('jland');}},650);},520);}
-function ntGo(k){const e=document.getElementById('nt-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});}
+function ntGo(k){const e=document.getElementById('nt-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});
+ document.querySelectorAll('.nt-nav button').forEach(b=>{b.classList.toggle('on',b.dataset.k===k);if(b.dataset.k===k)b.scrollIntoView({block:'nearest',inline:'center'});});}
 function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).find(x=>x.id===id);if(!it)return;const en=LANG()==='en';
  const _jj=jGet(id);
  sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+id+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+'<p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
