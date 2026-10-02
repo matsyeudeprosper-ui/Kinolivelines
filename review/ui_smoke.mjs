@@ -100,6 +100,37 @@ const VAL = TOK("u224016179");
 console.log("UI SMOKE");
 console.log("");
 
+// 2026-10-02: this suite failed its first run after EVERY restart.ps1 and
+// passed on the re-run - three times in one evening. Not a flaky product:
+// a flaky test. The app answers on 8787 the moment it binds, but the chart
+// feed and the day's payload land a few seconds later, so the first page
+// load raced them and checks fired against half-built state.
+//
+// A suite that cries wolf after every restart is a suite people stop
+// reading, which is exactly when it stops catching anything. So it waits
+// for the server to be genuinely ready before it judges anything.
+{
+  const t0 = Date.now();
+  let ready = false, why = "no response";
+  while (Date.now() - t0 < 90000 && !ready) {
+    try {
+      const r = await fetch(`${BASE}/${VAL}/api?t=${Date.now()}`,
+        { cache: "no-store" });
+      if (r.ok) {
+        const j = await r.json();
+        // balance present means the worker file is loaded, not just the
+        // socket open; the chart checks need the feed too
+        if (j && j.balance !== undefined && !j.error) ready = true;
+        else why = j && j.error ? String(j.error) : "payload incomplete";
+      } else why = "http " + r.status;
+    } catch (e) { why = e.message; }
+    if (!ready) await sleep(1500);
+  }
+  console.log(ready
+    ? `  (server ready after ${((Date.now() - t0) / 1000).toFixed(1)}s)`
+    : `  WARNING: server not ready after 90s - ${why}; running anyway`);
+}
+
 // ---------- the chart -------------------------------------------------
 console.log("chart");
 await nav(`${BASE}/${VAL}/chart`); await sleep(9000);
