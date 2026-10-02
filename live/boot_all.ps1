@@ -103,6 +103,15 @@ if (-not (ProcRunning "structure_bos_bot.py expenses")) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "expenses" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2026-10-02 (owner): the LAB's own demo account. The lab deploys a
+# winning idea here by itself and restarts this one bot; it must come
+# back after a reboot like the rest, or the lab quietly loses its
+# account and every duel it wins goes nowhere.
+if (-not (ProcRunning "structure_bos_bot.py labo")) {
+    Say "starting BOS bot (labo)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "labo" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2j) Dad's real account: the DEFAULT instance, no argv (own debt ledger,
 # package special_10). Same gap as Infinity above - never had a launch
 # block, found and fixed the same day, before it was ever tested by a

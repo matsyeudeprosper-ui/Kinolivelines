@@ -45,7 +45,15 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # every account stops taking them unless it opts back in.
           # Measured -42.8% / -56.1% of net and never positive in any
           # split - review/INTERNAL_BOS.md.
-          "internal_entries")
+          "internal_entries",
+          # 2026-10-02: the first STRATEGY dials to become data. Every
+          # other field here is money management; these two change which
+          # trades happen, so they carry the same weight as code and are
+          # checked by review/bot_harness_parity.py like the rest.
+          # rr       - target, as a multiple of the stop distance
+          # k_streak - losing trades in a row after which recovery
+          #            bullets stop firing (harness: `streak < K`)
+          "rr", "k_streak")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -55,7 +63,7 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "week_target": None, "nervosity": True, "movement": True,
         "day_cap_waived": True, "scale_with_balance": False,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
-        "internal_entries": False}
+        "internal_entries": False, "rr": 0.8, "k_streak": 2}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

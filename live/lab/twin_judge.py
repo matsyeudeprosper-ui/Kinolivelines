@@ -40,6 +40,24 @@ QUEUE = os.path.join(LIVE, "owl_push_queue.json")
 NEED = 30          # twin trades before the duel can be judged
 NEED_REAL = 15
 OWNER_UID = "std"
+# 2026-10-02 (owner): a winner deploys itself to the lab's own demo account.
+# PKG_FILE is the same file every bot reads its dials from; LABO_PKG is the
+# package only this account uses, so nothing else can be reached from here.
+PKG_FILE = os.path.join(LIVE, "owl_packages.json")
+LABO_PKG = "labo"
+LABO_VARIANT = "labo"
+# The dials a bot can actually express. A winning cfg that needs anything
+# else is not deployable, and saying so is the honest outcome - the harness
+# knows ~37 dials and the bot has these.
+BOT_DIALS = {"rr", "k_streak", "lot", "bullets", "day_cap", "kill_net",
+             "risk_pct", "jar", "nerv_gate", "debt_mode", "max_trades_day",
+             "movement", "internal"}
+# harness dial -> the package field that carries it
+TO_PKG = {"rr": "rr", "k_streak": "k_streak", "lot": "base_lot",
+          "bullets": "max_extra", "day_cap": "day_cap", "kill_net": "kill_net",
+          "risk_pct": "max_risk_pct", "jar": "jar", "nerv_gate": "nervosity",
+          "debt_mode": "debt_mode", "max_trades_day": "max_trades_day",
+          "movement": "movement", "internal": "internal_entries"}
 
 
 def _lj(p, d):
@@ -162,6 +180,63 @@ def emit(kind, fr, en, members=False):
         pass
 
 
+def _base_cfg():
+    try:
+        sys.path.insert(0, os.path.join(LIVE, "lab"))
+        import harness as H
+        return dict(H.CFG_BASE)
+    except Exception:
+        return {}
+
+
+def deploy(tid, cfg, fr, en):
+    """Write a winning idea's dials into the labo package and restart that
+    bot. Returns (ok, message). Never touches another account."""
+    base = _base_cfg()
+    diff = {k: v for k, v in (cfg or {}).items()
+            if k in base and v != base[k]}
+    if not diff:
+        return False, "rien a changer"
+    missing = sorted(set(diff) - BOT_DIALS)
+    if missing:
+        return False, "le robot n'a pas de reglage pour " + ", ".join(missing)
+    raw = _lj(PKG_FILE, None)
+    if not raw or LABO_PKG not in (raw.get("packages") or {}):
+        return False, "paquet labo introuvable"
+    pk = raw["packages"][LABO_PKG]
+    # Keep what we are replacing, so an undo is one edit and not a memory.
+    # The RESOLVED value, not pk.get(): a package that inherits a dial has
+    # no key of its own, and writing that None back on an undo would stop
+    # the bot at import (float(None)).
+    try:
+        sys.path.insert(0, LIVE)
+        import owl_package as _PK
+        _PK._cache = {"t": 0.0, "raw": None, "err": None}
+        _eff = _PK.for_account(LABO_PKG)
+    except Exception:
+        _eff = {}
+    pk["_previous"] = {TO_PKG[k]: _eff.get(TO_PKG[k], pk.get(TO_PKG[k])) for k in diff}
+    pk["_deployed"] = {"id": tid, "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                       "title_fr": fr, "title_en": en}
+    for k, v in diff.items():
+        pk[TO_PKG[k]] = v
+    _sj(PKG_FILE, raw)
+    # a bot resolves its package ONCE at import, so a restart is the deploy
+    try:
+        subprocess.Popen(["powershell", "-NoProfile", "-Command",
+                          "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*structure_bos_bot.py " + LABO_VARIANT + "*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"],
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).wait(30)
+    except Exception:
+        pass
+    try:
+        exe = sys.executable.replace("python.exe", "pythonw.exe")
+        subprocess.Popen([exe, os.path.join(LIVE, "structure_bos_bot.py"), LABO_VARIANT],
+                         cwd=LIVE, creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
+    except Exception as e:
+        return False, f"redemarrage: {e}"
+    return True, ", ".join(f"{TO_PKG[k]} {v}" for k, v in sorted(diff.items()))
+
+
 def _kill_twin(tid):
     try:
         subprocess.Popen(["powershell", "-NoProfile", "-Command",
@@ -203,12 +278,32 @@ def judge():
                                f"« {fr} » a perdu le duel contre le robot ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $). Il est arrêté et gardé comme un non."),
                  ("\U0001f6d1 The lab: a twin stops",
                   f"“{en}” lost the duel against the robot ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $). Stopped and kept as a no."), members=True)
-        elif d["status"] == "ahead" and not t.get("ahead_notified"):
-            t["ahead_notified"] = today
+        elif d["status"] == "ahead" and not t.get("deployed") and not t.get("deploy_failed"):
+            # 2026-10-02 (owner): no decision waits here any more. It won its
+            # duel, so it goes in - on the lab's demo account.
+            ok, how = deploy(tid, (t.get("cfg") or {}), fr, en)
             changed = True
-            emit("twin_ahead", ("✅ Le labo : une décision vous attend",
-                                f"« {fr} » est devant le robot après {n} trades ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $, trou pas plus profond). Approuver ou rejeter dans le labo."),
-                 ("✅ The lab: a decision is waiting", ""), members=False)
+            if ok:
+                t["deployed"] = today
+                t["status"] = "deployed"
+                dec.setdefault("decisions", {})[tid] = {
+                    "d": "yes", "date": today, "by": "lab",
+                    "note": f"le jumeau a gagne le duel ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $) et est entre dans le robot du labo"}
+                _kill_twin(tid)
+                emit("twin_deployed",
+                     ("\U0001f680 Le labo : une idée est entrée dans le robot",
+                      f"« {fr} » a battu le robot sur {n} trades ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $) et vient d’entrer dans le robot du labo, toute seule. Réglage : {how}. Argent de démonstration. Vos vrais comptes n’ont pas bougé."),
+                     ("\U0001f680 The lab: an idea went into the robot",
+                      f"“{en}” beat the robot over {n} trades ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $) and just went into the lab's robot by itself. Dial: {how}. Demo money. Your real accounts did not move."),
+                     members=True)
+            else:
+                t["deploy_failed"] = how
+                emit("twin_blocked",
+                     ("\U0001f6e0 Le labo : une idée a gagné mais ne peut pas entrer",
+                      f"« {fr} » a battu le robot ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $) mais ne peut pas être posée : {how}. Elle attend que le réglage existe."),
+                     ("\U0001f6e0 The lab: an idea won but cannot go in",
+                      f"“{en}” beat the robot ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $) but cannot be applied: {how}."),
+                     members=False)
     if changed:
         _sj(TWINS, tw)
         _sj(DEC, dec)

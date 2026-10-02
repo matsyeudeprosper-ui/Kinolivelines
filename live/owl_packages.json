@@ -71,7 +71,14 @@
   "                    balance was when the package was written.",
   "scale_ref_balance   the balance at which base_lot/day_cap are exactly",
   "                    the numbers written below. 200.0 = Valere's own",
-  "                    balance when the $3/day ratio was set."
+  "                    balance when the $3/day ratio was set.",
+  "",
+  "rr / k_streak are STRATEGY, not money (added 2026-10-02). rr is the",
+  "target as a multiple of the stop; k_streak is how many losses in a row",
+  "stop the recovery bullets. They are here so a winning lab idea can",
+  "reach a bot without a code edit - which is what 'Approuver' could",
+  "never actually do. Changing either still needs that account's bot",
+  "restarted, like every other dial in this file."
  ],
  "packages": {
   "base": {
@@ -94,7 +101,9 @@
    "week_target": null,
    "nervosity": false,
    "scale_with_balance": true,
-   "scale_ref_balance": 200.0
+   "scale_ref_balance": 200.0,
+   "rr": 0.8,
+   "k_streak": 2
   },
   "valere": {
    "extends": "base",
@@ -138,6 +147,11 @@
    "extends": "valere",
    "label": "Valere + plafond 3% par trade",
    "risk_fit_pct": 3.0
+  },
+  "labo": {
+   "label": "Le labo",
+   "extends": "base",
+   "_doc": "The lab writes this package itself when a paper twin beats the real robot over 30 trades. Demo money. Every field is the lab's to change; do not hand-edit it, the lab keeps the previous values here to undo with."
   }
  },
  "accounts": {
@@ -148,6 +162,7 @@
   "half": "halfdebt",
   "demo": "demo",
   "infinity": "valere",
-  "expenses": "valere_cap3"
+  "expenses": "valere_cap3",
+  "labo": "labo"
  }
 }

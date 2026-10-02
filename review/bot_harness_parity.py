@@ -51,6 +51,11 @@ RULE_MAP = {
     "jar": "jar",
     "base_lot": "lot",
     "scale_with_balance": "balance",
+    # 2026-10-02: the first strategy dials to become package data. They
+    # change which trades happen, so drift here is exactly what this file
+    # exists to catch.
+    "rr": "rr",
+    "k_streak": "k_streak",
     # these three have no dial. That is only DRIFT when the live value
     # differs from what the harness silently assumes - recorded here so the
     # check reports a real risk instead of a scary-looking list.

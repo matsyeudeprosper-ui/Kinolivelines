@@ -125,6 +125,18 @@ elif VARIANT == "halfdebt":
     COMMENT = "KL-HALF"
     DEBT_MODE = "half"
     _SFX = "_half"
+elif VARIANT == "labo":
+    # 2026-10-02 (owner): the account the LAB deploys to by itself. An idea
+    # that wins its paper duel is written into this package and this bot is
+    # restarted - no human in the path. Demo money only; the live accounts
+    # still need Kino's tap. Idle terminal, previously the halfdebt audition.
+    TERMINAL = r"C:\NestTerminals\u476989740\terminal64.exe"
+    LOGIN = 476989740
+    SERVER = "Exness-MT5Trial9"
+    MAGIC = 909701
+    COMMENT = "KL-LABO"
+    TOUCH_ENTRIES = False
+    _SFX = "_labo"
 elif VARIANT == "kino":
     # 2026-09-18 (owner): the main bot moves onto the Pro real account, with
     # the SAME rules as Valere except one - it ignores the nervosity brake.
@@ -242,7 +254,7 @@ JOURNAL_F = os.path.join(DIR, f"bos_journal{_SFX}.csv")
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
              "halfdebt": "half", "kino": "kino",
              "demo": "demo", "infinity": "infinity",
-             "expenses": "expenses"}.get(VARIANT, "bos")
+             "expenses": "expenses", "labo": "labo"}.get(VARIANT, "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 
@@ -311,6 +323,17 @@ MOVEMENT = _P.get("movement", True)
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
+# 2026-10-02 (owner): "if the backtest passes, deploy to the bot." It could
+# not, because the numbers the lab proposes were constants in this file.
+# These two are now package dials, defaulting to the frozen values above,
+# so an account that does not set them behaves exactly as before. Every RR
+# reader is inside a function and runs long after this line.
+# `is None` rather than `or`: k_streak 0 is a real setting (never fire a
+# bullet) and `or` would silently turn it back into 2.
+_rr_d = _P.get("rr")
+RR = float(RR if _rr_d is None else _rr_d)
+_ks_d = _P.get("k_streak")
+K_STREAK = int(2 if _ks_d is None else _ks_d)
 # owner 2026-09-24: the debt-day cap needs its own recent track record
 # before it can be trusted - below this many samples, day_blocked() falls
 # back to the old unlimited-while-in-debt behaviour rather than sizing a
@@ -1036,7 +1059,8 @@ def main():
             _scale_line += f", cap ${DAY_CAP * _ratio0:.2f}"
         _scale_line += ")"
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
-        f"base {BASE_LOT} RR {RR} kill {KILL_NET} | paquet {PACKAGE}"
+        f"base {BASE_LOT} RR {RR} serie {K_STREAK} "
+        f"kill {KILL_NET} | paquet {PACKAGE}"
         + (f" | plafond {RISK_FIT_PCT:.0f}% par trade" if RISK_FIT_PCT else "")
         + ("".join(f" | {x}" for x in _br))
         + ((f" | day cap +${DAY_CAP:.2f} "
@@ -1376,7 +1400,7 @@ def main():
                             say(f"COMBAT skipped: marche pas calme "
                                 f"({_nerv:.2f}x) - pas de balles ici")
                             _n = 0
-                        elif st.get("loss_streak", 0) >= 2:
+                        elif st.get("loss_streak", 0) >= K_STREAK:
                             say(f"COMBAT skipped: "
                                 f"{st['loss_streak']} pertes de suite - "
                                 f"pas de balles dans une mauvaise serie")
