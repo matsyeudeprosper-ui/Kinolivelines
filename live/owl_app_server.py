@@ -8429,7 +8429,10 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
     base = auto.get("base") or {}
     # 2026-10-02 (phase 3): the critic's last word per idea
     CR = {}
-    _cd = _lj("critiques.json", {})
+    try:
+        _cd = json.load(open(os.path.join(DIR, "lab", "critiques.json"), encoding="utf-8"))
+    except Exception:
+        _cd = {}
     for c in sorted([x for x in (_cd if isinstance(_cd, list) else _cd.get("critiques", [])) if isinstance(x, dict)], key=lambda c: c.get("date", "")):
         if c.get("id"):
             CR[c["id"]] = {k: c.get(k) for k in ("date", "verdict", "fr", "en")}

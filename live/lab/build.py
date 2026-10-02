@@ -188,7 +188,7 @@ def main():
     if DRY:
         return 0
     mod0, new0 = git_changed()
-    dirty = [p for p in mod0 if p in ALLOW]
+    dirty = [p for p in mod0 if p in ALLOW and p != "live/lab/requests.json"]   # the runner's own state may be unsaved
     if dirty:
         say(f"build files already modified, not building: {dirty}")
         return 1
@@ -221,6 +221,9 @@ def main():
                 if attempt >= MAX_ATTEMPTS:
                     r["status"] = "failed"
         _sj(REQ, doc)
+        sh(["git", "add", "live/lab/requests.json"], 60)
+        sh(["git", "commit", "-q", "-m", f"constructeur: {rid} attempt {attempt} failed - {why[:60]}" + chr(10) + chr(10) + "Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"], 60)
+        sh(["git", "push", "-q"], 180)
         say(f"reverted; {why}")
         if attempt >= MAX_ATTEMPTS:
             emit("build_failed", ("\U0001f6e0 Le labo : le constructeur n’y arrive pas",
