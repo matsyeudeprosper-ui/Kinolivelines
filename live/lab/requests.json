@@ -36,6 +36,17 @@
    "why_fr": "Sur les 45 vrais trades de Valère : aucune des 15 pertes n'est entrée après une heure partie contre le trade, contre 5 gains sur 30 (17 %). La taille du mouvement, elle, ne sépare rien (127 contre 155 points). C'est peu de trades, mais le sens semble compter plus que la taille, et le menu ne peut pas le tester.",
    "why_en": "On Valère's 45 real trades: none of the 15 losses entered after an hour that went against the trade, versus 5 of 30 wins (17%). The size of the move separates nothing (127 versus 155 points). Few trades, but the direction seems to matter more than the size, and the menu cannot test it.",
    "status": "open"
+  },
+  {
+   "id": "wait_after_win",
+   "date": "2026-10-02",
+   "title_fr": "Attendre un peu après un GAIN seulement, pas après une perte",
+   "title_en": "Wait a little after a WIN only, not after a loss",
+   "what_fr": "Un dial (en minutes) qui refuse une nouvelle entrée pendant X minutes après un trade GAGNANT. Après une perte, rien ne change : le trade de rattrapage part comme aujourd'hui. Le dial actuel wait_min attend après TOUTE sortie, y compris après une perte.",
+   "what_en": "A dial (in minutes) that refuses a new entry for X minutes after a WINNING trade. After a loss nothing changes: the recovery trade goes out as today. Today's wait_min waits after ANY close, including after a loss.",
+   "why_fr": "Sur les 51 vrais trades de Valère, les pertes arrivent 24 minutes après le trade d'avant, les gains 190 minutes. 12 des 16 pertes ne suivaient PAS une perte. Mais attendre après toute sortie coûte (trois renforts + 20 min : -32 $ sans plafond), car ça retarde aussi les trades de rattrapage, où se fait une partie du gain. Peu de trades.",
+   "why_en": "On Valère's 51 real trades, losses come 24 minutes after the previous trade, wins 190 minutes. 12 of the 16 losses did NOT follow a loss. But waiting after every close costs money (three boosts + 20 min: -$32 uncapped), because it also delays the recovery trades, where part of the profit is made. Few trades.",
+   "status": "open"
   }
  ]
 }

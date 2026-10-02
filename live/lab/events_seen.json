@@ -2,7 +2,8 @@
  "requests": [
   "nerv_gate_debt_only",
   "cap_fit_target",
-  "chase_dir"
+  "chase_dir",
+  "wait_after_win"
  ],
  "asks_answered": [
   "ask_1790670647",

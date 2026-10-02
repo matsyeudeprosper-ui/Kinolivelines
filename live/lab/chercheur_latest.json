@@ -1,36 +1,90 @@
 {
- "date": "2026-10-01",
- "fr": "Sur 42 jours rejoués : 32 idées, aucune A, 6 B (viser 1,0, envolées de 400 et 700 points, lundi en moins, trois renforts de suite, quatre renforts), 26 C. La deuxième moitié des 42 jours est plate pour le robot actuel (-1 $ sans plafond). Mes 5 idées d'hier : 700 points + trois renforts tient en B, les quatre avec le dimanche en moins sont C. Le frein « dans le rouge ET marché nerveux », né de ma demande, a pris trois C de suite et sort du menu : les chiffres ont dit non. J'ai rejoué 8 idées sur les deux formes de compte (sans plafond, et Valère avec plafond du jour, 252 $). Viser 1,0 + trois renforts : A sans plafond (+51 $, trou 50 -> 34 $, les deux moitiés gagnent, +67 $ sur 69 jours), C chez Valère (-30 $). Viser 0,9 : A sans plafond (+33 $), seule idée de la nuit aussi A sur 69 jours (+39 $), C chez Valère (-13 $). Viser 1,0 en misant moitié quand le marché est nerveux : B sans plafond (+5 $), trou 50 -> 31 $, C chez Valère. Trois quarts de mise quand c'est nerveux : B chez Valère (+2 $, trou 34 -> 28 $), C sans plafond (-15 $). 700 points + trois renforts : B sans plafond (+4 $), A chez Valère (+2 $), mais C sur 69 jours (-38 $) et le gain fond (+27 $ hier). 3 autres essais : 0,9 + trois renforts (A sans plafond, C chez Valère, rien de plus que 0,9 seul), 400 points + trois renforts (C), trois quarts + trois renforts (C). Le mécanisme du plafond : Valère s'arrête à 3,78 $ par jour, tout gain au-delà est jeté, donc une cible plus grande ne rapporte rien de plus et perd plus souvent. Vrais trades : 17 rejouables, 31 dans le journal, trop peu de trades. Chez Valère (45 trades) les gagnants ont des stops plus larges (161 contre 123 points) et attendent plus longtemps après le trade d'avant (339 contre 23 minutes) ; aucune des 15 pertes n'est entrée après une heure partie contre le trade, contre 5 gains sur 30. 6 des 13 pertes du dimanche tombent le 27/09, peut-être de la chance. Jumeaux : les trois ont été retirés (ancien moteur), aucun ne tourne. Je demande un réglage qui refuse d'entrer quand la dernière heure est déjà partie dans le sens du trade, et je maintiens la demande « viser ce qui manque pour atteindre le plafond du jour ».",
- "en": "Over 42 replayed days: 32 ideas, no A, 6 B (aiming for 1.0, the 400 and 700-point runs, skipping Monday, three boosts in a row, four boosts), 26 C. The second half of the 42 days is flat for today's robot (-$1 uncapped). My 5 ideas from yesterday: 700 points + three boosts holds as a B, the four with Sunday off are C. The 'in the red AND nervous' brake, born from my request, got three Cs in a row and leaves the menu: the numbers said no. I replayed 8 ideas on both account shapes (uncapped, and Valère with a daily cap, $252). Aiming 1.0 + three boosts: A uncapped (+$51, hole 50 -> 34 dollars, both halves win, +$67 over 69 days), C on Valère (-$30). Aiming 0.9: A uncapped (+$33), tonight's only idea also A over 69 days (+$39), C on Valère (-$13). Aiming 1.0 with half the stake when the market is nervous: B uncapped (+$5), hole 50 -> 31 dollars, C on Valère. Three-quarter stakes when nervous: B on Valère (+$2, hole 34 -> 28 dollars), C uncapped (-$15). 700 points + three boosts: B uncapped (+$4), A on Valère (+$2), but C over 69 days (-$38) and the gain is melting (+$27 yesterday). 3 other tries: 0.9 + three boosts (A uncapped, C on Valère, nothing more than 0.9 alone), 400 points + three boosts (C), three quarters + three boosts (C). The cap's mechanism: Valère stops at $3.78 a day, any gain beyond is thrown away, so a bigger target earns nothing more and loses more often. Real trades: 17 replayable, 31 in the journal, too few trades. On Valère (45 trades) winners have wider stops (161 versus 123 points) and wait longer after the previous trade (339 versus 23 minutes); none of the 15 losses entered after an hour that went against the trade, versus 5 of 30 wins. 6 of the 13 Sunday losses fall on 27/09, maybe luck. Twins: all three were retired (old engine), none is running. I ask for a setting that refuses an entry when the last hour already moved the trade's way, and I keep the request 'aim for what is missing to reach the daily cap'.",
- "proposals": ["rr10_k3", "rr09", "rr10_hot05", "hot075", "ext700_k3_b"],
- "headline_fr": "Viser un gain égal au risque avec trois renforts de suite : +51 $ et un trou de 34 $ au lieu de 50 sans plafond du jour, mais perdant chez Valère.",
- "headline_en": "Aiming for a gain equal to the risk with three boosts in a row: +$51 and a 34-dollar hole instead of 50 without a daily cap, but losing on Valère.",
+ "date": "2026-10-02",
+ "fr": "**Ce soir : trois renforts de suite est A sur les deux formes de compte, une première depuis la correction du moteur, et quatre renforts va dans le même sens.**\n\nLes verdicts, sur 42 jours rejoués : 37 idées, 2 A, 9 B, 26 C. Les deux A : trois renforts de suite (+9 $ sans plafond, +3,50 $ chez Valère avec plafond, compte de 252 $) et 700 points + trois renforts (+19 $ et +2 $). Les deux attendent un deuxième A. Prudence : sur 69 jours, les deux sont C (-29 et -38 $).\n\nMes 8 essais (sans plafond / Valère) : quatre renforts +10 $ / +8 $. 0,9 + trois renforts : +35 $ (A aussi sur 69 jours) / -9 $. Trois renforts + ceinture de 12 $ : trou de 50 à 34 $. Mise réduite si nerveux, lundi en moins, attendre 20 minutes : C.\n\nAttention : quelques heures de données en plus ont changé la deuxième moitié de +5 à -61 $. Moitiés fragiles ce soir.\n\nCe que je crois :\n- Plus de renforts de suite, c'est un mécanisme : NOUVEAU. Un renfort -18 $, trois +9 $, quatre +10 $ : ça monte avec la dose, sur les deux comptes.\n- Le plafond du jour change la bonne cible : RENFORCÉ, quatrième nuit.\n- Deux freins s'additionnent : REMONTE. 700 points + trois renforts est A ce soir, mais C sur 69 jours.\n- Mise réduite quand c'est nerveux : AFFAIBLI. Le trou baisse, l'argent part. Une ceinture, pas un gain.\n- Le dimanche : douteux. C sur 42 jours, A sur 69.\n\nLes vrais trades (51 chez Valère) : les pertes tombent 24 minutes après le trade d'avant, les gains 190. Stops des pertes plus étroits (132 contre 168 points). Aucune perte après une heure partie contre le trade. 6 pertes sur 16 le 27/09. Trop peu de trades.\n\nJe propose : quatre renforts ; trois renforts + ceinture ; 0,9 + trois renforts sans plafond ; trois renforts + quatrième balle ; hors du cadre, un paquet pour comptes sans plafond (0,9, quatre renforts, ceinture).\n\nJe demande : attendre après un GAIN seulement. Toujours ouverts : ne pas courir après le prix, viser le reste du plafond.",
+ "en": "**Tonight: three boosts in a row is A on both account shapes, a first since the engine was corrected, and four boosts points the same way.**\n\nVerdicts, over 42 replayed days: 37 ideas, 2 A, 9 B, 26 C. The two As: three boosts in a row (+$9 uncapped, +$3.50 on Valère with a cap, $252 account) and 700 points + three boosts (+$19 and +$2). Both wait for a second A. Caution: over 69 days both are C (-$29 and -$38).\n\nMy 8 tries (uncapped / Valère): four boosts +$10 / +$8 (A on Valère). 0.9 + three boosts: A uncapped (+$35, A over 69 days too), C on Valère (-$9). Three boosts + $12 belt: hole from 50 to 34 dollars, A on Valère. Smaller stake when nervous, skipping Monday, waiting 20 minutes: C.\n\nWarning: a few more hours of data moved the uncapped second half from +$5 to -$61. The halves are fragile tonight.\n\nWhat I believe:\n- More boosts in a row is a mechanism: NEW. One boost -$18, three +$9, four +$10: it rises with the dose, on both accounts.\n- The daily cap changes the right target: STRONGER, fourth night.\n- Two brakes add up: RECOVERING. 700 points + three boosts is A tonight, but C over 69 days.\n- Smaller stake when nervous: WEAKER. The hole shrinks, the money goes. A belt, not a gain.\n- Sunday: doubtful. C over 42 days, A over 69.\n\nThe real trades (51 on Valère, 35 won): losses come 24 minutes after the previous trade, wins 190. Losing stops are tighter (132 versus 168 points). Still no loss after an hour that went against the trade. 6 of the 16 losses are from 27/09. Too few trades.\n\nI propose: four boosts; three boosts + belt; 0.9 + three boosts for uncapped accounts; three boosts + a fourth bullet; out of the box, a package for uncapped accounts (0.9, four boosts, belt).\n\nI ask: wait after a WIN only. Still open: do not chase the price, aim for what is left of the cap.",
+ "proposals": [
+  "k4",
+  "k3_risk12",
+  "k3_rr09",
+  "k3_bul4",
+  "rr09_k4_risk12"
+ ],
+ "headline_fr": "Trois renforts de suite est A sur les deux formes de compte, une première depuis la correction du moteur, et quatre renforts va dans le même sens.",
+ "headline_en": "Three boosts in a row is A on both account shapes, a first since the engine was corrected, and four boosts points the same way.",
  "beliefs": [
-  {"fr": "Le plafond du jour change la bonne cible : viser plus gros aide un compte sans plafond et nuit à un compte avec plafond.", "en": "The daily cap changes the right target: aiming bigger helps an uncapped account and hurts a capped one.", "evidence": "RENFORCÉ : 0,9 / 1,0 / 1,0 + trois renforts sont A sans plafond (+33 / +47 / +51 $) et C chez Valère (-13 / -29 / -30 $). Mécanisme : plafond 3,78 $ par jour, le gain au-delà est jeté. / STRONGER: 0.9 / 1.0 / 1.0 + three boosts are A uncapped (+$33 / +$47 / +$51) and C on Valère (-$13 / -$29 / -$30). Mechanism: $3.78 daily cap, any gain beyond is thrown away."},
-  {"fr": "Deux freins s'additionnent quand ils coupent des trades différents.", "en": "Two brakes add up when they cut different trades.", "evidence": "AFFAIBLI : dimanche + 700 points est passé C au vote officiel ; 700 points + trois renforts fond de +27 $ à +4 $ et est C sur 69 jours. Une nuit de plus avant de trancher. / WEAKER: Sunday + 700 points went C in the official run; 700 points + three boosts melts from +$27 to +$4 and is C over 69 days. One more night before I decide."},
-  {"fr": "Les pertes arrivent quand le compte est dans le rouge ET que le marché est nerveux.", "en": "Losses happen when the account is in the red AND the market is nervous.", "evidence": "REJETÉ comme interdiction : trois C de suite, le réglage sort du menu. GARDÉ comme taille : marché nerveux coupe le trou de 50 à 19 $ ; 47 % des pertes réelles contre 20 % des gains. Je le teste en mise réduite. / REJECTED as a ban: three Cs in a row, the dial leaves the menu. KEPT as size: a nervous market cuts the hole from 50 to 19 dollars; 47% of real losses versus 20% of wins. I test it as a smaller stake."},
-  {"fr": "Le lundi est un bon jour pour laisser le robot tranquille.", "en": "Monday is a good day to leave the robot alone.", "evidence": "STABLE mais petit : B ce soir (A sans plafond +3 $, trou -13 $ ; C chez Valère -11 $), B sur 69 jours (+12 $). / STEADY but small: B tonight (A uncapped +$3, hole -$13; C on Valère -$11), B over 69 days (+$12)."},
-  {"fr": "Le dimanche est un mauvais jour.", "en": "Sunday is a bad day.", "evidence": "DOUTEUX : C sur 42 jours (-11 $), A sur 69 jours (+15 $) ; 6 des 13 pertes du dimanche tombent le même jour (27/09). / DOUBTFUL: C over 42 days (-$11), A over 69 days (+$15); 6 of the 13 Sunday losses fall on one day (27/09)."},
-  {"fr": "Les pertes courent après le prix.", "en": "Losses chase the price.", "evidence": "NOUVEAU, trop peu de trades : aucune des 15 pertes de Valère n'est entrée après une heure partie contre le trade, contre 5 gains sur 30. Réglage demandé. / NEW, too few trades: none of Valère's 15 losses entered after an hour that went against the trade, versus 5 of 30 wins. Dial requested."}
+  {
+   "fr": "Plus de renforts de suite, c'est un mécanisme, pas de la chance.",
+   "en": "More boosts in a row is a mechanism, not luck.",
+   "evidence": "NOUVEAU : un renfort -18 $, trois +9 $ (A sur les deux comptes), quatre +10 $ sans plafond et +8 $ chez Valère. Ça monte avec la dose. Prudence : trois renforts est C sur 69 jours (-29 $). / NEW: one boost -$18, three +$9 (A on both accounts), four +$10 uncapped and +$8 on Valère. It rises with the dose. Caution: three boosts is C over 69 days (-$29)."
+  },
+  {
+   "fr": "Le plafond du jour change la bonne cible : viser plus gros aide un compte sans plafond et nuit à un compte avec plafond.",
+   "en": "The daily cap changes the right target: aiming bigger helps an uncapped account and hurts a capped one.",
+   "evidence": "RENFORCÉ, quatrième nuit : 0,9 + trois renforts est A sans plafond (+35 $, A aussi sur 69 jours) et C chez Valère (-9 $). / STRONGER, fourth night: 0.9 + three boosts is A uncapped (+$35, A over 69 days too) and C on Valère (-$9)."
+  },
+  {
+   "fr": "Deux freins s'additionnent quand ils coupent des trades différents.",
+   "en": "Two brakes add up when they cut different trades.",
+   "evidence": "REMONTE : 700 points + trois renforts est A ce soir sur les deux comptes (+19 $ / +2 $), après un B hier. Mais C sur 69 jours (-38 $). Il faut un deuxième A. / RECOVERING: 700 points + three boosts is A tonight on both accounts (+$19 / +$2), after a B yesterday. But C over 69 days (-$38). It needs a second A."
+  },
+  {
+   "fr": "Le marché nerveux se traite par la taille de la mise, pas par une interdiction.",
+   "en": "A nervous market is handled by stake size, not by a ban.",
+   "evidence": "AFFAIBLI : trois quarts de mise C (-17 $), trois renforts + trois quarts de mise C sur les deux comptes (-18 $). Le trou baisse (-11 $), l'argent part plus vite. Une ceinture, pas un gain. / WEAKER: three-quarter stake C (-$17), three boosts + three-quarter stake C on both accounts (-$18). The hole shrinks (-$11), the money goes faster. A belt, not a gain."
+  },
+  {
+   "fr": "Les pertes viennent quand on reprend trop vite après un gain.",
+   "en": "Losses come when the robot re-enters too soon after a win.",
+   "evidence": "NOUVEAU, à tester : pertes 24 min après le trade d'avant, gains 190 min ; 12 des 16 pertes ne suivaient pas une perte. Attendre après toute sortie coûte (-32 $). Demande faite : attendre après un gain seulement. / NEW, to test: losses 24 min after the previous trade, wins 190 min; 12 of 16 losses did not follow a loss. Waiting after every close costs (-$32). Request made: wait after a win only."
+  },
+  {
+   "fr": "Le dimanche est un mauvais jour.",
+   "en": "Sunday is a bad day.",
+   "evidence": "DOUTEUX : C sur 42 jours (-14 $) mais A sur 69 jours (+18 $). 6 des 16 vraies pertes datent du seul 27/09. / DOUBTFUL: C over 42 days (-$14) but A over 69 days (+$18). 6 of the 16 real losses come from 27/09 alone."
+  }
  ],
  "sections": [
-  {"title_fr": "Ce soir", "title_en": "Tonight",
-   "fr": "Viser un gain égal au risque, avec trois renforts de suite, rapporte 51 $ de plus sur 42 jours rejoués. Le plus gros trou passe de 50 à 34 $, sur un compte sans plafond du jour. Chez Valère, avec un plafond, la même idée perd 30 $. Les deux formes de compte veulent des cibles différentes.",
-   "en": "Aiming for a gain equal to the risk, with three boosts in a row, earns $51 more over 42 replayed days. The biggest hole drops from 50 to 34 dollars, on an account without a daily cap. On Valère, with a cap, the same idea loses $30. The two account shapes want different targets, and tonight it is clear."},
-  {"title_fr": "Les verdicts", "title_en": "The verdicts",
-   "fr": "32 idées : aucune A, 6 B, 26 C. Les B : viser 1,0, les envolées de 400 et 700 points, le lundi en moins, trois renforts de suite, quatre renforts. Mes idées d'hier : une seule tient (700 points + trois renforts). Le frein « dans le rouge et nerveux » sort du menu après trois C.",
-   "en": "32 ideas: no A, 6 B, 26 C. The Bs: aiming for 1.0, the 400 and 700-point runs, skipping Monday, three boosts in a row, four boosts. My ideas from yesterday: only one holds (700 points + three boosts). The 'in the red and nervous' brake leaves the menu after three Cs."},
-  {"title_fr": "Ce que les trades apprennent", "title_en": "What the trades teach",
-   "fr": "Trop peu de trades : 17 rejouables. Chez Valère, les gagnants ont des stops plus larges (161 contre 123 points). Ils attendent aussi plus longtemps après le trade d'avant. Aucune des 15 pertes n'est entrée après une heure partie contre le trade, contre 5 gains sur 30. 6 pertes du dimanche tombent le même jour.",
-   "en": "Too few trades: 17 can be replayed. On Valère, winners have wider stops (161 versus 123 points). They also wait longer after the previous trade. None of the 15 losses entered after an hour that went against the trade, versus 5 of 30 wins. 6 Sunday losses fall on the same day."},
-  {"title_fr": "Ce que je crois", "title_en": "What I believe",
-   "fr": "Le plafond du jour change la bonne cible : renforcé. Valère s'arrête à 3,78 $ par jour, et tout gain au-delà est jeté. Deux freins s'additionnent : affaibli. Dans le rouge et nerveux : rejeté comme interdiction, gardé comme taille de mise. Le dimanche : douteux. Nouveau : les pertes courent après le prix.",
-   "en": "The daily cap changes the right target: stronger. Valère stops at $3.78 a day, and any gain beyond it is thrown away. Two brakes add up: weaker. In the red and nervous: rejected as a ban, kept as a stake size. Sunday: doubtful. New: losses chase the price."},
-  {"title_fr": "Ce que je propose", "title_en": "What I propose",
-   "fr": "1) Viser 1,0 + trois renforts : A sans plafond. 2) Viser 0,9 : seule idée A aussi sur 69 jours. 3) Sortie du cadre : viser 1,0, mais miser moitié quand le marché est nerveux (trou 31 $). 4) Trois quarts de mise quand c'est nerveux : B chez Valère. 5) Deuxième audience pour 700 points + trois renforts.",
-   "en": "1) Aim for 1.0 + three boosts: A uncapped. 2) Aim for 0.9: the only idea also A over 69 days. 3) Out of the box: aim for 1.0, but stake half when the market is nervous (hole 31 dollars). 4) Three-quarter stakes when nervous: B on Valère. 5) A second hearing for 700 points + three boosts."},
-  {"title_fr": "Ce que je demande", "title_en": "What I ask for",
-   "fr": "Un réglage pour ne pas courir après le prix : refuser d'entrer quand la dernière heure est déjà partie dans le sens du trade. Le frein « envolée » actuel regarde la taille du mouvement, pas son sens. Et toujours : viser ce qui manque pour atteindre le plafond du jour.",
-   "en": "A setting to stop chasing the price: refuse an entry when the last hour already moved the trade's way. Today's 'run' brake looks at the size of the move, not its direction. And still: aim for what is missing to reach the daily cap."}
+  {
+   "title_fr": "Ce soir",
+   "title_en": "Tonight",
+   "fr": "Trois renforts de suite est A sur les deux formes de compte : +9 $ sans plafond, +3,50 $ chez Valère (plafond du jour, 252 $). C'est la première fois depuis la correction du moteur. Quatre renforts va dans le même sens. Prudence : sur 69 jours, trois renforts est C (-29 $).",
+   "en": "Three boosts in a row is A on both account shapes: +$9 uncapped, +$3.50 on Valère (daily cap, $252). It is the first time since the engine was corrected. Four boosts points the same way. Caution: over 69 days, three boosts is C (-$29)."
+  },
+  {
+   "title_fr": "Les verdicts",
+   "title_en": "The verdicts",
+   "fr": "37 idées rejouées sur 42 jours : 2 A, 9 B, 26 C. Les deux A (trois renforts ; 700 points + trois renforts) attendent un deuxième A demain. Attention : quelques heures de données en plus ont fait passer la deuxième moitié sans plafond de +5 à -61 $. Les moitiés sont fragiles ce soir.",
+   "en": "37 ideas replayed over 42 days: 2 A, 9 B, 26 C. The two As (three boosts; 700 points + three boosts) wait for a second A tomorrow. Warning: a few more hours of data moved the uncapped second half from +$5 to -$61. The halves are fragile tonight."
+  },
+  {
+   "title_fr": "Mes essais",
+   "title_en": "My tries",
+   "fr": "8 essais. Quatre renforts : +10 $ sans plafond, +8 $ chez Valère (A). 0,9 + trois renforts : +35 $ sans plafond, A aussi sur 69 jours, mais -9 $ chez Valère. Trois renforts + ceinture de 12 $ : trou de 50 à 34 $. Mise réduite quand c'est nerveux, lundi en moins, attendre 20 minutes : C.",
+   "en": "8 tries. Four boosts: +$10 uncapped, +$8 on Valère (A). 0.9 + three boosts: +$35 uncapped, A over 69 days too, but -$9 on Valère. Three boosts + $12 belt: hole from 50 to 34 dollars. Smaller stake when nervous, skipping Monday, waiting 20 minutes: C."
+  },
+  {
+   "title_fr": "Ce que les trades apprennent",
+   "title_en": "What the trades teach",
+   "fr": "51 vrais trades chez Valère, 35 gagnés. Les pertes arrivent 24 minutes après le trade d'avant, les gains 190. Leurs stops sont plus étroits (132 contre 168 points). Toujours aucune perte après une heure partie contre le trade. 6 des 16 pertes datent du 27/09. Trop peu de trades.",
+   "en": "51 real trades on Valère, 35 won. Losses come 24 minutes after the previous trade, wins 190. Their stops are tighter (132 versus 168 points). Still no loss after an hour that went against the trade. 6 of the 16 losses are from 27/09. Too few trades."
+  },
+  {
+   "title_fr": "Ce que je crois",
+   "title_en": "What I believe",
+   "fr": "Plus de renforts de suite : un mécanisme (nouveau). Le plafond du jour change la bonne cible (renforcé). Deux freins s'additionnent (remonte). Mise réduite quand c'est nerveux : une ceinture, pas un gain (affaibli). Le dimanche : douteux.",
+   "en": "More boosts in a row: a mechanism (new). The daily cap changes the right target (stronger). Two brakes add up (recovering). Smaller stake when nervous: a belt, not a gain (weaker). Sunday: doubtful."
+  },
+  {
+   "title_fr": "Ce que je propose",
+   "title_en": "What I propose",
+   "fr": "Quatre renforts. Trois renforts + ceinture de 12 $. 0,9 + trois renforts pour les comptes sans plafond. Trois renforts + une quatrième balle. Hors du cadre : un paquet pour les seuls comptes sans plafond (0,9, quatre renforts, ceinture), jamais rejoué ensemble.",
+   "en": "Four boosts. Three boosts + $12 belt. 0.9 + three boosts for uncapped accounts. Three boosts + a fourth bullet. Out of the box: a package for uncapped accounts only (0.9, four boosts, belt), never replayed together."
+  },
+  {
+   "title_fr": "Ce que je demande",
+   "title_en": "What I ask for",
+   "fr": "Nouveau : attendre un peu après un GAIN seulement, pas après une perte, pour garder les trades de rattrapage. Toujours ouverts : ne pas courir après le prix ; sur un compte avec plafond, viser juste ce qui manque pour l'atteindre.",
+   "en": "New: wait a little after a WIN only, not after a loss, to keep the recovery trades. Still open: do not chase the price; on a capped account, aim for exactly what is missing to reach the cap."
+  }
  ]
 }

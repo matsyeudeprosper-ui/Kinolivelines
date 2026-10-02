@@ -566,11 +566,54 @@
    "why_en": "Aiming for 1.0 is B again tonight (A uncapped, +$47). Adding a third boost in a row takes it to +$51, and the biggest hole drops from 50 to 34 dollars. Both halves win, and so does the long 69-day window (+$67). But on Valère, with a daily cap, it is C (-$30).",
    "by": "chercheur",
    "date": "2026-10-01",
-   "status": "pending",
-   "cfg": {"rr": 1.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 1.0, "nerv_gate": false, "bullets": 3, "k_streak": 3},
-   "pretest": {"net": 180.78, "worst": 34.12, "h1": 39.83, "h2": 27.12, "base_net": 129.39, "base_worst": 50.23, "verdict": "B", "trades": 212, "engine": "2026-09-29b",
-    "byref": {"base": {"verdict": "A", "diff_net": 51.39, "diff_worst": -16.11}, "valere": {"verdict": "C", "diff_net": -30.04, "diff_worst": -5.18}},
-    "long": {"days": 69, "verdict": "B", "diff_net": 66.94, "diff_worst": -17.43}, "real": {"n_real": 17, "diff_net": 15.31}}
+   "status": "done",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 180.78,
+    "worst": 34.12,
+    "h1": 39.83,
+    "h2": 27.12,
+    "base_net": 129.39,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 212,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "A",
+      "diff_net": 51.39,
+      "diff_worst": -16.11
+     },
+     "valere": {
+      "verdict": "C",
+      "diff_net": -30.04,
+      "diff_worst": -5.18
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 66.94,
+     "diff_worst": -17.43
+    },
+    "real": {
+     "n_real": 17,
+     "diff_net": 15.31
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-02"
   },
   {
    "id": "rr09",
@@ -581,11 +624,54 @@
    "why_en": "It is the dose between 0.8 (today) and 1.0, and it is not in the battery. Uncapped: A, +$33, both halves win, hole from 50 to 43 dollars. It is tonight's only idea that is also A over 69 days (+$39). On Valère: C (-$13), less bad than 1.0 (-$30).",
    "by": "chercheur",
    "date": "2026-10-01",
-   "status": "pending",
-   "cfg": {"rr": 0.9, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 1.0, "nerv_gate": false, "bullets": 3, "k_streak": 2},
-   "pretest": {"net": 162.72, "worst": 42.58, "h1": 32.56, "h2": 20.3, "base_net": 129.39, "base_worst": 50.23, "verdict": "B", "trades": 243, "engine": "2026-09-29b",
-    "byref": {"base": {"verdict": "A", "diff_net": 33.33, "diff_worst": -7.65}, "valere": {"verdict": "C", "diff_net": -12.92, "diff_worst": -5.84}},
-    "long": {"days": 69, "verdict": "A", "diff_net": 39.45, "diff_worst": -12.23}, "real": {"n_real": 17, "diff_net": 2.21}}
+   "status": "done",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 162.72,
+    "worst": 42.58,
+    "h1": 32.56,
+    "h2": 20.3,
+    "base_net": 129.39,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 243,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "A",
+      "diff_net": 33.33,
+      "diff_worst": -7.65
+     },
+     "valere": {
+      "verdict": "C",
+      "diff_net": -12.92,
+      "diff_worst": -5.84
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "A",
+     "diff_net": 39.45,
+     "diff_worst": -12.23
+    },
+    "real": {
+     "n_real": 17,
+     "diff_net": 2.21
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-02"
   },
   {
    "id": "rr10_hot05",
@@ -596,11 +682,54 @@
    "why_en": "Out of the box: the 'nervous market' brake becomes a size rule, paid for by a bigger target (1.0). Uncapped: B, only +$5, but the biggest hole drops from 50 to 31 dollars, tonight's smallest. Over 69 days, +$22 and the hole -$22. On Valère: C (-$42).",
    "by": "chercheur",
    "date": "2026-10-01",
-   "status": "pending",
-   "cfg": {"rr": 1.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 0.5, "nerv_gate": false, "bullets": 3, "k_streak": 2},
-   "pretest": {"net": 134.25, "worst": 31.37, "h1": -13.7, "h2": 26.67, "base_net": 129.39, "base_worst": 50.23, "verdict": "B", "trades": 214, "engine": "2026-09-29b",
-    "byref": {"base": {"verdict": "B", "diff_net": 4.86, "diff_worst": -18.86}, "valere": {"verdict": "C", "diff_net": -41.55, "diff_worst": -3.11}},
-    "long": {"days": 69, "verdict": "B", "diff_net": 22.13, "diff_worst": -21.6}, "real": {"n_real": 17, "diff_net": 9.23}}
+   "status": "done",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 0.5,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 134.25,
+    "worst": 31.37,
+    "h1": -13.7,
+    "h2": 26.67,
+    "base_net": 129.39,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 214,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "B",
+      "diff_net": 4.86,
+      "diff_worst": -18.86
+     },
+     "valere": {
+      "verdict": "C",
+      "diff_net": -41.55,
+      "diff_worst": -3.11
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 22.13,
+     "diff_worst": -21.6
+    },
+    "real": {
+     "n_real": 17,
+     "diff_net": 9.23
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-02"
   },
   {
    "id": "hot075",
@@ -611,11 +740,54 @@
    "why_en": "Dose rescue: half size costs $21. In the real trades, 47% of losses come in a nervous market, versus 20% of wins. Three quarters on Valère: B (+$2, hole from 34 to 28 dollars). Uncapped: C (-$15), but the hole drops from 50 to 39 dollars. It is a safety belt, not a way to earn more.",
    "by": "chercheur",
    "date": "2026-10-01",
-   "status": "pending",
-   "cfg": {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [], "size_hot": 0.75, "nerv_gate": false, "bullets": 3, "k_streak": 2},
-   "pretest": {"net": 114.46, "worst": 38.53, "h1": -21.59, "h2": 7.12, "base_net": 129.39, "base_worst": 50.23, "verdict": "C", "trades": 256, "engine": "2026-09-29b",
-    "byref": {"base": {"verdict": "C", "diff_net": -14.93, "diff_worst": -11.7}, "valere": {"verdict": "B", "diff_net": 1.95, "diff_worst": -6.06}},
-    "long": {"days": 69, "verdict": "C", "diff_net": -18.48, "diff_worst": -11.71}, "real": {"n_real": 17, "diff_net": 2.93}}
+   "status": "done",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 0.75,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 114.46,
+    "worst": 38.53,
+    "h1": -21.59,
+    "h2": 7.12,
+    "base_net": 129.39,
+    "base_worst": 50.23,
+    "verdict": "C",
+    "trades": 256,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "C",
+      "diff_net": -14.93,
+      "diff_worst": -11.7
+     },
+     "valere": {
+      "verdict": "B",
+      "diff_net": 1.95,
+      "diff_worst": -6.06
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -18.48,
+     "diff_worst": -11.71
+    },
+    "real": {
+     "n_real": 17,
+     "diff_net": 2.93
+    }
+   },
+   "verdict": "C",
+   "done": "2026-10-02"
   },
   {
    "id": "ext700_k3_b",
@@ -626,11 +798,336 @@
    "why_en": "I still defend it: it is tonight's only idea that is A on Valère (+$2, with a daily cap). Uncapped, B (+$4, the first half goes back). Caution: over 69 days it is C (-$38). Yesterday +$27, tonight +$4: the gain is melting. One more night, then I decide.",
    "by": "chercheur",
    "date": "2026-10-01",
+   "status": "done",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 133.14,
+    "worst": 47.26,
+    "h1": -6.64,
+    "h2": 10.39,
+    "base_net": 129.39,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 253,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "B",
+      "diff_net": 3.75,
+      "diff_worst": -2.97
+     },
+     "valere": {
+      "verdict": "A",
+      "diff_net": 1.87,
+      "diff_worst": -0.65
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -37.71,
+     "diff_worst": 11.73
+    },
+    "real": {
+     "n_real": 17,
+     "diff_net": 10.9
+    }
+   },
+   "verdict": "A",
+   "done": "2026-10-02"
+  },
+  {
+   "id": "k4",
+   "title_fr": "Quatre renforts de suite",
+   "title_en": "Four boosts in a row",
+   "family": "structure",
+   "why_fr": "Trois renforts est A ce soir sur les deux formes de compte. J'ai essayé la dose voisine : quatre gagne aussi, +10 $ sans plafond et +8 $ chez Valère (A, avec plafond). Sans plafond, le verdict est C pour 0,74 $ de trou en plus seulement. Si les deux doses montent ensemble, c'est un mécanisme, pas de la chance.",
+   "why_en": "Three boosts is A tonight on both account shapes. I tried the next dose: four also earns, +$10 uncapped and +$8 on Valère (A, with a cap). Uncapped it scores C only because the hole is $0.74 deeper. If both doses rise together, it is a mechanism, not luck.",
+   "by": "chercheur",
+   "date": "2026-10-02",
    "status": "pending",
-   "cfg": {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 700, "skip_wd": [], "skip_hours": [], "size_hot": 1.0, "nerv_gate": false, "bullets": 3, "k_streak": 3},
-   "pretest": {"net": 133.14, "worst": 47.26, "h1": -6.64, "h2": 10.39, "base_net": 129.39, "base_worst": 50.23, "verdict": "B", "trades": 253, "engine": "2026-09-29b",
-    "byref": {"base": {"verdict": "B", "diff_net": 3.75, "diff_worst": -2.97}, "valere": {"verdict": "A", "diff_net": 1.87, "diff_worst": -0.65}},
-    "long": {"days": 69, "verdict": "C", "diff_net": -37.71, "diff_worst": 11.73}, "real": {"n_real": 17, "diff_net": 10.9}}
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 4
+   },
+   "pretest": {
+    "net": 146.18,
+    "worst": 50.97,
+    "h1": 3.76,
+    "h2": 0.63,
+    "base_net": 135.75,
+    "base_worst": 50.23,
+    "verdict": "C",
+    "trades": 258,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "C",
+      "diff_net": 10.43,
+      "diff_worst": 0.74
+     },
+     "valere": {
+      "verdict": "A",
+      "diff_net": 8.43,
+      "diff_worst": -0.65
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "=",
+     "diff_net": -0.02,
+     "diff_worst": 0.74
+    },
+    "real": {
+     "n_real": 23,
+     "trades": 18,
+     "diff_net": 8.84,
+     "diff_worst": 3.68
+    }
+   }
+  },
+  {
+   "id": "k3_risk12",
+   "title_fr": "Trois renforts de suite, avec une ceinture de 12 $ par trade",
+   "title_en": "Three boosts in a row, with a $12 belt per trade",
+   "family": "argent",
+   "why_fr": "C'est une ceinture de sécurité, pas une idée pour gagner plus. Sur un compte sans plafond, le plus gros trou passe de 50 à 34 $ pour 4 $ de moins (B), et le trou baisse aussi sur 69 jours (-16 $). Chez Valère, c'est A (+2 $). Sur les vrais trades : +11 $, mais trop peu de trades.",
+   "why_en": "This is a safety belt, not an idea to earn more. Uncapped, the biggest hole drops from 50 to 34 dollars for $4 less (B), and the hole also shrinks over 69 days (-$16). On Valère it is A (+$2). On the real trades: +$11, but too few trades.",
+   "by": "chercheur",
+   "date": "2026-10-02",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3,
+    "risk_max": 12
+   },
+   "pretest": {
+    "net": 131.33,
+    "worst": 33.83,
+    "h1": -18.09,
+    "h2": 66.02,
+    "base_net": 135.75,
+    "base_worst": 50.23,
+    "verdict": "B",
+    "trades": 268,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "B",
+      "diff_net": -4.42,
+      "diff_worst": -16.4
+     },
+     "valere": {
+      "verdict": "A",
+      "diff_net": 1.87,
+      "diff_worst": -0.65
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": -9.23,
+     "diff_worst": -16.4
+    },
+    "real": {
+     "n_real": 23,
+     "trades": 18,
+     "diff_net": 10.9,
+     "diff_worst": 1.62
+    }
+   }
+  },
+  {
+   "id": "k3_rr09",
+   "title_fr": "Viser 0,9 fois le risque, avec trois renforts de suite (comptes sans plafond)",
+   "title_en": "Aim for 0.9 times the risk, with three boosts in a row (uncapped accounts)",
+   "family": "cible",
+   "why_fr": "Sur un compte sans plafond : A, +35 $, trou de 44 au lieu de 50, et A aussi sur 69 jours (+31 $). Chez Valère, avec plafond, C (-9 $) : encore le plafond qui jette le gain au-delà de 3,78 $. Je la propose pour les comptes sans plafond, comme Infinity.",
+   "why_en": "On an uncapped account: A, +$35, hole of 44 instead of 50, and A over 69 days too (+$31). On Valère, with a cap, C (-$9): again the cap throws away gains beyond $3.78. I propose it for uncapped accounts, like Infinity.",
+   "by": "chercheur",
+   "date": "2026-10-02",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 170.26,
+    "worst": 44.15,
+    "h1": 15.74,
+    "h2": 71.94,
+    "base_net": 135.75,
+    "base_worst": 50.23,
+    "verdict": "A",
+    "trades": 249,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "A",
+      "diff_net": 34.51,
+      "diff_worst": -6.08
+     },
+     "valere": {
+      "verdict": "C",
+      "diff_net": -8.93,
+      "diff_worst": -3.62
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "A",
+     "diff_net": 31.1,
+     "diff_worst": -6.08
+    },
+    "real": {
+     "n_real": 23,
+     "trades": 18,
+     "diff_net": -6.52,
+     "diff_worst": 0.69
+    }
+   }
+  },
+  {
+   "id": "k3_bul4",
+   "title_fr": "Trois renforts de suite, et une quatrième balle",
+   "title_en": "Three boosts in a row, and a fourth bullet",
+   "family": "structure",
+   "why_fr": "Deux idées qui reviennent chaque nuit (quatre balles : B quatre nuits de suite ; trois renforts : B, B, A). Ensemble, sans plafond : A, +17 $, et B sur 69 jours (+9 $). Chez Valère, C (-4 $). Je veux savoir si elles s'additionnent.",
+   "why_en": "Two ideas that come back every night (four bullets: B four nights running; three boosts: B, B, A). Together, uncapped: A, +$17, and B over 69 days (+$9). On Valère, C (-$4). I want to know whether they add up.",
+   "by": "chercheur",
+   "date": "2026-10-02",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 3
+   },
+   "pretest": {
+    "net": 152.71,
+    "worst": 48.39,
+    "h1": 6.38,
+    "h2": 62.94,
+    "base_net": 135.75,
+    "base_worst": 50.23,
+    "verdict": "A",
+    "trades": 257,
+    "engine": "2026-09-29b",
+    "byref": {
+     "base": {
+      "verdict": "A",
+      "diff_net": 16.96,
+      "diff_worst": -1.84
+     },
+     "valere": {
+      "verdict": "C",
+      "diff_net": -4.17,
+      "diff_worst": -0.2
+     }
+    },
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 8.77,
+     "diff_worst": -1.84
+    },
+    "real": {
+     "n_real": 23,
+     "trades": 18,
+     "diff_net": -4.07,
+     "diff_worst": 4.44
+    }
+   }
+  },
+  {
+   "id": "rr09_k4_risk12",
+   "title_fr": "Le paquet des comptes sans plafond : viser 0,9, quatre renforts, ceinture de 12 $",
+   "title_en": "The uncapped-account package: aim 0.9, four boosts, $12 belt",
+   "family": "argent",
+   "why_fr": "Hors du cadre : au lieu d'une règle pour tous, un paquet pour une seule forme de compte. Sans plafond, viser 0,9 et plus de renforts gagnent (A), la ceinture coupe le trou de 50 à 34 $. Pas encore rejoué ensemble : c'est la question de la nuit.",
+   "why_en": "Out of the box: instead of one rule for everyone, a package for one account shape. Uncapped, aiming 0.9 and more boosts both earn (A), and the belt cuts the hole from 50 to 34 dollars. Never replayed together: that is tonight's question.",
+   "by": "chercheur",
+   "date": "2026-10-02",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 4,
+    "risk_max": 12
+   },
+   "pretest": {
+    "net": 233.99,
+    "worst": 60.8,
+    "h1": 202.84,
+    "h2": 22.87,
+    "base_net": 187.24,
+    "base_worst": 80.29,
+    "base_h1": 187.36,
+    "base_h2": -17.68,
+    "verdict": "A",
+    "trades": 259,
+    "at": "2026-10-02 04:32",
+    "long": {
+     "days": 69,
+     "verdict": "A",
+     "diff_net": 23.23,
+     "diff_worst": -19.49
+    },
+    "real": {
+     "n_real": 23,
+     "trades": 18,
+     "diff_net": -8.57,
+     "diff_worst": 2.74
+    }
+   }
   }
  ]
 }
