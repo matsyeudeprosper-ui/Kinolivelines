@@ -2867,7 +2867,10 @@ function tfDots(x){
  const d=['m15','h1','h4'].map(k=>
   '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;'+
   'background:'+tfSide(s[k],dir)+'"></span>').join('');
- return ' <span title="M15 H1 H4 au moment de l\u2019entr\u00e9e" '+
+ // 2026-10-02: the dots carry the same meaning as the sheet - green if
+ // that timeframe was WITH the trade, red if against - so the tooltip
+ // says so rather than only naming the three.
+ return ' <span title="M15 H1 H4 \u00e0 l\u2019entr\u00e9e \u00b7 vert = avec le trade, rouge = contre" '+
   'style="display:inline-flex;gap:3px;align-items:center;'+
   'margin-left:6px;vertical-align:middle">'+d+'</span>';
 }
@@ -3886,10 +3889,22 @@ function tradeSheet(i){
    // taken in - so both lines show rather than only the entry.
    const tf=x.tf;if(!tf)return '';
    const dir=(x.dir==='A')?1:-1;
-   const nm={'1':'haut','-1':'bas','0':'\u2014'};
-   const line=s=>['m15','h1','h4'].map(k=>k.toUpperCase()+' '+
-    '<span style="color:'+tfSide(s[k],dir)+'">'+
-    (nm[String(s[k]==null?0:s[k])])+'</span>').join(' \u00b7 ');
+   // 2026-10-02 (owner: "why are they all red???"). The colour was right
+   // and the WORD was wrong. On a sell with all three timeframes up this
+   // printed "M15 haut" in RED - because red here means "against this
+   // trade", while red everywhere else in the app means "down". One token
+   // carrying two opposite meanings reads as a bug even when the data is
+   // correct. The arrow is the DIRECTION and stays neutral; the word is
+   // the RELATIONSHIP to this trade and carries the colour. Nothing is
+   // lost and nothing contradicts itself.
+   const en2=LANG()==='en';
+   const arw=t=>t===1?'\u25b2':(t===-1?'\u25bc':'\u2014');
+   const rel=t=>(t==null||t===0)?(en2?'no trend':'sans tendance')
+    :((t===dir)?(en2?'with':'avec'):(en2?'against':'contre'));
+   const line=s=>['m15','h1','h4'].map(k=>k.toUpperCase()+
+    ' <span style="color:var(--muted)">'+arw(s[k])+'</span> '+
+    '<span style="color:'+tfSide(s[k],dir)+'">'+rel(s[k])+'</span>')
+    .join('&nbsp;&nbsp; ');
    let h=tf.e?L('Grandes unit\u00e9s \u00e0 l\u2019entr\u00e9e',line(tf.e)):'';
    if(tf.x)h+=L('\u2026 \u00e0 la sortie',line(tf.x));
    return h;})()+
