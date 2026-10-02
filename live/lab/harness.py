@@ -37,6 +37,10 @@ B.say = lambda *a, **k: None
 CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
             "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02,
             "debt_nerv_gate": False,   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
+            # 2026-10-02 (chercheur): wait_win = minutes with no new entry
+            # after a WINNING close only; after a loss the recovery trade
+            # goes out as today. 0 = off.
+            "wait_win": 0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -304,6 +308,7 @@ def simulate(R, spread, cfg):
     day_key = None
     last_flip_t = None
     last_close_t = None
+    last_win_t = None
     cont_left = 0
     n_trades = wins = 0
     blocked = 0
@@ -400,6 +405,8 @@ def simulate(R, spread, cfg):
                 pos = None
                 pos_trailed = False
                 last_close_t = t
+                if win:
+                    last_win_t = t
             elif hit_sl or hit_tp:
                 win = bool(hit_tp and not hit_sl)
                 # priced at the stop as it stands, not at the one the
@@ -474,6 +481,8 @@ def simulate(R, spread, cfg):
                 pos = None
                 pos_trailed = False
                 last_close_t = t
+                if win:
+                    last_win_t = t
         touched = False
         if eng.trend == 1 and eng.prot_lo is not None:
             touched = l <= eng.prot_lo[1] <= cl
@@ -598,6 +607,8 @@ def simulate(R, spread, cfg):
                 pos = None
                 pos_trailed = False
                 last_close_t = t
+                if _win:
+                    last_win_t = t
                 if int(c["flip_exit"]) == 1:
                     continue       # stand aside, do not take the reversal
                 # flip_exit 2 falls through: the reversal is now considered
@@ -637,6 +648,9 @@ def simulate(R, spread, cfg):
                 continue
         # ---- the what-if brakes ----
         if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
+            blocked += 1
+            continue
+        if c["wait_win"] and last_win_t is not None and t - last_win_t < c["wait_win"] * 60:
             blocked += 1
             continue
         if c["ext_pts"] and i >= 61 and abs(closes[i-1] - closes[i-61]) > c["ext_pts"]:
@@ -878,6 +892,7 @@ def simulate_real(T, R, spread, cfg):
     run = pk = worst = 0.0
     streak = 0
     last_close_t = last_flip_t = None
+    last_win_t = None
     cont_left = 0
     n_trades = wins = blocked = 0
     open_until = -1
@@ -899,6 +914,9 @@ def simulate_real(T, R, spread, cfg):
             blocked += 1
             continue
         if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
+            blocked += 1
+            continue
+        if c["wait_win"] and last_win_t is not None and t - last_win_t < c["wait_win"] * 60:
             blocked += 1
             continue
         if c["ext_pts"] and i >= 61 and abs(closes[i-1] - closes[i-61]) > c["ext_pts"]:
@@ -966,6 +984,8 @@ def simulate_real(T, R, spread, cfg):
         pk = max(pk, run)
         worst = max(worst, pk - run)
         last_close_t = times[j]
+        if win:
+            last_win_t = times[j]
         n_trades += 1
     return {"debt_mode_modelled": "hwm",  # this path has no chest, so it cannot run "half"            "net": round(run, 2), "worst_debt": round(worst, 2), "trades": n_trades,
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "n_real": len(T),
@@ -980,6 +1000,7 @@ def main():
                          " 1 = always, 2 = only past the entry")
     ap.add_argument("--n-cont", type=int)
     ap.add_argument("--wait", type=int, help="minutes after a close")
+    ap.add_argument("--wait-win", type=int, help="minutes after a winning close only")
     ap.add_argument("--ext", type=float, help="no entry after this many points in the last hour")
     ap.add_argument("--skip-wd", type=str, help="weekdays to skip, 0=Mon..6=Sun, comma list")
     ap.add_argument("--skip-hours", type=str, help="UTC hours to skip, e.g. 0-8 or 0,1,2")
@@ -997,6 +1018,7 @@ def main():
     if a.rr is not None: over["rr"] = a.rr
     if a.n_cont is not None: over["n_cont"] = a.n_cont
     if a.wait is not None: over["wait_min"] = a.wait
+    if a.wait_win is not None: over["wait_win"] = a.wait_win
     if a.ext is not None: over["ext_pts"] = a.ext
     if a.skip_wd: over["skip_wd"] = [int(x) for x in a.skip_wd.split(",") if x.strip()]
     if a.skip_hours:

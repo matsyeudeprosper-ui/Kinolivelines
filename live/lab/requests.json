@@ -46,9 +46,13 @@
    "what_en": "A dial (in minutes) that refuses a new entry for X minutes after a WINNING trade. After a loss nothing changes: the recovery trade goes out as today. Today's wait_min waits after ANY close, including after a loss.",
    "why_fr": "Sur les 51 vrais trades du compte avec plafond, les pertes arrivent 24 minutes après le trade d'avant, les gains 190 minutes. 12 des 16 pertes ne suivaient PAS une perte. Mais attendre après toute sortie coûte (trois rattrapages + 20 min : -32 $ sans plafond), car ça retarde aussi les trades de rattrapage, où se fait une partie du gain. Peu de trades.",
    "why_en": "On the capped account’s 51 real trades, losses come 24 minutes after the previous trade, wins 190 minutes. 12 of the 16 losses did NOT follow a loss. But waiting after every close costs money (three catch-ups + 20 min: -$32 uncapped), because it also delays the recovery trades, where part of the profit is made. Few trades.",
-   "status": "open",
+   "status": "built",
    "build_attempts": 1,
-   "build_error": "le réglage n’est pas du code mort : net a=None b=None"
+   "build_error": "le réglage n’est pas du code mort : net a=None b=None",
+   "key": "wait_win",
+   "built_note_fr": "Le chercheur peut maintenant demander au test : « n’entre pas pendant X minutes après un trade gagnant, mais repars tout de suite après une perte » (wait_win). Rien ne change dans le robot tant qu’une idée qui s’en sert n’a pas gagné son duel.",
+   "built_note_en": "The chercheur can now ask the replay: “do not enter for X minutes after a winning trade, but go again straight away after a loss” (wait_win). Nothing changes in the robot until an idea that uses it wins its duel.",
+   "test": {"flag": "--wait-win", "a": 0, "b": 120}
   }
  ]
 }

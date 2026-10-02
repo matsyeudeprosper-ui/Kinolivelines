@@ -218,12 +218,14 @@ itself (an ask with `"by":"labo"`); answer it like any other.
  "status": "pending",
  "cfg": {"rr": 0.3-1.5, "n_cont": 0-3, "wait_min": 0-120, "ext_pts": 0-1500, "skip_wd": [0-6],
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
-         "debt_nerv_gate": true|false, "cost_max": 0-15, "min_range": 0-200,
+         "debt_nerv_gate": true|false, "wait_win": 0-240, "cost_max": 0-15, "min_range": 0-200,
          "minute_win": [0-59, 0-59], "one_per_hour": true|false,
          "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4}}
 ```
 `debt_nerv_gate` was built on your own request (2026-09-29): refuse an entry
 only when the account is still in the red AND the market is nervous.
+`wait_win` (2026-10-02, your request): no new trade for X minutes after a
+WIN; after a loss the catch-up trade goes out as today (`wait_min` waits after both).
 `cost_max` and `min_range` were built by Kino (2026-09-29). The spread is
 FIXED at 7 points on this broker, so it never varies - but it is 1.2 % of a
 wide trade and 8.7 % of a tight one. `cost_max` refuses an entry whose
