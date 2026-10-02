@@ -1633,7 +1633,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .nt-eye{font-size:.62rem;font-weight:700;letter-spacing:.12em;
  text-transform:uppercase;color:#b98cff}
 #sheet h3.nt-h{font-size:1.2rem;line-height:1.36;font-weight:650;
- letter-spacing:-.015em;margin:8px 0 12px;color:var(--text)}
+ letter-spacing:-.015em;margin:8px 0 12px;color:var(--text);
+ display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;
+ overflow:hidden;cursor:pointer}
+#sheet h3.nt-h.open{display:block;-webkit-line-clamp:unset}
+.nt-pill em{font-style:normal;color:var(--muted);margin-left:1px;
+ font-variant-numeric:tabular-nums}
 .nt-cast{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}
 .nt-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px 6px 9px;
  border-radius:99px;background:var(--surface2);border:1px solid var(--border);
@@ -5440,10 +5445,10 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  const num=k=>parts.findIndex(x=>x[0]===k)+1;
  const sh=(k,sub)=>'<div class="nt-sec" id="nt-'+k+'"><div class="nt-sh"><i>'+('0'+num(k)).slice(-2)+'</i><b>'+esc(parts[num(k)-1][1])+'</b></div>'+(sub?'<div class="nt-sub">'+sub+'</div>':'');
  let h='<div class="nt-eye">'+(en?'The researcher \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date||'')+'</div>';
- if(head)h+='<h3 class="nt-h">'+esc(head)+'</h3>';
+ if(head)h+='<h3 class="nt-h" onclick="this.classList.toggle(&#39;open&#39;)" title="'+(en?'Tap to read it whole':'Touchez pour lire en entier')+'">'+esc(head)+'</h3>';
  // the cast of the night, one pill each, only those who did something
- const CAST=[['day','Kino num\u00e9rique','var(--accent-soft)'],['crit',en?'The critic':'Le critique','#b98cff'],['build',en?'The builder':'Le constructeur','var(--up-soft)']].filter(c=>num(c[0]));
- if(CAST.length)h+='<div class="nt-cast">'+CAST.map(c=>'<button class="nt-pill" onclick="ntGo(&#39;'+c[0]+'&#39;)"><i style="background:'+c[2]+'"></i>'+c[1]+'</button>').join('')+'</div>';
+ const CAST=[['day','Kino num\u00e9rique','var(--accent-soft)',DAY.length],['crit',en?'The critic':'Le critique','#b98cff',CRQ.length],['build',en?'The builder':'Le constructeur','var(--up-soft)',BLD.length]].filter(c=>num(c[0]));
+ if(CAST.length)h+='<div class="nt-cast">'+CAST.map(c=>'<button class="nt-pill" onclick="ntGo(&#39;'+c[0]+'&#39;)"><i style="background:'+c[2]+'"></i>'+c[1]+(c[3]?' <em>\u00b7 '+c[3]+'</em>':'')+'</button>').join('')+'</div>';
  if(parts.length>1)h+='<div class="nt-nav">'+parts.map((x,i)=>'<button data-k="'+x[0]+'"'+(i===0?' class="on"':'')+' onclick="ntGo(&#39;'+x[0]+'&#39;)"><i>'+('0'+num(x[0])).slice(-2)+'</i>'+esc(x[1])+'</button>').join('')+'</div>';
  if(tot){h+=sh('res',en?'Every idea is tested on the last 42 days of the market, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est test\u00e9e sur les 42 derniers jours du march\u00e9, coup\u00e9s en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
   '<div class="nt-tiles">'+
