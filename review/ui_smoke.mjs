@@ -152,6 +152,11 @@ const paint = async (ms = 900) => {
 // 2026-09-30 bug actually broke - is that flipping the inner-marks switch
 // changes ONLY inner labels and leaves every other label untouched.
 await ev(SPY); await paint();
+// 2026-10-02: after a reload the candles can still be in flight when the
+// fixed sleep ends, and draw() then paints nothing - a false "recorder is
+// dead". Give the data up to ~25s to arrive before judging the recorder.
+for (let k = 0; k < 12 && !((await ev("(window.__labels||[]).length")) > 0); k++)
+  await paint(2000);
 const rawOn = await ev("(window.__labels||[]).length") || 0;
 const on = await ev(LABELS) || [];
 check("the label recorder is alive", rawOn > 0, `${rawOn} paint call(s)`);
@@ -243,18 +248,32 @@ await ev("try{localStorage.removeItem('owlHTF');}catch(e){} 1");
 // renderings of ONE rule and the member can see both within two taps.
 console.log("");
 console.log("weather agreement");
-const chartWx = await ev(`(function(){
+const readChartWx = () => ev(`(function(){
   var w=(typeof wxState==='function')?wxState():null;
   return w?{k:w.k,mv:w.mv,nb:w.nb,intRule:w.intRule,mvOk:w.mvOk}:null;})()`);
+let chartWx = await readChartWx();
 check("the chart can state a weather verdict", !!chartWx,
       chartWx ? `${chartWx.k} (mv ${chartWx.mv}, nb ${chartWx.nb})` : "none");
-await nav("about:blank"); await nav(`${BASE}/${VAL}/#marche`); await sleep(11000);
-const cardTitle = await ev("(document.getElementById('mx-title')||{}).textContent");
-const chartTitle = chartWx ? null : null;
+const readCard = async () => {
+  await nav("about:blank"); await nav(`${BASE}/${VAL}/#marche`); await sleep(11000);
+  return await ev("(document.getElementById('mx-title')||{}).textContent");
+};
+let cardTitle = await readCard();
 // compare the DECISION, not the wording: both compute mvOk the same way, so
 // a disagreement shows up as one saying "nothing to do" and the other not.
-const cardSleep = /Rien .{0,3} faire|Nothing to do/i.test(cardTitle || "");
-const chartSleep = chartWx ? (chartWx.k === "none") : null;
+const isSleep = (t) => /Rien .{0,3} faire|Nothing to do/i.test(t || "");
+let cardSleep = isSleep(cardTitle);
+let chartSleep = chartWx ? (chartWx.k === "none") : null;
+// 2026-10-02: the two reads are ~20s apart and the movement count is a
+// rolling 2h window, so a mark landing between them is a real change, not a
+// disagreement (it failed 1 run in 3). Only two paired reads in a row that
+// still differ count as a fail.
+if (chartWx !== null && cardSleep !== chartSleep) {
+  await nav("about:blank"); await nav(`${BASE}/${VAL}/chart`); await sleep(9000);
+  const again = await readChartWx();
+  if (again) { chartWx = again; chartSleep = again.k === "none"; }
+  cardTitle = await readCard(); cardSleep = isSleep(cardTitle);
+}
 if (chartWx === null)
   skip("chart and card agree on movement", "the chart gave no verdict");
 else
@@ -277,7 +296,13 @@ check("its switch reflects the stored value",
 console.log("");
 console.log("proof");
 await nav("about:blank"); await nav(`${BASE}/${VAL}/`); await sleep(11000);
-await ev("if(typeof proofPage==='function')proofPage(); 1"); await sleep(2500);
+// 2026-10-02: proofPage() returns silently while window._proof is still in
+// flight (1 run in 3 failed here for that reason alone) - retry until the
+// deck exists instead of judging a page that had not loaded yet.
+for (let k = 0; k < 10; k++) {
+  await ev("if(typeof proofPage==='function')proofPage(); 1"); await sleep(2500);
+  if ((await ev("!!(window._pv&&window._pv.S&&window._pv.S.length)")) === true) break;
+}
 check("proof deck opens", (await ev("!!(window._pv&&window._pv.S&&window._pv.S.length)")) === true);
 let seen = false;
 for (let k = 0; k < 8 && !seen; k++) {

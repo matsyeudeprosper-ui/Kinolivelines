@@ -1568,6 +1568,70 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    the middle of it. Restraint, as on the weather card: a number that
    leads, a hairline, one accent each, and a real 44px target. */
 .labdoors{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+/* 2026-10-02: the chercheur's night, as one row under the doors. */
+@keyframes jland{0%{box-shadow:0 0 0 0 rgba(127,179,224,.55)}
+ 100%{box-shadow:0 0 0 12px rgba(127,179,224,0)}}
+.jland{animation:jland .9s ease-out 1;border-radius:var(--r-lg)}
+/* 2026-10-02 (owner): the night report - one page read top to bottom. */
+.nt-eye{font-size:.62rem;font-weight:800;letter-spacing:.1em;
+ text-transform:uppercase;color:#b98cff}
+#sheet h3.nt-h{font-size:1.18rem;line-height:1.32;margin:6px 0 12px}
+.nt-nav{position:sticky;top:0;z-index:2;display:flex;gap:6px;
+ overflow-x:auto;margin:0 -20px 4px;padding:8px 20px;
+ background:var(--surface2);border-bottom:1px solid var(--border);
+ scrollbar-width:none}
+.nt-nav::-webkit-scrollbar{display:none}
+.nt-nav button{flex:none;min-height:40px;padding:0 13px;border-radius:99px;
+ border:1px solid var(--border2);background:var(--surface);
+ color:var(--text2);font-size:.8rem;font-weight:600;white-space:nowrap}
+.nt-nav button:active{background:var(--surface3)}
+.nt-sec{scroll-margin-top:60px;padding-top:18px}
+.nt-sh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.nt-sh i{flex:none;width:26px;height:26px;border-radius:50%;
+ background:rgba(185,140,255,.16);color:#b98cff;font-style:normal;
+ font-size:.8rem;font-weight:800;display:flex;align-items:center;
+ justify-content:center}
+.nt-sh b{font-size:1.02rem;color:var(--text)}
+.nt-sub{font-size:.8rem;color:var(--muted2);line-height:1.45;margin:-4px 0 10px}
+.nt-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nt-tile{background:var(--surface);border:1px solid var(--border);
+ border-radius:13px;padding:12px 8px;text-align:center}
+.nt-tile b{display:block;font-size:1.6rem;line-height:1;font-weight:800;
+ font-variant-numeric:tabular-nums}
+.nt-tile span{display:block;margin-top:6px;font-size:.72rem;line-height:1.3;
+ color:var(--text2)}
+.nt-fold{background:var(--surface);border:1px solid var(--border);
+ border-radius:13px;margin-bottom:8px;overflow:hidden}
+.nt-fold summary{list-style:none;display:flex;align-items:center;gap:10px;
+ min-height:48px;padding:10px 14px;font-weight:700;font-size:.92rem;
+ color:var(--text);cursor:pointer}
+.nt-fold summary::-webkit-details-marker{display:none}
+.nt-fold summary .chv{margin-left:auto;flex:none;width:16px;height:16px;
+ color:var(--muted);transition:transform .2s}
+.nt-fold[open] summary .chv{transform:rotate(90deg)}
+.nt-fold .nt-b{padding:0 14px 14px;font-size:.92rem;line-height:1.6;
+ color:var(--text2)}
+.nt-fold .nt-b p{margin:0 0 9px;font-size:.92rem;color:var(--text2)}
+.nt-fold .nt-b p:last-child{margin-bottom:0}
+.nt-card{background:var(--surface);border:1px solid var(--border);
+ border-radius:13px;padding:12px 14px;margin-bottom:8px}
+.nt-card b{display:block;font-size:.92rem;line-height:1.4;color:var(--text)}
+.nt-card span.nt-w{display:block;margin-top:5px;font-size:.8rem;
+ line-height:1.5;color:var(--muted2)}
+.nt-chip{display:inline-block;margin-bottom:6px;padding:2px 9px;
+ border-radius:99px;font-size:.62rem;font-weight:800;letter-spacing:.06em;
+ text-transform:uppercase}
+.nt-none{font-size:.84rem;color:var(--muted);padding:4px 0}
+.labnight{display:flex;align-items:center;gap:11px;width:100%;
+ margin-top:8px;background:var(--surface);
+ border:1px solid rgba(185,140,255,.3);border-radius:14px;
+ padding:12px 14px;min-height:52px;text-align:left;
+ color:var(--text2);font-size:.86rem;line-height:1.35;cursor:pointer}
+.labnight:active{background:var(--surface2)}
+.labnight b{color:var(--text)}
+.labnight .chv{flex:none;color:var(--muted);width:17px;height:17px}
+.labnight .sic{width:34px;height:34px;border-radius:10px;
+ display:flex;align-items:center;justify-content:center}
 .labdoor{display:flex;align-items:center;gap:13px;width:100%;
  background:var(--surface);border:1px solid var(--border);
  border-radius:15px;padding:14px 14px;min-height:60px;text-align:left;
@@ -4932,16 +4996,35 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  })();
  document.getElementById('lab-hint').innerHTML='\u00b7 '+(en?'where the robot learns':'l\u00e0 o\u00f9 le robot apprend')+' <span onclick="labStage(&#39;how&#39;)" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:99px;background:var(--surface3);color:var(--accent-soft);font-weight:800;cursor:pointer;margin-left:4px">?</span>';
  let h='';const N=j.note||{};const esc=_escS;
- if(N.date){const AU=j.auto||{};const cc=AU.counts||{};const RQn=(j.requests||[]).length;const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
-  const headline=en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en);const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
-  const cell=(n,l,c,bg)=>'<div style="flex:1;background:'+bg+';border:1px solid var(--border);border-radius:12px;padding:9px 6px;text-align:center"><b style="display:block;font-size:1.15rem;color:'+c+';line-height:1">'+n+'</b><span style="display:block;font-size:.6rem;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-top:5px;line-height:1.2">'+l+'</span></div>';
-  h+='<div class="panel" style="border-color:rgba(185,140,255,.35);padding:14px;cursor:pointer" onclick="labStory()" role="button" tabindex="0">'+
-   '<div style="display:flex;gap:11px;align-items:flex-start"><div class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><div style="flex:1;min-width:0"><div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#b98cff">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date)+'</div><b style="font-size:.95rem;line-height:1.38;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-top:3px">'+esc(headline)+'</b></div></div>'+
-   (tot?'<div style="font-size:.78rem;color:var(--text2);margin-top:12px;line-height:1.45">'+(en?'Tonight it replayed <b>'+tot+' ideas</b> on the last 42 days of the market:':'Cette nuit, il a rejou\u00e9 <b>'+tot+' id\u00e9es</b> sur les 42 derniers jours du march\u00e9 :')+'</div>'+
-   '<div style="display:flex;gap:6px;margin-top:8px">'+cell(cc.A||0,en?'clearly better':'nettement meilleures','var(--up-soft)','rgba(46,204,113,.08)')+cell(cc.B||0,en?'a little better':'un peu mieux','var(--warn)','rgba(232,197,90,.08)')+cell((cc.C||0)+(cc['=']||0),en?'no':'non','var(--down-soft)','rgba(255,92,92,.06)')+'</div>':'')+
-   ((PRn||RQn)?'<div style="font-size:.78rem;color:var(--text2);margin-top:10px;line-height:1.45">'+(PRn?'<b style="color:#b98cff">'+PRn+'</b> '+(en?(PRn>1?'new ideas to try':'new idea to try'):(PRn>1?'nouvelles id\u00e9es \u00e0 essayer':'nouvelle id\u00e9e \u00e0 essayer')):'')+(PRn&&RQn?' \u00b7 ':'')+(RQn?'<b style="color:var(--warn)">'+RQn+'</b> '+(en?(RQn>1?'dials it asks us to build':'dial it asks us to build'):(RQn>1?'r\u00e9glages qu\u2019il nous demande de construire':'r\u00e9glage qu\u2019il nous demande de construire')):'')+'</div>':'')+
-   '<button class="shbtn shmain" style="margin:12px 0 0;padding:11px;font-size:.9rem" onclick="event.stopPropagation();labStory()">'+(en?'Read the night, slide by slide':'Lire la nuit, page par page')+' \u203a</button>'+
-   '<div style="font-size:.68rem;color:var(--muted);margin-top:8px;line-height:1.4">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; it never decides.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; il ne d\u00e9cide jamais.')+'</div></div>';}
+ // 2026-10-02 (owner): the doors ARE the landing, so they come first. The
+ // chercheur's night was a 389px card sitting above them - a dense report
+ // standing between a reader and the navigation. Same treatment as "Quoi
+ // de neuf" on the home: one line, opening the full thing.
+ h+=labDoors(en);
+ if(N.date){const AU=j.auto||{};const cc=AU.counts||{};
+  const RQn=(j.requests||[]).length;
+  const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
+  const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
+  const worth=(cc.A||0)+(cc.B||0);
+  h+='<button class="labnight" onclick="labNight()">'+
+   '<span class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);'+
+   'flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></span>'+
+   '<span style="flex:1;min-width:0">'+
+   '<b>'+(en?'Last night':'Cette nuit')+'</b> \u00b7 '+
+   // 2026-10-02: the rail says "sur le pass\u00e9" now, so this says the
+   // same thing. "Rejou\u00e9" was the last place the old word survived.
+   (tot?(tot+' '+(en?'ideas tested':'id\u00e9es test\u00e9es')):
+        (en?'nothing tested':'rien test\u00e9'))+
+   (worth?' \u00b7 <span style="color:var(--up-soft)">'+worth+' '+
+     (en?'worth a look':'\u00e0 regarder')+'</span>':'')+
+   ((PRn||RQn)?'<span style="display:block;color:var(--muted);'+
+     'font-size:.74rem;margin-top:2px">'+
+     (PRn?PRn+' '+(en?'new':'nouvelle'+(PRn>1?'s':''))+' '+
+       (en?(PRn>1?'ideas':'idea'):'id\u00e9e'+(PRn>1?'s':'')):'')+
+     ((PRn&&RQn)?' \u00b7 ':'')+
+     (RQn?RQn+' '+(en?'asked of us':'demande'+(RQn>1?'s':'')):'')+
+     '</span>':'')+
+   '</span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
  h+=labBoard(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
@@ -5003,8 +5086,17 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
  return h;
 }
 // ---- 2026-09-29 (owner): the story board - where every idea stands ----
-const JCOLS=[['idea','Id\u00e9es','Ideas','var(--warn)','id\u00e9es','ideas'],['replay','Rejou\u00e9es sur le pass\u00e9','Replayed on the past','#b98cff','rejou\u00e9es','replayed'],['test','En test pour de faux','Tested for pretend','var(--accent-soft)','en test','tested'],['decided','D\u00e9cid\u00e9es','Decided','var(--text2)','d\u00e9cid\u00e9es','decided'],['live','Dans le robot','In the robot','var(--up-soft)','dans le robot','in the robot']];
+const JCOLS=[['idea','Id\u00e9es','Ideas','var(--warn)','id\u00e9es','ideas'],['replay','Test\u00e9es sur le pass\u00e9','Tested on the past','#b98cff','sur le pass\u00e9','on the past'],['test','Essay\u00e9es pour de faux','Tried for pretend','var(--accent-soft)','pour de faux','for pretend'],['decided','D\u00e9cid\u00e9es','Decided','var(--text2)','d\u00e9cid\u00e9es','decided'],['live','Dans le robot','In the robot','var(--up-soft)','dans le robot','in the robot']];
 const JSTAGE={idea:'ideas',replay:'tests',test:'forward',decided:'decided',live:'decisions'};
+// 2026-10-02 (owner): the letter alone taught nobody anything. These are
+// the same three verdicts in words, used on the cards beside it.
+function vWord(v,en){
+ if(v==='A')return en?'better on both halves':'mieux sur les deux moiti\u00e9s';
+ if(v==='B')return en?'a little better':'un peu mieux';
+ if(v==='C')return en?'no':'non';
+ if(v==='=')return en?'no change':'sans changement';
+ return '';
+}
 function labMaps(en){return {FAM:{structure:[en?'how it enters':'comment il entre','var(--accent-soft)'],meteo:[en?'the weather':'la m\u00e9t\u00e9o','var(--warn)'],cible:[en?'gain and loss limits':'gain et limite de perte','#b98cff'],rythme:[en?'when it trades':'quand il trade','#e8743b'],argent:[en?'the money':'l\u2019argent','var(--up-soft)'],donnees:[en?'the data':'les donn\u00e9es','var(--muted2)']},
  VB:{A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)']}};}
 const lchip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||'rgba(255,255,255,.05)')+'">'+t+'</span>';
@@ -5019,7 +5111,14 @@ function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v
 function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];const S=j.steps||{};const r=S.replay||{};const v=M.VB[r.verdict];const esc=_escS;
  const badge=v?'<span class="lcb" style="color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span class="lcb" style="background:rgba(255,255,255,.05);color:'+col[3]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>';
  const f=M.FAM[j.family]||M.FAM.donnees;const d=S.decision||{};
- let chips=lchip(f[0],f[1]);
+ // 2026-10-02 (owner): the verdict in words, leading, because "B" alone
+ // told a reader nothing. The letter survives in the badge for anyone
+ // following the chercheur's own shorthand.
+ let chips='';
+ if(r.verdict&&vWord(r.verdict,en))
+  chips+=lchip(vWord(r.verdict,en),v?v[1]:'var(--muted)',
+   v?v[2]:'rgba(255,255,255,.05)');
+ chips+=lchip(f[0],f[1]);
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
  if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
  if(j.kind==='battery')chips+=lchip(en?'asked every night':'question de chaque nuit','var(--muted2)');
@@ -5035,7 +5134,10 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
  const line=(j.col==='test'||j.col==='decided'||j.col==='live')?'<div style="font-size:.76rem;color:var(--text2);margin-top:8px;line-height:1.45">'+jLine(j,en)+'</div>':'';
  return '<div class="panel lc" style="padding-right:14px" onclick="labJourney(&#39;'+esc(j.id)+'&#39;)" role="button" tabindex="0"><div class="lct">'+badge+'<div style="flex:1;min-width:0"><h4>'+esc(en?j.title_en:j.title_fr)+'</h4><div class="lcc">'+chips+'</div></div></div>'+
   (note?'<div class="lcn" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(note)+'</div>':'')+tiles+(tiles?xTiles(r,en):'')+line+
-  '<div class="lcm"><span>'+esc(j.date||'')+(j.kind==='registry'&&j.src?' \u00b7 '+esc(j.src):'')+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Its story':'Son histoire')+' \u203a</span></div></div>';}
+  // 2026-10-02: the line above already says "dans le robot depuis le
+  // ...", so repeating the date here was saying it twice; and j.src is a
+  // study id (E010) that belongs in the detail sheet, not on a card.
+  '<div class="lcm"><span>'+(j.col==='live'?'':esc(j.date||''))+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Its story':'Son histoire')+' \u203a</span></div></div>';}
 function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};const l=L[c.label]||L.trop_tot;const esc=_escS;
  const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
  return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'seed':'graine','var(--warn)')+lchip(l[0],l[1])+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
@@ -5093,7 +5195,7 @@ function labDoors(en){
  // the media query I wrote to "fix" that simply deleted the subtitle on
  // the owner's screen - removing the explanation to protect the layout.
  const door=(k,n,title,sub,col)=>'<button class="labdoor" onclick="jGo('+
-  idx(k)+')"><span class="labdn" style="color:'+col+'">'+n+'</span>'+
+  idx(k)+',1)"><span class="labdn" style="color:'+col+'">'+n+'</span>'+
   '<span class="labdx"><span class="labdt">'+title+'</span>'+
   '<span class="labds">'+sub+'</span></span>'+
   '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
@@ -5131,15 +5233,22 @@ function labDoors(en){
  }
  return h;
 }
+// the doors are emitted by labRender, above the night line - not here
 function labBoard(en){setTimeout(jSwipe,80);
- return labDoors(en)+
-  '<div class="panel jboard" id="jb">'+jRail(en)+
+ return '<div class="panel jboard" id="jb">'+jRail(en)+
   '<div id="jstage">'+jStage(en)+'</div></div>';}
-function jGo(i){if(!(i>=0&&i<JCOLS.length))return;const dir=i>jCol()?1:-1;window._jcol=i;try{localStorage.setItem('owlLabCol',String(i));}catch(e){}
+function jGo(i,land){if(!(i>=0&&i<JCOLS.length))return;const dir=i>jCol()?1:-1;window._jcol=i;try{localStorage.setItem('owlLabCol',String(i));}catch(e){}
  const en=LANG()==='en';const r=document.getElementById('jrail');if(r)r.outerHTML=jRail(en);const st=document.getElementById('jstage');if(!st)return;
  st.style.transition='none';st.style.opacity='0';st.style.transform='translateX('+(dir*18)+'px)';st.innerHTML=jStage(en);
  requestAnimationFrame(()=>{st.style.transition='opacity .22s ease,transform .22s ease';st.style.opacity='1';st.style.transform='translateX(0)';});
- const top=document.getElementById('jb');if(top&&top.getBoundingClientRect().top<0)window.scrollTo({top:top.getBoundingClientRect().top+window.scrollY-70,behavior:'smooth'});}
+ const top=document.getElementById('jb');
+ // 2026-10-02 (owner): a door tap changed the rail but the board is below
+ // the fold, so nothing seemed to happen. A door now carries the view to the
+ // board and rings it once; the rail's own tabs keep the old rule (only
+ // scroll back up when the board has gone off the top).
+ if(top&&land){window.scrollTo({top:top.getBoundingClientRect().top+window.scrollY-72,behavior:'smooth'});
+  top.classList.remove('jland');void top.offsetWidth;top.classList.add('jland');}
+ else if(top&&top.getBoundingClientRect().top<0)window.scrollTo({top:top.getBoundingClientRect().top+window.scrollY-70,behavior:'smooth'});}
 function jSwipe(){const b=document.getElementById('jb');if(!b||b._sw)return;b._sw=1;let x0=null,y0=null;
  b.addEventListener('touchstart',e=>{x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
  b.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){jGo(jCol()+(dx<0?1:-1));}},{passive:true});}
@@ -5266,30 +5375,61 @@ function labProp(id){const j=window._lab;if(!j)return;const p=(j.proposals||[]).
 // the chercheur's night as slides (owner 2026-09-29: "a summary, then a
 // click to show a professional slide that tells the full story")
 const _escS=x=>String(x||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
-function labStory(){const j=window._lab;if(!j)return;const N=j.note||{};const en=LANG()==='en';const S=[];
- if((N.sections||[]).length){N.sections.forEach(x=>S.push({t:en?(x.title_en||x.title_fr):(x.title_fr||x.title_en),b:en?(x.en||x.fr):(x.fr||x.en)}));}
- else{const txt=(en?(N.en||N.fr):(N.fr||N.en))||'';const paras=txt.split(String.fromCharCode(10)).map(x=>x.trim()).filter(Boolean);
-  const pages=[];let page=[],w=0;
-  paras.forEach(p=>{p.split(/(?<=[.!?])\s+/).forEach(sn=>{const n=sn.split(/\s+/).length;if(w+n>70&&page.length){pages.push(page.join(' '));page=[];w=0;}page.push(sn);w+=n;});});
-  if(page.length)pages.push(page.join(' '));
-  pages.forEach((p,i)=>S.push({t:i===0?(en?'Tonight':'Ce soir'):(en?'The story, part ':'La suite, partie ')+(i+1),b:p}));}
- if((N.beliefs||[]).length)S.push({t:en?'What it believes, and why':'Ce qu\u2019il croit, et pourquoi',list:N.beliefs.map(b=>[(en?(b.en||b.fr):(b.fr||b.en)),b.evidence||''])});
- const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);if(PR.length)S.push({t:en?'What it wants to try next':'Ce qu\u2019il veut essayer ensuite',list:PR.map(p=>[en?p.title_en:p.title_fr,en?(p.why_en||''):(p.why_fr||'')])});
- const RQ=j.requests||[];if(RQ.length)S.push({t:en?'What it asks us to build':'Ce qu\u2019il nous demande de construire',list:RQ.map(r=>[en?r.title_en:r.title_fr,en?(r.why_en||r.what_en||''):(r.why_fr||r.what_fr||'')])});
- if(!S.length)return;
- // 2026-09-29: a fresh id per opening - the closed sheet keeps its old
- // content, and painting into it made the second opening come up empty
- const sid='story'+Date.now();window._story={S,i:0,date:N.date||'',sid};
- sheet('<div id="'+sid+'"></div>');
- (function paint(n){if(!document.getElementById(sid)){if(n>0)setTimeout(()=>paint(n-1),120);return;}storyPaint();})(25);}
-function storyPaint(){const st=window._story;if(!st)return;const en=LANG()==='en';const s=st.S[st.i];const el=document.getElementById(st.sid||'story');if(!el||!s)return;
- const dots=st.S.map((x,k)=>'<i style="display:inline-block;width:'+(k===st.i?18:6)+'px;height:6px;border-radius:99px;background:'+(k===st.i?'#b98cff':'var(--border2)')+';transition:width .2s"></i>').join('');
- const body=s.list?'<div style="max-height:52vh;overflow-y:auto">'+s.list.map(([a,b])=>'<div class="kv"><div class="kvt"><b>'+_escS(a)+'</b><span>'+_escS(b)+'</span></div></div>').join('')+'</div>':'<p style="font-size:1.02rem;line-height:1.65;color:var(--text);margin:0;max-height:52vh;overflow-y:auto">'+_escS(s.b)+'</p>';
- el.innerHTML='<div style="display:flex;align-items:center;gap:8px;color:#b98cff;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase">'+(en?'The chercheur \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+_escS(st.date)+'<span style="margin-left:auto;color:var(--muted)">'+(st.i+1)+' / '+st.S.length+'</span></div>'+
-  '<h3 style="margin:8px 0 12px;font-size:1.15rem;line-height:1.3">'+_escS(s.t)+'</h3>'+body+
-  '<div style="display:flex;gap:4px;justify-content:center;margin:16px 0 10px">'+dots+'</div>'+
-  '<div style="display:flex;gap:8px"><button class="shbtn shghost" style="flex:1;margin:0" '+(st.i===0?'disabled':'')+' onclick="window._story.i--;storyPaint()">'+(en?'Back':'Retour')+'</button>'+(st.i<st.S.length-1?'<button class="shbtn shmain" style="flex:1;margin:0" onclick="window._story.i++;storyPaint()">'+(en?'Next':'Suivant')+'</button>':'<button class="shbtn shmain" style="flex:1;margin:0" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>')+'</div>';
- let x0=null;el.ontouchstart=e=>{x0=e.touches[0].clientX;};el.ontouchend=e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;x0=null;if(dx<-50&&st.i<st.S.length-1){st.i++;storyPaint();}else if(dx>50&&st.i>0){st.i--;storyPaint();}};}
+function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en=LANG()==='en';const esc=_escS;
+ const AU=j.auto||{};const cc=AU.counts||{};
+ const LF=String.fromCharCode(10);
+ const strip=t=>String(t||'').split('**').join('');
+ const paras=t=>strip(t).split(LF).map(x=>x.trim()).filter(Boolean).map(x=>'<p>'+esc(x)+'</p>').join('');
+ const head=strip(en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en));
+ const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
+ const bel=N.beliefs||[];
+ const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
+ const RQ=j.requests||[];
+ // the night's own "what I believe / propose / ask" sections say what
+ // sections 3-5 below say, structured - so they are not shown twice
+ const dup=x=>{const t=(x.title_fr||x.title_en||'');
+  return (/^Ce que je crois|^What I believe/.test(t)&&bel.length)||
+   (/^Ce que je propose|^What I propose/.test(t)&&PR.length)||
+   (/^Ce que je demande|^What I ask/.test(t)&&RQ.length);};
+ const secs=(N.sections||[]).filter(x=>(x.fr||x.en)&&!dup(x));
+ const parts=[];
+ if(tot)parts.push(['res',en?'The results':'Les r\u00e9sultats']);
+ if(secs.length||(!secs.length&&(N.fr||N.en)))parts.push(['ret',en?'To remember':'\u00c0 retenir']);
+ if(bel.length)parts.push(['bel',en?'What it believes':'Ce qu\u2019il croit']);
+ if(PR.length)parts.push(['try',en?'To try next':'\u00c0 essayer']);
+ if(RQ.length)parts.push(['ask',en?'To build':'\u00c0 construire']);
+ if(!parts.length&&!head)return;
+ const num=k=>parts.findIndex(x=>x[0]===k)+1;
+ const sh=(k,sub)=>'<div class="nt-sec" id="nt-'+k+'"><div class="nt-sh"><i>'+num(k)+'</i><b>'+esc(parts[num(k)-1][1])+'</b></div>'+(sub?'<div class="nt-sub">'+sub+'</div>':'');
+ let h='<div class="nt-eye">'+(en?'The researcher \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date||'')+'</div>';
+ if(head)h+='<h3 class="nt-h">'+esc(head)+'</h3>';
+ if(parts.length>1)h+='<div class="nt-nav">'+parts.map(x=>'<button onclick="ntGo(&#39;'+x[0]+'&#39;)">'+num(x[0])+' \u00b7 '+esc(x[1])+'</button>').join('')+'</div>';
+ if(tot){h+=sh('res',en?'Every idea is replayed on the past, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est rejou\u00e9e sur le pass\u00e9, coup\u00e9 en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
+  '<div class="nt-tiles">'+
+  '<div class="nt-tile"><b style="color:var(--up-soft)">'+(cc.A||0)+'</b><span>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</span></div>'+
+  '<div class="nt-tile"><b style="color:var(--accent-soft)">'+(cc.B||0)+'</b><span>'+(en?'a little better':'un peu mieux')+'</span></div>'+
+  '<div class="nt-tile"><b style="color:var(--muted)">'+((cc.C||0)+(cc['=']||0))+'</b><span>'+(en?'no':'non')+'</span></div></div>'+
+  '<div class="nt-sub" style="margin:10px 0 0">'+tot+' '+(en?'ideas tested in all.':'id\u00e9es test\u00e9es en tout.')+'</div></div>';}
+ if(num('ret')){h+=sh('ret');
+  if(secs.length)h+=secs.map((x,i)=>'<details class="nt-fold"'+(i===0?' open':'')+'><summary>'+esc(en?(x.title_en||x.title_fr):(x.title_fr||x.title_en))+'<svg class="ic chv"><use href="#i-chev"/></svg></summary><div class="nt-b">'+paras(en?(x.en||x.fr):(x.fr||x.en))+'</div></details>').join('');
+  else h+='<div class="nt-card">'+paras(en?(N.en||N.fr):(N.fr||N.en))+'</div>';
+  h+='</div>';}
+ if(num('bel')){
+  const SC={nouveau:'var(--accent-soft)',new:'var(--accent-soft)','renforc\u00e9':'var(--up-soft)',strengthened:'var(--up-soft)',remonte:'var(--up-soft)',rising:'var(--up-soft)',affaibli:'var(--warn)',weakened:'var(--warn)',douteux:'var(--warn)',doubtful:'var(--warn)'};
+  h+=sh('bel',en?'What the researcher now holds to be true, and what it rests on.':'Ce que le chercheur tient maintenant pour vrai, et sur quoi il s\u2019appuie.')+bel.map(b=>{
+   let ev=String(b.evidence||'');
+   {let at=-1,best=1e9,k=ev.indexOf(' / ');
+    while(k>=0){const d=Math.abs(k-(ev.length-k-3));if(d<best){best=d;at=k;}k=ev.indexOf(' / ',k+1);}
+    if(at>0&&best<0.35*ev.length)ev=en?ev.slice(at+3):ev.slice(0,at);}
+   let chip='';const m=ev.match(/^([A-Za-z\u00c0-\u00ff']{3,14})(, [^:]{1,30})?\s?:\s+/);
+   if(m){const w=m[1].trim();const c=SC[w.toLowerCase()];if(c){chip='<span class="nt-chip" style="color:'+c+';background:rgba(255,255,255,.06)">'+esc(w)+'</span>';
+    const x=m[2]?m[2].slice(2):'';ev=(x?x.charAt(0).toUpperCase()+x.slice(1)+' : ':'')+ev.slice(m[0].length);}}
+   return '<div class="nt-card">'+chip+'<b>'+esc(en?(b.en||b.fr):(b.fr||b.en))+'</b>'+(ev?'<span class="nt-w">'+esc(ev)+'</span>':'')+'</div>';}).join('')+'</div>';}
+ if(num('try'))h+=sh('try',en?'New ideas it wants to test.':'Les nouvelles id\u00e9es qu\u2019il veut tester.')+PR.map(p=>'<div class="nt-card"><b>'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</b>'+((en?p.why_en:p.why_fr)?'<span class="nt-w">'+esc(en?p.why_en:p.why_fr)+'</span>':'')+'</div>').join('')+'</div>';
+ if(num('ask'))h+=sh('ask',en?'Things it cannot do alone and asks us to build.':'Ce qu\u2019il ne peut pas faire seul et nous demande de construire.')+RQ.map(r=>'<div class="nt-card"><b>'+esc(en?(r.title_en||r.title_fr):(r.title_fr||r.title_en))+'</b>'+((en?(r.why_en||r.what_en):(r.why_fr||r.what_fr))?'<span class="nt-w">'+esc(en?(r.why_en||r.what_en):(r.why_fr||r.what_fr))+'</span>':'')+'</div>').join('')+'</div>';
+ h+='<button class="shbtn shghost" style="margin-top:18px" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>';
+ sheet(h);}
+function ntGo(k){const e=document.getElementById('nt-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});}
 function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).find(x=>x.id===id);if(!it)return;const en=LANG()==='en';
  const _jj=jGet(id);
  sheet('<h3>'+(en?it.title_en:it.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+id+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+'<p style="color:var(--text)">'+(en?it.note_en:it.note_fr)+'</p>'+
