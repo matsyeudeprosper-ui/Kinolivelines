@@ -48,11 +48,16 @@
    "why_en": "On the capped account’s 51 real trades, losses come 24 minutes after the previous trade, wins 190 minutes. 12 of the 16 losses did NOT follow a loss. But waiting after every close costs money (three catch-ups + 20 min: -$32 uncapped), because it also delays the recovery trades, where part of the profit is made. Few trades.",
    "status": "built",
    "build_attempts": 1,
-   "build_error": "le réglage n’est pas du code mort : net a=None b=None",
    "key": "wait_win",
    "built_note_fr": "Le chercheur peut maintenant demander au test : « n’entre pas pendant X minutes après un trade gagnant, mais repars tout de suite après une perte » (wait_win). Rien ne change dans le robot tant qu’une idée qui s’en sert n’a pas gagné son duel.",
    "built_note_en": "The chercheur can now ask the replay: “do not enter for X minutes after a winning trade, but go again straight away after a loss” (wait_win). Nothing changes in the robot until an idea that uses it wins its duel.",
-   "test": {"flag": "--wait-win", "a": 0, "b": 120}
+   "test": {
+    "flag": "--wait-win",
+    "a": 0,
+    "b": 120
+   },
+   "built_date": "2026-10-02",
+   "built_commit": "110e616"
   }
  ]
 }
