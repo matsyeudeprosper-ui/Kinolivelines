@@ -49,8 +49,8 @@
    "status": "built",
    "build_attempts": 1,
    "key": "wait_win",
-   "built_note_fr": "Le chercheur peut maintenant demander au test : « n’entre pas pendant X minutes après un trade gagnant, mais repars tout de suite après une perte » (wait_win). Rien ne change dans le robot tant qu’une idée qui s’en sert n’a pas gagné son duel.",
-   "built_note_en": "The chercheur can now ask the replay: “do not enter for X minutes after a winning trade, but go again straight away after a loss” (wait_win). Nothing changes in the robot until an idea that uses it wins its duel.",
+   "built_note_fr": "Le chercheur peut maintenant demander au test : « n’entre pas pendant X minutes après un trade gagnant, mais repars tout de suite après une perte ». Rien ne change dans le robot tant qu’une idée qui s’en sert n’a pas gagné son duel.",
+   "built_note_en": "The chercheur can now ask the replay: “do not enter for X minutes after a winning trade, but go again straight away after a loss”. Nothing changes in the robot until an idea that uses it wins its duel.",
    "test": {
     "flag": "--wait-win",
     "a": 0,
