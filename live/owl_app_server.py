@@ -5141,6 +5141,8 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
  if(j.stale)chips+=lchip(en?'to re-check':'\u00e0 rev\u00e9rifier','var(--warn)');
  if(j.archived)chips+=lchip(en?'set aside':'mise de c\u00f4t\u00e9','var(--muted2)');
  if(j.reference)chips+=lchip(en?'yardstick · never for the robot':'étalon · jamais pour le robot','var(--muted2)');
+ if(j.critique&&j.critique.verdict==='bloque')chips+=lchip(en?'the critic said no':'le critique a dit non','var(--down-soft)','rgba(255,92,92,.12)');
+ if(j.critique&&j.critique.verdict==='doute')chips+=lchip(en?'the critic doubts':'le critique doute','var(--warn)','rgba(232,197,90,.14)');
  if(d.d==='yes'&&j.col!=='live')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
  const note=en?(j.note_en||j.note_fr):(j.note_fr||j.note_en);
@@ -5325,6 +5327,7 @@ function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';con
   (chips?'<div class="lbl" style="margin-top:10px">'+(en?'What changes':'Ce qui change')+'</div><div style="margin-top:6px">'+chips+'</div>':'')+
   (tiles?'<div class="lbl" style="margin-top:10px">'+(en?'Against the robot as it is':'Contre le robot tel qu\u2019il est')+'</div>'+tiles+xTiles(r,en)+'<div style="font-size:.66rem;color:var(--muted);margin-top:4px;line-height:1.4">'+(en?'42 days give the mark. The long window and the real trades are two more looks: weaker there is a caution, not a no.':'Les 42 jours donnent la note. La fen\u00eatre longue et les vrais trades sont deux regards de plus : plus faible l\u00e0, c\u2019est une prudence, pas un non.')+'</div>':'')+
   ((S.test||{}).duel?'<div class="lbl" style="margin-top:12px">'+(en?'The duel, for pretend':'Le duel, pour de faux')+'</div>'+duelBlock(S.test.duel,en):'')+
+  (j.critique?'<div class="lbl" style="margin-top:12px">'+(en?'The critic':'Le critique')+' \u00b7 '+_escS(j.critique.date||'')+'</div><div class="panel" style="margin-top:6px;padding:11px 12px;border-color:'+({bloque:'rgba(255,92,92,.4)',doute:'rgba(232,197,90,.4)'}[j.critique.verdict]||'rgba(46,204,113,.35)')+'"><b style="font-size:.84rem;color:'+({bloque:'var(--down-soft)',doute:'var(--warn)'}[j.critique.verdict]||'var(--up-soft)')+'">'+({bloque:en?'No, not on this evidence':'Non, pas avec ces preuves',doute:en?'A doubt':'Un doute'}[j.critique.verdict]||(en?'Could not break it':'N\u2019a pas r\u00e9ussi \u00e0 la casser'))+'</b><p style="font-size:.88rem;line-height:1.5;color:var(--text);margin:5px 0 0">'+_escS(en?(j.critique.en||j.critique.fr):(j.critique.fr||j.critique.en))+'</p></div>':'')+
   (note?'<div class="lbl" style="margin-top:12px">'+(en?'The idea':'L\u2019id\u00e9e')+'</div><p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:6px 0 0">'+_escS(note)+'</p>':'')+
   (nums?'<p style="font-size:.8rem;color:var(--text2);margin:6px 0 0;line-height:1.5">'+_escS(nums)+'</p>':'')+
   '<div class="lbl" style="margin-top:12px">'+(en?'Its story':'Son histoire')+'</div><div style="max-height:34vh;overflow-y:auto;margin-top:4px">'+(ev||'<div class="jev"><span></span><div>'+(en?'Nothing yet.':'Rien encore.')+'</div></div>')+'</div>'+btns+
@@ -8424,6 +8427,11 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
     tw = {t.get("id"): t for t in twins}
     dec = decisions.get("decisions", {}) if isinstance(decisions, dict) else {}
     base = auto.get("base") or {}
+    # 2026-10-02 (phase 3): the critic's last word per idea
+    CR = {}
+    for c in sorted(_lj("critiques.json", {}).get("critiques", []) if isinstance(_lj("critiques.json", {}), dict) else [], key=lambda c: c.get("date", "")):
+        if c.get("id"):
+            CR[c["id"]] = {k: c.get(k) for k in ("date", "verdict", "fr", "en")}
     out = []
     seen = set()
 
@@ -8480,6 +8488,12 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                        "en": "Checked by hand: " + _vw(reg.get("verdict"), True), "k": "replay"})
         if rp:
             st["replay"] = rp
+        _cr = next((CR[k] for k in keys if k in CR), None)
+        if _cr:
+            _w = {"passe": ("Le critique a essay\u00e9 de la casser, sans y arriver", "The critic tried to break it and could not"),
+                  "doute": ("Le critique doute", "The critic doubts"),
+                  "bloque": ("Le critique a dit non", "The critic said no")}.get(_cr.get("verdict"), ("Le critique", "The critic"))
+            ev.append({"d": _cr.get("date", ""), "fr": _w[0] + " : " + str(_cr.get("fr") or ""), "en": _w[1] + ": " + str(_cr.get("en") or _cr.get("fr") or ""), "k": "replay"})
         # 3 - tested for pretend
         t = next((tw[k] for k in keys if k in tw), None)
         if t:
@@ -8558,6 +8572,7 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                     "reg_status": (reg or {}).get("status"), "robot": (reg or {}).get("robot"),
                     "reference": bool((reg or {}).get("reference")),
                     "archived": (jid in arch_on) or any(k in arch_on for k in keys),
+                    "critique": next((CR[k] for k in keys if k in CR), None),
                     "stale": bool(rp and rp.get("engine") and rp.get("engine") != auto.get("engine"))})
         seen.update(keys)
 

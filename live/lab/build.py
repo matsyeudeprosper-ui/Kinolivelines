@@ -142,8 +142,9 @@ def gates(req, mod, new):
             rc, o = sh(["python", "lab/harness.py", "--json", t["flag"], str(v)], 600, cwd=LIVE)
             try:
                 d = json.loads(o[o.index("{"):])
-                full = d.get("full") or d
-                nets.append(full.get("net"))
+                v = d.get("variant") or d.get("full") or d
+                v = v.get("full") if isinstance(v, dict) and isinstance(v.get("full"), dict) else v
+                nets.append(v.get("net") if isinstance(v, dict) else None)
             except Exception:
                 nets.append(None)
         alive = (None not in nets) and nets[0] != nets[1]

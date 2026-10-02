@@ -18,6 +18,12 @@ try {
     Say ("researcher exit " + $LASTEXITCODE)
 } catch { Say ("researcher failed: " + $_.Exception.Message) }
 try {
+    # 2026-10-02 (owner, phase 3): le critique tries to break every idea
+    # that scored A, before it can earn a twin (lab/CRITIQUE.md)
+    python lab/critic.py *> (Join-Path $lab "critic_last.log")
+    Say ("critic exit " + $LASTEXITCODE)
+} catch { Say ("critic failed: " + $_.Exception.Message) }
+try {
     # 2026-10-02 (owner): a clue that reached "a verifier" asks the
     # chercheur by itself; the session below must answer it tonight
     python lab/auto_ask.py *> (Join-Path $lab "auto_ask_last.log")
@@ -49,7 +55,7 @@ try {
     python lab/build.py *> (Join-Path $lab "build_last.log")
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/critiques.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null

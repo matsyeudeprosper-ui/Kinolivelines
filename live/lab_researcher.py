@@ -135,6 +135,13 @@ def save_json(p, obj):
     os.replace(tmp, p)
 
 
+def latest_critique(vid):
+    """The critic's last word on an idea (lab/critiques.json), or None."""
+    mine = [c for c in load_json(os.path.join(LAB, "critiques.json"), {"critiques": []}).get("critiques", []) if c.get("id") == vid]
+    mine.sort(key=lambda c: c.get("date", ""))
+    return mine[-1] if mine else None
+
+
 def ensure_twin(vid, title_fr, title_en, cfg, verdict):
     """Layer 3: an A starts observing by itself (paper, no money)."""
     tw = load_json(TWINS, {"twins": []})
@@ -291,8 +298,22 @@ def main():
         # two nights in a row costs one day and removes most false starts.
         if vd == "A" and prevv != "A":
             say(f"{vid}: A held back, waiting for a second A tomorrow")
-        if vd == "A" and prevv == "A":
+        crit = latest_critique(vid)
+        if vd == "A" and prevv == "A" and crit and crit.get("verdict") == "bloque":
+            # 2026-10-02 (phase 3): a second A is not enough when the critic
+            # could break it. It stays on the board with the critic's words.
+            say(f"{vid}: A twice, but the critic blocked it - {(crit.get('fr') or '')[:90]}")
+        elif vd == "A" and prevv == "A":
             if ensure_twin(vid, fr, en, H.cfg_of(cfg), vd):
+                if crit and crit.get("verdict") == "doute":
+                    try:
+                        _tw = load_json(TWINS, {"twins": []})
+                        for _t in _tw.get("twins", []):
+                            if _t.get("id") == vid:
+                                _t["critique"] = {k: crit.get(k) for k in ("date", "verdict", "fr", "en")}
+                        save_json(TWINS, _tw)
+                    except Exception:
+                        pass
                 try:
                     import twin_judge as TJ      # 2026-09-29: tell Kino + the Strategie members
                     TJ.emit("twin_started", ("\U0001f9ea Le labo : un jumeau démarre",
