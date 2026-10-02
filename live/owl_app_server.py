@@ -1502,6 +1502,56 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .jcards .lc:first-child{margin-top:12px}
 .jfoot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
 .jfoot .tfc{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 2026-10-02 (owner): "more professional, modern and premium". Fewer boxes,
+   one accent per block, numbers that read at a glance, and air. */
+.jboard{padding:18px 14px 14px;margin-top:12px;border-radius:var(--r-lg)}
+.jrail{margin:0 0 4px}
+.jrail .jn i{width:36px;height:36px;font-size:.84rem;border-width:2px}
+.jrail .jn:not(:last-child)::after{top:17px}
+.jrail .jn span{font-size:.6rem;margin-top:8px;letter-spacing:.06em;line-height:1.25}
+.jrail .jn.on i{box-shadow:0 0 0 5px rgba(255,255,255,.07),0 6px 18px rgba(0,0,0,.35)}
+.jhead{margin:18px 2px 0}
+.jhs{margin-top:3px}
+.jempty{padding:26px 14px;text-align:center;color:var(--muted);font-size:.86rem;
+ border:1px dashed var(--border2);border-radius:16px;margin-top:12px}
+.jfoldbtn{width:100%;margin-top:12px;padding:11px;justify-content:center}
+.lc{border-radius:18px;padding:14px 14px 12px;
+ background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,0)),var(--surface);
+ box-shadow:var(--hl)}
+.lc .lcb{width:34px;height:34px;border-radius:10px;font-size:.95rem}
+.lc h4{font-size:.96rem;letter-spacing:-.01em}
+.lc .lcc{margin-top:8px}
+.lc .lcm{border-top:1px solid var(--border);padding-top:9px;margin-top:11px;font-size:.68rem}
+.pchip{font-size:.58rem;padding:3px 7px;letter-spacing:.04em}
+.labhero{display:block;width:100%;text-align:left;margin-top:12px;padding:16px 16px 14px;
+ border-radius:var(--r-lg);border:1px solid rgba(185,140,255,.26);color:var(--text);
+ cursor:pointer;font:inherit;position:relative;overflow:hidden;
+ background:radial-gradient(120% 95% at 100% 0%,rgba(185,140,255,.24),transparent 58%),
+  linear-gradient(160deg,var(--hero1),var(--hero2));
+ box-shadow:0 12px 32px rgba(0,0,0,.28),var(--hl)}
+:root[data-theme=light] .labhero{--text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--up-soft:#8df0bb}
+.labhero:active{filter:brightness(1.06)}
+.lh-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lh-eye{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#d2b8ff}
+.lh-read{font-size:.76rem;font-weight:700;color:var(--text2)}
+.lh-head{margin-top:9px;font-size:1.04rem;font-weight:700;line-height:1.38;letter-spacing:-.012em;
+ display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.lh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.lh-stats div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);
+ border-radius:14px;padding:11px 6px 9px;text-align:center}
+.lh-stats b{display:block;font-size:1.35rem;font-weight:800;line-height:1;letter-spacing:-.02em;
+ font-variant-numeric:tabular-nums}
+.lh-stats span{display:block;font-size:.6rem;color:var(--text2);margin-top:6px;line-height:1.2}
+.lh-ok{margin-top:11px;font-size:.7rem;color:var(--up-soft);display:flex;align-items:center;gap:6px}
+.labseedrow{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;
+ background:transparent;border:1px dashed var(--border2);border-radius:16px;
+ padding:12px 14px;min-height:52px;text-align:left;color:var(--text2);font:inherit;cursor:pointer}
+.labseedrow:active{background:var(--surface2)}
+.labseedrow .lsr-n{font-size:1.2rem;font-weight:800;color:var(--warn);min-width:28px;
+ text-align:center;font-variant-numeric:tabular-nums}
+.labseedrow b{display:block;font-size:.88rem;color:var(--text)}
+.labseedrow .lsr-s{display:block;font-size:.74rem;color:var(--muted);margin-top:2px}
+.labseedrow .chv{flex:none;color:var(--muted);width:16px;height:16px}
 .jb{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:2px 0 10px;margin-top:10px}
 .jb::-webkit-scrollbar{display:none}
 .jcol{flex:0 0 84%;scroll-snap-align:start;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:10px 10px 6px;min-height:120px}
@@ -1514,7 +1564,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .jcard .jl b{font-weight:800}
 .jnav{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-top:10px}
 .jst{display:flex;align-items:flex-start;margin:12px 0 4px;position:relative}
-.jst>div{flex:1;text-align:center;position:relative;font-size:.58rem;color:var(--muted);line-height:1.25;text-transform:uppercase;letter-spacing:.04em}
+.jst>div{flex:1;text-align:center;position:relative;font-size:.58rem;color:var(--muted);line-height:1.25;text-transform:uppercase;letter-spacing:.04em;padding:0 3px}
 .jst>div:not(:last-child)::after{content:"";position:absolute;top:11px;left:50%;width:100%;height:2px;background:var(--border2)}
 .jst>div.done:not(:last-child)::after{background:var(--accent-soft)}
 .jst>div.no:not(:last-child)::after{background:var(--border2)}
@@ -1567,7 +1617,6 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
    three questions anyone has, before the pipeline rail drops them into
    the middle of it. Restraint, as on the weather card: a number that
    leads, a hairline, one accent each, and a real 44px target. */
-.labdoors{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 /* 2026-10-02: the chercheur's night, as one row under the doors. */
 @keyframes jland{0%{box-shadow:0 0 0 0 rgba(127,179,224,.55)}
  100%{box-shadow:0 0 0 12px rgba(127,179,224,0)}}
@@ -1623,47 +1672,6 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  text-transform:uppercase}
 .nt-go{margin-top:10px;min-height:44px;width:100%;justify-content:center}
 .nt-none{font-size:.84rem;color:var(--muted);padding:4px 0}
-.labnewbox{margin:0 0 12px}
-.labnewh{font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
- color:#b98cff;margin:0 0 7px}
-.labnew{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
- background:var(--surface);border:1px solid rgba(185,140,255,.3);border-radius:14px;
- padding:12px 13px;margin:0 0 7px;color:var(--text);font:inherit;cursor:pointer}
-.labnew:active{background:var(--surface2)}
-.labnew .chv{flex:none;color:var(--muted);width:17px;height:17px}
-.labnt{display:block;font-weight:700;font-size:.92rem;line-height:1.35}
-.labnv{display:block;font-size:.7rem;font-weight:800;letter-spacing:.04em;
- text-transform:uppercase;margin-top:3px}
-.labnw{display:block;font-size:.78rem;color:var(--muted2);margin-top:3px;line-height:1.4;
- overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.labnight{display:flex;align-items:center;gap:11px;width:100%;
- margin-top:8px;background:var(--surface);
- border:1px solid rgba(185,140,255,.3);border-radius:14px;
- padding:12px 14px;min-height:52px;text-align:left;
- color:var(--text2);font-size:.86rem;line-height:1.35;cursor:pointer}
-.labnight:active{background:var(--surface2)}
-.labnight b{color:var(--text)}
-.labnight .chv{flex:none;color:var(--muted);width:17px;height:17px}
-.labnight .sic{width:34px;height:34px;border-radius:10px;
- display:flex;align-items:center;justify-content:center}
-.labdoor{display:flex;align-items:center;gap:13px;width:100%;
- background:var(--surface);border:1px solid var(--border);
- border-radius:15px;padding:14px 14px;min-height:60px;text-align:left;
- color:var(--text);cursor:pointer}
-.labdoor:active{background:var(--surface2)}
-.labdn{font-size:1.5rem;font-weight:800;line-height:1;min-width:34px;
- font-variant-numeric:tabular-nums;text-align:center;flex:none}
-.labdx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.labdt{font-weight:700;font-size:.97rem}
-.labds{font-size:.78rem;color:var(--muted);line-height:1.3}
-.labdoor .chv{flex:none;color:var(--muted);width:17px;height:17px}
-.labseedline{display:flex;align-items:center;gap:8px;width:100%;
- margin-top:8px;background:transparent;border:1px dashed var(--border2);
- border-radius:13px;padding:12px 14px;min-height:46px;text-align:left;
- color:var(--text2);font-size:.82rem;line-height:1.35;cursor:pointer}
-.labseedline b{font-variant-numeric:tabular-nums}
-.labseedline .chv{flex:none;margin-left:auto;color:var(--muted);
- width:16px;height:16px}
 /* no media query hiding anything: the column stacks on its own, and a
    door without its sentence is a door nobody can read. */
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
@@ -1796,7 +1804,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
  <div id="sig-mark" style="display:none;margin-top:10px"></div>
  <div style="display:flex;gap:8px;margin-top:12px">
-  <a id="sig-chart" href="#" class="shbtn shmain" style="flex:1;margin:0;padding:11px;text-align:center;text-decoration:none;font-size:.88rem">Prendre sur le graphique</a>
+  <a id="sig-chart" href="#" class="shbtn shmain" style="flex:1 1 46%;margin:0;padding:11px;text-align:center;text-decoration:none;font-size:.88rem">Prendre sur le graphique</a>
   <button id="sig-copy" class="shbtn shghost" style="flex:none;margin:0;padding:11px 14px;font-size:.88rem" onclick="sigCopy()">Copier</button>
  </div>
 </div>
@@ -4998,8 +5006,9 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  (function(){const P=(j.auto||{}).parity;const el=document.getElementById('lab-parity');
   if(!el)return;
   if(!P){el.style.display='none';return;}
-  el.style.display='block';
-  el.style.borderLeft='2px solid '+(P.drift?'var(--down)':'var(--up)');
+  window._labParityOk=!P.drift;
+  el.style.display=P.drift?'block':'none';
+  el.style.borderLeft='2px solid var(--down)';
   el.innerHTML=P.drift
    ?'<b style="color:var(--down)">'+(en?'The test no longer matches the robot'
      :'Le test ne correspond plus au robot')+'</b><div style="color:var(--muted2);margin-top:3px">'+
@@ -5014,34 +5023,9 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  // chercheur's night was a 389px card sitting above them - a dense report
  // standing between a reader and the navigation. Same treatment as "Quoi
  // de neuf" on the home: one line, opening the full thing.
- h+=labNew(en);
- h+=labDoors(en);
- if(N.date){const AU=j.auto||{};const cc=AU.counts||{};
-  const RQn=(j.requests||[]).length;
-  const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
-  const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
-  const worth=(cc.A||0)+(cc.B||0);
-  h+='<button class="labnight" onclick="labNight()">'+
-   '<span class="sic" style="color:#b98cff;background:rgba(185,140,255,.14);'+
-   'flex:none"><svg class="ic ic-s"><use href="#i-eye"/></svg></span>'+
-   '<span style="flex:1;min-width:0">'+
-   '<b>'+(en?'Last night':'Cette nuit')+'</b> \u00b7 '+
-   // 2026-10-02: the rail says "sur le pass\u00e9" now, so this says the
-   // same thing. "Rejou\u00e9" was the last place the old word survived.
-   (tot?(tot+' '+(en?'ideas tested':'id\u00e9es test\u00e9es')):
-        (en?'nothing tested':'rien test\u00e9'))+
-   (worth?' \u00b7 <span style="color:var(--up-soft)">'+worth+' '+
-     (en?'worth a look':'\u00e0 regarder')+'</span>':'')+
-   ((PRn||RQn)?'<span style="display:block;color:var(--muted);'+
-     'font-size:.74rem;margin-top:2px">'+
-     (PRn?PRn+' '+(en?'new':'nouvelle'+(PRn>1?'s':''))+' '+
-       (en?(PRn>1?'ideas':'idea'):'id\u00e9e'+(PRn>1?'s':'')):'')+
-     ((PRn&&RQn)?' \u00b7 ':'')+
-     (RQn?RQn+' '+(en?'asked of us':'demande'+(RQn>1?'s':'')):'')+
-     '</span>':'')+
-   '</span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
- h+=labSeedLine(en);
+ h+=labHero(en);
  h+=labBoard(en);
+ h+=labSeedRow(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
 }
@@ -5068,13 +5052,13 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
   h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'Under 30 trades a number means little; it is shown so you can watch it grow.':'Sous 30 trades, un chiffre veut dire peu de chose ; on le montre pour le voir grandir.')+'</div>';
   h+='<div class="sec" style="margin:18px 8px 8px">'+(en?'Ideas on the table':'Id\u00e9es sur la table')+'</div>'+items.filter(it=>it.status==='idea'||it.status==='observation').map(item).join('');
  }else if(k==='tests'){
-  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We replay the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On rejoue les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
+  h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'How we check an idea':'Comment on v\u00e9rifie une id\u00e9e')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'We rerun the last 42 days of the market with the robot as it is, then with the idea. We look at the money at the end, the biggest hole along the way, and whether the first half and the second half of the period agree.':'On refait les 42 derniers jours du march\u00e9 avec le robot tel qu\u2019il est, puis avec l\u2019id\u00e9e. On regarde l\u2019argent \u00e0 la fin, le plus gros trou en chemin, et si la premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose.')+'</div>'+
    '<div class="st"><div><b style="color:var(--up-soft)">A</b>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</div><div><b style="color:var(--warn)">B</b>'+(en?'a little better':'un peu mieux')+'</div><div><b style="color:var(--down-soft)">C</b>'+(en?'no':'non')+'</div></div>'+
-   '<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-top:10px">'+(en?'Three looks at every idea. <b>42 days</b> gives the mark. <b>The long window</b> is all the history the terminal holds ('+(((j.auto||{}).days_long)||'\u2014')+' days today; it grows when the history grows). <b>The real trades</b> replay the idea on the exact entries the robot took since the journal began ('+(((j.auto||{}).real_n)||0)+' so far). Weaker on the last two is a caution, never a reason to drop an idea.':'Trois regards sur chaque id\u00e9e. <b>42 jours</b> donne la note. <b>La fen\u00eatre longue</b>, c\u2019est tout l\u2019historique que le terminal garde ('+(((j.auto||{}).days_long)||'\u2014')+' jours aujourd\u2019hui ; elle grandit avec l\u2019historique). <b>Les vrais trades</b> rejouent l\u2019id\u00e9e sur les entr\u00e9es exactes que le robot a prises depuis le d\u00e9but du journal ('+(((j.auto||{}).real_n)||0)+' pour l\u2019instant). Plus faible sur ces deux-l\u00e0, c\u2019est une prudence, jamais une raison d\u2019\u00e9carter une id\u00e9e.')+'</div></div>';
+   '<div style="font-size:.8rem;color:var(--text2);line-height:1.5;margin-top:10px">'+(en?'Three looks at every idea. <b>42 days</b> gives the mark. <b>The long window</b> is all the history the terminal holds ('+(((j.auto||{}).days_long)||'\u2014')+' days today; it grows when the history grows). <b>The real trades</b> replay the idea on the exact entries the robot took since the journal began ('+(((j.auto||{}).real_n)||0)+' so far). Weaker on the last two is a caution, never a reason to drop an idea.':'Trois regards sur chaque id\u00e9e. <b>42 jours</b> donne la note. <b>La fen\u00eatre longue</b>, c\u2019est tout l\u2019historique que le terminal garde ('+(((j.auto||{}).days_long)||'\u2014')+' jours aujourd\u2019hui ; elle grandit avec l\u2019historique). <b>Les vrais trades</b> testent l\u2019id\u00e9e sur les entr\u00e9es exactes que le robot a prises depuis le d\u00e9but du journal ('+(((j.auto||{}).real_n)||0)+' pour l\u2019instant). Plus faible sur ces deux-l\u00e0, c\u2019est une prudence, jamais une raison d\u2019\u00e9carter une id\u00e9e.')+'</div></div>';
   const AU=j.auto||{},AV=AU.variants||[];
   if(AV.length){const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VB2={A:['A','var(--up-soft)','rgba(46,204,113,.14)'],B:['B','var(--warn)','rgba(232,197,90,.14)'],C:['C','var(--down-soft)','rgba(255,92,92,.12)'],'=':['=','var(--muted)','rgba(255,255,255,.05)']};
    const order={A:0,B:1,'=':2,C:3};const sorted=[...AV].sort((a,b)=>(order[a.verdict]??9)-(order[b.verdict]??9)||(b.diff_net||0)-(a.diff_net||0));
-   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Replayed last night by the chercheur':'Rejou\u00e9 cette nuit par le chercheur')+' <span class="hint">\u00b7 '+AV.length+' '+(en?'what-ifs':'\u00ab et si \u00bb')+(AU.days?' \u00b7 '+AU.days+' '+(en?'days':'jours'):'')+'</span></div>';
+   h+='<div class="sec" style="margin:16px 8px 8px">'+(en?'Tested last night by the chercheur':'Test\u00e9 cette nuit par le chercheur')+' <span class="hint">\u00b7 '+AV.length+' '+(en?'what-ifs':'\u00ab et si \u00bb')+(AU.days?' \u00b7 '+AU.days+' '+(en?'days':'jours'):'')+'</span></div>';
    h+='<div class="panel" style="padding:4px 14px">'+sorted.map(v=>{const b=VB2[v.verdict]||VB2['='];const bt=AU.base||{};
     return '<div class="kv"><span class="lcb" style="width:30px;height:30px;font-size:.9rem;color:'+b[1]+';background:'+b[2]+'">'+b[0]+'</span><div class="kvt"><b>'+esc(en?v.title_en:v.title_fr)+'</b><span>'+(v.verdict==='='?(en?'no real change':'pas de vrai changement'):(en?'money ':'argent ')+mn(v.diff_net||0)+' \u00b7 '+(en?'biggest hole ':'plus gros trou ')+mn(v.diff_worst||0)+' \u00b7 '+(en?'halves':'moiti\u00e9s')+' '+mn(((v.h1||{}).net||0)-(((AU.base||{}).h1||{}).net||0))+' / '+mn(((v.h2||{}).net||0)-(((AU.base||{}).h2||{}).net||0)))+(v.long?' \u00b7 '+v.long.days+(en?' days: ':' jours : ')+v.long.verdict+' '+mn(v.long.diff_net||0):'')+(v.real?' \u00b7 '+(en?'real trades ':'vrais trades ')+mn(v.real.diff_net||0)+' ('+v.real.n_real+')':'')+(v.src==='chercheur'?' \u00b7 '+(en?'proposed by the chercheur':'propos\u00e9 par le chercheur'):'')+'</span></div></div>';}).join('')+'</div>';
    h+='<div style="font-size:.72rem;color:var(--muted);margin:6px 8px 0;line-height:1.45">'+(en?'A: more money on both halves of the period. B: a smaller hole without losing money, or more money with one half agreeing. C: no. =: nothing changed.':'A : plus d\u2019argent sur les deux moiti\u00e9s de la p\u00e9riode. B : un trou moins profond sans perdre d\u2019argent, ou plus d\u2019argent avec une moiti\u00e9 d\u2019accord. C : non. = : rien ne change.')+'</div>';}
@@ -5097,13 +5081,15 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
  }else{
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The rules the robot follows today':'Les r\u00e8gles que le robot suit aujourd\u2019hui')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each one earned its place through the three steps. Tap a card to see why.':'Chacune a gagn\u00e9 sa place en passant les trois \u00e9tapes. Touchez une carte pour voir pourquoi.')+'</div></div>';
   h+=items.filter(it=>it.status==='deployed').map(item).join('');
-  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a new rule gets in':'Comment une nouvelle r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.6;margin-top:6px">'+(en?'1. An idea comes from the real trades or from Kino.<br>2. We replay it on the last 42 days of the market.<br>3. A copy of the robot tries it for pretend, next to the real one.<br>4. It goes on the demo account first, then on real accounts, one at a time, on Kino\u2019s decision.<br>5. We keep watching it; if it starts losing, we take it out.':'1. Une id\u00e9e vient des vrais trades ou de Kino.<br>2. On la rejoue sur les 42 derniers jours du march\u00e9.<br>3. Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.<br>4. Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes, un par un, sur d\u00e9cision de Kino.<br>5. On continue de la surveiller ; si elle se met \u00e0 perdre, on la retire.')+'</div></div>';
+  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a new rule gets in':'Comment une nouvelle r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.6;margin-top:6px">'+(en?'1. An idea comes from the real trades or from Kino.<br>2. We replay it on the last 42 days of the market.<br>3. A copy of the robot tries it for pretend, next to the real one.<br>4. It goes on the demo account first, then on real accounts, one at a time, on Kino\u2019s decision.<br>5. We keep watching it; if it starts losing, we take it out.':'1. Une id\u00e9e vient des vrais trades ou de Kino.<br>2. On la teste sur les 42 derniers jours du march\u00e9.<br>3. Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.<br>4. Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes, un par un, sur d\u00e9cision de Kino.<br>5. On continue de la surveiller ; si elle se met \u00e0 perdre, on la retire.')+'</div></div>';
  }
  return h;
 }
 // ---- 2026-09-29 (owner): the story board - where every idea stands ----
-const JCOLS=[['idea','Pistes','Leads','var(--warn)','pistes','leads'],['replay','Test\u00e9es sur le pass\u00e9','Tested on the past','#b98cff','sur le pass\u00e9','on the past'],['test','Essay\u00e9es pour de faux','Tried for pretend','var(--accent-soft)','pour de faux','for pretend'],['decided','D\u00e9cid\u00e9es','Decided','var(--text2)','d\u00e9cid\u00e9es','decided'],['live','Dans le robot','In the robot','var(--up-soft)','dans le robot','in the robot']];
-const JSTAGE={idea:'ideas',replay:'tests',test:'forward',decided:'decided',live:'decisions'};
+// 2026-10-02 (owner): four columns, plain words. "Decided" is gone - the
+// lab deploys a duel winner by itself, so there is nothing left to decide.
+const JCOLS=[['idea','Id\u00e9es','Ideas','#d2b8ff','id\u00e9es','ideas'],['replay','Test\u00e9es','Tested','#b98cff','test\u00e9es','tested'],['test','Pour de faux','For pretend','var(--accent-soft)','pour de faux','for pretend'],['live','Dans le robot','In the robot','var(--up-soft)','dans le robot','in the robot']];
+const JSTAGE={idea:'ideas',replay:'tests',test:'forward',live:'decisions'};
 // 2026-10-02 (owner): the letter alone taught nobody anything. These are
 // the same three verdicts in words, used on the cards beside it.
 function vWord(v,en){
@@ -5119,11 +5105,12 @@ const lchip=(t,c,bg)=>'<span class="pchip" style="color:'+c+';background:'+(bg||
 function labSeeds(j){return (j.candidates||[]).map(c=>Object.assign({sid:'seed_'+c.id},c));}
 function jGet(id){return ((window._lab||{}).journeys||[]).find(j=>j.id===id||(j.keys||[]).indexOf(id)>=0)||null;}
 function jLine(j,en){const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
- if(j.col==='live')return (en?'in the robot since ':'dans le robot depuis le ')+_escS((S.live||{}).date||'');
- if(j.col==='decided'){const d=S.decision||{};return (d.d==='yes'?(en?'<b style="color:var(--up-soft)">yes</b>, waiting to go in the robot':'<b style="color:var(--up-soft)">oui</b>, en attente d\u2019entrer dans le robot'):(en?'<b style="color:var(--down-soft)">no</b>, kept so nobody proposes it again':'<b style="color:var(--down-soft)">non</b>, gard\u00e9e pour ne pas la reproposer'))+(d.date?' \u00b7 '+_escS(d.date):'');}
+ if(j.col==='live')return (en?'in the robot since ':'dans le robot depuis le ')+_escS((S.live||{}).date||'')+((S.live||{}).labo?' \u00b7 '+(en?'the lab\u2019s robot':'robot du labo'):'');
  if(j.col==='test'){const t=S.test||{};if(t.forward)return en?'watched live, no money':'observ\u00e9e en direct, sans argent';const d=t.duel;const du=d&&d.twin?' \u00b7 '+(en?'robot ':'robot ')+'<b style="color:'+((d.real.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(d.real.net)+'</b> '+(en?'same period':'m\u00eame p\u00e9riode'):'';return (t.status==='stopped'?(en?'twin stopped':'jumeau arr\u00eat\u00e9'):(en?'twin playing for pretend':'jumeau qui joue pour de faux'))+' \u00b7 '+(t.trades||0)+' / '+((d&&d.need)||30)+' trades \u00b7 '+(en?'twin ':'jumeau ')+'<b style="color:'+((t.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(t.net)+'</b>'+du;}
- if(j.col==='replay'){const r=S.replay||{};const c={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)'}[r.verdict]||'var(--muted)';return '<b style="color:'+c+'">'+_escS(r.verdict||'\u2014')+'</b>'+(r.streak>1?' '+r.streak+(en?' nights in a row':' nuits de suite'):(r.nights?' '+(en?'last night':'cette nuit'):(r.hand?(en?' by hand':' \u00e0 la main'):(en?' pre-test':' pr\u00e9-test'))))+(r.diff_net!==undefined?' \u00b7 '+(en?'money ':'argent ')+mn(r.diff_net)+' \u00b7 '+(en?'hole ':'trou ')+mn(r.diff_worst):'');}
- return en?'waiting for a replay':'attend d\u2019\u00eatre rejou\u00e9e';}
+ if(j.col==='replay'){const r=S.replay||{};const dd=S.decision||{};
+  if(!r.verdict&&dd.d)return (dd.d==='yes'?'<b style="color:var(--up-soft)">'+(en?'yes':'oui')+'</b>':'<b style="color:var(--down-soft)">'+(en?'no':'non')+'</b> \u00b7 '+(en?'the numbers said no':'les chiffres ont dit non'))+(dd.date?' \u00b7 '+_escS(dd.date):'');
+  const c={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)'}[r.verdict]||'var(--muted)';return '<b style="color:'+c+'">'+_escS(r.verdict||'\u2014')+'</b>'+(r.streak>1?' '+r.streak+(en?' nights in a row':' nuits de suite'):(r.nights?' '+(en?'last night':'cette nuit'):(r.hand?(en?' by hand':' \u00e0 la main'):(en?' first test':' premier test'))))+(r.diff_net!==undefined?' \u00b7 '+(en?'money ':'argent ')+mn(r.diff_net)+' \u00b7 '+(en?'hole ':'trou ')+mn(r.diff_worst):'');}
+ return en?'waiting for its first night of testing':'attend sa premi\u00e8re nuit de test';}
 function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];const S=j.steps||{};const r=S.replay||{};const v=M.VB[r.verdict];const esc=_escS;
  const badge=v?'<span class="lcb" style="color:'+v[1]+';background:'+v[2]+'">'+v[0]+'</span>':'<span class="lcb" style="background:rgba(255,255,255,.05);color:'+col[3]+'"><svg class="ic ic-s"><use href="#i-target"/></svg></span>';
  const f=M.FAM[j.family]||M.FAM.donnees;const d=S.decision||{};
@@ -5136,18 +5123,18 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
    v?v[2]:'rgba(255,255,255,.05)');
  chips+=lchip(f[0],f[1]);
  if(r.verdict&&r.streak>1)chips+=lchip(r.verdict+' \u00b7 '+r.streak+(en?' nights':' nuits'),v?v[1]:'var(--muted)');
- if(j.kind==='proposal')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
+ if(j.kind==='proposal'&&j.col!=='idea')chips+=lchip(en?'by the chercheur':'par le chercheur','#b98cff');
  if(j.kind==='battery')chips+=lchip(en?'asked every night':'question de chaque nuit','var(--muted2)');
  if(j.stale)chips+=lchip(en?'to re-check':'\u00e0 rev\u00e9rifier','var(--warn)');
  if(j.archived)chips+=lchip(en?'set aside':'mise de c\u00f4t\u00e9','var(--muted2)');
  if(j.reference)chips+=lchip(en?'yardstick · never for the robot':'étalon · jamais pour le robot','var(--muted2)');
- if(j.col==='decided'&&d.d==='yes')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
+ if(d.d==='yes'&&j.col!=='live')chips+=lchip(en?'yes, waiting':'oui, en attente','var(--up-soft)');
  if(j.robot==='oui'&&j.col!=='live')chips+=lchip(en?'robot: yes':'robot : oui','var(--up-soft)');
  const note=en?(j.note_en||j.note_fr):(j.note_fr||j.note_en);
  const mn=x=>(x>=0?'+$':'-$')+Math.abs(x||0).toFixed(0);
- const tile=(l,x,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const tile=(l,x,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  const tiles=(r.diff_net!==undefined&&j.col!=='live'&&!j.stale)?'<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(r.diff_net),(r.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(r.diff_worst),(r.diff_worst||0)<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',mn(r.h1)+' / '+mn(r.h2),((r.h1||0)>0&&(r.h2||0)>0)?'var(--up-soft)':'var(--text)')+'</div>':'';
- const line=(j.col==='test'||j.col==='decided'||j.col==='live')?'<div style="font-size:.76rem;color:var(--text2);margin-top:8px;line-height:1.45">'+jLine(j,en)+'</div>':'';
+ const line=(j.col==='test'||j.col==='live'||(j.col==='replay'&&d.d))?'<div style="font-size:.76rem;color:var(--text2);margin-top:8px;line-height:1.45">'+jLine(j,en)+'</div>':'';
  return '<div class="panel lc" data-jid="'+esc(j.id)+'" style="padding-right:14px" onclick="labJourney(&#39;'+esc(j.id)+'&#39;)" role="button" tabindex="0"><div class="lct">'+badge+'<div style="flex:1;min-width:0"><h4>'+esc(en?j.title_en:j.title_fr)+'</h4><div class="lcc">'+chips+'</div></div></div>'+
   (note?'<div class="lcn" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+esc(note)+'</div>':'')+tiles+(tiles?xTiles(r,en):'')+line+
   // 2026-10-02: the line above already says "dans le robot depuis le
@@ -5156,7 +5143,7 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
   '<div class="lcm"><span>'+(j.col==='live'?'':esc(j.date||''))+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Its story':'Son histoire')+' \u203a</span></div></div>';}
 function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};const l=L[c.label]||L.trop_tot;const esc=_escS;
  const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
- return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'seed':'graine','var(--warn)')+lchip(l[0],l[1])+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
+ return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'clue':'piste','var(--warn)')+lchip(l[0],l[1])+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
  // 2026-10-02 (owner): under 30 trades this printed a confident
  // comparison - "10 trades, 20 % contre 67 % (-47)" - which reads as
  // a finding and is noise. Same gate as the multi-timeframe payoff
@@ -5178,117 +5165,62 @@ function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de tra
 // 2026-10-02 (owner): a first visit used to land on IDEAS - eleven seeds
 // that all say "not enough trades". Land on what is settled instead; the
 // rail is right there for anyone who wants the rest.
-function jCol(){let i=window._jcol;if(i===undefined){try{i=parseInt(localStorage.getItem('owlLabCol'));}catch(e){}}if(!(i>=0&&i<JCOLS.length)){const j=window._lab||{};const J=j.journeys||[];const seeds=labSeeds(j);// prefer the settled end of the pipeline: what is IN the robot,
- // else what is being watched, else wherever there is anything.
- const pref=['live','test','decided','replay','idea'];
- i=-1;for(const k of pref){if(J.some(x=>x.col===k)||(k==='idea'&&seeds.length)){i=JCOLS.findIndex(c=>c[0]===k);break;}}
+// 2026-10-02 (owner): the page opens on what is new. The column you were
+// on survives within a visit, not across visits - a returning reader
+// should meet tonight's ideas, not last week's tab.
+function jCol(){let i=window._jcol;if(!(i>=0&&i<JCOLS.length)){const J=((window._lab||{}).journeys||[]);
+ const pref=['idea','live','test','replay'];
+ i=-1;for(const k of pref){if(J.some(x=>x.col===k)){i=JCOLS.findIndex(c=>c[0]===k);break;}}
  if(i<0)i=0;}return i;}
-function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.col===k).length+(k==='idea'?labSeeds(j).length:0);}
+function jCount(k){const j=window._lab||{};return (j.journeys||[]).filter(x=>x.col===k&&!x.archived).length;}
 function jRail(en){const cur=jCol();
  return '<div class="jrail" id="jrail">'+JCOLS.map(([k,fr,eg,c,fs,es],i)=>'<div class="jn'+(i===cur?' on':'')+(i<cur?' past':'')+'" onclick="jGo('+i+')" role="tab" aria-selected="'+(i===cur?'true':'false')+'" style="--jc:'+c+'"><i>'+jCount(k)+'</i><span>'+(en?es:fs)+'</span></div>').join('')+'</div>';}
-function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];let L=J.filter(x=>x.col===k);const seeds=k==='idea'?labSeeds(j):[];
+function jFold(id,label,items,en){if(!items.length)return '';
+ return '<button class="tfc jfoldbtn" onclick="const f=document.getElementById(&#39;'+id+'&#39;);f.hidden=!f.hidden;this.firstChild.textContent=f.hidden?&#39;\u25b8&#39;:&#39;\u25be&#39;"><span>\u25b8</span>&nbsp;'+label+'</button><div id="'+id+'" hidden>'+items.map(x=>jCard(x,en)).join('')+'</div>';}
+function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCol();const [k,fr,eg,c]=JCOLS[cur];let L=J.filter(x=>x.col===k);
+ const ST=x=>x.steps||{};const VO={A:0,B:1,'=':2,C:3};
  let cards;
- if(k==='replay'){const VO={A:0,B:1,'=':2,C:3};const AR=L.filter(x=>x.archived);L=L.filter(x=>!x.archived);const vd=x=>((x.steps||{}).replay||{}).verdict||'';const S2=[...L].sort((a,b)=>((VO[vd(a)]??2)-(VO[vd(b)]??2))||((((b.steps||{}).replay||{}).diff_net||0)-(((a.steps||{}).replay||{}).diff_net||0)));
+ if(k==='replay'){const AR=L.filter(x=>x.archived);L=L.filter(x=>!x.archived);
+  const vd=x=>(ST(x).replay||{}).verdict||((ST(x).decision||{}).d==='no'?'C':'');
+  const S2=[...L].sort((a,b)=>((VO[vd(a)]??2)-(VO[vd(b)]??2))||(((ST(b).replay||{}).diff_net||0)-((ST(a).replay||{}).diff_net||0)));
   const keep=S2.filter(x=>vd(x)!=='C'),no=S2.filter(x=>vd(x)==='C');
-  cards=keep.map(x=>jCard(x,en)).join('')+(AR.length?'<div class="pf-cap" style="margin-top:10px">'+AR.length+' '+(en?(AR.length>1?'ideas set aside after three nights of no':'idea set aside after three nights of no'):(AR.length>1?'id\u00e9es mises de c\u00f4t\u00e9 apr\u00e8s trois nuits de non':'id\u00e9e mise de c\u00f4t\u00e9 apr\u00e8s trois nuits de non'))+'. '+(en?'The chercheur still knows about them.':'Le chercheur les conna\u00eet toujours.')+'</div>':'')+(no.length?'<button class="tfc" style="width:100%;margin-top:12px;padding:11px;justify-content:center" onclick="const f=document.getElementById(&#39;jfold&#39;);f.hidden=!f.hidden;this.textContent=(f.hidden?&#39;\u25b8 &#39;:&#39;\u25be &#39;)+this.textContent.slice(2)">\u25b8 '+no.length+' '+(en?(no.length>1?'ideas said no last night':'idea said no last night'):(no.length>1?'id\u00e9es ont dit non cette nuit':'id\u00e9e a dit non cette nuit'))+'</button><div id="jfold" hidden>'+no.map(x=>jCard(x,en)).join('')+'</div>':'');}
- else cards=L.map(x=>jCard(x,en)).join('')+seeds.map(x=>seedCard(x,en)).join('');
- const sub={idea:[en?'Clues spotted in your real trades. Not tested yet: we check them before turning one into an idea.':'Des indices rep\u00e9r\u00e9s dans vos vrais trades. Pas encore test\u00e9s : on les v\u00e9rifie avant d\u2019en faire une id\u00e9e.'],replay:[en?'Replayed on the last 42 days of the market, against the robot as it is.':'Rejou\u00e9es sur les 42 derniers jours du march\u00e9, contre le robot tel qu\u2019il est.'],test:[en?'A copy of the robot tries them for pretend, next to the real one.':'Une copie du robot les essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.'],decided:[en?'Kino said yes or no.':'Kino a dit oui ou non.'],live:[en?'The rules the robot follows today.':'Les r\u00e8gles que le robot suit aujourd\u2019hui.']}[k][0];
- return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+(L.length+seeds.length)+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
-  '<div class="jcards" id="jcards">'+(cards||'<div class="panel" style="text-align:center;padding:26px 14px;color:var(--muted);font-size:.86rem">'+(en?'Nothing here right now.':'Rien ici pour l\u2019instant.')+'</div>')+'</div>'+
+  cards=keep.map(x=>jCard(x,en)).join('')+(AR.length?'<div class="pf-cap" style="margin-top:10px">'+AR.length+' '+(en?(AR.length>1?'ideas set aside after three nights of no':'idea set aside after three nights of no'):(AR.length>1?'id\u00e9es mises de c\u00f4t\u00e9 apr\u00e8s trois nuits de non':'id\u00e9e mise de c\u00f4t\u00e9 apr\u00e8s trois nuits de non'))+'. '+(en?'The chercheur still knows about them.':'Le chercheur les conna\u00eet toujours.')+'</div>':'')+
+   jFold('jfold',no.length+' '+(en?(no.length>1?'ideas said no':'idea said no'):(no.length>1?'id\u00e9es ont dit non':'id\u00e9e a dit non')),no,en);}
+ else if(k==='test'){const off=x=>['stopped','retired'].indexOf((ST(x).test||{}).status)>=0;const on=L.filter(x=>!off(x)),no=L.filter(off);
+  cards=on.map(x=>jCard(x,en)).join('')+jFold('jfold2',no.length+' '+(en?(no.length>1?'twins stopped':'twin stopped'):(no.length>1?'jumeaux arr\u00eat\u00e9s':'jumeau arr\u00eat\u00e9')),no,en);}
+ else if(k==='idea'){cards=[...L].sort((a,b)=>(VO[(ST(a).replay||{}).verdict]??2)-(VO[(ST(b).replay||{}).verdict]??2)).map(x=>jCard(x,en)).join('');}
+ else cards=L.map(x=>jCard(x,en)).join('');
+ const sub={idea:[en?'The researcher\u2019s new ideas. Each one gets its first full night of testing tonight.':'Les nouvelles id\u00e9es du chercheur. Chacune passe sa premi\u00e8re vraie nuit de test ce soir.'],replay:[en?'Tested on the last 42 days of the market, against the robot as it is.':'Test\u00e9es sur les 42 derniers jours du march\u00e9, contre le robot tel qu\u2019il est.'],test:[en?'A copy of the robot tries them live, with no money, next to the real one.':'Une copie du robot les essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai.'],live:[en?'The rules the robot follows today.':'Les r\u00e8gles que le robot suit aujourd\u2019hui.']}[k][0];
+ return '<div class="jhead"><div style="flex:1;min-width:0"><div class="jht" style="color:'+c+'">'+(en?eg:fr)+' <b>'+L.length+'</b></div><div class="jhs">'+sub+'</div></div><button class="tfc" style="flex:none" onclick="labStage(&#39;'+JSTAGE[k]+'&#39;)">'+(en?'The stage':'L\u2019\u00e9tape')+' \u203a</button></div>'+
+  '<div class="jcards" id="jcards">'+(cards||'<div class="jempty">'+(k==='idea'?(en?'Nothing new tonight.':'Rien de nouveau ce soir.'):(en?'Nothing here right now.':'Rien ici pour l\u2019instant.'))+'</div>')+'</div>'+
   '<div class="jfoot">'+(cur>0?'<button class="tfc" onclick="jGo('+(cur-1)+')">\u2039 '+(en?JCOLS[cur-1][5]:JCOLS[cur-1][4])+'</button>':'<span></span>')+(cur<JCOLS.length-1?'<button class="tfc" onclick="jGo('+(cur+1)+')">'+(en?JCOLS[cur+1][5]:JCOLS[cur+1][4])+' \u203a</button>':'<span></span>')+'</div>';}
-// 2026-10-02 (owner): "even grandma should navigate it without getting
-// lost". The pipeline rail is good and stays; what was missing is a
-// landing that answers the three questions anyone actually has before
-// dropping them into the middle of it. Each door jumps to its column.
 const LAB_MIN_N = 30;   // trades before a seed figure is worth printing
-function labDoors(en){
- const j=window._lab||{};
- const cnt=k=>(j.journeys||[]).filter(x=>x.col===k).length;
- const seeds=labSeeds(j);
- const idx=k=>JCOLS.findIndex(c=>c[0]===k);
- // 2026-10-02: title and subtitle share ONE column child. As four
- // separate flex children they fought for width on a narrow phone, and
- // the media query I wrote to "fix" that simply deleted the subtitle on
- // the owner's screen - removing the explanation to protect the layout.
- const door=(k,n,title,sub,col)=>'<button class="labdoor" onclick="jGo('+
-  idx(k)+',1)"><span class="labdn" style="color:'+col+'">'+n+'</span>'+
-  '<span class="labdx"><span class="labdt">'+title+'</span>'+
-  '<span class="labds">'+sub+'</span></span>'+
-  '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
- let h='<div class="labdoors">'+
-  door('live',cnt('live'),
-   en?'In the robot':'Dans le robot',
-   en?'rules it follows today':'les r\u00e8gles qu\u2019il suit aujourd\u2019hui',
-   'var(--up-soft)')+
-  door('test',cnt('test'),
-   en?'Being watched':'En observation',
-   en?'playing live, for pretend, no money':'en direct, pour de faux, sans argent',
-   'var(--accent-soft)')+
-  door('decided',cnt('decided'),
-   en?'Decided':'Tranch\u00e9es',
-   en?'said yes or no, and why':'oui ou non, et pourquoi',
-   '#b98cff')+
-  '</div>';
- return h;
-}
-// 2026-10-02 (owner): the clues used to sit above the night. They are a
-// waiting room - not one of them has ever become an idea - so they go
-// last, and the night's new ideas take the top.
-function labSeedLine(en){
- const j=window._lab||{};const seeds=labSeeds(j);
- const idx=k=>JCOLS.findIndex(c=>c[0]===k);let h='';
- // the seeds get ONE line, not eleven cards shouting the same thing
- if(seeds.length){
-  const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
-  // one flex child for the whole sentence, as the doors do - handing
-  // flex three children turned it into three columns.
-  h+='<button class="labseedline" onclick="jGo('+idx('idea')+',1)">'+
-   '<span class="labdn" style="font-size:1.15rem;color:var(--warn)">'+
-   seeds.length+'</span>'+
-   '<span style="flex:1;min-width:0">'+
-   (en?'trails found in your real trades':
-       'pistes trouv\u00e9es dans vos vrais trades')+
-   ' \u00b7 <span style="color:var(--muted)">'+
-   (ready?(en?ready+' ready to read':ready+' lisibles')
-        :(en?'none has enough trades to read yet'
-            :'aucune n\u2019a encore assez de trades'))+
-   '</span></span>'+
-   '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
- }
- return h;
-}
-// The newest thing the chercheur produced, at the top where it belongs.
-// Three at most: past that it is a list, and a list is what the night
-// report is for.
-function labNew(en){
- const j=window._lab||{};
- const PR=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status);
- if(!PR.length)return '';
- const esc=_escS;
- // best first: leading the page with an idea the replay said no to is
- // the opposite of putting the find in front
- const VO={A:0,B:1,'=':2,C:3};
- const vOf=p=>(((jGet(p.id)||{}).steps||{}).replay||{}).verdict||'';
- PR.sort((a,b)=>(VO[vOf(a)]??2)-(VO[vOf(b)]??2));
- const row=p=>{const jn=jGet(p.id)||{};
-  const v=((jn.steps||{}).replay||{}).verdict||'';
-  const vc={A:'var(--up-soft)','B':'var(--accent-soft)','=':'var(--muted)',C:'var(--down-soft)'}[v]||'var(--muted)';
-  const why=String((en?p.why_en:p.why_fr)||'').split('.')[0];
-  return '<button class="labnew" onclick="labJourney(&#39;'+esc(p.id)+'&#39;)">'+
-   '<span style="flex:1;min-width:0">'+
-   '<span class="labnt">'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</span>'+
-   (v?'<span class="labnv" style="color:'+vc+'">'+esc(vWord(v,en))+'</span>':'')+
-   (why?'<span class="labnw">'+esc(why)+'</span>':'')+
-   '</span><svg class="ic chv"><use href="#i-chev"/></svg></button>';};
- return '<div class="labnewbox">'+
-  '<div class="labnewh">'+(en?'New tonight \u00b7 what the researcher found':
-    'Nouveau cette nuit \u00b7 ce que le chercheur a trouv\u00e9')+'</div>'+
-  PR.slice(0,3).map(row).join('')+
-  (PR.length>3?'<button class="tfc" style="width:100%;margin-top:8px;padding:10px;justify-content:center" onclick="labNight()">'+
-    (PR.length-3)+' '+(en?'more in the night report':'autres dans le rapport de la nuit')+' \u203a</button>':'')+
-  '</div>';
-}
-// the doors are emitted by labRender, above the night line - not here
+function labHero(en){
+ const j=window._lab||{};const N=j.note||{};const esc=_escS;
+ if(!N.date)return '<div class="jempty" style="margin-top:12px">'+(en?'The researcher has not had its first night yet.':'Le chercheur n\u2019a pas encore fait sa premi\u00e8re nuit.')+'</div>';
+ const cc=(j.auto||{}).counts||{};
+ const tot=(cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0);
+ const worth=(cc.A||0)+(cc.B||0);
+ const PRn=(j.proposals||[]).filter(p=>p.status==='pending'||!p.status).length;
+ const head=String(en?(N.headline_en||N.headline_fr):(N.headline_fr||N.headline_en)||'').split('**').join('');
+ const stat=(n,l,c)=>'<div><b style="color:'+c+'">'+n+'</b><span>'+l+'</span></div>';
+ return '<button class="labhero" onclick="labNight()">'+
+  '<div class="lh-top"><span class="lh-eye">'+(en?'Last night':'Cette nuit')+' \u00b7 '+esc(N.date)+'</span><span class="lh-read">'+(en?'Read':'Lire')+' \u203a</span></div>'+
+  (head?'<div class="lh-head">'+esc(head)+'</div>':'')+
+  '<div class="lh-stats">'+stat(tot,en?'ideas tested':'id\u00e9es test\u00e9es','var(--text)')+stat(worth,en?'worth a look':'\u00e0 regarder','var(--up-soft)')+stat(PRn,en?(PRn>1?'new ideas':'new idea'):(PRn>1?'nouvelles id\u00e9es':'nouvelle id\u00e9e'),'#d2b8ff')+'</div>'+
+  (window._labParityOk?'<div class="lh-ok"><svg class="ic ic-s"><use href="#i-check"/></svg>'+(en?'The test still matches the robot, rule by rule':'Le test correspond toujours au robot, r\u00e8gle par r\u00e8gle')+'</div>':'')+
+  '</button>';}
+// 2026-10-02 (owner): the clues leave the board. They are a waiting room
+// (not one has ever become an idea) - one quiet row, and a panel for
+// anyone curious.
+function labSeedRow(en){const seeds=labSeeds(window._lab||{});if(!seeds.length)return '';
+ const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
+ return '<button class="labseedrow" onclick="labSeedsSheet()"><span class="lsr-n">'+seeds.length+'</span><span style="flex:1;min-width:0"><b>'+(en?'clues in your real trades':'pistes dans vos vrais trades')+'</b><span class="lsr-s">'+(ready?(en?ready+' ready to read':ready+' lisibles'):(en?'none has enough trades to read yet':'aucune n\u2019a encore assez de trades'))+'</span></span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
+function labSeedsSheet(){const j=window._lab||{};const en=LANG()==='en';const seeds=labSeeds(j);
+ sheet('<div class="nt-eye" style="color:var(--warn)">'+(en?'The clues':'Les pistes')+'</div><h3 style="margin:6px 0 8px">'+(en?'What your real trades hint at':'Ce que vos vrais trades laissent entrevoir')+'</h3>'+
+  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 4px">'+(en?'Every ten minutes the app cuts your real trades eleven ways and looks for a difference. A clue is not an idea yet: under 30 trades a number can still be luck. When both halves of the period agree, the researcher can turn it into an idea.':'Toutes les dix minutes, l\u2019appli d\u00e9coupe vos vrais trades de onze fa\u00e7ons et cherche une diff\u00e9rence. Une piste n\u2019est pas encore une id\u00e9e : sous 30 trades, un chiffre peut encore \u00eatre de la chance. Quand les deux moiti\u00e9s de la p\u00e9riode sont d\u2019accord, le chercheur peut en faire une id\u00e9e.')+'</p>'+
+  '<div style="max-height:60vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+seeds.map(c=>seedCard(c,en)).join('')+'</div>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function labBoard(en){setTimeout(jSwipe,80);
  return '<div class="panel jboard" id="jb">'+jRail(en)+
   '<div id="jstage">'+jStage(en)+'</div></div>';}
@@ -5316,10 +5248,10 @@ function duelBlock(d,en){if(!d||!d.twin)return '';const mn=v=>(v>=0?'+$':'-$')+M
  if(pts.length>=2){const t0=Math.min(...pts.map(p=>p[0])),t1=Math.max(...pts.map(p=>p[0]),t0+60);const ys=pts.map(p=>p[1]).concat([0]);const mx=Math.max(...ys),mnv=Math.min(...ys),sp=Math.max(1e-6,mx-mnv);
   const X=t=>(4+(t-t0)/(t1-t0)*292).toFixed(1),Y=v=>(46-((v-mnv)/sp)*40).toFixed(1);const line=(cv,c)=>{if(!cv||!cv.length)return '';const p=[[t0,0]].concat(cv).map(q=>X(q[0])+','+Y(q[1])).join(' ');return '<polyline points="'+p+'" fill="none" style="stroke:'+c+'" stroke-width="1.8" stroke-linejoin="round"/>';};
   svg='<svg viewBox="0 0 300 52" style="width:100%;height:52px;display:block;margin-top:8px"><line x1="4" y1="'+Y(0)+'" x2="296" y2="'+Y(0)+'" style="stroke:var(--border2)" stroke-dasharray="3 4"/>'+line(R.curve,'var(--accent-soft)')+line(T.curve,'#b98cff')+'</svg>';}
- const cell=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.9rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const cell=(l,v,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.9rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  return '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)"><i style="width:14px;height:3px;border-radius:2px;background:#b98cff;display:inline-block"></i>'+(en?'twin':'jumeau')+'<i style="width:14px;height:3px;border-radius:2px;background:var(--accent-soft);display:inline-block;margin-left:6px"></i>'+(en?'real robot':'vrai robot')+'<span class="pchip" style="margin-left:auto;color:'+ST[1]+';background:rgba(255,255,255,.05)">'+ST[0]+'</span></div>'+svg+
   '<div style="display:flex;gap:6px;margin-top:8px">'+cell(en?'twin':'jumeau',mn(T.net),(T.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'real robot':'vrai robot',mn(R.net),(R.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+cell(en?'twin trades':'trades jumeau',(T.trades||0)+' / '+(d.need||30),'var(--text)')+cell(en?'biggest hole':'plus gros trou',mn(-(T.worst||0))+' | '+mn(-(R.worst||0)),'var(--text)')+'</div>'+
-  '<div style="font-size:.68rem;color:var(--muted);margin-top:6px;line-height:1.4">'+(en?'Same period, same lot, base trades only. After 30 twin trades: behind on money and deeper in its hole = the twin stops by itself; ahead = Kino decides.':'M\u00eame p\u00e9riode, m\u00eame mise, trades de base seulement. Apr\u00e8s 30 trades du jumeau : derri\u00e8re en argent et trou plus profond = le jumeau s\u2019arr\u00eate tout seul ; devant = Kino d\u00e9cide.')+'</div>';}
+  '<div style="font-size:.68rem;color:var(--muted);margin-top:6px;line-height:1.4">'+(en?'Same period, same lot, base trades only. After 30 twin trades: behind on money and deeper in its hole = the twin stops by itself; ahead = it goes into the lab\u2019s robot by itself.':'M\u00eame p\u00e9riode, m\u00eame mise, trades de base seulement. Apr\u00e8s 30 trades du jumeau : derri\u00e8re en argent et trou plus profond = le jumeau s\u2019arr\u00eate tout seul ; devant = elle entre toute seule dans le robot du labo.')+'</div>';}
 function seedAsk(id){const j=window._lab||{};return (j.asks||[]).filter(a=>a.seed===id).sort((a,b)=>(a.date||'').localeCompare(b.date||'')).pop()||null;}
 async function labAsk(id){const en=LANG()==='en';const j=window._lab||{};const c=(j.candidates||[]).find(x=>x.id===id);if(!c)return;
  const note=(document.getElementById('ask-note')||{}).value||'';
@@ -5328,38 +5260,35 @@ async function labAsk(id){const en=LANG()==='en';const j=window._lab||{};const c
  if(!ok){await info('&#10060; <h3>'+(msg==='strategy'?(en?'The Strategy plan is needed to ask the chercheur.':'Le paquet Strat\u00e9gie est n\u00e9cessaire pour demander au chercheur.'):(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
  toast(en?'Sent to the chercheur for tonight':'Envoy\u00e9 au chercheur pour cette nuit',2200);window._labT=0;await loadLab(window._d||{});labSeed(id);}
 function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>x.id===id);if(!c)return;const en=LANG()==='en';const esc=_escS;const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';
- const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)',en?'Under 30 trades, a number can still be luck. We show it so you can watch it grow.':'Sous 30 trades, un chiffre peut encore \u00eatre de la chance. On le montre pour le voir grandir.'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)',en?'The first half and the second half of the period say the same thing. The chercheur can turn it into an idea to replay.':'La premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose. Le chercheur peut en faire une id\u00e9e \u00e0 rejouer.'],divergent:[en?'not clear':'pas net','var(--warn)',en?'The two halves of the period disagree. Noise for now.':'Les deux moiti\u00e9s de la p\u00e9riode ne sont pas d\u2019accord. Du bruit pour l\u2019instant.']};const l=L[c.label]||L.trop_tot;
+ const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)',en?'Under 30 trades, a number can still be luck. We show it so you can watch it grow.':'Sous 30 trades, un chiffre peut encore \u00eatre de la chance. On le montre pour le voir grandir.'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)',en?'The first half and the second half of the period say the same thing. The chercheur can turn it into an idea to test.':'La premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose. Le chercheur peut en faire une id\u00e9e \u00e0 tester.'],divergent:[en?'not clear':'pas net','var(--warn)',en?'The two halves of the period disagree. Noise for now.':'Les deux moiti\u00e9s de la p\u00e9riode ne sont pas d\u2019accord. Du bruit pour l\u2019instant.']};const l=L[c.label]||L.trop_tot;
  const cell=(lb,x)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+lb+'</span></div>';
  const a=seedAsk(id);let ask='';
- if(a&&a.status==='open')ask='<div class="panel" style="margin-top:12px;border-color:rgba(185,140,255,.35);padding:12px"><b style="font-size:.86rem;color:#b98cff">'+(en?'Sent to the chercheur':'Envoy\u00e9 au chercheur')+' \u00b7 '+esc(a.date||'')+'</b><div style="font-size:.8rem;color:var(--text2);margin-top:4px">'+(en?'It answers during its next night: a proposal to replay, or why not yet.':'Il r\u00e9pond \u00e0 sa prochaine nuit : une id\u00e9e \u00e0 rejouer, ou pourquoi pas encore.')+(a.note?'<br><i>\u00ab '+esc(a.note)+' \u00bb</i>':'')+'</div></div>';
+ if(a&&a.status==='open')ask='<div class="panel" style="margin-top:12px;border-color:rgba(185,140,255,.35);padding:12px"><b style="font-size:.86rem;color:#b98cff">'+(en?'Sent to the chercheur':'Envoy\u00e9 au chercheur')+' \u00b7 '+esc(a.date||'')+'</b><div style="font-size:.8rem;color:var(--text2);margin-top:4px">'+(en?'It answers during its next night: an idea to test, or why not yet.':'Il r\u00e9pond \u00e0 sa prochaine nuit : une id\u00e9e \u00e0 tester, ou pourquoi pas encore.')+(a.note?'<br><i>\u00ab '+esc(a.note)+' \u00bb</i>':'')+'</div></div>';
  else if(a&&a.status==='answered')ask='<div class="panel" style="margin-top:12px;border-color:rgba(185,140,255,.35);padding:12px"><b style="font-size:.86rem;color:#b98cff">'+(en?'The chercheur answered':'Le chercheur a r\u00e9pondu')+'</b><div style="font-size:.86rem;color:var(--text);margin-top:4px;line-height:1.5">'+esc(en?(a.answer_en||a.answer_fr):(a.answer_fr||a.answer_en))+'</div></div>';
  else if(a&&a.status==='proposed')ask='<div class="panel" style="margin-top:12px;border-color:rgba(185,140,255,.35);padding:12px"><b style="font-size:.86rem;color:#b98cff">'+(en?'The chercheur made it an idea':'Le chercheur en a fait une id\u00e9e')+'</b><div style="margin-top:6px"><button class="tfc" onclick="labJourney(&#39;'+esc(a.proposal||'')+'&#39;)">'+(en?'See the idea':'Voir l\u2019id\u00e9e')+' \u203a</button></div></div>';
  else if(labAllowed())ask='<div class="lbl" style="margin-top:14px">'+(en?'Ask the chercheur':'Demander au chercheur')+'</div><textarea id="ask-note" placeholder="'+(en?'Why it intrigues you (optional)':'Pourquoi \u00e7a vous intrigue (facultatif)')+'" style="width:100%;box-sizing:border-box;margin-top:6px;min-height:56px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:8px;font:inherit;font-size:.86rem"></textarea><button class="shbtn shmain" style="margin:8px 0 0;padding:11px" onclick="labAsk(&#39;'+esc(id)+'&#39;)">'+(en?'Send to the chercheur for tonight':'Envoyer au chercheur pour cette nuit')+'</button>';
- sheet('<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--warn)">'+(en?'A seed \u00b7 seen in the real trades':'Une graine \u00b7 vue dans les vrais trades')+'</div><h3 style="margin:6px 0 10px">'+esc(en?c.name_en:c.name_fr)+'</h3>'+
+ sheet('<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--warn)">'+(en?'A clue \u00b7 seen in the real trades':'Une piste \u00b7 vue dans les vrais trades')+'</div><h3 style="margin:6px 0 10px">'+esc(en?c.name_en:c.name_fr)+'</h3>'+
   '<div style="display:flex;gap:6px">'+cell('trades',c.n)+cell(en?'won':'gagn\u00e9s',pc(c.win))+cell(en?'the others':'les autres',pc(c.rest_win))+'</div>'+
   '<div style="display:flex;gap:6px;margin-top:6px">'+cell(en?'first half':'1\u00e8re moiti\u00e9',pc(c.h1)+' <small style="color:var(--muted)">('+c.h1n+')</small>')+cell(en?'second half':'2e moiti\u00e9',pc(c.h2)+' <small style="color:var(--muted)">('+c.h2n+')</small>')+'</div>'+
   '<div style="margin-top:12px">'+lchip(l[0],l[1])+'</div><p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:8px 0 0">'+l[2]+'</p>'+ask+
-  '<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'Seeds are counted again every ten minutes from the real trades of every account. The chercheur reads them every night.':'Les graines sont recompt\u00e9es toutes les dix minutes \u00e0 partir des vrais trades de tous les comptes. Le chercheur les lit chaque nuit.')+'</div>'+
+  '<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'Clues are counted again every ten minutes from the real trades of every account. The chercheur reads them every night.':'Les pistes sont recompt\u00e9es toutes les dix minutes \u00e0 partir des vrais trades de tous les comptes. Le chercheur les lit chaque nuit.')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function labStage(k){const en=LANG()==='en';let title='',body='';
  if(k==='how'){title=en?'The lab, in one minute':'Le labo, en une minute';
-  body='<p style="font-size:.92rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Here we look for ways to make the robot better over time. Every idea travels left to right through five columns before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e voyage de gauche \u00e0 droite, par cinq colonnes, avant de toucher \u00e0 votre compte.')+'</p>'+
-   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the real trades (a seed), from Kino, or from the chercheur.':'Une id\u00e9e na\u00eet : des vrais trades (une graine), de Kino, ou du chercheur.',en?'We replay the last 42 days of the market with the idea. A: better on both halves. B: a little better. C: no.':'On rejoue les 42 derniers jours du march\u00e9 avec l\u2019id\u00e9e. A : mieux sur les deux moiti\u00e9s. B : un peu mieux. C : non.',en?'A copy of the robot tries it for pretend, next to the real one, no money.':'Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai, sans argent.',en?'Kino says yes or no. A no is kept so nobody proposes it again.':'Kino dit oui ou non. Un non est gard\u00e9 pour ne pas la reproposer.',en?'It goes on the demo account first, then on real accounts one at a time. We keep watching it.':'Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes un par un. On continue de la surveiller.'][i]+'</span></div></div>').join('')+'</div>'+
-   '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; it never decides.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; il ne d\u00e9cide jamais.')+'</div>';}
- else if(k==='decided'){title=en?'Decided':'D\u00e9cid\u00e9es';const J=((window._lab||{}).journeys||[]).filter(x=>x.col==='decided');
-  body='<p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Kino decides after the replay and, when there is one, after the twin. A yes waits for the developer to put it in the robot, demo first. A no stays here so nobody proposes it again.':'Kino d\u00e9cide apr\u00e8s le rejeu et, quand il y en a un, apr\u00e8s le jumeau. Un oui attend que le d\u00e9veloppeur la mette dans le robot, d\u00e9mo d\u2019abord. Un non reste ici pour ne pas la reproposer.')+'</p>'+
-   '<div class="sec" style="margin:14px 8px 8px">'+(en?'Yes':'Oui')+'</div>'+(J.filter(x=>(x.steps.decision||{}).d==='yes').map(x=>jCard(x,en)).join('')||'<div style="font-size:.8rem;color:var(--muted);margin:0 8px">'+(en?'None waiting.':'Aucune en attente.')+'</div>')+
-   '<div class="sec" style="margin:14px 8px 8px">'+(en?'No':'Non')+'</div>'+J.filter(x=>(x.steps.decision||{}).d!=='yes').map(x=>jCard(x,en)).join('');}
- else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Replayed on the past':'Rejou\u00e9es sur le pass\u00e9'],forward:[en?'Tested for pretend':'En test pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
+  body='<p style="font-size:.92rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Here we look for ways to make the robot better over time. Every idea travels left to right through four columns before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e voyage de gauche \u00e0 droite, par quatre colonnes, avant de toucher \u00e0 votre compte.')+'</p>'+
+   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from Kino, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, de Kino, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. A: better on both halves. B: a little better. C: no.':'On la teste sur les 42 derniers jours du march\u00e9. A : mieux sur les deux moiti\u00e9s. B : un peu mieux. C : non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are Kino\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
+   '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; the tests decide.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; ce sont les tests qui d\u00e9cident.')+'</div>';}
+ else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Tested':'Test\u00e9es'],forward:[en?'For pretend':'Pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
-function jStrip(j,en){const S=j.steps||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Replayed':'Rejou\u00e9e',(S.replay||{}).last],['test',en?'Tested':'En test',(S.test||{}).started],['decided',en?'Decided':'D\u00e9cid\u00e9e',(S.decision||{}).date],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
- const idx={idea:1,replay:2,test:3,decided:4,live:5};const cur=idx[j.col]||1;const no=(S.decision||{}).d==='no';
- return '<div class="jst">'+N.map(([k,l,d],i)=>{const n=i+1;const done=n<=cur;const cls=(done?'done':'')+(n===cur?' now':'')+(no&&n===4?' no':'')+(no&&n===5?' no':'');
-  return '<div class="'+cls+'"><i>'+(no&&n===4?'\u00d7':(done&&n<cur?'\u2713':n))+'</i>'+l+'<small>'+(d?_escS(String(d).slice(5)):'\u00a0')+'</small></div>';}).join('')+'</div>';}
+function jStrip(j,en){const S=j.steps||{};const r=S.replay||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Tested':'Test\u00e9e',r.pretest?'':(r.last||(S.decision||{}).date)],['test',en?'For pretend':'Pour de faux',(S.test||{}).started],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
+ const idx={idea:1,replay:2,test:3,live:4};const cur=idx[j.col]||1;
+ const no=(S.decision||{}).d==='no'||['stopped','retired'].indexOf((S.test||{}).status)>=0;
+ return '<div class="jst">'+N.map(([k,l,d],i)=>{const n=i+1;const done=n<=cur;const cls=(done?'done':'')+(n===cur?' now':'')+(no&&n===cur?' no':'');
+  return '<div class="'+cls+'"><i>'+(no&&n===cur?'\u00d7':(done&&n<cur?'\u2713':n))+'</i>'+l+'<small>'+(d?_escS(String(d).slice(5)):'\u00a0')+'</small></div>';}).join('')+'</div>';}
 function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';const S=j.steps||{};const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(0);
  const col=JCOLS.find(c=>c[0]===j.col)||JCOLS[0];
  const chips=(j.cfg?dialChips(j.cfg,en):[]).map(([t,c])=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);margin:0 4px 4px 0">'+_escS(t)+'</span>').join('');
- const r=S.replay||{};const tile=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const r=S.replay||{};const tile=(l,v,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  const tiles=(r.diff_net!==undefined)?'<div style="display:flex;gap:6px;margin-top:8px">'+tile(en?'money':'argent',mn(r.diff_net),(r.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(r.diff_worst),(r.diff_worst||0)<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',mn(r.h1)+' / '+mn(r.h2),((r.h1||0)>0&&(r.h2||0)>0)?'var(--up-soft)':'var(--text)')+'</div>':'';
  const note=en?(j.note_en||j.note_fr||''):(j.note_fr||j.note_en||'');const nums=en?(j.nums_en||''):(j.nums_fr||'');
  const ev=(j.events||[]).map(e=>'<div class="jev"><span>'+_escS(String(e.d||'').slice(5))+'</span><div>'+_escS(en?e.en:e.fr)+'</div></div>').join('');
@@ -5368,10 +5297,10 @@ function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';con
  if(j.reference){btns='<div style="font-size:.78rem;color:var(--muted2);margin-top:14px;line-height:1.5">'+(en?'A yardstick. It measures the brakes; there is no decision to take on it.':'Un étalon. Il mesure les freins ; il n’y a pas de décision à prendre dessus.')+'</div>';}
  else if(adm&&j.col!=='live'){const dec=S.decision||{};const canTwin=(j.col==='replay'||j.col==='idea')&&!!j.cfg||(j.col==='replay'&&j.kind!=='registry');
   btns='<div class="lbl" style="margin-top:14px">'+(en?'Your call, Kino':'\u00c0 vous, Kino')+'</div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">'+
-   (canTwin&&!S.test?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;twin&#39;)">'+(en?'Start a twin':'Lancer un jumeau')+'</button>':'')+
-   (dec.d!=='yes'?'<button class="shbtn shmain" style="flex:1;margin:0;padding:11px;background:var(--up-soft);color:#08120c" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;yes&#39;)">'+(en?'Approve for the robot':'Approuver pour le robot')+'</button>':'')+
-   (dec.d!=='no'?'<button class="shbtn shghost" style="flex:1;margin:0;padding:11px;color:var(--down-soft)" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;no&#39;)">'+(en?'Reject':'Rejeter')+'</button>':'')+'</div>'+
-   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.4">'+(en?'Approve = the developer puts it in the robot, demo first. Reject = its twin stops and the idea is kept as a no.':'Approuver = le d\u00e9veloppeur la met dans le robot, d\u00e9mo d\u2019abord. Rejeter = son jumeau s\u2019arr\u00eate et l\u2019id\u00e9e est gard\u00e9e comme un non.')+'</div>';}
+   (canTwin&&!S.test?'<button class="shbtn shmain" style="flex:1 1 46%;margin:0;padding:11px" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;twin&#39;)">'+(en?'Start a twin':'Lancer un jumeau')+'</button>':'')+
+   (dec.d!=='yes'?'<button class="shbtn shmain" style="flex:1 1 46%;margin:0;padding:11px;background:var(--up-soft);color:#08120c" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;yes&#39;)">'+(en?'Put on the real accounts':'Mettre sur les vrais comptes')+'</button>':'')+
+   (dec.d!=='no'?'<button class="shbtn shghost" style="flex:1 1 46%;margin:0;padding:11px;color:var(--down-soft)" onclick="labDecide(&#39;'+_escS(j.id)+'&#39;,&#39;no&#39;)">'+(en?'Reject':'Rejeter')+'</button>':'')+'</div>'+
+   '<div style="font-size:.7rem;color:var(--muted);margin-top:6px;line-height:1.4">'+(en?'Real accounts = the developer puts it on the real accounts. Reject = its twin stops and the idea is kept as a no.':'Vrais comptes = le d\u00e9veloppeur la pose sur les comptes r\u00e9els. Rejeter = son jumeau s\u2019arr\u00eate et l\u2019id\u00e9e est gard\u00e9e comme un non.')+'</div>';}
  sheet('<div style="display:flex;align-items:center;gap:8px;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:'+col[3]+'"><i style="display:inline-block;width:8px;height:8px;border-radius:99px;background:'+col[3]+'"></i>'+(en?col[2]:col[1])+'<span style="margin-left:auto;color:var(--muted)">'+_escS(j.date||'')+'</span></div>'+
   '<h3 style="margin:6px 0 2px">'+_escS(en?j.title_en:j.title_fr)+'</h3>'+jStrip(j,en)+
   (chips?'<div class="lbl" style="margin-top:10px">'+(en?'What changes':'Ce qui change')+'</div><div style="margin-top:6px">'+chips+'</div>':'')+
@@ -5383,7 +5312,7 @@ function labJourney(id){const j=jGet(id);if(!j)return;const en=LANG()==='en';con
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 async function labDecide(id,d){const en=LANG()==='en';const j=jGet(id)||{};const t=en?(j.title_en||id):(j.title_fr||id);
  const Q={twin:[en?'Start a twin?':'Lancer un jumeau ?',en?'A copy of the robot will try this idea for pretend, next to the real one, from now on.':'Une copie du robot essaiera cette id\u00e9e pour de faux, \u00e0 c\u00f4t\u00e9 du vrai, \u00e0 partir de maintenant.',en?'Start':'Lancer'],
-  yes:[en?'Approve for the robot?':'Approuver pour le robot ?',en?'It goes to the developer to put in the robot, demo account first.':'Elle part chez le d\u00e9veloppeur pour entrer dans le robot, compte d\u00e9mo d\u2019abord.',en?'Approve':'Approuver'],
+  yes:[en?'Put it on the real accounts?':'La mettre sur les vrais comptes ?',en?'It goes to the developer to put on the real accounts. The lab\u2019s demo robot takes it by itself.':'Elle part chez le d\u00e9veloppeur pour entrer sur les vrais comptes. Le robot d\u00e9mo du labo, lui, la prend tout seul.',en?'Yes':'Oui'],
   no:[en?'Reject this idea?':'Rejeter cette id\u00e9e ?',en?'Its twin stops. The idea stays in the lab as a no.':'Son jumeau s\u2019arr\u00eate. L\u2019id\u00e9e reste dans le labo comme un non.',en?'Reject':'Rejeter']}[d];
  const pw=await askPwd(Q[0],'<b>'+_escS(t)+'</b><br>'+Q[1],Q[2],d==='no');if(!pw)return;
  const r=await fetch(AB()+'lab_decide',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'id='+encodeURIComponent(id)+'&d='+d+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
@@ -5410,11 +5339,11 @@ function propAuto(id){const v=(((window._lab||{}).auto||{}).variants||[]).find(x
 // 2026-09-29 (owner): two more views under the 42-day tiles - the long
 // window and the real trades. Weaker here = a caution, never a drop.
 function xTiles(r,en){const L=r&&r.long,T=r&&r.real;if(!L&&!T)return '';const mn=v=>Math.abs(v||0)<0.5?'$0':(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);const VC={A:'var(--up-soft)',B:'var(--warn)',C:'var(--down-soft)','=':'var(--muted)'};
- const tile=(l,x,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.88rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const tile=(l,x,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.88rem;color:'+c+'">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  return '<div style="display:flex;gap:6px;margin-top:6px">'+(L?tile((en?'over ':'sur ')+(L.days||'')+(en?' days':' jours'),'<span style="color:'+(VC[L.verdict]||'var(--text)')+'">'+_escS(L.verdict||'')+'</span> '+mn(L.diff_net),'var(--text)'):'')+(T?tile((en?'real trades (':'vrais trades (')+(T.n_real||0)+')',mn(T.diff_net),(T.diff_net||0)>=0?'var(--up-soft)':'var(--down-soft)'):'')+'</div>';}
 function propCard(p,en){const esc=_escS;const chips=dialChips(p.cfg,en).map(([t,c])=>'<span class="pchip" style="color:'+c+';background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">'+esc(t)+'</span>').join('');
  const why=esc(en?(p.why_en||''):(p.why_fr||''));const pt=p.pretest||propAuto(p.id);const mn=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(0);
- const tile=(l,v,c)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:7px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const tile=(l,v,c)=>'<div style="flex:1;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.92rem;color:'+c+'">'+v+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  const tiles=pt?'<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'money':'argent',mn(pt.net-(pt.base_net||0)),(pt.net-(pt.base_net||0))>=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'biggest hole':'plus gros trou',mn(pt.worst-(pt.base_worst||0)),(pt.worst-(pt.base_worst||0))<=0?'var(--up-soft)':'var(--down-soft)')+tile(en?'halves':'moiti\u00e9s',(pt.h1>=0?'+':'')+Math.round(pt.h1)+' / '+(pt.h2>=0?'+':'')+Math.round(pt.h2),(pt.h1>0&&pt.h2>0)?'var(--up-soft)':'var(--text)')+'</div>'+xTiles(pt,en)+'<div style="font-size:.62rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em">'+(en?'its own pre-test, against the robot as it is':'son pr\u00e9-test, contre le robot tel qu\u2019il est')+'</div>':'';
  return '<div class="panel lc" style="padding-right:14px" onclick="labProp(&#39;'+esc(p.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="color:#b98cff;background:rgba(185,140,255,.14)"><svg class="ic ic-s"><use href="#i-target"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?p.title_en:p.title_fr)+'</h4><div class="lcc">'+'<span class="pchip" style="color:#b98cff;background:rgba(185,140,255,.14)">'+(en?'replayed tonight':'rejou\u00e9 cette nuit')+'</span>'+chips+'</div></div></div>'+
   '<div class="lcn" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+why+'</div>'+tiles+
@@ -5425,7 +5354,7 @@ function labProp(id){const j=window._lab;if(!j)return;const p=(j.proposals||[]).
  sheet('<div style="color:#b98cff;font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase">'+(en?'The chercheur proposes':'Le chercheur propose')+' \u00b7 '+esc(p.date||'')+'</div><h3 style="margin:6px 0 4px">'+esc(en?p.title_en:p.title_fr)+'</h3>'+(_jj?jStrip(_jj,en)+'<button class="tfc" style="margin:4px 0 8px" onclick="labJourney(&#39;'+esc(id)+'&#39;)">'+(en?'Its story':'Son histoire')+' \u203a</button>':'')+
   '<div class="lbl">'+(en?'What changes':'Ce qui change')+'</div><div style="margin:6px 0 12px">'+chips+'</div>'+
   '<div class="lbl">'+(en?'Why':'Pourquoi')+'</div><p style="font-size:.95rem;line-height:1.6;color:var(--text);margin:6px 0 0;max-height:46vh;overflow-y:auto">'+esc(en?(p.why_en||''):(p.why_fr||''))+'</p>'+
-  '<div style="font-size:.74rem;color:var(--muted);margin-top:10px">'+(en?'Replayed tonight by the engine, with the fixed rules. Its mark shows tomorrow under \u201cV\u00e9rifi\u00e9 sur le pass\u00e9\u201d.':'Rejou\u00e9 cette nuit par le moteur, avec les r\u00e8gles fixes. Sa note appara\u00eet demain sous \u00ab V\u00e9rifi\u00e9 sur le pass\u00e9 \u00bb.')+'</div>'+
+  '<div style="font-size:.74rem;color:var(--muted);margin-top:10px">'+(en?'Tested tonight by the engine, with the fixed rules. Its mark shows tomorrow under \u201cV\u00e9rifi\u00e9 sur le pass\u00e9\u201d.':'Test\u00e9 cette nuit par le moteur, avec les r\u00e8gles fixes. Sa note appara\u00eet demain sous \u00ab V\u00e9rifi\u00e9 sur le pass\u00e9 \u00bb.')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 // the chercheur's night as slides (owner 2026-09-29: "a summary, then a
 // click to show a professional slide that tells the full story")
@@ -5459,7 +5388,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  let h='<div class="nt-eye">'+(en?'The researcher \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date||'')+'</div>';
  if(head)h+='<h3 class="nt-h">'+esc(head)+'</h3>';
  if(parts.length>1)h+='<div class="nt-nav">'+parts.map(x=>'<button onclick="ntGo(&#39;'+x[0]+'&#39;)">'+num(x[0])+' \u00b7 '+esc(x[1])+'</button>').join('')+'</div>';
- if(tot){h+=sh('res',en?'Every idea is replayed on the past, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est rejou\u00e9e sur le pass\u00e9, coup\u00e9 en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
+ if(tot){h+=sh('res',en?'Every idea is tested on the last 42 days of the market, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est test\u00e9e sur les 42 derniers jours du march\u00e9, coup\u00e9s en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
   '<div class="nt-tiles">'+
   '<div class="nt-tile"><b style="color:var(--up-soft)">'+(cc.A||0)+'</b><span>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--accent-soft)">'+(cc.B||0)+'</b><span>'+(en?'a little better':'un peu mieux')+'</span></div>'+
@@ -5481,7 +5410,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
     const x=m[2]?m[2].slice(2):'';ev=(x?x.charAt(0).toUpperCase()+x.slice(1)+' : ':'')+ev.slice(m[0].length);}}
    return '<div class="nt-card">'+chip+'<b>'+esc(en?(b.en||b.fr):(b.fr||b.en))+'</b>'+(ev?'<span class="nt-w">'+esc(ev)+'</span>':'')+'</div>';}).join('')+'</div>';}
  if(num('try')){const JJ=j.journeys||[];
-  h+=sh('try',en?'New ideas from the researcher. Each one has already been replayed once on the past; it is on the board, and the button shows you where.':'Les nouvelles id\u00e9es du chercheur. Chacune a d\u00e9j\u00e0 \u00e9t\u00e9 rejou\u00e9e une fois sur le pass\u00e9 : elle est sur le tableau, et le bouton vous montre o\u00f9.')+PR.map(p=>{
+  h+=sh('try',en?'New ideas from the researcher. Each one already had a first test; it is on the board, and the button shows you where.':'Les nouvelles id\u00e9es du chercheur. Chacune a d\u00e9j\u00e0 eu un premier test : elle est sur le tableau, et le bouton vous montre o\u00f9.')+PR.map(p=>{
    const jn=JJ.find(x=>x.id===p.id);const cl=jn?JCOLS.find(c=>c[0]===jn.col):null;
    return '<div class="nt-card"><b>'+esc(en?(p.title_en||p.title_fr):(p.title_fr||p.title_en))+'</b>'+((en?p.why_en:p.why_fr)?'<span class="nt-w">'+esc(en?p.why_en:p.why_fr)+'</span>':'')+
     (jn&&cl?'<button class="tfc nt-go" onclick="ntIdea(&#39;'+esc(jn.id)+'&#39;)">'+(en?'See it on the board':'La voir sur le tableau')+' \u00b7 '+esc(en?cl[2]:cl[1])+' \u203a</button>':'')+'</div>';}).join('')+'</div>';}
@@ -5491,7 +5420,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
 function ntIdea(id){const j=jGet(id);if(!j)return;const i=JCOLS.findIndex(c=>c[0]===j.col);
  window._shDone&&window._shDone(1);
  setTimeout(()=>{jGo(i,1);setTimeout(()=>{const e=document.querySelector('[data-jid="'+id+'"]');
-  const f=document.getElementById('jfold');if(e&&f&&f.hidden&&f.contains(e)&&f.previousElementSibling)f.previousElementSibling.click();
+  const f=e&&e.closest('div[hidden]');if(f&&f.previousElementSibling)f.previousElementSibling.click();
   if(e){e.scrollIntoView({behavior:'smooth',block:'center'});e.classList.remove('jland');void e.offsetWidth;e.classList.add('jland');}},650);},520);}
 function ntGo(k){const e=document.getElementById('nt-'+k);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});}
 function labItem(id){const j=window._lab;if(!j)return;const it=(j.items||[]).find(x=>x.id===id);if(!it)return;const en=LANG()==='en';
@@ -5913,7 +5842,7 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   return '<div class="pv-h">'+(en?'The strategy is not frozen':'La strat\u00e9gie n\u2019est pas fig\u00e9e')+'</div>'+
   '<div class="pv-p">'+(en?'Every night an AI replays the market, challenges the robot and proposes changes. Nothing reaches your account before it passes the three steps.':'Chaque nuit, une intelligence artificielle rejoue le march\u00e9, bouscule le robot et propose des changements. Rien n\u2019arrive sur votre compte avant d\u2019avoir pass\u00e9 les trois \u00e9tapes.')+'</div>'+
   '<div class="pv-g">'+
-   pvCard(((cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0))+'',en?'ideas replayed last night':'id\u00e9es rejou\u00e9es cette nuit',(cc.A||0)+' A \u00b7 '+(cc.B||0)+' B \u00b7 '+(cc.C||0)+' C')+
+   pvCard(((cc.A||0)+(cc.B||0)+(cc.C||0)+(cc['=']||0))+'',en?'ideas replayed last night':'id\u00e9es test\u00e9es cette nuit',(cc.A||0)+' A \u00b7 '+(cc.B||0)+' B \u00b7 '+(cc.C||0)+' C')+
    pvCard((LB.rules||0)+'',en?'rules in the robot':'r\u00e8gles dans le robot',en?'each one earned its place':'chacune a gagn\u00e9 sa place',up)+
    pvCard((LB.twins||0)+'',en?'copies on trial':'copies \u00e0 l\u2019essai',en?'playing for pretend, no money':'jouent pour de faux, sans argent','var(--accent-soft)')+
    pvCard((LB.archived||0)+'',en?'ideas set aside':'id\u00e9es mises de c\u00f4t\u00e9',en?'said no three nights running':'ont dit non trois nuits de suite','var(--muted2)')+
@@ -8308,7 +8237,8 @@ def lab_candidates(J):
 # a story board?" One journey per idea, derived from the files that already
 # exist (registry, proposals, auto_history, twins) plus lab/decisions.json
 # written by the owner's Approuver / Rejeter. Five steps:
-#   1 idea -> 2 replayed on the past -> 3 tested for pretend -> 4 decided -> 5 in the robot
+#   1 idea -> 2 tested on the past -> 3 tried for pretend -> 4 in the robot
+#   (2026-10-02: "decided" dropped - the lab deploys a duel winner itself)
 LAB_ALIAS = {"twin_06": "rr06", "half_tp": "rr04", "sunday": "nosun", "weekend": "nowe",
              "wait": "wait30", "sizehot": "hothalf"}
 LAB_DEC = os.path.join(DIR, "lab", "decisions.json")
@@ -8374,8 +8304,8 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                            "h2": round(((v.get("h2") or {}).get("net") or 0) - ((base.get("h2") or {}).get("net") or 0), 2),
                            "long": v.get("long"), "real": v.get("real")})
             first = rows[0]
-            ev.append({"d": first.get("d", ""), "fr": "Rejou\u00e9e sur le pass\u00e9 pour la premi\u00e8re fois : " + str(first.get("verdict")),
-                       "en": "Replayed on the past for the first time: " + str(first.get("verdict")), "k": "replay"})
+            ev.append({"d": first.get("d", ""), "fr": "Test\u00e9e pour la premi\u00e8re fois : " + str(first.get("verdict")),
+                       "en": "Tested for the first time: " + str(first.get("verdict")), "k": "replay"})
             if nights > 1:
                 ev.append({"d": last.get("d", ""), "fr": "Derni\u00e8re nuit : " + str(last.get("verdict")) + (" (" + str(streak) + " nuits de suite)" if streak > 1 else ""),
                            "en": "Last night: " + str(last.get("verdict")) + (" (" + str(streak) + " nights in a row)" if streak > 1 else ""), "k": "replay"})
@@ -8386,12 +8316,12 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                   "diff_worst": round((pt.get("worst") or 0) - (pt.get("base_worst") or 0), 2),
                   "h1": round((pt.get("h1") or 0) - (pt.get("base_h1") or 0), 2), "h2": round((pt.get("h2") or 0) - (pt.get("base_h2") or 0), 2),
                   "long": pt.get("long"), "real": pt.get("real")}
-            ev.append({"d": max((pt.get("at") or "")[:10], date or ""), "fr": "Pr\u00e9-test du chercheur : " + str(pt.get("verdict")),
-                       "en": "The chercheur\u2019s pre-test: " + str(pt.get("verdict")), "k": "replay"})
+            ev.append({"d": max((pt.get("at") or "")[:10], date or ""), "fr": "Premier test, par le chercheur : " + str(pt.get("verdict")),
+                       "en": "First test, by the chercheur: " + str(pt.get("verdict")), "k": "replay"})
         elif reg and reg.get("verdict") in ("A", "B", "C"):
             rp = {"verdict": reg.get("verdict"), "nights": 0, "streak": 0, "last": reg.get("date"), "hand": True}
-            ev.append({"d": reg.get("date", ""), "fr": "V\u00e9rifi\u00e9e \u00e0 la main sur le pass\u00e9 : " + reg.get("verdict"),
-                       "en": "Checked by hand on the past: " + reg.get("verdict"), "k": "replay"})
+            ev.append({"d": reg.get("date", ""), "fr": "V\u00e9rifi\u00e9e \u00e0 la main : " + reg.get("verdict"),
+                       "en": "Checked by hand: " + reg.get("verdict"), "k": "replay"})
         if rp:
             st["replay"] = rp
         # 3 - tested for pretend
@@ -8410,15 +8340,23 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
                        "en": "A twin plays for pretend" + (" (started by Kino)" if t.get("by") == "owner" else " (started by the chercheur)"), "k": "test"})
             if t.get("status") == "stopped":
                 ev.append({"d": (t.get("stopped") or "")[:10], "fr": "Jumeau arr\u00eat\u00e9", "en": "Twin stopped", "k": "test"})
+            # 2026-10-02: a twin that won its duel went into the lab's robot
+            # by itself (lab/twin_judge.py deploy). That IS "in the robot".
+            if t.get("status") == "deployed":
+                st["live"] = {"date": (t.get("deployed") or ""), "labo": True}
+                ev.append({"d": t.get("deployed") or "", "fr": "Entr\u00e9e toute seule dans le robot du labo",
+                           "en": "Went into the lab\u2019s robot by itself", "k": "live"})
         elif reg and reg.get("status") == "forward":
             st["test"] = {"started": reg.get("date"), "days": None, "forward": True}
             ev.append({"d": reg.get("date", ""), "fr": "Observ\u00e9e en direct, sans argent", "en": "Watched live, no money", "k": "test"})
         # 4 - decided
         d = next((dec[k] for k in keys if k in dec), None)
         if d:
-            st["decision"] = {"d": d.get("d"), "date": d.get("date"), "note": d.get("note", ""), "by": "Kino"}
-            ev.append({"d": d.get("date", ""), "fr": ("Kino a dit oui" if d.get("d") == "yes" else "Kino a dit non") + ((" : " + d.get("note")) if d.get("note") else ""),
-                       "en": ("Kino said yes" if d.get("d") == "yes" else "Kino said no") + ((": " + d.get("note")) if d.get("note") else ""), "k": "decision"})
+            lab = d.get("by") == "lab"
+            who_fr, who_en = ("Le labo", "The lab") if lab else ("Kino", "Kino")
+            st["decision"] = {"d": d.get("d"), "date": d.get("date"), "note": d.get("note", ""), "by": who_fr}
+            ev.append({"d": d.get("date", ""), "fr": (who_fr + " a dit oui" if d.get("d") == "yes" else who_fr + " a dit non") + ((" : " + d.get("note")) if d.get("note") else ""),
+                       "en": (who_en + " said yes" if d.get("d") == "yes" else who_en + " said no") + ((": " + d.get("note")) if d.get("note") else ""), "k": "decision"})
         elif reg and reg.get("status") == "rejected":
             st["decision"] = {"d": "no", "date": reg.get("date"), "by": "Kino"}
             ev.append({"d": reg.get("date", ""), "fr": "\u00c9cart\u00e9e : les chiffres ont dit non", "en": "Dropped: the numbers said no", "k": "decision"})
@@ -8429,13 +8367,15 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
             st["live"] = {"date": reg.get("date")}
             ev.append({"d": reg.get("date", ""), "fr": "Dans le robot", "en": "In the robot", "k": "live"})
         # where it stands
+        # 2026-10-02 (owner): four columns. "Decided" is gone - a yes means
+        # the idea went in (the lab deploys it itself), and a no is a test
+        # that said no, which the Tested column folds. A proposal that only
+        # has the chercheur's first test has not had its night: still an idea.
         if "live" in st:
-            step, col = 5, "live"
-        elif "decision" in st:
-            step, col = 4, "decided"
+            step, col = 4, "live"
         elif "test" in st:
             step, col = 3, "test"
-        elif "replay" in st:
+        elif ("replay" in st and not st["replay"].get("pretest")) or "decision" in st:
             step, col = 2, "replay"
         else:
             step, col = 1, "idea"
@@ -8474,7 +8414,7 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
         first = min((r.get("d", "") for r in by_id.get(vid, []) if r.get("d")), default=(auto.get("updated") or "")[:10])
         build(vid, [vid], v.get("title_fr"), v.get("title_en"), "battery", v.get("family"), "", "", "", "", "battery", first,
               prop={"cfg": v.get("cfg")})
-    order = {"live": 0, "decided": 1, "test": 2, "replay": 3, "idea": 4}
+    order = {"live": 0, "test": 1, "replay": 2, "idea": 3}
     out.sort(key=lambda j: (order.get(j["col"], 9), j.get("date") or ""), reverse=False)
     return out
 
