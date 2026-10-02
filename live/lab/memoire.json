@@ -14,10 +14,39 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": null,
- "hypotheses": [],
+ "updated": "2026-10-02T22:08:00Z",
+ "hypotheses": [
+  {
+   "id": "sleepy_market",
+   "fr": "Marché très endormi (allure sous 0,8) : le robot y perd plus qu'ailleurs.",
+   "status": "nouveau",
+   "evidence": [
+    "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit"
+   ],
+   "next": "Attendre au moins 15 trades sous 0,8 ; vérifier que ce n'est pas l'heure (00 h aussi négative, 6 trades -12 $) qui parle à sa place."
+  },
+  {
+   "id": "halves_shift",
+   "fr": "Le robot va beaucoup mieux depuis la mi-période (33% puis 74% de gains) : changement de marché ou de réglage ?",
+   "status": "en test",
+   "evidence": [
+    "2026-10-02 veille: 37 trades, moitié 1 33% (18), moitié 2 74% (19); 10 des 12 derniers gagnés (+45 $)"
+   ],
+   "next": "Tout filtre jugé sur les deux moitiés doit en tenir compte : un filtre qui ne gagne que sur la moitié 1 peut juste couper la mauvaise période."
+  }
+ ],
  "tried": [],
- "scrutiny_log": [],
- "lessons": [],
- "open": []
+ "scrutiny_log": [
+  {
+   "t": "2026-10-02T22:08:00Z",
+   "looked": ["wake_context new_trades (12)", "metrics overview/halves", "scrutiny --by nerv", "scrutiny --streaks"],
+   "saw": "10/12 recent wins (+45 $). nerv<0.8: 6 tr 33% -18.85 (peu). After 2 losses in a row: 0/3. Longest loss streak 6. Five proposals already pending -> no new proposal, no harness run, no new pile."
+  }
+ ],
+ "lessons": [
+  "2026-10-02: the two halves differ hugely (33% vs 74% win) - almost every bucket shows agree=false for that reason alone; read a bucket's halves against the overall halves, not against each other."
+ ],
+ "open": [
+  "Is the midnight weakness (00 h: 6 tr, -12 $) the same thing as the sleepy-market weakness? Cross hour x nerv when n allows."
+ ]
 }
