@@ -44,6 +44,9 @@ try {
     # 2026-09-29: judge the twins (retire the losers, flag the winners) and
     # send the night's events (new dial requests, answered asks)
     python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
+    # 2026-10-02 (owner, phase 2): the builder takes one open request a
+    # night - the chercheur's or the lab's own - behind the gates in build.py
+    python lab/build.py *> (Join-Path $lab "build_last.log")
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
     git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null

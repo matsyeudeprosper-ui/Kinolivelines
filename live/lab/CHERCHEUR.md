@@ -100,7 +100,7 @@ would measure with it and what you expect - that is how the tools grow.
   because that clue reached "à vérifier" - both halves of the period
   agree, 30 trades or more. Treat it exactly like a member's ask; it is
   the one clue tonight with real evidence behind it.
-- `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials the menu lacks. Append only.
+- `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials, facts and tools the menu lacks. Append only. Since 2026-10-02 **le constructeur** (a build session, `lab/CONSTRUCTEUR.md`) takes one open request every night and builds it behind the gates; a request comes back `built` with its `key` (use it), `declined` with `decline_fr` (read why), or `failed` after three attempts. Be precise in `what_*`: say the exact behaviour, the range, the default that changes nothing.
 - `lab/cuts.json` — the piles (see "The piles"). Append one at most per night, with its reason.
 - `lab/memoire.json` — your memory (see above). Yours alone; keep its shape.
 - `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],

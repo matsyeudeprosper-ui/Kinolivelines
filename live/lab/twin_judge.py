@@ -199,6 +199,7 @@ def deploy(tid, cfg, fr, en):
         return False, "rien a changer"
     missing = sorted(set(diff) - BOT_DIALS)
     if missing:
+        _request_dials(tid, fr, en, missing)
         return False, "le robot n'a pas de reglage pour " + ", ".join(missing)
     raw = _lj(PKG_FILE, None)
     if not raw or LABO_PKG not in (raw.get("packages") or {}):
@@ -226,6 +227,33 @@ def deploy(tid, cfg, fr, en):
     if err:
         return False, f"redemarrage: {err}"
     return True, ", ".join(f"{TO_PKG[k]} {v}" for k, v in sorted(diff.items()))
+
+
+def _request_dials(tid, fr, en, missing):
+    """2026-10-02 (phase 2): a winner the robot cannot express asks the
+    builder for the dial, by itself. One open request per dial."""
+    try:
+        doc = _lj(REQ, {"requests": []})
+        have = {k for r in doc.get("requests", []) if r.get("status", "open") in ("open", "built")
+                for k in (r.get("keys") or [r.get("key")]) if k}
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        added = False
+        for k in missing:
+            if k in have:
+                continue
+            doc.setdefault("requests", []).append({
+                "id": f"bot_{k}", "date": today, "by": "labo", "keys": [k],
+                "title_fr": f"Donner au robot le r\u00e9glage \u00ab {k} \u00bb",
+                "title_en": f"Give the robot the \u201c{k}\u201d dial",
+                "what_fr": f"Le moteur de test conna\u00eet \u00ab {k} \u00bb, le robot ne sait pas l\u2019appliquer. L\u2019id\u00e9e \u00ab {fr} \u00bb a gagn\u00e9 son duel et ne peut pas entrer tant que ce r\u00e9glage n\u2019existe pas dans le robot.",
+                "what_en": f"The test engine knows \u201c{k}\u201d, the robot cannot apply it. The idea \u201c{en}\u201d won its duel and cannot go in until the robot has this dial.",
+                "why_fr": "Une id\u00e9e qui a gagn\u00e9 attend ce r\u00e9glage.", "why_en": "A winning idea is waiting on this dial.",
+                "status": "open", "for": tid})
+            added = True
+        if added:
+            _sj(REQ, doc)
+    except Exception:
+        pass
 
 
 def _restart_labo():
