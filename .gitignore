@@ -111,3 +111,9 @@ live/owl_invites.json
 live/lab/twin_*_state.json
 live/lab/twin_*_state.json.tmp
 live/lab/*.log
+# the agents' scratch (2026-10-02)
+live/lab/build_context.json
+live/lab/critic_context.json
+live/lab/wake_context.json
+live/lab/build_*.log
+live/lab/critique_*.log

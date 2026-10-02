@@ -202,7 +202,7 @@ def main():
     say(f"session rc={rc} out={len(out)}")
     mod, new = git_changed()
     mod = {p for p in mod if p not in mod0}            # only what the session changed
-    new = {p for p in new if p not in new0}
+    new = {p for p in new if p not in new0 and not (p.endswith(".log") or p.endswith("_context.json") or "/build_" in p)}   # the runner's own scratch is never part of a build
     results = gates(req, mod, new)
     for name, ok, detail in results:
         say(("  ok   " if ok else "  FAIL ") + name + (" - " + detail if detail else ""))
