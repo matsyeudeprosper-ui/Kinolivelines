@@ -2864,13 +2864,25 @@ function tfSide(t,dir){
 function tfDots(x){
  const s=(x.tf||{}).e;if(!s)return '';
  const dir=(x.dir==='A')?1:-1;
- const d=['m15','h1','h4'].map(k=>
-  '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;'+
-  'background:'+tfSide(s[k],dir)+'"></span>').join('');
- // 2026-10-02: the dots carry the same meaning as the sheet - green if
- // that timeframe was WITH the trade, red if against - so the tooltip
- // says so rather than only naming the three.
- return ' <span title="M15 H1 H4 \u00e0 l\u2019entr\u00e9e \u00b7 vert = avec le trade, rouge = contre" '+
+ // 2026-10-02 (owner: "why 3 red dots, not green?"). The dots were right
+ // and the CHANNEL was wrong. They used the same red/green palette as the
+ // money, on the same row, for a completely different meaning - so a
+ // winning sell against three rising timeframes showed red dots beside a
+ // green +$2.90 and read as a fault. Colour cannot carry two unrelated
+ // scales on one line.
+ //
+ // Shape carries it instead: filled = that timeframe was WITH the trade,
+ // hollow = against. Monochrome accent, so it cannot be mistaken for P&L,
+ // and the number of filled dots reads as a little 0-to-3 gauge.
+ const d=['m15','h1','h4'].map(k=>{
+  const t=s[k],on=(t!=null&&t!==0&&t===dir);
+  return '<span style="display:inline-block;width:7px;height:7px;'+
+   'border-radius:50%;box-sizing:border-box;'+
+   (on?'background:var(--accent-soft)'
+     :'border:1.5px solid var(--muted);opacity:.75')+'"></span>';}).join('');
+ const n=['m15','h1','h4'].filter(k=>s[k]===dir).length;
+ return ' <span title="M15 H1 H4 \u00e0 l\u2019entr\u00e9e \u00b7 '+n+' sur 3 allaient dans le '+
+  'sens du trade (plein = avec, creux = contre)" '+
   'style="display:inline-flex;gap:3px;align-items:center;'+
   'margin-left:6px;vertical-align:middle">'+d+'</span>';
 }
