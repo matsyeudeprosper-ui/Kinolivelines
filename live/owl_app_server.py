@@ -1543,6 +1543,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  font-variant-numeric:tabular-nums}
 .lh-stats span{display:block;font-size:.6rem;color:var(--text2);margin-top:6px;line-height:1.2}
 .lh-ok{margin-top:11px;font-size:.7rem;color:var(--up-soft);display:flex;align-items:center;gap:6px}
+.lh-live{display:flex;align-items:flex-start;gap:9px;margin-top:11px;padding:10px 11px;
+ background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;font-size:.8rem;line-height:1.4}
+.lh-live b{color:var(--text)}
+.lh-ago{color:var(--muted)}
+.lh-say{display:block;color:var(--text2);margin-top:3px}
+.lh-dot{flex:none;width:8px;height:8px;border-radius:99px;background:var(--up);margin-top:6px;
+ box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:lhdot 2.2s ease-out infinite}
+@keyframes lhdot{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}100%{box-shadow:0 0 0 9px rgba(46,204,113,0)}}
 .labseedrow{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;
  background:transparent;border:1px dashed var(--border2);border-radius:16px;
  padding:12px 14px;min-height:52px;text-align:left;color:var(--text2);font:inherit;cursor:pointer}
@@ -5200,6 +5208,12 @@ function jStage(en){const j=window._lab||{};const J=j.journeys||[];const cur=jCo
   '<div class="jcards" id="jcards">'+(cards||'<div class="jempty">'+(k==='idea'?(en?'Nothing new tonight.':'Rien de nouveau ce soir.'):(en?'Nothing here right now.':'Rien ici pour l\u2019instant.'))+'</div>')+'</div>'+
   '<div class="jfoot">'+(cur>0?'<button class="tfc" onclick="jGo('+(cur-1)+')">\u2039 '+(en?JCOLS[cur-1][5]:JCOLS[cur-1][4])+'</button>':'<span></span>')+(cur<JCOLS.length-1?'<button class="tfc" onclick="jGo('+(cur+1)+')">'+(en?JCOLS[cur+1][5]:JCOLS[cur+1][4])+' \u203a</button>':'<span></span>')+'</div>';}
 const LAB_MIN_N = 30;   // trades before a seed figure is worth printing
+// 2026-10-02 (owner): "he must replace me, he is now digital Kino" - the
+// chercheur is awake during the day; this is his last word, and when.
+function labLive(en){const j=window._lab||{};const V=j.veille||[];if(!V.length)return '';const v=V[V.length-1];const esc=_escS;
+ let ago='';try{const m=Math.round((Date.now()-new Date(v.t).getTime())/60000);ago=m<60?(en?m+' min ago':'il y a '+m+' min'):(en?Math.round(m/60)+' h ago':'il y a '+Math.round(m/60)+' h');}catch(e){}
+ const K={observation:[en?'saw':'a vu','var(--accent-soft)'],piste:[en?'opened a clue':'a ouvert une piste','var(--warn)'],essai:[en?'ran a test':'a fait un essai','#b98cff'],idee:[en?'proposed an idea':'a propos\u00e9 une id\u00e9e','var(--up-soft)'],reponse:[en?'answered':'a r\u00e9pondu','#b98cff'],rien:[en?'is waiting':'attend','var(--muted)']}[v.kind]||[en?'noted':'a not\u00e9','var(--muted)'];
+ return '<div class="lh-live"><span class="lh-dot"></span><span style="flex:1;min-width:0"><b>Kino num\u00e9rique</b> <span style="color:'+K[1]+'">'+K[0]+'</span>'+(ago?' <span class="lh-ago">\u00b7 '+ago+'</span>':'')+'<span class="lh-say">'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</span></span></div>';}
 function labHero(en){
  const j=window._lab||{};const N=j.note||{};const esc=_escS;
  if(!N.date)return '<div class="jempty" style="margin-top:12px">'+(en?'The researcher has not had its first night yet.':'Le chercheur n\u2019a pas encore fait sa premi\u00e8re nuit.')+'</div>';
@@ -5211,7 +5225,7 @@ function labHero(en){
  const stat=(n,l,c)=>'<div><b style="color:'+c+'">'+n+'</b><span>'+l+'</span></div>';
  return '<button class="labhero" onclick="labNight()">'+
   '<div class="lh-top"><span class="lh-eye">'+(en?'Last night':'Cette nuit')+' \u00b7 '+esc(N.date)+'</span><span class="lh-read">'+(en?'Read':'Lire')+' \u203a</span></div>'+
-  (head?'<div class="lh-head">'+esc(head)+'</div>':'')+
+  (head?'<div class="lh-head">'+esc(head)+'</div>':'')+labLive(en)+
   '<div class="lh-stats">'+stat(tot,en?'ideas tested':'id\u00e9es test\u00e9es','var(--text)')+stat(worth,en?'worth a look':'\u00e0 regarder','var(--up-soft)')+stat(PRn,en?(PRn>1?'new ideas':'new idea'):(PRn>1?'nouvelles id\u00e9es':'nouvelle id\u00e9e'),'#d2b8ff')+'</div>'+
   (window._labParityOk?'<div class="lh-ok"><svg class="ic ic-s"><use href="#i-check"/></svg>'+(en?'The test still matches the robot, rule by rule':'Le test correspond toujours au robot, r\u00e8gle par r\u00e8gle')+'</div>':'')+
   '</button>';}
@@ -5383,6 +5397,8 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  const secs=(N.sections||[]).filter(x=>(x.fr||x.en)&&!dup(x));
  const parts=[];
  if(tot)parts.push(['res',en?'The results':'Les r\u00e9sultats']);
+ const DAY=(j.veille||[]).filter(v=>v.kind!=='rien').slice(-6).reverse();
+ if(DAY.length)parts.push(['day',en?'During the day':'Dans la journ\u00e9e']);
  if(secs.length||(!secs.length&&(N.fr||N.en)))parts.push(['ret',en?'To remember':'\u00c0 retenir']);
  if(bel.length)parts.push(['bel',en?'What it believes':'Ce qu\u2019il croit']);
  if(PR.length)parts.push(['try',en?'To try next':'\u00c0 essayer']);
@@ -5399,6 +5415,9 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
   '<div class="nt-tile"><b style="color:var(--accent-soft)">'+(cc.B||0)+'</b><span>'+(en?'a little better':'un peu mieux')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--muted)">'+((cc.C||0)+(cc['=']||0))+'</b><span>'+(en?'no':'non')+'</span></div></div>'+
   '<div class="nt-sub" style="margin:10px 0 0">'+tot+' '+(en?'ideas tested in all.':'id\u00e9es test\u00e9es en tout.')+'</div></div>';}
+ if(num('day')){h+=sh('day',en?'What Kino num\u00e9rique saw while watching the robot today.':'Ce que Kino num\u00e9rique a vu en surveillant le robot aujourd\u2019hui.')+
+  DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
+   return '<div class="nt-card"><span class="nt-w" style="display:block;margin:0 0 4px;color:var(--muted)">'+esc(hm)+'</span>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</div>';}).join('')+'</div>';}
  if(num('ret')){h+=sh('ret');
   if(secs.length)h+=secs.map((x,i)=>'<details class="nt-fold"'+(i===0?' open':'')+'><summary>'+esc(en?(x.title_en||x.title_fr):(x.title_fr||x.title_en))+'<svg class="ic chv"><use href="#i-chev"/></svg></summary><div class="nt-b">'+paras(en?(x.en||x.fr):(x.fr||x.en))+'</div></details>').join('');
   else h+='<div class="nt-card">'+paras(en?(N.en||N.fr):(N.fr||N.en))+'</div>';
@@ -8220,6 +8239,22 @@ CUT_SEED = [
 _CUTS_CACHE = {"m": None, "cuts": None}
 
 
+def _veille(n=8):
+    """The last n lines of lab/veille.jsonl, newest last."""
+    out = []
+    try:
+        for ln in open(os.path.join(DIR, "lab", "veille.jsonl"), encoding="utf-8").read().splitlines()[-n:]:
+            try:
+                o = json.loads(ln)
+                if isinstance(o, dict) and (o.get("fr") or o.get("en")):
+                    out.append({k: o.get(k) for k in ("t", "kind", "fr", "en", "ref")})
+            except Exception:
+                continue
+    except Exception:
+        pass
+    return out
+
+
 def lab_cuts():
     """Every pile, from lab/cuts.json. Written once with the eleven starting
     piles (by "kino"); the chercheur appends its own."""
@@ -8985,7 +9020,10 @@ def lab_payload():
                     "parity": auto.get("parity")},
            "note": note, "proposals": props[-20:], "twins": twins, "requests": requests,
            "engine": auto.get("engine"), "archive": arch_on,
-           "asks": _lj("asks.json", {}).get("asks", [])[-40:]}
+           "asks": _lj("asks.json", {}).get("asks", [])[-40:],
+           # 2026-10-02 (owner): Kino numerique watches during the day; the
+           # members see his last words and when he last looked
+           "veille": _veille(8), "veille_last": (_lj("veille_state.json", {}) or {}).get("last_wake")}
     try:
         out["journeys"] = lab_journeys(items, props, twins, auto, _lj("decisions.json", {}), arch_on)
     except Exception as e:

@@ -9,6 +9,8 @@ $log = Join-Path $lab "chercheur.log"
 function Say($m) { Add-Content -Path $log -Value ("{0} {1}" -f (Get-Date -Format o), $m) }
 Set-Location $live
 Say "run start"
+# 2026-10-02: the day watch (lab/wake.py) must not run while the night does
+New-Item -ItemType File -Force (Join-Path $lab "night.lock") | Out-Null
 try {
     $quick = ($args -contains "--quick")
     if ($quick) { python lab_researcher.py --quick *> (Join-Path $lab "researcher_last.log") }
@@ -44,10 +46,11 @@ try {
     python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/memoire.json lab/metrics.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null
     Say "committed"
 } catch { Say ("git failed: " + $_.Exception.Message) }
+Remove-Item -Force (Join-Path $lab "night.lock") -ErrorAction SilentlyContinue
 Say "run end"
