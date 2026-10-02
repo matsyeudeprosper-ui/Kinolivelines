@@ -43,6 +43,10 @@ decide and never deploy; the engine judges with fixed rules, Kino promotes.
   ask's `"status":"proposed"` and `"proposal"` = its id), or, if the seed
   cannot become a dial yet, `"answer_fr"`/`"answer_en"` (plain words, two
   sentences, honest) and `"status":"answered"`. Change only those fields.
+  An ask with `"by":"labo"` was opened by the lab itself (lab/auto_ask.py)
+  because that clue reached "à vérifier" - both halves of the period
+  agree, 30 trades or more. Treat it exactly like a member's ask; it is
+  the one clue tonight with real evidence behind it.
 - `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials the menu lacks. Append only.
 - `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],
   "sections":[{"title_fr","title_en","fr","en"}, ...]}` — the `sections` are the

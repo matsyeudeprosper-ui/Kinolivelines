@@ -16,6 +16,12 @@ try {
     Say ("researcher exit " + $LASTEXITCODE)
 } catch { Say ("researcher failed: " + $_.Exception.Message) }
 try {
+    # 2026-10-02 (owner): a clue that reached "a verifier" asks the
+    # chercheur by itself; the session below must answer it tonight
+    python lab/auto_ask.py *> (Join-Path $lab "auto_ask_last.log")
+    Say ("auto_ask exit " + $LASTEXITCODE)
+} catch { Say ("auto_ask failed: " + $_.Exception.Message) }
+try {
     New-Item -ItemType Directory -Force (Join-Path $lab "notes") | Out-Null
     $claude = "$env:USERPROFILE\.local\bin\claude.exe"
     $mission = Get-Content (Join-Path $lab "CHERCHEUR.md") -Raw

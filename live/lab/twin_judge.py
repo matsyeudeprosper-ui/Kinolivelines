@@ -328,7 +328,16 @@ def post_session():
             continue
         seen["asks_answered"].append(a.get("id"))
         uid = a.get("by")
-        if uid:
+        if uid == "labo":
+            # 2026-10-02: the lab asked on its own (lab/auto_ask.py) - the
+            # answer is news for everyone who can read the lab
+            sf, se = a.get("seed_fr") or a.get("seed") or "", a.get("seed_en") or a.get("seed") or ""
+            emit("clue_answered",
+                 ("\U0001f50e Le labo : une piste a eu sa réponse",
+                  f"« {sf} » : {(a.get('answer_fr') or a.get('answer_en') or '')[:170]}"),
+                 ("\U0001f50e The lab: a clue got its answer",
+                  f"“{se}”: {(a.get('answer_en') or a.get('answer_fr') or '')[:170]}"), members=True)
+        elif uid:
             en = _lang(uid) == "en"
             _push(uid, ("\U0001f4ac The chercheur answered you" if en else "\U0001f4ac Le chercheur vous a répondu"),
                   ((a.get("answer_en") or a.get("answer_fr") or "") if en else (a.get("answer_fr") or a.get("answer_en") or ""))[:180])
