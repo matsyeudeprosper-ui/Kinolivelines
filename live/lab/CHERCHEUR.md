@@ -205,13 +205,33 @@ NEVER write these; ALWAYS write the plain form instead:
 | le moteur, la correction du moteur      | le test, la correction du test                         | the test, the test's correction               |
 | dose                                    | réglage                                                | setting                                       |
 | deux formes de compte, les deux comptes | les comptes avec et sans plafond de gain par jour      | the accounts with and without a daily cap     |
-| chez Valère, Infinity, any member name  | sur un compte avec plafond / sans plafond              | on a capped / an uncapped account             |
+| chez Valère, Infinity, Dépenses, Kino's account, any member or account name | see the alias table below | see the alias table below |
 | ceinture de 12 $                        | une limite de 12 $ de perte par trade                  | a $12 loss limit per trade                    |
 | mécanisme                               | une vraie cause, pas de la chance                      | a real cause, not luck                        |
 | flip / continuation / en dette          | changement de sens / un trade de plus dans le même sens / après une perte | change of direction / one more trade the same way / after a loss |
 | drawdown, DD                            | le plus gros trou (la plus grosse baisse en route)     | the biggest hole (the deepest dip on the way) |
 | nervosité 1,0×, backtest, replay, rejoué| marché calme / nerveux ; testé sur les 42 derniers jours | calm / nervous market ; tested on the last 42 days |
 | cfg keys, ids (k3_rr09, rr, bullets)    | never in any text a member reads                       | never                                          |
+
+ACCOUNTS ARE NEVER NAMED (owner 2026-10-02). Members read the lab; a
+member must not find another member's name or account there. Speak of the
+two SHAPES the engine tests - "un compte avec plafond de gain par jour" and
+"un compte sans plafond" - and, only when one specific account matters,
+use its alias. The aliases are fixed; the files and packages you read use
+the real names, you translate on the way out:
+
+| what you read (journal / package / uid)            | fr                             | en                              |
+|----------------------------------------------------|--------------------------------|---------------------------------|
+| bos_journal_valere.csv, valere, valere_cap3, u224016179 | le compte 1 (avec plafond) | account 1 (capped)              |
+| bos_journal_expenses.csv, expenses                 | le compte 2 (avec plafond)     | account 2 (capped)              |
+| bos_journal_infinity.csv, infinity                 | le compte 3 (sans plafond)     | account 3 (uncapped)            |
+| bos_journal_kino.csv, kino                         | le compte 4 (sans plafond)     | account 4 (uncapped)            |
+| bos_journal.csv, bos, special_10                   | le compte 5                    | account 5                       |
+| bos_journal_demo.csv, demo                         | le compte démo public          | the public demo account         |
+| labo                                               | le robot du labo               | the lab's robot                 |
+
+Never write a first name, a login number, a package name or a uid in any
+text a member can read.
 
 Numbers stay, in words around them: "même argent, trou de 39 au lieu de
 63". A title is one short sentence (at most twelve words) that says what
