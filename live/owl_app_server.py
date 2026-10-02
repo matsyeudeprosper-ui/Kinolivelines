@@ -5146,9 +5146,9 @@ function jCard(j,en){const M=labMaps(en);const col=JCOLS.find(c=>c[0]===j.col)||
   // ...", so repeating the date here was saying it twice; and j.src is a
   // study id (E010) that belongs in the detail sheet, not on a card.
   '<div class="lcm"><span>'+(j.col==='live'?'':esc(j.date||''))+'</span><span style="color:var(--accent-soft);font-weight:700">'+(en?'Its story':'Son histoire')+' \u203a</span></div></div>';}
-function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']};const l=L[c.label]||L.trop_tot;const esc=_escS;
+function seedCard(c,en){const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)'],doublon:[en?'same trades as another':'m\u00eames trades qu\u2019une autre','var(--muted)'],invalide:[en?'badly written':'mal \u00e9crite','var(--down-soft)']};const l=L[c.label]||L.trop_tot;const esc=_escS;
  const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';const d=(c.win!==null&&c.rest_win!==null)?c.win-c.rest_win:null;
- return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'clue':'piste','var(--warn)')+lchip(l[0],l[1])+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
+ return '<div class="panel lc" style="padding-right:14px" onclick="labSeed(&#39;'+esc(c.id)+'&#39;)" role="button" tabindex="0"><div class="lct"><span class="lcb" style="background:rgba(255,255,255,.05);color:'+l[1]+'"><svg class="ic ic-s"><use href="#i-activity"/></svg></span><div style="flex:1;min-width:0"><h4>'+esc(en?c.name_en:c.name_fr)+'</h4><div class="lcc">'+lchip(en?'clue':'piste','var(--warn)')+lchip(l[0],l[1])+(c.by==='chercheur'?lchip(en?'by the chercheur':'par le chercheur','#b98cff'):'')+(function(){const a=seedAsk(c.id);return a?lchip(a.status==='open'?(en?'asked the chercheur':'demand\u00e9 au chercheur'):(a.status==='proposed'?(en?'became an idea':'devenue une id\u00e9e'):(en?'answered':'r\u00e9pondu')),'#b98cff','rgba(185,140,255,.14)'):'';})()+'</div></div></div>'+
  // 2026-10-02 (owner): under 30 trades this printed a confident
  // comparison - "10 trades, 20 % contre 67 % (-47)" - which reads as
  // a finding and is noise. Same gate as the multi-timeframe payoff
@@ -5223,7 +5223,7 @@ function labSeedRow(en){const seeds=labSeeds(window._lab||{});if(!seeds.length)r
  return '<button class="labseedrow" onclick="labSeedsSheet()"><span class="lsr-n">'+seeds.length+'</span><span style="flex:1;min-width:0"><b>'+(en?'clues in your real trades':'pistes dans vos vrais trades')+'</b><span class="lsr-s">'+(ready?(en?ready+' ready to read':ready+' lisibles'):(en?'none has enough trades to read yet':'aucune n\u2019a encore assez de trades'))+'</span></span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
 function labSeedsSheet(){const j=window._lab||{};const en=LANG()==='en';const seeds=labSeeds(j);
  sheet('<div class="nt-eye" style="color:var(--warn)">'+(en?'The clues':'Les pistes')+'</div><h3 style="margin:6px 0 8px">'+(en?'What your real trades hint at':'Ce que vos vrais trades laissent entrevoir')+'</h3>'+
-  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 4px">'+(en?'Every ten minutes the app cuts your real trades eleven ways and looks for a difference. A clue is not an idea yet: under 30 trades a number can still be luck. When both halves of the period agree, the researcher can turn it into an idea.':'Toutes les dix minutes, l\u2019appli d\u00e9coupe vos vrais trades de onze fa\u00e7ons et cherche une diff\u00e9rence. Une piste n\u2019est pas encore une id\u00e9e : sous 30 trades, un chiffre peut encore \u00eatre de la chance. Quand les deux moiti\u00e9s de la p\u00e9riode sont d\u2019accord, le chercheur peut en faire une id\u00e9e.')+'</p>'+
+  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 4px">'+(en?'Each clue is a question put to the real trades: a pile of them, against all the others. The first eleven came from Kino; the chercheur adds one when the data gives it a reason, one a night at most. A clue is not an idea yet: under 30 trades a number can still be luck. When both halves of the period agree, the researcher can turn it into an idea.':'Chaque piste est une question pos\u00e9e aux vrais trades : une pile de trades, contre tous les autres. Les onze premi\u00e8res viennent de Kino ; le chercheur en ajoute une quand les donn\u00e9es lui en donnent une raison, une par nuit au plus. Une piste n\u2019est pas encore une id\u00e9e : sous 30 trades, un chiffre peut encore \u00eatre de la chance. Quand les deux moiti\u00e9s de la p\u00e9riode sont d\u2019accord, le chercheur peut en faire une id\u00e9e.')+'</p>'+
   '<div style="max-height:60vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+seeds.map(c=>seedCard(c,en)).join('')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function labBoard(en){setTimeout(jSwipe,80);
@@ -5265,7 +5265,7 @@ async function labAsk(id){const en=LANG()==='en';const j=window._lab||{};const c
  if(!ok){await info('&#10060; <h3>'+(msg==='strategy'?(en?'The Strategy plan is needed to ask the chercheur.':'Le paquet Strat\u00e9gie est n\u00e9cessaire pour demander au chercheur.'):(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
  toast(en?'Sent to the chercheur for tonight':'Envoy\u00e9 au chercheur pour cette nuit',2200);window._labT=0;await loadLab(window._d||{});labSeed(id);}
 function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>x.id===id);if(!c)return;const en=LANG()==='en';const esc=_escS;const pc=x=>x===null||x===undefined?'\u2014':x+'\u202f%';
- const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)',en?'Under 30 trades, a number can still be luck. We show it so you can watch it grow.':'Sous 30 trades, un chiffre peut encore \u00eatre de la chance. On le montre pour le voir grandir.'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)',en?'The first half and the second half of the period say the same thing. The chercheur can turn it into an idea to test.':'La premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose. Le chercheur peut en faire une id\u00e9e \u00e0 tester.'],divergent:[en?'not clear':'pas net','var(--warn)',en?'The two halves of the period disagree. Noise for now.':'Les deux moiti\u00e9s de la p\u00e9riode ne sont pas d\u2019accord. Du bruit pour l\u2019instant.']};const l=L[c.label]||L.trop_tot;
+ const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)',en?'Under 30 trades, a number can still be luck. We show it so you can watch it grow.':'Sous 30 trades, un chiffre peut encore \u00eatre de la chance. On le montre pour le voir grandir.'],a_tester:[en?'worth checking':'\u00e0 v\u00e9rifier','var(--up-soft)',en?'The first half and the second half of the period say the same thing. The chercheur can turn it into an idea to test.':'La premi\u00e8re et la deuxi\u00e8me moiti\u00e9 de la p\u00e9riode disent la m\u00eame chose. Le chercheur peut en faire une id\u00e9e \u00e0 tester.'],divergent:[en?'not clear':'pas net','var(--warn)',en?'The two halves of the period disagree. Noise for now.':'Les deux moiti\u00e9s de la p\u00e9riode ne sont pas d\u2019accord. Du bruit pour l\u2019instant.'],doublon:[en?'same trades as another':'m\u00eames trades qu\u2019une autre','var(--muted)',(en?'Mostly the same trades as \u201c':'Presque les m\u00eames trades que \u00ab ')+_escS(en?(c.dup_name_en||''):(c.dup_name_fr||''))+(en?'\u201d, so it says nothing new and is never asked about.':' \u00bb : elle n\u2019apprend rien de plus, on ne la demande jamais.')],invalide:[en?'badly written':'mal \u00e9crite','var(--down-soft)',(en?'The chercheur wrote this pile in a form the app cannot read: ':'Le chercheur a \u00e9crit cette pile dans une forme que l\u2019appli ne sait pas lire : ')+_escS(c.error||'')]};const l=L[c.label]||L.trop_tot;
  const cell=(lb,x)=>'<div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x+'</b><span style="font-size:.56rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+lb+'</span></div>';
  const a=seedAsk(id);let ask='';
  if(a&&a.status==='open')ask='<div class="panel" style="margin-top:12px;border-color:rgba(185,140,255,.35);padding:12px"><b style="font-size:.86rem;color:#b98cff">'+(en?'Sent to the chercheur':'Envoy\u00e9 au chercheur')+' \u00b7 '+esc(a.date||'')+(a.by==='labo'?' \u00b7 '+(en?'by the lab itself':'par le labo lui-m\u00eame'):'')+'</b><div style="font-size:.8rem;color:var(--text2);margin-top:4px">'+(en?'It answers during its next night: an idea to test, or why not yet.':'Il r\u00e9pond \u00e0 sa prochaine nuit : une id\u00e9e \u00e0 tester, ou pourquoi pas encore.')+(a.note?'<br><i>\u00ab '+esc(a.note)+' \u00bb</i>':'')+'</div></div>';
@@ -5275,7 +5275,7 @@ function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>
  sheet('<div style="font-size:.6rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--warn)">'+(en?'A clue \u00b7 seen in the real trades':'Une piste \u00b7 vue dans les vrais trades')+'</div><h3 style="margin:6px 0 10px">'+esc(en?c.name_en:c.name_fr)+'</h3>'+
   '<div style="display:flex;gap:6px">'+cell('trades',c.n)+cell(en?'won':'gagn\u00e9s',pc(c.win))+cell(en?'the others':'les autres',pc(c.rest_win))+'</div>'+
   '<div style="display:flex;gap:6px;margin-top:6px">'+cell(en?'first half':'1\u00e8re moiti\u00e9',pc(c.h1)+' <small style="color:var(--muted)">('+c.h1n+')</small>')+cell(en?'second half':'2e moiti\u00e9',pc(c.h2)+' <small style="color:var(--muted)">('+c.h2n+')</small>')+'</div>'+
-  '<div style="margin-top:12px">'+lchip(l[0],l[1])+'</div><p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:8px 0 0">'+l[2]+'</p>'+ask+
+  '<div style="margin-top:12px">'+lchip(l[0],l[1])+'</div><p style="font-size:.9rem;line-height:1.55;color:var(--text);margin:8px 0 0">'+l[2]+'</p>'+((en?c.why_en:c.why_fr)?'<div class="lbl" style="margin-top:12px">'+(en?'Why this pile':'Pourquoi cette pile')+(c.by==='chercheur'?' \u00b7 '+(en?'the chercheur':'le chercheur'):'')+(c.date?' \u00b7 '+esc(c.date):'')+'</div><p style="font-size:.88rem;line-height:1.5;color:var(--text2);margin:6px 0 0">'+esc(en?c.why_en:c.why_fr)+'</p>':'')+ask+
   '<div style="font-size:.74rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'Clues are counted again every ten minutes from the real trades of every account. The chercheur reads them every night.':'Les pistes sont recompt\u00e9es toutes les dix minutes \u00e0 partir des vrais trades de tous les comptes. Le chercheur les lit chaque nuit.')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function labStage(k){const en=LANG()==='en';let title='',body='';
@@ -8195,34 +8195,128 @@ LAB_REG = os.path.join(DIR, "lab", "registry.json")
 _LAB_CACHE = {"t": 0.0, "data": None}
 
 
+# ---- 2026-10-02 (owner): the piles are DATA, written by the chercheur with
+# a reason, not a fixed list in code. lab/cuts.json; grammar below.
+LAB_CUTS = os.path.join(DIR, "lab", "cuts.json")
+CUT_FIELDS = ("nerv", "kind", "dir", "hour", "wday", "gap_min", "dur_min", "prev_win", "p", "internal")
+CUT_OPS = ("<", "<=", ">", ">=", "==", "!=", "in", "between")
+CUT_MAX_ACTIVE = 24      # not a flood
+CUT_MIN_N = 30           # trades before a pile can be read
+CUT_STRICT_GAP = 10      # past eleven piles, a pile must also beat the rest by this many points
+CUT_DUP = 0.8            # share of common trades that makes a pile a duplicate of an older one
+CUT_SEED = [
+    {"id": "calm", "title_fr": "Quand le march\u00e9 est calme", "title_en": "When the market is calm", "where": [{"field": "nerv", "op": "<", "value": 1.0}]},
+    {"id": "hot", "title_fr": "Quand le march\u00e9 est nerveux", "title_en": "When the market is nervous", "where": [{"field": "nerv", "op": ">=", "value": 1.0}]},
+    {"id": "flip", "title_fr": "Juste apr\u00e8s un changement de sens", "title_en": "Right after a change of direction", "where": [{"field": "kind", "op": "==", "value": "FLIP-BOS"}]},
+    {"id": "cont", "title_fr": "Un trade de plus dans le m\u00eame sens", "title_en": "One more trade the same way", "where": [{"field": "kind", "op": "==", "value": "BOS"}]},
+    {"id": "int", "title_fr": "Sur les petits mouvements", "title_en": "On the small moves", "where": [{"field": "kind", "op": "==", "value": "INT"}]},
+    {"id": "quick", "title_fr": "Moins de 30 min apr\u00e8s le trade d\u2019avant", "title_en": "Less than 30 min after the previous trade", "where": [{"field": "gap_min", "op": "<", "value": 30}]},
+    {"id": "weekend", "title_fr": "Le week-end", "title_en": "On weekends", "where": [{"field": "wday", "op": "in", "value": [5, 6]}]},
+    {"id": "asia", "title_fr": "La nuit (00\u201308 h UTC)", "title_en": "At night (00\u201308 UTC)", "where": [{"field": "hour", "op": "<", "value": 8}]},
+    {"id": "europe", "title_fr": "En journ\u00e9e (08\u201316 h UTC)", "title_en": "During the day (08\u201316 UTC)", "where": [{"field": "hour", "op": "between", "value": [8, 15]}]},
+    {"id": "us", "title_fr": "En soir\u00e9e (16\u201324 h UTC)", "title_en": "In the evening (16\u201324 UTC)", "where": [{"field": "hour", "op": ">=", "value": 16}]},
+    {"id": "long", "title_fr": "Quand le robot ach\u00e8te", "title_en": "When the robot buys", "where": [{"field": "dir", "op": "==", "value": "BUY"}]},
+]
+_CUTS_CACHE = {"m": None, "cuts": None}
+
+
+def lab_cuts():
+    """Every pile, from lab/cuts.json. Written once with the eleven starting
+    piles (by "kino"); the chercheur appends its own."""
+    try:
+        m = os.path.getmtime(LAB_CUTS)
+    except OSError:
+        doc = {"cuts": [dict(c, by="kino", date="2026-09-29", status="open",
+                             why_fr="Une des onze piles de d\u00e9part.", why_en="One of the eleven starting piles.") for c in CUT_SEED]}
+        tmp = LAB_CUTS + ".tmp"
+        json.dump(doc, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        os.replace(tmp, LAB_CUTS)
+        m = os.path.getmtime(LAB_CUTS)
+    if _CUTS_CACHE["m"] != m:
+        try:
+            doc = json.load(open(LAB_CUTS, encoding="utf-8"))
+            cuts = [c for c in doc.get("cuts", []) if isinstance(c, dict)]
+        except Exception:
+            cuts = list(CUT_SEED)
+        _CUTS_CACHE.update(m=m, cuts=cuts)
+    return list(_CUTS_CACHE["cuts"] or [])
+
+
+def cut_error(c):
+    """'' when the pile is well formed, else what is wrong with it."""
+    if not isinstance(c.get("id"), str) or not c["id"].strip():
+        return "id manquant"
+    if not (c.get("title_fr") and c.get("title_en")):
+        return "titre manquant"
+    w = c.get("where")
+    if not isinstance(w, list) or not (1 <= len(w) <= 3):
+        return "where : 1 \u00e0 3 conditions"
+    for k in w:
+        if not isinstance(k, dict) or k.get("field") not in CUT_FIELDS or k.get("op") not in CUT_OPS:
+            return "condition : champ ou op\u00e9rateur inconnu"
+        v = k.get("value")
+        if k["op"] == "in" and not (isinstance(v, list) and v):
+            return "in : une liste"
+        if k["op"] == "between" and not (isinstance(v, list) and len(v) == 2):
+            return "between : [bas, haut]"
+        if k["op"] in ("<", "<=", ">", ">=") and not isinstance(v, (int, float)):
+            return "comparaison : un nombre"
+    return ""
+
+
+def _cut_match(where, r):
+    for k in where:
+        f, op, v = k["field"], k["op"], k["value"]
+        x = r.get(f)
+        if x is None:
+            return False
+        try:
+            if op == "<" and not x < v: return False
+            if op == "<=" and not x <= v: return False
+            if op == ">" and not x > v: return False
+            if op == ">=" and not x >= v: return False
+            if op == "==" and not x == v: return False
+            if op == "!=" and not x != v: return False
+            if op == "in" and x not in v: return False
+            if op == "between" and not (v[0] <= x <= v[1]): return False
+        except TypeError:
+            return False
+    return True
+
+
 def lab_candidates(J):
-    """Automatic hypotheses from the live journals: each cut against the rest,
-    with the chronological halves. n < 30 = too early; halves that agree =
-    worth a replay; halves that disagree = noise for now."""
+    """Each pile, cut against the rest, with the chronological halves.
+    n < 30 = too early; halves that agree = worth a replay; halves that
+    disagree = noise for now; 80 % the same trades as an older pile =
+    a duplicate."""
     if not J:
         return []
     mid = J[len(J) // 2]["t"]
-    def prev_gap(i):
-        return (J[i]["t"] - J[i - 1]["x"]) if i else 1e9
-    cuts = [
-        ("calm", "Quand le march\u00e9 est calme", "When the market is calm", lambda i, r: r["nerv"] is not None and r["nerv"] < 1.0),
-        ("hot", "Quand le march\u00e9 est nerveux", "When the market is nervous", lambda i, r: r["nerv"] is not None and r["nerv"] >= 1.0),
-        ("flip", "Juste apr\u00e8s un changement de sens", "Right after a change of direction", lambda i, r: r["kind"] == "FLIP-BOS"),
-        ("cont", "Un trade de plus dans le m\u00eame sens", "One more trade the same way", lambda i, r: r["kind"] == "BOS"),
-        ("int", "Sur les petits mouvements", "On the small moves", lambda i, r: r["kind"] == "INT"),
-        ("quick", "Moins de 30 min apr\u00e8s le trade d\u2019avant", "Less than 30 min after the previous trade", lambda i, r: prev_gap(i) < 1800),
-        ("weekend", "Le week-end", "On weekends", lambda i, r: time.gmtime(r["t"]).tm_wday >= 5),
-        ("asia", "La nuit (00\u201308 h UTC)", "At night (00\u201308 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour < 8),
-        ("europe", "En journ\u00e9e (08\u201316 h UTC)", "During the day (08\u201316 UTC)", lambda i, r: 8 <= time.gmtime(r["t"]).tm_hour < 16),
-        ("us", "En soir\u00e9e (16\u201324 h UTC)", "In the evening (16\u201324 UTC)", lambda i, r: time.gmtime(r["t"]).tm_hour >= 16),
-        ("long", "Quand le robot ach\u00e8te", "When the robot buys", lambda i, r: r["p"] is not None and r.get("dir", "") == "BUY"),
-    ]
-    out = []
-    for cid, fr, en, pred in cuts:
-        rows = [r for i, r in enumerate(J) if pred(i, r)]
-        rest = [r for i, r in enumerate(J) if not pred(i, r)]
-        if not rows:
+    R = []
+    for i, r in enumerate(J):
+        g = time.gmtime(r["t"])
+        R.append(dict(r, hour=g.tm_hour, wday=g.tm_wday,
+                      gap_min=((r["t"] - J[i - 1]["x"]) / 60.0) if i else 1e9,
+                      dur_min=max(0.0, (r["x"] - r["t"]) / 60.0),
+                      prev_win=(J[i - 1]["win"] if i else None),
+                      t=r["t"]))
+    cuts = [c for c in lab_cuts() if c.get("status", "open") != "retired"]
+    strict = len(cuts) > len(CUT_SEED)
+    out, picks = [], {}
+    for c in cuts:
+        base = {"id": c.get("id"), "name_fr": c.get("title_fr"), "name_en": c.get("title_en"), "by": c.get("by", "kino"),
+                "date": c.get("date"), "why_fr": c.get("why_fr", ""), "why_en": c.get("why_en", "")}
+        err = cut_error(c)
+        if err:
+            out.append(dict(base, n=0, win=None, net=0, rest_n=len(R), rest_win=None, h1=None, h2=None, h1n=0, h2n=0,
+                            agree=False, label="invalide", error=err))
             continue
+        idx = [i for i, r in enumerate(R) if _cut_match(c["where"], r)]
+        if not idx:
+            continue
+        sel = set(idx)
+        rows = [R[i] for i in idx]
+        rest = [r for i, r in enumerate(R) if i not in sel]
         w = _wr(rows); wr = _wr(rest)
         h1 = [r for r in rows if r["t"] < mid]; h2 = [r for r in rows if r["t"] >= mid]
         r1 = [r for r in rest if r["t"] < mid]; r2 = [r for r in rest if r["t"] >= mid]
@@ -8231,10 +8325,25 @@ def lab_candidates(J):
             return None if (wa is None or wb is None or len(a) < 5 or len(b) < 5) else (wa - wb)
         d1, d2 = diff(h1, r1), diff(h2, r2)
         agree = (d1 is not None and d2 is not None and ((d1 > 0) == (d2 > 0)))
-        label = "trop_tot" if w["n"] < 30 else ("a_tester" if agree else "divergent")
-        out.append({"id": cid, "name_fr": fr, "name_en": en, "n": w["n"], "win": w["win"], "net": w["net"],
-                    "rest_n": wr["n"], "rest_win": wr["win"], "h1": _wr(h1)["win"], "h2": _wr(h2)["win"],
-                    "h1n": len(h1), "h2n": len(h2), "agree": agree, "label": label})
+        gap_ok = (not strict) or (w["win"] is not None and wr["win"] is not None and abs(w["win"] - wr["win"]) >= CUT_STRICT_GAP)
+        label = "trop_tot" if w["n"] < CUT_MIN_N else ("a_tester" if (agree and gap_ok) else "divergent")
+        picks[c["id"]] = sel
+        out.append(dict(base, n=w["n"], win=w["win"], net=w["net"], rest_n=wr["n"], rest_win=wr["win"],
+                        h1=_wr(h1)["win"], h2=_wr(h2)["win"], h1n=len(h1), h2n=len(h2), agree=agree, label=label))
+    # a later pile that is mostly the same trades as an older one says
+    # nothing new; it is shown as such and never asked about
+    for i, c in enumerate(out):
+        a = picks.get(c["id"])
+        if not a:
+            continue
+        for e in out[:i]:
+            b = picks.get(e["id"])
+            if not b or e.get("dup_of"):
+                continue
+            j = len(a & b) / float(len(a | b))
+            if j >= CUT_DUP:
+                c["label"] = "doublon"; c["dup_of"] = e["id"]; c["dup_name_fr"] = e["name_fr"]; c["dup_name_en"] = e["name_en"]
+                break
     return out
 
 # ---- 2026-09-29 (owner): "is there a way to see how an idea is doing, has

@@ -1,0 +1,197 @@
+{
+ "cuts": [
+  {
+   "id": "calm",
+   "title_fr": "Quand le marché est calme",
+   "title_en": "When the market is calm",
+   "where": [
+    {
+     "field": "nerv",
+     "op": "<",
+     "value": 1.0
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "hot",
+   "title_fr": "Quand le marché est nerveux",
+   "title_en": "When the market is nervous",
+   "where": [
+    {
+     "field": "nerv",
+     "op": ">=",
+     "value": 1.0
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "flip",
+   "title_fr": "Juste après un changement de sens",
+   "title_en": "Right after a change of direction",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "FLIP-BOS"
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "cont",
+   "title_fr": "Un trade de plus dans le même sens",
+   "title_en": "One more trade the same way",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "BOS"
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "int",
+   "title_fr": "Sur les petits mouvements",
+   "title_en": "On the small moves",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "INT"
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "quick",
+   "title_fr": "Moins de 30 min après le trade d’avant",
+   "title_en": "Less than 30 min after the previous trade",
+   "where": [
+    {
+     "field": "gap_min",
+     "op": "<",
+     "value": 30
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "weekend",
+   "title_fr": "Le week-end",
+   "title_en": "On weekends",
+   "where": [
+    {
+     "field": "wday",
+     "op": "in",
+     "value": [
+      5,
+      6
+     ]
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "asia",
+   "title_fr": "La nuit (00–08 h UTC)",
+   "title_en": "At night (00–08 UTC)",
+   "where": [
+    {
+     "field": "hour",
+     "op": "<",
+     "value": 8
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "europe",
+   "title_fr": "En journée (08–16 h UTC)",
+   "title_en": "During the day (08–16 UTC)",
+   "where": [
+    {
+     "field": "hour",
+     "op": "between",
+     "value": [
+      8,
+      15
+     ]
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "us",
+   "title_fr": "En soirée (16–24 h UTC)",
+   "title_en": "In the evening (16–24 UTC)",
+   "where": [
+    {
+     "field": "hour",
+     "op": ">=",
+     "value": 16
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "long",
+   "title_fr": "Quand le robot achète",
+   "title_en": "When the robot buys",
+   "where": [
+    {
+     "field": "dir",
+     "op": "==",
+     "value": "BUY"
+    }
+   ],
+   "by": "kino",
+   "date": "2026-09-29",
+   "status": "open",
+   "why_fr": "Une des onze piles de départ.",
+   "why_en": "One of the eleven starting piles."
+  }
+ ]
+}

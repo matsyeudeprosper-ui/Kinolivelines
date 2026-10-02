@@ -38,7 +38,7 @@ try {
     python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null

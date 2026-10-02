@@ -48,6 +48,7 @@ decide and never deploy; the engine judges with fixed rules, Kino promotes.
   agree, 30 trades or more. Treat it exactly like a member's ask; it is
   the one clue tonight with real evidence behind it.
 - `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials the menu lacks. Append only.
+- `lab/cuts.json` — the piles (see "The piles"). Append one at most per night, with its reason.
 - `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],
   "sections":[{"title_fr","title_en","fr","en"}, ...]}` — the `sections` are the
   night told as 5 to 7 SLIDES a member pages through on a phone: each has a
@@ -107,6 +108,43 @@ which account shape and which balance it is for.
 7. `python review/valere_loss_profile.py` — what the last losses share
    (and read the winners' side of the same table).
 8. `mkt_mem/` — one row per minute of market state, if you need it.
+
+## The piles (owner 2026-10-02: "smart, well-thought piles, not a flood")
+The clues members see ("pistes") are PILES of real trades: each pile is a
+question put to the journal - "the trades taken when the market was
+nervous" - compared with all the other trades, with the two halves of the
+period as the honesty check. They live in `lab/cuts.json` and they are
+YOURS to grow. The first eleven came from Kino. Add one when the data gives
+you a reason - something you saw in the trades, a need, an opportunity you
+foresee - never to fill a quota. Rules, enforced by the app:
+- at most ONE new pile a night, at most 24 active in all;
+- `why_fr`/`why_en` required: what you saw that makes this pile worth
+  counting (plain words, the Grandma rule applies - a member reads it);
+- `where`: 1 to 3 conditions, AND-ed, on these facts of a trade only:
+  `nerv` (market pace at entry, 1.0 = usual), `kind` ("FLIP-BOS" change of
+  direction / "BOS" one more the same way / "INT" small move), `dir` ("BUY"
+  / "SELL"), `hour` (0-23 UTC), `wday` (0 = Monday .. 6 = Sunday),
+  `gap_min` (minutes since the previous trade closed), `dur_min` (how long
+  the trade lasted), `prev_win` (true/false: did the previous trade win),
+  `p` (its money), `internal` (true/false);
+  operators `<` `<=` `>` `>=` `==` `!=` `in` (a list) `between` ([low, high]);
+- a pile that is 80 % the same trades as an older one is marked a
+  duplicate and never asked about - check the existing piles first;
+- past eleven piles the bar rises: "a verifier" also needs the pile to beat
+  the rest by ten points, so more questions do not buy more luck;
+- you may retire a pile of your own (`"status":"retired"` + `why_*` saying
+  why); never retire or edit one of Kino's.
+Append only, in `lab/cuts.json`, this shape:
+```
+{"id": "short_id", "title_fr": "...", "title_en": "...", "by": "chercheur", "date": "YYYY-MM-DD",
+ "status": "open", "why_fr": "...", "why_en": "...",
+ "where": [{"field": "nerv", "op": "between", "value": [1.0, 1.5]}, {"field": "hour", "op": ">=", "value": 16}]}
+```
+Example of a good reason: "16 losses, 12 came less than 25 minutes after a
+WIN - a pile of 'entered within 25 min of a win' would tell us if that is
+a pattern." Example of a bad one: "let us also look at Tuesdays."
+When a pile of yours reaches "a verifier", the lab asks you about it by
+itself (an ask with `"by":"labo"`); answer it like any other.
 
 ## The grammar of a proposal (only these keys, only these ranges)
 ```
