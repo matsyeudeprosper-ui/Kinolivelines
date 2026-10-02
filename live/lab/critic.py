@@ -53,6 +53,11 @@ def _sj(p, obj):
     os.replace(tmp, p)
 
 
+def _list(doc):
+    """the file as a list, whether it was written as a list or as {"critiques": [...]}"""
+    return doc if isinstance(doc, list) else (doc or {}).get("critiques", [])
+
+
 def latest(critiques, vid):
     mine = sorted((c for c in critiques if c.get("id") == vid), key=lambda c: c.get("date", ""))
     return mine[-1] if mine else None
@@ -124,7 +129,7 @@ def main():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     auto = _lj(os.path.join(LAB, "auto.json"), {})
     doc = _lj(CRIT, {"critiques": []})
-    cands = candidates(auto, doc.get("critiques", []), today)
+    cands = candidates(auto, _list(doc), today)
     say("to review: " + (", ".join(v.get("id") for v in cands) or "nothing") + (" [dry]" if DRY else ""))
     if DRY:
         return 0
@@ -132,11 +137,13 @@ def main():
         vid = v.get("id")
         review(v, auto)
         doc = _lj(CRIT, {"critiques": []})
-        c = latest(doc.get("critiques", []), vid)
+        c = latest(_list(doc), vid)
         ok = c and c.get("date") == today and c.get("verdict") in ("passe", "doute", "bloque") and (c.get("fr") or c.get("en"))
         if not ok:
             # a review that left no readable verdict must not block the lab,
             # and must not pass unseen either
+            if isinstance(doc, list):
+                doc = {"critiques": doc}
             doc.setdefault("critiques", []).append({"id": vid, "date": today, "verdict": "doute",
                                                     "fr": "Le critique n’a pas rendu d’avis lisible cette nuit ; l’idée avance avec ce doute.",
                                                     "en": "The critic left no readable verdict tonight; the idea moves on with that doubt.",

@@ -137,7 +137,8 @@ def save_json(p, obj):
 
 def latest_critique(vid):
     """The critic's last word on an idea (lab/critiques.json), or None."""
-    mine = [c for c in load_json(os.path.join(LAB, "critiques.json"), {"critiques": []}).get("critiques", []) if c.get("id") == vid]
+    _d = load_json(os.path.join(LAB, "critiques.json"), {"critiques": []})
+    mine = [c for c in (_d if isinstance(_d, list) else _d.get("critiques", [])) if isinstance(c, dict) and c.get("id") == vid]
     mine.sort(key=lambda c: c.get("date", ""))
     return mine[-1] if mine else None
 

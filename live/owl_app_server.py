@@ -8429,7 +8429,8 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
     base = auto.get("base") or {}
     # 2026-10-02 (phase 3): the critic's last word per idea
     CR = {}
-    for c in sorted(_lj("critiques.json", {}).get("critiques", []) if isinstance(_lj("critiques.json", {}), dict) else [], key=lambda c: c.get("date", "")):
+    _cd = _lj("critiques.json", {})
+    for c in sorted([x for x in (_cd if isinstance(_cd, list) else _cd.get("critiques", [])) if isinstance(x, dict)], key=lambda c: c.get("date", "")):
         if c.get("id"):
             CR[c["id"]] = {k: c.get(k) for k in ("date", "verdict", "fr", "en")}
     out = []

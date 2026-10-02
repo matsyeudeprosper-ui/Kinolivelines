@@ -1,0 +1,23 @@
+{
+ "_doc": "The critic's verdicts, one entry per review: {id,date,verdict passe|doute|bloque,fr,en,checks}. Append to 'critiques'.",
+ "critiques": [
+  {
+   "id": "k3",
+   "date": "2026-10-02",
+   "verdict": "bloque",
+   "fr": "Le gain de ce soir (+9 $ en 42 jours) est plus petit qu'un seul trade de rattrapage, et presque tout vient de la deuxième moitié. Sur 69 jours il perd 29 $ et creuse le plus gros trou de 15 $. Testé sans les protections, il perd 27 $ ; à quatre pertes de suite, 40 $. Il était à non cinq nuits sur huit. Pour changer d'avis : un gain sur 69 jours, plusieurs nuits de suite.",
+   "en": "Tonight's gain (+$9 in 42 days) is smaller than one catch-up trade, and nearly all of it comes from the second half. Over 69 days it loses $29 and deepens the biggest hole by $15. Tested without the safety nets it loses $27; at four losses in a row, $40. It was a no five nights out of eight. To change my mind: a gain over 69 days, several nights running.",
+   "checks": [
+    "dose: one step below (2 losses) is the deployed rule itself; harness (deployed rules, no safety nets): 3 losses -27.24 net, hole 80.29->95.37; 4 losses -40.41 net, hole ->94.68; 1 loss -30.69. Gain is not on a slope - only the deployed setting holds up",
+    "halves: battery ref +2.09 first half vs +13.72 second half - carried by the second half (a losing stretch where the extra catch-up happened to win). Harness: both halves worse (-19.58 / -8.63)",
+    "shapes: +9.14 on the uncapped reference, +3.50 on the capped one (account 1 shape), hole +0.38 / -0.65 - small on both",
+    "long window: 69 days -29.09, both halves negative (-13.5 / -13.67), hole +15.08 - a loss, not just weaker",
+    "real trades: +10.90 on 18 trades (5 blocked) - too few to outweigh the long window",
+    "concentration: +9.14 total < one single catch-up trade (catch-up wins/losses of 15-23 $ appear in the ledger, e.g. -22.32 in the second half) - one trade flipping explains it all",
+    "past: history C,C,C,C,C (worst 95.37 on 09-28/29, same as the no-safety-net run now) then B,B,A as recent days were added; not archived but already in the C counter, and three combos with it (rr10_k3, ext700_k3, nosun_ext700_k3) sit there too; no twin yet",
+    "mechanism: keeping a bigger stake after a third loss in a row only pays if the fourth trade wins more often than usual - no reason given beyond the numbers; it adds risk exactly in losing streaks",
+    "overlap: same trades as the deployed rule (258 vs 258, same win rate 61.2%) - only the stake on the trade after the third loss changes, so it is pure sizing on very few trades"
+   ]
+  }
+ ]
+}
