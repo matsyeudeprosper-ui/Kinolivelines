@@ -1575,9 +1575,9 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .labdoor:active{background:var(--surface2)}
 .labdn{font-size:1.5rem;font-weight:800;line-height:1;min-width:34px;
  font-variant-numeric:tabular-nums;text-align:center;flex:none}
-.labdt{font-weight:700;font-size:.97rem;flex:none}
-.labds{flex:1;min-width:0;font-size:.78rem;color:var(--muted);
- line-height:1.3}
+.labdx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.labdt{font-weight:700;font-size:.97rem}
+.labds{font-size:.78rem;color:var(--muted);line-height:1.3}
 .labdoor .chv{flex:none;color:var(--muted);width:17px;height:17px}
 .labseedline{display:flex;align-items:center;gap:8px;width:100%;
  margin-top:8px;background:transparent;border:1px dashed var(--border2);
@@ -1586,7 +1586,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .labseedline b{font-variant-numeric:tabular-nums}
 .labseedline .chv{flex:none;margin-left:auto;color:var(--muted);
  width:16px;height:16px}
-@media(max-width:360px){.labdt{font-size:.9rem}.labds{display:none}}
+/* no media query hiding anything: the column stacks on its own, and a
+   door without its sentence is a door nobody can read. */
 .ibdot{width:8px;height:8px;border-radius:99px;background:var(--accent);display:inline-block;margin-left:6px;vertical-align:middle}
 .hl{animation:hlp 1.6s ease-in-out 2}
 @keyframes hlp{0%,100%{box-shadow:var(--hl)}50%{box-shadow:0 0 0 2px var(--accent),0 0 28px rgba(59,130,246,.45)}}
@@ -5087,10 +5088,14 @@ function labDoors(en){
  const cnt=k=>(j.journeys||[]).filter(x=>x.col===k).length;
  const seeds=labSeeds(j);
  const idx=k=>JCOLS.findIndex(c=>c[0]===k);
+ // 2026-10-02: title and subtitle share ONE column child. As four
+ // separate flex children they fought for width on a narrow phone, and
+ // the media query I wrote to "fix" that simply deleted the subtitle on
+ // the owner's screen - removing the explanation to protect the layout.
  const door=(k,n,title,sub,col)=>'<button class="labdoor" onclick="jGo('+
   idx(k)+')"><span class="labdn" style="color:'+col+'">'+n+'</span>'+
-  '<span class="labdt">'+title+'</span>'+
-  '<span class="labds">'+sub+'</span>'+
+  '<span class="labdx"><span class="labdt">'+title+'</span>'+
+  '<span class="labds">'+sub+'</span></span>'+
   '<svg class="ic chv"><use href="#i-chev"/></svg></button>';
  let h='<div class="labdoors">'+
   door('live',cnt('live'),
