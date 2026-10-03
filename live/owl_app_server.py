@@ -1549,6 +1549,28 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-nid .nact-b{background:rgba(255,92,92,.08);color:#ff8c8c}
 #tab-nid #invbtn{background:transparent!important;border:1px dashed var(--border2)!important;color:var(--text2)!important;
  font-weight:600!important;font-size:.9rem!important;padding:13px!important}
+/* 2026-10-02 (owner): Historique, premium pass - scoped to #tab-hist */
+#tab-hist .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
+#tab-hist .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2)}
+#tab-hist .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+#tab-hist .sincegrid>div,#tab-hist #mvm-g>div{background:var(--tile-bg)!important;border:1px solid var(--tile-bd)!important;border-radius:14px!important}
+#tab-hist .sincegrid b{font-size:1.3rem;font-weight:700;letter-spacing:-.02em}
+#tab-hist .sincegrid span{font-size:.62rem;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+#tab-hist .grid .card{background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:14px;padding:14px 10px 12px;box-shadow:none}
+#tab-hist .grid .card .lbl{font-size:.64rem;letter-spacing:.1em;color:var(--muted);font-weight:700}
+#tab-hist .grid .card .val{font-size:1.4rem;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+#tab-hist .grid .card .sub{font-size:.7rem;margin-top:5px}
+#tab-hist #sharebtn{background:transparent!important;box-shadow:none!important;border:0!important;
+ border-top:1px solid var(--border)!important;border-radius:0!important;color:var(--accent-soft)!important;
+ justify-content:flex-start!important;padding:12px 0 2px!important;font-size:.9rem!important}
+#tab-hist #days .row{justify-content:flex-start;gap:10px}
+#tab-hist #days .row .rowt svg,#tab-hist #days .row .rowt>span{display:none}
+#tab-hist #days .row>b{margin-left:auto}
+#tab-hist #days .row::after{content:"›";color:var(--muted);font-size:1.1rem;line-height:1;margin-left:2px}
+#tab-hist #siglist .empty{padding:14px 10px}
+#tab-hist #siglist:has(.empty){background:transparent;border:1px dashed var(--border2);box-shadow:none}
+#tab-hist #msum-sec button{background:transparent!important;border-color:var(--border)!important;color:var(--muted2)!important}
+#tab-hist #tgo button,#tab-hist #tgo input{border-color:var(--border)!important;background:var(--tile-bg)!important}
 
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
