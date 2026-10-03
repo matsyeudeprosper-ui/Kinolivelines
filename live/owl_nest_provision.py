@@ -30,7 +30,7 @@ while True:
     if users:
         changed = False
         for u in users:
-            if u.get("terminal") or not u.get("id") or u.get("pending_pay") or u.get("app_only"):
+            if u.get("terminal") or not u.get("id") or u.get("pending_pay") or u.get("app_only") or u.get("pending_code"):
                 continue          # 2026-10-03: paid in crypto -> the terminal waits for the payment
             uid = u["id"]
             tgt = os.path.join(DEST, uid)

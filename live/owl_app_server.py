@@ -4499,7 +4499,13 @@ async function acctSheet(){
     '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
     '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
    '</div>';}).join('');
- sheet('<h3>Vos comptes</h3>'+
+ const PEND=((window._d||{}).pending)||[];
+ const pendHtml=PEND.length?'<div class="lbl" style="margin:4px 0 6px;color:var(--warn)">En attente d\u2019un code \u00b7 '+PEND.length+'</div>'+PEND.map(p=>{const L={family:'Automatique',manual:'Signal',strategy:'Strat\u00e9gie'}[p.pkg]||p.pkg;const ago=p.asked?Math.max(0,Math.round((Date.now()/1000-p.asked)/3600)):null;
+   return '<div class="srow" style="background:rgba(232,197,90,.06);border-radius:12px"><div class="sic" style="font-weight:800;font-size:.8rem;color:var(--warn)">'+String(p.name||p.id||'?').slice(0,2).toUpperCase()+'</div>'+
+    '<div style="flex:1;min-width:0"><b>'+_escS(p.name||p.id)+'</b><div class="ssub">'+L+(p.mt5?' \u00b7 compte \u2022\u2022\u2022\u2022'+p.mt5:'')+(p.pkg==='family'&&!p.has_mt5?' \u00b7 <span style="color:var(--down-soft)">compte MT5 manquant</span>':'')+(p.telegram?' \u00b7 '+_escS(p.telegram):'')+(ago!=null?' \u00b7 il y a '+ago+' h':'')+'</div></div>'+
+    '<div style="display:flex;gap:6px;flex:none"><button onclick="event.stopPropagation();_shDone(1);nestActivate(&#39;'+p.id+'&#39;,&#39;'+_escS(p.name||p.id)+'&#39;,&#39;'+L+'&#39;)" style="border:1px solid rgba(46,204,113,.45);background:rgba(46,204,113,.12);color:var(--up-soft);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">Activer</button>'+
+    '<button onclick="event.stopPropagation();_shDone(1);nestPendingDel(&#39;'+p.id+'&#39;,&#39;'+_escS(p.name||p.id)+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--muted2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u2715</button></div></div>';}).join('')+'<div style="height:10px"></div>':'';
+ sheet('<h3>Vos comptes</h3>'+pendHtml+
   '<div style="display:flex;justify-content:space-between;align-items:baseline;padding:4px 2px 10px;border-bottom:1px solid var(--border);margin-bottom:4px">'+
    '<span style="color:var(--muted2);font-size:.84rem">'+N.length+' compte'+(N.length>1?'s':'')+' \u00b7 total</span>'+
    '<span style="text-align:right"><b style="font-size:1.05rem">$'+tb.toFixed(2)+'</b> <span class="'+sgn(tt)+'" style="font-size:.8rem;margin-left:6px">'+money(tt)+' auj.</span></span></div>'+
@@ -5108,7 +5114,7 @@ function renderPlan(d){
  if(P.pending_pay){title=en?'Waiting for your payment':'En attente de votre paiement';txt=en?'As soon as NOWPayments confirms it, your account comes alive (a few minutes). Not paid yet? Tap the package below.':'D\u00e8s que NOWPayments le confirme, votre compte s\u2019active (quelques minutes). Pas encore pay\u00e9 ? Touchez le paquet ci-dessous.';color='var(--warn)';}
  else if(P.family){title=(en?'Automatic':'Automatique')+plusS;txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with Kino, then enter the code.':' \u2014 renouvelez aupr\u00e8s de Kino, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
  else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with Kino and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
- else if(P.manual){title='Signal\'+plusS;txt=(en?'Signals on your phone, until ':'Signaux sur votre t\u00e9l\u00e9phone, jusqu\u2019au ')+fd(P.manual_until)+(P.strategy?(en?' \u00b7 full view until ':' \u00b7 vue compl\u00e8te jusqu\u2019au ')+fd(P.strategy_until):'')+'.';color='var(--up-soft)';}
+ else if(P.manual){title='Signal'+plusS;txt=(en?'Signals on your phone, until ':'Signaux sur votre t\u00e9l\u00e9phone, jusqu\u2019au ')+fd(P.manual_until)+(P.strategy?(en?' \u00b7 full view until ':' \u00b7 vue compl\u00e8te jusqu\u2019au ')+fd(P.strategy_until):'')+'.';color='var(--up-soft)';}
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
  else{title=en?'No subscription':'Aucun abonnement';txt=en?'Signals and the full view are paid options. The demo is free for everyone.':'Les signaux et la vue compl\u00e8te sont des options payantes. La d\u00e9mo est gratuite pour tous.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
@@ -5142,9 +5148,9 @@ function renderPlan(d){
   h+='<div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'Your record = the account\u2019s best result since the robot started ('+us(N.hwm)+'). No share is ever taken on getting back to it.':'Votre record = le meilleur r\u00e9sultat du compte depuis le d\u00e9but du robot ('+us(N.hwm)+'). Aucune part n\u2019est prise sur un simple retour \u00e0 ce niveau.')+'</div>';
   sub.innerHTML=(P.family_expired||S.blocked?'':'')+h;})();
  const pk=P.packages||{};
- const btn=(k,lab,price,dis,sub2)=>'<button '+(dis?'disabled ':'')+'onclick="buyPkg(&#39;'+k+'&#39;)" style="border:1px solid var(--border2);background:'+(dis?'var(--surface2)':'var(--surface3)')+';color:'+(dis?'var(--muted)':'var(--text2)')+';border-radius:12px;padding:10px 8px;font-size:.84rem;font-weight:700;line-height:1.35">'+lab+'<span style="display:block;font-size:.72rem;font-weight:600;color:var(--muted2)">'+price+(sub2?' \u00b7 '+sub2:'')+'</span></button>';
+ const btn=(k,lab,price,dis,sub2)=>'<button onclick="codeModal(&#39;'+k+'&#39;)" style="border:1px solid var(--border2);background:'+(dis?'var(--surface2)':'var(--surface3)')+';color:'+(dis?'var(--muted)':'var(--text2)')+';border-radius:12px;padding:10px 8px;font-size:.84rem;font-weight:700;line-height:1.35">'+lab+'<span style="display:block;font-size:.72rem;font-weight:600;color:var(--muted2)">'+price+(sub2?' \u00b7 '+sub2:'')+'</span></button>';
  const full=(P.seats_left<=0&&!P.manual);
- bt.innerHTML=(P.family?'':btn('manual','Signal\'+(P.manual?' \u2713':''),'$'+(pk.manual||{}).usd+' / 30 j',!P.pay_ready||full,full?(en?'full':'complet'):''))+
+ bt.innerHTML=(P.family?'':btn('manual','Signal'+(P.manual?' \u2713':''),'$'+(pk.manual||{}).usd+' / 30 j',!P.pay_ready||full,full?(en?'full':'complet'):''))+
   btn('strategy',(en?'Strategy':'Strat\u00e9gie')+(P.strategy?' \u2713':''),'$'+(pk.strategy||{}).usd+' / 30 j',!P.pay_ready,'');
  bt.style.gridTemplateColumns=P.family?'1fr':'1fr 1fr';
  bt.insertAdjacentHTML('afterend','');
@@ -6508,6 +6514,22 @@ async function nestSharePaid(uid,name,ym,due){
 // 2026-10-03 (owner): a code for ANYONE - pick the package and the days.
 // New member: they enter it on the /activate page with their MT5 account.
 // Existing member: Reglages > Abonnement > "J'ai un code".
+async function nestActivate(uid,name,lab){
+ const pick=await sheet('<h3>Activer '+_escS(name)+'</h3><p style="color:var(--text2)">'+lab+' \u2014 sans code : le compte s\u2019active tout de suite. '+(lab==='Automatique'?'Le robot d\u00e9marre sur son compte dans quelques minutes.':'')+'</p>'+
+  '<div class="lbl">Dur\u00e9e</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+[30,90,365].map(d=>'<label style="display:block;text-align:center;border:1px solid var(--border);border-radius:12px;padding:10px 4px;cursor:pointer;background:var(--surface2)"><input type="radio" name="na-days" value="'+d+'" '+(d===30?'checked':'')+' style="margin:0 0 6px"><br><b>'+d+' j</b></label>').join('')+'</div>'+
+  '<button class="shbtn shmain" style="margin-top:14px" onclick="_shDone({d:(document.querySelector(&#39;input[name=na-days]:checked&#39;)||{}).value})">Activer</button><button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
+ if(!pick)return;
+ const pw=await askPwd('Activer '+name+' ?',(pick.d||30)+' jours de '+lab+'.','Activer');if(!pw)return;
+ const r=await fetch(AB()+'nest_activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&days='+encodeURIComponent(pick.d||30)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':_escS((j&&(j.msg||j.err))||'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
+ toast(name+' activ\u00e9',2200);load();}
+async function nestPendingDel(uid,name){
+ const pw=await askPwd('Supprimer la demande de '+name+' ?','Elle dispara\u00eet du Nid ; rien n\u2019a \u00e9t\u00e9 activ\u00e9.','Supprimer');if(!pw)return;
+ const r=await fetch(AB()+'nest_pending_del',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'\u00c7a n\u2019a pas march\u00e9.')+'</h3>');return;}
+ toast('Demande supprim\u00e9e',2000);load();}
 async function nestCodeAny(){
  const pick=await sheet('<h3>G\u00e9n\u00e9rer un code</h3><p style="color:var(--text2)">Le code ouvre un compte (page <b>owltrader.duckdns.org/activate</b>) ou renouvelle un membre (R\u00e9glages \u203a Abonnement). Usage unique, valable 7 jours.</p>'+
   '<div class="lbl">Pour qui (facultatif)</div><input id="cd-for" placeholder="Pr\u00e9nom" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px;font-size:1rem">'+
@@ -6558,9 +6580,33 @@ function observerView(d){
 function kinoBtns(P,en,main){const c=P.contact_url||'';
  return (c?'<a class="shbtn '+(main?'shmain':'shghost')+'" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+_escS(c)+'" target="_blank" rel="noopener">\u2709 '+(en?'Write to Kino on Telegram':'\u00c9crire \u00e0 Kino sur Telegram')+'</a>':'')+
   '<button class="shbtn shghost" style="display:block;width:100%;margin:8px 0 0" onclick="_shDone(1);openActCard()">\U0001f511 '+(en?'I have a code':'J\u2019ai un code')+'</button>';}
-// the in-app code card (home), where a code grants its package to THIS account
-function openActCard(){window._showAct=true;const c=document.getElementById('actcard');if(!c)return;c.style.display='block';tab('home',document.querySelector('.tb'));
- setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}
+// 2026-10-04 (owner): choose an offer -> this modal. A code activates it on
+// THIS account; no code -> the Owl on Telegram; Signal / Strategie -> crypto, instant.
+async function codeModal(pkg){const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
+ const L={manual:'Signal',strategy:en?'Strategy':'Strat\u00e9gie',family:en?'Automatic':'Automatique'}[pkg]||(en?'Your package':'Votre formule');
+ const contact=P.contact_url||'';
+ const inp='<input id="cm-code" maxlength="6" placeholder="ABC123" autocapitalize="characters" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:13px;font-size:1.3rem;font-weight:800;letter-spacing:.3em;text-align:center;text-transform:uppercase;margin-top:6px">';
+ const v=await sheet('<h3>'+L+' \u00b7 '+(en?'activation code':'code d\u2019activation')+'</h3>'+
+  '<p style="color:var(--text2)">'+(pkg==='family'?(en?'The Owl sends the code on Telegram after a word together.':'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.'):(en?'Enter your code, or buy now: it activates right away.':'Entrez votre code, ou achetez maintenant : activation imm\u00e9diate.'))+'</p>'+inp+
+  '<button class="shbtn shmain" style="margin-top:12px" onclick="_shDone({c:document.getElementById(&#39;cm-code&#39;).value})">'+(en?'Activate':'Activer')+'</button>'+
+  (pkg&&pkg!=='family'&&P.pay_ready?'<button class="shbtn shmain" style="margin-top:8px;background:var(--up-soft);color:#08120c" onclick="_shDone({buy:1})">'+(en?'Buy now in crypto \u00b7 instant':'Acheter maintenant en crypto \u00b7 imm\u00e9diat')+'</button>':'')+
+  (contact?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="'+_escS(contact)+'" target="_blank" rel="noopener">\u2709 '+(en?'No code? Contact the Owl on Telegram':'Pas de code ? Contacter le Owl sur Telegram')+'</a>':'')+
+  '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Close':'Fermer')+'</button>');
+ if(!v)return;
+ if(v.buy){buyPkg(pkg);return;}
+ const code=(v.c||'').trim().toUpperCase();if(code.length<6){toast(en?'Enter the full code.':'Entrez le code complet.',2200);return;}
+ const send=async(extra)=>{const r=await fetch(B+'activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'code='+encodeURIComponent(code)+(extra||'')}).catch(()=>null);try{return await r.json();}catch(e){return null;}};
+ let j=await send('');
+ if(j&&!j.ok&&j.need==='mt5'){
+  const f=(id,ph,t)=>'<input id="'+id+'" type="'+(t||'text')+'" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px;font-size:1rem;margin-top:8px">';
+  const m=await sheet('<h3>'+(en?'Your MT5 account':'Votre compte MT5')+'</h3><p style="color:var(--text2)">'+(en?'This code puts the robot on your own account. Tell it which one - once.':'Ce code met le robot sur votre propre compte. Dites-lui lequel \u2014 une seule fois.')+'</p>'+
+   f('am-l',en?'MT5 account number':'Num\u00e9ro de compte MT5')+f('am-s','Exness-MT5Real30')+f('am-p',en?'account password (main)':'mot de passe du compte (principal)','password')+
+   '<button class="shbtn shmain" style="margin-top:14px" onclick="_shDone({l:document.getElementById(&#39;am-l&#39;).value,s:document.getElementById(&#39;am-s&#39;).value,p:document.getElementById(&#39;am-p&#39;).value})">'+(en?'Put the robot on it':'Mettre le robot dessus')+'</button><button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
+  if(!m||!m.l||!m.s||!m.p)return;
+  j=await send('&mt5_login='+encodeURIComponent(m.l)+'&mt5_server='+encodeURIComponent(m.s)+'&mt5_password='+encodeURIComponent(m.p));}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad code'?(en?'Unknown or already used code.':'Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.'):(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
+ try{confetti();}catch(e){}toast(en?'Activated':'Activ\u00e9',2000);setTimeout(load,1200);}
+function openActCard(){codeModal(null);}
 function offersSheet(){
  const P=(window._d||{}).plan||{},en=LANG()==='en',pk=P.packages||{manual:{usd:29},strategy:{usd:49}};
  const T2=(fr,e)=>en?e:fr;
@@ -6580,15 +6626,15 @@ function offersSheet(){
   tier(T2('Signal','Signal'),'$'+(pk.manual||{}).usd+' / 30 j',T2('Les signaux du robot, vous tradez vous-m\u00eame','The robot\u2019s signals, you trade yourself'),
    [T2('Notification \u00ab Signal jouable \u00bb quand les conditions sont r\u00e9unies, et quand c\u2019est fini','\u201cPlayable signal\u201d push when conditions are met, and when it is over'),T2('Tout ce que montre la d\u00e9mo, sous votre nom ; sans compte MT5, vous tradez o\u00f9 vous voulez','Everything the demo shows, under your name; no MT5 account, you trade wherever you like'),T2('\u00ab Prochain signal ici \u00bb sur le graphique, la carte March\u00e9 en mode signal','\u201cNext signal here\u201d on the chart, the Market card in signal mode'),T2('Le rattrapage et le lot conseill\u00e9 apr\u00e8s une perte','Catch-up and the advised lot after a loss')],
    [T2('Le robot ne trade pas \u00e0 votre place','The robot does not trade for you'),T2('Les r\u00e8gles restent priv\u00e9es (voir Strat\u00e9gie)','The rules stay private (see Strategy)')],
-   (P.family||P.manual?'':btn('manual',T2('Choisir Signal','Choose Signal'),!P.pay_ready))+kinoBtns(P,en),'var(--up-soft)')+
+   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;manual&#39;)">'+T2('Choisir Signal','Choose Signal')+'</button>','var(--up-soft)')+
   tier(T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+' / 30 j',T2('Tout comprendre \u2014 un paquet \u00e0 part, qui se combine','Understand everything \u2014 a separate package that combines'),
    [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Signal ou Automatique','Combines with Signal or Automatic')],
    [T2('Sans les signaux (voir Signal)','Without the signals (see Signal)')],
-   (P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready))+kinoBtns(P,en),'var(--warn)')+
+   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;strategy&#39;)">'+T2('Choisir Strat\u00e9gie','Choose Strategy')+'</button>','var(--warn)')+
   tier(T2('Automatique','Automatic'),T2('Famille, sur invitation','Family, by invitation'),T2('Le robot sur votre compte, avec ses r\u00e8gles et ses freins','The robot on your account, with its rules and its brakes'),
    [T2('Le robot trade sur votre compte MT5, jour et nuit, depuis notre serveur','The robot trades your MT5 account, day and night, from our server'),T2('Votre page en direct : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','Your page live: balance, trades, market weather, evening review'),T2('Prix fixe chaque mois, r\u00e9gl\u00e9 avec Kino ; code d\u2019activation par Telegram','Fixed monthly price, settled with Kino; activation code by Telegram')],
    [T2('50 places, pour la famille','50 places, for the family')],
-   kinoBtns(P,en,true),'var(--accent-soft)')+
+   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;family&#39;)">'+T2('Choisir Automatique','Choose Automatic')+'</button>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
   step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici en crypto, ou avec Kino sur Telegram : il vous envoie un code.','Here in crypto, or with Kino on Telegram: he sends you a code.'))+
   step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT, BTC ou autre, 20 minutes pour envoyer. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT, BTC or other, 20 minutes to send. Nothing is charged automatically.'))+
@@ -7491,7 +7537,7 @@ function render(d){
    if(ps&&d.is_master)ps.textContent=(P.np_key_tail?'Cl\u00e9 API \u2026'+P.np_key_tail:'Cl\u00e9 API : non d\u00e9finie')+' \u00b7 secret IPN '+(P.np_secret_set?'\u2713':'\u2717')+(P.np_sandbox?' \u00b7 sandbox':'')+(P.mql5_url?' \u00b7 MQL5 \u2713':'');})();
   (function(){const P=d.plan;if(!P)return;const cur=P.family?'family':P.strategy?'strategy':P.manual?'manual':'none';
    let prev=null;try{prev=localStorage.getItem('owlPlan:'+B);}catch(e){}
-   if(prev&&prev!==cur&&cur!=='none'){const en=LANG()==='en';const lab=cur==='strategy'?(en?'Strategy':'Strat\u00e9gie'):cur==='manual'?'Signal\':'Famille';
+   if(prev&&prev!==cur&&cur!=='none'){const en=LANG()==='en';const lab=cur==='strategy'?(en?'Strategy':'Strat\u00e9gie'):cur==='manual'?'Signal':'Famille';
     toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div><div style="flex:1">'+(en?'Subscription active: <b>'+lab+'</b>. Settings \u203a The robot \u203a Manual mode to start.':'Abonnement activ\u00e9 : <b>'+lab+'</b>. R\u00e9glages \u203a Le robot \u203a Mode manuel pour commencer.')+'</div>',9000);
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
@@ -10120,6 +10166,12 @@ def user_stats(u, admin_override=False):
                                      and not has(x["id"], "manual")),
                         "sigs": (sig_score(x["id"], era_ts(x)) if x.get("mode") in MANUAL_MODES else None)})
                 d["nest"] = _rows
+                # 2026-10-04 (owner): requests waiting for a code (Le Nid > En attente)
+                d["pending"] = [{"id": x.get("id"), "name": x.get("name"), "pkg": x.get("pending_code"),
+                                 "asked": x.get("asked_at"), "telegram": x.get("telegram"),
+                                 "mt5": (str(x.get("mt5_login"))[-3:] if x.get("mt5_login") else None),
+                                 "has_mt5": bool(x.get("mt5_login") and x.get("mt5_server"))}
+                                for x in json.load(open(USERS_FILE, encoding="utf-8")) if x.get("pending_code")]
                 # 2026-09-28: the owner's "Revenus" card
                 try:
                     _E = _ents()
@@ -10809,14 +10861,10 @@ Se connecter &middot; ouvrir un compte</button>
 <a class="back" onclick="show('v-home')">&#8592; Retour</a>
 <form class="card" method="POST" action="login">
 <h2>Se connecter</h2>
-<div style="color:var(--muted);font-size:.85rem">Famille : votre num&eacute;ro
- de compte MT5 et son mot de passe. Signal / Strat&eacute;gie : votre identifiant
- et le mot de passe choisi &agrave; l&#8217;activation.
-</div>
-<label for="lg">Num&eacute;ro de compte MT5 ou identifiant</label>
+<label for="lg">Identifiant ou num&eacute;ro de compte</label>
 <input id="lg" name="login" required autocomplete="username"
- placeholder="12345678 ou votre identifiant">
-<label for="pw">Mot de passe du compte</label>
+ placeholder="">
+<label for="pw">Mot de passe</label>
 <div style="position:relative">
  <input id="pw" name="password" type="password" required
   autocomplete="current-password" placeholder="votre mot de passe"
@@ -10829,14 +10877,6 @@ Se connecter &middot; ouvrir un compte</button>
   <svg class="ic"><use href="#i-eye"/></svg></button>
 </div>
 <button class="go" id="gobtn">Continuer &#10142;</button>
-<div style="margin-top:12px;font-size:.84rem;color:var(--muted2);line-height:1.5;text-align:center">
- Pas encore de compte ? Entrez le num&eacute;ro ou un identifiant et un mot de passe :
- on vous demandera votre <b>code d&#8217;activation</b> juste apr&egrave;s.<br>
- <a href="%%CONTACT%%" style="color:#9fc2de;display:inline-block;margin-top:6px">&#9993; Demander un code &agrave; Kino sur Telegram</a>
-</div>
-<div style="margin-top:12px;font-size:.8rem;color:var(--muted);line-height:1.5">
- Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre
- compte. Ils ne sont jamais partag&eacute;s.</div>
 </form>
 </div>
 
@@ -10975,6 +11015,86 @@ def _step2_page(login, pwd):
             "</div></body></html>")
 
 
+def _offers_page(login, pwd, pending_pkg=None, name=""):
+    """2026-10-04 (owner): after the login, when the account does not
+    exist (or has no package): the three offers; 'Choisir' opens the code
+    modal - a code activates, the Owl on Telegram gives one, Signal and
+    Strategie can be bought in crypto on the spot. What was typed at the
+    login is carried over, hidden."""
+    import html as _h
+    cfg = nest_config()
+    contact = _h.escape(cfg.get("contact_url") or "")
+    pay = bool(cfg.get("np_api_key"))
+    numeric = login.isdigit()
+    note = ""
+    if pending_pkg:
+        lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}.get(pending_pkg, pending_pkg)
+        note = (f"<div class=\"note\">Votre demande <b>{lab}</b> est en attente. Entrez le code d&egrave;s que le Owl vous l&#8217;envoie, "
+                "ou choisissez une autre formule.</div>")
+
+    def tier(k, title, price, lines, color):
+        return (f"<div class=\"t\" style=\"border-color:{color}\"><div class=\"th\"><b>{title}</b><span style=\"color:{color}\">{price}</span></div>"
+                + "".join(f"<div class=\"tl\">&#10003; {x}</div>" for x in lines)
+                + f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button></div>")
+    tiers = (tier("manual", "Signal", "$29 / 30 jours",
+                  ["Les signaux du robot sur votre t&eacute;l&eacute;phone", "Tout ce que montre la d&eacute;mo, en direct", "Sans compte MT5 : vous tradez o&ugrave; vous voulez"], "var(--up)")
+             + tier("strategy", "Strat&eacute;gie", "$49 / 30 jours",
+                    ["Le graphique complet : points prot&eacute;g&eacute;s, cassures, niveaux", "La m&eacute;thode expliqu&eacute;e en mots simples", "Se combine avec Signal ou Automatique"], "var(--warn)")
+             + tier("family", "Automatique", "Famille, sur invitation",
+                    ["Le robot trade sur votre compte MT5, jour et nuit", "Ses r&egrave;gles, ses freins, son rattrapage", "Prix fixe chaque mois, code par Telegram"], "var(--accent-soft)"))
+    return ("<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
+            "<meta name=\"theme-color\" content=\"#0f2740\"><title>OwlNest</title><link rel=\"icon\" href=\"/icon192.png\">"
+            "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}"
+            ":root{--up:#2ecc71;--warn:#e8c55a;--accent-soft:#8fc6ff}"
+            "body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:22px 18px 40px}"
+            ".c{max-width:440px;margin:0 auto}.top{display:flex;align-items:center;gap:10px;margin-bottom:16px}.top img{width:40px;height:40px;border-radius:11px}.top b{font-size:1.1rem}"
+            "h1{font-size:1.3rem;margin:0 0 4px}p{color:#c6d3df;line-height:1.5;font-size:.92rem;margin:0 0 14px}"
+            ".note{background:rgba(232,197,90,.1);border:1px solid rgba(232,197,90,.4);border-radius:12px;padding:10px 12px;font-size:.86rem;margin-bottom:14px;line-height:1.45}"
+            ".t{background:#121a25;border:1px solid #1f2a38;border-radius:18px;padding:16px;margin-top:12px}.th{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.th b{font-size:1.1rem}.th span{font-weight:700;font-size:.9rem;text-align:right}"
+            ".tl{font-size:.88rem;color:#c6d3df;line-height:1.45;margin:4px 0}"
+            ".go{display:block;width:100%;box-sizing:border-box;margin-top:12px;border:0;border-radius:14px;padding:13px;font-size:1rem;font-weight:700;cursor:pointer;background:#3b82f6;color:#fff}"
+            ".ghost{background:#141c28;color:#c6d3df;border:1px solid #1f2c3d;text-decoration:none;text-align:center;display:block}"
+            "label{display:block;font-size:.74rem;color:#8a9bb0;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px}"
+            "input{width:100%;box-sizing:border-box;background:#141c28;border:1px solid #1f2c3d;border-radius:12px;color:#e8eef4;padding:13px 14px;font-size:1rem}"
+            "input#code{letter-spacing:.3em;text-transform:uppercase;font-weight:800;text-align:center;font-size:1.3rem}"
+            ".h{font-size:.78rem;color:#8a9bb0;line-height:1.45;margin-top:6px}"
+            "#bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5}#md{display:none;position:fixed;left:0;right:0;bottom:0;background:#121a25;border-radius:22px 22px 0 0;padding:18px 18px 28px;z-index:6;max-height:92vh;overflow:auto}"
+            "#md h2{margin:0 0 6px;font-size:1.15rem}a{color:#9fc2de}.back{display:inline-block;margin-bottom:12px;color:#9fc2de;text-decoration:none}"
+            "</style></head><body><div class=\"c\"><div class=\"top\"><img src=\"/icon192.png\" alt=\"\"><b>OwlNest</b></div>"
+            "<a class=\"back\" href=\"/\">&#8592; Retour</a>"
+            f"<h1>Choisissez votre formule</h1><p>Un code d&#8217;activation ouvre votre compte. Le Owl vous le donne sur Telegram ; Signal et Strat&eacute;gie s&#8217;ach&egrave;tent aussi en crypto, activation imm&eacute;diate.</p>{note}{tiers}"
+            "</div><div id=\"bg\" onclick=\"closeM()\"></div><div id=\"md\">"
+            "<h2 id=\"mt\"></h2><p id=\"mp\"></p>"
+            "<form method=\"POST\" action=\"/activate\" id=\"f\" autocomplete=\"off\">"
+            f"<input type=\"hidden\" name=\"login\" value=\"{_h.escape(login)}\"><input type=\"hidden\" name=\"password\" value=\"{_h.escape(pwd)}\">"
+            "<input type=\"hidden\" name=\"pkg\" id=\"pkg\"><input type=\"hidden\" name=\"action\" id=\"act\" value=\"activate\">"
+            f"<label for=\"name\">Votre pr&eacute;nom</label><input id=\"name\" name=\"name\" maxlength=\"30\" placeholder=\"Pr&eacute;nom\" value=\"{_h.escape(name)}\">"
+            "<div id=\"mt5\"><label for=\"ml\">Num&eacute;ro de compte MT5</label>"
+            f"<input id=\"ml\" name=\"mt5_login\" inputmode=\"numeric\" placeholder=\"12345678\" value=\"{_h.escape(login) if numeric else ''}\">"
+            "<label for=\"server\">Serveur MT5</label><input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
+            "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
+            "<div class=\"h\">Le mot de passe tap&eacute; &agrave; la connexion doit &ecirc;tre le mot de passe principal de ce compte : le robot doit pouvoir trader.</div></div>"
+            "<label for=\"code\">Code d&#8217;activation</label><input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\">"
+            "<button class=\"go\" id=\"ok\" onclick=\"document.getElementById('act').value='activate'\">Activer</button>"
+            + ("<button class=\"go\" id=\"buy\" type=\"button\" onclick=\"buyNow()\">Acheter maintenant en crypto &middot; activation imm&eacute;diate</button>" if pay else "")
+            + (f"<a class=\"go ghost\" id=\"tg\" href=\"{contact}\" target=\"_blank\" rel=\"noopener\" onclick=\"pend()\">&#9993; Pas de code ? Contacter le Owl sur Telegram</a>" if contact else "")
+            + "<div class=\"h\" id=\"mh\"></div></form></div>"
+            "<script>var P='';function pick(k){P=k;document.getElementById('pkg').value=k;var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];"
+            "document.getElementById('mt').textContent=L+' \u00b7 code d\u2019activation';"
+            "document.getElementById('mp').textContent=k==='family'?'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.':'Entrez votre code, ou achetez maintenant : votre compte s\u2019active tout de suite.';"
+            "document.getElementById('mt5').style.display=k==='family'?'':'none';var b=document.getElementById('buy');if(b)b.style.display=k==='family'?'none':'';"
+            "document.getElementById('mh').textContent=k==='family'?'':'Signal et Strat\u00e9gie ne demandent pas de compte MT5.';"
+            "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';setTimeout(function(){document.getElementById('code').focus();},150);}"
+            "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';}"
+            "function need(){var n=document.getElementById('name').value.trim();if(!n){alert('Votre pr\u00e9nom, s\u2019il vous pla\u00eet.');return false;}return true;}"
+            "function buyNow(){if(!need())return;document.getElementById('act').value='buy';document.getElementById('f').submit();}"
+            "function pend(){if(!need()){event.preventDefault();return;}var fd=new FormData(document.getElementById('f'));fd.set('action','pending');"
+            "try{navigator.sendBeacon('/activate',new URLSearchParams(fd));}catch(e){}}"
+            "document.getElementById('f').addEventListener('submit',function(e){if(document.getElementById('act').value==='activate'){if(!need()){e.preventDefault();return;}if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res).');}}});"
+            + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
+            + "</script></body></html>")
+
+
 def _code_page(mode, login, pwd, name=""):
     """2026-10-04 (owner): the second step of the login. `mode` = "new"
     (no such account: a code opens one) or "renew" (the package ended:
@@ -11057,14 +11177,14 @@ def handle_login(form):
         if au is not None and au.get("app_pwd") == _app_hash(pwd):
             if _member_active(au):
                 return ("redirect", f"https://owltrader.duckdns.org/{au['token']}/")
-            return ("page", _code_page("renew", raw, pwd, au.get("name", "")))
+            return ("page", _offers_page(raw, pwd, au.get("pending_code") or au.get("plan"), au.get("name", "")))
         if au is not None:
             rate_fail(("login", ident))
             return ("page", _join_result("&#128274; Mot de passe incorrect",
                                          "<p>Cet identifiant existe ; le mot de passe est celui que vous avez choisi &agrave; l&#8217;activation.</p>"
                                          "<p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
-        # 2026-10-04 (owner): one door - an unknown identifiant goes to the code screen
-        return ("page", _code_page("new", raw, pwd, ""))
+        # 2026-10-04 (owner): one door - unknown -> the offers
+        return ("page", _offers_page(raw, pwd))
     login = _re.sub(r"\D", "", raw)[:12]
     if not (login and pwd):
         return ("page", _join_result("&#10060; Il manque une info",
@@ -11079,8 +11199,8 @@ def handle_login(form):
     if u is not None:
         if (u.get("mt5_password") or "") == pwd:
             if not _member_active(u):
-                # 2026-10-04 (owner): known, but the package ended - a code renews it
-                return ("page", _code_page("renew", login, pwd, u.get("name", "")))
+                # 2026-10-04 (owner): known, but no running package - the offers
+                return ("page", _offers_page(login, pwd, u.get("pending_code") or u.get("plan"), u.get("name", "")))
             return ("redirect", f"https://owltrader.duckdns.org/"
                                 f"{u['token']}/")
         rate_fail(("login", login))
@@ -11090,8 +11210,8 @@ def handle_login(form):
             "le mot de passe ne correspond pas. V&eacute;rifiez-le dans "
             "votre application MT5, puis r&eacute;essayez.</p>"
             "<p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
-    # 2026-10-04 (owner): one door - unknown account -> the code screen opens one
-    return ("page", _code_page("new", login, pwd, ""))
+    # 2026-10-04 (owner): one door - unknown account -> the offers
+    return ("page", _offers_page(login, pwd))
 
 
 def handle_register(form):
@@ -11167,6 +11287,105 @@ def family_count():
     return sum(1 for x in users() if x.get("trade") and x.get("id") not in OWNER_UIDS and not x.get("public"))
 
 
+def _find_member(raw_login, pwd):
+    """The member these credentials belong to, or None (wrong password
+    counts as none - the offers page then creates nothing on top)."""
+    import re as _re
+    if not raw_login:
+        return None
+    if _re.search(r"[A-Za-z]", raw_login):
+        ident = _re.sub(r"[^a-z0-9]", "", raw_login.lower())
+        u = next((x for x in users() if x.get("id") == ident and x.get("app_pwd")), None)
+        return u if (u and u.get("app_pwd") == _app_hash(pwd)) else None
+    login = _re.sub(r"\D", "", raw_login)[:12]
+    u = next((x for x in users() if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
+    return u if (u and (u.get("mt5_password") or "") == pwd) else None
+
+
+def _file_pending(form):
+    """'Contact the Owl': the request is kept so the admin sees it in Le
+    Nid and can activate it from there. Nothing is granted yet."""
+    import re as _re
+    raw = (form.get("login", [""])[0] or "").strip()[:40]
+    pwd = (form.get("password", [""])[0] or "").strip()[:64]
+    name = (form.get("name", [""])[0] or "").strip()[:30]
+    pkg = (form.get("pkg", [""])[0] or "").strip()
+    server = (form.get("server", [""])[0] or "").strip()[:48]
+    ml = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or raw)[:12]
+    if pkg not in ("family", "manual", "strategy") or not pwd:
+        return None
+    u = _find_member(raw, pwd)
+    allu = json.load(open(USERS_FILE, encoding="utf-8"))
+    if u is None:
+        if not name:
+            return None
+        rec = _new_app_only_record(name, pwd, "", pkg, allu)
+        rec.pop("app_only", None)
+        rec.update({"via": "telegram"})
+        if pkg == "family" and ml:
+            rec.update({"login": int(ml), "mt5_login": int(ml), "mt5_password": pwd, "mt5_server": server})
+        allu.append(rec)
+        u = rec
+    for x in allu:
+        if x.get("id") == u.get("id"):
+            x["pending_code"] = pkg
+            x["asked_at"] = int(time.time())
+            if pkg == "family" and ml and not x.get("mt5_login"):
+                x.update({"login": int(ml), "mt5_login": int(ml), "mt5_password": pwd, "mt5_server": server})
+    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _users_cache["t"] = 0.0
+    try:
+        _qf = os.path.join(DIR, "owl_push_queue.json")
+        try:
+            _q = json.load(open(_qf, encoding="utf-8"))
+        except Exception:
+            _q = []
+        _lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strategie"}[pkg]
+        _q.append({"uid": "kino", "t": int(time.time()), "title": "\U0001f511 Demande de code \u00b7 " + (u.get("name") or u.get("id")),
+                   "body": f"{_lab} \u00b7 identifiant {u.get('id')}" + (f" \u00b7 compte {ml}" if pkg == "family" and ml else "") + " \u00b7 Le Nid \u203a En attente"})
+        json.dump(_q, open(_qf, "w", encoding="utf-8"))
+    except Exception:
+        pass
+    return u
+
+
+def grant_pending(uid, days=30, pkg=None):
+    """The admin's 'Activer' on a pending request (or the code's grant on
+    an existing record): the package goes on; a family account gets its
+    robot. Returns (ok, message)."""
+    allu = json.load(open(USERS_FILE, encoding="utf-8"))
+    x = next((r for r in allu if r.get("id") == uid), None)
+    if x is None:
+        return False, "inconnu"
+    pkg = pkg or x.get("pending_code") or x.get("plan") or "manual"
+    if pkg == "family":
+        if not (x.get("mt5_login") and x.get("mt5_password") and x.get("mt5_server")):
+            return False, "compte MT5 manquant"
+        if not x.get("trade") and family_count() >= FAMILY_CAP:
+            return False, "plein"
+        x.pop("app_only", None)
+        x.update({"terminal": x.get("terminal") or "", "symbol": "BTCUSD", "bot_only": True, "plan": "family", "mode": x.get("mode") or "auto",
+                  "trade": True, "dedicated": x.get("dedicated") or f"structure_bos_bot.py {uid}", "managed": True})
+        if x.get("app_pwd"):
+            x["app_login"] = True
+    else:
+        if not x.get("trade"):
+            x["app_only"] = True
+        x["plan"] = x.get("plan") if x.get("trade") else pkg
+    x.pop("pending_code", None)
+    x.pop("asked_at", None)
+    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _users_cache["t"] = 0.0
+    ent_grant(uid, pkg, int(days), "kino")
+    try:
+        _pf = os.path.join(DIR, pause_file(uid))
+        if json.load(open(_pf, encoding="utf-8")).get("by") == "expiry":
+            json.dump({"paused": False, "by": "renewal", "t": time.time()}, open(_pf, "w"))
+    except Exception:
+        pass
+    return True, pkg
+
+
 def handle_activate(form, origin="https://owltrader.duckdns.org"):
     """2026-10-03 (owner): open an account from an activation code. The
     code names the package; the MT5 account is checked for duplicates;
@@ -11182,6 +11401,18 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     server = (form.get("server", [""])[0] or "").strip()[:48]
     tg = (form.get("telegram", [""])[0] or "").strip()[:40]
     buy = (form.get("buy", [""])[0] or "").strip()
+    action = (form.get("action", [""])[0] or "").strip()
+    pkg_chosen = (form.get("pkg", [""])[0] or "").strip()
+    if action == "buy" and pkg_chosen in ("manual", "strategy"):
+        buy = pkg_chosen
+    if action == "pending":
+        u = _file_pending(form)
+        return _join_result("&#9993; Demande envoy&eacute;e",
+                            "<p>Le Owl vous r&eacute;pond sur Telegram. D&egrave;s que c&#8217;est r&eacute;gl&eacute;, reconnectez-vous avec les m&ecirc;mes identifiants : votre compte sera actif, ou entrez le code re&ccedil;u.</p>"
+                            "<p><a href=\"/\">&larr; Retour</a></p>") if u else _join_result("&#10060; Il manque une information", "<p>Votre pr&eacute;nom et un mot de passe.</p>")
+    # the offers modal names the MT5 account in its own field
+    if not login and form.get("mt5_login", [""])[0]:
+        login = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or "")[:12]
     if rate_limited(("activate", code or login or "?"), limit=8):
         return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
     if not pwd or not (code or buy in ("manual", "strategy")):
@@ -11199,21 +11430,33 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                             "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
     pkg, days = ce.get("pkg") or "family", int(ce.get("days") or 30)
     labels = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}
+    ex = _find_member(raw_login, pwd)
+    if ex is not None and (ex.get("pending_code") or ex.get("app_pwd")):
+        # a pending request, or a Signal / Strategie member: the code activates THIS record
+        if pkg == "family" and not (ex.get("mt5_login") and ex.get("mt5_server")):
+            ml = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or "")[:12]
+            if not (ml and server):
+                return _join_result("&#10060; Il manque le compte MT5",
+                                    "<p>Un code Automatique demande le num&eacute;ro de compte MT5 et le serveur.</p><p><a href=\"/\">&larr; Retour</a></p>")
+            allu = json.load(open(USERS_FILE, encoding="utf-8"))
+            for x in allu:
+                if x.get("id") == ex["id"]:
+                    x.update({"login": int(ml), "mt5_login": int(ml), "mt5_password": pwd, "mt5_server": server})
+            json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+            _users_cache["t"] = 0.0
+        ok, why = grant_pending(ex["id"], days, pkg)
+        if not ok:
+            return _join_result("&#9203; Pas possible pour l&#8217;instant", f"<p>{why}</p><p><a href=\"/\">&larr; Retour</a></p>")
+        redeem_activation_code(code, ex["id"])
+        ex = _find_member(raw_login, pwd) or ex
+        return _join_result("&#9989; " + labels.get(pkg, pkg) + " activ&eacute;",
+                            f"<p>{days} jours pour {ex.get('name') or ex.get('id')}.</p>"
+                            + ("<p>Le robot tourne sur votre compte dans quelques minutes.</p>" if pkg == "family" else "")
+                            + f"<p><a href=\"https://owltrader.duckdns.org/{ex['token']}/\">Ouvrir mon OwlNest</a></p>")
     if pkg == "family" and not (login and server):
         return _join_result("&#10060; Il manque le compte MT5",
                             "<p>Un code Automatique demande le num&eacute;ro de compte MT5, le serveur et le mot de passe du compte.</p>"
-                            "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
-    if _re.search(r"[A-Za-z]", raw_login):
-        # an identifiant: a Signal / Strategie member renewing
-        ident = _re.sub(r"[^a-z0-9]", "", raw_login.lower())
-        au = next((x for x in users() if x.get("app_only") and x.get("id") == ident), None)
-        if au is not None and au.get("app_pwd") == _app_hash(pwd) and pkg != "family":
-            redeem_activation_code(code, au["id"])
-            ent_grant(au["id"], pkg, days, "code")
-            _users_cache["t"] = 0.0
-            return _join_result("&#9989; " + labels.get(pkg, pkg) + " renouvel&eacute;",
-                                f"<p>{days} jours de plus pour {au.get('name') or ident}.</p>"
-                                f"<p><a href=\"https://owltrader.duckdns.org/{au['token']}/\">Ouvrir mon OwlNest</a></p>")
+                            "<p><a href=\"/\">&larr; R&eacute;essayer</a></p>")
     if pkg != "family":
         # 2026-10-03 (owner): Signal / Strategie = app-only - no MT5 account, no terminal
         nm = name or (raw_login if _re.search(r"[A-Za-z]", raw_login) else "")
@@ -12161,6 +12404,38 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
+        if len(_parts) == 2 and _parts[1] in ("nest_activate", "nest_pending_del"):
+            # 2026-10-04 (owner): the admin activates a pending request (no code
+            # needed) or drops it (master pwd)
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upn
+                _fn = _upn.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                if not master_pwd_ok((_fn.get("pwd", [""])[0] or "").strip()):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                _uid = (_fn.get("uid", [""])[0] or "").strip()[:40]
+                if _parts[1] == "nest_pending_del":
+                    allu = json.load(open(USERS_FILE, encoding="utf-8"))
+                    keep = [x for x in allu if not (x.get("id") == _uid and x.get("pending_code") and not x.get("trade") and not x.get("terminal"))]
+                    json.dump(keep, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                    _users_cache["t"] = 0.0
+                    self._send(json.dumps({"ok": len(keep) < len(allu)}), "application/json")
+                    return
+                try:
+                    _days = max(1, min(366, int(_fn.get("days", ["30"])[0] or 30)))
+                except Exception:
+                    _days = 30
+                ok, why = grant_pending(_uid, _days)
+                self._send(json.dumps({"ok": ok, "msg": why}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_pause":
             # master pauses/resumes any member (master pwd gated)
             u = user_by_token(_parts[0])
@@ -12826,11 +13101,10 @@ class H(BaseHTTPRequestHandler):
                                    "label": _lab.get((_e or {}).get("pkg"), "")}), "application/json")
             return
         if len(parts) == 1 and parts[0] == "activate":
-            # 2026-10-03 (owner): open an account with a code
-            _ct = nest_config().get("contact_url") or ""
-            self._send(ACTIVATE_PAGE.replace("%%CONTACT%%", _ct or "/")
-                       .replace("%%CONTACTBTN%%", ('<a class="b g" href="' + _ct + '" target="_blank" rel="noopener">&#9993; &Eacute;crire &agrave; Kino sur Telegram</a>') if _ct else ""),
-                       "text/html; charset=utf-8")
+            # 2026-10-04 (owner): one door - everything starts at the login
+            self.send_response(302)
+            self.send_header("Location", "/")
+            self.end_headers()
             return
         if parts and parts[0] == "manifest.json":
             self._send(MANIFEST, "application/manifest+json")
