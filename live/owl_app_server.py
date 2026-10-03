@@ -299,9 +299,7 @@ MANUAL_MODES = ("manual", "semi")
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
 PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Manuel"},
-            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"},   # separate packages, they combine
-            # 2026-10-03 (owner): the one-time opening fee of any account (a terminal on the VPS)
-            "setup": {"usd": 9, "days": 0, "label": "Ouverture"}}
+            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
 MANUAL_CAP = 10          # one MT5 terminal per manual member on this VPS
 
 
@@ -6531,7 +6529,7 @@ function offersSheet(){
  const btn=(k,l,dis)=>'<button '+(dis?'disabled ':'')+'onclick="_shDone(1);buyPkg(&#39;'+k+'&#39;)" class="shbtn shmain" style="margin:10px 0 0;padding:11px;font-size:.9rem'+(dis?';opacity:.5':'')+'">'+l+'</button>';
  const step=(n,t,x)=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0"><div style="flex:none;width:24px;height:24px;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center">'+n+'</div><div><b style="font-size:.9rem">'+t+'</b><div style="font-size:.82rem;color:var(--muted2);line-height:1.45">'+x+'</div></div></div>';
  const full=P.seats_left<=0&&!P.manual;
- const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.82rem;color:var(--text2);line-height:1.45;margin:-4px 0 10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2)">'+T2('<b>Frais d\u2019ouverture : 9 $, une seule fois</b>, pour tout compte \u2014 chaque compte a son propre terminal sur notre serveur.','<b>Opening fee: $9, once</b>, for any account \u2014 each account has its own terminal on our server.')+'</div><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:0 2px 10px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service \u2014 not investment advice or management.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot de Kino. Vous choisissez comment la suivre.','One strategy \u2014 Kino\u2019s robot. You choose how to follow it.')+'</p>'+
+ const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:-4px 2px 10px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service \u2014 not investment advice or management.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot de Kino. Vous choisissez comment la suivre.','One strategy \u2014 Kino\u2019s robot. You choose how to follow it.')+'</p>'+
   tier(T2('Observateur','Observer'),T2('Gratuit','Free'),T2('7 jours d\u2019essai puis lecture seule','7-day trial, then read only'),
    [T2('Votre compte MT5 en direct : solde, jour, semaine','Your MT5 account live: balance, day, week'),T2('La m\u00e9t\u00e9o du march\u00e9 et le bilan du soir','The market weather and the evening review'),T2('La d\u00e9mo publique du robot, en direct','The public demo of the robot, live')],
    [T2('Pas de signaux, pas d\u2019outil de trading','No signals, no trade tool')],'')+
