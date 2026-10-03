@@ -90,6 +90,17 @@ quality, less time in the red. Never repeat a look without new data: your
 `scrutiny_log` says what you already saw. Under 30 trades a line is a
 hint, say so; a hint is still a reason to open a pile or run the engine.
 
+## The engine and the real gap (2026-10-02)
+On the same entries the bot took, the engine's replay is more generous
+than what the accounts really made. The gap is measured every night,
+like-for-like (`lab/proof.json` → `sources.drag`: `per_trade`, `trades`,
+`usable`). The battery stays RAW until the measure rests on 30 trades
+(`usable`); once it does, `--drag auto` charges it per closed trade and
+the owner will switch the battery to charged verdicts. Until then, read
+`per_trade` as a warning: an idea whose gain per trade is smaller than
+the gap is not a gain. You may run `--drag auto` or `--drag <dollars>`
+on any hunch to see what survives the gap; say so when you quote it.
+
 ## The engine, when you need to be sure
 `python lab/harness.py --json ...` — up to TWENTY runs a night (owner raised
 it 2026-10-02). Use them to be sure before you propose, to rescue a

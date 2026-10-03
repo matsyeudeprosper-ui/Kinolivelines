@@ -33,6 +33,10 @@ deployed rules in ~1 s. Use it for:
    that is a doubt.
 7. **Overlap.** Is it just an old idea wearing new clothes (same trades cut
    another way)?
+8. **The real gap.** Run the idea with `--drag auto` (the measured gap
+   between the engine and the real accounts, charged per trade once it
+   rests on 30 trades) or with `--drag 1`: does the gain survive a dollar
+   a trade? An idea that wins only by trading more is the first to die here.
 
 ## Your verdict (append ONE entry to `lab/critiques.json`, nothing else)
 ```

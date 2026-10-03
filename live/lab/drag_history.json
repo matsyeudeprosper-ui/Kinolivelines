@@ -6,5 +6,31 @@
   "actual": -19.53,
   "gap": -5.09,
   "per_trade": -0.424
+ },
+ {
+  "d": "2026-10-01",
+  "trades": 13,
+  "expected": -11.5,
+  "actual": -15.88,
+  "gap": -4.38,
+  "per_trade": -0.337
+ },
+ {
+  "d": "2026-10-02",
+  "trades": 18,
+  "expected": 33.41,
+  "actual": 0.34,
+  "gap": -33.07,
+  "per_trade": -1.837
+ },
+ {
+  "d": "2026-10-03",
+  "trades": 17,
+  "expected": 23.64,
+  "actual": 14.02,
+  "gap": -9.62,
+  "per_trade": -0.566,
+  "usable": false,
+  "actual_all": 0.34
  }
 ]

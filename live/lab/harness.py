@@ -34,7 +34,7 @@ import MetaTrader5 as mt5              # noqa: E402
 import structure_bos_bot as B          # noqa: E402
 B.say = lambda *a, **k: None
 
-CFG_BASE = {"rr": 0.8, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
+CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "skip_wd": [], "skip_hours": [],
             "size_hot": 1.0, "nerv_gate": False, "storm": 1.85, "bullets": 3, "k_streak": 2, "lot": 0.02,
             "debt_nerv_gate": False,   # built 2026-09-29 on the chercheur's request: still in the red AND nervous
             # 2026-10-02 (chercheur): wait_win = minutes with no new entry
@@ -203,6 +203,41 @@ def _feed():
         _FEED = _m
     return _FEED
 BLOT = 0.01
+# 2026-10-02 (owner): on the SAME entries the bot took, this engine ran
+# about $1.80 a trade more generous than the real accounts (lab/proof.json
+# sources.drag, measured every night). Every replay charges that gap per
+# closed trade, scaled by lot, so a verdict means "better after the gap we
+# actually see". Default is RAW (drag 0): the gap is only charged on demand
+# (--drag auto, or cfg drag=None) and only once it rests on DRAG_MIN_N
+# like-for-like trades - on 18 trades the first figure ($1.84) killed the
+# replay at its own kill line, and was not even like-for-like. The gap is
+# measured on a raw replay (proof_build passes drag=0), or it would chase
+# itself to zero.
+DRAG_LOT = 0.02
+DRAG_MAX = 5.0
+DRAG_MIN_N = 30
+_DRAG_CACHE = {}
+
+
+def measured_drag():
+    if "v" in _DRAG_CACHE:
+        return _DRAG_CACHE["v"]
+    import json as _j
+    v = 0.0
+    try:
+        p = _j.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "proof.json"), encoding="utf-8"))
+        dr = (p.get("sources") or {}).get("drag") or {}
+        v = float(dr.get("per_trade") or 0.0) if int(dr.get("trades") or 0) >= DRAG_MIN_N else 0.0
+    except Exception:
+        v = 0.0
+    _DRAG_CACHE["v"] = min(DRAG_MAX, max(0.0, -v))
+    return _DRAG_CACHE["v"]
+
+
+def drag_cost(c, lot):
+    d = c.get("drag")
+    d = measured_drag() if d in (None, "auto") else min(DRAG_MAX, max(0.0, float(d or 0.0)))
+    return d * (float(lot) / DRAG_LOT)
 
 
 def bars(n=60000):
@@ -392,6 +427,7 @@ def simulate(R, spread, cfg):
                         debt_led = round(debt_led - _pay, 2)
                         chest = round(min(CHEST_CAP,
                                           chest + _pl - _pay), 2)
+                run -= drag_cost(c, lot)
                 day_profit += run - before
                 pnls.append(round(run - before, 2))
                 if TRACE is not None and cur_tr is not None:
@@ -463,6 +499,7 @@ def simulate(R, spread, cfg):
                         debt_led = round(debt_led - _pay, 2)
                         chest = round(min(CHEST_CAP,
                                           chest + _pl - _pay), 2)
+                run -= drag_cost(c, lot)
                 day_profit += run - before
                 pnls.append(round(run - before, 2))      # 2026-09-29: per-trade money, for the "normal range" band
                 if TRACE is not None and cur_tr is not None:
@@ -594,6 +631,7 @@ def simulate(R, spread, cfg):
                         debt_led = round(debt_led - _pay, 2)
                         chest = round(min(CHEST_CAP,
                                           chest + _pl - _pay), 2)
+                run -= drag_cost(c, _lot0)
                 day_profit += run - _before
                 pnls.append(round(run - _before, 2))
                 if TRACE is not None and cur_tr is not None:
@@ -895,6 +933,7 @@ def simulate_real(T, R, spread, cfg):
     last_win_t = None
     cont_left = 0
     n_trades = wins = blocked = 0
+    actual_taken = 0.0        # the real money of exactly the entries taken: like-for-like with `net`
     open_until = -1
     for e in T:
         t = e["t"]
@@ -905,6 +944,9 @@ def simulate_real(T, R, spread, cfg):
             continue
         g = datetime.fromtimestamp(t, tz=timezone.utc)
         nv = e["nerv"]
+        if e.get("internal") and not int(c.get("internal") or 0):
+            blocked += 1          # a kind of trade this replay does not model
+            continue
         if nv >= float(c["storm"]):
             continue
         if c["nerv_gate"] and nv > 1.0:
@@ -975,6 +1017,7 @@ def simulate_real(T, R, spread, cfg):
                      else -(dist + spread)))
         debt = max(0.0, pk - run)
         run += pts * lot
+        run -= drag_cost(c, lot)
         if debt > 0.5 and streak < K and hit_mid and NB > 0:
             run += ((1.3 * dist - spread) if win
                     else ((d * (sl - mid) - spread) if c["trail_prot"]
@@ -987,9 +1030,10 @@ def simulate_real(T, R, spread, cfg):
         if win:
             last_win_t = times[j]
         n_trades += 1
+        actual_taken += float(e.get("pnl") or 0.0)
     return {"debt_mode_modelled": "hwm",  # this path has no chest, so it cannot run "half"            "net": round(run, 2), "worst_debt": round(worst, 2), "trades": n_trades,
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "n_real": len(T),
-            "actual": round(sum(x["pnl"] for x in T), 2)}
+            "actual": round(actual_taken, 2), "actual_all": round(sum(x["pnl"] for x in T), 2)}
 
 
 def main():
@@ -1012,6 +1056,7 @@ def main():
     ap.add_argument("--cost-max", type=float, help="refuse an entry whose spread is over X %% of the stop distance")
     ap.add_argument("--min-range", type=float, help="refuse an entry when the median 60-min candle range is under X points")
     ap.add_argument("--spread", type=float, default=7.0)
+    ap.add_argument("--drag", type=str, help="per-trade cost in $ at 0.02 lot: a number, or 'auto' = last night's measured gap once it rests on 30 trades; default raw")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(_ARGV)
     over = {}
@@ -1019,6 +1064,7 @@ def main():
     if a.n_cont is not None: over["n_cont"] = a.n_cont
     if a.wait is not None: over["wait_min"] = a.wait
     if a.wait_win is not None: over["wait_win"] = a.wait_win
+    if a.drag is not None: over["drag"] = None if str(a.drag).strip().lower() == "auto" else float(a.drag)
     if a.ext is not None: over["ext_pts"] = a.ext
     if a.skip_wd: over["skip_wd"] = [int(x) for x in a.skip_wd.split(",") if x.strip()]
     if a.skip_hours:

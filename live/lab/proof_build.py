@@ -75,7 +75,10 @@ def drag(replay, hist_path):
     row = {"d": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
            "trades": n, "expected": round(exp, 2), "actual": round(act, 2),
            "gap": round(act - exp, 2),
-           "per_trade": round((act - exp) / n, 3) if n else None}
+           "per_trade": round((act - exp) / n, 3) if n else None,
+           # like-for-like since 2026-10-02 (the entries the replay took,
+           # internal ones excluded); charged by the engine only when usable
+           "usable": n >= 30, "actual_all": replay.get("actual_all")}
     try:
         h = json.load(open(hist_path, encoding="utf-8"))
         if not isinstance(h, list):
@@ -178,7 +181,8 @@ def main():
     # two match from here. The trades that already happened are NOT
     # deleted - they really cost that money - they are labelled.
     _rc = rule_change(T)
-    real_replay = H.simulate_real(T, R, 7.0, {}) if T else None
+    # raw on purpose: this replay is what the drag is measured FROM
+    real_replay = H.simulate_real(T, R, 7.0, {"drag": 0}) if T else None
     src = sources()
     src["rule_change"] = _rc
     src["drag"] = drag(real_replay,
