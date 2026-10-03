@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-03T09:30:00Z",
+ "updated": "2026-10-03T12:00:06Z",
  "hypotheses": [
   {
    "id": "target_09",
@@ -148,6 +148,11 @@
    "t": "2026-10-03T09:30:00Z",
    "looked": ["auto.json all 37 variants + halves", "critiques.json (k3 bloque)", "proof drag", "scrutiny --all", "scrutiny --streaks", "scrutiny --mm", "pile calm drill-down"],
    "saw": "Still 37 real trades. Sunday 10 tr 20% -21.6. nerv 0.8-1.0 88% vs <0.8 33%. move 4+ 8 tr 75% PF 4.56 (winners' side). 5th+ trade of the day 38%. After 2 losses 0/3 (peu). Lots 0.01/0.02/0.03, balance 207->400. In the red 81% of trades, PF 1.18 vs afloat 1.58. No twins running, no open ask. Drag -0.57/trade on 17 trades (not usable). No new pile: sleepy (<0.8) and 0.8-1.0 are both inside Kino's 'calm' pile -> would be duplicates."
+  },
+  {
+   "t": "2026-10-03T12:00:06Z",
+   "looked": ["wake_context (4h timer)", "asks.json"],
+   "saw": "Still 37 trades, no close since 2026-10-02 22:08, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
