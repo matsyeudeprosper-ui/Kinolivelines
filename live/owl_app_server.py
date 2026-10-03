@@ -222,7 +222,7 @@ SW = (
     "self.addEventListener('fetch',e=>{"
     "if(e.request.method==='GET'&&(/\\/fonts\\//.test(e.request.url)||/icon\\d+m?\\.png$/.test(e.request.url))){"
     "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl1').then(c=>c.put(e.request,cp));}return r;})));return;}"
-    "if(e.request.mode==='navigate'){"
+    "if(e.request.mode==='navigate'&&!/owlnest\\.apk|apk\\.json/.test(e.request.url)){"
     "e.respondWith(caches.match(e.request).then(m=>{"
     "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
     "caches.open('owl1').then(c=>c.put(e.request,cp));}return r;}).catch(()=>null);"
@@ -1528,8 +1528,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
 #tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
  white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
-#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
+#tab-home #apkcard,#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
 #tab-home:has(#newscard[style*="display: block"]) #recap{margin-top:12px!important}
+#tab-home:has(#apkcard[style*="display: block"]) #newscard,#tab-home:has(#apkcard[style*="display: block"]) #recap{margin-top:12px!important}
+#apkcard .shbtn{width:auto!important;margin:0!important;padding:10px 14px!important}
+#apkcard #apk-go{flex:1 1 auto;min-width:0}
+#apkcard #apk-no{flex:0 0 auto}
 #tab-home #newscard .shbtn{display:inline-flex;width:auto;margin:10px 8px 0 0;padding:7px 12px;
  font-size:.78rem;font-weight:600;background:transparent;border:1px solid var(--border);
  color:var(--text2);border-radius:99px;box-shadow:none}
@@ -1942,6 +1946,10 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  </div>
  <div id="missed-g" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px"></div>
  <div id="missed-sig" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
+</div>
+<div class="panel" id="apkcard" style="display:none;margin-top:12px;border-color:rgba(46,204,113,.35)">
+ <div style="display:flex;align-items:center;gap:12px"><div style="flex:1;min-width:0"><b id="apk-t"></b><div id="apk-b" style="font-size:.84rem;color:var(--text2);margin-top:4px;line-height:1.45"></div></div></div>
+ <div style="display:flex;gap:8px;margin-top:10px"><a class="shbtn shmain" id="apk-go" href="/owlnest.apk" style="flex:1;margin:0;padding:10px;text-align:center;text-decoration:none"></a><button class="shbtn shghost" id="apk-no" style="flex:0 0 auto;margin:0;padding:10px 14px" onclick="apkDismiss()"></button></div>
 </div>
 <div class="panel" id="newscard" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)">
  <div style="display:flex;align-items:center;gap:12px">
@@ -7789,6 +7797,29 @@ function inst(){
 window.addEventListener('appinstalled',()=>{
  document.getElementById('inst').style.display='none';
  document.getElementById('howto').style.display='none';});
+// 2026-10-03 (owner): the Android app. This phone's link is remembered so
+// the app opens straight on it; inside the app (?twa=<version>) a newer
+// APK is announced; in a browser on Android the APK is suggested once a
+// fortnight. The APK installs over the old one - nothing to uninstall.
+(function(){try{var m=location.pathname.match(/^[/]([A-Za-z0-9_-]{6,})[/]/);if(m)localStorage.setItem('owlLink','/'+m[1]+'/');}catch(e){}
+ try{var q=new URLSearchParams(location.search).get('twa');if(q)sessionStorage.setItem('owlTwa',q);}catch(e){}
+ setTimeout(apkCheck,1800);})();
+async function apkCheck(){const c=document.getElementById('apkcard');if(!c)return;const en=LANG()==='en';
+ const and=/Android/i.test(navigator.userAgent);let twa='';try{twa=sessionStorage.getItem('owlTwa')||'';}catch(e){}
+ if(!and&&!twa)return;
+ let j=null;try{j=await (await fetch('/apk.json',{cache:'no-store'})).json();}catch(e){}
+ if(!j||!j.versionCode)return;
+ const T=document.getElementById('apk-t'),B=document.getElementById('apk-b'),G=document.getElementById('apk-go'),N=document.getElementById('apk-no');
+ if(twa){if(+j.versionCode<=+twa)return;
+  T.textContent=en?'A new version of the app':'Une nouvelle version de l\u2019application';
+  B.textContent=en?'Version '+j.version+'. Tap, then install: it goes over the old one, nothing to uninstall.':'Version '+j.version+'. Touchez, puis installez : elle se pose par-dessus l\u2019ancienne, rien \u00e0 d\u00e9sinstaller.';
+  G.textContent=en?'Update':'Mettre \u00e0 jour';N.textContent=en?'Later':'Plus tard';c.style.display='block';return;}
+ let dis=0;try{dis=+localStorage.getItem('owlApkDis')||0;}catch(e){}
+ if(Date.now()-dis<14*86400000)return;
+ T.textContent=en?'OwlNest as a real app':'OwlNest en vraie application';
+ B.textContent=en?'Faster to open, its own icon, no browser bar. Android asks once to allow the install.':'Plus rapide \u00e0 ouvrir, sa propre ic\u00f4ne, sans barre de navigateur. Android demande une fois d\u2019autoriser l\u2019installation.';
+ G.textContent=en?'Install the app':'Installer l\u2019application';N.textContent=en?'No thanks':'Non merci';c.style.display='block';}
+function apkDismiss(){try{localStorage.setItem('owlApkDis',String(Date.now()));}catch(e){}const c=document.getElementById('apkcard');if(c)c.style.display='none';}
 </script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
 <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
@@ -10208,6 +10239,44 @@ window.addEventListener('resize',draw);
 load();setInterval(load,3000);
 </script></body></html>"""
 
+# 2026-10-03 (owner): where the Android app starts. The app cannot know
+# the member's link, so this page sends it to the one this phone used
+# last (the member app remembers it), or asks for it once.
+APP_PAGE = """<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2740"><title>OwlNest</title>
+<link rel="icon" href="/icon192.png"><link rel="manifest" href="/manifest.json">
+<style>
+body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+.c{max-width:380px;width:100%;text-align:center}
+img{width:72px;height:72px;border-radius:18px}
+h1{font-size:1.4rem;margin:14px 0 6px}
+p{color:#c6d3df;line-height:1.55;font-size:.95rem;margin:0 0 14px}
+input{width:100%;box-sizing:border-box;background:#141c28;border:1px solid #1f2c3d;border-radius:12px;color:#e8eef4;padding:13px 14px;font-size:1rem;margin-top:6px}
+button,a.b{display:block;width:100%;box-sizing:border-box;margin-top:12px;border:0;border-radius:14px;padding:14px;font-size:1rem;font-weight:700;cursor:pointer;text-decoration:none;text-align:center}
+.m{background:#3b82f6;color:#fff}.g{background:#141c28;color:#c6d3df;border:1px solid #1f2c3d}
+.s{font-size:.8rem;color:#8a9bb0;margin-top:16px;line-height:1.5}
+#ask{display:none}
+</style></head><body><div class="c">
+<img src="/icon192.png" alt="">
+<div id="ask"><h1>Bienvenue dans OwlNest</h1>
+<p>Collez le lien que vous avez re&ccedil;u (il contient votre cl&eacute;). L&#8217;application s&#8217;en souviendra.</p>
+<input id="lnk" placeholder="https://owltrader.duckdns.org/votre-cle/" autocomplete="off" inputmode="url">
+<button class="m" onclick="go()">Ouvrir mon compte</button>
+<a class="b g" href="/demo">Voir le compte d&eacute;mo</a>
+<div class="s">Pas encore de lien ? <a href="/" style="color:#9fc2de">Demander un acc&egrave;s</a></div>
+</div>
+<script>
+var V=(new URLSearchParams(location.search).get('v')||'');
+(function(){var l=null;try{l=localStorage.getItem('owlLink');}catch(e){}
+ if(l&&/^[/][A-Za-z0-9_-]{6,}[/]$/.test(l)){location.replace(l+(V?'?twa='+encodeURIComponent(V):''));return;}
+ document.getElementById('ask').style.display='block';})();
+function go(){var t=document.getElementById('lnk').value.trim();var m=t.match(/[/]([A-Za-z0-9_-]{6,})[/]?(?:[?#]|$)/);
+ var tok=m?m[1]:(/^[A-Za-z0-9_-]{6,}$/.test(t)?t:'');
+ if(!tok){alert('Ce lien ne ressemble pas &agrave; un lien OwlNest.');return;}
+ location.href='/'+tok+'/'+(V?'?twa='+encodeURIComponent(V):'');}
+</script></div></body></html>"""
+
 JOIN_PAGE = """<!doctype html><html lang="fr"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10439,6 +10508,8 @@ Se connecter</button>
  d&eacute;mo en direct</a>
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
  style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
+<a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.7;font-weight:600"></span></a>
+<div id="apk2-note" style="display:none;margin-top:8px;text-align:center;font-size:.78rem;color:var(--muted);line-height:1.5">Un fichier APK : Android demande une fois d&#8217;autoriser l&#8217;installation. Les mises &agrave; jour se posent par-dessus, sans rien d&eacute;sinstaller. Sur iPhone : &laquo; Installer l&#8217;application &raquo; ci-dessus.</div>
 <div style="margin-top:14px;text-align:center;font-size:.8rem;color:var(--muted);
  line-height:1.5">7 jours d&#8217;essai sur un compte d&eacute;mo &mdash;
  argent fictif, vraies performances.</div>
@@ -10533,6 +10604,14 @@ function inst2(){
   h.style.display=(h.style.display==='block')?'none':'block';}}
 window.addEventListener('appinstalled',()=>{
  document.getElementById('inst2').style.display='none';});
+// 2026-10-03 (owner): the Android app, when a build exists (apk.json)
+fetch('/apk.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{
+ if(!j||!j.versionCode||/iPad|iPhone|iPod/.test(navigator.userAgent))return;
+ document.getElementById('apk2').style.display='block';
+ document.getElementById('apk2-v').textContent='v'+j.version;
+ document.getElementById('apk2-note').style.display='block';
+ if(/Android/i.test(navigator.userAgent)){document.getElementById('apk2').className='bigbtn b2';document.getElementById('inst2').innerHTML='<svg class="ic ic-s"><use href="#i-download"/></svg> Ou ajouter &agrave; l&#8217;&eacute;cran d&#8217;accueil';}
+}).catch(()=>{});
 // 2026-09-26: the preview shows the PUBLIC demo account for real - its
 // balance, today's result, its 7-day curve. Falls back to the static
 // mock if the fetch fails. Set PV_LIVE=false to go back to the mock.
@@ -10802,6 +10881,24 @@ def handle_join(form):
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
+
+    def _send_file_fresh(self, path, ctype, disposition=None):
+        """A file that changes between releases: never cached by the
+        browser (the APK and its version must always be the latest)."""
+        try:
+            body = open(path, "rb").read()
+        except Exception:
+            self.send_response(404)
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Cache-Control", "no-cache")
+        if disposition:
+            self.send_header("Content-Disposition", disposition)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _send_static(self, path, ctype):
         try:
@@ -11936,6 +12033,23 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         p = self.path.split("?")[0].rstrip("/")
         parts = [x for x in p.split("/") if x]
+        # 2026-10-03 (owner): the Android app - a wrapper around this site.
+        # /owlnest.apk the file, /apk.json its version (the app and the
+        # landing read it), /.well-known/assetlinks.json the proof that the
+        # APK may own this site (no browser bar), /app where the APK starts.
+        if len(parts) == 2 and parts[0] == ".well-known" and parts[1] == "assetlinks.json":
+            self._send_file_fresh(os.path.join(DIR, "static", "assetlinks.json"), "application/json")
+            return
+        if len(parts) == 1 and parts[0] == "owlnest.apk":
+            self._send_file_fresh(os.path.join(DIR, "static", "owlnest.apk"), "application/vnd.android.package-archive",
+                                  disposition='attachment; filename="OwlNest.apk"')
+            return
+        if len(parts) == 1 and parts[0] == "apk.json":
+            self._send_file_fresh(os.path.join(DIR, "static", "apk.json"), "application/json")
+            return
+        if len(parts) == 1 and parts[0] == "app":
+            self._send(APP_PAGE, "text/html; charset=utf-8")
+            return
         if parts and parts[0] == "manifest.json":
             self._send(MANIFEST, "application/manifest+json")
             return

@@ -1,0 +1,14 @@
+[
+    {
+        "target":  {
+                       "sha256_cert_fingerprints":  [
+                                                        "D0:7C:96:59:A4:4C:49:04:2E:B5:5E:6B:63:4D:05:8E:AE:8C:B2:89:23:3E:50:37:C0:27:77:92:94:4C:A0:2E"
+                                                    ],
+                       "namespace":  "android_app",
+                       "package_name":  "org.duckdns.owltrader.owlnest"
+                   },
+        "relation":  [
+                         "delegate_permission/common.handle_all_urls"
+                     ]
+    }
+]

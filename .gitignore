@@ -117,3 +117,23 @@ live/lab/critic_context.json
 live/lab/wake_context.json
 live/lab/build_*.log
 live/lab/critique_*.log
+
+# 2026-10-03: the Android app - the signing key and its password never leave the VPS; the generated project and the binary are build output
+live/apk/owlnest.jks
+live/apk/keystore.env
+live/apk/app/
+live/apk/build/
+live/apk/gradle/
+live/apk/.gradle/
+live/apk/gradlew
+live/apk/gradlew.bat
+live/apk/build.gradle
+live/apk/settings.gradle
+live/apk/gradle.properties
+live/apk/store_icon.png
+live/apk/*.apk
+live/apk/*.aab
+live/apk/*.idsig
+live/static/owlnest.apk
+live/apk/*.log
+live/apk/manifest-checksum.txt
