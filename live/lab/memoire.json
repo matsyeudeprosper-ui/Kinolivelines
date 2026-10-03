@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-02T22:08:00Z",
+ "updated": "2026-10-03T02:30:08Z",
  "hypotheses": [
   {
    "id": "sleepy_market",
@@ -41,6 +41,11 @@
    "t": "2026-10-02T22:08:00Z",
    "looked": ["wake_context new_trades (12)", "metrics overview/halves", "scrutiny --by nerv", "scrutiny --streaks"],
    "saw": "10/12 recent wins (+45 $). nerv<0.8: 6 tr 33% -18.85 (peu). After 2 losses in a row: 0/3. Longest loss streak 6. Five proposals already pending -> no new proposal, no harness run, no new pile."
+  },
+  {
+   "t": "2026-10-03T02:30:08Z",
+   "looked": ["wake_context (4h timer)"],
+   "saw": "No new trade (still 37), no twins, no labo activity, no open ask. Nothing to re-look at -> veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
