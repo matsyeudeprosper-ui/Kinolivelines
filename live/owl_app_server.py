@@ -1528,7 +1528,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
 #tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
  white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
-#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:12px!important}
+#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
+#tab-home:has(#newscard[style*="display: block"]) #recap{margin-top:12px!important}
 #tab-home #newscard .shbtn{display:inline-flex;width:auto;margin:10px 8px 0 0;padding:7px 12px;
  font-size:.78rem;font-weight:600;background:transparent;border:1px solid var(--border);
  color:var(--text2);border-radius:99px;box-shadow:none}
