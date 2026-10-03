@@ -5100,7 +5100,8 @@ function renderPlan(d){
   const MO=en?['January','February','March','April','May','June','July','August','September','October','November','December']:['janvier','f\u00e9vrier','mars','avril','mai','juin','juillet','ao\u00fbt','septembre','octobre','novembre','d\u00e9cembre'];
   const mname=ym=>MO[parseInt(ym.slice(5,7),10)-1]+' '+ym.slice(0,4);
   t.textContent=(en?'Automatic \u00b7 ':'Automatique \u00b7 ')+S.pct.toFixed(0)+(en?' % of the result':' % du r\u00e9sultat')+plusS;
-  const N=S.now;let h='<div style="margin-top:6px">'+(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs only the base ($'+S.base.toFixed(0)+').':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte que la base ('+S.base.toFixed(0)+' $).')+'</div>';
+  const N=S.now;
+  let h='<div style="margin-top:6px">'+(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs only the base ($'+Number(N.base_full||S.base).toFixed(0)+'), counted from the day the robot started on your account.':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte que la base ('+Number(N.base_full||S.base).toFixed(0)+' $), compt\u00e9e depuis le jour o\u00f9 le robot a commenc\u00e9 sur votre compte.')+'</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+
    [[mn(N.profit),en?'robot, this month':'le robot, ce mois'],[us(N.above),en?'above your record':'au-dessus du record'],[us(N.due),en?'your share so far':'votre part, pour l\u2019instant']].map(x=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x[0]+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+x[1]+'</span></div>').join('')+'</div>';
   const L=S.last;
