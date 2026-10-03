@@ -3446,11 +3446,26 @@ window.addEventListener('load',()=>{
   const msg=document.getElementById('actmsg');
   if(code.length<6){msg.textContent='Entrez le code complet.';return;}
   ab.disabled=true;ab.textContent='...';
-  const r=await fetch(B+'activate',{method:'POST',
+  const send=async(extra)=>{const r=await fetch(B+'activate',{method:'POST',
    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-   body:'code='+encodeURIComponent(code)}).catch(()=>null);
+   body:'code='+encodeURIComponent(code)+(extra||'')}).catch(()=>null);
+   try{return await r.json();}catch(e){return null;}};
+  let j=await send('');
+  // 2026-10-04 (owner): a Signal member switching to Automatique - the
+  // robot needs the MT5 account it will trade; asked once, here
+  if(j&&!j.ok&&j.need==='mt5'){
+   const en=LANG()==='en';
+   const inp=(id,ph,t)=>'<input id="'+id+'" type="'+(t||'text')+'" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px;font-size:1rem;margin-top:8px">';
+   const v=await sheet('<h3>'+(en?'Your MT5 account':'Votre compte MT5')+'</h3><p style="color:var(--text2)">'+(en?'This code puts the robot on your own account. Tell it which one - once.':'Ce code met le robot sur votre propre compte. Dites-lui lequel \u2014 une seule fois.')+'</p>'+
+    inp('am-l',en?'MT5 account number':'Num\u00e9ro de compte MT5')+inp('am-s','Exness-MT5Real30')+inp('am-p',en?'account password (main)':'mot de passe du compte (principal)','password')+
+    '<div style="font-size:.78rem;color:var(--muted);margin-top:8px">'+(en?'The main password: the robot must be able to trade. Your app login does not change.':'Le mot de passe principal : le robot doit pouvoir trader. Votre connexion \u00e0 l\u2019app ne change pas.')+'</div>'+
+    '<button class="shbtn shmain" style="margin-top:14px" onclick="_shDone({l:document.getElementById(&#39;am-l&#39;).value,s:document.getElementById(&#39;am-s&#39;).value,p:document.getElementById(&#39;am-p&#39;).value})">'+(en?'Put the robot on it':'Mettre le robot dessus')+'</button>'+
+    '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
+   if(!v||!v.l||!v.s||!v.p){ab.disabled=false;ab.textContent='Activer';msg.textContent='';return;}
+   j=await send('&mt5_login='+encodeURIComponent(v.l)+'&mt5_server='+encodeURIComponent(v.s)+'&mt5_password='+encodeURIComponent(v.p));}
   ab.disabled=false;ab.textContent='Activer';
-  try{const j=await r.json();
+  try{
+   if(j&&j.ok&&j.pkg&&j.pkg!=='family'){document.getElementById('actcard').innerHTML='<div class="lbl">Code</div><div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:10px"><b>'+(j.pkg==='manual'?'Signal':'Strat\u00e9gie')+' activ\u00e9 !</b> '+(j.days||30)+' jours de plus.</div>';try{confetti();}catch(e2){}setTimeout(load,1500);return;}
    if(j.ok){document.getElementById('actcard').innerHTML=
     '<div class="lbl">Activer le robot</div>'+
     '<div class="jsteps" style="margin-top:12px"><div class="jl"></div>'+
@@ -5140,7 +5155,7 @@ function renderPlan(d){
   if(show){document.getElementById('offercard-t').textContent=en?'Trade the strategy yourself':'Tradez la strat\u00e9gie vous-m\u00eame';
    document.getElementById('offercard-s').textContent=en?'Signals + the Trader tool on your account, from $'+(pk.manual||{}).usd+' / 30 days.':'Signaux + l\u2019outil Trader sur votre compte, d\u00e8s $'+(pk.manual||{}).usd+' / 30 jours.';}})();
  (function(){let a=document.getElementById('plan-act');if(!a){a=document.createElement('a');a.id='plan-act';a.href='#';a.style.cssText='display:block;text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px;text-decoration:none';
-   a.onclick=e=>{e.preventDefault();window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';tab('home',document.querySelector('.tb'));setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}};
+   a.onclick=e=>{e.preventDefault();openActCard();};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
   a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
  nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments) or a code from Kino on Telegram. Renewing adds 30 days.':'Paiement en crypto (NOWPayments) ou code de Kino sur Telegram. Renouveler ajoute 30 jours.')
@@ -6542,7 +6557,10 @@ function observerView(d){
 // and to the code page
 function kinoBtns(P,en,main){const c=P.contact_url||'';
  return (c?'<a class="shbtn '+(main?'shmain':'shghost')+'" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+_escS(c)+'" target="_blank" rel="noopener">\u2709 '+(en?'Write to Kino on Telegram':'\u00c9crire \u00e0 Kino sur Telegram')+'</a>':'')+
-  '<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin:8px 0 0" href="/activate">\U0001f511 '+(en?'I have a code':'J\u2019ai un code')+'</a>';}
+  '<button class="shbtn shghost" style="display:block;width:100%;margin:8px 0 0" onclick="_shDone(1);openActCard()">\U0001f511 '+(en?'I have a code':'J\u2019ai un code')+'</button>';}
+// the in-app code card (home), where a code grants its package to THIS account
+function openActCard(){window._showAct=true;const c=document.getElementById('actcard');if(!c)return;c.style.display='block';tab('home',document.querySelector('.tb'));
+ setTimeout(()=>{c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();},200);}
 function offersSheet(){
  const P=(window._d||{}).plan||{},en=LANG()==='en',pk=P.packages||{manual:{usd:29},strategy:{usd:49}};
  const T2=(fr,e)=>en?e:fr;
@@ -11035,7 +11053,7 @@ def handle_login(form):
         ident = _re.sub(r"[^a-z0-9]", "", raw.lower())
         if rate_limited(("login", ident)):
             return ("page", _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>"))
-        au = next((x for x in users() if x.get("app_only") and x.get("id") == ident), None)
+        au = next((x for x in users() if (x.get("app_only") or x.get("app_login")) and x.get("id") == ident), None)
         if au is not None and au.get("app_pwd") == _app_hash(pwd):
             if _member_active(au):
                 return ("redirect", f"https://owltrader.duckdns.org/{au['token']}/")
@@ -12431,7 +12449,7 @@ class H(BaseHTTPRequestHandler):
                 body = self.rfile.read(ln).decode("utf-8", "replace")
                 import urllib.parse as _up
                 code = (_up.parse_qs(body).get("code", [""])[0] or "")
-                _ce = redeem_activation_code(code, u["id"])
+                _ce = peek_activation_code(code)
                 if not _ce:
                     self._send(json.dumps({"ok": False,
                                            "err": "bad code"}),
@@ -12440,14 +12458,38 @@ class H(BaseHTTPRequestHandler):
                 # 2026-10-03 (owner): the code names the package
                 _cpkg, _cdays = _ce.get("pkg") or "family", int(_ce.get("days") or 30)
                 if _cpkg != "family":
+                    redeem_activation_code(code, u["id"])
                     ent_grant(u["id"], _cpkg, _cdays, "code")
                     _users_cache["t"] = 0.0
-                    self._send(json.dumps({"ok": True, "pkg": _cpkg}), "application/json")
+                    self._send(json.dumps({"ok": True, "pkg": _cpkg, "days": _cdays}), "application/json")
                     return
+                _fq = _up.parse_qs(body)
+                _ml = re.sub(r"\D", "", _fq.get("mt5_login", [""])[0] or "")[:12]
+                _ms = (_fq.get("mt5_server", [""])[0] or "").strip()[:48]
+                _mp = (_fq.get("mt5_password", [""])[0] or "").strip()[:64]
+                if u.get("app_only") and not (_ml and _ms and _mp):
+                    # 2026-10-04 (owner): a Signal member switching to Automatique
+                    # - the robot needs the MT5 account; asked once, code kept
+                    self._send(json.dumps({"ok": False, "need": "mt5"}), "application/json")
+                    return
+                if u.get("app_only") and family_count() >= FAMILY_CAP:
+                    self._send(json.dumps({"ok": False, "err": "plein"}), "application/json")
+                    return
+                redeem_activation_code(code, u["id"])
                 us = json.load(open(USERS_FILE, encoding="utf-8"))
                 for x in us:
                     if x.get("id") == u["id"]:
                         x["trade"] = True
+                        if x.get("app_only"):
+                            # becomes a family account: the provisioner builds the
+                            # terminal, the manager starts the robot; the identifiant
+                            # + password still log in
+                            x.pop("app_only", None)
+                            x.update({"terminal": "", "login": int(_ml), "mt5_login": int(_ml),
+                                      "mt5_password": _mp, "mt5_server": _ms, "symbol": "BTCUSD",
+                                      "bot_only": True, "plan": "family", "mode": "auto",
+                                      "dedicated": f"structure_bos_bot.py {x['id']}", "managed": True})
+                            x["app_login"] = True
                 json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
                           indent=2)
                 _users_cache["t"] = 0.0
