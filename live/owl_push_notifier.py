@@ -475,7 +475,10 @@ CHART_F = os.path.join(DIR, "owl_chart_btc.json")
 
 def _package_gates(uid):
     """The two brakes of this account's package (owl_packages.json,
-    'extends' chain); both default to on."""
+    'extends' chain), both default to on - and whether its robot takes
+    internal-structure trades at all (off everywhere since 2026-09-30).
+    Owner 2026-10-02: a signal must not ring, or hold, on a structure the
+    member's robot does not trade."""
     try:
         p = json.load(open(os.path.join(DIR, "owl_packages.json"),
                            encoding="utf-8"))
@@ -489,9 +492,9 @@ def _package_gates(uid):
             name = pk.get("extends") or ("base" if name != "base" else None)
         for pk in reversed(chain):
             out.update(pk)
-        return bool(out.get("nervosity", True)), bool(out.get("movement", True))
+        return bool(out.get("nervosity", True)), bool(out.get("movement", True)), bool(out.get("internal_entries", False))
     except Exception:
-        return True, True
+        return True, True, False
 
 
 def maybe_signal():
@@ -508,8 +511,7 @@ def maybe_signal():
     vn, vr = cj.get("vol_now") or 0, cj.get("vol_ref") or 0
     rv = (vn / max(vr, 1)) if vn and vr else 1.0
     storm = rv >= 1.85
-    has_int = bool(cj.get("int_trend"))
-    int_ok = (not has_int) or (cj.get("int_state") in (None, "ready"))
+    int_seen = bool(cj.get("int_trend"))
     try:
         st = json.load(open(SIGNAL_MARK, encoding="utf-8"))
     except Exception:
@@ -522,7 +524,10 @@ def maybe_signal():
     for uid in subs:
         if not is_manual(uid):
             continue
-        gN, gM = _package_gates(uid)
+        gN, gM, gI = _package_gates(uid)
+        # the internal structure only counts for a robot that trades it
+        has_int = int_seen and gI
+        int_ok = (not has_int) or (cj.get("int_state") in (None, "ready"))
         nerv_bad = storm or (gN and rv > 1.0)
         mv_ok = True if not gM else (
             (cj.get("int_brk_1h") or 0) >= 1 if has_int
