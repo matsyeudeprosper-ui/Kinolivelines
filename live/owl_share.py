@@ -162,6 +162,20 @@ def eligible(now=None):
 
 
 # ---------------------------------------------------------------- the numbers
+def base_for(rows, acc, a, b, base_usd):
+    """The base, pro-rated to the days the robot was on the account that
+    month: someone who joined on the 25th pays a fifth of it (owner
+    2026-10-03, "what if someone joins mid-month"). The start is the
+    earlier of the account's first robot trade and its recorded start."""
+    first = rows[0][0] if rows else None
+    since = float(acc.get("since") or 0) or None
+    start = min(x for x in (first, since) if x) if (first or since) else b
+    start = max(a, start)
+    if start >= b:
+        return 0.0
+    return round(float(base_usd) * (b - start) / (b - a), 2)
+
+
 def preview(uid, now=None, doc=None):
     """This month so far, for one account."""
     now = now or time.time()
@@ -175,9 +189,11 @@ def preview(uid, now=None, doc=None):
     hwm = float(acc.get("hwm") or 0.0)
     above = max(0.0, cum_now - max(hwm, 0.0))
     share = round(above * float(c["pct"]) / 100.0, 2)
+    _, b = month_bounds(ym_of(now))
+    base = base_for(rows, acc, a, b, c["base_usd"])
     return {"ym": ym_of(now), "profit": round(cum_now - cum_start, 2), "cum": cum_now, "hwm": round(hwm, 2),
-            "above": round(above, 2), "share": share, "base": float(c["base_usd"]),
-            "due": round(share + float(c["base_usd"]), 2), "pct": float(c["pct"]), "trades": sum(1 for x, _ in rows if a <= x < now + 1)}
+            "above": round(above, 2), "share": share, "base": base, "base_full": float(c["base_usd"]),
+            "due": round(share + base, 2), "pct": float(c["pct"]), "trades": sum(1 for x, _ in rows if a <= x < now + 1)}
 
 
 def close_month(ym, now=None):
@@ -200,8 +216,9 @@ def close_month(ym, now=None):
         hwm = float(acc.get("hwm") or 0.0)
         above = max(0.0, cum_end - max(hwm, 0.0))
         share = round(above * float(c["pct"]) / 100.0, 2)
+        base = base_for(rows, acc, a, b, c["base_usd"])
         p = {"ym": ym, "profit": round(cum_end - cum_start, 2), "hwm_before": round(hwm, 2), "above": round(above, 2),
-             "share": share, "base": float(c["base_usd"]), "due": round(share + float(c["base_usd"]), 2),
+             "share": share, "base": base, "base_full": float(c["base_usd"]), "due": round(share + base, 2),
              "pct": float(c["pct"]), "status": "open", "issued": int(now)}
         acc["hwm"] = round(max(hwm, cum_end), 2)
         acc["periods"].append(p)
