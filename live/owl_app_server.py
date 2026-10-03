@@ -1121,9 +1121,9 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .topline>span:last-child{flex:none}
 .brand{font-weight:700;color:#dbe9f7;font-size:1.02rem;display:inline-flex;
  align-items:center}
-.live{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none;
- background:rgba(46,204,113,.14);color:var(--up-soft);font-size:.7rem;
- font-weight:700;padding:5px 11px;border-radius:999px;
+.live{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;flex:none;
+ background:rgba(46,204,113,.14);color:var(--up-soft);font-size:.6rem;
+ font-weight:700;padding:3px 8px;border-radius:999px;
  letter-spacing:.06em}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--up);
  animation:p 1.8s infinite}
@@ -1529,8 +1529,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
  white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
 #tab-home #apkcard,#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
-#tab-home:has(#newscard[style*="display: block"]) #recap{margin-top:12px!important}
-#tab-home:has(#apkcard[style*="display: block"]) #newscard,#tab-home:has(#apkcard[style*="display: block"]) #recap{margin-top:12px!important}
+.hq{display:none!important}
 #apkcard .shbtn{width:auto!important;margin:0!important;padding:10px 14px!important}
 #apkcard #apk-go{flex:1 1 auto;min-width:0}
 #apkcard #apk-no{flex:0 0 auto}
@@ -1870,11 +1869,11 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 <div class="hero">
 <div class="topline"><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px">
 <span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
-<span id="acctline"></span></span>
-<span style="display:flex;align-items:center;gap:10px">
-<button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:6px;
+<span style="display:flex;align-items:center;gap:8px"><span id="acctline"></span><span class="live" id="lv"><span class="dot" id="lvd"></span><span id="lvt">EN DIRECT</span></span></span></span>
+<span style="display:flex;align-items:center;gap:8px;flex:none">
+<button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:5px;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
- border-radius:99px;padding:5px 10px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
+ border-radius:99px;padding:5px 8px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
 <button id="hbell" class="tap44" onclick="inboxSheet()" title="Messages" aria-label="Messages" style="position:relative;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-bell"/></svg><span id="hbell-n" style="display:none;position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;border-radius:99px;background:var(--down);color:#fff;font-size:.6rem;font-weight:800;align-items:center;justify-content:center;padding:0 4px;border:2px solid #0e1a2b"></span></button>
 <a id="chartlink" class="tap44" href="#" title="Graphique en direct" aria-label="Graphique en direct"
@@ -1882,13 +1881,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  color:#dbe9f7;background:rgba(255,255,255,.08);
  border:1px solid rgba(255,255,255,.14);
  border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-chart"/></svg></a>
-<span class="live" id="lv"><span class="dot" id="lvd"></span><span
- id="lvt">EN DIRECT</span></span>
-<a href="../" style="color:#9fc2de;text-decoration:none;font-size:1.25rem;
- line-height:1;display:inline-flex;align-items:center;
- background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
- border-radius:99px;padding:5px 9px" class="tap44" title="Sortir"
- aria-label="Sortir"><svg class="ic ic-s"><use href="#i-exit"/></svg></a></span></div>
+</span></div>
 <!-- 2026-10-01 (owner): the wave was the last emoji in the hero. -->
 <div class="hello" id="hello">Bonjour %%NAME%%</div>
 <div class="money skel" id="eq">&#8226;&#8226;&#8226;</div>
@@ -2487,6 +2480,20 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     d&#39;accueil</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
+ <!-- 2026-10-03 (owner): Sortir lives here now; it locks the page without leaving it -->
+ <div class="srow" onclick="appExit()">
+  <div class="sic"><svg class="ic"><use href="#i-exit"/></svg></div>
+  <div style="flex:1"><b>Sortir</b>
+   <div class="ssub">Verrouille l&#39;application sur cet &eacute;cran</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <!-- 2026-10-03 (owner): the admin's way back from a member's page -->
+ <a class="srow" id="admback" href="#" style="display:none;text-decoration:none;color:inherit">
+  <div class="sic"><svg class="ic"><use href="#i-users"/></svg></div>
+  <div style="flex:1"><b>Revenir &agrave; mon compte</b>
+   <div class="ssub" id="admback-s">Vous regardez le compte d&#39;un membre</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </a>
  <!-- 2026-10-03 (owner): the Android app (an APK that wraps this site) -->
  <a class="srow" id="apkrow" href="/owlnest.apk" style="text-decoration:none;color:inherit">
   <div class="sic"><svg class="ic"><use href="#i-download"/></svg></div>
@@ -2750,7 +2757,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div style="font-weight:700;font-size:1.05rem;margin-top:14px">Code d&#39;acc&egrave;s</div>
  <div id="lock-dots" style="display:flex;gap:12px;margin:16px 0 22px"></div>
  <div class="kp" id="lock-kp"></div>
- <a href="../" style="margin-top:22px;color:var(--muted);font-size:.85rem;text-decoration:none">Code oubli&eacute; ? Changer de compte</a>
+ <button id="lock-back" class="shbtn shmain" style="display:none;width:auto;margin-top:18px;padding:11px 26px" onclick="appBack()">Revenir</button>
+ <a id="lock-forgot" href="../" style="margin-top:22px;color:var(--muted);font-size:.85rem;text-decoration:none">Code oubli&eacute; ? Changer de compte</a>
 </div>
 <div id="offline" role="status"><svg class="ic ic-s"><use href="#i-cloud"/></svg><span id="offline-t">Connexion perdue</span></div>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -2777,6 +2785,32 @@ async function sha(t){const b=new TextEncoder().encode(t);
  const h=await crypto.subtle.digest('SHA-256',b);
  return [...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function pinKey(){return 'owlPin:'+location.pathname;}
+// 2026-10-03 (owner): "Sortir" never leaves the page - the trip to the
+// landing page showed the address in the browser bar for a moment. With
+// a code set it locks; without one it shows the same screen with a
+// "Revenir" button. Nothing is loaded, so nothing can flash.
+function appExit(){const en=LANG()==='en';let pin=null;try{pin=localStorage.getItem(pinKey());}catch(e){}
+ const t=document.querySelector('#lock > div[style*="font-weight:700"]');
+ const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots'),back=document.getElementById('lock-back'),fg=document.getElementById('lock-forgot');
+ if(pin){if(t)t.textContent=en?'Access code':'Code d\u2019acc\u00e8s';if(kp)kp.style.display='';if(dots)dots.style.display='flex';if(back)back.style.display='none';if(fg)fg.style.display='';}
+ else{if(t)t.textContent=en?'See you soon':'\u00c0 bient\u00f4t';if(kp)kp.style.display='none';if(dots)dots.style.display='none';if(back){back.style.display='inline-flex';back.textContent=en?'Come back':'Revenir';}if(fg)fg.style.display='none';}
+ window._shDone&&window._shDone(1);window.scrollTo(0,0);
+ document.documentElement.classList.add('locked');}
+function appBack(){document.documentElement.classList.remove('locked');
+ const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots'),back=document.getElementById('lock-back'),fg=document.getElementById('lock-forgot');
+ if(kp)kp.style.display='';if(dots)dots.style.display='flex';if(back)back.style.display='none';if(fg)fg.style.display='';}
+// 2026-10-03 (owner): the home shows ONE card at a time, in order of
+// importance: notifications, last night, the Android app, what's new.
+// Each card keeps its own logic (it sets display:block when it has
+// something to say, none when dismissed); this only decides which of the
+// willing cards is the one on screen. The next appears when one goes.
+const HOME_Q=['nudge','recap','apkcard','newscard'];
+function homeCards(){let shown=false;
+ HOME_Q.forEach(id=>{const el=document.getElementById(id);if(!el)return;
+  const wants=el.style.display==='block';
+  if(wants&&!shown){el.classList.remove('hq');shown=true;}
+  else el.classList.toggle('hq',wants);});}
+setInterval(homeCards,600);
 function pinInit(){
  const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots');
  if(!kp||kp.children.length)return;
@@ -4398,8 +4432,12 @@ async function nestFromAdmin(){
 }
 async function acctChipInit(){
  if(window._d&&window._d.is_master)return;
- const N=await nestFromAdmin();const ch=document.getElementById('acctchip');
- if(N&&N.length&&ch){ch.style.display='inline-flex';document.getElementById('acctchip-n').textContent=N.length;}
+ // 2026-10-03 (owner): on a member's page the hero shows no switcher,
+ // even on the admin's own phone - the way back is a row in Reglages
+ const N=await nestFromAdmin();let adm=null;try{adm=localStorage.getItem('owl_adm');}catch(e){}
+ const row=document.getElementById('admback');
+ if(N&&N.length&&adm&&row){row.href=adm;row.style.display='flex';
+  const s=document.getElementById('admback-s');if(s)s.textContent=(LANG()==='en'?'You are viewing a member\u2019s account':'Vous regardez le compte d\u2019un membre')+(window._admName?' \u00b7 '+window._admName:'');}
 }
 async function acctSheet(){
  const N=(await nestFromAdmin())||[],d=window._d||{};if(!N.length)return;
@@ -7144,7 +7182,8 @@ function render(d){
   if(d.acct){
    setH(document.getElementById('acctline'),
     '<i style="background:'+(d.real?'var(--up)':'var(--warn)')+'"></i>'+
-    (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; '+d.acct);
+    // 2026-10-03 (owner): the number is masked - its last three digits only
+    (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; &bull;&bull;&bull;&bull;'+String(d.acct).slice(-3));
   }
   if(d.palier&&d.equity){
    const pb0=(d.palier_base&&d.palier_base<d.palier)
@@ -7808,7 +7847,9 @@ window.addEventListener('appinstalled',()=>{
 // the app opens straight on it; inside the app (?twa=<version>) a newer
 // APK is announced; in a browser on Android the APK is suggested once a
 // fortnight. The APK installs over the old one - nothing to uninstall.
-(function(){try{var m=location.pathname.match(/^[/]([A-Za-z0-9_-]{6,})[/]/);if(m)localStorage.setItem('owlLink','/'+m[1]+'/');}catch(e){}
+(function(){try{var m=location.pathname.match(/^[/]([A-Za-z0-9_-]{6,})[/]/);var adm=localStorage.getItem('owl_adm');
+  // the admin's phone remembers the admin's own page, not the member's it is visiting
+  if(m&&(!adm||adm==='/'+m[1]+'/'))localStorage.setItem('owlLink','/'+m[1]+'/');}catch(e){}
  try{var q=new URLSearchParams(location.search).get('twa');if(q)sessionStorage.setItem('owlTwa',q);}catch(e){}
  setTimeout(apkCheck,1800);})();
 async function apkCheck(){const c=document.getElementById('apkcard');if(!c)return;const en=LANG()==='en';
@@ -9869,8 +9910,10 @@ def user_stats(u, admin_override=False):
                 d["palier_step"] = _step
         except Exception:
             pass
+        # 2026-10-03 (owner): admin accounts only. "login == LOGIN" used to
+        # make master any member whose MT5 login is the server's own, and
+        # that member saw the account switcher and Le Nid.
         if (u.get("id") in ("kino", "std")
-                or str(u.get("login")) == str(LOGIN)
                 or admin_override):
             d["is_master"] = True
             # v2 Le Nid: one row per member for the master console
@@ -10272,7 +10315,7 @@ button,a.b{display:block;width:100%;box-sizing:border-box;margin-top:12px;border
 <img src="/icon192.png" alt="">
 <div id="ask"><h1>Bienvenue dans OwlNest</h1>
 <p>Collez le lien que vous avez re&ccedil;u (il contient votre cl&eacute;). L&#8217;application s&#8217;en souviendra.</p>
-<input id="lnk" placeholder="https://owltrader.duckdns.org/votre-cle/" autocomplete="off" inputmode="url">
+<input id="lnk" placeholder="Collez votre lien ici" autocomplete="off" inputmode="url">
 <button class="m" onclick="go()">Ouvrir mon compte</button>
 <a class="b g" href="/demo">Voir le compte d&eacute;mo</a>
 <div class="s">Pas encore de lien ? <a href="/" style="color:#9fc2de">Demander un acc&egrave;s</a></div>
