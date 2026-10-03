@@ -1483,6 +1483,30 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pf-dots i.today{border-color:var(--text)}
 .pf-tip{min-height:18px;font-size:.74rem;color:var(--text);margin-top:6px;font-variant-numeric:tabular-nums}
 .pf-mine{margin-top:12px;border-radius:16px;padding:12px 14px;border:1px solid var(--accent-soft);background:linear-gradient(180deg,rgba(59,130,246,.10),transparent)}
+/* 2026-10-02 (owner): Marche > Robot, premium pass - scoped to #mx-robot */
+#mx-robot .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;
+ font-weight:700;letter-spacing:.12em;color:var(--muted2);margin-bottom:10px}
+#mx-robot .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+#mx-robot .panel>.lbl>span:first-child,#mx-robot .panel>.lbl{white-space:nowrap}
+#mx-robot .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;
+ color:var(--muted);white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
+#mx-robot #rb-next{background:transparent!important;border:0!important;
+ border-top:1px solid var(--border)!important;border-radius:0!important;padding:11px 0 0!important}
+#mx-robot #rb-next>span{color:var(--muted2)!important;font-weight:700;
+ letter-spacing:.12em!important;font-size:.62rem!important;margin-bottom:4px!important}
+#mx-robot #st{border-top:1px solid var(--border)!important}
+#mx-robot #proofcard{border-color:var(--border)!important}
+#mx-robot .pf-verdict{font-weight:700;letter-spacing:-.01em}
+#mx-robot .pf-dots{margin-top:6px}
+#mx-robot .pf-dots i{display:none}
+#mx-robot .pf-dots span{margin-left:0!important;font-size:.72rem;color:var(--muted)}
+#mx-robot .pf-row .t b{font-weight:600}
+#mx-robot #proofcard .shbtn.shmain{margin:12px 0 0;padding:12px 0 2px;background:transparent;
+ border:0;border-top:1px solid var(--border);border-radius:0;color:var(--accent-soft);
+ font-weight:700;font-size:.9rem;text-align:left;box-shadow:none}
+#mx-robot #rjcard .lbl{margin-bottom:0;font-size:.62rem}
+#mx-robot #rjcard .lbl::after{display:none}
+#mx-robot .sic{background:var(--tile-bg);border:1px solid var(--tile-bd)}
 
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
