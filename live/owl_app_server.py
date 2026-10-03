@@ -1527,6 +1527,28 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .sic{background:var(--tile-bg)!important;border:1px solid var(--tile-bd)}
 #tab-home .cvc{border-color:transparent!important;padding:6px 11px!important;border-radius:9px!important}
 #tab-home .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
+/* 2026-10-02 (owner): Le Nid, premium pass - scoped to #tab-nid */
+#tab-nid .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
+#tab-nid #acctsw{background:transparent!important;border:0!important;padding:0!important;margin-bottom:10px!important}
+#tab-nid #acctsw>div:first-child{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+#tab-nid #acctsw-b{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin:0 -2px}
+#tab-nid #acctsw-b::-webkit-scrollbar{display:none}
+#tab-nid #acctsw-b>*{flex:none;white-space:nowrap;border-color:transparent!important;background:var(--tile-bg)!important;
+ font-size:.84rem!important;padding:8px 12px!important;border-radius:99px!important}
+#tab-nid .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2)}
+#tab-nid .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+#tab-nid #rev-g>div{background:var(--tile-bg)!important;border:1px solid var(--tile-bd)!important;border-radius:14px!important;padding:12px 6px!important}
+#tab-nid #rev-g>div b{font-size:1.3rem!important;font-weight:700!important;letter-spacing:-.02em}
+#tab-nid #rev-g>div span{font-size:.62rem!important;color:var(--muted)!important}
+#tab-nid .nrow{padding:14px 2px}
+#tab-nid .nr-nm{font-weight:600}
+#tab-nid .nr-bal{font-weight:600;color:var(--text)}
+#tab-nid .nchip{font-size:.7rem;padding:3px 9px;background:var(--tile-bg);border-color:var(--tile-bd)}
+#tab-nid .nr-a{gap:4px}
+#tab-nid .nact{border-color:transparent;background:var(--tile-bg);color:var(--muted);min-width:40px;min-height:40px;border-radius:10px}
+#tab-nid .nact-b{background:rgba(255,92,92,.08);color:#ff8c8c}
+#tab-nid #invbtn{background:transparent!important;border:1px dashed var(--border2)!important;color:var(--text2)!important;
+ font-weight:600!important;font-size:.9rem!important;padding:13px!important}
 
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
@@ -7232,7 +7254,7 @@ function render(d){
     (_dn>=_dt?'\u2713 tous ont fini \u00b7 '+_dn+'/'+_dt
      :_dn+'/'+_dt+' ont fini leur journ\u00e9e')+'</span></div>'):'';
    const hdr=_alh+_famh+'<div class="row" style="border-bottom:2px solid '+
-    '#24344a"><span><b>&#127968; Total famille</b> <span style="'+
+    '#24344a"><span><b>Total famille</b> <span style="'+
     'color:var(--muted);font-size:.75rem">'+_rl.length+
     ' compte'+(_rl.length>1?'s':'')+' r\u00e9el'+(_rl.length>1?'s':'')+
     (_dm?' <span style="color:#5f7185">(+'+_dm+' d\u00e9mo non '+
@@ -7286,7 +7308,7 @@ function render(d){
     '</span></div>'+
     '<div class="nr-l" style="margin-top:2px">'+
     '<span class="nr-mt" style="padding-left:18px">'+
-    (x.bot?'&#129302; '+x.bot:'&#8212;')+
+    (x.bot?x.bot:'&#8212;')+
     (x.login?' &middot; '+x.login:'')+
     (x.seen?' &middot; '+agoTxt(x.seen).replace(/^vu /,''):'')+'</span>'+
     (x.today!=null?'<span class="nr-td '+(sgn(x.today))+'">'+
