@@ -1077,6 +1077,9 @@ body{background:var(--bg);color:var(--text);
 @keyframes jp{0%{box-shadow:0 0 0 0 rgba(59,130,246,.45)}
  70%{box-shadow:0 0 0 10px rgba(59,130,246,0)}100%{box-shadow:0 0 0 0 rgba(59,130,246,0)}}
 .js.done .jc{color:var(--up)}
+#ib-list .srow-ev>button{opacity:.5;font-size:.9rem}
+#ib-list .evi{background:var(--tile-bg);border:1px solid var(--tile-bd)}
+#tfilt .tfc,#ib-list ~ * .ibf{border-color:transparent}
 .srow-ev{display:flex;align-items:flex-start;gap:11px;padding:10px 2px;
  border-bottom:1px solid var(--border);font-size:.92rem;line-height:1.4}
 .srow-ev:last-child{border-bottom:0}
@@ -1455,7 +1458,14 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pf-steps div{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:8px 6px;font-size:.66rem;color:var(--text2);line-height:1.3;text-align:center}
 .pf-steps b{display:block;font-size:.9rem;color:var(--accent-soft);margin-bottom:2px}
 .pf-ring b{font-size:.72rem;letter-spacing:.02em;text-transform:uppercase;text-align:center;line-height:1.1;padding:0 8px}
-.pf-ring.big{width:92px;height:92px}.pf-ring.big svg{width:92px;height:92px}.pf-ring.big b{font-size:.8rem}
+.pf-ring.big{width:116px;height:116px}.pf-ring.big svg{width:116px;height:116px}.pf-ring.big b{font-size:.9rem}
+/* 2026-10-02 (owner): the proof deck's verdict slide left 40% empty; the
+   dots become their sentence, the checks get room, the ring grows. */
+#sheet .pf-dots i{display:none}
+#sheet .pf-dots span{margin-left:0!important;font-size:.76rem;color:var(--muted2)}
+#sheet .pv-row{padding:15px 0;gap:12px}
+#sheet .pv-row .t{font-size:.95rem;font-weight:600}
+#sheet .pv-note{font-size:.78rem;margin-top:16px}
 .pf-nav{position:sticky;top:-2px;z-index:3;display:flex;gap:6px;padding:8px 0 10px;background:var(--surface);border-bottom:1px solid var(--border);margin-bottom:6px}
 .pf-nav button{flex:1;border:1px solid var(--border);background:var(--surface2);color:var(--text2);border-radius:99px;padding:7px 4px;font:inherit;font-size:.72rem;font-weight:700;cursor:pointer}
 .pf-nav button b{color:var(--accent-soft);margin-right:3px}
@@ -4009,12 +4019,15 @@ function inboxList(){
  const en=LANG()==='en';
  const ic=k=>k==='bil'?['i-calendar','var(--accent-soft)']:k==='sig'?['i-activity','var(--up)']:k==='tr'?['i-chart','var(--text3)']:['i-bell','var(--warn)'];
  const esc=x=>String(x||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+ // 2026-10-02 (owner): the icon square carries the picture; a title that
+ // starts with an emoji wrapped to three lines for nothing
+ const stripEmo=t=>String(t||'').replace(/^[\s\p{Extended_Pictographic}\uFE0F\u200D]+/u,'');
  const L=it.filter(x=>(f==='all'||inboxKind(x)===f)&&(!q||((x.title||'')+' '+(x.body||'')).toLowerCase().indexOf(q)>=0));
  const el=document.getElementById('ib-list');if(!el)return;
  el.innerHTML=L.length?L.map(x=>{const [n,c]=ic(inboxKind(x));
   return '<div class="srow-ev" style="align-items:flex-start"><div class="evi" style="color:'+c+'"><svg class="ic ic-s"><use href="#'+n+'"/></svg></div>'+
   '<div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">'+
-  '<b style="font-size:.9rem">'+esc(x.title)+'</b><span style="font-size:.7rem;color:var(--muted);white-space:nowrap">'+inboxWhen(x.t)+'</span></div>'+
+  '<b style="font-size:.9rem;font-weight:600">'+esc(stripEmo(x.title))+'</b><span style="font-size:.7rem;color:var(--muted);white-space:nowrap">'+inboxWhen(x.t)+'</span></div>'+
   '<div style="font-size:.84rem;color:var(--muted2);line-height:1.4;margin-top:2px">'+esc(x.body)+'</div></div>'+
   '<button onclick="inboxDel('+x.t+')" aria-label="'+(en?'Delete':'Supprimer')+'" style="flex:none;border:0;background:transparent;color:var(--muted);padding:2px 4px;font-size:1rem;line-height:1">\u00d7</button></div>';}).join('')
   :'<div class="empty"><p>'+(en?'Nothing here.':'Rien ici.')+'</p></div>';
@@ -10103,6 +10116,11 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
 .pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
  align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:30px}
+/* 2026-10-02 (owner): the 1-2-3 steps as small-caps numerals, not boxes */
+.feats:not(#plans) .fi.stp{background:transparent!important;border:0!important;color:#b98cff!important;
+ font-size:.66rem!important;font-weight:700!important;letter-spacing:.12em;width:auto!important;
+ height:auto!important;min-width:30px;border-radius:0!important;padding-top:5px;box-shadow:none!important}
+.feats:not(#plans) .fi.stp::before{content:"0"}
 .how{margin:0 4px 6px;font-size:.68rem;font-weight:700;color:var(--muted);
  text-transform:uppercase;letter-spacing:.09em}
 .fi.stp{font-weight:800;font-size:1rem;color:var(--accent-soft)}
