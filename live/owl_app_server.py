@@ -2487,6 +2487,13 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
     d&#39;accueil</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
+ <!-- 2026-10-03 (owner): the Android app (an APK that wraps this site) -->
+ <a class="srow" id="apkrow" href="/owlnest.apk" style="text-decoration:none;color:inherit">
+  <div class="sic"><svg class="ic"><use href="#i-download"/></svg></div>
+  <div style="flex:1"><b id="apkrow-t">Application Android</b>
+   <div class="ssub" id="apkrow-s">T&eacute;l&eacute;charger le fichier APK</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </a>
  <!-- 2026-09-30 (owner): the robot stopped trading the inner
       structure today, but the chart still draws it. Somebody reading the
       chart would reasonably assume the robot acts on it. This switch lets
@@ -7806,14 +7813,18 @@ window.addEventListener('appinstalled',()=>{
  setTimeout(apkCheck,1800);})();
 async function apkCheck(){const c=document.getElementById('apkcard');if(!c)return;const en=LANG()==='en';
  const and=/Android/i.test(navigator.userAgent);let twa='';try{twa=sessionStorage.getItem('owlTwa')||'';}catch(e){}
- if(!and&&!twa)return;
  let j=null;try{j=await (await fetch('/apk.json',{cache:'no-store'})).json();}catch(e){}
  if(!j||!j.versionCode)return;
+ // the Reglages row: version, and inside the app whether it is the latest
+ (function(){const s=document.getElementById('apkrow-s');if(!s)return;
+  if(twa)s.textContent=(+j.versionCode>+twa)?(en?'Version '+j.version+' available - tap to update':'Version '+j.version+' disponible \u2014 touchez pour mettre \u00e0 jour'):(en?'You have the latest version ('+j.version+')':'Vous avez la derni\u00e8re version ('+j.version+')');
+  else s.textContent=(en?'Download the APK file \u00b7 version ':'T\u00e9l\u00e9charger le fichier APK \u00b7 version ')+j.version+(and?'':(en?' \u00b7 Android only':' \u00b7 Android seulement'));})();
  const T=document.getElementById('apk-t'),B=document.getElementById('apk-b'),G=document.getElementById('apk-go'),N=document.getElementById('apk-no');
  if(twa){if(+j.versionCode<=+twa)return;
   T.textContent=en?'A new version of the app':'Une nouvelle version de l\u2019application';
   B.textContent=en?'Version '+j.version+'. Tap, then install: it goes over the old one, nothing to uninstall.':'Version '+j.version+'. Touchez, puis installez : elle se pose par-dessus l\u2019ancienne, rien \u00e0 d\u00e9sinstaller.';
   G.textContent=en?'Update':'Mettre \u00e0 jour';N.textContent=en?'Later':'Plus tard';c.style.display='block';return;}
+ if(!and)return;
  let dis=0;try{dis=+localStorage.getItem('owlApkDis')||0;}catch(e){}
  if(Date.now()-dis<14*86400000)return;
  T.textContent=en?'OwlNest as a real app':'OwlNest en vraie application';
