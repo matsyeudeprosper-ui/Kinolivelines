@@ -230,6 +230,28 @@ elif VARIANT == "valere":
     DAY_CAP = 3.0
     WEEK_TARGET = 20.0
     _SFX = "_valere"
+elif VARIANT not in ("live", "bos") and any(
+        x.get("id") == VARIANT and x.get("trade") and x.get("mt5_login")
+        for x in json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                             "owl_nest_users.json"), encoding="utf-8"))):
+    # 2026-10-03 (owner): "the creation of a family account must be
+    # automatic" - a member who activated the Automatique package runs
+    # THIS bot with the base package, no hand-written variant. Terminal
+    # and credentials from the nest record; its own state, log, journal
+    # and pause file, named after the member id.
+    _SFX = "_" + VARIANT
+    _gu = [x for x in json.load(open(os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "owl_nest_users.json"), encoding="utf-8"))
+        if x.get("id") == VARIANT][0]
+    TERMINAL = _gu["terminal"]
+    LOGIN = int(_gu["mt5_login"])
+    SERVER = _gu["mt5_server"]
+    PASSWORD = _gu["mt5_password"]
+    MAGIC = 909501
+    COMMENT = "KL-BOS-F"
+    TOUCH_ENTRIES = False
+    _GENERIC = True
 else:
     TERMINAL = r"C:\NestTerminals\u223995441\terminal64.exe"
     LOGIN = 223995441
@@ -254,7 +276,7 @@ JOURNAL_F = os.path.join(DIR, f"bos_journal{_SFX}.csv")
 PAUSE_UID = {"valere": "u224016179", "sniper": "sniper",
              "halfdebt": "half", "kino": "kino",
              "demo": "demo", "infinity": "infinity",
-             "expenses": "expenses", "labo": "labo"}.get(VARIANT, "bos")
+             "expenses": "expenses", "labo": "labo"}.get(VARIANT, VARIANT if globals().get("_GENERIC") else "bos")
 PAUSE_F = os.path.join(DIR, "owl_trading_pause.json")
 PAUSE_OWN = os.path.join(DIR, f"owl_trading_pause_{PAUSE_UID}.json")
 

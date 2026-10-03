@@ -39,6 +39,20 @@ def say(m):
 
 
 procs = {}
+
+
+def _running(tail):
+    """Is a python process whose command line ends with `tail` alive?
+    (a bot started by boot_all.ps1 or by a previous manager)"""
+    try:
+        out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                              "(Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*" + tail + "' }).Count"],
+                             capture_output=True, text=True, timeout=30, creationflags=CREATE_NO_WINDOW).stdout.strip()
+        return int(out or 0) > 0
+    except Exception:
+        return False
+
+
 say("manager starting")
 while True:
     try:
@@ -56,6 +70,20 @@ while True:
             procs[uid] = subprocess.Popen(
                 [sys.executable, os.path.join(DIR, "owl_nest_worker.py"), uid],
                 cwd=DIR, creationflags=CREATE_NO_WINDOW)
+        # 2026-10-03 (owner): the robot on a family account that activated
+        # itself - "managed": the manager starts it and brings it back if
+        # it dies. The hand-built accounts (kino, valere...) stay in
+        # boot_all.ps1. The bot reads its own pause file; expiry pauses it
+        # there, so nothing to decide here.
+        if u.get("managed") and u.get("trade") and u.get("mt5_password"):
+            mk = uid + ":bos"
+            mp = procs.get(mk)
+            if (mp is None or mp.poll() is not None) and not _running("structure_bos_bot.py " + uid):
+                say(f"spawning structure bot for {uid}")
+                procs[mk] = subprocess.Popen(
+                    [sys.executable.replace("python.exe", "pythonw.exe"),
+                     os.path.join(DIR, "structure_bos_bot.py"), uid],
+                    cwd=DIR, creationflags=CREATE_NO_WINDOW)
         # personal trading Owl (demo trials with trading enabled)
         if u.get("trading") and u.get("mt5_password"):
             import datetime as _dt
@@ -87,6 +115,11 @@ while True:
         _changed = False
         _keep = []
         for u in users:
+            # 2026-10-03 (owner): opened from the public page, never paid
+            if u.get("pending_pay") and not u.get("terminal") and time.time() - float(u.get("created") or time.time()) > 48 * 3600:
+                say(f"removing unpaid signup {u.get('id')}")
+                _changed = True
+                continue
             _ps = u.get("pending_since")
             if not _ps:
                 _keep.append(u)
