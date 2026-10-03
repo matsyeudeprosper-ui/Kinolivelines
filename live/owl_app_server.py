@@ -1571,6 +1571,20 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-hist #siglist:has(.empty){background:transparent;border:1px dashed var(--border2);box-shadow:none}
 #tab-hist #msum-sec button{background:transparent!important;border-color:var(--border)!important;color:var(--muted2)!important}
 #tab-hist #tgo button,#tab-hist #tgo input{border-color:var(--border)!important;background:var(--tile-bg)!important}
+#tab-hist #cal-sec>span:last-child{margin-left:14px}
+/* 2026-10-02 (owner): Marche > Marche, premium pass - scoped to #mx-market */
+#mx-market .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
+#mx-jump{gap:2px!important;border-bottom:1px solid var(--border);padding:2px 0 6px!important;margin-top:6px!important}
+#mx-jump button{border:0!important;background:transparent!important;color:var(--muted2)!important;
+ border-radius:9px!important;padding:8px 10px!important;min-height:36px!important;font-weight:600!important;font-size:.8rem!important}
+#mx-jump button:active{background:var(--surface2)!important}
+#mx-market .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2);white-space:nowrap}
+#mx-market .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+#mx-market .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
+#mx-chips>div{border-color:var(--tile-bd)!important;border-radius:14px!important}
+#mx-chips>div b{font-weight:600!important}
+#mx-market #tf-foot{font-size:.76rem;color:var(--muted);line-height:1.5}
+#mx-market #mh-leg{justify-content:flex-end}
 
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
