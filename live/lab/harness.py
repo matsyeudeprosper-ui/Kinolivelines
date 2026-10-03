@@ -153,6 +153,12 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             #   kill_net stop for good once the account is this far down
             # All default to OFF so every earlier measurement stays comparable.
             "jar": False, "day_cap": 0.0, "kill_net": 0.0,
+            # 2026-10-03 (chercheur): cap_fit = on an account with a daily
+            # cap, a trade's target aims only for what is still missing to
+            # reach the cap (after the spread), never further than rr.
+            # Not applied while in the red, where the cap is waived anyway.
+            # 0 = off; does nothing on an account without a daily cap.
+            "cap_fit": 0,
             # 2026-09-29 (owner: "each account has a different balance, so not
             # the same risk"). The live bot resizes the lot AND the daily cap
             # by balance / scale_ref, rounding the lot down to 0.01. With
@@ -361,6 +367,7 @@ def simulate(R, spread, cfg):
     n_trail_exit = 0     # ... and that were then closed by that stop
     trail_gain = 0.0     # points the moved stop saved, vs the first one
     pos_trailed = False
+    pos_rr = rr          # the open trade's own target, rr unless cap_fit shrank it
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
@@ -451,7 +458,7 @@ def simulate(R, spread, cfg):
                 # number in algebra but not always in the last bit of
                 # a float, and `run` carries that bit into every later
                 # trade's rounded money.
-                pts = ((rr * dist - spread) if win
+                pts = ((pos_rr * dist - spread) if win
                        else ((d * (sl - e) - spread) if c["trail_prot"]
                              else -(dist + spread)))
                 debt = (debt_led if c["debt_mode"] == "half"                        else max(0.0, pk - run))
@@ -465,7 +472,7 @@ def simulate(R, spread, cfg):
                         # nothing when the market is not calm. `nv` is the
                         # reading at entry, the closest we have to the midpoint.
                         r001 = dist * BLOT
-                        gain001 = rr * r001
+                        gain001 = pos_rr * r001
                         by_budget = int((chest * JAR_STAKE) // r001) if r001 > 0 else 0
                         by_debt = int(math.ceil(debt / gain001)) if gain001 > 0 else 0
                         nb = 0 if nv > 1.0 else max(0, min(int(NB), by_budget, by_debt))
@@ -477,7 +484,7 @@ def simulate(R, spread, cfg):
                     # of the distance to the target. This was hardcoded to 1.3,
                     # which silently assumed rr = 0.8 and mispriced every other
                     # target we tested.
-                    bpts = (((0.5 + rr) * dist - spread) if win
+                    bpts = (((0.5 + pos_rr) * dist - spread) if win
                             else ((d * (sl - mid) - spread)
                                   if c["trail_prot"]
                                   else -(dist / 2.0 + spread)))
@@ -769,7 +776,13 @@ def simulate(R, spread, cfg):
                 blocked += 1
                 continue
             _risk = dist * lot
-        tp = cl + d * rr * dist
+        # aim only for what is left of the day's cap, never past rr
+        pos_rr = rr
+        if c["cap_fit"] and day_cap_eff and debt_now <= 0.5:
+            _need = day_cap_eff - day_profit
+            if _need > 0:
+                pos_rr = min(rr, (_need / lot + spread) / dist)
+        tp = cl + d * pos_rr * dist
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
         pos_trailed = False
         last_hour = t // 3600
@@ -1055,6 +1068,9 @@ def main():
     ap.add_argument("--k-streak", type=int)
     ap.add_argument("--cost-max", type=float, help="refuse an entry whose spread is over X %% of the stop distance")
     ap.add_argument("--min-range", type=float, help="refuse an entry when the median 60-min candle range is under X points")
+    ap.add_argument("--cap-fit", type=float,
+                    help="aim each target only for what is left of a daily cap of $X"
+                         " (this replay has no cap of its own); 0 = off")
     ap.add_argument("--spread", type=float, default=7.0)
     ap.add_argument("--drag", type=str, help="per-trade cost in $ at 0.02 lot: a number, or 'auto' = last night's measured gap once it rests on 30 trades; default raw")
     ap.add_argument("--json", action="store_true")
@@ -1082,6 +1098,9 @@ def main():
     if a.k_streak is not None: over["k_streak"] = a.k_streak
     if a.cost_max is not None: over["cost_max"] = a.cost_max
     if a.min_range is not None: over["min_range"] = a.min_range
+    if a.cap_fit:
+        over["cap_fit"] = 1
+        over["day_cap"] = a.cap_fit
     sym, R = bars()
     base = run_cfg(R, a.spread, {})
     v = run_cfg(R, a.spread, over)
