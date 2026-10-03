@@ -329,7 +329,8 @@ console.log("labo");
   await ev("(function(){var b=document.getElementById('tb-marche');if(b)b.click();return 1;})()"); await sleep(1500);
   await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(5000);
   const order = await ev("Array.from(document.getElementById('lab-body').children).map(function(e){return e.className||e.id;}).join(' > ')");
-  check("labo landing is hero > board > clues row", /labhero > panel jboard/.test(order) && /labseedrow/.test(order), order);
+  // 2026-10-03: the week card (Sunday's digest) may sit between hero and board; the lab's robot card sits after the board
+  check("labo landing is hero > (week) > board > robot > clues row", /labhero > (panel labweek > )?panel jboard > panel lablabo/.test(order) && /labseedrow/.test(order), order);
   check("the board has four columns", (await ev("document.querySelectorAll('.jrail .jn').length")) === 4);
   check("a card renders in the open column", (await ev("document.querySelectorAll('#jcards .lc').length")) >= 1);
   const lt = await ev("document.getElementById('lab-body').innerText");

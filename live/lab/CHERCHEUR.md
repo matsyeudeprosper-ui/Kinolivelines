@@ -95,8 +95,10 @@ On the same entries the bot took, the engine's replay is more generous
 than what the accounts really made. The gap is measured every night,
 like-for-like (`lab/proof.json` → `sources.drag`: `per_trade`, `trades`,
 `usable`). The battery stays RAW until the measure rests on 30 trades
-(`usable`); once it does, `--drag auto` charges it per closed trade and
-the owner will switch the battery to charged verdicts. Until then, read
+(`usable`); once it does, the battery switches to CHARGED verdicts by
+itself (`auto.json` -> `charged` = dollars per trade, each variant keeps
+`net_raw` beside its charged `net`) and `--drag auto` charges your own runs
+the same way. Until then, read
 `per_trade` as a warning: an idea whose gain per trade is smaller than
 the gap is not a gain. You may run `--drag auto` or `--drag <dollars>`
 on any hunch to see what survives the gap; say so when you quote it.
@@ -122,7 +124,7 @@ would measure with it and what you expect - that is how the tools grow.
   because that clue reached "à vérifier" - both halves of the period
   agree, 30 trades or more. Treat it exactly like a member's ask; it is
   the one clue tonight with real evidence behind it.
-- `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials, facts and tools the menu lacks. Append only. Since 2026-10-02 **le constructeur** (a build session, `lab/CONSTRUCTEUR.md`) takes one open request every night and builds it behind the gates; a request comes back `built` with its `key` (use it), `declined` with `decline_fr` (read why), or `failed` after three attempts. Be precise in `what_*`: say the exact behaviour, the range, the default that changes nothing.
+- `lab/requests.json` — `{"requests":[{"id","date","title_fr","title_en","what_fr","what_en","why_fr","why_en","status":"open"}]}` — dials, facts and tools the menu lacks. Append only. Since 2026-10-02 **le constructeur** (a build session, `lab/CONSTRUCTEUR.md`) takes up to TWO open requests every night, oldest first, and builds them behind the gates; a request comes back `built` with its `key` (use it), `declined` with `decline_fr` (read why), or `failed` after three attempts. Be precise in `what_*`: say the exact behaviour, the range, the default that changes nothing.
 - `lab/cuts.json` — the piles (see "The piles"). Append one at most per night, with its reason.
 - `lab/memoire.json` — your memory (see above). Yours alone; keep its shape.
 - `lab/chercheur_latest.json` — `{"date","fr","en","proposals":[ids],"headline_fr","headline_en","beliefs":[{"fr","en","evidence"}],
@@ -194,6 +196,13 @@ YOURS to grow. The first eleven came from Kino. Add one when the data gives
 you a reason - something you saw in the trades, a need, an opportunity you
 foresee - never to fill a quota. Rules, enforced by the app:
 - at most ONE new pile a night, at most 24 active in all;
+- (owner 2026-10-03) EVERY night, one or the other: append one pile with
+  its reason, or write one line in section 4 of the note that starts
+  "Pas de nouvelle pile :" and says what you looked at and why nothing
+  deserved a pile. Silence is not an answer;
+- a pile of yours that has not reached 30 trades after 60 days is retired
+  by the lab itself (status "retired", reason appended) - a pile is a
+  question with a deadline, not a collection;
 - `why_fr`/`why_en` required: what you saw that makes this pile worth
   counting (plain words, the Grandma rule applies - a member reads it);
 - `where`: 1 to 3 conditions, AND-ed, on these facts of a trade only:
@@ -371,7 +380,8 @@ Structure:
    better / no, and the 2–3 that matter, with their numbers in words.
 3. What I believe and why (your running list, updated).
 4. What the last trades teach (losses AND wins; say "trop peu de trades"
-   when n < 30).
+   when n < 30). End it with the pile line: the pile you opened tonight
+   and why, or "Pas de nouvelle pile : ..." (owner 2026-10-03).
 5. What I propose to try next and why, including the out-of-the-box one.
 6. What I would need to test next (requests for new dials), if any.
 Keep it under 350 words per language. Tone: determined, curious, honest.

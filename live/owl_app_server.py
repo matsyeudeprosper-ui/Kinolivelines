@@ -1665,6 +1665,21 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:lhdot 2.2s ease-out infinite}
 @keyframes lhdot{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}100%{box-shadow:0 0 0 9px rgba(46,204,113,0)}}
 .lablabo{margin-top:10px;padding:14px 14px 12px}
+.lablabo.paused{border-color:rgba(232,197,90,.35)}
+.lablabo-reh{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:.78rem;color:var(--up-soft)}
+.lablabo-reh.bad{color:var(--down-soft)}
+.lablabo-reh span{color:var(--muted)}
+.lablabo-brake{margin:12px 0 0;padding:11px;width:100%}
+.labweek{margin-top:10px;padding:0}
+.labweek>summary{list-style:none;cursor:pointer;padding:14px 14px 12px;display:flex;flex-direction:column;gap:6px;position:relative}
+.labweek>summary::-webkit-details-marker{display:none}
+.labweek>summary .lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2)}
+.labweek>summary .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted)}
+.labweek>summary b{font-size:.92rem;line-height:1.45;font-weight:600;padding-right:26px}
+.labweek>summary .chv{position:absolute;right:14px;top:16px;transition:transform .2s}
+.labweek[open]>summary .chv{transform:rotate(180deg)}
+.labweek ul{margin:0;padding:0 14px 14px 30px;color:var(--text2);font-size:.86rem;line-height:1.5}
+.labweek li{margin-top:6px}
 .lablabo>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2);white-space:nowrap}
 .lablabo>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
 .lablabo>.lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted)}
@@ -5185,6 +5200,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  // standing between a reader and the navigation. Same treatment as "Quoi
  // de neuf" on the home: one line, opening the full thing.
  h+=labHero(en);
+ h+=labWeek(en);
  h+=labBoard(en);
  h+=labLabo(en);
  h+=labSeedRow(en);
@@ -5398,12 +5414,36 @@ function labLabo(en){const j=window._lab||{};const L=j.labo;if(!L)return '';cons
   what=(en?'Trying ':'Essaie ')+'\u00ab '+t+' \u00bb'+(en?' since ':' depuis le ')+esc(dep.date||'')+
    (w&&w.labo?' \u00b7 '+(w.labo.trades||0)+' / '+(w.need||30)+' trades \u00b7 '+(en?'lab ':'labo ')+'<b style="color:'+((w.labo.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(w.labo.net)+'</b> \u00b7 '+(en?'real robot ':'vrai robot ')+'<b>'+mn((w.real||{}).net)+'</b>':'')+
    (L.confirmed?' \u00b7 <span style="color:var(--up-soft)">'+(en?'confirmed':'confirm\u00e9e')+'</span>':'');}
+ else if(L.paused)what=en?'<b style="color:var(--warn)">Paused by Kino</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Runs the robot\u2019s base rules; no idea goes in until the brake is lifted.':'<b style="color:var(--warn)">En pause, par Kino</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Suit les r\u00e8gles de base du robot ; aucune id\u00e9e n\u2019entre tant que le frein est tir\u00e9.';
  else what=en?'Runs the robot\u2019s base rules. A duel winner goes in here first, by itself.':'Suit les r\u00e8gles de base du robot. Une id\u00e9e qui gagne son duel entre ici en premier, toute seule.';
  const tile=(l,x,c)=>'<div><b style="color:'+(c||'var(--text)')+'">'+x+'</b><span>'+l+'</span></div>';
- return '<div class="panel lablabo"><div class="lbl"><span class="lab-dot" style="background:'+(L.alive?'var(--up)':'var(--muted)')+'"></span>'+(en?'The lab\u2019s robot':'Le robot du labo')+'<span class="hint">\u00b7 '+(en?'demo money':'argent de d\u00e9monstration')+'</span></div>'+
+ // 2026-10-03 (owner): every night the gates are rehearsed with a pretend
+ // winner in a sandbox - the card says whether every door still closes
+ const R=L.rehearsal;let reh='';
+ if(R){reh='<div class="lablabo-reh'+(R.ok?'':' bad')+'">'+(R.ok?'<svg class="ic ic-s"><use href="#i-check"/></svg>':'<b>!</b>')+
+   (R.ok?(en?'Every gate rehearsed last night, '+R.passed+' of '+R.total+' fired':'Chaque contr\u00f4le r\u00e9p\u00e9t\u00e9 cette nuit, '+R.passed+' sur '+R.total+' ont ferm\u00e9')
+        :(en?'Rehearsal: '+((R.misses||[])[0]||{}).en:'R\u00e9p\u00e9tition : '+((R.misses||[])[0]||{}).fr))+(R.date?' <span>\u00b7 '+esc(R.date)+'</span>':'')+'</div>';}
+ // the hand brake - Kino only (the server checks the password too)
+ let adm=false;try{adm=!!((window._d||{}).is_master||localStorage.getItem('owl_adm'));}catch(e){}
+ const brake=adm?'<button class="shbtn '+(L.paused?'shmain':'shghost')+' lablabo-brake" onclick="labPause('+(L.paused?0:1)+')">'+(L.paused?(en?'Lift the brake':'Rel\u00e2cher le frein'):(en?'Pull the brake':'Tirer le frein'))+'</button>':'';
+ return '<div class="panel lablabo'+(L.paused?' paused':'')+'"><div class="lbl"><span class="lab-dot" style="background:'+(L.paused?'var(--warn)':(L.alive?'var(--up)':'var(--muted)'))+'"></span>'+(en?'The lab\u2019s robot':'Le robot du labo')+'<span class="hint">\u00b7 '+(en?'demo money':'argent de d\u00e9monstration')+'</span></div>'+
   '<div class="lablabo-what">'+what+'</div>'+
   '<div class="lablabo-tiles">'+tile(en?'trades':'trades',L.trades)+tile(en?'won':'gagn\u00e9s',L.trades?Math.round(100*L.won/L.trades)+'\u202f%':'\u2014')+tile(en?'since start':'depuis le d\u00e9but',mn(L.net),(L.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+  reh+brake+
   (L.since?'<div class="pf-cap">'+(en?'Started ':'D\u00e9marr\u00e9 le ')+esc(L.since)+(L.start?' \u00b7 '+(en?'with ':'avec ')+'$'+L.start.toFixed(2):'')+' \u00b7 '+(en?'real accounts still need your tap':'les vrais comptes attendent toujours votre accord')+'</div>':'')+'</div>';}
+async function labPause(on){const en=LANG()==='en';
+ const Q=on?[en?'Pull the brake?':'Tirer le frein ?',en?'No idea goes into the lab\u2019s robot while it is pulled. An idea already inside comes back out now; the twins keep playing for pretend.':'Aucune id\u00e9e n\u2019entre dans le robot du labo tant qu\u2019il est tir\u00e9. Une id\u00e9e d\u00e9j\u00e0 dedans ressort maintenant ; les jumeaux continuent pour de faux.',en?'Pull':'Tirer']
+            :[en?'Lift the brake?':'Rel\u00e2cher le frein ?',en?'Duel winners go in by themselves again, on demo money.':'Les id\u00e9es qui gagnent leur duel entrent de nouveau toutes seules, en argent de d\u00e9monstration.',en?'Lift':'Rel\u00e2cher'];
+ const pw=await askPwd(Q[0],Q[1],Q[2],!!on);if(!pw)return;
+ const r=await fetch(AB()+'lab_pause',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+(on?1:0)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let ok=false,msg='';try{const x=await r.json();ok=!!x.ok;msg=x.err||x.msg||'';}catch(e){}
+ if(!ok){await info('&#10060; <h3>'+(msg==='bad password'?(en?'Wrong password.':'Mot de passe incorrect.'):_escS(msg||(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.')))+'</h3>');return;}
+ toast(on?(en?'Brake pulled':'Frein tir\u00e9'):(en?'Brake lifted':'Frein rel\u00e2ch\u00e9'),1800);window._labT=0;await loadLab(window._d||{});}
+// 2026-10-03 (owner): the week in five lines, written on Sunday night
+function labWeek(en){const j=window._lab||{};const D=j.digest;if(!D||!(D.fr||[]).length)return '';const esc=_escS;
+ const L=en?(D.en||D.fr):(D.fr||D.en);
+ return '<details class="panel labweek"><summary><span class="lbl">'+(en?'This week':'Cette semaine')+'<span class="hint">\u00b7 '+esc(D.week_end||'')+'</span></span><b>'+esc(L[0]||'')+'</b><svg class="ic chv"><use href="#i-chev"/></svg></summary>'+
+  '<ul>'+L.slice(1).map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></details>';}
 function labSeedRow(en){const seeds=labSeeds(window._lab||{});if(!seeds.length)return '';
  const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
  return '<button class="labseedrow" onclick="labSeedsSheet()"><span class="lsr-n">'+seeds.length+'</span><span style="flex:1;min-width:0"><b>'+(en?'clues in your real trades':'pistes dans vos vrais trades')+'</b><span class="lsr-s">'+(ready?(en?ready+' ready to read':ready+' lisibles'):(en?'none has enough trades to read yet':'aucune n\u2019a encore assez de trades'))+'</span></span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
@@ -5605,7 +5645,12 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
   '<div class="nt-tile"><b style="color:var(--up-soft)">'+(cc.A||0)+'</b><span>'+(en?'better on both halves':'mieux sur les deux moiti\u00e9s')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--accent-soft)">'+(cc.B||0)+'</b><span>'+(en?'a little better':'un peu mieux')+'</span></div>'+
   '<div class="nt-tile"><b style="color:var(--muted)">'+((cc.C||0)+(cc['=']||0))+'</b><span>'+(en?'no':'non')+'</span></div></div>'+
-  '<div class="nt-cap">'+tot+' '+(en?'ideas tested in all':'id\u00e9es test\u00e9es en tout')+'</div></div>';}
+  '<div class="nt-cap">'+tot+' '+(en?'ideas tested in all':'id\u00e9es test\u00e9es en tout')+
+  // 2026-10-03 (owner): raw or charged? The measured cost of trading is
+  // counted in every verdict once it rests on 30 like-for-like trades.
+  (function(){const D=j.drag;if(!D||!D.trades)return '';const per=Math.abs(D.per_trade||0).toFixed(2);
+   if(AU.charged)return ' \u00b7 '+(en?'each verdict counts the real cost of trading, about $'+per+' a trade':'chaque verdict compte le vrai co\u00fbt de trader, environ '+per.replace('.',',')+' $ par trade');
+   return ' \u00b7 '+(en?'raw: the real cost of trading ($'+per+' a trade) is counted at 30 measured trades, '+D.trades+' so far':'brut : le vrai co\u00fbt de trader ('+per.replace('.',',')+' $ par trade) sera compt\u00e9 \u00e0 30 trades mesur\u00e9s, '+D.trades+' pour l\u2019instant');})()+'</div></div>';}
  if(num('day')){h+=sh('day',en?'What Kino num\u00e9rique saw while watching the robot today.':'Ce que Kino num\u00e9rique a vu en surveillant le robot aujourd\u2019hui.')+
   '<div class="nt-day">'+DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
    return '<div class="nt-ev"><span class="nt-dot"></span><time>'+esc(hm)+'</time><p>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</p></div>';}).join('')+'</div></div>';}
@@ -5615,7 +5660,11 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
     (jn&&cl?'<button class="tfc nt-go" onclick="ntIdea(&#39;'+esc(jn.id)+'&#39;)">'+(en?'See it on the board':'La voir sur le tableau')+' \u00b7 '+esc(en?cl[2]:cl[1])+' \u203a</button>':'')+'</div>';}).join('')+'</div>';}
  if(num('build')){h+=sh('build',en?'A third AI builds what the researcher asks for - a dial for the test, a fact, a tool - behind the gates. Nothing changes in the robot until an idea wins its duel.':'Une troisi\u00e8me intelligence artificielle construit ce que le chercheur demande \u2014 un r\u00e9glage pour le test, un fait, un outil \u2014 derri\u00e8re les contr\u00f4les. Rien ne change dans le robot tant qu\u2019une id\u00e9e n\u2019a pas gagn\u00e9 son duel.')+
   BLD.map(b=>{const t=en?(b.title_en||b.title_fr):(b.title_fr||b.title_en);const note=b.status==='built'?(en?(b.built_note_en||b.built_note_fr):(b.built_note_fr||b.built_note_en)):(b.status==='declined'?(en?(b.decline_en||b.decline_fr):(b.decline_fr||b.decline_en)):(b.build_error||''));
-   return '<div class="nt-card">'+chip(BW[b.status])+'<b>'+esc(t)+'</b>'+(note?'<span class="nt-w">'+esc(note)+'</span>':'')+(b.built_date||b.date?'<span class="nt-w" style="color:var(--muted)">'+esc(b.built_date||b.date)+'</span>':'')+'</div>';}).join('')+'</div>';}
+   return '<div class="nt-card">'+chip(BW[b.status])+'<b>'+esc(t)+'</b>'+(note?'<span class="nt-w">'+esc(note)+'</span>':'')+(b.built_date||b.date?'<span class="nt-w" style="color:var(--muted)">'+esc(b.built_date||b.date)+'</span>':'')+'</div>';}).join('')+
+  // 2026-10-03 (owner): what still waits, oldest first - the builder takes up to two a night
+  (function(){const open=RQ.filter(r=>!r.status||r.status==='open').slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+   if(!open.length)return '<div class="nt-cap">'+(en?'Nothing waits to be built.':'Rien n\u2019attend d\u2019\u00eatre construit.')+'</div>';
+   const nx=open[0];return '<div class="nt-cap">'+(open.length>1?(en?open.length+' requests wait':open.length+' demandes attendent'):(en?'One request waits':'Une demande attend'))+' \u00b7 '+(en?'next: ':'la prochaine : ')+'\u00ab '+esc(en?(nx.title_en||nx.title_fr):(nx.title_fr||nx.title_en))+' \u00bb'+(nx.date?' ('+esc(nx.date)+')':'')+'</div>';})()+'</div>';}
  if(num('ret')){h+=sh('ret');
   if(secs.length)h+=secs.map((x,i)=>'<details class="nt-fold"'+(i===0?' open':'')+'><summary>'+esc(en?(x.title_en||x.title_fr):(x.title_fr||x.title_en))+'<svg class="ic chv"><use href="#i-chev"/></svg></summary><div class="nt-b">'+paras(en?(x.en||x.fr):(x.fr||x.en))+'</div></details>').join('');
   else h+='<div class="nt-card">'+paras(en?(N.en||N.fr):(N.fr||N.en))+'</div>';
@@ -6024,6 +6073,10 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
         '. L\u2019\u00e9cart de '+(DG.gap>=0?'+$':'-$')+Math.abs(DG.gap).toFixed(2)+
         ' vient du spread et des ex\u00e9cutions'+
         (per==null?'':', environ $'+Math.abs(per).toFixed(2)+' par trade')+'.'+trend))+
+    // 2026-10-03 (owner): when does the test start counting this cost
+    ('<div style="margin-top:6px">'+(DG.usable
+      ?(en?'Measured on '+DG.trades+' trades: the lab\u2019s tests count this cost in every verdict.':'Mesur\u00e9 sur '+DG.trades+' trades : les tests du labo comptent ce co\u00fbt dans chaque verdict.')
+      :(en?DG.trades+' / 30 trades measured \u00b7 at 30, the lab\u2019s tests will count this cost in every verdict.':DG.trades+' / 30 trades mesur\u00e9s \u00b7 \u00e0 30, les tests du labo compteront ce co\u00fbt dans chaque verdict.'))+'</div>')+
     '</div>';})()+
   (function(){var RC=SRC.rule_change;
    if(!RC||!RC.live_trades)return '';
@@ -8496,6 +8549,19 @@ def _labo_card():
                 out[k.strip("_")] = pk[k]
     except Exception:
         pass
+    # 2026-10-03 (owner): the hand brake and last night's rehearsal of the gates
+    try:
+        p = json.load(open(os.path.join(DIR, "lab", "pause.json"), encoding="utf-8"))
+        out["paused"] = bool(p.get("on"))
+        out["paused_since"] = p.get("date") if p.get("on") else None
+    except Exception:
+        out["paused"] = False
+    try:
+        r = json.load(open(os.path.join(DIR, "lab", "rehearsal.json"), encoding="utf-8"))
+        out["rehearsal"] = {"date": r.get("date"), "ok": bool(r.get("ok")), "passed": r.get("passed"), "total": r.get("total"),
+                            "misses": [{"fr": s.get("fr"), "en": s.get("en")} for s in r.get("steps", []) if not s.get("ok")]}
+    except Exception:
+        pass
     return out
 
 
@@ -9314,6 +9380,11 @@ def lab_payload():
            # 2026-10-02 (owner): the night report shows the whole cast
            "critiques": _critiques_recent(10),
            "labo": _labo_card(),
+           # 2026-10-03 (owner): are the verdicts charged with the measured
+           # cost of trading yet, and how far is the measure from 30 trades
+           "drag": {k: ((_lj("proof.json", {}) or {}).get("sources") or {}).get("drag", {}).get(k)
+                    for k in ("trades", "per_trade", "usable", "gap")} if ((_lj("proof.json", {}) or {}).get("sources") or {}).get("drag") else None,
+           "digest": _lj("digest.json", None),
            "builds": [{k: r.get(k) for k in ("id", "date", "title_fr", "title_en", "status", "key", "built_date", "built_note_fr", "built_note_en", "decline_fr", "decline_en", "build_error", "by")}
                       for r in sorted((r for r in _lj("requests.json", {}).get("requests", []) if r.get("status") in ("built", "declined", "failed")),
                                       key=lambda r: r.get("built_date") or r.get("date") or "")[-8:]]}
@@ -11255,6 +11326,31 @@ class H(BaseHTTPRequestHandler):
                     return
                 ok, msg = lab_decide(_id, _d, _note)
                 self._send(json.dumps({"ok": ok, "msg": msg}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "lab_pause":
+            # 2026-10-03 (owner): the hand brake on the lab's robot. The
+            # judge owns the file and the revert, so this only asks it.
+            u = user_by_token(_parts[0])
+            if not (is_admin(u) or admin_cookie_ok(self.headers)):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upb
+                _fb = _upb.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                _pw = (_fb.get("pwd", [""])[0] or "").strip()
+                _on = (_fb.get("on", ["1"])[0] == "1")
+                if not master_pwd_ok(_pw):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                import subprocess as _spb
+                _r = _spb.run([sys.executable, os.path.join(DIR, "lab", "twin_judge.py"), "--pause" if _on else "--resume"],
+                              cwd=DIR, capture_output=True, text=True, timeout=120)
+                _LAB_CACHE.update(t=0.0)
+                self._send(json.dumps({"ok": _r.returncode == 0, "msg": (_r.stdout or _r.stderr or "").strip()[-160:]}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return

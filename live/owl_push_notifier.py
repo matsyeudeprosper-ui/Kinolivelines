@@ -437,6 +437,12 @@ def send_all(title, body, kind="instant", only_uid=None,
             json.dump(subs, open(SUBS, "w"))
         except Exception:
             pass
+    # 2026-10-03 (owner): a member with no device still gets the inbox
+    # line; that is not a push that went to nobody, so it is not logged
+    # as one
+    if only_uid is not None and total == 0 and not subs.get(only_uid):
+        mylog(f"inbox '{title}' -> {only_uid} (no device)")
+        return
     mylog(f"push '{title}' -> {total} device(s)")
 
 

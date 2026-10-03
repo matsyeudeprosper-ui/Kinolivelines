@@ -10,7 +10,7 @@ the request, and after three failures the request is marked failed.
 
 The agent writes code; this file decides. The gates are dumb on purpose.
 
-    python lab/build.py            # build the oldest open request, if any
+    python lab/build.py            # build the oldest open requests, up to two a night
     python lab/build.py --dry      # say which request would be built
     python lab/build.py --id X     # build that request
 """
@@ -30,6 +30,12 @@ CTX = os.path.join(LAB, "build_context.json")
 LOG = os.path.join(LAB, "constructeur.log")
 MISSION = os.path.join(LAB, "CONSTRUCTEUR.md")
 MAX_ATTEMPTS = 3
+# 2026-10-03 (owner): a request was waiting two nights behind an older
+# one. Up to two builds a night, oldest first, inside a time budget; a
+# failed or declined build ends the night (the next would meet the same
+# closed gate, and the researcher's note is due).
+MAX_PER_NIGHT = 2
+BUDGET_S = 45 * 60
 TURNS = 80
 ALLOW = {"live/lab/harness.py", "live/lab/scrutiny.py", "live/lab/CHERCHEUR.md", "live/lab/requests.json",
          "live/owl_app_server.py", "live/structure_bos_bot.py", "live/owl_package.py", "live/owl_packages.json",
@@ -86,9 +92,9 @@ def git_changed():
     return mod, new
 
 
-def pick(reqs):
+def pick(reqs, skip=()):
     cands = [r for r in reqs if r.get("status", "open") == "open" and int(r.get("build_attempts") or 0) < MAX_ATTEMPTS
-             and (ONLY is None or r.get("id") == ONLY)]
+             and (ONLY is None or r.get("id") == ONLY) and r.get("id") not in skip]
     cands.sort(key=lambda r: r.get("date", ""))
     return cands[0] if cands else None
 
@@ -177,11 +183,28 @@ def emit(kind, fr, en, members=True):
 
 
 def main():
+    t0 = time.time()
+    done, skip = 0, set()
+    while done < MAX_PER_NIGHT and time.time() - t0 < BUDGET_S:
+        rc = build_one(skip)
+        if rc is None:
+            break
+        if rc != 0:
+            return rc
+        done = sum(1 for r in _lj(REQ, {"requests": []}).get("requests", []) if r.get("id") in skip and r.get("status") == "built")
+        if DRY or ONLY:
+            break
+    return 0
+
+
+def build_one(skip):
+    """One request, oldest first. None = nothing left to build."""
     doc = _lj(REQ, {"requests": []})
-    req = pick(doc.get("requests", []))
+    req = pick(doc.get("requests", []), skip)
     if not req:
         say("nothing to build" + (" [dry]" if DRY else ""))
-        return 0
+        return None
+    skip.add(req.get("id"))
     rid = req.get("id")
     attempt = int(req.get("build_attempts") or 0) + 1
     say(f"request {rid} attempt {attempt}" + (" [dry]" if DRY else ""))

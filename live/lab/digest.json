@@ -1,0 +1,30 @@
+{
+ "week_end": "2026-10-03",
+ "from": "2026-09-27",
+ "t": "2026-10-03T09:44:10+00:00",
+ "fr": [
+  "Cette semaine le labo a testé 54 idées en 6 nuits : 4 mieux sur les deux moitiés, 24 un peu mieux, 26 non.",
+  "Le chercheur a proposé 27 nouvelles idées, par exemple « Viser 0,6× le risque et ne pas trader le dimanche » ; « Deux rattrapages au lieu de trois, et rien quand le marché est nerveux ».",
+  "Jumeaux : 3 jumeaux lancés, 3 mis de côté par Kino.",
+  "Le constructeur a livré « Sur un compte avec plafond du jour, viser juste ce qui manque pour l'atteindre », « Attendre un peu après un GAIN seulement, pas après une perte » ; le critique a dit non à 1.",
+  "Ce que le chercheur tient maintenant : viser 0,9 fois ce qu'on risque aide les comptes sans plafond de gain par jour."
+ ],
+ "en": [
+  "This week the lab tested 54 ideas over 6 nights: 4 better on both halves, 24 a little better, 26 no.",
+  "The researcher proposed 27 new ideas, e.g. « Aim for 0.6x the risk and skip Sunday » ; « Two catch-ups instead of three, and nothing when the market is nervous ».",
+  "Twins: 3 twins started, 3 set aside by Kino.",
+  "The builder delivered « On an account with a daily cap, aim for exactly what is missing to reach it », « Wait a little after a WIN only, not after a loss » ; the critic said no to 1.",
+  "What the researcher now holds: aiming for 0.9 times what we risk helps the accounts without a daily cap."
+ ],
+ "counts": {
+  "tested": 54,
+  "A": 4,
+  "B": 24,
+  "proposals": 27,
+  "twins_started": 3,
+  "twins_lost": 0,
+  "went_in": 0,
+  "came_out": 0,
+  "built": 2
+ }
+}

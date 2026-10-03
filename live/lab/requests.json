@@ -26,8 +26,8 @@
    "why_en": "Since the test was corrected, the the accounts with and without a daily cap pull opposite ways: aiming bigger (0.9 or 1.0 times the risk) earns +$47 without a cap and loses on the capped account (-$7 to -$52). With a cap, the day is a race to $3.78: any gain beyond it is thrown away, and a shorter target wins more often. The menu cannot aim for what is left of the cap.",
    "status": "built",
    "key": "cap_fit",
-   "built_note_fr": "Le robot peut maintenant tester, sur un compte avec plafond du jour, une cible qui vise seulement ce qui manque pour l'atteindre (cap_fit: 1). Rien ne change dans le robot tant qu'une idée qui l'utilise n'a pas gagné son duel.",
-   "built_note_en": "The robot can now test, on an account with a daily cap, a target that aims only for what is missing to reach it (cap_fit: 1). Nothing changes in the robot until an idea that uses it wins its duel.",
+   "built_note_fr": "Le robot peut maintenant tester, sur un compte avec plafond du jour, une cible qui vise seulement ce qui manque pour l'atteindre. Rien ne change dans le robot tant qu'une idée qui l'utilise n'a pas gagné son duel.",
+   "built_note_en": "The robot can now test, on an account with a daily cap, a target that aims only for what is missing to reach it. Nothing changes in the robot until an idea that uses it wins its duel.",
    "test": {
     "flag": "--cap-fit",
     "a": 0,

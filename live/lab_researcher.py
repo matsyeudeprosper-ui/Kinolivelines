@@ -205,9 +205,17 @@ def main():
     # 2026-09-29 (owner): one answer for a generic account is a fiction - the
     # daily cap changes it. Every what-if is judged against BOTH shapes a real
     # account has, and only counts as an A when both agree.
+    # 2026-10-03 (owner): once the measured cost of trading rests on 30
+    # like-for-like trades (lab/proof.json sources.drag.usable), every
+    # verdict is CHARGED with it - the reference and the idea alike, so
+    # the comparison stays fair and a gain smaller than the cost is not a
+    # gain. Before that the battery is raw, and says so.
+    charged = H.measured_drag()
+    DRAGC = {"drag": None} if charged > 0 else {}
+    say(f"verdicts {'CHARGED ' + format(charged, '.2f') + ' $ a trade' if charged > 0 else 'raw (the cost of trading is not on 30 trades yet)'}")
     REF = {}
     for _r in H.REFS:
-        _c = H.package_cfg(_r, {"balance": 252.0} if _r == "valere" else {})
+        _c = H.package_cfg(_r, dict(DRAGC, **({"balance": 252.0} if _r == "valere" else {})))
         REF[_r] = (_c, H.run_cfg(R, 7.0, _c))
         say(f"reference {_r}: {REF[_r][1]['full']['trades']} trades "
             f"net {REF[_r][1]['full']['net']:+.2f} worst {REF[_r][1]['full']['worst_debt']:.2f}")
@@ -220,7 +228,7 @@ def main():
     try:
         _, RL = H.bars_long()
         if RL is not None and len(RL) >= len(R) + 7 * 1440:
-            baseL = H.run_cfg(RL, 7.0, {})
+            baseL = H.run_cfg(RL, 7.0, dict(DRAGC))
             say(f"long window: {len(RL)/1440:.1f} days, base net {baseL['full']['net']:+.2f} worst {baseL['full']['worst_debt']:.2f}")
         else:
             RL = None
@@ -228,7 +236,7 @@ def main():
         say(f"long window unavailable: {e}")
         RL = None
     T = H.real_entries()
-    baseT = H.simulate_real(T, R, 7.0, {}) if T else None
+    baseT = H.simulate_real(T, R, 7.0, dict(DRAGC)) if T else None
     if baseT:
         say(f"real trades: {len(T)} entries since the journal began, base net {baseT['net']:+.2f} (actual {baseT['actual']:+.2f})")
     prev = load_json(AUTO, {"variants": []})
@@ -250,12 +258,14 @@ def main():
         try:
             byref = {}
             for _r, (_c, _b) in REF.items():
-                _v = H.run_cfg(R, 7.0, H.package_cfg(_r, dict(cfg, **({"balance": 252.0} if _r == "valere" else {}))))
+                _v = H.run_cfg(R, 7.0, H.package_cfg(_r, dict(cfg, **DRAGC, **({"balance": 252.0} if _r == "valere" else {}))))
                 byref[_r] = {"verdict": H.verdict(_v, _b),
                              "diff_net": round(_v["full"]["net"] - _b["full"]["net"], 2),
                              "diff_worst": round(_v["full"]["worst_debt"] - _b["full"]["worst_debt"], 2)}
-            v = H.run_cfg(R, 7.0, H.package_cfg("base", cfg))
+            v = H.run_cfg(R, 7.0, H.package_cfg("base", dict(cfg, **DRAGC)))
             vd = H.verdict(v, base)
+            # the raw number beside the charged one, so both can be shown
+            net_raw = H.run_cfg(R, 7.0, H.package_cfg("base", cfg))["full"]["net"] if DRAGC else v["full"]["net"]
             # an A has to hold on an account WITH the daily cap as well
             if vd == "A" and byref.get("valere", {}).get("verdict") != "A":
                 vd = "B"
@@ -268,10 +278,11 @@ def main():
                "engine": H.ENGINE, "byref": byref,
                "src": "chercheur" if any(p.get("id") == vid for p in props.get("proposals", [])) else "battery",
                "diff_net": round(v["full"]["net"] - base["full"]["net"], 2),
-               "diff_worst": round(v["full"]["worst_debt"] - base["full"]["worst_debt"], 2)}
+               "diff_worst": round(v["full"]["worst_debt"] - base["full"]["worst_debt"], 2),
+               "net_raw": net_raw, "charged": round(charged, 2) if DRAGC else 0}
         if RL is not None and baseL is not None:
             try:
-                vL = H.run_cfg(RL, 7.0, cfg)
+                vL = H.run_cfg(RL, 7.0, dict(cfg, **DRAGC))
                 rec["long"] = {"days": round(len(RL) / 1440), "verdict": H.verdict(vL, baseL),
                                "diff_net": round(vL["full"]["net"] - baseL["full"]["net"], 2),
                                "diff_worst": round(vL["full"]["worst_debt"] - baseL["full"]["worst_debt"], 2),
@@ -281,7 +292,7 @@ def main():
                 say(f"{vid}: long window ERROR {e}")
         if baseT:
             try:
-                vT = H.simulate_real(T, R, 7.0, cfg)
+                vT = H.simulate_real(T, R, 7.0, dict(cfg, **DRAGC))
                 rec["real"] = {"n_real": len(T), "trades": vT["trades"], "blocked": vT["blocked"], "net": vT["net"],
                                "worst": vT["worst_debt"], "diff_net": round(vT["net"] - baseT["net"], 2),
                                "diff_worst": round(vT["worst_debt"] - baseT["worst_debt"], 2)}
@@ -400,6 +411,7 @@ def main():
                      "days_long": (round(len(RL) / 1440) if RL is not None else None), "base_long": baseL,
                      "base_real": baseT, "real_n": (len(T) if T else 0),
                      "minutes": round((time.time() - t0) / 60, 1),
+                     "charged": round(charged, 2) if DRAGC else 0,
                      "parity": parity})
     # 2026-09-30 (owner): the risk ceiling is on Depenses only, with
     # Infinity left uncapped as its control. Two accounts on the same

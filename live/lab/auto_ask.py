@@ -65,6 +65,40 @@ def due(cands, asks, today):
     return out
 
 
+CUTS = os.path.join(LAB, "cuts.json")
+DORMANT_DAYS = 60
+
+
+def retire_dormant(cands, today):
+    """2026-10-03 (owner): a pile of the chercheur's that has not reached
+    30 trades after 60 days is retired by the lab, with the reason on it,
+    so the piles stay a short list of live questions. Kino's piles are
+    never touched."""
+    try:
+        doc = json.load(io.open(CUTS, encoding="utf-8"))
+    except Exception:
+        return
+    n_of = {c.get("id"): int(c.get("n") or 0) for c in cands}
+    changed = False
+    for c in doc.get("cuts", []):
+        if c.get("by") != "chercheur" or c.get("status", "open") == "retired" or not c.get("date"):
+            continue
+        try:
+            age = (datetime.strptime(today, "%Y-%m-%d") - datetime.strptime(c["date"][:10], "%Y-%m-%d")).days
+        except Exception:
+            continue
+        if age >= DORMANT_DAYS and n_of.get(c.get("id"), 0) < 30:
+            c["status"] = "retired"
+            c["retired"] = today
+            c["retired_by"] = "labo"
+            c["why_fr"] = (c.get("why_fr") or "") + f" Retirée par le labo : {age} jours sans atteindre 30 trades."
+            c["why_en"] = (c.get("why_en") or "") + f" Retired by the lab: {age} days without reaching 30 trades."
+            print(f"retired dormant pile {c.get('id')} ({n_of.get(c.get('id'), 0)} trades in {age} days)")
+            changed = True
+    if changed and not DRY:
+        _sj(CUTS, doc)
+
+
 def main():
     sys.path.insert(0, LIVE)
     import owl_app_server as S          # the same cuts the lab shows
@@ -72,6 +106,7 @@ def main():
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     doc = _lj(ASKS, {"asks": []})
     asks = doc.setdefault("asks", [])
+    retire_dormant(cands, today)
     todo = due(cands, asks, today)
     ready = [c["id"] for c in cands if c.get("label") == "a_tester"]
     print(f"clues: {len(cands)}, ready: {ready or 'none'}, to ask tonight: {[c['id'] for c in todo] or 'none'}")

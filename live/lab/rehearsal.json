@@ -1,0 +1,58 @@
+{
+ "date": "2026-10-03",
+ "t": "2026-10-03T09:32:51+00:00",
+ "ok": true,
+ "passed": 7,
+ "total": 7,
+ "steps": [
+  {
+   "id": "deploy",
+   "fr": "Une idée gagne son duel et entre dans le robot du labo",
+   "en": "An idea wins its duel and goes into the lab’s robot",
+   "ok": true,
+   "detail": "status=deployed rr=0.9 previous={'rr': 0.8} restarts=1 pushes=['🔬 Le labo : 30 trades pour un jumeau', '🚀 Le labo : une idée est entrée dans le robot']"
+  },
+  {
+   "id": "watch_early",
+   "fr": "Le robot du labo est surveillé dès le premier jour",
+   "en": "The lab’s robot is watched from day one",
+   "ok": true,
+   "detail": "watch={'since': '2026-10-03', 'id': 'reh_win', 'labo': {'net': 0.0, 'worst': 0.0, 'trades': 0}, 'real': {'net': 1.8, 'worst': 0.0, 'trades': 1}, 'need': 30, 'need_real': 15, 'ready': False, 'status': "
+  },
+  {
+   "id": "revert",
+   "fr": "Derrière le vrai robot après 30 trades : les réglages d’avant reviennent tout seuls",
+   "en": "Behind the real robot after 30 trades: the previous dials come back by themselves",
+   "ok": true,
+   "detail": "rr=0.8 reverted=reh_win restarts=2 status=reverted pushes=['↩️ Le labo : une idée est ressortie du robot']"
+  },
+  {
+   "id": "confirm",
+   "fr": "Devant le vrai robot après 30 trades : confirmée, dit une seule fois",
+   "en": "Ahead of the real robot after 30 trades: confirmed, said once",
+   "ok": true,
+   "detail": "confirmed=2026-10-03 rr=0.9 second_pushes=[]"
+  },
+  {
+   "id": "missing_dial",
+   "fr": "Un réglage que le robot n’a pas : rien n’entre, le constructeur est demandé",
+   "en": "A dial the robot lacks: nothing goes in, the builder is asked",
+   "ok": true,
+   "detail": "deploy_failed=le robot n'a pas de reglage pour wait_min requests=['bot_wait_min'] restarts=0"
+  },
+  {
+   "id": "brake_waits",
+   "fr": "Frein tiré : une idée qui gagne attend, rien n’entre",
+   "en": "Brake on: a winner waits, nothing goes in",
+   "ok": true,
+   "detail": "status=running waiting=2026-10-03 deployed=None second_pushes=[]"
+  },
+  {
+   "id": "brake_out",
+   "fr": "Frein relâché : elle entre ; frein tiré pendant qu’elle tourne : elle ressort",
+   "en": "Brake off: it goes in; brake on while it runs: it comes back out",
+   "ok": true,
+   "detail": "went_in=True msg=pause, Essai reh_brake est ressortie rr=0.8 restarts=2 pushes=['⏸️ Le labo : le robot du labo est en pause']"
+  }
+ ]
+}

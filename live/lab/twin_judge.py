@@ -40,6 +40,10 @@ QUEUE = os.path.join(LIVE, "owl_push_queue.json")
 NEED = 30          # twin trades before the duel can be judged
 NEED_REAL = 15
 OWNER_UID = "std"
+# 2026-10-03 (owner): the hand brake. While lab/pause.json says on, no idea
+# goes into the lab's robot and the one inside comes back out; the twins
+# keep playing for pretend. Only the owner's button and the CLI write it.
+PAUSE = os.path.join(LAB, "pause.json")
 # 2026-10-02 (owner): a winner deploys itself to the lab's own demo account.
 # PKG_FILE is the same file every bot reads its dials from; LABO_PKG is the
 # package only this account uses, so nothing else can be reached from here.
@@ -178,6 +182,74 @@ def emit(kind, fr, en, members=False):
             f.write(json.dumps({"t": int(time.time()), "kind": kind, "fr": fr[1], "en": en[1]}, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+
+def paused():
+    p = _lj(PAUSE, {})
+    return bool(isinstance(p, dict) and p.get("on"))
+
+
+def set_pause(on, by="kino"):
+    """Write the brake; when it goes on with an idea inside the robot, that
+    idea comes back out right away. Returns what happened, in words."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    _sj(PAUSE, {"on": bool(on), "date": today, "by": by})
+    if not on:
+        return "reprise"
+    raw = _lj(PKG_FILE, None)
+    pk = ((raw or {}).get("packages") or {}).get(LABO_PKG)
+    dep = (pk or {}).get("_deployed")
+    if not dep:
+        return "pause, rien a sortir"
+    tw = _lj(TWINS, {"twins": []})
+    dec = _lj(DEC, {"decisions": {}})
+    _undeploy(raw, pk, tw, dec, today, "pause")
+    _sj(TWINS, tw)
+    _sj(DEC, dec)
+    return "pause, " + (dep.get("title_fr") or dep.get("id") or "") + " est ressortie"
+
+
+def _undeploy(raw, pk, tw, dec, today, mode, T=None, Rc=None):
+    """The previous dials come back, the lab's bot restarts on them, the
+    twin and the decision say why. `mode` = "behind" (lost its watch) or
+    "pause" (the owner's brake)."""
+    dep = pk.get("_deployed") or {}
+    tid, fr, en = dep.get("id"), dep.get("title_fr") or dep.get("id"), dep.get("title_en") or dep.get("id")
+    slim = lambda c: {k: v for k, v in (c or {}).items() if k != "curve"}
+    for k, v in (pk.get("_previous") or {}).items():
+        pk[k] = v
+    pk["_reverted"] = {"id": tid, "date": today, "title_fr": fr, "title_en": en, "why": mode,
+                       "labo": slim(T), "real": slim(Rc)}
+    pk.pop("_deployed", None)
+    pk.pop("_previous", None)
+    pk.pop("_confirmed", None)
+    pk.pop("_watch", None)
+    _sj(PKG_FILE, raw)
+    _restart_labo()
+    t = next((x for x in tw.get("twins", []) if x.get("id") == tid), None)
+    if t is not None:
+        t["status"] = "reverted" if mode == "behind" else "paused"
+        t["reverted"] = today
+    if mode == "behind":
+        dec.setdefault("decisions", {})[tid] = {
+            "d": "no", "date": today, "by": "lab",
+            "note": f"dans le robot du labo, derriere le vrai robot sur {T['trades']} trades ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $, trou {T['worst']:.0f} contre {Rc['worst']:.0f}) : les reglages d'avant sont revenus"}
+        emit("twin_reverted",
+             ("\u21a9\ufe0f Le labo : une id\u00e9e est ressortie du robot",
+              f"\u00ab {fr} \u00bb a fait moins bien que le vrai robot une fois dans le robot du labo ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $ sur {T['trades']} trades, trou plus profond). Les r\u00e9glages d\u2019avant sont revenus, tout seuls. Gard\u00e9e comme un non."),
+             ("\u21a9\ufe0f The lab: an idea came back out of the robot",
+              f"\u201c{en}\u201d did worse than the real robot once inside the lab\u2019s robot ({T['net']:+.0f} $ vs {Rc['net']:+.0f} $ over {T['trades']} trades, deeper hole). The previous dials are back, by themselves. Kept as a no."),
+             members=True)
+    else:
+        dec.setdefault("decisions", {})[tid] = {
+            "d": "wait", "date": today, "by": "kino",
+            "note": "Kino a mis le robot du labo en pause : les reglages d'avant sont revenus, l'idee attend"}
+        emit("labo_paused",
+             ("\u23f8\ufe0f Le labo : le robot du labo est en pause",
+              f"Kino a tir\u00e9 le frein. \u00ab {fr} \u00bb est ressortie du robot du labo, les r\u00e9glages d\u2019avant sont revenus. Rien n\u2019entre tant que la pause dure."),
+             ("\u23f8\ufe0f The lab: the lab\u2019s robot is paused",
+              f"Kino pulled the brake. \u201c{en}\u201d came back out of the lab\u2019s robot, the previous dials are back. Nothing goes in while the pause lasts."),
+             members=True)
 
 
 def _base_cfg():
@@ -331,28 +403,7 @@ def watch_deployed(tw, dec, today):
     t = next((x for x in tw.get("twins", []) if x.get("id") == tid), None)
     changed = False
     if ready and status == "behind":
-        for k, v in (pk.get("_previous") or {}).items():
-            pk[k] = v
-        pk["_reverted"] = {"id": tid, "date": today, "title_fr": fr, "title_en": en,
-                           "labo": slim(T), "real": slim(Rc)}
-        pk.pop("_deployed", None)
-        pk.pop("_previous", None)
-        pk.pop("_confirmed", None)
-        pk.pop("_watch", None)
-        _sj(PKG_FILE, raw)
-        _restart_labo()
-        if t is not None:
-            t["status"] = "reverted"
-            t["reverted"] = today
-        dec.setdefault("decisions", {})[tid] = {
-            "d": "no", "date": today, "by": "lab",
-            "note": f"dans le robot du labo, derriere le vrai robot sur {T['trades']} trades ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $, trou {T['worst']:.0f} contre {Rc['worst']:.0f}) : les reglages d'avant sont revenus"}
-        emit("twin_reverted",
-             ("\u21a9\ufe0f Le labo : une idée est ressortie du robot",
-              f"« {fr} » a fait moins bien que le vrai robot une fois dans le robot du labo ({T['net']:+.0f} $ contre {Rc['net']:+.0f} $ sur {T['trades']} trades, trou plus profond). Les réglages d’avant sont revenus, tout seuls. Gardée comme un non."),
-             ("\u21a9\ufe0f The lab: an idea came back out of the robot",
-              f"“{en}” did worse than the real robot once inside the lab’s robot ({T['net']:+.0f} $ vs {Rc['net']:+.0f} $ over {T['trades']} trades, deeper hole). The previous dials are back, by themselves. Kept as a no."),
-             members=True)
+        _undeploy(raw, pk, tw, dec, today, "behind", T, Rc)
         return True
     pk["_watch"] = watch
     if ready and status == "ahead" and not pk.get("_confirmed"):
@@ -409,6 +460,17 @@ def judge():
                                f"« {fr} » a perdu le duel contre le robot ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $). Il est arrêté et gardé comme un non."),
                  ("\U0001f6d1 The lab: a twin stops",
                   f"“{en}” lost the duel against the robot ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $). Stopped and kept as a no."), members=True)
+        elif d["status"] == "ahead" and not t.get("deployed") and not t.get("deploy_failed") and paused():
+            # 2026-10-03 (owner): the brake is on - the winner waits, said once
+            if not t.get("waiting"):
+                t["waiting"] = today
+                changed = True
+                emit("twin_waits",
+                     ("\u23f8\ufe0f Le labo : une id\u00e9e a gagn\u00e9 et attend",
+                      f"\u00ab {fr} \u00bb a battu le robot ({d['twin']['net']:+.0f} $ contre {d['real']['net']:+.0f} $) mais le robot du labo est en pause. Elle entrera quand vous l\u2019enl\u00e8verez."),
+                     ("\u23f8\ufe0f The lab: an idea won and waits",
+                      f"\u201c{en}\u201d beat the robot ({d['twin']['net']:+.0f} $ vs {d['real']['net']:+.0f} $) but the lab\u2019s robot is paused. It goes in when you lift it."),
+                     members=False)
         elif d["status"] == "ahead" and not t.get("deployed") and not t.get("deploy_failed"):
             # 2026-10-02 (owner): no decision waits here any more. It won its
             # duel, so it goes in - on the lab's demo account.
@@ -478,6 +540,9 @@ def post_session():
 
 
 if __name__ == "__main__":
+    if "--pause" in sys.argv or "--resume" in sys.argv:
+        print(set_pause("--pause" in sys.argv))
+        sys.exit(0)
     ch = judge()
     print("judge: changed" if ch else "judge: nothing to change")
     if "--post" in sys.argv:

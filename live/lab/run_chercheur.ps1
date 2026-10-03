@@ -47,6 +47,10 @@ try {
 } catch { Say ("chercheur session failed: " + $_.Exception.Message) }
 try {
     python lab/pretest_fill.py *> (Join-Path $lab "pretest_last.log")
+    # 2026-10-03 (owner): rehearse every gate past "testee" with a pretend
+    # winner in a sandbox, BEFORE the judge runs for real (lab/rehearse.py)
+    python lab/rehearse.py *> (Join-Path $lab "rehearse_last.log")
+    Say ("rehearsal exit " + $LASTEXITCODE)
     # 2026-09-29: judge the twins (retire the losers, flag the winners) and
     # send the night's events (new dial requests, answered asks)
     python lab/twin_judge.py --post *> (Join-Path $lab "judge_last.log")
@@ -56,7 +60,12 @@ try {
     Say ("build exit " + $LASTEXITCODE)
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
-    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/critiques.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/notes 2>$null
+    # 2026-10-03 (owner): on Sunday, the week in five lines (lab/digest.py)
+    if ((Get-Date).DayOfWeek -eq 'Sunday') {
+        python lab/digest.py *> (Join-Path $lab "digest_last.log")
+        Say ("digest exit " + $LASTEXITCODE)
+    }
+    git add lab/auto.json lab/auto_history.jsonl lab/proposals.json lab/requests.json lab/twins.json lab/decisions.json lab/asks.json lab/cuts.json lab/critiques.json lab/memoire.json lab/metrics.json lab/veille.jsonl lab/veille_state.json lab/events_seen.json lab/chercheur_latest.json lab/rehearsal.json lab/digest.json lab/notes 2>$null
     $msg = "chercheur: nightly run " + (Get-Date -Format "yyyy-MM-dd") + "`n`nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
     git commit -q -m $msg 2>$null
     git push -q 2>$null

@@ -66,7 +66,9 @@ its usage, and one line about it under "Your eyes" in `lab/CHERCHEUR.md`.
 - When done: set the request's `status` to `"built"`, add `"key"` (the dial
   or fact name), `"built_note_fr"` / `"built_note_en"` (two plain sentences:
   what the robot can now be asked, and that nothing changes until an idea
-  wins), and the `test` block. Change nothing else in that file.
+  wins - a MEMBER reads them: plain words, never the dial's key or a
+  code name in them; the key goes in `"key"` only), and the `test` block.
+  Change nothing else in that file.
 - Do NOT run git. Do NOT restart anything. Do NOT edit files outside this
   list: `live/lab/harness.py`, `live/lab/scrutiny.py`, `live/lab/CHERCHEUR.md`,
   `live/lab/requests.json`, `live/owl_app_server.py`, `live/structure_bos_bot.py`,
