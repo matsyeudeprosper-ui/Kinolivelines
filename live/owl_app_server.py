@@ -6583,7 +6583,13 @@ function render(d){
     '</button>').join('');
    J.querySelectorAll('button').forEach(b=>{b.onclick=()=>{
     const t=document.getElementById(b.dataset.go);
-    if(t&&getComputedStyle(t).display!=='none')t.scrollIntoView({behavior:'smooth',block:'start'});};});}
+    if(t&&getComputedStyle(t).display!=='none')t.scrollIntoView({behavior:'smooth',block:'start'});};});
+   // 2026-10-03 (owner): a button only for a card that is on the page. The
+   // public demo hides Les temps / Heures / Lecons by design; the buttons
+   // were drawn anyway and led nowhere. The cards load at their own pace,
+   // so the row is re-checked rather than computed once.
+   const sync=()=>{let shown=0;J.querySelectorAll('button').forEach(b=>{const t=document.getElementById(b.dataset.go);const on=!!t&&getComputedStyle(t).display!=='none';b.style.display=on?'':'none';if(on)shown++;});J.style.display=shown>1?'':'none';};
+   sync();setInterval(sync,1500);}
   })();
  (function(){const hh=document.getElementById('mx-hint');
      if(hh)setH(hh,T('mx_hint'));})();
