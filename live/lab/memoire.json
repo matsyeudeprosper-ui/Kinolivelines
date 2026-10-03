@@ -14,28 +14,120 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-03T07:00:10Z",
+ "updated": "2026-10-03T09:30:00Z",
  "hypotheses": [
+  {
+   "id": "target_09",
+   "fr": "Viser 0,9 fois ce qu'on risque aide les comptes sans plafond de gain par jour ; c'est la cible qui porte le gain des combinaisons avec 'trois pertes de suite'.",
+   "status": "renforce",
+   "evidence": [
+    "2026-10-01: rr09 proposed, battery B.",
+    "2026-10-03: raw harness rr0.9 A +58 (243.41 vs 185.41), hole 80.29->68.06, halves +30.4/+34.7. rr0.9+k3 only +19. Battery k3_rr09 B (+26.6; uncapped ref A, capped ref B), long A +31.5. Neighbours raw: 0.85 A +7, 0.95 C -32, 1.0 A +40 -> money jagged, hole falls monotonic-ish (80/74/68/69/61)."
+   ],
+   "next": "Read tonight's battery on rr09_bul4 / rr09_hot075 / rr085_bul4 on BOTH account shapes. If capped ref says no again, the idea is uncapped-only (ties to cap_changes_target)."
+  },
+  {
+   "id": "cap_changes_target",
+   "fr": "Le plafond de gain par jour change la bonne cible : plus haut aide sans plafond, pas avec.",
+   "status": "renforce",
+   "evidence": [
+    "2026-09-29..10-02: four nights, rr10 A/B on uncapped ref, C on capped.",
+    "2026-10-03: fifth night. rr10 battery B (uncapped A, capped C); k3_rr09 uncapped A, capped B."
+   ],
+   "next": "The request cap_fit_target (aim for what is missing to reach the cap) is the real test; still open, push it."
+  },
+  {
+   "id": "bul4_with_target",
+   "fr": "Un quatrième trade de rattrapage paie quand on vise un peu plus haut (0,85-0,9).",
+   "status": "nouveau",
+   "evidence": [
+    "2026-10-03: raw rr0.9+bullets4 A +121.6, halves +84.4/+48.4, hole 77.8. rr0.85+bullets4 A +58.7 (+34/+24.7), hole 80.5. bul4 alone battery C (-0.24) tonight, B four nights before. k3_bul4 battery B (+21.6, capped '=')."
+   ],
+   "next": "Proposed rr09_bul4 + rr085_bul4 (dose check). Caution: raw harness has no cap/jar; the battery with cap may erase it. Critic will ask the dose slope: bullets 5?"
+  },
+  {
+   "id": "hot_size_with_target",
+   "fr": "Miser un quart de moins quand le marché est nerveux marche, mais seulement avec une cible plus haute ; surtout une limite de trou.",
+   "status": "nouveau",
+   "evidence": [
+    "2026-10-01: hot075 alone C (three nights). rr10_hot05 B.",
+    "2026-10-03: raw rr0.9+size_hot0.75 A +47.7, halves +13/+41, hole 80.3->58.1. Package rr0.9+bul4+hot0.75 A +98.6, hole 67.9, halves +53/+56."
+   ],
+   "next": "Proposed rr09_hot075 and the package. If it stays B with smaller hole, it is a safety belt, say so."
+  },
+  {
+   "id": "k3",
+   "fr": "Se rattraper jusqu'à trois pertes de suite est une vraie cause.",
+   "status": "affaibli",
+   "evidence": [
+    "2026-10-02: A on both shapes (+9 / +3.50), four losses +10.",
+    "2026-10-03: battery back to B (+4.6, halves -2.4/+7.0), long C -21.8. Critic BLOQUE (69 days -29, pure sizing on few trades). Raw: adding k3 to rr0.9 cuts the gain 58->19. I accept the critic: k3 alone is not pushed any more; only with new 69-day evidence."
+   ],
+   "next": "Do not re-propose k3 alone. Keep watching k3_rr09 long window only as a side view."
+  },
   {
    "id": "sleepy_market",
    "fr": "Marché très endormi (allure sous 0,8) : le robot y perd plus qu'ailleurs.",
-   "status": "nouveau",
+   "status": "en test",
    "evidence": [
-    "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit"
+    "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit",
+    "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor."
    ],
-   "next": "Attendre au moins 15 trades sous 0,8 ; vérifier que ce n'est pas l'heure (00 h aussi négative, 6 trades -12 $) qui parle à sa place."
+   "next": "When sleepy_floor is built: test 0.6 / 0.7 / 0.8 alone, then with rr0.9. Still 6 real trades: a hint."
+  },
+  {
+   "id": "sunday",
+   "fr": "Le dimanche est un mauvais jour pour le robot.",
+   "status": "en test",
+   "evidence": [
+    "2026-09-28..10-02: battery mostly C, long A.",
+    "2026-10-03: real 10 Sundays 20% won -21.64 (all in the first real half). Battery nosun B (+6.8, halves -23/+26), long A +45.9, real +20.5. Raw skip 6 B +27.6 (halves -28/+51); rr0.9+skip6 B +26 hole 56. Halves disagree every time."
+   ],
+   "next": "Only the second half likes it: wait for more real Sundays in the second half before proposing."
   },
   {
    "id": "halves_shift",
    "fr": "Le robot va beaucoup mieux depuis la mi-période (33% puis 74% de gains) : changement de marché ou de réglage ?",
    "status": "en test",
    "evidence": [
-    "2026-10-02 veille: 37 trades, moitié 1 33% (18), moitié 2 74% (19); 10 des 12 derniers gagnés (+45 $)"
+    "2026-10-02 veille: 37 trades, moitié 1 33% (18), moitié 2 74% (19); 10 des 12 derniers gagnés (+45 $)",
+    "2026-10-03: no new real trade. Note the test's own base is the opposite shape: 42-day battery base h1 +131.9, h2 +5.4 (raw harness h2 -2.0). The engine's second half is nearly flat while the real accounts' second half is good - the periods differ (real starts 09-24)."
    ],
-   "next": "Tout filtre jugé sur les deux moitiés doit en tenir compte : un filtre qui ne gagne que sur la moitié 1 peut juste couper la mauvaise période."
+   "next": "Any filter that only wins in h2 (Sunday, nervous) may just patch the engine's flat stretch. Compare engine vs real on the same dates when proof.json allows."
+  },
+  {
+   "id": "wait_after_win",
+   "fr": "Attendre un peu après un gain évite les pertes rapides.",
+   "status": "rejete",
+   "evidence": [
+    "2026-10-02: requested, built same day (wait_win).",
+    "2026-10-03: raw wait_win 30 C -43.4; 90 C -173.3; rr0.9+wait_win 60 C (-50 vs base, -108 vs rr0.9 alone). Monotonic: the longer the wait, the worse. Rejected by numbers."
+   ],
+   "next": "Closed. Do not propose wait_win."
   }
  ],
- "tried": [],
+ "tried": [
+  {"d": "2026-10-03", "run": "raw --rr 0.9", "res": "A +58.0, hole 68.1, halves +30.4/+34.7"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --k-streak 3", "res": "A +19.1, hole 77.5"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --drag 0.57", "res": "C as printed (base not charged); charged on both sides ~+56 vs base"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --skip-wd 6", "res": "B +26.0, hole 56.4, halves -10.5/+32.1"},
+  {"d": "2026-10-03", "run": "raw --wait-win 30", "res": "C -43.4, hole 75.4"},
+  {"d": "2026-10-03", "run": "raw --wait-win 90", "res": "C -173.3, hole 107.1"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --wait-win 60", "res": "C -50.2"},
+  {"d": "2026-10-03", "run": "raw --skip-hours 0", "res": "C -68.3, hole 113.1"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --skip-hours 0", "res": "C -25.8, hole 102.7"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --min-range 40", "res": "C -30.4, hole 55.1, half the trades"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --ext 700", "res": "A +28.5, hole 64.7 -> proposed rr09_ext700"},
+  {"d": "2026-10-03", "run": "raw --rr 0.85", "res": "A +7.4, hole 74.2"},
+  {"d": "2026-10-03", "run": "raw --rr 0.95", "res": "C -32.4, hole 69.0"},
+  {"d": "2026-10-03", "run": "raw --rr 1.0", "res": "A +40.3, hole 60.9"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --bullets 4", "res": "A +121.6, hole 77.8, halves +84.4/+48.4 -> proposed rr09_bul4"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --n-cont 2", "res": "C -31.2, hole 102.7"},
+  {"d": "2026-10-03", "run": "raw --skip-wd 6", "res": "B +27.6, hole 61.2, halves -27.8/+51.0"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --size-hot 0.75", "res": "A +47.7, hole 58.1, halves +13.0/+41.1 -> proposed rr09_hot075"},
+  {"d": "2026-10-03", "run": "raw --rr 0.9 --bullets 4 --size-hot 0.75", "res": "A +98.6, hole 67.9, halves +53.1/+55.9 -> proposed rr09_bul4_hot075"},
+  {"d": "2026-10-03", "run": "raw --rr 0.85 --bullets 4", "res": "A +58.7, hole 80.5, halves +34.0/+24.7 -> proposed rr085_bul4"}
+ ],
  "scrutiny_log": [
   {
    "t": "2026-10-02T22:08:00Z",
@@ -51,12 +143,24 @@
    "t": "2026-10-03T07:00:10Z",
    "looked": ["wake_context (4h timer)", "asks.json"],
    "saw": "Still 37 trades, no new close since 2026-10-02 22:08, no twins, no labo activity, no open ask. Veille 'rien'. Hypotheses untouched."
+  },
+  {
+   "t": "2026-10-03T09:30:00Z",
+   "looked": ["auto.json all 37 variants + halves", "critiques.json (k3 bloque)", "proof drag", "scrutiny --all", "scrutiny --streaks", "scrutiny --mm", "pile calm drill-down"],
+   "saw": "Still 37 real trades. Sunday 10 tr 20% -21.6. nerv 0.8-1.0 88% vs <0.8 33%. move 4+ 8 tr 75% PF 4.56 (winners' side). 5th+ trade of the day 38%. After 2 losses 0/3 (peu). Lots 0.01/0.02/0.03, balance 207->400. In the red 81% of trades, PF 1.18 vs afloat 1.58. No twins running, no open ask. Drag -0.57/trade on 17 trades (not usable). No new pile: sleepy (<0.8) and 0.8-1.0 are both inside Kino's 'calm' pile -> would be duplicates."
   }
  ],
  "lessons": [
-  "2026-10-02: the two halves differ hugely (33% vs 74% win) - almost every bucket shows agree=false for that reason alone; read a bucket's halves against the overall halves, not against each other."
+  "2026-10-02: the two halves differ hugely (33% vs 74% win) - almost every bucket shows agree=false for that reason alone; read a bucket's halves against the overall halves, not against each other.",
+  "2026-10-03: the CLI harness is RAW (no daily cap, no jar, no kill line, flat lot): its base is 185 net / hole 80, not the battery's 136 / 50. Say 'sans plafond ni protections' when quoting it; the battery on both shapes decides.",
+  "2026-10-03: --drag charges only the variant, not the printed base. Compare against base minus drag x base trades (~0.57 x 250 = 143) by hand.",
+  "2026-10-03: target settings are jagged on money (0.85 +7, 0.9 +58, 0.95 -32, 1.0 +40) but steady on the hole. Trust the hole trend more than one setting's money."
  ],
  "open": [
-  "Is the midnight weakness (00 h: 6 tr, -12 $) the same thing as the sleepy-market weakness? Cross hour x nerv when n allows."
+  "Does the capped account shape erase the fourth catch-up and the 0.9 target? (tonight's battery on rr09_bul4 / rr085_bul4)",
+  "Sleepy market: is it the sleepiness itself? Needs sleepy_floor built.",
+  "Aim for what is missing to reach the daily cap (cap_fit_target, open since 09-30) - would settle cap_changes_target.",
+  "Winners' side: trades after 4+ moves win 6/8 - no dial for a minimum move count yet; request it if it holds past 15 trades.",
+  "Is the midnight weakness the same as the sleepy weakness? Partly answered 2026-10-03: skipping midnight is C over 42 days, so the hour alone is not it."
  ]
 }

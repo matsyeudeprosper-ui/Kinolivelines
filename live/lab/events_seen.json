@@ -3,7 +3,8 @@
   "nerv_gate_debt_only",
   "cap_fit_target",
   "chase_dir",
-  "wait_after_win"
+  "wait_after_win",
+  "sleepy_floor"
  ],
  "asks_answered": [
   "ask_1790670647",

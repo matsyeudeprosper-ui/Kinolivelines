@@ -856,7 +856,7 @@
    "why_en": "Three catch-ups is better on both halves tonight on both kinds of account. I tried the next setting: four also earns, +$10 uncapped and +$8 on the capped account (better on both halves, with a cap). Uncapped it scores no only because the hole is $0.74 deeper. If both settings rise together, it is a real cause, not luck.",
    "by": "chercheur",
    "date": "2026-10-02",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.8,
     "n_cont": 1,
@@ -903,7 +903,9 @@
      "diff_net": 8.84,
      "diff_worst": 3.68
     }
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-03"
   },
   {
    "id": "k3_risk12",
@@ -914,7 +916,7 @@
    "why_en": "This is a safety belt, not an idea to earn more. Uncapped, the biggest hole drops from 50 to 34 dollars for $4 less (a little better), and the hole also shrinks over 69 days (-$16). On the capped account it is better on both halves (+$2). On the real trades: +$11, but too few trades.",
    "by": "chercheur",
    "date": "2026-10-02",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.8,
     "n_cont": 1,
@@ -962,7 +964,9 @@
      "diff_net": 10.9,
      "diff_worst": 1.62
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-03"
   },
   {
    "id": "k3_rr09",
@@ -973,7 +977,7 @@
    "why_en": "On an uncapped account: better on both halves, +$35, hole of 44 instead of 50, and better on both halves over 69 days too (+$31). On a capped account, no (-$9): again the cap throws away gains beyond $3.78. I propose it for uncapped accounts.",
    "by": "chercheur",
    "date": "2026-10-02",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1020,7 +1024,9 @@
      "diff_net": -6.52,
      "diff_worst": 0.69
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-03"
   },
   {
    "id": "k3_bul4",
@@ -1031,7 +1037,7 @@
    "why_en": "Two ideas that come back every night (four catch-up trades: a little better four nights running; three catch-ups: a little better, a little better, better on both halves). Together, uncapped: better on both halves, +$17, and a little better over 69 days (+$9). On the capped account, no (-$4). I want to know whether they add up.",
    "by": "chercheur",
    "date": "2026-10-02",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.8,
     "n_cont": 1,
@@ -1078,7 +1084,9 @@
      "diff_net": -4.07,
      "diff_worst": 4.44
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-03"
   },
   {
    "id": "rr09_k4_risk12",
@@ -1089,7 +1097,7 @@
    "why_en": "Out of the box: instead of one rule for everyone, a package for one account shape. Uncapped, aiming 0.9 and more catch-ups both earn (better on both halves), and the loss limit cuts the hole from 50 to 34 dollars. Never tested together: that is tonight's question.",
    "by": "chercheur",
    "date": "2026-10-02",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1127,6 +1135,163 @@
      "diff_net": -8.57,
      "diff_worst": 2.74
     }
+   },
+   "verdict": "B",
+   "done": "2026-10-03"
+  },
+  {
+   "id": "rr09_bul4",
+   "title_fr": "Viser 0,9 fois ce qu'on risque, avec jusqu'à quatre trades de rattrapage",
+   "title_en": "Aim for 0.9 times what we risk, with up to four catch-up trades",
+   "family": "argent",
+   "why_fr": "Viser un peu plus haut, et garder un quatrième trade de rattrapage après une perte. Testé sur les 42 derniers jours, sans plafond de gain par jour : +122 $ de plus, mieux sur les deux moitiés (+84 et +48), trou de 78 au lieu de 80. Le réglage voisin (0,85) gagne aussi.",
+   "why_en": "Aim a little higher, and keep a fourth catch-up trade after a loss. Tested on the last 42 days, without a daily cap: $122 more, better on both halves (+84 and +48), hole of 78 instead of 80. The neighbouring setting (0.85) also wins.",
+   "by": "chercheur",
+   "date": "2026-10-03",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 307.05,
+    "worst": 77.79,
+    "h1": 84.38,
+    "h2": 48.38,
+    "base_net": 185.41,
+    "base_worst": 80.29
+   }
+  },
+  {
+   "id": "rr09_hot075",
+   "title_fr": "Viser 0,9 fois ce qu'on risque, miser un quart de moins si nerveux",
+   "title_en": "Aim for 0.9 times what we risk, stake a quarter less when nervous",
+   "family": "meteo",
+   "why_fr": "Hors du cadre : miser moins quand le marché est nerveux perdait seul (non trois nuits). Avec une cible un peu plus haute, ça change : +48 $ sur 42 jours sans plafond, mieux sur les deux moitiés, et le plus gros trou passe de 80 à 58 $.",
+   "why_en": "Out of the box: staking less in a nervous market lost on its own (no, three nights). With a slightly higher target it changes: +$48 over 42 days without a cap, better on both halves, and the biggest hole goes from 80 to 58 dollars.",
+   "by": "chercheur",
+   "date": "2026-10-03",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 0.75,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 233.11,
+    "worst": 58.08,
+    "h1": 12.98,
+    "h2": 41.14,
+    "base_net": 185.41,
+    "base_worst": 80.29
+   }
+  },
+  {
+   "id": "rr09_bul4_hot075",
+   "title_fr": "Viser 0,9, quatre trades de rattrapage, un quart de moins si nerveux",
+   "title_en": "Aim for 0.9, four catch-up trades, a quarter less when nervous",
+   "family": "argent",
+   "why_fr": "Les deux idées du dessus ensemble : le rattrapage en plus apporte l'argent, la mise réduite quand c'est nerveux rend le trou plus petit. Sur 42 jours sans plafond : +99 $, mieux sur les deux moitiés (+53 et +56), trou de 68 au lieu de 80.",
+   "why_en": "The two ideas above together: the extra catch-up brings the money, the smaller stake when nervous makes the hole smaller. Over 42 days without a cap: +$99, better on both halves (+53 and +56), hole of 68 instead of 80.",
+   "by": "chercheur",
+   "date": "2026-10-03",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 0.75,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 284.02,
+    "worst": 67.92,
+    "h1": 53.06,
+    "h2": 55.94,
+    "base_net": 185.41,
+    "base_worst": 80.29
+   }
+  },
+  {
+   "id": "rr085_bul4",
+   "title_fr": "Viser 0,85 fois ce qu'on risque, avec jusqu'à quatre trades de rattrapage",
+   "title_en": "Aim for 0.85 times what we risk, with up to four catch-up trades",
+   "family": "cible",
+   "why_fr": "Le contrôle honnête de la première idée : un réglage juste à côté doit gagner aussi, sinon c'est de la chance. Sur 42 jours sans plafond : +59 $, mieux sur les deux moitiés (+34 et +25), même trou (80). Ça tient, en plus petit.",
+   "why_en": "The honest check of the first idea: a setting right next to it must win too, or it is luck. Over 42 days without a cap: +$59, better on both halves (+34 and +25), same hole (80). It holds, smaller.",
+   "by": "chercheur",
+   "date": "2026-10-03",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.85,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 244.12,
+    "worst": 80.54,
+    "h1": 34.01,
+    "h2": 24.68,
+    "base_net": 185.41,
+    "base_worst": 80.29
+   }
+  },
+  {
+   "id": "rr09_ext700",
+   "title_fr": "Viser 0,9 fois ce qu'on risque, sans courir après une montée de 700 points",
+   "title_en": "Aim for 0.9 times what we risk, without chasing a 700-point run",
+   "family": "structure",
+   "why_fr": "Ne pas entrer quand le prix a déjà fait 700 points en une heure, et viser un peu plus haut. Sur 42 jours sans plafond : +28 $, mieux sur les deux moitiés (+16 et +20), trou de 65 au lieu de 80. Moins d'argent que viser 0,9 seul, mais un trou plus petit.",
+   "why_en": "Do not enter when the price already moved 700 points in an hour, and aim a little higher. Over 42 days without a cap: +$28, better on both halves (+16 and +20), hole of 65 instead of 80. Less money than aiming 0.9 alone, but a smaller hole.",
+   "by": "chercheur",
+   "date": "2026-10-03",
+   "status": "pending",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 213.87,
+    "worst": 64.71,
+    "h1": 16.08,
+    "h2": 19.53,
+    "base_net": 185.41,
+    "base_worst": 80.29
    }
   }
  ]
