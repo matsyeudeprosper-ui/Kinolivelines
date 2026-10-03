@@ -301,7 +301,7 @@ def maybe_renewals():
         en = lang_of(uid) == "en"
         for key, label_fr, label_en in (("family_until", "Automatique", "Automatic"),
                                        ("strategy_until", "Strat\u00e9gie", "Strategy"),
-                                       ("manual_until", "Manuel", "Manual")):
+                                       ("manual_until", "Signal", "Signal")):
             until = float(e.get(key) or 0)
             if not until:
                 continue
