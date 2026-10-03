@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-03T02:30:08Z",
+ "updated": "2026-10-03T07:00:10Z",
  "hypotheses": [
   {
    "id": "sleepy_market",
@@ -46,6 +46,11 @@
    "t": "2026-10-03T02:30:08Z",
    "looked": ["wake_context (4h timer)"],
    "saw": "No new trade (still 37), no twins, no labo activity, no open ask. Nothing to re-look at -> veille 'rien'. Hypotheses untouched."
+  },
+  {
+   "t": "2026-10-03T07:00:10Z",
+   "looked": ["wake_context (4h timer)", "asks.json"],
+   "saw": "Still 37 trades, no new close since 2026-10-02 22:08, no twins, no labo activity, no open ask. Veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
