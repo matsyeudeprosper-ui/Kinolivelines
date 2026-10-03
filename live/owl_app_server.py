@@ -2633,12 +2633,6 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  <div id="plan-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
  <div id="plan-note" style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.45"></div>
 </div>
-<a class="srow" id="mql5row" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;color:inherit;margin-top:10px">
- <div class="sic"><svg class="ic"><use href="#i-bot"/></svg></div>
- <div style="flex:1"><b>Trading automatique</b>
-  <div class="ssub">Copier le compte de Kino via MQL5 &middot; ouvrir le signal</div></div>
- <svg class="ic chv"><use href="#i-chev"/></svg>
-</a>
 <div class="srow" id="payrow" onclick="paySheet()" style="display:none;margin-top:10px">
  <div class="sic"><svg class="ic"><use href="#i-ticket"/></svg></div>
  <div style="flex:1"><b>Mes paiements</b>
@@ -2691,8 +2685,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
  </div>
  <div class="srow" id="paycfg" onclick="payCfg()">
   <div class="sic"><svg class="ic"><use href="#i-key"/></svg></div>
-  <div style="flex:1"><b>Paiements &amp; MQL5</b>
-   <div class="ssub" id="paycfg-sub">Cl&eacute; NOWPayments, secret IPN, lien du signal MQL5</div></div>
+  <div style="flex:1"><b>Paiements</b>
+   <div class="ssub" id="paycfg-sub">Cl&eacute; NOWPayments, secret IPN, prix Automatique</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="contactcfg" onclick="contactCfg()">
@@ -3387,10 +3381,9 @@ window.addEventListener('load',()=>{
   if(isPaused&&!_P.family&&!(window._d&&window._d.is_master)){
    const en=LANG()==='en';
    const v=await sheet('<h3>'+(en?'Automatic trading':'Trading automatique')+'</h3><p>'+(en
-    ?'The robot does not run on your account with the Manual plan. Automatic trading is either the <b>Automatic</b> plan, settled with Kino, or the copy of Kino\u2019s account on <b>MQL5</b>. Manual mode stays yours: signals and the trade tool.'
-    :'Le robot ne tourne pas sur votre compte avec le paquet Manuel. Le trading automatique, c\u2019est le paquet <b>Automatique</b>, r\u00e9gl\u00e9 avec Kino, ou la copie du compte de Kino sur <b>MQL5</b>. Le mode manuel reste le v\u00f4tre : signaux et outil de trading.')+'</p>'+
+    ?'The robot does not run on your account with the Signal plan. Automatic trading is the <b>Automatic</b> package, for the family, by invitation - ask Kino for a code on Telegram.'
+    :'Le robot ne tourne pas sur votre compte avec le paquet Signal. Le trading automatique, c\u2019est le paquet <b>Automatique</b>, r\u00e9serv\u00e9 \u00e0 la famille, sur invitation \u2014 demandez un code \u00e0 Kino sur Telegram.')+'</p>'+
     '<button class="shbtn shmain" onclick="_shDone({o:1})">'+(en?'See the plans':'Voir les offres')+'</button>'+
-    (_P.mql5_url?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none" href="'+_P.mql5_url+'" target="_blank" rel="noopener">'+(en?'Open Kino\u2019s MQL5 signal':'Ouvrir le signal MQL5 de Kino')+'</a>':'')+
     '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Close':'Fermer')+'</button>');
    if(v&&v.o)setTimeout(offersSheet,500);
    return;}
@@ -5150,7 +5143,6 @@ function renderPlan(d){
   a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
  nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments). Renewing adds 30 days. Manual = one dedicated terminal, '+P.seats_left+' place(s) left.':'Paiement en crypto (NOWPayments). Renouveler ajoute 30 jours. Manuel = un terminal d\u00e9di\u00e9, '+P.seats_left+' place(s) restante(s).')
   :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
- const mq=document.getElementById('mql5row');if(mq){if(P.mql5_url&&!P.family){mq.style.display='flex';mq.href=P.mql5_url;}else mq.style.display='none';}
  const pr=document.getElementById('payrow');if(pr)pr.style.display=d.public?'none':'flex';
  // 2026-09-28: waiting list when the manual seats are full
  (function(){let w=document.getElementById('plan-wait');if(!w){w=document.createElement('button');w.id='plan-wait';w.className='shbtn shghost';w.style.cssText='margin:10px 0 0;padding:11px;font-size:.9rem';bt.parentNode.insertBefore(w,nt);}
@@ -6482,7 +6474,7 @@ function renderRevenue(d){
   const old=document.getElementById('rev-share');if(old)old.remove();
   g.insertAdjacentHTML('afterend','<div id="rev-share" style="margin-top:10px;font-size:.82rem;line-height:1.5"><b>Part '+Number(S.cfg.pct).toFixed(0)+' %</b> \u00b7 attendu ce mois <b>'+us(S.expected)+'</b>'+(S.open?' \u00b7 relev\u00e9s ouverts <b style="color:var(--warn)">'+us(S.open)+'</b>':'')+(S.overdue.length?' \u00b7 <b style="color:var(--down-soft)">'+S.overdue.length+' en retard</b>':'')+
    '<div style="color:var(--muted2);margin-top:2px">'+S.rows.map(r=>r.name+' '+us(r.now.due)+(r.last&&(r.last.status==='open'||r.last.status==='overdue')?' (relev\u00e9 '+r.last.ym.slice(5)+' : '+us(r.last.due)+(r.last.status==='overdue'?', retard':'')+')':'')).join(' \u00b7 ')+'</div></div>');})();
- setH(document.getElementById('rev-due'),(R.due.length?'<b>\u00c0 renouveler sous 7 j :</b> '+R.due.map(x=>x.name+' ('+x.pkg+', '+x.days+' j)').join(' \u00b7 '):'Aucun renouvellement sous 7 jours.')+(R.family_usd?'':' <span style="color:var(--muted)">\u00b7 prix Automatique non d\u00e9fini (Paiements & MQL5)</span>'));
+ setH(document.getElementById('rev-due'),(R.due.length?'<b>\u00c0 renouveler sous 7 j :</b> '+R.due.map(x=>x.name+' ('+x.pkg+', '+x.days+' j)').join(' \u00b7 '):'Aucun renouvellement sous 7 jours.')+(R.family_usd?'':' <span style="color:var(--muted)">\u00b7 prix Automatique non d\u00e9fini (Paiements)</span>'));
  setH(document.getElementById('rev-pay'),R.payments.length?R.payments.map(p=>{const x=new Date(p.t*1000);return '<div class="row" style="padding:6px 0;font-size:.82rem"><span class="rowt">'+String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+' \u00b7 '+(p.order||'').split('|')[0]+' \u00b7 '+p.granted+'</span><b class="pos">+$'+Number(p.amount||0).toFixed(0)+'</b></div>';}).join(''):'<div style="font-size:.78rem;color:var(--muted)">Aucun paiement NOWPayments encore.</div>');
  el.style.display='block';
 }
@@ -6557,17 +6549,17 @@ function offersSheet(){
    [T2('Un vrai compte de d\u00e9monstration : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','A real demo account: balance, trades, market weather, evening review'),T2('Ouvert \u00e0 tous, depuis la page d\u2019accueil','Open to everyone, from the front page')],
    [T2('Pas de signaux, pas de compte personnel','No signals, no personal account')],'')+
   tier(T2('Signal','Signal'),'$'+(pk.manual||{}).usd+' / 30 j',T2('Les signaux du robot, vous tradez vous-m\u00eame','The robot\u2019s signals, you trade yourself'),
-   [T2('Notification \u00ab Signal jouable \u00bb quand les conditions sont r\u00e9unies, et quand c\u2019est fini','\u201cPlayable signal\u201d push when conditions are met, and when it is over'),T2('Votre compte MT5 en direct dans l\u2019app : solde, jour, semaine','Your MT5 account live in the app: balance, day, week'),T2('\u00ab Prochain signal ici \u00bb sur le graphique, la carte March\u00e9 en mode signal','\u201cNext signal here\u201d on the chart, the Market card in signal mode'),T2('Le rattrapage et le lot conseill\u00e9 apr\u00e8s une perte','Catch-up and the advised lot after a loss')],
+   [T2('Notification \u00ab Signal jouable \u00bb quand les conditions sont r\u00e9unies, et quand c\u2019est fini','\u201cPlayable signal\u201d push when conditions are met, and when it is over'),T2('Tout ce que montre la d\u00e9mo, sous votre nom ; sans compte MT5, vous tradez o\u00f9 vous voulez','Everything the demo shows, under your name; no MT5 account, you trade wherever you like'),T2('\u00ab Prochain signal ici \u00bb sur le graphique, la carte March\u00e9 en mode signal','\u201cNext signal here\u201d on the chart, the Market card in signal mode'),T2('Le rattrapage et le lot conseill\u00e9 apr\u00e8s une perte','Catch-up and the advised lot after a loss')],
    [T2('Le robot ne trade pas \u00e0 votre place','The robot does not trade for you'),T2('Les r\u00e8gles restent priv\u00e9es (voir Strat\u00e9gie)','The rules stay private (see Strategy)')],
    P.family||P.manual?'':btn('manual',full?T2('Places compl\u00e8tes pour l\u2019instant','No place left for now'):T2('Choisir Signal','Choose Signal'),!P.pay_ready||full),'var(--up-soft)')+
   tier(T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+' / 30 j',T2('Tout comprendre \u2014 un paquet \u00e0 part, qui se combine','Understand everything \u2014 a separate package that combines'),
    [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Signal ou Automatique','Combines with Signal or Automatic')],
    [T2('Sans les signaux ni l\u2019outil Trader (voir Manuel)','Without the signals or the Trader tool (see Manual)')],
    P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready),'var(--warn)')+
-  tier(T2('Automatique','Automatic'),T2('via MQL5','via MQL5'),T2('Votre compte copie celui de Kino','Your account copies Kino\u2019s'),
-   [T2('Abonnement au signal MQL5 de Kino : vos trades suivent les siens, sans rien faire','Subscribe to Kino\u2019s MQL5 signal: your trades follow his, hands-free'),T2('Votre compte reste le v\u00f4tre : personne d\u2019autre n\u2019y a acc\u00e8s','Your account stays yours: nobody else has access to it'),T2('L\u2019app OwlNest reste votre tableau de bord','The OwlNest app stays your dashboard')],
-   [T2('Le prix et le paiement sont ceux de MQL5, pas d\u2019OwlNest','Price and payment are MQL5\u2019s, not OwlNest\u2019s')],
-   P.mql5_url?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+P.mql5_url+'" target="_blank" rel="noopener">'+T2('Ouvrir le signal MQL5','Open the MQL5 signal')+'</a>':'<div style="font-size:.78rem;color:var(--muted);margin-top:8px">'+T2('Lien bient\u00f4t disponible.','Link coming soon.')+'</div>','var(--accent-soft)')+
+  tier(T2('Automatique','Automatic'),T2('Famille, sur invitation','Family, by invitation'),T2('Le robot sur votre compte, avec ses r\u00e8gles et ses freins','The robot on your account, with its rules and its brakes'),
+   [T2('Le robot trade sur votre compte MT5, jour et nuit, depuis notre serveur','The robot trades your MT5 account, day and night, from our server'),T2('Votre page en direct : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','Your page live: balance, trades, market weather, evening review'),T2('Prix fixe chaque mois, r\u00e9gl\u00e9 avec Kino ; code d\u2019activation par Telegram','Fixed monthly price, settled with Kino; activation code by Telegram')],
+   [T2('50 places, pour la famille','50 places, for the family')],
+   '<div style="font-size:.78rem;color:var(--muted);margin-top:8px">'+T2('Demandez un code \u00e0 Kino sur Telegram, puis ouvrez votre compte sur owltrader.duckdns.org/activate.','Ask Kino for a code on Telegram, then open your account at owltrader.duckdns.org/activate.')+'</div>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
   step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici, ou dans R\u00e9glages \u203a Abonnement.','Here, or in Settings \u203a Subscription.'))+
   step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT, BTC ou autre, 20 minutes pour envoyer. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT, BTC or other, 20 minutes to send. Nothing is charged automatically.'))+
@@ -6633,16 +6625,16 @@ async function payCfg(){
  const d=window._d||{};
  const inp=(id,ph,val,type)=>'<input id="'+id+'" type="'+(type||'text')+'" placeholder="'+ph+'" value="'+String(val||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:11px 14px;font-size:.92rem;margin-bottom:8px">';
  const P=d.plan||{};
- const v=await sheet('<h3>Paiements &amp; MQL5</h3><p>Cl\u00e9s NOWPayments (compte marchand), secret IPN (m\u00eame valeur que dans NOWPayments \u203a IPN), et le lien du signal MQL5 pour le trading automatique. Laissez vide pour ne pas changer.</p>'+
+ const v=await sheet('<h3>Paiements</h3><p>Cl\u00e9s NOWPayments (compte marchand), secret IPN (m\u00eame valeur que dans NOWPayments \u203a IPN). Laissez vide pour ne pas changer.</p>'+
   '<div style="font-size:.8rem;color:var(--muted2);margin:-4px 0 10px">\u00c9tat : '+(P.np_key_tail?'cl\u00e9 API enregistr\u00e9e (\u2026'+P.np_key_tail+')':'cl\u00e9 API absente')+' \u00b7 secret IPN '+(P.np_secret_set?'enregistr\u00e9':'absent')+(P.np_sandbox?' \u00b7 mode test':'')+'</div>'+
-  inp('shnpk','Cl\u00e9 API NOWPayments','', 'password')+inp('shnps','Secret IPN','', 'password')+inp('shmq','https://www.mql5.com/fr/signals/...',d.plan&&d.plan.mql5_url||'')+
+  inp('shnpk','Cl\u00e9 API NOWPayments','', 'password')+inp('shnps','Secret IPN','', 'password')+
   inp('shfam','Prix Automatique (famille) en $ / 30 j, pour le calcul des revenus',(d.revenue&&d.revenue.family_usd)||'', 'number')+
   '<label style="display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted2);margin:2px 0 10px"><input id="shsbx" type="checkbox"'+(P.np_sandbox?' checked':'')+'> Mode test (sandbox NOWPayments)</label>'+
   '<button class="shbtn shmain" onclick="_shDone({k:document.getElementById(&#39;shnpk&#39;).value,s:document.getElementById(&#39;shnps&#39;).value,m:document.getElementById(&#39;shmq&#39;).value,b:document.getElementById(&#39;shsbx&#39;).checked,f:document.getElementById(&#39;shfam&#39;).value})">Enregistrer</button>'+
   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
  if(!v)return;
  const pw=await askPwd('Enregistrer ?','Mot de passe ma\u00eetre.','Enregistrer');if(!pw)return;
- let body='pwd='+encodeURIComponent(pw)+'&mql5_url='+encodeURIComponent(v.m||'')+'&np_sandbox='+(v.b?'1':'0')+(v.f!==''&&v.f!=null?'&family_usd='+encodeURIComponent(v.f):'');
+ let body='pwd='+encodeURIComponent(pw)+'&np_sandbox='+(v.b?'1':'0')+(v.f!==''&&v.f!=null?'&family_usd='+encodeURIComponent(v.f):'');
  if(v.k)body+='&np_api_key='+encodeURIComponent(v.k);if(v.s)body+='&np_ipn_secret='+encodeURIComponent(v.s);
  const r=await fetch(AB()+'nest_config',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
@@ -7312,13 +7304,13 @@ function render(d){
    const _pl=d.plan||{},_paid=!_pl.family&&!d.is_master;
    lb.innerHTML=isPaused
     ?(_paid?'Mode manuel \u00b7 signaux + outil':'Mode manuel')
-    :(_paid?'Copie MQL5 \u00b7 automatique':'Trading automatique');
+    :'Trading automatique';
    lb.style.color=pauseLocked?'#6f8299':'';
    sb.textContent=pauseLocked
     ?(_pl.manual?'':(isPaused?'Le trading manuel est r\u00e9serv\u00e9 \u00e0 l\u2019administrateur.':'Le trading manuel est r\u00e9serv\u00e9 \u00e0 l\u2019administrateur.'))
     :(_paid
-      ?(isPaused?'Vous tradez vous-m\u00eame avec les signaux et l\u2019outil du graphique. Touchez pour repasser en copie MQL5.'
-        :'Rien ne tourne ici : votre compte suit le signal MQL5 si vous y \u00eates abonn\u00e9. Touchez pour passer en manuel.')
+      ?(isPaused?'Vous tradez vous-m\u00eame avec les signaux.'
+        :'Rien ne tourne ici : le robot ne trade pas sur ce compte.')
       :(isPaused
         ?'Le robot n\u2019entre pas seul. Touchez pour le lancer.'
         :'Le robot entre seul. Touchez pour repasser en manuel.'));
@@ -10465,25 +10457,39 @@ a{color:#9fc2de}.k{background:#121a25;border:1px solid #1f2a38;border-radius:18p
 <form method="POST" action="/activate" autocomplete="off">
 <label for="code">Code d&#8217;activation</label>
 <input id="code" name="code" maxlength="6" placeholder="ABC123" autocapitalize="characters">
-<div class="h">Re&ccedil;u de Kino sur Telegram (Automatique, Signal, Strat&eacute;gie).</div>
+<div class="h" id="ch">Re&ccedil;u de Kino sur Telegram (Automatique, Signal, Strat&eacute;gie).</div>
 <label for="buy">Pas de code ? Acheter en crypto</label>
 <select id="buy" name="buy"><option value="">&mdash; j&#8217;ai un code &mdash;</option><option value="manual">Signal &middot; $29 / 30 jours</option><option value="strategy">Strat&eacute;gie &middot; $49 / 30 jours</option></select>
 <div class="h">NOWPayments ouvre une page : USDT, BTC ou autre. Votre compte s&#8217;active d&egrave;s que le paiement est confirm&eacute;.</div>
 <label for="name">Votre pr&eacute;nom</label>
 <input id="name" name="name" required maxlength="30" placeholder="Pr&eacute;nom">
+<div id="mt5">
 <label for="login">Num&eacute;ro de compte MT5</label>
-<input id="login" name="login" required inputmode="numeric" placeholder="12345678">
+<input id="login" name="login" inputmode="numeric" placeholder="12345678">
 <label for="server">Serveur MT5</label>
-<input id="server" name="server" required placeholder="Exness-MT5Real30" list="srv">
+<input id="server" name="server" placeholder="Exness-MT5Real30" list="srv">
 <datalist id="srv"><option value="Exness-MT5Real30"><option value="Exness-MT5Real27"><option value="Exness-MT5Trial9"></datalist>
-<div class="h">Visible dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div>
-<label for="pw">Mot de passe du compte</label>
+<div class="h">Visible dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes. Le robot a besoin du mot de passe principal du compte.</div>
+</div>
+<label for="pw" id="pwl">Mot de passe</label>
 <input id="pw" name="password" type="password" required maxlength="64" placeholder="mot de passe">
-<div class="h"><b>Automatique</b> : le mot de passe principal (le robot doit pouvoir trader). <b>Signal / Strat&eacute;gie</b> : le mot de passe investisseur suffit (lecture seule).</div>
+<div class="h" id="pwh">Automatique : le mot de passe du compte MT5. Signal / Strat&eacute;gie : un mot de passe de votre choix, pour vous connecter.</div>
 <label for="tg">Telegram (facultatif)</label>
 <input id="tg" name="telegram" maxlength="40" placeholder="@votre_nom">
 <button>Activer &#10142;</button>
 </form>
+<script>
+function mode(p){var fam=(p==='family');var m=document.getElementById('mt5');m.style.display=fam?'':'none';
+ document.getElementById('login').required=fam;document.getElementById('server').required=fam;
+ document.getElementById('pwl').textContent=fam?'Mot de passe du compte MT5':'Choisissez un mot de passe';
+ document.getElementById('pwh').textContent=fam?'Le mot de passe principal : le robot doit pouvoir trader sur le compte.':'Il vous servira pour vous connecter, avec votre identifiant. Pas de compte MT5 n\u00e9cessaire.';}
+mode('family');
+document.getElementById('code').addEventListener('input',function(){var c=this.value.trim().toUpperCase();var h=document.getElementById('ch');
+ if(c.length<6){h.textContent='Re\u00e7u de Kino sur Telegram (Automatique, Signal, Strat\u00e9gie).';return;}
+ fetch('/codeinfo?c='+encodeURIComponent(c)).then(function(r){return r.json();}).then(function(j){
+  if(j&&j.ok){h.textContent='Code '+j.label+' \u00b7 '+j.days+' jours';mode(j.pkg);}else{h.textContent='Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.';mode('family');}}).catch(function(){});});
+document.getElementById('buy').addEventListener('change',function(){mode(this.value?'manual':'family');});
+</script>
 <div class="k">D&eacute;j&agrave; membre et vous renouvelez ? Entrez le code dans l&#8217;app : R&eacute;glages &rsaquo; Abonnement &rsaquo; &laquo; J&#8217;ai un code &raquo;.<br><br>Pas encore de code ? <a href="%%CONTACT%%">&Eacute;crivez &agrave; Kino sur Telegram</a> &middot; <a href="/">Retour</a></div>
 <div class="h" style="margin-top:14px;text-align:center">Vos identifiants servent uniquement &agrave; relier votre compte. OwlNest vend un logiciel et un service de copie &mdash; pas de conseil ni de gestion d&#8217;investissement.</div>
 </div></body></html>"""
@@ -10745,16 +10751,13 @@ Se connecter</button>
 <span>Le robot en direct sur un vrai compte de d&eacute;monstration : solde, trades, m&eacute;t&eacute;o du march&eacute;, bilan du soir. Sans compte.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--up)">$29</div>
 <div class="ft"><b>Signal &middot; 30 jours</b>
-<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et votre compte MT5 en direct dans l&#39;app. Vous tradez vous-m&ecirc;me.</span></div></div>
+<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et tout ce que montre la d&eacute;mo. Sans compte MT5 : vous tradez o&ugrave; vous voulez.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
 <div class="ft"><b>Strat&eacute;gie &middot; 30 jours</b>
 <span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec Kino ; code d&#39;activation par Telegram. 50 places.</span></div></div>
-<div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#8635;</div>
-<div class="ft"><b>Copie &middot; via MQL5</b>
-<span>Pour tous : votre compte copie celui de Kino. Prix et paiement sur MQL5.</span></div></div>
 <div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#39;app ou par code. Le d&eacute;tail complet est dans l&#39;application, R&eacute;glages &rsaquo; Abonnement.</div>
 </div>
 <div class="feats" id="faq">
@@ -10781,9 +10784,9 @@ Se connecter</button>
 <div style="color:var(--muted);font-size:.85rem">Compte connu : vous entrez
  directement. Nouveau compte : on vous demande juste une info de plus.
 </div>
-<label for="lg">Num&eacute;ro de compte MT5</label>
-<input id="lg" name="login" required inputmode="numeric" autocomplete="username"
- placeholder="12345678">
+<label for="lg">Num&eacute;ro de compte MT5 ou identifiant</label>
+<input id="lg" name="login" required autocomplete="username"
+ placeholder="12345678 ou votre identifiant">
 <label for="pw">Mot de passe du compte</label>
 <div style="position:relative">
  <input id="pw" name="password" type="password" required
@@ -10943,8 +10946,22 @@ def handle_login(form):
     Known account+password -> straight in. Known account, wrong
     password -> error. Unknown account -> step 2 (auto-register)."""
     import re as _re
-    login = _re.sub(r"\D", "", form.get("login", [""])[0] or "")[:12]
+    raw = (form.get("login", [""])[0] or "").strip()[:40]
     pwd = (form.get("password", [""])[0] or "").strip()[:64]
+    if _re.search(r"[A-Za-z]", raw):
+        # 2026-10-03 (owner): a Signal / Strategie member logs in with the
+        # identifiant given at activation and the password they chose
+        ident = _re.sub(r"[^a-z0-9]", "", raw.lower())
+        if rate_limited(("login", ident)):
+            return ("page", _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>"))
+        au = next((x for x in users() if x.get("app_only") and x.get("id") == ident), None)
+        if au is not None and au.get("app_pwd") == _app_hash(pwd):
+            return ("redirect", f"https://owltrader.duckdns.org/{au['token']}/")
+        rate_fail(("login", ident))
+        return ("page", _join_result("&#128274; Identifiant ou mot de passe incorrect",
+                                     "<p>L&#8217;identifiant est celui de votre page de bienvenue (en minuscules), le mot de passe celui que vous avez choisi.</p>"
+                                     "<p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
+    login = _re.sub(r"\D", "", raw)[:12]
     if not (login and pwd):
         return ("page", _join_result("&#10060; Il manque une info",
                                      "<p>Compte et mot de passe.</p>"))
@@ -11032,6 +11049,20 @@ def handle_register(form):
         "l&#8217;essai sera nettoy&eacute; automatiquement.</p>")
 
 
+def _app_hash(p):
+    import hashlib as _hl
+    return _hl.sha256(("owl|" + (p or "")).encode("utf-8")).hexdigest()
+
+
+def _data_user(u):
+    """2026-10-03 (owner): a Signal / Strategie member has no MT5 account.
+    Their page shows the PUBLIC DEMO's live view - balance, trades, market
+    weather, evening review - under their own name and package."""
+    if not (u and u.get("app_only")):
+        return u
+    return next((x for x in users() if x.get("public")), u)
+
+
 def family_count():
     """Family (Automatique) accounts on this VPS: members whose account the robot trades."""
     return sum(1 for x in users() if x.get("trade") and x.get("id") not in OWNER_UIDS and not x.get("public"))
@@ -11053,11 +11084,11 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     buy = (form.get("buy", [""])[0] or "").strip()
     if rate_limited(("activate", code or login or "?"), limit=8):
         return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
-    if not (name and login and pwd and server) or not (code or buy in ("manual", "strategy")):
+    if not (name and pwd) or not (code or buy in ("manual", "strategy")):
         return _join_result("&#10060; Il manque une information",
                             "<p>Revenez en arri&egrave;re et remplissez toutes les cases : un code, ou un paquet &agrave; acheter.</p>")
     if not code:
-        return _activate_buy(name, login, pwd, server, tg, buy, origin)
+        return _activate_buy(name, pwd, tg, buy, origin)
     ce = peek_activation_code(code)
     if not ce:
         rate_fail(("activate", code))
@@ -11066,6 +11097,13 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                             "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
     pkg, days = ce.get("pkg") or "family", int(ce.get("days") or 30)
     labels = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}
+    if pkg == "family" and not (login and server):
+        return _join_result("&#10060; Il manque le compte MT5",
+                            "<p>Un code Automatique demande le num&eacute;ro de compte MT5, le serveur et le mot de passe du compte.</p>"
+                            "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
+    if pkg != "family":
+        # 2026-10-03 (owner): Signal / Strategie = app-only - no MT5 account, no terminal
+        return _activate_app_only(name, pwd, tg, pkg, days, code)
     us = users()
     known = next((x for x in us if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
     if known is not None:
@@ -11144,7 +11182,56 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                         "ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
 
 
-def _activate_buy(name, login, pwd, server, tg, pkg, origin):
+def _new_app_only_record(name, pwd, tg, pkg, allu):
+    import re as _re
+    base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
+    uid, n = base, 1
+    while any(u.get("id") == uid for u in allu):
+        n += 1
+        uid = f"{base}{n}"
+    token = uid + secrets.token_hex(2)
+    return {"id": uid, "name": name, "token": token, "app_only": True, "app_pwd": _app_hash(pwd),
+            "plan": pkg, "telegram": tg, "created": int(time.time()),
+            "era_start": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+
+
+def _activate_app_only(name, pwd, tg, pkg, days, code):
+    """A Signal / Strategie account from a code: identifiant + password,
+    the package for `days`, the public demo's view under their name."""
+    try:
+        allu = json.load(open(USERS_FILE, encoding="utf-8"))
+    except Exception:
+        allu = []
+    rec = _new_app_only_record(name, pwd, tg, pkg, allu)
+    rec["via"] = "code"
+    allu.append(rec)
+    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _users_cache["t"] = 0.0
+    redeem_activation_code(code, rec["id"])
+    ent_grant(rec["id"], pkg, days, "code")
+    labels = {"manual": "Signal", "strategy": "Strat&eacute;gie"}
+    try:
+        _qf = os.path.join(DIR, "owl_push_queue.json")
+        try:
+            _q = json.load(open(_qf, encoding="utf-8"))
+        except Exception:
+            _q = []
+        _q.append({"uid": "kino", "t": int(time.time()), "title": "\U0001f423 Nouveau membre \u00b7 " + name,
+                   "body": f"{labels.get(pkg, pkg).replace('&eacute;', 'e')} {days} j \u00b7 identifiant {rec['id']}" + (f" \u00b7 {tg}" if tg else "")})
+        json.dump(_q, open(_qf, "w", encoding="utf-8"))
+    except Exception:
+        pass
+    link = f"https://owltrader.duckdns.org/{rec['token']}/"
+    return _join_result("&#127881; Bienvenue dans le nid, " + name + " !",
+                        f"<p><b>{labels.get(pkg, pkg)}</b> &middot; {days} jours. Votre page est pr&ecirc;te.</p>"
+                        f"<p>Votre identifiant : <b>{rec['id']}</b> &mdash; avec votre mot de passe, il vous reconnecte depuis n&#8217;importe quel t&eacute;l&eacute;phone (&laquo; Se connecter &raquo;).</p>"
+                        + ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
+                           else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
+                        + f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
+                        "<p style=\"color:#9aa7b4;font-size:.85rem\">Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
+
+
+def _activate_buy(name, pwd, tg, pkg, origin):
     """Signal / Strategie bought in crypto from the public page: the
     account is created 'waiting for the payment' (no terminal yet), the
     NOWPayments page opens; the webhook activates it (and the provisioner
@@ -11155,24 +11242,14 @@ def _activate_buy(name, login, pwd, server, tg, pkg, origin):
     if not cfg.get("np_api_key"):
         return _join_result("&#9888;&#65039; Paiement en crypto indisponible",
                             "<p>Demandez un code &agrave; Kino sur Telegram.</p><p><a href=\"/activate\">&larr; Retour</a></p>")
-    if any(str(x.get("login")) == login or str(x.get("mt5_login") or "") == login for x in users()):
-        return _join_result("&#128274; Ce compte est d&eacute;j&agrave; dans le nid",
-                            "<p>Connectez-vous, puis achetez le paquet dans l&#8217;app : R&eacute;glages &rsaquo; Abonnement.</p><p><a href=\"/\">&larr; Se connecter</a></p>")
-    base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
     except Exception:
         allu = []
-    uid, n = base, 1
-    while any(u.get("id") == uid for u in allu):
-        n += 1
-        uid = f"{base}{n}"
-    token = uid + secrets.token_hex(2)
-    allu.append({"id": uid, "name": name, "token": token, "terminal": "",
-                 "login": int(login), "mt5_login": int(login), "mt5_password": pwd, "mt5_server": server,
-                 "era_start": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-                 "symbol": "BTCUSD", "bot_only": True, "plan": pkg, "mode": "auto", "telegram": tg,
-                 "created": int(time.time()), "via": "crypto", "pending_pay": True})
+    rec = _new_app_only_record(name, pwd, tg, pkg, allu)
+    rec.update({"via": "crypto", "pending_pay": True})
+    uid, token = rec["id"], rec["token"]
+    allu.append(rec)
     json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
     api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
@@ -12596,6 +12673,16 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 1 and parts[0] == "app":
             self._send(APP_PAGE, "text/html; charset=utf-8")
             return
+        if len(parts) == 1 and parts[0] == "codeinfo":
+            # the /activate page asks what a code is for (package, days) - nothing else
+            import urllib.parse as _upc
+            _q = _upc.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _c = (_q.get("c", [""])[0] or "").strip().upper()[:12]
+            _e = peek_activation_code(_c) if len(_c) >= 6 and not rate_limited(("codeinfo", _c), limit=20) else None
+            _lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat\u00e9gie"}
+            self._send(json.dumps({"ok": bool(_e), "pkg": (_e or {}).get("pkg"), "days": (_e or {}).get("days"),
+                                   "label": _lab.get((_e or {}).get("pkg"), "")}), "application/json")
+            return
         if len(parts) == 1 and parts[0] == "activate":
             # 2026-10-03 (owner): open an account with a code
             self._send(ACTIVATE_PAGE.replace("%%CONTACT%%", nest_config().get("contact_url") or "/"), "text/html; charset=utf-8")
@@ -12659,10 +12746,18 @@ class H(BaseHTTPRequestHandler):
             self._send(page, "text/html; charset=utf-8")
         elif sub == "api":
             touch_seen(user.get("id"))
-            self._send(json.dumps(user_stats(
-                user, admin_cookie_ok(self.headers))), "application/json")
+            if user.get("app_only"):
+                # 2026-10-03 (owner): the public demo's live view, their name and package
+                _d = user_stats(_data_user(user), False)
+                _d.update({"name": user.get("name", ""), "plan": plan_of(user), "public": False,
+                           "app_only": True, "is_master": False, "trading_paused": False})
+                _d.pop("nest", None)
+                self._send(json.dumps(_d), "application/json")
+            else:
+                self._send(json.dumps(user_stats(
+                    user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "day":
-            self._send(json.dumps(day_payload(user)), "application/json")
+            self._send(json.dumps(day_payload(_data_user(user))), "application/json")
         elif sub == "trade":
             # 2026-09-27: the story of one closed trade, member-safe words
             try:
@@ -12671,7 +12766,7 @@ class H(BaseHTTPRequestHandler):
                 _t = int(_q.get("t", ["0"])[0])
             except Exception:
                 _t = 0
-            self._send(json.dumps(trade_story(user, _t)), "application/json")
+            self._send(json.dumps(trade_story(_data_user(user), _t)), "application/json")
         elif sub == "nest_reset_preview":
             if not is_admin(user):
                 self.send_response(404)

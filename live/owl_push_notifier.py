@@ -478,7 +478,14 @@ def is_manual(uid):
     try:
         us = json.load(open(os.path.join(DIR, "owl_nest_users.json"),
                             encoding="utf-8"))
-        return any(u.get("id") == uid and u.get("mode") in ("manual", "semi")
+        # 2026-10-03 (owner): a Signal member (app-only, no MT5 account)
+        # gets the signal-service voice while the package runs
+        try:
+            ents = json.load(open(os.path.join(DIR, "owl_entitlements.json"), encoding="utf-8"))
+        except Exception:
+            ents = {}
+        return any(u.get("id") == uid and (u.get("mode") in ("manual", "semi")
+                   or (u.get("app_only") and float((ents.get(uid) or {}).get("manual_until") or 0) > time.time()))
                    for u in us)
     except Exception:
         return False
