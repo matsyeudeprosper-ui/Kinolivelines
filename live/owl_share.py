@@ -35,7 +35,10 @@ FILE = os.path.join(DIR, "owl_share.json")
 USERS = os.path.join(DIR, "owl_nest_users.json")
 ENTS = os.path.join(DIR, "owl_entitlements.json")
 OWNER_UIDS = ("kino", "std", "expenses")
-DEFAULT_CFG = {"on": True, "pct": 30.0, "base_usd": 9.0, "grace_days": 7}
+# owner 2026-10-03 (second thought): no monthly base - 30 % of the robot's
+# result only; the $9 is a ONE-TIME opening fee, for every account type
+# (each account is a terminal on the VPS)
+DEFAULT_CFG = {"on": True, "pct": 30.0, "base_usd": 0.0, "grace_days": 7, "setup_usd": 9.0}
 
 
 def _lj(p, d):
@@ -334,6 +337,27 @@ def overdue_sweep(now=None):
             _block(uid, True)
             _pause(uid, True, "share")
     return newly
+
+
+# ---------------------------------------------------------------- opening fee
+def setup_info(uid):
+    """The one-time opening fee of an account: paid (how, when) or not."""
+    e = _lj(ENTS, {}).get(uid) or {}
+    c = cfg()
+    return {"usd": float(c.get("setup_usd") or 0), "paid": bool(e.get("setup_paid")),
+            "how": e.get("setup_how"), "when": e.get("setup_paid") if isinstance(e.get("setup_paid"), int) else None}
+
+
+def mark_setup(uid, how="kino", amount=None):
+    ents = _lj(ENTS, {})
+    e = ents.setdefault(uid, {})
+    e["setup_paid"] = int(time.time())
+    e["setup_how"] = how
+    if amount is not None:
+        e["setup_amount"] = float(amount)
+    e["updated"] = int(time.time())
+    _sj(ENTS, ents)
+    return e
 
 
 def owner_view(now=None):

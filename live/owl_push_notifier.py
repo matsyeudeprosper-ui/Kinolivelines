@@ -221,11 +221,12 @@ def maybe_share():
             if float(p.get("due") or 0) <= 0:
                 continue
             if p["above"] > 0:
+                bse = (f" + {p['base']:.2f} $ base" if en else f" + {p['base']:.2f} $ de base") if float(p.get("base") or 0) > 0 else ""
                 body = ((f"The robot made {p['profit']:+.2f} $ for you in {m}; {p['above']:.2f} $ above your record. "
-                         f"Your OwlNest share: {p['share']:.2f} $ ({p['pct']:.0f} %) + {p['base']:.0f} $ base = {p['due']:.2f} $. "
+                         f"Your OwlNest share: {p['share']:.2f} $ ({p['pct']:.0f} %){bse} = {p['due']:.2f} $. "
                          f"{SH.cfg()['grace_days']} days to settle - Settings > Subscription.") if en else
                         (f"Le robot a gagn\u00e9 {p['profit']:+.2f} $ pour vous en {m} ; {p['above']:.2f} $ au-dessus de votre record. "
-                         f"Votre part OwlNest : {p['share']:.2f} $ ({p['pct']:.0f} %) + {p['base']:.0f} $ de base = {p['due']:.2f} $. "
+                         f"Votre part OwlNest : {p['share']:.2f} $ ({p['pct']:.0f} %){bse} = {p['due']:.2f} $. "
                          f"{SH.cfg()['grace_days']} jours pour r\u00e9gler \u2014 R\u00e9glages \u203a Abonnement."))
             else:
                 body = ((f"No gain above your record in {m} ({p['profit']:+.2f} $): no share. Only the {p['base']:.0f} $ base is due. "

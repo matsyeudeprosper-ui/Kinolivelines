@@ -299,7 +299,9 @@ MANUAL_MODES = ("manual", "semi")
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
 PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Manuel"},
-            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
+            "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"},   # separate packages, they combine
+            # 2026-10-03 (owner): the one-time opening fee of any account (a terminal on the VPS)
+            "setup": {"usd": 9, "days": 0, "label": "Ouverture"}}
 MANUAL_CAP = 10          # one MT5 terminal per manual member on this VPS
 
 
@@ -499,7 +501,9 @@ def plan_of(u):
             "pay_ready": bool(cfg.get("np_api_key")),
             "mql5_url": cfg.get("mql5_url") or "",
             # 2026-10-03 (owner): the member's share statement (robot accounts only)
-            "share": (SHARE.statement(u.get("id")) if (SHARE.on() and u.get("id") in SHARE.eligible()) else None)}
+            "share": (SHARE.statement(u.get("id")) if (SHARE.on() and u.get("id") in SHARE.eligible()) else None),
+            # 2026-10-03 (owner): the one-time opening fee, every account type
+            "setup": (SHARE.setup_info(u.get("id")) if (u.get("id") not in OWNER_UIDS and not u.get("public")) else None)}
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
 # sees the row, locked.
 # Owner 2026-09-17: the accounts whose owner may switch auto <-> manual.
@@ -4477,6 +4481,7 @@ async function acctSheet(){
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
     '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
     (x.family_until?'<button onclick="event.stopPropagation();_shDone(1);nestCodeFor(&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-key"/></svg>Code</button>':'')+
+    (x.setup&&!x.setup.paid&&x.setup.usd?'<button onclick="event.stopPropagation();_shDone(1);nestSharePaid(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;setup&#39;,'+Number(x.setup.usd).toFixed(2)+')" style="border:1px solid rgba(232,197,90,.5);background:rgba(232,197,90,.1);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px">Ouverture $'+Number(x.setup.usd).toFixed(0)+'</button>':'')+
     (x.share&&x.share.last&&(x.share.last.status==='open'||x.share.last.status==='overdue')?'<button onclick="event.stopPropagation();_shDone(1);nestSharePaid(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;'+x.share.last.ym+'&#39;,'+Number(x.share.last.due).toFixed(2)+')" style="border:1px solid rgba(46,204,113,.45);background:rgba(46,204,113,.1);color:var(--up-soft);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px">Pay\u00e9 $'+Number(x.share.last.due).toFixed(2)+(x.share.last.status==='overdue'?' \u00b7 retard':'')+'</button>':'')+
     (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
     '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
@@ -5093,6 +5098,11 @@ function renderPlan(d){
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
  else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
+ // 2026-10-03 (owner): the one-time opening fee, until it is paid
+ (function(){const F=P.setup;if(!F||F.paid||!F.usd)return;const us=v=>'$'+Number(v||0).toFixed(2);
+  sub.innerHTML='<div style="margin-top:6px;padding:12px;border-radius:14px;border:1px solid rgba(232,197,90,.4);background:rgba(232,197,90,.08)"><b style="color:var(--text)">'+(en?'Opening fee \u00b7 '+us(F.usd)+', once':'Frais d\u2019ouverture \u00b7 '+us(F.usd)+', une seule fois')+'</b>'+
+   '<div style="font-size:.8rem;margin-top:4px">'+(en?'Every account has its own terminal on our server. This fee opens yours.':'Chaque compte a son propre terminal sur notre serveur. Ces frais ouvrent le v\u00f4tre.')+'</div>'+
+   (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="buyPkg(&#39;setup&#39;)">'+(en?'Pay '+us(F.usd)+' in crypto':'Payer '+us(F.usd)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with Kino.':'R\u00e9glez avec Kino.')+'</div>')+'</div>'+sub.innerHTML;})();
  // 2026-10-03 (owner): the profit share - this month so far, and the
  // last statement with its Payer button
  (function(){const S=P.share;if(!S||!S.on||!P.family&&!P.family_expired&&!S.blocked)return;
@@ -5101,14 +5111,17 @@ function renderPlan(d){
   const mname=ym=>MO[parseInt(ym.slice(5,7),10)-1]+' '+ym.slice(0,4);
   t.textContent=(en?'Automatic \u00b7 ':'Automatique \u00b7 ')+S.pct.toFixed(0)+(en?' % of the result':' % du r\u00e9sultat')+plusS;
   const N=S.now;
-  let h='<div style="margin-top:6px">'+(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs only the base ($'+Number(N.base_full||S.base).toFixed(0)+'), counted from the day the robot started on your account.':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte que la base ('+Number(N.base_full||S.base).toFixed(0)+' $), compt\u00e9e depuis le jour o\u00f9 le robot a commenc\u00e9 sur votre compte.')+'</div>';
+  const BF=Number(N.base_full||S.base||0);
+  let h='<div style="margin-top:6px">'+(BF>0
+   ?(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs only the base ($'+BF.toFixed(0)+'), counted from the day the robot started on your account.':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte que la base ('+BF.toFixed(0)+' $), compt\u00e9e depuis le jour o\u00f9 le robot a commenc\u00e9 sur votre compte.')
+   :(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs nothing.':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte rien.'))+'</div>';
   h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+
    [[mn(N.profit),en?'robot, this month':'le robot, ce mois'],[us(N.above),en?'above your record':'au-dessus du record'],[us(N.due),en?'your share so far':'votre part, pour l\u2019instant']].map(x=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x[0]+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+x[1]+'</span></div>').join('')+'</div>';
   const L=S.last;
   if(L&&(L.status==='open'||L.status==='overdue')){
    h+='<div style="margin-top:12px;padding:12px;border-radius:14px;border:1px solid '+(L.status==='overdue'?'rgba(255,92,92,.45)':'rgba(232,197,90,.4)')+';background:'+(L.status==='overdue'?'rgba(255,92,92,.08)':'rgba(232,197,90,.08)')+'">'+
     '<b style="color:var(--text)">'+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' \u00b7 '+us(L.due)+'</b>'+
-    '<div style="font-size:.8rem;margin-top:4px">'+(en?'Robot '+mn(L.profit)+', '+us(L.above)+' above your record \u2192 '+us(L.share)+' + base '+us(L.base)+'.':'Robot '+mn(L.profit)+', '+us(L.above)+' au-dessus du record \u2192 '+us(L.share)+' + base '+us(L.base)+'.')+
+    '<div style="font-size:.8rem;margin-top:4px">'+(en?'Robot '+mn(L.profit)+', '+us(L.above)+' above your record \u2192 '+us(L.share)+(L.base>0?' + base '+us(L.base):'')+'.':'Robot '+mn(L.profit)+', '+us(L.above)+' au-dessus du record \u2192 '+us(L.share)+(L.base>0?' + base '+us(L.base):'')+'.')+
     (L.status==='overdue'?' <b style="color:var(--down-soft)">'+(en?'Overdue: the robot is paused on your account until it is settled.':'En retard : le robot est en pause sur votre compte jusqu\u2019au r\u00e8glement.')+'</b>':' '+(en?S.grace_days+' days to settle.':S.grace_days+' jours pour r\u00e9gler.'))+'</div>'+
     (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="payShare(&#39;'+L.ym+'&#39;)">'+(en?'Pay '+us(L.due)+' in crypto':'Payer '+us(L.due)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with Kino; he marks it paid and the robot goes on.':'R\u00e9glez avec Kino ; il marque le relev\u00e9 pay\u00e9 et le robot continue.')+'</div>')+'</div>';}
   else if(L&&L.status==='paid')h+='<div style="font-size:.78rem;color:var(--up-soft);margin-top:8px">\u2713 '+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' '+(en?'settled':'r\u00e9gl\u00e9')+' ('+us(L.due)+').</div>';
@@ -6470,7 +6483,7 @@ function renderRevenue(d){
  el.style.display='block';
 }
 async function nestSharePaid(uid,name,ym,due){
- const pw=await askPwd('Relev\u00e9 '+ym+' de '+name+' pay\u00e9 ?','$'+Number(due).toFixed(2)+' re\u00e7u. Le robot reprend si la pause venait du relev\u00e9.','Marquer pay\u00e9');if(!pw)return;
+ const pw=await askPwd(ym==='setup'?'Frais d\u2019ouverture de '+name+' pay\u00e9s ?':'Relev\u00e9 '+ym+' de '+name+' pay\u00e9 ?','$'+Number(due).toFixed(2)+' re\u00e7u.'+(ym==='setup'?'':' Le robot reprend si la pause venait du relev\u00e9.'),'Marquer pay\u00e9');if(!pw)return;
  const r=await fetch(AB()+'share_paid',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&ym='+encodeURIComponent(ym)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':_escS((j&&j.err)||'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
@@ -6518,7 +6531,7 @@ function offersSheet(){
  const btn=(k,l,dis)=>'<button '+(dis?'disabled ':'')+'onclick="_shDone(1);buyPkg(&#39;'+k+'&#39;)" class="shbtn shmain" style="margin:10px 0 0;padding:11px;font-size:.9rem'+(dis?';opacity:.5':'')+'">'+l+'</button>';
  const step=(n,t,x)=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0"><div style="flex:none;width:24px;height:24px;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center">'+n+'</div><div><b style="font-size:.9rem">'+t+'</b><div style="font-size:.82rem;color:var(--muted2);line-height:1.45">'+x+'</div></div></div>';
  const full=P.seats_left<=0&&!P.manual;
- const h='<h3>'+T2('Les offres','The plans')+'</h3><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot de Kino. Vous choisissez comment la suivre.','One strategy \u2014 Kino\u2019s robot. You choose how to follow it.')+'</p>'+
+ const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.82rem;color:var(--text2);line-height:1.45;margin:-4px 0 10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2)">'+T2('<b>Frais d\u2019ouverture : 9 $, une seule fois</b>, pour tout compte \u2014 chaque compte a son propre terminal sur notre serveur.','<b>Opening fee: $9, once</b>, for any account \u2014 each account has its own terminal on our server.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot de Kino. Vous choisissez comment la suivre.','One strategy \u2014 Kino\u2019s robot. You choose how to follow it.')+'</p>'+
   tier(T2('Observateur','Observer'),T2('Gratuit','Free'),T2('7 jours d\u2019essai puis lecture seule','7-day trial, then read only'),
    [T2('Votre compte MT5 en direct : solde, jour, semaine','Your MT5 account live: balance, day, week'),T2('La m\u00e9t\u00e9o du march\u00e9 et le bilan du soir','The market weather and the evening review'),T2('La d\u00e9mo publique du robot, en direct','The public demo of the robot, live')],
    [T2('Pas de signaux, pas d\u2019outil de trading','No signals, no trade tool')],'')+
@@ -6530,8 +6543,8 @@ function offersSheet(){
    [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Manuel ou Automatique','Combines with Manual or Automatic')],
    [T2('Sans les signaux ni l\u2019outil Trader (voir Manuel)','Without the signals or the Trader tool (see Manual)')],
    P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready),'var(--warn)')+
-  tier(T2('Automatique','Automatic'),T2('9 $ / mois + 30 % du r\u00e9sultat','$9 / month + 30 % of the result'),T2('Le robot sur votre compte \u2014 je gagne seulement si vous gagnez','The robot on your account \u2014 I earn only when you earn'),
-   [T2('Le robot trade sur votre compte ; vous gardez 70 % de ce qu\u2019il gagne','The robot trades your account; you keep 70 % of what it makes'),T2('Un mois sans gain ne co\u00fbte que la base de 9 $','A month without gain costs only the $9 base'),T2('Jamais de part sur un simple retour \u00e0 votre record','Never a share on simply getting back to your record'),T2('Relev\u00e9 le 1er du mois, 7 jours pour r\u00e9gler, en crypto ou avec Kino','Statement on the 1st, 7 days to settle, in crypto or with Kino'),T2('Ou la copie du compte de Kino via MQL5','Or copy Kino\u2019s account via MQL5')],
+  tier(T2('Automatique','Automatic'),T2('30 % du r\u00e9sultat du robot','30 % of the robot\u2019s result'),T2('Le robot sur votre compte \u2014 je gagne seulement si vous gagnez','The robot on your account \u2014 I earn only when you earn'),
+   [T2('Le robot trade sur votre compte ; vous gardez 70 % de ce qu\u2019il gagne','The robot trades your account; you keep 70 % of what it makes'),T2('Un mois sans gain ne co\u00fbte rien','A month without gain costs nothing'),T2('Jamais de part sur un simple retour \u00e0 votre record','Never a share on simply getting back to your record'),T2('Relev\u00e9 le 1er du mois, 7 jours pour r\u00e9gler, en crypto ou avec Kino','Statement on the 1st, 7 days to settle, in crypto or with Kino'),T2('Ou la copie du compte de Kino via MQL5','Or copy Kino\u2019s account via MQL5')],
    [T2('Le robot reste en pause tant qu\u2019un relev\u00e9 n\u2019est pas r\u00e9gl\u00e9','The robot stays paused while a statement is unsettled')],
    P.mql5_url?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+P.mql5_url+'" target="_blank" rel="noopener">'+T2('Ouvrir le signal MQL5','Open the MQL5 signal')+'</a>':'<div style="font-size:.78rem;color:var(--muted);margin-top:8px">'+T2('Lien bient\u00f4t disponible.','Link coming soon.')+'</div>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
@@ -10007,6 +10020,7 @@ def user_stats(u, admin_override=False):
                         "err": bool(nd.get("error")),
                         "stale": _age > 60, "paused": _pz,
                         "share": (SHARE.statement(x["id"]) if (SHARE.on() and x.get("trade") and x["id"] in _SHARE_EL) else None),
+                        "setup": (SHARE.setup_info(x["id"]) if (x["id"] not in OWNER_UIDS and not x.get("public")) else None),
                         "pos": nd.get("open_positions"),
                         "bot": _bot, "botlive": _live, "blocked": _blk,
                         # 2026-10-01 (owner): "all accounts done for the
@@ -11207,6 +11221,11 @@ class H(BaseHTTPRequestHandler):
                 if good and data.get("payment_status") in ("finished", "confirmed"):
                     try:
                         _uid, _pkg, _ts = str(data.get("order_id")).split("|")[:3]
+                        if _pkg == "setup":
+                            # 2026-10-03 (owner): the opening fee, paid in crypto
+                            SHARE.mark_setup(_uid, f"nowpayments:{data.get('payment_id')}", float(data.get("price_amount") or 0))
+                            rec["granted"] = "setup"
+                            _pkg = "_setup_done"
                         if _pkg == "share":
                             # 2026-10-03 (owner): a share statement paid in crypto
                             _per = SHARE.mark_paid(_uid, _ts, f"nowpayments:{data.get('payment_id')}", float(data.get("price_amount") or 0))
@@ -11434,6 +11453,11 @@ class H(BaseHTTPRequestHandler):
                     return
                 _uid = (_fp.get("uid", [""])[0] or "").strip()[:40]
                 _ym = (_fp.get("ym", [""])[0] or "").strip()[:7]
+                if _ym == "setup":
+                    # the opening fee, settled with Kino
+                    SHARE.mark_setup(_uid, "kino")
+                    self._send(json.dumps({"ok": True}), "application/json")
+                    return
                 per = SHARE.mark_paid(_uid, _ym, "kino")
                 if per:
                     _en = member_lang(_uid) == "en"
