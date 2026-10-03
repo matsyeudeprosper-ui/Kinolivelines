@@ -1663,6 +1663,16 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .lh-dot{flex:none;width:8px;height:8px;border-radius:99px;background:var(--up);margin-top:6px;
  box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:lhdot 2.2s ease-out infinite}
 @keyframes lhdot{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}100%{box-shadow:0 0 0 9px rgba(46,204,113,0)}}
+.lablabo{margin-top:10px;padding:14px 14px 12px}
+.lablabo>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;letter-spacing:.12em;color:var(--muted2);white-space:nowrap}
+.lablabo>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+.lablabo>.lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted)}
+.lab-dot{width:8px;height:8px;border-radius:99px;flex:none}
+.lablabo-what{font-size:.9rem;line-height:1.5;color:var(--text);margin-top:10px}
+.lablabo-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.lablabo-tiles>div{background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:14px;padding:12px 6px 10px;text-align:center}
+.lablabo-tiles b{display:block;font-size:1.3rem;font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.lablabo-tiles span{display:block;font-size:.64rem;color:var(--muted);margin-top:6px}
 .labseedrow{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;
  background:transparent;border:1px dashed var(--border2);border-radius:16px;
  padding:12px 14px;min-height:52px;text-align:left;color:var(--text2);font:inherit;cursor:pointer}
@@ -5175,6 +5185,7 @@ function labRender(){const j=window._lab;if(!j)return;const en=LANG()==='en';con
  // de neuf" on the home: one line, opening the full thing.
  h+=labHero(en);
  h+=labBoard(en);
+ h+=labLabo(en);
  h+=labSeedRow(en);
  setH(document.getElementById('lab-body'),h);
  try{if(!localStorage.getItem('owlLabIntro')){localStorage.setItem('owlLabIntro','1');setTimeout(()=>labStage('how'),700);}}catch(e){}
@@ -5376,6 +5387,22 @@ function labHero(en){
 // 2026-10-02 (owner): the clues leave the board. They are a waiting room
 // (not one has ever become an idea) - one quiet row, and a panel for
 // anyone curious.
+// 2026-10-03 (owner): the lab's own robot, where ideas go to prove
+// themselves - it was invisible (not a member, so not in Le Nid).
+function labLabo(en){const j=window._lab||{};const L=j.labo;if(!L)return '';const esc=_escS;
+ const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(2);
+ const dep=L.deployed,w=L.watch;
+ let what;
+ if(dep){const t=esc(en?(dep.title_en||dep.title_fr):(dep.title_fr||dep.title_en));
+  what=(en?'Trying ':'Essaie ')+'\u00ab '+t+' \u00bb'+(en?' since ':' depuis le ')+esc(dep.date||'')+
+   (w&&w.labo?' \u00b7 '+(w.labo.trades||0)+' / '+(w.need||30)+' trades \u00b7 '+(en?'lab ':'labo ')+'<b style="color:'+((w.labo.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(w.labo.net)+'</b> \u00b7 '+(en?'real robot ':'vrai robot ')+'<b>'+mn((w.real||{}).net)+'</b>':'')+
+   (L.confirmed?' \u00b7 <span style="color:var(--up-soft)">'+(en?'confirmed':'confirm\u00e9e')+'</span>':'');}
+ else what=en?'Runs the robot\u2019s base rules. A duel winner goes in here first, by itself.':'Suit les r\u00e8gles de base du robot. Une id\u00e9e qui gagne son duel entre ici en premier, toute seule.';
+ const tile=(l,x,c)=>'<div><b style="color:'+(c||'var(--text)')+'">'+x+'</b><span>'+l+'</span></div>';
+ return '<div class="panel lablabo"><div class="lbl"><span class="lab-dot" style="background:'+(L.alive?'var(--up)':'var(--muted)')+'"></span>'+(en?'The lab\u2019s robot':'Le robot du labo')+'<span class="hint">\u00b7 '+(en?'demo money':'argent de d\u00e9monstration')+'</span></div>'+
+  '<div class="lablabo-what">'+what+'</div>'+
+  '<div class="lablabo-tiles">'+tile(en?'trades':'trades',L.trades)+tile(en?'won':'gagn\u00e9s',L.trades?Math.round(100*L.won/L.trades)+'\u202f%':'\u2014')+tile(en?'since start':'depuis le d\u00e9but',mn(L.net),(L.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+  (L.since?'<div class="pf-cap">'+(en?'Started ':'D\u00e9marr\u00e9 le ')+esc(L.since)+(L.start?' \u00b7 '+(en?'with ':'avec ')+'$'+L.start.toFixed(2):'')+' \u00b7 '+(en?'real accounts still need your tap':'les vrais comptes attendent toujours votre accord')+'</div>':'')+'</div>';}
 function labSeedRow(en){const seeds=labSeeds(window._lab||{});if(!seeds.length)return '';
  const ready=seeds.filter(c=>(c.n||0)>=LAB_MIN_N).length;
  return '<button class="labseedrow" onclick="labSeedsSheet()"><span class="lsr-n">'+seeds.length+'</span><span style="flex:1;min-width:0"><b>'+(en?'clues in your real trades':'pistes dans vos vrais trades')+'</b><span class="lsr-s">'+(ready?(en?ready+' ready to read':ready+' lisibles'):(en?'none has enough trades to read yet':'aucune n\u2019a encore assez de trades'))+'</span></span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
@@ -5440,7 +5467,14 @@ function labStage(k){const en=LANG()==='en';let title='',body='';
  if(k==='how'){title=en?'The lab, in one minute':'Le labo, en une minute';
   body='<p style="font-size:.92rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Here we look for ways to make the robot better over time. Every idea travels left to right through four columns before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e voyage de gauche \u00e0 droite, par quatre colonnes, avant de toucher \u00e0 votre compte.')+'</p>'+
    '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from Kino, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, de Kino, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. Three possible answers: better on both halves, a little better, or no.':'On la teste sur les 42 derniers jours du march\u00e9. Trois r\u00e9ponses possibles : mieux sur les deux moiti\u00e9s, un peu mieux, ou non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are Kino\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
-   '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; the tests decide.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; ce sont les tests qui d\u00e9cident.')+'</div>';}
+   '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; the tests decide.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; ce sont les tests qui d\u00e9cident.')+'</div>'+
+   // 2026-10-03 (owner): the three agents, and what each is NOT allowed to do
+   '<div class="lbl" style="margin-top:16px">'+(en?'Who does what':'Qui fait quoi')+'</div>'+
+   [['var(--accent-soft)',en?'Kino num\u00e9rique, the researcher':'Kino num\u00e9rique, le chercheur',en?'Watches the robot all day and all night, remembers everything, proposes ideas and clues. May never decide, never touch the robot, never name a member.':'Surveille le robot jour et nuit, se souvient de tout, propose des id\u00e9es et des pistes. Ne d\u00e9cide jamais, ne touche jamais au robot, ne nomme jamais un membre.'],
+    ['#b98cff',en?'The critic':'Le critique',en?'Tries to break every idea that scored well before it earns a twin. May only say yes, doubt, or no - with its reasons for you to read.':'Essaie de casser chaque id\u00e9e qui a bien marqu\u00e9 avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau. Ne peut que dire oui, douter, ou non \u2014 avec ses raisons, que vous lisez.'],
+    ['var(--up-soft)',en?'The builder':'Le constructeur',en?'Builds what the researcher asks for - a dial for the test, a fact, a tool. Every build passes the same gates or is undone. May never change how money is risked.':'Construit ce que le chercheur demande \u2014 un r\u00e9glage pour le test, un fait, un outil. Chaque construction passe les m\u00eames contr\u00f4les ou est annul\u00e9e. Ne peut jamais changer la fa\u00e7on dont l\u2019argent est risqu\u00e9.'],
+    ['var(--muted2)',en?'The gates':'Les contr\u00f4les',en?'Not an agent: fixed rules that never get smarter. Tested on the past, a twin for pretend, a 30-trade duel, then the lab\u2019s own robot, watched. Real accounts still need Kino\u2019s tap.':'Pas une intelligence : des r\u00e8gles fixes qui ne deviennent jamais plus malignes. Test\u00e9e sur le pass\u00e9, un jumeau pour de faux, un duel de 30 trades, puis le robot du labo, surveill\u00e9. Les vrais comptes attendent toujours l\u2019accord de Kino.']]
+   .map(a=>'<div class="jev"><span style="width:10px;padding-top:6px"><i style="display:inline-block;width:8px;height:8px;border-radius:99px;background:'+a[0]+'"></i></span><div><b>'+a[1]+'</b><br><span style="color:var(--text2)">'+a[2]+'</span></div></div>').join('');}
  else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Tested':'Test\u00e9es'],forward:[en?'For pretend':'Pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function jStrip(j,en){const S=j.steps||{};const r=S.replay||{};const N=[['idea',en?'Idea':'Id\u00e9e',(S.idea||{}).date],['replay',en?'Tested':'Test\u00e9e',r.pretest?'':(r.last||(S.decision||{}).date)],['test',en?'For pretend':'Pour de faux',(S.test||{}).started],['live',en?'In the robot':'Dans le robot',(S.live||{}).date]];
@@ -8407,6 +8441,46 @@ CUT_SEED = [
 _CUTS_CACHE = {"m": None, "cuts": None}
 
 
+def _labo_card():
+    """2026-10-03 (owner): the lab's own demo robot, as a card. Start
+    balance from the bot's first log line, trades/net from its journal,
+    what it runs from the labo package (deploy / watch / confirmed)."""
+    import csv as _csv, re as _re
+    out = {"since": None, "start": None, "trades": 0, "net": 0.0, "won": 0, "alive": False,
+           "deployed": None, "watch": None, "confirmed": None, "reverted": None}
+    try:
+        first = open(os.path.join(DIR, "bos_bot_labo.log"), encoding="utf-8", errors="replace").readline()
+        m = _re.search(r"balance ([0-9.]+)", first)
+        out["start"] = float(m.group(1)) if m else None
+        out["since"] = first[:10]
+    except Exception:
+        pass
+    try:
+        w = json.load(open(os.path.join(DIR, "bos_weather_labo.json"), encoding="utf-8"))
+        out["alive"] = (time.time() - float(w.get("updated") or 0)) < 600
+    except Exception:
+        pass
+    try:
+        for r in _csv.DictReader(open(os.path.join(DIR, "bos_journal_labo.csv"), encoding="utf-8", errors="replace")):
+            if r.get("is_add") == "True" or (r.get("outcome") or "").lower() not in ("win", "loss"):
+                continue
+            out["trades"] += 1
+            p = float(r.get("profit_usd") or 0)
+            out["net"] = round(out["net"] + p, 2)
+            if p > 0:
+                out["won"] += 1
+    except Exception:
+        pass
+    try:
+        pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))["packages"]["labo"]
+        for k in ("_deployed", "_watch", "_confirmed", "_reverted"):
+            if pk.get(k):
+                out[k.strip("_")] = pk[k]
+    except Exception:
+        pass
+    return out
+
+
 def _critiques_recent(n=10):
     """The critic's last n verdicts, oldest first, with the idea's title."""
     try:
@@ -9221,6 +9295,7 @@ def lab_payload():
            "veille": _veille(8), "veille_last": (_lj("veille_state.json", {}) or {}).get("last_wake"),
            # 2026-10-02 (owner): the night report shows the whole cast
            "critiques": _critiques_recent(10),
+           "labo": _labo_card(),
            "builds": [{k: r.get(k) for k in ("id", "date", "title_fr", "title_en", "status", "key", "built_date", "built_note_fr", "built_note_en", "decline_fr", "decline_en", "build_error", "by")}
                       for r in sorted((r for r in _lj("requests.json", {}).get("requests", []) if r.get("status") in ("built", "declined", "failed")),
                                       key=lambda r: r.get("built_date") or r.get("date") or "")[-8:]]}

@@ -316,6 +316,38 @@ await shot("smoke_proof");
 check("no runtime errors anywhere", (await ev("(window.__errs||[]).length")) === 0,
       await ev("(window.__errs||[]).slice(0,3).join(' | ')"));
 
+// ---------- the lab, the night, the nest (2026-10-03) ------------------
+// The three screens that changed most this week, and that only hand-made
+// probes covered. kino = Strategie access + admin, so every block renders.
+console.log("");
+console.log("labo");
+{
+  const KIN = TOK("kino");
+  await nav("about:blank"); await nav(`${BASE}/${KIN}/`);
+  await ev("try{localStorage.setItem('owlTourDone','1');localStorage.setItem('owl_adm','1');localStorage.setItem('owlLabIntro','1');}catch(e){}1");
+  await nav(`${BASE}/${KIN}/`); await sleep(12000);
+  await ev("(function(){var b=document.getElementById('tb-marche');if(b)b.click();return 1;})()"); await sleep(1500);
+  await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(5000);
+  const order = await ev("Array.from(document.getElementById('lab-body').children).map(function(e){return e.className||e.id;}).join(' > ')");
+  check("labo landing is hero > board > clues row", /labhero > panel jboard/.test(order) && /labseedrow/.test(order), order);
+  check("the board has four columns", (await ev("document.querySelectorAll('.jrail .jn').length")) === 4);
+  check("a card renders in the open column", (await ev("document.querySelectorAll('#jcards .lc').length")) >= 1);
+  const lt = await ev("document.getElementById('lab-body').innerText");
+  check("no bare A/B/C verdict badge", !/(^|,)[ABC](,|$)/.test(await ev("Array.from(document.querySelectorAll('.lcb')).map(function(e){return e.innerText.trim();}).filter(Boolean).join(',')")));
+  check("no NaN/undefined on the landing", !/NaN|undefined/.test(lt));
+  await ev("(function(){var h=document.querySelector('.labhero');if(h)h.click();return 1;})()"); await sleep(1500);
+  const navTxt = await ev("Array.from(document.querySelectorAll('.nt-nav button')).map(function(b){return b.innerText;}).join(' | ')");
+  check("the night report opens with its sections", (await ev("document.querySelectorAll('.nt-sec').length")) >= 3, navTxt);
+  check("the report has no bare verdict letter", !/(?<=[\s(:])[ABC](?=[\s,.;:)])/.test(await ev("(function(){var c=document.getElementById('sheet-c').cloneNode(true);c.querySelectorAll('.nt-chip').forEach(function(e){e.remove();});return c.innerText;})()")));
+  await shot("smoke_labo");
+  await ev("window._shDone&&_shDone(1);1"); await sleep(500);
+  await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()"); await sleep(3500);
+  check("le Nid lists the accounts", (await ev("document.querySelectorAll('#nest .nrow').length")) >= 3);
+  check("le Nid rows carry no emoji", !/[\u{1F300}-\u{1FAFF}]/u.test(await ev("document.getElementById('nest').innerText")));
+  check("no runtime errors on the lab screens", (await ev("(window.__errs||[]).length")) === 0,
+        await ev("(window.__errs||[]).slice(0,3).join(' | ')"));
+}
+
 console.log("");
 console.log(fails ? `UI SMOKE: ${fails} CHECK(S) FAILED`
       : (skips ? `UI SMOKE: OK (${skips} skipped, nothing to compare)`

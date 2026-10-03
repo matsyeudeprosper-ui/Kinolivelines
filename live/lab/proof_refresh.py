@@ -22,6 +22,45 @@ sys.path.insert(0, LIVE)
 OUT = os.path.join(LAB, "proof.json")
 
 
+def night_alarm():
+    """2026-10-03 (owner): if the 03:30 night did not run, say so by 06:00 -
+    one push to Kino per day. The Labo's 36 h banner was the only sign, and
+    a banner nobody opens is a silence."""
+    import datetime as _dt
+    now = _dt.datetime.now()
+    if now.hour < 6:
+        return
+    today = now.strftime("%Y-%m-%d")
+    log = os.path.join(LAB, "chercheur.log")
+    mark = os.path.join(LAB, "night_alarm_seen")
+    try:
+        if io.open(mark, encoding="utf-8").read().strip() == today:
+            return
+    except Exception:
+        pass
+    ran = False
+    try:
+        for ln in io.open(log, encoding="utf-8").read().splitlines()[-40:]:
+            if ln.startswith(today) and "run end" in ln:
+                ran = True
+                break
+    except Exception:
+        pass
+    if ran:
+        return
+    try:
+        import twin_judge as TJ
+        TJ.emit("night_missing",
+                ("\u26a0\ufe0f Le labo : la nuit n\u2019a pas tourn\u00e9",
+                 f"Il est {now.strftime('%H:%M')} et la s\u00e9ance de nuit du {today} n\u2019a pas fini. Les v\u00e9rifications, le critique et le constructeur n\u2019ont rien fait cette nuit. \u00c0 regarder : lab/chercheur.log."),
+                ("\u26a0\ufe0f The lab: the night did not run",
+                 f"It is {now.strftime('%H:%M')} and the night session of {today} has not finished. Checks, critic and builder did nothing tonight. Look at lab/chercheur.log."),
+                members=False)
+        io.open(mark, "w", encoding="utf-8").write(today)
+    except Exception as e:
+        print("night alarm:", e)
+
+
 def main():
     try:
         p = json.load(io.open(OUT, encoding="utf-8"))
@@ -69,6 +108,7 @@ def main():
         TJ.judge()
     except Exception as e:
         print("twin judge:", e)
+    night_alarm()
     u = p.get("union") or {}
     print(f"refreshed: {u.get('trades', 0)} real trades {u.get('net', 0):+.2f} "
           f"(was {before.get('trades', 0)} {before.get('net', 0):+.2f}), "
