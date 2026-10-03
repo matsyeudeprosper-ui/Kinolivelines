@@ -23,6 +23,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
 import MetaTrader5 as mt5
 import owl_package as PKG
+import owl_share as SHARE   # 2026-10-03 (owner): the profit share
 import re
 
 DIR = r"C:\Projects\KinoliveLines\live"
@@ -323,6 +324,10 @@ def family_active(e, now=None):
     owner directly, 30 days at a time, renewed with a code. An old boolean
     'family' record still counts (grandfathered until it is dated)."""
     now = now or time.time()
+    # 2026-10-03 (owner): with the profit share on, the package has no
+    # end date - it runs while the monthly statements are settled
+    if SHARE.on() and (e.get("family") or e.get("family_until")):
+        return not e.get("share_blocked")
     if e.get("family_until"):
         return float(e["family_until"]) > now
     return bool(e.get("family"))
@@ -492,7 +497,9 @@ def plan_of(u):
             "seats_left": max(0, MANUAL_CAP - manual_seats()),
             "waitlisted": u.get("id") in waitlist(),
             "pay_ready": bool(cfg.get("np_api_key")),
-            "mql5_url": cfg.get("mql5_url") or ""}
+            "mql5_url": cfg.get("mql5_url") or "",
+            # 2026-10-03 (owner): the member's share statement (robot accounts only)
+            "share": (SHARE.statement(u.get("id")) if (SHARE.on() and u.get("id") in SHARE.eligible()) else None)}
 # who may actually switch the bot off (owner 2026-09-16). Everyone else
 # sees the row, locked.
 # Owner 2026-09-17: the accounts whose owner may switch auto <-> manual.
@@ -4470,6 +4477,7 @@ async function acctSheet(){
    '<div style="display:flex;gap:6px;padding:0 0 10px 44px;margin-top:-4px">'+
     '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
     (x.family_until?'<button onclick="event.stopPropagation();_shDone(1);nestCodeFor(&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-key"/></svg>Code</button>':'')+
+    (x.share&&x.share.last&&(x.share.last.status==='open'||x.share.last.status==='overdue')?'<button onclick="event.stopPropagation();_shDone(1);nestSharePaid(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;'+x.share.last.ym+'&#39;,'+Number(x.share.last.due).toFixed(2)+')" style="border:1px solid rgba(46,204,113,.45);background:rgba(46,204,113,.1);color:var(--up-soft);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px">Pay\u00e9 $'+Number(x.share.last.due).toFixed(2)+(x.share.last.status==='overdue'?' \u00b7 retard':'')+'</button>':'')+
     (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
     '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
     '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
@@ -5085,6 +5093,26 @@ function renderPlan(d){
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
  else{title=en?'Observer':'Observateur';txt=en?'You watch. Manual trading and the full view are paid options.':'Vous regardez. Le trading manuel et la vue compl\u00e8te sont des options payantes.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
+ // 2026-10-03 (owner): the profit share - this month so far, and the
+ // last statement with its Payer button
+ (function(){const S=P.share;if(!S||!S.on||!P.family&&!P.family_expired&&!S.blocked)return;
+  const mn=v=>(v>=0?'+$':'-$')+Math.abs(v||0).toFixed(2),us=v=>'$'+Number(v||0).toFixed(2);
+  const MO=en?['January','February','March','April','May','June','July','August','September','October','November','December']:['janvier','f\u00e9vrier','mars','avril','mai','juin','juillet','ao\u00fbt','septembre','octobre','novembre','d\u00e9cembre'];
+  const mname=ym=>MO[parseInt(ym.slice(5,7),10)-1]+' '+ym.slice(0,4);
+  t.textContent=(en?'Automatic \u00b7 ':'Automatique \u00b7 ')+S.pct.toFixed(0)+(en?' % of the result':' % du r\u00e9sultat')+plusS;
+  const N=S.now;let h='<div style="margin-top:6px">'+(en?'You keep '+(100-S.pct).toFixed(0)+' % of what the robot makes. A month without gain costs only the base ($'+S.base.toFixed(0)+').':'Vous gardez '+(100-S.pct).toFixed(0)+' % de ce que le robot gagne. Un mois sans gain ne co\u00fbte que la base ('+S.base.toFixed(0)+' $).')+'</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">'+
+   [[mn(N.profit),en?'robot, this month':'le robot, ce mois'],[us(N.above),en?'above your record':'au-dessus du record'],[us(N.due),en?'your share so far':'votre part, pour l\u2019instant']].map(x=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:.95rem">'+x[0]+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+x[1]+'</span></div>').join('')+'</div>';
+  const L=S.last;
+  if(L&&(L.status==='open'||L.status==='overdue')){
+   h+='<div style="margin-top:12px;padding:12px;border-radius:14px;border:1px solid '+(L.status==='overdue'?'rgba(255,92,92,.45)':'rgba(232,197,90,.4)')+';background:'+(L.status==='overdue'?'rgba(255,92,92,.08)':'rgba(232,197,90,.08)')+'">'+
+    '<b style="color:var(--text)">'+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' \u00b7 '+us(L.due)+'</b>'+
+    '<div style="font-size:.8rem;margin-top:4px">'+(en?'Robot '+mn(L.profit)+', '+us(L.above)+' above your record \u2192 '+us(L.share)+' + base '+us(L.base)+'.':'Robot '+mn(L.profit)+', '+us(L.above)+' au-dessus du record \u2192 '+us(L.share)+' + base '+us(L.base)+'.')+
+    (L.status==='overdue'?' <b style="color:var(--down-soft)">'+(en?'Overdue: the robot is paused on your account until it is settled.':'En retard : le robot est en pause sur votre compte jusqu\u2019au r\u00e8glement.')+'</b>':' '+(en?S.grace_days+' days to settle.':S.grace_days+' jours pour r\u00e9gler.'))+'</div>'+
+    (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="payShare(&#39;'+L.ym+'&#39;)">'+(en?'Pay '+us(L.due)+' in crypto':'Payer '+us(L.due)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with Kino; he marks it paid and the robot goes on.':'R\u00e9glez avec Kino ; il marque le relev\u00e9 pay\u00e9 et le robot continue.')+'</div>')+'</div>';}
+  else if(L&&L.status==='paid')h+='<div style="font-size:.78rem;color:var(--up-soft);margin-top:8px">\u2713 '+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' '+(en?'settled':'r\u00e9gl\u00e9')+' ('+us(L.due)+').</div>';
+  h+='<div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'Your record = the account\u2019s best result since the robot started ('+us(N.hwm)+'). No share is ever taken on getting back to it.':'Votre record = le meilleur r\u00e9sultat du compte depuis le d\u00e9but du robot ('+us(N.hwm)+'). Aucune part n\u2019est prise sur un simple retour \u00e0 ce niveau.')+'</div>';
+  sub.innerHTML=(P.family_expired||S.blocked?'':'')+h;})();
  const pk=P.packages||{};
  const btn=(k,lab,price,dis,sub2)=>'<button '+(dis?'disabled ':'')+'onclick="buyPkg(&#39;'+k+'&#39;)" style="border:1px solid var(--border2);background:'+(dis?'var(--surface2)':'var(--surface3)')+';color:'+(dis?'var(--muted)':'var(--text2)')+';border-radius:12px;padding:10px 8px;font-size:.84rem;font-weight:700;line-height:1.35">'+lab+'<span style="display:block;font-size:.72rem;font-weight:600;color:var(--muted2)">'+price+(sub2?' \u00b7 '+sub2:'')+'</span></button>';
  const full=(P.seats_left<=0&&!P.manual);
@@ -6430,10 +6458,22 @@ function renderRevenue(d){
  const el=document.getElementById('revcard'),R=d.revenue;if(!el)return;if(!d.is_master||!R){el.style.display='none';return;}
  const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px 6px;text-align:center"><b style="display:block;font-size:1.05rem">'+v+'</b><span style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
  setH(document.getElementById('rev-g'),cell('Auto',R.active.family)+cell('Manuel',R.active.manual)+cell('Strat\u00e9gie',R.active.strategy)+cell('MRR','$'+Math.round(R.mrr)));
+ // 2026-10-03 (owner): the profit share, this month so far
+ (function(){const S=R.share;const g=document.getElementById('rev-g');if(!S||!g)return;
+  const us=v=>'$'+Number(v||0).toFixed(2);
+  const old=document.getElementById('rev-share');if(old)old.remove();
+  g.insertAdjacentHTML('afterend','<div id="rev-share" style="margin-top:10px;font-size:.82rem;line-height:1.5"><b>Part '+Number(S.cfg.pct).toFixed(0)+' %</b> \u00b7 attendu ce mois <b>'+us(S.expected)+'</b>'+(S.open?' \u00b7 relev\u00e9s ouverts <b style="color:var(--warn)">'+us(S.open)+'</b>':'')+(S.overdue.length?' \u00b7 <b style="color:var(--down-soft)">'+S.overdue.length+' en retard</b>':'')+
+   '<div style="color:var(--muted2);margin-top:2px">'+S.rows.map(r=>r.name+' '+us(r.now.due)+(r.last&&(r.last.status==='open'||r.last.status==='overdue')?' (relev\u00e9 '+r.last.ym.slice(5)+' : '+us(r.last.due)+(r.last.status==='overdue'?', retard':'')+')':'')).join(' \u00b7 ')+'</div></div>');})();
  setH(document.getElementById('rev-due'),(R.due.length?'<b>\u00c0 renouveler sous 7 j :</b> '+R.due.map(x=>x.name+' ('+x.pkg+', '+x.days+' j)').join(' \u00b7 '):'Aucun renouvellement sous 7 jours.')+(R.family_usd?'':' <span style="color:var(--muted)">\u00b7 prix Automatique non d\u00e9fini (Paiements & MQL5)</span>'));
  setH(document.getElementById('rev-pay'),R.payments.length?R.payments.map(p=>{const x=new Date(p.t*1000);return '<div class="row" style="padding:6px 0;font-size:.82rem"><span class="rowt">'+String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+' \u00b7 '+(p.order||'').split('|')[0]+' \u00b7 '+p.granted+'</span><b class="pos">+$'+Number(p.amount||0).toFixed(0)+'</b></div>';}).join(''):'<div style="font-size:.78rem;color:var(--muted)">Aucun paiement NOWPayments encore.</div>');
  el.style.display='block';
 }
+async function nestSharePaid(uid,name,ym,due){
+ const pw=await askPwd('Relev\u00e9 '+ym+' de '+name+' pay\u00e9 ?','$'+Number(due).toFixed(2)+' re\u00e7u. Le robot reprend si la pause venait du relev\u00e9.','Marquer pay\u00e9');if(!pw)return;
+ const r=await fetch(AB()+'share_paid',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&ym='+encodeURIComponent(ym)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':_escS((j&&j.err)||'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
+ toast('Relev\u00e9 marqu\u00e9 pay\u00e9',1800);}
 async function nestCodeFor(name){
  const pw=await askPwd('Code pour '+name,'Code de renouvellement / activation, valable 24 h, usage unique.','🔑 G\u00e9n\u00e9rer');if(!pw)return;
  const r=await fetch(AB()+'actcode',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pwd='+encodeURIComponent(pw)}).catch(()=>null);
@@ -6489,9 +6529,9 @@ function offersSheet(){
    [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Manuel ou Automatique','Combines with Manual or Automatic')],
    [T2('Sans les signaux ni l\u2019outil Trader (voir Manuel)','Without the signals or the Trader tool (see Manual)')],
    P.strategy?'':btn('strategy',T2('Choisir Strat\u00e9gie','Choose Strategy'),!P.pay_ready),'var(--warn)')+
-  tier(T2('Automatique','Automatic'),T2('via MQL5','via MQL5'),T2('Votre compte copie celui de Kino','Your account copies Kino\u2019s'),
-   [T2('Abonnement au signal MQL5 de Kino : vos trades suivent les siens, sans rien faire','Subscribe to Kino\u2019s MQL5 signal: your trades follow his, hands-free'),T2('L\u2019app OwlNest reste votre tableau de bord','The OwlNest app stays your dashboard')],
-   [T2('Le prix et le paiement sont ceux de MQL5, pas d\u2019OwlNest','Price and payment are MQL5\u2019s, not OwlNest\u2019s')],
+  tier(T2('Automatique','Automatic'),T2('9 $ / mois + 30 % du r\u00e9sultat','$9 / month + 30 % of the result'),T2('Le robot sur votre compte \u2014 je gagne seulement si vous gagnez','The robot on your account \u2014 I earn only when you earn'),
+   [T2('Le robot trade sur votre compte ; vous gardez 70 % de ce qu\u2019il gagne','The robot trades your account; you keep 70 % of what it makes'),T2('Un mois sans gain ne co\u00fbte que la base de 9 $','A month without gain costs only the $9 base'),T2('Jamais de part sur un simple retour \u00e0 votre record','Never a share on simply getting back to your record'),T2('Relev\u00e9 le 1er du mois, 7 jours pour r\u00e9gler, en crypto ou avec Kino','Statement on the 1st, 7 days to settle, in crypto or with Kino'),T2('Ou la copie du compte de Kino via MQL5','Or copy Kino\u2019s account via MQL5')],
+   [T2('Le robot reste en pause tant qu\u2019un relev\u00e9 n\u2019est pas r\u00e9gl\u00e9','The robot stays paused while a statement is unsettled')],
    P.mql5_url?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+P.mql5_url+'" target="_blank" rel="noopener">'+T2('Ouvrir le signal MQL5','Open the MQL5 signal')+'</a>':'<div style="font-size:.78rem;color:var(--muted);margin-top:8px">'+T2('Lien bient\u00f4t disponible.','Link coming soon.')+'</div>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
   step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici, ou dans R\u00e9glages \u203a Abonnement.','Here, or in Settings \u203a Subscription.'))+
@@ -6526,6 +6566,13 @@ async function paySheet(){const en=LANG()==='en';
   '<div class="lbl" style="margin-top:14px">'+(en?'Receipts (NOWPayments)':'Re\u00e7us (NOWPayments)')+'</div>'+(rows||'<p style="color:var(--muted2)">'+(en?'No crypto payment recorded. Packages settled with Kino directly do not appear here.':'Aucun paiement crypto enregistr\u00e9. Les paquets r\u00e9gl\u00e9s directement aupr\u00e8s de Kino n\u2019apparaissent pas ici.')+'</p>')+
   '<p style="font-size:.78rem;color:var(--muted)">'+(en?'A payment activates the package by itself, minutes after confirmation. If a receipt is missing, contact Kino with the date.':'Un paiement active le paquet tout seul, quelques minutes apr\u00e8s confirmation. S\u2019il manque un re\u00e7u, contactez Kino avec la date.')+'</p>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');
+}
+async function payShare(ym){
+ const en=LANG()==='en';
+ const r=await fetch(B+'pay_share',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ym='+encodeURIComponent(ym)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(en?'Payment page unavailable - settle with Kino.':'Page de paiement indisponible \u2014 r\u00e9glez avec Kino.',3200);return;}
+ try{window.open(j.url,'_blank');}catch(e){location.href=j.url;}
 }
 async function buyPkg(k){
  const en=LANG()==='en';
@@ -9919,6 +9966,7 @@ def user_stats(u, admin_override=False):
             # v2 Le Nid: one row per member for the master console
             try:
                 _rows = []
+                _SHARE_EL = SHARE.eligible() if SHARE.on() else {}
                 try:
                     _notes = json.load(open(NOTES_FILE, encoding="utf-8"))
                 except Exception:
@@ -9957,6 +10005,7 @@ def user_stats(u, admin_override=False):
                         "today": nd.get("today"),
                         "err": bool(nd.get("error")),
                         "stale": _age > 60, "paused": _pz,
+                        "share": (SHARE.statement(x["id"]) if (SHARE.on() and x.get("trade") and x["id"] in _SHARE_EL) else None),
                         "pos": nd.get("open_positions"),
                         "bot": _bot, "botlive": _live, "blocked": _blk,
                         # 2026-10-01 (owner): "all accounts done for the
@@ -10017,7 +10066,9 @@ def user_stats(u, admin_override=False):
                     _fam_usd = float(_cfg.get("family_usd") or 0)
                     d["revenue"] = {"active": _act, "due": _due, "payments": _pays,
                                     "mrr": _act["manual"] * PACKAGES["manual"]["usd"] + _act["strategy"] * PACKAGES["strategy"]["usd"] + _act["family"] * _fam_usd,
-                                    "family_usd": _fam_usd}
+                                    "family_usd": _fam_usd,
+                                    # 2026-10-03 (owner): the profit share, this month so far + what is open
+                                    "share": (SHARE.owner_view() if SHARE.on() else None)}
                 except Exception:
                     pass
             except Exception:
@@ -11155,6 +11206,27 @@ class H(BaseHTTPRequestHandler):
                 if good and data.get("payment_status") in ("finished", "confirmed"):
                     try:
                         _uid, _pkg, _ts = str(data.get("order_id")).split("|")[:3]
+                        if _pkg == "share":
+                            # 2026-10-03 (owner): a share statement paid in crypto
+                            _per = SHARE.mark_paid(_uid, _ts, f"nowpayments:{data.get('payment_id')}", float(data.get("price_amount") or 0))
+                            rec["granted"] = "share"
+                            if _per:
+                                _en = member_lang(_uid) == "en"
+                                try:
+                                    _qf = os.path.join(DIR, "owl_push_queue.json")
+                                    try:
+                                        _q = json.load(open(_qf, encoding="utf-8"))
+                                    except Exception:
+                                        _q = []
+                                    _q.append({"uid": _uid, "t": int(time.time()),
+                                               "title": "\u2705 " + ("Statement settled" if _en else "Relev\u00e9 r\u00e9gl\u00e9"),
+                                               "body": (f"Thank you - {_ts} is settled (${_per['due']:.2f}). The robot goes on." if _en
+                                                        else f"Merci \u2014 {_ts} est r\u00e9gl\u00e9 ({_per['due']:.2f} $). Le robot continue.")})
+                                    _q.append({"uid": "kino", "t": int(time.time()), "title": "\U0001f4b5 Part r\u00e9gl\u00e9e en crypto",
+                                               "body": f"{_uid} \u00b7 {_ts} \u00b7 ${_per['due']:.2f}"})
+                                    json.dump(_q, open(_qf, "w", encoding="utf-8"))
+                                except Exception:
+                                    pass
                         if _pkg in PACKAGES:
                             paid = float(data.get("price_amount") or 0)
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
@@ -11303,6 +11375,80 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": True, "url": url}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:120]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "pay_share":
+            # 2026-10-03 (owner): a NOWPayments invoice for one share statement
+            u = user_by_token(_parts[0])
+            if u is None:
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _ups
+                import urllib.request as _urs
+                _fs = _ups.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                ym = (_fs.get("ym", [""])[0] or "").strip()[:7]
+                cfg = nest_config()
+                per = next((p for p in ((SHARE.load()["accounts"].get(u["id"]) or {}).get("periods") or []) if p.get("ym") == ym), None)
+                if not per or per.get("status") not in ("open", "overdue") or float(per.get("due") or 0) <= 0:
+                    self._send(json.dumps({"ok": False, "err": "no statement"}), "application/json")
+                    return
+                if not cfg.get("np_api_key"):
+                    self._send(json.dumps({"ok": False, "err": "not ready"}), "application/json")
+                    return
+                host = self.headers.get("Host") or "owlnest.local"
+                proto = "https" if ("127.0.0.1" not in host and "localhost" not in host) else "http"
+                origin = f"{proto}://{host}"
+                api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
+                body = json.dumps({
+                    "price_amount": round(float(per["due"]), 2), "price_currency": "usd",
+                    "order_id": f"{u['id']}|share|{ym}",
+                    "order_description": f"OwlNest - part {ym}",
+                    "ipn_callback_url": f"{origin}/np_ipn",
+                    "success_url": f"{origin}/{u['token']}/#set",
+                    "cancel_url": f"{origin}/{u['token']}/#set"}).encode()
+                req = _urs.Request(api + "/v1/invoice", data=body, method="POST",
+                                   headers={"x-api-key": cfg["np_api_key"], "Content-Type": "application/json"})
+                with _urs.urlopen(req, timeout=20) as r:
+                    inv = json.loads(r.read().decode("utf-8", "replace"))
+                url = inv.get("invoice_url")
+                self._send(json.dumps({"ok": bool(url), "url": url, "err": None if url else "no invoice"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:120]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "share_paid":
+            # 2026-10-03 (owner): "Marquer paye" in Le Nid (master pwd)
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upp
+                _fp = _upp.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                if not master_pwd_ok((_fp.get("pwd", [""])[0] or "").strip()):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                _uid = (_fp.get("uid", [""])[0] or "").strip()[:40]
+                _ym = (_fp.get("ym", [""])[0] or "").strip()[:7]
+                per = SHARE.mark_paid(_uid, _ym, "kino")
+                if per:
+                    _en = member_lang(_uid) == "en"
+                    _qf = os.path.join(DIR, "owl_push_queue.json")
+                    try:
+                        _q = json.load(open(_qf, encoding="utf-8"))
+                    except Exception:
+                        _q = []
+                    _q.append({"uid": _uid, "t": int(time.time()),
+                               "title": "\u2705 " + ("Statement settled" if _en else "Relev\u00e9 r\u00e9gl\u00e9"),
+                               "body": (f"Thank you - {_ym} is settled (${per['due']:.2f}). The robot goes on." if _en
+                                        else f"Merci \u2014 {_ym} est r\u00e9gl\u00e9 ({per['due']:.2f} $). Le robot continue.")})
+                    json.dump(_q, open(_qf, "w", encoding="utf-8"))
+                self._send(json.dumps({"ok": bool(per), "err": None if per else "no statement"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "nest_config":
             # 2026-09-27: owner settings shared by every member page (contact link)

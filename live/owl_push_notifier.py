@@ -168,6 +168,110 @@ def maybe_demo_reset():
 
 
 RENEW_MARK = os.path.join(DIR, "owl_renew_marks.json")
+SHARE_MARK = os.path.join(DIR, "owl_share_marks.json")
+MONTHS_FR = ["janvier", "f\u00e9vrier", "mars", "avril", "mai", "juin", "juillet", "ao\u00fbt", "septembre", "octobre", "novembre", "d\u00e9cembre"]
+MONTHS_EN = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+
+def _mname(ym, en):
+    try:
+        return (MONTHS_EN if en else MONTHS_FR)[int(ym[5:7]) - 1]
+    except Exception:
+        return ym
+
+
+def maybe_share():
+    """2026-10-03 (owner): the profit share's clock.
+    1st of the month -> the statements of the month that ended, one push
+    each + one summary to Kino; 2 days before the grace ends -> a
+    reminder; past the grace -> the robot pauses on that account and both
+    are told. Each step once (owl_share_marks.json / the period itself)."""
+    try:
+        sys.path.insert(0, DIR)
+        import owl_share as SH
+        if not SH.on():
+            return
+    except Exception:
+        return
+    now = time.time()
+    try:
+        marks = json.load(open(SHARE_MARK, encoding="utf-8"))
+    except Exception:
+        marks = {}
+    try:
+        users = {u["id"]: u for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))}
+    except Exception:
+        users = {}
+    name = lambda uid: users.get(uid, {}).get("name", uid)
+    # 1. the month that ended
+    this_ym = SH.ym_of(now)
+    prev = SH.prev_ym(this_ym)
+    if marks.get("closed") != prev:
+        issued = SH.close_month(prev, now)
+        marks["closed"] = prev
+        try:
+            json.dump(marks, open(SHARE_MARK, "w", encoding="utf-8"))
+        except Exception:
+            pass
+        tot = 0.0
+        for uid, p in issued:
+            en = lang_of(uid) == "en"
+            m = _mname(prev, en)
+            tot += float(p.get("due") or 0)
+            if float(p.get("due") or 0) <= 0:
+                continue
+            if p["above"] > 0:
+                body = ((f"The robot made {p['profit']:+.2f} $ for you in {m}; {p['above']:.2f} $ above your record. "
+                         f"Your OwlNest share: {p['share']:.2f} $ ({p['pct']:.0f} %) + {p['base']:.0f} $ base = {p['due']:.2f} $. "
+                         f"{SH.cfg()['grace_days']} days to settle - Settings > Subscription.") if en else
+                        (f"Le robot a gagn\u00e9 {p['profit']:+.2f} $ pour vous en {m} ; {p['above']:.2f} $ au-dessus de votre record. "
+                         f"Votre part OwlNest : {p['share']:.2f} $ ({p['pct']:.0f} %) + {p['base']:.0f} $ de base = {p['due']:.2f} $. "
+                         f"{SH.cfg()['grace_days']} jours pour r\u00e9gler \u2014 R\u00e9glages \u203a Abonnement."))
+            else:
+                body = ((f"No gain above your record in {m} ({p['profit']:+.2f} $): no share. Only the {p['base']:.0f} $ base is due. "
+                         f"{SH.cfg()['grace_days']} days to settle - Settings > Subscription.") if en else
+                        (f"Pas de gain au-dessus de votre record en {m} ({p['profit']:+.2f} $) : pas de part. Seule la base de {p['base']:.0f} $ est due. "
+                         f"{SH.cfg()['grace_days']} jours pour r\u00e9gler \u2014 R\u00e9glages \u203a Abonnement."))
+            send_all("\U0001f9fe " + (f"Your OwlNest statement - {m}" if en else f"Votre relev\u00e9 OwlNest \u2014 {m}"), body, kind="instant", only_uid=uid)
+        if issued:
+            send_all("\U0001f9fe Relev\u00e9s envoy\u00e9s \u00b7 " + _mname(prev, False),
+                     " \u00b7 ".join(f"{name(uid)} {float(p.get('due') or 0):.2f} $" for uid, p in issued) + f" \u2014 total {tot:.2f} $",
+                     kind="instant", only_uid="kino")
+    # 2. reminders, 2 days before the grace ends
+    doc = SH.load()
+    grace = int(doc["cfg"]["grace_days"]) * 86400
+    changed = False
+    for uid, acc in doc["accounts"].items():
+        for p in acc.get("periods") or []:
+            if p.get("status") == "open" and not p.get("reminded") and float(p.get("due") or 0) > 0 \
+                    and now > float(p.get("issued") or now) + grace - 2 * 86400:
+                p["reminded"] = int(now)
+                changed = True
+                en = lang_of(uid) == "en"
+                send_all("\u23f3 " + (f"Statement {_mname(p['ym'], en)}: 2 days left" if en else f"Relev\u00e9 {_mname(p['ym'], en)} : 2 jours"),
+                         (f"{p['due']:.2f} $ still to settle. Past the deadline the robot pauses on your account." if en
+                          else f"{p['due']:.2f} $ restent \u00e0 r\u00e9gler. Pass\u00e9 le d\u00e9lai, le robot se met en pause sur votre compte."),
+                         kind="instant", only_uid=uid)
+    if changed:
+        SH.save(doc)
+    # 3. past the grace: pause
+    for uid, p in SH.overdue_sweep(now):
+        en = lang_of(uid) == "en"
+        send_all("\u23f8 " + ("Robot paused - statement unsettled" if en else "Robot en pause \u2014 relev\u00e9 non r\u00e9gl\u00e9"),
+                 (f"The {_mname(p['ym'], en)} statement ({p['due']:.2f} $) was not settled in time. The robot is paused on your account; it goes on as soon as it is settled."
+                  if en else f"Le relev\u00e9 de {_mname(p['ym'], en)} ({p['due']:.2f} $) n\u2019a pas \u00e9t\u00e9 r\u00e9gl\u00e9 \u00e0 temps. Le robot est en pause sur votre compte ; il reprend d\u00e8s le r\u00e8glement."),
+                 kind="instant", only_uid=uid)
+        send_all("\u23f8 Robot en pause \u00b7 " + name(uid), f"Relev\u00e9 {p['ym']} non r\u00e9gl\u00e9 ({p['due']:.2f} $). \u00ab Pay\u00e9 \u00bb dans Le Nid quand c\u2019est r\u00e9gl\u00e9.",
+                 kind="instant", only_uid="kino")
+
+
+def _share_on():
+    try:
+        sys.path.insert(0, DIR)
+        import owl_share as SH
+        return SH.on()
+    except Exception:
+        return False
 
 
 def maybe_renewals():
@@ -202,6 +306,8 @@ def maybe_renewals():
                 continue
             if key == "manual_until" and float(e.get("strategy_until") or 0) > now:
                 continue          # covered by the strategy package
+            if key == "family_until" and _share_on():
+                continue          # 2026-10-03: the share replaces the dated period
             left = (until - now) / 86400.0
             step = "0" if left <= 0 else "2" if left <= 2 else "5" if left <= 5 else None
             if step is None:
@@ -1077,6 +1183,7 @@ def main():
             maybe_health()
             maybe_demo_reset()
             maybe_renewals()
+            maybe_share()
             maybe_waitlist()
             maybe_day_close()
             market_memory_tick()
