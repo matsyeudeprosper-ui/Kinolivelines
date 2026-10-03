@@ -1507,6 +1507,26 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #mx-robot #rjcard .lbl{margin-bottom:0;font-size:.62rem}
 #mx-robot #rjcard .lbl::after{display:none}
 #mx-robot .sic{background:var(--tile-bg);border:1px solid var(--tile-bd)}
+/* 2026-10-02 (owner): Accueil, premium pass - scoped to #tab-home */
+#tab-home .grid .card{background:var(--tile-bg);border:1px solid var(--tile-bd);
+ border-radius:14px;padding:14px 10px 12px;box-shadow:none}
+#tab-home .grid .card .lbl{font-size:.64rem;letter-spacing:.1em;color:var(--muted);font-weight:700}
+#tab-home .grid .card .val{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-top:6px}
+#tab-home .grid .card .sub{font-size:.7rem;margin-top:5px}
+#tab-home .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;
+ letter-spacing:.12em;color:var(--muted2);white-space:nowrap}
+#tab-home .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
+#tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
+ white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
+#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:12px!important}
+#tab-home #newscard .shbtn{display:inline-flex;width:auto;margin:10px 8px 0 0;padding:7px 12px;
+ font-size:.78rem;font-weight:600;background:transparent;border:1px solid var(--border);
+ color:var(--text2);border-radius:99px;box-shadow:none}
+#tab-home #newscard .shbtn.shmain{color:var(--accent-soft);border-color:rgba(59,130,246,.35)}
+#tab-home #newscard .shbtn,#tab-home #newscard button{flex:0 0 auto!important;width:auto!important}
+#tab-home .sic{background:var(--tile-bg)!important;border:1px solid var(--tile-bd)}
+#tab-home .cvc{border-color:transparent!important;padding:6px 11px!important;border-radius:9px!important}
+#tab-home .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
 
 .jboard{padding:14px 12px 12px;margin-top:12px}
 .jrail{display:flex;align-items:flex-start;position:relative;margin:2px 0 6px}
@@ -6873,13 +6893,17 @@ function render(d){
     dtc.style.background=_done?'rgba(46,204,113,.22)':'rgba(255,255,255,.1)';
     dtc.style.color=_done?'var(--up-soft)':'#dbe9f7';
     const _off=(94.2*(1-_pct/100)).toFixed(1);
-    dtc.innerHTML='<svg width="16" height="16" viewBox="0 0 36 36" style="flex:none">'+
-     '<circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="6"/>'+
+    // 2026-10-02 (owner): an empty ring at zero progress read as broken.
+    // No ring until something is earned; the text says what the target is.
+    const _ring=(_pct>0||_done)?('<svg width="16" height="16" viewBox="0 0 36 36" style="flex:none">'+
+     '<circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="4"/>'+
      '<circle cx="18" cy="18" r="15" fill="none" stroke="'+(_done?'var(--up)':'var(--warn)')+
-     '" stroke-width="6" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="'+
-     _off+'" transform="rotate(-90 18 18)"/></svg>'+
+     '" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="'+
+     _off+'" transform="rotate(-90 18 18)"/></svg>'):'';
+    dtc.innerHTML=_ring+
      (_done?'Objectif atteint \\u00b7 $'+_pnl.toFixed(2)
-      :'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui');
+      :(_pct>0?'$'+_pnl.toFixed(2)+' / $'+_cap.toFixed(2)+' aujourd\\u2019hui'
+              :'Objectif du jour \\u00b7 $'+_cap.toFixed(2)));
     if(_done){const _dk='owlDayDone:'+new Date().toISOString().slice(0,10)+':'+B;
      let _seen=false;try{_seen=!!localStorage.getItem(_dk);localStorage.setItem(_dk,'1');}catch(e){}
      if(!_seen){toast('<div class="evi" style="color:var(--up)"><svg class="ic ic-s"><use href="#i-check"/></svg></div>'+
@@ -7095,10 +7119,10 @@ function render(d){
   }else{bs.style.display='none';met.style.display='block';
    if(lc0)lc0.style.marginTop='12px';}
   const t=document.getElementById('today');
-  t.innerHTML=arw(d.today)+f(d.today);
+  t.innerHTML=f(d.today);
   t.className='val '+(sgn(d.today));
   const w=document.getElementById('week');
-  w.innerHTML=arw(d.week)+f(d.week);
+  w.innerHTML=f(d.week);   // 2026-10-02: the colour carries the sign; no glyph
   w.className='val '+(sgn(d.week));
   const dv=d.max_dd_7d.toFixed(0);
   document.getElementById('dd').textContent=(dv==0?'$0':'-$'+dv);
@@ -7112,7 +7136,7 @@ function render(d){
      :(en?'since the 1st':'depuis le 1er'));}}
   if(d.month!==undefined){
    const mo=document.getElementById('month');
-   mo.innerHTML=arw(d.month)+f(d.month);
+   mo.innerHTML=f(d.month);
    mo.className='val '+(sgn(d.month));
   }
   window._c7=d.curve||[];window._c30=d.curve30||[];
