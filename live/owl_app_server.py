@@ -11187,7 +11187,12 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
     pay_help = ("Vous payez en <b>crypto</b> (une monnaie num&eacute;rique). Le plus simple est l&#8217;<b>USDT</b>, qui vaut toujours "
                 "environ 1&nbsp;$. Si vous n&#8217;en avez pas, on en ach&egrave;te en quelques minutes sur Binance, Bybit ou une "
                 "application de change, puis on l&#8217;envoie &agrave; l&#8217;adresse affich&eacute;e. Choisissez le r&eacute;seau "
-                "<b>Tron (TRC-20)</b> : c&#8217;est le moins cher, quelques centimes de frais.")
+                "<b>Tron (TRC-20)</b> : c&#8217;est le moins cher, quelques centimes de frais."
+                "<br><br><b>Pas encore de crypto ?</b> Vous pouvez en acheter par <b>carte bancaire</b> sur "
+                "<a href=\"https://paybis.com\" target=\"_blank\" rel=\"noopener\" style=\"color:#9fc2de\">Paybis</a>, un site fait pour &ccedil;a. "
+                "Choisissez <b>USDT</b> (r&eacute;seau <b>Tron</b>) et le montant, et, quand il demande o&ugrave; l&#8217;envoyer, collez l&#8217;adresse "
+                "que vous montre notre page de paiement. Paybis peut demander une pi&egrave;ce d&#8217;identit&eacute; la premi&egrave;re fois, "
+                "et prend quelques frais. Pr&eacute;voyez quelques minutes.")
 
     steps = (("1", "Choisissez votre formule", "Ici m&ecirc;me. Rien n&#8217;est pr&eacute;lev&eacute; tant que vous n&#8217;avez rien envoy&eacute;."),
              ("2", "Un code, ou un paiement", "Le Owl vous donne un code sur Telegram ; ou vous payez en crypto et le code n&#8217;est pas n&eacute;cessaire."),
