@@ -224,11 +224,13 @@ SW = (
     "if(e.request.method==='GET'&&(/\\/fonts\\//.test(e.request.url)||/icon\\d+m?\\.png$/.test(e.request.url))){"
     "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl1').then(c=>c.put(e.request,cp));}return r;})));return;}"
     "if(e.request.mode==='navigate'&&!/owlnest\\.apk|apk\\.json/.test(e.request.url)){"
-    "e.respondWith(caches.match(e.request).then(m=>{"
+    # 2026-10-04 (owner): fresh first - a change must show on the FIRST open;
+    # the cached page only steps in when the network is slow (4 s) or gone
     "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
     "caches.open('owl1').then(c=>c.put(e.request,cp));}return r;}).catch(()=>null);"
-    "if(m){net.catch(()=>{});return m;}"
-    "return net.then(r=>r||new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}}));}));}});"
+    "const slow=new Promise(res=>setTimeout(()=>res(null),4000));"
+    "e.respondWith(Promise.race([net,slow]).then(r=>r||caches.match(e.request).then(m=>m||net))"
+    ".then(r=>r||new Response(OFF,{headers:{'Content-Type':'text/html;charset=utf-8'}})));}});"
     "self.addEventListener('message',e=>{if(e.data&&e.data.type==='refresh'){"
     "e.waitUntil(fetch(e.data.url,{cache:'no-store'}).then(r=>{if(r&&r.ok){"
     "return caches.open('owl1').then(c=>c.put(e.data.url,r.clone()));}}).catch(()=>{})"
@@ -298,7 +300,7 @@ MANUAL_MODES = ("manual", "semi")
 # auto      : copy of the owner's account on MQL5 Signals (link only)
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
-PACKAGES = {"manual": {"usd": 15, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal   *** TEMPORARY $3 for the real-money test (2026-10-04) - put back 29 ***
+PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal
             "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
 MANUAL_CAP = 100000      # 2026-10-04: Signal is app-only now - no terminal, no cap
 FAMILY_CAP = 50          # 2026-10-03 (owner): at most 50 family (Automatique) accounts on this VPS
@@ -972,8 +974,9 @@ def pwd_ok(u, pw):
     rate_fail(key)
     return False
 
-PAGE = """<!doctype html><html lang="fr"><head>
+PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0f2740">
@@ -1688,6 +1691,22 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 .lh-dot{flex:none;width:8px;height:8px;border-radius:99px;background:var(--up);margin-top:6px;
  box-shadow:0 0 0 0 rgba(46,204,113,.6);animation:lhdot 2.2s ease-out infinite}
 @keyframes lhdot{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}100%{box-shadow:0 0 0 9px rgba(46,204,113,0)}}
+.otier{background:linear-gradient(180deg,var(--surface2) 0%,var(--surface3) 100%);border:1px solid var(--border);border-radius:18px;padding:16px;margin-top:12px;position:relative;overflow:hidden}
+.otier::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--a);opacity:.9}
+.otier.on{border-color:rgba(46,204,113,.4)}
+.oth{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.oth b{font-size:1.16rem;letter-spacing:-.01em}
+.ots{color:var(--muted);font-size:.8rem;margin-top:3px}
+.otp{color:var(--a);font-weight:800;font-size:1.24rem;text-align:right;white-space:nowrap;letter-spacing:-.02em}
+.otp span{display:block;font-size:.66rem;font-weight:600;color:var(--muted);margin-top:2px}
+.otl{list-style:none;margin:12px 0 0;padding:0}
+.otl li{position:relative;padding-left:24px;margin:8px 0;font-size:.88rem;color:var(--text2);line-height:1.5}
+.otl li::before{content:'';position:absolute;left:2px;top:.5em;width:10px;height:5px;border-left:2px solid var(--a);border-bottom:2px solid var(--a);transform:rotate(-45deg)}
+.oi{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:99px;margin-left:5px;vertical-align:1px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--muted);font-size:.64rem;font-weight:800;font-style:italic;font-family:Georgia,serif;cursor:pointer;padding:0;line-height:1}
+.ohas{display:inline-flex;align-items:center;gap:7px;margin-top:14px;color:var(--up-soft);font-size:.84rem;font-weight:700;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.3);border-radius:99px;padding:7px 13px}
+.ostep{display:flex;gap:11px;align-items:flex-start;padding:7px 0}
+.ostep i{flex:none;width:24px;height:24px;border-radius:99px;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.3);color:var(--accent-soft);font-style:normal;font-weight:800;font-size:.76rem;display:flex;align-items:center;justify-content:center}
+.ostep b{display:block;font-size:.9rem}.ostep span{display:block;color:var(--muted);font-size:.82rem;margin-top:1px}
 .lablabo{margin-top:10px;padding:14px 14px 12px}
 .lablabo.paused{border-color:rgba(232,197,90,.35)}
 .lablabo-reh{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:.78rem;color:var(--up-soft)}
@@ -6669,44 +6688,58 @@ function openActCard(){codeModal(null);}
 function offersSheet(){
  const P=(window._d||{}).plan||{},en=LANG()==='en',pk=P.packages||{manual:{usd:29},strategy:{usd:49}};
  const T2=(fr,e)=>en?e:fr;
- const tier=(name,price,tag,gets,nots,cta,accent)=>'<div style="background:var(--surface2);border:1px solid '+(accent?accent:'var(--border)')+';border-radius:16px;padding:14px;margin-bottom:10px">'+
-  '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:1.05rem">'+name+'</b><span style="font-size:.9rem;font-weight:700;color:'+(accent||'var(--text2)')+'">'+price+'</span></div>'+
-  (tag?'<div style="font-size:.74rem;color:var(--muted2);margin-top:2px">'+tag+'</div>':'')+
-  '<div style="font-size:.86rem;line-height:1.55;margin-top:8px;color:var(--text)">'+gets.map(x=>'<div style="display:flex;gap:8px"><span style="color:var(--up)">\u2713</span><span>'+x+'</span></div>').join('')+
-  nots.map(x=>'<div style="display:flex;gap:8px;color:var(--muted)"><span>\u2013</span><span>'+x+'</span></div>').join('')+'</div>'+
-  (cta||'')+'</div>';
- const btn=(k,l,dis)=>'<button '+(dis?'disabled ':'')+'onclick="_shDone(1);buyPkg(&#39;'+k+'&#39;)" class="shbtn shmain" style="margin:10px 0 0;padding:11px;font-size:.9rem'+(dis?';opacity:.5':'')+'">'+l+'</button>';
- const step=(n,t,x)=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0"><div style="flex:none;width:24px;height:24px;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center">'+n+'</div><div><b style="font-size:.9rem">'+t+'</b><div style="font-size:.82rem;color:var(--muted2);line-height:1.45">'+x+'</div></div></div>';
- const full=P.seats_left<=0&&!P.manual;
- const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:-4px 2px 10px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service \u2014 not investment advice or management.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot du Owl. Vous choisissez comment la suivre.','One strategy \u2014 the Owl\u2019s robot. You choose how to follow it.')+'</p>'+
-  tier(T2('D\u00e9mo','Demo'),T2('Gratuit, toujours','Free, always'),T2('Le robot en direct, sans compte','The robot live, no account needed'),
-   [T2('Un vrai compte de d\u00e9monstration : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','A real demo account: balance, trades, market weather, evening review'),T2('Ouvert \u00e0 tous, depuis la page d\u2019accueil','Open to everyone, from the front page')],
-   [T2('Pas de signaux, pas de compte personnel','No signals, no personal account')],'')+
-  tier(T2('Signal','Signal'),'$'+(pk.manual||{}).usd+' / 30 j',T2('Les signaux du robot, vous tradez vous-m\u00eame','The robot\u2019s signals, you trade yourself'),
-   [T2('Notification \u00ab Signal jouable \u00bb quand les conditions sont r\u00e9unies, et quand c\u2019est fini','\u201cPlayable signal\u201d push when conditions are met, and when it is over'),T2('Tout ce que montre la d\u00e9mo, sous votre nom ; sans compte MT5, vous tradez o\u00f9 vous voulez','Everything the demo shows, under your name; no MT5 account, you trade wherever you like'),T2('\u00ab Prochain signal ici \u00bb sur le graphique, la carte March\u00e9 en mode signal','\u201cNext signal here\u201d on the chart, the Market card in signal mode'),T2('Le rattrapage et le lot conseill\u00e9 apr\u00e8s une perte','Catch-up and the advised lot after a loss')],
-   [T2('Le robot ne trade pas \u00e0 votre place','The robot does not trade for you'),T2('Les r\u00e8gles restent priv\u00e9es (voir Strat\u00e9gie)','The rules stay private (see Strategy)')],
-   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;manual&#39;)">'+T2('Choisir Signal','Choose Signal')+'</button>','var(--up-soft)')+
-  tier(T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+' / 30 j',T2('Tout comprendre \u2014 un paquet \u00e0 part, qui se combine','Understand everything \u2014 a separate package that combines'),
-   [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus, en direct','The full chart: protected points, breaks, expected levels, live'),T2('La m\u00e9thode expliqu\u00e9e en mots simples (entr\u00e9es, stop, freins, rattrapage, limites)','The method in plain words (entries, stop, brakes, catch-up, limits)'),T2('Se combine avec Signal ou Automatique','Combines with Signal or Automatic')],
-   [T2('Sans les signaux (voir Signal)','Without the signals (see Signal)')],
-   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;strategy&#39;)">'+T2('Choisir Strat\u00e9gie','Choose Strategy')+'</button>','var(--warn)')+
-  tier(T2('Automatique','Automatic'),T2('Famille, sur invitation','Family, by invitation'),T2('Le robot sur votre compte, avec ses r\u00e8gles et ses freins','The robot on your account, with its rules and its brakes'),
-   [T2('Le robot trade sur votre compte MT5, jour et nuit, depuis notre serveur','The robot trades your MT5 account, day and night, from our server'),T2('Votre page en direct : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','Your page live: balance, trades, market weather, evening review'),T2('Prix fixe chaque mois, r\u00e9gl\u00e9 avec le Owl ; code d\u2019activation par Telegram','Fixed monthly price, settled with the Owl; activation code by Telegram')],
-   [T2('50 places, pour la famille','50 places, for the family')],
-   '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;family&#39;)">'+T2('Choisir Automatique','Choose Automatic')+'</button>','var(--accent-soft)')+
-  '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
-  step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici en crypto, ou avec le Owl sur Telegram : il vous envoie un code.','Here in crypto, or with the Owl on Telegram: he sends you a code.'))+
-  step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT (Tron, BSC, Ethereum) ou USDC (Ethereum, Polygon, Solana), 20 minutes pour envoyer le montant exact. Le moins cher : USDT sur Tron. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT (Tron, BSC, Ethereum) or USDC (Ethereum, Polygon, Solana), 20 minutes to send the exact amount. Cheapest: USDT on Tron. Nothing is charged automatically.'))+
-  step(3,T2('Activation automatique','Automatic activation'),T2('D\u00e8s que le paiement est confirm\u00e9, l\u2019app s\u2019active seule et vous pr\u00e9vient.','As soon as the payment is confirmed, the app activates itself and tells you.'))+
-  step(4,T2('Activez les notifications','Turn on notifications'),T2('R\u00e9glages \u203a Notifications. Les signaux du robot et le bilan du soir arrivent sur votre t\u00e9l\u00e9phone.','Settings \u203a Notifications. The robot\u2019s signals and the evening review reach your phone.'))+
-  '<div class="lbl" style="margin:14px 0 4px">'+T2('Bon \u00e0 savoir','Good to know')+'</div>'+
-  '<div style="font-size:.84rem;color:var(--muted2);line-height:1.55">'+
-   '\u2022 '+T2('30 jours, sans reconduction automatique. Renouveler ajoute 30 jours.','30 days, no auto-renewal. Renewing adds 30 days.')+'<br>'+
-   '\u2022 '+T2('Pour arr\u00eater : ne rien faire, l\u2019abonnement expire. Pas de remboursement une fois activ\u00e9.','To stop: do nothing, it expires. No refund once activated.')+'<br>'+
-   '\u2022 '+T2('Trader comporte un risque de perte. Aucun r\u00e9sultat n\u2019est garanti.','Trading carries a risk of loss. No result is guaranteed.')+'</div>'+
-  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
+ const S=window._d||{};
+ // 2026-10-04 (owner): a little (i) wherever a newcomer could wonder
+ const ic=(t)=>'<button class="oi" onclick="event.stopPropagation();oTip(this)" data-tip="'+_escS(t)+'" aria-label="?">i</button>';
+ // what this member already has, and until when
+ const until=(ts)=>{try{const d=new Date(ts*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}catch(e){return '';}};
+ const state=(k)=>{const has={manual:P.manual,strategy:P.strategy,family:P.family}[k];
+  const u={manual:P.manual_until,strategy:P.strategy_until,family:P.family_until}[k];
+  return has?{on:true,until:u}:{on:false};};
+ const tier=(k,name,price,sub,gets,accent)=>{const st=state(k);
+  const cta=st.on
+   ?'<div class="ohas"><svg class="ic ic-s"><use href="#i-check"/></svg>'+(en?'You have it':'Vous l\u2019avez')+(st.until?' \u00b7 '+(en?'until ':'jusqu\u2019au ')+until(st.until):'')+'</div>'+
+     (k==='family'?'':'<button class="shbtn shghost" style="margin:10px 0 0;padding:10px" onclick="_shDone(1);codeModal(&#39;'+k+'&#39;)">'+(en?'Renew early':'Renouveler maintenant')+'</button>')
+   :'<button class="shbtn shmain" style="margin:12px 0 0" onclick="_shDone(1);codeModal(&#39;'+k+'&#39;)">'+(en?'Choose ':'Choisir ')+name+'</button>';
+  return '<div class="otier'+(st.on?' on':'')+'" style="--a:'+accent+'">'+
+   '<div class="oth"><div><b>'+name+'</b><div class="ots">'+sub+'</div></div><div class="otp">'+price+'</div></div>'+
+   '<ul class="otl">'+gets.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+cta+'</div>';};
+ const step=(n,t,x)=>'<div class="ostep"><i>'+n+'</i><div><b>'+t+'</b><span>'+x+'</span></div></div>';
+ const h='<h3>'+T2('Les offres','The plans')+'</h3>'+
+  '<p style="color:var(--text2);font-size:.9rem;margin:-2px 0 2px">'+T2('Trois fa\u00e7ons de suivre le robot. Vous pouvez les combiner.','Three ways to follow the robot. They combine.')+'</p>'+
+  tier('manual','Signal','$'+(pk.manual||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
+   T2('Le robot vous pr\u00e9vient, vous d\u00e9cidez','The robot tells you, you decide'),
+   [T2('Une alerte sur votre t\u00e9l\u00e9phone quand le robot voit une occasion','An alert on your phone when the robot sees an opportunity')+ic(T2('Le robot surveille le march\u00e9 nuit et jour. Quand ses conditions sont r\u00e9unies, votre t\u00e9l\u00e9phone sonne \u2014 et il vous dit aussi quand c\u2019est fini.','The robot watches the market night and day. When its conditions are met your phone rings - and it also tells you when it is over.')),
+    T2('Tout ce que montre la d\u00e9mo, en direct, sous votre nom','Everything the demo shows, live, under your name'),
+    T2('Aucun compte de courtier \u00e0 donner','No broker account to hand over')+ic(T2('Vous choisissez un identifiant et un mot de passe, c\u2019est tout. Nous ne touchons jamais \u00e0 votre argent.','You pick an identifiant and a password, nothing else. We never touch your money.'))],
+   'var(--up-soft)')+
+  tier('strategy',T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
+   T2('Comprendre ce que le robot voit','Understand what the robot sees'),
+   [T2('Le graphique complet : points prot\u00e9g\u00e9s, cassures, niveaux attendus','The full chart: protected points, breaks, expected levels')+ic(T2('Le m\u00eame graphique que le robot regarde, avec ses rep\u00e8res dessin\u00e9s dessus, en direct.','The same chart the robot reads, with its marks drawn on it, live.')),
+    T2('La m\u00e9thode expliqu\u00e9e en mots simples','The method explained in plain words'),
+    T2('Se combine avec Signal ou Automatique','Combines with Signal or Automatic')],
+   'var(--warn)')+
+  tier('family',T2('Automatique','Automatic'),T2('Famille<span>sur invitation</span>','Family<span>by invitation</span>'),
+   T2('Le robot trade \u00e0 votre place','The robot trades for you'),
+   [T2('Il passe les ordres sur votre compte MT5, jour et nuit','It places the orders on your MT5 account, day and night')+ic(T2('Il faut nous confier le mot de passe de votre compte chez le courtier. Le robot ne sait qu\u2019ouvrir et fermer des trades : il ne peut ni retirer ni d\u00e9placer votre argent.','You hand us the password of your broker account. The robot can only open and close trades: it cannot withdraw or move your money.')),
+    T2('Ses r\u00e8gles, ses freins, son rattrapage apr\u00e8s une perte','Its rules, its brakes, its catch-up after a loss'),
+    T2('Prix fixe chaque mois, code par Telegram','Fixed monthly price, code by Telegram')+ic(T2('Cette formule n\u2019est pas en vente libre : on en parle d\u2019abord ensemble. 50 places au total.','This one is not on open sale: we talk first. 50 places in all.'))],
+   'var(--accent-soft)')+
+  '<div class="lbl" style="margin:18px 0 4px">'+T2('Comment \u00e7a se passe','How it goes')+'</div>'+
+  step(1,T2('Choisissez votre formule','Pick your plan'),T2('Rien n\u2019est pr\u00e9lev\u00e9 tant que vous n\u2019avez rien envoy\u00e9.','Nothing is charged until you send something.'))+
+  step(2,T2('Un code, ou un paiement','A code, or a payment'),T2('Le Owl vous donne un code sur Telegram ; ou vous payez en crypto, sans code.','The Owl gives you a code on Telegram; or you pay in crypto, no code needed.'))+
+  step(3,T2('\u00c7a s\u2019active tout seul','It activates by itself'),T2('Une minute en g\u00e9n\u00e9ral, et votre formule est en place.','Usually a minute, and your plan is on.'))+
+  '<div class="lbl" style="margin:18px 0 4px">'+T2('Bon \u00e0 savoir','Good to know')+'</div>'+
+  '<div style="font-size:.85rem;color:var(--text2);line-height:1.6">'+
+   '<b>'+T2('30 jours, sans reconduction.','30 days, no auto-renewal.')+'</b> '+T2('Rien ne se renouvelle tout seul.','Nothing renews by itself.')+'<br>'+
+   '<b>'+T2('Pour arr\u00eater :','To stop:')+'</b> '+T2('ne rien faire, \u00e7a se termine.','do nothing, it ends.')+'<br>'+
+   '<b>'+T2('Votre argent reste chez vous.','Your money stays yours.')+'</b> '+T2('OwlNest ne d\u00e9tient jamais vos fonds.','OwlNest never holds your funds.')+'<br>'+
+   '<b>'+T2('Trader comporte un risque de perte.','Trading carries a risk of loss.')+'</b> '+T2('Aucun r\u00e9sultat n\u2019est garanti.','No result is guaranteed.')+'</div>'+
+  '<div style="font-size:.76rem;color:var(--muted);line-height:1.5;margin-top:14px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service - not investment advice or management.')+'</div>'+
+  '<button class="shbtn shghost" style="margin-top:16px" onclick="_shDone(1)">'+T2('Fermer','Close')+'</button>';
  sheet(h);
 }
+function oTip(b){const en=LANG()==='en';info('<p style="text-align:left;line-height:1.55;margin:0">'+b.getAttribute('data-tip')+'</p>');}
 async function waitlistToggle(on){const en=LANG()==='en';
  const r=await fetch(B+'waitlist',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'on='+(on?1:0)}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
@@ -10327,8 +10360,9 @@ def user_stats(u, admin_override=False):
 
 FAMILY_CODE = "kino"
 
-CHART_PAGE = """<!doctype html><html lang="fr"><head>
+CHART_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1,
 maximum-scale=1,user-scalable=no">
 <title>Graphique custom</title>
@@ -10555,8 +10589,9 @@ load();setInterval(load,3000);
 # 2026-10-03 (owner): where the Android app starts. The app cannot know
 # the member's link, so this page sends it to the one this phone used
 # last (the member app remembers it), or asks for it once.
-APP_PAGE = """<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+APP_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f2740"><title>OwlNest</title>
 <link rel="icon" href="/icon192.png"><link rel="manifest" href="/manifest.json">
 <style>
@@ -10595,8 +10630,9 @@ function go(){var t=document.getElementById('lnk').value.trim();var m=t.match(/[
 # bought in crypto for Signal / Strategie) names the package; the member
 # gives the MT5 account; the server creates the terminal and, for
 # Automatique, the robot. No trial, no self-registration without a code.
-ACTIVATE_PAGE = """<!doctype html><html lang="fr"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ACTIVATE_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f2740"><title>OwlNest &middot; Activer</title>
 <link rel="icon" href="/icon192.png">
 <style>
@@ -10656,8 +10692,9 @@ document.getElementById('buy').addEventListener('change',function(){mode(this.va
 <div class="h" style="margin-top:14px;text-align:center">Vos identifiants servent uniquement &agrave; relier votre compte. OwlNest vend un logiciel et un service de copie &mdash; pas de conseil ni de gestion d&#8217;investissement.</div>
 </div></body></html>"""
 
-JOIN_PAGE = """<!doctype html><html lang="fr"><head>
+JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0b0f14">
@@ -11035,7 +11072,7 @@ const PV_LIVE=true;
 
 
 def _join_result(title, body_html):
-    return ("<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\">"
+    return ("<!doctype html><html lang=\"fr\" translate=\"no\"><head><meta charset=\"utf-8\"><meta name=\"google\" content=\"notranslate\">"
             "<meta name=\"viewport\" content=\"width=device-width,"
             "initial-scale=1\"><title>OwlNest</title>"
             "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}body{background:#0b0f14;color:#e8eef4;margin:0;"
@@ -11053,8 +11090,8 @@ def _step2_page(login, pwd):
     """Smart login step 2 (2026-09-06 user): the account is new - ask
     ONLY the missing pieces (first name + server)."""
     import html as _h
-    return ("<!doctype html><html lang=\"fr\"><head>"
-            "<meta charset=\"utf-8\"><meta name=\"viewport\" "
+    return ("<!doctype html><html lang=\"fr\" translate=\"no\"><head>"
+            "<meta charset=\"utf-8\"><meta name=\"google\" content=\"notranslate\"><meta name=\"viewport\" "
             "content=\"width=device-width,initial-scale=1\">"
             "<title>OwlNest</title><style>@font-face{font-family:'Inter';"
             "src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;"
@@ -11098,90 +11135,206 @@ def _step2_page(login, pwd):
 
 
 def _offers_page(login, pwd, pending_pkg=None, name=""):
-    """2026-10-04 (owner): after the login, when the account does not
-    exist (or has no package): the three offers; 'Choisir' opens the code
-    modal - a code activates, the Owl on Telegram gives one, Signal and
-    Strategie can be bought in crypto on the spot. What was typed at the
-    login is carried over, hidden."""
+    """2026-10-04 (owner): the shop window. Three cards, a modal per card,
+    and a little (i) wherever a newcomer could wonder - in the plainest
+    words, for people who have never touched crypto or trading."""
     import html as _h
     cfg = nest_config()
     contact = _h.escape(cfg.get("contact_url") or "")
     pay = bool(cfg.get("np_api_key"))
-    numeric = login.isdigit()
     note = ""
     if pending_pkg:
         lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}.get(pending_pkg, pending_pkg)
-        note = (f"<div class=\"note\">Votre demande <b>{lab}</b> est en attente. Entrez le code d&egrave;s que le Owl vous l&#8217;envoie, "
+        note = (f"<div class=\"note\"><b>Votre demande {lab} attend son code.</b> Entrez-le d&egrave;s que le Owl vous l&#8217;envoie, "
                 "ou choisissez une autre formule.</div>")
 
-    def tier(k, title, price, lines, color):
-        return (f"<div class=\"t\" style=\"border-color:{color}\"><div class=\"th\"><b>{title}</b><span style=\"color:{color}\">{price}</span></div>"
-                + "".join(f"<div class=\"tl\">&#10003; {x}</div>" for x in lines)
-                + f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button></div>")
-    tiers = (tier("manual", "Signal", "$%d / 30 jours" % PACKAGES["manual"]["usd"],
-                  ["Les signaux du robot sur votre t&eacute;l&eacute;phone", "Tout ce que montre la d&eacute;mo, en direct", "Sans compte MT5 : vous tradez o&ugrave; vous voulez"], "var(--up)")
-             + tier("strategy", "Strat&eacute;gie", "$%d / 30 jours" % PACKAGES["strategy"]["usd"],
-                    ["Le graphique complet : points prot&eacute;g&eacute;s, cassures, niveaux", "La m&eacute;thode expliqu&eacute;e en mots simples", "Se combine avec Signal ou Automatique"], "var(--warn)")
-             + tier("family", "Automatique", "Famille, sur invitation",
-                    ["Le robot trade sur votre compte MT5, jour et nuit", "Ses r&egrave;gles, ses freins, son rattrapage", "Prix fixe chaque mois, code par Telegram"], "var(--accent-soft)"))
-    return ("<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
-            "<meta name=\"theme-color\" content=\"#0f2740\"><title>OwlNest</title><link rel=\"icon\" href=\"/icon192.png\">"
+    def info(txt):
+        """A little (i): tap it, a plain sentence appears."""
+        return f"<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"{_h.escape(txt, quote=True)}\" aria-label=\"Explication\">i</button>"
+
+    def tier(k, title, price, sub, lines, color, badge=""):
+        body = "".join(f"<li>{x}</li>" for x in lines)
+        return (f"<div class=\"t\" style=\"--a:{color}\">"
+                f"<div class=\"th\"><div><b>{title}</b>{badge}<div class=\"ts\">{sub}</div></div><div class=\"tp\">{price}</div></div>"
+                f"<ul>{body}</ul>"
+                f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button></div>")
+
+    tiers = (
+        tier("manual", "Signal", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
+             "Le robot vous pr&eacute;vient, vous d&eacute;cidez",
+             ["Une alerte sur votre t&eacute;l&eacute;phone quand le robot voit une occasion "
+              + info("Le robot surveille le march\u00e9 nuit et jour. Quand ses conditions sont r\u00e9unies, votre t\u00e9l\u00e9phone sonne. Vous d\u00e9cidez si vous suivez, ou pas."),
+              "Tout ce que montre la d&eacute;mo, en direct, sous votre nom",
+              "Aucun compte de courtier &agrave; donner "
+              + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte.")],
+             "var(--up)")
+        + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
+             "Comprendre ce que le robot voit",
+             ["Le graphique complet : les points que le march&eacute; prot&egrave;ge, les cassures, les niveaux attendus "
+              + info("Le m\u00eame graphique que le robot regarde, avec ses rep\u00e8res dessin\u00e9s dessus, en direct."),
+              "La m&eacute;thode expliqu&eacute;e en mots simples : entr&eacute;es, stop, freins, rattrapage",
+              "Se combine avec Signal ou Automatique"],
+             "var(--warn)")
+        + tier("family", "Automatique", "Famille<span>sur invitation</span>",
+             "Le robot trade &agrave; votre place",
+             ["Le robot passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur "
+              + info("Il faut alors nous confier le mot de passe de votre compte chez le courtier, pour qu\u2019il puisse passer les ordres. Nous ne pouvons ni retirer ni d\u00e9placer votre argent : le robot ne sait qu\u2019ouvrir et fermer des trades."),
+              "Ses r&egrave;gles, ses freins, son rattrapage apr&egrave;s une perte",
+              "Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code par Telegram "
+              + info("Cette formule n\u2019est pas en vente libre : on en parle d\u2019abord ensemble sur Telegram. 50 places au total.")],
+             "var(--accent-soft)", "&nbsp;<span class=\"bdg\">Sur invitation</span>"))
+
+    pay_help = ("Vous payez en <b>crypto</b> (une monnaie num&eacute;rique). Le plus simple est l&#8217;<b>USDT</b>, qui vaut toujours "
+                "environ 1&nbsp;$. Si vous n&#8217;en avez pas, on en ach&egrave;te en quelques minutes sur Binance, Bybit ou une "
+                "application de change, puis on l&#8217;envoie &agrave; l&#8217;adresse affich&eacute;e. Choisissez le r&eacute;seau "
+                "<b>Tron (TRC-20)</b> : c&#8217;est le moins cher, quelques centimes de frais.")
+
+    steps = (("1", "Choisissez votre formule", "Ici m&ecirc;me. Rien n&#8217;est pr&eacute;lev&eacute; tant que vous n&#8217;avez rien envoy&eacute;."),
+             ("2", "Un code, ou un paiement", "Le Owl vous donne un code sur Telegram ; ou vous payez en crypto et le code n&#8217;est pas n&eacute;cessaire."),
+             ("3", "Votre compte s&#8217;ouvre tout seul", "D&egrave;s que c&#8217;est confirm&eacute; (une minute en g&eacute;n&eacute;ral), votre page est pr&ecirc;te."),
+             ("4", "Vous &ecirc;tes pr&eacute;venu", "Activez les notifications et le robot vous parle sur votre t&eacute;l&eacute;phone."))
+    steps_html = "".join(f"<div class=\"st\"><i>{n}</i><div><b>{t}</b><span>{x}</span></div></div>" for n, t, x in steps)
+
+    return ("<!doctype html><html lang=\"fr\" translate=\"no\"><head><meta charset=\"utf-8\">"
+            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
+            "<meta name=\"google\" content=\"notranslate\"><meta name=\"theme-color\" content=\"#0b0f14\">"
+            "<title>OwlNest &middot; Les offres</title><link rel=\"icon\" href=\"/icon192.png\">"
             "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}"
-            ":root{--up:#2ecc71;--warn:#e8c55a;--accent-soft:#8fc6ff}"
-            "body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:22px 18px 40px}"
-            ".c{max-width:440px;margin:0 auto}.top{display:flex;align-items:center;gap:10px;margin-bottom:16px}.top img{width:40px;height:40px;border-radius:11px}.top b{font-size:1.1rem}"
-            "h1{font-size:1.3rem;margin:0 0 4px}p{color:#c6d3df;line-height:1.5;font-size:.92rem;margin:0 0 14px}"
-            ".note{background:rgba(232,197,90,.1);border:1px solid rgba(232,197,90,.4);border-radius:12px;padding:10px 12px;font-size:.86rem;margin-bottom:14px;line-height:1.45}"
-            ".t{background:#121a25;border:1px solid #1f2a38;border-radius:18px;padding:16px;margin-top:12px}.th{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}.th b{font-size:1.1rem}.th span{font-weight:700;font-size:.9rem;text-align:right}"
-            ".tl{font-size:.88rem;color:#c6d3df;line-height:1.45;margin:4px 0}"
-            ".go{display:block;width:100%;box-sizing:border-box;margin-top:12px;border:0;border-radius:14px;padding:13px;font-size:1rem;font-weight:700;cursor:pointer;background:#3b82f6;color:#fff}"
-            ".ghost{background:#141c28;color:#c6d3df;border:1px solid #1f2c3d;text-decoration:none;text-align:center;display:block}"
-            "label{display:block;font-size:.74rem;color:#8a9bb0;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px}"
-            "input{width:100%;box-sizing:border-box;background:#141c28;border:1px solid #1f2c3d;border-radius:12px;color:#e8eef4;padding:13px 14px;font-size:1rem}"
-            "input#code{letter-spacing:.3em;text-transform:uppercase;font-weight:800;text-align:center;font-size:1.3rem}"
-            ".h{font-size:.78rem;color:#8a9bb0;line-height:1.45;margin-top:6px}"
-            "#bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:5}#md{display:none;position:fixed;left:0;right:0;bottom:0;background:#121a25;border-radius:22px 22px 0 0;padding:18px 18px 28px;z-index:6;max-height:92vh;overflow:auto}"
-            "#md h2{margin:0 0 6px;font-size:1.15rem}a{color:#9fc2de}.back{display:inline-block;margin-bottom:12px;color:#9fc2de;text-decoration:none}"
-            "</style></head><body><div class=\"c\"><div class=\"top\"><img src=\"/icon192.png\" alt=\"\"><b>OwlNest</b></div>"
-            "<a class=\"back\" href=\"/\">&#8592; Retour</a>"
-            f"<h1>Choisissez votre formule</h1><p>Un code d&#8217;activation ouvre votre compte. Le Owl vous le donne sur Telegram ; Signal et Strat&eacute;gie s&#8217;ach&egrave;tent aussi en crypto, activation imm&eacute;diate. Vos identifiants vous sont demand&eacute;s apr&egrave;s votre choix &mdash; un compte MT5 seulement pour Automatique.</p>{note}{tiers}"
-            "</div><div id=\"bg\" onclick=\"closeM()\"></div><div id=\"md\">"
-            "<h2 id=\"mt\"></h2><p id=\"mp\"></p>"
+            "*{-webkit-tap-highlight-color:transparent}"
+            ":root{--bg:#0a0e13;--card:#111823;--card2:#151d2a;--bd:#1e2836;--tx:#e8eef4;--tx2:#aebccb;--tx3:#7d8da0;"
+            "--up:#2ecc71;--warn:#e8c55a;--accent:#3b82f6;--accent-soft:#8fc6ff}"
+            "body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;"
+            "padding:0 0 48px;line-height:1.5;-webkit-font-smoothing:antialiased}"
+            ".hero{background:radial-gradient(120% 90% at 50% -10%,#16304d 0%,#0d1620 55%,var(--bg) 100%);padding:20px 18px 26px;text-align:center}"
+            ".c{max-width:460px;margin:0 auto;padding:0 18px}"
+            ".nav{display:flex;align-items:center;justify-content:space-between;max-width:460px;margin:0 auto 18px;padding:0}"
+            ".nav a{color:var(--tx2);text-decoration:none;font-size:.86rem;display:inline-flex;align-items:center;gap:6px}"
+            ".brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:1.02rem}.brand img{width:30px;height:30px;border-radius:9px}"
+            ".hero h1{font-size:1.55rem;line-height:1.25;margin:14px 0 8px;letter-spacing:-.02em}"
+            ".hero p{color:var(--tx2);font-size:.95rem;margin:0 auto;max-width:360px}"
+            ".note{background:rgba(232,197,90,.08);border:1px solid rgba(232,197,90,.35);border-radius:14px;padding:12px 14px;font-size:.88rem;margin:18px 0 0;line-height:1.5}"
+            ".t{background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--bd);border-radius:20px;padding:18px;margin-top:14px;position:relative;overflow:hidden}"
+            ".t::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--a);opacity:.9}"
+            ".th{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}"
+            ".th b{font-size:1.22rem;letter-spacing:-.01em;display:inline-block}"
+            ".ts{color:var(--tx3);font-size:.82rem;margin-top:3px}"
+            ".tp{color:var(--a);font-weight:800;font-size:1.3rem;text-align:right;white-space:nowrap;letter-spacing:-.02em}"
+            ".tp span{display:block;font-size:.68rem;font-weight:600;color:var(--tx3);letter-spacing:.02em;margin-top:2px}"
+            ".bdg{display:inline-block;margin-left:8px;vertical-align:2px;font-size:.6rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;"
+            "color:var(--accent-soft);background:rgba(143,198,255,.12);border:1px solid rgba(143,198,255,.3);border-radius:99px;padding:3px 8px}"
+            "ul{list-style:none;margin:14px 0 0;padding:0}"
+            "li{position:relative;padding:0 0 0 26px;margin:9px 0;font-size:.9rem;color:var(--tx2)}"
+            "li::before{content:'';position:absolute;left:3px;top:.52em;width:11px;height:6px;border-left:2px solid var(--a);border-bottom:2px solid var(--a);transform:rotate(-45deg)}"
+            ".i{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:99px;margin-left:5px;vertical-align:1px;"
+            "background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);color:var(--tx3);font-size:.68rem;font-weight:800;font-style:italic;"
+            "font-family:Georgia,serif;cursor:pointer;padding:0;line-height:1}"
+            ".i:active{background:rgba(255,255,255,.16)}"
+            ".go{display:block;width:100%;box-sizing:border-box;margin-top:16px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;"
+            "cursor:pointer;background:var(--accent);color:#fff;letter-spacing:-.01em}"
+            ".go:active{transform:scale(.99)}"
+            ".go.sec{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--bd)}"
+            ".go.buy{background:var(--up);color:#06160c}"
+            ".sec-t{font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3);margin:30px 0 10px}"
+            ".st{display:flex;gap:12px;align-items:flex-start;padding:9px 0}"
+            ".st i{flex:none;width:26px;height:26px;border-radius:99px;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.3);"
+            "color:var(--accent-soft);font-style:normal;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center}"
+            ".st b{display:block;font-size:.92rem;font-weight:650}.st span{display:block;color:var(--tx3);font-size:.84rem;margin-top:2px}"
+            ".kb{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:14px 16px;font-size:.86rem;color:var(--tx2);margin-top:12px}"
+            ".kb b{color:var(--tx)}"
+            ".foot{color:var(--tx3);font-size:.76rem;text-align:center;margin-top:26px;line-height:1.6}"
+            "label{display:block;font-size:.7rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 7px}"
+            "input,select{width:100%;box-sizing:border-box;background:#0d141d;border:1px solid var(--bd);border-radius:13px;color:var(--tx);"
+            "padding:14px;font-size:1rem;font-family:inherit}"
+            "input:focus,select:focus{outline:none;border-color:var(--accent)}"
+            "input#code{letter-spacing:.34em;text-transform:uppercase;font-weight:800;text-align:center;font-size:1.26rem;padding:15px 14px}"
+            ".h{font-size:.79rem;color:var(--tx3);line-height:1.5;margin-top:7px}"
+            "#bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);z-index:5}"
+            "#md{display:none;position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:24px 24px 0 0;border-top:1px solid var(--bd);"
+            "padding:8px 20px 30px;z-index:6;max-height:92vh;overflow:auto}"
+            "#md .grab{width:40px;height:4px;border-radius:99px;background:#2a3645;margin:4px auto 14px}"
+            "#md h2{margin:0 0 6px;font-size:1.22rem;letter-spacing:-.01em}#md .mp{color:var(--tx2);font-size:.9rem;margin:0}"
+            ".or{display:flex;align-items:center;gap:12px;color:var(--tx3);font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;margin:18px 0 2px}"
+            ".or::before,.or::after{content:'';flex:1;height:1px;background:var(--bd)}"
+            "a{color:var(--accent-soft)}"
+            "#tipbx{display:none;position:fixed;left:14px;right:14px;bottom:14px;background:#1b2635;border:1px solid #2b394b;border-radius:16px;"
+            "padding:14px 16px;font-size:.88rem;color:var(--tx);line-height:1.55;z-index:9;box-shadow:0 12px 40px rgba(0,0,0,.5)}"
+            "#tipbx button{margin-top:10px;background:none;border:0;color:var(--accent-soft);font-weight:700;font-size:.86rem;padding:0;cursor:pointer}"
+            "</style></head><body>"
+            "<div class=\"hero\"><div class=\"nav c\"><span class=\"brand\"><img src=\"/icon192.png\" alt=\"\">OwlNest</span>"
+            "<a href=\"/\">&#8592; Retour</a></div>"
+            "<h1>Choisissez votre formule</h1>"
+            "<p>Trois fa&ccedil;ons de suivre le robot. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
+            f"<div class=\"c\">{note}{tiers}"
+            f"<div class=\"sec-t\">Comment &ccedil;a se passe</div>{steps_html}"
+            "<div class=\"sec-t\">Bon &agrave; savoir</div>"
+            "<div class=\"kb\"><b>30 jours, sans reconduction.</b> Rien ne se renouvelle tout seul : &agrave; la fin, vous d&eacute;cidez.<br><br>"
+            "<b>Pour arr&ecirc;ter :</b> ne rien faire. L&#8217;abonnement se termine, c&#8217;est tout.<br><br>"
+            "<b>Votre argent reste chez vous.</b> OwlNest ne d&eacute;tient jamais vos fonds.<br><br>"
+            "<b>Trader comporte un risque de perte.</b> Aucun r&eacute;sultat n&#8217;est garanti &mdash; la d&eacute;mo montre les vrais r&eacute;sultats, bons comme mauvais.</div>"
+            "<div class=\"foot\">OwlNest vend un logiciel et un service de copie<br>&mdash; pas de conseil ni de gestion d&#8217;investissement.</div>"
+            "</div>"
+            "<div id=\"tipbx\"><span id=\"tipt\"></span><br><button type=\"button\" onclick=\"document.getElementById('tipbx').style.display='none'\">Compris</button></div>"
+            "<div id=\"bg\" onclick=\"closeM()\"></div><div id=\"md\"><div class=\"grab\"></div>"
+            "<h2 id=\"mt\"></h2><p class=\"mp\" id=\"mp\"></p>"
             "<form method=\"POST\" action=\"/activate\" id=\"f\" autocomplete=\"off\">"
             "<input type=\"hidden\" name=\"pkg\" id=\"pkg\"><input type=\"hidden\" name=\"action\" id=\"act\" value=\"activate\">"
             f"<label for=\"name\">Votre pr&eacute;nom</label><input id=\"name\" name=\"name\" maxlength=\"30\" placeholder=\"Pr&eacute;nom\" value=\"{_h.escape(name)}\">"
             "<label for=\"lg\" id=\"lgl\">Choisissez un identifiant</label>"
             f"<input id=\"lg\" name=\"login\" maxlength=\"24\" autocomplete=\"off\" placeholder=\"ex. mike77\" value=\"{_h.escape(login)}\">"
-            "<div class=\"h\" id=\"lgh\">Lettres et chiffres. Pas besoin de compte MT5 pour Signal et Strat&eacute;gie.</div>"
+            "<div class=\"h\" id=\"lgh\">Lettres et chiffres. C&#8217;est avec lui que vous vous connecterez.</div>"
             "<label for=\"pw\" id=\"pwl\">Choisissez un mot de passe</label>"
             f"<input id=\"pw\" name=\"password\" type=\"password\" maxlength=\"64\" autocomplete=\"new-password\" placeholder=\"6 caract&egrave;res au moins\" value=\"{_h.escape(pwd)}\">"
+            "<div class=\"h\" id=\"pwh\">Notez-le quelque part. Vous pourrez aussi le retrouver par Telegram.</div>"
             "<div id=\"mt5\"><label for=\"server\">Serveur MT5</label><input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
             "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
-            "<div class=\"h\">Visible dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div></div>"
-            "<label for=\"code\">Code d&#8217;activation</label><input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\">"
-            "<button class=\"go\" id=\"ok\" onclick=\"document.getElementById('act').value='activate'\">Activer</button>"
-            + ("<button class=\"go\" id=\"buy\" type=\"button\" onclick=\"buyNow()\">Acheter maintenant en crypto &middot; activation imm&eacute;diate</button>" if pay else "")
-            + (f"<a class=\"go ghost\" id=\"tg\" href=\"{contact}\" target=\"_blank\" rel=\"noopener\" onclick=\"pend()\">&#9993; Pas de code ? Contacter le Owl sur Telegram</a>" if contact else "")
-            + "<div class=\"h\" id=\"mh\"></div></form></div>"
-            "<script>var P='';function pick(k){P=k;document.getElementById('pkg').value=k;var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];"
-            "document.getElementById('mt').textContent=L+' \u00b7 code d\u2019activation';"
-            "document.getElementById('mp').textContent=k==='family'?'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.':'Entrez votre code, ou achetez maintenant : votre compte s\u2019active tout de suite.';"
-            "document.getElementById('mt5').style.display=k==='family'?'':'none';var b=document.getElementById('buy');if(b)b.style.display=k==='family'?'none':'';"
-            "var fam=(k==='family');document.getElementById('lgl').textContent=fam?'Num\u00e9ro de compte MT5':'Choisissez un identifiant';document.getElementById('lg').placeholder=fam?'12345678':'ex. mike77';document.getElementById('lg').setAttribute('inputmode',fam?'numeric':'text');"
-            "document.getElementById('lgh').textContent=fam?'Le compte que le robot va trader.':'Lettres et chiffres. Pas besoin de compte MT5 pour Signal et Strat\u00e9gie.';"
-            "document.getElementById('pwl').textContent=fam?'Mot de passe du compte MT5 (principal)':'Choisissez un mot de passe';document.getElementById('pw').placeholder=fam?'le robot doit pouvoir trader':'6 caract\u00e8res au moins';"
-            "document.getElementById('mh').textContent=k==='family'?'':'La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT sur Tron, le moins cher), \u00ab Next step \u00bb, envoyez le montant exact ; votre compte s\u2019active tout seul d\u00e8s confirmation.';"
-            "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';setTimeout(function(){document.getElementById('code').focus();},150);}"
-            "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';}"
+            "<div class=\"h\">C&#8217;est &eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div></div>"
+            "<label for=\"code\">Code d&#8217;activation</label>"
+            "<input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\">"
+            "<div class=\"h\" id=\"ch\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.</div>"
+            "<button class=\"go\" id=\"ok\" onclick=\"document.getElementById('act').value='activate'\">Activer mon compte</button>"
+            + (("<div class=\"or\" id=\"orline\">ou</div>"
+                "<button class=\"go buy\" id=\"buy\" type=\"button\" onclick=\"buyNow()\">Payer en crypto &middot; activation imm&eacute;diate</button>"
+                f"<div class=\"h\" id=\"payh\">{pay_help}</div>") if pay else "")
+            + (f"<a class=\"go sec\" id=\"tg\" href=\"{contact}\" target=\"_blank\" rel=\"noopener\" onclick=\"pend()\" "
+               "style=\"text-decoration:none;text-align:center;display:block;margin-top:10px\">&#9993; Pas de code ? &Eacute;crire au Owl</a>" if contact else "")
+            + "<div class=\"h\" id=\"mh\" style=\"margin-top:14px\"></div></form>"
+            "<button type=\"button\" class=\"go sec\" onclick=\"closeM()\" style=\"margin-top:10px\">Annuler</button></div>"
+            "<script>var P='';"
+            "function tip(b){var t=document.getElementById('tipbx');document.getElementById('tipt').innerHTML=b.getAttribute('data-tip');t.style.display='block';}"
+            "function pick(k){P=k;document.getElementById('pkg').value=k;"
+            "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
+            "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
+            "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
+            "document.getElementById('mt5').style.display=fam?'':'none';"
+            "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
+            "if(b){b.style.display=fam?'none':'';o.style.display=fam?'none':'';ph.style.display=fam?'none':'';}"
+            "document.getElementById('lgl').textContent=fam?'Num\u00e9ro de compte MT5':'Choisissez un identifiant';"
+            "document.getElementById('lg').placeholder=fam?'12345678':'ex. mike77';"
+            "document.getElementById('lg').setAttribute('inputmode',fam?'numeric':'text');"
+            "document.getElementById('lgh').textContent=fam?'Le compte que le robot va trader, chez votre courtier.':'Lettres et chiffres. C\u2019est avec lui que vous vous connecterez.';"
+            "document.getElementById('pwl').textContent=fam?'Mot de passe du compte MT5':'Choisissez un mot de passe';"
+            "document.getElementById('pw').placeholder=fam?'le mot de passe principal':'6 caract\u00e8res au moins';"
+            "document.getElementById('pwh').textContent=fam?'Le mot de passe principal : le robot doit pouvoir passer les ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Notez-le quelque part. Vous pourrez aussi le retrouver par Telegram.';"
+            "document.getElementById('mh').textContent='';"
+            "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';"
+            "document.body.style.overflow='hidden';setTimeout(function(){document.getElementById('name').focus();},180);}"
+            "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';document.body.style.overflow='';}"
             "function need(){var n=document.getElementById('name').value.trim();if(!n){alert('Votre pr\u00e9nom, s\u2019il vous pla\u00eet.');return false;}"
-            "var l=document.getElementById('lg').value.trim(),p=document.getElementById('pw').value;if(!l){alert(P==='family'?'Le num\u00e9ro de votre compte MT5.':'Choisissez un identifiant.');return false;}"
+            "var l=document.getElementById('lg').value.trim(),p=document.getElementById('pw').value;"
+            "if(!l){alert(P==='family'?'Le num\u00e9ro de votre compte MT5.':'Choisissez un identifiant.');return false;}"
             "if(P!=='family'&&!/^[A-Za-z0-9]{3,24}$/.test(l)){alert('Identifiant : lettres et chiffres seulement, 3 \u00e0 24.');return false;}"
             "if(P==='family'&&!/^\\d{5,12}$/.test(l)){alert('Le num\u00e9ro de compte MT5, en chiffres.');return false;}"
             "if(!p||p.length<6){alert('Mot de passe : 6 caract\u00e8res au moins.');return false;}return true;}"
             "function buyNow(){if(!need())return;document.getElementById('act').value='buy';document.getElementById('f').submit();}"
             "function pend(){if(!need()){event.preventDefault();return;}var fd=new FormData(document.getElementById('f'));fd.set('action','pending');"
             "try{navigator.sendBeacon('/activate',new URLSearchParams(fd));}catch(e){}}"
-            "document.getElementById('f').addEventListener('submit',function(e){if(document.getElementById('act').value==='activate'){if(!need()){e.preventDefault();return;}if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res).');}}});"
+            "document.getElementById('code').addEventListener('input',function(){var c=this.value.trim().toUpperCase();var h=document.getElementById('ch');"
+            "if(c.length<6){h.textContent='Six lettres et chiffres, re\u00e7us du Owl sur Telegram.';return;}"
+            "fetch('/codeinfo?c='+encodeURIComponent(c)).then(function(r){return r.json();}).then(function(j){"
+            "h.textContent=(j&&j.ok)?('Code '+j.label+' \u00b7 '+j.days+' jours'):'Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.';}).catch(function(){});});"
+            "document.getElementById('f').addEventListener('submit',function(e){if(document.getElementById('act').value==='activate'){"
+            "if(!need()){e.preventDefault();return;}"
+            "if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
             + "</script></body></html>")
 
@@ -11219,7 +11372,7 @@ def _code_page(mode, login, pwd, name=""):
           "if(c.length<6){h.textContent='';return;}fetch('/codeinfo?c='+encodeURIComponent(c)).then(function(r){return r.json();}).then(function(j){"
           "if(j&&j.ok){h.textContent='Code '+j.label+' \u00b7 '+j.days+' jours';mode(j.pkg);}else{h.textContent='Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.';mode('family');}}).catch(function(){});});"
           "var b=document.getElementById('buy');if(b)b.addEventListener('change',function(){mode(this.value?'manual':'family');});</script>")
-    return ("<!doctype html><html lang=\"fr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
+    return ("<!doctype html><html lang=\"fr\" translate=\"no\"><head><meta charset=\"utf-8\"><meta name=\"google\" content=\"notranslate\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\">"
             "<meta name=\"theme-color\" content=\"#0f2740\"><title>OwlNest</title><link rel=\"icon\" href=\"/icon192.png\">"
             "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}"
             "body{margin:0;background:#0b0f14;color:#e8eef4;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:22px 18px 40px}"
