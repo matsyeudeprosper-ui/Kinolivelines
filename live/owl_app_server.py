@@ -503,6 +503,10 @@ def plan_of(u):
             "mql5_url": cfg.get("mql5_url") or "",
             "contact_url": cfg.get("contact_url") or "",     # the Owl on Telegram
             "pending_pay": bool(u.get("pending_pay")),
+            # 2026-10-04 (owner): recovery through the Telegram bot
+            "tg_linked": bool(u.get("telegram_chat")),
+            "tg_bot": nest_config().get("tg_bot") or "Kino_owl_bot",
+            "app_account": bool(u.get("app_only") or u.get("app_login") or u.get("app_pwd")),
             # 2026-10-03 (owner): the member's share statement (robot accounts only)
             "share": (SHARE.statement(u.get("id")) if (SHARE.on() and u.get("id") in SHARE.eligible()) else None),
             # 2026-10-03 (owner): the one-time opening fee, every account type
@@ -2721,12 +2725,24 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 <div class="sec">Compte</div>
 <div class="panel" style="padding:4px 14px">
- <a class="srow" href="../" style="text-decoration:none">
+ <div class="srow" id="tgrow" onclick="tgLink()">
+  <div class="sic"><svg class="ic"><use href="#i-bell"/></svg></div>
+  <div style="flex:1"><b id="tgrow-t">Relier Telegram</b>
+   <div class="ssub" id="tgrow-s">Pour retrouver votre acc&egrave;s un jour, sans e-mail</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" id="pwdrow" onclick="pwdChange()" style="display:none">
+  <div class="sic"><svg class="ic"><use href="#i-key"/></svg></div>
+  <div style="flex:1"><b>Changer mon mot de passe</b>
+   <div class="ssub">Celui de l&#39;app, pour vous connecter</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </div>
+ <div class="srow" onclick="appExit()">
   <div class="sic"><svg class="ic"><use href="#i-switch"/></svg></div>
   <div style="flex:1"><b>Changer de compte</b>
-   <div class="ssub">Ou cr&eacute;er un nouveau nid</div></div>
+   <div class="ssub">Verrouille cette page ; connectez-vous avec un autre compte</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
- </a>
+ </div>
  <div class="srow" id="delbtn">
   <div class="sic" style="background:rgba(255,92,92,.14);color:var(--down-soft)"><svg class="ic"><use href="#i-trash"/></svg></div>
   <div style="flex:1"><b style="color:var(--down-soft)">Retirer mon compte
@@ -5183,6 +5199,9 @@ function renderPlan(d){
    a.onclick=e=>{e.preventDefault();openActCard();};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
   a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
+ (function(){const t=document.getElementById('tgrow-t'),s=document.getElementById('tgrow-s'),pr=document.getElementById('pwdrow');
+  if(t&&s){t.textContent=P.tg_linked?(en?'Telegram linked \u2713':'Telegram reli\u00e9 \u2713'):(en?'Link Telegram':'Relier Telegram');s.textContent=P.tg_linked?(en?'Write \u201clien\u201d to the bot to get your access back':'\u00c9crivez \u00ab lien \u00bb au robot pour retrouver votre acc\u00e8s'):(en?'To get your access back one day, without e-mail':'Pour retrouver votre acc\u00e8s un jour, sans e-mail');}
+  if(pr)pr.style.display=P.app_account?'flex':'none';})();
  nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments) or a code from the Owl on Telegram. Renewing adds 30 days.':'Paiement en crypto (NOWPayments) ou code du Owl sur Telegram. Renouveler ajoute 30 jours.')
   :(en?'Payments open soon \u2014 ask the Owl for now.':'Paiements bient\u00f4t disponibles \u2014 demandez au Owl en attendant.'));
  const pr=document.getElementById('payrow');if(pr)pr.style.display=d.public?'none':'flex';
@@ -6699,6 +6718,23 @@ async function paySheet(){const en=LANG()==='en';
   '<p style="font-size:.78rem;color:var(--muted)">'+(en?'A payment activates the package by itself, minutes after confirmation. If a receipt is missing, contact the Owl with the date.':'Un paiement active le paquet tout seul, quelques minutes apr\u00e8s confirmation. S\u2019il manque un re\u00e7u, contactez Kino avec la date.')+'</p>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');
 }
+// 2026-10-04 (owner): recovery through the Telegram bot - link once, then
+// 'lien' gives the identifiant + personal link, 'nouveau mot de passe' a new one
+async function tgLink(){const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
+ const r=await fetch(B+'tg_link',{method:'POST'}).catch(()=>null);let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){toast(en?'Not available right now.':'Indisponible pour l\u2019instant.',2500);return;}
+ const v=await sheet('<h3>'+(en?'Link Telegram':'Relier Telegram')+'</h3><p style="color:var(--text2)">'+(j.linked?(en?'Already linked. In Telegram, write \u201clien\u201d to the OwlNest bot to get your identifiant and your personal link back; \u201cnouveau mot de passe\u201d gives a new password.':'D\u00e9j\u00e0 reli\u00e9. Sur Telegram, \u00e9crivez \u00ab lien \u00bb au robot OwlNest pour retrouver votre identifiant et votre lien personnel ; \u00ab nouveau mot de passe \u00bb en cr\u00e9e un nouveau.'):(en?'Tap the button: Telegram opens the OwlNest bot and links it to this account. From then on, \u201clien\u201d brings your access back, any day, without e-mail.':'Touchez le bouton : Telegram ouvre le robot OwlNest et le relie \u00e0 ce compte. Ensuite, \u00ab lien \u00bb vous rend votre acc\u00e8s, n\u2019importe quel jour, sans e-mail.'))+'</p>'+
+  '<a class="shbtn shmain" style="display:block;text-align:center;text-decoration:none" href="'+_escS(j.url)+'" target="_blank" rel="noopener">'+(j.linked?(en?'Open the bot':'Ouvrir le robot'):(en?'Link in Telegram':'Relier dans Telegram'))+'</a>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
+async function pwdChange(){const en=LANG()==='en';
+ const f=(id,ph)=>'<input id="'+id+'" type="password" placeholder="'+ph+'" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px;font-size:1rem;margin-top:8px">';
+ const v=await sheet('<h3>'+(en?'Change my password':'Changer mon mot de passe')+'</h3>'+f('pc-old',en?'current password':'mot de passe actuel')+f('pc-new',en?'new password (6+)':'nouveau mot de passe (6+)')+
+  '<button class="shbtn shmain" style="margin-top:14px" onclick="_shDone({o:document.getElementById(&#39;pc-old&#39;).value,n:document.getElementById(&#39;pc-new&#39;).value})">'+(en?'Change':'Changer')+'</button><button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
+ if(!v)return;if(!v.n||v.n.length<6){toast(en?'6 characters at least.':'6 caract\u00e8res au moins.',2200);return;}
+ const r=await fetch(B+'app_pwd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'old='+encodeURIComponent(v.o||'')+'&new='+encodeURIComponent(v.n)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?(en?'Current password incorrect.':'Mot de passe actuel incorrect.'):(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
+ toast(en?'Password changed':'Mot de passe chang\u00e9',2200);}
 async function payShare(ym){
  const en=LANG()==='en';
  const r=await fetch(B+'pay_share',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ym='+encodeURIComponent(ym)}).catch(()=>null);
@@ -10910,6 +10946,8 @@ Se connecter &middot; ouvrir un compte</button>
   <svg class="ic"><use href="#i-eye"/></svg></button>
 </div>
 <button class="go" id="gobtn">Continuer &#10142;</button>
+<div style="margin-top:12px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5">Identifiant ou mot de passe oubli&eacute; ?
+ <a href="https://t.me/%%TGBOT%%" style="color:#9fc2de">&Eacute;crivez &laquo; lien &raquo; au robot OwlNest sur Telegram</a></div>
 </form>
 </div>
 
@@ -11589,6 +11627,25 @@ def _new_app_only_record(name, pwd, tg, pkg, allu):
             "era_start": datetime.now(timezone.utc).isoformat(timespec="seconds")}
 
 
+def _tg_link_html(uid):
+    """A 'Relier Telegram' button for the welcome pages (one-week code)."""
+    try:
+        import random as _rl
+        code = "".join(_rl.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(10))
+        lp = os.path.join(DIR, "owl_tg_links.json")
+        try:
+            links = json.load(open(lp, encoding="utf-8"))
+        except Exception:
+            links = {}
+        links[code] = {"uid": uid, "t": int(time.time())}
+        json.dump(links, open(lp, "w", encoding="utf-8"), indent=1)
+        bot = nest_config().get("tg_bot") or "Kino_owl_bot"
+        return (f"<p style=\"margin-top:14px\"><a href=\"https://t.me/{bot}?start={code}\" style=\"display:inline-block;background:#141c28;border:1px solid #1f2c3d;border-radius:12px;padding:10px 14px;color:#c6d3df;text-decoration:none;font-weight:700\">"
+                "&#128279; Relier Telegram</a><br><span style=\"color:#9aa7b4;font-size:.82rem\">Pour retrouver votre acc&egrave;s un jour, sans e-mail : le robot OwlNest vous renverra votre lien.</span></p>")
+    except Exception:
+        return ""
+
+
 def _activate_app_only(name, pwd, tg, pkg, days, code):
     """A Signal / Strategie account from a code: identifiant + password,
     the package for `days`, the public demo's view under their name."""
@@ -11622,7 +11679,8 @@ def _activate_app_only(name, pwd, tg, pkg, days, code):
                         + ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
                            else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
                         + f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
-                        "<p style=\"color:#9aa7b4;font-size:.85rem\">Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
+                        "<p style=\"color:#9aa7b4;font-size:.85rem\">Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>"
+                        + _tg_link_html(rec["id"]))
 
 
 def _activate_buy(name, pwd, tg, pkg, origin):
@@ -12156,6 +12214,63 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": True, "url": url}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:120]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "tg_link":
+            # 2026-10-04 (owner): a one-week code that the Telegram bot turns into a link
+            u = user_by_token(_parts[0])
+            if u is None or u.get("public"):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                import random as _rl
+                code = "".join(_rl.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(10))
+                lp = os.path.join(DIR, "owl_tg_links.json")
+                try:
+                    links = json.load(open(lp, encoding="utf-8"))
+                except Exception:
+                    links = {}
+                now = time.time()
+                links = {k: v for k, v in links.items() if now - float((v or {}).get("t") or 0) < 7 * 86400}
+                links[code] = {"uid": u["id"], "t": int(now)}
+                json.dump(links, open(lp, "w", encoding="utf-8"), indent=1)
+                bot = nest_config().get("tg_bot") or "Kino_owl_bot"
+                self._send(json.dumps({"ok": True, "url": f"https://t.me/{bot}?start={code}", "linked": bool(u.get("telegram_chat"))}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
+        if len(_parts) == 2 and _parts[1] == "app_pwd":
+            # 2026-10-04 (owner): a member changes the app password (current one required)
+            u = user_by_token(_parts[0])
+            if u is None or u.get("public") or not (u.get("app_only") or u.get("app_login") or u.get("app_pwd")):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upw
+                _fw = _upw.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                old_, new_ = (_fw.get("old", [""])[0] or ""), (_fw.get("new", [""])[0] or "").strip()[:64]
+                if rate_limited(("pwd", u["id"]), limit=6):
+                    self._send(json.dumps({"ok": False, "err": "wait"}), "application/json")
+                    return
+                if u.get("app_pwd") != _app_hash(old_):
+                    rate_fail(("pwd", u["id"]))
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                if len(new_) < 6:
+                    self._send(json.dumps({"ok": False, "err": "short"}), "application/json")
+                    return
+                allu = json.load(open(USERS_FILE, encoding="utf-8"))
+                for x in allu:
+                    if x.get("id") == u["id"]:
+                        x["app_pwd"] = _app_hash(new_)
+                        x["app_login"] = True
+                json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                _users_cache["t"] = 0.0
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "pay_share":
             # 2026-10-03 (owner): a NOWPayments invoice for one share statement
@@ -13214,7 +13329,7 @@ class H(BaseHTTPRequestHandler):
             _host = self.headers.get("Host") or "owlnest.local"
             _proto = "https" if (self.headers.get("X-Forwarded-Proto") == "https"
                                  or "127.0.0.1" not in _host and "localhost" not in _host) else "http"
-            self._send(JOIN_PAGE.replace("%%ORIGIN%%", f"{_proto}://{_host}").replace("%%CONTACT%%", nest_config().get("contact_url") or "/activate"),
+            self._send(JOIN_PAGE.replace("%%ORIGIN%%", f"{_proto}://{_host}").replace("%%CONTACT%%", nest_config().get("contact_url") or "/activate").replace("%%TGBOT%%", nest_config().get("tg_bot") or "Kino_owl_bot"),
                        "text/html; charset=utf-8")
             return
         user = user_by_token(parts[0])

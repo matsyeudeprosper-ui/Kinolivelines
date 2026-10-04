@@ -90,6 +90,97 @@ def frenchify(line):
     return msg
 
 
+USERS = os.path.join(DIR, "owl_nest_users.json")
+LINKS = os.path.join(DIR, "owl_tg_links.json")
+SITE = "https://owltrader.duckdns.org"
+RECOVER = re.compile(r"^/?(lien|acc[e\u00e8]s|login|identifiant|oubli\u00e9?|mot de passe oubli\u00e9?|retrouver)\b", re.I)
+RESET = re.compile(r"^/?(nouveau mot de passe|reset|motdepasse|changer (le |mon )?mot de passe)\b", re.I)
+
+
+def _lj(p, d):
+    try:
+        return json.load(open(p, encoding="utf-8"))
+    except Exception:
+        return d
+
+
+def _sj(p, obj):
+    json.dump(obj, open(p + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    os.replace(p + ".tmp", p)
+
+
+def _app_hash(p):
+    import hashlib
+    return hashlib.sha256(("owl|" + (p or "")).encode("utf-8")).hexdigest()
+
+
+def _member_of(cid):
+    return next((u for u in _lj(USERS, []) if str(u.get("telegram_chat") or "") == str(cid)), None)
+
+
+def recovery(token, cid, txt, frm):
+    """2026-10-04 (owner): the automated way back in. Returns True when
+    the message was about an account (handled here)."""
+    t = (txt or "").strip()
+    low = t.lower()
+    # /start <code> from the app's "Relier Telegram" button
+    if low.startswith("/start ") and len(t.split()) >= 2:
+        code = t.split()[1].strip()
+        links = _lj(LINKS, {})
+        ent = links.get(code)
+        if not ent or time.time() - float(ent.get("t") or 0) > 7 * 86400:
+            tg(token, "sendMessage", chat_id=cid, text="\U0001F989 Ce lien a expir\u00e9. Dans l\u2019app : R\u00e9glages \u203a Compte \u203a Relier Telegram, puis touchez le nouveau bouton.")
+            return True
+        users = _lj(USERS, [])
+        name = None
+        for u in users:
+            if u.get("id") == ent.get("uid"):
+                u["telegram_chat"] = cid
+                if frm.get("username"):
+                    u["telegram"] = "@" + frm["username"]
+                name = u.get("name") or u.get("id")
+        _sj(USERS, users)
+        links.pop(code, None)
+        _sj(LINKS, links)
+        tg(token, "sendMessage", chat_id=cid, text=(
+            f"\U0001F989 Telegram reli\u00e9 au compte de {name}. Si un jour vous perdez l\u2019acc\u00e8s, \u00e9crivez-moi simplement \u00ab lien \u00bb : "
+            "je vous renvoie votre identifiant et votre lien personnel. \u00ab nouveau mot de passe \u00bb en cr\u00e9e un nouveau."))
+        say(f"linked chat {cid} to {ent.get('uid')}")
+        return True
+    if not (RECOVER.search(low) or RESET.search(low)):
+        return False
+    u = _member_of(cid)
+    if u is None:
+        tg(token, "sendMessage", chat_id=cid, text=(
+            "\U0001F989 Ce Telegram n\u2019est reli\u00e9 \u00e0 aucun compte OwlNest. Dans l\u2019app : R\u00e9glages \u203a Compte \u203a "
+            "\u00ab Relier Telegram \u00bb (une fois, quand vous \u00eates connect\u00e9). Sans acc\u00e8s \u00e0 l\u2019app, \u00e9crivez au Owl : @owlnest_contact."))
+        return True
+    link = f"{SITE}/{u.get('token')}/"
+    if RESET.search(low):
+        if u.get("app_pwd") or u.get("app_only") or u.get("app_login"):
+            import random
+            temp = "".join(random.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+            users = _lj(USERS, [])
+            for x in users:
+                if x.get("id") == u.get("id"):
+                    x["app_pwd"] = _app_hash(temp)
+                    x["app_login"] = True
+            _sj(USERS, users)
+            tg(token, "sendMessage", chat_id=cid, text=(
+                f"\U0001F511 Nouveau mot de passe : {temp}\nIdentifiant : {u.get('id')}\nVous pouvez le changer dans l\u2019app : R\u00e9glages \u203a Compte."))
+            say(f"password reset for {u.get('id')} via telegram")
+        else:
+            tg(token, "sendMessage", chat_id=cid, text=(
+                f"\U0001F989 Votre compte entre avec le num\u00e9ro et le mot de passe de votre compte MT5 \u2014 ils ne changent pas ici. "
+                f"Le plus simple : votre lien personnel, qui vous ouvre la page directement :\n{link}"))
+        return True
+    tg(token, "sendMessage", chat_id=cid, text=(
+        f"\U0001F989 Identifiant : {u.get('id')}\nVotre lien personnel (il vous connecte directement) :\n{link}\n"
+        "Mot de passe oubli\u00e9 ? \u00c9crivez \u00ab nouveau mot de passe \u00bb."))
+    say(f"sent link to {u.get('id')}")
+    return True
+
+
 def main():
     say("telegram daemon starting")
     # wait for config with a token
@@ -119,6 +210,11 @@ def main():
                     if cid is None:
                         continue
                     c = cfg() or {"token": token, "chat_ids": []}
+                    try:
+                        if recovery(token, cid, m.get("text") or "", m.get("from") or {}):
+                            continue
+                    except Exception as e:
+                        say(f"recovery error: {e}")
                     if txt == join_word and cid not in c.get("chat_ids", []):
                         c.setdefault("chat_ids", []).append(cid)
                         save_cfg(c)
@@ -128,8 +224,8 @@ def main():
                         say(f"subscribed chat {cid}")
                     elif txt.startswith("/start"):
                         tg(token, "sendMessage", chat_id=cid, text=(
-                            "\U0001F989 OwlNest. Envoyez le mot de passe "
-                            "pour vous abonner aux alertes."))
+                            "\U0001F989 OwlNest. Pour retrouver votre acc\u00e8s un jour, reliez ce Telegram depuis l\u2019app "
+                            "(R\u00e9glages \u203a Compte \u203a Relier Telegram). Ensuite, \u00e9crivez-moi \u00ab lien \u00bb."))
         # 2) log tail
         try:
             size = os.path.getsize(LOGF)
