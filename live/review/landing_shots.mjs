@@ -32,7 +32,11 @@ const { result: { sessionId: S } } = await send("Target.attachToTarget", { targe
 await send("Page.enable", {}, S); await send("Runtime.enable", {}, S);
 const evalJs = async (expr) => (await send("Runtime.evaluate", { expression: expr, returnByValue: true, awaitPromise: true }, S)).result?.result?.value;
 const nav = async (url) => { await send("Page.navigate", { url }, S); await waitEvent("Page.loadEventFired", S); };
-const shot = async (name) => { const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(join(OUT, name), Buffer.from(result.data, "base64")); console.log("wrote static/" + name); };
+// 2026-10-04 (owner): a red day is not a shop window. The three renders are
+// taken into memory and written together only when the day and the week
+// are green; otherwise the previous ones stay (unless none exist yet).
+const taken = {};
+const shot = async (name) => { const { result } = await send("Page.captureScreenshot", { format: "png" }, S); taken[name] = Buffer.from(result.data, "base64"); };
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 780, deviceScaleFactor: 2, mobile: true }, S);
 await nav(`${BASE}/${tok}/`);
 await evalJs("localStorage.setItem('owlTourDone','1'); localStorage.removeItem('owlTheme'); localStorage.removeItem('owlBig'); localStorage.removeItem('owl_adm'); localStorage.removeItem('owlLang'); 1");
@@ -40,4 +44,9 @@ await nav("about:blank"); await nav(`${BASE}/${tok}/`); await sleep(7500);
 await evalJs("window.scrollTo(0,0); 1"); await shot("shot_home.png");
 await evalJs("tab('marche', document.querySelectorAll('.tb')[1]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_marche.png");
 await evalJs("tab('hist', document.querySelectorAll('.tb')[2]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_hist.png");
+const red = await evalJs("(function(){var d=window._d||{};var h=(document.querySelector('.hero')||{}).innerText||'';var w=(document.getElementById('tab-hist')||{}).innerText||'';return (typeof d.today==='number'&&d.today<0)||/-\\$\\d/.test(h)||/Cette semaine : -\\$|This week: -\\$/.test(w);})()");
+const { existsSync } = await import("node:fs");
+const missing = ["shot_home.png", "shot_marche.png", "shot_hist.png"].some(n => !existsSync(join(OUT, n)));
+if (red && !missing) { console.log("red day/week: landing shots kept as they were"); }
+else { for (const [n, b] of Object.entries(taken)) { writeFileSync(join(OUT, n), b); console.log("wrote static/" + n); } }
 ws.close(); edge.kill();

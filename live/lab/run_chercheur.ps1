@@ -60,6 +60,8 @@ try {
     Say ("build exit " + $LASTEXITCODE)
     # 2026-09-29: the numbers behind "La preuve" (robot space)
     python lab/proof_build.py *> (Join-Path $lab "proof_last.log")
+    # 2026-10-04 (owner): the landing renders, refreshed nightly - kept when the day is red
+    node review/landing_shots.mjs *> (Join-Path $lab "shots_last.log")
     # 2026-10-03 (owner): on Sunday, the week in five lines (lab/digest.py)
     if ((Get-Date).DayOfWeek -eq 'Sunday') {
         python lab/digest.py *> (Join-Path $lab "digest_last.log")
