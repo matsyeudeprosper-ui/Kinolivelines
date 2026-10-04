@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-04T05:00:09Z",
+ "updated": "2026-10-04T07:00:06Z",
  "hypotheses": [
   {
    "id": "target_09",
@@ -71,7 +71,8 @@
    "status": "en test",
    "evidence": [
     "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit",
-    "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor."
+    "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor.",
+    "2026-10-04 veille: two trades at pace 0.93/0.91: +1.30 and -11.56. Bucket 0.8-1.0 now 10 tr 80% but +4.95 net - its edge is thin in money. <0.8 unchanged (6 tr)."
    ],
    "next": "When sleepy_floor is built: test 0.6 / 0.7 / 0.8 alone, then with rr0.9. Still 6 real trades: a hint."
   },
@@ -81,7 +82,8 @@
    "status": "en test",
    "evidence": [
     "2026-09-28..10-02: battery mostly C, long A.",
-    "2026-10-03: real 10 Sundays 20% won -21.64 (all in the first real half). Battery nosun B (+6.8, halves -23/+26), long A +45.9, real +20.5. Raw skip 6 B +27.6 (halves -28/+51); rr0.9+skip6 B +26 hole 56. Halves disagree every time."
+    "2026-10-03: real 10 Sundays 20% won -21.64 (all in the first real half). Battery nosun B (+6.8, halves -23/+26), long A +45.9, real +20.5. Raw skip 6 B +27.6 (halves -28/+51); rr0.9+skip6 B +26 hole 56. Halves disagree every time.",
+    "2026-10-04 veille: first second-half real Sunday trade: FLIP-BOS won +1.30 (dim 11 tr 27%, h2 1/1). The -11.56 loss closed 05:36 UTC Sunday but scrutiny files it under 'sam' - check the day boundary before reading Sunday numbers."
    ],
    "next": "Only the second half likes it: wait for more real Sundays in the second half before proposing."
   },
@@ -173,20 +175,26 @@
    "t": "2026-10-04T05:00:09Z",
    "looked": ["wake_context (4h timer)", "asks.json", "metrics.json trade count"],
    "saw": "Sunday dawn, market closed. Still 38 trades, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Next: market reopens Sunday evening (a real Sunday trade would feed 'sunday')."
+  },
+  {
+   "t": "2026-10-04T07:00:06Z",
+   "looked": ["wake_context new trades (2)", "scrutiny --by kind", "scrutiny --by wday", "scrutiny --by nerv"],
+   "saw": "40 trades. FLIP-BOS SELL lost -11.56 (pace 0.932, filed 'sam' by scrutiny), FLIP-BOS BUY won +1.30 (pace 0.908, filed 'dim'; 2nd-half Sunday now 1/1). Two FLIP losses in a row at 2-3x the usual loss (-9.36, -11.56) -> sam 2 tr -20.92. FLIP-BOS now 20 tr 45% -11.15 PF 0.73 (halves 25%/58%); BOS 17 tr 65% +21.07. Pace 0.8-1.0: 10 tr 80% but only +4.95 net because of the -11.56. No harness run (FLIP pile already open, no dial for kind), no pile, no proposal."
   }
  ],
  "lessons": [
   "2026-10-02: the two halves differ hugely (33% vs 74% win) - almost every bucket shows agree=false for that reason alone; read a bucket's halves against the overall halves, not against each other.",
   "2026-10-03: the CLI harness is RAW (no daily cap, no jar, no kill line, flat lot): its base is 185 net / hole 80, not the battery's 136 / 50. Say 'sans plafond ni protections' when quoting it; the battery on both shapes decides.",
   "2026-10-03: --drag charges only the variant, not the printed base. Compare against base minus drag x base trades (~0.57 x 250 = 143) by hand.",
-  "2026-10-03: target settings are jagged on money (0.85 +7, 0.9 +58, 0.95 -32, 1.0 +40) but steady on the hole. Trust the hole trend more than one setting's money."
+  "2026-10-03: target settings are jagged on money (0.85 +7, 0.9 +58, 0.95 -32, 1.0 +40) but steady on the hole. Trust the hole trend more than one setting's money.",
+  "2026-10-04: scrutiny's weekday clock is not UTC - a 05:36 UTC Sunday close is filed under 'sam'. Check the day boundary before reading weekday buckets."
  ],
  "open": [
   "Does the capped account shape erase the fourth catch-up and the 0.9 target? (tonight's battery on rr09_bul4 / rr085_bul4)",
   "Sleepy market: is it the sleepiness itself? Needs sleepy_floor built.",
   "Aim for what is missing to reach the daily cap (cap_fit_target, open since 09-30) - would settle cap_changes_target.",
   "Winners' side: trades after 4+ moves win 6/8 - no dial for a minimum move count yet; request it if it holds past 15 trades.",
-  "Reversals (FLIP-BOS) 18 tr 44% ~0 net vs plain BOS 17 tr 65% +21: is the reversal kind the weak link? Pile exists; at 30 FLIP trades, check halves and ask for a dial if it holds. Also: why was the 2026-10-03 19:47 loss twice the usual size?",
+  "Reversals (FLIP-BOS) 20 tr 45% -11.15 PF 0.73 vs plain BOS 17 tr 65% +21: is the reversal kind the weak link? Pile exists; at 30 FLIP trades, check halves and ask for a dial if it holds. The last two FLIP losses (-9.36 on 10-03, -11.56 on 10-04) are 2-3x the usual loss: bigger lot after balance growth, or wider stop on reversals? Night: scrutiny --mm and --by dist on FLIP.",
   "Is the midnight weakness the same as the sleepy weakness? Partly answered 2026-10-03: skipping midnight is C over 42 days, so the hour alone is not it."
  ]
 }
