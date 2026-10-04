@@ -30,11 +30,11 @@ VEILLE = os.path.join(LAB, "veille.jsonl")
 NIGHT_LOCK = os.path.join(LAB, "night.lock")
 LOG = os.path.join(LAB, "veille.log")
 MISSION = os.path.join(LAB, "VEILLE.md")
-MAX_PER_DAY = 10        # 2026-10-04 (owner): woken by the trades themselves
-MIN_GAP = 20 * 60       # one look per burst of trades, not one per trade
+MAX_PER_DAY = 6         # 2026-10-04 (owner): woken by the trades, at most six looks a day
+MIN_GAP = 60 * 60       # one look per hour at most - a burst of trades is one look
 MAX_GAP = 12 * 3600     # a dead day still gets one look
 QUIET_LOCAL = (3, 7)        # the night run owns 03:30-06:30 local
-TURNS = 30
+TURNS = 20              # a look, not a study: the night run is the deep one
 A = sys.argv[1:]
 DRY, FORCE = "--dry" in A, "--force" in A
 
