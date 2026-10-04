@@ -41,10 +41,11 @@ await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 780, devi
 await nav(`${BASE}/${tok}/`);
 await evalJs("localStorage.setItem('owlTourDone','1'); localStorage.removeItem('owlTheme'); localStorage.removeItem('owlBig'); localStorage.removeItem('owl_adm'); localStorage.removeItem('owlLang'); 1");
 await nav("about:blank"); await nav(`${BASE}/${tok}/`); await sleep(7500);
-await evalJs("window.scrollTo(0,0); 1"); await shot("shot_home.png");
+// the running-trade pill is a moment, not a result: not in the shop window
+await evalJs("(function(){var p=document.getElementById('tradepill');if(p)p.style.display='none';})(); window.scrollTo(0,0); 1"); await shot("shot_home.png");
 await evalJs("tab('marche', document.querySelectorAll('.tb')[1]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_marche.png");
 await evalJs("tab('hist', document.querySelectorAll('.tb')[2]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_hist.png");
-const red = await evalJs("(function(){var d=window._d||{};var h=(document.querySelector('.hero')||{}).innerText||'';var w=(document.getElementById('tab-hist')||{}).innerText||'';return (typeof d.today==='number'&&d.today<0)||/-\\$\\d/.test(h)||/Cette semaine : -\\$|This week: -\\$/.test(w);})()");
+const red = await evalJs("(function(){var d=window._d||{};return (typeof d.today==='number'&&d.today<0)||(typeof d.week==='number'&&d.week<0);})()");
 const { existsSync } = await import("node:fs");
 const missing = ["shot_home.png", "shot_marche.png", "shot_hist.png"].some(n => !existsSync(join(OUT, n)));
 if (red && !missing) { console.log("red day/week: landing shots kept as they were"); }
