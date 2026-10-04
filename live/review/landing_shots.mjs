@@ -42,7 +42,7 @@ await nav(`${BASE}/${tok}/`);
 await evalJs("localStorage.setItem('owlTourDone','1'); localStorage.removeItem('owlTheme'); localStorage.removeItem('owlBig'); localStorage.removeItem('owl_adm'); localStorage.removeItem('owlLang'); 1");
 await nav("about:blank"); await nav(`${BASE}/${tok}/`); await sleep(7500);
 // the running-trade pill is a moment, not a result: not in the shop window
-await evalJs("(function(){var p=document.getElementById('tradepill');if(p)p.style.display='none';})(); window.scrollTo(0,0); 1"); await shot("shot_home.png");
+await evalJs("(function(){['tradepill','nudge','apkcard','expcard'].forEach(function(i){var p=document.getElementById(i);if(p)p.style.display='none';});})(); window.scrollTo(0,0); 1"); await shot("shot_home.png");
 await evalJs("tab('marche', document.querySelectorAll('.tb')[1]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_marche.png");
 await evalJs("tab('hist', document.querySelectorAll('.tb')[2]); window.scrollTo(0,0); 1"); await sleep(800); await shot("shot_hist.png");
 const red = await evalJs("(function(){var d=window._d||{};return (typeof d.today==='number'&&d.today<0)||(typeof d.week==='number'&&d.week<0);})()");
