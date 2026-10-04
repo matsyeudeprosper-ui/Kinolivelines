@@ -240,8 +240,12 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "skip_hours": [0-23], "size_hot": 0.25-1.0, "nerv_gate": true|false, "bullets": 0-5, "k_streak": 1-4,
          "debt_nerv_gate": true|false, "wait_win": 0-240, "cost_max": 0-15, "min_range": 0-200,
          "minute_win": [0-59, 0-59], "one_per_hour": true|false,
-         "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1}}
+         "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1,
+         "chase_pts": 0-1500}}
 ```
+`chase_pts` (2026-10-04, your request): no entry when the last hour already
+moved more than X points the trade's way (up for a buy, down for a sell);
+unlike `ext_pts`, an hour that went against the trade never blocks.
 `cap_fit` (2026-10-03, your request): on an account with a daily cap, each
 trade aims only for what is still missing to reach the cap, never further
 than `rr`; not while in the red, and it does nothing on an account without a cap.

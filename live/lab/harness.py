@@ -41,6 +41,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # after a WINNING close only; after a loss the recovery trade
             # goes out as today. 0 = off.
             "wait_win": 0,
+            # 2026-10-04 (chercheur): chase_pts = no entry when the last hour
+            # already moved more than X points the trade's way (up for a buy,
+            # down for a sell); unlike ext_pts a move against it is left alone.
+            # 0 = off.
+            "chase_pts": 0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -701,6 +706,9 @@ def simulate(R, spread, cfg):
         if c["ext_pts"] and i >= 61 and abs(closes[i-1] - closes[i-61]) > c["ext_pts"]:
             blocked += 1
             continue
+        if c["chase_pts"] and i >= 61 and d * (closes[i-1] - closes[i-61]) > float(c["chase_pts"]):
+            blocked += 1
+            continue
         if skip_wd and g.weekday() in skip_wd:
             blocked += 1
             continue
@@ -977,6 +985,9 @@ def simulate_real(T, R, spread, cfg):
         if c["ext_pts"] and i >= 61 and abs(closes[i-1] - closes[i-61]) > c["ext_pts"]:
             blocked += 1
             continue
+        if c["chase_pts"] and i >= 61 and e["d"] * (closes[i-1] - closes[i-61]) > float(c["chase_pts"]):
+            blocked += 1
+            continue
         if skip_wd and g.weekday() in skip_wd:
             blocked += 1
             continue
@@ -1059,6 +1070,7 @@ def main():
     ap.add_argument("--wait", type=int, help="minutes after a close")
     ap.add_argument("--wait-win", type=int, help="minutes after a winning close only")
     ap.add_argument("--ext", type=float, help="no entry after this many points in the last hour")
+    ap.add_argument("--chase", type=float, help="no entry after this many points in the last hour the trade's way")
     ap.add_argument("--skip-wd", type=str, help="weekdays to skip, 0=Mon..6=Sun, comma list")
     ap.add_argument("--skip-hours", type=str, help="UTC hours to skip, e.g. 0-8 or 0,1,2")
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
@@ -1082,6 +1094,7 @@ def main():
     if a.wait_win is not None: over["wait_win"] = a.wait_win
     if a.drag is not None: over["drag"] = None if str(a.drag).strip().lower() == "auto" else float(a.drag)
     if a.ext is not None: over["ext_pts"] = a.ext
+    if a.chase is not None: over["chase_pts"] = a.chase
     if a.skip_wd: over["skip_wd"] = [int(x) for x in a.skip_wd.split(",") if x.strip()]
     if a.skip_hours:
         hs = set()
