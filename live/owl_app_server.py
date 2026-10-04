@@ -10876,7 +10876,9 @@ jour et nuit. Vous, vous regardez.</div>
  text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
  &middot; gratuit</a>
 <button class="bigbtn b2" onclick="show('v-login')" style="margin-top:12px">
-Se connecter &middot; ouvrir un compte</button>
+Se connecter</button>
+<a class="bigbtn b2" href="/offres" style="display:block;margin-top:12px;
+ text-decoration:none;text-align:center">Cr&eacute;er un compte</a>
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
  style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
 <a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.7;font-weight:600"></span></a>
@@ -10930,10 +10932,10 @@ Se connecter &middot; ouvrir un compte</button>
 <a class="back" onclick="show('v-home')">&#8592; Retour</a>
 <form class="card" method="POST" action="login">
 <h2>Se connecter</h2>
-<label for="lg">Num&eacute;ro de compte MT5 &middot; ou votre identifiant</label>
+<label for="lg">Identifiant <span style="font-weight:400;color:var(--muted)">(famille : num&eacute;ro de compte MT5)</span></label>
 <input id="lg" name="login" required autocomplete="username"
- placeholder="12345678 (MT5) ou identifiant">
-<label for="pw">Mot de passe <span style="font-weight:400;color:var(--muted)">(du compte MT5, ou le v&ocirc;tre)</span></label>
+ placeholder="votre identifiant">
+<label for="pw">Mot de passe</label>
 <div style="position:relative">
  <input id="pw" name="password" type="password" required
   autocomplete="current-password" placeholder="votre mot de passe"
@@ -10946,7 +10948,7 @@ Se connecter &middot; ouvrir un compte</button>
   <svg class="ic"><use href="#i-eye"/></svg></button>
 </div>
 <button class="go" id="gobtn">Continuer &#10142;</button>
-<div style="margin-top:12px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5">Identifiant ou mot de passe oubli&eacute; ?
+<div style="margin-top:12px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5">Pas encore membre ? <a href="/offres" style="color:#9fc2de">Cr&eacute;er un compte</a><br>Identifiant ou mot de passe oubli&eacute; ?
  <a href="https://t.me/%%TGBOT%%" style="color:#9fc2de">&Eacute;crivez &laquo; lien &raquo; au robot OwlNest sur Telegram</a></div>
 </form>
 </div>
@@ -11133,18 +11135,20 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "#md h2{margin:0 0 6px;font-size:1.15rem}a{color:#9fc2de}.back{display:inline-block;margin-bottom:12px;color:#9fc2de;text-decoration:none}"
             "</style></head><body><div class=\"c\"><div class=\"top\"><img src=\"/icon192.png\" alt=\"\"><b>OwlNest</b></div>"
             "<a class=\"back\" href=\"/\">&#8592; Retour</a>"
-            f"<h1>Choisissez votre formule</h1><p>Un code d&#8217;activation ouvre votre compte. Le Owl vous le donne sur Telegram ; Signal et Strat&eacute;gie s&#8217;ach&egrave;tent aussi en crypto, activation imm&eacute;diate.</p>{note}{tiers}"
+            f"<h1>Choisissez votre formule</h1><p>Un code d&#8217;activation ouvre votre compte. Le Owl vous le donne sur Telegram ; Signal et Strat&eacute;gie s&#8217;ach&egrave;tent aussi en crypto, activation imm&eacute;diate. Vos identifiants vous sont demand&eacute;s apr&egrave;s votre choix &mdash; un compte MT5 seulement pour Automatique.</p>{note}{tiers}"
             "</div><div id=\"bg\" onclick=\"closeM()\"></div><div id=\"md\">"
             "<h2 id=\"mt\"></h2><p id=\"mp\"></p>"
             "<form method=\"POST\" action=\"/activate\" id=\"f\" autocomplete=\"off\">"
-            f"<input type=\"hidden\" name=\"login\" value=\"{_h.escape(login)}\"><input type=\"hidden\" name=\"password\" value=\"{_h.escape(pwd)}\">"
             "<input type=\"hidden\" name=\"pkg\" id=\"pkg\"><input type=\"hidden\" name=\"action\" id=\"act\" value=\"activate\">"
             f"<label for=\"name\">Votre pr&eacute;nom</label><input id=\"name\" name=\"name\" maxlength=\"30\" placeholder=\"Pr&eacute;nom\" value=\"{_h.escape(name)}\">"
-            "<div id=\"mt5\"><label for=\"ml\">Num&eacute;ro de compte MT5</label>"
-            f"<input id=\"ml\" name=\"mt5_login\" inputmode=\"numeric\" placeholder=\"12345678\" value=\"{_h.escape(login) if numeric else ''}\">"
-            "<label for=\"server\">Serveur MT5</label><input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
+            "<label for=\"lg\" id=\"lgl\">Choisissez un identifiant</label>"
+            f"<input id=\"lg\" name=\"login\" maxlength=\"24\" autocomplete=\"off\" placeholder=\"ex. mike77\" value=\"{_h.escape(login)}\">"
+            "<div class=\"h\" id=\"lgh\">Lettres et chiffres. Pas besoin de compte MT5 pour Signal et Strat&eacute;gie.</div>"
+            "<label for=\"pw\" id=\"pwl\">Choisissez un mot de passe</label>"
+            f"<input id=\"pw\" name=\"password\" type=\"password\" maxlength=\"64\" autocomplete=\"new-password\" placeholder=\"6 caract&egrave;res au moins\" value=\"{_h.escape(pwd)}\">"
+            "<div id=\"mt5\"><label for=\"server\">Serveur MT5</label><input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
             "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
-            "<div class=\"h\">Le mot de passe tap&eacute; &agrave; la connexion doit &ecirc;tre le mot de passe principal de ce compte : le robot doit pouvoir trader.</div></div>"
+            "<div class=\"h\">Visible dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div></div>"
             "<label for=\"code\">Code d&#8217;activation</label><input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\">"
             "<button class=\"go\" id=\"ok\" onclick=\"document.getElementById('act').value='activate'\">Activer</button>"
             + ("<button class=\"go\" id=\"buy\" type=\"button\" onclick=\"buyNow()\">Acheter maintenant en crypto &middot; activation imm&eacute;diate</button>" if pay else "")
@@ -11154,10 +11158,17 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "document.getElementById('mt').textContent=L+' \u00b7 code d\u2019activation';"
             "document.getElementById('mp').textContent=k==='family'?'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.':'Entrez votre code, ou achetez maintenant : votre compte s\u2019active tout de suite.';"
             "document.getElementById('mt5').style.display=k==='family'?'':'none';var b=document.getElementById('buy');if(b)b.style.display=k==='family'?'none':'';"
-            "document.getElementById('mh').textContent=k==='family'?'':'Signal et Strat\u00e9gie ne demandent pas de compte MT5. La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT sur Tron, le moins cher), \u00ab Next step \u00bb, envoyez le montant exact ; votre compte s\u2019active tout seul d\u00e8s confirmation.';"
+            "var fam=(k==='family');document.getElementById('lgl').textContent=fam?'Num\u00e9ro de compte MT5':'Choisissez un identifiant';document.getElementById('lg').placeholder=fam?'12345678':'ex. mike77';document.getElementById('lg').setAttribute('inputmode',fam?'numeric':'text');"
+            "document.getElementById('lgh').textContent=fam?'Le compte que le robot va trader.':'Lettres et chiffres. Pas besoin de compte MT5 pour Signal et Strat\u00e9gie.';"
+            "document.getElementById('pwl').textContent=fam?'Mot de passe du compte MT5 (principal)':'Choisissez un mot de passe';document.getElementById('pw').placeholder=fam?'le robot doit pouvoir trader':'6 caract\u00e8res au moins';"
+            "document.getElementById('mh').textContent=k==='family'?'':'La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT sur Tron, le moins cher), \u00ab Next step \u00bb, envoyez le montant exact ; votre compte s\u2019active tout seul d\u00e8s confirmation.';"
             "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';setTimeout(function(){document.getElementById('code').focus();},150);}"
             "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';}"
-            "function need(){var n=document.getElementById('name').value.trim();if(!n){alert('Votre pr\u00e9nom, s\u2019il vous pla\u00eet.');return false;}return true;}"
+            "function need(){var n=document.getElementById('name').value.trim();if(!n){alert('Votre pr\u00e9nom, s\u2019il vous pla\u00eet.');return false;}"
+            "var l=document.getElementById('lg').value.trim(),p=document.getElementById('pw').value;if(!l){alert(P==='family'?'Le num\u00e9ro de votre compte MT5.':'Choisissez un identifiant.');return false;}"
+            "if(P!=='family'&&!/^[A-Za-z0-9]{3,24}$/.test(l)){alert('Identifiant : lettres et chiffres seulement, 3 \u00e0 24.');return false;}"
+            "if(P==='family'&&!/^\\d{5,12}$/.test(l)){alert('Le num\u00e9ro de compte MT5, en chiffres.');return false;}"
+            "if(!p||p.length<6){alert('Mot de passe : 6 caract\u00e8res au moins.');return false;}return true;}"
             "function buyNow(){if(!need())return;document.getElementById('act').value='buy';document.getElementById('f').submit();}"
             "function pend(){if(!need()){event.preventDefault();return;}var fd=new FormData(document.getElementById('f'));fd.set('action','pending');"
             "try{navigator.sendBeacon('/activate',new URLSearchParams(fd));}catch(e){}}"
@@ -13332,6 +13343,10 @@ class H(BaseHTTPRequestHandler):
             _lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat\u00e9gie"}
             self._send(json.dumps({"ok": bool(_e), "pkg": (_e or {}).get("pkg"), "days": (_e or {}).get("days"),
                                    "label": _lab.get((_e or {}).get("pkg"), "")}), "application/json")
+            return
+        if len(parts) == 1 and parts[0] == "offres":
+            # 2026-10-04 (owner): 'Creer un compte' - the offers first, credentials after the choice
+            self._send(_offers_page("", ""), "text/html; charset=utf-8")
             return
         if len(parts) == 1 and parts[0] == "activate":
             # 2026-10-04 (owner): one door - everything starts at the login
