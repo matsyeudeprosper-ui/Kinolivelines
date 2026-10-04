@@ -501,7 +501,7 @@ def plan_of(u):
             "waitlisted": u.get("id") in waitlist(),
             "pay_ready": bool(cfg.get("np_api_key")),
             "mql5_url": cfg.get("mql5_url") or "",
-            "contact_url": cfg.get("contact_url") or "",     # Kino on Telegram
+            "contact_url": cfg.get("contact_url") or "",     # the Owl on Telegram
             "pending_pay": bool(u.get("pending_pay")),
             # 2026-10-03 (owner): the member's share statement (robot accounts only)
             "share": (SHARE.statement(u.get("id")) if (SHARE.on() and u.get("id") in SHARE.eligible()) else None),
@@ -912,7 +912,7 @@ def master_pwd_ok(pw):
 
 
 # 2026-09-23 (owner): "the nid menu must not exist for all but me."
-# is_master was tied to WHICH ACCOUNT's page is open (Kino's own token),
+# is_master was tied to WHICH ACCOUNT's page is open (the Owl's own token),
 # not to WHO is looking - so viewing any other member's page hid Le Nid
 # even for the owner. This is a real access control on other people's
 # balances (Valere, Infinity, ... are not the owner), so unlocking it is
@@ -1998,7 +1998,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
 </div>
 <div class="panel" id="kinocard" style="display:none;margin-top:12px">
- <div class="lbl">Le robot de Kino &middot; r&eacute;sultats</div>
+ <div class="lbl">Le robot du Owl &middot; r&eacute;sultats</div>
  <div id="kino-g" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px"></div>
  <svg id="kino-spark" viewBox="0 0 300 44" style="width:100%;height:44px;display:none;margin-top:10px"></svg>
  <div id="kino-s" style="font-size:.78rem;color:var(--muted2);margin-top:8px"></div>
@@ -2136,7 +2136,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
  <div style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px">
   Votre compte est connect&eacute;. Il reste un code &agrave; entrer :
-  demandez-le &agrave; <b>Kino sur Telegram</b>.</div>
+  demandez-le &agrave; <b>le Owl sur Telegram</b>.</div>
  <div style="display:flex;gap:8px;margin-top:12px">
   <input id="actcode" inputmode="text" autocapitalize="characters"
    maxlength="6" placeholder="CODE" aria-label="Code d&#39;activation"
@@ -2578,7 +2578,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </a>
  <a class="srow" id="contactrow" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none;color:inherit">
   <div class="sic"><svg class="ic"><use href="#i-users"/></svg></div>
-  <div style="flex:1"><b id="contact-lbl">Contacter Kino</b>
+  <div style="flex:1"><b id="contact-lbl">Contacter le Owl</b>
    <div class="ssub">Une question, un souci : un message suffit</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
@@ -2665,7 +2665,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 <!-- Owner 2026-09-23: "the nid menu must not exist for all but me" - this
      is how the owner unlocks it from whichever account's page is open,
-     without going back to Kino. Password-verified server-side
+     without going back to the Owl. Password-verified server-side
      (admin_unlock), never a client-side flag; hidden the moment this
      browser is already recognised as admin. -->
 <div class="sec" id="adminlock-sec">Acc&egrave;s</div>
@@ -3079,28 +3079,28 @@ function LANG(){try{return localStorage.getItem('owlLang')==='en'?'en':'fr';}cat
 function TIER(){const d=window._d||{},P=d.plan||{};if(d.public)return 'demo';if(P.family)return 'family';if(P.strategy)return 'strategy';if(P.manual)return 'manual';return 'observer';}
 function OBS(){const t=TIER();return t==='observer'||t==='strategy';}   // no robot on the account
 function HIDEGAUGES(){return TIER()==='observer';}
-// observers watch Kino's robot: the market card speaks about HIS robot
+// observers watch the Owl's robot: the market card speaks about HIS robot
 VOICE.observer={
- wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies. Le robot de Kino entrera dès que le signal se confirme.'],
-     flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot de Kino attend la confirmation.'],
-     forming:['⏳','Ça se prépare','#8fa1b3','Trop tôt. Le robot de Kino laisse le marché se dessiner.'],
-     none:['💤','Rien à faire','#6f8299','Le marché est calme. Le robot de Kino attend une occasion.'],
-     brisk:['🍃','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot de Kino laisse passer.'],
-     nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot de Kino s’écarte.'],
-     nogate:['⚡','Marché rapide','#b98cff','Le robot de Kino travaille quand même — à ses risques.']},
- mx_hint:'&middot; ce que voit le robot de Kino',day_lbl:'Votre journ\u00e9e',
- day_empty:'Aucun trade sur votre compte aujourd\u2019hui. Le robot de Kino, lui, travaille : ses r\u00e9sultats sont plus bas.',
+ wx:{ready:['✅','Feu vert','#8df0bb','Les conditions sont réunies. Le robot du Owl entrera dès que le signal se confirme.'],
+     flip:['⚖️','Ça peut tourner','#e8c55a','Le sens change peut-être. Le robot du Owl attend la confirmation.'],
+     forming:['⏳','Ça se prépare','#8fa1b3','Trop tôt. Le robot du Owl laisse le marché se dessiner.'],
+     none:['💤','Rien à faire','#6f8299','Le marché est calme. Le robot du Owl attend une occasion.'],
+     brisk:['🍃','Marché soutenu','#e8c55a','Les bougies sont un peu plus grandes que d’habitude. Le robot du Owl laisse passer.'],
+     nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot du Owl s’écarte.'],
+     nogate:['⚡','Marché rapide','#b98cff','Le robot du Owl travaille quand même — à ses risques.']},
+ mx_hint:'&middot; ce que voit le robot du Owl',day_lbl:'Votre journ\u00e9e',
+ day_empty:'Aucun trade sur votre compte aujourd\u2019hui. Le robot du Owl, lui, travaille : ses r\u00e9sultats sont plus bas.',
  since:'Avec OwlNest depuis le <b>'};
 VOICE_EN.observer={
- wx:{ready:['✅','Green light','#8df0bb','Conditions are met. Kino\u2019s robot will enter as soon as the signal confirms.'],
-     flip:['⚖️','It may turn','#e8c55a','The direction may be changing. Kino\u2019s robot waits for confirmation.'],
-     forming:['⏳','Setting up','#8fa1b3','Too early. Kino\u2019s robot lets the market take shape.'],
-     none:['💤','Nothing to do','#6f8299','The market is calm. Kino\u2019s robot waits for an opportunity.'],
-     brisk:['🍃','Lively market','#e8c55a','Candles are a bit larger than usual. Kino\u2019s robot lets it go.'],
-     nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. Kino\u2019s robot steps aside.'],
-     nogate:['⚡','Fast market','#b98cff','Kino\u2019s robot works anyway \u2014 at its own risk.']},
- mx_hint:'&middot; what Kino\u2019s robot sees',day_lbl:'Your day',
- day_empty:'No trade on your account today. Kino\u2019s robot is working: its results are below.',
+ wx:{ready:['✅','Green light','#8df0bb','Conditions are met. the Owl\u2019s robot will enter as soon as the signal confirms.'],
+     flip:['⚖️','It may turn','#e8c55a','The direction may be changing. the Owl\u2019s robot waits for confirmation.'],
+     forming:['⏳','Setting up','#8fa1b3','Too early. the Owl\u2019s robot lets the market take shape.'],
+     none:['💤','Nothing to do','#6f8299','The market is calm. the Owl\u2019s robot waits for an opportunity.'],
+     brisk:['🍃','Lively market','#e8c55a','Candles are a bit larger than usual. the Owl\u2019s robot lets it go.'],
+     nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. the Owl\u2019s robot steps aside.'],
+     nogate:['⚡','Fast market','#b98cff','the Owl\u2019s robot works anyway \u2014 at its own risk.']},
+ mx_hint:'&middot; what the Owl\u2019s robot sees',day_lbl:'Your day',
+ day_empty:'No trade on your account today. the Owl\u2019s robot is working: its results are below.',
  since:'With OwlNest since <b>'};
 function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OBS()?'observer':'auto');const v=Lb[_vo]||Lb.auto;
  if(v[k]!==undefined)return v[k];if(Lb.auto[k]!==undefined)return Lb.auto[k];
@@ -3377,14 +3377,14 @@ window.addEventListener('load',()=>{
   // changes for the user, nothing about which conditions are watched.
   // 2026-09-28 (owner): a Manuel-only member has NO robot on their account -
   // "launching the automatic" would just stop the desk and run nothing.
-  // Automatic trading is the Automatique package (settled with Kino) or the
-  // copy of Kino's account on MQL5: say so and point at the offers.
+  // Automatic trading is the Automatique package (settled with the Owl) or the
+  // copy of the Owl's account on MQL5: say so and point at the offers.
   const _P=(window._d&&window._d.plan)||{};
   if(isPaused&&!_P.family&&!(window._d&&window._d.is_master)){
    const en=LANG()==='en';
    const v=await sheet('<h3>'+(en?'Automatic trading':'Trading automatique')+'</h3><p>'+(en
-    ?'The robot does not run on your account with the Signal plan. Automatic trading is the <b>Automatic</b> package, for the family, by invitation - ask Kino for a code on Telegram.'
-    :'Le robot ne tourne pas sur votre compte avec le paquet Signal. Le trading automatique, c\u2019est le paquet <b>Automatique</b>, r\u00e9serv\u00e9 \u00e0 la famille, sur invitation \u2014 demandez un code \u00e0 Kino sur Telegram.')+'</p>'+
+    ?'The robot does not run on your account with the Signal plan. Automatic trading is the <b>Automatic</b> package, for the family, by invitation - ask the Owl for a code on Telegram.'
+    :'Le robot ne tourne pas sur votre compte avec le paquet Signal. Le trading automatique, c\u2019est le paquet <b>Automatique</b>, r\u00e9serv\u00e9 \u00e0 la famille, sur invitation \u2014 demandez un code au Owl sur Telegram.')+'</p>'+
     '<button class="shbtn shmain" onclick="_shDone({o:1})">'+(en?'See the plans':'Voir les offres')+'</button>'+
     '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Close':'Fermer')+'</button>');
    if(v&&v.o)setTimeout(offersSheet,500);
@@ -3476,7 +3476,7 @@ window.addEventListener('load',()=>{
     '<b>Robot activ&eacute; !</b> Il surveille maintenant le march&eacute; pour vous.</div>';
     try{confetti();}catch(e2){}setTimeout(load,1500);}
    else{msg.textContent='Code invalide ou expir&eacute;. Demandez un '+
-    'nouveau code &agrave; Kino.';}}
+    'nouveau code au Owl.';}}
   catch(e2){msg.textContent='Petit souci, r&eacute;essayez.';}};
  const gb=document.getElementById('goalbtn');
  if(gb)gb.onclick=async(e)=>{e.preventDefault();
@@ -5112,8 +5112,8 @@ function renderPlan(d){
  let title,txt,color='var(--accent-soft)';
  const plusS=P.strategy?(en?' + Strategy':' + Strat\u00e9gie'):'';
  if(P.pending_pay){title=en?'Waiting for your payment':'En attente de votre paiement';txt=en?'As soon as NOWPayments confirms it, your account comes alive (a few minutes). Not paid yet? Tap the package below.':'D\u00e8s que NOWPayments le confirme, votre compte s\u2019active (quelques minutes). Pas encore pay\u00e9 ? Touchez le paquet ci-dessous.';color='var(--warn)';}
- else if(P.family){title=(en?'Automatic':'Automatique')+plusS;txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with Kino, then enter the code.':' \u2014 renouvelez aupr\u00e8s de Kino, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
- else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with Kino and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
+ else if(P.family){title=(en?'Automatic':'Automatique')+plusS;txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with the Owl, then enter the code.':' \u2014 renouvelez aupr\u00e8s du Owl, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
+ else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with the Owl and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez le Owl et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
  else if(P.manual){title='Signal'+plusS;txt=(en?'Signals on your phone, until ':'Signaux sur votre t\u00e9l\u00e9phone, jusqu\u2019au ')+fd(P.manual_until)+(P.strategy?(en?' \u00b7 full view until ':' \u00b7 vue compl\u00e8te jusqu\u2019au ')+fd(P.strategy_until):'')+'.';color='var(--up-soft)';}
  else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
  else{title=en?'No subscription':'Aucun abonnement';txt=en?'Signals and the full view are paid options. The demo is free for everyone.':'Les signaux et la vue compl\u00e8te sont des options payantes. La d\u00e9mo est gratuite pour tous.';}
@@ -5122,7 +5122,7 @@ function renderPlan(d){
  (function(){const F=P.setup;if(!F||F.paid||!F.usd)return;const us=v=>'$'+Number(v||0).toFixed(2);
   sub.innerHTML='<div style="margin-top:6px;padding:12px;border-radius:14px;border:1px solid rgba(232,197,90,.4);background:rgba(232,197,90,.08)"><b style="color:var(--text)">'+(en?'Opening fee \u00b7 '+us(F.usd)+', once':'Frais d\u2019ouverture \u00b7 '+us(F.usd)+', une seule fois')+'</b>'+
    '<div style="font-size:.8rem;margin-top:4px">'+(en?'Every account has its own terminal on our server. This fee opens yours.':'Chaque compte a son propre terminal sur notre serveur. Ces frais ouvrent le v\u00f4tre.')+'</div>'+
-   (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="buyPkg(&#39;setup&#39;)">'+(en?'Pay '+us(F.usd)+' in crypto':'Payer '+us(F.usd)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with Kino.':'R\u00e9glez avec Kino.')+'</div>')+'</div>'+sub.innerHTML;})();
+   (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="buyPkg(&#39;setup&#39;)">'+(en?'Pay '+us(F.usd)+' in crypto':'Payer '+us(F.usd)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with the Owl.':'R\u00e9glez avec le Owl.')+'</div>')+'</div>'+sub.innerHTML;})();
  // 2026-10-03 (owner): the profit share - this month so far, and the
  // last statement with its Payer button
  (function(){const S=P.share;if(!S||!S.on||!P.family&&!P.family_expired&&!S.blocked)return;
@@ -5143,7 +5143,7 @@ function renderPlan(d){
     '<b style="color:var(--text)">'+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' \u00b7 '+us(L.due)+'</b>'+
     '<div style="font-size:.8rem;margin-top:4px">'+(en?'Robot '+mn(L.profit)+', '+us(L.above)+' above your record \u2192 '+us(L.share)+(L.base>0?' + base '+us(L.base):'')+'.':'Robot '+mn(L.profit)+', '+us(L.above)+' au-dessus du record \u2192 '+us(L.share)+(L.base>0?' + base '+us(L.base):'')+'.')+
     (L.status==='overdue'?' <b style="color:var(--down-soft)">'+(en?'Overdue: the robot is paused on your account until it is settled.':'En retard : le robot est en pause sur votre compte jusqu\u2019au r\u00e8glement.')+'</b>':' '+(en?S.grace_days+' days to settle.':S.grace_days+' jours pour r\u00e9gler.'))+'</div>'+
-    (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="payShare(&#39;'+L.ym+'&#39;)">'+(en?'Pay '+us(L.due)+' in crypto':'Payer '+us(L.due)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with Kino; he marks it paid and the robot goes on.':'R\u00e9glez avec Kino ; il marque le relev\u00e9 pay\u00e9 et le robot continue.')+'</div>')+'</div>';}
+    (P.pay_ready?'<button class="shbtn shmain" style="margin:10px 0 0;padding:10px" onclick="payShare(&#39;'+L.ym+'&#39;)">'+(en?'Pay '+us(L.due)+' in crypto':'Payer '+us(L.due)+' en crypto')+'</button>':'<div style="font-size:.8rem;margin-top:8px;color:var(--text2)">'+(en?'Settle with the Owl; he marks it paid and the robot goes on.':'R\u00e9glez avec le Owl ; il marque le relev\u00e9 pay\u00e9 et le robot continue.')+'</div>')+'</div>';}
   else if(L&&L.status==='paid')h+='<div style="font-size:.78rem;color:var(--up-soft);margin-top:8px">\u2713 '+(en?'Statement for ':'Relev\u00e9 de ')+mname(L.ym)+' '+(en?'settled':'r\u00e9gl\u00e9')+' ('+us(L.due)+').</div>';
   h+='<div style="font-size:.74rem;color:var(--muted);margin-top:8px">'+(en?'Your record = the account\u2019s best result since the robot started ('+us(N.hwm)+'). No share is ever taken on getting back to it.':'Votre record = le meilleur r\u00e9sultat du compte depuis le d\u00e9but du robot ('+us(N.hwm)+'). Aucune part n\u2019est prise sur un simple retour \u00e0 ce niveau.')+'</div>';
   sub.innerHTML=(P.family_expired||S.blocked?'':'')+h;})();
@@ -5164,8 +5164,8 @@ function renderPlan(d){
    a.onclick=e=>{e.preventDefault();openActCard();};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
   a.textContent=P.family?(en?'I have a renewal code':'J\u2019ai un code de renouvellement'):(en?'I have an activation code':'J\u2019ai un code d\u2019activation');a.style.display=d.public?'none':'block';})();
- nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments) or a code from Kino on Telegram. Renewing adds 30 days.':'Paiement en crypto (NOWPayments) ou code de Kino sur Telegram. Renouveler ajoute 30 jours.')
-  :(en?'Payments open soon \u2014 ask Kino for now.':'Paiements bient\u00f4t disponibles \u2014 demandez \u00e0 Kino en attendant.'));
+ nt.textContent=(P.family&&P.strategy)?'':(P.pay_ready?(en?'Payment in crypto (NOWPayments) or a code from the Owl on Telegram. Renewing adds 30 days.':'Paiement en crypto (NOWPayments) ou code du Owl sur Telegram. Renouveler ajoute 30 jours.')
+  :(en?'Payments open soon \u2014 ask the Owl for now.':'Paiements bient\u00f4t disponibles \u2014 demandez au Owl en attendant.'));
  const pr=document.getElementById('payrow');if(pr)pr.style.display=d.public?'none':'flex';
  // 2026-09-28: waiting list when the manual seats are full
  (function(){let w=document.getElementById('plan-wait');if(!w){w=document.createElement('button');w.id='plan-wait';w.className='shbtn shghost';w.style.cssText='margin:10px 0 0;padding:11px;font-size:.9rem';bt.parentNode.insertBefore(w,nt);}
@@ -5176,7 +5176,7 @@ function renderPlan(d){
 }
 // The offers, in full - one screen, both languages. What is INCLUDED is
 // only what the app really does today; nothing promised beyond that.
-// Observers: results and the app, never the gates. Kino's robot = the public demo account.
+// Observers: results and the app, never the gates. the Owl's robot = the public demo account.
 // Manual members: the current signal (from their desk), plain and complete.
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
@@ -5195,7 +5195,7 @@ function renderSignal(ms){
  const far=(ms&&typeof ms.px==='number'&&sg.e)?Math.abs(ms.px-sg.e)/sg.e:0;
  const farTxt=far>0.0025?('<div style="color:var(--warn);margin-bottom:4px">\u26a0 '+(en?'The price has moved '+(far*100).toFixed(2)+'% from the entry \u2014 careful, the risk is no longer the same.':'Le prix s\u2019est \u00e9loign\u00e9 de l\u2019entr\u00e9e ('+(far*100).toFixed(2)+'\u202f%) \u2014 prudence, le risque n\u2019est plus le m\u00eame.')+'</div>'):'';
  setH(document.getElementById('sig-note'),farTxt+(sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
-  :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. Kino\u2019s robot would not take it either.':'. Le robot de Kino ne le prendrait pas non plus.'))));
+  :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. the Owl\u2019s robot would not take it either.':'. Le robot du Owl ne le prendrait pas non plus.'))));
  const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
  window._sig=sg;
  // 2026-09-28: members trading on another broker tell the app themselves
@@ -5373,7 +5373,7 @@ function labStageHtml(k){const j=window._lab;if(!j)return '';const en=LANG()==='
  }else{
   h+='<div class="panel labintro"><b style="font-size:.95rem">'+(en?'The rules the robot follows today':'Les r\u00e8gles que le robot suit aujourd\u2019hui')+'</b><div style="font-size:.84rem;color:var(--text2);line-height:1.5;margin-top:6px">'+(en?'Each one earned its place through the three steps. Tap a card to see why.':'Chacune a gagn\u00e9 sa place en passant les trois \u00e9tapes. Touchez une carte pour voir pourquoi.')+'</div></div>';
   h+=items.filter(it=>it.status==='deployed').map(item).join('');
-  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a new rule gets in':'Comment une nouvelle r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.6;margin-top:6px">'+(en?'1. An idea comes from the real trades or from Kino.<br>2. We replay it on the last 42 days of the market.<br>3. A copy of the robot tries it for pretend, next to the real one.<br>4. It goes on the demo account first, then on real accounts, one at a time, on Kino\u2019s decision.<br>5. We keep watching it; if it starts losing, we take it out.':'1. Une id\u00e9e vient des vrais trades ou de Kino.<br>2. On la teste sur les 42 derniers jours du march\u00e9.<br>3. Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.<br>4. Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes, un par un, sur d\u00e9cision de Kino.<br>5. On continue de la surveiller ; si elle se met \u00e0 perdre, on la retire.')+'</div></div>';
+  h+='<div class="panel" style="margin-top:14px;border-color:rgba(59,130,246,.35)"><div class="lbl">'+(en?'How a new rule gets in':'Comment une nouvelle r\u00e8gle entre')+'</div><div style="font-size:.86rem;color:var(--text);line-height:1.6;margin-top:6px">'+(en?'1. An idea comes from the real trades or from the Owl.<br>2. We replay it on the last 42 days of the market.<br>3. A copy of the robot tries it for pretend, next to the real one.<br>4. It goes on the demo account first, then on real accounts, one at a time, on the Owl\u2019s decision.<br>5. We keep watching it; if it starts losing, we take it out.':'1. Une id\u00e9e vient des vrais trades ou du Owl.<br>2. On la teste sur les 42 derniers jours du march\u00e9.<br>3. Une copie du robot l\u2019essaie pour de faux, \u00e0 c\u00f4t\u00e9 du vrai.<br>4. Elle passe d\u2019abord sur le compte d\u00e9mo, puis sur les vrais comptes, un par un, sur d\u00e9cision du Owl.<br>5. On continue de la surveiller ; si elle se met \u00e0 perdre, on la retire.')+'</div></div>';
  }
  return h;
 }
@@ -5499,7 +5499,7 @@ const LAB_MIN_N = 30;   // trades before a seed figure is worth printing
 function labLive(en){const j=window._lab||{};const V=j.veille||[];if(!V.length)return '';const v=V[V.length-1];const esc=_escS;
  let ago='';try{const m=Math.round((Date.now()-new Date(v.t).getTime())/60000);ago=m<60?(en?m+' min ago':'il y a '+m+' min'):(en?Math.round(m/60)+' h ago':'il y a '+Math.round(m/60)+' h');}catch(e){}
  const K={observation:[en?'saw':'a vu','var(--accent-soft)'],piste:[en?'opened a clue':'a ouvert une piste','var(--warn)'],essai:[en?'ran a test':'a fait un essai','#b98cff'],idee:[en?'proposed an idea':'a propos\u00e9 une id\u00e9e','var(--up-soft)'],reponse:[en?'answered':'a r\u00e9pondu','#b98cff'],rien:[en?'is waiting':'attend','var(--muted)']}[v.kind]||[en?'noted':'a not\u00e9','var(--muted)'];
- return '<div class="lh-live"><span class="lh-dot"></span><span style="flex:1;min-width:0"><b>Kino num\u00e9rique</b> <span style="color:'+K[1]+'">'+K[0]+'</span>'+(ago?' <span class="lh-ago">\u00b7 '+ago+'</span>':'')+'<span class="lh-say">'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</span></span></div>';}
+ return '<div class="lh-live"><span class="lh-dot"></span><span style="flex:1;min-width:0"><b>Le chercheur</b> <span style="color:'+K[1]+'">'+K[0]+'</span>'+(ago?' <span class="lh-ago">\u00b7 '+ago+'</span>':'')+'<span class="lh-say">'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</span></span></div>';}
 function labHero(en){
  const j=window._lab||{};const N=j.note||{};const esc=_escS;
  if(!N.date)return '<div class="jempty" style="margin-top:12px">'+(en?'The researcher has not had its first night yet.':'Le chercheur n\u2019a pas encore fait sa premi\u00e8re nuit.')+'</div>';
@@ -5528,7 +5528,7 @@ function labLabo(en){const j=window._lab||{};const L=j.labo;if(!L)return '';cons
   what=(en?'Trying ':'Essaie ')+'\u00ab '+t+' \u00bb'+(en?' since ':' depuis le ')+esc(dep.date||'')+
    (w&&w.labo?' \u00b7 '+(w.labo.trades||0)+' / '+(w.need||30)+' trades \u00b7 '+(en?'lab ':'labo ')+'<b style="color:'+((w.labo.net||0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(w.labo.net)+'</b> \u00b7 '+(en?'real robot ':'vrai robot ')+'<b>'+mn((w.real||{}).net)+'</b>':'')+
    (L.confirmed?' \u00b7 <span style="color:var(--up-soft)">'+(en?'confirmed':'confirm\u00e9e')+'</span>':'');}
- else if(L.paused)what=en?'<b style="color:var(--warn)">Paused by Kino</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Runs the robot\u2019s base rules; no idea goes in until the brake is lifted.':'<b style="color:var(--warn)">En pause, par Kino</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Suit les r\u00e8gles de base du robot ; aucune id\u00e9e n\u2019entre tant que le frein est tir\u00e9.';
+ else if(L.paused)what=en?'<b style="color:var(--warn)">Paused by the Owl</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Runs the robot\u2019s base rules; no idea goes in until the brake is lifted.':'<b style="color:var(--warn)">En pause, par le Owl</b>'+(L.paused_since?' \u00b7 '+esc(L.paused_since):'')+'. Suit les r\u00e8gles de base du robot ; aucune id\u00e9e n\u2019entre tant que le frein est tir\u00e9.';
  else what=en?'Runs the robot\u2019s base rules. A duel winner goes in here first, by itself.':'Suit les r\u00e8gles de base du robot. Une id\u00e9e qui gagne son duel entre ici en premier, toute seule.';
  const tile=(l,x,c)=>'<div><b style="color:'+(c||'var(--text)')+'">'+x+'</b><span>'+l+'</span></div>';
  // 2026-10-03 (owner): every night the gates are rehearsed with a pretend
@@ -5563,7 +5563,7 @@ function labSeedRow(en){const seeds=labSeeds(window._lab||{});if(!seeds.length)r
  return '<button class="labseedrow" onclick="labSeedsSheet()"><span class="lsr-n">'+seeds.length+'</span><span style="flex:1;min-width:0"><b>'+(en?'clues in your real trades':'pistes dans vos vrais trades')+'</b><span class="lsr-s">'+(ready?(en?ready+' ready to read':ready+' lisibles'):(en?'none has enough trades to read yet':'aucune n\u2019a encore assez de trades'))+'</span></span><svg class="ic chv"><use href="#i-chev"/></svg></button>';}
 function labSeedsSheet(){const j=window._lab||{};const en=LANG()==='en';const seeds=labSeeds(j);
  sheet('<div class="nt-eye" style="color:var(--warn)">'+(en?'The clues':'Les pistes')+'</div><h3 style="margin:6px 0 8px">'+(en?'What your real trades hint at':'Ce que vos vrais trades laissent entrevoir')+'</h3>'+
-  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 4px">'+(en?'Each clue is a question put to the real trades: a pile of them, against all the others. The first eleven came from Kino; the chercheur adds one when the data gives it a reason, one a night at most. A clue is not an idea yet: under 30 trades a number can still be luck. When both halves of the period agree, the researcher can turn it into an idea.':'Chaque piste est une question pos\u00e9e aux vrais trades : une pile de trades, contre tous les autres. Les onze premi\u00e8res viennent de Kino ; le chercheur en ajoute une quand les donn\u00e9es lui en donnent une raison, une par nuit au plus. Une piste n\u2019est pas encore une id\u00e9e : sous 30 trades, un chiffre peut encore \u00eatre de la chance. Quand les deux moiti\u00e9s de la p\u00e9riode sont d\u2019accord, le chercheur peut en faire une id\u00e9e.')+'</p>'+
+  '<p style="font-size:.86rem;color:var(--text2);line-height:1.5;margin:0 0 4px">'+(en?'Each clue is a question put to the real trades: a pile of them, against all the others. The first eleven came from the Owl; the chercheur adds one when the data gives it a reason, one a night at most. A clue is not an idea yet: under 30 trades a number can still be luck. When both halves of the period agree, the researcher can turn it into an idea.':'Chaque piste est une question pos\u00e9e aux vrais trades : une pile de trades, contre tous les autres. Les onze premi\u00e8res viennent du Owl ; le chercheur en ajoute une quand les donn\u00e9es lui en donnent une raison, une par nuit au plus. Une piste n\u2019est pas encore une id\u00e9e : sous 30 trades, un chiffre peut encore \u00eatre de la chance. Quand les deux moiti\u00e9s de la p\u00e9riode sont d\u2019accord, le chercheur peut en faire une id\u00e9e.')+'</p>'+
   '<div style="max-height:60vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+seeds.map(c=>seedCard(c,en)).join('')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function labBoard(en){setTimeout(jSwipe,80);
@@ -5621,14 +5621,14 @@ function labSeed(id){const j=window._lab||{};const c=(j.candidates||[]).find(x=>
 function labStage(k){const en=LANG()==='en';let title='',body='';
  if(k==='how'){title=en?'The lab, in one minute':'Le labo, en une minute';
   body='<p style="font-size:.92rem;line-height:1.55;color:var(--text);margin:0">'+(en?'Here we look for ways to make the robot better over time. Every idea travels left to right through four columns before it touches your account.':'Ici, on cherche comment rendre le robot meilleur avec le temps. Chaque id\u00e9e voyage de gauche \u00e0 droite, par quatre colonnes, avant de toucher \u00e0 votre compte.')+'</p>'+
-   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from Kino, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, de Kino, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. Three possible answers: better on both halves, a little better, or no.':'On la teste sur les 42 derniers jours du march\u00e9. Trois r\u00e9ponses possibles : mieux sur les deux moiti\u00e9s, un peu mieux, ou non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are Kino\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
+   '<div style="margin-top:12px">'+JCOLS.map(([kk,fr,eg,c],i)=>'<div class="jev"><span style="width:26px;color:'+c+';font-weight:800">'+(i+1)+'</span><div><b>'+(en?eg:fr)+'</b><br><span style="color:var(--text2)">'+[en?'An idea is born: from the researcher, from the Owl, or from a clue in the real trades.':'Une id\u00e9e na\u00eet : du chercheur, du Owl, ou d\u2019une piste vue dans les vrais trades.',en?'We test it on the last 42 days of the market. Three possible answers: better on both halves, a little better, or no.':'On la teste sur les 42 derniers jours du march\u00e9. Trois r\u00e9ponses possibles : mieux sur les deux moiti\u00e9s, un peu mieux, ou non.',en?'A copy of the robot tries it live, with no money, next to the real one. After 30 trades, the duel.':'Une copie du robot l\u2019essaie en direct, sans argent, \u00e0 c\u00f4t\u00e9 du vrai. Apr\u00e8s 30 trades, le duel.',en?'If it beats the robot, it goes into the lab\u2019s robot by itself (demo money). The real accounts are the Owl\u2019s yes.':'Si elle bat le robot, elle entre toute seule dans le robot du labo (argent de d\u00e9monstration). Les vrais comptes, c\u2019est Kino qui dit oui.'][i]+'</span></div></div>').join('')+'</div>'+
    '<div style="font-size:.78rem;color:var(--muted);margin-top:10px;line-height:1.45">'+(en?'The chercheur is an AI that reads the data every night and challenges the robot. It proposes; the tests decide.':'Le chercheur est une intelligence artificielle qui lit les donn\u00e9es chaque nuit et bouscule le robot. Il propose ; ce sont les tests qui d\u00e9cident.')+'</div>'+
    // 2026-10-03 (owner): the three agents, and what each is NOT allowed to do
    '<div class="lbl" style="margin-top:16px">'+(en?'Who does what':'Qui fait quoi')+'</div>'+
-   [['var(--accent-soft)',en?'Kino num\u00e9rique, the researcher':'Kino num\u00e9rique, le chercheur',en?'Watches the robot all day and all night, remembers everything, proposes ideas and clues. May never decide, never touch the robot, never name a member.':'Surveille le robot jour et nuit, se souvient de tout, propose des id\u00e9es et des pistes. Ne d\u00e9cide jamais, ne touche jamais au robot, ne nomme jamais un membre.'],
+   [['var(--accent-soft)',en?'The researcher':'Le chercheur',en?'Watches the robot all day and all night, remembers everything, proposes ideas and clues. May never decide, never touch the robot, never name a member.':'Surveille le robot jour et nuit, se souvient de tout, propose des id\u00e9es et des pistes. Ne d\u00e9cide jamais, ne touche jamais au robot, ne nomme jamais un membre.'],
     ['#b98cff',en?'The critic':'Le critique',en?'Tries to break every idea that scored well before it earns a twin. May only say yes, doubt, or no - with its reasons for you to read.':'Essaie de casser chaque id\u00e9e qui a bien marqu\u00e9 avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau. Ne peut que dire oui, douter, ou non \u2014 avec ses raisons, que vous lisez.'],
     ['var(--up-soft)',en?'The builder':'Le constructeur',en?'Builds what the researcher asks for - a dial for the test, a fact, a tool. Every build passes the same gates or is undone. May never change how money is risked.':'Construit ce que le chercheur demande \u2014 un r\u00e9glage pour le test, un fait, un outil. Chaque construction passe les m\u00eames contr\u00f4les ou est annul\u00e9e. Ne peut jamais changer la fa\u00e7on dont l\u2019argent est risqu\u00e9.'],
-    ['var(--muted2)',en?'The gates':'Les contr\u00f4les',en?'Not an agent: fixed rules that never get smarter. Tested on the past, a twin for pretend, a 30-trade duel, then the lab\u2019s own robot, watched. Real accounts still need Kino\u2019s tap.':'Pas une intelligence : des r\u00e8gles fixes qui ne deviennent jamais plus malignes. Test\u00e9e sur le pass\u00e9, un jumeau pour de faux, un duel de 30 trades, puis le robot du labo, surveill\u00e9. Les vrais comptes attendent toujours l\u2019accord de Kino.']]
+    ['var(--muted2)',en?'The gates':'Les contr\u00f4les',en?'Not an agent: fixed rules that never get smarter. Tested on the past, a twin for pretend, a 30-trade duel, then the lab\u2019s own robot, watched. Real accounts still need the Owl\u2019s tap.':'Pas une intelligence : des r\u00e8gles fixes qui ne deviennent jamais plus malignes. Test\u00e9e sur le pass\u00e9, un jumeau pour de faux, un duel de 30 trades, puis le robot du labo, surveill\u00e9. Les vrais comptes attendent toujours l\u2019accord du Owl.']]
    .map(a=>'<div class="jev"><span style="width:10px;padding-top:6px"><i style="display:inline-block;width:8px;height:8px;border-radius:99px;background:'+a[0]+'"></i></span><div><b>'+a[1]+'</b><br><span style="color:var(--text2)">'+a[2]+'</span></div></div>').join('');}
  else{const T={ideas:[en?'Ideas':'Id\u00e9es'],tests:[en?'Tested':'Test\u00e9es'],forward:[en?'For pretend':'Pour de faux'],decisions:[en?'In the robot':'Dans le robot']};title=(T[k]||[''])[0];body=labStageHtml(k);}
  sheet('<h3 style="margin:0 0 10px">'+title+'</h3><div style="max-height:72vh;overflow-y:auto;margin:0 -4px;padding:0 4px">'+body+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
@@ -5751,7 +5751,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
  let h='<div class="nt-eye">'+(en?'The researcher \u00b7 night of ':'Le chercheur \u00b7 nuit du ')+esc(N.date||'')+'</div>';
  if(head)h+='<h3 class="nt-h" onclick="this.classList.toggle(&#39;open&#39;)" title="'+(en?'Tap to read it whole':'Touchez pour lire en entier')+'">'+esc(head)+'</h3>';
  // the cast of the night, one pill each, only those who did something
- const CAST=[['day','Kino num\u00e9rique','var(--accent-soft)',DAY.length],['crit',en?'The critic':'Le critique','#b98cff',CRQ.length],['build',en?'The builder':'Le constructeur','var(--up-soft)',BLD.length]].filter(c=>num(c[0]));
+ const CAST=[['day','Le chercheur','var(--accent-soft)',DAY.length],['crit',en?'The critic':'Le critique','#b98cff',CRQ.length],['build',en?'The builder':'Le constructeur','var(--up-soft)',BLD.length]].filter(c=>num(c[0]));
  if(CAST.length)h+='<div class="nt-cast">'+CAST.map(c=>'<button class="nt-pill" onclick="ntGo(&#39;'+c[0]+'&#39;)"><i style="background:'+c[2]+'"></i>'+c[1]+(c[3]?' <em>\u00b7 '+c[3]+'</em>':'')+'</button>').join('')+'</div>';
  if(parts.length>1)h+='<div class="nt-nav">'+parts.map((x,i)=>'<button data-k="'+x[0]+'"'+(i===0?' class="on"':'')+' onclick="ntGo(&#39;'+x[0]+'&#39;)"><i>'+('0'+num(x[0])).slice(-2)+'</i>'+esc(x[1])+'</button>').join('')+'</div>';
  if(tot){h+=sh('res',en?'Every idea is tested on the last 42 days of the market, cut in two halves. \u201cBetter on both\u201d is the strongest result.':'Chaque id\u00e9e est test\u00e9e sur les 42 derniers jours du march\u00e9, coup\u00e9s en deux moiti\u00e9s. \u00ab Mieux sur les deux \u00bb est le r\u00e9sultat le plus solide.')+
@@ -5765,7 +5765,7 @@ function labNight(){const j=window._lab;if(!j)return;const N=j.note||{};const en
   (function(){const D=j.drag;if(!D||!D.trades)return '';const per=Math.abs(D.per_trade||0).toFixed(2);
    if(AU.charged)return ' \u00b7 '+(en?'each verdict counts the real cost of trading, about $'+per+' a trade':'chaque verdict compte le vrai co\u00fbt de trader, environ '+per.replace('.',',')+' $ par trade');
    return ' \u00b7 '+(en?'raw: the real cost of trading ($'+per+' a trade) is counted at 30 measured trades, '+D.trades+' so far':'brut : le vrai co\u00fbt de trader ('+per.replace('.',',')+' $ par trade) sera compt\u00e9 \u00e0 30 trades mesur\u00e9s, '+D.trades+' pour l\u2019instant');})()+'</div></div>';}
- if(num('day')){h+=sh('day',en?'What Kino num\u00e9rique saw while watching the robot today.':'Ce que Kino num\u00e9rique a vu en surveillant le robot aujourd\u2019hui.')+
+ if(num('day')){h+=sh('day',en?'What the researcher saw while watching the robot today.':'Ce que le chercheur a vu en surveillant le robot aujourd\u2019hui.')+
   '<div class="nt-day">'+DAY.map(v=>{let hm='';try{hm=new Date(v.t).toLocaleTimeString(en?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'});}catch(e){}
    return '<div class="nt-ev"><span class="nt-dot"></span><time>'+esc(hm)+'</time><p>'+esc(en?(v.en||v.fr):(v.fr||v.en))+'</p></div>';}).join('')+'</div></div>';}
  if(num('crit')){h+=sh('crit',en?'A second AI tries to break every idea that scored better on both halves, before it can earn a twin.':'Une seconde intelligence artificielle essaie de casser chaque id\u00e9e mieux sur les deux moiti\u00e9s, avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau.')+
@@ -6340,7 +6340,7 @@ async function loadCompare(d){const sec=document.getElementById('cmp-sec'),el=do
  const mx=Math.max(1,...days.map(dd=>Math.max(Math.abs(mm.get(dd)||0),Math.abs(rm.get(dd)||0))));
  const bar=(v)=>'<span style="flex:1;height:7px;border-radius:99px;background:var(--surface3);position:relative;overflow:hidden"><i style="position:absolute;left:0;top:0;bottom:0;width:'+Math.round(Math.abs(v)/mx*100)+'%;background:'+(v>=0?'var(--up)':'var(--down)')+';border-radius:99px;opacity:.85"></i></span>';
  const rows=days.slice(-14).map(dd=>{const a=mm.has(dd)?mm.get(dd):null,b=rm.get(dd)||0;return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--border);font-size:.78rem"><span style="width:44px;color:var(--muted)">'+dd.slice(8,10)+'/'+dd.slice(5,7)+'</span>'+bar(a||0)+'<b style="width:58px;text-align:right;color:'+(a===null?'var(--muted)':(a>=0?'var(--up-soft)':'var(--down-soft)'))+'">'+(a===null?'\u2014':mn(a))+'</b>'+bar(b)+'<b style="width:58px;text-align:right;color:'+(b>=0?'var(--up-soft)':'var(--down-soft)')+'">'+mn(b)+'</b></div>';}).join('');
- setH(el,'<div style="display:flex;gap:8px">'+big(en?'You':'Vous',mn(tme),tme>=0?'var(--up-soft)':'var(--down-soft)')+big(j.robot_name||(en?'Kino\u2019s robot':'Le robot de Kino'),mn(trb),trb>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
+ setH(el,'<div style="display:flex;gap:8px">'+big(en?'You':'Vous',mn(tme),tme>=0?'var(--up-soft)':'var(--down-soft)')+big(j.robot_name||(en?'the Owl\u2019s robot':'Le robot du Owl'),mn(trb),trb>=0?'var(--up-soft)':'var(--down-soft)')+'</div>'+
   '<div style="font-size:.74rem;color:var(--muted);margin:8px 0 2px">'+(en?'Same days, this month. Left: you. Right: the robot on its public account.':'M\u00eames jours, ce mois. \u00c0 gauche vous, \u00e0 droite le robot sur son compte public.')+'</div>'+rows+
   (days.length?'':'<div class="empty"><p>'+(en?'No day yet this month.':'Aucun jour ce mois pour l\u2019instant.')+'</p></div>'));
  sec.style.display='block';el.style.display='block';
@@ -6349,13 +6349,13 @@ async function loadCompare(d){const sec=document.getElementById('cmp-sec'),el=do
 const NEWS_V='2026-10-04a';
 const NEWS=[
  {fr:'<b>Signal remplace Manuel</b> \u2014 les signaux du robot sur votre t\u00e9l\u00e9phone et tout ce que montre la d\u00e9mo, sans compte MT5. Vous tradez o\u00f9 vous voulez.',en:'<b>Signal replaces Manual</b> \u2014 the robot\u2019s signals on your phone and everything the demo shows, no MT5 account. You trade wherever you like.'},
- {fr:'<b>Un compte s\u2019ouvre avec un code</b> \u2014 Kino vous l\u2019envoie sur Telegram ; la page owltrader.duckdns.org/activate fait le reste. Le m\u00eame code renouvelle, dans R\u00e9glages \u203a Abonnement.',en:'<b>An account opens with a code</b> \u2014 Kino sends it on Telegram; the page owltrader.duckdns.org/activate does the rest. The same code renews, in Settings \u203a Subscription.'},
+ {fr:'<b>Un compte s\u2019ouvre avec un code</b> \u2014 Le Owl vous l\u2019envoie sur Telegram ; la page owltrader.duckdns.org/activate fait le reste. Le m\u00eame code renouvelle, dans R\u00e9glages \u203a Abonnement.',en:'<b>An account opens with a code</b> \u2014 the Owl sends it on Telegram; the page owltrader.duckdns.org/activate does the rest. The same code renews, in Settings \u203a Subscription.'},
  {fr:'<b>L\u2019application Android</b> \u2014 un vrai fichier APK, sur la page d\u2019accueil et dans R\u00e9glages \u203a Application. Les mises \u00e0 jour se posent par-dessus, sans rien d\u00e9sinstaller.',en:'<b>The Android app</b> \u2014 a real APK, on the front page and in Settings \u203a Application. Updates install over the old one, nothing to uninstall.'},
  {fr:'<b>Sortir et le num\u00e9ro de compte</b> \u2014 \u00ab Sortir \u00bb est dans R\u00e9glages et verrouille l\u2019\u00e9cran sans quitter la page ; le num\u00e9ro de compte ne montre plus que ses trois derniers chiffres.',en:'<b>Exit and the account number</b> \u2014 \u201cSortir\u201d lives in Settings and locks the screen without leaving the page; the account number shows only its last three digits.'},
- {fr:'<b>Kino num\u00e9rique veille toute la journ\u00e9e</b> \u2014 le chercheur se r\u00e9veille quand un trade se ferme ou toutes les quatre heures ; sa derni\u00e8re observation est sur la carte \u00ab Cette nuit \u00bb du Labo.',en:'<b>Kino num\u00e9rique watches all day</b> \u2014 the researcher wakes when a trade closes or every four hours; his last observation sits on the Labo\u2019s \u201cLast night\u201d card.',need:'strategy'},
+ {fr:'<b>Le chercheur veille toute la journ\u00e9e</b> \u2014 le chercheur se r\u00e9veille quand un trade se ferme ou toutes les quatre heures ; sa derni\u00e8re observation est sur la carte \u00ab Cette nuit \u00bb du Labo.',en:'<b>The researcher watches all day</b> \u2014 the researcher wakes when a trade closes or every four hours; his last observation sits on the Labo\u2019s \u201cLast night\u201d card.',need:'strategy'},
  {fr:'<b>Le critique</b> \u2014 une seconde intelligence artificielle essaie de casser chaque id\u00e9e qui a bien marqu\u00e9, avant qu\u2019elle n\u2019ait droit \u00e0 un jumeau. Son avis est sur la carte de l\u2019id\u00e9e et dans le rapport de la nuit.',en:'<b>The critic</b> \u2014 a second AI tries to break every idea that scored well before it earns a twin. Its verdict sits on the idea\u2019s card and in the night report.',need:'strategy'},
  {fr:'<b>Le constructeur</b> \u2014 une troisi\u00e8me intelligence artificielle construit ce que le chercheur demande (un r\u00e9glage pour le test, un fait, un outil), derri\u00e8re des contr\u00f4les. Rien ne change dans le robot tant qu\u2019une id\u00e9e n\u2019a pas gagn\u00e9 son duel.',en:'<b>The builder</b> \u2014 a third AI builds what the researcher asks for (a dial for the test, a fact, a tool), behind the gates. Nothing changes in the robot until an idea wins its duel.',need:'strategy'},
- {fr:'<b>Le robot du labo</b> \u2014 un compte d\u00e9mo o\u00f9 une id\u00e9e qui gagne son duel entre toute seule, puis est surveill\u00e9e contre le vrai robot. Sa carte est sous le tableau du Labo. Les vrais comptes attendent toujours l\u2019accord de Kino.',en:'<b>The lab\u2019s robot</b> \u2014 a demo account where a duel winner goes in by itself, then is watched against the real robot. Its card sits under the Labo board. Real accounts still need Kino\u2019s tap.',need:'strategy'},
+ {fr:'<b>Le robot du labo</b> \u2014 un compte d\u00e9mo o\u00f9 une id\u00e9e qui gagne son duel entre toute seule, puis est surveill\u00e9e contre le vrai robot. Sa carte est sous le tableau du Labo. Les vrais comptes attendent toujours l\u2019accord du Owl.',en:'<b>The lab\u2019s robot</b> \u2014 a demo account where a duel winner goes in by itself, then is watched against the real robot. Its card sits under the Labo board. Real accounts still need the Owl\u2019s tap.',need:'strategy'},
  {fr:'<b>Le Labo, une seule page</b> \u2014 quatre colonnes : Id\u00e9es, Test\u00e9es, Pour de faux, Dans le robot. Les nouvelles id\u00e9es de la nuit en premier ; les pistes dans leur propre panneau.',en:'<b>The Labo, one page</b> \u2014 four columns: Ideas, Tested, For pretend, In the robot. The night\u2019s new ideas first; the clues in their own panel.',need:'strategy'},
  {fr:'<b>Le rapport de la nuit</b> \u2014 tout dans l\u2019ordre : les r\u00e9sultats, la journ\u00e9e, le critique, le constructeur, \u00e0 retenir, ce qu\u2019il croit, les nouvelles id\u00e9es, \u00e0 construire.',en:'<b>The night report</b> \u2014 everything in order: results, the day, the critic, the builder, to remember, beliefs, new ideas, to build.',need:'strategy'},
  {fr:'<b>Des mots simples</b> \u2014 plus de lettres A/B/C ni de \u00ab renforts \u00bb : on dit \u00ab mieux sur les deux moiti\u00e9s \u00bb, \u00ab un peu mieux \u00bb, \u00ab non \u00bb, et \u00ab trades de rattrapage \u00bb. Aucun nom de membre dans le Labo.',en:'<b>Plain words</b> \u2014 no more A/B/C letters or \u201cboosts\u201d: we say \u201cbetter on both halves\u201d, \u201ca little better\u201d, \u201cno\u201d, and \u201ccatch-up trades\u201d. No member\u2019s name in the Labo.',need:'strategy'},
@@ -6460,7 +6460,7 @@ function renewBanner(d){
  const days=Math.max(0,Math.ceil((best.u-now)/86400));
  document.getElementById('renew-t').textContent=best.l+(en?' ends in ':' expire dans ')+days+(en?' day'+(days>1?'s':''):' jour'+(days>1?'s':''));
  const b=document.getElementById('renew-b');
- if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with Kino, then enter the code he sends you.':'R\u00e9glez Kino, puis entrez le code qu\u2019il vous envoie.';
+ if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with the Owl, then enter the code he sends you.':'R\u00e9glez le Owl, puis entrez le code qu\u2019il vous envoie.';
   b.textContent=en?'Enter the code':'Entrer le code';b.onclick=()=>{window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();}};}
  else{document.getElementById('renew-s').textContent=en?'Renewing adds 30 days from the current end \u2014 no interruption.':'Renouveler ajoute 30 jours \u00e0 la fin actuelle \u2014 sans coupure.';
   b.textContent=en?'Renew':'Renouveler';b.onclick=()=>buyPkg(best.k);}
@@ -6575,10 +6575,10 @@ function observerView(d){
    sv.innerHTML='<path d="'+p+'" fill="none" style="stroke:'+col+'" stroke-width="2"/>';sv.style.display='block';}
   const a=document.getElementById('kino-link');if(a)a.href=base;}catch(e){}})();
 }
-// 2026-10-04 (owner): no dead end - every offer leads to Kino (Telegram)
+// 2026-10-04 (owner): no dead end - every offer leads to the Owl (Telegram)
 // and to the code page
 function kinoBtns(P,en,main){const c=P.contact_url||'';
- return (c?'<a class="shbtn '+(main?'shmain':'shghost')+'" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+_escS(c)+'" target="_blank" rel="noopener">\u2709 '+(en?'Write to Kino on Telegram':'\u00c9crire \u00e0 Kino sur Telegram')+'</a>':'')+
+ return (c?'<a class="shbtn '+(main?'shmain':'shghost')+'" style="display:block;text-align:center;text-decoration:none;margin:10px 0 0" href="'+_escS(c)+'" target="_blank" rel="noopener">\u2709 '+(en?'Write to the Owl on Telegram':'\u00c9crire au Owl sur Telegram')+'</a>':'')+
   '<button class="shbtn shghost" style="display:block;width:100%;margin:8px 0 0" onclick="_shDone(1);openActCard()">\U0001f511 '+(en?'I have a code':'J\u2019ai un code')+'</button>';}
 // 2026-10-04 (owner): choose an offer -> this modal. A code activates it on
 // THIS account; no code -> the Owl on Telegram; Signal / Strategie -> crypto, instant.
@@ -6619,7 +6619,7 @@ function offersSheet(){
  const btn=(k,l,dis)=>'<button '+(dis?'disabled ':'')+'onclick="_shDone(1);buyPkg(&#39;'+k+'&#39;)" class="shbtn shmain" style="margin:10px 0 0;padding:11px;font-size:.9rem'+(dis?';opacity:.5':'')+'">'+l+'</button>';
  const step=(n,t,x)=>'<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0"><div style="flex:none;width:24px;height:24px;border-radius:99px;background:var(--accent);color:#fff;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center">'+n+'</div><div><b style="font-size:.9rem">'+t+'</b><div style="font-size:.82rem;color:var(--muted2);line-height:1.45">'+x+'</div></div></div>';
  const full=P.seats_left<=0&&!P.manual;
- const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:-4px 2px 10px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service \u2014 not investment advice or management.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot de Kino. Vous choisissez comment la suivre.','One strategy \u2014 Kino\u2019s robot. You choose how to follow it.')+'</p>'+
+ const h='<h3>'+T2('Les offres','The plans')+'</h3><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin:-4px 2px 10px">'+T2('OwlNest vend un logiciel et un service de copie \u2014 pas de conseil ni de gestion d\u2019investissement.','OwlNest sells software and a copy service \u2014 not investment advice or management.')+'</div><p style="color:var(--text)">'+T2('Une seule strat\u00e9gie \u2014 celle du robot du Owl. Vous choisissez comment la suivre.','One strategy \u2014 the Owl\u2019s robot. You choose how to follow it.')+'</p>'+
   tier(T2('D\u00e9mo','Demo'),T2('Gratuit, toujours','Free, always'),T2('Le robot en direct, sans compte','The robot live, no account needed'),
    [T2('Un vrai compte de d\u00e9monstration : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','A real demo account: balance, trades, market weather, evening review'),T2('Ouvert \u00e0 tous, depuis la page d\u2019accueil','Open to everyone, from the front page')],
    [T2('Pas de signaux, pas de compte personnel','No signals, no personal account')],'')+
@@ -6632,11 +6632,11 @@ function offersSheet(){
    [T2('Sans les signaux (voir Signal)','Without the signals (see Signal)')],
    '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;strategy&#39;)">'+T2('Choisir Strat\u00e9gie','Choose Strategy')+'</button>','var(--warn)')+
   tier(T2('Automatique','Automatic'),T2('Famille, sur invitation','Family, by invitation'),T2('Le robot sur votre compte, avec ses r\u00e8gles et ses freins','The robot on your account, with its rules and its brakes'),
-   [T2('Le robot trade sur votre compte MT5, jour et nuit, depuis notre serveur','The robot trades your MT5 account, day and night, from our server'),T2('Votre page en direct : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','Your page live: balance, trades, market weather, evening review'),T2('Prix fixe chaque mois, r\u00e9gl\u00e9 avec Kino ; code d\u2019activation par Telegram','Fixed monthly price, settled with Kino; activation code by Telegram')],
+   [T2('Le robot trade sur votre compte MT5, jour et nuit, depuis notre serveur','The robot trades your MT5 account, day and night, from our server'),T2('Votre page en direct : solde, trades, m\u00e9t\u00e9o du march\u00e9, bilan du soir','Your page live: balance, trades, market weather, evening review'),T2('Prix fixe chaque mois, r\u00e9gl\u00e9 avec le Owl ; code d\u2019activation par Telegram','Fixed monthly price, settled with the Owl; activation code by Telegram')],
    [T2('50 places, pour la famille','50 places, for the family')],
    '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;family&#39;)">'+T2('Choisir Automatique','Choose Automatic')+'</button>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
-  step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici en crypto, ou avec Kino sur Telegram : il vous envoie un code.','Here in crypto, or with Kino on Telegram: he sends you a code.'))+
+  step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici en crypto, ou avec le Owl sur Telegram : il vous envoie un code.','Here in crypto, or with the Owl on Telegram: he sends you a code.'))+
   step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT, BTC ou autre, 20 minutes pour envoyer. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT, BTC or other, 20 minutes to send. Nothing is charged automatically.'))+
   step(3,T2('Activation automatique','Automatic activation'),T2('D\u00e8s que le paiement est confirm\u00e9, l\u2019app s\u2019active seule et vous pr\u00e9vient.','As soon as the payment is confirmed, the app activates itself and tells you.'))+
   step(4,T2('Activez les notifications','Turn on notifications'),T2('R\u00e9glages \u203a Notifications. Les signaux du robot et le bilan du soir arrivent sur votre t\u00e9l\u00e9phone.','Settings \u203a Notifications. The robot\u2019s signals and the evening review reach your phone.'))+
@@ -6665,15 +6665,15 @@ async function paySheet(){const en=LANG()==='en';
   return '<div class="row"><span class="rowt">'+fd(p.t)+' \u00b7 '+(L[p.pkg]||p.pkg||'')+'</span><b style="color:'+(ok?'var(--up-soft)':'var(--muted2)')+'">$'+Number(p.amount||0).toFixed(0)+' \u00b7 '+st+'</b></div>';}).join('');
  sheet('<h3>'+(en?'My payments':'Mes paiements')+'</h3>'+
   '<div class="lbl" style="margin-top:4px">'+(en?'Current access':'Acc\u00e8s en cours')+'</div>'+(ends||'<p style="color:var(--muted2)">'+(en?'No paid package yet.':'Aucun paquet pay\u00e9 pour l\u2019instant.')+'</p>')+
-  '<div class="lbl" style="margin-top:14px">'+(en?'Receipts (NOWPayments)':'Re\u00e7us (NOWPayments)')+'</div>'+(rows||'<p style="color:var(--muted2)">'+(en?'No crypto payment recorded. Packages settled with Kino directly do not appear here.':'Aucun paiement crypto enregistr\u00e9. Les paquets r\u00e9gl\u00e9s directement aupr\u00e8s de Kino n\u2019apparaissent pas ici.')+'</p>')+
-  '<p style="font-size:.78rem;color:var(--muted)">'+(en?'A payment activates the package by itself, minutes after confirmation. If a receipt is missing, contact Kino with the date.':'Un paiement active le paquet tout seul, quelques minutes apr\u00e8s confirmation. S\u2019il manque un re\u00e7u, contactez Kino avec la date.')+'</p>'+
+  '<div class="lbl" style="margin-top:14px">'+(en?'Receipts (NOWPayments)':'Re\u00e7us (NOWPayments)')+'</div>'+(rows||'<p style="color:var(--muted2)">'+(en?'No crypto payment recorded. Packages settled with the Owl directly do not appear here.':'Aucun paiement crypto enregistr\u00e9. Les paquets r\u00e9gl\u00e9s directement aupr\u00e8s du Owl n\u2019apparaissent pas ici.')+'</p>')+
+  '<p style="font-size:.78rem;color:var(--muted)">'+(en?'A payment activates the package by itself, minutes after confirmation. If a receipt is missing, contact the Owl with the date.':'Un paiement active le paquet tout seul, quelques minutes apr\u00e8s confirmation. S\u2019il manque un re\u00e7u, contactez Kino avec la date.')+'</p>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');
 }
 async function payShare(ym){
  const en=LANG()==='en';
  const r=await fetch(B+'pay_share',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'ym='+encodeURIComponent(ym)}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
- if(!j||!j.ok){toast(en?'Payment page unavailable - settle with Kino.':'Page de paiement indisponible \u2014 r\u00e9glez avec Kino.',3200);return;}
+ if(!j||!j.ok){toast(en?'Payment page unavailable - settle with the Owl.':'Page de paiement indisponible \u2014 r\u00e9glez avec le Owl.',3200);return;}
  try{window.open(j.url,'_blank');}catch(e){location.href=j.url;}
 }
 async function buyPkg(k){
@@ -6721,9 +6721,9 @@ function agoTxt(ts){if(!ts)return LANG()==='en'?'never seen':'jamais vu';const s
  if(s<86400)return (en?'seen ':'vu il y a ')+Math.round(s/3600)+' h'+(en?' ago':'');return (en?'seen ':'vu il y a ')+Math.round(s/86400)+(en?' d ago':' j');}
 async function contactCfg(){
  const d=window._d||{};
- const v=await sheet('<h3>Lien de contact</h3><p>Montr\u00e9 dans les R\u00e9glages de chaque membre (\u00ab Contacter Kino \u00bb). WhatsApp : https://wa.me/33612345678 \u00b7 Telegram : https://t.me/votrenom \u00b7 ou mailto:</p>'+
+ const v=await sheet('<h3>Lien de contact</h3><p>Montr\u00e9 dans les R\u00e9glages de chaque membre (\u00ab Contacter le Owl \u00bb). WhatsApp : https://wa.me/33612345678 \u00b7 Telegram : https://t.me/votrenom \u00b7 ou mailto:</p>'+
   '<input id="shcurl" type="url" placeholder="https://wa.me/..." value="'+String(d.contact_url||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:.95rem;margin-bottom:8px">'+
-  '<input id="shclbl" type="text" maxlength="60" placeholder="Libell\u00e9 (Contacter Kino)" value="'+String(d.contact_label||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:.95rem;margin-bottom:10px">'+
+  '<input id="shclbl" type="text" maxlength="60" placeholder="Libell\u00e9 (Contacter le Owl)" value="'+String(d.contact_label||'').replace(/"/g,'&quot;')+'" style="width:100%;box-sizing:border-box;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:12px;padding:12px 14px;font-size:.95rem;margin-bottom:10px">'+
   '<button class="shbtn shmain" onclick="_shDone({u:document.getElementById(&#39;shcurl&#39;).value,l:document.getElementById(&#39;shclbl&#39;).value})">Enregistrer</button>'+
   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
  if(!v)return;
@@ -6775,7 +6775,7 @@ function ago(){
 function render(d){
   window._d=d;
   if(d.expired){document.getElementById('st').innerHTML=
-   '&#9203; <b>Essai termin&eacute;.</b> Contactez Kino pour passer au '+
+   '&#9203; <b>Essai termin&eacute;.</b> Contactez le Owl pour passer au '+
    'Premium et continuer.';return}
   if(d.error){document.getElementById('st').innerHTML=
    '&#9203; '+(d.error.includes('patientez')?d.error:
@@ -7417,8 +7417,8 @@ function render(d){
   document.getElementById('actcard').style.display=
    (window._showAct||d.family_expired)?'block':'none';   // 2026-09-28: stays once opened
   (function(){const t=document.querySelector('#actcard .lbl'),x=document.querySelector('#actcard div[style*="line-height:1.5"]');if(!t||!x)return;
-   if(d.family_expired){t.textContent='Renouveler l\u2019acc\u00e8s';x.innerHTML='Votre acc\u00e8s Automatique a expir\u00e9 le <b>'+d.family_expired+'</b>. Le robot est en pause sur votre compte. R\u00e9glez Kino, puis entrez le code re\u00e7u :';}
-   else{t.textContent='Activer le robot';x.innerHTML='Votre compte est connect\u00e9. Il reste un code \u00e0 entrer : demandez-le \u00e0 <b>Kino sur Telegram</b>.';}})();
+   if(d.family_expired){t.textContent='Renouveler l\u2019acc\u00e8s';x.innerHTML='Votre acc\u00e8s Automatique a expir\u00e9 le <b>'+d.family_expired+'</b>. Le robot est en pause sur votre compte. R\u00e9glez le Owl, puis entrez le code re\u00e7u :';}
+   else{t.textContent='Activer le robot';x.innerHTML='Votre compte est connect\u00e9. Il reste un code \u00e0 entrer : demandez-le \u00e0 <b>le Owl sur Telegram</b>.';}})();
   document.getElementById('adminlock-sec').style.display=
    d.is_master?'none':'block';
   document.getElementById('adminlock-card').style.display=
@@ -9029,9 +9029,9 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
     def build(jid, keys, title_fr, title_en, kind, fam, note_fr, note_en, nums_fr, nums_en, src, date, reg=None, prop=None):
         ev = []
         st = {"idea": {"date": date, "src": src}}
-        who_fr = {"registry": "Une id\u00e9e de Kino ou des vrais trades", "proposal": "Propos\u00e9e par le chercheur",
+        who_fr = {"registry": "Une id\u00e9e du Owl ou des vrais trades", "proposal": "Propos\u00e9e par le chercheur",
                   "twin": "Lanc\u00e9e par le chercheur apr\u00e8s un A", "battery": "Une question que le moteur pose chaque nuit"}
-        who_en = {"registry": "An idea from Kino or the real trades", "proposal": "Proposed by the chercheur",
+        who_en = {"registry": "An idea from the Owl or the real trades", "proposal": "Proposed by the chercheur",
                   "twin": "Started by the chercheur after an A", "battery": "A question the engine asks every night"}
         ev.append({"d": date or "", "fr": who_fr.get(kind, ""), "en": who_en.get(kind, ""), "k": "idea"})
         # 2 - replayed on the past
@@ -9097,8 +9097,8 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
             st["test"] = {"started": started, "days": days, "trades": t.get("trades"), "net": t.get("net"),
                           "win": t.get("win"), "alive": t.get("alive"), "status": t.get("status"), "by": t.get("by"),
                           "reason": t.get("reason"), "duel": t.get("duel")}
-            ev.append({"d": started, "fr": "Un jumeau joue pour de faux" + (" (lanc\u00e9 par Kino)" if t.get("by") == "owner" else " (lanc\u00e9 par le chercheur)"),
-                       "en": "A twin plays for pretend" + (" (started by Kino)" if t.get("by") == "owner" else " (started by the chercheur)"), "k": "test"})
+            ev.append({"d": started, "fr": "Un jumeau joue pour de faux" + (" (lanc\u00e9 par le Owl)" if t.get("by") == "owner" else " (lanc\u00e9 par le chercheur)"),
+                       "en": "A twin plays for pretend" + (" (started by the Owl)" if t.get("by") == "owner" else " (started by the chercheur)"), "k": "test"})
             if t.get("status") == "stopped":
                 ev.append({"d": (t.get("stopped") or "")[:10], "fr": "Jumeau arr\u00eat\u00e9", "en": "Twin stopped", "k": "test"})
             # 2026-10-02: a twin that won its duel went into the lab's robot
@@ -9128,7 +9128,7 @@ def lab_journeys(items, props, twins, auto, decisions, arch_on=None):
         d = next((dec[k] for k in keys if k in dec), None)
         if d:
             lab = d.get("by") == "lab"
-            who_fr, who_en = ("Le labo", "The lab") if lab else ("Kino", "Kino")
+            who_fr, who_en = ("Le labo", "The lab") if lab else ("Le Owl", "The Owl")
             st["decision"] = {"d": d.get("d"), "date": d.get("date"), "note": d.get("note", ""), "by": who_fr}
             ev.append({"d": d.get("date", ""), "fr": (who_fr + " a dit oui" if d.get("d") == "yes" else who_fr + " a dit non") + ((" : " + d.get("note")) if d.get("note") else ""),
                        "en": (who_en + " said yes" if d.get("d") == "yes" else who_en + " said no") + ((": " + d.get("note")) if d.get("note") else ""), "k": "decision"})
@@ -9259,9 +9259,9 @@ def lab_decide(jid, d, note):
                 try:
                     import twin_judge as TJ
                     TJ.emit("twin_started", ("\U0001f9ea Le labo : un jumeau d\u00e9marre",
-                                             f"Kino lance \u00ab {fr} \u00bb : une copie du robot l\u2019essaie pour de faux \u00e0 partir de maintenant."),
+                                             f"Le Owl lance \u00ab {fr} \u00bb : une copie du robot l\u2019essaie pour de faux \u00e0 partir de maintenant."),
                             ("\U0001f9ea The lab: a twin starts",
-                             f"Kino started \u201c{en}\u201d: a copy of the robot tries it for pretend from now on."), members=True)
+                             f"The Owl started \u201c{en}\u201d: a copy of the robot tries it for pretend from now on."), members=True)
                 except Exception:
                     pass
                 tw = json.load(open(os.path.join(DIR, "lab", "twins.json"), encoding="utf-8"))
@@ -9379,8 +9379,8 @@ def proof_payload(pkg="base"):
     ready = [t for t in ahead if (t.get("duel") or {}).get("ready")]
     if ready:
         t = ready[0]
-        lights.append({"k": "lab", "c": "red", "fr": f"Une copie d\u2019essai fait mieux que le robot apr\u00e8s 30 trades : \u00ab {t.get('title_fr')} \u00bb. Kino doit d\u00e9cider.",
-                       "en": f"A trial copy beats the robot after 30 trades: \u201c{t.get('title_en')}\u201d. Kino must decide."})
+        lights.append({"k": "lab", "c": "red", "fr": f"Une copie d\u2019essai fait mieux que le robot apr\u00e8s 30 trades : \u00ab {t.get('title_fr')} \u00bb. Le Owl doit d\u00e9cider.",
+                       "en": f"A trial copy beats the robot after 30 trades: \u201c{t.get('title_en')}\u201d. The Owl must decide."})
     elif ahead:
         t = ahead[0]
         k = ((t.get("duel") or {}).get("twin") or {}).get("trades", 0)
@@ -10513,7 +10513,7 @@ function go(){var t=document.getElementById('lnk').value.trim();var m=t.match(/[
 </script></div></body></html>"""
 
 # 2026-10-03 (owner): "the creation of a family account must be done in a
-# special way" - one page, one code. The code (from Kino on Telegram, or
+# special way" - one page, one code. The code (from the Owl on Telegram, or
 # bought in crypto for Signal / Strategie) names the package; the member
 # gives the MT5 account; the server creates the terminal and, for
 # Automatique, the robot. No trial, no self-registration without a code.
@@ -10536,12 +10536,12 @@ a{color:#9fc2de}.k{background:#121a25;border:1px solid #1f2a38;border-radius:18p
 </style></head><body><div class="c">
 <div class="top"><img src="/icon192.png" alt=""><b>OwlNest</b></div>
 <h1>Activer mon compte</h1>
-<p>Un code et c&#8217;est tout : votre page personnelle se pr&eacute;pare en 2&ndash;3 minutes. Pas encore de code ? Kino vous le donne sur Telegram.</p>
+<p>Un code et c&#8217;est tout : votre page personnelle se pr&eacute;pare en 2&ndash;3 minutes. Pas encore de code ? Le Owl vous le donne sur Telegram.</p>
 %%CONTACTBTN%%
 <form method="POST" action="/activate" autocomplete="off">
 <label for="code">Code d&#8217;activation</label>
 <input id="code" name="code" maxlength="6" placeholder="ABC123" autocapitalize="characters">
-<div class="h" id="ch">Re&ccedil;u de Kino sur Telegram (Automatique, Signal, Strat&eacute;gie).</div>
+<div class="h" id="ch">Re&ccedil;u du Owl sur Telegram (Automatique, Signal, Strat&eacute;gie).</div>
 <label for="buy">Pas de code ? Acheter en crypto</label>
 <select id="buy" name="buy"><option value="">&mdash; j&#8217;ai un code &mdash;</option><option value="manual">Signal &middot; $29 / 30 jours</option><option value="strategy">Strat&eacute;gie &middot; $49 / 30 jours</option></select>
 <div class="h">NOWPayments ouvre une page : USDT, BTC ou autre. Votre compte s&#8217;active d&egrave;s que le paiement est confirm&eacute;.</div>
@@ -10569,12 +10569,12 @@ function mode(p){var fam=(p==='family');var m=document.getElementById('mt5');m.s
  document.getElementById('pwh').textContent=fam?'Le mot de passe principal : le robot doit pouvoir trader sur le compte.':'Il vous servira pour vous connecter, avec votre identifiant. Pas de compte MT5 n\u00e9cessaire.';}
 mode('family');
 document.getElementById('code').addEventListener('input',function(){var c=this.value.trim().toUpperCase();var h=document.getElementById('ch');
- if(c.length<6){h.textContent='Re\u00e7u de Kino sur Telegram (Automatique, Signal, Strat\u00e9gie).';return;}
+ if(c.length<6){h.textContent='Re\u00e7u du Owl sur Telegram (Automatique, Signal, Strat\u00e9gie).';return;}
  fetch('/codeinfo?c='+encodeURIComponent(c)).then(function(r){return r.json();}).then(function(j){
   if(j&&j.ok){h.textContent='Code '+j.label+' \u00b7 '+j.days+' jours';mode(j.pkg);}else{h.textContent='Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.';mode('family');}}).catch(function(){});});
 document.getElementById('buy').addEventListener('change',function(){mode(this.value?'manual':'family');});
 </script>
-<div class="k">D&eacute;j&agrave; membre et vous renouvelez ? Entrez le code dans l&#8217;app : R&eacute;glages &rsaquo; Abonnement &rsaquo; &laquo; J&#8217;ai un code &raquo;.<br><br>Pas encore de code ? <a href="%%CONTACT%%">&Eacute;crivez &agrave; Kino sur Telegram</a> &middot; <a href="/">Retour</a></div>
+<div class="k">D&eacute;j&agrave; membre et vous renouvelez ? Entrez le code dans l&#8217;app : R&eacute;glages &rsaquo; Abonnement &rsaquo; &laquo; J&#8217;ai un code &raquo;.<br><br>Pas encore de code ? <a href="%%CONTACT%%">&Eacute;crivez au Owl sur Telegram</a> &middot; <a href="/">Retour</a></div>
 <div class="h" style="margin-top:14px;text-align:center">Vos identifiants servent uniquement &agrave; relier votre compte. OwlNest vend un logiciel et un service de copie &mdash; pas de conseil ni de gestion d&#8217;investissement.</div>
 </div></body></html>"""
 
@@ -10837,7 +10837,7 @@ Se connecter &middot; ouvrir un compte</button>
 <span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
-<span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec Kino ; code d&#39;activation par Telegram. 50 places.</span></div></div>
+<span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#39;activation par Telegram. 50 places.</span></div></div>
 <div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#39;app ou par code. Le d&eacute;tail complet est dans l&#39;application, R&eacute;glages &rsaquo; Abonnement.</div>
 </div>
 <div class="feats" id="faq">
@@ -10854,7 +10854,7 @@ Se connecter &middot; ouvrir un compte</button>
 <p>Oui. Votre lien personnel fonctionne partout ; vous pouvez le prot&eacute;ger avec un code &agrave; 4 chiffres.</p></details>
 </div>
 <div class="pfoot"><img src="/icon192.png" alt="">OwlNest &middot; fait avec amour
- par la famille Kino<br><span style="display:block;margin-top:8px;opacity:.75;line-height:1.5">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
+ par la famille Owl<br><span style="display:block;margin-top:8px;opacity:.75;line-height:1.5">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
 </div>
 
 <div class="view" id="v-login">
@@ -11106,9 +11106,9 @@ def _code_page(mode, login, pwd, name=""):
     intro = ((f"<p>Bonjour {_h.escape(name)} &mdash; votre p&eacute;riode est termin&eacute;e. Entrez le code de renouvellement : "
               "il ajoute 30 jours (ou plus) et tout repart.</p>") if mode == "renew" else
              "<p>Ce compte n&#8217;est pas encore dans le nid. Un <b>code d&#8217;activation</b> l&#8217;ouvre : "
-             "Kino vous l&#8217;envoie sur Telegram (Automatique, Signal, Strat&eacute;gie), ou vous l&#8217;achetez en crypto ci-dessous.</p>")
-    cta = (f"<a class=\"b g\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">&#9993; &Eacute;crire &agrave; Kino sur Telegram</a>" if contact else
-           "<div class=\"h\" style=\"text-align:center\">Kino vous donne le code sur Telegram.</div>")
+             "Le Owl vous l&#8217;envoie sur Telegram (Automatique, Signal, Strat&eacute;gie), ou vous l&#8217;achetez en crypto ci-dessous.</p>")
+    cta = (f"<a class=\"b g\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">&#9993; &Eacute;crire au Owl sur Telegram</a>" if contact else
+           "<div class=\"h\" style=\"text-align:center\">Le Owl vous donne le code sur Telegram.</div>")
     name_field = "" if mode == "renew" else (
         "<label for=\"name\">Votre pr&eacute;nom</label>"
         f"<input id=\"name\" name=\"name\" required maxlength=\"30\" placeholder=\"Pr&eacute;nom\" value=\"{_h.escape(name)}\">")
@@ -11230,7 +11230,7 @@ def handle_register(form):
     us = json.load(open(USERS_FILE, encoding="utf-8"))
     if len(us) >= 12:
         return _join_result("&#128679; Nid complet",
-                            "<p>Contactez Kino pour une place.</p>")
+                            "<p>Contactez le Owl pour une place.</p>")
     if any(str(x.get("login")) == login
            or str(x.get("mt5_login") or "") == login for x in us):
         return _join_result("&#9888;&#65039; D&eacute;j&agrave; inscrit",
@@ -11426,7 +11426,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     if not ce:
         rate_fail(("activate", code))
         return _join_result("&#10060; Code inconnu ou d&eacute;j&agrave; utilis&eacute;",
-                            "<p>V&eacute;rifiez le code, ou demandez-en un nouveau &agrave; Kino sur Telegram.</p>"
+                            "<p>V&eacute;rifiez le code, ou demandez-en un nouveau au Owl sur Telegram.</p>"
                             "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
     pkg, days = ce.get("pkg") or "family", int(ce.get("days") or 30)
     labels = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}
@@ -11498,7 +11498,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
     if pkg == "family" and family_count() >= FAMILY_CAP:
         return _join_result("&#9203; Le nid est plein",
-                            "<p>Toutes les places Automatique sont prises pour l&#8217;instant. Kino vous pr&eacute;viendra quand une place se lib&egrave;re.</p>")
+                            "<p>Toutes les places Automatique sont prises pour l&#8217;instant. Le Owl vous pr&eacute;viendra quand une place se lib&egrave;re.</p>")
     base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
@@ -11602,7 +11602,7 @@ def _activate_buy(name, pwd, tg, pkg, origin):
     cfg = nest_config()
     if not cfg.get("np_api_key"):
         return _join_result("&#9888;&#65039; Paiement en crypto indisponible",
-                            "<p>Demandez un code &agrave; Kino sur Telegram.</p><p><a href=\"/activate\">&larr; Retour</a></p>")
+                            "<p>Demandez un code au Owl sur Telegram.</p><p><a href=\"/activate\">&larr; Retour</a></p>")
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
     except Exception:
@@ -11644,7 +11644,7 @@ def handle_join(form):
     code = (form.get("code", [""])[0] or "").strip().lower()
     if code != FAMILY_CODE:
         return _join_result("&#10060; Code famille incorrect",
-                           "<p>Demandez le mot secret &agrave; Kino.</p>")
+                           "<p>Demandez le mot secret au Owl.</p>")
     name = (form.get("name", [""])[0] or "").strip()[:30]
     login = _re.sub(r"\D", "", form.get("login", [""])[0] or "")[:12]
     pwd = (form.get("password", [""])[0] or "").strip()[:64]
@@ -11669,7 +11669,7 @@ def handle_join(form):
                 "&#11088; Compte r&eacute;el = famille ou Premium",
                 "<p>Commencez avec un <b>compte d&eacute;mo</b> (7 jours "
                 "d&#8217;essai gratuit) &mdash; ou demandez un <b>code "
-                "d&#8217;invitation</b> &agrave; Kino si vous &ecirc;tes "
+                "d&#8217;invitation</b> au Owl si vous &ecirc;tes "
                 "de la famille.</p>")
         _c0["used"] = True
         _c0["used_by"] = login
@@ -12182,7 +12182,7 @@ class H(BaseHTTPRequestHandler):
                 _uid = (_fp.get("uid", [""])[0] or "").strip()[:40]
                 _ym = (_fp.get("ym", [""])[0] or "").strip()[:7]
                 if _ym == "setup":
-                    # the opening fee, settled with Kino
+                    # the opening fee, settled with the Owl
                     SHARE.mark_setup(_uid, "kino")
                     self._send(json.dumps({"ok": True}), "application/json")
                     return
@@ -12713,7 +12713,7 @@ class H(BaseHTTPRequestHandler):
                            "application/json")
             return
         if len(_parts) == 2 and _parts[1] == "activate":
-            # family member enters the one-time code from Kino
+            # family member enters the one-time code from the Owl
             u = user_by_token(_parts[0])
             if u is None:
                 self.send_response(404)
@@ -12786,7 +12786,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "admin_unlock":
             # 2026-09-23 (owner): "the nid menu must not exist for all but
             # me." Works from ANY account's page (that is the point - the
-            # owner should not have to go back to Kino), so this only
+            # owner should not have to go back to the Owl), so this only
             # requires a valid token to route through, not a master one.
             # The password is what proves identity, checked fresh here
             # exactly like every other master action.
@@ -13371,7 +13371,7 @@ class H(BaseHTTPRequestHandler):
                 if _era:
                     _e0 = time.strftime("%Y-%m-%d", time.gmtime(_era))
                     _me = [x for x in _me if x.get("d", "") >= _e0]
-                self._send(json.dumps({"me": _me, "robot": _rb, "robot_name": (_pub or {}).get("name", "Le robot de Kino"),
+                self._send(json.dumps({"me": _me, "robot": _rb, "robot_name": (_pub or {}).get("name", "Le robot du Owl"),
                                        "month": time.strftime("%Y-%m", time.gmtime())}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100], "me": [], "robot": []}), "application/json")

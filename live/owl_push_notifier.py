@@ -183,7 +183,7 @@ def _mname(ym, en):
 def maybe_share():
     """2026-10-03 (owner): the profit share's clock.
     1st of the month -> the statements of the month that ended, one push
-    each + one summary to Kino; 2 days before the grace ends -> a
+    each + one summary to the Owl; 2 days before the grace ends -> a
     reminder; past the grace -> the robot pauses on that account and both
     are told. Each step once (owl_share_marks.json / the period itself)."""
     try:
@@ -327,8 +327,8 @@ def maybe_renewals():
                     except Exception:
                         pass
                     send_all("\u23f8 " + ("Access expired" if en else "Acc\u00e8s expir\u00e9"),
-                             ("The robot is paused on your account. Settle with Kino and enter the renewal code in the app."
-                              if en else "Le robot est en pause sur votre compte. R\u00e9glez Kino et entrez le code de renouvellement dans l'app."),
+                             ("The robot is paused on your account. Settle with the Owl and enter the renewal code in the app."
+                              if en else "Le robot est en pause sur votre compte. R\u00e9glez le Owl et entrez le code de renouvellement dans l'app."),
                              kind="instant", only_uid=uid)
                     send_all("\u23f8 Acc\u00e8s expir\u00e9 \u00b7 " + users.get(uid, {}).get("name", uid),
                              "Robot mis en pause. Envoyez un code de renouvellement quand c'est r\u00e9gl\u00e9.",
@@ -342,8 +342,8 @@ def maybe_renewals():
                 d_ = int(step)
                 if fam:
                     send_all("\u23f3 " + (f"{label_en} ends in {d_} days" if en else f"{label_fr} expire dans {d_} jours"),
-                             ("Settle with Kino now, then enter the code he sends you, to avoid an interruption."
-                              if en else "R\u00e9glez Kino d\u00e8s maintenant, puis entrez le code qu'il vous enverra, pour \u00e9viter une coupure."),
+                             ("Settle with the Owl now, then enter the code he sends you, to avoid an interruption."
+                              if en else "R\u00e9glez le Owl d\u00e8s maintenant, puis entrez le code qu'il vous enverra, pour \u00e9viter une coupure."),
                              kind="instant", only_uid=uid)
                     send_all("\u23f3 " + users.get(uid, {}).get("name", uid) + f" \u00b7 expire dans {d_} j",
                              "Pensez au r\u00e8glement et au code de renouvellement.", kind="instant", only_uid="kino")
