@@ -30,9 +30,9 @@ VEILLE = os.path.join(LAB, "veille.jsonl")
 NIGHT_LOCK = os.path.join(LAB, "night.lock")
 LOG = os.path.join(LAB, "veille.log")
 MISSION = os.path.join(LAB, "VEILLE.md")
-MAX_PER_DAY = 6
-MIN_GAP = 90 * 60
-MAX_GAP = 4 * 3600
+MAX_PER_DAY = 10        # 2026-10-04 (owner): woken by the trades themselves
+MIN_GAP = 20 * 60       # one look per burst of trades, not one per trade
+MAX_GAP = 12 * 3600     # a dead day still gets one look
 QUIET_LOCAL = (3, 7)        # the night run owns 03:30-06:30 local
 TURNS = 30
 A = sys.argv[1:]
@@ -123,7 +123,7 @@ def decide(state, reasons, now):
     if FORCE:
         return True, "forcé"
     if now - last >= MAX_GAP:
-        return True, "quatre heures sans regarder"
+        return True, "douze heures sans regarder"
     if reasons and now - last >= MIN_GAP:
         return True, " ; ".join(reasons)
     if reasons:

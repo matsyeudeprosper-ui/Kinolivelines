@@ -7,6 +7,7 @@ words) to every subscribed device in owl_push_subs.json:
 Dead subscriptions (410/404) are pruned automatically.
 """
 import json
+import subprocess
 import os
 import re
 import time
@@ -1120,6 +1121,27 @@ def member_trades():
                     else (f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive." if is_manual(uid)
                           else f"Aujourd'hui : {t:+.2f} $. \u00c7a arrive \u2014 le robot continue."))
         send_all(title, body, kind="batch", only_uid=uid)
+        _wake_chercheur()
+
+
+_wake_last = {"t": 0.0}
+
+
+def _wake_chercheur():
+    """2026-10-04 (owner): a closed trade wakes the chercheur now, not at
+    the next half-hour. wake.py keeps its own rules (20-minute gap, ten
+    looks a day, never during the night run, one at a time); this only
+    knocks - at most once a minute, so a mirrored close on two accounts
+    is one knock."""
+    now = time.time()
+    if now - _wake_last["t"] < 60:
+        return
+    _wake_last["t"] = now
+    try:
+        subprocess.Popen([sys.executable, os.path.join(DIR, "lab", "wake.py")], cwd=DIR,
+                         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    except Exception as e:
+        mylog(f"wake knock failed: {e}")
 
 
 DAYDONE_MARK = os.path.join(DIR, "owl_push_dayclose.json")
