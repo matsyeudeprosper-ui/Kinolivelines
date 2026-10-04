@@ -1019,6 +1019,26 @@ def admin_cookie_ok(headers):
     return issued is not None and (time.time() - issued) < ADMIN_MAX_AGE
 
 
+SESS_COOKIE = "owlsess"
+SESS_SET = SESS_COOKIE + "=%s; Path=/; Max-Age=31536000; HttpOnly; Secure; SameSite=Lax"
+SESS_CLEAR = SESS_COOKIE + "=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax"
+
+
+def sess_user(headers):
+    """The account this phone is signed in to: the long-lived cookie set by the
+    server at login / on opening the account page, cleared only by /logout."""
+    raw = headers.get("Cookie") or ""
+    for part in raw.split(";"):
+        part = part.strip()
+        if part.startswith(SESS_COOKIE + "="):
+            tok = part[len(SESS_COOKIE) + 1:]
+            u = user_by_token(tok) if tok else None
+            if u is not None and not u.get("public"):
+                return u
+            return None
+    return None
+
+
 def pwd_ok(u, pw):
     """Broker-password check with 5-fails-per-10-min lockout."""
     key = ("pwd", u.get("id"))
@@ -2910,7 +2930,7 @@ async function appLogout(){const en=LANG()==='en';
  if(!ok)return;
  try{localStorage.removeItem('owlLink');sessionStorage.removeItem('owlTwa');if(localStorage.getItem('owl_adm')===B)localStorage.removeItem('owl_adm');}catch(e){}
  try{document.cookie='owlLink=;max-age=0;path=/;SameSite=Lax;Secure';}catch(e){}
- location.replace('/');}
+ location.replace('/logout');}
 function appBack(){document.documentElement.classList.remove('locked');
  const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots'),back=document.getElementById('lock-back'),fg=document.getElementById('lock-forgot');
  if(kp)kp.style.display='';if(dots)dots.style.display='flex';if(back)back.style.display='none';if(fg)fg.style.display='';}
@@ -12161,12 +12181,14 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _send(self, body, ctype):
+    def _send(self, body, ctype, cookie=None):
         if isinstance(body, str):
             body = body.encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Cache-Control", "no-store")
+        if cookie:
+            self.send_header("Set-Cookie", cookie)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -13582,6 +13604,13 @@ class H(BaseHTTPRequestHandler):
                     if kind == "redirect":
                         self.send_response(302)
                         self.send_header("Location", val)
+                        try:
+                            _lt = val.split("/")[3]
+                            _lu = user_by_token(_lt)
+                            if _lu is not None and not _lu.get("public"):
+                                self.send_header("Set-Cookie", SESS_SET % _lt)
+                        except Exception:
+                            pass
                         self.end_headers()
                     else:
                         self._send(val, "text/html; charset=utf-8")
@@ -13657,7 +13686,26 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 1 and parts[0] == "apk.json":
             self._send_file_fresh(os.path.join(DIR, "static", "apk.json"), "application/json")
             return
+        if len(parts) == 1 and parts[0] == "logout":
+            # the only way the phone forgets the account: the cookie goes, then the landing
+            self.send_response(302)
+            self.send_header("Set-Cookie", SESS_CLEAR)
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Location", "/")
+            self.end_headers()
+            return
         if len(parts) == 1 and parts[0] == "app":
+            # where the Android app starts: signed in -> straight to the account,
+            # decided here on the server (a phone can lose page storage, never this cookie)
+            _su = sess_user(self.headers)
+            if _su is not None:
+                import urllib.parse as _upa
+                _v = (_upa.parse_qs(self.path.split("?", 1)[1]).get("v", [""])[0] if "?" in self.path else "")[:12]
+                self.send_response(302)
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Location", f"/{_su['token']}/" + (("?twa=" + _upa.quote(_v)) if _v else ""))
+                self.end_headers()
+                return
             self._send(APP_PAGE, "text/html; charset=utf-8")
             return
         if len(parts) == 1 and parts[0] == "codeinfo":
@@ -13719,6 +13767,15 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Location", f"/{pu['token']}/")
             self.end_headers()
             return
+        if not parts and self.headers.get("Sec-Fetch-Site") == "none" and "?" not in self.path and not admin_cookie_ok(self.headers):
+            # opened from the icon / typed address while signed in: back on the account
+            _su = sess_user(self.headers)
+            if _su is not None:
+                self.send_response(302)
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Location", f"/{_su['token']}/")
+                self.end_headers()
+                return
         if not parts or parts[0] == "join":
             # front door: no token -> the welcome/sign-up screen
             _host = self.headers.get("Host") or "owlnest.local"
@@ -13736,7 +13793,12 @@ class H(BaseHTTPRequestHandler):
         if sub == "":
             page = (PAGE.replace("%%NAME%%", user.get("name", ""))
                     .replace("%%BUILD%%", APP_BUILD))
-            self._send(page, "text/html; charset=utf-8")
+            # opening an account page signs this phone in to it (the owner browsing
+            # a member's page from the admin session does not)
+            _ck = None
+            if not user.get("public") and not (admin_cookie_ok(self.headers) and user.get("id") not in OWNER_UIDS):
+                _ck = SESS_SET % parts[0]
+            self._send(page, "text/html; charset=utf-8", cookie=_ck)
         elif sub == "api":
             touch_seen(user.get("id"))
             if user.get("app_only"):
