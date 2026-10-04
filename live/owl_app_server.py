@@ -298,7 +298,7 @@ MANUAL_MODES = ("manual", "semi")
 # auto      : copy of the owner's account on MQL5 Signals (link only)
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
-PACKAGES = {"manual": {"usd": 29, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal
+PACKAGES = {"manual": {"usd": 3, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal   *** TEMPORARY $3 for the real-money test (2026-10-04) - put back 29 ***
             "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
 MANUAL_CAP = 100000      # 2026-10-04: Signal is app-only now - no terminal, no cap
 FAMILY_CAP = 50          # 2026-10-03 (owner): at most 50 family (Automatique) accounts on this VPS
@@ -6620,7 +6620,7 @@ async function codeModal(pkg){const en=LANG()==='en';const P=(window._d&&window.
  const v=await sheet('<h3>'+L+' \u00b7 '+(en?'activation code':'code d\u2019activation')+'</h3>'+
   '<p style="color:var(--text2)">'+(pkg==='family'?(en?'The Owl sends the code on Telegram after a word together.':'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.'):(en?'Enter your code, or buy now: it activates right away.':'Entrez votre code, ou achetez maintenant : activation imm\u00e9diate.'))+'</p>'+inp+
   '<button class="shbtn shmain" style="margin-top:12px" onclick="_shDone({c:document.getElementById(&#39;cm-code&#39;).value})">'+(en?'Activate':'Activer')+'</button>'+
-  (pkg&&pkg!=='family'&&P.pay_ready?'<button class="shbtn shmain" style="margin-top:8px;background:var(--up-soft);color:#08120c" onclick="_shDone({buy:1})">'+(en?'Buy now in crypto \u00b7 instant':'Acheter maintenant en crypto \u00b7 imm\u00e9diat')+'</button><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:6px">'+(en?'The payment page (NOWPayments) is in English: pick the coin (USDT is simplest), \u201cNext step\u201d, send the exact amount. Your package activates by itself once confirmed.':'La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT, le plus simple), \u00ab Next step \u00bb, envoyez le montant exact. Votre formule s\u2019active toute seule d\u00e8s confirmation.')+'</div>':'')+
+  (pkg&&pkg!=='family'&&P.pay_ready?'<button class="shbtn shmain" style="margin-top:8px;background:var(--up-soft);color:#08120c" onclick="_shDone({buy:1})">'+(en?'Buy now in crypto \u00b7 instant':'Acheter maintenant en crypto \u00b7 imm\u00e9diat')+'</button><div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:6px">'+(en?'The payment page (NOWPayments) is in English: pick the coin (USDT on Tron is cheapest), \u201cNext step\u201d, send the exact amount. Your package activates by itself once confirmed.':'La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT sur Tron, le moins cher), \u00ab Next step \u00bb, envoyez le montant exact. Votre formule s\u2019active toute seule d\u00e8s confirmation.')+'</div>':'')+
   (contact?'<a class="shbtn shghost" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="'+_escS(contact)+'" target="_blank" rel="noopener">\u2709 '+(en?'No code? Contact the Owl on Telegram':'Pas de code ? Contacter le Owl sur Telegram')+'</a>':'')+
   '<button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Close':'Fermer')+'</button>');
  if(!v)return;
@@ -6668,14 +6668,13 @@ function offersSheet(){
    '<button class="shbtn shmain" style="margin:10px 0 0" onclick="_shDone(1);codeModal(&#39;family&#39;)">'+T2('Choisir Automatique','Choose Automatic')+'</button>','var(--accent-soft)')+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Comment \u00e7a marche','How it works')+'</div>'+
   step(1,T2('Choisissez une offre','Pick a plan'),T2('Ici en crypto, ou avec le Owl sur Telegram : il vous envoie un code.','Here in crypto, or with the Owl on Telegram: he sends you a code.'))+
-  step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT, BTC ou autre, 20 minutes pour envoyer. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT, BTC or other, 20 minutes to send. Nothing is charged automatically.'))+
+  step(2,T2('Payez en crypto','Pay in crypto'),T2('NOWPayments ouvre une page : USDT (Tron, BSC, Ethereum) ou USDC (Ethereum, Polygon, Solana), 20 minutes pour envoyer le montant exact. Le moins cher : USDT sur Tron. Rien n\u2019est pr\u00e9lev\u00e9 automatiquement.','NOWPayments opens a page: USDT (Tron, BSC, Ethereum) or USDC (Ethereum, Polygon, Solana), 20 minutes to send the exact amount. Cheapest: USDT on Tron. Nothing is charged automatically.'))+
   step(3,T2('Activation automatique','Automatic activation'),T2('D\u00e8s que le paiement est confirm\u00e9, l\u2019app s\u2019active seule et vous pr\u00e9vient.','As soon as the payment is confirmed, the app activates itself and tells you.'))+
   step(4,T2('Activez les notifications','Turn on notifications'),T2('R\u00e9glages \u203a Notifications. Les signaux du robot et le bilan du soir arrivent sur votre t\u00e9l\u00e9phone.','Settings \u203a Notifications. The robot\u2019s signals and the evening review reach your phone.'))+
   '<div class="lbl" style="margin:14px 0 4px">'+T2('Bon \u00e0 savoir','Good to know')+'</div>'+
   '<div style="font-size:.84rem;color:var(--muted2);line-height:1.55">'+
    '\u2022 '+T2('30 jours, sans reconduction automatique. Renouveler ajoute 30 jours.','30 days, no auto-renewal. Renewing adds 30 days.')+'<br>'+
    '\u2022 '+T2('Pour arr\u00eater : ne rien faire, l\u2019abonnement expire. Pas de remboursement une fois activ\u00e9.','To stop: do nothing, it expires. No refund once activated.')+'<br>'+
-   '\u2022 '+T2('Manuel = un terminal d\u00e9di\u00e9 sur nos serveurs : places limit\u00e9es ('+(P.seats_left!=null?P.seats_left+' restante(s)':'10')+').','Manual = a dedicated terminal on our servers: limited places ('+(P.seats_left!=null?P.seats_left+' left':'10')+').')+'<br>'+
    '\u2022 '+T2('Trader comporte un risque de perte. Aucun r\u00e9sultat n\u2019est garanti.','Trading carries a risk of loss. No result is guaranteed.')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  sheet(h);
@@ -11070,9 +11069,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
         return (f"<div class=\"t\" style=\"border-color:{color}\"><div class=\"th\"><b>{title}</b><span style=\"color:{color}\">{price}</span></div>"
                 + "".join(f"<div class=\"tl\">&#10003; {x}</div>" for x in lines)
                 + f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button></div>")
-    tiers = (tier("manual", "Signal", "$29 / 30 jours",
+    tiers = (tier("manual", "Signal", "$%d / 30 jours" % PACKAGES["manual"]["usd"],
                   ["Les signaux du robot sur votre t&eacute;l&eacute;phone", "Tout ce que montre la d&eacute;mo, en direct", "Sans compte MT5 : vous tradez o&ugrave; vous voulez"], "var(--up)")
-             + tier("strategy", "Strat&eacute;gie", "$49 / 30 jours",
+             + tier("strategy", "Strat&eacute;gie", "$%d / 30 jours" % PACKAGES["strategy"]["usd"],
                     ["Le graphique complet : points prot&eacute;g&eacute;s, cassures, niveaux", "La m&eacute;thode expliqu&eacute;e en mots simples", "Se combine avec Signal ou Automatique"], "var(--warn)")
              + tier("family", "Automatique", "Famille, sur invitation",
                     ["Le robot trade sur votre compte MT5, jour et nuit", "Ses r&egrave;gles, ses freins, son rattrapage", "Prix fixe chaque mois, code par Telegram"], "var(--accent-soft)"))
@@ -11117,7 +11116,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "document.getElementById('mt').textContent=L+' \u00b7 code d\u2019activation';"
             "document.getElementById('mp').textContent=k==='family'?'Le Owl vous envoie le code sur Telegram apr\u00e8s un mot ensemble.':'Entrez votre code, ou achetez maintenant : votre compte s\u2019active tout de suite.';"
             "document.getElementById('mt5').style.display=k==='family'?'':'none';var b=document.getElementById('buy');if(b)b.style.display=k==='family'?'none':'';"
-            "document.getElementById('mh').textContent=k==='family'?'':'Signal et Strat\u00e9gie ne demandent pas de compte MT5. La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT, le plus simple), \u00ab Next step \u00bb, envoyez le montant exact ; votre compte s\u2019active tout seul d\u00e8s confirmation.';"
+            "document.getElementById('mh').textContent=k==='family'?'':'Signal et Strat\u00e9gie ne demandent pas de compte MT5. La page de paiement (NOWPayments) est en anglais : choisissez la monnaie (USDT sur Tron, le moins cher), \u00ab Next step \u00bb, envoyez le montant exact ; votre compte s\u2019active tout seul d\u00e8s confirmation.';"
             "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';setTimeout(function(){document.getElementById('code').focus();},150);}"
             "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';}"
             "function need(){var n=document.getElementById('name').value.trim();if(!n){alert('Votre pr\u00e9nom, s\u2019il vous pla\u00eet.');return false;}return true;}"
