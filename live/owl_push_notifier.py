@@ -180,6 +180,69 @@ def _mname(ym, en):
         return ym
 
 
+LAUNCH_MARK = os.path.join(DIR, "owl_launch_report_mark.json")
+
+
+def maybe_launch_report():
+    """2026-10-04 (owner): the evening watch while the doors are new. One
+    push to Kino a day, after 13:00 VPS time (20:00 for him): who joined,
+    who opened the app, who waits for a code, who got a push nobody could
+    receive, whose period ends within three days."""
+    import datetime as _dt
+    now = _dt.datetime.now()
+    if now.hour < 13:
+        return
+    today = now.strftime("%Y-%m-%d")
+    try:
+        if json.load(open(LAUNCH_MARK, encoding="utf-8")).get("day") == today:
+            return
+    except Exception:
+        pass
+    try:
+        users = json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))
+        seen = json.load(open(os.path.join(DIR, "owl_last_seen.json"), encoding="utf-8"))
+        ents = json.load(open(os.path.join(DIR, "owl_entitlements.json"), encoding="utf-8"))
+    except Exception:
+        return
+    midnight = _dt.datetime(now.year, now.month, now.day).timestamp()
+    name = lambda u: u.get("name") or u.get("id")
+    members = [u for u in users if u.get("id") not in ("kino", "std", "expenses") and not u.get("public")]
+    new = [name(u) for u in members if float(u.get("created") or 0) >= midnight and not u.get("pending_code")]
+    opened = [name(u) for u in members if float(seen.get(u.get("id")) or 0) >= midnight]
+    pend = [f"{name(u)} ({ {'family': 'Automatique', 'manual': 'Signal', 'strategy': 'Strategie'}.get(u.get('pending_code'), '?') }, {max(0, int((time.time() - float(u.get('asked_at') or time.time())) // 3600))} h)"
+            for u in users if u.get("pending_code")]
+    unpaid = [name(u) for u in users if u.get("pending_pay")]
+    ending = []
+    for u in members:
+        e = ents.get(u.get("id")) or {}
+        for k, lab in (("family_until", "Automatique"), ("manual_until", "Signal"), ("strategy_until", "Strategie")):
+            left = (float(e.get(k) or 0) - time.time()) / 86400.0
+            if 0 < left <= 3:
+                ending.append(f"{name(u)} {lab} {left:.0f} j")
+    nodev = 0
+    try:
+        for ln in open(os.path.join(DIR, "owl_push_notifier.log"), encoding="utf-8", errors="replace"):
+            if ln.startswith(today) and "(no device)" in ln:
+                nodev += 1
+    except Exception:
+        pass
+    parts = [f"Nouveaux : {', '.join(new) if new else 'aucun'}",
+             f"Ont ouvert l'app : {', '.join(opened) if opened else 'personne'}"]
+    if pend:
+        parts.append("En attente d'un code : " + ", ".join(pend))
+    if unpaid:
+        parts.append("Paiement crypto en attente : " + ", ".join(unpaid))
+    if ending:
+        parts.append("Finit sous 3 j : " + ", ".join(ending))
+    if nodev:
+        parts.append(f"{nodev} push(s) sans appareil aujourd'hui")
+    send_all("\U0001f989 Le soir \u00b7 " + today, " \u00b7 ".join(parts)[:600], kind="instant", only_uid="kino")
+    try:
+        json.dump({"day": today}, open(LAUNCH_MARK, "w", encoding="utf-8"))
+    except Exception:
+        pass
+
+
 def maybe_share():
     """2026-10-03 (owner): the profit share's clock.
     1st of the month -> the statements of the month that ended, one push
@@ -1192,6 +1255,7 @@ def main():
             maybe_demo_reset()
             maybe_renewals()
             maybe_share()
+            maybe_launch_report()
             maybe_waitlist()
             maybe_day_close()
             market_memory_tick()

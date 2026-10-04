@@ -1543,6 +1543,8 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
  white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
 #tab-home #apkcard,#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
+#tab-home #expcard{margin-top:26px!important}
+#expcard .shbtn{width:auto!important;margin:0!important;padding:10px 14px!important}
 .hq{display:none!important}
 html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:none!important}
 #apkcard .shbtn{width:auto!important;margin:0!important;padding:10px 14px!important}
@@ -1954,6 +1956,10 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
  <div id="missed-g" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px"></div>
  <div id="missed-sig" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
+</div>
+<div class="panel" id="expcard" style="display:none;margin-top:12px;border-color:rgba(232,197,90,.45)">
+ <div style="display:flex;align-items:center;gap:12px"><div style="flex:1;min-width:0"><b id="exp-t"></b><div id="exp-b" style="font-size:.84rem;color:var(--text2);margin-top:4px;line-height:1.45"></div></div></div>
+ <div style="display:flex;gap:8px;margin-top:10px"><button class="shbtn shmain" id="exp-go" style="flex:1;margin:0;padding:10px"></button></div>
 </div>
 <div class="panel" id="apkcard" style="display:none;margin-top:12px;border-color:rgba(46,204,113,.35)">
  <div style="display:flex;align-items:center;gap:12px"><div style="flex:1;min-width:0"><b id="apk-t"></b><div id="apk-b" style="font-size:.84rem;color:var(--text2);margin-top:4px;line-height:1.45"></div></div></div>
@@ -2813,7 +2819,7 @@ function appBack(){document.documentElement.classList.remove('locked');
 // Each card keeps its own logic (it sets display:block when it has
 // something to say, none when dismissed); this only decides which of the
 // willing cards is the one on screen. The next appears when one goes.
-const HOME_Q=['nudge','recap','apkcard','newscard'];
+const HOME_Q=['expcard','nudge','recap','apkcard','newscard'];
 function homeCards(){let shown=false;
  HOME_Q.forEach(id=>{const el=document.getElementById(id);if(!el)return;
   const wants=el.style.display==='block';
@@ -4494,10 +4500,12 @@ async function acctSheet(){
     '<a href="/'+x.tok+'/chart" onclick="event.stopPropagation()" aria-label="Graphique" style="text-decoration:none;color:var(--text2);border:1px solid var(--border2);background:var(--surface3);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-chart"/></svg>Graphique</a>'+
     (x.family_until?'<button onclick="event.stopPropagation();_shDone(1);nestCodeFor(&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-key"/></svg>Code</button>':'')+
     (x.setup&&!x.setup.paid&&x.setup.usd?'<button onclick="event.stopPropagation();_shDone(1);nestSharePaid(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;setup&#39;,'+Number(x.setup.usd).toFixed(2)+')" style="border:1px solid rgba(232,197,90,.5);background:rgba(232,197,90,.1);color:var(--warn);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px">Ouverture $'+Number(x.setup.usd).toFixed(0)+'</button>':'')+
+    (x.app&&!x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestActivate(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;'+({manual:'Signal',strategy:'Strat\u00e9gie'}[x.pkg]||'Signal')+'&#39;)" style="border:1px solid rgba(46,204,113,.45);background:rgba(46,204,113,.1);color:var(--up-soft);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">Renouveler</button>':'')+
+    (x.app?'<button onclick="event.stopPropagation();_shDone(1);nestResetPwd(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">Mot de passe</button>':'')+
     (x.share&&x.share.last&&(x.share.last.status==='open'||x.share.last.status==='overdue')?'<button onclick="event.stopPropagation();_shDone(1);nestSharePaid(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;,&#39;'+x.share.last.ym+'&#39;,'+Number(x.share.last.due).toFixed(2)+')" style="border:1px solid rgba(46,204,113,.45);background:rgba(46,204,113,.1);color:var(--up-soft);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px">Pay\u00e9 $'+Number(x.share.last.due).toFixed(2)+(x.share.last.status==='overdue'?' \u00b7 retard':'')+'</button>':'')+
     (x.trade?'<button onclick="event.stopPropagation();_shDone(1);nestPause(&#39;'+x.id+'&#39;,&#39;'+(x.paused?'0':'1')+'&#39;)" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#'+(x.paused?'i-bot':'i-pause')+'"/></svg>'+(x.paused?'Reprendre':'Pause')+'</button>':'')+
     '<button onclick="event.stopPropagation();_shDone(1);nestNote(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" aria-label="Note" style="border:1px solid var(--border2);background:var(--surface3);color:var(--text2);border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700">\u270e</button>'+
-    '<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>'+
+    (x.app?'':'<button onclick="event.stopPropagation();_shDone(1);nestPanic(&#39;'+x.id+'&#39;,&#39;'+String(x.name||'').replace(/[&#39;"<>]/g,'')+'&#39;)" style="border:1px solid rgba(255,92,92,.45);background:rgba(255,92,92,.12);color:#ff8c8c;border-radius:9px;padding:6px 10px;font-size:.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px"><svg class="ic ic-s"><use href="#i-stop"/></svg>Urgence'+(x.pos?' \u00b7 '+x.pos:'')+'</button>')+
    '</div>';}).join('');
  const PEND=((window._d||{}).pending)||[];
  const pendHtml=PEND.length?'<div class="lbl" style="margin:4px 0 6px;color:var(--warn)">En attente d\u2019un code \u00b7 '+PEND.length+'</div>'+PEND.map(p=>{const L={family:'Automatique',manual:'Signal',strategy:'Strat\u00e9gie'}[p.pkg]||p.pkg;const ago=p.asked?Math.max(0,Math.round((Date.now()/1000-p.asked)/3600)):null;
@@ -5110,6 +5118,16 @@ function renderPlan(d){
  const en=LANG()==='en';const fd=ts=>{const x=new Date(ts*1000);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0');};
  const t=document.getElementById('plan-t'),sub=document.getElementById('plan-s'),bt=document.getElementById('plan-btns'),nt=document.getElementById('plan-note'),ic=document.getElementById('plan-ic');
  if(d.public){el.style.display='none';document.getElementById('plan-sec').style.display='none';return;}
+ // 2026-10-04 (owner): the period ended - say it on the home, with the way to renew
+ (function(){const c=document.getElementById('expcard');if(!c)return;
+  const had=P.family_until||P.manual_until||P.strategy_until;const active=P.family||P.manual||P.strategy;
+  if(d.is_master||!had||active||P.pending_pay){c.style.display='none';return;}
+  const last=P.family_until>=Math.max(P.manual_until||0,P.strategy_until||0)?'family':(P.strategy_until>=(P.manual_until||0)?'strategy':'manual');
+  const L={family:en?'Automatic':'Automatique',manual:'Signal',strategy:en?'Strategy':'Strat\u00e9gie'}[last];
+  document.getElementById('exp-t').textContent=en?'Your '+L+' period has ended':'Votre p\u00e9riode '+L+' est termin\u00e9e';
+  document.getElementById('exp-b').textContent=en?'Renew with a code from the Owl on Telegram'+(last==='family'?'.':', or in crypto - it comes back right away.'):'Renouvelez avec un code du Owl sur Telegram'+(last==='family'?'.':', ou en crypto \u2014 \u00e7a repart tout de suite.');
+  const g=document.getElementById('exp-go');g.textContent=en?'Renew':'Renouveler';g.onclick=()=>codeModal(last);
+  c.style.display='block';})();
  let title,txt,color='var(--accent-soft)';
  const plusS=P.strategy?(en?' + Strategy':' + Strat\u00e9gie'):'';
  if(P.pending_pay){title=en?'Waiting for your payment':'En attente de votre paiement';txt=en?'As soon as NOWPayments confirms it, your account comes alive (a few minutes). Not paid yet? Tap the package below.':'D\u00e8s que NOWPayments le confirme, votre compte s\u2019active (quelques minutes). Pas encore pay\u00e9 ? Touchez le paquet ci-dessous.';color='var(--warn)';}
@@ -6525,6 +6543,18 @@ async function nestActivate(uid,name,lab){
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':_escS((j&&(j.msg||j.err))||'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
  toast(name+' activ\u00e9',2200);load();}
+// 2026-10-04 (owner): a member who forgot the password - a temporary one,
+// sent on Telegram; they can keep it or change it later
+async function nestResetPwd(uid,name){
+ const pw=await askPwd('Nouveau mot de passe pour '+name+' ?','Un mot de passe provisoire est cr\u00e9\u00e9 ; envoyez-le sur Telegram.','Cr\u00e9er');if(!pw)return;
+ const r=await fetch(AB()+'nest_reset_pwd',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+ let j=null;try{j=await r.json();}catch(e){}
+ if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':_escS((j&&j.err)||'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
+ const msg='Bonjour '+name+', votre nouveau mot de passe OwlNest : '+j.temp+' \u2014 identifiant : '+uid+'. Connectez-vous sur owltrader.duckdns.org.';
+ sheet('<h3>Mot de passe de '+_escS(name)+'</h3><div style="font-size:1.6rem;font-weight:800;letter-spacing:.2em;text-align:center;background:var(--bg);border-radius:14px;padding:16px 6px;margin:6px 0 10px;color:var(--up-soft)">'+_escS(j.temp)+'</div>'+
+  '<p style="font-size:.86rem;color:var(--muted2)">'+_escS(msg)+'</p>'+
+  '<button class="shbtn shmain" onclick="(navigator.clipboard?navigator.clipboard.writeText('+JSON.stringify(msg).replace(/"/g,'&quot;')+'):Promise.reject()).then(()=>toast(&#39;Message copi\u00e9&#39;,2000),()=>toast(&#39;Copie impossible ici&#39;,2000))">Copier le message</button>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');}
 async function nestPendingDel(uid,name){
  const pw=await askPwd('Supprimer la demande de '+name+' ?','Elle dispara\u00eet du Nid ; rien n\u2019a \u00e9t\u00e9 activ\u00e9.','Supprimer');if(!pw)return;
  const r=await fetch(AB()+'nest_pending_del',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'uid='+encodeURIComponent(uid)+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
@@ -10100,6 +10130,8 @@ def user_stats(u, admin_override=False):
                 except Exception:
                     _seen = {}
                 for x in json.load(open(USERS_FILE, encoding="utf-8")):
+                    if x.get("pending_code"):
+                        continue          # 2026-10-04: a request, not an account yet (listed apart)
                     _ndp = os.path.join(NEST_DATA, x["id"] + ".json")
                     try:
                         nd = json.load(open(_ndp))
@@ -10131,6 +10163,7 @@ def user_stats(u, admin_override=False):
                         "stale": _age > 60, "paused": _pz,
                         "share": (SHARE.statement(x["id"]) if (SHARE.on() and x.get("trade") and x["id"] in _SHARE_EL) else None),
                         "setup": (SHARE.setup_info(x["id"]) if (x["id"] not in OWNER_UIDS and not x.get("public")) else None),
+                        "app": bool(x.get("app_only") or x.get("app_login")), "pkg": x.get("plan"),
                         "pos": nd.get("open_positions"),
                         "bot": _bot, "botlive": _live, "blocked": _blk,
                         # 2026-10-01 (owner): "all accounts done for the
@@ -10862,10 +10895,10 @@ Se connecter &middot; ouvrir un compte</button>
 <a class="back" onclick="show('v-home')">&#8592; Retour</a>
 <form class="card" method="POST" action="login">
 <h2>Se connecter</h2>
-<label for="lg">Identifiant ou num&eacute;ro de compte</label>
+<label for="lg">Num&eacute;ro de compte MT5 &middot; ou votre identifiant</label>
 <input id="lg" name="login" required autocomplete="username"
- placeholder="">
-<label for="pw">Mot de passe</label>
+ placeholder="12345678 (MT5) ou identifiant">
+<label for="pw">Mot de passe <span style="font-weight:400;color:var(--muted)">(du compte MT5, ou le v&ocirc;tre)</span></label>
 <div style="position:relative">
  <input id="pw" name="password" type="password" required
   autocomplete="current-password" placeholder="votre mot de passe"
@@ -12405,6 +12438,37 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "nest_reset_pwd":
+            # 2026-10-04 (owner): a temporary app password for a member (master pwd)
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upr
+                _fr = _upr.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                if not master_pwd_ok((_fr.get("pwd", [""])[0] or "").strip()):
+                    self._send(json.dumps({"ok": False, "err": "bad password"}), "application/json")
+                    return
+                _uid = (_fr.get("uid", [""])[0] or "").strip()[:40]
+                import random as _rnd
+                temp = "".join(_rnd.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+                allu = json.load(open(USERS_FILE, encoding="utf-8"))
+                hit = False
+                for x in allu:
+                    if x.get("id") == _uid and (x.get("app_only") or x.get("app_login") or x.get("app_pwd")):
+                        x["app_pwd"] = _app_hash(temp)
+                        x["app_login"] = True
+                        hit = True
+                if hit:
+                    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                    _users_cache["t"] = 0.0
+                self._send(json.dumps({"ok": hit, "temp": temp if hit else None, "err": None if hit else "pas un compte app"}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] in ("nest_activate", "nest_pending_del"):
             # 2026-10-04 (owner): the admin activates a pending request (no code
             # needed) or drops it (master pwd)
@@ -13170,7 +13234,9 @@ class H(BaseHTTPRequestHandler):
                 # 2026-10-03 (owner): the public demo's live view, their name and package
                 _d = user_stats(_data_user(user), False)
                 _d.update({"name": user.get("name", ""), "plan": plan_of(user), "public": False,
-                           "app_only": True, "is_master": False, "trading_paused": False})
+                           "app_only": True, "is_master": False,
+                           # a Signal member reads the app as a signal service
+                           "trading_paused": bool(has(user.get("id"), "manual"))})
                 _d.pop("nest", None)
                 self._send(json.dumps(_d), "application/json")
             else:
