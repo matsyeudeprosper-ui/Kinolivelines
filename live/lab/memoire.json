@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-04T00:30:05Z",
+ "updated": "2026-10-04T05:00:09Z",
  "hypotheses": [
   {
    "id": "target_09",
@@ -168,6 +168,11 @@
    "t": "2026-10-04T00:30:05Z",
    "looked": ["wake_context (4h timer)", "asks.json", "metrics.json trade count"],
    "saw": "Still 38 trades, no close since the 2026-10-03 FLIP-BOS loss, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
+  },
+  {
+   "t": "2026-10-04T05:00:09Z",
+   "looked": ["wake_context (4h timer)", "asks.json", "metrics.json trade count"],
+   "saw": "Sunday dawn, market closed. Still 38 trades, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Next: market reopens Sunday evening (a real Sunday trade would feed 'sunday')."
   }
  ],
  "lessons": [
