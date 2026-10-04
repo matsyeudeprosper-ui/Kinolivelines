@@ -117,10 +117,12 @@ def review(v, auto):
     claude = os.path.join(os.environ.get("USERPROFILE", ""), ".local", "bin", "claude.exe")
     mission = io.open(MISSION, encoding="utf-8").read() + f"\n\nCritique `{vid}`. Read lab/critic_context.json first. Begin."
     try:
-        r = subprocess.run([claude, "-p", mission, "--output-format", "text", "--max-turns", str(TURNS),
-                            "--allowedTools", "Bash(python *)", "Read", "Write", "Edit", "Glob", "Grep"],
-                           cwd=LIVE, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1500)
-        io.open(os.path.join(LAB, f"critique_{vid}.log"), "w", encoding="utf-8").write((r.stdout or "") + (r.stderr or ""))
+        # 2026-10-04 (owner): the model falls back by itself when the usual one is out (claude_run)
+        sys.path.insert(0, LAB)
+        from claude_run import run as _crun
+        rc, out, _model = _crun(mission, turns=TURNS, cwd=LIVE, timeout=1500, log=os.path.join(LAB, f"critique_{vid}.log"), who="le critique")
+        if _model:
+            say(f"{vid}: model fallback: {_model}")
     except Exception as e:
         say(f"{vid}: session failed: {e}")
 

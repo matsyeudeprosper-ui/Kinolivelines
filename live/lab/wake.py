@@ -137,11 +137,13 @@ def run_session(ctx):
     mission += ("\n\nNow is " + ctx["now"] + ". You were woken because: " + ("; ".join(ctx["reasons"]) or "four hours passed") +
                 ". Read lab/wake_context.json first. Begin.")
     try:
-        out = subprocess.run([claude, "-p", mission, "--output-format", "text", "--max-turns", str(TURNS),
-                              "--allowedTools", "Bash(python *)", "Read", "Write", "Edit", "Glob", "Grep"],
-                             cwd=LIVE, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1500)
-        io.open(os.path.join(LAB, "veille_last.log"), "w", encoding="utf-8").write((out.stdout or "") + (out.stderr or ""))
-        return out.returncode, len(out.stdout or "")
+        # 2026-10-04 (owner): the model falls back by itself when the usual one is out (claude_run)
+        sys.path.insert(0, LAB)
+        from claude_run import run as _crun
+        rc, out, model = _crun(mission, turns=TURNS, cwd=LIVE, timeout=1500, log=os.path.join(LAB, "veille_last.log"), who="la veille")
+        if model:
+            say(f"model fallback: {model}")
+        return rc, len(out or "")
     except Exception as e:
         return -1, str(e)
 

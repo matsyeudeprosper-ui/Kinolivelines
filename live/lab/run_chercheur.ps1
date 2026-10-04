@@ -37,13 +37,10 @@ try {
 } catch { Say ("scrutiny failed: " + $_.Exception.Message) }
 try {
     New-Item -ItemType Directory -Force (Join-Path $lab "notes") | Out-Null
-    $claude = "$env:USERPROFILE\.local\bin\claude.exe"
-    $mission = Get-Content (Join-Path $lab "CHERCHEUR.md") -Raw
-    $mission += "`n`nToday is " + (Get-Date -Format "yyyy-MM-dd") + ". Begin."
-    $out = & $claude -p $mission --output-format text --max-turns 140 `
-        --allowedTools "Bash(python *)","Read","Write","Edit","Glob","Grep" 2>&1 | Out-String
-    Set-Content -Path (Join-Path $lab "chercheur_last.log") -Value $out -Encoding utf8
-    Say ("chercheur session done, " + $out.Length + " chars")
+    # 2026-10-04 (owner): through lab/claude_run.py - the model falls back by
+    # itself (sonnet, then haiku) when the usual one is out or silent
+    $res = python lab/claude_run.py --mission-file lab/CHERCHEUR.md --turns 140 --out (Join-Path $lab "chercheur_last.log") --suffix ("Today is " + (Get-Date -Format "yyyy-MM-dd") + ". Begin.") --who "le chercheur" 2>&1 | Out-String
+    Say ("chercheur session done, " + $res.Trim())
 } catch { Say ("chercheur session failed: " + $_.Exception.Message) }
 try {
     python lab/pretest_fill.py *> (Join-Path $lab "pretest_last.log")

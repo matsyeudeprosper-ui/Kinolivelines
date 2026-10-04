@@ -219,8 +219,12 @@ def build_one(skip):
               "allowed_files": sorted(ALLOW), "now": datetime.now(timezone.utc).isoformat(timespec="seconds")})
     claude = os.path.join(os.environ.get("USERPROFILE", ""), ".local", "bin", "claude.exe")
     mission = io.open(MISSION, encoding="utf-8").read() + f"\n\nBuild request `{rid}` (attempt {attempt}). Read lab/build_context.json first. Begin."
-    rc, out = sh([claude, "-p", mission, "--output-format", "text", "--max-turns", str(TURNS),
-                  "--allowedTools", "Bash(python *)", "Read", "Write", "Edit", "Glob", "Grep"], 3000, cwd=LIVE)
+    # 2026-10-04 (owner): the model falls back by itself when the usual one is out (claude_run)
+    sys.path.insert(0, LAB)
+    from claude_run import run as _crun
+    rc, out, _model = _crun(mission, turns=TURNS, cwd=LIVE, timeout=3000, who="le constructeur")
+    if _model:
+        say(f"model fallback: {_model}")
     io.open(os.path.join(LAB, f"build_{rid}_{attempt}.log"), "w", encoding="utf-8").write(out)
     say(f"session rc={rc} out={len(out)}")
     mod, new = git_changed()
