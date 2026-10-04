@@ -11307,7 +11307,6 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "function pick(k){P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
             "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
-            "document.getElementById('mh').textContent=fam?'Pour écrire au Owl, seul votre prénom suffit. Le numéro et le mot de passe MT5 ne servent qu’avec votre code.':'Pour écrire au Owl, seul votre prénom suffit. L’identifiant et le mot de passe ne servent qu’avec votre code.';"
             "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
             "document.getElementById('mt5').style.display=fam?'':'none';"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
