@@ -46,6 +46,10 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # down for a sell); unlike ext_pts a move against it is left alone.
             # 0 = off.
             "chase_pts": 0,
+            # 2026-10-04 (chercheur): nerv_floor = no entry when the market's
+            # pace at entry is under X (1.0 = usual); the market is almost
+            # asleep. 0 = off.
+            "nerv_floor": 0.0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -693,6 +697,9 @@ def simulate(R, spread, cfg):
             if c["nerv_gate"] and nv > 1.0:
                 blocked += 1
                 continue
+            if c["nerv_floor"] and nv < float(c["nerv_floor"]):
+                blocked += 1
+                continue
             _dbt = (debt_led if c["debt_mode"] == "half"                    else max(0.0, pk - run))            if c["debt_nerv_gate"] and nv > 1.0 and _dbt > 0.5:
                 blocked += 1
                 continue
@@ -973,6 +980,9 @@ def simulate_real(T, R, spread, cfg):
         if c["nerv_gate"] and nv > 1.0:
             blocked += 1
             continue
+        if c["nerv_floor"] and nv < float(c["nerv_floor"]):
+            blocked += 1
+            continue
         if c["debt_nerv_gate"] and nv > 1.0 and max(0.0, pk - run) > 0.5:
             blocked += 1
             continue
@@ -1075,6 +1085,7 @@ def main():
     ap.add_argument("--skip-hours", type=str, help="UTC hours to skip, e.g. 0-8 or 0,1,2")
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--nerv-gate", action="store_true")
+    ap.add_argument("--nerv-floor", type=float, help="no entry when the market's pace at entry is under X (1.0 = usual)")
     ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
     ap.add_argument("--bullets", type=float)
     ap.add_argument("--k-streak", type=int)
@@ -1106,6 +1117,7 @@ def main():
         over["skip_hours"] = sorted(hs)
     if a.size_hot is not None: over["size_hot"] = a.size_hot
     if a.nerv_gate: over["nerv_gate"] = True
+    if a.nerv_floor is not None: over["nerv_floor"] = a.nerv_floor
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
     if a.bullets is not None: over["bullets"] = a.bullets
     if a.k_streak is not None: over["k_streak"] = a.k_streak

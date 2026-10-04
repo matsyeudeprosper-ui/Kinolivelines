@@ -88,7 +88,15 @@
    "what_en": "A new setting for the test: refuse an entry when the market's pace at entry is under X (X between 0.5 and 0.95; 1.0 = the usual pace). The default, 0, changes nothing. Everything else stays the same, catch-up trades included. I would test 0.6, 0.7 and 0.8.",
    "why_fr": "Sur les 37 vrais trades, quand le marché est presque endormi (allure sous 0,8) : 6 trades, 2 gagnés, -19 $. Juste au-dessus (0,8 à 1,0) : 8 trades, 7 gagnés, +15 $. Couper l'heure de minuit à la place coûte 68 $ sur 42 jours : ce n'est donc pas l'heure. Couper les petites bougies non plus. Il faut tester l'endormissement lui-même. Peu de trades.",
    "why_en": "On the 37 real trades, when the market is almost asleep (pace under 0.8): 6 trades, 2 won, -$19. Just above (0.8 to 1.0): 8 trades, 7 won, +$15. Cutting the midnight hour instead costs $68 over 42 days: so it is not the hour. Cutting small candles does not work either. The sleepiness itself must be tested. Few trades.",
-   "status": "open"
+   "status": "built",
+   "key": "nerv_floor",
+   "built_note_fr": "Le chercheur peut maintenant demander au test : « n’entre pas quand le marché est presque endormi, sous telle allure ». Rien ne change dans le robot tant qu’une idée qui s’en sert n’a pas gagné son duel.",
+   "built_note_en": "The chercheur can now ask the replay: “do not enter when the market is almost asleep, under this pace”. Nothing changes in the robot until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--nerv-floor",
+    "a": 0,
+    "b": 0.8
+   }
   },
   {
    "id": "flip_hot_size",
