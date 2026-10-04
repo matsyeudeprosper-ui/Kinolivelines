@@ -11184,15 +11184,13 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
               + info("Cette formule n\u2019est pas en vente libre : on en parle d\u2019abord ensemble sur Telegram. 50 places au total.")],
              "var(--accent-soft)", "&nbsp;<span class=\"bdg\">Sur invitation</span>"))
 
-    pay_help = ("Vous payez en <b>crypto</b> (une monnaie num&eacute;rique). Le plus simple est l&#8217;<b>USDT</b>, qui vaut toujours "
-                "environ 1&nbsp;$. Si vous n&#8217;en avez pas, on en ach&egrave;te en quelques minutes sur Binance, Bybit ou une "
-                "application de change, puis on l&#8217;envoie &agrave; l&#8217;adresse affich&eacute;e. Choisissez le r&eacute;seau "
-                "<b>Tron (TRC-20)</b> : c&#8217;est le moins cher, quelques centimes de frais."
-                "<br><br><b>Pas encore de crypto ?</b> Vous pouvez en acheter par <b>carte bancaire</b> sur "
-                "<a href=\"https://paybis.com\" target=\"_blank\" rel=\"noopener\" style=\"color:#9fc2de\">Paybis</a>, un site fait pour &ccedil;a. "
-                "Choisissez <b>USDT</b> (r&eacute;seau <b>Tron</b>) et le montant, et, quand il demande o&ugrave; l&#8217;envoyer, collez l&#8217;adresse "
-                "que vous montre notre page de paiement. Paybis peut demander une pi&egrave;ce d&#8217;identit&eacute; la premi&egrave;re fois, "
-                "et prend quelques frais. Pr&eacute;voyez quelques minutes.")
+    pay_help = ("Choisissez parmi les cryptomonnaies propos&eacute;es sur la page de paiement, puis suivez les instructions. "
+                "Votre acc&egrave;s sera activ&eacute; automatiquement apr&egrave;s confirmation du paiement."
+                "<br><br><b>Pas encore de crypto ?</b> Vous pouvez en acheter par carte bancaire sur "
+                "<a href=\"https://paybis.com\" target=\"_blank\" rel=\"noopener\" style=\"color:#9fc2de\">Paybis</a>. "
+                "V&eacute;rifiez d&#8217;abord la monnaie et le r&eacute;seau indiqu&eacute;s sur notre page de paiement, puis choisissez les m&ecirc;mes sur Paybis."
+                "<br><br>Des frais et une v&eacute;rification d&#8217;identit&eacute; peuvent s&#8217;appliquer. "
+                "V&eacute;rifiez que le montant envoy&eacute; couvre bien le paiement demand&eacute;.")
 
     steps = (("1", "Choisissez votre formule", "Ici m&ecirc;me. Rien n&#8217;est pr&eacute;lev&eacute; tant que vous n&#8217;avez rien envoy&eacute;."),
              ("2", "Un code, ou un paiement", "Le Owl vous donne un code sur Telegram ; ou vous payez en crypto et le code n&#8217;est pas n&eacute;cessaire."),
