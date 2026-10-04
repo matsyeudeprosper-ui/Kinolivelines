@@ -4,7 +4,8 @@
   "cap_fit_target",
   "chase_dir",
   "wait_after_win",
-  "sleepy_floor"
+  "sleepy_floor",
+  "flip_hot_size"
  ],
  "asks_answered": [
   "ask_1790670647",

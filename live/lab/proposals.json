@@ -1148,7 +1148,7 @@
    "why_en": "Aim a little higher, and keep a fourth catch-up trade after a loss. Tested on the last 42 days, without a daily cap: $122 more, better on both halves (+84 and +48), hole of 78 instead of 80. The neighbouring setting (0.85) also wins.",
    "by": "chercheur",
    "date": "2026-10-03",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1168,7 +1168,9 @@
     "h2": 48.38,
     "base_net": 185.41,
     "base_worst": 80.29
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-04"
   },
   {
    "id": "rr09_hot075",
@@ -1179,7 +1181,7 @@
    "why_en": "Out of the box: staking less in a nervous market lost on its own (no, three nights). With a slightly higher target it changes: +$48 over 42 days without a cap, better on both halves, and the biggest hole goes from 80 to 58 dollars.",
    "by": "chercheur",
    "date": "2026-10-03",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1199,7 +1201,9 @@
     "h2": 41.14,
     "base_net": 185.41,
     "base_worst": 80.29
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-04"
   },
   {
    "id": "rr09_bul4_hot075",
@@ -1210,7 +1214,7 @@
    "why_en": "The two ideas above together: the extra catch-up brings the money, the smaller stake when nervous makes the hole smaller. Over 42 days without a cap: +$99, better on both halves (+53 and +56), hole of 68 instead of 80.",
    "by": "chercheur",
    "date": "2026-10-03",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1230,7 +1234,9 @@
     "h2": 55.94,
     "base_net": 185.41,
     "base_worst": 80.29
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-04"
   },
   {
    "id": "rr085_bul4",
@@ -1241,7 +1247,7 @@
    "why_en": "The honest check of the first idea: a setting right next to it must win too, or it is luck. Over 42 days without a cap: +$59, better on both halves (+34 and +25), same hole (80). It holds, smaller.",
    "by": "chercheur",
    "date": "2026-10-03",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.85,
     "n_cont": 1,
@@ -1261,7 +1267,9 @@
     "h2": 24.68,
     "base_net": 185.41,
     "base_worst": 80.29
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-04"
   },
   {
    "id": "rr09_ext700",
@@ -1272,7 +1280,7 @@
    "why_en": "Do not enter when the price already moved 700 points in an hour, and aim a little higher. Over 42 days without a cap: +$28, better on both halves (+16 and +20), hole of 65 instead of 80. Less money than aiming 0.9 alone, but a smaller hole.",
    "by": "chercheur",
    "date": "2026-10-03",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.9,
     "n_cont": 1,
@@ -1292,6 +1300,169 @@
     "h2": 19.53,
     "base_net": 185.41,
     "base_worst": 80.29
+   },
+   "verdict": "B",
+   "done": "2026-10-04"
+  },
+  {
+   "id": "rr10_nosun",
+   "title_fr": "Viser autant que ce qu'on risque, et ne pas trader le dimanche",
+   "title_en": "Aim for as much as we risk, and do not trade on Sunday",
+   "family": "cible",
+   "why_fr": "Viser un gain égal à ce qu'on risque, et laisser le robot se reposer le dimanche. Testé sur les 42 derniers jours : mieux sur les deux moitiés, sur un compte sans plafond de gain par jour (+46 $) ET avec plafond (+16 $). Plus gros trou : 34 au lieu de 50 sans plafond, 22 au lieu de 34 avec.",
+   "why_en": "Aim for a gain equal to what we risk, and let the robot rest on Sunday. Tested on the last 42 days: better on both halves, on an account without a daily cap (+$46) AND with one (+$16). Biggest hole: 34 instead of 50 without a cap, 22 instead of 34 with one.",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "pending",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 183.65,
+    "worst": 34.12,
+    "h1": 28.31,
+    "h2": 24.97,
+    "base_net": 137.38,
+    "base_worst": 50.23
+   }
+  },
+  {
+   "id": "rr10_bul4_nosun",
+   "title_fr": "Viser autant que le risque, quatre rattrapages, pas le dimanche",
+   "title_en": "Aim for as much as we risk, four catch-ups, no Sunday",
+   "family": "argent",
+   "why_fr": "La même idée, avec jusqu'à quatre trades de rattrapage après une perte. 42 jours : mieux sur les deux moitiés avec et sans plafond de gain par jour (+51 $ et +19 $), trous de 34 et 22 au lieu de 50 et 34. Sur 69 jours : un peu mieux sans plafond (+36 $), pareil avec (-4 $).",
+   "why_en": "The same idea, with up to four catch-up trades after a loss. 42 days: better on both halves with and without a daily cap (+$51 and +$19), holes of 34 and 22 instead of 50 and 34. Over 69 days: a little better without a cap (+$36), the same with one (-$4).",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "pending",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 188.09,
+    "worst": 34.12,
+    "h1": 31.74,
+    "h2": 24.97,
+    "base_net": 137.38,
+    "base_worst": 50.23
+   }
+  },
+  {
+   "id": "rr10_bul4",
+   "title_fr": "Viser autant que ce qu'on risque, avec jusqu'à quatre rattrapages",
+   "title_en": "Aim for as much as we risk, with up to four catch-ups",
+   "family": "argent",
+   "why_fr": "Le contrôle : sans toucher au dimanche, pour savoir ce que le dimanche pèse. 42 jours sans plafond de gain par jour : +61 $, mieux sur les deux moitiés, trou de 34 au lieu de 50. Avec plafond : même argent (+1 $), trou de 26 au lieu de 34, mais les moitiés ne sont pas d'accord.",
+   "why_en": "The check: without touching Sunday, to see what Sunday weighs. 42 days without a daily cap: +$61, better on both halves, hole of 34 instead of 50. With a cap: same money (+$1), hole of 26 instead of 34, but the halves disagree.",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "pending",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 198.07,
+    "worst": 34.12,
+    "h1": 53.14,
+    "h2": 10.4,
+    "base_net": 137.38,
+    "base_worst": 50.23
+   }
+  },
+  {
+   "id": "rr10_bul4_ext700",
+   "title_fr": "Viser autant que le risque, quatre rattrapages, sans courir après le prix",
+   "title_en": "Aim for as much as we risk, four catch-ups, no chasing the price",
+   "family": "structure",
+   "why_fr": "Ne pas entrer quand le prix a déjà fait plus de 700 points dans l'heure. 42 jours sans plafond de gain par jour : +51 $, mieux sur les deux moitiés, trou de 28 au lieu de 50. Avec plafond : même argent (+1 $), trou de 26 au lieu de 34.",
+   "why_en": "Do not enter when the price has already moved more than 700 points in the hour. 42 days without a daily cap: +$51, better on both halves, hole of 28 instead of 50. With a cap: same money (+$1), hole of 26 instead of 34.",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "pending",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 700,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 188.7,
+    "worst": 27.53,
+    "h1": 42.7,
+    "h2": 11.47,
+    "base_net": 137.38,
+    "base_worst": 50.23
+   }
+  },
+  {
+   "id": "rr10_nosun_hot075",
+   "title_fr": "Viser autant que le risque, sans dimanche, miser moins si c'est nerveux",
+   "title_en": "Aim for as much as we risk, no Sunday, stake less when nervous",
+   "family": "meteo",
+   "why_fr": "Hors du cadre : les changements de sens en marché nerveux ne rapportent rien (66 trades, 0 $ en 42 jours). En attendant un réglage plus fin, miser un quart de moins quand c'est nerveux. Mieux sur les deux moitiés avec et sans plafond (+31 $, +3 $), et le plus gros trou divisé par deux : 26 au lieu de 50, 16 au lieu de 34.",
+   "why_en": "Out of the box: changes of direction in a nervous market earn nothing (66 trades, $0 in 42 days). Until a finer setting exists, stake a quarter less when nervous. Better on both halves with and without a cap (+$31, +$3), and the biggest hole halved: 26 instead of 50, 16 instead of 34.",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "pending",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 0.75,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 168.46,
+    "worst": 25.59,
+    "h1": 3.55,
+    "h2": 32.96,
+    "base_net": 137.38,
+    "base_worst": 50.23
    }
   }
  ]

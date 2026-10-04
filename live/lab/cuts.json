@@ -192,6 +192,28 @@
    "status": "open",
    "why_fr": "Une des onze piles de départ.",
    "why_en": "One of the eleven starting piles."
+  },
+  {
+   "id": "flip_hot",
+   "title_fr": "Changement de sens quand le marché est nerveux",
+   "title_en": "Change of direction in a nervous market",
+   "by": "chercheur",
+   "date": "2026-10-04",
+   "status": "open",
+   "why_fr": "Les changements de sens gagnent moins souvent que les trades dans le même sens (9 sur 21, contre 12 sur 18). Quand le marché est nerveux : 4 sur 13 seulement, perdants sur les deux moitiés ; quand il est calme : 5 sur 8. Le test voit la même chose sur 42 jours : 66 changements de sens nerveux, 0 $ au total.",
+   "why_en": "Changes of direction win less often than trades the same way (9 of 21, against 12 of 18). In a nervous market: only 4 of 13, losing on both halves; in a calm one: 5 of 8. The test sees the same over 42 days: 66 nervous changes of direction, $0 in all.",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "FLIP-BOS"
+    },
+    {
+     "field": "nerv",
+     "op": ">=",
+     "value": 1.0
+    }
+   ]
   }
  ]
 }
