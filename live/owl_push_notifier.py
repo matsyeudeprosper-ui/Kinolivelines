@@ -529,6 +529,103 @@ def market_memory_tick():
         mylog(f"market memory: {type(e).__name__}: {e}")
 
 
+def signal_members():
+    """App-only members whose Signal package is running: they have no desk,
+    so the robot's real trades reach them through the shared feed."""
+    try:
+        us = json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8"))
+        ents = json.load(open(os.path.join(DIR, "owl_entitlements.json"), encoding="utf-8"))
+    except Exception:
+        return []
+    now = time.time()
+    return [u["id"] for u in us if u.get("app_only") and u.get("id")
+            and float((ents.get(u["id"]) or {}).get("manual_until") or 0) > now]
+
+
+BOS_LOG = os.path.join(DIR, "bos_bot_kino.log")
+FEED_F = os.path.join(DIR, "owl_signal_feed.json")
+RX_ENTRY = re.compile(r"(?:^|\s)(BOS|FLIP-BOS) ENTRY: (BUY|SELL) [\d.]+ @ ~([\d.]+) SL ([\d.]+) TP ([\d.]+)")
+RX_RESULT = re.compile(r"(?:^|\s)(WIN|LOSS) [+-]?[\d.]+ \(lot")
+SIGNAL_LIFE = 1200      # a signal stays takeable for 20 minutes
+
+
+def _feed_load():
+    try:
+        x = json.load(open(FEED_F, encoding="utf-8"))
+        return x if isinstance(x, list) else []
+    except Exception:
+        return []
+
+
+def _feed_save(lst):
+    try:
+        json.dump(lst[-200:], open(FEED_F + ".tmp", "w", encoding="utf-8"))
+        os.replace(FEED_F + ".tmp", FEED_F)
+    except Exception as e:
+        mylog(f"signal feed save: {e}")
+
+
+def _fmt_px(v):
+    return f"{float(v):,.0f}".replace(",", "\u202f")
+
+
+def feed_line(line):
+    """One line of the master robot's log. A real entry becomes a signal for
+    every Signal member (direction, entry, stop, target - no lot: they size
+    it themselves); its WIN/LOSS line closes it. INT entries are off."""
+    m = RX_ENTRY.search(line)
+    if m:
+        d = 1 if m.group(2) == "BUY" else -1
+        now = int(time.time())
+        item = {"t": now, "dir": d, "e": float(m.group(3)), "sl": float(m.group(4)),
+                "tp": float(m.group(5)), "ok": True, "kind": m.group(1),
+                "expires": now + SIGNAL_LIFE, "done": False, "n": []}
+        who = signal_members()
+        for uid in who:
+            en = lang_of(uid) == "en"
+            buy = d == 1
+            title = ("\U0001f7e2 " + (("BUY" if buy else "SELL") + " signal" if en else
+                     ("Signal \u00b7 ACHAT" if buy else "Signal \u00b7 VENTE")))
+            body = (f"Entry ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 target {_fmt_px(item['tp'])}. Open the app." if en else
+                    f"Entr\u00e9e ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 cible {_fmt_px(item['tp'])}. Ouvrez l\u2019app.")
+            try:
+                send_all(title, body, kind="instant", only_uid=uid, url=_tok_url(uid, ""))
+                item["n"].append(uid)
+            except Exception:
+                pass
+        lst = _feed_load()
+        lst.append(item)
+        _feed_save(lst)
+        mylog(f"signal feed: {m.group(1)} {m.group(2)} -> {len(item['n'])} member(s)")
+        return
+    m = RX_RESULT.search(line)
+    if m:
+        lst = _feed_load()
+        it = None
+        for x in reversed(lst):
+            if not x.get("done"):
+                it = x
+                break
+        if it is None:
+            return
+        it["done"] = True
+        it["outcome"] = "win" if m.group(1) == "WIN" else "loss"
+        _feed_save(lst)
+        win = it["outcome"] == "win"
+        for uid in it.get("n") or []:
+            en = lang_of(uid) == "en"
+            if win:
+                title = "\u2705 " + ("Signal over \u00b7 target reached" if en else "Signal termin\u00e9 \u00b7 cible atteinte")
+            else:
+                title = "\u26aa " + ("Signal over \u00b7 stop hit" if en else "Signal termin\u00e9 \u00b7 stop touch\u00e9")
+            body = ("The trade is closed. The next signal will ring here." if en else
+                    "Le trade est ferm\u00e9. Le prochain signal sonnera ici.")
+            try:
+                send_all(title, body, kind="instant", only_uid=uid, url=_tok_url(uid, ""))
+            except Exception:
+                pass
+
+
 def is_manual(uid):
     """2026-09-27 (owner): two voices. An account in manual mode (its own
     pause file says paused, or its nest record is manual/semi) gets the
@@ -569,6 +666,8 @@ def send_all(title, body, kind="instant", only_uid=None,
     changed = False
     total = 0
     _ib = {}
+    if only_uid is not None:
+        subs.setdefault(only_uid, [])
     for uid, lst in list(subs.items()):
         if only_uid is not None and uid != only_uid:
             continue
@@ -706,7 +805,7 @@ def maybe_signal():
         return
     changed = False
     for uid in subs:
-        if not is_manual(uid):
+        if not is_manual(uid) or uid in signal_members():
             continue
         gN, gM, gI = _package_gates(uid)
         # the internal structure only counts for a robot that trades it
@@ -725,11 +824,19 @@ def maybe_signal():
             continue
         if ready == prev:
             continue
-        st[uid] = {"ready": ready, "t": rec.get("t", 0)}
+        st[uid] = {"ready": ready, "t": rec.get("t", 0), "rang": rec.get("rang", False)}
         changed = True
-        if time.time() - (rec.get("t") or 0) < 1800:
-            continue        # one push per half hour, the state still moves
-        st[uid]["t"] = time.time()
+        # one "playable" ring per half hour; "over" is only sent after a ring
+        # and is never held back by that throttle
+        if ready:
+            if time.time() - (rec.get("t") or 0) < 1800:
+                continue
+            st[uid]["t"] = time.time()
+            st[uid]["rang"] = True
+        else:
+            if not rec.get("rang"):
+                continue
+            st[uid]["rang"] = False
         en = lang_of(uid) == "en"
         if ready:
             send_all("\U0001f7e2 " + ("Playable signal" if en else "Signal jouable"),
@@ -1020,7 +1127,7 @@ def maybe_morning():
             return
         send_all("\u2600\ufe0f Bonjour !",
                  "Pendant la nuit : " + " \u00b7 ".join(parts)
-                 + ". Bonne journ\u00e9e !")
+                 + ". Bonne journ\u00e9e !", only_uid="kino")
         json.dump({"sent": day}, open(MORNING_MARK, "w"))
     except Exception as e:
         mylog(f"morning failed: {e}")
@@ -1239,10 +1346,24 @@ def main():
         _bf.seek(0, 2)
     except Exception:
         _bf = None
+    try:
+        _sf = open(BOS_LOG, "r", encoding="utf-8", errors="replace")
+        _sf.seek(0, 2)
+    except Exception:
+        _sf = None
     _wk_last = 0.0
     _mb_last = 0.0
     _sg_last = 0.0
     while True:
+        if _sf is not None:
+            while True:
+                _l = _sf.readline()
+                if not _l:
+                    break
+                try:
+                    feed_line(_l)
+                except Exception as e:
+                    mylog(f"signal feed: {type(e).__name__}: {e}")
         if time.time() - _wk_last > 600:
             _wk_last = time.time()
             maybe_weekly()
@@ -1293,7 +1414,7 @@ def main():
                 elif "starting" in bl:
                     send_all("⚠️ Redémarrage",
                              "Le gardien a relancé : "
-                             + bl.split("starting", 1)[-1].strip())
+                             + bl.split("starting", 1)[-1].strip(), only_uid="kino")
         got = False
         for s in sources:
             while True:
@@ -1303,7 +1424,7 @@ def main():
                 got = True
                 ev = instant_event(line)
                 if ev is not None:
-                    send_all(s["pfx"] + ev[0], ev[1])
+                    send_all(s["pfx"] + ev[0], ev[1], only_uid="kino")
                     continue
                 m = RX_EXIT.search(line)
                 if m:

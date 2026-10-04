@@ -285,6 +285,31 @@ def rate_fail(key):
     _rl.setdefault(key, []).append(time.time())
 
 
+def code_guess_blocked(who):
+    """Wrong activation codes: 8 per caller and 40 across everyone per 10
+    minutes, so changing the code or the name does not reset the count."""
+    return rate_limited(("codeguess", who), limit=8) or rate_limited(("codeguess", "*"), limit=40)
+
+
+def code_guess_fail(who):
+    rate_fail(("codeguess", who))
+    rate_fail(("codeguess", "*"))
+
+
+def queue_push(uid, title, body):
+    """One line for the push notifier (it also writes the member's inbox)."""
+    try:
+        qf = os.path.join(DIR, "owl_push_queue.json")
+        try:
+            q = json.load(open(qf, encoding="utf-8"))
+        except Exception:
+            q = []
+        q.append({"uid": uid, "t": int(time.time()), "title": title, "body": body})
+        json.dump(q, open(qf, "w", encoding="utf-8"), ensure_ascii=False)
+    except Exception:
+        pass
+
+
 def is_admin(u):
     """Both of the owner's pages (Pro master + manual Standard)."""
     return u is not None and (u.get("id") in ("kino", "std")
@@ -428,11 +453,41 @@ def sig_merge(uid, lst):
     return lst
 
 
+SIGFEED_FILE = os.path.join(DIR, "owl_signal_feed.json")
+
+
+def is_signal_member(u):
+    """An app-only member with a running Signal package: no desk of their
+    own, so their signals are the robot's real trades (the shared feed)."""
+    return bool(u and u.get("app_only") and u.get("id") and has(u["id"], "manual"))
+
+
+def sig_source(uid):
+    """The signals of one member: their desk's log, or - for an app-only
+    Signal member - the shared feed (never the internal list of who was told)."""
+    u = next((x for x in users() if x.get("id") == uid), None)
+    if u is not None and u.get("app_only"):
+        try:
+            lst = json.load(open(SIGFEED_FILE, encoding="utf-8"))
+        except Exception:
+            return []
+        out, now = [], time.time()
+        for x in lst:
+            if not isinstance(x, dict):
+                continue
+            y = {k: v for k, v in x.items() if k != "n"}
+            if not y.get("done") and now - float(y.get("t") or 0) > 86400:
+                y["done"] = True
+            out.append(y)
+        return out
+    return json.load(open(os.path.join(DIR, f"owl_signals_{uid}.json"), encoding="utf-8"))
+
+
 def sig_score(uid, era=0):
     """This month's signal numbers for one manual member (UTC month)."""
     try:
         import calendar as _cal
-        lst = json.load(open(os.path.join(DIR, f"owl_signals_{uid}.json"), encoding="utf-8"))
+        lst = sig_source(uid)
         lst = sig_merge(uid, [x for x in lst if isinstance(x, dict) and (not era or x.get("t", 0) >= era)])
         _g = time.gmtime()
         m0 = _cal.timegm((_g.tm_year, _g.tm_mon, 1, 0, 0, 0, 0, 0, 0))
@@ -2474,8 +2529,8 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div class="srow" id="notifbtn" style="display:none">
   <div class="sic"><svg class="ic"><use href="#i-bell"/></svg></div>
   <div style="flex:1"><b id="notif-lbl">Notifications</b>
-   <div class="ssub">Gains, orages et soldats sur votre
-    t&eacute;l&eacute;phone</div></div>
+   <div class="ssub">Vos alertes sur votre
+    t&eacute;l&eacute;phone, m&ecirc;me app ferm&eacute;e</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div id="nprefs" style="display:none;padding:2px 0 14px 51px">
@@ -2974,6 +3029,8 @@ function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
 // the signal is and leaves the decision to the member. Every sentence that
 // names an actor goes through MAN().
 function MAN(){return !!(window._d&&window._d.trading_paused);}
+// a Signal card is for a manual desk, or an app-only Signal member (even with Strategie on top)
+function SIGOK(){const d=window._d||{};return d.app_only?!!(d.plan&&d.plan.manual):(MAN()&&!OBS());}
 // 2026-09-27: every sentence that carries a voice lives HERE, once per voice.
 // T(key) picks the current voice; a missing manual key falls back to auto.
 // This is also the i18n seam: a language is one more table.
@@ -3153,6 +3210,8 @@ VOICE_EN.observer={
  day_empty:'No trade on your account today. the Owl\u2019s robot is working: its results are below.',
  since:'With OwlNest since <b>'};
 function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OBS()?'observer':'auto');const v=Lb[_vo]||Lb.auto;
+ // a Signal member has no account of their own here: what the history shows is the Owl's robot, never "you"
+ if(MAN()&&(window._d||{}).app_only&&!/^(wx|mx_hint|jcard|jsteps|j_(forming|flip|ready|storm|nervous|none|debt)|st_manual)$/.test(k)&&Lb.auto[k]!==undefined)return Lb.auto[k];
  if(v[k]!==undefined)return v[k];if(Lb.auto[k]!==undefined)return Lb.auto[k];
  const f=VOICE[MAN()?'manual':'auto'];return f[k]!==undefined?f[k]:VOICE.auto[k];}
 // Static chrome: a French -> English dictionary applied to text nodes and a
@@ -3688,8 +3747,10 @@ async function notifSetup(){
    .catch(()=>null);
   window._pushLocal=true;const _np=document.getElementById('nopushcard');if(_np)_np.style.display='none';
   await info('&#128276; <h3>Notifications activ&eacute;es !</h3>'+
-   '<p>Vous recevrez les gains, les orages et les victoires des '+
-   'soldats &mdash; m&ecirc;me app ferm&eacute;e.</p>');
+   (SIGOK()?'<p>Vous recevrez chaque signal du robot &mdash; m&ecirc;me app ferm&eacute;e. '+
+    'Le signal reste jouable 20 minutes.</p>'
+   :'<p>Vous recevrez les gains, les orages et les victoires des '+
+   'soldats &mdash; m&ecirc;me app ferm&eacute;e.</p>'));
   notifSetup();
  };
 }
@@ -4574,11 +4635,11 @@ function onboard(i){
  const C=[
   ['i-eye','var(--accent-soft)','Bienvenue sur OwlNest',M?'Votre compte est en mode manuel : l\u2019app lit le march\u00e9 pour vous et vous dit quand un signal est jouable. Vous d\u00e9cidez, l\u2019app veille.'
     :'Le robot Owl trade pour vous, jour et nuit. Vous, vous regardez : solde, trades et march\u00e9, mis \u00e0 jour toutes les 5 secondes.'],
-  ['i-activity','var(--up)',M?'Le signal':'Le robot',M?'La carte March\u00e9 dit ce que fait le march\u00e9 et si un signal est jouable. Le graphique montre o\u00f9, et l\u2019outil Trader vous laisse d\u00e9cider.'
+  ['i-activity','var(--up)',M?'Le signal':'Le robot',M?'La carte March\u00e9 dit ce que fait le march\u00e9. Quand le robot prend un trade, vous recevez le signal : le sens, l\u2019entr\u00e9e, le stop et la cible. Vous d\u00e9cidez de le prendre ou non.'
     :'Il n\u2019agit que quand tout est r\u00e9uni, il s\u2019abrite quand le march\u00e9 devient m\u00e9chant, et apr\u00e8s une perte il se rattrape prudemment. Tout se lit sur l\u2019Accueil.'],
   ['i-calendar','var(--warn)','Ce que vous recevrez','Chaque trade termin\u00e9, le bilan du soir et votre semaine le dimanche. L\u2019Historique garde tout, jour par jour.'],
   ['i-bell','var(--accent-soft)','Les notifications','Pour \u00eatre pr\u00e9venu sur votre t\u00e9l\u00e9phone, m\u00eame l\u2019app ferm\u00e9e. Vous pourrez couper la nuit dans les R\u00e9glages.']];
- if(OBS())C.push(['i-key','var(--warn)','Choisissez votre offre','Regarder est gratuit. Pour trader la strat\u00e9gie vous-m\u00eame avec les signaux et l\u2019outil du graphique, ou tout comprendre, une offre \u00e0 30 jours suffit.']);
+ if(OBS())C.push(['i-key','var(--warn)','Choisissez votre offre','Regarder est gratuit. Pour recevoir les signaux du robot sur votre t\u00e9l\u00e9phone, ou tout comprendre, une offre \u00e0 30 jours suffit.']);
  const n=C.length;i=Math.max(0,Math.min(n-1,i||0));const c=C[i];
  const dots=C.map((_,k)=>'<i style="display:inline-block;width:'+(k===i?18:6)+'px;height:6px;border-radius:99px;margin:0 2px;background:'+(k===i?'var(--accent)':'var(--border2)')+';transition:width .2s"></i>').join('');
  const last=i===n-1;
@@ -4607,6 +4668,7 @@ function AB(){try{return localStorage.getItem('owl_adm')||B;}catch(e){return B;}
 // 2026-09-27: the member's journey - start, first trade, milestones, fresh starts
 function renderTimeline(d){
  const el=document.getElementById('tl');if(!el)return;const en=LANG()==='en';
+ if(d.app_only){const _tl=document.getElementById('tl-lbl');if(_tl)_tl.textContent=en?'The robot\u2019s journey':'Le parcours du robot';}
  const ev=[];const S=d.since_start||{};
  const fd=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?(m[3]+'/'+m[2]+'/'+m[1]):null;};
  const ts=k=>{const m=/(\d{4})-(\d\d)-(\d\d)/.exec(k||'');return m?Date.UTC(+m[1],+m[2]-1,+m[3])/1000:0;};
@@ -5014,6 +5076,7 @@ function acctRules(d){
  const el=document.getElementById('arules');
  const sec=document.getElementById('arules-sec');
  if(!el)return;
+ if(d.app_only){el.style.display='none';if(sec)sec.style.display='none';return;}
  const r=d.acct_rules||{};const en=LANG()==='en';
  const bal=(d.ledger||{}).balance||d.balance||0;
  const rows=[];
@@ -5222,7 +5285,7 @@ function renderPlan(d){
  (function(){const oc=document.getElementById('offercard');if(!oc)return;let hid=0;try{hid=parseInt(localStorage.getItem('owlOfferHide:'+B)||'0',10);}catch(e){}
   const show=!d.public&&!P.family&&!P.manual&&(Date.now()-hid>3*86400000);oc.style.display=show?'block':'none';
   if(show){document.getElementById('offercard-t').textContent=en?'Trade the strategy yourself':'Tradez la strat\u00e9gie vous-m\u00eame';
-   document.getElementById('offercard-s').textContent=en?'Signals + the Trader tool on your account, from $'+(pk.manual||{}).usd+' / 30 days.':'Signaux + l\u2019outil Trader sur votre compte, d\u00e8s $'+(pk.manual||{}).usd+' / 30 jours.';}})();
+   document.getElementById('offercard-s').textContent=en?'The robot\u2019s signals on your phone, from $'+(pk.manual||{}).usd+' / 30 days.':'Les signaux du robot sur votre t\u00e9l\u00e9phone, d\u00e8s $'+(pk.manual||{}).usd+' / 30 jours.';}})();
  (function(){let a=document.getElementById('plan-act');if(!a){a=document.createElement('a');a.id='plan-act';a.href='#';a.style.cssText='display:block;text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px;text-decoration:none';
    a.onclick=e=>{e.preventDefault();openActCard();};
    nt.parentNode.insertBefore(a,nt.nextSibling);}
@@ -5247,7 +5310,7 @@ function renderPlan(d){
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
  const sg=ms&&ms.signal;const en=LANG()==='en';
- if(!sg||sg.done||sg.skipped||!MAN()||OBS()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
+ if(!sg||sg.done||sg.skipped||!SIGOK()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
  window._sigMs=ms;
  const buy=sg.dir===1,col=sg.ok?(buy?'var(--up)':'var(--down)'):'var(--muted)';
  el.style.display='block';el.style.borderColor=sg.ok?col:'var(--border2)';el.style.opacity=sg.ok?'1':'.75';
@@ -5256,7 +5319,8 @@ function renderSignal(ms){
  document.getElementById('sig-when').textContent=(age<1?(en?'just now':'\u00e0 l\u2019instant'):(en?age+' min ago':'il y a '+age+' min'))+' \u00b7 '+(en?'until ':'valable jusqu\u2019\u00e0 ')+String(exp.getHours()).padStart(2,'0')+':'+String(exp.getMinutes()).padStart(2,'0');
  const dd=document.getElementById('sig-dir');dd.textContent=(buy?'\u25b2 ':'\u25bc ')+(buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'));dd.style.color=col;
  const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center"><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span><b style="font-size:.86rem;font-variant-numeric:tabular-nums">'+v+'</b></div>';
- setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')));
+ setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')):''));
+ document.getElementById('sig-g').style.gridTemplateColumns='repeat('+(typeof sg.lot==='number'?4:3)+',1fr)';
  myLotLine(sg,en);
  const far=(ms&&typeof ms.px==='number'&&sg.e)?Math.abs(ms.px-sg.e)/sg.e:0;
  const farTxt=far>0.0025?('<div style="color:var(--warn);margin-bottom:4px">\u26a0 '+(en?'The price has moved '+(far*100).toFixed(2)+'% from the entry \u2014 careful, the risk is no longer the same.':'Le prix s\u2019est \u00e9loign\u00e9 de l\u2019entr\u00e9e ('+(far*100).toFixed(2)+'\u202f%) \u2014 prudence, le risque n\u2019est plus le m\u00eame.')+'</div>'):'';
@@ -5284,7 +5348,7 @@ async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG(
 }
 function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.value:'');}
 function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
- const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' \u00b7 lot '+sg.lot.toFixed(2)+' \u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
+ const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' '+(typeof sg.lot==='number'?'\u00b7 lot '+sg.lot.toFixed(2)+' ':'')+'\u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
 function chime(force){try{if(!force&&localStorage.getItem('owlChime')!=='1')return;}catch(e){return;}
  try{if(navigator.vibrate)navigator.vibrate([120,60,120]);}catch(e){}
@@ -5292,7 +5356,7 @@ function chime(force){try{if(!force&&localStorage.getItem('owlChime')!=='1')retu
   [[880,0],[1175,.16]].forEach(([f,dd])=>{const o=A.createOscillator(),g=A.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t0+dd);g.gain.exponentialRampToValueAtTime(0.25,t0+dd+.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dd+.28);o.connect(g);g.connect(A.destination);o.start(t0+dd);o.stop(t0+dd+.3);});}catch(e){}}
 document.addEventListener('pointerdown',()=>{try{if(localStorage.getItem('owlChime')==='1'&&!window._ac)window._ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 async function pollSignal(){
- const d=window._d;if(!d||!MAN()||OBS())return;
+ const d=window._d;if(!d||!SIGOK())return;
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
  try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}const ms=await r.json();
   const sg=ms&&ms.signal;if(sg&&sg.ok&&!sg.done&&!sg.taken&&window._sgLastT!==undefined&&sg.t!==window._sgLastT)chime();if(sg)window._sgLastT=sg.t;else if(window._sgLastT===undefined)window._sgLastT=0;
@@ -6494,12 +6558,13 @@ function newsCard(d){const el=document.getElementById('newscard');if(!el)return;
  el.style.display='block';}
 // ---- batch 28 ----
 function noPushBanner(d){const el=document.getElementById('nopushcard');if(!el)return;const en=LANG()==='en';
- const show=!d.public&&MAN()&&!OBS()&&!d.push_on&&!window._pushLocal;
+ const show=!d.public&&SIGOK()&&!d.push_on&&!window._pushLocal;
  if(!show){el.style.display='none';return;}
  const nb=document.getElementById('notifbtn');const can=!!(nb&&nb.style.display!=='none');
  document.getElementById('nopush-t').textContent=en?'Your signals will not reach you':'Vos signaux ne vous arriveront pas';
  document.getElementById('nopush-s').textContent=can?(en?'Notifications are off on this phone. A signal is pushed the second it appears.':'Les notifications sont d\u00e9sactiv\u00e9es sur ce t\u00e9l\u00e9phone. Un signal est envoy\u00e9 \u00e0 la seconde o\u00f9 il appara\u00eet.')
-  :(en?'Install the app first (Settings \u203a Install), then enable notifications.':'Installez d\u2019abord l\u2019app (R\u00e9glages \u203a Installer), puis activez les notifications.');
+  :(/iPhone|iPad|iPod/.test(navigator.userAgent)?(en?'On iPhone: tap Share, then \u201cAdd to Home Screen\u201d, open the app from its icon, then enable notifications.':'Sur iPhone : touchez Partager, puis \u00ab Sur l\u2019\u00e9cran d\u2019accueil \u00bb, ouvrez l\u2019app depuis son ic\u00f4ne, puis activez les notifications.')
+  :(en?'Install the app first (Settings \u203a Install), then enable notifications. Until then, open the app to see each signal.':'Installez d\u2019abord l\u2019app (R\u00e9glages \u203a Installer), puis activez les notifications. D\u2019ici l\u00e0, ouvrez l\u2019app pour voir chaque signal.'));
  const b=document.getElementById('nopush-b');b.textContent=can?(en?'Enable':'Activer'):(en?'How':'Comment');
  b.onclick=()=>{if(can){nb.click();}else{tab('set',document.querySelectorAll('.tb')[3]);}};
  el.style.display='block';}
@@ -6552,9 +6617,11 @@ async function loadSignals(){
   let st,c;
   if(!x.ok){st=(en?'set aside':'\u00e9cart\u00e9')+' \u00b7 '+(x.why||'');c='var(--muted)';}
   else if(x.taken){st=(en?'taken':'pris')+(typeof x.result==='number'?' \u00b7 '+money(x.result):'');c=typeof x.result==='number'?(x.result>=0?'var(--up-soft)':'var(--down-soft)'):'var(--accent-soft)';}
-  else if(x.skipped||x.done){st=en?'not taken':'non pris';c='var(--muted2)';}
+  else if(x.skipped){st=en?'not taken':'non pris';c='var(--muted2)';}
+  else if(x.kind&&x.outcome){st=x.outcome==='win'?(en?'target reached':'cible atteinte'):(en?'stop hit':'stop touch\u00e9');c=x.outcome==='win'?'var(--up-soft)':'var(--down-soft)';}
+  else if(x.done){st=x.kind?(en?'over':'termin\u00e9'):(en?'not taken':'non pris');c='var(--muted2)';}
   else{st=en?'live':'en cours';c='var(--up-soft)';}
-  return '<div class="row"><span class="rowt"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span> '+hm(x.t)+' \u00b7 ~'+Number(x.e).toFixed(0)+' \u00b7 '+Number(x.lot).toFixed(2)+'</span><b style="color:'+c+';font-size:.8rem;text-align:right;max-width:52%">'+st+'</b></div>';}).join('');
+  return '<div class="row"><span class="rowt"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span> '+hm(x.t)+' \u00b7 ~'+Number(x.e).toFixed(0)+(typeof x.lot==='number'?' \u00b7 '+Number(x.lot).toFixed(2):'')+'</span><b style="color:'+c+';font-size:.8rem;text-align:right;max-width:52%">'+st+'</b></div>';}).join('');
  sec.style.display='block';el.style.display='block';
 }
 function renderRevenue(d){
@@ -6762,6 +6829,16 @@ async function paySheet(){const en=LANG()==='en';
 }
 // 2026-10-04 (owner): recovery through the Telegram bot - link once, then
 // 'lien' gives the identifiant + personal link, 'nouveau mot de passe' a new one
+function tgAskOnce(d){
+ if(!d||!d.app_only||d.public||window._tgAsked)return;const P=d.plan||{};
+ if(P.tg_linked||!(P.manual||P.strategy))return;
+ let seen='';try{seen=localStorage.getItem('owlTgAsk:'+B)||'';}catch(e){}
+ if(seen)return;window._tgAsked=1;
+ setTimeout(async()=>{const en=LANG()==='en';
+  try{localStorage.setItem('owlTgAsk:'+B,'1');}catch(e){}
+  const v=await sheet('<h3>'+(en?'Never lose your access':'Ne perdez jamais votre acc\u00e8s')+'</h3><p style="color:var(--text2)">'+(en?'Link Telegram once. If you ever lose your login, the OwlNest bot sends you your link back \u2014 no e-mail needed.':'Reliez Telegram une fois. Si vous perdez un jour votre identifiant, le robot OwlNest vous renvoie votre lien \u2014 sans e-mail.')+'</p>'+
+   '<button class="shbtn shmain" onclick="_shDone(1)">'+(en?'Link Telegram':'Relier Telegram')+'</button><button class="shbtn shghost" onclick="_shDone(0)">'+(en?'Later':'Plus tard')+'</button>');
+  if(v)tgLink();},6000);}
 async function tgLink(){const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
  const r=await fetch(B+'tg_link',{method:'POST'}).catch(()=>null);let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){toast(en?'Not available right now.':'Indisponible pour l\u2019instant.',2500);return;}
@@ -7436,7 +7513,10 @@ function render(d){
    else{lvtE.textContent='EN DIRECT';
     lvE.style.background='';lvE.style.color='';}
   }
-  if(d.acct){
+  if(d.acct&&d.app_only){
+   setH(document.getElementById('acctline'),'<i style="background:var(--up)"></i>'+(LANG()==='en'?'The Owl\u2019s robot':'Le robot du Owl'));
+  }
+  else if(d.acct){
    setH(document.getElementById('acctline'),
     '<i style="background:'+(d.real?'var(--up)':'var(--warn)')+'"></i>'+
     // 2026-10-03 (owner): the number is masked - its last three digits only
@@ -7464,7 +7544,7 @@ function render(d){
    if(pc>=100&&!window._conf){window._conf=1;confetti();}
   }
   const n=d.open_positions;
-  if(d.public){const db=document.getElementById('delbtn');
+  if(d.public||d.app_only){const db=document.getElementById('delbtn');
    if(db)db.style.display='none';}
   if(d.trading_paused!==undefined){
    isPaused=d.trading_paused;
@@ -7486,7 +7566,7 @@ function render(d){
    // means following the MQL5 copy, so the words must say so
    const _pl=d.plan||{},_paid=!_pl.family&&!d.is_master;
    lb.innerHTML=isPaused
-    ?(_paid?'Mode manuel \u00b7 signaux + outil':'Mode manuel')
+    ?(_paid?'Mode manuel \u00b7 signaux':'Mode manuel')
     :'Trading automatique';
    lb.style.color=pauseLocked?'#6f8299':'';
    sb.textContent=pauseLocked
@@ -7528,9 +7608,9 @@ function render(d){
    if(d.family_expired){t.textContent='Renouveler l\u2019acc\u00e8s';x.innerHTML='Votre acc\u00e8s Automatique a expir\u00e9 le <b>'+d.family_expired+'</b>. Le robot est en pause sur votre compte. R\u00e9glez le Owl, puis entrez le code re\u00e7u :';}
    else{t.textContent='Activer le robot';x.innerHTML='Votre compte est connect\u00e9. Il reste un code \u00e0 entrer : demandez-le \u00e0 <b>le Owl sur Telegram</b>.';}})();
   document.getElementById('adminlock-sec').style.display=
-   d.is_master?'none':'block';
+   (d.is_master||d.app_only)?'none':'block';
   document.getElementById('adminlock-card').style.display=
-   d.is_master?'none':'block';
+   (d.is_master||d.app_only)?'none':'block';
   if(d.is_master){
    document.getElementById('adm-sec').style.display='block';
    document.getElementById('adm-card').style.display='block';
@@ -7638,7 +7718,7 @@ function render(d){
     window._badges=null;toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div><div style="flex:1">'+(LANG()==='en'?'Fresh start \u2014 the history restarts from today.':'Nouveau d\u00e9part \u2014 l\u2019historique repart d\u2019aujourd\u2019hui.')+'</div>',6000);}
    try{localStorage.setItem('owlEra:'+B,d.era_start);}catch(e){}}
   (function(){const cr=document.getElementById('contactrow');if(!cr)return;
-   if(d.contact_url){cr.style.display='flex';cr.href=d.contact_url;if(d.contact_label)document.getElementById('contact-lbl').textContent=d.contact_label;}
+   if(d.contact_url){cr.style.display='flex';cr.href=d.contact_url;if(d.contact_label&&!/kino/i.test(d.contact_label))document.getElementById('contact-lbl').textContent=d.contact_label;}
    else cr.style.display='none';
    const cs=document.getElementById('contactcfg-sub');if(cs&&d.contact_url)cs.textContent=d.contact_url;
    const ps=document.getElementById('paycfg-sub'),P=d.plan||{};
@@ -7650,7 +7730,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -8199,7 +8279,8 @@ def new_activation_code(pkg="family", days=30, for_name=""):
     use, one week."""
     import random
     alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"   # no O/0/I/1
-    code = "".join(random.choice(alphabet) for _ in range(6))
+    import secrets
+    code = "".join(secrets.choice(alphabet) for _ in range(6))
     c = _load_codes()
     c["codes"].append({"code": code, "t": time.time(), "used_by": None,
                        "pkg": pkg if pkg in CODE_PKGS else "family", "days": int(days or 30),
@@ -11702,9 +11783,12 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         if not name:
             return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
         return _activate_buy(name, pwd, tg, buy, origin, raw_login)
+    if code_guess_blocked(("act", (login or name or "?").lower())):
+        return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
     ce = peek_activation_code(code)
     if not ce:
         rate_fail(("activate", code))
+        code_guess_fail(("act", (login or name or "?").lower()))
         return _join_result("&#10060; Code inconnu ou d&eacute;j&agrave; utilis&eacute;",
                             "<p>V&eacute;rifiez le code, ou demandez-en un nouveau au Owl sur Telegram.</p>"
                             "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
@@ -11851,7 +11935,7 @@ def _new_app_only_record(name, pwd, tg, pkg, allu, ident=""):
 def _tg_link_html(uid):
     """A 'Relier Telegram' button for the welcome pages (one-week code)."""
     try:
-        import random as _rl
+        import secrets as _rl
         code = "".join(_rl.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(10))
         lp = os.path.join(DIR, "owl_tg_links.json")
         try:
@@ -12275,7 +12359,17 @@ class H(BaseHTTPRequestHandler):
                        "status": data.get("payment_status"), "order": data.get("order_id"),
                        "amount": data.get("price_amount"), "pay_amount": data.get("pay_amount"),
                        "currency": data.get("pay_currency"), "id": data.get("payment_id")}
-                if good and data.get("payment_status") in ("finished", "confirmed"):
+                try:
+                    _pays0 = json.load(open(PAY_FILE, encoding="utf-8"))
+                    if not isinstance(_pays0, list):
+                        _pays0 = []
+                except Exception:
+                    _pays0 = []
+                _dupgrant = bool(data.get("payment_id")) and any(
+                    p.get("id") == data.get("payment_id") and p.get("granted") for p in _pays0)
+                if good and _dupgrant and data.get("payment_status") in ("finished", "confirmed"):
+                    rec["granted"] = "dup"
+                if good and not _dupgrant and data.get("payment_status") in ("finished", "confirmed"):
                     try:
                         _uid, _pkg, _ts = str(data.get("order_id")).split("|")[:3]
                         if _pkg == "setup":
@@ -12349,6 +12443,40 @@ class H(BaseHTTPRequestHandler):
                         pays = []
                 except Exception:
                     pays = []
+                if good:
+                    try:
+                        _st = str(data.get("payment_status") or "")
+                        _seen = any(p.get("id") == rec["id"] and p.get("status") == rec["status"] for p in pays)
+                        _oid = (str(data.get("order_id") or "").split("|") + ["", ""])
+                        _ouid, _opkg = _oid[0], _oid[1]
+                        _ou = next((x for x in users() if x.get("id") == _ouid), None)
+                        _nm = (_ou.get("name") if _ou else None) or _ouid or "?"
+                        _lab = PACKAGES.get(_opkg, {}).get("label") or _opkg
+                        _en = member_lang(_ouid) == "en"
+                        if not _seen:
+                            if rec.get("granted") in PACKAGES:
+                                queue_push("kino", "\U0001f4b0 Paiement re\u00e7u \u00b7 " + _lab,
+                                           f"{_nm} \u00b7 ${float(rec.get('amount') or 0):.0f} \u00b7 abonnement activ\u00e9.")
+                            elif _st in ("finished", "confirmed") and rec.get("granted") not in ("dup", "setup", "share"):
+                                queue_push("kino", "\u26a0\ufe0f Paiement \u00e0 v\u00e9rifier",
+                                           f"{_nm} \u00b7 {_opkg} \u00b7 ${float(rec.get('amount') or 0):.2f} \u2014 le montant ne couvre pas le paquet.")
+                            if rec.get("granted") == "short" or _st == "partially_paid":
+                                queue_push("kino", "\u26a0\ufe0f Paiement incomplet \u00b7 " + _lab,
+                                           f"{_nm} a pay\u00e9 une partie seulement. Compl\u00e9tez-le ou remboursez-le sur NOWPayments.")
+                                queue_push(_ouid, "\u23f3 " + ("Payment incomplete" if _en else "Paiement incomplet"),
+                                           ("Your payment arrived but a small part is missing. The Owl will sort it out with you on Telegram." if _en
+                                            else "Votre paiement est arriv\u00e9 mais il en manque une petite partie. Le Owl vous \u00e9crit sur Telegram pour le compl\u00e9ter."))
+                            if _st in ("expired", "failed") and _ou and _ou.get("pending_pay"):
+                                queue_push(_ouid, "\u23f3 " + ("Payment expired" if _en else "Paiement expir\u00e9"),
+                                           ("The payment window closed. Open the app and pick your package again." if _en
+                                            else "La fen\u00eatre de paiement s\u2019est ferm\u00e9e. Ouvrez l\u2019app et choisissez de nouveau votre paquet."))
+                            if _st == "refunded":
+                                queue_push("kino", "\u21a9\ufe0f Paiement rembours\u00e9", f"{_nm} \u00b7 {_lab}")
+                            if _st in ("finished", "confirmed") and _ouid and _ou is None and _opkg in PACKAGES:
+                                queue_push("kino", "\u26a0\ufe0f Paiement d\u2019un compte introuvable",
+                                           f"{_ouid} a pay\u00e9 {_lab} mais son compte n\u2019existe plus. Recr\u00e9ez-le ou remboursez.")
+                    except Exception:
+                        pass
                 pays.append(rec)
                 json.dump(pays[-500:], open(PAY_FILE, "w", encoding="utf-8"), indent=1)
                 self._send("ok" if good else "bad signature", "text/plain")
@@ -12473,7 +12601,7 @@ class H(BaseHTTPRequestHandler):
                 self.end_headers()
                 return
             try:
-                import random as _rl
+                import secrets as _rl
                 code = "".join(_rl.choice("ABCDEFGHJKLMNPQRSTUVWXYZ23456789") for _ in range(10))
                 lp = os.path.join(DIR, "owl_tg_links.json")
                 try:
@@ -13153,8 +13281,12 @@ class H(BaseHTTPRequestHandler):
                 body = self.rfile.read(ln).decode("utf-8", "replace")
                 import urllib.parse as _up
                 code = (_up.parse_qs(body).get("code", [""])[0] or "")
+                if code_guess_blocked(("tok", u["id"])):
+                    self._send(json.dumps({"ok": False, "err": "too many tries"}), "application/json")
+                    return
                 _ce = peek_activation_code(code)
                 if not _ce:
+                    code_guess_fail(("tok", u["id"]))
                     self._send(json.dumps({"ok": False,
                                            "err": "bad code"}),
                                "application/json")
@@ -13813,7 +13945,11 @@ class H(BaseHTTPRequestHandler):
         elif sub == "signals":
             # 2026-09-28: the signals the member's desk emitted (last 100)
             try:
-                lst = json.load(open(os.path.join(DIR, f"owl_signals_{user.get('id')}.json"), encoding="utf-8"))
+                if user.get("app_only") and not has(user.get("id"), "manual"):
+                    # the robot's real signals are the Signal package: nothing for anyone else
+                    self._send(json.dumps({"items": [], "score": None}), "application/json")
+                    return
+                lst = sig_source(user.get("id"))
                 _era = era_ts(user)
                 lst = sig_merge(user.get("id"), [x for x in lst if isinstance(x, dict) and (not _era or x.get("t", 0) >= _era)])
                 self._send(json.dumps({"items": lst[-100:][::-1], "score": sig_score(user.get("id"), _era)}), "application/json")
@@ -13885,6 +14021,11 @@ class H(BaseHTTPRequestHandler):
                     return
                 if _tf not in ("M15", "H1", "H4"):
                     _tf = "H1"
+                # the higher-timeframe panel is part of Strategie: the data
+                # itself stays on the server for anyone without it
+                if not (admin_cookie_ok(self.headers) or is_admin(user) or has(user.get("id"), "strategy") or has(user.get("id"), "family")):
+                    self._send(json.dumps({"err": "strategy"}), "application/json")
+                    return
                 _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
                 _d = dict((_h.get("tf") or {}).get(_tf) or {})
                 _d["tf"] = _tf
@@ -13931,6 +14072,11 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             d["trades"] = tr
+            # the protected points, breaks and marks are what Strategie sells:
+            # the page hides them for everyone else, and the data is not sent
+            if not (admin_cookie_ok(self.headers) or is_admin(user) or has(uid, "strategy") or has(uid, "family")):
+                for _k in ("dots", "marks", "breaks", "int_dots", "int_marks"):
+                    d[_k] = []
             # 2026-09-27: the member's closed trades (entry -> exit arrows)
             try:
                 nd2 = json.load(open(os.path.join(DIR, "nest_data", f"{uid}.json")))
@@ -13980,6 +14126,23 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(d), "application/json")
         elif sub == "manual_state":
             # assisted manual trading on the live account (2026-09-15)
+            if is_signal_member(user):
+                # an app-only Signal member: the latest real signal of the robot
+                _uid = user.get("id")
+                _era = era_ts(user)
+                _lst = [x for x in sig_source(_uid) if not _era or x.get("t", 0) >= _era]
+                _d = {"mode": "manual", "signal": (_lst[-1] if _lst else None)}
+                try:
+                    _d["px"] = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")).get("px")
+                except Exception:
+                    pass
+                try:
+                    if isinstance(_d["signal"], dict):
+                        sig_merge(_uid, [_d["signal"]])
+                except Exception:
+                    pass
+                self._send(json.dumps(_d), "application/json")
+                return
             if not manual_ok(user):
                 self.send_response(404)
                 self.end_headers()

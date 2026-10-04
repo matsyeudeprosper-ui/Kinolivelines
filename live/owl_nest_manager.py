@@ -116,10 +116,18 @@ while True:
         _keep = []
         for u in users:
             # 2026-10-03 (owner): opened from the public page, never paid
-            if u.get("pending_pay") and not u.get("terminal") and time.time() - float(u.get("created") or time.time()) > 48 * 3600:
-                say(f"removing unpaid signup {u.get('id')}")
-                _changed = True
-                continue
+            if u.get("pending_pay") and not u.get("terminal") and time.time() - float(u.get("created") or time.time()) > 7 * 86400:
+                _inflight = False
+                try:
+                    for _p in json.load(open(os.path.join(DIR, "owl_payments.json"), encoding="utf-8")):
+                        if str(_p.get("order") or "").startswith(str(u.get("id")) + "|") and _p.get("status") not in ("expired", "failed", "refunded"):
+                            _inflight = True
+                except Exception:
+                    pass
+                if not _inflight:
+                    say(f"removing unpaid signup {u.get('id')}")
+                    _changed = True
+                    continue
             _ps = u.get("pending_since")
             if not _ps:
                 _keep.append(u)
