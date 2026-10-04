@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-03T20:00:07Z",
+ "updated": "2026-10-04T00:30:05Z",
  "hypotheses": [
   {
    "id": "target_09",
@@ -163,6 +163,11 @@
    "t": "2026-10-03T20:00:07Z",
    "looked": ["wake_context new trade (1)", "scrutiny --by nerv", "scrutiny --streaks", "scrutiny --by kind", "cuts.json (FLIP-BOS pile exists)"],
    "saw": "38th trade: FLIP-BOS BUY lost -9.36, pace 1.126 (1.0-1.3 bucket now 12 tr 42% +5.03). Loss ~2x the usual loss (avg loss 3-4.6) - bigger lot or wider stop. By kind: BOS 17 tr 65% +21.07 PF 1.75; FLIP-BOS 18 tr 44% -0.89 PF 0.97; INT 3 tr 33% -10.86. Not sleepy, so sleepy_market untouched. FLIP-BOS pile already open -> no new pile, no harness run, no proposal."
+  },
+  {
+   "t": "2026-10-04T00:30:05Z",
+   "looked": ["wake_context (4h timer)", "asks.json", "metrics.json trade count"],
+   "saw": "Still 38 trades, no close since the 2026-10-03 FLIP-BOS loss, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
