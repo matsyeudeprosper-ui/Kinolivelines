@@ -45,7 +45,17 @@
    "what_en": "A dial (in points) that refuses an entry when the price already rose more than X points in the last hour for a buy (or fell more than X for a sell). Today's 'run' brake (ext_pts) only looks at the size of the move, not its direction: it also cuts entries made after a pullback.",
    "why_fr": "Sur les 45 vrais trades du compte avec plafond : aucune des 15 pertes n'est entrée après une heure partie contre le trade, contre 5 gains sur 30 (17 %). La taille du mouvement, elle, ne sépare rien (127 contre 155 points). C'est peu de trades, mais le sens semble compter plus que la taille, et le menu ne peut pas le tester.",
    "why_en": "On the capped account’s 45 real trades: none of the 15 losses entered after an hour that went against the trade, versus 5 of 30 wins (17%). The size of the move separates nothing (127 versus 155 points). Few trades, but the direction seems to matter more than the size, and the menu cannot test it.",
-   "status": "open"
+   "status": "built",
+   "key": "chase_pts",
+   "built_note_fr": "Le robot peut maintenant tester de refuser une entrée quand la dernière heure est déjà partie de plus de X points dans le sens du trade, sans toucher aux entrées faites après un recul. Rien ne change dans le robot tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The robot can now test refusing an entry when the last hour already moved more than X points the trade's way, while leaving entries made after a pullback alone. Nothing changes in the robot until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--chase",
+    "a": 0,
+    "b": 300
+   },
+   "built_date": "2026-10-04",
+   "built_commit": "0ffdd8c"
   },
   {
    "id": "wait_after_win",
@@ -78,6 +88,17 @@
    "what_en": "A new setting for the test: refuse an entry when the market's pace at entry is under X (X between 0.5 and 0.95; 1.0 = the usual pace). The default, 0, changes nothing. Everything else stays the same, catch-up trades included. I would test 0.6, 0.7 and 0.8.",
    "why_fr": "Sur les 37 vrais trades, quand le marché est presque endormi (allure sous 0,8) : 6 trades, 2 gagnés, -19 $. Juste au-dessus (0,8 à 1,0) : 8 trades, 7 gagnés, +15 $. Couper l'heure de minuit à la place coûte 68 $ sur 42 jours : ce n'est donc pas l'heure. Couper les petites bougies non plus. Il faut tester l'endormissement lui-même. Peu de trades.",
    "why_en": "On the 37 real trades, when the market is almost asleep (pace under 0.8): 6 trades, 2 won, -$19. Just above (0.8 to 1.0): 8 trades, 7 won, +$15. Cutting the midnight hour instead costs $68 over 42 days: so it is not the hour. Cutting small candles does not work either. The sleepiness itself must be tested. Few trades.",
+   "status": "open"
+  },
+  {
+   "id": "flip_hot_size",
+   "date": "2026-10-04",
+   "title_fr": "Miser moins sur un changement de sens quand le marché est nerveux",
+   "title_en": "Stake less on a change of direction when the market is nervous",
+   "what_fr": "Un nouveau réglage pour le test : multiplier la mise par X (entre 0,25 et 1,0) seulement sur un trade de changement de sens pris quand l'allure du marché est de 1,0 ou plus. Le trade est toujours pris : la direction et les trades qui le suivent ne changent pas. Par défaut 1,0, qui ne change rien. Je testerais 0,5 et 0,75, seul puis en visant autant que ce qu'on risque.",
+   "what_en": "A new setting for the test: multiply the stake by X (between 0.25 and 1.0) only on a change-of-direction trade taken when the market's pace is 1.0 or more. The trade is still taken: the direction and the trades that follow it do not change. Default 1.0, which changes nothing. I would test 0.5 and 0.75, alone and then aiming for as much as we risk.",
+   "why_fr": "Sur les 42 derniers jours, le test compte 66 changements de sens en marché nerveux : 54 % gagnés, 0 $ au total, -25 $ sur la deuxième moitié. En marché calme : 55 trades, 76 % gagnés, +82 $. Les vrais trades disent pareil : 13 changements de sens nerveux, 4 gagnés. Ne plus les prendre casserait le robot (déjà testé), miser moins dessus garderait tout le reste.",
+   "why_en": "Over the last 42 days the test counts 66 changes of direction in a nervous market: 54% won, $0 in all, -$25 in the second half. In a calm market: 55 trades, 76% won, +$82. The real trades say the same: 13 nervous changes of direction, 4 won. Dropping them would break the robot (already tested); staking less on them keeps everything else.",
    "status": "open"
   }
  ]
