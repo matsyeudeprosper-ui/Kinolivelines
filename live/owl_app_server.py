@@ -298,7 +298,7 @@ MANUAL_MODES = ("manual", "semi")
 # auto      : copy of the owner's account on MQL5 Signals (link only)
 ENT_FILE = os.path.join(DIR, "owl_entitlements.json")
 PAY_FILE = os.path.join(DIR, "owl_payments.json")
-PACKAGES = {"manual": {"usd": 3, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal   *** TEMPORARY $3 for the real-money test (2026-10-04) - put back 29 ***
+PACKAGES = {"manual": {"usd": 15, "days": 30, "label": "Signal"},   # 2026-10-03 (owner): Manuel -> Signal   *** TEMPORARY $3 for the real-money test (2026-10-04) - put back 29 ***
             "strategy": {"usd": 49, "days": 30, "label": "Strat\u00e9gie"}}   # separate packages, they combine
 MANUAL_CAP = 100000      # 2026-10-04: Signal is app-only now - no terminal, no cap
 FAMILY_CAP = 50          # 2026-10-03 (owner): at most 50 family (Automatique) accounts on this VPS
@@ -11268,6 +11268,15 @@ def handle_login(form):
               if str(x.get("login")) == login
               or str(x.get("mt5_login") or "") == login), None)
     if u is not None:
+        if u.get("app_pwd") and not u.get("mt5_password"):
+            # 2026-10-04: an app account whose identifiant is a number
+            if u.get("app_pwd") != _app_hash(pwd):
+                rate_fail(("login", login))
+                return ("page", _join_result("&#128274; Mot de passe incorrect",
+                                             "<p>Le mot de passe est celui choisi &agrave; l&#8217;activation.</p><p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
+            if _member_active(u):
+                return ("redirect", f"https://owltrader.duckdns.org/{u['token']}/")
+            return ("page", _offers_page(login, pwd, u.get("pending_code") or u.get("plan"), u.get("name", "")))
         if (u.get("mt5_password") or "") == pwd:
             if not _member_active(u):
                 # 2026-10-04 (owner): known, but no running package - the offers
@@ -11370,6 +11379,8 @@ def _find_member(raw_login, pwd):
         return u if (u and u.get("app_pwd") == _app_hash(pwd)) else None
     login = _re.sub(r"\D", "", raw_login)[:12]
     u = next((x for x in users() if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
+    if u and u.get("app_pwd") and not u.get("mt5_password"):
+        return u if u.get("app_pwd") == _app_hash(pwd) else None
     return u if (u and (u.get("mt5_password") or "") == pwd) else None
 
 
@@ -11390,7 +11401,9 @@ def _file_pending(form):
     if u is None:
         if not name:
             return None
-        rec = _new_app_only_record(name, pwd, "", pkg, allu)
+        rec = _new_app_only_record(name, pwd, "", pkg, allu, raw)
+        if rec is None:
+            return None
         rec.pop("app_only", None)
         rec.update({"via": "telegram"})
         if pkg == "family" and ml:
@@ -11492,7 +11505,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     if not code:
         if not name:
             return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
-        return _activate_buy(name, pwd, tg, buy, origin)
+        return _activate_buy(name, pwd, tg, buy, origin, raw_login)
     ce = peek_activation_code(code)
     if not ce:
         rate_fail(("activate", code))
@@ -11533,7 +11546,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         nm = name or (raw_login if _re.search(r"[A-Za-z]", raw_login) else "")
         if not nm:
             return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
-        return _activate_app_only(nm, pwd, tg, pkg, days, code)
+        return _activate_app_only(nm, pwd, tg, pkg, days, code, raw_login)
     us = users()
     known = next((x for x in us if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
     if known is not None:
@@ -11614,17 +11627,29 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                         "ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
 
 
-def _new_app_only_record(name, pwd, tg, pkg, allu):
+def _new_app_only_record(name, pwd, tg, pkg, allu, ident=""):
+    """2026-10-04 (owner): the identifiant is what was typed at the login
+    (letters or digits), when given and free; else it comes from the
+    name. Returns None when the typed identifiant is already taken."""
     import re as _re
-    base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
-    uid, n = base, 1
-    while any(u.get("id") == uid for u in allu):
-        n += 1
-        uid = f"{base}{n}"
+    want = _re.sub(r"[^a-z0-9]", "", (ident or "").lower())[:24]
+    if want:
+        if any(u.get("id") == want or str(u.get("login") or "") == want or str(u.get("mt5_login") or "") == want for u in allu):
+            return None
+        uid = want
+    else:
+        base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
+        uid, n = base, 1
+        while any(u.get("id") == uid for u in allu):
+            n += 1
+            uid = f"{base}{n}"
     token = uid + secrets.token_hex(2)
-    return {"id": uid, "name": name, "token": token, "app_only": True, "app_pwd": _app_hash(pwd),
-            "plan": pkg, "telegram": tg, "created": int(time.time()),
-            "era_start": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    rec = {"id": uid, "name": name, "token": token, "app_only": True, "app_pwd": _app_hash(pwd),
+           "plan": pkg, "telegram": tg, "created": int(time.time()),
+           "era_start": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    if uid.isdigit():
+        rec["login"] = int(uid)          # found by number at the login, like a family account
+    return rec
 
 
 def _tg_link_html(uid):
@@ -11646,14 +11671,17 @@ def _tg_link_html(uid):
         return ""
 
 
-def _activate_app_only(name, pwd, tg, pkg, days, code):
+def _activate_app_only(name, pwd, tg, pkg, days, code, ident=""):
     """A Signal / Strategie account from a code: identifiant + password,
     the package for `days`, the public demo's view under their name."""
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
     except Exception:
         allu = []
-    rec = _new_app_only_record(name, pwd, tg, pkg, allu)
+    rec = _new_app_only_record(name, pwd, tg, pkg, allu, ident)
+    if rec is None:
+        return _join_result("&#128274; Cet identifiant est d&eacute;j&agrave; pris",
+                            "<p>Si c&#8217;est le v&ocirc;tre, connectez-vous avec son mot de passe ; sinon choisissez-en un autre.</p><p><a href=\"/\">&larr; Retour</a></p>")
     rec["via"] = "code"
     allu.append(rec)
     json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
@@ -11675,7 +11703,7 @@ def _activate_app_only(name, pwd, tg, pkg, days, code):
     link = f"https://owltrader.duckdns.org/{rec['token']}/"
     return _join_result("&#127881; Bienvenue dans le nid, " + name + " !",
                         f"<p><b>{labels.get(pkg, pkg)}</b> &middot; {days} jours. Votre page est pr&ecirc;te.</p>"
-                        f"<p>Votre identifiant : <b>{rec['id']}</b> &mdash; avec votre mot de passe, il vous reconnecte depuis n&#8217;importe quel t&eacute;l&eacute;phone (&laquo; Se connecter &raquo;).</p>"
+                        f"<p>Votre identifiant : <b>{rec['id']}</b> &mdash; celui que vous avez tap&eacute; &agrave; la connexion, avec le m&ecirc;me mot de passe. Ils vous reconnectent depuis n&#8217;importe quel t&eacute;l&eacute;phone.</p>"
                         + ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
                            else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
                         + f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
@@ -11683,7 +11711,7 @@ def _activate_app_only(name, pwd, tg, pkg, days, code):
                         + _tg_link_html(rec["id"]))
 
 
-def _activate_buy(name, pwd, tg, pkg, origin):
+def _activate_buy(name, pwd, tg, pkg, origin, ident=""):
     """Signal / Strategie bought in crypto from the public page: the
     account is created 'waiting for the payment' (no terminal yet), the
     NOWPayments page opens; the webhook activates it (and the provisioner
@@ -11698,7 +11726,10 @@ def _activate_buy(name, pwd, tg, pkg, origin):
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
     except Exception:
         allu = []
-    rec = _new_app_only_record(name, pwd, tg, pkg, allu)
+    rec = _new_app_only_record(name, pwd, tg, pkg, allu, ident)
+    if rec is None:
+        return _join_result("&#128274; Cet identifiant est d&eacute;j&agrave; pris",
+                            "<p>Si c&#8217;est le v&ocirc;tre, connectez-vous avec son mot de passe ; sinon choisissez-en un autre.</p><p><a href=\"/\">&larr; Retour</a></p>")
     rec.update({"via": "crypto", "pending_pay": True})
     uid, token = rec["id"], rec["token"]
     allu.append(rec)
