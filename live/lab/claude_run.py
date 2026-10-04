@@ -27,16 +27,17 @@ MODELS = [None, "sonnet", "haiku"]
 TOOLS = ["Bash(python *)", "Read", "Write", "Edit", "Glob", "Grep"]
 LIMIT_RE = re.compile(r"rate.?limit|usage limit|limit reached|out of (?:tokens|credits)|quota|overloaded|529|too many requests|"
                       r"capacity|try again later|temporarily unavailable|service unavailable|not available|"
-                      r"api error|connection error|ECONNRESET|fetch failed|timed out", re.I)
+                      r"api error|connection error|ECONNRESET|fetch failed|timed out|not a valid model|unknown model|invalid model|does not exist", re.I)
 MARK = os.path.join(LAB, "model_fallback.json")
 
 
 def _looks_limited(rc, out, err):
+    """A run that did not deliver: non-zero exit with little said (a
+    model that is out, unknown, overloaded, or died early), or a short
+    answer that only says it could not."""
     text = (out or "")[-4000:] + (err or "")[-4000:]
-    if rc != 0 and LIMIT_RE.search(text):
+    if rc != 0 and len((out or "").strip()) < 2000:
         return True
-    if rc != 0 and not (out or "").strip():
-        return True                      # died before saying anything
     if LIMIT_RE.search(text) and len((out or "").strip()) < 400:
         return True                      # said only that it could not
     return False
@@ -71,6 +72,7 @@ def _note(model, why, who):
 def run(mission, turns=30, tools=None, cwd=LIVE, timeout=1500, log=None, who="le labo", models=None):
     """Returns (rc, output, model_used). model_used is None for the default."""
     last = (-1, "", "")
+    fell_back = False
     for model in (models or MODELS):
         cmd = [CLAUDE, "-p", mission, "--output-format", "text", "--max-turns", str(turns), "--allowedTools"] + list(tools or TOOLS)
         if model:
@@ -88,9 +90,10 @@ def run(mission, turns=30, tools=None, cwd=LIVE, timeout=1500, log=None, who="le
             except Exception:
                 pass
         if not _looks_limited(rc, out, err):
-            if model:
+            if fell_back:
                 _note(model, "ok après repli", who)
             return rc, out, model
+        fell_back = True
         why = (LIMIT_RE.search((out + err)[-4000:]) or [None])[0] if LIMIT_RE.search((out + err)[-4000:]) else ("rc %s, sans réponse" % rc)
         last = (rc, out, err)
         nxt = (models or MODELS)[(models or MODELS).index(model) + 1] if (models or MODELS).index(model) + 1 < len(models or MODELS) else None
