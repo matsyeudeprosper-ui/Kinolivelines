@@ -96,7 +96,9 @@
     "flag": "--nerv-floor",
     "a": 0,
     "b": 0.8
-   }
+   },
+   "built_date": "2026-10-04",
+   "built_commit": "1acdfa5"
   },
   {
    "id": "flip_hot_size",
