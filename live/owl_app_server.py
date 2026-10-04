@@ -2909,6 +2909,7 @@ async function appLogout(){const en=LANG()==='en';
   '<button class="shbtn shmain" onclick="_shDone(1)">'+(en?'Log out':'Se d\u00e9connecter')+'</button><button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
  if(!ok)return;
  try{localStorage.removeItem('owlLink');sessionStorage.removeItem('owlTwa');if(localStorage.getItem('owl_adm')===B)localStorage.removeItem('owl_adm');}catch(e){}
+ try{document.cookie='owlLink=;max-age=0;path=/;SameSite=Lax;Secure';}catch(e){}
  location.replace('/');}
 function appBack(){document.documentElement.classList.remove('locked');
  const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots'),back=document.getElementById('lock-back'),fg=document.getElementById('lock-forgot');
@@ -8184,9 +8185,16 @@ window.addEventListener('appinstalled',()=>{
 // the app opens straight on it; inside the app (?twa=<version>) a newer
 // APK is announced; in a browser on Android the APK is suggested once a
 // fortnight. The APK installs over the old one - nothing to uninstall.
-(function(){try{var m=location.pathname.match(/^[/]([A-Za-z0-9_-]{6,})[/]/);var adm=localStorage.getItem('owl_adm');
-  // the admin's phone remembers the admin's own page, not the member's it is visiting
-  if(m&&(!adm||adm==='/'+m[1]+'/'))localStorage.setItem('owlLink','/'+m[1]+'/');}catch(e){}
+(function(){try{var m=location.pathname.match(/^[/]([A-Za-z0-9_-]{6,})[/]/);var adm=null;try{adm=localStorage.getItem('owl_adm');}catch(e){}
+  // the admin's phone remembers the admin's own page, not the member's it is visiting -
+  // except right after a login (?in=1): that is a choice, and the app must reopen on it
+  var fresh=new URLSearchParams(location.search).get('in')==='1';
+  if(m&&(fresh||!adm||adm==='/'+m[1]+'/')){var lk='/'+m[1]+'/';
+   try{localStorage.setItem('owlLink',lk);}catch(e){}
+   try{document.cookie='owlLink='+lk+';max-age=31536000;path=/;SameSite=Lax;Secure';}catch(e){}}
+  if(fresh){try{history.replaceState(null,'',location.pathname+location.hash);}catch(e){}}
+  // keep the phone from evicting what makes the app open on the account
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}}catch(e){}
  try{var q=new URLSearchParams(location.search).get('twa');if(q)sessionStorage.setItem('owlTwa',q);}catch(e){}
  setTimeout(apkCheck,1800);
  // 2026-10-04 (owner): a Signal / Strategie member has no robot - the robot settings stay out of sight
@@ -10698,6 +10706,7 @@ button,a.b{display:block;width:100%;box-sizing:border-box;margin-top:12px;border
 <script>
 var V=(new URLSearchParams(location.search).get('v')||'');
 (function(){var l=null;try{l=localStorage.getItem('owlLink');}catch(e){}
+ if(!l){var mc=(document.cookie||'').match(/(?:^|;\s*)owlLink=([^;]+)/);if(mc)l=decodeURIComponent(mc[1]);}
  if(l&&/^[/][A-Za-z0-9_-]{6,}[/]$/.test(l)){location.replace(l+(V?'?twa='+encodeURIComponent(V):''));return;}
  location.replace('/');})();
 function go(){var t=document.getElementById('lnk').value.trim();var m=t.match(/[/]([A-Za-z0-9_-]{6,})[/]?(?:[?#]|$)/);
@@ -11509,7 +11518,7 @@ def handle_login(form):
         au = next((x for x in users() if (x.get("app_only") or x.get("app_login")) and x.get("id") == ident), None)
         if au is not None and au.get("app_pwd") == _app_hash(pwd):
             if _member_active(au):
-                return ("redirect", f"https://owltrader.duckdns.org/{au['token']}/")
+                return ("redirect", f"https://owltrader.duckdns.org/{au['token']}/?in=1")
             return ("page", _offers_page(raw, pwd, au.get("pending_code") or au.get("plan"), au.get("name", "")))
         if au is not None:
             rate_fail(("login", ident))
@@ -11537,14 +11546,14 @@ def handle_login(form):
                 return ("page", _join_result("&#128274; Mot de passe incorrect",
                                              "<p>Le mot de passe est celui choisi &agrave; l&#8217;activation.</p><p><a href=\"/\">&larr; R&eacute;essayer</a></p>"))
             if _member_active(u):
-                return ("redirect", f"https://owltrader.duckdns.org/{u['token']}/")
+                return ("redirect", f"https://owltrader.duckdns.org/{u['token']}/?in=1")
             return ("page", _offers_page(login, pwd, u.get("pending_code") or u.get("plan"), u.get("name", "")))
         if (u.get("mt5_password") or "") == pwd:
             if not _member_active(u):
                 # 2026-10-04 (owner): known, but no running package - the offers
                 return ("page", _offers_page(login, pwd, u.get("pending_code") or u.get("plan"), u.get("name", "")))
             return ("redirect", f"https://owltrader.duckdns.org/"
-                                f"{u['token']}/")
+                                f"{u['token']}/?in=1")
         rate_fail(("login", login))
         return ("page", _join_result(
             "&#128274; Mot de passe incorrect",
@@ -11604,7 +11613,7 @@ def handle_register(form):
         "&#129417; Nid en pr&eacute;paration !",
         f"<p>Bienvenue {name} ! Votre espace se construit "
         "(environ 2 minutes).</p>"
-        f"<p><a href=\"{link}\">Ouvrir mon OwlNest</a></p>"
+        f"<p><a href=\"{link}?in=1\">Ouvrir mon OwlNest</a></p>"
         "<p style=\"color:#8fa1b3;font-size:.85rem\">Si les "
         "identifiants sont incorrects, la page vous le dira et "
         "l&#8217;essai sera nettoy&eacute; automatiquement.</p>")
@@ -11857,7 +11866,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         link = f"https://owltrader.duckdns.org/{known['token']}/"
         return _join_result("&#9989; " + labels.get(pkg, pkg) + " renouvel&eacute;",
                             f"<p>{days} jours de plus sur le compte de {known.get('name') or name}.</p>"
-                            f"<p><a href=\"{link}\">Ouvrir mon OwlNest</a></p>")
+                            f"<p><a href=\"{link}?in=1\">Ouvrir mon OwlNest</a></p>")
     if not name:
         return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
     if pkg == "family" and family_count() >= FAMILY_CAP:
@@ -11902,7 +11911,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
             else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
     return _join_result("&#127881; Bienvenue dans le nid, " + name + " !",
                         f"<p><b>{labels.get(pkg, pkg)}</b> &middot; {days} jours. Votre OwlNest se pr&eacute;pare (2-3 minutes).</p>" + what +
-                        f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
+                        f"<p>Votre lien personnel :</p><p><a href=\"{link}?in=1\">{link}</a></p>"
                         "<p style=\"color:#9aa7b4;font-size:.85rem\">Gardez-le pr&eacute;cieusement, ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil "
                         "ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
 
@@ -11986,7 +11995,7 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident=""):
                         f"<p>Votre identifiant : <b>{rec['id']}</b> &mdash; celui que vous avez tap&eacute; &agrave; la connexion, avec le m&ecirc;me mot de passe. Ils vous reconnectent depuis n&#8217;importe quel t&eacute;l&eacute;phone.</p>"
                         + ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
                            else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
-                        + f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
+                        + f"<p>Votre lien personnel :</p><p><a href=\"{link}?in=1\">{link}</a></p>"
                         "<p style=\"color:#9aa7b4;font-size:.85rem\">Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>"
                         + _tg_link_html(rec["id"]))
 
@@ -12033,7 +12042,7 @@ def _activate_buy(name, pwd, tg, pkg, origin, ident=""):
     link = f"https://owltrader.duckdns.org/{token}/"
     if not url:
         return _join_result("&#9888;&#65039; La page de paiement n&#8217;a pas r&eacute;pondu",
-                            f"<p>Votre compte est cr&eacute;&eacute; mais pas encore actif. Ouvrez votre lien et payez depuis R&eacute;glages &rsaquo; Abonnement :</p><p><a href=\"{link}\">{link}</a></p>")
+                            f"<p>Votre compte est cr&eacute;&eacute; mais pas encore actif. Ouvrez votre lien et payez depuis R&eacute;glages &rsaquo; Abonnement :</p><p><a href=\"{link}?in=1\">{link}</a></p>")
     return ("redirect", url)
 
 
@@ -12110,7 +12119,7 @@ def handle_join(form):
         "&#127881; Bienvenue dans le nid, " + name + " !",
         "<p>Votre OwlNest se pr&eacute;pare (2-3 minutes).</p>"
         "<p>&#127873; Essai gratuit : <b>7 jours</b>.</p>"
-        f"<p>Votre lien personnel :</p><p><a href=\"{link}\">{link}</a></p>"
+        f"<p>Votre lien personnel :</p><p><a href=\"{link}?in=1\">{link}</a></p>"
         "<p style=\"color:#9aa7b4;font-size:.85rem\">Gardez-le "
         "pr&eacute;cieusement et ajoutez-le &agrave; votre &eacute;cran "
         "d&#8217;accueil.</p>")
