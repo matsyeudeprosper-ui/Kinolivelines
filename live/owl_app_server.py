@@ -11298,7 +11298,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             + (("<div class=\"or\" id=\"orline\">ou</div>"
                 "<button class=\"go buy\" id=\"buy\" type=\"button\" onclick=\"buyNow()\">Payer en crypto &middot; activation imm&eacute;diate</button>"
                 f"<div class=\"h\" id=\"payh\">{pay_help}</div>") if pay else "")
-            + (f"<a class=\"go sec\" id=\"tg\" href=\"{contact}\" target=\"_blank\" rel=\"noopener\" onclick=\"pend()\" "
+            + (f"<a class=\"go sec\" id=\"tg\" href=\"{contact}\" target=\"_blank\" rel=\"noopener\" data-h=\"{contact}\" onclick=\"pend(this)\" "
                "style=\"text-decoration:none;text-align:center;display:block;margin-top:10px\">&#9993; Pas de code ? &Eacute;crire au Owl</a>" if contact else "")
             + "<div class=\"h\" id=\"mh\" style=\"margin-top:14px\"></div></form>"
             "<button type=\"button\" class=\"go sec\" onclick=\"closeM()\" style=\"margin-top:10px\">Annuler</button></div>"
@@ -11307,6 +11307,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "function pick(k){P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
             "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
+            "document.getElementById('mh').textContent=fam?'Pour écrire au Owl, seul votre prénom suffit. Le numéro et le mot de passe MT5 ne servent qu’avec votre code.':'';"
             "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
             "document.getElementById('mt5').style.display=fam?'':'none';"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
@@ -11318,7 +11319,6 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "document.getElementById('pwl').textContent=fam?'Mot de passe du compte MT5':'Choisissez un mot de passe';"
             "document.getElementById('pw').placeholder=fam?'le mot de passe principal':'6 caract\u00e8res au moins';"
             "document.getElementById('pwh').textContent=fam?'Le mot de passe principal : le robot doit pouvoir passer les ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Notez-le quelque part. Vous pourrez aussi le retrouver par Telegram.';"
-            "document.getElementById('mh').textContent='';"
             "document.getElementById('bg').style.display='block';document.getElementById('md').style.display='block';"
             "document.body.style.overflow='hidden';setTimeout(function(){document.getElementById('name').focus();},180);}"
             "function closeM(){document.getElementById('bg').style.display='none';document.getElementById('md').style.display='none';document.body.style.overflow='';}"
@@ -11329,7 +11329,13 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "if(P==='family'&&!/^\\d{5,12}$/.test(l)){alert('Le num\u00e9ro de compte MT5, en chiffres.');return false;}"
             "if(!p||p.length<6){alert('Mot de passe : 6 caract\u00e8res au moins.');return false;}return true;}"
             "function buyNow(){if(!need())return;document.getElementById('act').value='buy';document.getElementById('f').submit();}"
-            "function pend(){if(!need()){event.preventDefault();return;}var fd=new FormData(document.getElementById('f'));fd.set('action','pending');"
+            "function pend(a){var nm=document.getElementById('name').value.trim();"
+            "if(P==='family'){if(!nm){alert('Votre prénom, s’il vous plaît.');event.preventDefault();return;}"
+            "var h=a.getAttribute('data-h'),L={manual:'Signal',strategy:'Stratégie',family:'Automatique'}[P];"
+            "a.href=h+(h.indexOf('?')<0?'?':'&')+'text='+encodeURIComponent('Bonjour, c’est '+nm+'. Je voudrais la formule '+L+'.');"
+            "var f2=new URLSearchParams();f2.set('action','pending');f2.set('pkg',P);f2.set('name',nm);"
+            "try{navigator.sendBeacon('/activate',f2);}catch(e){}return;}"
+            "if(!need()){event.preventDefault();return;}var fd=new FormData(document.getElementById('f'));fd.set('action','pending');"
             "try{navigator.sendBeacon('/activate',new URLSearchParams(fd));}catch(e){}}"
             "document.getElementById('code').addEventListener('input',function(){var c=this.value.trim().toUpperCase();var h=document.getElementById('ch');"
             "if(c.length<6){h.textContent='Six lettres et chiffres, re\u00e7us du Owl sur Telegram.';return;}"
@@ -11665,6 +11671,21 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     pkg_chosen = (form.get("pkg", [""])[0] or "").strip()
     if action == "buy" and pkg_chosen in ("manual", "strategy"):
         buy = pkg_chosen
+    if action == "pending" and pkg_chosen == "family" and not pwd:
+        if name and not rate_limited(("pend", name.lower()), limit=2):
+            rate_fail(("pend", name.lower()))
+            try:
+                _qf = os.path.join(DIR, "owl_push_queue.json")
+                try:
+                    _q = json.load(open(_qf, encoding="utf-8"))
+                except Exception:
+                    _q = []
+                _q.append({"uid": "kino", "t": int(time.time()), "title": "🔑 Demande Automatique · " + name,
+                           "body": "Il ou elle vous écrit sur Telegram. Générez-lui un code (Le Nid › Code) et envoyez-le."})
+                json.dump(_q, open(_qf, "w", encoding="utf-8"))
+            except Exception:
+                pass
+        return _join_result("&#9993; Demande envoy&eacute;e", "<p>Le Owl vous r&eacute;pond sur Telegram.</p>")
     if action == "pending":
         u = _file_pending(form)
         return _join_result("&#9993; Demande envoy&eacute;e",
