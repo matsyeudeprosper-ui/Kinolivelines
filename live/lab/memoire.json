@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-04T14:00:07Z",
+ "updated": "2026-10-04T15:30:19Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -32,7 +32,8 @@
    "evidence": [
     "2026-10-04: engine trace (base package, 42 d): flip nervous 66 tr 54.5% +0.35 (h1 +25.2, h2 -24.9); flip calm 55 tr 76.4% +82.0; cont nervous 72 tr 56.9% +20.3; cont calm 55 tr 56.4% +34.7. Real (in times-the-risk): FLIP nervous 13 tr 31% -6.2 R (h1 -5.7, h2 -0.5); FLIP calm 8 tr 62% +0.8 R. nerv_gate (refuse all nervous) is C and only_kind kills the structure, so asked for a size-only dial (flip_hot_size). Pile flip_hot opened.",
     "2026-10-04 veille: one more nervous FLIP lost (-2.21, pace 1.52); two BOS won (+3.45, +3.81). Pile flip_hot 13 tr 31% -9.45 $, h2 3/6. Still a hint.",
-    "2026-10-04 14:00 veille: FLIP-BOS SELL lost -4.23 (pace 1.309, normal-size loss, after the BOS win). Pile flip_hot 14 tr 29% -13.68 $ PF 0.57, halves 25%/33% - both halves losing. FLIP-BOS overall 22 tr 41% -17.59 PF 0.64; BOS 19 tr 68% +28.33."
+    "2026-10-04 14:00 veille: FLIP-BOS SELL lost -4.23 (pace 1.309, normal-size loss, after the BOS win). Pile flip_hot 14 tr 29% -13.68 $ PF 0.57, halves 25%/33% - both halves losing. FLIP-BOS overall 22 tr 41% -17.59 PF 0.64; BOS 19 tr 68% +28.33.",
+    "2026-10-04 15:30 veille: FLIP-BOS BUY won +3.00 (pace 1.609, 15 h UTC, right after the -4.23 FLIP loss). Pile flip_hot 15 tr 33% -10.68 $ PF 0.66, halves 25%/43% - still losing on both. After a loss inside the pile now 1/5 (peu)."
    ],
    "next": "When flip_hot_size is built: 0.5 and 0.75, alone and with rr1.0_nosun. Expect same money, smaller hole, better second half."
   },
@@ -477,6 +478,15 @@
     "scrutiny --by nerv"
    ],
    "saw": "44 trades. FLIP-BOS SELL lost -4.23, pace 1.309 (nervous), normal-size loss, right after a BOS win. As predicted. Pile flip_hot 14 tr 29% -13.68 PF 0.57, halves 25%/33%; inside it after a win 10 tr 40%, after a loss 0/4 (peu). FLIP-BOS 22 tr 41% -17.59; BOS 19 tr 68% +28.33. Pace 1.3-1.85 now 14 tr 43% +1.49. No harness run (flip_hot_size still not built), no pile, no proposal, no open ask."
+  },
+  {
+   "t": "2026-10-04T15:30:19Z",
+   "looked": [
+    "wake_context new trade (1)",
+    "scrutiny --pile flip_hot",
+    "asks.json (none open)"
+   ],
+   "saw": "45 trades. FLIP-BOS BUY won +3.00, pace 1.609 (nervous, 1.3-1.85), right after the -4.23 FLIP loss. Against the hypothesis's direction but a single win; pile flip_hot 15 tr 33% -10.68 PF 0.66, halves 25%/43%. Inside the pile: after a win 10 tr 40%, after a loss 5 tr 20%; 1.3-1.85 9 tr 33% -8.54. FLIP-BOS ~23 tr 43% -14.59; BOS unchanged 19 tr 68% +28.33. No harness run (flip_hot_size not built), no pile, no proposal."
   }
  ],
  "lessons": [
