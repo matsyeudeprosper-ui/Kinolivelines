@@ -12018,9 +12018,32 @@ class H(BaseHTTPRequestHandler):
                 secret = (nest_config().get("np_ipn_secret") or "").encode()
                 sig = self.headers.get("x-nowpayments-sig") or ""
                 data = json.loads(raw.decode("utf-8", "replace"))
-                canon = json.dumps(data, sort_keys=True, separators=(",", ":"))
-                good = secret and _hmac.compare_digest(
-                    _hmac.new(secret, canon.encode(), _hashlib.sha512).hexdigest(), sig)
+                try:
+                    open(os.path.join(DIR, "owl_ipn_raw.log"), "a", encoding="utf-8").write(
+                        time.strftime("%Y-%m-%d %H:%M:%S ") + sig[:16] + " " + raw.decode("utf-8", "replace")[:4000] + "\n")
+                except Exception:
+                    pass
+                # 2026-10-04: NOWPayments signs the JS canonical form; Python prints
+                # some numbers differently (1e-07 vs 1e-7, non-ASCII escapes), so
+                # several forms are tried
+                _c1 = json.dumps(data, sort_keys=True, separators=(",", ":"))
+                _c2 = json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+                _c3 = re.sub(r"e([+-])0(\d)", r"e\1\2", _c2)
+                good = bool(secret) and any(_hmac.compare_digest(_hmac.new(secret, _c.encode("utf-8"), _hashlib.sha512).hexdigest(), sig)
+                                            for _c in (_c1, _c2, _c3))
+                if not good and data.get("payment_id") and data.get("payment_status") in ("finished", "confirmed", "partially_paid"):
+                    # the signature disagrees: ask NOWPayments itself (our API key) before trusting the body
+                    try:
+                        import urllib.request as _uri
+                        _cfgk = nest_config().get("np_api_key") or ""
+                        _api = "https://api-sandbox.nowpayments.io" if nest_config().get("np_sandbox") else "https://api.nowpayments.io"
+                        _pr = json.loads(_uri.urlopen(_uri.Request(f"{_api}/v1/payment/{data.get('payment_id')}", headers={"x-api-key": _cfgk}), timeout=20).read().decode("utf-8", "replace"))
+                        good = (_pr.get("payment_status") == data.get("payment_status") and str(_pr.get("order_id")) == str(data.get("order_id"))
+                                and abs(float(_pr.get("price_amount") or 0) - float(data.get("price_amount") or 0)) < 0.01)
+                        if good:
+                            data["price_amount"] = _pr.get("price_amount")
+                    except Exception:
+                        good = False
                 rec = {"t": int(time.time()), "sig_ok": bool(good),
                        "status": data.get("payment_status"), "order": data.get("order_id"),
                        "amount": data.get("price_amount"), "pay_amount": data.get("pay_amount"),
