@@ -2507,9 +2507,9 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
  <!-- 2026-10-03 (owner): Sortir lives here now; it locks the page without leaving it -->
  <div class="srow" onclick="appExit()">
-  <div class="sic"><svg class="ic"><use href="#i-exit"/></svg></div>
-  <div style="flex:1"><b>Sortir</b>
-   <div class="ssub">Verrouille l&#39;application sur cet &eacute;cran</div></div>
+  <div class="sic"><svg class="ic"><use href="#i-lock"/></svg></div>
+  <div style="flex:1"><b>Verrouiller l&#39;&eacute;cran</b>
+   <div class="ssub">Cache l&#39;application sans quitter le compte</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <!-- 2026-10-03 (owner): the admin's way back from a member's page -->
@@ -2737,10 +2737,10 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    <div class="ssub">Celui de l&#39;app, pour vous connecter</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
- <div class="srow" onclick="appExit()">
-  <div class="sic"><svg class="ic"><use href="#i-switch"/></svg></div>
-  <div style="flex:1"><b>Changer de compte</b>
-   <div class="ssub">Verrouille cette page ; connectez-vous avec un autre compte</div></div>
+ <div class="srow" onclick="appLogout()">
+  <div class="sic"><svg class="ic"><use href="#i-exit"/></svg></div>
+  <div style="flex:1"><b>Se d&eacute;connecter</b>
+   <div class="ssub">Ce t&eacute;l&eacute;phone oublie ce compte ; vous pourrez en ouvrir un autre</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
  <div class="srow" id="delbtn">
@@ -2827,6 +2827,15 @@ function appExit(){const en=LANG()==='en';let pin=null;try{pin=localStorage.getI
  else{if(t)t.textContent=en?'See you soon':'\u00c0 bient\u00f4t';if(kp)kp.style.display='none';if(dots)dots.style.display='none';if(back){back.style.display='inline-flex';back.textContent=en?'Come back':'Revenir';}if(fg)fg.style.display='none';}
  window._shDone&&window._shDone(1);window.scrollTo(0,0);
  document.documentElement.classList.add('locked');}
+// 2026-10-04 (owner): a real logout - this phone forgets the account
+// (remembered link, admin memory if it is this account, the app session)
+// and goes back to the landing, where another account can log in
+async function appLogout(){const en=LANG()==='en';
+ const ok=await sheet('<h3>'+(en?'Log out?':'Se d\u00e9connecter ?')+'</h3><p style="color:var(--text2)">'+(en?'This phone forgets this account. To come back you will need your identifiant and password (or your personal link).':'Ce t\u00e9l\u00e9phone oublie ce compte. Pour revenir il faudra votre identifiant et votre mot de passe (ou votre lien personnel).')+'</p>'+
+  '<button class="shbtn shmain" onclick="_shDone(1)">'+(en?'Log out':'Se d\u00e9connecter')+'</button><button class="shbtn shghost" onclick="_shDone(null)">'+(en?'Cancel':'Annuler')+'</button>');
+ if(!ok)return;
+ try{localStorage.removeItem('owlLink');sessionStorage.removeItem('owlTwa');if(localStorage.getItem('owl_adm')===B)localStorage.removeItem('owl_adm');}catch(e){}
+ location.replace('/');}
 function appBack(){document.documentElement.classList.remove('locked');
  const kp=document.getElementById('lock-kp'),dots=document.getElementById('lock-dots'),back=document.getElementById('lock-back'),fg=document.getElementById('lock-forgot');
  if(kp)kp.style.display='';if(dots)dots.style.display='flex';if(back)back.style.display='none';if(fg)fg.style.display='';}
@@ -10574,7 +10583,7 @@ button,a.b{display:block;width:100%;box-sizing:border-box;margin-top:12px;border
 var V=(new URLSearchParams(location.search).get('v')||'');
 (function(){var l=null;try{l=localStorage.getItem('owlLink');}catch(e){}
  if(l&&/^[/][A-Za-z0-9_-]{6,}[/]$/.test(l)){location.replace(l+(V?'?twa='+encodeURIComponent(V):''));return;}
- document.getElementById('ask').style.display='block';})();
+ location.replace('/');})();
 function go(){var t=document.getElementById('lnk').value.trim();var m=t.match(/[/]([A-Za-z0-9_-]{6,})[/]?(?:[?#]|$)/);
  var tok=m?m[1]:(/^[A-Za-z0-9_-]{6,}$/.test(t)?t:'');
  if(!tok){alert('Ce lien ne ressemble pas &agrave; un lien OwlNest.');return;}
