@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-04T09:30:00Z",
+ "updated": "2026-10-04T12:00:10Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -30,7 +30,8 @@
    "fr": "Les changements de sens en marché nerveux ne rapportent rien ; ceux en marché calme portent le robot.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-04: engine trace (base package, 42 d): flip nervous 66 tr 54.5% +0.35 (h1 +25.2, h2 -24.9); flip calm 55 tr 76.4% +82.0; cont nervous 72 tr 56.9% +20.3; cont calm 55 tr 56.4% +34.7. Real (in times-the-risk): FLIP nervous 13 tr 31% -6.2 R (h1 -5.7, h2 -0.5); FLIP calm 8 tr 62% +0.8 R. nerv_gate (refuse all nervous) is C and only_kind kills the structure, so asked for a size-only dial (flip_hot_size). Pile flip_hot opened."
+    "2026-10-04: engine trace (base package, 42 d): flip nervous 66 tr 54.5% +0.35 (h1 +25.2, h2 -24.9); flip calm 55 tr 76.4% +82.0; cont nervous 72 tr 56.9% +20.3; cont calm 55 tr 56.4% +34.7. Real (in times-the-risk): FLIP nervous 13 tr 31% -6.2 R (h1 -5.7, h2 -0.5); FLIP calm 8 tr 62% +0.8 R. nerv_gate (refuse all nervous) is C and only_kind kills the structure, so asked for a size-only dial (flip_hot_size). Pile flip_hot opened.",
+    "2026-10-04 veille: one more nervous FLIP lost (-2.21, pace 1.52); two BOS won (+3.45, +3.81). Pile flip_hot 13 tr 31% -9.45 $, h2 3/6. Still a hint."
    ],
    "next": "When flip_hot_size is built: 0.5 and 0.75, alone and with rr1.0_nosun. Expect same money, smaller hole, better second half."
   },
@@ -454,6 +455,17 @@
     "engine trace by kind x pace"
    ],
    "saw": "42 trades, 52%, +0.30 $ but -2.84 R: dollars hide a small loss because lots grew 0.01->0.04. Weekend losses -9.36/-11.56 = full stops at 0.04 lot (234/289 pts), not anomalies. FLIP 21 tr 43% -5.4 R (both halves neg), BOS 18 tr 67% +3.8 R. FLIP nervous 13 tr 31% -6.2 R, calm 8 tr 62%. Gap 15-60 min 10 tr 80% +4.3 R both halves; gap 60-240 8 tr 25% -4.9 R both halves (hint). Move 1 14 tr 36% -4.8 R. Sunday 13 tr 31%. Engine agrees on the flip/cont split since 09-24. New pile flip_hot (Jaccard 0.62 vs flip, 0.5 vs hot)."
+  },
+  {
+   "t": "2026-10-04T12:00:10Z",
+   "looked": [
+    "wake_context new trades (3)",
+    "scrutiny --by kind",
+    "scrutiny --by wday",
+    "scrutiny --by nerv",
+    "scrutiny --pile flip_hot"
+   ],
+   "saw": "43 trades. BOS BUY won +3.45 (pace 1.05), FLIP-BOS BUY lost -2.21 (pace 1.52, nervous, normal-size loss, right after the BOS win), BOS BUY won +3.81 (pace 1.24). All as predicted. BOS 19 tr 68% +28.33 PF 2.01; FLIP-BOS 21 tr 43% -13.36 PF 0.70. Pile flip_hot 13 tr 31% -9.45 (h 14%/50%); inside it, after a loss 0/4 (peu). Sunday 14 tr 36% -15.29, second half 3/4. No harness run (flip_hot_size not built), no pile, no proposal, no open ask."
   }
  ],
  "lessons": [
