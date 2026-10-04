@@ -2750,7 +2750,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <button id="invbtn" style="width:100%;margin-top:14px;
  background:var(--surface3);color:var(--text2);border:1px solid var(--border2);
  border-radius:14px;padding:15px;font-size:1rem;font-weight:700">
- <svg class="ic"><use href="#i-ticket"/></svg> Code d&#39;invitation (compte r&eacute;el)</button>
+ <svg class="ic"><use href="#i-key"/></svg> G&eacute;n&eacute;rer un code</button>
 </div>
 </div>
 <div class="tabbar">
@@ -4673,6 +4673,7 @@ async function tradeStory(tx,x){
 window.addEventListener('load',()=>{
  const ib=document.getElementById('invbtn');
  if(ib)ib.onclick=async()=>{
+  nestCodeAny();return;   // 2026-10-04: invitations are codes now
   const pw=await askPwd('Code d&#39;invitation (compte r&eacute;el)',
    'Pour un membre de la famille qui veut connecter son VRAI compte. '+
    'Usage unique.','&#127915; G&eacute;n&eacute;rer',false);
