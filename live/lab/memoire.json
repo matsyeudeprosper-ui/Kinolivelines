@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-04T15:30:19Z",
+ "updated": "2026-10-05T04:00:07Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -487,6 +487,14 @@
     "asks.json (none open)"
    ],
    "saw": "45 trades. FLIP-BOS BUY won +3.00, pace 1.609 (nervous, 1.3-1.85), right after the -4.23 FLIP loss. Against the hypothesis's direction but a single win; pile flip_hot 15 tr 33% -10.68 PF 0.66, halves 25%/43%. Inside the pile: after a win 10 tr 40%, after a loss 5 tr 20%; 1.3-1.85 9 tr 33% -8.54. FLIP-BOS ~23 tr 43% -14.59; BOS unchanged 19 tr 68% +28.33. No harness run (flip_hot_size not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-05T04:00:07Z",
+   "looked": [
+    "wake_context (4h timer)",
+    "asks.json (none open)"
+   ],
+   "saw": "Still 45 trades, no close since the 2026-10-04 15:30 FLIP-BOS win, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Waiting for: next nervous FLIP trades (pile flip_hot 15/30) and the night battery on rr10_nosun."
   }
  ],
  "lessons": [
