@@ -41,6 +41,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # after a WINNING close only; after a loss the recovery trade
             # goes out as today. 0 = off.
             "wait_win": 0,
+            # 2026-10-05 (owner): cap_resume_h4 = after the daily profit cap
+            # is hit, resume at the start of the Nth next 4-hour candle
+            # (UTC 00/04/08/12/16/20) with the target counted again from
+            # zero, instead of waiting for the next UTC day. 0 = off.
+            "cap_resume_h4": 0,
             # 2026-10-04 (chercheur): chase_pts = no entry when the last hour
             # already moved more than X points the trade's way (up for a buy,
             # down for a sell); unlike ext_pts a move against it is left alone.
@@ -372,6 +377,8 @@ def simulate(R, spread, cfg):
     debt_led = 0.0   # the 'half' ledger; unused under hwm
     day_profit = 0.0
     day_n = 0
+    cap_h4 = None
+    n_rearm = 0
     dead = False
     cur_tr = None
     n_storm_exit = 0     # trades closed because the weather turned
@@ -393,7 +400,16 @@ def simulate(R, spread, cfg):
             day_key = dk
             day_profit = 0.0
             day_n = 0
+            cap_h4 = None
             curve.append(run)
+        if c["cap_resume_h4"] and day_cap_eff:
+            if cap_h4 is None:
+                if day_profit >= day_cap_eff:
+                    cap_h4 = (t - 60) // 14400
+            elif t // 14400 >= cap_h4 + int(c["cap_resume_h4"]):
+                day_profit = 0.0
+                cap_h4 = None
+                n_rearm += 1
         if pos:
             d, e, sl, tp, dist, mid, hit_mid, lot = pos
             # The stop follows the structure. This runs BEFORE
@@ -846,7 +862,7 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "internal": n_int, "curve": dated, "pnls": pnls,
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit}
@@ -1092,6 +1108,7 @@ def main():
     ap.add_argument("--n-cont", type=int)
     ap.add_argument("--wait", type=int, help="minutes after a close")
     ap.add_argument("--wait-win", type=int, help="minutes after a winning close only")
+    ap.add_argument("--cap-resume-h4", type=int, help="after the daily cap is hit, resume at the Nth next H4 candle (target counted again); needs a cap; 0 = next UTC day")
     ap.add_argument("--ext", type=float, help="no entry after this many points in the last hour")
     ap.add_argument("--chase", type=float, help="no entry after this many points in the last hour the trade's way")
     ap.add_argument("--skip-wd", type=str, help="weekdays to skip, 0=Mon..6=Sun, comma list")
@@ -1117,6 +1134,7 @@ def main():
     if a.n_cont is not None: over["n_cont"] = a.n_cont
     if a.wait is not None: over["wait_min"] = a.wait
     if a.wait_win is not None: over["wait_win"] = a.wait_win
+    if a.cap_resume_h4 is not None: over["cap_resume_h4"] = a.cap_resume_h4
     if a.drag is not None: over["drag"] = None if str(a.drag).strip().lower() == "auto" else float(a.drag)
     if a.ext is not None: over["ext_pts"] = a.ext
     if a.chase is not None: over["chase_pts"] = a.chase
