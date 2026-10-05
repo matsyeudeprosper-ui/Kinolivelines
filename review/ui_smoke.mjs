@@ -192,12 +192,13 @@ await ev("localStorage.setItem('owlIntMarks','1'); 1");
 // protected dot moved and the label did not. It was 27 days stale on H4.
 // The invariant: if the label is painted, its number is the newest break.
 //
-// The annotated structure is gated on FULL, which is the owner's view, so
+// The annotated structure is gated on FULL (Strategie or the owner's own page), so
 // the check has to ask for it - run as a plain member it finds no label at
 // all and skips, which is how the first version of this check quietly
 // tested nothing.
-await ev("try{localStorage.setItem('owl_adm','1');}catch(e){} location.reload(); 1");
-await sleep(9000);
+// FULL now follows the account being viewed (owner 2026-10-05), so open the owner's own page
+await nav("about:blank"); await nav(`${BASE}/${TOK("std")}/chart`); await sleep(9000);
+await ev("localStorage.setItem('owlIntMarks','1'); 1");
 await ev(SPY);
 check("the annotated structure view is on for this check",
       (await ev("FULL")) === true);
@@ -222,8 +223,7 @@ else
         + (differ ? "  (they differ now, so this check has teeth)" : ""));
 await shot("smoke_chart");
 // back to the member view for everything below
-await ev("try{localStorage.removeItem('owl_adm');}catch(e){} location.reload(); 1");
-await sleep(8000);
+await nav("about:blank"); await nav(`${BASE}/${VAL}/chart`); await sleep(9000);
 
 // two timeframes belong to Strategie only (owner 2026-10-05): a family member must not see the entry nor an empty panel
 await ev("document.getElementById('tools').click(); 1"); await sleep(600);

@@ -395,7 +395,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
 const tok=location.pathname.split('/').filter(x=>x)[0];
 // 2026-09-26 (owner): members see candles, their own trades and a soft
 // zone; the annotated structure is for the admin's browser only.
-const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})()||%%FULL%%;
+const FULL=%%FULL%%;   // 2026-10-05 (owner): decided by the account being VIEWED (Strategie or the owner's own pages), never by what this browser remembers
 const HTFOK=%%HTF%%;   // two timeframes belong to Strategie only: nobody else sees the menu or the panel
 const TIER='%%TIER%%';   // observer: no structure hints at all   // 2026-09-27: strategy members get the full view from the server
 document.getElementById('back').onclick=(e)=>{e.preventDefault();

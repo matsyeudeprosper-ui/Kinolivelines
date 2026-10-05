@@ -510,6 +510,21 @@ def funnel_page():
 SIGFEED_FILE = os.path.join(DIR, "owl_signal_feed.json")
 
 
+def chart_view(u):
+    """What the chart may show this account (2026-10-05, owner): 'full' =
+    Strategie or the owner's own pages; 'soft' = Automatique / full-desk
+    Manuel (a faint zone, no marks); 'obs' = demo and Signal (no structure).
+    Decided by the account being viewed, never by the viewer's admin cookie."""
+    uid = (u or {}).get("id")
+    if is_admin(u) or has(uid, "strategy"):
+        return "full"
+    if has(uid, "family"):
+        return "soft"
+    if has(uid, "manual") and not (u.get("app_only") and not has(uid, "family")):
+        return "soft"
+    return "obs"
+
+
 def is_signal_member(u):
     """An app-only member with a running Signal package: no desk of their
     own, so their signals are the robot's real trades (the shared feed)."""
@@ -3979,7 +3994,7 @@ window.addEventListener('load',()=>{
   if(!localStorage.getItem('owlFirstSeen'))localStorage.setItem('owlFirstSeen',String(Date.now()));
  }catch(e){}},1500);
 });
-function labAllowed(){const d=window._d||{};let adm=false;try{adm=!!localStorage.getItem('owl_adm');}catch(e){}return !!(d.is_master||adm||TIER()==='strategy');}
+function labAllowed(){const d=window._d||{};return !!(d.is_master||TIER()==='strategy');}
 function labVisible(){const d=window._d||{};return !d.public;}
 function mxView(v,quiet){v=(v==='robot')?'robot':(v==='lab'&&labVisible()?'lab':'market');
  const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab');if(!m||!r)return;
@@ -14303,16 +14318,10 @@ class H(BaseHTTPRequestHandler):
                 # stamp the build so a stale page on a phone is obvious
                 _st = time.strftime("%m%d.%H%M",
                                     time.localtime(os.path.getmtime(_cp)))
-                _full = "true" if (admin_cookie_ok(self.headers)
-                                   or has(user.get("id"), "strategy")) else "false"
-                # the Signal package is the demo's chart plus the signals: no zones, no
-                # next-level tag. Only Strategie / Automatique see the method.
-                _sig_only = bool(user.get("app_only") and not has(user.get("id"), "strategy")
-                                 and not has(user.get("id"), "family"))
-                _tier = ("member" if (admin_cookie_ok(self.headers) or is_admin(user)
-                                      or (has(user.get("id"), "manual") and not _sig_only)) else "observer")
-                _htf = "true" if (admin_cookie_ok(self.headers) or is_admin(user)
-                                  or has(user.get("id"), "strategy")) else "false"
+                _cv = chart_view(user)
+                _full = "true" if _cv == "full" else "false"
+                _tier = "observer" if _cv == "obs" else "member"
+                _htf = _full
                 self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full)
                            .replace("%%HTF%%", _htf).replace("%%TIER%%", _tier),
                            "text/html; charset=utf-8")
@@ -14345,7 +14354,7 @@ class H(BaseHTTPRequestHandler):
                     _tf = "H1"
                 # the higher-timeframe panel is part of Strategie: the data
                 # itself stays on the server for anyone without it
-                if not (admin_cookie_ok(self.headers) or is_admin(user) or has(user.get("id"), "strategy")):
+                if chart_view(user) != "full":
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                     return
                 _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
@@ -14396,9 +14405,16 @@ class H(BaseHTTPRequestHandler):
             d["trades"] = tr
             # the protected points, breaks and marks are what Strategie sells:
             # the page hides them for everyone else, and the data is not sent
-            if not (admin_cookie_ok(self.headers) or is_admin(user) or has(uid, "strategy") or has(uid, "family")):
+            _cv = chart_view(user)
+            if _cv != "full":
                 for _k in ("dots", "marks", "breaks", "int_dots", "int_marks"):
                     d[_k] = []
+                for _k in ("int_bos", "int_inv", "int_bos_t", "int_inv_t", "next_bos_t",
+                           "invalid_t", "flip_bos_t", "int_flip_bos", "int_flip_bos_t"):
+                    d[_k] = None
+                if _cv == "obs":
+                    for _k in ("next_bos", "invalid", "flip_bos"):
+                        d[_k] = None
             # 2026-09-27: the member's closed trades (entry -> exit arrows)
             try:
                 nd2 = json.load(open(os.path.join(DIR, "nest_data", f"{uid}.json")))
