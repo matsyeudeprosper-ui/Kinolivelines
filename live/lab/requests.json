@@ -109,6 +109,27 @@
    "what_en": "A new setting for the test: multiply the stake by X (between 0.25 and 1.0) only on a change-of-direction trade taken when the market's pace is 1.0 or more. The trade is still taken: the direction and the trades that follow it do not change. Default 1.0, which changes nothing. I would test 0.5 and 0.75, alone and then aiming for as much as we risk.",
    "why_fr": "Sur les 42 derniers jours, le test compte 66 changements de sens en marché nerveux : 54 % gagnés, 0 $ au total, -25 $ sur la deuxième moitié. En marché calme : 55 trades, 76 % gagnés, +82 $. Les vrais trades disent pareil : 13 changements de sens nerveux, 4 gagnés. Ne plus les prendre casserait le robot (déjà testé), miser moins dessus garderait tout le reste.",
    "why_en": "Over the last 42 days the test counts 66 changes of direction in a nervous market: 54% won, $0 in all, -$25 in the second half. In a calm market: 55 trades, 76% won, +$82. The real trades say the same: 13 nervous changes of direction, 4 won. Dropping them would break the robot (already tested); staking less on them keeps everything else.",
+   "status": "built",
+   "key": "flip_hot_size",
+   "built_note_fr": "Le test peut maintenant miser moins sur un changement de sens pris quand le marché est nerveux, sans jamais sauter ce trade. Rien ne change pour le robot tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The test can now stake less on a change of direction taken when the market is nervous, without ever skipping that trade. Nothing changes for the robot until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--flip-hot-size",
+    "a": 1.0,
+    "b": 0.5
+   },
+   "built_date": "2026-10-05",
+   "built_commit": "96dbe40"
+  },
+  {
+   "id": "cap_rr",
+   "date": "2026-10-05",
+   "title_fr": "Une cible à part pour les comptes avec plafond de gain par jour",
+   "title_en": "A separate target for accounts with a daily cap",
+   "what_fr": "Un nouveau réglage pour le test : sur un compte qui a un plafond de gain par jour, viser X fois ce qu'on risque au lieu de la cible commune (X entre 0,5 et 1,5). Les comptes sans plafond gardent la cible commune. Par défaut 0, qui ne change rien. Je testerais 0,75 et 0,8 pour les comptes avec plafond, avec 1,0 pour les autres.",
+   "what_en": "A new setting for the test: on an account with a daily cap, aim for X times what we risk instead of the common target (X between 0.5 and 1.5). Accounts without a cap keep the common target. Default 0, which changes nothing. I would test 0.75 and 0.8 for capped accounts, with 1.0 for the others.",
+   "why_fr": "Depuis une semaine, chaque nuit dit la même chose : viser plus haut aide les comptes sans plafond et fait du tort à ceux avec plafond. Ce soir, viser plus bas fait l'inverse : avec plafond, 0,7 donne +10 $ et un trou de 16 au lieu de 19 ; sans plafond, -51 $. Une seule cible pour tous force un mauvais compromis.",
+   "why_en": "For a week, every night says the same: aiming higher helps accounts without a cap and hurts those with one. Tonight aiming lower does the opposite: with a cap, 0.7 gives +$10 and a hole of 16 instead of 19; without one, -$51. One target for everyone forces a bad compromise.",
    "status": "open"
   }
  ]
