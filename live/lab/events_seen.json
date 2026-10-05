@@ -5,10 +5,12 @@
   "chase_dir",
   "wait_after_win",
   "sleepy_floor",
-  "flip_hot_size"
+  "flip_hot_size",
+  "cap_rr"
  ],
  "asks_answered": [
   "ask_1790670647",
-  "ask_1790670744"
+  "ask_1790670744",
+  "ask_1791181811_long"
  ]
 }
