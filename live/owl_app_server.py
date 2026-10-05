@@ -1307,6 +1307,43 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
  border-radius:var(--r);box-shadow:var(--hl)}
 .status{padding:16px;text-align:center;font-size:1.04rem;color:var(--text2)}
 .panel{padding:16px}
+/* 2026-10-05 (owner): the Signal card, premium look. Colour comes from two
+   variables set per signal: --sgc (the direction colour), --sgt (its tint). */
+#sigcard{position:relative;overflow:hidden;padding:18px 18px 16px;border-radius:22px;border:1px solid var(--border2);
+ background:linear-gradient(165deg,var(--surface2),var(--surface) 60%);box-shadow:0 14px 34px -14px rgba(0,0,0,.6),var(--hl)}
+#sigcard::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--sgc,var(--accent));opacity:.9}
+#sigcard::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;
+ background:radial-gradient(110% 70% at 0 0,var(--sgt,transparent),transparent 62%)}
+#sigcard>*{position:relative;z-index:1}
+.sg-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:nowrap}
+.sg-pill{font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:6px 11px;border-radius:999px;
+ background:var(--sgt,var(--accent-bg));color:var(--sgc,var(--accent-soft));white-space:nowrap}
+.sg-exp{font-size:.72rem;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sg-hero{display:flex;align-items:center;gap:14px;margin-top:18px}
+.sg-ic{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;flex:none;
+ background:var(--sgt,var(--accent-bg));color:var(--sgc,var(--accent-soft));box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.sg-dir{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:var(--sgc,var(--text))}
+.sg-sym{font-size:.8rem;color:var(--muted2);margin-top:4px;letter-spacing:.02em}
+.sg-g{display:grid;gap:8px;margin-top:20px}
+.sg-c{background:rgba(127,140,160,.07);border:1px solid var(--border);border-radius:15px;padding:11px 6px 10px;text-align:center}
+.sg-cl{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.sg-cl i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.sg-cv{display:block;margin-top:5px;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.sg-m{margin-top:20px}
+.sg-mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.78rem;color:var(--muted)}
+.sg-mh b{font-variant-numeric:tabular-nums;font-size:.86rem}
+.sg-tr{position:relative;height:7px;border-radius:999px;margin:13px 0 9px;opacity:.95}
+.sg-tk{position:absolute;top:-4px;bottom:-4px;width:2px;border-radius:2px;background:var(--text);opacity:.45}
+.sg-pt{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;border:3px solid var(--surface);box-sizing:border-box}
+.sg-ml{display:flex;justify-content:space-between;font-size:.64rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.sg-st{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 12px;border-radius:999px;font-size:.78rem;font-weight:700;line-height:1.2}
+.sg-st i{width:7px;height:7px;border-radius:50%;flex:none}
+.sg-note{font-size:.76rem;color:var(--muted);line-height:1.55;margin-top:12px}
+#sigcard #sig-mark{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.sg-act{display:flex;gap:10px;margin-top:16px}
+#sigcard .sg-go{flex:1 1 auto;min-width:0;width:auto;margin:0;padding:15px 12px;border-radius:15px;display:block;text-align:center;text-decoration:none;
+ background:linear-gradient(180deg,#4f93f8,var(--accent));color:#fff;font-weight:800;font-size:.95rem;box-shadow:0 10px 22px -10px rgba(59,130,246,.75),inset 0 1px 0 rgba(255,255,255,.18)}
+#sigcard .sg-cp{flex:none;width:auto;margin:0;padding:15px 18px;border-radius:15px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:.9rem}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .card{padding:18px 10px 15px;text-align:center}
 /* 2026-10-01 (owner): "professional, premium, modern". Restraint, not
@@ -2141,20 +2178,19 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <button id="nopush-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
 </div>
-<div class="panel" id="sigcard" style="display:none;margin-top:12px;border-width:1.5px">
- <div style="display:flex;justify-content:space-between;align-items:center">
-  <div class="lbl" id="sig-lbl">Signal</div><span id="sig-when" style="font-size:.72rem;color:var(--muted)"></span></div>
- <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
-  <div id="sig-dir" style="font-size:1.35rem;font-weight:800;letter-spacing:-.01em"></div>
-  <div id="sig-sym" style="font-size:.8rem;color:var(--muted2)">BTCUSD</div></div>
- <div id="sig-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
- <div id="sig-meter" style="display:none;margin-top:10px"></div>
- <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45"></div>
- <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
- <div id="sig-mark" style="display:none;margin-top:10px"></div>
- <div style="display:flex;gap:8px;margin-top:12px">
-  <a id="sig-chart" href="#" class="shbtn shmain" style="flex:1 1 46%;margin:0;padding:11px;text-align:center;text-decoration:none;font-size:.88rem">Prendre sur le graphique</a>
-  <button id="sig-copy" class="shbtn shghost" style="flex:none;margin:0;padding:11px 14px;font-size:.88rem" onclick="sigCopy()">Copier</button>
+<button id="sigprev-b" class="shbtn shghost" style="display:none;margin-top:12px" onclick="sigPreview()"></button>
+<div class="panel" id="sigcard" style="display:none;margin-top:12px">
+ <div class="sg-top"><span class="sg-pill" id="sig-lbl">Signal</span><span class="sg-exp" id="sig-when"></span></div>
+ <div class="sg-hero"><div class="sg-ic" id="sig-ic"></div>
+  <div style="min-width:0"><div class="sg-dir" id="sig-dir"></div><div class="sg-sym" id="sig-sym">BTCUSD</div></div></div>
+ <div id="sig-g" class="sg-g"></div>
+ <div id="sig-meter" class="sg-m" style="display:none"></div>
+ <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:12px;line-height:1.45"></div>
+ <div id="sig-note" class="sg-note"></div>
+ <div id="sig-mark" style="display:none"></div>
+ <div class="sg-act">
+  <a id="sig-chart" href="#" class="shbtn sg-go">Prendre sur le graphique</a>
+  <button id="sig-copy" class="shbtn sg-cp" onclick="sigCopy()">Copier</button>
  </div>
 </div>
 <div class="panel" id="kinocard" style="display:none;margin-top:12px">
@@ -5396,6 +5432,7 @@ function sigMeter(sg,ms,en){
  const fav=gap*dir>0,fr=fav?(gap*dir)/toTp:(-gap*dir)/toSl;
  let lv=0;if(fr>=0.5)lv=2;else if(fr>=0.2)lv=1;
  const col=['var(--up)','var(--warn)','var(--down)'][lv];
+ const tint=['rgba(46,204,113,.14)','rgba(232,197,90,.14)','rgba(255,92,92,.14)'][lv];
  const txt=lv===0?(en?'Still good to take':'Encore bon \u00e0 prendre')
   :lv===1?(fav?(en?'Getting late: part of the move is done':'Un peu tard : une partie du mouvement est faite'):(en?'Price is drifting toward the stop':'Le prix glisse vers le stop'))
   :(fav?(en?'Too late: half the way to the target is done \u2014 skip it':'Trop tard : la moiti\u00e9 du chemin vers la cible est faite \u2014 passez'):(en?'Price is heading to the stop \u2014 skip it':'Le prix va vers le stop \u2014 passez'));
@@ -5403,12 +5440,14 @@ function sigMeter(sg,ms,en){
  const P=v=>Math.max(0,Math.min(100,(v-lo)/W*100));
  const sgn=gap>=0?'+':'\u2212';
  const num=sgn+Math.abs(pct).toFixed(2).replace('.',en?'.':',')+'\u202f% ('+sgn+Math.abs(pts)+' pts)';
- setH(m,'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.8rem"><span style="color:var(--muted)">'+(en?'Gap from entry':'\u00c9cart \u00e0 l\u2019entr\u00e9e')+'</span><b style="color:'+col+';font-variant-numeric:tabular-nums">'+num+'</b></div>'
-  +'<div style="position:relative;height:8px;border-radius:5px;margin:8px 0 6px;background:linear-gradient(90deg,'+(sg.sl<sg.tp?'var(--down-soft),var(--up-soft)':'var(--up-soft),var(--down-soft)')+');opacity:.9">'
-  +'<i style="position:absolute;top:-3px;bottom:-3px;width:2px;left:'+P(sg.e).toFixed(1)+'%;background:var(--text);opacity:.55"></i>'
-  +'<i style="position:absolute;top:-4px;width:12px;height:16px;margin-left:-6px;border-radius:5px;left:'+P(px).toFixed(1)+'%;background:'+col+';border:2px solid var(--bg)"></i></div>'
-  +'<div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);font-variant-numeric:tabular-nums"><span>'+(sg.sl<sg.tp?'stop '+sg.sl.toFixed(0):(en?'target ':'cible ')+sg.tp.toFixed(0))+'</span><span>'+(sg.sl<sg.tp?(en?'target ':'cible ')+sg.tp.toFixed(0):'stop '+sg.sl.toFixed(0))+'</span></div>'
-  +'<div style="font-size:.78rem;color:'+col+';margin-top:5px;font-weight:600">'+txt+'</div>');
+ const slL=(sg.sl<sg.tp?'stop ':(en?'target ':'cible '))+(sg.sl<sg.tp?sg.sl:sg.tp).toFixed(0);
+ const tpL=(sg.sl<sg.tp?(en?'target ':'cible '):'stop ')+(sg.sl<sg.tp?sg.tp:sg.sl).toFixed(0);
+ setH(m,'<div class="sg-mh"><span>'+(en?'Gap from entry':'\u00c9cart \u00e0 l\u2019entr\u00e9e')+'</span><b style="color:'+col+'">'+num+'</b></div>'
+  +'<div class="sg-tr" style="background:linear-gradient(90deg,'+(sg.sl<sg.tp?'#f08a8a,#7fe0a6':'#7fe0a6,#f08a8a')+')">'
+  +'<i class="sg-tk" style="left:'+P(sg.e).toFixed(1)+'%"></i>'
+  +'<i class="sg-pt" style="left:'+P(px).toFixed(1)+'%;background:'+col+';box-shadow:0 0 0 4px '+tint+'"></i></div>'
+  +'<div class="sg-ml"><span>'+slL+'</span><span>'+tpL+'</span></div>'
+  +'<div class="sg-st" style="background:'+tint+';color:'+col+'"><i style="background:'+col+'"></i>'+txt+'</div>');
  m.style.display='block';}
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
@@ -5416,13 +5455,18 @@ function renderSignal(ms){
  if(!sg||sg.done||sg.skipped||!SIGOK()||(sg.expires&&Date.now()/1000>sg.expires)){el.style.display='none';return;}
  window._sigMs=ms;
  const buy=sg.dir===1,col=sg.ok?(buy?'var(--up)':'var(--down)'):'var(--muted)';
- el.style.display='block';el.style.borderColor=sg.ok?col:'var(--border2)';el.style.opacity=sg.ok?'1':'.75';
+ el.style.display='block';el.style.opacity=sg.ok?'1':'.8';
+ const tintC=sg.ok?(buy?'rgba(46,204,113,.15)':'rgba(255,92,92,.15)'):'rgba(127,140,160,.12)';
+ el.style.setProperty('--sgc',col);el.style.setProperty('--sgt',tintC);
+ el.style.borderColor=sg.ok?(buy?'rgba(46,204,113,.38)':'rgba(255,92,92,.38)'):'var(--border2)';
  document.getElementById('sig-lbl').textContent=sg.ok?(en?'Signal':'Signal'):(en?'Signal set aside':'Signal \u00e9cart\u00e9');
  const age=Math.max(0,Math.round((Date.now()/1000-sg.t)/60));const exp=new Date(sg.expires*1000);
- document.getElementById('sig-when').textContent=(age<1?(en?'just now':'\u00e0 l\u2019instant'):(en?age+' min ago':'il y a '+age+' min'))+' \u00b7 '+(en?'until ':'valable jusqu\u2019\u00e0 ')+String(exp.getHours()).padStart(2,'0')+':'+String(exp.getMinutes()).padStart(2,'0');
- const dd=document.getElementById('sig-dir');dd.textContent=(buy?'\u25b2 ':'\u25bc ')+(buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'));dd.style.color=col;
- const cell=(l,v)=>'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center"><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span><b style="font-size:.86rem;font-variant-numeric:tabular-nums">'+v+'</b></div>';
- setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')):''));
+ document.getElementById('sig-when').textContent=(en?'Until ':'Valable jusqu\u2019\u00e0 ')+String(exp.getHours()).padStart(2,'0')+':'+String(exp.getMinutes()).padStart(2,'0');
+ document.getElementById('sig-sym').textContent='BTCUSD \u00b7 '+(age<1?(en?'just now':'\u00e0 l\u2019instant'):(en?age+' min ago':'il y a '+age+' min'));
+ const dd=document.getElementById('sig-dir');dd.textContent=buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE');
+ setH(document.getElementById('sig-ic'),'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+(buy?'<path d="M7 17L17 7M9 7h8v8"/>':'<path d="M7 7l10 10M17 9v8H9"/>')+'</svg>');
+ const cell=(l,v,c,dot)=>'<div class="sg-c"><span class="sg-cl">'+(dot?'<i style="background:'+dot+'"></i>':'')+l+'</span><b class="sg-cv" style="color:'+c+'">'+v+'</b></div>';
+ setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0),'var(--text)','var(--accent)')+cell('stop',sg.sl.toFixed(0),'var(--down-soft)','var(--down)')+cell(en?'target':'cible',sg.tp.toFixed(0),'var(--up-soft)','var(--up)')+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:''),'var(--text)',''):''));
  document.getElementById('sig-g').style.gridTemplateColumns='repeat('+(typeof sg.lot==='number'?4:3)+',1fr)';
  myLotLine(sg,en);
  sigMeter(sg,ms,en);
@@ -5432,7 +5476,7 @@ function renderSignal(ms){
  window._sig=sg;
  // 2026-09-28: members trading on another broker tell the app themselves
  const mk=document.getElementById('sig-mark');
- if(mk){const bs='border:1px solid var(--border2);background:var(--surface3);border-radius:10px;padding:9px;font-size:.84rem;font-weight:700;flex:1;';
+ if(mk){const bs='border:1px solid var(--border2);background:transparent;border-radius:13px;padding:11px;font-size:.84rem;font-weight:700;flex:1;line-height:1.2;display:flex;align-items:center;justify-content:center;';
   if(!sg.ok){mk.style.display='none';}
   else if(sg.taken){mk.style.display='block';
    setH(mk,'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--up-soft);font-weight:700;font-size:.84rem">\u2713 '+(en?'Taken':'Pris')+(sg.taken_manual?'':(en?' (detected on your account)':' (d\u00e9tect\u00e9 sur votre compte)'))+(typeof sg.result==='number'?' \u00b7 '+(sg.result>=0?'+$':'-$')+Math.abs(sg.result).toFixed(2):'')+'</span>'+
@@ -5451,12 +5495,15 @@ async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG(
 }
 function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.value:'');}
 // owner only: draws a made-up Signal card on the home tab from the live price, nothing is sent or saved
+function sigPrevBtn(d){const b=document.getElementById('sigprev-b');if(!b)return;
+ b.style.display=(d&&d.is_master&&!window._sigPreview)?'block':'none';
+ b.textContent=LANG()==='en'?'Preview the Signal card (owner)':'Voir un exemple de carte Signal (propriétaire)';}
 async function sigPreview(){const en=LANG()==='en';
  let D=null;try{const r=await fetch(B+'chart_data');if(r.ok)D=await r.json();}catch(e){}
  const px=D&&typeof D.px==='number'?D.px:null;
  if(!px){toast(en?'No price yet.':'Pas de prix pour l\u2019instant.',2500);return;}
  const e=Math.round(px-8),tp=Math.round(e*1.0016),sl=Math.round(e-(tp-e)/0.8),now=Date.now()/1000;
- window._sigPreview=true;
+ window._sigPreview=true;{const pb=document.getElementById('sigprev-b');if(pb)pb.style.display='none';}
  tab('home',document.querySelector('.tb'));
  renderSignal({px:px,signal:{ok:true,dir:1,e:e,sl:sl,tp:tp,t:now-120,expires:now+1200,preview:true}});
  const l=document.getElementById('sig-lbl');if(l)l.textContent=en?'Signal \u00b7 preview':'Signal \u00b7 aper\u00e7u';
@@ -7846,7 +7893,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);sigPrevBtn(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
