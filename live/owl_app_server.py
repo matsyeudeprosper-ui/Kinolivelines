@@ -498,7 +498,7 @@ def funnel_page():
     conv = "".join("<td>%s</td>" % (pct(tot[i], tot[i - 1]) if i else "") for i in range(5))
     return ("<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             "<title>Entonnoir</title><style>body{background:#0b0f14;color:#e6edf3;font-family:system-ui,sans-serif;margin:16px}"
-            "table{border-collapse:collapse;width:100%}td,th{padding:8px 6px;border-bottom:1px solid #223;text-align:right;font-size:.9rem}"
+            "table{border-collapse:collapse;width:100%%}td,th{padding:8px 6px;border-bottom:1px solid #223;text-align:right;font-size:.9rem}"
             "td:first-child,th:first-child{text-align:left}th{color:#8b9bb0;font-weight:600}.t td{font-weight:800}p{color:#8b9bb0;font-size:.82rem}</style></head><body>"
             "<h2>Entonnoir</h2><div style=\"overflow-x:auto\"><table><tr><th>Jour (UTC)</th>%s</tr>%s"
             "<tr class=\"t\"><td>Total</td>%s</tr><tr><td>vs &eacute;tape pr&eacute;c&eacute;dente</td>%s</tr></table></div>"
