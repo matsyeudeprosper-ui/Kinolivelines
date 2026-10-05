@@ -889,6 +889,23 @@ DIGEST_MARK = os.path.join(DIR, "owl_push_digest.json")
 PKG_USD = {"manual": 29, "strategy": 49}    # keep in step with owl_app_server.PACKAGES
 
 
+def usage_line(now):
+    """Launch numbers for the Monday digest, from owl_usage.json (empty if none yet)."""
+    try:
+        u = json.load(open(os.path.join(DIR, "owl_usage.json"), encoding="utf-8"))
+        cut = time.strftime("%Y-%m-%d", time.gmtime(now - 7 * 86400))
+        days = u.get("day") or {}
+        dl = sum(int(r.get("apk_dl", 0)) for k, r in days.items() if k > cut)
+        new = sum(1 for v in (u.get("dev") or {}).values() if v.get("m") == "app" and str(v.get("f")) > cut)
+        act = sum(1 for v in (u.get("dev") or {}).values() if v.get("m") == "app" and any(str(x) > cut for x in v.get("d", [])))
+        mem = sum(1 for v in (u.get("acct") or {}).values() if any(str(x) > cut for x in v.get("d", [])))
+        if not (dl or new or act or mem):
+            return ""
+        return f"App : {dl} t\u00e9l\u00e9chargement(s), {new} nouvel(s) appareil(s), {act} actif(s), {mem} membre(s) venus. "
+    except Exception:
+        return ""
+
+
 def digest_body(now=None):
     """2026-09-28: the owner's Monday digest - packages, money, signals,
     renewals, waiting list. Pure: reads the data files, returns the text."""
@@ -953,7 +970,7 @@ def digest_body(now=None):
         wl = len(json.load(open(os.path.join(DIR, "owl_waitlist.json"), encoding="utf-8")) or {})
     except Exception:
         wl = 0
-    return (f"Actifs : {act['family']} auto \u00b7 {act['manual']} manuel \u00b7 {act['strategy']} strat\u00e9gie "
+    return (usage_line(now) + f"Actifs : {act['family']} auto \u00b7 {act['manual']} manuel \u00b7 {act['strategy']} strat\u00e9gie "
             f"\u00b7 MRR ${mrr:.0f}. 7 jours : {new} activation(s), {paid_n} paiement(s) ${paid_usd:.0f}, "
             f"{sent} signaux / {taken} pris. "
             + (("\u00c0 renouveler sous 7 j : " + ", ".join(due) + ". ") if due else "Aucun renouvellement sous 7 j. ")

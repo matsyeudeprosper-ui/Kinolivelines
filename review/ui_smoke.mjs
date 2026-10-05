@@ -314,6 +314,14 @@ check("no runtime errors anywhere", (await ev("(window.__errs||[]).length")) ===
 // The three screens that changed most this week, and that only hand-made
 // probes covered. kino = Strategie access + admin, so every block renders.
 console.log("");
+console.log("suivi du lancement");
+{
+  await nav("about:blank"); await nav(`${BASE}/${TOK("std")}/`); await sleep(9000);
+  check("the owner sees the launch-tracking row in Reglages", (await ev("(function(){var r=document.getElementById('usagerow');return !!r&&r.style.display==='flex'&&r.getAttribute('href').endsWith('funnel');})()")) === true);
+  await nav("about:blank"); await nav(`${BASE}/${VAL}/`); await sleep(9000);
+  check("a member never sees the launch-tracking row", (await ev("(function(){var r=document.getElementById('usagerow');return !r||r.style.display==='none';})()")) === true);
+}
+console.log("");
 console.log("labo");
 {
   const KIN = TOK("kino");

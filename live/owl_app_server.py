@@ -507,6 +507,225 @@ def funnel_page():
         "".join("<th>%s</th>" % n for n in names), rows, "".join("<td>%d</td>" % t for t in tot), conv)
 
 
+USAGE_FILE = os.path.join(DIR, "owl_usage.json")
+_us_lock = threading.Lock()
+_us_acct_day = {}
+USAGE_SKIP = ("demo", "fresh")
+
+
+def _us_today():
+    return time.strftime("%Y-%m-%d", time.gmtime())
+
+
+def _us_dn(day):
+    import calendar as _cal
+    try:
+        return _cal.timegm(time.strptime(day, "%Y-%m-%d")) // 86400
+    except Exception:
+        return 0
+
+
+def _us_edit(fn):
+    """2026-10-05 (owner): launch + retention monitor. day = counters per UTC day,
+    dev = anonymous random device ids (never tied to an account), acct = days
+    each member was active. No IP, no cookie, owner and demo never counted."""
+    try:
+        with _us_lock:
+            try:
+                d = json.load(open(USAGE_FILE, encoding="utf-8"))
+                if not isinstance(d, dict):
+                    d = {}
+            except Exception:
+                d = {}
+            for k in ("day", "dev", "acct"):
+                if not isinstance(d.get(k), dict):
+                    d[k] = {}
+            fn(d)
+            for k in sorted(d["day"])[:-400]:
+                d["day"].pop(k, None)
+            if len(d["dev"]) > 4000:
+                for k in sorted(d["dev"], key=lambda x: d["dev"][x].get("f", ""))[:len(d["dev"]) - 4000]:
+                    d["dev"].pop(k, None)
+            json.dump(d, open(USAGE_FILE + ".tmp", "w", encoding="utf-8"))
+            os.replace(USAGE_FILE + ".tmp", USAGE_FILE)
+    except Exception:
+        pass
+
+
+def usage_local(h):
+    """Our own tests and the UI smoke reach the server on localhost; real visitors arrive through Caddy with the public Host."""
+    return (h.get("Host") or "").split(":")[0].lower() in ("127.0.0.1", "localhost")
+
+
+def usage_count(key):
+    def f(d):
+        row = d["day"].setdefault(_us_today(), {})
+        if key not in row and key.startswith(("src_", "dls_")) and \
+                sum(1 for k in row if k.startswith(("src_", "dls_"))) >= 40:
+            return
+        row[key] = int(row.get(key, 0)) + 1
+    _us_edit(f)
+
+
+def usage_device(dev, ver, mode):
+    today = _us_today()
+
+    def f(d):
+        r = d["dev"].get(dev)
+        if r is None:
+            r = d["dev"][dev] = {"f": today, "d": [], "m": mode}
+        if today not in r["d"]:
+            r["d"] = (r["d"] + [today])[-90:]
+        if mode == "app" or r.get("m") != "app":
+            r["m"] = mode
+        r["v"] = ver
+        row = d["day"].setdefault(today, {})
+        row["open_" + mode] = int(row.get("open_" + mode, 0)) + 1
+    _us_edit(f)
+
+
+def usage_account(uid):
+    today = _us_today()
+    if not uid or _us_acct_day.get(uid) == today:
+        return
+    _us_acct_day[uid] = today
+
+    def f(d):
+        r = d["acct"].setdefault(uid, {"f": today, "d": []})
+        if today not in r["d"]:
+            r["d"] = (r["d"] + [today])[-120:]
+    _us_edit(f)
+
+
+def usage_html():
+    import html as _h
+    from collections import Counter as _Ctr
+    try:
+        d = json.load(open(USAGE_FILE, encoding="utf-8"))
+        if not isinstance(d, dict):
+            d = {}
+    except Exception:
+        d = {}
+    days, devs, accts = (d.get(k) if isinstance(d.get(k), dict) else {} for k in ("day", "dev", "acct"))
+    tn = _us_dn(_us_today())
+
+    def ago(day):
+        return tn - _us_dn(day)
+
+    def s7(key, n=7):
+        return sum(int(r.get(key, 0)) for k, r in days.items() if 0 <= ago(k) < n)
+
+    def tot(key):
+        return sum(int(r.get(key, 0)) for r in days.values())
+
+    def active(recs, n):
+        return sum(1 for r in recs.values() if any(0 <= ago(x) < n for x in r.get("d", [])))
+
+    def back(recs, n):
+        old = [r for r in recs.values() if r.get("f") and ago(r["f"]) >= n]
+        ok = sum(1 for r in old if any(0 < _us_dn(x) - _us_dn(r["f"]) <= n for x in r.get("d", [])))
+        return ok, len(old)
+
+    def pc(ab):
+        a, b = ab
+        return ("%d sur %d (%.0f%%)" % (a, b, 100.0 * a / b)) if b else "trop t&ocirc;t"
+
+    def card(label, val, sub=""):
+        return ('<div class="k"><b>%s</b><span>%s</span>%s</div>'
+                % (val, label, ("<i>%s</i>" % sub) if sub else ""))
+
+    apps = {k: v for k, v in devs.items() if v.get("m") == "app"}
+    out = ["<style>.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0 4px}"
+           ".k{background:#141c28;border:1px solid #1f2c3d;border-radius:12px;padding:12px}"
+           ".k b{display:block;font-size:1.5rem}.k span{display:block;color:#8b9bb0;font-size:.8rem;margin-top:2px}"
+           ".k i{display:block;color:#6b7b90;font-size:.72rem;margin-top:3px;font-style:normal}"
+           "h3{margin:26px 0 4px;font-size:1.05rem}.n{color:#8b9bb0;font-size:.82rem;line-height:1.5}</style>"]
+    out.append("<h2 style=\"margin-top:34px\">Application Android</h2>")
+    out.append('<div class="g">' + card("T&eacute;l&eacute;chargements, 7 jours", s7("apk_dl"), "total %d" % tot("apk_dl"))
+               + card("Appareils avec l&rsquo;app (install&eacute;s)", len(apps), "vus au moins une fois")
+               + card("Actifs aujourd&rsquo;hui", active(apps, 1))
+               + card("Actifs sur 7 jours", active(apps, 7))
+               + card("Actifs sur 30 jours", active(apps, 30))
+               + card("Ouverts sans compte, 7 jours", s7("open_out"), "install&eacute;s mais pas inscrits")
+               + card("Mises &agrave; jour t&eacute;l&eacute;charg&eacute;es, 7 jours", s7("apk_upd")) + "</div>")
+    out.append("<h3>Les appareils reviennent-ils ?</h3><div class=\"g\">"
+               + card("Reviennent le lendemain", pc(back(apps, 1)))
+               + card("Reviennent dans les 7 jours", pc(back(apps, 7)))
+               + card("Reviennent dans les 30 jours", pc(back(apps, 30))) + "</div>")
+    try:
+        latest = str(json.load(open(os.path.join(DIR, "static", "apk.json"), encoding="utf-8")).get("versionCode") or "")
+    except Exception:
+        latest = ""
+    vc = _Ctr((v.get("v") or "?") for v in apps.values() if any(0 <= ago(x) < 14 for x in v.get("d", [])))
+    if vc:
+        out.append("<p class=\"n\">Versions utilis&eacute;es (14 jours) : " + " &middot; ".join(
+            "v%s&nbsp;: %d%s" % (_h.escape(k), n, " (&agrave; jour)" if k == latest else "") for k, n in vc.most_common()) + "</p>")
+    rows = ""
+    for i in range(14):
+        k = time.strftime("%Y-%m-%d", time.gmtime(time.time() - i * 86400))
+        r = days.get(k, {})
+        rows += ("<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td><td>%d</td></tr>" % (
+            k, int(r.get("apk_dl", 0)), int(r.get("apk_upd", 0)), int(r.get("open_app", 0)), int(r.get("open_out", 0)),
+            sum(1 for v in apps.values() if v.get("f") == k),
+            sum(1 for v in apps.values() if k in v.get("d", [])),
+            sum(1 for v in accts.values() if k in v.get("d", []))))
+    out.append("<div style=\"overflow-x:auto\"><table><tr><th>Jour (UTC)</th><th>T&eacute;l&eacute;ch.</th><th>Mises &agrave; jour</th>"
+               "<th>Ouvertures</th><th>Sans compte</th><th>Nouveaux appareils</th><th>Appareils actifs</th><th>Comptes actifs</th></tr>"
+               + rows + "</table></div>")
+    # members
+    try:
+        mem = [u for u in users() if u.get("id") not in OWNER_UIDS and u.get("id") not in USAGE_SKIP and not u.get("public")]
+    except Exception:
+        mem = []
+    ids = {u["id"] for u in mem if u.get("id")}
+    am = {k: v for k, v in accts.items() if k in ids}
+    subs = _load_subs()
+    a30 = active(am, 30)
+    pushed = sum(1 for u in ids if subs.get(u))
+    try:
+        seen = json.load(open(SEEN_FILE, encoding="utf-8"))
+    except Exception:
+        seen = {}
+    out.append("<h2 style=\"margin-top:34px\">Membres</h2><div class=\"g\">"
+               + card("Comptes", len(ids))
+               + card("Actifs aujourd&rsquo;hui", active(am, 1))
+               + card("Actifs sur 7 jours", active(am, 7))
+               + card("Actifs sur 30 jours", a30)
+               + card("Alertes activ&eacute;es", "%d sur %d" % (pushed, len(ids)), "t&eacute;l&eacute;phones qui re&ccedil;oivent les notifications")
+               + "</div><div class=\"g\">"
+               + card("Reviennent le lendemain", pc(back(am, 1)), "depuis le d&eacute;but du suivi")
+               + card("Reviennent dans les 7 jours", pc(back(am, 7)))
+               + card("Reviennent dans les 30 jours", pc(back(am, 30))) + "</div>")
+    names = {u["id"]: u.get("name", u["id"]) for u in mem if u.get("id")}
+    sil = []
+    for uid in ids:
+        if not (has(uid, "family") or has(uid, "manual") or has(uid, "strategy")):
+            continue
+        ds = (accts.get(uid) or {}).get("d") or []
+        last = max([_us_dn(x) * 86400 for x in ds] + [float(seen.get(uid) or 0)])
+        gap = (time.time() - last) / 86400.0 if last else None
+        if gap is None or gap >= 5:
+            sil.append((gap if gap is not None else 9999, names.get(uid, uid)))
+    sil.sort(reverse=True)
+    out.append("<h3>Abonn&eacute;s silencieux (5 jours ou plus)</h3><p class=\"n\">"
+               + (" &middot; ".join("%s (%s)" % (_h.escape(str(n)), "jamais vu" if g == 9999 else "%d j" % g) for g, n in sil)
+                  if sil else "Aucun : tous les abonn&eacute;s sont pass&eacute;s r&eacute;cemment.") + "</p>")
+    # sources
+    srcs = sorted({k[4:] for r in days.values() for k in r if k.startswith("src_")})
+    if srcs:
+        rows = "".join("<tr><td>%s</td><td>%d</td><td>%d</td></tr>" % (
+            _h.escape(s), tot("src_" + s), tot("dls_" + s)) for s in sorted(srcs, key=lambda x: -tot("src_" + x)))
+        out.append("<h3>D&rsquo;o&ugrave; viennent les visites</h3><table><tr><th>Source</th><th>Visites</th><th>APK t&eacute;l&eacute;charg&eacute;</th></tr>"
+                   + rows + "</table>")
+    out.append("<p class=\"n\">Pour savoir d&rsquo;o&ugrave; vient une personne, ajoutez <b>?src=nom</b> &agrave; chaque lien que vous partagez "
+               "(exemple : le lien d&rsquo;accueil suivi de <b>?src=tiktok</b>). Rien d&rsquo;autre n&rsquo;est suivi.</p>"
+               "<p class=\"n\">Comment lire : un appareil est compt&eacute; par un num&eacute;ro au hasard rang&eacute; dans l&rsquo;app, "
+               "jamais li&eacute; &agrave; un compte, ni &agrave; une IP. Si quelqu&rsquo;un efface les donn&eacute;es de l&rsquo;app ou "
+               "la r&eacute;installe, il compte comme un nouvel appareil : les chiffres sont des ordres de grandeur. Le propri&eacute;taire "
+               "et la d&eacute;mo ne comptent pas. Le suivi des comptes et des appareils a commenc&eacute; le 2026-10-05.</p>")
+    return "".join(out)
+
+
 SIGFEED_FILE = os.path.join(DIR, "owl_signal_feed.json")
 
 
@@ -2740,6 +2959,12 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <div class="sic"><svg class="ic"><use href="#i-download"/></svg></div>
   <div style="flex:1"><b id="apkrow-t">Application Android</b>
    <div class="ssub" id="apkrow-s">T&eacute;l&eacute;charger le fichier APK</div></div>
+  <svg class="ic chv"><use href="#i-chev"/></svg>
+ </a>
+ <a class="srow" id="usagerow" href="#" style="display:none;text-decoration:none;color:inherit">
+  <div class="sic"><svg class="ic"><use href="#i-users"/></svg></div>
+  <div style="flex:1"><b>Suivi du lancement</b>
+   <div class="ssub">T&eacute;l&eacute;chargements, installations, retour des membres (propri&eacute;taire)</div></div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </a>
  <!-- 2026-09-30 (owner): the robot stopped trading the inner
@@ -7967,7 +8192,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);usageRow(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -8435,6 +8660,13 @@ window.addEventListener('appinstalled',()=>{
  setTimeout(apkCheck,1800);
  // 2026-10-04 (owner): a Signal / Strategie member has no robot - the robot settings stay out of sight
  setInterval(function(){document.documentElement.classList.toggle('apponly',!!(window._d&&window._d.app_only));},1200);})();
+function usageRow(d){const r=document.getElementById('usagerow');if(r){r.style.display=(d&&d.is_master)?'flex':'none';r.href=B+'funnel';}
+ try{if(sessionStorage.getItem('fn_open'))return;sessionStorage.setItem('fn_open','1');
+  let id=localStorage.getItem('owlDev');
+  if(!id||!/^[a-f0-9]{16}$/.test(id)){id=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(x=>('0'+x.toString(16)).slice(-2)).join('');localStorage.setItem('owlDev',id);}
+  const tw=sessionStorage.getItem('owlTwa')||'';
+  const m=tw?'app':(window.matchMedia('(display-mode: standalone)').matches?'pwa':'web');
+  navigator.sendBeacon(B+'fn','e=open&d='+id+'&v='+encodeURIComponent(tw)+'&m='+m);}catch(x){}}
 async function apkCheck(){const c=document.getElementById('apkcard');if(!c)return;const en=LANG()==='en';
  const and=/Android/i.test(navigator.userAgent);let twa='';try{twa=sessionStorage.getItem('owlTwa')||'';}catch(e){}
  let j=null;try{j=await (await fetch('/apk.json',{cache:'no-store'})).json();}catch(e){}
@@ -11394,7 +11626,11 @@ const PV_LIVE=true;
    $('pv-bot-t').textContent='D\\u00e9mo red\\u00e9marr\\u00e9e le '+String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0')+' \\u00b7 elle repart de z\\u00e9ro';}}
  }catch(e){}
 })();
-</script><script>function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}} fn('landing');</script></body></html>"""
+</script><script>function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}} fn('landing');
+(function(){try{var q=new URLSearchParams(location.search);var s=(q.get('src')||q.get('utm_source')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,16);
+ if(s){try{sessionStorage.setItem('owlSrc',s);}catch(e){}}else{try{s=sessionStorage.getItem('owlSrc')||'';}catch(e){}}
+ if(s){if(!sessionStorage.getItem('fn_src')){sessionStorage.setItem('fn_src','1');navigator.sendBeacon('/fn','e=src&s='+s);}
+  var a=document.getElementById('apk2');if(a)a.href='/owlnest.apk?s='+s;}}catch(e){}})();</script></body></html>"""
 
 
 def _join_result(title, body_html):
@@ -12421,6 +12657,11 @@ class H(BaseHTTPRequestHandler):
                 _ev = (_ff.get("e", [""])[0] or "").strip()
                 if _ev in FUNNEL_CLIENT and not admin_cookie_ok(self.headers):
                     fn_count(_ev)
+                elif _ev == "src" and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
+                    import re as _res
+                    _sv = (_ff.get("s", [""])[0] or "").lower()
+                    if _res.match(r"^[a-z0-9_-]{1,16}$", _sv):
+                        usage_count("src_" + _sv)
             except Exception:
                 pass
             self.send_response(204)
@@ -12814,8 +13055,17 @@ class H(BaseHTTPRequestHandler):
                 _fg = _upg.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 200)).decode("utf-8", "replace"))
                 _ev = (_fg.get("e", [""])[0] or "").strip()
                 _fu = user_by_token(_parts[0])
-                if _fu is not None and _ev in FUNNEL_CLIENT and not is_admin(_fu) and _fu.get("id") not in OWNER_UIDS and not _fu.get("public"):
+                _real = (_fu is not None and not is_admin(_fu) and _fu.get("id") not in OWNER_UIDS
+                         and _fu.get("id") not in USAGE_SKIP and not _fu.get("public"))
+                if _real and _ev in FUNNEL_CLIENT:
                     fn_count(_ev)
+                elif _real and _ev == "open" and not usage_local(self.headers):
+                    import re as _reo
+                    _dv = (_fg.get("d", [""])[0] or "")
+                    _vv = (_fg.get("v", [""])[0] or "")[:12]
+                    _mm = (_fg.get("m", [""])[0] or "")
+                    if _reo.match(r"^[a-f0-9]{16}$", _dv) and _mm in ("app", "pwa", "web") and _reo.match(r"^[A-Za-z0-9._-]{0,12}$", _vv):
+                        usage_device(_dv, _vv, _mm)
             except Exception:
                 pass
             self.send_response(204)
@@ -13925,6 +14175,22 @@ class H(BaseHTTPRequestHandler):
             self._send_file_fresh(os.path.join(DIR, "static", "assetlinks.json"), "application/json")
             return
         if len(parts) == 1 and parts[0] == "owlnest.apk":
+            try:
+                _rg = self.headers.get("Range") or ""
+                if (not _rg or _rg.startswith("bytes=0-")) and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
+                    import re as _rea
+                    import urllib.parse as _upd
+                    _rm = _rea.match(r"^https?://[^/]+/([A-Za-z0-9_-]{6,})/", self.headers.get("Referer") or "")
+                    if _rm and user_by_token(_rm.group(1)) is not None:
+                        usage_count("apk_upd")
+                    else:
+                        usage_count("apk_dl")
+                        _sq = _upd.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                        _st = (_sq.get("s", [""])[0] or "").lower()
+                        if _rea.match(r"^[a-z0-9_-]{1,16}$", _st):
+                            usage_count("dls_" + _st)
+            except Exception:
+                pass
             self._send_file_fresh(os.path.join(DIR, "static", "owlnest.apk"), "application/vnd.android.package-archive",
                                   disposition='attachment; filename="OwlNest.apk"')
             return
@@ -13951,6 +14217,8 @@ class H(BaseHTTPRequestHandler):
                 self.send_header("Location", f"/{_su['token']}/" + (("?twa=" + _upa.quote(_v)) if _v else ""))
                 self.end_headers()
                 return
+            if "?" in self.path and "v=" in self.path.split("?", 1)[1] and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
+                usage_count("open_out")
             self._send(APP_PAGE, "text/html; charset=utf-8")
             return
         if len(parts) == 1 and parts[0] == "codeinfo":
@@ -14045,9 +14313,12 @@ class H(BaseHTTPRequestHandler):
                 _ck = SESS_SET % parts[0]
             self._send(page, "text/html; charset=utf-8", cookie=_ck)
         elif sub == "funnel" and is_admin(user):
-            self._send(funnel_page(), "text/html; charset=utf-8")
+            self._send(funnel_page().replace("</body></html>", usage_html() + "</body></html>"), "text/html; charset=utf-8")
         elif sub == "api":
             touch_seen(user.get("id"))
+            if (not user.get("public") and user.get("id") not in OWNER_UIDS and user.get("id") not in USAGE_SKIP
+                    and not admin_cookie_ok(self.headers) and not usage_local(self.headers)):
+                usage_account(user.get("id"))
             if user.get("app_only"):
                 # 2026-10-03 (owner): the public demo's live view, their name and package
                 _d = user_stats(_data_user(user), False)
