@@ -2094,6 +2094,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <div id="sig-dir" style="font-size:1.35rem;font-weight:800;letter-spacing:-.01em"></div>
   <div id="sig-sym" style="font-size:.8rem;color:var(--muted2)">BTCUSD</div></div>
  <div id="sig-g" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px"></div>
+ <div id="sig-meter" style="display:none;margin-top:10px"></div>
  <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45"></div>
  <div id="sig-note" style="font-size:.8rem;color:var(--muted2);line-height:1.45;margin-top:8px"></div>
  <div id="sig-mark" style="display:none;margin-top:10px"></div>
@@ -5329,6 +5330,31 @@ function renderPlan(d){
 // only what the app really does today; nothing promised beyond that.
 // Observers: results and the app, never the gates. the Owl's robot = the public demo account.
 // Manual members: the current signal (from their desk), plain and complete.
+// live gap between the price and the signal's entry, read against the trade's own
+// target and stop (measured 2026-10-05: after 3 min 13% of signals are already half way
+// to the target and 10% half way to the stop; the target is ~0.16% away, so a fixed 0.25% was far too loose)
+function sigMeter(sg,ms,en){
+ const m=document.getElementById('sig-meter');if(!m)return;
+ if(!sg.ok||!(ms&&typeof ms.px==='number')||!sg.e||!sg.sl||!sg.tp){m.style.display='none';return;}
+ const px=ms.px,dir=sg.dir===1?1:-1,gap=px-sg.e,pct=gap/sg.e*100,pts=Math.round(gap);
+ const toTp=Math.abs(sg.tp-sg.e)||1,toSl=Math.abs(sg.e-sg.sl)||1;
+ const fav=gap*dir>0,fr=fav?(gap*dir)/toTp:(-gap*dir)/toSl;
+ let lv=0;if(fr>=0.5)lv=2;else if(fr>=0.2)lv=1;
+ const col=['var(--up)','var(--warn)','var(--down)'][lv];
+ const txt=lv===0?(en?'Still good to take':'Encore bon \u00e0 prendre')
+  :lv===1?(fav?(en?'Getting late: part of the move is done':'Un peu tard : une partie du mouvement est faite'):(en?'Price is drifting toward the stop':'Le prix glisse vers le stop'))
+  :(fav?(en?'Too late: half the way to the target is done \u2014 skip it':'Trop tard : la moiti\u00e9 du chemin vers la cible est faite \u2014 passez'):(en?'Price is heading to the stop \u2014 skip it':'Le prix va vers le stop \u2014 passez'));
+ const lo=Math.min(sg.sl,sg.tp),hi=Math.max(sg.sl,sg.tp),W=hi-lo||1;
+ const P=v=>Math.max(0,Math.min(100,(v-lo)/W*100));
+ const sgn=gap>=0?'+':'\u2212';
+ const num=sgn+Math.abs(pct).toFixed(2).replace('.',en?'.':',')+'\u202f% ('+sgn+Math.abs(pts)+' pts)';
+ setH(m,'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.8rem"><span style="color:var(--muted)">'+(en?'Gap from entry':'\u00c9cart \u00e0 l\u2019entr\u00e9e')+'</span><b style="color:'+col+';font-variant-numeric:tabular-nums">'+num+'</b></div>'
+  +'<div style="position:relative;height:8px;border-radius:5px;margin:8px 0 6px;background:linear-gradient(90deg,'+(sg.sl<sg.tp?'var(--down-soft),var(--up-soft)':'var(--up-soft),var(--down-soft)')+');opacity:.9">'
+  +'<i style="position:absolute;top:-3px;bottom:-3px;width:2px;left:'+P(sg.e).toFixed(1)+'%;background:var(--text);opacity:.55"></i>'
+  +'<i style="position:absolute;top:-4px;width:12px;height:16px;margin-left:-6px;border-radius:5px;left:'+P(px).toFixed(1)+'%;background:'+col+';border:2px solid var(--bg)"></i></div>'
+  +'<div style="display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);font-variant-numeric:tabular-nums"><span>'+(sg.sl<sg.tp?'stop '+sg.sl.toFixed(0):(en?'target ':'cible ')+sg.tp.toFixed(0))+'</span><span>'+(sg.sl<sg.tp?(en?'target ':'cible ')+sg.tp.toFixed(0):'stop '+sg.sl.toFixed(0))+'</span></div>'
+  +'<div style="font-size:.78rem;color:'+col+';margin-top:5px;font-weight:600">'+txt+'</div>');
+ m.style.display='block';}
 function renderSignal(ms){
  const el=document.getElementById('sigcard');if(!el)return;
  const sg=ms&&ms.signal;const en=LANG()==='en';
@@ -5344,9 +5370,8 @@ function renderSignal(ms){
  setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0))+cell('stop',sg.sl.toFixed(0))+cell(en?'target':'cible',sg.tp.toFixed(0))+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:'')):''));
  document.getElementById('sig-g').style.gridTemplateColumns='repeat('+(typeof sg.lot==='number'?4:3)+',1fr)';
  myLotLine(sg,en);
- const far=(ms&&typeof ms.px==='number'&&sg.e)?Math.abs(ms.px-sg.e)/sg.e:0;
- const farTxt=far>0.0025?('<div style="color:var(--warn);margin-bottom:4px">\u26a0 '+(en?'The price has moved '+(far*100).toFixed(2)+'% from the entry \u2014 careful, the risk is no longer the same.':'Le prix s\u2019est \u00e9loign\u00e9 de l\u2019entr\u00e9e ('+(far*100).toFixed(2)+'\u202f%) \u2014 prudence, le risque n\u2019est plus le m\u00eame.')+'</div>'):'';
- setH(document.getElementById('sig-note'),farTxt+(sg.ok?(en?'Take it at market as long as the price is near the entry. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que le prix est proche de l\u2019entr\u00e9e. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
+ sigMeter(sg,ms,en);
+ setH(document.getElementById('sig-note'),(sg.ok?(en?'Take it at market while the gap above stays green. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que l\u2019\u00e9cart ci-dessus reste vert. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
   :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. the Owl\u2019s robot would not take it either.':'. Le robot du Owl ne le prendrait pas non plus.'))));
  const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
  window._sig=sg;
