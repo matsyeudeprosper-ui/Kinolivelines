@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-05T09:45:00Z",
+ "updated": "2026-10-05T12:00:12Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -60,9 +60,10 @@
     "2026-10-04 14:00 veille: FLIP-BOS SELL lost -4.23 (pace 1.309, normal-size loss, after the BOS win). Pile flip_hot 14 tr 29% -13.68 $ PF 0.57, halves 25%/33% - both halves losing. FLIP-BOS overall 22 tr 41% -17.59 PF 0.64; BOS 19 tr 68% +28.33.",
     "2026-10-04 15:30 veille: FLIP-BOS BUY won +3.00 (pace 1.609, 15 h UTC, right after the -4.23 FLIP loss). Pile flip_hot 15 tr 33% -10.68 $ PF 0.66, halves 25%/43% - still losing on both. After a loss inside the pile now 1/5 (peu).",
     "2026-10-05 06:30 veille: FLIP-BOS BUY won +3.68 (pace 1.722, 05 h UTC entry, after a win), then BOS BUY won +3.20 (pace 1.686). Pile flip_hot 16 tr 38% -7.00 $ PF 0.78, halves 25%/50% - still losing, but the second half is now break-even-ish. After a win inside the pile 11 tr 45% +0.25; after a loss 5 tr 20% -7.25: the pile's loss sits after losses (peu). FLIP-BOS 24 tr 46% -10.91; BOS 20 tr 70% +31.53.",
-    "2026-10-05: real pile flip_hot 17 tr 41% -5.18 $ PF 0.84, halves 22%/62% - the second half now wins 5 of 8. After a loss inside the pile 1/5 -7.25, after a win 12 tr 50% +2.07. FLIP-BOS 25 tr 48% -9.09; BOS 21 tr 71% +34.14. Engine 42 d still says nervous reversals earn ~0 (10-04 trace); no new trace tonight."
+    "2026-10-05: real pile flip_hot 17 tr 41% -5.18 $ PF 0.84, halves 22%/62% - the second half now wins 5 of 8. After a loss inside the pile 1/5 -7.25, after a win 12 tr 50% +2.07. FLIP-BOS 25 tr 48% -9.09; BOS 21 tr 71% +34.14. Engine 42 d still says nervous reversals earn ~0 (10-04 trace); no new trace tonight.",
+    "2026-10-05 12:00 veille: flip_hot_size built (96dbe40). Raw CLI (no cap, no protections), base 265.7 hole 80.3 (h1 246.4 / h2 21.3). 0.75: C 252.6 (-13.1) hole 76.5, h1 -13.4 h2 -0.8. 0.5: C 234.6 (-31.1) hole 72.8, h1 -36.7 h2 +3.3. Monotonic: smaller stake = less money, a few dollars less hole. The engine's nervous reversals still earn in h1, so cutting them costs. Real: the 09:16 FLIP-BOS SELL +1.82 (pace 1.295) already counted in the night's 17."
    ],
-   "next": "Still waiting for flip_hot_size (open since 10-04). If the second half keeps winning, the real case is only 'after a loss' (5 trades)."
+   "next": "flip_hot_size alone is a C (belt at best). Night: try it on both shapes and in company of rr1.0 (does it replace size_hot 0.75 as a narrower belt?). The real case shrinks to 'after a loss' (5 trades)."
   },
   {
    "id": "sunday",
@@ -483,6 +484,16 @@
    "d": "2026-10-05",
    "run": "rr1.0 + ext 700 + size_hot 0.75 (uncapped / capped, 42 d)",
    "res": "B +4.8 hole 19.8 / C -10.0 -> rr10_ext700_hot075"
+  },
+  {
+   "d": "2026-10-05",
+   "run": "raw --flip-hot-size 0.75 (veille)",
+   "res": "C -13.1 (265.7->252.6), hole 80.3->76.5, h1 -13.4 h2 -0.8"
+  },
+  {
+   "d": "2026-10-05",
+   "run": "raw --flip-hot-size 0.5 (veille)",
+   "res": "C -31.1 (265.7->234.6), hole 80.3->72.8, h1 -36.7 h2 +3.3"
   }
  ],
  "scrutiny_log": [
@@ -659,6 +670,17 @@
     "gap>60 by kind"
    ],
    "saw": "49 trades, 57%, +14.19 $. BOS 21 tr 71% +34.14; FLIP-BOS 25 tr 48% -9.09. flip_hot 17 tr 41% -5.18, h2 5/8. BUY 32 62% +34.55, SELL 17 47% -20.36. gap>60 22 tr 45% -10.18 but 16/22 are reversals -> no pile. Battery: 0 A, 13 B, 24 C; rr10 family uncapped A, capped C. Base 42 d moved (127 battery, 156 my run hours later)."
+  },
+  {
+   "t": "2026-10-05T12:00:12Z",
+   "looked": [
+    "wake_context new trades (2, already in the night's 49)",
+    "scrutiny --pile flip_hot",
+    "scrutiny --by kind",
+    "requests.json (flip_hot_size built 96dbe40)",
+    "harness raw --flip-hot-size 0.75 / 0.5"
+  ],
+  "saw": "BOS BUY +2.61 (pace 1.34) and FLIP-BOS SELL +1.82 (pace 1.295) - both won, both already counted at 09:40. Pile flip_hot 17 tr 41% -5.18, after a loss 1/5. flip_hot_size raw: 0.75 C -13.1 hole -3.8; 0.5 C -31.1 hole -7.5. A belt, not a gain. No proposal, no pile, no open ask."
   }
  ],
  "lessons": [
@@ -676,7 +698,7 @@
  "open": [
   "Does the higher target hold on the capped shape a second night (rr10_bul4_nosun_n2, rr10_bul4_ext700_n2)? If not, it is an uncapped-only idea and needs cap_rr.",
   "cap_rr (requested tonight): capped 0.75/0.8 + uncapped 1.0 - the first setting that could suit both shapes at once.",
-  "flip_hot_size (open since 10-04): does staking 0.5/0.75 on nervous reversals keep the money and shrink the hole? The real pile's second half now wins 5/8 - the case may be shrinking.",
+  "flip_hot_size (built 10-05): raw alone C at 0.75 and 0.5 (money down, hole down a little). Night: both shapes, and with rr1.0 / Sunday off - a narrower belt than size_hot 0.75?",
   "Belts: does the hole halved by rr1.0+ext700+hot0.75 (50->20) hold a second night?",
   "Long pause vs reversal: BOS after >60 min (3 tr) - revisit at 10+.",
   "Buys vs sells: wait for a falling week before any direction dial.",
