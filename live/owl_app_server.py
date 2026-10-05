@@ -2206,7 +2206,6 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <button id="nopush-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
 </div>
-<button id="sigprev-b" class="shbtn shghost" style="display:none;margin-top:12px" onclick="sigPreview()"></button>
 <div class="panel" id="sigcard" style="display:none;margin-top:12px">
  <div class="sg-top"><span class="sg-pill" id="sig-lbl">Signal</span><span class="sg-exp" id="sig-when"></span></div>
  <div class="sg-hero"><div class="sg-ic" id="sig-ic"></div>
@@ -5531,15 +5530,12 @@ async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG(
 }
 function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.value:'');}
 // owner only: draws a made-up Signal card on the home tab from the live price, nothing is sent or saved
-function sigPrevBtn(d){const b=document.getElementById('sigprev-b');if(!b)return;
- b.style.display=(d&&d.is_master&&!window._sigPreview)?'block':'none';
- b.textContent=LANG()==='en'?'Preview the Signal card (owner)':'Voir un exemple de carte Signal (propriétaire)';}
 async function sigPreview(){const en=LANG()==='en';
  let D=null;try{const r=await fetch(B+'chart_data');if(r.ok)D=await r.json();}catch(e){}
  const px=D&&typeof D.px==='number'?D.px:null;
  if(!px){toast(en?'No price yet.':'Pas de prix pour l\u2019instant.',2500);return;}
  const e=Math.round(px-8),tp=Math.round(e*1.0016),sl=Math.round(e-(tp-e)/0.8),now=Date.now()/1000;
- window._sigPreview=true;{const pb=document.getElementById('sigprev-b');if(pb)pb.style.display='none';}
+ window._sigPreview=true;
  tab('home',document.querySelector('.tb'));
  renderSignal({px:px,signal:{ok:true,dir:1,e:e,sl:sl,tp:tp,t:now-120,expires:now+1200,preview:true}});
  const l=document.getElementById('sig-lbl');if(l)l.textContent=en?'Signal \u00b7 preview':'Signal \u00b7 aper\u00e7u';
@@ -7971,7 +7967,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);sigPrevBtn(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
