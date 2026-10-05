@@ -23,6 +23,18 @@
    "status": "answered",
    "answer_fr": "Sur les 19 vrais trades, 14 sont arrivés marché nerveux, avec seulement 29 % de gains contre 60 % le reste du temps - un vrai signal, mais les deux moitiés de la période ne sont pas d'accord (14 % puis 43 %), donc trop tôt pour trancher avec si peu de trades. On pousse déjà une version plus fine, née d'une de mes demandes : ne rien prendre quand on est nerveux ET encore dans le rouge - elle gagne dans le rejeu et je continue à la défendre.",
    "answer_en": "Out of the 19 real trades, 14 happened in a nervous market, with only 29% wins versus 60% the rest of the time - a real signal, but the two halves of the period disagree (14% then 43%), so it's too early to decide with so few trades. We're already pushing a finer version, born from one of my own requests: take nothing when nervous AND still in the red - it wins in the test and I keep defending it."
+  },
+  {
+   "id": "ask_1791181811_long",
+   "seed": "long",
+   "seed_fr": "Quand le robot achète",
+   "seed_en": "When the robot buys",
+   "by": "labo",
+   "date": "2026-10-05",
+   "note": "31 trades, 61 % gagnés contre 44 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "C'est vrai : sur 47 vrais trades, les achats gagnent 61 % (environ trente-deux dollars gagnés), les ventes 44 % (environ vingt-deux perdus), et les achats font mieux sur les deux moitiés. Mais la période ne fait que onze jours, et un marché qui monte fait gagner les achats tout seul. Ce n'est pas encore une recette : le jour où le marché baisse, couper les ventes coûterait cher. Les ventes ne sont que seize, trop peu. Je ne peux pas encore le tester sur 42 jours (pas de réglage par sens) ; je le surveille, avec ma demande 'ne pas courir après le prix'.",
+   "answer_en": "True: out of 47 real trades, buys win 61% (about thirty-two dollars made), sells 44% (about twenty-two lost), and buys do better in both halves. But the period is only eleven days, and a rising market makes buys win on its own. Not a recipe yet: the day the market falls, cutting sells would cost a lot. Only sixteen sells - too few. I can't test it over 42 days yet (no per-direction dial); I'm watching it, with my 'don't chase the price' request."
   }
  ]
 }
