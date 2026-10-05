@@ -3107,7 +3107,7 @@ function setH(el,h){if(el._h!==h){el._h=h;el.innerHTML=h;}}
 // names an actor goes through MAN().
 function MAN(){return !!(window._d&&window._d.trading_paused);}
 // a Signal card is for a manual desk, or an app-only Signal member (even with Strategie on top)
-function SIGOK(){const d=window._d||{};return d.app_only?!!(d.plan&&d.plan.manual):(MAN()&&!OBS());}
+function SIGOK(){const d=window._d||{};if(window._sigPreview)return true;return d.app_only?!!(d.plan&&d.plan.manual):(MAN()&&!OBS());}
 // 2026-09-27: every sentence that carries a voice lives HERE, once per voice.
 // T(key) picks the current voice; a missing manual key falls back to auto.
 // This is also the i18n seam: a language is one more table.
@@ -4704,6 +4704,7 @@ async function acctSheet(){
     return (adm&&adm!==B)?'<a class="shbtn shmain" style="display:block;text-align:center;text-decoration:none" href="'+adm+'">Retour \\u00e0 mon compte</a>':'';})())+
   (d.is_master?'<button class="shbtn shmain" onclick="_shDone(1);nestCodeAny()">\U0001f511 G\u00e9n\u00e9rer un code</button>':'')+
   (d.is_master?'<button class="shbtn shghost" onclick="_shDone(1);tab(\\'nid\\',document.getElementById(\\'tb-nid\\'))">Ouvrir Le Nid</button>':'')+
+  (d.is_master?'<button class="shbtn shghost" onclick="_shDone(1);sigPreview()">Aper\u00e7u de la carte Signal</button>':'')+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
 // ---- batch 20: onboarding cards + notification nudge ----
@@ -5440,6 +5441,7 @@ function renderSignal(ms){
    setH(mk,'<div style="font-size:.74rem;color:var(--muted);margin-bottom:6px">'+(en?'Trading it on another broker? Tell the app, so your history stays right:':'Vous le tradez chez un autre broker ? Dites-le \u00e0 l\u2019app, pour un historique juste :')+'</div><div style="display:flex;gap:8px"><button onclick="sigMark(1)" style="'+bs+'color:var(--up-soft)">\u2713 '+(en?'I took it':'J\u2019ai pris')+'</button><button onclick="sigMark(0)" style="'+bs+'color:var(--text2)">'+(en?'Not taken':'Pas pris')+'</button></div>');}}
 }
 async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
+ if(sg.preview){toast(en?'Preview only: nothing is saved.':'Aper\u00e7u seulement : rien n\u2019est enregistr\u00e9.',2200);return;}
  const r=await fetch(B+'sigmark',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'t='+sg.t+'&taken='+tk+(res!==undefined&&res!==''?'&result='+encodeURIComponent(res):'')}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){toast(en?'Not saved, try again.':'Pas enregistr\u00e9, r\u00e9essayez.',2500);return;}
@@ -5448,6 +5450,17 @@ async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG(
  renderSignal(Object.assign({},window._sigMs||{},{signal:sg}));window._sgT=0;loadSignals();
 }
 function sigMarkRes(){const i=document.getElementById('sig-res');sigMark(1,i?i.value:'');}
+// owner only: draws a made-up Signal card on the home tab from the live price, nothing is sent or saved
+async function sigPreview(){const en=LANG()==='en';
+ let D=null;try{const r=await fetch(B+'chart_data');if(r.ok)D=await r.json();}catch(e){}
+ const px=D&&typeof D.px==='number'?D.px:null;
+ if(!px){toast(en?'No price yet.':'Pas de prix pour l\u2019instant.',2500);return;}
+ const e=Math.round(px-8),tp=Math.round(e*1.0016),sl=Math.round(e-(tp-e)/0.8),now=Date.now()/1000;
+ window._sigPreview=true;
+ tab('home',document.querySelector('.tb'));
+ renderSignal({px:px,signal:{ok:true,dir:1,e:e,sl:sl,tp:tp,t:now-120,expires:now+1200,preview:true}});
+ const l=document.getElementById('sig-lbl');if(l)l.textContent=en?'Signal \u00b7 preview':'Signal \u00b7 aper\u00e7u';
+ const c=document.getElementById('sigcard');if(c)setTimeout(()=>c.scrollIntoView({behavior:'smooth',block:'center'}),150);}
 function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
  const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' '+(typeof sg.lot==='number'?'\u00b7 lot '+sg.lot.toFixed(2)+' ':'')+'\u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
@@ -5457,6 +5470,7 @@ function chime(force){try{if(!force&&localStorage.getItem('owlChime')!=='1')retu
   [[880,0],[1175,.16]].forEach(([f,dd])=>{const o=A.createOscillator(),g=A.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.0001,t0+dd);g.gain.exponentialRampToValueAtTime(0.25,t0+dd+.02);g.gain.exponentialRampToValueAtTime(0.0001,t0+dd+.28);o.connect(g);g.connect(A.destination);o.start(t0+dd);o.stop(t0+dd+.3);});}catch(e){}}
 document.addEventListener('pointerdown',()=>{try{if(localStorage.getItem('owlChime')==='1'&&!window._ac)window._ac=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}},{once:true});
 async function pollSignal(){
+ if(window._sigPreview)return;
  const d=window._d;if(!d||!SIGOK())return;
  if(window._sigT&&Date.now()-window._sigT<8000)return;window._sigT=Date.now();
  try{const r=await fetch(B+'manual_state?t='+Date.now(),{cache:'no-store'});if(!r.ok){renderSignal(null);return;}const ms=await r.json();
