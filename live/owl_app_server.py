@@ -1625,6 +1625,7 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 #tab-home .panel .lbl .hint{font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);
  white-space:normal;flex:0 1 auto;min-width:0;line-height:1.3}
 #tab-home #apkcard,#tab-home #newscard,#tab-home #recap{border-color:var(--border)!important;margin-top:26px!important}
+#tab-home #nopushcard{margin-top:26px!important}
 #tab-home #expcard{margin-top:26px!important}
 #expcard .shbtn{width:auto!important;margin:0!important;padding:10px 14px!important}
 .hq{display:none!important}
@@ -13808,6 +13809,15 @@ class H(BaseHTTPRequestHandler):
                            "app_only": True, "is_master": False,
                            # a Signal member reads the app as a signal service
                            "trading_paused": bool(has(user.get("id"), "manual"))})
+                # the member's OWN notification state (user_stats read the demo's)
+                _d["push_on"] = bool(_push_subs().get(user.get("id")))
+                try:
+                    _pp = json.load(open(PUSH_PREFS_FILE))
+                    _d["push_level"] = _pp.get(user["id"], "all")
+                    _d["push_quiet"] = bool((_pp.get("_quiet") or {}).get(user["id"], {}).get("on"))
+                except Exception:
+                    _d["push_level"] = "all"
+                    _d["push_quiet"] = False
                 _d.pop("nest", None)
                 self._send(json.dumps(_d), "application/json")
             else:
