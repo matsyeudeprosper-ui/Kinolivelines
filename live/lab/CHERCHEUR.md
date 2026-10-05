@@ -241,8 +241,11 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "debt_nerv_gate": true|false, "wait_win": 0-240, "cost_max": 0-15, "min_range": 0-200,
          "minute_win": [0-59, 0-59], "one_per_hour": true|false,
          "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1,
-         "chase_pts": 0-1500, "nerv_floor": 0|0.5-0.95}}
+         "chase_pts": 0-1500, "nerv_floor": 0|0.5-0.95, "flip_hot_size": 0.25-1.0}}
 ```
+`flip_hot_size` (2026-10-05, your request): multiplies the stake by X only on
+a change-of-direction trade taken when the market's pace is 1.0 or more; the
+trade is still taken; 1.0 = off.
 `nerv_floor` (2026-10-04, your request): no entry when the market's pace at
 entry is under X (1.0 = usual), the market almost asleep; 0 = off.
 `chase_pts` (2026-10-04, your request): no entry when the last hour already

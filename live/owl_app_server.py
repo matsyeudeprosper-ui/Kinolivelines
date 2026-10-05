@@ -453,6 +453,60 @@ def sig_merge(uid, lst):
     return lst
 
 
+FUNNEL_FILE = os.path.join(DIR, "owl_funnel.json")
+FUNNEL_STEPS = ("landing", "offers", "choose", "pay_created", "paid")
+FUNNEL_CLIENT = ("landing", "offers", "choose")
+FN_JS = "function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}}"
+_fn_lock = threading.Lock()
+
+
+def fn_count(ev):
+    """Anonymous funnel counter: one number per step per UTC day. No cookie, no IP, no id."""
+    if ev not in FUNNEL_STEPS:
+        return
+    try:
+        with _fn_lock:
+            try:
+                d = json.load(open(FUNNEL_FILE, encoding="utf-8"))
+                if not isinstance(d, dict):
+                    d = {}
+            except Exception:
+                d = {}
+            day = time.strftime("%Y-%m-%d", time.gmtime())
+            row = d.setdefault(day, {})
+            row[ev] = int(row.get(ev, 0)) + 1
+            for k in sorted(d)[:-200]:
+                d.pop(k, None)
+            json.dump(d, open(FUNNEL_FILE + ".tmp", "w", encoding="utf-8"))
+            os.replace(FUNNEL_FILE + ".tmp", FUNNEL_FILE)
+    except Exception:
+        pass
+
+
+def funnel_page():
+    try:
+        d = json.load(open(FUNNEL_FILE, encoding="utf-8"))
+    except Exception:
+        d = {}
+    names = ("Visites", "Offres vues", "Paquet choisi", "Paiement cr&eacute;&eacute;", "Pay&eacute;")
+
+    def pct(a, b):
+        return ("%.0f%%" % (100.0 * a / b)) if b else "&ndash;"
+    days = sorted(d)[-14:][::-1]
+    tot = [sum(int(d[k].get(e, 0)) for k in d) for e in FUNNEL_STEPS]
+    rows = "".join("<tr><td>%s</td>%s</tr>" % (k, "".join("<td>%d</td>" % int(d[k].get(e, 0)) for e in FUNNEL_STEPS)) for k in days)
+    conv = "".join("<td>%s</td>" % (pct(tot[i], tot[i - 1]) if i else "") for i in range(5))
+    return ("<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+            "<title>Entonnoir</title><style>body{background:#0b0f14;color:#e6edf3;font-family:system-ui,sans-serif;margin:16px}"
+            "table{border-collapse:collapse;width:100%}td,th{padding:8px 6px;border-bottom:1px solid #223;text-align:right;font-size:.9rem}"
+            "td:first-child,th:first-child{text-align:left}th{color:#8b9bb0;font-weight:600}.t td{font-weight:800}p{color:#8b9bb0;font-size:.82rem}</style></head><body>"
+            "<h2>Entonnoir</h2><div style=\"overflow-x:auto\"><table><tr><th>Jour (UTC)</th>%s</tr>%s"
+            "<tr class=\"t\"><td>Total</td>%s</tr><tr><td>vs &eacute;tape pr&eacute;c&eacute;dente</td>%s</tr></table></div>"
+            "<p>Compte anonyme : un chiffre par &eacute;tape et par jour, une fois par session de navigateur. Ni cookie, ni IP, ni identifiant. "
+            "Le propri&eacute;taire et la d&eacute;mo ne comptent pas.</p></body></html>") % (
+        "".join("<th>%s</th>" % n for n in names), rows, "".join("<td>%d</td>" % t for t in tot), conv)
+
+
 SIGFEED_FILE = os.path.join(DIR, "owl_signal_feed.json")
 
 
@@ -6774,7 +6828,8 @@ function kinoBtns(P,en,main){const c=P.contact_url||'';
   '<button class="shbtn shghost" style="display:block;width:100%;margin:8px 0 0" onclick="_shDone(1);openActCard()">\U0001f511 '+(en?'I have a code':'J\u2019ai un code')+'</button>';}
 // 2026-10-04 (owner): choose an offer -> this modal. A code activates it on
 // THIS account; no code -> the Owl on Telegram; Signal / Strategie -> crypto, instant.
-async function codeModal(pkg){const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
+function fnb(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon(B+'fn','e='+e);}catch(x){}}
+async function codeModal(pkg){if(pkg)fnb('choose');const en=LANG()==='en';const P=(window._d&&window._d.plan)||{};
  const L={manual:'Signal',strategy:en?'Strategy':'Strat\u00e9gie',family:en?'Automatic':'Automatique'}[pkg]||(en?'Your package':'Votre formule');
  const contact=P.contact_url||'';
  const inp='<input id="cm-code" maxlength="6" placeholder="ABC123" autocapitalize="characters" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:13px;font-size:1.3rem;font-weight:800;letter-spacing:.3em;text-align:center;text-transform:uppercase;margin-top:6px">';
@@ -6799,7 +6854,7 @@ async function codeModal(pkg){const en=LANG()==='en';const P=(window._d&&window.
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad code'?(en?'Unknown or already used code.':'Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.'):(en?'It did not work.':'\u00c7a n\u2019a pas march\u00e9.'))+'</h3>');return;}
  try{confetti();}catch(e){}toast(en?'Activated':'Activ\u00e9',2000);setTimeout(load,1200);}
 function openActCard(){codeModal(null);}
-function offersSheet(){
+function offersSheet(){fnb('offers');
  const P=(window._d||{}).plan||{},en=LANG()==='en',pk=P.packages||{manual:{usd:29},strategy:{usd:49}};
  const T2=(fr,e)=>en?e:fr;
  const S=window._d||{};
@@ -11204,7 +11259,7 @@ const PV_LIVE=true;
    $('pv-bot-t').textContent='D\\u00e9mo red\\u00e9marr\\u00e9e le '+String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0')+' \\u00b7 elle repart de z\\u00e9ro';}}
  }catch(e){}
 })();
-</script></body></html>"""
+</script><script>function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}} fn('landing');</script></body></html>"""
 
 
 def _join_result(title, body_html):
@@ -11438,9 +11493,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
                "style=\"text-decoration:none;text-align:center;display:block;margin-top:10px\">&#9993; Pas de code ? &Eacute;crire au Owl</a>" if contact else "")
             + "<div class=\"h\" id=\"mh\" style=\"margin-top:14px\"></div></form>"
             "<button type=\"button\" class=\"go sec\" onclick=\"closeM()\" style=\"margin-top:10px\">Annuler</button></div>"
-            "<script>var P='';"
+            "<script>var P='';" + FN_JS +
             "function tip(b){var t=document.getElementById('tipbx');document.getElementById('tipt').innerHTML=b.getAttribute('data-tip');t.style.display='block';}"
-            "function pick(k){P=k;document.getElementById('pkg').value=k;"
+            "function pick(k){fn('choose');P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
             "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
             "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
@@ -11480,7 +11535,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "if(!need()){e.preventDefault();return;}"
             "if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
-            + "</script></body></html>")
+            + "fn('offers');</script></body></html>")
 
 
 def _code_page(mode, login, pwd, name=""):
@@ -12083,6 +12138,8 @@ def _activate_buy(name, pwd, tg, pkg, origin, ident=""):
         with _urq.urlopen(req, timeout=20) as r:
             inv = json.loads(r.read().decode("utf-8", "replace"))
         url = inv.get("invoice_url")
+        if url:
+            fn_count("pay_created")
     except Exception as e:
         url = None
     link = f"https://owltrader.duckdns.org/{token}/"
@@ -12222,6 +12279,18 @@ class H(BaseHTTPRequestHandler):
     def do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        if p == "/fn":
+            try:
+                import urllib.parse as _upf
+                _ff = _upf.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 200)).decode("utf-8", "replace"))
+                _ev = (_ff.get("e", [""])[0] or "").strip()
+                if _ev in FUNNEL_CLIENT and not admin_cookie_ok(self.headers):
+                    fn_count(_ev)
+            except Exception:
+                pass
+            self.send_response(204)
+            self.end_headers()
+            return
         # Owner 2026-09-19: the public showcase is view-only. Its token is
         # in everyone's hands, so EVERY action on it is refused here, on the
         # server, before any password check - a hidden button is not a
@@ -12512,6 +12581,7 @@ class H(BaseHTTPRequestHandler):
                         _en = member_lang(_ouid) == "en"
                         if not _seen:
                             if rec.get("granted") in PACKAGES:
+                                fn_count("paid")
                                 queue_push("kino", "\U0001f4b0 Paiement re\u00e7u \u00b7 " + _lab,
                                            f"{_nm} \u00b7 ${float(rec.get('amount') or 0):.0f} \u00b7 abonnement activ\u00e9.")
                             elif _st in ("finished", "confirmed") and rec.get("granted") not in ("dup", "setup", "share"):
@@ -12603,6 +12673,19 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "fn":
+            try:
+                import urllib.parse as _upg
+                _fg = _upg.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 200)).decode("utf-8", "replace"))
+                _ev = (_fg.get("e", [""])[0] or "").strip()
+                _fu = user_by_token(_parts[0])
+                if _fu is not None and _ev in FUNNEL_CLIENT and not is_admin(_fu) and _fu.get("id") not in OWNER_UIDS and not _fu.get("public"):
+                    fn_count(_ev)
+            except Exception:
+                pass
+            self.send_response(204)
+            self.end_headers()
+            return
         if len(_parts) == 2 and _parts[1] == "buy":
             # 2026-09-27: create a NOWPayments invoice for a package
             u = user_by_token(_parts[0])
@@ -12646,6 +12729,7 @@ class H(BaseHTTPRequestHandler):
                 if not url:
                     self._send(json.dumps({"ok": False, "err": "no invoice"}), "application/json")
                     return
+                fn_count("pay_created")
                 self._send(json.dumps({"ok": True, "url": url}), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:120]}), "application/json")
@@ -13825,6 +13909,8 @@ class H(BaseHTTPRequestHandler):
             if not user.get("public") and not (admin_cookie_ok(self.headers) and user.get("id") not in OWNER_UIDS):
                 _ck = SESS_SET % parts[0]
             self._send(page, "text/html; charset=utf-8", cookie=_ck)
+        elif sub == "funnel" and is_admin(user):
+            self._send(funnel_page(), "text/html; charset=utf-8")
         elif sub == "api":
             touch_seen(user.get("id"))
             if user.get("app_only"):
