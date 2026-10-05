@@ -586,10 +586,11 @@ def feed_line(line):
             buy = d == 1
             title = ("\U0001f7e2 " + (("BUY" if buy else "SELL") + " signal" if en else
                      ("Signal \u00b7 ACHAT" if buy else "Signal \u00b7 VENTE")))
-            body = (f"Entry ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 target {_fmt_px(item['tp'])}. Open the app." if en else
-                    f"Entr\u00e9e ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 cible {_fmt_px(item['tp'])}. Ouvrez l\u2019app.")
+            body = (f"Entry ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 target {_fmt_px(item['tp'])} (the robot's prices). Open the app to match them to your broker." if en else
+                    f"Entr\u00e9e ~{_fmt_px(item['e'])} \u00b7 stop {_fmt_px(item['sl'])} \u00b7 cible {_fmt_px(item['tp'])} (prix du robot). Ouvrez l\u2019app pour les ajuster \u00e0 votre broker.")
             try:
-                send_all(title, body, kind="instant", only_uid=uid, url=_tok_url(uid, ""))
+                send_all(title, body, kind="instant", only_uid=uid, url=_tok_url(uid, ""),
+                         ttl=SIGNAL_LIFE, urgent=True)
                 item["n"].append(uid)
             except Exception:
                 pass
@@ -653,7 +654,7 @@ def is_manual(uid):
 
 
 def send_all(title, body, kind="instant", only_uid=None,
-             skip_uids=None, url=None, image=None):
+             skip_uids=None, url=None, image=None, ttl=0, urgent=False):
     try:
         subs = json.load(open(SUBS))
     except Exception:
@@ -693,7 +694,8 @@ def send_all(title, body, kind="instant", only_uid=None,
                                               "url": url or "",
                                               "image": image or ""}),
                                vapid_private_key=VAPID_PEM,
-                               vapid_claims=dict(CLAIMS), timeout=10)
+                               vapid_claims=dict(CLAIMS), timeout=10,
+                               ttl=ttl, headers=({"Urgency": "high"} if urgent else None))
                 mylog(f"  {uid}: HTTP "
                       f"{getattr(resp, 'status_code', '?')}")
                 keep.append(s)

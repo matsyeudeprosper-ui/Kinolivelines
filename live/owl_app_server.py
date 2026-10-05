@@ -200,7 +200,7 @@ MANIFEST = json.dumps({
     "shortcuts": [
         {"name": "Graphique", "url": "./chart",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
-        {"name": "Signal", "url": "./chart?sig=1",
+        {"name": "Signal", "url": "./",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
         {"name": "Historique", "url": "./#hist",
          "icons": [{"src": "icon192.png", "sizes": "192x192"}]},
@@ -1319,17 +1319,17 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .sg-pill{font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:6px 11px;border-radius:999px;
  background:var(--sgt,var(--accent-bg));color:var(--sgc,var(--accent-soft));white-space:nowrap}
 .sg-exp{font-size:.72rem;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-.sg-hero{display:flex;align-items:center;gap:14px;margin-top:18px}
-.sg-ic{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;flex:none;
+.sg-hero{display:flex;align-items:center;gap:13px;margin-top:14px}
+.sg-ic{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;flex:none;
  background:var(--sgt,var(--accent-bg));color:var(--sgc,var(--accent-soft));box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
-.sg-dir{font-size:1.75rem;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:var(--sgc,var(--text))}
+.sg-dir{font-size:1.6rem;font-weight:800;letter-spacing:-.02em;line-height:1.05;color:var(--sgc,var(--text))}
 .sg-sym{font-size:.8rem;color:var(--muted2);margin-top:4px;letter-spacing:.02em}
-.sg-g{display:grid;gap:8px;margin-top:20px}
+.sg-g{display:grid;gap:8px;margin-top:14px}
 .sg-c{background:rgba(127,140,160,.07);border:1px solid var(--border);border-radius:15px;padding:11px 6px 10px;text-align:center}
 .sg-cl{display:flex;align-items:center;justify-content:center;gap:5px;font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .sg-cl i{width:6px;height:6px;border-radius:50%;display:inline-block}
 .sg-cv{display:block;margin-top:5px;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-.sg-m{margin-top:20px}
+.sg-m{margin-top:16px}
 .sg-mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:.78rem;color:var(--muted)}
 .sg-mh b{font-variant-numeric:tabular-nums;font-size:.86rem}
 .sg-tr{position:relative;height:7px;border-radius:999px;margin:13px 0 9px;opacity:.95}
@@ -1339,11 +1339,24 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .sg-st{display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:7px 12px;border-radius:999px;font-size:.78rem;font-weight:700;line-height:1.2}
 .sg-st i{width:7px;height:7px;border-radius:50%;flex:none}
 .sg-note{font-size:.76rem;color:var(--muted);line-height:1.55;margin-top:12px}
-#sigcard #sig-mark{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
-.sg-act{display:flex;gap:10px;margin-top:16px}
+.sg-note:empty{display:none}
+#sigcard #sig-mark{margin-top:14px}
+.sg-act{display:flex;gap:10px;margin-top:12px}
+#sigcard .sg-tg{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;margin-top:14px;padding:12px 0 0;background:none;border:0;border-top:1px solid var(--border);color:var(--muted2);font-size:.76rem;text-align:left;font-family:inherit}
+#sigcard .sg-tg b{color:var(--accent-soft);font-weight:700;white-space:nowrap}
+#sigcard .sg-tg svg{transition:transform .2s}
+#sigcard.open .sg-tg svg{transform:rotate(180deg)}
 #sigcard .sg-go{flex:1 1 auto;min-width:0;width:auto;margin:0;padding:15px 12px;border-radius:15px;display:block;text-align:center;text-decoration:none;
  background:linear-gradient(180deg,#4f93f8,var(--accent));color:#fff;font-weight:800;font-size:.95rem;box-shadow:0 10px 22px -10px rgba(59,130,246,.75),inset 0 1px 0 rgba(255,255,255,.18)}
-#sigcard .sg-cp{flex:none;width:auto;margin:0;padding:15px 18px;border-radius:15px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:.9rem}
+#sigcard .sg-brk{margin-top:10px;padding:11px 12px;border-radius:13px;background:var(--surface3);border:1px solid var(--border2);font-size:.76rem;color:var(--muted2);line-height:1.45}
+#sigcard .sg-bd{display:flex;justify-content:space-between;gap:4px 10px;flex-wrap:wrap}
+#sigcard .sg-bl{display:flex;justify-content:space-between;gap:10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
+#sigcard .sg-bl a{color:var(--accent-soft);text-decoration:none;font-weight:700;white-space:nowrap}
+#sigcard .sg-bh{margin-top:8px;padding-top:8px;border-top:1px solid var(--border2)}
+#sigcard .sg-bi{display:flex;gap:8px;margin-top:8px}
+#sigcard .sg-bi input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:10px;color:var(--text);font-size:.92rem}
+#sigcard .sg-bi button{flex:none;border:0;border-radius:10px;padding:10px 16px;background:var(--accent);color:#fff;font-weight:700;font-size:.84rem}
+#sigcard .sg-cp{width:100%;margin:12px 0 0;padding:12px;border-radius:13px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-weight:700;font-size:.86rem}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .card{padding:18px 10px 15px;text-align:center}
 /* 2026-10-01 (owner): "professional, premium, modern". Restraint, not
@@ -2184,13 +2197,16 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div class="sg-hero"><div class="sg-ic" id="sig-ic"></div>
   <div style="min-width:0"><div class="sg-dir" id="sig-dir"></div><div class="sg-sym" id="sig-sym">BTCUSD</div></div></div>
  <div id="sig-g" class="sg-g"></div>
- <div id="sig-meter" class="sg-m" style="display:none"></div>
- <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:12px;line-height:1.45"></div>
  <div id="sig-note" class="sg-note"></div>
+ <div id="sig-meter" class="sg-m" style="display:none"></div>
  <div id="sig-mark" style="display:none"></div>
- <div class="sg-act">
-  <a id="sig-chart" href="#" class="shbtn sg-go">Prendre sur le graphique</a>
-  <button id="sig-copy" class="shbtn sg-cp" onclick="sigCopy()">Copier</button>
+ <div class="sg-act"><a id="sig-chart" href="#" class="shbtn sg-go">Prendre sur le graphique</a></div>
+ <button id="sig-tg" class="sg-tg" onclick="sigMore()" style="display:none"><span id="sig-tg-l"></span><b><span id="sig-tg-r">D\u00e9tails</span> <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M6 9l6 6 6-6"/></svg></b></button>
+ <div id="sig-more" style="display:none">
+  <div id="sig-brk" class="sg-brk" style="display:none"></div>
+  <div id="sig-mylot" style="display:none;font-size:.78rem;color:var(--muted2);margin-top:12px;line-height:1.45"></div>
+  <div id="sig-how" class="sg-note"></div>
+  <button id="sig-copy" class="shbtn sg-cp" onclick="sigCopy()">Copier le signal</button>
  </div>
 </div>
 <div class="panel" id="kinocard" style="display:none;margin-top:12px">
@@ -5440,8 +5456,9 @@ function sigMeter(sg,ms,en){
  const P=v=>Math.max(0,Math.min(100,(v-lo)/W*100));
  const sgn=gap>=0?'+':'\u2212';
  const num=sgn+Math.abs(pct).toFixed(2).replace('.',en?'.':',')+'\u202f% ('+sgn+Math.abs(pts)+' pts)';
- const slL=(sg.sl<sg.tp?'stop ':(en?'target ':'cible '))+(sg.sl<sg.tp?sg.sl:sg.tp).toFixed(0);
- const tpL=(sg.sl<sg.tp?(en?'target ':'cible '):'stop ')+(sg.sl<sg.tp?sg.tp:sg.sl).toFixed(0);
+ const off=(brkGet()||{}).off||0;
+ const slL=(sg.sl<sg.tp?'stop ':(en?'target ':'cible '))+((sg.sl<sg.tp?sg.sl:sg.tp)+off).toFixed(0);
+ const tpL=(sg.sl<sg.tp?(en?'target ':'cible '):'stop ')+((sg.sl<sg.tp?sg.tp:sg.sl)+off).toFixed(0);
  setH(m,'<div class="sg-mh"><span>'+(en?'Gap from entry':'\u00c9cart \u00e0 l\u2019entr\u00e9e')+'</span><b style="color:'+col+'">'+num+'</b></div>'
   +'<div class="sg-tr" style="background:linear-gradient(90deg,'+(sg.sl<sg.tp?'#f08a8a,#7fe0a6':'#7fe0a6,#f08a8a')+')">'
   +'<i class="sg-tk" style="left:'+P(sg.e).toFixed(1)+'%"></i>'
@@ -5459,21 +5476,25 @@ function renderSignal(ms){
  const tintC=sg.ok?(buy?'rgba(46,204,113,.15)':'rgba(255,92,92,.15)'):'rgba(127,140,160,.12)';
  el.style.setProperty('--sgc',col);el.style.setProperty('--sgt',tintC);
  el.style.borderColor=sg.ok?(buy?'rgba(46,204,113,.38)':'rgba(255,92,92,.38)'):'var(--border2)';
- document.getElementById('sig-lbl').textContent=sg.ok?(en?'Signal':'Signal'):(en?'Signal set aside':'Signal \u00e9cart\u00e9');
+ document.getElementById('sig-lbl').textContent=sg.preview?(en?'Signal · preview':'Signal · aperçu'):sg.ok?'Signal':(en?'Signal set aside':'Signal \u00e9cart\u00e9');
  const age=Math.max(0,Math.round((Date.now()/1000-sg.t)/60));const exp=new Date(sg.expires*1000);
  document.getElementById('sig-when').textContent=(en?'Until ':'Valable jusqu\u2019\u00e0 ')+String(exp.getHours()).padStart(2,'0')+':'+String(exp.getMinutes()).padStart(2,'0');
  document.getElementById('sig-sym').textContent='BTCUSD \u00b7 '+(age<1?(en?'just now':'\u00e0 l\u2019instant'):(en?age+' min ago':'il y a '+age+' min'));
  const dd=document.getElementById('sig-dir');dd.textContent=buy?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE');
  setH(document.getElementById('sig-ic'),'<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">'+(buy?'<path d="M7 17L17 7M9 7h8v8"/>':'<path d="M7 7l10 10M17 9v8H9"/>')+'</svg>');
  const cell=(l,v,c,dot)=>'<div class="sg-c"><span class="sg-cl">'+(dot?'<i style="background:'+dot+'"></i>':'')+l+'</span><b class="sg-cv" style="color:'+c+'">'+v+'</b></div>';
- setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+sg.e.toFixed(0),'var(--text)','var(--accent)')+cell('stop',sg.sl.toFixed(0),'var(--down-soft)','var(--down)')+cell(en?'target':'cible',sg.tp.toFixed(0),'var(--up-soft)','var(--up)')+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:''),'var(--text)',''):''));
+ const bk=brkGet(),off=bk?bk.off:0;
+ setH(document.getElementById('sig-g'),cell(en?'entry':'entr\u00e9e','~'+(sg.e+off).toFixed(0),'var(--text)','var(--accent)')+cell('stop',(sg.sl+off).toFixed(0),'var(--down-soft)','var(--down)')+cell(en?'target':'cible',(sg.tp+off).toFixed(0),'var(--up-soft)','var(--up)')+(typeof sg.lot==='number'?cell('lot',sg.lot.toFixed(2)+(sg.bul?'+'+sg.bul:''),'var(--text)',''):''));
  document.getElementById('sig-g').style.gridTemplateColumns='repeat('+(typeof sg.lot==='number'?4:3)+',1fr)';
  myLotLine(sg,en);
  sigMeter(sg,ms,en);
- setH(document.getElementById('sig-note'),(sg.ok?(en?'Take it at market while the gap above stays green. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que l\u2019\u00e9cart ci-dessus reste vert. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
+ setH(document.getElementById(sg.ok?'sig-how':'sig-note'),(sg.ok?(en?'Take it at market while the gap above stays green. The stop is the level that invalidates it; the target is 0.8\u00d7 the risk.':'\u00c0 prendre au march\u00e9 tant que l\u2019\u00e9cart ci-dessus reste vert. Le stop est le niveau qui l\u2019invalide ; la cible vaut 0,8\u00d7 le risque.')
   :('<b>'+(en?'Not advised':'Pas conseill\u00e9')+'</b> \u2014 '+sg.why+(en?'. the Owl\u2019s robot would not take it either.':'. Le robot du Owl ne le prendrait pas non plus.'))));
- const a=document.getElementById('sig-chart');a.href=B+'chart?sig=1';a.style.display=sg.ok?'block':'none';
- window._sig=sg;
+ const a=document.getElementById('sig-chart'),cp=document.getElementById('sig-copy'),own=!!(window._d&&window._d.is_master&&sg.ok&&!sg.preview);
+ a.href=B+'chart?sig=1';a.parentNode.style.display=own?'flex':'none';
+ if(cp)cp.textContent=en?'Copy the signal':'Copier le signal';
+ {const o=document.getElementById(sg.ok?'sig-note':'sig-how');if(o)o.innerHTML='';}
+ window._sig=sg;sigBrk(sg,en,bk);sigMoreApply();
  // 2026-09-28: members trading on another broker tell the app themselves
  const mk=document.getElementById('sig-mark');
  if(mk){const bs='border:1px solid var(--border2);background:transparent;border-radius:13px;padding:11px;font-size:.84rem;font-weight:700;flex:1;line-height:1.2;display:flex;align-items:center;justify-content:center;';
@@ -5482,7 +5503,7 @@ function renderSignal(ms){
    setH(mk,'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="color:var(--up-soft);font-weight:700;font-size:.84rem">\u2713 '+(en?'Taken':'Pris')+(sg.taken_manual?'':(en?' (detected on your account)':' (d\u00e9tect\u00e9 sur votre compte)'))+(typeof sg.result==='number'?' \u00b7 '+(sg.result>=0?'+$':'-$')+Math.abs(sg.result).toFixed(2):'')+'</span>'+
     (sg.taken_manual&&typeof sg.result!=='number'?'<input id="sig-res" inputmode="decimal" placeholder="'+(en?'result in $, e.g. +12.5':'r\u00e9sultat en $, ex. +12,5')+'" style="flex:1;min-width:120px;background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:8px 10px;color:var(--text);font-size:.84rem"><button onclick="sigMarkRes()" style="'+bs+'flex:none;color:var(--text2)">'+(en?'Save':'Enregistrer')+'</button>':'')+'</div>');}
   else{mk.style.display='block';
-   setH(mk,'<div style="font-size:.74rem;color:var(--muted);margin-bottom:6px">'+(en?'Trading it on another broker? Tell the app, so your history stays right:':'Vous le tradez chez un autre broker ? Dites-le \u00e0 l\u2019app, pour un historique juste :')+'</div><div style="display:flex;gap:8px"><button onclick="sigMark(1)" style="'+bs+'color:var(--up-soft)">\u2713 '+(en?'I took it':'J\u2019ai pris')+'</button><button onclick="sigMark(0)" style="'+bs+'color:var(--text2)">'+(en?'Not taken':'Pas pris')+'</button></div>');}}
+   setH(mk,'<div style="display:flex;gap:8px"><button onclick="sigMark(1)" style="'+bs+'color:var(--up-soft)">\u2713 '+(en?'I took it':'J\u2019ai pris')+'</button><button onclick="sigMark(0)" style="'+bs+'color:var(--text2)">'+(en?'Not taken':'Pas pris')+'</button></div>');}}
 }
 async function sigMark(tk,res){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
  if(sg.preview){toast(en?'Preview only: nothing is saved.':'Aper\u00e7u seulement : rien n\u2019est enregistr\u00e9.',2200);return;}
@@ -5508,8 +5529,50 @@ async function sigPreview(){const en=LANG()==='en';
  renderSignal({px:px,signal:{ok:true,dir:1,e:e,sl:sl,tp:tp,t:now-120,expires:now+1200,preview:true}});
  const l=document.getElementById('sig-lbl');if(l)l.textContent=en?'Signal \u00b7 preview':'Signal \u00b7 aper\u00e7u';
  const c=document.getElementById('sigcard');if(c)setTimeout(()=>c.scrollIntoView({behavior:'smooth',block:'center'}),150);}
+// the member's broker quotes BTC a little differently: one number (their price now minus ours now) moves entry, stop and target onto their screen
+function brkGet(){try{const j=JSON.parse(localStorage.getItem('owlBrk:'+B)||'null');if(j&&typeof j.off==='number'&&isFinite(j.off)&&j.t)return j;}catch(e){}return null;}
+function brkRedraw(){const sg=window._sig;if(sg)renderSignal(Object.assign({},window._sigMs||{},{signal:sg}));}
+function brkClear(){try{localStorage.removeItem('owlBrk:'+B);}catch(e){}window._brkEdit=false;window._brkSnap=null;const b=document.getElementById('sig-brk');if(b)b.dataset.k='';brkRedraw();}
+function brkEdit(on){window._brkEdit=!!on;window._brkSnap=null;const b=document.getElementById('sig-brk');if(b)b.dataset.k='';brkRedraw();}
+// the price keeps moving while the member types: freeze OUR price at the first keystroke (they have just read theirs), not at the tap on "Ajuster"
+function brkTyp(i){const ms=window._sigMs;if(!i.value){window._brkSnap=null;return;}if(!window._brkSnap&&ms&&typeof ms.px==='number')window._brkSnap={px:ms.px,t:Date.now()};}
+function brkSet(){const en=LANG()==='en',i=document.getElementById('sig-brk-in'),ms=window._sigMs;if(!i)return;
+ const sn=window._brkSnap,px=(sn&&Date.now()-sn.t<180000)?sn.px:(ms&&ms.px);
+ let t=String(i.value||'').split(' ').join('').split('\u00a0').join('').split('\u202f').join('');
+ const nc=(t.match(/,/g)||[]).length,nd=(t.match(/[.]/g)||[]).length;
+ if(nc&&nd)t=t.split(',').join('');else if(nc>1)t=t.split(',').join('');else if(nc===1){const a=t.split(',')[1]||'';t=a.length===3?t.split(',').join(''):t.replace(',','.');}
+ const v=parseFloat(t);
+ if(!(v>0)||typeof px!=='number'){toast(en?'Enter the BTC price your broker shows right now.':'Entrez le prix du BTC que votre broker affiche en ce moment.',3200);return;}
+ if(Math.abs(v-px)/px>0.015){toast(en?'That does not look like BTC/USD. Check the symbol.':'\u00c7a ne ressemble pas au BTC/USD. V\u00e9rifiez le symbole.',3500);return;}
+ try{localStorage.setItem('owlBrk:'+B,JSON.stringify({off:Math.round(v-px),t:Date.now()}));}catch(e){}
+ window._brkEdit=false;window._brkSnap=null;const b=document.getElementById('sig-brk');if(b)b.dataset.k='';
+ toast(en?'Saved. We keep it until you change it.':'C\u2019est enregistr\u00e9. On le garde jusqu\u2019\u00e0 ce que vous le changiez.',2800);brkRedraw();}
+function sigMore(){window._sigMore=!window._sigMore;sigMoreApply();}
+function sigMoreApply(){const el=document.getElementById('sigcard'),m=document.getElementById('sig-more'),t=document.getElementById('sig-tg'),sg=window._sig;
+ const on=!!(sg&&sg.ok);if(t)t.style.display=on?'flex':'none';
+ const open=on&&!!window._sigMore;if(m)m.style.display=open?'block':'none';if(el)el.classList.toggle('open',open);
+ const r=document.getElementById('sig-tg-r');if(r)r.textContent=LANG()==='en'?(open?'Less':'Details'):(open?'Moins':'D\u00e9tails');}
+function sigBrk(sg,en,bk){const b=document.getElementById('sig-brk');if(!b)return;
+ if(!sg.ok||!sg.e||!sg.sl||!sg.tp){b.style.display='none';return;}
+ const ed=!!window._brkEdit,k=[en?1:0,bk?bk.off:'n',ed?1:0,sg.t].join('|');
+ {const l=document.getElementById('sig-tg-l');if(l){const sn=bk?(bk.off>=0?'+':'\u2212')+Math.abs(Math.round(bk.off))+'\u202f$':'';
+  l.textContent=bk?(en?'Matched to your broker ('+sn+')':'Ajust\u00e9 \u00e0 votre broker ('+sn+')'):(en?'Different price at your broker?':'Prix diff\u00e9rent chez votre broker ?');}}
+ b.style.display='block';
+ const our=document.getElementById('sig-brk-our'),ms=window._sigMs;if(our&&ms&&typeof ms.px==='number')our.textContent=Math.round(ms.px).toLocaleString(en?'en-US':'fr-FR').split('\u202f').join('\u00a0')+'\u00a0$';
+ if(b.dataset.k===k)return;b.dataset.k=k;
+ const dsl=Math.abs(sg.e-sg.sl),dtp=Math.abs(sg.tp-sg.e),pc=v=>(v/sg.e*100).toFixed(2).replace('.',en?'.':',')+'\u202f%';
+ let h='<div class="sg-bd"><span>'+(en?'Distance from entry':'Distance depuis l\u2019entr\u00e9e')+'</span><span><b style="color:var(--down-soft)">stop '+Math.round(dsl)+'\u202f$</b> ('+pc(dsl)+') \u00b7 <b style="color:var(--up-soft)">'+(en?'target ':'cible ')+Math.round(dtp)+'\u202f$</b> ('+pc(dtp)+')</span></div>';
+ if(bk&&!ed){const sn=bk.off>=0?'+':'\u2212';
+  h+='<div class="sg-bl"><span>'+(en?'Matched to your broker':'Ajust\u00e9 \u00e0 votre broker')+' ('+sn+Math.abs(Math.round(bk.off))+'\u202f$) \u00b7 '+(en?'saved':'enregistr\u00e9')+'</span><a href="#" onclick="event.preventDefault();brkEdit(true)">'+(en?'change':'changer')+'</a></div>';}
+ else h+='<div class="sg-bh">'+(en?'Your broker may show another price. Enter the BTC price you see there, once: we keep it until you change it. A few dollars off does not matter.':'Votre broker affiche peut-\u00eatre un autre prix. Entrez le prix du BTC que vous y voyez, une seule fois : on le garde jusqu\u2019\u00e0 ce que vous le changiez. Quelques dollars d\u2019\u00e9cart, ce n\u2019est pas grave.')+'</div>'
+  +'<div class="sg-bh" style="margin-top:6px">'+(en?'Our price now: ':'Notre prix en ce moment : ')+'<b id="sig-brk-our"></b></div>'
+  +'<div class="sg-bi"><input id="sig-brk-in" inputmode="decimal" autocomplete="off" oninput="brkTyp(this)" placeholder="'+(en?'BTC price at your broker':'Prix du BTC chez vous')+'"><button onclick="brkSet()">'+(en?'Save':'Enregistrer')+'</button></div>'
+  +(bk?'<div class="sg-bh" style="margin-top:8px"><a href="#" onclick="event.preventDefault();brkEdit(false)">'+(en?'Cancel':'Annuler')+'</a> \u00b7 <a href="#" onclick="event.preventDefault();brkClear()">'+(en?'Use the OwlNest prices':'Revenir aux prix OwlNest')+'</a></div>':'');
+ setH(b,h);
+ {const o2=document.getElementById('sig-brk-our');if(o2&&ms&&typeof ms.px==='number')o2.textContent=Math.round(ms.px).toLocaleString(en?'en-US':'fr-FR').split('\u202f').join('\u00a0')+'\u00a0$';}}
 function sigCopy(){const sg=window._sig;if(!sg)return;const en=LANG()==='en';
- const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+sg.e.toFixed(0)+' \u00b7 stop '+sg.sl.toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+sg.tp.toFixed(0)+' '+(typeof sg.lot==='number'?'\u00b7 lot '+sg.lot.toFixed(2)+' ':'')+'\u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
+ const off=(brkGet()||{}).off||0;
+ const txt=(sg.dir===1?(en?'BUY':'ACHAT'):(en?'SELL':'VENTE'))+' BTCUSD \u00b7 '+(en?'entry':'entr\u00e9e')+' ~'+(sg.e+off).toFixed(0)+' \u00b7 stop '+(sg.sl+off).toFixed(0)+' \u00b7 '+(en?'target':'cible')+' '+(sg.tp+off).toFixed(0)+' '+(typeof sg.lot==='number'?'\u00b7 lot '+sg.lot.toFixed(2)+' ':'')+'\u00b7 OwlNest '+new Date(sg.t*1000).toISOString().slice(11,16)+' UTC';
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast((en?'Copied: ':'Copi\u00e9 : ')+txt,3500),()=>toast(txt,5000));}
 function chime(force){try{if(!force&&localStorage.getItem('owlChime')!=='1')return;}catch(e){return;}
  try{if(navigator.vibrate)navigator.vibrate([120,60,120]);}catch(e){}
@@ -14242,10 +14305,16 @@ class H(BaseHTTPRequestHandler):
                                     time.localtime(os.path.getmtime(_cp)))
                 _full = "true" if (admin_cookie_ok(self.headers)
                                    or has(user.get("id"), "strategy")) else "false"
+                # the Signal package is the demo's chart plus the signals: no zones, no
+                # next-level tag. Only Strategie / Automatique see the method.
+                _sig_only = bool(user.get("app_only") and not has(user.get("id"), "strategy")
+                                 and not has(user.get("id"), "family"))
                 _tier = ("member" if (admin_cookie_ok(self.headers) or is_admin(user)
-                                      or has(user.get("id"), "manual")) else "observer")
+                                      or (has(user.get("id"), "manual") and not _sig_only)) else "observer")
+                _htf = "true" if (admin_cookie_ok(self.headers) or is_admin(user)
+                                  or has(user.get("id"), "strategy")) else "false"
                 self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full)
-                           .replace("%%TIER%%", _tier),
+                           .replace("%%HTF%%", _htf).replace("%%TIER%%", _tier),
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
@@ -14276,7 +14345,7 @@ class H(BaseHTTPRequestHandler):
                     _tf = "H1"
                 # the higher-timeframe panel is part of Strategie: the data
                 # itself stays on the server for anyone without it
-                if not (admin_cookie_ok(self.headers) or is_admin(user) or has(user.get("id"), "strategy") or has(user.get("id"), "family")):
+                if not (admin_cookie_ok(self.headers) or is_admin(user) or has(user.get("id"), "strategy")):
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                     return
                 _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
@@ -14384,7 +14453,7 @@ class H(BaseHTTPRequestHandler):
                 _uid = user.get("id")
                 _era = era_ts(user)
                 _lst = [x for x in sig_source(_uid) if not _era or x.get("t", 0) >= _era]
-                _d = {"mode": "manual", "signal": (_lst[-1] if _lst else None)}
+                _d = {"mode": "manual", "view_only": True, "signal": (_lst[-1] if _lst else None)}
                 try:
                     _d["px"] = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")).get("px")
                 except Exception:

@@ -396,6 +396,7 @@ const tok=location.pathname.split('/').filter(x=>x)[0];
 // 2026-09-26 (owner): members see candles, their own trades and a soft
 // zone; the annotated structure is for the admin's browser only.
 const FULL=(()=>{try{return !!localStorage.getItem('owl_adm');}catch(e){return false;}})()||%%FULL%%;
+const HTFOK=%%HTF%%;   // two timeframes belong to Strategie only: nobody else sees the menu or the panel
 const TIER='%%TIER%%';   // observer: no structure hints at all   // 2026-09-27: strategy members get the full view from the server
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
@@ -474,6 +475,7 @@ function rulerTap(x,y){const t=xToT(x),p=yToP(y);if(t===null||p===null)return;
  if(!RULER.a||RULER.b){RULER.a={t,p};RULER.b=null;}else RULER.b={t,p};}
 document.getElementById('ruler').onclick=()=>{RULER.on=!RULER.on;if(!RULER.on){RULER.a=RULER.b=null;}document.getElementById('ruler').classList.toggle('on',RULER.on);toolsMenu(false);toolsDot();};
 document.getElementById('htfbtn').onclick=()=>{toolsMenu(false);htSheet();};
+if(!HTFOK){const hb=document.getElementById('htfbtn');if(hb)hb.style.display='none';}
 function toolsMenu(on){const m=document.getElementById('toolsmenu'),b=document.getElementById('tools');if(on===undefined)on=!m.classList.contains('on');m.classList.toggle('on',on);b.setAttribute('aria-expanded',on?'true':'false');}
 function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST||HT.on)?'block':'none';}
 document.getElementById('tools').onclick=e=>{e.stopPropagation();toolsMenu();};
@@ -505,7 +507,7 @@ const HTCW=9;   // base candle width, before the zoom
 const HT={on:false,tf:'H1',split:'v',r:0.42,data:null,t:0,xoft:{},xts:[],scale:null,
  off:0,hz:1,vz:1,vo:0};
 try{const sv=JSON.parse(localStorage.getItem('owlHTF')||'null');
- if(sv){HT.on=!!sv.on;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}}catch(e){}
+ if(sv){HT.on=!!sv.on&&HTFOK;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}}catch(e){}
 function htSave(){try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
 function htApply(){document.body.classList.toggle('htf-v',HT.on&&HT.split==='v');
  document.body.classList.toggle('htf-h',HT.on&&HT.split==='h');
@@ -517,7 +519,7 @@ async function htLoad(force){
  if(!HT.on)return;
  if(!force&&Date.now()-HT.t<45000)return;HT.t=Date.now();
  try{const r=await fetch('chart_htf?tf='+HT.tf+'&t='+Date.now(),{cache:'no-store'});
-  if(r.ok){const j=await r.json();if(j&&j.candles)HT.data=j;}}catch(e){}
+  if(r.ok){const j=await r.json();if(j&&j.candles)HT.data=j;else if(j&&j.err==='strategy'){HT.on=false;htApply();toolsDot();return;}}}catch(e){}
  htDraw();}
 function htDraw(){
  const wrap=document.getElementById('htfwrap');const c=document.getElementById('cvh');

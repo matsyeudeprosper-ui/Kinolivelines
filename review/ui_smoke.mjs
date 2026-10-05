@@ -225,18 +225,12 @@ await shot("smoke_chart");
 await ev("try{localStorage.removeItem('owl_adm');}catch(e){} location.reload(); 1");
 await sleep(8000);
 
-// the two-timeframe panel still opens from the menu
+// two timeframes belong to Strategie only (owner 2026-10-05): a family member must not see the entry nor an empty panel
 await ev("document.getElementById('tools').click(); 1"); await sleep(600);
-check("tools menu lists the two-timeframe entry",
-      /Deux temps|Two timeframes/.test(await ev(
-        "[...document.querySelectorAll('#toolsmenu .tb')].map(b=>b.textContent).join(' ')") || ""));
-await ev("document.getElementById('htfbtn').click(); 1"); await sleep(900);
-await ev("(()=>{const b=[...document.querySelectorAll('button')].find(x=>x.textContent.trim()==='H1'); if(b)b.click(); return 1;})()");
-await sleep(4500);
-check("higher panel opens and has candles",
-      (await ev("HT.on && (HT.data&&HT.data.candles||[]).length>50")) === true,
-      await ev("'on='+HT.on+' candles='+((HT.data&&HT.data.candles)||[]).length"));
-check("header chips still reachable with the panel open",
+check("two-timeframe entry is hidden for a non-Strategie member",
+      (await ev("getComputedStyle(document.getElementById('htfbtn')).display==='none' && HTFOK===false && !HT.on")) === true);
+await ev("document.getElementById('tools').click(); 1"); await sleep(300);
+check("header chips still reachable",
       (await ev("(()=>{const e=document.getElementById('meteo');const b=e.getBoundingClientRect();const t=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return !!(t&&(t.id==='meteo'||e.contains(t)));})()")) === true);
 await shot("smoke_htf");
 await ev("try{localStorage.removeItem('owlHTF');}catch(e){} 1");
