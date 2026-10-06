@@ -55,7 +55,8 @@
     "b": 300
    },
    "built_date": "2026-10-04",
-   "built_commit": "0ffdd8c"
+   "built_commit": "0ffdd8c",
+   "c_nights": 1
   },
   {
    "id": "wait_after_win",
@@ -130,7 +131,39 @@
    "what_en": "A new setting for the test: on an account with a daily cap, aim for X times what we risk instead of the common target (X between 0.5 and 1.5). Accounts without a cap keep the common target. Default 0, which changes nothing. I would test 0.75 and 0.8 for capped accounts, with 1.0 for the others.",
    "why_fr": "Depuis une semaine, chaque nuit dit la même chose : viser plus haut aide les comptes sans plafond et fait du tort à ceux avec plafond. Ce soir, viser plus bas fait l'inverse : avec plafond, 0,7 donne +10 $ et un trou de 16 au lieu de 19 ; sans plafond, -51 $. Une seule cible pour tous force un mauvais compromis.",
    "why_en": "For a week, every night says the same: aiming higher helps accounts without a cap and hurts those with one. Tonight aiming lower does the opposite: with a cap, 0.7 gives +$10 and a hole of 16 instead of 19; without one, -$51. One target for everyone forces a bad compromise.",
-   "status": "open"
+   "status": "built",
+   "key": "cap_rr",
+   "built_note_fr": "Le test peut maintenant viser une cible à part sur les comptes qui ont un plafond de gain par jour, pendant que les autres comptes gardent la cible commune. Rien ne change pour le robot tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The test can now aim for a separate target on accounts that have a daily profit cap, while the other accounts keep the common target. Nothing changes for the robot until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--cap-rr",
+    "a": 0.75,
+    "b": 1.2
+   },
+   "built_date": "2026-10-06",
+   "built_commit": "a50eeb9"
+  },
+  {
+   "id": "first_move_size",
+   "title_fr": "Miser moins sur le premier mouvement d'une nouvelle tendance",
+   "title_en": "Stake less on the first move of a new trend",
+   "what_fr": "Un nouveau réglage pour le test : multiplier la mise par X (entre 0,25 et 1,0) quand le trade est le premier mouvement compté depuis que la tendance a commencé (compte de mouvements = 1). Le trade est pris quand même. Par défaut 1,0, qui ne change rien. Je testerais 0,75 et 0,5, seul et avec viser autant que ce qu'on risque sans dimanche.",
+   "what_en": "A new setting for the test: multiply the stake by X (between 0.25 and 1.0) when the trade is the first move counted since the trend began (move count = 1). The trade is still taken. Default 1.0, which changes nothing. I would test 0.75 and 0.5, alone and with aim-as-much-as-we-risk without Sunday.",
+   "why_fr": "Sur les vrais trades, le premier mouvement d'une tendance gagne 6 fois sur 16 et perd 22 $, perdant sur les deux moitiés ; au quatrième mouvement et plus, 9 sur 13 et +28 $. Ce n'est pas exactement la même chose que les retournements (27 trades), donc le réglage d'hier ne le couvre pas.",
+   "why_en": "On the real trades, the first move of a trend wins 6 times in 16 and loses $22, losing on both halves; from the fourth move on, 9 of 13 and +$28. It is not exactly the same as the reversals (27 trades), so yesterday's setting does not cover it.",
+   "status": "open",
+   "date": "2026-10-06"
+  },
+  {
+   "id": "halves_without_kill",
+   "title_fr": "Lire les deux moitiés sans la limite de perte qui arrête le robot",
+   "title_en": "Read the two halves without the loss limit that stops the robot",
+   "what_fr": "Un outil pour le test de chaque nuit : calculer aussi les deux moitiés avec la limite de perte de la période coupée, et marquer une idée quand son verdict change entre les deux lectures. Le verdict officiel ne change pas ; on voit seulement quand une moitié a été décidée par cette limite.",
+   "what_en": "A tool for the nightly test: also compute the two halves with the period's loss limit switched off, and flag an idea when its verdict differs between the two readings. The official verdict does not change; we only see when a half was decided by that limit.",
+   "why_fr": "Ce soir, la deuxième moitié du robot actuel, lancée quelques heures plus tard, a touché la limite et s'est arrêtée : -65 $ sur 43 trades au lieu de +14 $ sur 81. Toutes les idées qui évitaient ce hasard semblaient alors gagner 80 à 110 $. Un verdict ne doit pas tenir à l'heure de départ.",
+   "why_en": "Tonight the second half of the current robot, started a few hours later, hit the limit and stopped: -$65 on 43 trades instead of +$14 on 81. Every idea that dodged that accident then looked $80 to $110 better. A verdict must not hang on the starting hour.",
+   "status": "open",
+   "date": "2026-10-06"
   }
  ]
 }
