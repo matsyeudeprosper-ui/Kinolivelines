@@ -6,7 +6,9 @@
   "wait_after_win",
   "sleepy_floor",
   "flip_hot_size",
-  "cap_rr"
+  "cap_rr",
+  "first_move_size",
+  "halves_without_kill"
  ],
  "asks_answered": [
   "ask_1790670647",

@@ -1,90 +1,90 @@
 {
- "date": "2026-10-05",
- "fr": "**Ce soir : une seule cible ne convient pas à tous. Viser plus haut aide les comptes sans plafond de gain par jour, viser plus bas aide ceux avec plafond. Je demande une cible pour chacun.**\n\nLes verdicts (42 jours) : 37 idées, aucune mieux sur les deux moitiés, 13 un peu mieux, 24 non. Viser autant que ce qu'on risque sans dimanche : hier mieux partout, ce soir un peu mieux. Sans plafond +32 $, trou de 40 au lieu de 50 ; avec plafond +4 $ mais un trou plus gros de 8 $. Sur 69 jours, avec quatre trades de rattrapage : +113 $.\n\nMes 20 essais : ne pas trader quand le marché dort, non à chaque réglage, et plus le seuil monte, plus ça coûte. Ne pas courir après le prix : les réglages voisins se contredisent, c'est de la chance. Viser 0,7 : +10 $ avec plafond, -51 $ sans.\n\nCe que je crois :\n- Viser 1,0 sans dimanche : AFFAIBLI avec plafond.\n- Le plafond change la bonne cible : RENFORCÉ.\n- Miser moins si nerveux : RENFORCÉ, comme ceinture.\n- Changements de sens nerveux : AFFAIBLI (5 sur 8 récemment).\n- Marché endormi, course au prix : REJETÉS.\n\nLes vrais trades (49) : 57 % gagnés, +14 $. Même sens : 15 sur 21, +34 $. Changement de sens : 12 sur 25, -9 $. Achats 62 %, ventes 47 %, sur onze jours d'un marché qui monte. Moins de 30 trades par case.\nPas de nouvelle pile : après plus d'une heure de pause, 10 gagnés sur 22, mais 16 sont des changements de sens, déjà comptés.\n\nJe propose : deux deuxièmes auditions (viser 1,0 avec quatre rattrapages, sans courir ; puis sans dimanche) ; viser 1,0 sans dimanche ni course, jamais essayé ; deux ceintures, dont une hors du cadre : miser moins si nerveux et ne pas courir (trou de 28 au lieu de 50, 14 au lieu de 19).\n\nJe demande : une cible à part pour les comptes avec plafond. J'attends toujours : miser moins sur un changement de sens nerveux.",
- "en": "**Tonight: one target does not suit everyone. Aiming higher helps accounts without a daily cap, aiming lower helps those with one. I am asking for a target for each.**\n\nVerdicts (42 days): 37 ideas, none better on both halves, 13 a little better, 24 no. Aim for as much as we risk with Sunday off: yesterday better everywhere, tonight a little better. Without a cap +$32, hole 40 instead of 50; with a cap +$4 but a hole $8 deeper. Over 69 days, with four catch-up trades: +$113.\n\nMy 20 tries: no trading when the market is asleep, no at every setting, and the higher the floor, the more it costs. Do not chase the price: neighbouring settings contradict each other, that is luck. Aim 0.7: +$10 with a cap, -$51 without.\n\nWhat I believe:\n- Aim 1.0 without Sunday: WEAKER with a cap.\n- The cap changes the right target: STRONGER.\n- Stake less when nervous: STRONGER, as a safety belt.\n- Nervous changes of direction: WEAKER (5 of 8 lately).\n- Sleepy market, chasing the price: REJECTED.\n\nThe real trades (49): 57% won, +$14. Same way: 15 of 21, +$34. Change of direction: 12 of 25, -$9. Buys 62%, sells 47%, over eleven days of a rising market. Every box has fewer than 30 trades.\nNo new pile: after more than an hour's pause, 10 won of 22, but 16 of the 22 are changes of direction, already counted.\n\nI propose: two second hearings (aim 1.0 with four catch-ups, no chasing; then with Sunday off); aim 1.0 with no Sunday and no chasing, never tried; two safety belts, one out of the box: stake less when nervous and do not chase (hole 28 instead of 50, 14 instead of 19).\n\nI ask for: a separate target for capped accounts. Still waiting: stake less on a nervous change of direction.",
+ "date": "2026-10-06",
+ "fr": "**Ce soir : viser autant que ce qu'on risque, sans dimanche, et miser un quart de moins sur les retournements en marché nerveux — mieux sur les deux moitiés, avec et sans plafond de gain par jour.**\n\n**Les verdicts (42 jours).** 37 idées : aucune mieux sur les deux moitiés, 8 un peu mieux, 1 pareille, 28 non. Viser 1,0 sans dimanche avec jusqu'à quatre trades de rattrapage : un peu mieux sur les deux comptes (sans plafond +19 $, trou de 24 au lieu de 50 ; avec plafond +8 $, trou de 16 au lieu de 19) ; sur 69 jours, +85 $. Viser 1,0 seul : un peu mieux sans plafond pour la huitième nuit, non avec plafond.\n\n**Mes 20 essais.** Ne pas trader de 21 h à 1 h UTC : non à chaque réglage (de -2 à -106 $). Miser 0,75 sur les retournements nerveux, seul : non sans plafond (-6 $), mieux sur les deux moitiés avec plafond (+14 $). Avec viser 1,0 sans dimanche : mieux sur les deux moitiés sur les deux comptes (+17 $, trou 24 au lieu de 50 ; +9 $, trou 15 au lieu de 19). Réglages voisins 0,5 et 0,85 : positifs aussi. Sur 69 jours : un peu mieux, +8 $ et +4 $. Le même avec viser 0,9 : non avec plafond. Piège : la limite de perte qui arrête le robot a coupé une moitié au hasard de son heure de départ ; j'ai relu les moitiés sans elle.\n\n**Ce que je crois.**\n- Viser 1,0 sans dimanche : REMONTE, en test.\n- Miser moins sur les retournements nerveux : RENFORCÉ, mais en compagnie.\n- Le plafond change la bonne cible : RENFORCÉ.\n- Pas d'entrée après une heure de 400 points : bon sans plafond, non avec.\n- Autour de minuit : les vrais trades perdent, le test dit non. NOUVEAU.\n\n**Les vrais trades (52).** 56 % gagnés, +18 $. Même sens : 16 sur 22, +44 $. Retournements : 12 sur 27, -15 $. Premier mouvement d'une tendance : 6 sur 16 ; quatrième et plus : 9 sur 13, +28 $. De 21 h à 1 h UTC : 3 sur 13, -47 $. Trop peu de trades partout.\nNouvelle pile : « autour de minuit » — vrais trades et test se contredisent ; la pile tranchera.\n\n**Je propose :** viser 1,0 sans dimanche en misant moins sur les retournements nerveux ; ce petit réglage seul pour les comptes avec plafond ; pas d'entrée après 400 points, sans dimanche ; une troisième audition des quatre rattrapages ; hors du cadre, trois freins doux réunis.\n\n**Je demande :** miser moins sur le premier mouvement d'une tendance ; lire les moitiés sans la limite de perte. J'attends : une cible à part pour les comptes avec plafond.",
+ "en": "**Tonight: aim for as much as we risk, no Sunday, and stake a quarter less on reversals in a nervous market — better on both halves, with and without a daily cap.**\n\n**Verdicts (42 days).** 37 ideas: none better on both halves, 8 a little better, 1 same, 28 no. Aim 1.0 with no Sunday and up to four catch-up trades: a little better on both accounts (uncapped +$19, hole 24 instead of 50; capped +$8, hole 16 instead of 19); over 69 days, +$85. Aim 1.0 alone: a little better uncapped for the eighth night, no when capped.\n\n**My 20 tries.** No trading from 21:00 to 01:00 UTC: no at every setting (-$2 to -$106). Stake 0.75 on nervous reversals, alone: no uncapped (-$6), better on both halves capped (+$14). With aim 1.0 and no Sunday: better on both halves on both accounts (+$17, hole 24 instead of 50; +$9, hole 15 instead of 19). Neighbouring settings 0.5 and 0.85: positive too. Over 69 days: a little better, +$8 and +$4. Same with aim 0.9: no when capped. Trap: the loss limit that stops the robot cut one half by the accident of its start hour; I re-read the halves without it.\n\n**What I believe.**\n- Aim 1.0 with no Sunday: RECOVERING, under test.\n- Stake less on nervous reversals: STRONGER, but in company.\n- The cap changes the right target: STRONGER.\n- No entry after a 400-point hour: good uncapped, no capped.\n- Around midnight: real trades lose, the test says no. NEW.\n\n**The real trades (52).** 56% won, +$18. Same way: 16 of 22, +$44. Reversals: 12 of 27, -$15. First move of a trend: 6 of 16; fourth and later: 9 of 13, +$28. From 21:00 to 01:00 UTC: 3 of 13, -$47. Too few trades everywhere.\nNew pile: \"around midnight\" — real trades and the test disagree; the pile will decide.\n\n**I propose:** aim 1.0 with no Sunday and a smaller stake on nervous reversals; that small setting alone for capped accounts; no entry after 400 points, no Sunday; a third hearing for four catch-up trades; out of the box, three soft brakes together.\n\n**I ask for:** a smaller stake on the first move of a trend; halves read without the loss limit. Still waiting: a separate target for capped accounts.",
  "proposals": [
-  "rr10_bul4_ext700_n2",
-  "rr10_bul4_nosun_n2",
-  "hot075_chase500",
-  "rr10_ext700_hot075",
-  "rr10_ext700_nosun"
+  "rr10_nosun_fliphot075",
+  "fliphot075_capped",
+  "ext400_nosun",
+  "rr10_bul4_nosun_n3",
+  "soft3_fliphot_ext400_nosun"
  ],
- "headline_fr": "Une seule cible ne convient pas à tous : viser plus haut aide les comptes sans plafond, plus bas ceux avec plafond.",
- "headline_en": "One target does not suit everyone: aiming higher helps accounts without a cap, lower helps those with one.",
+ "headline_fr": "Viser plus haut, sans dimanche, en misant moins sur les retournements nerveux : mieux sur les deux moitiés, avec et sans plafond.",
+ "headline_en": "Aim higher, no Sunday, a smaller stake on nervous reversals: better on both halves, with and without a cap.",
  "beliefs": [
   {
-   "fr": "Viser autant que ce qu'on risque, sans trader le dimanche, aide les comptes sans plafond ; avec plafond, ce n'est plus sûr.",
-   "en": "Aiming for as much as we risk, with no Sunday trading, helps accounts without a cap; with a cap, it is no longer sure.",
-   "evidence": "Affaibli : sans plafond +32 $, trou 40 au lieu de 50 ; avec plafond +4 $ mais trou plus gros de 8 $. Sur 69 jours : +113 $ avec quatre rattrapages."
+   "fr": "Viser autant que ce qu'on risque, sans trader le dimanche, aide les comptes sans plafond ; avec plafond, c'est redevenu un peu mieux.",
+   "en": "Aiming for as much as we risk, with no Sunday trading, helps accounts without a cap; with a cap it is a little better again.",
+   "evidence": "En test : avec quatre trades de rattrapage, +19 $ sans plafond et +8 $ avec, trous plus petits sur les deux ; +85 $ sur 69 jours."
   },
   {
-   "fr": "Le plafond de gain par jour change la bonne cible : plus haut sans plafond, plus bas avec.",
-   "en": "The daily cap changes the right target: higher without a cap, lower with one.",
-   "evidence": "Renforcé : viser 0,7 donne +10 $ avec plafond et -51 $ sans ; viser 1,0 fait l'inverse, depuis huit nuits."
+   "fr": "Miser un quart de moins sur les retournements en marché nerveux aide, mais en compagnie de la cible plus haute.",
+   "en": "Staking a quarter less on reversals in a nervous market helps, but alongside the higher target.",
+   "evidence": "Renforcé : avec la cible haute sans dimanche, mieux sur les deux moitiés partout (+17 $, +9 $). Seul : non sans plafond (-6 $)."
   },
   {
-   "fr": "Miser un quart de moins quand le marché est nerveux est une ceinture : le plus gros trou baisse toujours.",
-   "en": "Staking a quarter less when the market is nervous is a safety belt: the biggest hole always shrinks.",
-   "evidence": "Renforcé : avec la cible 1,0 et sans course, le trou passe de 50 à 20 ; l'argent change peu."
+   "fr": "Le plafond de gain par jour change la bonne cible : plus haut aide sans plafond, pas avec.",
+   "en": "The daily cap changes the right target: higher helps without a cap, not with one.",
+   "evidence": "Renforcé : viser plus haut seul est un peu mieux sans plafond et non avec, huit nuits de suite."
   },
   {
-   "fr": "Les changements de sens en marché nerveux rapportent moins que les autres trades.",
-   "en": "Changes of direction in a nervous market earn less than the other trades.",
-   "evidence": "Affaibli : 7 gagnés sur 17, -5 $, mais 5 sur 8 sur la deuxième moitié. Trop peu de trades."
+   "fr": "Ne pas entrer après une heure qui a déjà bougé de 400 points aide les comptes sans plafond.",
+   "en": "Not entering after an hour that already moved 400 points helps accounts without a cap.",
+   "evidence": "Nouveau : un peu mieux huit nuits de suite sans plafond ; avec dimanche off, trou de 13 au lieu de 50. Avec plafond : non (-41 $)."
   },
   {
-   "fr": "Le dimanche est un mauvais jour pour le robot.",
-   "en": "Sunday is a bad day for the robot.",
-   "evidence": "Renforcé, mais seul les deux moitiés ne sont pas d'accord ; il aide surtout avec la cible 1,0. Sur 69 jours : +16 $."
+   "fr": "Le dimanche est un mauvais jour pour le robot, surtout comme compagnon d'une cible plus haute.",
+   "en": "Sunday is a bad day for the robot, above all as a companion to a higher target.",
+   "evidence": "Renforcé : un peu mieux quatre nuits de suite sans plafond (+15 $, trou de 28 au lieu de 50) ; non avec plafond seul."
   },
   {
-   "fr": "Ne pas trader quand le marché dort, ni courir après le prix : ça ne marche pas.",
-   "en": "Not trading when the market is asleep, or not chasing the price: it does not work.",
-   "evidence": "Rejeté : trois réglages du marché endormi, tous non ; quatre réglages de la course au prix qui se contredisent."
+   "fr": "Autour de minuit UTC, les vrais trades perdent ; le test dit le contraire.",
+   "en": "Around midnight UTC the real trades lose; the test says the opposite.",
+   "evidence": "Nouveau : 3 gagnés sur 13, -47 $ ; ne pas trader à ces heures coûte de 2 à 106 $ dans le test. Trop peu de trades : une pile est ouverte."
   }
  ],
  "sections": [
   {
    "title_fr": "Ce soir",
    "title_en": "Tonight",
-   "fr": "Une seule cible ne peut pas convenir à tous les comptes. Viser plus haut aide les comptes sans plafond de gain par jour ; viser plus bas aide ceux avec plafond. Hier, viser autant que ce qu'on risque sans dimanche était mieux partout. Ce soir, ça ne tient plus que sans plafond.",
-   "en": "One target cannot suit every account. Aiming higher helps accounts without a daily cap; aiming lower helps those with one. Yesterday, aiming for as much as we risk with Sunday off was better everywhere. Tonight it only holds without a cap."
+   "fr": "Une idée est mieux sur les deux moitiés, avec et sans plafond de gain par jour : viser autant que ce qu'on risque, ne pas trader le dimanche, et miser un quart de moins quand le robot change de sens dans un marché nerveux. +17 $ et +9 $ sur 42 jours, plus gros trou divisé par deux sans plafond.",
+   "en": "One idea is better on both halves, with and without a daily cap: aim for as much as we risk, skip Sundays, and stake a quarter less when the robot changes direction in a nervous market. +$17 and +$9 over 42 days, biggest hole halved without a cap."
   },
   {
    "title_fr": "Les verdicts",
    "title_en": "The verdicts",
-   "fr": "37 idées testées sur les 42 derniers jours : aucune mieux sur les deux moitiés, 13 un peu mieux, 24 non. Viser 1,0 sans dimanche : +32 $ et un trou de 40 au lieu de 50 sans plafond ; avec plafond, +4 $ mais un trou plus gros de 8 $. Sur 69 jours, avec quatre rattrapages : +113 $.",
-   "en": "37 ideas tested on the last 42 days: none better on both halves, 13 a little better, 24 no. Aim 1.0 with Sunday off: +$32 and a hole of 40 instead of 50 without a cap; with a cap, +$4 but a hole $8 deeper. Over 69 days, with four catch-ups: +$113."
+   "fr": "37 idées testées sur 42 jours : aucune mieux sur les deux moitiés, 8 un peu mieux, 28 non. Viser plus haut sans dimanche avec jusqu'à quatre trades de rattrapage : un peu mieux sur les deux comptes, +19 $ et +8 $, et +85 $ sur 69 jours. Viser plus haut seul : bon sans plafond, non avec, huitième nuit de suite.",
+   "en": "37 ideas tested on 42 days: none better on both halves, 8 a little better, 28 no. Aim higher with no Sunday and up to four catch-up trades: a little better on both accounts, +$19 and +$8, and +$85 over 69 days. Aim higher alone: good uncapped, no capped, eighth night running."
   },
   {
    "title_fr": "Mes 20 essais",
    "title_en": "My 20 tries",
-   "fr": "Ne pas trader quand le marché dort : non, et plus le seuil monte, plus ça coûte. Ne pas courir après le prix : les réglages voisins se contredisent, c'est de la chance, pas une vraie cause. Viser 0,7 : +10 $ avec plafond, -51 $ sans. Les deux sortes de comptes veulent des cibles différentes.",
-   "en": "No trading when the market is asleep: no, and the higher the floor, the more it costs. Do not chase the price: neighbouring settings contradict each other, that is luck, not a real cause. Aim 0.7: +$10 with a cap, -$51 without. The two kinds of account want different targets."
+   "fr": "Miser moins sur les retournements nerveux, seul : bon avec plafond (+14 $), non sans (-6 $). Avec la cible haute et sans dimanche : bon partout, et les réglages voisins aussi. Ne pas trader de 21 h à 1 h UTC : non à chaque réglage. Un piège trouvé : une moitié coupée par hasard par la limite de perte.",
+   "en": "Stake less on nervous reversals, alone: good capped (+$14), no uncapped (-$6). With the higher target and no Sunday: good everywhere, and neighbouring settings too. No trading from 21:00 to 01:00 UTC: no at every setting. A trap found: one half cut by chance by the loss limit."
   },
   {
    "title_fr": "Ce que les trades apprennent",
    "title_en": "What the trades teach",
-   "fr": "49 vrais trades, 57 % gagnés, +14 $. Un trade de plus dans le même sens : 15 sur 21, +34 $. Changement de sens : 12 sur 25, -9 $, mais 5 sur 8 récemment. Achats 62 %, ventes 47 %, sur onze jours d'un marché qui monte. Pas de nouvelle pile : les trades après une longue pause sont surtout des changements de sens, déjà comptés.",
-   "en": "49 real trades, 57% won, +$14. One more trade the same way: 15 of 21, +$34. Change of direction: 12 of 25, -$9, but 5 of 8 lately. Buys 62%, sells 47%, over eleven days of a rising market. No new pile: trades after a long pause are mostly changes of direction, already counted."
+   "fr": "52 vrais trades, 56 % gagnés, +18 $. Un trade de plus dans le même sens : 16 sur 22. Retournements : 12 sur 27, -15 $. Le quatrième mouvement d'une tendance gagne 9 fois sur 13 ; le premier, 6 sur 16. Autour de minuit UTC : 3 sur 13, -47 $. Trop peu de trades pour conclure ; nouvelle pile « autour de minuit ».",
+   "en": "52 real trades, 56% won, +$18. One more trade the same way: 16 of 22. Reversals: 12 of 27, -$15. The fourth move of a trend wins 9 times in 13; the first, 6 in 16. Around midnight UTC: 3 of 13, -$47. Too few trades to conclude; new pile 'around midnight'."
   },
   {
    "title_fr": "Ce que je crois",
    "title_en": "What I believe",
-   "fr": "Viser 1,0 sans dimanche : affaibli avec plafond. Le plafond change la bonne cible : renforcé. Miser moins si nerveux : renforcé, comme ceinture. Changements de sens nerveux : affaibli. Marché endormi et course au prix : rejetés par les chiffres.",
-   "en": "Aim 1.0 without Sunday: weaker with a cap. The cap changes the right target: stronger. Stake less when nervous: stronger, as a safety belt. Nervous changes of direction: weaker. Sleepy market and chasing the price: rejected by the numbers."
+   "fr": "Viser plus haut sans dimanche remonte. Miser moins sur les retournements nerveux aide, mais seulement en compagnie. Le plafond de gain par jour change la bonne cible. Ne pas entrer après une grosse heure aide sans plafond. Autour de minuit, les vrais trades perdent mais le test dit non : je garde la question ouverte.",
+   "en": "Aiming higher with no Sunday is recovering. Staking less on nervous reversals helps, but only in company. The daily cap changes the right target. Not entering after a big hour helps uncapped. Around midnight, real trades lose but the test says no: I keep the question open."
   },
   {
    "title_fr": "Ce que je propose",
    "title_en": "What I propose",
-   "fr": "Deux deuxièmes auditions : viser 1,0 avec quatre rattrapages, sans courir ; puis sans dimanche. Une idée jamais essayée : viser 1,0 sans dimanche ni course. Deux ceintures, dont une hors du cadre : miser moins si nerveux et ne pas courir. Le trou passe à 28 au lieu de 50, et à 14 au lieu de 19.",
-   "en": "Two second hearings: aim 1.0 with four catch-ups, no chasing; then with Sunday off. One idea never tried: aim 1.0 with no Sunday and no chasing. Two safety belts, one out of the box: stake less when nervous and do not chase. The hole drops to 28 instead of 50, and 14 instead of 19."
+   "fr": "1. Viser plus haut, sans dimanche, mise réduite aux retournements nerveux. 2. La mise réduite seule, pour les comptes avec plafond. 3. Sans dimanche, pas d'entrée après une heure de 400 points. 4. Troisième audition : quatre trades de rattrapage. 5. Hors du cadre : trois freins doux réunis.",
+   "en": "1. Aim higher, no Sunday, smaller stake on nervous reversals. 2. The smaller stake alone, for capped accounts. 3. No Sunday, no entry after a 400-point hour. 4. Third hearing: four catch-up trades. 5. Out of the box: three soft brakes together."
   },
   {
    "title_fr": "Ce que je demande",
    "title_en": "What I ask for",
-   "fr": "Une cible à part pour les comptes avec plafond de gain par jour, pour que chacun vise ce qui lui va. J'attends toujours : miser moins sur un changement de sens quand le marché est nerveux.",
-   "en": "A separate target for accounts with a daily cap, so each aims for what suits it. Still waiting: stake less on a change of direction when the market is nervous."
+   "fr": "Miser moins sur le premier mouvement d'une nouvelle tendance. Lire les deux moitiés aussi sans la limite de perte, pour qu'un verdict ne dépende pas de l'heure de départ. J'attends toujours une cible à part pour les comptes avec plafond.",
+   "en": "Stake less on the first move of a new trend. Also read the two halves without the loss limit, so a verdict does not hang on the start hour. Still waiting for a separate target for capped accounts."
   }
  ]
 }

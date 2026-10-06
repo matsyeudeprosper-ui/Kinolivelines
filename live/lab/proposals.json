@@ -1484,7 +1484,7 @@
    "why_en": "Second hearing. Aim for as much as we risk, up to four catch-up trades, and no entry after a 700-point run in an hour. Yesterday: a little better. Over 69 days: better on both halves, +$74. Tonight without a cap: +$30, hole 28 instead of 50; with a cap: -$9.",
    "by": "chercheur",
    "date": "2026-10-05",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 1.0,
     "n_cont": 1,
@@ -1504,7 +1504,9 @@
     "h2": 13.6,
     "base_net": 155.8,
     "base_worst": 50.2
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-06"
   },
   {
    "id": "rr10_bul4_nosun_n2",
@@ -1515,7 +1517,7 @@
    "why_en": "Second hearing. Over 69 days it is the best idea of the night: +$113, better on both halves. Over 42 days without a cap: +$19, hole 24 instead of 50. With a cap: -$8 tonight, against +$20 yesterday. I want to see which night was right.",
    "by": "chercheur",
    "date": "2026-10-05",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 1.0,
     "n_cont": 1,
@@ -1537,7 +1539,9 @@
     "h2": 18.9,
     "base_net": 155.8,
     "base_worst": 50.2
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-06"
   },
   {
    "id": "hot075_chase500",
@@ -1548,7 +1552,7 @@
    "why_en": "Out of the box: a safety belt, not a way to earn more. Stake less when the market is nervous, and no entry when the hour already ran 500 points our way. The biggest hole shrinks with and without a cap: 28 instead of 50, 14 instead of 19. The price: $12 less without a cap, +$2 with one.",
    "by": "chercheur",
    "date": "2026-10-05",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 0.8,
     "n_cont": 1,
@@ -1569,7 +1573,9 @@
     "h2": 4.9,
     "base_net": 155.8,
     "base_worst": 50.2
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-06"
   },
   {
    "id": "rr10_ext700_hot075",
@@ -1580,7 +1586,7 @@
    "why_en": "A safety belt with the higher target. Without a cap: +$5 and the biggest hole drops from 50 to 20, the smallest of all my ideas. With a cap: -$10, same hole. The two halves disagree. I want to know if the halved hole holds a second night.",
    "by": "chercheur",
    "date": "2026-10-05",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 1.0,
     "n_cont": 1,
@@ -1600,7 +1606,9 @@
     "h2": 16.0,
     "base_net": 155.8,
     "base_worst": 50.2
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-06"
   },
   {
    "id": "rr10_ext700_nosun",
@@ -1611,7 +1619,7 @@
    "why_en": "Never tried together. With the higher target, each of the two brakes (Sunday off, no entry after a 700-point run) shrank the biggest hole. I put them together without the fourth catch-up, to see if the capped account gains. Not tested yet: tonight's test will answer.",
    "by": "chercheur",
    "date": "2026-10-05",
-   "status": "pending",
+   "status": "done",
    "cfg": {
     "rr": 1.0,
     "n_cont": 1,
@@ -1649,6 +1657,191 @@
      "trades": 17,
      "diff_net": 3.17,
      "diff_worst": -5.79
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-06"
+  },
+  {
+   "id": "rr10_nosun_fliphot075",
+   "family": "argent",
+   "title_fr": "Viser plus haut, sans dimanche, mise réduite aux retournements nerveux",
+   "title_en": "Aim higher, no Sunday, smaller stake on nervous reversals",
+   "why_fr": "Viser autant que ce qu'on risque, ne pas trader le dimanche, et miser un quart de moins quand le robot change de sens dans un marché nerveux. Testé sur 42 jours : mieux sur les deux moitiés avec et sans plafond de gain par jour, +17 $ et +9 $, trou de 24 au lieu de 50. Réglages voisins positifs aussi.",
+   "why_en": "Aim for as much as we risk, skip Sundays, and stake a quarter less when the robot changes direction in a nervous market. Tested on 42 days: better on both halves with and without a daily cap, +$17 and +$9, hole 24 instead of 50. Neighbouring settings positive too.",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 192.0,
+    "worst": 23.8,
+    "h1": 6.8,
+    "h2": 4.2,
+    "base_net": 175.1,
+    "base_worst": 50.2
+   },
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "pending"
+  },
+  {
+   "id": "fliphot075_capped",
+   "family": "argent",
+   "title_fr": "Miser un quart de moins sur les retournements en marché nerveux",
+   "title_en": "Stake a quarter less on reversals in a nervous market",
+   "why_fr": "Le trade est pris quand même, seulement plus petit. Sur les vrais trades, ces retournements gagnent 7 fois sur 17. Testé sur 42 jours, compte avec plafond : mieux sur les deux moitiés, +14 $, trou de 16 au lieu de 19. Sans plafond : non, -6 $. Chiffres ci-dessous : compte avec plafond.",
+   "why_en": "The trade is still taken, only smaller. On the real trades these reversals win 7 times in 17. Tested on 42 days, capped account: better on both halves, +$14, hole 16 instead of 19. Uncapped: no, -$6. Numbers below: capped account.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 131.0,
+    "worst": 15.7,
+    "h1": 4.5,
+    "h2": 6.8,
+    "base_net": 116.8,
+    "base_worst": 19.4
+   },
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_nosun",
+   "family": "rythme",
+   "title_fr": "Sans dimanche, ne pas entrer après une heure de 400 points",
+   "title_en": "No Sunday, no entry after an hour that moved 400 points",
+   "why_fr": "Ne pas entrer quand l'heure passée a déjà bougé de plus de 400 points, et ne pas trader le dimanche. Seul, ce frein est un peu mieux huit nuits de suite sans plafond. Réunis, testé sur 42 jours sans plafond : mieux sur les deux moitiés, +15 $, trou de 13 au lieu de 50. Avec plafond : non, -41 $.",
+   "why_en": "No entry when the last hour already moved more than 400 points, and no trading on Sunday. Alone, this brake is a little better eight nights running without a cap. Together, tested on 42 days uncapped: better on both halves, +$15, hole 13 instead of 50. Capped: no, -$41.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 400,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 190.5,
+    "worst": 12.8,
+    "h1": 2.0,
+    "h2": 17.3,
+    "base_net": 175.1,
+    "base_worst": 50.2
+   },
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "pending"
+  },
+  {
+   "id": "rr10_bul4_nosun_n3",
+   "family": "cible",
+   "title_fr": "Viser plus haut, sans dimanche, jusqu'à quatre trades de rattrapage",
+   "title_en": "Aim higher, no Sunday, up to four catch-up trades",
+   "why_fr": "Troisième audition. Viser autant que ce qu'on risque, pas de dimanche, jusqu'à quatre trades de rattrapage. Cette nuit : un peu mieux avec et sans plafond, +19 $ et +8 $, trous plus petits sur les deux. Sur 69 jours : +85 $. La deuxième moitié reste un peu en dessous : je veux une nuit de plus.",
+   "why_en": "Third hearing. Aim for as much as we risk, no Sunday, up to four catch-up trades. Last night: a little better with and without a cap, +$19 and +$8, smaller holes on both. Over 69 days: +$85. The second half stays slightly below: I want one more night.",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 4,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 196.06,
+    "worst": 24.28,
+    "h1": 19.6,
+    "h2": -6.9,
+    "base_net": 177.26,
+    "base_worst": 50.23
+   },
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "pending"
+  },
+  {
+   "id": "soft3_fliphot_ext400_nosun",
+   "family": "argent",
+   "title_fr": "Trois freins doux : sans dimanche, sans grosse heure, petite mise aux retournements",
+   "title_en": "Three soft brakes: no Sunday, no big hour, smaller stake on reversals",
+   "why_fr": "Hors du cadre : jamais réunis. Chacun a réduit le plus gros trou ce soir ; le troisième ne refuse aucun trade, il le rend seulement plus petit. Je veux voir si, ensemble, ils gardent l'argent du robot tout en coupant le trou. Pas encore testé : la nuit répondra.",
+   "why_en": "Out of the box: never put together. Each shrank the biggest hole tonight; the third refuses no trade, it only makes it smaller. I want to see whether, together, they keep the robot's money while cutting the hole. Not tested yet: tonight will answer.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 400,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "flip_hot_size": 0.75
+   },
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "pending",
+   "pretest": {
+    "net": 206.51,
+    "worst": 25.82,
+    "h1": 170.68,
+    "h2": 33.1,
+    "base_net": 248.92,
+    "base_worst": 80.29,
+    "base_h1": 229.67,
+    "base_h2": 25.07,
+    "verdict": "C",
+    "trades": 208,
+    "at": "2026-10-06 04:23",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -63.41,
+     "diff_worst": -23.92
+    },
+    "real": {
+     "n_real": 38,
+     "trades": 16,
+     "diff_net": 0.69,
+     "diff_worst": -3.05
     }
    }
   }

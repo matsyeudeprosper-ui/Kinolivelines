@@ -214,6 +214,28 @@
      "value": 1.0
     }
    ]
+  },
+  {
+   "id": "late_night",
+   "title_fr": "Autour de minuit (21 h – 01 h UTC)",
+   "title_en": "Around midnight (21:00 – 01:00 UTC)",
+   "by": "chercheur",
+   "date": "2026-10-06",
+   "status": "open",
+   "why_fr": "Les vrais trades pris entre 21 h et 1 h du matin UTC, vers l'heure où beaucoup de courtiers changent de journée, n'en gagnent que 3 sur 13 et perdent 47 $. Le test sur 42 jours dit le contraire : ne pas trader à ces heures coûte de l'argent. Cette pile dira qui a raison.",
+   "why_en": "The real trades taken between 21:00 and 01:00 UTC, around the time many brokers roll to a new day, win only 3 of 13 and lose $47. The 42-day test says the opposite: skipping those hours costs money. This pile will say who is right.",
+   "where": [
+    {
+     "field": "hour",
+     "op": "in",
+     "value": [
+      21,
+      22,
+      23,
+      0
+     ]
+    }
+   ]
   }
  ]
 }
