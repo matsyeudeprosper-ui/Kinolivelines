@@ -11259,12 +11259,17 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OwlNest">
-<meta property="og:description" content="Le robot Owl trade pour vous, jour et nuit. Vous, vous regardez.">
-<meta property="og:image" content="%%ORIGIN%%/shots/shot_home.png">
+<meta property="og:description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte.">
+<meta property="og:image" content="%%ORIGIN%%/shots/og_card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="OwlNest : le robot Owl trade pour vous, jour et nuit">
+<meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="%%ORIGIN%%/join">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="OwlNest">
-<meta name="twitter:image" content="%%ORIGIN%%/shots/shot_home.png">
+<meta name="twitter:description" content="Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
+<meta name="twitter:image" content="%%ORIGIN%%/shots/og_card.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11383,6 +11388,14 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .shots figure{flex:0 0 68%;scroll-snap-align:center;margin:0}
 .shots img{width:100%;display:block;border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
 .shots figcaption{text-align:center;font-size:.74rem;color:var(--muted);margin-top:8px}
+.stk{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;
+ align-items:center;justify-content:center;gap:8px;min-height:54px;border-radius:16px;background:var(--accent);color:#fff;
+ font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 12px 32px rgba(0,0,0,.45);transform:translateY(150%);
+ opacity:0;pointer-events:none;transition:transform .28s ease,opacity .28s ease}
+.stk.on{transform:none;opacity:1;pointer-events:auto}
+.stk:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(min-width:760px){.stk{display:none}}
+@media(prefers-reduced-motion:reduce){.stk{transition:none}}
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
  display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:28px}
 .pf1{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text2)}
@@ -11393,6 +11406,11 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
  color:var(--text2);background:rgba(255,255,255,.04);border:1px solid var(--border2);
  border-radius:999px;padding:6px 9px}
 .chips svg{color:var(--up)}
+.pv-live{display:inline-flex;align-items:center;gap:7px;margin-top:11px;font-size:.72rem;font-weight:600;
+ color:var(--up);background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:999px;padding:4px 10px}
+.pv-live i{width:7px;height:7px;border-radius:50%;background:var(--up);flex:none}
+@media(prefers-reduced-motion:no-preference){.pv-live i{animation:pvp 2.2s ease-out infinite}}
+@keyframes pvp{0%{box-shadow:0 0 0 0 rgba(46,204,113,.55)}70%,100%{box-shadow:0 0 0 7px rgba(46,204,113,0)}}
 .pv-note{margin-top:10px;font-size:.7rem;color:var(--muted);line-height:1.45}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .duo .bigbtn{margin-top:0;padding:0 8px;min-height:56px;font-size:1rem;font-family:inherit;line-height:1.2;display:flex;align-items:center;justify-content:center}
@@ -11476,9 +11494,10 @@ jour et nuit. Vous, vous regardez.</div>
  depuis le début</span>
 <span class="pv-chip2" id="pv-chip2">trades</span></div>
 <div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">Gains du robot seulement &middot; compte r&eacute;el</span></div>
+<div><span class="pv-live" id="pv-live" hidden><i></i><span id="pv-live-t"></span></span></div>
 <div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti.</div>
 </div>
-<a class="bigbtn b1" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
+<a class="bigbtn b1" id="hero-cta" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
 <div class="feats" id="shots-sec">
 <div class="how">Ce que vous verrez</div>
 <div class="shots" id="shots">
@@ -11518,7 +11537,7 @@ jour et nuit. Vous, vous regardez.</div>
 </div>
 <div class="fine">Exemples de calcul, pas des résultats. Le plafond est une limite, pas une promesse : certains jours le robot gagne moins, d&#8217;autres il perd. Vous pouvez couper cette option dans Réglages.</div>
 </div>
-<a class="bigbtn b1" href="/demo" style="display:block;
+<a class="bigbtn b1" id="end-cta" href="/demo" style="display:block;
  text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
  &middot; gratuit</a>
 <div class="duo">
@@ -11586,6 +11605,7 @@ jour et nuit. Vous, vous regardez.</div>
 <details class="fq"><summary>Comment vous joindre ?</summary>
 <p>Écrivez au robot OwlNest sur Telegram : <a href="https://t.me/%%TGBOT%%">ouvrir Telegram</a>. La famille Owl vous répond.</p></details>
 </div>
+<a class="stk" id="stk" href="/demo" tabindex="-1" aria-hidden="true"><svg class="ic"><use href="#i-eye"/></svg> Essayer la d&eacute;mo gratuite</a>
 <div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pf2">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
 </div>
 
@@ -11647,6 +11667,12 @@ fetch('/apk.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{
 // balance, today's result, its 7-day curve. Falls back to the static
 // mock if the fetch fails. Set PV_LIVE=false to go back to the mock.
 const PV_LIVE=true;
+(function(){const s=document.getElementById('stk'),h=document.getElementById('hero-cta'),e=document.getElementById('end-cta');
+ if(!s||!h||!e||!('IntersectionObserver' in window))return;let hv=true,ev=false;
+ const f=()=>{const on=!hv&&h.getBoundingClientRect().top<0&&e.getBoundingClientRect().top>innerHeight;s.classList.toggle('on',on);
+  s.tabIndex=on?0:-1;s.setAttribute('aria-hidden',on?'false':'true');};
+ new IntersectionObserver(a=>{hv=a[0].isIntersecting;f();}).observe(h);
+ new IntersectionObserver(a=>{ev=a[0].isIntersecting;f();}).observe(e);})();
 (async function(){
  if(!PV_LIVE)return;
  try{
@@ -11676,6 +11702,9 @@ const PV_LIVE=true;
    $('pv-line').setAttribute('points',pts);$('pv-line').setAttribute('stroke',col);
    $('pv-area').setAttribute('points','0,44 '+pts+' 260,44');
    $('pv-g1').setAttribute('stop-color',col);$('pv-g2').setAttribute('stop-color',col);}
+  try{const ag=(Date.now()-new Date(d.updated_utc).getTime())/60000;
+   if(!d.bot_killed&&isFinite(ag)&&ag>=-2&&ag<30){const m=Math.round(ag);
+    $('pv-live-t').textContent='Robot en ligne · '+(m<1?'à l’instant':'mis à jour il y a '+m+' min');$('pv-live').hidden=false;}}catch(e){}
   $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct');
   if(d.bot_killed){$('pv-bot-t').textContent='La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
   else if(d.era_start){const es=new Date(d.era_start);if(!isNaN(es)&&Date.now()-es.getTime()<7*86400e3){
@@ -14309,7 +14338,7 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
             return
-        if parts and parts[0] == "shots" and len(parts) == 2 and parts[1] in ("shot_home.png", "shot_marche.png", "shot_hist.png"):
+        if parts and parts[0] == "shots" and len(parts) == 2 and parts[1] in ("shot_home.png", "shot_marche.png", "shot_hist.png", "og_card.png"):
             # 2026-09-27: landing screenshots, regenerated by review/landing_shots.mjs
             _sp = os.path.join(DIR, "static", parts[1])
             if not os.path.exists(_sp):
