@@ -11272,6 +11272,7 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="twitter:image" content="%%ORIGIN%%/shots/og_card.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OwlNest">
@@ -11410,7 +11411,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
  display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:28px}
 .pf1{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text2)}
-.pf2{max-width:320px;line-height:1.55;opacity:.85}
+.pf2{max-width:320px;line-height:1.55;opacity:1}
 .pfoot img{width:16px;height:16px;border-radius:4px}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
 .chips span{display:inline-flex;align-items:center;gap:5px;font-size:.69rem;font-weight:600;
@@ -11425,7 +11426,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .pv-note{margin-top:10px;font-size:.7rem;color:var(--muted);line-height:1.45}
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .duo .bigbtn{margin-top:0;padding:0 8px;min-height:56px;font-size:1rem;font-family:inherit;line-height:1.2;display:flex;align-items:center;justify-content:center}
-:root[data-theme=light] .fi{background:#e8eef6}
+:root[data-theme=light] .fi{background:#f3f6fa}
 :root[data-theme=light] .feats:not(#plans) .fi.stp{color:#7c3aed!important}
 .bigbtn:focus-visible,.b3:focus-visible,.fq summary:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
 .b2:hover{border-color:var(--accent);color:var(--text)}
@@ -11439,6 +11440,25 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .sc3 b{display:block;font-size:1.15rem;margin:4px 0 2px}
 .sc3 em{font-style:normal;font-size:.72rem;color:var(--up);font-weight:700}
 .fine{font-size:.74rem;color:var(--muted);margin:10px 4px 0;line-height:1.5}
+:root{--warn:#f5b84a;--down:#ff5c5c;--up-bg:rgba(46,204,113,.12);--down-bg:rgba(255,92,92,.12)}
+:root[data-theme=light]{--warn:#b45309;--down:#b91c1c;--up-bg:rgba(21,128,61,.10);--down-bg:rgba(185,28,28,.09)}
+.pv-chip{background:var(--up-bg);color:var(--up)}
+.b1,.stk,button.go{background:#2563eb}
+a:focus-visible,button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
+.back{display:inline-flex;align-items:center;min-height:44px}
+.lk{color:var(--accent-soft)}
+.all{display:flex;align-items:center;justify-content:center;min-height:48px;margin-top:10px;border:1px solid var(--border2);
+ border-radius:var(--r);color:var(--text2);text-decoration:none;font-weight:700;font-size:.92rem;background:var(--surface)}
+.all:hover{border-color:var(--accent);color:var(--text)}
+.lgl{display:flex;flex-wrap:wrap;justify-content:center;gap:0 4px}
+.lgl a{color:var(--text2);text-decoration:none;font-size:.78rem;font-weight:600;padding:0 10px;min-height:44px;display:inline-flex;align-items:center}
+.lgl a:hover{color:var(--text);text-decoration:underline}
+.hero{position:relative}
+.lgb{position:absolute;top:10px;right:0;min-width:44px;min-height:44px;border-radius:999px;border:1px solid var(--border2);
+ background:var(--surface);color:var(--text2);font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}
+.shots img{height:auto}
+@media(prefers-reduced-motion:reduce){.ring,.blob{animation:none}}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -11476,21 +11496,22 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></symbol>
 </svg>
 <div class="bg"><div class="blob bl1"></div><div class="blob bl2"></div></div>
-<div class="wrap">
+<div class="wrap" role="main">
 
 <div class="view on" id="v-home">
 <div class="hero">
-<div class="ring"><img src="/icon192.png" alt="" style="width:64px;height:64px;border-radius:16px"></div>
+<button type="button" class="lgb" id="lgb" aria-label="English">EN</button>
+<div class="ring"><img src="/icon192.png" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:16px"></div>
 <h1>OwlNest</h1>
 <div class="tag">Le robot Owl trade pour vous,<br>
 jour et nuit. Vous, vous regardez.</div>
-<div class="chips"><span><svg class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
+<div class="chips"><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
 </div>
 <div class="preview">
 <div class="pv-lbl" id="pv-lbl">Aper&ccedil;u en direct</div>
 <div class="pv-money" id="pv-money">$1 234,56</div>
 <div class="pv-eur" id="pv-eur">&asymp; 1 062 &euro;</div>
-<svg viewBox="0 0 260 44" style="width:100%;height:44px;margin-top:10px">
+<svg viewBox="0 0 260 44" aria-hidden="true" style="width:100%;height:44px;margin-top:10px">
 <defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
 <stop id="pv-g1" offset="0%" stop-color="#2ecc71" stop-opacity=".35"/>
 <stop id="pv-g2" offset="100%" stop-color="#2ecc71" stop-opacity="0"/>
@@ -11504,21 +11525,23 @@ jour et nuit. Vous, vous regardez.</div>
 <div class="pv-row"><span class="pv-chip" id="pv-chip">&#9650; +23,40 $
  depuis le début</span>
 <span class="pv-chip2" id="pv-chip2">trades</span></div>
-<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">Gains du robot seulement &middot; compte r&eacute;el</span></div>
+<div class="pv-bot"><svg aria-hidden="true" class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">Gains du robot seulement &middot; compte r&eacute;el</span></div>
 <div><span class="pv-live" id="pv-live" hidden><i></i><span id="pv-live-t"></span></span></div>
-<div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti.</div>
+<div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</div>
 </div>
-<a class="bigbtn b1" id="hero-cta" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
+<a class="bigbtn b1" id="hero-cta" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
 <div class="feats" id="shots-sec">
-<div class="how">Ce que vous verrez</div>
-<div class="shots" id="shots">
- <figure><img src="/shots/shot_home.png" alt="Accueil OwlNest" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>Accueil &middot; solde et journ&eacute;e</figcaption></figure>
- <figure><img src="/shots/shot_marche.png" alt="March&eacute;" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>March&eacute; &middot; ce que le robot voit</figcaption></figure>
- <figure><img src="/shots/shot_hist.png" alt="Historique" loading="lazy" onerror="this.closest('figure').style.display='none'"><figcaption>Historique &middot; jour par jour</figcaption></figure>
+<div class="how" role="heading" aria-level="2">Ce que vous verrez</div>
+<div class="shots" id="shots" tabindex="0" role="region" aria-label="Aper&ccedil;us de l&#8217;application">
+ <figure><img src="/shots/shot_home.webp" alt="Accueil OwlNest : solde et journ&eacute;e" width="780" height="1560" loading="lazy" decoding="async" onerror="this.closest('figure').style.display='none'"><figcaption>Accueil &middot; solde et journ&eacute;e</figcaption></figure>
+ <figure><img src="/shots/shot_marche.webp" alt="March&eacute; : ce que le robot voit" width="780" height="1560" loading="lazy" decoding="async" onerror="this.closest('figure').style.display='none'"><figcaption>March&eacute; &middot; ce que le robot voit</figcaption></figure>
+ <figure><img src="/shots/shot_chart.webp" alt="Graphique avec les rep&egrave;res de structure : cassures (BOS) et changements de sens (CHoCH)" width="780" height="1560" loading="lazy" decoding="async" onerror="this.closest('figure').style.display='none'"><figcaption>Graphique &middot; les rep&egrave;res de structure</figcaption></figure>
+ <figure><img src="/shots/shot_labo.webp" alt="Le labo : les id&eacute;es que le robot teste la nuit" width="780" height="1560" loading="lazy" decoding="async" onerror="this.closest('figure').style.display='none'"><figcaption>Labo &middot; l&agrave; o&ugrave; le robot apprend</figcaption></figure>
+ <figure><img src="/shots/shot_hist.webp" alt="Historique jour par jour" width="780" height="1560" loading="lazy" decoding="async" onerror="this.closest('figure').style.display='none'"><figcaption>Historique &middot; jour par jour</figcaption></figure>
 </div>
 </div>
 <div class="feats">
-<div class="how">Comment &ccedil;a marche</div>
+<div class="how" role="heading" aria-level="2">Comment &ccedil;a marche</div>
 <div class="fr"><div class="fi stp">1</div>
 <div class="ft"><b>Choisissez votre formule</b>
 <span>Signal : les alertes et la d&eacute;mo en direct, sans compte MT5.
@@ -11534,11 +11557,11 @@ jour et nuit. Vous, vous regardez.</div>
  5 secondes, sur votre t&eacute;l&eacute;phone.</span></div></div>
 </div>
 <div class="feats" id="scale">
-<div class="how">Une mise qui grandit avec vous</div>
-<div class="fr"><div class="fi"><svg class="ic"><use href="#i-chart"/></svg></div>
+<div class="how" role="heading" aria-level="2">Une mise qui grandit avec vous</div>
+<div class="fr"><div class="fi"><svg aria-hidden="true" class="ic"><use href="#i-chart"/></svg></div>
 <div class="ft"><b>Chaque matin, le robot ajuste sa taille</b>
 <span>Il regarde le solde de votre compte et règle la taille de ses trades en proportion : compte plus gros, trades un peu plus gros ; compte plus petit, trades plus petits. Rien à faire de votre côté.</span></div></div>
-<div class="fr"><div class="fi"><svg class="ic"><use href="#i-target"/></svg></div>
+<div class="fr"><div class="fi"><svg aria-hidden="true" class="ic"><use href="#i-target"/></svg></div>
 <div class="ft"><b>Objectif du jour : environ 1,5&nbsp;%</b>
 <span>Quand il y a un plafond du jour, il vaut environ 1,5&nbsp;% du solde du matin. Une fois atteint, le robot se repose jusqu&#8217;au lendemain.</span></div></div>
 <div class="sc3">
@@ -11549,7 +11572,7 @@ jour et nuit. Vous, vous regardez.</div>
 <div class="fine">Exemples de calcul, pas des résultats. Le plafond est une limite, pas une promesse : certains jours le robot gagne moins, d&#8217;autres il perd. Vous pouvez couper cette option dans Réglages.</div>
 </div>
 <a class="bigbtn b1" id="end-cta" href="/demo" style="display:block;
- text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
+ text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
  &middot; gratuit</a>
 <div class="duo">
 <button class="bigbtn b2" onclick="show('v-login')">Se connecter</button>
@@ -11557,8 +11580,8 @@ jour et nuit. Vous, vous regardez.</div>
 </div>
 <div class="appc">
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
- style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
-<a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.7;font-weight:600"></span></a>
+ style="margin-top:4px"><svg aria-hidden="true" class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
+<a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.9;font-weight:600"></span></a>
 <div id="apk2-note" style="display:none;margin-top:8px;text-align:center;font-size:.78rem;color:var(--muted);line-height:1.5">Un fichier APK : Android demande une fois d&#8217;autoriser l&#8217;installation. Les mises &agrave; jour se posent par-dessus, sans rien d&eacute;sinstaller. Sur iPhone : &laquo; Installer l&#8217;application &raquo; ci-dessus.</div>
 <div id="howto2" style="display:none;margin-top:12px;background:var(--surface2);
  border:1px solid var(--border);border-radius:14px;padding:14px;
@@ -11568,28 +11591,29 @@ jour et nuit. Vous, vous regardez.</div>
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b><br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
-<div class="appc-fine">La d&eacute;mo est gratuite, toujours. Les abonnements se paient
- chaque mois, &agrave; l&#8217;avance.<br>OwlNest vend un logiciel et un service de copie &mdash;
+<div class="appc-fine">La d&eacute;mo est gratuite, toujours. Les offres se paient &agrave; l&#8217;avance ;
+ Signal et Strat&eacute;gie se renouvellent &agrave; la main, jamais tout seuls.<br>OwlNest vend un logiciel et un service de copie &mdash;
  pas de conseil ni de gestion d&#8217;investissement.</div>
 </div>
 <div class="feats" id="plans">
-<div class="how">Nos offres</div>
+<div class="how" role="heading" aria-level="2">Nos offres</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
 <div class="ft"><b>D&eacute;mo &middot; gratuit, toujours</b>
 <span>Le robot en direct sur un vrai compte de d&eacute;monstration : solde, trades, m&eacute;t&eacute;o du march&eacute;, bilan du soir. Sans compte.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--up)">$29</div>
 <div class="ft"><b>Signal &middot; 30 jours</b>
-<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et tout ce que montre la d&eacute;mo. Sans compte MT5 : vous tradez o&ugrave; vous voulez.</span></div></div>
+<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et tout ce que montre la d&eacute;mo. Sans compte MT5 : vous tradez o&ugrave; vous voulez. &Agrave; renouveler vous-m&ecirc;me, sans reconduction automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
 <div class="ft"><b>Strat&eacute;gie &middot; 30 jours</b>
-<span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique.</span></div></div>
+<span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique. &Agrave; renouveler vous-m&ecirc;me, sans reconduction automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
 <span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
-<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#8217;app ou par code. Le d&eacute;tail complet est dans l&#8217;application, R&eacute;glages &rsaquo; Abonnement.</div>
+<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#8217;app ou par code. Ils ne se renouvellent jamais tout seuls : &agrave; la fin des 30 jours, c&#8217;est &agrave; vous de renouveler, sinon l&#8217;acc&egrave;s s&#8217;arr&ecirc;te. Le d&eacute;tail complet est dans l&#8217;application, R&eacute;glages &rsaquo; Abonnement.</div>
+<a class="all" href="/offres">Voir toutes les offres &rsaquo;</a>
 </div>
 <div class="feats" id="faq">
-<div class="how">Questions fr&eacute;quentes</div>
+<div class="how" role="heading" aria-level="2">Questions fr&eacute;quentes</div>
 <details class="fq"><summary>Où est mon argent ?</summary>
 <p>Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.</p></details>
 <details class="fq"><summary>Puis-je perdre de l’argent ?</summary>
@@ -11600,8 +11624,10 @@ jour et nuit. Vous, vous regardez.</div>
 <p>Chaque matin, le robot regarde le solde de votre compte et règle la taille de ses trades en proportion. Quand il y a un plafond du jour, il vaut environ 1,5&nbsp;% du solde du matin (3 $ pour 200 $, 6 $ pour 400 $). C’est une limite, pas une promesse. Vous pouvez désactiver cette option dans Réglages.</p></details>
 <details class="fq"><summary>Prenez-vous une part de mes gains ?</summary>
 <p>Non. Les offres ont un prix fixe par mois, quel que soit votre résultat. Vos gains restent à vous.</p></details>
+<details class="fq"><summary>Mon abonnement se renouvelle-t-il tout seul ?</summary>
+<p>Non. Signal et Stratégie durent 30 jours et ne se renouvellent jamais automatiquement : rien n’est prélevé sans vous. À la fin, c’est à vous de renouveler, par un nouveau paiement ou un code ; sans cela, l’accès s’arrête.</p></details>
 <details class="fq"><summary>Puis-je arrêter quand je veux ?</summary>
-<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent pas tout seuls : sans paiement, ça s’arrête à la fin des 30 jours.</p></details>
+<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent jamais tout seuls : sans renouvellement de votre part, l’accès s’arrête à la fin des 30 jours.</p></details>
 <details class="fq"><summary>Que se passe-t-il si mon téléphone est éteint ?</summary>
 <p>Rien. Le robot tourne sur nos serveurs, jour et nuit. Votre téléphone sert seulement à regarder.</p></details>
 <details class="fq"><summary>Dois-je installer quelque chose sur mon ordinateur ?</summary>
@@ -11617,12 +11643,13 @@ jour et nuit. Vous, vous regardez.</div>
 <details class="fq"><summary>Comment vous joindre ?</summary>
 <p>Écrivez au robot OwlNest sur Telegram : <a href="https://t.me/%%TGBOT%%">ouvrir Telegram</a>. La famille Owl vous répond.</p></details>
 </div>
-<a class="stk" id="stk" href="/demo" tabindex="-1" aria-hidden="true"><svg class="ic"><use href="#i-eye"/></svg> Essayer la d&eacute;mo gratuite</a>
-<div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pf2">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
+<a class="stk" id="stk" href="/demo" tabindex="-1" aria-hidden="true"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Essayer la d&eacute;mo gratuite</a>
+<div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pf2">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span>
+<nav class="lgl" aria-label="Informations l&eacute;gales"><a href="/legal#conditions">Conditions</a><a href="/legal#confidentialite">Confidentialit&eacute;</a><a href="/legal#risques">Avertissement sur les risques</a><a href="https://t.me/%%TGBOT%%">Contact</a></nav></div>
 </div>
 
 <div class="view" id="v-login">
-<a class="back" onclick="show('v-home')">&#8592; Retour</a>
+<a class="back" href="#v-home" onclick="show('v-home');return false">&#8592; Retour</a>
 <form class="card" method="POST" action="login">
 <h2>Se connecter</h2>
 <label for="lg">Identifiant <span style="font-weight:400;color:var(--muted)">(famille : num&eacute;ro de compte MT5)</span></label>
@@ -11634,21 +11661,21 @@ jour et nuit. Vous, vous regardez.</div>
   autocomplete="current-password" placeholder="votre mot de passe"
   style="padding-right:52px">
  <button type="button" id="pweye" aria-label="Afficher le mot de passe"
-  onclick="const p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.style.opacity=p.type==='text'?'1':'.6'"
+  onclick="const p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';this.style.opacity=p.type==='text'?'1':'.6';this.setAttribute('aria-pressed',p.type==='text')"
   style="position:absolute;right:8px;top:50%;transform:translateY(-50%);
   width:40px;height:40px;border:0;background:transparent;color:var(--text3);
   opacity:.6;display:flex;align-items:center;justify-content:center">
-  <svg class="ic"><use href="#i-eye"/></svg></button>
+  <svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg></button>
 </div>
 <button class="go" id="gobtn">Continuer &#10142;</button>
-<div style="margin-top:12px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5">Pas encore membre ? <a href="/offres" style="color:#9fc2de">Cr&eacute;er un compte</a><br>Identifiant ou mot de passe oubli&eacute; ?
- <a href="https://t.me/%%TGBOT%%" style="color:#9fc2de">&Eacute;crivez &laquo; lien &raquo; au robot OwlNest sur Telegram</a></div>
+<div style="margin-top:12px;font-size:.8rem;color:var(--muted);text-align:center;line-height:1.5">Pas encore membre ? <a href="/offres" class="lk">Cr&eacute;er un compte</a><br>Identifiant ou mot de passe oubli&eacute; ?
+ <a href="https://t.me/%%TGBOT%%" class="lk">&Eacute;crivez &laquo; lien &raquo; au robot OwlNest sur Telegram</a></div>
 </form>
 </div>
 
 </div><script>
 document.addEventListener('submit',e=>{const b=document.getElementById('gobtn');
- if(b&&e.target.contains(b)){b.disabled=true;b.textContent='Un instant\u2026';}});
+ if(b&&e.target.contains(b)){b.disabled=true;b.textContent=pvEn()?'One moment…':'Un instant\u2026';}});
 function show(id){
  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
  document.getElementById(id).classList.add('on');
@@ -11673,7 +11700,8 @@ fetch('/apk.json',{cache:'no-store'}).then(r=>r.json()).then(j=>{
  document.getElementById('apk2').style.display='block';
  document.getElementById('apk2-v').textContent='v'+j.version;
  document.getElementById('apk2-note').style.display='block';
- if(/Android/i.test(navigator.userAgent)){document.getElementById('apk2').className='bigbtn b2';document.getElementById('inst2').innerHTML='<svg class="ic ic-s"><use href="#i-download"/></svg> Ou ajouter &agrave; l&#8217;&eacute;cran d&#8217;accueil';}
+ if(/Android/i.test(navigator.userAgent)){document.getElementById('apk2').className='bigbtn b2';document.getElementById('inst2').innerHTML='<svg aria-hidden="true" class="ic ic-s"><use href="#i-download"/></svg> Ou ajouter &agrave; l&#8217;&eacute;cran d&#8217;accueil';}
+if(window.owlApply)owlApply();
 }).catch(()=>{});
 // 2026-09-26: the preview shows the PUBLIC demo account for real - its
 // balance, today's result, its 7-day curve. Falls back to the static
@@ -11685,25 +11713,33 @@ const PV_LIVE=true;
   s.tabIndex=on?0:-1;s.setAttribute('aria-hidden',on?'false':'true');};
  new IntersectionObserver(a=>{hv=a[0].isIntersecting;f();}).observe(h);
  new IntersectionObserver(a=>{ev=a[0].isIntersecting;f();}).observe(e);})();
-(async function(){
+function pvEn(){if(window._en!==undefined)return window._en;try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}}
+async function pvLoad(){
  if(!PV_LIVE)return;
  try{
   const r=await fetch('/demo',{redirect:'follow'});if(!r.ok)return;
   const base=new URL(r.url).pathname.replace(/\\/+$/,'')+'/';
   const d=await (await fetch(base+'api')).json();
   if(!d||typeof d.equity!=='number')return;
+  window._pvd=d;pvRender(d);
+ }catch(e){}
+}
+pvLoad();
+function pvRender(d){
+ try{
   const $=id=>document.getElementById(id);
+  const en=pvEn();
   $('pv-money').textContent='$'+d.equity.toFixed(2);
   const S=d.since_start||{},hasS=typeof S.net==='number';
-  $('pv-eur').innerHTML=d.eurusd?('&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;'):'solde actuel';
+  $('pv-eur').innerHTML=d.eurusd?('&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;'):(en?'current balance':'solde actuel');
   const gain=hasS?S.net:(d.month||0),up=gain>=0,ch=$('pv-chip');
-  const fd=S.first?String(S.first).slice(8,10)+'/'+String(S.first).slice(5,7):'';
+  const fd=S.first?(en?new Date(S.first+'T12:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}):String(S.first).slice(8,10)+'/'+String(S.first).slice(5,7)):'';
   ch.innerHTML=(gain>0?'&#9650; ':(gain<0?'&#9660; ':''))+(up?'+':'-')+'$'+
-   Math.abs(gain).toFixed(2)+(hasS?' depuis le début':' ce mois-ci');
-  ch.style.background=up?'rgba(46,204,113,.12)':'rgba(255,92,92,.12)';
-  ch.style.color=up?'#2ecc71':'#ff5c5c';
+   Math.abs(gain).toFixed(2)+(hasS?(en?' since the start':' depuis le début'):(en?' this month':' ce mois-ci'));
+  ch.style.background=up?'var(--up-bg)':'var(--down-bg)';
+  ch.style.color=up?'var(--up)':'var(--down)';
   const n=hasS?(S.n||0):(d.trades||[]).length;$('pv-chip2').textContent=n+' trade'+(n>1?'s':'');
-  $('pv-bot-t').textContent=(fd?'Depuis le '+fd+' · ':'')+'gains du robot · compte réel';
+  $('pv-bot-t').textContent=en?((fd?'Since '+fd+' · ':'')+'robot gains · real account'):((fd?'Depuis le '+fd+' · ':'')+'gains du robot · compte réel');
   let c=d.curve||[];
   try{if(hasS&&S.first){const dl=[];Object.keys(d.months||{}).forEach(k=>(d.months[k]||[]).forEach(x=>{if(x.d>=S.first)dl.push(x);}));
    dl.sort((p,q)=>p.d<q.d?-1:1);if(dl.length>1){let t=0;c=[0].concat(dl.map(x=>(t+=x.p)));}}}catch(e){}
@@ -11716,18 +11752,301 @@ const PV_LIVE=true;
    $('pv-g1').setAttribute('stop-color',col);$('pv-g2').setAttribute('stop-color',col);}
   try{const ag=(Date.now()-new Date(d.updated_utc).getTime())/60000;
    if(!d.bot_killed&&isFinite(ag)&&ag>=-2&&ag<30){const m=Math.round(ag);
-    $('pv-live-t').textContent='Robot en ligne · '+(m<1?'à l’instant':'mis à jour il y a '+m+' min');$('pv-live').hidden=false;}}catch(e){}
-  $('pv-lbl').textContent='Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct');
-  if(d.bot_killed){$('pv-bot-t').textContent='La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
+    $('pv-live-t').textContent=en?('Robot online · '+(m<1?'just now':'updated '+m+' min ago')):('Robot en ligne · '+(m<1?'à l’instant':'mis à jour il y a '+m+' min'));$('pv-live').hidden=false;}}catch(e){}
+  $('pv-lbl').textContent=en?('Public demo account · '+(d.bot_killed?'paused':'live')):('Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct'));
+  if(d.bot_killed){$('pv-bot-t').textContent=en?'The demo is paused — it restarts soon.':'La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
   else if(d.era_start){const es=new Date(d.era_start);if(!isNaN(es)&&Date.now()-es.getTime()<7*86400e3){
-   $('pv-bot-t').textContent='D\\u00e9mo red\\u00e9marr\\u00e9e le '+String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0')+' \\u00b7 elle repart de z\\u00e9ro';}}
+   (function(){const dd=String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0');
+   $('pv-bot-t').textContent=en?('Demo restarted on '+dd+' · it starts again from zero'):('D\\u00e9mo red\\u00e9marr\\u00e9e le '+dd+' \\u00b7 elle repart de z\\u00e9ro');})();}}
  }catch(e){}
+}
+</script><script>
+(function(){
+var EN={
+"Aperçus de l’application": "App previews",
+"Le robot Owl trade pour vous,": "The Owl robot trades for you,",
+"jour et nuit. Vous, vous regardez.": "day and night. You just watch.",
+"Démo gratuite": "Free demo",
+"Rien à installer": "Nothing to install",
+"Arrêt à tout moment": "Stop at any time",
+"Dépôts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n’est garanti. Les résultats passés ne promettent pas les suivants.": "Deposits and withdrawals don’t count. There are down days too: nothing is guaranteed. Past results do not promise future ones.",
+"Voir le robot en direct · gratuit": "Watch the robot live · free",
+"Ce que vous verrez": "What you will see",
+"Accueil · solde et journée": "Home · balance and day",
+"Marché · ce que le robot voit": "Market · what the robot sees",
+"Graphique · les repères de structure": "Chart · the structure marks",
+"Labo · là où le robot apprend": "Lab · where the robot learns",
+"Historique · jour par jour": "History · day by day",
+"Comment ça marche": "How it works",
+"Choisissez votre formule": "Choose your plan",
+"Signal : les alertes et la démo en direct, sans compte MT5. Automatique (famille) : le robot sur votre compte MT5. Rien à installer sur l’ordinateur.": "Signal: the alerts and the live demo, no MT5 account. Automatic (family): the robot on your MT5 account. Nothing to install on your computer.",
+"Le robot veille, jour et nuit": "The robot watches, day and night",
+"Il surveille le marché en continu et n’agit que lorsque ses conditions sont réunies.": "It watches the market non-stop and only acts when its conditions are met.",
+"Vous suivez tout, en direct": "You follow everything, live",
+"Solde, gains, trades du jour — mis à jour toutes les 5 secondes, sur votre téléphone.": "Balance, gains, today’s trades — updated every 5 seconds, on your phone.",
+"Une mise qui grandit avec vous": "A stake that grows with you",
+"Chaque matin, le robot ajuste sa taille": "Every morning, the robot adjusts its size",
+"Il regarde le solde de votre compte et règle la taille de ses trades en proportion : compte plus gros, trades un peu plus gros ; compte plus petit, trades plus petits. Rien à faire de votre côté.": "It looks at your account balance and sets the size of its trades in proportion: bigger account, slightly bigger trades; smaller account, smaller trades. Nothing to do on your side.",
+"Objectif du jour : environ 1,5 %": "Daily target: about 1.5%",
+"Quand il y a un plafond du jour, il vaut environ 1,5 % du solde du matin. Une fois atteint, le robot se repose jusqu’au lendemain.": "When there is a daily cap, it is worth about 1.5% of the morning balance. Once it is reached, the robot rests until the next day.",
+"Solde du matin": "Morning balance",
+"plafond ≈ 3 $": "cap ≈ $3",
+"plafond ≈ 6 $": "cap ≈ $6",
+"plafond ≈ 12 $": "cap ≈ $12",
+"Exemples de calcul, pas des résultats. Le plafond est une limite, pas une promesse : certains jours le robot gagne moins, d’autres il perd. Vous pouvez couper cette option dans Réglages.": "Calculation examples, not results. The cap is a limit, not a promise: some days the robot earns less, others it loses. You can turn this option off in Settings.",
+"Se connecter": "Log in",
+"Créer un compte": "Create an account",
+"Installer l’application": "Install the app",
+"Télécharger l’application Android": "Download the Android app",
+"Un fichier APK : Android demande une fois d’autoriser l’installation. Les mises à jour se posent par-dessus, sans rien désinstaller. Sur iPhone : « Installer l’application » ci-dessus.": "An APK file: Android asks once to allow the installation. Updates are installed on top, with nothing to uninstall. On iPhone: “Install the app” above.",
+"Pour installer :": "To install:",
+"1. Touchez le menu": "1. Tap the menu",
+"en haut à droite de Chrome": "at the top right of Chrome",
+"2. Choisissez": "2. Choose",
+"« Ajouter à l’écran d’accueil »": "“Add to Home screen”",
+"3. L’icône 🦉 apparaît !": "3. The icon 🦉 appears!",
+"La démo est gratuite, toujours. Les offres se paient à l’avance ; Signal et Stratégie se renouvellent à la main, jamais tout seuls.": "The demo is free, always. Plans are paid in advance; Signal and Strategy are renewed by hand, never automatically.",
+"OwlNest vend un logiciel et un service de copie — pas de conseil ni de gestion d’investissement.": "OwlNest sells software and a copy service — not investment advice or management.",
+"Nos offres": "Our plans",
+"Démo · gratuit, toujours": "Demo · free, always",
+"Le robot en direct sur un vrai compte de démonstration : solde, trades, météo du marché, bilan du soir. Sans compte.": "The robot live on a real demonstration account: balance, trades, market weather, evening summary. No account needed.",
+"Signal · 30 jours": "Signal · 30 days",
+"Les signaux du robot sur votre téléphone, et tout ce que montre la démo. Sans compte MT5 : vous tradez où vous voulez. À renouveler vous-même, sans reconduction automatique.": "The robot’s signals on your phone, and everything the demo shows. No MT5 account: you trade wherever you want. Renew it yourself, no automatic renewal.",
+"Stratégie · 30 jours": "Strategy · 30 days",
+"Le graphique complet et la méthode expliquée. Un paquet à part, qui se combine avec Signal ou Automatique. À renouveler vous-même, sans reconduction automatique.": "The full chart and the method explained. A separate pack, combinable with Signal or Automatic. Renew it yourself, no automatic renewal.",
+"Automatique · famille, sur invitation": "Automatic · family, by invitation",
+"Le robot sur votre compte, avec ses règles et ses freins. Prix fixe chaque mois, réglé avec le Owl ; code d’activation par Telegram. 50 places.": "The robot on your account, with its rules and its brakes. Fixed monthly price, settled with the Owl; activation code via Telegram. 50 places.",
+"Signal et Stratégie : en crypto dans l’app ou par code. Ils ne se renouvellent jamais tout seuls : à la fin des 30 jours, c’est à vous de renouveler, sinon l’accès s’arrête. Le détail complet est dans l’application, Réglages › Abonnement.": "Signal and Strategy: in crypto in the app or by code. They never renew by themselves: at the end of the 30 days it is up to you to renew, otherwise access stops. Full details are in the app, Settings › Subscription.",
+"Voir toutes les offres ›": "See all plans ›",
+"Questions fréquentes": "Frequently asked questions",
+"Où est mon argent ?": "Where is my money?",
+"Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.": "On your own MT5 account, with your broker, in your name. The robot places orders there; it cannot withdraw or move your money. You withdraw whenever you like, as usual.",
+"Puis-je perdre de l’argent ?": "Can I lose money?",
+"Oui. Aucun robot ne gagne tous les jours et rien n’est garanti : les résultats passés ne promettent pas les suivants. Ne mettez que de l’argent que vous pouvez vous permettre de perdre. Chaque trade, gagné ou perdu, est visible dans l’application.": "Yes. No robot wins every day and nothing is guaranteed: past results do not promise future ones. Only put in money you can afford to lose. Every trade, won or lost, is visible in the app.",
+"Et si le robot enchaîne les pertes ?": "What if the robot strings together losses?",
+"Il a des freins. Après une perte, il garde une petite réserve de côté et avance prudemment. Si les pertes s’accumulent jusqu’à une limite fixée à l’avance, il s’arrête tout seul : il ne s’acharne pas.": "It has brakes. After a loss, it keeps a small reserve aside and moves carefully. If losses build up to a limit set in advance, it stops by itself: it does not dig in.",
+"Que veut dire « la mise grandit avec mon compte » ?": "What does “the stake grows with my account” mean?",
+"Chaque matin, le robot regarde le solde de votre compte et règle la taille de ses trades en proportion. Quand il y a un plafond du jour, il vaut environ 1,5 % du solde du matin (3 $ pour 200 $, 6 $ pour 400 $). C’est une limite, pas une promesse. Vous pouvez désactiver cette option dans Réglages.": "Every morning, the robot looks at your account balance and sets the size of its trades in proportion. When there is a daily cap, it is worth about 1.5% of the morning balance ($3 for $200, $6 for $400). It is a limit, not a promise. You can turn this option off in Settings.",
+"Prenez-vous une part de mes gains ?": "Do you take a share of my gains?",
+"Non. Les offres ont un prix fixe par mois, quel que soit votre résultat. Vos gains restent à vous.": "No. Plans have a fixed price per month, whatever your result. Your gains stay yours.",
+"Mon abonnement se renouvelle-t-il tout seul ?": "Does my subscription renew by itself?",
+"Non. Signal et Stratégie durent 30 jours et ne se renouvellent jamais automatiquement : rien n’est prélevé sans vous. À la fin, c’est à vous de renouveler, par un nouveau paiement ou un code ; sans cela, l’accès s’arrête.": "No. Signal and Strategy last 30 days and never renew automatically: nothing is charged without you. At the end, it is up to you to renew, with a new payment or a code; without that, access stops.",
+"Puis-je arrêter quand je veux ?": "Can I stop whenever I want?",
+"Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent jamais tout seuls : sans renouvellement de votre part, l’accès s’arrête à la fin des 30 jours.": "Yes. One message is enough, and the robot stops taking trades on your account. Signal and Strategy never renew by themselves: if you do not renew, access stops at the end of the 30 days.",
+"Que se passe-t-il si mon téléphone est éteint ?": "What happens if my phone is off?",
+"Rien. Le robot tourne sur nos serveurs, jour et nuit. Votre téléphone sert seulement à regarder.": "Nothing. The robot runs on our servers, day and night. Your phone is only for watching.",
+"Dois-je installer quelque chose sur mon ordinateur ?": "Do I need to install anything on my computer?",
+"Non. Vous ouvrez cette page sur votre téléphone, et c’est tout. Une application est proposée si vous préférez, mais elle est facultative.": "No. You open this page on your phone, and that is all. An app is offered if you prefer, but it is optional.",
+"Puis-je essayer sans payer ?": "Can I try without paying?",
+"Oui. La démo est gratuite, toujours, sans compte : vous voyez le robot travailler sur un vrai compte de démonstration.": "Yes. The demo is free, always, with no account: you see the robot working on a real demonstration account.",
+"Mes identifiants sont-ils en sécurité ?": "Are my credentials safe?",
+"Ils servent uniquement à relier le robot à votre compte et ne sont jamais partagés. Pour couper l’accès à tout moment, il suffit de changer votre mot de passe chez votre courtier.": "They are used only to link the robot to your account and are never shared. To cut access at any time, just change your password with your broker.",
+"Puis-je suivre depuis plusieurs téléphones ?": "Can I follow from several phones?",
+"Oui. Votre lien personnel fonctionne partout ; vous pouvez le protéger avec un code à 4 chiffres.": "Yes. Your personal link works everywhere; you can protect it with a 4-digit code.",
+"OwlNest donne-t-il des conseils d’investissement ?": "Does OwlNest give investment advice?",
+"Non. OwlNest est un logiciel et un service de copie : ni conseil, ni gestion d’investissement. Vous restez responsable de votre compte.": "No. OwlNest is software and a copy service: no advice, no investment management. You remain responsible for your account.",
+"Comment vous joindre ?": "How do I reach you?",
+"Écrivez au robot OwlNest sur Telegram :": "Write to the OwlNest robot on Telegram:",
+"ouvrir Telegram": "open Telegram",
+". La famille Owl vous répond.": ". The Owl family will answer.",
+"Essayer la démo gratuite": "Try the free demo",
+"OwlNest · fait avec amour par la famille Owl": "OwlNest · made with love by the Owl family",
+"Vos identifiants servent uniquement à relier le robot à votre compte. Ils ne sont jamais partagés.": "Your credentials are used only to link the robot to your account. They are never shared.",
+"Conditions": "Terms",
+"Confidentialité": "Privacy",
+"Avertissement sur les risques": "Risk warning",
+"Contact": "Contact",
+"← Retour": "← Back",
+"Identifiant": "Username",
+"(famille : numéro de compte MT5)": "(family: MT5 account number)",
+"Mot de passe": "Password",
+"Continuer ➞": "Continue ➞",
+"Pas encore membre ?": "Not a member yet?",
+"Identifiant ou mot de passe oublié ?": "Forgot your username or password?",
+"Écrivez « lien » au robot OwlNest sur Telegram": "Write “link” to the OwlNest robot on Telegram",
+"Accueil OwlNest : solde et journée": "OwlNest home: balance and day",
+"Marché : ce que le robot voit": "Market: what the robot sees",
+"Graphique avec les repères de structure : cassures (BOS) et changements de sens (CHoCH)": "Chart with the structure marks: breaks (BOS) and changes of direction (CHoCH)",
+"Le labo : les idées que le robot teste la nuit": "The lab: the ideas the robot tests at night",
+"Historique jour par jour": "History, day by day",
+"Informations légales": "Legal information",
+"Afficher le mot de passe": "Show password",
+"votre identifiant": "your username",
+"votre mot de passe": "your password",
+"Aperçu en direct": "Live preview",
+"▲ +23,40 $ depuis le début": "▲ +$23.40 since the start",
+"Gains du robot seulement · compte réel": "Robot gains only · real account",
+"Ou ajouter à l’écran d’accueil": "Or add to the home screen"
+};
+var O=new WeakMap(),on=null,md=document.querySelector('meta[name=description]'),mdFr=md?md.getAttribute('content'):'';
+var mdEn='The Owl robot trades for you, day and night. Free live demo, no account. You keep your money with your broker.';
+function nz(t){return t.replace(/\\s+/g,' ').trim();}
+function has(k){return Object.prototype.hasOwnProperty.call(EN,k);}
+function stored(){try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}}
+function apply(en){
+ var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n,L=[];
+ while((n=w.nextNode())){if(!n.parentNode.closest('script,style'))L.push(n);}
+ L.forEach(function(n){
+  var o=O.get(n);
+  if(!en){if(o!==undefined){n.nodeValue=o;O.delete(n);}return;}
+  if(o===undefined)o=n.nodeValue;
+  var k=nz(o);
+  if(has(k)){O.set(n,o);n.nodeValue=o.match(/^\\s*/)[0]+EN[k]+o.match(/\\s*$/)[0];}
+ });
+ ['alt','aria-label','placeholder'].forEach(function(at){
+  document.querySelectorAll('['+at+']').forEach(function(e){
+   if(e.id==='lgb')return;
+   var d='data-o-'+at,o=e.getAttribute(d);
+   if(!en){if(o!==null){e.setAttribute(at,o);e.removeAttribute(d);}return;}
+   if(o===null)o=e.getAttribute(at);
+   var k=nz(o);
+   if(has(k)){e.setAttribute(d,o);e.setAttribute(at,EN[k]);}
+  });
+ });
+}
+function paint(){
+ var en=window._en;
+ document.documentElement.lang=en?'en':'fr';
+ apply(en);
+ var b=document.getElementById('lgb');
+ if(b){b.textContent=en?'FR':'EN';b.setAttribute('aria-label',en?'Français':'English');}
+ if(md)md.setAttribute('content',en?mdEn:mdFr);
+ if(window._pvd&&window.pvRender)pvRender(window._pvd);
+}
+window.owlApply=function(){apply(window._en);};
+window._en=stored();
+var b=document.getElementById('lgb');
+if(b)b.addEventListener('click',function(){window._en=!window._en;try{localStorage.setItem('owlLang',window._en?'en':'fr');}catch(e){}paint();});
+if(window._en)paint();
 })();
 </script><script>function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}} fn('landing');
 (function(){try{var q=new URLSearchParams(location.search);var s=(q.get('src')||q.get('utm_source')||'').toLowerCase().replace(/[^a-z0-9_-]/g,'').slice(0,16);
  if(s){try{sessionStorage.setItem('owlSrc',s);}catch(e){}}else{try{s=sessionStorage.getItem('owlSrc')||'';}catch(e){}}
  if(s){if(!sessionStorage.getItem('fn_src')){sessionStorage.setItem('fn_src','1');navigator.sendBeacon('/fn','e=src&s='+s);}
   var a=document.getElementById('apk2');if(a)a.href='/owlnest.apk?s='+s;}}catch(e){}})();</script></body></html>"""
+
+
+LEGAL_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
+<meta charset="utf-8"><meta name="google" content="notranslate">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0f14">
+<title>OwlNest · Informations</title>
+<link rel="icon" href="/icon192.png">
+<link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+:root{--bg:#0b0f14;--surface:#121a25;--border:#1f2a38;--text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--accent-soft:#8fc6ff}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#ffffff;--border:#dde4ed;--text:#0f172a;--text2:#33415a;--muted:#5f6f85;--accent-soft:#1d4ed8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.6;padding:0 16px 48px}
+.w{max-width:640px;margin:0 auto}
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0 6px}
+.top a{color:var(--accent-soft);text-decoration:none;font-weight:600;font-size:.9rem;min-height:44px;display:inline-flex;align-items:center}
+.top button{min-height:44px;min-width:44px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}
+h1{font-size:1.5rem;margin:10px 0 4px}
+.up{color:var(--muted);font-size:.8rem;margin:0 0 18px}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+nav.toc a{color:var(--text2);text-decoration:none;font-size:.84rem;font-weight:600;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:10px 14px}
+section{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:18px 18px 8px;margin-top:16px;scroll-margin-top:12px}
+h2{font-size:1.1rem;margin:0 0 8px}
+p,li{font-size:.92rem;color:var(--text2)}
+p{margin:0 0 12px}
+ul{margin:0 0 12px;padding-left:20px}
+li{margin-bottom:6px}
+a{color:var(--accent-soft)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+html[lang=en] [data-l=fr]{display:none!important}
+html:not([lang=en]) [data-l=en]{display:none!important}
+</style></head><body>
+<main class="w">
+<div class="top"><a href="/"><span data-l="fr">&#8592; Retour</span><span data-l="en">&#8592; Back</span></a>
+<button type="button" id="lg" onclick="setL()" aria-label="English">EN</button></div>
+<h1><span data-l="fr">Informations</span><span data-l="en">Information</span></h1>
+<p class="up"><span data-l="fr">Mis &agrave; jour le 6 octobre 2026</span><span data-l="en">Updated 6 October 2026</span></p>
+<nav class="toc" aria-label="Sections">
+<a href="#conditions"><span data-l="fr">Conditions</span><span data-l="en">Terms</span></a>
+<a href="#confidentialite"><span data-l="fr">Confidentialit&eacute;</span><span data-l="en">Privacy</span></a>
+<a href="#risques"><span data-l="fr">Risques</span><span data-l="en">Risks</span></a>
+</nav>
+
+<section id="conditions">
+<div data-l="fr">
+<h2>Conditions</h2>
+<p><b>Ce que c&#8217;est.</b> OwlNest vend un logiciel et un service de copie. Ce n&#8217;est ni du conseil, ni de la gestion d&#8217;investissement.</p>
+<p><b>Les offres.</b> La d&eacute;mo est gratuite. Signal ($29) et Strat&eacute;gie ($49) durent 30 jours ; Automatique est sur invitation, &agrave; prix fixe chaque mois. Le prix est celui affich&eacute; dans l&#8217;application et sur la page des offres.</p>
+<p><b>Paiement.</b> En crypto dans l&#8217;application, ou par code. On paie &agrave; l&#8217;avance, pour la p&eacute;riode choisie.</p>
+<p><b>Pas de reconduction automatique.</b> Signal et Strat&eacute;gie ne se renouvellent jamais tout seuls : &agrave; la fin des 30 jours, c&#8217;est &agrave; vous de renouveler, par un nouveau paiement ou un code. Sans cela, l&#8217;acc&egrave;s s&#8217;arr&ecirc;te.</p>
+<p><b>Aucune part de vos gains.</b> Le prix est fixe, quel que soit votre r&eacute;sultat. Vos gains restent &agrave; vous.</p>
+<p><b>Votre argent.</b> Il reste sur votre compte, chez votre courtier, &agrave; votre nom. OwlNest ne d&eacute;tient jamais vos fonds. Le robot passe des ordres sur votre compte ; il ne peut ni retirer ni d&eacute;placer votre argent.</p>
+<p><b>Arr&ecirc;ter.</b> &Agrave; tout moment. Un message nous suffit, et le robot ne prend plus de trade sur votre compte. Changer votre mot de passe chez votre courtier coupe aussi l&#8217;acc&egrave;s.</p>
+<p><b>Votre responsabilit&eacute;.</b> Vous restez responsable de votre compte et de vos d&eacute;cisions. Le service peut &ecirc;tre interrompu (maintenance, panne du courtier ou du r&eacute;seau) sans promesse de disponibilit&eacute; continue.</p>
+<p><b>Une question ?</b> &Eacute;crivez-nous sur <a href="https://t.me/%%TGBOT%%">Telegram</a>.</p>
+</div>
+<div data-l="en">
+<h2>Terms</h2>
+<p><b>What this is.</b> OwlNest sells software and a copy service. It is not investment advice or investment management.</p>
+<p><b>The plans.</b> The demo is free. Signal ($29) and Strategy ($49) last 30 days; Automatic is by invitation, at a fixed monthly price. The price is the one shown in the app and on the plans page.</p>
+<p><b>Payment.</b> In crypto inside the app, or with a code. You pay in advance, for the period you choose.</p>
+<p><b>No automatic renewal.</b> Signal and Strategy never renew by themselves: at the end of the 30 days it is up to you to renew, with a new payment or a code. Without that, access stops.</p>
+<p><b>No share of your gains.</b> The price is fixed, whatever your result. Your gains stay yours.</p>
+<p><b>Your money.</b> It stays in your own account, with your broker, in your name. OwlNest never holds your funds. The robot places orders on your account; it cannot withdraw or move your money.</p>
+<p><b>Stopping.</b> At any time. One message is enough, and the robot stops taking trades on your account. Changing your password with your broker also cuts the access.</p>
+<p><b>Your responsibility.</b> You remain responsible for your account and your decisions. The service can be interrupted (maintenance, broker or network outage) with no promise of continuous availability.</p>
+<p><b>A question?</b> Write to us on <a href="https://t.me/%%TGBOT%%">Telegram</a>.</p>
+</div>
+</section>
+
+<section id="confidentialite">
+<div data-l="fr">
+<h2>Confidentialit&eacute;</h2>
+<p><b>Ce que nous gardons.</b> Votre pr&eacute;nom, votre identifiant et votre mot de passe OwlNest ; pour l&#8217;offre Automatique, l&#8217;identifiant et le mot de passe de votre compte MT5 ; l&#8217;historique des trades de votre compte, pour l&#8217;afficher dans l&#8217;application.</p>
+<p><b>&Agrave; quoi &ccedil;a sert.</b> Vos identifiants MT5 servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</p>
+<p><b>Notifications.</b> Si vous les activez, votre appareil nous donne une adresse d&#8217;envoi pour vous pr&eacute;venir des trades et du bilan du soir. Vous pouvez les couper &agrave; tout moment.</p>
+<p><b>Visites.</b> Nous comptons, de fa&ccedil;on anonyme, combien de visites et d&#8217;installations il y a chaque jour. Ces compteurs ne sont li&eacute;s &agrave; aucune personne. Cette page n&#8217;a ni publicit&eacute; ni traceur tiers.</p>
+<p><b>Suppression.</b> Pour retirer votre compte et vos donn&eacute;es, &eacute;crivez-nous sur <a href="https://t.me/%%TGBOT%%">Telegram</a>. Pour couper l&#8217;acc&egrave;s du robot tout de suite, changez votre mot de passe chez votre courtier.</p>
+</div>
+<div data-l="en">
+<h2>Privacy</h2>
+<p><b>What we keep.</b> Your first name, your OwlNest username and password; for the Automatic plan, the username and password of your MT5 account; the trade history of your account, to show it in the app.</p>
+<p><b>What it is for.</b> Your MT5 credentials are used only to link the robot to your account. They are never shared.</p>
+<p><b>Notifications.</b> If you turn them on, your device gives us a delivery address to tell you about trades and the evening summary. You can turn them off at any time.</p>
+<p><b>Visits.</b> We count, anonymously, how many visits and installs there are each day. These counters are not tied to any person. This page has no ads and no third-party trackers.</p>
+<p><b>Deletion.</b> To remove your account and your data, write to us on <a href="https://t.me/%%TGBOT%%">Telegram</a>. To cut the robot&#8217;s access right away, change your password with your broker.</p>
+</div>
+</section>
+
+<section id="risques">
+<div data-l="fr">
+<h2>Risques</h2>
+<p><b>Vous pouvez perdre de l&#8217;argent.</b> Aucun robot ne gagne tous les jours et rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</p>
+<p><b>Les freins aident, ils ne prot&egrave;gent pas de tout.</b> Le robot garde une r&eacute;serve apr&egrave;s une perte et s&#8217;arr&ecirc;te si les pertes atteignent une limite fix&eacute;e &agrave; l&#8217;avance. Un trade peut quand m&ecirc;me se fermer plus loin que pr&eacute;vu quand le march&eacute; saute ou que le courtier est lent.</p>
+<p><b>La mise grandit avec le compte.</b> Quand le solde monte, les trades grossissent un peu ; les pertes aussi. Vous pouvez couper cette option dans les R&eacute;glages.</p>
+<p><b>Les essais ne sont pas des r&eacute;sultats.</b> Ce que montre le labo est test&eacute; sur l&#8217;historique ou en d&eacute;monstration. Cela ne promet rien pour votre compte.</p>
+<p><b>Ne confiez que de l&#8217;argent que vous pouvez vous permettre de perdre.</b></p>
+</div>
+<div data-l="en">
+<h2>Risks</h2>
+<p><b>You can lose money.</b> No robot wins every day and nothing is guaranteed. Past results do not promise future ones.</p>
+<p><b>The brakes help; they do not protect against everything.</b> The robot keeps a reserve after a loss and stops if losses reach a limit set in advance. A trade can still close further out than planned when the market jumps or the broker is slow.</p>
+<p><b>The stake grows with the account.</b> When the balance goes up, trades get a little bigger; so do losses. You can turn this off in Settings.</p>
+<p><b>Tests are not results.</b> What the lab shows is tested on history or in demonstration. It promises nothing for your account.</p>
+<p><b>Only put in money you can afford to lose.</b></p>
+</div>
+</section>
+</main>
+<script>
+(function(){try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';}catch(e){}
+ function cur(){try{return localStorage.getItem('owlLang')==='en'?'en':'fr';}catch(e){return 'fr';}}
+ function paint(){var en=cur()==='en';document.documentElement.lang=en?'en':'fr';var b=document.getElementById('lg');b.textContent=en?'FR':'EN';b.setAttribute('aria-label',en?'Français':'English');}
+ window.setL=function(){try{localStorage.setItem('owlLang',cur()==='en'?'fr':'en');}catch(e){}paint();};
+ paint();})();
+</script>
+</body></html>"""
+
+
+def _gzip_bytes(b):
+    import gzip
+    return gzip.compress(b, 6)
 
 
 def _join_result(title, body_html):
@@ -12718,7 +13037,7 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def _send_static(self, path, ctype):
+    def _send_static(self, path, ctype, cache="public, max-age=31536000, immutable"):
         try:
             body = open(path, "rb").read()
         except Exception:
@@ -12727,7 +13046,7 @@ class H(BaseHTTPRequestHandler):
             return
         self.send_response(200)
         self.send_header("Content-Type", ctype)
-        self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+        self.send_header("Cache-Control", cache)
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -12735,9 +13054,15 @@ class H(BaseHTTPRequestHandler):
     def _send(self, body, ctype, cookie=None):
         if isinstance(body, str):
             body = body.encode("utf-8")
+        _gz = ctype.startswith("text/html") and len(body) > 2048 and "gzip" in (self.headers.get("Accept-Encoding") or "")
+        if _gz:
+            body = _gzip_bytes(body)
         self.send_response(200)
         self.send_header("Content-Type", ctype)
         self.send_header("Cache-Control", "no-store")
+        if _gz:
+            self.send_header("Content-Encoding", "gzip")
+            self.send_header("Vary", "Accept-Encoding")
         if cookie:
             self.send_header("Set-Cookie", cookie)
         self.send_header("Content-Length", str(len(body)))
@@ -14328,6 +14653,9 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps({"ok": bool(_e), "pkg": (_e or {}).get("pkg"), "days": (_e or {}).get("days"),
                                    "label": _lab.get((_e or {}).get("pkg"), "")}), "application/json")
             return
+        if len(parts) == 1 and parts[0] == "legal":
+            self._send(LEGAL_PAGE.replace("%%TGBOT%%", nest_config().get("tg_bot") or "Kino_owl_bot"), "text/html; charset=utf-8")
+            return
         if len(parts) == 1 and parts[0] == "offres":
             # 2026-10-04 (owner): 'Creer un compte' - the offers first, credentials after the choice
             self._send(_offers_page("", ""), "text/html; charset=utf-8")
@@ -14350,14 +14678,14 @@ class H(BaseHTTPRequestHandler):
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")
             return
-        if parts and parts[0] == "shots" and len(parts) == 2 and parts[1] in ("shot_home.png", "shot_marche.png", "shot_hist.png", "og_card.png"):
+        if parts and parts[0] == "shots" and len(parts) == 2 and parts[1] in ("shot_home.webp", "shot_marche.webp", "shot_hist.webp", "shot_chart.webp", "shot_labo.webp", "shot_home.png", "shot_marche.png", "shot_hist.png", "og_card.png"):
             # 2026-09-27: landing screenshots, regenerated by review/landing_shots.mjs
             _sp = os.path.join(DIR, "static", parts[1])
             if not os.path.exists(_sp):
                 self.send_response(404)
                 self.end_headers()
                 return
-            self._send_static(_sp, "image/png")
+            self._send_static(_sp, "image/webp" if _sp.endswith(".webp") else "image/png", "public, max-age=3600")
             return
         if parts and parts[0] == "fonts" and len(parts) == 2 and parts[1] == "inter.woff2":
             self._send_static(os.path.join(DIR, "static", "InterVariable.woff2"), "font/woff2")
