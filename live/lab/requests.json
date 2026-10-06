@@ -156,7 +156,13 @@
    "key": "first_move_size",
    "built_note_fr": "Le test peut maintenant miser moins (entre 0,25 et 1 fois la mise) quand le trade est le seul grand mouvement compté dans les 2 dernières heures, c'est-à-dire le même compte de mouvements = 1 que dans les vrais trades ; le trade est pris quand même. Rien ne change sur les comptes tant qu'une idée qui s'en sert n'a pas gagné son duel.",
    "built_note_en": "The test can now stake less (between 0.25 and 1 times the stake) when the trade is the only big move counted in the last 2 hours, which is the same move count = 1 seen in the real trades; the trade is still taken. Nothing changes on the accounts until an idea that uses it wins its duel.",
-   "test": {"flag": "--first-move-size", "a": 1.0, "b": 0.5}
+   "test": {
+    "flag": "--first-move-size",
+    "a": 1.0,
+    "b": 0.5
+   },
+   "built_date": "2026-10-06",
+   "built_commit": "2e3f47c"
   },
   {
    "id": "halves_without_kill",
