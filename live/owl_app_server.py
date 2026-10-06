@@ -11292,7 +11292,8 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 .ic-l{width:24px;height:24px}
 body{background:var(--bg);color:var(--text);padding:0 0 44px;overflow-x:hidden;
  font-family:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
- font-feature-settings:'tnum' 1,'cv11' 1}
+ font-feature-settings:'cv11' 1}
+.pv-money,.pv-chip,.pv-chip2,.pl-p,.sc3 b{font-feature-settings:'tnum' 1,'cv11' 1}
 .bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
 .blob{position:absolute;width:420px;height:420px;border-radius:50%;
  filter:blur(90px);opacity:.35}
@@ -11388,6 +11389,31 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .shots figure{flex:0 0 68%;scroll-snap-align:center;margin:0}
 .shots img{width:100%;display:block;border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
 .shots figcaption{text-align:center;font-size:.74rem;color:var(--muted);margin-top:8px}
+.pl-free{display:flex;align-items:center;gap:12px;margin-top:10px;padding:12px 14px;border:1px dashed var(--border2);
+ border-radius:var(--r);font-size:.84rem;color:var(--text2);line-height:1.45}
+.pl-free svg{color:var(--up);flex:none}
+.pl-free b{color:var(--text)}
+.pl-free a{margin-left:auto;font-weight:700;color:var(--accent-soft);text-decoration:none;white-space:nowrap}
+.pl{position:relative;margin-top:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+ padding:20px 18px 18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.pl-star{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 14px 34px rgba(59,130,246,.16)}
+.pl-tag{position:absolute;top:-10px;left:16px;background:var(--accent);color:#fff;font-size:.62rem;font-weight:800;
+ letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:4px 10px}
+.pl-tag2{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.pl-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.pl-h b{font-size:1.15rem}
+.pl-p{text-align:right;font-weight:800;font-size:1.6rem;line-height:1}
+.pl-p2{font-size:1.05rem}
+.pl-p small{display:block;font-size:.68rem;font-weight:600;color:var(--muted);margin-top:4px}
+.pl-for{margin:8px 0 14px;font-size:.86rem;color:var(--text2);line-height:1.5}
+.pl ul{list-style:none;margin:0;padding:14px 0 0;border-top:1px solid var(--border);display:grid;gap:10px}
+.pl li{display:flex;gap:10px;align-items:flex-start;font-size:.88rem;line-height:1.4;color:var(--text)}
+.pl li svg{color:var(--up);flex:none;margin-top:2px;width:16px;height:16px}
+.pl li.n{color:var(--muted)}
+.pl li .dash{width:16px;flex:none;text-align:center}
+.pl .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.pl-do{margin-top:14px;font-size:.78rem;color:var(--muted);line-height:1.5}
+.pl .bigbtn{margin-top:14px}
 .stk{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;
  align-items:center;justify-content:center;gap:8px;min-height:54px;border-radius:16px;background:var(--accent);color:#fff;
  font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 12px 32px rgba(0,0,0,.45);transform:translateY(150%);
@@ -11562,19 +11588,43 @@ jour et nuit. Vous, vous regardez.</div>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
 <div class="feats" id="plans">
 <div class="how">Nos offres</div>
-<div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
-<div class="ft"><b>D&eacute;mo &middot; gratuit, toujours</b>
-<span>Le robot en direct sur un vrai compte de d&eacute;monstration : solde, trades, m&eacute;t&eacute;o du march&eacute;, bilan du soir. Sans compte.</span></div></div>
-<div class="fr"><div class="fi stp" style="color:var(--up)">$29</div>
-<div class="ft"><b>Signal &middot; 30 jours</b>
-<span>Les signaux du robot sur votre t&eacute;l&eacute;phone, et tout ce que montre la d&eacute;mo. Sans compte MT5 : vous tradez o&ugrave; vous voulez.</span></div></div>
-<div class="fr"><div class="fi stp" style="color:var(--warn)">$49</div>
-<div class="ft"><b>Strat&eacute;gie &middot; 30 jours</b>
-<span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique.</span></div></div>
-<div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
-<div class="ft"><b>Automatique &middot; famille, sur invitation</b>
-<span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
-<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#8217;app ou par code. Le d&eacute;tail complet est dans l&#8217;application, R&eacute;glages &rsaquo; Abonnement.</div>
+<div class="pl-free"><svg class="ic ic-s"><use href="#i-check"/></svg><span><b>Démo &middot; gratuit, toujours.</b> Le robot en direct sur un vrai compte de démonstration. Sans compte.</span><a href="/demo">Voir</a></div>
+<div class="pl">
+<div class="pl-h"><b>Signal</b><div class="pl-p">$29<small>pour 30 jours</small></div></div>
+<p class="pl-for">Pour suivre le robot et trader vous-même, où vous voulez.</p>
+<ul>
+<li><svg class="ic ic-s"><use href="#i-check"/></svg><span>Les alertes du robot sur votre téléphone</span></li>
+<li class="n"><span class="dash" aria-hidden="true">&ndash;</span><span class="sr">Non inclus : </span><span>Le robot trade sur votre compte</span></li>
+<li class="n"><span class="dash" aria-hidden="true">&ndash;</span><span class="sr">Non inclus : </span><span>Graphique complet et méthode</span></li>
+</ul>
+<div class="pl-do">Pas de compte MT5 nécessaire. Tout ce que montre la démo est inclus.</div>
+<a class="bigbtn b2" href="/offres" style="display:block;text-decoration:none;text-align:center">Choisir Signal</a>
+</div>
+<div class="pl pl-star">
+<span class="pl-tag">Sur invitation &middot; 50 places</span>
+<div class="pl-h"><b>Automatique</b><div class="pl-p pl-p2">Prix fixe<small>chaque mois</small></div></div>
+<p class="pl-for">Pour ne rien faire : le robot travaille sur votre compte, vous regardez.</p>
+<ul>
+<li><svg class="ic ic-s"><use href="#i-check"/></svg><span>Les alertes du robot sur votre téléphone</span></li>
+<li><svg class="ic ic-s"><use href="#i-check"/></svg><span>Le robot trade sur votre compte, avec ses règles et ses freins</span></li>
+<li class="n"><span class="dash" aria-hidden="true">&ndash;</span><span class="sr">Non inclus : </span><span>Graphique complet et méthode</span></li>
+</ul>
+<div class="pl-do">Il vous faut un compte MT5. Réglé avec le Owl ; vous recevez un code d&#8217;activation par Telegram.</div>
+<a class="bigbtn b1" href="https://t.me/%%TGBOT%%" style="display:block;text-decoration:none;text-align:center">Demander une invitation</a>
+</div>
+<div class="pl">
+<span class="pl-tag pl-tag2">Se combine avec les autres</span>
+<div class="pl-h"><b>Stratégie</b><div class="pl-p">$49<small>pour 30 jours</small></div></div>
+<p class="pl-for">Pour comprendre comment le robot décide, trade après trade.</p>
+<ul>
+<li class="n"><span class="dash" aria-hidden="true">&ndash;</span><span class="sr">Non inclus : </span><span>Les alertes du robot sur votre téléphone</span></li>
+<li class="n"><span class="dash" aria-hidden="true">&ndash;</span><span class="sr">Non inclus : </span><span>Le robot trade sur votre compte</span></li>
+<li><svg class="ic ic-s"><use href="#i-check"/></svg><span>Le graphique complet et la méthode expliquée</span></li>
+</ul>
+<div class="pl-do">Un paquet à part : ajoutez-le à Signal ou à Automatique.</div>
+<a class="bigbtn b2" href="/offres" style="display:block;text-decoration:none;text-align:center">Choisir Stratégie</a>
+</div>
+<div class="fine" style="margin-top:12px">Signal et Stratégie : paiement en crypto dans l&#8217;app ou par code. Le détail complet est dans l&#8217;application, Réglages &rsaquo; Abonnement. Aucune part de vos gains n&#8217;est prélevée.</div>
 </div>
 <div class="feats" id="faq">
 <div class="how">Questions fr&eacute;quentes</div>
