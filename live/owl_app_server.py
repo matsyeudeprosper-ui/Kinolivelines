@@ -11256,6 +11256,7 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="google" content="notranslate">
 <meta name="theme-color" content="#0b0f14">
+<meta name="description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OwlNest">
 <meta property="og:description" content="Le robot Owl trade pour vous, jour et nuit. Vous, vous regardez.">
@@ -11376,15 +11377,39 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .fq summary::-webkit-details-marker{display:none}
 .fq summary::after{content:'+';color:var(--muted);font-size:1.25rem;line-height:1;flex:none}
 .fq[open] summary::after{content:'−'}
-.fq p{padding:0 0 14px;font-size:.88rem;color:var(--muted);line-height:1.55}
+.fq p{padding:0 0 14px;font-size:.88rem;color:var(--text2);line-height:1.6}
 .shots{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 2px 10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .shots::-webkit-scrollbar{display:none}
 .shots figure{flex:0 0 68%;scroll-snap-align:center;margin:0}
 .shots img{width:100%;display:block;border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
 .shots figcaption{text-align:center;font-size:.74rem;color:var(--muted);margin-top:8px}
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
- display:flex;align-items:center;justify-content:center;gap:6px}
+ display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:28px}
+.pf1{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text2)}
+.pf2{max-width:320px;line-height:1.55;opacity:.85}
 .pfoot img{width:16px;height:16px;border-radius:4px}
+.chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
+.chips span{display:inline-flex;align-items:center;gap:5px;font-size:.69rem;font-weight:600;
+ color:var(--text2);background:rgba(255,255,255,.04);border:1px solid var(--border2);
+ border-radius:999px;padding:6px 9px}
+.chips svg{color:var(--up)}
+.pv-note{margin-top:10px;font-size:.7rem;color:var(--muted);line-height:1.45}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.duo .bigbtn{margin-top:0;padding:0 8px;min-height:56px;font-size:1rem;font-family:inherit;line-height:1.2;display:flex;align-items:center;justify-content:center}
+:root[data-theme=light] .fi{background:#e8eef6}
+:root[data-theme=light] .feats:not(#plans) .fi.stp{color:#7c3aed!important}
+.bigbtn:focus-visible,.b3:focus-visible,.fq summary:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}
+.b2:hover{border-color:var(--accent);color:var(--text)}
+.fq{transition:border-color .2s,background .2s}
+.fq[open]{border-color:var(--border2);background:var(--surface2)}
+.fq p a{color:var(--accent-soft)}
+.sc3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.sc3>div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+ padding:12px 6px;text-align:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.sc3 small{display:block;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.sc3 b{display:block;font-size:1.15rem;margin:4px 0 2px}
+.sc3 em{font-style:normal;font-size:.72rem;color:var(--up);font-weight:700}
+.fine{font-size:.74rem;color:var(--muted);margin:10px 4px 0;line-height:1.5}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -11430,6 +11455,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 <h1>OwlNest</h1>
 <div class="tag">Le robot Owl trade pour vous,<br>
 jour et nuit. Vous, vous regardez.</div>
+<div class="chips"><span><svg class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
 </div>
 <div class="preview">
 <div class="pv-lbl" id="pv-lbl">Aper&ccedil;u en direct</div>
@@ -11447,11 +11473,12 @@ jour et nuit. Vous, vous regardez.</div>
  points="0,34 30,30 60,33 90,24 120,27 150,18 180,21 210,12 240,15 260,7"/>
 </svg>
 <div class="pv-row"><span class="pv-chip" id="pv-chip">&#9650; +23,40 $
- aujourd&#8217;hui</span>
-<span class="pv-chip2" id="pv-chip2">2 trades</span></div>
-<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">L&#8217;Owl vient de gagner un trade
- pour vous</span></div>
+ depuis le début</span>
+<span class="pv-chip2" id="pv-chip2">trades</span></div>
+<div class="pv-bot"><svg class="ic ic-s"><use href="#i-bot"/></svg> <span id="pv-bot-t">Gains du robot seulement &middot; compte r&eacute;el</span></div>
+<div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti.</div>
 </div>
+<a class="bigbtn b1" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
 <div class="feats" id="shots-sec">
 <div class="how">Ce que vous verrez</div>
 <div class="shots" id="shots">
@@ -11476,13 +11503,28 @@ jour et nuit. Vous, vous regardez.</div>
 <span>Solde, gains, trades du jour &mdash; mis &agrave; jour toutes les
  5 secondes, sur votre t&eacute;l&eacute;phone.</span></div></div>
 </div>
+<div class="feats" id="scale">
+<div class="how">Une mise qui grandit avec vous</div>
+<div class="fr"><div class="fi"><svg class="ic"><use href="#i-chart"/></svg></div>
+<div class="ft"><b>Chaque matin, le robot ajuste sa taille</b>
+<span>Il regarde le solde de votre compte et règle la taille de ses trades en proportion : compte plus gros, trades un peu plus gros ; compte plus petit, trades plus petits. Rien à faire de votre côté.</span></div></div>
+<div class="fr"><div class="fi"><svg class="ic"><use href="#i-target"/></svg></div>
+<div class="ft"><b>Objectif du jour : environ 1,5&nbsp;%</b>
+<span>Quand il y a un plafond du jour, il vaut environ 1,5&nbsp;% du solde du matin. Une fois atteint, le robot se repose jusqu&#8217;au lendemain.</span></div></div>
+<div class="sc3">
+<div><small>Solde du matin</small><b>200 $</b><em>plafond &asymp; 3 $</em></div>
+<div><small>Solde du matin</small><b>400 $</b><em>plafond &asymp; 6 $</em></div>
+<div><small>Solde du matin</small><b>800 $</b><em>plafond &asymp; 12 $</em></div>
+</div>
+<div class="fine">Exemples de calcul, pas des résultats. Le plafond est une limite, pas une promesse : certains jours le robot gagne moins, d&#8217;autres il perd. Vous pouvez couper cette option dans Réglages.</div>
+</div>
 <a class="bigbtn b1" href="/demo" style="display:block;
  text-decoration:none;text-align:center"><svg class="ic"><use href="#i-eye"/></svg> Voir le robot en direct
  &middot; gratuit</a>
-<button class="bigbtn b2" onclick="show('v-login')" style="margin-top:12px">
-Se connecter</button>
-<a class="bigbtn b2" href="/offres" style="display:block;margin-top:12px;
- text-decoration:none;text-align:center">Cr&eacute;er un compte</a>
+<div class="duo">
+<button class="bigbtn b2" onclick="show('v-login')">Se connecter</button>
+<a class="bigbtn b2" href="/offres" style="text-decoration:none;text-align:center">Cr&eacute;er un compte</a>
+</div>
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
  style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
 <a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.7;font-weight:600"></span></a>
@@ -11512,24 +11554,39 @@ Se connecter</button>
 <span>Le graphique complet et la m&eacute;thode expliqu&eacute;e. Un paquet &agrave; part, qui se combine avec Signal ou Automatique.</span></div></div>
 <div class="fr"><div class="fi stp" style="color:var(--accent-soft)">&#9733;</div>
 <div class="ft"><b>Automatique &middot; famille, sur invitation</b>
-<span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#39;activation par Telegram. 50 places.</span></div></div>
-<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#39;app ou par code. Le d&eacute;tail complet est dans l&#39;application, R&eacute;glages &rsaquo; Abonnement.</div>
+<span>Le robot sur votre compte, avec ses r&egrave;gles et ses freins. Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code d&#8217;activation par Telegram. 50 places.</span></div></div>
+<div style="font-size:.74rem;color:var(--muted);margin:6px 4px 0;line-height:1.5">Signal et Strat&eacute;gie : en crypto dans l&#8217;app ou par code. Le d&eacute;tail complet est dans l&#8217;application, R&eacute;glages &rsaquo; Abonnement.</div>
 </div>
 <div class="feats" id="faq">
 <div class="how">Questions fr&eacute;quentes</div>
+<details class="fq"><summary>Où est mon argent ?</summary>
+<p>Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.</p></details>
+<details class="fq"><summary>Puis-je perdre de l’argent ?</summary>
+<p>Oui. Aucun robot ne gagne tous les jours et rien n’est garanti : les résultats passés ne promettent pas les suivants. Ne mettez que de l’argent que vous pouvez vous permettre de perdre. Chaque trade, gagné ou perdu, est visible dans l’application.</p></details>
+<details class="fq"><summary>Et si le robot enchaîne les pertes ?</summary>
+<p>Il a des freins. Après une perte, il garde une petite réserve de côté et avance prudemment. Si les pertes s’accumulent jusqu’à une limite fixée à l’avance, il s’arrête tout seul : il ne s’acharne pas.</p></details>
+<details class="fq"><summary>Que veut dire « la mise grandit avec mon compte » ?</summary>
+<p>Chaque matin, le robot regarde le solde de votre compte et règle la taille de ses trades en proportion. Quand il y a un plafond du jour, il vaut environ 1,5&nbsp;% du solde du matin (3 $ pour 200 $, 6 $ pour 400 $). C’est une limite, pas une promesse. Vous pouvez désactiver cette option dans Réglages.</p></details>
+<details class="fq"><summary>Prenez-vous une part de mes gains ?</summary>
+<p>Non. Les offres ont un prix fixe par mois, quel que soit votre résultat. Vos gains restent à vous.</p></details>
+<details class="fq"><summary>Puis-je arrêter quand je veux ?</summary>
+<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent pas tout seuls : sans paiement, ça s’arrête à la fin des 30 jours.</p></details>
+<details class="fq"><summary>Que se passe-t-il si mon téléphone est éteint ?</summary>
+<p>Rien. Le robot tourne sur nos serveurs, jour et nuit. Votre téléphone sert seulement à regarder.</p></details>
 <details class="fq"><summary>Dois-je installer quelque chose sur mon ordinateur ?</summary>
-<p>Non. Le robot tourne sur nos serveurs, jour et nuit. Vous, vous ouvrez cette page sur votre t&eacute;l&eacute;phone.</p></details>
-<details class="fq"><summary>O&ugrave; est mon argent ?</summary>
-<p>Sur votre propre compte MT5, chez votre courtier. Le robot y passe les ordres ; il ne peut ni retirer ni d&eacute;placer votre argent.</p></details>
-<details class="fq"><summary>Et si le robot perd ?</summary>
-<p>&Ccedil;a arrive. Il garde alors une petite r&eacute;serve de c&ocirc;t&eacute; et avance prudemment jusqu&#39;&agrave; se rattraper. Vous le voyez dans l&#39;application.</p></details>
-<details class="fq"><summary>Puis-je arr&ecirc;ter quand je veux ?</summary>
-<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte.</p></details>
-<details class="fq"><summary>Puis-je suivre depuis plusieurs t&eacute;l&eacute;phones ?</summary>
-<p>Oui. Votre lien personnel fonctionne partout ; vous pouvez le prot&eacute;ger avec un code &agrave; 4 chiffres.</p></details>
+<p>Non. Vous ouvrez cette page sur votre téléphone, et c’est tout. Une application est proposée si vous préférez, mais elle est facultative.</p></details>
+<details class="fq"><summary>Puis-je essayer sans payer ?</summary>
+<p>Oui. La démo est gratuite, toujours, sans compte : vous voyez le robot travailler sur un vrai compte de démonstration.</p></details>
+<details class="fq"><summary>Mes identifiants sont-ils en sécurité ?</summary>
+<p>Ils servent uniquement à relier le robot à votre compte et ne sont jamais partagés. Pour couper l’accès à tout moment, il suffit de changer votre mot de passe chez votre courtier.</p></details>
+<details class="fq"><summary>Puis-je suivre depuis plusieurs téléphones ?</summary>
+<p>Oui. Votre lien personnel fonctionne partout ; vous pouvez le protéger avec un code à 4 chiffres.</p></details>
+<details class="fq"><summary>OwlNest donne-t-il des conseils d’investissement ?</summary>
+<p>Non. OwlNest est un logiciel et un service de copie : ni conseil, ni gestion d’investissement. Vous restez responsable de votre compte.</p></details>
+<details class="fq"><summary>Comment vous joindre ?</summary>
+<p>Écrivez au robot OwlNest sur Telegram : <a href="https://t.me/%%TGBOT%%">ouvrir Telegram</a>. La famille Owl vous répond.</p></details>
 </div>
-<div class="pfoot"><img src="/icon192.png" alt="">OwlNest &middot; fait avec amour
- par la famille Owl<br><span style="display:block;margin-top:8px;opacity:.75;line-height:1.5">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
+<div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pf2">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span></div>
 </div>
 
 <div class="view" id="v-login">
@@ -11599,20 +11656,19 @@ const PV_LIVE=true;
   if(!d||typeof d.equity!=='number')return;
   const $=id=>document.getElementById(id);
   $('pv-money').textContent='$'+d.equity.toFixed(2);
-  $('pv-eur').innerHTML=d.eurusd?('&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;')
-   :'compte d\\u00e9mo public';
-  const t=d.today||0,up=t>=0,ch=$('pv-chip');
-  ch.innerHTML=(t>0?'&#9650; ':(t<0?'&#9660; ':''))+(up?'+':'-')+'$'+
-   Math.abs(t).toFixed(2)+' aujourd\\u2019hui';
+  const S=d.since_start||{},hasS=typeof S.net==='number';
+  $('pv-eur').innerHTML=d.eurusd?('&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;'):'solde actuel';
+  const gain=hasS?S.net:(d.month||0),up=gain>=0,ch=$('pv-chip');
+  const fd=S.first?String(S.first).slice(8,10)+'/'+String(S.first).slice(5,7):'';
+  ch.innerHTML=(gain>0?'&#9650; ':(gain<0?'&#9660; ':''))+(up?'+':'-')+'$'+
+   Math.abs(gain).toFixed(2)+(hasS?' depuis le début':' ce mois-ci');
   ch.style.background=up?'rgba(46,204,113,.12)':'rgba(255,92,92,.12)';
   ch.style.color=up?'#2ecc71':'#ff5c5c';
-  const n=(d.trades||[]).length;$('pv-chip2').textContent=n+' trade'+(n>1?'s':'');
-  const wk=d.week||0;
-  let nt=0;try{const dt=d.day_trades||{};const lim=Date.now()-7*86400e3;
-   Object.keys(dt).forEach(k=>{if(new Date(k+'T00:00:00Z').getTime()>=lim)nt+=(dt[k]||[]).length;});}catch(e){}
-  $('pv-bot-t').textContent='Cette semaine : '+(wk>=0?'+':'-')+'$'+
-   Math.abs(wk).toFixed(2)+(nt?' \\u00b7 '+nt+' trade'+(nt>1?'s':''):'')+' \\u00b7 vrai compte';
-  const c=d.curve||[];
+  const n=hasS?(S.n||0):(d.trades||[]).length;$('pv-chip2').textContent=n+' trade'+(n>1?'s':'');
+  $('pv-bot-t').textContent=(fd?'Depuis le '+fd+' · ':'')+'gains du robot · compte réel';
+  let c=d.curve||[];
+  try{if(hasS&&S.first){const dl=[];Object.keys(d.months||{}).forEach(k=>(d.months[k]||[]).forEach(x=>{if(x.d>=S.first)dl.push(x);}));
+   dl.sort((p,q)=>p.d<q.d?-1:1);if(dl.length>1){let t=0;c=[0].concat(dl.map(x=>(t+=x.p)));}}}catch(e){}
   if(c.length>1){const mn=Math.min(...c,0),mx=Math.max(...c,0),sp=(mx-mn)||1;
    const P=(v,i)=>((i/(c.length-1))*260).toFixed(1)+','+
     (40-((v-mn)/sp*34)).toFixed(1);
