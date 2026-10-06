@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-06T02:00:13Z",
+ "updated": "2026-10-06T04:00:08Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -62,7 +62,8 @@
     "2026-10-05 06:30 veille: FLIP-BOS BUY won +3.68 (pace 1.722, 05 h UTC entry, after a win), then BOS BUY won +3.20 (pace 1.686). Pile flip_hot 16 tr 38% -7.00 $ PF 0.78, halves 25%/50% - still losing, but the second half is now break-even-ish. After a win inside the pile 11 tr 45% +0.25; after a loss 5 tr 20% -7.25: the pile's loss sits after losses (peu). FLIP-BOS 24 tr 46% -10.91; BOS 20 tr 70% +31.53.",
     "2026-10-05: real pile flip_hot 17 tr 41% -5.18 $ PF 0.84, halves 22%/62% - the second half now wins 5 of 8. After a loss inside the pile 1/5 -7.25, after a win 12 tr 50% +2.07. FLIP-BOS 25 tr 48% -9.09; BOS 21 tr 71% +34.14. Engine 42 d still says nervous reversals earn ~0 (10-04 trace); no new trace tonight.",
     "2026-10-05 12:00 veille: flip_hot_size built (96dbe40). Raw CLI (no cap, no protections), base 265.7 hole 80.3 (h1 246.4 / h2 21.3). 0.75: C 252.6 (-13.1) hole 76.5, h1 -13.4 h2 -0.8. 0.5: C 234.6 (-31.1) hole 72.8, h1 -36.7 h2 +3.3. Monotonic: smaller stake = less money, a few dollars less hole. The engine's nervous reversals still earn in h1, so cutting them costs. Real: the 09:16 FLIP-BOS SELL +1.82 (pace 1.295) already counted in the night's 17.",
-    "2026-10-06 02:00 veille: two FLIP-BOS lost overnight, both CALM (pace 0.743 BUY -3.11 closed 00:30; pace 0.887 SELL -3.00 closed 00:59, right after the first). Real calm flips now 10 tr 50% (was 8 tr 62%): the 'calm flips carry the robot' half is an engine fact, not yet a real one. FLIP-BOS 27 tr 44% -15.20; BOS 21 tr 71% +34.14. Kind, not pace, is the cleaner real split (hint)."
+    "2026-10-06 02:00 veille: two FLIP-BOS lost overnight, both CALM (pace 0.743 BUY -3.11 closed 00:30; pace 0.887 SELL -3.00 closed 00:59, right after the first). Real calm flips now 10 tr 50% (was 8 tr 62%): the 'calm flips carry the robot' half is an engine fact, not yet a real one. FLIP-BOS 27 tr 44% -15.20; BOS 21 tr 71% +34.14. Kind, not pace, is the cleaner real split (hint).",
+    "2026-10-06 04:00 veille: BOS SELL won +9.97 (pace 1.092, closed 03:30, ~2x the BOS avg gain), after the two calm FLIP losses. BOS 22 tr 73% +44.11 PF 2.57 (h 55%/91%) vs FLIP-BOS 27 tr 44% -15.20 PF 0.72. The kind split keeps widening; flip_hot unchanged (17 tr)."
    ],
    "next": "flip_hot_size alone is a C (belt at best). Night: try it on both shapes and in company of rr1.0 (does it replace size_hot 0.75 as a narrower belt?). The real case shrinks to 'after a loss' (5 trades)."
   },
@@ -172,7 +173,8 @@
    "fr": "Les achats gagnent plus que les ventes.",
    "status": "en test",
    "evidence": [
-    "2026-10-05: real BUY 32 tr 62% +34.55 PF 1.69 (h 47%/76%), SELL 17 tr 47% -20.36 PF 0.49 (h 33%/62%). Eleven days of a mostly rising market; no per-direction dial."
+    "2026-10-05: real BUY 32 tr 62% +34.55 PF 1.69 (h 47%/76%), SELL 17 tr 47% -20.36 PF 0.49 (h 33%/62%). Eleven days of a mostly rising market; no per-direction dial.",
+    "2026-10-06 veille: SELL 19 tr 47% -13.39 PF 0.69 (h 30%/67%), BUY 33 tr 61% +31.44 PF 1.59 (h 44%/76%). The +9.97 BOS SELL narrows the gap; sell losses sit mostly in reversals."
    ],
    "next": "Do not request a direction dial until a falling week is in the journal; then compare."
   },
@@ -703,6 +705,17 @@
     "scrutiny --by prev"
    ],
    "saw": "51 trades. Two FLIP-BOS losses ~-3 each, both calm (pace 0.743 and 0.887), the second right after the first, near midnight UTC. Not in flip_hot (still 17 tr 41% -5.18). Real calm flips 10 tr 50%; FLIP-BOS 27 tr 44% -15.20 vs BOS 21 tr 71% +34.14. <0.8 7 tr 29% -21.96. After a loss overall 22 tr 50% -11.07. No twins, no labo, no open ask. No harness run (nerv_floor and flip_hot_size already tested; no kind-only size dial), no pile (flip pile exists), no proposal."
+  },
+  {
+   "t": "2026-10-06T04:00:08Z",
+   "looked": [
+    "wake_context new trade (1)",
+    "scrutiny --by kind",
+    "scrutiny --by dir",
+    "scrutiny --by gap",
+    "asks.json (none open)"
+   ],
+   "saw": "52 trades. BOS SELL won +9.97, pace 1.092, after two calm FLIP losses. BOS 22 tr 73% +44.11 (h2 10/11); FLIP-BOS 27 tr 44% -15.20; SELL 19 tr 47% -13.39. Gap >3 h 15 tr 40% -15.71, 30-60 min 9 tr 78% +23.80 (peu). No twins, no labo, no open ask. No harness run (no kind-only size dial; flip_hot_size already raw-tested), no pile, no proposal."
   }
  ],
  "lessons": [
