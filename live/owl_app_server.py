@@ -11389,6 +11389,16 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .shots figure{flex:0 0 68%;scroll-snap-align:center;margin:0}
 .shots img{width:100%;display:block;border-radius:22px;border:1px solid var(--border);box-shadow:0 14px 34px rgba(0,0,0,.4)}
 .shots figcaption{text-align:center;font-size:.74rem;color:var(--muted);margin-top:8px}
+.appc{margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+ padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.appc>.bigbtn:first-child{margin-top:0!important}
+.appc .b3{border:1px solid var(--border2);background:var(--surface2);color:var(--text2);min-height:50px;border-radius:var(--r)}
+.appc .b3:hover{color:var(--text)}
+.appc #apk2{margin-top:10px!important}
+.appc .b2{margin-top:10px!important}
+.appc-fine{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);text-align:center;
+ font-size:.78rem;color:var(--muted);line-height:1.55}
+.appc-fine+.appc-fine{margin-top:0;padding-top:0;border:0}
 .stk{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:40;display:flex;
  align-items:center;justify-content:center;gap:8px;min-height:54px;border-radius:16px;background:var(--accent);color:#fff;
  font-weight:700;font-size:1rem;text-decoration:none;box-shadow:0 12px 32px rgba(0,0,0,.45);transform:translateY(150%);
@@ -11545,22 +11555,23 @@ jour et nuit. Vous, vous regardez.</div>
 <button class="bigbtn b2" onclick="show('v-login')">Se connecter</button>
 <a class="bigbtn b2" href="/offres" style="text-decoration:none;text-align:center">Cr&eacute;er un compte</a>
 </div>
+<div class="appc">
 <button class="bigbtn b3" id="inst2" onclick="inst2()"
  style="margin-top:4px"><svg class="ic ic-s"><use href="#i-download"/></svg> Installer l&#8217;application</button>
 <a class="bigbtn b3" id="apk2" href="/owlnest.apk" style="display:none;margin-top:4px;text-decoration:none;text-align:center"><svg class="ic ic-s"><use href="#i-phone"/></svg> T&eacute;l&eacute;charger l&#8217;application Android <span id="apk2-v" style="opacity:.7;font-weight:600"></span></a>
 <div id="apk2-note" style="display:none;margin-top:8px;text-align:center;font-size:.78rem;color:var(--muted);line-height:1.5">Un fichier APK : Android demande une fois d&#8217;autoriser l&#8217;installation. Les mises &agrave; jour se posent par-dessus, sans rien d&eacute;sinstaller. Sur iPhone : &laquo; Installer l&#8217;application &raquo; ci-dessus.</div>
-<div style="margin-top:14px;text-align:center;font-size:.8rem;color:var(--muted);
- line-height:1.5">La d&eacute;mo est gratuite, toujours. Les abonnements se paient
- chaque mois, &agrave; l&#8217;avance.<br>OwlNest vend un logiciel et un service de copie &mdash;
- pas de conseil ni de gestion d&#8217;investissement.</div>
-<div id="howto2" style="display:none;margin-top:12px;background:#141c28;
- border:1px solid #1f2c3d;border-radius:14px;padding:14px;
- font-size:.9rem;color:#c6d3df;line-height:1.6;text-align:left">
+<div id="howto2" style="display:none;margin-top:12px;background:var(--surface2);
+ border:1px solid var(--border);border-radius:14px;padding:14px;
+ font-size:.9rem;color:var(--text2);line-height:1.6;text-align:left">
 &#128241; <b>Pour installer :</b><br>
 1. Touchez le menu <b>&#8942;</b> en haut &agrave; droite de Chrome<br>
 2. Choisissez <b>&laquo; Ajouter &agrave; l&#8217;&eacute;cran
  d&#8217;accueil &raquo;</b><br>
 3. L&#8217;ic&ocirc;ne &#129417; appara&icirc;t !</div>
+<div class="appc-fine">La d&eacute;mo est gratuite, toujours. Les abonnements se paient
+ chaque mois, &agrave; l&#8217;avance.<br>OwlNest vend un logiciel et un service de copie &mdash;
+ pas de conseil ni de gestion d&#8217;investissement.</div>
+</div>
 <div class="feats" id="plans">
 <div class="how">Nos offres</div>
 <div class="fr"><div class="fi stp" style="color:var(--muted2)">0</div>
