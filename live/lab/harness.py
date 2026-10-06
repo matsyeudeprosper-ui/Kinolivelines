@@ -177,6 +177,10 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # Not applied while in the red, where the cap is waived anyway.
             # 0 = off; does nothing on an account without a daily cap.
             "cap_fit": 0,
+            # 2026-10-06 (chercheur): cap_rr = on an account with a daily
+            # cap, aim for X times the risk instead of rr. An account without
+            # a daily cap keeps rr. 0 = off.
+            "cap_rr": 0.0,
             # 2026-09-29 (owner: "each account has a different balance, so not
             # the same risk"). The live bot resizes the lot AND the daily cap
             # by balance / scale_ref, rounding the lot down to 0.01. With
@@ -325,6 +329,8 @@ def simulate(R, spread, cfg):
     if bal > 0:
         LOT = max(0.01, math.floor((LOT * ratio) / 0.01) * 0.01)
     day_cap_eff = float(c["day_cap"]) * ratio
+    if c["cap_rr"] and day_cap_eff:
+        rr = float(c["cap_rr"])     # a capped account's own target
     bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
@@ -961,10 +967,12 @@ def simulate_real(T, R, spread, cfg):
     if bal > 0:
         LOT = max(0.01, math.floor((LOT * ratio) / 0.01) * 0.01)
     day_cap_eff = float(c["day_cap"]) * ratio
+    if c["cap_rr"] and day_cap_eff:
+        rr = float(c["cap_rr"])     # a capped account's own target
     bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
-    times = [int(r["time"]) for r in R]
+    times =[int(r["time"]) for r in R]
     closes = [float(r["close"]) for r in R]
     # This path replays the bot's REAL entries and runs no structure
     # engine of its own, so the trail needs the protected level as it
@@ -1125,6 +1133,9 @@ def main():
     ap.add_argument("--cap-fit", type=float,
                     help="aim each target only for what is left of a daily cap of $X"
                          " (this replay has no cap of its own); 0 = off")
+    ap.add_argument("--cap-rr", type=float,
+                    help="on an account with a daily cap, aim for X times the risk instead of rr;"
+                         " base and variant both get valere's daily cap (this replay has none); 0 = off")
     ap.add_argument("--spread", type=float, default=7.0)
     ap.add_argument("--drag", type=str, help="per-trade cost in $ at 0.02 lot: a number, or 'auto' = last night's measured gap once it rests on 30 trades; default raw")
     ap.add_argument("--json", action="store_true")
@@ -1159,8 +1170,13 @@ def main():
     if a.cap_fit:
         over["cap_fit"] = 1
         over["day_cap"] = a.cap_fit
+    base_over = {}
+    if a.cap_rr:
+        over["cap_rr"] = a.cap_rr
+        if not over.get("day_cap"):
+            over["day_cap"] = base_over["day_cap"] = package_cfg("valere")["day_cap"]
     sym, R = bars()
-    base = run_cfg(R, a.spread, {})
+    base = run_cfg(R, a.spread, base_over)
     v = run_cfg(R, a.spread, over)
     out = {"symbol": sym, "days": round(len(R) / 1440, 1), "spread": a.spread, "cfg": cfg_of(over),
            "base": base, "variant": v, "verdict": verdict(v, base)}
