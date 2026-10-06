@@ -12112,6 +12112,157 @@ def _step2_page(login, pwd):
             "</div></body></html>")
 
 
+OFFERS_EN_JS = """<script>
+(function(){
+var EN={
+"← Retour": "← Back",
+"Choisissez votre formule": "Choose your plan",
+"Trois façons de suivre le robot. Vos identifiants ne vous sont demandés qu’après votre choix.": "Three ways to follow the robot. Your login details are only asked for after you choose.",
+"Le robot vous prévient, vous décidez": "The robot alerts you, you decide",
+"/ 30 jours": "/ 30 days",
+"Une alerte sur votre téléphone quand le robot voit une occasion": "An alert on your phone when the robot sees an opportunity",
+"Tout ce que montre la démo, en direct, sous votre nom": "Everything the demo shows, live, under your name",
+"Aucun compte de courtier à donner": "No broker account to hand over",
+"Choisir Signal": "Choose Signal",
+"Stratégie": "Strategy",
+"Comprendre ce que le robot voit": "Understand what the robot sees",
+"Le graphique complet : les points que le marché protège, les cassures, les niveaux attendus": "The full chart: the points the market defends, the breaks, the expected levels",
+"La méthode expliquée en mots simples : entrées, stop, freins, rattrapage": "The method explained in simple words: entries, stop, brakes, recovery",
+"Se combine avec Signal ou Automatique": "Combines with Signal or Automatic",
+"Choisir Stratégie": "Choose Strategy",
+"Automatique": "Automatic",
+"Sur invitation": "By invitation",
+"Le robot trade à votre place": "The robot trades for you",
+"Famille": "Family",
+"sur invitation": "by invitation",
+"Le robot passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur": "The robot places orders on your MT5 account, day and night, from our server",
+"Ses règles, ses freins, son rattrapage après une perte": "Its rules, its brakes, its recovery after a loss",
+"Prix fixe chaque mois, réglé avec le Owl ; code par Telegram": "Fixed price each month, settled with the Owl; code via Telegram",
+"Choisir Automatique": "Choose Automatic",
+"Comment ça se passe": "How it works",
+"Ici même. Rien n’est prélevé tant que vous n’avez rien envoyé.": "Right here. Nothing is charged until you have sent something.",
+"Un code, ou un paiement": "A code, or a payment",
+"Le Owl vous donne un code sur Telegram ; ou vous payez en crypto et le code n’est pas nécessaire.": "The Owl gives you a code on Telegram; or you pay in crypto and no code is needed.",
+"Votre compte s’ouvre tout seul": "Your account opens by itself",
+"Dès que c’est confirmé (une minute en général), votre page est prête.": "As soon as it is confirmed (usually a minute), your page is ready.",
+"Vous êtes prévenu": "You get notified",
+"Activez les notifications et le robot vous parle sur votre téléphone.": "Turn on notifications and the robot talks to you on your phone.",
+"Bon à savoir": "Good to know",
+"30 jours, sans reconduction.": "30 days, no automatic renewal.",
+"Rien ne se renouvelle tout seul : à la fin, vous décidez.": "Nothing renews by itself: at the end, you decide.",
+"Pour arrêter :": "To stop:",
+"ne rien faire. L’abonnement se termine, c’est tout.": "do nothing. The subscription ends, that’s all.",
+"Votre argent reste chez vous.": "Your money stays with you.",
+"OwlNest ne détient jamais vos fonds.": "OwlNest never holds your funds.",
+"Trader comporte un risque de perte.": "Trading carries a risk of loss.",
+"Aucun résultat n’est garanti — la démo montre les vrais résultats, bons comme mauvais.": "No result is guaranteed — the demo shows the real results, good and bad.",
+"OwlNest vend un logiciel et un service de copie": "OwlNest sells software and a copy service",
+"— pas de conseil ni de gestion d’investissement.": "— not investment advice or management.",
+"Compris": "Got it",
+"Votre prénom": "Your first name",
+"Choisissez un identifiant": "Choose a username",
+"Lettres et chiffres. C’est avec lui que vous vous connecterez.": "Letters and digits. You will log in with it.",
+"Choisissez un mot de passe": "Choose a password",
+"Notez-le quelque part. Vous pourrez aussi le retrouver par Telegram.": "Write it down somewhere. You can also get it back through Telegram.",
+"Serveur MT5": "MT5 server",
+"C’est écrit dans votre application MT5 : Paramètres › Comptes.": "It is written in your MT5 app: Settings › Accounts.",
+"Code d’activation": "Activation code",
+"Six lettres et chiffres, reçus du Owl sur Telegram.": "Six letters and digits, received from the Owl on Telegram.",
+"Activer mon compte": "Activate my account",
+"ou": "or",
+"Payer en crypto · activation immédiate": "Pay in crypto · instant activation",
+"Choisissez parmi les cryptomonnaies proposées sur la page de paiement, puis suivez les instructions. Votre accès sera activé automatiquement après confirmation du paiement.": "Choose from the cryptocurrencies offered on the payment page, then follow the instructions. Your access will be activated automatically once the payment is confirmed.",
+"Pas encore de crypto ?": "No crypto yet?",
+"Vous pouvez en acheter par carte bancaire sur": "You can buy some by bank card on",
+". Vérifiez d’abord la monnaie et le réseau indiqués sur notre page de paiement, puis choisissez les mêmes sur Paybis.": ". First check the currency and network shown on our payment page, then choose the same ones on Paybis.",
+"Des frais et une vérification d’identité peuvent s’appliquer. Vérifiez que le montant envoyé couvre bien le paiement demandé.": "Fees and an identity check may apply. Check that the amount sent fully covers the payment requested.",
+"✉ Pas de code ? Écrire au Owl": "✉ No code? Write to the Owl",
+"Annuler": "Cancel",
+"Explication": "Explanation",
+"Prénom": "First name",
+"ex. mike77": "e.g. mike77",
+"6 caractères au moins": "at least 6 characters",
+"Le robot surveille le marché nuit et jour. Quand ses conditions sont réunies, votre téléphone sonne. Vous décidez si vous suivez, ou pas.": "The robot watches the market day and night. When its conditions are met, your phone rings. You decide whether to follow, or not.",
+"Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais à votre argent ni à votre compte.": "You simply choose a username and a password. We never touch your money or your account.",
+"Le même graphique que le robot regarde, avec ses repères dessinés dessus, en direct.": "The same chart the robot looks at, with its marks drawn on it, live.",
+"Il faut alors nous confier le mot de passe de votre compte chez le courtier, pour qu’il puisse passer les ordres. Nous ne pouvons ni retirer ni déplacer votre argent : le robot ne sait qu’ouvrir et fermer des trades.": "You then need to give us your broker account password, so it can place orders. We can neither withdraw nor move your money: the robot can only open and close trades.",
+"Cette formule n’est pas en vente libre : on en parle d’abord ensemble sur Telegram. 50 places au total.": "This plan is not for open sale: we first talk about it together on Telegram. 50 places in total.",
+"Votre prénom, s’il vous plaît.": "Your first name, please.",
+"Le numéro de votre compte MT5.": "Your MT5 account number.",
+"Choisissez un identifiant.": "Choose a username.",
+"Identifiant : lettres et chiffres seulement, 3 à 24.": "Username: letters and digits only, 3 to 24.",
+"Le numéro de compte MT5, en chiffres.": "The MT5 account number, digits only.",
+"Mot de passe : 6 caractères au moins.": "Password: at least 6 characters.",
+"Entrez le code complet (6 caractères), ou payez en crypto.": "Enter the full code (6 characters), or pay in crypto.",
+"Code inconnu ou déjà utilisé.": "Unknown code, or already used.",
+"Signal · ouvrir mon compte": "Signal · open my account",
+"Stratégie · ouvrir mon compte": "Strategy · open my account",
+"Automatique · ouvrir mon compte": "Automatic · open my account",
+"Le Owl vous envoie un code sur Telegram après un mot ensemble. Préparez le numéro de votre compte MT5.": "The Owl sends you a code on Telegram after a short chat. Have your MT5 account number ready.",
+"Entrez votre code, ou payez en crypto : votre compte s’ouvre tout de suite.": "Enter your code, or pay in crypto: your account opens right away.",
+"Numéro de compte MT5": "MT5 account number",
+"Le compte que le robot va trader, chez votre courtier.": "The account the robot will trade, at your broker.",
+"Mot de passe du compte MT5": "MT5 account password",
+"Le mot de passe principal : le robot doit pouvoir passer les ordres. Il ne peut ni retirer ni déplacer votre argent.": "The main password: the robot must be able to place orders. It can neither withdraw nor move your money.",
+"le mot de passe principal": "the main password",
+"Entrez-le dès que le Owl vous l’envoie, ou choisissez une autre formule.": "Enter it as soon as the Owl sends it to you, or choose another plan.",
+"OwlNest · Les offres": "OwlNest · Plans"
+};
+var O=new WeakMap(),on=null,t0=document.title,busy=false;
+function nz(t){return t.replace(/\\s+/g,' ').trim();}
+function has(k){return Object.prototype.hasOwnProperty.call(EN,k);}
+function stored(){try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}}
+var RX=[[/^Votre demande (.+) attend son code\\.$/,function(m){return 'Your '+tr(m[1])+' request is waiting for its code.';}],
+ [/^Code (.+) \\u00b7 (\\d+) jours$/,function(m){return 'Code '+tr(m[1])+' \\u00b7 '+m[2]+' days';}]];
+function tr(k){k=nz(k);if(has(k))return EN[k];for(var i=0;i<RX.length;i++){var m=RX[i][0].exec(k);if(m)return RX[i][1](m);}return null;}
+function wrap(o,t){return o.match(/^\\s*/)[0]+t+o.match(/\\s*$/)[0];}
+function apply(en){
+ busy=true;
+ var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n,L=[];
+ while((n=w.nextNode())){if(!n.parentNode.closest('script,style'))L.push(n);}
+ L.forEach(function(n){
+  var o=O.get(n);
+  if(o!==undefined){var t0_=tr(o);if(n.nodeValue!==o&&(t0_===null||n.nodeValue!==wrap(o,t0_)))o=n.nodeValue;}
+  if(!en){if(O.has(n)){n.nodeValue=O.get(n);O.delete(n);}return;}
+  if(o===undefined)o=n.nodeValue;
+  var t=tr(o);
+  if(t!==null){O.set(n,o);var v=wrap(o,t);if(n.nodeValue!==v)n.nodeValue=v;}
+ });
+ ['alt','aria-label','placeholder','data-tip'].forEach(function(at){
+  document.querySelectorAll('['+at+']').forEach(function(e){
+   if(e.id==='lgb')return;
+   var d='data-o-'+at,o=e.getAttribute(d),c=e.getAttribute(at);
+   if(o!==null){var t1=tr(o);if(c!==o&&c!==t1)o=c;}
+   if(!en){if(e.getAttribute(d)!==null){e.setAttribute(at,e.getAttribute(d));e.removeAttribute(d);}return;}
+   if(o===null)o=c;
+   var t=tr(o);
+   if(t!==null){e.setAttribute(d,o);if(c!==t)e.setAttribute(at,t);}
+  });
+ });
+ document.title=en?(tr(t0)||t0):t0;
+ busy=false;
+}
+function paint(){
+ var en=window._en;
+ document.documentElement.lang=en?'en':'fr';
+ apply(en);
+ var b=document.getElementById('lgb');
+ if(b){b.textContent=en?'FR':'EN';b.setAttribute('aria-label',en?'Français':'English');}
+}
+var _al=window.alert;
+window.alert=function(m){var t=window._en?tr(String(m)):null;_al.call(window,t!==null?t:m);};
+window.owlApply=function(){apply(window._en);};
+window._en=stored();
+var b=document.getElementById('lgb');
+if(b)b.addEventListener('click',function(){window._en=!window._en;try{localStorage.setItem('owlLang',window._en?'en':'fr');}catch(e){}paint();});
+var tm=null;
+new MutationObserver(function(){if(busy||!window._en)return;clearTimeout(tm);tm=setTimeout(function(){if(window._en)apply(true);},30);})
+ .observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['placeholder','data-tip','aria-label','alt']});
+if(window._en)paint();
+})();
+</script>"""
+
+
 def _offers_page(login, pwd, pending_pkg=None, name=""):
     """2026-10-04 (owner): the shop window. Three cards, a modal per card,
     and a little (i) wherever a newcomer could wonder - in the plainest
@@ -12211,7 +12362,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "font-family:Georgia,serif;cursor:pointer;padding:0;line-height:1}"
             ".i:active{background:rgba(255,255,255,.16)}"
             ".go{display:block;width:100%;box-sizing:border-box;margin-top:16px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;"
-            "cursor:pointer;background:var(--accent);color:#fff;letter-spacing:-.01em}"
+            "cursor:pointer;background:#2563eb;color:#fff;letter-spacing:-.01em}"
             ".go:active{transform:scale(.99)}"
             ".go.sec{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--bd)}"
             ".go.buy{background:var(--up);color:#06160c}"
@@ -12240,9 +12391,13 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "#tipbx{display:none;position:fixed;left:14px;right:14px;bottom:14px;background:#1b2635;border:1px solid #2b394b;border-radius:16px;"
             "padding:14px 16px;font-size:.88rem;color:var(--tx);line-height:1.55;z-index:9;box-shadow:0 12px 40px rgba(0,0,0,.5)}"
             "#tipbx button{margin-top:10px;background:none;border:0;color:var(--accent-soft);font-weight:700;font-size:.86rem;padding:0;cursor:pointer}"
+            ".nr{display:inline-flex;align-items:center;gap:10px}"
+            ".lgb{min-width:44px;min-height:44px;border-radius:999px;border:1px solid #2b394b;background:var(--card);color:var(--tx2);font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}"
+            ".lgb:focus-visible,.go:focus-visible,.i:focus-visible,a:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}"
             "</style></head><body>"
             "<div class=\"hero\"><div class=\"nav c\"><span class=\"brand\"><img src=\"/icon192.png\" alt=\"\">OwlNest</span>"
-            "<a href=\"/\">&#8592; Retour</a></div>"
+            "<span class=\"nr\"><a href=\"/\">&#8592; Retour</a>"
+            "<button type=\"button\" class=\"lgb\" id=\"lgb\" aria-label=\"English\">EN</button></span></div>"
             "<h1>Choisissez votre formule</h1>"
             "<p>Trois fa&ccedil;ons de suivre le robot. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
             f"<div class=\"c\">{note}{tiers}"
@@ -12322,7 +12477,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "if(!need()){e.preventDefault();return;}"
             "if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
-            + "fn('offers');</script></body></html>")
+            + "fn('offers');</script>" + OFFERS_EN_JS + "</body></html>")
 
 
 def _code_page(mode, login, pwd, name=""):
