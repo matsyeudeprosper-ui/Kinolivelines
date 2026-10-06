@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-06T00:30:11Z",
+ "updated": "2026-10-06T02:00:13Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -61,7 +61,8 @@
     "2026-10-04 15:30 veille: FLIP-BOS BUY won +3.00 (pace 1.609, 15 h UTC, right after the -4.23 FLIP loss). Pile flip_hot 15 tr 33% -10.68 $ PF 0.66, halves 25%/43% - still losing on both. After a loss inside the pile now 1/5 (peu).",
     "2026-10-05 06:30 veille: FLIP-BOS BUY won +3.68 (pace 1.722, 05 h UTC entry, after a win), then BOS BUY won +3.20 (pace 1.686). Pile flip_hot 16 tr 38% -7.00 $ PF 0.78, halves 25%/50% - still losing, but the second half is now break-even-ish. After a win inside the pile 11 tr 45% +0.25; after a loss 5 tr 20% -7.25: the pile's loss sits after losses (peu). FLIP-BOS 24 tr 46% -10.91; BOS 20 tr 70% +31.53.",
     "2026-10-05: real pile flip_hot 17 tr 41% -5.18 $ PF 0.84, halves 22%/62% - the second half now wins 5 of 8. After a loss inside the pile 1/5 -7.25, after a win 12 tr 50% +2.07. FLIP-BOS 25 tr 48% -9.09; BOS 21 tr 71% +34.14. Engine 42 d still says nervous reversals earn ~0 (10-04 trace); no new trace tonight.",
-    "2026-10-05 12:00 veille: flip_hot_size built (96dbe40). Raw CLI (no cap, no protections), base 265.7 hole 80.3 (h1 246.4 / h2 21.3). 0.75: C 252.6 (-13.1) hole 76.5, h1 -13.4 h2 -0.8. 0.5: C 234.6 (-31.1) hole 72.8, h1 -36.7 h2 +3.3. Monotonic: smaller stake = less money, a few dollars less hole. The engine's nervous reversals still earn in h1, so cutting them costs. Real: the 09:16 FLIP-BOS SELL +1.82 (pace 1.295) already counted in the night's 17."
+    "2026-10-05 12:00 veille: flip_hot_size built (96dbe40). Raw CLI (no cap, no protections), base 265.7 hole 80.3 (h1 246.4 / h2 21.3). 0.75: C 252.6 (-13.1) hole 76.5, h1 -13.4 h2 -0.8. 0.5: C 234.6 (-31.1) hole 72.8, h1 -36.7 h2 +3.3. Monotonic: smaller stake = less money, a few dollars less hole. The engine's nervous reversals still earn in h1, so cutting them costs. Real: the 09:16 FLIP-BOS SELL +1.82 (pace 1.295) already counted in the night's 17.",
+    "2026-10-06 02:00 veille: two FLIP-BOS lost overnight, both CALM (pace 0.743 BUY -3.11 closed 00:30; pace 0.887 SELL -3.00 closed 00:59, right after the first). Real calm flips now 10 tr 50% (was 8 tr 62%): the 'calm flips carry the robot' half is an engine fact, not yet a real one. FLIP-BOS 27 tr 44% -15.20; BOS 21 tr 71% +34.14. Kind, not pace, is the cleaner real split (hint)."
    ],
    "next": "flip_hot_size alone is a C (belt at best). Night: try it on both shapes and in company of rr1.0 (does it replace size_hot 0.75 as a narrower belt?). The real case shrinks to 'after a loss' (5 trades)."
   },
@@ -130,6 +131,7 @@
     "2026-10-02 veille: 6 trades, 33% gagnés vs 58% ailleurs, net -18.85 $, PF 0.17; moitiés 0% (1) / 40% (5); 2 des 3 nouveaux trades sous 0,8 perdus, vers minuit",
     "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor.",
     "2026-10-04 veille: two trades at pace 0.93/0.91: +1.30 and -11.56. Bucket 0.8-1.0 now 10 tr 80% but +4.95 net - its edge is thin in money. <0.8 unchanged (6 tr).",
+    "2026-10-06 veille: one more real <0.8 trade, FLIP-BOS BUY lost -3.11 (pace 0.743, closed 00:30 UTC). Bucket <0.8 now 7 tr 29% -21.96 PF 0.15. Still contradicted by the engine (nerv_floor C on all floors); curiosity only.",
     "2026-10-05: nerv_floor built (10-04). 42 d both shapes: 0.6 C -3.6 / C -9.6; 0.7 C -14.3 / C -12.2; 0.8 C -29.4 (hole 50->57) / C -20.3. Monotonic: the higher the floor, the worse. The engine's sleepy trades make money; the 6 real ones (33%) are a small sample. Rejected by numbers."
    ],
    "next": "Closed as a dial. Watch the real <0.8 bucket only as a curiosity (6 tr)."
@@ -690,6 +692,17 @@
     "metrics.json overview"
    ],
    "saw": "Still 49 trades (57%, +14.19), no close since the 2026-10-05 morning wins, no twins, no labo activity, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched. Waiting for: nervous FLIP trades after a loss (1/5) and the night's flip_hot_size on both shapes."
+  },
+  {
+   "t": "2026-10-06T02:00:13Z",
+   "looked": [
+    "wake_context new trades (2)",
+    "scrutiny --pile flip_hot",
+    "scrutiny --by kind",
+    "scrutiny --by nerv",
+    "scrutiny --by prev"
+   ],
+   "saw": "51 trades. Two FLIP-BOS losses ~-3 each, both calm (pace 0.743 and 0.887), the second right after the first, near midnight UTC. Not in flip_hot (still 17 tr 41% -5.18). Real calm flips 10 tr 50%; FLIP-BOS 27 tr 44% -15.20 vs BOS 21 tr 71% +34.14. <0.8 7 tr 29% -21.96. After a loss overall 22 tr 50% -11.07. No twins, no labo, no open ask. No harness run (nerv_floor and flip_hot_size already tested; no kind-only size dial), no pile (flip pile exists), no proposal."
   }
  ],
  "lessons": [
