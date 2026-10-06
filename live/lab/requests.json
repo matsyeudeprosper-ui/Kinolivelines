@@ -151,8 +151,12 @@
    "what_en": "A new setting for the test: multiply the stake by X (between 0.25 and 1.0) when the trade is the first move counted since the trend began (move count = 1). The trade is still taken. Default 1.0, which changes nothing. I would test 0.75 and 0.5, alone and with aim-as-much-as-we-risk without Sunday.",
    "why_fr": "Sur les vrais trades, le premier mouvement d'une tendance gagne 6 fois sur 16 et perd 22 $, perdant sur les deux moitiés ; au quatrième mouvement et plus, 9 sur 13 et +28 $. Ce n'est pas exactement la même chose que les retournements (27 trades), donc le réglage d'hier ne le couvre pas.",
    "why_en": "On the real trades, the first move of a trend wins 6 times in 16 and loses $22, losing on both halves; from the fourth move on, 9 of 13 and +$28. It is not exactly the same as the reversals (27 trades), so yesterday's setting does not cover it.",
-   "status": "open",
-   "date": "2026-10-06"
+   "status": "built",
+   "date": "2026-10-06",
+   "key": "first_move_size",
+   "built_note_fr": "Le test peut maintenant miser moins (entre 0,25 et 1 fois la mise) quand le trade est le seul grand mouvement compté dans les 2 dernières heures, c'est-à-dire le même compte de mouvements = 1 que dans les vrais trades ; le trade est pris quand même. Rien ne change sur les comptes tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The test can now stake less (between 0.25 and 1 times the stake) when the trade is the only big move counted in the last 2 hours, which is the same move count = 1 seen in the real trades; the trade is still taken. Nothing changes on the accounts until an idea that uses it wins its duel.",
+   "test": {"flag": "--first-move-size", "a": 1.0, "b": 0.5}
   },
   {
    "id": "halves_without_kill",

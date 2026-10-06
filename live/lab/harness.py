@@ -59,6 +59,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # change-of-direction trade only, when the market's pace at entry
             # is 1.0 or more. The trade is still taken. 1.0 = off.
             "flip_hot_size": 1.0,
+            # 2026-10-06 (chercheur): first_move_size = lot multiplier when
+            # the entry is the first big move counted in the last 2 hours
+            # (the journal's movement_count = 1, main structure only). The
+            # trade is still taken. 1.0 = off.
+            "first_move_size": 1.0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -793,6 +798,8 @@ def simulate(R, spread, cfg):
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
         if flip and nv >= 1.0:
             lot *= float(c["flip_hot_size"])
+        if not i_fire and i >= 1440 and mv2 == 1:
+            lot *= float(c["first_move_size"])
         if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
         _risk = dist * lot
@@ -949,7 +956,8 @@ def real_entries(files=None):
                     uniq[key] = {"t": int(t), "d": 1 if r["direction"] == "BUY" else -1, "e": e, "sl": sl, "dist": dist,
                                  "nerv": float(r.get("nervosity") or 1.0), "flip": r.get("kind") == "FLIP-BOS",
                                  "kind": r.get("kind"), "pnl": float(r.get("profit_usd") or 0),
-                                 "internal": (r.get("internal") == "True")}
+                                 "internal": (r.get("internal") == "True"),
+                                 "move": float(r.get("movement_count") or 0)}
         except Exception:
             continue
     return sorted(uniq.values(), key=lambda x: x["t"])
@@ -1055,7 +1063,9 @@ def simulate_real(T, R, spread, cfg):
         lot = LOT * (float(c["size_hot"]) if nv >= 1.0 else 1.0)
         if e["flip"] and nv >= 1.0:
             lot *= float(c["flip_hot_size"])
-        tp = ent + d * rr * dist
+        if not e.get("internal") and e.get("move") == 1:
+            lot *= float(c["first_move_size"])
+        tp =ent + d * rr * dist
         mid = ent - d * dist / 2.0
         hit_mid = False
         win = None
@@ -1123,6 +1133,7 @@ def main():
     ap.add_argument("--skip-hours", type=str, help="UTC hours to skip, e.g. 0-8 or 0,1,2")
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--flip-hot-size", type=float, help="lot multiplier on a change-of-direction trade when nervosity >= 1.0")
+    ap.add_argument("--first-move-size", type=float, help="lot multiplier when the entry is the first big move counted in the last 2 hours")
     ap.add_argument("--nerv-gate", action="store_true")
     ap.add_argument("--nerv-floor", type=float, help="no entry when the market's pace at entry is under X (1.0 = usual)")
     ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
@@ -1160,6 +1171,7 @@ def main():
         over["skip_hours"] = sorted(hs)
     if a.size_hot is not None: over["size_hot"] = a.size_hot
     if a.flip_hot_size is not None: over["flip_hot_size"] = a.flip_hot_size
+    if a.first_move_size is not None: over["first_move_size"] = a.first_move_size
     if a.nerv_gate: over["nerv_gate"] = True
     if a.nerv_floor is not None: over["nerv_floor"] = a.nerv_floor
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
