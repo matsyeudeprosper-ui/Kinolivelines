@@ -35,6 +35,30 @@
    "status": "answered",
    "answer_fr": "C'est vrai : sur 47 vrais trades, les achats gagnent 61 % (environ trente-deux dollars gagnés), les ventes 44 % (environ vingt-deux perdus), et les achats font mieux sur les deux moitiés. Mais la période ne fait que onze jours, et un marché qui monte fait gagner les achats tout seul. Ce n'est pas encore une recette : le jour où le marché baisse, couper les ventes coûterait cher. Les ventes ne sont que seize, trop peu. Je ne peux pas encore le tester sur 42 jours (pas de réglage par sens) ; je le surveille, avec ma demande 'ne pas courir après le prix'.",
    "answer_en": "True: out of 47 real trades, buys win 61% (about thirty-two dollars made), sells 44% (about twenty-two lost), and buys do better in both halves. But the period is only eleven days, and a rising market makes buys win on its own. Not a recipe yet: the day the market falls, cutting sells would cost a lot. Only sixteen sells - too few. I can't test it over 42 days yet (no per-direction dial); I'm watching it, with my 'don't chase the price' request."
+  },
+  {
+   "id": "ask_1791315902",
+   "seed": "flip_hot",
+   "seed_fr": "Changement de sens quand le marché est nerveux",
+   "seed_en": "Change of direction in a nervous market",
+   "by": "kino",
+   "date": "2026-10-06",
+   "note": "",
+   "status": "answered",
+   "answer_fr": "Oui, c'est le trou le plus net du robot. Sur soixante-dix vrais trades, vingt-trois sont des changements de sens en marché nerveux : sept gagnés seulement (30 %), contre 57 % pour tout le reste, environ trente-cinq dollars perdus, et perdants sur les deux moitiés de la période. C'est pire juste après une perte : un gagné sur dix. Mais vingt-trois trades, c'est encore trop peu pour être sûr : un indice fort, pas une preuve. Le test sur quarante-deux jours dit que ces trades ne rapportent rien au total. Les refuser tous coûte plus cher (déjà testé). Ce que je propose : miser un quart de moins sur eux, avec une cible égale au risque et sans trader le dimanche. C'est en attente du verdict de la nuit.",
+   "answer_en": "Yes, it is the robot's clearest hole. Out of seventy real trades, twenty-three are changes of direction in a nervous market: only seven won (30%), against 57% for everything else, about thirty-five dollars lost, and losing in both halves of the period. It is worse right after a loss: one won out of ten. But twenty-three trades is still too few to be sure: a strong hint, not a proof. The 42-day test says these trades earn nothing overall. Refusing them all costs more (already tested). What I propose: stake a quarter less on them, with a target equal to the risk and no Sunday trading. It is waiting for the night's verdict."
+  },
+  {
+   "id": "ask_1791407166_flip",
+   "seed": "flip",
+   "seed_fr": "Juste après un changement de sens",
+   "seed_en": "Right after a change of direction",
+   "by": "labo",
+   "date": "2026-10-07",
+   "note": "39 trades, 38 % gagnés contre 61 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "Vrai, et ça se confirme : trente-neuf changements de sens, 38 % gagnés contre 61 % pour les autres, environ quarante-quatre dollars perdus, perdants sur les deux moitiés. Mais l'essentiel du trou vient de ceux pris en marché nerveux : vingt-trois trades, environ trente-cinq dollars perdus. Les seize en marché calme gagnent une fois sur deux et perdent peu, environ neuf dollars. Et sur quarante-deux jours, le test dit que les changements de sens en marché calme rapportent bien. Couper tous les changements de sens jetterait donc les bons avec les mauvais. Je vise seulement les nerveux : miser moins sur eux. C'est proposé et en attente du verdict de la nuit.",
+   "answer_en": "True, and it keeps holding: thirty-nine changes of direction, 38% won against 61% for the others, about forty-four dollars lost, losing in both halves. But most of the hole comes from the ones taken in a nervous market: twenty-three trades, about thirty-five dollars lost. The sixteen in a calm market win one time in two and lose little, about nine dollars. And over 42 days the test says changes of direction in a calm market earn well. So cutting every change of direction would throw out the good with the bad. I aim only at the nervous ones: stake less on them. It is proposed and waiting for the night's verdict."
   }
  ]
 }

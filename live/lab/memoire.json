@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-06T10:30:00Z",
+ "updated": "2026-10-07T22:35:00Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -67,7 +67,8 @@
     "2026-10-05 12:00 veille: flip_hot_size built (96dbe40). Raw CLI (no cap, no protections), base 265.7 hole 80.3 (h1 246.4 / h2 21.3). 0.75: C 252.6 (-13.1) hole 76.5, h1 -13.4 h2 -0.8. 0.5: C 234.6 (-31.1) hole 72.8, h1 -36.7 h2 +3.3. Monotonic: smaller stake = less money, a few dollars less hole. The engine's nervous reversals still earn in h1, so cutting them costs. Real: the 09:16 FLIP-BOS SELL +1.82 (pace 1.295) already counted in the night's 17.",
     "2026-10-06 02:00 veille: two FLIP-BOS lost overnight, both CALM (pace 0.743 BUY -3.11 closed 00:30; pace 0.887 SELL -3.00 closed 00:59, right after the first). Real calm flips now 10 tr 50% (was 8 tr 62%): the 'calm flips carry the robot' half is an engine fact, not yet a real one. FLIP-BOS 27 tr 44% -15.20; BOS 21 tr 71% +34.14. Kind, not pace, is the cleaner real split (hint).",
     "2026-10-06 04:00 veille: BOS SELL won +9.97 (pace 1.092, closed 03:30, ~2x the BOS avg gain), after the two calm FLIP losses. BOS 22 tr 73% +44.11 PF 2.57 (h 55%/91%) vs FLIP-BOS 27 tr 44% -15.20 PF 0.72. The kind split keeps widening; flip_hot unchanged (17 tr).",
-    "2026-10-06: flip_hot_size on both shapes (nokill halves, 42 d): alone uncapped C -5.8 hole 46.5, capped A +14.2 (h +4.5/+6.8) hole 15.7. rr1.0+nosun+0.75: A +16.9 (h +6.8/+4.2) hole 24 / A +8.9 (h +0.1/+38.5) hole 15.3. Neighbours: 0.85 A +13.9 / B +7.6; 0.5 B +11.3 / B +6.8. 69 d: B +7.5 / B +4.4, holes 33 / 20.6; alone 69 d C -9.6 / C +4.1. rr0.9+nosun+0.75: B +4.0 / C -14.8. Real: no new nervous flip; FLIP-BOS 27 tr 44% -15.20."
+    "2026-10-06: flip_hot_size on both shapes (nokill halves, 42 d): alone uncapped C -5.8 hole 46.5, capped A +14.2 (h +4.5/+6.8) hole 15.7. rr1.0+nosun+0.75: A +16.9 (h +6.8/+4.2) hole 24 / A +8.9 (h +0.1/+38.5) hole 15.3. Neighbours: 0.85 A +13.9 / B +7.6; 0.5 B +11.3 / B +6.8. 69 d: B +7.5 / B +4.4, holes 33 / 20.6; alone 69 d C -9.6 / C +4.1. rr0.9+nosun+0.75: B +4.0 / C -14.8. Real: no new nervous flip; FLIP-BOS 27 tr 44% -15.20.",
+    "2026-10-07 veille: real 70 tr. FLIP-BOS 39 tr 38% -43.87; flip_hot 23 tr 30% -34.75 (h 36%/25%), after a loss 1/10 -32.93, after a win 13 tr 46% -1.82. BOS 28 tr 64% +17.55: the BOS edge shrank (73%->64%) as it grew from 22 to 28 trades. Latest trade BOS BUY -2.08."
    ],
    "next": "Proposed rr10_nosun_fliphot075 and fliphot075_capped. Capped h1 +0.1 is razor thin; want the battery to confirm, then the critic."
   },
@@ -858,6 +859,16 @@
     "veille.jsonl 10-04..10-06"
    ],
    "saw": "52 real trades 56% +18.05 PF 1.19. BOS 22 tr 73% +44.11; FLIP 27 tr 44% -15.20. Move 1 16 tr 38% -21.9 (both halves), 4+ 13 tr 69% +28.0. Hours 21-00 UTC 13 tr 3 won -46.6. Storm=1 17 tr 47% -14.5 (both halves lower). 2nd-4th trade of the day 16 tr 69% +28. Duration 30-60 min 7 tr 29%. Stop 100-150 pts 13 tr 38%. Drag -0.387/trade on 27 (not usable). Engine: base h2 hit the kill line on fresher bars (-64.8 / 43 tr). New pile late_night."
+  },
+  {
+   "t": "2026-10-07T22:35:00Z",
+   "looked": [
+    "wake_context new trade (1)",
+    "asks.json (both open asks already answered)",
+    "scrutiny --by kind",
+    "scrutiny --pile flip_hot"
+   ],
+   "saw": "70 trades. BOS BUY lost -2.08 (pace 1.39, closed 17:25), a normal-size loss. BOS now 28 tr 64% +17.55 PF 1.29 (h 62%/67%) - down from 22 tr 73% +44 on 10-06; FLIP-BOS 39 tr 38% -43.87 PF 0.52. Pile flip_hot 23 tr 30% -34.75, after a loss 10 tr 10% -32.93, after a win 13 tr 46% -1.82. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
