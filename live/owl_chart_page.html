@@ -487,7 +487,13 @@ function ctApply(d){if(d&&CTPB()&&d.pb&&d.pb.candles&&d.pb.candles.length>=3){co
  d.candles=p.candles;d.closed=[];
  for(const k of ['dots','marks','breaks','trend','choch','bos_dir','next_bos','invalid','next_bos_t','invalid_t','flip_bos','flip_bos_t','flip_bos_dir','bos_ready','flip_bos_ready'])d[k]=p[k]===undefined?null:p[k];
  d.int_dots=[];d.int_marks=[];d.int_trend=0;d.int_choch=0;d.int_bos=null;d.int_inv=null;d.int_bos_t=null;d.int_inv_t=null;
- d.int_flip_bos=null;d.int_flip_bos_t=null;d.int_state='none';d.int_awake=false;d.int_bos_ready=false;d.int_flip_bos_ready=false;}return d;}
+ d.int_flip_bos=null;d.int_flip_bos_t=null;d.int_state='none';d.int_awake=false;d.int_bos_ready=false;d.int_flip_bos_ready=false;
+ // 2026-10-07 (owner): the pullback chart has its own internal structure,
+ // shown when its own setting (owlPbInt, on by default) is on.
+ if(PBINT()&&p.int_trend!==undefined){for(const k of ['int_dots','int_marks','int_trend','int_choch','int_bos','int_inv','int_bos_t','int_inv_t','int_bos_dir','int_bos_ready','int_flip_bos','int_flip_bos_t','int_flip_bos_dir','int_flip_bos_ready'])d[k]=p[k]===undefined?null:p[k];
+  d.int_dots=d.int_dots||[];d.int_marks=d.int_marks||[];d.int_trend=d.int_trend||0;
+  d.int_state=!d.int_trend?'none':((d.int_choch&&d.int_choch!==d.int_trend)?'flip':(d.int_bos_ready?'ready':'forming'));}}return d;}
+function PBINT(){try{return localStorage.getItem('owlPbInt')!=='0';}catch(e){return true;}}
 function ctPaint(){const b=document.getElementById('cttype'),l=document.getElementById('ctlbl');if(!b||!l)return;
  const on=CTPB();b.classList.toggle('on',on);
  l.textContent=CL?(on?'Filter: pullbacks':'Filter: quiet'):(on?'Filtre : reculs':'Filtre : silence');
@@ -2802,7 +2808,7 @@ const CL=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){retur
 // on every draw, NOT cached, so flipping it in the app tab shows up on
 // the next frame here. It hides the INNER marks only - the main
 // structure is a different thing and must never ride on this.
-function INTMK(){try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}}
+function INTMK(){if(CTPB())return PBINT();try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}}
 const EN={'Aujourd’hui':'Today','EN DIRECT':'LIVE','Trader':'Trade','filtre silence':'quiet filter','Fermer':'Close','Fermer l\'outil':'Close the tool',
  'haussier':'bullish','baissier':'bearish','neutre':'neutral','choc!':'shock!','achat':'buy','vente':'sell','pris':'taken',
  'Feu vert':'Green light','Ça peut tourner':'It may turn','Ça se prépare':'Getting ready','Rien à faire':'Nothing to do','Pas de signal':'No signal','Marché soutenu':'Brisk market','Marché rapide':'Fast market','Aucun frein':'No brakes',

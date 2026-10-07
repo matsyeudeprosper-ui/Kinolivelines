@@ -2979,6 +2979,14 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
     affichage seulement</div></div>
   <span class="sw" id="intmk-sw" aria-hidden="true"><span class="swk"></span></span>
  </div>
+ <!-- 2026-10-07 (owner): same switch for the pullback chart's own inner
+      structure; on by default, display only, stored in this browser. -->
+ <div class="srow" id="pbintrow">
+  <div class="sic"><svg class="ic"><use href="#i-chart"/></svg></div>
+  <div style="flex:1"><b id="pbint-lbl">Petite structure sur le graphique des reculs</b>
+   <div class="ssub" id="pbint-sub">Affich&eacute;e</div></div>
+  <span class="sw" id="pbint-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
  <div class="srow" id="themerow" style="cursor:default">
   <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
   <div style="flex:1"><b>Apparence</b>
@@ -3885,6 +3893,17 @@ window.addEventListener('load',()=>{
    if(!j.ok){await info('&#10060; <h3>Mot de passe incorrect.</h3>');
     return;}}catch(e2){}
   load();};
+(function(){const r=document.getElementById('pbintrow');if(!r)return;
+  const sw=document.getElementById('pbint-sw');
+  const rd=()=>{try{return localStorage.getItem('owlPbInt')!=='0';}catch(e){return true;}};
+  const paint=()=>{const on=rd();sw.classList.toggle('on',on);
+   const en=LANG()==='en';
+   document.getElementById('pbint-lbl').textContent=en?'Inner structure on the pullback chart':'Petite structure sur le graphique des reculs';
+   document.getElementById('pbint-sub').textContent=on
+    ?(en?'Shown - display only':'Affichée — affichage seulement')
+    :(en?'Hidden on the pullback chart':'Masquée sur le graphique des reculs');};
+  r.onclick=()=>{try{localStorage.setItem('owlPbInt',rd()?'0':'1');}catch(e){}paint();};
+  paint();})();
 (function(){const r=document.getElementById('intmkrow');if(!r)return;
   const sw=document.getElementById('intmk-sw');
   const rd=()=>{try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}};

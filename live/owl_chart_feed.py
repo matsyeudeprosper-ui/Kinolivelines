@@ -820,6 +820,7 @@ def htf_tick():
 # stands out. Published as `pb`, additive: nothing that reads the file today
 # looks at it.
 PB_KEEP = 400
+_PB_PIN = {"t0": None, "start": None}   # the pullback chart's internal window
 
 
 def pb_join(cs):
@@ -872,7 +873,32 @@ def pullback_view(kept, dots, marks, brks):
         frdy = pullback_since(chain, flp_t, fdir)
     except Exception:
         rdy = frdy = False
+    # Owner 2026-10-07: "just like in the original chart" - the pullback
+    # chart gets its own internal structure, same engine, own pin. Its own
+    # try: a failure costs the internal block, never the chart.
+    ist = {}
+    try:
+        ist = internal_structure(chain, nxt, inv, inv_t, flp, m2, nxt_t,
+                                 int(chain[-1][0]), pin=_PB_PIN,
+                                 brk_t=(bk[-1][0] if bk else None))
+    except Exception:
+        ist = {}
     return {"candles": show,
+            "int_trend": ist.get("i_trend", 0),
+            "int_choch": ist.get("i_choch", 0),
+            "int_bos": round(ist["i_nxt"], 2) if ist.get("i_nxt") else None,
+            "int_inv": round(ist["i_inv"], 2) if ist.get("i_inv") else None,
+            "int_bos_t": ist.get("i_nxt_t"), "int_inv_t": ist.get("i_inv_t"),
+            "int_bos_dir": ist.get("i_dir", 0),
+            "int_bos_ready": ist.get("i_ready", False),
+            "int_flip_bos": (round(ist["i_flp"], 2)
+                             if ist.get("i_flp") else None),
+            "int_flip_bos_t": ist.get("i_flp_t"),
+            "int_flip_bos_dir": ist.get("i_fdir", 0),
+            "int_flip_bos_ready": ist.get("i_fready", False),
+            "int_dots": [q for q in (ist.get("i_dots") or []) if q[0] >= p0],
+            "int_marks": [m for m in (ist.get("i_marks") or [])
+                          if m[0] >= p0][-10:],
             "dots": [d for d in d2 if d[0] >= p0],
             "marks": [m for m in m2 if m[0] >= p0],
             "breaks": [[b[0], b[1], round(b[2], 2)] for b in bk
