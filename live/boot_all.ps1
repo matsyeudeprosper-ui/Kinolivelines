@@ -137,6 +137,13 @@ if (-not (Get-CimInstance Win32_Process |
     Start-Process pythonw -ArgumentList "liq_shadow.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2g) pullback-chart touch logger (2026-10-07 forward test, read-only, NO ORDERS)
+if (-not (Get-CimInstance Win32_Process |
+        Where-Object { $_.CommandLine -like "*pb_touch_logger.py*" })) {
+    Say "starting pullback touch logger"
+    Start-Process pythonw -ArgumentList "pb_touch_logger.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2c) the lab's variant twins (2026-09-28): every running entry in lab/twins.json
 try {
     # (2026-09-29: the path used to hold a TAB instead of a backslash, so this
