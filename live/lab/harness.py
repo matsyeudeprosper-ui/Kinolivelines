@@ -218,6 +218,9 @@ REFS = ("base", "valere")
 # been approached, and the outcome. None by default, so the nightly battery
 # pays nothing. Used by review/bos_break_character.py.
 TRACE = None
+# 2026-10-07 (owner): a function (t, d) -> bool that allows or refuses a trade
+# by the direction another chart points. None by default.
+DIRGATE = None
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -754,6 +757,9 @@ def simulate(R, spread, cfg):
             blocked += 1
             continue
         if skip_h and g.hour in skip_h:
+            blocked += 1
+            continue
+        if DIRGATE is not None and not DIRGATE(t, d):
             blocked += 1
             continue
         debt_now = (debt_led if c["debt_mode"] == "half"
