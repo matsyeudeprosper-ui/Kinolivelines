@@ -528,14 +528,16 @@ const HT={on:false,tf:'H1',split:'v',r:0.42,data:null,t:0,xoft:{},xts:[],scale:n
 try{const sv=JSON.parse(localStorage.getItem('owlHTF')||'null');
  if(sv){HT.on=!!sv.on&&HTFOK;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}}catch(e){}
 function htSave(){try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
+function htLbl(){return HT.tf==='PB'?(CL?'PULLBACKS':'RECULS'):HT.tf;}
 function htApply(){document.body.classList.toggle('htf-v',HT.on&&HT.split==='v');
  document.body.classList.toggle('htf-h',HT.on&&HT.split==='h');
  document.documentElement.style.setProperty('--htf-r',HT.r);
- const tg=document.getElementById('htftag');if(tg)tg.textContent=HT.tf;
+ const tg=document.getElementById('htftag');if(tg)tg.textContent=htLbl();
  if(HT.on)htLoad(true);
  try{draw();}catch(e){}}
 async function htLoad(force){
  if(!HT.on)return;
+ if(HT.tf==='PB'){HT.data=(D&&D.pb&&D.pb.candles&&D.pb.candles.length>=3)?D.pb:null;htDraw();return;}
  if(!force&&Date.now()-HT.t<45000)return;HT.t=Date.now();
  try{const r=await fetch('chart_htf?tf='+HT.tf+'&t='+Date.now(),{cache:'no-store'});
   if(r.ok){const j=await r.json();if(j&&j.candles)HT.data=j;else if(j&&j.err==='strategy'){HT.on=false;htApply();toolsDot();return;}}}catch(e){}
@@ -551,7 +553,7 @@ function htDraw(){
  g.fillStyle='rgba(255,255,255,.012)';g.fillRect(0,0,W,H);
  if(!d||!d.candles||d.candles.length<3){
   g.fillStyle='#5f6f82';g.font='500 12px Inter, system-ui, sans-serif';g.textAlign='center';
-  g.fillText(CL?'loading '+HT.tf+'...':'chargement '+HT.tf+'\u2026',W/2,H/2);return;}
+  g.fillText(CL?'loading '+htLbl()+'...':'chargement '+htLbl()+'\u2026',W/2,H/2);return;}
  const NARROW=W<300;
  const PAD=NARROW?34:52,TOP=26,BOT=16;
  // A panel you cannot move is a picture, not a chart. This one pans, zooms
@@ -800,7 +802,7 @@ function htDraw(){
  const sub=document.getElementById('htfsub');
  if(sub)sub.textContent=(d.trend===1?(CL?'up':'hausse'):d.trend===-1?(CL?'down':'baisse'):'\u2014')
   +(d.next_bos?' \u00b7 BOS '+Math.round(d.next_bos):'')
-  +(!INTMK()?'':' \u00b7 '+(d.int_trend
+  +(!INTMK()||HT.tf==='PB'?'':' \u00b7 '+(d.int_trend
     ? (CL?'inner ':'interne ')+(d.int_trend===1?'\u25b2':'\u25bc')
     : (CL?'no inner':'sans interne')))
   +(HT.vz!==1?' \u00b7 x'+(1/HT.vz).toFixed(1):'');
@@ -918,7 +920,7 @@ function htSheet(){
    (CL?'The same market read at two speeds. The higher one sits first and is drawn in greys, because up or down does not matter there: what matters is the structure.'
       :'Le m\u00eame march\u00e9 lu \u00e0 deux vitesses. Le plus grand passe en premier et se dessine en gris, parce que hausse ou baisse n\u2019y change rien : ce qui compte, c\u2019est la structure.')+'</div>'+
   '<div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d92a8">'+(CL?'Higher timeframe':'Temps sup\u00e9rieur')+'</div>'+
-  '<div style="display:flex;gap:8px;margin-top:8px">'+['M15','H1','H4'].map(t=>cell(t,HT.on&&HT.tf===t,"htPick('"+t+"')")).join('')+'</div>'+
+  '<div style="display:flex;gap:8px;margin-top:8px">'+['M15','H1','H4','PB'].map(t=>cell(t==='PB'?(CL?'Pullbacks':'Reculs'):t,HT.on&&HT.tf===t,"htPick('"+t+"')")).join('')+'</div>'+
   '<div style="font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7d92a8;margin-top:16px">'+(CL?'Split':'Partage')+'</div>'+
   '<div style="display:flex;gap:8px;margin-top:8px">'+
    cell(CL?'Top and bottom':'Haut et bas',HT.split==='v',"htSplit('v')")+
@@ -2191,7 +2193,7 @@ async function load(){
  if(PAST)return;
  try{
   const r=await fetch('/'+tok+'/chart_data',{cache:'no-store'});
-  if(r.ok){D=ctApply(await r.json());digest(D);ui();}
+  if(r.ok){D=ctApply(await r.json());digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
  }catch(e){}
 }
 // A throw inside draw() used to skip the next requestAnimationFrame, so
