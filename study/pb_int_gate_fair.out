@@ -1,0 +1,31 @@
+events 5822
+span from 2026-09-01 20:58:00 | halves split at 2026-09-14 04:06:00 | base trades 204
+
+A) bot replay with the gate (trades it really takes, chain effects included)
+base                             n 204 win 59.3% net  154.33 DD  -98.22 PF 1.34 | 1st half  166.52 2nd half  -12.19 | since 27/9: n  58 net   35.86 PF 1.23
+close main, until opposite       n 123 win 58.5% net   46.11 DD  -55.86 PF 1.17 | 1st half   91.32 2nd half  -45.21 | since 27/9: n  30 net  -40.61 PF 0.58
+close main+int, until opposite   n 132 win 57.6% net  -19.98 DD -155.11 PF 0.94 | 1st half  113.64 2nd half -133.62 | since 27/9: n  38 net  -59.31 PF 0.59
+touch main, until opposite       n 119 win 61.3% net  104.05 DD  -36.65 PF 1.49 | 1st half   98.30 2nd half    5.75 | since 27/9: n  27 net    8.03 PF 1.15
+touch main+int, until opposite   n 130 win 58.5% net   -2.77 DD -135.39 PF 0.99 | 1st half   99.90 2nd half -102.67 | since 27/9: n  37 net  -32.48 PF 0.74
+close main+int, <=60m            n  88 win 54.5% net   -4.88 DD -102.54 PF 0.98 | 1st half   78.12 2nd half  -83.00 | since 27/9: n  23 net  -27.44 PF 0.68
+touch main+int, <=60m            n  92 win 54.3% net  -13.48 DD -104.50 PF 0.94 | 1st half   73.00 2nd half  -86.48 | since 27/9: n  23 net  -33.00 PF 0.61
+
+B) base trades kept by each gate vs 2000 random picks of the same size (same span)
+  close main, until opposite       all kept 107 of 204  per trade +0.70 (all +0.76)  random pct  45
+  close main, until opposite       h1  kept  56 of 102  per trade +2.14 (all +1.63)  random pct  80
+  close main, until opposite       h2  kept  51 of 102  per trade -0.88 (all -0.12)  random pct  18
+  close main+int, until opposite   all kept 120 of 204  per trade +0.66 (all +0.76)  random pct  41
+  close main+int, until opposite   h1  kept  61 of 102  per trade +2.57 (all +1.63)  random pct  96
+  close main+int, until opposite   h2  kept  59 of 102  per trade -1.31 (all -0.12)  random pct   5
+  touch main, until opposite       all kept 102 of 204  per trade +1.31 (all +0.76)  random pct  87
+  touch main, until opposite       h1  kept  56 of 102  per trade +2.43 (all +1.63)  random pct  92
+  touch main, until opposite       h2  kept  46 of 102  per trade -0.05 (all -0.12)  random pct  55
+  touch main+int, until opposite   all kept 114 of 204  per trade +0.85 (all +0.76)  random pct  59
+  touch main+int, until opposite   h1  kept  59 of 102  per trade +2.44 (all +1.63)  random pct  94
+  touch main+int, until opposite   h2  kept  55 of 102  per trade -0.86 (all -0.12)  random pct  17
+  close main+int, <=60m            all kept  72 of 204  per trade +0.75 (all +0.76)  random pct  50
+  close main+int, <=60m            h1  kept  44 of 102  per trade +3.03 (all +1.63)  random pct  98
+  close main+int, <=60m            h2  kept  28 of 102  per trade -2.84 (all -0.12)  random pct   2
+  touch main+int, <=60m            all kept  76 of 204  per trade +0.98 (all +0.76)  random pct  63
+  touch main+int, <=60m            h1  kept  47 of 102  per trade +3.26 (all +1.63)  random pct  99
+  touch main+int, <=60m            h2  kept  29 of 102  per trade -2.70 (all -0.12)  random pct   2
