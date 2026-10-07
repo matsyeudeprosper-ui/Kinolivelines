@@ -1,0 +1,14 @@
+bars 60000
+base                     ALL: n 265 net   205.47 h1  212.98 h2  -20.81 worst   80.29 wr 60.4 -   | SINCE 27/9: n 116 win 56.9% net   71.72 DD  -76.43 PF 1.23
+A hit same dir <=15m     ALL: n  21 net    69.01 h1   60.85 h2    8.16 worst    7.25 wr 76.2 C   | SINCE 27/9: n   0 win  0.0% net    0.00 DD    0.00 PF 0.00
+A hit same dir <=60m     ALL: n  27 net    98.75 h1   90.59 h2    8.16 worst   13.53 wr 70.4 C   | SINCE 27/9: n   0 win  0.0% net    0.00 DD    0.00 PF 0.00
+A hit same dir <=240m    ALL: n  54 net    80.42 h1   69.19 h2   11.23 worst   24.89 wr 63.0 C   | SINCE 27/9: n   0 win  0.0% net    0.00 DD    0.00 PF 0.00
+B back at pb level +-20  ALL: n  17 net    27.26 h1   27.26 h2    0.00 worst    6.43 wr 58.8 C   | SINCE 27/9: n   0 win  0.0% net    0.00 DD    0.00 PF 0.00
+B back at pb level +-50  ALL: n  35 net    45.90 h1   42.19 h2    3.71 worst   14.59 wr 54.3 C   | SINCE 27/9: n   0 win  0.0% net    0.00 DD    0.00 PF 0.00
+
+Second way: base trades kept by each gate vs 2000 random subsets of the same size
+  A hit same dir <=15m     kept  38 of 541  net  152.32  per trade +4.01 (all +0.74)  random percentile 100
+  A hit same dir <=60m     kept  44 of 541  net  145.20  per trade +3.30 (all +0.74)  random percentile  99
+  A hit same dir <=240m    kept  86 of 541  net  192.58  per trade +2.24 (all +0.74)  random percentile  98
+  B back at pb level +-20  kept  24 of 541  net   25.48  per trade +1.06 (all +0.74)  random percentile  59
+  B back at pb level +-50  kept  48 of 541  net   56.78  per trade +1.18 (all +0.74)  random percentile  68
