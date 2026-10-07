@@ -484,7 +484,7 @@ if(!HTFOK){const hb=document.getElementById('htfbtn');if(hb)hb.style.display='no
 // candles are derived from the dots, which that tier alone receives.
 function CTPB(){try{return FULL&&localStorage.getItem('owlChartType')==='pb';}catch(e){return false;}}
 function ctApply(d){if(d&&CTPB()&&d.pb&&d.pb.candles&&d.pb.candles.length>=3){const p=d.pb;
- d.candles=p.candles;
+ d.candles=p.candles;d.closed=[];
  for(const k of ['dots','marks','breaks','trend','choch','bos_dir','next_bos','invalid','next_bos_t','invalid_t','flip_bos','flip_bos_t','flip_bos_dir','bos_ready','flip_bos_ready'])d[k]=p[k]===undefined?null:p[k];
  d.int_dots=[];d.int_marks=[];d.int_trend=0;d.int_choch=0;d.int_bos=null;d.int_inv=null;d.int_bos_t=null;d.int_inv_t=null;
  d.int_flip_bos=null;d.int_flip_bos_t=null;d.int_state='none';d.int_awake=false;d.int_bos_ready=false;d.int_flip_bos_ready=false;}return d;}
