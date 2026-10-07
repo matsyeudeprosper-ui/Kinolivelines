@@ -822,17 +822,68 @@ def htf_tick():
 PB_KEEP = 400
 
 
+def pb_join(cs):
+    # each candle opens where the previous kept one closed, wick stretched
+    # to cover it, so the skipped moves read as one continuous chart
+    out, pc = [], None
+    for c in cs:
+        if pc is None:
+            out.append(list(c))
+        else:
+            o = pc
+            out.append([c[0], round(o, 2), round(max(c[2], o), 2),
+                        round(min(c[3], o), 2), c[4],
+                        1 if c[4] >= o else -1])
+        pc = c[4]
+    return out
+
+
+def pb_quiet(cs):
+    # the silence rule again, on the joined candles
+    out, rh, rl = [], None, None
+    for c in cs:
+        if rh is None or c[4] > rh or c[4] < rl:
+            out.append(c)
+            rh, rl = c[2], c[3]
+    return out
+
+
 def pullback_view(kept, dots, marks, brks):
     want = {d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in brks}
     if kept:
         want.add(kept[-1][0])
-    cands = [c for c in kept if c[0] in want][-PB_KEEP:]
+    cands = [c for c in kept if c[0] in want]
     if not cands:
         return None
-    p0 = cands[0][0]
-    return {"candles": cands,
-            "dots": [d for d in dots if d[0] >= p0],
-            "marks": [m for m in marks if m[0] >= p0]}
+    chain = pb_join(pb_quiet(pb_join(cands)))
+    # Owner 2026-10-07: the glowing dots and the lines must be THIS chart's
+    # own structure, so the same engine runs over these candles.
+    bk = []
+    (d2, m2, tr2, ch2, nxt, inv, nxt_t, inv_t, dr2,
+     flp, flp_t, fdir) = engine(chain, brk_out=bk)
+    if tr2 == 1:
+        d2 = [d for d in d2 if d[2] == 1]
+    elif tr2 == -1:
+        d2 = [d for d in d2 if d[2] == -1]
+    show = chain[-PB_KEEP:]
+    p0 = show[0][0]
+    try:
+        rdy = pullback_since(chain, nxt_t, dr2)
+        frdy = pullback_since(chain, flp_t, fdir)
+    except Exception:
+        rdy = frdy = False
+    return {"candles": show,
+            "dots": [d for d in d2 if d[0] >= p0],
+            "marks": [m for m in m2 if m[0] >= p0],
+            "breaks": [[b[0], b[1], round(b[2], 2)] for b in bk
+                       if len(b) > 2 and b[0] >= p0][-12:],
+            "trend": tr2, "choch": ch2, "bos_dir": dr2,
+            "next_bos": round(nxt, 2) if nxt else None,
+            "invalid": round(inv, 2) if inv else None,
+            "next_bos_t": nxt_t, "invalid_t": inv_t,
+            "flip_bos": round(flp, 2) if flp else None,
+            "flip_bos_t": flp_t, "flip_bos_dir": fdir,
+            "bos_ready": rdy, "flip_bos_ready": frdy}
 
 
 def main():

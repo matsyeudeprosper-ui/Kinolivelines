@@ -483,20 +483,11 @@ if(!HTFOK){const hb=document.getElementById('htfbtn');if(hb)hb.style.display='no
 // serious pullback or a full reversal stands out. Strategie only: the kept
 // candles are derived from the dots, which that tier alone receives.
 function CTPB(){try{return FULL&&localStorage.getItem('owlChartType')==='pb';}catch(e){return false;}}
-function ctJoin(cs){let pc=null;return cs.map(c=>{if(pc===null){pc=c[4];return c;}const o=pc;pc=c[4];return [c[0],o,Math.max(c[2],o),Math.min(c[3],o),c[4],c[4]>=o?1:0].concat(c.slice(6));});}
-function ctQuiet(d,cs){
- const kept=[];let rh=null,rl=null;
- for(const c of cs){if(rh===null||c[4]>rh||c[4]<rl){kept.push(c);rh=c[2];rl=c[3];}}
- const k=ctJoin(kept),ts=k.map(c=>c[0]),alias={};
- const near=t=>{let lo=0,hi=ts.length-1;while(lo<hi){const m=(lo+hi)>>1;if(ts[m]<t)lo=m+1;else hi=m;}
-  const a=Math.max(0,lo-1);return (t-ts[a]<=ts[lo]-t)?a:lo;};
- cs.forEach(c=>{alias[c[0]]=ts[near(c[0])];});
- const dots=(d.pb.dots||[]).map(x=>{const i=near(x[0]),c=k[i];
-  if(x[2]===1)c[3]=Math.min(c[3],x[1]);else c[2]=Math.max(c[2],x[1]);
-  return [c[0],x[1],x[2]].concat(x.slice(3));});
- const marks=(d.pb.marks||[]).map(m=>[ts[near(m[0])]].concat(m.slice(1)));
- d._alias=alias;d.candles=k;d.dots=dots;d.marks=marks;}
-function ctApply(d){if(d&&CTPB()&&d.pb&&d.pb.candles&&d.pb.candles.length>=3){ctQuiet(d,ctJoin(d.pb.candles));}return d;}
+function ctApply(d){if(d&&CTPB()&&d.pb&&d.pb.candles&&d.pb.candles.length>=3){const p=d.pb;
+ d.candles=p.candles;
+ for(const k of ['dots','marks','breaks','trend','choch','bos_dir','next_bos','invalid','next_bos_t','invalid_t','flip_bos','flip_bos_t','flip_bos_dir','bos_ready','flip_bos_ready'])d[k]=p[k]===undefined?null:p[k];
+ d.int_dots=[];d.int_marks=[];d.int_trend=0;d.int_choch=0;d.int_bos=null;d.int_inv=null;d.int_bos_t=null;d.int_inv_t=null;
+ d.int_flip_bos=null;d.int_flip_bos_t=null;d.int_state='none';d.int_awake=false;d.int_bos_ready=false;d.int_flip_bos_ready=false;}return d;}
 function ctPaint(){const b=document.getElementById('cttype'),l=document.getElementById('ctlbl');if(!b||!l)return;
  const on=CTPB();b.classList.toggle('on',on);
  l.textContent=CL?(on?'Filter: pullbacks':'Filter: quiet'):(on?'Filtre : reculs':'Filtre : silence');
@@ -1276,7 +1267,6 @@ function draw(){
   ctx.shadowBlur=0;
   ctx.globalAlpha=1;
  });
- if(D&&D._alias){for(const k in D._alias){const v=xoft[D._alias[k]];if(v!==undefined&&xoft[k]===undefined)xoft[k]=v;}}
  // --- the trade opened from the history tab (2026-09-26) ---
  // 2026-09-27: closed trades as soft entry -> exit arrows with the result
  HITS.length=0;
