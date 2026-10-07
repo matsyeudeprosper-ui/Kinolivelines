@@ -810,6 +810,31 @@ def htf_tick():
         pass
 
 
+# Owner 2026-10-07: a SECOND chart type beside the silence one. Same candles,
+# same engine, nothing about a trade changes - it only decides which candles
+# are DRAWN. Kept: the candles that carry the structure (the swing candle of
+# each glowing dot, every candle that broke a level, the CHoCH candle and the
+# flip candle) plus the newest closed one. Every candle in between - the small
+# pullbacks that never touched the protected dot - is skipped, so the trend
+# reads as a line of its own breaks and a serious pullback or a full reversal
+# stands out. Published as `pb`, additive: nothing that reads the file today
+# looks at it.
+PB_KEEP = 400
+
+
+def pullback_view(kept, dots, marks, brks):
+    want = {d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in brks}
+    if kept:
+        want.add(kept[-1][0])
+    cands = [c for c in kept if c[0] in want][-PB_KEEP:]
+    if not cands:
+        return None
+    p0 = cands[0][0]
+    return {"candles": cands,
+            "dots": [d for d in dots if d[0] >= p0],
+            "marks": [m for m in marks if m[0] >= p0]}
+
+
 def main():
     assert connect(), "no terminal could serve BTCUSD candles"
     print("chart feed up", flush=True)
@@ -873,6 +898,10 @@ def main():
                     dots = [d for d in dots if d[2] == 1]
                 elif trend == -1:
                     dots = [d for d in dots if d[2] == -1]
+                try:
+                    _pb = pullback_view(kept, dots, marks, _mbrk)
+                except Exception:
+                    _pb = None
                 dots = [d for d in dots if d[0] >= t0]
                 marks = [m for m in marks if m[0] >= t0]
                 # owner 2026-09-16: the main structure anticipates its
@@ -905,7 +934,7 @@ def main():
                      "vol_now": round(_vn, 1), "vol_ref": round(_vr, 1),
                      "spread": round(float(tick.ask - tick.bid), 2),
                      "raw": len(R) - 1, "kept": len(kept),
-                     "candles": win, "live": live, "dots": dots,
+                     "candles": win, "live": live, "dots": dots, "pb": _pb,
                      "marks": marks, "trend": trend, "choch": choch,
                      # 2026-10-01 (owner): EVERY break, continuations
                      # included, as [time, direction, level broken].

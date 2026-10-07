@@ -15256,6 +15256,7 @@ class H(BaseHTTPRequestHandler):
             if _cv != "full":
                 for _k in ("dots", "marks", "breaks", "int_dots", "int_marks"):
                     d[_k] = []
+                d["pb"] = None      # the pullback chart is built from the dots
                 for _k in ("int_bos", "int_inv", "int_bos_t", "int_inv_t", "next_bos_t",
                            "invalid_t", "flip_bos_t", "int_flip_bos", "int_flip_bos_t"):
                     d[_k] = None
