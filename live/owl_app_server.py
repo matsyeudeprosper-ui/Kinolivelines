@@ -4595,7 +4595,11 @@ function drawSpark(){
   if(cv)cv.style.display=bg?'block':'none';
   if(bg){const sd=document.getElementById('spkdates');if(sd)sd.style.display='none';
    const dc=document.getElementById('ddcap');if(dc)dc.style.display='none';
-   drawEqc((window._d||{}).eqc);return;}
+   drawEqc((window._d||{}).eqc);
+   // 2026-10-08 (owner): the big sheet follows the data too, while open
+   {const bc=document.getElementById('eqcvbig');
+    if(bc&&window._shOpen)drawEqc((window._d||{}).eqc,bc,document.getElementById('eqcsubbig'),3);}
+   return;}
   const sb=document.getElementById('eqcsub');if(sb)sb.style.display='none';}
  const c=(window._cvz==='90'&&window._c90&&window._c90.length>1)?window._c90
   :(window._cvz==='30'&&window._c30&&window._c30.length>1)?window._c30:(window._c7||[]);
