@@ -319,6 +319,50 @@ def compute():
     }
 
 
+WEALTH_OUT = os.path.join(OUT, uid + ".wealth.json")
+LAB_WEALTH = os.path.join(DIR, "lab", "wealth")
+_wealth_t = 0.0
+
+
+def wealth():
+    """2026-10-08 (owner): the Patrimoine money centre. Every closed trade of
+    the era and every deposit / withdrawal, kept APART so results are never
+    moved by cash. The page computes the charts; this only gathers facts.
+    Also copied to lab/wealth/<uid>.json for the chercheur."""
+    ai = mt5.account_info()
+    if ai is None:
+        return None
+    now = datetime.now(timezone.utc)
+    horizon = now + timedelta(minutes=5)
+    alld = sorted(mt5.history_deals_get(ERA, horizon) or [], key=lambda d: d.time)
+    outs, ins_map = out_deals(ERA, horizon)
+    outs = sorted(outs, key=lambda d: d.time)
+    mine = {d.ticket for d in outs}
+    trades = []
+    for d in outs:
+        _in = ins_map.get(d.position_id)
+        trades.append([int(d.time), round(d.profit + d.commission + d.swap, 2),
+                       round(d.volume, 2),
+                       1 if (_in is not None and _in.type == mt5.DEAL_TYPE_BUY) else -1,
+                       (round((d.time - _in.time) / 60) if _in is not None else None)])
+    flows = [[int(d.time), round(d.profit, 2), (d.comment or "")[:40]]
+             for d in alld if d.type == mt5.DEAL_TYPE_BALANCE]
+    # anything else that moved the balance (hand trades on a bot-only
+    # account, fees): needed to rebuild the balance before each trade
+    others = [[int(d.time), round(d.profit + d.commission + d.swap, 2)]
+              for d in alld
+              if d.type != mt5.DEAL_TYPE_BALANCE and d.ticket not in mine
+              and abs(d.profit + d.commission + d.swap) > 0.004]
+    total = (sum(x[1] for x in trades) + sum(x[1] for x in flows)
+             + sum(x[1] for x in others))
+    return {"uid": uid, "name": u.get("name", uid), "era": ERA.isoformat(),
+            "currency": ai.currency, "balance": round(ai.balance, 2),
+            "equity": round(ai.equity, 2),
+            "bal_start": round(ai.balance - total, 2),
+            "trades": trades, "flows": flows, "others": others,
+            "updated": int(time.time())}
+
+
 _authfails = 0
 while True:
     try:
@@ -346,6 +390,19 @@ while True:
         else:
             _authfails = 0
             data = compute()
+            # the money centre's facts, once a minute (its own try: never
+            # costs the 5-second stats)
+            if time.time() - _wealth_t > 60:
+                try:
+                    _w = wealth()
+                    if _w:
+                        for _p in (WEALTH_OUT, os.path.join(LAB_WEALTH, uid + ".json")):
+                            os.makedirs(os.path.dirname(_p), exist_ok=True)
+                            json.dump(_w, open(_p + ".tmp", "w"))
+                            os.replace(_p + ".tmp", _p)
+                    _wealth_t = time.time()
+                except Exception:
+                    _wealth_t = time.time()
     except Exception as e:
         data = {"error": str(e)}
     data.setdefault("updated_utc",

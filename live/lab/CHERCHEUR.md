@@ -66,6 +66,20 @@ A hypothesis is never silently dropped: it is rejected by numbers, with
 the numbers, or it stays open. The `beliefs` of `chercheur_latest.json`
 are the top six of `hypotheses`, in Grandma words.
 
+## Your ledger — `lab/wealth/<account>.json` (since 2026-10-08)
+Every account's money facts, refreshed each minute by its stats worker for
+the owner's money centre "Patrimoine": `trades` = `[close_time, pnl $,
+lot, dir (1 buy/-1 sell), minutes held]` since the account's era,
+`flows` = deposits (+) / withdrawals (-) `[time, $, comment]`, `others` =
+anything else that moved the balance, `bal_start`, `balance`, `equity`.
+Deposits and withdrawals are NOT results: never count them as gains, and
+measure growth per trade on the balance before it (time-weighted). These
+are REAL fills, account by account - read them as a second, independent
+view next to the replay (different sizes, real costs, real timing). The
+accounts share the same signals, so pooled across accounts they are one
+sample, not six. Asks with `seed: "patrimoine"` come from that page as a
+free-text idea (`note`): answer them like any ask, using these files.
+
 ## Your eyes — `lab/scrutiny.py` and `lab/metrics.json`
 `lab/metrics.json` is written for you before every session: the real
 trades, each entry once, with win rate, profit factor, expectancy, average

@@ -2904,6 +2904,16 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 
 </div>
 <div class="tab" id="tab-set">
+<!-- 2026-10-08 (owner): the money centre, its own space -->
+<a class="panel" id="wealthrow" href="#" onclick="event.preventDefault();location.href=B+'wealth'"
+ style="display:flex;align-items:center;gap:14px;margin-top:22px;padding:16px;text-decoration:none;color:inherit;
+ background:linear-gradient(140deg,var(--hero1),var(--hero2));border-color:rgba(143,198,255,.18)">
+ <div style="width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;flex:0 0 auto">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8fc6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></div>
+ <div style="flex:1;min-width:0"><b style="color:#fff;font-size:1rem">Patrimoine</b>
+  <div style="font-size:.8rem;color:#9fc2de;margin-top:2px">Croissance, sant&eacute; du compte, d&eacute;p&ocirc;ts et retraits</div></div>
+ <svg class="ic chv" style="color:#9fc2de"><use href="#i-chev"/></svg>
+</a>
 <!-- 2026-10-01 (owner): accounts really differ now - a 3% per-trade
      ceiling here, none there - and the only way to see which was to read
      owl_packages.json. A member should be able to see their own worst
@@ -14121,6 +14131,47 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] == "wealth_ask":
+            # 2026-10-08 (owner): free-text idea from Patrimoine -> lab/asks.json
+            # (seed "patrimoine"); the chercheur reads it with lab/wealth/
+            u = user_by_token(_parts[0])
+            if u is None or u.get("public"):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                if not (is_admin(u) or has(u.get("id"), "strategy") or admin_cookie_ok(self.headers)):
+                    self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
+                    return
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upw
+                _fw = _upw.parse_qs(self.rfile.read(min(ln, 4000)).decode("utf-8", "replace"))
+                _note = (_fw.get("note", [""])[0] or "").strip()[:300]
+                if len(_note) < 5:
+                    self._send(json.dumps({"ok": False, "err": "trop court"}), "application/json")
+                    return
+                _ap = os.path.join(DIR, "lab", "asks.json")
+                try:
+                    _asks = json.load(open(_ap, encoding="utf-8"))
+                except Exception:
+                    _asks = {"asks": []}
+                _mine = [a for a in _asks.get("asks", []) if a.get("by") == u.get("id")
+                         and a.get("seed") == "patrimoine" and a.get("status") == "open"]
+                if len(_mine) >= 3:
+                    self._send(json.dumps({"ok": False, "err": "3 idees deja en attente"}), "application/json")
+                    return
+                _asks.setdefault("asks", []).append({"id": f"ask_{int(time.time())}", "seed": "patrimoine",
+                                                     "seed_fr": "Patrimoine (idee libre)", "seed_en": "Money centre (free idea)",
+                                                     "by": u.get("id"), "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                                                     "note": _note, "status": "open"})
+                _tmp = _ap + ".tmp"
+                json.dump(_asks, open(_tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+                os.replace(_tmp, _ap)
+                _LAB_CACHE.update(t=0.0, data=None)
+                self._send(json.dumps({"ok": True}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:100]}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "lab_ask":
             # 2026-09-29: "Demander au chercheur" on a seed - Kino and Strategie members
             u = user_by_token(_parts[0])
@@ -15401,6 +15452,35 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(_d), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "wealth":
+            # 2026-10-08 (owner): Patrimoine - the money centre, own file
+            try:
+                _wp = os.path.join(DIR, "owl_wealth_page.html")
+                _wh = open(_wp, encoding="utf-8").read()
+                self._send(_wh.replace("%%LAB%%", "false" if user.get("public") else "true"),
+                           "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "wealth_data":
+            # the worker's facts (trades, deposits/withdrawals kept apart) +
+            # the chercheur's latest words for the lab tab
+            try:
+                _w = json.load(open(os.path.join(DIR, "nest_data", f"{user.get('id')}.wealth.json")))
+            except Exception:
+                _w = None
+            _lab = None
+            if not user.get("public"):
+                try:
+                    _cl = json.load(open(os.path.join(DIR, "lab", "chercheur_latest.json"), encoding="utf-8"))
+                    _en = False
+                    _lab = {"date": _cl.get("date"),
+                            "headline": _cl.get("headline_en" if _en else "headline_fr"),
+                            "beliefs": [b.get("fr") for b in (_cl.get("beliefs") or []) if b.get("fr")][:6]}
+                except Exception:
+                    _lab = None
+            _can = bool(not user.get("public") and (is_admin(user) or has(user.get("id"), "strategy")
+                                                    or admin_cookie_ok(self.headers)))
+            self._send(json.dumps({"w": _w, "lab": _lab, "can_ask": _can}), "application/json")
         elif sub == "chart_data" and "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else ""):
             # 2026-10-08 (owner): the Progression screen's data - the worker's
             # result candles (eqc) shaped like the BTC feed so the same page
