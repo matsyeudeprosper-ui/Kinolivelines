@@ -568,7 +568,11 @@ function htDraw(){
  // HT.vo are the vertical zoom and pan taken from the right-hand strip.
  const ALL=d.candles,LEN=ALL.length;
  const cw=Math.max(1.6,(NARROW?5.5:HTCW)*HT.hz);
- const N=Math.min(LEN,Math.max(12,Math.floor((W-PAD)/cw)));
+ // Owner 2026-10-08: the newest candles touched the price scale and the
+ // level pills (drawn right-aligned against it) covered them. An empty
+ // strip on the right now holds the pills, clear of the candles.
+ const RGAP=NARROW?30:78;
+ const N=Math.min(LEN,Math.max(12,Math.floor((W-PAD-RGAP)/cw)));
  HT.off=Math.max(0,Math.min(Math.max(0,LEN-N),HT.off));
  const end=Math.max(3,LEN-Math.round(HT.off));
  const cs=ALL.slice(Math.max(0,end-N),end);
