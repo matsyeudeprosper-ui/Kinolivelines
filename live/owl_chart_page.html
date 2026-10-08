@@ -3125,7 +3125,7 @@ async function acLoad(){if(Date.now()-acT<20000)return;acT=Date.now();
   if(a&&a.candles){AC={e:a,tr:((b&&b.w&&b.w.trades)||[]),ref};if(oshCur==='ac')acRender();}}catch(e){}}
 function acState(){if(!AC)return null;const e=AC.e,now=+e.px;if(!isFinite(now))return null;
  const t=e.trend||0,upL=t===-1?e.invalid:e.next_bos,dnL=t===-1?e.next_bos:e.invalid;
- return {t,now,up:(upL!=null&&upL>now)?upL-now:null,dn:(dnL!=null&&dnL<now)?now-dnL:null};}
+ return {t,now,up:(upL!=null&&upL>now)?upL-now:null,dn:(dnL!=null&&dnL<=now+1e-9)?Math.max(0,now-dnL):null};}
 function acChip(){const seg=document.getElementById('acseg');if(!seg)return;
  if(EQ||!FULL||PAST){seg.style.display='none';return;}acLoad();const s=acState();if(!s||!(AC.e.candles||[]).length){seg.style.display='none';return;}
  const col=s.t===1?'#8df0bb':s.t===-1?'#ff8c8c':'#9fb3c8';
@@ -3150,8 +3150,9 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  document.getElementById('ac-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>';
  const M=v=>(v<0?'-':'+')+'$'+Math.abs(v).toFixed(2);
  document.getElementById('ac-t').textContent=(AC.ref?(CL?'The robot · ':'Le robot · '):(CL?'The account · ':'Le compte · '))+(s.t===1?(CL?'rising':'en hausse'):s.t===-1?(CL?'falling':'en baisse'):(CL?'no trend yet':'sans tendance'));
+ const _dn0=s.dn!=null&&s.dn<0.005;
  document.getElementById('ac-l').innerHTML=s.t===-1
-  ?(s.dn!=null?(CL?'A loss of <b>$':'Une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> makes a new low':'</b> fait un nouveau plus bas'):'')+(s.up!=null?' \u00b7 '+(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> net breaks the downtrend':'</b> net casse la baisse'):'')
+  ?(_dn0?(CL?'At its low: <b>any loss</b> makes a new low':'Sur son plus bas : <b>toute perte</b> fait un nouveau plus bas'):s.dn!=null?(CL?'A loss of <b>$':'Une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> makes a new low':'</b> fait un nouveau plus bas'):'')+(s.up!=null?' \u00b7 '+(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> net breaks the downtrend':'</b> net casse la baisse'):'')
   :(s.up!=null?(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> to a new high':'</b> pour un nouveau plus haut'):'')+(s.dn!=null?' \u00b7 '+(CL?'a loss of <b>$':'une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> breaks the rise':'</b> casse la hausse'):'');
  document.getElementById('ac-now').textContent=M(s.now);
  // mini candles: the last 40 result candles + the two levels
@@ -3171,10 +3172,15 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  // account is still inside the last candle's range (a loss in there is noise)
  const KC=e.candles||[],last=KC[KC.length-1];
  if(last){const lh=last[2],ll=last[3],inside=s.now<=lh+1e-9&&s.now>=ll-1e-9,pos=Math.round(100*(s.now-ll)/((lh-ll)||1));
+  const _g=Math.max(0,lh-s.now)+0.01,_r=Math.max(0,s.now-ll)+0.01;
+  const _need='<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
+   '<span style="border:1px solid rgba(46,204,113,.35);background:rgba(46,204,113,.08);border-radius:99px;padding:5px 10px;font-size:.78rem"><b style="color:#8df0bb">+$'+_g.toFixed(2)+'</b> '+(CL?'net = a green candle':'net = une bougie verte')+'</span>'+
+   '<span style="border:1px solid rgba(255,92,92,.35);background:rgba(255,92,92,.08);border-radius:99px;padding:5px 10px;font-size:.78rem"><b style="color:#ff8c8c">'+(_r<=0.011?(CL?'any loss':'toute perte'):'-$'+_r.toFixed(2))+'</b> '+(CL?'= a red candle':'= une bougie rouge')+'</span></div>';
   document.getElementById('ac-in').innerHTML=inside
    ?(CL?'Inside the last candle (':'Dans la derni\u00e8re bougie (')+M(ll)+' \u2192 '+M(lh)+', '+(CL?'at ':'\u00e0 ')+pos+' %). '+(CL?'Recent losses and wins stay in its range: no new candle yet.':'Les gains et pertes r\u00e9cents restent dans son range : pas de nouvelle bougie.')
    :(s.now<ll?(CL?'<b style="color:#ff8c8c">Below</b> the last candle: a new red candle is forming.':'<b style="color:#ff8c8c">Sous</b> la derni\u00e8re bougie : une nouvelle bougie rouge se forme.')
-    :(CL?'<b style="color:#8df0bb">Above</b> the last candle: a new green candle is forming.':'<b style="color:#8df0bb">Au-dessus</b> de la derni\u00e8re bougie : une nouvelle bougie verte se forme.'));}
+    :(CL?'<b style="color:#8df0bb">Above</b> the last candle: a new green candle is forming.':'<b style="color:#8df0bb">Au-dessus</b> de la derni\u00e8re bougie : une nouvelle bougie verte se forme.'));
+  if(inside)document.getElementById('ac-in').innerHTML+=_need;}
  let run=0;for(let i=KC.length-1;i>=0;i--){const up=KC[i][4]>=KC[i][1];if(i===KC.length-1)run=up?1:-1;else if(up===(run>0))run+=run>0?1:-1;else break;}
  document.getElementById('ac-st').textContent=run>0?(run+(CL?' green in a row':(run>1?' vertes d\u2019affil\u00e9e':' verte'))):run<0?((-run)+(CL?' red in a row':(-run>1?' rouges d\u2019affil\u00e9e':' rouge'))):'';
  const dfm=t=>{const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
@@ -3183,7 +3189,7 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
    '<div style="display:flex;align-items:center;gap:5px"><i style="width:6px;height:14px;border-radius:2px;background:'+c+';flex:none"></i><b style="font-size:.8rem;color:'+c+'">'+M(k[4]-k[1])+'</b></div>'+
    '<small style="display:block;font-size:.6rem;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+dfm(k[0])+'</small></div>';}).join('');
  const t14=Date.now()/1000-14*86400,pace=AC.tr.filter(x=>x[0]>=t14).reduce((a,x)=>a+x[1],0)/14;
- document.getElementById('ac-chips').innerHTML=chipH(CL?'next low':'prochain plus bas',s.dn!=null?'-$'+s.dn.toFixed(2):'\u2014','#ff8c8c',true)+chipH(CL?'trend break':'casse de tendance',s.up!=null&&s.t===-1?'+$'+s.up.toFixed(2):(s.dn!=null&&s.t===1?'-$'+s.dn.toFixed(2):'\u2014'),'#8df0bb',true)+
+ document.getElementById('ac-chips').innerHTML=chipH(CL?'next low':'prochain plus bas',s.dn!=null?(s.dn<0.005?(CL?'any loss':'toute perte'):'-$'+s.dn.toFixed(2)):'\u2014','#ff8c8c',true)+chipH(CL?'trend break':'casse de tendance',s.up!=null&&s.t===-1?'+$'+s.up.toFixed(2):(s.dn!=null&&s.t===1?'-$'+s.dn.toFixed(2):'\u2014'),'#8df0bb',true)+
   chipH(CL?'last candle':'derni\u00e8re bougie',last?M(last[4]-last[1]):'\u2014',last&&last[4]>=last[1]?'#8df0bb':'#ff8c8c',false)+chipH(CL?'pace 14 d':'rythme 14 j',M(pace)+(CL?'/day':'/j'),pace>=0?'#8df0bb':'#ff8c8c',false);
  document.getElementById('ac-note').textContent=CL?'An indicator for reading, not a rule: our tests have not shown yet that it predicts the next trade. A live test is running.':'Un rep\u00e8re pour lire, pas une r\u00e8gle : nos tests n\u2019ont pas encore montr\u00e9 qu\u2019il pr\u00e9dit le prochain trade. Un test en direct est en cours.';
  document.getElementById('ac-full').href='/'+tok+'/chart?src=eq';
