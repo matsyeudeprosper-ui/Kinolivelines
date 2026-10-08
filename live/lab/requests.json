@@ -120,7 +120,8 @@
     "b": 0.5
    },
    "built_date": "2026-10-05",
-   "built_commit": "96dbe40"
+   "built_commit": "96dbe40",
+   "c_nights": 0
   },
   {
    "id": "cap_rr",
@@ -172,8 +173,38 @@
    "what_en": "A tool for the nightly test: also compute the two halves with the period's loss limit switched off, and flag an idea when its verdict differs between the two readings. The official verdict does not change; we only see when a half was decided by that limit.",
    "why_fr": "Ce soir, la deuxième moitié du robot actuel, lancée quelques heures plus tard, a touché la limite et s'est arrêtée : -65 $ sur 43 trades au lieu de +14 $ sur 81. Toutes les idées qui évitaient ce hasard semblaient alors gagner 80 à 110 $. Un verdict ne doit pas tenir à l'heure de départ.",
    "why_en": "Tonight the second half of the current robot, started a few hours later, hit the limit and stopped: -$65 on 43 trades instead of +$14 on 81. Every idea that dodged that accident then looked $80 to $110 better. A verdict must not hang on the starting hour.",
-   "status": "open",
-   "date": "2026-10-06"
+   "status": "built",
+   "date": "2026-10-06",
+   "key": "halves_nokill",
+   "built_note_fr": "Le labo peut maintenant relire chaque idée de la nuit avec la limite de perte coupée à l'intérieur des deux moitiés, et il signale une idée quand son verdict change entre les deux lectures. Le verdict officiel ne change pas, et rien ne change pour le robot.",
+   "built_note_en": "The lab can now read each idea of the night again with the loss limit switched off inside the two halves, and it flags an idea when its verdict changes between the two readings. The official verdict does not change, and nothing changes for the robot.",
+   "test": {
+    "cmd": "python lab/halves_nokill.py --id rr06"
+   },
+   "build_attempts": 1,
+   "build_error": "périmètre : live/owl_chart_htf.json.tmp"
+  },
+  {
+   "id": "cap_wait",
+   "title_fr": "Attendre après chaque trade, seulement sur les comptes avec plafond",
+   "title_en": "Wait after each trade, only on accounts with a daily cap",
+   "what_fr": "Un réglage de 0 à 120 minutes : sur un compte avec plafond de gain par jour, pas de nouveau trade pendant X minutes après la fermeture du précédent (gain ou perte), comme l'attente actuelle ; un compte sans plafond n'attend pas. 0 = arrêt, rien ne change.",
+   "what_en": "A setting from 0 to 120 minutes: on an account with a daily cap, no new trade for X minutes after the previous one closes (win or loss), like today's wait; an account without a cap does not wait. 0 = off, nothing changes.",
+   "why_fr": "Attendre 30 minutes aide le compte avec plafond (+45 $ sur 42 jours, +39 $ sur 69, trou de 22 au lieu de 30) mais coûte au compte sans plafond (-28 $ et -63 $). Aujourd'hui on ne peut pas donner l'attente à l'un sans l'imposer à l'autre.",
+   "why_en": "Waiting 30 minutes helps the capped account (+$45 over 42 days, +$39 over 69, hole 22 instead of 30) but costs the uncapped one (-$28 and -$63). Today we cannot give the wait to one without forcing it on the other.",
+   "date": "2026-10-08",
+   "status": "open"
+  },
+  {
+   "id": "flip_loss_size",
+   "title_fr": "Miser moins sur un changement de sens pris juste après une perte",
+   "title_en": "Stake less on a change of direction taken right after a loss",
+   "what_fr": "Un réglage de 0,25 à 1,0 : multiplie la mise par X seulement sur un trade de changement de sens pris quand le trade précédent a perdu. Le trade est toujours pris. 1,0 = arrêt, rien ne change.",
+   "what_en": "A setting from 0.25 to 1.0: multiplies the stake by X only on a change-of-direction trade taken when the previous trade lost. The trade is still taken. 1.0 = off, nothing changes.",
+   "why_fr": "Chez les vrais trades, ces changements de sens gagnent 8 fois sur 23 et perdent 37 $, sur les deux moitiés ; après un gain, ils perdent 9 $ seulement. Je mesurerais 0,75 et 0,5 sur les deux comptes ; j'attends un trou plus petit sans perdre d'argent.",
+   "why_en": "In the real trades, these changes of direction win 8 times in 23 and lose $37, on both halves; after a win they lose only $9. I would measure 0.75 and 0.5 on both accounts; I expect a smaller hole without losing money.",
+   "date": "2026-10-08",
+   "status": "open"
   }
  ]
 }
