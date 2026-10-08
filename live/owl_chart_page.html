@@ -39,6 +39,13 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
  border:1px solid rgba(127,179,224,.18);
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #hdstrip:empty,#hdrow:empty{display:none}
+#acseg{position:fixed;left:12px;z-index:6;align-items:center;gap:6px;cursor:pointer;
+ padding:5px 11px 5px 9px;border-radius:99px;font:700 .64rem/1.2 system-ui,sans-serif;letter-spacing:.04em;
+ text-transform:uppercase;background:rgba(10,17,28,.72);border:1px solid rgba(127,179,224,.2);
+ backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
+#acseg .acv{font-variant-numeric:tabular-nums;letter-spacing:0}
+#acseg .acd{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor;background:currentColor}
+body.light #acseg{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.14)}
 /* 2026-10-01 (owner UX): measured on a 320px phone, the weather segment
    read "FEU" instead of "FEU VERT 0,99x". The strip BOX fits - which is why
    a width measurement said nothing was wrong - but `overflow:hidden` was
@@ -271,6 +278,9 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
  style="display:none"></span><span class="seg" id="sigseg" style="display:none"></span><span class="seg" id="wkseg" style="display:none;cursor:pointer"></span></span></span>
 </div>
 <span id="px"></span>
+<!-- 2026-10-08 (owner): the account indicator, a glass label floating at the
+     chart's top left (the header strip is already full on a phone) -->
+<button id="acseg" type="button" style="display:none"></button>
 
 <div id="wxbk"></div>
 <div id="wx" class="osh" role="dialog" aria-label="M&eacute;t&eacute;o du march&eacute;">
@@ -324,6 +334,21 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
  <div class="note" id="tr-story"></div>
  <div id="tr-act"></div>
  <div class="ft"><span id="tr-ft"></span><a id="tr-hist" href="#">Historique <span>&#8250;</span></a></div>
+</div>
+<!-- 2026-10-08 (owner): the account's progression as an indicator on the
+     real chart - where the results stand (trend, next new low / break). -->
+<div id="ac" class="osh" role="dialog" aria-label="Le compte">
+ <div class="aur"></div><div class="grip"></div>
+ <div class="hdr"><div class="orb" id="ac-orb"></div>
+  <div style="flex:1;min-width:0"><h2 id="ac-t">Le compte</h2><div class="ln" id="ac-l"></div></div>
+  <button class="x" onclick="oshShow('ac',false)" aria-label="Fermer">&#10005;</button></div>
+ <div class="lbl"><span>R&eacute;sultats en bougies</span><b id="ac-now"></b></div>
+ <canvas id="ac-cv" style="position:relative;width:100%;height:150px;display:block"></canvas>
+ <div class="lbl"><span>Les 10 derniers trades</span><b id="ac-st"></b></div>
+ <div id="ac-dots" style="position:relative;display:flex;gap:6px;flex-wrap:wrap"></div>
+ <div class="lbl"><span>En chiffres</span></div><div class="chips" id="ac-chips"></div>
+ <div id="ac-note" style="position:relative;font-size:.72rem;color:var(--muted);margin-top:14px;line-height:1.5"></div>
+ <div class="ft"><span></span><a id="ac-full" href="#">Progression <span>&#8250;</span></a></div>
 </div>
 <div id="wk" class="osh" role="dialog" aria-label="La semaine">
  <div class="aur"></div><div class="grip"></div>
@@ -2197,8 +2222,8 @@ function ui(){
   ab.querySelector('i').innerHTML='<svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">'+(D.auto?RBI.bot:RBI.hand)+'</svg>';}
  if(oshCur==='rb'){rbRender();i18nEl(document.getElementById('rb'));}if(oshCur==='st'){stRender();i18nEl(document.getElementById('st'));}
  if(oshCur==='tr')trRender();
- wkChip();
- if(PAST){['sigseg','wkseg','meteo'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});}
+ wkChip();acChip();
+ if(PAST){['sigseg','wkseg','acseg','meteo'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});}
  hdstrip();i18nEl(document.getElementById('hdstrip'));
  document.getElementById('aura').className=(FULL&&D.choch)?'choc':'';
  const pe=document.getElementById('px');
@@ -2897,7 +2922,7 @@ try{ctPaint();toolsDot();}catch(e){}
 // closes it; each re-renders on its own data tick while open.
 let wxOpen=false,wxDay=null,wxDayT=0,oshCur=null;
 const wxEl=document.getElementById('wx'),wxBk=document.getElementById('wxbk');
-const OSH={wx:()=>{const W=wxState();if(W)wxRender(W);wxDayLoad();},rb:()=>rbOpen(),sg:()=>sgRender(),st:()=>stRender(),tr:()=>trRender(),wk:()=>wkRender()};
+const OSH={wx:()=>{const W=wxState();if(W)wxRender(W);wxDayLoad();},rb:()=>rbOpen(),sg:()=>sgRender(),st:()=>stRender(),tr:()=>trRender(),wk:()=>wkRender(),ac:()=>acRender()};
 function oshShow(id,on){
  if(on&&oshCur&&oshCur!==id)oshShow(oshCur,false);
  const el=document.getElementById(id);if(!el)return;
@@ -3086,6 +3111,58 @@ function trRender(){const h=TRC;if(!h)return;const el=document.getElementById('t
   document.getElementById('tr-act').innerHTML=(window._MANUAL&&MS&&MS.open&&MS.open.length)?'<button class="btn" onclick="oshShow(\'tr\',false);setTimeout(()=>mtopen.click(),300)">'+tx('Modifier sur le graphique')+'</button>':'';
   document.getElementById('tr-ft').textContent=CL?'Live figures, every 1.5 s.':'Chiffres en direct, toutes les 1,5 s.';}
 }
+
+// ---- 2026-10-08 (owner): "Le compte" - the progression chart as an indicator
+// on the real chart. Admin only (its structure is). Reads the same data as
+// the Progression screen; never trades, never gates anything.
+let AC=null,acT=0;
+async function acLoad(){if(Date.now()-acT<20000)return;acT=Date.now();
+ try{const [a,b]=await Promise.all([fetch('/'+tok+'/chart_data?src=eq',{cache:'no-store'}).then(r=>r.ok?r.json():null),
+  fetch('/'+tok+'/wealth_data',{cache:'no-store'}).then(r=>r.ok?r.json():null)]);
+  if(a&&a.candles){AC={e:a,tr:((b&&b.w&&b.w.trades)||[])};if(oshCur==='ac')acRender();}}catch(e){}}
+function acState(){if(!AC)return null;const e=AC.e,now=+e.px;if(!isFinite(now))return null;
+ const t=e.trend||0,upL=t===-1?e.invalid:e.next_bos,dnL=t===-1?e.next_bos:e.invalid;
+ return {t,now,up:(upL!=null&&upL>now)?upL-now:null,dn:(dnL!=null&&dnL<now)?now-dnL:null};}
+function acChip(){const seg=document.getElementById('acseg');if(!seg)return;
+ if(EQ||!FULL||PAST){seg.style.display='none';return;}acLoad();const s=acState();if(!s||!s.t){seg.style.display='none';return;}
+ const col=s.t===1?'#8df0bb':'#ff8c8c';
+ seg.innerHTML='<span class="acd" style="color:'+col+'"></span><span style="color:#a9b8c8">'+(CL?'Account':'Compte')+'</span>'+
+  '<span class="acv" style="color:'+col+'">'+(s.t===1?'\u25B2 ':'\u25BC ')+(s.dn!=null?'-$'+s.dn.toFixed(2):'')+'</span>'+
+  (s.t===-1&&s.up!=null?'<span class="acv" style="color:var(--muted)">\u00b7 +$'+s.up.toFixed(2)+'</span>':'');
+ const hd=document.getElementById('hd');seg.style.top=((hd?hd.getBoundingClientRect().bottom:90)+6)+'px';
+ seg.style.display='flex';seg.onclick=()=>oshShow('ac',oshCur!=='ac');
+ seg.title=CL?'Account results: trend and distance to the next low':'R\u00e9sultats du compte : tendance et distance au prochain plus bas';}
+function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!el)return;const e=AC.e,col=s.t===1?'#8df0bb':s.t===-1?'#ff8c8c':'#9fb3c8';
+ el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
+ document.getElementById('ac-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>';
+ const M=v=>(v<0?'-':'+')+'$'+Math.abs(v).toFixed(2);
+ document.getElementById('ac-t').textContent=(CL?'The account · ':'Le compte · ')+(s.t===1?(CL?'rising':'en hausse'):s.t===-1?(CL?'falling':'en baisse'):(CL?'no trend yet':'sans tendance'));
+ document.getElementById('ac-l').innerHTML=s.t===-1
+  ?(s.dn!=null?(CL?'A loss of <b>$':'Une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> makes a new low':'</b> fait un nouveau plus bas'):'')+(s.up!=null?' \u00b7 '+(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> net breaks the downtrend':'</b> net casse la baisse'):'')
+  :(s.up!=null?(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> to a new high':'</b> pour un nouveau plus haut'):'')+(s.dn!=null?' \u00b7 '+(CL?'a loss of <b>$':'une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> breaks the rise':'</b> casse la hausse'):'');
+ document.getElementById('ac-now').textContent=M(s.now);
+ // mini candles: the last 40 result candles + the two levels
+ const cv=document.getElementById('ac-cv'),dpr=window.devicePixelRatio||1,W=cv.clientWidth||320,H=cv.clientHeight||150;
+ cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ const cs=(e.candles||[]).slice(-40),RG=64;let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
+ [e.next_bos,e.invalid,s.now].forEach(v=>{if(v!=null&&isFinite(v)){hi=Math.max(hi,v);lo=Math.min(lo,v);}});
+ const pd=(hi-lo)*0.1||1;hi+=pd;lo-=pd;const py=v=>6+(hi-v)/(hi-lo)*(H-12),cw=(W-RG)/(cs.length+1),bw=Math.max(2,Math.min(8,cw*0.6));
+ cs.forEach((k,i)=>{const x=Math.round(cw*(i+1))+0.5,up=k[4]>=k[1];g.fillStyle=up?'#2ecc71':'#ff5c5c';g.globalAlpha=0.45+0.55*i/Math.max(1,cs.length-1);
+  const y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));g.fillRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1));});g.globalAlpha=1;
+ const lvl=(v,c,lab,dash)=>{if(v==null)return;const y=py(v);g.strokeStyle=c;g.setLineDash(dash);g.lineWidth=1.2;g.beginPath();g.moveTo(0,y);g.lineTo(W-RG+4,y);g.stroke();g.setLineDash([]);
+  g.font='bold 9px system-ui';const t=lab+' '+M(v),w=g.measureText(t).width+10;g.fillStyle='rgba(8,14,22,.88)';g.beginPath();g.roundRect(W-w,y-7,w,14,7);g.fill();g.strokeStyle=c;g.stroke();g.fillStyle=c;g.fillText(t,W-w+5,y+3.5);};
+ if(s.t===-1){lvl(e.next_bos,'#ff9678','BOS',[2,4]);lvl(e.invalid,'#2ecc71','CHoCH',[6,4]);}
+ else if(s.t===1){lvl(e.next_bos,'#4fd8c8','BOS',[2,4]);lvl(e.invalid,'#ff5c5c','CHoCH',[6,4]);}
+ {const y=py(s.now);g.fillStyle='#e8eef4';g.beginPath();g.arc(Math.round(cw*(cs.length+0.6)),y,3.5,0,6.3);g.fill();}
+ // the last 10 trades, oldest left
+ const T=AC.tr.slice(-10);let st=0;for(let i=AC.tr.length-1;i>=0;i--){const p=AC.tr[i][1];if(i===AC.tr.length-1)st=p>0?1:(p<0?-1:0);else if((p>0&&st>0)||(p<0&&st<0))st+=st>0?1:-1;else break;}
+ document.getElementById('ac-dots').innerHTML=T.map(x=>{const w=x[1]>0;return '<span title="'+M(x[1])+'" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:26px"><i style="width:14px;height:14px;border-radius:50%;background:'+(w?'#2ecc71':'#ff5c5c')+';box-shadow:0 0 10px '+(w?'rgba(46,204,113,.45)':'rgba(255,92,92,.45)')+'"></i><small style="font-size:.62rem;color:var(--muted)">'+(x[1]>=0?'+':'')+x[1].toFixed(1)+'</small></span>';}).join('');
+ document.getElementById('ac-st').textContent=st>0?(st+(CL?' won in a row':' gagn\u00e9s d\u2019affil\u00e9e')):st<0?((-st)+(CL?' lost in a row':' perdus d\u2019affil\u00e9e')):'';
+ const t14=Date.now()/1000-14*86400,p14=AC.tr.filter(x=>x[0]>=t14),pace=p14.reduce((a,x)=>a+x[1],0)/14,l20=AC.tr.slice(-20),wr=l20.length?Math.round(100*l20.filter(x=>x[1]>0).length/l20.length):0;
+ document.getElementById('ac-chips').innerHTML=chipH(CL?'next low':'prochain plus bas',s.dn!=null?'-$'+s.dn.toFixed(2):'\u2014','#ff8c8c',true)+chipH(CL?'trend break':'casse de tendance',s.up!=null&&s.t===-1?'+$'+s.up.toFixed(2):(s.dn!=null&&s.t===1?'-$'+s.dn.toFixed(2):'\u2014'),'#8df0bb',true)+
+  chipH(CL?'pace 14 d':'rythme 14 j',M(pace)+(CL?'/day':'/j'),pace>=0?'#8df0bb':'#ff8c8c',false)+chipH(CL?'last 20':'20 derniers',wr+' %',wr>=50?'#8df0bb':'#ff8c8c',false);
+ document.getElementById('ac-note').textContent=CL?'An indicator for reading, not a rule: our tests have not shown yet that it predicts the next trade. A live test is running.':'Un rep\u00e8re pour lire, pas une r\u00e8gle : nos tests n\u2019ont pas encore montr\u00e9 qu\u2019il pr\u00e9dit le prochain trade. Un test en direct est en cours.';
+ document.getElementById('ac-full').href='/'+tok+'/chart?src=eq';}
 // ---- La semaine (chip + sheet, from the account's own numbers) ----
 let WK=null,wkT=0;
 async function wkLoad(){if(Date.now()-wkT<60000)return;wkT=Date.now();try{const r=await fetch('/'+tok+'/api?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();WK={week:+j.week||0,days:j.days||[],expired:!!j.expired};if(oshCur==='rb'){RB=j;rbT=Date.now();}}}catch(e){}}
