@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-07T22:35:00Z",
+ "updated": "2026-10-08T00:00:23Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -869,6 +869,14 @@
     "scrutiny --pile flip_hot"
    ],
    "saw": "70 trades. BOS BUY lost -2.08 (pace 1.39, closed 17:25), a normal-size loss. BOS now 28 tr 64% +17.55 PF 1.29 (h 62%/67%) - down from 22 tr 73% +44 on 10-06; FLIP-BOS 39 tr 38% -43.87 PF 0.52. Pile flip_hot 23 tr 30% -34.75, after a loss 10 tr 10% -32.93, after a win 13 tr 46% -1.82. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-08T00:00:23Z",
+   "looked": [
+    "wake_context new trade (1, already logged 2026-10-07T22:35)",
+    "asks.json (none open)"
+   ],
+   "saw": "Still 70 trades. The BOS BUY -2.08 (closed 17:25) was already read at 22:35. No twins, no labo, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
