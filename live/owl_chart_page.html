@@ -39,13 +39,15 @@ body{background:var(--bg);color:var(--text2);overflow:hidden;
  border:1px solid rgba(127,179,224,.18);
  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 #hdstrip:empty,#hdrow:empty{display:none}
-#acseg{position:fixed;left:12px;z-index:6;align-items:center;gap:6px;cursor:pointer;
- padding:5px 11px 5px 9px;border-radius:99px;font:700 .64rem/1.2 system-ui,sans-serif;letter-spacing:.04em;
- text-transform:uppercase;background:rgba(10,17,28,.72);border:1px solid rgba(127,179,224,.2);
- backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 6px 18px rgba(0,0,0,.25)}
-#acseg .acv{font-variant-numeric:tabular-nums;letter-spacing:0}
-#acseg .acd{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor;background:currentColor}
-body.light #acseg{background:rgba(255,255,255,.85);border-color:rgba(15,23,42,.14)}
+/* 2026-10-08 (owner): the account indicator lives in the header row, after
+   the strip - it must never cover the chart. It draws the LAST progression
+   candles (the filtered chart), not single trades. */
+#acseg{flex:0 0 auto;margin-left:6px;display:flex;align-items:center;gap:5px;cursor:pointer;
+ padding:3px 9px 3px 7px;border-radius:99px;background:rgba(127,179,224,.06);
+ border:1px solid rgba(127,179,224,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+ font:700 .62rem/1 system-ui,sans-serif;color:#a9b8c8}
+#acseg svg{display:block}
+body.light #acseg{background:rgba(15,23,42,.05);border-color:rgba(15,23,42,.14)}
 /* 2026-10-01 (owner UX): measured on a 320px phone, the weather segment
    read "FEU" instead of "FEU VERT 0,99x". The strip BOX fits - which is why
    a width measurement said nothing was wrong - but `overflow:hidden` was
@@ -275,12 +277,9 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
  style="display:none;color:#8df0bb"
  title="Mode automatique : le robot gere les entrees"><i><svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4M9 4h6"/><circle cx="9" cy="14" r="1.2"/><circle cx="15" cy="14" r="1.2"/></svg></i></span><span
  class="seg" id="meteo"
- style="display:none"></span><span class="seg" id="sigseg" style="display:none"></span><span class="seg" id="wkseg" style="display:none;cursor:pointer"></span></span></span>
+ style="display:none"></span><span class="seg" id="sigseg" style="display:none"></span><span class="seg" id="wkseg" style="display:none;cursor:pointer"></span></span><button id="acseg" type="button" aria-label="Le compte" style="display:none"></button></span>
 </div>
 <span id="px"></span>
-<!-- 2026-10-08 (owner): the account indicator, a glass label floating at the
-     chart's top left (the header strip is already full on a phone) -->
-<button id="acseg" type="button" style="display:none"></button>
 
 <div id="wxbk"></div>
 <div id="wx" class="osh" role="dialog" aria-label="M&eacute;t&eacute;o du march&eacute;">
@@ -344,8 +343,9 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
   <button class="x" onclick="oshShow('ac',false)" aria-label="Fermer">&#10005;</button></div>
  <div class="lbl"><span>R&eacute;sultats en bougies</span><b id="ac-now"></b></div>
  <canvas id="ac-cv" style="position:relative;width:100%;height:150px;display:block"></canvas>
- <div class="lbl"><span>Les 10 derniers trades</span><b id="ac-st"></b></div>
- <div id="ac-dots" style="position:relative;display:flex;gap:6px;flex-wrap:wrap"></div>
+ <div id="ac-in" style="position:relative;margin-top:10px;font-size:.84rem;line-height:1.5;color:var(--text2)"></div>
+ <div class="lbl"><span>Les derni&egrave;res bougies</span><b id="ac-st"></b></div>
+ <div id="ac-dots" style="position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:6px"></div>
  <div class="lbl"><span>En chiffres</span></div><div class="chips" id="ac-chips"></div>
  <div id="ac-note" style="position:relative;font-size:.72rem;color:var(--muted);margin-top:14px;line-height:1.5"></div>
  <div class="ft"><span></span><a id="ac-full" href="#">Progression <span>&#8250;</span></a></div>
@@ -988,6 +988,7 @@ if(HT.on){document.documentElement.style.setProperty('--htf-r',HT.r);
 let TFS=null;
 function tfDotsPaint(){
  const el=document.getElementById('tfdots');if(!el||!TFS)return;
+ if(window._tfYield){el.style.display='none';return;}   // 2026-10-08: gave way to the account pill
   const S=TFS;const ks=['H4','H1','M15'];
   if(!ks.some(k=>S[k])){el.style.display='none';return;}
   const col=t=>t===1?'#2ecc71':t===-1?'#ff5c5c':'#5f6f82';
@@ -3126,11 +3127,21 @@ function acState(){if(!AC)return null;const e=AC.e,now=+e.px;if(!isFinite(now))r
 function acChip(){const seg=document.getElementById('acseg');if(!seg)return;
  if(EQ||!FULL||PAST){seg.style.display='none';return;}acLoad();const s=acState();if(!s||!s.t){seg.style.display='none';return;}
  const col=s.t===1?'#8df0bb':'#ff8c8c';
- seg.innerHTML='<span class="acd" style="color:'+col+'"></span><span style="color:#a9b8c8">'+(CL?'Account':'Compte')+'</span>'+
-  '<span class="acv" style="color:'+col+'">'+(s.t===1?'\u25B2 ':'\u25BC ')+(s.dn!=null?'-$'+s.dn.toFixed(2):'')+'</span>'+
-  (s.t===-1&&s.up!=null?'<span class="acv" style="color:var(--muted)">\u00b7 +$'+s.up.toFixed(2)+'</span>':'');
- const hd=document.getElementById('hd');seg.style.top=((hd?hd.getBoundingClientRect().bottom:90)+6)+'px';
+ const cs=(AC.e.candles||[]).slice(-(acChip.n||6));let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
+ if(isFinite(s.now)){hi=Math.max(hi,s.now);lo=Math.min(lo,s.now);}
+ const H=16,Wd=cs.length*7+6,py=v=>1+(hi-v)/((hi-lo)||1)*(H-2);let g='';
+ cs.forEach((k,i)=>{const x=3+i*7,y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
+  g+='<rect x="'+x+'" y="'+y1.toFixed(1)+'" width="4" height="'+Math.max(1.5,y2-y1).toFixed(1)+'" rx="1" fill="'+(k[4]>=k[1]?'#2ecc71':'#ff5c5c')+'"/>';});
+ g+='<circle cx="'+(Wd-1.5)+'" cy="'+py(s.now).toFixed(1)+'" r="1.8" fill="#e8eef4"/>';
+ seg.innerHTML='<svg width="'+Wd+'" height="'+H+'" viewBox="0 0 '+Wd+' '+H+'">'+g+'</svg><span style="color:'+col+'">'+(s.t===1?'\u25B2':'\u25BC')+'</span>';
+ seg.title=CL?'Account progression: the last candles':'Progression du compte : les derni\u00e8res bougies';
  seg.style.display='flex';seg.onclick=()=>oshShow('ac',oshCur!=='ac');
+ // nothing may be cut: the weather verdict and its number come first. The
+ // week pill, then the timeframe dots give way, then the pill shrinks to 4.
+ const mt=document.getElementById('meteo'),hs=document.getElementById('hdstrip'),cut=()=>(mt&&mt.style.display!=='none'&&mt.scrollWidth>mt.clientWidth+1)||(hs&&hs.scrollWidth>hs.clientWidth+1)||((document.getElementById('hdrow')||{}).scrollWidth>(document.getElementById('hdrow')||{}).clientWidth+1);
+ if(cut()){const wk=document.getElementById('wkseg');if(wk)wk.style.display='none';}
+ if(cut()){const tf=document.getElementById('tfdots');if(tf){tf.style.display='none';window._tfYield=true;}}
+ if(cut()&&(acChip.n||6)>4){acChip.n=4;return acChip();}
  seg.title=CL?'Account results: trend and distance to the next low':'R\u00e9sultats du compte : tendance et distance au prochain plus bas';}
 function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!el)return;const e=AC.e,col=s.t===1?'#8df0bb':s.t===-1?'#ff8c8c':'#9fb3c8';
  el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
@@ -3144,7 +3155,7 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  // mini candles: the last 40 result candles + the two levels
  const cv=document.getElementById('ac-cv'),dpr=window.devicePixelRatio||1,W=cv.clientWidth||320,H=cv.clientHeight||150;
  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
- const cs=(e.candles||[]).slice(-40),RG=64;let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
+ const cs=(e.candles||[]).slice(-24),RG=64;let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
  [e.next_bos,e.invalid,s.now].forEach(v=>{if(v!=null&&isFinite(v)){hi=Math.max(hi,v);lo=Math.min(lo,v);}});
  const pd=(hi-lo)*0.1||1;hi+=pd;lo-=pd;const py=v=>6+(hi-v)/(hi-lo)*(H-12),cw=(W-RG)/(cs.length+1),bw=Math.max(2,Math.min(8,cw*0.6));
  cs.forEach((k,i)=>{const x=Math.round(cw*(i+1))+0.5,up=k[4]>=k[1];g.fillStyle=up?'#2ecc71':'#ff5c5c';g.globalAlpha=0.45+0.55*i/Math.max(1,cs.length-1);
@@ -3154,13 +3165,24 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  if(s.t===-1){lvl(e.next_bos,'#ff9678','BOS',[2,4]);lvl(e.invalid,'#2ecc71','CHoCH',[6,4]);}
  else if(s.t===1){lvl(e.next_bos,'#4fd8c8','BOS',[2,4]);lvl(e.invalid,'#ff5c5c','CHoCH',[6,4]);}
  {const y=py(s.now);g.fillStyle='#e8eef4';g.beginPath();g.arc(Math.round(cw*(cs.length+0.6)),y,3.5,0,6.3);g.fill();}
- // the last 10 trades, oldest left
- const T=AC.tr.slice(-10);let st=0;for(let i=AC.tr.length-1;i>=0;i--){const p=AC.tr[i][1];if(i===AC.tr.length-1)st=p>0?1:(p<0?-1:0);else if((p>0&&st>0)||(p<0&&st<0))st+=st>0?1:-1;else break;}
- document.getElementById('ac-dots').innerHTML=T.map(x=>{const w=x[1]>0;return '<span title="'+M(x[1])+'" style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;min-width:26px"><i style="width:14px;height:14px;border-radius:50%;background:'+(w?'#2ecc71':'#ff5c5c')+';box-shadow:0 0 10px '+(w?'rgba(46,204,113,.45)':'rgba(255,92,92,.45)')+'"></i><small style="font-size:.62rem;color:var(--muted)">'+(x[1]>=0?'+':'')+x[1].toFixed(1)+'</small></span>';}).join('');
- document.getElementById('ac-st').textContent=st>0?(st+(CL?' won in a row':' gagn\u00e9s d\u2019affil\u00e9e')):st<0?((-st)+(CL?' lost in a row':' perdus d\u2019affil\u00e9e')):'';
- const t14=Date.now()/1000-14*86400,p14=AC.tr.filter(x=>x[0]>=t14),pace=p14.reduce((a,x)=>a+x[1],0)/14,l20=AC.tr.slice(-20),wr=l20.length?Math.round(100*l20.filter(x=>x[1]>0).length/l20.length):0;
+ // what matters on a filtered chart: the LAST candles, and whether the
+ // account is still inside the last candle's range (a loss in there is noise)
+ const KC=e.candles||[],last=KC[KC.length-1];
+ if(last){const lh=last[2],ll=last[3],inside=s.now<=lh+1e-9&&s.now>=ll-1e-9,pos=Math.round(100*(s.now-ll)/((lh-ll)||1));
+  document.getElementById('ac-in').innerHTML=inside
+   ?(CL?'Inside the last candle (':'Dans la derni\u00e8re bougie (')+M(ll)+' \u2192 '+M(lh)+', '+(CL?'at ':'\u00e0 ')+pos+' %). '+(CL?'Recent losses and wins stay in its range: no new candle yet.':'Les gains et pertes r\u00e9cents restent dans son range : pas de nouvelle bougie.')
+   :(s.now<ll?(CL?'<b style="color:#ff8c8c">Below</b> the last candle: a new red candle is forming.':'<b style="color:#ff8c8c">Sous</b> la derni\u00e8re bougie : une nouvelle bougie rouge se forme.')
+    :(CL?'<b style="color:#8df0bb">Above</b> the last candle: a new green candle is forming.':'<b style="color:#8df0bb">Au-dessus</b> de la derni\u00e8re bougie : une nouvelle bougie verte se forme.'));}
+ let run=0;for(let i=KC.length-1;i>=0;i--){const up=KC[i][4]>=KC[i][1];if(i===KC.length-1)run=up?1:-1;else if(up===(run>0))run+=run>0?1:-1;else break;}
+ document.getElementById('ac-st').textContent=run>0?(run+(CL?' green in a row':(run>1?' vertes d\u2019affil\u00e9e':' verte'))):run<0?((-run)+(CL?' red in a row':(-run>1?' rouges d\u2019affil\u00e9e':' rouge'))):'';
+ const dfm=t=>{const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+ document.getElementById('ac-dots').innerHTML=KC.slice(-8).reverse().map((k,i)=>{const up=k[4]>=k[1],c=up?'#2ecc71':'#ff5c5c';
+  return '<div style="border:1px solid '+(i===0?c+'66':'rgba(127,179,224,.14)')+';background:'+(i===0?c+'14':'rgba(255,255,255,.03)')+';border-radius:12px;padding:7px 8px;min-width:0">'+
+   '<div style="display:flex;align-items:center;gap:5px"><i style="width:6px;height:14px;border-radius:2px;background:'+c+';flex:none"></i><b style="font-size:.8rem;color:'+c+'">'+M(k[4]-k[1])+'</b></div>'+
+   '<small style="display:block;font-size:.6rem;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+dfm(k[0])+'</small></div>';}).join('');
+ const t14=Date.now()/1000-14*86400,pace=AC.tr.filter(x=>x[0]>=t14).reduce((a,x)=>a+x[1],0)/14;
  document.getElementById('ac-chips').innerHTML=chipH(CL?'next low':'prochain plus bas',s.dn!=null?'-$'+s.dn.toFixed(2):'\u2014','#ff8c8c',true)+chipH(CL?'trend break':'casse de tendance',s.up!=null&&s.t===-1?'+$'+s.up.toFixed(2):(s.dn!=null&&s.t===1?'-$'+s.dn.toFixed(2):'\u2014'),'#8df0bb',true)+
-  chipH(CL?'pace 14 d':'rythme 14 j',M(pace)+(CL?'/day':'/j'),pace>=0?'#8df0bb':'#ff8c8c',false)+chipH(CL?'last 20':'20 derniers',wr+' %',wr>=50?'#8df0bb':'#ff8c8c',false);
+  chipH(CL?'last candle':'derni\u00e8re bougie',last?M(last[4]-last[1]):'\u2014',last&&last[4]>=last[1]?'#8df0bb':'#ff8c8c',false)+chipH(CL?'pace 14 d':'rythme 14 j',M(pace)+(CL?'/day':'/j'),pace>=0?'#8df0bb':'#ff8c8c',false);
  document.getElementById('ac-note').textContent=CL?'An indicator for reading, not a rule: our tests have not shown yet that it predicts the next trade. A live test is running.':'Un rep\u00e8re pour lire, pas une r\u00e8gle : nos tests n\u2019ont pas encore montr\u00e9 qu\u2019il pr\u00e9dit le prochain trade. Un test en direct est en cours.';
  document.getElementById('ac-full').href='/'+tok+'/chart?src=eq';}
 // ---- La semaine (chip + sheet, from the account's own numbers) ----
