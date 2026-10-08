@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T00:00:23Z",
+ "updated": "2026-10-08T01:30:11Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -877,6 +877,15 @@
     "asks.json (none open)"
    ],
    "saw": "Still 70 trades. The BOS BUY -2.08 (closed 17:25) was already read at 22:35. No twins, no labo, no open ask. No new data -> no harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
+  },
+  {
+   "t": "2026-10-08T01:30:11Z",
+   "looked": [
+    "wake_context new trade (1, same BOS BUY -2.08 closed 2026-10-07 17:25, third wake for it)",
+    "asks.json (none open)",
+    "metrics.json trade count (70)"
+   ],
+   "saw": "No new data: still 70 trades, no twins, no labo, no open ask. No harness run, no pile, no proposal. Veille 'rien'. Hypotheses untouched."
   }
  ],
  "lessons": [
@@ -891,7 +900,8 @@
   "2026-10-05: the 42-day window slides every night: a setting that is better on both shapes one night can lose the capped shape the next only because early days left the window (rr10_nosun capped +15.5 on 10-04, -6.6 on 10-05). Want two nights in a row before believing an A.",
   "2026-10-05: my runner's reference differs from the battery's (base 155.8 vs 127.2) because the bars were fetched hours later. Compare inside one run only. Runner kept outside the repo (Temp/cr.py): refs base + valere(balance 252), verdict per shape.",
   "2026-10-06: the kill line makes the halves fragile: a few hours of fresh bars moved the midpoint and the base second half hit -60 and stopped (-64.8 on 43 tr vs +14.0 on 81 without it). Every variant that dodged it looked +80..+110 in h2. Read halves with kill_net 0 too (Temp/cr2.py MODE nokill); full-period numbers are unaffected.",
-  "2026-10-06: real trades and the engine can disagree on a whole time slot (21-00 UTC: real 3/13, engine says skipping costs). A pile is the right tool, not a dial, until the real side has 30 trades."
+  "2026-10-06: real trades and the engine can disagree on a whole time slot (21-00 UTC: real 3/13, engine says skipping costs). A pile is the right tool, not a dial, until the real side has 30 trades.",
+  "2026-10-08: wake_context can re-flag an already-read close as 'new' several watches in a row (BOS BUY -2.08 of 10-07 17:25 woke me at 22:35, 00:00 and 01:30). Check the close time against scrutiny_log before reading it as new."
  ],
  "open": [
   "rr10_nosun_fliphot075: does A/A hold in the battery (capped h1 was +0.1)? Then the critic: neighbours 0.5/0.85 already positive.",
