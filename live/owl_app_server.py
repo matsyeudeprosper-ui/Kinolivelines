@@ -4575,7 +4575,7 @@ function drawEqc(e,cv,sub,minW){
    g.strokeStyle=col;g.globalAlpha=.9;g.setLineDash([1,4]);g.lineWidth=1.4;g.beginPath();g.moveTo(xat(e.next_bos_t)||0,y);g.lineTo(W-RG+4,y);g.stroke();
    g.setLineDash([]);g.lineWidth=1;g.globalAlpha=1;pill(y,'BOS '+fm(e.next_bos),col,true);}}
  }
- const last=live?live[4]:cs[cs.length-1][4];
+ const last=(e.now!=null)?e.now:(live?live[4]:cs[cs.length-1][4]);
  {const y=Math.max(TOP+7,Math.min(TOP+PL-7,py(last)));pill(y,fm(last),'#e8eef4',true);}
  // the money scale last, skipping any row a label already holds
  g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';g.fillStyle='#5f6f82';
@@ -4583,6 +4583,13 @@ function drawEqc(e,cv,sub,minW){
   g.fillText(fm(hi-(hi-lo)*i/3),W-RG+8,y+3);}
  sub.textContent=(e.n_trades||cs0.length)+(en?' trades \u00b7 one candle per trade, quiet ones hidden':' trades \u00b7 une bougie par trade, les calmes masqu\u00e9es')+
   (S?(e.trend===1?(en?' \u00b7 trend up':' \u00b7 tendance hausse'):e.trend===-1?(en?' \u00b7 trend down':' \u00b7 tendance baisse'):''):'');
+ // 2026-10-08 (owner): how far to the next structure event, in money, so
+ // the levels read at a glance. Up = wins needed, down = losses that do it.
+ if(S&&e.trend){const up=e.trend===1,m=v=>'$'+Math.abs(v).toFixed(2),parts=[];
+  const gU=up?e.next_bos:e.invalid,gD=up?e.invalid:e.next_bos;
+  if(gU!=null&&gU>last)parts.push('<b style="color:var(--up)">+'+m(gU-last)+'</b> '+(up?(en?'to a new high':'pour un nouveau plus haut'):(en?'to break the downtrend':'pour casser la baisse')));
+  if(gD!=null&&gD<last)parts.push('<b style="color:#ff5c5c">\u2212'+m(last-gD)+'</b> '+(up?(en?'to break the uptrend':'pour casser la hausse'):(en?'to a new low':'pour un nouveau plus bas')));
+  if(parts.length)sub.innerHTML='<div style="font-size:.86rem;color:var(--text2);margin-bottom:4px">'+parts.join(' \u00b7 ')+'</div>'+sub.innerHTML;}
  sub.style.display='block';}
 function drawSpark(){
  {const bg=!!window._cvbg,cv=document.getElementById('eqcv');
@@ -10916,7 +10923,7 @@ def user_stats(u, admin_override=False):
         if (isinstance(d.get("eqc"), dict)
                 and not (u.get("id") in ("kino", "std") or admin_override)):
             d["eqc"] = {k: d["eqc"].get(k)
-                        for k in ("candles", "live", "n_trades")}
+                        for k in ("candles", "live", "n_trades", "now")}
         if (u.get("id") in ("kino", "std")
                 or admin_override):
             d["is_master"] = True

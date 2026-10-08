@@ -266,6 +266,9 @@ def compute():
             if _tr:
                 _dots = [x for x in _dots if x[2] == _tr]
             eqc = {"candles": _kept[-300:], "n_trades": len(_raw),
+                   # the true current total (hidden trades + open trade),
+                   # which the last SHOWN candle may not be
+                   "now": round(_cum + floating, 2),
                    "live": ([int(utcnow.timestamp()), round(_cum, 2),
                              round(max(_cum, _cum + floating), 2),
                              round(min(_cum, _cum + floating), 2),
@@ -280,7 +283,8 @@ def compute():
                    "flip_bos": round(_fl, 2) if _fl else None,
                    "flip_bos_t": _fl_t, "flip_bos_dir": _fd}
         elif _kept:
-            eqc = {"candles": _kept, "n_trades": len(_raw), "live": None}
+            eqc = {"candles": _kept, "n_trades": len(_raw), "live": None,
+                   "now": round(_cum + floating, 2)}
     except Exception as _e:
         eqc = {"err": f"{type(_e).__name__}: {_e}"}
     return {
