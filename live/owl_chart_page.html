@@ -1142,7 +1142,12 @@ function draw(){
  const PLOT=Math.max(60,Hh-TOPP-BOTP);
  const px=v=>(hi-v)/(hi-lo)*PLOT+TOPP;
  SCALE={hi:hi,lo:lo,Hh:Hh,W:W,top:TOPP,bot:BOTP,plot:PLOT,span0:span0};
- const cw=W/(N+9);
+ // Owner 2026-10-08: same as the split panel - the right margin was 8
+ // candle widths (~50 px on a phone) while the level pills, drawn
+ // right-aligned, are 80-100 px, so they sat on the newest candles. A
+ // fixed strip in pixels now holds them; the live candle ends before it.
+ const RGAP=Math.min(96,Math.max(60,W*0.21));
+ const cw=(W-RGAP)/(N+1);
  cwG=cw;
  const bw=Math.max(2,Math.min(9,cw*0.62));
  if(vzoom!==1||vz){
