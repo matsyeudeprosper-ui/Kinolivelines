@@ -3127,15 +3127,15 @@ function acState(){if(!AC)return null;const e=AC.e,now=+e.px;if(!isFinite(now))r
  const t=e.trend||0,upL=t===-1?e.invalid:e.next_bos,dnL=t===-1?e.next_bos:e.invalid;
  return {t,now,up:(upL!=null&&upL>now)?upL-now:null,dn:(dnL!=null&&dnL<now)?now-dnL:null};}
 function acChip(){const seg=document.getElementById('acseg');if(!seg)return;
- if(EQ||!FULL||PAST){seg.style.display='none';return;}acLoad();const s=acState();if(!s||!s.t){seg.style.display='none';return;}
- const col=s.t===1?'#8df0bb':'#ff8c8c';
+ if(EQ||!FULL||PAST){seg.style.display='none';return;}acLoad();const s=acState();if(!s||!(AC.e.candles||[]).length){seg.style.display='none';return;}
+ const col=s.t===1?'#8df0bb':s.t===-1?'#ff8c8c':'#9fb3c8';
  const cs=(AC.e.candles||[]).slice(-(acChip.n||6));let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
  if(isFinite(s.now)){hi=Math.max(hi,s.now);lo=Math.min(lo,s.now);}
  const H=16,Wd=cs.length*7+6,py=v=>1+(hi-v)/((hi-lo)||1)*(H-2);let g='';
  cs.forEach((k,i)=>{const x=3+i*7,y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
   g+='<rect x="'+x+'" y="'+y1.toFixed(1)+'" width="4" height="'+Math.max(1.5,y2-y1).toFixed(1)+'" rx="1" fill="'+(k[4]>=k[1]?'#2ecc71':'#ff5c5c')+'"/>';});
  g+='<circle cx="'+(Wd-1.5)+'" cy="'+py(s.now).toFixed(1)+'" r="1.8" fill="#e8eef4"/>';
- seg.innerHTML='<svg width="'+Wd+'" height="'+H+'" viewBox="0 0 '+Wd+' '+H+'">'+g+'</svg><span style="color:'+col+'">'+(s.t===1?'\u25B2':'\u25BC')+'</span>';
+ seg.innerHTML='<svg width="'+Wd+'" height="'+H+'" viewBox="0 0 '+Wd+' '+H+'">'+g+'</svg><span style="color:'+col+'">'+(s.t===1?'\u25B2':s.t===-1?'\u25BC':'\u2013')+'</span>';
  seg.title=CL?'Account progression: the last candles':'Progression du compte : les derni\u00e8res bougies';
  seg.style.display='flex';seg.onclick=()=>oshShow('ac',oshCur!=='ac');
  // nothing may be cut: the weather verdict and its number come first. The
