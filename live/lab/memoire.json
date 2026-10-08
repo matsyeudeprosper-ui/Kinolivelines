@@ -14,18 +14,28 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T07:30:09Z",
+ "updated": "2026-10-08T12:00:00Z",
  "hypotheses": [
+  {
+   "id": "capped_slow_small",
+   "fr": "Les comptes avec plafond de gain par jour aiment moins de trades et des mises plus petites ; les comptes sans plafond, non.",
+   "status": "nouveau",
+   "evidence": [
+    "2026-10-08: battery wait30 capped A +61.0 / uncapped C -30.9; wait20 capped A +44.0 / C -39.6. My runs 42 d: wait30 capped +44.8 hole 30.3->21.8 (nokill h +4.8/-10.7), uncapped C -27.5; wait20 capped +38.8; 69 d wait30 capped B +39.2 hole 34.5->22.4 (h -15.1/+40.3), uncapped C -63.2. Smaller stakes on first move / nervous flips: capped A, uncapped C. Every gain tonight was on the capped shape. Mechanism guess: with a cap, the day ends at the cap anyway, so fewer and smaller trades only remove losses before the cap. Requested cap_wait."
+   ],
+   "next": "cap_wait when built: 20/30/45 on capped. Battery on wait30_fm075."
+  },
   {
    "id": "target_10_nosun",
    "fr": "Viser autant que ce qu'on risque, sans trader le dimanche, aide les comptes avec et sans plafond de gain par jour.",
-   "status": "en test",
+   "status": "affaibli",
    "evidence": [
     "2026-10-04: my runs (42 d, safety nets on). rr1.0+skip Sun: uncapped A +46.3 (h +28.3/+25.0) hole 50.2->34.1; capped A +15.5 (h +12.5/+14.4) hole 34.5->21.6. +bullets4: A/A +50.7/+19.5. Neighbours: rr0.95_bul4_nosun B +17.2 / C -8.5; rr0.9_bul4_nosun B +27.3 / B -2.4. 69 days rr1.0_bul4_nosun: B +36.3 uncapped (h2 -34.9), capped -3.7, hole smaller on both. Jagged money, steady hole.",
     "2026-10-05: battery rr10_nosun B: uncapped A +32.3 hole -10.4, capped C +3.8 but hole +8.2; long A +38.0 (h +16.7/+0.3); real +3.2 on 17. rr10_bul4_nosun B (cap C +8.8 hole +8.2), long A +113.0 (h +60.5/+26.5). My runs (fresher bars): rr10_nosun uncapped B +19.7 (h -5.5/+26.5) hole 50.2->24.3, capped C -6.6 (h -13.5/+8.2); rr10_bul4_nosun B +19.2 / C -8.4. Yesterday's capped A did not survive one night of window shift.",
-    "2026-10-06: battery rr10_bul4_nosun_n2 B/B (uncapped +18.8 hole -26.0, h +19.6/-6.9; capped B +8.5 hole -3.6), long A +85.2 (h +82.7/+2.2), real +6.6 on 20/37. rr10_ext700_nosun B/B (+3.7 / +5.6). My runs (nokill halves): rr10_nosun B +15.9 (h +16.2/-2.7) / B +4.2 (h -4.8/+34.6); 69 d B +12.8 / B -1.2. Capped money back to positive."
+    "2026-10-06: battery rr10_bul4_nosun_n2 B/B (uncapped +18.8 hole -26.0, h +19.6/-6.9; capped B +8.5 hole -3.6), long A +85.2 (h +82.7/+2.2), real +6.6 on 20/37. rr10_ext700_nosun B/B (+3.7 / +5.6). My runs (nokill halves): rr10_nosun B +15.9 (h +16.2/-2.7) / B +4.2 (h -4.8/+34.6); 69 d B +12.8 / B -1.2. Capped money back to positive.",
+    "2026-10-08: battery rr10_bul4_nosun_n3 B: uncapped +6.4 hole -18.5, capped C -18.5; long B +40.2; real -1.3 on 39. rr10_nosun_fliphot075 (yesterday A/A in my run) battery uncapped B +13.7, capped C -19.2. Capped side failed again."
    ],
-   "next": "Third hearing rr10_bul4_nosun_n3. With flip_hot_size 0.75 it became A/A (see flip_nervous). Want two nights of capped >0."
+   "next": "Uncapped only now. Capped accounts get their own target via cap_rr (see cap_changes_target)."
   },
   {
    "id": "cap_changes_target",
@@ -36,9 +46,10 @@
     "2026-10-03: fifth night. rr10 battery B (uncapped A, capped C); k3_rr09 uncapped A, capped B.",
     "2026-10-04: rr10 battery: uncapped A +54.4, capped C -2.1 (seventh night). But WITH Sunday off, 1.0 is A on the capped shape too (+15.5). The cap still punishes the bare higher target; the company changes it.",
     "2026-10-05: lower targets mirror it: rr0.7 capped B +9.7 (h -12.0/+20.9) hole 19.4->16.1, uncapped C -50.6; rr0.75 capped B +5.9 hole 15.9, uncapped C -47.8; rr0.65 C/C. Battery rr07 capped A +32.5. wait_min 30 capped +13.9 (both halves up, hole +2.4) / uncapped C -50.2. The two shapes want different settings -> request cap_rr.",
-    "2026-10-06: rr10 battery B eighth night (uncapped +26.3 hole -19.4; capped C -1.1 hole +6.7). rr07 capped B +6.6. Unchanged picture."
+    "2026-10-06: rr10 battery B eighth night (uncapped +26.3 hole -19.4; capped C -1.1 hole +6.7). rr07 capped B +6.6. Unchanged picture.",
+    "2026-10-08: cap_rr built. 42 d: rr1.0 + cap_rr 0.7 uncapped A +17.1 hole 50.2->31.5 (h +46.8/+20.8; nokill +46.8/-29.0), capped +16.8 hole 30.3->27.7 (nokill h -6.1/-0.9). Neighbours capped: cap_rr 0.65 C -25.9, 0.75 +8.3 (h -2.5/+1.1). 69 d: capped B +20.4 hole 34.5->27.7, uncapped C -10.6 hole 50->35. Jagged on money, steady on the hole. With first_move 0.75 or with wait 30 it turns C. Proposed rr10_caprr07, ext400_nosun_caprr07."
    ],
-   "next": "When cap_rr is built: capped 0.75 / 0.8 with uncapped 1.0, alone and with Sunday off."
+   "next": "Battery on rr10_caprr07 two nights; cap_rr 0.7 is the only setting that helps; distrust it if 0.7 flips."
   },
   {
    "id": "hot_size_with_target",
@@ -71,9 +82,10 @@
     "2026-10-07 veille: real 70 tr. FLIP-BOS 39 tr 38% -43.87; flip_hot 23 tr 30% -34.75 (h 36%/25%), after a loss 1/10 -32.93, after a win 13 tr 46% -1.82. BOS 28 tr 64% +17.55: the BOS edge shrank (73%->64%) as it grew from 22 to 28 trades. Latest trade BOS BUY -2.08.",
     "2026-10-08 veille: BOS 29 tr 66% +27.31 PF 1.46 (h 62%/69%) after the +9.76 SELL (pace 1.224); FLIP-BOS unchanged 39 tr 38% -43.87. Edge picture intact.",
     "2026-10-08 04:30 veille: FLIP-BOS BUY lost -1.66 (pace 0.909, CALM, closed 03:04), then BOS SELL +1.00 (pace 0.974) and BOS SELL +3.63 (pace 1.45). BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%); FLIP-BOS 40 tr 38% -45.53 PF 0.51 (h 47%/30%). flip_hot unchanged 23 tr (the loss was calm). Real calm flips keep losing too: kind remains the cleaner real split.",
-    "2026-10-08 07:30 veille: FLIP-BOS BUY won +0.78 (pace 1.203, NERVOUS, closed 07:18, after the BOS SELL +3.63 win). Pile flip_hot 24 tr 33% -33.97 PF 0.45 (h 36%/31%); after a win 14 tr 50% -1.04, after a loss 10 tr 10% -32.93: the pile's loss still sits entirely after losses (peu). FLIP-BOS 41 tr 39% -44.75; BOS 31 tr 68% +31.94."
+    "2026-10-08 07:30 veille: FLIP-BOS BUY won +0.78 (pace 1.203, NERVOUS, closed 07:18, after the BOS SELL +3.63 win). Pile flip_hot 24 tr 33% -33.97 PF 0.45 (h 36%/31%); after a win 14 tr 50% -1.04, after a loss 10 tr 10% -32.93: the pile's loss still sits entirely after losses (peu). FLIP-BOS 41 tr 39% -44.75; BOS 31 tr 68% +31.94.",
+    "2026-10-08: battery fliphot075_capped capped A +14.7 hole -2.4 (second night better on capped), uncapped B +4.1, long C -14.5, real +15.9 on 51. Real: FLIP-BOS 42 tr 38% -45.68; flip after a loss 23 tr 35% -36.69 (h 33%/36%), after a win 19 tr 42% -8.99. New pile flip_after_loss; requested flip_loss_size. With first_move 0.75: capped A +18.4 (nokill h +7.5/+17.1), 69 d capped B +15.2."
    ],
-   "next": "Proposed rr10_nosun_fliphot075 and fliphot075_capped. Capped h1 +0.1 is razor thin; want the battery to confirm, then the critic. Side view: flip_hot after a loss 1/10 - if it reaches 15 and holds, ask the engine whether 'nervous reversal after a loss' is a cleaner cut."
+   "next": "Battery on fm075_fliphot075; flip_loss_size when built (0.75/0.5 both shapes)."
   },
   {
    "id": "sunday",
@@ -85,7 +97,8 @@
     "2026-10-04 veille: first second-half real Sunday trade: FLIP-BOS won +1.30 (dim 11 tr 27%, h2 1/1). The -11.56 loss closed 05:36 UTC Sunday but scrutiny files it under 'sam' - check the day boundary before reading Sunday numbers.",
     "2026-10-04: real Sundays 13 tr 31% -19.10 (h1 2/10, h2 2/3). Battery nosun B (+12.8, halves -15/+36; capped A +3.5), long B +24.3, real +12.4. With rr1.0 the halves AGREE on both shapes (rr10_nosun A/A). Note: scrutiny files by ENTRY hour in UTC; the two Saturday-entered reversal losses (-20.92) sit under 'sam'.",
     "2026-10-05: battery nosun B (+5.8 hole -18.6; capped C -4.4), long B +15.6 (h -4.4/+20.2), real +10.9 on 18. nomon (Monday off) B too (+21.7, capped B +4.9) - a day off helps; which day is noise.",
-    "2026-10-06: nosun battery B fourth night (uncapped +15.2 hole -22.3; capped C -8.5), long B +15.6, real +10.9. Again a passenger: every A/A tonight has Sunday off."
+    "2026-10-06: nosun battery B fourth night (uncapped +15.2 hole -22.3; capped C -8.5), long B +15.6, real +10.9. Again a passenger: every A/A tonight has Sunday off.",
+    "2026-10-08: battery nosun B (uncapped +15.9 hole -20.7, capped C -7.8), long B +7.9, real +11.0. Passenger."
    ],
    "next": "Sunday stays a passenger of the higher target; not pushed alone."
   },
@@ -118,7 +131,8 @@
     "2026-10-03: raw rr0.9+bullets4 A +121.6, halves +84.4/+48.4, hole 77.8. rr0.85+bullets4 A +58.7 (+34/+24.7), hole 80.5. bul4 alone battery C (-0.24) tonight, B four nights before. k3_bul4 battery B (+21.6, capped '=').",
     "2026-10-04: battery rr09_bul4 B (+40.7 / -4.2), rr085_bul4 C (-6.9). Fourth catch-up adds +6 to rr0.9 (34.6->40.7) and +4.4 to rr1.0_nosun (46.3->50.7); bullets 5 = bullets 4 (+41.2, the fifth is never used). It is a small add-on, the target carries the gain.",
     "2026-10-05: battery bul4 alone B (uncapped A +3.1, capped =), long C. rr10_bul4 vs rr10 +5.6 uncapped. Still a passenger.",
-    "2026-10-06: battery bul4 B (uncapped A +0.5, capped B +2.6); rr10_bul4_nosun_n2 B/B with long A +85. Still a passenger."
+    "2026-10-06: battery bul4 B (uncapped A +0.5, capped B +2.6); rr10_bul4_nosun_n2 B/B with long A +85. Still a passenger.",
+    "2026-10-08: battery bul4 alone A (+2.9 / +1.5), long C (+37.7 but hole +5.4), real -0.85 on 50. Critic: doute (pure sizing, gain grows with the hole). I agree: not pushed."
    ],
    "next": "Keep only as a passenger on the target ideas; do not propose alone."
   },
@@ -131,7 +145,8 @@
     "2026-10-03: battery back to B (+4.6, halves -2.4/+7.0), long C -21.8. Critic BLOQUE (69 days -29, pure sizing on few trades). Raw: adding k3 to rr0.9 cuts the gain 58->19. I accept the critic: k3 alone is not pushed any more; only with new 69-day evidence.",
     "2026-10-04: battery k3 B (+4.6, capped A +3.5), long C -41.1. Critic's block stands.",
     "2026-10-05: battery B (+4.5, capped A +3.5), long C -29.1 (h -18.4/-10.5). Critic's block stands; not proposed.",
-    "2026-10-06: battery = (-0.1 / +0.8), long C -29.1. Critic's block stands."
+    "2026-10-06: battery = (-0.1 / +0.8), long C -29.1. Critic's block stands.",
+    "2026-10-08: battery B (+2.7 / capped C +1.7), long C -35.0. Critic's block stands."
    ],
    "next": "Do not re-propose k3 alone. Keep watching k3_rr09 long window only as a side view."
   },
@@ -151,15 +166,16 @@
   {
    "id": "halves_shift",
    "fr": "Le robot va beaucoup mieux depuis la mi-période (33% puis 74% de gains) : changement de marché ou de réglage ?",
-   "status": "en test",
+   "status": "affaibli",
    "evidence": [
     "2026-10-02 veille: 37 trades, moitié 1 33% (18), moitié 2 74% (19); 10 des 12 derniers gagnés (+45 $)",
     "2026-10-03: no new real trade. Note the test's own base is the opposite shape: 42-day battery base h1 +131.9, h2 +5.4 (raw harness h2 -2.0). The engine's second half is nearly flat while the real accounts' second half is good - the periods differ (real starts 09-24).",
     "2026-10-04: engine trace since 09-24: reversals 16 tr 43.8%, continuations 18 tr 66.7% - the same split as the real trades (43% / 67%). On the recent period, engine and real agree on WHICH trades fail; the engine's own second half is weak (base h2 +4.6) for the same reason: nervous reversals h2 23 tr 43.5% -24.9.",
     "2026-10-05: real 49 tr: first half 42% (24), second half 72% (25). 2 trades since 06:30, both won (BOS BUY +2.61, FLIP-BOS SELL +1.82 after a 2 h pause).",
-    "2026-10-06: real 52 tr: halves 38% (26) / 73% (26). Engine: a few hours of fresh bars made the base second half hit the kill line (h2 -64.8 on 43 tr vs +14.0 on 81 without it)."
+    "2026-10-06: real 52 tr: halves 38% (26) / 73% (26). Engine: a few hours of fresh bars made the base second half hit the kill line (h2 -64.8 on 43 tr vs +14.0 on 81 without it).",
+    "2026-10-08: real 77 tr: halves 53% (38) / 46% (39) - the 'second half better' has reversed as the period slid. Real 49% -25.93 PF 0.85."
    ],
-   "next": "The 'flat engine second half' is largely nervous reversals. Re-check when flip_hot_size is built."
+   "next": "Probably just the market's mood; keep only as a reading caution."
   },
   {
    "id": "wait_after_win",
@@ -188,7 +204,8 @@
     "2026-10-05: real BUY 32 tr 62% +34.55 PF 1.69 (h 47%/76%), SELL 17 tr 47% -20.36 PF 0.49 (h 33%/62%). Eleven days of a mostly rising market; no per-direction dial.",
     "2026-10-06 veille: SELL 19 tr 47% -13.39 PF 0.69 (h 30%/67%), BUY 33 tr 61% +31.44 PF 1.59 (h 44%/76%). The +9.97 BOS SELL narrows the gap; sell losses sit mostly in reversals.",
     "2026-10-08 veille: real 71 tr. SELL 29 tr 52% -2.18 PF 0.96 (h 50%/53%); BUY 42 tr 48% -25.24 PF 0.77 (h 52%/43%). The +9.76 BOS SELL nearly closes the sell hole; buys now the weaker side (reversal buys).",
-    "2026-10-08 04:30 veille: SELL 31 tr 55% +2.45 PF 1.04 (h 50%/59%); BUY 43 tr 47% -26.90 PF 0.76 (h 57%/35%). Sells positive for the first time; the buy second half is the weak spot."
+    "2026-10-08 04:30 veille: SELL 31 tr 55% +2.45 PF 1.04 (h 50%/59%); BUY 43 tr 47% -26.90 PF 0.76 (h 57%/35%). Sells positive for the first time; the buy second half is the weak spot.",
+    "2026-10-08: real BUY 44 tr 48% -26.12 (pile long, halves 54%/40%)."
    ],
    "next": "Do not request a direction dial until a falling week is in the journal; then compare."
   },
@@ -205,29 +222,32 @@
   {
    "id": "ext400_uncapped",
    "fr": "Ne pas entrer après une heure qui a déjà bougé de 400 points aide les comptes sans plafond.",
-   "status": "nouveau",
+   "status": "en test",
    "evidence": [
-    "2026-10-06: battery ext400 B eighth night in a row (uncapped B +13.3 hole -10.3, capped C -55.2), long C -45.4. My run ext400+nosun: uncapped A +15.4 (h +2.0/+17.3) hole 50->12.8 (smallest ever), capped C -41.2."
+    "2026-10-06: battery ext400 B eighth night in a row (uncapped B +13.3 hole -10.3, capped C -55.2), long C -45.4. My run ext400+nosun: uncapped A +15.4 (h +2.0/+17.3) hole 50->12.8 (smallest ever), capped C -41.2.",
+    "2026-10-08: battery ext400 B ninth night (uncapped +6.1 hole -10.3, capped C -48.3), long C -24.7. ext400_nosun battery uncapped A +15.3 (second time A), capped C -29.5, long C -43.1. soft3 uncapped A +20.5, capped C -23.3, long C -62.1."
    ],
-   "next": "Proposed ext400_nosun and soft3 (with flip_hot 0.75). Uncapped-only unless cap_rr changes the capped picture."
+   "next": "Proposed ext400_nosun_caprr07: does the capped target rescue the capped side?"
   },
   {
    "id": "late_night",
    "fr": "Autour de minuit UTC (21 h - 1 h), les vrais trades perdent.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-06: real hours 21/22/23/00: 13 tr, 3 won, -46.6 $ (00 h 8 tr 38% -18.14). Engine 42 d says no: skip 21-23 C -29.7 / C -46.3; 21-00 C -68.8 / C -53.7; 22-00 C -106.3 / C -44.5; 21 only C -31.8 / C -2.3 (holes 40 / 14.9 smaller). rr1.0+nosun+skip 21-23 C / C. Real and engine disagree. Pile late_night opened."
+    "2026-10-06: real hours 21/22/23/00: 13 tr, 3 won, -46.6 $ (00 h 8 tr 38% -18.14). Engine 42 d says no: skip 21-23 C -29.7 / C -46.3; 21-00 C -68.8 / C -53.7; 22-00 C -106.3 / C -44.5; 21 only C -31.8 / C -2.3 (holes 40 / 14.9 smaller). rr1.0+nosun+skip 21-23 C / C. Real and engine disagree. Pile late_night opened.",
+    "2026-10-08: pile late_night 17 tr 29% -46.11 (h 30%/29%). No engine run tonight."
    ],
    "next": "Watch the pile; if it reaches 30 trades and still loses, ask for an engine trace by hour to see why the engine's late trades win."
   },
   {
    "id": "first_move",
    "fr": "Le premier mouvement d'une nouvelle tendance gagne moins que les suivants.",
-   "status": "nouveau",
+   "status": "renforce",
    "evidence": [
-    "2026-10-06: real move 1: 16 tr 38% -21.88 (h 22%/57%); 2-3: 23 tr 61% +11.89; 4+: 13 tr 69% +28.04 PF 3.91. Overlaps reversals but not the same trades (27 FLIP-BOS)."
+    "2026-10-06: real move 1: 16 tr 38% -21.88 (h 22%/57%); 2-3: 23 tr 61% +11.89; 4+: 13 tr 69% +28.04 PF 3.91. Overlaps reversals but not the same trades (27 FLIP-BOS).",
+    "2026-10-08: first_move_size built. 42 d capped: 0.75 A +12.0 hole 30.3->26.4 (h +8.6/+7.5 nokill), 0.85 A +4.7 (h +2.8/+2.4), 0.5 C -19.3. Uncapped: 0.75 C -4.0, 0.85 = -0.7, 0.5 C -33.1. 69 d 0.75 capped C -8.4 (h -16.5/+6.3). Real move 1 22 tr 32% -34.27 (h 33%/30%). With rr1.0+nosun C/C."
    ],
-   "next": "Requested first_move_size. Test 0.75 / 0.5 alone and with rr1.0+nosun."
+   "next": "Capped-only idea. Battery on fm075_capped and fm075_fliphot075; watch the 69 d side."
   }
  ],
  "tried": [
@@ -630,6 +650,111 @@
    "d": "2026-10-06",
    "run": "proposed untested: ext400 + skip Sun + flip_hot 0.75",
    "res": "soft3_fliphot_ext400_nosun (out of the box)"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "cap_rr 0.7 (uncapped / capped, 42 d)",
+   "res": "= / B +16.8 hole 27.7 (nokill h -6.1/-0.9)"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "cap_rr 0.75",
+   "res": "= / C +8.3 hole 31.1"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "cap_rr 0.65",
+   "res": "= / C -25.9"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "rr1.0 + cap_rr 0.7",
+   "res": "A +17.1 hole 31.5 (nokill h2 -29) / B +16.8 -> rr10_caprr07"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "rr1.0 + cap_rr 0.75",
+   "res": "A +17.1 / C +8.3"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "rr1.0 + cap_rr 0.75 + skip Sun",
+   "res": "A +7.8 (nokill B) / C -12.9"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "first_move 0.75",
+   "res": "C -4.0 / A +12.0 hole 26.4 -> fm075_capped"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "first_move 0.5",
+   "res": "C -33.1 / C -19.3"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "first_move 0.85",
+   "res": "= -0.7 / A +4.7"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "rr1.0 + skip Sun + first_move 0.75",
+   "res": "C -8.0 hole 28.6 / C -19.2"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "wait 30",
+   "res": "C -27.5 / B +44.8 hole 21.8"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "wait 20",
+   "res": "C -40.0 / B +38.8 hole 21.8"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "wait 30 + cap_rr 0.75",
+   "res": "C -27.5 / C -11.7"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "first_move 0.75 + flip_hot 0.75",
+   "res": "C -10.9 / A +18.4 hole 24.5 -> fm075_fliphot075 (out of the box)"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "rr1.0 + cap_rr 0.7 + first_move 0.75",
+   "res": "B +10.6 / C -38.5"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "cap_rr 0.7 + first_move 0.75 + flip_hot 0.75",
+   "res": "C -10.9 / C -36.2"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "69 d: rr1.0 + cap_rr 0.7",
+   "res": "C -10.6 hole 35.1 / B +20.4 hole 27.7"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "69 d: first_move 0.75 + flip_hot 0.75",
+   "res": "C -18.8 / B +15.2 hole 28.9"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "69 d: first_move 0.75",
+   "res": "C -10.6 / C -8.4"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "69 d: wait 30",
+   "res": "C -63.2 / B +39.2 hole 22.4"
+  },
+  {
+   "d": "2026-10-08",
+   "run": "proposed untested",
+   "res": "wait30_fm075, ext400_nosun_caprr07"
   }
  ],
  "scrutiny_log": [
@@ -932,6 +1057,23 @@
     "asks.json (none open)"
    ],
    "saw": "75 trades. Nervous reversal after a win, won small - as the after-win split predicts (14 tr 50%). flip_hot 24 tr 33% -33.97; after a loss 1/10. BUY 44 tr 48% -26.12, SELL 31 tr 55% +2.45. No twins, no labo, no ask. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-08T12:00:00Z",
+   "looked": [
+    "auto.json 37 variants both shapes + long + real",
+    "critiques (bul4 doute new)",
+    "veille.jsonl 10-06..10-08",
+    "requests (cap_rr, first_move_size built)",
+    "asks (none open)",
+    "twins (none running)",
+    "proof drag (usable)",
+    "scrutiny --by kind/prev/move/hour",
+    "scrutiny --pile flip --by prev",
+    "scrutiny --streaks / --mm",
+    "piles (--cuts)"
+   ],
+   "saw": "77 real trades 49% -25.93 PF 0.85, halves 53%/46%, 90% of trades in the red. BOS 32 tr 66% +30.61; FLIP-BOS 42 tr 38% -45.68 (after a loss 23 tr 35% -36.69). Move 1 22 tr 32% -34.27 both halves; 4+ 23 tr 65% +24.28. Longest loss streak 7. Drag usable: -0.018/trade on 32 - the engine gap is closed; battery charged 0.02. Battery 1 A (bul4), 10 B, 26 C. All my gains tonight were on the capped shape. New pile flip_after_loss (Jaccard ~0.55 vs flip)."
   }
  ],
  "lessons": [
@@ -947,17 +1089,21 @@
   "2026-10-05: my runner's reference differs from the battery's (base 155.8 vs 127.2) because the bars were fetched hours later. Compare inside one run only. Runner kept outside the repo (Temp/cr.py): refs base + valere(balance 252), verdict per shape.",
   "2026-10-06: the kill line makes the halves fragile: a few hours of fresh bars moved the midpoint and the base second half hit -60 and stopped (-64.8 on 43 tr vs +14.0 on 81 without it). Every variant that dodged it looked +80..+110 in h2. Read halves with kill_net 0 too (Temp/cr2.py MODE nokill); full-period numbers are unaffected.",
   "2026-10-06: real trades and the engine can disagree on a whole time slot (21-00 UTC: real 3/13, engine says skipping costs). A pile is the right tool, not a dial, until the real side has 30 trades.",
-  "2026-10-08: wake_context can re-flag an already-read close as 'new' several watches in a row (BOS BUY -2.08 of 10-07 17:25 woke me at 22:35, 00:00 and 01:30). Check the close time against scrutiny_log before reading it as new."
+  "2026-10-08: wake_context can re-flag an already-read close as 'new' several watches in a row (BOS BUY -2.08 of 10-07 17:25 woke me at 22:35, 00:00 and 01:30). Check the close time against scrutiny_log before reading it as new.",
+  "2026-10-08: the measured engine gap is now usable and tiny (-0.018 $/trade on 32 trades): the engine is no longer more generous than the accounts; --drag auto changes almost nothing.",
+  "2026-10-08: the same 42-day refs run an hour apart flipped the base second half from -60.3 (kill line hit) to -8.4 (not hit). STD halves of the first batch were kill-decided; use the nokill halves when they differ.",
+  "2026-10-08: on the capped shape, dials that each help (cap_rr 0.7, first_move 0.75, wait 30) turn C when combined - capped gains do not add up. Test combos before believing them.",
+  "2026-10-08: runs are slow now (~15 min for 12 variants x 2 shapes x 2 readings); runner in Temp/cr3.py takes a JSON spec file and 'long'."
  ],
  "open": [
-  "rr10_nosun_fliphot075: does A/A hold in the battery (capped h1 was +0.1)? Then the critic: neighbours 0.5/0.85 already positive.",
-  "Third hearing rr10_bul4_nosun_n3: capped money positive two nights running?",
-  "cap_rr (open since 10-05): capped 0.75/0.8 + uncapped 1.0.",
-  "first_move_size (requested tonight): 0.75 / 0.5, alone and with rr1.0+nosun.",
-  "halves_without_kill (requested tonight): how many verdicts change when the kill line is off in the halves?",
-  "late_night pile: real 3/13 vs engine 'skip costs'. Why do the engine's late trades win?",
-  "ext400 uncapped-only: eight nights B; does soft3 keep it on the capped shape?",
+  "fm075_fliphot075: capped A tonight (+18.4, 69 d +15.2) - does the battery confirm two nights? Then the critic.",
+  "rr10_caprr07: +17 / +17, but cap_rr neighbours jagged (0.65 -26, 0.75 +8). Two nights.",
+  "cap_wait (requested): wait 20/30/45 on capped only. Wait30 capped +45 (42 d), +39 (69 d).",
+  "flip_loss_size (requested): 0.75 / 0.5; pile flip_after_loss 23 tr.",
+  "halves_without_kill (open since 10-06).",
+  "ext400 uncapped-only: does cap_rr 0.7 rescue its capped side (ext400_nosun_caprr07)?",
+  "late_night pile 17 tr: real 29% vs engine 'skip costs'.",
   "Buys vs sells: wait for a falling week.",
-  "Storm at entry: 17 tr 47% -14.5, both halves lower - a pile when it reaches 25 (would overlap 'hot'?)."
+  "Storm at entry: pile when 25 trades."
  ]
 }

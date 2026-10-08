@@ -8,11 +8,16 @@
   "flip_hot_size",
   "cap_rr",
   "first_move_size",
-  "halves_without_kill"
+  "halves_without_kill",
+  "cap_wait",
+  "flip_loss_size"
  ],
  "asks_answered": [
   "ask_1790670647",
   "ask_1790670744",
-  "ask_1791181811_long"
+  "ask_1791181811_long",
+  "ask_1791315902",
+  "ask_1791407166_flip",
+  "ask_1791433808_cont"
  ]
 }

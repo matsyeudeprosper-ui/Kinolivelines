@@ -18,6 +18,25 @@
     "mechanism: keeping a bigger stake after a third loss in a row only pays if the fourth trade wins more often than usual - no reason given beyond the numbers; it adds risk exactly in losing streaks",
     "overlap: same trades as the deployed rule (258 vs 258, same win rate 61.2%) - only the stake on the trade after the third loss changes, so it is pure sizing on very few trades"
    ]
+  },
+  {
+   "id": "bul4",
+   "date": "2026-10-08",
+   "verdict": "doute",
+   "fr": "Avec toutes les protections, il gagne 3 $ en 42 jours, moins qu'un trade ; sur les vrais trades il perd 1 $. Sans protections, chaque trade de rattrapage en plus rapporte environ 22 $ mais creuse le plus gros trou d'environ 7 $ : c'est miser plus après une perte. Ce qui m'inquiète : le gain grandit avec le trou. Il était à oui une seule nuit sur douze.",
+   "en": "With every safety net on, it gains $3 in 42 days, less than one trade; on the real trades it loses $1. Without the nets, each extra catch-up trade earns about $22 but deepens the biggest hole by about $7: it is just betting more after a loss. What worries me: the gain grows with the hole. It was a yes on only one night in twelve.",
+   "checks": [
+    "dose (harness, deployed rules without safety nets, base 208.62 / hole 80.29): 2 catch-up -43.61 / hole 74.39; 4 catch-up +44.33 / hole 87.24; 5 catch-up +68.73 / hole 94.20. No sign flip - a clean slope, but money and hole rise together (~+22 $ and ~+7 $ hole per extra catch-up trade): a size lever, not a better rule. Archive agrees: 2 and 0 catch-up rejected (fewer = less money)",
+    "halves: battery ref +1.31 first half / +1.18 second half - tiny on both. Harness: +40.90 first half / +7.87 second half, but second-half hole 84.32->92.71 - the gain sits in the good first half, the extra depth in the bad second half",
+    "shapes: +2.94 on the uncapped account (hole -2.34 better), +1.45 on the capped one (hole -1.29) - same tiny size on both",
+    "long window: 69 days +37.70 (+15.87 / +13.37 by half) but hole +5.37 deeper -> C; a gain bought with depth, a caution not a no",
+    "real trades: -0.85 on 50 trades (9 blocked), hole +4.99 deeper - a small loss where it matters most",
+    "concentration: +2.94 under deployed rules is smaller than one average losing trade (-3 to -8 $ are common, -22.34 exists) - one trade flipping erases it",
+    "past: nightly history C,C,C,B,B,B,B,C,C,B,B,A - A only tonight; no twin yet; not archived (counter 0); several combos with it sit in the archive (rr09/rr10/k3 + 4 catch-up)",
+    "mechanism: a bigger stake after a loss pays only because the robot wins ~60% overall; it adds no edge, it adds stake exactly when the robot is in a losing streak",
+    "overlap: same trades as the deployed rule (265 vs 265, win rate 59.6% both) - only the stake on catch-up trades changes; pure sizing",
+    "real gap: --drag auto (~0.02 $/trade measured) leaves +30.19 raw vs base, hole 88.23 - survives the gap because it does not trade more, it bets more"
+   ]
   }
  ]
 }

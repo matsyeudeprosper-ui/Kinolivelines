@@ -1694,7 +1694,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-06",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-08"
   },
   {
    "id": "fliphot075_capped",
@@ -1726,7 +1728,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-06",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-08"
   },
   {
    "id": "ext400_nosun",
@@ -1759,7 +1763,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-06",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-08"
   },
   {
    "id": "rr10_bul4_nosun_n3",
@@ -1792,7 +1798,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-06",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-08"
   },
   {
    "id": "soft3_fliphot_ext400_nosun",
@@ -1818,7 +1826,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-06",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 206.51,
     "worst": 25.82,
@@ -1842,6 +1850,205 @@
      "trades": 16,
      "diff_net": 0.69,
      "diff_worst": -3.05
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-08"
+  },
+  {
+   "id": "rr10_caprr07",
+   "family": "cible",
+   "title_fr": "Viser plus haut sans plafond, plus bas avec plafond",
+   "title_en": "Aim higher without a daily cap, lower with one",
+   "why_fr": "Les comptes avec et sans plafond de gain par jour ne veulent pas la même cible. Sans plafond, viser autant que ce qu'on risque ; avec plafond, 0,7 fois. Sur 42 jours : +17 $ sur les deux, trous plus petits (31 au lieu de 50, 28 au lieu de 30). Prudence : avec plafond, les deux moitiés baissent un peu.",
+   "why_en": "Accounts with and without a daily cap do not want the same target. Without a cap, aim for as much as we risk; with one, 0.7 times. Over 42 days: +$17 on both, smaller holes (31 instead of 50, 28 instead of 30). Caution: with a cap, both halves dip a little.",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "cap_rr": 0.7
+   },
+   "pretest": {
+    "net": 147.4,
+    "worst": 31.5,
+    "h1": 46.8,
+    "h2": -29.0,
+    "base_net": 130.28,
+    "base_worst": 50.23
+   },
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "pending"
+  },
+  {
+   "id": "fm075_fliphot075",
+   "family": "argent",
+   "title_fr": "Miser moins sur le premier mouvement et les changements de sens nerveux",
+   "title_en": "Stake less on the first move and on nervous changes of direction",
+   "why_fr": "Hors du cadre : deux règles de mise réunies, aucun trade refusé. Chez les vrais trades, le premier mouvement d'une tendance gagne 7 fois sur 22 et les changements de sens en marché nerveux 8 sur 25. Compte avec plafond : +18 $, trou de 24 au lieu de 30, mieux sur les deux moitiés ; +15 $ sur 69 jours. Sans plafond : -11 $.",
+   "why_en": "Out of the box: two stake rules together, no trade refused. In the real trades, the first move of a trend wins 7 times in 22 and changes of direction in a nervous market 8 in 25. Capped account: +$18, hole 24 instead of 30, better on both halves; +$15 over 69 days. Uncapped: -$11.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "first_move_size": 0.75,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 102.7,
+    "worst": 24.5,
+    "h1": 7.5,
+    "h2": 17.1,
+    "base_net": 84.3,
+    "base_worst": 30.3
+   },
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "pending"
+  },
+  {
+   "id": "fm075_capped",
+   "family": "argent",
+   "title_fr": "Miser un quart de moins sur le premier mouvement d'une tendance",
+   "title_en": "Stake a quarter less on the first move of a trend",
+   "why_fr": "Quand une nouvelle tendance commence, les vrais trades perdent : 7 gagnés sur 22, -34 $, sur les deux moitiés. Le trade est pris, avec une mise plus petite. Compte avec plafond : +12 $, trou de 26 au lieu de 30, mieux sur les deux moitiés ; le réglage voisin 0,85 aussi (+5 $), 0,5 non. Sans plafond -4 $ ; 69 jours avec plafond -8 $.",
+   "why_en": "When a new trend starts, the real trades lose: 7 won out of 22, -$34, on both halves. The trade is taken, with a smaller stake. Capped account: +$12, hole 26 instead of 30, better on both halves; the neighbouring setting 0.85 too (+$5), 0.5 no. Uncapped -$4; 69 days capped -$8.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "first_move_size": 0.75
+   },
+   "pretest": {
+    "net": 96.3,
+    "worst": 26.4,
+    "h1": 8.6,
+    "h2": 7.5,
+    "base_net": 84.3,
+    "base_worst": 30.3
+   },
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "pending"
+  },
+  {
+   "id": "wait30_fm075",
+   "family": "rythme",
+   "title_fr": "Attendre 30 minutes après chaque trade, miser moins au premier mouvement",
+   "title_en": "Wait 30 minutes after each trade, stake less on the first move",
+   "why_fr": "Attendre 30 minutes après chaque trade aide nettement le compte avec plafond : +45 $ sur 42 jours, +39 $ sur 69, trou de 22 au lieu de 30. Mais une moitié baisse, et sans plafond c'est non. Je l'associe à la petite mise sur le premier mouvement, mieux sur les deux moitiés avec plafond. Pas encore testé ensemble.",
+   "why_en": "Waiting 30 minutes after each trade clearly helps the capped account: +$45 over 42 days, +$39 over 69, hole 22 instead of 30. But one half dips, and uncapped it is a no. I pair it with the smaller stake on the first move, better on both halves when capped. Not tested together yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 30,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "first_move_size": 0.75
+   },
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "pending",
+   "pretest": {
+    "net": 68.13,
+    "worst": 106.06,
+    "h1": 135.96,
+    "h2": -77.73,
+    "base_net": 206.68,
+    "base_worst": 80.29,
+    "base_h1": 205.34,
+    "base_h2": -14.51,
+    "verdict": "C",
+    "trades": 208,
+    "at": "2026-10-08 04:59",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -173.24,
+     "diff_worst": 25.77
+    },
+    "real": {
+     "n_real": 59,
+     "trades": 40,
+     "diff_net": 21.55,
+     "diff_worst": -13.72
+    }
+   }
+  },
+  {
+   "id": "ext400_nosun_caprr07",
+   "family": "structure",
+   "title_fr": "Sans dimanche ni heure agitée, viser plus bas avec plafond",
+   "title_en": "No Sunday, no wild hour, aim lower with a daily cap",
+   "why_fr": "Ne pas entrer après une heure qui a déjà bougé de 400 points, et pas le dimanche : sans plafond, mieux sur les deux moitiés deux nuits (+15 $, trou de 13 à 21 au lieu de 50) ; avec plafond, non (-29 $). Je donne au compte avec plafond la cible 0,7 pour voir s'il suit. Pas encore testé.",
+   "why_en": "No entry after an hour that already moved 400 points, and no Sunday: uncapped, better on both halves two nights (+$15, hole 13 to 21 instead of 50); capped, no (-$29). I give the capped account the 0.7 target to see if it follows. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 400,
+    "skip_wd": [
+     6
+    ],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2,
+    "cap_rr": 0.7
+   },
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "pending",
+   "pretest": {
+    "net": 164.53,
+    "worst": 38.17,
+    "h1": 162.24,
+    "h2": 4.17,
+    "base_net": 206.68,
+    "base_worst": 80.29,
+    "base_h1": 205.34,
+    "base_h2": -14.51,
+    "verdict": "C",
+    "trades": 219,
+    "at": "2026-10-08 04:59",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -67.7,
+     "diff_worst": -24.72
+    },
+    "real": {
+     "n_real": 59,
+     "trades": 33,
+     "diff_net": 24.56,
+     "diff_worst": -4.49
     }
    }
   }

@@ -236,6 +236,28 @@
      ]
     }
    ]
+  },
+  {
+   "id": "flip_after_loss",
+   "title_fr": "Changement de sens juste après une perte",
+   "title_en": "Change of direction right after a loss",
+   "by": "chercheur",
+   "date": "2026-10-08",
+   "status": "open",
+   "why_fr": "Les changements de sens perdent 46 $ sur 42 trades. Mais presque toute la perte vient de ceux pris juste après une perte : 8 gagnés sur 23, -37 $, sur les deux moitiés ; juste après un gain, 8 sur 19 et -9 $. Cette pile dira si c'est le moment, et pas le changement de sens, qui coûte.",
+   "why_en": "Changes of direction lose $46 over 42 trades. But almost all of it comes from those taken right after a loss: 8 won out of 23, -$37, on both halves; right after a win, 8 of 19 and -$9. This pile will tell whether the moment, not the change of direction, is what costs.",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "FLIP-BOS"
+    },
+    {
+     "field": "prev_win",
+     "op": "==",
+     "value": false
+    }
+   ]
   }
  ]
 }
