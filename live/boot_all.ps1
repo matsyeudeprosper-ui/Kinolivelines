@@ -112,6 +112,15 @@ if (-not (ProcRunning "structure_bos_bot.py labo")) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "labo" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2k) 2026-10-08 (owner): the bot's OWN demo account 477508138 (package
+# "reference": fixed lot, no scaling, no day cap, no kill line). Its
+# progression chart is the reference indicator on the real chart. The nest
+# record is "dedicated", so no copier ever trades it twice.
+if (-not (ProcRunning "structure_bos_bot.py u477508138")) {
+    Say "starting BOS bot (reference u477508138)"
+    Start-Process pythonw -ArgumentList "structure_bos_bot.py", "u477508138" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2j) Dad's real account: the DEFAULT instance, no argv (own debt ledger,
 # package special_10). Same gap as Infinity above - never had a launch
 # block, found and fixed the same day, before it was ever tested by a

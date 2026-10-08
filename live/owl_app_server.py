@@ -15507,8 +15507,12 @@ class H(BaseHTTPRequestHandler):
         elif sub == "wealth_data":
             # the worker's facts (trades, deposits/withdrawals kept apart) +
             # the chercheur's latest words for the lab tab
+            _wsrc = user.get("id")
+            if ("ref=1" in (self.path.split("?", 1)[1] if "?" in self.path else "")
+                    and (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))):
+                _wsrc = next((x.get("id") for x in users() if x.get("reference")), _wsrc)
             try:
-                _w = json.load(open(os.path.join(DIR, "nest_data", f"{user.get('id')}.wealth.json")))
+                _w = json.load(open(os.path.join(DIR, "nest_data", f"{_wsrc}.wealth.json")))
             except Exception:
                 _w = None
             _lab = None
@@ -15541,12 +15545,17 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-08 (owner): the Progression screen's data - the worker's
             # result candles (eqc) shaped like the BTC feed so the same page
             # draws them. Structure for the admin only, as on the card.
+            _adm = (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))
+            # 2026-10-08 (owner): &ref=1 = the bot's OWN demo account (the
+            # nest record flagged "reference"), admin only
+            _src = user.get("id")
+            if _adm and "ref=1" in (self.path.split("?", 1)[1] if "?" in self.path else ""):
+                _src = next((x.get("id") for x in users() if x.get("reference")), _src)
             try:
-                _nd = json.load(open(os.path.join(DIR, "nest_data", f"{user.get('id')}.json")))
+                _nd = json.load(open(os.path.join(DIR, "nest_data", f"{_src}.json")))
                 _e = _nd.get("eqc") or {}
             except Exception:
                 _e = {}
-            _adm = (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))
             _now = _e.get("now")
             _cs = [list(c) for c in (_e.get("candles") or [])]
             _lv = _e.get("live")
@@ -15564,7 +15573,8 @@ class H(BaseHTTPRequestHandler):
                     "closed": [], "pending": [], "h1": None, "pb": None,
                     "dots": [], "marks": [], "breaks": [], "trend": 0, "choch": 0,
                     "int_dots": [], "int_marks": [], "int_trend": 0,
-                    "acct": user.get("login"), "uid": user.get("id"), "eq": True}
+                    "acct": user.get("login"), "uid": _src, "eq": True,
+                    "ref": _src != user.get("id"), "n_trades": _e.get("n_trades")}
             if _adm:
                 for _k in ("dots", "marks", "breaks", "trend", "choch", "bos_dir",
                            "next_bos", "invalid", "next_bos_t", "invalid_t",

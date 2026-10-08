@@ -3118,9 +3118,11 @@ function trRender(){const h=TRC;if(!h)return;const el=document.getElementById('t
 // the Progression screen; never trades, never gates anything.
 let AC=null,acT=0;
 async function acLoad(){if(Date.now()-acT<20000)return;acT=Date.now();
- try{const [a,b]=await Promise.all([fetch('/'+tok+'/chart_data?src=eq',{cache:'no-store'}).then(r=>r.ok?r.json():null),
-  fetch('/'+tok+'/wealth_data',{cache:'no-store'}).then(r=>r.ok?r.json():null)]);
-  if(a&&a.candles){AC={e:a,tr:((b&&b.w&&b.w.trades)||[])};if(oshCur==='ac')acRender();}}catch(e){}}
+ try{const g=u=>fetch(u,{cache:'no-store'}).then(r=>r.ok?r.json():null);
+  let [a,b]=await Promise.all([g('/'+tok+'/chart_data?src=eq&ref=1'),g('/'+tok+'/wealth_data?ref=1')]);
+  let ref=!!(a&&a.ref);
+  if(!a||!a.candles||a.candles.length<10){[a,b]=await Promise.all([g('/'+tok+'/chart_data?src=eq'),g('/'+tok+'/wealth_data')]);ref=false;}
+  if(a&&a.candles){AC={e:a,tr:((b&&b.w&&b.w.trades)||[]),ref};if(oshCur==='ac')acRender();}}catch(e){}}
 function acState(){if(!AC)return null;const e=AC.e,now=+e.px;if(!isFinite(now))return null;
  const t=e.trend||0,upL=t===-1?e.invalid:e.next_bos,dnL=t===-1?e.next_bos:e.invalid;
  return {t,now,up:(upL!=null&&upL>now)?upL-now:null,dn:(dnL!=null&&dnL<now)?now-dnL:null};}
@@ -3147,7 +3149,7 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  el.style.setProperty('--wxa',col+'2e');el.style.setProperty('--wxg',col+'40');
  document.getElementById('ac-orb').innerHTML='<svg viewBox="0 0 24 24" style="color:'+col+'"><path d="M3 17l5-5 4 3 8-8"/><path d="M15 7h5v5"/></svg>';
  const M=v=>(v<0?'-':'+')+'$'+Math.abs(v).toFixed(2);
- document.getElementById('ac-t').textContent=(CL?'The account · ':'Le compte · ')+(s.t===1?(CL?'rising':'en hausse'):s.t===-1?(CL?'falling':'en baisse'):(CL?'no trend yet':'sans tendance'));
+ document.getElementById('ac-t').textContent=(AC.ref?(CL?'The robot · ':'Le robot · '):(CL?'The account · ':'Le compte · '))+(s.t===1?(CL?'rising':'en hausse'):s.t===-1?(CL?'falling':'en baisse'):(CL?'no trend yet':'sans tendance'));
  document.getElementById('ac-l').innerHTML=s.t===-1
   ?(s.dn!=null?(CL?'A loss of <b>$':'Une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> makes a new low':'</b> fait un nouveau plus bas'):'')+(s.up!=null?' \u00b7 '+(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> net breaks the downtrend':'</b> net casse la baisse'):'')
   :(s.up!=null?(CL?'<b>+$':'<b>+$')+s.up.toFixed(2)+(CL?'</b> to a new high':'</b> pour un nouveau plus haut'):'')+(s.dn!=null?' \u00b7 '+(CL?'a loss of <b>$':'une perte de <b>$')+s.dn.toFixed(2)+(CL?'</b> breaks the rise':'</b> casse la hausse'):'');
@@ -3184,7 +3186,13 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  document.getElementById('ac-chips').innerHTML=chipH(CL?'next low':'prochain plus bas',s.dn!=null?'-$'+s.dn.toFixed(2):'\u2014','#ff8c8c',true)+chipH(CL?'trend break':'casse de tendance',s.up!=null&&s.t===-1?'+$'+s.up.toFixed(2):(s.dn!=null&&s.t===1?'-$'+s.dn.toFixed(2):'\u2014'),'#8df0bb',true)+
   chipH(CL?'last candle':'derni\u00e8re bougie',last?M(last[4]-last[1]):'\u2014',last&&last[4]>=last[1]?'#8df0bb':'#ff8c8c',false)+chipH(CL?'pace 14 d':'rythme 14 j',M(pace)+(CL?'/day':'/j'),pace>=0?'#8df0bb':'#ff8c8c',false);
  document.getElementById('ac-note').textContent=CL?'An indicator for reading, not a rule: our tests have not shown yet that it predicts the next trade. A live test is running.':'Un rep\u00e8re pour lire, pas une r\u00e8gle : nos tests n\u2019ont pas encore montr\u00e9 qu\u2019il pr\u00e9dit le prochain trade. Un test en direct est en cours.';
- document.getElementById('ac-full').href='/'+tok+'/chart?src=eq';}
+ document.getElementById('ac-full').href='/'+tok+'/chart?src=eq';
+ // which curve this is: the bot's own reference account, or this account
+ // while the reference is still building its history
+ document.getElementById('ac-note').textContent=(AC.ref
+   ?(CL?'Source: the robot\u2019s own demo account (fixed size, every signal). ':'Source : le compte d\u00e9mo du robot (taille fixe, tous les signaux). ')
+   :(CL?'Source: this account, until the robot\u2019s reference account has 10 candles. ':'Source : ce compte, en attendant que le compte de r\u00e9f\u00e9rence du robot ait 10 bougies. '))
+  +document.getElementById('ac-note').textContent;}
 // ---- La semaine (chip + sheet, from the account's own numbers) ----
 let WK=null,wkT=0;
 async function wkLoad(){if(Date.now()-wkT<60000)return;wkT=Date.now();try{const r=await fetch('/'+tok+'/api?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();WK={week:+j.week||0,days:j.days||[],expired:!!j.expired};if(oshCur==='rb'){RB=j;rbT=Date.now();}}}catch(e){}}
