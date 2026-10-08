@@ -398,7 +398,15 @@ const tok=location.pathname.split('/').filter(x=>x)[0];
 // zone; the annotated structure is for the admin's browser only.
 const FULL=%%FULL%%;   // 2026-10-05 (owner): decided by the account being VIEWED (Strategie or the owner's own pages), never by what this browser remembers
 const HTFOK=%%HTF%%;   // two timeframes belong to Strategie only: nobody else sees the menu or the panel
+const EQ=%%EQ%%;   // 2026-10-08 (owner): the Progression screen - this page drawing the ACCOUNT's result candles (one per trade) instead of BTC
+// money labels in EQ mode, price labels otherwise
+function PF(v){return EQ?((v>=0?'+$':'-$')+Math.abs(v).toFixed(2)):v.toFixed(0);}
 const TIER='%%TIER%%';   // observer: no structure hints at all   // 2026-09-27: strategy members get the full view from the server
+if(EQ){(function(){
+ const h=document.querySelector('#hd h1');if(h)h.textContent=(localStorage.getItem('owlLang')==='en')?'Progression':'Progression';
+ const st=document.createElement('style');
+ st.textContent='#ctbadge,#hdrow,#mtopen,#mtbar,#htfbtn,#cttype,#gotoday,#pickday,#pastbar,#htfwrap,#adstop{display:none!important}';
+ document.head.appendChild(st);})();}
 document.getElementById('back').onclick=(e)=>{e.preventDefault();
  if(history.length>1)history.back();else location.href='/'+tok;};
 const cv=document.getElementById('cv');
@@ -1176,7 +1184,7 @@ function draw(){
   ctx.strokeStyle='rgba(255,255,255,.14)';
   ctx.beginPath();ctx.moveTo(W-5,y);ctx.lineTo(W,y);ctx.stroke();
   ctx.fillStyle='#55677d';
-  const s=v.toFixed(0);
+  const s=PF(v);
   ctx.fillText(s,W-8-ctx.measureText(s).width,y-3);
   _axisY.push(y-3);}
  // --- trade zones (behind candles) ---
@@ -1418,7 +1426,7 @@ function draw(){
   ctx.moveTo(W-30,y+(top?-5:5));ctx.lineTo(W-22,y+(top?4:-4));
   ctx.lineTo(W-38,y+(top?4:-4));ctx.closePath();ctx.fill();
   ctx.font='bold 9px system-ui';
-  const t=lab+' '+v.toFixed(0);
+  const t=lab+' '+PF(v);
   const w2=ctx.measureText(t).width+10;
   ctx.fillStyle='rgba(8,14,22,.85)';
   ctx.beginPath();ctx.roundRect(W-w2-42,y-8,w2,16,8);ctx.fill();
@@ -1890,7 +1898,7 @@ function draw(){
     ?xoft[D.flip_bos_t]:null;
    const xf=xo!==null?xo:0;
    ctx.font='bold 8px system-ui';
-   const tf=(fd===1?'▲ ':'▼ ')+'BOS de bascule '+D.flip_bos.toFixed(0)+
+   const tf=(fd===1?'▲ ':'▼ ')+'BOS de bascule '+PF(D.flip_bos)+
     (farm?'':' · attend un repli');
    const wf=ctx.measureText(tf).width+8;
    ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
@@ -1907,7 +1915,7 @@ function draw(){
  {const lc=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
   if(lc&&!dupLvl(lc[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lc[1],col='#e8c55a';
-   const lab=(CL?'last CHoCH ':'dernier CHoCH ')+v.toFixed(0);
+   const lab=(CL?'last CHoCH ':'dernier CHoCH ')+PF(v);
    const yL=px(v);
    if(v>hi||v<lo||yL<=TOPP+9||yL>=TOPP+PLOT-9){
     edgeMark(v,col,CL?'last CHoCH':'dernier CHoCH');}
@@ -1937,7 +1945,7 @@ function draw(){
              :(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
   if(lb&&!dupLvl(lb[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lb[1],up=lb[3]===1,col=up?'#2ecc71':'#ff5c5c';
-   const lab=(CL?'last BOS ':'dernier BOS ')+v.toFixed(0);
+   const lab=(CL?'last BOS ':'dernier BOS ')+PF(v);
    const yL=px(v);
    if(v>hi||v<lo||yL<=TOPP+9||yL>=TOPP+PLOT-9){
     edgeMark(v,col,CL?'last BOS':'dernier BOS');}
@@ -1972,7 +1980,7 @@ function draw(){
     ctx.beginPath();ctx.moveTo(W*0.55,yb);ctx.lineTo(W-64,yb);ctx.stroke();
     ctx.setLineDash([]);ctx.globalAlpha=.75;
     ctx.font='bold 8px system-ui';
-    const tw='BOS '+D.next_bos.toFixed(0)+' · attend un repli';
+    const tw='BOS '+PF(D.next_bos)+' · attend un repli';
     const ww=ctx.measureText(tw).width+8;
     ctx.fillStyle='rgba(8,14,22,.8)';
     const lyw=lvlY(yb,'next-bos');
@@ -1996,7 +2004,7 @@ function draw(){
    ctx.lineTo(W-66,yb+(up?-5:5));ctx.closePath();ctx.fill();
    ctx.globalAlpha=1;
    ctx.font='bold 9px system-ui';
-   const lbl='BOS '+D.next_bos.toFixed(0);
+   const lbl='BOS '+PF(D.next_bos);
    const lw=ctx.measureText(lbl).width+10;
    ctx.fillStyle=near?col:'rgba(8,14,22,.8)';
    ctx.beginPath();ctx.roundRect(W-lw-4,yb-8,lw,16,8);ctx.fill();
@@ -2195,7 +2203,7 @@ function ui(){
  document.getElementById('aura').className=(FULL&&D.choch)?'choc':'';
  const pe=document.getElementById('px');
  if(D.px){
-  pe.textContent='$'+D.px.toFixed(0);
+  pe.textContent=EQ?PF(D.px):'$'+D.px.toFixed(0);
   if(lastPx!==null&&D.px!==lastPx){
    const up=D.px>lastPx;
    pe.style.color=up?'#2ecc71':'#ff5c5c';
@@ -2208,7 +2216,7 @@ let PAST=null;   // 2026-09-28: a past day is shown - the live feed is paused
 async function load(){
  if(PAST)return;
  try{
-  const r=await fetch('/'+tok+'/chart_data',{cache:'no-store'});
+  const r=await fetch('/'+tok+'/chart_data'+(EQ?'?src=eq':''),{cache:'no-store'});
   if(r.ok){D=ctApply(await r.json());digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
  }catch(e){}
 }
@@ -2818,7 +2826,7 @@ const CL=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){retur
 // on every draw, NOT cached, so flipping it in the app tab shows up on
 // the next frame here. It hides the INNER marks only - the main
 // structure is a different thing and must never ride on this.
-function INTMK(){if(CTPB())return PBINT();try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}}
+function INTMK(){if(EQ)return false;if(CTPB())return PBINT();try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}}
 const EN={'Aujourd’hui':'Today','EN DIRECT':'LIVE','Trader':'Trade','filtre silence':'quiet filter','Fermer':'Close','Fermer l\'outil':'Close the tool',
  'haussier':'bullish','baissier':'bearish','neutre':'neutral','choc!':'shock!','achat':'buy','vente':'sell','pris':'taken',
  'Feu vert':'Green light','Ça peut tourner':'It may turn','Ça se prépare':'Getting ready','Rien à faire':'Nothing to do','Pas de signal':'No signal','Marché soutenu':'Brisk market','Marché rapide':'Fast market','Aucun frein':'No brakes',

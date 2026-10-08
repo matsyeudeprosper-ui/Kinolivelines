@@ -4678,6 +4678,9 @@ function drawSpark(){
 }
 // 2026-10-08 (owner): the progression in a big sheet for a greater view
 function cvBig(){const en=LANG()==='en',bg=!!window._cvbg,d=window._d||{};
+ // 2026-10-08 (owner): the candles open their own full screen, with the
+ // real chart's zoom and pan; the line curve keeps the sheet
+ if(bg){location.href=B+'chart?src=eq';return;}
  const H=Math.round(Math.min(window.innerHeight*0.62,560));
  sheet('<h3>Progression</h3>'+
   (bg?'<canvas id="eqcvbig" style="width:100%;height:'+H+'px;display:block"></canvas>'+
@@ -15345,8 +15348,18 @@ class H(BaseHTTPRequestHandler):
                 _full = "true" if _cv == "full" else "false"
                 _tier = "observer" if _cv == "obs" else "member"
                 _htf = _full
+                # 2026-10-08 (owner): ?src=eq = the Progression screen. Its
+                # structure is the admin's only (same rule as the card).
+                _eq = "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else "")
+                if _eq:
+                    _adm = (user.get("id") in ("kino", "std")
+                            or admin_cookie_ok(self.headers))
+                    _full = "true" if _adm else "false"
+                    _tier = "member"
+                    _htf = "false"
                 self._send(_html.replace("%%BUILD%%", _st).replace("%%FULL%%", _full)
-                           .replace("%%HTF%%", _htf).replace("%%TIER%%", _tier),
+                           .replace("%%HTF%%", _htf).replace("%%TIER%%", _tier)
+                           .replace("%%EQ%%", "true" if _eq else "false"),
                            "text/html; charset=utf-8")
             except Exception:
                 self._send(CHART_PAGE, "text/html; charset=utf-8")
@@ -15388,6 +15401,42 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(_d), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "chart_data" and "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else ""):
+            # 2026-10-08 (owner): the Progression screen's data - the worker's
+            # result candles (eqc) shaped like the BTC feed so the same page
+            # draws them. Structure for the admin only, as on the card.
+            try:
+                _nd = json.load(open(os.path.join(DIR, "nest_data", f"{user.get('id')}.json")))
+                _e = _nd.get("eqc") or {}
+            except Exception:
+                _e = {}
+            _adm = (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))
+            _now = _e.get("now")
+            _cs = [list(c) for c in (_e.get("candles") or [])]
+            _lv = _e.get("live")
+            _t = int(time.time())
+            if _cs and _t <= _cs[-1][0]:
+                _t = _cs[-1][0] + 1
+            if _lv:
+                _live = [max(_t, int(_lv[0])), _lv[1], _lv[2], _lv[3], _lv[4],
+                         1 if _lv[4] >= _lv[1] else -1]
+            elif _now is not None:
+                _live = [_t, _now, _now, _now, _now, 1]
+            else:
+                _live = None
+            _out = {"candles": _cs, "live": _live, "px": _now, "trades": [],
+                    "closed": [], "pending": [], "h1": None, "pb": None,
+                    "dots": [], "marks": [], "breaks": [], "trend": 0, "choch": 0,
+                    "int_dots": [], "int_marks": [], "int_trend": 0,
+                    "acct": user.get("login"), "uid": user.get("id"), "eq": True}
+            if _adm:
+                for _k in ("dots", "marks", "breaks", "trend", "choch", "bos_dir",
+                           "next_bos", "invalid", "next_bos_t", "invalid_t",
+                           "flip_bos", "flip_bos_t", "flip_bos_dir"):
+                    if _k in _e:
+                        _out[_k] = _e[_k]
+                _out["breaks"] = [[b[0], b[1], b[2]] for b in (_e.get("breaks") or [])]
+            self._send(json.dumps(_out), "application/json")
         elif sub == "chart_data":
             # 2026-09-16 (owner): the chart shows the positions of the
             # account BEING VIEWED, never the terminal that happens to
