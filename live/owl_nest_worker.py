@@ -306,6 +306,10 @@ def compute():
         "since_start": since_start,
         "curve": curve[-120:],
         "curve30": curve30,
+        # 2026-10-08: the curves are one point per TRADE, so the app cannot
+        # derive their first date from their length - send it
+        "curve_from": int(d7[-120:][0].time) if d7 else None,
+        "curve30_from": int(d30[0].time) if d30 else None,
         "eqc": eqc,
         "updated_utc": utcnow.isoformat(timespec="seconds"),
     }

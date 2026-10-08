@@ -2676,8 +2676,14 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    <rect x="2.25" y="4" width="3.5" height="7" rx="1"/><rect x="10.25" y="5.5" width="3.5" height="7" rx="1"/></svg>
  </button></span>
 </div>
-<div class="panel"><svg id="spark" viewBox="0 0 300 80"
+<div class="panel" id="cvpanel" style="position:relative;cursor:pointer"><svg id="spark" viewBox="0 0 300 80"
  style="width:100%;height:80px;display:block"></svg>
+ <!-- 2026-10-08 (owner): tap the progression to open it big -->
+ <button id="cvbig" aria-label="Agrandir" style="position:absolute;top:8px;right:8px;width:26px;height:26px;
+  border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);
+  display:inline-flex;align-items:center;justify-content:center;padding:0;z-index:1">
+  <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"
+   stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5 9 7M2.5 13.5 7 9"/></svg></button>
  <!-- 2026-10-08 (owner): the progression as a filtered candle chart, one
       candle per closed trade; structure marks for the admin only. -->
  <canvas id="eqcv" style="width:100%;height:210px;display:none"></canvas>
@@ -4498,8 +4504,8 @@ function drawJourney(d){
 }
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
-function drawEqc(e){
- const cv=document.getElementById('eqcv'),sub=document.getElementById('eqcsub');
+function drawEqc(e,cv,sub,minW){
+ cv=cv||document.getElementById('eqcv');sub=sub||document.getElementById('eqcsub');
  const en=LANG()==='en';
  const W=cv.clientWidth||300,H=cv.clientHeight||210,dpr=window.devicePixelRatio||1;
  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
@@ -4511,7 +4517,7 @@ function drawEqc(e){
  // the same rule as the price chart: an empty strip on the right holds
  // the labels, clear of the newest candle
  const RG=Math.min(84,Math.max(58,W*0.2)),TOP=10,BOT=10;
- const maxN=Math.max(8,Math.floor((W-RG)/4)-1);
+ const maxN=Math.max(8,Math.floor((W-RG)/(minW||4))-1);
  const cs=cs0.slice(-maxN),live=e.live;
  const n=cs.length+(live?1:0),cw=(W-RG)/(n+1);
  let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
@@ -4610,15 +4616,18 @@ function drawSpark(){
    c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
   dp+=' C'+c1x.toFixed(1)+','+c1y.toFixed(1)+' '+c2x.toFixed(1)+','+
    c2y.toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1);}
- // 2026-10-01 (owner): the dates the curve actually covers. Derived
- // from its own length - one point per day - so an account younger than
- // the selected range still gets true dates instead of a flattering one.
- {const sd=document.getElementById('spkdates');
-  if(sd){const f=n=>{const x=new Date();x.setDate(x.getDate()-n);
-    return String(x.getDate()).padStart(2,'0')+'/'+
-      String(x.getMonth()+1).padStart(2,'0');};
-   sd.innerHTML='<span>'+f(c.length-1)+'</span><span>'+f(0)+'</span>';
-   sd.style.display='flex';}}
+ // 2026-10-01 (owner): the dates the curve actually covers.
+ // 2026-10-08: the 7 j and 30 j curves are one point per TRADE, so their
+ // length is not a number of days (a 7-day curve read "22/08"). The worker
+ // now sends the first point's time; the 3-month curve is per day and
+ // carries its own first date.
+ {const sd=document.getElementById('spkdates'),d=window._d||{};
+  const f=x=>String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0');
+  const z=window._cvz,t0=z==='90'?(window._c90f?new Date(window._c90f+'T12:00:00'):null)
+   :z==='30'?(d.curve30_from?new Date(d.curve30_from*1000):null)
+   :(d.curve_from?new Date(d.curve_from*1000):null);
+  if(sd){if(t0){sd.innerHTML='<span>'+f(t0)+'</span><span>'+f(new Date())+'</span>';sd.style.display='flex';}
+   else sd.style.display='none';}}
  const last=c[c.length-1],col=last>=0?'#2ecc71':'#ff5c5c';
  const y0=Y(0).toFixed(1),ex=pts[pts.length-1][0].toFixed(1),
   ey=pts[pts.length-1][1].toFixed(1);
@@ -4656,6 +4665,21 @@ function drawSpark(){
   (+ey-9).toFixed(1)+'" text-anchor="middle" style="fill:'+col+
   '" font-size="11" font-weight="800">'+fm(last)+'</text>';
 }
+// 2026-10-08 (owner): the progression in a big sheet for a greater view
+function cvBig(){const en=LANG()==='en',bg=!!window._cvbg,d=window._d||{};
+ const H=Math.round(Math.min(window.innerHeight*0.62,560));
+ sheet('<h3>Progression</h3>'+
+  (bg?'<canvas id="eqcvbig" style="width:100%;height:'+H+'px;display:block"></canvas>'+
+      '<div id="eqcsubbig" style="font-size:.78rem;color:var(--muted);margin-top:8px"></div>'
+     :'<div id="sparkbig"></div>')+
+  '<button class="shbtn shmain" onclick="window._shDone(null)" style="margin-top:14px">'+(en?'Close':'Fermer')+'</button>');
+ setTimeout(()=>{
+  if(bg){const c=document.getElementById('eqcvbig');if(c)drawEqc(d.eqc,c,document.getElementById('eqcsubbig'),3);}
+  else{const w=document.getElementById('sparkbig'),sv=document.getElementById('spark');
+   if(w&&sv)w.innerHTML='<svg viewBox="0 0 300 80" style="width:100%;height:auto;display:block">'+sv.innerHTML+'</svg>';}},320);}
+{const p=document.getElementById('cvpanel'),b=document.getElementById('cvbig');
+ if(p)p.onclick=()=>cvBig();
+ if(b)b.onclick=(ev)=>{ev.stopPropagation();cvBig();};}
 {const mb=document.getElementById('cvmode');if(mb)mb.onclick=()=>{window._cvbg=!window._cvbg;
  try{localStorage.setItem('owlCvBg',window._cvbg?'1':'0');}catch(e){}drawSpark();ddCap(window._d);};
  try{window._cvbg=localStorage.getItem('owlCvBg')==='1';}catch(e){}}
@@ -8306,7 +8330,8 @@ function render(d){
   // 2026-09-27: 3-month curve built from the worker's day-by-day months
   (function(){const M=d.months||{};
    const ds=[].concat(...Object.keys(M).sort().map(k=>M[k]||[])).sort((a,b)=>a.d<b.d?-1:1);
-   let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});})();
+   let c=0;window._c90=ds.map(x=>{c+=(x.p||0);return Math.round(c*100)/100;});
+   window._c90f=ds.length?ds[0].d:null;})();
   // 2026-09-27: a reset (new era_start) clears this phone's own marks too
   if(d.era_start){let prev=null;try{prev=localStorage.getItem('owlEra:'+B);}catch(e){}
    if(prev&&prev!==d.era_start){['owlBadges:'+B,'owlInboxSeen:'+B,'owlWeekImg:'+B].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
