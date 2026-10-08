@@ -59,6 +59,16 @@
    "status": "answered",
    "answer_fr": "Vrai, et ça se confirme : trente-neuf changements de sens, 38 % gagnés contre 61 % pour les autres, environ quarante-quatre dollars perdus, perdants sur les deux moitiés. Mais l'essentiel du trou vient de ceux pris en marché nerveux : vingt-trois trades, environ trente-cinq dollars perdus. Les seize en marché calme gagnent une fois sur deux et perdent peu, environ neuf dollars. Et sur quarante-deux jours, le test dit que les changements de sens en marché calme rapportent bien. Couper tous les changements de sens jetterait donc les bons avec les mauvais. Je vise seulement les nerveux : miser moins sur eux. C'est proposé et en attente du verdict de la nuit.",
    "answer_en": "True, and it keeps holding: thirty-nine changes of direction, 38% won against 61% for the others, about forty-four dollars lost, losing in both halves. But most of the hole comes from the ones taken in a nervous market: twenty-three trades, about thirty-five dollars lost. The sixteen in a calm market win one time in two and lose little, about nine dollars. And over 42 days the test says changes of direction in a calm market earn well. So cutting every change of direction would throw out the good with the bad. I aim only at the nervous ones: stake less on them. It is proposed and waiting for the night's verdict."
+  },
+  {
+   "id": "ask_1791433808_cont",
+   "seed": "cont",
+   "seed_fr": "Un trade de plus dans le même sens",
+   "seed_en": "One more trade the same way",
+   "by": "labo",
+   "date": "2026-10-08",
+   "note": "31 trades, 68 % gagnés contre 37 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }

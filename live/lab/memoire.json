@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T03:00:13Z",
+ "updated": "2026-10-08T04:30:06Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -69,7 +69,8 @@
     "2026-10-06 04:00 veille: BOS SELL won +9.97 (pace 1.092, closed 03:30, ~2x the BOS avg gain), after the two calm FLIP losses. BOS 22 tr 73% +44.11 PF 2.57 (h 55%/91%) vs FLIP-BOS 27 tr 44% -15.20 PF 0.72. The kind split keeps widening; flip_hot unchanged (17 tr).",
     "2026-10-06: flip_hot_size on both shapes (nokill halves, 42 d): alone uncapped C -5.8 hole 46.5, capped A +14.2 (h +4.5/+6.8) hole 15.7. rr1.0+nosun+0.75: A +16.9 (h +6.8/+4.2) hole 24 / A +8.9 (h +0.1/+38.5) hole 15.3. Neighbours: 0.85 A +13.9 / B +7.6; 0.5 B +11.3 / B +6.8. 69 d: B +7.5 / B +4.4, holes 33 / 20.6; alone 69 d C -9.6 / C +4.1. rr0.9+nosun+0.75: B +4.0 / C -14.8. Real: no new nervous flip; FLIP-BOS 27 tr 44% -15.20.",
     "2026-10-07 veille: real 70 tr. FLIP-BOS 39 tr 38% -43.87; flip_hot 23 tr 30% -34.75 (h 36%/25%), after a loss 1/10 -32.93, after a win 13 tr 46% -1.82. BOS 28 tr 64% +17.55: the BOS edge shrank (73%->64%) as it grew from 22 to 28 trades. Latest trade BOS BUY -2.08.",
-    "2026-10-08 veille: BOS 29 tr 66% +27.31 PF 1.46 (h 62%/69%) after the +9.76 SELL (pace 1.224); FLIP-BOS unchanged 39 tr 38% -43.87. Edge picture intact."
+    "2026-10-08 veille: BOS 29 tr 66% +27.31 PF 1.46 (h 62%/69%) after the +9.76 SELL (pace 1.224); FLIP-BOS unchanged 39 tr 38% -43.87. Edge picture intact.",
+    "2026-10-08 04:30 veille: FLIP-BOS BUY lost -1.66 (pace 0.909, CALM, closed 03:04), then BOS SELL +1.00 (pace 0.974) and BOS SELL +3.63 (pace 1.45). BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%); FLIP-BOS 40 tr 38% -45.53 PF 0.51 (h 47%/30%). flip_hot unchanged 23 tr (the loss was calm). Real calm flips keep losing too: kind remains the cleaner real split."
    ],
    "next": "Proposed rr10_nosun_fliphot075 and fliphot075_capped. Capped h1 +0.1 is razor thin; want the battery to confirm, then the critic."
   },
@@ -185,7 +186,8 @@
    "evidence": [
     "2026-10-05: real BUY 32 tr 62% +34.55 PF 1.69 (h 47%/76%), SELL 17 tr 47% -20.36 PF 0.49 (h 33%/62%). Eleven days of a mostly rising market; no per-direction dial.",
     "2026-10-06 veille: SELL 19 tr 47% -13.39 PF 0.69 (h 30%/67%), BUY 33 tr 61% +31.44 PF 1.59 (h 44%/76%). The +9.97 BOS SELL narrows the gap; sell losses sit mostly in reversals.",
-    "2026-10-08 veille: real 71 tr. SELL 29 tr 52% -2.18 PF 0.96 (h 50%/53%); BUY 42 tr 48% -25.24 PF 0.77 (h 52%/43%). The +9.76 BOS SELL nearly closes the sell hole; buys now the weaker side (reversal buys)."
+    "2026-10-08 veille: real 71 tr. SELL 29 tr 52% -2.18 PF 0.96 (h 50%/53%); BUY 42 tr 48% -25.24 PF 0.77 (h 52%/43%). The +9.76 BOS SELL nearly closes the sell hole; buys now the weaker side (reversal buys).",
+    "2026-10-08 04:30 veille: SELL 31 tr 55% +2.45 PF 1.04 (h 50%/59%); BUY 43 tr 47% -26.90 PF 0.76 (h 57%/35%). Sells positive for the first time; the buy second half is the weak spot."
    ],
    "next": "Do not request a direction dial until a falling week is in the journal; then compare."
   },
@@ -898,6 +900,16 @@
     "asks.json (none open)"
    ],
    "saw": "71 trades. BOS 29 tr 66% +27.31 (64% on 28 yesterday). SELL 29 tr 52% -2.18 (was 19 tr 47% -13.39 on 10-06); BUY 42 tr 48% -25.24 now the weaker side. No twins, no labo, no ask. No harness run, no pile, no proposal (the night's battery decides)."
+  },
+  {
+   "t": "2026-10-08T04:30:06Z",
+   "looked": [
+    "wake_context new trades (3, all closed after 03:00: FLIP-BOS BUY -1.66 03:04 pace 0.909; BOS SELL +1.00 03:21 pace 0.974; BOS SELL +3.63 04:20 pace 1.45)",
+    "scrutiny --by kind",
+    "scrutiny --pile flip_hot",
+    "scrutiny --by dir"
+   ],
+   "saw": "74 trades. BOS 31 tr 68% +31.94; FLIP-BOS 40 tr 38% -45.53 (h 47%/30%). flip_hot unchanged (calm loss). SELL 31 tr 55% +2.45 now positive; BUY 43 tr 47% -26.90 (h 57%/35%). No twins, no labo, no ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
