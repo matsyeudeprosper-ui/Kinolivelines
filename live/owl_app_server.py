@@ -2649,19 +2649,32 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="pgoal-s" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
 </div>
 <div class="sec" style="display:flex;justify-content:space-between;
- align-items:center">Progression
- <span><button class="cvc" data-c="7" style="border:1px solid var(--border2);
-  background:var(--surface3);color:var(--text2);border-radius:99px;padding:5px 12px;
+ align-items:center;flex-wrap:nowrap;gap:8px">Progression
+ <!-- 2026-10-08 (owner): a 4th chip wrapped the row on a phone. The
+      range chips and the curve/candles switch are two different things:
+      the candles always cover the whole history, so in that mode the
+      range chips give way to "depuis le debut", and the switch is one
+      icon button that never needs more room. -->
+ <span style="display:flex;align-items:center;gap:4px;white-space:nowrap">
+ <span id="cvrange" style="display:flex;gap:4px">
+ <button class="cvc" data-c="7" style="border:1px solid var(--border2);
+  background:var(--surface3);color:var(--text2);border-radius:99px;padding:5px 10px;
   font-size:.72rem;font-weight:700">7 j</button>
  <button class="cvc" data-c="30" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
-  font-size:.72rem;font-weight:700;margin-left:6px">30 j</button>
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 10px;
+  font-size:.72rem;font-weight:700">30 j</button>
  <button class="cvc" data-c="90" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
-  font-size:.72rem;font-weight:700;margin-left:6px">3 mois</button>
- <button class="cvc" data-c="bg" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
-  font-size:.72rem;font-weight:700;margin-left:6px">Bougies</button></span>
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 10px;
+  font-size:.72rem;font-weight:700">3 mois</button></span>
+ <span id="cvsince" style="display:none;font-size:.72rem;font-weight:700;
+  color:var(--muted2);padding:5px 4px">depuis le d&eacute;but</span>
+ <button id="cvmode" aria-label="Bougies" aria-pressed="false" style="border:1px solid var(--border);
+  background:transparent;color:var(--muted2);border-radius:99px;width:30px;height:28px;
+  padding:0;display:inline-flex;align-items:center;justify-content:center;margin-left:2px">
+  <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor"
+   stroke-width="1.5" stroke-linecap="round"><path d="M4 1.5v2.5M4 11v3.5M12 2.5v3M12 12.5v2"/>
+   <rect x="2.25" y="4" width="3.5" height="7" rx="1"/><rect x="10.25" y="5.5" width="3.5" height="7" rx="1"/></svg>
+ </button></span>
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 80"
  style="width:100%;height:80px;display:block"></svg>
@@ -4566,7 +4579,12 @@ function drawEqc(e){
   (S?(e.trend===1?(en?' \u00b7 trend up':' \u00b7 tendance hausse'):e.trend===-1?(en?' \u00b7 trend down':' \u00b7 tendance baisse'):''):'');
  sub.style.display='block';}
 function drawSpark(){
- {const bg=window._cvz==='bg',cv=document.getElementById('eqcv');
+ {const bg=!!window._cvbg,cv=document.getElementById('eqcv');
+  {const rg=document.getElementById('cvrange'),sn=document.getElementById('cvsince'),mb=document.getElementById('cvmode');
+   if(rg)rg.style.display=bg?'none':'flex';
+   if(sn){sn.style.display=bg?'inline':'none';sn.textContent=LANG()==='en'?'since the start':'depuis le début';}
+   if(mb){mb.setAttribute('aria-pressed',bg?'true':'false');mb.style.background=bg?'var(--surface3)':'transparent';
+    mb.style.borderColor=bg?'var(--border2)':'var(--border)';mb.style.color=bg?'var(--text2)':'var(--muted2)';}}
   document.getElementById('spark').style.display=bg?'none':'block';
   if(cv)cv.style.display=bg?'block':'none';
   if(bg){const sd=document.getElementById('spkdates');if(sd)sd.style.display='none';
@@ -4638,6 +4656,9 @@ function drawSpark(){
   (+ey-9).toFixed(1)+'" text-anchor="middle" style="fill:'+col+
   '" font-size="11" font-weight="800">'+fm(last)+'</text>';
 }
+{const mb=document.getElementById('cvmode');if(mb)mb.onclick=()=>{window._cvbg=!window._cvbg;
+ try{localStorage.setItem('owlCvBg',window._cvbg?'1':'0');}catch(e){}drawSpark();ddCap(window._d);};
+ try{window._cvbg=localStorage.getItem('owlCvBg')==='1';}catch(e){}}
 document.querySelectorAll('.cvc').forEach(b=>{b.onclick=()=>{
  window._cvz=b.dataset.c;
  document.querySelectorAll('.cvc').forEach(x=>{
@@ -7095,7 +7116,7 @@ const NEWS=[
 function ddCap(d){
  const dc=document.getElementById('ddcap');
  if(!dc||!d||d.max_dd_7d===undefined)return;
- if(String(window._cvz||'7')!=='7'){dc.style.display='none';return;}
+ if(window._cvbg||String(window._cvz||'7')!=='7'){dc.style.display='none';return;}
  const dv=Number(d.max_dd_7d).toFixed(0);
  dc.textContent=(LANG()==='en'
   ?'Worst dip over these 7 days: '+(dv==0?'$0':'-$'+dv)
