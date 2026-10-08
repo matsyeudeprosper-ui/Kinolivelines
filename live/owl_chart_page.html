@@ -3190,7 +3190,7 @@ function acRender(){const s=acState(),el=document.getElementById('ac');if(!s||!e
  // which curve this is: the bot's own reference account, or this account
  // while the reference is still building its history
  document.getElementById('ac-note').textContent=(AC.ref
-   ?(CL?'Source: the robot\u2019s own demo account (fixed size, every signal). ':'Source : le compte d\u00e9mo du robot (taille fixe, tous les signaux). ')
+   ?(CL?'Source: the robot\u2019s own demo account (fixed size, every signal'+(AC.e.spread_extra?', real spread: +$'+(+AC.e.spread_extra).toFixed(2)+' charged per trade':'')+'). ':'Source : le compte d\u00e9mo du robot (taille fixe, tous les signaux'+(AC.e.spread_extra?', spread r\u00e9el : +$'+(+AC.e.spread_extra).toFixed(2)+' compt\u00e9 par trade':'')+'). ')
    :(CL?'Source: this account, until the robot\u2019s reference account has 10 candles. ':'Source : ce compte, en attendant que le compte de r\u00e9f\u00e9rence du robot ait 10 bougies. '))
   +document.getElementById('ac-note').textContent;}
 // ---- La semaine (chip + sheet, from the account's own numbers) ----

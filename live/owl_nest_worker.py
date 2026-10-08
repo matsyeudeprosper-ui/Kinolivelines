@@ -247,9 +247,24 @@ def compute():
     try:
         from owl_chart_feed import build as _fbuild, engine as _feng
         _raw, _cum, _lt = [], 0.0, 0
+        # 2026-10-08 (owner): the reference demo pays a kinder spread than
+        # the real accounts ($4.48 vs ~$7). "spread_extra" on its nest record
+        # = dollars of spread charged on every closed deal of THIS curve
+        # (x volume x contract size), so the indicator reads real costs. The
+        # account's own balance and history are never touched.
+        _sx = float(u.get("spread_extra") or 0.0)
+        _cs = 1.0
+        if _sx:
+            try:
+                _si = mt5.symbol_info(SYMBOL)
+                _cs = float(_si.trade_contract_size) if _si else 1.0
+            except Exception:
+                _cs = 1.0
+        _charged = 0.0
         for d in _alls:
             _t = max(int(d.time), _lt + 1); _lt = _t
-            _o = _cum; _cum += val(d)
+            _o = _cum; _c = _sx * d.volume * _cs; _charged += _c
+            _cum += val(d) - _c
             _raw.append({"time": _t, "open": _o, "high": max(_o, _cum),
                          "low": min(_o, _cum), "close": _cum})
         _kept = _fbuild(_raw)
@@ -269,6 +284,7 @@ def compute():
                    # the true current total (hidden trades + open trade),
                    # which the last SHOWN candle may not be
                    "now": round(_cum + floating, 2),
+                   "spread_extra": _sx, "charged": round(_charged, 2),
                    "live": ([int(utcnow.timestamp()), round(_cum, 2),
                              round(max(_cum, _cum + floating), 2),
                              round(min(_cum, _cum + floating), 2),

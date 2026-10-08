@@ -15574,7 +15574,8 @@ class H(BaseHTTPRequestHandler):
                     "dots": [], "marks": [], "breaks": [], "trend": 0, "choch": 0,
                     "int_dots": [], "int_marks": [], "int_trend": 0,
                     "acct": user.get("login"), "uid": _src, "eq": True,
-                    "ref": _src != user.get("id"), "n_trades": _e.get("n_trades")}
+                    "ref": _src != user.get("id"), "n_trades": _e.get("n_trades"),
+                    "spread_extra": _e.get("spread_extra"), "charged": _e.get("charged")}
             if _adm:
                 for _k in ("dots", "marks", "breaks", "trend", "choch", "bos_dir",
                            "next_bos", "invalid", "next_bos_t", "invalid_t",
