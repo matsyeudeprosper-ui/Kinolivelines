@@ -221,6 +221,10 @@ TRACE = None
 # 2026-10-07 (owner): a function (t, d) -> bool that allows or refuses a trade
 # by the direction another chart points. None by default.
 DIRGATE = None
+# 2026-10-08 (owner): the loss-pause rule. True -> after a losing trade the
+# next trades are VIRTUAL (taken, scored, but booked nowhere: no money, no
+# debt, no reserve, no streak) until one of them wins. Off by default.
+LOSSPAUSE = False
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -405,6 +409,25 @@ def simulate(R, spread, cfg):
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
+    lp_paused = lp_virt = False
+    lp_snap = None
+    n_virt = 0
+
+    def _lp_close(win):
+        # called once per closed trade, right after its booking. A virtual
+        # trade's booking is undone from the snapshot taken at its entry
+        # (one position at a time, so nothing else moved in between).
+        nonlocal run, pk, chest, debt_led, day_profit, streak, wins
+        nonlocal lp_paused, lp_virt, lp_snap, n_virt
+        if lp_virt:
+            day_profit -= run - lp_snap[0]
+            run, pk, chest, debt_led, streak, wins = lp_snap
+            if pnls:
+                pnls.pop()
+            n_virt += 1
+        # a callable LOSSPAUSE decides it instead (controls: random pauses)
+        lp_paused = LOSSPAUSE(win) if callable(LOSSPAUSE) else (not win)
+        lp_virt = False
     for i, bar in enumerate(R):
         t = int(bar["time"])
         o, h, l, cl = (float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"]))
@@ -488,6 +511,8 @@ def simulate(R, spread, cfg):
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
+                if LOSSPAUSE:
+                    _lp_close(win)
                 pos = None
                 pos_trailed = False
                 last_close_t = t
@@ -560,6 +585,8 @@ def simulate(R, spread, cfg):
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
+                if LOSSPAUSE:
+                    _lp_close(win)
                 if pos_trailed and not win:
                     n_trail_exit += 1
                     # what the move was worth on this trade: the old
@@ -693,6 +720,8 @@ def simulate(R, spread, cfg):
                 streak = 0 if _win else streak + 1
                 wins += 1 if _win else 0
                 pk = max(pk, run)
+                if LOSSPAUSE:
+                    _lp_close(_win)
                 pos = None
                 pos_trailed = False
                 last_close_t = t
@@ -843,6 +872,9 @@ def simulate(R, spread, cfg):
             if _need > 0:
                 pos_rr = min(rr, (_need / lot + spread) / dist)
         tp = cl + d * pos_rr * dist
+        lp_virt = bool(LOSSPAUSE and lp_paused)
+        if lp_virt:
+            lp_snap = (run, pk, chest, debt_led, streak, wins)
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
         pos_trailed = False
         last_hour = t // 3600
@@ -860,7 +892,7 @@ def simulate(R, spread, cfg):
                       "power": (round(rng[i] / _m, 2) if _m > 0 else None),
                       "age": int((t - (hi_since if d == 1 else lo_since)) // 60),
                       "touch": (hi_touch if d == 1 else lo_touch),
-                      "win": None, "pnl": None}
+                      "win": None, "pnl": None, "virt": lp_virt}
             TRACE.append(cur_tr)
     dd = pk2 = worst = 0.0
     for v in curve:
@@ -884,7 +916,8 @@ def simulate(R, spread, cfg):
             "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
-            "storm_exits": n_storm_exit, "flip_exits": n_flip_exit}
+            "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
+            "virtual": n_virt}
 
 
 def run_cfg(R, spread, cfg):

@@ -1,0 +1,9 @@
+ok
+check off == before: net 208.62 trades 274
+sanity: real pnl sum 87.08 vs net 87.06
+normal bot                 net   208.62 | 1st half   207.28 2nd half    -9.35 | worst drop  -80.29 | real 274 virtual   0 
+loss-pause (simulated)     net    87.06 | 1st half    68.46 2nd half    21.62 | worst drop  -73.75 | real 163 virtual 108 verdict C
+virtual trades: 108, would-be net 72.17, win 64%
+random pauses at the same rate (40%), 40 runs: net median 89.32, worst drop median -75.23
+loss-pause beats random on net in 50% of runs, on worst drop in 55%
+
