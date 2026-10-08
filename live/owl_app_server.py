@@ -2525,15 +2525,24 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="mxs-day" style="position:relative;font-size:.76rem;color:var(--muted);
   margin-top:8px"></div>
 </div>
-<div class="panel" id="palier" style="display:none;margin-top:12px">
- <div class="lbl">Croissance</div>
- <div style="font-size:.92rem;color:var(--text2);margin-top:8px"
-  id="palier-lbl"></div>
- <div style="background:var(--surface3);border-radius:99px;height:6px;
-  margin-top:8px"><div id="palier-bar" style="
-  transition:width .9s cubic-bezier(.2,.8,.2,1);background:
-  var(--up);height:6px;border-radius:99px;width:0%"></div></div>
- <div class="sub" id="grow-lot"></div>
+<!-- 2026-10-08 (owner): the Croissance card, redesigned as a mini ladder of
+     paliers, and the door to "Votre parcours" in Patrimoine. -->
+<div class="panel" id="palier" role="link" tabindex="0" aria-label="Croissance, voir votre parcours"
+ onclick="location.href=B+'wealth#parcours'"
+ onkeydown="if(event.key==='Enter')location.href=B+'wealth#parcours'"
+ style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;
+ background:radial-gradient(120% 90% at 100% 0%,rgba(46,204,113,.10),transparent 60%),
+ radial-gradient(90% 80% at 0% 100%,rgba(59,130,246,.12),transparent 60%),var(--surface)">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl">Croissance</div>
+  <span id="pal-link" style="font-size:.74rem;font-weight:700;color:var(--accent-soft);
+   display:inline-flex;align-items:center;gap:2px;white-space:nowrap">Votre parcours
+   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <div id="pal-head" style="font-size:1.12rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
+ <svg id="pal-track" viewBox="0 0 300 64" preserveAspectRatio="none"
+  style="width:100%;height:64px;display:block;margin-top:6px;overflow:visible"></svg>
+ <div id="pal-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+ <div id="pal-goal" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
@@ -4601,6 +4610,56 @@ function drawEqc(e,cv,sub,minW){
   if(gD!=null&&gD<last)parts.push('<b style="color:#ff5c5c">\u2212'+m(last-gD)+'</b> '+(up?(en?'to break the uptrend':'pour casser la hausse'):(en?'to a new low':'pour un nouveau plus bas')));
   if(parts.length)sub.innerHTML='<div style="font-size:.86rem;color:var(--text2);margin-bottom:4px">'+parts.join(' \u00b7 ')+'</div>'+sub.innerHTML;}
  sub.style.display='block';}
+// 2026-10-08 (owner): the Croissance card = a mini ladder of paliers. Same
+// numbers as Patrimoine's "Votre parcours" (the bot's own scaling state).
+function renderGrow(d){const card=document.getElementById('palier');if(!card)return;
+ const lg=d.ledger||{},eq=+d.equity||0,en=LANG()==='en';
+ const scale=lg.scale_active&&!lg.scale_opt_out&&lg.scale_ref_balance>0&&lg.scale_base_cap>0;
+ const goal=(!d.palier_def&&d.palier)?+d.palier:null;
+ if(!eq||(!scale&&!d.palier)){card.style.display='none';return;}
+ card.style.display='block';
+ const m=v=>'$'+(Math.abs(v)>=1000?Math.abs(v).toFixed(0):Math.abs(v).toFixed(2));
+ const m0=v=>'$'+Math.round(v);
+ // pace of the last 14 days from the worker's day-by-day months
+ let pace=null;{const M=d.months||{},cut=new Date(Date.now()-14*86400000).toISOString().slice(0,10);
+  const ds=[].concat(...Object.values(M));if(ds.length){pace=ds.filter(x=>x.d>=cut).reduce((a,x)=>a+(x.p||0),0)/14;}}
+ let R=[],lo,hi,head,chips=[];
+ if(scale){const per=lg.scale_ref_balance/lg.scale_base_cap,k=Math.floor(eq/per);
+  const rung=j=>({v:per*j,lab:'$'+j+(en?'/day':'/jour')});
+  const prev=rung(Math.max(k,0)),nxt=rung(k+1),nx2=rung(k+2);R=[prev,nxt,nx2];lo=prev.v;hi=nx2.v;
+  head='<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'to reach ':'pour passer \u00e0 ')+'<b>'+nxt.lab+'</b>';
+  const lot=(typeof lg.sized_lot==='number')?lg.sized_lot:Math.max(0.01,Math.floor((lg.scale_base_lot||0.02)*eq/lg.scale_ref_balance/0.01+1e-9)*0.01);
+  if(lg.sized_day_cap)chips.push([en?'Target today':'Objectif du jour','$'+(+lg.sized_day_cap).toFixed(2)]);
+  chips.push(['Lot',lot.toFixed(2)]);
+  if(pace!=null){if(pace>0.01){const dd=Math.ceil((nxt.v-eq)/pace),dt=new Date(Date.now()+dd*86400000);
+    chips.push([en?'Around':'Vers le',String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')]);}
+   else chips.push([en?'Pace 14 d':'Rythme 14 j',(pace<0?'-':'+')+m(pace)+(en?'/day':'/j')]);}}
+ else{const b0=(d.palier_base&&d.palier_base<d.palier)?+d.palier_base:0;lo=b0;hi=+d.palier;
+  R=[{v:lo,lab:en?'start':'d\u00e9part'},{v:hi,lab:d.palier_def?(en?'week goal':'objectif semaine'):(en?'goal':'objectif')}];
+  head='<b style="color:var(--up)">'+m(Math.max(0,hi-eq))+'</b> '+(en?'to ':'pour ')+(d.palier_def?(en?'this week\u2019s goal (+$':'l\u2019objectif de la semaine (+$')+(d.palier_step||50).toFixed(0)+')':(en?'the goal ':'l\u2019objectif ')+m0(hi));}
+ document.getElementById('pal-head').innerHTML=head;
+ // the track: one scale, rung ticks, the travelled part filled, a dot = now
+ const W=300,X=v=>14+Math.max(0,Math.min(1,(v-lo)/((hi-lo)||1)))*(W-28),xe=X(eq),cs=getComputedStyle(document.documentElement);
+ const up=cs.getPropertyValue('--up').trim(),ac=cs.getPropertyValue('--accent').trim(),mu=cs.getPropertyValue('--muted').trim(),s3=cs.getPropertyValue('--surface3').trim(),tx2=cs.getPropertyValue('--text2').trim();
+ let g='<defs><linearGradient id="pgr" x1="0" x2="1"><stop offset="0" stop-color="'+ac+'"/><stop offset="1" stop-color="'+up+'"/></linearGradient>'+
+  '<filter id="pgl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs>'+
+  '<rect x="14" y="29" width="'+(W-28)+'" height="6" rx="3" fill="'+s3+'"/>'+
+  '<rect x="14" y="29" width="'+Math.max(0,xe-14).toFixed(1)+'" height="6" rx="3" fill="url(#pgr)"/>';
+ R.forEach((r,i)=>{const x=X(r.v),done=r.v<=eq+1e-9,col=done?up:(i===1?ac:mu);
+  g+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="24" y2="40" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+(done||i===1?1:.6)+'"/>'+
+   '<text x="'+x.toFixed(1)+'" y="15" text-anchor="'+(i===0?'start':i===R.length-1?'end':'middle')+'" font-size="11" font-weight="800" fill="'+(done?up:(i===1?tx2:mu))+'">'+r.lab+'</text>'+
+   '<text x="'+x.toFixed(1)+'" y="57" text-anchor="'+(i===0?'start':i===R.length-1?'end':'middle')+'" font-size="10" fill="'+mu+'">'+m0(r.v)+'</text>';});
+ g+='<circle cx="'+xe.toFixed(1)+'" cy="32" r="9" fill="'+up+'" opacity=".35" filter="url(#pgl)"/><circle cx="'+xe.toFixed(1)+'" cy="32" r="5.5" fill="#fff" stroke="'+up+'" stroke-width="2.5"/>';
+ document.getElementById('pal-track').innerHTML=g;
+ document.getElementById('pal-chips').innerHTML=chips.map(c=>'<span style="font-size:.74rem;color:var(--muted2);background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:5px 10px;white-space:nowrap">'+c[0]+' <b style="color:var(--text)">'+c[1]+'</b></span>').join('');
+ // a personal goal, when one is set, as a slim second line
+ const pg=document.getElementById('pal-goal');
+ if(scale&&goal){const b0=(d.palier_base&&d.palier_base<goal)?+d.palier_base:0,pc=Math.max(0,Math.min(100,(eq-b0)/(goal-b0)*100));
+  pg.style.display='block';pg.innerHTML='<div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted2)"><span>'+(en?'Your goal ':'Votre objectif ')+'<b style="color:var(--text)">'+m0(goal)+'</b></span><b style="color:var(--text)">'+pc.toFixed(0)+' %</b></div>'+
+   '<div style="height:5px;background:var(--surface3);border-radius:99px;margin-top:7px;overflow:hidden"><div style="height:100%;width:'+pc.toFixed(1)+'%;background:var(--warn);border-radius:99px"></div></div>';
+  if(pc>=100&&!window._conf){window._conf=1;confetti();}}
+ else pg.style.display='none';
+ if(!scale&&d.palier&&eq>=d.palier&&!window._conf){window._conf=1;confetti();}}
 function drawSpark(){
  {const bg=!!window._cvbg,cv=document.getElementById('eqcv');
   {const rg=document.getElementById('cvrange'),sn=document.getElementById('cvsince'),mb=document.getElementById('cvmode');
@@ -8166,27 +8225,7 @@ function render(d){
     // 2026-10-03 (owner): the number is masked - its last three digits only
     (d.real?'R&Eacute;EL':'D&Eacute;MO')+' &middot; &bull;&bull;&bull;&bull;'+String(d.acct).slice(-3));
   }
-  if(d.palier&&d.equity){
-   const pb0=(d.palier_base&&d.palier_base<d.palier)
-    ?d.palier_base:0;
-   const pc=Math.max(0,Math.min(100,
-    (d.equity-pb0)/(d.palier-pb0)*100));
-   document.getElementById('palier').style.display='block';
-   document.getElementById('palier-lbl').innerHTML=
-    (d.palier_kind==='scale'
-     ?'Prochain palier $'+d.palier.toFixed(0)+' &rarr; $'+
-      d.palier_next_cap.toFixed(0)+'/jour'
-     :d.palier_def
-     ?'Objectif de la semaine : +$'+(d.palier_step||50).toFixed(0)
-     :'Objectif : $'+d.palier.toFixed(0))+
-    ' &middot; '+pc.toFixed(0)+'&nbsp;%';
-   document.getElementById('palier-bar').style.width=pc+'%';
-   const _gl=document.getElementById('grow-lot'),_lg3=d.ledger||{};
-   if(_gl){const _lot=_lg3.scale_base_lot||_lg3.base_lot;
-    _gl.textContent=(_lot?'Lot de base actuel : '+Number(_lot).toFixed(2)+' lot'
-     +(_lg3.scale_active?' \\u00b7 mise \\u00e0 l\\u2019\\u00e9chelle active':''):'');}
-   if(pc>=100&&!window._conf){window._conf=1;confetti();}
-  }
+  try{renderGrow(d);}catch(e){}
   const n=d.open_positions;
   if(d.public||d.app_only){const db=document.getElementById('delbtn');
    if(db)db.style.display='none';}
@@ -10680,6 +10719,10 @@ def user_stats(u, admin_override=False):
                 if _bs.get("sized_day_cap") is not None:
                     d["ledger"]["sized_day_cap"] = float(
                         _bs["sized_day_cap"])
+                # 2026-10-08: the lot the bot really trades today, never
+                # recomputed on the page
+                if _bs.get("sized_lot") is not None:
+                    d["ledger"]["sized_lot"] = float(_bs["sized_lot"])
                 # 2026-09-24: the REAL number stopping (or not stopping)
                 # entries today, straight from effective_cap_today() via
                 # the bot's own state - never reconstructed here, so the

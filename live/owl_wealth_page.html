@@ -274,7 +274,9 @@ const healthWord=s=>s>=75?tx('Excellente','Excellent'):s>=55?tx('Bonne','Good'):
 /* ---------------- the six spaces ---------------- */
 const TABS=[['ov',tx('Aperçu','Overview')],['gr',tx('Croissance','Growth')],['he',tx('Santé','Health')],['ha',tx('Habitudes','Habits')],['fl',tx('Flux','Cash flows')]];
 if(LAB)TABS.push(['ch',tx('Chercheur','Researcher')]);
-let CUR=(()=>{try{return localStorage.getItem('owlWTab')||'ov';}catch(e){return 'ov';}})();if(!TABS.some(t=>t[0]===CUR))CUR='ov';
+let CUR=(()=>{try{return localStorage.getItem('owlWTab')||'ov';}catch(e){return 'ov';}})();
+// 2026-10-08: the home Croissance card opens straight on "Votre parcours"
+const GOPAR=location.hash==='#parcours';if(GOPAR)CUR='ov';if(!TABS.some(t=>t[0]===CUR))CUR='ov';
 function buildTabs(){const tb=$('tabs');tb.innerHTML='<span id="tabind"></span>'+TABS.map(t=>'<button class="tab'+(t[0]===CUR?' on':'')+'" data-k="'+t[0]+'">'+svgI(t[0])+t[1]+'</button>').join('');
  tb.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{CUR=b.dataset.k;try{localStorage.setItem('owlWTab',CUR);}catch(e){}tipHide();
   tb.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));moveInd();render(true);b.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});});
@@ -440,6 +442,8 @@ async function load(first){try{const r=await fetch('/'+tok+'/wealth_data',{cache
  const lv=S.days>=90?tx('Légende','Legend'):S.days>=30?tx('Pilier','Pillar'):S.days>=7?tx('Habitué','Regular'):tx('Éclaireur','Scout');
  const l=$('lvl');if(S.n){l.textContent=lv+' · '+S.days+tx(' j',' d');l.style.display='';}
  {const _d=new Date(j.w.updated*1000);$('foot').textContent=tx('Mis à jour à ','Updated at ')+String(_d.getHours()).padStart(2,'0')+':'+String(_d.getMinutes()).padStart(2,'0')+tx(' · les dépôts et retraits sont tenus à part',' · deposits and withdrawals are kept apart');}
- if(first)buildTabs();render(first);}catch(e){}}
+ if(first)buildTabs();render(first);
+ if(first&&GOPAR)setTimeout(()=>{const p=$('parcours');if(p){const y=p.getBoundingClientRect().top+scrollY-84;scrollTo({top:y,behavior:'smooth'});
+  p.animate([{boxShadow:'0 0 0 0 rgba(59,130,246,0)'},{boxShadow:'0 0 0 3px rgba(59,130,246,.45)'},{boxShadow:'0 0 0 0 rgba(59,130,246,0)'}],{duration:1600});}},450);}catch(e){}}
 load(true);setInterval(()=>{if(!document.hidden)load(false);},30000);
 </script></body></html>
