@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T19:30:08Z",
+ "updated": "2026-10-08T21:00:04Z",
  "hypotheses": [
   {
    "id": "capped_slow_small",
@@ -86,7 +86,8 @@
     "2026-10-08: battery fliphot075_capped capped A +14.7 hole -2.4 (second night better on capped), uncapped B +4.1, long C -14.5, real +15.9 on 51. Real: FLIP-BOS 42 tr 38% -45.68; flip after a loss 23 tr 35% -36.69 (h 33%/36%), after a win 19 tr 42% -8.99. New pile flip_after_loss; requested flip_loss_size. With first_move 0.75: capped A +18.4 (nokill h +7.5/+17.1), 69 d capped B +15.2.",
     "2026-10-08 12:00 veille: FLIP-BOS SELL -0.93 (pace 1.091, NERVOUS, closed 08:05, after the +0.78 win) then BOS SELL -1.33 (pace 1.023, closed 08:18, after a loss) - both already in the night's 77. Pile flip_hot 25 tr 32% -34.90 PF 0.44 (h 33%/31%); after a win 15 tr 47% -1.97, after a loss 10 tr 10% -32.93 unchanged. Small losses, consistent with the after-win split.",
     "2026-10-08 15:30 veille: BOS BUY -2.65 (pace 1.692, closed 15:04, after the BOS SELL -1.33 loss). BOS 33 tr 64% +27.96 PF 1.44 (h 65%/62%); FLIP-BOS unchanged 42 tr 38% -45.68. Inside BOS by pace: 0.8-1.0 8 tr 88% +10.30, 1.0-1.3 11 tr 55% +23.87, 1.3-1.85 11 tr 64% +1.23 PF 1.05: the very nervous breakouts win often but earn ~nothing (peu).",
-    "2026-10-08 19:30 veille: FLIP-BOS BUY won +1.77 (pace 1.631, NERVOUS, closed 19:23, right after the BOS BUY -2.65 loss) - against the after-loss split. Pile flip_hot 26 tr 35% -33.13 PF 0.47 (h 33%/36%); after a loss 11 tr 18% -31.16 (was 1/10), after a win 15 tr 47% -1.97. FLIP-BOS 43 tr 40% -43.91; flip_after_loss 24 tr 38% -34.92 PF 0.39. One win, the split stands (peu)."
+    "2026-10-08 19:30 veille: FLIP-BOS BUY won +1.77 (pace 1.631, NERVOUS, closed 19:23, right after the BOS BUY -2.65 loss) - against the after-loss split. Pile flip_hot 26 tr 35% -33.13 PF 0.47 (h 33%/36%); after a loss 11 tr 18% -31.16 (was 1/10), after a win 15 tr 47% -1.97. FLIP-BOS 43 tr 40% -43.91; flip_after_loss 24 tr 38% -34.92 PF 0.39. One win, the split stands (peu).",
+    "2026-10-08 21:00 veille: BOS BUY -1.35 (pace 0.922, CALM, closed 20:25, after the +1.77 flip win). BOS 34 tr 62% +26.61 PF 1.41 (h 65%/59%); FLIP-BOS unchanged 43 tr 40% -43.91. BOS 0.8-1.0 9 tr 78% +8.95. Kind split intact."
    ],
    "next": "Battery on fm075_fliphot075; flip_loss_size when built (0.75/0.5 both shapes)."
   },
@@ -211,7 +212,8 @@
     "2026-10-08: real BUY 44 tr 48% -26.12 (pile long, halves 54%/40%).",
     "2026-10-08 12:00 veille: two small sell losses (-0.93 flip, -1.33 BOS). SELL 33 tr 52% +0.19 PF 1.00 - back to break-even.",
     "2026-10-08 15:30 veille: BUY 45 tr 47% -28.77 PF 0.75 (h 54%/38%); SELL 33 tr 52% +0.19 unchanged.",
-    "2026-10-08 19:30 veille: BUY 46 tr 48% -27.00 PF 0.76 (h 54%/41%) after the +1.77 flip buy; SELL unchanged."
+    "2026-10-08 19:30 veille: BUY 46 tr 48% -27.00 PF 0.76 (h 54%/41%) after the +1.77 flip buy; SELL unchanged.",
+    "2026-10-08 21:00 veille: BUY 47 tr 47% -28.35 PF 0.75 (h 56%/36%) after the -1.35 BOS buy; SELL 33 tr 52% +0.19 unchanged."
    ],
    "next": "Do not request a direction dial until a falling week is in the journal; then compare."
   },
@@ -1111,6 +1113,16 @@
     "scrutiny --by kind / dir"
    ],
    "saw": "79 trades. Nervous reversal after a loss, won small - the second such win in eleven. flip_hot 26 tr 35% -33.13; after a loss 2/11 -31.16, after a win 15 tr 47%. FLIP-BOS 43 tr 40% -43.91; BOS 33 tr 64% +27.96. BUY 46 tr 48% -27.00. Overall after a loss 40 tr 45% -35.70. No twins, no labo, no ask. No harness run (flip_loss_size not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-08T21:00:04Z",
+   "looked": [
+    "wake_context new trade (BOS BUY -1.35 closed 20:25 pace 0.922, new)",
+    "scrutiny --by kind / nerv / dir",
+    "scrutiny --pile cont --by nerv/prev",
+    "scrutiny --pile late_night"
+   ],
+   "saw": "80 trades 49% -28.16 PF 0.84. Calm BOS buy after a win lost small. BOS 34 tr 62% +26.61 (0.8-1.0 9 tr 78%; 1.3-1.85 11 tr +1.23); FLIP-BOS 43 tr 40% -43.91. BUY 47 tr 47% -28.35, SELL +0.19. late_night unchanged 17 tr (entry before 21 h). No twins, no labo, no ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
