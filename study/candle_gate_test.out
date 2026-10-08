@@ -1,0 +1,35 @@
+
+REPLAY 60000 bars (bot rules): 263 trades
+  base         real 263  net   171.58  worst drop   -98.22 | 1st half  126.02 2nd half   45.56
+  candle gate  real 157  net    60.24  worst drop   -91.17 | 1st half   61.56 2nd half   -1.32 | random pct  25
+  plain gate   real 158  net   122.13  worst drop   -62.25 | 1st half   58.92 2nd half   63.21 | random pct  62
+
+REAL bos_journal.csv: 63 trades
+  base         real  63  net     3.96  worst drop   -56.40 | 1st half   32.22 2nd half  -28.26
+  candle gate  real  27  net     4.75  worst drop   -40.78 | 1st half   36.17 2nd half  -31.42 | random pct  54
+  plain gate   real  31  net    28.94  worst drop   -21.59 | 1st half   28.67 2nd half    0.27 | random pct  87
+
+REAL bos_journal_demo.csv: 69 trades
+  base         real  69  net    -1.16  worst drop   -18.30 | 1st half    6.78 2nd half   -7.94
+  candle gate  real  34  net     4.49  worst drop   -16.98 | 1st half   16.24 2nd half  -11.75 | random pct  68
+  plain gate   real  33  net    16.99  worst drop   -12.40 | 1st half   12.41 2nd half    4.58 | random pct  96
+
+REAL bos_journal_expenses.csv: 42 trades
+  base         real  42  net    -4.76  worst drop   -23.10 | 1st half   11.10 2nd half  -15.86
+  candle gate  real  19  net   -18.49  worst drop   -26.18 | 1st half   -2.06 2nd half  -16.43 | random pct   5
+  plain gate   real  21  net     9.63  worst drop    -6.66 | 1st half    8.83 2nd half    0.80 | random pct  88
+
+REAL bos_journal_infinity.csv: 64 trades
+  base         real  64  net    10.15  worst drop   -15.33 | 1st half   14.29 2nd half   -4.14
+  candle gate  real  35  net    -8.00  worst drop   -15.83 | 1st half    2.60 2nd half  -10.60 | random pct  13
+  plain gate   real  32  net    10.72  worst drop    -8.67 | 1st half    1.79 2nd half    8.93 | random pct  67
+
+REAL bos_journal_kino.csv: 66 trades
+  base         real  66  net    22.83  worst drop   -30.21 | 1st half   45.97 2nd half  -23.14
+  candle gate  real  30  net    29.98  worst drop   -18.23 | 1st half   43.54 2nd half  -13.56 | random pct  90
+  plain gate   real  36  net    44.05  worst drop    -6.95 | 1st half   43.82 2nd half    0.23 | random pct  97
+
+REAL bos_journal_valere.csv: 62 trades
+  base         real  62  net     8.47  worst drop   -27.84 | 1st half   23.62 2nd half  -15.15
+  candle gate  real  27  net    -0.77  worst drop   -27.50 | 1st half   16.29 2nd half  -17.06 | random pct  40
+  plain gate   real  30  net    15.61  worst drop   -23.82 | 1st half   13.38 2nd half    2.23 | random pct  73
