@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T04:30:06Z",
+ "updated": "2026-10-08T06:00:13Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -910,6 +910,16 @@
     "scrutiny --by dir"
    ],
    "saw": "74 trades. BOS 31 tr 68% +31.94; FLIP-BOS 40 tr 38% -45.53 (h 47%/30%). flip_hot unchanged (calm loss). SELL 31 tr 55% +2.45 now positive; BUY 43 tr 47% -26.90 (h 57%/35%). No twins, no labo, no ask. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-08T06:00:13Z",
+   "looked": [
+    "wake_context (labo ask 'cont' open, no new trade)",
+    "asks.json",
+    "scrutiny --by kind",
+    "scrutiny --by nerv (header only)"
+   ],
+   "saw": "Still 74 trades. BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%), avg gain 4.36 vs avg loss -5.95: wins often, loses bigger. Answered labo ask 'cont' (BOS = the engine; n_cont 2 raw C -31.2 already; engine cont earns but less than calm flips). No harness run, no pile, no proposal."
   }
  ],
  "lessons": [

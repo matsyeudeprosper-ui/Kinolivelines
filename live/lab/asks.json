@@ -68,7 +68,9 @@
    "by": "labo",
    "date": "2026-10-08",
    "note": "31 trades, 68 % gagnés contre 37 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Vrai : sur soixante-quatorze vrais trades, les trente et un qui repartent dans le même sens gagnent 68 % (environ trente-deux dollars gagnés) contre 37 % pour les autres, et ça tient sur les deux moitiés (65 % puis 71 %). C'est le moteur du robot. Une réserve : quand ils perdent, ils perdent un peu plus gros (environ six dollars) qu'ils ne gagnent (un peu plus de quatre). Trente et un trades : un indice solide, pas une preuve. Sur quarante-deux jours, le test dit aussi qu'ils rapportent, mais moins nettement. Attendre une deuxième continuation avant d'entrer a déjà été testé : ça coûte. Je ne touche donc pas à ces trades ; le trou est chez les changements de sens en marché nerveux, et c'est là que je propose de miser moins.",
+   "answer_en": "True: out of seventy-four real trades, the thirty-one that go on the same way win 68% (about thirty-two dollars made) against 37% for the others, and it holds in both halves (65% then 71%). This is the robot's engine. One caveat: when they lose, they lose a bit more (about six dollars) than they win (a bit over four). Thirty-one trades: a firm hint, not a proof. Over 42 days the test also says they earn, but less clearly. Waiting for a second continuation before entering was already tested: it costs. So I leave these trades alone; the hole is in the changes of direction in a nervous market, and that is where I propose staking less."
   }
  ]
 }
