@@ -1098,6 +1098,7 @@ def main():
         # week_target is optional - special_10 has a day cap and no weekly
         # one, which crashed this line the first time 441 ran as a bot
         + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else "")
+        + ("" if DEBT_GATE else " | sans systeme de dette")
         + _scale_line)
     ensure_algo()
 
