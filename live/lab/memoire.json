@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T06:00:13Z",
+ "updated": "2026-10-08T07:30:09Z",
  "hypotheses": [
   {
    "id": "target_10_nosun",
@@ -70,9 +70,10 @@
     "2026-10-06: flip_hot_size on both shapes (nokill halves, 42 d): alone uncapped C -5.8 hole 46.5, capped A +14.2 (h +4.5/+6.8) hole 15.7. rr1.0+nosun+0.75: A +16.9 (h +6.8/+4.2) hole 24 / A +8.9 (h +0.1/+38.5) hole 15.3. Neighbours: 0.85 A +13.9 / B +7.6; 0.5 B +11.3 / B +6.8. 69 d: B +7.5 / B +4.4, holes 33 / 20.6; alone 69 d C -9.6 / C +4.1. rr0.9+nosun+0.75: B +4.0 / C -14.8. Real: no new nervous flip; FLIP-BOS 27 tr 44% -15.20.",
     "2026-10-07 veille: real 70 tr. FLIP-BOS 39 tr 38% -43.87; flip_hot 23 tr 30% -34.75 (h 36%/25%), after a loss 1/10 -32.93, after a win 13 tr 46% -1.82. BOS 28 tr 64% +17.55: the BOS edge shrank (73%->64%) as it grew from 22 to 28 trades. Latest trade BOS BUY -2.08.",
     "2026-10-08 veille: BOS 29 tr 66% +27.31 PF 1.46 (h 62%/69%) after the +9.76 SELL (pace 1.224); FLIP-BOS unchanged 39 tr 38% -43.87. Edge picture intact.",
-    "2026-10-08 04:30 veille: FLIP-BOS BUY lost -1.66 (pace 0.909, CALM, closed 03:04), then BOS SELL +1.00 (pace 0.974) and BOS SELL +3.63 (pace 1.45). BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%); FLIP-BOS 40 tr 38% -45.53 PF 0.51 (h 47%/30%). flip_hot unchanged 23 tr (the loss was calm). Real calm flips keep losing too: kind remains the cleaner real split."
+    "2026-10-08 04:30 veille: FLIP-BOS BUY lost -1.66 (pace 0.909, CALM, closed 03:04), then BOS SELL +1.00 (pace 0.974) and BOS SELL +3.63 (pace 1.45). BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%); FLIP-BOS 40 tr 38% -45.53 PF 0.51 (h 47%/30%). flip_hot unchanged 23 tr (the loss was calm). Real calm flips keep losing too: kind remains the cleaner real split.",
+    "2026-10-08 07:30 veille: FLIP-BOS BUY won +0.78 (pace 1.203, NERVOUS, closed 07:18, after the BOS SELL +3.63 win). Pile flip_hot 24 tr 33% -33.97 PF 0.45 (h 36%/31%); after a win 14 tr 50% -1.04, after a loss 10 tr 10% -32.93: the pile's loss still sits entirely after losses (peu). FLIP-BOS 41 tr 39% -44.75; BOS 31 tr 68% +31.94."
    ],
-   "next": "Proposed rr10_nosun_fliphot075 and fliphot075_capped. Capped h1 +0.1 is razor thin; want the battery to confirm, then the critic."
+   "next": "Proposed rr10_nosun_fliphot075 and fliphot075_capped. Capped h1 +0.1 is razor thin; want the battery to confirm, then the critic. Side view: flip_hot after a loss 1/10 - if it reaches 15 and holds, ask the engine whether 'nervous reversal after a loss' is a cleaner cut."
   },
   {
    "id": "sunday",
@@ -920,6 +921,17 @@
     "scrutiny --by nerv (header only)"
    ],
    "saw": "Still 74 trades. BOS 31 tr 68% +31.94 PF 1.54 (h 65%/71%), avg gain 4.36 vs avg loss -5.95: wins often, loses bigger. Answered labo ask 'cont' (BOS = the engine; n_cont 2 raw C -31.2 already; engine cont earns but less than calm flips). No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-08T07:30:09Z",
+   "looked": [
+    "wake_context new trade (1: FLIP-BOS BUY +0.78 closed 07:18 pace 1.203, new)",
+    "scrutiny --by kind",
+    "scrutiny --pile flip_hot",
+    "scrutiny --by dir",
+    "asks.json (none open)"
+   ],
+   "saw": "75 trades. Nervous reversal after a win, won small - as the after-win split predicts (14 tr 50%). flip_hot 24 tr 33% -33.97; after a loss 1/10. BUY 44 tr 48% -26.12, SELL 31 tr 55% +2.45. No twins, no labo, no ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
