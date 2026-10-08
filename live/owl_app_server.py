@@ -10976,8 +10976,10 @@ def user_stats(u, admin_override=False):
         # that member saw the account switcher and Le Nid.
         # 2026-10-08 (owner): the progression candles are for everyone,
         # their structure marks for the admin only.
+        # 2026-10-08 (owner): Strategie gets it too ("full" chart tier)
         if (isinstance(d.get("eqc"), dict)
-                and not (u.get("id") in ("kino", "std") or admin_override)):
+                and not (u.get("id") in ("kino", "std") or admin_override
+                         or chart_view(u) == "full")):
             d["eqc"] = {k: d["eqc"].get(k)
                         for k in ("candles", "live", "n_trades", "now")}
         if (u.get("id") in ("kino", "std")
@@ -15447,7 +15449,8 @@ class H(BaseHTTPRequestHandler):
                 _eq = "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else "")
                 if _eq:
                     _adm = (user.get("id") in ("kino", "std")
-                            or admin_cookie_ok(self.headers))
+                            or admin_cookie_ok(self.headers)
+                            or chart_view(user) == "full")
                     _full = "true" if _adm else "false"
                     _tier = "member"
                     _htf = "false"
@@ -15509,7 +15512,8 @@ class H(BaseHTTPRequestHandler):
             # the chercheur's latest words for the lab tab
             _wsrc = user.get("id")
             if ("ref=1" in (self.path.split("?", 1)[1] if "?" in self.path else "")
-                    and (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))):
+                    and (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers)
+                         or chart_view(user) == "full")):
                 _wsrc = next((x.get("id") for x in users() if x.get("reference")), _wsrc)
             try:
                 _w = json.load(open(os.path.join(DIR, "nest_data", f"{_wsrc}.wealth.json")))
@@ -15545,7 +15549,10 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-08 (owner): the Progression screen's data - the worker's
             # result candles (eqc) shaped like the BTC feed so the same page
             # draws them. Structure for the admin only, as on the card.
-            _adm = (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers))
+            # 2026-10-08 (owner): the Compte indicator for the Strategie
+            # package too - same "full" tier as the chart itself
+            _adm = (user.get("id") in ("kino", "std") or admin_cookie_ok(self.headers)
+                    or chart_view(user) == "full")
             # 2026-10-08 (owner): &ref=1 = the bot's OWN demo account (the
             # nest record flagged "reference"), admin only
             _src = user.get("id")
