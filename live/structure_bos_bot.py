@@ -342,6 +342,11 @@ MAX_TRADES_DAY = _P["max_trades_day"]
 WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
 MOVEMENT = _P.get("movement", True)
+# 2026-10-08 (owner): the reference account must never skip a signal for
+# the sake of its own debt - every account reads its curve. True (default,
+# every live account) = the recovery entry rules below apply; False = a
+# BOS / internal entry is never refused because the account owes money.
+DEBT_GATE = _P.get("debt_gate", True)
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
@@ -1156,7 +1161,7 @@ def main():
         # case swing" - deliberate, informed choice.
         if kind == "FLIP-BOS":
             st["cont_used_since_flip"] = False
-        elif kind == "BOS" and st.get("debt", 0.0) > 0.5:
+        elif kind == "BOS" and DEBT_GATE and st.get("debt", 0.0) > 0.5:
             if not st.get("cont_used_since_flip", True):
                 st["cont_used_since_flip"] = True
             else:
@@ -1174,7 +1179,7 @@ def main():
         # Internal trades simply are not reliable enough to keep in any
         # reduced form during recovery. TOUCH is untouched - neither
         # tested rule ever covered it.
-        if internal and st.get("debt", 0.0) > 0.5:
+        if internal and DEBT_GATE and st.get("debt", 0.0) > 0.5:
             say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
                 f"structure interne en pause pendant la reprise")
             return False

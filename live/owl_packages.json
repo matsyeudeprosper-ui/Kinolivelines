@@ -78,7 +78,13 @@
     "stop the recovery bullets. They are here so a winning lab idea can",
     "reach a bot without a code edit - which is what 'Approuver' could",
     "never actually do. Changing either still needs that account's bot",
-    "restarted, like every other dial in this file."
+    "restarted, like every other dial in this file.",
+    "",
+    "debt_gate  true (default, every live account) = while the account owes",
+    "           money a plain BOS is refused after the one continuation that",
+    "           follows a flip, and internal entries pause. false = never",
+    "           refuse an entry because of debt. Owner 2026-10-08: off ONLY on",
+    "           the reference account, so its curve keeps every signal."
   ],
   "packages": {
     "base": {
@@ -155,11 +161,15 @@
     },
     "reference": {
       "extends": "base",
-      "label": "Robot de référence - démo, taille fixe",
+      "label": "Robot de référence - démo, taille fixe, sans système de dette",
       "scale_with_balance": false,
       "kill_net": -100000.0,
       "day_cap": null,
-      "_why": "2026-10-08 owner: the bot's own account. Fixed 0.02 lot, no scaling, no day cap, no kill line (a number that never binds: the bot compares to it), so it takes every signal and its curve is the strategy's, not one account's money management."
+      "_why": "2026-10-08 owner: the bot's own account. Fixed 0.02 lot, no scaling, no day cap, no kill line (a number that never binds), and NO debt system (debt_gate false, no recovery adds, no jar), so it takes every signal at the same size and its curve is the strategy's, not one account's money management.",
+      "debt_gate": false,
+      "adds_on": false,
+      "max_extra": 0,
+      "jar": false
     }
   },
   "accounts": {
