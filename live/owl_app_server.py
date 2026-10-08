@@ -15480,7 +15480,20 @@ class H(BaseHTTPRequestHandler):
                     _lab = None
             _can = bool(not user.get("public") and (is_admin(user) or has(user.get("id"), "strategy")
                                                     or admin_cookie_ok(self.headers)))
-            self._send(json.dumps({"w": _w, "lab": _lab, "can_ask": _can}), "application/json")
+            # 2026-10-08 (owner): "Votre parcours" = the paliers. The SAME
+            # numbers the home card uses (user_stats), so the two never differ.
+            _pal = None
+            try:
+                _us = user_stats(user, admin_override=admin_cookie_ok(self.headers))
+                _lg = _us.get("ledger") or {}
+                _pal = {"scale": bool(_lg.get("scale_active")) and not _lg.get("scale_opt_out"),
+                        "ref": _lg.get("scale_ref_balance"), "base_cap": _lg.get("scale_base_cap"),
+                        "base_lot": _lg.get("scale_base_lot"), "cap_now": _lg.get("sized_day_cap"),
+                        "goal": (None if _us.get("palier_def") else _us.get("palier")),
+                        "week_step": float(user.get("week_goal") or 50.0)}
+            except Exception:
+                _pal = None
+            self._send(json.dumps({"w": _w, "lab": _lab, "can_ask": _can, "pal": _pal}), "application/json")
         elif sub == "chart_data" and "src=eq" in (self.path.split("?", 1)[1] if "?" in self.path else ""):
             # 2026-10-08 (owner): the Progression screen's data - the worker's
             # result candles (eqc) shaped like the BTC feed so the same page

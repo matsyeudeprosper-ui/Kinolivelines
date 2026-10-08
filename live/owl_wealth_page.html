@@ -1,5 +1,6 @@
-<!doctype html><html lang="fr" translate="no"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0f14">
 <title>Patrimoine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -159,7 +160,7 @@ function crunch(W){
  const t0=ev.length?ev[0].t:Math.floor(Date.now()/1000);
  const S={value:[[t0,bal]],inv:[[t0,inv]],cum:[[t0,0]],twr:[[t0,0]],uw:[[t0,0]],trades:[],dep:0,wd:0};
  ev.forEach(e=>{
-  if(e.k==='F'){bal+=e.p;inv+=e.p;if(e.p>0)S.dep+=e.p;else S.wd-=e.p;S.inv.push([e.t,inv]);S.value.push([e.t,bal]);return;}
+  if(e.k==='F'){bal+=e.p;inv+=e.p;if(e.p>0)S.dep+=e.p;else S.wd-=e.p;S.inv.push([e.t,inv]);S.value.push([e.t,bal,'F']);return;}
   if(e.k==='O'){bal+=e.p;S.value.push([e.t,bal]);return;}
   const before=bal;const r=before>1?e.p/before:0;
   idx*=(1+r);bal+=e.p;cum+=e.p;pk=Math.max(pk,idx);pkC=Math.max(pkC,cum);
@@ -225,6 +226,9 @@ function lineChart(el,series,o){o=o||{};const W=el.clientWidth||320,H=o.h||190,L
    '<path d="'+d+' L'+X(s.pts[s.pts.length-1][0]).toFixed(1)+','+base.toFixed(1)+' L'+X(s.pts[0][0]).toFixed(1)+','+base.toFixed(1)+' Z" fill="url(#ga'+si+el.id+')"/>';}
   g+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"'+(s.dash?' stroke-dasharray="5 5"':'')+'/>';
   const lp=s.pts[s.pts.length-1];g+='<circle cx="'+X(lp[0]).toFixed(1)+'" cy="'+Y(lp[1]).toFixed(1)+'" r="4" fill="'+s.color+'" stroke="'+css('--surface')+'" stroke-width="2"/>';});
+ (o.levels||[]).forEach(lv=>{if(lv.v<y0||lv.v>y1)return;const y=Y(lv.v).toFixed(1);
+  g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="'+lv.color+'" stroke-width="1" opacity="'+(lv.op||.7)+'"'+(lv.dash?' stroke-dasharray="'+lv.dash+'"':'')+'/>'+
+   '<text x="'+(L+4)+'" y="'+(Y(lv.v)-4).toFixed(1)+'" font-size="9.5" font-weight="700" fill="'+lv.color+'" opacity="'+Math.min(1,(lv.op||.7)+.2)+'">'+lv.label+'</text>';});
  g+='<line id="xh'+el.id+'" y1="'+T+'" y2="'+(H-Bm)+'" stroke="'+css('--muted2')+'" stroke-width="1" opacity="0"/>';
  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'">'+g+'</svg>';
  const sv=el.querySelector('svg'),xh=el.querySelector('#xh'+el.id);
@@ -298,20 +302,50 @@ function pOv(el,W){
  tile(tx('Trades','Trades'),S.n,S.wins+tx(' gagnés',' won'))+tile(tx('Réussite','Win rate'),Math.round(S.wr)+' %',tx('des trades','of trades'))+
  tile(tx('Meilleure journée','Best day'),S.bestDay?money(S.bestDay[1].p,1):'—',S.bestDay?dlab(S.bestDay[0]):'','pos')+tile(tx('Série en cours','Current streak'),(S.curStreak>0?S.curStreak+' ✓':S.curStreak<0?(-S.curStreak)+' ✗':'—'),S.curStreak>0?tx('gagnants d’affilée','wins in a row'):S.curStreak<0?tx('pertes d’affilée','losses in a row'):'')+
  '</div><div style="height:14px"></div>'+
- '<div class="card"><h2>'+tx('Votre parcours','Your journey')+'</h2><div class="sub">'+tx('Chaque étape franchie avec le robot.','Every step reached with the robot.')+'</div><div class="tl" id="c_tl"></div></div>';
+ '<div class="card" id="parcours"></div>';
  lineChart($('c_val'),[{name:tx('Valeur','Value'),color:css('--s1'),pts:S.value,area:true,areaOp:.22},{name:tx('Versé','Put in'),color:css('--muted'),pts:S.inv,step:true,dash:true}],{h:200});
- ring($('c_ring'),S.score);journey($('c_tl'),W);}
+ ring($('c_ring'),S.score);parcours($('parcours'),W);}
+
+/* 2026-10-08 (owner): "Votre parcours" = the paliers - where the account
+   stands on its ladder, the steps already climbed, and where it is going. */
+function lotAt(B,P){return Math.max(0.01,Math.floor((P.base_lot||0.02)*B/P.ref/0.01+1e-9)*0.01);}
+function rungs(W){const P=DATA.pal||{},R=[];
+ const top=Math.max(W.equity,...S.value.map(v=>v[1]));
+ if(P.scale&&P.ref>0&&P.base_cap>0){const per=P.ref/P.base_cap,kmax=Math.floor(top/per)+3;
+  for(let k=1;k<=kmax;k++){const B=per*k;R.push({v:B,lab:'$'+k+tx('/jour','/day'),sub:tx('objectif de $','target $')+k+tx(' par jour',' a day')+' · lot '+lotAt(B,P).toFixed(2)});}}
+ else{const st=P.week_step||50,b0=W.bal_start,kmax=Math.floor((top-b0)/st)+3;
+  for(let k=1;k<=kmax;k++)R.push({v:b0+st*k,lab:'+$'+(st*k),sub:tx('palier de +$','step of +$')+st});}
+ if(P.goal&&!R.some(r=>Math.abs(r.v-P.goal)<1))R.push({v:P.goal,lab:tx('Objectif','Goal'),sub:tx('votre objectif','your goal'),goal:1});
+ R.sort((a,b)=>a.v-b.v);
+ // first time the account value reached each step, and what got it there
+ R.forEach(r=>{if(S.value.length&&S.value[0][1]>=r.v-1e-9){r.t=S.value[0][0];r.start=1;return;}
+  for(let i=1;i<S.value.length;i++){const p=S.value[i];if(p[1]>=r.v-1e-9){r.t=p[0];r.dep=p[2]==='F';break;}}});
+ return R;}
+function parcours(el,W){const P=DATA.pal||{},R=rungs(W),now=W.equity;
+ const below=R.filter(r=>r.v<=now),nxt=R.find(r=>r.v>now),prev=below.length?below[below.length-1]:null;
+ const lo=prev?prev.v:W.bal_start,pc=nxt?Math.max(0,Math.min(100,(now-lo)/(nxt.v-lo)*100)):100;
+ // pace of the last 14 days, robot only - deposits never count
+ const t14=Date.now()/1000-14*86400,p14=S.trades.filter(x=>x.t>=t14).reduce((a,x)=>a+x.p,0),pace=p14/14;
+ let eta='';if(nxt){if(pace>0.01){const dd=Math.ceil((nxt.v-now)/pace),d=new Date(Date.now()+dd*86400000);
+   eta=tx('Au rythme des 14 derniers jours (','At the pace of the last 14 days (')+money(pace,1)+tx('/jour) : vers le ','/day): around ')+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' ('+dd+tx(' j',' d')+').';}
+  else eta=tx('Au rythme des 14 derniers jours (','At the pace of the last 14 days (')+money(pace,1)+tx('/jour), ce palier n’est pas encore en vue.','/day), this step is not in sight yet.');}
+ const climbed=R.filter(r=>r.t&&r.v<=now),ahead=R.filter(r=>r.v>now).slice(0,3);
+ el.innerHTML='<h2>'+tx('Votre parcours','Your journey')+'</h2><div class="sub">'+(P.scale?tx('Chaque palier atteint donne au robot un objectif par jour plus grand.','Each step reached gives the robot a bigger daily target.'):tx('Les paliers de votre compte.','Your account’s steps.'))+'</div>'+
+ (nxt?'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px">'+
+  '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:1rem">'+tx('Prochain palier ','Next step ')+money(nxt.v)+'</b><span style="font-weight:800;color:var(--accent-soft)">'+nxt.lab+'</span></div>'+
+  '<div style="height:10px;background:var(--surface3);border-radius:99px;margin:10px 0 8px;overflow:hidden"><div style="height:100%;width:'+pc.toFixed(1)+'%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up))"></div></div>'+
+  '<div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted)"><span>'+(prev?prev.lab+' · '+money(prev.v):tx('départ ','start ')+money(lo))+'</span><span><b style="color:var(--text)">'+money(nxt.v-now)+'</b>'+tx(' à faire',' to go')+' · '+Math.round(pc)+' %</span></div>'+
+  '<div style="font-size:.78rem;color:var(--muted2);margin-top:8px;line-height:1.45">'+nxt.sub+'. '+eta+'</div></div>':'')+
+ '<div class="chart" id="c_pal"></div>'+
+ '<div class="tl" style="margin-top:14px">'+
+  climbed.map(r=>'<div class="it done"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+(r.start?tx('dès le départ','from the start'):tx('atteint le ','reached on ')+dfmt(r.t,1)+(r.dep?tx(' · grâce à un dépôt',' · thanks to a deposit'):''))+'</span></div>').join('')+
+  '<div class="it" style="color:var(--accent-soft)"><b style="color:var(--accent-soft)">'+tx('Vous êtes ici · ','You are here · ')+money(now)+'</b><span>'+(P.scale&&P.cap_now?tx('objectif actuel ','current target ')+'$'+(+P.cap_now).toFixed(2)+tx('/jour','/day'):'')+'</span></div>'+
+  ahead.map((r,i)=>'<div class="it next" style="opacity:'+(1-i*0.22)+'"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+money(r.v-now)+tx(' à faire',' to go')+(r.t?tx(' · déjà atteint le ',' · already reached on ')+dfmt(r.t):'')+'</span></div>').join('')+'</div>';
+ const lv=R.filter(r=>r.v>=Math.min(...S.value.map(v=>v[1]))*0.9&&r.v<=Math.max(now,...S.value.map(v=>v[1]))*1.15).map(r=>({v:r.v,label:r.lab,
+  color:r===nxt?css('--accent-soft'):(r.v<=now?css('--up'):css('--muted')),dash:r===nxt?'5 4':(r.v<=now?null:'2 5'),op:r===nxt?.9:(r.v<=now?.45:.5)}));
+ lineChart($('c_pal'),[{name:tx('Valeur','Value'),color:css('--s1'),pts:S.value.map(p=>[p[0],p[1]]),area:true,areaOp:.16}],{h:190,levels:lv});}
 function tile(k,v,n,c){return '<div class="tile"><div class="k">'+k+'</div><div class="v '+(c||'')+'">'+v+'</div><div class="n">'+(n||'&nbsp;')+'</div></div>';}
 function dlab(k){const p=k.split('-');return p[2]+'/'+p[1];}
-function journey(el,W){const it=[],T=S.trades;if(!T.length){el.innerHTML='';return;}
- it.push({d:1,b:tx('Premier trade','First trade'),s:dfmt(T[0].t,1)});
- [10,50,100,250,500,1000].forEach(m=>{if(T.length>=m)it.push({d:1,b:m+tx(' trades',' trades'),s:dfmt(T[m-1].t,1)});});
- // record high of the robot's result
- let pk=-1e9,pkT=null,c=0;T.forEach(x=>{c+=x.p;if(c>pk){pk=c;pkT=x.t;}});if(pk>0)it.push({d:1,b:tx('Record : ','Record: ')+money(pk,1),s:dfmt(pkT,1)});
- if(S.bestW>=3)it.push({d:1,b:S.bestW+tx(' gains d’affilée',' wins in a row'),s:tx('meilleure série','best streak')});
- const nx=[10,50,100,250,500,1000,2500].find(m=>m>T.length);if(nx)it.push({d:0,b:tx('Prochaine étape : ','Next step: ')+nx+' trades',s:(nx-T.length)+tx(' à faire',' to go')});
- el.innerHTML=it.map(x=>'<div class="it '+(x.d?'done':'next')+'"><b>'+x.b+'</b><span>'+x.s+'</span></div>').join('');}
-
 function pGr(el,W){
  const ms=Object.keys(S.month).sort().slice(-12),wk=Object.keys(S.week).map(Number).sort((a,b)=>a-b).slice(-16);
  // a savings account at 3 % a year on the same money, same dates: an honest yardstick
