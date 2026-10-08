@@ -706,7 +706,7 @@ function htDraw(){
     g.globalAlpha=1;}
    else{const up=lb[3]===1,c2=up?'#2ecc71':'#ff5c5c',xb=htX(lb[0]);
     g.strokeStyle=c2;g.globalAlpha=.30;g.lineWidth=1;g.setLineDash([7,5]);
-    g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-3,y);g.stroke();
+    g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();
     g.setLineDash([]);
     if(xb!==undefined){g.globalAlpha=.85;g.fillStyle=c2;g.fillRect(xb-2.5,y-2.5,5,5);}
     g.globalAlpha=1;
@@ -1946,7 +1946,8 @@ function draw(){
     ctx.save();
     ctx.strokeStyle=col;ctx.globalAlpha=.30;ctx.lineWidth=1;
     ctx.setLineDash([7,5]);
-    ctx.beginPath();ctx.moveTo(x0!==undefined?x0:0,y);ctx.lineTo(W,y);
+    // owner 2026-10-08: the last-BOS line crosses the whole chart
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);
     ctx.stroke();ctx.setLineDash([]);
     if(x0!==undefined){ctx.globalAlpha=.85;ctx.fillStyle=col;
      ctx.fillRect(x0-2.5,y-2.5,5,5);}

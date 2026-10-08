@@ -2658,10 +2658,17 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   font-size:.72rem;font-weight:700;margin-left:6px">30 j</button>
  <button class="cvc" data-c="90" style="border:1px solid var(--border);
   background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
-  font-size:.72rem;font-weight:700;margin-left:6px">3 mois</button></span>
+  font-size:.72rem;font-weight:700;margin-left:6px">3 mois</button>
+ <button class="cvc" data-c="bg" style="border:1px solid var(--border);
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 12px;
+  font-size:.72rem;font-weight:700;margin-left:6px">Bougies</button></span>
 </div>
 <div class="panel"><svg id="spark" viewBox="0 0 300 80"
  style="width:100%;height:80px;display:block"></svg>
+ <!-- 2026-10-08 (owner): the progression as a filtered candle chart, one
+      candle per closed trade; structure marks for the admin only. -->
+ <canvas id="eqcv" style="width:100%;height:210px;display:none"></canvas>
+ <div id="eqcsub" style="display:none;font-size:.74rem;color:var(--muted);margin-top:4px"></div>
  <!-- 2026-10-01 (owner): the worst dip, next to the line that shows it,
       and only on the 7-day view it actually measures. -->
  <!-- 2026-10-01 (owner): the curve said how much and never WHEN. -->
@@ -4478,7 +4485,94 @@ function drawJourney(d){
 }
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
+function drawEqc(e){
+ const cv=document.getElementById('eqcv'),sub=document.getElementById('eqcsub');
+ const en=LANG()==='en';
+ const W=cv.clientWidth||300,H=cv.clientHeight||210,dpr=window.devicePixelRatio||1;
+ if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+ const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+ const cs0=(e&&e.candles)||[];
+ if(cs0.length<2){g.fillStyle='#5f6f82';g.font='500 12px Inter, system-ui, sans-serif';g.textAlign='center';
+  g.fillText(en?'Candles appear after a few trades':'Les bougies appara\u00eetront apr\u00e8s quelques trades',W/2,H/2);
+  sub.style.display='none';return;}
+ // the same rule as the price chart: an empty strip on the right holds
+ // the labels, clear of the newest candle
+ const RG=Math.min(84,Math.max(58,W*0.2)),TOP=10,BOT=10;
+ const maxN=Math.max(8,Math.floor((W-RG)/4)-1);
+ const cs=cs0.slice(-maxN),live=e.live;
+ const n=cs.length+(live?1:0),cw=(W-RG)/(n+1);
+ let hi=-1e9,lo=1e9;cs.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});
+ if(live){hi=Math.max(hi,live[2]);lo=Math.min(lo,live[3]);}
+ const sp0=Math.max(1,hi-lo);
+ const S=e.trend!==undefined;          // structure present = admin view
+ if(S)[e.next_bos,e.invalid].forEach(v=>{if(v!=null&&Math.abs(v-(hi+lo)/2)<sp0*1.5){hi=Math.max(hi,v);lo=Math.min(lo,v);}});
+ const pd=(hi-lo)*0.08||1;hi+=pd;lo-=pd;
+ const PL=H-TOP-BOT,py=v=>TOP+(hi-v)/(hi-lo)*PL;
+ const fm=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(Math.abs(v)<100?2:0);
+ // grid + money scale
+ g.strokeStyle='rgba(255,255,255,.05)';g.lineWidth=1;g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';
+ for(let i=0;i<=3;i++){const y=TOP+PL*i/3;g.beginPath();g.moveTo(0,y);g.lineTo(W-RG+4,y);g.stroke();
+  }
+ if(lo<0&&hi>0){const y=py(0);g.strokeStyle='rgba(255,255,255,.18)';g.setLineDash([3,5]);
+  g.beginPath();g.moveTo(0,y);g.lineTo(W-RG+4,y);g.stroke();g.setLineDash([]);}
+ const X={},xs=[];
+ const bw=Math.max(2,Math.min(9,cw*0.62));
+ const candle=(k,x,a)=>{const up=k[4]>=k[1],col=up?'#2ecc71':'#ff5c5c';g.globalAlpha=a;
+  g.strokeStyle=col;g.beginPath();g.moveTo(x,py(k[2]));g.lineTo(x,py(k[3]));g.stroke();
+  const y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
+  g.fillStyle=col;g.beginPath();g.roundRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1),Math.min(2,bw/3));g.fill();g.globalAlpha=1;};
+ cs.forEach((k,i)=>{const x=Math.round(cw*(i+1))+0.5;X[k[0]]=x;xs.push(k[0]);
+  candle(k,x,1-0.5*(cs.length-1-i)/Math.max(1,cs.length-1));});
+ if(live)candle(live,Math.round(cw*(cs.length+1))+0.5,.45);
+ const xat=t=>{if(X[t]!==undefined)return X[t];if(!xs.length||t<xs[0])return undefined;
+  let b=xs[0];for(const q of xs){if(q<=t)b=q;}return X[b];};
+ const inV=y=>y>TOP+3&&y<TOP+PL-3;
+ const usedY=[];
+ const pill=(y0,txt,col,fill)=>{let y=y0;while(usedY.some(u=>Math.abs(u-y)<15))y+=15;usedY.push(y);
+  g.font='800 8.5px Inter, system-ui, sans-serif';g.textAlign='left';const w=g.measureText(txt).width+10;
+  const x=W-w-2;g.fillStyle=fill?col:'rgba(10,17,28,.9)';g.beginPath();g.roundRect(x,y-7,w,14,7);g.fill();
+  if(!fill){g.strokeStyle=col;g.lineWidth=1;g.stroke();}g.fillStyle=fill?'#0b1118':col;g.fillText(txt,x+5,y+3);};
+ if(S){
+  // last BOS crosses the whole chart (owner 2026-10-08, same as the price chart)
+  const lb=(e.breaks||[]).slice(-1)[0];
+  if(lb){const y=py(lb[2]);if(inV(y)){const c2=lb[1]===1?'#2ecc71':'#ff5c5c';
+   g.strokeStyle=c2;g.globalAlpha=.3;g.setLineDash([7,5]);g.beginPath();g.moveTo(0,y);g.lineTo(W-RG+4,y);g.stroke();
+   g.setLineDash([]);g.globalAlpha=1;g.font='700 8px Inter, system-ui, sans-serif';
+   const t3=(en?'last BOS ':'dernier BOS ')+fm(lb[2]),w3=g.measureText(t3).width+9;
+   g.fillStyle='rgba(10,17,28,.86)';g.beginPath();g.roundRect(3,y-6.5,w3,13,6);g.fill();
+   g.strokeStyle=c2;g.globalAlpha=.5;g.stroke();g.globalAlpha=1;g.fillStyle=c2;g.fillText(t3,7.5,y+2.6);}}
+  (e.marks||[]).slice(-6).forEach(m=>{const x=xat(m[0]);if(x===undefined)return;const y=py(m[1]);if(!inV(y))return;
+   const col=m[2]==='choch'?'#e8c55a':(m[3]===1?'#4fd8c8':'#ff9678');
+   g.strokeStyle=col;g.lineWidth=1.4;g.beginPath();g.moveTo(x-12,y);g.lineTo(x+12,y);g.stroke();g.lineWidth=1;
+   g.font='800 8px Inter, system-ui, sans-serif';g.textAlign='center';g.fillStyle=col;
+   g.fillText(m[2]==='choch'?'CHoCH':'BOS',Math.max(16,x),y+(m[3]===1?-5:11));});
+  (e.dots||[]).slice(-10).forEach(q=>{const x=xat(q[0]);if(x===undefined)return;const y=py(q[1]);if(!inV(y))return;
+   const col=q[2]===1?'#2ecc71':'#ff5c5c';g.fillStyle=col;g.globalAlpha=.25;g.beginPath();g.arc(x,y,6,0,6.3);g.fill();
+   g.globalAlpha=1;g.beginPath();g.arc(x,y,3,0,6.3);g.fill();});
+  if(e.invalid!=null){const y=py(e.invalid);if(inV(y)){const col=e.trend===1?'#ff5c5c':'#2ecc71';
+   g.strokeStyle=col;g.globalAlpha=.45;g.setLineDash([6,4]);g.beginPath();g.moveTo(xat(e.invalid_t)||0,y);g.lineTo(W-RG+4,y);g.stroke();
+   g.setLineDash([]);g.globalAlpha=1;pill(y,'CHoCH '+fm(e.invalid),col,false);}}
+  if(e.next_bos!=null){const y=py(e.next_bos);if(inV(y)){const col=e.trend===1?'#4fd8c8':'#ff9678';
+   g.strokeStyle=col;g.globalAlpha=.9;g.setLineDash([1,4]);g.lineWidth=1.4;g.beginPath();g.moveTo(xat(e.next_bos_t)||0,y);g.lineTo(W-RG+4,y);g.stroke();
+   g.setLineDash([]);g.lineWidth=1;g.globalAlpha=1;pill(y,'BOS '+fm(e.next_bos),col,true);}}
+ }
+ const last=live?live[4]:cs[cs.length-1][4];
+ {const y=Math.max(TOP+7,Math.min(TOP+PL-7,py(last)));pill(y,fm(last),'#e8eef4',true);}
+ // the money scale last, skipping any row a label already holds
+ g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';g.fillStyle='#5f6f82';
+ for(let i=0;i<=3;i++){const y=TOP+PL*i/3;if(usedY.some(u=>Math.abs(u-y)<11))continue;
+  g.fillText(fm(hi-(hi-lo)*i/3),W-RG+8,y+3);}
+ sub.textContent=(e.n_trades||cs0.length)+(en?' trades \u00b7 one candle per trade, quiet ones hidden':' trades \u00b7 une bougie par trade, les calmes masqu\u00e9es')+
+  (S?(e.trend===1?(en?' \u00b7 trend up':' \u00b7 tendance hausse'):e.trend===-1?(en?' \u00b7 trend down':' \u00b7 tendance baisse'):''):'');
+ sub.style.display='block';}
 function drawSpark(){
+ {const bg=window._cvz==='bg',cv=document.getElementById('eqcv');
+  document.getElementById('spark').style.display=bg?'none':'block';
+  if(cv)cv.style.display=bg?'block':'none';
+  if(bg){const sd=document.getElementById('spkdates');if(sd)sd.style.display='none';
+   const dc=document.getElementById('ddcap');if(dc)dc.style.display='none';
+   drawEqc((window._d||{}).eqc);return;}
+  const sb=document.getElementById('eqcsub');if(sb)sb.style.display='none';}
  const c=(window._cvz==='90'&&window._c90&&window._c90.length>1)?window._c90
   :(window._cvz==='30'&&window._c30&&window._c30.length>1)?window._c30:(window._c7||[]);
  const el=document.getElementById('spark');
@@ -10767,6 +10861,12 @@ def user_stats(u, admin_override=False):
         # 2026-10-03 (owner): admin accounts only. "login == LOGIN" used to
         # make master any member whose MT5 login is the server's own, and
         # that member saw the account switcher and Le Nid.
+        # 2026-10-08 (owner): the progression candles are for everyone,
+        # their structure marks for the admin only.
+        if (isinstance(d.get("eqc"), dict)
+                and not (u.get("id") in ("kino", "std") or admin_override)):
+            d["eqc"] = {k: d["eqc"].get(k)
+                        for k in ("candles", "live", "n_trades")}
         if (u.get("id") in ("kino", "std")
                 or admin_override):
             d["is_master"] = True

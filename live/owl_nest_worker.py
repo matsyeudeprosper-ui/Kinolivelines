@@ -238,6 +238,51 @@ def compute():
         "net": round(sum(val(d) for d in _alls), 2),
         "best_month": ({"ym": _best[0], "p": round(_best[1], 2)} if _best else None),
     }
+    # 2026-10-08 (owner): the progression as a filtered candle chart. One
+    # candle per closed deal since the era start (open = cumulative result
+    # before it, close = after), then the SAME silence filter and structure
+    # engine as the price chart. The app server strips the structure for
+    # everyone but the admin. Its own try: never costs the stats.
+    eqc = None
+    try:
+        from owl_chart_feed import build as _fbuild, engine as _feng
+        _raw, _cum, _lt = [], 0.0, 0
+        for d in _alls:
+            _t = max(int(d.time), _lt + 1); _lt = _t
+            _o = _cum; _cum += val(d)
+            _raw.append({"time": _t, "open": _o, "high": max(_o, _cum),
+                         "low": min(_o, _cum), "close": _cum})
+        _kept = _fbuild(_raw)
+        if len(_kept) >= 3:
+            # cold start: the engine needs two dots of one kind from its
+            # first candle; like the chart's internal structure, try the
+            # whole history then shorter tails, first direction wins
+            for _w in (len(_kept), 120, 80, 50, 30, 20):
+                _bk = []
+                (_dots, _marks, _tr, _ch, _nx, _iv, _nxt_t, _iv_t, _dr,
+                 _fl, _fl_t, _fd) = _feng(_kept[-_w:], brk_out=_bk)
+                if _tr:
+                    break
+            if _tr:
+                _dots = [x for x in _dots if x[2] == _tr]
+            eqc = {"candles": _kept[-300:], "n_trades": len(_raw),
+                   "live": ([int(utcnow.timestamp()), round(_cum, 2),
+                             round(max(_cum, _cum + floating), 2),
+                             round(min(_cum, _cum + floating), 2),
+                             round(_cum + floating, 2)]
+                            if abs(floating) > 0.004 else None),
+                   "dots": _dots, "marks": _marks,
+                   "breaks": [[x[0], x[1], round(x[2], 2)] for x in _bk][-12:],
+                   "trend": _tr, "choch": _ch, "bos_dir": _dr,
+                   "next_bos": round(_nx, 2) if _nx else None,
+                   "invalid": round(_iv, 2) if _iv else None,
+                   "next_bos_t": _nxt_t, "invalid_t": _iv_t,
+                   "flip_bos": round(_fl, 2) if _fl else None,
+                   "flip_bos_t": _fl_t, "flip_bos_dir": _fd}
+        elif _kept:
+            eqc = {"candles": _kept, "n_trades": len(_raw), "live": None}
+    except Exception as _e:
+        eqc = {"err": f"{type(_e).__name__}: {_e}"}
     return {
         "name": u.get("name", uid),
         "acct": ai.login,
@@ -261,6 +306,7 @@ def compute():
         "since_start": since_start,
         "curve": curve[-120:],
         "curve30": curve30,
+        "eqc": eqc,
         "updated_utc": utcnow.isoformat(timespec="seconds"),
     }
 
