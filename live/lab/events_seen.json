@@ -10,7 +10,8 @@
   "first_move_size",
   "halves_without_kill",
   "cap_wait",
-  "flip_loss_size"
+  "flip_loss_size",
+  "hour_size"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -18,6 +19,8 @@
   "ask_1791181811_long",
   "ask_1791315902",
   "ask_1791407166_flip",
-  "ask_1791433808_cont"
+  "ask_1791433808_cont",
+  "ask_1791522013_us",
+  "ask_1791522013_flip_after_loss"
  ]
 }

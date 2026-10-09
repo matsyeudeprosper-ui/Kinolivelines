@@ -97,6 +97,18 @@
    "answer_fr": "Vrai, c'est ma propre pile : trente changements de sens juste après une perte, 33 % gagnés contre 53 % pour les autres, environ trente-huit dollars perdus, et les deux moitiés sont d'accord (36 % puis 32 %). Après un gain, les changements de sens ne perdent qu'environ neuf dollars. Le gros du trou est en marché nerveux : onze trades, deux gagnés, environ trente et un dollars perdus ; les dix-neuf en marché calme perdent peu, environ sept dollars. Trente trades : un indice solide, pas une preuve. J'ai demandé un réglage pour miser moins sur ces trades, sans les refuser ; il n'est pas encore construit, donc je ne peux pas encore le tester sur quarante-deux jours. Pas de proposition avant ce test.",
    "answer_en": "True, it is my own pile: thirty changes of direction right after a loss, 33% won against 53% for the others, about thirty-eight dollars lost, and both halves agree (36% then 32%). After a win, changes of direction lose only about nine dollars. Most of the hole is in a nervous market: eleven trades, two won, about thirty-one dollars lost; the nineteen in a calm market lose little, about seven dollars. Thirty trades: a firm hint, not a proof. I asked for a setting to stake less on these trades, without refusing them; it is not built yet, so I cannot test it over 42 days yet. No proposal before that test.",
    "answered": "2026-10-09T06:30:05Z"
+  },
+  {
+   "id": "ask_1791537073_asia",
+   "seed": "asia",
+   "seed_fr": "La nuit (00–08 h UTC)",
+   "seed_en": "At night (00–08 UTC)",
+   "by": "labo",
+   "date": "2026-10-09",
+   "note": "30 trades, 73 % gagnés contre 34 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "proposed",
+   "proposal": "skip_day_late",
+   "answered": "2026-10-09T12:00:00Z"
   }
  ]
 }

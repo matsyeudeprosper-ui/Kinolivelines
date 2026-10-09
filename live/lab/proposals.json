@@ -1885,7 +1885,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-08",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-09"
   },
   {
    "id": "fm075_fliphot075",
@@ -1918,7 +1920,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-08",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-09"
   },
   {
    "id": "fm075_capped",
@@ -1950,7 +1954,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-08",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-09"
   },
   {
    "id": "wait30_fm075",
@@ -1974,7 +1980,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-08",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 68.13,
     "worst": 106.06,
@@ -1999,7 +2005,9 @@
      "diff_net": 21.55,
      "diff_worst": -13.72
     }
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-09"
   },
   {
    "id": "ext400_nosun_caprr07",
@@ -2025,7 +2033,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-08",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 164.53,
     "worst": 38.17,
@@ -2050,7 +2058,181 @@
      "diff_net": 24.56,
      "diff_worst": -4.49
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-09"
+  },
+  {
+   "id": "ext400_wait20",
+   "family": "rythme",
+   "title_fr": "Pas d'entrée après une heure agitée, et 20 minutes de pause",
+   "title_en": "No entry after a wild hour, and a 20-minute pause",
+   "why_fr": "Deux freins ensemble : ne pas entrer quand l'heure a déjà bougé de 400 points, et attendre 20 minutes après chaque trade. Le premier aide les comptes sans plafond, le second ceux avec. Ensemble, mieux sur les deux moitiés pour les deux : +16 $ (trou 32 au lieu de 51) et +39 $ (trou 23). 69 jours : un peu mieux.",
+   "why_en": "Two brakes together: no entry when the hour already moved 400 points, and a 20-minute wait after each trade. The first helps uncapped accounts, the second capped ones. Together, better on both halves for both: +$16 (hole 32 instead of 51) and +$39 (hole 23). 69 days: a little better.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 20,
+    "ext_pts": 400,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 126.0,
+    "worst": 32.4,
+    "h1": 9.9,
+    "h2": 15.3,
+    "base_net": 110.38,
+    "base_worst": 50.91
+   },
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_wait30",
+   "family": "rythme",
+   "title_fr": "Pas d'entrée après une heure agitée, et 30 minutes de pause",
+   "title_en": "No entry after a wild hour, and a 30-minute pause",
+   "why_fr": "Le même duo avec une pause de 30 minutes, pour vérifier que le réglage voisin tient aussi. Mieux sur les deux moitiés sur les comptes avec et sans plafond de gain par jour : +13 $ (trou 35 au lieu de 51) et +50 $ (trou 29). Sur 69 jours : un peu mieux, -7 $ sans plafond et +22 $ avec.",
+   "why_en": "The same pair with a 30-minute pause, to check the neighbouring setting holds too. Better on both halves on the accounts with and without a daily cap: +$13 (hole 35 instead of 51) and +$50 (hole 29). Over 69 days: a little better, -$7 uncapped and +$22 capped.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 30,
+    "ext_pts": 400,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 123.5,
+    "worst": 35.4,
+    "h1": 5.2,
+    "h2": 8.7,
+    "base_net": 110.38,
+    "base_worst": 50.91
+   },
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "pending"
+  },
+  {
+   "id": "wait45",
+   "family": "rythme",
+   "title_fr": "Attendre 45 minutes après chaque trade",
+   "title_en": "Wait 45 minutes after each trade",
+   "why_fr": "Attendre 30 minutes aide déjà les comptes avec plafond deux nuits de suite. Avec 45 minutes : avec plafond +72 $, plus gros trou 18 au lieu de 51 ; sans plafond, +7 $ pour la première fois au lieu d'une perte. Un peu mieux des deux côtés, mais presque tout le gain est dans la deuxième moitié.",
+   "why_en": "Waiting 30 minutes already helps capped accounts two nights in a row. With 45 minutes: capped +$72, biggest hole 18 instead of 51; uncapped +$7, for the first time a gain instead of a loss. A little better on both, but almost all of the gain sits in the second half.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 45,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 117.5,
+    "worst": 48.7,
+    "h1": -1.7,
+    "h2": 1.3,
+    "base_net": 110.38,
+    "base_worst": 50.91
+   },
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "pending"
+  },
+  {
+   "id": "skip_day_late",
+   "family": "rythme",
+   "ask": "ask_1791537073_asia",
+   "title_fr": "Ne pas trader de 8 h à 16 h ni de 21 h à minuit UTC",
+   "title_en": "No trading from 08:00 to 16:00 nor 21:00 to midnight UTC",
+   "why_fr": "Sur les vrais comptes, la nuit (1 h - 8 h UTC) gagne 7 fois sur 10 et tout le reste perd. Le test voit pareil depuis deux semaines : deuxième moitié +82 $ et +60 $, trou 19 au lieu de 51. Mais la première moitié perd beaucoup : sans plafond -31 $ au total, avec plafond +21 $.",
+   "why_en": "On the real accounts, the night (01:00-08:00 UTC) wins 7 times in 10 and everything else loses. The test sees the same for two weeks: second half +$82 and +$60, hole 19 instead of 51. But the first half loses a lot: uncapped -$31 overall, capped +$21.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     21,
+     22,
+     23
+    ],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 79.1,
+    "worst": 19.0,
+    "h1": -117.7,
+    "h2": 82.1,
+    "base_net": 110.38,
+    "base_worst": 50.91
+   },
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "pending"
+  },
+  {
+   "id": "skip21_23_wait30",
+   "family": "rythme",
+   "title_fr": "Pas de trade de 21 h à minuit UTC, et 30 minutes de pause",
+   "title_en": "No trade from 21:00 to midnight UTC, and a 30-minute pause",
+   "why_fr": "De 21 h à minuit, les vrais trades gagnent 1 fois sur 13 ; le test, 1 fois sur 11 depuis deux semaines. Couper ces heures seul coûte encore. Avec la pause de 30 minutes, le compte avec plafond fait +63 $, trou 19 au lieu de 51 ; sans plafond, non (-60 $). Pour voir si la fin de soirée reste mauvaise.",
+   "why_en": "From 21:00 to midnight, the real trades win 1 time in 13; the test, 1 in 11 for two weeks. Cutting those hours alone still costs. With the 30-minute pause, the capped account makes +$63, hole 19 instead of 51; uncapped, no (-$60). To see whether late evening stays bad.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "wait_min": 30,
+    "ext_pts": 0,
+    "skip_wd": [],
+    "skip_hours": [
+     21,
+     22,
+     23
+    ],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "bullets": 3,
+    "k_streak": 2
+   },
+   "pretest": {
+    "net": 50.2,
+    "worst": 55.5,
+    "h1": -66.2,
+    "h2": 24.4,
+    "base_net": 110.38,
+    "base_worst": 50.91
+   },
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "pending"
   }
  ]
 }

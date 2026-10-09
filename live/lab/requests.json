@@ -121,7 +121,7 @@
    },
    "built_date": "2026-10-05",
    "built_commit": "96dbe40",
-   "c_nights": 0
+   "c_nights": 1
   },
   {
    "id": "cap_rr",
@@ -142,7 +142,8 @@
     "b": 1.2
    },
    "built_date": "2026-10-06",
-   "built_commit": "a50eeb9"
+   "built_commit": "a50eeb9",
+   "c_nights": 0
   },
   {
    "id": "first_move_size",
@@ -163,7 +164,8 @@
     "b": 0.5
    },
    "built_date": "2026-10-06",
-   "built_commit": "2e3f47c"
+   "built_commit": "2e3f47c",
+   "c_nights": 1
   },
   {
    "id": "halves_without_kill",
@@ -204,6 +206,17 @@
    "why_fr": "Chez les vrais trades, ces changements de sens gagnent 8 fois sur 23 et perdent 37 $, sur les deux moitiés ; après un gain, ils perdent 9 $ seulement. Je mesurerais 0,75 et 0,5 sur les deux comptes ; j'attends un trou plus petit sans perdre d'argent.",
    "why_en": "In the real trades, these changes of direction win 8 times in 23 and lose $37, on both halves; after a win they lose only $9. I would measure 0.75 and 0.5 on both accounts; I expect a smaller hole without losing money.",
    "date": "2026-10-08",
+   "status": "open"
+  },
+  {
+   "id": "hour_size",
+   "title_fr": "Miser moins à certaines heures, sans refuser les trades",
+   "title_en": "Stake less at some hours, without refusing trades",
+   "what_fr": "Deux réglages ensemble : une liste d'heures UTC (0 à 23) et un multiplicateur de 0,25 à 1,0. Un trade dont l'heure d'entrée est dans la liste est pris avec la mise multipliée par X ; les trades de rattrapage qui le suivent aussi. Le trade est toujours pris. Liste vide ou 1,0 = arrêt, rien ne change.",
+   "what_en": "Two settings together: a list of UTC hours (0 to 23) and a multiplier from 0.25 to 1.0. A trade whose entry hour is in the list is taken with the stake multiplied by X; the catch-up trades that follow it too. The trade is still taken. Empty list or 1.0 = off, nothing changes.",
+   "why_fr": "Sur tous les vrais comptes, les trades pris de 1 h à 8 h UTC gagnent 7 fois sur 10 ; tous les autres créneaux perdent. Le test voit la même chose depuis deux semaines. Mais refuser les autres heures coûte cher sur 42 jours (les trades de rattrapage disparaissent). Je mesurerais 0,5 et 0,75 de 8 h à minuit sur les comptes avec et sans plafond ; j'attends un trou plus petit sans perdre la nuit.",
+   "why_en": "On every real account, trades taken from 01:00 to 08:00 UTC win 7 times in 10; every other slot loses. The test sees the same for two weeks. But refusing the other hours costs a lot over 42 days (the catch-up trades vanish). I would measure 0.5 and 0.75 from 08:00 to midnight on the accounts with and without a daily cap; I expect a smaller hole without losing the night.",
+   "date": "2026-10-09",
    "status": "open"
   }
  ]

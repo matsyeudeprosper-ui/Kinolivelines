@@ -258,6 +258,31 @@
      "value": false
     }
    ]
+  },
+  {
+   "id": "flip_day",
+   "title_fr": "Changement de sens pris entre 8 h et minuit UTC",
+   "title_en": "Change of direction taken between 08:00 and midnight UTC",
+   "by": "chercheur",
+   "date": "2026-10-09",
+   "status": "open",
+   "why_fr": "Les changements de sens pris la nuit (0 h à 8 h UTC) gagnent 8 fois sur 12. Ceux pris le reste de la journée n'en gagnent que 10 sur 37 et perdent environ 64 $. Le test sur les deux dernières semaines voit la même chose. Cette pile dira si l'heure, plus que le changement de sens, fait la perte.",
+   "why_en": "Changes of direction taken at night (00:00 to 08:00 UTC) win 8 times in 12. Those taken the rest of the day win only 10 of 37 and lose about $64. The test over the last two weeks sees the same. This pile will tell whether the hour, more than the change of direction, makes the loss.",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "FLIP-BOS"
+    },
+    {
+     "field": "hour",
+     "op": "between",
+     "value": [
+      8,
+      23
+     ]
+    }
+   ]
   }
  ]
 }

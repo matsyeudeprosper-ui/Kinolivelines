@@ -37,6 +37,25 @@
     "overlap: same trades as the deployed rule (265 vs 265, win rate 59.6% both) - only the stake on catch-up trades changes; pure sizing",
     "real gap: --drag auto (~0.02 $/trade measured) leaves +30.19 raw vs base, hole 88.23 - survives the gap because it does not trade more, it bets more"
    ]
+  },
+  {
+   "id": "bul2",
+   "date": "2026-10-09",
+   "verdict": "bloque",
+   "fr": "Ce soir il gagne 4 $ en 42 jours, moins qu'un seul trade de rattrapage. Sur 69 jours il perd 43 $, sur les deux moitiés. Testé sans les protections, il perd 48 $ : un trade de rattrapage en moins coûte environ 50 $ et ne réduit le plus gros trou que de 6 $. Il était à non onze nuits sur douze. Pour changer d'avis : un gain sur 69 jours, plusieurs nuits de suite.",
+   "en": "Tonight it gains $4 in 42 days, less than one catch-up trade. Over 69 days it loses $43, in both halves. Tested without the safety nets it loses $48: one catch-up trade fewer costs about $50 and only makes the biggest hole $6 shallower. It was a no eleven nights out of twelve. To change my mind: a gain over 69 days, several nights running.",
+   "checks": [
+    "dose (harness, deployed rules without safety nets, base 194.58 / hole 80.29): 1 catch-up 93.73 / 66.91; 2 catch-up 147.06 / 74.39 (-47.52, C); 4 catch-up 238.95 / 87.24. No sign flip but a clean slope the wrong way: each catch-up trade removed costs ~45-50 $ for ~6-7 $ of hole. Mirror of bul4 - a size lever, not a better rule",
+    "halves: battery ref +4.64 first half / +3.89 second half - tiny on both. Harness: -44.83 first half / -0.61 second half - the loss sits in the good half, the bad half is a wash",
+    "shapes: +3.65 on the uncapped reference (hole +0.32 deeper), +6.80 on the capped one (account 1 shape, hole -1.71) - both smaller than one trade; the gain only exists with the safety nets on (half lot when results fall), which already shrink catch-up stakes",
+    "long window: 69 days -43.19, both halves negative (-15.73 / -30.01), hole 5.90 shallower -> a loss, not a caution",
+    "real trades: +15.85 on 52 trades (10 blocked), hole 4.84 shallower - the one favourable sign, but 52 trades cannot outweigh 420 on the long window",
+    "concentration: +3.65 is smaller than a single catch-up trade in the ledger (-22.32, -19.12, +31.44 exist) - one trade flipping erases it",
+    "past: archived after three C nights in a row (-1 $ on the last); history C x11 then A tonight only; no twin; bul0 (no catch-up) also archived at -74 $",
+    "mechanism: a smaller stake after a loss means smaller holes and smaller recoveries; with the robot winning ~58% the recoveries outweigh the holes, so cutting them loses money - the only reason it scores tonight is the numbers",
+    "overlap: same trades as the deployed rule (274 vs 276, win rate 58.4 vs 58.3) - only the stake on the third catch-up trade changes; pure sizing",
+    "real gap: --drag auto leaves the harness result unchanged (147.06, -47.52 vs base); it trades 2 fewer, so a $1/trade charge would move it ~2 $ at most - not run, cannot rescue a -43 $ long window"
+   ]
   }
  ]
 }
