@@ -577,6 +577,9 @@ def simulate(R, spread, cfg):
                                   if c["trail_prot"]
                                   else -(dist / 2.0 + spread)))
                     run += bpts * BLOT * nb
+                    # 2026-10-09: bullets pay the same execution drag per lot as
+                    # the main trade (0 by default, so nothing changes unless set)
+                    run -= drag_cost(c, BLOT * nb)
                 if c["jar"]:
                     if nb and bpts < 0:
                         chest = max(0.0, chest + bpts * BLOT * nb)
