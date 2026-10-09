@@ -1,0 +1,6 @@
+reference simulated: 303 trades, net 30.27
+today: recovery entry limit        trades 276 | win 58.7% | PF 1.24 | net   113.80 | 1st half   130.90 | 2nd half   -27.26 | worst drop  -50.91 | - 
+every BOS in recovery, no control  trades 303 | win 57.1% | PF 1.18 | net    99.40 | 1st half   113.10 | 2nd half   -24.88 | worst drop  -75.48 | verdict C 
+every BOS, indicator decides (green) trades 164 | win 57.3% | PF 1.20 | net    54.88 | 1st half    42.70 | 2nd half    10.16 | worst drop  -37.97 | verdict C | skips 63% of recovery signals
+every BOS, opposite (red = go)     trades 157 | win 55.4% | PF 1.07 | net    23.33 | 1st half    49.92 | 2nd half   -36.75 | worst drop  -44.88 | verdict C 
+random skipping in recovery, same rate, every BOS (20 runs): median net 43.86, median worst drop -45.90 | indicator beats random: net 65%, drop 60%

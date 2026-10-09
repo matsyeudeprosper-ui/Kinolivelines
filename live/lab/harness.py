@@ -221,6 +221,9 @@ TRACE = None
 # 2026-10-07 (owner): a function (t, d) -> bool that allows or refuses a trade
 # by the direction another chart points. None by default.
 DIRGATE = None
+# 2026-10-09 (owner): a (t, d) -> bool consulted ONLY while the account is in
+# debt (recovery mode), after the recovery entry limit. None = off.
+DEBTGATE = None
 # 2026-10-08 (owner): the loss-pause rule. True -> after a losing trade the
 # next trades are VIRTUAL (taken, scored, but booked nowhere: no money, no
 # debt, no reserve, no streak) until one of them wins. Off by default.
@@ -815,6 +818,9 @@ def simulate(R, spread, cfg):
                 cont_left -= 1
             else:
                 continue
+        if DEBTGATE is not None and debt_now > 0.5 and not DEBTGATE(t, d):
+            blocked += 1
+            continue
         # the daily profit stop, waived while still in the red like the live bot
         if c["max_trades_day"] and day_n >= int(c["max_trades_day"]):
             blocked += 1
