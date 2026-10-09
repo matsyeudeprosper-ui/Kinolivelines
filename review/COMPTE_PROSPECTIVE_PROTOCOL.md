@@ -1,6 +1,6 @@
 # Compte directional sizing - prospective shadow protocol
 
-**Status: DRAFT v0.2 (2026-10-09, after review 8). Not frozen.** The executable
+**Status: DRAFT v0.3 (2026-10-09, after review 9). Not frozen.** The executable
 configuration is `review/compte_frozen_manifest.json` (hashes, package values,
 datasets, arms, controls, seeds, cost basis, horizon). Freezing = a dated FROZEN
 line below plus the manifest's `status` set to FROZEN in the same commit.
@@ -30,9 +30,12 @@ warm-up or trigger change is allowed to rescue this; it is measured as is.
 ## Paths
 Every arm is a COMPLETE package path on the same opportunity stream with its
 OWN debt, jar, loss streak, eligibility, caps, balance and position lifecycle
-(harness `simulate()` with the account's package values from the manifest and
-the arm's EQHOOK/EQ_ADDS policy), run on the closed bars of the control feed
-from the FROZEN line. Initial state: flat, debt 0, jar 0, streak 0, balance =
+(`study/manifest_runner.py`: the manifest's package values mapped EXPLICITLY
+into harness settings by `effective_cfg()`, unknown keys an error, unsupported
+behaviour rejected, fixed-or-disclosed fields listed in the manifest; balance
+scaling at the live cadence - lot and day cap recomputed once per UTC day from
+balance + realised run), run on the closed bars of the control feed from the
+FROZEN line. Initial state: flat, debt 0, jar 0, streak 0, balance =
 the account's balance at FROZEN (recorded in the manifest at freeze). Real fills
 of the live accounts are observations for matched trades only (fill-realism
 check), never the counterfactual. Capped regimes (valere, valere_cap3,
@@ -57,7 +60,12 @@ reference is unknown: the shadow collects GROSS evidence from the FROZEN line;
 no net label can PASS until a verified cost model is registered in the
 manifest (a dated entry with its source). Observations collected before that
 registration remain gross-only; the net evaluation period starts at the
-registration date and runs its own 120 days. Drag sensitivity $0 / $0.35 per
+registration date and runs its own 120 days. **Initialisation at that date
+(frozen now):** the REFERENCE state is a declared causal replay of the gross
+period under the registered cost model (the curve keeps its history, recomputed
+with costs); the SHADOW ACCOUNT PATHS restart flat (declared cold restart:
+debt 0, jar 0, streak 0, balance = each account's balance at that date). Earlier
+gross observations stay outside the net evaluation. No result-driven seed. Drag sensitivity $0 / $0.35 per
 0.02 lot is reported throughout. Curve basis B (reference rebuilt under the
 registered cost model) is the evaluation basis; A is a sensitivity.
 
@@ -77,10 +85,15 @@ drawdown; MTM main-only proxy (whole-account MTM UNAVAILABLE - stated); tail
 * **Net non-degradation:** paired net degradation <= 0.05 baseline-risk units
   per eligible opportunity with its 90% interval respecting the bound -
   requires the net label, so UNAVAILABLE until a cost model is registered.
-* **Controls:** the primary beats >= 75% of the exposure-control phases and
-  >= 75% of the 20 block shifts on the drawdown ratio.
-A PASS on the risk label requires LABEL A and the controls; without the net
-label it is a GROSS-risk PASS, stated as such. Otherwise inconclusive
+* **Controls:** the primary beats >= 75% of the exposure-control phases (k
+  per regime and cost basis as recorded in the manifest from development data;
+  where none is recorded for a regime, that limitation is reported and no k is
+  chosen from prospective performance) and >= 75% of the 20 block shifts on
+  the drawdown ratio; unkeyed opportunities counted independently.
+LABEL A with the controls = "**gross risk criterion met; complete decision
+unavailable**" while the net label is unavailable. The COMPLETE decision gate
+= LABEL A + controls + net non-degradation under the registered cost model.
+Neither state permits a live sizing change. Otherwise inconclusive
 (interval straddles) or FAIL (point the wrong way). Bootstrap intervals are
 conditional development-style diagnostics (resampled path returns; the
 adaptive policy is not rerun); the 8 historical five-day blocks make the

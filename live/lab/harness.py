@@ -191,7 +191,15 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # by balance / scale_ref, rounding the lot down to 0.01. With
             # balance = 0 the old flat lot is used, so nothing already measured
             # moves. Real balances today run 122 to 356, i.e. lots 0.01 to 0.03.
-            "balance": 0.0, "scale_ref": 200.0}
+            "balance": 0.0, "scale_ref": 200.0,
+            # 2026-10-09 (review 9): 1 = recompute the lot and the day cap ONCE
+            # PER UTC DAY from (balance + realised run), the live bot's cadence
+            # (structure_bos_bot.day_roll). 0 = once at start (old behaviour).
+            "scale_daily": 0,
+            # 2026-10-09 (review 9): 0 = no debt system at all (the reference
+            # package: structure_bos_bot DEBT_GATE false) - every BOS is
+            # taken in debt, not only FLIP + n_cont continuations.
+            "debt_gate": 1}
 # the live bot's own numbers, read from it so the two cannot drift apart
 JAR_SKIM = getattr(B, "JAR_SKIM", 0.50)
 JAR_STAKE = getattr(B, "JAR_STAKE", 0.50)
@@ -349,9 +357,19 @@ def cfg_of(over=None):
     return c
 
 
+def cfg_strict(over):
+    """2026-10-09 (review 9): like cfg_of but an unknown key is an ERROR, so a
+    package value can never be silently dropped by the manifest runner."""
+    bad = [k for k in (over or {}) if k not in CFG_BASE]
+    if bad:
+        raise KeyError("unsupported harness keys: %s" % bad)
+    return cfg_of(over)
+
+
 def simulate(R, spread, cfg):
     c = cfg_of(cfg)
     rr, LOT = float(c["rr"]), float(c["lot"])
+    LOT0 = LOT
     # the account's own size: same arithmetic as structure_bos_bot.day_roll()
     bal = float(c["balance"] or 0.0)
     ratio = (bal / float(c["scale_ref"])) if (bal > 0 and float(c["scale_ref"]) > 0) else 1.0
@@ -467,6 +485,10 @@ def simulate(R, spread, cfg):
             day_n = 0
             cap_h4 = None
             curve.append(run)
+            if c.get("scale_daily") and bal > 0 and float(c["scale_ref"]) > 0:
+                _ratio = (bal + run) / float(c["scale_ref"])
+                LOT = max(0.01, math.floor((LOT0 * _ratio) / 0.01) * 0.01)
+                day_cap_eff = float(c["day_cap"]) * _ratio
         if c["cap_resume_h4"] and day_cap_eff:
             if cap_h4 is None:
                 if day_profit >= day_cap_eff:
@@ -838,7 +860,7 @@ def simulate(R, spread, cfg):
         if flip:
             last_flip_t = t
             cont_left = int(c["n_cont"])
-        elif debt_now > 0.5:
+        elif debt_now > 0.5 and c.get("debt_gate", 1):
             if cont_left > 0 and last_flip_t is not None:
                 cont_left -= 1
             else:
