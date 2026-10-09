@@ -4,14 +4,16 @@
  "server": "Exness-MT5Real27",
  "symbol": "BTCUSD",
  "terminal": "C:\\NestTerminals\\infinity\\terminal64.exe",
- "git": "acca596",
- "frozen_at": "2026-10-09T13:56:48Z",
+ "git": "68183ba",
+ "frozen_at": "2026-10-09T14:11:23Z",
  "hashes": {
   "structure_bos_bot.py": "737176d37d79f435",
   "owl_chart_feed.py": "44fa43a5ef0550ff",
   "owl_package.py": "14a105bc9373a087",
   "bos_paper_variant.py": "81d8ec9538f118d4",
-  "bos_reference_ledger.py": "9e4e109634bb6644"
+  "bos_reference_ledger.py": "e1327d28b3016380",
+  "reference_ledger_lib.py": "be7fba3cb651afcd",
+  "lab/compte_controller.py": "dc0e3ae0d748bc31"
  },
  "package": {
   "name": "valere",

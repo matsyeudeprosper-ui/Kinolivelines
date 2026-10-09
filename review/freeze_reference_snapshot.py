@@ -11,7 +11,7 @@ import owl_package as P   # noqa: E402
 
 UID = sys.argv[1] if len(sys.argv) > 1 else "infinity"
 FILES = ["structure_bos_bot.py", "owl_chart_feed.py", "owl_package.py", "bos_paper_variant.py",
-         "bos_reference_ledger.py"]
+         "bos_reference_ledger.py", "reference_ledger_lib.py", "lab/compte_controller.py"]
 
 
 def sha(p):
