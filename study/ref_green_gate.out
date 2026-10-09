@@ -1,0 +1,5 @@
+reference simulated: 304 trades, net 20.46
+normal bot (live settings)         trades 276 | win 58.3% | PF 1.23 | net   109.08 | 1st half   126.18 | 2nd half   -17.23 | worst drop  -50.91 | - 
+GREEN = go, RED = skip             trades 150 | win 58.0% | PF 1.18 | net    43.51 | 1st half    37.40 | 2nd half    12.96 | worst drop  -36.23 | verdict C | skips 59% of signals
+opposite: RED = go                 trades 138 | win 56.5% | PF 1.07 | net    18.40 | 1st half    23.03 | 2nd half    -1.83 | worst drop  -26.88 | verdict C | skips 63%
+random skipping at the same rate (20 runs): median net 36.57, median worst drop -41.62 | gate beats random: net 60%, drop 65%

@@ -517,6 +517,7 @@ def simulate(R, spread, cfg):
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(win)
                     cur_tr["pnl"] = round(run - before, 2)
+                    cur_tr["tc"] = t      # 2026-10-08: close time (causal joins)
                     cur_tr["storm_exit"] = True
                     cur_tr = None
                 streak = 0 if win else streak + 1
@@ -592,6 +593,7 @@ def simulate(R, spread, cfg):
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(win)
                     cur_tr["pnl"] = round(run - before, 2)
+                    cur_tr["tc"] = t      # 2026-10-08: close time (causal joins)
                     cur_tr = None
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
@@ -726,6 +728,7 @@ def simulate(R, spread, cfg):
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["win"] = bool(_win)
                     cur_tr["pnl"] = round(run - _before, 2)
+                    cur_tr["tc"] = t      # 2026-10-08: close time (causal joins)
                     cur_tr["flip_exit"] = True
                     cur_tr = None
                 streak = 0 if _win else streak + 1
