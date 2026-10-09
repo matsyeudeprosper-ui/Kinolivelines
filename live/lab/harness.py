@@ -271,6 +271,10 @@ EQHOOK = None
 # recovery add budget (bullets) of that trade - the "main + adds" policy.
 # False = main-only attribution diagnostic. Only read when EQHOOK is set.
 EQ_ADDS = False
+# 2026-10-10 (review 13): raw OPPORTUNITY stream for the tick engine - every engine
+# signal with its path-INDEPENDENT facts (awake, nervosity, movement, flip, level),
+# recorded before any path gate (position, pending, debt allowance, caps, kill).
+OPPHOOK = None
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -938,6 +942,14 @@ def simulate(R, spread, cfg):
                 # like any other entry, every later gate still applying
         if TLMODE:
             sig = tl_sig            # the projected line REPLACES the BOS trigger
+        if OPPHOOK is not None and sig is not None and not dead:
+            _nv = 1.0; _mv2 = None
+            if i >= 1440:
+                _nv = (sorted(rng[i-60:i])[30] / max(sorted(rng[i-1440:i])[720], 1e-9))
+                _mv2 = (bisect.bisect_left(marks, t) - bisect.bisect_left(marks, t - 7200))
+            OPPHOOK({"t": t, "i": i, "d": sig[0], "slp": float(sig[1]), "cl": cl, "flip": bool(flips) and flips[-1] == t,
+                     "awake": any(f > t - B.AWAKE_WIN for f in flips), "nv": _nv, "mv2": _mv2, "i_fire": bool(i_fire),
+                     "lvl": (eng.hi_v if sig[0] == 1 else eng.lo_v), "weekday": g.weekday(), "hour": g.hour, "minute": g.minute})
         if sig is None or pos or pend is not None:
             continue
         if dead:
