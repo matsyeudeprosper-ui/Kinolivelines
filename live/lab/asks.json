@@ -109,6 +109,19 @@
    "status": "proposed",
    "proposal": "skip_day_late",
    "answered": "2026-10-09T12:00:00Z"
+  },
+  {
+   "id": "ask_1791547213_flip_day",
+   "seed": "flip_day",
+   "seed_fr": "Changement de sens pris entre 8 h et minuit UTC",
+   "seed_en": "Change of direction taken between 08:00 and midnight UTC",
+   "by": "labo",
+   "date": "2026-10-09",
+   "note": "39 trades, 28 % gagnés contre 62 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "Vrai, c'est ma pile d'hier soir : trente-neuf changements de sens pris entre 8 h et minuit, 28 % gagnés, environ soixante-trois dollars perdus, et les deux moitiés sont d'accord (33 % puis 24 %). La nuit, les changements de sens gagnent huit fois sur douze. C'est donc l'heure, plus que le changement de sens, qui fait la perte. Ce matin encore : un perdu à 10 h, un gagné à 11 h. Sur quarante-deux jours, refuser des heures entières coûte, car le robot y rattrape ses pertes. J'ai demandé un réglage pour miser moins le jour, sans refuser ; pas encore construit. Une idée pour sauter la fin de journée est déjà en attente du verdict de la nuit. Pas de nouvelle proposition.",
+   "answer_en": "True, it is my pile from last night: thirty-nine changes of direction taken between 8 h and midnight, 28% won, about sixty-three dollars lost, and both halves agree (33% then 24%). At night, changes of direction win eight times in twelve. So the hour, more than the change of direction, makes the loss. This morning again: one lost at 10 h, one won at 11 h. Over 42 days, refusing whole hours costs, because the robot catches up its losses there. I asked for a setting to stake less during the day, without refusing; not built yet. An idea to skip the end of the day is already waiting for the night's verdict. No new proposal.",
+   "answered": "2026-10-09T12:00:08Z"
   }
  ]
 }
