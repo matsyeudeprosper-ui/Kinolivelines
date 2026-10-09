@@ -112,6 +112,14 @@ if (-not (ProcRunning "structure_bos_bot.py labo")) {
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "labo" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2l) 2026-10-09 (ChatGPT brief): the canonical REFERENCE LEDGER runner -
+# virtual trades on Infinity's own feed, attached read-only, no order code
+# path. Research data only (lab/reference_ledger_infinity.jsonl).
+if (-not (ProcRunning "bos_reference_ledger.py infinity")) {
+    Say "starting reference ledger runner (infinity)"
+    Start-Process pythonw -ArgumentList "bos_reference_ledger.py", "infinity" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
 # 2k) 2026-10-08 (owner): the bot's OWN demo account 477508138 (package
 # "reference": fixed lot, no scaling, no day cap, no kill line). Its
 # progression chart is the reference indicator on the real chart. The nest
