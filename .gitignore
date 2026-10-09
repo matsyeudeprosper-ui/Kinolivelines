@@ -137,3 +137,4 @@ live/apk/*.idsig
 live/static/owlnest.apk
 live/apk/*.log
 live/apk/manifest-checksum.txt
+study/ticks/*.npz

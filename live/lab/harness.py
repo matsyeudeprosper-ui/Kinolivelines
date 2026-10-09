@@ -1158,7 +1158,7 @@ def simulate(R, spread, cfg):
             # the candidate: in debt the MAIN waits at the recovery midpoint with the
             # ORIGINAL stop and target; no other signal is taken while it waits
             if cur_tr is not None:
-                cur_tr["delayed_setup"] = True
+                cur_tr.update({"delayed_setup": True, "e0": e_px, "sl": float(slp), "tp": tp, "mid": e_px - d * dist / 2.0})
             pend = {"d": d, "e0": e_px, "sl": float(slp), "tp": tp, "dist": dist, "mid": e_px - d * dist / 2.0, "lot": lot, "t0": t, "trace": cur_tr}
             pos = None; pos_geo = None; cur_tr = None
             n_trades -= 1; day_n -= 1; n_pend += 1
