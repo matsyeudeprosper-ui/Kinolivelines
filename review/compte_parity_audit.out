@@ -1,0 +1,13 @@
+A display vs B eq_state vs C tracker, state = (trend, choch) at every closed trade:
+dad          trades  71 (adds 12) | display vs eq_state differ at  28/71 steps | display vs tracker   0/71 | trend flips with a window change 3
+demo         trades  77 (adds 13) | display vs eq_state differ at  24/77 steps | display vs tracker   1/77 | trend flips with a window change 1
+expenses     trades  48 (adds  8) | display vs eq_state differ at  18/48 steps | display vs tracker   4/48 | trend flips with a window change 1
+infinity     trades  72 (adds 11) | display vs eq_state differ at  23/72 steps | display vs tracker  14/72 | trend flips with a window change 1
+kino         trades  83 (adds 14) | display vs eq_state differ at  48/83 steps | display vs tracker  25/83 | trend flips with a window change 1
+u477508138   trades  13 (adds  0) | display vs eq_state differ at   0/13 steps | display vs tracker   0/13 | trend flips with a window change 0
+valere       trades  70 (adds 12) | display vs eq_state differ at  27/70 steps | display vs tracker   1/70 | trend flips with a window change 5
+
+synthetic 160 outcomes: 3 trend flips caused by a window change
+   outcome  45: window None trend +0 -> window 20 trend +1
+   outcome 108: window 50 trend +1 -> window 30 trend -1
+   outcome 116: window 30 trend -1 -> window 80 trend +1
