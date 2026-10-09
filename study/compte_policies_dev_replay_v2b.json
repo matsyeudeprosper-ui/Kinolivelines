@@ -1,0 +1,419 @@
+{
+ "dataset": {
+  "symbol": "BTCUSDm",
+  "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+  "bars": 60000,
+  "first_bar": 1787957640,
+  "last_bar": 1791558420,
+  "frozen_at": "2026-10-09T15:07:17Z",
+  "sha256": "06ece48906f62129"
+ },
+ "drag_0.00": {
+  "baseline": {
+   "net": 109.29,
+   "trades": 272,
+   "dd_cc_observed": 63.69,
+   "dd_daily_sampled": 50.91,
+   "dd_daily_aggregate_diag": 50.22,
+   "mtm_main_only_proxy": {
+    "adverse": 67.92,
+    "close": 67.6,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 1029.78,
+   "add_nominal_capacity": 772.24,
+   "add_rule_permitted": 475.92,
+   "add_actual": 83.04,
+   "adds_fired": 109,
+   "later_half_calendar": -16.25
+  },
+  "directional main+adds PRIMARY": {
+   "net": 110.6,
+   "trades": 273,
+   "dd_cc_observed": 55.28,
+   "dd_daily_sampled": 48.1,
+   "dd_daily_aggregate_diag": 51.67,
+   "mtm_main_only_proxy": {
+    "adverse": 55.25,
+    "close": 54.62,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 924.02,
+   "add_nominal_capacity": 666.16,
+   "add_rule_permitted": 387.48,
+   "add_actual": 64.0,
+   "adds_fired": 90,
+   "later_half_calendar": -19.59,
+   "cc_ratio_observed": 0.868,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.58,
+      1.0
+     ],
+     "net_diff_ci90": [
+      -28.7,
+      32.89
+     ]
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.63,
+      1.01
+     ],
+     "net_diff_ci90": [
+      -33.67,
+      37.69
+     ]
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.551,
+      1.0
+     ],
+     "net_diff_ci90": [
+      -27.02,
+      35.56
+     ]
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 1.182,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.202,
+      "12": 0.85,
+      "24": 0.601
+     },
+     "note": "blocks of 5 days; IID sd shown for reference only"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 1.897,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.928,
+      "12": 1.364,
+      "24": 0.964
+     },
+     "note": "blocks of 3 days; IID sd shown for reference only"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 0.981,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 0.997,
+      "12": 0.705,
+      "24": 0.499
+     },
+     "note": "blocks of 10 days; IID sd shown for reference only"
+    }
+   }
+  },
+  "directional main-only arm": {
+   "net": 122.37,
+   "trades": 275,
+   "dd_cc_observed": 55.97,
+   "dd_daily_sampled": 49.63,
+   "dd_daily_aggregate_diag": 52.36,
+   "mtm_main_only_proxy": {
+    "adverse": 55.93,
+    "close": 55.3,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 931.08,
+   "add_nominal_capacity": 783.89,
+   "add_rule_permitted": 463.46,
+   "add_actual": 73.82,
+   "adds_fired": 102,
+   "later_half_calendar": -9.75,
+   "cc_ratio_observed": 0.879,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.534,
+      1.012
+     ],
+     "net_diff_ci90": [
+      -8.48,
+      42.49
+     ]
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.595,
+      1.019
+     ],
+     "net_diff_ci90": [
+      -16.78,
+      49.16
+     ]
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.499,
+      1.012
+     ],
+     "net_diff_ci90": [
+      -6.05,
+      45.08
+     ]
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 1.075,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.093,
+      "12": 0.773,
+      "24": 0.546
+     },
+     "note": "blocks of 5 days; IID sd shown for reference only"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 1.867,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.898,
+      "12": 1.342,
+      "24": 0.949
+     },
+     "note": "blocks of 3 days; IID sd shown for reference only"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 0.863,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 0.877,
+      "12": 0.62,
+      "24": 0.439
+     },
+     "note": "blocks of 10 days; IID sd shown for reference only"
+    }
+   }
+  }
+ },
+ "drag_0.35": {
+  "baseline": {
+   "net": 8.35,
+   "trades": 265,
+   "dd_cc_observed": 85.45,
+   "dd_daily_sampled": 77.92,
+   "dd_daily_aggregate_diag": 77.89,
+   "mtm_main_only_proxy": {
+    "adverse": 89.69,
+    "close": 89.36,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 1005.13,
+   "add_nominal_capacity": 753.72,
+   "add_rule_permitted": 528.77,
+   "add_actual": 100.14,
+   "adds_fired": 129,
+   "later_half_calendar": -48.34
+  },
+  "directional main+adds PRIMARY": {
+   "net": 48.55,
+   "trades": 266,
+   "dd_cc_observed": 57.99,
+   "dd_daily_sampled": 49.2,
+   "dd_daily_aggregate_diag": 55.04,
+   "mtm_main_only_proxy": {
+    "adverse": 57.97,
+    "close": 57.34,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 864.24,
+   "add_nominal_capacity": 612.33,
+   "add_rule_permitted": 398.14,
+   "add_actual": 65.72,
+   "adds_fired": 90,
+   "later_half_calendar": -31.63,
+   "cc_ratio_observed": 0.679,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.512,
+      0.941
+     ],
+     "net_diff_ci90": [
+      -0.72,
+      70.25
+     ]
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.523,
+      0.936
+     ],
+     "net_diff_ci90": [
+      -6.84,
+      81.93
+     ]
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.5,
+      0.876
+     ],
+     "net_diff_ci90": [
+      1.66,
+      74.39
+     ]
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 1.452,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.476,
+      "12": 1.044,
+      "24": 0.738
+     },
+     "note": "blocks of 5 days; IID sd shown for reference only"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 2.339,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 2.377,
+      "12": 1.681,
+      "24": 1.189
+     },
+     "note": "blocks of 3 days; IID sd shown for reference only"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 1.33,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.352,
+      "12": 0.956,
+      "24": 0.676
+     },
+     "note": "blocks of 10 days; IID sd shown for reference only"
+    }
+   }
+  },
+  "directional main-only arm": {
+   "net": 48.41,
+   "trades": 266,
+   "dd_cc_observed": 60.93,
+   "dd_daily_sampled": 52.13,
+   "dd_daily_aggregate_diag": 57.98,
+   "mtm_main_only_proxy": {
+    "adverse": 60.91,
+    "close": 60.28,
+    "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"
+   },
+   "exp_main": 864.24,
+   "add_nominal_capacity": 755.54,
+   "add_rule_permitted": 494.03,
+   "add_actual": 79.44,
+   "adds_fired": 107,
+   "later_half_calendar": -33.13,
+   "cc_ratio_observed": 0.713,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.499,
+      0.942
+     ],
+     "net_diff_ci90": [
+      2.27,
+      71.41
+     ]
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.518,
+      0.945
+     ],
+     "net_diff_ci90": [
+      -1.78,
+      80.1
+     ]
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.491,
+      0.895
+     ],
+     "net_diff_ci90": [
+      5.15,
+      77.98
+     ]
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.491,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.515,
+      "12": 1.072,
+      "24": 0.758
+     },
+     "note": "blocks of 5 days; IID sd shown for reference only"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.941,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.973,
+      "12": 1.395,
+      "24": 0.987
+     },
+     "note": "blocks of 3 days; IID sd shown for reference only"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.351,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.373,
+      "12": 0.971,
+      "24": 0.687
+     },
+     "note": "blocks of 10 days; IID sd shown for reference only"
+    }
+   }
+  }
+ }
+}

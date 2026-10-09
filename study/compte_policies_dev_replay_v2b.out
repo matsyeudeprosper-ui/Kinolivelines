@@ -1,0 +1,20 @@
+
+=== drag $0.00, reference basis A ===
+baseline: {"net": 109.29, "trades": 272, "dd_cc_observed": 63.69, "dd_daily_sampled": 50.91, "dd_daily_aggregate_diag": 50.22, "mtm_main_only_proxy": {"adverse": 67.92, "close": 67.6, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 1029.78, "add_nominal_capacity": 772.24, "add_rule_permitted": 475.92, "add_actual": 83.04, "adds_fired": 109, "later_half_calendar": -16.25}
+directional main+adds PRIMARY: {"net": 110.6, "trades": 273, "dd_cc_observed": 55.28, "dd_daily_sampled": 48.1, "dd_daily_aggregate_diag": 51.67, "mtm_main_only_proxy": {"adverse": 55.25, "close": 54.62, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 924.02, "add_nominal_capacity": 666.16, "add_rule_permitted": 387.48, "add_actual": 64.0, "adds_fired": 90, "later_half_calendar": -19.59, "cc_ratio_observed": 0.868}
+   CC ratio observed 0.868 | CI90 block5 [0.58, 1.0] block3 [0.63, 1.01] block10 [0.551, 1.0] | net diff CI90 block5 [-28.7, 32.89]
+   power (block 5): mean daily diff +0.032 | sd of block means 1.182 (IID daily sd 3.978) | detectable daily diff at 6/12/24 blocks {'6': 1.202, '12': 0.85, '24': 0.601}
+directional main-only arm: {"net": 122.37, "trades": 275, "dd_cc_observed": 55.97, "dd_daily_sampled": 49.63, "dd_daily_aggregate_diag": 52.36, "mtm_main_only_proxy": {"adverse": 55.93, "close": 55.3, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 931.08, "add_nominal_capacity": 783.89, "add_rule_permitted": 463.46, "add_actual": 73.82, "adds_fired": 102, "later_half_calendar": -9.75, "cc_ratio_observed": 0.879}
+   CC ratio observed 0.879 | CI90 block5 [0.534, 1.012] block3 [0.595, 1.019] block10 [0.499, 1.012] | net diff CI90 block5 [-8.48, 42.49]
+   power (block 5): mean daily diff +0.311 | sd of block means 1.075 (IID daily sd 3.773) | detectable daily diff at 6/12/24 blocks {'6': 1.093, '12': 0.773, '24': 0.546}
+
+=== drag $0.35, reference basis B ===
+baseline: {"net": 8.35, "trades": 265, "dd_cc_observed": 85.45, "dd_daily_sampled": 77.92, "dd_daily_aggregate_diag": 77.89, "mtm_main_only_proxy": {"adverse": 89.69, "close": 89.36, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 1005.13, "add_nominal_capacity": 753.72, "add_rule_permitted": 528.77, "add_actual": 100.14, "adds_fired": 129, "later_half_calendar": -48.34}
+directional main+adds PRIMARY: {"net": 48.55, "trades": 266, "dd_cc_observed": 57.99, "dd_daily_sampled": 49.2, "dd_daily_aggregate_diag": 55.04, "mtm_main_only_proxy": {"adverse": 57.97, "close": 57.34, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 864.24, "add_nominal_capacity": 612.33, "add_rule_permitted": 398.14, "add_actual": 65.72, "adds_fired": 90, "later_half_calendar": -31.63, "cc_ratio_observed": 0.679}
+   CC ratio observed 0.679 | CI90 block5 [0.512, 0.941] block3 [0.523, 0.936] block10 [0.5, 0.876] | net diff CI90 block5 [-0.72, 70.25]
+   power (block 5): mean daily diff +0.958 | sd of block means 1.452 (IID daily sd 4.730) | detectable daily diff at 6/12/24 blocks {'6': 1.476, '12': 1.044, '24': 0.738}
+directional main-only arm: {"net": 48.41, "trades": 266, "dd_cc_observed": 60.93, "dd_daily_sampled": 52.13, "dd_daily_aggregate_diag": 57.98, "mtm_main_only_proxy": {"adverse": 60.91, "close": 60.28, "label": "main position only, vs realised peak, whole-bar extremes: a proxy, not a whole-account bound"}, "exp_main": 864.24, "add_nominal_capacity": 755.54, "add_rule_permitted": 494.03, "add_actual": 79.44, "adds_fired": 107, "later_half_calendar": -33.13, "cc_ratio_observed": 0.713}
+   CC ratio observed 0.713 | CI90 block5 [0.499, 0.942] block3 [0.518, 0.945] block10 [0.491, 0.895] | net diff CI90 block5 [2.27, 71.41]
+   power (block 5): mean daily diff +0.954 | sd of block means 1.491 (IID daily sd 4.398) | detectable daily diff at 6/12/24 blocks {'6': 1.515, '12': 1.072, '24': 0.758}
+
+DONE v2b
