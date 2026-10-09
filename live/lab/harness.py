@@ -943,8 +943,13 @@ def simulate(R, spread, cfg):
             # drifts from this line would quietly mismeasure the cap.
             cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),
                       "lot": round(lot, 2), "risk": round(dist * lot, 2),
-                      # contingent maximum add budget permitted at entry under the policy
+                      # NOMINAL worst-case add capacity (bullet count x half-distance risk)
                       "add_max_risk": round(int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT, 2),
+                      # RULE-PERMITTED contingent budget from facts known at entry: the
+                      # package fires adds only in debt and below the loss-streak cap
+                      "add_permitted_risk": round((int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT)
+                                                  if (debt_now > 0.5 and streak < K) else 0.0, 2),
+                      "tc_entry": t,
                       "med": round(_m, 1), "nerv": round(nv, 2),
                       "power": (round(rng[i] / _m, 2) if _m > 0 else None),
                       "age": int((t - (hi_since if d == 1 else lo_since)) // 60),
