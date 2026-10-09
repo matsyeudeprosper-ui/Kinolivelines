@@ -1,0 +1,11 @@
+normal bot                         net   179.52 | 1st half   190.93 2nd half   -16.36 | worst drop  -80.29 | trades real 282 virtual   0 
+#1 half lot in downtrend           net   181.28 | 1st half   186.14 2nd half   -18.31 | worst drop  -58.61 | trades real 280 virtual   0 | on 43% of entries | verdict B
+#1b half lot until CHoCH up        net   182.41 | 1st half   186.97 2nd half   -18.01 | worst drop  -58.61 | trades real 282 virtual   0 | on 18% of entries | verdict B
+#5 virtual in downtrend            net   113.58 | 1st half   141.63 2nd half   -39.67 | worst drop  -39.60 | trades real 150 virtual 124 | on 44% of entries | verdict C
+#5b virtual until CHoCH up         net   109.49 | 1st half   115.29 2nd half   -12.36 | worst drop  -54.00 | trades real 163 virtual 112 | on 37% of entries | verdict C
+
+Random controls (same rate, 20 seeds, full period):
+  #1 half lot in downtrend           random median net   162.94 drop  -71.80 | rule beats random: net  80%  drop  90%
+  #1b half lot until CHoCH up        random median net   170.98 drop  -79.88 | rule beats random: net  75%  drop 100%
+  #5 virtual in downtrend            random median net    98.06 drop  -58.45 | rule beats random: net  70%  drop  90%
+  #5b virtual until CHoCH up         random median net    86.36 drop  -69.47 | rule beats random: net  60%  drop  55%
