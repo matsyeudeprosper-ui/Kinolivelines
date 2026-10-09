@@ -275,6 +275,9 @@ EQ_ADDS = False
 # signal with its path-INDEPENDENT facts (awake, nervosity, movement, flip, level),
 # recorded before any path gate (position, pending, debt allowance, caps, kill).
 OPPHOOK = None
+# per-BAR facts for the tick engine: the protected-dot touch (re-arms one continuation)
+# and the bar's nervosity reading (known at the bar's open: previous 60 vs 1440 ranges)
+BARHOOK = None
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -748,6 +751,9 @@ def simulate(R, spread, cfg):
             touched = l <= eng.prot_lo[1] <= cl
         elif eng.trend == -1 and eng.prot_hi is not None:
             touched = cl <= eng.prot_hi[1] <= h
+        if BARHOOK is not None:
+            BARHOOK({"t": t, "touched": bool(touched),
+                     "nv": ((sorted(rng[i-60:i])[30] / max(sorted(rng[i-1440:i])[720], 1e-9)) if i >= 1440 else 1.0)})
         if TRACE is not None:
             # The level as it stands BEFORE this bar is judged: step() moves it
             # on the very bar that breaks it, so reading it after would always
