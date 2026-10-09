@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-08T21:00:04Z",
+ "updated": "2026-10-09T05:00:09Z",
  "hypotheses": [
   {
    "id": "capped_slow_small",
@@ -87,7 +87,8 @@
     "2026-10-08 12:00 veille: FLIP-BOS SELL -0.93 (pace 1.091, NERVOUS, closed 08:05, after the +0.78 win) then BOS SELL -1.33 (pace 1.023, closed 08:18, after a loss) - both already in the night's 77. Pile flip_hot 25 tr 32% -34.90 PF 0.44 (h 33%/31%); after a win 15 tr 47% -1.97, after a loss 10 tr 10% -32.93 unchanged. Small losses, consistent with the after-win split.",
     "2026-10-08 15:30 veille: BOS BUY -2.65 (pace 1.692, closed 15:04, after the BOS SELL -1.33 loss). BOS 33 tr 64% +27.96 PF 1.44 (h 65%/62%); FLIP-BOS unchanged 42 tr 38% -45.68. Inside BOS by pace: 0.8-1.0 8 tr 88% +10.30, 1.0-1.3 11 tr 55% +23.87, 1.3-1.85 11 tr 64% +1.23 PF 1.05: the very nervous breakouts win often but earn ~nothing (peu).",
     "2026-10-08 19:30 veille: FLIP-BOS BUY won +1.77 (pace 1.631, NERVOUS, closed 19:23, right after the BOS BUY -2.65 loss) - against the after-loss split. Pile flip_hot 26 tr 35% -33.13 PF 0.47 (h 33%/36%); after a loss 11 tr 18% -31.16 (was 1/10), after a win 15 tr 47% -1.97. FLIP-BOS 43 tr 40% -43.91; flip_after_loss 24 tr 38% -34.92 PF 0.39. One win, the split stands (peu).",
-    "2026-10-08 21:00 veille: BOS BUY -1.35 (pace 0.922, CALM, closed 20:25, after the +1.77 flip win). BOS 34 tr 62% +26.61 PF 1.41 (h 65%/59%); FLIP-BOS unchanged 43 tr 40% -43.91. BOS 0.8-1.0 9 tr 78% +8.95. Kind split intact."
+    "2026-10-08 21:00 veille: BOS BUY -1.35 (pace 0.922, CALM, closed 20:25, after the +1.77 flip win). BOS 34 tr 62% +26.61 PF 1.41 (h 65%/59%); FLIP-BOS unchanged 43 tr 40% -43.91. BOS 0.8-1.0 9 tr 78% +8.95. Kind split intact.",
+    "2026-10-09 05:00 veille: 8 new. Five FLIP-BOS lost small, ALL pace <0.66 (22:09 -1.90, 22:23 -0.71, 22:33 -0.62, 22:54 -0.73, 01:43 -2.14); BOS SELL -6.88 (pace 0.85); FLIP-BOS BUY +3.06 (pace 0.848) and BOS BUY +5.90 (pace 0.776) won. flip_hot unchanged 26 tr 35% -33.13 - tonight's flip losses were calm. FLIP-BOS 49 tr 37% -46.95 PF 0.53 (h 41%/33%); BOS 36 tr 61% +25.63 PF 1.36. flip_after_loss 30 tr 33% -37.96 PF 0.40 (h 36%/32%). Real calm flips lose too: kind, not pace, is the real split; the engine's 'calm flips carry' is not seen in real trades."
    ],
    "next": "Battery on fm075_fliphot075; flip_loss_size when built (0.75/0.5 both shapes)."
   },
@@ -163,7 +164,8 @@
     "2026-10-03: not the hour - raw skip hour 0 C (-68, hole 80->113), rr0.9+skip 0 C. min_range 40 + rr0.9 C (cuts half the trades). Just above (0.8-1.0): 8 tr 88% +15.21. Requested sleepy_floor.",
     "2026-10-04 veille: two trades at pace 0.93/0.91: +1.30 and -11.56. Bucket 0.8-1.0 now 10 tr 80% but +4.95 net - its edge is thin in money. <0.8 unchanged (6 tr).",
     "2026-10-06 veille: one more real <0.8 trade, FLIP-BOS BUY lost -3.11 (pace 0.743, closed 00:30 UTC). Bucket <0.8 now 7 tr 29% -21.96 PF 0.15. Still contradicted by the engine (nerv_floor C on all floors); curiosity only.",
-    "2026-10-05: nerv_floor built (10-04). 42 d both shapes: 0.6 C -3.6 / C -9.6; 0.7 C -14.3 / C -12.2; 0.8 C -29.4 (hole 50->57) / C -20.3. Monotonic: the higher the floor, the worse. The engine's sleepy trades make money; the 6 real ones (33%) are a small sample. Rejected by numbers."
+    "2026-10-05: nerv_floor built (10-04). 42 d both shapes: 0.6 C -3.6 / C -9.6; 0.7 C -14.3 / C -12.2; 0.8 C -29.4 (hole 50->57) / C -20.3. Monotonic: the higher the floor, the worse. The engine's sleepy trades make money; the 6 real ones (33%) are a small sample. Rejected by numbers.",
+    "2026-10-09 05:00 veille: real <0.8 bucket grew 7 -> 17 tr, 29% -21.68 PF 0.43, halves 33%/27% (agree). Most of the growth is calm reversals around 22-02 h, tangled with flip and late_night. Engine nerv_floor C on every floor (10-05); dial closed, curiosity only."
    ],
    "next": "Closed as a dial. Watch the real <0.8 bucket only as a curiosity (6 tr)."
   },
@@ -213,7 +215,8 @@
     "2026-10-08 12:00 veille: two small sell losses (-0.93 flip, -1.33 BOS). SELL 33 tr 52% +0.19 PF 1.00 - back to break-even.",
     "2026-10-08 15:30 veille: BUY 45 tr 47% -28.77 PF 0.75 (h 54%/38%); SELL 33 tr 52% +0.19 unchanged.",
     "2026-10-08 19:30 veille: BUY 46 tr 48% -27.00 PF 0.76 (h 54%/41%) after the +1.77 flip buy; SELL unchanged.",
-    "2026-10-08 21:00 veille: BUY 47 tr 47% -28.35 PF 0.75 (h 56%/36%) after the -1.35 BOS buy; SELL 33 tr 52% +0.19 unchanged."
+    "2026-10-08 21:00 veille: BUY 47 tr 47% -28.35 PF 0.75 (h 56%/36%) after the -1.35 BOS buy; SELL 33 tr 52% +0.19 unchanged.",
+    "2026-10-09 05:00 veille: BUY 51 tr 47% -20.83 PF 0.82 (h 57%/35%); SELL 37 tr 46% -11.35 PF 0.84. Gap narrowing (+5.90 BOS buy, +3.06 flip buy)."
    ],
    "next": "Do not request a direction dial until a falling week is in the journal; then compare."
   },
@@ -244,7 +247,8 @@
    "status": "nouveau",
    "evidence": [
     "2026-10-06: real hours 21/22/23/00: 13 tr, 3 won, -46.6 $ (00 h 8 tr 38% -18.14). Engine 42 d says no: skip 21-23 C -29.7 / C -46.3; 21-00 C -68.8 / C -53.7; 22-00 C -106.3 / C -44.5; 21 only C -31.8 / C -2.3 (holes 40 / 14.9 smaller). rr1.0+nosun+skip 21-23 C / C. Real and engine disagree. Pile late_night opened.",
-    "2026-10-08: pile late_night 17 tr 29% -46.11 (h 30%/29%). No engine run tonight."
+    "2026-10-08: pile late_night 17 tr 29% -46.11 (h 30%/29%). No engine run tonight.",
+    "2026-10-09 05:00 veille: by entry hour 21 h 0/4 -20.60, 22 h 0/4 -9.60, 23 h 1/5 -7.04, 00 h 9 tr 44% -14.97; but 01-02 h 10 tr 70% +26.23. Four calm flip losses 22:09-22:54 sit in the window."
    ],
    "next": "Watch the pile; if it reaches 30 trades and still loses, ask for an engine trace by hour to see why the engine's late trades win."
   },
@@ -1123,6 +1127,16 @@
     "scrutiny --pile late_night"
    ],
    "saw": "80 trades 49% -28.16 PF 0.84. Calm BOS buy after a win lost small. BOS 34 tr 62% +26.61 (0.8-1.0 9 tr 78%; 1.3-1.85 11 tr +1.23); FLIP-BOS 43 tr 40% -43.91. BUY 47 tr 47% -28.35, SELL +0.19. late_night unchanged 17 tr (entry before 21 h). No twins, no labo, no ask. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-09T05:00:09Z",
+   "looked": [
+    "wake_context new trades (8: five calm FLIP-BOS losses, BOS SELL -6.88, FLIP-BOS BUY +3.06, BOS BUY +5.90)",
+    "scrutiny --by nerv / kind / hour / dir / prev",
+    "scrutiny --pile calm / flip_hot / flip_after_loss / late_night",
+    "asks (none open)"
+   ],
+   "saw": "88 trades 47% -32.18 PF 0.83, hole 59.82. The flip losses were all calm (<0.66): flip_hot unchanged 26 tr. Pace <0.8 17 tr 29% -21.68 (halves agree). FLIP-BOS 49 tr 37% -46.95; BOS 36 tr 61% +25.63. After a loss 47 tr 40% -45.62; after a win 40 tr 52% +5.64. flip_after_loss 30 tr 33% -37.96. No twins, no labo, no ask. No harness run (nerv_floor already C; flip_loss_size not built), no pile, no proposal."
   }
  ],
  "lessons": [
@@ -1154,6 +1168,7 @@
   "late_night pile 17 tr: real 29% vs engine 'skip costs'.",
   "Buys vs sells: wait for a falling week.",
   "Storm at entry: pile when 25 trades.",
-  "BOS in a very nervous market (pace 1.3-1.85): 11 tr 64% but +1.23 - wins often, earns nothing. Watch to 20 before any look."
+  "BOS in a very nervous market (pace 1.3-1.85): 11 tr 64% but +1.23 - wins often, earns nothing. Watch to 20 before any look.",
+  "Calm reversals (FLIP-BOS pace <1.0) now ~23 real tr and losing like nervous ones: does the engine trace still show calm flips winning on fresh bars? Night: re-run the kind x pace trace."
  ]
 }
