@@ -238,6 +238,10 @@ LOSSPAUSE = False
 # (money / the multiplier that trade used) - the system's own curve, so a
 # paused or shrunk account can still see its curve recover. None = off.
 EQHOOK = None
+# 2026-10-09 (review 5): when True the EQHOOK multiplier also scales the
+# recovery add budget (bullets) of that trade - the "main + adds" policy.
+# False = main-only attribution diagnostic. Only read when EQHOOK is set.
+EQ_ADDS = False
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -566,6 +570,8 @@ def simulate(R, spread, cfg):
                         nb = 0 if nv > 1.0 else max(0, min(int(NB), by_budget, by_debt))
                     else:
                         nb = int(NB)
+                if nb and EQHOOK is not None and EQ_ADDS and eq_mult < 1.0:
+                    nb = int(nb * eq_mult)          # the policy halves the add budget too
                 bpts = 0.0
                 if nb:
                     # the bullet enters at the midpoint, so it walks (0.5 + rr)

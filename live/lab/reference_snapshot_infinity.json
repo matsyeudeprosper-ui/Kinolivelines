@@ -4,15 +4,15 @@
  "server": "Exness-MT5Real27",
  "symbol": "BTCUSD",
  "terminal": "C:\\NestTerminals\\infinity\\terminal64.exe",
- "git": "68183ba",
- "frozen_at": "2026-10-09T14:11:23Z",
+ "git": "cbece0e",
+ "frozen_at": "2026-10-09T14:27:15Z",
  "hashes": {
   "structure_bos_bot.py": "737176d37d79f435",
   "owl_chart_feed.py": "44fa43a5ef0550ff",
   "owl_package.py": "14a105bc9373a087",
   "bos_paper_variant.py": "81d8ec9538f118d4",
-  "bos_reference_ledger.py": "e1327d28b3016380",
-  "reference_ledger_lib.py": "be7fba3cb651afcd",
+  "bos_reference_ledger.py": "618637e4dabbfdf2",
+  "reference_ledger_lib.py": "0db5a16ddb934a90",
   "lab/compte_controller.py": "dc0e3ae0d748bc31"
  },
  "package": {

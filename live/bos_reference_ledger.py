@@ -1,4 +1,4 @@
-"""CANONICAL REFERENCE LEDGER runner, recording version rec-2 (ChatGPT brief
+"""CANONICAL REFERENCE LEDGER runner, recording version rec-3 (ChatGPT brief
 2026-10-09, reviews 2-4).      pythonw bos_reference_ledger.py <control uid>
 
 Trades the frozen control strategy VIRTUALLY on the control account's OWN
@@ -73,21 +73,22 @@ def dt(ts):
     return datetime.fromtimestamp(ts, tz=timezone.utc)
 
 
+_LOCK_FH = None
+
+
 def single_writer():
-    """One writer per ledger (review 4). The lock holds the owner's PID; a
-    lock whose PID is dead is stale and taken over, a live one aborts us."""
+    """One writer per ledger (reviews 4-5): an OS-held exclusive byte lock on
+    the lock file, kept for the process lifetime - atomic even for two
+    simultaneous starts; released by the OS when the process dies."""
+    global _LOCK_FH
+    import msvcrt
     try:
-        old = int(open(LOCK, encoding="utf-8").read().strip() or 0)
-    except Exception:
-        old = 0
-    if old and old != os.getpid():
-        import ctypes
-        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, old)   # PROCESS_QUERY_LIMITED_INFORMATION
-        if h:
-            ctypes.windll.kernel32.CloseHandle(h)
-            say(f"ABORT: another writer holds the ledger (pid {old})")
-            return False
-    open(LOCK, "w", encoding="utf-8").write(str(os.getpid()))
+        _LOCK_FH = open(LOCK, "a+")
+        msvcrt.locking(_LOCK_FH.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        say("ABORT: another writer holds the ledger (OS lock)")
+        return False
+    _LOCK_FH.seek(0); _LOCK_FH.truncate(); _LOCK_FH.write(str(os.getpid())); _LOCK_FH.flush()
     return True
 
 
@@ -126,16 +127,23 @@ def main():
         q = LEDGER + f".quarantined.{int(time.time())}"
         os.replace(LEDGER, q)
         say(f"QUARANTINE {len(st['errors'])} ledger errors -> {os.path.basename(q)}: {st['errors'][:5]}")
-        rec({"phase": "quarantine", "event_id": None, "from": os.path.basename(q), "errors": st["errors"][:20]})
+        rec({"phase": "quarantine", "event_id": None, "from": os.path.basename(q), "errors": st["errors"][:20],
+             "segment": int(time.time()), "prior_history": "unresolved",
+             "note": "a fresh segment: NOT the continuation of a fully observed reference; states carry segment_unresolved"})
         st = L.parse_ledger([])
-    rt = {"used_hi": None, "used_lo": None, "tick_msc": 0, "open_event": None}
+    segment_unresolved = any(r.get("phase") == "quarantine" for r in st["rows"])
+    rt = {"used_hi": None, "used_lo": None, "tick_msc": 0, "tick_seen": 0, "open_event": None, "cov": None}
     try:
         rt.update(json.load(open(RUNTIME, encoding="utf-8")))
     except Exception:
         pass
     pos = L.reconcile(st, rt)
-    if pos and "t_fill_msc" not in pos:                   # a rec-1 entry: give it the fields rec-2 needs
+    if pos and "t_fill_msc" not in pos:                   # a rec-1 entry: give it the fields rec-2+ need
         pos["t_fill_msc"] = int(float(pos["t_fill"]) * 1000)
+    cov = (rt.get("cov") if (pos and rt.get("cov") and rt["cov"].get("event") == pos["event_id"]) else None)
+    if pos and cov is None:
+        cov = dict(L.new_coverage(int(pos["t_fill_msc"])), event=pos["event_id"], restarted_without_cov=True)
+    rt["cov"] = cov
     # --- engine: seed to the latest CLOSED bar = the documented watermark
     eng = B.Struct(); eng.quiet = True
     flips = []
@@ -150,7 +158,8 @@ def main():
     last_bar = int(R["time"][-1])                      # never an older checkpoint bar
     # tick watermark: the open position's fill, else the checkpoint, else NOW
     # (never 0: that would ask the terminal for its whole tick history)
-    rt["tick_msc"] = max(int(rt.get("tick_msc") or 0), (int(pos["t_fill_msc"]) - 1) if pos else 0) or int(time.time() * 1000)
+    if not rt.get("tick_msc"):
+        rt["tick_msc"] = int(pos["t_fill_msc"]) - 1 if pos else int(time.time() * 1000); rt["tick_seen"] = 0
     checkpoint(rt)
     rec({"phase": "restart", "event_id": None, "feed": feed_id, "strategy_version": ver, "spec": spec,
          "research_config": rc, "snapshot_git": snap.get("git"), "engine_watermark": last_bar,
@@ -159,25 +168,41 @@ def main():
     say(f"REFERENCE {UID} {L.RECORDING_VERSION} attached read-only to {feed_id} | strategy {ver} | watermark {last_bar} | open {pos['event_id'] if pos else None}")
 
     def states_before():
-        used, excluded = L.closed_outcomes(st)
-        out = {}
-        for name, flt in (("global", lambda d: True), ("buy", lambda d: d == 1), ("sell", lambda d: d == -1)):
-            c = CompteController()
-            for ev, d, p in used:
-                if flt(d):
-                    c.feed(p, event=ev)
-            s = c.state
-            out[name] = {"trend": s["trend"], "choch": s["choch"], "status": s["status"], "origin": s["origin"],
-                         "origin_window": s["origin_window"], "n": s["n"], "version": s["version"]}
-        out["outcomes_used"] = len(used); out["outcomes_excluded"] = excluded
-        out["basis"] = "gross pnl of validated closes (commission unknown)"
-        return out
+        """PRIMARY: every close in order, an unresolved one fed as a GAP (the
+        controller latches invalid from there). FILTERED diagnostic: resolved
+        closes only, named so, never for allocation."""
+        outs = L.closed_outcomes(st)
+        def build(filtered):
+            res = {}
+            for name, flt in (("global", lambda d: True), ("buy", lambda d: d == 1), ("sell", lambda d: d == -1)):
+                c = CompteController()
+                for ev, d, p, resolved, _m in outs:
+                    if not flt(d):
+                        continue
+                    if resolved:
+                        c.feed(p, event=ev)
+                    elif not filtered:
+                        c.feed(None, valid=False, event=ev)
+                s = c.state
+                res[name] = {"trend": s["trend"], "choch": s["choch"], "status": s["status"], "reason": s.get("reason"),
+                             "origin": s["origin"], "origin_window": s["origin_window"], "n": s["n"], "version": s["version"]}
+            return res
+        prim = build(False)
+        if segment_unresolved:
+            for k in prim:
+                prim[k]["status"] = "invalid"; prim[k]["reason"] = "segment_unresolved"
+        return {"primary": prim, "filtered_diagnostic": build(True), "exclusions": L.exclusion_report(outs),
+                "segment_unresolved": segment_unresolved,
+                "validity": {"complete_gross": not any(not o[3] for o in outs) and not segment_unresolved,
+                             "coverage": "per close row", "net_cost": False},
+                "basis": "gross pnl (commission unknown; swap not applied)"}
 
     def close(why, px, t_close, cov, bounds=None):
         nonlocal pos
         gross = (px - pos["entry"]) * pos["dir"] * LOT * spec["contract_size"]
         row = {"phase": "close", "event_id": pos["event_id"], "exit": px, "exit_why": why, "t_close": t_close,
                "ticks_ok": bool(cov.get("certified")), "coverage": cov, "pnl_usd_gross": round(gross, 6),
+               "restarted_without_cov": bool((rt.get("cov") or {}).get("restarted_without_cov")),
                "pnl_r": round(gross / pos["risk_usd"], 6) if pos.get("risk_usd") else None,
                "cost_note": "gross; commission unknown", **L.rollover_exposure(float(pos["t_fill"]), t_close)}
         if bounds:
@@ -187,7 +212,7 @@ def main():
         rec(row); st["seen"].setdefault(row["event_id"], []).append("close")
         st["open"].pop(row["event_id"], None); st["closed"].add(row["event_id"]); st["rows"].append(row)
         say(f"CLOSE {pos['event_id']} {why} {gross:+.4f} certified={row['ticks_ok']}")
-        pos = None; rt["open_event"] = None; checkpoint(rt)
+        pos = None; rt["open_event"] = None; rt["cov"] = None; checkpoint(rt)
 
     while True:
         time.sleep(min(60.0 - (time.time() % 60.0) + 0.2, 1.0))
@@ -195,13 +220,15 @@ def main():
             now = time.time()
             # --- 1. ordered ticks since the watermark; first barrier touch closes
             raw = mt5.copy_ticks_range(symbol, dt(max(0, rt["tick_msc"] / 1000.0 - 1)), dt(now + 1), mt5.COPY_TICKS_ALL)
-            ticks, dropped = L.ordered_new_ticks(list(raw) if raw is not None else [], rt["tick_msc"])
+            if raw is None and pos and rt.get("cov"):
+                rt["cov"]["query_failures"] += 1; checkpoint(rt)
+            ticks, dropped, mk, n_at = L.ordered_new_ticks(list(raw) if raw is not None else [], rt["tick_msc"], rt.get("tick_seen", 0))
             if pos and ticks:
-                why, px, msc, cov = L.first_barrier_hit(ticks, pos)
+                why, px, msc, cs = L.first_barrier_hit(ticks, pos, rt["cov"])
                 if why:
-                    close(why, float(px), msc / 1000.0, cov)
+                    close(why, float(px), msc / 1000.0, cs)
             if ticks:
-                rt["tick_msc"] = int(ticks[-1]["time_msc"]); checkpoint(rt)
+                rt["tick_msc"], rt["tick_seen"] = int(mk), int(n_at); checkpoint(rt)
             # --- 2. every missed closed bar, in order
             kb = mt5.copy_rates_range(symbol, mt5.TIMEFRAME_M1, dt(last_bar + 60), dt(now))
             bars = [b for b in (list(kb) if kb is not None else []) if int(b["time"]) + 60 <= now]
@@ -209,10 +236,11 @@ def main():
                 bt = int(bar["time"]); last_bar = bt
                 # no tick coverage at all for a bar while open: only then the bid-side bar speaks
                 if pos and bt >= float(pos["t_fill"]) and not ticks and (now - rt["tick_msc"] / 1000.0) > 60:
+                    rt["cov"]["query_failures"] += 1
                     amb = L.bar_ambiguity(dict(pos, contract_size=spec["contract_size"]), bar)
                     if amb:
                         close(amb["status"], pos["sl"] if "sl" in amb["status"] else pos["tp"], bt + 60,
-                              {"ticks": 0, "max_gap_ms": None, "certified": False}, amb)
+                              dict(L.coverage_summary(rt["cov"]), certified=False), amb)
                 pt = eng.trend; hv, lv = eng.hi_v, eng.lo_v
                 sig = eng.step(bt, float(bar["open"]), float(bar["high"]), float(bar["low"]), float(bar["close"]))
                 flip = eng.trend != pt and eng.trend != 0 and pt != 0
@@ -268,7 +296,7 @@ def main():
                 ft, why = None, None
                 for _ in range(6):
                     fr = mt5.copy_ticks_range(symbol, dt(decision_ms / 1000.0 - 1), dt(time.time() + 1), mt5.COPY_TICKS_ALL)
-                    cand, _ = L.ordered_new_ticks(list(fr) if fr is not None else [], decision_ms - 1)
+                    cand, _d, _m, _n = L.ordered_new_ticks(list(fr) if fr is not None else [], decision_ms - 1, 0)
                     ft, why = L.fill_tick(cand, decision_ms)
                     if ft:
                         break
@@ -292,9 +320,13 @@ def main():
                        "bar_close_px": float(bar["close"]), "strategy_version": ver, "feed": feed_id,
                        "gate": gate, "state_before": states_before(), "eligible": True, "valid": True}
                 rec(pos); st["seen"][ev] = ["entry"]; st["open"][ev] = pos; st["rows"].append(pos)
-                rt["open_event"] = ev; rt["tick_msc"] = max(rt["tick_msc"], int(ft["time_msc"])); checkpoint(rt)
+                rt["open_event"] = ev; rt["cov"] = dict(L.new_coverage(int(ft["time_msc"])), event=ev)
+                if int(ft["time_msc"]) > rt["tick_msc"]:
+                    rt["tick_msc"], rt["tick_seen"] = int(ft["time_msc"]), 1
+                checkpoint(rt)
                 sb = pos["state_before"]
-                say(f"ENTRY {ev} {'BUY' if d == 1 else 'SELL'} @ {e:.2f} SL {slp:.2f} TP {tp:.2f} risk {risk:.4f} | states g/b/s {sb['global']['trend']}/{sb['buy']['trend']}/{sb['sell']['trend']}")
+                pr = sb["primary"]
+                say(f"ENTRY {ev} {'BUY' if d == 1 else 'SELL'} @ {e:.2f} SL {slp:.2f} TP {tp:.2f} risk {risk:.4f} | primary g/b/s {pr['global']['trend']}/{pr['buy']['trend']}/{pr['sell']['trend']} ({pr['global']['status']})")
         except Exception as ex:
             say(f"ERROR {type(ex).__name__}: {ex}")
             time.sleep(30)
