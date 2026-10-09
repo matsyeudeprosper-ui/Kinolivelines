@@ -1,0 +1,19 @@
+dataset b: BTCUSDm 59999 bars 1787957640 -> 1791558360 sha 594a3275fb4a3c1d | days 42
+
+=== drag $0.00, basis A | baseline {"net": 109.29, "trades": 272, "dd_cc": 63.69, "dd_daily_sampled": 50.91, "mtm_main_only_proxy": 67.92, "exp_main": 1029.78, "exp_add_permitted": 475.92, "exp_add_actual": 83.04, "adds_fired": 109, "later_half_calendar": -16.25}
+primary main+adds: {"net": 110.6, "trades": 273, "dd_cc": 55.28, "dd_daily_sampled": 48.1, "mtm_main_only_proxy": 55.25, "exp_main": 924.02, "exp_add_permitted": 387.48, "exp_add_actual": 64.0, "adds_fired": 90, "later_half_calendar": -19.59, "cc_ratio": 0.868}
+   CC ratio 0.868 CI90 b5 [0.584, 1.0] b3 [0.63, 1.01] b10 [0.554, 1.0] (degenerate 0/3000) | net diff CI90 b5 [-28.76, 35.28] | power b5: mean +0.032 sd_blocks 1.182 detect@24 0.601
+   periodic (matched on main+permitted adds, target 1312; k=4, 4 phases): matched exp [1282, 1315, 1320, 1304] | main [900, 900, 909, 886] | permitted adds [382, 416, 411, 418] | net [84.9, 94.44, 102.05, 70.5] | dd_cc [62.11, 45.97, 70.14, 58.86] | beats net 4/4 dd 3/4 | unkeyed [3, 5, 4, 1]
+   block shifts (20, keyed by baseline opportunity id): net median 94.04 IQR [76.16, 108.34] | dd_cc median 63.52 | matched exp [1325..1398] | beats net 16/20 dd 18/20 | unkeyed max 4
+arm main-only: {"net": 122.37, "trades": 275, "dd_cc": 55.97, "dd_daily_sampled": 49.63, "mtm_main_only_proxy": 55.93, "exp_main": 931.08, "exp_add_permitted": 463.46, "exp_add_actual": 73.82, "adds_fired": 102, "later_half_calendar": -9.75, "cc_ratio": 0.879}
+   CC ratio 0.879 CI90 b5 [0.537, 1.012] b3 [0.595, 1.019] b10 [0.5, 1.0] (degenerate 0/3000) | net diff CI90 b5 [-8.39, 46.01] | power b5: mean +0.311 sd_blocks 1.075 detect@24 0.546
+
+=== drag $0.35, basis B | baseline {"net": 8.35, "trades": 265, "dd_cc": 85.45, "dd_daily_sampled": 77.92, "mtm_main_only_proxy": 89.69, "exp_main": 1005.13, "exp_add_permitted": 528.77, "exp_add_actual": 100.14, "adds_fired": 129, "later_half_calendar": -48.34}
+primary main+adds: {"net": 48.55, "trades": 266, "dd_cc": 57.99, "dd_daily_sampled": 49.2, "mtm_main_only_proxy": 57.97, "exp_main": 864.24, "exp_add_permitted": 398.14, "exp_add_actual": 65.72, "adds_fired": 90, "later_half_calendar": -31.63, "cc_ratio": 0.679}
+   CC ratio 0.679 CI90 b5 [0.517, 0.927] b3 [0.523, 0.936] b10 [0.506, 0.876] (degenerate 0/3000) | net diff CI90 b5 [-1.64, 74.05] | power b5: mean +0.958 sd_blocks 1.452 detect@24 0.738
+   periodic (matched on main+permitted adds, target 1262; k=3, 3 phases): matched exp [1229, 1252, 1293] | main [831, 838, 842] | permitted adds [398, 414, 450] | net [20.07, 27.59, -37.22] | dd_cc [71.8, 68.0, 87.22] | beats net 3/3 dd 3/3 | unkeyed [2, 5, 1]
+   block shifts (20, keyed by baseline opportunity id): net median -6.47 IQR [-13.00, 9.85] | dd_cc median 85.45 | matched exp [1245..1347] | beats net 20/20 dd 20/20 | unkeyed max 5
+arm main-only: {"net": 48.41, "trades": 266, "dd_cc": 60.93, "dd_daily_sampled": 52.13, "mtm_main_only_proxy": 60.91, "exp_main": 864.24, "exp_add_permitted": 494.03, "exp_add_actual": 79.44, "adds_fired": 107, "later_half_calendar": -33.13, "cc_ratio": 0.713}
+   CC ratio 0.713 CI90 b5 [0.501, 0.938] b3 [0.518, 0.945] b10 [0.491, 0.898] (degenerate 0/3000) | net diff CI90 b5 [3.09, 75.01] | power b5: mean +0.954 sd_blocks 1.491 detect@24 0.758
+
+DONE v2c

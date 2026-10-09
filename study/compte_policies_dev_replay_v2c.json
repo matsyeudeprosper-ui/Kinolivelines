@@ -1,0 +1,1605 @@
+{
+ "dataset": {
+  "symbol": "BTCUSDm",
+  "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+  "bars": 59999,
+  "first_bar": 1787957640,
+  "last_bar": 1791558360,
+  "frozen_at": "2026-10-09T16:08:39Z",
+  "sha256": "594a3275fb4a3c1d",
+  "derived_from": "dev_bars_2026-10-09.npz (sha 06ece48906f62129), last (forming) bar removed",
+  "closed_bar_cutoff": 1791558420,
+  "note": "version b: closed bars only; the original pinned file is kept untouched"
+ },
+ "K_SET": [
+  2,
+  3,
+  4,
+  6,
+  8
+ ],
+ "SHIFTS": [
+  10,
+  20,
+  30,
+  40,
+  50,
+  60,
+  70,
+  80,
+  90,
+  100,
+  110,
+  120,
+  130,
+  140,
+  150,
+  160,
+  170,
+  180,
+  190,
+  200
+ ],
+ "SEED": 7,
+ "REPS": 3000,
+ "drag_0.00": {
+  "baseline": {
+   "net": 109.29,
+   "trades": 272,
+   "dd_cc": 63.69,
+   "dd_daily_sampled": 50.91,
+   "mtm_main_only_proxy": 67.92,
+   "exp_main": 1029.78,
+   "exp_add_permitted": 475.92,
+   "exp_add_actual": 83.04,
+   "adds_fired": 109,
+   "later_half_calendar": -16.25
+  },
+  "primary main+adds": {
+   "net": 110.6,
+   "trades": 273,
+   "dd_cc": 55.28,
+   "dd_daily_sampled": 48.1,
+   "mtm_main_only_proxy": 55.25,
+   "exp_main": 924.02,
+   "exp_add_permitted": 387.48,
+   "exp_add_actual": 64.0,
+   "adds_fired": 90,
+   "later_half_calendar": -19.59,
+   "cc_ratio": 0.868,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.584,
+      1.0
+     ],
+     "net_diff_ci90": [
+      -28.76,
+      35.28
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.63,
+      1.01
+     ],
+     "net_diff_ci90": [
+      -33.67,
+      37.69
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.554,
+      1.0
+     ],
+     "net_diff_ci90": [
+      -27.73,
+      36.64
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 1.182,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.202,
+      "12": 0.85,
+      "24": 0.601
+     },
+     "label": "approximate planning diagnostic from 8 historical blocks"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 1.897,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.928,
+      "12": 1.364,
+      "24": 0.964
+     },
+     "label": "approximate planning diagnostic from 14 historical blocks"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.032,
+     "sd_block_means": 0.981,
+     "sd_daily_iid_only": 3.978,
+     "detectable_daily_diff_at_blocks": {
+      "6": 0.997,
+      "12": 0.705,
+      "24": 0.499
+     },
+     "label": "approximate planning diagnostic from 4 historical blocks"
+    }
+   },
+   "controls": {
+    "periodic_k": 4,
+    "periodic": {
+     "2": [
+      {
+       "net": 83.37,
+       "trades": 273,
+       "dd_cc": 68.37,
+       "dd_daily_sampled": 56.04,
+       "mtm_main_only_proxy": 71.47,
+       "exp_main": 786.69,
+       "exp_add_permitted": 332.6,
+       "exp_add_actual": 70.71,
+       "adds_fired": 85,
+       "later_half_calendar": -38.75,
+       "unkeyed_opportunities": 5
+      },
+      {
+       "net": 52.29,
+       "trades": 269,
+       "dd_cc": 35.14,
+       "dd_daily_sampled": 31.08,
+       "mtm_main_only_proxy": 36.19,
+       "exp_main": 761.82,
+       "exp_add_permitted": 340.24,
+       "exp_add_actual": 46.02,
+       "adds_fired": 67,
+       "later_half_calendar": -1.22,
+       "unkeyed_opportunities": 4
+      }
+     ],
+     "3": [
+      {
+       "net": 73.34,
+       "trades": 267,
+       "dd_cc": 60.81,
+       "dd_daily_sampled": 51.54,
+       "mtm_main_only_proxy": 65.03,
+       "exp_main": 843.7,
+       "exp_add_permitted": 397.23,
+       "exp_add_actual": 68.73,
+       "adds_fired": 86,
+       "later_half_calendar": -13.25,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 105.58,
+       "trades": 272,
+       "dd_cc": 55.37,
+       "dd_daily_sampled": 44.2,
+       "mtm_main_only_proxy": 57.71,
+       "exp_main": 859.53,
+       "exp_add_permitted": 385.22,
+       "exp_add_actual": 61.74,
+       "adds_fired": 83,
+       "later_half_calendar": -10.66,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 56.14,
+       "trades": 270,
+       "dd_cc": 54.38,
+       "dd_daily_sampled": 45.76,
+       "mtm_main_only_proxy": 57.5,
+       "exp_main": 850.05,
+       "exp_add_permitted": 384.24,
+       "exp_add_actual": 62.01,
+       "adds_fired": 88,
+       "later_half_calendar": -14.02,
+       "unkeyed_opportunities": 3
+      }
+     ],
+     "4": [
+      {
+       "net": 84.9,
+       "trades": 271,
+       "dd_cc": 62.11,
+       "dd_daily_sampled": 52.83,
+       "mtm_main_only_proxy": 65.8,
+       "exp_main": 900.44,
+       "exp_add_permitted": 381.66,
+       "exp_add_actual": 72.44,
+       "adds_fired": 91,
+       "later_half_calendar": -31.04,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 94.44,
+       "trades": 272,
+       "dd_cc": 45.97,
+       "dd_daily_sampled": 40.15,
+       "mtm_main_only_proxy": 47.02,
+       "exp_main": 899.65,
+       "exp_add_permitted": 415.67,
+       "exp_add_actual": 62.23,
+       "adds_fired": 83,
+       "later_half_calendar": 15.04,
+       "unkeyed_opportunities": 5
+      },
+      {
+       "net": 102.05,
+       "trades": 273,
+       "dd_cc": 70.14,
+       "dd_daily_sampled": 55.99,
+       "mtm_main_only_proxy": 74.35,
+       "exp_main": 909.25,
+       "exp_add_permitted": 410.58,
+       "exp_add_actual": 75.54,
+       "adds_fired": 99,
+       "later_half_calendar": -16.58,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 70.5,
+       "trades": 268,
+       "dd_cc": 58.86,
+       "dd_daily_sampled": 48.61,
+       "mtm_main_only_proxy": 61.22,
+       "exp_main": 886.27,
+       "exp_add_permitted": 418.2,
+       "exp_add_actual": 64.2,
+       "adds_fired": 87,
+       "later_half_calendar": -16.28,
+       "unkeyed_opportunities": 1
+      }
+     ],
+     "6": [
+      {
+       "net": 91.58,
+       "trades": 272,
+       "dd_cc": 62.12,
+       "dd_daily_sampled": 51.01,
+       "mtm_main_only_proxy": 66.34,
+       "exp_main": 945.45,
+       "exp_add_permitted": 436.09,
+       "exp_add_actual": 77.61,
+       "adds_fired": 98,
+       "later_half_calendar": -19.45,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 99.97,
+       "trades": 270,
+       "dd_cc": 59.04,
+       "dd_daily_sampled": 47.84,
+       "mtm_main_only_proxy": 61.39,
+       "exp_main": 937.44,
+       "exp_add_permitted": 448.38,
+       "exp_add_actual": 74.74,
+       "adds_fired": 99,
+       "later_half_calendar": -15.57,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 75.53,
+       "trades": 269,
+       "dd_cc": 73.29,
+       "dd_daily_sampled": 58.5,
+       "mtm_main_only_proxy": 76.39,
+       "exp_main": 942.22,
+       "exp_add_permitted": 439.9,
+       "exp_add_actual": 80.34,
+       "adds_fired": 107,
+       "later_half_calendar": -30.46,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 85.41,
+       "trades": 267,
+       "dd_cc": 62.38,
+       "dd_daily_sampled": 51.32,
+       "mtm_main_only_proxy": 66.6,
+       "exp_main": 923.96,
+       "exp_add_permitted": 442.71,
+       "exp_add_actual": 70.7,
+       "adds_fired": 92,
+       "later_half_calendar": -9.5,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 119.63,
+       "trades": 273,
+       "dd_cc": 61.77,
+       "dd_daily_sampled": 46.13,
+       "mtm_main_only_proxy": 66.0,
+       "exp_main": 949.23,
+       "exp_add_permitted": 408.21,
+       "exp_add_actual": 73.03,
+       "adds_fired": 94,
+       "later_half_calendar": -11.51,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 96.52,
+       "trades": 273,
+       "dd_cc": 54.81,
+       "dd_daily_sampled": 48.97,
+       "mtm_main_only_proxy": 55.85,
+       "exp_main": 945.8,
+       "exp_add_permitted": 421.5,
+       "exp_add_actual": 65.38,
+       "adds_fired": 90,
+       "later_half_calendar": 12.86,
+       "unkeyed_opportunities": 4
+      }
+     ],
+     "8": [
+      {
+       "net": 96.43,
+       "trades": 272,
+       "dd_cc": 68.21,
+       "dd_daily_sampled": 54.66,
+       "mtm_main_only_proxy": 71.9,
+       "exp_main": 968.94,
+       "exp_add_permitted": 436.72,
+       "exp_add_actual": 76.56,
+       "adds_fired": 99,
+       "later_half_calendar": -29.66,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 96.69,
+       "trades": 272,
+       "dd_cc": 53.4,
+       "dd_daily_sampled": 47.31,
+       "mtm_main_only_proxy": 54.19,
+       "exp_main": 973.38,
+       "exp_add_permitted": 440.79,
+       "exp_add_actual": 73.88,
+       "adds_fired": 96,
+       "later_half_calendar": -12.64,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 113.07,
+       "trades": 272,
+       "dd_cc": 69.24,
+       "dd_daily_sampled": 53.05,
+       "mtm_main_only_proxy": 73.46,
+       "exp_main": 973.9,
+       "exp_add_permitted": 437.05,
+       "exp_add_actual": 79.84,
+       "adds_fired": 103,
+       "later_half_calendar": -15.32,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 109.01,
+       "trades": 269,
+       "dd_cc": 57.62,
+       "dd_daily_sampled": 48.4,
+       "mtm_main_only_proxy": 61.86,
+       "exp_main": 959.23,
+       "exp_add_permitted": 441.53,
+       "exp_add_actual": 77.76,
+       "adds_fired": 101,
+       "later_half_calendar": -10.9,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 90.47,
+       "trades": 272,
+       "dd_cc": 58.83,
+       "dd_daily_sampled": 49.08,
+       "mtm_main_only_proxy": 63.06,
+       "exp_main": 964.93,
+       "exp_add_permitted": 429.39,
+       "exp_add_actual": 78.16,
+       "adds_fired": 99,
+       "later_half_calendar": -17.63,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 105.3,
+       "trades": 272,
+       "dd_cc": 51.88,
+       "dd_daily_sampled": 43.74,
+       "mtm_main_only_proxy": 56.11,
+       "exp_main": 956.05,
+       "exp_add_permitted": 447.55,
+       "exp_add_actual": 72.99,
+       "adds_fired": 98,
+       "later_half_calendar": 10.34,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 104.48,
+       "trades": 272,
+       "dd_cc": 64.59,
+       "dd_daily_sampled": 50.9,
+       "mtm_main_only_proxy": 68.81,
+       "exp_main": 962.22,
+       "exp_add_permitted": 453.9,
+       "exp_add_actual": 80.49,
+       "adds_fired": 107,
+       "later_half_calendar": -13.49,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 77.71,
+       "trades": 267,
+       "dd_cc": 66.68,
+       "dd_daily_sampled": 55.87,
+       "mtm_main_only_proxy": 69.04,
+       "exp_main": 940.64,
+       "exp_add_permitted": 437.1,
+       "exp_add_actual": 73.74,
+       "adds_fired": 99,
+       "later_half_calendar": -16.15,
+       "unkeyed_opportunities": 1
+      }
+     ]
+    },
+    "shifts": [
+     {
+      "net": 134.63,
+      "trades": 275,
+      "dd_cc": 53.88,
+      "dd_daily_sampled": 49.47,
+      "mtm_main_only_proxy": 54.68,
+      "exp_main": 946.73,
+      "exp_add_permitted": 381.19,
+      "exp_add_actual": 67.65,
+      "adds_fired": 90,
+      "later_half_calendar": 5.37,
+      "unkeyed": 4
+     },
+     {
+      "net": 118.19,
+      "trades": 275,
+      "dd_cc": 63.52,
+      "dd_daily_sampled": 59.09,
+      "mtm_main_only_proxy": 64.3,
+      "exp_main": 947.61,
+      "exp_add_permitted": 393.11,
+      "exp_add_actual": 66.94,
+      "adds_fired": 90,
+      "later_half_calendar": -10.41,
+      "unkeyed": 4
+     },
+     {
+      "net": 124.59,
+      "trades": 274,
+      "dd_cc": 47.17,
+      "dd_daily_sampled": 42.82,
+      "mtm_main_only_proxy": 47.94,
+      "exp_main": 945.75,
+      "exp_add_permitted": 414.38,
+      "exp_add_actual": 68.34,
+      "adds_fired": 92,
+      "later_half_calendar": 4.9,
+      "unkeyed": 4
+     },
+     {
+      "net": 74.69,
+      "trades": 273,
+      "dd_cc": 57.78,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 62.02,
+      "exp_main": 941.73,
+      "exp_add_permitted": 426.36,
+      "exp_add_actual": 81.08,
+      "adds_fired": 102,
+      "later_half_calendar": -31.23,
+      "unkeyed": 2
+     },
+     {
+      "net": 99.97,
+      "trades": 273,
+      "dd_cc": 58.77,
+      "dd_daily_sampled": 52.08,
+      "mtm_main_only_proxy": 62.99,
+      "exp_main": 950.14,
+      "exp_add_permitted": 411.14,
+      "exp_add_actual": 71.63,
+      "adds_fired": 90,
+      "later_half_calendar": -22.15,
+      "unkeyed": 2
+     },
+     {
+      "net": 85.84,
+      "trades": 272,
+      "dd_cc": 61.38,
+      "dd_daily_sampled": 51.23,
+      "mtm_main_only_proxy": 63.5,
+      "exp_main": 936.25,
+      "exp_add_permitted": 407.06,
+      "exp_add_actual": 70.26,
+      "adds_fired": 92,
+      "later_half_calendar": -28.36,
+      "unkeyed": 2
+     },
+     {
+      "net": 99.69,
+      "trades": 272,
+      "dd_cc": 55.33,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 58.36,
+      "exp_main": 942.17,
+      "exp_add_permitted": 403.16,
+      "exp_add_actual": 71.3,
+      "adds_fired": 91,
+      "later_half_calendar": -12.2,
+      "unkeyed": 1
+     },
+     {
+      "net": 88.45,
+      "trades": 273,
+      "dd_cc": 57.21,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 61.44,
+      "exp_main": 933.87,
+      "exp_add_permitted": 408.09,
+      "exp_add_actual": 73.05,
+      "adds_fired": 91,
+      "later_half_calendar": -11.32,
+      "unkeyed": 3
+     },
+     {
+      "net": 94.04,
+      "trades": 272,
+      "dd_cc": 58.36,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 62.58,
+      "exp_main": 943.83,
+      "exp_add_permitted": 413.23,
+      "exp_add_actual": 71.18,
+      "adds_fired": 90,
+      "later_half_calendar": -10.92,
+      "unkeyed": 2
+     },
+     {
+      "net": 74.69,
+      "trades": 272,
+      "dd_cc": 60.98,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 65.22,
+      "exp_main": 937.22,
+      "exp_add_permitted": 424.46,
+      "exp_add_actual": 77.3,
+      "adds_fired": 92,
+      "later_half_calendar": -13.54,
+      "unkeyed": 2
+     },
+     {
+      "net": 76.16,
+      "trades": 273,
+      "dd_cc": 62.57,
+      "dd_daily_sampled": 55.74,
+      "mtm_main_only_proxy": 66.81,
+      "exp_main": 935.39,
+      "exp_add_permitted": 434.27,
+      "exp_add_actual": 77.25,
+      "adds_fired": 93,
+      "later_half_calendar": -17.41,
+      "unkeyed": 2
+     },
+     {
+      "net": 54.1,
+      "trades": 271,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 52.43,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 932.35,
+      "exp_add_permitted": 450.13,
+      "exp_add_actual": 75.14,
+      "adds_fired": 95,
+      "later_half_calendar": -16.25,
+      "unkeyed": 2
+     },
+     {
+      "net": 55.48,
+      "trades": 270,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 926.46,
+      "exp_add_permitted": 448.48,
+      "exp_add_actual": 72.35,
+      "adds_fired": 92,
+      "later_half_calendar": -16.25,
+      "unkeyed": 2
+     },
+     {
+      "net": 59.47,
+      "trades": 270,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 905.63,
+      "exp_add_permitted": 428.3,
+      "exp_add_actual": 77.19,
+      "adds_fired": 102,
+      "later_half_calendar": -16.25,
+      "unkeyed": 1
+     },
+     {
+      "net": 76.16,
+      "trades": 271,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.91,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 904.08,
+      "exp_add_permitted": 421.39,
+      "exp_add_actual": 75.49,
+      "adds_fired": 98,
+      "later_half_calendar": -16.25,
+      "unkeyed": 1
+     },
+     {
+      "net": 99.2,
+      "trades": 272,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.23,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 929.38,
+      "exp_add_permitted": 419.01,
+      "exp_add_actual": 71.21,
+      "adds_fired": 93,
+      "later_half_calendar": -11.77,
+      "unkeyed": 2
+     },
+     {
+      "net": 108.34,
+      "trades": 270,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.23,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 931.59,
+      "exp_add_permitted": 420.05,
+      "exp_add_actual": 72.26,
+      "adds_fired": 96,
+      "later_half_calendar": -9.27,
+      "unkeyed": 2
+     },
+     {
+      "net": 87.88,
+      "trades": 270,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.23,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 927.55,
+      "exp_add_permitted": 437.47,
+      "exp_add_actual": 74.89,
+      "adds_fired": 97,
+      "later_half_calendar": -17.61,
+      "unkeyed": 2
+     },
+     {
+      "net": 100.79,
+      "trades": 273,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.23,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 955.35,
+      "exp_add_permitted": 442.38,
+      "exp_add_actual": 72.67,
+      "adds_fired": 94,
+      "later_half_calendar": -12.48,
+      "unkeyed": 3
+     },
+     {
+      "net": 116.97,
+      "trades": 273,
+      "dd_cc": 63.69,
+      "dd_daily_sampled": 50.23,
+      "mtm_main_only_proxy": 67.92,
+      "exp_main": 938.03,
+      "exp_add_permitted": 410.04,
+      "exp_add_actual": 72.66,
+      "adds_fired": 96,
+      "later_half_calendar": -1.17,
+      "unkeyed": 2
+     }
+    ]
+   }
+  },
+  "arm main-only": {
+   "net": 122.37,
+   "trades": 275,
+   "dd_cc": 55.97,
+   "dd_daily_sampled": 49.63,
+   "mtm_main_only_proxy": 55.93,
+   "exp_main": 931.08,
+   "exp_add_permitted": 463.46,
+   "exp_add_actual": 73.82,
+   "adds_fired": 102,
+   "later_half_calendar": -9.75,
+   "cc_ratio": 0.879,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.537,
+      1.012
+     ],
+     "net_diff_ci90": [
+      -8.39,
+      46.01
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.595,
+      1.019
+     ],
+     "net_diff_ci90": [
+      -16.78,
+      49.16
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.5,
+      1.0
+     ],
+     "net_diff_ci90": [
+      -7.28,
+      47.15
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 1.075,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.093,
+      "12": 0.773,
+      "24": 0.546
+     },
+     "label": "approximate planning diagnostic from 8 historical blocks"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 1.867,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.898,
+      "12": 1.342,
+      "24": 0.949
+     },
+     "label": "approximate planning diagnostic from 14 historical blocks"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.311,
+     "sd_block_means": 0.863,
+     "sd_daily_iid_only": 3.773,
+     "detectable_daily_diff_at_blocks": {
+      "6": 0.877,
+      "12": 0.62,
+      "24": 0.439
+     },
+     "label": "approximate planning diagnostic from 4 historical blocks"
+    }
+   }
+  }
+ },
+ "drag_0.35": {
+  "baseline": {
+   "net": 8.35,
+   "trades": 265,
+   "dd_cc": 85.45,
+   "dd_daily_sampled": 77.92,
+   "mtm_main_only_proxy": 89.69,
+   "exp_main": 1005.13,
+   "exp_add_permitted": 528.77,
+   "exp_add_actual": 100.14,
+   "adds_fired": 129,
+   "later_half_calendar": -48.34
+  },
+  "primary main+adds": {
+   "net": 48.55,
+   "trades": 266,
+   "dd_cc": 57.99,
+   "dd_daily_sampled": 49.2,
+   "mtm_main_only_proxy": 57.97,
+   "exp_main": 864.24,
+   "exp_add_permitted": 398.14,
+   "exp_add_actual": 65.72,
+   "adds_fired": 90,
+   "later_half_calendar": -31.63,
+   "cc_ratio": 0.679,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.517,
+      0.927
+     ],
+     "net_diff_ci90": [
+      -1.64,
+      74.05
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.523,
+      0.936
+     ],
+     "net_diff_ci90": [
+      -6.84,
+      81.93
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.506,
+      0.876
+     ],
+     "net_diff_ci90": [
+      1.18,
+      77.13
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 1.452,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.476,
+      "12": 1.044,
+      "24": 0.738
+     },
+     "label": "approximate planning diagnostic from 8 historical blocks"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 2.339,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 2.377,
+      "12": 1.681,
+      "24": 1.189
+     },
+     "label": "approximate planning diagnostic from 14 historical blocks"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.958,
+     "sd_block_means": 1.33,
+     "sd_daily_iid_only": 4.73,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.352,
+      "12": 0.956,
+      "24": 0.676
+     },
+     "label": "approximate planning diagnostic from 4 historical blocks"
+    }
+   },
+   "controls": {
+    "periodic_k": 3,
+    "periodic": {
+     "2": [
+      {
+       "net": -19.97,
+       "trades": 267,
+       "dd_cc": 85.76,
+       "dd_daily_sampled": 77.94,
+       "mtm_main_only_proxy": 87.57,
+       "exp_main": 764.63,
+       "exp_add_permitted": 358.61,
+       "exp_add_actual": 63.6,
+       "adds_fired": 80,
+       "later_half_calendar": -65.02,
+       "unkeyed_opportunities": 5
+      },
+      {
+       "net": 11.71,
+       "trades": 265,
+       "dd_cc": 60.73,
+       "dd_daily_sampled": 53.68,
+       "mtm_main_only_proxy": 63.63,
+       "exp_main": 753.37,
+       "exp_add_permitted": 369.03,
+       "exp_add_actual": 67.77,
+       "adds_fired": 92,
+       "later_half_calendar": -17.61,
+       "unkeyed_opportunities": 2
+      }
+     ],
+     "3": [
+      {
+       "net": 20.07,
+       "trades": 264,
+       "dd_cc": 71.8,
+       "dd_daily_sampled": 65.39,
+       "mtm_main_only_proxy": 74.68,
+       "exp_main": 831.4,
+       "exp_add_permitted": 397.5,
+       "exp_add_actual": 77.24,
+       "adds_fired": 101,
+       "later_half_calendar": -40.85,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 27.59,
+       "trades": 267,
+       "dd_cc": 68.0,
+       "dd_daily_sampled": 63.12,
+       "mtm_main_only_proxy": 70.92,
+       "exp_main": 838.12,
+       "exp_add_permitted": 414.13,
+       "exp_add_actual": 70.58,
+       "adds_fired": 97,
+       "later_half_calendar": -45.08,
+       "unkeyed_opportunities": 5
+      },
+      {
+       "net": -37.22,
+       "trades": 264,
+       "dd_cc": 87.22,
+       "dd_daily_sampled": 80.42,
+       "mtm_main_only_proxy": 91.43,
+       "exp_main": 842.45,
+       "exp_add_permitted": 450.33,
+       "exp_add_actual": 82.59,
+       "adds_fired": 108,
+       "later_half_calendar": -51.09,
+       "unkeyed_opportunities": 1
+      }
+     ],
+     "4": [
+      {
+       "net": -16.52,
+       "trades": 264,
+       "dd_cc": 87.56,
+       "dd_daily_sampled": 76.02,
+       "mtm_main_only_proxy": 87.51,
+       "exp_main": 868.55,
+       "exp_add_permitted": 444.56,
+       "exp_add_actual": 77.94,
+       "adds_fired": 101,
+       "later_half_calendar": -63.44,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 16.81,
+       "trades": 266,
+       "dd_cc": 75.39,
+       "dd_daily_sampled": 67.3,
+       "mtm_main_only_proxy": 75.32,
+       "exp_main": 883.36,
+       "exp_add_permitted": 434.32,
+       "exp_add_actual": 83.32,
+       "adds_fired": 108,
+       "later_half_calendar": -31.54,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 11.17,
+       "trades": 267,
+       "dd_cc": 85.88,
+       "dd_daily_sampled": 78.5,
+       "mtm_main_only_proxy": 90.1,
+       "exp_main": 889.9,
+       "exp_add_permitted": 450.0,
+       "exp_add_actual": 82.58,
+       "adds_fired": 106,
+       "later_half_calendar": -54.67,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 4.44,
+       "trades": 264,
+       "dd_cc": 75.76,
+       "dd_daily_sampled": 70.05,
+       "mtm_main_only_proxy": 78.65,
+       "exp_main": 873.12,
+       "exp_add_permitted": 479.14,
+       "exp_add_actual": 82.08,
+       "adds_fired": 114,
+       "later_half_calendar": -32.4,
+       "unkeyed_opportunities": 1
+      }
+     ],
+     "6": [
+      {
+       "net": -0.17,
+       "trades": 264,
+       "dd_cc": 79.92,
+       "dd_daily_sampled": 72.39,
+       "mtm_main_only_proxy": 84.16,
+       "exp_main": 908.14,
+       "exp_add_permitted": 463.05,
+       "exp_add_actual": 92.3,
+       "adds_fired": 118,
+       "later_half_calendar": -56.03,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 28.34,
+       "trades": 268,
+       "dd_cc": 67.62,
+       "dd_daily_sampled": 63.41,
+       "mtm_main_only_proxy": 67.52,
+       "exp_main": 924.54,
+       "exp_add_permitted": 481.52,
+       "exp_add_actual": 86.17,
+       "adds_fired": 115,
+       "later_half_calendar": -27.72,
+       "unkeyed_opportunities": 5
+      },
+      {
+       "net": -4.25,
+       "trades": 265,
+       "dd_cc": 86.07,
+       "dd_daily_sampled": 78.98,
+       "mtm_main_only_proxy": 90.29,
+       "exp_main": 920.7,
+       "exp_add_permitted": 491.33,
+       "exp_add_actual": 92.15,
+       "adds_fired": 114,
+       "later_half_calendar": -38.81,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 18.71,
+       "trades": 265,
+       "dd_cc": 80.71,
+       "dd_daily_sampled": 72.84,
+       "mtm_main_only_proxy": 83.62,
+       "exp_main": 920.93,
+       "exp_add_permitted": 470.57,
+       "exp_add_actual": 86.94,
+       "adds_fired": 115,
+       "later_half_calendar": -33.27,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": 7.53,
+       "trades": 265,
+       "dd_cc": 95.56,
+       "dd_daily_sampled": 84.03,
+       "mtm_main_only_proxy": 96.26,
+       "exp_main": 924.08,
+       "exp_add_permitted": 461.29,
+       "exp_add_actual": 83.81,
+       "adds_fired": 112,
+       "later_half_calendar": -72.64,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": -21.42,
+       "trades": 264,
+       "dd_cc": 85.46,
+       "dd_daily_sampled": 77.34,
+       "mtm_main_only_proxy": 89.72,
+       "exp_main": 926.88,
+       "exp_add_permitted": 489.12,
+       "exp_add_actual": 90.49,
+       "adds_fired": 123,
+       "later_half_calendar": -57.42,
+       "unkeyed_opportunities": 1
+      }
+     ],
+     "8": [
+      {
+       "net": 25.62,
+       "trades": 267,
+       "dd_cc": 82.43,
+       "dd_daily_sampled": 74.89,
+       "mtm_main_only_proxy": 86.66,
+       "exp_main": 948.53,
+       "exp_add_permitted": 477.92,
+       "exp_add_actual": 96.57,
+       "adds_fired": 123,
+       "later_half_calendar": -40.99,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 21.54,
+       "trades": 268,
+       "dd_cc": 76.47,
+       "dd_daily_sampled": 67.74,
+       "mtm_main_only_proxy": 80.73,
+       "exp_main": 960.7,
+       "exp_add_permitted": 490.02,
+       "exp_add_actual": 88.02,
+       "adds_fired": 115,
+       "later_half_calendar": -35.9,
+       "unkeyed_opportunities": 4
+      },
+      {
+       "net": 0.22,
+       "trades": 265,
+       "dd_cc": 86.29,
+       "dd_daily_sampled": 78.74,
+       "mtm_main_only_proxy": 90.51,
+       "exp_main": 941.43,
+       "exp_add_permitted": 518.8,
+       "exp_add_actual": 94.37,
+       "adds_fired": 122,
+       "later_half_calendar": -51.44,
+       "unkeyed_opportunities": 2
+      },
+      {
+       "net": -7.97,
+       "trades": 265,
+       "dd_cc": 86.93,
+       "dd_daily_sampled": 81.8,
+       "mtm_main_only_proxy": 89.79,
+       "exp_main": 937.54,
+       "exp_add_permitted": 496.48,
+       "exp_add_actual": 87.07,
+       "adds_fired": 114,
+       "later_half_calendar": -56.12,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": -21.22,
+       "trades": 262,
+       "dd_cc": 92.7,
+       "dd_daily_sampled": 79.32,
+       "mtm_main_only_proxy": 92.65,
+       "exp_main": 923.43,
+       "exp_add_permitted": 487.35,
+       "exp_add_actual": 85.51,
+       "adds_fired": 113,
+       "later_half_calendar": -68.79,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 3.56,
+       "trades": 264,
+       "dd_cc": 79.67,
+       "dd_daily_sampled": 66.51,
+       "mtm_main_only_proxy": 83.86,
+       "exp_main": 933.67,
+       "exp_add_permitted": 480.65,
+       "exp_add_actual": 96.6,
+       "adds_fired": 126,
+       "later_half_calendar": -44.89,
+       "unkeyed_opportunities": 1
+      },
+      {
+       "net": 16.63,
+       "trades": 267,
+       "dd_cc": 86.03,
+       "dd_daily_sampled": 76.5,
+       "mtm_main_only_proxy": 90.26,
+       "exp_main": 955.45,
+       "exp_add_permitted": 485.31,
+       "exp_add_actual": 91.22,
+       "adds_fired": 113,
+       "later_half_calendar": -48.82,
+       "unkeyed_opportunities": 3
+      },
+      {
+       "net": 17.85,
+       "trades": 265,
+       "dd_cc": 75.89,
+       "dd_daily_sampled": 68.09,
+       "mtm_main_only_proxy": 80.14,
+       "exp_main": 943.13,
+       "exp_add_permitted": 504.05,
+       "exp_add_actual": 91.21,
+       "adds_fired": 125,
+       "later_half_calendar": -27.53,
+       "unkeyed_opportunities": 2
+      }
+     ]
+    },
+    "shifts": [
+     {
+      "net": 32.25,
+      "trades": 268,
+      "dd_cc": 65.37,
+      "dd_daily_sampled": 58.57,
+      "mtm_main_only_proxy": 65.3,
+      "exp_main": 873.06,
+      "exp_add_permitted": 392.2,
+      "exp_add_actual": 70.88,
+      "adds_fired": 91,
+      "later_half_calendar": -31.25,
+      "unkeyed": 4
+     },
+     {
+      "net": 29.6,
+      "trades": 267,
+      "dd_cc": 76.09,
+      "dd_daily_sampled": 68.56,
+      "mtm_main_only_proxy": 76.01,
+      "exp_main": 869.64,
+      "exp_add_permitted": 375.64,
+      "exp_add_actual": 69.91,
+      "adds_fired": 88,
+      "later_half_calendar": -43.29,
+      "unkeyed": 3
+     },
+     {
+      "net": 16.79,
+      "trades": 268,
+      "dd_cc": 64.55,
+      "dd_daily_sampled": 57.01,
+      "mtm_main_only_proxy": 64.46,
+      "exp_main": 872.55,
+      "exp_add_permitted": 401.98,
+      "exp_add_actual": 79.45,
+      "adds_fired": 103,
+      "later_half_calendar": -32.52,
+      "unkeyed": 4
+     },
+     {
+      "net": -26.66,
+      "trades": 265,
+      "dd_cc": 104.34,
+      "dd_daily_sampled": 90.95,
+      "mtm_main_only_proxy": 104.31,
+      "exp_main": 878.2,
+      "exp_add_permitted": 436.37,
+      "exp_add_actual": 93.35,
+      "adds_fired": 113,
+      "later_half_calendar": -70.21,
+      "unkeyed": 1
+     },
+     {
+      "net": 3.4,
+      "trades": 266,
+      "dd_cc": 87.33,
+      "dd_daily_sampled": 79.79,
+      "mtm_main_only_proxy": 87.28,
+      "exp_main": 888.56,
+      "exp_add_permitted": 422.64,
+      "exp_add_actual": 77.26,
+      "adds_fired": 97,
+      "later_half_calendar": -69.33,
+      "unkeyed": 2
+     },
+     {
+      "net": -17.34,
+      "trades": 266,
+      "dd_cc": 85.52,
+      "dd_daily_sampled": 75.46,
+      "mtm_main_only_proxy": 85.46,
+      "exp_main": 876.46,
+      "exp_add_permitted": 429.52,
+      "exp_add_actual": 77.41,
+      "adds_fired": 101,
+      "later_half_calendar": -64.09,
+      "unkeyed": 2
+     },
+     {
+      "net": -13.0,
+      "trades": 266,
+      "dd_cc": 83.21,
+      "dd_daily_sampled": 74.82,
+      "mtm_main_only_proxy": 87.43,
+      "exp_main": 866.5,
+      "exp_add_permitted": 428.66,
+      "exp_add_actual": 79.81,
+      "adds_fired": 102,
+      "later_half_calendar": -52.08,
+      "unkeyed": 2
+     },
+     {
+      "net": -28.25,
+      "trades": 265,
+      "dd_cc": 75.22,
+      "dd_daily_sampled": 66.16,
+      "mtm_main_only_proxy": 79.45,
+      "exp_main": 838.58,
+      "exp_add_permitted": 431.61,
+      "exp_add_actual": 85.15,
+      "adds_fired": 110,
+      "later_half_calendar": -44.88,
+      "unkeyed": 2
+     },
+     {
+      "net": -8.46,
+      "trades": 265,
+      "dd_cc": 86.89,
+      "dd_daily_sampled": 79.35,
+      "mtm_main_only_proxy": 91.12,
+      "exp_main": 851.19,
+      "exp_add_permitted": 426.59,
+      "exp_add_actual": 82.04,
+      "adds_fired": 96,
+      "later_half_calendar": -45.68,
+      "unkeyed": 2
+     },
+     {
+      "net": 9.85,
+      "trades": 268,
+      "dd_cc": 76.84,
+      "dd_daily_sampled": 65.52,
+      "mtm_main_only_proxy": 81.07,
+      "exp_main": 874.58,
+      "exp_add_permitted": 436.04,
+      "exp_add_actual": 84.23,
+      "adds_fired": 98,
+      "later_half_calendar": -43.72,
+      "unkeyed": 4
+     },
+     {
+      "net": -9.02,
+      "trades": 265,
+      "dd_cc": 75.19,
+      "dd_daily_sampled": 63.72,
+      "mtm_main_only_proxy": 79.42,
+      "exp_main": 860.01,
+      "exp_add_permitted": 434.59,
+      "exp_add_actual": 82.54,
+      "adds_fired": 102,
+      "later_half_calendar": -45.73,
+      "unkeyed": 3
+     },
+     {
+      "net": -35.92,
+      "trades": 264,
+      "dd_cc": 88.39,
+      "dd_daily_sampled": 79.22,
+      "mtm_main_only_proxy": 92.63,
+      "exp_main": 856.26,
+      "exp_add_permitted": 490.91,
+      "exp_add_actual": 90.07,
+      "adds_fired": 117,
+      "later_half_calendar": -48.4,
+      "unkeyed": 3
+     },
+     {
+      "net": -10.59,
+      "trades": 264,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.92,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 850.05,
+      "exp_add_permitted": 459.58,
+      "exp_add_actual": 81.06,
+      "adds_fired": 104,
+      "later_half_calendar": -34.98,
+      "unkeyed": 3
+     },
+     {
+      "net": -16.18,
+      "trades": 261,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.92,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 835.74,
+      "exp_add_permitted": 451.5,
+      "exp_add_actual": 89.74,
+      "adds_fired": 116,
+      "later_half_calendar": -46.57,
+      "unkeyed": 1
+     },
+     {
+      "net": 6.42,
+      "trades": 263,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.92,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 848.38,
+      "exp_add_permitted": 452.13,
+      "exp_add_actual": 84.74,
+      "adds_fired": 106,
+      "later_half_calendar": -26.63,
+      "unkeyed": 3
+     },
+     {
+      "net": -6.47,
+      "trades": 261,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.92,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 839.42,
+      "exp_add_permitted": 463.94,
+      "exp_add_actual": 78.66,
+      "adds_fired": 104,
+      "later_half_calendar": -35.58,
+      "unkeyed": 2
+     },
+     {
+      "net": 27.83,
+      "trades": 265,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.92,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 852.76,
+      "exp_add_permitted": 427.71,
+      "exp_add_actual": 80.03,
+      "adds_fired": 104,
+      "later_half_calendar": -19.19,
+      "unkeyed": 3
+     },
+     {
+      "net": 1.61,
+      "trades": 266,
+      "dd_cc": 85.45,
+      "dd_daily_sampled": 77.94,
+      "mtm_main_only_proxy": 89.69,
+      "exp_main": 873.89,
+      "exp_add_permitted": 434.61,
+      "exp_add_actual": 76.85,
+      "adds_fired": 100,
+      "later_half_calendar": -59.12,
+      "unkeyed": 3
+     },
+     {
+      "net": -10.19,
+      "trades": 266,
+      "dd_cc": 77.39,
+      "dd_daily_sampled": 72.36,
+      "mtm_main_only_proxy": 81.65,
+      "exp_main": 868.62,
+      "exp_add_permitted": 451.29,
+      "exp_add_actual": 77.82,
+      "adds_fired": 103,
+      "later_half_calendar": -42.93,
+      "unkeyed": 3
+     },
+     {
+      "net": 6.75,
+      "trades": 268,
+      "dd_cc": 74.34,
+      "dd_daily_sampled": 69.16,
+      "mtm_main_only_proxy": 74.34,
+      "exp_main": 861.36,
+      "exp_add_permitted": 446.96,
+      "exp_add_actual": 77.42,
+      "adds_fired": 109,
+      "later_half_calendar": -49.63,
+      "unkeyed": 5
+     }
+    ]
+   }
+  },
+  "arm main-only": {
+   "net": 48.41,
+   "trades": 266,
+   "dd_cc": 60.93,
+   "dd_daily_sampled": 52.13,
+   "mtm_main_only_proxy": 60.91,
+   "exp_main": 864.24,
+   "exp_add_permitted": 494.03,
+   "exp_add_actual": 79.44,
+   "adds_fired": 107,
+   "later_half_calendar": -33.13,
+   "cc_ratio": 0.713,
+   "bootstrap": {
+    "5": {
+     "cc_ratio_ci90": [
+      0.501,
+      0.938
+     ],
+     "net_diff_ci90": [
+      3.09,
+      75.01
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "3": {
+     "cc_ratio_ci90": [
+      0.518,
+      0.945
+     ],
+     "net_diff_ci90": [
+      -1.78,
+      80.1
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    },
+    "10": {
+     "cc_ratio_ci90": [
+      0.491,
+      0.898
+     ],
+     "net_diff_ci90": [
+      6.37,
+      81.03
+     ],
+     "resamples": 3000,
+     "degenerate": 0,
+     "label": "conditional development diagnostic (resampled path returns; policy not rerun; no selection correction)"
+    }
+   },
+   "power": {
+    "5": {
+     "days": 42,
+     "blocks": 8,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.491,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.515,
+      "12": 1.072,
+      "24": 0.758
+     },
+     "label": "approximate planning diagnostic from 8 historical blocks"
+    },
+    "3": {
+     "days": 42,
+     "blocks": 14,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.941,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.973,
+      "12": 1.395,
+      "24": 0.987
+     },
+     "label": "approximate planning diagnostic from 14 historical blocks"
+    },
+    "10": {
+     "days": 42,
+     "blocks": 4,
+     "mean_daily_diff": 0.954,
+     "sd_block_means": 1.351,
+     "sd_daily_iid_only": 4.398,
+     "detectable_daily_diff_at_blocks": {
+      "6": 1.373,
+      "12": 0.971,
+      "24": 0.687
+     },
+     "label": "approximate planning diagnostic from 4 historical blocks"
+    }
+   }
+  }
+ }
+}
