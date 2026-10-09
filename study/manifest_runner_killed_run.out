@@ -25,8 +25,3 @@ u224016179         valere_cap3 drag 0.00 A | base net   62.73 dd  73.51 | primar
 bos                special_10  drag 0.00 A | base net   78.24 dd 118.75 | primary net   65.23 dd 118.16 ratio 0.995 | cut main 138.70 adds  35.84 | k=2 beats net 1/2 dd 0/2 | unkeyed [27, 61]
 reference_uncapped reference   drag 0.00 A | base net   53.06 dd  91.16 | primary net   54.12 dd  74.57 ratio 0.818 | cut main  92.95 adds   0.00 | k=6 beats net 4/6 dd 6/6 | unkeyed [0, 0, 0, 0, 0, 0]
 infinity           valere      drag 0.35 B | base net  -21.67 dd  60.69 | primary net    4.07 dd  56.05 ratio 0.924 | cut main -54.51 adds  60.78 | k=2 beats net 1/2 dd 1/2 | unkeyed [9, 6]
-u224016179         valere_cap3 drag 0.35 B | base net  -30.52 dd  65.23 | primary net  -22.38 dd  55.19 ratio 0.846 | cut main 107.65 adds 104.08 | k=6 beats net 5/6 dd 6/6 | unkeyed [4, 6, 5, 5, 7, 9]
-bos                special_10  drag 0.35 B | base net  -65.01 dd 130.47 | primary net  -12.49 dd  92.00 ratio 0.705 | cut main 124.95 adds  53.55 | k=6 beats net 6/6 dd 6/6 | unkeyed [84, 70, 7, 71, 6, 74]
-reference_uncapped reference   drag 0.35 B | base net  -51.59 dd 120.00 | primary net  -25.58 dd  84.46 ratio 0.704 | cut main 163.77 adds   0.00 | k=4 beats net 4/4 dd 4/4 | unkeyed [0, 0, 0, 0]
-
-manifest updated

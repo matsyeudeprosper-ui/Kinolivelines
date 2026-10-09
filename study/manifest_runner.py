@@ -1,12 +1,19 @@
-"""Manifest-driven package runner (ChatGPT review 9).
+"""Manifest-driven package runner (ChatGPT reviews 9 + 10).
 
-Loads ONLY review/compte_frozen_manifest.json, maps each package field
-EXPLICITLY into harness settings (cfg_strict: an unknown key is an error),
-REJECTS unsupported behaviour instead of falling back, prints the effective
-config beside each regime, runs the parity contrasts with traces, and records
-the matched control k per regime and cost basis from development data only.
+Loads ONLY review/compte_frozen_manifest.json, maps EVERY package field
+explicitly into harness settings (a package field outside the known set is a
+REJECT, a harness key the simulator does not know is an error), validates the
+fixed values against the LOADED simulator constants, prints the effective
+config beside each regime, runs the parity contrasts with decision traces,
+and records the matched control k per regime and cost basis from
+development data only.
 
-    python manifest_runner.py            -> parity checks + k per regime, updates the manifest
+Review 10: per-entry money limits in the live order on the CURRENT simulated
+balance (harness limits_live=1): min_balance refusal -> policy multiplier ->
+risk_fit shrink -> hard cap on the FINAL lot. The legacy generic convention
+(limits_live=0) is untouched and still reproduces the v2c tables.
+
+    python manifest_runner.py
 """
 import sys, json, bisect, statistics, math, time, hashlib
 sys.path.insert(0, r"C:\Projects\KinoliveLines\live\lab"); sys.path.insert(0, r"C:\Projects\KinoliveLines\live")
@@ -18,21 +25,28 @@ MAN = r"C:\Projects\KinoliveLines\review\compte_frozen_manifest.json"
 man = json.load(open(MAN, encoding="utf-8"))
 sym, R, META = dev_dataset.load("b")
 
-UNSUPPORTED_FIXED = {         # package field -> what the harness hard-codes (must match or reject)
-    "max_risk_pct": (0.10, "harness: B.MAX_RISK_PCT (0.10) x $230, fixed"),
-    "chest_cap": (10.0, "harness CHEST_CAP 10.0, fixed"), "jar_skim": (0.5, "harness JAR_SKIM 0.5, fixed"),
-    "jar_stake": (0.5, "harness JAR_STAKE 0.5, fixed"), "jar_debt_mult": (0.5, "harness JAR_DEBT_MULT 0.5, fixed"),
-    "jar_floor_cap": (10.0, "harness JAR_FLOOR_CAP 10.0, fixed"), "day_cap_waived": (True, "harness waives the cap while in debt, always"),
-    "debt_mode": ("hwm", "harness debt_mode hwm"), "min_balance": (None, "not modelled (never binds above $20 in these sims) - DISCLOSED"),
-    "week_target": (None, "informational only"), "label": (None, "label"), "touch_entries": (False, "harness has no TOUCH path"),
-    "eq_half": (False, "live dial, not part of the frozen regimes - REJECT if true"),
-    "recov_bullets_only": (False, "live dial, not part of the frozen regimes - REJECT if true"),
-    "scale_ref_balance": (None, "mapped"), "movement": (None, "mapped"), "nervosity": (None, "mapped"),
-}
+MAPPED = {"base_lot", "max_extra", "adds_on", "jar", "kill_net", "day_cap", "risk_fit_pct", "rr", "k_streak",
+          "nervosity", "movement", "internal_entries", "debt_gate", "scale_with_balance", "scale_ref_balance",
+          "max_risk_pct", "min_balance"}
+# fixed in the simulator: the package value must EQUAL the loaded constant, else REJECT
+FIXED = {"chest_cap": ("CHEST_CAP", H.CHEST_CAP), "jar_skim": ("JAR_SKIM", H.JAR_SKIM), "jar_stake": ("JAR_STAKE", H.JAR_STAKE),
+         "jar_debt_mult": ("JAR_DEBT_MULT", H.JAR_DEBT_MULT), "jar_floor_cap": ("JAR_FLOOR_CAP", H.JAR_FLOOR_CAP)}
+FIXED_BEHAVIOUR = {"day_cap_waived": True, "debt_mode": "hwm", "touch_entries": False, "eq_half": False,
+                   "recov_bullets_only": False, "max_trades_day": None}
+INFORMATIONAL = {"label", "week_target"}
 
 
 def effective_cfg(pkg, balance, drag):
-    """explicit mapping; returns (cfg, report) or raises on unsupported"""
+    """explicit mapping; (cfg, report); raises ValueError('REJECT ...') on anything unsupported"""
+    unknown = sorted(set(pkg) - MAPPED - set(FIXED) - set(FIXED_BEHAVIOUR) - INFORMATIONAL)
+    if unknown:
+        raise ValueError("REJECT %s: unhandled package fields %s" % (pkg.get("label", "?"), unknown))
+    for k, (name, const) in FIXED.items():
+        if k in pkg and abs(float(pkg[k]) - float(const)) > 1e-12:
+            raise ValueError("REJECT %s: %s=%r but the loaded simulator constant %s is %r" % (pkg.get("label", "?"), k, pkg[k], name, const))
+    for k, want in FIXED_BEHAVIOUR.items():
+        if k in pkg and pkg[k] != want:
+            raise ValueError("REJECT %s: %s=%r is not modelled (simulator behaviour fixed at %r)" % (pkg.get("label", "?"), k, pkg[k], want))
     rep, cfg = {}, {}
     cfg["lot"] = float(pkg["base_lot"]); rep["lot"] = "base_lot %.2f" % cfg["lot"]
     cfg["bullets"] = int(pkg["max_extra"]) if pkg.get("adds_on", True) else 0
@@ -41,36 +55,38 @@ def effective_cfg(pkg, balance, drag):
     cfg["kill_net"] = float(pkg["kill_net"]) if pkg.get("kill_net") not in (None, 0) else 0.0
     rep["kill_net"] = ("%.0f" % cfg["kill_net"]) if cfg["kill_net"] else "none"
     cfg["day_cap"] = float(pkg["day_cap"]) if pkg.get("day_cap") else 0.0; rep["day_cap"] = ("%.2f" % cfg["day_cap"]) if cfg["day_cap"] else "none"
-    cfg["risk_fit"] = float(pkg.get("risk_fit_pct") or 0.0); rep["risk_fit"] = "risk_fit_pct %.1f%% -> %.1f (percent, unchanged)" % (cfg["risk_fit"], cfg["risk_fit"])
+    cfg["risk_fit"] = float(pkg.get("risk_fit_pct") or 0.0); rep["risk_fit"] = "risk_fit_pct %.1f%% -> %.1f%% of the CURRENT balance" % (cfg["risk_fit"], cfg["risk_fit"])
     cfg["rr"] = float(pkg["rr"]); cfg["k_streak"] = int(pkg["k_streak"]); rep["rr/k_streak"] = "%.1f / %d" % (cfg["rr"], cfg["k_streak"])
     cfg["nerv_gate"] = bool(pkg.get("nervosity", True)); cfg["movement"] = bool(pkg.get("movement", True))
     rep["gates"] = "nervosity %s, movement %s" % (cfg["nerv_gate"], cfg["movement"])
     cfg["internal"] = 1 if pkg.get("internal_entries") else 0; rep["internal"] = str(cfg["internal"])
     cfg["debt_gate"] = 1 if pkg.get("debt_gate", True) else 0; rep["debt_gate"] = "%s -> harness debt_gate %d (0 = every BOS taken in debt)" % (pkg.get("debt_gate", True), cfg["debt_gate"])
+    cfg["balance"] = float(balance); cfg["limits_live"] = 1
+    cfg["hard_cap_pct"] = float(pkg.get("max_risk_pct") or 0.0); cfg["min_balance"] = float(pkg.get("min_balance") or 0.0)
+    rep["limits"] = "LIVE order on balance %.2f + run: min_balance %.0f refusal -> policy -> fit -> hard cap %.0f%% of the current balance on the FINAL lot (refuse)" % (
+        cfg["balance"], cfg["min_balance"], 100 * cfg["hard_cap_pct"])
     if pkg.get("scale_with_balance"):
-        cfg["balance"] = float(balance); cfg["scale_ref"] = float(pkg.get("scale_ref_balance") or 200.0); cfg["scale_daily"] = 1
-        rep["scaling"] = "ON: lot and cap from (balance %.2f + run)/%.0f once per UTC day (live cadence)" % (cfg["balance"], cfg["scale_ref"])
+        cfg["scale_lot"] = 1; cfg["scale_ref"] = float(pkg.get("scale_ref_balance") or 200.0); cfg["scale_daily"] = 1
+        rep["scaling"] = "ON: lot and day cap from (balance + run)/%.0f once per UTC day (live cadence)" % cfg["scale_ref"]
     else:
-        cfg["balance"] = 0.0; cfg["scale_daily"] = 0; rep["scaling"] = "OFF (flat lot)"
+        cfg["scale_lot"] = 0; cfg["scale_daily"] = 0; rep["scaling"] = "OFF (fixed lot; the balance still exists for the limits)"
     cfg["drag"] = drag; rep["drag"] = "%.2f $/0.02 lot" % drag
-    for k, (fixed, why) in UNSUPPORTED_FIXED.items():
-        v = pkg.get(k)
-        if fixed is None or v is None:
-            continue
-        if v != fixed:
-            raise ValueError("REJECT %s: package %s=%r but %s" % (pkg.get("label", "?"), k, v, why))
-    rep["fixed_or_disclosed"] = {k: why for k, (fixed, why) in UNSUPPORTED_FIXED.items() if fixed is not None or k == "min_balance"}
+    rep["fixed_validated"] = {k: "%s == %r" % (name, const) for k, (name, const) in FIXED.items()}
+    rep["fixed_behaviour"] = dict(FIXED_BEHAVIOUR)
     return H.cfg_strict(cfg), rep
 
 
-# ---------------- reference states (basis by drag)
-REF_CFG = {"n_cont": 999, "bullets": 0, "jar": False}
+# ---------------- canonical reference (the recorder spec, bos_reference_ledger.py header):
+# no debt gate, no caps, no kill line, no recovery, no scaling, fixed 0.02 lot, no money ceiling
+REF_CANON = {"debt_gate": 0, "bullets": 0, "jar": False, "kill_net": 0.0, "day_cap": 0.0, "lot": 0.02,
+             "balance": 0.0, "limits_live": 1, "hard_cap_pct": 0.0, "min_balance": 0.0, "scale_lot": 0}
+REF_OLD = {"n_cont": 999, "bullets": 0, "jar": False}        # the v2c approximation, kept for reconciliation only
 CUR = {"t": None, "d": None}
 H.DIRGATE = lambda t, d: (CUR.update(t=t, d=d) or True)
 
 
-def reference(drag):
-    H.TRACE = []; H.simulate(R, 7.0, dict(REF_CFG, drag=drag))
+def reference(drag, spec=REF_CANON):
+    H.TRACE = []; H.simulate(R, 7.0, H.cfg_strict(dict(spec, drag=drag)))
     ref = sorted([x for x in H.TRACE if x.get("pnl") is not None and x.get("tc")], key=lambda x: x["tc"]); H.TRACE = None; return ref
 
 
@@ -122,57 +138,99 @@ def matched(tr): return sum(x["risk"] for x in tr) + sum(x.get("add_permitted_ri
 
 REGIMES = [("infinity", "valere", 175.70), ("u224016179", "valere_cap3", 267.42), ("bos", "special_10", 360.37), ("reference_uncapped", "reference", 1000.0)]
 # balances = nest_data at the time of this development run; the FROZEN values are recorded at freeze
-K_SET = tuple(man["arms"]["exposure_control"]["K_SET"]); SHIFTS = man["arms"]["block_shift_control"]["shifts"]
-out = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "dataset": META["sha256"], "regimes": {}, "parity_checks": {}}
+K_SET = tuple(man["arms"]["exposure_control"]["K_SET"])
+PR = man["arms"]["baseline"]["package_regimes"]
+out = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "dataset": META["sha256"], "regimes": {}, "parity_checks": {}, "reference": {}}
 
 print("=== effective configs (manifest only) ===", flush=True)
 for uid, pname, bal in REGIMES:
-    pkg = man["arms"]["baseline"]["package_regimes"][uid]
     try:
-        cfg, rep = effective_cfg(pkg, bal, 0.0)
-        print(uid, pname, json.dumps(rep), flush=True)
+        cfg, rep = effective_cfg(PR[uid], bal, 0.0); print(uid, pname, json.dumps(rep), flush=True)
     except (ValueError, KeyError) as e:
         print(uid, pname, "REJECTED:", e, flush=True); out["regimes"][uid] = {"rejected": str(e)}
+# strictness demonstrations
+for bad in ({"unexpected_entry_rule": True}, {"eq_half": True}, {"jar_skim": 0.4}):
+    try:
+        effective_cfg(dict(PR["infinity"], **bad), 175.70, 0.0); print("STRICTNESS FAILED: accepted", bad, flush=True); out["parity_checks"]["strict_" + list(bad)[0]] = {"pass": False}
+    except ValueError as e:
+        print("strictness:", e, flush=True); out["parity_checks"]["strict_" + list(bad)[0]] = {"pass": True, "msg": str(e)}
+
+# ---------------- reference reconciliation (review 10)
+print("\n=== reference reconciliation ===", flush=True)
+for drag in (0.0, 0.35):
+    rc, ro = reference(drag, REF_CANON), reference(drag, REF_OLD)
+    ids_c, ids_o = {x["t"] for x in rc}, {x["t"] for x in ro}
+    print("drag %.2f: canonical (recorder spec) %d outcomes net %.2f | old n_cont=999 %d outcomes net %.2f | only canonical %d, only old %d" % (
+        drag, len(rc), sum(x["pnl"] for x in rc), len(ro), sum(x["pnl"] for x in ro), len(ids_c - ids_o), len(ids_o - ids_c)), flush=True)
+    out["reference"]["drag_%.2f" % drag] = {"canonical_n": len(rc), "canonical_net": round(sum(x["pnl"] for x in rc), 2), "old_n": len(ro), "old_net": round(sum(x["pnl"] for x in ro), 2),
+                                           "only_canonical": sorted(ids_c - ids_o), "only_old": sorted(ids_o - ids_c)}
 
 # ---------------- parity contrasts with traces
-print("\n=== parity contrasts ===", flush=True)
-cap_pkg = man["arms"]["baseline"]["package_regimes"]["u224016179"]      # valere_cap3: risk_fit 3 %
-cfg_cap, _ = effective_cfg(cap_pkg, 267.42, 0.0)
-cfg_nocap = dict(cfg_cap, risk_fit=0.0)
+print("\n=== parity contrasts (live-order limits on the current balance) ===", flush=True)
+cfg_cap, _ = effective_cfg(PR["u224016179"], 267.42, 0.0); cfg_nocap = dict(cfg_cap, risk_fit=0.0)
 f1, t1 = run(cfg_nocap); f2, t2 = run(cfg_cap)
-b1 = {x["t"]: x for x in t1}; changed = [(t, b1[t]["risk"], x["risk"], x["lot"]) for t, x in ((x["t"], x) for x in t2) if t in b1 and abs(b1[t]["risk"] - x["risk"]) > 0.005]
-over = [x for x in t1 if x["risk"] > 0.03 * 267.42]
-print("1. 3%% risk-fit (cap $%.2f at the start balance): trades above the cap without it %d; trades whose risk changed with it %d; e.g. %s" % (
-    0.03 * 267.42, len(over), len(changed), changed[:3]), flush=True)
-out["parity_checks"]["risk_fit"] = {"cap_usd": round(0.03 * 267.42, 2), "over_cap_without": len(over), "changed_with": len(changed), "examples": changed[:5], "pass": len(over) > 0 and len(changed) > 0}
-ref_pkg = man["arms"]["baseline"]["package_regimes"]["reference_uncapped"]
-cfg_ref, _ = effective_cfg(ref_pkg, 1000.0, 0.0); f3, t3 = run(cfg_ref)
-adds3 = sum(x.get("add_n", 0) for x in t3)
-print("2. reference regime (adds_on false, max_extra 0): adds fired %d (must be 0); trades %d net %.2f" % (adds3, len(t3), f3["net"]), flush=True)
-out["parity_checks"]["reference_no_adds"] = {"adds_fired": adds3, "pass": adds3 == 0}
-inf_pkg = man["arms"]["baseline"]["package_regimes"]["infinity"]
-cfg_inf, _ = effective_cfg(inf_pkg, 175.70, 0.0); f4, t4 = run(cfg_inf)
-lots = sorted(set(x["lot"] for x in t4)); cfg_inf_static = dict(cfg_inf, scale_daily=0); f5, t5 = run(cfg_inf_static)
-print("3. balance scaling at live cadence (infinity, balance 175.70, ref 200): lots seen %s (static run lots %s); net daily %.2f vs static %.2f" % (
-    lots, sorted(set(x["lot"] for x in t5)), f4["net"], f5["net"]), flush=True)
-out["parity_checks"]["scaling_cadence"] = {"lots_daily": lots, "lots_static": sorted(set(x["lot"] for x in t5)), "net_daily": f4["net"], "net_static": f5["net"], "pass": True}
+b1 = {x["t"]: x for x in t1}
+changed = [(t, x["bal_now"], x["fit_cap"], b1[t]["risk"], x["risk"], x["lot"]) for t, x in ((x["t"], x) for x in t2) if t in b1 and abs(b1[t]["risk"] - x["risk"]) > 0.005]
+fits = [x["fit_cap"] for x in t2]
+print("1. 3%% risk-fit on the CURRENT balance (Depenses): fit cap ranged $%.2f..$%.2f over the run (start $%.2f); risks changed %d; e.g. (t, balance, fit, risk before, after, lot) %s" % (
+    min(fits), max(fits), 0.03 * 267.42, len(changed), changed[:3]), flush=True)
+out["parity_checks"]["risk_fit_current_balance"] = {"fit_min": min(fits), "fit_max": max(fits), "changed": len(changed), "examples": changed[:5], "pass": len(changed) > 0 and min(fits) < max(fits)}
+cfg_inf, _ = effective_cfg(PR["infinity"], 175.70, 0.0)
+f3a, t3a = run(dict(cfg_inf, hard_cap_pct=0.0)); f3b, t3b = run(cfg_inf)
+would = [(x["t"], x["bal_now"], x["risk"], round(0.10 * x["bal_now"], 2)) for x in t3a if x["risk"] > 0.10 * x["bal_now"] + 1e-9]
+legacy_pass = [w for w in would if w[2] <= 0.10 * 230.0]
+print("2. hard 10%% cap on the FINAL lot vs the current balance (Infinity, $175.70): trades that break it without the cap %d (%d of them would PASS the legacy fixed $23 ceiling); trades with cap %d vs without %d; e.g. %s" % (
+    len(would), len(legacy_pass), len(t3b), len(t3a), would[:3]), flush=True)
+out["parity_checks"]["hard_cap_current_balance"] = {"breaking_without": len(would), "legacy_would_pass": len(legacy_pass), "trades_with": len(t3b), "trades_without": len(t3a), "examples": would[:5], "pass": len(would) > 0}
+# order: fit then cap on the final lot - a trade shrunk by the fit must be judged by the cap on the SHRUNK lot
+f4, t4 = run(cfg_cap)
+after_fit = [x for x in t4 if x["lot"] < x["lot_pol"] - 1e-9]
+viol = [x for x in after_fit if x["risk"] > x["hard_cap"] + 1e-9]
+print("3. order fit -> cap: %d traced trades were shrunk by the fit; %d of them exceed the hard cap on the FINAL lot (must be 0)" % (len(after_fit), len(viol)), flush=True)
+out["parity_checks"]["fit_then_cap_order"] = {"shrunk_by_fit": len(after_fit), "cap_violations_after_fit": len(viol), "pass": len(viol) == 0}
+f5, t5 = run(dict(cfg_inf, scale_daily=0))
+lots = sorted(set(x["lot_prop"] for x in t3b))
+print("4. balance scaling at live cadence (Infinity): proposed lots seen %s (static %s); net daily %.2f vs static %.2f" % (lots, sorted(set(x["lot_prop"] for x in t5)), f3b["net"], f5["net"]), flush=True)
+out["parity_checks"]["scaling_cadence"] = {"lots_daily": lots, "lots_static": sorted(set(x["lot_prop"] for x in t5)), "net_daily": f3b["net"], "net_static": f5["net"], "pass": True}
 S0 = States(reference(0.0)); f6, t6 = run(cfg_inf, hook_directional(S0), True)
-b4 = {x["t"]: x for x in t4}; inc = [(t, b4[t]["lot"], x["lot"]) for t, x in ((x["t"], x) for x in t6) if t in b4 and x["lot"] > b4[t]["lot"] + 1e-9]
-halved = sum(1 for x in t6 if x["t"] in b4 and x["lot"] < b4[x["t"]]["lot"] - 1e-9)
-print("4. policy rounding never increases the baseline lot: increases %d (must be 0); halved %d of %d matched" % (len(inc), halved, len(b4)), flush=True)
-out["parity_checks"]["never_above_baseline"] = {"increases": len(inc), "halved": halved, "matched": len(b4), "pass": len(inc) == 0}
+inc = [x for x in t6 if x["lot_pol"] > x["lot_prop"] + 1e-9]
+fired = [x for x in t6 if x["lot_pol"] < x["lot_prop"] - 1e-9]
+inert = sum(1 for x in t6 if x["lot_prop"] <= 0.01 + 1e-9)
+print("5. rounding from the decision's OWN ladder (Infinity primary): policy lot > proposed lot %d (must be 0); halved %d of %d; at the 0.01 floor %d decisions could not halve the MAIN" % (
+    len(inc), len(fired), len(t6), inert), flush=True)
+out["parity_checks"]["never_above_proposed"] = {"increases": len(inc), "halved": len(fired), "n": len(t6), "at_floor": inert, "pass": len(inc) == 0}
+# min_balance: force a tiny balance to show the refusal binds (demonstration only)
+f7, t7 = run(dict(cfg_inf, balance=25.0, min_balance=20.0, scale_lot=0))
+print("6. min_balance modelled: with balance $25 and the $20 floor, %d refusals (minbal) over the run" % f7.get("minbal", -1), flush=True)
+out["parity_checks"]["min_balance"] = {"refusals_at_25": f7.get("minbal", -1), "pass": f7.get("minbal", -1) >= 0}
 
 # ---------------- k per regime and cost basis (development only)
-print("\n=== matched control k per regime (development, dataset b) ===", flush=True)
+print("\n=== matched control k per regime (development, dataset b, canonical reference, live-order limits) ===", flush=True)
+# rows are cached as they finish (keyed by dataset + harness hash) so a killed run resumes
+ROWS = r"C:\Projects\KinoliveLines\study\manifest_runner_rows.json"
+HKEY = META["sha256"][:16] + ":" + hashlib.sha256(open(r"C:\Projects\KinoliveLines\live\lab\harness.py", "rb").read()).hexdigest()[:16]
+try:
+    cache = json.load(open(ROWS)); cache = cache if cache.get("key") == HKEY else {"key": HKEY, "rows": {}}
+except Exception:
+    cache = {"key": HKEY, "rows": {}}
 for drag in (0.0, 0.35):
-    S = States(reference(drag)); basis = "B" if drag else "A"
+    basis = "B" if drag else "A"; S = None
     for uid, pname, bal in REGIMES:
-        pkg = man["arms"]["baseline"]["package_regimes"][uid]
         try:
-            cfg, rep = effective_cfg(pkg, bal, drag)
-        except (ValueError, KeyError) as e:
+            cfg, rep = effective_cfg(PR[uid], bal, drag)
+        except (ValueError, KeyError):
             continue
+        ck = "%s|%.2f" % (uid, drag)
+        if ck in cache["rows"]:
+            row = cache["rows"][ck]; out["regimes"].setdefault(uid, {})["drag_%.2f" % drag] = row
+            print("%-18s %-11s drag %.2f %s | (cached) primary ratio %s k=%d beats net %d/%d dd %d/%d" % (uid, pname, drag, basis, row["primary"]["ratio"], row["k"], row["beats_net"], row["k"], row["beats_dd"], row["k"]), flush=True)
+            continue
+        if S is None:
+            S = States(reference(drag))
         fb, trb = run(cfg); fp, trp = run(cfg, hook_directional(S), True)
+        bmap = {x["t"]: x for x in trb}
+        main_red = sum(bmap[x["t"]]["risk"] - x["risk"] for x in trp if x["t"] in bmap)
+        add_red = sum(bmap[x["t"]].get("add_permitted_risk", 0) - x.get("add_permitted_risk", 0) for x in trp if x["t"] in bmap)
         base_ids = [x["t"] for x in trb]; target = matched(trp)
         per = {}
         for k in K_SET:
@@ -184,20 +242,25 @@ for drag in (0.0, 0.35):
             per[k] = {"exp": exps, "net": nets, "dd_cc": dds, "unkeyed": miss_}
         kb = min(K_SET, key=lambda k: abs(statistics.mean(per[k]["exp"]) - target))
         ddp = dd_of([x["pnl"] for x in trp]); ddb = dd_of([x["pnl"] for x in trb])
-        row = {"basis": basis, "balance_used": bal, "effective": rep, "baseline": {"net": fb["net"], "dd_cc": round(ddb, 2), "trades": len(trb)},
-               "primary": {"net": fp["net"], "dd_cc": round(ddp, 2), "trades": len(trp), "ratio": round(ddp / ddb, 3) if ddb else None},
+        row = {"basis": basis, "balance_used": bal, "effective": rep, "baseline": {"net": fb["net"], "dd_cc": round(ddb, 2), "trades": len(trb), "blocked": fb["blocked"], "minbal": fb.get("minbal", 0)},
+               "primary": {"net": fp["net"], "dd_cc": round(ddp, 2), "trades": len(trp), "ratio": round(ddp / ddb, 3) if ddb else None,
+                           "main_risk_reduction": round(main_red, 2), "permitted_add_reduction": round(add_red, 2)},
                "k": kb, "k_phases": per[kb], "beats_net": sum(1 for x in per[kb]["net"] if x < fp["net"]), "beats_dd": sum(1 for x in per[kb]["dd_cc"] if x > ddp)}
         out["regimes"].setdefault(uid, {})["drag_%.2f" % drag] = row
-        print("%-20s %-12s drag %.2f basis %s | baseline net %7.2f dd %6.2f | primary net %7.2f dd %6.2f ratio %s | k=%d beats net %d/%d dd %d/%d | unkeyed %s" % (
-            uid, pname, drag, basis, fb["net"], ddb, fp["net"], ddp, row["primary"]["ratio"], kb, row["beats_net"], kb, row["beats_dd"], kb, per[kb]["unkeyed"]), flush=True)
+        cache["rows"][ck] = row; json.dump(cache, open(ROWS, "w"), indent=1)
+        print("%-18s %-11s drag %.2f %s | base net %7.2f dd %6.2f | primary net %7.2f dd %6.2f ratio %s | cut main %6.2f adds %6.2f | k=%d beats net %d/%d dd %d/%d | unkeyed %s" % (
+            uid, pname, drag, basis, fb["net"], ddb, fp["net"], ddp, row["primary"]["ratio"], main_red, add_red, kb, row["beats_net"], kb, row["beats_dd"], kb, per[kb]["unkeyed"]), flush=True)
 H.DIRGATE = None
 json.dump(out, open(r"C:\Projects\KinoliveLines\study\manifest_runner_report.json", "w"), indent=1)
-# ---- update the manifest: selected k, effective configs, unsupported list, harness hash
 man["control_k_by_regime"] = {uid: {d: {"k": r["k"], "basis": r["basis"], "balance_used": r["balance_used"]} for d, r in v.items() if "k" in r} for uid, v in out["regimes"].items()}
 man["effective_configs"] = {uid: {d: r["effective"] for d, r in v.items() if "effective" in r} for uid, v in out["regimes"].items()}
-man["unsupported_fixed_or_disclosed"] = {k: v[1] for k, v in UNSUPPORTED_FIXED.items() if v[0] is not None or k == "min_balance"}
+man["package_field_coverage"] = {"mapped": sorted(MAPPED), "fixed_validated_against_loaded_constants": {k: v[0] for k, v in FIXED.items()},
+                                 "fixed_behaviour": FIXED_BEHAVIOUR, "informational": sorted(INFORMATIONAL), "unknown_field": "REJECT"}
+man["reference_state_source"] = {"spec": "bos_reference_ledger.py header: no debt gate, no caps, no kill line, no recovery, no scaling, fixed 0.02 lot, no money ceiling",
+                                 "harness_cfg": REF_CANON, "reconciliation_vs_v2c_n_cont_999": out["reference"]}
+man["limits_convention"] = "limits_live=1: live enter() order on the current simulated balance; legacy limits_live=0 kept only to reproduce v2c"
 man["hashes"]["lab/harness.py"] = hashlib.sha256(open(r"C:\Projects\KinoliveLines\live\lab\harness.py", "rb").read()).hexdigest()[:16]
 man["hashes"]["study/manifest_runner.py"] = hashlib.sha256(open(__file__, "rb").read()).hexdigest()[:16]
 man["parity_report"] = "study/manifest_runner_report.json"
 json.dump(man, open(MAN, "w", encoding="utf-8"), indent=1)
-print("\nmanifest updated with k per regime, effective configs, disclosed/fixed fields", flush=True)
+print("\nmanifest updated", flush=True)

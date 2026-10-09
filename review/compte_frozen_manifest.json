@@ -7,11 +7,11 @@
   "structure_bos_bot.py": "737176d37d79f435",
   "owl_chart_feed.py": "44fa43a5ef0550ff",
   "owl_package.py": "14a105bc9373a087",
-  "lab/harness.py": "47eff239e697beea",
+  "lab/harness.py": "db49142d2d9bedcb",
   "lab/compte_controller.py": "dc0e3ae0d748bc31",
   "reference_ledger_lib.py": "b95a48add2da165e",
   "bos_reference_ledger.py": "618637e4dabbfdf2",
-  "study/manifest_runner.py": "d35b0a11e65c5bb1"
+  "study/manifest_runner.py": "d92f3f6b1bff127a"
  },
  "datasets": {
   "development_original": {
@@ -279,36 +279,36 @@
   },
   "u224016179": {
    "drag_0.00": {
-    "k": 4,
+    "k": 2,
     "basis": "A",
     "balance_used": 267.42
    },
    "drag_0.35": {
-    "k": 2,
+    "k": 6,
     "basis": "B",
     "balance_used": 267.42
    }
   },
   "bos": {
    "drag_0.00": {
-    "k": 4,
+    "k": 2,
     "basis": "A",
     "balance_used": 360.37
    },
    "drag_0.35": {
-    "k": 8,
+    "k": 6,
     "basis": "B",
     "balance_used": 360.37
    }
   },
   "reference_uncapped": {
    "drag_0.00": {
-    "k": 4,
+    "k": 6,
     "basis": "A",
     "balance_used": 1000.0
    },
    "drag_0.35": {
-    "k": 3,
+    "k": 4,
     "basis": "B",
     "balance_used": 1000.0
    }
@@ -322,26 +322,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 175.70 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.00 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    },
    "drag_0.35": {
@@ -350,26 +352,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 175.70 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.35 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    }
   },
@@ -380,26 +384,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 3.0% -> 3.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 267.42 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.00 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    },
    "drag_0.35": {
@@ -408,26 +414,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 3.0% -> 3.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 267.42 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.35 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    }
   },
@@ -438,26 +446,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 360.37 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.00 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    },
    "drag_0.35": {
@@ -466,26 +476,28 @@
     "jar": "True",
     "kill_net": "-60",
     "day_cap": "3.00",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
-    "scaling": "ON: lot and cap from (balance 360.37 + run)/200 once per UTC day (live cadence)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
     "drag": "0.35 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    }
   },
@@ -496,26 +508,28 @@
     "jar": "False",
     "kill_net": "-100000",
     "day_cap": "none",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
-    "scaling": "OFF (flat lot)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
     "drag": "0.00 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    },
    "drag_0.35": {
@@ -524,26 +538,28 @@
     "jar": "False",
     "kill_net": "-100000",
     "day_cap": "none",
-    "risk_fit": "risk_fit_pct 0.0% -> 0.0 (percent, unchanged)",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
     "rr/k_streak": "0.8 / 2",
     "gates": "nervosity False, movement True",
     "internal": "0",
     "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
-    "scaling": "OFF (flat lot)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
     "drag": "0.35 $/0.02 lot",
-    "fixed_or_disclosed": {
-     "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
-     "chest_cap": "harness CHEST_CAP 10.0, fixed",
-     "jar_skim": "harness JAR_SKIM 0.5, fixed",
-     "jar_stake": "harness JAR_STAKE 0.5, fixed",
-     "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
-     "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
-     "day_cap_waived": "harness waives the cap while in debt, always",
-     "debt_mode": "harness debt_mode hwm",
-     "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
-     "touch_entries": "harness has no TOUCH path",
-     "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
-     "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
     }
    }
   }
@@ -562,5 +578,85 @@
   "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
   "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
  },
- "parity_report": "study/manifest_runner_report.json"
+ "parity_report": "study/manifest_runner_report.json",
+ "package_field_coverage": {
+  "mapped": [
+   "adds_on",
+   "base_lot",
+   "day_cap",
+   "debt_gate",
+   "internal_entries",
+   "jar",
+   "k_streak",
+   "kill_net",
+   "max_extra",
+   "max_risk_pct",
+   "min_balance",
+   "movement",
+   "nervosity",
+   "risk_fit_pct",
+   "rr",
+   "scale_ref_balance",
+   "scale_with_balance"
+  ],
+  "fixed_validated_against_loaded_constants": {
+   "chest_cap": "CHEST_CAP",
+   "jar_skim": "JAR_SKIM",
+   "jar_stake": "JAR_STAKE",
+   "jar_debt_mult": "JAR_DEBT_MULT",
+   "jar_floor_cap": "JAR_FLOOR_CAP"
+  },
+  "fixed_behaviour": {
+   "day_cap_waived": true,
+   "debt_mode": "hwm",
+   "touch_entries": false,
+   "eq_half": false,
+   "recov_bullets_only": false,
+   "max_trades_day": null
+  },
+  "informational": [
+   "label",
+   "week_target"
+  ],
+  "unknown_field": "REJECT"
+ },
+ "reference_state_source": {
+  "spec": "bos_reference_ledger.py header: no debt gate, no caps, no kill line, no recovery, no scaling, fixed 0.02 lot, no money ceiling",
+  "harness_cfg": {
+   "debt_gate": 0,
+   "bullets": 0,
+   "jar": false,
+   "kill_net": 0.0,
+   "day_cap": 0.0,
+   "lot": 0.02,
+   "balance": 0.0,
+   "limits_live": 1,
+   "hard_cap_pct": 0.0,
+   "min_balance": 0.0,
+   "scale_lot": 0
+  },
+  "reconciliation_vs_v2c_n_cont_999": {
+   "drag_0.00": {
+    "canonical_n": 299,
+    "canonical_net": 53.05,
+    "old_n": 298,
+    "old_net": 34.35,
+    "only_canonical": [
+     1789130160
+    ],
+    "only_old": []
+   },
+   "drag_0.35": {
+    "canonical_n": 299,
+    "canonical_net": -51.6,
+    "old_n": 298,
+    "old_net": -69.95,
+    "only_canonical": [
+     1789130160
+    ],
+    "only_old": []
+   }
+  }
+ },
+ "limits_convention": "limits_live=1: live enter() order on the current simulated balance; legacy limits_live=0 kept only to reproduce v2c"
 }

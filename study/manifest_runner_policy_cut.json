@@ -1,0 +1,72 @@
+{
+ "infinity|0.00": {
+  "decisions": 193,
+  "policy_halved_main": 31,
+  "main_at_floor": 70,
+  "floor_with_add_budget": 33,
+  "main_cut_usd": 61.99,
+  "permitted_add_cut_usd": 41.24
+ },
+ "u224016179|0.00": {
+  "decisions": 199,
+  "policy_halved_main": 32,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 128.3,
+  "permitted_add_cut_usd": 41.24
+ },
+ "bos|0.00": {
+  "decisions": 186,
+  "policy_halved_main": 31,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 125.87,
+  "permitted_add_cut_usd": 41.24
+ },
+ "reference_uncapped|0.00": {
+  "decisions": 299,
+  "policy_halved_main": 41,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 92.93,
+  "permitted_add_cut_usd": 0
+ },
+ "infinity|0.35": {
+  "decisions": 207,
+  "policy_halved_main": 41,
+  "main_at_floor": 105,
+  "floor_with_add_budget": 70,
+  "main_cut_usd": 76.58,
+  "permitted_add_cut_usd": 49.52
+ },
+ "u224016179|0.35": {
+  "decisions": 256,
+  "policy_halved_main": 67,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 125.3,
+  "permitted_add_cut_usd": 104.14
+ },
+ "bos|0.35": {
+  "decisions": 225,
+  "policy_halved_main": 61,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 240.35,
+  "permitted_add_cut_usd": 92.88
+ },
+ "reference_uncapped|0.35": {
+  "decisions": 299,
+  "policy_halved_main": 72,
+  "main_at_floor": 0,
+  "floor_with_add_budget": 0,
+  "main_cut_usd": 163.73,
+  "permitted_add_cut_usd": 0
+ },
+ "special_hard_cap": {
+  "breaking_without": 0,
+  "trades_with": 185,
+  "trades_without": 185,
+  "examples": []
+ }
+}

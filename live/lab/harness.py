@@ -199,7 +199,19 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # 2026-10-09 (review 9): 0 = no debt system at all (the reference
             # package: structure_bos_bot DEBT_GATE false) - every BOS is
             # taken in debt, not only FLIP + n_cont continuations.
-            "debt_gate": 1}
+            "debt_gate": 1,
+            # 2026-10-09 (review 10): per-entry money limits the LIVE way.
+            #   limits_live 0 = legacy generic convention (fixed $23 hard
+            #     ceiling on the unadjusted lot BEFORE the fit; fit on the
+            #     starting balance) - kept for historical reconciliation;
+            #   limits_live 1 = structure_bos_bot.enter() order on the CURRENT
+            #     simulated balance (balance + realised run): min_balance
+            #     refusal, policy multiplier, risk_fit shrink, then the
+            #     hard_cap_pct ceiling against the FINAL lot (0 = none, the
+            #     reference recorder has no ceiling).
+            #   scale_lot 0 = a balance that is NOT used to scale the lot
+            #     (fixed-lot account) but still exists for the limits.
+            "limits_live": 0, "hard_cap_pct": 0.10, "min_balance": 0.0, "scale_lot": 1}
 # the live bot's own numbers, read from it so the two cannot drift apart
 JAR_SKIM = getattr(B, "JAR_SKIM", 0.50)
 JAR_STAKE = getattr(B, "JAR_STAKE", 0.50)
@@ -373,12 +385,16 @@ def simulate(R, spread, cfg):
     # the account's own size: same arithmetic as structure_bos_bot.day_roll()
     bal = float(c["balance"] or 0.0)
     ratio = (bal / float(c["scale_ref"])) if (bal > 0 and float(c["scale_ref"]) > 0) else 1.0
-    if bal > 0:
+    if not c.get("scale_lot", 1):
+        ratio = 1.0
+    if bal > 0 and c.get("scale_lot", 1):
         LOT = max(0.01, math.floor((LOT * ratio) / 0.01) * 0.01)
     day_cap_eff = float(c["day_cap"]) * ratio
     if c["cap_rr"] and day_cap_eff:
         rr = float(c["cap_rr"])     # a capped account's own target
     bal_ref = bal if bal > 0 else BAL0
+    LIM_LIVE = bool(c.get("limits_live", 0))
+    n_minbal = 0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     eng = B.Struct()
@@ -485,7 +501,7 @@ def simulate(R, spread, cfg):
             day_n = 0
             cap_h4 = None
             curve.append(run)
-            if c.get("scale_daily") and bal > 0 and float(c["scale_ref"]) > 0:
+            if c.get("scale_daily") and c.get("scale_lot", 1) and bal > 0 and float(c["scale_ref"]) > 0:
                 _ratio = (bal + run) / float(c["scale_ref"])
                 LOT = max(0.01, math.floor((LOT0 * _ratio) / 0.01) * 0.01)
                 day_cap_eff = float(c["day_cap"]) * _ratio
@@ -904,13 +920,22 @@ def simulate(R, spread, cfg):
             lot *= float(c["first_move_size"])
         eq_v = False
         eq_mult = 1.0
+        bal_now = bal + run            # the balance live reads at the entry decision
+        lot_prop = lot                 # the unadjusted (balance-scaled) lot
+        if LIM_LIVE and float(c["min_balance"]) and bal_now < float(c["min_balance"]):
+            n_minbal += 1
+            blocked += 1
+            continue
         if EQHOOK is not None:
             _m, eq_v = EQHOOK(eq_all)
             if _m != 1.0:
                 _l2 = max(0.01, math.floor(lot * _m / 0.01 + 1e-9) * 0.01)
                 eq_mult = _l2 / lot if lot else 1.0
                 lot = _l2
-        if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
+        lot_pol = lot                  # after the sizing policy, before the fit
+        if dist <= B.S_MIN_DIST:
+            continue
+        if not LIM_LIVE and dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
         if DEBT_MAIN_MULT is not None and debt_now > 0.5:
             lot = lot * float(DEBT_MAIN_MULT)
@@ -932,7 +957,7 @@ def simulate(R, spread, cfg):
         # cap the money by shrinking the lot, keeping the trade
         _fit = 0.0
         if c["risk_fit"]:
-            _fit = bal_ref * float(c["risk_fit"]) / 100.0
+            _fit = (bal_now if LIM_LIVE else bal_ref) * float(c["risk_fit"]) / 100.0
         if c["risk_fit_abs"]:
             _a = float(c["risk_fit_abs"])
             _fit = _a if not _fit else min(_fit, _a)
@@ -942,6 +967,14 @@ def simulate(R, spread, cfg):
                 blocked += 1
                 continue
             _risk = dist * lot
+        hard_cap = 0.0
+        if LIM_LIVE and float(c["hard_cap_pct"]) > 0:
+            # live order: the 10% ceiling is checked on the FINAL lot, against
+            # the current balance, and refuses the trade (no shrink)
+            hard_cap = float(c["hard_cap_pct"]) * bal_now
+            if _risk > hard_cap:
+                blocked += 1
+                continue
         # aim only for what is left of the day's cap, never past rr
         pos_rr = rr
         if c["cap_fit"] and day_cap_eff and debt_now <= 0.5:
@@ -965,6 +998,10 @@ def simulate(R, spread, cfg):
             # drifts from this line would quietly mismeasure the cap.
             cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),
                       "lot": round(lot, 2), "risk": round(dist * lot, 2),
+                      # review 10: the decision's own ladder - proposed, policy,
+                      # fitted lot, the balance read, and each cap in dollars
+                      "lot_prop": round(lot_prop, 2), "lot_pol": round(lot_pol, 2),
+                      "bal_now": round(bal_now, 2), "fit_cap": round(_fit, 2), "hard_cap": round(hard_cap, 2),
                       # NOMINAL worst-case add capacity (bullet count x half-distance risk)
                       "add_max_risk": round(int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT, 2),
                       # RULE-PERMITTED contingent budget from facts known at entry: the
@@ -997,7 +1034,7 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "minbal": n_minbal, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
