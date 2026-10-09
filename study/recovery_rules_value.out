@@ -1,0 +1,8 @@
+all recovery rules (jar on, like live)         trades 276 | win 58.3% | PF 1.23 | net   109.08 | 1st half   126.18 | 2nd half   -17.23 | worst drop  -50.91 | -
+no entry limit in debt (jar on, like live)     trades 304 | win 56.6% | PF 1.16 | net    90.03 | 1st half   103.72 | 2nd half   -14.86 | worst drop  -75.48 | verdict vs today C
+no recovery bullets (jar on, like live)        trades 270 | win 58.5% | PF 1.11 | net    48.10 | 1st half    78.27 | 2nd half   -28.23 | worst drop  -59.43 | verdict vs today C
+plain strategy (jar on, like live)             trades 304 | win 56.6% | PF 1.04 | net    20.46 | 1st half    63.71 | 2nd half   -41.30 | worst drop  -83.41 | verdict vs today C
+all recovery rules (jar off)                   trades 276 | win 58.3% | PF 1.31 | net   190.93 | 1st half   202.34 | 2nd half   -15.73 | worst drop  -80.29 | -
+no entry limit in debt (jar off)               trades 304 | win 56.6% | PF 1.23 | net   169.27 | 1st half   157.79 | 2nd half     7.17 | worst drop -111.09 | verdict vs today C
+no recovery bullets (jar off)                  trades 270 | win 58.5% | PF 1.11 | net    48.10 | 1st half    78.27 | 2nd half   -28.23 | worst drop  -59.43 | verdict vs today C
+plain strategy (jar off)                       trades 304 | win 56.6% | PF 1.04 | net    20.46 | 1st half    63.71 | 2nd half   -41.30 | worst drop  -83.41 | verdict vs today C
