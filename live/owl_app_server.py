@@ -3032,6 +3032,22 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    <div class="ssub" id="pbint-sub">Affich&eacute;e</div></div>
   <span class="sw" id="pbint-sw" aria-hidden="true"><span class="swk"></span></span>
  </div>
+ <!-- Owner 2026-10-10: the line through the last two glowing dots, carried on
+      towards the newest prices; display only, on by default, this browser. -->
+ <div class="srow" id="tl2row">
+  <div class="sic"><svg class="ic"><use href="#i-chart"/></svg></div>
+  <div style="flex:1"><b id="tl2-lbl">Ligne des 2 derniers points</b>
+   <div class="ssub" id="tl2-sub">Affich&eacute;e</div></div>
+  <span class="sw" id="tl2-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
+ <!-- Owner 2026-10-10: swing candles - each run of same-colour candles of the
+      chosen chart (silence or pullbacks) drawn as one candle; display only. -->
+ <div class="srow" id="swingrow">
+  <div class="sic"><svg class="ic"><use href="#i-chart"/></svg></div>
+  <div style="flex:1"><b id="swing-lbl">Bougies de vague</b>
+   <div class="ssub" id="swing-sub">Masqu&eacute;es</div></div>
+  <span class="sw" id="swing-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
  <div class="srow" id="themerow" style="cursor:default">
   <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
   <div style="flex:1"><b>Apparence</b>
@@ -3948,6 +3964,28 @@ window.addEventListener('load',()=>{
     ?(en?'Shown - display only':'Affichée — affichage seulement')
     :(en?'Hidden on the pullback chart':'Masquée sur le graphique des reculs');};
   r.onclick=()=>{try{localStorage.setItem('owlPbInt',rd()?'0':'1');}catch(e){}paint();};
+  paint();})();
+(function(){const r=document.getElementById('tl2row');if(!r)return;
+  const sw=document.getElementById('tl2-sw');
+  const rd=()=>{try{return localStorage.getItem('owlTl2')!=='0';}catch(e){return true;}};
+  const paint=()=>{const on=rd();sw.classList.toggle('on',on);
+   const en=LANG()==='en';
+   document.getElementById('tl2-lbl').textContent=en?'Line through the last 2 dots':'Ligne des 2 derniers points';
+   document.getElementById('tl2-sub').textContent=on
+    ?(en?'Drawn from the last two glowing dots towards the newest prices - display only':'Tracée depuis les deux derniers points lumineux vers les prix récents — affichage seulement')
+    :(en?'Hidden':'Masquée');};
+  r.onclick=()=>{try{localStorage.setItem('owlTl2',rd()?'0':'1');}catch(e){}paint();};
+  paint();})();
+(function(){const r=document.getElementById('swingrow');if(!r)return;
+  const sw=document.getElementById('swing-sw');
+  const rd=()=>{try{return localStorage.getItem('owlSwing')==='1';}catch(e){return false;}};
+  const paint=()=>{const on=rd();sw.classList.toggle('on',on);
+   const en=LANG()==='en';
+   document.getElementById('swing-lbl').textContent=en?'Swing candles':'Bougies de vague';
+   document.getElementById('swing-sub').textContent=on
+    ?(en?'Each run of same-colour candles becomes one candle - on the chart you chose (quiet or pullbacks), display only':'Chaque série de bougies de même couleur devient une seule bougie — sur le graphique choisi (silence ou reculs), affichage seulement')
+    :(en?'Off - one candle per filtered minute':'Désactivées — une bougie par minute filtrée');};
+  r.onclick=()=>{try{localStorage.setItem('owlSwing',rd()?'0':'1');}catch(e){}paint();};
   paint();})();
 (function(){const r=document.getElementById('intmkrow');if(!r)return;
   const sw=document.getElementById('intmk-sw');

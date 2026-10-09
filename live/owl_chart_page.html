@@ -527,10 +527,28 @@ function ctApply(d){if(d&&CTPB()&&d.pb&&d.pb.candles&&d.pb.candles.length>=3){co
   d.int_dots=d.int_dots||[];d.int_marks=d.int_marks||[];d.int_trend=d.int_trend||0;
   d.int_state=!d.int_trend?'none':((d.int_choch&&d.int_choch!==d.int_trend)?'flip':(d.int_bos_ready?'ready':'forming'));}}return d;}
 function PBINT(){try{return localStorage.getItem('owlPbInt')!=='0';}catch(e){return true;}}
+// Owner 2026-10-10: "swing candles" - every run of same-colour candles of the
+// chosen chart (silence or pullbacks) is shown as ONE candle: open of the first,
+// close of the last, the run's high and low, the run's colour (c[5]). Display
+// only; the structure marks keep their meaning and are moved onto the candle
+// that absorbed their original one, so dots, breaks and lines still land.
+// Switch in Reglages (owlSwing, off by default), read on every load.
+function SWING(){try{return localStorage.getItem('owlSwing')==='1';}catch(e){return false;}}
+function swingApply(d){if(!d||!SWING()||!d.candles||d.candles.length<3)return d;
+ const out=[],tmap={};let cur=null;
+ for(const k of d.candles){const g=k[5]!==undefined?k[5]:(k[4]>=k[1]?1:-1);
+  if(cur&&cur[5]===g){cur[2]=Math.max(cur[2],k[2]);cur[3]=Math.min(cur[3],k[3]);cur[4]=k[4];tmap[k[0]]=cur[0];}
+  else{if(cur)out.push(cur);cur=k.slice();cur[5]=g;tmap[k[0]]=k[0];}}
+ if(cur)out.push(cur);
+ const rt=t=>(t!==null&&t!==undefined&&tmap[t]!==undefined)?tmap[t]:t;
+ for(const key of ['dots','marks','breaks','int_dots','int_marks']){if(Array.isArray(d[key]))d[key]=d[key].map(x=>{const y=x.slice();y[0]=rt(y[0]);return y;});}
+ for(const key of ['next_bos_t','invalid_t','flip_bos_t','int_bos_t','int_inv_t','int_flip_bos_t']){if(d[key]!==undefined&&d[key]!==null)d[key]=rt(d[key]);}
+ d.candles=out;d.closed=[];d.swing=true;return d;}
 function ctPaint(){const b=document.getElementById('cttype'),l=document.getElementById('ctlbl');if(!b||!l)return;
  const on=CTPB();b.classList.toggle('on',on);
- l.textContent=CL?(on?'Filter: pullbacks':'Filter: quiet'):(on?'Filtre : reculs':'Filtre : silence');
- const bg=document.getElementById('ctbadge');if(bg)bg.textContent=CL?(on?'pullback filter':'quiet filter'):(on?'filtre reculs':'filtre silence');}
+ const sw=SWING()?(CL?' · swings':' · vagues'):'';
+ l.textContent=(CL?(on?'Filter: pullbacks':'Filter: quiet'):(on?'Filtre : reculs':'Filtre : silence'))+sw;
+ const bg=document.getElementById('ctbadge');if(bg)bg.textContent=(CL?(on?'pullback filter':'quiet filter'):(on?'filtre reculs':'filtre silence'))+sw;}
 document.getElementById('cttype').onclick=()=>{try{localStorage.setItem('owlChartType',CTPB()?'silence':'pb');}catch(e){}
  viewOff=0;seen.first=true;ctPaint();toolsMenu(false);toolsDot();load();};
 if(!FULL){const cb=document.getElementById('cttype');if(cb)cb.style.display='none';}
@@ -1398,6 +1416,35 @@ function draw(){
     (dpts[i-1].y+dpts[i].y)/2);
    ctx.quadraticCurveTo(dpts[i].x,dpts[i].y,dpts[i].x,dpts[i].y);}
   ctx.stroke();
+  // Owner 2026-10-10: the line through the LAST TWO glowing dots of the
+  // current trend (lows in an uptrend, highs in a downtrend), carried on
+  // towards the newest prices. A reading aid only - the robot does not use
+  // it (the entry test on it was negative, review/ENTRY_SCREENS_2026-10-10.md).
+  // Pixel-straight on the displayed (silence-filtered) candles. Switch in
+  // Reglages (owlTl2, on by default), read every frame.
+  let _tl2on=true;try{_tl2on=localStorage.getItem('owlTl2')!=='0';}catch(e){}
+  if(_tl2on&&(D.trend===1||D.trend===-1)){
+   const want=D.trend===1?1:-1;
+   // the two dots may have scrolled off the left edge: place them by their
+   // candle index in the full series, not by the visible window's xoft
+   const two=(D.dots||[]).filter(d=>d[2]===want).slice(-2);
+   const tix=t=>{const a=D.candles||[];let lo=0,hi=a.length-1;while(lo<=hi){const m=(lo+hi)>>1,v=a[m][0];if(v===t)return m;if(v<t)lo=m+1;else hi=m-1;}return -1;};
+   const i1=two.length===2?tix(two[0][0]):-1,i2=two.length===2?tix(two[1][0]):-1;
+   if(two.length===2&&i1>=0&&i2>i1){
+    const start=Math.max(0,end-N);
+    const x1=Math.round(cw*(i1-start+1))+0.5,y1=px(two[0][1]),x2=Math.round(cw*(i2-start+1))+0.5,y2=px(two[1][1]);
+    if(x2>x1){
+     const k=(y2-y1)/(x2-x1),xe=W,ye=y2+k*(xe-x2);
+     const col=D.trend===1?'#4fd8c8':'#ffb86b';
+     ctx.save();ctx.setLineDash([6,5]);ctx.lineWidth=1.3;ctx.strokeStyle=col;
+     ctx.shadowColor=col;ctx.shadowBlur=6;ctx.globalAlpha=.55;
+     ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+     ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(xe,ye);ctx.stroke();
+     ctx.setLineDash([]);ctx.shadowBlur=0;ctx.globalAlpha=.75;ctx.font='bold 8px system-ui';
+     const tl=(CL?'line of the 2 last dots':'ligne des 2 derniers points');
+     const tw=ctx.measureText(tl).width+8,ty=Math.max(14,Math.min(Hh-8,ye));
+     ctx.fillStyle='rgba(8,14,22,.8)';ctx.beginPath();ctx.roundRect(W-tw-6,ty-16,tw,14,7);ctx.fill();
+     ctx.fillStyle=col;ctx.fillText(tl,W-tw-2,ty-6);ctx.restore();}}}
   ctx.shadowBlur=0;
  }
  // --- marks: choc = dashed line + open circle, bos = arrow ---
@@ -2243,7 +2290,7 @@ async function load(){
  if(PAST)return;
  try{
   const r=await fetch('/'+tok+'/chart_data'+(EQ?'?src=eq':''),{cache:'no-store'});
-  if(r.ok){D=ctApply(await r.json());digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
+  if(r.ok){D=swingApply(ctApply(await r.json()));digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
  }catch(e){}
 }
 // A throw inside draw() used to skip the next requestAnimationFrame, so
