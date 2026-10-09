@@ -426,6 +426,12 @@ def simulate(R, spread, cfg):
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
+    # 2026-10-09 (review 6): marked-to-market drawdown bounds from the bar
+    # path of the OPEN main position (adverse extreme / bar close), against
+    # the realised peak; bullets not marked (they enter at the midpoint in
+    # this model). Reported next to the daily-sampled and close-to-close
+    # realised drawdowns - three measures, not one.
+    mtm_dd_adv = mtm_dd_close = 0.0
     lp_paused = lp_virt = False
     lp_snap = None
     eq_all = []          # EQHOOK: full-size money of every closed trade
@@ -493,6 +499,10 @@ def simulate(R, spread, cfg):
                 pos = (d, e, sl, tp, dist, mid, hit_mid, lot)
             hit_sl = (l <= sl) if d == 1 else (h >= sl)
             hit_tp = (h >= tp) if d == 1 else (l <= tp)
+            _adv = run + d * ((l if d == 1 else h) - e) * lot
+            _clo = run + d * (cl - e) * lot
+            mtm_dd_adv = max(mtm_dd_adv, pk - _adv)
+            mtm_dd_close = max(mtm_dd_close, pk - _clo)
             # The weather turning bad while the trade is open. Only
             # considered when the stop and the target both survived this
             # bar, so a storm exit never pre-empts a real hit. Note there
@@ -571,7 +581,9 @@ def simulate(R, spread, cfg):
                     else:
                         nb = int(NB)
                 if nb and EQHOOK is not None and EQ_ADDS and eq_mult < 1.0:
-                    nb = int(nb * eq_mult)          # the policy halves the add budget too
+                    nb = int(nb * eq_mult)          # count-based: 3 -> 1 at 0.5 (achieved cut reported, not "exactly half")
+                if TRACE is not None and cur_tr is not None:
+                    cur_tr["add_n"] = nb; cur_tr["add_risk"] = round(nb * 0.5 * dist * BLOT, 2)
                 bpts = 0.0
                 if nb:
                     # the bullet enters at the midpoint, so it walks (0.5 + rr)
@@ -931,6 +943,8 @@ def simulate(R, spread, cfg):
             # drifts from this line would quietly mismeasure the cap.
             cur_tr = {"t": t, "d": d, "flip": bool(flip), "dist": round(dist, 1),
                       "lot": round(lot, 2), "risk": round(dist * lot, 2),
+                      # contingent maximum add budget permitted at entry under the policy
+                      "add_max_risk": round(int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT, 2),
                       "med": round(_m, 1), "nerv": round(nv, 2),
                       "power": (round(rng[i] / _m, 2) if _m > 0 else None),
                       "age": int((t - (hi_since if d == 1 else lo_since)) // 60),
@@ -960,7 +974,18 @@ def simulate(R, spread, cfg):
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
-            "virtual": n_virt, "eq_all": len(eq_all)}
+            "virtual": n_virt, "eq_all": len(eq_all),
+            "mtm_dd_adverse": round(mtm_dd_adv, 2), "mtm_dd_close": round(mtm_dd_close, 2),
+            "cc_dd": round(_cc_dd(pnls), 2)}
+
+
+def _cc_dd(pnls):
+    """close-to-close realised drawdown over every closed result (the
+    daily-sampled worst_debt misses intraday realised dips)."""
+    c = pk = dd = 0.0
+    for p in pnls:
+        c += p; pk = max(pk, c); dd = max(dd, pk - c)
+    return dd
 
 
 def run_cfg(R, spread, cfg):
