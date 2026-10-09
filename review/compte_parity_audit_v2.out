@@ -1,0 +1,8 @@
+APPROXIMATE JOURNAL RECONSTRUCTION - before-entry states on the same opportunity index
+dad         n  71 | display vs eq_state differ  28 | display vs tracker trend differ   0 | flips: with mark 0, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 17/20
+demo        n  77 | display vs eq_state differ  24 | display vs tracker trend differ   0 | flips: with mark 0, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 0/all
+expenses    n  48 | display vs eq_state differ  17 | display vs tracker trend differ   0 | flips: with mark 1, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 0/all
+infinity    n  72 | display vs eq_state differ  22 | display vs tracker trend differ   0 | flips: with mark 0, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 0/all
+kino        n  83 | display vs eq_state differ  47 | display vs tracker trend differ   0 | flips: with mark 1, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 0/all
+u477508138  n  13 | display vs eq_state differ   0 | display vs tracker trend differ   0 | flips: with mark 0, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin None/None
+valere      n  70 | display vs eq_state differ  27 | display vs tracker trend differ   0 | flips: with mark 0, window change no mark 0 (origin-induced 0), same window no mark 0 | ctl origin 17/20

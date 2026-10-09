@@ -1,0 +1,3 @@
+compte-ctl-1 synthetic: origin 14 window 20 final -1 transitions [(45, 0, 1, 'bootstrap'), (144, 1, -1, 'mark')]
+determinism violations: 0
+invalid input -> invalid
