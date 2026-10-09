@@ -43,7 +43,7 @@ import math
 import os
 import shutil
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import MetaTrader5 as mt5
 
@@ -347,6 +347,14 @@ MOVEMENT = _P.get("movement", True)
 # every live account) = the recovery entry rules below apply; False = a
 # BOS / internal entry is never refused because the account owes money.
 DEBT_GATE = _P.get("debt_gate", True)
+# 2026-10-08 (owner): rule #1b of the Compte indicator. True = while this
+# account's own results are FALLING (progression structure trend -1, no
+# CHoCH up pending), a lot of 0.02 or more is halved (floor 0.01). Replay:
+# same net, worst drop -80 -> -59, beats random halving 75%/100%
+# (study/compte_rules_test.py). Off everywhere except the package that
+# asks for it.
+EQ_HALF = bool(_P.get("eq_half", False))
+_EQ_CACHE = {"t": 0.0, "v": (0, 0)}
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
@@ -1099,6 +1107,7 @@ def main():
         # one, which crashed this line the first time 441 ran as a bot
         + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else "")
         + ("" if DEBT_GATE else " | sans systeme de dette")
+        + (" | demi-lot si resultats en baisse" if EQ_HALF else "")
         + _scale_line)
     ensure_algo()
 
@@ -1121,6 +1130,44 @@ def main():
     save_state(st)
     say(f"seeded {len(R)} bars: trend {eng.trend} "
         f"choch {eng.choch} kept {len(eng.kept)}")
+
+    def eq_state():
+        """The account's own progression structure (trend, pending choch),
+        rebuilt like the stats worker builds the Compte chart: the bot's
+        own MAIN closed trades since the account's era, each scaled to a
+        0.02 lot so a halved trade does not flatten its own curve, then
+        the silence filter and the structure engine with the same
+        cold-start windows. Cached a minute."""
+        if time.time() - _EQ_CACHE["t"] < 60:
+            return _EQ_CACHE["v"]
+        from owl_chart_feed import build as _fb, engine as _fe
+        _rec = next((x for x in json.load(open(os.path.join(DIR, "owl_nest_users.json"),
+                     encoding="utf-8")) if x.get("id") == PAUSE_UID), {})
+        _era = datetime.fromisoformat(_rec.get("era_start") or "2026-01-01T00:00:00+00:00")
+        if _era.tzinfo is None:
+            _era = _era.replace(tzinfo=timezone.utc)
+        _adds = set(st.get("add_ids") or [])
+        _ds = sorted([x for x in (mt5.history_deals_get(_era, datetime.now(timezone.utc)
+                      + timedelta(minutes=5)) or [])
+                      if x.magic == MAGIC and x.entry == mt5.DEAL_ENTRY_OUT
+                      and x.position_id not in _adds and x.volume > 0],
+                     key=lambda x: x.time)
+        _raw, _c = [], 0.0
+        for _i, _x in enumerate(_ds):
+            _o = _c
+            _c += (_x.profit + _x.swap + _x.commission) * 0.02 / _x.volume
+            _raw.append({"time": _i + 1, "open": _o, "high": max(_o, _c),
+                         "low": min(_o, _c), "close": _c})
+        _k = _fb(_raw)
+        _v = (0, 0)
+        if len(_k) >= 3:
+            for _w in (len(_k), 120, 80, 50, 30, 20):
+                _out = _fe(_k[-_w:], brk_out=[])
+                if _out[2]:
+                    _v = (_out[2], _out[3])
+                    break
+        _EQ_CACHE.update(t=time.time(), v=_v)
+        return _v
 
     def enter(d, slp, kind, internal=False):
         """Shared entry executor (close-BOS, flip-BOS, touch, and - owner
@@ -1250,6 +1297,17 @@ def main():
                 say(f"{kind} refuse: demi-lot impossible a {BASE_LOT}")
                 return False
             lot = _half
+        # --- rule #1b (eq_half): half size while the results are falling
+        if EQ_HALF and lot >= 0.02 - 1e-9:
+            try:
+                _etr, _ech = eq_state()
+                if _etr == -1 and _ech != 1:
+                    _eh = round(max(0.01, int(lot * 0.5 / 0.01 + 1e-9) * 0.01), 2)
+                    say(f"{kind} lot {lot:.2f} -> {_eh:.2f}: resultats du "
+                        f"compte en baisse (eq_half)")
+                    lot = _eh
+            except Exception as _e:
+                say(f"eq_half ignore: {type(_e).__name__}: {_e}")
         # --- shrink to the per-trade ceiling before anything else
         if RISK_FIT_PCT > 0 and ai2.balance > 0:
             _fit = RISK_FIT_PCT / 100.0 * ai2.balance

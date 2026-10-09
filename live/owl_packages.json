@@ -84,7 +84,12 @@
     "           money a plain BOS is refused after the one continuation that",
     "           follows a flip, and internal entries pause. false = never",
     "           refuse an entry because of debt. Owner 2026-10-08: off ONLY on",
-    "           the reference account, so its curve keeps every signal."
+    "           the reference account, so its curve keeps every signal.",
+    "",
+    "eq_half    false (default) / true = rule #1b: while the account's own",
+    "           results are falling (progression trend down, no CHoCH up",
+    "           pending) a lot of 0.02+ is halved, floor 0.01. Owner",
+    "           2026-10-08: on Depenses only (study/compte_rules_test.py)."
   ],
   "packages": {
     "base": {
@@ -170,6 +175,12 @@
       "adds_on": false,
       "max_extra": 0,
       "jar": false
+    },
+    "valere_cap3_eqhalf": {
+      "extends": "valere_cap3",
+      "eq_half": true,
+      "label": "Valere cap 3 % + demi-lot si resultats en baisse",
+      "_why": "2026-10-08 owner: rule #1b on Depenses - half lot while the account's own progression falls, until a CHoCH up. Bites from lot 0.02 (balance >= $200)."
     }
   },
   "accounts": {
@@ -180,7 +191,7 @@
     "half": "halfdebt",
     "demo": "demo",
     "infinity": "valere",
-    "expenses": "valere_cap3",
+    "expenses": "valere_cap3_eqhalf",
     "labo": "labo",
     "u477508138": "reference"
   }
