@@ -1,0 +1,7 @@
+normal bot (live settings)                   trades 274 | win 58.8% | PF 1.25 | net   116.09 | 1st half   132.37 | 2nd half   -37.25 | worst drop  -50.91 | - 
+a) incl. signal candle: same colour = go     trades 270 | win 58.5% | PF 1.24 | net   112.37 | 1st half   129.88 | 2nd half   -33.05 | worst drop  -51.47 | verdict C | skips 2%
+a) incl. signal candle: opposite colour = go trades   7 | win 71.4% | PF 1.28 | net     1.65 | 1st half     0.41 | 2nd half    -6.64 | worst drop   -5.20 | verdict C | skips 98%
+   random skipping at 2%: median net 117.56, drop -50.91 | rule beats random: net 40%, drop 15%
+b) candle closed before the signal: same colour = go trades 271 | win 58.7% | PF 1.26 | net   116.82 | 1st half    96.70 | 2nd half   -14.54 | worst drop  -45.24 | verdict B | skips 9%
+b) candle closed before the signal: opposite colour = go trades  29 | win 62.1% | PF 1.09 | net     5.05 | 1st half     7.11 | 2nd half   -16.31 | worst drop  -19.18 | verdict C | skips 92%
+   random skipping at 9%: median net 106.03, drop -51.80 | rule beats random: net 70%, drop 75%
