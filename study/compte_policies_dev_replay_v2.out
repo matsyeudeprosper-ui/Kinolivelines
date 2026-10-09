@@ -1,0 +1,42 @@
+pinned dataset: BTCUSDm 60000 bars 1787957640 -> 1791558420 sha 06ece48906f62129
+
+=== spread 7, execution drag $0.00/0.02 lot | reference A (spread-only): 298 outcomes net 34.35 | reference B (same drag): 298 outcomes net 34.35 ===
+baseline                                     net   109.29 | later(cal)     7.49 later(cnt)     1.10 | DD daily  50.91 cc  63.69 mtm  67.60/ 67.92 | tail5  -61.99 | exp main  1029.8 +addmax  772.2 (planned  1802.0, committed  1112.8, adds 109) | trades 272
+[A] directional main+adds PRIMARY            net   110.60 | later(cal)    -5.36 later(cnt)    -1.46 | DD daily  48.10 cc  55.28 mtm  54.62/ 55.25 | tail5  -51.24 | exp main   924.0 +addmax  666.2 (planned  1590.2, committed   988.0, adds 90) | trades 273
+   periodic controls (planned exposure matched by k=6, all 6 phases): exposure [1631, 1622, 1625, 1600, 1652, 1607] | net [90.27, 90.1, 89.91, 70.64, 103.83, 76.18] | dd_cc [61.77, 73.29, 73.29, 61.77, 73.29, 73.29] | candidate net 110.60 dd_cc 55.28 beats net 6/6 dd 6/6
+   block-shift controls (20 cyclic shifts): net median 100.67 IQR [90.79, 105.43] | dd_cc median 62.57 | planned exposure [1557..1649] | candidate beats net 16/20 dd 17/20
+   paired vs baseline (block 5 days): mean daily diff +0.037 (sd 4.98) CI90 [-1.057, 1.192] | DD ratio (cc) 0.949 CI90 [0.461, 1.0] | detectable daily diff at 30/60/120 days {'30': 2.263, '60': 1.6, '120': 1.131}
+   halves: h1 base 125.56 / full-ref 130.23 / cold-ref 130.23 | h2 base -35.31 / full-ref -23.33 / cold-ref -42.96
+[A] directional main-only (attribution arm)  net   122.37 | later(cal)     4.53 later(cnt)     8.16 | DD daily  49.63 cc  55.97 mtm  55.30/ 55.93 | tail5  -50.83 | exp main   931.1 +addmax  783.9 (planned  1715.0, committed  1004.9, adds 102) | trades 275
+   periodic controls (planned exposure matched by k=6, all 6 phases): exposure [1722, 1696, 1699, 1696, 1726, 1679] | net [100.47, 92.37, 92.18, 91.36, 111.02, 82.86] | dd_cc [61.5, 63.37, 63.37, 61.5, 67.47, 63.37] | candidate net 122.37 dd_cc 55.97 beats net 6/6 dd 6/6
+   block-shift controls (20 cyclic shifts): net median 100.57 IQR [90.76, 117.17] | dd_cc median 63.45 | planned exposure [1680..1731] | candidate beats net 17/20 dd 17/20
+   paired vs baseline (block 5 days): mean daily diff +0.363 (sd 4.45) CI90 [-0.468, 1.509] | DD ratio (cc) 0.977 CI90 [0.37, 1.0] | detectable daily diff at 30/60/120 days {'30': 2.021, '60': 1.429, '120': 1.011}
+   halves: h1 base 125.56 / full-ref 132.14 / cold-ref 132.14 | h2 base -35.31 / full-ref -24.49 / cold-ref -36.38
+[A] global main+adds (parked)                net    89.20 | later(cal)    -8.78 later(cnt)   -17.21 | DD daily  48.71 cc  50.82 mtm  51.34/ 51.37 | tail5  -50.83 | exp main   853.6 +addmax  597.3 (planned  1450.9, committed   915.2, adds 90) | trades 271
+
+=== spread 7, execution drag $0.35/0.02 lot | reference A (spread-only): 298 outcomes net 34.35 | reference B (same drag): 298 outcomes net -69.95 ===
+baseline                                     net     8.35 | later(cal)   -12.53 later(cnt)   -28.86 | DD daily  77.92 cc  85.45 mtm  89.36/ 89.69 | tail5  -65.56 | exp main  1005.1 +addmax  753.7 (planned  1758.8, committed  1105.3, adds 129) | trades 265
+[A] directional main+adds PRIMARY            net    23.57 | later(cal)   -16.91 later(cnt)   -16.95 | DD daily  58.96 cc  67.77 mtm  67.11/ 67.74 | tail5  -52.99 | exp main   900.4 +addmax  648.4 (planned  1548.8, committed   973.2, adds 101) | trades 266
+   periodic controls (planned exposure matched by k=4, all 4 phases): exposure [1473, 1490, 1565, 1530] | net [28.62, 32.15, 0.13, -15.08] | dd_cc [60.15, 60.14, 93.7, 93.7] | candidate net 23.57 dd_cc 67.77 beats net 2/4 dd 2/4
+   block-shift controls (20 cyclic shifts): net median 8.10 IQR [-3.00, 25.87] | dd_cc median 82.87 | planned exposure [1515..1593] | candidate beats net 15/20 dd 18/20
+   paired vs baseline (block 5 days): mean daily diff +0.423 (sd 5.17) CI90 [-0.727, 1.689] | DD ratio (cc) 0.830 CI90 [0.496, 0.934] | detectable daily diff at 30/60/120 days {'30': 2.348, '60': 1.66, '120': 1.174}
+   halves: h1 base 56.70 / full-ref 63.48 / cold-ref 63.48 | h2 base -71.29 / full-ref -53.66 / cold-ref -85.31
+[A] directional main-only (attribution arm)  net    24.82 | later(cal)   -15.41 later(cnt)   -15.45 | DD daily  59.64 cc  68.45 mtm  67.79/ 68.42 | tail5  -52.40 | exp main   900.4 +addmax  755.5 (planned  1655.9, committed   986.3, adds 116) | trades 266
+   periodic controls (planned exposure matched by k=6, all 6 phases): exposure [1655, 1667, 1682, 1671, 1681, 1682] | net [0.68, 6.13, 0.49, -2.83, 4.53, -22.57] | dd_cc [72.9, 72.9, 72.9, 93.09, 93.09, 91.17] | candidate net 24.82 dd_cc 68.45 beats net 6/6 dd 6/6
+   block-shift controls (20 cyclic shifts): net median 8.23 IQR [-0.12, 18.32] | dd_cc median 82.98 | planned exposure [1642..1695] | candidate beats net 17/20 dd 18/20
+   paired vs baseline (block 5 days): mean daily diff +0.458 (sd 4.74) CI90 [-0.596, 1.675] | DD ratio (cc) 0.839 CI90 [0.459, 0.933] | detectable daily diff at 30/60/120 days {'30': 2.154, '60': 1.523, '120': 1.077}
+   halves: h1 base 56.70 / full-ref 63.98 / cold-ref 63.98 | h2 base -71.29 / full-ref -56.30 / cold-ref -78.71
+[A] global main+adds (parked)                net    -2.82 | later(cal)   -29.53 later(cnt)   -35.87 | DD daily  67.14 cc  78.30 mtm  78.24/ 78.29 | tail5  -52.40 | exp main   833.7 +addmax  582.3 (planned  1416.0, committed   909.6, adds 112) | trades 265
+[B] directional main+adds PRIMARY            net    48.55 | later(cal)    -8.65 later(cnt)    -8.69 | DD daily  49.20 cc  57.99 mtm  57.34/ 57.97 | tail5  -50.32 | exp main   864.2 +addmax  612.3 (planned  1476.6, committed   930.0, adds 90) | trades 266
+   periodic controls (planned exposure matched by k=4, all 4 phases): exposure [1473, 1490, 1565, 1530] | net [28.62, 32.15, 0.13, -15.08] | dd_cc [60.15, 60.14, 93.7, 93.7] | candidate net 48.55 dd_cc 57.99 beats net 4/4 dd 4/4
+   block-shift controls (20 cyclic shifts): net median 6.47 IQR [-2.47, 17.71] | dd_cc median 80.69 | planned exposure [1413..1517] | candidate beats net 20/20 dd 19/20
+   paired vs baseline (block 5 days): mean daily diff +1.117 (sd 5.76) CI90 [-0.338, 2.362] | DD ratio (cc) 0.705 CI90 [0.435, 0.916] | detectable daily diff at 30/60/120 days {'30': 2.621, '60': 1.853, '120': 1.31}
+   halves: h1 base 56.70 / full-ref 80.21 / cold-ref 80.21 | h2 base -71.29 / full-ref -45.41 / cold-ref -85.49
+[B] directional main-only (attribution arm)  net    48.41 | later(cal)    -9.41 later(cnt)    -9.45 | DD daily  52.13 cc  60.93 mtm  60.28/ 60.91 | tail5  -49.21 | exp main   864.2 +addmax  755.5 (planned  1619.8, committed   943.7, adds 107) | trades 266
+   periodic controls (planned exposure matched by k=4, all 4 phases): exposure [1634, 1626, 1648, 1638] | net [37.43, 27.96, 1.33, 32.81] | dd_cc [74.25, 59.79, 95.79, 59.79] | candidate net 48.41 dd_cc 60.93 beats net 4/4 dd 2/4
+   block-shift controls (20 cyclic shifts): net median 15.00 IQR [1.03, 18.79] | dd_cc median 80.20 | planned exposure [1584..1645] | candidate beats net 20/20 dd 18/20
+   paired vs baseline (block 5 days): mean daily diff +1.113 (sd 5.26) CI90 [-0.196, 2.402] | DD ratio (cc) 0.743 CI90 [0.4, 0.916] | detectable daily diff at 30/60/120 days {'30': 2.389, '60': 1.69, '120': 1.195}
+   halves: h1 base 56.70 / full-ref 81.57 / cold-ref 81.57 | h2 base -71.29 / full-ref -50.31 / cold-ref -77.91
+[B] global main+adds (parked)                net     3.27 | later(cal)   -29.78 later(cnt)   -39.79 | DD daily  59.00 cc  72.22 mtm  72.15/ 72.20 | tail5  -52.40 | exp main   755.7 +addmax  504.4 (planned  1260.1, committed   814.7, adds 85) | trades 265
+
+DONE - development data, pinned interval; gross after spread, before the stated drag

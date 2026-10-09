@@ -1,6 +1,6 @@
 # Compte directional sizing - prospective shadow protocol
 
-**Status: DRAFT v0 (2026-10-09). Not frozen.** Freeze = a dated "FROZEN" line
+**Status: DRAFT v0.1 (2026-10-09 night). Not frozen.** Freeze = a dated "FROZEN" line
 below, after the lead's reply and the power numbers from
 `study/compte_policies_dev_replay_v2.*`. Nothing here changes a live bot.
 
@@ -58,12 +58,13 @@ p95 loss); trade count; the later calendar half of the horizon.
 
 ## Decision rule - RISK label only (profit label not resolvable, see power)
 PASS if, on the primary vs baseline paired paths at the horizon:
-1. candidate maximum drawdown (close-to-close realised, primary metric;
-   MTM-adverse reported) / baseline maximum drawdown <= 0.80, with the
-   block-bootstrap 90% interval of the ratio entirely <= 0.80... [to be set
-   from the power calculation: the interval requirement may be relaxed to
-   "point <= 0.80 and interval upper bound <= 1.00" if the detectable ratio
-   at the horizon is too wide - decided at freeze, not after];
+1. LABEL A (registered gate, unchanged): candidate maximum drawdown
+   (close-to-close realised; MTM main-only proxy reported beside) / baseline
+   maximum drawdown <= 0.80 with the block-bootstrap 90% interval entirely
+   <= 0.80. LABEL B (registered now, justified by the development interval
+   widths, reported apart, never substituted): interval entirely < 1.0 AND
+   point ratio <= 0.80 = "drawdown smaller, with a point estimate of at
+   least 20%". The two support different claims and are reported as such;
 2. paired net degradation <= 0.05 baseline-risk units per eligible
    opportunity (baseline-risk unit = the baseline's mean planned main stop
    risk), block-bootstrap 90% interval respecting the bound;
@@ -74,12 +75,20 @@ as sensitivities, never used to pick the result.
 Otherwise: inconclusive (interval straddles) or FAIL (point estimate the
 wrong way). The exploratory arm gets the same table and no decision.
 
-## Power (filled from replay v2 before freezing)
-* per-day paired SD of (candidate - baseline): [sd]
-* detectable mean daily difference at 30 / 60 / 120 days (80%, one-sided
-  5%): [values]  -> profit label: [resolvable / not]
-* drawdown ratio CI90 width on the development paths at block 5 / 3 / 10:
-  [values] -> feasibility of gate 1 at the horizon: [assessment]
+## Power (from replay v2b, pinned development interval, block means of the paired daily difference)
+* 5-day blocks (nominated): sd of block means 1.18 $/day at drag 0 (primary), 1.45 under the
+  assumed $0.35 drag (basis B); IID daily sd 3.98 / 4.73 shown for reference only.
+* detectable mean daily difference (80% power, one-sided 5%): 1.20 / 0.85 / 0.60 at 6 / 12 / 24
+  blocks (drag 0); 1.48 / 1.04 / 0.74 (drag 0.35 B). Observed: +0.03 (drag 0), +0.96 (drag 0.35 B).
+  -> profit label: not resolvable at zero drag; resolvable at ~24 blocks under the cost scenario
+  ONLY if the development effect persisted - stated as a condition, not a forecast.
+* drawdown ratio CI90 width on 42 development days: ~0.40-0.45 (e.g. [0.51, 0.94]). Gate 1 as
+  registered (whole interval <= 0.80) is not reachable at that width; label 2 (interval < 1.0,
+  point <= 0.80) is. Both are reported; gate 1 is NOT weakened.
+* Horizon registered: 24 five-day blocks (~120 calendar days) from the FROZEN line, or 600
+  reference opportunities, whichever first. One evaluation. Blocks 3 / 10 as sensitivities only.
+* Known weakest point: the prospective reference starts COLD at the FROZEN line; on the
+  development halves a cold-start reference made the policy worse than baseline in the weak half.
 
 ## Prohibited
 Parameter sweeps on multiplier, window, CHoCH definition, k or block length;

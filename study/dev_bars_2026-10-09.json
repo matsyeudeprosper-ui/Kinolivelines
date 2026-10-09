@@ -1,0 +1,9 @@
+{
+ "symbol": "BTCUSDm",
+ "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+ "bars": 60000,
+ "first_bar": 1787957640,
+ "last_bar": 1791558420,
+ "frozen_at": "2026-10-09T15:07:17Z",
+ "sha256": "06ece48906f62129"
+}
