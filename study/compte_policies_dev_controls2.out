@@ -1,0 +1,8 @@
+
+=== drag_0.00 ===
+global half (main+adds PRIMARY)          target exposure   861.87 | alternating control: halve every 3th entry -> exposure   866.26 (match error 0.5%) | net    94.17 | later third   -10.51 | drop  -45.76 | tail5  -48.90 | candidate: net    96.00 drop  -48.71
+directional half (main+adds PRIMARY)     target exposure   932.31 | alternating control: halve every 6th entry -> exposure   929.54 (match error 0.3%) | net    76.18 | later third    -0.17 | drop  -58.50 | tail5  -63.46 | candidate: net   117.40 drop  -48.10
+
+=== drag_0.35 ===
+global half (main+adds PRIMARY)          target exposure   834.15 | alternating control: halve every 3th entry -> exposure   824.37 (match error 1.2%) | net    -9.56 | later third   -27.41 | drop  -63.12 | tail5  -52.57 | candidate: net    -5.13 drop  -67.14
+directional half (main+adds PRIMARY)     target exposure   900.85 | alternating control: halve every 4th entry -> exposure   890.86 (match error 1.1%) | net   -15.08 | later third   -26.48 | drop  -83.08 | tail5  -67.37 | candidate: net    21.26 drop  -58.96
