@@ -10,7 +10,14 @@ NPZ = os.path.join(HERE, "dev_bars_2026-10-09.npz")
 META = NPZ.replace(".npz", ".json")
 
 
-def load():
+def load(version=""):
+    """version "" = the original pinned file (last bar was FORMING at capture:
+    kept for reconciliation); version "b" = closed bars only (review 8)."""
+    if version:
+        npz = NPZ.replace(".npz", version + ".npz"); meta = json.load(open(npz.replace(".npz", ".json")))
+        R = np.load(npz)["R"]
+        assert hashlib.sha256(open(npz, "rb").read()).hexdigest()[:16] == meta["sha256"], "dataset drift"
+        return meta["symbol"], R, meta
     if not os.path.exists(NPZ):
         import harness as H
         sym, R = H.bars()
