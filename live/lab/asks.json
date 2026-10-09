@@ -80,7 +80,10 @@
    "by": "labo",
    "date": "2026-10-09",
    "note": "32 trades, 28 % gagnés contre 57 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Vrai : trente-deux vrais trades le soir, 28 % gagnés contre 57 % le reste du temps, environ quarante-huit dollars perdus, et les deux moitiés sont d'accord. Mais le trou n'est pas tout le soir : de 16 h à 20 h, dix-neuf trades, huit gagnés, environ onze dollars perdus. De 21 h à minuit, treize trades, un seul gagné, environ trente-sept dollars perdus. J'ai testé ce matin, sur quarante-deux jours, ne pas trader de 16 h à 23 h : ça coûte environ cinquante-neuf dollars, car le robot du test y gagne bien, et le trou ne rétrécit presque pas. Couper 21 h - 23 h seul avait déjà été testé : ça coûte aussi. Le vrai et le test ne sont pas d'accord ; je suis la pile 'tard le soir' et je demanderai une trace par heure quand elle aura trente trades. Pas de proposition.",
+   "answer_en": "True: thirty-two real trades in the evening, 28% won against 57% the rest of the time, about forty-eight dollars lost, and both halves agree. But the hole is not the whole evening: from 16 to 20 h, nineteen trades, eight won, about eleven dollars lost. From 21 h to midnight, thirteen trades, only one won, about thirty-seven dollars lost. This morning I tested, over 42 days, not trading from 16 to 23 h: it costs about fifty-nine dollars, because the test robot earns well there, and the hole barely shrinks. Cutting 21-23 h alone was already tested: it costs too. The real trades and the test disagree; I am watching the 'late night' pile and will ask for an hour-by-hour trace when it reaches thirty trades. No proposal.",
+   "answered": "2026-10-09T06:30:05Z"
   },
   {
    "id": "ask_1791522013_flip_after_loss",
@@ -90,7 +93,10 @@
    "by": "labo",
    "date": "2026-10-09",
    "note": "30 trades, 33 % gagnés contre 53 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answer_fr": "Vrai, c'est ma propre pile : trente changements de sens juste après une perte, 33 % gagnés contre 53 % pour les autres, environ trente-huit dollars perdus, et les deux moitiés sont d'accord (36 % puis 32 %). Après un gain, les changements de sens ne perdent qu'environ neuf dollars. Le gros du trou est en marché nerveux : onze trades, deux gagnés, environ trente et un dollars perdus ; les dix-neuf en marché calme perdent peu, environ sept dollars. Trente trades : un indice solide, pas une preuve. J'ai demandé un réglage pour miser moins sur ces trades, sans les refuser ; il n'est pas encore construit, donc je ne peux pas encore le tester sur quarante-deux jours. Pas de proposition avant ce test.",
+   "answer_en": "True, it is my own pile: thirty changes of direction right after a loss, 33% won against 53% for the others, about thirty-eight dollars lost, and both halves agree (36% then 32%). After a win, changes of direction lose only about nine dollars. Most of the hole is in a nervous market: eleven trades, two won, about thirty-one dollars lost; the nineteen in a calm market lose little, about seven dollars. Thirty trades: a firm hint, not a proof. I asked for a setting to stake less on these trades, without refusing them; it is not built yet, so I cannot test it over 42 days yet. No proposal before that test.",
+   "answered": "2026-10-09T06:30:05Z"
   }
  ]
 }

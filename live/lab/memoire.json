@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-09T05:00:09Z",
+ "updated": "2026-10-09T06:30:05Z",
  "hypotheses": [
   {
    "id": "capped_slow_small",
@@ -88,7 +88,8 @@
     "2026-10-08 15:30 veille: BOS BUY -2.65 (pace 1.692, closed 15:04, after the BOS SELL -1.33 loss). BOS 33 tr 64% +27.96 PF 1.44 (h 65%/62%); FLIP-BOS unchanged 42 tr 38% -45.68. Inside BOS by pace: 0.8-1.0 8 tr 88% +10.30, 1.0-1.3 11 tr 55% +23.87, 1.3-1.85 11 tr 64% +1.23 PF 1.05: the very nervous breakouts win often but earn ~nothing (peu).",
     "2026-10-08 19:30 veille: FLIP-BOS BUY won +1.77 (pace 1.631, NERVOUS, closed 19:23, right after the BOS BUY -2.65 loss) - against the after-loss split. Pile flip_hot 26 tr 35% -33.13 PF 0.47 (h 33%/36%); after a loss 11 tr 18% -31.16 (was 1/10), after a win 15 tr 47% -1.97. FLIP-BOS 43 tr 40% -43.91; flip_after_loss 24 tr 38% -34.92 PF 0.39. One win, the split stands (peu).",
     "2026-10-08 21:00 veille: BOS BUY -1.35 (pace 0.922, CALM, closed 20:25, after the +1.77 flip win). BOS 34 tr 62% +26.61 PF 1.41 (h 65%/59%); FLIP-BOS unchanged 43 tr 40% -43.91. BOS 0.8-1.0 9 tr 78% +8.95. Kind split intact.",
-    "2026-10-09 05:00 veille: 8 new. Five FLIP-BOS lost small, ALL pace <0.66 (22:09 -1.90, 22:23 -0.71, 22:33 -0.62, 22:54 -0.73, 01:43 -2.14); BOS SELL -6.88 (pace 0.85); FLIP-BOS BUY +3.06 (pace 0.848) and BOS BUY +5.90 (pace 0.776) won. flip_hot unchanged 26 tr 35% -33.13 - tonight's flip losses were calm. FLIP-BOS 49 tr 37% -46.95 PF 0.53 (h 41%/33%); BOS 36 tr 61% +25.63 PF 1.36. flip_after_loss 30 tr 33% -37.96 PF 0.40 (h 36%/32%). Real calm flips lose too: kind, not pace, is the real split; the engine's 'calm flips carry' is not seen in real trades."
+    "2026-10-09 05:00 veille: 8 new. Five FLIP-BOS lost small, ALL pace <0.66 (22:09 -1.90, 22:23 -0.71, 22:33 -0.62, 22:54 -0.73, 01:43 -2.14); BOS SELL -6.88 (pace 0.85); FLIP-BOS BUY +3.06 (pace 0.848) and BOS BUY +5.90 (pace 0.776) won. flip_hot unchanged 26 tr 35% -33.13 - tonight's flip losses were calm. FLIP-BOS 49 tr 37% -46.95 PF 0.53 (h 41%/33%); BOS 36 tr 61% +25.63 PF 1.36. flip_after_loss 30 tr 33% -37.96 PF 0.40 (h 36%/32%). Real calm flips lose too: kind, not pace, is the real split; the engine's 'calm flips carry' is not seen in real trades.",
+    "2026-10-09 06:30 veille: labo ask flip_after_loss 30 tr 33% -37.96 (h 36%/32%); inside, nervous 11 tr 2 won -31.16, calm 19 tr 8 won -6.80. The after-loss hole is the nervous one. flip_loss_size still not built."
    ],
    "next": "Battery on fm075_fliphot075; flip_loss_size when built (0.75/0.5 both shapes)."
   },
@@ -248,7 +249,8 @@
    "evidence": [
     "2026-10-06: real hours 21/22/23/00: 13 tr, 3 won, -46.6 $ (00 h 8 tr 38% -18.14). Engine 42 d says no: skip 21-23 C -29.7 / C -46.3; 21-00 C -68.8 / C -53.7; 22-00 C -106.3 / C -44.5; 21 only C -31.8 / C -2.3 (holes 40 / 14.9 smaller). rr1.0+nosun+skip 21-23 C / C. Real and engine disagree. Pile late_night opened.",
     "2026-10-08: pile late_night 17 tr 29% -46.11 (h 30%/29%). No engine run tonight.",
-    "2026-10-09 05:00 veille: by entry hour 21 h 0/4 -20.60, 22 h 0/4 -9.60, 23 h 1/5 -7.04, 00 h 9 tr 44% -14.97; but 01-02 h 10 tr 70% +26.23. Four calm flip losses 22:09-22:54 sit in the window."
+    "2026-10-09 05:00 veille: by entry hour 21 h 0/4 -20.60, 22 h 0/4 -9.60, 23 h 1/5 -7.04, 00 h 9 tr 44% -14.97; but 01-02 h 10 tr 70% +26.23. Four calm flip losses 22:09-22:54 sit in the window.",
+    "2026-10-09 06:30 veille: labo ask 'us' (16-24 h) 32 tr 28% -47.99; but 16-20 h 19 tr 8 won -10.75, 21-23 h 13 tr 1 won -37.24 - the evening pile is the late pile. Engine skip 16-22 C -59.2 (h1 -64.1 / h2 +4.9), hole unchanged. Real and engine still disagree."
    ],
    "next": "Watch the pile; if it reaches 30 trades and still loses, ask for an engine trace by hour to see why the engine's late trades win."
   },
@@ -768,6 +770,11 @@
    "d": "2026-10-08",
    "run": "proposed untested",
    "res": "wait30_fm075, ext400_nosun_caprr07"
+  },
+  {
+   "d": "2026-10-09",
+   "run": "skip_hours 16-22 (raw, 42 d)",
+   "res": "C -59.2 (h1 -64.1 / h2 +4.9) hole 80.3 -> 79.1"
   }
  ],
  "scrutiny_log": [
@@ -1137,6 +1144,16 @@
     "asks (none open)"
    ],
    "saw": "88 trades 47% -32.18 PF 0.83, hole 59.82. The flip losses were all calm (<0.66): flip_hot unchanged 26 tr. Pace <0.8 17 tr 29% -21.68 (halves agree). FLIP-BOS 49 tr 37% -46.95; BOS 36 tr 61% +25.63. After a loss 47 tr 40% -45.62; after a win 40 tr 52% +5.64. flip_after_loss 30 tr 33% -37.96. No twins, no labo, no ask. No harness run (nerv_floor already C; flip_loss_size not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-09T06:30:05Z",
+   "looked": [
+    "wake_context (no new trade, 2 labo asks open: us, flip_after_loss)",
+    "scrutiny --pile us (by nerv / prev / hour)",
+    "scrutiny --pile flip_after_loss (by nerv / hour)",
+    "harness --skip-hours 16-23 (engine reads it as 16-22)"
+   ],
+   "saw": "88 trades, nothing new. us 32 tr 28% -47.99 (h 29%/28%): 16-20 h 19 tr 8 won -10.75; 21-23 h 13 tr 1 won -37.24 - the evening hole is the late_night hole. Engine 42 d skip 16-22: C, 178.8 -> 119.6 (-59.2), h1 -64.1 / h2 +4.9, hole 80.3 -> 79.1. flip_after_loss 30 tr 33% -37.96 (h 36%/32%): nervous 11 tr 2 won -31.16, calm 19 tr 8 won -6.80. Answered both asks. No pile, no proposal."
   }
  ],
  "lessons": [
@@ -1156,7 +1173,8 @@
   "2026-10-08: the measured engine gap is now usable and tiny (-0.018 $/trade on 32 trades): the engine is no longer more generous than the accounts; --drag auto changes almost nothing.",
   "2026-10-08: the same 42-day refs run an hour apart flipped the base second half from -60.3 (kill line hit) to -8.4 (not hit). STD halves of the first batch were kill-decided; use the nokill halves when they differ.",
   "2026-10-08: on the capped shape, dials that each help (cap_rr 0.7, first_move 0.75, wait 30) turn C when combined - capped gains do not add up. Test combos before believing them.",
-  "2026-10-08: runs are slow now (~15 min for 12 variants x 2 shapes x 2 readings); runner in Temp/cr3.py takes a JSON spec file and 'long'."
+  "2026-10-08: runs are slow now (~15 min for 12 variants x 2 shapes x 2 readings); runner in Temp/cr3.py takes a JSON spec file and 'long'.",
+  "2026-10-09: harness --skip-hours A-B excludes B (16-23 skipped 16..22 only). Write the last hour + 1."
  ],
  "open": [
   "fm075_fliphot075: capped A tonight (+18.4, 69 d +15.2) - does the battery confirm two nights? Then the critic.",
