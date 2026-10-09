@@ -7,11 +7,11 @@
   "structure_bos_bot.py": "737176d37d79f435",
   "owl_chart_feed.py": "44fa43a5ef0550ff",
   "owl_package.py": "14a105bc9373a087",
-  "lab/harness.py": "db49142d2d9bedcb",
+  "lab/harness.py": "5595bd65d0fd6e2e",
   "lab/compte_controller.py": "dc0e3ae0d748bc31",
   "reference_ledger_lib.py": "b95a48add2da165e",
   "bos_reference_ledger.py": "618637e4dabbfdf2",
-  "study/manifest_runner.py": "d92f3f6b1bff127a"
+  "study/manifest_runner.py": "5a932c4e8ea1d48b"
  },
  "datasets": {
   "development_original": {
@@ -267,7 +267,7 @@
  "control_k_by_regime": {
   "infinity": {
    "drag_0.00": {
-    "k": 4,
+    "k": 2,
     "basis": "A",
     "balance_used": 175.7
    },
@@ -284,7 +284,7 @@
     "balance_used": 267.42
    },
    "drag_0.35": {
-    "k": 6,
+    "k": 4,
     "basis": "B",
     "balance_used": 267.42
    }
@@ -296,7 +296,7 @@
     "balance_used": 360.37
    },
    "drag_0.35": {
-    "k": 6,
+    "k": 2,
     "basis": "B",
     "balance_used": 360.37
    }

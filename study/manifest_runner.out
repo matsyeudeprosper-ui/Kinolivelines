@@ -16,17 +16,19 @@ drag 0.35: canonical (recorder spec) 299 outcomes net -51.60 | old n_cont=999 29
 2. hard 10% cap on the FINAL lot vs the current balance (Infinity, $175.70): trades that break it without the cap 0 (0 of them would PASS the legacy fixed $23 ceiling); trades with cap 194 vs without 194; e.g. []
 3. order fit -> cap: 17 traced trades were shrunk by the fit; 0 of them exceed the hard cap on the FINAL lot (must be 0)
 4. balance scaling at live cadence (Infinity): proposed lots seen [0.01, 0.02] (static [0.01]); net daily 52.90 vs static 54.93
-5. rounding from the decision's OWN ladder (Infinity primary): policy lot > proposed lot 0 (must be 0); halved 31 of 193; at the 0.01 floor 70 decisions could not halve the MAIN
+5. rounding from the decision's OWN ladder (Infinity primary): policy lot > proposed lot 0 (must be 0); halved 31 of 194; at the 0.01 floor 70 decisions could not halve the MAIN
 6. min_balance modelled: with balance $25 and the $20 floor, 333 refusals (minbal) over the run
+7. add rule on the REQUESTED multiplier (Infinity primary): triggered at the 0.01 floor 0 decisions -> main stays 0.01 (achieved 1.0), permitted adds 3 -> 1: True; triggered at 0.02: 31 -> main 0.01, adds 1: True; untriggered 163 keep 3: True; fired adds above budget 0 (must be 0); e.g. {'t': None, 'lot_prop': None, 'lot_pol': None, 'req_mult': None, 'ach_mult': None, 'add_cnt_before': None, 'add_cnt_after': None, 'add_permitted_before': None, 'add_permitted_risk': None, 'add_n': None}
+7b. forced floor (Infinity package, fixed 0.01 lot): triggered 35 -> main 0.01 kept, achieved 1.0, adds 3 -> 1: True; untriggered 186 keep 3: True; fired over budget 0; e.g. {'t': 1790172000, 'lot_prop': 0.01, 'lot_pol': 0.01, 'req_mult': 0.5, 'ach_mult': 1.0, 'add_cnt_before': 3, 'add_cnt_after': 1, 'add_permitted_before': 3.78, 'add_permitted_risk': 1.26, 'add_n': 0}
 
 === matched control k per regime (development, dataset b, canonical reference, live-order limits) ===
-infinity           valere      drag 0.00 A | base net   52.90 dd  55.33 | primary net   35.60 dd  55.28 ratio 0.999 | cut main  62.01 adds  24.65 | k=4 beats net 2/4 dd 1/4 | unkeyed [2, 32, 6, 2]
-u224016179         valere_cap3 drag 0.00 A | base net   62.73 dd  73.51 | primary net   50.68 dd  68.42 ratio 0.931 | cut main 113.56 adds  27.17 | k=2 beats net 2/2 dd 0/2 | unkeyed [60, 28]
-bos                special_10  drag 0.00 A | base net   78.24 dd 118.75 | primary net   65.23 dd 118.16 ratio 0.995 | cut main 138.70 adds  35.84 | k=2 beats net 1/2 dd 0/2 | unkeyed [27, 61]
-reference_uncapped reference   drag 0.00 A | base net   53.06 dd  91.16 | primary net   54.12 dd  74.57 ratio 0.818 | cut main  92.95 adds   0.00 | k=6 beats net 4/6 dd 6/6 | unkeyed [0, 0, 0, 0, 0, 0]
-infinity           valere      drag 0.35 B | base net  -21.67 dd  60.69 | primary net    4.07 dd  56.05 ratio 0.924 | cut main -54.51 adds  60.78 | k=2 beats net 1/2 dd 1/2 | unkeyed [9, 6]
-u224016179         valere_cap3 drag 0.35 B | base net  -30.52 dd  65.23 | primary net  -22.38 dd  55.19 ratio 0.846 | cut main 107.65 adds 104.08 | k=6 beats net 5/6 dd 6/6 | unkeyed [4, 6, 5, 5, 7, 9]
-bos                special_10  drag 0.35 B | base net  -65.01 dd 130.47 | primary net  -12.49 dd  92.00 ratio 0.705 | cut main 124.95 adds  53.55 | k=6 beats net 6/6 dd 6/6 | unkeyed [84, 70, 7, 71, 6, 74]
-reference_uncapped reference   drag 0.35 B | base net  -51.59 dd 120.00 | primary net  -25.58 dd  84.46 ratio 0.704 | cut main 163.77 adds   0.00 | k=4 beats net 4/4 dd 4/4 | unkeyed [0, 0, 0, 0]
+infinity           valere      drag 0.00 A | (cached) primary ratio 0.999 k=2 beats net 2/2 dd 0/2
+u224016179         valere_cap3 drag 0.00 A | (cached) primary ratio 1.081 k=2 beats net 2/2 dd 0/2
+bos                special_10  drag 0.00 A | (cached) primary ratio 0.995 k=2 beats net 1/2 dd 0/2
+reference_uncapped reference   drag 0.00 A | (cached) primary ratio 0.818 k=6 beats net 4/6 dd 6/6
+infinity           valere      drag 0.35 B | (cached) primary ratio 0.924 k=2 beats net 1/2 dd 1/2
+u224016179         valere_cap3 drag 0.35 B | (cached) primary ratio 0.846 k=4 beats net 1/4 dd 4/4
+bos                special_10  drag 0.35 B | (cached) primary ratio 0.705 k=2 beats net 1/2 dd 2/2
+reference_uncapped reference   drag 0.35 B | (cached) primary ratio 0.704 k=4 beats net 4/4 dd 4/4
 
 manifest updated

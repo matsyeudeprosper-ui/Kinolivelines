@@ -203,12 +203,44 @@ out["parity_checks"]["never_above_proposed"] = {"increases": len(inc), "halved":
 f7, t7 = run(dict(cfg_inf, balance=25.0, min_balance=20.0, scale_lot=0))
 print("6. min_balance modelled: with balance $25 and the $20 floor, %d refusals (minbal) over the run" % f7.get("minbal", -1), flush=True)
 out["parity_checks"]["min_balance"] = {"refusals_at_25": f7.get("minbal", -1), "pass": f7.get("minbal", -1) >= 0}
+# review 11: the REQUESTED multiplier drives the add count rule, the achieved main ratio is reporting only
+trig_floor = [x for x in t6 if x["req_mult"] < 1.0 and x["lot_prop"] <= 0.01 + 1e-9]
+trig_02 = [x for x in t6 if x["req_mult"] < 1.0 and x["lot_prop"] >= 0.02 - 1e-9]
+untrig = [x for x in t6 if x["req_mult"] == 1.0]
+ok_floor = all(x["lot_pol"] == 0.01 and x["add_cnt_after"] == 1 and x["ach_mult"] == 1.0 for x in trig_floor)
+ok_02 = all(x["add_cnt_after"] == 1 and x["ach_mult"] == 0.5 for x in trig_02)
+ok_un = all(x["add_cnt_after"] == x["add_cnt_before"] == 3 for x in untrig)
+over = [x for x in t6 if x.get("add_n", 0) > x["add_cnt_after"]]
+ex = (trig_floor[:1] or [{}])[0]
+print("7. add rule on the REQUESTED multiplier (Infinity primary): triggered at the 0.01 floor %d decisions -> main stays 0.01 (achieved 1.0), permitted adds 3 -> 1: %s; triggered at 0.02: %d -> main 0.01, adds 1: %s; untriggered %d keep 3: %s; fired adds above budget %d (must be 0); e.g. %s" % (
+    len(trig_floor), ok_floor, len(trig_02), ok_02, len(untrig), ok_un, len(over),
+    {k: ex.get(k) for k in ("t", "lot_prop", "lot_pol", "req_mult", "ach_mult", "add_cnt_before", "add_cnt_after", "add_permitted_before", "add_permitted_risk", "add_n")}), flush=True)
+# 7b. the floor case on real data may have no trigger (cold start = early run = 0.01 days); force it:
+# Infinity's package at a FIXED 0.01 lot (scale_lot 0) so every decision sits at the floor
+f6b, t6b = run(dict(cfg_inf, lot=0.01, scale_lot=0, scale_daily=0), hook_directional(S0), True)
+tf = [x for x in t6b if x["req_mult"] < 1.0]; uf = [x for x in t6b if x["req_mult"] == 1.0]
+ok_tf = bool(tf) and all(x["lot_pol"] == 0.01 and x["ach_mult"] == 1.0 and x["add_cnt_after"] == 1 for x in tf)
+ok_uf = all(x["add_cnt_after"] == 3 for x in uf); over_f = [x for x in t6b if x.get("add_n", 0) > x["add_cnt_after"]]
+exf = (tf[:1] or [{}])[0]
+print("7b. forced floor (Infinity package, fixed 0.01 lot): triggered %d -> main 0.01 kept, achieved 1.0, adds 3 -> 1: %s; untriggered %d keep 3: %s; fired over budget %d; e.g. %s" % (
+    len(tf), ok_tf, len(uf), ok_uf, len(over_f), {k: exf.get(k) for k in ("t", "lot_prop", "lot_pol", "req_mult", "ach_mult", "add_cnt_before", "add_cnt_after", "add_permitted_before", "add_permitted_risk", "add_n")}), flush=True)
+out["parity_checks"]["requested_vs_achieved_forced_floor"] = {"triggered": len(tf), "untriggered": len(uf), "ok_triggered": ok_tf, "ok_untriggered": ok_uf, "fired_over_budget": len(over_f), "example": exf, "pass": ok_tf and ok_uf and not over_f}
+out["parity_checks"]["requested_vs_achieved"] = {"triggered_floor": len(trig_floor), "triggered_02": len(trig_02), "untriggered": len(untrig), "ok_floor": ok_floor, "ok_02": ok_02, "ok_untriggered": ok_un,
+                                                "fired_over_budget": len(over), "example": ex, "pass": ok_floor and ok_02 and ok_un and not over}
 
 # ---------------- k per regime and cost basis (development only)
 print("\n=== matched control k per regime (development, dataset b, canonical reference, live-order limits) ===", flush=True)
 # rows are cached as they finish (keyed by dataset + harness hash) so a killed run resumes
 ROWS = r"C:\Projects\KinoliveLines\study\manifest_runner_rows.json"
-HKEY = META["sha256"][:16] + ":" + hashlib.sha256(open(r"C:\Projects\KinoliveLines\live\lab\harness.py", "rb").read()).hexdigest()[:16]
+# review 11: the cache key covers everything a row depends on - dataset, harness, this runner's
+# mapping, the controller, the bot engine, the canonical reference spec, the cost basis set,
+# the control settings and (per row, below) the effective config + starting balance
+def _h(path): return hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
+HKEY = ":".join([META["sha256"][:16], _h(r"C:\Projects\KinoliveLines\live\lab\harness.py"),
+                 hashlib.sha256(open(__file__, "rb").read().split(b"REGIMES = [")[0]).hexdigest()[:16],
+                 _h(r"C:\Projects\KinoliveLines\live\lab\compte_controller.py"), _h(r"C:\Projects\KinoliveLines\live\structure_bos_bot.py"),
+                 hashlib.sha256(json.dumps(REF_CANON, sort_keys=True).encode()).hexdigest()[:8],
+                 hashlib.sha256(json.dumps({"K_SET": K_SET, "drags": [0.0, 0.35], "spread": 7.0}, sort_keys=True).encode()).hexdigest()[:8]])
 try:
     cache = json.load(open(ROWS)); cache = cache if cache.get("key") == HKEY else {"key": HKEY, "rows": {}}
 except Exception:
@@ -220,7 +252,7 @@ for drag in (0.0, 0.35):
             cfg, rep = effective_cfg(PR[uid], bal, drag)
         except (ValueError, KeyError):
             continue
-        ck = "%s|%.2f" % (uid, drag)
+        ck = "%s|%.2f|%s" % (uid, drag, hashlib.sha256(json.dumps(cfg, sort_keys=True, default=str).encode()).hexdigest()[:12])
         if ck in cache["rows"]:
             row = cache["rows"][ck]; out["regimes"].setdefault(uid, {})["drag_%.2f" % drag] = row
             print("%-18s %-11s drag %.2f %s | (cached) primary ratio %s k=%d beats net %d/%d dd %d/%d" % (uid, pname, drag, basis, row["primary"]["ratio"], row["k"], row["beats_net"], row["k"], row["beats_dd"], row["k"]), flush=True)
@@ -228,9 +260,10 @@ for drag in (0.0, 0.35):
         if S is None:
             S = States(reference(drag))
         fb, trb = run(cfg); fp, trp = run(cfg, hook_directional(S), True)
-        bmap = {x["t"]: x for x in trb}
-        main_red = sum(bmap[x["t"]]["risk"] - x["risk"] for x in trp if x["t"] in bmap)
-        add_red = sum(bmap[x["t"]].get("add_permitted_risk", 0) - x.get("add_permitted_risk", 0) for x in trp if x["t"] in bmap)
+        # review 11: the policy's own cut from each decision's trace (not matched across diverged paths)
+        main_red = sum((x["lot_prop"] - x["lot_pol"]) * x["dist"] for x in trp)
+        add_red = sum(x.get("add_permitted_before", 0) - x.get("add_permitted_risk", 0) for x in trp)
+        n_trig = sum(1 for x in trp if x["req_mult"] < 1.0); n_floor_trig = sum(1 for x in trp if x["req_mult"] < 1.0 and x["lot_prop"] <= 0.01 + 1e-9)
         base_ids = [x["t"] for x in trb]; target = matched(trp)
         per = {}
         for k in K_SET:
@@ -244,7 +277,8 @@ for drag in (0.0, 0.35):
         ddp = dd_of([x["pnl"] for x in trp]); ddb = dd_of([x["pnl"] for x in trb])
         row = {"basis": basis, "balance_used": bal, "effective": rep, "baseline": {"net": fb["net"], "dd_cc": round(ddb, 2), "trades": len(trb), "blocked": fb["blocked"], "minbal": fb.get("minbal", 0)},
                "primary": {"net": fp["net"], "dd_cc": round(ddp, 2), "trades": len(trp), "ratio": round(ddp / ddb, 3) if ddb else None,
-                           "main_risk_reduction": round(main_red, 2), "permitted_add_reduction": round(add_red, 2)},
+                           "main_risk_reduction": round(main_red, 2), "permitted_add_reduction": round(add_red, 2),
+                           "triggered": n_trig, "triggered_at_floor": n_floor_trig},
                "k": kb, "k_phases": per[kb], "beats_net": sum(1 for x in per[kb]["net"] if x < fp["net"]), "beats_dd": sum(1 for x in per[kb]["dd_cc"] if x > ddp)}
         out["regimes"].setdefault(uid, {})["drag_%.2f" % drag] = row
         cache["rows"][ck] = row; json.dump(cache, open(ROWS, "w"), indent=1)

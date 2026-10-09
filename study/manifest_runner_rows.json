@@ -1,7 +1,7 @@
 {
- "key": "594a3275fb4a3c1d:db49142d2d9bedcb",
+ "key": "594a3275fb4a3c1d:5595bd65d0fd6e2e:810978929aa76e1b:dc0e3ae0d748bc31:737176d37d79f435:4d054741:53f660ef",
  "rows": {
-  "infinity|0.00": {
+  "infinity|0.00|82108c056295": {
    "basis": "A",
    "balance_used": 175.7,
    "effective": {
@@ -42,44 +42,38 @@
     "minbal": 0
    },
    "primary": {
-    "net": 35.6,
+    "net": 51.92,
     "dd_cc": 55.28,
-    "trades": 193,
+    "trades": 194,
     "ratio": 0.999,
-    "main_risk_reduction": 62.01,
-    "permitted_add_reduction": 24.65
+    "main_risk_reduction": 61.99,
+    "permitted_add_reduction": 41.26,
+    "triggered": 31,
+    "triggered_at_floor": 0
    },
-   "k": 4,
+   "k": 2,
    "k_phases": {
     "exp": [
-     771.6899999999999,
-     886.4100000000003,
-     770.9199999999998,
-     755.5099999999999
+     666.3,
+     855.0300000000003
     ],
     "net": [
-     60.11,
-     6.48,
-     31.51,
-     49.99
+     47.54,
+     22.24
     ],
     "dd_cc": [
-     43.28,
-     41.61999999999999,
-     58.269999999999996,
-     45.96999999999999
+     46.219999999999985,
+     35.140000000000015
     ],
     "unkeyed": [
-     2,
-     32,
      6,
-     2
+     46
     ]
    },
    "beats_net": 2,
-   "beats_dd": 1
+   "beats_dd": 0
   },
-  "u224016179|0.00": {
+  "u224016179|0.00|15053fbceb72": {
    "basis": "A",
    "balance_used": 267.42,
    "effective": {
@@ -120,36 +114,38 @@
     "minbal": 0
    },
    "primary": {
-    "net": 50.68,
-    "dd_cc": 68.42,
-    "trades": 199,
-    "ratio": 0.931,
-    "main_risk_reduction": 113.56,
-    "permitted_add_reduction": 27.17
+    "net": 59.33,
+    "dd_cc": 79.49,
+    "trades": 200,
+    "ratio": 1.081,
+    "main_risk_reduction": 128.3,
+    "permitted_add_reduction": 41.26,
+    "triggered": 32,
+    "triggered_at_floor": 0
    },
    "k": 2,
    "k_phases": {
     "exp": [
-     1028.67,
-     956.8399999999999
+     1038.5900000000001,
+     933.7599999999999
     ],
     "net": [
-     -10.11,
-     48.18
+     -0.3,
+     52.06
     ],
     "dd_cc": [
-     50.769999999999996,
-     47.589999999999975
+     50.56,
+     37.64
     ],
     "unkeyed": [
-     60,
-     28
+     56,
+     25
     ]
    },
    "beats_net": 2,
    "beats_dd": 0
   },
-  "bos|0.00": {
+  "bos|0.00|3b8c5d84bf09": {
    "basis": "A",
    "balance_used": 360.37,
    "effective": {
@@ -190,36 +186,38 @@
     "minbal": 0
    },
    "primary": {
-    "net": 65.23,
+    "net": 77.75,
     "dd_cc": 118.16,
     "trades": 186,
     "ratio": 0.995,
-    "main_risk_reduction": 138.7,
-    "permitted_add_reduction": 35.84
+    "main_risk_reduction": 125.87,
+    "permitted_add_reduction": 41.26,
+    "triggered": 31,
+    "triggered_at_floor": 0
    },
    "k": 2,
    "k_phases": {
     "exp": [
-     1255.5099999999998,
-     1499.2399999999998
+     1242.0299999999995,
+     1435.9000000000005
     ],
     "net": [
-     105.1,
-     3.58
+     105.55,
+     -2.02
     ],
     "dd_cc": [
-     71.06,
-     91.82000000000001
+     71.99000000000001,
+     89.50999999999999
     ],
     "unkeyed": [
-     27,
-     61
+     25,
+     60
     ]
    },
    "beats_net": 1,
    "beats_dd": 0
   },
-  "reference_uncapped|0.00": {
+  "reference_uncapped|0.00|4c3129e78cdb": {
    "basis": "A",
    "balance_used": 1000.0,
    "effective": {
@@ -264,8 +262,10 @@
     "dd_cc": 74.57,
     "trades": 299,
     "ratio": 0.818,
-    "main_risk_reduction": 92.95,
-    "permitted_add_reduction": 0.0
+    "main_risk_reduction": 92.93,
+    "permitted_add_reduction": 0.0,
+    "triggered": 41,
+    "triggered_at_floor": 0
    },
    "k": 6,
    "k_phases": {
@@ -305,7 +305,7 @@
    "beats_net": 4,
    "beats_dd": 6
   },
-  "infinity|0.35": {
+  "infinity|0.35|33ea2a92a506": {
    "basis": "B",
    "balance_used": 175.7,
    "effective": {
@@ -346,36 +346,38 @@
     "minbal": 0
    },
    "primary": {
-    "net": 4.07,
+    "net": 16.06,
     "dd_cc": 56.05,
     "trades": 207,
     "ratio": 0.924,
-    "main_risk_reduction": -54.51,
-    "permitted_add_reduction": 60.78
+    "main_risk_reduction": 76.58,
+    "permitted_add_reduction": 68.27,
+    "triggered": 54,
+    "triggered_at_floor": 13
    },
    "k": 2,
    "k_phases": {
     "exp": [
-     755.9000000000001,
-     898.1200000000003
+     716.9700000000001,
+     786.5000000000005
     ],
     "net": [
-     31.92,
-     -14.79
+     33.62,
+     -18.44
     ],
     "dd_cc": [
-     58.429999999999964,
-     45.12999999999999
+     58.42999999999999,
+     50.190000000000005
     ],
     "unkeyed": [
-     9,
-     6
+     12,
+     11
     ]
    },
    "beats_net": 1,
    "beats_dd": 1
   },
-  "u224016179|0.35": {
+  "u224016179|0.35|e046db0beace": {
    "basis": "B",
    "balance_used": 267.42,
    "effective": {
@@ -416,52 +418,46 @@
     "minbal": 0
    },
    "primary": {
-    "net": -22.38,
+    "net": -23.98,
     "dd_cc": 55.19,
     "trades": 256,
     "ratio": 0.846,
-    "main_risk_reduction": 107.65,
-    "permitted_add_reduction": 104.08
+    "main_risk_reduction": 125.3,
+    "permitted_add_reduction": 104.08,
+    "triggered": 67,
+    "triggered_at_floor": 0
    },
-   "k": 6,
+   "k": 4,
    "k_phases": {
     "exp": [
-     873.97,
-     1205.0599999999995,
-     1240.5700000000002,
-     1248.4600000000005,
-     1188.3499999999995,
-     1203.4900000000005
+     1209.48,
+     1108.6800000000003,
+     1138.0899999999997,
+     1140.8700000000006
     ],
     "net": [
-     -61.38,
-     -22.62,
-     -47.81,
-     -46.21,
-     -33.53,
-     -13.61
+     -44.69,
+     -18.22,
+     -23.07,
+     -22.2
     ],
     "dd_cc": [
-     77.89,
-     68.84,
-     68.82000000000001,
-     71.49000000000004,
-     75.25,
-     58.22000000000001
+     71.57000000000002,
+     62.22000000000001,
+     60.29,
+     60.190000000000005
     ],
     "unkeyed": [
-     4,
-     6,
-     5,
-     5,
+     8,
+     9,
      7,
-     9
+     6
     ]
    },
-   "beats_net": 5,
-   "beats_dd": 6
+   "beats_net": 1,
+   "beats_dd": 4
   },
-  "bos|0.35": {
+  "bos|0.35|2ec758e2f10f": {
    "basis": "B",
    "balance_used": 360.37,
    "effective": {
@@ -502,52 +498,38 @@
     "minbal": 0
    },
    "primary": {
-    "net": -12.49,
+    "net": -12.21,
     "dd_cc": 92.0,
     "trades": 225,
     "ratio": 0.705,
-    "main_risk_reduction": 124.95,
-    "permitted_add_reduction": 53.55
+    "main_risk_reduction": 240.35,
+    "permitted_add_reduction": 92.85,
+    "triggered": 61,
+    "triggered_at_floor": 0
    },
-   "k": 6,
+   "k": 2,
    "k_phases": {
     "exp": [
-     1663.9700000000003,
-     1658.9600000000005,
-     1082.4400000000003,
-     1720.0200000000007,
-     1156.9899999999998,
-     1689.7500000000005
+     1489.0600000000004,
+     1512.210000000001
     ],
     "net": [
-     -36.56,
-     -33.06,
-     -60.84,
-     -49.22,
-     -62.27,
-     -60.02
+     -38.55,
+     -8.54
     ],
     "dd_cc": [
-     110.17,
-     110.17,
-     113.65999999999998,
-     135.81,
-     127.76,
-     124.11000000000001
+     121.59999999999998,
+     110.17000000000002
     ],
     "unkeyed": [
-     84,
-     70,
-     7,
-     71,
-     6,
-     74
+     78,
+     77
     ]
    },
-   "beats_net": 6,
-   "beats_dd": 6
+   "beats_net": 1,
+   "beats_dd": 2
   },
-  "reference_uncapped|0.35": {
+  "reference_uncapped|0.35|9acf34344a94": {
    "basis": "B",
    "balance_used": 1000.0,
    "effective": {
@@ -592,8 +574,10 @@
     "dd_cc": 84.46,
     "trades": 299,
     "ratio": 0.704,
-    "main_risk_reduction": 163.77,
-    "permitted_add_reduction": 0.0
+    "main_risk_reduction": 163.73,
+    "permitted_add_reduction": 0.0,
+    "triggered": 72,
+    "triggered_at_floor": 0
    },
    "k": 4,
    "k_phases": {

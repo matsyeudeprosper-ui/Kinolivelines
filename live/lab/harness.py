@@ -211,7 +211,16 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             #     reference recorder has no ceiling).
             #   scale_lot 0 = a balance that is NOT used to scale the lot
             #     (fixed-lot account) but still exists for the limits.
-            "limits_live": 0, "hard_cap_pct": 0.10, "min_balance": 0.0, "scale_lot": 1}
+            "limits_live": 0, "hard_cap_pct": 0.10, "min_balance": 0.0, "scale_lot": 1,
+            # 2026-10-10 entry screens (ChatGPT briefs, research only):
+            #   delay_main_mid 1 = in debt (> $0.50) the MAIN waits for the
+            #     recovery midpoint; original stop and target kept; one
+            #     virtual setup at a time, no other signal while it waits.
+            #   delay_order "adverse" | "favorable" = same-bar ambiguity rule.
+            #   entry_mode "bos" (live) | "tl" (protected-dot projected line,
+            #     first touch from the trend side) | "tl_h" (same line frozen
+            #     horizontal at arming - attribution control).
+            "delay_main_mid": 0, "delay_order": "adverse", "entry_mode": "bos"}
 # the live bot's own numbers, read from it so the two cannot drift apart
 JAR_SKIM = getattr(B, "JAR_SKIM", 0.50)
 JAR_STAKE = getattr(B, "JAR_STAKE", 0.50)
@@ -430,6 +439,18 @@ def simulate(R, spread, cfg):
     prev = 0
     used_hi = used_lo = None
     pos = None
+    pos_geo = None       # delayed main: price-based payoff (original stop/target kept)
+    pend = None          # the waiting setup of the delayed-main candidate
+    n_pend = n_pend_fill = n_pend_mw = n_pend_ml = n_pend_amb = n_pend_fav_cancel = 0
+    pend_amb_kinds = {"mid_sl": 0, "mid_tp": 0, "mid_sl_tp": 0}
+    TLMODE = c.get("entry_mode", "bos") if c.get("entry_mode", "bos") != "bos" else None
+    tl = {"trend": 0, "anchors": [], "pair": None, "armed_at": None, "L_h": None, "side": False, "used": False, "slope": 0.0}
+    tl_stats = {"anchors": 0, "anchor_time_invalid": 0, "pairs": 0, "slope_pos": 0, "slope_neg": 0, "slope_flat": 0, "touches": 0,
+                "geom_reject": 0, "entries": 0, "arm_to_touch_s": [], "displacement": [], "stop_vs_spread": [], "gap_fills": 0,
+                "pre_confirm_touch": 0}
+    tl_events = []       # causal log of the first pairs: anchors (candle t, price, known-at), arming, touch
+    tl_sig = None
+    tl_times = [int(r["time"]) for r in R] if TLMODE else None
     run = pk = 0.0
     streak = 0
     curve = []
@@ -469,7 +490,8 @@ def simulate(R, spread, cfg):
     lp_paused = lp_virt = False
     lp_snap = None
     eq_all = []          # EQHOOK: full-size money of every closed trade
-    eq_mult = 1.0        # the lot multiplier the open trade used
+    eq_mult = 1.0        # the ACHIEVED main-lot multiplier of the open trade (after the 0.01 floor)
+    eq_req = 1.0         # the REQUESTED policy multiplier (review 11: drives the count-based add rule)
     n_virt = 0
 
     def _lp_close(win):
@@ -513,7 +535,37 @@ def simulate(R, spread, cfg):
                 day_profit = 0.0
                 cap_h4 = None
                 n_rearm += 1
-        if pos:
+        if pend is not None and pos is None:
+            _pd, _pmid, _psl, _ptp = pend["d"], pend["mid"], pend["sl"], pend["tp"]
+            _hm = (l <= _pmid) if _pd == 1 else (h >= _pmid)
+            _hs = (l <= _psl) if _pd == 1 else (h >= _psl)
+            _ht = (h >= _ptp) if _pd == 1 else (l <= _ptp)
+            if _ht and not _hm:
+                n_pend_mw += 1; pend = None            # ran to the target without offering the midpoint
+            elif _hm:
+                _amb = "mid_sl_tp" if (_hs and _ht) else ("mid_sl" if _hs else ("mid_tp" if _ht else None))
+                if _amb:
+                    n_pend_amb += 1; pend_amb_kinds[_amb] += 1
+                _fav = c.get("delay_order", "adverse") == "favorable"
+                if _fav and _amb in ("mid_sl", "mid_sl_tp"):
+                    n_pend_fav_cancel += 1; n_pend_ml += 1; pend = None   # favorable reading: the stop printed first, no fill
+                else:
+                    _fill = _pmid if _pd * (o - _pmid) > 0 else o          # gap: the open is the quote
+                    _lot = pend["lot"]
+                    pos = (_pd, _fill, _psl, _ptp, pend["dist"], _pmid, True, _lot)
+                    pos_geo = {"e0": pend["e0"], "fill": _fill, "amb": _amb, "skip_eval": (_amb == "mid_tp" and not _fav)}
+                    pos_trailed = False; last_hour = t // 3600
+                    n_trades += 1; day_n += 1; n_pend_fill += 1
+                    cur_tr = pend["trace"]
+                    if cur_tr is not None:
+                        cur_tr.update({"delayed": True, "e0": round(pend["e0"], 2), "e_fill": round(_fill, 2), "t_fill": t, "amb": _amb,
+                                       "lot": round(_lot, 2), "risk": round(_pd * (_fill - _psl) * _lot, 2)})
+                    pend = None
+        if pos and pos_geo is not None and pos_geo.get("skip_eval"):
+            # adverse reading of a same-bar fill + target: the target is NOT
+            # credited on the fill bar; the position lives on from the next bar
+            pos_geo["skip_eval"] = False
+        elif pos:
             d, e, sl, tp, dist, mid, hit_mid, lot = pos
             # The stop follows the structure. This runs BEFORE
             # eng.step() for this bar, so the level it reads already
@@ -597,9 +649,12 @@ def simulate(R, spread, cfg):
                 # number in algebra but not always in the last bit of
                 # a float, and `run` carries that bit into every later
                 # trade's rounded money.
-                pts = ((pos_rr * dist - spread) if win
-                       else ((d * (sl - e) - spread) if c["trail_prot"]
-                             else -(dist + spread)))
+                if pos_geo is not None:
+                    pts = (d * (tp - e) - spread) if win else (d * (sl - e) - spread)
+                else:
+                    pts = ((pos_rr * dist - spread) if win
+                           else ((d * (sl - e) - spread) if c["trail_prot"]
+                                 else -(dist + spread)))
                 debt = (debt_led if c["debt_mode"] == "half"
                         else max(0.0, pk - run))
                 before = run
@@ -618,8 +673,11 @@ def simulate(R, spread, cfg):
                         nb = 0 if nv > 1.0 else max(0, min(int(NB), by_budget, by_debt))
                     else:
                         nb = int(NB)
-                if nb and EQHOOK is not None and EQ_ADDS and eq_mult < 1.0:
-                    nb = int(nb * eq_mult)          # count-based: 3 -> 1 at 0.5 (achieved cut reported, not "exactly half")
+                if nb and EQHOOK is not None and EQ_ADDS and eq_req < 1.0:
+                    # review 11: the REQUESTED multiplier drives the count rule
+                    # (int(3 x 0.5) = 1) even when the main sits at the 0.01
+                    # floor; the achieved main ratio is for reporting only
+                    nb = min(nb, int(int(NB) * eq_req))
                 if TRACE is not None and cur_tr is not None:
                     cur_tr["add_n"] = nb; cur_tr["add_risk"] = round(nb * 0.5 * dist * BLOT, 2)
                 bpts = 0.0
@@ -636,6 +694,10 @@ def simulate(R, spread, cfg):
                     # 2026-10-09: bullets pay the same execution drag per lot as
                     # the main trade (0 by default, so nothing changes unless set)
                     run -= drag_cost(c, BLOT * nb)
+                if TRACE is not None and cur_tr is not None:
+                    # main and add money apart (entry screens report them separately)
+                    cur_tr["pnl_main"] = round(pts * lot - drag_cost(c, lot), 2)
+                    cur_tr["pnl_add"] = round((bpts * BLOT * nb - drag_cost(c, BLOT * nb)) if nb else 0.0, 2)
                 if c["jar"]:
                     if nb and bpts < 0:
                         chest = max(0.0, chest + bpts * BLOT * nb)
@@ -706,6 +768,69 @@ def simulate(R, spread, cfg):
             prev = eng.trend
         if sig is not None:
             marks.append(t)
+        # ---- protected-dot projected line (entry screen, research only) ----
+        if TLMODE:
+            if flips and flips[-1] == t:
+                # the touch is a CONTINUATION opportunity: the debt allowance
+                # re-arms on the trend flip itself, not on a flip ENTRY
+                last_flip_t = t
+                cont_left = int(c["n_cont"])
+            _dot = eng.prot_lo if eng.trend == 1 else (eng.prot_hi if eng.trend == -1 else None)
+            if eng.trend != tl["trend"] or eng.choch not in (0, eng.trend):
+                # segment broken (flip or opposing CHoCH): no anchors carried over
+                tl["trend"] = eng.trend; tl["anchors"] = []; tl["pair"] = None
+            if _dot is not None and eng.trend != 0 and (not tl["anchors"] or int(_dot[0]) != tl["anchors"][-1][0]):
+                if tl["anchors"] and int(_dot[0]) <= tl["anchors"][-1][0]:
+                    tl_stats["anchor_time_invalid"] += 1
+                else:
+                    # (candle time, price, known-at = this bar's time; eligible from the next bar)
+                    tl["anchors"] = (tl["anchors"] + [(int(_dot[0]), float(_dot[1]), t)])[-2:]
+                    tl_stats["anchors"] += 1
+                    if len(tl["anchors"]) == 2:
+                        (_t1, _p1, _), (_t2, _p2, _) = tl["anchors"]
+                        tl["pair"] = (_t1, _t2); tl["armed_at"] = t; tl["side"] = False; tl["used"] = False
+                        tl["slope"] = (_p2 - _p1) / float(_t2 - _t1)
+                        tl["L_h"] = _p2 + tl["slope"] * (t - _t2)
+                        tl_stats["pairs"] += 1
+                        tl_stats["slope_pos" if _p2 > _p1 else ("slope_neg" if _p2 < _p1 else "slope_flat")] += 1
+                        # a touch of the (future) line between the 2nd anchor's candle and its
+                        # confirmation: visible on a finished chart, impossible to trade
+                        _pre = False
+                        for _j in range(bisect.bisect_left(tl_times, _t2) + 1, i):   # AFTER the anchor candle (which lies on its own line)
+                            _Lj = _p2 + tl["slope"] * (tl_times[_j] - _t2)
+                            _xj = float(R[_j]["low"]) if eng.trend == 1 else float(R[_j]["high"])
+                            if eng.trend * (_xj - _Lj) <= 0:
+                                _pre = True; break
+                        if _pre:
+                            tl_stats["pre_confirm_touch"] += 1
+                        if len(tl_events) < 12:
+                            tl_events.append({"pair": [_t1, _t2], "anchors": [list(a) for a in tl["anchors"]], "armed_at": t, "trend": eng.trend,
+                                              "slope_per_s": round(tl["slope"], 6), "L_at_arming": round(tl["L_h"], 2), "pre_confirm_touch": _pre})
+            tl_sig = None
+            if tl["pair"] is not None and t > tl["armed_at"] and not tl["used"]:
+                (_t1, _p1, _), (_t2, _p2, _) = tl["anchors"]; _d = eng.trend
+                _L = tl["L_h"] if TLMODE == "tl_h" else _p2 + tl["slope"] * (t - _t2)
+                if not tl["side"]:
+                    if _d * (cl - _L) > 0:
+                        tl["side"] = True        # price is on the trend side: armed for a touch from the NEXT bar
+                else:
+                    _x = l if _d == 1 else h
+                    if _d * (_x - _L) <= 0:
+                        tl["used"] = True; tl_stats["touches"] += 1
+                        _e = _L if _d * (o - _L) > 0 else o     # gap through the line: the open is the quote
+                        for _ev in tl_events:
+                            if _ev["pair"] == list(tl["pair"]) and "touch" not in _ev:
+                                _ev["touch"] = {"t": t, "L": round(_L, 2), "entry": round(_e, 2), "stop": round(_p2, 2), "bar_o": o, "bar_x": l if _d == 1 else h}
+                        if _e != _L:
+                            tl_stats["gap_fills"] += 1
+                        _sl = _p2                                # the most recent protected dot
+                        tl_stats["arm_to_touch_s"].append(int(t - tl["armed_at"]))
+                        tl_stats["displacement"].append(round(_L - tl["L_h"], 1))
+                        if _d * (_e - _sl) <= B.S_MIN_DIST:
+                            tl_stats["geom_reject"] += 1
+                        else:
+                            tl_sig = (_d, _sl, _e)
+                            tl_stats["stop_vs_spread"].append(round(_d * (_e - _sl) / max(spread, 1e-9), 2))
         # ---- internal structure ----------------------------------
         # Recomputed only when a candle actually survived the silence
         # filter, which is the only moment it can change. The main
@@ -811,7 +936,9 @@ def simulate(R, spread, cfg):
                     continue       # stand aside, do not take the reversal
                 # flip_exit 2 falls through: the reversal is now considered
                 # like any other entry, every later gate still applying
-        if sig is None or pos:
+        if TLMODE:
+            sig = tl_sig            # the projected line REPLACES the BOS trigger
+        if sig is None or pos or pend is not None:
             continue
         if dead:
             continue
@@ -820,11 +947,12 @@ def simulate(R, spread, cfg):
             continue
         if not i_fire and not any(f > t - B.AWAKE_WIN for f in flips):
             continue
-        d, slp = sig
+        d, slp = sig[0], sig[1]
+        e_px = float(sig[2]) if len(sig) > 2 else cl     # the executable entry quote (tl: the line / the open)
         flip = bool(flips) and flips[-1] == t
         if i_fire:
             n_int += 1
-        if not flip and not i_fire:
+        if not flip and not i_fire and not TLMODE:
             lvl = eng.hi_v if d == 1 else eng.lo_v
             if (d == 1 and used_hi == lvl) or (d == -1 and used_lo == lvl):
                 continue
@@ -903,7 +1031,7 @@ def simulate(R, spread, cfg):
         if c["one_per_hour"] and last_hour == t // 3600:
             blocked += 1
             continue
-        dist = abs(cl - slp)
+        dist = abs(e_px - slp)
         # 2026-09-29 (owner): the spread is fixed at 7 pts on this broker, but
         # that is 1.2 % of a wide trade and 8.7 % of a tight one - and a market
         # too small to move cannot pay for it at all
@@ -920,6 +1048,7 @@ def simulate(R, spread, cfg):
             lot *= float(c["first_move_size"])
         eq_v = False
         eq_mult = 1.0
+        eq_req = 1.0
         bal_now = bal + run            # the balance live reads at the entry decision
         lot_prop = lot                 # the unadjusted (balance-scaled) lot
         if LIM_LIVE and float(c["min_balance"]) and bal_now < float(c["min_balance"]):
@@ -928,6 +1057,7 @@ def simulate(R, spread, cfg):
             continue
         if EQHOOK is not None:
             _m, eq_v = EQHOOK(eq_all)
+            eq_req = float(_m)
             if _m != 1.0:
                 _l2 = max(0.01, math.floor(lot * _m / 0.01 + 1e-9) * 0.01)
                 eq_mult = _l2 / lot if lot else 1.0
@@ -938,7 +1068,8 @@ def simulate(R, spread, cfg):
         if not LIM_LIVE and dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
         if DEBT_MAIN_MULT is not None and debt_now > 0.5:
-            lot = lot * float(DEBT_MAIN_MULT)
+            # 2026-10-10: broker step - floor 0.01 unless the main is a ghost (0)
+            lot = 0.0 if float(DEBT_MAIN_MULT) == 0 else max(0.01, math.floor(lot * float(DEBT_MAIN_MULT) / 0.01 + 1e-9) * 0.01)
         _risk = dist * lot
         if c["risk_max"] and _risk > float(c["risk_max"]):
             blocked += 1
@@ -981,11 +1112,14 @@ def simulate(R, spread, cfg):
             _need = day_cap_eff - day_profit
             if _need > 0:
                 pos_rr = min(rr, (_need / lot + spread) / dist)
-        tp = cl + d * pos_rr * dist
+        tp = e_px + d * pos_rr * dist
         lp_virt = bool(LOSSPAUSE and lp_paused) or bool(eq_v)
         if lp_virt:
             lp_snap = (run, pk, chest, debt_led, streak, wins)
-        pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
+        pos = (d, e_px, float(slp), tp, dist, e_px - d * dist / 2.0, False, lot)
+        pos_geo = None
+        if TLMODE:
+            tl_stats["entries"] += 1
         pos_trailed = False
         last_hour = t // 3600
         n_trades += 1
@@ -1003,10 +1137,15 @@ def simulate(R, spread, cfg):
                       "lot_prop": round(lot_prop, 2), "lot_pol": round(lot_pol, 2),
                       "bal_now": round(bal_now, 2), "fit_cap": round(_fit, 2), "hard_cap": round(hard_cap, 2),
                       # NOMINAL worst-case add capacity (bullet count x half-distance risk)
-                      "add_max_risk": round(int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT, 2),
+                      "add_max_risk": round(int(NB * (eq_req if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT, 2),
+                      # review 11: requested vs achieved, and the permitted add
+                      # count/risk BEFORE and AFTER the policy on this decision
+                      "req_mult": eq_req, "ach_mult": round(eq_mult, 4),
+                      "add_cnt_before": int(NB), "add_cnt_after": int(NB * (eq_req if (EQHOOK is not None and EQ_ADDS) else 1.0)),
+                      "add_permitted_before": round((int(NB) * 0.5 * dist * BLOT) if (debt_now > 0.5 and streak < K) else 0.0, 2),
                       # RULE-PERMITTED contingent budget from facts known at entry: the
                       # package fires adds only in debt and below the loss-streak cap
-                      "add_permitted_risk": round((int(NB * (eq_mult if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT)
+                      "add_permitted_risk": round((int(NB * (eq_req if (EQHOOK is not None and EQ_ADDS) else 1.0)) * 0.5 * dist * BLOT)
                                                   if (debt_now > 0.5 and streak < K) else 0.0, 2),
                       "tc_entry": t,
                       "med": round(_m, 1), "nerv": round(nv, 2),
@@ -1015,6 +1154,14 @@ def simulate(R, spread, cfg):
                       "touch": (hi_touch if d == 1 else lo_touch),
                       "win": None, "pnl": None, "virt": lp_virt}
             TRACE.append(cur_tr)
+        if c.get("delay_main_mid") and debt_now > 0.5:
+            # the candidate: in debt the MAIN waits at the recovery midpoint with the
+            # ORIGINAL stop and target; no other signal is taken while it waits
+            if cur_tr is not None:
+                cur_tr["delayed_setup"] = True
+            pend = {"d": d, "e0": e_px, "sl": float(slp), "tp": tp, "dist": dist, "mid": e_px - d * dist / 2.0, "lot": lot, "t0": t, "trace": cur_tr}
+            pos = None; pos_geo = None; cur_tr = None
+            n_trades -= 1; day_n -= 1; n_pend += 1
     dd = pk2 = worst = 0.0
     for v in curve:
         pk2 = max(pk2, v)
@@ -1040,7 +1187,14 @@ def simulate(R, spread, cfg):
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
             "virtual": n_virt, "eq_all": len(eq_all),
             "mtm_dd_adverse": round(mtm_dd_adv, 2), "mtm_dd_close": round(mtm_dd_close, 2),
-            "cc_dd": round(_cc_dd(pnls), 2)}
+            "cc_dd": round(_cc_dd(pnls), 2),
+            "pend": {"setups": n_pend, "filled": n_pend_fill, "missed_win": n_pend_mw, "cancelled_stop_first": n_pend_ml,
+                     "ambiguous": n_pend_amb, "ambiguous_kinds": pend_amb_kinds, "favorable_cancels": n_pend_fav_cancel,
+                     "still_waiting": 1 if pend is not None else 0},
+            "tl": {k: (v if not isinstance(v, list) else {"n": len(v), "median": (sorted(v)[len(v) // 2] if v else None),
+                                                           "min": (min(v) if v else None), "max": (max(v) if v else None)})
+                   for k, v in tl_stats.items()},
+            "tl_events": tl_events}
 
 
 def _cc_dd(pnls):
