@@ -355,6 +355,14 @@ DEBT_GATE = _P.get("debt_gate", True)
 # asks for it.
 EQ_HALF = bool(_P.get("eq_half", False))
 _EQ_CACHE = {"t": 0.0, "v": (0, 0)}
+# 2026-10-09 (owner, "test it in Depenses"): recovery = bullets only. While
+# the account is in debt a BOS entry is NOT opened: it is followed as a
+# GHOST (no order, its SL/TP watched on ticks so the loss streak counts it
+# exactly like a real main trade) and only the midpoint bullets trade, at
+# the same SL/TP, without the jar budget. Replay: same net, worst drop
+# -51 -> -32, and it survives real execution costs where today's recovery
+# does not (study/recovery_bullets_only_costs.py, verdict A).
+RECOV_BULLETS_ONLY = bool(_P.get("recov_bullets_only", False))
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
@@ -1108,6 +1116,7 @@ def main():
         + (f", target ${WEEK_TARGET:.0f}/week" if WEEK_TARGET else "")
         + ("" if DEBT_GATE else " | sans systeme de dette")
         + (" | demi-lot si resultats en baisse" if EQ_HALF else "")
+        + (" | reprise: balles seulement" if RECOV_BULLETS_ONLY else "")
         + _scale_line)
     ensure_algo()
 
@@ -1176,7 +1185,7 @@ def main():
         An internal entry follows the desk's approved rules: the 1 h
         small-move brake instead of the 2 h one, half the base lot, no
         recovery bullets."""
-        if my_positions():
+        if my_positions() or st.get("ghost"):
             return False
         if paused():
             return False
@@ -1354,6 +1363,27 @@ def main():
                           f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt} "
                           f"storm={_storm}",
                           BASE_LOT, book="fvg")
+        if (RECOV_BULLETS_ONLY and not internal
+                and st.get("debt", 0.0) > 0.5):
+            _lv = round(e_ref - d * 0.5 * dist, 2)
+            st["ghost"] = {"d": d, "e": round(e_ref, 2), "sl": round(slp, 2),
+                           "tp": round(tp, 2), "kind": kind,
+                           "t": datetime.now(timezone.utc).isoformat()}
+            # bullets in proportion to the account's size: the replay used
+            # 3 x 0.01 against a 0.02 lot (1.5x), so 0.01 -> 2 bullets
+            _nb = max(1, int(3 * lot / 0.02 + 0.5))
+            st["add"] = {"d": d, "lvl": _lv, "sl": round(slp, 2),
+                         "tp": round(tp, 2),
+                         "risk001": round(0.5 * dist * 0.01, 2),
+                         "done": False, "ghost": True, "nb": _nb}
+            day_roll(st)
+            st["day_n"] = st.get("day_n", 0) + 1
+            say(f"{kind} RECOVERY: pas d'entree {'BUY' if d == 1 else 'SELL'} "
+                f"@ ~{e_ref:.2f} (dette ${st['debt']:.2f}) - fantome suivi, "
+                f"{_nb} balle{'s' if _nb > 1 else ''} de 0.01 au mi-chemin "
+                f"{_lv:.2f}, SL {slp:.2f} TP {tp:.2f}")
+            save_state(st)
+            return True
         req = {"action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL,
                "volume": lot,
                "type": (mt5.ORDER_TYPE_BUY if d == 1
@@ -1462,9 +1492,31 @@ def main():
                 st["killed"] = True
                 save_state(st)
                 continue
+            # recovery GHOST (recov_bullets_only): its own SL/TP on ticks,
+            # so the loss streak counts it like a real main trade
+            _gh = st.get("ghost")
+            if _gh:
+                _tkg = mt5.symbol_info_tick(SYMBOL)
+                if _tkg is not None:
+                    if _gh["d"] == 1:
+                        _gl, _gw = _tkg.bid <= _gh["sl"], _tkg.bid >= _gh["tp"]
+                    else:
+                        _gl, _gw = _tkg.ask >= _gh["sl"], _tkg.ask <= _gh["tp"]
+                    if _gl or _gw:
+                        st["loss_streak"] = (0 if _gw
+                                             else st.get("loss_streak", 0) + 1)
+                        say(f"RECOVERY fantome {'TP' if _gw else 'SL'} "
+                            f"({_gh['kind']} {'BUY' if _gh['d'] == 1 else 'SELL'}"
+                            f" @ {_gh['e']:.2f}) - serie de pertes "
+                            f"{st['loss_streak']}")
+                        st["ghost"] = None
+                        if (st.get("add") and st["add"].get("ghost")
+                                and not st["add"].get("done")):
+                            st["add"] = None
+                        save_state(st)
             # 50%-PULLBACK ADD on the open trade (chest bullets)
             _ad = st.get("add")
-            if _ad and not _ad.get("done") and my_positions():
+            if _ad and not _ad.get("done") and (my_positions() or _ad.get("ghost")):
                 tk3 = mt5.symbol_info_tick(SYMBOL)
                 if tk3 is not None:
                     _hit = (tk3.bid <= _ad["lvl"] if _ad["d"] == 1
@@ -1493,6 +1545,16 @@ def main():
                             _n = 0
                         elif st["debt"] <= 0.5:
                             _n = 0        # nothing to recover, no fighters
+                        elif _ad.get("ghost"):
+                            # bullets-only recovery: no jar budget, sized
+                            # with the account, never past the package's
+                            # per-trade risk ceiling
+                            _n = int(_ad.get("nb") or 2)
+                            if RISK_FIT_PCT > 0:
+                                _ai4 = mt5.account_info()
+                                if _ai4 is not None:
+                                    _n = min(_n, int((RISK_FIT_PCT / 100.0
+                                                      * _ai4.balance) // _r001))
                         elif JAR:
                             # the BOS entry's economy, now applied at the
                             # midpoint: stake only part of the jar, and never
@@ -1539,7 +1601,7 @@ def main():
                                 say(f"ADD FAILED retcode="
                                     f"{_r3.retcode if _r3 else None}")
                         save_state(st)
-            if st.get("add") and not my_positions():
+            if st.get("add") and not my_positions() and not st.get("ghost"):
                 st["add"] = None
                 save_state(st)
             # TOUCH continuation (user 2026-09-09, measured first:

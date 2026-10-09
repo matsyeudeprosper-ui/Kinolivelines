@@ -60,7 +60,10 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "debt_gate",
           # 2026-10-08 (owner): eq_half - rule #1b, False everywhere
           # except the package that switches it on (structure_bos_bot.EQ_HALF)
-          "eq_half")
+          "eq_half",
+          # 2026-10-09 (owner): bullets-only recovery, False everywhere
+          # except the package that switches it on
+          "recov_bullets_only")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -71,7 +74,7 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "day_cap_waived": True, "scale_with_balance": False,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
-        "debt_gate": True, "eq_half": False}
+        "debt_gate": True, "eq_half": False, "recov_bullets_only": False}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

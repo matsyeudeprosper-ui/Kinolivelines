@@ -89,7 +89,13 @@
     "eq_half    false (default) / true = rule #1b: while the account's own",
     "           results are falling (progression trend down, no CHoCH up",
     "           pending) a lot of 0.02+ is halved, floor 0.01. Owner",
-    "           2026-10-08: on Depenses only (study/compte_rules_test.py)."
+    "           2026-10-08: on Depenses only (study/compte_rules_test.py).",
+    "",
+    "recov_bullets_only  false (default) / true = in debt a BOS entry is",
+    "           not opened: a ghost follows it (SL/TP on ticks, counts in the",
+    "           loss streak) and only the midpoint bullets trade, same SL/TP,",
+    "           no jar budget, 1.5x the account's lot in 0.01s, under its",
+    "           per-trade risk ceiling. Owner 2026-10-09: Depenses only."
   ],
   "packages": {
     "base": {
@@ -179,8 +185,9 @@
     "valere_cap3_eqhalf": {
       "extends": "valere_cap3",
       "eq_half": true,
-      "label": "Valere cap 3 % + demi-lot si resultats en baisse",
-      "_why": "2026-10-08 owner: rule #1b on Depenses - half lot while the account's own progression falls, until a CHoCH up. Bites from lot 0.02 (balance >= $200)."
+      "label": "Valere cap 3 % + demi-lot si resultats en baisse + reprise balles seulement",
+      "_why": "2026-10-08 owner: rule #1b on Depenses - half lot while the account's own progression falls, until a CHoCH up. Bites from lot 0.02 (balance >= $200). 2026-10-09 owner: also bullets-only recovery (study/recovery_bullets_only_costs.py).",
+      "recov_bullets_only": true
     }
   },
   "accounts": {
