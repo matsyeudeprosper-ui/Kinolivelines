@@ -1,0 +1,198 @@
+{
+ "drag_0.00": {
+  "baseline": {
+   "net": 116.09,
+   "trades": 274,
+   "exposure": 1038.07,
+   "worst_drop": -50.91,
+   "tail5": -61.99,
+   "p95_loss": -8.04,
+   "later_third": -5.52,
+   "h1": 132.37,
+   "h2": -35.69,
+   "label": "baseline"
+  },
+  "global half (main+adds PRIMARY)": {
+   "net": 96.0,
+   "trades": 273,
+   "exposure": 861.87,
+   "worst_drop": -48.71,
+   "tail5": -50.83,
+   "p95_loss": -7.68,
+   "later_third": -17.21,
+   "h1": 117.57,
+   "h2": -54.49,
+   "label": "global half (main+adds PRIMARY)"
+  },
+  "global half (main+adds PRIMARY) const": {
+   "net": 35.49,
+   "trades": 272,
+   "exposure": 514.6,
+   "worst_drop": -28.72,
+   "tail5": -30.99,
+   "p95_loss": -3.87,
+   "later_third": -8.58,
+   "h1": 48.26,
+   "h2": -31.11,
+   "label": "   control: constant 0.83x exposure"
+  },
+  "global half (main+adds PRIMARY) shift": {
+   "median_net": 79.76,
+   "median_drop": -50.23,
+   "beats_net": 7,
+   "beats_drop": 9
+  },
+  "global half (main-only diag)": {
+   "net": 100.93,
+   "trades": 273,
+   "exposure": 861.87,
+   "worst_drop": -49.65,
+   "tail5": -50.83,
+   "p95_loss": -7.68,
+   "later_third": -13.56,
+   "h1": 121.55,
+   "h2": -47.5,
+   "label": "global half (main-only diag)"
+  },
+  "directional half (main+adds PRIMARY)": {
+   "net": 117.4,
+   "trades": 275,
+   "exposure": 932.31,
+   "worst_drop": -48.1,
+   "tail5": -51.24,
+   "p95_loss": -8.2,
+   "later_third": -3.31,
+   "h1": 137.03,
+   "h2": -32.28,
+   "label": "directional half (main+adds PRIMARY)"
+  },
+  "directional half (main+adds PRIMARY) const": {
+   "net": 35.49,
+   "trades": 272,
+   "exposure": 514.6,
+   "worst_drop": -28.72,
+   "tail5": -30.99,
+   "p95_loss": -3.87,
+   "later_third": -8.58,
+   "h1": 48.26,
+   "h2": -31.11,
+   "label": "   control: constant 0.90x exposure"
+  },
+  "directional half (main+adds PRIMARY) shift": {
+   "median_net": 106.32,
+   "median_drop": -50.91,
+   "beats_net": 8,
+   "beats_drop": 9
+  },
+  "directional half (main-only diag)": {
+   "net": 129.18,
+   "trades": 277,
+   "exposure": 939.37,
+   "worst_drop": -49.63,
+   "tail5": -50.83,
+   "p95_loss": -7.68,
+   "later_third": 8.43,
+   "h1": 138.95,
+   "h2": -32.39,
+   "label": "directional half (main-only diag)"
+  }
+ },
+ "drag_0.35": {
+  "baseline": {
+   "net": 6.04,
+   "trades": 266,
+   "exposure": 1005.6,
+   "worst_drop": -77.92,
+   "tail5": -65.56,
+   "p95_loss": -8.72,
+   "later_third": -28.86,
+   "h1": 54.39,
+   "h2": -81.81,
+   "label": "baseline"
+  },
+  "global half (main+adds PRIMARY)": {
+   "net": -5.13,
+   "trades": 266,
+   "exposure": 834.15,
+   "worst_drop": -67.14,
+   "tail5": -52.4,
+   "p95_loss": -8.03,
+   "later_third": -35.87,
+   "h1": 41.2,
+   "h2": -87.16,
+   "label": "global half (main+adds PRIMARY)"
+  },
+  "global half (main+adds PRIMARY) const": {
+   "net": -4.78,
+   "trades": 266,
+   "exposure": 501.96,
+   "worst_drop": -38.35,
+   "tail5": -31.87,
+   "p95_loss": -4.04,
+   "later_third": -17.88,
+   "h1": 21.33,
+   "h2": -54.03,
+   "label": "   control: constant 0.83x exposure"
+  },
+  "global half (main+adds PRIMARY) shift": {
+   "median_net": -3.8,
+   "median_drop": -68.0,
+   "beats_net": 4,
+   "beats_drop": 6
+  },
+  "global half (main-only diag)": {
+   "net": -9.38,
+   "trades": 266,
+   "exposure": 834.15,
+   "worst_drop": -71.0,
+   "tail5": -52.4,
+   "p95_loss": -8.03,
+   "later_third": -36.59,
+   "h1": 42.85,
+   "h2": -82.63,
+   "label": "global half (main-only diag)"
+  },
+  "directional half (main+adds PRIMARY)": {
+   "net": 21.26,
+   "trades": 267,
+   "exposure": 900.85,
+   "worst_drop": -58.96,
+   "tail5": -52.99,
+   "p95_loss": -8.55,
+   "later_third": -16.95,
+   "h1": 61.17,
+   "h2": -56.83,
+   "label": "directional half (main+adds PRIMARY)"
+  },
+  "directional half (main+adds PRIMARY) const": {
+   "net": -4.78,
+   "trades": 266,
+   "exposure": 501.96,
+   "worst_drop": -38.35,
+   "tail5": -31.87,
+   "p95_loss": -4.04,
+   "later_third": -17.88,
+   "h1": 21.33,
+   "h2": -54.03,
+   "label": "   control: constant 0.90x exposure"
+  },
+  "directional half (main+adds PRIMARY) shift": {
+   "median_net": 5.3,
+   "median_drop": -74.48,
+   "beats_net": 8,
+   "beats_drop": 10
+  },
+  "directional half (main-only diag)": {
+   "net": 22.52,
+   "trades": 267,
+   "exposure": 900.85,
+   "worst_drop": -59.64,
+   "tail5": -52.4,
+   "p95_loss": -8.03,
+   "later_third": -15.45,
+   "h1": 61.67,
+   "h2": -59.47,
+   "label": "directional half (main-only diag)"
+  }
+ }
+}

@@ -1,0 +1,25 @@
+reference: 299 trades, net 35.79 (fixed 0.02, no recovery)
+
+=== spread 7, execution drag $0.00 per 0.02 lot ===
+baseline                                 net   116.09 | later third    -5.52 | drop  -50.91 | tail5  -61.99 p95  -8.04 | exposure  1038.07 | trades 274 | cold halves  132.37 /  -35.69
+global half (main+adds PRIMARY)          net    96.00 | later third   -17.21 | drop  -48.71 | tail5  -50.83 p95  -7.68 | exposure   861.87 | trades 273 | cold halves  117.57 /  -54.49
+   control: constant 0.83x exposure      net    35.49 | later third    -8.58 | drop  -28.72 | tail5  -30.99 p95  -3.87 | exposure   514.60 | trades 272 | cold halves   48.26 /  -31.11
+   control: block-shifted schedule x10 -> median net 79.76, median drop -50.23 | candidate beats: net 7/10, drop 9/10
+global half (main-only diag)             net   100.93 | later third   -13.56 | drop  -49.65 | tail5  -50.83 p95  -7.68 | exposure   861.87 | trades 273 | cold halves  121.55 /  -47.50
+directional half (main+adds PRIMARY)     net   117.40 | later third    -3.31 | drop  -48.10 | tail5  -51.24 p95  -8.20 | exposure   932.31 | trades 275 | cold halves  137.03 /  -32.28
+   control: constant 0.90x exposure      net    35.49 | later third    -8.58 | drop  -28.72 | tail5  -30.99 p95  -3.87 | exposure   514.60 | trades 272 | cold halves   48.26 /  -31.11
+   control: block-shifted schedule x10 -> median net 106.32, median drop -50.91 | candidate beats: net 8/10, drop 9/10
+directional half (main-only diag)        net   129.18 | later third     8.43 | drop  -49.63 | tail5  -50.83 p95  -7.68 | exposure   939.37 | trades 277 | cold halves  138.95 /  -32.39
+
+=== spread 7, execution drag $0.35 per 0.02 lot ===
+baseline                                 net     6.04 | later third   -28.86 | drop  -77.92 | tail5  -65.56 p95  -8.72 | exposure  1005.60 | trades 266 | cold halves   54.39 /  -81.81
+global half (main+adds PRIMARY)          net    -5.13 | later third   -35.87 | drop  -67.14 | tail5  -52.40 p95  -8.03 | exposure   834.15 | trades 266 | cold halves   41.20 /  -87.16
+   control: constant 0.83x exposure      net    -4.78 | later third   -17.88 | drop  -38.35 | tail5  -31.87 p95  -4.04 | exposure   501.96 | trades 266 | cold halves   21.33 /  -54.03
+   control: block-shifted schedule x10 -> median net -3.80, median drop -68.00 | candidate beats: net 4/10, drop 6/10
+global half (main-only diag)             net    -9.38 | later third   -36.59 | drop  -71.00 | tail5  -52.40 p95  -8.03 | exposure   834.15 | trades 266 | cold halves   42.85 /  -82.63
+directional half (main+adds PRIMARY)     net    21.26 | later third   -16.95 | drop  -58.96 | tail5  -52.99 p95  -8.55 | exposure   900.85 | trades 267 | cold halves   61.17 /  -56.83
+   control: constant 0.90x exposure      net    -4.78 | later third   -17.88 | drop  -38.35 | tail5  -31.87 p95  -4.04 | exposure   501.96 | trades 266 | cold halves   21.33 /  -54.03
+   control: block-shifted schedule x10 -> median net 5.30, median drop -74.48 | candidate beats: net 8/10, drop 10/10
+directional half (main-only diag)        net    22.52 | later third   -15.45 | drop  -59.64 | tail5  -52.40 p95  -8.03 | exposure   900.85 | trades 267 | cold halves   61.67 /  -59.47
+
+reference stream: 299 outcomes; input = fixed 0.02 gross, spread 7, same drag as the bot; states causal (closed before entry); DEVELOPMENT DATA
