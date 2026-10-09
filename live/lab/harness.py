@@ -225,6 +225,12 @@ DIRGATE = None
 # next trades are VIRTUAL (taken, scored, but booked nowhere: no money, no
 # debt, no reserve, no streak) until one of them wins. Off by default.
 LOSSPAUSE = False
+# 2026-10-08 (owner): the Compte indicator as a bot rule. A callable
+# (all_trades) -> (lot_multiplier, virtual) consulted at every entry.
+# all_trades = every closed trade so far, real AND virtual, at FULL size
+# (money / the multiplier that trade used) - the system's own curve, so a
+# paused or shrunk account can still see its curve recover. None = off.
+EQHOOK = None
 # the internal-structure engine lives in the chart feed, factored out
 # of its live loop exactly so other callers can use it. Imported here
 # lazily: a harness run with internal=0 must not pay for it, and must
@@ -411,6 +417,8 @@ def simulate(R, spread, cfg):
     hi_touch = lo_touch = 0
     lp_paused = lp_virt = False
     lp_snap = None
+    eq_all = []          # EQHOOK: full-size money of every closed trade
+    eq_mult = 1.0        # the lot multiplier the open trade used
     n_virt = 0
 
     def _lp_close(win):
@@ -419,6 +427,8 @@ def simulate(R, spread, cfg):
         # (one position at a time, so nothing else moved in between).
         nonlocal run, pk, chest, debt_led, day_profit, streak, wins
         nonlocal lp_paused, lp_virt, lp_snap, n_virt
+        if EQHOOK is not None and pnls:
+            eq_all.append(pnls[-1] / (eq_mult or 1.0))
         if lp_virt:
             day_profit -= run - lp_snap[0]
             run, pk, chest, debt_led, streak, wins = lp_snap
@@ -426,7 +436,8 @@ def simulate(R, spread, cfg):
                 pnls.pop()
             n_virt += 1
         # a callable LOSSPAUSE decides it instead (controls: random pauses)
-        lp_paused = LOSSPAUSE(win) if callable(LOSSPAUSE) else (not win)
+        if LOSSPAUSE:
+            lp_paused = LOSSPAUSE(win) if callable(LOSSPAUSE) else (not win)
         lp_virt = False
     for i, bar in enumerate(R):
         t = int(bar["time"])
@@ -511,7 +522,7 @@ def simulate(R, spread, cfg):
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
-                if LOSSPAUSE:
+                if LOSSPAUSE or EQHOOK is not None:
                     _lp_close(win)
                 pos = None
                 pos_trailed = False
@@ -585,7 +596,7 @@ def simulate(R, spread, cfg):
                 streak = 0 if win else streak + 1
                 wins += 1 if win else 0
                 pk = max(pk, run)
-                if LOSSPAUSE:
+                if LOSSPAUSE or EQHOOK is not None:
                     _lp_close(win)
                 if pos_trailed and not win:
                     n_trail_exit += 1
@@ -720,7 +731,7 @@ def simulate(R, spread, cfg):
                 streak = 0 if _win else streak + 1
                 wins += 1 if _win else 0
                 pk = max(pk, run)
-                if LOSSPAUSE:
+                if LOSSPAUSE or EQHOOK is not None:
                     _lp_close(_win)
                 pos = None
                 pos_trailed = False
@@ -835,6 +846,14 @@ def simulate(R, spread, cfg):
             lot *= float(c["flip_hot_size"])
         if not i_fire and i >= 1440 and mv2 == 1:
             lot *= float(c["first_move_size"])
+        eq_v = False
+        eq_mult = 1.0
+        if EQHOOK is not None:
+            _m, eq_v = EQHOOK(eq_all)
+            if _m != 1.0:
+                _l2 = max(0.01, math.floor(lot * _m / 0.01 + 1e-9) * 0.01)
+                eq_mult = _l2 / lot if lot else 1.0
+                lot = _l2
         if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
         _risk = dist * lot
@@ -872,7 +891,7 @@ def simulate(R, spread, cfg):
             if _need > 0:
                 pos_rr = min(rr, (_need / lot + spread) / dist)
         tp = cl + d * pos_rr * dist
-        lp_virt = bool(LOSSPAUSE and lp_paused)
+        lp_virt = bool(LOSSPAUSE and lp_paused) or bool(eq_v)
         if lp_virt:
             lp_snap = (run, pk, chest, debt_led, streak, wins)
         pos = (d, cl, float(slp), tp, dist, cl - d * dist / 2.0, False, lot)
@@ -917,7 +936,7 @@ def simulate(R, spread, cfg):
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
-            "virtual": n_virt}
+            "virtual": n_virt, "eq_all": len(eq_all)}
 
 
 def run_cfg(R, spread, cfg):
