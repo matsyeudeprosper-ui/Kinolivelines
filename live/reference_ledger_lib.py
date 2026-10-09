@@ -50,6 +50,9 @@ def parse_ledger(lines):
                 st["errors"].append((i, "duplicate_entry", ev)); continue
             if "blocked" in ph_seen:
                 st["errors"].append((i, "entry_after_blocked", ev)); continue
+            if not r.get("recording_version") and "t_fill_msc" not in r and isinstance(r.get("t_fill"), (int, float)):
+                r["t_fill_msc"] = int(float(r["t_fill"]) * 1000)      # rec-1 schema: derive, do not reject
+                r["schema_upgraded_from"] = "rec-1"
             bad = _finite_fields(r, ENTRY_NUM)
             if bad or r.get("dir") not in (1, -1):
                 st["errors"].append((i, "entry_schema", f"{ev}:{bad or 'dir'}")); continue

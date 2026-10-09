@@ -23,6 +23,8 @@ st = L.parse_ledger([E("a"), E("b")]); ok("two open ids flagged", any(e[1] == "m
 st = L.parse_ledger([E("a"), C("a"), '{"phase": "entry", "event_id": "b"']); ok("truncated tail flagged", any(e[1] == "malformed" for e in st["errors"]) and L.reconcile(st, {}) is None)
 st = L.parse_ledger([E("a"), "garbage", C("a")]); ok("corrupt middle flagged", any(e[1] == "malformed" for e in st["errors"]))
 st = L.parse_ledger([E("a", sl=float("nan"))]); ok("entry with non-finite field flagged", any(e[1] == "entry_schema" for e in st["errors"]))
+st = L.parse_ledger([J(phase="entry", event_id="old", dir=-1, entry=100.0, sl=110.0, tp=92.0, lot=0.02, t_fill=1791554460.5)])
+ok("rec-1 entry (no t_fill_msc, no recording_version) accepted with the field derived", not st["errors"] and st["open"]["old"]["t_fill_msc"] == 1791554460500)
 st = L.parse_ledger([E("a", d=2)]); ok("entry with bad dir flagged", any(e[1] == "entry_schema" for e in st["errors"]))
 st = L.parse_ledger([E("a"), C("a", pnl=float("inf"))]); ok("close with non-finite pnl flagged", any(e[1] == "close_schema" for e in st["errors"]))
 st = L.parse_ledger([E("a")]); ok("entry_allowed refuses a seen event", not L.entry_allowed(st, "a"))
