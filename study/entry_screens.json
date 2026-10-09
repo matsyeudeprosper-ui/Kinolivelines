@@ -1,0 +1,6341 @@
+{
+ "generated_at": "2026-10-09T19:46:50Z",
+ "key": "594a3275fb4a3c1d:b716448c3e7defe3:810978929aa76e1b:737176d37d79f435:7b96fa25:spread7",
+ "dataset": "594a3275fb4a3c1d",
+ "rows": {
+  "infinity|0.00|baseline|8fcf8f5500": {
+   "net": 52.9,
+   "dd_cc": 55.33,
+   "dd_daily": 50.91,
+   "mtm_proxy": 56.12,
+   "trades": 194,
+   "wins": 110,
+   "pnl_main": 28.79,
+   "pnl_add": 24.11,
+   "risk_main": 568.51,
+   "risk_add_actual": 54.59,
+   "adds_fired": 71,
+   "later_half_net": 2.87,
+   "killed": false,
+   "blocked": 168,
+   "lots": {
+    "0.01": 70,
+    "0.02": 124
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.00|delayed_adverse|eb28029568": {
+   "net": 27.36,
+   "dd_cc": 32.01,
+   "dd_daily": 28.22,
+   "mtm_proxy": 32.15,
+   "trades": 156,
+   "wins": 60,
+   "pnl_main": 18.96,
+   "pnl_add": 8.44,
+   "risk_main": 218.46,
+   "risk_add_actual": 45.73,
+   "adds_fired": 68,
+   "later_half_net": -1.8,
+   "killed": false,
+   "blocked": 110,
+   "lots": {
+    "0.01": 94,
+    "0.02": 62
+   },
+   "pend": {
+    "setups": 196,
+    "filled": 124,
+    "missed_win": 72,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 196,
+    "fills": 124,
+    "win_rate_filled": 0.363,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.228,
+    "sum_pnl_main_filled": 28.33,
+    "mean_win_main": 2.96,
+    "mean_loss_main": -1.33,
+    "entry_price_gain_usd": 149.85,
+    "missed_winners": 72,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.00|delayed_favorable|189de7a2ed": {
+   "net": 30.2,
+   "dd_cc": 32.01,
+   "dd_daily": 28.22,
+   "mtm_proxy": 32.15,
+   "trades": 152,
+   "wins": 60,
+   "pnl_main": 22.8,
+   "pnl_add": 7.45,
+   "risk_main": 221.46,
+   "risk_add_actual": 46.65,
+   "adds_fired": 69,
+   "later_half_net": -0.82,
+   "killed": false,
+   "blocked": 111,
+   "lots": {
+    "0.01": 84,
+    "0.02": 68
+   },
+   "pend": {
+    "setups": 195,
+    "filled": 120,
+    "missed_win": 71,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 4,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 195,
+    "fills": 120,
+    "win_rate_filled": 0.375,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.262,
+    "sum_pnl_main_filled": 31.48,
+    "mean_win_main": 3.01,
+    "mean_loss_main": -1.39,
+    "entry_price_gain_usd": 150.1,
+    "missed_winners": 71,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.00|half_main_in_debt|8fcf8f5500": {
+   "net": 21.73,
+   "dd_cc": 30.69,
+   "dd_daily": 28.09,
+   "mtm_proxy": 30.64,
+   "trades": 219,
+   "wins": 126,
+   "pnl_main": -0.41,
+   "pnl_add": 22.1,
+   "risk_main": 415.35,
+   "risk_add_actual": 59.15,
+   "adds_fired": 80,
+   "later_half_net": -13.94,
+   "killed": false,
+   "blocked": 110,
+   "lots": {
+    "0.01": 205,
+    "0.02": 14
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.00|tl_projected|c3846973d5": {
+   "net": -24.87,
+   "dd_cc": 28.46,
+   "dd_daily": 23.62,
+   "mtm_proxy": 29.09,
+   "trades": 115,
+   "wins": 51,
+   "pnl_main": -19.61,
+   "pnl_add": -5.25,
+   "risk_main": 112.43,
+   "risk_add_actual": 17.3,
+   "adds_fired": 58,
+   "later_half_net": -17.07,
+   "killed": false,
+   "blocked": 6,
+   "lots": {
+    "0.01": 115
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 115,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.00|tl_horizontal|734432327c": {
+   "net": -0.9,
+   "dd_cc": 8.54,
+   "dd_daily": 6.8,
+   "mtm_proxy": 8.98,
+   "trades": 98,
+   "wins": 53,
+   "pnl_main": 5.6,
+   "pnl_add": -6.48,
+   "risk_main": 63.22,
+   "risk_add_actual": 7.28,
+   "adds_fired": 43,
+   "later_half_net": 3.78,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.01": 98
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 98,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.0,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|baseline|565b360f2c": {
+   "net": 62.73,
+   "dd_cc": 73.51,
+   "dd_daily": 67.39,
+   "mtm_proxy": 75.06,
+   "trades": 198,
+   "wins": 112,
+   "pnl_main": 34.66,
+   "pnl_add": 28.0,
+   "risk_main": 811.84,
+   "risk_add_actual": 66.0,
+   "adds_fired": 87,
+   "later_half_net": -3.34,
+   "killed": false,
+   "blocked": 163,
+   "lots": {
+    "0.02": 91,
+    "0.01": 6,
+    "0.03": 101
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|delayed_adverse|877ffd5187": {
+   "net": 38.57,
+   "dd_cc": 39.94,
+   "dd_daily": 34.23,
+   "mtm_proxy": 40.13,
+   "trades": 154,
+   "wins": 61,
+   "pnl_main": 38.36,
+   "pnl_add": 0.19,
+   "risk_main": 339.13,
+   "risk_add_actual": 54.01,
+   "adds_fired": 82,
+   "later_half_net": -1.87,
+   "killed": false,
+   "blocked": 139,
+   "lots": {
+    "0.02": 79,
+    "0.01": 6,
+    "0.03": 69
+   },
+   "pend": {
+    "setups": 186,
+    "filled": 121,
+    "missed_win": 65,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 186,
+    "fills": 121,
+    "win_rate_filled": 0.347,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.334,
+    "sum_pnl_main_filled": 40.46,
+    "mean_win_main": 4.97,
+    "mean_loss_main": -2.13,
+    "entry_price_gain_usd": 237.86,
+    "missed_winners": 65,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|delayed_favorable|a1887833af": {
+   "net": 34.9,
+   "dd_cc": 39.94,
+   "dd_daily": 34.23,
+   "mtm_proxy": 40.13,
+   "trades": 149,
+   "wins": 60,
+   "pnl_main": 37.55,
+   "pnl_add": -2.66,
+   "risk_main": 337.03,
+   "risk_add_actual": 50.36,
+   "adds_fired": 80,
+   "later_half_net": -8.69,
+   "killed": false,
+   "blocked": 148,
+   "lots": {
+    "0.02": 65,
+    "0.01": 6,
+    "0.03": 78
+   },
+   "pend": {
+    "setups": 183,
+    "filled": 115,
+    "missed_win": 64,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 4,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 183,
+    "fills": 115,
+    "win_rate_filled": 0.357,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.373,
+    "sum_pnl_main_filled": 42.88,
+    "mean_win_main": 5.04,
+    "mean_loss_main": -2.21,
+    "entry_price_gain_usd": 232.75,
+    "missed_winners": 64,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|half_main_in_debt|565b360f2c": {
+   "net": 41.84,
+   "dd_cc": 31.79,
+   "dd_daily": 29.18,
+   "mtm_proxy": 31.74,
+   "trades": 222,
+   "wins": 128,
+   "pnl_main": 15.79,
+   "pnl_add": 26.03,
+   "risk_main": 454.39,
+   "risk_add_actual": 69.0,
+   "adds_fired": 97,
+   "later_half_net": -1.15,
+   "killed": false,
+   "blocked": 119,
+   "lots": {
+    "0.02": 21,
+    "0.01": 187,
+    "0.03": 14
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|tl_projected|2ba134a453": {
+   "net": -44.46,
+   "dd_cc": 49.18,
+   "dd_daily": 43.7,
+   "mtm_proxy": 49.77,
+   "trades": 114,
+   "wins": 50,
+   "pnl_main": -39.96,
+   "pnl_add": -4.49,
+   "risk_main": 214.13,
+   "risk_add_actual": 17.8,
+   "adds_fired": 60,
+   "later_half_net": -28.23,
+   "killed": false,
+   "blocked": 7,
+   "lots": {
+    "0.02": 112,
+    "0.01": 2
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 114,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.00|tl_horizontal|0a350ccfc8": {
+   "net": 6.24,
+   "dd_cc": 11.82,
+   "dd_daily": 10.35,
+   "mtm_proxy": 14.22,
+   "trades": 98,
+   "wins": 53,
+   "pnl_main": 11.2,
+   "pnl_add": -4.94,
+   "risk_main": 126.56,
+   "risk_add_actual": 10.29,
+   "adds_fired": 52,
+   "later_half_net": 14.14,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 98
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 98,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.0,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|baseline|406b39d1ff": {
+   "net": 78.24,
+   "dd_cc": 118.75,
+   "dd_daily": 107.78,
+   "mtm_proxy": 120.82,
+   "trades": 185,
+   "wins": 104,
+   "pnl_main": 35.43,
+   "pnl_add": 42.82,
+   "risk_main": 1238.53,
+   "risk_add_actual": 74.41,
+   "adds_fired": 98,
+   "later_half_net": -12.45,
+   "killed": false,
+   "blocked": 189,
+   "lots": {
+    "0.03": 61,
+    "0.04": 95,
+    "0.05": 29
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|delayed_adverse|5ea9d386b6": {
+   "net": 69.38,
+   "dd_cc": 52.31,
+   "dd_daily": 44.73,
+   "mtm_proxy": 52.6,
+   "trades": 154,
+   "wins": 60,
+   "pnl_main": 52.03,
+   "pnl_add": 17.42,
+   "risk_main": 538.43,
+   "risk_add_actual": 61.77,
+   "adds_fired": 91,
+   "later_half_net": 15.52,
+   "killed": false,
+   "blocked": 137,
+   "lots": {
+    "0.03": 76,
+    "0.04": 78
+   },
+   "pend": {
+    "setups": 187,
+    "filled": 123,
+    "missed_win": 64,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 187,
+    "fills": 123,
+    "win_rate_filled": 0.358,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.596,
+    "sum_pnl_main_filled": 73.33,
+    "mean_win_main": 7.46,
+    "mean_loss_main": -3.23,
+    "entry_price_gain_usd": 365.66,
+    "missed_winners": 64,
+    "cancelled_stop_first": 0,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|delayed_favorable|648d7f6b47": {
+   "net": 73.72,
+   "dd_cc": 52.31,
+   "dd_daily": 44.73,
+   "mtm_proxy": 52.6,
+   "trades": 150,
+   "wins": 60,
+   "pnl_main": 56.37,
+   "pnl_add": 17.42,
+   "risk_main": 540.18,
+   "risk_add_actual": 61.77,
+   "adds_fired": 91,
+   "later_half_net": 14.59,
+   "killed": false,
+   "blocked": 137,
+   "lots": {
+    "0.03": 62,
+    "0.04": 88
+   },
+   "pend": {
+    "setups": 187,
+    "filled": 119,
+    "missed_win": 64,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 4,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 187,
+    "fills": 119,
+    "win_rate_filled": 0.37,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.653,
+    "sum_pnl_main_filled": 77.67,
+    "mean_win_main": 7.55,
+    "mean_loss_main": -3.39,
+    "entry_price_gain_usd": 367.4,
+    "missed_winners": 64,
+    "cancelled_stop_first": 4,
+    "ambiguous": 5,
+    "ambiguous_kinds": {
+     "mid_sl": 4,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|half_main_in_debt|406b39d1ff": {
+   "net": 19.14,
+   "dd_cc": 43.62,
+   "dd_daily": 41.03,
+   "mtm_proxy": 43.59,
+   "trades": 217,
+   "wins": 126,
+   "pnl_main": -18.95,
+   "pnl_add": 38.09,
+   "risk_main": 504.44,
+   "risk_add_actual": 65.49,
+   "adds_fired": 90,
+   "later_half_net": -16.53,
+   "killed": false,
+   "blocked": 93,
+   "lots": {
+    "0.03": 24,
+    "0.01": 175,
+    "0.04": 4,
+    "0.02": 14
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|tl_projected|3971997300": {
+   "net": -67.25,
+   "dd_cc": 70.53,
+   "dd_daily": 56.0,
+   "mtm_proxy": 72.41,
+   "trades": 114,
+   "wins": 50,
+   "pnl_main": -62.75,
+   "pnl_add": -4.49,
+   "risk_main": 332.09,
+   "risk_add_actual": 17.8,
+   "adds_fired": 60,
+   "later_half_net": -40.03,
+   "killed": false,
+   "blocked": 6,
+   "lots": {
+    "0.03": 114
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 114,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.00|tl_horizontal|59dc86ec60": {
+   "net": 12.55,
+   "dd_cc": 15.57,
+   "dd_daily": 14.32,
+   "mtm_proxy": 19.46,
+   "trades": 98,
+   "wins": 53,
+   "pnl_main": 16.76,
+   "pnl_add": -4.22,
+   "risk_main": 189.79,
+   "risk_add_actual": 9.64,
+   "adds_fired": 51,
+   "later_half_net": 22.9,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.03": 98
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 98,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.0,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|baseline|d06ff079fa": {
+   "net": 53.06,
+   "dd_cc": 91.16,
+   "dd_daily": 83.41,
+   "mtm_proxy": 93.33,
+   "trades": 299,
+   "wins": 171,
+   "pnl_main": 53.05,
+   "pnl_add": 0.0,
+   "risk_main": 1188.89,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -39.88,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 299
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|delayed_adverse|d467628c67": {
+   "net": 52.56,
+   "dd_cc": 50.73,
+   "dd_daily": 46.11,
+   "mtm_proxy": 51.76,
+   "trades": 196,
+   "wins": 68,
+   "pnl_main": 52.54,
+   "pnl_add": 0.0,
+   "risk_main": 416.82,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": 14.12,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 196
+   },
+   "pend": {
+    "setups": 271,
+    "filled": 168,
+    "missed_win": 103,
+    "cancelled_stop_first": 0,
+    "ambiguous": 8,
+    "ambiguous_kinds": {
+     "mid_sl": 7,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 271,
+    "fills": 168,
+    "win_rate_filled": 0.351,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.539,
+    "sum_pnl_main_filled": 90.63,
+    "mean_win_main": 5.35,
+    "mean_loss_main": -2.07,
+    "entry_price_gain_usd": 334.83,
+    "missed_winners": 103,
+    "cancelled_stop_first": 0,
+    "ambiguous": 8,
+    "ambiguous_kinds": {
+     "mid_sl": 7,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|delayed_favorable|afafc77497": {
+   "net": 57.31,
+   "dd_cc": 48.02,
+   "dd_daily": 43.41,
+   "mtm_proxy": 49.05,
+   "trades": 189,
+   "wins": 68,
+   "pnl_main": 57.3,
+   "pnl_add": 0.0,
+   "risk_main": 413.04,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": 15.29,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 189
+   },
+   "pend": {
+    "setups": 271,
+    "filled": 161,
+    "missed_win": 103,
+    "cancelled_stop_first": 7,
+    "ambiguous": 8,
+    "ambiguous_kinds": {
+     "mid_sl": 7,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 7,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 271,
+    "fills": 161,
+    "win_rate_filled": 0.366,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.641,
+    "sum_pnl_main_filled": 103.26,
+    "mean_win_main": 5.35,
+    "mean_loss_main": -2.08,
+    "entry_price_gain_usd": 323.18,
+    "missed_winners": 103,
+    "cancelled_stop_first": 7,
+    "ambiguous": 8,
+    "ambiguous_kinds": {
+     "mid_sl": 7,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|half_main_in_debt|d06ff079fa": {
+   "net": 19.37,
+   "dd_cc": 46.6,
+   "dd_daily": 42.07,
+   "mtm_proxy": 47.68,
+   "trades": 299,
+   "wins": 171,
+   "pnl_main": 19.33,
+   "pnl_add": 0.0,
+   "risk_main": 642.86,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -19.96,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 28,
+    "0.01": 271
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|tl_projected|64c7b67822": {
+   "net": -51.57,
+   "dd_cc": 51.54,
+   "dd_daily": 42.72,
+   "mtm_proxy": 52.8,
+   "trades": 149,
+   "wins": 69,
+   "pnl_main": -51.54,
+   "pnl_add": 0.0,
+   "risk_main": 301.25,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -24.69,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 149
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 149,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.00|tl_horizontal|4e88aa5ca5": {
+   "net": 7.19,
+   "dd_cc": 10.39,
+   "dd_daily": 8.58,
+   "mtm_proxy": 11.76,
+   "trades": 105,
+   "wins": 56,
+   "pnl_main": 7.2,
+   "pnl_add": 0.0,
+   "risk_main": 135.48,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": 11.58,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 105
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 105,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.0,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|baseline|8e0d261e72": {
+   "net": -21.67,
+   "dd_cc": 60.69,
+   "dd_daily": 57.07,
+   "mtm_proxy": 60.68,
+   "trades": 226,
+   "wins": 133,
+   "pnl_main": -43.14,
+   "pnl_add": 21.5,
+   "risk_main": 475.25,
+   "risk_add_actual": 66.38,
+   "adds_fired": 92,
+   "later_half_net": -52.77,
+   "killed": false,
+   "blocked": 90,
+   "lots": {
+    "0.01": 182,
+    "0.02": 44
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|delayed_adverse|c091be2a9e": {
+   "net": -10.07,
+   "dd_cc": 37.1,
+   "dd_daily": 34.85,
+   "mtm_proxy": 37.0,
+   "trades": 161,
+   "wins": 60,
+   "pnl_main": -14.67,
+   "pnl_add": 4.55,
+   "risk_main": 166.94,
+   "risk_add_actual": 43.88,
+   "adds_fired": 67,
+   "later_half_net": -24.66,
+   "killed": false,
+   "blocked": 66,
+   "lots": {
+    "0.01": 152,
+    "0.02": 9
+   },
+   "pend": {
+    "setups": 222,
+    "filled": 139,
+    "missed_win": 83,
+    "cancelled_stop_first": 0,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 222,
+    "fills": 139,
+    "win_rate_filled": 0.367,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": -0.002,
+    "sum_pnl_main_filled": -0.27,
+    "mean_win_main": 2.2,
+    "mean_loss_main": -1.28,
+    "entry_price_gain_usd": 137.11,
+    "missed_winners": 83,
+    "cancelled_stop_first": 0,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|delayed_favorable|ae18c4fe0a": {
+   "net": -3.59,
+   "dd_cc": 27.62,
+   "dd_daily": 24.94,
+   "mtm_proxy": 28.11,
+   "trades": 155,
+   "wins": 59,
+   "pnl_main": -2.93,
+   "pnl_add": -0.72,
+   "risk_main": 153.6,
+   "risk_add_actual": 43.15,
+   "adds_fired": 65,
+   "later_half_net": -15.69,
+   "killed": false,
+   "blocked": 68,
+   "lots": {
+    "0.01": 155
+   },
+   "pend": {
+    "setups": 221,
+    "filled": 133,
+    "missed_win": 83,
+    "cancelled_stop_first": 5,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 5,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 221,
+    "fills": 133,
+    "win_rate_filled": 0.376,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.077,
+    "sum_pnl_main_filled": 10.2,
+    "mean_win_main": 2.17,
+    "mean_loss_main": -1.19,
+    "entry_price_gain_usd": 124.79,
+    "missed_winners": 83,
+    "cancelled_stop_first": 5,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|half_main_in_debt|8e0d261e72": {
+   "net": -12.93,
+   "dd_cc": 44.96,
+   "dd_daily": 39.27,
+   "mtm_proxy": 45.22,
+   "trades": 232,
+   "wins": 135,
+   "pnl_main": -31.36,
+   "pnl_add": 18.42,
+   "risk_main": 423.53,
+   "risk_add_actual": 66.46,
+   "adds_fired": 93,
+   "later_half_net": -31.52,
+   "killed": false,
+   "blocked": 83,
+   "lots": {
+    "0.01": 229,
+    "0.02": 3
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|tl_projected|26b1729612": {
+   "net": -56.25,
+   "dd_cc": 56.27,
+   "dd_daily": 51.47,
+   "mtm_proxy": 56.69,
+   "trades": 119,
+   "wins": 53,
+   "pnl_main": -41.26,
+   "pnl_add": -15.03,
+   "risk_main": 118.7,
+   "risk_add_actual": 17.63,
+   "adds_fired": 59,
+   "later_half_net": -30.94,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.01": 119
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 119,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "infinity|0.35|tl_horizontal|2e3453150c": {
+   "net": -25.28,
+   "dd_cc": 25.49,
+   "dd_daily": 25.48,
+   "mtm_proxy": 25.56,
+   "trades": 97,
+   "wins": 52,
+   "pnl_main": -11.71,
+   "pnl_add": -13.58,
+   "risk_main": 62.72,
+   "risk_add_actual": 7.73,
+   "adds_fired": 46,
+   "later_half_net": -9.74,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.01": 97
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 97,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "infinity",
+   "package": "valere",
+   "drag": 0.35,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|baseline|dd2bf7b75c": {
+   "net": -30.52,
+   "dd_cc": 65.23,
+   "dd_daily": 58.96,
+   "mtm_proxy": 68.89,
+   "trades": 256,
+   "wins": 149,
+   "pnl_main": -53.54,
+   "pnl_add": 23.03,
+   "risk_main": 839.79,
+   "risk_add_actual": 102.12,
+   "adds_fired": 135,
+   "later_half_net": -34.21,
+   "killed": false,
+   "blocked": 59,
+   "lots": {
+    "0.02": 243,
+    "0.01": 13
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|delayed_adverse|60a31f1d51": {
+   "net": -11.99,
+   "dd_cc": 55.01,
+   "dd_daily": 50.01,
+   "mtm_proxy": 56.02,
+   "trades": 164,
+   "wins": 58,
+   "pnl_main": -13.64,
+   "pnl_add": 1.57,
+   "risk_main": 286.11,
+   "risk_add_actual": 62.64,
+   "adds_fired": 91,
+   "later_half_net": -22.15,
+   "killed": false,
+   "blocked": 64,
+   "lots": {
+    "0.02": 158,
+    "0.01": 6
+   },
+   "pend": {
+    "setups": 238,
+    "filled": 149,
+    "missed_win": 89,
+    "cancelled_stop_first": 0,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 238,
+    "fills": 149,
+    "win_rate_filled": 0.349,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.012,
+    "sum_pnl_main_filled": 1.81,
+    "mean_win_main": 4.03,
+    "mean_loss_main": -2.14,
+    "entry_price_gain_usd": 251.05,
+    "missed_winners": 89,
+    "cancelled_stop_first": 0,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|delayed_favorable|3975c88e68": {
+   "net": -9.2,
+   "dd_cc": 52.1,
+   "dd_daily": 49.37,
+   "mtm_proxy": 53.11,
+   "trades": 159,
+   "wins": 60,
+   "pnl_main": -7.72,
+   "pnl_add": -1.54,
+   "risk_main": 290.63,
+   "risk_add_actual": 62.28,
+   "adds_fired": 88,
+   "later_half_net": -24.09,
+   "killed": false,
+   "blocked": 69,
+   "lots": {
+    "0.02": 142,
+    "0.01": 6,
+    "0.03": 11
+   },
+   "pend": {
+    "setups": 231,
+    "filled": 140,
+    "missed_win": 85,
+    "cancelled_stop_first": 6,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 6,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 231,
+    "fills": 140,
+    "win_rate_filled": 0.371,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.078,
+    "sum_pnl_main_filled": 10.97,
+    "mean_win_main": 4.05,
+    "mean_loss_main": -2.27,
+    "entry_price_gain_usd": 245.98,
+    "missed_winners": 85,
+    "cancelled_stop_first": 6,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|half_main_in_debt|dd2bf7b75c": {
+   "net": -11.61,
+   "dd_cc": 40.83,
+   "dd_daily": 37.19,
+   "mtm_proxy": 40.79,
+   "trades": 247,
+   "wins": 144,
+   "pnl_main": -27.51,
+   "pnl_add": 15.88,
+   "risk_main": 454.03,
+   "risk_add_actual": 80.45,
+   "adds_fired": 115,
+   "later_half_net": -25.13,
+   "killed": false,
+   "blocked": 71,
+   "lots": {
+    "0.02": 17,
+    "0.01": 230
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|tl_projected|ae2ecd6a7b": {
+   "net": -61.55,
+   "dd_cc": 61.59,
+   "dd_daily": 61.55,
+   "mtm_proxy": 61.09,
+   "trades": 93,
+   "wins": 45,
+   "pnl_main": -52.89,
+   "pnl_add": -8.69,
+   "risk_main": 170.9,
+   "risk_add_actual": 15.49,
+   "adds_fired": 48,
+   "later_half_net": -12.32,
+   "killed": true,
+   "blocked": 0,
+   "lots": {
+    "0.02": 90,
+    "0.01": 3
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 93,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179|0.35|tl_horizontal|f9eb1ae714": {
+   "net": -41.97,
+   "dd_cc": 42.3,
+   "dd_daily": 42.36,
+   "mtm_proxy": 42.52,
+   "trades": 97,
+   "wins": 52,
+   "pnl_main": -26.21,
+   "pnl_add": -15.76,
+   "risk_main": 121.74,
+   "risk_add_actual": 10.58,
+   "adds_fired": 55,
+   "later_half_net": -13.78,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 96,
+    "0.01": 1
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 97,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "u224016179",
+   "package": "valere_cap3",
+   "drag": 0.35,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|baseline|6fab0fdaa7": {
+   "net": -65.01,
+   "dd_cc": 130.47,
+   "dd_daily": 130.51,
+   "mtm_proxy": 131.5,
+   "trades": 158,
+   "wins": 94,
+   "pnl_main": -89.2,
+   "pnl_add": 24.2,
+   "risk_main": 929.46,
+   "risk_add_actual": 54.5,
+   "adds_fired": 74,
+   "later_half_net": -93.69,
+   "killed": true,
+   "blocked": 78,
+   "lots": {
+    "0.03": 96,
+    "0.04": 62
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|delayed_adverse|cd6f5ee2db": {
+   "net": -12.93,
+   "dd_cc": 85.07,
+   "dd_daily": 76.47,
+   "mtm_proxy": 86.61,
+   "trades": 161,
+   "wins": 58,
+   "pnl_main": -26.51,
+   "pnl_add": 13.61,
+   "risk_main": 499.33,
+   "risk_add_actual": 73.4,
+   "adds_fired": 102,
+   "later_half_net": -31.03,
+   "killed": false,
+   "blocked": 68,
+   "lots": {
+    "0.03": 128,
+    "0.04": 33
+   },
+   "pend": {
+    "setups": 228,
+    "filled": 144,
+    "missed_win": 84,
+    "cancelled_stop_first": 0,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 228,
+    "fills": 144,
+    "win_rate_filled": 0.361,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.201,
+    "sum_pnl_main_filled": 28.88,
+    "mean_win_main": 6.94,
+    "mean_loss_main": -3.61,
+    "entry_price_gain_usd": 414.05,
+    "missed_winners": 84,
+    "cancelled_stop_first": 0,
+    "ambiguous": 7,
+    "ambiguous_kinds": {
+     "mid_sl": 6,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|delayed_favorable|669fac9e56": {
+   "net": 7.63,
+   "dd_cc": 79.75,
+   "dd_daily": 75.66,
+   "mtm_proxy": 81.28,
+   "trades": 153,
+   "wins": 60,
+   "pnl_main": -10.0,
+   "pnl_add": 17.66,
+   "risk_main": 512.77,
+   "risk_add_actual": 71.29,
+   "adds_fired": 96,
+   "later_half_net": -20.06,
+   "killed": false,
+   "blocked": 105,
+   "lots": {
+    "0.03": 110,
+    "0.04": 43
+   },
+   "pend": {
+    "setups": 204,
+    "filled": 128,
+    "missed_win": 71,
+    "cancelled_stop_first": 5,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 5,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 204,
+    "fills": 128,
+    "win_rate_filled": 0.383,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.319,
+    "sum_pnl_main_filled": 40.77,
+    "mean_win_main": 6.95,
+    "mean_loss_main": -3.79,
+    "entry_price_gain_usd": 382.69,
+    "missed_winners": 71,
+    "cancelled_stop_first": 5,
+    "ambiguous": 6,
+    "ambiguous_kinds": {
+     "mid_sl": 5,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|half_main_in_debt|6fab0fdaa7": {
+   "net": -19.46,
+   "dd_cc": 51.56,
+   "dd_daily": 46.21,
+   "mtm_proxy": 51.53,
+   "trades": 248,
+   "wins": 147,
+   "pnl_main": -41.49,
+   "pnl_add": 22.03,
+   "risk_main": 513.34,
+   "risk_add_actual": 79.86,
+   "adds_fired": 110,
+   "later_half_net": -35.5,
+   "killed": false,
+   "blocked": 51,
+   "lots": {
+    "0.03": 17,
+    "0.01": 231
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|tl_projected|5f702bfb40": {
+   "net": -65.0,
+   "dd_cc": 65.01,
+   "dd_daily": 65.0,
+   "mtm_proxy": 66.04,
+   "trades": 57,
+   "wins": 27,
+   "pnl_main": -61.95,
+   "pnl_add": -3.06,
+   "risk_main": 162.02,
+   "risk_add_actual": 11.35,
+   "adds_fired": 33,
+   "later_half_net": 0,
+   "killed": true,
+   "blocked": 0,
+   "lots": {
+    "0.03": 57
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 57,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos|0.35|tl_horizontal|c498c265c3": {
+   "net": -50.01,
+   "dd_cc": 50.6,
+   "dd_daily": 50.58,
+   "mtm_proxy": 50.83,
+   "trades": 97,
+   "wins": 52,
+   "pnl_main": -35.18,
+   "pnl_add": -14.89,
+   "risk_main": 188.29,
+   "risk_add_actual": 11.52,
+   "adds_fired": 57,
+   "later_half_net": -10.76,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.03": 97
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 97,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "bos",
+   "package": "special_10",
+   "drag": 0.35,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|baseline|f33d243763": {
+   "net": -51.59,
+   "dd_cc": 120.0,
+   "dd_daily": 113.53,
+   "mtm_proxy": 120.8,
+   "trades": 299,
+   "wins": 171,
+   "pnl_main": -51.6,
+   "pnl_add": 0.0,
+   "risk_main": 1188.89,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -85.03,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 299
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "baseline",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|delayed_adverse|9335349ba4": {
+   "net": -0.56,
+   "dd_cc": 66.13,
+   "dd_daily": 60.81,
+   "mtm_proxy": 67.16,
+   "trades": 194,
+   "wins": 66,
+   "pnl_main": -0.57,
+   "pnl_add": 0.0,
+   "risk_main": 394.22,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -10.81,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 194
+   },
+   "pend": {
+    "setups": 284,
+    "filled": 179,
+    "missed_win": 105,
+    "cancelled_stop_first": 0,
+    "ambiguous": 9,
+    "ambiguous_kinds": {
+     "mid_sl": 8,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 284,
+    "fills": 179,
+    "win_rate_filled": 0.341,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.131,
+    "sum_pnl_main_filled": 23.44,
+    "mean_win_main": 5.0,
+    "mean_loss_main": -2.39,
+    "entry_price_gain_usd": 352.92,
+    "missed_winners": 105,
+    "cancelled_stop_first": 0,
+    "ambiguous": 9,
+    "ambiguous_kinds": {
+     "mid_sl": 8,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "delayed_adverse",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|delayed_favorable|4f69fc3ecf": {
+   "net": 9.49,
+   "dd_cc": 62.37,
+   "dd_daily": 57.06,
+   "mtm_proxy": 63.4,
+   "trades": 186,
+   "wins": 66,
+   "pnl_main": 9.48,
+   "pnl_add": 0.0,
+   "risk_main": 388.09,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -4.31,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 186
+   },
+   "pend": {
+    "setups": 283,
+    "filled": 170,
+    "missed_win": 105,
+    "cancelled_stop_first": 8,
+    "ambiguous": 9,
+    "ambiguous_kinds": {
+     "mid_sl": 8,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 8,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "delayed": {
+    "setups": 283,
+    "fills": 170,
+    "win_rate_filled": 0.359,
+    "breakeven_wr_fair": 0.278,
+    "mean_pnl_main_filled": 0.227,
+    "sum_pnl_main_filled": 38.6,
+    "mean_win_main": 5.0,
+    "mean_loss_main": -2.45,
+    "entry_price_gain_usd": 342.18,
+    "missed_winners": 105,
+    "cancelled_stop_first": 8,
+    "ambiguous": 9,
+    "ambiguous_kinds": {
+     "mid_sl": 8,
+     "mid_tp": 1,
+     "mid_sl_tp": 0
+    },
+    "still_waiting_at_end": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "delayed_favorable",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|half_main_in_debt|f33d243763": {
+   "net": -27.98,
+   "dd_cc": 60.77,
+   "dd_daily": 56.76,
+   "mtm_proxy": 61.17,
+   "trades": 299,
+   "wins": 171,
+   "pnl_main": -27.98,
+   "pnl_add": 0.0,
+   "risk_main": 619.63,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -42.52,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 13,
+    "0.01": 286
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 0,
+    "anchor_time_invalid": 0,
+    "pairs": 0,
+    "slope_pos": 0,
+    "slope_neg": 0,
+    "slope_flat": 0,
+    "touches": 0,
+    "geom_reject": 0,
+    "entries": 0,
+    "arm_to_touch_s": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "displacement": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "stop_vs_spread": {
+     "n": 0,
+     "median": null,
+     "min": null,
+     "max": null
+    },
+    "gap_fills": 0,
+    "pre_confirm_touch": 0
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "half_main_in_debt",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|tl_projected|d5bdeced31": {
+   "net": -103.72,
+   "dd_cc": 103.69,
+   "dd_daily": 94.17,
+   "mtm_proxy": 104.6,
+   "trades": 149,
+   "wins": 69,
+   "pnl_main": -103.69,
+   "pnl_add": 0.0,
+   "risk_main": 301.25,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -46.04,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 149
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 300,
+    "geom_reject": 4,
+    "entries": 149,
+    "arm_to_touch_s": {
+     "n": 300,
+     "median": 360,
+     "min": 120,
+     "max": 9420
+    },
+    "displacement": {
+     "n": 300,
+     "median": 8.4,
+     "min": -317.0,
+     "max": 1112.2
+    },
+    "stop_vs_spread": {
+     "n": 296,
+     "median": 12.83,
+     "min": 1.46,
+     "max": 190.66
+    },
+    "gap_fills": 28,
+    "pre_confirm_touch": 307
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "tl_projected",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped|0.35|tl_horizontal|0f133a3323": {
+   "net": -29.56,
+   "dd_cc": 29.93,
+   "dd_daily": 29.94,
+   "mtm_proxy": 29.94,
+   "trades": 105,
+   "wins": 56,
+   "pnl_main": -29.55,
+   "pnl_add": 0.0,
+   "risk_main": 135.48,
+   "risk_add_actual": 0.0,
+   "adds_fired": 0,
+   "later_half_net": -6.62,
+   "killed": false,
+   "blocked": 0,
+   "lots": {
+    "0.02": 105
+   },
+   "pend": {
+    "setups": 0,
+    "filled": 0,
+    "missed_win": 0,
+    "cancelled_stop_first": 0,
+    "ambiguous": 0,
+    "ambiguous_kinds": {
+     "mid_sl": 0,
+     "mid_tp": 0,
+     "mid_sl_tp": 0
+    },
+    "favorable_cancels": 0,
+    "still_waiting": 0
+   },
+   "tl": {
+    "anchors": 857,
+    "anchor_time_invalid": 0,
+    "pairs": 479,
+    "slope_pos": 254,
+    "slope_neg": 225,
+    "slope_flat": 0,
+    "touches": 244,
+    "geom_reject": 34,
+    "entries": 105,
+    "arm_to_touch_s": {
+     "n": 244,
+     "median": 420,
+     "min": 120,
+     "max": 54780
+    },
+    "displacement": {
+     "n": 244,
+     "median": 0.0,
+     "min": 0.0,
+     "max": 0.0
+    },
+    "stop_vs_spread": {
+     "n": 210,
+     "median": 7.84,
+     "min": 1.49,
+     "max": 90.39
+    },
+    "gap_fills": 7,
+    "pre_confirm_touch": 307
+   },
+   "regime": "reference_uncapped",
+   "package": "reference",
+   "drag": 0.35,
+   "arm": "tl_horizontal",
+   "effective": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  }
+ },
+ "tl_events": {
+  "infinity": [
+   {
+    "pair": [
+     1787961600,
+     1787961900
+    ],
+    "anchors": [
+     [
+      1787961600,
+      77782.69,
+      1787961660
+     ],
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ]
+    ],
+    "armed_at": 1787962140,
+    "trend": 1,
+    "slope_per_s": -0.026433,
+    "L_at_arming": 77768.42,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787961900,
+     1787962440
+    ],
+    "anchors": [
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ],
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ]
+    ],
+    "armed_at": 1787962860,
+    "trend": 1,
+    "slope_per_s": 0.055574,
+    "L_at_arming": 77828.11,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787962440,
+     1787962980
+    ],
+    "anchors": [
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ],
+     [
+      1787962980,
+      77857.15,
+      1787963160
+     ]
+    ],
+    "armed_at": 1787963160,
+    "trend": 1,
+    "slope_per_s": 0.097,
+    "L_at_arming": 77874.61,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787963280,
+     "L": 77886.25,
+     "entry": 77886.25,
+     "stop": 77857.15,
+     "bar_o": 77938.28,
+     "bar_x": 77880.37
+    }
+   },
+   {
+    "pair": [
+     1787963700,
+     1787964900
+    ],
+    "anchors": [
+     [
+      1787963700,
+      77818.0,
+      1787964480
+     ],
+     [
+      1787964900,
+      77805.91,
+      1787965260
+     ]
+    ],
+    "armed_at": 1787965260,
+    "trend": -1,
+    "slope_per_s": -0.010075,
+    "L_at_arming": 77802.28,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787966940,
+     "L": 77785.36,
+     "entry": 77785.36,
+     "stop": 77805.91,
+     "bar_o": 77761.94,
+     "bar_x": 77789.19
+    }
+   },
+   {
+    "pair": [
+     1787968320,
+     1787972520
+    ],
+    "anchors": [
+     [
+      1787968320,
+      77850.74,
+      1787970120
+     ],
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ]
+    ],
+    "armed_at": 1787975460,
+    "trend": -1,
+    "slope_per_s": -0.031757,
+    "L_at_arming": 77623.99,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787976660,
+     "L": 77585.89,
+     "entry": 77585.89,
+     "stop": 77717.36,
+     "bar_o": 77569.02,
+     "bar_x": 77587.02
+    }
+   },
+   {
+    "pair": [
+     1787972520,
+     1787982060
+    ],
+    "anchors": [
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ],
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ]
+    ],
+    "armed_at": 1787984040,
+    "trend": -1,
+    "slope_per_s": -0.000952,
+    "L_at_arming": 77706.4,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787982060,
+     1787984220
+    ],
+    "anchors": [
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ],
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ]
+    ],
+    "armed_at": 1787984340,
+    "trend": -1,
+    "slope_per_s": -0.09112,
+    "L_at_arming": 77500.53,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787984220,
+     1787984640
+    ],
+    "anchors": [
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ],
+     [
+      1787984640,
+      77410.61,
+      1787984760
+     ]
+    ],
+    "armed_at": 1787984760,
+    "trend": -1,
+    "slope_per_s": -0.240119,
+    "L_at_arming": 77381.8,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787985540,
+     1787986380
+    ],
+    "anchors": [
+     [
+      1787985540,
+      77402.81,
+      1787985720
+     ],
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ]
+    ],
+    "armed_at": 1787986920,
+    "trend": 1,
+    "slope_per_s": 0.016631,
+    "L_at_arming": 77425.76,
+    "pre_confirm_touch": false,
+    "touch": {
+     "t": 1787987340,
+     "L": 77432.75,
+     "entry": 77432.75,
+     "stop": 77416.78,
+     "bar_o": 77438.71,
+     "bar_x": 77426.75
+    }
+   },
+   {
+    "pair": [
+     1787986380,
+     1787987340
+    ],
+    "anchors": [
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ],
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ]
+    ],
+    "armed_at": 1787988660,
+    "trend": 1,
+    "slope_per_s": 0.010385,
+    "L_at_arming": 77440.46,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787987340,
+     1787988840
+    ],
+    "anchors": [
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ],
+     [
+      1787988840,
+      77521.43,
+      1787988960
+     ]
+    ],
+    "armed_at": 1787988960,
+    "trend": 1,
+    "slope_per_s": 0.06312,
+    "L_at_arming": 77529.0,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787990340,
+     "L": 77616.11,
+     "entry": 77616.11,
+     "stop": 77521.43,
+     "bar_o": 77641.37,
+     "bar_x": 77611.44
+    }
+   },
+   {
+    "pair": [
+     1787990640,
+     1787994180
+    ],
+    "anchors": [
+     [
+      1787990640,
+      77464.02,
+      1787994000
+     ],
+     [
+      1787994180,
+      77611.67,
+      1787994300
+     ]
+    ],
+    "armed_at": 1787994300,
+    "trend": 1,
+    "slope_per_s": 0.041709,
+    "L_at_arming": 77616.68,
+    "pre_confirm_touch": true
+   }
+  ],
+  "u224016179": [
+   {
+    "pair": [
+     1787961600,
+     1787961900
+    ],
+    "anchors": [
+     [
+      1787961600,
+      77782.69,
+      1787961660
+     ],
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ]
+    ],
+    "armed_at": 1787962140,
+    "trend": 1,
+    "slope_per_s": -0.026433,
+    "L_at_arming": 77768.42,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787961900,
+     1787962440
+    ],
+    "anchors": [
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ],
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ]
+    ],
+    "armed_at": 1787962860,
+    "trend": 1,
+    "slope_per_s": 0.055574,
+    "L_at_arming": 77828.11,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787962440,
+     1787962980
+    ],
+    "anchors": [
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ],
+     [
+      1787962980,
+      77857.15,
+      1787963160
+     ]
+    ],
+    "armed_at": 1787963160,
+    "trend": 1,
+    "slope_per_s": 0.097,
+    "L_at_arming": 77874.61,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787963280,
+     "L": 77886.25,
+     "entry": 77886.25,
+     "stop": 77857.15,
+     "bar_o": 77938.28,
+     "bar_x": 77880.37
+    }
+   },
+   {
+    "pair": [
+     1787963700,
+     1787964900
+    ],
+    "anchors": [
+     [
+      1787963700,
+      77818.0,
+      1787964480
+     ],
+     [
+      1787964900,
+      77805.91,
+      1787965260
+     ]
+    ],
+    "armed_at": 1787965260,
+    "trend": -1,
+    "slope_per_s": -0.010075,
+    "L_at_arming": 77802.28,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787966940,
+     "L": 77785.36,
+     "entry": 77785.36,
+     "stop": 77805.91,
+     "bar_o": 77761.94,
+     "bar_x": 77789.19
+    }
+   },
+   {
+    "pair": [
+     1787968320,
+     1787972520
+    ],
+    "anchors": [
+     [
+      1787968320,
+      77850.74,
+      1787970120
+     ],
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ]
+    ],
+    "armed_at": 1787975460,
+    "trend": -1,
+    "slope_per_s": -0.031757,
+    "L_at_arming": 77623.99,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787976660,
+     "L": 77585.89,
+     "entry": 77585.89,
+     "stop": 77717.36,
+     "bar_o": 77569.02,
+     "bar_x": 77587.02
+    }
+   },
+   {
+    "pair": [
+     1787972520,
+     1787982060
+    ],
+    "anchors": [
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ],
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ]
+    ],
+    "armed_at": 1787984040,
+    "trend": -1,
+    "slope_per_s": -0.000952,
+    "L_at_arming": 77706.4,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787982060,
+     1787984220
+    ],
+    "anchors": [
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ],
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ]
+    ],
+    "armed_at": 1787984340,
+    "trend": -1,
+    "slope_per_s": -0.09112,
+    "L_at_arming": 77500.53,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787984220,
+     1787984640
+    ],
+    "anchors": [
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ],
+     [
+      1787984640,
+      77410.61,
+      1787984760
+     ]
+    ],
+    "armed_at": 1787984760,
+    "trend": -1,
+    "slope_per_s": -0.240119,
+    "L_at_arming": 77381.8,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787985540,
+     1787986380
+    ],
+    "anchors": [
+     [
+      1787985540,
+      77402.81,
+      1787985720
+     ],
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ]
+    ],
+    "armed_at": 1787986920,
+    "trend": 1,
+    "slope_per_s": 0.016631,
+    "L_at_arming": 77425.76,
+    "pre_confirm_touch": false,
+    "touch": {
+     "t": 1787987340,
+     "L": 77432.75,
+     "entry": 77432.75,
+     "stop": 77416.78,
+     "bar_o": 77438.71,
+     "bar_x": 77426.75
+    }
+   },
+   {
+    "pair": [
+     1787986380,
+     1787987340
+    ],
+    "anchors": [
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ],
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ]
+    ],
+    "armed_at": 1787988660,
+    "trend": 1,
+    "slope_per_s": 0.010385,
+    "L_at_arming": 77440.46,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787987340,
+     1787988840
+    ],
+    "anchors": [
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ],
+     [
+      1787988840,
+      77521.43,
+      1787988960
+     ]
+    ],
+    "armed_at": 1787988960,
+    "trend": 1,
+    "slope_per_s": 0.06312,
+    "L_at_arming": 77529.0,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787990340,
+     "L": 77616.11,
+     "entry": 77616.11,
+     "stop": 77521.43,
+     "bar_o": 77641.37,
+     "bar_x": 77611.44
+    }
+   },
+   {
+    "pair": [
+     1787990640,
+     1787994180
+    ],
+    "anchors": [
+     [
+      1787990640,
+      77464.02,
+      1787994000
+     ],
+     [
+      1787994180,
+      77611.67,
+      1787994300
+     ]
+    ],
+    "armed_at": 1787994300,
+    "trend": 1,
+    "slope_per_s": 0.041709,
+    "L_at_arming": 77616.68,
+    "pre_confirm_touch": true
+   }
+  ],
+  "bos": [
+   {
+    "pair": [
+     1787961600,
+     1787961900
+    ],
+    "anchors": [
+     [
+      1787961600,
+      77782.69,
+      1787961660
+     ],
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ]
+    ],
+    "armed_at": 1787962140,
+    "trend": 1,
+    "slope_per_s": -0.026433,
+    "L_at_arming": 77768.42,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787961900,
+     1787962440
+    ],
+    "anchors": [
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ],
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ]
+    ],
+    "armed_at": 1787962860,
+    "trend": 1,
+    "slope_per_s": 0.055574,
+    "L_at_arming": 77828.11,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787962440,
+     1787962980
+    ],
+    "anchors": [
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ],
+     [
+      1787962980,
+      77857.15,
+      1787963160
+     ]
+    ],
+    "armed_at": 1787963160,
+    "trend": 1,
+    "slope_per_s": 0.097,
+    "L_at_arming": 77874.61,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787963280,
+     "L": 77886.25,
+     "entry": 77886.25,
+     "stop": 77857.15,
+     "bar_o": 77938.28,
+     "bar_x": 77880.37
+    }
+   },
+   {
+    "pair": [
+     1787963700,
+     1787964900
+    ],
+    "anchors": [
+     [
+      1787963700,
+      77818.0,
+      1787964480
+     ],
+     [
+      1787964900,
+      77805.91,
+      1787965260
+     ]
+    ],
+    "armed_at": 1787965260,
+    "trend": -1,
+    "slope_per_s": -0.010075,
+    "L_at_arming": 77802.28,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787966940,
+     "L": 77785.36,
+     "entry": 77785.36,
+     "stop": 77805.91,
+     "bar_o": 77761.94,
+     "bar_x": 77789.19
+    }
+   },
+   {
+    "pair": [
+     1787968320,
+     1787972520
+    ],
+    "anchors": [
+     [
+      1787968320,
+      77850.74,
+      1787970120
+     ],
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ]
+    ],
+    "armed_at": 1787975460,
+    "trend": -1,
+    "slope_per_s": -0.031757,
+    "L_at_arming": 77623.99,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787976660,
+     "L": 77585.89,
+     "entry": 77585.89,
+     "stop": 77717.36,
+     "bar_o": 77569.02,
+     "bar_x": 77587.02
+    }
+   },
+   {
+    "pair": [
+     1787972520,
+     1787982060
+    ],
+    "anchors": [
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ],
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ]
+    ],
+    "armed_at": 1787984040,
+    "trend": -1,
+    "slope_per_s": -0.000952,
+    "L_at_arming": 77706.4,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787982060,
+     1787984220
+    ],
+    "anchors": [
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ],
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ]
+    ],
+    "armed_at": 1787984340,
+    "trend": -1,
+    "slope_per_s": -0.09112,
+    "L_at_arming": 77500.53,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787984220,
+     1787984640
+    ],
+    "anchors": [
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ],
+     [
+      1787984640,
+      77410.61,
+      1787984760
+     ]
+    ],
+    "armed_at": 1787984760,
+    "trend": -1,
+    "slope_per_s": -0.240119,
+    "L_at_arming": 77381.8,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787985540,
+     1787986380
+    ],
+    "anchors": [
+     [
+      1787985540,
+      77402.81,
+      1787985720
+     ],
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ]
+    ],
+    "armed_at": 1787986920,
+    "trend": 1,
+    "slope_per_s": 0.016631,
+    "L_at_arming": 77425.76,
+    "pre_confirm_touch": false,
+    "touch": {
+     "t": 1787987340,
+     "L": 77432.75,
+     "entry": 77432.75,
+     "stop": 77416.78,
+     "bar_o": 77438.71,
+     "bar_x": 77426.75
+    }
+   },
+   {
+    "pair": [
+     1787986380,
+     1787987340
+    ],
+    "anchors": [
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ],
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ]
+    ],
+    "armed_at": 1787988660,
+    "trend": 1,
+    "slope_per_s": 0.010385,
+    "L_at_arming": 77440.46,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787987340,
+     1787988840
+    ],
+    "anchors": [
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ],
+     [
+      1787988840,
+      77521.43,
+      1787988960
+     ]
+    ],
+    "armed_at": 1787988960,
+    "trend": 1,
+    "slope_per_s": 0.06312,
+    "L_at_arming": 77529.0,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787990340,
+     "L": 77616.11,
+     "entry": 77616.11,
+     "stop": 77521.43,
+     "bar_o": 77641.37,
+     "bar_x": 77611.44
+    }
+   },
+   {
+    "pair": [
+     1787990640,
+     1787994180
+    ],
+    "anchors": [
+     [
+      1787990640,
+      77464.02,
+      1787994000
+     ],
+     [
+      1787994180,
+      77611.67,
+      1787994300
+     ]
+    ],
+    "armed_at": 1787994300,
+    "trend": 1,
+    "slope_per_s": 0.041709,
+    "L_at_arming": 77616.68,
+    "pre_confirm_touch": true
+   }
+  ],
+  "reference_uncapped": [
+   {
+    "pair": [
+     1787961600,
+     1787961900
+    ],
+    "anchors": [
+     [
+      1787961600,
+      77782.69,
+      1787961660
+     ],
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ]
+    ],
+    "armed_at": 1787962140,
+    "trend": 1,
+    "slope_per_s": -0.026433,
+    "L_at_arming": 77768.42,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787961900,
+     1787962440
+    ],
+    "anchors": [
+     [
+      1787961900,
+      77774.76,
+      1787962140
+     ],
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ]
+    ],
+    "armed_at": 1787962860,
+    "trend": 1,
+    "slope_per_s": 0.055574,
+    "L_at_arming": 77828.11,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787962440,
+     1787962980
+    ],
+    "anchors": [
+     [
+      1787962440,
+      77804.77,
+      1787962860
+     ],
+     [
+      1787962980,
+      77857.15,
+      1787963160
+     ]
+    ],
+    "armed_at": 1787963160,
+    "trend": 1,
+    "slope_per_s": 0.097,
+    "L_at_arming": 77874.61,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787963280,
+     "L": 77886.25,
+     "entry": 77886.25,
+     "stop": 77857.15,
+     "bar_o": 77938.28,
+     "bar_x": 77880.37
+    }
+   },
+   {
+    "pair": [
+     1787963700,
+     1787964900
+    ],
+    "anchors": [
+     [
+      1787963700,
+      77818.0,
+      1787964480
+     ],
+     [
+      1787964900,
+      77805.91,
+      1787965260
+     ]
+    ],
+    "armed_at": 1787965260,
+    "trend": -1,
+    "slope_per_s": -0.010075,
+    "L_at_arming": 77802.28,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787966940,
+     "L": 77785.36,
+     "entry": 77785.36,
+     "stop": 77805.91,
+     "bar_o": 77761.94,
+     "bar_x": 77789.19
+    }
+   },
+   {
+    "pair": [
+     1787968320,
+     1787972520
+    ],
+    "anchors": [
+     [
+      1787968320,
+      77850.74,
+      1787970120
+     ],
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ]
+    ],
+    "armed_at": 1787975460,
+    "trend": -1,
+    "slope_per_s": -0.031757,
+    "L_at_arming": 77623.99,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787976660,
+     "L": 77585.89,
+     "entry": 77585.89,
+     "stop": 77717.36,
+     "bar_o": 77569.02,
+     "bar_x": 77587.02
+    }
+   },
+   {
+    "pair": [
+     1787972520,
+     1787982060
+    ],
+    "anchors": [
+     [
+      1787972520,
+      77717.36,
+      1787975460
+     ],
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ]
+    ],
+    "armed_at": 1787984040,
+    "trend": -1,
+    "slope_per_s": -0.000952,
+    "L_at_arming": 77706.4,
+    "pre_confirm_touch": false
+   },
+   {
+    "pair": [
+     1787982060,
+     1787984220
+    ],
+    "anchors": [
+     [
+      1787982060,
+      77708.28,
+      1787984040
+     ],
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ]
+    ],
+    "armed_at": 1787984340,
+    "trend": -1,
+    "slope_per_s": -0.09112,
+    "L_at_arming": 77500.53,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787984220,
+     1787984640
+    ],
+    "anchors": [
+     [
+      1787984220,
+      77511.46,
+      1787984340
+     ],
+     [
+      1787984640,
+      77410.61,
+      1787984760
+     ]
+    ],
+    "armed_at": 1787984760,
+    "trend": -1,
+    "slope_per_s": -0.240119,
+    "L_at_arming": 77381.8,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787985540,
+     1787986380
+    ],
+    "anchors": [
+     [
+      1787985540,
+      77402.81,
+      1787985720
+     ],
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ]
+    ],
+    "armed_at": 1787986920,
+    "trend": 1,
+    "slope_per_s": 0.016631,
+    "L_at_arming": 77425.76,
+    "pre_confirm_touch": false,
+    "touch": {
+     "t": 1787987340,
+     "L": 77432.75,
+     "entry": 77432.75,
+     "stop": 77416.78,
+     "bar_o": 77438.71,
+     "bar_x": 77426.75
+    }
+   },
+   {
+    "pair": [
+     1787986380,
+     1787987340
+    ],
+    "anchors": [
+     [
+      1787986380,
+      77416.78,
+      1787986920
+     ],
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ]
+    ],
+    "armed_at": 1787988660,
+    "trend": 1,
+    "slope_per_s": 0.010385,
+    "L_at_arming": 77440.46,
+    "pre_confirm_touch": true
+   },
+   {
+    "pair": [
+     1787987340,
+     1787988840
+    ],
+    "anchors": [
+     [
+      1787987340,
+      77426.75,
+      1787988660
+     ],
+     [
+      1787988840,
+      77521.43,
+      1787988960
+     ]
+    ],
+    "armed_at": 1787988960,
+    "trend": 1,
+    "slope_per_s": 0.06312,
+    "L_at_arming": 77529.0,
+    "pre_confirm_touch": true,
+    "touch": {
+     "t": 1787990340,
+     "L": 77616.11,
+     "entry": 77616.11,
+     "stop": 77521.43,
+     "bar_o": 77641.37,
+     "bar_x": 77611.44
+    }
+   },
+   {
+    "pair": [
+     1787990640,
+     1787994180
+    ],
+    "anchors": [
+     [
+      1787990640,
+      77464.02,
+      1787994000
+     ],
+     [
+      1787994180,
+      77611.67,
+      1787994300
+     ]
+    ],
+    "armed_at": 1787994300,
+    "trend": 1,
+    "slope_per_s": 0.041709,
+    "L_at_arming": 77616.68,
+    "pre_confirm_touch": true
+   }
+  ]
+ }
+}
