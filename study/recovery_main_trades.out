@@ -1,0 +1,16 @@
+
+=== execution drag: none (replay prices) ===
+A today                            trades 273 | PF 1.21 | net    99.73 | 1st half   122.59 | 2nd half    -7.25 | worst drop  -50.91 | -
+B no trades at all in recovery     trades   1 | PF 0.00 | net    -3.36 | 1st half    -3.36 | 2nd half    11.78 | worst drop   -3.36 | verdict vs A C
+C bullets only (main at size 0)    trades 260 | PF 0.00 | net    -3.36 | 1st half    -3.36 | 2nd half    34.55 | worst drop   -3.36 | verdict vs A C
+D half-size main in recovery       trades 266 | PF 1.19 | net    54.17 | 1st half    66.09 | 2nd half    -1.96 | worst drop  -28.09 | verdict vs A C
+E bullets only, jar off            trades 268 | PF 1.38 | net   111.84 | 1st half    92.81 | 2nd half    31.62 | worst drop  -31.71 | verdict vs A B
+   (today with jar off, for E)     trades 273 | PF 1.30 | net   181.81 | 1st half   199.00 | 2nd half    -5.30 | worst drop  -80.29 | verdict vs A C
+
+=== execution drag: measured real drag ===
+A today                            trades 273 | PF 1.21 | net    99.73 | 1st half   122.59 | 2nd half    -7.25 | worst drop  -50.91 | -
+B no trades at all in recovery     trades   1 | PF 0.00 | net    -3.36 | 1st half    -3.36 | 2nd half    11.78 | worst drop   -3.36 | verdict vs A C
+C bullets only (main at size 0)    trades 260 | PF 0.00 | net    -3.36 | 1st half    -3.36 | 2nd half    34.55 | worst drop   -3.36 | verdict vs A C
+D half-size main in recovery       trades 266 | PF 1.19 | net    54.17 | 1st half    66.09 | 2nd half    -1.96 | worst drop  -28.09 | verdict vs A C
+E bullets only, jar off            trades 268 | PF 1.38 | net   111.84 | 1st half    92.81 | 2nd half    31.62 | worst drop  -31.71 | verdict vs A B
+   (today with jar off, for E)     trades 273 | PF 1.30 | net   181.81 | 1st half   199.00 | 2nd half    -5.30 | worst drop  -80.29 | verdict vs A C

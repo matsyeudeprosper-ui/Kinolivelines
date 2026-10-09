@@ -224,6 +224,10 @@ DIRGATE = None
 # 2026-10-09 (owner): a (t, d) -> bool consulted ONLY while the account is in
 # debt (recovery mode), after the recovery entry limit. None = off.
 DEBTGATE = None
+# 2026-10-09 (owner): size multiplier for MAIN trades while in debt only
+# (0 = the main trade is followed at zero size, its bullets stay real).
+# None = off. Bullets use BLOT and are never touched by this.
+DEBT_MAIN_MULT = None
 # 2026-10-08 (owner): the loss-pause rule. True -> after a losing trade the
 # next trades are VIRTUAL (taken, scored, but booked nowhere: no money, no
 # debt, no reserve, no streak) until one of them wins. Off by default.
@@ -865,6 +869,8 @@ def simulate(R, spread, cfg):
                 lot = _l2
         if dist <= B.S_MIN_DIST or dist * LOT > B.MAX_RISK_PCT * 230.0:
             continue
+        if DEBT_MAIN_MULT is not None and debt_now > 0.5:
+            lot = lot * float(DEBT_MAIN_MULT)
         _risk = dist * lot
         if c["risk_max"] and _risk > float(c["risk_max"]):
             blocked += 1
