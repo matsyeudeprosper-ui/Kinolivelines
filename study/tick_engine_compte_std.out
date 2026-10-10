@@ -1,0 +1,14 @@
+follower ticks (std feed) 4869156
+reference (std_feed) drag 0.00: 296 closed outcomes net 60.61
+infinity           drag 0.00 no_pause       | net    67.42 cc_dd   56.78 mtm_dd   62.63 | trades 264 wins 146 main    31.89 adds  35.46 risk    892 | h1   74.56 h2   -7.21 | eligible 622 paused   0 invalid   0 thinned   0 | 829s
+infinity           drag 0.00 global_pause   | net     7.43 cc_dd   53.72 mtm_dd   53.72 | trades 178 wins  94 main     1.13 adds   6.25 risk    519 | h1   34.22 h2  -26.87 | eligible 700 paused 301 invalid   0 thinned   0 | 829s
+infinity           drag 0.00 dir_pause      | net    56.62 cc_dd   56.78 mtm_dd   58.30 | trades 237 wins 133 main    44.59 adds  11.99 risk    769 | h1   74.56 h2  -18.01 | eligible 651 paused 128 invalid   0 thinned   0 | 829s
+infinity           drag 0.00 thin_k2_p0     | net   -20.62 cc_dd   38.84 mtm_dd   42.03 | trades 177 wins  87 main   -16.60 adds  -4.05 risk    320 | h1    8.49 h2  -29.07 | eligible 748 paused   0 invalid   0 thinned 374 | 829s
+infinity           drag 0.00 thin_k2_p1     | net   -19.00 cc_dd   38.84 mtm_dd   42.03 | trades 178 wins  89 main   -12.53 adds  -6.50 risk    322 | h1   10.11 h2  -29.07 | eligible 745 paused   0 invalid   0 thinned 373 | 829s
+reference (std_feed) drag 0.35: 296 closed outcomes net -43.00
+infinity           drag 0.35 no_pause       | net     0.68 cc_dd   54.99 mtm_dd   56.12 | trades 260 wins 146 main   -10.57 adds  11.30 risk    591 | h1   23.68 h2  -22.97 | eligible 623 paused   0 invalid   0 thinned   0 | 813s
+infinity           drag 0.35 global_pause   | net   -37.48 cc_dd   63.31 mtm_dd   63.86 | trades 157 wins  82 main   -28.31 adds  -9.16 risk    291 | h1   -1.95 h2  -35.53 | eligible 712 paused 349 invalid   0 thinned   0 | 813s
+infinity           drag 0.35 dir_pause      | net     6.13 cc_dd   35.27 mtm_dd   36.80 | trades 209 wins 120 main     2.54 adds   3.61 risk    460 | h1   23.68 h2  -17.52 | eligible 683 paused 217 invalid   0 thinned   0 | 813s
+infinity           drag 0.35 thin_k2_p0     | net   -61.54 cc_dd   63.71 mtm_dd   65.80 | trades 140 wins  71 main   -43.99 adds -17.57 risk    252 | h1  -22.64 h2  -38.92 | eligible 577 paused   0 invalid   0 thinned 288 | 813s
+infinity           drag 0.35 thin_k2_p1     | net   -63.08 cc_dd   65.74 mtm_dd   66.49 | trades 142 wins  73 main   -40.70 adds -22.41 risk    255 | h1  -24.18 h2  -38.92 | eligible 574 paused   0 invalid   0 thinned 287 | 813s
+DONE

@@ -172,3 +172,11 @@ drawdown ratios 0.63-0.69 whose intervals touch 1.0; its thinning control is mat
 not to its own ~31% rate, so that attribution is INADEQUATE (a rate-matched control is the obvious next
 control - not run here, so as not to search). Every net interval includes zero. Compte as a pause gate:
 primary = negative; directional = a conditional, cost-dependent, unmatched point pattern - not a pass.
+
+**Transfer check (Infinity, reference replayed on the STD feed instead of the demo's own quotes; same rule,
+same follower):** reference 296 outcomes +60.61 / -43.01. global_pause 7.43 / DD 53.72 at drag 0 (demo-feed
+source gave 46.56) and -37.48 / 63.31 under drag (demo: -28.07 / 53.89); dir_pause 56.62 / 56.78 (demo 54.04)
+and 6.13 / 35.27 (demo 3.73 / 37.67). The same strategy on a different quote feed builds a different outcome
+curve and the global pause's decisions move with it (-21 vs -60 against no-pause at drag 0): the gate does
+not transfer robustly across feeds; the directional one moved less. Both source histories are labelled
+apart in `tick_engine_compte_demo_feed.json` / `tick_engine_compte_std_feed.json`.
