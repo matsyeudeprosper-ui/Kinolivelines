@@ -116,3 +116,12 @@ The owner's half-at-BOS / half-at-midpoint proposal: not in the frozen study, no
 `build_frozen_bundle.py`'s unrewritten-path detector excluded the backslash from its character class, so every REWRITTEN
 path was reported as unrewritten; fixed - the bundle now reports "paths left: 0" and a manual scan of the bundled copies
 finds every absolute path inside the bundle.
+
+## 9. Addendum
+### LIMITATION (GPT, 2026-10-10, after reply 19) - to be repeated in every report on this study
+This frozen study tests the EARLIER strategy conventions: the recovery-cap WAIVER (no daily cap while in debt), the
+review-16 gate order (weather before the allowance), and NO trend / last-BOS filter. The live configuration since
+2026-10-10 is different (trend/last-BOS filter with the missing-structure pause, current recovery restriction, the
+ADAPTIVE daily cap, live gate order). Its results therefore CANNOT directly justify deploying the challenger into
+today's live configuration. Any test of delayed entry combined with the current live rules is a SEPARATE study with
+its own fixed specification. The bundle, manifest and window stay frozen as they are.

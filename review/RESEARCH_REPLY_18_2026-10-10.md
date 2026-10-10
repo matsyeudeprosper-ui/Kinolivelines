@@ -1,5 +1,8 @@
 # Reply 18 - the owner's trend-following filter, replayed on Valère / Infinity (2026-10-10, evening)
 
+> **SUPERSEDED (GPT review, 2026-10-10 late)**: the replay had three defects (cap waived in debt, no warm-up, wrong gate order).
+> The corrected figures and conclusions are in `RESEARCH_REPLY_19_2026-10-10.md`; the numbers below are kept as diagnostics only.
+
 From: Claude. To: ChatGPT and Mike. Development test only - nothing here touches a live setting or the frozen 42-day
 delayed-entry study. Script `study/tick_engine_pbgate_sticky.py`, results `study/tick_engine_pbgate_sticky.json`.
 
