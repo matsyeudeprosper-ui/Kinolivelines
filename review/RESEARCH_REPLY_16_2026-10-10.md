@@ -48,8 +48,35 @@ later continuation consumes the allowance and is paused, the next one is refused
 eligible); an ordinary dedupe refusal is not eligible; the no-pause arm creates its order after the same gates.
 Thinning controls are now matched to EACH gate's own realised pause rate (global and directional apart,
 development calibration), every phase of each k run, residual rate mismatch reported.
-Rerun (demo-feed reference, three live packages, both costs): (filled in section 2b below when the run ends)
-The earlier run is kept and labelled `tick_engine_compte_demo_feed_v1_earlygate.json` (early-gate diagnostic).
+**2b. Rerun** (demo-feed reference, three live packages, both costs; `tick_engine_compte_demo_feed.json`,
+contrasts `tick_engine_compte_stats_demo_feed.json`; the early-gate run kept as `..._v1_earlygate.json`).
+The order fix changed the POPULATIONS, not the money: the no-pause / global / directional nets and drawdowns
+are identical to the early-gate run on every row except cap3 at drag 0 (directional 54.34 -> 49.80). Eligible
+setups are now the true ones (260-276 per arm instead of 620-710); realised pause rates: global 33-42% (cap3
+under drag 15%), directional 11-25%; thinning controls k = round(1/rate) per gate, every phase run.
+| package | drag | no_pause | global (rate) | thin_global k (phases) net range / DD | directional (rate) | thin_dir k (phases) net range / DD |
+|---|---|---|---|---|---|---|
+| Infinity | 0 | 67.42 / 56.78 | 46.56 / 54.86 (0.34) | k3: -9.3..-9.6 / 44.9 | 54.04 / 56.78 (0.11) | k9: -4.8..+47.4 / 49-61 |
+| Infinity | 0.35 | 0.68 / 54.99 | -28.07 / 53.89 (0.42) | k2: +3.2, -1.8 / 26.6, 46.9 | 3.73 / 37.67 (0.25) | k4: -19.8..+5.0 / 83-95 |
+| cap3 | 0 | 64.02 / 62.19 | 32.66 / 57.93 (0.33) | k3: -19.3..-9.0 / 48-51 | 49.80 / 61.09 (0.11) | k9: +2.3..+85.7 / 55-93 |
+| cap3 | 0.35 | -33.48 / 64.70 | -60.20 / 74.40 (0.15) | k6: -61.1..-60.0 / 64-67 | -6.10 / 44.17 (0.25) | k4: -40.9..-16.0 / 83-92 |
+| Special | 0 | 112.52 / 127.33 | 56.98 / 116.65 (0.33) | k3: -38.5..+70.0 / 99-113 | 82.66 / 117.37 (0.11) | k9: +43.7..+133.5 / 94-127 |
+| Special | 0.35 | 7.13 / 129.72 | -61.67 / 150.84 (0.39) | k3: -64.6..-61.5 / 76-163 | 41.24 / 82.26 (0.25) | k4: -7.8..+16.7 / 141-150 |
+Contrasts (CI90, 5-day): global vs no_pause negative on all six rows (-21 to -69; every interval includes
+zero); global vs its rate-matched thinning: beats the phases on NET at drag 0 (Infinity [+32, +117] on all
+three phases; cap3 and Special point-positive, intervals include zero) but with HIGHER drawdown than the
+thinned arms (ratios 1.03-1.22), and under drag it is no better than thinning (Infinity -31 / -26, cap3 and
+Special within +-3). Directional vs no_pause: -13 / -14 / -30 at drag 0 (DD ratio ~1.0), +3 / +27 / +34 under
+drag with DD ratios 0.69 / 0.68 / 0.63 whose intervals reach 1.0-1.05. Directional vs its rate-matched thinning
+(k = 9 at drag 0, 4 under drag): mixed at drag 0 (ahead of most phases on Infinity, behind the best phases on
+cap3 and Special); under drag ahead of every phase on cap3 (+10 to +35) and Special (+25 to +49) and of 3 of 4 on
+Infinity, with drawdown ratios 0.40-0.58 (upper CI 1.08-1.34). Residual rate mismatch is reported in the JSON
+(e.g. Special drag 0 directional 0.106 vs 1/9 = 0.111).
+**Reading:** the global pause (primary) stays negative against no-pause and is not better than outcome-
+independent thinning once drawdown is included - not a pass. The directional pause is a cost-dependent
+pattern: at zero cost it only costs profit; under the assumed drag it beats both no-pause and rate-matched
+thinning on all three packages in point terms, with intervals that still include zero / 1.0. Development
+data, demo-feed proxy (no TOUCH), one history; no live change.
 
 ## 3. Demo audit updated, TOUCH reconciliation plan
 `review/STAGE0_REFERENCE_AUDIT_2026-10-10.md`: the spread line now states the measured period distribution
