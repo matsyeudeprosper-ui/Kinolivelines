@@ -559,6 +559,22 @@ function PBINT(){try{return localStorage.getItem('owlPbInt')!=='0';}catch(e){ret
 // that absorbed their original one, so dots, breaks and lines still land.
 // Switch in Reglages (owlSwing, off by default), read on every load.
 function SWING(){try{return localStorage.getItem('owlSwing')==='1';}catch(e){return false;}}
+// Owner 2026-10-10: the phone screen stays on while the chart is open (Screen
+// Wake Lock). On by default, Reglages switch owlWake. The browser releases
+// the lock whenever the page is hidden; it is taken again on return and on
+// the first touch (some browsers only grant it after a gesture). Silent when
+// the API is missing or refused - the chart works the same without it.
+(function(){let lock=null;
+ const want=()=>{try{return localStorage.getItem('owlWake')!=='0';}catch(e){return true;}};
+ const take=async()=>{if(!want()||!navigator.wakeLock||document.visibilityState!=='visible'||lock)return;
+  try{lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null;});}catch(e){lock=null;}};
+ const drop=async()=>{if(lock){try{await lock.release();}catch(e){}lock=null;}};
+ window._wakeSync=()=>{want()?take():drop();};
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')take();});
+ ['pointerdown','touchstart','keydown'].forEach(ev=>document.addEventListener(ev,()=>take(),{passive:true}));
+ window.addEventListener('storage',e=>{if(e.key==='owlWake')window._wakeSync();});
+ setInterval(()=>{if(want()&&!lock)take();},30000);
+ take();})();
 function swingApply(d){if(!d||!SWING()||!d.candles||d.candles.length<3)return d;
  const out=[],tmap={};let cur=null;
  for(const k of d.candles){const g=k[5]!==undefined?k[5]:(k[4]>=k[1]?1:-1);

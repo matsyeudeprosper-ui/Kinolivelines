@@ -3048,6 +3048,15 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    <div class="ssub" id="swing-sub">Masqu&eacute;es</div></div>
   <span class="sw" id="swing-sw" aria-hidden="true"><span class="swk"></span></span>
  </div>
+ <!-- Owner 2026-10-10: keep the phone screen on while the chart is open
+      (Screen Wake Lock, on by default; the browser drops it when the page is
+      hidden and the chart takes it back when it is shown again). -->
+ <div class="srow" id="wakerow">
+  <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
+  <div style="flex:1"><b id="wake-lbl">&Eacute;cran allum&eacute; sur le graphique</b>
+   <div class="ssub" id="wake-sub">Activ&eacute;</div></div>
+  <span class="sw" id="wake-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
  <div class="srow" id="themerow" style="cursor:default">
   <div class="sic"><svg class="ic"><use href="#i-sun"/></svg></div>
   <div style="flex:1"><b>Apparence</b>
@@ -4051,6 +4060,17 @@ window.addEventListener('load',()=>{
     ?(en?'Each run of same-colour candles becomes one candle - on the chart you chose (quiet or pullbacks), display only':'Chaque série de bougies de même couleur devient une seule bougie — sur le graphique choisi (silence ou reculs), affichage seulement')
     :(en?'Off - one candle per filtered minute':'Désactivées — une bougie par minute filtrée');};
   r.onclick=()=>{try{localStorage.setItem('owlSwing',rd()?'0':'1');}catch(e){}paint();};
+  paint();})();
+(function(){const r=document.getElementById('wakerow');if(!r)return;
+  const sw=document.getElementById('wake-sw');
+  const rd=()=>{try{return localStorage.getItem('owlWake')!=='0';}catch(e){return true;}};
+  const paint=()=>{const on=rd();sw.classList.toggle('on',on);
+   const en=LANG()==='en';
+   document.getElementById('wake-lbl').textContent=en?'Screen stays on with the chart':'Écran allumé sur le graphique';
+   document.getElementById('wake-sub').textContent=on
+    ?(en?'The phone does not go to sleep while the chart is open':'Le téléphone ne se met pas en veille tant que le graphique est ouvert')
+    :(en?'Off - the phone sleeps as usual':'Désactivé — le téléphone se met en veille comme d’habitude');};
+  r.onclick=()=>{try{localStorage.setItem('owlWake',rd()?'0':'1');}catch(e){}paint();};
   paint();})();
 // Owner 2026-10-10 (urgent): the two Nid-wide switches. Admin only; every
 // change asks the master password; the files are read live by every robot.
