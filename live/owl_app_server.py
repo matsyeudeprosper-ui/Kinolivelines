@@ -3265,6 +3265,21 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div class="tab" id="tab-nid">
 <div class="sec" style="margin-top:26px">Le Nid &middot; tous les
  comptes</div>
+<!-- Owner 2026-10-10 (urgent): two switches for every robot at once. -->
+<div class="panel" id="nestsw" style="display:none;margin-bottom:12px">
+ <div class="srow" id="allrow">
+  <div class="sic" id="all-ic">&#9654;&#65039;</div>
+  <div style="flex:1"><b id="all-lbl">Tous les robots</b>
+   <div class="ssub" id="all-sub">&hellip;</div></div>
+  <span class="sw" id="all-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
+ <div class="srow" id="waiverrow">
+  <div class="sic">&#9728;&#65039;</div>
+  <div style="flex:1"><b id="waiver-lbl">Continuer aujourd&rsquo;hui</b>
+   <div class="ssub" id="waiver-sub">&hellip;</div></div>
+  <span class="sw" id="waiver-sw" aria-hidden="true"><span class="swk"></span></span>
+ </div>
+</div>
 <div id="acctsw" style="display:none;margin-bottom:12px;
  background:var(--surface2);border:1px solid var(--border);border-radius:14px;
  padding:12px">
@@ -3987,6 +4002,35 @@ window.addEventListener('load',()=>{
     :(en?'Off - one candle per filtered minute':'Désactivées — une bougie par minute filtrée');};
   r.onclick=()=>{try{localStorage.setItem('owlSwing',rd()?'0':'1');}catch(e){}paint();};
   paint();})();
+// Owner 2026-10-10 (urgent): the two Nid-wide switches. Admin only; every
+// change asks the master password; the files are read live by every robot.
+(function(){const box=document.getElementById('nestsw');if(!box)return;
+  let st={paused:false,waiver_until:null};
+  const en=()=>LANG()==='en';
+  const paint=()=>{
+   const asw=document.getElementById('all-sw'),wsw=document.getElementById('waiver-sw');
+   asw.classList.toggle('on',!st.paused);
+   document.getElementById('all-ic').innerHTML=st.paused?'&#9208;&#65039;':'&#9654;&#65039;';
+   document.getElementById('all-sub').textContent=st.paused
+    ?(en()?'ALL robots paused - no new entry anywhere':'TOUS les robots en pause — aucune nouvelle entrée')
+    :(en()?'All robots running (their own switches still apply)':'Tous les robots en marche (les interrupteurs de chaque compte s’appliquent toujours)');
+   wsw.classList.toggle('on',!!st.waiver_until);
+   document.getElementById('waiver-sub').textContent=st.waiver_until
+    ?(en()?'Accounts that reached their daily target keep trading until '+new Date(st.waiver_until*1000).toISOString().slice(11,16)+' UTC':'Les comptes qui ont atteint leur objectif du jour continuent jusqu’à '+new Date(st.waiver_until*1000).toISOString().slice(11,16)+' UTC')
+    :(en()?'Off - the daily target stops the day as usual':'Désactivé — l’objectif du jour arrête la journée comme d’habitude');};
+  const load=async()=>{try{const r=await fetch(AB()+'nest_switches');if(!r.ok){box.style.display='none';return;}
+   const j=await r.json();if(!j.ok){box.style.display='none';return;}st=j;box.style.display='';paint();}catch(e){}};
+  const post=async(route,on)=>{const pw=await askPwd(en()?'Master password':'Mot de passe administrateur',
+    en()?'This changes EVERY robot at once.':'Ceci change TOUS les robots d’un coup.',en()?'Confirm':'Confirmer',true);
+   if(!pw)return;
+   const r=await fetch(AB()+route,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'on='+(on?'1':'0')+'&pwd='+encodeURIComponent(pw)}).catch(()=>null);
+   let j=null;try{j=await r.json();}catch(e){}
+   if(!j||!j.ok){await info('&#10060; <h3>'+((j&&j.err)||(en()?'Refused':'Refusé'))+'</h3>');}
+   load();};
+  document.getElementById('allrow').onclick=()=>post('nest_pause_all',!st.paused);
+  document.getElementById('waiverrow').onclick=()=>post('nest_cap_waiver',!st.waiver_until);
+  load();setInterval(load,30000);})();
 (function(){const r=document.getElementById('intmkrow');if(!r)return;
   const sw=document.getElementById('intmk-sw');
   const rd=()=>{try{return localStorage.getItem('owlIntMarks')!=='0';}catch(e){return true;}};
@@ -13611,6 +13655,48 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps({"ok": False, "err": str(e)}),
                            "application/json")
             return
+        if len(_parts) == 2 and _parts[1] in ("nest_pause_all", "nest_cap_waiver"):
+            # Owner 2026-10-10 (urgent): two switches for the whole Nid.
+            #  nest_pause_all  on=1|0  -> the master file every bot reads
+            #                  live (owl_trading_pause.json): stop / start all
+            #  nest_cap_waiver on=1|0  -> owl_day_cap_waiver.json: the accounts
+            #                  that reached their profit target keep trading
+            #                  until the end of the UTC day (on=0 removes it)
+            # Admin only, master password; no restart needed (both files are
+            # read on every decision by structure_bos_bot).
+            u = user_by_token(_parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            try:
+                ln = int(self.headers.get("Content-Length", 0))
+                import urllib.parse as _upa
+                _fa = _upa.parse_qs(self.rfile.read(ln).decode("utf-8", "replace"))
+                if not master_pwd_ok((_fa.get("pwd", [""])[0] or "").strip()):
+                    self._send(json.dumps({"ok": False, "err": "mot de passe incorrect"}), "application/json")
+                    return
+                _on = (_fa.get("on", ["1"])[0] == "1")
+                if _parts[1] == "nest_pause_all":
+                    json.dump({"paused": _on, "by": "owner", "t": time.time()},
+                              open(os.path.join(DIR, "owl_trading_pause.json"), "w"))
+                    self._send(json.dumps({"ok": True, "paused": _on}), "application/json")
+                else:
+                    _wf = os.path.join(DIR, "owl_day_cap_waiver.json")
+                    if _on:
+                        _now = datetime.now(timezone.utc)
+                        _until = datetime(_now.year, _now.month, _now.day, 23, 59, 59, tzinfo=timezone.utc).timestamp()
+                        json.dump({"until": _until, "by": "owner", "set_at": time.time()}, open(_wf, "w"))
+                        self._send(json.dumps({"ok": True, "until": _until}), "application/json")
+                    else:
+                        try:
+                            os.remove(_wf)
+                        except FileNotFoundError:
+                            pass
+                        self._send(json.dumps({"ok": True, "until": None}), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)}), "application/json")
+            return
         if len(_parts) == 2 and _parts[1] == "nest_panic":
             # ADMIN EMERGENCY STOP on ANY account (owner 2026-09-18).
             # Pauses the account, cancels its pending orders and closes
@@ -15057,6 +15143,26 @@ class H(BaseHTTPRequestHandler):
     def do_GET(self):
         p = self.path.split("?")[0].rstrip("/")
         parts = [x for x in p.split("/") if x]
+        # Owner 2026-10-10: the state of the two Nid-wide switches (admin only)
+        if len(parts) == 2 and parts[1] == "nest_switches":
+            u = user_by_token(parts[0])
+            if not is_admin(u):
+                self.send_response(404)
+                self.end_headers()
+                return
+            _paused = False; _until = None
+            try:
+                _paused = bool(json.load(open(os.path.join(DIR, "owl_trading_pause.json"), encoding="utf-8")).get("paused"))
+            except Exception:
+                pass
+            try:
+                _until = float(json.load(open(os.path.join(DIR, "owl_day_cap_waiver.json"))).get("until") or 0)
+                if _until <= time.time():
+                    _until = None
+            except Exception:
+                _until = None
+            self._send(json.dumps({"ok": True, "paused": _paused, "waiver_until": _until}), "application/json")
+            return
         # 2026-10-03 (owner): the Android app - a wrapper around this site.
         # /owlnest.apk the file, /apk.json its version (the app and the
         # landing read it), /.well-known/assetlinks.json the proof that the

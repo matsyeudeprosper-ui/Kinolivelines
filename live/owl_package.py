@@ -63,7 +63,15 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           "eq_half",
           # 2026-10-09 (owner): bullets-only recovery, False everywhere
           # except the package that switches it on
-          "recov_bullets_only")
+          "recov_bullets_only",
+          # 2026-10-10 (owner, urgent): pb_dir_gate - only trades in the
+          # direction of the pullback ("reculs") chart's trend. True on the
+          # live packages by the owner's decision; False on the reference
+          # account (it must take every signal). NOTE the 2026-10-07 replay
+          # of this gate LOST on every account (pb direction carried no
+          # information) - deployed on the owner's instruction, measured
+          # forward (structure_bos_bot.PB_DIR_GATE).
+          "pb_dir_gate")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -74,7 +82,8 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "day_cap_waived": True, "scale_with_balance": False,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
-        "debt_gate": True, "eq_half": False, "recov_bullets_only": False}
+        "debt_gate": True, "eq_half": False, "recov_bullets_only": False,
+        "pb_dir_gate": False}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

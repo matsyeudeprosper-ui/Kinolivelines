@@ -363,6 +363,39 @@ _EQ_CACHE = {"t": 0.0, "v": (0, 0)}
 # -51 -> -32, and it survives real execution costs where today's recovery
 # does not (study/recovery_bullets_only_costs.py, verdict A).
 RECOV_BULLETS_ONLY = bool(_P.get("recov_bullets_only", False))
+# 2026-10-10 (owner, urgent): only trades in the direction of the pullback
+# ("reculs") chart's trend. The chart is rebuilt here exactly like the feed
+# builds it (silence filter -> structure engine -> pullback_view over the
+# structure candles), from closed M1 bars, cached a minute. A trend of 0
+# (no structure yet) allows. NOTE: the 2026-10-07 replay of this gate lost
+# on every account (review/ENTRY_SCREENS, pb_direction_filter) - deployed
+# on the owner's decision and measured forward. Off on the reference account.
+PB_DIR_GATE = bool(_P.get("pb_dir_gate", False))
+_PB_CACHE = {"t": 0.0, "v": 0}
+
+
+def pb_trend_now():
+    """trend of the pullback chart (1 / -1 / 0) from the last 8000 closed M1 bars"""
+    if time.time() - _PB_CACHE["t"] < 60:
+        return _PB_CACHE["v"]
+    v = 0
+    try:
+        from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv
+        _r = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 8000)
+        if _r is not None and len(_r) > 200:
+            _k = _fb(_r); _bk = []
+            _d, _m, _tr, *_rest = _fe(_k, brk_out=_bk)
+            if _tr:
+                _d = [x for x in _d if x[2] == _tr]
+            _pb = _pv(_k, _d, _m, _bk)
+            v = int((_pb or {}).get("trend") or 0)
+    except Exception as _e:
+        say(f"reculs: lecture impossible ({type(_e).__name__}) - pas de filtre")
+        v = 0
+    _PB_CACHE.update(t=time.time(), v=v)
+    return v
+
+
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
 SCALE_WITH_BALANCE = _P.get("scale_with_balance", False)
 SCALE_REF_BALANCE = _P.get("scale_ref_balance", 200.0)
@@ -872,6 +905,22 @@ def day_blocked(st):
     if _adaptive is None:
         return None
     if pnl >= _adaptive:
+        # Owner 2026-10-10 (urgent): an EXCEPTION file lets the accounts that
+        # reached their profit target keep trading until the time it names
+        # (the owner's switch on le Nid writes it; the package limit
+        # max_trades_day above is never waived). Read every call, no restart.
+        try:
+            _w = json.load(open(os.path.join(DIR, "owl_day_cap_waiver.json")))
+            if time.time() < float(_w.get("until", 0)):
+                if not st.get("cap_waived_note"):
+                    st["cap_waived_note"] = True
+                    save_state(st)
+                    say(f"LIMITE DU JOUR levee par le proprietaire jusqu'a "
+                        f"{datetime.fromtimestamp(float(_w['until']), tz=timezone.utc):%H:%M} UTC "
+                        f"- on continue (+{pnl:.2f} >= ${_adaptive:.2f})")
+                return None
+        except Exception:
+            pass
         _tag = ("dette active" if st.get("debt", 0.0) > 0.5
                 else "sans dette")
         return f"+{pnl:.2f} aujourd'hui (>= ${_adaptive:.2f}), {_tag}"
@@ -1240,6 +1289,13 @@ def main():
             say(f"{kind} refuse: dette active (${st['debt']:.2f}) - "
                 f"structure interne en pause pendant la reprise")
             return False
+        # Owner 2026-10-10 (urgent): the pullback chart's direction decides
+        if PB_DIR_GATE:
+            _pbt = pb_trend_now()
+            if _pbt in (1, -1) and d != _pbt:
+                say(f"{kind} refuse: sens contraire au graphique des reculs "
+                    f"(reculs {'haussiers' if _pbt == 1 else 'baissiers'})")
+                return False
         _cj0 = weather()          # captured once, reused for the gate
         _wg = weather_gate(need_int=internal, cj=_cj0)
         if _wg:
