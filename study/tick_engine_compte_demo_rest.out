@@ -1,0 +1,28 @@
+follower ticks (std feed) 4869156
+reference (demo_feed) drag 0.00: 296 closed outcomes net 66.31
+u224016179         drag 0.00 no_pause       | net    64.02 cc_dd   62.19 mtm_dd   66.57 | trades 273 wins 149 main    30.24 adds  33.74 risk   1161 | h1   55.99 h2    8.05 | eligible 657 paused   0 invalid   0 thinned   0 | 824s
+u224016179         drag 0.00 global_pause   | net    32.66 cc_dd   57.93 mtm_dd   59.50 | trades 196 wins 106 main    18.19 adds  14.44 risk    768 | h1   55.99 h2  -23.34 | eligible 709 paused 282 invalid   0 thinned   0 | 824s
+u224016179         drag 0.00 dir_pause      | net    54.34 cc_dd   61.10 mtm_dd   63.83 | trades 250 wins 138 main    42.60 adds  11.73 risk   1029 | h1   55.99 h2   -1.66 | eligible 681 paused 107 invalid   0 thinned   0 | 824s
+u224016179         drag 0.00 thin_k3_p0     | net    -1.32 cc_dd   54.96 mtm_dd   57.11 | trades 209 wins 108 main    -7.13 adds   5.80 risk    758 | h1   24.56 h2  -25.91 | eligible 693 paused   0 invalid   0 thinned 231 | 824s
+u224016179         drag 0.00 thin_k3_p1     | net   -11.17 cc_dd   46.22 mtm_dd   49.61 | trades 206 wins 106 main   -22.28 adds  11.09 risk    698 | h1    1.95 h2  -13.14 | eligible 700 paused   0 invalid   0 thinned 234 | 824s
+u224016179         drag 0.00 thin_k3_p2     | net     0.87 cc_dd   57.31 mtm_dd   59.46 | trades 208 wins 107 main    -4.94 adds   5.80 risk    778 | h1   26.75 h2  -25.91 | eligible 689 paused   0 invalid   0 thinned 230 | 824s
+bos                drag 0.00 no_pause       | net   112.52 cc_dd  127.33 mtm_dd  130.78 | trades 270 wins 148 main    44.66 adds  67.87 risk   2057 | h1  119.95 h2   -7.45 | eligible 636 paused   0 invalid   0 thinned   0 | 809s
+bos                drag 0.00 global_pause   | net    56.98 cc_dd  116.65 mtm_dd  118.57 | trades 198 wins 107 main    37.24 adds  19.73 risk   1394 | h1  119.95 h2  -62.98 | eligible 707 paused 282 invalid   0 thinned   0 | 809s
+bos                drag 0.00 dir_pause      | net    82.66 cc_dd  117.37 mtm_dd  125.25 | trades 250 wins 138 main    52.39 adds  30.29 risk   1823 | h1  119.95 h2  -37.30 | eligible 658 paused  96 invalid   0 thinned   0 | 809s
+bos                drag 0.00 thin_k3_p0     | net    56.84 cc_dd   89.78 mtm_dd  101.47 | trades 210 wins 108 main    27.57 adds  29.28 risk   1430 | h1   64.77 h2   -7.93 | eligible 693 paused   0 invalid   0 thinned 231 | 809s
+bos                drag 0.00 thin_k3_p1     | net    -8.46 cc_dd  100.15 mtm_dd  109.55 | trades 203 wins 103 main   -26.98 adds  18.53 risk   1223 | h1   20.69 h2  -29.12 | eligible 688 paused   0 invalid   0 thinned 230 | 809s
+bos                drag 0.00 thin_k3_p2     | net    57.13 cc_dd   89.78 mtm_dd  105.99 | trades 209 wins 107 main    28.23 adds  28.92 risk   1446 | h1   65.49 h2   -8.33 | eligible 689 paused   0 invalid   0 thinned 230 | 809s
+reference (demo_feed) drag 0.35: 296 closed outcomes net -37.32
+u224016179         drag 0.35 no_pause       | net   -33.48 cc_dd   64.70 mtm_dd   66.20 | trades 268 wins 149 main   -39.53 adds   6.01 risk    911 | h1   -1.32 h2  -32.12 | eligible 657 paused   0 invalid   0 thinned   0 | 922s
+u224016179         drag 0.35 global_pause   | net   -60.20 cc_dd   74.40 mtm_dd   75.50 | trades 153 wins  82 main   -51.33 adds  -8.88 risk    503 | h1  -34.42 h2  -25.76 | eligible 417 paused  53 invalid   0 thinned   0 | 922s
+u224016179         drag 0.35 dir_pause      | net    -6.10 cc_dd   44.17 mtm_dd   48.19 | trades 216 wins 124 main    -8.88 adds   2.76 risk    723 | h1   -1.32 h2   -4.74 | eligible 695 paused 211 invalid   0 thinned   0 | 922s
+u224016179         drag 0.35 thin_k8_p0     | net   -47.39 cc_dd   73.12 mtm_dd   73.90 | trades 252 wins 138 main   -44.48 adds  -2.92 risk    830 | h1    4.35 h2  -51.71 | eligible 674 paused   0 invalid   0 thinned  84 | 922s
+u224016179         drag 0.35 thin_k8_p1     | net   -37.58 cc_dd   74.03 mtm_dd   76.20 | trades 250 wins 139 main   -36.24 adds  -1.37 risk    855 | h1   15.05 h2  -52.62 | eligible 667 paused   0 invalid   0 thinned  84 | 922s
+u224016179         drag 0.35 thin_k8_p2     | net   -38.70 cc_dd   74.03 mtm_dd   76.20 | trades 248 wins 136 main   -38.32 adds  -0.40 risk    844 | h1   13.94 h2  -52.62 | eligible 668 paused   0 invalid   0 thinned  84 | 922s
+u224016179         drag 0.35 thin_k8_p3     | net   -33.43 cc_dd   74.03 mtm_dd   76.20 | trades 246 wins 137 main   -31.83 adds  -1.61 risk    841 | h1   19.22 h2  -52.62 | eligible 669 paused   0 invalid   0 thinned  84 | 922s
+bos                drag 0.35 no_pause       | net     7.13 cc_dd  129.72 mtm_dd  139.19 | trades 259 wins 145 main   -44.84 adds  51.95 risk   1732 | h1   58.22 h2  -51.13 | eligible 624 paused   0 invalid   0 thinned   0 | 921s
+bos                drag 0.35 global_pause   | net   -61.67 cc_dd  150.84 mtm_dd  153.04 | trades 164 wins  89 main   -71.20 adds   9.54 risk    987 | h1  -10.12 h2  -51.55 | eligible 671 paused 280 invalid   0 thinned   0 | 921s
+bos                drag 0.35 dir_pause      | net    41.24 cc_dd   82.26 mtm_dd   88.95 | trades 212 wins 122 main    29.66 adds  11.58 risk   1441 | h1   58.22 h2  -16.99 | eligible 681 paused 211 invalid   0 thinned   0 | 921s
+bos                drag 0.35 thin_k2_p0     | net   -67.77 cc_dd   78.49 mtm_dd   84.70 | trades 116 wins  62 main   -50.69 adds -17.11 risk    592 | h1  -46.91 h2  -20.90 | eligible 443 paused   0 invalid   0 thinned 221 | 921s
+bos                drag 0.35 thin_k2_p1     | net   -61.73 cc_dd   81.27 mtm_dd   87.48 | trades 125 wins  68 main   -46.69 adds -15.07 risk    657 | h1  -38.09 h2  -23.68 | eligible 472 paused   0 invalid   0 thinned 236 | 921s
+DONE

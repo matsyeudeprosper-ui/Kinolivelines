@@ -156,3 +156,19 @@ late, so every pause acted in the second half (H1 identical for no_pause and dir
 every number above = demo package on the demo's own quotes (proxy for the demo's actual history: no TOUCH
 path, bar-close signals); the std-feed transfer check and the two other live packages follow in the next
 commit. Existing weather gates already refused 121-129 opportunities per arm before Compte saw them.
+
+## E. Appendix - Stage 2 on the two other live packages (demo-feed reference; same rules; development)
+| package | drag | no_pause net / DD | global_pause net / DD (paused) | dir_pause net / DD (paused) | thinning k (phases) net / DD | global vs none CI90 net | dir vs none CI90 net / DD ratio |
+|---|---|---|---|---|---|---|---|
+| u224016179 | 0 | 64.02 / 62.19 | 32.66 / 57.93 (282 of 709) | 54.34 / 61.10 (107) | k=3: -1.3, -11.2, +0.9 / 55, 46, 57 | [-101, +39] | [-58, +28] / 0.98 [0.79, 1.11] |
+| u224016179 | 0.35 | -33.48 / 64.70 | -60.20 / 74.40 | -6.10 / 44.17 (211) | k=8: -47, -38, -39, -33 / ~74 | [-133, +18] | [-24, +65] / 0.68 [0.46, 1.05] |
+| bos | 0 | 112.52 / 127.33 | 56.98 / 116.65 | 82.66 / 117.37 (96) | k=3: +57, -8, +57 / 90, 100, 90 | [-213, +87] | [-111, +11] / 0.92 [0.84, 1.13] |
+| bos | 0.35 | 7.13 / 129.72 | -61.67 / 150.84 | 41.24 / 82.26 (211) | k=2: -68, -62 / 78, 81 | [-293, +73] | [-58, +111] / 0.63 [0.47, 1.00] |
+Reading across the three live packages: the GLOBAL pause (primary hypothesis) is negative on every row at
+both cost bases - it pauses 40-45% of eligible setups (13% on Depenses under drag, where the demo curve
+was weak less often from that follower's clock) and never buys drawdown. The DIRECTIONAL pause costs profit at
+zero drag on all three and, under the assumed drag, raises the net on all three (+3 / +27 / +34) with
+drawdown ratios 0.63-0.69 whose intervals touch 1.0; its thinning control is matched to the global rate,
+not to its own ~31% rate, so that attribution is INADEQUATE (a rate-matched control is the obvious next
+control - not run here, so as not to search). Every net interval includes zero. Compte as a pause gate:
+primary = negative; directional = a conditional, cost-dependent, unmatched point pattern - not a pass.
