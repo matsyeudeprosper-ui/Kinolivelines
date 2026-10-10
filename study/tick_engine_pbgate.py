@@ -17,26 +17,28 @@ sys.path.insert(0, r"C:\Projects\KinoliveLines\study"); sys.path.insert(0, r"C:\
 import tick_engine as E
 from tick_engine_matrix import PolicyArm
 import owl_chart_feed as F
+from pb_gate import pb_gate
 R = E.R
-CACHE = r"C:\Projects\KinoliveLines\study\pb_state_cache.pkl"
+CACHE = r"C:\Projects\KinoliveLines\study\pb_state_cache_v2.pkl"   # v2: states carry the last BOS price too
 
 
 def pb_state_at(i):
-    """(trend, pending choch dir, choch price) of the pullback chart built from bars [i-7999 .. i]"""
+    """(trend, pending choch dir, choch price, last BOS price) of the pullback chart built from bars [i-7999 .. i]"""
     g0 = max(0, i - 7999); kept = F.build(R[g0:i + 1]); bk = []
-    if len(kept) < 3: return (0, 0, None)
+    if len(kept) < 3: return (0, 0, None, None)
     dots, marks, trend, *_ = F.engine(kept, brk_out=bk)
     if trend: dots = [d for d in dots if d[2] == trend]
     try:
         pb = F.pullback_view(kept, dots, marks, bk) or {}
     except Exception:
-        return (0, 0, None)
+        return (0, 0, None, None)
     t = int(pb.get("trend") or 0); c = int(pb.get("choch") or 0); c = c if (c and c != t) else 0
     lvl = None
     if c:
         cm = [x for x in (pb.get("marks") or []) if len(x) > 2 and x[2] == "choch"]
         lvl = float(cm[-1][1]) if cm else None
-    return (t, c, lvl)
+    bks = pb.get("breaks") or []
+    return (t, c, lvl, float(bks[-1][2]) if bks else None)
 
 
 class PbGateArm(PolicyArm):
@@ -50,18 +52,17 @@ class PbGateArm(PolicyArm):
         if self.gmode == "none": return True
         st = self.S.get(o["t"])
         if st is None: self.n["pb_no_state"] += 1; return True
-        tr, ch, lvl = st; d = o["d"]
-        if tr in (1, -1) and d != tr:
-            px = setup["e0"]
-            if self.gmode == "choch" and ch == d and lvl is not None and d * (px - lvl) > 0:
-                self.n["pb_choch_allowed"] += 1; return True
-            self.n["pb_refused"] += 1; return False
+        tr, ch, lvl, last = (tuple(st) + (None,))[:4]
+        ok, why = pb_gate(self.gmode, o["d"], setup["e0"], tr, ch, lvl, last)   # the live bot's own decision function
+        if not ok: self.n["pb_refused"] += 1; self.n["pb_" + why] = self.n.get("pb_" + why, 0) + 1; return False
+        if why == "choch_exception": self.n["pb_choch_allowed"] += 1
         return True
 
 
 def run_gate(uid, drag, TM, BID, ASK, END, opps, bars, S):
     cfg, rep = E.effective_cfg(E.PR[uid], E.REGIMES[uid], drag)
-    arms = [PbGateArm("baseline", cfg, bars, "none", S), PbGateArm("pb_gate_choch", cfg, bars, "choch", S), PbGateArm("pb_gate_strict", cfg, bars, "strict", S)]
+    arms = [PbGateArm("baseline", cfg, bars, "none", S), PbGateArm("pb_gate_choch", cfg, bars, "choch", S), PbGateArm("pb_gate_strict", cfg, bars, "strict", S),
+            PbGateArm("pb_gate_trend", cfg, bars, "trend", S)]   # owner 2026-10-10 evening: the official rule
     elig = [((o["t"] + 60) * 1000 + E.SIGNAL_MS, o) for o in opps]; ei = 0
     touches = sorted((t * 1000 + 60000, 1) for t, (touched, nv) in bars.items() if touched); ti = 0
     n = len(TM); prev = int(TM[0])

@@ -71,7 +71,11 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # of this gate LOST on every account (pb direction carried no
           # information) - deployed on the owner's instruction, measured
           # forward (structure_bos_bot.PB_DIR_GATE).
-          "pb_dir_gate")
+          "pb_dir_gate",
+          # 2026-10-10 (owner, evening): the gate's rule - "trend" (official:
+          # with the pullback trend AND beyond its last BOS), "choch" (the
+          # morning rule), "strict". Decision in live/pb_gate.py.
+          "pb_gate_mode")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -83,7 +87,7 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
         "debt_gate": True, "eq_half": False, "recov_bullets_only": False,
-        "pb_dir_gate": False}
+        "pb_dir_gate": False, "pb_gate_mode": "trend"}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

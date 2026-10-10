@@ -13,7 +13,7 @@ ROOT = r"C:\Projects\KinoliveLines"; B = os.path.join(ROOT, "study", "frozen_ent
 PY = ["study/tick_engine.py", "study/tick_engine_forward.py", "study/tick_engine_stats.py", "study/manifest_runner.py", "study/dev_dataset.py",
       "study/fetch_ticks.py", "live/lab/harness.py", "live/structure_bos_bot.py", "live/owl_package.py", "live/lab/compte_controller.py", "live/lab/test_tick_engine.py",
       # imported by the bot / the controller at import time (review 16: the bundle must resolve everything itself)
-      "live/owl_shadow.py", "live/owl_chart_feed.py"]
+      "live/owl_shadow.py", "live/owl_chart_feed.py", "live/pb_gate.py"]
 DATA = ["review/compte_frozen_manifest.json", "live/owl_packages.json", "study/dev_bars_2026-10-09b.npz", "study/dev_bars_2026-10-09b.json"]
 # every absolute root the sources use -> the bundle (longest first so prefixes do not clobber)
 ROOTS = [r"C:\Projects\KinoliveLines\review\compte_frozen_manifest.json", r"C:\Projects\KinoliveLines\live\lab", r"C:\Projects\KinoliveLines\live",

@@ -371,19 +371,22 @@ RECOV_BULLETS_ONLY = bool(_P.get("recov_bullets_only", False))
 # on every account (review/ENTRY_SCREENS, pb_direction_filter) - deployed
 # on the owner's decision and measured forward. Off on the reference account.
 PB_DIR_GATE = bool(_P.get("pb_dir_gate", False))
-_PB_CACHE = {"t": 0.0, "v": (0, 0, None)}
+# owner 2026-10-10 (evening): the OFFICIAL rule is "trend" - see live/pb_gate.py
+PB_GATE_MODE = str(_P.get("pb_gate_mode", "trend"))
+from pb_gate import pb_gate
+_PB_CACHE = {"t": 0.0, "v": (0, 0, None, None)}
 
 
 def pb_state_now():
-    """the pullback chart's (trend, pending CHoCH direction, CHoCH price) from
-    the last 8000 closed M1 bars, cached a minute. CHoCH direction is 0 when
+    """the pullback chart's (trend, pending CHoCH direction, CHoCH price,
+    last BOS price) from the last 8000 closed M1 bars, cached a minute. CHoCH direction is 0 when
     none is pending; the price is that of the last CHoCH mark on that chart.
     Owner 2026-10-10 (urgent #2): a pending CHoCH opens the OTHER direction
     beyond its level - a bearish pullback structure takes sells, and once a
     bullish CHoCH is pending, buys are allowed above the CHoCH price."""
     if time.time() - _PB_CACHE["t"] < 60:
         return _PB_CACHE["v"]
-    v = (0, 0, None)
+    v = (0, 0, None, None)
     try:
         from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv, PB_CHAIN as _pbc
         _r = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 8000)
@@ -400,10 +403,12 @@ def pb_state_now():
             if _c:
                 _cm = [x for x in (_pb.get("marks") or []) if len(x) > 2 and x[2] == "choch"]
                 _lvl = float(_cm[-1][1]) if _cm else None
-            v = (_t, _c, _lvl)
+            _bks = _pb.get("breaks") or []
+            _last = float(_bks[-1][2]) if _bks else None
+            v = (_t, _c, _lvl, _last)
     except Exception as _e:
         say(f"reculs: lecture impossible ({type(_e).__name__}) - pas de filtre")
-        v = (0, 0, None)
+        v = (0, 0, None, None)
     _PB_CACHE.update(t=time.time(), v=v)
     return v
 
@@ -1307,23 +1312,26 @@ def main():
             return False
         # Owner 2026-10-10 (urgent): the pullback chart's direction decides
         if PB_DIR_GATE:
-            _pbt, _pbc, _pbl = pb_state_now()
-            if _pbt in (1, -1) and d != _pbt:
-                # the pending CHoCH's own direction, beyond its level, is open
-                _tk0 = mt5.symbol_info_tick(SYMBOL)
-                _px0 = (_tk0.ask if d == 1 else _tk0.bid) if _tk0 else None
-                if (_pbc == d and _pbl is not None and _px0 is not None
-                        and d * (_px0 - _pbl) > 0):
-                    say(f"{kind} accepte malgre les reculs "
-                        f"{'haussiers' if _pbt == 1 else 'baissiers'}: CHoCH "
-                        f"{'haussier' if d == 1 else 'baissier'} en attente et "
-                        f"prix {_px0:.2f} au-dela de {_pbl:.2f}")
+            # Owner 2026-10-10 (evening), official trend-following rule - the
+            # decision itself lives in live/pb_gate.py, shared with the replay
+            _pbt, _pbc, _pbl, _pbb = pb_state_now()
+            _tk0 = mt5.symbol_info_tick(SYMBOL)
+            _px0 = (_tk0.ask if d == 1 else _tk0.bid) if _tk0 else None
+            _ok, _why = pb_gate(PB_GATE_MODE, d, _px0, _pbt, _pbc, _pbl, _pbb)
+            _sens = 'haussiers' if _pbt == 1 else 'baissiers'
+            if not _ok:
+                if _why == "paused_wrong_side":
+                    say(f"{kind} refuse: reculs {_sens} mais prix {_px0:.2f} du mauvais "
+                        f"cote du dernier BOS des reculs {_pbb:.2f} - continuation en pause")
                 else:
-                    say(f"{kind} refuse: sens contraire au graphique des reculs "
-                        f"(reculs {'haussiers' if _pbt == 1 else 'baissiers'}"
-                        + (f", CHoCH en attente mais prix pas encore au-dela de {_pbl:.2f}"
-                           if (_pbc == d and _pbl is not None) else "") + ")")
-                    return False
+                    say(f"{kind} refuse: sens contraire au graphique des reculs (reculs {_sens})")
+                return False
+            if _why == "choch_exception":
+                say(f"{kind} accepte malgre les reculs {_sens}: CHoCH "
+                    f"{'haussier' if d == 1 else 'baissier'} en attente et prix {_px0:.2f} au-dela de {_pbl:.2f}")
+            elif _why == "beyond_last_bos":
+                say(f"{kind} dans le sens des reculs {_sens}, prix {_px0:.2f} "
+                    f"au-dela du dernier BOS des reculs {_pbb:.2f}")
         _cj0 = weather()          # captured once, reused for the gate
         _wg = weather_gate(need_int=internal, cj=_cj0)
         if _wg:
