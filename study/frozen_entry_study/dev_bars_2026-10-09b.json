@@ -1,0 +1,12 @@
+{
+ "symbol": "BTCUSDm",
+ "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+ "bars": 59999,
+ "first_bar": 1787957640,
+ "last_bar": 1791558360,
+ "frozen_at": "2026-10-09T16:08:39Z",
+ "sha256": "594a3275fb4a3c1d",
+ "derived_from": "dev_bars_2026-10-09.npz (sha 06ece48906f62129), last (forming) bar removed",
+ "closed_bar_cutoff": 1791558420,
+ "note": "version b: closed bars only; the original pinned file is kept untouched"
+}

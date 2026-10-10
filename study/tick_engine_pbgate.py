@@ -44,19 +44,19 @@ class PbGateArm(PolicyArm):
         super().__init__(name, cfg, {"entry": "immediate", "allowance": "current", "cap": "on"}, bars)
         self.gmode, self.S = mode, states; self.n.update({"pb_refused": 0, "pb_choch_allowed": 0, "pb_no_state": 0})
 
-    def signal(self, o, k, TM, BID, ASK):
-        if self.gmode != "none" and not (self.pos is not None or self.order is not None or self.pend is not None or self.dead):
-            st = self.S.get(o["t"])
-            if st is None: self.n["pb_no_state"] += 1
-            else:
-                tr, ch, lvl = st; d = o["d"]
-                if tr in (1, -1) and d != tr:
-                    px = ASK[k] if d == 1 else BID[k]
-                    if self.gmode == "choch" and ch == d and lvl is not None and d * (px - lvl) > 0:
-                        self.n["pb_choch_allowed"] += 1
-                    else:
-                        self.n["pb_refused"] += 1; return
-        return super().signal(o, k, TM, BID, ASK)
+    def gate_hook(self, o, k, TM, BID, ASK, setup, debt_now):
+        """review 16: like the live enter(), the pullback gate runs AFTER the ordinary gates and the
+        continuation allowance / used-level updates, immediately before the order"""
+        if self.gmode == "none": return True
+        st = self.S.get(o["t"])
+        if st is None: self.n["pb_no_state"] += 1; return True
+        tr, ch, lvl = st; d = o["d"]
+        if tr in (1, -1) and d != tr:
+            px = setup["e0"]
+            if self.gmode == "choch" and ch == d and lvl is not None and d * (px - lvl) > 0:
+                self.n["pb_choch_allowed"] += 1; return True
+            self.n["pb_refused"] += 1; return False
+        return True
 
 
 def run_gate(uid, drag, TM, BID, ASK, END, opps, bars, S):

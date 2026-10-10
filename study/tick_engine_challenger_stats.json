@@ -1,0 +1,1002 @@
+{
+ "label": "conditional uncertainty of realised paths; one history; the challenger was selected after inspecting the 12 x 4 x 2 family",
+ "n_days": 43,
+ "rows": {
+  "infinity|0.00": {
+   "challenger_raw": {
+    "net": 92.27,
+    "net_with_open_mtm": 92.27,
+    "cc_dd": 19.95,
+    "mtm_dd": 20.92,
+    "trades": 133,
+    "wins": 47,
+    "pnl_main": 75.59,
+    "pnl_add": 16.66,
+    "risk_main": 163.04,
+    "adds": 28,
+    "first_half": 24.76,
+    "later_half": 67.49,
+    "gap_flagged_trades": 79,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 324,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 90,
+     "skipped_pending": 97,
+     "skipped_dead": 0,
+     "not_awake": 188,
+     "dedupe": 0,
+     "weather": 125,
+     "debt_gate": 0,
+     "day_cap": 148,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 133,
+     "fills": 133,
+     "reject_geom": 0,
+     "setups": 209,
+     "missed_win": 76,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 133,
+     "adds_filled": 28,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 79,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 17,
+     "cap_waived_off": 0,
+     "signals_in_debt": 147,
+     "signals_out_debt": 210,
+     "delayed_out_debt": 62,
+     "delayed_in_debt": 147
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 10,
+     "pnl": 28.81,
+     "pnl_main": 22.56
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     92.27,
+     38.49
+    ],
+    "net_diff": 53.78,
+    "dd": [
+     19.95,
+     56.78
+    ],
+    "dd_ratio": 0.351,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.148,
+       1.231
+      ],
+      "net_diff_ci90": [
+       -52.5,
+       123.96
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.137,
+       1.146
+      ],
+      "net_diff_ci90": [
+       -40.81,
+       142.48
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.21,
+       1.419
+      ],
+      "net_diff_ci90": [
+       -61.01,
+       94.36
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     92.27,
+     38.01
+    ],
+    "net_diff": 54.26,
+    "dd": [
+     19.95,
+     26.24
+    ],
+    "dd_ratio": 0.76,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.281,
+       1.383
+      ],
+      "net_diff_ci90": [
+       -19.64,
+       100.96
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.262,
+       1.272
+      ],
+      "net_diff_ci90": [
+       -10.01,
+       105.47
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.423,
+       1.461
+      ],
+      "net_diff_ci90": [
+       -27.91,
+       80.15
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  },
+  "infinity|0.35": {
+   "challenger_raw": {
+    "net": 32.23,
+    "net_with_open_mtm": 32.23,
+    "cc_dd": 27.01,
+    "mtm_dd": 28.95,
+    "trades": 162,
+    "wins": 51,
+    "pnl_main": 31.83,
+    "pnl_add": 0.36,
+    "risk_main": 174.07,
+    "adds": 59,
+    "first_half": 12.49,
+    "later_half": 19.7,
+    "gap_flagged_trades": 99,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 335,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 126,
+     "skipped_pending": 106,
+     "skipped_dead": 0,
+     "not_awake": 183,
+     "dedupe": 0,
+     "weather": 123,
+     "debt_gate": 0,
+     "day_cap": 68,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 162,
+     "fills": 162,
+     "reject_geom": 0,
+     "setups": 251,
+     "missed_win": 89,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 162,
+     "adds_filled": 59,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 99,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 23,
+     "cap_waived_off": 0,
+     "signals_in_debt": 223,
+     "signals_out_debt": 96,
+     "delayed_out_debt": 28,
+     "delayed_in_debt": 223
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 15,
+     "pnl": 13.68,
+     "pnl_main": 13.49
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     32.23,
+     -24.66
+    ],
+    "net_diff": 56.89,
+    "dd": [
+     27.01,
+     54.99
+    ],
+    "dd_ratio": 0.491,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.205,
+       1.176
+      ],
+      "net_diff_ci90": [
+       -25.51,
+       114.65
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.176,
+       0.995
+      ],
+      "net_diff_ci90": [
+       -15.24,
+       134.05
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.271,
+       1.101
+      ],
+      "net_diff_ci90": [
+       -35.32,
+       97.95
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     32.23,
+     -6.54
+    ],
+    "net_diff": 38.77,
+    "dd": [
+     27.01,
+     34.41
+    ],
+    "dd_ratio": 0.785,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.27,
+       1.401
+      ],
+      "net_diff_ci90": [
+       -13.29,
+       87.14
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.249,
+       1.274
+      ],
+      "net_diff_ci90": [
+       -8.14,
+       97.95
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.445,
+       1.493
+      ],
+      "net_diff_ci90": [
+       -18.05,
+       60.53
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  },
+  "u224016179|0.00": {
+   "challenger_raw": {
+    "net": 142.39,
+    "net_with_open_mtm": 142.39,
+    "cc_dd": 29.19,
+    "mtm_dd": 31.01,
+    "trades": 140,
+    "wins": 48,
+    "pnl_main": 131.96,
+    "pnl_add": 10.4,
+    "risk_main": 331.95,
+    "adds": 42,
+    "first_half": 50.36,
+    "later_half": 92.05,
+    "gap_flagged_trades": 83,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 322,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 92,
+     "skipped_pending": 93,
+     "skipped_dead": 0,
+     "not_awake": 191,
+     "dedupe": 0,
+     "weather": 125,
+     "debt_gate": 0,
+     "day_cap": 138,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 140,
+     "fills": 140,
+     "reject_geom": 0,
+     "setups": 218,
+     "missed_win": 78,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 140,
+     "adds_filled": 42,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 83,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 21,
+     "cap_waived_off": 0,
+     "signals_in_debt": 170,
+     "signals_out_debt": 186,
+     "delayed_out_debt": 48,
+     "delayed_in_debt": 170
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 13,
+     "pnl": 37.59,
+     "pnl_main": 32.77
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     142.39,
+     62.24
+    ],
+    "net_diff": 80.15,
+    "dd": [
+     29.19,
+     61.1
+    ],
+    "dd_ratio": 0.478,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.297,
+       1.309
+      ],
+      "net_diff_ci90": [
+       -51.75,
+       142.14
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.258,
+       1.238
+      ],
+      "net_diff_ci90": [
+       -41.12,
+       181.44
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.342,
+       1.586
+      ],
+      "net_diff_ci90": [
+       -67.06,
+       144.36
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     142.39,
+     48.14
+    ],
+    "net_diff": 94.25,
+    "dd": [
+     29.19,
+     32.86
+    ],
+    "dd_ratio": 0.888,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.427,
+       1.506
+      ],
+      "net_diff_ci90": [
+       -3.91,
+       144.52
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.39,
+       1.44
+      ],
+      "net_diff_ci90": [
+       -2.72,
+       166.13
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.493,
+       1.738
+      ],
+      "net_diff_ci90": [
+       -5.8,
+       143.77
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  },
+  "u224016179|0.35": {
+   "challenger_raw": {
+    "net": 62.92,
+    "net_with_open_mtm": 62.92,
+    "cc_dd": 52.0,
+    "mtm_dd": 55.35,
+    "trades": 162,
+    "wins": 50,
+    "pnl_main": 50.69,
+    "pnl_add": 12.2,
+    "risk_main": 321.71,
+    "adds": 61,
+    "first_half": 13.76,
+    "later_half": 49.08,
+    "gap_flagged_trades": 96,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 335,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 105,
+     "skipped_pending": 119,
+     "skipped_dead": 0,
+     "not_awake": 179,
+     "dedupe": 0,
+     "weather": 123,
+     "debt_gate": 0,
+     "day_cap": 78,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 162,
+     "fills": 162,
+     "reject_geom": 0,
+     "setups": 253,
+     "missed_win": 91,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 162,
+     "adds_filled": 61,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 96,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 24,
+     "cap_waived_off": 0,
+     "signals_in_debt": 224,
+     "signals_out_debt": 107,
+     "delayed_out_debt": 29,
+     "delayed_in_debt": 224
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 16,
+     "pnl": 12.83,
+     "pnl_main": 12.63
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     62.92,
+     -44.82
+    ],
+    "net_diff": 107.74,
+    "dd": [
+     52.0,
+     64.69
+    ],
+    "dd_ratio": 0.804,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.282,
+       1.026
+      ],
+      "net_diff_ci90": [
+       22.32,
+       157.63
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.233,
+       0.929
+      ],
+      "net_diff_ci90": [
+       22.33,
+       194.19
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.372,
+       1.06
+      ],
+      "net_diff_ci90": [
+       16.55,
+       150.48
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     62.92,
+     -1.14
+    ],
+    "net_diff": 64.06,
+    "dd": [
+     52.0,
+     48.98
+    ],
+    "dd_ratio": 1.062,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.32,
+       1.646
+      ],
+      "net_diff_ci90": [
+       -25.5,
+       138.16
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.296,
+       1.45
+      ],
+      "net_diff_ci90": [
+       -12.1,
+       145.71
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.514,
+       1.741
+      ],
+      "net_diff_ci90": [
+       -36.79,
+       110.74
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  },
+  "bos|0.00": {
+   "challenger_raw": {
+    "net": 236.38,
+    "net_with_open_mtm": 236.38,
+    "cc_dd": 41.85,
+    "mtm_dd": 44.26,
+    "trades": 126,
+    "wins": 45,
+    "pnl_main": 211.87,
+    "pnl_add": 24.49,
+    "risk_main": 436.57,
+    "adds": 40,
+    "first_half": 68.48,
+    "later_half": 167.9,
+    "gap_flagged_trades": 74,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 322,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 81,
+     "skipped_pending": 85,
+     "skipped_dead": 0,
+     "not_awake": 192,
+     "dedupe": 0,
+     "weather": 126,
+     "debt_gate": 0,
+     "day_cap": 178,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 126,
+     "fills": 126,
+     "reject_geom": 0,
+     "setups": 195,
+     "missed_win": 69,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 126,
+     "adds_filled": 40,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 74,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 18,
+     "cap_waived_off": 0,
+     "signals_in_debt": 148,
+     "signals_out_debt": 225,
+     "delayed_out_debt": 47,
+     "delayed_in_debt": 148
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 11,
+     "pnl": 64.42,
+     "pnl_main": 58.17
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     236.38,
+     68.6
+    ],
+    "net_diff": 167.78,
+    "dd": [
+     41.85,
+     117.37
+    ],
+    "dd_ratio": 0.357,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.163,
+       1.048
+      ],
+      "net_diff_ci90": [
+       -58.9,
+       331.57
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.146,
+       0.96
+      ],
+      "net_diff_ci90": [
+       -28.82,
+       376.74
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.214,
+       1.229
+      ],
+      "net_diff_ci90": [
+       -72.81,
+       305.59
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     236.38,
+     84.07
+    ],
+    "net_diff": 152.31,
+    "dd": [
+     41.85,
+     40.41
+    ],
+    "dd_ratio": 1.036,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.306,
+       1.165
+      ],
+      "net_diff_ci90": [
+       6.26,
+       249.97
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.301,
+       1.131
+      ],
+      "net_diff_ci90": [
+       26.09,
+       254.93
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.384,
+       1.231
+      ],
+      "net_diff_ci90": [
+       -2.5,
+       207.6
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  },
+  "bos|0.35": {
+   "challenger_raw": {
+    "net": 87.06,
+    "net_with_open_mtm": 87.06,
+    "cc_dd": 88.14,
+    "mtm_dd": 93.89,
+    "trades": 162,
+    "wins": 50,
+    "pnl_main": 60.37,
+    "pnl_add": 26.7,
+    "risk_main": 478.85,
+    "adds": 68,
+    "first_half": 17.58,
+    "later_half": 69.46,
+    "gap_flagged_trades": 96,
+    "gap_unresolved_trades": 0,
+    "wait_s_median": 335,
+    "counts": {
+     "signals": 857,
+     "skipped_open": 105,
+     "skipped_pending": 119,
+     "skipped_dead": 0,
+     "not_awake": 179,
+     "dedupe": 0,
+     "weather": 123,
+     "debt_gate": 0,
+     "day_cap": 78,
+     "min_balance": 0,
+     "fit_refuse": 0,
+     "hard_cap": 0,
+     "min_dist": 0,
+     "orders": 162,
+     "fills": 162,
+     "reject_geom": 0,
+     "setups": 253,
+     "missed_win": 91,
+     "reject_after_stop_print": 0,
+     "adds_triggered": 162,
+     "adds_filled": 68,
+     "adds_rejected": 0,
+     "kills": 0,
+     "trades_gap_flag": 96,
+     "trades_gap_unresolved": 0,
+     "open_at_end": 0,
+     "pending_at_end": 0,
+     "admitted_by_allowance": 24,
+     "cap_waived_off": 0,
+     "signals_in_debt": 224,
+     "signals_out_debt": 107,
+     "delayed_out_debt": 29,
+     "delayed_in_debt": 224
+    },
+    "policy": {
+     "entry": "delay_always",
+     "allowance": "all_bos",
+     "cap": "on"
+    },
+    "admitted_money": {
+     "n_traded": 16,
+     "pnl": 12.94,
+     "pnl_main": 12.74
+    }
+   },
+   "vs_baseline": {
+    "ref": "immediate|current|cap_on",
+    "net": [
+     87.06,
+     -72.13
+    ],
+    "net_diff": 159.19,
+    "dd": [
+     88.14,
+     117.02
+    ],
+    "dd_ratio": 0.753,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.324,
+       1.012
+      ],
+      "net_diff_ci90": [
+       4.82,
+       360.18
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.319,
+       1.014
+      ],
+      "net_diff_ci90": [
+       11.37,
+       347.15
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.351,
+       0.907
+      ],
+      "net_diff_ci90": [
+       -23.13,
+       362.74
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   },
+   "vs_recovery_delay_candidate": {
+    "ref": "delay_debt|current|cap_on",
+    "net": [
+     87.06,
+     -4.23
+    ],
+    "net_diff": 91.29,
+    "dd": [
+     88.14,
+     66.41
+    ],
+    "dd_ratio": 1.327,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.36,
+       1.618
+      ],
+      "net_diff_ci90": [
+       -39.21,
+       188.97
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "3": {
+      "ratio_ci90": [
+       0.323,
+       1.456
+      ],
+      "net_diff_ci90": [
+       -27.58,
+       207.03
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     },
+     "10": {
+      "ratio_ci90": [
+       0.563,
+       1.635
+      ],
+      "net_diff_ci90": [
+       -48.59,
+       158.16
+      ],
+      "degenerate": 0,
+      "resamples": 3000
+     }
+    }
+   }
+  }
+ }
+}

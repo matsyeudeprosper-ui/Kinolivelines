@@ -1,0 +1,662 @@
+{
+ "manifest_version": "compte-prospective-1",
+ "status": "DRAFT until FROZEN line in review/COMPTE_PROSPECTIVE_PROTOCOL.md",
+ "generated_at": "2026-10-09T16:11:30Z",
+ "git": "fc9d37a",
+ "hashes": {
+  "structure_bos_bot.py": "737176d37d79f435",
+  "owl_chart_feed.py": "44fa43a5ef0550ff",
+  "owl_package.py": "14a105bc9373a087",
+  "lab/harness.py": "5595bd65d0fd6e2e",
+  "lab/compte_controller.py": "dc0e3ae0d748bc31",
+  "reference_ledger_lib.py": "b95a48add2da165e",
+  "bos_reference_ledger.py": "618637e4dabbfdf2",
+  "study/manifest_runner.py": "5a932c4e8ea1d48b"
+ },
+ "datasets": {
+  "development_original": {
+   "symbol": "BTCUSDm",
+   "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+   "bars": 60000,
+   "first_bar": 1787957640,
+   "last_bar": 1791558420,
+   "frozen_at": "2026-10-09T15:07:17Z",
+   "sha256": "06ece48906f62129"
+  },
+  "development_b_closed_bars": {
+   "symbol": "BTCUSDm",
+   "source": "harness.bars(): the std account's terminal (C:/Projects/MT5-KinoliveTrader)",
+   "bars": 59999,
+   "first_bar": 1787957640,
+   "last_bar": 1791558360,
+   "frozen_at": "2026-10-09T16:08:39Z",
+   "sha256": "594a3275fb4a3c1d",
+   "derived_from": "dev_bars_2026-10-09.npz (sha 06ece48906f62129), last (forming) bar removed",
+   "closed_bar_cutoff": 1791558420,
+   "note": "version b: closed bars only; the original pinned file is kept untouched"
+  }
+ },
+ "feed_provenance": {
+  "development": "BTCUSDm, std account terminal (transport limitation: not Infinity's feed; feed/contract/fill parity unmeasured)",
+  "prospective_reference": "Infinity 296380509 @ Exness-MT5Real27 BTCUSD, read-only, lab/reference_ledger_infinity.jsonl rec-3"
+ },
+ "arms": {
+  "baseline": {
+   "harness_cfg": {
+    "jar": true
+   },
+   "package_regimes": {
+    "infinity": {
+     "label": "Valere - $3 par jour",
+     "base_lot": 0.02,
+     "max_extra": 3,
+     "adds_on": true,
+     "chest_cap": 10.0,
+     "jar": true,
+     "jar_skim": 0.5,
+     "jar_stake": 0.5,
+     "jar_debt_mult": 0.5,
+     "jar_floor_cap": 10.0,
+     "kill_net": -60.0,
+     "min_balance": 20.0,
+     "max_risk_pct": 0.1,
+     "debt_mode": "hwm",
+     "day_cap": 3.0,
+     "max_trades_day": null,
+     "week_target": 20.0,
+     "nervosity": false,
+     "movement": true,
+     "day_cap_waived": true,
+     "scale_with_balance": true,
+     "scale_ref_balance": 200.0,
+     "risk_fit_pct": 0.0,
+     "internal_entries": false,
+     "rr": 0.8,
+     "k_streak": 2,
+     "debt_gate": true,
+     "eq_half": false,
+     "recov_bullets_only": false
+    },
+    "u224016179": {
+     "label": "Valere + plafond 3% par trade",
+     "base_lot": 0.02,
+     "max_extra": 3,
+     "adds_on": true,
+     "chest_cap": 10.0,
+     "jar": true,
+     "jar_skim": 0.5,
+     "jar_stake": 0.5,
+     "jar_debt_mult": 0.5,
+     "jar_floor_cap": 10.0,
+     "kill_net": -60.0,
+     "min_balance": 20.0,
+     "max_risk_pct": 0.1,
+     "debt_mode": "hwm",
+     "day_cap": 3.0,
+     "max_trades_day": null,
+     "week_target": 20.0,
+     "nervosity": false,
+     "movement": true,
+     "day_cap_waived": true,
+     "scale_with_balance": true,
+     "scale_ref_balance": 200.0,
+     "risk_fit_pct": 3.0,
+     "internal_entries": false,
+     "rr": 0.8,
+     "k_streak": 2,
+     "debt_gate": true,
+     "eq_half": false,
+     "recov_bullets_only": false
+    },
+    "bos": {
+     "label": "Special - meme regles que les autres comptes ($3/jour)",
+     "base_lot": 0.02,
+     "max_extra": 3,
+     "adds_on": true,
+     "chest_cap": 10.0,
+     "jar": true,
+     "jar_skim": 0.5,
+     "jar_stake": 0.5,
+     "jar_debt_mult": 0.5,
+     "jar_floor_cap": 10.0,
+     "kill_net": -60.0,
+     "min_balance": 20.0,
+     "max_risk_pct": 0.1,
+     "debt_mode": "hwm",
+     "day_cap": 3.0,
+     "max_trades_day": null,
+     "week_target": null,
+     "nervosity": false,
+     "movement": true,
+     "day_cap_waived": true,
+     "scale_with_balance": true,
+     "scale_ref_balance": 200.0,
+     "risk_fit_pct": 0.0,
+     "internal_entries": false,
+     "rr": 0.8,
+     "k_streak": 2,
+     "debt_gate": true,
+     "eq_half": false,
+     "recov_bullets_only": false
+    },
+    "reference_uncapped": {
+     "label": "Robot de r\u00e9f\u00e9rence - d\u00e9mo, taille fixe, sans syst\u00e8me de dette",
+     "base_lot": 0.02,
+     "max_extra": 0,
+     "adds_on": false,
+     "chest_cap": 10.0,
+     "jar": false,
+     "jar_skim": 0.5,
+     "jar_stake": 0.5,
+     "jar_debt_mult": 0.5,
+     "jar_floor_cap": 10.0,
+     "kill_net": -100000.0,
+     "min_balance": 20.0,
+     "max_risk_pct": 0.1,
+     "debt_mode": "hwm",
+     "day_cap": null,
+     "max_trades_day": null,
+     "week_target": null,
+     "nervosity": false,
+     "movement": true,
+     "day_cap_waived": true,
+     "scale_with_balance": false,
+     "scale_ref_balance": 200.0,
+     "risk_fit_pct": 0.0,
+     "internal_entries": false,
+     "rr": 0.8,
+     "k_streak": 2,
+     "debt_gate": false,
+     "eq_half": false,
+     "recov_bullets_only": false
+    }
+   },
+   "note": "each account path uses its own package values above"
+  },
+  "primary_directional_main_adds": {
+   "trigger": "own-side reference Compte (compte-ctl-2 buy curve for a buy, sell curve for a sell) trend == -1 and choch != 1, from resolved closes strictly before entry; invalid state => multiplier 1.0 and tag state_invalid",
+   "main_multiplier": 0.5,
+   "add_budget": "count-based: int(nb*0.5), 3 -> 1; achieved cut reported",
+   "lot_rounding": "floor to 0.01 step, floor 0.01",
+   "never_above_baseline": true,
+   "multiplier_frozen_per_opportunity": true
+  },
+  "arm_directional_main_only": {
+   "same_trigger": true,
+   "main_multiplier": 0.5,
+   "adds": "unchanged",
+   "role": "exploratory attribution arm, no decision"
+  },
+  "exposure_control": {
+   "type": "periodic, every k-th eligible opportunity of the BASELINE stream at 0.5x, all k phases",
+   "K_SET": [
+    2,
+    3,
+    4,
+    6,
+    8
+   ],
+   "k_selection": "mean (main + rule-permitted add) risk closest to the primary's on the development interval (reported in v2c)",
+   "opportunity_id": "entry bar time of the baseline stream; an arm opportunity absent from it gets 1.0 and is counted"
+  },
+  "block_shift_control": {
+   "shifts": [
+    10,
+    20,
+    30,
+    40,
+    50,
+    60,
+    70,
+    80,
+    90,
+    100,
+    110,
+    120,
+    130,
+    140,
+    150,
+    160,
+    170,
+    180,
+    190,
+    200
+   ],
+   "indexing": "cyclic over the baseline opportunity stream"
+  },
+  "global": "parked"
+ },
+ "costs": {
+  "spread": "as quoted per feed (development: harness spread 7)",
+  "execution_drag_sensitivity_usd_per_0.02_lot": [
+   0.0,
+   0.35
+  ],
+  "commission": "UNKNOWN - no net label until a verified cost model is registered; observations collected before registration stay gross-only",
+  "swap": "recorded exposure, not applied",
+  "curve_basis": "B (reference rebuilt under the same cost model) for evaluation; A as sensitivity"
+ },
+ "statistics": {
+  "bootstrap": {
+   "reps": 3000,
+   "seed": 7,
+   "block_days_nominated": 5,
+   "sensitivities": [
+    3,
+    10
+   ],
+   "horizon": "exact N_DAYS sampled days, last block trimmed, zero-close days retained, degenerate resamples counted apart",
+   "label": "conditional development diagnostic"
+  },
+  "drawdown_primary": "close-to-close realised over ordered closes (exit time)",
+  "drawdown_secondary": "daily-sampled realised; MTM main-only proxy (whole-account MTM UNAVAILABLE)",
+  "labels": {
+   "A_registered_gate": "ratio <= 0.80 with CI90 entirely <= 0.80",
+   "B_secondary": "CI90 entirely < 1.0 and point <= 0.80 (reported apart; never a PASS alone)",
+   "net_non_degradation": "<= 0.05 baseline-risk units per eligible opportunity (baseline-risk unit = baseline mean planned main stop risk); requires the net label => unavailable until a cost model is registered"
+  }
+ },
+ "horizon": {
+  "evaluation": "120 calendar days from the FROZEN line, one evaluation at the end",
+  "adequacy_target": "600 reference opportunities (not a stopping rule); below it => inconclusive",
+  "interim_checks": "none"
+ },
+ "initial_state": "each shadow path starts flat, debt 0, jar 0, streak 0, balance = the account's balance at FROZEN (recorded then)",
+ "units": "USD; lots in 0.01 steps",
+ "prospective_collection": "read-only: bos_reference_ledger.py attaches by terminal path, no order call path (AST-listed read calls only); shadow paths are simulations",
+ "control_k_by_regime": {
+  "infinity": {
+   "drag_0.00": {
+    "k": 2,
+    "basis": "A",
+    "balance_used": 175.7
+   },
+   "drag_0.35": {
+    "k": 2,
+    "basis": "B",
+    "balance_used": 175.7
+   }
+  },
+  "u224016179": {
+   "drag_0.00": {
+    "k": 2,
+    "basis": "A",
+    "balance_used": 267.42
+   },
+   "drag_0.35": {
+    "k": 4,
+    "basis": "B",
+    "balance_used": 267.42
+   }
+  },
+  "bos": {
+   "drag_0.00": {
+    "k": 2,
+    "basis": "A",
+    "balance_used": 360.37
+   },
+   "drag_0.35": {
+    "k": 2,
+    "basis": "B",
+    "balance_used": 360.37
+   }
+  },
+  "reference_uncapped": {
+   "drag_0.00": {
+    "k": 6,
+    "basis": "A",
+    "balance_used": 1000.0
+   },
+   "drag_0.35": {
+    "k": 4,
+    "basis": "B",
+    "balance_used": 1000.0
+   }
+  }
+ },
+ "effective_configs": {
+  "infinity": {
+   "drag_0.00": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   },
+   "drag_0.35": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 175.70 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "u224016179": {
+   "drag_0.00": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   },
+   "drag_0.35": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 3.0% -> 3.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 267.42 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "bos": {
+   "drag_0.00": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   },
+   "drag_0.35": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 3, adds_on True -> 3",
+    "jar": "True",
+    "kill_net": "-60",
+    "day_cap": "3.00",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "True -> harness debt_gate 1 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 360.37 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "ON: lot and day cap from (balance + run)/200 once per UTC day (live cadence)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  },
+  "reference_uncapped": {
+   "drag_0.00": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.00 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   },
+   "drag_0.35": {
+    "lot": "base_lot 0.02",
+    "bullets": "max_extra 0, adds_on False -> 0",
+    "jar": "False",
+    "kill_net": "-100000",
+    "day_cap": "none",
+    "risk_fit": "risk_fit_pct 0.0% -> 0.0% of the CURRENT balance",
+    "rr/k_streak": "0.8 / 2",
+    "gates": "nervosity False, movement True",
+    "internal": "0",
+    "debt_gate": "False -> harness debt_gate 0 (0 = every BOS taken in debt)",
+    "limits": "LIVE order on balance 1000.00 + run: min_balance 20 refusal -> policy -> fit -> hard cap 10% of the current balance on the FINAL lot (refuse)",
+    "scaling": "OFF (fixed lot; the balance still exists for the limits)",
+    "drag": "0.35 $/0.02 lot",
+    "fixed_validated": {
+     "chest_cap": "CHEST_CAP == 10.0",
+     "jar_skim": "JAR_SKIM == 0.5",
+     "jar_stake": "JAR_STAKE == 0.5",
+     "jar_debt_mult": "JAR_DEBT_MULT == 0.5",
+     "jar_floor_cap": "JAR_FLOOR_CAP == 10.0"
+    },
+    "fixed_behaviour": {
+     "day_cap_waived": true,
+     "debt_mode": "hwm",
+     "touch_entries": false,
+     "eq_half": false,
+     "recov_bullets_only": false,
+     "max_trades_day": null
+    }
+   }
+  }
+ },
+ "unsupported_fixed_or_disclosed": {
+  "max_risk_pct": "harness: B.MAX_RISK_PCT (0.10) x $230, fixed",
+  "chest_cap": "harness CHEST_CAP 10.0, fixed",
+  "jar_skim": "harness JAR_SKIM 0.5, fixed",
+  "jar_stake": "harness JAR_STAKE 0.5, fixed",
+  "jar_debt_mult": "harness JAR_DEBT_MULT 0.5, fixed",
+  "jar_floor_cap": "harness JAR_FLOOR_CAP 10.0, fixed",
+  "day_cap_waived": "harness waives the cap while in debt, always",
+  "debt_mode": "harness debt_mode hwm",
+  "min_balance": "not modelled (never binds above $20 in these sims) - DISCLOSED",
+  "touch_entries": "harness has no TOUCH path",
+  "eq_half": "live dial, not part of the frozen regimes - REJECT if true",
+  "recov_bullets_only": "live dial, not part of the frozen regimes - REJECT if true"
+ },
+ "parity_report": "study/manifest_runner_report.json",
+ "package_field_coverage": {
+  "mapped": [
+   "adds_on",
+   "base_lot",
+   "day_cap",
+   "debt_gate",
+   "internal_entries",
+   "jar",
+   "k_streak",
+   "kill_net",
+   "max_extra",
+   "max_risk_pct",
+   "min_balance",
+   "movement",
+   "nervosity",
+   "risk_fit_pct",
+   "rr",
+   "scale_ref_balance",
+   "scale_with_balance"
+  ],
+  "fixed_validated_against_loaded_constants": {
+   "chest_cap": "CHEST_CAP",
+   "jar_skim": "JAR_SKIM",
+   "jar_stake": "JAR_STAKE",
+   "jar_debt_mult": "JAR_DEBT_MULT",
+   "jar_floor_cap": "JAR_FLOOR_CAP"
+  },
+  "fixed_behaviour": {
+   "day_cap_waived": true,
+   "debt_mode": "hwm",
+   "touch_entries": false,
+   "eq_half": false,
+   "recov_bullets_only": false,
+   "max_trades_day": null
+  },
+  "informational": [
+   "label",
+   "week_target"
+  ],
+  "unknown_field": "REJECT"
+ },
+ "reference_state_source": {
+  "spec": "bos_reference_ledger.py header: no debt gate, no caps, no kill line, no recovery, no scaling, fixed 0.02 lot, no money ceiling",
+  "harness_cfg": {
+   "debt_gate": 0,
+   "bullets": 0,
+   "jar": false,
+   "kill_net": 0.0,
+   "day_cap": 0.0,
+   "lot": 0.02,
+   "balance": 0.0,
+   "limits_live": 1,
+   "hard_cap_pct": 0.0,
+   "min_balance": 0.0,
+   "scale_lot": 0
+  },
+  "reconciliation_vs_v2c_n_cont_999": {
+   "drag_0.00": {
+    "canonical_n": 299,
+    "canonical_net": 53.05,
+    "old_n": 298,
+    "old_net": 34.35,
+    "only_canonical": [
+     1789130160
+    ],
+    "only_old": []
+   },
+   "drag_0.35": {
+    "canonical_n": 299,
+    "canonical_net": -51.6,
+    "old_n": 298,
+    "old_net": -69.95,
+    "only_canonical": [
+     1789130160
+    ],
+    "only_old": []
+   }
+  }
+ },
+ "limits_convention": "limits_live=1: live enter() order on the current simulated balance; legacy limits_live=0 kept only to reproduce v2c"
+}

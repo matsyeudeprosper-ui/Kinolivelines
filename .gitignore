@@ -140,3 +140,6 @@ live/apk/manifest-checksum.txt
 study/ticks/*.npz
 study/ticks_forward/*.npz
 study/ticks_*/*.npz
+study/frozen_entry_study/owl_secrets.json
+study/frozen_entry_study/owl_nest_users.json
+study/frozen_entry_study/frozen_*.out

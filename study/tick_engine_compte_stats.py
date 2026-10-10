@@ -52,10 +52,13 @@ def contrast(arms, a, b):
 
 out = {"source": SRC, "label": "conditional uncertainty of realised paths; one history", "n_days": N_DAYS, "rows": {}}
 for key in sorted(res["rows"]):
-    row = res["rows"][key]; arms = row["arms"]; thin = [n for n in arms if n.startswith("thin_")]
-    print("== %s | global pause rate %.3f, k=%s" % (key, row.get("global_pause_rate", 0), row.get("thin_k")), flush=True)
+    row = res["rows"][key]; arms = row["arms"]
+    thin_g = [n for n in arms if n.startswith("thin_global_")]; thin_d = [n for n in arms if n.startswith("thin_dir_")]
+    print("== %s | pause rates %s, k=%s" % (key, row.get("pause_rates"), row.get("thin_k")), flush=True)
     r = {"global_vs_none": contrast(arms, "global_pause", "no_pause"), "dir_vs_none": contrast(arms, "dir_pause", "no_pause"),
-         "global_vs_thin": [contrast(arms, "global_pause", t) for t in thin], "dir_vs_thin": [contrast(arms, "dir_pause", t) for t in thin],
+         "global_vs_thin": [contrast(arms, "global_pause", t) for t in thin_g], "dir_vs_thin": [contrast(arms, "dir_pause", t) for t in thin_d],
+         "residual_mismatch": {"global": {"pause_rate": (row.get("pause_rates") or {}).get("global"), "thin_rate": (1.0 / row["thin_k"]["global"]) if (row.get("thin_k") or {}).get("global") else None},
+                               "dir": {"pause_rate": (row.get("pause_rates") or {}).get("dir"), "thin_rate": (1.0 / row["thin_k"]["dir"]) if (row.get("thin_k") or {}).get("dir") else None}},
          "counts": {n: {k: v for k, v in arms[n]["counts"].items() if k in ("eligible_for_gate", "paused", "paused_invalid", "no_state", "thinned", "fills", "setups", "missed_win")} for n in arms}}
     out["rows"][key] = r
 json.dump(out, open(r"C:\Projects\KinoliveLines\study\tick_engine_compte_stats_%s.json" % SRC, "w"), indent=1)

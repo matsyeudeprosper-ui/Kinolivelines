@@ -28,25 +28,30 @@ class PolicyArm(E.Arm):
         self.n.update({"admitted_by_allowance": 0, "cap_waived_off": 0, "signals_in_debt": 0, "signals_out_debt": 0, "delayed_out_debt": 0, "delayed_in_debt": 0})
         self.admitted = []          # extra signals the all_bos allowance admitted: (t, ordinal since flip, debt at signal)
 
-    def signal(self, o, k, TM, BID, ASK):
-        c = self.c; t = o["t"]; p = self.policy; self.n["signals"] += 1
-        if self.pos is not None or self.order is not None: self.n["skipped_open"] += 1; return
-        if self.pend is not None: self.n["skipped_pending"] += 1; return
-        if self.dead: self.n["skipped_dead"] += 1; return
+    # review 16: ONE ordered pipeline for every arm, no double mutation:
+    #   state checks (position / pending / dead)  ->  ordinary gates WITH their state updates
+    #   (kill, awake, used-level dedupe, weather, continuation allowance, day cap)  ->  geometry
+    #   ->  the arm's gate hook (Compte pause, pullback gate, thinning: see subclasses)  ->  setup.
+    # Frozen convention: a signal refused by the HOOK has already consumed the used level and the
+    # continuation allowance exactly as the live enter() does before its late gates; nothing else.
+    def ordinary_gates(self, o, k, TM, BID, ASK):
+        """apply the ordinary gates and their state updates; returns debt_now or None (refused)"""
+        c = self.c; t = o["t"]; p = self.policy
         if c["kill_net"] and self.run <= float(c["kill_net"]):
-            self.dead = True; self.n["kills"] += 1; self.events.append({"t": t, "ev": "KILL", "run": round(self.run, 2)}); return
-        if not o["awake"]: self.n["not_awake"] += 1; return
+            self.dead = True; self.n["kills"] += 1; self.events.append({"t": t, "ev": "KILL", "run": round(self.run, 2)}); return None
+        if not o["awake"]: self.n["not_awake"] += 1; return None
         d, slp, flip, lvl = o["d"], o["slp"], o["flip"], o["lvl"]
         if not flip:
-            if (d == 1 and self.used_hi == lvl) or (d == -1 and self.used_lo == lvl): self.n["dedupe"] += 1; return
+            if (d == 1 and self.used_hi == lvl) or (d == -1 and self.used_lo == lvl): self.n["dedupe"] += 1; return None
             if d == 1: self.used_hi = lvl
             else: self.used_lo = lvl
         if o["mv2"] is not None:
-            if o["nv"] >= float(c["storm"]) or (c["movement"] and o["mv2"] < 1): self.n["weather"] += 1; return
-            if c["nerv_gate"] and o["nv"] > 1.0: self.n["weather"] += 1; return
+            if o["nv"] >= float(c["storm"]) or (c["movement"] and o["mv2"] < 1): self.n["weather"] += 1; return None
+            if c["nerv_gate"] and o["nv"] > 1.0: self.n["weather"] += 1; return None
         debt_now = self.debt()
         self.n["signals_in_debt" if debt_now > 0.5 else "signals_out_debt"] += 1
-        # ordinal since the last flip (1 = the flip entry itself)
+        # the ARM's eligible-signal ordinal since its last flip (1 = the flip itself); signals that this
+        # arm skipped while a position or a setup was open are NOT counted - not the structural ordinal
         self.ord = (1 if flip else getattr(self, "ord", 0) + 1)
         if flip:
             self.last_flip_t = t; self.cont_left = int(c["n_cont"])
@@ -54,16 +59,31 @@ class PolicyArm(E.Arm):
             if self.cont_left > 0 and self.last_flip_t is not None: self.cont_left -= 1
             elif p["allowance"] == "all_bos":
                 self.n["admitted_by_allowance"] += 1; self.admitted.append({"t": t, "ordinal": self.ord, "debt": round(debt_now, 2)})
-            else: self.n["debt_gate"] += 1; return
+            else: self.n["debt_gate"] += 1; return None
         if self.day_cap_eff and self.day_profit >= self.day_cap_eff and debt_now <= 0.5:
             if p["cap"] == "off": self.n["cap_waived_off"] += 1
-            else: self.n["day_cap"] += 1; return
+            else: self.n["day_cap"] += 1; return None
+        return debt_now
+
+    def gate_hook(self, o, k, TM, BID, ASK, setup, debt_now):
+        """the arm's late gate, immediately before the setup is created; True = go"""
+        return True
+
+    def signal(self, o, k, TM, BID, ASK):
+        c = self.c; t = o["t"]; p = self.policy; self.n["signals"] += 1
+        if self.pos is not None or self.order is not None: self.n["skipped_open"] += 1; return
+        if self.pend is not None: self.n["skipped_pending"] += 1; return
+        if self.dead: self.n["skipped_dead"] += 1; return
+        debt_now = self.ordinary_gates(o, k, TM, BID, ASK)
+        if debt_now is None: return
+        d, slp, flip = o["d"], o["slp"], o["flip"]
         e0 = ASK[k] if d == 1 else BID[k]
         lot = self.LOT
         dist0 = abs(e0 - slp)
         if dist0 <= S_MIN_DIST: self.n["min_dist"] += 1; return
         setup = {"t": t, "d": d, "slp": float(slp), "e0": float(e0), "dist0": float(dist0), "tp0": float(e0 + d * self.rr * dist0), "mid0": float(e0 - d * dist0 / 2.0),
                  "lot_req": lot, "nv": o["nv"], "k_sig": k, "gap_max": 0, "flip": flip, "debt_at_signal": round(debt_now, 2), "ordinal": self.ord}
+        if not self.gate_hook(o, k, TM, BID, ASK, setup, debt_now): return
         delay = p["entry"] == "delay_always" or (p["entry"] == "delay_debt" and debt_now > 0.5)
         if delay:
             self.pend = setup; self.n["setups"] += 1; self.n["delayed_in_debt" if debt_now > 0.5 else "delayed_out_debt"] += 1

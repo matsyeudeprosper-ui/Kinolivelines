@@ -34,7 +34,7 @@ from compte_controller import CompteController
 SOURCE = ARGS[ARGS.index("--source") + 1] if "--source" in ARGS else "demo_feed"
 FOLLOWER_POLICY = {"entry": "immediate", "allowance": "current", "cap": "off"}
 WEAK = lambda st: st["trend"] == -1 and st["choch"] != 1
-K_PHASES_MAX = 4
+K_PHASES_MAX = None   # review 16: every phase of every nominated k is run
 
 
 def reference_outcomes(source, drag):
@@ -83,9 +83,10 @@ class GatedArm(PolicyArm):
         self.gmode, self.S, self.k, self.phase = mode, states, k, phase
         self.n.update({"paused": 0, "paused_invalid": 0, "eligible_for_gate": 0, "thinned": 0}); self.gate_log = []; self.elig_i = 0
 
-    def signal(self, o, k, TM, BID, ASK):
-        # the gate sits AFTER every ordinary gate and BEFORE the setup is created: evaluate on a dry pass
-        if self.pos is not None or self.order is not None or self.pend is not None or self.dead: return super().signal(o, k, TM, BID, ASK)
+    def gate_hook(self, o, k, TM, BID, ASK, setup, debt_now):
+        """review 16: the Compte / thinning gate runs AFTER every ordinary gate and its state updates
+        (kill, awake, dedupe, weather, continuation allowance, day cap) and the geometry check, immediately
+        before the setup is created - so "eligible" = a MAIN setup the arm would otherwise create now"""
         t_ms = int(TM[k]); self.n["eligible_for_gate"] += 1; self.elig_i += 1
         decision = "go"; st = None
         if self.gmode in ("global", "dir"):
@@ -96,17 +97,20 @@ class GatedArm(PolicyArm):
             self.gate_log.append({"t": o["t"], "d": o["d"], "src_n": st["n"], "trend": st["trend"], "choch": st["choch"], "last_close_ms": s["last_close_ms"], "decision": decision})
         elif self.gmode == "thin" and self.k and (self.elig_i % self.k) == self.phase:
             decision = "thin"
-        if decision == "pause": self.n["paused"] += 1; return
-        if decision == "pause_invalid": self.n["paused_invalid"] += 1; return
-        if decision == "thin": self.n["thinned"] += 1; return
-        return super().signal(o, k, TM, BID, ASK)
+        if decision == "pause": self.n["paused"] += 1; return False
+        if decision == "pause_invalid": self.n["paused_invalid"] += 1; return False
+        if decision == "thin": self.n["thinned"] += 1; return False
+        return True
 
 
 def run_gated(uid, drag, TM, BID, ASK, END, opps, bars, S, k):
     cfg, rep = E.effective_cfg(E.PR[uid], E.REGIMES[uid], drag)
     arms = [GatedArm("no_pause", cfg, bars, "none", S), GatedArm("global_pause", cfg, bars, "global", S), GatedArm("dir_pause", cfg, bars, "dir", S)]
-    if k and k >= 2:
-        for ph in range(min(k, K_PHASES_MAX)): arms.append(GatedArm("thin_k%d_p%d" % (k, ph), cfg, bars, "thin", S, k, ph))
+    # review 16: outcome-independent thinning controls matched to EACH gate's own realised pause rate
+    # (development calibration), every phase run; k is a dict {"global": k_g, "dir": k_d}
+    for tag, kk in (k or {}).items():
+        if kk and kk >= 2:
+            for ph in range(kk): arms.append(GatedArm("thin_%s_k%d_p%d" % (tag, kk, ph), cfg, bars, "thin", S, kk, ph))
     elig = [((o["t"] + 60) * 1000 + E.SIGNAL_MS, o) for o in opps]; ei = 0
     touches = sorted((t * 1000 + 60000, 1) for t, (touched, nv) in bars.items() if touched); ti = 0
     n = len(TM); prev = int(TM[0])
@@ -149,9 +153,12 @@ if __name__ == "__main__":
             cfg0, _ = E.effective_cfg(E.PR[uid], E.REGIMES[uid], 0.0); opps, bars = E.streams(cfg0)
             # calibrate the thinning rate from the GLOBAL arm's development pause share (dry pass: state only)
             t0 = time.time(); pre, _ = run_gated(uid, drag, TM, BID, ASK, END, opps, bars, S, None)
-            g = pre["global_pause"]["counts"]; rate = (g["paused"] + g["paused_invalid"]) / max(1, g["eligible_for_gate"]); k = int(round(1.0 / rate)) if rate > 0 else None
-            out, rep = run_gated(uid, drag, TM, BID, ASK, END, opps, bars, S, k) if (k and k >= 2) else (pre, _)
-            res["rows"][key] = {"effective": rep, "thin_k": k, "global_pause_rate": round(rate, 4), "arms": out}
+            rates, k = {}, {}
+            for tag, arm in (("global", "global_pause"), ("dir", "dir_pause")):
+                g = pre[arm]["counts"]; r_ = (g["paused"] + g["paused_invalid"]) / max(1, g["eligible_for_gate"]); rates[tag] = round(r_, 4)
+                k[tag] = int(round(1.0 / r_)) if r_ > 0 else None
+            out, rep = run_gated(uid, drag, TM, BID, ASK, END, opps, bars, S, k)
+            res["rows"][key] = {"effective": rep, "thin_k": k, "pause_rates": rates, "arms": out}
             for name, a in out.items():
                 c = a["counts"]
                 print("%-18s drag %.2f %-14s | net %8.2f cc_dd %7.2f mtm_dd %7.2f | trades %3d wins %3d main %8.2f adds %6.2f risk %6.0f | h1 %7.2f h2 %7.2f | eligible %3d paused %3d invalid %3d thinned %3d | %.0fs" % (
