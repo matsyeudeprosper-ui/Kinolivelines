@@ -1,0 +1,12 @@
+{
+ "symbol": "BTCUSDm",
+ "source": "std account terminal, copy_rates_range (read-only)",
+ "for_dataset": "594a3275fb4a3c1d",
+ "bars": 8000,
+ "first_bar": 1787477640,
+ "last_bar": 1787957580,
+ "dataset_first_bar": 1787957640,
+ "gap_to_dataset_s": 60,
+ "fetched_at": "2026-10-10T21:07:02Z",
+ "sha256": "e7d587ee9e979771"
+}

@@ -21,12 +21,69 @@ POLICIES = [{"entry": e, "allowance": a, "cap": c} for e in ("immediate", "delay
 NAME = lambda p: "%s|%s|cap_%s" % (p["entry"], p["allowance"], p["cap"])
 
 
+DEBT_CAP_MIN_SAMPLES, DEBT_CAP_WINDOW, DEBT_CAP_BONUS_MULT = 3, 40, 5   # structure_bos_bot.py constants, copied (change the two together)
+
+
 class PolicyArm(E.Arm):
-    def __init__(self, name, cfg, policy, bars):
+    """order (GPT review of reply 18, item 3):
+         "review16" - kill, awake, dedupe, weather, allowance, day cap, geometry, hook   (the frozen study's convention)
+         "live"     - the live enter() order: kill, awake, dedupe (the loop), allowance (consumed), the hook (pullback
+                      filter), weather, day cap, geometry. A weather- or cap-refused signal has consumed the allowance,
+                      exactly as live.
+       cap_rule (item 1):
+         "waiver"   - the harness mirror: no cap at all while debt > $0.50
+         "adaptive" - live effective_cap_today(): in debt the cap is the sized cap + bonus, bonus = clamp(median of this
+                      arm's own last 40 debt-day results, 0, 5 x cap); unrestricted only while fewer than 3 such days
+                      exist (cold start, explicit); each arm keeps its own history (debt at day open, debt-day P&L)."""
+    def __init__(self, name, cfg, policy, bars, order="review16", cap_rule="waiver"):
         super().__init__(name, cfg, "delayed" if policy["entry"] != "immediate" else "base", bars)
-        self.policy = policy
-        self.n.update({"admitted_by_allowance": 0, "cap_waived_off": 0, "signals_in_debt": 0, "signals_out_debt": 0, "delayed_out_debt": 0, "delayed_in_debt": 0})
+        self.policy = policy; self.gate_order = order; self.cap_rule = cap_rule
+        self.debt_day_pnls = []; self.debt_at_day_open = 0.0
+        self.n.update({"admitted_by_allowance": 0, "cap_waived_off": 0, "signals_in_debt": 0, "signals_out_debt": 0, "delayed_out_debt": 0, "delayed_in_debt": 0,
+                       "cap_unrestricted_cold": 0, "cap_bonus_refusals": 0, "cap_plain_refusals": 0, "cap_bonus_passes": 0})
         self.admitted = []          # extra signals the all_bos allowance admitted: (t, ordinal since flip, debt at signal)
+
+    def roll(self, t_ms):
+        """the live day_roll(): at the UTC day change, a day that OPENED in debt records its realised P&L in the
+        debt-day history (window 40); the debt at the new day's open is remembered for tomorrow's test"""
+        before = self.day_key; day_profit_before = self.day_profit
+        super().roll(t_ms)
+        if self.day_key != before:
+            if before is not None and self.debt_at_day_open > 0.5:
+                self.debt_day_pnls.append(day_profit_before); del self.debt_day_pnls[:-DEBT_CAP_WINDOW]
+            self.debt_at_day_open = self.debt()
+
+    def cap_today(self, debt_now):
+        """the enforced day target right now, or None = unrestricted (live effective_cap_today, adaptive rule)"""
+        if not self.day_cap_eff: return None
+        cap = float(self.day_cap_eff)
+        if self.cap_rule == "adaptive":
+            if debt_now > 0.5 and self.c.get("day_cap_waived", 1):
+                vals = self.debt_day_pnls
+                if len(vals) < DEBT_CAP_MIN_SAMPLES: return None
+                sv = sorted(vals); n = len(sv); med = sv[n // 2] if n % 2 else (sv[n // 2 - 1] + sv[n // 2]) / 2.0
+                return cap + min(max(0.0, med), DEBT_CAP_BONUS_MULT * cap)
+            return cap
+        return None if debt_now > 0.5 else cap        # "waiver": the harness mirror
+
+    def cap_gate(self, debt_now):
+        """True = refused by the day cap"""
+        p = self.policy
+        if not self.day_cap_eff: return False
+        if p["cap"] == "off":
+            if self.day_profit >= float(self.day_cap_eff): self.n["cap_waived_off"] += 1
+            return False
+        cap = self.cap_today(debt_now)
+        if cap is None:
+            if debt_now > 0.5 and self.cap_rule == "adaptive": self.n["cap_unrestricted_cold"] += 1
+            return False
+        if self.day_profit >= cap:
+            self.n["day_cap"] += 1
+            if debt_now > 0.5 and self.cap_rule == "adaptive": self.n["cap_bonus_refusals"] += 1
+            else: self.n["cap_plain_refusals"] += 1
+            return True
+        if debt_now > 0.5 and self.cap_rule == "adaptive" and self.day_profit >= float(self.day_cap_eff): self.n["cap_bonus_passes"] += 1
+        return False
 
     # review 16: ONE ordered pipeline for every arm, no double mutation:
     #   state checks (position / pending / dead)  ->  ordinary gates WITH their state updates
@@ -60,10 +117,40 @@ class PolicyArm(E.Arm):
             elif p["allowance"] == "all_bos":
                 self.n["admitted_by_allowance"] += 1; self.admitted.append({"t": t, "ordinal": self.ord, "debt": round(debt_now, 2)})
             else: self.n["debt_gate"] += 1; return None
-        if self.day_cap_eff and self.day_profit >= self.day_cap_eff and debt_now <= 0.5:
-            if p["cap"] == "off": self.n["cap_waived_off"] += 1
-            else: self.n["day_cap"] += 1; return None
+        if self.cap_gate(debt_now): return None
         return debt_now
+
+    def early_gates(self, o, k, TM, BID, ASK):
+        """live order, part 1: kill, awake, dedupe (the bot's loop), then the recovery allowance (consumed inside
+        enter() before anything else); returns debt_now or None"""
+        c = self.c; t = o["t"]; p = self.policy
+        if c["kill_net"] and self.run <= float(c["kill_net"]):
+            self.dead = True; self.n["kills"] += 1; self.events.append({"t": t, "ev": "KILL", "run": round(self.run, 2)}); return None
+        if not o["awake"]: self.n["not_awake"] += 1; return None
+        d, slp, flip, lvl = o["d"], o["slp"], o["flip"], o["lvl"]
+        if not flip:
+            if (d == 1 and self.used_hi == lvl) or (d == -1 and self.used_lo == lvl): self.n["dedupe"] += 1; return None
+            if d == 1: self.used_hi = lvl
+            else: self.used_lo = lvl
+        debt_now = self.debt()
+        self.n["signals_in_debt" if debt_now > 0.5 else "signals_out_debt"] += 1
+        self.ord = (1 if flip else getattr(self, "ord", 0) + 1)
+        if flip:
+            self.last_flip_t = t; self.cont_left = int(c["n_cont"])
+        elif debt_now > 0.5 and c.get("debt_gate", 1):
+            if self.cont_left > 0 and self.last_flip_t is not None: self.cont_left -= 1
+            elif p["allowance"] == "all_bos":
+                self.n["admitted_by_allowance"] += 1; self.admitted.append({"t": t, "ordinal": self.ord, "debt": round(debt_now, 2)})
+            else: self.n["debt_gate"] += 1; return None
+        return debt_now
+
+    def late_gates(self, o, debt_now):
+        """live order, part 2 (after the hook): weather, then the day cap; True = refused"""
+        c = self.c
+        if o["mv2"] is not None:
+            if o["nv"] >= float(c["storm"]) or (c["movement"] and o["mv2"] < 1): self.n["weather"] += 1; return True
+            if c["nerv_gate"] and o["nv"] > 1.0: self.n["weather"] += 1; return True
+        return self.cap_gate(debt_now)
 
     def gate_hook(self, o, k, TM, BID, ASK, setup, debt_now):
         """the arm's late gate, immediately before the setup is created; True = go"""
@@ -74,16 +161,22 @@ class PolicyArm(E.Arm):
         if self.pos is not None or self.order is not None: self.n["skipped_open"] += 1; return
         if self.pend is not None: self.n["skipped_pending"] += 1; return
         if self.dead: self.n["skipped_dead"] += 1; return
-        debt_now = self.ordinary_gates(o, k, TM, BID, ASK)
-        if debt_now is None: return
         d, slp, flip = o["d"], o["slp"], o["flip"]
         e0 = ASK[k] if d == 1 else BID[k]
         lot = self.LOT
+        if self.gate_order == "live":
+            debt_now = self.early_gates(o, k, TM, BID, ASK)
+            if debt_now is None: return
+            if not self.gate_hook(o, k, TM, BID, ASK, {"t": t, "d": d, "e0": float(e0), "slp": float(slp), "flip": flip}, debt_now): return
+            if self.late_gates(o, debt_now): return
+        else:
+            debt_now = self.ordinary_gates(o, k, TM, BID, ASK)
+            if debt_now is None: return
         dist0 = abs(e0 - slp)
         if dist0 <= S_MIN_DIST: self.n["min_dist"] += 1; return
         setup = {"t": t, "d": d, "slp": float(slp), "e0": float(e0), "dist0": float(dist0), "tp0": float(e0 + d * self.rr * dist0), "mid0": float(e0 - d * dist0 / 2.0),
                  "lot_req": lot, "nv": o["nv"], "k_sig": k, "gap_max": 0, "flip": flip, "debt_at_signal": round(debt_now, 2), "ordinal": self.ord}
-        if not self.gate_hook(o, k, TM, BID, ASK, setup, debt_now): return
+        if self.gate_order != "live" and not self.gate_hook(o, k, TM, BID, ASK, setup, debt_now): return
         delay = p["entry"] == "delay_always" or (p["entry"] == "delay_debt" and debt_now > 0.5)
         if delay:
             self.pend = setup; self.n["setups"] += 1; self.n["delayed_in_debt" if debt_now > 0.5 else "delayed_out_debt"] += 1

@@ -42,8 +42,8 @@ def pb_state_at(i):
 
 
 class PbGateArm(PolicyArm):
-    def __init__(self, name, cfg, bars, mode, states):
-        super().__init__(name, cfg, {"entry": "immediate", "allowance": "current", "cap": "on"}, bars)
+    def __init__(self, name, cfg, bars, mode, states, order="review16", cap_rule="waiver", allowance="current", cap="on"):
+        super().__init__(name, cfg, {"entry": "immediate", "allowance": allowance, "cap": cap}, bars, order=order, cap_rule=cap_rule)
         self.gmode, self.S = mode, states; self.n.update({"pb_refused": 0, "pb_choch_allowed": 0, "pb_no_state": 0})
 
     def gate_hook(self, o, k, TM, BID, ASK, setup, debt_now):
