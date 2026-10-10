@@ -809,7 +809,7 @@ function htDraw(){
  // YOUR TRADE, in the bigger picture (upgrade 3). Same three prices as
  // the minute panel, thinner, and only when they are inside the view.
  const lv={};
- (D.trades||[]).forEach(t=>{
+ ((D&&D.trades)||[]).forEach(t=>{
   if(t[3]>0){const k='S'+t[3].toFixed(0);(lv[k]=lv[k]||['S',t[3]]);}
   if(t[4]>0){const k='T'+t[4].toFixed(0);(lv[k]=lv[k]||['T',t[4]]);}
   if(t[2]>0){const k='E'+t[2].toFixed(0);(lv[k]=lv[k]||['E',t[2]]);}});
@@ -826,7 +826,7 @@ function htDraw(){
  // WHERE PRICE IS (upgrade 2): the live line, and what is left to run
  // before this timeframe breaks. A level you cannot measure yourself
  // against is only half a level.
- if(D.px){const y=py(D.px);
+ if(D&&D.px){const y=py(D.px);
   if(inView(y)){
    g.strokeStyle='rgba(255,255,255,.34)';g.lineWidth=1;g.setLineDash([2,3]);
    g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();g.setLineDash([]);
@@ -853,6 +853,13 @@ function htDraw(){
    g.fillStyle='rgba(122,162,255,.07)';g.fillRect(Math.min(a,b)-cw/2,TOP,Math.max(3,Math.abs(b-a)+cw),plot);
    g.strokeStyle='rgba(122,162,255,.30)';g.lineWidth=1;
    g.strokeRect(Math.min(a,b)-cw/2,TOP,Math.max(3,Math.abs(b-a)+cw),plot);}}
+ // one shared vertical reference (owner 2026-10-10): the candle at the
+ // centre of the minute view, drawn on BOTH panels in the same blue with a
+ // small cap at the top, so the eye carries the minute chart's place up here
+ if(window._xref!==undefined&&HT.xts.length){const xr=htX(window._xref);
+  if(xr!==undefined){g.save();g.strokeStyle='rgba(122,162,255,.75)';g.lineWidth=1;g.setLineDash([3,4]);
+   g.beginPath();g.moveTo(xr,TOP);g.lineTo(xr,TOP+plot);g.stroke();g.setLineDash([]);
+   g.fillStyle='rgba(122,162,255,.95)';g.beginPath();g.moveTo(xr-4,TOP-1);g.lineTo(xr+4,TOP-1);g.lineTo(xr,TOP+5);g.closePath();g.fill();g.restore();}}
  // the same ruler, anchored in time, so a measure taken below shows here
  if(RULER.a&&RULER.b){const ax=htX(RULER.a.t),bx=htX(RULER.b.t);
   if(ax!==undefined&&bx!==undefined){
@@ -1138,6 +1145,7 @@ function draw(){
  const end=D.candles.length-Math.round(viewOff);
  const cs=D.candles.slice(Math.max(0,end-N),end);
  const atLive=viewOff<0.5;
+ window._xref=(HT.on&&cs.length)?cs[Math.floor(cs.length/2)][0]:undefined;
  document.getElementById('backlive').style.display=
   (atLive&&!voff&&vzoom===1)?'none':'block';
  if(LA&&LT){
@@ -2104,6 +2112,32 @@ function draw(){
    ctx.fillStyle='#e8c55a';ctx.beginPath();
    ctx.roundRect(W/2-w2/2,ye-12,w2,24,12);ctx.fill();
    ctx.fillStyle='#0b1118';ctx.fillText(t,W/2-w2/2+9,ye+4);}}
+ // the pullback chart's three levels (owner 2026-10-10), echoed here with NO
+ // text: a soft wide band under a thin solid core, from the left edge, with a
+ // small square tab at the edge - nothing the minute chart's own dashed,
+ // labelled lines look like. Next BOS teal/salmon by the pullback trend, the
+ // protected dot amber with its glow, the last BOS green/red by direction.
+ // Out of view: a quiet triangle at the edge it sits beyond. Only while the
+ // pullback panel is open above and this chart is the silence filter.
+ if(HT.on&&HT.tf==='PB'&&!CTPB()&&D.pb&&D.pb.candles){const p=D.pb;
+  const bk=(p.breaks||[]).slice(-1)[0];
+  const lv=[[p.next_bos,p.trend===1?'#4fd8c8':'#ff9678',false],[p.invalid,'#e8c55a',true],
+            [bk?bk[2]:null,bk?(bk[1]===1?'#2ecc71':'#ff5c5c'):null,false]];
+  ctx.save();
+  lv.forEach(q=>{const v=q[0];if(v==null||!isFinite(v))return;const y=px(v);
+   if(y<TOPP+2||y>TOPP+PLOT-2){const up=y<TOPP+2,ye=up?TOPP+4:TOPP+PLOT-4;
+    ctx.globalAlpha=.85;ctx.fillStyle=q[1];ctx.beginPath();
+    ctx.moveTo(4,ye+(up?-4:4));ctx.lineTo(0,ye+(up?2:-2));ctx.lineTo(8,ye+(up?2:-2));ctx.closePath();ctx.fill();return;}
+   ctx.setLineDash([]);ctx.strokeStyle=q[1];
+   ctx.globalAlpha=.14;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();
+   if(q[2]){ctx.shadowColor=q[1];ctx.shadowBlur=8;}
+   ctx.globalAlpha=.8;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();ctx.shadowBlur=0;
+   ctx.fillStyle=q[1];ctx.globalAlpha=.95;ctx.fillRect(0,y-3,6,6);});
+  ctx.restore();}
+ if(HT.on&&window._xref!==undefined&&xoft[window._xref]!==undefined){const xr=xoft[window._xref];
+  ctx.save();ctx.strokeStyle='rgba(122,162,255,.55)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
+  ctx.beginPath();ctx.moveTo(xr,TOPP);ctx.lineTo(xr,TOPP+PLOT);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='rgba(122,162,255,.95)';ctx.beginPath();ctx.moveTo(xr-4,TOPP-1);ctx.lineTo(xr+4,TOPP-1);ctx.lineTo(xr,TOPP+5);ctx.closePath();ctx.fill();ctx.restore();}
  if(D.px){const y=px(D.px);
   if(y>0&&y<Hh){ctx.strokeStyle='rgba(255,255,255,.35)';
    ctx.setLineDash([2,5]);ctx.beginPath();ctx.moveTo(0,y);
