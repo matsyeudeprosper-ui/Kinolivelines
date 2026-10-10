@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-09T19:00:09Z",
+ "updated": "2026-10-10T05:00:04Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -40,7 +40,8 @@
    "fr": "La nuit (1 h - 8 h UTC) porte le robot ; le reste de la journée perd.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-09: wealth ledgers pooled (per 0.01 lot): 01-07 h 234 tr 70% +108.9; 00 h 42% -14.1; 08-15 51% -42.9; 16-20 42% -39.5; 21-23 34% -71.3. 8 of 9 accounts agree (fresh is the exception). Journal pile asia 30 tr 73% +46.2 (h 71%/75%). Engine trace: 01-07 best bucket overall, 83-87% since 09-24. Engine 42 d: night_0_7 C -37.6 hole 23.3 / B +10.1 hole 23.3 (h2 +82.5/+51.7); night_1_7 C -66.3 / C -7.7; skip8_15+21_23 C -31.3 hole 19.0 / B +21.3 hole 19.0. Refusing hours kills catch-up chains; first half loses."
+    "2026-10-09: wealth ledgers pooled (per 0.01 lot): 01-07 h 234 tr 70% +108.9; 00 h 42% -14.1; 08-15 51% -42.9; 16-20 42% -39.5; 21-23 34% -71.3. 8 of 9 accounts agree (fresh is the exception). Journal pile asia 30 tr 73% +46.2 (h 71%/75%). Engine trace: 01-07 best bucket overall, 83-87% since 09-24. Engine 42 d: night_0_7 C -37.6 hole 23.3 / B +10.1 hole 23.3 (h2 +82.5/+51.7); night_1_7 C -66.3 / C -7.7; skip8_15+21_23 C -31.3 hole 19.0 / B +21.3 hole 19.0. Refusing hours kills catch-up chains; first half loses.",
+    "2026-10-10 05:00 veille: real plain breakouts now lose in the evening too: cont entered 16-22 h 10 tr 4 won about -10 $, 19-22 h 0/4 -24.09 (too few). cont halves 71%/50%: part of the breakout edge may be the night edge. Night: check cont x hour."
    ],
    "next": "hour_size request (stake less 08-24 h). Battery on skip_day_late. Real accounts share signals: one sample, not nine."
   },
@@ -1343,6 +1344,17 @@
     "asks (none open)"
    ],
    "saw": "96 trades. Two day reversals, one lost one won: flip_day 43 tr 28% -73.66 PF 0.33 (h 33%/24%) - unchanged in shape. 18 h inside the pile 5 tr 3 won +2.87 (too few, noise). FLIP-BOS 55 tr 36% -56.18 (h 46%/29%); BOS 38 tr 63% +35.86 unchanged. No twins, no labo robot, no ask. No harness run (hour_size not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-10T05:00:04Z",
+   "looked": [
+    "wake_context new trade (BOS SELL -10.92 closed 22:38 pace 0.932)",
+    "scrutiny --by kind / hour",
+    "scrutiny --pile late_night (unchanged, 22 tr)",
+    "scrutiny --pile cont (by nerv / prev / hour / dur)",
+    "asks (none open)"
+   ],
+   "saw": "97 trades, net -42.10 PF 0.8. A plain breakout lost -10.92, the biggest cont loss; scrutiny files it under entry hour 19 h, so late_night pile unchanged (22 tr 23% -52.21). cont 39 tr 62% +24.94 PF 1.3 (was 38 tr 63% +35.86), halves now 71%/50% pas d'accord. cont entered 16-22 h: 10 tr 4 won about -10 $; 19-22 h 0/4 -24.09 (too few). cont after a loss 16 tr 56% -6.24 (h 75%/38%); after a win 22 tr 64% +23.38 (h ok). FLIP-BOS 55 tr 36% -56.18 unchanged. No twins, no labo robot, no ask. No harness run (hour_size not built), no pile, no proposal."
   }
  ],
  "lessons": [
