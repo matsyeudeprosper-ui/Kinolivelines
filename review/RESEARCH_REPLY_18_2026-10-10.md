@@ -73,6 +73,50 @@ development window that has been used for every decision this week; the structur
 only this evening, so the forward data will be the first real test of it. It is already live by the owner's decision;
 nothing in this replay argues against that, and the forward observation should run as it is, without retuning.
 
-## 6. Next (GPT's second request)
-The four-variant comparison (recovery allowance current / all eligible BOS x daily cap ON / OFF, trend filter in all
-four) is running on the same saved structure: `study/tick_engine_pbgate_allowance.py`.
+## 6. Second request - recovery allowance x daily cap, trend filter active in all four (Infinity only)
+Script `study/tick_engine_pbgate_allowance.py`, results `study/tick_engine_pbgate_allowance.json`. Same data, same
+engine, same saved causal/sticky structure (857 states, inputs unchanged), same gate order. Each arm keeps its own
+balance, debt and recovery budget. The trend filter with its missing-structure pause is in all four. Lots, recovery
+bullets (off in this package), every other brake identical; internal entries off.
+* A / C: the CURRENT recovery restriction (FLIP BOS + one continuation while in debt, dot-touch re-arm).
+* B / D: every otherwise-eligible MAIN BOS admitted while in debt (only the debt-based BOS restriction removed).
+* A / B: daily cap ON = the package's $3 cap with its adaptive recovery rules; the manual "continue today" override is
+  not in the engine at all. C / D: no daily profit cap of any kind, adaptive included (day accounting and scaling
+  unchanged).
+
+| cost | variant | trades | win rate | PF | net | closed DD | floating DD | 1st half | 2nd half | debt-gate refusals / admitted by allowance | day-cap refusals / cap-off passes |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| spread only | A current + cap ON | 50 | 68.0% | 1.61 | 24.46 | 14.43 | 19.24 | 14.48 | 9.99 | 58 / 0 | 59 / 0 |
+| spread only | B all BOS + cap ON | 62 | 66.1% | 1.53 | 32.99 | 16.57 | 19.24 | 18.62 | 14.41 | 0 / 59 | 40 / 0 |
+| spread only | C current + cap OFF | 69 | 68.1% | **2.01** | **51.73** | **14.43** | 19.24 | 19.97 | **31.77** | 76 / 0 | 0 / 31 |
+| spread only | D all BOS + cap OFF | 78 | 65.4% | 1.67 | 49.66 | 16.57 | 19.24 | 19.44 | 30.26 | 0 / 67 | 0 / 22 |
+| + $0.35 | A current + cap ON | 52 | 69.2% | 1.44 | 21.27 | 18.93 | 21.03 | 7.11 | 14.18 | 77 / 0 | 35 / 0 |
+| + $0.35 | B all BOS + cap ON | 68 | 63.2% | 1.30 | 22.00 | 16.13 | 22.04 | 16.72 | 5.29 | 0 / 61 | 24 / 0 |
+| + $0.35 | C current + cap OFF | 66 | 69.7% | **1.58** | **31.36** | 18.93 | 21.03 | 12.37 | **19.02** | 82 / 0 | 0 / 25 |
+| + $0.35 | D all BOS + cap OFF | 78 | 65.4% | 1.33 | 26.08 | 15.91 | 22.04 | 16.96 | 9.12 | 0 / 68 | 0 / 16 |
+(filter refusals, direction / wrong side / no trend / no last BOS: A 119/67/120/2, B 158/90/121/2, C 134/71/118/2,
+D 176/91/121/2 at spread only; within a few units with drag.)
+
+### Reading
+* **The allowance (B vs A, D vs C)**: more trades (+12 to +16), a little more net at spread only (+8.5), nothing under
+  the nominated cost (+0.7), the profit factor lower every time (1.61 -> 1.53, 1.44 -> 1.30, 2.01 -> 1.67, 1.58 -> 1.33),
+  closed DD a touch higher with the cap on (14.4 -> 16.6), and the second half weaker with drag (14.18 -> 5.29). The
+  recovery BOS the restriction removes are, after the trend filter, roughly break-even trades once costs are counted.
+* **The cap (C vs A, D vs B)**: the bigger lever. Removing it adds +27 net at spread only and +10 with drag, raises the
+  profit factor (1.61 -> 2.01, 1.44 -> 1.58), leaves the closed and floating drawdowns UNCHANGED (14.43 / 19.24 and
+  18.93 / 21.03 - the filter already removed the trades that made the drawdown), and makes the second half the strongest
+  of the set. The cap, as replayed, stopped 59 / 35 signals that the filtered account would have taken and that, on this
+  window, were net positive. (This is the opposite of the morning's cap finding - that one was for the delayed /
+  all-BOS combination without the trend filter; the two are not in conflict, they are different accounts.)
+* **Best cell both costs**: C (current restriction, cap off): 51.73 / 31.36 net, PF 2.01 / 1.58, DD unchanged. D is
+  second; B adds little; A is the live configuration.
+
+### Verdict
+* Allowance change (B): **C** - not supported. It adds trades and gives back profit factor; under the nominated cost it
+  earns nothing extra and its second half is the weakest.
+* Daily cap OFF with the trend filter (C): **B** - a real candidate on development data: more net, higher profit
+  factor, same drawdown, better second half, at both costs. The usual caveats hold (one window, 66-69 trades, the
+  difference made by ~20 extra trades), and the daily cap is also a product rule ($3-a-day plans, the "continue today"
+  switch), so this is a decision for the owner, not a replay. If pursued: a forward comparison on the demo accounts, the
+  cap left ON on the paid accounts until then.
+* Nothing live changes; the frozen 42-day study is untouched.
