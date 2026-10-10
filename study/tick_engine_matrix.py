@@ -1,0 +1,138 @@
+"""Stage 1 (revised brief 2026-10-10): the fixed 12-cell development matrix on the three-arm
+tick engine, run as 13 independently evolving arms on one clock (12 cells + the old half-MAIN
+attribution control), per regime and cost basis. The engine itself is untouched (subclass).
+
+  entry      : immediate | delay_debt (midpoint delay only while debt > $0.50 - the nominated
+               candidate) | delay_always (midpoint delay for every eligible MAIN entry)
+  allowance  : current (FLIP + 1 continuation, dot-touch re-arm, while in debt) | all_bos (every
+               otherwise eligible confirmed MAIN BOS while in debt; all other gates kept)
+  cap        : on (package day cap, waived in debt) | off (no realised-profit daily stop; day
+               accounting and scaling unchanged)
+
+Cells where the package already has no debt gate or no cap are duplicates and are marked so.
+    python tick_engine_matrix.py [regime ...]      (rows cached per regime/drag in tick_engine_matrix.json)
+"""
+import sys, os, json, time, math, itertools
+ARGS = list(sys.argv); sys.argv = ["x"]
+sys.path.insert(0, r"C:\Projects\KinoliveLines\study")
+import tick_engine as E
+S_MIN_DIST, EXEC_MS, SIGNAL_MS = E.S_MIN_DIST, E.EXEC_MS, E.SIGNAL_MS
+POLICIES = [{"entry": e, "allowance": a, "cap": c} for e in ("immediate", "delay_debt", "delay_always") for a in ("current", "all_bos") for c in ("on", "off")]
+NAME = lambda p: "%s|%s|cap_%s" % (p["entry"], p["allowance"], p["cap"])
+
+
+class PolicyArm(E.Arm):
+    def __init__(self, name, cfg, policy, bars):
+        super().__init__(name, cfg, "delayed" if policy["entry"] != "immediate" else "base", bars)
+        self.policy = policy
+        self.n.update({"admitted_by_allowance": 0, "cap_waived_off": 0, "signals_in_debt": 0, "signals_out_debt": 0, "delayed_out_debt": 0, "delayed_in_debt": 0})
+        self.admitted = []          # extra signals the all_bos allowance admitted: (t, ordinal since flip, debt at signal)
+
+    def signal(self, o, k, TM, BID, ASK):
+        c = self.c; t = o["t"]; p = self.policy; self.n["signals"] += 1
+        if self.pos is not None or self.order is not None: self.n["skipped_open"] += 1; return
+        if self.pend is not None: self.n["skipped_pending"] += 1; return
+        if self.dead: self.n["skipped_dead"] += 1; return
+        if c["kill_net"] and self.run <= float(c["kill_net"]):
+            self.dead = True; self.n["kills"] += 1; self.events.append({"t": t, "ev": "KILL", "run": round(self.run, 2)}); return
+        if not o["awake"]: self.n["not_awake"] += 1; return
+        d, slp, flip, lvl = o["d"], o["slp"], o["flip"], o["lvl"]
+        if not flip:
+            if (d == 1 and self.used_hi == lvl) or (d == -1 and self.used_lo == lvl): self.n["dedupe"] += 1; return
+            if d == 1: self.used_hi = lvl
+            else: self.used_lo = lvl
+        if o["mv2"] is not None:
+            if o["nv"] >= float(c["storm"]) or (c["movement"] and o["mv2"] < 1): self.n["weather"] += 1; return
+            if c["nerv_gate"] and o["nv"] > 1.0: self.n["weather"] += 1; return
+        debt_now = self.debt()
+        self.n["signals_in_debt" if debt_now > 0.5 else "signals_out_debt"] += 1
+        # ordinal since the last flip (1 = the flip entry itself)
+        self.ord = (1 if flip else getattr(self, "ord", 0) + 1)
+        if flip:
+            self.last_flip_t = t; self.cont_left = int(c["n_cont"])
+        elif debt_now > 0.5 and c.get("debt_gate", 1):
+            if self.cont_left > 0 and self.last_flip_t is not None: self.cont_left -= 1
+            elif p["allowance"] == "all_bos":
+                self.n["admitted_by_allowance"] += 1; self.admitted.append({"t": t, "ordinal": self.ord, "debt": round(debt_now, 2)})
+            else: self.n["debt_gate"] += 1; return
+        if self.day_cap_eff and self.day_profit >= self.day_cap_eff and debt_now <= 0.5:
+            if p["cap"] == "off": self.n["cap_waived_off"] += 1
+            else: self.n["day_cap"] += 1; return
+        e0 = ASK[k] if d == 1 else BID[k]
+        lot = self.LOT
+        dist0 = abs(e0 - slp)
+        if dist0 <= S_MIN_DIST: self.n["min_dist"] += 1; return
+        setup = {"t": t, "d": d, "slp": float(slp), "e0": float(e0), "dist0": float(dist0), "tp0": float(e0 + d * self.rr * dist0), "mid0": float(e0 - d * dist0 / 2.0),
+                 "lot_req": lot, "nv": o["nv"], "k_sig": k, "gap_max": 0, "flip": flip, "debt_at_signal": round(debt_now, 2), "ordinal": self.ord}
+        delay = p["entry"] == "delay_always" or (p["entry"] == "delay_debt" and debt_now > 0.5)
+        if delay:
+            self.pend = setup; self.n["setups"] += 1; self.n["delayed_in_debt" if debt_now > 0.5 else "delayed_out_debt"] += 1
+            self.events.append({"t": t, "ev": "PENDING", "mid": round(setup["mid0"], 2), "sl": round(slp, 2), "tp": round(setup["tp0"], 2), "lot": lot, "debt": round(debt_now, 2)})
+            return
+        self.order = {"kind": "main", "due": int(TM[k]) + EXEC_MS, "setup": setup, "frozen": False}; self.n["orders"] += 1
+
+
+def run_matrix(uid, drag, TM, BID, ASK, END, opps, bars):
+    cfg, rep = E.effective_cfg(E.PR[uid], E.REGIMES[uid], drag)
+    arms = [PolicyArm(NAME(p), cfg, p, bars) for p in POLICIES] + [E.Arm("half_main", cfg, "half", bars)]
+    elig = [((o["t"] + 60) * 1000 + SIGNAL_MS, o) for o in opps]; ei = 0
+    touches = sorted((t * 1000 + 60000, 1) for t, (touched, nv) in bars.items() if touched); ti = 0
+    n = len(TM); prev = int(TM[0])
+    for k in range(n):
+        t_ms = int(TM[k]); gap_in = t_ms - prev; prev = t_ms
+        for arm in arms: arm.roll(t_ms)
+        while ti < len(touches) and touches[ti][0] <= t_ms:
+            ti += 1
+            for arm in arms:
+                if arm.last_flip_t is not None and arm.cont_left < int(arm.c["n_cont"]):
+                    arm.cont_left = min(int(arm.c["n_cont"]), arm.cont_left + 1)
+        while ei < len(elig) and elig[ei][0] <= t_ms:
+            o = elig[ei][1]; ei += 1
+            for arm in arms: arm.signal(o, k, TM, BID, ASK)
+        for arm in arms: arm.tick(k, TM, BID, ASK, gap_in)
+    out = {}
+    T1 = int(TM[-1]); TMID = (int(TM[0]) + T1) // 2
+    dup = {"no_debt_gate": not cfg.get("debt_gate", 1), "no_cap": not bool(cfg["day_cap"])}
+    for arm in arms:
+        mtm_open = arm.finish(TM, BID, ASK, END); tr = arm.trades
+        out[arm.name] = {"net": round(arm.run, 2), "net_with_open_mtm": round(arm.run + mtm_open, 2), "cc_dd": round(E.dd_of(arm.pnls), 2), "mtm_dd": round(arm.mtm_dd, 2),
+                         "trades": len(tr), "wins": arm.wins, "pnl_main": round(sum(x["pnl_main"] for x in tr), 2), "pnl_add": round(sum(x["pnl_add"] for x in tr), 2),
+                         "risk_main": round(sum(x["risk"] for x in tr), 2), "adds": sum(x["adds"] for x in tr),
+                         "first_half": round(sum(x["pnl"] for x in tr if x["tc"] < TMID), 2), "later_half": round(sum(x["pnl"] for x in tr if x["tc"] >= TMID), 2),
+                         "gap_flagged_trades": arm.n["trades_gap_flag"], "gap_unresolved_trades": arm.n["trades_gap_unresolved"],
+                         "wait_s_median": (sorted(arm.n["wait_s"])[len(arm.n["wait_s"]) // 2] if arm.n["wait_s"] else None),
+                         "counts": {k: v for k, v in arm.n.items() if k != "wait_s"}, "policy": getattr(arm, "policy", {"entry": "immediate", "allowance": "current", "cap": "on", "control": "half_main"}),
+                         "admitted": getattr(arm, "admitted", [])[:200], "trades_list": tr, "events": arm.events[:300]}
+        # money of the trades the all_bos allowance admitted (attribution inside the path, not standalone value)
+        if getattr(arm, "admitted", None):
+            at = {a["t"] for a in arm.admitted}
+            out[arm.name]["admitted_money"] = {"n_traded": sum(1 for x in tr if x["t"] in at), "pnl": round(sum(x["pnl"] for x in tr if x["t"] in at), 2),
+                                               "pnl_main": round(sum(x["pnl_main"] for x in tr if x["t"] in at), 2)}
+    return out, rep, dup
+
+
+if __name__ == "__main__":
+    want = ARGS[1:] or ["infinity", "u224016179", "bos", "reference_uncapped"]
+    TM, BID, ASK, n_bad, END = E.load_ticks()
+    print("ticks in window", len(TM), "invalid", n_bad, flush=True)
+    outp = r"C:\Projects\KinoliveLines\study\tick_engine_matrix.json"
+    res = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "dataset": E.META["sha256"], "policies": [NAME(p) for p in POLICIES], "rows": {}}
+    try: res["rows"] = json.load(open(outp))["rows"]
+    except Exception: pass
+    for uid in want:
+        cfg0, _ = E.effective_cfg(E.PR[uid], E.REGIMES[uid], 0.0)
+        opps, bars = E.streams(cfg0)
+        print("%s: opportunities %d" % (uid, len(opps)), flush=True)
+        for drag in (0.0, 0.35):
+            key = "%s|%.2f" % (uid, drag)
+            if key in res["rows"]:
+                print(key, "(cached)", flush=True); continue
+            t0 = time.time(); out, rep, dup = run_matrix(uid, drag, TM, BID, ASK, END, opps, bars)
+            res["rows"][key] = {"effective": rep, "duplicates": dup, "arms": out}
+            for name, a in out.items():
+                c = a["counts"]
+                print("%-18s drag %.2f %-32s | net %8.2f cc_dd %7.2f mtm_dd %7.2f | trades %3d wins %3d main %8.2f adds %6.2f | risk %6.0f | h1 %7.2f h2 %7.2f | setups %3d missed %3d | admitted %3d (%s) | capoff %3d | daycap %3d debtgate %3d | %.0fs" % (
+                    uid, drag, name, a["net"], a["cc_dd"], a["mtm_dd"], a["trades"], a["wins"], a["pnl_main"], a["pnl_add"], a["risk_main"], a["first_half"], a["later_half"],
+                    c.get("setups", 0), c.get("missed_win", 0), c.get("admitted_by_allowance", 0), (a.get("admitted_money") or {}).get("pnl", "-"), c.get("cap_waived_off", 0), c.get("day_cap", 0), c.get("debt_gate", 0), time.time() - t0), flush=True)
+            json.dump(res, open(outp, "w"), indent=1)
+    print("DONE", flush=True)

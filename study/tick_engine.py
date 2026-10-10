@@ -50,29 +50,32 @@ REGIMES = {"infinity": 175.70, "u224016179": 267.42, "bos": 360.37, "reference_u
 TICKS = r"C:\Projects\KinoliveLines\study\ticks"
 
 
-def load_ticks():
-    tman = json.load(open(os.path.join(TICKS, "manifest.json"))); sym = tman["symbol"]
+def load_ticks(tdir=TICKS, t0_ms=None, end_ms=None):
+    """ticks of one directory (per-day files, hashes verified), cleaned, clipped to [t0_ms, end_ms);
+    defaults = the development window"""
+    tman = json.load(open(os.path.join(tdir, "manifest.json"))); sym = tman["symbol"]
     parts = []
     for k in sorted(tman["days"]):
         if not tman["days"][k].get("n"): continue
-        fn = os.path.join(TICKS, "%s_%s.npz" % (sym, k))
+        fn = os.path.join(tdir, "%s_%s.npz" % (sym, k))
         if hashlib.sha256(open(fn, "rb").read()).hexdigest()[:16] != tman["days"][k]["sha256"]:
             raise SystemExit("hash mismatch %s" % k)
         parts.append(np.load(fn))
     TM = np.concatenate([p["time_msc"] for p in parts]).astype(np.int64); BID = np.concatenate([p["bid"] for p in parts]); ASK = np.concatenate([p["ask"] for p in parts])
     o = np.argsort(TM, kind="stable"); TM, BID, ASK = TM[o], BID[o], ASK[o]
     ok = np.isfinite(BID) & np.isfinite(ASK) & (BID > 0) & (ASK >= BID)
-    T0 = int(R["time"][0]) * 1000; END = int(META["closed_bar_cutoff"]) * 1000
+    T0 = int(R["time"][0]) * 1000 if t0_ms is None else int(t0_ms); END = int(META["closed_bar_cutoff"]) * 1000 if end_ms is None else int(end_ms)
     win = ok & (TM >= T0) & (TM < END)
     return TM[win], BID[win], ASK[win], int((~ok).sum()), END
 
 
-def streams(cfg):
-    """raw opportunities + per-bar facts from the harness (path-independent; kill off so nothing truncates)"""
+def streams(cfg, Rb=None):
+    """raw opportunities + per-bar facts from the harness (path-independent; kill off so nothing truncates);
+    Rb = the bar array to use (default: the development dataset)"""
     opps, bars = [], {}
     H.OPPHOOK = lambda o: opps.append(dict(o))
     H.BARHOOK = lambda b: bars.__setitem__(b["t"], (b["touched"], b["nv"]))
-    H.TRACE = None; H.simulate(R, 7.0, H.cfg_strict(dict(cfg, kill_net=0.0)))
+    H.TRACE = None; H.simulate(R if Rb is None else Rb, 7.0, H.cfg_strict(dict(cfg, kill_net=0.0)))
     H.OPPHOOK = None; H.BARHOOK = None
     return opps, bars
 
@@ -309,14 +312,16 @@ def dd_of(seq):
     return dd
 
 
-def run_regime(uid, drag, TM, BID, ASK, END, opps, bars):
-    cfg, rep = effective_cfg(PR[uid], REGIMES[uid], drag)
+def run_regime(uid, drag, TM, BID, ASK, END, opps, bars, start_ms=None, balance=None):
+    """start_ms (scored mode): signals eligible before it are NOT traded (structural warm-up only), the
+    first incoming gap is measured from it, every arm starts cold-flat; balance overrides the development one"""
+    cfg, rep = effective_cfg(PR[uid], REGIMES[uid] if balance is None else balance, drag)
     arms = [Arm("baseline", cfg, "base", bars), Arm("delayed", cfg, "delayed", bars), Arm("half_main", cfg, "half", bars)]
-    elig = [((o["t"] + 60) * 1000 + SIGNAL_MS, o) for o in opps]; ei = 0
+    elig = [((o["t"] + 60) * 1000 + SIGNAL_MS, o) for o in opps if start_ms is None or (o["t"] + 60) * 1000 + SIGNAL_MS >= start_ms]; ei = 0
     # bar closes in order: the protected-dot touch re-arms one continuation (harness rule), applied
     # at the bar's close, before that bar's signal is judged
     touches = sorted((t * 1000 + 60000, 1) for t, (touched, nv) in bars.items() if touched); ti = 0
-    n = len(TM); prev = int(TM[0])
+    n = len(TM); prev = int(TM[0]) if start_ms is None else int(start_ms)
     for k in range(n):
         t_ms = int(TM[k]); gap_in = t_ms - prev; prev = t_ms
         for arm in arms: arm.roll(t_ms)

@@ -139,3 +139,4 @@ live/apk/*.log
 live/apk/manifest-checksum.txt
 study/ticks/*.npz
 study/ticks_forward/*.npz
+study/ticks_*/*.npz

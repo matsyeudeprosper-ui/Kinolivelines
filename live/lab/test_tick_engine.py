@@ -71,13 +71,25 @@ def test_pending_breach_during_latency_is_a_fill_rejection():
     assert arm.n["orders"] == 1 and arm.n["reject_geom"] == 1 and arm.n["fills"] == 0, arm.n
 
 
-def test_pending_fill_after_earlier_print_is_counted():
-    # the stop printed earlier (bid 89), price rebounded ABOVE the stop before the midpoint trigger -> order sent, counted apart
+def test_pending_cancelled_when_the_breaching_quote_is_also_the_trigger():
+    # (review 15: renamed - this is the cancellation case) bid 89 / ask 89.2 breaches the stop AND crosses the midpoint
+    # on the same quote -> the trigger quote fails the geometry check -> cancelled, no order, no later fill at 94
     arm = E.Arm("delayed", cfg(), "delayed", {}); arm.pk = 5.0
     TM, B, A = arr([(61_000, 100.0, 100.2), (65_000, 89.0, 89.2), (66_000, 97.0, 97.2), (70_000, 94.0, 94.2), (71_000, 94.0, 94.2), (72_000, 109.0, 109.2)])
     drive(arm, TM, B, A, o=opp())
-    # at 65,000 the ask 89.2 <= mid 95.1 too: trigger on that tick -> stop breached on the trigger quote -> cancelled (rule 3)
     assert arm.n.get("cancel_stop_before_submission", 0) == 1 and arm.n["fills"] == 0
+
+
+def test_wide_spread_earlier_print_then_legitimate_trigger_is_counted():
+    # review 15: a WIDE spread lets the bid breach the stop (89) while the ask (96) stays above the midpoint (95.1),
+    # so nothing triggers; the quote rebounds above the stop, then a normal quote crosses the midpoint -> the
+    # order is legitimately sent (stop below the bid at the trigger), filled, and counted apart
+    arm = E.Arm("delayed", cfg(), "delayed", {}); arm.pk = 5.0
+    TM, B, A = arr([(61_000, 100.0, 100.2), (65_000, 89.0, 96.0), (66_000, 97.0, 97.2), (70_000, 95.0, 95.1), (71_000, 95.0, 95.1), (72_000, 109.0, 109.2)])
+    drive(arm, TM, B, A, o=opp())
+    assert arm.n.get("cancel_stop_before_submission", 0) == 0
+    assert arm.n.get("trigger_after_earlier_stop_print", 0) == 1 and arm.n["orders"] == 1 and arm.n["fills"] == 1, arm.n
+    assert len(arm.trades) == 1 and arm.trades[0]["win"] is True
 
 
 if __name__ == "__main__":

@@ -7,26 +7,32 @@ Files are local (gitignored); the manifest is committed.
 """
 import json, os, sys, time, hashlib
 FORWARD = "--forward" in sys.argv        # captured BEFORE the imports below (dev_dataset resets sys.argv)
+# --uid <nest id> : fetch from THAT account's terminal (read-only) into study/ticks_<uid>/ (Stage 0/2:
+# the dedicated demo's own quotes); the symbol is the terminal's (BTCUSD on Exness demo/real, BTCUSDm on std)
+UID = sys.argv[sys.argv.index("--uid") + 1] if "--uid" in sys.argv else "std"
 import numpy as np
 from datetime import datetime, timezone
 sys.path.insert(0, r"C:\Projects\KinoliveLines\study")
 import dev_dataset
 import MetaTrader5 as mt5
-LIVE = r"C:\Projects\KinoliveLines\live"; OUT = r"C:\Projects\KinoliveLines\study\ticks"; os.makedirs(OUT, exist_ok=True)
+LIVE = r"C:\Projects\KinoliveLines\live"; OUT = "C:/Projects/KinoliveLines/study/ticks"; os.makedirs(OUT, exist_ok=True)
 sym, R, META = dev_dataset.load("b")
 T0, T1 = int(R["time"][0]), int(R["time"][-1]) + 60
 # --forward (pre-registered untouched period): from the development cutoff to now, into
 # study/ticks_forward/ with its own manifest; re-runnable daily, finished days are skipped,
 # the current (partial) day is refreshed. Read-only, no trading call.
 if FORWARD:
-    T0 = int(META["closed_bar_cutoff"]); T1 = int(time.time()); OUT = r"C:\Projects\KinoliveLines\study\ticks_forward"; os.makedirs(OUT, exist_ok=True)
-u = next(x for x in json.load(open(os.path.join(LIVE, "owl_nest_users.json"), encoding="utf-8")) if x["id"] == "std")
+    T0 = int(META["closed_bar_cutoff"]); T1 = int(time.time()); OUT = "C:/Projects/KinoliveLines/study/ticks_forward"; os.makedirs(OUT, exist_ok=True)
+if UID != "std":
+    OUT = "C:/Projects/KinoliveLines/study/ticks_%s%s" % (UID, "_forward" if FORWARD else ""); os.makedirs(OUT, exist_ok=True)
+u = next(x for x in json.load(open(os.path.join(LIVE, "owl_nest_users.json"), encoding="utf-8")) if x["id"] == UID)
 if not mt5.initialize(path=u["terminal"]):
     raise SystemExit("MT5: %s" % (mt5.last_error(),))
+sym = "BTCUSD" if mt5.symbol_info("BTCUSD") else sym          # the terminal's own symbol name
 dt = lambda s: datetime.fromtimestamp(s, tz=timezone.utc)
 day0 = T0 - T0 % 86400
 man_path = os.path.join(OUT, "manifest.json")
-man = json.load(open(man_path)) if os.path.exists(man_path) else {"symbol": sym, "dataset": META["sha256"], "window": [T0, T1], "days": {}}
+man = json.load(open(man_path)) if os.path.exists(man_path) else {"symbol": sym, "dataset": META["sha256"], "window": [T0, T1], "days": {}, "uid": UID, "terminal": u["terminal"]}
 d = day0
 while d < T1:
     key = dt(d).strftime("%Y-%m-%d"); fn = os.path.join(OUT, "%s_%s.npz" % (sym, key))
