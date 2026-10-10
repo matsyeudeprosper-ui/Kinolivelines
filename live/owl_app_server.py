@@ -3496,6 +3496,11 @@ const VOICE={
       nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Le robot préfère s’écarter.'],
       nogate:['⚡','Aucun frein','#b98cff','Ce compte prend tous les signaux, marché calme ou rapide.']},
   mx_hint:'&middot; ce que le robot voit',
+  pb_up:'Reculs en hausse : le robot ne prend que des achats, et seulement au-dessus du dernier BOS des reculs{lvl}.',
+  pb_down:'Reculs en baisse : le robot ne prend que des ventes, et seulement sous le dernier BOS des reculs{lvl}.',
+  pb_wrong:'Le prix est du mauvais c\u00f4t\u00e9 du dernier BOS des reculs{lvl} : les entr\u00e9es de continuation sont en pause jusqu\u2019\u00e0 ce qu\u2019il le reprenne ou que les reculs se retournent.',
+  pb_none:'Pas de tendance sur les reculs pour l\u2019instant : pas de filtre de sens.',
+  pb_chip:'cap des reculs',pb_chip_up:'\u25b2 achats au-dessus de {lvl}',pb_chip_down:'\u25bc ventes sous {lvl}',pb_chip_wrong:'\u23f8 en pause ({lvl})',pb_chip_none:'\u2014',
   jcard:'Le robot en ce moment',jsteps:['Observe','Occasion','Trade','Bilan'],
   j_open:'Un trade est en cours{pl}. Le robot le surveille jusqu\u2019au bout.',
   j_won:'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +${p}</b>. Le robot repart en observation.',
@@ -3535,6 +3540,11 @@ const VOICE={
       nervous:['🌀','Marché rapide','#ff9678','Les mouvements sont beaucoup plus grands que d’habitude. Mieux vaut s’écarter.'],
       nogate:['⚡','Aucun frein','#b98cff','Tous les signaux sont affichés, marché calme ou rapide.']},
   mx_hint:'&middot; ce que le signal dit',
+  pb_up:'Reculs en hausse : seuls les achats au-dessus du dernier BOS des reculs{lvl} suivent la tendance.',
+  pb_down:'Reculs en baisse : seules les ventes sous le dernier BOS des reculs{lvl} suivent la tendance.',
+  pb_wrong:'Le prix est du mauvais c\u00f4t\u00e9 du dernier BOS des reculs{lvl} : la continuation est en pause jusqu\u2019\u00e0 ce qu\u2019il le reprenne ou que les reculs se retournent.',
+  pb_none:'Pas de tendance sur les reculs pour l\u2019instant : pas de filtre de sens.',
+  pb_chip:'cap des reculs',pb_chip_up:'\u25b2 achats au-dessus de {lvl}',pb_chip_down:'\u25bc ventes sous {lvl}',pb_chip_wrong:'\u23f8 en pause ({lvl})',pb_chip_none:'\u2014',
   jcard:'Le signal en ce moment',jsteps:['Veille','Signal','Trade','Bilan'],
   j_open:'Votre trade est en cours{pl}. G\u00e9rez-le depuis le graphique.',
   j_won:'Dernier trade termin\u00e9 : <b class="pos">gagn\u00e9 +${p}</b>. Bien jou\u00e9 \u2014 l\u2019app veille pour le prochain signal.',
@@ -3570,6 +3580,11 @@ const VOICE_EN={
       nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. The robot prefers to step aside.'],
       nogate:['⚡','No brakes','#b98cff','This account takes every signal, calm or fast market.']},
   mx_hint:'&middot; what the robot sees',
+  pb_up:'Pullbacks going up: the robot only buys, and only above the pullback chart\u2019s last BOS{lvl}.',
+  pb_down:'Pullbacks going down: the robot only sells, and only below the pullback chart\u2019s last BOS{lvl}.',
+  pb_wrong:'Price is on the wrong side of the pullback chart\u2019s last BOS{lvl}: continuation entries are paused until it reclaims the level or the pullbacks reverse.',
+  pb_none:'No trend on the pullback chart right now: no direction filter.',
+  pb_chip:'pullback heading',pb_chip_up:'\u25b2 buys above {lvl}',pb_chip_down:'\u25bc sells below {lvl}',pb_chip_wrong:'\u23f8 paused ({lvl})',pb_chip_none:'\u2014',
   jcard:'The robot right now',jsteps:['Watching','Opportunity','Trade','Review'],
   j_open:'A trade is running{pl}. The robot watches it to the end.',
   j_won:'Last trade closed: <b class="pos">won +${p}</b>. The robot is back to watching.',
@@ -3609,6 +3624,11 @@ const VOICE_EN={
       nervous:['🌀','Fast market','#ff9678','Moves are much larger than usual. Better to step aside.'],
       nogate:['⚡','No brakes','#b98cff','Every signal is shown, calm or fast market.']},
   mx_hint:'&middot; what the signal says',
+  pb_up:'Pullbacks going up: only buys above the pullback chart\u2019s last BOS{lvl} follow the trend.',
+  pb_down:'Pullbacks going down: only sells below the pullback chart\u2019s last BOS{lvl} follow the trend.',
+  pb_wrong:'Price is on the wrong side of the pullback chart\u2019s last BOS{lvl}: continuation is paused until it reclaims the level or the pullbacks reverse.',
+  pb_none:'No trend on the pullback chart right now: no direction filter.',
+  pb_chip:'pullback heading',pb_chip_up:'\u25b2 buys above {lvl}',pb_chip_down:'\u25bc sells below {lvl}',pb_chip_wrong:'\u23f8 paused ({lvl})',pb_chip_none:'\u2014',
   jcard:'The signal right now',jsteps:['Watch','Signal','Trade','Review'],
   j_open:'Your trade is running{pl}. Manage it from the chart.',
   j_won:'Last trade closed: <b class="pos">won +${p}</b>. Well played \u2014 the app watches for the next signal.',
@@ -3661,6 +3681,18 @@ VOICE_EN.observer={
  mx_hint:'&middot; what the Owl\u2019s robot sees',day_lbl:'Your day',
  day_empty:'No trade on your account today. the Owl\u2019s robot is working: its results are below.',
  since:'With OwlNest since <b>'};
+// 2026-10-10 (owner): the trend-following rule in words - what the robot is
+// waiting for on the PULLBACK chart. ms = d.meteo_struct. Level only when
+// the server sent it (Strategie / admin).
+function pbRule(ms){
+ if(!ms||!ms.pb_gate)return {sent:'',chip:null};
+ const lvl=(ms.pb_last_bos!=null)?Math.round(ms.pb_last_bos):null,lt=lvl!==null?(' ('+lvl+')'):'',lc=lvl!==null?String(lvl):'';
+ const t=ms.pb_trend,side=ms.pb_side;
+ if(t!==1&&t!==-1)return {sent:' '+T('pb_none'),chip:[T('pb_chip'),T('pb_chip_none'),'var(--muted)']};
+ if(side==='wrong')return {sent:' '+T('pb_wrong').replace('{lvl}',lt),chip:[T('pb_chip'),T('pb_chip_wrong').replace('{lvl}',lc).replace(' ()',''),'var(--warn)']};
+ return t===1?{sent:' '+T('pb_up').replace('{lvl}',lt),chip:[T('pb_chip'),T('pb_chip_up').replace('{lvl}',lc).replace(' de $',''),'var(--up-soft)']}
+             :{sent:' '+T('pb_down').replace('{lvl}',lt),chip:[T('pb_chip'),T('pb_chip_down').replace('{lvl}',lc),'var(--down-soft)']};
+}
 function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OBS()?'observer':'auto');const v=Lb[_vo]||Lb.auto;
  // a Signal member has no account of their own here: what the history shows is the Owl's robot, never "you"
  if(MAN()&&(window._d||{}).app_only&&!/^(wx|mx_hint|jcard|jsteps|j_(forming|flip|ready|storm|nervous|none|debt)|st_manual)$/.test(k)&&Lb.auto[k]!==undefined)return Lb.auto[k];
@@ -4586,6 +4618,8 @@ function drawJourney(d){
   txt=k==='forming'?T('j_forming'):(k==='flip'?T('j_flip'):T('j_ready'));}
  else{step=1;txt=k==='storm'?T('j_storm'):((k==='nervous'||k==='brisk')?T('j_nervous'):T('j_none'));}
  if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=T('j_debt');
+ // 2026-10-10 (owner): what the robot is waiting for under the trend-following rule
+ if(step<3){try{const pr=pbRule(d.meteo_struct);if(pr.sent)txt+=pr.sent;}catch(e){}}
  const jp=document.getElementById('jprog');
  if(jp){if(step===3&&open.length){const p=open[0];
    const e=parseFloat(p.e)||0,tp=parseFloat(p.tp)||0,lot=parseFloat(p.lot)||0,pl=parseFloat(p.pl)||0;
@@ -7938,6 +7972,10 @@ function render(d){
     // then the context
     chips.push(intRule?big:small);
     chips.push(cell('sens',ttxt,tcol,false));
+    // 2026-10-10 (owner): the trend-following rule, in words and as a chip
+    {const pr=pbRule(ms2);if(pr.sent){ln=ln+pr.sent;}
+     if(pr.chip){let v=pr.chip[1];if(!(ms2.pb_last_bos!=null)){v=v.replace(/ ?\(?\{lvl\}\)?/,'').replace(/ (de|above|below|sous) ?$/,'').trim();}
+      chips.push(cell(pr.chip[0],v,pr.chip[2],true));}}
     // 2026-09-29 (owner): two market facts the robot does not use yet.
     // The spread is fixed at 7 pts on this broker, so what changes is how
     // big a bite it takes out of a candle; and nervosity is a ratio, so a
@@ -10856,6 +10894,28 @@ def user_stats(u, admin_override=False):
                             d["meteo_struct"]["internal_entries"] = False
                         for _k in ("bos_ready", "flip_bos_ready", "int_bos_ready", "int_flip_bos_ready", "trend", "choch"):
                             d["meteo_struct"][_k] = _cj.get(_k)
+                        # 2026-10-10 (owner, trend following): what the robot
+                        # is waiting for comes from the PULLBACK chart - its
+                        # trend and which side of its last BOS price sits.
+                        # Direction and side for everyone; the price itself
+                        # only for Strategie members and the admin (a level).
+                        try:
+                            _pb = _cj.get("pb") or {}
+                            _pbt = int(_pb.get("trend") or 0)
+                            _bks = _pb.get("breaks") or []
+                            _last = float(_bks[-1][2]) if _bks else None
+                            _px = _cj.get("px")
+                            _side = None
+                            if _pbt in (1, -1) and _last is not None and _px:
+                                _side = "ok" if _pbt * (float(_px) - _last) > 0 else "wrong"
+                            d["meteo_struct"]["pb_trend"] = _pbt
+                            d["meteo_struct"]["pb_side"] = _side
+                            d["meteo_struct"]["pb_gate"] = bool(
+                                PKG.for_account(u["id"]).get("pb_dir_gate", False))
+                            if is_admin(u) or has(u.get("id"), "strategy"):
+                                d["meteo_struct"]["pb_last_bos"] = _last
+                        except Exception:
+                            pass
                         if is_admin(u) or has(u.get("id"), "strategy"):
                             for _k in ("next_bos", "flip_bos", "invalid", "int_bos", "int_inv", "int_flip_bos"):
                                 d["meteo_struct"][_k] = _cj.get(_k)
@@ -15773,6 +15833,12 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     pass
             d["trades"] = tr
+            # 2026-10-10 (owner): does this account run the pullback gate? The
+            # chart page words the trend-following rule only when it does.
+            try:
+                d["pb_gate"] = bool(PKG.for_account(user["id"]).get("pb_dir_gate", False))
+            except Exception:
+                d["pb_gate"] = False
             # the protected points, breaks and marks are what Strategie sells:
             # the page hides them for everyone else, and the data is not sent
             _cv = chart_view(user)

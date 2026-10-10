@@ -608,7 +608,11 @@ const HTCW=9;   // base candle width, before the zoom
 const HT={on:false,tf:'H1',split:'v',r:0.42,data:null,t:0,xoft:{},xts:[],scale:null,
  off:0,hz:1,vz:1,vo:0};
 try{const sv=JSON.parse(localStorage.getItem('owlHTF')||'null');
- if(sv){HT.on=!!sv.on&&HTFOK;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}}catch(e){}
+ if(sv){HT.on=!!sv.on&&HTFOK;HT.tf=sv.tf||'H1';HT.split=sv.split||'v';HT.r=sv.r||0.42;}
+ // Owner 2026-10-10: the chart opens SPLIT by default - pullback panel above
+ // the minute chart - for anyone who has not chosen otherwise (a saved choice,
+ // including "off", is respected)
+ else if(HTFOK){HT.on=true;HT.tf='PB';}}catch(e){}
 function htSave(){try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
 function htLbl(){return HT.tf==='PB'?(CL?'PULLBACKS':'RECULS'):HT.tf;}
 function htApply(){document.body.classList.toggle('htf-v',HT.on&&HT.split==='v');
@@ -1266,9 +1270,20 @@ function draw(){
   x=>(x!==null&&x!==undefined&&Math.abs(px(v)-px(x))<11));
  // Owner 2026-10-10: no text on the lines - a ring at the right edge and
  // the words in the card a tap opens (txt becomes the card's state line)
+ // Owner 2026-10-10 (later): the OPEN TRADE's lines keep a short label after
+ // all - money to win/lose and the distance in % of price for SL/TP, side /
+ // lot / floating for the entry. Structure levels stay text-free.
  const tag=(y0,txt,col,bg,kind,v,t)=>{
   const y=Math.max(12,Math.min(Hh-12,y0));
-  lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,kind||'entry',v,col,txt,t);};
+  lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,kind||'entry',v,col,txt,t);
+  let lab=txt||'';
+  if((kind==='sl'||kind==='tp')&&D.px&&v){lab=txt+' · '+(Math.abs(v-D.px)/D.px*100).toFixed(2)+'%';}
+  if(!lab)return;
+  ctx.save();ctx.font='bold 9px system-ui';const w=ctx.measureText(lab).width+10;
+  const ly=lvlY(y,null);
+  ctx.fillStyle='rgba(8,14,22,.82)';ctx.beginPath();ctx.roundRect(W-w-18,ly-8,w,16,8);ctx.fill();
+  ctx.strokeStyle=col;ctx.globalAlpha=.55;ctx.lineWidth=1;ctx.stroke();ctx.globalAlpha=1;
+  ctx.fillStyle=col;ctx.fillText(lab,W-w-13,ly+3.5);ctx.restore();};
  // 2026-09-27 (owner): in manual mode the chart is a signal service - the
  // anticipated break, when its pullback is confirmed, is named on the chart.
  if(!FULL&&window._MANUAL){
@@ -1588,7 +1603,7 @@ function draw(){
    ctx.lineTo(8+s,yE+2-s*0.6);}
   ctx.closePath();ctx.fill();
   tag(yE,(t[0]===1?(CL?'Buy ':'Achat '):(CL?'Sell ':'Vente '))+t[1].toFixed(2)+
-   (t[5]>=0?'  +$':'  -$')+Math.abs(t[5]).toFixed(2)+(man?(CL?' · manual':' · manuel'):''),
+   (t[5]>=0?' · +$':' · -$')+Math.abs(t[5]).toFixed(2)+(man?(CL?' · manual':' · manuel'):''),
    LC.entry,null,'entry',t[2]);
  });
  // SL/TP levels drawn ONCE per unique price (several positions
@@ -2981,6 +2996,8 @@ function rbRender(){
  else if(auto&&hasBot){t='Le robot est arrêté';l='Le robot de ce compte ne tourne pas en ce moment. Kino est prévenu automatiquement.';}
  else if(auto){t='Rien ne tourne';l=man?'Aucun robot sur ce compte. Passez en mode manuel pour recevoir les signaux et l’outil de trading.':'Aucun robot sur ce compte. Le trading demande un paquet : Manuel pour trader vous-même, Automatique pour le robot.';}
  else{t=obs?'Kino garde la main':'Vous gardez la main';l='Le robot n’entre pas seul. Les trades se prennent depuis le graphique ; ceux en cours gardent leur stop et leur cible.';}
+ // 2026-10-10 (owner): a working robot says what it is waiting for under the trend-following rule
+ if(robot){try{l=l+pbRule().sent;}catch(e){}}
  document.getElementById('rb-t').textContent=t;document.getElementById('rb-l').textContent=l;
  const tr=(D&&D.trades)||[];const fl=tr.reduce((a,t)=>a+(+t[5]||0),0);
  const today=RB&&typeof RB.today==='number'?RB.today:null,bal=RB&&typeof RB.balance==='number'?RB.balance:null;
@@ -3260,12 +3277,31 @@ async function wxDayLoad(){
  try{const r=await fetch('/'+tok+'/day',{cache:'no-store'});
   if(r.ok){wxDay=await r.json();const W=wxState();if(W&&wxOpen)wxRender(W);}}catch(e){}
 }
+// 2026-10-10 (owner): the trend-following rule in words, from the pullback
+// chart this page already holds (D.pb) and the live price. Level only on the
+// full (Strategie / owner) view - D.pb is nulled for everyone else anyway.
+function pbRule(){
+ const p=D&&D.pb,g=!!(D&&D.pb_gate);
+ if(!p||!g)return {sent:'',chip:null};
+ const bks=p.breaks||[],last=bks.length?Number(bks[bks.length-1][2]):null,t=p.trend,px=D.px;
+ const lvl=last!==null?Math.round(last):null,lt=lvl!==null?' ('+lvl+')':'';
+ const side=(t===1||t===-1)&&last!==null&&px?((t*(px-last)>0)?'ok':'wrong'):null;
+ const F={up:'Reculs en hausse : seuls les achats au-dessus du dernier BOS des reculs'+lt+' sont pris.',down:'Reculs en baisse : seules les ventes sous le dernier BOS des reculs'+lt+' sont prises.',
+  wrong:'Le prix est du mauvais côté du dernier BOS des reculs'+lt+' : continuation en pause jusqu’à ce qu’il le reprenne ou que les reculs se retournent.',none:'Pas de tendance sur les reculs : pas de filtre de sens.'};
+ const E={up:'Pullbacks going up: only buys above the pullback chart’s last BOS'+lt+' are taken.',down:'Pullbacks going down: only sells below the pullback chart’s last BOS'+lt+' are taken.',
+  wrong:'Price is on the wrong side of the pullback chart’s last BOS'+lt+': continuation paused until it reclaims the level or the pullbacks reverse.',none:'No trend on the pullback chart: no direction filter.'};
+ const W=CL?E:F;
+ if(t!==1&&t!==-1)return {sent:' '+W.none,chip:[CL?'pullback heading':'cap des reculs','—','var(--muted)']};
+ if(side==='wrong')return {sent:' '+W.wrong,chip:[CL?'pullback heading':'cap des reculs',(CL?'⏸ paused':'⏸ en pause')+(lvl!==null?' ('+lvl+')':''),'var(--warn)']};
+ return t===1?{sent:' '+W.up,chip:[CL?'pullback heading':'cap des reculs',(CL?'▲ buys above ':'▲ achats au-dessus de ')+(lvl!==null?lvl:(CL?'the last BOS':'dernier BOS')),'#8df0bb']}
+             :{sent:' '+W.down,chip:[CL?'pullback heading':'cap des reculs',(CL?'▼ sells below ':'▼ ventes sous ')+(lvl!==null?lvl:(CL?'the last BOS':'dernier BOS')),'#ff8c8c']};
+}
 function wxRender(W){
  const S=W.S;
  wxEl.style.setProperty('--wxa',S[2]+'2e');wxEl.style.setProperty('--wxg',S[2]+'40');
  document.getElementById('wx-orb').innerHTML=WXS(S[0],S[2]);
  document.getElementById('wx-t').textContent=S[1];
- document.getElementById('wx-l').textContent=S[3];
+ document.getElementById('wx-l').textContent=S[3]+pbRule().sent;
  const hide=TIER==='observer'&&!FULL;   // the admin sees everything on every account
  document.getElementById('wx-gsec').style.display=hide?'none':'block';
  document.getElementById('wx-csec').style.display=hide?'none':'block';
@@ -3277,7 +3313,8 @@ function wxRender(W){
   // accent = the two figures that DECIDE right now (same rule as the app)
   const small=chip('petits mouvements',W.hasInt?(W.nb+' / 1 h'):'—',W.hasInt?(W.nb>=1?'var(--accent-soft)':'var(--muted)'):'var(--muted)',W.hasInt&&W.gM);
   const big=chip('grands mouvements',W.mv+' / 2 h',W.hasInt?(W.mv===0?'var(--muted)':'var(--text)'):(W.mv>=1?'var(--accent-soft)':'var(--muted)'),(!W.hasInt)&&W.gM);
-  document.getElementById('wx-chips').innerHTML=(W.hasInt?small:big)+chip('nervosité vs 24 h',W.rv.toFixed(2).replace('.',',')+'× '+W.vw[0],W.vw[1],W.gN||W.storm)+(W.hasInt?big:small)+chip('sens',ttxt,tcol,false);
+  const pr=pbRule();
+  document.getElementById('wx-chips').innerHTML=(W.hasInt?small:big)+chip('nervosité vs 24 h',W.rv.toFixed(2).replace('.',',')+'× '+W.vw[0],W.vw[1],W.gN||W.storm)+(W.hasInt?big:small)+chip('sens',ttxt,tcol,false)+(pr.chip?chip(pr.chip[0],pr.chip[1],pr.chip[2],true):'');
  }
  const age=D.updated?Math.max(0,Math.round(Date.now()/1000-D.updated)):null;
  document.getElementById('wx-upd').textContent=age===null?'':('Mis à jour il y a '+(age<60?age+' s':Math.round(age/60)+' min'));
