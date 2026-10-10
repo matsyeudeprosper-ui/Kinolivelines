@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-10T10:30:00Z",
+ "updated": "2026-10-10T12:00:05Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -122,7 +122,8 @@
     "2026-10-09 17:30 veille: FLIP-BOS SELL -4.01 (pace 1.013, entry 17 h, closed 17:28, after the -7.64 flip loss) - another day flip, as flip_day predicts. flip_day 41 tr 27% -74.19 PF 0.30 (h 33%/22%); 1.0-1.3 12 tr 17%; after a loss 27 tr 26%, after a win 14 tr 29%: by day every pace and every previous result loses. FLIP-BOS 53 tr 36% -56.71 (h 46%/28%); BOS unchanged.",
     "2026-10-09 19:00 veille: flip_day by pace 0.8-1.0 7 tr 57%, <0.8 11 tr 18%, 1.0-1.3 13 tr 15%, 1.3-1.85 12 tr 33%: day flips lose at every pace; hour, not nerves, splits them.",
     "2026-10-10 07:00 veille: FLIP-BOS BUY +4.80 (pace 0.383, very CALM, night, closed 06:45). flip_day unchanged 43 tr 28% -73.66; night flips ~13 tr 9 won ~+22. FLIP-BOS 56 tr 38% -51.38 (h 48%/29%). A calm night reversal wins: hour, not pace.",
-    "2026-10-10: real nervous flips 29 tr 31% -47.46, of which by day 25 tr 24% -57.08, by night 4 tr 75%. flip_hot_size 0.6/0.75/0.85 inside ext400+wait20 all A on both shapes: as a size rule in company it works; alone still unproven."
+    "2026-10-10: real nervous flips 29 tr 31% -47.46, of which by day 25 tr 24% -57.08, by night 4 tr 75%. flip_hot_size 0.6/0.75/0.85 inside ext400+wait20 all A on both shapes: as a size rule in company it works; alone still unproven.",
+    "2026-10-10 12:00 veille: FLIP-BOS SELL +0.78 (pace 0.708, CALM, entry 10 h, closed 10:29). flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%); avg win ~2.7-2.9 vs avg loss ~3.2-4.2. FLIP-BOS 57 tr 39% -50.60 (h 48%/31%); BOS 39 tr 62% +24.94 unchanged. A tiny day win, shape intact."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -1503,6 +1504,16 @@
     "owl_package pb_dir_gate"
    ],
    "saw": "98 trades 47% -37.30 PF 0.83. Night 1-7 h 22 tr 19 won ~+66; day after a loss 39 tr 31% -62; night BOS 82% vs day BOS 45%. Real fills: same split on 8 of 9 accounts. Live accounts now filter by pullback direction; the test does not."
+  },
+  {
+   "t": "2026-10-10T12:00:05Z",
+   "looked": [
+    "wake_context new trade (FLIP-BOS SELL +0.78 closed 10:29 pace 0.708, entry 10 h)",
+    "scrutiny --pile flip_day (by nerv / prev / hour / dur)",
+    "scrutiny --by kind",
+    "asks (none open)"
+   ],
+   "saw": "99 trades. A calm day reversal won +0.78. flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%), unchanged in shape; second half still worse. FLIP-BOS 57 tr 39% -50.60; BOS 39 tr 62% +24.94 (h 71%/50%). No twins, no labo robot, no ask. No harness run (nothing new to test; hour_brake_adaptive / hour_size not built), no pile, no proposal. First live trade after pb_dir_gate went on: read with care."
   }
  ],
  "lessons": [
