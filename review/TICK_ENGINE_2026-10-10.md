@@ -1,7 +1,8 @@
 # Tick engine - three arms on one clock (review 13 brief), development results 2026-10-10
 
 From: Claude. To: ChatGPT and Mike. Development evidence only (the window already guided research); no live
-change; nothing frozen for a later period yet.
+change; nothing frozen for a later period yet. All 24 arm-rows complete (the reference regime's drag row was
+rerun after the host had stopped the first pass for memory; the drag-0 rows reproduced to the cent).
 Files: `study/tick_engine.py` (engine), `study/tick_engine.json` (per arm: trades, events, counts),
 `study/tick_engine.out`, `study/tick_engine_validation_infinity.md`, `study/tick_engine_stats.py` (+ `.json`),
 `live/lab/harness.py` (OPPHOOK / BARHOOK: raw opportunity and per-bar facts, no behaviour change - generic
@@ -61,7 +62,9 @@ barrier crossing of the executable side with the money exact to the cent.
 | bos | 0.35 | baseline | -72.13 (kill) | 117.02 | 117.37 | 162 | 89 | -80.99 | 8.86 (65) | 902 | -86.02 | - | - | 78 |
 | bos | 0.35 | **delayed** | -4.23 | 66.41 | 72.17 | 158 | 49 | -1.85 | -2.37 (82) | 482 | -9.37 | 222 / 78 | 335 s | 96 |
 | bos | 0.35 | half_main | -18.55 | **42.52** | 44.17 | 248 | 140 | -26.38 | 7.86 (93) | 535 | -26.36 | - | - | 126 |
-| reference | 0.35 | (all three) | not available - the host stopped the run for low memory on this last row; rerun pending | | | | | | | | | | | |
+| reference | 0.35 | baseline | -43.01 | 113.52 | 115.84 | 296 | 161 | -42.98 | 0 | 1220 | -77.62 | - | - | 146 |
+| reference | 0.35 | **delayed** | 0.70 | 61.72 | 63.47 | 188 | 57 | 0.66 | 0 | 382 | -11.95 | 275 / 101 | 380 s | 110 |
+| reference | 0.35 | half_main | -21.71 | **57.59** | 59.12 | 296 | 161 | -21.69 | 0 | 638 | -38.76 | - | - | 146 |
 Counts per arm (signals skipped while open / pending, not awake, weather, debt allowance, day cap, rejects,
 kills, gap flags) are in `tick_engine.json`; e.g. Infinity delayed at drag 0: 857 signals, 78 skipped with a
 position open, 80 while a setup waited, 201 not awake, 125 weather, 42 debt allowance, 126 day cap, 0 rejects.
@@ -83,6 +86,8 @@ position open, 80 while a setup waited, 201 not awake, 125 weather, 42 debt allo
 | u224016179 | 0.35 | half_main | 0.637 | [0.39, 0.89] | | +13.5 | [-47.1, +65.7] |
 | bos | 0.35 | delayed | 0.568 | [0.31, 1.80] | [0.35, 1.87] / [0.28, 1.14] | +67.9 | [-71.0, +280.6] |
 | bos | 0.35 | half_main | 0.363 | [0.20, 0.91] | | +53.6 | [-18.0, +173.9] |
+| reference | 0.35 | delayed | 0.544 | **[0.30, 0.80]** | [0.28, 0.83] / [0.32, 0.70] | +43.7 | [-54.5, +119.1] |
+| reference | 0.35 | half_main | 0.507 | [0.48, 0.59] | | +21.3 | [-32.1, +76.8] |
 
 ## Event traces (Infinity, delayed arm, drag 0; `tick_engine.json` "events")
 * **Delayed fill:** setup at signal 1787962140 - PENDING mid 77822.56, stop 77774.76, target 77946.84, lot 0.01;
@@ -100,13 +105,13 @@ position open, 80 while a setup waited, 201 not awake, 125 weather, 42 debt allo
 ## Reading
 On ticks, full paths, the delayed MAIN cut the closed-trade drawdown by 34-66% at zero drag and 24-43% under
 the assumed drag against the baseline, kept the net within -23% / +23% at zero drag (-0.5 / -14 / +15 /
--7), and under drag turned losses of -25 / -45 / -72 (kill) into -7 / -1 / -4. Against the half-size control it
-earned more net on every row (7 / 7) at a lower or similar drawdown on 5 and a higher one on 2 (Depenses and
-Special under drag, where the control's cut is 50-67% of the lot on every trade and the candidate still risks
+-7), and under drag turned losses of -25 / -45 / -72 (kill) / -43 into -7 / -1 / -4 / +1. Against the half-size control
+it earned more net on every row (8 / 8) at a lower or similar drawdown on 5 and a higher one on 3 (Depenses,
+Special and the reference under drag, where the control's cut is 50-67% of the lot on every trade and the candidate still risks
 half the distance on the fills it takes). The later calendar half is positive for the candidate on all four
 regimes at zero drag and the least negative of the three arms under drag. The bootstrap says what 42 days of
 one history can say: the drawdown-ratio intervals cross 1.0 on every live package (only the reference regime
-at zero drag stays below, [0.33, 0.73]) and every net-difference interval includes zero. Rows share the same
+stays below at both costs, [0.33, 0.73] and [0.30, 0.80]) and every net-difference interval includes zero. Rows share the same
 market history; they are not independent confirmations.
 **Verdict: the mechanism survives the complete bot replay on ticks - it is more than lower exposure and
 costs on these paths - but it is development evidence on a window that guided the research. Nothing to
@@ -115,7 +120,6 @@ model, 1 s delays, gap rules, arms, regimes, both cost bases) and evaluate it on
 period with a registered horizon, cost model and adequacy rule.**
 
 ## Limits
-* The reference regime's drag row is missing (host killed the run for memory on the 24th of 24 arm-rows).
 * Weather at the add trigger = that bar's nervosity reading (known at the bar's open); the harness's entry
   nervosity is the fallback.
 * Signals remain bar-close events (the live bot's cadence); the bullet and main executions are tick events.
