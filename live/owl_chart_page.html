@@ -366,6 +366,7 @@ body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !
  <button id="pickday" class="tb" title="Voir une journ&eacute;e pass&eacute;e"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Journ&eacute;e pass&eacute;e</span></button>
  <button id="htfbtn" class="tb" title="Deux temps : M15, H1 ou H4 au-dessus"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/></svg><span>Deux temps</span></button>
  <button id="ruler" class="tb" title="R&egrave;gle : deux touches"><svg viewBox="0 0 24 24"><path d="M3 17 17 3l4 4L7 21z"/><path d="M7 13l2 2M10 10l2 2M13 7l2 2"/></svg><span>R&egrave;gle</span></button>
+ <button id="legend" class="tb" title="L&eacute;gende des couleurs"><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2.5"/><circle cx="7" cy="17" r="2.5"/><path d="M12 7h8M12 17h8"/></svg><span>L&eacute;gende</span></button>
  <button id="cttype" class="tb" title="Type de graphique : tous les mouvements, ou seulement les reculs s&eacute;rieux"><svg viewBox="0 0 24 24"><path d="M4 18 9 9l4 6 3-5 4 8"/><path d="M4 5h4M10 5h2"/></svg><span id="ctlbl">Filtre : silence</span></button>
 </div></div><input id="dayinp" type="date" style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none"><button id="backlive">&#9654; EN DIRECT</button>
 <button id="adstop" style="display:none;padding:11px 15px;border-radius:14px;
@@ -464,6 +465,7 @@ cv.addEventListener('pointerdown',e=>{
  drag={x:e.clientX,off:viewOff,v:0,px:e.clientX,
   y:e.clientY,voff:voff,t:performance.now()};
  window._tap={x:e.clientX,y:e.clientY,t:performance.now()};
+ clearTimeout(_peekT);{const sx=e.clientX,sy=e.clientY;_peekT=setTimeout(()=>{const tp=window._tap;if(tp&&Math.hypot(sx-tp.x,sy-tp.y)<7){PEEK=Date.now()+2200;window._tap=null;}},550);}
  cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointerup',e=>{
  const tp=window._tap;window._tap=null;if(!tp||MT||MTdrag||pinch)return;
@@ -477,6 +479,7 @@ cv.addEventListener('pointerup',e=>{
  lvlTap(y);});
 // ---- 2026-09-28 batch 32: the ruler (two taps) and a past day ----
 const LVLHIT=[];
+let PEEK=0,_peekT=null;   // owner 2026-10-10: long-press peek (prices shown until PEEK)
 // Owner 2026-10-10: ONE colour per level TYPE on both charts (direction is
 // carried by the trend badge, the carets and the event marks, never by a
 // line's colour any more), and NO text on the lines: each level ends in a
@@ -511,6 +514,15 @@ function lvCard(h){
   (LVTECH[h.k]?'<div style="color:#8fa6bd;font-size:.8rem;font-weight:700;letter-spacing:.02em;margin:-4px 0 8px 24px">'+LVTECH[h.k]+'</div>':'')+
   '<div style="color:#cfe3f5;font-size:.92rem;line-height:1.7">'+rows.join('<br>')+'</div>'+
   (doc?'<div style="color:#8fa6bd;font-size:.84rem;line-height:1.55;margin-top:10px">'+doc[1]+'</div>':'')+
+  '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');}
+function lvLegend(){
+ const rows=[['bos','bos'],['flip','flip'],['prot','prot'],['choch','choch'],['last','last'],['int','int-bos'],['entry','entry'],['sl','sl'],['tp','tp'],['h1','h1c']];
+ const html=rows.map(([ck,nk])=>{const nm=LVNAME[nk]||[nk,nk];return '<div style="display:flex;align-items:center;gap:11px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)">'+
+  '<span style="width:13px;height:13px;border-radius:50%;flex:none;background:'+LC[ck]+';box-shadow:0 0 8px '+LC[ck]+'"></span>'+
+  '<span style="flex:1;color:#e8eef4;font-weight:700;font-size:.9rem">'+(CL?nm[1]:nm[0])+'</span>'+
+  '<span style="color:#8fa6bd;font-size:.76rem">'+(LVTECH[nk]||'')+'</span></div>';}).join('');
+ adSheet('<div style="font-size:1.05rem;font-weight:800;color:#e8eef4;margin-bottom:8px">'+(CL?'Colours of the lines':'Les couleurs des lignes')+'</div>'+html+
+  '<div style="color:#8fa6bd;font-size:.8rem;line-height:1.5;margin-top:10px">'+(CL?'A ring at the right end marks every level; tap it, or the line, for its card. Hold a panel to see every price for two seconds.':'Un anneau au bout droit marque chaque niveau ; touchez-le, ou la ligne, pour sa carte. Maintenez le doigt sur un graphique pour voir tous les prix pendant deux secondes.')+'</div>'+
   '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');}
 function lvlTapIn(list,y){let best=null,bd=1e9;list.forEach(h=>{const d=Math.abs(h.y-y);if(d<bd){bd=d;best=h;}});if(!best||bd>16)return false;lvCard(best);return true;}
 // UX 5 (owner 2026-10-01): the chart is full of words a member has never
@@ -593,6 +605,7 @@ function ctPaint(){const b=document.getElementById('cttype'),l=document.getEleme
 document.getElementById('cttype').onclick=()=>{try{localStorage.setItem('owlChartType',CTPB()?'silence':'pb');}catch(e){}
  viewOff=0;seen.first=true;ctPaint();toolsMenu(false);toolsDot();load();};
 if(!FULL){const cb=document.getElementById('cttype');if(cb)cb.style.display='none';}
+(function(){const b=document.getElementById('legend');if(b)b.onclick=()=>{toolsMenu(false);lvLegend();};})();
 function toolsMenu(on){const m=document.getElementById('toolsmenu'),b=document.getElementById('tools');if(on===undefined)on=!m.classList.contains('on');m.classList.toggle('on',on);b.setAttribute('aria-expanded',on?'true':'false');}
 function toolsDot(){const d=document.getElementById('tools-dot');if(d)d.style.display=(RULER.on||PAST||HT.on||CTPB())?'block':'none';}
 document.getElementById('tools').onclick=e=>{e.stopPropagation();toolsMenu();};
@@ -696,11 +709,14 @@ function htDraw(){
   g.fillStyle='#5f6f82';g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';
   g.fillText((hi-(hi-lo)*k/3).toFixed(0),W-PAD+(NARROW?6:10),y+3);}
  // candles, all grey: here we read structure, not direction
+ // Owner 2026-10-10: a candle kept only by the panel's memory (the sticky
+ // chain) is drawn a shade dimmer than one the current structure still uses
+ const MEM=new Set(d.memory||[]);
  cs.forEach((k,i)=>{
   const x=Math.round(cw*(i+1))+0.5;HT.xoft[k[0]]=x;HT.xts.push(k[0]);
   if(HT.tf==='PB'&&atLive&&LT&&k[0]===LT[0])return;   // the forming minute is drawn live, below
   const age=(cs.length-1-i)/Math.max(1,cs.length-1);
-  g.globalAlpha=1-age*(HT.off<0.5?0.45:0.18);
+  g.globalAlpha=(1-age*(HT.off<0.5?0.45:0.18))*(MEM.has(k[0])?0.55:1);
   g.strokeStyle='#7d8b9e';g.lineWidth=1;
   g.beginPath();g.moveTo(x,py(k[2]));g.lineTo(x,py(k[3]));g.stroke();
   const y1=py(Math.max(k[1],k[4])),y2=py(Math.min(k[1],k[4]));
@@ -877,6 +893,10 @@ function htDraw(){
   if(xr!==undefined){g.save();g.strokeStyle='rgba(122,162,255,.75)';g.lineWidth=1;g.setLineDash([3,4]);
    g.beginPath();g.moveTo(xr,TOP);g.lineTo(xr,TOP+plot);g.stroke();g.setLineDash([]);
    g.fillStyle='rgba(122,162,255,.95)';g.beginPath();g.moveTo(xr-4,TOP-1);g.lineTo(xr+4,TOP-1);g.lineTo(xr,TOP+5);g.closePath();g.fill();g.restore();}}
+ // Owner 2026-10-10: long-press peek on this panel too
+ if(Date.now()<PEEK){g.save();g.font='bold 8.5px Inter, system-ui, sans-serif';g.textAlign='right';
+  LVLHIT_H.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=String(Math.round(h.v));const w=g.measureText(txt).width+8;
+   g.fillStyle='rgba(8,14,22,.88)';g.beginPath();g.roundRect(W-PAD-14-w,h.y-6.5,w,13,6);g.fill();g.fillStyle=h.col;g.fillText(txt,W-PAD-18,h.y+3);});g.restore();}
  // the same ruler, anchored in time, so a measure taken below shows here
  if(RULER.a&&RULER.b){const ax=htX(RULER.a.t),bx=htX(RULER.b.t);
   if(ax!==undefined&&bx!==undefined){
@@ -923,12 +943,14 @@ function htX(t){if(!HT.xts.length)return undefined;
   if(x>c.clientWidth-AX&&!LVLHIT_H.some(h=>Math.abs(h.y-y)<=10)){vzs={y:y,z:HT.vz};c.setPointerCapture(e.pointerId);e.preventDefault();return;}
   dg={x:e.clientX,y:e.clientY,off:HT.off,vo:HT.vo,v:0,px:e.clientX,t:performance.now()};
   tap={x:e.clientX,y:e.clientY,t:performance.now()};
+  clearTimeout(_peekT);{const sx=e.clientX,sy=e.clientY;_peekT=setTimeout(()=>{if(tap&&Math.hypot(sx-tap.x,sy-tap.y)<7){PEEK=Date.now()+2200;tap=null;htDraw();}},550);}
   c.setPointerCapture(e.pointerId);e.preventDefault();});
  c.addEventListener('pointermove',e=>{
   if(vzs){const r=c.getBoundingClientRect(),y=e.clientY-r.top;
    HT.vz=Math.max(0.25,Math.min(8,vzs.z*Math.exp((y-vzs.y)/240)));
    htDraw();e.preventDefault();return;}
   if(!dg)return;
+  if(Math.hypot(e.clientX-dg.x,e.clientY-dg.y)>7)clearTimeout(_peekT);
   const now=performance.now();
   dg.v=(e.clientX-dg.px)/Math.max(8,now-dg.t);dg.px=e.clientX;dg.t=now;
   const S=HT.scale;
@@ -1069,6 +1091,7 @@ function pastExit(){PAST=null;document.getElementById('pastbar').style.display='
 cv.addEventListener('pointermove',e=>{
  if(MTdrag){drag=null;return;}
  if(!drag)return;
+ if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>7)clearTimeout(_peekT);
  e.preventDefault();
  const now=performance.now();
  drag.v=(e.clientX-drag.px)/Math.max(8,now-drag.t);
@@ -1610,6 +1633,9 @@ function draw(){
   ctx.shadowColor=pcol+'1)';ctx.shadowBlur=7;
   ctx.beginPath();ctx.moveTo(0,yE);ctx.lineTo(W,yE);ctx.stroke();
   ctx.shadowBlur=0;ctx.setLineDash([]);
+  // Owner 2026-10-10: a faint band between the entry and the live price, green or red by the floating result
+  if(D.px){const yp=px(D.px);ctx.save();ctx.globalAlpha=.09;ctx.fillStyle=t[5]>=0?'#2ecc71':'#ff5c5c';
+   ctx.fillRect(0,Math.min(yE,yp),W,Math.max(1,Math.abs(yp-yE)));ctx.restore();}
   ctx.fillStyle=t[0]===1?'#2ecc71':'#ff5c5c';
   const s=5;
   ctx.beginPath();
@@ -1656,6 +1682,9 @@ function draw(){
   ctx.strokeStyle='#e8c55a';
   ctx.strokeRect(x-bw/2,y1,bw,Math.max(1.5,y2-y1));
   const yc=px(LA.c);
+  // Owner 2026-10-10: seconds to the next close, above the live candle
+  {const sec=60-Math.floor(Date.now()/1000)%60;ctx.save();ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillStyle='rgba(232,197,90,.85)';
+   ctx.fillText('0:'+String(sec).padStart(2,'0'),x,Math.max(TOPP+10,px(LA.h)-8));ctx.restore();}
   const r=cv.getBoundingClientRect();
   dot.style.display='block';
   dot.style.left=(r.left+x-5)+'px';
@@ -2057,6 +2086,17 @@ function draw(){
    ctx.fillStyle='#e8c55a';ctx.beginPath();
    ctx.roundRect(W/2-w2/2,ye-12,w2,24,12);ctx.fill();
    ctx.fillStyle='#0b1118';ctx.fillText(t,W/2-w2/2+9,ye+4);}}
+ // Owner 2026-10-10: distance meter - a thin gauge on the right edge from the
+ // live price to the next BOS, in the BOS colour (the removed "pts a faire"
+ // text, as a shape)
+ if(D.px&&D.next_bos&&D.bos_ready!==false){const y0=px(D.px),y1=px(D.next_bos);
+  const ya=Math.max(TOPP,Math.min(y0,y1)),yb=Math.min(TOPP+PLOT,Math.max(y0,y1));
+  if(yb-ya>2){ctx.save();ctx.globalAlpha=.85;ctx.fillStyle=LC.bos;ctx.fillRect(W-3,ya,2,yb-ya);
+   ctx.fillRect(W-6,Math.max(TOPP,Math.min(TOPP+PLOT,y0))-1,5,2);ctx.restore();}}
+ // Owner 2026-10-10: long-press peek - every level shows its price for two seconds
+ if(Date.now()<PEEK){ctx.save();ctx.font='bold 9px system-ui';ctx.textAlign='right';
+  LVLHIT.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=String(Math.round(h.v));const w=ctx.measureText(txt).width+8;
+   ctx.fillStyle='rgba(8,14,22,.88)';ctx.beginPath();ctx.roundRect(W-18-w,h.y-7,w,14,7);ctx.fill();ctx.fillStyle=h.col;ctx.fillText(txt,W-22,h.y+3.5);});ctx.restore();}
  // the pullback chart's three levels (owner 2026-10-10), echoed here with NO
  // text: a soft wide band under a thin solid core, from the left edge, with a
  // small square tab at the edge - nothing the minute chart's own dashed,
@@ -2235,10 +2275,15 @@ function ui(){
  const mb=document.getElementById('meteo');
  const W=wxState();
  if(W){
-  mb.innerHTML='<i>'+WXS(W.S[0],W.S[2],15)+'</i><span class="wxt">'+W.S[1]+'</span><span class="wxv" style="color:'+W.vw[1]+'">'+W.rv.toFixed(2).replace('.',',')+'×</span>'+
+  // Owner 2026-10-10: the chip tells the truth about the trend filter - when
+  // it pauses entries (wrong side / no structure) the chip says so instead of
+  // "Feu vert"; the sheet still carries the full sentence
+  const _pr=pbRule(),_paused=(_pr.k==='wrong'||_pr.k==='none');
+  const _ic=_paused?WXS('clock','#e8c55a',15):WXS(W.S[0],W.S[2],15),_tt=_paused?(CL?'Waiting':'En attente'):W.S[1],_col=_paused?'#e8c55a':W.S[2];
+  mb.innerHTML='<i>'+_ic+'</i><span class="wxt">'+_tt+'</span><span class="wxv" style="color:'+W.vw[1]+'">'+W.rv.toFixed(2).replace('.',',')+'×</span>'+
    '<svg class="wxc" viewBox="0 0 24 24" style="stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round"><path d="M9 6l6 6-6 6"/></svg>';
   mb.className='seg'+((W.k==='nervous'||W.k==='brisk')?' busy':'');
-  mb.style.display='flex';mb.style.color=W.S[2];
+  mb.style.display='flex';mb.style.color=_col;
   if(wxOpen){wxRender(W);wxDayLoad();i18nEl(document.getElementById('wx'));}
  }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
@@ -3297,7 +3342,7 @@ async function wxDayLoad(){
 // chart this page already holds (D.pb) and the live price. Level only on the
 // full (Strategie / owner) view - D.pb is nulled for everyone else anyway.
 function pbRule(){
- if(!D||!D.pb_gate)return {sent:'',chip:null};
+ if(!D||!D.pb_gate)return {sent:'',chip:null,k:''};
  // 2026-10-10 (owner): the MECHANICS are Strategie's - the full view gets the
  // level and the side; everyone else gets the plain sentence (direction and
  // pause state only, from pb_trend / pb_side the route sends to all)
@@ -3314,10 +3359,10 @@ function pbRule(){
   :{up:'Background trend up: the robot only buys, with the trend.',down:'Background trend down: the robot only sells, with the trend.',
    wrong:'Price has come back against the background trend: the robot pauses its entries for now.',none:'No clear background trend right now: the robot waits.'};
  const W=CL?E:F,nm=CL?'background trend':'tendance de fond';
- if(t!==1&&t!==-1)return {sent:' '+W.none,chip:[nm,CL?'⏸ waiting':'⏸ en attente','var(--warn)']};
- if(side==='wrong')return {sent:' '+W.wrong,chip:[nm,CL?'⏸ paused':'⏸ en pause','var(--warn)']};
- if(t===1)return {sent:' '+W.up,chip:[nm,lvl!==null?(CL?'▲ buys above ':'▲ achats au-dessus de ')+lvl:(CL?'▲ buys only':'▲ achats seulement'),'#8df0bb']};
- return {sent:' '+W.down,chip:[nm,lvl!==null?(CL?'▼ sells below ':'▼ ventes sous ')+lvl:(CL?'▼ sells only':'▼ ventes seulement'),'#ff8c8c']};
+ if(t!==1&&t!==-1)return {sent:' '+W.none,chip:[nm,CL?'⏸ waiting':'⏸ en attente','var(--warn)'],k:'none'};
+ if(side==='wrong')return {sent:' '+W.wrong,chip:[nm,CL?'⏸ paused':'⏸ en pause','var(--warn)'],k:'wrong'};
+ if(t===1)return {sent:' '+W.up,chip:[nm,lvl!==null?(CL?'▲ buys above ':'▲ achats au-dessus de ')+lvl:(CL?'▲ buys only':'▲ achats seulement'),'#8df0bb'],k:'up'};
+ return {sent:' '+W.down,chip:[nm,lvl!==null?(CL?'▼ sells below ':'▼ ventes sous ')+lvl:(CL?'▼ sells only':'▼ ventes seulement'),'#ff8c8c'],k:'down'};
 }
 function wxRender(W){
  const S=W.S;

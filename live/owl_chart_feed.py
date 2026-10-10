@@ -918,8 +918,10 @@ def pb_catch_up():
 
 def pullback_view(kept, dots, marks, brks, sticky=None, write=True):
     want = {d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in brks}
+    cur = set(want)        # what the CURRENT minute structure carries
     if sticky and kept:
         want = pb_sticky_times(want, kept[0][0], sticky, write, ceil_t=kept[-1][0])
+    memory = {int(t) for t in want if t not in cur}    # kept by the chain's memory only (owner 2026-10-10: drawn dimmer)
     if kept:
         want.add(kept[-1][0])
     cands = [c for c in kept if c[0] in want]
@@ -952,7 +954,7 @@ def pullback_view(kept, dots, marks, brks, sticky=None, write=True):
                                  brk_t=(bk[-1][0] if bk else None))
     except Exception:
         ist = {}
-    return {"candles": show,
+    return {"candles": show, "memory": sorted(t for t in memory if t >= p0),
             "int_trend": ist.get("i_trend", 0),
             "int_choch": ist.get("i_choch", 0),
             "int_bos": round(ist["i_nxt"], 2) if ist.get("i_nxt") else None,
