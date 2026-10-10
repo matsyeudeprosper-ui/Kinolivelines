@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-10T12:00:05Z",
+ "updated": "2026-10-10T18:00:05Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -227,7 +227,8 @@
    "status": "rejete",
    "evidence": [
     "2026-10-02: requested, built same day (wait_win).",
-    "2026-10-03: raw wait_win 30 C -43.4; 90 C -173.3; rr0.9+wait_win 60 C (-50 vs base, -108 vs rr0.9 alone). Monotonic: the longer the wait, the worse. Rejected by numbers."
+    "2026-10-03: raw wait_win 30 C -43.4; 90 C -173.3; rr0.9+wait_win 60 C (-50 vs base, -108 vs rr0.9 alone). Monotonic: the longer the wait, the worse. Rejected by numbers.",
+    "2026-10-10 18h: ask quick - restart <30 min after a WIN 13 tr 62% +7.53; after a LOSS 19 tr 26% -33.77 (halves agree). The pause belongs after a loss, not after a win."
    ],
    "next": "Closed. Do not propose wait_win."
   },
@@ -1514,6 +1515,16 @@
     "asks (none open)"
    ],
    "saw": "99 trades. A calm day reversal won +0.78. flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%), unchanged in shape; second half still worse. FLIP-BOS 57 tr 39% -50.60; BOS 39 tr 62% +24.94 (h 71%/50%). No twins, no labo robot, no ask. No harness run (nothing new to test; hour_brake_adaptive / hour_size not built), no pile, no proposal. First live trade after pb_dir_gate went on: read with care."
+  },
+  {
+   "t": "2026-10-10T18:00:05Z",
+   "looked": [
+    "wake_context new trade (FLIP-BOS BUY +3.22 closed 17:35 pace 0.868, day)",
+    "scrutiny --pile flip_day (nerv/prev/hour/dur)",
+    "scrutiny --by kind / gap",
+    "scrutiny --pile quick (ask from labo)"
+   ],
+   "saw": "Ledger window now 90 trades (since 09-24) 49% -28.41 PF 0.86 - counts shifted vs 99 this morning, read as a new window. flip_day 38 tr 32% -61.39 PF 0.38 (h 36%/29%), still losing on both halves; this win is at 17 h where the pile was 0/3. FLIP-BOS 51 tr 41% -39.11; BOS 37 tr 59% +20.14 (h 67%/50% pas d'accord). Ask quick: 32 tr 41% -26.24; after a loss 19 tr 26% -33.77 (h 29%/25% ok), after a gain 13 tr 62% +7.53; night quick fine, day quick loses. gap <15 min 25 tr 32% -29.82 (h ok); 30-60 min 20 tr 65% +23.16. Answered the ask; no pile (overlaps day-after-a-loss / ext400_wait), no harness run, no proposal."
   }
  ],
  "lessons": [
@@ -1552,6 +1563,7 @@
   "late_night pile 22 tr 23% -52: reaches 30 soon.",
   "Day after a loss 39 tr 31% -62 vs night 77%: catch-up trades by day lose.",
   "Buys vs sells: wait for a falling week.",
-  "Storm at entry: pile when 25 trades."
+  "Storm at entry: pile when 25 trades.",
+  "Quick restart after a loss (19 tr 26% -34, halves agree): same fault as 'day after a loss'; a pause-after-loss-only variant is the test. Pile when 30."
  ]
 }
