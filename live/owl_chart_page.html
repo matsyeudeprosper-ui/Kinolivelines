@@ -806,23 +806,9 @@ function htDraw(){
     if(xb!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xb,y,2.6,0,6.3);g.fill();}
     pill(y,(d.int_bos_dir===1?'\u25b2 ':'\u25bc ')+'int BOS '+Math.round(d.int_bos),ic,false);}}
  }
- // YOUR TRADE, in the bigger picture (upgrade 3). Same three prices as
- // the minute panel, thinner, and only when they are inside the view.
- const lv={};
- ((D&&D.trades)||[]).forEach(t=>{
-  if(t[3]>0){const k='S'+t[3].toFixed(0);(lv[k]=lv[k]||['S',t[3]]);}
-  if(t[4]>0){const k='T'+t[4].toFixed(0);(lv[k]=lv[k]||['T',t[4]]);}
-  if(t[2]>0){const k='E'+t[2].toFixed(0);(lv[k]=lv[k]||['E',t[2]]);}});
- Object.values(lv).forEach(q=>{const k=q[0],v=q[1],y=py(v);
-  if(!inView(y))return;
-  const c=k==='S'?'rgba(255,92,92,.8)':k==='T'?'rgba(46,204,113,.8)':'rgba(143,198,255,.8)';
-  g.strokeStyle=c;g.lineWidth=1;g.setLineDash(k==='E'?[5,4]:[]);
-  g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();g.setLineDash([]);
-  g.font='800 8px Inter, system-ui, sans-serif';g.textAlign='left';
-  const lab=k==='S'?'SL':k==='T'?'TP':(CL?'entry':'entr\u00e9e');
-  const w=g.measureText(lab).width+8;
-  g.fillStyle='rgba(10,17,28,.9)';g.beginPath();g.roundRect(3,y-6.5,w,13,6);g.fill();
-  g.fillStyle=c;g.fillText(lab,6,y+2.6);});
+ // Owner 2026-10-10: the open trade's entry / SL / TP are NOT drawn on this
+ // panel any more - with the minute chart showing them already, the second
+ // copy on the bigger picture only confused the reading of its levels.
  // WHERE PRICE IS (upgrade 2): the live line, and what is left to run
  // before this timeframe breaks. A level you cannot measure yourself
  // against is only half a level.
