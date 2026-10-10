@@ -1440,11 +1440,9 @@ function draw(){
      ctx.shadowColor=col;ctx.shadowBlur=6;ctx.globalAlpha=.55;
      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
      ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(xe,ye);ctx.stroke();
-     ctx.setLineDash([]);ctx.shadowBlur=0;ctx.globalAlpha=.75;ctx.font='bold 8px system-ui';
-     const tl=(CL?'line of the 2 last dots':'ligne des 2 derniers points');
-     const tw=ctx.measureText(tl).width+8,ty=Math.max(14,Math.min(Hh-8,ye));
-     ctx.fillStyle='rgba(8,14,22,.8)';ctx.beginPath();ctx.roundRect(W-tw-6,ty-16,tw,14,7);ctx.fill();
-     ctx.fillStyle=col;ctx.fillText(tl,W-tw-2,ty-6);ctx.restore();}}}
+     // Owner 2026-10-10: no text label - the dashed line through the two
+     // glowing dots explains itself, and the Reglages row names it
+     ctx.setLineDash([]);ctx.shadowBlur=0;ctx.restore();}}}
   ctx.shadowBlur=0;
  }
  // --- marks: choc = dashed line + open circle, bos = arrow ---
@@ -1522,7 +1520,10 @@ function draw(){
    ctx.setLineDash([3,7]);
    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
    ctx.setLineDash([]);ctx.globalAlpha=.7;ctx.font='bold 8px system-ui';
-   const t2='CHoCH '+cm[1].toFixed(0)+' · point consommé';
+   // Owner 2026-10-10 (less clutter): this line IS the last CHoCH, so the
+   // "dernier CHoCH" label below is skipped while this one shows - one
+   // label, both facts (which CHoCH, and that its dot is consumed)
+   const t2=(CL?'last CHoCH ':'dernier CHoCH ')+cm[1].toFixed(0)+(CL?' · consumed':' · consommé');
    const w2=ctx.measureText(t2).width+8;
    ctx.fillStyle='rgba(8,14,22,.8)';
    ctx.beginPath();ctx.roundRect(8,y-7,w2,14,7);ctx.fill();
@@ -1971,8 +1972,10 @@ function draw(){
     ?xoft[D.flip_bos_t]:null;
    const xf=xo!==null?xo:0;
    ctx.font='bold 8px system-ui';
-   const tf=(fd===1?'▲ ':'▼ ')+'BOS de bascule '+PF(D.flip_bos)+
-    (farm?'':' · attend un repli');
+   // Owner 2026-10-10 (less clutter): "bascule" already says it is the flip
+   // BOS; the arrow carries the direction
+   const tf=(fd===1?'▲ ':'▼ ')+(CL?'flip ':'bascule ')+PF(D.flip_bos)+
+    (farm?'':(CL?' · waits a pullback':' · attend un repli'));
    const wf=ctx.measureText(tf).width+8;
    ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
    ctx.lineWidth=1;ctx.setLineDash(farm?[1,4]:[1,7]);
@@ -1986,7 +1989,9 @@ function draw(){
    ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
    ctx.fillStyle=fcol;ctx.fillText(tf,W-wf,yf+3);ctx.restore();}}
  {const lc=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
-  if(lc&&!dupLvl(lc[1],D.invalid,D.next_bos,D.flip_bos)){
+  // skipped while the consumed-CHoCH line above already labels this level
+  const _cons=(!D.invalid&&D.choch&&(D.trend===1||D.trend===-1)&&lc&&lc[1]>lo&&lc[1]<hi);
+  if(lc&&!_cons&&!dupLvl(lc[1],D.invalid,D.next_bos,D.flip_bos)){
    const v=lc[1],col='#e8c55a';
    const lab=(CL?'last CHoCH ':'dernier CHoCH ')+PF(v);
    const yL=px(v);
