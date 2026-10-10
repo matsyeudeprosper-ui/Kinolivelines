@@ -2121,8 +2121,9 @@ function draw(){
  // pullback panel is open above and this chart is the silence filter.
  if(HT.on&&HT.tf==='PB'&&!CTPB()&&D.pb&&D.pb.candles){const p=D.pb;
   const bk=(p.breaks||[]).slice(-1)[0];
-  const lv=[[p.next_bos,p.trend===1?'#4fd8c8':'#ff9678',false],[p.invalid,'#e8c55a',true],
-            [bk?bk[2]:null,bk?(bk[1]===1?'#2ecc71':'#ff5c5c'):null,false]];
+  // [price, colour, glow, kind]: 'bos' = caret tab (the way price must go), 'last' = thick core + square tab
+  const lv=[[p.next_bos,p.trend===1?'#4fd8c8':'#ff9678',false,'bos'],[p.invalid,'#e8c55a',true,'inv'],
+            [bk?bk[2]:null,bk?(bk[1]===1?'#2ecc71':'#ff5c5c'):null,false,'last']];
   ctx.save();
   lv.forEach(q=>{const v=q[0];if(v==null||!isFinite(v))return;const y=px(v);
    if(y<TOPP+2||y>TOPP+PLOT-2){const up=y<TOPP+2,ye=up?TOPP+4:TOPP+PLOT-4;
@@ -2131,8 +2132,10 @@ function draw(){
    ctx.setLineDash([]);ctx.strokeStyle=q[1];
    ctx.globalAlpha=.14;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();
    if(q[2]){ctx.shadowColor=q[1];ctx.shadowBlur=8;}
-   ctx.globalAlpha=.8;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();ctx.shadowBlur=0;
-   ctx.fillStyle=q[1];ctx.globalAlpha=.95;ctx.fillRect(0,y-3,6,6);});
+   ctx.globalAlpha=q[3]==='last'?.95:.8;ctx.lineWidth=q[3]==='last'?2.2:1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();ctx.shadowBlur=0;
+   ctx.fillStyle=q[1];ctx.globalAlpha=.95;
+   if(q[3]==='bos'){const up=p.trend===1;ctx.beginPath();ctx.moveTo(0,y+(up?4:-4));ctx.lineTo(9,y+(up?4:-4));ctx.lineTo(4.5,y+(up?-5:5));ctx.closePath();ctx.fill();}
+   else ctx.fillRect(0,y-3,q[3]==='last'?9:6,q[3]==='last'?7:6);});
   ctx.restore();}
  if(HT.on&&window._xref!==undefined&&xoft[window._xref]!==undefined){const xr=xoft[window._xref];
   ctx.save();ctx.strokeStyle='rgba(122,162,255,.55)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
