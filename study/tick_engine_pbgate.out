@@ -1,0 +1,36 @@
+ticks in window 4869156
+pb state 0 / 857 (0s)
+pb state 100 / 857 (2s)
+pb state 200 / 857 (7s)
+pb state 300 / 857 (13s)
+pb state 400 / 857 (20s)
+pb state 500 / 857 (27s)
+pb state 600 / 857 (35s)
+pb state 700 / 857 (42s)
+pb state 800 / 857 (51s)
+pb states at 857 opportunities: with a trend 814, with a pending CHoCH 368
+infinity           drag 0.00 baseline        | net    38.49 cc_dd   56.78 mtm_dd   58.30 | trades 202 wins 110 main    32.01 adds   6.41 risk    561 | h1   36.60 h2    1.86 | pb refused   0 choch-allowed   0 no-state 0 | 250s
+infinity           drag 0.00 pb_gate_choch   | net    29.28 cc_dd   40.23 mtm_dd   43.85 | trades 155 wins  88 main    16.12 adds  13.12 risk    288 | h1   16.94 h2   12.29 | pb refused 249 choch-allowed 126 no-state 0 | 250s
+infinity           drag 0.00 pb_gate_strict  | net    22.49 cc_dd   27.83 mtm_dd   30.13 | trades 120 wins  71 main    16.80 adds   5.68 risk    235 | h1   16.53 h2    5.94 | pb refused 396 choch-allowed   0 no-state 0 | 250s
+infinity           drag 0.35 baseline        | net   -24.66 cc_dd   54.99 mtm_dd   56.12 | trades 239 wins 132 main   -19.09 adds  -5.54 risk    487 | h1   19.53 h2  -44.16 | pb refused   0 choch-allowed   0 no-state 0 | 247s
+infinity           drag 0.35 pb_gate_choch   | net   -11.61 cc_dd   50.61 mtm_dd   53.36 | trades 176 wins  99 main   -13.07 adds   1.49 risk    328 | h1    4.23 h2  -15.81 | pb refused 247 choch-allowed 120 no-state 0 | 247s
+infinity           drag 0.35 pb_gate_strict  | net     0.29 cc_dd   37.30 mtm_dd   40.20 | trades 129 wins  76 main    -0.92 adds   1.22 risk    246 | h1    9.50 h2   -9.22 | pb refused 395 choch-allowed   0 no-state 0 | 247s
+u224016179         drag 0.00 baseline        | net    62.24 cc_dd   61.10 mtm_dd   63.83 | trades 206 wins 112 main    54.47 adds   7.78 risk    840 | h1   48.33 h2   13.90 | pb refused   0 choch-allowed   0 no-state 0 | 248s
+u224016179         drag 0.00 pb_gate_choch   | net    52.21 cc_dd   53.48 mtm_dd   60.31 | trades 151 wins  84 main    31.45 adds  20.72 risk    539 | h1   22.49 h2   29.73 | pb refused 260 choch-allowed 126 no-state 0 | 248s
+u224016179         drag 0.00 pb_gate_strict  | net    41.93 cc_dd   43.02 mtm_dd   49.84 | trades 118 wins  68 main    23.97 adds  17.89 risk    431 | h1   25.06 h2   16.80 | pb refused 407 choch-allowed   0 no-state 0 | 248s
+u224016179         drag 0.35 baseline        | net   -44.82 cc_dd   64.69 mtm_dd   66.30 | trades 268 wins 147 main   -53.92 adds   9.09 risk    892 | h1  -18.65 h2  -26.13 | pb refused   0 choch-allowed   0 no-state 0 | 262s
+u224016179         drag 0.35 pb_gate_choch   | net   -11.41 cc_dd   67.14 mtm_dd   70.75 | trades 164 wins  92 main   -21.27 adds   9.83 risk    543 | h1   -9.92 h2   -1.49 | pb refused 249 choch-allowed 122 no-state 0 | 262s
+u224016179         drag 0.35 pb_gate_strict  | net     0.87 cc_dd   48.01 mtm_dd   54.32 | trades 125 wins  73 main     3.33 adds  -2.55 risk    429 | h1    6.40 h2   -5.59 | pb refused 397 choch-allowed   0 no-state 0 | 262s
+bos                drag 0.00 baseline        | net    68.60 cc_dd  117.37 mtm_dd  120.82 | trades 181 wins  96 main    52.10 adds  16.45 risk   1268 | h1   68.26 h2    0.30 | pb refused   0 choch-allowed   0 no-state 0 | 245s
+bos                drag 0.00 pb_gate_choch   | net    63.69 cc_dd  107.90 mtm_dd  116.19 | trades 145 wins  80 main    13.11 adds  50.58 risk    855 | h1   30.35 h2   33.38 | pb refused 249 choch-allowed 127 no-state 0 | 245s
+bos                drag 0.00 pb_gate_strict  | net    79.49 cc_dd   60.08 mtm_dd   70.16 | trades 106 wins  60 main    51.63 adds  27.92 risk    657 | h1   47.89 h2   31.67 | pb refused 407 choch-allowed   0 no-state 0 | 245s
+bos                drag 0.35 baseline        | net   -72.13 cc_dd  117.02 mtm_dd  118.26 | trades 162 wins  89 main   -80.99 adds   8.86 risk    902 | h1   13.91 h2  -86.02 | pb refused   0 choch-allowed   0 no-state 0 | 243s
+bos                drag 0.35 pb_gate_choch   | net   -61.94 cc_dd  101.21 mtm_dd  101.74 | trades 126 wins  67 main   -67.98 adds   6.03 risk    678 | h1    3.91 h2  -65.83 | pb refused 155 choch-allowed  89 no-state 0 | 243s
+bos                drag 0.35 pb_gate_strict  | net     5.96 cc_dd   95.78 mtm_dd  105.38 | trades 127 wins  74 main   -20.36 adds  26.31 risk    737 | h1   18.66 h2  -12.72 | pb refused 395 choch-allowed   0 no-state 0 | 243s
+reference_uncapped drag 0.00 baseline        | net    60.59 cc_dd   84.72 mtm_dd   89.42 | trades 296 wins 161 main    60.60 adds   0.00 risk   1220 | h1   93.09 h2  -32.48 | pb refused   0 choch-allowed   0 no-state 0 | 253s
+reference_uncapped drag 0.00 pb_gate_choch   | net     9.02 cc_dd  101.93 mtm_dd  107.46 | trades 197 wins 106 main     8.99 adds   0.00 risk    818 | h1   35.14 h2  -26.16 | pb refused 232 choch-allowed 108 no-state 0 | 253s
+reference_uncapped drag 0.00 pb_gate_strict  | net    29.56 cc_dd   61.59 mtm_dd   69.40 | trades 146 wins  83 main    29.48 adds   0.00 risk    595 | h1   35.98 h2   -6.50 | pb refused 386 choch-allowed   0 no-state 0 | 253s
+reference_uncapped drag 0.35 baseline        | net   -43.01 cc_dd  113.52 mtm_dd  115.84 | trades 296 wins 161 main   -42.98 adds   0.00 risk   1220 | h1   34.62 h2  -77.62 | pb refused   0 choch-allowed   0 no-state 0 | 246s
+reference_uncapped drag 0.35 pb_gate_choch   | net   -59.93 cc_dd  130.42 mtm_dd  135.09 | trades 197 wins 106 main   -59.94 adds   0.00 risk    818 | h1   -6.51 h2  -53.45 | pb refused 232 choch-allowed 108 no-state 0 | 246s
+reference_uncapped drag 0.35 pb_gate_strict  | net   -21.54 cc_dd   81.89 mtm_dd   87.16 | trades 146 wins  83 main   -21.62 adds   0.00 risk    595 | h1    5.53 h2  -27.16 | pb refused 386 choch-allowed   0 no-state 0 | 246s
+DONE
