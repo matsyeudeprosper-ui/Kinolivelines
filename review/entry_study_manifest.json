@@ -1,19 +1,50 @@
 {
  "study": "delayed recovery MAIN entry - three-arm chronological tick engine",
  "status": "DRAFT",
- "generated_at": "2026-10-10T06:06:25Z",
+ "generated_at": "2026-10-10T06:42:01Z",
  "frozen_at": null,
  "sources": {
-  "study/tick_engine.py": "0771a50a733bfbd4",
+  "study/tick_engine.py": "c3202efd7d2b99f0",
+  "study/tick_engine_forward.py": "c9153e13acae8294",
   "study/tick_engine_stats.py": "25ad01c9b22c1733",
   "study/manifest_runner.py": "5a932c4e8ea1d48b",
   "study/dev_dataset.py": "a33c3e6efe0062ab",
-  "study/fetch_ticks.py": "2b0e481733c27313",
+  "study/fetch_ticks.py": "af8583f679a5e905",
   "live/lab/harness.py": "bb50329954694650",
   "live/structure_bos_bot.py": "737176d37d79f435",
   "live/owl_package.py": "14a105bc9373a087",
-  "live/lab/test_tick_engine.py": "9460a05268f1079a",
+  "live/lab/test_tick_engine.py": "7e8f5786f11a44a4",
   "review/compte_frozen_manifest.json": "cb5328c5683fccdd"
+ },
+ "frozen_copy": {
+  "dir": "study/frozen_entry_study",
+  "files": {
+   "compte_frozen_manifest.json": "cb5328c5683fccdd",
+   "dev_dataset.py": "a33c3e6efe0062ab",
+   "fetch_ticks.py": "af8583f679a5e905",
+   "harness.py": "bb50329954694650",
+   "manifest_runner.py": "5a932c4e8ea1d48b",
+   "owl_package.py": "14a105bc9373a087",
+   "structure_bos_bot.py": "737176d37d79f435",
+   "test_tick_engine.py": "7e8f5786f11a44a4",
+   "tick_engine.py": "c3202efd7d2b99f0",
+   "tick_engine_forward.py": "c9153e13acae8294",
+   "tick_engine_stats.py": "25ad01c9b22c1733"
+  }
+ },
+ "scored_start": null,
+ "scored_end": null,
+ "balances_at_freeze": null,
+ "initialisation": "cold-flat at scored_start (run 0, debt 0, jar 0, streak 0, no allowance, no pending, no position); balances_at_freeze; structural warm-up = bars before scored_start, not traded; first gap measured from scored_start",
+ "coverage_rule": {
+  "minute_share_min": 0.97,
+  "max_gap_s": 120,
+  "days_covered_min": 36,
+  "flagged_trades_max_share": 0.03
+ },
+ "checkpoints": {
+  "risk_replication": "DD ratio <= 0.75 AND delayed net >= baseline - 5 AND delayed net >= half_main net (primary, nominated basis); fail: ratio >= 0.90 OR net < baseline - 15",
+  "profitable_edge": "candidate absolute net > 0 after nominated costs AND paired net-diff CI90 excludes 0 AND DD-ratio CI90 entirely < 1.0"
  },
  "development_data": {
   "bars": {

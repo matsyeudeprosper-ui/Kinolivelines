@@ -1,0 +1,10 @@
+{
+ "symbol": "BTCUSD",
+ "source": "demo u477508138 terminal (Exness-MT5Trial9), copy_rates_range, closed bars < cutoff",
+ "bars": 70051,
+ "first_bar": 1787352840,
+ "last_bar": 1791558360,
+ "closed_bar_cutoff": 1791558420,
+ "frozen_at": "2026-10-10T06:43:34Z",
+ "sha256": "f76840753ea2760a"
+}

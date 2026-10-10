@@ -1,0 +1,9 @@
+dev-fixture: source drift tolerated: ['study/tick_engine.py', 'study/fetch_ticks.py', 'live/lab/test_tick_engine.py']
+bars 59999 (warm-up before start 45599), ticks dir ticks
+scored ticks 1172003, invalid dropped 0, first 1790694420012 (gap from start 0.0 s), last 1791558419253
+coverage: 11 / 11 days covered
+infinity: opportunities 857 (scored 200)
+infinity           drag 0.00 baseline  | net    -6.66 (+open    -6.66) cc_dd   32.40 mtm_dd   33.29 | trades  57 wins  29 | setups 0 missed 0 | rej 0 cancel 0 | gap flag 29 unres 0 | open/pending at end 0/0 | 86s
+infinity           drag 0.00 delayed   | net    -0.69 (+open    -0.69) cc_dd   17.47 mtm_dd   17.98 | trades  42 wins  15 | setups 43 missed 12 | rej 0 cancel 0 | gap flag 24 unres 0 | open/pending at end 0/0 | 86s
+infinity           drag 0.00 half_main | net    -6.66 (+open    -6.66) cc_dd   32.40 mtm_dd   33.29 | trades  57 wins  29 | setups 0 missed 0 | rej 0 cancel 0 | gap flag 29 unres 0 | open/pending at end 0/0 | 86s
+DONE -> tick_engine_forward_devfixture.json
