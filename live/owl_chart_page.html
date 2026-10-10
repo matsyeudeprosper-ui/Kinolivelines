@@ -490,6 +490,10 @@ const LVNAME={bos:['La prochaine cassure','The next break'],flip:['La bascule','
  'int-flip':['Petite structure : bascule','Small structure: flip'],sl:['Le stop','The stop'],tp:['L\u2019objectif','The target'],entry:['L\u2019entr\u00e9e','The entry'],
  h1o:['Ouverture H1 pr\u00e9c\u00e9dente','Previous H1 open'],h1c:['Cl\u00f4ture H1 pr\u00e9c\u00e9dente','Previous H1 close'],
  'echo-bos':['Reculs : prochaine cassure','Pullbacks: next break'],'echo-prot':['Reculs : point prot\u00e9g\u00e9','Pullbacks: protected point'],'echo-last':['Reculs : derni\u00e8re cassure','Pullbacks: last break']};
+// Owner 2026-10-10: the technical name too, under the plain one
+const LVTECH={bos:'BOS (break of structure)',flip:'BOS de bascule (flip BOS)',prot:'point protégé (niveau CHoCH)',choch:'CHoCH (change of character)',
+ last:'dernier BOS',  'int-bos':'BOS interne','int-inv':'CHoCH interne','int-flip':'BOS de bascule interne',sl:'SL (stop loss)',tp:'TP (take profit)',entry:'prix d’entrée',
+ h1o:'H1 open',h1c:'H1 close','echo-bos':'BOS des reculs','echo-prot':'CHoCH des reculs','echo-last':'dernier BOS des reculs'};
 function lvReg(list,y,k,v,col,extra,t){list.push({y:y,k:k,v:v,col:col,extra:extra||'',t:t||null});}
 function lvRing(g,x,y,col){g.save();g.setLineDash([]);g.globalAlpha=1;g.shadowBlur=0;g.fillStyle='#0b1118';g.beginPath();g.arc(x,y,4.4,0,6.3);g.fill();
  g.strokeStyle=col;g.lineWidth=1.6;g.beginPath();g.arc(x,y,3.2,0,6.3);g.stroke();g.fillStyle=col;g.beginPath();g.arc(x,y,1.2,0,6.3);g.fill();g.restore();}
@@ -504,6 +508,7 @@ function lvCard(h){
  const doc=(CL?LVLDOC_EN:LVLDOC)[({bos:'next-bos',last:'last-bos',choch:'last-choch','echo-bos':'next-bos','echo-last':'last-bos'})[h.k]||h.k];
  adSheet('<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="width:14px;height:14px;border-radius:50%;background:'+h.col+';box-shadow:0 0 10px '+h.col+'"></span>'+
   '<span style="font-size:1.05rem;font-weight:800;color:#e8eef4">'+title+'</span></div>'+
+  (LVTECH[h.k]?'<div style="color:#8fa6bd;font-size:.8rem;font-weight:700;letter-spacing:.02em;margin:-4px 0 8px 24px">'+LVTECH[h.k]+'</div>':'')+
   '<div style="color:#cfe3f5;font-size:.92rem;line-height:1.7">'+rows.join('<br>')+'</div>'+
   (doc?'<div style="color:#8fa6bd;font-size:.84rem;line-height:1.55;margin-top:10px">'+doc[1]+'</div>':'')+
   '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');}
