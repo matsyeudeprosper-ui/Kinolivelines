@@ -2288,13 +2288,19 @@ function ui(){
  }else{mb.style.display='none';}
  const tb=document.getElementById('trbadge');
  tb.style.display='flex';
- const wound=(FULL&&D.choch)?' · choc!':'';
+ // Owner 2026-10-11: the badge shows the PULLBACK chart's trend - the one the
+ // robot follows since the trend-following rule - not the minute chart's.
+ // The minute chart's own direction stays readable in the weather sheet's
+ // "sens" chip. Full view: D.pb.trend; everyone else: pb_trend from the route.
+ const _bt=(D.pb&&D.pb.trend!==undefined&&D.pb.trend!==null)?D.pb.trend:(D.pb_trend!==undefined?D.pb_trend:D.trend);
+ const wound=(FULL&&D.pb&&D.pb.choch&&D.pb.choch!==_bt)?' · choc!':'';
  // the arrow lives in <i> so it glows like the weather icon
- if(D.trend===1){tb.innerHTML='<i>▲</i>haussier'+wound;
+ if(_bt===1){tb.innerHTML='<i>▲</i>haussier'+wound;
   tb.style.color='#2ecc71';}
- else if(D.trend===-1){tb.innerHTML='<i>▼</i>baissier'+wound;
+ else if(_bt===-1){tb.innerHTML='<i>▼</i>baissier'+wound;
   tb.style.color='#ff5c5c';}
- else{tb.innerHTML='<i>‒</i>neutre'+wound;tb.style.color='#8fa1b3';}
+ else{tb.innerHTML='<i>‒</i>'+(CL?'no trend':'sans tendance')+wound;tb.style.color='#8fa1b3';}
+ tb.title=CL?'Background trend (pullback chart) - the one the robot follows':'Tendance de fond (graphique des reculs) - celle que suit le robot';
  // Owner 2026-09-17: the robot badge reads the chart feed, not the desk's
  // manual_state - that file only exists for the half-manual account, so
  // accounts driven by the bot (Valere) showed nothing while in auto.
