@@ -256,8 +256,11 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "minute_win": [0-59, 0-59], "one_per_hour": true|false,
          "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1,
          "chase_pts": 0-1500, "nerv_floor": 0|0.5-0.95, "flip_hot_size": 0.25-1.0,
-         "cap_rr": 0|0.5-1.5, "first_move_size": 0.25-1.0}}
+         "cap_rr": 0|0.5-1.5, "first_move_size": 0.25-1.0, "cap_wait": 0-120}}
 ```
+`cap_wait` (2026-10-10, your request): on an account with a daily cap, no new
+trade for X minutes after the previous one closes (win or loss), like
+`wait_min`; an account without a cap does not wait; 0 = off.
 `first_move_size` (2026-10-06, your request): multiplies the stake by X when
 the entry is the first big move counted in the last 2 hours (the `move` fact
 = 1, main structure only); the trade is still taken; 1.0 = off.

@@ -186,6 +186,10 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # cap, aim for X times the risk instead of rr. An account without
             # a daily cap keeps rr. 0 = off.
             "cap_rr": 0.0,
+            # 2026-10-10 (chercheur): cap_wait = on an account with a daily
+            # cap, no new trade for X minutes after any close (like wait_min);
+            # an account without a daily cap does not wait. 0 = off.
+            "cap_wait": 0,
             # 2026-09-29 (owner: "each account has a different balance, so not
             # the same risk"). The live bot resizes the lot AND the daily cap
             # by balance / scale_ref, rounding the lot down to 0.01. With
@@ -999,6 +1003,9 @@ def simulate(R, spread, cfg):
         if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
             blocked += 1
             continue
+        if c["cap_wait"] and day_cap_eff and last_close_t is not None and t - last_close_t < c["cap_wait"] * 60:
+            blocked += 1
+            continue
         if c["wait_win"] and last_win_t is not None and t - last_win_t < c["wait_win"] * 60:
             blocked += 1
             continue
@@ -1374,6 +1381,9 @@ def simulate_real(T, R, spread, cfg):
         if c["wait_min"] and last_close_t is not None and t - last_close_t < c["wait_min"] * 60:
             blocked += 1
             continue
+        if c["cap_wait"] and day_cap_eff and last_close_t is not None and t - last_close_t < c["cap_wait"] * 60:
+            blocked += 1
+            continue
         if c["wait_win"] and last_win_t is not None and t - last_win_t < c["wait_win"] * 60:
             blocked += 1
             continue
@@ -1490,6 +1500,9 @@ def main():
     ap.add_argument("--cap-rr", type=float,
                     help="on an account with a daily cap, aim for X times the risk instead of rr;"
                          " base and variant both get valere's daily cap (this replay has none); 0 = off")
+    ap.add_argument("--cap-wait", type=int,
+                    help="on an account with a daily cap, no new trade for X minutes after a close;"
+                         " base and variant both get valere's daily cap (this replay has none); 0 = off")
     ap.add_argument("--spread", type=float, default=7.0)
     ap.add_argument("--drag", type=str, help="per-trade cost in $ at 0.02 lot: a number, or 'auto' = last night's measured gap once it rests on 30 trades; default raw")
     ap.add_argument("--json", action="store_true")
@@ -1528,6 +1541,10 @@ def main():
     base_over = {}
     if a.cap_rr:
         over["cap_rr"] = a.cap_rr
+        if not over.get("day_cap"):
+            over["day_cap"] = base_over["day_cap"] = package_cfg("valere")["day_cap"]
+    if a.cap_wait:
+        over["cap_wait"] = a.cap_wait
         if not over.get("day_cap"):
             over["day_cap"] = base_over["day_cap"] = package_cfg("valere")["day_cap"]
     sym, R = bars()
