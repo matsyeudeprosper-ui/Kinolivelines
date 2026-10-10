@@ -131,6 +131,54 @@ def run_matrix(uid, drag, TM, BID, ASK, END, opps, bars):
     return out, rep, dup
 
 
+def summarise(arm, TM, BID, ASK, END, TMID):
+    """one arm's result row (review 17: shared by run_matrix's twin run_cells and the frozen runner)"""
+    mtm_open = arm.finish(TM, BID, ASK, END); tr = arm.trades
+    gw = sum(x["pnl"] for x in tr if x["pnl"] > 0); gl = -sum(x["pnl"] for x in tr if x["pnl"] < 0)
+    row = {"net": round(arm.run, 2), "net_with_open_mtm": round(arm.run + mtm_open, 2), "cc_dd": round(E.dd_of(arm.pnls), 2), "mtm_dd": round(arm.mtm_dd, 2),
+           "trades": len(tr), "wins": arm.wins, "win_rate": round(arm.wins / len(tr), 4) if tr else None,
+           "profit_factor": (round(gw / gl, 3) if gl > 0 else (None if gw == 0 else float("inf"))), "gross_win": round(gw, 2), "gross_loss": round(gl, 2),
+           "pnl_main": round(sum(x["pnl_main"] for x in tr), 2), "pnl_add": round(sum(x["pnl_add"] for x in tr), 2),
+           "risk_main": round(sum(x["risk"] for x in tr), 2), "adds": sum(x["adds"] for x in tr),
+           "first_half": round(sum(x["pnl"] for x in tr if x["tc"] < TMID), 2), "later_half": round(sum(x["pnl"] for x in tr if x["tc"] >= TMID), 2),
+           "missed_winners": arm.n["missed_win"], "gap_flagged_trades": arm.n["trades_gap_flag"], "gap_unresolved_trades": arm.n["trades_gap_unresolved"],
+           "wait_s_median": (sorted(arm.n["wait_s"])[len(arm.n["wait_s"]) // 2] if arm.n["wait_s"] else None),
+           "counts": {k: v for k, v in arm.n.items() if k != "wait_s"}, "policy": getattr(arm, "policy", {"entry": "immediate", "allowance": "current", "cap": "on", "control": arm.name}),
+           "admitted": getattr(arm, "admitted", [])[:200], "trades_list": tr, "events": arm.events[:300]}
+    if getattr(arm, "admitted", None):
+        at = {a["t"] for a in arm.admitted}
+        row["admitted_money"] = {"n_traded": sum(1 for x in tr if x["t"] in at), "pnl": round(sum(x["pnl"] for x in tr if x["t"] in at), 2),
+                                 "pnl_main": round(sum(x["pnl_main"] for x in tr if x["t"] in at), 2)}
+    return row
+
+
+def run_cells(uid, drag, TM, BID, ASK, END, opps, bars, cells, start_ms=None, balance=None, with_half=False):
+    """review 17: the chosen cells (policy names, e.g. "delay_always|all_bos|cap_on") in SCORED mode with exactly
+    tick_engine.run_regime's semantics - signals eligible before start_ms are not traded (structural warm-up only),
+    the first incoming gap is measured from start_ms, every arm starts cold-flat, balance overrides the development one."""
+    cfg, rep = E.effective_cfg(E.PR[uid], E.REGIMES[uid] if balance is None else balance, drag)
+    pol = {NAME(p): p for p in POLICIES}
+    arms = [PolicyArm(c, cfg, pol[c], bars) for c in cells] + ([E.Arm("half_main", cfg, "half", bars)] if with_half else [])
+    elig = [((o["t"] + 60) * 1000 + SIGNAL_MS, o) for o in opps if start_ms is None or (o["t"] + 60) * 1000 + SIGNAL_MS >= start_ms]; ei = 0
+    touches = sorted((t * 1000 + 60000, 1) for t, (touched, nv) in bars.items() if touched); ti = 0
+    n = len(TM); prev = int(TM[0]) if start_ms is None else int(start_ms)
+    for k in range(n):
+        t_ms = int(TM[k]); gap_in = t_ms - prev; prev = t_ms
+        for arm in arms: arm.roll(t_ms)
+        while ti < len(touches) and touches[ti][0] <= t_ms:
+            ti += 1
+            for arm in arms:
+                if arm.last_flip_t is not None and arm.cont_left < int(arm.c["n_cont"]):
+                    arm.cont_left = min(int(arm.c["n_cont"]), arm.cont_left + 1)
+        while ei < len(elig) and elig[ei][0] <= t_ms:
+            o = elig[ei][1]; ei += 1
+            for arm in arms: arm.signal(o, k, TM, BID, ASK)
+        for arm in arms: arm.tick(k, TM, BID, ASK, gap_in)
+    T1 = int(TM[-1]); TMID = ((int(TM[0]) if start_ms is None else int(start_ms)) + T1) // 2
+    dup = {"no_debt_gate": not cfg.get("debt_gate", 1), "no_cap": not bool(cfg["day_cap"])}
+    return {arm.name: summarise(arm, TM, BID, ASK, END, TMID) for arm in arms}, rep, dup
+
+
 if __name__ == "__main__":
     want = ARGS[1:] or ["infinity", "u224016179", "bos", "reference_uncapped"]
     TM, BID, ASK, n_bad, END = E.load_ticks()

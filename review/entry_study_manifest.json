@@ -1,8 +1,8 @@
 {
  "study": "delayed recovery MAIN entry - three-arm chronological tick engine",
- "status": "DRAFT",
+ "status": "FROZEN",
  "generated_at": "2026-10-10T06:42:01Z",
- "frozen_at": null,
+ "frozen_at": "2026-10-10T17:13:44Z",
  "sources": {
   "study/tick_engine.py": "c3202efd7d2b99f0",
   "study/tick_engine_forward.py": "c9153e13acae8294",
@@ -11,14 +11,14 @@
   "study/dev_dataset.py": "a33c3e6efe0062ab",
   "study/fetch_ticks.py": "af8583f679a5e905",
   "live/lab/harness.py": "3a4f9a1c594725a1",
-  "live/structure_bos_bot.py": "356f102c76d4afe3",
-  "live/owl_package.py": "aad9bf27b8612db2",
+  "live/structure_bos_bot.py": "74045b0538796c31",
+  "live/owl_package.py": "f756db3819731dea",
   "live/lab/test_tick_engine.py": "7e8f5786f11a44a4",
   "review/compte_frozen_manifest.json": "cb5328c5683fccdd"
  },
  "frozen_copy": {
   "dir": "study/frozen_entry_study",
-  "built_at": "2026-10-10T10:44:14Z",
+  "built_at": "2026-10-10T17:13:44Z",
   "runner": "run_frozen.py",
   "isolation": "paths rewritten into the bundle; run_frozen.py asserts every loaded module sits inside it and hashes every bundle file first",
   "files": {
@@ -30,23 +30,30 @@
    "fetch_ticks.py": "75422e792fcf6836",
    "harness.py": "d55dd9373f5653c4",
    "manifest_runner.py": "d5e62f845985149f",
-   "owl_chart_feed.py": "44fa43a5ef0550ff",
+   "owl_chart_feed.py": "1dc93700eae9f067",
    "owl_nest_users.json": "4f53cda18c2baa0c",
-   "owl_package.py": "aad9bf27b8612db2",
-   "owl_packages.json": "5eb837449bc2f45a",
+   "owl_package.py": "f756db3819731dea",
+   "owl_packages.json": "a049a884cbd175a2",
    "owl_secrets.json": "77feee85ec7a65cf",
    "owl_shadow.py": "54c61fe8c6341d30",
-   "structure_bos_bot.py": "356f102c76d4afe3",
+   "pb_gate.py": "227b289af598d201",
+   "structure_bos_bot.py": "74045b0538796c31",
    "test_tick_engine.py": "c2015ca55b6c6b21",
    "tick_engine.py": "00930edc5effdfeb",
    "tick_engine_forward.py": "0313470173438d23",
+   "tick_engine_matrix.py": "5d19e762b61d7c38",
    "tick_engine_stats.py": "a13c5292eeaee2d3"
   },
-  "run_frozen_sha256": "e90af2983b64242d"
+  "run_frozen_sha256": "cadc0d3b21cc6898"
  },
- "scored_start": null,
- "scored_end": null,
- "balances_at_freeze": null,
+ "scored_start": 1791652800,
+ "scored_end": 1795281600,
+ "balances_at_freeze": {
+  "infinity": 171.65,
+  "u224016179": 258.44,
+  "bos": 350.11,
+  "reference_uncapped": 993.0
+ },
  "initialisation": "cold-flat at scored_start (run 0, debt 0, jar 0, streak 0, no allowance, no pending, no position); balances_at_freeze; structural warm-up = bars before scored_start, not traded; first gap measured from scored_start",
  "coverage_rule": {
   "minute_share_min": 0.97,
@@ -311,5 +318,75 @@
   "reselecting the primary regime after results",
   "extending or shortening the horizon after inspecting P&L",
   "live deployment on development evidence"
- ]
+ ],
+ "scored_utc": [
+  "2026-10-10 17:20:00",
+  "2026-11-21 17:20:00"
+ ],
+ "balances_source": {
+  "infinity": {
+   "nest_id": "infinity",
+   "file": "live/lab/wealth/infinity.json",
+   "read_at": "2026-10-10T17:13:44Z"
+  },
+  "u224016179": {
+   "nest_id": "u224016179",
+   "file": "live/lab/wealth/u224016179.json",
+   "read_at": "2026-10-10T17:13:44Z"
+  },
+  "bos": {
+   "nest_id": "bos",
+   "file": "live/lab/wealth/bos.json",
+   "read_at": "2026-10-10T17:13:44Z"
+  },
+  "reference_uncapped": {
+   "nest_id": "u477508138",
+   "file": "live/lab/wealth/u477508138.json",
+   "read_at": "2026-10-10T17:13:44Z"
+  }
+ },
+ "balances_dev": {
+  "infinity": 175.7,
+  "u224016179": 267.42,
+  "bos": 360.37,
+  "reference_uncapped": 1000.0
+ },
+ "costs": {
+  "drags_per_0_02_lot": [
+   0.0,
+   0.35
+  ],
+  "nominated": 0.35,
+  "spread": "the quote at the fill (bid/ask ticks)"
+ },
+ "arms_scored": {
+  "baseline": "frozen package snapshot, market order at the signal (tick_engine.run_regime)",
+  "delayed": "recovery-only delayed MAIN - the original comparator (tick_engine.run_regime)",
+  "half_main": "original-entry MAIN at half lot in debt, floored 0.01 - control (tick_engine.run_regime)",
+  "cell:immediate|current|cap_on": "the baseline through tick_engine_matrix.run_cells - engine-identity check",
+  "cell:delay_always|all_bos|cap_on": "the SELECTED CHALLENGER (review 15/16): midpoint delay for EVERY eligible MAIN entry, every otherwise-eligible confirmed MAIN BOS admitted while in debt, package daily cap kept"
+ },
+ "challenger_checks": "every run: delayed_out_debt > 0 (delay outside recovery), debt_gate == 0 (no eligible recovery BOS refused), policy cap on and cap_waived_off == 0 (cap retained); engine identity: matrix baseline == engine baseline",
+ "baseline_note": "the baseline is the EARLIER package snapshot (compte_frozen_manifest.json, pinned and hashed in the bundle), NOT today's live configuration (the live bots since 2026-10-10 carry the pullback-direction/trend gate, the day-cap waiver switch and the sticky pullback chain - none of that is in this study)",
+ "scope": "research / demo only - nothing here changes a live bot, and the reference demo is never changed to match the replay",
+ "fixture_verification": {
+  "file": "study/frozen_entry_study/frozen_fixture_verify.json",
+  "generated_at": "2026-10-10T16:12:13Z",
+  "all_checks_pass": true,
+  "reproduced": {
+   "infinity|0.00": true,
+   "infinity|0.35": true,
+   "u224016179|0.00": true,
+   "u224016179|0.35": true,
+   "bos|0.00": true,
+   "bos|0.35": true,
+   "reference_uncapped|0.00": true,
+   "reference_uncapped|0.35": true
+  }
+ },
+ "forward_data": {
+  "ticks": "study/ticks_forward/ (daily task OwlForwardTicks 03:10 local, std BTCUSDm account)",
+  "bars": "fetched at the end of the window from the same terminal; warm-up = bars before scored_start"
+ },
+ "reporting": "at scored_end (and interim status only): win rate, profit factor, net, closed DD (cc_dd), floating DD (mtm_dd), trade counts, missed winners, coverage - per arm, per regime, both cost bases; the two prereg checkpoints; no retuning"
 }

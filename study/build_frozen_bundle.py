@@ -10,7 +10,7 @@ re-stamps the manifest's own sources. Idempotent; run it right before the FROZEN
 """
 import os, re, json, shutil, hashlib, time
 ROOT = r"C:\Projects\KinoliveLines"; B = os.path.join(ROOT, "study", "frozen_entry_study"); os.makedirs(B, exist_ok=True)
-PY = ["study/tick_engine.py", "study/tick_engine_forward.py", "study/tick_engine_stats.py", "study/manifest_runner.py", "study/dev_dataset.py",
+PY = ["study/tick_engine.py", "study/tick_engine_matrix.py", "study/tick_engine_forward.py", "study/tick_engine_stats.py", "study/manifest_runner.py", "study/dev_dataset.py",
       "study/fetch_ticks.py", "live/lab/harness.py", "live/structure_bos_bot.py", "live/owl_package.py", "live/lab/compte_controller.py", "live/lab/test_tick_engine.py",
       # imported by the bot / the controller at import time (review 16: the bundle must resolve everything itself)
       "live/owl_shadow.py", "live/owl_chart_feed.py", "live/pb_gate.py"]
@@ -60,5 +60,6 @@ print("bundle:", len(files), "files; manifest updated;", "paths left:", sum(1 fo
 for f in files:
     if f.endswith(".py"):
         txt = open(os.path.join(B, f), encoding="utf-8").read()
-        left = [m for m in re.findall(r"C:[\\/]+Projects[\\/]+KinoliveLines[^\"'\\s]*", txt) if "frozen_entry_study" not in m]
+        # review 17: the old class excluded the backslash itself, so every REWRITTEN path was reported as unrewritten
+        left = [m for m in re.findall(r"C:[\\/]+Projects[\\/]+KinoliveLines[^\"'\s]*", txt) if "frozen_entry_study" not in m]
         if left: print("  WARNING unrewritten path in", f, left[:3])
