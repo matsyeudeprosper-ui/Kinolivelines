@@ -71,3 +71,10 @@ drift. Development work on the entry matrix and Compte experiments continues in 
 cannot touch the frozen copy.
 
 FROZEN: (not yet)
+
+## FROZEN - 2026-10-10 17:13:44 UTC (commit 7702c19)
+Scored window 2026-10-10 17:20:00 -> 2026-11-21 17:20:00 UTC (42 days). Balances at the freeze: infinity 171.65,
+u224016179 258.44, bos 350.11, reference_uncapped 993.00. Arms: baseline (earlier package snapshot, NOT the live
+configuration), recovery-only delayed, half_main, and the selected challenger delay_always | all_bos | cap_on (review 17),
+plus the engine-identity cell. Rules above unchanged; the verification of the bundle is in
+review/RESEARCH_REPLY_17_2026-10-10.md and study/frozen_entry_study/frozen_fixture_verify.json.

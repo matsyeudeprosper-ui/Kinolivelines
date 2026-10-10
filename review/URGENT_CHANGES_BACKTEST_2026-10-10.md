@@ -1,4 +1,4 @@
-# Backtest of the 2026-10-10 urgent live changes (for Mike) - development data, tick engine
+# Backtest of the 2026-10-10 urgent live changes (for Mike) - development data, tick engine (v3: cap-claim corrected)
 
 Three changes went live today on your instruction. Here is what the same replay that GPT audited says about
 them (dataset b: 42 days of BTCUSDm M1 bars + 4.87 million bid/ask ticks, each account's own package, both
@@ -48,9 +48,11 @@ Replayed as "no daily profit stop at all" with the accounts' normal entry (the s
 | Special | spread only | 68.6 / 117.4 | 112.5 / 127.3 | 33 |
 | Special | + $0.35 | -72.1 / 117.0 | +7.1 / 129.7 | 19 |
 Plainly: continuing after the daily target earned MORE on every account (a lot more on Infinity and Special)
-without changing the drawdown much - with the accounts entering as they do today. One caution: in the same
-matrix, removing the cap HURT every "delayed-entry" variant, so if the delayed entry ever goes live the cap
-should come back with it.
+without changing the drawdown much - with the accounts entering as they do today. One caution (corrected
+2026-10-10 evening, GPT review 17): in the same matrix, removing the cap HURT the SELECTED always-delay /
+all-BOS combination (cap on 92.27 / 142.39 / 236.38 vs cap off 45.10 / 123.18 / 161.04 net on Infinity /
+Depenses / Special at spread only) - that is the variant the statement applies to in these results, not
+every delayed variant; so if that combination ever goes live the cap should come back with it.
 
 ## 3. The Nid "all robots" switch
 A control, not a strategy - nothing to backtest. It writes the master pause file every robot reads live.
