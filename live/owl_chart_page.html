@@ -654,6 +654,7 @@ function htDraw(){
  let dots=(d.dots||[]).filter(x=>x[0]>=t0&&x[0]<=t1);
  dots.forEach(x=>{if(x[1]>hi)hi=x[1];if(x[1]<lo)lo=x[1];});
  if(d.next_bos&&HT.off<0.5){hi=Math.max(hi,d.next_bos);lo=Math.min(lo,d.next_bos);}
+ if(HT.tf==='PB'&&HT.off<0.5&&LT){hi=Math.max(hi,LT[2]);lo=Math.min(lo,LT[3]);}
  const pad=(hi-lo)*0.10||1;hi+=pad;lo-=pad;
  if(HT.vz!==1){const mid=(hi+lo)/2,half=(hi-lo)/2*HT.vz;hi=mid+half;lo=mid-half;}
  if(HT.vo){hi+=HT.vo;lo+=HT.vo;}
@@ -672,6 +673,7 @@ function htDraw(){
  // candles, all grey: here we read structure, not direction
  cs.forEach((k,i)=>{
   const x=Math.round(cw*(i+1))+0.5;HT.xoft[k[0]]=x;HT.xts.push(k[0]);
+  if(HT.tf==='PB'&&atLive&&LT&&k[0]===LT[0])return;   // the forming minute is drawn live, below
   const age=(cs.length-1-i)/Math.max(1,cs.length-1);
   g.globalAlpha=1-age*(HT.off<0.5?0.45:0.18);
   g.strokeStyle='#7d8b9e';g.lineWidth=1;
@@ -682,6 +684,23 @@ function htDraw(){
   gb.addColorStop(0,'#aeb9c7');gb.addColorStop(1,'#78849a');
   g.fillStyle=gb;g.beginPath();g.roundRect(x-bw/2,y1,bw,hgt,Math.min(2,bw/3));g.fill();
   g.globalAlpha=1;});
+ // Owner 2026-10-10: the forming minute on the pullback panel, styled like
+ // the minute chart's live candle (translucent body, gold outline) and
+ // moving with every quote (LA is the eased live candle the minute chart
+ // animates every frame). Joined like the rest of this chart: it opens at
+ // the previous candle's close.
+ if(HT.tf==='PB'&&atLive&&LA&&LT&&cs.length){
+  const last=cs[cs.length-1],same=last[0]===LT[0];
+  const i=same?cs.length-1:cs.length,x=Math.round(cw*(i+1))+0.5;
+  const o=same?(cs.length>1?cs[cs.length-2][4]:LA.o):last[4];
+  const up=LA.c>=o,col=up?'#2ecc71':'#ff5c5c';
+  g.save();g.globalAlpha=1;g.strokeStyle=col;g.lineWidth=1;
+  g.beginPath();g.moveTo(x,py(Math.max(LA.h,o,LA.c)));g.lineTo(x,py(Math.min(LA.l,o,LA.c)));g.stroke();
+  const y1=py(Math.max(o,LA.c)),y2=py(Math.min(o,LA.c)),hh=Math.max(1.5,y2-y1);
+  g.globalAlpha=.35;g.fillStyle=col;g.beginPath();g.roundRect(x-bw/2,y1,bw,hh,Math.min(2,bw/3));g.fill();
+  g.globalAlpha=1;g.strokeStyle='#e8c55a';g.strokeRect(x-bw/2,y1,bw,hh);
+  g.restore();
+  if(!same){HT.xoft[LT[0]]=x;HT.xts.push(LT[0]);}}
  // the structure is the point: dots first, then the breaks
  dots.forEach(x=>{const xx=HT.xoft[x[0]]!==undefined?HT.xoft[x[0]]:(x[0]>=HT.xts[0]?htNear(x[0]):undefined);
   if(xx===undefined)return;const y=py(x[1]);
@@ -2067,7 +2086,11 @@ function adSheet(html){
   bg.appendChild(bx);document.body.appendChild(bg);
   const done=v=>{try{document.body.removeChild(bg)}catch(e){}res(v)};
   window._adDone=done;
-  bg.onclick=e=>{if(e.target===bg)done(null)};
+  // Owner 2026-10-10: a tap on the top panel opened the sheet and its own
+  // click, landing on the backdrop a moment later, closed it ("just a
+  // flash"); the backdrop ignores clicks for the first half second
+  const t0=performance.now();
+  bg.onclick=e=>{if(e.target===bg&&performance.now()-t0>500)done(null)};
  });
 }
 const AD_BTN='display:block;width:100%;margin-top:9px;padding:13px;'+

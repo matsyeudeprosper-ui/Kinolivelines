@@ -43,5 +43,8 @@ const tapTest = async (cvId, listName) => {
 };
 console.log('MAIN ', await tapTest('cv', 'LVLHIT'));
 console.log('SPLIT', await tapTest('cvh', 'LVLHIT_H'));
+// the forming minute on the pullback panel: gold outline pixels must exist at the right of the last grey candle
+console.log('LIVE ', await evalJs(`(()=>{draw();const c=document.getElementById('cvh');const g=c.getContext('2d');const d=g.getImageData(0,0,c.width,c.height).data;let gold=0;
+ for(let i=0;i<d.length;i+=4){if(d[i]>200&&d[i+1]>170&&d[i+1]<215&&d[i+2]<120&&d[i+3]>200)gold++;}return JSON.stringify({goldPixels:gold,LT:!!(typeof LT!=='undefined'&&LT),xts:HT.xts.length});})()`));
 const errs = errors().map(e => String(e).split(TOKEN).join('<token>')); console.log('errors', errs.length, errs.map(e=>e.slice(0,220)).join(' || '));
 edge.kill(); process.exit(0);
