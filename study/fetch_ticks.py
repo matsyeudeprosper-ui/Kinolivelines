@@ -6,6 +6,7 @@ Files are local (gitignored); the manifest is committed.
     python fetch_ticks.py
 """
 import json, os, sys, time, hashlib
+FORWARD = "--forward" in sys.argv        # captured BEFORE the imports below (dev_dataset resets sys.argv)
 import numpy as np
 from datetime import datetime, timezone
 sys.path.insert(0, r"C:\Projects\KinoliveLines\study")
@@ -14,6 +15,11 @@ import MetaTrader5 as mt5
 LIVE = r"C:\Projects\KinoliveLines\live"; OUT = r"C:\Projects\KinoliveLines\study\ticks"; os.makedirs(OUT, exist_ok=True)
 sym, R, META = dev_dataset.load("b")
 T0, T1 = int(R["time"][0]), int(R["time"][-1]) + 60
+# --forward (pre-registered untouched period): from the development cutoff to now, into
+# study/ticks_forward/ with its own manifest; re-runnable daily, finished days are skipped,
+# the current (partial) day is refreshed. Read-only, no trading call.
+if FORWARD:
+    T0 = int(META["closed_bar_cutoff"]); T1 = int(time.time()); OUT = r"C:\Projects\KinoliveLines\study\ticks_forward"; os.makedirs(OUT, exist_ok=True)
 u = next(x for x in json.load(open(os.path.join(LIVE, "owl_nest_users.json"), encoding="utf-8")) if x["id"] == "std")
 if not mt5.initialize(path=u["terminal"]):
     raise SystemExit("MT5: %s" % (mt5.last_error(),))
@@ -24,7 +30,7 @@ man = json.load(open(man_path)) if os.path.exists(man_path) else {"symbol": sym,
 d = day0
 while d < T1:
     key = dt(d).strftime("%Y-%m-%d"); fn = os.path.join(OUT, "%s_%s.npz" % (sym, key))
-    if key in man["days"] and os.path.exists(fn):
+    if key in man["days"] and os.path.exists(fn) and man["days"][key].get("complete", True):
         d += 86400; continue
     parts = []
     for h in range(0, 24, 4):                     # 4-hour slices: the API returns at most ~a few hundred thousand per call
@@ -40,7 +46,8 @@ while d < T1:
         gaps = int(np.sum(np.diff(tm) > 5000))
         man["days"][key] = {"n": int(len(tm)), "first_msc": int(tm[0]), "last_msc": int(tm[-1]), "gaps_gt_5s": gaps,
                             "max_gap_s": round(float(np.max(np.diff(tm)) / 1000.0), 1) if len(tm) > 1 else None,
-                            "sha256": hashlib.sha256(open(fn, "rb").read()).hexdigest()[:16]}
+                            "sha256": hashlib.sha256(open(fn, "rb").read()).hexdigest()[:16],
+                            "complete": bool(d + 86400 <= T1 - 3600)}      # a day is complete once an hour past its end has elapsed
         print(key, man["days"][key], flush=True)
     else:
         man["days"][key] = {"n": 0}; print(key, "NO TICKS", flush=True)

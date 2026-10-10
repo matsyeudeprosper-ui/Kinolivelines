@@ -1,0 +1,28 @@
+{
+ "symbol": "BTCUSDm",
+ "dataset": "594a3275fb4a3c1d",
+ "window": [
+  1791558420,
+  1791609695
+ ],
+ "days": {
+  "2026-10-09": {
+   "n": 110281,
+   "first_msc": 1791504000569,
+   "last_msc": 1791590399028,
+   "gaps_gt_5s": 46,
+   "max_gap_s": 18.2,
+   "sha256": "1a60325ea8ec4a06",
+   "complete": true
+  },
+  "2026-10-10": {
+   "n": 18598,
+   "first_msc": 1791590400189,
+   "last_msc": 1791609691738,
+   "gaps_gt_5s": 15,
+   "max_gap_s": 31.5,
+   "sha256": "c41ca409988b3ae9",
+   "complete": false
+  }
+ }
+}

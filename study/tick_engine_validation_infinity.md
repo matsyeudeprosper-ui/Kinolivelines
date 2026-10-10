@@ -1,30 +1,23 @@
-# Tick engine - Infinity end-to-end validation (drag 0, 2026-10-10)
+# Tick engine - Infinity end-to-end validation (drag 0), regenerated on the final run
 
-Engine baseline arm vs the harness bar-level baseline (same manifest package, same dataset b):
+Engine baseline arm vs the harness bar-level baseline (same manifest package, dataset b).
 
 | | harness (bars) | engine (ticks) |
 |---|---|---|
 | trades | 194 | 202 |
-| net | 52.90 | 38.46 |
-| common signals traded by both | 177 | 177 |
+| net (engine: unrounded running balance) | 52.90 | 38.49 |
+| engine: sum of the per-trade P&L rounded to cents | | 38.46 |
+| common signals traded by both | 177 | |
 | harness-only / engine-only trades | 17 | 25 |
 | outcome agreement on common signals | 171 / 177 (96.6%) | |
-| per-trade pnl difference on common signals (engine - harness) | mean -0.19, median +0.10, sum -33.76 | |
+| per-trade P&L difference on common signals (engine - harness) | mean -0.191, median 0.100, sum -33.76 | |
+| of which the 6 outcome flips | -31.69 | |
 | common wins (95): mean diff | -0.147 | |
-| common losses (76): mean diff | +0.156 | |
-| entry price: engine fill vs harness bar close (signed, median) | 0.00 | |
+| common losses (76): mean diff | 0.156 | |
+| first path divergence (signal time) | 1787970120 (harness-only) | |
 
-Where the $14 gap comes from:
-* 6 of 177 common signals flip outcome. The live geometry sets the target from the executable
-  entry (ask for a buy): tp = fill + rr x |fill - stop|, so the target sits ~(1 + rr) x half-spread
-  higher than the harness's close-based target; a bar-level "high touched the target" win can be a
-  tick-level loss. These six account for ~-$32 of the -$33.76 on common signals.
-* The remaining per-trade differences are cents (1 s fill delay; bid/ask embedded instead of 7 pts fixed):
-  wins slightly smaller, losses slightly smaller, net ~-$2.
-* Path divergence (17 vs 25 different trades): first at signal 1787970120 (harness entered, engine
-  did not - its previous position was still open at the engine's later tick exit; the engine counted
-  142 signals skipped while a position was open vs the harness's bar-granular closes). Net effect of
-  the differing trades is small (the two sets roughly offset).
-Conclusion: the engine's baseline reproduces the harness path at 97% outcome agreement on common
-signals; the differences are the intended execution realism (ask-based geometry, tick exits, 1 s
-fills), not bookkeeping errors. The delayed and half-size arms share this execution model.
+The $0.0x between the engine's net and the sum of its rounded per-trade rows is cent rounding of the
+attribution (the running balance is unrounded internally; Reply 14 item 4). The gap to the harness is the
+intended execution realism: the live ask-based target geometry flips a few bar-level wins into tick-level
+losses, 1 s fills and the embedded bid/ask cost cents per trade, and the paths diverge where a tick exit
+lands later than a bar-granular one (signals skipped while the engine's position was still open).

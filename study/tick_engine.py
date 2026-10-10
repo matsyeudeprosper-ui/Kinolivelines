@@ -179,8 +179,17 @@ class Arm:
             else:
                 if (d == 1 and xq <= p["slp"]) or (d == -1 and xq >= p["slp"]): p["stop_printed"] = True
                 if (d == 1 and eq <= p["mid0"]) or (d == -1 and eq >= p["mid0"]):
-                    self.n["wait_s"].append(round((t_ms - (p["t"] + 60) * 1000) / 1000.0))
-                    self.order = {"kind": "main", "due": t_ms + EXEC_MS, "setup": p, "frozen": True}; self.n["orders"] += 1; self.pend = None
+                    # review 14, declared rule: the bot checks the attached stop BEFORE submitting -
+                    # a stop already breached on the trigger quote means no order (cancelled, counted);
+                    # a breach DURING the 1 s execution latency is the fill-quote rejection below
+                    if (d == 1 and p["slp"] >= xq) or (d == -1 and p["slp"] <= xq):
+                        self.n["cancel_stop_before_submission"] = self.n.get("cancel_stop_before_submission", 0) + 1
+                        self.events.append({"t": p["t"], "ev": "CANCEL_STOP_BREACHED", "at": t_ms, "exit_q": round(xq, 2), "sl": round(p["slp"], 2)}); self.pend = None
+                    else:
+                        if p.get("stop_printed"):
+                            self.n["trigger_after_earlier_stop_print"] = self.n.get("trigger_after_earlier_stop_print", 0) + 1
+                        self.n["wait_s"].append(round((t_ms - (p["t"] + 60) * 1000) / 1000.0))
+                        self.order = {"kind": "main", "due": t_ms + EXEC_MS, "setup": p, "frozen": True}; self.n["orders"] += 1; self.pend = None
         # orders due
         if self.order is not None and t_ms >= self.order["due"]:
             od = self.order; self.order = None; s = od["setup"]; d = s["d"]
@@ -205,9 +214,16 @@ class Arm:
             else:   # bullet order
                 p = self.pos
                 if p is not None and p["d"] == d:
-                    fill_px = a if d == 1 else b
-                    p["adds"].append({"e": float(fill_px), "lot": BLOT, "n": od["n"], "at": t_ms}); self.n["adds_filled"] += od["n"]
-                    self.events.append({"t": p["t"], "ev": "ADD_FILL", "at": t_ms, "n": od["n"], "e": round(fill_px, 2)})
+                    fill_px = a if d == 1 else b; xq = b if d == 1 else a
+                    # review 14: the add carries the parent's stop and target - the same executable
+                    # geometry as the MAIN at its fill quote; a parent already stopped / targeted on
+                    # this quote rejects the add (the parent closes on this same tick below)
+                    if (d == 1 and (p["sl"] >= xq or p["tp"] <= xq)) or (d == -1 and (p["sl"] <= xq or p["tp"] >= xq)):
+                        self.n["adds_rejected_geom"] = self.n.get("adds_rejected_geom", 0) + od["n"]
+                        self.events.append({"t": p["t"], "ev": "ADD_REJECT_GEOM", "at": t_ms, "n": od["n"], "exit_q": round(xq, 2), "sl": round(p["sl"], 2), "tp": round(p["tp"], 2)})
+                    else:
+                        p["adds"].append({"e": float(fill_px), "lot": BLOT, "n": od["n"], "at": t_ms}); self.n["adds_filled"] += od["n"]
+                        self.events.append({"t": p["t"], "ev": "ADD_FILL", "at": t_ms, "n": od["n"], "e": round(fill_px, 2)})
                 else:
                     self.n["adds_rejected"] += od["n"]
         # open position
@@ -219,13 +235,15 @@ class Arm:
                 if (d == 1 and eq <= p["mid"]) or (d == -1 and eq >= p["mid"]):
                     self.try_adds(k, TM, BID, ASK)
             xq = b if d == 1 else a
+            # review 14: marked equity at EVERY quote, the closing quote included, then the
+            # realised equity after the close and its costs
+            eq_now = self.run + d * (xq - p["e"]) * p["lot"] + sum(d * (xq - ad["e"]) * ad["lot"] * ad["n"] for ad in p["adds"])
+            self.eq_pk = max(self.eq_pk, eq_now); self.mtm_dd = max(self.mtm_dd, self.eq_pk - eq_now)
             hit_sl = (d == 1 and xq <= p["sl"]) or (d == -1 and xq >= p["sl"])
             hit_tp = (d == 1 and xq >= p["tp"]) or (d == -1 and xq <= p["tp"])
             if hit_sl or hit_tp:
                 self.close(p, xq, t_ms, bool(hit_tp and not hit_sl), both=bool(hit_tp and hit_sl))
-            else:
-                eq_now = self.run + d * (xq - p["e"]) * p["lot"] + sum(d * (xq - ad["e"]) * ad["lot"] * ad["n"] for ad in p["adds"])
-                self.eq_pk = max(self.eq_pk, eq_now); self.mtm_dd = max(self.mtm_dd, self.eq_pk - eq_now)
+                self.eq_pk = max(self.eq_pk, self.run); self.mtm_dd = max(self.mtm_dd, self.eq_pk - self.run)
         else:
             self.eq_pk = max(self.eq_pk, self.run); self.mtm_dd = max(self.mtm_dd, self.eq_pk - self.run)
 
@@ -278,6 +296,7 @@ class Arm:
         if self.pos is not None:
             p = self.pos; d = p["d"]; xq = BID[k] if d == 1 else ASK[k]
             mtm = d * (xq - p["e"]) * p["lot"] + sum(d * (xq - ad["e"]) * ad["lot"] * ad["n"] for ad in p["adds"]); self.n["open_at_end"] = 1
+            self.eq_pk = max(self.eq_pk, self.run + mtm); self.mtm_dd = max(self.mtm_dd, self.eq_pk - (self.run + mtm))
         if self.pend is not None: self.n["pending_at_end"] = 1
         if self.order is not None: self.n["order_at_end"] = 1
         return mtm
