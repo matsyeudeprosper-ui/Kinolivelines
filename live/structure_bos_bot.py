@@ -371,14 +371,19 @@ RECOV_BULLETS_ONLY = bool(_P.get("recov_bullets_only", False))
 # on every account (review/ENTRY_SCREENS, pb_direction_filter) - deployed
 # on the owner's decision and measured forward. Off on the reference account.
 PB_DIR_GATE = bool(_P.get("pb_dir_gate", False))
-_PB_CACHE = {"t": 0.0, "v": 0}
+_PB_CACHE = {"t": 0.0, "v": (0, 0, None)}
 
 
-def pb_trend_now():
-    """trend of the pullback chart (1 / -1 / 0) from the last 8000 closed M1 bars"""
+def pb_state_now():
+    """the pullback chart's (trend, pending CHoCH direction, CHoCH price) from
+    the last 8000 closed M1 bars, cached a minute. CHoCH direction is 0 when
+    none is pending; the price is that of the last CHoCH mark on that chart.
+    Owner 2026-10-10 (urgent #2): a pending CHoCH opens the OTHER direction
+    beyond its level - a bearish pullback structure takes sells, and once a
+    bullish CHoCH is pending, buys are allowed above the CHoCH price."""
     if time.time() - _PB_CACHE["t"] < 60:
         return _PB_CACHE["v"]
-    v = 0
+    v = (0, 0, None)
     try:
         from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv
         _r = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 8000)
@@ -387,13 +392,23 @@ def pb_trend_now():
             _d, _m, _tr, *_rest = _fe(_k, brk_out=_bk)
             if _tr:
                 _d = [x for x in _d if x[2] == _tr]
-            _pb = _pv(_k, _d, _m, _bk)
-            v = int((_pb or {}).get("trend") or 0)
+            _pb = _pv(_k, _d, _m, _bk) or {}
+            _t = int(_pb.get("trend") or 0); _c = int(_pb.get("choch") or 0)
+            _c = _c if (_c and _c != _t) else 0
+            _lvl = None
+            if _c:
+                _cm = [x for x in (_pb.get("marks") or []) if len(x) > 2 and x[2] == "choch"]
+                _lvl = float(_cm[-1][1]) if _cm else None
+            v = (_t, _c, _lvl)
     except Exception as _e:
         say(f"reculs: lecture impossible ({type(_e).__name__}) - pas de filtre")
-        v = 0
+        v = (0, 0, None)
     _PB_CACHE.update(t=time.time(), v=v)
     return v
+
+
+def pb_trend_now():
+    return pb_state_now()[0]
 
 
 DAY_CAP_WAIVED = _P.get("day_cap_waived", True)
@@ -1291,11 +1306,23 @@ def main():
             return False
         # Owner 2026-10-10 (urgent): the pullback chart's direction decides
         if PB_DIR_GATE:
-            _pbt = pb_trend_now()
+            _pbt, _pbc, _pbl = pb_state_now()
             if _pbt in (1, -1) and d != _pbt:
-                say(f"{kind} refuse: sens contraire au graphique des reculs "
-                    f"(reculs {'haussiers' if _pbt == 1 else 'baissiers'})")
-                return False
+                # the pending CHoCH's own direction, beyond its level, is open
+                _tk0 = mt5.symbol_info_tick(SYMBOL)
+                _px0 = (_tk0.ask if d == 1 else _tk0.bid) if _tk0 else None
+                if (_pbc == d and _pbl is not None and _px0 is not None
+                        and d * (_px0 - _pbl) > 0):
+                    say(f"{kind} accepte malgre les reculs "
+                        f"{'haussiers' if _pbt == 1 else 'baissiers'}: CHoCH "
+                        f"{'haussier' if d == 1 else 'baissier'} en attente et "
+                        f"prix {_px0:.2f} au-dela de {_pbl:.2f}")
+                else:
+                    say(f"{kind} refuse: sens contraire au graphique des reculs "
+                        f"(reculs {'haussiers' if _pbt == 1 else 'baissiers'}"
+                        + (f", CHoCH en attente mais prix pas encore au-dela de {_pbl:.2f}"
+                           if (_pbc == d and _pbl is not None) else "") + ")")
+                    return False
         _cj0 = weather()          # captured once, reused for the gate
         _wg = weather_gate(need_int=internal, cj=_cj0)
         if _wg:
