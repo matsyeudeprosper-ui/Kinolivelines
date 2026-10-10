@@ -283,6 +283,31 @@
      ]
     }
    ]
+  },
+  {
+   "id": "cont_day",
+   "title_fr": "Un trade de plus dans le même sens, pris entre 8 h et minuit UTC",
+   "title_en": "One more trade the same way, taken between 08:00 and midnight UTC",
+   "by": "chercheur",
+   "date": "2026-10-10",
+   "status": "open",
+   "why_fr": "On croyait que les trades de plus dans le même sens étaient le point fort du robot. En fait c'est surtout la nuit : 17 trades de nuit, 14 gagnés, +41 $ ; le jour, 22 trades, à peine un sur deux, -16 $, et la deuxième moitié est bien pire que la première. Cette pile dira si c'est l'heure qui fait tout le gain.",
+   "why_en": "We thought one more trade the same way was the robot's strong point. In fact it is mostly the night: 17 night trades, 14 won, +$41; by day, 22 trades, barely one in two, -$16, and the second half is much worse than the first. This pile will tell whether the hour makes the whole gain.",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "BOS"
+    },
+    {
+     "field": "hour",
+     "op": "between",
+     "value": [
+      8,
+      23
+     ]
+    }
+   ]
   }
  ]
 }

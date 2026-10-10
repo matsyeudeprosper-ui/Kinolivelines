@@ -1,6 +1,6 @@
 {
- "date": "2026-10-09",
- "t": "2026-10-09T09:24:34+00:00",
+ "date": "2026-10-10",
+ "t": "2026-10-10T09:10:40+00:00",
  "ok": true,
  "passed": 7,
  "total": 7,
@@ -17,7 +17,7 @@
    "fr": "Le robot du labo est surveillé dès le premier jour",
    "en": "The lab’s robot is watched from day one",
    "ok": true,
-   "detail": "watch={'since': '2026-10-09', 'id': 'reh_win', 'labo': {'net': 0.0, 'worst': 0.0, 'trades': 0}, 'real': {'net': 1.8, 'worst': 0.0, 'trades': 1}, 'need': 30, 'need_real': 15, 'ready': False, 'status': "
+   "detail": "watch={'since': '2026-10-10', 'id': 'reh_win', 'labo': {'net': 0.0, 'worst': 0.0, 'trades': 0}, 'real': {'net': 1.8, 'worst': 0.0, 'trades': 1}, 'need': 30, 'need_real': 15, 'ready': False, 'status': "
   },
   {
    "id": "revert",
@@ -31,7 +31,7 @@
    "fr": "Devant le vrai robot après 30 trades : confirmée, dit une seule fois",
    "en": "Ahead of the real robot after 30 trades: confirmed, said once",
    "ok": true,
-   "detail": "confirmed=2026-10-09 rr=0.9 second_pushes=[]"
+   "detail": "confirmed=2026-10-10 rr=0.9 second_pushes=[]"
   },
   {
    "id": "missing_dial",
@@ -45,7 +45,7 @@
    "fr": "Frein tiré : une idée qui gagne attend, rien n’entre",
    "en": "Brake on: a winner waits, nothing goes in",
    "ok": true,
-   "detail": "status=running waiting=2026-10-09 deployed=None second_pushes=[]"
+   "detail": "status=running waiting=2026-10-10 deployed=None second_pushes=[]"
   },
   {
    "id": "brake_out",

@@ -2091,7 +2091,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-09",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-10"
   },
   {
    "id": "ext400_wait30",
@@ -2122,7 +2124,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-09",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-10"
   },
   {
    "id": "wait45",
@@ -2153,7 +2157,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-09",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-10"
   },
   {
    "id": "skip_day_late",
@@ -2197,7 +2203,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-09",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-10"
   },
   {
    "id": "skip21_23_wait30",
@@ -2232,6 +2240,158 @@
    },
    "by": "chercheur",
    "date": "2026-10-09",
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-10"
+  },
+  {
+   "id": "ext400_wait20_fh075",
+   "family": "rythme",
+   "title_fr": "Heure agitée, pause de 20 minutes, mise réduite aux changements de sens nerveux",
+   "title_en": "Busy hour, 20-minute pause, smaller stake on nervous changes of direction",
+   "why_fr": "Trois freins ensemble : pas d'entrée après une heure qui a bougé de 400 points, 20 minutes de pause après chaque trade, et un quart de mise en moins sur un changement de sens quand le marché est nerveux. Mieux sur les deux moitiés avec et sans plafond : +11 $ et +36 $, trou 39 et 21 au lieu de 57.",
+   "why_en": "Three brakes together: no entry after an hour that moved 400 points, a 20-minute pause after each trade, and a quarter less stake on a change of direction in a nervous market. Better on both halves with and without a daily cap: +$11 and +$36, hole 39 and 21 instead of 57.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "wait_min": 20,
+    "ext_pts": 400,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 102.8,
+    "worst": 38.9,
+    "h1": 2.1,
+    "h2": 10.2,
+    "base_net": 91.35,
+    "base_worst": 57.09
+   },
+   "by": "chercheur",
+   "date": "2026-10-10",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_wait25_fh075",
+   "family": "rythme",
+   "title_fr": "Même trio de freins, avec 25 minutes de pause",
+   "title_en": "The same three brakes, with a 25-minute pause",
+   "why_fr": "Le même trio, avec une pause un peu plus longue. C'est le meilleur réglage de la nuit : mieux sur les deux moitiés avec et sans plafond, +22 $ sans plafond (trou 38 au lieu de 57) et +79 $ avec plafond (trou 14 au lieu de 57).",
+   "why_en": "The same three, with a slightly longer pause. Tonight's best setting: better on both halves with and without a daily cap, +$22 uncapped (hole 38 instead of 57) and +$79 capped (hole 14 instead of 57).",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "wait_min": 25,
+    "ext_pts": 400,
+    "flip_hot_size": 0.75
+   },
+   "pretest": {
+    "net": 116.2,
+    "worst": 38.0,
+    "h1": 3.0,
+    "h2": 21.0,
+    "base_net": 93.95,
+    "base_worst": 57.09
+   },
+   "by": "chercheur",
+   "date": "2026-10-10",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_wait20_fh06",
+   "family": "argent",
+   "title_fr": "Même trio, mise réduite de 40 % aux changements de sens nerveux",
+   "title_en": "The same three, 40 % less stake on nervous changes of direction",
+   "why_fr": "Les vrais changements de sens pris dans un marché nerveux n'en gagnent que 9 sur 29 (-47 $). Miser 40 % de moins au lieu de 25 % : mieux sur les deux moitiés avec et sans plafond, +17 $ et +68 $, trou 36 et 19 au lieu de 57.",
+   "why_en": "Real changes of direction taken in a nervous market win only 9 of 29 (-$47). Staking 40 % less instead of 25 %: better on both halves with and without a daily cap, +$17 and +$68, hole 36 and 19 instead of 57.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "wait_min": 20,
+    "ext_pts": 400,
+    "flip_hot_size": 0.6
+   },
+   "pretest": {
+    "net": 110.9,
+    "worst": 35.5,
+    "h1": 1.7,
+    "h2": 8.7,
+    "base_net": 93.95,
+    "base_worst": 57.09
+   },
+   "by": "chercheur",
+   "date": "2026-10-10",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_wait20_nosun",
+   "family": "rythme",
+   "title_fr": "Heure agitée, pause de 20 minutes, et pas de trade le dimanche",
+   "title_en": "Busy hour, 20-minute pause, and no trading on Sunday",
+   "why_fr": "Le dimanche reste un mauvais jour. Ajouté au duo heure agitée et pause : avec plafond, mieux sur les deux moitiés, +53 $, trou 15 au lieu de 57 ; sans plafond, un peu mieux (+10 $, la première moitié perd 6 $).",
+   "why_en": "Sunday stays a bad day. Added to the busy-hour and pause pair: capped, better on both halves, +$53, hole 15 instead of 57; uncapped, a little better (+$10, the first half loses $6).",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "wait_min": 20,
+    "ext_pts": 400,
+    "skip_wd": [
+     6
+    ]
+   },
+   "pretest": {
+    "net": 101.8,
+    "worst": 43.6,
+    "h1": -6.0,
+    "h2": 7.0,
+    "base_net": 91.35,
+    "base_worst": 57.09
+   },
+   "by": "chercheur",
+   "date": "2026-10-10",
+   "status": "pending"
+  },
+  {
+   "id": "ext400_noday",
+   "family": "meteo",
+   "title_fr": "Ne pas trader de 8 h à 16 h UTC, ni après une heure agitée",
+   "title_en": "No trading from 08:00 to 16:00 UTC, nor after a busy hour",
+   "why_fr": "Idée hors des sentiers : sur 8 vrais comptes sur 9, la journée (8 h-16 h) perd et la nuit gagne. Couper la journée et les heures agitées réduit le plus gros trou à 22 au lieu de 57, avec et sans plafond, et gagne +8 $ et +40 $. Mais la première moitié perd : un peu mieux seulement.",
+   "why_en": "Out-of-the-box idea: on 8 real accounts in 9, the day (08-16) loses and the night wins. Cutting the day and the busy hours brings the biggest hole to 22 instead of 57, with and without a daily cap, and gains +$8 and +$40. But the first half loses: only a little better.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 400,
+    "skip_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ]
+   },
+   "pretest": {
+    "net": 99.1,
+    "worst": 21.8,
+    "h1": -40.3,
+    "h2": 53.0,
+    "base_net": 91.35,
+    "base_worst": 57.09
+   },
+   "by": "chercheur",
+   "date": "2026-10-10",
    "status": "pending"
   }
  ]
