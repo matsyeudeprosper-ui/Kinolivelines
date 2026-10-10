@@ -3306,15 +3306,15 @@ function pbRule(){
  const det=!!(FULL&&p),lvl=(det&&last!==null)?Math.round(last):null,lt=lvl!==null?' ('+lvl+')':'';
  const side=det?(((t===1||t===-1)&&last!==null&&px)?((t*(px-last)>0)?'ok':'wrong'):null):(D.pb_side||null);
  const F=det?{up:'Tendance de fond en hausse : seuls les achats au-dessus de sa dernière cassure'+lt+' sont pris.',down:'Tendance de fond en baisse : seules les ventes sous sa dernière cassure'+lt+' sont prises.',
-   wrong:'Le prix est revenu du mauvais côté de la dernière cassure de la tendance de fond'+lt+' : entrées en pause jusqu’à ce qu’il la reprenne ou que la tendance de fond se retourne.',none:'Pas de tendance de fond claire : pas de filtre de sens.'}
+   wrong:'Le prix est revenu du mauvais côté de la dernière cassure de la tendance de fond'+lt+' : entrées en pause jusqu’à ce qu’il la reprenne ou que la tendance de fond se retourne.',none:'Pas de tendance de fond claire : entrées en pause jusqu’à ce qu’elle se dessine.'}
   :{up:'Tendance de fond en hausse : le robot ne prend que des achats, dans son sens.',down:'Tendance de fond en baisse : le robot ne prend que des ventes, dans son sens.',
-   wrong:'Le prix est revenu contre la tendance de fond : le robot met ses entrées en pause en attendant.',none:'Pas de tendance de fond claire pour l’instant.'};
+   wrong:'Le prix est revenu contre la tendance de fond : le robot met ses entrées en pause en attendant.',none:'Pas de tendance de fond claire pour l’instant : le robot attend.'};
  const E=det?{up:'Background trend up: only buys above its last break'+lt+' are taken.',down:'Background trend down: only sells below its last break'+lt+' are taken.',
-   wrong:'Price is back on the wrong side of the background trend’s last break'+lt+': entries paused until it reclaims the level or the background trend turns.',none:'No clear background trend: no direction filter.'}
+   wrong:'Price is back on the wrong side of the background trend’s last break'+lt+': entries paused until it reclaims the level or the background trend turns.',none:'No clear background trend: entries paused until one forms.'}
   :{up:'Background trend up: the robot only buys, with the trend.',down:'Background trend down: the robot only sells, with the trend.',
-   wrong:'Price has come back against the background trend: the robot pauses its entries for now.',none:'No clear background trend right now.'};
+   wrong:'Price has come back against the background trend: the robot pauses its entries for now.',none:'No clear background trend right now: the robot waits.'};
  const W=CL?E:F,nm=CL?'background trend':'tendance de fond';
- if(t!==1&&t!==-1)return {sent:' '+W.none,chip:[nm,'—','var(--muted)']};
+ if(t!==1&&t!==-1)return {sent:' '+W.none,chip:[nm,CL?'⏸ waiting':'⏸ en attente','var(--warn)']};
  if(side==='wrong')return {sent:' '+W.wrong,chip:[nm,CL?'⏸ paused':'⏸ en pause','var(--warn)']};
  if(t===1)return {sent:' '+W.up,chip:[nm,lvl!==null?(CL?'▲ buys above ':'▲ achats au-dessus de ')+lvl:(CL?'▲ buys only':'▲ achats seulement'),'#8df0bb']};
  return {sent:' '+W.down,chip:[nm,lvl!==null?(CL?'▼ sells below ':'▼ ventes sous ')+lvl:(CL?'▼ sells only':'▼ ventes seulement'),'#ff8c8c']};

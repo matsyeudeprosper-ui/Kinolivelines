@@ -1323,6 +1323,12 @@ def main():
                 if _why == "paused_wrong_side":
                     say(f"{kind} refuse: reculs {_sens} mais prix {_px0:.2f} du mauvais "
                         f"cote du dernier BOS des reculs {_pbb:.2f} - continuation en pause")
+                elif _why == "no_structure":
+                    say(f"{kind} refuse: pas de tendance sur le graphique des reculs - en pause "
+                        f"jusqu'a une structure valable")
+                elif _why == "no_last_bos":
+                    say(f"{kind} refuse: pas de dernier BOS sur le graphique des reculs - en pause "
+                        f"jusqu'a une structure valable")
                 else:
                     say(f"{kind} refuse: sens contraire au graphique des reculs (reculs {_sens})")
                 return False
