@@ -385,14 +385,15 @@ def pb_state_now():
         return _PB_CACHE["v"]
     v = (0, 0, None)
     try:
-        from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv
+        from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv, PB_CHAIN as _pbc
         _r = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 8000)
         if _r is not None and len(_r) > 200:
             _k = _fb(_r); _bk = []
             _d, _m, _tr, *_rest = _fe(_k, brk_out=_bk)
             if _tr:
                 _d = [x for x in _d if x[2] == _tr]
-            _pb = _pv(_k, _d, _m, _bk) or {}
+            # owner 2026-10-10: the sticky chain the feed keeps (read-only here)
+            _pb = _pv(_k, _d, _m, _bk, sticky=_pbc, write=False) or {}
             _t = int(_pb.get("trend") or 0); _c = int(_pb.get("choch") or 0)
             _c = _c if (_c and _c != _t) else 0
             _lvl = None
