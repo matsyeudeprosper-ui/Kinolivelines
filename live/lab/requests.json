@@ -195,7 +195,17 @@
    "why_fr": "Attendre 30 minutes aide le compte avec plafond (+45 $ sur 42 jours, +39 $ sur 69, trou de 22 au lieu de 30) mais coûte au compte sans plafond (-28 $ et -63 $). Aujourd'hui on ne peut pas donner l'attente à l'un sans l'imposer à l'autre.",
    "why_en": "Waiting 30 minutes helps the capped account (+$45 over 42 days, +$39 over 69, hole 22 instead of 30) but costs the uncapped one (-$28 and -$63). Today we cannot give the wait to one without forcing it on the other.",
    "date": "2026-10-08",
-   "status": "open"
+   "status": "built",
+   "key": "cap_wait",
+   "built_note_fr": "On peut maintenant demander au robot d'attendre quelques minutes après chaque trade seulement sur un compte avec plafond de gain par jour, un compte sans plafond continuant comme avant. Rien ne change tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The robot can now be asked to wait a few minutes after each trade only on an account with a daily cap, while an account without a cap carries on as before. Nothing changes until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--cap-wait",
+    "a": 15,
+    "b": 30
+   },
+   "built_date": "2026-10-10",
+   "built_commit": "2da94b2"
   },
   {
    "id": "flip_loss_size",
@@ -217,6 +227,28 @@
    "why_fr": "Sur tous les vrais comptes, les trades pris de 1 h à 8 h UTC gagnent 7 fois sur 10 ; tous les autres créneaux perdent. Le test voit la même chose depuis deux semaines. Mais refuser les autres heures coûte cher sur 42 jours (les trades de rattrapage disparaissent). Je mesurerais 0,5 et 0,75 de 8 h à minuit sur les comptes avec et sans plafond ; j'attends un trou plus petit sans perdre la nuit.",
    "why_en": "On every real account, trades taken from 01:00 to 08:00 UTC win 7 times in 10; every other slot loses. The test sees the same for two weeks. But refusing the other hours costs a lot over 42 days (the catch-up trades vanish). I would measure 0.5 and 0.75 from 08:00 to midnight on the accounts with and without a daily cap; I expect a smaller hole without losing the night.",
    "date": "2026-10-09",
+   "status": "open"
+  },
+  {
+   "id": "pb_dir_gate_test",
+   "date": "2026-10-10",
+   "title_fr": "Reproduire dans le test le filtre « sens du repli » des comptes réels",
+   "title_en": "Copy into the test the 'pullback direction' filter of the real accounts",
+   "what_fr": "Depuis aujourd'hui, les comptes réels ne prennent un trade que s'il va dans le sens de la tendance du graphique des reculs. Le test ne le sait pas. Demande : un réglage oui/non dans le test qui refuse exactement les mêmes entrées que le robot, et le même contrôle dans la vérification robot contre test. Par défaut non : rien ne change.",
+   "what_en": "Since today the real accounts take a trade only when it goes the way of the pullback chart's trend. The test does not know it. Ask: a yes/no setting in the test that refuses exactly the same entries as the robot, and the same check in the robot-versus-test check. Default no: nothing changes.",
+   "why_fr": "Sans cela, chaque nuit je compare le test à des comptes qui ne jouent plus le même jeu, et l'écart entre le test et les vrais trades va grandir sans qu'on sache pourquoi. Je veux aussi mesurer ce filtre sur 42 et 69 jours, avec et sans plafond.",
+   "why_en": "Without it, every night I compare the test with accounts that no longer play the same game, and the gap between the test and the real trades will grow with no known cause. I also want to measure this filter over 42 and 69 days, with and without a daily cap.",
+   "status": "open"
+  },
+  {
+   "id": "hour_brake_adaptive",
+   "date": "2026-10-10",
+   "title_fr": "Couper une tranche d'heures seulement quand elle perd depuis deux semaines",
+   "title_en": "Pause a block of hours only while it has been losing for two weeks",
+   "what_fr": "Couper la journée en quatre tranches UTC : 1-8 h, 8-16 h, 16-21 h, 21-1 h. Avant chaque entrée, additionner les résultats des trades du robot (dans le test) entrés dans la même tranche pendant les X derniers jours ; si la somme est négative et qu'il y a au moins 5 trades, pas d'entrée. X de 7 à 28 jours, 0 = arrêt (par défaut, rien ne change).",
+   "what_en": "Split the day into four UTC blocks: 1-8, 8-16, 16-21, 21-1. Before each entry, add up the results of the robot's own trades (in the test) entered in the same block over the last X days; if the sum is negative and there are at least 5 trades, no entry. X from 7 to 28 days, 0 = off (default, nothing changes).",
+   "why_fr": "Couper la journée et la fin de soirée gagne beaucoup depuis le 24 septembre (8 vrais comptes sur 9 d'accord) mais perdait avant : chaque coupure fixe est meilleure sur une moitié et pire sur l'autre. Un frein qui suit les heures qui perdent en ce moment répondrait sans choisir les heures à la main.",
+   "why_en": "Cutting the day and the late evening gains a lot since 24 September (8 real accounts in 9 agree) but lost before: every fixed cut is better on one half and worse on the other. A brake that follows the hours losing right now would answer without picking hours by hand.",
    "status": "open"
   }
  ]
