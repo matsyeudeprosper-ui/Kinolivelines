@@ -1110,6 +1110,17 @@ def htf_of(uid):
     return out
 
 
+def cap_waiver_until():
+    """2026-10-10 (owner): the Nid's "continue today" exception - the epoch
+    until which accounts past their profit target keep trading, 0 if none."""
+    try:
+        _w = json.load(open(os.path.join(DIR, "owl_day_cap_waiver.json")))
+        _u = float(_w.get("until") or 0)
+        return _u if time.time() < _u else 0.0
+    except Exception:
+        return 0.0
+
+
 def day_state(uid):
     """Has this account finished its day, and where is it against its own
     target? (owner 2026-10-01: "all accounts done for the day?")
@@ -1131,9 +1142,12 @@ def day_state(uid):
     cap = st.get("cap_today")
     cap = float(cap) if isinstance(cap, (int, float)) else None
     pnl = float(st.get("day_pnl") or 0.0)
+    _reached = bool(st.get("day_capped") or (cap is not None and cap > 0 and pnl >= cap))
+    _wu = cap_waiver_until()
     return {"pnl": round(pnl, 2), "cap": cap, "n": st.get("day_n") or 0,
-            "done": bool(st.get("day_capped")
-                         or (cap is not None and cap > 0 and pnl >= cap)),
+            # the owner's exception keeps a "done" account trading: not done
+            "done": bool(_reached and not _wu), "target_reached": _reached,
+            "cap_waived_until": _wu or None,
             "killed": bool(st.get("killed")),
             "debt": round(float(st.get("debt") or 0.0), 2)}
 
@@ -5978,8 +5992,16 @@ function dayDone(d){
  const en=LANG()==='en';const n=new Date();const nxt=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate()+1,0,0,0));
  const hm=String(nxt.getHours()).padStart(2,'0')+':'+String(nxt.getMinutes()).padStart(2,'0');
  const pnl=lg.day_pnl_bot||0;
+ // 2026-10-10 (owner): the "continue today" exception is on - the target is
+ // reached but the robot carries on until the hour the exception names
+ const wu=+lg.cap_waived_until||0;
+ if(wu>Date.now()/1000){const w=new Date(wu*1000);const wl=String(w.getHours()).padStart(2,'0')+':'+String(w.getMinutes()).padStart(2,'0');
+  const wu2=String(w.getUTCHours()).padStart(2,'0')+':'+String(w.getUTCMinutes()).padStart(2,'0');
+  document.getElementById('daydone-t').textContent=(en?'\u2713 Day target reached \u00b7 ':'\u2713 Objectif du jour atteint \u00b7 ')+(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
+  document.getElementById('daydone-s').textContent=en?('Today\u2019s exception: the robot carries on until '+wu2+' UTC ('+wl+' on your phone).'):('Exception d\u2019aujourd\u2019hui : le robot continue jusqu\u2019\u00e0 '+wu2+' UTC ('+wl+' chez vous).');}
+ else{
  document.getElementById('daydone-t').textContent=(en?'\u2713 Day complete \u00b7 ':'\u2713 Journ\u00e9e termin\u00e9e \u00b7 ')+(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
- document.getElementById('daydone-s').textContent=en?('The robot resumes tomorrow at 00:00 UTC ('+hm+' on your phone).'):('Le robot reprend demain \u00e0 00:00 UTC ('+hm+' chez vous).');
+ document.getElementById('daydone-s').textContent=en?('The robot resumes tomorrow at 00:00 UTC ('+hm+' on your phone).'):('Le robot reprend demain \u00e0 00:00 UTC ('+hm+' chez vous).');}
  el.style.display='block';
  const dtc=document.getElementById('daytargetchip');if(dtc)dtc.style.display='none';
 }
@@ -10891,6 +10913,11 @@ def user_stats(u, admin_override=False):
                     d["ledger"]["cap_today"] = float(_ct)
                 d["ledger"]["day_pnl_bot"] = float(_bs.get("day_pnl") or 0.0)
                 d["ledger"]["day_capped"] = bool(_bs.get("day_capped"))
+                # 2026-10-10 (owner): the "continue today" exception, so the
+                # home card does not say the day is over while the robot trades
+                _wu = cap_waiver_until()
+                if _wu:
+                    d["ledger"]["cap_waived_until"] = _wu
                 d["bot_killed"] = bool(_bs.get("killed"))
                 d["ledger"]["scale_opt_out"] = bool(u.get("scale_opt_out"))
                 try:
