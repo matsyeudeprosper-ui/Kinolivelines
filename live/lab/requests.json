@@ -216,7 +216,15 @@
    "why_fr": "Chez les vrais trades, ces changements de sens gagnent 8 fois sur 23 et perdent 37 $, sur les deux moitiés ; après un gain, ils perdent 9 $ seulement. Je mesurerais 0,75 et 0,5 sur les deux comptes ; j'attends un trou plus petit sans perdre d'argent.",
    "why_en": "In the real trades, these changes of direction win 8 times in 23 and lose $37, on both halves; after a win they lose only $9. I would measure 0.75 and 0.5 on both accounts; I expect a smaller hole without losing money.",
    "date": "2026-10-08",
-   "status": "open"
+   "status": "built",
+   "key": "flip_loss_size",
+   "built_note_fr": "On peut maintenant demander au robot de miser moins sur un trade de changement de sens quand le trade d'avant a perdu, le trade restant toujours pris. Rien ne change tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "The robot can now be asked to stake less on a change-of-direction trade when the trade before it lost, the trade still being taken. Nothing changes until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--flip-loss-size",
+    "a": 1.0,
+    "b": 0.5
+   }
   },
   {
    "id": "hour_size",

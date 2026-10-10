@@ -64,6 +64,10 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # (the journal's movement_count = 1, main structure only). The
             # trade is still taken. 1.0 = off.
             "first_move_size": 1.0,
+            # 2026-10-10 (chercheur): flip_loss_size = lot multiplier on a
+            # change-of-direction trade only, when the previous closed trade
+            # lost. The trade is still taken. 1.0 = off.
+            "flip_loss_size": 1.0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -1071,6 +1075,8 @@ def simulate(R, spread, cfg):
             lot *= float(c["flip_hot_size"])
         if not i_fire and i >= 1440 and mv2 == 1:
             lot *= float(c["first_move_size"])
+        if flip and streak > 0:
+            lot *= float(c["flip_loss_size"])
         eq_v = False
         eq_mult = 1.0
         eq_req = 1.0
@@ -1418,6 +1424,8 @@ def simulate_real(T, R, spread, cfg):
             lot *= float(c["flip_hot_size"])
         if not e.get("internal") and e.get("move") == 1:
             lot *= float(c["first_move_size"])
+        if e["flip"] and streak > 0:
+            lot *= float(c["flip_loss_size"])
         tp =ent + d * rr * dist
         mid = ent - d * dist / 2.0
         hit_mid = False
@@ -1487,6 +1495,7 @@ def main():
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--flip-hot-size", type=float, help="lot multiplier on a change-of-direction trade when nervosity >= 1.0")
     ap.add_argument("--first-move-size", type=float, help="lot multiplier when the entry is the first big move counted in the last 2 hours")
+    ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
     ap.add_argument("--nerv-gate", action="store_true")
     ap.add_argument("--nerv-floor", type=float, help="no entry when the market's pace at entry is under X (1.0 = usual)")
     ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
@@ -1528,6 +1537,7 @@ def main():
     if a.size_hot is not None: over["size_hot"] = a.size_hot
     if a.flip_hot_size is not None: over["flip_hot_size"] = a.flip_hot_size
     if a.first_move_size is not None: over["first_move_size"] = a.first_move_size
+    if a.flip_loss_size is not None: over["flip_loss_size"] = a.flip_loss_size
     if a.nerv_gate: over["nerv_gate"] = True
     if a.nerv_floor is not None: over["nerv_floor"] = a.nerv_floor
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
