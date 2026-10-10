@@ -477,6 +477,37 @@ cv.addEventListener('pointerup',e=>{
  lvlTap(y);});
 // ---- 2026-09-28 batch 32: the ruler (two taps) and a past day ----
 const LVLHIT=[];
+// Owner 2026-10-10: ONE colour per level TYPE on both charts (direction is
+// carried by the trend badge, the carets and the event marks, never by a
+// line's colour any more), and NO text on the lines: each level ends in a
+// small ring at the right edge; a tap on the line or the ring opens its card
+// (name, price, distance from price, age, state, plain-language meaning).
+const LC={bos:'#4fd8c8',flip:'#ff9f43',prot:'#e8c55a',choch:'#ff7eb6',last:'#5ba4ff',int:'#9d8cff',sl:'#ff5c5c',tp:'#2ecc71',entry:'#8fc6ff',h1:'#7ea6ff'};
+const LVLHIT_H=[];   // the split panel's levels, same shape as LVLHIT
+const LVNAME={bos:['La prochaine cassure','The next break'],flip:['La bascule','The flip'],prot:['Le point prot\u00e9g\u00e9','The protected point'],
+ choch:['Le dernier changement','The last turn'],last:['La derni\u00e8re cassure','The last break'],
+ 'int-bos':['Petite structure : prochaine cassure','Small structure: next break'],'int-inv':['Petite structure : point prot\u00e9g\u00e9','Small structure: protected point'],
+ 'int-flip':['Petite structure : bascule','Small structure: flip'],sl:['Le stop','The stop'],tp:['L\u2019objectif','The target'],entry:['L\u2019entr\u00e9e','The entry'],
+ h1o:['Ouverture H1 pr\u00e9c\u00e9dente','Previous H1 open'],h1c:['Cl\u00f4ture H1 pr\u00e9c\u00e9dente','Previous H1 close'],
+ 'echo-bos':['Reculs : prochaine cassure','Pullbacks: next break'],'echo-prot':['Reculs : point prot\u00e9g\u00e9','Pullbacks: protected point'],'echo-last':['Reculs : derni\u00e8re cassure','Pullbacks: last break']};
+function lvReg(list,y,k,v,col,extra,t){list.push({y:y,k:k,v:v,col:col,extra:extra||'',t:t||null});}
+function lvRing(g,x,y,col){g.save();g.setLineDash([]);g.globalAlpha=1;g.shadowBlur=0;g.fillStyle='#0b1118';g.beginPath();g.arc(x,y,4.4,0,6.3);g.fill();
+ g.strokeStyle=col;g.lineWidth=1.6;g.beginPath();g.arc(x,y,3.2,0,6.3);g.stroke();g.fillStyle=col;g.beginPath();g.arc(x,y,1.2,0,6.3);g.fill();g.restore();}
+function lvAge(t){if(!t)return '';const sec=Math.max(0,Math.floor(Date.now()/1000-t)),h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);
+ return (CL?'since ':'depuis ')+(h?h+' h ':'')+m+' min';}
+function lvCard(h){
+ const nm=LVNAME[h.k]||[h.k,h.k],title=CL?nm[1]:nm[0],px0=(D&&D.px)?D.px:null,v=h.v,rows=[];
+ if(v!=null&&isFinite(v)){rows.push((CL?'Level ':'Niveau ')+'<b>'+Number(v).toFixed(0)+'</b>');
+  if(px0){const dd=v-px0;rows.push((CL?'Price is ':'Le prix est ')+'<b>'+Math.abs(dd).toFixed(0)+' pts '+(dd>0?(CL?'below':'en dessous'):(CL?'above':'au-dessus'))+'</b>');}}
+ if(h.t)rows.push(lvAge(h.t));
+ if(h.extra)rows.push('<b>'+h.extra+'</b>');
+ const doc=(CL?LVLDOC_EN:LVLDOC)[({bos:'next-bos',last:'last-bos',choch:'last-choch','echo-bos':'next-bos','echo-last':'last-bos'})[h.k]||h.k];
+ adSheet('<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="width:14px;height:14px;border-radius:50%;background:'+h.col+';box-shadow:0 0 10px '+h.col+'"></span>'+
+  '<span style="font-size:1.05rem;font-weight:800;color:#e8eef4">'+title+'</span></div>'+
+  '<div style="color:#cfe3f5;font-size:.92rem;line-height:1.7">'+rows.join('<br>')+'</div>'+
+  (doc?'<div style="color:#8fa6bd;font-size:.84rem;line-height:1.55;margin-top:10px">'+doc[1]+'</div>':'')+
+  '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');}
+function lvlTapIn(list,y){let best=null,bd=1e9;list.forEach(h=>{const d=Math.abs(h.y-y);if(d<bd){bd=d;best=h;}});if(!best||bd>16)return false;lvCard(best);return true;}
 // UX 5 (owner 2026-10-01): the chart is full of words a member has never
 // met. Tapping one now explains it in the plainest language that is still
 // true. Short on purpose: this is a tooltip, not a lesson.
@@ -490,18 +521,7 @@ const LVLDOC_EN={
  'last-bos':['The last break','The last level price actually went through. It often becomes support afterwards, which is why it stays on the chart.'],
  'last-choch':['The last turn','Where the trend last reversed. That is where the current move began.'],
  'no-inner':['No small structure','Inside the big move, the market has not formed a smaller structure right now. The robot no longer trades it anyway.']};
-function lvlTap(y){
- let best=null,bd=1e9;
- LVLHIT.forEach(h=>{const d=Math.abs(h.y-y);if(d<bd){bd=d;best=h;}});
- if(!best||bd>16)return false;
- const T=(CL?LVLDOC_EN:LVLDOC)[best.k];
- if(!T)return false;
- adSheet('<div style="font-size:1.05rem;font-weight:800;color:#e8eef4;margin-bottom:6px">'+T[0]+'</div>'+
-  '<div style="color:#8fa6bd;font-size:.86rem;line-height:1.55">'+T[1]+'</div>'+
-  '<button style="display:block;width:100%;margin-top:18px;padding:12px;border-radius:12px;'+
-  'font-weight:800;font-size:.85rem;border:1px solid #24405c;background:#12202e;color:#cfe3f5" '+
-  'onclick="window._adDone(1)">'+(CL?'Got it':'Compris')+'</button>');
- return true;}
+function lvlTap(y){return lvlTapIn(LVLHIT,y);}
 const RULER={on:false,a:null,b:null};
 function xToT(x){const xts=window._xts||[],xo=window._xoft||{};let bt=null,bd=1e9;for(const t of xts){const d=Math.abs((xo[t]||0)-x);if(d<bd){bd=d;bt=t;}}return bt;}
 function yToP(y){if(!SCALE)return null;return SCALE.hi-(y-SCALE.top)/SCALE.plot*(SCALE.hi-SCALE.lo);}
@@ -640,7 +660,7 @@ function htDraw(){
  const plot=H-TOP-BOT;
  const py=v=>TOP+(hi-v)/(hi-lo)*plot;
  const bw=Math.max(2,Math.min(12,cw*0.62));
- HT.xoft={};HT.xts=[];HT.scale={hi:hi,lo:lo,top:TOP,plot:plot,py:py,cw:cw,W:W};
+ HT.xoft={};HT.xts=[];HT.scale={hi:hi,lo:lo,top:TOP,plot:plot,py:py,cw:cw,W:W};LVLHIT_H.length=0;
  const atLive=HT.off<0.5&&!HT.vo&&HT.vz===1&&HT.hz===1;
  const bkb=document.getElementById('htfback');
  if(bkb)bkb.style.display=atLive?'none':'block';
@@ -677,104 +697,78 @@ function htDraw(){
   g.strokeStyle=col;g.globalAlpha=.55;g.lineWidth=1;g.setLineDash([3,3]);
   g.beginPath();g.moveTo(xx,y);g.lineTo(W-PAD+2,y);g.stroke();
   g.setLineDash([]);g.globalAlpha=1;
-  if(mi<LBL)return;
-  const lab=(m[2]==='choch'?'CHoCH':'BOS');
-  g.font='800 8.5px Inter, system-ui, sans-serif';const tw=g.measureText(lab).width+10;
-  g.fillStyle='rgba(10,17,28,.9)';g.beginPath();g.roundRect(xx-tw/2,y-14,tw,12,6);g.fill();
-  g.fillStyle=col;g.textAlign='center';g.fillText(lab,xx,y-5);});
+  // Owner 2026-10-10: no words on the marks either - a circle is a CHoCH, an
+  // arrow is a BOS, as on the minute chart
+  });
  // MAIN STRUCTURE (owner 2026-09-30: "I still don't see the main structure
  // and internal (structure if any) on the higher timeframe"). Same reading
  // as the minute panel: the level it must not lose, and the level it is
  // aiming at, each with its price on it.
  const inView=y=>y>TOP+5&&y<TOP+plot-5;
- const pill=(y,txt,col,fill)=>{
-  g.font='800 8.5px Inter, system-ui, sans-serif';g.textAlign='left';
-  const w=g.measureText(txt).width+10;
-  const x=Math.max(2,W-PAD-w-3);
-  g.fillStyle=fill?col:'rgba(10,17,28,.88)';
-  g.beginPath();g.roundRect(x,y-7,w,14,7);g.fill();
-  if(!fill){g.strokeStyle=col;g.lineWidth=1;g.stroke();}
-  g.fillStyle=fill?'#0b1118':col;g.fillText(txt,x+5,y+3);};
+ // Owner 2026-10-10: no text on the panel either - the same ring, the same
+ // card (txt is the card's state line)
+ const pill=(y,txt,col,fill,kind,v,t)=>{lvRing(g,W-PAD-6,y,col);lvReg(LVLHIT_H,y,kind||'bos',v,col,txt,t);};
  if(d.invalid!=null){const y=py(d.invalid);
-  if(inView(y)){const col=d.trend===1?'#ff5c5c':'#2ecc71';
+  if(inView(y)){const col=LC.prot;
    const xv=htX(d.invalid_t);
    g.strokeStyle=col;g.globalAlpha=.45;g.lineWidth=1;g.setLineDash([6,4]);
    g.beginPath();g.moveTo(xv!==undefined?xv:0,y);g.lineTo(W-PAD-3,y);g.stroke();
    g.setLineDash([]);g.globalAlpha=1;
    if(xv!==undefined){g.fillStyle=col;g.beginPath();g.arc(xv,y,3,0,6.3);g.fill();}
-   pill(y,'CHoCH '+Math.round(d.invalid),col,false);}}
+   pill(y,'',col,false,'prot',d.invalid,d.invalid_t);}}
  if(d.flip_bos!=null&&Math.abs(py(d.flip_bos)-py(d.invalid!=null?d.invalid:-1e9))>11){
   const y=py(d.flip_bos);
-  if(inView(y)){const col='#e8c55a',xf=htX(d.flip_bos_t);
+  if(inView(y)){const col=LC.flip,xf=htX(d.flip_bos_t);
    g.strokeStyle=col;g.globalAlpha=.40;g.lineWidth=1;g.setLineDash([1,6]);
    g.beginPath();g.moveTo(xf!==undefined?xf:0,y);g.lineTo(W-PAD-3,y);g.stroke();
    g.setLineDash([]);g.globalAlpha=1;
-   pill(y,(d.flip_bos_dir===1?'\u25b2 ':'\u25bc ')+(CL?'flip ':'bascule ')+Math.round(d.flip_bos),col,false);}}
+   pill(y,(d.flip_bos_dir===1?'\u25b2':'\u25bc'),col,false,'flip',d.flip_bos,d.flip_bos_t);}}
  if(d.next_bos){const y=py(d.next_bos);
-  if(inView(y)){const up=d.trend===1,col=up?'#4fd8c8':'#ff9678';
+  if(inView(y)){const up=d.trend===1,col=LC.bos;
    const xb=htX(d.next_bos_t);
    g.strokeStyle=col;g.globalAlpha=.9;g.lineWidth=1.4;g.setLineDash([1,4]);
    g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-3,y);g.stroke();
    g.setLineDash([]);g.globalAlpha=1;
    if(xb!==undefined){g.fillStyle=col;g.beginPath();g.arc(xb,y,3,0,6.3);g.fill();}
-   pill(y,'BOS '+Math.round(d.next_bos),col,true);}}
+   pill(y,(up?'\u25b2':'\u25bc'),col,true,'bos',d.next_bos,d.next_bos_t);}}
  // the BOS this timeframe last crossed, kept as a level for the same
  // reason as on the minute panel: it is where price leaned last.
  {const lc=(d.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
-  if(lc){const y=py(lc[1]),c4='#e8c55a';
+  if(lc){const y=py(lc[1]),c4=LC.choch;
    if(inView(y)){const xc=htX(lc[0]);
     g.strokeStyle=c4;g.globalAlpha=.22;g.lineWidth=1;g.setLineDash([2,6]);
     g.beginPath();g.moveTo(xc!==undefined?xc:0,y);g.lineTo(W-PAD-3,y);g.stroke();
     g.setLineDash([]);
     if(xc!==undefined){g.globalAlpha=.7;g.fillStyle=c4;
      g.beginPath();g.arc(xc,y,2.2,0,6.3);g.fill();}
-    g.globalAlpha=1;
-    g.font='700 8px Inter, system-ui, sans-serif';g.textAlign='left';
-    const t5=(CL?'last CHoCH ':'dernier CHoCH ')+Math.round(lc[1]);
-    const w5=g.measureText(t5).width+9;
-    g.fillStyle='rgba(10,17,28,.86)';
-    g.beginPath();g.roundRect(3,y-6.5,w5,13,6);g.fill();
-    g.strokeStyle=c4;g.globalAlpha=.4;g.lineWidth=1;g.stroke();
-    g.globalAlpha=.9;g.fillStyle=c4;g.fillText(t5,7.5,y+2.6);g.globalAlpha=1;}}}
+    g.globalAlpha=1;pill(y,'',c4,false,'choch',lc[1],lc[0]);}}}
  {const _bk=(d.breaks||[]).slice(-1)[0];
   const lb=_bk?[_bk[0],_bk[2],'bos',_bk[1]]
              :(d.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
   if(lb){const y=py(lb[1]);
    if(!inView(y)){
     // docked at the edge it came from, with its price and how far away
-    const up2=lb[3]===1,c3=up2?'#2ecc71':'#ff5c5c';
+    const up2=lb[3]===1,c3=LC.last;
     // clear of the two things that live in those corners: the "pts a
     // faire" chip at the top left and the timeframe tag at the bottom left
     const yd=(y<TOP)?TOP+26:TOP+plot-34;
-    const t4=(y<TOP?'\u25b2 ':'\u25bc ')+(CL?'last BOS ':'dernier BOS ')+Math.round(lb[1]);
-    g.font='700 8px Inter, system-ui, sans-serif';g.textAlign='left';
-    const w4=g.measureText(t4).width+9;
-    g.globalAlpha=.85;
-    g.fillStyle='rgba(10,17,28,.86)';
-    g.beginPath();g.roundRect(3,yd-6.5,w4,13,6);g.fill();
-    g.strokeStyle=c3;g.globalAlpha=.45;g.lineWidth=1;g.stroke();
-    g.globalAlpha=.9;g.fillStyle=c3;g.fillText(t4,7.5,yd+2.6);
-    g.globalAlpha=1;}
-   else{const up=lb[3]===1,c2=up?'#2ecc71':'#ff5c5c',xb=htX(lb[0]);
+    // a small triangle at the edge it sits beyond, no text; the card says so
+    g.globalAlpha=.85;g.fillStyle=c3;g.beginPath();
+    g.moveTo(W-PAD-6,yd+(y<TOP?-5:5));g.lineTo(W-PAD-11,yd+(y<TOP?3:-3));g.lineTo(W-PAD-1,yd+(y<TOP?3:-3));g.closePath();g.fill();
+    g.globalAlpha=1;lvReg(LVLHIT_H,yd,'last',lb[1],c3,(up2?'\u25b2 ':'\u25bc ')+(CL?'off screen':'hors \u00e9cran'),lb[0]);}
+   else{const up=lb[3]===1,c2=LC.last,xb=htX(lb[0]);
     g.strokeStyle=c2;g.globalAlpha=.30;g.lineWidth=1;g.setLineDash([7,5]);
     g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();
     g.setLineDash([]);
     if(xb!==undefined){g.globalAlpha=.85;g.fillStyle=c2;g.fillRect(xb-2.5,y-2.5,5,5);}
-    g.globalAlpha=1;
-    g.font='700 8px Inter, system-ui, sans-serif';g.textAlign='left';
-    const t3=(CL?'last BOS ':'dernier BOS ')+Math.round(lb[1]);
-    const w3=g.measureText(t3).width+9;
-    g.fillStyle='rgba(10,17,28,.86)';
-    g.beginPath();g.roundRect(3,y-6.5,w3,13,6);g.fill();
-    g.strokeStyle=c2;g.globalAlpha=.5;g.lineWidth=1;g.stroke();
-    g.globalAlpha=1;g.fillStyle=c2;g.fillText(t3,7.5,y+2.6);}}}
+    g.globalAlpha=1;pill(y,(up?'\u25b2':'\u25bc'),c2,false,'last',lb[1],lb[0]);}}}
  // INTERNAL STRUCTURE: the smaller structure building inside the main one.
  // Violet, dimmer and smaller, so the hierarchy is obvious at a glance. A
  // level landing on the same row as a main one is skipped - the bigger
  // picture wins, the same rule the minute panel follows.
  const hides=(v,m)=>(v!=null&&m!=null&&Math.abs(py(v)-py(m))<11);
  if(INTMK()&&d.int_trend){
-  const ic=d.int_trend===1?'#9d8cff':'#c58cff';
+  const ic=LC.int;
   (d.int_dots||[]).slice(-8).forEach(q=>{const x=htX(q[0]);if(x===undefined)return;
    const y=py(q[1]);if(!inView(y))return;
    g.globalAlpha=.8;g.fillStyle=ic;
@@ -797,14 +791,14 @@ function htDraw(){
     g.strokeStyle=ic;g.globalAlpha=.40;g.lineWidth=1;g.setLineDash([6,4]);
     g.beginPath();g.moveTo(xv!==undefined?xv:0,y);g.lineTo(W-PAD-14,y);g.stroke();
     g.setLineDash([]);g.globalAlpha=1;
-    if(xv!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xv,y,2.6,0,6.3);g.fill();}}}
+    if(xv!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xv,y,2.6,0,6.3);g.fill();}pill(y,'',ic,false,'int-inv',d.int_inv,d.int_inv_t);}}
   if(d.int_bos!=null&&!hides(d.int_bos,d.next_bos)){const y=py(d.int_bos);
    if(inView(y)){const xb=htX(d.int_bos_t);
     g.strokeStyle=ic;g.globalAlpha=.7;g.lineWidth=1;g.setLineDash([2,4]);
     g.beginPath();g.moveTo(xb!==undefined?xb:0,y);g.lineTo(W-PAD-14,y);g.stroke();
     g.setLineDash([]);g.globalAlpha=1;
     if(xb!==undefined){g.fillStyle=ic;g.beginPath();g.arc(xb,y,2.6,0,6.3);g.fill();}
-    pill(y,(d.int_bos_dir===1?'\u25b2 ':'\u25bc ')+'int BOS '+Math.round(d.int_bos),ic,false);}}
+    pill(y,(d.int_bos_dir===1?'\u25b2':'\u25bc'),ic,false,'int-bos',d.int_bos,d.int_bos_t);}}
  }
  // Owner 2026-10-10: the open trade's entry / SL / TP are NOT drawn on this
  // panel any more - with the minute chart showing them already, the second
@@ -821,16 +815,9 @@ function htDraw(){
    const w=g.measureText(px0).width+10;
    g.fillStyle='#e8eef4';g.beginPath();g.roundRect(W-PAD-w-3,y-7,w,14,7);g.fill();
    g.fillStyle='#0b1118';g.fillText(px0,W-PAD-w+2,y+3);}
-  if(d.next_bos){const left=Math.round(Math.abs(d.next_bos-D.px));
-   const up=d.trend===1;
-   g.font='700 9px Inter, system-ui, sans-serif';g.textAlign='left';
-   const t2=(CL?'':'')+left+(CL?' pts to go':' pts \u00e0 faire');
-   const w2=g.measureText(t2).width+12;
-   g.fillStyle='rgba(10,17,28,.86)';
-   g.beginPath();g.roundRect(6,TOP+4,w2,15,7);g.fill();
-   g.strokeStyle=up?'rgba(79,216,200,.45)':'rgba(255,150,120,.45)';
-   g.lineWidth=1;g.stroke();
-   g.fillStyle=up?'#4fd8c8':'#ff9678';g.fillText(t2,12,TOP+15);}}
+  // Owner 2026-10-10: the 'pts a faire' chip is gone - the distance is in
+  // the next-break card a tap opens
+  }
  // where the minute chart is looking, so the two panels stay tied together
  const xw=window._xts||[];
  if(xw.length&&HT.xts.length){
@@ -889,7 +876,7 @@ function htX(t){if(!HT.xts.length)return undefined;
  c.addEventListener('pointerdown',e=>{
   if(pz)return;
   const r=c.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
-  if(x>c.clientWidth-AX){vzs={y:y,z:HT.vz};c.setPointerCapture(e.pointerId);e.preventDefault();return;}
+  if(x>c.clientWidth-AX&&!LVLHIT_H.some(h=>Math.abs(h.y-y)<=10)){vzs={y:y,z:HT.vz};c.setPointerCapture(e.pointerId);e.preventDefault();return;}
   dg={x:e.clientX,y:e.clientY,off:HT.off,vo:HT.vo,v:0,px:e.clientX,t:performance.now()};
   tap={x:e.clientX,y:e.clientY,t:performance.now()};
   c.setPointerCapture(e.pointerId);e.preventDefault();});
@@ -921,6 +908,7 @@ function htX(t){if(!HT.xts.length)return undefined;
   const nt=performance.now();
   if(nt-lastTap<420){lastTap=0;htHome();return;}   // double tap = back to live
   lastTap=nt;
+  if(!RULER.on){const r0=c.getBoundingClientRect();if(lvlTapIn(LVLHIT_H,e.clientY-r0.top))return;}
   if(!RULER.on||!HT.scale)return;
   const r=c.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;
   let bt=null,bd=1e18;for(const k of HT.xts){const dd=Math.abs(HT.xoft[k]-x);if(dd<bd){bd=dd;bt=k;}}
@@ -1241,27 +1229,22 @@ function draw(){
  const lvlY=(y0,key)=>{
   const fits=(y)=>!usedY.some(u=>Math.abs(u-y)<17);
   const y=Math.max(12,Math.min(Hh-12,y0));
-  if(fits(y)){usedY.push(y);if(key)LVLHIT.push({y:y,k:key});return y;}
+  if(fits(y)){usedY.push(y);return y;}
   for(let k=1;k<=8;k++){
    const dn=y+k*17,up=y-k*17;
-   if(dn<=Hh-12&&fits(dn)){usedY.push(dn);if(key)LVLHIT.push({y:dn,k:key});return dn;}
-   if(up>=12&&fits(up)){usedY.push(up);if(key)LVLHIT.push({y:up,k:key});return up;}}
-  usedY.push(y);if(key)LVLHIT.push({y:y,k:key});return y;};
+   if(dn<=Hh-12&&fits(dn)){usedY.push(dn);return dn;}
+   if(up>=12&&fits(up)){usedY.push(up);return up;}}
+  usedY.push(y);return y;};
  // a memory label that repeats a live level is not drawn at all: the
  // live one already says that price, and two pills saying the same
  // thing is worse than one.
  const dupLvl=(v,...o)=>o.some(
   x=>(x!==null&&x!==undefined&&Math.abs(px(v)-px(x))<11));
- const tag=(y0,txt,col,bg)=>{
-  let y=Math.max(12,Math.min(Hh-12,y0));
-  while(usedY.some(u=>Math.abs(u-y)<17))y+=17;
-  if(y>Hh-12)y=Math.max(12,Math.min(...usedY)-17);
-  usedY.push(y);
-  ctx.font='bold 9px system-ui';
-  const w=ctx.measureText(txt).width+10;
-  ctx.fillStyle=bg;
-  ctx.beginPath();ctx.roundRect(W-w-4,y-8,w,16,8);ctx.fill();
-  ctx.fillStyle=col;ctx.fillText(txt,W-w+1,y+3.5);};
+ // Owner 2026-10-10: no text on the lines - a ring at the right edge and
+ // the words in the card a tap opens (txt becomes the card's state line)
+ const tag=(y0,txt,col,bg,kind,v,t)=>{
+  const y=Math.max(12,Math.min(Hh-12,y0));
+  lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,kind||'entry',v,col,txt,t);};
  // 2026-09-27 (owner): in manual mode the chart is a signal service - the
  // anticipated break, when its pullback is confirmed, is named on the chart.
  if(!FULL&&window._MANUAL){
@@ -1490,13 +1473,11 @@ function draw(){
   // off-screen side: up at the top, down at the bottom.
   ctx.moveTo(W-30,y+(top?-5:5));ctx.lineTo(W-22,y+(top?4:-4));
   ctx.lineTo(W-38,y+(top?4:-4));ctx.closePath();ctx.fill();
-  ctx.font='bold 9px system-ui';
-  const t=lab+' '+PF(v);
-  const w2=ctx.measureText(t).width+10;
-  ctx.fillStyle='rgba(8,14,22,.85)';
-  ctx.beginPath();ctx.roundRect(W-w2-42,y-8,w2,16,8);ctx.fill();
-  ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
-  ctx.fillStyle=col;ctx.fillText(t,W-w2-37,y+3.5);
+  // Owner 2026-10-10: no text - the kind is read from the old label so every
+  // caller keeps working; the card says it is off screen
+  const kind=/int flip/.test(lab)?'int-flip':/int BOS/.test(lab)?'int-bos':/int CHoCH/.test(lab)?'int-inv':/bascule|flip/.test(lab)?'flip'
+   :(/CHoCH/.test(lab)&&/dernier|last/.test(lab))?'choch':/CHoCH/.test(lab)?'prot':(/BOS/.test(lab)&&/dernier|last/.test(lab))?'last':/BOS/.test(lab)?'bos':/SL/.test(lab)?'sl':/TP/.test(lab)?'tp':lab;
+  lvReg(LVLHIT,y,kind,v,col,(top?'▲ ':'▼ ')+(CL?'off screen':'hors écran'),null);
   ctx.restore();};
  // --- FLIP LINE: where a close kills the trend. Taken from the
  //     published level, not from the dot list: that dot scrolls out of
@@ -1509,22 +1490,14 @@ function draw(){
  if(!D.invalid&&D.choch&&(D.trend===1||D.trend===-1)){
   const cm=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
   if(cm&&cm[1]>lo&&cm[1]<hi){
-   const y=px(cm[1]),col=D.trend===1?'#4fd8c8':'#ffb86b';
+   const y=px(cm[1]),col=LC.choch;
    ctx.save();ctx.strokeStyle=col;ctx.globalAlpha=.28;ctx.lineWidth=1;
    ctx.setLineDash([3,7]);
    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-   ctx.setLineDash([]);ctx.globalAlpha=.7;ctx.font='bold 8px system-ui';
-   // Owner 2026-10-10 (less clutter): this line IS the last CHoCH, so the
-   // "dernier CHoCH" label below is skipped while this one shows - one
-   // label, both facts (which CHoCH, and that its dot is consumed)
-   const t2=(CL?'last CHoCH ':'dernier CHoCH ')+cm[1].toFixed(0)+(CL?' · consumed':' · consommé');
-   const w2=ctx.measureText(t2).width+8;
-   ctx.fillStyle='rgba(8,14,22,.8)';
-   ctx.beginPath();ctx.roundRect(8,y-7,w2,14,7);ctx.fill();
-   ctx.strokeStyle=col;ctx.stroke();ctx.fillStyle=col;
-   ctx.fillText(t2,12,y+3);ctx.restore();}}
+   ctx.setLineDash([]);lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,'choch',cm[1],col,CL?'its dot is consumed':'son point est consommé',cm[0]);
+   ctx.restore();}}
  if(D.invalid&&(D.trend===1||D.trend===-1)){
-  const col=D.trend===1?'#4fd8c8':'#ffb86b';
+  const col=LC.prot;
   if(D.invalid>hi||D.invalid<lo){edgeMark(D.invalid,col,'CHoCH');}
   else{
    const y=px(D.invalid);
@@ -1542,12 +1515,12 @@ function draw(){
    ctx.beginPath();
    ctx.moveTo(W-14,y-5);ctx.lineTo(W-9,y);
    ctx.lineTo(W-14,y+5);ctx.lineTo(W-19,y);
-   ctx.closePath();ctx.fill();}
+   ctx.closePath();ctx.fill();lvReg(LVLHIT,y,'prot',D.invalid,col,'',D.invalid_t);}
  }
  // an open position's stop or target, when the fit pushes it off screen
  (D.trades||[]).forEach(t=>{
-  if(t[3]>0&&(t[3]>hi||t[3]<lo))edgeMark(t[3],'#ff5c5c','SL');
-  if(t[4]>0&&(t[4]>hi||t[4]<lo))edgeMark(t[4],'#2ecc71','TP');});
+  if(t[3]>0&&(t[3]>hi||t[3]<lo))edgeMark(t[3],LC.sl,'SL');
+  if(t[4]>0&&(t[4]>hi||t[4]<lo))edgeMark(t[4],LC.tp,'TP');});
  // --- glowing dots with birth bloom ---
  (D.dots||[]).forEach(d=>{
   const x=xoft[d[0]];
@@ -1577,7 +1550,7 @@ function draw(){
   const man=t[6]==='m';
   const yE=px(t[2]);
   const pcol=t[5]>=0?'rgba(46,204,113,':'rgba(255,92,92,';
-  ctx.strokeStyle=man?'rgba(232,197,90,.9)':'rgba(127,179,224,.85)';
+  ctx.strokeStyle=LC.entry;
   ctx.setLineDash([7,4]);
   ctx.shadowColor=pcol+'1)';ctx.shadowBlur=7;
   ctx.beginPath();ctx.moveTo(0,yE);ctx.lineTo(W,yE);ctx.stroke();
@@ -1590,10 +1563,9 @@ function draw(){
   else{ctx.moveTo(8,yE+2+s);ctx.lineTo(8-s,yE+2-s*0.6);
    ctx.lineTo(8+s,yE+2-s*0.6);}
   ctx.closePath();ctx.fill();
-  tag(yE,(man?'✋ ':'\u{1F916} ')+
-   (t[0]===1?'▲ ':'▼ ')+t[1].toFixed(2)+
-   (t[5]>=0?'  +$':'  -$')+Math.abs(t[5]).toFixed(2),
-   '#cfe3f5',man?'rgba(232,197,90,.28)':'rgba(127,179,224,.25)');
+  tag(yE,(t[0]===1?(CL?'Buy ':'Achat '):(CL?'Sell ':'Vente '))+t[1].toFixed(2)+
+   (t[5]>=0?'  +$':'  -$')+Math.abs(t[5]).toFixed(2)+(man?(CL?' · manual':' · manuel'):''),
+   LC.entry,null,'entry',t[2]);
  });
  // SL/TP levels drawn ONCE per unique price (several positions
  // often share them - no duplicate lines or clipped double tags)
@@ -1609,10 +1581,7 @@ function draw(){
   const isS=k==='S';
   ctx.strokeStyle=isS?'rgba(255,92,92,.75)':'rgba(46,204,113,.75)';
   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
-  tag(y,(isS?'SL ':'TP ')+v.toFixed(0)+'  '+
-   (isS?'−$':'+$')+amt.toFixed(2),
-   isS?'#ffd7d7':'#d2f5e0',
-   isS?'rgba(255,92,92,.3)':'rgba(46,204,113,.3)');
+  tag(y,(isS?'−$':'+$')+amt.toFixed(2),isS?LC.sl:LC.tp,null,isS?'sl':'tp',v);
  });
  // --- live candle + price line ---
  const dot=document.getElementById('livedot');
@@ -1651,15 +1620,11 @@ function draw(){
    const y=ys[k];
    if(y<4||y>Hh-4)return;
    ctx.save();
-   ctx.strokeStyle='rgba(126,166,255,.75)';ctx.lineWidth=1;
+   ctx.strokeStyle=LC.h1;ctx.globalAlpha=.75;ctx.lineWidth=1;
    ctx.setLineDash(it[2]);
-   ctx.beginPath();ctx.moveTo(0,Math.round(y)+0.5);ctx.lineTo(W-lw-6,Math.round(y)+0.5);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(0,Math.round(y)+0.5);ctx.lineTo(W-16,Math.round(y)+0.5);ctx.stroke();
    ctx.restore();
-   const yl=Math.max(10,Math.min(Hh-10,ly[k]));
-   ctx.fillStyle='rgba(126,166,255,.22)';
-   ctx.beginPath();ctx.roundRect(W-lw-4,yl-7,lw,14,7);ctx.fill();
-   ctx.fillStyle='#bcd0ff';
-   ctx.fillText(it[1]+' '+it[0].toFixed(0),W-lw+1,yl+3.5);
+   lvRing(ctx,W-9,y,LC.h1);lvReg(LVLHIT,y,k===0?'h1o':'h1c',it[0],LC.h1,'',null);
   });
  }
  if(MT){
@@ -1788,19 +1753,9 @@ function draw(){
  if(INTMK()&&!D.int_trend&&D.px&&D.next_bos&&_mOther!=null){
   const room=Math.min(Math.abs(D.px-D.next_bos),Math.abs(D.px-_mOther));
   const mrange=Math.abs(_mOther-D.next_bos);
-  if(intRoom(room,mrange)){
-   ctx.save();
-   ctx.font='bold 9px system-ui';
-   const t0='pas de petite structure';
-   const w0=ctx.measureText(t0).width+14;
-   const y0=lvlY(px(D.px)-34,'no-inner');
-   if(y0>TOPP+10&&y0<TOPP+PLOT-10){
-    ctx.fillStyle='rgba(8,14,22,.72)';
-    ctx.beginPath();ctx.roundRect(W-w0-26,y0-8,w0,16,8);ctx.fill();
-    ctx.strokeStyle='rgba(185,140,255,.28)';ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle='rgba(185,140,255,.62)';
-    ctx.fillText(t0,W-w0-19,y0+3.5);}
-   ctx.restore();}
+  // Owner 2026-10-10: no text on the chart - the 'no small structure'
+  // chip is gone; nothing is drawn for that state
+  if(intRoom(room,mrange)){}
  }
  if(INTMK()&&D.int_trend&&D.int_bos&&D.px&&D.next_bos&&_mOther!=null){
   // Owner 2026-09-18: "it says int BOS but I can't see the main structure".
@@ -1815,7 +1770,7 @@ function draw(){
   // a share of the MAIN range, so scrolling or zooming cannot make the
   // internal structure blink in and out (2026-09-16)
   if(intRoom(room,mainRange)){
-   const ic=D.int_trend===1?'#9d8cff':'#c58cff';
+   const ic=LC.int;
    (D.int_dots||[]).slice(-6).forEach(dd=>{
     const x=xnear(dd[0]);if(x===undefined)return;
     const y=px(dd[1]);if(y<TOPP||y>TOPP+PLOT)return;
@@ -1877,7 +1832,7 @@ function draw(){
      ctx.beginPath();
      ctx.moveTo(W-30,yv-4);ctx.lineTo(W-26,yv);
      ctx.lineTo(W-30,yv+4);ctx.lineTo(W-34,yv);
-     ctx.closePath();ctx.fill();
+     ctx.closePath();ctx.fill();lvReg(LVLHIT,yv,'int-inv',D.int_inv,ic,'',D.int_inv_t);
      ctx.shadowColor=ic;ctx.shadowBlur=6;
      ctx.beginPath();ctx.arc(xv,yv,3.2,0,6.3);ctx.fill();
      ctx.shadowBlur=0;ctx.restore();}}
@@ -1902,14 +1857,7 @@ function draw(){
      ctx.setLineDash([]);ctx.globalAlpha=.6;
      ctx.fillStyle=ic;
      ctx.beginPath();ctx.arc(xf,yf,2.4,0,6.3);ctx.fill();
-     ctx.globalAlpha=1;ctx.font='bold 8px system-ui';
-     const tf=fa+'int flip '+D.int_flip_bos.toFixed(0);
-     const wf=ctx.measureText(tf).width+8;
-     const bf=Math.max(2,Math.min(xf-wf-8,W-wf-24));
-     ctx.fillStyle='rgba(8,14,22,.8)';
-     ctx.beginPath();ctx.roundRect(bf,yf-7,wf,14,7);ctx.fill();
-     ctx.strokeStyle=ic;ctx.globalAlpha=.6;ctx.lineWidth=1;ctx.stroke();
-     ctx.globalAlpha=1;ctx.fillStyle=ic;ctx.fillText(tf,bf+4,yf+3);
+     ctx.globalAlpha=1;lvRing(ctx,W-9,yf,ic);lvReg(LVLHIT,yf,'int-flip',D.int_flip_bos,ic,fa.trim(),D.int_flip_bos_t);
      ctx.restore();}}
    const ibd=D.int_bos_dir||D.int_trend;
    if(!D.int_bos_ready||bosDup){}
@@ -1926,18 +1874,10 @@ function draw(){
     ctx.globalAlpha=.85;ctx.setLineDash([]);
     ctx.beginPath();ctx.arc(xa,yi,2.8,0,6.3);ctx.fill();   // its origin
     ctx.globalAlpha=1;
-    ctx.font='bold 8px system-ui';
-    // the arrow is the direction of the break being anticipated. After a
-    // CHoCH that is the confirming direction, so it already points the new
-    // way instead of the dying trend's (owner 2026-09-16).
-    const ia=(ibd===1?'▲ ':(ibd===-1?'▼ ':''));
-    const t=ia+'int BOS '+D.int_bos.toFixed(0);
-    const w3=ctx.measureText(t).width+8;
-    const b3=Math.max(2,Math.min(xa-w3-8,W-w3-24));
-    ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(b3,yi-7,w3,14,7);ctx.fill();
-    ctx.strokeStyle=ic;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=ic;ctx.fillText(t,b3+4,yi+3);
+    // the arrow is the direction of the break being anticipated (after a
+    // CHoCH, the confirming direction) - it goes in the card now
+    const ia=(ibd===1?'▲':(ibd===-1?'▼':''));
+    lvRing(ctx,W-9,yi,ic);lvReg(LVLHIT,yi,'int-bos',D.int_bos,ic,ia,D.int_bos_t);
     ctx.restore();}}}
  // where the next BOS would fire, and where the trend would break.
  // Deliberately small: a stub over the recent candles plus an edge tag,
@@ -1952,7 +1892,7 @@ function draw(){
  // only the internal one was. After a CHoCH it is the line that decides
  // whether the trend actually turns, so it is the one to watch.
  if(D.flip_bos&&D.flip_bos!==D.next_bos){
-  const fd=D.flip_bos_dir||-D.trend,fcol=fd===1?'#2ecc71':'#ff5c5c';
+  const fd=D.flip_bos_dir||-D.trend,fcol=LC.flip;
   const farm=D.flip_bos_ready!==false,yf=px(D.flip_bos);
   if(D.flip_bos>hi||D.flip_bos<lo){
    if(farm)edgeMark(D.flip_bos,fcol,(fd===1?'▲ ':'▼ ')+'bascule');}
@@ -1965,28 +1905,19 @@ function draw(){
    const xo=(D.flip_bos_t!==undefined&&xoft[D.flip_bos_t]!==undefined)
     ?xoft[D.flip_bos_t]:null;
    const xf=xo!==null?xo:0;
-   ctx.font='bold 8px system-ui';
-   // Owner 2026-10-10 (less clutter): "bascule" already says it is the flip
-   // BOS; the arrow carries the direction
-   const tf=(fd===1?'▲ ':'▼ ')+(CL?'flip ':'bascule ')+PF(D.flip_bos)+
-    (farm?'':(CL?' · waits a pullback':' · attend un repli'));
-   const wf=ctx.measureText(tf).width+8;
    ctx.save();ctx.strokeStyle=fcol;ctx.globalAlpha=farm?.6:.28;
    ctx.lineWidth=1;ctx.setLineDash(farm?[1,4]:[1,7]);
-   ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W-wf-8,yf);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(xf,yf);ctx.lineTo(W-16,yf);ctx.stroke();
    ctx.setLineDash([]);
    if(farm&&xo!==null){ctx.fillStyle=fcol;ctx.globalAlpha=.85;
     ctx.beginPath();ctx.arc(xo,yf,3,0,6.3);ctx.fill();}
-   ctx.globalAlpha=farm?1:.75;
-   ctx.fillStyle='rgba(8,14,22,.8)';
-   ctx.beginPath();ctx.roundRect(W-wf-4,yf-7,wf,14,7);ctx.fill();
-   ctx.strokeStyle=fcol;ctx.lineWidth=1;ctx.stroke();
-   ctx.fillStyle=fcol;ctx.fillText(tf,W-wf,yf+3);ctx.restore();}}
+   lvRing(ctx,W-9,yf,fcol);lvReg(LVLHIT,yf,'flip',D.flip_bos,fcol,(fd===1?'▲ ':'▼ ')+(farm?(CL?'ready':'prête'):(CL?'waits a pullback':'attend un repli')),D.flip_bos_t);
+   ctx.restore();}}
  {const lc=(D.marks||[]).filter(m=>m[2]==='choch').slice(-1)[0];
   // skipped while the consumed-CHoCH line above already labels this level
   const _cons=(!D.invalid&&D.choch&&(D.trend===1||D.trend===-1)&&lc&&lc[1]>lo&&lc[1]<hi);
   if(lc&&!_cons&&!dupLvl(lc[1],D.invalid,D.next_bos,D.flip_bos)){
-   const v=lc[1],col='#e8c55a';
+   const v=lc[1],col=LC.choch;
    const lab=(CL?'last CHoCH ':'dernier CHoCH ')+PF(v);
    const yL=px(v);
    if(v>hi||v<lo||yL<=TOPP+9||yL>=TOPP+PLOT-9){
@@ -2000,13 +1931,7 @@ function draw(){
     ctx.stroke();ctx.setLineDash([]);
     if(x0!==undefined){ctx.globalAlpha=.7;ctx.fillStyle=col;
      ctx.beginPath();ctx.arc(x0,y,2.6,0,6.3);ctx.fill();}
-    ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
-    const w4=ctx.measureText(lab).width+10;
-    const ly4=lvlY(y,'last-choch');
-    ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(4,ly4-7,w4,14,7);ctx.fill();
-    ctx.strokeStyle=col;ctx.globalAlpha=.42;ctx.lineWidth=1;ctx.stroke();
-    ctx.globalAlpha=.92;ctx.fillStyle=col;ctx.fillText(lab,9,ly4+3.5);
+    ctx.globalAlpha=1;lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,'choch',v,col,'',lc[0]);
     ctx.restore();}}}
  // 2026-10-01: `breaks` is EVERY break including continuations;
  // `marks` is flips only, which is why this label used to go stale
@@ -2016,7 +1941,7 @@ function draw(){
   const lb=_bk?[_bk[0],_bk[2],'bos',_bk[1]]
              :(D.marks||[]).filter(m=>m[2]==='bos').slice(-1)[0];
   if(lb&&!dupLvl(lb[1],D.invalid,D.next_bos,D.flip_bos)){
-   const v=lb[1],up=lb[3]===1,col=up?'#2ecc71':'#ff5c5c';
+   const v=lb[1],up=lb[3]===1,col=LC.last;
    const lab=(CL?'last BOS ':'dernier BOS ')+PF(v);
    const yL=px(v);
    if(v>hi||v<lo||yL<=TOPP+9||yL>=TOPP+PLOT-9){
@@ -2031,34 +1956,20 @@ function draw(){
     ctx.stroke();ctx.setLineDash([]);
     if(x0!==undefined){ctx.globalAlpha=.85;ctx.fillStyle=col;
      ctx.fillRect(x0-2.5,y-2.5,5,5);}
-    ctx.globalAlpha=1;ctx.font='bold 9px system-ui';
-    const w3=ctx.measureText(lab).width+10;
-    const ly3=lvlY(y,'last-bos');
-    ctx.fillStyle='rgba(8,14,22,.8)';
-    ctx.beginPath();ctx.roundRect(4,ly3-7,w3,14,7);ctx.fill();
-    ctx.strokeStyle=col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.stroke();
-    ctx.globalAlpha=1;ctx.fillStyle=col;ctx.fillText(lab,9,ly3+3.5);
+    ctx.globalAlpha=1;lvRing(ctx,W-9,y,col);lvReg(LVLHIT,y,'last',v,col,(up?'▲':'▼'),lb[0]);
     ctx.restore();}}}
  if(D.next_bos){
   const armed=D.bos_ready!==false;
   const yb=px(D.next_bos),up=D.trend===1;
   if(D.next_bos>hi||D.next_bos<lo){
-   if(armed)edgeMark(D.next_bos,up?'#4fd8c8':'#ff9678','BOS');}
+   if(armed)edgeMark(D.next_bos,LC.bos,'BOS');}
   else if(yb>TOPP+6&&yb<TOPP+PLOT-6){
-   const col=up?'#4fd8c8':'#ff9678';
+   const col=LC.bos;
    if(!armed){
     ctx.save();ctx.globalAlpha=.30;ctx.strokeStyle=col;ctx.lineWidth=1;
     ctx.setLineDash([1,7]);
     ctx.beginPath();ctx.moveTo(W*0.55,yb);ctx.lineTo(W-64,yb);ctx.stroke();
-    ctx.setLineDash([]);ctx.globalAlpha=.75;
-    ctx.font='bold 8px system-ui';
-    const tw='BOS '+PF(D.next_bos)+' · attend un repli';
-    const ww=ctx.measureText(tw).width+8;
-    ctx.fillStyle='rgba(8,14,22,.8)';
-    const lyw=lvlY(yb,'next-bos');
-    ctx.beginPath();ctx.roundRect(W-ww-70,lyw-7,ww,14,7);ctx.fill();
-    ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=col;ctx.fillText(tw,W-ww-66,lyw+3);
+    ctx.setLineDash([]);lvRing(ctx,W-9,yb,col);lvReg(LVLHIT,yb,'bos',D.next_bos,col,(up?'▲ ':'▼ ')+(CL?'waits a pullback':'attend un repli'),D.next_bos_t);
     ctx.restore();}
    else{
    const near=D.px&&Math.abs(D.px-D.next_bos)<(hi-lo)*0.04;
@@ -2074,15 +1985,8 @@ function draw(){
    ctx.beginPath();
    ctx.moveTo(W-58,yb);ctx.lineTo(W-66,yb+(up?5:-5));
    ctx.lineTo(W-66,yb+(up?-5:5));ctx.closePath();ctx.fill();
-   ctx.globalAlpha=1;
-   ctx.font='bold 9px system-ui';
-   const lbl='BOS '+PF(D.next_bos);
-   const lw=ctx.measureText(lbl).width+10;
-   ctx.fillStyle=near?col:'rgba(8,14,22,.8)';
-   ctx.beginPath();ctx.roundRect(W-lw-4,yb-8,lw,16,8);ctx.fill();
-   if(!near){ctx.strokeStyle=col;ctx.lineWidth=1;ctx.stroke();}
-   ctx.fillStyle=near?'#0b1118':col;
-   ctx.fillText(lbl,W-lw+1,yb+3.5);
+   ctx.globalAlpha=1;lvRing(ctx,W-9,yb,col);
+   lvReg(LVLHIT,yb,'bos',D.next_bos,col,(up?'▲ ':'▼ ')+(near?(CL?'price is close':'le prix est proche'):(CL?'ready':'prête')),D.next_bos_t);
    ctx.restore();}}}
  }
  if(!MT&&MS&&MS.pending&&MS.pending.length){
@@ -2108,8 +2012,7 @@ function draw(){
  if(HT.on&&HT.tf==='PB'&&!CTPB()&&D.pb&&D.pb.candles){const p=D.pb;
   const bk=(p.breaks||[]).slice(-1)[0];
   // [price, colour, glow, kind]: 'bos' = caret tab (the way price must go), 'last' = thick core + square tab
-  const lv=[[p.next_bos,p.trend===1?'#4fd8c8':'#ff9678',false,'bos'],[p.invalid,'#e8c55a',true,'inv'],
-            [bk?bk[2]:null,bk?(bk[1]===1?'#2ecc71':'#ff5c5c'):null,false,'last']];
+  const lv=[[p.next_bos,LC.bos,false,'bos'],[p.invalid,LC.prot,true,'inv'],[bk?bk[2]:null,LC.last,false,'last']];
   ctx.save();
   lv.forEach(q=>{const v=q[0];if(v==null||!isFinite(v))return;const y=px(v);
    if(y<TOPP+2||y>TOPP+PLOT-2){const up=y<TOPP+2,ye=up?TOPP+4:TOPP+PLOT-4;
@@ -2121,7 +2024,8 @@ function draw(){
    ctx.globalAlpha=q[3]==='last'?.95:.8;ctx.lineWidth=q[3]==='last'?2.2:1;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W-64,y);ctx.stroke();ctx.shadowBlur=0;
    ctx.fillStyle=q[1];ctx.globalAlpha=.95;
    if(q[3]==='bos'){const up=p.trend===1;ctx.beginPath();ctx.moveTo(0,y+(up?4:-4));ctx.lineTo(9,y+(up?4:-4));ctx.lineTo(4.5,y+(up?-5:5));ctx.closePath();ctx.fill();}
-   else ctx.fillRect(0,y-3,q[3]==='last'?9:6,q[3]==='last'?7:6);});
+   else ctx.fillRect(0,y-3,q[3]==='last'?9:6,q[3]==='last'?7:6);
+   lvReg(LVLHIT,y,q[3]==='inv'?'echo-prot':'echo-'+q[3],v,q[1],'',null);});
   ctx.restore();}
  if(HT.on&&window._xref!==undefined&&xoft[window._xref]!==undefined){const xr=xoft[window._xref];
   ctx.save();ctx.strokeStyle='rgba(122,162,255,.55)';ctx.lineWidth=1;ctx.setLineDash([3,4]);
@@ -2757,7 +2661,9 @@ cv.addEventListener('pointerdown',e=>{
    MT.entry?Math.abs(y0-p2y(MT.entry)):1e9)<=MTGRAB;
  // 2026-09-28: a trade marker sitting in the axis zone is still a tap target
  const onMarker=HITS.some(h=>h.kind==='closed'&&Math.hypot(h.x-x0,h.y-y0)<=18);
- if(!nearLine&&!onMarker&&x0>cv.clientWidth-AXIS){
+ // Owner 2026-10-10: a level's ring lives in the axis zone too - a tap on it opens the card, it does not zoom
+ const onRing=x0>cv.clientWidth-22&&LVLHIT.some(h=>Math.abs(h.y-y0)<=10);
+ if(!nearLine&&!onMarker&&!onRing&&x0>cv.clientWidth-AXIS){
   vz={y:y0,z:vzoom,t:performance.now()};
   drag=null;cv.setPointerCapture(e.pointerId);
   e.preventDefault();e.stopImmediatePropagation();return;}
