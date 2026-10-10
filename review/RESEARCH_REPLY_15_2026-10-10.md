@@ -180,3 +180,53 @@ and 6.13 / 35.27 (demo 3.73 / 37.67). The same strategy on a different quote fee
 curve and the global pause's decisions move with it (-21 vs -60 against no-pause at drag 0): the gate does
 not transfer robustly across feeds; the directional one moved less. Both source histories are labelled
 apart in `tick_engine_compte_demo_feed.json` / `tick_engine_compte_std_feed.json`.
+
+## F. Appendix - Stage 1 on the three supporting regimes (same 13 arms; `tick_engine_matrix.json`, intervals `tick_engine_matrix_stats.json`)
+net / closed DD per cell (drag 0 | drag 0.35). The reference regime has no debt gate and no cap, so its
+allowance and cap cells are exact duplicates (only the entry policy differs) - shown once.
+| cell | u224016179 (cap3) | bos (Special) | reference (uncapped) |
+|---|---|---|---|
+| immediate / current / cap on (baseline) | 62.24 / 61.10 \| -44.82 / 64.69 | 68.60 / 117.37 \| -72.13 / 117.02 (kill) | 60.59 / 84.72 \| -43.01 / 113.52 |
+| immediate / current / cap off | 64.02 / 62.19 \| -33.48 / 64.70 | 112.52 / 127.33 \| 7.13 / 129.72 | = |
+| immediate / all_bos / cap on | 8.63 / 55.80 \| -66.37 / 79.70 | 228.28 / 67.29 \| -66.21 / 131.90 | = |
+| immediate / all_bos / cap off | 59.55 / 70.66 \| -25.19 / 71.57 | 171.00 / 147.31 \| -65.43 / 164.89 | = |
+| delay_debt / current / cap on (candidate) | 48.14 / 32.86 \| -1.14 / 48.98 | 84.07 / 40.41 \| -4.23 / 66.41 | 53.75 / 45.97 \| 0.70 / 61.72 |
+| delay_debt / current / cap off | 79.00 / 47.94 \| -5.65 / 53.60 | 109.61 / 72.70 \| 1.63 / 75.80 | = |
+| delay_debt / all_bos / cap on | 88.43 / 34.40 \| 11.75 / 53.02 | 150.23 / 62.55 \| **-66.38** / 84.05 | = |
+| delay_debt / all_bos / cap off | 83.92 / 45.55 \| 4.72 / 53.02 | 113.41 / 77.34 \| 14.66 / 94.27 | = |
+| delay_always / current / cap on | 79.80 / 43.01 \| 10.12 / 59.85 | 126.41 / 53.94 \| 24.60 / 77.65 | 77.74 / 44.95 \| 14.04 / 60.70 |
+| delay_always / current / cap off | 94.76 / 55.28 \| 3.92 / 59.85 | 135.74 / 65.25 \| 22.41 / 77.65 | = |
+| **delay_always / all_bos / cap on** | **142.39 / 29.19 \| 62.92 / 52.00** | **236.38 / 41.85 \| 87.06 / 88.14** | = |
+| delay_always / all_bos / cap off | 123.18 / 44.11 \| 13.84 / 59.24 | 161.04 / 81.84 \| 24.28 / 95.86 | = |
+| half_main control | 34.55 / 33.03 \| -31.30 / 41.22 | 14.59 / 45.09 \| -18.55 / 42.52 | 12.05 / 45.64 \| -21.71 / 57.59 |
+Admitted-by-allowance money (the extra recovery BOS themselves): immediate entry -11.9 / -27.4 (cap3, drag 0),
+-20.8 / -10.0 (under drag); +4.6 / -44.3 (Special, drag 0), -29.6 / -30.5 (under drag); delayed entry +23.1 /
++4.0 / +37.6 / +7.0 (cap3, drag 0), -3.0 / -16.0 / +12.8 / -6.9 (under drag); +11.9 / +4.1 / +64.4 / +12.9
+(Special, drag 0), -44.6 / -20.9 / +12.9 / -21.6 (under drag). Missed winners for the delayed cells: 54-105
+per cell; later half positive for delay_always + all_bos + cap on on every regime (+92, +168, +18 at drag 0;
++49, +69, -12 under drag).
+
+**Key paired contrasts (net diff, CI90 5-day; DD ratio, CI90) - `tick_engine_matrix_stats.json`**
+| contrast | infinity 0 \| 0.35 | u224016179 0 \| 0.35 | bos 0 \| 0.35 | reference 0 \| 0.35 |
+|---|---|---|---|---|
+| Q1 always vs recovery delay (all_bos, cap on) | -14.1 [-43, +7], DD 0.85 [0.54, 0.98] \| +27.6 [-4, +58], 0.98 | +54.0 [-24, +99], 0.85 \| **+51.2 [+11, +94]**, 0.98 [0.50, 1.0] | **+86.2 [+21, +150]**, 0.67 [0.34, 1.07] \| **+153.4 [+30, +339]**, 1.05 | **+24.0 [+7, +34]**, 0.98 \| **+13.3 [+3, +23]**, 0.98 |
+| Q2 all_bos vs current, immediate | +23.2 [-37, +48] \| +9.1 [-34, +34] | **-53.6 [-154, -8]** \| -21.6 [-127, +24] | +159.7 [-32, +309] \| +5.9 [-63, +68] | 0 (duplicate) |
+| Q2 all_bos vs current, delay_debt | **+68.3 [+7, +109]**, DD 0.89 \| +11.2 [-18, +35], 0.80 | +40.3 [-22, +92], 1.05 \| +12.9 [-42, +48], 1.08 | +66.2 [-46, +137], 1.55 \| -62.1 [-263, +51], 1.27 | 0 |
+| Q2 all_bos vs current, delay_always | +50.4 [-16, +102], DD 0.60 [0.24, 1.74] \| +30.2 [-19, +75], 0.83 | +62.6 [-14, +99], 0.68 \| +52.8 [-30, +132], 0.87 | +110.0 [-46, +213], 0.78 \| +62.5 [-54, +168], 1.14 | 0 |
+| Q3 cap off vs on (delay_always, all_bos) | -47.2 [-105, +22], DD **1.82 [1.15, 3.67]** \| -29.7 [-72, +7], 1.00 | -19.2 [-81, +64], 1.51 \| -49.1 [-129, +24], 1.14 | -75.3 [-202, +61], **1.96 [1.07, 3.27]** \| -62.8 [-173, +42], 1.09 | 0 |
+
+**Reading across regimes.** (1) Entry patience: delaying EVERY entry (not only in recovery) is at worst neutral on
+Infinity and better elsewhere - with the all-BOS allowance and the cap on, its net-difference interval excludes
+zero on cap3 under drag, Special at both costs and the reference at both costs. (2) The all-BOS recovery
+allowance pays only with delayed entry: with immediate entry it loses on cap3 (interval excludes zero) and
+its admitted trades lose money under cost on every live package; with delayed entry every point is positive
+except Special's recovery-delay cell under drag (-62: the admitted trades there lost -44.6). (3) Removing
+the daily profit cap hurts the delayed arms on every regime (drawdown ratios 1.1-2.0, two intervals above
+1.0) and helps only immediate entry. (4) The cell that is best on every live package at both cost bases is
+**delay_always + all_bos + cap on** (142 / 29 and 63 / 52 on cap3; 236 / 42 and 87 / 88 on Special; 92 / 20
+and 32 / 27 on Infinity; the reference's duplicate 78 / 45 and 14 / 61). It was identified after inspecting
+the whole 12 x 4 x 2 family on one history, so it is a DEVELOPMENT-SELECTED challenger - replacing the
+Infinity-only nomination in section C. The nominated recovery-delay candidate stays the fixed reference arm.
+Nothing here is validated; no live change follows from it. The owner's separate live changes of today
+(cap exception, Nid switches, pullback-direction gate with the CHoCH exception) are NOT in any of these
+arms and will be backtested apart as he asked.

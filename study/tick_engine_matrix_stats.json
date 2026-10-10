@@ -2,6 +2,1638 @@
  "label": "conditional uncertainty of the realised paths (engine not rerun on resampled prices); one history, one research family",
  "n_days": 43,
  "rows": {
+  "bos|0.00": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 126.41,
+     "net_b": 84.07,
+     "net_diff": 42.34,
+     "dd_a": 53.94,
+     "dd_b": 40.41,
+     "dd_ratio": 1.335,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.76,
+        1.443
+       ],
+       "net_diff_ci90": [
+        -14.64,
+        112.72
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.73,
+        1.376
+       ],
+       "net_diff_ci90": [
+        -10.99,
+        109.41
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.816,
+        1.438
+       ],
+       "net_diff_ci90": [
+        -12.59,
+        100.24
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 135.74,
+     "net_b": 109.61,
+     "net_diff": 26.13,
+     "dd_a": 65.25,
+     "dd_b": 72.7,
+     "dd_ratio": 0.898,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.806,
+        1.093
+       ],
+       "net_diff_ci90": [
+        -6.07,
+        58.44
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.813,
+        1.139
+       ],
+       "net_diff_ci90": [
+        -7.28,
+        64.18
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.814,
+        1.0
+       ],
+       "net_diff_ci90": [
+        9.82,
+        47.65
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 236.38,
+     "net_b": 150.23,
+     "net_diff": 86.15,
+     "dd_a": 41.85,
+     "dd_b": 62.55,
+     "dd_ratio": 0.669,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.34,
+        1.073
+       ],
+       "net_diff_ci90": [
+        21.22,
+        150.12
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.386,
+        1.073
+       ],
+       "net_diff_ci90": [
+        29.29,
+        148.69
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.34,
+        1.062
+       ],
+       "net_diff_ci90": [
+        18.78,
+        139.1
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 161.04,
+     "net_b": 113.41,
+     "net_diff": 47.63,
+     "dd_a": 81.84,
+     "dd_b": 77.34,
+     "dd_ratio": 1.058,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.824,
+        1.207
+       ],
+       "net_diff_ci90": [
+        0.91,
+        89.94
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.812,
+        1.24
+       ],
+       "net_diff_ci90": [
+        2.42,
+        92.31
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.856,
+        1.126
+       ],
+       "net_diff_ci90": [
+        13.36,
+        86.63
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": 228.28,
+     "net_b": 68.6,
+     "net_diff": 159.68,
+     "dd_a": 67.29,
+     "dd_b": 117.37,
+     "dd_ratio": 0.573,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.268,
+        1.762
+       ],
+       "net_diff_ci90": [
+        -32.28,
+        308.93
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.239,
+        1.695
+       ],
+       "net_diff_ci90": [
+        -17.7,
+        347.27
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.367,
+        1.731
+       ],
+       "net_diff_ci90": [
+        -17.7,
+        226.25
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": 171.0,
+     "net_b": 112.52,
+     "net_diff": 58.48,
+     "dd_a": 147.31,
+     "dd_b": 127.33,
+     "dd_ratio": 1.157,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.749,
+        1.704
+       ],
+       "net_diff_ci90": [
+        -120.57,
+        183.16
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.729,
+        1.709
+       ],
+       "net_diff_ci90": [
+        -100.88,
+        181.63
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.848,
+        1.626
+       ],
+       "net_diff_ci90": [
+        -124.11,
+        126.72
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 150.23,
+     "net_b": 84.07,
+     "net_diff": 66.16,
+     "dd_a": 62.55,
+     "dd_b": 40.41,
+     "dd_ratio": 1.548,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.509,
+        1.614
+       ],
+       "net_diff_ci90": [
+        -45.83,
+        136.68
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.467,
+        1.526
+       ],
+       "net_diff_ci90": [
+        -40.06,
+        151.95
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.644,
+        1.722
+       ],
+       "net_diff_ci90": [
+        -57.18,
+        100.09
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 113.41,
+     "net_b": 109.61,
+     "net_diff": 3.8,
+     "dd_a": 77.34,
+     "dd_b": 72.7,
+     "dd_ratio": 1.064,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.459,
+        1.561
+       ],
+       "net_diff_ci90": [
+        -108.33,
+        66.5
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.503,
+        1.533
+       ],
+       "net_diff_ci90": [
+        -97.89,
+        72.49
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.55,
+        1.596
+       ],
+       "net_diff_ci90": [
+        -113.85,
+        18.32
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 236.38,
+     "net_b": 126.41,
+     "net_diff": 109.97,
+     "dd_a": 41.85,
+     "dd_b": 53.94,
+     "dd_ratio": 0.776,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.295,
+        1.205
+       ],
+       "net_diff_ci90": [
+        -45.58,
+        213.29
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.292,
+        1.18
+       ],
+       "net_diff_ci90": [
+        -31.18,
+        222.66
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.343,
+        1.161
+       ],
+       "net_diff_ci90": [
+        -49.68,
+        145.88
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 161.04,
+     "net_b": 135.74,
+     "net_diff": 25.3,
+     "dd_a": 81.84,
+     "dd_b": 65.25,
+     "dd_ratio": 1.254,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.475,
+        1.676
+       ],
+       "net_diff_ci90": [
+        -77.78,
+        79.9
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.522,
+        1.599
+       ],
+       "net_diff_ci90": [
+        -68.69,
+        83.76
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.566,
+        1.792
+       ],
+       "net_diff_ci90": [
+        -85.32,
+        35.28
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": 112.52,
+     "net_b": 68.6,
+     "net_diff": 43.92,
+     "dd_a": 127.33,
+     "dd_b": 117.37,
+     "dd_ratio": 1.085,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.799,
+        2.91
+       ],
+       "net_diff_ci90": [
+        -113.13,
+        212.33
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.744,
+        2.344
+       ],
+       "net_diff_ci90": [
+        -108.48,
+        211.83
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.979,
+        4.31
+       ],
+       "net_diff_ci90": [
+        -171.88,
+        193.59
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": 171.0,
+     "net_b": 228.28,
+     "net_diff": -57.28,
+     "dd_a": 147.31,
+     "dd_b": 67.29,
+     "dd_ratio": 2.189,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.124,
+        3.927
+       ],
+       "net_diff_ci90": [
+        -260.16,
+        201.21
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.103,
+        4.105
+       ],
+       "net_diff_ci90": [
+        -280.75,
+        167.84
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.347,
+        4.179
+       ],
+       "net_diff_ci90": [
+        -289.12,
+        193.12
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 109.61,
+     "net_b": 84.07,
+     "net_diff": 25.54,
+     "dd_a": 72.7,
+     "dd_b": 40.41,
+     "dd_ratio": 1.799,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.835,
+        1.899
+       ],
+       "net_diff_ci90": [
+        -47.17,
+        105.4
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.764,
+        1.78
+       ],
+       "net_diff_ci90": [
+        -48.49,
+        108.97
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.892,
+        1.855
+       ],
+       "net_diff_ci90": [
+        -31.32,
+        106.76
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 113.41,
+     "net_b": 150.23,
+     "net_diff": -36.82,
+     "dd_a": 77.34,
+     "dd_b": 62.55,
+     "dd_ratio": 1.236,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.837,
+        1.725
+       ],
+       "net_diff_ci90": [
+        -104.22,
+        38.75
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.767,
+        1.754
+       ],
+       "net_diff_ci90": [
+        -114.01,
+        43.74
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.92,
+        1.56
+       ],
+       "net_diff_ci90": [
+        -96.38,
+        37.03
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 135.74,
+     "net_b": 126.41,
+     "net_diff": 9.33,
+     "dd_a": 65.25,
+     "dd_b": 53.94,
+     "dd_ratio": 1.21,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.911,
+        1.534
+       ],
+       "net_diff_ci90": [
+        -80.6,
+        90.13
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.805,
+        1.571
+       ],
+       "net_diff_ci90": [
+        -73.07,
+        90.86
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.936,
+        1.397
+       ],
+       "net_diff_ci90": [
+        -71.66,
+        104.33
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 161.04,
+     "net_b": 236.38,
+     "net_diff": -75.34,
+     "dd_a": 81.84,
+     "dd_b": 41.85,
+     "dd_ratio": 1.956,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.072,
+        3.271
+       ],
+       "net_diff_ci90": [
+        -202.13,
+        60.97
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.033,
+        3.017
+       ],
+       "net_diff_ci90": [
+        -198.96,
+        47.71
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.191,
+        3.378
+       ],
+       "net_diff_ci90": [
+        -191.03,
+        80.07
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": 159.68,
+     "cap_off": 58.48
+    },
+    "capoff_effect_immediate": {
+     "current": 43.92,
+     "all_bos": -57.28
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": 66.16,
+     "cap_off": 3.8
+    },
+    "capoff_effect_delay_debt": {
+     "current": 25.54,
+     "all_bos": -36.82
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 109.97,
+     "cap_off": 25.3
+    },
+    "capoff_effect_delay_always": {
+     "current": 9.33,
+     "all_bos": -75.34
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": 84.07,
+    "net_b": 14.59,
+    "net_diff": 69.48,
+    "dd_a": 40.41,
+    "dd_b": 45.09,
+    "dd_ratio": 0.896,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.896,
+       2.1
+      ],
+      "net_diff_ci90": [
+       -23.2,
+       192.7
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.82,
+       2.261
+      ],
+      "net_diff_ci90": [
+       -18.2,
+       198.84
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       0.899,
+       2.002
+      ],
+      "net_diff_ci90": [
+       -1.58,
+       170.07
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
+  "bos|0.35": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 24.6,
+     "net_b": -4.23,
+     "net_diff": 28.83,
+     "dd_a": 77.65,
+     "dd_b": 66.41,
+     "dd_ratio": 1.169,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.699,
+        1.3
+       ],
+       "net_diff_ci90": [
+        -27.4,
+        82.06
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.675,
+        1.359
+       ],
+       "net_diff_ci90": [
+        -37.61,
+        97.91
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.743,
+        1.239
+       ],
+       "net_diff_ci90": [
+        -1.55,
+        67.49
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 22.41,
+     "net_b": 1.63,
+     "net_diff": 20.78,
+     "dd_a": 77.65,
+     "dd_b": 75.8,
+     "dd_ratio": 1.024,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.869,
+        1.135
+       ],
+       "net_diff_ci90": [
+        -5.91,
+        47.77
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.86,
+        1.145
+       ],
+       "net_diff_ci90": [
+        -2.81,
+        49.1
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.894,
+        1.125
+       ],
+       "net_diff_ci90": [
+        -3.34,
+        48.21
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 87.06,
+     "net_b": -66.38,
+     "net_diff": 153.44,
+     "dd_a": 88.14,
+     "dd_b": 84.05,
+     "dd_ratio": 1.049,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.455,
+        0.993
+       ],
+       "net_diff_ci90": [
+        29.9,
+        338.58
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.431,
+        0.974
+       ],
+       "net_diff_ci90": [
+        38.76,
+        328.77
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.5,
+        1.0
+       ],
+       "net_diff_ci90": [
+        10.32,
+        338.36
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 24.28,
+     "net_b": 14.66,
+     "net_diff": 9.62,
+     "dd_a": 95.86,
+     "dd_b": 94.27,
+     "dd_ratio": 1.017,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.902,
+        1.115
+       ],
+       "net_diff_ci90": [
+        -8.95,
+        27.9
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.875,
+        1.126
+       ],
+       "net_diff_ci90": [
+        -9.94,
+        30.72
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.918,
+        1.093
+       ],
+       "net_diff_ci90": [
+        -5.94,
+        25.95
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": -66.21,
+     "net_b": -72.13,
+     "net_diff": 5.92,
+     "dd_a": 131.9,
+     "dd_b": 117.02,
+     "dd_ratio": 1.127,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.859,
+        1.697
+       ],
+       "net_diff_ci90": [
+        -63.42,
+        67.66
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.823,
+        1.761
+       ],
+       "net_diff_ci90": [
+        -70.77,
+        78.97
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.947,
+        1.484
+       ],
+       "net_diff_ci90": [
+        -47.98,
+        42.68
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": -65.43,
+     "net_b": 7.13,
+     "net_diff": -72.56,
+     "dd_a": 164.89,
+     "dd_b": 129.72,
+     "dd_ratio": 1.271,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.606,
+        2.196
+       ],
+       "net_diff_ci90": [
+        -292.73,
+        27.1
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.484,
+        2.066
+       ],
+       "net_diff_ci90": [
+        -271.75,
+        89.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.746,
+        2.207
+       ],
+       "net_diff_ci90": [
+        -271.8,
+        -41.12
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": -66.38,
+     "net_b": -4.23,
+     "net_diff": -62.15,
+     "dd_a": 84.05,
+     "dd_b": 66.41,
+     "dd_ratio": 1.266,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.518,
+        2.425
+       ],
+       "net_diff_ci90": [
+        -262.94,
+        50.51
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.473,
+        2.315
+       ],
+       "net_diff_ci90": [
+        -250.84,
+        69.07
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.75,
+        2.52
+       ],
+       "net_diff_ci90": [
+        -241.2,
+        -18.6
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 14.66,
+     "net_b": 1.63,
+     "net_diff": 13.03,
+     "dd_a": 94.27,
+     "dd_b": 75.8,
+     "dd_ratio": 1.244,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.658,
+        1.522
+       ],
+       "net_diff_ci90": [
+        -57.63,
+        52.07
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.63,
+        1.497
+       ],
+       "net_diff_ci90": [
+        -54.62,
+        59.35
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.683,
+        1.587
+       ],
+       "net_diff_ci90": [
+        -65.39,
+        32.27
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 87.06,
+     "net_b": 24.6,
+     "net_diff": 62.46,
+     "dd_a": 88.14,
+     "dd_b": 77.65,
+     "dd_ratio": 1.135,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.333,
+        1.648
+       ],
+       "net_diff_ci90": [
+        -54.12,
+        167.98
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.321,
+        1.526
+       ],
+       "net_diff_ci90": [
+        -43.78,
+        179.82
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.515,
+        1.684
+       ],
+       "net_diff_ci90": [
+        -61.89,
+        121.19
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 24.28,
+     "net_b": 22.41,
+     "net_diff": 1.87,
+     "dd_a": 95.86,
+     "dd_b": 77.65,
+     "dd_ratio": 1.235,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.683,
+        1.472
+       ],
+       "net_diff_ci90": [
+        -72.16,
+        43.56
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.675,
+        1.483
+       ],
+       "net_diff_ci90": [
+        -67.99,
+        46.29
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.707,
+        1.508
+       ],
+       "net_diff_ci90": [
+        -79.81,
+        19.1
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": 7.13,
+     "net_b": -72.13,
+     "net_diff": 79.26,
+     "dd_a": 129.72,
+     "dd_b": 117.02,
+     "dd_ratio": 1.109,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.609,
+        2.294
+       ],
+       "net_diff_ci90": [
+        -21.74,
+        290.69
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.619,
+        2.659
+       ],
+       "net_diff_ci90": [
+        -87.07,
+        278.32
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.608,
+        1.907
+       ],
+       "net_diff_ci90": [
+        15.34,
+        258.81
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": -65.43,
+     "net_b": -66.21,
+     "net_diff": 0.78,
+     "dd_a": 164.89,
+     "dd_b": 131.9,
+     "dd_ratio": 1.25,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.87,
+        1.502
+       ],
+       "net_diff_ci90": [
+        -76.61,
+        88.49
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.823,
+        1.426
+       ],
+       "net_diff_ci90": [
+        -71.45,
+        78.32
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.969,
+        1.584
+       ],
+       "net_diff_ci90": [
+        -78.99,
+        57.52
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 1.63,
+     "net_b": -4.23,
+     "net_diff": 5.86,
+     "dd_a": 75.8,
+     "dd_b": 66.41,
+     "dd_ratio": 1.141,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.825,
+        1.314
+       ],
+       "net_diff_ci90": [
+        -44.83,
+        54.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.757,
+        1.321
+       ],
+       "net_diff_ci90": [
+        -42.39,
+        58.39
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.841,
+        1.262
+       ],
+       "net_diff_ci90": [
+        -46.44,
+        61.97
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 14.66,
+     "net_b": -66.38,
+     "net_diff": 81.04,
+     "dd_a": 94.27,
+     "dd_b": 84.05,
+     "dd_ratio": 1.122,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.547,
+        1.535
+       ],
+       "net_diff_ci90": [
+        -24.35,
+        232.61
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.531,
+        1.578
+       ],
+       "net_diff_ci90": [
+        -28.2,
+        228.33
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.571,
+        1.162
+       ],
+       "net_diff_ci90": [
+        15.45,
+        202.26
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 22.41,
+     "net_b": 24.6,
+     "net_diff": -2.19,
+     "dd_a": 77.65,
+     "dd_b": 77.65,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.83,
+        1.31
+       ],
+       "net_diff_ci90": [
+        -77.11,
+        71.01
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.772,
+        1.335
+       ],
+       "net_diff_ci90": [
+        -79.36,
+        73.95
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.941,
+        1.233
+       ],
+       "net_diff_ci90": [
+        -74.44,
+        73.98
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 24.28,
+     "net_b": 87.06,
+     "net_diff": -62.78,
+     "dd_a": 95.86,
+     "dd_b": 88.14,
+     "dd_ratio": 1.088,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.815,
+        2.332
+       ],
+       "net_diff_ci90": [
+        -173.06,
+        41.91
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.819,
+        2.513
+       ],
+       "net_diff_ci90": [
+        -177.73,
+        33.33
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.854,
+        1.582
+       ],
+       "net_diff_ci90": [
+        -164.76,
+        53.55
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": 5.92,
+     "cap_off": -72.56
+    },
+    "capoff_effect_immediate": {
+     "current": 79.26,
+     "all_bos": 0.78
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": -62.15,
+     "cap_off": 13.03
+    },
+    "capoff_effect_delay_debt": {
+     "current": 5.86,
+     "all_bos": 81.04
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 62.46,
+     "cap_off": 1.87
+    },
+    "capoff_effect_delay_always": {
+     "current": -2.19,
+     "all_bos": -62.78
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": -4.23,
+    "net_b": -18.55,
+    "net_diff": 14.32,
+    "dd_a": 66.41,
+    "dd_b": 42.52,
+    "dd_ratio": 1.562,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       1.036,
+       2.704
+      ],
+      "net_diff_ci90": [
+       -95.07,
+       157.31
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.889,
+       2.831
+      ],
+      "net_diff_ci90": [
+       -96.52,
+       164.83
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       1.175,
+       2.225
+      ],
+      "net_diff_ci90": [
+       -51.67,
+       125.6
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
   "infinity|0.00": {
    "q1_always_vs_recovery_delay": [
     {
@@ -1628,6 +3260,3270 @@
       "net_diff_ci90": [
        -34.82,
        51.47
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
+  "reference_uncapped|0.00": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 77.74,
+     "net_b": 53.75,
+     "net_diff": 23.99,
+     "dd_a": 44.95,
+     "dd_b": 45.97,
+     "dd_ratio": 0.978,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.81,
+        1.0
+       ],
+       "net_diff_ci90": [
+        6.67,
+        33.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.79,
+        1.0
+       ],
+       "net_diff_ci90": [
+        8.5,
+        35.87
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.812,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.1,
+        33.47
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 77.74,
+     "net_b": 53.75,
+     "net_diff": 23.99,
+     "dd_a": 44.95,
+     "dd_b": 45.97,
+     "dd_ratio": 0.978,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.81,
+        1.0
+       ],
+       "net_diff_ci90": [
+        6.67,
+        33.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.79,
+        1.0
+       ],
+       "net_diff_ci90": [
+        8.5,
+        35.87
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.812,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.1,
+        33.47
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 77.74,
+     "net_b": 53.75,
+     "net_diff": 23.99,
+     "dd_a": 44.95,
+     "dd_b": 45.97,
+     "dd_ratio": 0.978,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.81,
+        1.0
+       ],
+       "net_diff_ci90": [
+        6.67,
+        33.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.79,
+        1.0
+       ],
+       "net_diff_ci90": [
+        8.5,
+        35.87
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.812,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.1,
+        33.47
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 77.74,
+     "net_b": 53.75,
+     "net_diff": 23.99,
+     "dd_a": 44.95,
+     "dd_b": 45.97,
+     "dd_ratio": 0.978,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.81,
+        1.0
+       ],
+       "net_diff_ci90": [
+        6.67,
+        33.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.79,
+        1.0
+       ],
+       "net_diff_ci90": [
+        8.5,
+        35.87
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.812,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.1,
+        33.47
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": 60.59,
+     "net_b": 60.59,
+     "net_diff": 0.0,
+     "dd_a": 84.72,
+     "dd_b": 84.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": 60.59,
+     "net_b": 60.59,
+     "net_diff": 0.0,
+     "dd_a": 84.72,
+     "dd_b": 84.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 53.75,
+     "net_b": 53.75,
+     "net_diff": 0.0,
+     "dd_a": 45.97,
+     "dd_b": 45.97,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 53.75,
+     "net_b": 53.75,
+     "net_diff": 0.0,
+     "dd_a": 45.97,
+     "dd_b": 45.97,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 77.74,
+     "net_b": 77.74,
+     "net_diff": 0.0,
+     "dd_a": 44.95,
+     "dd_b": 44.95,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 77.74,
+     "net_b": 77.74,
+     "net_diff": 0.0,
+     "dd_a": 44.95,
+     "dd_b": 44.95,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": 60.59,
+     "net_b": 60.59,
+     "net_diff": 0.0,
+     "dd_a": 84.72,
+     "dd_b": 84.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": 60.59,
+     "net_b": 60.59,
+     "net_diff": 0.0,
+     "dd_a": 84.72,
+     "dd_b": 84.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 53.75,
+     "net_b": 53.75,
+     "net_diff": 0.0,
+     "dd_a": 45.97,
+     "dd_b": 45.97,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 53.75,
+     "net_b": 53.75,
+     "net_diff": 0.0,
+     "dd_a": 45.97,
+     "dd_b": 45.97,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 77.74,
+     "net_b": 77.74,
+     "net_diff": 0.0,
+     "dd_a": 44.95,
+     "dd_b": 44.95,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 77.74,
+     "net_b": 77.74,
+     "net_diff": 0.0,
+     "dd_a": 44.95,
+     "dd_b": 44.95,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_immediate": {
+     "current": 0.0,
+     "all_bos": 0.0
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_delay_debt": {
+     "current": 0.0,
+     "all_bos": 0.0
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_delay_always": {
+     "current": 0.0,
+     "all_bos": 0.0
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": 53.75,
+    "net_b": 12.05,
+    "net_diff": 41.7,
+    "dd_a": 45.97,
+    "dd_b": 45.64,
+    "dd_ratio": 1.007,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.602,
+       1.27
+      ],
+      "net_diff_ci90": [
+       -14.92,
+       94.77
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.537,
+       1.327
+      ],
+      "net_diff_ci90": [
+       -17.52,
+       105.43
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       0.639,
+       1.171
+      ],
+      "net_diff_ci90": [
+       0.3,
+       84.47
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
+  "reference_uncapped|0.35": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 14.04,
+     "net_b": 0.7,
+     "net_diff": 13.34,
+     "dd_a": 60.7,
+     "dd_b": 61.72,
+     "dd_ratio": 0.983,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.831,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.01,
+        22.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.8,
+        1.0
+       ],
+       "net_diff_ci90": [
+        4.03,
+        23.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.845,
+        1.0
+       ],
+       "net_diff_ci90": [
+        1.02,
+        22.31
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 14.04,
+     "net_b": 0.7,
+     "net_diff": 13.34,
+     "dd_a": 60.7,
+     "dd_b": 61.72,
+     "dd_ratio": 0.983,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.831,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.01,
+        22.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.8,
+        1.0
+       ],
+       "net_diff_ci90": [
+        4.03,
+        23.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.845,
+        1.0
+       ],
+       "net_diff_ci90": [
+        1.02,
+        22.31
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 14.04,
+     "net_b": 0.7,
+     "net_diff": 13.34,
+     "dd_a": 60.7,
+     "dd_b": 61.72,
+     "dd_ratio": 0.983,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.831,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.01,
+        22.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.8,
+        1.0
+       ],
+       "net_diff_ci90": [
+        4.03,
+        23.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.845,
+        1.0
+       ],
+       "net_diff_ci90": [
+        1.02,
+        22.31
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 14.04,
+     "net_b": 0.7,
+     "net_diff": 13.34,
+     "dd_a": 60.7,
+     "dd_b": 61.72,
+     "dd_ratio": 0.983,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.831,
+        1.0
+       ],
+       "net_diff_ci90": [
+        3.01,
+        22.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.8,
+        1.0
+       ],
+       "net_diff_ci90": [
+        4.03,
+        23.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.845,
+        1.0
+       ],
+       "net_diff_ci90": [
+        1.02,
+        22.31
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": -43.01,
+     "net_b": -43.01,
+     "net_diff": 0.0,
+     "dd_a": 113.52,
+     "dd_b": 113.52,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": -43.01,
+     "net_b": -43.01,
+     "net_diff": 0.0,
+     "dd_a": 113.52,
+     "dd_b": 113.52,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 0.7,
+     "net_b": 0.7,
+     "net_diff": 0.0,
+     "dd_a": 61.72,
+     "dd_b": 61.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 0.7,
+     "net_b": 0.7,
+     "net_diff": 0.0,
+     "dd_a": 61.72,
+     "dd_b": 61.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 14.04,
+     "net_b": 14.04,
+     "net_diff": 0.0,
+     "dd_a": 60.7,
+     "dd_b": 60.7,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 14.04,
+     "net_b": 14.04,
+     "net_diff": 0.0,
+     "dd_a": 60.7,
+     "dd_b": 60.7,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": -43.01,
+     "net_b": -43.01,
+     "net_diff": 0.0,
+     "dd_a": 113.52,
+     "dd_b": 113.52,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": -43.01,
+     "net_b": -43.01,
+     "net_diff": 0.0,
+     "dd_a": 113.52,
+     "dd_b": 113.52,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 0.7,
+     "net_b": 0.7,
+     "net_diff": 0.0,
+     "dd_a": 61.72,
+     "dd_b": 61.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 0.7,
+     "net_b": 0.7,
+     "net_diff": 0.0,
+     "dd_a": 61.72,
+     "dd_b": 61.72,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 14.04,
+     "net_b": 14.04,
+     "net_diff": 0.0,
+     "dd_a": 60.7,
+     "dd_b": 60.7,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 14.04,
+     "net_b": 14.04,
+     "net_diff": 0.0,
+     "dd_a": 60.7,
+     "dd_b": 60.7,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        1.0,
+        1.0
+       ],
+       "net_diff_ci90": [
+        0.0,
+        0.0
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_immediate": {
+     "current": 0.0,
+     "all_bos": 0.0
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_delay_debt": {
+     "current": 0.0,
+     "all_bos": 0.0
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 0.0,
+     "cap_off": 0.0
+    },
+    "capoff_effect_delay_always": {
+     "current": 0.0,
+     "all_bos": 0.0
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": 0.7,
+    "net_b": -21.71,
+    "net_diff": 22.41,
+    "dd_a": 61.72,
+    "dd_b": 57.59,
+    "dd_ratio": 1.072,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.563,
+       1.522
+      ],
+      "net_diff_ci90": [
+       -42.96,
+       74.0
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.521,
+       1.531
+      ],
+      "net_diff_ci90": [
+       -41.68,
+       86.6
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       0.606,
+       1.378
+      ],
+      "net_diff_ci90": [
+       -28.25,
+       65.94
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
+  "u224016179|0.00": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 79.8,
+     "net_b": 48.14,
+     "net_diff": 31.66,
+     "dd_a": 43.01,
+     "dd_b": 32.86,
+     "dd_ratio": 1.309,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.579,
+        1.518
+       ],
+       "net_diff_ci90": [
+        -11.73,
+        80.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.584,
+        1.569
+       ],
+       "net_diff_ci90": [
+        -17.36,
+        87.81
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.596,
+        1.492
+       ],
+       "net_diff_ci90": [
+        4.51,
+        64.7
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 94.76,
+     "net_b": 79.0,
+     "net_diff": 15.76,
+     "dd_a": 55.28,
+     "dd_b": 47.94,
+     "dd_ratio": 1.153,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.813,
+        1.33
+       ],
+       "net_diff_ci90": [
+        -20.32,
+        54.8
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.83,
+        1.348
+       ],
+       "net_diff_ci90": [
+        -20.71,
+        56.86
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.805,
+        1.158
+       ],
+       "net_diff_ci90": [
+        6.33,
+        44.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 142.39,
+     "net_b": 88.43,
+     "net_diff": 53.96,
+     "dd_a": 29.19,
+     "dd_b": 34.4,
+     "dd_ratio": 0.849,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.471,
+        1.598
+       ],
+       "net_diff_ci90": [
+        -24.19,
+        98.5
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.502,
+        1.761
+       ],
+       "net_diff_ci90": [
+        -37.06,
+        119.94
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.444,
+        1.434
+       ],
+       "net_diff_ci90": [
+        -5.95,
+        88.71
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 123.18,
+     "net_b": 83.92,
+     "net_diff": 39.26,
+     "dd_a": 44.11,
+     "dd_b": 45.55,
+     "dd_ratio": 0.968,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.801,
+        1.104
+       ],
+       "net_diff_ci90": [
+        8.05,
+        71.69
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.796,
+        1.143
+       ],
+       "net_diff_ci90": [
+        9.37,
+        73.1
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.828,
+        1.025
+       ],
+       "net_diff_ci90": [
+        19.03,
+        63.85
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": 8.63,
+     "net_b": 62.24,
+     "net_diff": -53.61,
+     "dd_a": 55.8,
+     "dd_b": 61.1,
+     "dd_ratio": 0.913,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.866,
+        2.905
+       ],
+       "net_diff_ci90": [
+        -154.08,
+        -7.71
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.842,
+        2.534
+       ],
+       "net_diff_ci90": [
+        -146.38,
+        -1.85
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.913,
+        3.68
+       ],
+       "net_diff_ci90": [
+        -150.96,
+        -38.88
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": 59.55,
+     "net_b": 64.02,
+     "net_diff": -4.47,
+     "dd_a": 70.66,
+     "dd_b": 62.19,
+     "dd_ratio": 1.136,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.909,
+        1.568
+       ],
+       "net_diff_ci90": [
+        -73.01,
+        38.01
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.886,
+        1.701
+       ],
+       "net_diff_ci90": [
+        -75.98,
+        42.02
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.974,
+        1.447
+       ],
+       "net_diff_ci90": [
+        -75.52,
+        14.21
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 88.43,
+     "net_b": 48.14,
+     "net_diff": 40.29,
+     "dd_a": 34.4,
+     "dd_b": 32.86,
+     "dd_ratio": 1.047,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.43,
+        1.709
+       ],
+       "net_diff_ci90": [
+        -21.99,
+        92.25
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.407,
+        1.515
+       ],
+       "net_diff_ci90": [
+        -19.73,
+        102.74
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.551,
+        1.951
+       ],
+       "net_diff_ci90": [
+        -29.29,
+        83.68
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 83.92,
+     "net_b": 79.0,
+     "net_diff": 4.92,
+     "dd_a": 45.55,
+     "dd_b": 47.94,
+     "dd_ratio": 0.95,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.493,
+        1.615
+       ],
+       "net_diff_ci90": [
+        -71.42,
+        45.68
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.544,
+        1.52
+       ],
+       "net_diff_ci90": [
+        -66.67,
+        51.32
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.591,
+        1.8
+       ],
+       "net_diff_ci90": [
+        -78.49,
+        21.0
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 142.39,
+     "net_b": 79.8,
+     "net_diff": 62.59,
+     "dd_a": 29.19,
+     "dd_b": 43.01,
+     "dd_ratio": 0.679,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.393,
+        1.35
+       ],
+       "net_diff_ci90": [
+        -14.17,
+        99.33
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.443,
+        1.312
+       ],
+       "net_diff_ci90": [
+        -11.49,
+        109.74
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.467,
+        1.378
+       ],
+       "net_diff_ci90": [
+        -19.8,
+        95.7
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 123.18,
+     "net_b": 94.76,
+     "net_diff": 28.42,
+     "dd_a": 44.11,
+     "dd_b": 55.28,
+     "dd_ratio": 0.798,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.381,
+        1.651
+       ],
+       "net_diff_ci90": [
+        -47.47,
+        74.55
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.423,
+        1.505
+       ],
+       "net_diff_ci90": [
+        -40.96,
+        77.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.467,
+        1.873
+       ],
+       "net_diff_ci90": [
+        -53.83,
+        43.24
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": 64.02,
+     "net_b": 62.24,
+     "net_diff": 1.78,
+     "dd_a": 62.19,
+     "dd_b": 61.1,
+     "dd_ratio": 1.018,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.789,
+        2.693
+       ],
+       "net_diff_ci90": [
+        -86.35,
+        82.61
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.764,
+        2.211
+       ],
+       "net_diff_ci90": [
+        -82.76,
+        86.4
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.946,
+        4.046
+       ],
+       "net_diff_ci90": [
+        -115.45,
+        72.85
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": 59.55,
+     "net_b": 8.63,
+     "net_diff": 50.92,
+     "dd_a": 70.66,
+     "dd_b": 55.8,
+     "dd_ratio": 1.266,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.806,
+        1.467
+       ],
+       "net_diff_ci90": [
+        3.53,
+        114.55
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.769,
+        1.471
+       ],
+       "net_diff_ci90": [
+        -5.24,
+        117.64
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.952,
+        1.63
+       ],
+       "net_diff_ci90": [
+        -5.65,
+        93.66
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 79.0,
+     "net_b": 48.14,
+     "net_diff": 30.86,
+     "dd_a": 47.94,
+     "dd_b": 32.86,
+     "dd_ratio": 1.459,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.918,
+        1.84
+       ],
+       "net_diff_ci90": [
+        -25.26,
+        94.26
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.806,
+        1.713
+       ],
+       "net_diff_ci90": [
+        -30.12,
+        102.13
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.975,
+        1.8
+       ],
+       "net_diff_ci90": [
+        -7.16,
+        91.7
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 83.92,
+     "net_b": 88.43,
+     "net_diff": -4.51,
+     "dd_a": 45.55,
+     "dd_b": 34.4,
+     "dd_ratio": 1.324,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.878,
+        2.148
+       ],
+       "net_diff_ci90": [
+        -58.61,
+        38.44
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.804,
+        2.107
+       ],
+       "net_diff_ci90": [
+        -72.19,
+        47.73
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.974,
+        1.882
+       ],
+       "net_diff_ci90": [
+        -53.62,
+        28.56
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 94.76,
+     "net_b": 79.8,
+     "net_diff": 14.96,
+     "dd_a": 55.28,
+     "dd_b": 43.01,
+     "dd_ratio": 1.285,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.869,
+        1.952
+       ],
+       "net_diff_ci90": [
+        -50.75,
+        90.63
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.817,
+        1.853
+       ],
+       "net_diff_ci90": [
+        -57.26,
+        91.34
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.842,
+        2.261
+       ],
+       "net_diff_ci90": [
+        -40.79,
+        100.85
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 123.18,
+     "net_b": 142.39,
+     "net_diff": -19.21,
+     "dd_a": 44.11,
+     "dd_b": 29.19,
+     "dd_ratio": 1.511,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.937,
+        2.286
+       ],
+       "net_diff_ci90": [
+        -81.27,
+        64.45
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.859,
+        2.156
+       ],
+       "net_diff_ci90": [
+        -86.87,
+        62.06
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.971,
+        2.719
+       ],
+       "net_diff_ci90": [
+        -84.75,
+        71.17
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": -53.61,
+     "cap_off": -4.47
+    },
+    "capoff_effect_immediate": {
+     "current": 1.78,
+     "all_bos": 50.92
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": 40.29,
+     "cap_off": 4.92
+    },
+    "capoff_effect_delay_debt": {
+     "current": 30.86,
+     "all_bos": -4.51
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 62.59,
+     "cap_off": 28.42
+    },
+    "capoff_effect_delay_always": {
+     "current": 14.96,
+     "all_bos": -19.21
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": 48.14,
+    "net_b": 34.55,
+    "net_diff": 13.59,
+    "dd_a": 32.86,
+    "dd_b": 33.03,
+    "dd_ratio": 0.995,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.756,
+       1.491
+      ],
+      "net_diff_ci90": [
+       -17.68,
+       48.76
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.772,
+       1.691
+      ],
+      "net_diff_ci90": [
+       -21.86,
+       53.78
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       0.694,
+       1.334
+      ],
+      "net_diff_ci90": [
+       1.87,
+       43.56
+      ],
+      "degenerate": 0
+     }
+    }
+   }
+  },
+  "u224016179|0.35": {
+   "q1_always_vs_recovery_delay": [
+    {
+     "label": "Q1 always vs recovery delay | current cap_on",
+     "a": "delay_always|current|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 10.12,
+     "net_b": -1.14,
+     "net_diff": 11.26,
+     "dd_a": 59.85,
+     "dd_b": 48.98,
+     "dd_ratio": 1.222,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.799,
+        1.295
+       ],
+       "net_diff_ci90": [
+        -16.0,
+        34.94
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.784,
+        1.302
+       ],
+       "net_diff_ci90": [
+        -19.96,
+        43.95
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.827,
+        1.284
+       ],
+       "net_diff_ci90": [
+        -8.15,
+        27.47
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | current cap_off",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 3.92,
+     "net_b": -5.65,
+     "net_diff": 9.57,
+     "dd_a": 59.85,
+     "dd_b": 53.6,
+     "dd_ratio": 1.117,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.89,
+        1.336
+       ],
+       "net_diff_ci90": [
+        -20.8,
+        39.73
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.868,
+        1.344
+       ],
+       "net_diff_ci90": [
+        -19.97,
+        39.78
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.91,
+        1.23
+       ],
+       "net_diff_ci90": [
+        -9.69,
+        38.13
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 62.92,
+     "net_b": 11.75,
+     "net_diff": 51.17,
+     "dd_a": 52.0,
+     "dd_b": 53.02,
+     "dd_ratio": 0.981,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.502,
+        1.0
+       ],
+       "net_diff_ci90": [
+        11.23,
+        93.99
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.462,
+        1.0
+       ],
+       "net_diff_ci90": [
+        15.71,
+        98.25
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.732,
+        1.0
+       ],
+       "net_diff_ci90": [
+        5.76,
+        82.43
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q1 always vs recovery delay | all_bos cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_off",
+     "net_a": 13.84,
+     "net_b": 4.72,
+     "net_diff": 9.12,
+     "dd_a": 59.24,
+     "dd_b": 53.02,
+     "dd_ratio": 1.117,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.909,
+        1.257
+       ],
+       "net_diff_ci90": [
+        -11.86,
+        29.68
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.876,
+        1.236
+       ],
+       "net_diff_ci90": [
+        -10.62,
+        30.45
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.937,
+        1.207
+       ],
+       "net_diff_ci90": [
+        -6.2,
+        25.3
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q2_allbos_vs_current": [
+    {
+     "label": "Q2 all_bos vs current | immediate cap_on",
+     "a": "immediate|all_bos|cap_on",
+     "b": "immediate|current|cap_on",
+     "net_a": -66.37,
+     "net_b": -44.82,
+     "net_diff": -21.55,
+     "dd_a": 79.7,
+     "dd_b": 64.69,
+     "dd_ratio": 1.232,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.577,
+        2.201
+       ],
+       "net_diff_ci90": [
+        -126.92,
+        24.34
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.451,
+        2.088
+       ],
+       "net_diff_ci90": [
+        -122.23,
+        61.46
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.721,
+        2.327
+       ],
+       "net_diff_ci90": [
+        -110.72,
+        -24.29
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | immediate cap_off",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|current|cap_off",
+     "net_a": -25.19,
+     "net_b": -33.48,
+     "net_diff": 8.29,
+     "dd_a": 71.57,
+     "dd_b": 64.7,
+     "dd_ratio": 1.106,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.813,
+        1.754
+       ],
+       "net_diff_ci90": [
+        -55.53,
+        41.85
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.78,
+        1.607
+       ],
+       "net_diff_ci90": [
+        -50.55,
+        44.8
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.808,
+        2.032
+       ],
+       "net_diff_ci90": [
+        -62.92,
+        44.18
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_on",
+     "a": "delay_debt|all_bos|cap_on",
+     "b": "delay_debt|current|cap_on",
+     "net_a": 11.75,
+     "net_b": -1.14,
+     "net_diff": 12.89,
+     "dd_a": 53.02,
+     "dd_b": 48.98,
+     "dd_ratio": 1.082,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.566,
+        1.724
+       ],
+       "net_diff_ci90": [
+        -42.02,
+        48.29
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.555,
+        1.618
+       ],
+       "net_diff_ci90": [
+        -36.48,
+        53.1
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.652,
+        1.813
+       ],
+       "net_diff_ci90": [
+        -45.79,
+        28.35
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_debt cap_off",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|current|cap_off",
+     "net_a": 4.72,
+     "net_b": -5.65,
+     "net_diff": 10.37,
+     "dd_a": 53.02,
+     "dd_b": 53.6,
+     "dd_ratio": 0.989,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.684,
+        1.476
+       ],
+       "net_diff_ci90": [
+        -31.34,
+        33.27
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.674,
+        1.45
+       ],
+       "net_diff_ci90": [
+        -30.19,
+        37.42
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.704,
+        1.586
+       ],
+       "net_diff_ci90": [
+        -36.37,
+        25.86
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_on",
+     "a": "delay_always|all_bos|cap_on",
+     "b": "delay_always|current|cap_on",
+     "net_a": 62.92,
+     "net_b": 10.12,
+     "net_diff": 52.8,
+     "dd_a": 52.0,
+     "dd_b": 59.85,
+     "dd_ratio": 0.869,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.286,
+        1.729
+       ],
+       "net_diff_ci90": [
+        -29.7,
+        131.67
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.274,
+        1.544
+       ],
+       "net_diff_ci90": [
+        -22.49,
+        143.43
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.436,
+        1.775
+       ],
+       "net_diff_ci90": [
+        -34.85,
+        99.81
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q2 all_bos vs current | delay_always cap_off",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|current|cap_off",
+     "net_a": 13.84,
+     "net_b": 3.92,
+     "net_diff": 9.92,
+     "dd_a": 59.24,
+     "dd_b": 59.85,
+     "dd_ratio": 0.99,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.654,
+        1.447
+       ],
+       "net_diff_ci90": [
+        -43.94,
+        45.9
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.65,
+        1.409
+       ],
+       "net_diff_ci90": [
+        -40.27,
+        46.92
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.69,
+        1.51
+       ],
+       "net_diff_ci90": [
+        -51.14,
+        31.87
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q3_capoff_vs_capon": [
+    {
+     "label": "Q3 cap off vs on | immediate current",
+     "a": "immediate|current|cap_off",
+     "b": "immediate|current|cap_on",
+     "net_a": -33.48,
+     "net_b": -44.82,
+     "net_diff": 11.34,
+     "dd_a": 64.7,
+     "dd_b": 64.69,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.713,
+        1.155
+       ],
+       "net_diff_ci90": [
+        -14.18,
+        41.08
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.737,
+        1.161
+       ],
+       "net_diff_ci90": [
+        -16.98,
+        39.87
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.73,
+        1.198
+       ],
+       "net_diff_ci90": [
+        -18.46,
+        39.41
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | immediate all_bos",
+     "a": "immediate|all_bos|cap_off",
+     "b": "immediate|all_bos|cap_on",
+     "net_a": -25.19,
+     "net_b": -66.37,
+     "net_diff": 41.18,
+     "dd_a": 71.57,
+     "dd_b": 79.7,
+     "dd_ratio": 0.898,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.541,
+        1.635
+       ],
+       "net_diff_ci90": [
+        -8.51,
+        135.57
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.553,
+        2.14
+       ],
+       "net_diff_ci90": [
+        -49.65,
+        131.97
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.581,
+        1.392
+       ],
+       "net_diff_ci90": [
+        24.28,
+        119.6
+       ],
+       "degenerate": 5
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt current",
+     "a": "delay_debt|current|cap_off",
+     "b": "delay_debt|current|cap_on",
+     "net_a": -5.65,
+     "net_b": -1.14,
+     "net_diff": -4.51,
+     "dd_a": 53.6,
+     "dd_b": 48.98,
+     "dd_ratio": 1.094,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.786,
+        1.451
+       ],
+       "net_diff_ci90": [
+        -54.02,
+        36.51
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.713,
+        1.453
+       ],
+       "net_diff_ci90": [
+        -52.94,
+        41.5
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.939,
+        1.381
+       ],
+       "net_diff_ci90": [
+        -49.14,
+        24.93
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_debt all_bos",
+     "a": "delay_debt|all_bos|cap_off",
+     "b": "delay_debt|all_bos|cap_on",
+     "net_a": 4.72,
+     "net_b": 11.75,
+     "net_diff": -7.03,
+     "dd_a": 53.02,
+     "dd_b": 53.02,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.737,
+        1.438
+       ],
+       "net_diff_ci90": [
+        -51.6,
+        36.11
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.695,
+        1.513
+       ],
+       "net_diff_ci90": [
+        -51.39,
+        37.69
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.776,
+        1.284
+       ],
+       "net_diff_ci90": [
+        -47.08,
+        34.02
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always current",
+     "a": "delay_always|current|cap_off",
+     "b": "delay_always|current|cap_on",
+     "net_a": 3.92,
+     "net_b": 10.12,
+     "net_diff": -6.2,
+     "dd_a": 59.85,
+     "dd_b": 59.85,
+     "dd_ratio": 1.0,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.899,
+        1.495
+       ],
+       "net_diff_ci90": [
+        -65.16,
+        49.16
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.809,
+        1.51
+       ],
+       "net_diff_ci90": [
+        -65.16,
+        52.3
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.957,
+        1.459
+       ],
+       "net_diff_ci90": [
+        -61.35,
+        53.5
+       ],
+       "degenerate": 0
+      }
+     }
+    },
+    {
+     "label": "Q3 cap off vs on | delay_always all_bos",
+     "a": "delay_always|all_bos|cap_off",
+     "b": "delay_always|all_bos|cap_on",
+     "net_a": 13.84,
+     "net_b": 62.92,
+     "net_diff": -49.08,
+     "dd_a": 59.24,
+     "dd_b": 52.0,
+     "dd_ratio": 1.139,
+     "boot": {
+      "5": {
+       "ratio_ci90": [
+        0.88,
+        2.698
+       ],
+       "net_diff_ci90": [
+        -128.71,
+        24.08
+       ],
+       "degenerate": 0
+      },
+      "3": {
+       "ratio_ci90": [
+        0.854,
+        2.813
+       ],
+       "net_diff_ci90": [
+        -131.42,
+        18.35
+       ],
+       "degenerate": 0
+      },
+      "10": {
+       "ratio_ci90": [
+        0.881,
+        1.78
+       ],
+       "net_diff_ci90": [
+        -115.69,
+        33.52
+       ],
+       "degenerate": 0
+      }
+     }
+    }
+   ],
+   "q4_interactions": {
+    "allbos_effect_immediate": {
+     "cap_on": -21.55,
+     "cap_off": 8.29
+    },
+    "capoff_effect_immediate": {
+     "current": 11.34,
+     "all_bos": 41.18
+    },
+    "allbos_effect_delay_debt": {
+     "cap_on": 12.89,
+     "cap_off": 10.37
+    },
+    "capoff_effect_delay_debt": {
+     "current": -4.51,
+     "all_bos": -7.03
+    },
+    "allbos_effect_delay_always": {
+     "cap_on": 52.8,
+     "cap_off": 9.92
+    },
+    "capoff_effect_delay_always": {
+     "current": -6.2,
+     "all_bos": -49.08
+    }
+   },
+   "half_main_vs_recovery_delay": {
+    "label": "attribution: recovery delay vs half_main (cap on, current)",
+    "a": "delay_debt|current|cap_on",
+    "b": "half_main",
+    "net_a": -1.14,
+    "net_b": -31.3,
+    "net_diff": 30.16,
+    "dd_a": 48.98,
+    "dd_b": 41.22,
+    "dd_ratio": 1.188,
+    "boot": {
+     "5": {
+      "ratio_ci90": [
+       0.6,
+       1.981
+      ],
+      "net_diff_ci90": [
+       -49.87,
+       121.56
+      ],
+      "degenerate": 0
+     },
+     "3": {
+      "ratio_ci90": [
+       0.554,
+       2.004
+      ],
+      "net_diff_ci90": [
+       -47.14,
+       126.85
+      ],
+      "degenerate": 0
+     },
+     "10": {
+      "ratio_ci90": [
+       0.635,
+       1.549
+      ],
+      "net_diff_ci90": [
+       -5.87,
+       99.36
       ],
       "degenerate": 0
      }
