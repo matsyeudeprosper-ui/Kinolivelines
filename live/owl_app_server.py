@@ -12200,7 +12200,8 @@ function pvRender(d){
   if(d.bot_killed){$('pv-bot-t').textContent=en?'The demo is paused — it restarts soon.':'La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
   else if(d.era_start){const es=new Date(d.era_start);if(!isNaN(es)&&Date.now()-es.getTime()<7*86400e3){
    (function(){const dd=String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0');
-   $('pv-bot-t').textContent=en?('Demo restarted on '+dd+' · it starts again from zero'):('D\\u00e9mo red\\u00e9marr\\u00e9e le '+dd+' \\u00b7 elle repart de z\\u00e9ro');})();}}
+   // owner 2026-10-10: just when it started - no "restarted", no explanation
+   $('pv-bot-t').textContent=en?('Demo since '+dd):('D\\u00e9mo depuis le '+dd);})();}}
  }catch(e){}
 }
 </script><script>
