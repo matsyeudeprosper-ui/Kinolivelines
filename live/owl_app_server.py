@@ -1865,16 +1865,6 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pv-nav{display:flex;gap:8px}
 .pv-pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 11px;font-size:.7rem;color:var(--text2);font-weight:700}
 .pf{--pfc:var(--warn)}
-/* 2026-10-11 (owner): the AI card - violet is the AI's colour */
-.aic{margin:12px 0 0;border-radius:var(--r-lg,22px);padding:18px 18px 0;overflow:hidden;text-align:left;cursor:pointer;
- background:radial-gradient(120% 90% at 100% 0%,rgba(167,139,250,.22),transparent 60%),linear-gradient(160deg,#151a33,#0d1424);
- border:1px solid rgba(167,139,250,.28);box-shadow:0 14px 36px rgba(0,0,0,.35)}
-.aic-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.aic-ey{display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd;white-space:nowrap}
-.aic-ey svg{width:16px;height:16px;fill:#c4b5fd}
-.aic-ago{font-size:.78rem;color:#a9b8d8;white-space:nowrap}
-.aic-q{margin:12px 0 0;font-size:.98rem;line-height:1.6;color:#e6ecf8;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.aic-go{display:flex;justify-content:space-between;align-items:center;margin:16px -18px 0;padding:13px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:.9rem;font-weight:800;color:#c4b5fd}
 /* 2026-10-11 (owner): the proof card on the HOME (same design as the landing) - one card, two views:
    the witness account (real money) first, the backtest second */
 .rc2{margin:12px 0 0;max-width:none;cursor:pointer;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
@@ -2603,11 +2593,16 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
      measured on a real account: return, win rate, profit factor, max drawdown -->
 <!-- 2026-10-11 (owner): the home proof card, same design as the landing card:
      witness account (real money) / backtest switch -->
-<!-- 2026-10-11 (owner): the AI's latest words, one tap to the lab -->
-<div class="aic" id="aicard" style="display:none" role="link" tabindex="0">
- <div class="aic-top"><span class="aic-ey"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg><span id="aic-ey">L&rsquo;IA du robot</span></span><span class="aic-ago" id="aic-ago"></span></div>
- <p class="aic-q" id="aic-q"></p>
- <div class="aic-go" id="aic-go"><span id="aic-gt">Voir le labo</span><span aria-hidden="true">&rsaquo;</span></div>
+<!-- 2026-10-11 (owner): the lab's latest clue, in the home's own style -->
+<div class="panel" id="aicard" role="link" tabindex="0" style="display:none;margin-top:12px">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl" id="aic-ey">Le labo &middot; derni&egrave;re piste</div>
+  <span id="aic-go" style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="aic-gt">Le labo</span>
+   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <div id="aic-h" style="font-size:1.08rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
+ <div id="aic-c" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+ <div id="aic-t" style="display:flex;gap:6px;margin-top:12px"></div>
+ <div id="aic-n" style="font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.45"></div>
 </div>
 <div class="rc2" id="rentcard" role="link" tabindex="0" style="display:none" aria-label="Preuve de rentabilit&eacute;"
  onclick="if(!event.target.closest('.vsw'))location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')"
@@ -7166,14 +7161,21 @@ async function loadAI(){const el=document.getElementById('aicard');if(!el)return
  if(!(window._aiT&&Date.now()-window._aiT<120000)){window._aiT=Date.now();
   try{const r=await fetch(B+'ai_pulse?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err)window._aiJ=j;}}catch(e){}}
  aiPaint();}
-function aiPaint(){const j=window._aiJ,el=document.getElementById('aicard');if(!el)return;const en=LANG()==='en',txt=j&&(en?(j.en||j.fr):j.fr);
- if(!txt){el.style.display='none';return;}const $=id=>document.getElementById(id);
- const m=j.t?Math.max(1,Math.round((Date.now()/1000-j.t)/60)):null;
- $('aic-ago').textContent=m===null?'':(m<60?(en?m+' min ago':'il y a '+m+' min'):(m<1440?(en?Math.round(m/60)+' h ago':'il y a '+Math.round(m/60)+' h'):(en?Math.round(m/1440)+' d ago':'il y a '+Math.round(m/1440)+' j')));
- $('aic-ey').textContent=en?'The robot’s AI':'L’IA du robot';$('aic-q').textContent=txt;
+function aiPaint(){const j=window._aiJ,el=document.getElementById('aicard');if(!el)return;const c=j&&j.piste;if(!c){el.style.display='none';return;}
+ const en=LANG()==='en',$=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+ const chip=(t,col)=>'<span class="pchip" style="color:'+col+';background:var(--tile-bg)">'+t+'</span>';
+ const L={trop_tot:[en?'too few trades':'pas assez de trades','var(--muted)'],a_tester:[en?'worth checking':'à vérifier','var(--up-soft)'],divergent:[en?'not clear':'pas net','var(--warn)']}[c.label]||[en?'being counted':'en cours','var(--muted)'];
+ const ds=c.date?c.date.slice(8,10)+'/'+c.date.slice(5,7):'';
+ $('aic-ey').textContent=en?'The lab · latest clue':'Le labo · dernière piste';$('aic-gt').textContent=en?'The lab':'Le labo';
+ $('aic-h').textContent=en?(c.name_en||c.name_fr):(c.name_fr||c.name_en);
+ $('aic-c').innerHTML=chip(L[0],L[1])+(c.by==='chercheur'?chip(en?'opened by the AI':'ouverte par l’IA','var(--accent-soft)'):'')+(ds?chip((en?'since ':'depuis le ')+ds,'var(--muted)'):'');
+ const pc=x=>x==null?'—':x+'\u202f%',tile=(l,x,col)=>'<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:1.02rem;color:'+(col||'var(--text)')+'">'+x+'</b><span style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const better=c.win!=null&&c.rest_win!=null?c.win-c.rest_win:null;
+ $('aic-t').innerHTML=tile('trades',c.n)+tile(en?'won':'gagnés',pc(c.win),better==null?null:(better>=0?'var(--up-soft)':'var(--down-soft)'))+tile(en?'the others':'les autres',pc(c.rest_win));
+ $('aic-n').textContent=(c.n<30)?(en?('A question the AI put to the real trades. '+(30-c.n)+' more trades before it can be read: under 30, a number can still be luck.'):('Une question que l’IA pose aux vrais trades. Encore '+(30-c.n)+' trades avant de pouvoir conclure : sous 30, un chiffre peut être de la chance.'))
+  :(en?'A question the AI put to the real trades, against all the others.':'Une question que l’IA pose aux vrais trades, contre tous les autres.');
  const canLab=typeof labVisible==='function'&&labVisible(),go=()=>{tab('marche',document.getElementById('tb-marche'));mxView('lab');};
- $('aic-go').style.display=canLab?'':'none';$('aic-gt').textContent=en?'See the lab':'Voir le labo';
- el.style.paddingBottom=canLab?'':'18px';el.style.cursor=canLab?'pointer':'default';
+ $('aic-go').style.display=canLab?'':'none';el.style.cursor=canLab?'pointer':'default';
  el.onclick=canLab?go:null;el.onkeydown=canLab?(e=>{if(e.key==='Enter')go();}):null;
  el.style.display='';}
 setTimeout(()=>{try{loadAI();}catch(e){}},1700);
@@ -10501,18 +10503,15 @@ _AI_CACHE = [0.0, None]
 
 
 def ai_pulse():
-    """2026-10-11 (owner): "just a card that shows what the AI is saying, linking
-    to the lab". The latest message of the AI's day watch (lab/veille.jsonl)."""
+    """2026-10-11 (owner): the home card = the lab's latest "piste" (a pile of
+    real trades the chercheur put against all the others) with its numbers."""
     if _AI_CACHE[1] and time.time() - _AI_CACHE[0] < 120:
         return _AI_CACHE[1]
-    v = (lab_payload().get("veille") or [])
-    last = v[-1] if v else {}
-    t = None
-    try:
-        t = int(datetime.strptime(last.get("t", ""), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp())
-    except Exception:
-        pass
-    out = {"t": t, "fr": last.get("fr") or "", "en": last.get("en") or ""}
+    C = [c for c in (lab_payload().get("candidates") or []) if c.get("label") not in ("invalide", "doublon")]
+    C.sort(key=lambda c: (c.get("date") or "", c.get("by") == "chercheur"))
+    c = C[-1] if C else None
+    out = {"piste": None if not c else {k: c.get(k) for k in ("id", "name_fr", "name_en", "by", "date", "label", "n", "win", "rest_win", "net", "h1", "h2")},
+           "count": len(C)}
     _AI_CACHE[0], _AI_CACHE[1] = time.time(), out
     return out
 
