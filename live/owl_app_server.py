@@ -7111,6 +7111,8 @@ function pfWeeks(cv){if(!cv||cv.length<8)return [];const W=[];let wk=null,start=
 // 2026-10-11 (owner): the home card of the "Rentabilite" space - real account,
 // return + the three numbers traders read first; the same arithmetic as the page
 async function loadRent(){const el=document.getElementById('rentcard');if(!el)return;
+ // owner 2026-10-11: the proof card sits at the very bottom of the home
+ {const h=document.getElementById('tab-home');if(h&&h.lastElementChild!==el)h.appendChild(el);}
  if(window._rtT&&Date.now()-window._rtT<300000)return;window._rtT=Date.now();
  let j=null;try{const r=await fetch(B+'rentabilite_data?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||!j.real||!j.real.trades||!j.real.trades.length){el.style.display='none';return;}
