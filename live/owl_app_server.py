@@ -2558,7 +2558,8 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  onclick="tab('marche',document.getElementById('tb-marche'));mxView('robot',true)"
  onkeydown="if(event.key==='Enter')this.click()">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-  <div class="lbl" id="rbn-lbl">Le robot en ce moment</div></div>
+  <div class="lbl" id="rbn-lbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Le robot en ce moment</div>
+  <span id="rbn-ago" style="font-size:.74rem;color:var(--muted);white-space:nowrap"></span></div>
  <div class="jsteps" id="rbn-steps" style="margin-top:12px">
   <div class="jl"></div>
   <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
@@ -4720,9 +4721,14 @@ function drawJourney(d){
  else if(k==='ready'||k==='flip'||k==='forming'||k==='nogate'){step=2;
   txt=k==='forming'?T('j_forming'):(k==='flip'?T('j_flip'):T('j_ready'));}
  else{step=1;txt=k==='storm'?T('j_storm'):((k==='nervous'||k==='brisk')?T('j_nervous'):T('j_none'));}
- if(((d.ledger||{}).debt||0)>0.5&&step<3)txt+=T('j_debt');
+ // 2026-10-11 (owner): the headline in bold, the caution and the trend rule as two small lines
+ const extra=[];
+ const SVG=p=>'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
+ if(((d.ledger||{}).debt||0)>0.5&&step<3)extra.push([SVG('<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>'),T('j_debt').trim(),'var(--warn)']);
  // 2026-10-10 (owner): what the robot is waiting for under the trend-following rule
- if(step<3){try{const pr=pbRule(d.meteo_struct);if(pr.sent)txt+=pr.sent;}catch(e){}}
+ if(step<3){try{const pr=pbRule(d.meteo_struct),ms=d.meteo_struct||{};if(pr.sent){const t=ms.pb_trend,wr=ms.pb_side==='wrong';
+  extra.push([SVG(t===1?'<path d="M12 19V5M5 12l7-7 7 7"/>':(t===-1?'<path d="M12 5v14M5 12l7 7 7-7"/>':'<path d="M5 12h14"/>')),pr.sent.trim(),
+   wr?'var(--warn)':(t===1?'var(--up-soft)':(t===-1?'var(--down-soft)':'var(--muted)'))]);}}catch(e){}}
  const jp=document.getElementById('jprog');
  if(jp){if(step===3&&open.length){const p=open[0];
    const e=parseFloat(p.e)||0,tp=parseFloat(p.tp)||0,lot=parseFloat(p.lot)||0,pl=parseFloat(p.pl)||0;
@@ -4736,9 +4742,24 @@ function drawJourney(d){
     '<div style="height:7px;border-radius:99px;width:'+(pct===null?0:pct.toFixed(0))+'%;'+
     'background:linear-gradient(90deg,var(--accent),var(--up));transition:width .8s"></div></div>';}
   else jp.style.display='none';}
- el.querySelectorAll('.js').forEach(x=>{const i=parseInt(x.dataset.i);
-  x.classList.toggle('on',i===step);x.classList.toggle('done',false);});
- setH(msg,txt);
+ // 2. the active step takes the colour of the situation
+ let tone=null;
+ if(step===3)tone=['var(--up)','var(--up-soft)','#fff'];
+ else if(step===4)tone=recent&&recent.p<0?['var(--down)','var(--down-soft)','#fff']:['var(--up)','var(--up-soft)','#fff'];
+ else if(step===1&&(k==='storm'||k==='nervous'||k==='brisk'))tone=['var(--warn)','var(--warn)','#1a1300'];
+ el.querySelectorAll('.js').forEach(x=>{const i=parseInt(x.dataset.i),on=i===step,jc=x.querySelector('.jc');
+  x.classList.toggle('on',on);x.classList.toggle('done',false);
+  x.style.color=on&&tone?tone[1]:'';
+  if(jc){jc.style.background=on&&tone?tone[0]:'';jc.style.borderColor=on&&tone?tone[0]:'';jc.style.color=on&&tone?tone[2]:'';jc.style.animation=on&&tone?'none':'';}});
+ // 3. how long - only when the time is actually known
+ {const ag=document.getElementById('rbn-ago');if(ag){const en=LANG()==='en';
+  const fm=s=>{const m=Math.max(1,Math.round(s/60));return m<60?m+' min':(m<1440?Math.round(m/60)+' h':Math.round(m/1440)+(en?' d':' j'));};
+  const lastX=Math.max(0,...(D.trades||[]).map(t=>t.x||0));let s='';
+  if(step===4&&recent)s=(en?'':'il y a ')+fm(now-recent.x)+(en?' ago':'');
+  else if(step<3&&k==='storm'&&d.meteo_since)s=(en?'for ':'depuis ')+fm(now-d.meteo_since);
+  else if(step<3&&lastX)s=(en?'last trade: ':'dernier trade : ')+fm(now-lastX);
+  ag.textContent=s;}}
+ setH(msg,'<b style="font-weight:700">'+txt+'</b>'+extra.map(x=>'<div style="display:flex;gap:9px;align-items:flex-start;margin-top:8px;font-size:.84rem;color:var(--muted2);line-height:1.45"><span style="flex:none;color:'+x[2]+';margin-top:1px">'+x[0]+'</span><span>'+x[1]+'</span></div>').join(''));
 }
 async function loadDay(){try{const r=await fetch(B+'day');if(!r.ok)return;
  window._day=await r.json();drawDay();drawNerv();}catch(e){}}
