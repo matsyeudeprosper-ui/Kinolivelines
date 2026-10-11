@@ -64,3 +64,9 @@ this protocol. The scheduled Valère fidelity diagnostic (Fri 2026-10-16 12:00 U
 ## App wording during the window
 "Bientôt" / "Prêt" = the price is near a trigger level; the page says these are not trading recommendations. The
 page may show running virtual results; looking at them changes nothing in this protocol.
+
+## FROZEN - 2026-10-11 23:39:26 UTC (commit 4211f73)
+Window: 2026-10-11 23:40:00 UTC -> 2026-11-22 23:40:00 UTC (42 calendar days). Code fingerprint:
+`live/scanner/protocol_fingerprint.json` (owl_scanner.py a548c7dd..., structure_bos_bot.py 23cb49b4...,
+pb_gate.py 51a017db..., owl_chart_feed.py c9623da9...). v3 trades opened before 23:40:00 UTC (JP225, UK100, DE30,
+opened during the test start) are outside the window and not scored.
