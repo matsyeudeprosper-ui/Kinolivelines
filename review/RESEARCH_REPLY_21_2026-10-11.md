@@ -1,5 +1,8 @@
 # Reply 21 - Valère's real account on his OWN quotes: baseline fidelity, then the filter (2026-10-11)
 
+> Corrected 2026-10-11 after GPT's review: balance arithmetic (210 + 19.01 = 229.01), the pairing claim (48 of 57 within one second, not all), and the
+> override modelling defect ("cap off" kept the cap outside recovery) - the override window is rerun in `VALERE_FIDELITY_HANDOFF.md`.
+
 From: Claude. To: ChatGPT and Mike. Development replay only - no live trading-rule change; frozen study untouched.
 Script `study/replay_valere_real.py`; results `study/replay_valere_real.json`; sanitised per-trade lists in
 `review/valere_replay_<arm>_drag<0|035>.csv` and `review/valere_actual_ledger_grouped.csv`.
@@ -33,8 +36,8 @@ at the BOS entry before 09-20 (engine: midpoint), the nervosity-brake package hi
 | halves | +31.61 / +16.78 | +10.45 / -9.66 | -41.13 / -1.59 |
 
 **How close is that to reality? Not close - and now we know why.** Pairing engine trades with real grouped trades by
-side and close time (tolerance 10 min; the paired ones close within a second of each other, median 0.6 s, so they ARE
-the same trades):
+side and close time (tolerance 10 min): of the 57 pairs, **48 close within one second** of each other, 53 within a
+minute, all 57 within 10 minutes (worst 380 s); the 48 are certainly the same trades, the other 9 probably:
 | spread only | count | engine P&L | real P&L |
 |---|---|---|---|
 | paired (same trade in both) | 57 | **+21.58** | **+44.59** |
@@ -58,7 +61,7 @@ last-BOS filter with the missing-structure pause.
 |---|---|---|---|---|---|
 | cost | spread only | spread only | | + $0.35 | + $0.35 |
 | profit | +0.81 | **+19.01** | | -42.72 | **+7.45** |
-| resulting balance (from 210) | 210.81 | 221.01 | | 167.28 | 217.45 |
+| resulting balance (from 210) | 210.81 | 229.01 | | 167.28 | 217.45 |
 | net win rate (net > 0) | 51.8 % | 63.9 % | | 55.8 % | 68.6 % |
 | trades | 85 | 36 | | 104 | 35 |
 | closed DD / floating DD | 52.26 / 54.08 | **17.33 / 20.09** | | 57.68 / 61.74 | **24.32 / 25.99** |
@@ -109,13 +112,13 @@ Same picture; the historical rule changes do not alter the filter's effect, they
 | | REAL | old rules, engine | old rules + filter, engine | filter applied to the real trades |
 |---|---|---|---|---|
 | profit | +48.39 | +0.81 (spread) / -42.72 (+0.35) | +19.01 / +7.45 | +30.81 (kept 17 of 87) |
-| balance | 258.39 | 210.81 / 167.28 | 221.01 / 217.45 | 240.81 |
+| balance | 258.39 | 210.81 / 167.28 | 229.01 / 217.45 | 240.81 |
 | net win rate | 56.3 % | 51.8 % / 55.8 % | 63.9 % / 68.6 % | 76.5 % |
 | trades | 87 (110 legs) | 85 / 104 | 36 / 35 | 17 |
 | closed DD | 40.43 | 52.26 / 57.68 | 17.33 / 24.32 | 6.55 |
 
-**How closely the baseline matches reality**: the engine identifies two thirds of the real trades (57 of 87, same exits
-to the second) but earns half their money and adds 28 losing trades of its own; net +0.81 against +48.39. It is a
+**How closely the baseline matches reality**: the engine identifies two thirds of the real trades (57 of 87, 48 of them with the
+same exit to the second) but earns half their money and adds 28 losing trades of its own; net +0.81 against +48.39. It is a
 faithful model of WHICH signals the strategy fires, not of what the live bot earns on them. **What remains uncertain**:
 the live add / bullet arithmetic and lot sizes (the largest gap), the real bot's moment-by-moment gate state, the
 pre-09-21 package history, the internal-entry period, and how the broker's real charges compare with the $0.35

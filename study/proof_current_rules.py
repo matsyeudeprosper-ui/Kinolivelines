@@ -54,14 +54,15 @@ def run(cfg, drag, TM, BID, ASK, END, opps, bars, S):
 if __name__ == "__main__":
     K.install_nopause_gate()
     TM, BID, ASK, n_bad, END = E.load_ticks()
-    cfg_b = H.package_cfg("base", {"balance": BAL}); cfg0 = H.cfg_strict(dict(cfg_b, drag=0.0, limits_live=1))
+    # GPT 2026-10-11: the live base package scales lot and cap with the balance at each day roll - the test must too
+    cfg_b = H.package_cfg("base", {"balance": BAL}); cfg_b.update({"scale_lot": 1, "scale_daily": 1}); cfg0 = H.cfg_strict(dict(cfg_b, drag=0.0, limits_live=1))
     opps, bars = E.streams(cfg0, E.R)
     cached = pickle.load(open(K.CACHE, "rb")); S_idx = cached["states"]
     assert all(o["i"] in S_idx for o in opps), "the saved sticky structure does not cover every opportunity - rerun tick_engine_pbgate_sticky.py"
     S = {o["t"]: S_idx[o["i"]] for o in opps}
     res = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "balance": BAL, "package": "base", "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
            "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
-           "engine": "tick engine (bid/ask ticks of the std account), live gate order, adaptive cap rule, causal + sticky pullback structure with 8000-bar warm-up (fingerprint %s)" % cached.get("fingerprint"),
+           "engine": "tick engine (bid/ask ticks of the std account), live gate order, adaptive cap rule, daily balance scaling of lot and cap, causal + sticky pullback structure with 8000-bar warm-up (fingerprint %s)" % cached.get("fingerprint"),
            "rules": "today's rules: trend / last-BOS filter with the missing-structure pause, current recovery restriction, package brakes; 'no_filter' = the same without the filter", "rows": {}}
     for drag in (0.0, 0.35):
         cfg = H.cfg_strict(dict(cfg_b, drag=drag, limits_live=1)); t0 = time.time()

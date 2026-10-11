@@ -56,6 +56,7 @@ class PolicyArm(E.Arm):
     def cap_today(self, debt_now):
         """the enforced day target right now, or None = unrestricted (live effective_cap_today, adaptive rule)"""
         if not self.day_cap_eff: return None
+        if self.cap_rule == "off": return None      # GPT 2026-10-11: a lifted cap is lifted EVERYWHERE, not only in recovery (the recorded manual override)
         cap = float(self.day_cap_eff)
         if self.cap_rule == "adaptive":
             if debt_now > 0.5 and self.c.get("day_cap_waived", 1):
