@@ -1,0 +1,387 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Rentabilité</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-10-11 (owner): "Preuve de rentabilite" - the strategy measured, for traders,
+   investors and grandma. Same tokens as the app and Patrimoine. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
+ --border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--muted2:#a9b8c8;
+ --accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;--warn:#e8c55a;
+ --gold:#e8c55a;--r:16px;--r-lg:24px;--hero1:#0d2236;--hero2:#103a5c;--grid:rgba(255,255,255,.06);--tip:#0e1621;
+ --ok-bg:rgba(46,204,113,.12);--mid-bg:rgba(232,197,90,.12);--bad-bg:rgba(255,92,92,.12)}
+:root[data-theme=light]{--bg:#eef2f7;--surface:#ffffff;--surface2:#f6f8fb;--surface3:#e6ecf4;--border:#dde4ed;--border2:#c7d2df;
+ --hl:inset 0 1px 0 rgba(255,255,255,.7);--text:#0f172a;--text2:#33415a;--muted:#5f6f85;--muted2:#4c5b70;
+ --accent:#2563eb;--accent-soft:#1d4ed8;--accent-bg:rgba(37,99,235,.10);--up:#15803d;--up-soft:#166534;--down:#dc2626;--down-soft:#b91c1c;
+ --warn:#a16207;--gold:#a16207;--grid:rgba(15,23,42,.07);--tip:#ffffff;--hero1:#123a63;--hero2:#1d5a94}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));overflow-x:hidden}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+#aur{position:fixed;inset:-20% -10% auto -10%;height:460px;z-index:0;pointer-events:none;
+ background:radial-gradient(55% 60% at 18% 28%,rgba(46,204,113,.18),transparent 70%),radial-gradient(50% 55% at 85% 18%,rgba(59,130,246,.22),transparent 70%),radial-gradient(40% 40% at 60% 70%,rgba(232,197,90,.08),transparent 70%);filter:blur(10px)}
+header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 6px}
+.hrow{display:flex;align-items:center;gap:12px}
+#back{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex:none}
+.ttl{flex:1;min-width:0}.ttl h1{font-size:1.25rem;font-weight:800;letter-spacing:-.01em}
+.ttl div{font-size:.78rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--up-soft);border:1px solid rgba(46,204,113,.35);background:var(--ok-bg);border-radius:99px;padding:5px 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.35}}
+nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 72%,transparent);padding:10px 0 12px}
+.tabs{display:flex;gap:4px;position:relative;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--hl)}
+.tab{flex:1 1 0;border:0;background:transparent;color:var(--muted2);font-size:.8rem;font-weight:700;padding:9px 6px;border-radius:12px;position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:color .2s;white-space:nowrap}
+.tab svg{width:15px;height:15px;flex:none}.tab.on{color:var(--text)}
+#tabind{position:absolute;top:4px;bottom:4px;border-radius:12px;background:var(--surface3);border:1px solid var(--border2);transition:left .28s cubic-bezier(.3,.7,.2,1),width .28s cubic-bezier(.3,.7,.2,1);z-index:0}
+.pane{display:none}.pane.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px;margin-bottom:14px;position:relative;overflow:hidden}
+.card h2{font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card .sub{font-size:.82rem;color:var(--muted);margin:6px 0 12px;line-height:1.5}
+.hero{background:linear-gradient(145deg,var(--hero1),var(--hero2));border-color:rgba(143,198,255,.18);padding:20px 18px 18px}
+.hero:after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(141,240,187,.18),transparent 70%)}
+.eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;display:flex;align-items:center;gap:8px}
+.verdict{display:inline-flex;align-items:center;gap:7px;margin-top:10px;font-size:.78rem;font-weight:800;border-radius:99px;padding:6px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff}
+.verdict i{width:8px;height:8px;border-radius:50%}
+.big{font-size:3rem;font-weight:900;letter-spacing:-.035em;line-height:1;margin-top:12px;color:#fff}
+.big small{font-size:1rem;font-weight:700;letter-spacing:0;color:#9fc2de;margin-left:6px}
+.hero p{font-size:.92rem;line-height:1.5;color:#d6e6f3;margin-top:10px;max-width:440px}
+.hero .spark{margin-top:14px;height:66px}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.pil{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:13px 12px 12px;position:relative;text-align:left;box-shadow:var(--hl);color:var(--text)}
+.pil .k{padding-right:16px;font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.pil .v{font-size:1.45rem;font-weight:900;letter-spacing:-.02em;margin-top:6px;line-height:1}
+.pil .g{height:5px;border-radius:99px;background:var(--surface3);margin-top:10px;overflow:hidden}
+.pil .g i{display:block;height:100%;border-radius:99px}
+.pil .w{font-size:.7rem;color:var(--muted2);margin-top:8px;line-height:1.35;min-height:2.7em}
+.pil .q{position:absolute;right:9px;top:9px;width:18px;height:18px;border-radius:50%;border:1px solid var(--border2);color:var(--muted);font-size:.66rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:3px 8px}
+.b-ok{background:var(--ok-bg);color:var(--up-soft)}.b-mid{background:var(--mid-bg);color:var(--warn)}.b-bad{background:var(--bad-bg);color:var(--down-soft)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;position:relative;text-align:left;color:var(--text);font:inherit;width:100%}
+.tile .k{padding-right:18px;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font-size:1.15rem;font-weight:800;margin-top:5px;letter-spacing:-.01em}
+.tile .n{font-size:.72rem;color:var(--muted);margin-top:3px;line-height:1.35}
+.tile.tap:after{content:"i";position:absolute;right:9px;top:9px;width:15px;height:15px;border-radius:50%;border:1px solid var(--border2);color:var(--muted);font-size:.58rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pos{color:var(--up)}.neg{color:var(--down)}.neu{color:var(--text)}.gold{color:var(--gold)}
+.chart{position:relative;width:100%}.chart svg{display:block;width:100%;overflow:visible}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--text2);margin-top:10px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--muted2);font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:9px}
+.seg button.on{background:var(--surface3);color:var(--text);box-shadow:inset 0 0 0 1px var(--border2)}
+.cmp{display:grid;grid-template-columns:1.2fr 1fr 1fr;font-size:.82rem}
+.cmp div{padding:10px 6px;border-top:1px solid var(--border)}
+.cmp .h{font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border-top:0;padding-top:0}
+.cmp .l{color:var(--muted2)}.cmp .r{text-align:right;font-weight:800}
+.cmp .win{color:var(--up-soft)}
+.gm{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,rgba(232,197,90,.10),rgba(232,197,90,.03));border:1px solid rgba(232,197,90,.25);border-radius:var(--r-lg);padding:15px;margin-bottom:14px}
+.gm .ic{width:36px;height:36px;border-radius:12px;background:rgba(232,197,90,.16);display:flex;align-items:center;justify-content:center;flex:none;color:var(--gold)}
+.gm b{display:block;font-size:.9rem;margin-bottom:3px}.gm p{font-size:.86rem;line-height:1.55;color:var(--text2)}
+.note{font-size:.8rem;line-height:1.55;color:var(--text2);border-left:3px solid var(--border2);padding:2px 0 2px 12px;margin-top:12px}
+.note.w{border-color:var(--warn)}
+.tl{position:relative;padding-left:22px}
+.tl:before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:var(--border2);border-radius:2px}
+.tl .it{position:relative;padding:0 0 13px}
+.tl .it:before{content:"";position:absolute;left:-19px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--accent)}
+.tl .it.new:before{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px var(--gold)}
+.tl .it b{display:block;font-size:.86rem;line-height:1.35}.tl .it span{font-size:.72rem;color:var(--muted)}
+.gl .li{padding:12px 0;border-top:1px solid var(--border)}.gl .li:first-child{border-top:0;padding-top:4px}
+.gl .li b{font-size:.88rem}.gl .li p{font-size:.8rem;color:var(--muted2);line-height:1.5;margin-top:3px}
+.lights .lt{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--border);font-size:.84rem;line-height:1.45;color:var(--text2)}
+.lights .lt:first-child{border-top:0;padding-top:2px}
+.lights .lt i{width:10px;height:10px;border-radius:50%;flex:none;margin-top:5px}
+.skel{height:120px;border-radius:var(--r-lg);background:var(--surface);margin-bottom:14px;animation:pulse 1.2s infinite alternate}
+@keyframes pulse{from{opacity:.55}to{opacity:1}}
+.foot{font-size:.72rem;color:var(--muted);text-align:center;margin-top:8px;line-height:1.6;padding:0 8px}
+#tip{position:fixed;z-index:20;pointer-events:none;background:var(--tip);border:1px solid var(--border2);border-radius:12px;padding:8px 10px;font-size:.78rem;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .12s;max-width:220px;line-height:1.4}
+/* bottom sheet */
+#sh{position:fixed;inset:0;z-index:30;display:none;align-items:flex-end;background:rgba(4,8,13,.62);backdrop-filter:blur(3px)}
+#sh.on{display:flex;animation:fadeb .2s ease}
+@keyframes fadeb{from{opacity:0}to{opacity:1}}
+#shb{width:100%;max-width:560px;margin:0 auto;background:var(--surface);border-top:1px solid var(--border2);border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));max-height:86vh;overflow:auto;animation:up .28s cubic-bezier(.3,.7,.2,1)}
+@keyframes up{from{transform:translateY(40px)}to{transform:none}}
+#shb .grab{width:40px;height:4px;border-radius:2px;background:var(--border2);margin:2px auto 14px}
+#shb h3{font-size:1.15rem;font-weight:800;letter-spacing:-.01em}
+#shb .val{font-size:2rem;font-weight:900;letter-spacing:-.02em;margin-top:6px}
+#shb .blk{margin-top:14px;border-radius:16px;padding:12px 13px;background:var(--surface2);border:1px solid var(--border)}
+#shb .blk .t{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+#shb .blk p{font-size:.88rem;line-height:1.55;color:var(--text2)}
+#shb .blk.g{background:linear-gradient(135deg,rgba(232,197,90,.10),rgba(232,197,90,.03));border-color:rgba(232,197,90,.25)}
+#shb .scale{display:flex;gap:4px;margin-top:8px}
+#shb .scale span{flex:1;font-size:.66rem;font-weight:700;text-align:center;padding:6px 2px;border-radius:8px;color:var(--muted2);background:var(--surface3)}
+#shb .scale span.on{color:#0b1118;font-weight:900}
+#shb .close{width:100%;border:1px solid var(--border2);border-radius:14px;padding:12px;font-weight:800;font-size:.9rem;background:var(--surface3);color:var(--text);margin-top:16px}
+@media (max-width:360px){.pil .v{font-size:1.2rem}.big{font-size:2.5rem}.tab span{display:none}}
+</style></head><body>
+<div id="aur"></div>
+<div class="wrap">
+<header><div class="hrow">
+ <a id="back" href="#" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+ <div class="ttl"><h1 id="h1">Rentabilité</h1><div id="hsub">&nbsp;</div></div>
+ <span class="live"><i></i><span id="livet">En direct</span></span>
+</div></header>
+<nav><div class="tabs" id="tabs"><span id="tabind"></span></div></nav>
+<main id="main"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
+<div class="foot" id="foot"></div>
+</div>
+<div id="tip"></div>
+<div id="sh"><div id="shb"></div></div>
+<script>
+const tok=location.pathname.split('/')[1];
+const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
+const tx=(fr,en)=>EN?en:fr;
+document.getElementById('back').onclick=e=>{e.preventDefault();if(history.length>1)history.back();else location.href='/'+tok+'/';};
+const $=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const money=(v,sign)=>{const a=Math.abs(v);return (v<0?'−':(sign&&v>0?'+':''))+'$'+(a>=1000?a.toFixed(0):a.toFixed(2));};
+const pct=(v,sign,d)=>(v<0?'−':(sign&&v>0?'+':''))+Math.abs(v).toFixed(d===undefined?(Math.abs(v)<10?1:0):d)+' %';
+const num=(v,d)=>v===null||v===undefined||!isFinite(v)?'—':v.toFixed(d===undefined?2:d).replace('.',EN?'.':',');
+const sgn=v=>v>0.004?'pos':(v<-0.004?'neg':'neu');
+const dfmt=t=>{const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
+const ICON={ov:'<path d="M12 3l2.6 5.3 5.9.9-4.2 4.1 1 5.8L12 16.4 6.7 19.1l1-5.8-4.2-4.1 5.9-.9z"/>',
+ re:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+ te:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/>',
+ me:'<circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>',
+ gm:'<path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/>'};
+const svgI=(k,s)=>'<svg width="'+(s||15)+'" height="'+(s||15)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICON[k]+'</svg>';
+
+/* ------------------------------------------------------------ the numbers */
+// every metric from a list of trade results (net, after the broker's costs); won = net > 0
+function stats(P,bal0){
+ const n=P.length,W=P.filter(x=>x>0),L=P.filter(x=>x<=0);
+ const gw=W.reduce((a,b)=>a+b,0),gl=-L.reduce((a,b)=>a+b,0),net=gw-gl;
+ let cum=0,pk=0,mdd=0,mddPct=0,ws=0,ls=0,mws=0,mls=0,eqPk=bal0||0;
+ P.forEach(p=>{cum+=p;pk=Math.max(pk,cum);mdd=Math.max(mdd,pk-cum);
+  const eq=(bal0||0)+cum;eqPk=Math.max(eqPk,eq);if(eqPk>0)mddPct=Math.max(mddPct,(eqPk-eq)/eqPk*100);
+  if(p>0){ws++;ls=0;}else{ls++;ws=0;}mws=Math.max(mws,ws);mls=Math.max(mls,ls);});
+ const avgW=W.length?gw/W.length:0,avgL=L.length?gl/L.length:0,mean=n?net/n:0;
+ const sd=n>1?Math.sqrt(P.reduce((a,p)=>a+(p-mean)*(p-mean),0)/(n-1)):0;
+ return {n,wins:W.length,losses:L.length,wr:n?100*W.length/n:0,gw,gl,net,pf:gl>0?gw/gl:(gw>0?Infinity:0),avgW,avgL,
+  payoff:avgL>0?avgW/avgL:null,exp:mean,best:n?Math.max(...P):0,worst:n?Math.min(...P):0,mws,mls,mdd,mddPct,
+  rf:mdd>0?net/mdd:null,curDD:pk-cum,ret:bal0?100*net/bal0:null,sqn:sd>0?Math.sqrt(n)*mean/sd:null};}
+// verdict bands (traders' usual reading)
+const band={wr:v=>v>=55?'ok':(v>=45?'mid':'bad'),pf:v=>v>=1.5?'ok':(v>=1.15?'mid':'bad'),dd:v=>v<=12?'ok':(v<=22?'mid':'bad'),
+ rf:v=>v>=2?'ok':(v>=1?'mid':'bad'),exp:v=>v>0.15?'ok':(v>0?'mid':'bad'),sqn:v=>v>=2?'ok':(v>=1?'mid':'bad')};
+const bcol=b=>b==='ok'?css('--up'):(b==='mid'?css('--warn'):css('--down'));
+const bword=b=>b==='ok'?tx('solide','solid'):(b==='mid'?tx('correct','fair'):tx('faible','weak'));
+const badge=b=>'<span class="badge b-'+b+'">'+bword(b)+'</span>';
+
+/* ------------------------------------------------------------ the words */
+// one entry per metric: what traders read, what it means in plain words, the usual scale
+const DOC={
+ wr:{t:tx('Taux de réussite','Win rate'),tr:tx('Part des trades fermés avec un résultat net positif, frais du courtier déduits. Une trade de rattrapage qui accompagne une entrée compte avec elle : c’est un seul trade.','Share of trades closed with a positive net result, after the broker’s costs. A recovery order riding with an entry counts with it: one trade.'),
+  gm:tx('Sur 10 fois où le robot essaie, combien de fois il gagne. Mais attention : gagner souvent ne suffit pas, il faut aussi que les gains soient plus gros que les pertes. C’est le rôle du chiffre suivant.','Out of 10 tries, how many times the robot wins. Careful: winning often is not enough, the wins also have to be bigger than the losses. That is the next number’s job.'),
+  sc:[['< 45 %','bad'],['45–55 %','mid'],['> 55 %','ok']]},
+ pf:{t:tx('Profit factor','Profit factor'),tr:tx('Total des gains divisé par le total des pertes. Au-dessus de 1 la stratégie gagne de l’argent ; 1,5 et plus est considéré comme solide, au-delà de 2 comme rare sur la durée.','Gross profit divided by gross loss. Above 1 the strategy makes money; 1.5 and up is considered solid, above 2 rare over time.'),
+  gm:tx('Pour chaque dollar perdu, combien de dollars gagnés. 1,5 veut dire : quand on perd 1 $, on en gagne 1,50 $ à côté.','For every dollar lost, how many dollars won. 1.5 means: when we lose 1 $, we win 1.50 $ alongside.'),
+  sc:[['< 1,15','bad'],['1,15–1,5','mid'],['> 1,5','ok']]},
+ dd:{t:tx('Baisse maximale','Max drawdown'),tr:tx('La plus grande chute du solde depuis un sommet, en pourcentage de ce sommet (trades fermés). C’est la mesure du risque que regardent les investisseurs en premier.','The largest fall of the balance from a peak, as a share of that peak (closed trades). The risk measure investors look at first.'),
+  gm:tx('Le pire moment à traverser. Si le compte est monté à 100 et redescendu à 85 avant de repartir, la baisse maximale est de 15 %. Plus c’est petit, plus c’est confortable.','The worst stretch to sit through. If the account rose to 100 and fell to 85 before climbing again, the max drawdown is 15 %. The smaller, the calmer.'),
+  sc:[['> 22 %','bad'],['12–22 %','mid'],['< 12 %','ok']]},
+ ret:{t:tx('Rendement','Return'),tr:tx('Résultat net des trades divisé par le capital de départ. Dépôts et retraits ne comptent pas comme gains.','Net trading result divided by the starting capital. Deposits and withdrawals never count as gains.'),
+  gm:tx('Combien le compte a grandi grâce au robot, en pourcentage de ce qu’il y avait au début.','How much the account grew thanks to the robot, as a share of what was there at the start.')},
+ exp:{t:tx('Espérance par trade','Expectancy per trade'),tr:tx('Résultat net moyen d’un trade. Positive = avantage statistique ; c’est ce que chaque nouveau trade rapporte en moyenne.','Average net result of one trade. Positive = statistical edge; what each new trade earns on average.'),
+  gm:tx('Ce qu’un trade rapporte en moyenne, en comptant les gagnants et les perdants ensemble.','What one trade brings on average, winners and losers together.')},
+ payoff:{t:tx('Ratio gain / perte','Payoff ratio'),tr:tx('Gain moyen d’un trade gagnant divisé par la perte moyenne d’un trade perdant. À lire avec le taux de réussite : ensemble ils font l’espérance.','Average win divided by average loss. Read it with the win rate: together they make the expectancy.'),
+  gm:tx('Quand on gagne, on gagne combien de fois ce qu’on perd quand on perd.','When we win, how many times what we lose when we lose.')},
+ rf:{t:tx('Facteur de récupération','Recovery factor'),tr:tx('Résultat net divisé par la baisse maximale en dollars. Au-dessus de 1, la stratégie a gagné plus que son pire trou.','Net result divided by the max drawdown in dollars. Above 1 the strategy earned more than its deepest hole.'),
+  gm:tx('Est-ce que le robot a gagné plus que ce qu’il a perdu au pire moment ? 2 veut dire : deux fois plus.','Did the robot earn more than it lost at its worst moment? 2 means: twice as much.')},
+ mls:{t:tx('Pertes d’affilée','Losing streak'),tr:tx('Le plus grand nombre de trades perdants consécutifs. Utile pour savoir quelle série il faut pouvoir encaisser.','The longest run of consecutive losing trades. Useful to know which run one must be able to sit through.'),
+  gm:tx('La pire série de mauvaises nouvelles d’un coup. C’est normal qu’elle existe ; l’important est que la suite rattrape.','The worst run of bad news in a row. It is normal that it exists; what matters is that what follows makes up for it.')},
+ sqn:{t:tx('Qualité du système (SQN)','System quality (SQN)'),tr:tx('Racine du nombre de trades × espérance ÷ écart-type des résultats (Van Tharp). Mesure la régularité de l’avantage ; au-dessus de 2 c’est bon, au-dessus de 3 excellent.','Square root of the number of trades × expectancy ÷ standard deviation (Van Tharp). Measures how steady the edge is; above 2 good, above 3 excellent.'),
+  gm:tx('Est-ce que le robot gagne de façon régulière, ou grâce à quelques coups de chance ? Plus c’est haut, plus c’est régulier.','Does the robot win steadily, or thanks to a few lucky shots? The higher, the steadier.')}};
+function sheet(k,val,b){const D=DOC[k];if(!D)return;
+ $('shb').innerHTML='<div class="grab"></div><h3>'+D.t+'</h3>'+(val?'<div class="val" style="color:'+(b?bcol(b):'var(--text)')+'">'+val+'</div>':'')+(b?'<div style="margin-top:6px">'+badge(b)+'</div>':'')+
+  '<div class="blk g"><div class="t">'+tx('En clair','In plain words')+'</div><p>'+D.gm+'</p></div>'+
+  '<div class="blk"><div class="t">'+tx('Pour les traders','For traders')+'</div><p>'+D.tr+'</p>'+
+  (D.sc?'<div class="scale">'+D.sc.map(s=>'<span class="'+(s[1]===b?'on':'')+'" style="'+(s[1]===b?'background:'+bcol(s[1]):'')+'">'+s[0]+'</span>').join('')+'</div>':'')+'</div>'+
+  '<button class="close" onclick="shut()">'+tx('Compris','Got it')+'</button>';
+ $('sh').classList.add('on');}
+function shut(){$('sh').classList.remove('on');}
+$('sh').addEventListener('click',e=>{if(e.target.id==='sh')shut();});
+
+/* ------------------------------------------------------------ charts */
+const TIP=$('tip');
+function tipAt(x,y,h){TIP.innerHTML=h;TIP.style.opacity=1;const w=TIP.offsetWidth;TIP.style.left=Math.max(8,Math.min(innerWidth-w-8,x-w/2))+'px';TIP.style.top=Math.max(8,y-TIP.offsetHeight-14)+'px';}
+function tipOff(){TIP.style.opacity=0;}
+// series: [[x, y]] ; opts {h, color, fill, ref:[[x,y]] refColor, marks:[{x,label}], fmtX, fmtY, zero}
+function line(el,S,o){o=o||{};const W=el.clientWidth||320,H=o.h||170,pl=6,pr=42,pt=10,pb=22;
+ const all=S.concat(o.ref||[]);if(S.length<2){el.innerHTML='';return;}
+ let x0=Math.min(...all.map(p=>p[0])),x1=Math.max(...all.map(p=>p[0])),y0=Math.min(...all.map(p=>p[1]),o.zero?0:Infinity),y1=Math.max(...all.map(p=>p[1]),o.zero?0:-Infinity);
+ if(y1===y0){y1+=1;y0-=1;}const pad=(y1-y0)*.08;y0-=pad;y1+=pad;
+ const X=v=>pl+(v-x0)/(x1-x0||1)*(W-pl-pr),Y=v=>pt+(y1-v)/(y1-y0)*(H-pt-pb);
+ const path=s=>s.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+ const col=o.color||css('--up'),id='g'+Math.random().toString(36).slice(2,7);
+ let g='<defs><linearGradient id="'+id+'" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="'+col+'" stop-opacity=".32"/><stop offset="1" stop-color="'+col+'" stop-opacity="0"/></linearGradient></defs>';
+ for(let i=0;i<=3;i++){const v=y0+(y1-y0)*i/3,y=Y(v);g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y+'" y2="'+y+'" stroke="'+css('--grid')+'"/><text x="'+(W-pr+6)+'" y="'+(y+3)+'" font-size="9.5" fill="'+css('--muted')+'">'+(o.fmtY?o.fmtY(v):v.toFixed(0))+'</text>';}
+ if(o.zero&&y0<0&&y1>0)g+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+Y(0)+'" y2="'+Y(0)+'" stroke="'+css('--border2')+'" stroke-dasharray="3 4"/>';
+ (o.marks||[]).forEach(m=>{if(m.x<x0||m.x>x1)return;const xm=X(m.x);g+='<line x1="'+xm+'" x2="'+xm+'" y1="'+pt+'" y2="'+(H-pb)+'" stroke="'+css('--gold')+'" stroke-dasharray="3 3" opacity=".8"/><text x="'+(xm+4)+'" y="'+(pt+9)+'" font-size="9" font-weight="700" fill="'+css('--gold')+'">'+m.label+'</text>';});
+ if(o.ref)g+='<path d="'+path(o.ref)+'" fill="none" stroke="'+(o.refColor||css('--muted'))+'" stroke-width="1.6" stroke-dasharray="4 4" opacity=".85"/>';
+ if(o.fill!==false)g+='<path d="'+path(S)+' L'+X(S[S.length-1][0])+' '+(H-pb)+' L'+X(S[0][0])+' '+(H-pb)+' Z" fill="url(#'+id+')"/>';
+ g+='<path d="'+path(S)+'" fill="none" stroke="'+col+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+ const lp=S[S.length-1];g+='<circle cx="'+X(lp[0])+'" cy="'+Y(lp[1])+'" r="4" fill="'+col+'" stroke="'+css('--surface')+'" stroke-width="2"/>';
+ if(o.fmtX){g+='<text x="'+pl+'" y="'+(H-6)+'" font-size="9.5" fill="'+css('--muted')+'">'+o.fmtX(x0)+'</text><text x="'+(W-pr)+'" y="'+(H-6)+'" font-size="9.5" fill="'+css('--muted')+'" text-anchor="end">'+o.fmtX(x1)+'</text>';}
+ g+='<line class="cx" x1="0" x2="0" y1="'+pt+'" y2="'+(H-pb)+'" stroke="'+css('--muted')+'" opacity="0"/><circle class="cd" r="4.5" fill="'+col+'" opacity="0"/>';
+ el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'">'+g+'</svg>';
+ const sv=el.querySelector('svg'),cx=sv.querySelector('.cx'),cd=sv.querySelector('.cd');
+ const mv=ev=>{const r=sv.getBoundingClientRect(),px=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;let b=S[0],bd=1e9;
+  S.forEach(p=>{const d=Math.abs(X(p[0])-px);if(d<bd){bd=d;b=p;}});cx.setAttribute('x1',X(b[0]));cx.setAttribute('x2',X(b[0]));cx.setAttribute('opacity',.4);
+  cd.setAttribute('cx',X(b[0]));cd.setAttribute('cy',Y(b[1]));cd.setAttribute('opacity',1);
+  tipAt(r.left+X(b[0]),r.top+Y(b[1]),o.tip?o.tip(b):((o.fmtX?o.fmtX(b[0]):'')+' · <b>'+(o.fmtY?o.fmtY(b[1]):b[1])+'</b>'));};
+ const off=()=>{cx.setAttribute('opacity',0);cd.setAttribute('opacity',0);tipOff();};
+ sv.addEventListener('pointermove',mv);sv.addEventListener('touchmove',mv,{passive:true});sv.addEventListener('pointerleave',off);sv.addEventListener('touchend',off);}
+// bars: [[label, value]]
+function bars(el,B,o){o=o||{};const W=el.clientWidth||320,H=o.h||120,pt=14,pb=20;if(!B.length){el.innerHTML='';return;}
+ const mx=Math.max(...B.map(b=>Math.abs(b[1])),0.01),bw=(W-8)/B.length,y0=pt+(H-pt-pb)/2,sc=(H-pt-pb)/2/mx;
+ let g='<line x1="0" x2="'+W+'" y1="'+y0+'" y2="'+y0+'" stroke="'+css('--border2')+'"/>';
+ B.forEach((b,i)=>{const h=Math.max(1.5,Math.abs(b[1])*sc),x=4+i*bw+bw*.18,w=bw*.64,y=b[1]>=0?y0-h:y0;
+  g+='<rect data-i="'+i+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="3" fill="'+(b[1]>=0?css('--up'):css('--down'))+'" opacity=".88"/>';
+  if(B.length<=12||i%Math.ceil(B.length/8)===0)g+='<text x="'+(x+w/2)+'" y="'+(H-5)+'" font-size="9" text-anchor="middle" fill="'+css('--muted')+'">'+b[0]+'</text>';});
+ el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'">'+g+'</svg>';
+ el.querySelectorAll('rect').forEach(r=>{const b=B[+r.dataset.i];const sh=ev=>{const R=r.getBoundingClientRect();tipAt(R.left+R.width/2,R.top,(o.lab?o.lab(b):b[0])+' · <b>'+money(b[1],true)+'</b>');};
+  r.addEventListener('pointerenter',sh);r.addEventListener('touchstart',sh,{passive:true});r.addEventListener('pointerleave',tipOff);});}
+// histogram of trade results
+function hist(el,P){const W=el.clientWidth||320,H=110,pt=8,pb=20;if(!P.length){el.innerHTML='';return;}
+ const lo=Math.min(...P),hi=Math.max(...P),nb=14,bw0=(hi-lo)/nb||1,cnt=new Array(nb).fill(0);P.forEach(p=>{cnt[Math.min(nb-1,Math.floor((p-lo)/bw0))]++;});
+ const mx=Math.max(...cnt),bw=(W-8)/nb;let g='';
+ cnt.forEach((c,i)=>{const h=c/mx*(H-pt-pb),a=lo+i*bw0,b=a+bw0;g+='<rect data-a="'+a+'" data-b="'+b+'" data-c="'+c+'" x="'+(4+i*bw+1)+'" y="'+(H-pb-h)+'" width="'+(bw-2)+'" height="'+Math.max(h,c?1.5:0)+'" rx="2.5" fill="'+((a+b)/2>=0?css('--up'):css('--down'))+'" opacity=".85"/>';});
+ const z=4+(0-lo)/(hi-lo||1)*(W-8);if(lo<0&&hi>0)g+='<line x1="'+z+'" x2="'+z+'" y1="'+pt+'" y2="'+(H-pb)+'" stroke="'+css('--muted')+'" stroke-dasharray="3 3"/>';
+ g+='<text x="4" y="'+(H-5)+'" font-size="9" fill="'+css('--muted')+'">'+money(lo)+'</text><text x="'+(W-4)+'" y="'+(H-5)+'" font-size="9" text-anchor="end" fill="'+css('--muted')+'">'+money(hi,true)+'</text>';
+ el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" height="'+H+'">'+g+'</svg>';
+ el.querySelectorAll('rect').forEach(r=>{const sh=ev=>{const R=r.getBoundingClientRect();tipAt(R.left+R.width/2,R.top,'<b>'+r.dataset.c+'</b> '+tx('trades entre ','trades between ')+money(+r.dataset.a)+' '+tx('et','and')+' '+money(+r.dataset.b));};
+  r.addEventListener('pointerenter',sh);r.addEventListener('touchstart',sh,{passive:true});r.addEventListener('pointerleave',tipOff);});}
+
+/* ------------------------------------------------------------ building blocks */
+const tile=(k,label,val,note,cls,b)=>'<button class="tile'+(DOC[k]?' tap':'')+'" '+(DOC[k]?'data-k="'+k+'" data-v="'+encodeURIComponent(val)+'" data-b="'+(b||'')+'"':'')+'><div class="k">'+label+'</div><div class="v '+(cls||'neu')+'">'+val+'</div>'+(note?'<div class="n">'+note+'</div>':'')+'</button>';
+function pillars(s,where){
+ const pfv=s.pf===Infinity?'∞':num(s.pf),bw=band.wr(s.wr),bp=band.pf(s.pf),bd=band.dd(s.mddPct);
+ const one=(k,label,val,b,fill,word)=>'<button class="pil" data-k="'+k+'" data-v="'+encodeURIComponent(val)+'" data-b="'+b+'"><span class="q">?</span><div class="k">'+label+'</div><div class="v" style="color:'+bcol(b)+'">'+val+'</div><div class="g"><i style="width:'+Math.max(4,Math.min(100,fill))+'%;background:'+bcol(b)+'"></i></div><div class="w">'+word+'</div></button>';
+ return '<div class="pillars">'+
+  one('wr',tx('Réussite','Win rate'),pct(s.wr,false,0),bw,s.wr,tx(Math.round(s.wr/10)+' trades sur 10 gagnés',Math.round(s.wr/10)+' trades in 10 won'))+
+  one('pf',tx('Profit factor','Profit factor'),pfv,bp,Math.min(100,(s.pf===Infinity?3:s.pf)/2.5*100),tx(num(s.pf===Infinity?0:s.pf)+' $ gagnés pour 1 $ perdu',num(s.pf===Infinity?0:s.pf)+' $ won per 1 $ lost'))+
+  one('dd',tx('Baisse max','Max drawdown'),pct(-s.mddPct,false),bd,100-Math.min(100,s.mddPct*3),tx('le pire creux depuis un sommet','the deepest dip from a peak'))+
+ '</div>';}
+function fullGrid(s,bal0){
+ return '<div class="grid2">'+
+  tile('ret',tx('Rendement','Return'),s.ret===null?'—':pct(s.ret,true),money(s.net,true)+tx(' sur ',' on ')+money(bal0),sgn(s.net))+
+  tile('exp',tx('Espérance / trade','Expectancy / trade'),money(s.exp,true),tx('moyenne nette','net average'),sgn(s.exp),band.exp(s.exp))+
+  tile('wr',tx('Gagnés / perdus','Won / lost'),s.wins+' / '+s.losses,s.n+' trades',null,band.wr(s.wr))+
+  tile('payoff',tx('Ratio gain / perte','Payoff ratio'),s.payoff===null?'—':num(s.payoff),tx('gain moyen ','avg win ')+money(s.avgW)+' · '+tx('perte ','loss ')+money(s.avgL))+
+  tile('rf',tx('Récupération','Recovery'),s.rf===null?'—':num(s.rf),tx('gain net ÷ pire creux','net ÷ deepest dip'),null,s.rf===null?'':band.rf(s.rf))+
+  tile('dd',tx('Pire creux ($)','Deepest dip ($)'),money(-s.mdd),pct(-s.mddPct)+tx(' du sommet',' of the peak'),'neg',band.dd(s.mddPct))+
+  tile('mls',tx('Pertes d’affilée','Losing streak'),s.mls+'',tx('gains d’affilée : ','winning streak: ')+s.mws)+
+  tile('sqn',tx('Qualité (SQN)','Quality (SQN)'),s.sqn===null?'—':num(s.sqn),tx('régularité de l’avantage','steadiness of the edge'),null,s.sqn===null?'':band.sqn(s.sqn))+
+  tile('',tx('Meilleur trade','Best trade'),money(s.best,true),'', 'pos')+
+  tile('',tx('Pire trade','Worst trade'),money(s.worst),'', 'neg')+
+ '</div>';}
+function wire(root){root.querySelectorAll('[data-k]').forEach(b=>{if(!b.dataset.k)return;b.onclick=()=>sheet(b.dataset.k,decodeURIComponent(b.dataset.v||''),b.dataset.b||'');});}
+
+/* ------------------------------------------------------------ the space */
+let J=null,TAB='ov',COST='0.00';
+const TABS=[['ov',tx('Aperçu','Overview')],['re',tx('En vrai','Real')],['te',tx('Le test','Test')],['me',tx('Méthode','Method')]];
+function tabs(){const t=$('tabs');t.innerHTML='<span id="tabind"></span>'+TABS.map(x=>'<button class="tab'+(x[0]===TAB?' on':'')+'" data-t="'+x[0]+'">'+svgI(x[0])+'<span>'+x[1]+'</span></button>').join('');
+ t.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','#'+TAB);}catch(e){}render();scrollTo({top:0,behavior:'smooth'});});
+ requestAnimationFrame(()=>{const on=t.querySelector('.tab.on'),ind=$('tabind');if(on&&ind){ind.style.left=on.offsetLeft+'px';ind.style.width=on.offsetWidth+'px';}});}
+function realSeries(R){const T=R.trades||[];let c=0;const S=[[R.start,R.bal0]];T.forEach(t=>{c+=t[1];S.push([t[0],R.bal0+c]);});return S;}
+function weekly(T){const m=new Map();T.forEach(t=>{const d=new Date(t[0]*1000),day=(d.getUTCDay()+6)%7,mon=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-day));const k=mon.getTime();m.set(k,(m.get(k)||0)+t[1]);});
+ const ud=k=>{const d=new Date(k);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');};
+ return [...m.entries()].sort((a,b)=>a[0]-b[0]).map(([k,v])=>[ud(k),v,k]);}
+
+function ovPane(){const R=J.real,T=(J.test||{}).rows||{};if(!R)return '<div class="card"><div class="sub">'+tx('Données indisponibles.','Data unavailable.')+'</div></div>';
+ const P=R.trades.map(t=>t[1]),s=stats(P,R.bal0),days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));
+ const tt=(T['0.35']||{}).today,ts=tt?stats(tt.pnls,J.test.balance):null,V=J.verdict||{},ov=V.overall||{};
+ const vc=ov.c==='green'?css('--up'):(ov.c==='red'?css('--down'):css('--warn'));
+ const wk=weekly(R.trades),gw=wk.filter(w=>w[1]>0).length;
+ return '<div class="card hero"><div class="eyebrow">'+svgI('ov',13)+tx('Sur un vrai compte, en argent réel','On a real account, with real money')+'</div>'+
+  '<div class="big '+'">'+pct(s.ret,true)+'<small>'+tx('en ','in ')+days+tx(' jours',' days')+'</small></div>'+
+  '<p>'+tx('Depuis le '+dfmt(R.start)+', le robot a fait '+money(s.net,true)+' sur un compte réel parti de '+money(R.bal0)+'. Frais du courtier compris, sans dépôt ni retrait.','Since '+dfmt(R.start)+', the robot made '+money(s.net,true)+' on a real account that started with '+money(R.bal0)+'. Broker costs included, no deposit or withdrawal.')+'</p>'+
+  (ov.fr?'<div class="verdict"><i style="background:'+vc+';box-shadow:0 0 8px '+vc+'"></i>'+(EN?ov.en:ov.fr)+'</div>':'')+
+  '<div class="chart spark" id="c-spark"></div></div>'+
+  pillars(s)+
+  '<div class="gm"><div class="ic">'+svgI('gm',18)+'</div><div><b>'+tx('Pour faire simple','To put it simply')+'</b><p>'+
+   tx('Sur '+s.n+' trades, le robot en a gagné '+s.wins+'. Pour 1 $ perdu, il en a gagné '+num(s.pf===Infinity?0:s.pf)+'. Au pire moment, le compte a reculé de '+pct(s.mddPct)+' avant de repartir. '+gw+' semaines sur '+wk.length+' ont fini en positif.',
+      'Over '+s.n+' trades the robot won '+s.wins+'. For 1 $ lost it won '+num(s.pf===Infinity?0:s.pf)+'. At its worst the account fell '+pct(s.mddPct)+' before climbing again. '+gw+' weeks out of '+wk.length+' ended positive.')+'</p></div></div>'+
+  (ts?'<div class="card"><h2>'+tx('Les règles d’aujourd’hui, testées','Today’s rules, tested')+'<span class="badge b-ok">'+tx('filtre de tendance','trend filter')+'</span></h2>'+
+   '<div class="sub">'+tx('Les mêmes règles que le robot suit depuis le 10/10, rejouées tick par tick sur '+Math.round(J.test.days)+' jours, sur un compte de '+J.test.balance+' $, avec un coût de 0,35 $ par trade en plus du spread.','The rules the robot follows since 10/10, replayed tick by tick over '+Math.round(J.test.days)+' days, on a '+J.test.balance+' $ account, with 0.35 $ per trade on top of the spread.')+'</div>'+
+   '<div class="grid3">'+tile('wr',tx('Réussite','Win rate'),pct(ts.wr,false,0),ts.n+' trades',null,band.wr(ts.wr))+tile('pf','PF',num(ts.pf),'',null,band.pf(ts.pf))+tile('dd',tx('Baisse','Drawdown'),pct(-ts.mddPct),'','neg',band.dd(ts.mddPct))+'</div>'+
+   '<button class="tile" style="margin-top:10px;text-align:center;font-weight:800;color:var(--accent-soft)" onclick="go(\'te\')">'+tx('Voir le test en détail ›','See the test in detail ›')+'</button></div>':'')+
+  '<div class="card"><h2>'+tx('Les vérifications de chaque nuit','The nightly checks')+'</h2><div class="lights" style="margin-top:8px">'+(V.lights||[]).map(l=>'<div class="lt"><i style="background:'+(l.c==='green'?css('--up'):(l.c==='red'?css('--down'):(l.c==='grey'?css('--muted'):css('--warn'))))+'"></i><div>'+(EN?l.en:l.fr)+'</div></div>').join('')+'</div>'+
+  '<div class="note w">'+(EN?(J.legacy||{}).en:(J.legacy||{}).fr)+tx('. Ces vérifications utilisent encore cet ancien test ; les chiffres ci-dessus, eux, sont réels ou rejoués avec les règles d’aujourd’hui.','. These checks still use that older test; the figures above are real or replayed with today’s rules.')+'</div></div>';}
+
+function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s=stats(P,R.bal0),wk=weekly(R.trades),pre=R.trades.filter(t=>t[0]<R.filter_since),post=R.trades.filter(t=>t[0]>=R.filter_since);
+ const sp=stats(pre.map(t=>t[1]),R.bal0),so=post.length?stats(post.map(t=>t[1]),0):null;
+ return '<div class="card"><h2>'+tx('Le compte réel','The real account')+'<span class="badge b-ok">'+tx('argent réel','real money')+'</span></h2>'+
+  '<div class="sub">'+tx('Un compte réel chez Exness, piloté uniquement par le robot depuis le '+dfmt(R.start)+'. Départ '+money(R.bal0)+', aujourd’hui '+money(R.balance)+'. Aucun dépôt, aucun retrait.','A real Exness account, run only by the robot since '+dfmt(R.start)+'. Start '+money(R.bal0)+', now '+money(R.balance)+'. No deposit, no withdrawal.')+'</div>'+
+  '<div class="chart" id="c-real"></div><div class="legend"><span><i style="background:'+css('--up')+'"></i>'+tx('solde du compte','account balance')+'</span><span><i style="background:'+css('--gold')+'"></i>'+tx('filtre de tendance activé','trend filter switched on')+'</span></div></div>'+
+  pillars(s)+
+  '<div class="card"><h2>'+tx('Toutes les mesures','Every measure')+'</h2><div class="sub">'+tx('Touchez une case pour son explication.','Tap a box for its explanation.')+'</div>'+fullGrid(s,R.bal0)+'</div>'+
+  '<div class="card"><h2>'+tx('Semaine par semaine','Week by week')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+wk.filter(w=>w[1]>0).length+' / '+wk.length+tx(' positives',' positive')+'</span></h2><div class="chart" id="c-week"></div></div>'+
+  '<div class="card"><h2>'+tx('Le creux, au fil du temps','The dip, over time')+'</h2><div class="sub">'+tx('À zéro, le compte est à son plus haut. En dessous : combien il est loin de son dernier sommet.','At zero the account is at its high. Below: how far it is from its last peak.')+'</div><div class="chart" id="c-uw"></div></div>'+
+  '<div class="card"><h2>'+tx('La forme des résultats','The shape of the results')+'</h2><div class="sub">'+tx('Chaque barre compte les trades d’un même montant. Une bonne stratégie a des pertes resserrées et quelques gros gains.','Each bar counts trades of the same size. A good strategy keeps its losses tight and has a few large wins.')+'</div><div class="chart" id="c-hist"></div></div>'+
+  '<div class="card"><h2>'+tx('Avant et depuis le filtre','Before and since the filter')+'</h2><div class="cmp" style="margin-top:8px">'+
+   '<div class="h"></div><div class="h r">'+tx('avant le 10/10','before 10/10')+'</div><div class="h r">'+tx('depuis','since')+'</div>'+
+   ['n','wr','pf','net'].map(k=>'<div class="l">'+({n:'Trades',wr:tx('Réussite','Win rate'),pf:'Profit factor',net:tx('Résultat','Result')})[k]+'</div><div class="r">'+fmtK(k,sp)+'</div><div class="r">'+(so?fmtK(k,so):'—')+'</div>').join('')+'</div>'+
+   '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au 10/10 à 15h55 UTC. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until 10/10 15:55 UTC. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>';}
+function fmtK(k,s){return k==='n'?s.n:(k==='wr'?pct(s.wr,false,0):(k==='pf'?(s.pf===Infinity?'∞':num(s.pf)):'<span class="'+sgn(s.net)+'">'+money(s.net,true)+'</span>'));}
+
+function tePane(){const T=J.test;if(!T||!T.rows)return '<div class="card"><div class="sub">'+tx('Le test n’est pas encore construit.','The test is not built yet.')+'</div></div>';
+ const r=T.rows[COST]||{},a=r.today,b=r.no_filter,sa=stats(a.pnls,T.balance),sb=stats(b.pnls,T.balance);
+ return '<div class="card"><h2>'+tx('Le test des règles d’aujourd’hui','The test of today’s rules')+'</h2><div class="sub">'+tx('Les règles que suit le robot aujourd’hui, rejouées tick par tick sur les vrais bid/ask du courtier, du '+T.window_utc[0].slice(0,10)+' au '+T.window_utc[1].slice(0,10)+', sur un compte de '+T.balance+' $.','The rules the robot follows today, replayed tick by tick on the broker’s real bid/ask, from '+T.window_utc[0].slice(0,10)+' to '+T.window_utc[1].slice(0,10)+', on a '+T.balance+' $ account.')+'</div>'+
+  '<div class="seg" id="cost"><button data-c="0.00" class="'+(COST==='0.00'?'on':'')+'">'+tx('Spread seul','Spread only')+'</button><button data-c="0.35" class="'+(COST==='0.35'?'on':'')+'">'+tx('+ 0,35 $ par trade','+ 0.35 $ a trade')+'</button></div>'+
+  '<div class="chart" id="c-test" style="margin-top:12px"></div><div class="legend"><span><i style="background:'+css('--up')+'"></i>'+tx('avec le filtre de tendance','with the trend filter')+'</span><span><i style="background:'+css('--muted')+'"></i>'+tx('sans le filtre','without the filter')+'</span></div></div>'+
+  pillars(sa)+
+  '<div class="card"><h2>'+tx('Filtre ou pas filtre','Filter or no filter')+'</h2><div class="cmp" style="margin-top:8px">'+
+   '<div class="h"></div><div class="h r">'+tx('avec','with')+'</div><div class="h r">'+tx('sans','without')+'</div>'+
+   [['n','Trades'],['wr',tx('Réussite','Win rate')],['pf','Profit factor'],['dd',tx('Baisse max','Max drawdown')],['ret',tx('Rendement','Return')],['exp',tx('Espérance / trade','Expectancy')]].map(([k,l])=>{
+    const va={n:sa.n,wr:pct(sa.wr,false,0),pf:num(sa.pf),dd:pct(-sa.mddPct),ret:pct(sa.ret,true),exp:money(sa.exp,true)}[k],vb={n:sb.n,wr:pct(sb.wr,false,0),pf:num(sb.pf),dd:pct(-sb.mddPct),ret:pct(sb.ret,true),exp:money(sb.exp,true)}[k];
+    const better={n:null,wr:sa.wr>sb.wr,pf:sa.pf>sb.pf,dd:sa.mddPct<sb.mddPct,ret:sa.ret>sb.ret,exp:sa.exp>sb.exp}[k];
+    return '<div class="l">'+l+'</div><div class="r '+(better===true?'win':'')+'">'+va+'</div><div class="r '+(better===false?'win':'')+'">'+vb+'</div>';}).join('')+'</div>'+
+   '<div class="note">'+tx('Le filtre prend environ trois fois moins de trades. Il gagne plus souvent et creuse beaucoup moins. Quand trader ne coûte presque rien, ne pas filtrer peut rapporter plus au total ; dès que les frais comptent, le filtre l’emporte.','The filter takes about three times fewer trades. It wins more often and digs far less. When trading costs almost nothing, not filtering can earn more in total; as soon as costs count, the filter wins.')+'</div></div>'+
+  '<div class="card"><h2>'+tx('Toutes les mesures','Every measure')+'</h2>'+fullGrid(sa,T.balance)+'</div>'+
+  '<div class="card"><h2>'+tx('Est-ce que ça tient ?','Does it hold?')+'</h2><div class="sub">'+tx('Une stratégie qui ne gagne qu’une fois a peut-être eu de la chance. On coupe la période en deux.','A strategy that only wins once may have been lucky. We cut the period in two.')+'</div><div class="grid2">'+
+   tile('',tx('1ère moitié','1st half'),pct(100*a.first_half/T.balance,true),money(a.first_half,true),sgn(a.first_half))+tile('',tx('2e moitié','2nd half'),pct(100*a.later_half/T.balance,true),money(a.later_half,true),sgn(a.later_half))+'</div></div>';}
+
+function mePane(){const R=J.real,T=J.test||{},rules=(J.rules||[]).slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ return '<div class="card"><h2>'+tx('D’où viennent les chiffres','Where the numbers come from')+'</h2><div class="gl" style="margin-top:8px">'+
+  '<div class="li"><b>'+tx('En vrai','Real')+'</b><p>'+tx('Le relevé du courtier d’un compte réel ('+(R?R.legs:0)+' ordres depuis le '+(R?dfmt(R.start):'')+'), piloté uniquement par le robot. Un trade et ses ordres de rattrapage fermés ensemble comptent pour un seul trade. Résultats nets : spread, commission et swap du courtier déduits.','The broker statement of one real account ('+(R?R.legs:0)+' orders since '+(R?dfmt(R.start):'')+'), run only by the robot. A trade and its recovery orders closed together count as one trade. Net results: the broker’s spread, commission and swap deducted.')+'</p></div>'+
+  '<div class="li"><b>'+tx('Le test','The test')+'</b><p>'+tx('Les règles d’aujourd’hui rejouées tick par tick sur les vrais prix d’achat et de vente du courtier, compte de '+(T.balance||200)+' $, lot et objectif ajustés au solde chaque jour, deux niveaux de frais : le spread seul, puis 0,35 $ de plus par trade.','Today’s rules replayed tick by tick on the broker’s real bid and ask, '+(T.balance||200)+' $ account, lot and target adjusted to the balance each day, two cost levels: spread only, then 0.35 $ more per trade.')+'</p></div>'+
+  '<div class="li"><b>'+tx('Ce qu’on ne cache pas','What we do not hide')+'</b><p>'+tx('Un test n’est pas le réel : sur ce compte, le test retrouve les mêmes entrées mais gagne moins par trade que le vrai robot. C’est pourquoi le compte réel passe en premier ici. Les résultats passés ne garantissent pas les résultats futurs.','A test is not real life: on this account the test finds the same entries but earns less per trade than the real robot. That is why the real account comes first here. Past results do not guarantee future results.')+'</p></div>'+
+  '</div></div>'+
+  '<div class="card"><h2>'+tx('Les règles, dans l’ordre','The rules, in order')+'</h2><div class="sub">'+tx('La stratégie n’est pas figée : chaque règle est testée avant d’entrer dans le robot.','The strategy is not frozen: every rule is tested before it enters the robot.')+'</div><div class="tl">'+
+   rules.map(r=>'<div class="it'+(r.id==='trend'?' new':'')+'"><b>'+(EN?r.title_en:r.title_fr)+'</b><span>'+(r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7)+'</span></div>').join('')+'</div></div>'+
+  '<div class="card"><h2>'+tx('Le petit lexique','The small glossary')+'</h2><div class="gl" style="margin-top:8px">'+
+   ['wr','pf','dd','exp','payoff','rf','mls','sqn'].map(k=>'<div class="li"><b>'+DOC[k].t+'</b><p>'+DOC[k].gm+'</p></div>').join('')+'</div></div>';}
+
+function go(t){TAB=t;try{history.replaceState(null,'','#'+t);}catch(e){}render();scrollTo({top:0,behavior:'smooth'});}
+function render(){tabs();const m=$('main');
+ m.innerHTML='<div class="pane on">'+({ov:ovPane,re:rePane,te:tePane,me:mePane}[TAB])()+'</div>';wire(m);
+ const R=J.real;
+ if(TAB==='ov'&&R){const S=realSeries(R);line($('c-spark'),S,{h:66,color:'#8df0bb',fmtY:v=>'',tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
+  $('c-spark').querySelectorAll('text').forEach(t=>t.remove());}
+ if(TAB==='re'&&R){const S=realSeries(R);line($('c-real'),S,{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),marks:[{x:R.filter_since,label:tx('filtre','filter')}],tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
+  const wk=weekly(R.trades);bars($('c-week'),wk.map(w=>[w[0],w[1]]),{lab:b=>tx('semaine du ','week of ')+b[0]});
+  let pk=R.bal0;const U=S.map(p=>{pk=Math.max(pk,p[1]);return [p[0],-(pk-p[1])/pk*100];});line($('c-uw'),U,{h:120,color:css('--down'),fmtX:dfmt,fmtY:v=>v.toFixed(0)+'%',tip:p=>dfmt(p[0])+' · <b>'+pct(p[1])+'</b>'});
+  hist($('c-hist'),R.trades.map(t=>t[1]));}
+ if(TAB==='te'&&J.test&&J.test.rows){const r=J.test.rows[COST]||{},B=J.test.balance;
+  const toS=c=>(c||[]).map(([d,v])=>[Date.parse(d+'T23:59:00Z')/1000,B+v]);
+  line($('c-test'),toS(r.today.curve),{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),ref:toS(r.no_filter.curve),tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
+  $('cost').querySelectorAll('button').forEach(b=>b.onclick=()=>{COST=b.dataset.c;render();});}
+}
+async function load(){
+ try{const r=await fetch('rentabilite_data?t='+Date.now(),{cache:'no-store'});J=await r.json();}catch(e){J=null;}
+ if(!J||J.err){$('main').innerHTML='<div class="card"><div class="sub">'+tx('Impossible de charger les chiffres. Réessayez dans un instant.','Could not load the numbers. Try again in a moment.')+'</div></div>';return;}
+ const R=J.real;$('hsub').textContent=tx('La stratégie, mesurée','The strategy, measured')+(R?' · '+tx('compte réel depuis le ','real account since ')+dfmt(R.start):'');
+ $('h1').textContent=tx('Rentabilité','Profitability');$('livet').textContent=tx('En direct','Live');
+ $('foot').innerHTML=tx('Chiffres mis à jour en continu depuis le relevé du courtier. Les performances passées ne préjugent pas des performances futures. Le trading comporte un risque de perte en capital.','Figures updated continuously from the broker statement. Past performance does not predict future performance. Trading carries a risk of capital loss.');
+ const h=(location.hash||'').slice(1);if(['ov','re','te','me'].includes(h))TAB=h;render();}
+let _w=innerWidth,_rt=null;addEventListener('resize',()=>{if(innerWidth===_w)return;_w=innerWidth;clearTimeout(_rt);_rt=setTimeout(()=>{if(J)render();},150);});
+load();setInterval(()=>{if(document.visibilityState==='visible'&&!$('sh').classList.contains('on'))load();},120000);
+</script></body></html>

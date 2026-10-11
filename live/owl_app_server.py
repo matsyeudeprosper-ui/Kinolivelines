@@ -2558,6 +2558,26 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="pal-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
  <div id="pal-goal" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
 </div>
+<!-- 2026-10-11 (owner): the door to the "Rentabilite" space - the strategy
+     measured on a real account: return, win rate, profit factor, max drawdown -->
+<div class="panel" id="rentcard" role="link" tabindex="0" aria-label="Rentabilit&eacute; de la strat&eacute;gie"
+ onclick="location.href=B+'rentabilite'" onkeydown="if(event.key==='Enter')location.href=B+'rentabilite'"
+ style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;padding:16px 16px 14px;
+ background:radial-gradient(110% 90% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0f1b2a);
+ border-color:rgba(141,240,187,.22)">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl" id="rent-lbl" style="color:#9fc2de">Preuve de rentabilit&eacute;</div>
+  <span id="rent-live" style="font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px">
+   <i style="width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71"></i><span>Compte r&eacute;el</span></span></div>
+ <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px">
+  <div style="min-width:0"><div id="rent-big" style="font-size:2.3rem;font-weight:900;letter-spacing:-.03em;line-height:1;color:#fff"></div>
+   <div id="rent-sub" style="font-size:.78rem;color:#9fc2de;margin-top:5px"></div></div>
+  <svg id="rent-spark" viewBox="0 0 120 44" preserveAspectRatio="none" style="width:44%;max-width:170px;height:44px;flex:none;overflow:visible"></svg></div>
+ <div id="rent-pills" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px"></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08)">
+  <span id="rent-gm" style="font-size:.76rem;color:#c6d3df;line-height:1.35;min-width:0"></span>
+  <span id="rent-go" style="font-size:.78rem;font-weight:800;color:#8fc6ff;white-space:nowrap;display:inline-flex;align-items:center;gap:2px">Voir la preuve<svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+</div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
  padding:10px;color:var(--warn);font-size:.9rem"></div>
@@ -2822,7 +2842,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div class="panel pf" id="proofcard" style="display:none;margin-top:12px">
  <div class="lbl" id="proof-lbl">La preuve <span class="hint">&middot; en direct</span></div>
  <div id="proof-lights" style="margin-top:10px"></div>
- <button class="shbtn shmain" style="margin:12px 0 0;padding:11px;font-size:.9rem" onclick="proofPage()">Voir la preuve &rsaquo;</button>
+ <button class="shbtn shmain" style="margin:12px 0 0;padding:11px;font-size:.9rem" onclick="location.href=B+'rentabilite'">Voir la preuve &rsaquo;</button>
 </div>
 <div class="panel" id="whycard" style="display:none;margin-top:12px">
  <div class="lbl">Le robot explique <span class="hint">&middot; les occasions laiss&eacute;es passer</span></div>
@@ -7066,7 +7086,31 @@ function pfSpark(cv,c){if(!cv||cv.length<2)return '';const ys=cv.map(p=>p[1]);co
 function pfWeeks(cv){if(!cv||cv.length<8)return [];const W=[];let wk=null,start=null,last=null;
  cv.forEach(p=>{const d=new Date(p[0]+'T00:00:00Z');const mon=new Date(d);mon.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));const k=mon.toISOString().slice(0,10);if(k!==wk){if(wk!==null)W.push([wk,last-start]);wk=k;start=last===null?p[1]:last;}last=p[1];});
  if(wk!==null)W.push([wk,last-start]);return W;}
-async function loadProof(d){const el=document.getElementById('proofcard');if(!el)return;
+// 2026-10-11 (owner): the home card of the "Rentabilite" space - real account,
+// return + the three numbers traders read first; the same arithmetic as the page
+async function loadRent(){const el=document.getElementById('rentcard');if(!el)return;
+ if(window._rtT&&Date.now()-window._rtT<300000)return;window._rtT=Date.now();
+ let j=null;try{const r=await fetch(B+'rentabilite_data?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
+ const R=j&&j.real;if(!R||!R.trades||!R.trades.length){el.style.display='none';return;}
+ const en=LANG()==='en',P=R.trades.map(t=>t[1]),n=P.length,W=P.filter(x=>x>0),gw=W.reduce((a,b)=>a+b,0),gl=-P.filter(x=>x<=0).reduce((a,b)=>a+b,0),net=gw-gl;
+ let c=0,pk=R.bal0,mdd=0;const S=[R.bal0];P.forEach(p=>{c+=p;const eq=R.bal0+c;S.push(eq);pk=Math.max(pk,eq);mdd=Math.max(mdd,(pk-eq)/pk*100);});
+ const wr=n?100*W.length/n:0,pf=gl>0?gw/gl:0,ret=100*net/R.bal0,days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));
+ const col=(v,b)=>v==='ok'?'#8df0bb':(v==='mid'?'#e8c55a':'#ff9a9a');
+ const bw=wr>=55?'ok':(wr>=45?'mid':'bad'),bp=pf>=1.5?'ok':(pf>=1.15?'mid':'bad'),bd=mdd<=12?'ok':(mdd<=22?'mid':'bad');
+ document.getElementById('rent-lbl').textContent=en?'Proof of profitability':'Preuve de rentabilité';
+ document.getElementById('rent-live').lastElementChild.textContent=en?'Real account':'Compte réel';
+ document.getElementById('rent-big').textContent=(ret>=0?'+':'−')+Math.abs(ret).toFixed(1).replace('.',en?'.':',')+' %';
+ document.getElementById('rent-sub').textContent=(en?'in '+days+' days · real money':'en '+days+' jours · argent réel');
+ const mn=Math.min(...S),mx=Math.max(...S),X=i=>i/(S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36;
+ const d=S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+ document.getElementById('rent-spark').innerHTML='<defs><linearGradient id="rsg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#rsg)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(S[S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
+ const pill=(k,v,b)=>'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 9px"><div style="font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#9fc2de">'+k+'</div><div style="font-size:1.08rem;font-weight:900;margin-top:3px;color:'+col(b)+'">'+v+'</div></div>';
+ document.getElementById('rent-pills').innerHTML=pill(en?'Win rate':'Réussite',Math.round(wr)+' %',bw)+pill('Profit factor',pf.toFixed(2).replace('.',en?'.':','),bp)+pill(en?'Max drawdown':'Baisse max','−'+mdd.toFixed(1).replace('.',en?'.':',')+' %',bd);
+ document.getElementById('rent-gm').textContent=en?(n+' trades · '+Math.round(wr/10)+' in 10 won'):(n+' trades · '+Math.round(wr/10)+' sur 10 gagnés');
+ document.getElementById('rent-go').firstChild.textContent=en?'See the proof':'Voir la preuve';
+ el.style.display='';}
+setTimeout(()=>{try{loadRent();}catch(e){}},1500);
+async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
  let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){el.style.display='none';return;}
@@ -8608,6 +8652,7 @@ function render(d){
     try{confetti();}catch(e){}}
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
+  try{loadRent();}catch(e){}
   drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);usageRow(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
@@ -10379,6 +10424,66 @@ def _proof_lab():
             "to_try": len(props), "twins": len(tw),
             "rules": len([i for i in (L.get("items") or []) if i.get("status") == "deployed"]),
             "archived": len(L.get("archive") or {})}
+
+
+_RENT_CACHE = [0.0, None]
+
+
+def rentabilite_payload():
+    """2026-10-11 (owner): the numbers of the "Rentabilite" space.
+    real  - ONE real account (Valere's, the reference real account), from the
+            broker ledger: legs closing within 90 s on the same side are one
+            trade (main + recovery adds); no name, no lot sizes leave here
+    test  - the $200 reference test with TODAY's rules (tick engine, trend
+            filter, live order, daily scaling) and its no-filter twin, both
+            cost bases (lab/proof_current.json)
+    legacy- the older nightly candle-engine test, labelled
+    verdict / rules - the nightly lights and the rule dates"""
+    if _RENT_CACHE[1] and time.time() - _RENT_CACHE[0] < 120:
+        return _RENT_CACHE[1]
+    out = {"updated": int(time.time())}
+    try:
+        w = json.load(open(os.path.join(DIR, "lab", "wealth", "u224016179.json"), encoding="utf-8"))
+        legs = sorted(w.get("trades") or [])
+        grp = []
+        for x in legs:
+            if grp and abs(x[0] - grp[-1][0]) <= 90 and x[3] == grp[-1][3]:
+                grp[-1][1] = round(grp[-1][1] + x[1], 2); grp[-1][2] += 1; grp[-1][0] = max(grp[-1][0], x[0])
+            else:
+                grp.append([int(x[0]), round(float(x[1]), 2), 1, int(x[3]), int(x[0] - 60 * float(x[4] or 0))])
+        _era = w.get("era") or ""
+        try:
+            _t0 = int(datetime.fromisoformat(_era.replace("Z", "+00:00")).timestamp())
+        except Exception:
+            _t0 = grp[0][4] if grp else int(time.time())
+        out["real"] = {"start": _t0, "bal0": float(w.get("bal_start") or 0), "balance": float(w.get("balance") or 0),
+                       "equity": float(w.get("equity") or 0), "flows": w.get("flows") or [], "legs": len(legs),
+                       "trades": grp, "updated": w.get("updated"), "currency": w.get("currency") or "USD",
+                       "filter_since": 1791647710}
+    except Exception as e:
+        out["real"] = None
+    try:
+        c = json.load(open(os.path.join(DIR, "lab", "proof_current.json"), encoding="utf-8"))
+        out["test"] = {"generated_at": c.get("generated_at"), "days": c.get("days"), "balance": c.get("balance"), "window_utc": c.get("window_utc"), "rows": c.get("rows")}
+    except Exception:
+        out["test"] = None
+    try:
+        p = json.load(open(os.path.join(DIR, "lab", "proof.json"), encoding="utf-8"))
+        f = (p.get("base") or {}).get("full") or {}
+        out["legacy"] = {"net": f.get("net"), "trades": f.get("trades"), "wr": f.get("wr"), "days": p.get("days"), "updated": p.get("updated"),
+                         "fr": "Ancien test nocturne : règles au 2026-10-09, sans le filtre de tendance, moteur bougies, spread fixe 7 $",
+                         "en": "Older nightly test: rules as of 2026-10-09, no trend filter, candle engine, fixed 7 $ spread"}
+        out["rules"] = (p.get("rules") or []) + [{"id": "trend", "date": "2026-10-10", "title_fr": "Le robot ne suit que la tendance de fond, au-delà de sa dernière cassure",
+                                                  "title_en": "The robot only follows the background trend, beyond its last break"}]
+    except Exception:
+        out["legacy"] = None; out["rules"] = []
+    try:
+        v = proof_payload("base")
+        out["verdict"] = {"overall": v.get("overall"), "lights": v.get("lights")}
+    except Exception:
+        out["verdict"] = None
+    _RENT_CACHE[0], _RENT_CACHE[1] = time.time(), out
+    return out
 
 
 def proof_payload(pkg="base"):
@@ -15806,6 +15911,19 @@ class H(BaseHTTPRequestHandler):
                 _wh = open(_wp, encoding="utf-8").read()
                 self._send(_wh.replace("%%LAB%%", "false" if user.get("public") else "true"),
                            "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "rentabilite":
+            # 2026-10-11 (owner): "Preuve de rentabilite" - the dedicated space,
+            # built like Patrimoine (own page, own data endpoint)
+            try:
+                _rp = open(os.path.join(DIR, "owl_proof_page.html"), encoding="utf-8").read()
+                self._send(_rp, "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "rentabilite_data":
+            try:
+                self._send(json.dumps(rentabilite_payload()), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "wealth_data":
