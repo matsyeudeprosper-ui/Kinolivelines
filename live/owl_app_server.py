@@ -1870,24 +1870,24 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .rc2{margin:12px 0 0;max-width:none;cursor:pointer;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
  background:radial-gradient(110% 80% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0d1826);
  border:1px solid rgba(141,240,187,.22);box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
-.rc2 .in{padding:18px 18px 0}
+.rc2 .in{padding:20px 18px 2px}
 .rc2 .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.rc2 .ey{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rc2 .ey{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .rc2 .lv{flex:none;font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;
  background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px;white-space:nowrap}
 .rc2 .lv i{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71}
 .rc2 .vsw{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:3px;margin-top:14px}
-.rc2 .vsw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.76rem;font-weight:700;padding:8px 4px;border-radius:9px;cursor:pointer}
+.rc2 .vsw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.88rem;font-weight:700;padding:10px 4px;border-radius:9px;cursor:pointer}
 .rc2 .vsw button.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .rc2 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
 .rc2 .big{font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap}
-.rc2 .bs{font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
+.rc2 .bs{font-size:.88rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
 .rc2 svg.sp{flex:1;min-width:0;max-width:170px;height:48px;overflow:visible}
 .rc2 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.rc2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px}
-.rc2 .pl small{display:block;font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc2 .pl b{display:block;font-size:1.12rem;font-weight:900;margin-top:5px;white-space:nowrap}
-.rc2 .nt{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:12px}
+.rc2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 11px 11px}
+.rc2 .pl small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;line-height:1.25;min-height:2.5em;display:flex;align-items:flex-end}
+.rc2 .pl b{display:block;font-size:1.22rem;font-weight:900;margin-top:5px;white-space:nowrap}
+.rc2 .nt{font-size:.88rem;color:#d5e0ea;line-height:1.6;margin-top:16px}
 .rc2 .nt span{color:#9fc2de}
 .rc2 .go{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:13px 18px;border-top:1px solid rgba(255,255,255,.08);
  background:rgba(255,255,255,.03);color:#8fc6ff;font-size:.86rem;font-weight:800;text-decoration:none}
@@ -10517,11 +10517,6 @@ def landing_payload():
                        "trend": int(((cj.get("pb") or {}).get("trend")) or 0), "open": bool(r.get("equity") and r.get("balance") and abs(float(r["equity"]) - float(r["balance"])) > 0.005)}
     except Exception:
         out["live"] = {"online": False}
-    try:
-        us = users()
-        out["robots"] = sum(1 for x in us if x.get("dedicated") and x.get("mode") == "auto")
-    except Exception:
-        out["robots"] = None
     out["tg_bot"] = nest_config().get("tg_bot") or "Kino_owl_bot"
     _LAND_CACHE[0], _LAND_CACHE[1] = time.time(), out
     return out
@@ -12025,52 +12020,56 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
 .pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
  align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:30px}
-/* 2026-10-11 (owner, acquisition) */
-.tag .tg2{display:block;margin-top:8px;font-size:.86rem;color:#9fc2de;font-weight:500}
-.pw{margin:12px auto 0;max-width:360px;text-align:left;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
-.pw .h{font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#e8c55a;display:flex;align-items:center;gap:7px}
-.pw .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
-.pw .g div{min-width:0}.pw .g b{display:block;font-size:1.02rem;font-weight:900;color:#ff9a9a;white-space:nowrap}
-.pw .g span{display:block;font-size:.66rem;color:#9fc2de;line-height:1.3;margin-top:2px}
-.pw p{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:10px}
-.trust{margin:18px auto 0;max-width:360px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left}
-.trust div{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 11px;font-size:.74rem;line-height:1.35;color:#c6d3df}
-.trust svg.ic{flex:none;width:18px;height:18px;color:#8df0bb;margin-top:1px}
-.trust b{display:block;color:#fff;font-size:.78rem}
-.live2{margin:14px auto 0;max-width:360px;display:flex;align-items:center;gap:12px;text-align:left;border-radius:16px;padding:12px 14px;background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(59,130,246,.04));border:1px solid rgba(143,198,255,.22)}
-.live2 .dot{width:10px;height:10px;border-radius:50%;flex:none;background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.18),0 0 12px #2ecc71;animation:lv2 1.6s infinite}
+/* 2026-10-11 (owner, acquisition) - v2: bigger text, more air */
+.tag .tg2{display:block;margin-top:10px;font-size:.95rem;color:#b9d3e8;font-weight:500;line-height:1.45}
+.pw{margin:16px auto 0;max-width:360px;text-align:left;border-radius:22px;padding:20px 18px;background:linear-gradient(160deg,rgba(255,154,154,.07),rgba(255,255,255,.02));border:1px solid rgba(255,154,154,.18)}
+.pw .h{font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e8c55a;display:flex;align-items:center;gap:8px}
+.pw .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.pw .g div{min-width:0;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 10px}
+.pw .g b{display:block;font-size:1.3rem;font-weight:900;color:#ff9a9a;white-space:nowrap;letter-spacing:-.02em}
+.pw .g span{display:block;font-size:.76rem;color:#b9d3e8;line-height:1.35;margin-top:6px}
+.pw p{font-size:.9rem;color:#d5e0ea;line-height:1.6;margin-top:16px}
+.trust{margin:22px auto 0;max-width:360px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.trust div{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px 16px;font-size:.86rem;line-height:1.45;color:#b9d3e8}
+.trust .ti{flex:none;width:40px;height:40px;border-radius:12px;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.25);display:flex;align-items:center;justify-content:center}
+.trust svg.ic{width:20px;height:20px;color:#8df0bb;vertical-align:0}
+.trust b{display:block;color:#fff;font-size:.98rem;margin-bottom:2px}
+.live2{margin:16px auto 0;max-width:360px;display:flex;align-items:center;gap:14px;text-align:left;border-radius:18px;padding:16px 16px;background:linear-gradient(135deg,rgba(59,130,246,.16),rgba(59,130,246,.04));border:1px solid rgba(143,198,255,.24)}
+.live2 .dot{width:12px;height:12px;border-radius:50%;flex:none;margin:0 4px;background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.18),0 0 12px #2ecc71;animation:lv2 1.6s infinite}
 .live2 .dot.off{background:#8a9bb0;box-shadow:none;animation:none}
-@keyframes lv2{50%{box-shadow:0 0 0 7px rgba(46,204,113,.06),0 0 12px #2ecc71}}
-.live2 b{display:block;font-size:.84rem;color:#fff}.live2 span{display:block;font-size:.74rem;color:#9fc2de;margin-top:2px;line-height:1.35}
-.tgc{margin:26px 0 28px;border-radius:20px;padding:16px;text-align:left;background:linear-gradient(135deg,rgba(42,171,238,.16),rgba(42,171,238,.04));border:1px solid rgba(42,171,238,.3);display:flex;gap:14px;align-items:center}
-.tgc .ic2{width:44px;height:44px;border-radius:14px;flex:none;background:#2aabee;display:flex;align-items:center;justify-content:center}
-.tgc b{display:block;font-size:.95rem;color:#fff}.tgc span{display:block;font-size:.78rem;color:#c6d3df;margin-top:3px;line-height:1.4}
-.tgc a{flex:none;background:#2aabee;color:#fff;font-weight:800;font-size:.82rem;border-radius:12px;padding:10px 12px;text-decoration:none;white-space:nowrap}
-details.fqall{margin-top:4px}details.fqall>summary{list-style:none;cursor:pointer;text-align:center;font-weight:800;color:#8fc6ff;padding:14px 0;font-size:.9rem}
+@keyframes lv2{50%{box-shadow:0 0 0 8px rgba(46,204,113,.06),0 0 12px #2ecc71}}
+.live2 b{display:block;font-size:.98rem;color:#fff}.live2 span{display:block;font-size:.86rem;color:#b9d3e8;margin-top:4px;line-height:1.5}
+.tgc{margin:30px 0 34px;border-radius:22px;padding:20px 18px;text-align:left;background:linear-gradient(135deg,rgba(42,171,238,.18),rgba(42,171,238,.04));border:1px solid rgba(42,171,238,.32)}
+.tgc .tgh{display:flex;gap:14px;align-items:center}
+.tgc .ic2{width:46px;height:46px;border-radius:14px;flex:none;background:#2aabee;display:flex;align-items:center;justify-content:center}
+.tgc b{display:block;font-size:1.1rem;color:#fff}
+.tgc p{font-size:.92rem;color:#d5e0ea;margin-top:12px;line-height:1.55}
+.tgc a{display:block;text-align:center;margin-top:16px;background:#2aabee;color:#fff;font-weight:800;font-size:.98rem;border-radius:14px;padding:14px;text-decoration:none}
+details.fqall{margin-top:6px}details.fqall>summary{list-style:none;cursor:pointer;text-align:center;font-weight:800;color:#8fc6ff;padding:16px 0;font-size:.98rem}
 details.fqall>summary::-webkit-details-marker{display:none}
 /* 2026-10-11 (owner): the proof, on the landing - one card, two views:
    the witness account (real money) first, the backtest second */
 .pf2{margin:26px auto 0;max-width:360px;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
  background:radial-gradient(110% 80% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0d1826);
  border:1px solid rgba(141,240,187,.22);box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
-.pf2 .in{padding:18px 18px 0}
+.pf2 .in{padding:20px 18px 2px}
 .pf2 .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.pf2 .ey{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pf2 .ey{font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pf2 .lv{flex:none;font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;
  background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px;white-space:nowrap}
 .pf2 .lv i{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71}
 .pf2 .sw{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:3px;margin-top:14px}
-.pf2 .sw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.76rem;font-weight:700;padding:8px 4px;border-radius:9px;cursor:pointer}
+.pf2 .sw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.88rem;font-weight:700;padding:10px 4px;border-radius:9px;cursor:pointer}
 .pf2 .sw button.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
 .pf2 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
 .pf2 .big{font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap}
-.pf2 .bs{font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
+.pf2 .bs{font-size:.88rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
 .pf2 svg.sp{flex:1;min-width:0;max-width:170px;height:48px;overflow:visible}
 .pf2 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
-.pf2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px}
-.pf2 .pl small{display:block;font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pf2 .pl b{display:block;font-size:1.12rem;font-weight:900;margin-top:5px;white-space:nowrap}
-.pf2 .nt{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:12px}
+.pf2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 11px 11px}
+.pf2 .pl small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;line-height:1.25;min-height:2.5em;display:flex;align-items:flex-end}
+.pf2 .pl b{display:block;font-size:1.22rem;font-weight:900;margin-top:5px;white-space:nowrap}
+.pf2 .nt{font-size:.88rem;color:#d5e0ea;line-height:1.6;margin-top:16px}
 .pf2 .nt span{color:#9fc2de}
 .pf2 a.go{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:13px 18px;border-top:1px solid rgba(255,255,255,.08);
  background:rgba(255,255,255,.03);color:#8fc6ff;font-size:.86rem;font-weight:800;text-decoration:none}
@@ -12289,10 +12288,10 @@ sur votre propre compte.<span class="tg2">Ses vrais r&eacute;sultats sont public
 </div>
 <a class="bigbtn b1" id="hero-cta" href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
 <div class="trust" id="trust">
- <div><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg><span><b>Votre argent reste chez vous</b>sur votre compte, chez votre courtier.</span></div>
- <div><svg aria-hidden="true" class="ic"><use href="#i-key"/></svg><span><b>Le robot ne peut rien retirer</b>il passe des ordres, c&rsquo;est tout.</span></div>
- <div><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg><span><b>R&eacute;sultats publics</b>un compte t&eacute;moin r&eacute;el, pertes comprises.</span></div>
- <div><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg><span><b id="tr-rb">Robots en service</b><i id="tr-rbs" style="font-style:normal">jour et nuit, depuis septembre.</i></span></div>
+ <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg></span><span><b>Votre argent reste chez vous</b>sur votre compte, chez votre courtier.</span></div>
+ <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-key"/></svg></span><span><b>Le robot ne peut rien retirer</b>il passe des ordres, c&rsquo;est tout.</span></div>
+ <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg></span><span><b>R&eacute;sultats publics</b>un compte t&eacute;moin r&eacute;el, pertes comprises.</span></div>
+ <div><span class="ti"><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg></span><span><b>Il veille jour et nuit</b>et s&rsquo;arr&ecirc;te d&egrave;s que vous le d&eacute;cidez.</span></div>
 </div>
 <div class="live2" id="live2" hidden><i class="dot" id="lv2-dot"></i><div><b id="lv2-t">Le robot en ce moment</b><span id="lv2-s"></span></div></div>
 
@@ -12380,9 +12379,9 @@ sur votre propre compte.<span class="tg2">Ses vrais r&eacute;sultats sont public
 <a class="all" href="/offres">Voir toutes les offres &rsaquo;</a>
 </div>
 <div class="feats" id="faq">
-<div class="tgc" id="tgc"><div class="ic2"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.2-1.9zM8.4 14.1l9.3-5.9c.5-.3.9-.1.5.2l-7.6 6.9-.3 3.4-1.9-4.6z"/></svg></div>
- <div style="flex:1;min-width:0"><b>Pas encore pr&ecirc;t&nbsp;?</b><span>Recevez le bilan de la semaine du compte t&eacute;moin sur Telegram. Gratuit, sans compte.</span></div>
- <a id="tg-go" href="https://t.me/Kino_owl_bot?start=bilan" target="_blank" rel="noopener" onclick="try{fn('tg_open')}catch(e){}">Recevoir</a></div>
+<div class="tgc" id="tgc"><div class="tgh"><div class="ic2"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.2-1.9zM8.4 14.1l9.3-5.9c.5-.3.9-.1.5.2l-7.6 6.9-.3 3.4-1.9-4.6z"/></svg></div><b>Pas encore pr&ecirc;t&nbsp;?</b></div>
+ <p>Recevez le bilan de la semaine du compte t&eacute;moin sur Telegram. Gratuit, sans compte.</p>
+ <a id="tg-go" href="https://t.me/Kino_owl_bot?start=bilan" target="_blank" rel="noopener" onclick="try{fn('tg_open')}catch(e){}">Recevoir le bilan</a></div>
 <div class="how" role="heading" aria-level="2">Questions fr&eacute;quentes</div>
 <details class="fq"><summary>Où est mon argent ?</summary>
 <p>Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.</p></details>
@@ -12539,9 +12538,6 @@ function landPaint(){const j=window._land;if(!j)return;const en=pvEn(),$=id=>doc
   $('pw-p').textContent=en?('These are the witness account’s real worst moments since it started. '+W.weeks_pos+' weeks out of '+W.weeks+' ended positive. A robot that never loses does not exist; what matters is that the losses stay small.')
    :('Ce sont les vrais pires moments du compte témoin depuis son départ. '+W.weeks_pos+' semaines sur '+W.weeks+' ont fini en positif. Un robot qui ne perd jamais n’existe pas : ce qui compte, c’est que les pertes restent petites.');
   $('pw').hidden=false;}
- if(j.robots){$('tr-rb').textContent=en?(j.robots+' robots at work'):(j.robots+' robots en service');}
- if(W&&W.start){const d=new Date(W.start*1000),m=en?['January','February','March','April','May','June','July','August','September','October','November','December']:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-  $('tr-rbs').textContent=en?('day and night, since '+m[d.getUTCMonth()]+'.'):('jour et nuit, depuis '+m[d.getUTCMonth()]+'.');}
  const L=j.live||{};if(L.online!==undefined){const ago=W&&W.last_trade?Math.max(1,Math.round((Date.now()/1000-W.last_trade)/60)):null;
   const agoT=ago===null?'':(ago<60?ago+' min':(ago<1440?Math.round(ago/60)+' h':Math.round(ago/1440)+(en?' d':' j')));
   const pace={calm:en?'calm market':'marché calme',brisk:en?'brisk market':'marché soutenu',fast:en?'fast market':'marché rapide',very_fast:en?'very fast market':'marché très rapide'}[L.pace]||'';
@@ -12606,12 +12602,12 @@ var EN={
 "il passe des ordres, c’est tout.": "it places orders, nothing more.",
 "Résultats publics": "Public results",
 "un compte témoin réel, pertes comprises.": "a real witness account, losses included.",
-"Robots en service": "Robots at work",
-"jour et nuit, depuis septembre.": "day and night, since September.",
+"Il veille jour et nuit": "It watches day and night",
+"et s’arrête dès que vous le décidez.": "and stops as soon as you decide.",
 "Le robot en ce moment": "The robot right now",
 "Pas encore prêt ?": "Not ready yet?",
 "Recevez le bilan de la semaine du compte témoin sur Telegram. Gratuit, sans compte.": "Get the witness account’s weekly summary on Telegram. Free, no account.",
-"Recevoir": "Get it",
+"Recevoir le bilan": "Get the summary",
 "Aperçus de l’application": "App previews",
 "Le robot Owl trade pour vous,": "The Owl robot trades for you,",
 "jour et nuit. Vous, vous regardez.": "day and night. You just watch.",
