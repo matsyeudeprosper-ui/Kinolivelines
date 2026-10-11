@@ -121,7 +121,7 @@
    },
    "built_date": "2026-10-05",
    "built_commit": "96dbe40",
-   "c_nights": 1
+   "c_nights": 0
   },
   {
    "id": "cap_rr",
@@ -237,7 +237,17 @@
    "why_fr": "Sur tous les vrais comptes, les trades pris de 1 h à 8 h UTC gagnent 7 fois sur 10 ; tous les autres créneaux perdent. Le test voit la même chose depuis deux semaines. Mais refuser les autres heures coûte cher sur 42 jours (les trades de rattrapage disparaissent). Je mesurerais 0,5 et 0,75 de 8 h à minuit sur les comptes avec et sans plafond ; j'attends un trou plus petit sans perdre la nuit.",
    "why_en": "On every real account, trades taken from 01:00 to 08:00 UTC win 7 times in 10; every other slot loses. The test sees the same for two weeks. But refusing the other hours costs a lot over 42 days (the catch-up trades vanish). I would measure 0.5 and 0.75 from 08:00 to midnight on the accounts with and without a daily cap; I expect a smaller hole without losing the night.",
    "date": "2026-10-09",
-   "status": "open"
+   "status": "built",
+   "key": "hour_size",
+   "built_note_fr": "Le robot peut maintenant tester une mise plus petite sur les trades pris à certaines heures, trades de rattrapage compris, sans jamais refuser le trade. Rien ne change dans le robot tant qu'une idée qui l'utilise n'a pas gagné son duel.",
+   "built_note_en": "The robot can now test a smaller stake on trades taken at chosen hours, catch-up trades included, without ever refusing the trade. Nothing changes in the robot until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--hour-size",
+    "a": "8-24:0.5",
+    "b": "8-24:1.0"
+   },
+   "built_date": "2026-10-11",
+   "built_commit": "0bb1d2a"
   },
   {
    "id": "pb_dir_gate_test",
@@ -259,6 +269,28 @@
    "what_en": "Split the day into four UTC blocks: 1-8, 8-16, 16-21, 21-1. Before each entry, add up the results of the robot's own trades (in the test) entered in the same block over the last X days; if the sum is negative and there are at least 5 trades, no entry. X from 7 to 28 days, 0 = off (default, nothing changes).",
    "why_fr": "Couper la journée et la fin de soirée gagne beaucoup depuis le 24 septembre (8 vrais comptes sur 9 d'accord) mais perdait avant : chaque coupure fixe est meilleure sur une moitié et pire sur l'autre. Un frein qui suit les heures qui perdent en ce moment répondrait sans choisir les heures à la main.",
    "why_en": "Cutting the day and the late evening gains a lot since 24 September (8 real accounts in 9 agree) but lost before: every fixed cut is better on one half and worse on the other. A brake that follows the hours losing right now would answer without picking hours by hand.",
+   "status": "open"
+  },
+  {
+   "id": "early_moves_size",
+   "date": "2026-10-11",
+   "title_fr": "Miser moins tant que la tendance est jeune",
+   "title_en": "Stake less while the trend is young",
+   "what_fr": "Multiplier la mise par X quand le nombre de grands mouvements comptés sur les 2 dernières heures (le fait « move », structure principale) est au plus N. Le trade est quand même pris. X de 0,25 à 1,0 (1,0 = arrêt, par défaut rien ne change) ; N de 1 à 3 (N = 1 refait le réglage actuel du premier mouvement).",
+   "what_en": "Multiply the stake by X when the number of big moves counted over the last 2 hours (the 'move' fact, main structure) is at most N. The trade is still taken. X from 0.25 to 1.0 (1.0 = off, default, nothing changes); N from 1 to 3 (N = 1 repeats today's first-move setting).",
+   "why_fr": "Sur les 98 vrais trades : au premier mouvement, 45 % gagnés, -35 $ ; au 2e-3e, 44 %, -30 $ ; à partir du 4e, 61 %, +32 $, et les deux moitiés sont d'accord. Ce soir, une mise réduite au premier mouvement fait passer le trio à « mieux sur les deux moitiés » partout. Je veux savoir si l'étendre au 2e et 3e aide encore.",
+   "why_en": "Over the 98 real trades: on the first move, 45 % won, -$35; on the 2nd-3rd, 44 %, -$30; from the 4th on, 61 %, +$32, and both halves agree. Tonight a smaller stake on the first move made the trio 'better on both halves' everywhere. I want to know whether extending it to the 2nd and 3rd still helps.",
+   "status": "open"
+  },
+  {
+   "id": "pile_field_move",
+   "date": "2026-10-11",
+   "title_fr": "Pouvoir faire des piles selon l'âge de la tendance",
+   "title_en": "Allow piles by how old the trend is",
+   "what_fr": "Ajouter « move » (le nombre de grands mouvements comptés sur les 2 dernières heures à l'entrée, comme dans les outils de lecture) aux faits qu'une pile peut utiliser, avec les mêmes opérateurs. Rien ne change pour les piles existantes.",
+   "what_en": "Add 'move' (the number of big moves counted over the last 2 hours at entry, as in the reading tools) to the facts a pile can use, with the same operators. Nothing changes for existing piles.",
+   "why_fr": "Le meilleur indice de ce soir (les tendances mûres gagnent, les jeunes perdent) ne peut pas devenir une pile : ce fait n'est pas dans la liste. Une pile « à partir du 4e mouvement » le suivrait avec la vérification des deux moitiés.",
+   "why_en": "Tonight's best clue (mature trends win, young ones lose) cannot become a pile: this fact is not on the list. A pile 'from the 4th move on' would follow it with the two-halves check.",
    "status": "open"
   }
  ]
