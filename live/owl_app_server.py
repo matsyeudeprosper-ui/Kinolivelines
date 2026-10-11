@@ -1865,6 +1865,39 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pv-nav{display:flex;gap:8px}
 .pv-pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 11px;font-size:.7rem;color:var(--text2);font-weight:700}
 .pf{--pfc:var(--warn)}
+/* 2026-10-11 (owner): the AI card - violet is the AI's colour, nowhere else on the home */
+.aic{margin:12px 0 0;border-radius:var(--r-lg,22px);overflow:hidden;position:relative;text-align:left;
+ background:radial-gradient(120% 90% at 100% 0%,rgba(167,139,250,.22),transparent 60%),radial-gradient(90% 80% at 0% 100%,rgba(59,130,246,.12),transparent 60%),linear-gradient(160deg,#151a33,#0d1424);
+ border:1px solid rgba(167,139,250,.28);box-shadow:0 18px 44px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05)}
+.aic::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(196,181,253,.07) 45%,transparent 60%);background-size:250% 100%;animation:aicSh 7s linear infinite}
+@keyframes aicSh{0%{background-position:150% 0}100%{background-position:-100% 0}}
+@media (prefers-reduced-motion:reduce){.aic::before,.aic-roles i.on{animation:none}}
+.aic-in{padding:20px 18px 4px;position:relative}
+.aic-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.aic-ey{display:inline-flex;align-items:center;gap:7px;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#c4b5fd;white-space:nowrap}
+.aic-ey svg{width:16px;height:16px;fill:#c4b5fd}
+.aic-lv{flex:none;font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#c4b5fd;display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,.12);border:1px solid rgba(167,139,250,.3);border-radius:99px;padding:4px 10px;white-space:nowrap}
+.aic-lv i{width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 8px #a78bfa}
+.aic-h{font-size:1.08rem;font-weight:800;color:#fff;line-height:1.35;margin-top:14px;text-wrap:balance}
+.aic-big{margin-top:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.aic-big b{font-size:2.6rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff}
+.aic-big em{font-style:normal;font-size:.8rem;font-weight:800;color:#c4b5fd;background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.3);border-radius:99px;padding:5px 11px;white-space:nowrap}
+.aic-bs{font-size:.95rem;color:#c9d4f0;line-height:1.4;margin-top:8px}
+.aic-g{display:flex;flex-direction:column;margin-top:16px;border-top:1px solid rgba(255,255,255,.08)}
+.aic-g div{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.aic-g b{flex:none;min-width:42px;font-size:1.3rem;font-weight:900;color:#c4b5fd;text-align:left}
+.aic-g span{font-size:.92rem;color:#d5e0ea;line-height:1.35}
+.aic-roles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.aic-roles div{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 11px;min-width:0}
+.aic-roles i{flex:none;width:8px;height:8px;border-radius:50%;background:#64748b}
+.aic-roles i.on{background:#a78bfa;box-shadow:0 0 0 3px rgba(167,139,250,.18);animation:aicP 2s infinite}
+@keyframes aicP{50%{box-shadow:0 0 0 6px rgba(167,139,250,.05)}}
+.aic-roles b{display:block;font-size:.86rem;color:#fff;line-height:1.25}
+.aic-roles small{display:block;font-size:.74rem;color:#a9b8d8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aic-nt{font-size:.86rem;color:#c9d4f0;line-height:1.55;margin-top:16px}
+.aic-go{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:.9rem;font-weight:800;color:#c4b5fd}
+.aic-go.lk{font-weight:600;color:#a9b8d8;font-size:.84rem}
+.aic-go.btn{cursor:pointer}
 /* 2026-10-11 (owner): the proof card on the HOME (same design as the landing) - one card, two views:
    the witness account (real money) first, the backtest second */
 .rc2{margin:12px 0 0;max-width:none;cursor:pointer;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
@@ -2593,6 +2626,22 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
      measured on a real account: return, win rate, profit factor, max drawdown -->
 <!-- 2026-10-11 (owner): the home proof card, same design as the landing card:
      witness account (real money) / backtest switch -->
+<!-- 2026-10-11 (owner): the AI at work behind the robot -->
+<div class="aic" id="aicard" style="display:none">
+ <div class="aic-in">
+  <div class="aic-top"><span class="aic-ey"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l1.9 5.6 5.6 1.9-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.9z"/><path d="M19 15l.8 2.2 2.2.8-2.2.8L19 21l-.8-2.2-2.2-.8 2.2-.8z"/></svg><span id="aic-ey">L&rsquo;IA du robot</span></span><span class="aic-lv"><i></i><span id="aic-lv">Active</span></span></div>
+  <div class="aic-h" id="aic-h">Pendant que le robot trade, une IA cherche &agrave; le rendre meilleur.</div>
+  <div class="aic-big"><b id="aic-n">&nbsp;</b><em id="aic-nn" hidden></em></div><div class="aic-bs" id="aic-ns">&nbsp;</div>
+  <div class="aic-g">
+   <div><b id="aic-r">&nbsp;</b><span id="aic-rs">r&egrave;gles du robot ont pass&eacute; ses tests</span></div>
+   <div><b id="aic-t">&nbsp;</b><span id="aic-ts">en essai sur un compte d&rsquo;entra&icirc;nement</span></div>
+   <div><b id="aic-x">&nbsp;</b><span id="aic-xs">id&eacute;es refus&eacute;es faute de preuve</span></div>
+  </div>
+  <div class="aic-roles" id="aic-roles"></div>
+  <div class="aic-nt" id="aic-nt">Rien n&rsquo;entre dans le robot sans avoir gagn&eacute; sur deux p&eacute;riodes de vrais prix.</div>
+ </div>
+ <div class="aic-go" id="aic-go"></div>
+</div>
 <div class="rc2" id="rentcard" role="link" tabindex="0" style="display:none" aria-label="Preuve de rentabilit&eacute;"
  onclick="if(!event.target.closest('.vsw'))location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')"
  onkeydown="if(event.key==='Enter')location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')">
@@ -7145,6 +7194,35 @@ function rcPaint(){const j=window._rcJ;if(!j)return;const en=LANG()==='en',$=id=
  $('rc2-nt').innerHTML=s.n+' trades \u00b7 '+note;$('rc2-ey').textContent=en?'Proof of profitability':'Preuve de rentabilit\u00e9';
  $('rc2-lv').textContent=V==='real'?(en?'Live':'En direct'):(en?'Up to date':'\u00c0 jour');$('rc2-b1').textContent=en?'Witness account':'Compte t\u00e9moin';$('rc2-gt').textContent=go;}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
+// 2026-10-11 (owner): the AI at work - counts and times from <tok>/ai_pulse
+async function loadAI(){const el=document.getElementById('aicard');if(!el)return;
+ if(window._aiT&&Date.now()-window._aiT<300000){aiPaint();return;}window._aiT=Date.now();
+ try{const r=await fetch(B+'ai_pulse?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err)window._aiJ=j;}}catch(e){}
+ aiPaint();}
+function aiPaint(){const j=window._aiJ,el=document.getElementById('aicard');if(!j||!el||!j.tests){if(el)el.style.display='none';return;}
+ const en=LANG()==='en',$=id=>document.getElementById(id),now=Date.now()/1000;
+ const ago=t=>{if(!t)return en?'not yet':'pas encore';const m=Math.max(1,Math.round((now-t)/60));return m<60?(en?m+' min ago':'il y a '+m+' min'):(m<1440?(en?Math.round(m/60)+' h ago':'il y a '+Math.round(m/60)+' h'):(en?Math.round(m/1440)+' d ago':'il y a '+Math.round(m/1440)+' j'));};
+ const fr=n=>en?n.toLocaleString('en-US'):n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ');
+ const sd=j.since?j.since.slice(8,10)+'/'+j.since.slice(5,7):'';
+ $('aic-ey').textContent=en?'The robot’s AI':'L’IA du robot';$('aic-lv').textContent=en?'Active':'Active';
+ $('aic-h').textContent=en?'While the robot trades, an AI looks for ways to make it better.':'Pendant que le robot trade, une IA cherche à le rendre meilleur.';
+ $('aic-n').textContent=fr(j.tests);$('aic-ns').textContent=en?('tests on real prices since '+sd):('essais sur de vrais prix depuis le '+sd);const nn=$('aic-nn');if(j.night_tests){nn.textContent='+'+j.night_tests+(en?' last night':' cette nuit');nn.hidden=false;}else nn.hidden=true;
+ $('aic-r').textContent=j.in_robot;$('aic-rs').textContent=en?'of the robot’s rules passed its tests':'règles du robot ont passé ses tests';
+ $('aic-t').textContent=j.trial;$('aic-ts').textContent=en?'on trial on a practice account':'en essai sur un compte d’entraînement';
+ $('aic-x').textContent=j.rejected+j.blocked;$('aic-xs').textContent=en?'ideas turned down for lack of proof':'idées refusées faute de preuve';
+ const R=j.roles||{},fresh=(t,h)=>t&&(now-t)<h*3600;
+ const roles=[[en?'The researcher':'Le chercheur',R.chercheur,en?'reads the day, proposes':'lit la journée, propose',30],
+  [en?'The critic':'Le critique',R.critique,en?'tries to break it':'cherche la faille',30],
+  [en?'The builder':'Le constructeur',R.constructeur,en?'builds the best one':'construit la meilleure',30],
+  [en?'The watch':'La veille',R.veille,en?'watches by day':'surveille le jour',8]];
+ $('aic-roles').innerHTML=roles.map(r=>'<div><i class="'+(fresh(r[1],r[3])?'on':'')+'"></i><span style="min-width:0"><b>'+r[0]+'</b><small>'+ago(r[1])+'</small></span></div>').join('');
+ $('aic-nt').textContent=en?'Nothing goes into the robot without winning on two separate stretches of real prices.':'Rien n’entre dans le robot sans avoir gagné sur deux périodes de vrais prix.';
+ const go=$('aic-go');
+ if(j.lab_ok&&typeof labVisible==='function'&&labVisible()){go.className='aic-go btn';go.innerHTML='<span>'+(en?'Open the lab':'Ouvrir le labo')+'</span><span aria-hidden="true">&rsaquo;</span>';
+  go.onclick=()=>{tab('marche',document.getElementById('tb-marche'));mxView('lab');};}
+ else{go.className='aic-go lk';go.onclick=null;go.innerHTML='<span>'+(en?'The ideas themselves are in the Strategy plan.':'Le détail des idées est réservé au forfait Stratégie.')+'</span>';}
+ el.style.display='';}
+setTimeout(()=>{try{loadAI();}catch(e){}},1700);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
  el.style.display='none';return;
@@ -10465,6 +10543,48 @@ def _proof_lab():
 
 _RENT_CACHE = [0.0, None]
 _LAND_CACHE = [0.0, None]
+_AI_CACHE = [0.0, None]
+
+
+def ai_pulse():
+    """2026-10-11 (owner): "a card that shows off the AI work in the bot".
+    Every night a Claude session (le chercheur) reads the day and proposes
+    ideas, the test bench replays them on real prices, le critique tries to
+    break the winners, le constructeur builds one; by day la veille watches.
+    Counts and times only - what the ideas ARE stays in the lab (Strategie)."""
+    if _AI_CACHE[1] and time.time() - _AI_CACHE[0] < 300:
+        return _AI_CACHE[1]
+    L = os.path.join(DIR, "lab")
+    p = lab_payload()
+    au = p.get("auto") or {}
+    night_n = sum(int(v) for v in (au.get("counts") or {}).values())
+    tests = 0; ids = set(); first = None
+    try:
+        for ln in open(os.path.join(L, "auto_history.jsonl"), encoding="utf-8"):
+            try:
+                r = json.loads(ln)
+            except Exception:
+                continue
+            tests += 1; ids.add(r.get("id")); first = first or r.get("d")
+    except Exception:
+        pass
+    cnt = p.get("counts") or {}
+    crit = [c for c in (p.get("critiques") or []) if c.get("verdict") == "bloque"]
+
+    def mt(name):
+        try:
+            return int(os.path.getmtime(os.path.join(L, name)))
+        except Exception:
+            return None
+    out = {"night_tests": night_n, "tests": tests, "ideas": len(ids), "since": first,
+           "in_robot": int(cnt.get("deployed") or 0), "trial": int(cnt.get("forward") or 0),
+           "rejected": int(cnt.get("rejected") or 0), "blocked": len(crit),
+           "roles": {"chercheur": mt("chercheur_last.log"), "banc": mt("researcher_last.log"),
+                     "critique": mt("critic_last.log"), "constructeur": mt("build_last.log"),
+                     "veille": int(p["veille_last"]) if p.get("veille_last") else None},
+           "updated": int(time.time())}
+    _AI_CACHE[0], _AI_CACHE[1] = time.time(), out
+    return out
 
 
 def landing_payload():
@@ -16221,6 +16341,13 @@ class H(BaseHTTPRequestHandler):
             try:
                 _rp = open(os.path.join(DIR, "owl_proof_page.html"), encoding="utf-8").read()
                 self._send(_rp, "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "ai_pulse":
+            try:
+                o = dict(ai_pulse())
+                o["lab_ok"] = bool(is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers))
+                self._send(json.dumps(o), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "rentabilite_data":
