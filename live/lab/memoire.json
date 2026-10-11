@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-11T01:30:03Z",
+ "updated": "2026-10-11T03:00:04Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -46,7 +46,8 @@
     "2026-10-10 05:00 veille: real plain breakouts now lose in the evening too: cont entered 16-22 h 10 tr 4 won about -10 $, 19-22 h 0/4 -24.09 (too few). cont halves 71%/50%: part of the breakout edge may be the night edge. Night: check cont x hour.",
     "2026-10-10 07:00 veille: night flip won +4.80 (closed 06:45, pace 0.383); night flips ~9/13 ~+22 vs day flips 12/43 -73.66.",
     "2026-10-10: wealth ledgers since 09-24: night 1-7 h wins on 8 of 9 accounts, day 8-15 loses on 8 of 9, 21-0 h loses on 8 of 9, 16-20 h flat/positive. Journal: night BOS 17 tr 82% +40.6 vs day BOS 22 tr 45% -15.7 (halves 64%/27%). Engine 42 d: every hour cut is worse on h1 and better on h2 (ext400_noday B +7.7/B +40.1 hole 22; noday_wait20 C/B +49.9; skip13-14+21-23 B +28.5 h -72/+90 = hand-picked, not proposed). Regime, not a fixed rule: requested hour_brake_adaptive.",
-    "2026-10-11 01:30 veille: asia pile 32 tr 75% +51.47 (h 70%/83%); 01-07 h 23 tr 20 won +66.44, 00 h 9 tr 44% -14.97 is the weak hour inside it."
+    "2026-10-11 01:30 veille: asia pile 32 tr 75% +51.47 (h 70%/83%); 01-07 h 23 tr 20 won +66.44, 00 h 9 tr 44% -14.97 is the weak hour inside it.",
+    "2026-10-11 03:00 veille: BOS BUY +0.67 (pace 0.752, calm, closed 01:37). asia 33 tr 76% +52.14 (h 70%/85%); 01-07 h 24 tr 21 won ~+67."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -1537,6 +1538,15 @@
     "scrutiny --by kind / hour"
    ],
    "saw": "91 trades 49% -27.91 PF 0.86. A tiny early-night win; shape unchanged. late_night 20 tr 25% -47.14 PF 0.22 (h 27%/22%). 00 h 9 tr 44% -14.97, the only losing hour in the asia pile; 01-07 h 23 tr 20 won +66.44. asia 32 tr 75% +51.47 (h 70%/83%). BOS 37 tr 59% +20.14 (h 67%/50%); FLIP-BOS 52 tr 42% -38.61. No twins, no labo, no ask. No harness run: hour cuts already tested C/C on 42 d, nothing new to test."
+  },
+  {
+   "t": "2026-10-11T03:00:04Z",
+   "looked": [
+    "wake_context new trade (BOS BUY +0.67 closed 01:37 pace 0.752, calm, night)",
+    "scrutiny --by kind / hour",
+    "scrutiny --pile cont_day / asia"
+   ],
+   "saw": "92 trades. A small calm night breakout win, as night_carries / breakout_is_night predict. 01 h now 7 tr 86% +15.46; 01-07 h 24 tr 21 won ~+67; asia 33 tr 76% +52.14 (h 70%/85%). cont_day unchanged 20 tr 40% -20.50 (h 50%/30%). BOS 38 tr 61% +20.81 (h 67%/53%). No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
   }
  ],
  "lessons": [
