@@ -171,7 +171,7 @@ const isInner = (t) => /int /i.test(t) || /petite structure/i.test(t)
 // nothing to do with the switch. It did, once. Compare with the money
 // blanked out: the switch must not add or remove a label, and the live
 // number is not the switch's business.
-const noMoney = (t) => t.replace(/[-+−]?\$[0-9.,]+/g, "$");
+const noMoney = (t) => t.replace(/[-+−]?\$[0-9.,]+/g, "$").replace(/^\d:\d\d$/, "0:00");   // 2026-10-11: the bar-close countdown ticks between the two frames
 const mainOn = [...new Set(on.filter(t => !isInner(t)).map(noMoney))].sort();
 const mainOff = [...new Set(off.filter(t => !isInner(t)).map(noMoney))].sort();
 if (mainOn.length === 0 && mainOff.length === 0)

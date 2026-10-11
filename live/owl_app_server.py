@@ -7138,7 +7138,7 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
  // 2 - the strategy on the past
  S2.push({k:en?'The strategy, tested':'La strat\u00e9gie, test\u00e9e',b:()=>
   '<div class="pv-h">'+(en?'What the strategy earns on the past':'Ce que la strat\u00e9gie rapporte sur le pass\u00e9')+'</div>'+
-  '<div class="pv-p">'+(en?'The robot as it is today, replayed on the last '+D+' days, on a reference account of '+BAL+' $. Costs counted.':'Le robot tel qu\u2019il est aujourd\u2019hui, rejou\u00e9 sur les '+D+' derniers jours, sur un compte de r\u00e9f\u00e9rence de '+BAL+' $. Frais compt\u00e9s.')+'</div>'+
+  '<div class="pv-p">'+(j.current?('<b style="color:var(--warn)">'+esc(en?(j.legacy||{}).en:(j.legacy||{}).fr)+'</b> \u2014 '+(en?'replayed on the last '+D+' days, on a reference account of '+BAL+' $. Costs counted. Today\u2019s rules are below.':'rejou\u00e9es sur les '+D+' derniers jours, sur un compte de r\u00e9f\u00e9rence de '+BAL+' $. Co\u00fbts compt\u00e9s. Les r\u00e8gles d\u2019aujourd\u2019hui sont plus bas.')):(en?'The robot as it is today, replayed on the last '+D+' days, on a reference account of '+BAL+' $. Costs counted.':'Le robot tel qu\u2019il est aujourd\u2019hui, rejou\u00e9 sur les '+D+' derniers jours, sur un compte de r\u00e9f\u00e9rence de '+BAL+' $. Frais compt\u00e9s.'))+'</div>'+
   '<div class="pv-big"><b style="color:'+((F.net||0)>=0?up:down)+'">'+pvPct(F.net||0,BAL)+'</b><span>'+(en?'in '+D+' days':'en '+D+' jours')+'</span></div>'+
   '<div class="pv-g">'+
    pvCard((S.wr||0).toFixed(0)+'\u202f%',en?'trades won':'trades gagn\u00e9s',(F.trades||0)+' trades',up)+
@@ -7147,7 +7147,20 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
    pvCard((S.per_week||0).toFixed(0),en?'trades a week':'trades par semaine',en?'it works while you sleep':'elle travaille pendant que vous dormez')+
   '</div>'+
   '<div class="pv-chart">'+pfArea(F.curve,j.rules,en)+'</div>'+
-  '<div class="pv-note">'+(en?'Percentages are of the reference account. Your own money depends on your balance and your stake.':'Les pourcentages sont ceux du compte de r\u00e9f\u00e9rence. Votre argent d\u00e9pend de votre solde et de votre mise.')+'</div>'});
+  '<div class="pv-note">'+(en?'Percentages are of the reference account. Your own money depends on your balance and your stake.':'Les pourcentages sont ceux du compte de r\u00e9f\u00e9rence. Votre argent d\u00e9pend de votre solde et de votre mise.')+'</div>'+
+  // GPT 2026-10-11: the same $200 reference test with TODAY's verified rules (tick engine, trend filter, live order,
+  // real bid/ask of the std account), both cost bases - kept separate from any member's own replay
+  (function(){const C=j.current;if(!C||!C.rows)return '';const r0=(C.rows['0.00']||{}).today||{},r1=(C.rows['0.35']||{}).today||{},n0=(C.rows['0.00']||{}).no_filter||{};
+   const B=C.balance||200;
+   return '<div class="pv-h" style="margin-top:18px">'+(en?'Today\u2019s rules, same test':'Les r\u00e8gles d\u2019aujourd\u2019hui, m\u00eame test')+'</div>'+
+    '<div class="pv-p">'+(en?'Trend filter on, tick-by-tick engine, the broker\u2019s real bid/ask. Same '+(C.days||D)+' days, same '+B+' $ account.':'Filtre de tendance actif, moteur tick par tick, vrais bid/ask du courtier. M\u00eames '+(C.days||D)+' jours, m\u00eame compte de '+B+' $.')+'</div>'+
+    '<div class="pv-g">'+
+     pvCard(pvPct(r0.net||0,B),en?'spread only':'spread seul',(r0.trades||0)+' trades \u00b7 '+Math.round(100*(r0.win_rate||0))+'\u202f% '+(en?'won':'gagn\u00e9s'),(r0.net||0)>=0?up:down)+
+     pvCard(pvPct(r1.net||0,B),en?'+ 0.35 $ a trade':'+ 0,35 $ par trade',(r1.trades||0)+' trades \u00b7 PF '+((r1.profit_factor||0).toFixed? (r1.profit_factor||0).toFixed(2):r1.profit_factor),(r1.net||0)>=0?up:down)+
+     pvCard('\u2212'+Math.abs((r0.cc_dd||0)/B*100).toFixed(1)+'\u202f%',en?'biggest dip':'plus grosse baisse',en?'spread only':'spread seul',down)+
+     pvCard(pvPct(n0.net||0,B),en?'without the filter':'sans le filtre',(n0.trades||0)+' trades \u00b7 '+(en?'same engine':'m\u00eame moteur'),(n0.net||0)>=0?up:down)+
+    '</div>'+
+    '<div class="pv-note">'+(en?'Built '+(C.generated_at||'').slice(0,10)+'. The two tests use different engines: the one above counts a fixed 7 $ spread on candles, this one the real ticks. Compare the shape, not the cents.':'Construit le '+(C.generated_at||'').slice(0,10)+'. Les deux tests n\u2019utilisent pas le m\u00eame moteur : celui du dessus compte un spread fixe de 7 $ sur des bougies, celui-ci les vrais ticks. Comparez la forme, pas les centimes.')+'</div>';})()});
  // 3 - does it hold over time
  S2.push({k:en?'Does it hold?':'Est-ce que \u00e7a tient ?',b:()=>
   '<div class="pv-h">'+(en?'The same strategy, cut in pieces':'La m\u00eame strat\u00e9gie, coup\u00e9e en morceaux')+'</div>'+
@@ -10483,6 +10496,20 @@ def proof_payload(pkg="base"):
                         "day_cap": mine_run.get("day_cap")},
            # what the lab is doing to the strategy right now
            "lab": _proof_lab()}
+    # GPT 2026-10-11: the nightly numbers above come from the bar-level
+    # harness (fixed spread 7, no trend filter, the earlier cap / gate
+    # conventions). They are LABELLED as such, and the same $200 reference
+    # test rebuilt with today's verified rules on the tick engine is served
+    # beside them (study/proof_current_rules.py -> lab/proof_current.json).
+    out["legacy"] = {"as_of": "2026-10-09", "engine": "harness M1 (spread fixe 7)",
+                     "fr": "R\u00e8gles au 2026-10-09 \u2014 sans le filtre de tendance \u2014 moteur bougies, spread fixe 7 $",
+                     "en": "Rules as of 2026-10-09 \u2014 without the trend filter \u2014 candle engine, fixed spread 7 $"}
+    try:
+        _cur = json.load(open(os.path.join(DIR, "lab", "proof_current.json"), encoding="utf-8"))
+        out["current"] = {"generated_at": _cur.get("generated_at"), "days": _cur.get("days"), "balance": _cur.get("balance"), "window_utc": _cur.get("window_utc"),
+                          "rows": {d: {n: {k: v for k, v in arm.items() if k not in ("pnls", "curve")} for n, arm in row.items()} for d, row in (_cur.get("rows") or {}).items()}}
+    except Exception:
+        out["current"] = None
     _PROOF_CACHE[pkg] = (time.time(), out)
     return out
 
