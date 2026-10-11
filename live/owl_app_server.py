@@ -2552,9 +2552,9 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
 </div>
 <div class="panel" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
- style="margin-top:12px;cursor:pointer"
+ style="margin-top:26px;cursor:pointer"
  onclick="tab('marche',document.getElementById('tb-marche'));mxView('market',true)">
- <!-- 2026-10-11 (owner): price + state + three facts + the 24 h pace -->
+ <!-- 2026-10-11 (owner, "too busy"): price, state in one line, the 24 h pace curve. Nothing else. -->
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
   <div class="lbl">Le march&eacute;</div>
   <span id="mxs-px" style="font-size:.82rem;font-weight:700;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums"></span></div>
@@ -2562,14 +2562,12 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <div id="mxs-orb" class="orbsm"></div>
   <div style="flex:1;min-width:0">
    <b id="mxs-title" style="font-size:1.08rem;display:block">...</b>
-   <div id="mxs-sub" style="font-size:.82rem;color:var(--muted2);margin-top:2px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>
+   <div id="mxs-sub" style="font-size:.82rem;color:var(--muted2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
   </div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
- <div id="mxs-tiles" style="display:flex;gap:6px;margin-top:12px"></div>
  <div id="mxs-sw" style="position:relative;margin-top:12px;display:none">
-  <span id="mxs-sl" style="position:absolute;left:0;top:-4px;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Rythme &middot; 24 h</span>
-  <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;height:40px;display:none;margin-top:6px"></svg>
+  <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;height:36px;display:none"></svg>
  </div>
  <div id="mxs-day" style="display:none"></div>
 </div>
@@ -4573,16 +4571,10 @@ function dayx(l){
 }
 window._cvz='7';
 // 2026-10-11 (owner): the home market card - price, three facts, 24 h pace
-function mxsPaint(){const d=window._d||{},ms=d.meteo_struct||{},en=LANG()==='en',$=id=>document.getElementById(id);if(!$('mxs-tiles'))return;
+function mxsPaint(){const d=window._d||{},ms=d.meteo_struct||{},en=LANG()==='en',$=id=>document.getElementById(id);if(!$('mxs-px'))return;
  if(ms.px){const c=ms.chg24,up=c>=0;$('mxs-px').innerHTML=(en?'$'+Math.round(ms.px).toLocaleString('en-US'):Math.round(ms.px).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' $')+
   (c==null?'':' <span style="color:'+(up?'var(--up-soft)':'var(--down-soft)')+'">'+(up?'▲':'▼')+' '+(en?Math.abs(c).toFixed(1):Math.abs(c).toFixed(1).replace('.',','))+'\u202f%</span>');}
- const tile=(l,v,col)=>'<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:'+(col||'var(--text)')+'">'+v+'</b><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l+'</span></div>';
- const t=ms.pb_trend,tr=t===1?[en?'up ▲':'hausse ▲','var(--up-soft)']:(t===-1?[en?'down ▼':'baisse ▼','var(--down-soft)']:['—','var(--muted)']);
- const rv=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):null;   // the same number the weather gate reads
- const pc=rv==null?['—','var(--muted)']:['×'+(en?rv.toFixed(1):rv.toFixed(1).replace('.',',')),rv<1.0?'var(--text)':(rv<1.30?'var(--warn)':(rv<1.85?'#e8743b':'var(--down-soft)'))];
- const D=window._mxsDay,dy=D?(D.n+' trade'+(D.n>1?'s':'')):'—';
- $('mxs-tiles').innerHTML=tile(en?'Trend':'Tendance',tr[0],tr[1])+tile(en?'Pace vs normal':'Rythme / normal',pc[0],pc[1])+tile(en?'Today':'Aujourd’hui',dy);
- const sl=$('mxs-sl');if(sl)sl.textContent=en?'Pace · 24 h':'Rythme · 24 h';}
+}
 function drawNerv(){
  const D=window._day,el=document.getElementById('mx-nerv'),
   ms=document.getElementById('mxs-spark'),msw=document.getElementById('mxs-sw');
