@@ -266,7 +266,9 @@
     "flag": "--pb-gate",
     "a": 1,
     "b": 0
-   }
+   },
+   "built_date": "2026-10-11",
+   "built_commit": "6fd57a1"
   },
   {
    "id": "hour_brake_adaptive",
