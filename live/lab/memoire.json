@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-11T05:00:15Z",
+ "updated": "2026-10-11T07:00:04Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -48,7 +48,8 @@
     "2026-10-10: wealth ledgers since 09-24: night 1-7 h wins on 8 of 9 accounts, day 8-15 loses on 8 of 9, 21-0 h loses on 8 of 9, 16-20 h flat/positive. Journal: night BOS 17 tr 82% +40.6 vs day BOS 22 tr 45% -15.7 (halves 64%/27%). Engine 42 d: every hour cut is worse on h1 and better on h2 (ext400_noday B +7.7/B +40.1 hole 22; noday_wait20 C/B +49.9; skip13-14+21-23 B +28.5 h -72/+90 = hand-picked, not proposed). Regime, not a fixed rule: requested hour_brake_adaptive.",
     "2026-10-11 01:30 veille: asia pile 32 tr 75% +51.47 (h 70%/83%); 01-07 h 23 tr 20 won +66.44, 00 h 9 tr 44% -14.97 is the weak hour inside it.",
     "2026-10-11 03:00 veille: BOS BUY +0.67 (pace 0.752, calm, closed 01:37). asia 33 tr 76% +52.14 (h 70%/85%); 01-07 h 24 tr 21 won ~+67.",
-    "2026-10-11 05:00 veille: two night losses: BOS BUY entered 02:41 calm 0.76, wide stop ~102 pts, third up breakout in a row, -3.00; FLIP-BOS SELL closed 04:53 nervous 1.185, -2.44. asia pile 35 tr 71% +46.70 (h 70%/73%), was 33 tr 76% +52.14. Inside asia: calm <0.8 11 tr 64% -0.21 (h 33%/75%), >=0.8 24 tr ~75% ~+47. Night still holds; the calm-night part is flat (too few)."
+    "2026-10-11 05:00 veille: two night losses: BOS BUY entered 02:41 calm 0.76, wide stop ~102 pts, third up breakout in a row, -3.00; FLIP-BOS SELL closed 04:53 nervous 1.185, -2.44. asia pile 35 tr 71% +46.70 (h 70%/73%), was 33 tr 76% +52.14. Inside asia: calm <0.8 11 tr 64% -0.21 (h 33%/75%), >=0.8 24 tr ~75% ~+47. Night still holds; the calm-night part is flat (too few).",
+    "2026-10-11 07:00 veille: two FLIP-BOS BUY wins closed 06:45/06:46 (+0.54 pace 0.912, +1.73 pace 0.813). asia 37 tr 73% +48.97 PF 2.2 (h 70%/76%); 0.8-1.0 inside asia 13 tr 77% +10.55."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -126,7 +127,8 @@
     "2026-10-09 19:00 veille: flip_day by pace 0.8-1.0 7 tr 57%, <0.8 11 tr 18%, 1.0-1.3 13 tr 15%, 1.3-1.85 12 tr 33%: day flips lose at every pace; hour, not nerves, splits them.",
     "2026-10-10 07:00 veille: FLIP-BOS BUY +4.80 (pace 0.383, very CALM, night, closed 06:45). flip_day unchanged 43 tr 28% -73.66; night flips ~13 tr 9 won ~+22. FLIP-BOS 56 tr 38% -51.38 (h 48%/29%). A calm night reversal wins: hour, not pace.",
     "2026-10-10: real nervous flips 29 tr 31% -47.46, of which by day 25 tr 24% -57.08, by night 4 tr 75%. flip_hot_size 0.6/0.75/0.85 inside ext400+wait20 all A on both shapes: as a size rule in company it works; alone still unproven.",
-    "2026-10-10 12:00 veille: FLIP-BOS SELL +0.78 (pace 0.708, CALM, entry 10 h, closed 10:29). flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%); avg win ~2.7-2.9 vs avg loss ~3.2-4.2. FLIP-BOS 57 tr 39% -50.60 (h 48%/31%); BOS 39 tr 62% +24.94 unchanged. A tiny day win, shape intact."
+    "2026-10-10 12:00 veille: FLIP-BOS SELL +0.78 (pace 0.708, CALM, entry 10 h, closed 10:29). flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%); avg win ~2.7-2.9 vs avg loss ~3.2-4.2. FLIP-BOS 57 tr 39% -50.60 (h 48%/31%); BOS 39 tr 62% +24.94 unchanged. A tiny day win, shape intact.",
+    "2026-10-11 07:00 veille: two night FLIP-BOS BUY wins (+0.54, +1.73, pace 0.91/0.81, closed ~06:45). Window slid to 96 tr: FLIP-BOS 55 tr 44% -38.78; flip_day 38 tr 32% -61.39 PF 0.38 (h 31%/32%); night flips ~17 tr ~12 won ~+22.6. Hour, not kind, splits the reversals (hint)."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -1558,6 +1560,15 @@
     "kino journal tail (BOS stop 101.8 pts)"
    ],
    "saw": "94 trades. First two night losses since the 01-07 h run; both small. asia 35 tr 71% +46.70 PF 2.14 (h 70%/73%) - still holds. Inside asia calm <0.8 is flat (11 tr 64% -0.21, halves disagree 33/75) while >=0.8 carries the money; too few to cut. No twins, labo, ask. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-11T07:00:04Z",
+   "looked": [
+    "wake_context 2 new trades (FLIP-BOS BUY +0.54 closed 06:45 pace 0.912; FLIP-BOS BUY +1.73 closed 06:46 pace 0.813)",
+    "scrutiny --pile asia (nerv/prev/hour/dur)",
+    "scrutiny --by kind; --pile flip_day"
+   ],
+   "saw": "96 trades (window slid). Two night reversal wins at pace 0.8-1.0, as night_carries predicts. asia 37 tr 73% +48.97 PF 2.2 (h 70%/76%); 06 h 4/4. FLIP-BOS 55 tr 44% -38.78 (h 42%/45%); flip_day 38 tr 32% -61.39 PF 0.38 (h 31%/32%) -> night flips ~17 tr ~12 won ~+22.6. BOS 39 tr 59% +17.81. No twins, labo, ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
