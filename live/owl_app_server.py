@@ -2566,7 +2566,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
   <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
  </div>
- <div id="rbn-msg" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden"></div>
+ <div id="rbn-msg" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
  <div id="jprog" style="display:none;margin-top:10px"></div>
  <div id="rbn-more" style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px -16px;padding:11px 16px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft)"><span id="rbn-mt">Tout sur le robot</span><svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></div>
 </div>
