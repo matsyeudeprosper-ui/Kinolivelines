@@ -2551,25 +2551,24 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    </div></div>
  </div>
 </div>
-<div class="panel" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
+<!-- 2026-10-11 (owner): "le robot en ce moment" replaces the market card on the home.
+     Same steps and sentence as the Marche tab's card (drawJourney writes both). -->
+<div class="panel" id="rbnow" role="button" tabindex="0" aria-label="Le robot en ce moment"
  style="margin-top:26px;cursor:pointer"
- onclick="tab('marche',document.getElementById('tb-marche'));mxView('market',true)">
- <!-- 2026-10-11 (owner, "too busy"): price, state in one line, the 24 h pace curve. Nothing else. -->
+ onclick="tab('marche',document.getElementById('tb-marche'));mxView('robot',true)"
+ onkeydown="if(event.key==='Enter')this.click()">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-  <div class="lbl">Le march&eacute;</div>
-  <span id="mxs-px" style="font-size:.82rem;font-weight:700;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums"></span></div>
- <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
-  <div id="mxs-orb" class="orbsm"></div>
-  <div style="flex:1;min-width:0">
-   <b id="mxs-title" style="font-size:1.08rem;display:block">...</b>
-   <div id="mxs-sub" style="font-size:.82rem;color:var(--muted2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-  </div>
-  <svg class="ic chv"><use href="#i-chev"/></svg>
+  <div class="lbl" id="rbn-lbl">Le robot en ce moment</div></div>
+ <div class="jsteps" id="rbn-steps" style="margin-top:12px">
+  <div class="jl"></div>
+  <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
+  <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
+  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
+  <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
  </div>
- <div id="mxs-sw" style="position:relative;margin-top:12px;display:none">
-  <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;height:36px;display:none"></svg>
- </div>
- <div id="mxs-day" style="display:none"></div>
+ <div id="rbn-msg" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:12px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden"></div>
+ <div id="jprog" style="display:none;margin-top:10px"></div>
+ <div id="rbn-more" style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px -16px;padding:11px 16px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft)"><span id="rbn-mt">Tout sur le robot</span><svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></div>
 </div>
 <!-- 2026-10-08 (owner): the Croissance card, redesigned as a mini ladder of
      paliers, and the door to "Votre parcours" in Patrimoine. -->
@@ -2859,19 +2858,10 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div id="mx-robot" style="display:none">
 <div class="sec" style="margin-top:14px">Le robot <span class="hint" id="rb-hint">&middot; sur ce compte</span></div>
 <div class="panel" id="jcard" style="margin-top:12px">
- <div class="lbl" id="jcard-lbl">Le robot en ce moment</div>
- <div class="jsteps" id="jsteps">
-  <div class="jl"></div>
-  <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
-  <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
-  <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
-  <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
- </div>
- <div id="jmsg" style="font-size:.95rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
- <div id="jprog" style="display:none;margin-top:10px"></div>
- <div id="rb-next" style="display:none;margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--tile-bg);border:1px solid var(--tile-bd);font-size:.88rem;color:var(--text);line-height:1.45"></div>
+ <!-- 2026-10-11 (owner): the steps and the sentence moved to the home card "Le robot en ce moment" -->
+ <div id="rb-next" style="display:none;font-size:.92rem;color:var(--text);line-height:1.5"></div>
  <div id="st" style="position:relative;margin:12px 0 0;
-  border-top:1px solid rgba(255,255,255,.06);padding:10px 0 2px;
+  border-top:1px solid var(--border);padding:10px 0 2px;
   font-size:.8rem;color:var(--muted)">Connexion...</div>
 </div>
 <div class="panel pf" id="proofcard" style="display:none;margin-top:12px">
@@ -3818,7 +3808,7 @@ const I18N_EN=new Map(Object.entries({
  'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What we learn from the market','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
- 'Le robot en ce moment':'The robot right now','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
+ 'Le robot en ce moment':'The robot right now','Tout sur le robot':'All about the robot','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
  'Grands mouvements':'Big moves','Nervosité vs 24 h':'Nervousness vs 24 h','Petits mouvements':'Small moves',
  'Mode manuel':'Manual mode','Mode automatique':'Automatic mode','Mise à l\\'échelle du solde':'Scale with balance','Mise à l\u2019échelle du solde':'Scale with balance',
  'Bienvenue':'Welcome','Votre premier trade':'Your first trade','Les notifications':'Notifications','Aujourd\\'hui':'Today','Aujourd\u2019hui':'Today',
@@ -4411,11 +4401,10 @@ window.addEventListener('load',notifSetup);
 function tourList(){const M=MAN();return [
  ['eq','&#128176; &Ccedil;a, c&#39;est votre argent. Il se met '+
   '&agrave; jour tout seul, toutes les 5 secondes.'],
- ['mxsum',M?'&#127782;&#65039; Ici, l&#39;app vous dit ce que fait le march&eacute; '+
-  'et si un signal est jouable. Touchez la carte pour la page March&eacute;.'
-  :'&#127782;&#65039; Ici, le robot vous dit ce qu&#39;il voit : '+
-  'march&eacute; calme ou agit&eacute;, et ce qu&#39;il a fait aujourd&#39;hui. '+
-  'Touchez la carte pour la page March&eacute;.'],
+ ['rbnow',M?'&#128064; Ici, l&#39;app vous dit o&ugrave; en est le signal : '+
+  'veille, signal, trade ou bilan. Touchez la carte pour en savoir plus.'
+  :'&#128064; Ici, le robot vous dit ce qu&#39;il fait en ce moment : '+
+  'il observe, voit une occasion, trade, puis fait le bilan. Touchez la carte pour en savoir plus.'],
  ['ledcard',M?'&#128737;&#65039; Apr&egrave;s une perte, une partie de chaque gain '+
   'est mise de c&ocirc;t&eacute; et l&#39;app vous conseille le lot. Tout se suit ici.'
   :'&#128737;&#65039; Quand le robot perd un peu, il met une '+
@@ -4714,14 +4703,14 @@ function drawDay(){
  drawJourney(window._lastd);
 }
 function drawJourney(d){
- const el=document.getElementById('jsteps'),msg=document.getElementById('jmsg');
+ const el=document.getElementById('rbn-steps'),msg=document.getElementById('rbn-msg');
  if(!el||!msg||!d)return;
  const k=window._mxk||'none',D=window._day||{},now=Date.now()/1000;
  const open=d.open_list||[];
  const recent=(D.trades||[]).filter(t=>t.x&&now-t.x<1800).sort((a,b)=>b.x-a.x)[0];
  let step=1,txt='';
  const M=MAN();
- (function(){const lb=document.getElementById('jcard-lbl');if(lb)lb.textContent=T('jcard');
+ (function(){const lb=document.getElementById('rbn-lbl');if(lb)lb.textContent=T('jcard');
   const names=T('jsteps');
   el.querySelectorAll('.js span').forEach((sp,i)=>{if(names[i]&&sp.textContent!==names[i])sp.textContent=names[i];});})();
  const fmtP=v=>Math.abs(v).toFixed(2);
@@ -7074,7 +7063,10 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
  el.style.display='block';
 }
 function renderNext(d){const el=document.getElementById('rb-next');if(!el)return;const en=LANG()==='en';
- const ms=d.meteo_struct;if(!ms||HIDEGAUGES()||d.public){el.style.display='none';return;}
+ // 2026-10-11: with no "next action" the status line is alone in its panel - no divider above it
+ const _st=document.getElementById('st'),_solo=on=>{if(_st){_st.style.borderTop=on?'0':'';_st.style.marginTop=on?'0':'';_st.style.paddingTop=on?'0':'';}};
+ const ms=d.meteo_struct;if(!ms||HIDEGAUGES()||d.public){el.style.display='none';_solo(true);return;}
+ _solo(false);
  const full=!!(ms.next_bos!==undefined||ms.invalid!==undefined);
  const rv=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):1;
  const debt=d.ledger&&d.ledger.debt>0.5,open=(d.open_positions||0)>0,tr=ms.trend;
@@ -7089,7 +7081,7 @@ function renderNext(d){const el=document.getElementById('rb-next');if(!el)return
    (ms.bos_ready?(en?'It waits for a break '+(up?'upwards':'downwards'):'Il attend une cassure vers le '+(up?'haut':'bas'))+lvl(ms.next_bos)+(en?' to enter with the trend.':' pour entrer dans le sens de la tendance.')
     :(en?'It waits for the '+(up?'up':'down')+'trend to form its next level.':'Il attend que la tendance '+(up?'haussi\u00e8re':'baissi\u00e8re')+' forme son prochain niveau.'));}
  else t=en?'No trend yet: it waits for a structure to form.':'Pas de tendance pour l\u2019instant : il attend qu\u2019une structure se dessine.';
- setH(el,'<span style="font-size:.6rem;color:var(--accent-soft);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">'+(en?'Next action':'Prochaine action')+'</span>'+t);
+ setH(el,'<span class="lbl" style="display:block;margin-bottom:8px">'+(en?'Next action':'Prochaine action')+'</span>'+t);
  el.style.display='block';
 }
 // ---- 2026-09-29 (owner): "La preuve" - the retention card. A report a
