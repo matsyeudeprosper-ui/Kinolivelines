@@ -68,6 +68,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # change-of-direction trade only, when the previous closed trade
             # lost. The trade is still taken. 1.0 = off.
             "flip_loss_size": 1.0,
+            # 2026-10-11 (chercheur): hour_size = lot multiplier when the
+            # entry's UTC hour is in size_hours; the trade's catch-up trades
+            # (bullets) are scaled by the same X. The trade is still taken.
+            # Empty list or 1.0 = off.
+            "size_hours": [], "hour_size": 1.0,
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -421,6 +426,7 @@ def simulate(R, spread, cfg):
     n_minbal = 0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
+    size_h = set(int(h) for h in (c["size_hours"] or []))
     eng = B.Struct()
     # internal structure: its own pin per simulate() call, never a
     # module-level one - the docstring on internal_structure is
@@ -493,6 +499,7 @@ def simulate(R, spread, cfg):
     trail_gain = 0.0     # points the moved stop saved, vs the first one
     pos_trailed = False
     pos_rr = rr          # the open trade's own target, rr unless cap_fit shrank it
+    pos_hs = 1.0         # the open trade's hour_size multiplier (its bullets follow it)
     prev_hi_v = prev_lo_v = None
     hi_since = lo_since = 0.0        # wall time the level value last changed
     hi_touch = lo_touch = 0
@@ -694,7 +701,7 @@ def simulate(R, spread, cfg):
                     # floor; the achieved main ratio is for reporting only
                     nb = min(nb, int(int(NB) * eq_req))
                 if TRACE is not None and cur_tr is not None:
-                    cur_tr["add_n"] = nb; cur_tr["add_risk"] = round(nb * 0.5 * dist * BLOT, 2)
+                    cur_tr["add_n"] = nb; cur_tr["add_risk"] = round(nb * 0.5 * dist * BLOT * pos_hs, 2)
                 bpts = 0.0
                 if nb:
                     # the bullet enters at the midpoint, so it walks (0.5 + rr)
@@ -705,17 +712,17 @@ def simulate(R, spread, cfg):
                             else ((d * (sl - mid) - spread)
                                   if c["trail_prot"]
                                   else -(dist / 2.0 + spread)))
-                    run += bpts * BLOT * nb
+                    run += bpts * BLOT * nb * pos_hs
                     # 2026-10-09: bullets pay the same execution drag per lot as
                     # the main trade (0 by default, so nothing changes unless set)
-                    run -= drag_cost(c, BLOT * nb)
+                    run -= drag_cost(c, BLOT * nb * pos_hs)
                 if TRACE is not None and cur_tr is not None:
                     # main and add money apart (entry screens report them separately)
                     cur_tr["pnl_main"] = round(pts * lot - drag_cost(c, lot), 2)
-                    cur_tr["pnl_add"] = round((bpts * BLOT * nb - drag_cost(c, BLOT * nb)) if nb else 0.0, 2)
+                    cur_tr["pnl_add"] = round((bpts * BLOT * nb * pos_hs - drag_cost(c, BLOT * nb * pos_hs)) if nb else 0.0, 2)
                 if c["jar"]:
                     if nb and bpts < 0:
-                        chest = max(0.0, chest + bpts * BLOT * nb)
+                        chest = max(0.0, chest + bpts * BLOT * nb * pos_hs)
                     if win:
                         chest += JAR_SKIM * (pts * lot)
                     if run > pk:
@@ -1077,6 +1084,8 @@ def simulate(R, spread, cfg):
             lot *= float(c["first_move_size"])
         if flip and streak > 0:
             lot *= float(c["flip_loss_size"])
+        pos_hs = float(c["hour_size"]) if g.hour in size_h else 1.0
+        lot *= pos_hs
         eq_v = False
         eq_mult = 1.0
         eq_req = 1.0
@@ -1336,6 +1345,7 @@ def simulate_real(T, R, spread, cfg):
     bal_ref = bal if bal > 0 else BAL0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
+    size_h = set(int(h) for h in (c["size_hours"] or []))
     times =[int(r["time"]) for r in R]
     closes = [float(r["close"]) for r in R]
     # This path replays the bot's REAL entries and runs no structure
@@ -1426,6 +1436,8 @@ def simulate_real(T, R, spread, cfg):
             lot *= float(c["first_move_size"])
         if e["flip"] and streak > 0:
             lot *= float(c["flip_loss_size"])
+        hs = float(c["hour_size"]) if g.hour in size_h else 1.0
+        lot *= hs
         tp =ent + d * rr * dist
         mid = ent - d * dist / 2.0
         hit_mid = False
@@ -1462,7 +1474,7 @@ def simulate_real(T, R, spread, cfg):
         if debt > 0.5 and streak < K and hit_mid and NB > 0:
             run += ((1.3 * dist - spread) if win
                     else ((d * (sl - mid) - spread) if c["trail_prot"]
-                          else -(dist / 2.0 + spread))) * BLOT * NB
+                          else -(dist / 2.0 + spread))) * BLOT * NB * hs
         streak = 0 if win else streak + 1
         wins += 1 if win else 0
         pk = max(pk, run)
@@ -1495,6 +1507,7 @@ def main():
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--flip-hot-size", type=float, help="lot multiplier on a change-of-direction trade when nervosity >= 1.0")
     ap.add_argument("--first-move-size", type=float, help="lot multiplier when the entry is the first big move counted in the last 2 hours")
+    ap.add_argument("--hour-size", type=str, help="HOURS:X = lot multiplier X (bullets too) at these UTC entry hours, e.g. 8-24:0.5")
     ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
     ap.add_argument("--nerv-gate", action="store_true")
     ap.add_argument("--nerv-floor", type=float, help="no entry when the market's pace at entry is under X (1.0 = usual)")
@@ -1538,6 +1551,16 @@ def main():
     if a.flip_hot_size is not None: over["flip_hot_size"] = a.flip_hot_size
     if a.first_move_size is not None: over["first_move_size"] = a.first_move_size
     if a.flip_loss_size is not None: over["flip_loss_size"] = a.flip_loss_size
+    if a.hour_size:
+        _hp, _hx = a.hour_size.rsplit(":", 1)
+        hs = set()
+        for part in _hp.split(","):
+            if "-" in part:
+                lo, hi = part.split("-"); hs.update(range(int(lo), int(hi)))
+            elif part.strip():
+                hs.add(int(part))
+        over["size_hours"] = sorted(hs)
+        over["hour_size"] = float(_hx)
     if a.nerv_gate: over["nerv_gate"] = True
     if a.nerv_floor is not None: over["nerv_floor"] = a.nerv_floor
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
