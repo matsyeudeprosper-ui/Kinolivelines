@@ -66,6 +66,7 @@ SYMBOLS = [
     ("EURUSD", "Euro / Dollar", "fx"), ("GBPUSD", "Livre / Dollar", "fx"), ("USDJPY", "Dollar / Yen", "fx"),
 ]
 MAX_CORR = 0.5
+LATE_S = 90             # a signal whose candle closed more than this many seconds ago is not tradeable
 PB_BARS = 8000          # the pullback state's window (structure_bos_bot.pb_state_now)
 FETCH = PB_BARS + 300   # bars read per minute in the daemon
 BTC_SPREAD_REF = 7.0    # BTC's spread on this broker, in points - S_MIN_DIST is 10 at that spread
@@ -239,16 +240,30 @@ def backtest(sym, days):
         return {"sym": sym, "err": "symbol not found"}
     mt5.symbol_select(sym, True)
     seed = int(bot().SEED_BARS)
+    # 2026-10-11 (GPT review): the window is CALENDAR days, the same span for every
+    # market. Bars are read until PB_BARS of history sit before the window's start.
+    start = time.time() - days * 86400
     n = PB_BARS + int(days * 1440) + 10
-    R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, n)
+    R = None
+    for _ in range(6):
+        R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, n)
+        if R is None or len(R) < 100:
+            break
+        k0 = next((i for i in range(len(R)) if int(R[i]["time"]) >= start), len(R))
+        if k0 >= PB_BARS or len(R) < n:
+            break
+        n = int(n * 1.6)
     if R is None or len(R) < PB_BARS + 100:
         return {"sym": sym, "err": "not enough history (%s bars)" % (0 if R is None else len(R))}
+    k0 = next((i for i in range(len(R)) if int(R[i]["time"]) >= start), len(R))
+    if k0 < PB_BARS:
+        return {"sym": sym, "err": "not enough history before the window (%d bars)" % k0}
     t0 = time.time()
     rows = rows_of(R, info.digits)
     S = Sym(sym)
-    S.seed(R[PB_BARS - seed:PB_BARS])          # the bot seeds with SEED_BARS closed bars
+    S.seed(R[k0 - seed:k0])          # the bot seeds with SEED_BARS closed bars
     trades, refused, open_tr, sigs = [], {}, None, 0
-    for k in range(PB_BARS, len(R)):
+    for k in range(k0, len(R)):
         r = R[k]
         if open_tr is not None:
             done = step_trade(open_tr, r, info.point)
@@ -266,7 +281,8 @@ def backtest(sym, days):
                 open_tr = tr
             else:
                 refused[why] = refused.get(why, 0) + 1
-    out = {"sym": sym, "days": days, "engine": ENGINE, "from": int(R[PB_BARS]["time"]), "to": int(R[-1]["time"]),
+    out = {"sym": sym, "days": days, "calendar": True, "bars": len(R) - k0, "engine": ENGINE,
+           "from": int(R[k0]["time"]), "to": int(R[-1]["time"]),
            "built": int(time.time()), "secs": round(time.time() - t0, 1), "signals": sigs, "refused": refused,
            "summary": summary(trades), "trades": trades[-500:]}
     json.dump(out, open(os.path.join(OUTD, "backtest_%s.json" % sym), "w", encoding="utf-8"))
@@ -347,6 +363,24 @@ def scan_once(open_tr):
                 S.seed(R[-seed:])
                 ENG[sym] = S
                 log("%s seeded %d bars, trend %s" % (sym, seed, S.eng.trend))
+                # 2026-10-11 (GPT review): an open virtual trade carried over a restart is
+                # walked through every closed bar since its entry, so an exit that happened
+                # while the scanner was off is booked at the right bar and price
+                tr0 = open_tr.get(sym)
+                if tr0:
+                    Rr = mt5.copy_rates_range(sym, mt5.TIMEFRAME_M1,
+                                              datetime.fromtimestamp(int(tr0["t"]) + 60, tz=timezone.utc),
+                                              datetime.fromtimestamp(time.time(), tz=timezone.utc))
+                    for r in (Rr if Rr is not None else []):
+                        if int(r["time"]) <= int(tr0["t"]) or int(r["time"]) + 60 > time.time():
+                            continue
+                        done = step_trade(tr0, r, info.point)
+                        if done:
+                            done.update({"ev": "close", "replayed": True})
+                            append(done)
+                            log("%s close (replayed after restart) %s r=%s" % (sym, "win" if done["win"] else "loss", done["r"]))
+                            open_tr.pop(sym, None)
+                            break
             rows = None
             tr = open_tr.get(sym)
             for j in range(len(R)):
@@ -362,6 +396,12 @@ def scan_once(open_tr):
                         open_tr.pop(sym, None)
                         tr = None
                 sig = S.step(r)
+                late = time.time() - (int(r["time"]) + 60) > LATE_S
+                if sig and not tr and late:
+                    append({"ev": "missed", "sym": sym, "t": int(r["time"]), "d": sig["d"], "why": "late",
+                            "age_s": int(time.time() - int(r["time"]) - 60), "engine": ENGINE})
+                    log("%s signal missed: candle closed %ds ago" % (sym, time.time() - int(r["time"]) - 60))
+                    continue
                 if sig and not tr:
                     if rows is None:
                         rows = rows_of(R, info.digits)

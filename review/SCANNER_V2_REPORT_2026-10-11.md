@@ -1,4 +1,23 @@
-# Setup scanner v2 - report for GPT (2026-10-11)
+# Setup scanner v2 - report for GPT (2026-10-11, corrected after GPT's review the same day - see section 0)
+
+## 0. Corrections after GPT's review (all five points confirmed true)
+
+1. **"30-day" backtests were not 30 calendar days.** They used 30 x 1440 M1 bars: 30.0 calendar days on BTC but
+   44-47 on markets that close at night/weekends. **Fixed:** the window is now 30 calendar days for every symbol
+   (`"calendar": true`, PB_BARS of history required before the window start). Section 4 shows the new table; the
+   first table is kept below it, marked superseded.
+2. **Stale catch-up entries.** After a pause the daemon could open a virtual trade at an old candle's close.
+   **Fixed:** a signal whose candle closed more than 90 s ago is not traded; it is written to forward.jsonl as
+   `{"ev": "missed", "why": "late"}`.
+3. **Missed exits after a restart.** Open virtual trades were restored, but bars while offline were skipped.
+   **Fixed:** on restart each open virtual trade is walked through every closed bar since its entry
+   (`copy_rates_range`), exit booked at the right bar, flagged `"replayed": true`. Tested on a scratch file: a
+   planted 2-hour-old trade closed at its real stop bar.
+4. **Pullback state without the sticky chain** - true, a known and kept limitation (section 1): the backtest
+   cannot have the chain, and forward and backtest must share the rule.
+5. **70/70 is a signal-and-stop check, not a decision check** - true. It shows the engine sees the robot's setups
+   with the robot's stops; it does not show the scanner would take the robot's trades (the robot took 70 of ~520
+   signals). Wording corrected here and on the page ("the setup's results, not the robot's").
 
 Owner request (Mike, 2026-10-11): make the Marché page a place where the app scans other symbols for the
 robot's setup; **first version = virtual trades only**, keep records, and see whether each symbol's backtest
@@ -62,7 +81,30 @@ hourly log returns with BTCUSD over ~60 days (shared consecutive hours):
 
 ETHUSD dropped (0.85). The daemon recomputes the correlation every 6 h (`max_corr` flag 0.5).
 
-## 4. Backtests, 30 days, same rule (live/scanner/backtest_<SYM>.json)
+## 4. Backtests, 30 CALENDAR days, same rule (live/scanner/backtest_<SYM>.json, rerun after correction 1)
+
+Window 2026-09-11 -> 2026-10-11 for every symbol (markets that close show ~28 days of bars inside it).
+
+| symbol | trades | win % | avg R | sum R | PF |
+|---|---|---|---|---|---|
+| USTEC | 116 | 69.0 | +0.241 | +28.0 | 1.78 |
+| XAUUSD | 98 | 62.2 | +0.120 | +11.8 | 1.32 |
+| US30 | 71 | 59.2 | +0.065 | +4.6 | 1.16 |
+| US500 | 88 | 59.1 | +0.064 | +5.6 | 1.16 |
+| JP225 | 112 | 56.2 | +0.012 | +1.4 | 1.03 |
+| BTCUSD | 80 | 55.0 | -0.010 | -0.8 | 0.98 |
+| EURUSD | 114 | 50.9 | -0.084 | -9.6 | 0.83 |
+| DE30 | 123 | 49.6 | -0.107 | -13.2 | 0.79 |
+| USOIL | 95 | 48.4 | -0.128 | -12.2 | 0.75 |
+| XAGUSD | 78 | 47.4 | -0.146 | -11.4 | 0.72 |
+| USDJPY | 81 | 46.9 | -0.156 | -12.6 | 0.71 |
+| UK100 | 116 | 46.6 | -0.162 | -18.8 | 0.70 |
+| GBPUSD | 122 | 36.9 | -0.336 | -41.0 | 0.47 |
+
+The ranking's top and bottom held between the two windows, but US500 and JP225 changed sign and the leaders' sizes
+moved a lot (USTEC +0.09 -> +0.24). That is itself evidence that one window says little.
+
+### Superseded table (~45 calendar days on closing markets, 30 on BTC)
 
 | symbol | trades | win % | avg R | sum R | PF |
 |---|---|---|---|---|---|
@@ -86,7 +128,7 @@ Break-even win rate at 0.8R with no cost slippage beyond the bar spread is 55.6 
 (conservative on same-bar ties), demo-server prices, spread from the bar's spread field, no brakes. The three
 positive symbols are **leads, not evidence**.
 
-## 5. Forward record
+## 5. Forward record (late signals logged as "missed", restart replay - corrections 2 and 3)
 
 `live/scanner/forward.jsonl` - every virtual open/close (engine tag v2), from 2026-10-11 ~22:40 UTC. The page
 (Marché > Scanner > Résultats) shows backtest vs virtual avg R per symbol; levels only for Stratégie / admin.
