@@ -2622,18 +2622,15 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="ft-sub" style="font-size:.76rem;color:var(--muted);
   margin-top:6px"></div>
 </div>
-<div id="ledcard" style="display:none;position:relative;margin-top:12px;
- background:var(--surface2);border:1px solid var(--border2);border-radius:16px;
- padding:14px;color:var(--text2);font-size:.92rem;line-height:1.5">
+<div id="ledcard" class="panel" style="display:none;position:relative;margin-top:12px;
+ color:var(--text2);font-size:.92rem;line-height:1.5">
  <button onclick="ledInfo()" aria-label="explications" class="tap44" style="
   position:absolute;right:10px;top:10px;width:26px;height:26px;
   border-radius:50%;border:1px solid rgba(127,179,224,.4);
   background:rgba(127,179,224,.12);color:var(--accent-soft);font-size:.8rem;
   font-weight:700;font-style:italic;font-family:Georgia,serif;
   cursor:pointer;animation:ipulse 2.6s ease-out infinite">i</button>
- <div id="led-hd" style="font-size:.7rem;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">
-  Le rattrapage</div>
+ <div id="led-hd" class="lbl" style="margin-bottom:10px">Le rattrapage</div>
  <div id="led-txt"></div>
  <div id="led-barwrap" style="display:none;
   background:rgba(255,255,255,.15);border-radius:99px;height:8px;
@@ -3802,7 +3799,7 @@ function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OB
 // back is exact. Regex entries handle counted words.
 const I18N_EN=new Map(Object.entries({
  'Accueil':'Home','Marché':'Market','Historique':'History','Réglages':'Settings','Le Nid':'The Nest',
- 'Le marché':'The market','Croissance':'Growth','Le rattrapage':'Catching up','À rattraper':'to catch up','Réserve':'Reserve',
+ 'Le marché':'The market','Croissance':'Growth','Le rattrapage':'Catching up','Prochain lot':'Next lot','Risque':'Risk','Un gain enlève':'A win clears','Taille':'Size','normale':'normal','Pour miser plus':'To stake more','À rattraper':'to catch up','Réserve':'Reserve',
  'Prochain trade':'Next trade','Ma semaine':'My week','Jour par jour':'Day by day','· touchez un jour':'· tap a day',
  'Résumé du mois':'Month summary','Calendrier':'Calendar','Statistiques · 30 derniers trades':'Statistics · last 30 trades',
  'Derniers trades':'Latest trades','Tous':'All','Gagnés':'Won','Perdus':'Lost','Cette semaine':'This week','Voir ce jour':'Open that day',
@@ -8247,9 +8244,9 @@ function render(d){
     lb=document.getElementById('led-bar'),
     lw=document.getElementById('led-barwrap'),
     ls2=document.getElementById('led-sub');
-   lc.style.padding=d.ledger.debt>0.5?'14px':'8px 14px';
+   lc.style.padding=d.ledger.debt>0.5?'16px':'8px 14px';
    lc.style.fontSize=d.ledger.debt>0.5?'.92rem':'.8rem';
-   lc.style.boxShadow='';lc.style.borderColor='var(--border2)';
+   lc.style.boxShadow='';lc.style.borderColor='';
    document.getElementById('led-hd').style.display=
     d.ledger.debt>0.5?'block':'none';
    if(d.ledger.debt>0.5){
@@ -8315,62 +8312,51 @@ function render(d){
      const stillNeed=Math.max(0,need/(d.ledger.stake||0.5)-am);
      Object.assign(window._ledD,{clears:clears,stillNeed:stillNeed,
       cap:d.ledger.cap,base_lot:d.ledger.base_lot});
+     // 2026-10-11 (owner): same look as the other home cards - amount on the
+     // left in gold (a plan in progress, not an alarm), then the reserve,
+     // then one row of tiles instead of a box inside the box.
+     const tl=(lbl,val,col)=>'<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);'+
+      'border-radius:12px;padding:9px 6px;text-align:center"><b style="display:block;font-size:1.02rem;'+
+      'font-variant-numeric:tabular-nums;color:'+(col||'var(--text)')+'">'+val+'</b>'+
+      '<span style="display:block;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;'+
+      'margin-top:2px;line-height:1.25">'+lbl+'</span></div>';
      lt2.innerHTML=
-      '<div style="text-align:center;padding:2px 0 10px">'+
-       '<b style="color:var(--down-soft);font-size:2.4rem;line-height:1;'+
+      '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+
+       '<b style="color:var(--warn);font-size:2.1rem;line-height:1;'+
         'font-variant-numeric:tabular-nums;letter-spacing:-.02em">'+
         '$<span id="rz-debt">'+d.ledger.debt.toFixed(2)+'</span></b>'+
-       '<div style="font-size:.66rem;color:var(--muted2);margin-top:4px;'+
-        'text-transform:uppercase;letter-spacing:.1em">'+
-        '&agrave; rattraper</div>'+
+       '<span style="font-size:.86rem;color:var(--muted2)">&agrave; rattraper</span>'+
       '</div>'+
       '<div style="display:flex;align-items:center;gap:8px;'+
-       'font-size:.7rem;color:var(--muted2);margin-bottom:3px">'+
+       'font-size:.78rem;color:var(--muted2);margin-bottom:5px">'+
        '<span style="flex:1">R&eacute;serve</span>'+
        '<span style="font-variant-numeric:tabular-nums;color:var(--warn)">'+
         '$<span id="rz-ammo">'+am.toFixed(2)+'</span>'+
-        '<span style="color:#6b5f38"> / $'+fm(d.ledger.cap||0)+
+        '<span style="color:var(--muted)"> / $'+fm(d.ledger.cap||0)+
         '</span></span>'+
       '</div>'+
-      // 2026-10-01 (owner): an empty track reads as broken rather than
-      // as "not started" - the same complaint that turned out to be a
-      // real bug on the growth bar. At zero, say what fills it.
       (am>0.005
-       ?'<div style="background:rgba(255,255,255,.07);border-radius:99px;'+
+       ?'<div style="background:var(--tile-bg);border-radius:99px;'+
         'height:7px;overflow:hidden">'+
         '<div style="height:7px;border-radius:99px;width:'+
          jarPct.toFixed(0)+'%;background:linear-gradient(90deg,'+
          '#b8963f,#e8c55a);transition:width .8s"></div>'+
         '</div>'
-       :'<div style="font-size:.76rem;color:var(--muted);line-height:1.45">'+
+       :'<div style="font-size:.8rem;color:var(--muted);line-height:1.45">'+
         'Elle se remplit sur les gains, puis paie les trades de '+
         'rattrapage.</div>')+
-      '<div style="margin-top:12px;background:rgba(127,179,224,.06);'+
-       'border:1px solid rgba(127,179,224,.16);border-radius:12px;'+
-       'padding:10px 12px">'+
-       '<div style="display:flex;align-items:baseline;gap:6px">'+
-        '<span style="flex:1;font-size:.7rem;color:var(--muted2);'+
-         'text-transform:uppercase;letter-spacing:.08em">'+
-         'Prochain trade</span>'+
-        '<b style="color:var(--text2);font-size:1.15rem;'+
-         'font-variant-numeric:tabular-nums"><span id="rz-lot">'+
-         nl.toFixed(2)+'</span></b>'+
-        '<span style="font-size:.72rem;color:var(--muted2)"> lot</span>'+
-       '</div>'+
-       '<div style="font-size:.72rem;color:var(--muted2);margin-top:5px;'+
-        'line-height:1.45">'+
-        (fillN>0
-         ? 'Risque $'+fm(stake)+' &middot; un gain en enl&egrave;ve '+
-           '<b style="color:var(--up-soft)">$'+fm(clears)+'</b>'
-         : 'Taille normale. Encore $'+fm(stillNeed)+' pour miser plus.')+
-       '</div>'+
+      '<div style="display:flex;gap:6px;margin-top:14px">'+
+       tl('Prochain lot','<span id="rz-lot">'+nl.toFixed(2)+'</span>')+
+       (fillN>0
+        ? tl('Risque','$'+fm(stake))+tl('Un gain enl&egrave;ve','$'+fm(clears),'var(--up-soft)')
+        : tl('Taille','normale')+tl('Pour miser plus','$'+fm(stillNeed)))+
       '</div>';
      lw.style.display='none';
      ls2.innerHTML=(bos&&!MAN()&&typeof d.ledger.cap_today!=='number')?
       'Pas de limite journali\u00e8re pendant le rattrapage.':'';
      lc.style.transition='box-shadow .8s,border-color .8s';
      lc.style.boxShadow=ok?'0 0 24px rgba(232,197,90,.3)':'';
-     lc.style.borderColor=ok?'rgba(232,197,90,.55)':'#23405e';
+     lc.style.borderColor=ok?'rgba(232,197,90,.55)':'';
      const rz=window._rz||{};
      const roll=(id,a,b,dec)=>{
       if(a===undefined||Math.abs(a-b)<0.005)return;
@@ -8386,12 +8372,12 @@ function render(d){
       el.style.transition='color .25s';
       el.style.color=good?'#2ecc71':'#ff5c5c';
       setTimeout(()=>{el.style.color='';},1100);};
-     const bigV=bos?stake:nl;
+     const bigV=nl;
      roll('rz-debt',rz.d,d.ledger.debt);
      fl('rz-debt',rz.d,d.ledger.debt,d.ledger.debt<rz.d);
      roll('rz-ammo',rz.a,am);
      fl('rz-ammo',rz.a,am,am>rz.a);
-     roll('rz-lot',rz.m,bigV,bos?(stake<10?1:0):2);
+     roll('rz-lot',rz.m,bigV,2);
      fl('rz-lot',rz.m,bigV,bigV>rz.m);
      window._rz={d:d.ledger.debt,a:am,m:bigV};
     }
