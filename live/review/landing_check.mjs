@@ -27,11 +27,11 @@ for (const w of [390, 360]) {
   await send("Page.navigate", { url: "http://127.0.0.1:8787/join" }, S); await waitEvent("Page.loadEventFired", S); await sleep(5000);
   const r = await evalJs(`(()=>{const de=document.documentElement,q=id=>{const e=document.getElementById(id);return !!e&&!e.hidden&&e.offsetHeight>0};
     const wide=[...document.querySelectorAll('body *')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.right>innerWidth+1&&getComputedStyle(e).position!=='fixed'&&!e.closest('.shots,.carousel,[class*=scroll]')}).slice(0,6).map(e=>e.tagName+'.'+e.className+'#'+e.id+' r='+Math.round(e.getBoundingClientRect().right));
-    return {sw:de.scrollWidth,iw:innerWidth,h:de.scrollHeight,proof:q('pf2'),worst:q('pw'),trust:q('trust'),live:q('live2'),tg:q('tgc'),tgHref:(document.getElementById('tg-go')||{}).href,
+    return {sw:de.scrollWidth,iw:innerWidth,h:de.scrollHeight,proof:q('pf2'),worst:q('pw'),trust:q('trust'),calc:q('calc'),shots:document.querySelectorAll('#shots-sec figure:not([style*=none])').length,tg:q('tgc'),tgHref:(document.getElementById('tg-go')||{}).href,
      faqOpen:document.querySelectorAll('details.fq:not(details.fqall details.fq)').length,faqMore:document.querySelectorAll('details.fqall details.fq').length,wide}})()`);
   const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => e.params.exceptionDetails.exception?.description?.split("\n")[0]); events.length = 0;
   console.log(w, JSON.stringify(r), errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
-  if (!r || r.sw > r.iw || errs.length || !r.proof || !r.worst || !r.trust || !r.live || !r.tg) bad++;
+  if (!r || r.sw > r.iw || errs.length || !r.proof || !r.worst || !r.trust || !r.calc || !r.tg) bad++;
   await send("Emulation.setDeviceMetricsOverride", { width: w, height: Math.min(r.h, 7000), deviceScaleFactor: 1, mobile: true }, S); await sleep(800);
   const { result } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true }, S);
   writeFileSync(`${OUT}/landing_${w}.png`, Buffer.from(result.data, "base64"));
@@ -39,6 +39,6 @@ for (const w of [390, 360]) {
 // English: the new blocks must not keep French text
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true }, S);
 await evalJs(`(()=>{const b=[...document.querySelectorAll('button,a')].find(x=>x.textContent.trim()==='EN');if(b)b.click();return !!b})()`); await sleep(1500);
-const en = await evalJs(`(()=>['pf2','pw','trust','live2','tgc'].map(id=>{const e=document.getElementById(id);return id+': '+(e?e.innerText.replace(/\\s+/g,' ').slice(0,260):'-')}).concat(['FAQ more: '+(document.querySelector('details.fqall>summary')||{}).textContent, 'tag: '+(document.querySelector('.tag')||{}).innerText]))()`);
+const en = await evalJs(`(()=>['pf2','pw','trust','calc','tgc'].map(id=>{const e=document.getElementById(id);return id+': '+(e?e.innerText.replace(/\\s+/g,' ').slice(0,260):'-')}).concat(['FAQ more: '+(document.querySelector('details.fqall>summary')||{}).textContent, 'tag: '+(document.querySelector('.tag')||{}).innerText]))()`);
 console.log("EN\n" + (en || []).join("\n"));
 edge.kill(); process.exit(bad ? 1 : 0);

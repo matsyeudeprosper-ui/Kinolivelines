@@ -9,7 +9,7 @@ import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
-const OUT = join(HERE, "..", "static");
+const OUT = process.env.SHOT_OUT || join(HERE, "..", "static"); // SHOT_OUT = preview folder
 mkdirSync(OUT, { recursive: true });
 const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 const BASE = "http://127.0.0.1:8787", PORT = 9378;
@@ -37,7 +37,10 @@ const nav = async (url) => { await send("Page.navigate", { url }, S); await wait
 // taken into memory and written together only when the day and the week
 // are green; otherwise the previous ones stay (unless none exist yet).
 const taken = {};
-const shot = async (name) => { const { result } = await send("Page.captureScreenshot", { format: "webp", quality: 82 }, S); taken[name] = Buffer.from(result.data, "base64"); };
+// 2026-10-11 (owner: "the images are empty"): a shot is taken only once the
+// page shows real numbers - no grey loading box left on screen (waits up to 40 s).
+const ready = async () => { for (let i = 0; i < 80; i++) { const n = await evalJs("[...document.querySelectorAll('.skel')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.height>0&&b.bottom>0&&b.top<innerHeight&&getComputedStyle(e).visibility!=='hidden'}).length"); if (n === 0) return true; await sleep(500); } return false; };
+const shot = async (name) => { if (!(await ready())) { console.log(name + " skipped: still loading (kept previous)"); return; } const { result } = await send("Page.captureScreenshot", { format: "webp", quality: 82 }, S); taken[name] = Buffer.from(result.data, "base64"); };
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 780, deviceScaleFactor: 2, mobile: true }, S);
 await nav(`${BASE}/${tok}/`);
 await evalJs("localStorage.setItem('owlTourDone','1'); localStorage.removeItem('owlTheme'); localStorage.removeItem('owlBig'); localStorage.removeItem('owl_adm'); localStorage.removeItem('owlLang'); 1");
@@ -103,6 +106,8 @@ const red = await evalJs("(function(){var d=window._d||{};return (typeof d.today
 const missing = ["shot_home.webp", "shot_marche.webp", "shot_hist.webp", "shot_chart.webp", "shot_labo.webp"].some(n => !existsSync(join(OUT, n)));
 const only = process.env.SHOT_ONLY ? process.env.SHOT_ONLY.split(",") : null;
 if (only) { for (const [n, b] of Object.entries(taken)) if (only.includes(n)) { writeFileSync(join(OUT, n), b); console.log("wrote static/" + n); } }
-else if (red && !missing) { console.log("red day/week: landing shots kept as they were"); }
+// 2026-10-11: a red day never publishes the money screens, even when they are missing
+// (a missing picture is simply hidden on the landing); chart and lab carry no money.
+else if (red) { for (const n of ["shot_chart.webp", "shot_labo.webp"]) if (taken[n]) { writeFileSync(join(OUT, n), taken[n]); console.log("wrote static/" + n); } console.log("red day/week: money screens kept as they were" + (missing ? " (some missing: hidden on the landing)" : "")); }
 else { for (const [n, b] of Object.entries(taken)) { writeFileSync(join(OUT, n), b); console.log("wrote static/" + n); } }
 ws.close(); edge.kill();
