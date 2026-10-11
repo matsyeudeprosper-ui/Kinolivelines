@@ -2,5 +2,9 @@
  "url": "https://www.myfxbook.com/portfolio/val%C3%A8re/12252387",
  "verified": false,
  "added": "2026-10-11",
- "note": "set verified true only after Myfxbook confirms track record + trading privileges"
+ "note": "owner: do not show verification status for now; verified label only when the owner says so and both checks are green",
+ "track_record": true,
+ "trading_privileges": false,
+ "status_seen": "2026-10-11 owner screenshot",
+ "show_status": false
 }
