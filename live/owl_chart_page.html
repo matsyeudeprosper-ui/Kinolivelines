@@ -2292,10 +2292,14 @@ function ui(){
  // robot follows since the trend-following rule - not the minute chart's.
  // The minute chart's own direction stays readable in the weather sheet's
  // "sens" chip. Full view: D.pb.trend; everyone else: pb_trend from the route.
- const _bt=(D.pb&&D.pb.trend!==undefined&&D.pb.trend!==null)?D.pb.trend:(D.pb_trend!==undefined?D.pb_trend:D.trend);
+ // GPT 2026-10-11: no fallback to the minute chart - when the pullback data
+ // is missing the badge says so
+ const _has=(D.pb&&D.pb.trend!==undefined&&D.pb.trend!==null)||(D.pb_trend!==undefined&&D.pb_trend!==null);
+ const _bt=_has?((D.pb&&D.pb.trend!==undefined&&D.pb.trend!==null)?D.pb.trend:D.pb_trend):null;
  const wound=(FULL&&D.pb&&D.pb.choch&&D.pb.choch!==_bt)?' · choc!':'';
  // the arrow lives in <i> so it glows like the weather icon
- if(_bt===1){tb.innerHTML='<i>▲</i>haussier'+wound;
+ if(!_has){tb.innerHTML='<i>?</i>'+(CL?'unavailable':'indisponible');tb.style.color='#8fa1b3';}
+ else if(_bt===1){tb.innerHTML='<i>▲</i>haussier'+wound;
   tb.style.color='#2ecc71';}
  else if(_bt===-1){tb.innerHTML='<i>▼</i>baissier'+wound;
   tb.style.color='#ff5c5c';}
