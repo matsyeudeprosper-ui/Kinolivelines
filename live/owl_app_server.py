@@ -2554,22 +2554,24 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div class="panel" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
  style="margin-top:12px;cursor:pointer"
  onclick="tab('marche',document.getElementById('tb-marche'));mxView('market',true)">
- <div style="position:relative;display:flex;align-items:center;gap:12px">
+ <!-- 2026-10-11 (owner): price + state + three facts + the 24 h pace -->
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl">Le march&eacute;</div>
+  <span id="mxs-px" style="font-size:.82rem;font-weight:700;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums"></span></div>
+ <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
   <div id="mxs-orb" class="orbsm"></div>
   <div style="flex:1;min-width:0">
-   <div class="lbl">Le march&eacute;</div>
-   <b id="mxs-title" style="font-size:1.02rem;display:block;margin-top:2px">
-    ...</b>
-   <div id="mxs-sub" style="font-size:.78rem;color:var(--muted2);margin-top:2px;
-    line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
-    -webkit-box-orient:vertical;overflow:hidden"></div>
+   <b id="mxs-title" style="font-size:1.08rem;display:block">...</b>
+   <div id="mxs-sub" style="font-size:.82rem;color:var(--muted2);margin-top:2px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"></div>
   </div>
   <svg class="ic chv"><use href="#i-chev"/></svg>
  </div>
- <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;
-  height:40px;display:none;margin-top:10px"></svg>
- <div id="mxs-day" style="position:relative;font-size:.76rem;color:var(--muted);
-  margin-top:8px"></div>
+ <div id="mxs-tiles" style="display:flex;gap:6px;margin-top:12px"></div>
+ <div id="mxs-sw" style="position:relative;margin-top:12px;display:none">
+  <span id="mxs-sl" style="position:absolute;left:0;top:-4px;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Rythme &middot; 24 h</span>
+  <svg id="mxs-spark" viewBox="0 0 300 40" style="position:relative;width:100%;height:40px;display:none;margin-top:6px"></svg>
+ </div>
+ <div id="mxs-day" style="display:none"></div>
 </div>
 <!-- 2026-10-08 (owner): the Croissance card, redesigned as a mini ladder of
      paliers, and the door to "Votre parcours" in Patrimoine. -->
@@ -4570,11 +4572,23 @@ function dayx(l){
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
 window._cvz='7';
+// 2026-10-11 (owner): the home market card - price, three facts, 24 h pace
+function mxsPaint(){const d=window._d||{},ms=d.meteo_struct||{},en=LANG()==='en',$=id=>document.getElementById(id);if(!$('mxs-tiles'))return;
+ if(ms.px){const c=ms.chg24,up=c>=0;$('mxs-px').innerHTML=(en?'$'+Math.round(ms.px).toLocaleString('en-US'):Math.round(ms.px).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' $')+
+  (c==null?'':' <span style="color:'+(up?'var(--up-soft)':'var(--down-soft)')+'">'+(up?'▲':'▼')+' '+(en?Math.abs(c).toFixed(1):Math.abs(c).toFixed(1).replace('.',','))+'\u202f%</span>');}
+ const tile=(l,v,col)=>'<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 4px;text-align:center"><b style="display:block;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:'+(col||'var(--text)')+'">'+v+'</b><span style="display:block;font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+l+'</span></div>';
+ const t=ms.pb_trend,tr=t===1?[en?'up ▲':'hausse ▲','var(--up-soft)']:(t===-1?[en?'down ▼':'baisse ▼','var(--down-soft)']:['—','var(--muted)']);
+ const rv=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):null;   // the same number the weather gate reads
+ const pc=rv==null?['—','var(--muted)']:['×'+(en?rv.toFixed(1):rv.toFixed(1).replace('.',',')),rv<1.0?'var(--text)':(rv<1.30?'var(--warn)':(rv<1.85?'#e8743b':'var(--down-soft)'))];
+ const D=window._mxsDay,dy=D?(D.n+' trade'+(D.n>1?'s':'')):'—';
+ $('mxs-tiles').innerHTML=tile(en?'Trend':'Tendance',tr[0],tr[1])+tile(en?'Pace vs normal':'Rythme / normal',pc[0],pc[1])+tile(en?'Today':'Aujourd’hui',dy);
+ const sl=$('mxs-sl');if(sl)sl.textContent=en?'Pace · 24 h':'Rythme · 24 h';}
 function drawNerv(){
  const D=window._day,el=document.getElementById('mx-nerv'),
-  ms=document.getElementById('mxs-spark');
+  ms=document.getElementById('mxs-spark'),msw=document.getElementById('mxs-sw');
  if(!D)return;const pts=(D.nerv||[]).slice(-1440);
- if(pts.length<5){if(el)el.style.display='none';if(ms)ms.style.display='none';return;}
+ if(pts.length<5){if(el)el.style.display='none';if(ms)ms.style.display='none';if(msw)msw.style.display='none';return;}
+ if(msw)msw.style.display='';mxsPaint();
  const t0=pts[0][0],t1=pts[pts.length-1][0],sp=Math.max(1,t1-t0);
  const mx=Math.max(2.2,...pts.map(p=>p[1]));
  const X=t=>(6+(t-t0)/sp*288);
@@ -4704,6 +4718,7 @@ function drawDay(){
  const md=document.getElementById('mxs-day');
  if(md)md.textContent=(tr.length?tr.length+' trade'+(tr.length>1?'s':''):(LANG()==='en'?'No trade yet':'Aucun trade pour l\u2019instant'))+
   (ig.length?' \u00b7 '+ig.length+' '+T('day_ign')[ig.length>1?1:0]:'');
+ window._mxsDay={n:tr.length,ig:ig.length};mxsPaint();
  drawJourney(window._lastd);
 }
 function drawJourney(d){
@@ -8213,7 +8228,8 @@ function render(d){
    const _so=document.getElementById('mxs-orb');
    if(_so){_so.innerHTML=ORB[cls]||ORB['mx-sun'];
     setH(document.getElementById('mxs-title'),ti);
-    setH(document.getElementById('mxs-sub'),ln);}
+    setH(document.getElementById('mxs-sub'),String(ln).split('. ')[0].split(' \u2014 ')[0].replace(/\.$/,''));
+    mxsPaint();}
   }
   if(d.ftest){
    const ft=d.ftest;
@@ -11254,6 +11270,16 @@ def user_stats(u, admin_override=False):
                             if _pbt in (1, -1) and _last is not None and _px:
                                 _side = "ok" if _pbt * (float(_px) - _last) > 0 else "wrong"
                             d["meteo_struct"]["pb_trend"] = _pbt
+                            # 2026-10-11 (owner): the home market card shows the price and its 24 h move
+                            try:
+                                _cc = _cj.get("candles") or []
+                                _b = next((float(c[4]) for c in _cc if c[0] >= time.time() - 86400), None)
+                                if _px:
+                                    d["meteo_struct"]["px"] = round(float(_px), 2)
+                                    if _b:
+                                        d["meteo_struct"]["chg24"] = round((float(_px) - _b) / _b * 100, 2)
+                            except Exception:
+                                pass
                             d["meteo_struct"]["pb_side"] = _side
                             d["meteo_struct"]["pb_gate"] = bool(
                                 PKG.for_account(u["id"]).get("pb_dir_gate", False))
