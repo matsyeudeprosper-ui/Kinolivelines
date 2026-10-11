@@ -1,0 +1,9 @@
+{
+ "protocol": "SCANNER-F2",
+ "frozen_commit": "a264923",
+ "start": 1791763140,
+ "end": 1795391940,
+ "start_utc": "2026-10-11T23:59:00Z",
+ "end_utc": "2026-11-22T23:59:00Z",
+ "bundle_manifest_sha256": "0b0fdd9e129ea91bbd645cae023f7097322b9ac8c0b191d06156971a19ca655a"
+}

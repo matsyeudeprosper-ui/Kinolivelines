@@ -77,3 +77,6 @@ In-sample percentiles from `study/scanner_research.py` are EXPLORATORY.
 Writes only `live/scanner/`. Not read by, and does not read, the shared demo / Compte pipeline, the lab, the proof
 numbers, the frozen entry study, or the separate portfolio study (`review/PORTFOLIO_STUDY_SPEC.md`). The Valère
 fidelity diagnostic (Fri 2026-10-16 12:00 UTC) is unaffected.
+
+## FROZEN - 2026-10-11 23:58:25 UTC (commit a264923)
+Window: 2026-10-11 23:59:00 UTC -> 2026-11-22 23:59:00 UTC (42 calendar days), `live/scanner/protocol_window.json`. Bundle manifest SHA-256 0b0fdd9e129ea91bbd645cae023f7097322b9ac8c0b191d06156971a19ca655a. Daemon restarted on this code at 23:56:58 UTC; startup check "OK - bundle verified and isolated". Records opened before 23:59:00 UTC are outside the window.
