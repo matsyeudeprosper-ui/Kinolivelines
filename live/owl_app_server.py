@@ -1999,9 +1999,12 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 /* 2026-10-02 (owner): Accueil, premium pass - scoped to #tab-home */
 #tab-home .grid .card{background:var(--tile-bg);border:1px solid var(--tile-bd);
  border-radius:14px;padding:14px 10px 12px;box-shadow:none}
-#tab-home .grid .card .lbl{font-size:.64rem;letter-spacing:.1em;color:var(--muted);font-weight:700}
-#tab-home .grid .card .val{font-size:1.5rem;font-weight:700;letter-spacing:-.02em;margin-top:6px}
-#tab-home .grid .card .sub{font-size:.7rem;margin-top:5px}
+/* 2026-10-11 (owner): same theme as the other home cards - left-aligned, home label, softer colours */
+#tab-home .grid .card{text-align:left;padding:16px}
+#tab-home .grid .card .lbl{font-size:.72rem;letter-spacing:.07em;color:var(--muted2);font-weight:600}
+#tab-home .grid .card .val{font-size:1.4rem;font-weight:800;letter-spacing:-.02em;margin-top:8px}
+#tab-home .grid .card .val.pos{color:var(--up-soft)}#tab-home .grid .card .val.neg{color:var(--down-soft)}
+#tab-home .grid .card .sub{font-size:.76rem;color:var(--muted);margin-top:4px}
 #tab-home .panel>.lbl{display:flex;align-items:center;gap:8px;font-size:.68rem;font-weight:700;
  letter-spacing:.12em;color:var(--muted2);white-space:nowrap}
 #tab-home .panel>.lbl::after{content:"";flex:1;height:1px;background:var(--border);margin-left:4px}
@@ -2458,8 +2461,8 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
       one line. -->
  <div id="news-list" style="display:none"></div>
  <div style="display:flex;gap:8px;margin-top:10px">
-  <button id="news-open" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem"></button>
-  <button id="news-b" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem"></button>
+  <button id="news-open" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;color:var(--text2)"></button>
+  <button id="news-b" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;color:var(--text2)"></button>
  </div>
 </div>
 <div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(255,92,92,.45)">
@@ -2548,15 +2551,13 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    </div></div>
  </div>
 </div>
-<div class="glass" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
- style="margin-top:26px;padding:16px 16px 14px;cursor:pointer"
+<div class="panel" id="mxsum" role="button" tabindex="0" aria-label="Voir le march&eacute;"
+ style="margin-top:12px;cursor:pointer"
  onclick="tab('marche',document.getElementById('tb-marche'));mxView('market',true)">
- <div class="sheen"></div>
  <div style="position:relative;display:flex;align-items:center;gap:12px">
   <div id="mxs-orb" class="orbsm"></div>
   <div style="flex:1;min-width:0">
-   <div style="font-size:.66rem;color:var(--muted);text-transform:uppercase;
-    letter-spacing:.08em">Le march&eacute;</div>
+   <div class="lbl">Le march&eacute;</div>
    <b id="mxs-title" style="font-size:1.02rem;display:block;margin-top:2px">
     ...</b>
    <div id="mxs-sub" style="font-size:.78rem;color:var(--muted2);margin-top:2px;
@@ -2715,42 +2716,41 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div class="gbar"><i id="pgoal-bar" style="width:0%"></i></div>
  <div id="pgoal-s" style="font-size:.8rem;color:var(--muted2);margin-top:8px"></div>
 </div>
-<div class="sec" style="display:flex;justify-content:space-between;
- align-items:center;flex-wrap:nowrap;gap:8px">Progression
- <!-- 2026-10-08 (owner): a 4th chip wrapped the row on a phone. The
-      range chips and the curve/candles switch are two different things:
-      the candles always cover the whole history, so in that mode the
-      range chips give way to "depuis le debut", and the switch is one
-      icon button that never needs more room. -->
+<div class="panel" id="cvpanel" style="position:relative;cursor:pointer;margin-top:12px">
+ <!-- 2026-10-11 (owner): the title and the range buttons live INSIDE the card, like every other home card -->
+ <div id="cvhead" style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;cursor:default">
+  <div class="lbl" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Progression</div>
  <span style="display:flex;align-items:center;gap:4px;white-space:nowrap">
- <span id="cvrange" style="display:flex;gap:4px">
+ <span id="cvrange" style="display:flex;gap:3px">
  <button class="cvc" data-c="7" style="border:1px solid var(--border2);
-  background:var(--surface3);color:var(--text2);border-radius:99px;padding:5px 10px;
+  background:var(--surface3);color:var(--text2);border-radius:99px;padding:5px 7px;
   font-size:.72rem;font-weight:700">7 j</button>
  <button class="cvc" data-c="30" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 10px;
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 7px;
   font-size:.72rem;font-weight:700">30 j</button>
  <button class="cvc" data-c="90" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 10px;
+  background:transparent;color:var(--muted2);border-radius:99px;padding:5px 7px;
   font-size:.72rem;font-weight:700">3 mois</button></span>
  <span id="cvsince" style="display:none;font-size:.72rem;font-weight:700;
   color:var(--muted2);padding:5px 4px">depuis le d&eacute;but</span>
  <button id="cvmode" aria-label="Bougies" aria-pressed="false" style="border:1px solid var(--border);
-  background:transparent;color:var(--muted2);border-radius:99px;width:30px;height:28px;
+  background:transparent;color:var(--muted2);border-radius:99px;width:28px;height:28px;
   padding:0;display:inline-flex;align-items:center;justify-content:center;margin-left:2px">
   <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor"
    stroke-width="1.5" stroke-linecap="round"><path d="M4 1.5v2.5M4 11v3.5M12 2.5v3M12 12.5v2"/>
    <rect x="2.25" y="4" width="3.5" height="7" rx="1"/><rect x="10.25" y="5.5" width="3.5" height="7" rx="1"/></svg>
  </button></span>
-</div>
-<div class="panel" id="cvpanel" style="position:relative;cursor:pointer"><svg id="spark" viewBox="0 0 300 80"
- style="width:100%;height:80px;display:block"></svg>
+ </div>
+ <div style="position:relative">
+ <svg id="spark" viewBox="0 0 300 80"
+  style="width:100%;height:80px;display:block"></svg>
  <!-- 2026-10-08 (owner): tap the progression to open it big -->
- <button id="cvbig" aria-label="Agrandir" style="position:absolute;top:8px;right:8px;width:26px;height:26px;
-  border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);
-  display:inline-flex;align-items:center;justify-content:center;padding:0;z-index:1">
-  <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"
-   stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5 9 7M2.5 13.5 7 9"/></svg></button>
+  <button id="cvbig" aria-label="Agrandir" style="position:absolute;top:0;right:0;width:26px;height:26px;
+   border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted2);
+   display:inline-flex;align-items:center;justify-content:center;padding:0;z-index:1">
+   <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"
+    stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5h4v4M6.5 13.5h-4v-4M13.5 2.5 9 7M2.5 13.5 7 9"/></svg></button>
+ </div>
  <!-- 2026-10-08 (owner): the progression as a filtered candle chart, one
       candle per closed trade; structure marks for the admin only. -->
  <canvas id="eqcv" style="width:100%;height:210px;display:none"></canvas>
@@ -4984,7 +4984,7 @@ function cvBig(){const en=LANG()==='en',bg=!!window._cvbg,d=window._d||{};
   else{const w=document.getElementById('sparkbig'),sv=document.getElementById('spark');
    if(w&&sv)w.innerHTML='<svg viewBox="0 0 300 80" style="width:100%;height:auto;display:block">'+sv.innerHTML+'</svg>';}},320);}
 {const p=document.getElementById('cvpanel'),b=document.getElementById('cvbig');
- if(p)p.onclick=()=>cvBig();
+ if(p)p.onclick=(ev)=>{if(ev.target.closest&&ev.target.closest('#cvhead'))return;cvBig();};
  if(b)b.onclick=(ev)=>{ev.stopPropagation();cvBig();};}
 {const mb=document.getElementById('cvmode');if(mb)mb.onclick=()=>{window._cvbg=!window._cvbg;
  try{localStorage.setItem('owlCvBg',window._cvbg?'1':'0');}catch(e){}drawSpark();ddCap(window._d);};

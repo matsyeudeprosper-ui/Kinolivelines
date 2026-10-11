@@ -33,6 +33,7 @@ for (const w of [412, 360]) {
   console.log(w, JSON.stringify(r), errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
   if (!r || !r.shown || r.sw > r.iw || errs.length) bad++;
   await sleep(700);
-  const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUT}/${EL}_${WHO}_${w}.png`, Buffer.from(result.data, "base64"));
+  if (process.env.FULL) { await evalJs("window.scrollTo(0,0);1"); const h = await evalJs("document.documentElement.scrollHeight"); await send("Emulation.setDeviceMetricsOverride", { width: w, height: Math.min(h, 9000), deviceScaleFactor: 1, mobile: true }, S); await sleep(1500); }
+  const { result } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: !!process.env.FULL }, S); writeFileSync(`${OUT}/${EL}_${WHO}_${w}.png`, Buffer.from(result.data, "base64"));
 }
 edge.kill(); process.exit(bad ? 1 : 0);
