@@ -56,6 +56,9 @@ RULE_MAP = {
     # exists to catch.
     "rr": "rr",
     "k_streak": "k_streak",
+    # 2026-10-11: the pullback-direction filter (live since 2026-10-10)
+    "pb_dir_gate": "pb_dir_gate",
+    "pb_gate_mode": "pb_gate_mode",
     # these three have no dial. That is only DRIFT when the live value
     # differs from what the harness silently assumes - recorded here so the
     # check reports a real risk instead of a scary-looking list.

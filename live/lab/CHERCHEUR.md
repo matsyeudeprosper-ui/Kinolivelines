@@ -257,8 +257,13 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1,
          "chase_pts": 0-1500, "nerv_floor": 0|0.5-0.95, "flip_hot_size": 0.25-1.0,
          "cap_rr": 0|0.5-1.5, "first_move_size": 0.25-1.0, "cap_wait": 0-120,
-         "flip_loss_size": 0.25-1.0, "size_hours": [0-23], "hour_size": 0.25-1.0}}
+         "flip_loss_size": 0.25-1.0, "size_hours": [0-23], "hour_size": 0.25-1.0,
+         "pb_dir_gate": true|false, "pb_gate_mode": "trend"|"choch"|"strict"}}
 ```
+`pb_dir_gate` + `pb_gate_mode` (2026-10-11, your request): the pullback-direction
+filter the live accounts run since 2026-10-10, with the robot's own decision
+("trend" = their rule); the replay rebuilds the pullback chart without the
+feed's sticky memory, so it is close, not identical; false = off. Slow (~30 s).
 `size_hours` + `hour_size` (2026-10-11, your request): a trade whose entry
 hour (UTC) is in `size_hours` is taken with the stake multiplied by X, and its
 catch-up trades too; the trade is still taken; empty list or 1.0 = off.

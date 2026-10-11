@@ -258,7 +258,15 @@
    "what_en": "Since today the real accounts take a trade only when it goes the way of the pullback chart's trend. The test does not know it. Ask: a yes/no setting in the test that refuses exactly the same entries as the robot, and the same check in the robot-versus-test check. Default no: nothing changes.",
    "why_fr": "Sans cela, chaque nuit je compare le test à des comptes qui ne jouent plus le même jeu, et l'écart entre le test et les vrais trades va grandir sans qu'on sache pourquoi. Je veux aussi mesurer ce filtre sur 42 et 69 jours, avec et sans plafond.",
    "why_en": "Without it, every night I compare the test with accounts that no longer play the same game, and the gap between the test and the real trades will grow with no known cause. I also want to measure this filter over 42 and 69 days, with and without a daily cap.",
-   "status": "open"
+   "status": "built",
+   "key": "pb_dir_gate",
+   "built_note_fr": "Le test peut maintenant appliquer le filtre « sens du repli » des comptes réels, avec la même règle de décision que le robot, et la vérification robot contre test le voit. Par défaut il est éteint : rien ne change tant qu'une idée qui l'utilise n'a pas gagné son duel.",
+   "built_note_en": "The test can now apply the real accounts' 'pullback direction' filter, with the same decision rule as the robot, and the robot-versus-test check now sees it. It is off by default: nothing changes until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--pb-gate",
+    "a": 1,
+    "b": 0
+   }
   },
   {
    "id": "hour_brake_adaptive",

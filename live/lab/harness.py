@@ -73,6 +73,14 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # (bullets) are scaled by the same X. The trade is still taken.
             # Empty list or 1.0 = off.
             "size_hours": [], "hour_size": 1.0,
+            # 2026-10-11 (chercheur): pb_dir_gate = the live accounts'
+            # pullback-direction filter (structure_bos_bot PB_DIR_GATE), with
+            # the bot's own decision function live/pb_gate.py in pb_gate_mode
+            # ("trend" = the official rule). The pullback chart is rebuilt
+            # at each signal from the last 8000 closed M1 bars like the bot,
+            # WITHOUT the feed's sticky chain (the replay cannot know it -
+            # same as study/tick_engine_pbgate.py). False = off.
+            "pb_dir_gate": False, "pb_gate_mode": "trend",
             # 2026-09-29 (owner): cost_max refuses an entry whose fixed spread
             # eats more than X % of the stop distance; min_range refuses one
             # when the median 60-min candle range is under X points
@@ -308,6 +316,50 @@ def _feed():
         _sp.loader.exec_module(_m)
         _FEED = _m
     return _FEED
+
+
+# pb_dir_gate: the pullback chart's state, memoised by (window start, last
+# closed bar) so run_cfg's full and half runs share the work (~55 ms each)
+_PB_MEMO = {}
+
+
+def _pb_state(R, i):
+    """(trend, pending CHoCH dir, CHoCH price, last BOS price) of the pullback
+    chart built from R[i-7999 .. i], bar i being the last CLOSED bar - the
+    arithmetic of structure_bos_bot.pb_state_now(), minus the sticky chain."""
+    g0 = max(0, i - 7999)
+    key = (int(R[g0]["time"]), int(R[i]["time"]))
+    if key in _PB_MEMO:
+        return _PB_MEMO[key]
+    F = _feed()
+    v = (0, 0, None, None)
+    try:
+        kept = F.build(R[g0:i + 1]); bk = []
+        if len(kept) >= 3:
+            dots, marks, trend, *_ = F.engine(kept, brk_out=bk)
+            if trend:
+                dots = [x for x in dots if x[2] == trend]
+            pb = F.pullback_view(kept, dots, marks, bk, write=False) or {}
+            t_ = int(pb.get("trend") or 0); c_ = int(pb.get("choch") or 0)
+            c_ = c_ if (c_ and c_ != t_) else 0
+            lvl = None
+            if c_:
+                cm = [x for x in (pb.get("marks") or []) if len(x) > 2 and x[2] == "choch"]
+                lvl = float(cm[-1][1]) if cm else None
+            bks = pb.get("breaks") or []
+            v = (t_, c_, lvl, float(bks[-1][2]) if bks else None)
+    except Exception:
+        v = (0, 0, None, None)
+    _PB_MEMO[key] = v
+    return v
+
+
+def _pb_ok(c, R, i, d, px):
+    """the bot's own pb_gate() decision at bar i for direction d at quote px"""
+    from pb_gate import pb_gate
+    return pb_gate(str(c["pb_gate_mode"]), d, px, *_pb_state(R, i))[0]
+
+
 BLOT = 0.01
 # 2026-10-02 (owner): on the SAME entries the bot took, this engine ran
 # about $1.80 a trade more generous than the real accounts (lab/proof.json
@@ -1045,6 +1097,11 @@ def simulate(R, spread, cfg):
                 cont_left -= 1
             else:
                 continue
+        # the live enter() order: after the recovery allowance is consumed;
+        # the quote is the ask for a buy, the bid for a sell
+        if c["pb_dir_gate"] and not _pb_ok(c, R, i, d, e_px + (spread if d == 1 else 0.0)):
+            blocked += 1
+            continue
         if DEBTGATE is not None and debt_now > 0.5 and not DEBTGATE(t, d):
             blocked += 1
             continue
@@ -1425,6 +1482,11 @@ def simulate_real(T, R, spread, cfg):
             else:
                 blocked += 1
                 continue
+        if c["pb_dir_gate"]:
+            _ic = bisect.bisect_right(times, t - 60) - 1     # the last bar closed at the entry
+            if _ic < 0 or not _pb_ok(c, R, _ic, e["d"], e["e"]):
+                blocked += 1
+                continue
         d, ent, sl, dist = e["d"], e["e"], e["sl"], e["dist"]
         if c["cost_max"] and dist > 0 and (spread / dist) * 100.0 > float(c["cost_max"]):
             blocked += 1
@@ -1509,6 +1571,8 @@ def main():
     ap.add_argument("--first-move-size", type=float, help="lot multiplier when the entry is the first big move counted in the last 2 hours")
     ap.add_argument("--hour-size", type=str, help="HOURS:X = lot multiplier X (bullets too) at these UTC entry hours, e.g. 8-24:0.5")
     ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
+    ap.add_argument("--pb-gate", type=int, help="1 = the live pullback-direction filter (the bot's own rule), 0 = off")
+    ap.add_argument("--pb-gate-mode", type=str, help="the filter's rule: trend (official), choch, strict")
     ap.add_argument("--nerv-gate", action="store_true")
     ap.add_argument("--nerv-floor", type=float, help="no entry when the market's pace at entry is under X (1.0 = usual)")
     ap.add_argument("--debt-nerv-gate", action="store_true", help="refuse only when still in the red AND nervous")
@@ -1561,6 +1625,8 @@ def main():
                 hs.add(int(part))
         over["size_hours"] = sorted(hs)
         over["hour_size"] = float(_hx)
+    if a.pb_gate is not None: over["pb_dir_gate"] = bool(a.pb_gate)
+    if a.pb_gate_mode: over["pb_gate_mode"] = a.pb_gate_mode
     if a.nerv_gate: over["nerv_gate"] = True
     if a.nerv_floor is not None: over["nerv_floor"] = a.nerv_floor
     if a.debt_nerv_gate: over["debt_nerv_gate"] = True
