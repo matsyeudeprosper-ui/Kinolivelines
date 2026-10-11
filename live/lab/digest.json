@@ -1,30 +1,30 @@
 {
- "week_end": "2026-10-04",
- "from": "2026-09-28",
- "t": "2026-10-04T09:10:21+00:00",
+ "week_end": "2026-10-11",
+ "from": "2026-10-05",
+ "t": "2026-10-11T09:13:47+00:00",
  "fr": [
-  "Cette semaine le labo a testé 59 idées en 7 nuits : 4 mieux sur les deux moitiés, 28 un peu mieux, 27 non.",
-  "Le chercheur a proposé 32 nouvelles idées, par exemple « Viser 0,6× le risque et ne pas trader le dimanche » ; « Deux rattrapages au lieu de trois, et rien quand le marché est nerveux ».",
-  "Jumeaux : 3 jumeaux lancés, 3 mis de côté par Kino.",
-  "Le constructeur a livré « Sur un compte avec plafond du jour, viser juste ce qui manque pour l'atteindre », « Ne pas courir après le prix : refuser une entrée quand la dernière heure est déjà partie dans le sens du trade » ; le critique a dit non à 1.",
-  "Ce que le chercheur tient maintenant : viser un gain égal à ce qu'on risque, sans trader le dimanche, aide les comptes avec et sans plafond de gain par jour."
+  "Cette semaine le labo a testé 62 idées en 6 nuits : 3 mieux sur les deux moitiés, 28 un peu mieux, 31 non.",
+  "Le chercheur a proposé 30 nouvelles idées, par exemple « Viser autant que ce qu'on risque, quatre rattrapages, sans courir » ; « Viser autant que ce qu'on risque, quatre rattrapages, repos le dimanche ».",
+  "Aucun jumeau cette semaine : aucune idée n’a tenu deux nuits de suite.",
+  "Le constructeur a livré « Miser moins sur un changement de sens quand le marché est nerveux », « Une cible à part pour les comptes avec plafond de gain par jour » ; le critique a dit non à 2.",
+  "Ce que le chercheur tient maintenant : pas d'entrée après une heure agitée et une pause après chaque trade aident tous les comptes, surtout ensemble."
  ],
  "en": [
-  "This week the lab tested 59 ideas over 7 nights: 4 better on both halves, 28 a little better, 27 no.",
-  "The researcher proposed 32 new ideas, e.g. « Aim for 0.6x the risk and skip Sunday » ; « Two catch-ups instead of three, and nothing when the market is nervous ».",
-  "Twins: 3 twins started, 3 set aside by Kino.",
-  "The builder delivered « On an account with a daily cap, aim for exactly what is missing to reach it », « Do not chase the price: refuse an entry when the last hour already moved the trade's way » ; the critic said no to 1.",
-  "What the researcher now holds: aiming for a gain equal to what we risk, without trading on Sunday, helps the accounts with and without a daily cap."
+  "This week the lab tested 62 ideas over 6 nights: 3 better on both halves, 28 a little better, 31 no.",
+  "The researcher proposed 30 new ideas, e.g. « Aim for as much as we risk, four catch-ups, no chasing » ; « Aim for as much as we risk, four catch-ups, Sunday off ».",
+  "No twin this week: no idea held two nights in a row.",
+  "The builder delivered « Stake less on a change of direction when the market is nervous », « A separate target for accounts with a daily cap » ; the critic said no to 2.",
+  "What the researcher now holds: no entry after a busy hour and a pause after each trade help every account, above all together."
  ],
  "counts": {
-  "tested": 59,
-  "A": 4,
+  "tested": 62,
+  "A": 3,
   "B": 28,
-  "proposals": 32,
-  "twins_started": 3,
+  "proposals": 30,
+  "twins_started": 0,
   "twins_lost": 0,
   "went_in": 0,
   "came_out": 0,
-  "built": 4
+  "built": 7
  }
 }

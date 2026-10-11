@@ -13,7 +13,9 @@
   "flip_loss_size",
   "hour_size",
   "pb_dir_gate_test",
-  "hour_brake_adaptive"
+  "hour_brake_adaptive",
+  "early_moves_size",
+  "pile_field_move"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -24,6 +26,7 @@
   "ask_1791433808_cont",
   "ask_1791522013_us",
   "ask_1791522013_flip_after_loss",
-  "ask_1791547213_flip_day"
+  "ask_1791547213_flip_day",
+  "ask_1791655206_quick"
  ]
 }

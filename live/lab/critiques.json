@@ -56,6 +56,25 @@
     "overlap: same trades as the deployed rule (274 vs 276, win rate 58.4 vs 58.3) - only the stake on the third catch-up trade changes; pure sizing",
     "real gap: --drag auto leaves the harness result unchanged (147.06, -47.52 vs base); it trades 2 fewer, so a $1/trade charge would move it ~2 $ at most - not run, cannot rescue a -43 $ long window"
    ]
+  },
+  {
+   "id": "ext400_wait25_fh075",
+   "date": "2026-10-11",
+   "verdict": "bloque",
+   "fr": "Ce réglage ne gagne qu'à 25 minutes et 400 points pile : 20 ou 30 minutes, 350 ou 450 points, tous perdent 12 à 43 $. Rejoué ce matin sur 42 jours, il gagne moins sur les deux moitiés ; il ne garde qu'un trou plus petit. Sur 69 jours il perd 15 $. Pour changer d'avis : un gain qui tient aux réglages voisins et sur 69 jours.",
+   "en": "This setting only wins at exactly 25 minutes and 400 points: 20 or 30 minutes, 350 or 450 points all lose $12 to $43. Replayed this morning on the same 42 days, it earns less in both halves; all it keeps is a smaller hole. Over 69 days it loses $15. To change my mind: a gain that holds at the neighbouring settings and over 69 days.",
+   "checks": [
+    "dose (harness 2026-10-11 morning, same 42 days): idea +8.9 net (B), hole 80.3->44.1. Neighbours all C: wait20 -11.9, wait30 -43.4, ext350 -28.9, ext450 -27.6. flip_hot 1.0 instead of 0.75: +3.3 (B). Isolated peak, no slope",
+    "halves: nightly battery +14.0 / +28.1 (h2-carried); harness this morning both halves WORSE (h1 -29.2, h2 -4.9) - the +8.9 full gain is path, not edge. Same trade count (214) yet nets moved 143->201 and base 108->192 between runs: the result is fragile to the bar window",
+    "shapes: battery +35.18 uncapped (account 4 shape), +85.81 capped (account 1 shape); capped gain comes mostly from a smaller hole (-42.85), consistent with fewer trades under a cap",
+    "long window: 69 days -14.98, both halves negative (-18.41 / -7.41), hole +36.16 worse -> a loss there = doubt",
+    "real trades: +38.11 on 47 kept of 76 (29 blocked), hole -27.41 better - the one clean point in its favour",
+    "concentration: battery diff +35 ~ one big ledger trade (+31.44, +23.46 in base); harness diff +8.9 is smaller than a single winner",
+    "past: registry wait 30/60 min rejected (C, -106/-107), ext300 rejected (C, -26), ext500 candidate only B (same money, smaller hole). This is wait+ext re-stacked with a size cut; neighbours confirm the old verdicts",
+    "mechanism: \"skip right after a spike, rest after each close, trade smaller on nervous flips\" plausibly cuts holes, but nothing says why 25/400 earns MORE - only the numbers say so",
+    "drag: auto = 0 (not yet 30 trades measured) -> +8.9 unchanged. drag 1 charges the variant only in this harness (-150.7 vs uncharged base) - not a fair duel; by count it trades 59 fewer, so a per-trade cost would favour it, not hurt it",
+    "overlap: same trades as ext500/wait cut at another dose; 136 entries blocked of ~350"
+   ]
   }
  ]
 }
