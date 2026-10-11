@@ -7111,6 +7111,8 @@ async function loadRent(){const el=document.getElementById('rentcard');if(!el)re
  el.style.display='';}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
+ // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
+ el.style.display='none';return;
  if(window._prT&&Date.now()-window._prT<600000)return;window._prT=Date.now();
  let j=null;try{const r=await fetch(B+'proof?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  if(!j||j.err){el.style.display='none';return;}
@@ -10464,7 +10466,15 @@ def rentabilite_payload():
         out["real"] = None
     try:
         c = json.load(open(os.path.join(DIR, "lab", "proof_current.json"), encoding="utf-8"))
-        out["test"] = {"generated_at": c.get("generated_at"), "days": c.get("days"), "balance": c.get("balance"), "window_utc": c.get("window_utc"), "rows": c.get("rows")}
+        out["test"] = {"generated_at": c.get("generated_at"), "days": c.get("days"), "balance": c.get("balance"), "window_utc": c.get("window_utc"), "rows": c.get("rows"),
+                       "rebuilt_at": c.get("rebuilt_at"), "rebuilt_reason": c.get("rebuilt_reason")}
+        # is the backtest built on the robot's CURRENT rules? (study/proof_autorun.py stamps it)
+        import hashlib as _hlr
+        _h = _hlr.sha256()
+        for _f in ("structure_bos_bot.py", "owl_packages.json", "owl_package.py", "pb_gate.py"):
+            try: _h.update(open(os.path.join(DIR, _f), "rb").read())
+            except Exception: _h.update(_f.encode())
+        out["test"]["rules_current"] = (c.get("rules_fp") == _h.hexdigest()[:16])
     except Exception:
         out["test"] = None
     try:
@@ -10477,6 +10487,10 @@ def rentabilite_payload():
                                                   "title_en": "The robot only follows the background trend, beyond its last break"}]
     except Exception:
         out["legacy"] = None; out["rules"] = []
+    try:
+        out["fidelity"] = json.load(open(os.path.join(DIR, "lab", "fidelity.json"), encoding="utf-8"))
+    except Exception:
+        out["fidelity"] = None
     try:
         v = proof_payload("base")
         out["verdict"] = {"overall": v.get("overall"), "lights": v.get("lights")}

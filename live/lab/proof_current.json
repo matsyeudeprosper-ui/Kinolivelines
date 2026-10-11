@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-11T04:26:00Z",
+ "generated_at": "2026-10-11T08:00:51Z",
  "balance": 200.0,
  "package": "base",
  "days": 41.7,
@@ -1296,5 +1296,9 @@
     }
    }
   }
- }
+ },
+ "rules_fp": "02f55fbd2e282636",
+ "engine_fp": "7f83435964acaa91",
+ "rebuilt_at": 1791705994,
+ "rebuilt_reason": "nightly"
 }

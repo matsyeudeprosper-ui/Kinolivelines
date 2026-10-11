@@ -289,23 +289,15 @@ check("its switch reflects the stored value",
 // ---------- the proof -------------------------------------------------
 console.log("");
 console.log("proof");
-await nav("about:blank"); await nav(`${BASE}/${VAL}/`); await sleep(11000);
-// 2026-10-02: proofPage() returns silently while window._proof is still in
-// flight (1 run in 3 failed here for that reason alone) - retry until the
-// deck exists instead of judging a page that had not loaded yet.
-for (let k = 0; k < 10; k++) {
-  await ev("if(typeof proofPage==='function')proofPage(); 1"); await sleep(2500);
-  if ((await ev("!!(window._pv&&window._pv.S&&window._pv.S.length)")) === true) break;
-}
-check("proof deck opens", (await ev("!!(window._pv&&window._pv.S&&window._pv.S.length)")) === true);
-let seen = false;
-for (let k = 0; k < 8 && !seen; k++) {
-  seen = (await ev("document.body.innerText.indexOf('ources')>=0")) === true;
-  if (!seen) { await ev("if(window._pv&&window._pv.i<window._pv.S.length-1){window._pv.i++;pvPaint();} 1"); await sleep(600); }
-}
-check("the sources slide renders", seen);
+// 2026-10-11 (owner): the proof is now the "Rentabilite" space (its own page) and its home card
+await nav("about:blank"); await nav(`${BASE}/${VAL}/rentabilite`); await sleep(5000);
+check("proof deck opens", (await ev("!!document.querySelector('.pillars')&&!!document.querySelector('.hero')")) === true);
+await ev("go('me'); 1"); await sleep(1200);
+check("the sources slide renders", (await ev("document.body.innerText.toLowerCase().indexOf('viennent les chiffres')>=0||document.body.innerText.toLowerCase().indexOf('numbers come from')>=0")) === true);
 check("the honest note about the retired rule is on it",
-      (await ev("document.body.innerText.indexOf('Note honn')>=0 || document.body.innerText.indexOf('Honest note')>=0")) === true);
+      (await ev("document.body.innerText.indexOf('ne cache pas')>=0||document.body.innerText.indexOf('do not hide')>=0")) === true);
+await ev("go('te'); 1"); await sleep(1200);
+check("the backtest tab shows the backtest-vs-real comparison", (await ev("document.body.innerText.toLowerCase().indexOf('backtest contre r')>=0||document.body.innerText.toLowerCase().indexOf('backtest vs real')>=0")) === true);
 await shot("smoke_proof");
 check("no runtime errors anywhere", (await ev("(window.__errs||[]).length")) === 0,
       await ev("(window.__errs||[]).slice(0,3).join(' | ')"));

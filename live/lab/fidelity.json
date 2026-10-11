@@ -1,0 +1,44 @@
+{
+ "generated_at": "2026-10-11T08:00:26Z",
+ "period_utc": [
+  "2026-09-14 22:46:39",
+  "2026-10-11 03:20:44"
+ ],
+ "quotes": "the account's own broker quotes (bid/ask ticks)",
+ "days_covered": 28,
+ "days": 28,
+ "real": {
+  "n": 87,
+  "wr": 56.3,
+  "pf": 1.29,
+  "net": 48.39,
+  "dd": 40.43,
+  "dd_pct": 13.9
+ },
+ "backtest": {
+  "n": 85,
+  "wr": 51.8,
+  "pf": 1.01,
+  "net": 0.79,
+  "dd": 52.26,
+  "dd_pct": 20.1
+ },
+ "matched": 57,
+ "matched_1s": 48,
+ "real_n": 87,
+ "backtest_n": 85,
+ "engine_only": 28,
+ "engine_only_pnl": -20.79,
+ "real_only": 30,
+ "real_only_pnl": 3.8,
+ "paired_pnl_backtest": 21.58,
+ "paired_pnl_real": 44.59,
+ "with_filter": {
+  "n": 36,
+  "wr": 63.9,
+  "pf": 1.34,
+  "net": 19.03,
+  "dd": 17.33,
+  "dd_pct": 8.1
+ }
+}
