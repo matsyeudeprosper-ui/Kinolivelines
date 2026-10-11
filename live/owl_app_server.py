@@ -11933,6 +11933,32 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
 .pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
  align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:30px}
+/* 2026-10-11 (owner): the proof, on the landing - one card, two views:
+   the witness account (real money) first, the backtest second */
+.pf2{margin:26px auto 0;max-width:360px;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
+ background:radial-gradient(110% 80% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0d1826);
+ border:1px solid rgba(141,240,187,.22);box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+.pf2 .in{padding:18px 18px 0}
+.pf2 .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pf2 .ey{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pf2 .lv{flex:none;font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;
+ background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px;white-space:nowrap}
+.pf2 .lv i{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71}
+.pf2 .sw{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:3px;margin-top:14px}
+.pf2 .sw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.76rem;font-weight:700;padding:8px 4px;border-radius:9px;cursor:pointer}
+.pf2 .sw button.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.pf2 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.pf2 .big{font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap}
+.pf2 .bs{font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
+.pf2 svg.sp{flex:1;min-width:0;max-width:170px;height:48px;overflow:visible}
+.pf2 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.pf2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px}
+.pf2 .pl small{display:block;font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf2 .pl b{display:block;font-size:1.12rem;font-weight:900;margin-top:5px;white-space:nowrap}
+.pf2 .nt{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:12px}
+.pf2 .nt span{color:#9fc2de}
+.pf2 a.go{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:13px 18px;border-top:1px solid rgba(255,255,255,.08);
+ background:rgba(255,255,255,.03);color:#8fc6ff;font-size:.86rem;font-weight:800;text-decoration:none}
 /* 2026-10-02 (owner): the 1-2-3 steps as small-caps numerals, not boxes */
 .feats:not(#plans) .fi.stp{background:transparent!important;border:0!important;color:#b98cff!important;
  font-size:.66rem!important;font-weight:700!important;letter-spacing:.12em;width:auto!important;
@@ -12132,6 +12158,17 @@ jour et nuit. Vous, vous regardez.</div>
 <div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</div>
 </div>
 <a class="bigbtn b1" id="hero-cta" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
+<div class="pf2" id="pf2" hidden>
+ <div class="in">
+  <div class="top"><span class="ey" id="pf2-ey">Preuve de rentabilit&eacute;</span><span class="lv"><i></i><span id="pf2-lv">En direct</span></span></div>
+  <div class="sw" role="tablist"><button type="button" class="on" data-v="real" id="pf2-b1">Compte t&eacute;moin</button><button type="button" data-v="bt" id="pf2-b2">Backtest</button></div>
+  <div class="hd"><div><div class="big" id="pf2-big">&nbsp;</div><div class="bs" id="pf2-bs">&nbsp;</div></div><svg class="sp" id="pf2-sp" viewBox="0 0 120 44" preserveAspectRatio="none"></svg></div>
+  <div class="g3" id="pf2-g3"></div>
+  <div class="nt" id="pf2-nt"></div>
+ </div>
+ <a class="go" id="pf2-go" href="/demo"><span id="pf2-gt">Voir la preuve compl&egrave;te</span><span aria-hidden="true">&rsaquo;</span></a>
+</div>
+
 <div class="feats" id="shots-sec">
 <div class="how" role="heading" aria-level="2">Ce que vous verrez</div>
 <div class="shots" id="shots" tabindex="0" role="region" aria-label="Aper&ccedil;us de l&#8217;application">
@@ -12327,6 +12364,39 @@ async function pvLoad(){
  }catch(e){}
 }
 pvLoad();
+// 2026-10-11 (owner): the proof card on the landing - the witness account (real
+// money) and the backtest of today's rules, from the public demo's own page data
+var PF2=null,PF2V='real';
+async function pf2Load(){try{
+ const r=await fetch('/demo',{redirect:'follow'});if(!r.ok)return;
+ const base=new URL(r.url).pathname.replace(/\/+$/,'')+'/';
+ const j=await (await fetch(base+'rentabilite_data')).json();if(!j||!j.real)return;
+ PF2={j:j,base:base};document.getElementById('pf2-go').href=base+'rentabilite';
+ document.querySelectorAll('#pf2 .sw button').forEach(b=>b.onclick=()=>{PF2V=b.dataset.v;document.querySelectorAll('#pf2 .sw button').forEach(x=>x.classList.toggle('on',x===b));pf2Paint();});
+ document.getElementById('pf2').hidden=false;pf2Paint();}catch(e){}}
+function pf2St(P,bal0){let c=0,pk=bal0,dd=0;const S=[bal0];const W=P.filter(x=>x>0),gw=W.reduce((a,b)=>a+b,0),gl=-P.filter(x=>x<=0).reduce((a,b)=>a+b,0);
+ P.forEach(p=>{c+=p;const eq=bal0+c;S.push(eq);pk=Math.max(pk,eq);dd=Math.max(dd,(pk-eq)/pk*100);});
+ return {n:P.length,wr:P.length?100*W.length/P.length:0,pf:gl>0?gw/gl:0,net:gw-gl,ret:100*(gw-gl)/bal0,dd:dd,S:S};}
+function pf2Paint(){if(!PF2)return;const en=pvEn(),j=PF2.j,$=id=>document.getElementById(id),fr=v=>en?v:v.replace('.',',');
+ const col=b=>b==='ok'?'#8df0bb':(b==='mid'?'#e8c55a':'#ff9a9a');
+ const bw=v=>v>=55?'ok':(v>=45?'mid':'bad'),bp=v=>v>=1.5?'ok':(v>=1.15?'mid':'bad'),bd=v=>v<=12?'ok':(v<=22?'mid':'bad');
+ let s,sub,note;
+ if(PF2V==='real'||!j.test||!j.test.rows){const R=j.real,days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));
+  s=pf2St(R.trades.map(t=>t[1]),R.bal0);sub=en?('in '+days+' days · real money'):('en '+days+' jours · argent réel');
+  note=en?'Results of the witness account, a real account run only by the robot. <span>Not your account; losses included.</span>':'Résultats du compte témoin, un vrai compte piloté uniquement par le robot. <span>Ce n’est pas votre compte ; pertes comprises.</span>';
+}
+ else{const T=j.test,r=(T.rows['0.35']||T.rows['0.00']).today;s=pf2St(r.pnls,T.balance);
+  sub=en?(Math.round(T.days)+' days replayed · costs counted'):(Math.round(T.days)+' jours rejoués · frais comptés');
+  note=en?'Today’s rules replayed tick by tick on the broker’s real prices, with 0.35 $ per trade on top of the spread. <span>Rebuilt by itself whenever a rule changes.</span>':'Les règles d’aujourd’hui rejouées tick par tick sur les vrais prix du courtier, avec 0,35 $ par trade en plus du spread. <span>Refait tout seul dès qu’une règle change.</span>';
+}
+ $('pf2-big').textContent=(s.ret>=0?'+':'−')+fr(Math.abs(s.ret).toFixed(1))+'\u202f%';$('pf2-bs').textContent=sub;
+ const mn=Math.min(...s.S),mx=Math.max(...s.S),X=i=>i/(s.S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36,d=s.S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+ $('pf2-sp').innerHTML='<defs><linearGradient id="pf2g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#pf2g)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(s.S[s.S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
+ const pl=(k,v,b)=>'<div class="pl"><small>'+k+'</small><b style="color:'+col(b)+'">'+v+'</b></div>';
+ $('pf2-g3').innerHTML=pl(en?'Win rate':'Réussite',Math.round(s.wr)+'\u202f%',bw(s.wr))+pl(document.getElementById('pf2').clientWidth<320?'PF':'Profit factor',fr(s.pf.toFixed(2)),bp(s.pf))+pl(en?'Max drawdown':'Baisse max','−'+fr(s.dd.toFixed(1))+'\u202f%',bd(s.dd));
+ $('pf2-nt').innerHTML=s.n+' trades · '+note;$('pf2-ey').textContent=en?'Proof of profitability':'Preuve de rentabilité';$('pf2-lv').textContent=PF2V==='real'?(en?'Live':'En direct'):(en?'Up to date':'À jour');
+ $('pf2-b1').textContent=en?'Witness account':'Compte témoin';$('pf2-gt').textContent=en?'See the full proof':'Voir la preuve complète';}
+pf2Load();
 function pvRender(d){
  try{
   const $=id=>document.getElementById(id);
@@ -12515,6 +12585,7 @@ function paint(){
  if(b){b.textContent=en?'FR':'EN';b.setAttribute('aria-label',en?'Français':'English');}
  if(md)md.setAttribute('content',en?mdEn:mdFr);
  if(window._pvd&&window.pvRender)pvRender(window._pvd);
+ if(window.pf2Paint)pf2Paint();
 }
 window.owlApply=function(){apply(window._en);};
 window._en=stored();
