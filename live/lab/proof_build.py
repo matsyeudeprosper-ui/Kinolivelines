@@ -49,12 +49,17 @@ def _journal(f):
             "wr": _wr(pn), "since": min([r["entry_time_utc"][:10] for r in closed if r.get("entry_time_utc")] or [""])}
 
 
+# owner 2026-10-11: the real-trades slide reads Valere's account ONLY (no other
+# real account, no demo) - one account, one set of rules, one broker feed
+PROOF_SOURCES = ["bos_journal_valere.csv"]
+
+
 def sources():
     """The clean sources, without names (owner 2026-09-29: never list the
     accounts we host): how many real accounts feed the numbers, the demo
     account on its own, and the earliest date."""
-    real = [j for j in (_journal(f) for f in H.REAL_SOURCES) if j]
-    demo = _journal("bos_journal_demo.csv")
+    real = [j for j in (_journal(f) for f in PROOF_SOURCES) if j]
+    demo = None
     since = min([j["since"] for j in real if j["since"]] or [""])
     return {"real_accounts": len(real), "demo": demo, "since": since or None}
 
@@ -173,7 +178,7 @@ def main():
             print("package", pk, "failed:", e)
     _, RL = H.bars_long()
     base_long = H.run_cfg(RL, 7.0, {}) if RL is not None and len(RL) > len(R) + 7 * 1440 else None
-    T = H.real_entries()
+    T = H.real_entries(PROOF_SOURCES)
     # 2026-09-30: honesty block. Until today the bot took
     # internal-structure entries and this test never modelled one, so
     # the backtest and the live record were not the same strategy.
@@ -208,6 +213,22 @@ def main():
         union = {"trades": len(T), "net": round(sum(x["pnl"] for x in T), 2), "wr": _wr(pn), "since": time.strftime("%Y-%m-%d", time.gmtime(T[0]["t"])),
                  "replay_same_entries": real_replay,
                  "clean": clean_union(T)}
+        # owner 2026-10-11: "En vrai" is the ACCOUNT's money - the broker ledger
+        # of Valere's account over the same dates, recovery adds included
+        # (the journal rows above are the main entries only: what the
+        # same-entries replay re-plays). Legs closing within 90 s on the
+        # same side are one trade; won = net > 0.
+        try:
+            led = json.load(io.open(os.path.join(LAB, "wealth", "u224016179.json"), encoding="utf-8"))["trades"]
+            led = sorted(x for x in led if x[0] >= T[0]["t"])
+            grp = []
+            for x in led:
+                if grp and abs(x[0] - grp[-1]["t"]) <= 90 and x[3] == grp[-1]["d"]: grp[-1]["pnl"] += x[1]
+                else: grp.append({"t": x[0], "d": x[3], "pnl": x[1]})
+            union["main_only"] = {"trades": union["trades"], "net": union["net"], "wr": union["wr"]}
+            union.update({"trades": len(grp), "net": round(sum(g["pnl"] for g in grp), 2), "wr": _wr(grp), "legs": len(led), "source": "broker ledger, adds included"})
+        except Exception as e:
+            print("ledger read failed:", e)
     rules = []
     try:
         reg = json.load(open(os.path.join(LAB, "registry.json"), encoding="utf-8"))

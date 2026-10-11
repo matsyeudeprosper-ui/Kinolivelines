@@ -7158,7 +7158,7 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
      pvCard(pvPct(r0.net||0,B),en?'spread only':'spread seul',(r0.trades||0)+' trades \u00b7 '+Math.round(100*(r0.win_rate||0))+'\u202f% '+(en?'won':'gagn\u00e9s'),(r0.net||0)>=0?up:down)+
      pvCard(pvPct(r1.net||0,B),en?'+ 0.35 $ a trade':'+ 0,35 $ par trade',(r1.trades||0)+' trades \u00b7 PF '+((r1.profit_factor||0).toFixed? (r1.profit_factor||0).toFixed(2):r1.profit_factor),(r1.net||0)>=0?up:down)+
      pvCard('\u2212'+Math.abs((r0.cc_dd||0)/B*100).toFixed(1)+'\u202f%',en?'biggest dip':'plus grosse baisse',en?'spread only':'spread seul',down)+
-     pvCard(pvPct(n0.net||0,B),en?'without the filter':'sans le filtre',(n0.trades||0)+' trades \u00b7 '+(en?'same engine':'m\u00eame moteur'),(n0.net||0)>=0?up:down)+
+     pvCard(pvPct(n0.net||0,B),en?'without the filter, spread only':'sans le filtre, spread seul',(n0.trades||0)+' trades \u00b7 '+Math.round(100*(n0.win_rate||0))+'\u202f% '+(en?'won':'gagn\u00e9s')+' \u00b7 '+(en?'with 0.35 $: ':'avec 0,35 $ : ')+pvPct(((C.rows['0.35']||{}).no_filter||{}).net||0,B),(n0.net||0)>=0?up:down)+
     '</div>'+
     '<div class="pv-note">'+(en?'Built '+(C.generated_at||'').slice(0,10)+'. The two tests use different engines: the one above counts a fixed 7 $ spread on candles, this one the real ticks. Compare the shape, not the cents.':'Construit le '+(C.generated_at||'').slice(0,10)+'. Les deux tests n\u2019utilisent pas le m\u00eame moteur : celui du dessus compte un spread fixe de 7 $ sur des bougies, celui-ci les vrais ticks. Comparez la forme, pas les centimes.')+'</div>';})()});
  // 3 - does it hold over time
@@ -7183,6 +7183,8 @@ function proofPage(){const j=window._proof;if(!j)return;const en=LANG()==='en';c
   '</div>'+
   '<div class="pv-chart">'+pfBars([[en?'In real life':'En vrai',U.net],[en?'Expected':'Attendu',E?E.net:null],[en?'Test, same entries':'Test, m\u00eames entr\u00e9es',(j.replay_same||{}).net]],en)+
    pfBand(j.band,U.net,en,en?'The real result':'Le r\u00e9sultat r\u00e9el')+'</div>'+
+  // owner 2026-10-11: "En vrai" is the account's own money (broker ledger, recovery included); the main entries alone are shown apart
+  (U.main_only?'<div class="pv-note">'+(en?'In real life = the account\u2019s money from the broker, recovery trades included ('+(U.legs||0)+' orders, '+(U.trades||0)+' trades). The main entries alone made '+((U.main_only.net>=0?'+':'')+U.main_only.net.toFixed(2))+' $ - that is what the test re-plays.':'En vrai = l\u2019argent du compte chez le courtier, trades de rattrapage compris ('+(U.legs||0)+' ordres, '+(U.trades||0)+' trades). Les entr\u00e9es principales seules ont fait '+((U.main_only.net>=0?'+':'')+U.main_only.net.toFixed(2))+' $ : c\u2019est ce que le test rejoue.')+'</div>':'')+
   '<div class="pf-prog" style="margin-top:12px"><div style="display:flex;justify-content:space-between;font-size:.78rem"><b>'+(U.trades||0)+' / 30 '+(en?'real trades':'vrais trades')+'</b><span style="color:var(--muted2)">'+(en?'before we judge':'avant de juger')+'</span></div><div class="b"><i style="width:'+Math.min(100,(U.trades||0)/30*100).toFixed(0)+'%"></i></div></div>'+
   (function(){var DG=SRC.drag;
    if(!DG||!DG.trades)return '';
