@@ -2593,17 +2593,6 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
      measured on a real account: return, win rate, profit factor, max drawdown -->
 <!-- 2026-10-11 (owner): the home proof card, same design as the landing card:
      witness account (real money) / backtest switch -->
-<!-- 2026-10-11 (owner): the lab's latest clue, in the home's own style -->
-<div class="panel" id="aicard" role="link" tabindex="0" style="display:none;margin-top:12px">
- <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-  <div class="lbl" id="aic-ey">Le labo &middot; derni&egrave;re piste</div>
-  <span id="aic-go" style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="aic-gt">Le labo</span>
-   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
- <div id="aic-h" style="font-size:1.08rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
- <div id="aic-c" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
- <div id="aic-t" style="display:flex;gap:6px;margin-top:12px"></div>
- <div id="aic-n" style="font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.45"></div>
-</div>
 <div class="rc2" id="rentcard" role="link" tabindex="0" style="display:none" aria-label="Preuve de rentabilit&eacute;"
  onclick="if(!event.target.closest('.vsw'))location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')"
  onkeydown="if(event.key==='Enter')location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')">
@@ -2776,6 +2765,17 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   font-size:.74rem;color:var(--muted);margin-top:4px"></div>
  <div id="ddcap" style="display:none;font-size:.78rem;color:var(--muted2);
   margin-top:8px"></div></div>
+<!-- 2026-10-11 (owner): the lab's latest clue, in the home's own style -->
+<div class="panel" id="aicard" role="link" tabindex="0" style="display:none;margin-top:12px">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl" id="aic-ey">Le labo &middot; derni&egrave;re piste</div>
+  <span id="aic-go" style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="aic-gt">Le labo</span>
+   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <div id="aic-h" style="font-size:1.08rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
+ <div id="aic-c" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
+ <div id="aic-t" style="display:flex;gap:6px;margin-top:12px"></div>
+ <div id="aic-n" style="font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.45"></div>
+</div>
 </div>
 <div class="tab" id="tab-marche">
 <!-- 2026-09-28 (owner): two spaces, one switch - the MARKET (what the
