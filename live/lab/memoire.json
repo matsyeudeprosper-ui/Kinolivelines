@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-10T18:00:05Z",
+ "updated": "2026-10-11T01:30:03Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -45,7 +45,8 @@
     "2026-10-09: wealth ledgers pooled (per 0.01 lot): 01-07 h 234 tr 70% +108.9; 00 h 42% -14.1; 08-15 51% -42.9; 16-20 42% -39.5; 21-23 34% -71.3. 8 of 9 accounts agree (fresh is the exception). Journal pile asia 30 tr 73% +46.2 (h 71%/75%). Engine trace: 01-07 best bucket overall, 83-87% since 09-24. Engine 42 d: night_0_7 C -37.6 hole 23.3 / B +10.1 hole 23.3 (h2 +82.5/+51.7); night_1_7 C -66.3 / C -7.7; skip8_15+21_23 C -31.3 hole 19.0 / B +21.3 hole 19.0. Refusing hours kills catch-up chains; first half loses.",
     "2026-10-10 05:00 veille: real plain breakouts now lose in the evening too: cont entered 16-22 h 10 tr 4 won about -10 $, 19-22 h 0/4 -24.09 (too few). cont halves 71%/50%: part of the breakout edge may be the night edge. Night: check cont x hour.",
     "2026-10-10 07:00 veille: night flip won +4.80 (closed 06:45, pace 0.383); night flips ~9/13 ~+22 vs day flips 12/43 -73.66.",
-    "2026-10-10: wealth ledgers since 09-24: night 1-7 h wins on 8 of 9 accounts, day 8-15 loses on 8 of 9, 21-0 h loses on 8 of 9, 16-20 h flat/positive. Journal: night BOS 17 tr 82% +40.6 vs day BOS 22 tr 45% -15.7 (halves 64%/27%). Engine 42 d: every hour cut is worse on h1 and better on h2 (ext400_noday B +7.7/B +40.1 hole 22; noday_wait20 C/B +49.9; skip13-14+21-23 B +28.5 h -72/+90 = hand-picked, not proposed). Regime, not a fixed rule: requested hour_brake_adaptive."
+    "2026-10-10: wealth ledgers since 09-24: night 1-7 h wins on 8 of 9 accounts, day 8-15 loses on 8 of 9, 21-0 h loses on 8 of 9, 16-20 h flat/positive. Journal: night BOS 17 tr 82% +40.6 vs day BOS 22 tr 45% -15.7 (halves 64%/27%). Engine 42 d: every hour cut is worse on h1 and better on h2 (ext400_noday B +7.7/B +40.1 hole 22; noday_wait20 C/B +49.9; skip13-14+21-23 B +28.5 h -72/+90 = hand-picked, not proposed). Regime, not a fixed rule: requested hour_brake_adaptive.",
+    "2026-10-11 01:30 veille: asia pile 32 tr 75% +51.47 (h 70%/83%); 01-07 h 23 tr 20 won +66.44, 00 h 9 tr 44% -14.97 is the weak hour inside it."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -294,7 +295,8 @@
     "2026-10-09 05:00 veille: by entry hour 21 h 0/4 -20.60, 22 h 0/4 -9.60, 23 h 1/5 -7.04, 00 h 9 tr 44% -14.97; but 01-02 h 10 tr 70% +26.23. Four calm flip losses 22:09-22:54 sit in the window.",
     "2026-10-09 06:30 veille: labo ask 'us' (16-24 h) 32 tr 28% -47.99; but 16-20 h 19 tr 8 won -10.75, 21-23 h 13 tr 1 won -37.24 - the evening pile is the late pile. Engine skip 16-22 C -59.2 (h1 -64.1 / h2 +4.9), hole unchanged. Real and engine still disagree.",
     "2026-10-09: engine trace since 09-24: 21-23 h 9% (uncapped) / 0% (capped), -87; before 09-24 those hours won (h1 +79). Engine now agrees with the real trades on the recent period. skip21_23 C -10.3 (was -29.7 on 10-06; h -62.2/+54.3) / C -27.9; skip22_23 C -54.5 / B +9.3. A regime that started ~09-24, not a constant.",
-    "2026-10-10: wealth: 21-0 h loses on 8 of 9 accounts. Engine ext400_skip2123 C -9.4 / C -21.2; with wait20 C -18.5 / B +38.0. Fixed cut still splits the halves."
+    "2026-10-10: wealth: 21-0 h loses on 8 of 9 accounts. Engine ext400_skip2123 C -9.4 / C -21.2; with wait20 C -18.5 / B +38.0. Fixed cut still splits the halves.",
+    "2026-10-11 01:30 veille: FLIP-BOS BUY closed 01:15 (entry likely 01 h, outside the window) won +0.50 (calm). late_night 20 tr 25% -47.14 PF 0.22 (h 27%/22%); 00 h 9 tr 44% -14.97. Unchanged."
    ],
    "next": "Battery on skip21_23_wait30; watch skip21_23 drift toward B as old days leave the window."
   },
@@ -1525,6 +1527,16 @@
     "scrutiny --pile quick (ask from labo)"
    ],
    "saw": "Ledger window now 90 trades (since 09-24) 49% -28.41 PF 0.86 - counts shifted vs 99 this morning, read as a new window. flip_day 38 tr 32% -61.39 PF 0.38 (h 36%/29%), still losing on both halves; this win is at 17 h where the pile was 0/3. FLIP-BOS 51 tr 41% -39.11; BOS 37 tr 59% +20.14 (h 67%/50% pas d'accord). Ask quick: 32 tr 41% -26.24; after a loss 19 tr 26% -33.77 (h 29%/25% ok), after a gain 13 tr 62% +7.53; night quick fine, day quick loses. gap <15 min 25 tr 32% -29.82 (h ok); 30-60 min 20 tr 65% +23.16. Answered the ask; no pile (overlaps day-after-a-loss / ext400_wait), no harness run, no proposal."
+  },
+  {
+   "t": "2026-10-11T01:30:03Z",
+   "looked": [
+    "wake_context new trade (FLIP-BOS BUY +0.50 closed 01:15 pace 0.722, entry hour not in wake_context; 00 h already 9 tr on 10-09, so likely 01 h)",
+    "scrutiny --pile asia (nerv/prev/hour/dur)",
+    "scrutiny --pile late_night",
+    "scrutiny --by kind / hour"
+   ],
+   "saw": "91 trades 49% -27.91 PF 0.86. A tiny early-night win; shape unchanged. late_night 20 tr 25% -47.14 PF 0.22 (h 27%/22%). 00 h 9 tr 44% -14.97, the only losing hour in the asia pile; 01-07 h 23 tr 20 won +66.44. asia 32 tr 75% +51.47 (h 70%/83%). BOS 37 tr 59% +20.14 (h 67%/50%); FLIP-BOS 52 tr 42% -38.61. No twins, no labo, no ask. No harness run: hour cuts already tested C/C on 42 d, nothing new to test."
   }
  ],
  "lessons": [
