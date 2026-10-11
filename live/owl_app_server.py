@@ -1865,6 +1865,26 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pv-nav{display:flex;gap:8px}
 .pv-pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 11px;font-size:.7rem;color:var(--text2);font-weight:700}
 .pf{--pfc:var(--warn)}
+/* 2026-10-11 (owner): the setup scanner, in the home theme */
+.scn-badge{font-style:normal;min-width:16px;height:16px;padding:0 4px;border-radius:99px;background:var(--accent);color:#fff;font-size:.62rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.mxs{gap:5px}
+.scn-f{display:flex;gap:6px;margin-top:12px}
+.scn-f button{flex:1;border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;padding:8px 6px;font:inherit;font-size:.8rem;font-weight:700;cursor:pointer}
+.scn-f button.on{background:var(--surface3);border-color:var(--border2);color:var(--text)}
+.scn-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border);cursor:pointer}
+.scn-row:first-child{border-top:0}
+.scn-row .nm{flex:1;min-width:0}
+.scn-row .nm b{display:block;font-size:.95rem;color:var(--text)}
+.scn-row .nm small{display:block;font-size:.74rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scn-row .tr{flex:none;width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--tile-bg);border:1px solid var(--tile-bd)}
+.scn-st{flex:none;font-size:.7rem;font-weight:800;border-radius:99px;padding:5px 9px;white-space:nowrap;background:var(--tile-bg)}
+.scn-near{height:4px;border-radius:99px;background:var(--tile-bg);margin-top:6px;overflow:hidden}
+.scn-near i{display:block;height:4px;border-radius:99px}
+.scn-tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.scn-tbl th{font-size:.64rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:right;padding:0 0 8px}
+.scn-tbl th:first-child,.scn-tbl td:first-child{text-align:left}
+.scn-tbl td{padding:9px 0;border-top:1px solid var(--border);text-align:right;color:var(--text2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scn-tbl td small{color:var(--muted);font-size:.7rem}
 /* 2026-10-11 (owner): the proof card on the HOME (same design as the landing) - one card, two views:
    the witness account (real money) first, the backtest second */
 .rc2{margin:12px 0 0;max-width:none;cursor:pointer;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
@@ -2074,8 +2094,8 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 #tab-hist #cal-sec>span:last-child{margin-left:14px}
 /* 2026-10-11 (owner): one theme across the tabs - card labels plain (no trailing rule), same size as .lbl;
    Historique month tiles left-aligned with soft colours, like the home's week/month tiles */
-#tab-home .panel>.lbl,#tab-hist .panel>.lbl,#mx-robot .panel>.lbl,#tab-nid .panel>.lbl{font-size:.78rem;font-weight:600;letter-spacing:.07em;color:var(--muted2)}
-#tab-home .panel>.lbl::after,#tab-hist .panel>.lbl::after,#mx-robot .panel>.lbl::after,#tab-nid .panel>.lbl::after{display:none}
+#tab-home .panel>.lbl,#tab-hist .panel>.lbl,#mx-robot .panel>.lbl,#tab-nid .panel>.lbl,#tab-marche .panel>.lbl{font-size:.78rem;font-weight:600;letter-spacing:.07em;color:var(--muted2)}
+#tab-home .panel>.lbl::after,#tab-hist .panel>.lbl::after,#mx-robot .panel>.lbl::after,#tab-nid .panel>.lbl::after,#tab-marche .panel>.lbl::after{display:none}
 #tab-hist .grid .card{text-align:left;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--hl)}
 #tab-hist .grid .card .lbl{font-size:.72rem;letter-spacing:.07em;color:var(--muted2);font-weight:600}
 #tab-hist .grid .card .val{font-size:1.4rem;font-weight:800;margin-top:8px}
@@ -2794,6 +2814,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <button class="mxs on" id="mxs-market" role="tab" aria-selected="true" onclick="mxView('market')"><svg class="ic ic-s"><use href="#i-wave"/></svg><span>March&eacute;</span></button>
  <button class="mxs" id="mxs-robot" role="tab" aria-selected="false" onclick="mxView('robot')"><svg class="ic ic-s"><use href="#i-bot"/></svg><span>Robot</span></button>
  <button class="mxs" id="mxs-lab" role="tab" aria-selected="false" onclick="mxView('lab')" style="display:none"><svg class="ic ic-s"><use href="#i-target"/></svg><span>Labo</span></button>
+ <button class="mxs" id="mxs-scan" role="tab" aria-selected="false" onclick="mxView('scan')"><svg class="ic ic-s"><use href="#i-eye"/></svg><span>Scanner</span><i id="mxs-scan-n" class="scn-badge" hidden></i></button>
 </div>
 <div id="mx-market">
 <!-- 2026-10-01 (owner UX): the Marche tab is four stacked sections and
@@ -2857,6 +2878,13 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div id="lrn-list" style="display:none"></div>
 <div class="panel" id="lrn-next" style="display:none;margin-top:12px;border-color:rgba(59,130,246,.35)"></div>
 </div>
+</div>
+<!-- 2026-10-11 (owner): the setup scanner - other markets, virtual trades only -->
+<div id="mx-scan" style="display:none">
+ <div class="sec" style="margin-top:14px">Scanner <span class="hint" id="scn-hint">&middot; autres march&eacute;s, en essai</span></div>
+ <div id="scn-intro" style="font-size:.86rem;color:var(--muted2);line-height:1.5;margin-top:6px">Le robot cherche sa configuration sur d&rsquo;autres march&eacute;s. Rien n&rsquo;y est trad&eacute; : chaque signal devient un trade virtuel, pour v&eacute;rifier si ces march&eacute;s tiennent ce que promet leur backtest.</div>
+ <div class="scn-f" id="scn-f"><button type="button" class="on" data-f="live">En ce moment</button><button type="button" data-f="all">Tous</button><button type="button" data-f="res">R&eacute;sultats</button></div>
+ <div id="scn-body"></div>
 </div>
 <div id="mx-lab" style="display:none">
 <div class="sec" style="margin-top:14px">Le labo <span class="hint" id="lab-hint">&middot; id&eacute;es, tests, observations, d&eacute;cisions</span></div>
@@ -4511,14 +4539,82 @@ window.addEventListener('load',()=>{
 });
 function labAllowed(){const d=window._d||{};return !!(d.is_master||TIER()==='strategy');}
 function labVisible(){const d=window._d||{};return !d.public;}
-function mxView(v,quiet){v=(v==='robot')?'robot':(v==='lab'&&labVisible()?'lab':'market');
- const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab');if(!m||!r)return;
- m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';if(l)l.style.display=v==='lab'?'':'none';
+function mxView(v,quiet){v=(v==='robot')?'robot':(v==='scan'?'scan':(v==='lab'&&labVisible()?'lab':'market'));
+ const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab'),sc=document.getElementById('mx-scan');if(!m||!r)return;
+ m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';if(l)l.style.display=v==='lab'?'':'none';if(sc)sc.style.display=v==='scan'?'':'none';
  if(v==='lab'){window._labT=0;loadLab(window._d||{});}
- [['mxs-market','market'],['mxs-robot','robot'],['mxs-lab','lab']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',v===k);b.setAttribute('aria-selected',v===k?'true':'false');}});
+ if(v==='scan'){window._scnT=0;loadScan();}
+ [['mxs-market','market'],['mxs-robot','robot'],['mxs-lab','lab'],['mxs-scan','scan']].forEach(([id,k])=>{const b=document.getElementById(id);if(b){b.classList.toggle('on',v===k);b.setAttribute('aria-selected',v===k?'true':'false');}});
  try{localStorage.setItem('owlMxView:'+B,v);}catch(e){}
  if(!quiet){try{navigator.vibrate&&navigator.vibrate(6)}catch(e){}window.scrollTo({top:0});}}
 (function(){let v='market';try{v=localStorage.getItem('owlMxView:'+B)||'market';}catch(e){}window.addEventListener('load',()=>mxView(v,true));})();
+// ---- 2026-10-11 (owner): the setup scanner (live/owl_scanner.py) ----
+async function loadScan(){if(window._scnT&&Date.now()-window._scnT<55000){scanPaint();return;}window._scnT=Date.now();
+ try{const r=await fetch(B+'scanner_data?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err)window._scn=j;}}catch(e){}
+ scanPaint();}
+setInterval(()=>{const sc=document.getElementById('mx-scan');if(sc&&sc.style.display!=='none'&&document.visibilityState==='visible'){window._scnT=0;loadScan();}},60000);
+setTimeout(()=>{try{loadScan();}catch(e){}},2500);
+function scanTxt(){const en=LANG()==='en';return {
+ trade:[en?'In a trade':'En trade','var(--up-soft)'],ready:[en?'Ready':'Prêt','var(--accent-soft)'],soon:[en?'Soon':'Bientôt','var(--warn)'],
+ far:[en?'Trend set':'En place','var(--text2)'],waiting_turn:[en?'Waiting to turn':'Attend le retour','var(--muted2)'],
+ wrong_side:[en?'Wrong side':'Mauvais côté','var(--muted2)'],no_trend:[en?'No trend':'Sans tendance','var(--muted)'],
+ closed:[en?'Market closed':'Fermé','var(--muted)'],no_data:[en?'Unavailable':'Indisponible','var(--muted)'],error:[en?'Unavailable':'Indisponible','var(--muted)']};}
+const SCN_ORD=['trade','ready','soon','far','waiting_turn','wrong_side','no_trend','closed','no_data','error'];
+function scnFmt(v,dg){if(v==null)return '—';const en=LANG()==='en';const s=Number(v).toFixed(Math.min(5,Math.max(0,dg)));return en?s:s.replace('.',',');}
+function scnR(v){const en=LANG()==='en';if(v==null)return '—';const s=(v>=0?'+':'−')+Math.abs(v).toFixed(2);return (en?s:s.replace('.',','))+' R';}
+function scanPaint(){const j=window._scn,body=document.getElementById('scn-body');if(!body)return;const en=LANG()==='en',$=id=>document.getElementById(id);
+ $('scn-hint').textContent=en?'· other markets, on trial':'· autres marchés, en essai';
+ $('scn-intro').textContent=en?'The robot looks for its setup on other markets. Nothing is traded there: every signal becomes a virtual trade, to check whether these markets keep what their backtest promises.':'Le robot cherche sa configuration sur d’autres marchés. Rien n’y est tradé : chaque signal devient un trade virtuel, pour vérifier si ces marchés tiennent ce que promet leur backtest.';
+ const fb=document.querySelectorAll('#scn-f button'),lab=[en?'Right now':'En ce moment',en?'All':'Tous',en?'Results':'Résultats'];
+ fb.forEach((b,i)=>{b.textContent=lab[i];b.onclick=()=>{window._scnF=b.dataset.f;fb.forEach(x=>x.classList.toggle('on',x===b));scanPaint();};b.classList.toggle('on',(window._scnF||'live')===b.dataset.f);});
+ if(!j||!j.state||!(j.state.symbols||[]).length){body.innerHTML='<div class="panel" style="margin-top:12px;color:var(--muted2)">'+(en?'The scanner is starting…':'Le scanner démarre…')+'</div>';return;}
+ const S=scanTxt(),rows=(j.state.symbols||[]).slice().sort((a,b)=>SCN_ORD.indexOf(a.status)-SCN_ORD.indexOf(b.status)||((a.near==null?9:a.near)-(b.near==null?9:b.near)));
+ const live=rows.filter(r=>r.status==='trade'||r.status==='ready'||r.status==='soon');
+ const bd=$('mxs-scan-n');if(bd){bd.hidden=!live.length;bd.textContent=live.length;}
+ const F=window._scnF||'live';
+ const arrow=t=>t===1?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--up-soft)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>':(t===-1?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--down-soft)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>');
+ const sub=r=>{if(r.status==='trade'&&r.open)return (r.open.d===1?(en?'virtual buy':'achat virtuel'):(en?'virtual sell':'vente virtuelle'))+' · '+scnR(r.open.r_now);
+  if(r.status==='ready')return en?'close to its trigger':'tout près de son déclencheur';
+  if(r.status==='soon')return en?'approaching its trigger':'se rapproche de son déclencheur';
+  if(r.status==='far')return en?'trend in place, trigger still far':'tendance en place, déclencheur encore loin';
+  if(r.status==='waiting_turn')return en?'the small structure is against the trend':'la petite structure va contre la tendance';
+  if(r.status==='wrong_side')return en?'price must come back past its last break':'le prix doit repasser sa dernière cassure';
+  if(r.status==='no_trend')return en?'no background trend':'pas de tendance de fond';
+  if(r.status==='closed')return en?'reopens at the next session':'rouvre à la prochaine séance';return '';};
+ const nearBar=r=>{if(r.near==null||!(r.status==='ready'||r.status==='soon'||r.status==='far'))return '';const p=Math.max(4,Math.min(100,100-(r.near/3)*100));const c=r.status==='ready'?'var(--accent)':(r.status==='soon'?'var(--warn)':'var(--muted)');return '<div class="scn-near"><i style="width:'+p.toFixed(0)+'%;background:'+c+'"></i></div>';};
+ const rowH=r=>{const s=S[r.status]||S.error;return '<div class="scn-row" data-s="'+r.sym+'"><span class="tr">'+arrow(r.pb_trend)+'</span><div class="nm"><b>'+(r.name||r.sym)+'</b><small>'+sub(r)+'</small>'+nearBar(r)+'</div><span class="scn-st" style="color:'+s[1]+'">'+s[0]+'</span></div>';};
+ let h='';
+ if(F==='live'){
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Ready or close':'Prêts ou presque')+'</div>'+(live.length?live.map(rowH).join(''):'<div style="font-size:.9rem;color:var(--muted2);line-height:1.5;margin-top:8px">'+(en?'No market is close to its trigger right now. The scanner checks every minute.':'Aucun marché n’est près de son déclencheur pour l’instant. Le scanner vérifie chaque minute.')+'</div>')+'</div>';
+  const rec=(j.recent||[]).slice(0,5);
+  if(rec.length)h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Latest virtual trades':'Derniers trades virtuels')+'</div>'+rec.map(t=>'<div class="scn-row" style="cursor:default"><span class="tr">'+arrow(t.d)+'</span><div class="nm"><b>'+(t.name||t.sym)+'</b><small>'+new Date((t.xt||t.t)*1000).toLocaleString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></div><b style="color:'+(t.r>0?'var(--up-soft)':'var(--down-soft)')+';font-variant-numeric:tabular-nums">'+scnR(t.r)+'</b></div>').join('')+'</div>';
+ }else if(F==='all'){
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Every market watched':'Tous les marchés suivis')+'</div>'+rows.map(rowH).join('')+'</div>';
+ }else{
+  const R=j.results||{},cell=(x,k)=>x&&x.n?(k==='n'?x.n:(k==='wr'?Math.round(x.wr)+'\u202f%':scnR(x.avg_r))):'—';
+  let tb=0,tf=0,sb=0,sf=0;
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Backtest vs virtual, per market':'Backtest et virtuel, par marché')+'</div>'+
+   '<div style="font-size:.8rem;color:var(--muted2);line-height:1.5;margin:8px 0 12px">'+(en?'R = the result divided by the trade’s risk: a target is +0.8 R, a stop −1 R. Above 0 on average, the setup pays; the two columns should end up close.':'R = le résultat divisé par le risque du trade : une cible fait +0,8 R, un stop −1 R. Au-dessus de 0 en moyenne, la configuration paie ; les deux colonnes doivent finir proches.')+'</div>'+
+   '<table class="scn-tbl"><tr><th>'+(en?'Market':'Marché')+'</th><th>'+(en?'Backtest':'Backtest')+'</th><th>'+(en?'Virtual':'Virtuel')+'</th></tr>'+
+   rows.map(r=>{const x=R[r.sym]||{},b=x.bt,f=x.fwd;if(b&&b.n){tb+=b.n;sb+=b.sum_r||0;}if(f&&f.n){tf+=f.n;sf+=f.sum_r||0;}
+    return '<tr><td>'+(r.name||r.sym)+(r.sym==='BTCUSD'?' <small>'+(en?'(reference)':'(référence)')+'</small>':'')+'</td><td>'+(b&&b.n?scnR(b.avg_r)+'<br><small>'+b.n+' · '+Math.round(b.wr)+'\u202f%</small>':'—')+'</td><td>'+(f&&f.n?scnR(f.avg_r)+'<br><small>'+f.n+' · '+Math.round(f.wr)+'\u202f%</small>':'<small>'+(en?'none yet':'aucun')+'</small>')+'</td></tr>';}).join('')+
+   '<tr><td><b>'+(en?'All':'Ensemble')+'</b></td><td><b>'+(tb?scnR(sb/tb):'—')+'</b><br><small>'+tb+' trades</small></td><td><b>'+(tf?scnR(sf/tf):'—')+'</b><br><small>'+tf+' trades</small></td></tr></table>'+
+   '<div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:10px">'+(en?'Backtest: the last 30 days, same rule, same code. Virtual: since the scanner started'+(j.fwd_since?' on '+new Date(j.fwd_since*1000).toLocaleDateString('en-GB'):'')+'. Under 30 trades a market proves nothing yet.':'Backtest : les 30 derniers jours, même règle, même code. Virtuel : depuis le démarrage du scanner'+(j.fwd_since?', le '+new Date(j.fwd_since*1000).toLocaleDateString('fr-FR'):'')+'. Sous 30 trades, un marché ne prouve encore rien.')+'</div></div>';
+ }
+ h+='<div style="font-size:.74rem;color:var(--muted);line-height:1.45;margin:12px 2px 0">'+(en?'The robot’s core setup only (a break in the background trend’s direction, stop on the protected level, target 0.8×), without its brakes or its catch-up. No real money.':'Uniquement la configuration de base du robot (une cassure dans le sens de la tendance de fond, stop sur le niveau protégé, cible 0,8×), sans ses freins ni son rattrapage. Aucun argent réel.')+'</div>';
+ body.innerHTML=h;
+ body.querySelectorAll('.scn-row[data-s]').forEach(el=>el.onclick=()=>scanSheet(el.dataset.s));}
+function scanSheet(sym){const j=window._scn;if(!j)return;const en=LANG()==='en',r=(j.state.symbols||[]).find(x=>x.sym===sym);if(!r)return;const S=scanTxt(),s=S[r.status]||S.error,x=(j.results||{})[sym]||{},b=x.bt,f=x.fwd;
+ const tile=(l,v,c)=>'<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:9px 4px;text-align:center"><b style="display:block;font-size:.98rem;color:'+(c||'var(--text)')+'">'+v+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+l+'</span></div>';
+ const tr=r.pb_trend===1?(en?'up':'hausse'):(r.pb_trend===-1?(en?'down':'baisse'):'—');
+ let lv='';if(j.detail&&(r.pb_bos!=null||r.next_bos!=null)){lv='<div style="display:flex;gap:6px;margin-top:8px">'+tile(en?'last break':'dernière cassure',scnFmt(r.pb_bos,r.digits))+tile(en?'trigger':'déclencheur',scnFmt(r.next_bos,r.digits))+tile(en?'protected':'protégé',scnFmt(r.inv,r.digits))+'</div>';}
+ let op='';if(r.open){op='<div class="lbl" style="margin-top:14px">'+(en?'Virtual trade':'Trade virtuel')+'</div><div style="display:flex;gap:6px;margin-top:8px">'+tile(en?'side':'sens',r.open.d===1?(en?'buy':'achat'):(en?'sell':'vente'))+tile(en?'now':'maintenant',scnR(r.open.r_now),r.open.r_now>=0?'var(--up-soft)':'var(--down-soft)')+(j.detail&&r.open.e!=null?tile(en?'entry':'entrée',scnFmt(r.open.e,r.digits)):'')+'</div>';}
+ const st=(l,v)=>v&&v.n?tile(l,scnR(v.avg_r)+'<br><small style="font-size:.66rem;color:var(--muted)">'+v.n+' · '+Math.round(v.wr)+'\u202f%</small>'):tile(l,'—');
+ sheet('<div class="lbl">'+(r.name||r.sym)+' · '+r.sym+'</div><h3 style="margin:6px 0 4px;color:'+s[1]+'">'+s[0]+'</h3>'+
+  '<div style="display:flex;gap:6px;margin-top:10px">'+tile(en?'background trend':'tendance de fond',tr,r.pb_trend===1?'var(--up-soft)':(r.pb_trend===-1?'var(--down-soft)':null))+tile(en?'with BTC':'lien avec BTC',r.corr_btc==null?'—':(en?String(r.corr_btc):String(r.corr_btc).replace('.',',')))+tile(en?'cost':'coût',r.cost==null?'—':(en?r.cost:String(r.cost).replace('.',','))+'\u202f%')+'</div>'+lv+op+
+  '<div class="lbl" style="margin-top:14px">'+(en?'Results':'Résultats')+'</div><div style="display:flex;gap:6px;margin-top:8px">'+st(en?'backtest 30 d':'backtest 30 j',b)+st(en?'virtual':'virtuel',f)+'</div>'+
+  '<p style="font-size:.8rem;color:var(--muted2);line-height:1.5;margin:12px 0 0">'+(en?'Link with BTC: 0 = moves on its own, 1 = moves exactly like BTC. Cost: the spread as a share of the last hour’s move.':'Lien avec BTC : 0 = bouge seul, 1 = bouge exactement comme BTC. Coût : le spread comparé au mouvement de la dernière heure.')+'</p>'+
+  '<button class="shbtn shghost" onclick="_shDone(1)">'+(en?'Close':'Fermer')+'</button>');}
 function tab(n,el){
  document.querySelectorAll('.tab').forEach(x=>
   x.classList.toggle('on',x.id==='tab-'+n));
@@ -10525,6 +10621,65 @@ _LAND_CACHE = [0.0, None]
 _AI_CACHE = [0.0, None]
 
 
+def scanner_payload(detail):
+    """2026-10-11 (owner): the setup scanner (live/owl_scanner.py) - what each
+    symbol is doing now, its virtual trades, and forward vs backtest. Levels
+    (trigger, stop, target) only for Strategie / the admin, like the chart."""
+    D = os.path.join(DIR, "scanner")
+    try:
+        st = json.load(open(os.path.join(D, "state.json"), encoding="utf-8"))
+    except Exception:
+        st = {"symbols": []}
+    fwd, opened = {}, {}
+    try:
+        for ln in open(os.path.join(D, "forward.jsonl"), encoding="utf-8"):
+            try:
+                x = json.loads(ln)
+            except Exception:
+                continue
+            if x.get("ev") == "close":
+                fwd.setdefault(x["sym"], []).append(x)
+            elif x.get("ev") == "open":
+                opened[x["sym"]] = x
+    except Exception:
+        pass
+
+    def summ(trs):
+        n = len(trs)
+        if not n:
+            return {"n": 0}
+        rs = [float(t.get("r") or 0) for t in trs]
+        w = [r for r in rs if r > 0]
+        gl = -sum(r for r in rs if r <= 0)
+        return {"n": n, "wr": round(100 * len(w) / n, 1), "avg_r": round(sum(rs) / n, 3),
+                "sum_r": round(sum(rs), 2), "pf": round(sum(w) / gl, 2) if gl > 0 else None}
+    res = {}
+    for row in st.get("symbols") or []:
+        s = row.get("sym")
+        bt = None
+        try:
+            b = json.load(open(os.path.join(D, "backtest_%s.json" % s), encoding="utf-8"))
+            bt = dict(b.get("summary") or {}); bt["days"] = b.get("days"); bt["built"] = b.get("built")
+        except Exception:
+            pass
+        res[s] = {"fwd": summ(fwd.get(s) or []), "bt": bt}
+        if not detail:
+            for k in ("pb_bos", "next_bos", "inv"):
+                row.pop(k, None)
+            if row.get("open"):
+                row["open"] = {"d": row["open"].get("d"), "t": row["open"].get("t"), "r_now": row["open"].get("r_now")}
+    recent = sorted([t for v in fwd.values() for t in v], key=lambda t: t.get("xt") or 0, reverse=True)[:12]
+    keep = ("sym", "name", "d", "t", "xt", "r", "win") if not detail else ("sym", "name", "d", "t", "xt", "r", "win", "e", "sl", "tp", "x")
+    started = None
+    try:
+        with open(os.path.join(D, "forward.jsonl"), encoding="utf-8") as f:
+            started = json.loads(f.readline()).get("t")
+    except Exception:
+        pass
+    return {"state": st, "results": res, "recent": [{k: t.get(k) for k in keep} for t in recent],
+            "detail": bool(detail), "fwd_since": started}
+
+
 def ai_pulse():
     """2026-10-11 (owner): the home card = the lab's latest "piste" (a pile of
     real trades the chercheur put against all the others) with its numbers."""
@@ -16303,6 +16458,12 @@ class H(BaseHTTPRequestHandler):
             try:
                 _rp = open(os.path.join(DIR, "owl_proof_page.html"), encoding="utf-8").read()
                 self._send(_rp, "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "scanner_data":
+            try:
+                _det = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
+                self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "ai_pulse":

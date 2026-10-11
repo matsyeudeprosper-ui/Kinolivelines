@@ -27,10 +27,11 @@ await send("Page.navigate", { url }, S); await waitEvent("Page.loadEventFired", 
 const tb = { home: "tb-home", marche: "tb-marche", hist: "tb-hist", reglages: "tb-reglages" }[TAB] || "tb-home";
 await evalJs(`(()=>{const b=document.getElementById('${tb}')||[...document.querySelectorAll('.tb')].find(x=>x.getAttribute('onclick')&&x.getAttribute('onclick').indexOf("'${TAB}'")>=0);tab('${TAB}',b);${VIEW ? `mxView('${VIEW}',true);` : ""}window.scrollTo(0,0);return 1})()`);
 await sleep(3500);
+if (process.argv[6]) { await evalJs(process.argv[6]); await sleep(1500); }   // optional: JS to run before the capture
 const h = await evalJs("document.documentElement.scrollHeight");
 await send("Emulation.setDeviceMetricsOverride", { width: 360, height: Math.min(h, 9000), deviceScaleFactor: 1, mobile: true }, S); await sleep(1500);
 const shot = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true }, S);
-writeFileSync(`${OUT}/${TAB}${VIEW ? "_" + VIEW : ""}_${WHO}.png`, Buffer.from(shot.result.data, "base64"));
+writeFileSync(`${OUT}/${TAB}${VIEW ? "_" + VIEW : ""}_${WHO}${process.argv[7] ? "_" + process.argv[7] : ""}.png`, Buffer.from(shot.result.data, "base64"));
 const errs = events.filter(e => e.method === "Runtime.exceptionThrown").map(e => (e.params.exceptionDetails.exception || {}).description || "error");
 console.log(TAB, VIEW, WHO, "height", h, errs.length ? "JS ERRORS: " + errs.join(" | ") : "no JS errors");
 edge.kill(); process.exit(errs.length ? 1 : 0);

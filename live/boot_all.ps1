@@ -293,6 +293,13 @@ try {
     Say ("copier revive failed: " + $_)
 }
 
+# 3b2) setup scanner (2026-10-11): other markets, virtual trades only - reads prices, never trades
+if (-not (ProcRunning "owl_scanner.py")) {
+    Say "starting setup scanner"
+    Start-Process pythonw -ArgumentList "owl_scanner.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 3c) Telegram alert daemon
 if (-not (ProcRunning "owl_telegram.py")) {
     Say "starting Telegram daemon"
