@@ -7102,7 +7102,7 @@ async function loadRent(){const el=document.getElementById('rentcard');if(!el)re
  const bw=wr>=55?'ok':(wr>=45?'mid':'bad'),bp=pf>=1.5?'ok':(pf>=1.15?'mid':'bad'),bd=mdd<=12?'ok':(mdd<=22?'mid':'bad');
  // GPT 2026-10-11: say WHOSE results these are - the witness account, never the member's own
  document.getElementById('rent-lbl').textContent=en?'Witness account':'Compte t\u00e9moin';
- const MF=j.myfxbook||{};document.getElementById('rent-live').lastElementChild.textContent=(MF.url&&MF.verified)?(en?'Verified by Myfxbook':'V\u00e9rifi\u00e9 par Myfxbook'):(en?'Live':'En direct');
+ document.getElementById('rent-live').lastElementChild.textContent=en?'Live':'En direct';
  document.getElementById('rent-big').textContent=(ret>=0?'+':'−')+Math.abs(ret).toFixed(1).replace('.',en?'.':',')+' %';
  document.getElementById('rent-sub').textContent=(en?'in '+days+' days \u00b7 real money':'en '+days+' jours \u00b7 argent r\u00e9el');
  const mn=Math.min(...S),mx=Math.max(...S),X=i=>i/(S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36;

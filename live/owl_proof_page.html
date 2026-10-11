@@ -119,6 +119,28 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 72%,tra
 #shb .scale span{flex:1;font-size:.66rem;font-weight:700;text-align:center;padding:6px 2px;border-radius:8px;color:var(--muted2);background:var(--surface3)}
 #shb .scale span.on{color:#0b1118;font-weight:900}
 #shb .close{width:100%;border:1px solid var(--border2);border-radius:14px;padding:12px;font-weight:800;font-size:.9rem;background:var(--surface3);color:var(--text);margin-top:16px}
+/* 2026-10-11 (owner): long lists live in their own full-screen panel */
+html{overflow-x:clip}
+#pan{position:fixed;inset:0;z-index:25;background:var(--bg);transform:translateX(100%);visibility:hidden;transition:transform .32s cubic-bezier(.3,.7,.2,1),visibility 0s linear .32s;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#pan.on{transform:none;visibility:visible;transition:transform .32s cubic-bezier(.3,.7,.2,1),visibility 0s}
+.mh{flex-wrap:wrap;gap:4px}
+#pan .ph{position:sticky;top:0;z-index:2;background:linear-gradient(var(--bg) 78%,transparent);padding:calc(14px + env(safe-area-inset-top,0px)) 16px 10px;max-width:560px;margin:0 auto;display:flex;align-items:center;gap:12px}
+#pan .ph b{font-size:1.1rem;font-weight:800;flex:1;min-width:0}
+#pan .pb{max-width:560px;margin:0 auto;padding:0 16px calc(40px + env(safe-area-inset-bottom,0px))}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 12px}
+.chips button{border:1px solid var(--border2);background:var(--surface);color:var(--muted2);font-size:.76rem;font-weight:700;padding:7px 12px;border-radius:99px}
+.chips button.on{background:var(--accent-bg);border-color:rgba(59,130,246,.45);color:var(--accent-soft)}
+.mh{display:flex;justify-content:space-between;align-items:baseline;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin:16px 2px 6px}
+.mh span{font-size:.78rem;letter-spacing:0;text-transform:none}
+.tr{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:11px 13px;margin-bottom:6px}
+.tr .s{width:30px;height:30px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900}
+.tr .s.b{background:var(--ok-bg);color:var(--up-soft)}.tr .s.v{background:var(--bad-bg);color:var(--down-soft)}
+.tr .m{flex:1;min-width:0}.tr .m b{display:block;font-size:.86rem;font-weight:700}.tr .m span{font-size:.72rem;color:var(--muted)}
+.tr .p{font-size:.95rem;font-weight:800;white-space:nowrap}
+.rowlink{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;border-top:1px solid var(--border);background:transparent;color:var(--accent-soft);font-weight:800;font-size:.86rem;padding:13px 0 0;margin-top:12px}
+.mfx{display:flex;align-items:center;gap:14px;text-decoration:none;background:linear-gradient(135deg,rgba(59,130,246,.16),rgba(46,204,113,.08));border:1px solid rgba(143,198,255,.25);border-radius:var(--r-lg);padding:16px;margin-bottom:14px;color:var(--text)}
+.mfx .lg{width:44px;height:44px;border-radius:14px;flex:none;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.72rem;color:#0b5cad;letter-spacing:-.02em}
+.mfx b{display:block;font-size:.98rem}.mfx span{display:block;font-size:.78rem;color:var(--muted2);margin-top:2px;line-height:1.4}
 @media (max-width:360px){.pil .v{font-size:1.2rem}.big{font-size:2.5rem}.tab span{display:none}}
 </style></head><body>
 <div id="aur"></div>
@@ -134,6 +156,7 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 72%,tra
 </div>
 <div id="tip"></div>
 <div id="sh"><div id="shb"></div></div>
+<div id="pan"><div class="ph"><a id="panback" href="#" style="width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a><b id="pant"></b></div><div class="pb" id="panb"></div></div>
 <script>
 const tok=location.pathname.split('/')[1];
 const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
@@ -317,39 +340,55 @@ function ovPane(){const R=J.real,T=(J.test||{}).rows||{};if(!R)return '<div clas
   '<div class="note w">'+(EN?(J.legacy||{}).en:(J.legacy||{}).fr)+tx('. Ces vérifications utilisent encore cet ancien test ; les chiffres ci-dessus, eux, sont réels ou rejoués avec les règles d’aujourd’hui.','. These checks still use that older test; the figures above are real or replayed with today’s rules.')+'</div></div>';}
 
 function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s=stats(P,R.bal0),wk=weekly(R.trades),pre=R.trades.filter(t=>t[0]<R.filter_since),post=R.trades.filter(t=>t[0]>=R.filter_since);
- const sp=stats(pre.map(t=>t[1]),R.bal0),so=post.length?stats(post.map(t=>t[1]),0):null;
- const MF=J.myfxbook||{},up=R.updated?(typeof R.updated==='number'?R.updated:Date.parse(R.updated)/1000):null;
+ const sp=stats(pre.map(t=>t[1]),R.bal0),so=post.length?stats(post.map(t=>t[1]),0):null,MF=J.myfxbook||{},fl=R.flows||[];
+ const up=R.updated?(typeof R.updated==='number'?R.updated:Date.parse(R.updated)/1000):null;
  const upTxt=up?dfmt(up)+' '+new Date(up*1000).toLocaleTimeString(EN?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'}):'—';
+ const T=R.trades.slice().reverse(),rules=wRules(R);
  return '<div class="card"><h2>'+tx('Le compte témoin','The witness account')+'<span class="badge b-ok">'+tx('argent réel','real money')+'</span></h2>'+
   '<div class="sub">'+tx('Un vrai compte chez Exness, piloté uniquement par le robot depuis le '+dfmt(R.start)+'. Personne n’y touche à la main. Ce n’est pas votre compte : vous voyez ici ses résultats à lui, en lecture seule.','A real Exness account, run only by the robot since '+dfmt(R.start)+'. Nobody touches it by hand. It is not your account: you see its own results here, read-only.')+'</div>'+
-  '<div class="grid2" style="margin-bottom:12px">'+tile('',tx('Départ','Start'),money(R.bal0),dfmt(R.start))+tile('',tx('Solde aujourd’hui','Balance today'),money(R.balance),tx('mis à jour le ','updated ')+upTxt,sgn(R.balance-R.bal0))+'</div>'+
+  '<div class="grid3" style="margin-bottom:12px">'+tile('',tx('Départ','Start'),money(R.bal0),dfmt(R.start))+tile('',tx('Aujourd’hui','Today'),money(R.balance),upTxt,sgn(R.balance-R.bal0))+
+   tile('',tx('Dépôts / retraits','Deposits / withdrawals'),fl.length?fl.length+'':tx('Aucun','None'),fl.length?'':tx('jamais comptés en gains','never counted as gains'))+'</div>'+
   '<div class="chart" id="c-real"></div><div class="legend"><span><i style="background:'+css('--up')+'"></i>'+tx('solde du compte','account balance')+'</span><span><i style="background:'+css('--gold')+'"></i>'+tx('filtre de tendance activé','trend filter switched on')+'</span></div></div>'+
+  (MF.url?'<a class="mfx" href="'+MF.url+'" target="_blank" rel="noopener"><div class="lg">my<br>fx</div><div style="flex:1;min-width:0"><b>'+tx('Suivre ce compte sur Myfxbook','Follow this account on Myfxbook')+'</b><span>'+tx('Le même compte, affiché par Myfxbook, le site de référence des traders pour suivre un compte réel.','The same account, shown by Myfxbook, the traders’ reference site for following a real account.')+'</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--accent-soft)"><path d="M7 17L17 7M9 7h8v8"/></svg></a>':'')+
   pillars(s)+
   '<div class="card"><h2>'+tx('Toutes les mesures','Every measure')+'</h2><div class="sub">'+tx('Touchez une case pour son explication.','Tap a box for its explanation.')+'</div>'+fullGrid(s,R.bal0)+'</div>'+
-  '<div class="card"><h2>'+tx('Semaine par semaine','Week by week')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+wk.filter(w=>w[1]>0).length+' / '+wk.length+tx(' positives',' positive')+'</span></h2><div class="chart" id="c-week"></div></div>'+
-  '<div class="card"><h2>'+tx('Le creux, au fil du temps','The dip, over time')+'</h2><div class="sub">'+tx('À zéro, le compte est à son plus haut. En dessous : combien il est loin de son dernier sommet.','At zero the account is at its high. Below: how far it is from its last peak.')+'</div><div class="chart" id="c-uw"></div></div>'+
-  '<div class="card"><h2>'+tx('La forme des résultats','The shape of the results')+'</h2><div class="sub">'+tx('Chaque barre compte les trades d’un même montant. Une bonne stratégie a des pertes resserrées et quelques gros gains.','Each bar counts trades of the same size. A good strategy keeps its losses tight and has a few large wins.')+'</div><div class="chart" id="c-hist"></div></div>'+
+  '<div class="card"><h2>'+tx('En images','In pictures')+'</h2><div class="seg" id="vseg" style="margin-top:10px">'+
+   [['wk',tx('Semaines','Weeks')],['uw',tx('Le creux','The dip')],['hi',tx('Répartition','Spread')]].map(v=>'<button data-v="'+v[0]+'" class="'+(VIEW===v[0]?'on':'')+'">'+v[1]+'</button>').join('')+'</div>'+
+   '<div class="sub" id="vsub" style="margin:10px 0 4px"></div><div class="chart" id="c-view"></div></div>'+
   '<div class="card"><h2>'+tx('Avant et depuis le filtre','Before and since the filter')+'</h2><div class="cmp" style="margin-top:8px">'+
    '<div class="h"></div><div class="h r">'+tx('avant le 10/10','before 10/10')+'</div><div class="h r">'+tx('depuis','since')+'</div>'+
    ['n','wr','pf','net'].map(k=>'<div class="l">'+({n:'Trades',wr:tx('Réussite','Win rate'),pf:'Profit factor',net:tx('Résultat','Result')})[k]+'</div><div class="r">'+fmtK(k,sp)+'</div><div class="r">'+(so?fmtK(k,so):'—')+'</div>').join('')+'</div>'+
    '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au 10/10 à 15h55 UTC. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until 10/10 15:55 UTC. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>'+
-  witnessExtras(R);}
-function witnessExtras(R){const MF=J.myfxbook||{},fl=R.flows||[];
- const rules=(J.rules||[]).filter(r=>r.date&&Date.parse(r.date+'T00:00:00Z')/1000>=R.start-86400).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
- const T=(R.trades||[]).slice().reverse();
- return '<div class="card"><h2>'+tx('Dépôts et retraits','Deposits and withdrawals')+'</h2><div class="sub" style="margin-bottom:0">'+(fl.length?fl.map(f=>dfmt(f[0])+' · <b class="'+sgn(f[1])+'">'+money(f[1],true)+'</b>').join('<br>'):tx('Aucun depuis le début. Tout ce qui a changé sur le solde vient des trades. Les dépôts et retraits ne sont jamais comptés comme des gains.','None since the start. Every change of the balance comes from trades. Deposits and withdrawals are never counted as gains.'))+'</div></div>'+
-  '<div class="card"><h2>'+tx('Les règles ont changé pendant ce temps','The rules changed meanwhile')+'</h2><div class="sub">'+tx('Le robot n’est pas figé. Voici les règles entrées pendant la vie du compte : ses résultats mélangent donc plusieurs versions.','The robot is not frozen. Here are the rules added during the account’s life: its results therefore mix several versions.')+'</div><div class="tl">'+
-   rules.map(r=>'<div class="it'+(r.id==='trend'?' new':'')+'"><b>'+(EN?r.title_en:r.title_fr)+'</b><span>'+(r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7)+'</span></div>').join('')+'</div></div>'+
-  '<div class="card"><h2>'+tx('Tous les trades','Every trade')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+T.length+'</span></h2>'+
-   '<div class="sub">'+tx('Du plus récent au plus ancien, résultat net du courtier. Un trade et ses ordres de rattrapage fermés ensemble font une ligne.','Newest first, net result from the broker. A trade and its recovery orders closed together make one line.')+'</div>'+
-   '<div id="tlist">'+tradeRows(T,15)+'</div>'+(T.length>15?'<button class="tile" id="tmore" style="margin-top:10px;text-align:center;font-weight:800;color:var(--accent-soft)">'+tx('Voir les '+T.length+' trades','Show all '+T.length+' trades')+'</button>':'')+'</div>'+
-  '<div class="card"><h2>'+tx('Vérification indépendante','Independent verification')+'</h2><div class="sub" style="margin-bottom:0">'+
-   (MF.url?('<a href="'+MF.url+'" target="_blank" rel="noopener" style="color:var(--accent-soft);font-weight:800">'+(MF.verified?tx('Vérifié par Myfxbook : voir le compte ↗','Verified by Myfxbook: see the account ↗'):tx('Publié sur Myfxbook : voir le compte ↗','Published on Myfxbook: see the account ↗'))+'</a>'+(MF.verified?'':'<br>'+tx('Vérification Myfxbook en cours, pas encore confirmée.','Myfxbook verification in progress, not confirmed yet.')))
-    :tx('Pas encore. Les chiffres viennent du relevé du courtier, publiés ici tels quels, pertes comprises. Une page publique vérifiée par un service indépendant arrivera ensuite ; nous ne l’annoncerons qu’une fois la vérification confirmée.','Not yet. The figures come from the broker statement, shown here as they are, losses included. A public page verified by an independent service will follow; we will only announce it once the verification is confirmed.'))+
-   '<br><span style="color:var(--muted)">'+tx('Une vérification prouve l’historique du compte, pas les résultats futurs.','A verification proves the account history, not future results.')+'</span></div></div>';}
-function tradeRows(T,k){return '<div class="cmp" style="grid-template-columns:1.1fr .8fr .6fr 1fr">'+
- '<div class="h">'+tx('Fermé le','Closed')+'</div><div class="h">'+tx('Sens','Side')+'</div><div class="h r">'+tx('Ordres','Orders')+'</div><div class="h r">'+tx('Résultat','Result')+'</div>'+
- T.slice(0,k).map(t=>{const d=new Date(t[0]*1000);return '<div class="l">'+dfmt(t[0])+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</div><div class="l">'+(t[3]===1?tx('Achat','Buy'):tx('Vente','Sell'))+'</div><div class="r" style="font-weight:600">'+t[2]+'</div><div class="r '+sgn(t[1])+'">'+money(t[1],true)+'</div>';}).join('')+'</div>';}
+  '<div class="card"><h2>'+tx('Derniers trades','Latest trades')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+T.length+tx(' au total',' in all')+'</span></h2><div style="margin-top:10px">'+T.slice(0,4).map(trRow).join('')+'</div>'+
+   '<button class="rowlink" id="opentrades"><span>'+tx('Tout l’historique des trades','The full trade history')+'</span><span>›</span></button></div>'+
+  '<div class="card"><h2>'+tx('Les règles du robot','The robot’s rules')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+rules.length+tx(' changements',' changes')+'</span></h2>'+
+   '<div class="sub" style="margin-bottom:0">'+tx('Le robot n’est pas figé : ses résultats mélangent plusieurs versions de ses règles. La dernière : ','The robot is not frozen: its results mix several versions of its rules. The latest: ')+'<b style="color:var(--text)">'+(rules.length?(EN?rules[rules.length-1].title_en:rules[rules.length-1].title_fr):'—')+'</b></div>'+
+   '<button class="rowlink" id="openrules"><span>'+tx('Voir tous les changements','See every change')+'</span><span>›</span></button></div>';}
+let VIEW='wk',TF='all';
+function wRules(R){return (J.rules||[]).filter(r=>r.date&&Date.parse(r.date+'T00:00:00Z')/1000>=R.start-86400).sort((a,b)=>(a.date||'').localeCompare(b.date||''));}
+function trRow(t){const d=new Date(t[0]*1000),hm=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),dur=t[4]?Math.max(1,Math.round((t[0]-t[4])/60)):null;
+ return '<div class="tr"><div class="s '+(t[3]===1?'b':'v')+'">'+(t[3]===1?'▲':'▼')+'</div><div class="m"><b>'+(t[3]===1?tx('Achat','Buy'):tx('Vente','Sell'))+(t[2]>1?' <span style="font-weight:600">· '+t[2]+tx(' ordres',' orders')+'</span>':'')+'</b><span>'+dfmt(t[0])+' '+hm+(dur?' · '+(dur<60?dur+' min':Math.floor(dur/60)+' h '+String(dur%60).padStart(2,'0')):'')+'</span></div><div class="p '+sgn(t[1])+'">'+money(t[1],true)+'</div></div>';}
+function panel(title,html,after){$('pant').textContent=title;$('panb').innerHTML=html;$('pan').classList.add('on');$('pan').scrollTop=0;document.body.style.overflow='hidden';if(after)after();
+ try{history.pushState({pan:1},'');}catch(e){}}
+function panClose(){$('pan').classList.remove('on');document.body.style.overflow='';}
+$('panback').onclick=e=>{e.preventDefault();try{history.back();}catch(x){panClose();}};
+addEventListener('popstate',()=>{if($('pan').classList.contains('on'))panClose();});
+function tradesPanel(){const R=J.real,all=R.trades.slice().reverse();
+ const draw=()=>{const L=all.filter(t=>TF==='all'||(TF==='w'?t[1]>0:t[1]<=0)),g=new Map();
+  L.forEach(t=>{const d=new Date(t[0]*1000),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(!g.has(k))g.set(k,[]);g.get(k).push(t);});
+  const MOS=EN?['January','February','March','April','May','June','July','August','September','October','November','December']:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  $('tbody').innerHTML=L.length?[...g.entries()].map(([k,ts])=>{const net=ts.reduce((a,t)=>a+t[1],0),w=ts.filter(t=>t[1]>0).length;
+   return '<div class="mh">'+MOS[+k.slice(5)-1]+' '+k.slice(0,4)+'<span>'+ts.length+' trades · '+Math.round(100*w/ts.length)+'\u202f% · <b class="'+sgn(net)+'">'+money(net,true)+'</b></span></div>'+ts.map(trRow).join('');}).join(''):'<div class="sub">'+tx('Aucun trade.','No trade.')+'</div>';};
+ panel(tx('Historique des trades','Trade history'),'<div class="sub" style="margin-top:0">'+tx('Résultat net du courtier, du plus récent au plus ancien. Un trade et ses ordres de rattrapage fermés ensemble font une ligne.','Net result from the broker, newest first. A trade and its recovery orders closed together make one line.')+'</div>'+
+  '<div class="chips" id="tchips">'+[['all',tx('Tous','All')+' · '+all.length],['w',tx('Gagnés','Won')+' · '+all.filter(t=>t[1]>0).length],['l',tx('Perdus','Lost')+' · '+all.filter(t=>t[1]<=0).length]].map(c=>'<button data-f="'+c[0]+'" class="'+(TF===c[0]?'on':'')+'">'+c[1]+'</button>').join('')+'</div><div id="tbody"></div>',
+  ()=>{draw();$('tchips').querySelectorAll('button').forEach(b=>b.onclick=()=>{TF=b.dataset.f;$('tchips').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));draw();});});}
+function rulesPanel(){const R=J.real,rules=wRules(R);
+ panel(tx('Les règles du robot','The robot’s rules'),'<div class="sub" style="margin-top:0">'+tx('Chaque règle est testée avant d’entrer dans le robot. Voici celles entrées pendant la vie du compte témoin, dans l’ordre.','Every rule is tested before it enters the robot. Here are those added during the witness account’s life, in order.')+'</div>'+
+  '<div class="card"><div class="tl">'+rules.map(r=>'<div class="it'+(r.id==='trend'?' new':'')+'"><b>'+(EN?r.title_en:r.title_fr)+'</b><span>'+(r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7)+'</span></div>').join('')+'</div></div>');}
+function drawView(R){const S=realSeries(R),sub=$('vsub'),el=$('c-view');
+ if(VIEW==='wk'){const wk=weekly(R.trades);sub.textContent=tx(wk.filter(w=>w[1]>0).length+' semaines positives sur '+wk.length+'. Une semaine rouge n’est pas un problème : c’est la somme qui compte.',wk.filter(w=>w[1]>0).length+' positive weeks out of '+wk.length+'. A red week is not a problem: the sum is what counts.');bars(el,wk.map(w=>[w[0],w[1]]),{lab:b=>tx('semaine du ','week of ')+b[0]});}
+ else if(VIEW==='uw'){sub.textContent=tx('À zéro, le compte est à son plus haut. En dessous : combien il est loin de son dernier sommet.','At zero the account is at its high. Below: how far it is from its last peak.');let pk=R.bal0;const U=S.map(p=>{pk=Math.max(pk,p[1]);return [p[0],-(pk-p[1])/pk*100];});line(el,U,{h:140,color:css('--down'),fmtX:dfmt,fmtY:v=>v.toFixed(0)+'%',tip:p=>dfmt(p[0])+' · <b>'+pct(p[1])+'</b>'});}
+ else{sub.textContent=tx('Chaque barre compte les trades d’un même montant. Une bonne stratégie a des pertes resserrées et quelques gros gains.','Each bar counts trades of the same size. A good strategy keeps its losses tight and has a few large wins.');hist(el,R.trades.map(t=>t[1]));}}
 function fmtK(k,s){return k==='n'?s.n:(k==='wr'?pct(s.wr,false,0):(k==='pf'?(s.pf===Infinity?'∞':num(s.pf)):'<span class="'+sgn(s.net)+'">'+money(s.net,true)+'</span>'));}
 
 function tePane(){const T=J.test;if(!T||!T.rows)return '<div class="card"><div class="sub">'+tx('Le backtest n’est pas encore construit.','The backtest is not built yet.')+'</div></div>';
@@ -404,10 +443,8 @@ function render(){tabs();const m=$('main');
  if(TAB==='ov'&&R){const S=realSeries(R);line($('c-spark'),S,{h:66,color:'#8df0bb',fmtY:v=>'',tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
   $('c-spark').querySelectorAll('text').forEach(t=>t.remove());}
  if(TAB==='re'&&R){const S=realSeries(R);line($('c-real'),S,{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),marks:[{x:R.filter_since,label:tx('filtre','filter')}],tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
-  const wk=weekly(R.trades);bars($('c-week'),wk.map(w=>[w[0],w[1]]),{lab:b=>tx('semaine du ','week of ')+b[0]});
-  let pk=R.bal0;const U=S.map(p=>{pk=Math.max(pk,p[1]);return [p[0],-(pk-p[1])/pk*100];});line($('c-uw'),U,{h:120,color:css('--down'),fmtX:dfmt,fmtY:v=>v.toFixed(0)+'%',tip:p=>dfmt(p[0])+' · <b>'+pct(p[1])+'</b>'});
-  hist($('c-hist'),R.trades.map(t=>t[1]));
-  const tm=$('tmore');if(tm)tm.onclick=()=>{$('tlist').innerHTML=tradeRows(R.trades.slice().reverse(),1e9);tm.remove();};}
+  drawView(R);$('vseg').querySelectorAll('button').forEach(b=>b.onclick=()=>{VIEW=b.dataset.v;$('vseg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));drawView(R);});
+  $('opentrades').onclick=tradesPanel;$('openrules').onclick=rulesPanel;}
  if(TAB==='te'&&J.test&&J.test.rows){const r=J.test.rows[COST]||{},B=J.test.balance;
   const toS=c=>(c||[]).map(([d,v])=>[Date.parse(d+'T23:59:00Z')/1000,B+v]);
   line($('c-test'),toS(r.today.curve),{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),ref:toS(r.no_filter.curve),tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});

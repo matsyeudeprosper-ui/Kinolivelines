@@ -31,6 +31,8 @@ const full = async (name) => { const m = await send("Page.getLayoutMetrics", {},
 events.length = 0;
 await nav(`${BASE}/${TOKEN}/rentabilite`); await sleep(3500);
 for (const t of ["re", "te", "me"]) { await evalJs(`(()=>{go("${t}");return 1;})()`); await sleep(1500); await full("rent_" + t); }
+await evalJs(`(()=>{go("re");tradesPanel();return 1;})()`); await sleep(1200); { const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUTD}/rent_trades_panel.png`, Buffer.from(result.data, "base64")); }
+await evalJs(`(()=>{panClose();return 1;})()`);
 await evalJs(`(()=>{localStorage.setItem('owlTourDone','1');return 1;})()`); await nav(`${BASE}/${TOKEN}/`); await sleep(9000);
 await sleep(12000);
 const hc = await send("Runtime.evaluate", { expression: "(async()=>{window._rtT=0;await loadRent();const e=document.getElementById('rentcard');if(!e)return 'missing';e.scrollIntoView({block:'center'});return JSON.stringify({shown:e.style.display, big:document.getElementById('rent-big').textContent, pills:document.getElementById('rent-pills').innerText.split(String.fromCharCode(10)).join(' '), ld: typeof loadRent});})()", returnByValue: true, awaitPromise: true }, S);
