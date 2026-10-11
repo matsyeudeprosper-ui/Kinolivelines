@@ -2560,23 +2560,26 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 <!-- 2026-10-11 (owner): the door to the "Rentabilite" space - the strategy
      measured on a real account: return, win rate, profit factor, max drawdown -->
-<div class="panel" id="rentcard" role="link" tabindex="0" aria-label="Rentabilit&eacute; de la strat&eacute;gie"
+<div class="panel" id="rentcard" role="link" tabindex="0" aria-label="Compte t&eacute;moin, voir le compte et l&rsquo;historique"
  onclick="location.href=B+'rentabilite#re'" onkeydown="if(event.key==='Enter')location.href=B+'rentabilite#re'"
- style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;padding:16px 16px 14px;
+ style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;padding:16px 16px 0;
  background:radial-gradient(110% 90% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0f1b2a);
  border-color:rgba(141,240,187,.22)">
- <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-  <div class="lbl" id="rent-lbl" style="color:#9fc2de">Preuve de rentabilit&eacute;</div>
-  <span id="rent-live" style="font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px">
-   <i style="width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71"></i><span>Compte r&eacute;el</span></span></div>
- <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-top:10px">
-  <div style="min-width:0"><div id="rent-big" style="font-size:2.3rem;font-weight:900;letter-spacing:-.03em;line-height:1;color:#fff"></div>
-   <div id="rent-sub" style="font-size:.78rem;color:#9fc2de;margin-top:5px"></div></div>
-  <svg id="rent-spark" viewBox="0 0 120 44" preserveAspectRatio="none" style="width:44%;max-width:170px;height:44px;flex:none;overflow:visible"></svg></div>
- <div id="rent-pills" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px"></div>
- <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08)">
-  <span id="rent-gm" style="font-size:.76rem;color:#c6d3df;line-height:1.35;min-width:0"></span>
-  <span id="rent-go" style="font-size:.78rem;font-weight:800;color:#8fc6ff;white-space:nowrap;display:inline-flex;align-items:center;gap:2px">Voir la preuve<svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <!-- 2026-10-11 (owner): "squashed" - one line per element, nothing wraps -->
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+  <div class="lbl" id="rent-lbl" style="color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin:0">Compte t&eacute;moin</div>
+  <span id="rent-live" style="flex:none;font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+   background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px">
+   <i style="width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71"></i><span>En direct</span></span></div>
+ <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px">
+  <div style="min-width:0;flex:none"><div id="rent-big" style="font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap"></div>
+   <div id="rent-sub" style="font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap"></div></div>
+  <svg id="rent-spark" viewBox="0 0 120 44" preserveAspectRatio="none" style="flex:1;min-width:0;max-width:190px;height:50px;overflow:visible"></svg></div>
+ <div id="rent-pills" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px"></div>
+ <div id="rent-gm" style="font-size:.76rem;color:#9fc2de;line-height:1.4;margin-top:12px"></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px 0;padding:13px 16px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)">
+  <span id="rent-go" style="font-size:.86rem;font-weight:800;color:#8fc6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Voir le compte et l&rsquo;historique</span>
+  <svg class="ic" style="width:16px;height:16px;flex:none;color:#8fc6ff"><use href="#i-chev"/></svg></div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
@@ -7098,17 +7101,17 @@ async function loadRent(){const el=document.getElementById('rentcard');if(!el)re
  const col=(v,b)=>v==='ok'?'#8df0bb':(v==='mid'?'#e8c55a':'#ff9a9a');
  const bw=wr>=55?'ok':(wr>=45?'mid':'bad'),bp=pf>=1.5?'ok':(pf>=1.15?'mid':'bad'),bd=mdd<=12?'ok':(mdd<=22?'mid':'bad');
  // GPT 2026-10-11: say WHOSE results these are - the witness account, never the member's own
- document.getElementById('rent-lbl').textContent=en?'Witness account \u00b7 real money':'Compte t\u00e9moin \u00b7 argent r\u00e9el';
+ document.getElementById('rent-lbl').textContent=en?'Witness account':'Compte t\u00e9moin';
  const MF=j.myfxbook||{};document.getElementById('rent-live').lastElementChild.textContent=(MF.url&&MF.verified)?(en?'Verified by Myfxbook':'V\u00e9rifi\u00e9 par Myfxbook'):(en?'Live':'En direct');
  document.getElementById('rent-big').textContent=(ret>=0?'+':'−')+Math.abs(ret).toFixed(1).replace('.',en?'.':',')+' %';
- document.getElementById('rent-sub').textContent=(en?'in '+days+' days':'en '+days+' jours');
+ document.getElementById('rent-sub').textContent=(en?'in '+days+' days \u00b7 real money':'en '+days+' jours \u00b7 argent r\u00e9el');
  const mn=Math.min(...S),mx=Math.max(...S),X=i=>i/(S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36;
  const d=S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
  document.getElementById('rent-spark').innerHTML='<defs><linearGradient id="rsg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#rsg)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(S[S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
- const pill=(k,v,b)=>'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 9px"><div style="font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#9fc2de">'+k+'</div><div style="font-size:1.08rem;font-weight:900;margin-top:3px;color:'+col(b)+'">'+v+'</div></div>';
- document.getElementById('rent-pills').innerHTML=pill(en?'Win rate':'Réussite',Math.round(wr)+' %',bw)+pill('Profit factor',pf.toFixed(2).replace('.',en?'.':','),bp)+pill(en?'Max drawdown':'Baisse max','−'+mdd.toFixed(1).replace('.',en?'.':',')+' %',bd);
+ const pill=(k,v,b)=>'<div style="min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px"><div style="font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+k+'</div><div style="font-size:1.15rem;font-weight:900;margin-top:5px;letter-spacing:-.01em;white-space:nowrap;color:'+col(b)+'">'+v+'</div></div>';
+ document.getElementById('rent-pills').innerHTML=pill(en?'Win rate':'Réussite',Math.round(wr)+' %',bw)+pill(el.clientWidth<360?'PF':'Profit factor',pf.toFixed(2).replace('.',en?'.':','),bp)+pill(en?'Max drawdown':'Baisse max','−'+mdd.toFixed(1).replace('.',en?'.':',')+' %',bd);
  document.getElementById('rent-gm').textContent=en?'Results of the witness account, not your account.':'R\u00e9sultats du compte t\u00e9moin, pas de votre compte.';
- document.getElementById('rent-go').firstChild.textContent=en?'See the account and its history':'Voir le compte et l\u2019historique';
+ document.getElementById('rent-go').textContent=en?'See the account and its history':'Voir le compte et l\u2019historique';
  el.style.display='';}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;

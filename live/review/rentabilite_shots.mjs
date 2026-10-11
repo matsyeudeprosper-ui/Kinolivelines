@@ -35,6 +35,6 @@ await evalJs(`(()=>{localStorage.setItem('owlTourDone','1');return 1;})()`); awa
 await sleep(12000);
 const hc = await send("Runtime.evaluate", { expression: "(async()=>{window._rtT=0;await loadRent();const e=document.getElementById('rentcard');if(!e)return 'missing';e.scrollIntoView({block:'center'});return JSON.stringify({shown:e.style.display, big:document.getElementById('rent-big').textContent, pills:document.getElementById('rent-pills').innerText.split(String.fromCharCode(10)).join(' '), ld: typeof loadRent});})()", returnByValue: true, awaitPromise: true }, S);
 console.log("home card", JSON.stringify(hc.result?.result?.value ?? hc.result?.exceptionDetails?.exception?.description).slice(0,300));
-await sleep(1200); { const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUTD}/rent_home.png`, Buffer.from(result.data, "base64")); }
+for (const w of [412, 360]) { await send("Emulation.setDeviceMetricsOverride", { width: w, height: 900, deviceScaleFactor: 2, mobile: true }, S); await sleep(900); await send("Runtime.evaluate", { expression: "document.getElementById('rentcard').scrollIntoView({block:'center'})" }, S); await sleep(700); const { result } = await send("Page.captureScreenshot", { format: "png" }, S); writeFileSync(`${OUTD}/rent_home_${w}.png`, Buffer.from(result.data, "base64")); }
 const errs = errors().map(e => String(e).split(TOKEN).join('<token>')).filter(e => !/favicon|net::ERR|404/.test(e)); console.log('errors', errs.length, errs.slice(0,3).join(' | '));
 edge.kill(); process.exit(0);
