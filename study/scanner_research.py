@@ -35,7 +35,7 @@ CANDS = [("USTEC", "primary"), ("XAUUSD", "primary"), ("US30", "secondary"), ("U
 N_REPS = 1000
 HORIZON = 5 * 1440              # a random trade still open after 5 days of bars is closed at market
 RNG = np.random.default_rng(7)
-OUT = os.path.join(HERE, "results", "scanner_research_2026-10-11.json")
+OUT = os.path.join(HERE, "results", "scanner_research_2026-10-11b.json")   # b = after GPT review of 59f09ee
 
 
 def metrics(trs):
@@ -56,40 +56,54 @@ def metrics(trs):
 
 
 def random_control(trs, R, k0, k1, point):
-    """matched random entries; returns the distribution of avg R and the real's percentile"""
+    """matched random entries (GPT review of 59f09ee): ONE position at a time like the scanner; entries only on
+    bars where the market is open (the next bar follows within 5 min); exits never past the window: a position
+    still open at the window's end is closed at the last window bar (bid for a buy, ask for a sell) - the same
+    end-of-window rule the strategy backtest now uses. Directions and stop distances are taken from the real
+    trades in their order; same RR, same entry convention (bar close, + spread for a buy)."""
     if not trs:
         return None
     hi = R["high"].astype(float); lo = R["low"].astype(float); cl = R["close"].astype(float)
     sp = R["spread"].astype(float) * point
-    n = len(R)
-    picks = np.arange(k0, k1 - 2)
-    means = np.empty(N_REPS)
+    tt = R["time"].astype(np.int64)
+    ok = np.where((np.arange(len(R)) >= k0) & (np.arange(len(R)) < k1 - 1))[0]
+    ok = ok[(tt[ok + 1] - tt[ok]) <= 300]                     # session availability
+    N = len(trs)
+    means, counts = [], []
     for rep in range(N_REPS):
-        res = []
-        starts = RNG.choice(picks, size=len(trs))
-        for t, i in zip(trs, starts):
+        cand = np.sort(RNG.choice(ok, size=min(len(ok), 25 * N), replace=False))
+        res, free_at, q = [], k0, 0
+        for i in cand:
+            if q >= N:
+                break
+            if i < free_at:
+                continue
+            t = trs[q]; q += 1
             d, risk = t["d"], t["risk"]
             e = cl[i] + (sp[i] if d == 1 else 0.0)
-            sl = e - d * risk
-            tp = e + d * 0.8 * risk
-            j1 = min(n, i + 1 + HORIZON)
-            h = hi[i + 1:j1]; l = lo[i + 1:j1]; s = sp[i + 1:j1]
+            sl = e - d * risk; tp = e + d * 0.8 * risk
+            h = hi[i + 1:k1]; l = lo[i + 1:k1]; s = sp[i + 1:k1]
             if d == 1:
                 hs = l <= sl; ht = h >= tp
             else:
                 hs = h + s >= sl; ht = l + s <= tp
             any_ = hs | ht
-            if not any_.any():
-                x = cl[j1 - 1] if d == 1 else cl[j1 - 1] + sp[j1 - 1]
+            if any_.any():
+                f = int(np.argmax(any_))
+                res.append(-1.0 if hs[f] else 0.8)
+                free_at = i + 1 + f + 1
+            else:                                              # end of window: same rule as the strategy
+                x = cl[k1 - 1] + (0.0 if d == 1 else sp[k1 - 1])
                 res.append(d * (x - e) / risk)
-                continue
-            f = int(np.argmax(any_))
-            res.append(-1.0 if hs[f] else 0.8)
-        means[rep] = np.mean(res)
+                free_at = k1
+        if res:
+            means.append(float(np.mean(res))); counts.append(len(res))
+    means = np.array(means)
     real = float(np.mean([t["r"] for t in trs]))
-    return {"reps": N_REPS, "real_avg_r": round(real, 3), "random_mean": round(float(means.mean()), 3),
-            "random_p05": round(float(np.percentile(means, 5)), 3), "random_p95": round(float(np.percentile(means, 95)), 3),
-            "real_percentile": round(float((means < real).mean() * 100), 1)}
+    return {"label": "EXPLORATORY (bar model, in-sample window)", "reps": len(means), "matched_n": N,
+            "random_n_median": int(np.median(counts)), "real_avg_r": round(real, 3),
+            "random_mean": round(float(means.mean()), 3), "random_p05": round(float(np.percentile(means, 5)), 3),
+            "random_p95": round(float(np.percentile(means, 95)), 3), "real_percentile": round(float((means < real).mean() * 100), 1)}
 
 
 def gaps(R, k0, k1):

@@ -46,8 +46,14 @@ from datetime import datetime, timezone
 import MetaTrader5 as mt5
 
 DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, DIR)
 OUTD = os.path.join(DIR, "scanner")
+# 2026-10-11 (GPT review of 59f09ee): the engine is loaded ONLY from the isolated, immutable bundle
+# (live/scanner/build_engine_bundle.py). The working tree is taken off the import path so a product edit to
+# the robot or the chart can never change the scanner's signals; every loaded module is checked (isolation()).
+BUNDLE = os.path.join(OUTD, "engine_f2")
+MANIFEST = os.path.join(BUNDLE, "BUNDLE_MANIFEST.json")
+sys.path[:] = [p for p in sys.path if os.path.normcase(os.path.abspath(p or ".")) != os.path.normcase(DIR)]
+sys.path.insert(0, BUNDLE)
 os.makedirs(OUTD, exist_ok=True)
 STATE = os.path.join(OUTD, "state.json")
 LOGF = os.path.join(OUTD, "scanner.log")
@@ -86,7 +92,7 @@ _B = None
 def feed():
     global _F
     if _F is None:
-        p = os.path.join(DIR, "owl_chart_feed.py")
+        p = os.path.join(BUNDLE, "owl_chart_feed.py")
         sp = importlib.util.spec_from_file_location("owl_chart_feed_scan", p)
         m = importlib.util.module_from_spec(sp)
         sp.loader.exec_module(m)
@@ -282,6 +288,15 @@ def backtest(sym, days, end_ago=0.0, save=True):
                 open_tr = tr
             else:
                 refused[why] = refused.get(why, 0) + 1
+    if open_tr is not None:
+        # GPT review: one explicit end-of-window rule for strategy AND controls - a position still open at
+        # the window's end is closed at the last window bar's close (bid for a buy, ask for a sell), flagged
+        rl = R[k1 - 1]
+        xp = float(rl["close"]) + (0.0 if open_tr["d"] == 1 else spread_px(rl, info.point))
+        c = dict(open_tr)
+        c.update({"x": xp, "xt": int(rl["time"]), "win": open_tr["d"] * (xp - open_tr["e"]) > 0,
+                  "r": round(open_tr["d"] * (xp - open_tr["e"]) / open_tr["risk"], 3), "eow": True})
+        trades.append(c)
     out = {"sym": sym, "days": days, "calendar": True, "bars": len(R) - k0, "engine": ENGINE,
            "from": int(R[k0]["time"]), "to": int(R[k1 - 1]["time"]), "end_ago": end_ago,
            "built": int(time.time()), "secs": round(time.time() - t0, 1), "signals": sigs, "refused": refused,
@@ -313,28 +328,48 @@ FWD = os.path.join(OUTD, "forward_v3.jsonl")
 FWD_V2 = os.path.join(OUTD, "forward_v2_close.jsonl")
 POLL_S = 5
 QUOTE_MAX_AGE = 30.0
-# 2026-10-11 (forward protocol SCANNER-F1): the code that makes the signals is
-# fingerprinted at the freeze. If any of it changes while the daemon runs, no new
-# virtual trade is opened (open ones are still followed) and "code_drift" is logged:
-# the protocol says a drifted period is not scored unless GPT re-freezes.
-FP_FILES = ("owl_scanner.py", "structure_bos_bot.py", "pb_gate.py", "owl_chart_feed.py")
-FP_FILE = os.path.join(OUTD, "protocol_fingerprint.json")
+# 2026-10-11 (GPT review of 59f09ee): the guard FAILS CLOSED. No new virtual trade unless the bundle manifest
+# exists, parses, lists every required file, every hash matches, the runner's hash matches, and every engine
+# module in memory was loaded from the bundle. Checked at startup before the first entry, then every minute.
 HB = os.path.join(OUTD, "heartbeat.jsonl")
+ENGINE_MODS = ("structure_bos_bot", "owl_package", "owl_shadow", "pb_gate")
 
 
-def fingerprint():
+def _sha(p):
     import hashlib
-    return {f: hashlib.sha256(open(os.path.join(DIR, f), "rb").read()).hexdigest() for f in FP_FILES}
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+
+
+def isolation():
+    """engine modules loaded from outside the bundle (empty list = isolated)"""
+    bad = []
+    root = os.path.normcase(os.path.abspath(BUNDLE))
+    for m in ENGINE_MODS:
+        mod = sys.modules.get(m)
+        if mod is None or not os.path.normcase(os.path.abspath(getattr(mod, "__file__", "") or "")).startswith(root):
+            bad.append("isolation:" + m)
+    if _F is None or not os.path.normcase(os.path.abspath(_F.__file__)).startswith(root):
+        bad.append("isolation:owl_chart_feed")
+    return bad
 
 
 def drift():
-    """None when the code matches the frozen fingerprint (or none is frozen yet), else the changed files"""
+    """None when everything checks, else the list of problems (fail closed)"""
     try:
-        fz = json.load(open(FP_FILE, encoding="utf-8")).get("files") or {}
+        man = json.load(open(MANIFEST, encoding="utf-8"))
+        files, req, run = man["files"], man["required"], man["runner"]
     except Exception:
-        return None
-    cur = fingerprint()
-    bad = [f for f in FP_FILES if fz.get(f) and fz.get(f) != cur.get(f)]
+        return ["manifest_missing_or_invalid"]
+    bad = ["incomplete:" + f for f in req if f not in files]
+    for f, h in files.items():
+        p = os.path.join(BUNDLE, f)
+        if not os.path.exists(p):
+            bad.append("missing:" + f)
+        elif _sha(p) != h:
+            bad.append("changed:" + f)
+    if run.get("owl_scanner.py") != _sha(os.path.abspath(__file__)):
+        bad.append("changed:owl_scanner.py")
+    bad += isolation()
     return bad or None
 
 
@@ -467,7 +502,7 @@ def tick_exit(tr, sym, upto=None):
 
 
 ENG = {}       # sym -> Sym, alive for the daemon's life (the bot keeps its engine the same way)
-DRIFT = {"files": None, "t": 0.0}
+DRIFT = {"files": ["not_checked_yet"], "t": 0.0}     # fail closed until the first check passes
 STATS = {}     # sym -> counters shown on the page (missed / refused since start)
 
 
@@ -530,6 +565,176 @@ def process_symbol(sym, name, info, open_tr, seed):
     return R
 
 
+CTRL_K = 40                      # streams per symbol and variant
+CTRL_VARIANTS = ("coin", "trend")
+CTRL_F = os.path.join(OUTD, "control_v3.jsonl")
+WINDOW_F = os.path.join(OUTD, "protocol_window.json")
+PBT = {}                         # sym -> pullback trend at the last state write (for the "trend" control)
+CTRL = {}                        # stream id -> {"sym","var","next","pos"}
+_RNG = None
+
+
+def ctrl_params():
+    try:
+        return json.load(open(os.path.join(BUNDLE, "control_params.json"), encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def ctrl_append(rec):
+    rec.setdefault("engine", ENGINE_FWD)
+    with open(CTRL_F, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec) + "\n")
+
+
+def ctrl_init():
+    """the control streams; open control positions survive a restart (replayed on ticks)"""
+    global _RNG
+    import random
+    _RNG = random.Random()
+    P = ctrl_params()
+    opened = {}
+    try:
+        for ln in open(CTRL_F, encoding="utf-8"):
+            x = json.loads(ln)
+            if x.get("ev") == "open":
+                opened[x["sid"]] = x
+            elif x.get("ev") == "close":
+                opened.pop(x["sid"], None)
+    except Exception:
+        pass
+    now = time.time()
+    for sym, p in P.items():
+        for var in CTRL_VARIANTS:
+            for k in range(CTRL_K):
+                sid = "%s:%s:%02d" % (sym, var, k)
+                CTRL[sid] = {"sym": sym, "var": var, "pos": opened.get(sid),
+                             "next": now + _RNG.expovariate(1.0 / max(60.0, p["mean_gap_s"]))}
+
+
+def ctrl_step(sym, info):
+    """open controls that are due, then judge the symbol's open control positions on its ticks"""
+    P = ctrl_params().get(sym)
+    if not P:
+        return
+    now = time.time()
+    tk = None
+    for sid, c in CTRL.items():
+        if c["sym"] != sym or c["pos"] is not None or now < c["next"]:
+            continue
+        if DRIFT.get("files"):
+            c["next"] = now + 60
+            continue
+        if tk is None:
+            tk = mt5.symbol_info_tick(sym)
+        last = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, 1)
+        fresh = (tk is not None and tk.bid and tk.ask and now - tk.time_msc / 1000.0 <= QUOTE_MAX_AGE
+                 and last is not None and len(last) and now - int(last[-1]["time"]) <= 15 * 60)
+        if not fresh:                                  # market closed or no quote: try again later
+            c["next"] = now + 60
+            continue
+        if c["var"] == "coin":
+            d = 1 if _RNG.random() < 0.5 else -1
+        else:
+            d = PBT.get(sym, 0)
+            if d not in (1, -1):
+                c["next"] = now + 60
+                continue
+        px = float(tk.ask) if d == 1 else float(tk.bid)
+        sp = float(tk.ask) - float(tk.bid)
+        dist = _RNG.choice(P["risk_frac"]) * px
+        if dist <= min_dist(sym, sp):
+            c["next"] = now + 1
+            continue
+        RR = float(bot().RR)
+        c["pos"] = {"sid": sid, "sym": sym, "var": c["var"], "d": d, "t": int(tk.time_msc / 1000), "t_msc": int(tk.time_msc),
+                    "detect": round(now, 3), "latency_s": round(now - c["next"], 1), "quote_age_s": round(now - tk.time_msc / 1000.0, 1),
+                    "e": px, "sl": px - d * dist, "tp": px + d * RR * dist, "risk": dist, "spread": sp,
+                    "chk_msc": int(tk.time_msc), "ev": "open"}
+        ctrl_append(dict(c["pos"]))
+    opens = [c for c in CTRL.values() if c["sym"] == sym and c["pos"] is not None]
+    if not opens:
+        return
+    t_from = min(c["pos"]["chk_msc"] for c in opens)
+    T = mt5.copy_ticks_range(sym, datetime.fromtimestamp(t_from / 1000.0 + 0.001, tz=timezone.utc),
+                             datetime.fromtimestamp(time.time(), tz=timezone.utc), mt5.COPY_TICKS_ALL)
+    if T is None or len(T) == 0:
+        return
+    for c in opens:
+        done = _walk(c["pos"], T)
+        if done:
+            ctrl_append(done)
+            c["pos"] = None
+            c["next"] = time.time() + _RNG.expovariate(1.0 / max(60.0, P["mean_gap_s"]))
+
+
+def _walk(tr, T):
+    """tick_exit's rule on an already-fetched tick array"""
+    d, sl, tp = tr["d"], tr["sl"], tr["tp"]
+    bad = 0
+    for x in T:
+        ms = int(x["time_msc"])
+        if ms <= tr["chk_msc"]:
+            continue
+        b, a_ = float(x["bid"]), float(x["ask"])
+        if b <= 0 or a_ <= 0:
+            bad += 1
+            continue
+        hit = None
+        if d == 1:
+            hit = ("sl", b) if b <= sl else (("tp", tp) if b >= tp else None)
+        else:
+            hit = ("sl", a_) if a_ >= sl else (("tp", tp) if a_ <= tp else None)
+        if hit:
+            c = dict(tr)
+            c.update({"ev": "close", "x": hit[1], "xt": int(ms / 1000), "xt_msc": ms, "win": hit[0] == "tp",
+                      "r": round(d * (hit[1] - tr["e"]) / tr["risk"], 3),
+                      "slip_r": round(d * (hit[1] - sl) / tr["risk"], 3) if hit[0] == "sl" else 0.0,
+                      "bad_ticks": tr.get("bad_ticks", 0) + bad})
+            return c
+    tr["chk_msc"] = int(T[-1]["time_msc"])
+    tr["bad_ticks"] = tr.get("bad_ticks", 0) + bad
+    return None
+
+
+def end_of_window(open_tr):
+    """at the protocol window's end every open strategy AND control position is closed at the current quote
+    (bid for a buy, ask for a sell), flagged eow - the same rule for both"""
+    try:
+        w = json.load(open(WINDOW_F, encoding="utf-8"))
+    except Exception:
+        return
+    if time.time() < w["end"] or w.get("eow_done"):
+        return
+    for sym in list(open_tr):
+        tr = open_tr[sym]
+        tk = mt5.symbol_info_tick(sym)
+        if tk is None:
+            continue
+        xp = float(tk.bid) if tr["d"] == 1 else float(tk.ask)
+        c = dict(tr)
+        c.update({"ev": "close", "x": xp, "xt": int(time.time()), "win": tr["d"] * (xp - tr["e"]) > 0,
+                  "r": round(tr["d"] * (xp - tr["e"]) / tr["risk"], 3), "eow": True})
+        append(c)
+        open_tr.pop(sym, None)
+    for c in CTRL.values():
+        tr = c["pos"]
+        if tr is None:
+            continue
+        tk = mt5.symbol_info_tick(tr["sym"])
+        if tk is None:
+            continue
+        xp = float(tk.bid) if tr["d"] == 1 else float(tk.ask)
+        cl = dict(tr)
+        cl.update({"ev": "close", "x": xp, "xt": int(time.time()), "win": tr["d"] * (xp - tr["e"]) > 0,
+                   "r": round(tr["d"] * (xp - tr["e"]) / tr["risk"], 3), "eow": True})
+        ctrl_append(cl)
+        c["pos"] = None
+    w["eow_done"] = int(time.time())
+    json.dump(w, open(WINDOW_F, "w", encoding="utf-8"))
+    log("end of window %s: open positions closed at the quote (eow)" % w.get("protocol"))
+
+
 def write_state(open_tr):
     rows_out = []
     for sym, name, cat in SYMBOLS:
@@ -546,6 +751,7 @@ def write_state(open_tr):
             k = len(R) - 1
             rows = rows_of(R, info.digits)
             pt, _pc, _pl, L = pb_state(rows, k, info.digits)
+            PBT[sym] = pt
             px = float(R[k]["close"])
             e = S.eng
             trig = (e.hi_v if e.trend == 1 else e.lo_v if e.trend == -1 else None)
@@ -633,8 +839,12 @@ def main():
     if os.path.exists(old) and not os.path.exists(FWD_V2):
         os.replace(old, FWD_V2)
         log("v2 close-price records moved to forward_v2_close.jsonl (kept apart from v3)")
+    feed()                                # load the whole engine now, so isolation() sees every module
+    DRIFT["files"] = drift()
+    log("startup check: %s" % ("OK - bundle verified and isolated" if not DRIFT["files"] else "BLOCKED %s" % DRIFT["files"]))
     open_tr = load_open()
     replay_open(open_tr)
+    ctrl_init()
     seed = int(bot().SEED_BARS)
     log("scanner start (%s / forward %s), %d symbols, poll %ss" % (ENGINE, ENGINE_FWD, len(SYMBOLS), POLL_S))
     last_state = 0.0
@@ -651,11 +861,16 @@ def main():
                     process_symbol(sym, name, info, open_tr, seed)
                 except Exception as ex:
                     log("%s error %r" % (sym, ex))
+                try:
+                    ctrl_step(sym, info)
+                except Exception as ex:
+                    log("%s control error %r" % (sym, ex))
+            end_of_window(open_tr)
             if time.time() - last_state >= 60 or "--once" in a:
                 d0 = DRIFT["files"]
                 DRIFT["files"] = drift()
                 if DRIFT["files"] and not d0:
-                    log("CODE_DRIFT: %s changed since the freeze - no new virtual trades" % DRIFT["files"])
+                    log("GUARD BLOCKED: %s - no new virtual trades (strategy and controls)" % DRIFT["files"])
                 write_state(open_tr)
                 last_state = time.time()
                 with open(HB, "a", encoding="utf-8") as f:       # one line a minute: uptime for the protocol

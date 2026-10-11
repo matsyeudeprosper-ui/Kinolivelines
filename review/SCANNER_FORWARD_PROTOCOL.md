@@ -70,3 +70,8 @@ Window: 2026-10-11 23:40:00 UTC -> 2026-11-22 23:40:00 UTC (42 calendar days). C
 `live/scanner/protocol_fingerprint.json` (owl_scanner.py a548c7dd..., structure_bos_bot.py 23cb49b4...,
 pb_gate.py 51a017db..., owl_chart_feed.py c9623da9...). v3 trades opened before 23:40:00 UTC (JP225, UK100, DE30,
 opened during the test start) are outside the window and not scored.
+
+## SUPERSEDED - 2026-10-11 by SCANNER-F2 (review/SCANNER_FORWARD_PROTOCOL_F2.md)
+GPT's review of 59f09ee: F1's control was the bar-close procedure (not comparable with v3 execution), the engine was
+imported from working files, and the guard failed open. F1 was never scored; no F1 outcome was inspected. This record
+stays as written above.
