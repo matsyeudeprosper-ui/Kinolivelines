@@ -11947,7 +11947,7 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="theme-color" content="#0b0f14">
 <meta name="description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="OwlNest &middot; un robot de trading aux r&eacute;sultats publics">
+<meta property="og:title" content="OwlNest &middot; le robot qui montre aussi ses pertes">
 <meta property="og:description" content="Un compte t&eacute;moin en argent r&eacute;el, r&eacute;sultats publics, pertes comprises. D&eacute;mo gratuite en direct, sans compte.">
 <meta property="og:image" content="%%ORIGIN%%/shots/og_card.png">
 <meta property="og:image:width" content="1200">
@@ -11956,7 +11956,7 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="%%ORIGIN%%/join">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OwlNest &middot; un robot de trading aux r&eacute;sultats publics">
+<meta name="twitter:title" content="OwlNest &middot; le robot qui montre aussi ses pertes">
 <meta name="twitter:description" content="Un compte t&eacute;moin en argent r&eacute;el, pertes comprises. Votre argent reste chez votre courtier.">
 <meta name="twitter:image" content="%%ORIGIN%%/shots/og_card.png">
 <link rel="manifest" href="/manifest.json">
@@ -12021,14 +12021,17 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
  align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:30px}
 /* 2026-10-11 (owner, acquisition) - v2: bigger text, more air */
-.tag .tg2{display:block;margin-top:10px;font-size:.95rem;color:#b9d3e8;font-weight:500;line-height:1.45}
+.tag .tg2{display:block;margin-top:8px;font-size:.98rem;color:#b9d3e8;font-weight:500;line-height:1.45}
 .pw{margin:16px auto 0;max-width:360px;text-align:left;border-radius:22px;padding:20px 18px;background:linear-gradient(160deg,rgba(255,154,154,.07),rgba(255,255,255,.02));border:1px solid rgba(255,154,154,.18)}
 .pw .h{font-size:.74rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#e8c55a;display:flex;align-items:center;gap:8px}
-.pw .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
-.pw .g div{min-width:0;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 10px}
-.pw .g b{display:block;font-size:1.3rem;font-weight:900;color:#ff9a9a;white-space:nowrap;letter-spacing:-.02em}
-.pw .g span{display:block;font-size:.76rem;color:#b9d3e8;line-height:1.35;margin-top:6px}
-.pw p{font-size:.9rem;color:#d5e0ea;line-height:1.6;margin-top:16px}
+.pw .rows{margin-top:14px;display:flex;flex-direction:column}
+.pw .r{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 2px;border-top:1px solid rgba(255,255,255,.07)}
+.pw .r:first-child{border-top:0}
+.pw .r span{font-size:.95rem;color:#d5e0ea;line-height:1.35}
+.pw .r b{flex:none;font-size:1.25rem;font-weight:900;color:#ff9a9a;letter-spacing:-.01em;white-space:nowrap}
+.pw .r.ok b{color:#8df0bb}
+.pw p{font-size:.9rem;color:#b9d3e8;line-height:1.55;margin-top:10px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07)}
+.tag .tg1{display:block;text-wrap:balance;font-size:1.22rem;font-weight:800;color:#fff;line-height:1.3;letter-spacing:-.01em}
 .trust{margin:22px auto 0;max-width:360px;display:flex;flex-direction:column;gap:10px;text-align:left}
 .trust div{display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px 16px;font-size:.86rem;line-height:1.45;color:#b9d3e8}
 .trust .ti{flex:none;width:40px;height:40px;border-radius:12px;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.25);display:flex;align-items:center;justify-content:center}
@@ -12245,8 +12248,7 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <button type="button" class="lgb" id="lgb" aria-label="English">EN</button>
 <div class="ring"><img src="/icon192.png" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:16px"></div>
 <h1>OwlNest</h1>
-<div class="tag">Un robot de trading qui travaille<br>
-sur votre propre compte.<span class="tg2">Ses vrais r&eacute;sultats sont publics, pertes comprises.</span></div>
+<div class="tag"><span class="tg1">Le robot qui montre aussi ses pertes.</span><span class="tg2">Il trade sur votre compte. Tout est public.</span></div>
 <div class="chips"><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
 </div>
 <div class="pf2" id="pf2" hidden>
@@ -12261,8 +12263,13 @@ sur votre propre compte.<span class="tg2">Ses vrais r&eacute;sultats sont public
 </div>
 <div class="pw" id="pw" hidden>
  <div class="h"><svg aria-hidden="true" class="ic ic-s"><use href="#i-info"/></svg>Le pire moment, sans filtre</div>
- <div class="g"><div><b id="pw-dd">&nbsp;</b><span>baisse maximale</span></div><div><b id="pw-wk">&nbsp;</b><span id="pw-wkl">pire semaine</span></div><div><b id="pw-ls">&nbsp;</b><span>pertes d&rsquo;affil&eacute;e au pire</span></div></div>
- <p id="pw-p"></p>
+ <div class="rows">
+  <div class="r"><span>Plus forte baisse</span><b id="pw-dd">&nbsp;</b></div>
+  <div class="r"><span id="pw-wkl">Pire semaine</span><b id="pw-wk">&nbsp;</b></div>
+  <div class="r"><span>Pertes d&rsquo;affil&eacute;e, au pire</span><b id="pw-ls">&nbsp;</b></div>
+  <div class="r ok"><span>Semaines en positif</span><b id="pw-wp">&nbsp;</b></div>
+ </div>
+ <p id="pw-p">Aucun robot ne gagne &agrave; tous les coups. Ce qui compte : des pertes qui restent petites.</p>
 </div>
 <div class="preview" style="display:none">
 <div class="pv-lbl" id="pv-lbl">Aper&ccedil;u en direct</div>
@@ -12533,10 +12540,9 @@ async function landLoad(){try{const j=await (await fetch('/landing_data',{cache:
 function landPaint(){const j=window._land;if(!j)return;const en=pvEn(),$=id=>document.getElementById(id),fr=v=>en?v:String(v).replace('.',',');
  const W=j.witness;if(W){$('pw-dd').textContent='−'+fr(W.dd_pct.toFixed(1))+'\u202f%';
   const wk=W.worst_week||{};$('pw-wk').textContent=(wk.pct<0?'−':'+')+fr(Math.abs(wk.pct||0).toFixed(1))+'\u202f%';
-  if(wk.monday){const d=new Date(wk.monday+'T12:00:00Z');$('pw-wkl').textContent=(en?'worst week (':'pire semaine (')+String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+')';}
+  if(wk.monday){const d=new Date(wk.monday+'T12:00:00Z');$('pw-wkl').textContent=(en?'Worst week (':'Pire semaine (')+(en?'from ':'du ')+String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+')';}
   $('pw-ls').textContent=W.max_loss_streak;
-  $('pw-p').textContent=en?('These are the witness account’s real worst moments since it started. '+W.weeks_pos+' weeks out of '+W.weeks+' ended positive. A robot that never loses does not exist; what matters is that the losses stay small.')
-   :('Ce sont les vrais pires moments du compte témoin depuis son départ. '+W.weeks_pos+' semaines sur '+W.weeks+' ont fini en positif. Un robot qui ne perd jamais n’existe pas : ce qui compte, c’est que les pertes restent petites.');
+  $('pw-wp').textContent=W.weeks_pos+(en?' of ':' sur ')+W.weeks;
   $('pw').hidden=false;}
  const L=j.live||{};if(L.online!==undefined){const ago=W&&W.last_trade?Math.max(1,Math.round((Date.now()/1000-W.last_trade)/60)):null;
   const agoT=ago===null?'':(ago<60?ago+' min':(ago<1440?Math.round(ago/60)+' h':Math.round(ago/1440)+(en?' d':' j')));
@@ -12589,13 +12595,14 @@ function pvRender(d){
 (function(){
 var EN={
 "Toutes les questions (8)": "All questions (8)",
-"Un robot de trading qui travaille": "A trading robot that works",
-"sur votre propre compte.": "on your own account.",
-"Ses vrais résultats sont publics, pertes comprises.": "Its real results are public, losses included.",
+"Le robot qui montre aussi ses pertes.": "The robot that shows its losses too.",
+"Il trade sur votre compte. Tout est public.": "It trades on your account. Everything is public.",
 "Le pire moment, sans filtre": "The worst moment, unfiltered",
-"baisse maximale": "max drawdown",
-"pire semaine": "worst week",
-"pertes d’affilée au pire": "losses in a row, at worst",
+"Plus forte baisse": "Deepest drop",
+"Pire semaine": "Worst week",
+"Pertes d’affilée, au pire": "Losses in a row, at worst",
+"Semaines en positif": "Weeks in profit",
+"Aucun robot ne gagne à tous les coups. Ce qui compte : des pertes qui restent petites.": "No robot wins every time. What matters: losses that stay small.",
 "Votre argent reste chez vous": "Your money stays with you",
 "sur votre compte, chez votre courtier.": "on your account, at your broker.",
 "Le robot ne peut rien retirer": "The robot cannot withdraw anything",
