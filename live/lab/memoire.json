@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-11T09:40:00Z",
+ "updated": "2026-10-11T12:00:04Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -343,7 +343,8 @@
    "fr": "Les trades de plus dans le même sens gagnent surtout la nuit ; le jour ils ne valent rien.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-10: journal BOS night 17 tr 82% +40.64; day 22 tr 45% -15.70, halves 64%/27%; 21-23 h 3 tr 0 won -16.8. Pile cont_day opened."
+    "2026-10-10: journal BOS night 17 tr 82% +40.64; day 22 tr 45% -15.70, halves 64%/27%; 21-23 h 3 tr 0 won -16.8. Pile cont_day opened.",
+    "2026-10-11 12:00 veille: BOS SELL -1.47 (pace 0.866, closed 08:30, day). cont_day 21 tr 38% -21.97 PF 0.69 (h 45%/30%); 08 h 0/2. Still under 30."
    ],
    "next": "Pile cont_day to 30; adaptive hour brake."
   },
@@ -1691,6 +1692,14 @@
     "veille.jsonl 10-11"
    ],
    "saw": "98 trades 49%. move 1 31 tr 45% -34.52; 2-3 39 tr 44% -30.08; 4+ 28 tr 61% +32.01 (halves agree). After a loss 49 tr 43% -35.60; after a win 48 tr 54% -4.79. BOS 40 tr 58% +16.34, FLIP 56 tr 43% -39.49. Hours 08, 13, 14, 19, 21, 22 all losing (each <10 tr). Drag +0.34/trade (real better than test)."
+  },
+  {
+   "t": "2026-10-11T12:00:04Z",
+   "looked": [
+    "wake_context 3 trades (06:46 FLIP BUY +1.73 already read at 07:00; FLIP-BOS SELL -0.71 closed 08:00 pace 1.176; BOS SELL -1.47 closed 08:30 pace 0.866) - all inside the night's 98",
+    "scrutiny --pile cont_day / flip_day / asia"
+   ],
+   "saw": "Two small day sells lost at 08 h, as cont_day / flip_day predict. cont_day 21 tr 38% -21.97 PF 0.69 (h 45%/30%), 08 h 0/2. flip_day unchanged 38 tr (the 08:00 flip entered before 08 h). asia 38 tr 71% +48.26 (h 70/72). No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
   }
  ],
  "lessons": [
