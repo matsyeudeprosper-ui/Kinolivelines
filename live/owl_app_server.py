@@ -1860,6 +1860,32 @@ button,a,.srow{-webkit-tap-highlight-color:transparent}
 .pv-nav{display:flex;gap:8px}
 .pv-pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 11px;font-size:.7rem;color:var(--text2);font-weight:700}
 .pf{--pfc:var(--warn)}
+/* 2026-10-11 (owner): the proof card on the HOME (same design as the landing) - one card, two views:
+   the witness account (real money) first, the backtest second */
+.rc2{margin:12px 0 0;max-width:none;cursor:pointer;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
+ background:radial-gradient(110% 80% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0d1826);
+ border:1px solid rgba(141,240,187,.22);box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.05)}
+.rc2 .in{padding:18px 18px 0}
+.rc2 .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.rc2 .ey{font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rc2 .lv{flex:none;font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;
+ background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px;white-space:nowrap}
+.rc2 .lv i{width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71}
+.rc2 .vsw{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:3px;margin-top:14px}
+.rc2 .vsw button{flex:1;border:0;background:transparent;color:#a9b8c8;font:inherit;font-size:.76rem;font-weight:700;padding:8px 4px;border-radius:9px;cursor:pointer}
+.rc2 .vsw button.on{background:rgba(255,255,255,.10);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.rc2 .hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px}
+.rc2 .big{font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap}
+.rc2 .bs{font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap}
+.rc2 svg.sp{flex:1;min-width:0;max-width:170px;height:48px;overflow:visible}
+.rc2 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.rc2 .pl{min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px}
+.rc2 .pl small{display:block;font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc2 .pl b{display:block;font-size:1.12rem;font-weight:900;margin-top:5px;white-space:nowrap}
+.rc2 .nt{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:12px}
+.rc2 .nt span{color:#9fc2de}
+.rc2 .go{display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding:13px 18px;border-top:1px solid rgba(255,255,255,.08);
+ background:rgba(255,255,255,.03);color:#8fc6ff;font-size:.86rem;font-weight:800;text-decoration:none}
 .pf-hero{display:flex;gap:14px;align-items:center}
 .pf-ring{flex:none;width:74px;height:74px;position:relative}
 .pf-ring svg{width:74px;height:74px;display:block}
@@ -2560,26 +2586,19 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 <!-- 2026-10-11 (owner): the door to the "Rentabilite" space - the strategy
      measured on a real account: return, win rate, profit factor, max drawdown -->
-<div class="panel" id="rentcard" role="link" tabindex="0" aria-label="Compte t&eacute;moin, voir le compte et l&rsquo;historique"
- onclick="location.href=B+'rentabilite#re'" onkeydown="if(event.key==='Enter')location.href=B+'rentabilite#re'"
- style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;padding:16px 16px 0;
- background:radial-gradient(110% 90% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0f1b2a);
- border-color:rgba(141,240,187,.22)">
- <!-- 2026-10-11 (owner): "squashed" - one line per element, nothing wraps -->
- <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-  <div class="lbl" id="rent-lbl" style="color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;margin:0">Compte t&eacute;moin</div>
-  <span id="rent-live" style="flex:none;font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
-   background:rgba(46,204,113,.10);border:1px solid rgba(46,204,113,.28);border-radius:99px;padding:4px 9px">
-   <i style="width:6px;height:6px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71"></i><span>En direct</span></span></div>
- <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px">
-  <div style="min-width:0;flex:none"><div id="rent-big" style="font-size:2.4rem;font-weight:900;letter-spacing:-.035em;line-height:1;color:#fff;white-space:nowrap"></div>
-   <div id="rent-sub" style="font-size:.78rem;color:#9fc2de;margin-top:6px;white-space:nowrap"></div></div>
-  <svg id="rent-spark" viewBox="0 0 120 44" preserveAspectRatio="none" style="flex:1;min-width:0;max-width:190px;height:50px;overflow:visible"></svg></div>
- <div id="rent-pills" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px"></div>
- <div id="rent-gm" style="font-size:.76rem;color:#9fc2de;line-height:1.4;margin-top:12px"></div>
- <div style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px 0;padding:13px 16px;border-top:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)">
-  <span id="rent-go" style="font-size:.86rem;font-weight:800;color:#8fc6ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Voir le compte et l&rsquo;historique</span>
-  <svg class="ic" style="width:16px;height:16px;flex:none;color:#8fc6ff"><use href="#i-chev"/></svg></div>
+<!-- 2026-10-11 (owner): the home proof card, same design as the landing card:
+     witness account (real money) / backtest switch -->
+<div class="rc2" id="rentcard" role="link" tabindex="0" style="display:none" aria-label="Preuve de rentabilit&eacute;"
+ onclick="if(!event.target.closest('.vsw'))location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')"
+ onkeydown="if(event.key==='Enter')location.href=B+'rentabilite'+(window._rcV==='bt'?'#te':'#re')">
+ <div class="in">
+  <div class="top"><span class="ey" id="rc2-ey">Preuve de rentabilit&eacute;</span><span class="lv"><i></i><span id="rc2-lv">En direct</span></span></div>
+  <div class="vsw"><button type="button" class="on" data-v="real" id="rc2-b1">Compte t&eacute;moin</button><button type="button" data-v="bt" id="rc2-b2">Backtest</button></div>
+  <div class="hd"><div><div class="big" id="rc2-big">&nbsp;</div><div class="bs" id="rc2-bs">&nbsp;</div></div><svg class="sp" id="rc2-sp" viewBox="0 0 120 44" preserveAspectRatio="none"></svg></div>
+  <div class="g3" id="rc2-g3"></div>
+  <div class="nt" id="rc2-nt"></div>
+ </div>
+ <div class="go"><span id="rc2-gt">Voir le compte et l&rsquo;historique</span><span aria-hidden="true">&rsaquo;</span></div>
 </div>
 <div id="trial" style="display:none;margin-top:10px;text-align:center;
  background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35);border-radius:14px;
@@ -7094,25 +7113,30 @@ function pfWeeks(cv){if(!cv||cv.length<8)return [];const W=[];let wk=null,start=
 async function loadRent(){const el=document.getElementById('rentcard');if(!el)return;
  if(window._rtT&&Date.now()-window._rtT<300000)return;window._rtT=Date.now();
  let j=null;try{const r=await fetch(B+'rentabilite_data?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
- const R=j&&j.real;if(!R||!R.trades||!R.trades.length){el.style.display='none';return;}
- const en=LANG()==='en',P=R.trades.map(t=>t[1]),n=P.length,W=P.filter(x=>x>0),gw=W.reduce((a,b)=>a+b,0),gl=-P.filter(x=>x<=0).reduce((a,b)=>a+b,0),net=gw-gl;
- let c=0,pk=R.bal0,mdd=0;const S=[R.bal0];P.forEach(p=>{c+=p;const eq=R.bal0+c;S.push(eq);pk=Math.max(pk,eq);mdd=Math.max(mdd,(pk-eq)/pk*100);});
- const wr=n?100*W.length/n:0,pf=gl>0?gw/gl:0,ret=100*net/R.bal0,days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));
- const col=(v,b)=>v==='ok'?'#8df0bb':(v==='mid'?'#e8c55a':'#ff9a9a');
- const bw=wr>=55?'ok':(wr>=45?'mid':'bad'),bp=pf>=1.5?'ok':(pf>=1.15?'mid':'bad'),bd=mdd<=12?'ok':(mdd<=22?'mid':'bad');
- // GPT 2026-10-11: say WHOSE results these are - the witness account, never the member's own
- document.getElementById('rent-lbl').textContent=en?'Witness account':'Compte t\u00e9moin';
- document.getElementById('rent-live').lastElementChild.textContent=en?'Live':'En direct';
- document.getElementById('rent-big').textContent=(ret>=0?'+':'−')+Math.abs(ret).toFixed(1).replace('.',en?'.':',')+' %';
- document.getElementById('rent-sub').textContent=(en?'in '+days+' days \u00b7 real money':'en '+days+' jours \u00b7 argent r\u00e9el');
- const mn=Math.min(...S),mx=Math.max(...S),X=i=>i/(S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36;
- const d=S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
- document.getElementById('rent-spark').innerHTML='<defs><linearGradient id="rsg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#rsg)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(S[S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
- const pill=(k,v,b)=>'<div style="min-width:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:13px;padding:10px 10px 9px"><div style="font-size:.56rem;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#9fc2de;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+k+'</div><div style="font-size:1.15rem;font-weight:900;margin-top:5px;letter-spacing:-.01em;white-space:nowrap;color:'+col(b)+'">'+v+'</div></div>';
- document.getElementById('rent-pills').innerHTML=pill(en?'Win rate':'Réussite',Math.round(wr)+' %',bw)+pill(el.clientWidth<360?'PF':'Profit factor',pf.toFixed(2).replace('.',en?'.':','),bp)+pill(en?'Max drawdown':'Baisse max','−'+mdd.toFixed(1).replace('.',en?'.':',')+' %',bd);
- document.getElementById('rent-gm').textContent=en?'Results of the witness account, not your account.':'R\u00e9sultats du compte t\u00e9moin, pas de votre compte.';
- document.getElementById('rent-go').textContent=en?'See the account and its history':'Voir le compte et l\u2019historique';
- el.style.display='';}
+ if(!j||!j.real||!j.real.trades||!j.real.trades.length){el.style.display='none';return;}
+ window._rcJ=j;window._rcV=window._rcV||'real';
+ el.querySelectorAll('.vsw button').forEach(b=>b.onclick=ev=>{ev.stopPropagation();window._rcV=b.dataset.v;el.querySelectorAll('.vsw button').forEach(x=>x.classList.toggle('on',x===b));rcPaint();});
+ el.style.display='';rcPaint();}
+function rcPaint(){const j=window._rcJ;if(!j)return;const en=LANG()==='en',$=id=>document.getElementById(id),fr=v=>en?v:v.replace('.',','),V=window._rcV||'real';
+ const St=(P,b0)=>{let c=0,pk=b0,dd=0;const S=[b0],W=P.filter(x=>x>0),gw=W.reduce((a,b)=>a+b,0),gl=-P.filter(x=>x<=0).reduce((a,b)=>a+b,0);
+  P.forEach(p=>{c+=p;const eq=b0+c;S.push(eq);pk=Math.max(pk,eq);dd=Math.max(dd,(pk-eq)/pk*100);});return {n:P.length,wr:P.length?100*W.length/P.length:0,pf:gl>0?gw/gl:0,ret:100*(gw-gl)/b0,dd:dd,S:S};};
+ const col=b=>b==='ok'?'#8df0bb':(b==='mid'?'#e8c55a':'#ff9a9a'),bw=v=>v>=55?'ok':(v>=45?'mid':'bad'),bp=v=>v>=1.5?'ok':(v>=1.15?'mid':'bad'),bd=v=>v<=12?'ok':(v<=22?'mid':'bad');
+ let s,sub,note,go;
+ if(V==='bt'&&j.test&&j.test.rows){const T=j.test,r=(T.rows['0.35']||T.rows['0.00']).today;s=St(r.pnls,T.balance);
+  sub=en?(Math.round(T.days)+' days replayed \u00b7 costs counted'):(Math.round(T.days)+' jours rejou\u00e9s \u00b7 frais compt\u00e9s');
+  note=en?'Today\u2019s rules replayed tick by tick on the broker\u2019s real prices, with 0.35 $ per trade on top of the spread. <span>Rebuilt by itself whenever a rule changes.</span>':'Les r\u00e8gles d\u2019aujourd\u2019hui rejou\u00e9es tick par tick sur les vrais prix du courtier, avec 0,35 $ par trade en plus du spread. <span>Refait tout seul d\u00e8s qu\u2019une r\u00e8gle change.</span>';
+  go=en?'See the backtest':'Voir le backtest';}
+ else{const R=j.real,days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));s=St(R.trades.map(t=>t[1]),R.bal0);
+  sub=en?('in '+days+' days \u00b7 real money'):('en '+days+' jours \u00b7 argent r\u00e9el');
+  note=en?'Results of the witness account, a real account run only by the robot. <span>Not your account; losses included.</span>':'R\u00e9sultats du compte t\u00e9moin, un vrai compte pilot\u00e9 uniquement par le robot. <span>Ce n\u2019est pas votre compte ; pertes comprises.</span>';
+  go=en?'See the account and its history':'Voir le compte et l\u2019historique';}
+ $('rc2-big').textContent=(s.ret>=0?'+':'\u2212')+fr(Math.abs(s.ret).toFixed(1))+'\u202f%';$('rc2-bs').textContent=sub;
+ const mn=Math.min(...s.S),mx=Math.max(...s.S),X=i=>i/(s.S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36,d=s.S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+ $('rc2-sp').innerHTML='<defs><linearGradient id="rc2g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#rc2g)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(s.S[s.S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
+ const pl=(k,v,b)=>'<div class="pl"><small>'+k+'</small><b style="color:'+col(b)+'">'+v+'</b></div>';
+ $('rc2-g3').innerHTML=pl(en?'Win rate':'R\u00e9ussite',Math.round(s.wr)+'\u202f%',bw(s.wr))+pl(document.getElementById('rentcard').clientWidth<380?'PF':'Profit factor',fr(s.pf.toFixed(2)),bp(s.pf))+pl(en?'Max drawdown':'Baisse max','\u2212'+fr(s.dd.toFixed(1))+'\u202f%',bd(s.dd));
+ $('rc2-nt').innerHTML=s.n+' trades \u00b7 '+note;$('rc2-ey').textContent=en?'Proof of profitability':'Preuve de rentabilit\u00e9';
+ $('rc2-lv').textContent=V==='real'?(en?'Live':'En direct'):(en?'Up to date':'\u00c0 jour');$('rc2-b1').textContent=en?'Witness account':'Compte t\u00e9moin';$('rc2-gt').textContent=go;}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
