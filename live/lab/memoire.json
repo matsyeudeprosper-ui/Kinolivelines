@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-11T12:00:04Z",
+ "updated": "2026-10-11T13:30:03Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -103,7 +103,8 @@
     "2026-10-10: real nervous flips 29 tr 31% -47.46, of which by day 25 tr 24% -57.08, by night 4 tr 75%. flip_hot_size 0.6/0.75/0.85 inside ext400+wait20 all A on both shapes: as a size rule in company it works; alone still unproven.",
     "2026-10-10 12:00 veille: FLIP-BOS SELL +0.78 (pace 0.708, CALM, entry 10 h, closed 10:29). flip_day 44 tr 30% -72.88 PF 0.33 (h 37%/24%); avg win ~2.7-2.9 vs avg loss ~3.2-4.2. FLIP-BOS 57 tr 39% -50.60 (h 48%/31%); BOS 39 tr 62% +24.94 unchanged. A tiny day win, shape intact.",
     "2026-10-11 07:00 veille: two night FLIP-BOS BUY wins (+0.54, +1.73, pace 0.91/0.81, closed ~06:45). Window slid to 96 tr: FLIP-BOS 55 tr 44% -38.78; flip_day 38 tr 32% -61.39 PF 0.38 (h 31%/32%); night flips ~17 tr ~12 won ~+22.6. Hour, not kind, splits the reversals (hint).",
-    "2026-10-11: kind: FLIP-BOS 56 tr 43% -39.49 (h 40/45); flip_day 38 tr 32% -61.39 agree."
+    "2026-10-11: kind: FLIP-BOS 56 tr 43% -39.49 (h 40/45); flip_day 38 tr 32% -61.39 agree.",
+    "2026-10-11 13:30 veille: FLIP-BOS BUY -2.56 (pace 1.373, NERVOUS, day, closed 12:18). flip_day 39 tr 31% -63.95 PF 0.37 (h 29%/32%); flip_hot 28 tr 29% -48.41 (h 35%/18%). As predicted."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -1700,6 +1701,15 @@
     "scrutiny --pile cont_day / flip_day / asia"
    ],
    "saw": "Two small day sells lost at 08 h, as cont_day / flip_day predict. cont_day 21 tr 38% -21.97 PF 0.69 (h 45%/30%), 08 h 0/2. flip_day unchanged 38 tr (the 08:00 flip entered before 08 h). asia 38 tr 71% +48.26 (h 70/72). No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
+  },
+  {
+   "t": "2026-10-11T13:30:03Z",
+   "looked": [
+    "wake_context 1 trade (FLIP-BOS BUY -2.56 closed 12:18 pace 1.373)",
+    "scrutiny --pile flip_day / flip_hot",
+    "scrutiny --by kind"
+   ],
+   "saw": "A nervous day reversal lost, as flip_day and flip_hot predict. flip_day 39 tr 31% -63.95 PF 0.37 (h 29/32), 12 h 4 tr 1 won. flip_hot 28 tr 29% -48.41 (h 35/18). FLIP-BOS 57 tr 42% -42.05; BOS 40 tr 58% +16.34. No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
   }
  ],
  "lessons": [

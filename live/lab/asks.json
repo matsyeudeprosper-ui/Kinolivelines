@@ -135,6 +135,16 @@
    "answered": "2026-10-10T18:00:05Z",
    "answer_fr": "Vrai en partie. Les trades pris moins d'une demi-heure après le précédent : trente-deux, quatre sur dix gagnés, environ vingt-six dollars perdus. Mais tout le mal vient d'après une perte : dix-neuf trades, un sur quatre gagné, trente-quatre dollars perdus, les deux moitiés d'accord. Après un gain, la reprise rapide gagne six fois sur dix. C'est le robot qui court après sa perte, surtout le jour ; la pause après une perte est déjà à l'essai. Trop peu pour une pile à part.",
    "answer_en": "Partly true. Trades taken less than half an hour after the previous one: thirty-two, four in ten won, about twenty-six dollars lost. But all the harm comes after a loss: nineteen trades, one in four won, thirty-four dollars lost, both halves agree. After a win, a quick restart wins six in ten. It is the robot chasing its loss, mostly by day; the pause after a loss is already being tested. Too few for a pile of its own."
+  },
+  {
+   "id": "ask_1791725405_europe",
+   "seed": "europe",
+   "seed_fr": "En journée (08–16 h UTC)",
+   "seed_en": "During the day (08–16 UTC)",
+   "by": "labo",
+   "date": "2026-10-11",
+   "note": "30 trades, 37 % gagnés contre 54 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
