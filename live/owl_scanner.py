@@ -4,32 +4,32 @@
 which have a setup ready. First version: virtual trades only, keep records,
 and see whether the backtests of the new symbols match the forward test."
 
-WHAT IT DOES
-  Every minute, for each symbol in SYMBOLS, it reads the last WINDOW M1 bars
-  (read only - this file never sends an order) and runs the SAME structure
-  engine the BTC chart uses (owl_chart_feed.build / engine / pullback_view),
-  then applies the robot's core trend-following rule:
+v2 (owner, same day): the scanner must play the ROBOT's setup, not a cousin
+of it. So the signals now come from the robot's own code:
 
-    pullback trend up   -> only a BUY BOS of the minute structure, and only
-                           while price is above the pullback chart's last BOS
-    pullback trend down -> the mirror image
+  * structure_bos_bot.Struct - the robot's incremental structure engine,
+    seeded with SEED_BARS (3000) closed M1 bars and then stepped on every
+    closed bar, exactly like the bot's main loop;
+  * an entry is the bar the engine returns a signal on: entry at the CLOSE
+    beyond the BOS level (ask for a buy), stop = the new protected dot the
+    engine returns, target 0.8 x the risk (the robot's RR);
+  * pb_gate.pb_gate("trend", ...) - the SAME function the live bot calls -
+    with the pullback chart's state from the last 8000 closed bars (the
+    feed's build/engine/pullback_view, prices scaled so the engine's 2-dp
+    rounding keeps a currency's precision). The live bot also reads a sticky
+    chain of past pullback candles; the scanner cannot have one for every
+    symbol in the past, so backtest and forward both read the plain view;
+  * the robot's minimum stop: 10 pts on BTC (S_MIN_DIST, the spread zone);
+    on other symbols the same idea scaled to their spread (10/7 x spread).
+  * one virtual position per symbol at a time (the bot's my_positions()).
 
-  A virtual trade opens at the close of the breaking candle (ask for a buy),
-  its stop is the structure's protected level, its target 0.8 x the risk -
-  the robot's numbers. It closes on the first M1 bar that touches either
-  (both on one bar = counted as a LOSS). Results are in R (result / risk), so
-  gold, an index and a currency are comparable without contract sizes.
+  NOT modelled (said on the page): the weather brakes, the debt/recovery
+  rules, lot sizing, the internal structure, day caps. Results are in R.
 
-  It is the robot's CORE setup, not the whole robot: no weather brake, no
-  recovery, no lot sizing. That is said on the page too.
+Read only: this file never sends an order. It attaches to the chart feed's
+demo terminal without logging in.
 
-THE SAME FUNCTION does the forward test and the backtest (--backtest), so a
-gap between the two is the market, not two codes.
-
-Files (live/scanner/):
-  state.json            what each symbol is doing now (the page reads it)
-  forward.jsonl         every virtual trade, opened and closed, forward
-  backtest_<SYM>.json   the backtest of each symbol (same rule, past bars)
+Files (live/scanner/): state.json, forward.jsonl, backtest_<SYM>.json, scanner.log
 
     python owl_scanner.py                 # the daemon
     python owl_scanner.py --once          # one pass, print the states
@@ -46,18 +46,15 @@ from datetime import datetime, timezone
 import MetaTrader5 as mt5
 
 DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, DIR)
 OUTD = os.path.join(DIR, "scanner")
 os.makedirs(OUTD, exist_ok=True)
 STATE = os.path.join(OUTD, "state.json")
 FWD = os.path.join(OUTD, "forward.jsonl")
 LOGF = os.path.join(OUTD, "scanner.log")
-# the chart feed's own demo terminal; we ATTACH to it (no login call), so the
-# account it runs is never switched, and we only ever READ prices
 TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
+ENGINE = "v2-robot-struct"
 
-# cheapest symbols of the broker's cost census (spread vs the hourly move,
-# study/cost_census.csv - BTC scores 3.3), spread over gold, oil, indices,
-# currencies and one more crypto. BTCUSD is the REFERENCE: the robot's own.
 SYMBOLS = [
     # 2026-10-11 (owner: "not the same move as BTC"): ETHUSD dropped - its hourly
     # returns correlate 0.85 with BTC over 60 days; every symbol kept is under 0.35.
@@ -68,10 +65,10 @@ SYMBOLS = [
     ("DE30", "DAX", "index"), ("UK100", "FTSE 100", "index"), ("JP225", "Nikkei 225", "index"),
     ("EURUSD", "Euro / Dollar", "fx"), ("GBPUSD", "Livre / Dollar", "fx"), ("USDJPY", "Dollar / Yen", "fx"),
 ]
-MAX_CORR = 0.5          # a symbol moving with BTC above this is flagged (and should not be added)
-WINDOW = 8000          # M1 bars per evaluation - the chart feed's own window
-RR = 0.8               # the robot's target
-MIN_RISK_SPREADS = 3.0  # a stop closer than 3 spreads is noise (the robot's S_MIN_DIST idea)
+MAX_CORR = 0.5
+PB_BARS = 8000          # the pullback state's window (structure_bos_bot.pb_state_now)
+FETCH = PB_BARS + 300   # bars read per minute in the daemon
+BTC_SPREAD_REF = 7.0    # BTC's spread on this broker, in points - S_MIN_DIST is 10 at that spread
 
 
 def log(m):
@@ -83,10 +80,10 @@ def log(m):
 
 
 _F = None
+_B = None
 
 
 def feed():
-    """the chart feed's engine, imported as a module (its main() is not run)"""
     global _F
     if _F is None:
         p = os.path.join(DIR, "owl_chart_feed.py")
@@ -97,11 +94,23 @@ def feed():
     return _F
 
 
+def bot():
+    """the live robot's module, for Struct / RR / SEED_BARS / S_MIN_DIST (its
+    main() is not run; argv is masked so it picks no account variant)"""
+    global _B
+    if _B is None:
+        saved = sys.argv
+        sys.argv = ["owl_scanner"]
+        try:
+            import structure_bos_bot as B
+        finally:
+            sys.argv = saved
+        B.say = lambda *a, **k: None
+        _B = B
+    return _B
+
+
 def scale_of(digits):
-    """the engine rounds to 2 decimals (it was written for BTC). Prices are
-    multiplied so 2 decimals keep the symbol's full precision, and divided
-    back for display - the engine only compares prices, so the result is
-    the same structure."""
     return 10 ** max(0, int(digits) - 2)
 
 
@@ -111,39 +120,31 @@ def rows_of(R, digits):
              "low": float(r["low"]) * s, "close": float(r["close"]) * s} for r in R]
 
 
-def evaluate(R, k, digits, rows=None):
-    """The structure at bar k (R[k] = the last CLOSED bar). Returns a dict:
-    t, px, pb_trend, pb_bos, trend, next_bos, inv, signal (None or
-    {d, level, sl}) - all prices in the symbol's own units."""
+def pb_state(rows, k, digits):
+    """(trend, pending CHoCH dir, CHoCH price, last BOS price) of the pullback chart
+    from rows[k-7999 .. k] - structure_bos_bot.pb_state_now()'s arithmetic, no sticky chain"""
     F = feed()
     s = scale_of(digits)
-    g0 = max(0, k - WINDOW + 1)
-    win = rows[g0:k + 1] if rows is not None else rows_of(R[g0:k + 1], digits)
-    kept = F.build(win)
-    out = {"t": int(R[k]["time"]), "px": float(R[k]["close"]), "pb_trend": 0, "pb_bos": None,
-           "trend": 0, "next_bos": None, "inv": None, "signal": None}
-    if len(kept) < 5:
-        return out
-    bk = []
-    (dots, marks, trend, choch, nxt, inv, nxt_t, inv_t, dr,
-     flp, flp_t, fdir) = F.engine(kept, brk_out=bk)
-    out["trend"] = int(trend or 0)
-    out["next_bos"] = (nxt / s) if nxt else None
-    out["inv"] = (inv / s) if inv else None
-    d2 = [x for x in dots if x[2] == trend] if trend else dots
-    pb = F.pullback_view(kept, d2, marks, bk, write=False) or {}
-    pt = int(pb.get("trend") or 0)
-    pbk = pb.get("breaks") or []
-    L = float(pbk[-1][2]) / s if pbk else None
-    out["pb_trend"], out["pb_bos"] = pt, L
-    # a fresh minute-structure BOS on THIS candle, with the background trend,
-    # beyond the pullback chart's last BOS: the robot's trend-following entry
-    if bk and int(bk[-1][0]) == int(kept[-1][0]) == int(R[k]["time"]) and pt in (1, -1) and int(bk[-1][1]) == pt \
-            and L is not None and inv:
-        px = float(R[k]["close"])
-        if pt * (px - L) > 0:
-            out["signal"] = {"d": pt, "level": float(bk[-1][2]) / s, "sl": inv / s}
-    return out
+    g0 = max(0, k - PB_BARS + 1)
+    try:
+        kept = F.build(rows[g0:k + 1])
+        if len(kept) < 3:
+            return (0, 0, None, None)
+        bk = []
+        d, m, tr, *_ = F.engine(kept, brk_out=bk)
+        if tr:
+            d = [x for x in d if x[2] == tr]
+        pb = F.pullback_view(kept, d, m, bk, write=False) or {}
+        t_ = int(pb.get("trend") or 0); c_ = int(pb.get("choch") or 0)
+        c_ = c_ if (c_ and c_ != t_) else 0
+        lvl = None
+        if c_:
+            cm = [x for x in (pb.get("marks") or []) if len(x) > 2 and x[2] == "choch"]
+            lvl = float(cm[-1][1]) / s if cm else None
+        bks = pb.get("breaks") or []
+        return (t_, c_, lvl, float(bks[-1][2]) / s if bks else None)
+    except Exception:
+        return (0, 0, None, None)
 
 
 def spread_px(r, point):
@@ -153,32 +154,66 @@ def spread_px(r, point):
         return 0.0
 
 
-def open_trade(sym, ev, r, point):
-    """the virtual trade from a signal, or a refusal reason"""
-    d, sl = ev["signal"]["d"], ev["signal"]["sl"]
-    sp = spread_px(r, point)
-    e = float(r["close"]) + (sp if d == 1 else 0.0)        # bars are BID: a buy pays the spread
-    risk = d * (e - sl)
-    if risk <= 0:
-        return None, "stop on the wrong side"
-    if sp > 0 and risk < MIN_RISK_SPREADS * sp:
-        return None, "stop too close to the spread"
-    tp = e + d * RR * risk
-    return {"sym": sym, "d": d, "t": int(r["time"]), "e": e, "sl": sl, "tp": tp, "risk": risk,
-            "spread": sp, "level": ev["signal"]["level"]}, None
+def min_dist(sym, sp):
+    B = bot()
+    return float(B.S_MIN_DIST) if sym == "BTCUSD" else float(B.S_MIN_DIST) / BTC_SPREAD_REF * sp
+
+
+class Sym:
+    """one symbol's robot engine, stepped like the bot's main loop"""
+
+    def __init__(self, sym):
+        self.sym = sym
+        self.eng = bot().Struct()
+        self.eng.quiet = True
+        self.last = 0
+
+    def seed(self, R):
+        for r in R:
+            self.eng.step(int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"]))
+            self.last = int(r["time"])
+        self.eng.quiet = True
+
+    def step(self, r):
+        pt = self.eng.trend
+        sig = self.eng.step(int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"]))
+        self.last = int(r["time"])
+        if not sig:
+            return None
+        return {"d": int(sig[0]), "sl": float(sig[1]), "flip": self.eng.trend != pt}
+
+
+def try_entry(sym, info, R, k, sig, rows):
+    """the bot's enter() checks that apply here: pb_gate('trend'), the minimum stop"""
+    from pb_gate import pb_gate
+    r = R[k]
+    sp = spread_px(r, info.point)
+    d, sl = sig["d"], sig["sl"]
+    px = float(r["close"]) + (sp if d == 1 else 0.0)     # bars are BID: ask = bid + spread
+    st = pb_state(rows, k, info.digits)
+    ok, why = pb_gate("trend", d, px, *st)
+    if not ok:
+        return None, why
+    dist = abs(px - sl)
+    if d * (px - sl) <= 0:
+        return None, "stop_wrong_side"
+    if dist <= min_dist(sym, sp):
+        return None, "stop_in_spread_zone"
+    RR = float(bot().RR)
+    return {"sym": sym, "d": d, "t": int(r["time"]), "e": px, "sl": sl, "tp": px + d * RR * dist, "risk": dist,
+            "spread": sp, "flip": sig["flip"], "pb": st[0], "pb_bos": st[3], "engine": ENGINE}, None
 
 
 def step_trade(tr, r, point):
-    """advance an open virtual trade by one M1 bar; returns the closed trade or None"""
     sp = spread_px(r, point)
     hi, lo = float(r["high"]), float(r["low"])
-    if tr["d"] == 1:            # buy closes at BID
+    if tr["d"] == 1:
         hit_sl, hit_tp = lo <= tr["sl"], hi >= tr["tp"]
-    else:                       # sell closes at ASK
+    else:
         hit_sl, hit_tp = hi + sp >= tr["sl"], lo + sp <= tr["tp"]
     if not (hit_sl or hit_tp):
         return None
-    win = hit_tp and not hit_sl            # both on one bar = a loss (we cannot see the order)
+    win = hit_tp and not hit_sl
     x = tr["tp"] if win else tr["sl"]
     c = dict(tr)
     c.update({"x": x, "xt": int(r["time"]), "win": win, "r": round(tr["d"] * (x - tr["e"]) / tr["risk"], 3),
@@ -203,55 +238,49 @@ def backtest(sym, days):
     if info is None:
         return {"sym": sym, "err": "symbol not found"}
     mt5.symbol_select(sym, True)
-    n = WINDOW + int(days * 1440) + 10
-    R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, n)      # from 1: closed bars only
-    if R is None or len(R) < WINDOW + 100:
+    seed = int(bot().SEED_BARS)
+    n = PB_BARS + int(days * 1440) + 10
+    R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, n)
+    if R is None or len(R) < PB_BARS + 100:
         return {"sym": sym, "err": "not enough history (%s bars)" % (0 if R is None else len(R))}
-    F = feed()
-    s = scale_of(info.digits)
-    trades, refused, open_tr = [], {}, None
-    ALL = rows_of(R, info.digits)          # converted once, sliced per evaluation
     t0 = time.time()
-    # the engine can only see a new BOS on a bar whose close is KEPT by the
-    # silence filter, so only those bars are evaluated (same answer, faster)
-    ref_h = ref_l = None
-    for k in range(len(R)):
+    rows = rows_of(R, info.digits)
+    S = Sym(sym)
+    S.seed(R[PB_BARS - seed:PB_BARS])          # the bot seeds with SEED_BARS closed bars
+    trades, refused, open_tr, sigs = [], {}, None, 0
+    for k in range(PB_BARS, len(R)):
         r = R[k]
-        h, l, c = float(r["high"]) * s, float(r["low"]) * s, float(r["close"]) * s
-        is_kept = ref_h is None or c > ref_h or c < ref_l
-        if is_kept:
-            ref_h, ref_l = h, l
-        if k < WINDOW:
-            continue
         if open_tr is not None:
             done = step_trade(open_tr, r, info.point)
             if done:
                 trades.append(done)
                 open_tr = None
-            continue
-        if not is_kept:
-            continue
-        ev = evaluate(R, k, info.digits, rows=ALL)
-        if ev["signal"]:
-            tr, why = open_trade(sym, ev, r, info.point)
+        sig = S.step(r)
+        if sig:
+            sigs += 1
+            if open_tr is not None:
+                refused["position_open"] = refused.get("position_open", 0) + 1
+                continue
+            tr, why = try_entry(sym, info, R, k, sig, rows)
             if tr:
                 open_tr = tr
             else:
                 refused[why] = refused.get(why, 0) + 1
-    out = {"sym": sym, "days": days, "from": int(R[WINDOW]["time"]), "to": int(R[-1]["time"]),
-           "built": int(time.time()), "secs": round(time.time() - t0, 1), "refused": refused,
-           "summary": summary(trades), "trades": trades[-400:]}
+    out = {"sym": sym, "days": days, "engine": ENGINE, "from": int(R[PB_BARS]["time"]), "to": int(R[-1]["time"]),
+           "built": int(time.time()), "secs": round(time.time() - t0, 1), "signals": sigs, "refused": refused,
+           "summary": summary(trades), "trades": trades[-500:]}
     json.dump(out, open(os.path.join(OUTD, "backtest_%s.json" % sym), "w", encoding="utf-8"))
     return out
 
 
 # ------------------------------------------------------------------ forward
 def load_open():
-    """open virtual trades survive a restart: replay forward.jsonl"""
     op = {}
     try:
         for ln in open(FWD, encoding="utf-8"):
             x = json.loads(ln)
+            if x.get("engine") != ENGINE:
+                continue
             if x.get("ev") == "open":
                 op[x["sym"]] = x
             elif x.get("ev") == "close":
@@ -270,7 +299,6 @@ _CORR = {"t": 0, "v": {}}
 
 
 def btc_corr():
-    """hourly-return correlation of each symbol with BTCUSD over ~60 days, refreshed every 6 h"""
     if time.time() - _CORR["t"] < 6 * 3600 and _CORR["v"]:
         return _CORR["v"]
     import numpy as np
@@ -295,8 +323,12 @@ def btc_corr():
     return out
 
 
-def scan_once(open_tr, last_eval):
-    rows = []
+ENG = {}       # sym -> Sym, alive for the daemon's life (the bot keeps its engine the same way)
+
+
+def scan_once(open_tr):
+    rows_out = []
+    seed = int(bot().SEED_BARS)
     for sym, name, cat in SYMBOLS:
         try:
             info = mt5.symbol_info(sym)
@@ -304,45 +336,54 @@ def scan_once(open_tr, last_eval):
                 continue
             if not info.visible:
                 mt5.symbol_select(sym, True)
-            R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, WINDOW + 200)
-            if R is None or len(R) < 300:
-                rows.append({"sym": sym, "name": name, "cat": cat, "status": "no_data"})
+            R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, FETCH)      # closed bars only
+            if R is None or len(R) < seed + 10:
+                rows_out.append({"sym": sym, "name": name, "cat": cat, "status": "no_data"})
                 continue
             k = len(R) - 1
-            last_t = int(R[k]["time"])
-            closed = time.time() - last_t > 15 * 60      # no new bar for 15 min: market closed
-            # move an open trade through every bar it has not seen yet
+            S = ENG.get(sym)
+            if S is None:
+                S = Sym(sym)
+                S.seed(R[-seed:])
+                ENG[sym] = S
+                log("%s seeded %d bars, trend %s" % (sym, seed, S.eng.trend))
+            rows = None
             tr = open_tr.get(sym)
-            if tr:
-                for r in R:
-                    if int(r["time"]) <= int(tr.get("seen", tr["t"])):
-                        continue
+            for j in range(len(R)):
+                r = R[j]
+                if int(r["time"]) <= S.last:
+                    continue
+                if tr:
                     done = step_trade(tr, r, info.point)
-                    tr["seen"] = int(r["time"])
                     if done:
                         done["ev"] = "close"
                         append(done)
                         log("%s close %s r=%s" % (sym, "win" if done["win"] else "loss", done["r"]))
                         open_tr.pop(sym, None)
                         tr = None
-                        break
-            ev = evaluate(R, k, info.digits)
-            # a signal is acted on once per bar
-            if ev["signal"] and not tr and last_eval.get(sym) != last_t and not closed:
-                nt, why = open_trade(sym, ev, R[k], info.point)
-                if nt:
-                    nt.update({"ev": "open", "seen": last_t, "name": name})
-                    append(nt)
-                    open_tr[sym] = nt
-                    tr = nt
-                    log("%s open d=%s e=%s sl=%s tp=%s" % (sym, nt["d"], nt["e"], nt["sl"], nt["tp"]))
-                else:
-                    log("%s signal refused: %s" % (sym, why))
-            last_eval[sym] = last_t
-            # how far price is from the next trigger, in units of the last hour's range
+                sig = S.step(r)
+                if sig and not tr:
+                    if rows is None:
+                        rows = rows_of(R, info.digits)
+                    nt, why = try_entry(sym, info, R, j, sig, rows)
+                    if nt:
+                        nt.update({"ev": "open", "name": name})
+                        append(nt)
+                        open_tr[sym] = nt
+                        tr = nt
+                        log("%s open d=%s e=%s sl=%s tp=%s" % (sym, nt["d"], nt["e"], nt["sl"], nt["tp"]))
+                    else:
+                        log("%s signal refused: %s" % (sym, why))
+            closed = time.time() - int(R[k]["time"]) > 15 * 60
+            if rows is None:
+                rows = rows_of(R, info.digits)
+            pt, _pc, _pl, L = pb_state(rows, k, info.digits)
+            px = float(R[k]["close"])
+            e = S.eng
+            trig = (e.hi_v if e.trend == 1 else e.lo_v if e.trend == -1 else None)
+            prot = (e.prot_lo[1] if (e.trend == 1 and e.prot_lo) else e.prot_hi[1] if (e.trend == -1 and e.prot_hi) else None)
             hr = R[max(0, k - 59):k + 1]
             rng = float(max(x["high"] for x in hr) - min(x["low"] for x in hr)) or 1e-9
-            pt, L, px = ev["pb_trend"], ev["pb_bos"], ev["px"]
             near = None
             if tr:
                 st = "trade"
@@ -353,32 +394,32 @@ def scan_once(open_tr, last_eval):
             elif pt * (px - L) <= 0:
                 st = "wrong_side"
                 near = abs(px - L) / rng
-            elif ev["trend"] == pt and ev["next_bos"]:
-                near = abs(ev["next_bos"] - px) / rng
+            elif e.trend == pt and trig is not None:
+                near = abs(trig - px) / rng
                 st = "ready" if near <= 0.5 else ("soon" if near <= 2.0 else "far")
             else:
                 st = "waiting_turn"
             sp = float(info.spread) * info.point
             row = {"sym": sym, "name": name, "cat": cat, "status": st, "px": px, "digits": info.digits,
-                   "pb_trend": pt, "pb_bos": L, "trend": ev["trend"], "next_bos": ev["next_bos"],
-                   "inv": ev["inv"], "near": round(near, 2) if near is not None else None,
-                   "range_1h": rng, "spread": sp, "cost": round(sp / rng * 100, 1) if rng else None,
-                   "updated": last_t}
+                   "pb_trend": pt, "pb_bos": L, "trend": e.trend, "next_bos": trig, "inv": prot,
+                   "near": round(near, 2) if near is not None else None, "range_1h": rng, "spread": sp,
+                   "cost": round(sp / rng * 100, 1) if rng else None, "updated": int(R[k]["time"])}
             if tr:
-                cur = float(R[k]["close"]) if tr["d"] == 1 else float(R[k]["close"]) + sp
+                cur = px if tr["d"] == 1 else px + sp
                 row["open"] = {"d": tr["d"], "e": tr["e"], "sl": tr["sl"], "tp": tr["tp"], "t": tr["t"],
                                "r_now": round(tr["d"] * (cur - tr["e"]) / tr["risk"], 2)}
-            rows.append(row)
-        except Exception as e:
-            log("%s error %r" % (sym, e))
-            rows.append({"sym": sym, "name": name, "cat": cat, "status": "error"})
+            rows_out.append(row)
+        except Exception as ex:
+            log("%s error %r" % (sym, ex))
+            rows_out.append({"sym": sym, "name": name, "cat": cat, "status": "error"})
     try:
         cr = btc_corr()
-        for row in rows:
+        for row in rows_out:
             row["corr_btc"] = cr.get(row["sym"])
-    except Exception as e:
-        log("corr error %r" % (e,))
-    st = {"updated": int(time.time()), "symbols": rows, "rr": RR, "window": WINDOW, "max_corr": MAX_CORR}
+    except Exception as ex:
+        log("corr error %r" % (ex,))
+    st = {"updated": int(time.time()), "symbols": rows_out, "rr": float(bot().RR), "engine": ENGINE,
+          "max_corr": MAX_CORR}
     json.dump(st, open(STATE + ".tmp", "w", encoding="utf-8"))
     os.replace(STATE + ".tmp", STATE)
     return st
@@ -386,6 +427,7 @@ def scan_once(open_tr, last_eval):
 
 def main():
     a = sys.argv[1:]
+    bot()
     if not mt5.initialize(path=TERMINAL):
         raise SystemExit("MT5: %s" % (mt5.last_error(),))
     if "--backtest" in a:
@@ -394,24 +436,24 @@ def main():
         syms = [s[0] for s in SYMBOLS] if which == "all" else [which]
         for s in syms:
             o = backtest(s, days)
-            print(s, o.get("err") or o["summary"], "refused", o.get("refused"), "%ss" % o.get("secs"))
+            print(s, o.get("err") or o["summary"], "signals", o.get("signals"), "refused", o.get("refused"), "%ss" % o.get("secs"))
             sys.stdout.flush()
         mt5.shutdown()
         return
-    open_tr, last_eval = load_open(), {}
+    open_tr = load_open()
     if "--once" in a:
-        st = scan_once(open_tr, last_eval)
+        st = scan_once(open_tr)
         for r in st["symbols"]:
-            print(r["sym"].ljust(8), r["status"].ljust(12), r.get("pb_trend"), r.get("near"), r.get("cost"))
+            print(r["sym"].ljust(8), r["status"].ljust(12), r.get("pb_trend"), r.get("trend"), r.get("near"), r.get("cost"))
         mt5.shutdown()
         return
-    log("scanner start, %d symbols" % len(SYMBOLS))
+    log("scanner start (%s), %d symbols" % (ENGINE, len(SYMBOLS)))
     while True:
         t0 = time.time()
         try:
-            scan_once(open_tr, last_eval)
-        except Exception as e:
-            log("pass error %r" % (e,))
+            scan_once(open_tr)
+        except Exception as ex:
+            log("pass error %r" % (ex,))
             try:
                 mt5.shutdown(); time.sleep(5); mt5.initialize(path=TERMINAL)
             except Exception:
