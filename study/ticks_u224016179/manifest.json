@@ -1,0 +1,399 @@
+{
+ "symbol": "BTCUSD",
+ "dataset": "594a3275fb4a3c1d",
+ "window": [
+  1787957640,
+  1791558420
+ ],
+ "days": {
+  "2026-08-28": {
+   "n": 145280,
+   "first_msc": 1787875200214,
+   "last_msc": 1787961599606,
+   "gaps_gt_5s": 80,
+   "max_gap_s": 17.9,
+   "sha256": "42dd343203940b78",
+   "complete": true
+  },
+  "2026-08-29": {
+   "n": 86767,
+   "first_msc": 1787961600664,
+   "last_msc": 1788047999013,
+   "gaps_gt_5s": 109,
+   "max_gap_s": 17.6,
+   "sha256": "5e4aaa9d42c5bfbd",
+   "complete": true
+  },
+  "2026-08-30": {
+   "n": 105909,
+   "first_msc": 1788048000181,
+   "last_msc": 1788134399726,
+   "gaps_gt_5s": 111,
+   "max_gap_s": 19.4,
+   "sha256": "6e27f4522c1d5a95",
+   "complete": true
+  },
+  "2026-08-31": {
+   "n": 132150,
+   "first_msc": 1788134400017,
+   "last_msc": 1788220799962,
+   "gaps_gt_5s": 73,
+   "max_gap_s": 13.9,
+   "sha256": "839b43dc13400da1",
+   "complete": true
+  },
+  "2026-09-01": {
+   "n": 125187,
+   "first_msc": 1788220800966,
+   "last_msc": 1788307199672,
+   "gaps_gt_5s": 44,
+   "max_gap_s": 19.0,
+   "sha256": "04b19e2dec29851b",
+   "complete": true
+  },
+  "2026-09-02": {
+   "n": 121624,
+   "first_msc": 1788307200316,
+   "last_msc": 1788393599175,
+   "gaps_gt_5s": 80,
+   "max_gap_s": 10.7,
+   "sha256": "2651c0e0d5e58630",
+   "complete": true
+  },
+  "2026-09-03": {
+   "n": 141543,
+   "first_msc": 1788393600188,
+   "last_msc": 1788479996668,
+   "gaps_gt_5s": 53,
+   "max_gap_s": 13.6,
+   "sha256": "d3e8d845b9657762",
+   "complete": true
+  },
+  "2026-09-04": {
+   "n": 129215,
+   "first_msc": 1788480000252,
+   "last_msc": 1788566399039,
+   "gaps_gt_5s": 69,
+   "max_gap_s": 19.6,
+   "sha256": "498f532b5ef25360",
+   "complete": true
+  },
+  "2026-09-05": {
+   "n": 84587,
+   "first_msc": 1788566400276,
+   "last_msc": 1788652799354,
+   "gaps_gt_5s": 103,
+   "max_gap_s": 21.7,
+   "sha256": "40159bc142298b17",
+   "complete": true
+  },
+  "2026-09-06": {
+   "n": 88458,
+   "first_msc": 1788652800444,
+   "last_msc": 1788739199293,
+   "gaps_gt_5s": 115,
+   "max_gap_s": 801.7,
+   "sha256": "38682d33aa544f97",
+   "complete": true
+  },
+  "2026-09-07": {
+   "n": 100014,
+   "first_msc": 1788739200295,
+   "last_msc": 1788825599019,
+   "gaps_gt_5s": 91,
+   "max_gap_s": 18.2,
+   "sha256": "994e0f6e90760300",
+   "complete": true
+  },
+  "2026-09-08": {
+   "n": 113003,
+   "first_msc": 1788825600024,
+   "last_msc": 1788911999794,
+   "gaps_gt_5s": 92,
+   "max_gap_s": 16.5,
+   "sha256": "7e6c7c7526c2becb",
+   "complete": true
+  },
+  "2026-09-09": {
+   "n": 121003,
+   "first_msc": 1788912000363,
+   "last_msc": 1788998399847,
+   "gaps_gt_5s": 72,
+   "max_gap_s": 15.1,
+   "sha256": "5599377c9a5f7826",
+   "complete": true
+  },
+  "2026-09-10": {
+   "n": 118887,
+   "first_msc": 1788998400875,
+   "last_msc": 1789084799602,
+   "gaps_gt_5s": 86,
+   "max_gap_s": 12.5,
+   "sha256": "c511024262464786",
+   "complete": true
+  },
+  "2026-09-11": {
+   "n": 142908,
+   "first_msc": 1789084800607,
+   "last_msc": 1789171199227,
+   "gaps_gt_5s": 66,
+   "max_gap_s": 21.8,
+   "sha256": "f98acfb8e6e3e935",
+   "complete": true
+  },
+  "2026-09-12": {
+   "n": 79369,
+   "first_msc": 1789171200462,
+   "last_msc": 1789257599378,
+   "gaps_gt_5s": 130,
+   "max_gap_s": 28.9,
+   "sha256": "28d3a47c2a31efab",
+   "complete": true
+  },
+  "2026-09-13": {
+   "n": 88359,
+   "first_msc": 1789257600397,
+   "last_msc": 1789343999385,
+   "gaps_gt_5s": 91,
+   "max_gap_s": 17.0,
+   "sha256": "bde92d4b9bc17a3e",
+   "complete": true
+  },
+  "2026-09-14": {
+   "n": 124156,
+   "first_msc": 1789344000389,
+   "last_msc": 1789430399428,
+   "gaps_gt_5s": 48,
+   "max_gap_s": 12.4,
+   "sha256": "bf887167817b4814",
+   "complete": true
+  },
+  "2026-09-15": {
+   "n": 144318,
+   "first_msc": 1789430400194,
+   "last_msc": 1789516799895,
+   "gaps_gt_5s": 63,
+   "max_gap_s": 14.5,
+   "sha256": "8631611ca62d3e9e",
+   "complete": true
+  },
+  "2026-09-16": {
+   "n": 141522,
+   "first_msc": 1789516800806,
+   "last_msc": 1789603199802,
+   "gaps_gt_5s": 63,
+   "max_gap_s": 12.5,
+   "sha256": "734566cf345fb8a7",
+   "complete": true
+  },
+  "2026-09-17": {
+   "n": 111391,
+   "first_msc": 1789603200731,
+   "last_msc": 1789689599762,
+   "gaps_gt_5s": 72,
+   "max_gap_s": 16.3,
+   "sha256": "59f4dff8e70bfd35",
+   "complete": true
+  },
+  "2026-09-18": {
+   "n": 129973,
+   "first_msc": 1789689600234,
+   "last_msc": 1789775998543,
+   "gaps_gt_5s": 70,
+   "max_gap_s": 14.0,
+   "sha256": "046c0d93f0788c22",
+   "complete": true
+  },
+  "2026-09-19": {
+   "n": 94040,
+   "first_msc": 1789776000613,
+   "last_msc": 1789862399238,
+   "gaps_gt_5s": 64,
+   "max_gap_s": 37.9,
+   "sha256": "dc996f9611048f83",
+   "complete": true
+  },
+  "2026-09-20": {
+   "n": 102312,
+   "first_msc": 1789862400324,
+   "last_msc": 1789948799268,
+   "gaps_gt_5s": 74,
+   "max_gap_s": 15.7,
+   "sha256": "675c2976f480b23a",
+   "complete": true
+  },
+  "2026-09-21": {
+   "n": 164953,
+   "first_msc": 1789948800299,
+   "last_msc": 1790035199407,
+   "gaps_gt_5s": 53,
+   "max_gap_s": 15.3,
+   "sha256": "92e6c3ec023f5565",
+   "complete": true
+  },
+  "2026-09-22": {
+   "n": 134292,
+   "first_msc": 1790035200419,
+   "last_msc": 1790121599483,
+   "gaps_gt_5s": 64,
+   "max_gap_s": 14.0,
+   "sha256": "956cbc73679a9252",
+   "complete": true
+  },
+  "2026-09-23": {
+   "n": 128762,
+   "first_msc": 1790121600526,
+   "last_msc": 1790207999357,
+   "gaps_gt_5s": 64,
+   "max_gap_s": 15.5,
+   "sha256": "86ec5ad4e6cf5ba4",
+   "complete": true
+  },
+  "2026-09-24": {
+   "n": 131241,
+   "first_msc": 1790208000374,
+   "last_msc": 1790294399126,
+   "gaps_gt_5s": 55,
+   "max_gap_s": 30.1,
+   "sha256": "c2520a60f016a993",
+   "complete": true
+  },
+  "2026-09-25": {
+   "n": 120213,
+   "first_msc": 1790294400185,
+   "last_msc": 1790380799427,
+   "gaps_gt_5s": 49,
+   "max_gap_s": 15.4,
+   "sha256": "60e1cf074d617fe9",
+   "complete": true
+  },
+  "2026-09-26": {
+   "n": 83101,
+   "first_msc": 1790380800455,
+   "last_msc": 1790467198952,
+   "gaps_gt_5s": 93,
+   "max_gap_s": 18.9,
+   "sha256": "a8a50c66ab67e264",
+   "complete": true
+  },
+  "2026-09-27": {
+   "n": 91367,
+   "first_msc": 1790467200002,
+   "last_msc": 1790553599007,
+   "gaps_gt_5s": 84,
+   "max_gap_s": 16.0,
+   "sha256": "771e062b6d499c7d",
+   "complete": true
+  },
+  "2026-09-28": {
+   "n": 136625,
+   "first_msc": 1790553600011,
+   "last_msc": 1790639999281,
+   "gaps_gt_5s": 44,
+   "max_gap_s": 14.4,
+   "sha256": "2627613338f7d24f",
+   "complete": true
+  },
+  "2026-09-29": {
+   "n": 117690,
+   "first_msc": 1790640000281,
+   "last_msc": 1790726399149,
+   "gaps_gt_5s": 64,
+   "max_gap_s": 15.8,
+   "sha256": "c4aede4a10dbb136",
+   "complete": true
+  },
+  "2026-09-30": {
+   "n": 126682,
+   "first_msc": 1790726400203,
+   "last_msc": 1790812799423,
+   "gaps_gt_5s": 80,
+   "max_gap_s": 12.4,
+   "sha256": "77faaac40ff15592",
+   "complete": true
+  },
+  "2026-10-01": {
+   "n": 122379,
+   "first_msc": 1790812800379,
+   "last_msc": 1790899199320,
+   "gaps_gt_5s": 78,
+   "max_gap_s": 16.2,
+   "sha256": "da9ed12a522ee218",
+   "complete": true
+  },
+  "2026-10-02": {
+   "n": 138187,
+   "first_msc": 1790899200323,
+   "last_msc": 1790985599356,
+   "gaps_gt_5s": 61,
+   "max_gap_s": 11.7,
+   "sha256": "29fd682f7196de88",
+   "complete": true
+  },
+  "2026-10-03": {
+   "n": 81949,
+   "first_msc": 1790985600362,
+   "last_msc": 1791071999824,
+   "gaps_gt_5s": 76,
+   "max_gap_s": 14.8,
+   "sha256": "8ebc974e219978aa",
+   "complete": true
+  },
+  "2026-10-04": {
+   "n": 89211,
+   "first_msc": 1791072000856,
+   "last_msc": 1791158398965,
+   "gaps_gt_5s": 74,
+   "max_gap_s": 17.0,
+   "sha256": "fffaa6caa90ae72e",
+   "complete": true
+  },
+  "2026-10-05": {
+   "n": 116081,
+   "first_msc": 1791158400065,
+   "last_msc": 1791244799964,
+   "gaps_gt_5s": 57,
+   "max_gap_s": 12.8,
+   "sha256": "651404429dfed7ce",
+   "complete": true
+  },
+  "2026-10-06": {
+   "n": 107137,
+   "first_msc": 1791244800395,
+   "last_msc": 1791331199145,
+   "gaps_gt_5s": 86,
+   "max_gap_s": 27.7,
+   "sha256": "17885d1b2a97d19f",
+   "complete": true
+  },
+  "2026-10-07": {
+   "n": 122463,
+   "first_msc": 1791331200239,
+   "last_msc": 1791417599766,
+   "gaps_gt_5s": 69,
+   "max_gap_s": 18.0,
+   "sha256": "360a3bf26ad63366",
+   "complete": true
+  },
+  "2026-10-08": {
+   "n": 152574,
+   "first_msc": 1791417600782,
+   "last_msc": 1791503999669,
+   "gaps_gt_5s": 47,
+   "max_gap_s": 13.9,
+   "sha256": "475464b8fbd3ec7a",
+   "complete": true
+  },
+  "2026-10-09": {
+   "n": 110280,
+   "first_msc": 1791504000569,
+   "last_msc": 1791590399028,
+   "gaps_gt_5s": 46,
+   "max_gap_s": 18.2,
+   "sha256": "9e350a3f0cd9c439",
+   "complete": false
+  }
+ },
+ "uid": "u224016179",
+ "terminal": "C:\\NestTerminals\\u224016179\\terminal64.exe"
+}

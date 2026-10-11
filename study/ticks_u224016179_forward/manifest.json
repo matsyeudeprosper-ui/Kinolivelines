@@ -1,0 +1,39 @@
+{
+ "symbol": "BTCUSD",
+ "dataset": "594a3275fb4a3c1d",
+ "window": [
+  1791558420,
+  1791688847
+ ],
+ "days": {
+  "2026-10-09": {
+   "n": 110280,
+   "first_msc": 1791504000569,
+   "last_msc": 1791590399028,
+   "gaps_gt_5s": 46,
+   "max_gap_s": 18.2,
+   "sha256": "9e350a3f0cd9c439",
+   "complete": true
+  },
+  "2026-10-10": {
+   "n": 81950,
+   "first_msc": 1791590400188,
+   "last_msc": 1791676799268,
+   "gaps_gt_5s": 85,
+   "max_gap_s": 33.0,
+   "sha256": "bc4e4fa80dcd601f",
+   "complete": true
+  },
+  "2026-10-11": {
+   "n": 11095,
+   "first_msc": 1791676800272,
+   "last_msc": 1791688844495,
+   "gaps_gt_5s": 7,
+   "max_gap_s": 17.1,
+   "sha256": "bb72ae7e8dce7237",
+   "complete": false
+  }
+ },
+ "uid": "u224016179",
+ "terminal": "C:\\NestTerminals\\u224016179\\terminal64.exe"
+}
