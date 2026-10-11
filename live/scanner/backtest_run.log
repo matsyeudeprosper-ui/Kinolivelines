@@ -1,0 +1,13 @@
+BTCUSD {'n': 80, 'wins': 44, 'wr': 55.0, 'sum_r': -0.8, 'avg_r': -0.01, 'pf': 0.98} signals 520 refused {'paused_wrong_side': 89, 'against_structure': 257, 'position_open': 70, 'no_last_bos': 4, 'no_structure': 20} 13.9s
+XAUUSD {'n': 141, 'wins': 84, 'wr': 59.6, 'sum_r': 10.2, 'avg_r': 0.072, 'pf': 1.18} signals 849 refused {'against_structure': 324, 'paused_wrong_side': 142, 'position_open': 241} 21.1s
+XAGUSD {'n': 119, 'wins': 55, 'wr': 46.2, 'sum_r': -20.0, 'avg_r': -0.168, 'pf': 0.69} signals 733 refused {'paused_wrong_side': 124, 'position_open': 266, 'against_structure': 224} 16.4s
+USOIL {'n': 141, 'wins': 72, 'wr': 51.1, 'sum_r': -11.4, 'avg_r': -0.081, 'pf': 0.83} signals 782 refused {'against_structure': 328, 'paused_wrong_side': 82, 'position_open': 230} 17.9s
+US30 {'n': 134, 'wins': 78, 'wr': 58.2, 'sum_r': 6.4, 'avg_r': 0.048, 'pf': 1.11} signals 591 refused {'against_structure': 262, 'paused_wrong_side': 78, 'position_open': 115, 'no_last_bos': 2} 14.4s
+USTEC {'n': 170, 'wins': 103, 'wr': 60.6, 'sum_r': 15.4, 'avg_r': 0.091, 'pf': 1.23} signals 769 refused {'against_structure': 340, 'position_open': 181, 'paused_wrong_side': 78} 20.5s
+US500 {'n': 144, 'wins': 75, 'wr': 52.1, 'sum_r': -9.0, 'avg_r': -0.062, 'pf': 0.87} signals 719 refused {'against_structure': 235, 'paused_wrong_side': 122, 'no_last_bos': 1, 'no_structure': 4, 'position_open': 213} 16.2s
+DE30 {'n': 181, 'wins': 93, 'wr': 51.4, 'sum_r': -13.6, 'avg_r': -0.075, 'pf': 0.85} signals 780 refused {'against_structure': 252, 'paused_wrong_side': 122, 'position_open': 223, 'stop_in_spread_zone': 1} 18.0s
+UK100 {'n': 152, 'wins': 72, 'wr': 47.4, 'sum_r': -22.4, 'avg_r': -0.147, 'pf': 0.72} signals 808 refused {'against_structure': 326, 'position_open': 205, 'paused_wrong_side': 110, 'stop_in_spread_zone': 6, 'no_structure': 8} 20.8s
+JP225 {'n': 189, 'wins': 99, 'wr': 52.4, 'sum_r': -10.8, 'avg_r': -0.057, 'pf': 0.88} signals 877 refused {'against_structure': 270, 'position_open': 239, 'paused_wrong_side': 179} 21.6s
+EURUSD {'n': 140, 'wins': 70, 'wr': 50.0, 'sum_r': -14.0, 'avg_r': -0.1, 'pf': 0.8} signals 750 refused {'stop_in_spread_zone': 3, 'against_structure': 279, 'position_open': 237, 'paused_wrong_side': 90, 'no_structure': 1} 19.8s
+GBPUSD {'n': 161, 'wins': 62, 'wr': 38.5, 'sum_r': -49.4, 'avg_r': -0.307, 'pf': 0.5} signals 788 refused {'against_structure': 331, 'stop_in_spread_zone': 7, 'position_open': 160, 'paused_wrong_side': 129} 24.1s
+USDJPY {'n': 131, 'wins': 62, 'wr': 47.3, 'sum_r': -19.4, 'avg_r': -0.148, 'pf': 0.72} signals 697 refused {'against_structure': 248, 'position_open': 158, 'paused_wrong_side': 160} 21.8s

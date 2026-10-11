@@ -16,12 +16,21 @@
    "complete": true
   },
   "2026-10-10": {
-   "n": 18598,
+   "n": 81952,
    "first_msc": 1791590400189,
-   "last_msc": 1791609691738,
-   "gaps_gt_5s": 15,
+   "last_msc": 1791676799269,
+   "gaps_gt_5s": 85,
    "max_gap_s": 31.5,
-   "sha256": "c41ca409988b3ae9",
+   "sha256": "e472cf909babdca2",
+   "complete": true
+  },
+  "2026-10-11": {
+   "n": 27283,
+   "first_msc": 1791676800272,
+   "last_msc": 1791706201203,
+   "gaps_gt_5s": 35,
+   "max_gap_s": 22.9,
+   "sha256": "486d98ea5dce2eb0",
    "complete": false
   }
  }

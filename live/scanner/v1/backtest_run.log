@@ -1,0 +1,7 @@
+BTCUSD {'n': 77, 'wins': 42, 'wr': 54.5, 'sum_r': -1.4, 'avg_r': -0.018, 'pf': 0.96} refused {} 367.3s
+XAUUSD {'n': 151, 'wins': 91, 'wr': 60.3, 'sum_r': 12.8, 'avg_r': 0.085, 'pf': 1.21} refused {} 402.3s
+XAGUSD {'n': 110, 'wins': 50, 'wr': 45.5, 'sum_r': -20.0, 'avg_r': -0.182, 'pf': 0.67} refused {} 379.9s
+USOIL {'n': 129, 'wins': 67, 'wr': 51.9, 'sum_r': -8.4, 'avg_r': -0.065, 'pf': 0.86} refused {} 300.0s
+US30 {'n': 129, 'wins': 74, 'wr': 57.4, 'sum_r': 4.2, 'avg_r': 0.033, 'pf': 1.08} refused {} 372.9s
+USTEC {'n': 159, 'wins': 97, 'wr': 61.0, 'sum_r': 15.6, 'avg_r': 0.098, 'pf': 1.25} refused {} 386.0s
+US500 {'n': 133, 'wins': 69, 'wr': 51.9, 'sum_r': -8.8, 'avg_r': -0.066, 'pf': 0.86} refused {} 287.9s

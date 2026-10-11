@@ -122,7 +122,9 @@
    "rr": 0.8,
    "k_streak": 2,
    "pb_dir_gate": true,
-   "_why_pb_dir_gate": "2026-10-10 owner (urgent): only trades in the direction of the pullback chart's trend; the 2026-10-07 replay of this gate lost on every account - owner's decision, measured forward"
+   "_why_pb_dir_gate": "2026-10-10 owner (urgent): only trades in the direction of the pullback chart's trend; the 2026-10-07 replay of this gate lost on every account - owner's decision, measured forward",
+   "pb_gate_mode": "trend",
+   "_why_pb_gate_mode": "2026-10-10 owner (evening), OFFICIAL trend-following rule: with the pullback trend AND beyond its last BOS (buys above / sells below); wrong side = continuation paused until reclaim or reversal. Replaces the morning CHoCH exception. Backtest deferred by the owner (to run on request)."
   },
   "valere": {
    "extends": "base",

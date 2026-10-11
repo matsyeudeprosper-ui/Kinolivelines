@@ -849,8 +849,77 @@ def pb_quiet(cs):
     return out
 
 
-def pullback_view(kept, dots, marks, brks):
+PB_CHAIN = os.path.join(DIR, "owl_pb_chain.json")
+
+
+def pb_sticky_times(want, floor_t, path, write, ceil_t=None):
+    """Owner 2026-10-10: once a candle has carried the pullback chart's
+    structure it STAYS in the chain. Before this, the chain was rebuilt from
+    the minute chart's current dots at every refresh, so a flip of the minute
+    structure dropped the other side's dots, re-filtered the candles and the
+    pullback engine rewrote its whole history (16:24 up / BOS 83034, 16:35
+    down / BOS 80534 with price never crossing the protected level). The set
+    of structure times lives in owl_pb_chain.json; times older than the bar
+    window fall off; the feed writes, the bots only read (write=False)."""
+    try:
+        old = set(int(t) for t in json.load(open(path, encoding="utf-8")).get("times", []))
+    except Exception:
+        old = set()
+    # only CLOSED candles are remembered (ceil_t = the newest, still forming,
+    # candle): a level seen on a forming candle that later changes shape must
+    # not be kept for ever. The forming candle still joins the view below.
+    keep = {int(t) for t in want if ceil_t is None or int(t) < int(ceil_t)}
+    new = {int(t) for t in (old | keep) if int(t) >= int(floor_t)}
+    if write and new != old:
+        try:
+            tmp = path + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump({"times": sorted(new), "updated": int(time.time())}, fh)
+            os.replace(tmp, path)
+        except Exception:
+            pass
+    return new | {int(t) for t in want}
+
+
+def pb_catch_up():
+    """Startup (owner 2026-10-10, "if the VPS pauses for a day"): when the
+    chain file is older than ten minutes, the missing closed bars are replayed
+    CAUSALLY - build -> engine over the 8000 bars ending at each missing bar,
+    exactly what the live feed would have done minute by minute - before the
+    first publish. About 55 ms a bar: a day of pause costs ~80 s."""
+    try:
+        upd = int(json.load(open(PB_CHAIN, encoding="utf-8")).get("updated", 0))
+    except Exception:
+        upd = 0
+    gap = int((time.time() - upd) // 60)
+    if upd == 0 or gap < 10:
+        return 0
+    gap = min(gap, RAW_BARS)
+    R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 0, RAW_BARS + gap)
+    if R is None or len(R) < RAW_BARS + 10:
+        return 0
+    n = len(R); S = set()
+    for i in range(n - gap - 1, n):
+        kept = build(R[max(0, i - RAW_BARS + 1):i + 1])
+        if len(kept) < 3:
+            continue
+        bk = []
+        dots, marks, trend, *_ = engine(kept, brk_out=bk)
+        if trend:
+            dots = [d for d in dots if d[2] == trend]
+        S |= {t for t in ({d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in bk})
+              if t < kept[-1][0]}
+    kept = build(R[n - RAW_BARS:n])
+    if kept:
+        pb_sticky_times(S, kept[0][0], PB_CHAIN, True)
+    print(f"pullback chain caught up: {gap} bars replayed", flush=True)
+    return gap
+
+
+def pullback_view(kept, dots, marks, brks, sticky=None, write=True):
     want = {d[0] for d in dots} | {m[0] for m in marks} | {b[0] for b in brks}
+    if sticky and kept:
+        want = pb_sticky_times(want, kept[0][0], sticky, write, ceil_t=kept[-1][0])
     if kept:
         want.add(kept[-1][0])
     cands = [c for c in kept if c[0] in want]
@@ -915,6 +984,10 @@ def pullback_view(kept, dots, marks, brks):
 def main():
     assert connect(), "no terminal could serve BTCUSD candles"
     print("chart feed up", flush=True)
+    try:
+        pb_catch_up()
+    except Exception as _e:
+        print(f"pullback chain catch-up skipped ({type(_e).__name__})", flush=True)
     while True:
         try:
             R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
@@ -976,7 +1049,8 @@ def main():
                 elif trend == -1:
                     dots = [d for d in dots if d[2] == -1]
                 try:
-                    _pb = pullback_view(kept, dots, marks, _mbrk)
+                    _pb = pullback_view(kept, dots, marks, _mbrk,
+                                        sticky=PB_CHAIN)
                 except Exception:
                     _pb = None
                 dots = [d for d in dots if d[0] >= t0]
