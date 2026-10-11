@@ -82,11 +82,17 @@ foreach ($a in $botArgs) {
     }
     Start-Sleep -Seconds 2
 }
+# 2026-10-11: a watchdog can relaunch the app/feed during the pause above; starting
+# another copy then gave two apps sharing port 8787. Start only what is not back yet.
 if ($What -eq "all" -or $What -eq "feed") {
-    Start-Process $PYW -ArgumentList "owl_chart_feed.py" -WorkingDirectory $LIVE -WindowStyle Hidden
+    if (@(Running "*owl_chart_feed.py*").Count -eq 0) {
+        Start-Process $PYW -ArgumentList "owl_chart_feed.py" -WorkingDirectory $LIVE -WindowStyle Hidden
+    } else { Say "feed already relaunched by the watchdog - not starting a second one" }
 }
 if ($What -eq "all" -or $What -eq "app") {
-    Start-Process $PYW -ArgumentList "owl_app_server.py" -WorkingDirectory $LIVE -WindowStyle Hidden
+    if (@(Running "*owl_app_server.py*").Count -eq 0) {
+        Start-Process $PYW -ArgumentList "owl_app_server.py" -WorkingDirectory $LIVE -WindowStyle Hidden
+    } else { Say "app already relaunched by the watchdog - not starting a second one" }
 }
 Start-Sleep -Seconds 12
 
@@ -106,6 +112,14 @@ foreach ($k in @("app", "feed", "bots")) {
 }
 $port = (Get-NetTCPConnection -LocalPort 8787 -State Listen -ErrorAction SilentlyContinue |
          Select-Object -First 1).OwningProcess
+# a second app (both bound to 8787) is still possible in a race: keep the listener, stop the rest
+if (($What -eq "all" -or $What -eq "app") -and $port -and $after.app -gt 1) {
+    Running "*owl_app_server.py*" | Where-Object { $_.ProcessId -ne $port } | ForEach-Object {
+        Say ("DUPLICATE app pid " + $_.ProcessId + " stopped (kept the listener " + $port + ")")
+        Stop-Process -Id $_.ProcessId -Force }
+    Start-Sleep -Seconds 2
+    Say ("app now: " + @(Running "*owl_app_server.py*").Count)
+}
 if ($What -eq "all" -or $What -eq "app") {
     if ($port) { Say ("app is listening on 8787, pid " + $port) }
     else { Say "app is NOT listening on 8787"; $bad = $true }

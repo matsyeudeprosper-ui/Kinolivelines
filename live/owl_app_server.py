@@ -2072,6 +2072,18 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 #tab-hist #msum-sec button{background:transparent!important;border-color:var(--border)!important;color:var(--muted2)!important}
 #tab-hist #tgo button,#tab-hist #tgo input{border-color:var(--border)!important;background:var(--tile-bg)!important}
 #tab-hist #cal-sec>span:last-child{margin-left:14px}
+/* 2026-10-11 (owner): one theme across the tabs - card labels plain (no trailing rule), same size as .lbl;
+   Historique month tiles left-aligned with soft colours, like the home's week/month tiles */
+#tab-home .panel>.lbl,#tab-hist .panel>.lbl,#mx-robot .panel>.lbl,#tab-nid .panel>.lbl{font-size:.78rem;font-weight:600;letter-spacing:.07em;color:var(--muted2)}
+#tab-home .panel>.lbl::after,#tab-hist .panel>.lbl::after,#mx-robot .panel>.lbl::after,#tab-nid .panel>.lbl::after{display:none}
+#tab-hist .grid .card{text-align:left;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--hl)}
+#tab-hist .grid .card .lbl{font-size:.72rem;letter-spacing:.07em;color:var(--muted2);font-weight:600}
+#tab-hist .grid .card .val{font-size:1.4rem;font-weight:800;margin-top:8px}
+#tab-hist .grid .card .val.pos{color:var(--up-soft)}#tab-hist .grid .card .val.neg{color:var(--down-soft)}
+#tab-hist .grid .card .sub{font-size:.76rem;color:var(--muted);margin-top:4px}
+#mx-robot .panel>.lbl{white-space:normal;flex-wrap:wrap;row-gap:2px}
+#mx-robot #rb-next{border-top:0!important;padding:0!important}
+#mx-robot #rb-next>span{font-size:.78rem!important;letter-spacing:.07em!important;font-weight:600;margin-bottom:8px!important}
 /* 2026-10-02 (owner): Marche > Marche, premium pass - scoped to #mx-market */
 #mx-market .sec{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2)}
 #mx-jump{gap:2px!important;border-bottom:1px solid var(--border);padding:2px 0 6px!important;margin-top:6px!important}
@@ -2858,6 +2870,8 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 <div id="mx-robot" style="display:none">
 <div class="sec" style="margin-top:14px">Le robot <span class="hint" id="rb-hint">&middot; sur ce compte</span></div>
+<!-- 2026-10-11 (owner): members arrive here from the home card "Tout sur le robot" -->
+<div id="rb-intro" style="font-size:.86rem;color:var(--muted2);line-height:1.5;margin-top:6px">Ce qu&rsquo;il va faire ensuite, pourquoi il laisse passer des occasions, et sa journ&eacute;e trade par trade.</div>
 <div class="panel" id="jcard" style="margin-top:12px">
  <!-- 2026-10-11 (owner): the steps and the sentence moved to the home card "Le robot en ce moment" -->
  <div id="rb-next" style="display:none;font-size:.92rem;color:var(--text);line-height:1.5"></div>
@@ -3223,18 +3237,20 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
  <div id="plan-btns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"></div>
  <div id="plan-note" style="font-size:.74rem;color:var(--muted);margin-top:8px;line-height:1.45"></div>
-</div>
-<div class="srow" id="payrow" onclick="paySheet()" style="display:none;margin-top:10px">
+ <div id="plan-rows" style="margin:10px -14px -14px;padding:0 14px;border-top:1px solid var(--border)">
+<div class="srow" id="payrow" onclick="paySheet()" style="display:none">
  <div class="sic"><svg class="ic"><use href="#i-ticket"/></svg></div>
  <div style="flex:1"><b>Mes paiements</b>
   <div class="ssub">Vos re&ccedil;us et vos dates de fin</div></div>
  <svg class="ic chv"><use href="#i-chev"/></svg>
 </div>
-<div class="srow" id="stratrow" onclick="stratSheet()" style="display:none;margin-top:10px">
- <div class="sic" style="color:var(--warn)"><svg class="ic"><use href="#i-eye"/></svg></div>
+<div class="srow" id="stratrow" onclick="stratSheet()" style="display:none">
+ <div class="sic"><svg class="ic"><use href="#i-eye"/></svg></div>
  <div style="flex:1"><b>La strat&eacute;gie</b>
   <div class="ssub">La m&eacute;thode en mots simples &middot; le graphique complet</div></div>
  <svg class="ic chv"><use href="#i-chev"/></svg>
+</div>
+ </div>
 </div>
 <div class="sec" id="rob-sec" style="display:none">Le robot</div>
 <div class="panel" id="rob-card" style="display:none;padding:4px 14px">
@@ -3806,7 +3822,7 @@ const I18N_EN=new Map(Object.entries({
  'Revoir le guide':'See the guide again','Le robot':'The robot','Le service':'Service health','Accès':'Access','Déverrouiller Le Nid':'Unlock The Nest',
  'Réservé à l\\'administrateur':'Admin only','Réservé à l\u2019administrateur':'Admin only',
  'Fermer':'Close','Annuler':'Cancel','Enregistrer':'Save','Voir sur le graphique':'View on the chart','Résultat':'Result','Taille':'Size','Entrée':'Entry','Sortie':'Exit','Durée':'Duration','Quand':'When',
- 'Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What we learn from the market','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
+ 'Ce qu’il va faire ensuite, pourquoi il laisse passer des occasions, et sa journée trade par trade.':'What it will do next, why it lets chances go by, and its day trade by trade.','Achat':'Buy','Vente':'Sell','Rapport du mois':'Month report','Vos comptes':'Your accounts','Le labo':'The lab','Marché':'Market','Robot':'Robot','Labo':'Lab','· idées, tests, observations, décisions':'· ideas, tests, observations, decisions','Ce que le marché nous apprend':'What we learn from the market','Les heures du marché':'Market hours','Le robot explique':'The robot explains','· les occasions laissées passer':'· the opportunities let go','Journal du robot':'Robot journal','· les 20 derniers trades':'· the last 20 trades','Le marché':'The market','· sur ce compte':'· on this account','Vous et le robot':'You and the robot','même période':'same period','Mes paiements':'My payments','Vos re\u00e7us et vos dates de fin':'Your receipts and end dates','Retour à mon compte':'Back to my account','Ouvrir Le Nid':'Open The Nest',
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Tout sur le robot':'All about the robot','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
@@ -7085,7 +7101,7 @@ function tfPaint(d){const el=document.getElementById('tfcard');if(!el)return;
 }
 function renderNext(d){const el=document.getElementById('rb-next');if(!el)return;const en=LANG()==='en';
  // 2026-10-11: with no "next action" the status line is alone in its panel - no divider above it
- const _st=document.getElementById('st'),_solo=on=>{if(_st){_st.style.borderTop=on?'0':'';_st.style.marginTop=on?'0':'';_st.style.paddingTop=on?'0':'';}};
+ const _st=document.getElementById('st'),_solo=on=>{if(_st){[['border-top','1px solid var(--border)'],['margin-top','12px'],['padding-top','10px']].forEach(([k,v])=>_st.style.setProperty(k,on?'0':v,'important'));}};
  const ms=d.meteo_struct;if(!ms||HIDEGAUGES()||d.public){el.style.display='none';_solo(true);return;}
  _solo(false);
  const full=!!(ms.next_bos!==undefined||ms.invalid!==undefined);
