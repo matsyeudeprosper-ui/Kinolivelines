@@ -31,7 +31,9 @@ Do not tune the model to match total profit. First establish baseline fidelity W
 * Adds: real adds (15 legs at 0.03-0.05 lot) +32.72; engine adds -3.05 on 38 adds (spread only). THE largest gap.
 * Defect found by GPT and fixed 2026-10-11 (commit after this file): `cap_rule="off"` (the recorded manual override)
   still applied the normal cap outside recovery; now a lifted cap is lifted everywhere. The override window is only
-  2026-10-10 07:05 -> 10-11 03:20 UTC. Rerun pending/recorded in `study/replay_valere_real_v2.out`.
+  2026-10-10 07:05 -> 10-11 03:20 UTC. RERUN DONE (`study/replay_valere_real_v2.out`, structure cache reused): every
+  figure identical to reply 21 - no signal in the override window met the cap outside recovery, so the defect had no
+  effect on these numbers. The fix stands for any future run.
 * Proof-page $200 test: daily balance scaling of lot and cap was missing; fixed (`study/proof_current_rules.py`,
   scale_lot/scale_daily on) and rerun (`live/lab/proof_current.json`).
 * Known model gaps (not yet quantified per trade): live add/bullet sizing and funding (jar budget, by_debt, BLOT),
