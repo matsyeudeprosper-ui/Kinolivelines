@@ -286,7 +286,7 @@ function wire(root){root.querySelectorAll('[data-k]').forEach(b=>{if(!b.dataset.
 
 /* ------------------------------------------------------------ the space */
 let J=null,TAB='ov',COST='0.00';
-const TABS=[['ov',tx('Aperçu','Overview')],['re',tx('En vrai','Real')],['te',tx('Backtest','Backtest')],['me',tx('Méthode','Method')]];
+const TABS=[['ov',tx('Aperçu','Overview')],['re',tx('Compte témoin','Witness')],['te',tx('Backtest','Backtest')],['me',tx('Méthode','Method')]];
 function tabs(){const t=$('tabs');t.innerHTML='<span id="tabind"></span>'+TABS.map(x=>'<button class="tab'+(x[0]===TAB?' on':'')+'" data-t="'+x[0]+'">'+svgI(x[0])+'<span>'+x[1]+'</span></button>').join('');
  t.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','#'+TAB);}catch(e){}render();scrollTo({top:0,behavior:'smooth'});});
  requestAnimationFrame(()=>{const on=t.querySelector('.tab.on'),ind=$('tabind');if(on&&ind){ind.style.left=on.offsetLeft+'px';ind.style.width=on.offsetWidth+'px';}});}
@@ -300,9 +300,9 @@ function ovPane(){const R=J.real,T=(J.test||{}).rows||{};if(!R)return '<div clas
  const tt=(T['0.35']||{}).today,ts=tt?stats(tt.pnls,J.test.balance):null,V=J.verdict||{},ov=V.overall||{};
  const vc=ov.c==='green'?css('--up'):(ov.c==='red'?css('--down'):css('--warn'));
  const wk=weekly(R.trades),gw=wk.filter(w=>w[1]>0).length;
- return '<div class="card hero"><div class="eyebrow">'+svgI('ov',13)+tx('Sur un vrai compte, en argent réel','On a real account, with real money')+'</div>'+
+ return '<div class="card hero"><div class="eyebrow">'+svgI('ov',13)+tx('Compte témoin · argent réel','Witness account · real money')+'</div>'+
   '<div class="big '+'">'+pct(s.ret,true)+'<small>'+tx('en ','in ')+days+tx(' jours',' days')+'</small></div>'+
-  '<p>'+tx('Depuis le '+dfmt(R.start)+', le robot a fait '+money(s.net,true)+' sur un compte réel parti de '+money(R.bal0)+'. Frais du courtier compris, sans dépôt ni retrait.','Since '+dfmt(R.start)+', the robot made '+money(s.net,true)+' on a real account that started with '+money(R.bal0)+'. Broker costs included, no deposit or withdrawal.')+'</p>'+
+  '<p>'+tx('Depuis le '+dfmt(R.start)+', le robot a fait '+money(s.net,true)+' sur le compte témoin, un vrai compte parti de '+money(R.bal0)+'. Frais du courtier compris. Ce sont les résultats du compte témoin, pas de votre compte.','Since '+dfmt(R.start)+', the robot made '+money(s.net,true)+' on the witness account, a real account that started with '+money(R.bal0)+'. Broker costs included. These are the witness account’s results, not your account’s.')+'</p>'+
   (ov.fr?'<div class="verdict"><i style="background:'+vc+';box-shadow:0 0 8px '+vc+'"></i>'+(EN?ov.en:ov.fr)+'</div>':'')+
   '<div class="chart spark" id="c-spark"></div></div>'+
   pillars(s)+
@@ -313,13 +313,16 @@ function ovPane(){const R=J.real,T=(J.test||{}).rows||{};if(!R)return '<div clas
    '<div class="sub">'+tx('Les mêmes règles que le robot suit depuis le 10/10, rejouées tick par tick sur '+Math.round(J.test.days)+' jours, sur un compte de '+J.test.balance+' $, avec un coût de 0,35 $ par trade en plus du spread.','The rules the robot follows since 10/10, replayed tick by tick over '+Math.round(J.test.days)+' days, on a '+J.test.balance+' $ account, with 0.35 $ per trade on top of the spread.')+'</div>'+
    '<div class="grid3">'+tile('wr',tx('Réussite','Win rate'),pct(ts.wr,false,0),ts.n+' trades',null,band.wr(ts.wr))+tile('pf','PF',num(ts.pf),'',null,band.pf(ts.pf))+tile('dd',tx('Baisse','Drawdown'),pct(-ts.mddPct),'','neg',band.dd(ts.mddPct))+'</div>'+
    '<button class="tile" style="margin-top:10px;text-align:center;font-weight:800;color:var(--accent-soft)" onclick="go(\'te\')">'+tx('Voir le backtest en détail ›','See the backtest in detail ›')+'</button></div>':'')+vsReal(true)+
-  '<div class="card"><h2>'+tx('Les vérifications de chaque nuit','The nightly checks')+'</h2><div class="lights" style="margin-top:8px">'+(V.lights||[]).map(l=>'<div class="lt"><i style="background:'+(l.c==='green'?css('--up'):(l.c==='red'?css('--down'):(l.c==='grey'?css('--muted'):css('--warn'))))+'"></i><div>'+(EN?l.en:l.fr)+'</div></div>').join('')+'</div>'+
+  '<div class="card"><h2>'+tx('Les contrôles de chaque nuit','The nightly checks')+'</h2><div class="lights" style="margin-top:8px">'+(V.lights||[]).map(l=>'<div class="lt"><i style="background:'+(l.c==='green'?css('--up'):(l.c==='red'?css('--down'):(l.c==='grey'?css('--muted'):css('--warn'))))+'"></i><div>'+(EN?l.en:l.fr)+'</div></div>').join('')+'</div>'+
   '<div class="note w">'+(EN?(J.legacy||{}).en:(J.legacy||{}).fr)+tx('. Ces vérifications utilisent encore cet ancien test ; les chiffres ci-dessus, eux, sont réels ou rejoués avec les règles d’aujourd’hui.','. These checks still use that older test; the figures above are real or replayed with today’s rules.')+'</div></div>';}
 
 function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s=stats(P,R.bal0),wk=weekly(R.trades),pre=R.trades.filter(t=>t[0]<R.filter_since),post=R.trades.filter(t=>t[0]>=R.filter_since);
  const sp=stats(pre.map(t=>t[1]),R.bal0),so=post.length?stats(post.map(t=>t[1]),0):null;
- return '<div class="card"><h2>'+tx('Le compte réel','The real account')+'<span class="badge b-ok">'+tx('argent réel','real money')+'</span></h2>'+
-  '<div class="sub">'+tx('Un compte réel chez Exness, piloté uniquement par le robot depuis le '+dfmt(R.start)+'. Départ '+money(R.bal0)+', aujourd’hui '+money(R.balance)+'. Aucun dépôt, aucun retrait.','A real Exness account, run only by the robot since '+dfmt(R.start)+'. Start '+money(R.bal0)+', now '+money(R.balance)+'. No deposit, no withdrawal.')+'</div>'+
+ const MF=J.myfxbook||{},up=R.updated?(typeof R.updated==='number'?R.updated:Date.parse(R.updated)/1000):null;
+ const upTxt=up?dfmt(up)+' '+new Date(up*1000).toLocaleTimeString(EN?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'}):'—';
+ return '<div class="card"><h2>'+tx('Le compte témoin','The witness account')+'<span class="badge b-ok">'+tx('argent réel','real money')+'</span></h2>'+
+  '<div class="sub">'+tx('Un vrai compte chez Exness, piloté uniquement par le robot depuis le '+dfmt(R.start)+'. Personne n’y touche à la main. Ce n’est pas votre compte : vous voyez ici ses résultats à lui, en lecture seule.','A real Exness account, run only by the robot since '+dfmt(R.start)+'. Nobody touches it by hand. It is not your account: you see its own results here, read-only.')+'</div>'+
+  '<div class="grid2" style="margin-bottom:12px">'+tile('',tx('Départ','Start'),money(R.bal0),dfmt(R.start))+tile('',tx('Solde aujourd’hui','Balance today'),money(R.balance),tx('mis à jour le ','updated ')+upTxt,sgn(R.balance-R.bal0))+'</div>'+
   '<div class="chart" id="c-real"></div><div class="legend"><span><i style="background:'+css('--up')+'"></i>'+tx('solde du compte','account balance')+'</span><span><i style="background:'+css('--gold')+'"></i>'+tx('filtre de tendance activé','trend filter switched on')+'</span></div></div>'+
   pillars(s)+
   '<div class="card"><h2>'+tx('Toutes les mesures','Every measure')+'</h2><div class="sub">'+tx('Touchez une case pour son explication.','Tap a box for its explanation.')+'</div>'+fullGrid(s,R.bal0)+'</div>'+
@@ -329,7 +332,24 @@ function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s
   '<div class="card"><h2>'+tx('Avant et depuis le filtre','Before and since the filter')+'</h2><div class="cmp" style="margin-top:8px">'+
    '<div class="h"></div><div class="h r">'+tx('avant le 10/10','before 10/10')+'</div><div class="h r">'+tx('depuis','since')+'</div>'+
    ['n','wr','pf','net'].map(k=>'<div class="l">'+({n:'Trades',wr:tx('Réussite','Win rate'),pf:'Profit factor',net:tx('Résultat','Result')})[k]+'</div><div class="r">'+fmtK(k,sp)+'</div><div class="r">'+(so?fmtK(k,so):'—')+'</div>').join('')+'</div>'+
-   '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au 10/10 à 15h55 UTC. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until 10/10 15:55 UTC. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>';}
+   '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au 10/10 à 15h55 UTC. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until 10/10 15:55 UTC. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>'+
+  witnessExtras(R);}
+function witnessExtras(R){const MF=J.myfxbook||{},fl=R.flows||[];
+ const rules=(J.rules||[]).filter(r=>r.date&&Date.parse(r.date+'T00:00:00Z')/1000>=R.start-86400).sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+ const T=(R.trades||[]).slice().reverse();
+ return '<div class="card"><h2>'+tx('Dépôts et retraits','Deposits and withdrawals')+'</h2><div class="sub" style="margin-bottom:0">'+(fl.length?fl.map(f=>dfmt(f[0])+' · <b class="'+sgn(f[1])+'">'+money(f[1],true)+'</b>').join('<br>'):tx('Aucun depuis le début. Tout ce qui a changé sur le solde vient des trades. Les dépôts et retraits ne sont jamais comptés comme des gains.','None since the start. Every change of the balance comes from trades. Deposits and withdrawals are never counted as gains.'))+'</div></div>'+
+  '<div class="card"><h2>'+tx('Les règles ont changé pendant ce temps','The rules changed meanwhile')+'</h2><div class="sub">'+tx('Le robot n’est pas figé. Voici les règles entrées pendant la vie du compte : ses résultats mélangent donc plusieurs versions.','The robot is not frozen. Here are the rules added during the account’s life: its results therefore mix several versions.')+'</div><div class="tl">'+
+   rules.map(r=>'<div class="it'+(r.id==='trend'?' new':'')+'"><b>'+(EN?r.title_en:r.title_fr)+'</b><span>'+(r.date||'').slice(8,10)+'/'+(r.date||'').slice(5,7)+'</span></div>').join('')+'</div></div>'+
+  '<div class="card"><h2>'+tx('Tous les trades','Every trade')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+T.length+'</span></h2>'+
+   '<div class="sub">'+tx('Du plus récent au plus ancien, résultat net du courtier. Un trade et ses ordres de rattrapage fermés ensemble font une ligne.','Newest first, net result from the broker. A trade and its recovery orders closed together make one line.')+'</div>'+
+   '<div id="tlist">'+tradeRows(T,15)+'</div>'+(T.length>15?'<button class="tile" id="tmore" style="margin-top:10px;text-align:center;font-weight:800;color:var(--accent-soft)">'+tx('Voir les '+T.length+' trades','Show all '+T.length+' trades')+'</button>':'')+'</div>'+
+  '<div class="card"><h2>'+tx('Vérification indépendante','Independent verification')+'</h2><div class="sub" style="margin-bottom:0">'+
+   (MF.url?('<a href="'+MF.url+'" target="_blank" rel="noopener" style="color:var(--accent-soft);font-weight:800">'+(MF.verified?tx('Vérifié par Myfxbook : voir le compte ↗','Verified by Myfxbook: see the account ↗'):tx('Publié sur Myfxbook : voir le compte ↗','Published on Myfxbook: see the account ↗'))+'</a>'+(MF.verified?'':'<br>'+tx('Vérification Myfxbook en cours, pas encore confirmée.','Myfxbook verification in progress, not confirmed yet.')))
+    :tx('Pas encore. Les chiffres viennent du relevé du courtier, publiés ici tels quels, pertes comprises. Une page publique vérifiée par un service indépendant arrivera ensuite ; nous ne l’annoncerons qu’une fois la vérification confirmée.','Not yet. The figures come from the broker statement, shown here as they are, losses included. A public page verified by an independent service will follow; we will only announce it once the verification is confirmed.'))+
+   '<br><span style="color:var(--muted)">'+tx('Une vérification prouve l’historique du compte, pas les résultats futurs.','A verification proves the account history, not future results.')+'</span></div></div>';}
+function tradeRows(T,k){return '<div class="cmp" style="grid-template-columns:1.1fr .8fr .6fr 1fr">'+
+ '<div class="h">'+tx('Fermé le','Closed')+'</div><div class="h">'+tx('Sens','Side')+'</div><div class="h r">'+tx('Ordres','Orders')+'</div><div class="h r">'+tx('Résultat','Result')+'</div>'+
+ T.slice(0,k).map(t=>{const d=new Date(t[0]*1000);return '<div class="l">'+dfmt(t[0])+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'</div><div class="l">'+(t[3]===1?tx('Achat','Buy'):tx('Vente','Sell'))+'</div><div class="r" style="font-weight:600">'+t[2]+'</div><div class="r '+sgn(t[1])+'">'+money(t[1],true)+'</div>';}).join('')+'</div>';}
 function fmtK(k,s){return k==='n'?s.n:(k==='wr'?pct(s.wr,false,0):(k==='pf'?(s.pf===Infinity?'∞':num(s.pf)):'<span class="'+sgn(s.net)+'">'+money(s.net,true)+'</span>'));}
 
 function tePane(){const T=J.test;if(!T||!T.rows)return '<div class="card"><div class="sub">'+tx('Le backtest n’est pas encore construit.','The backtest is not built yet.')+'</div></div>';
@@ -386,7 +406,8 @@ function render(){tabs();const m=$('main');
  if(TAB==='re'&&R){const S=realSeries(R);line($('c-real'),S,{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),marks:[{x:R.filter_since,label:tx('filtre','filter')}],tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});
   const wk=weekly(R.trades);bars($('c-week'),wk.map(w=>[w[0],w[1]]),{lab:b=>tx('semaine du ','week of ')+b[0]});
   let pk=R.bal0;const U=S.map(p=>{pk=Math.max(pk,p[1]);return [p[0],-(pk-p[1])/pk*100];});line($('c-uw'),U,{h:120,color:css('--down'),fmtX:dfmt,fmtY:v=>v.toFixed(0)+'%',tip:p=>dfmt(p[0])+' · <b>'+pct(p[1])+'</b>'});
-  hist($('c-hist'),R.trades.map(t=>t[1]));}
+  hist($('c-hist'),R.trades.map(t=>t[1]));
+  const tm=$('tmore');if(tm)tm.onclick=()=>{$('tlist').innerHTML=tradeRows(R.trades.slice().reverse(),1e9);tm.remove();};}
  if(TAB==='te'&&J.test&&J.test.rows){const r=J.test.rows[COST]||{},B=J.test.balance;
   const toS=c=>(c||[]).map(([d,v])=>[Date.parse(d+'T23:59:00Z')/1000,B+v]);
   line($('c-test'),toS(r.today.curve),{h:190,fmtX:dfmt,fmtY:v=>'$'+v.toFixed(0),ref:toS(r.no_filter.curve),tip:p=>dfmt(p[0])+' · <b>'+money(p[1])+'</b>'});

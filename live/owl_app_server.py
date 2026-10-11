@@ -2561,7 +2561,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <!-- 2026-10-11 (owner): the door to the "Rentabilite" space - the strategy
      measured on a real account: return, win rate, profit factor, max drawdown -->
 <div class="panel" id="rentcard" role="link" tabindex="0" aria-label="Rentabilit&eacute; de la strat&eacute;gie"
- onclick="location.href=B+'rentabilite'" onkeydown="if(event.key==='Enter')location.href=B+'rentabilite'"
+ onclick="location.href=B+'rentabilite#re'" onkeydown="if(event.key==='Enter')location.href=B+'rentabilite#re'"
  style="display:none;margin-top:12px;cursor:pointer;position:relative;overflow:hidden;padding:16px 16px 14px;
  background:radial-gradient(110% 90% at 100% 0%,rgba(46,204,113,.16),transparent 60%),radial-gradient(90% 90% at 0% 100%,rgba(232,197,90,.10),transparent 60%),linear-gradient(160deg,#0f2236,#0f1b2a);
  border-color:rgba(141,240,187,.22)">
@@ -7097,17 +7097,18 @@ async function loadRent(){const el=document.getElementById('rentcard');if(!el)re
  const wr=n?100*W.length/n:0,pf=gl>0?gw/gl:0,ret=100*net/R.bal0,days=Math.max(1,Math.round((Date.now()/1000-R.start)/86400));
  const col=(v,b)=>v==='ok'?'#8df0bb':(v==='mid'?'#e8c55a':'#ff9a9a');
  const bw=wr>=55?'ok':(wr>=45?'mid':'bad'),bp=pf>=1.5?'ok':(pf>=1.15?'mid':'bad'),bd=mdd<=12?'ok':(mdd<=22?'mid':'bad');
- document.getElementById('rent-lbl').textContent=en?'Proof of profitability':'Preuve de rentabilité';
- document.getElementById('rent-live').lastElementChild.textContent=en?'Real account':'Compte réel';
+ // GPT 2026-10-11: say WHOSE results these are - the witness account, never the member's own
+ document.getElementById('rent-lbl').textContent=en?'Witness account \u00b7 real money':'Compte t\u00e9moin \u00b7 argent r\u00e9el';
+ const MF=j.myfxbook||{};document.getElementById('rent-live').lastElementChild.textContent=(MF.url&&MF.verified)?(en?'Verified by Myfxbook':'V\u00e9rifi\u00e9 par Myfxbook'):(en?'Live':'En direct');
  document.getElementById('rent-big').textContent=(ret>=0?'+':'−')+Math.abs(ret).toFixed(1).replace('.',en?'.':',')+' %';
- document.getElementById('rent-sub').textContent=(en?'in '+days+' days · real money':'en '+days+' jours · argent réel');
+ document.getElementById('rent-sub').textContent=(en?'in '+days+' days':'en '+days+' jours');
  const mn=Math.min(...S),mx=Math.max(...S),X=i=>i/(S.length-1)*120,Y=v=>40-(v-mn)/((mx-mn)||1)*36;
  const d=S.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
  document.getElementById('rent-spark').innerHTML='<defs><linearGradient id="rsg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2ecc71" stop-opacity=".35"/><stop offset="1" stop-color="#2ecc71" stop-opacity="0"/></linearGradient></defs><path d="'+d+' L120 44 L0 44 Z" fill="url(#rsg)"/><path d="'+d+'" fill="none" stroke="#8df0bb" stroke-width="2" stroke-linejoin="round"/><circle cx="120" cy="'+Y(S[S.length-1]).toFixed(1)+'" r="3" fill="#8df0bb"/>';
  const pill=(k,v,b)=>'<div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px 9px"><div style="font-size:.58rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#9fc2de">'+k+'</div><div style="font-size:1.08rem;font-weight:900;margin-top:3px;color:'+col(b)+'">'+v+'</div></div>';
  document.getElementById('rent-pills').innerHTML=pill(en?'Win rate':'Réussite',Math.round(wr)+' %',bw)+pill('Profit factor',pf.toFixed(2).replace('.',en?'.':','),bp)+pill(en?'Max drawdown':'Baisse max','−'+mdd.toFixed(1).replace('.',en?'.':',')+' %',bd);
- document.getElementById('rent-gm').textContent=en?(n+' trades · '+Math.round(wr/10)+' in 10 won'):(n+' trades · '+Math.round(wr/10)+' sur 10 gagnés');
- document.getElementById('rent-go').firstChild.textContent=en?'See the proof':'Voir la preuve';
+ document.getElementById('rent-gm').textContent=en?'Results of the witness account, not your account.':'R\u00e9sultats du compte t\u00e9moin, pas de votre compte.';
+ document.getElementById('rent-go').firstChild.textContent=en?'See the account and its history':'Voir le compte et l\u2019historique';
  el.style.display='';}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
@@ -10487,6 +10488,13 @@ def rentabilite_payload():
                                                   "title_en": "The robot only follows the background trend, beyond its last break"}]
     except Exception:
         out["legacy"] = None; out["rules"] = []
+    # GPT 2026-10-11: an independent public record (Myfxbook) once the owner connects
+    # the witness account; "verified" is shown ONLY when lab/myfxbook.json says so
+    try:
+        _mf = json.load(open(os.path.join(DIR, "lab", "myfxbook.json"), encoding="utf-8"))
+        out["myfxbook"] = {"url": _mf.get("url"), "verified": bool(_mf.get("verified"))}
+    except Exception:
+        out["myfxbook"] = None
     try:
         out["fidelity"] = json.load(open(os.path.join(DIR, "lab", "fidelity.json"), encoding="utf-8"))
     except Exception:
