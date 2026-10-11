@@ -456,13 +456,15 @@ def sig_merge(uid, lst):
 FUNNEL_FILE = os.path.join(DIR, "owl_funnel.json")
 FUNNEL_STEPS = ("landing", "offers", "choose", "pay_created", "paid")
 FUNNEL_CLIENT = ("landing", "offers", "choose")
+# 2026-10-11 (owner): what visitors do on the landing (anonymous, one per session)
+LANDING_EVENTS = ("proof_seen", "proof_switch", "proof_open", "demo_open", "tg_open", "faq_more")
 FN_JS = "function fn(e){try{var k='fn_'+e;if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1');navigator.sendBeacon('/fn','e='+e);}catch(x){}}"
 _fn_lock = threading.Lock()
 
 
 def fn_count(ev):
     """Anonymous funnel counter: one number per step per UTC day. No cookie, no IP, no id."""
-    if ev not in FUNNEL_STEPS:
+    if ev not in FUNNEL_STEPS and ev not in LANDING_EVENTS:
         return
     try:
         with _fn_lock:
@@ -496,6 +498,9 @@ def funnel_page():
     tot = [sum(int(d[k].get(e, 0)) for k in d) for e in FUNNEL_STEPS]
     rows = "".join("<tr><td>%s</td>%s</tr>" % (k, "".join("<td>%d</td>" % int(d[k].get(e, 0)) for e in FUNNEL_STEPS)) for k in days)
     conv = "".join("<td>%s</td>" % (pct(tot[i], tot[i - 1]) if i else "") for i in range(5))
+    _ln = ("Preuve vue", "Bascule backtest", "Preuve ouverte", "D&eacute;mo ouverte", "Telegram", "Toutes les FAQ")
+    _lrows = "".join("<tr><td>%s</td>%s</tr>" % (k, "".join("<td>%d</td>" % int(d[k].get(e, 0)) for e in LANDING_EVENTS)) for k in days)
+    _ltab = ("<h2 style=\"font-size:1rem;margin:22px 0 8px\">Sur la page d&rsquo;accueil</h2><table><tr><th>Jour</th>" + "".join("<th>%s</th>" % x for x in _ln) + "</tr>" + _lrows + "</table>")
     return ("<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             "<title>Entonnoir</title><style>body{background:#0b0f14;color:#e6edf3;font-family:system-ui,sans-serif;margin:16px}"
             "table{border-collapse:collapse;width:100%%}td,th{padding:8px 6px;border-bottom:1px solid #223;text-align:right;font-size:.9rem}"
@@ -503,7 +508,7 @@ def funnel_page():
             "<h2>Entonnoir</h2><div style=\"overflow-x:auto\"><table><tr><th>Jour (UTC)</th>%s</tr>%s"
             "<tr class=\"t\"><td>Total</td>%s</tr><tr><td>vs &eacute;tape pr&eacute;c&eacute;dente</td>%s</tr></table></div>"
             "<p>Compte anonyme : un chiffre par &eacute;tape et par jour, une fois par session de navigateur. Ni cookie, ni IP, ni identifiant. "
-            "Le propri&eacute;taire et la d&eacute;mo ne comptent pas.</p></body></html>") % (
+            "Le propri&eacute;taire et la d&eacute;mo ne comptent pas.</p>" + _ltab + "</body></html>") % (
         "".join("<th>%s</th>" % n for n in names), rows, "".join("<td>%d</td>" % t for t in tot), conv)
 
 
@@ -10459,6 +10464,67 @@ def _proof_lab():
 
 
 _RENT_CACHE = [0.0, None]
+_LAND_CACHE = [0.0, None]
+
+
+def landing_payload():
+    """2026-10-11 (owner, acquisition): the public, AGGREGATED numbers the
+    logged-out landing shows - the witness account's figures and its worst
+    moments, the backtest's headline, what the robot is doing now, and a few
+    trust facts. Nothing per trade, no name, no lot."""
+    if _LAND_CACHE[1] and time.time() - _LAND_CACHE[0] < 120:
+        return _LAND_CACHE[1]
+    R = rentabilite_payload()
+    out = {"updated": int(time.time())}
+    r = R.get("real") or {}
+    T = r.get("trades") or []
+    if T:
+        P = [t[1] for t in T]; bal0 = float(r.get("bal0") or 0)
+        W = [p for p in P if p > 0]; gw = sum(W); gl = -sum(p for p in P if p <= 0)
+        c = 0.0; pk = bal0; dd = 0.0; dd_usd = 0.0; pk_usd = 0.0; ls = 0; mls = 0
+        for p in P:
+            c += p; eq = bal0 + c; pk = max(pk, eq); dd = max(dd, (pk - eq) / pk * 100 if pk else 0)
+            pk_usd = max(pk_usd, c); dd_usd = max(dd_usd, pk_usd - c)
+            ls = ls + 1 if p <= 0 else 0; mls = max(mls, ls)
+        wk = {}
+        for t in T:
+            d = datetime.fromtimestamp(t[0], tz=timezone.utc); mon = (d - timedelta(days=d.weekday())).strftime("%Y-%m-%d")
+            wk[mon] = wk.get(mon, 0.0) + t[1]
+        worst = min(wk.items(), key=lambda x: x[1]) if wk else (None, 0)
+        out["witness"] = {"start": r.get("start"), "bal0": bal0, "balance": r.get("balance"), "n": len(P), "net": round(gw - gl, 2),
+                          "ret": round(100 * (gw - gl) / bal0, 1) if bal0 else None, "wr": round(100 * len(W) / len(P), 1),
+                          "pf": round(gw / gl, 2) if gl else None, "dd_pct": round(dd, 1), "dd_usd": round(dd_usd, 2),
+                          "max_loss_streak": mls, "weeks": len(wk), "weeks_pos": sum(1 for v in wk.values() if v > 0),
+                          "worst_week": {"monday": worst[0], "net": round(worst[1], 2), "pct": round(100 * worst[1] / bal0, 1) if bal0 else None},
+                          "last_trade": T[-1][0], "updated": r.get("updated")}
+    t = R.get("test") or {}
+    try:
+        rw = ((t.get("rows") or {}).get("0.35") or {}).get("today") or {}
+        Pt = rw.get("pnls") or []; Wt = [p for p in Pt if p > 0]; glt = -sum(p for p in Pt if p <= 0)
+        c = 0.0; b0 = float(t.get("balance") or 200); pk = b0; ddt = 0.0
+        for p in Pt:
+            c += p; pk = max(pk, b0 + c); ddt = max(ddt, (pk - b0 - c) / pk * 100)
+        out["backtest"] = {"days": t.get("days"), "n": len(Pt), "ret": round(100 * c / b0, 1), "wr": round(100 * len(Wt) / len(Pt), 1) if Pt else None,
+                           "pf": round(sum(Wt) / glt, 2) if glt else None, "dd_pct": round(ddt, 1), "current": t.get("rules_current")}
+    except Exception:
+        out["backtest"] = None
+    # what the robot is doing now: the chart feed (fresh = online), the market's pace, the background trend
+    try:
+        cj = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8"))
+        age = time.time() - os.path.getmtime(os.path.join(DIR, "owl_chart_btc.json"))
+        rv = (float(cj.get("vol_now") or 0) / max(float(cj.get("vol_ref") or 1), 1)) if cj.get("vol_ref") else 1.0
+        out["live"] = {"online": age < 300, "pace": "calm" if rv < 1.0 else ("brisk" if rv < 1.3 else ("fast" if rv < 1.85 else "very_fast")),
+                       "trend": int(((cj.get("pb") or {}).get("trend")) or 0), "open": bool(r.get("equity") and r.get("balance") and abs(float(r["equity"]) - float(r["balance"])) > 0.005)}
+    except Exception:
+        out["live"] = {"online": False}
+    try:
+        us = users()
+        out["robots"] = sum(1 for x in us if x.get("dedicated") and x.get("mode") == "auto")
+    except Exception:
+        out["robots"] = None
+    out["tg_bot"] = nest_config().get("tg_bot") or "Kino_owl_bot"
+    _LAND_CACHE[0], _LAND_CACHE[1] = time.time(), out
+    return out
 
 
 def rentabilite_payload():
@@ -11886,17 +11952,17 @@ JOIN_PAGE = """<!doctype html><html lang="fr" translate="no"><head>
 <meta name="theme-color" content="#0b0f14">
 <meta name="description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="OwlNest">
-<meta property="og:description" content="Le robot Owl trade pour vous, jour et nuit. Démo gratuite en direct, sans compte.">
+<meta property="og:title" content="OwlNest &middot; un robot de trading aux r&eacute;sultats publics">
+<meta property="og:description" content="Un compte t&eacute;moin en argent r&eacute;el, r&eacute;sultats publics, pertes comprises. D&eacute;mo gratuite en direct, sans compte.">
 <meta property="og:image" content="%%ORIGIN%%/shots/og_card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="OwlNest : le robot Owl trade pour vous, jour et nuit">
+<meta property="og:image:alt" content="OwlNest : les r&eacute;sultats du compte t&eacute;moin en argent r&eacute;el">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:url" content="%%ORIGIN%%/join">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="OwlNest">
-<meta name="twitter:description" content="Démo gratuite en direct, sans compte. Vous gardez votre argent chez votre courtier.">
+<meta name="twitter:title" content="OwlNest &middot; un robot de trading aux r&eacute;sultats publics">
+<meta name="twitter:description" content="Un compte t&eacute;moin en argent r&eacute;el, pertes comprises. Votre argent reste chez votre courtier.">
 <meta name="twitter:image" content="%%ORIGIN%%/shots/og_card.png">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icon192.png">
@@ -11959,6 +12025,29 @@ h1{font-size:2rem;font-weight:800;margin-top:16px;letter-spacing:.5px}
 .pv-bot{margin-top:13px;font-size:.82rem;color:var(--text2);display:flex;
  align-items:center;justify-content:center;gap:7px}
 .feats{margin-top:30px}
+/* 2026-10-11 (owner, acquisition) */
+.tag .tg2{display:block;margin-top:8px;font-size:.86rem;color:#9fc2de;font-weight:500}
+.pw{margin:12px auto 0;max-width:360px;text-align:left;border-radius:18px;padding:14px 16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
+.pw .h{font-size:.64rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#e8c55a;display:flex;align-items:center;gap:7px}
+.pw .g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.pw .g div{min-width:0}.pw .g b{display:block;font-size:1.02rem;font-weight:900;color:#ff9a9a;white-space:nowrap}
+.pw .g span{display:block;font-size:.66rem;color:#9fc2de;line-height:1.3;margin-top:2px}
+.pw p{font-size:.76rem;color:#c6d3df;line-height:1.45;margin-top:10px}
+.trust{margin:18px auto 0;max-width:360px;display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left}
+.trust div{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 11px;font-size:.74rem;line-height:1.35;color:#c6d3df}
+.trust svg.ic{flex:none;width:18px;height:18px;color:#8df0bb;margin-top:1px}
+.trust b{display:block;color:#fff;font-size:.78rem}
+.live2{margin:14px auto 0;max-width:360px;display:flex;align-items:center;gap:12px;text-align:left;border-radius:16px;padding:12px 14px;background:linear-gradient(135deg,rgba(59,130,246,.14),rgba(59,130,246,.04));border:1px solid rgba(143,198,255,.22)}
+.live2 .dot{width:10px;height:10px;border-radius:50%;flex:none;background:#2ecc71;box-shadow:0 0 0 4px rgba(46,204,113,.18),0 0 12px #2ecc71;animation:lv2 1.6s infinite}
+.live2 .dot.off{background:#8a9bb0;box-shadow:none;animation:none}
+@keyframes lv2{50%{box-shadow:0 0 0 7px rgba(46,204,113,.06),0 0 12px #2ecc71}}
+.live2 b{display:block;font-size:.84rem;color:#fff}.live2 span{display:block;font-size:.74rem;color:#9fc2de;margin-top:2px;line-height:1.35}
+.tgc{margin:26px 0 28px;border-radius:20px;padding:16px;text-align:left;background:linear-gradient(135deg,rgba(42,171,238,.16),rgba(42,171,238,.04));border:1px solid rgba(42,171,238,.3);display:flex;gap:14px;align-items:center}
+.tgc .ic2{width:44px;height:44px;border-radius:14px;flex:none;background:#2aabee;display:flex;align-items:center;justify-content:center}
+.tgc b{display:block;font-size:.95rem;color:#fff}.tgc span{display:block;font-size:.78rem;color:#c6d3df;margin-top:3px;line-height:1.4}
+.tgc a{flex:none;background:#2aabee;color:#fff;font-weight:800;font-size:.82rem;border-radius:12px;padding:10px 12px;text-decoration:none;white-space:nowrap}
+details.fqall{margin-top:4px}details.fqall>summary{list-style:none;cursor:pointer;text-align:center;font-weight:800;color:#8fc6ff;padding:14px 0;font-size:.9rem}
+details.fqall>summary::-webkit-details-marker{display:none}
 /* 2026-10-11 (owner): the proof, on the landing - one card, two views:
    the witness account (real money) first, the backtest second */
 .pf2{margin:26px auto 0;max-width:360px;text-align:left;border-radius:var(--r-lg);overflow:hidden;position:relative;
@@ -12065,7 +12154,7 @@ button.go{width:100%;margin-top:24px;background:var(--accent);color:#fff;
 .pfoot{margin-top:34px;text-align:center;font-size:.75rem;color:var(--muted);
  display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:28px}
 .pf1{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text2)}
-.pf2{max-width:320px;line-height:1.55;opacity:1}
+.pfnote{max-width:320px;line-height:1.55;opacity:1}
 .pfoot img{width:16px;height:16px;border-radius:4px}
 .chips{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:16px}
 .chips span{display:inline-flex;align-items:center;gap:5px;font-size:.69rem;font-weight:600;
@@ -12157,11 +12246,26 @@ input:focus{box-shadow:0 0 0 3px rgba(59,130,246,.35)}
 <button type="button" class="lgb" id="lgb" aria-label="English">EN</button>
 <div class="ring"><img src="/icon192.png" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:16px"></div>
 <h1>OwlNest</h1>
-<div class="tag">Le robot Owl trade pour vous,<br>
-jour et nuit. Vous, vous regardez.</div>
+<div class="tag">Un robot de trading qui travaille<br>
+sur votre propre compte.<span class="tg2">Ses vrais r&eacute;sultats sont publics, pertes comprises.</span></div>
 <div class="chips"><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Démo gratuite</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Rien à installer</span><span><svg aria-hidden="true" class="ic ic-s"><use href="#i-check"/></svg> Arrêt à tout moment</span></div>
 </div>
-<div class="preview">
+<div class="pf2" id="pf2" hidden>
+ <div class="in">
+  <div class="top"><span class="ey" id="pf2-ey">Preuve de rentabilit&eacute;</span><span class="lv"><i></i><span id="pf2-lv">En direct</span></span></div>
+  <div class="sw" role="tablist"><button type="button" class="on" data-v="real" id="pf2-b1">Compte t&eacute;moin</button><button type="button" data-v="bt" id="pf2-b2">Backtest</button></div>
+  <div class="hd"><div><div class="big" id="pf2-big">&nbsp;</div><div class="bs" id="pf2-bs">&nbsp;</div></div><svg class="sp" id="pf2-sp" viewBox="0 0 120 44" preserveAspectRatio="none"></svg></div>
+  <div class="g3" id="pf2-g3"></div>
+  <div class="nt" id="pf2-nt"></div>
+ </div>
+ <a class="go" id="pf2-go" href="/demo"><span id="pf2-gt">Voir la preuve compl&egrave;te</span><span aria-hidden="true">&rsaquo;</span></a>
+</div>
+<div class="pw" id="pw" hidden>
+ <div class="h"><svg aria-hidden="true" class="ic ic-s"><use href="#i-info"/></svg>Le pire moment, sans filtre</div>
+ <div class="g"><div><b id="pw-dd">&nbsp;</b><span>baisse maximale</span></div><div><b id="pw-wk">&nbsp;</b><span id="pw-wkl">pire semaine</span></div><div><b id="pw-ls">&nbsp;</b><span>pertes d&rsquo;affil&eacute;e au pire</span></div></div>
+ <p id="pw-p"></p>
+</div>
+<div class="preview" style="display:none">
 <div class="pv-lbl" id="pv-lbl">Aper&ccedil;u en direct</div>
 <div class="pv-money" id="pv-money">$1 234,56</div>
 <div class="pv-eur" id="pv-eur">&asymp; 1 062 &euro;</div>
@@ -12183,17 +12287,15 @@ jour et nuit. Vous, vous regardez.</div>
 <div><span class="pv-live" id="pv-live" hidden><i></i><span id="pv-live-t"></span></span></div>
 <div class="pv-note">D&eacute;p&ocirc;ts et retraits ne comptent pas. Il y a aussi des jours en baisse : rien n&#8217;est garanti. Les r&eacute;sultats pass&eacute;s ne promettent pas les suivants.</div>
 </div>
-<a class="bigbtn b1" id="hero-cta" href="/demo" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
-<div class="pf2" id="pf2" hidden>
- <div class="in">
-  <div class="top"><span class="ey" id="pf2-ey">Preuve de rentabilit&eacute;</span><span class="lv"><i></i><span id="pf2-lv">En direct</span></span></div>
-  <div class="sw" role="tablist"><button type="button" class="on" data-v="real" id="pf2-b1">Compte t&eacute;moin</button><button type="button" data-v="bt" id="pf2-b2">Backtest</button></div>
-  <div class="hd"><div><div class="big" id="pf2-big">&nbsp;</div><div class="bs" id="pf2-bs">&nbsp;</div></div><svg class="sp" id="pf2-sp" viewBox="0 0 120 44" preserveAspectRatio="none"></svg></div>
-  <div class="g3" id="pf2-g3"></div>
-  <div class="nt" id="pf2-nt"></div>
- </div>
- <a class="go" id="pf2-go" href="/demo"><span id="pf2-gt">Voir la preuve compl&egrave;te</span><span aria-hidden="true">&rsaquo;</span></a>
+<a class="bigbtn b1" id="hero-cta" href="/demo" onclick="try{fn('demo_open')}catch(e){}" style="display:block;margin-top:22px;text-decoration:none;text-align:center"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Voir le robot en direct &middot; gratuit</a>
+<div class="trust" id="trust">
+ <div><svg aria-hidden="true" class="ic"><use href="#i-lock"/></svg><span><b>Votre argent reste chez vous</b>sur votre compte, chez votre courtier.</span></div>
+ <div><svg aria-hidden="true" class="ic"><use href="#i-key"/></svg><span><b>Le robot ne peut rien retirer</b>il passe des ordres, c&rsquo;est tout.</span></div>
+ <div><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg><span><b>R&eacute;sultats publics</b>un compte t&eacute;moin r&eacute;el, pertes comprises.</span></div>
+ <div><svg aria-hidden="true" class="ic"><use href="#i-bot"/></svg><span><b id="tr-rb">Robots en service</b><i id="tr-rbs" style="font-style:normal">jour et nuit, depuis septembre.</i></span></div>
 </div>
+<div class="live2" id="live2" hidden><i class="dot" id="lv2-dot"></i><div><b id="lv2-t">Le robot en ce moment</b><span id="lv2-s"></span></div></div>
+
 
 <div class="feats" id="shots-sec">
 <div class="how" role="heading" aria-level="2">Ce que vous verrez</div>
@@ -12278,38 +12380,43 @@ jour et nuit. Vous, vous regardez.</div>
 <a class="all" href="/offres">Voir toutes les offres &rsaquo;</a>
 </div>
 <div class="feats" id="faq">
+<div class="tgc" id="tgc"><div class="ic2"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M21.5 4.3 2.9 11.5c-1.1.4-1.1 1.1-.2 1.4l4.7 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.7 3.5c.9.5 1.5.2 1.7-.8l3.1-14.6c.3-1.3-.5-1.9-1.2-1.9zM8.4 14.1l9.3-5.9c.5-.3.9-.1.5.2l-7.6 6.9-.3 3.4-1.9-4.6z"/></svg></div>
+ <div style="flex:1;min-width:0"><b>Pas encore pr&ecirc;t&nbsp;?</b><span>Recevez le bilan de la semaine du compte t&eacute;moin sur Telegram. Gratuit, sans compte.</span></div>
+ <a id="tg-go" href="https://t.me/Kino_owl_bot?start=bilan" target="_blank" rel="noopener" onclick="try{fn('tg_open')}catch(e){}">Recevoir</a></div>
 <div class="how" role="heading" aria-level="2">Questions fr&eacute;quentes</div>
 <details class="fq"><summary>Où est mon argent ?</summary>
 <p>Sur votre propre compte MT5, chez votre courtier, à votre nom. Le robot y passe des ordres ; il ne peut ni retirer ni déplacer votre argent. Vous retirez quand vous voulez, comme d’habitude.</p></details>
 <details class="fq"><summary>Puis-je perdre de l’argent ?</summary>
 <p>Oui. Aucun robot ne gagne tous les jours et rien n’est garanti : les résultats passés ne promettent pas les suivants. Ne mettez que de l’argent que vous pouvez vous permettre de perdre. Chaque trade, gagné ou perdu, est visible dans l’application.</p></details>
+<details class="fq"><summary>Puis-je arrêter quand je veux ?</summary>
+<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent jamais tout seuls : sans renouvellement de votre part, l’accès s’arrête à la fin des 30 jours.</p></details>
+<details class="fq"><summary>Prenez-vous une part de mes gains ?</summary>
+<p>Non. Les offres ont un prix fixe par mois, quel que soit votre résultat. Vos gains restent à vous.</p></details>
+<details class="fq"><summary>Puis-je essayer sans payer ?</summary>
+<p>Oui. La démo est gratuite, toujours, sans compte : vous voyez le robot travailler sur un vrai compte de démonstration.</p></details>
+<details class="fq"><summary>OwlNest donne-t-il des conseils d’investissement ?</summary>
+<p>Non. OwlNest est un logiciel et un service de copie : ni conseil, ni gestion d’investissement. Vous restez responsable de votre compte.</p></details>
+<details class="fqall" ontoggle="if(this.open)try{fn('faq_more')}catch(e){}"><summary>Toutes les questions (8)</summary>
 <details class="fq"><summary>Et si le robot enchaîne les pertes ?</summary>
 <p>Il a des freins. Après une perte, il garde une petite réserve de côté et avance prudemment. Si les pertes s’accumulent jusqu’à une limite fixée à l’avance, il s’arrête tout seul : il ne s’acharne pas.</p></details>
 <details class="fq"><summary>Que veut dire « la mise grandit avec mon compte » ?</summary>
 <p>Chaque matin, le robot regarde le solde de votre compte et règle la taille de ses trades en proportion. Quand il y a un plafond du jour, il vaut environ 1,5&nbsp;% du solde du matin (3 $ pour 200 $, 6 $ pour 400 $). C’est une limite, pas une promesse. Vous pouvez désactiver cette option dans Réglages.</p></details>
-<details class="fq"><summary>Prenez-vous une part de mes gains ?</summary>
-<p>Non. Les offres ont un prix fixe par mois, quel que soit votre résultat. Vos gains restent à vous.</p></details>
 <details class="fq"><summary>Mon abonnement se renouvelle-t-il tout seul ?</summary>
 <p>Non. Signal et Stratégie durent 30 jours et ne se renouvellent jamais automatiquement : rien n’est prélevé sans vous. À la fin, c’est à vous de renouveler, par un nouveau paiement ou un code ; sans cela, l’accès s’arrête.</p></details>
-<details class="fq"><summary>Puis-je arrêter quand je veux ?</summary>
-<p>Oui. Un message suffit, et le robot ne prend plus de trade sur votre compte. Signal et Stratégie ne se renouvellent jamais tout seuls : sans renouvellement de votre part, l’accès s’arrête à la fin des 30 jours.</p></details>
 <details class="fq"><summary>Que se passe-t-il si mon téléphone est éteint ?</summary>
 <p>Rien. Le robot tourne sur nos serveurs, jour et nuit. Votre téléphone sert seulement à regarder.</p></details>
 <details class="fq"><summary>Dois-je installer quelque chose sur mon ordinateur ?</summary>
 <p>Non. Vous ouvrez cette page sur votre téléphone, et c’est tout. Une application est proposée si vous préférez, mais elle est facultative.</p></details>
-<details class="fq"><summary>Puis-je essayer sans payer ?</summary>
-<p>Oui. La démo est gratuite, toujours, sans compte : vous voyez le robot travailler sur un vrai compte de démonstration.</p></details>
 <details class="fq"><summary>Mes identifiants sont-ils en sécurité ?</summary>
 <p>Ils servent uniquement à relier le robot à votre compte et ne sont jamais partagés. Pour couper l’accès à tout moment, il suffit de changer votre mot de passe chez votre courtier.</p></details>
 <details class="fq"><summary>Puis-je suivre depuis plusieurs téléphones ?</summary>
 <p>Oui. Votre lien personnel fonctionne partout ; vous pouvez le protéger avec un code à 4 chiffres.</p></details>
-<details class="fq"><summary>OwlNest donne-t-il des conseils d’investissement ?</summary>
-<p>Non. OwlNest est un logiciel et un service de copie : ni conseil, ni gestion d’investissement. Vous restez responsable de votre compte.</p></details>
 <details class="fq"><summary>Comment vous joindre ?</summary>
 <p>Écrivez au robot OwlNest sur Telegram : <a href="https://t.me/%%TGBOT%%">ouvrir Telegram</a>. La famille Owl vous répond.</p></details>
+</details>
 </div>
 <a class="stk" id="stk" href="/demo" tabindex="-1" aria-hidden="true"><svg aria-hidden="true" class="ic"><use href="#i-eye"/></svg> Essayer la d&eacute;mo gratuite</a>
-<div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pf2">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span>
+<div class="pfoot"><div class="pf1"><img src="/icon192.png" alt=""><span>OwlNest &middot; fait avec amour par la famille Owl</span></div><span class="pfnote">Vos identifiants servent uniquement &agrave; relier le robot &agrave; votre compte. Ils ne sont jamais partag&eacute;s.</span>
 <nav class="lgl" aria-label="Informations l&eacute;gales"><a href="/legal#conditions">Conditions</a><a href="/legal#confidentialite">Confidentialit&eacute;</a><a href="/legal#risques">Avertissement sur les risques</a><a href="https://t.me/%%TGBOT%%">Contact</a></nav></div>
 </div>
 
@@ -12422,6 +12529,29 @@ function pf2Paint(){if(!PF2)return;const en=pvEn(),j=PF2.j,$=id=>document.getEle
  $('pf2-g3').innerHTML=pl(en?'Win rate':'Réussite',Math.round(s.wr)+'\u202f%',bw(s.wr))+pl(document.getElementById('pf2').clientWidth<320?'PF':'Profit factor',fr(s.pf.toFixed(2)),bp(s.pf))+pl(en?'Max drawdown':'Baisse max','−'+fr(s.dd.toFixed(1))+'\u202f%',bd(s.dd));
  $('pf2-nt').innerHTML=s.n+' trades · '+note;$('pf2-ey').textContent=en?'Proof of profitability':'Preuve de rentabilité';$('pf2-lv').textContent=PF2V==='real'?(en?'Live':'En direct'):(en?'Up to date':'À jour');
  $('pf2-b1').textContent=en?'Witness account':'Compte témoin';$('pf2-gt').textContent=en?'See the full proof':'Voir la preuve complète';}
+// 2026-10-11 (owner, acquisition): the worst moment, the trust row, the live strip, from /landing_data
+async function landLoad(){try{const j=await (await fetch('/landing_data',{cache:'no-store'})).json();window._land=j;landPaint();}catch(e){}}
+function landPaint(){const j=window._land;if(!j)return;const en=pvEn(),$=id=>document.getElementById(id),fr=v=>en?v:String(v).replace('.',',');
+ const W=j.witness;if(W){$('pw-dd').textContent='−'+fr(W.dd_pct.toFixed(1))+'\u202f%';
+  const wk=W.worst_week||{};$('pw-wk').textContent=(wk.pct<0?'−':'+')+fr(Math.abs(wk.pct||0).toFixed(1))+'\u202f%';
+  if(wk.monday){const d=new Date(wk.monday+'T12:00:00Z');$('pw-wkl').textContent=(en?'worst week (':'pire semaine (')+String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+')';}
+  $('pw-ls').textContent=W.max_loss_streak;
+  $('pw-p').textContent=en?('These are the witness account’s real worst moments since it started. '+W.weeks_pos+' weeks out of '+W.weeks+' ended positive. A robot that never loses does not exist; what matters is that the losses stay small.')
+   :('Ce sont les vrais pires moments du compte témoin depuis son départ. '+W.weeks_pos+' semaines sur '+W.weeks+' ont fini en positif. Un robot qui ne perd jamais n’existe pas : ce qui compte, c’est que les pertes restent petites.');
+  $('pw').hidden=false;}
+ if(j.robots){$('tr-rb').textContent=en?(j.robots+' robots at work'):(j.robots+' robots en service');}
+ if(W&&W.start){const d=new Date(W.start*1000),m=en?['January','February','March','April','May','June','July','August','September','October','November','December']:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  $('tr-rbs').textContent=en?('day and night, since '+m[d.getUTCMonth()]+'.'):('jour et nuit, depuis '+m[d.getUTCMonth()]+'.');}
+ const L=j.live||{};if(L.online!==undefined){const ago=W&&W.last_trade?Math.max(1,Math.round((Date.now()/1000-W.last_trade)/60)):null;
+  const agoT=ago===null?'':(ago<60?ago+' min':(ago<1440?Math.round(ago/60)+' h':Math.round(ago/1440)+(en?' d':' j')));
+  const pace={calm:en?'calm market':'marché calme',brisk:en?'brisk market':'marché soutenu',fast:en?'fast market':'marché rapide',very_fast:en?'very fast market':'marché très rapide'}[L.pace]||'';
+  const tr=L.trend===1?(en?'background trend up':'tendance de fond en hausse'):(L.trend===-1?(en?'background trend down':'tendance de fond en baisse'):'');
+  $('lv2-dot').className='dot'+(L.online?'':' off');$('lv2-t').textContent=L.online?(en?'The robot is watching the market':'Le robot surveille le marché'):(en?'The robot is resting':'Le robot se repose');
+  $('lv2-s').textContent=[L.open?(en?'a trade is open':'un trade est en cours'):(agoT?(en?'last trade '+agoT+' ago':'dernier trade il y a '+agoT):''),pace,tr].filter(Boolean).join(' · ');$('live2').hidden=false;}
+ if(j.tg_bot){$('tg-go').href='https://t.me/'+j.tg_bot+'?start=bilan';}}
+landLoad();setInterval(()=>{if(document.visibilityState==='visible')landLoad();},120000);
+if('IntersectionObserver' in window){const _po=new IntersectionObserver(a=>{if(a[0].isIntersecting){try{fn('proof_seen')}catch(e){}_po.disconnect();}},{threshold:.5});const _pe=document.getElementById('pf2');if(_pe)_po.observe(_pe);}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#pf2-b2')){try{fn('proof_switch')}catch(x){}}if(e.target.closest&&e.target.closest('#pf2-go')){try{fn('proof_open')}catch(x){}}});
 pf2Load();
 function pvRender(d){
  try{
@@ -12462,6 +12592,26 @@ function pvRender(d){
 </script><script>
 (function(){
 var EN={
+"Toutes les questions (8)": "All questions (8)",
+"Un robot de trading qui travaille": "A trading robot that works",
+"sur votre propre compte.": "on your own account.",
+"Ses vrais résultats sont publics, pertes comprises.": "Its real results are public, losses included.",
+"Le pire moment, sans filtre": "The worst moment, unfiltered",
+"baisse maximale": "max drawdown",
+"pire semaine": "worst week",
+"pertes d’affilée au pire": "losses in a row, at worst",
+"Votre argent reste chez vous": "Your money stays with you",
+"sur votre compte, chez votre courtier.": "on your account, at your broker.",
+"Le robot ne peut rien retirer": "The robot cannot withdraw anything",
+"il passe des ordres, c’est tout.": "it places orders, nothing more.",
+"Résultats publics": "Public results",
+"un compte témoin réel, pertes comprises.": "a real witness account, losses included.",
+"Robots en service": "Robots at work",
+"jour et nuit, depuis septembre.": "day and night, since September.",
+"Le robot en ce moment": "The robot right now",
+"Pas encore prêt ?": "Not ready yet?",
+"Recevez le bilan de la semaine du compte témoin sur Telegram. Gratuit, sans compte.": "Get the witness account’s weekly summary on Telegram. Free, no account.",
+"Recevoir": "Get it",
 "Aperçus de l’application": "App previews",
 "Le robot Owl trade pour vous,": "The Owl robot trades for you,",
 "jour et nuit. Vous, vous regardez.": "day and night. You just watch.",
@@ -12612,6 +12762,7 @@ function paint(){
  if(md)md.setAttribute('content',en?mdEn:mdFr);
  if(window._pvd&&window.pvRender)pvRender(window._pvd);
  if(window.pf2Paint)pf2Paint();
+ if(window.landPaint)landPaint();
 }
 window.owlApply=function(){apply(window._en);};
 window._en=stored();
@@ -13932,7 +14083,7 @@ class H(BaseHTTPRequestHandler):
                 import urllib.parse as _upf
                 _ff = _upf.parse_qs(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 200)).decode("utf-8", "replace"))
                 _ev = (_ff.get("e", [""])[0] or "").strip()
-                if _ev in FUNNEL_CLIENT and not admin_cookie_ok(self.headers):
+                if (_ev in FUNNEL_CLIENT or _ev in LANDING_EVENTS) and not admin_cookie_ok(self.headers):
                     fn_count(_ev)
                 elif _ev == "src" and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
                     import re as _res
@@ -15632,6 +15783,12 @@ class H(BaseHTTPRequestHandler):
             return
         if parts and parts[0] == "icon192.png":
             self._send(ICON192, "image/png")
+            return
+        if parts and parts[0] == "landing_data" and len(parts) == 1:
+            try:
+                self._send(json.dumps(landing_payload()), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:80]}), "application/json")
             return
         if parts and parts[0] == "icon512.png":
             self._send(ICON512, "image/png")

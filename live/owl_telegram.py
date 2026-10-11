@@ -181,6 +181,76 @@ def recovery(token, cid, txt, frm):
     return True
 
 
+# 2026-10-11 (owner, acquisition): the landing's "Pas encore pret ?" door.
+# A visitor taps /start bilan -> joins digest_ids (separate from the family
+# alert list chat_ids); every Monday 07:00 UTC they get the witness account's
+# week, from the app's PUBLIC aggregates (/landing_data). "stop" leaves.
+def _landing():
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:8787/landing_data", timeout=20) as r:
+            return json.loads(r.read().decode("utf-8"))
+    except Exception as e:
+        say(f"landing_data error: {e}")
+        return None
+
+
+def _fr(v, d=1):
+    return (("%." + str(d) + "f") % v).replace(".", ",")
+
+
+def digest_text(L):
+    W = (L or {}).get("witness")
+    if not W:
+        return None
+    wk = W.get("worst_week") or {}
+    sign = "+" if W["ret"] >= 0 else "\u2212"
+    lines = ["\U0001F989 OwlNest \u00b7 le bilan de la semaine",
+             "",
+             f"Compte t\u00e9moin (argent r\u00e9el) : {sign}{_fr(abs(W['ret']))} % depuis le d\u00e9part",
+             f"{W['n']} trades \u00b7 r\u00e9ussite {round(W['wr'])} % \u00b7 baisse max \u2212{_fr(W['dd_pct'])} %",
+             f"{W['weeks_pos']} semaines sur {W['weeks']} en positif."]
+    lines += ["", "Pertes comprises, rien n\u2019est cach\u00e9. Tout le d\u00e9tail :", SITE + "/",
+              "", "Pour ne plus recevoir ce bilan, \u00e9crivez \u00ab stop \u00bb."]
+    return "\n".join(lines)
+
+
+def _digest_due(c):
+    now = time.gmtime()
+    if now.tm_wday != 0 or now.tm_hour < 7:
+        return False
+    key = time.strftime("%Y-%m-%d", now)
+    return c.get("digest_last") != key
+
+
+def bilan(token, cid, txt):
+    """Returns True when the message was about the weekly summary."""
+    low = (txt or "").strip().lower()
+    if low in ("/start bilan", "bilan"):
+        c = cfg() or {}
+        ids = c.setdefault("digest_ids", [])
+        if cid not in ids:
+            ids.append(cid)
+            save_cfg(c)
+            say(f"digest subscribed {cid}")
+        L = _landing()
+        tg(token, "sendMessage", chat_id=cid, text=(
+            "\U0001F989 C\u2019est not\u00e9 : chaque lundi matin, vous recevrez le bilan de la semaine du compte t\u00e9moin. "
+            "Pas de pub, pas d\u2019appel. \u00ab stop \u00bb pour arr\u00eater.\n\nO\u00f9 il en est aujourd\u2019hui :"))
+        t = digest_text(L)
+        if t:
+            tg(token, "sendMessage", chat_id=cid, text=t)
+        return True
+    if low in ("stop", "/stop"):
+        c = cfg() or {}
+        if cid in c.get("digest_ids", []):
+            c["digest_ids"].remove(cid)
+            save_cfg(c)
+            say(f"digest unsubscribed {cid}")
+            tg(token, "sendMessage", chat_id=cid, text="\U0001F989 C\u2019est fait, vous ne recevrez plus le bilan. \u00ab bilan \u00bb pour revenir.")
+            return True
+    return False
+
+
 def main():
     say("telegram daemon starting")
     # wait for config with a token
@@ -211,6 +281,11 @@ def main():
                         continue
                     c = cfg() or {"token": token, "chat_ids": []}
                     try:
+                        if bilan(token, cid, m.get("text") or ""):
+                            continue
+                    except Exception as e:
+                        say(f"bilan error: {e}")
+                    try:
                         if recovery(token, cid, m.get("text") or "", m.get("from") or {}):
                             continue
                     except Exception as e:
@@ -226,6 +301,19 @@ def main():
                         tg(token, "sendMessage", chat_id=cid, text=(
                             "\U0001F989 OwlNest. Pour retrouver votre acc\u00e8s un jour, reliez ce Telegram depuis l\u2019app "
                             "(R\u00e9glages \u203a Compte \u203a Relier Telegram). Ensuite, \u00e9crivez-moi \u00ab lien \u00bb."))
+        # 1b) the Monday summary for the landing's visitors
+        try:
+            c = cfg() or {}
+            if c.get("digest_ids") and _digest_due(c):
+                t = digest_text(_landing())
+                if t:
+                    sent = sum(1 for cid in list(c["digest_ids"]) if tg(token, "sendMessage", chat_id=cid, text=t) is not None)
+                    c = cfg() or c
+                    c["digest_last"] = time.strftime("%Y-%m-%d", time.gmtime())
+                    save_cfg(c)
+                    say(f"weekly digest sent to {sent}/{len(c.get('digest_ids', []))}")
+        except Exception as e:
+            say(f"digest error: {e}")
         # 2) log tail
         try:
             size = os.path.getsize(LOGF)

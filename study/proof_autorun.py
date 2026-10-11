@@ -92,6 +92,11 @@ def nightly():
         try: fidelity()
         except Exception as e: log("fidelity failed: %r" % (e,))
     check()
+    # 2026-10-11: the share-preview picture follows the witness account's numbers
+    try:
+        r = subprocess.run([PY, os.path.join(ROOT, "live", "review", "og_card.py")], capture_output=True, text=True, timeout=180)
+        log("og card: " + (r.stdout or r.stderr).strip()[-120:])
+    except Exception as e: log("og card failed: %r" % (e,))
 
 
 if __name__ == "__main__":
