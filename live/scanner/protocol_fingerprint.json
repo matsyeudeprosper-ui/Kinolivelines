@@ -1,0 +1,11 @@
+{
+ "protocol": "SCANNER-F1",
+ "written_utc": "2026-10-11T23:39:25Z",
+ "files": {
+  "owl_scanner.py": "a548c7ddaa100f3443566d3eeb1f1a208f89906892c07e1baf546012c205f3af",
+  "structure_bos_bot.py": "23cb49b44a68df6d34bedb647fccdd7f0997cfc28d01f57fc078a64b78e298d9",
+  "pb_gate.py": "51a017dbeed6248c361ed61d205df07187c4901b24baaa8a7edc219ae77cac41",
+  "owl_chart_feed.py": "c9623da9ab166e3ee71b8c6387d9690d864966608fd7c9e3b6d7f308812d81d8"
+ },
+ "engine_fwd": "v3-quote"
+}

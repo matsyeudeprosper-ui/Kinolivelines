@@ -4574,8 +4574,9 @@ function scanPaint(){const j=window._scn,body=document.getElementById('scn-body'
  const F=window._scnF||'live';
  const arrow=t=>t===1?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--up-soft)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>':(t===-1?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--down-soft)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg>');
  const sub=r=>{if(r.status==='trade'&&r.open)return (r.open.d===1?(en?'virtual buy':'achat virtuel'):(en?'virtual sell':'vente virtuelle'))+' · '+scnR(r.open.r_now);
-  if(r.status==='ready')return en?'close to its trigger':'tout près de son déclencheur';
-  if(r.status==='soon')return en?'approaching its trigger':'se rapproche de son déclencheur';
+  const dp=r.dist_pct!=null?(en?r.dist_pct.toFixed(2):r.dist_pct.toFixed(2).replace('.',','))+' %':null;
+  if(r.status==='ready')return dp?(en?'trigger '+dp+' away':'déclencheur à '+dp):(en?'near its trigger':'près du déclencheur');
+  if(r.status==='soon')return dp?(en?'trigger '+dp+' away':'déclencheur à '+dp):(en?'nearing its trigger':'s’approche du déclencheur');
   if(r.status==='far')return en?'trend in place, trigger still far':'tendance en place, déclencheur encore loin';
   if(r.status==='waiting_turn')return en?'the small structure is against the trend':'la petite structure va contre la tendance';
   if(r.status==='wrong_side')return en?'price must come back past its last break':'le prix doit repasser sa dernière cassure';
@@ -4585,7 +4586,7 @@ function scanPaint(){const j=window._scn,body=document.getElementById('scn-body'
  const rowH=r=>{const s=S[r.status]||S.error;return '<div class="scn-row" data-s="'+r.sym+'"><span class="tr">'+arrow(r.pb_trend)+'</span><div class="nm"><b>'+(r.name||r.sym)+'</b><small>'+sub(r)+'</small>'+nearBar(r)+'</div><span class="scn-st" style="color:'+s[1]+'">'+s[0]+'</span></div>';};
  let h='';
  if(F==='live'){
-  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Ready or close':'Prêts ou presque')+'</div>'+(live.length?live.map(rowH).join(''):'<div style="font-size:.9rem;color:var(--muted2);line-height:1.5;margin-top:8px">'+(en?'No market is close to its trigger right now. The scanner checks every minute.':'Aucun marché n’est près de son déclencheur pour l’instant. Le scanner vérifie chaque minute.')+'</div>')+'</div>';
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Close to a trigger':'Proches d’un déclencheur')+'</div>'+(live.length?live.map(rowH).join('')+'<div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:10px">'+(en?'“Soon” and “Ready” only mean the price is near a trigger level. They are not trading recommendations.':'« Bientôt » et « Prêt » veulent seulement dire que le prix est proche d’un niveau de déclenchement. Ce ne sont pas des recommandations de trading.')+'</div>':'<div style="font-size:.9rem;color:var(--muted2);line-height:1.5;margin-top:8px">'+(en?'No market is close to its trigger right now. The scanner checks every minute.':'Aucun marché n’est près de son déclencheur pour l’instant. Le scanner vérifie chaque minute.')+'</div>')+'</div>';
   const rec=(j.recent||[]).slice(0,5);
   if(rec.length)h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Latest virtual trades':'Derniers trades virtuels')+'</div>'+rec.map(t=>'<div class="scn-row" style="cursor:default"><span class="tr">'+arrow(t.d)+'</span><div class="nm"><b>'+(t.name||t.sym)+'</b><small>'+new Date((t.xt||t.t)*1000).toLocaleString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></div><b style="color:'+(t.r>0?'var(--up-soft)':'var(--down-soft)')+';font-variant-numeric:tabular-nums">'+scnR(t.r)+'</b></div>').join('')+'</div>';
  }else if(F==='all'){
@@ -4595,7 +4596,7 @@ function scanPaint(){const j=window._scn,body=document.getElementById('scn-body'
   let tb=0,tf=0,sb=0,sf=0;
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Backtest vs virtual, per market':'Backtest et virtuel, par marché')+'</div>'+
    '<div style="font-size:.8rem;color:var(--muted2);line-height:1.5;margin:8px 0 12px">'+(en?'R = the result divided by the trade’s risk: a target is +0.8 R, a stop −1 R. Above 0 on average, the setup pays; the two columns should end up close.':'R = le résultat divisé par le risque du trade : une cible fait +0,8 R, un stop −1 R. Au-dessus de 0 en moyenne, la configuration paie ; les deux colonnes doivent finir proches.')+'</div>'+
-   '<table class="scn-tbl"><tr><th>'+(en?'Market':'Marché')+'</th><th>'+(en?'Backtest':'Backtest')+'</th><th>'+(en?'Virtual':'Virtuel')+'</th></tr>'+
+   '<table class="scn-tbl"><tr><th>'+(en?'Market':'Marché')+'</th><th>'+(en?'Backtest':'Backtest')+'<br><small style="font-weight:600;text-transform:none;letter-spacing:0">'+(en?'candle close':'clôture')+'</small></th><th>'+(en?'Virtual':'Virtuel')+'<br><small style="font-weight:600;text-transform:none;letter-spacing:0">'+(en?'live quote':'cotation')+'</small></th></tr>'+
    rows.slice().sort((p,q)=>(((R[q.sym]||{}).bt||{}).avg_r??-9)-(((R[p.sym]||{}).bt||{}).avg_r??-9)).map(r=>{const x=R[r.sym]||{},b=x.bt,f=x.fwd;if(b&&b.n){tb+=b.n;sb+=b.sum_r||0;}if(f&&f.n){tf+=f.n;sf+=f.sum_r||0;}
     return '<tr><td>'+(r.name||r.sym)+(r.sym==='BTCUSD'?' <small>'+(en?'(reference)':'(référence)')+'</small>':'')+'</td><td>'+(b&&b.n?scnR(b.avg_r)+'<br><small>'+b.n+' · '+Math.round(b.wr)+'\u202f%</small>':'—')+'</td><td>'+(f&&f.n?scnR(f.avg_r)+'<br><small>'+f.n+' · '+Math.round(f.wr)+'\u202f%</small>':'<small>'+(en?'none yet':'aucun')+'</small>')+'</td></tr>';}).join('')+
    '<tr><td><b>'+(en?'All':'Ensemble')+'</b></td><td><b>'+(tb?scnR(sb/tb):'—')+'</b><br><small>'+tb+' trades</small></td><td><b>'+(tf?scnR(sf/tf):'—')+'</b><br><small>'+tf+' trades</small></td></tr></table>'+
@@ -10630,13 +10631,19 @@ def scanner_payload(detail):
         st = json.load(open(os.path.join(D, "state.json"), encoding="utf-8"))
     except Exception:
         st = {"symbols": []}
-    fwd, opened = {}, {}
+    fwd, opened, missed = {}, {}, {}
     try:
-        for ln in open(os.path.join(D, "forward.jsonl"), encoding="utf-8"):
+        # v3 = entries at a fresh quote, exits on ticks (GPT review 2026-10-11); the v2
+        # close-price records live in forward_v2_close.jsonl and are never mixed in
+        for ln in open(os.path.join(D, "forward_v3.jsonl"), encoding="utf-8"):
             try:
                 x = json.loads(ln)
             except Exception:
                 continue
+            if x.get("engine") != "v3-quote":
+                continue
+            if x.get("ev") == "missed":
+                missed[x.get("why") or "?"] = missed.get(x.get("why") or "?", 0) + 1
             if x.get("ev") == "close":
                 fwd.setdefault(x["sym"], []).append(x)
             elif x.get("ev") == "open":
@@ -10672,12 +10679,12 @@ def scanner_payload(detail):
     keep = ("sym", "name", "d", "t", "xt", "r", "win") if not detail else ("sym", "name", "d", "t", "xt", "r", "win", "e", "sl", "tp", "x")
     started = None
     try:
-        with open(os.path.join(D, "forward.jsonl"), encoding="utf-8") as f:
-            started = json.loads(f.readline()).get("t")
+        with open(os.path.join(D, "forward_v3.jsonl"), encoding="utf-8") as f:
+            started = json.loads(f.readline()).get("detect") or None
     except Exception:
         pass
     return {"state": st, "results": res, "recent": [{k: t.get(k) for k in keep} for t in recent],
-            "detail": bool(detail), "fwd_since": started}
+            "detail": bool(detail), "fwd_since": started, "fwd_model": "v3-quote", "missed": missed}
 
 
 def ai_pulse():

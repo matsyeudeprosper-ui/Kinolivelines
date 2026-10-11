@@ -50,7 +50,6 @@ sys.path.insert(0, DIR)
 OUTD = os.path.join(DIR, "scanner")
 os.makedirs(OUTD, exist_ok=True)
 STATE = os.path.join(OUTD, "state.json")
-FWD = os.path.join(OUTD, "forward.jsonl")
 LOGF = os.path.join(OUTD, "scanner.log")
 TERMINAL = r"C:\NestTerminals\u476954287\terminal64.exe"
 ENGINE = "v2-robot-struct"
@@ -234,7 +233,7 @@ def summary(trs):
 
 
 # ---------------------------------------------------------------- backtest
-def backtest(sym, days):
+def backtest(sym, days, end_ago=0.0, save=True):
     info = mt5.symbol_info(sym)
     if info is None:
         return {"sym": sym, "err": "symbol not found"}
@@ -242,8 +241,9 @@ def backtest(sym, days):
     seed = int(bot().SEED_BARS)
     # 2026-10-11 (GPT review): the window is CALENDAR days, the same span for every
     # market. Bars are read until PB_BARS of history sit before the window's start.
-    start = time.time() - days * 86400
-    n = PB_BARS + int(days * 1440) + 10
+    end = time.time() - end_ago * 86400
+    start = end - days * 86400
+    n = PB_BARS + int((days + end_ago) * 1440) + 10
     R = None
     for _ in range(6):
         R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, n)
@@ -263,7 +263,8 @@ def backtest(sym, days):
     S = Sym(sym)
     S.seed(R[k0 - seed:k0])          # the bot seeds with SEED_BARS closed bars
     trades, refused, open_tr, sigs = [], {}, None, 0
-    for k in range(k0, len(R)):
+    k1 = next((i for i in range(len(R)) if int(R[i]["time"]) >= end), len(R))
+    for k in range(k0, k1):
         r = R[k]
         if open_tr is not None:
             done = step_trade(open_tr, r, info.point)
@@ -282,20 +283,67 @@ def backtest(sym, days):
             else:
                 refused[why] = refused.get(why, 0) + 1
     out = {"sym": sym, "days": days, "calendar": True, "bars": len(R) - k0, "engine": ENGINE,
-           "from": int(R[k0]["time"]), "to": int(R[-1]["time"]),
+           "from": int(R[k0]["time"]), "to": int(R[k1 - 1]["time"]), "end_ago": end_ago,
            "built": int(time.time()), "secs": round(time.time() - t0, 1), "signals": sigs, "refused": refused,
            "summary": summary(trades), "trades": trades[-500:]}
-    json.dump(out, open(os.path.join(OUTD, "backtest_%s.json" % sym), "w", encoding="utf-8"))
+    out["_R"] = (R, k0, k1, info.point)          # for callers that need the bars (not saved)
+    if save:
+        json.dump({k: v for k, v in out.items() if k != "_R"}, open(os.path.join(OUTD, "backtest_%s.json" % sym), "w", encoding="utf-8"))
     return out
 
 
 # ------------------------------------------------------------------ forward
+# ------------------------------------------------------------------ forward (v3: quotes)
+# 2026-10-11 (GPT review of b8aea4d): v2 found a signal up to a minute after the
+# candle closed but booked the entry at that candle's close, and judged exits on
+# whole M1 bars that began before the entry. v3:
+#   * the daemon polls every POLL_S seconds for a newly closed candle;
+#   * an entry is booked at a FRESH quote read at detection (ask for a buy, bid
+#     for a sell), with the detection latency and the quote's age recorded;
+#   * no quote, or one older than QUOTE_MAX_AGE, = the signal is MISSED (logged);
+#   * a quote already beyond the stop = MISSED ("price_through_stop");
+#   * exits are judged on TICKS strictly after the entry tick: a buy's stop at the
+#     first bid <= SL, filled at that bid (a gap below the stop is recorded as
+#     slippage); its target at the first bid >= TP, filled at TP (limit). Mirror
+#     for a sell on the ask. Ticks with a zero bid/ask are skipped and counted.
+#   * after a restart an open trade is replayed on ticks from its entry.
+# v2 records (close-price model) stay in forward_v2_close.jsonl, never mixed.
+ENGINE_FWD = "v3-quote"
+FWD = os.path.join(OUTD, "forward_v3.jsonl")
+FWD_V2 = os.path.join(OUTD, "forward_v2_close.jsonl")
+POLL_S = 5
+QUOTE_MAX_AGE = 30.0
+# 2026-10-11 (forward protocol SCANNER-F1): the code that makes the signals is
+# fingerprinted at the freeze. If any of it changes while the daemon runs, no new
+# virtual trade is opened (open ones are still followed) and "code_drift" is logged:
+# the protocol says a drifted period is not scored unless GPT re-freezes.
+FP_FILES = ("owl_scanner.py", "structure_bos_bot.py", "pb_gate.py", "owl_chart_feed.py")
+FP_FILE = os.path.join(OUTD, "protocol_fingerprint.json")
+HB = os.path.join(OUTD, "heartbeat.jsonl")
+
+
+def fingerprint():
+    import hashlib
+    return {f: hashlib.sha256(open(os.path.join(DIR, f), "rb").read()).hexdigest() for f in FP_FILES}
+
+
+def drift():
+    """None when the code matches the frozen fingerprint (or none is frozen yet), else the changed files"""
+    try:
+        fz = json.load(open(FP_FILE, encoding="utf-8")).get("files") or {}
+    except Exception:
+        return None
+    cur = fingerprint()
+    bad = [f for f in FP_FILES if fz.get(f) and fz.get(f) != cur.get(f)]
+    return bad or None
+
+
 def load_open():
     op = {}
     try:
         for ln in open(FWD, encoding="utf-8"):
             x = json.loads(ln)
-            if x.get("engine") != ENGINE:
+            if x.get("engine") != ENGINE_FWD:
                 continue
             if x.get("ev") == "open":
                 op[x["sym"]] = x
@@ -307,6 +355,7 @@ def load_open():
 
 
 def append(rec):
+    rec.setdefault("engine", ENGINE_FWD)
     with open(FWD, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec) + "\n")
 
@@ -339,84 +388,163 @@ def btc_corr():
     return out
 
 
+def quote_entry(sym, info, R, j, sig, rows):
+    """the entry at a fresh quote, or (None, reason)"""
+    from pb_gate import pb_gate
+    now = time.time()
+    bar_close = int(R[j]["time"]) + 60
+    lat = now - bar_close
+    if lat > LATE_S:
+        return None, "late", {"latency_s": round(lat, 1)}
+    tk = mt5.symbol_info_tick(sym)
+    if tk is None or not tk.bid or not tk.ask:
+        return None, "no_quote", {"latency_s": round(lat, 1)}
+    qt = tk.time_msc / 1000.0
+    age = now - qt
+    if age > QUOTE_MAX_AGE:
+        return None, "stale_quote", {"latency_s": round(lat, 1), "quote_age_s": round(age, 1)}
+    d, sl = sig["d"], sig["sl"]
+    px = float(tk.ask) if d == 1 else float(tk.bid)
+    sp = float(tk.ask) - float(tk.bid)
+    st = pb_state(rows, j, info.digits)
+    ok, why = pb_gate("trend", d, px, *st)
+    meta = {"latency_s": round(lat, 1), "quote_age_s": round(age, 1), "spread": sp}
+    if not ok:
+        return None, why, meta
+    if d * (px - sl) <= 0:
+        return None, "price_through_stop", meta
+    dist = abs(px - sl)
+    if dist <= min_dist(sym, sp):
+        return None, "stop_in_spread_zone", meta
+    RR = float(bot().RR)
+    tr = {"sym": sym, "d": d, "sig_bar": int(R[j]["time"]), "bar_close_px": float(R[j]["close"]),
+          "t": int(qt), "t_msc": int(tk.time_msc), "detect": round(now, 3), "e": px, "sl": sl,
+          "tp": px + d * RR * dist, "risk": dist, "flip": sig["flip"], "pb": st[0], "pb_bos": st[3],
+          "chk_msc": int(tk.time_msc)}
+    tr.update(meta)
+    return tr, None, meta
+
+
+def tick_exit(tr, sym, upto=None):
+    """walk the ticks after tr['chk_msc']; returns the closed trade or None (updates chk_msc)"""
+    t_from = datetime.fromtimestamp(tr["chk_msc"] / 1000.0 + 0.001, tz=timezone.utc)
+    t_to = datetime.fromtimestamp(upto or time.time(), tz=timezone.utc)
+    T = mt5.copy_ticks_range(sym, t_from, t_to, mt5.COPY_TICKS_ALL)
+    if T is None or len(T) == 0:
+        return None
+    bad = 0
+    d, sl, tp = tr["d"], tr["sl"], tr["tp"]
+    for x in T:
+        ms = int(x["time_msc"])
+        if ms <= tr["chk_msc"]:
+            continue
+        b, a = float(x["bid"]), float(x["ask"])
+        if b <= 0 or a <= 0:
+            bad += 1
+            continue
+        hit = None
+        if d == 1:
+            if b <= sl:
+                hit = ("sl", b)
+            elif b >= tp:
+                hit = ("tp", tp)
+        else:
+            if a >= sl:
+                hit = ("sl", a)
+            elif a <= tp:
+                hit = ("tp", tp)
+        if hit:
+            c = dict(tr)
+            x_px = hit[1]
+            c.update({"ev": "close", "x": x_px, "xt": int(ms / 1000), "xt_msc": ms, "win": hit[0] == "tp",
+                      "r": round(d * (x_px - tr["e"]) / tr["risk"], 3),
+                      "slip_r": round(d * (x_px - sl) / tr["risk"], 3) if hit[0] == "sl" else 0.0,
+                      "bad_ticks": tr.get("bad_ticks", 0) + bad})
+            return c
+    tr["chk_msc"] = int(T[-1]["time_msc"])
+    tr["bad_ticks"] = tr.get("bad_ticks", 0) + bad
+    return None
+
+
 ENG = {}       # sym -> Sym, alive for the daemon's life (the bot keeps its engine the same way)
+DRIFT = {"files": None, "t": 0.0}
+STATS = {}     # sym -> counters shown on the page (missed / refused since start)
 
 
-def scan_once(open_tr):
+def process_symbol(sym, name, info, open_tr, seed):
+    """new closed candles -> engine -> signals at fresh quotes; open trade -> tick exits"""
+    S = ENG.get(sym)
+    tr = open_tr.get(sym)
+    if tr:
+        done = tick_exit(tr, sym)
+        if done:
+            append(done)
+            log("%s close %s r=%s slip=%s" % (sym, "win" if done["win"] else "loss", done["r"], done.get("slip_r")))
+            open_tr.pop(sym, None)
+            tr = None
+    last2 = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, 2)
+    if last2 is None or len(last2) == 0:
+        return None
+    if S is not None and int(last2[-1]["time"]) <= S.last:
+        return None                      # no new closed candle
+    R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, FETCH)
+    if R is None or len(R) < seed + 10:
+        return None
+    if S is None:
+        S = Sym(sym)
+        S.seed(R[-seed:])
+        ENG[sym] = S
+        log("%s seeded %d bars, trend %s" % (sym, seed, S.eng.trend))
+        return R
+    rows = None
+    for j in range(len(R)):
+        r = R[j]
+        if int(r["time"]) <= S.last:
+            continue
+        sig = S.step(r)
+        if not sig:
+            continue
+        cnt = STATS.setdefault(sym, {})
+        if DRIFT.get("files"):
+            cnt["code_drift"] = cnt.get("code_drift", 0) + 1
+            append({"ev": "missed", "sym": sym, "sig_bar": int(r["time"]), "d": sig["d"], "why": "code_drift"})
+            continue
+        if open_tr.get(sym):
+            cnt["position_open"] = cnt.get("position_open", 0) + 1
+            continue
+        if rows is None:
+            rows = rows_of(R, info.digits)
+        nt, why, meta = quote_entry(sym, info, R, j, sig, rows)
+        if nt:
+            nt.update({"ev": "open", "name": name})
+            append(nt)
+            open_tr[sym] = nt
+            log("%s open d=%s e=%s sl=%s tp=%s lat=%ss" % (sym, nt["d"], nt["e"], nt["sl"], nt["tp"], nt["latency_s"]))
+        else:
+            cnt[why] = cnt.get(why, 0) + 1
+            if why in ("late", "no_quote", "stale_quote", "price_through_stop"):
+                rec = {"ev": "missed", "sym": sym, "sig_bar": int(r["time"]), "d": sig["d"], "why": why}
+                rec.update(meta or {})
+                append(rec)
+            log("%s signal not taken: %s" % (sym, why))
+    return R
+
+
+def write_state(open_tr):
     rows_out = []
-    seed = int(bot().SEED_BARS)
     for sym, name, cat in SYMBOLS:
         try:
             info = mt5.symbol_info(sym)
-            if info is None:
+            S = ENG.get(sym)
+            if info is None or S is None:
+                rows_out.append({"sym": sym, "name": name, "cat": cat, "status": "no_data"})
                 continue
-            if not info.visible:
-                mt5.symbol_select(sym, True)
-            R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, FETCH)      # closed bars only
-            if R is None or len(R) < seed + 10:
+            R = mt5.copy_rates_from_pos(sym, mt5.TIMEFRAME_M1, 1, PB_BARS + 5)
+            if R is None or len(R) < 100:
                 rows_out.append({"sym": sym, "name": name, "cat": cat, "status": "no_data"})
                 continue
             k = len(R) - 1
-            S = ENG.get(sym)
-            if S is None:
-                S = Sym(sym)
-                S.seed(R[-seed:])
-                ENG[sym] = S
-                log("%s seeded %d bars, trend %s" % (sym, seed, S.eng.trend))
-                # 2026-10-11 (GPT review): an open virtual trade carried over a restart is
-                # walked through every closed bar since its entry, so an exit that happened
-                # while the scanner was off is booked at the right bar and price
-                tr0 = open_tr.get(sym)
-                if tr0:
-                    Rr = mt5.copy_rates_range(sym, mt5.TIMEFRAME_M1,
-                                              datetime.fromtimestamp(int(tr0["t"]) + 60, tz=timezone.utc),
-                                              datetime.fromtimestamp(time.time(), tz=timezone.utc))
-                    for r in (Rr if Rr is not None else []):
-                        if int(r["time"]) <= int(tr0["t"]) or int(r["time"]) + 60 > time.time():
-                            continue
-                        done = step_trade(tr0, r, info.point)
-                        if done:
-                            done.update({"ev": "close", "replayed": True})
-                            append(done)
-                            log("%s close (replayed after restart) %s r=%s" % (sym, "win" if done["win"] else "loss", done["r"]))
-                            open_tr.pop(sym, None)
-                            break
-            rows = None
-            tr = open_tr.get(sym)
-            for j in range(len(R)):
-                r = R[j]
-                if int(r["time"]) <= S.last:
-                    continue
-                if tr:
-                    done = step_trade(tr, r, info.point)
-                    if done:
-                        done["ev"] = "close"
-                        append(done)
-                        log("%s close %s r=%s" % (sym, "win" if done["win"] else "loss", done["r"]))
-                        open_tr.pop(sym, None)
-                        tr = None
-                sig = S.step(r)
-                late = time.time() - (int(r["time"]) + 60) > LATE_S
-                if sig and not tr and late:
-                    append({"ev": "missed", "sym": sym, "t": int(r["time"]), "d": sig["d"], "why": "late",
-                            "age_s": int(time.time() - int(r["time"]) - 60), "engine": ENGINE})
-                    log("%s signal missed: candle closed %ds ago" % (sym, time.time() - int(r["time"]) - 60))
-                    continue
-                if sig and not tr:
-                    if rows is None:
-                        rows = rows_of(R, info.digits)
-                    nt, why = try_entry(sym, info, R, j, sig, rows)
-                    if nt:
-                        nt.update({"ev": "open", "name": name})
-                        append(nt)
-                        open_tr[sym] = nt
-                        tr = nt
-                        log("%s open d=%s e=%s sl=%s tp=%s" % (sym, nt["d"], nt["e"], nt["sl"], nt["tp"]))
-                    else:
-                        log("%s signal refused: %s" % (sym, why))
-            closed = time.time() - int(R[k]["time"]) > 15 * 60
-            if rows is None:
-                rows = rows_of(R, info.digits)
+            rows = rows_of(R, info.digits)
             pt, _pc, _pl, L = pb_state(rows, k, info.digits)
             px = float(R[k]["close"])
             e = S.eng
@@ -424,6 +552,8 @@ def scan_once(open_tr):
             prot = (e.prot_lo[1] if (e.trend == 1 and e.prot_lo) else e.prot_hi[1] if (e.trend == -1 and e.prot_hi) else None)
             hr = R[max(0, k - 59):k + 1]
             rng = float(max(x["high"] for x in hr) - min(x["low"] for x in hr)) or 1e-9
+            closed = time.time() - int(R[k]["time"]) > 15 * 60
+            tr = open_tr.get(sym)
             near = None
             if tr:
                 st = "trade"
@@ -442,15 +572,18 @@ def scan_once(open_tr):
             sp = float(info.spread) * info.point
             row = {"sym": sym, "name": name, "cat": cat, "status": st, "px": px, "digits": info.digits,
                    "pb_trend": pt, "pb_bos": L, "trend": e.trend, "next_bos": trig, "inv": prot,
-                   "near": round(near, 2) if near is not None else None, "range_1h": rng, "spread": sp,
-                   "cost": round(sp / rng * 100, 1) if rng else None, "updated": int(R[k]["time"])}
+                   "near": round(near, 2) if near is not None else None,
+                   "dist_pct": round(abs(trig - px) / px * 100, 3) if (trig is not None and px) else None,
+                   "range_1h": rng, "spread": sp, "cost": round(sp / rng * 100, 1) if rng else None,
+                   "updated": int(R[k]["time"]), "not_taken": STATS.get(sym, {})}
             if tr:
-                cur = px if tr["d"] == 1 else px + sp
+                tk = mt5.symbol_info_tick(sym)
+                cur = (float(tk.bid) if tr["d"] == 1 else float(tk.ask)) if tk else px
                 row["open"] = {"d": tr["d"], "e": tr["e"], "sl": tr["sl"], "tp": tr["tp"], "t": tr["t"],
                                "r_now": round(tr["d"] * (cur - tr["e"]) / tr["risk"], 2)}
             rows_out.append(row)
         except Exception as ex:
-            log("%s error %r" % (sym, ex))
+            log("%s state error %r" % (sym, ex))
             rows_out.append({"sym": sym, "name": name, "cat": cat, "status": "error"})
     try:
         cr = btc_corr()
@@ -459,10 +592,25 @@ def scan_once(open_tr):
     except Exception as ex:
         log("corr error %r" % (ex,))
     st = {"updated": int(time.time()), "symbols": rows_out, "rr": float(bot().RR), "engine": ENGINE,
-          "max_corr": MAX_CORR}
+          "engine_fwd": ENGINE_FWD, "max_corr": MAX_CORR, "code_drift": DRIFT["files"]}
     json.dump(st, open(STATE + ".tmp", "w", encoding="utf-8"))
     os.replace(STATE + ".tmp", STATE)
     return st
+
+
+def replay_open(open_tr):
+    """after a restart: walk each open v3 trade through the ticks since its last check"""
+    for sym in list(open_tr):
+        tr = open_tr[sym]
+        try:
+            done = tick_exit(tr, sym)
+            if done:
+                done["replayed"] = True
+                append(done)
+                log("%s close (replayed after restart) %s r=%s" % (sym, "win" if done["win"] else "loss", done["r"]))
+                open_tr.pop(sym, None)
+        except Exception as ex:
+            log("%s replay error %r" % (sym, ex))
 
 
 def main():
@@ -480,25 +628,51 @@ def main():
             sys.stdout.flush()
         mt5.shutdown()
         return
+    # the v2 close-price history is kept apart, under its own name, never read as v3
+    old = os.path.join(OUTD, "forward.jsonl")
+    if os.path.exists(old) and not os.path.exists(FWD_V2):
+        os.replace(old, FWD_V2)
+        log("v2 close-price records moved to forward_v2_close.jsonl (kept apart from v3)")
     open_tr = load_open()
-    if "--once" in a:
-        st = scan_once(open_tr)
-        for r in st["symbols"]:
-            print(r["sym"].ljust(8), r["status"].ljust(12), r.get("pb_trend"), r.get("trend"), r.get("near"), r.get("cost"))
-        mt5.shutdown()
-        return
-    log("scanner start (%s), %d symbols" % (ENGINE, len(SYMBOLS)))
+    replay_open(open_tr)
+    seed = int(bot().SEED_BARS)
+    log("scanner start (%s / forward %s), %d symbols, poll %ss" % (ENGINE, ENGINE_FWD, len(SYMBOLS), POLL_S))
+    last_state = 0.0
     while True:
         t0 = time.time()
         try:
-            scan_once(open_tr)
+            for sym, name, cat in SYMBOLS:
+                info = mt5.symbol_info(sym)
+                if info is None:
+                    continue
+                if not info.visible:
+                    mt5.symbol_select(sym, True)
+                try:
+                    process_symbol(sym, name, info, open_tr, seed)
+                except Exception as ex:
+                    log("%s error %r" % (sym, ex))
+            if time.time() - last_state >= 60 or "--once" in a:
+                d0 = DRIFT["files"]
+                DRIFT["files"] = drift()
+                if DRIFT["files"] and not d0:
+                    log("CODE_DRIFT: %s changed since the freeze - no new virtual trades" % DRIFT["files"])
+                write_state(open_tr)
+                last_state = time.time()
+                with open(HB, "a", encoding="utf-8") as f:       # one line a minute: uptime for the protocol
+                    f.write(json.dumps({"t": int(time.time()), "open": len(open_tr), "drift": DRIFT["files"]}) + "\n")
         except Exception as ex:
             log("pass error %r" % (ex,))
             try:
                 mt5.shutdown(); time.sleep(5); mt5.initialize(path=TERMINAL)
             except Exception:
                 pass
-        time.sleep(max(5.0, 60.0 - (time.time() - t0)))
+        if "--once" in a:
+            st = json.load(open(STATE, encoding="utf-8"))
+            for r in st["symbols"]:
+                print(r["sym"].ljust(8), r["status"].ljust(12), r.get("pb_trend"), r.get("trend"), r.get("near"), r.get("dist_pct"))
+            mt5.shutdown()
+            return
+        time.sleep(max(1.0, POLL_S - (time.time() - t0)))
 
 
 if __name__ == "__main__":
