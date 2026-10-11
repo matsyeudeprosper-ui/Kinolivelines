@@ -10598,7 +10598,7 @@ def proof_payload(pkg="base"):
         lights.append({"k": "lab", "c": "amber", "fr": f"Une copie d\u2019essai est devant le robot, mais c\u2019est trop t\u00f4t pour conclure ({k} trades sur 30) : \u00ab {t.get('title_fr')} \u00bb.",
                        "en": f"A trial copy is ahead of the robot, but it is too early to conclude ({k} of 30 trades): \u201c{t.get('title_en')}\u201d."})
     else:
-        lights.append({"k": "lab", "c": "green", "fr": f"Aucune des {len(twins)} copies d\u2019essai ne fait mieux que le robot pour l\u2019instant. Le robot reste notre meilleure version.",
+        lights.append({"k": "lab", "c": "green", "fr": "Aucune copie d’essai ne tourne en ce moment : le robot reste notre meilleure version.", "en": "No trial copy is running right now: the robot is still our best version."} if not twins else {"k": "lab", "c": "green", "fr": f"Aucune des {len(twins)} copies d\u2019essai ne fait mieux que le robot pour l\u2019instant. Le robot reste notre meilleure version.",
                        "en": f"None of the {len(twins)} trial copies beats the robot for now. The robot is still our best version."})
     rank = {"green": 0, "grey": 1, "amber": 2, "red": 3}
     worst = max(lights, key=lambda l: rank[l["c"]])["c"]

@@ -64,7 +64,7 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 72%,tra
 .pil .q{position:absolute;right:9px;top:9px;width:18px;height:18px;border-radius:50%;border:1px solid var(--border2);color:var(--muted);font-size:.66rem;font-weight:800;display:flex;align-items:center;justify-content:center}
 .badge{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:3px 8px}
 .b-ok{background:var(--ok-bg);color:var(--up-soft)}.b-mid{background:var(--mid-bg);color:var(--warn)}.b-bad{background:var(--bad-bg);color:var(--down-soft)}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .tile{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;position:relative;text-align:left;color:var(--text);font:inherit;width:100%}
 .tile .k{padding-right:18px;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .tile .v{font-size:1.15rem;font-weight:800;margin-top:5px;letter-spacing:-.01em}
@@ -141,7 +141,7 @@ html{overflow-x:clip}
 .mfx{display:flex;align-items:center;gap:14px;text-decoration:none;background:linear-gradient(135deg,rgba(59,130,246,.16),rgba(46,204,113,.08));border:1px solid rgba(143,198,255,.25);border-radius:var(--r-lg);padding:16px;margin-bottom:14px;color:var(--text)}
 .mfx .lg{width:44px;height:44px;border-radius:14px;flex:none;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.72rem;color:#0b5cad;letter-spacing:-.02em}
 .mfx b{display:block;font-size:.98rem}.mfx span{display:block;font-size:.78rem;color:var(--muted2);margin-top:2px;line-height:1.4}
-@media (max-width:360px){.pil .v{font-size:1.2rem}.big{font-size:2.5rem}.tab span{display:none}}
+@media (max-width:380px){.grid3 .tile{padding:10px 9px}.grid3 .tile .v{font-size:1rem}.pil{padding:12px 10px 11px}.pil .v{font-size:1.2rem}.big{font-size:2.5rem}.tab svg{display:none}.tab{font-size:.74rem;padding:9px 2px}}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -309,7 +309,8 @@ function wire(root){root.querySelectorAll('[data-k]').forEach(b=>{if(!b.dataset.
 
 /* ------------------------------------------------------------ the space */
 let J=null,TAB='ov',COST='0.00';
-const TABS=[['ov',tx('Aperçu','Overview')],['re',tx('Compte témoin','Witness')],['te',tx('Backtest','Backtest')],['me',tx('Méthode','Method')]];
+const NARROW=()=>innerWidth<=380;
+const TABS=[['ov',tx('Aperçu','Overview')],['re',NARROW()?tx('Témoin','Witness'):tx('Compte témoin','Witness')],['te',tx('Backtest','Backtest')],['me',tx('Méthode','Method')]];
 function tabs(){const t=$('tabs');t.innerHTML='<span id="tabind"></span>'+TABS.map(x=>'<button class="tab'+(x[0]===TAB?' on':'')+'" data-t="'+x[0]+'">'+svgI(x[0])+'<span>'+x[1]+'</span></button>').join('');
  t.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','#'+TAB);}catch(e){}render();scrollTo({top:0,behavior:'smooth'});});
  requestAnimationFrame(()=>{const on=t.querySelector('.tab.on'),ind=$('tabind');if(on&&ind){ind.style.left=on.offsetLeft+'px';ind.style.width=on.offsetWidth+'px';}});}
@@ -337,7 +338,7 @@ function ovPane(){const R=J.real,T=(J.test||{}).rows||{};if(!R)return '<div clas
    '<div class="grid3">'+tile('wr',tx('Réussite','Win rate'),pct(ts.wr,false,0),ts.n+' trades',null,band.wr(ts.wr))+tile('pf','PF',num(ts.pf),'',null,band.pf(ts.pf))+tile('dd',tx('Baisse','Drawdown'),pct(-ts.mddPct),'','neg',band.dd(ts.mddPct))+'</div>'+
    '<button class="tile" style="margin-top:10px;text-align:center;font-weight:800;color:var(--accent-soft)" onclick="go(\'te\')">'+tx('Voir le backtest en détail ›','See the backtest in detail ›')+'</button></div>':'')+vsReal(true)+
   '<div class="card"><h2>'+tx('Les contrôles de chaque nuit','The nightly checks')+'</h2><div class="lights" style="margin-top:8px">'+(V.lights||[]).map(l=>'<div class="lt"><i style="background:'+(l.c==='green'?css('--up'):(l.c==='red'?css('--down'):(l.c==='grey'?css('--muted'):css('--warn'))))+'"></i><div>'+(EN?l.en:l.fr)+'</div></div>').join('')+'</div>'+
-  '<div class="note w">'+(EN?(J.legacy||{}).en:(J.legacy||{}).fr)+tx('. Ces vérifications utilisent encore cet ancien test ; les chiffres ci-dessus, eux, sont réels ou rejoués avec les règles d’aujourd’hui.','. These checks still use that older test; the figures above are real or replayed with today’s rules.')+'</div></div>';}
+  '<div class="note w">'+(EN?(J.legacy||{}).en:(J.legacy||{}).fr)+tx('. Ces contrôles utilisent encore cet ancien test ; les chiffres ci-dessus, eux, sont réels ou rejoués avec les règles d’aujourd’hui.','. These checks still use that older test; the figures above are real or replayed with today’s rules.')+'</div></div>';}
 
 function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s=stats(P,R.bal0),wk=weekly(R.trades),pre=R.trades.filter(t=>t[0]<R.filter_since),post=R.trades.filter(t=>t[0]>=R.filter_since);
  const sp=stats(pre.map(t=>t[1]),R.bal0),so=post.length?stats(post.map(t=>t[1]),0):null,MF=J.myfxbook||{},fl=R.flows||[];
@@ -346,8 +347,9 @@ function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s
  const T=R.trades.slice().reverse(),rules=wRules(R);
  return '<div class="card"><h2>'+tx('Le compte témoin','The witness account')+'<span class="badge b-ok">'+tx('argent réel','real money')+'</span></h2>'+
   '<div class="sub">'+tx('Un vrai compte chez Exness, piloté uniquement par le robot depuis le '+dfmt(R.start)+'. Personne n’y touche à la main. Ce n’est pas votre compte : vous voyez ici ses résultats à lui, en lecture seule.','A real Exness account, run only by the robot since '+dfmt(R.start)+'. Nobody touches it by hand. It is not your account: you see its own results here, read-only.')+'</div>'+
-  '<div class="grid3" style="margin-bottom:12px">'+tile('',tx('Départ','Start'),money(R.bal0),dfmt(R.start))+tile('',tx('Aujourd’hui','Today'),money(R.balance),upTxt,sgn(R.balance-R.bal0))+
-   tile('',tx('Dépôts / retraits','Deposits / withdrawals'),fl.length?fl.length+'':tx('Aucun','None'),fl.length?'':tx('jamais comptés en gains','never counted as gains'))+'</div>'+
+  '<div class="grid2">'+tile('',tx('Départ','Start'),money(R.bal0),dfmt(R.start))+tile('',tx('Aujourd’hui','Today'),money(R.balance),upTxt,sgn(R.balance-R.bal0))+'</div>'+
+  '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:10px 0 12px;padding:10px 12px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:.8rem">'+
+   '<span style="color:var(--muted2)">'+tx('Dépôts et retraits','Deposits and withdrawals')+'</span><b style="text-align:right">'+(fl.length?fl.length+tx(' mouvements',' movements'):tx('Aucun','None'))+' <span style="font-weight:500;color:var(--muted)">· '+tx('jamais comptés en gains','never counted as gains')+'</span></b></div>'+
   '<div class="chart" id="c-real"></div><div class="legend"><span><i style="background:'+css('--up')+'"></i>'+tx('solde du compte','account balance')+'</span><span><i style="background:'+css('--gold')+'"></i>'+tx('filtre de tendance activé','trend filter switched on')+'</span></div></div>'+
   (MF.url?'<a class="mfx" href="'+MF.url+'" target="_blank" rel="noopener"><div class="lg">my<br>fx</div><div style="flex:1;min-width:0"><b>'+tx('Suivre ce compte sur Myfxbook','Follow this account on Myfxbook')+'</b><span>'+tx('Le même compte, affiché par Myfxbook, le site de référence des traders pour suivre un compte réel.','The same account, shown by Myfxbook, the traders’ reference site for following a real account.')+'</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;color:var(--accent-soft)"><path d="M7 17L17 7M9 7h8v8"/></svg></a>':'')+
   pillars(s)+
