@@ -264,12 +264,30 @@ body.light .osh input{background:#fff;border-color:#c7d2df}
 body.light .osh .btn.ok{color:#15803d}body.light .osh .btn.warn{color:#a16207}
 body.light #mtbar{background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(238,242,247,.995)) !important;border-top-color:#c7d2df !important}
 body.light #mtline1{color:#0f172a !important}body.light #mtline2{color:#5f6f85 !important}
+
+/* 2026-10-12 (owner): market picker */
+#symh{cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+#symh .symchev{font-size:.7em;opacity:.7}
+#symh .symobs{font-size:.55em;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:99px;border:1px dashed rgba(196,181,253,.6);color:#c4b5fd}
+#sympk{position:fixed;left:12px;top:56px;z-index:60;width:min(320px,calc(100vw - 24px));max-height:min(70vh,520px);overflow:auto;
+ background:rgba(13,20,32,.97);border:1px solid rgba(255,255,255,.1);border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.55);padding:8px;backdrop-filter:blur(10px)}
+body.light #sympk{background:rgba(255,255,255,.98);border-color:rgba(15,23,42,.12)}
+#sympk .sk{font-size:.62rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#8a9bb0;padding:8px 10px 4px}
+#sympk button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:inherit;font:inherit;text-align:left;padding:10px;border-radius:12px;cursor:pointer}
+#sympk button:hover,#sympk button.on{background:rgba(255,255,255,.07)}
+body.light #sympk button:hover,body.light #sympk button.on{background:rgba(15,23,42,.06)}
+#sympk .si{flex:none;width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.72rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+#sympk .sn{flex:1;min-width:0}#sympk .sn b{display:block;font-size:.92rem}#sympk .sn small{display:block;font-size:.72rem;color:#8a9bb0}
+#sympk .st{flex:none;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8df0bb}
+/* another market: the robot's own header items (its weather, signal, money) do not apply */
+body.othsym #autobadge,body.othsym #meteo,body.othsym #sigseg,body.othsym #wkseg,body.othsym #acseg{display:none!important}
 </style></head><body>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
 <div id="hd">
 <a id="back" href="#">&#8592;</a>
-<h1>BTCUSD &middot; M1</h1>
+<h1 id="symh" role="button" tabindex="0" title="Changer de march&eacute;">BTCUSD &middot; M1 <span class="symchev">&#9662;</span></h1>
+<div id="sympk" role="listbox" hidden></div>
 <span class="badge" id="ctbadge">filtre silence</span>
 <span id="hdrow"><span id="hdstrip"><span class="seg" id="tfdots"
  title="Les temps du march&eacute;" style="display:none;gap:4px;padding:0 9px"></span><span class="seg" id="trbadge"
@@ -426,7 +444,15 @@ const FULL=%%FULL%%;   // 2026-10-05 (owner): decided by the account being VIEWE
 const HTFOK=%%HTF%%;   // two timeframes belong to Strategie only: nobody else sees the menu or the panel
 const EQ=%%EQ%%;   // 2026-10-08 (owner): the Progression screen - this page drawing the ACCOUNT's result candles (one per trade) instead of BTC
 // money labels in EQ mode, price labels otherwise
-function PF(v){return EQ?((v>=0?'+$':'-$')+Math.abs(v).toFixed(2)):v.toFixed(0);}
+// 2026-10-12 (owner): the chart switches market. Other markets come from owl_chart_multi.py with prices
+// scaled x10^(digits-2) (the engine rounds to 2 decimals); fmtPx divides back and shows the market's precision.
+// Bitcoin keeps exactly its old display (whole points).
+let SYM=(()=>{try{if(EQ)return 'BTCUSD';const q=new URLSearchParams(location.search).get('sym');return (q||localStorage.getItem('owlChartSym')||'BTCUSD').toUpperCase();}catch(e){return 'BTCUSD';}})();
+let SC=1,DG=2;
+function fmtPx(v){v=Number(v);if(!isFinite(v))return '—';return SYM==='BTCUSD'?v.toFixed(0):(v/SC).toFixed(Math.max(0,DG-1));}
+function fmtPts(v){return SYM==='BTCUSD'?Math.abs(v).toFixed(0)+' pts':(Math.abs(v)/SC).toFixed(Math.max(0,DG-1));}
+const SYMQ=()=>SYM==='BTCUSD'?'':'sym='+SYM;
+function PF(v){return EQ?((v>=0?'+$':'-$')+Math.abs(v).toFixed(2)):fmtPx(v);}
 const TIER='%%TIER%%';   // observer: no structure hints at all   // 2026-09-27: strategy members get the full view from the server
 if(EQ){(function(){
  const h=document.querySelector('#hd h1');if(h)h.textContent=(localStorage.getItem('owlLang')==='en')?'Progression':'Progression';
@@ -504,8 +530,8 @@ function lvAge(t){if(!t)return '';const sec=Math.max(0,Math.floor(Date.now()/100
  return (CL?'since ':'depuis ')+(h?h+' h ':'')+m+' min';}
 function lvCard(h){
  const nm=LVNAME[h.k]||[h.k,h.k],title=CL?nm[1]:nm[0],px0=(D&&D.px)?D.px:null,v=h.v,rows=[];
- if(v!=null&&isFinite(v)){rows.push((CL?'Level ':'Niveau ')+'<b>'+Number(v).toFixed(0)+'</b>');
-  if(px0){const dd=v-px0;rows.push((CL?'Price is ':'Le prix est ')+'<b>'+Math.abs(dd).toFixed(0)+' pts '+(dd>0?(CL?'below':'en dessous'):(CL?'above':'au-dessus'))+'</b>');}}
+ if(v!=null&&isFinite(v)){rows.push((CL?'Level ':'Niveau ')+'<b>'+fmtPx(v)+'</b>');
+  if(px0){const dd=v-px0;rows.push((CL?'Price is ':'Le prix est ')+'<b>'+fmtPts(dd)+' '+(dd>0?(CL?'below':'en dessous'):(CL?'above':'au-dessus'))+'</b>');}}
  if(h.t)rows.push(lvAge(h.t));
  if(h.extra)rows.push('<b>'+h.extra+'</b>');
  const doc=(CL?LVLDOC_EN:LVLDOC)[({bos:'next-bos',last:'last-bos',choch:'last-choch','echo-bos':'next-bos','echo-last':'last-bos'})[h.k]||h.k];
@@ -654,7 +680,7 @@ async function htLoad(force){
  if(!HT.on)return;
  if(HT.tf==='PB'){HT.data=(D&&D.pb&&D.pb.candles&&D.pb.candles.length>=3)?D.pb:null;htDraw();return;}
  if(!force&&Date.now()-HT.t<45000)return;HT.t=Date.now();
- try{const r=await fetch('chart_htf?tf='+HT.tf+'&t='+Date.now(),{cache:'no-store'});
+ try{const r=await fetch('chart_htf?tf='+HT.tf+(SYMQ()?'&'+SYMQ():'')+'&t='+Date.now(),{cache:'no-store'});
   if(r.ok){const j=await r.json();if(j&&j.candles)HT.data=j;else if(j&&j.err==='strategy'){HT.on=false;htApply();toolsDot();return;}}}catch(e){}
  htDraw();}
 function htDraw(){
@@ -707,7 +733,7 @@ function htDraw(){
  g.strokeStyle='rgba(255,255,255,.05)';g.lineWidth=1;
  for(let k=0;k<=3;k++){const y=TOP+plot*k/3;g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD+6,y);g.stroke();
   g.fillStyle='#5f6f82';g.font='500 9px Inter, system-ui, sans-serif';g.textAlign='left';
-  g.fillText((hi-(hi-lo)*k/3).toFixed(0),W-PAD+(NARROW?6:10),y+3);}
+  g.fillText(fmtPx(hi-(hi-lo)*k/3),W-PAD+(NARROW?6:10),y+3);}
  // candles, all grey: here we read structure, not direction
  // Owner 2026-10-10: a candle kept only by the panel's memory (the sticky
  // chain) is drawn a shade dimmer than one the current structure still uses
@@ -870,7 +896,7 @@ function htDraw(){
   if(inView(y)){
    g.strokeStyle='rgba(255,255,255,.34)';g.lineWidth=1;g.setLineDash([2,3]);
    g.beginPath();g.moveTo(0,y);g.lineTo(W-PAD-3,y);g.stroke();g.setLineDash([]);
-   const px0=Math.round(D.px);
+   const px0=fmtPx(D.px);
    g.font='800 8.5px Inter, system-ui, sans-serif';g.textAlign='left';
    const w=g.measureText(px0).width+10;
    g.fillStyle='#e8eef4';g.beginPath();g.roundRect(W-PAD-w-3,y-7,w,14,7);g.fill();
@@ -895,7 +921,7 @@ function htDraw(){
    g.fillStyle='rgba(122,162,255,.95)';g.beginPath();g.moveTo(xr-4,TOP-1);g.lineTo(xr+4,TOP-1);g.lineTo(xr,TOP+5);g.closePath();g.fill();g.restore();}}
  // Owner 2026-10-10: long-press peek on this panel too
  if(Date.now()<PEEK){g.save();g.font='bold 8.5px Inter, system-ui, sans-serif';g.textAlign='right';
-  LVLHIT_H.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=String(Math.round(h.v));const w=g.measureText(txt).width+8;
+  LVLHIT_H.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=fmtPx(h.v);const w=g.measureText(txt).width+8;
    g.fillStyle='rgba(8,14,22,.88)';g.beginPath();g.roundRect(W-PAD-14-w,h.y-6.5,w,13,6);g.fill();g.fillStyle=h.col;g.fillText(txt,W-PAD-18,h.y+3);});g.restore();}
  // the same ruler, anchored in time, so a measure taken below shows here
  if(RULER.a&&RULER.b){const ax=htX(RULER.a.t),bx=htX(RULER.b.t);
@@ -906,7 +932,7 @@ function htDraw(){
     g.beginPath();g.arc(q[0],py(q[1]),2.6,0,Math.PI*2);g.fill();});}}
  const sub=document.getElementById('htfsub');
  if(sub)sub.textContent=(d.trend===1?(CL?'up':'hausse'):d.trend===-1?(CL?'down':'baisse'):'\u2014')
-  +(d.next_bos?' \u00b7 BOS '+Math.round(d.next_bos):'')
+  +(d.next_bos?' \u00b7 BOS '+fmtPx(d.next_bos):'')
   +(!INTMK()||HT.tf==='PB'?'':' \u00b7 '+(d.int_trend
     ? (CL?'inner ':'interne ')+(d.int_trend===1?'\u25b2':'\u25bc')
     : (CL?'no inner':'sans interne')))
@@ -1069,7 +1095,7 @@ function tfDotsPaint(){
 // the three higher dots come from the feed once a minute; the minute dot is
 // whatever the chart is showing right now, so it is repainted far more often
 async function tfDots(){
- try{const r=await fetch('chart_htf?tf=all&t='+Date.now(),{cache:'no-store'});
+ try{const r=await fetch('chart_htf?tf=all'+(SYMQ()?'&'+SYMQ():'')+'&t='+Date.now(),{cache:'no-store'});
   if(!r.ok)return;const j=await r.json();TFS=(j&&j.tf)||null;tfDotsPaint();}catch(e){}}
 tfDots();setInterval(tfDots,60000);setInterval(tfDotsPaint,4000);
 setInterval(()=>{if(HT.on)htLoad(false);},20000);
@@ -1696,7 +1722,7 @@ function draw(){
  if(SHOW_H1&&D.h1&&D.h1.length>=5){
   const items=[[D.h1[1],'H1 O',[3,4]],[D.h1[4],'H1 C',[]]];
   ctx.font='bold 9px system-ui';
-  const lw=Math.max(...items.map(it=>ctx.measureText(it[1]+' '+it[0].toFixed(0)).width))+10;
+  const lw=Math.max(...items.map(it=>ctx.measureText(it[1]+' '+fmtPx(it[0])).width))+10;
   const ys=items.map(it=>px(it[0]));
   let ly=ys.slice();
   if(Math.abs(ly[0]-ly[1])<14){const m=(ly[0]+ly[1])/2;ly=ys[0]<=ys[1]?[m-7,m+7]:[m+7,m-7];}
@@ -2095,7 +2121,7 @@ function draw(){
    ctx.fillRect(W-6,Math.max(TOPP,Math.min(TOPP+PLOT,y0))-1,5,2);ctx.restore();}}
  // Owner 2026-10-10: long-press peek - every level shows its price for two seconds
  if(Date.now()<PEEK){ctx.save();ctx.font='bold 9px system-ui';ctx.textAlign='right';
-  LVLHIT.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=String(Math.round(h.v));const w=ctx.measureText(txt).width+8;
+  LVLHIT.forEach(h=>{if(h.v==null||!isFinite(h.v))return;const txt=fmtPx(h.v);const w=ctx.measureText(txt).width+8;
    ctx.fillStyle='rgba(8,14,22,.88)';ctx.beginPath();ctx.roundRect(W-18-w,h.y-7,w,14,7);ctx.fill();ctx.fillStyle=h.col;ctx.fillText(txt,W-22,h.y+3.5);});ctx.restore();}
  // the pullback chart's three levels (owner 2026-10-10), echoed here with NO
  // text: a soft wide band under a thin solid core, from the left edge, with a
@@ -2322,7 +2348,7 @@ function ui(){
  document.getElementById('aura').className=(FULL&&D.choch)?'choc':'';
  const pe=document.getElementById('px');
  if(D.px){
-  pe.textContent=EQ?PF(D.px):'$'+D.px.toFixed(0);
+  pe.textContent=EQ?PF(D.px):(SYM==='BTCUSD'?'$'+D.px.toFixed(0):fmtPx(D.px));
   if(lastPx!==null&&D.px!==lastPx){
    const up=D.px>lastPx;
    pe.style.color=up?'#2ecc71':'#ff5c5c';
@@ -2331,12 +2357,40 @@ function ui(){
     pe.style.transform='none';},240);}
   lastPx=D.px;}
 }
+// ---- 2026-10-12 (owner): market picker ----
+const SYMI={BTCUSD:'₿',XAUUSD:'Au',XAGUSD:'Ag',USOIL:'OIL',US30:'DJ',USTEC:'NQ',US500:'SP',DE30:'DAX',UK100:'UK',JP225:'JP',EURUSD:'€$',GBPUSD:'£$',USDJPY:'$¥'};
+let SYMS=[];
+function symHead(j){SYMS=j.symbols||SYMS;const h=document.getElementById('symh');if(!h)return;
+ const nm=CL?(j.sym_en||SYM):(j.sym_fr||SYM);
+ h.innerHTML=(SYM==='BTCUSD'?'BTCUSD':nm)+' &middot; M1 '+(j.robot_market===false?'<span class="symobs">'+(CL?'watched':'observé')+'</span>':'')+'<span class="symchev">&#9662;</span>';
+ document.body.classList.toggle('othsym',SYM!=='BTCUSD');}
+function symOpen(){const pk=document.getElementById('sympk');if(!pk)return;if(!pk.hidden){pk.hidden=true;return;}
+ const L=SYMS.length?SYMS:[{sym:'BTCUSD',fr:'Bitcoin',en:'Bitcoin',robot:true}];
+ const row=x=>'<button data-s="'+x.sym+'" class="'+(x.sym===SYM?'on':'')+'"><span class="si">'+(SYMI[x.sym]||x.sym.slice(0,3))+'</span><span class="sn"><b>'+(CL?x.en:x.fr)+'</b><small>'+x.sym+'</small></span>'+(x.robot?'<span class="st">'+(CL?'robot':'robot')+'</span>':'')+'</button>';
+ pk.innerHTML='<div class="sk">'+(CL?'The robot’s market':'Le marché du robot')+'</div>'+L.filter(x=>x.robot).map(row).join('')+
+  '<div class="sk">'+(CL?'Watched markets':'Marchés observés')+'</div>'+L.filter(x=>!x.robot).map(row).join('');
+ pk.hidden=false;
+ pk.querySelectorAll('button').forEach(b=>b.onclick=()=>{pk.hidden=true;symSet(b.dataset.s);});}
+function symSet(s){if(!s||s===SYM)return;SYM=s;try{localStorage.setItem('owlChartSym',s);}catch(e){}
+ try{const u=new URL(location.href);if(s==='BTCUSD')u.searchParams.delete('sym');else u.searchParams.set('sym',s);history.replaceState(null,'',u.toString());}catch(e){}
+ // a new market: forget the old one's view and its higher-timeframe data, then load right away
+ viewOff=0;vzoom=1;vz=null;voff=0;hzoom=1;HT.data=null;HT.t=0;HT.xoft={};HT.xts=[];TFS=null;lastPx=null;
+ document.body.classList.toggle('othsym',s!=='BTCUSD');
+ load();if(HT.on&&HT.tf!=='PB')htLoad(true);tfDots();}
+(function(){const h=document.getElementById('symh');if(!h)return;if(EQ){h.style.cursor='default';return;}
+ h.onclick=symOpen;h.onkeydown=e=>{if(e.key==='Enter')symOpen();};
+ document.addEventListener('click',e=>{const pk=document.getElementById('sympk');if(pk&&!pk.hidden&&!e.target.closest('#sympk')&&!e.target.closest('#symh'))pk.hidden=true;});
+ document.body.classList.toggle('othsym',SYM!=='BTCUSD');})();
+
 let PAST=null;   // 2026-09-28: a past day is shown - the live feed is paused
 async function load(){
  if(PAST)return;
  try{
-  const r=await fetch('/'+tok+'/chart_data'+(EQ?'?src=eq':''),{cache:'no-store'});
-  if(r.ok){D=swingApply(ctApply(await r.json()));digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
+  const _q=EQ?'?src=eq':(SYMQ()?'?'+SYMQ():''),_sy=SYM;
+  const r=await fetch('/'+tok+'/chart_data'+_q,{cache:'no-store'});
+  if(r.ok){const _j=await r.json();if(_sy!==SYM)return;   // the market changed while this was in flight
+   SC=+_j.scale||1;DG=+_j.digits||2;symHead(_j);
+   D=swingApply(ctApply(_j));digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
  }catch(e){}
 }
 // A throw inside draw() used to skip the next requestAnimationFrame, so
@@ -3358,7 +3412,7 @@ function pbRule(){
  // pause state only, from pb_trend / pb_side the route sends to all)
  const p=FULL?D.pb:null,bks=(p&&p.breaks)||[],last=bks.length?Number(bks[bks.length-1][2]):null;
  const t=(p&&p.trend!==undefined)?p.trend:(D.pb_trend||0),px=D.px;
- const det=!!(FULL&&p),lvl=(det&&last!==null)?Math.round(last):null,lt=lvl!==null?' ('+lvl+')':'';
+ const det=!!(FULL&&p),lvl=(det&&last!==null)?fmtPx(last):null,lt=lvl!==null?' ('+lvl+')':'';
  const side=det?(((t===1||t===-1)&&last!==null&&px)?((t*(px-last)>0)?'ok':'wrong'):null):(D.pb_side||null);
  const F=det?{up:'Tendance de fond en hausse : seuls les achats au-dessus de sa dernière cassure'+lt+' sont pris.',down:'Tendance de fond en baisse : seules les ventes sous sa dernière cassure'+lt+' sont prises.',
    wrong:'Le prix est revenu du mauvais côté de la dernière cassure de la tendance de fond'+lt+' : entrées en pause jusqu’à ce qu’il la reprenne ou que la tendance de fond se retourne.',none:'Pas de tendance de fond claire : entrées en pause jusqu’à ce qu’elle se dessine.'}

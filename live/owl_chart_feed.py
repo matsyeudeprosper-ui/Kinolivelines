@@ -983,6 +983,163 @@ def pullback_view(kept, dots, marks, brks, sticky=None, write=True):
             "bos_ready": rdy, "flip_bos_ready": frdy}
 
 
+def tick_once():
+    """One pass of the feed (2026-10-12: moved out of main() unchanged, so the
+    multi-market chart feed can run the SAME code for other symbols)."""
+    R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
+                                0, RAW_BARS)
+    tick = mt5.symbol_info_tick(SYMBOL)
+    # user 2026-09-13: previous (closed) H1 candle's open/close
+    # for a discreet reference on the chart; [t, o, h, l, c]
+    h1 = None
+    try:
+        _H = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, 1)
+        if _H is not None and len(_H) == 1:
+            _b = _H[0]
+            h1 = [int(_b["time"]), round(float(_b["open"]), 2),
+                  round(float(_b["high"]), 2), round(float(_b["low"]), 2),
+                  round(float(_b["close"]), 2)]
+    except Exception:
+        h1 = None
+    # 2026-09-16 (owner): positions are NOT published here any
+    # more. This process is attached to whatever terminal serves
+    # the candles, which is not the account being traded. The app
+    # server injects the VIEWER's own positions instead.
+    trades = []
+    if R is not None and len(R) > 1 and tick is not None:
+        kept = build(R[:-1])       # closed bars only
+        lv = R[-1]                 # the forming candle, live
+        live = [int(lv["time"]), round(float(lv["open"]), 2),
+                round(float(lv["high"]), 2),
+                round(float(lv["low"]), 2),
+                round(float(lv["close"]), 2),
+                1 if lv["close"] >= lv["open"] else -1]
+        win = kept[-KEEP_LAST:]
+        t0 = win[0][0] if win else 0
+        _mbrk = []
+        (dots, marks, trend, choch, nxt, inv,
+         nxt_t, inv_t, _mdir,
+         _mflp, _mflp_t, _mfdir) = engine(kept, brk_out=_mbrk)
+        # INTERNAL STRUCTURE (owner 2026-09-16): between two main
+        # events the range can be wide enough for its own little
+        # BOS patterns. Run the SAME engine over the candles since
+        # the last main event only. The window restarts on the
+        # newest main event - dot, mark or break (2026-09-26: marks
+        # alone only cover flips, and the dot precedes its break).
+        _res = internal_structure(kept, nxt, inv, inv_t, _mflp, marks,
+                                  nxt_t, int(R[-1]["time"]),
+                                  pin=_INT_PIN,
+                                  brk_t=(_mbrk[-1][0] if _mbrk
+                                         else None))
+        (i_dots, i_marks, i_trend, i_choch, i_nxt, i_inv, i_nxt_t,
+         i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
+         i_fready, _since, _win_len) = (
+            _res["i_dots"], _res["i_marks"], _res["i_trend"],
+            _res["i_choch"], _res["i_nxt"], _res["i_inv"],
+            _res["i_nxt_t"], _res["i_inv_t"], _res["i_dir"],
+            _res["i_flp"], _res["i_flp_t"], _res["i_fdir"],
+            _res["i_brk1h"], _res["i_ready"], _res["i_fready"],
+            _res["since"], _res["win_len"])
+        if trend == 1:
+            dots = [d for d in dots if d[2] == 1]
+        elif trend == -1:
+            dots = [d for d in dots if d[2] == -1]
+        try:
+            _pb = pullback_view(kept, dots, marks, _mbrk,
+                                sticky=PB_CHAIN)
+        except Exception:
+            _pb = None
+        dots = [d for d in dots if d[0] >= t0]
+        marks = [m for m in marks if m[0] >= t0]
+        # owner 2026-09-16: the main structure anticipates its
+        # next break under the same condition as the internal one -
+        # price must have pulled back from the level first
+        _fready = pullback_since(kept, _mflp_t, _mfdir)
+        _ready = pullback_since(kept, nxt_t, _mdir)
+        # STRICT WINDOW (owner-visible bug 2026-09-22 13:59): the
+        # three bots refused a flip for "aucun grand mouvement depuis
+        # 2 h" and the 441 desk took it 3.5 s later, because by then
+        # this count had gone 0 -> 1 - it had counted the flip's OWN
+        # break. A signal was authorising itself through the gate
+        # that is supposed to ask whether the market moved BEFORE it.
+        # Measured over 41.7 days / 643 breaks: inclusive passes
+        # 100.0% of them (the gate never blocks by rule, only by
+        # losing a race with this file), strict passes 80.2%. The
+        # replay that measured this brake has always used the strict
+        # window, so live now matches what was measured.
+        _now = int(R[-1]["time"])
+        _mv2 = sum(1 for m in marks
+                   if _now - 7200 <= m[0] < _now)
+        _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]
+        _ref = [float(r["high"]) - float(r["low"]) for r in R[-1440:]]
+        _rng.sort(); _ref.sort()
+        _vn = _rng[len(_rng) // 2] if _rng else 0.0
+        _vr = _ref[len(_ref) // 2] if _ref else 0.0
+        json.dump(
+            {"updated": int(time.time()), "symbol": SYMBOL,
+             "moves_2h": _mv2,
+             "vol_now": round(_vn, 1), "vol_ref": round(_vr, 1),
+             "spread": round(float(tick.ask - tick.bid), 2),
+             "raw": len(R) - 1, "kept": len(kept),
+             "candles": win, "live": live, "dots": dots, "pb": _pb,
+             "marks": marks, "trend": trend, "choch": choch,
+             # 2026-10-01 (owner): EVERY break, continuations
+             # included, as [time, direction, level broken].
+             # `marks` deliberately stays flips-only because
+             # moves_2h counts it and the movement brake reads
+             # that - see review/MOVEMENT_BRAKE.md.
+             "breaks": [[b[0], b[1], round(b[2], 2)]
+                        for b in _mbrk
+                        if len(b) > 2 and b[0] >= t0][-12:],
+             "next_bos": round(nxt, 2) if nxt else None,
+             "invalid": round(inv, 2) if inv else None,
+             "int_trend": i_trend,
+             "int_bos": round(i_nxt, 2) if i_nxt else None,
+             "int_inv": round(i_inv, 2) if i_inv else None,
+             "int_dots": [d for d in i_dots if d[0] >= t0],
+             "int_bos_t": i_nxt_t, "int_inv_t": i_inv_t,
+             "next_bos_t": nxt_t, "invalid_t": inv_t,
+             "int_since": _since,
+             "int_choch": i_choch,
+             "bos_dir": _mdir,
+             "int_bos_dir": i_dir,
+             "flip_bos": round(_mflp, 2) if _mflp else None,
+             "flip_bos_t": _mflp_t, "flip_bos_dir": _mfdir,
+             "flip_bos_ready": _fready,
+             "int_flip_bos": round(i_flp, 2) if i_flp else None,
+             "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
+             "int_flip_bos_ready": i_fready,
+             "bos_ready": _ready,
+             "int_win": _win_len,
+             "int_brk_1h": i_brk1h,
+             "int_awake": i_brk1h >= 1,
+             "int_state": (
+                 "none" if not i_trend else
+                 ("flip" if (i_choch and i_choch != i_trend) else
+                  ("ready" if i_ready else "forming"))),
+             "int_bos_ready": i_ready,
+             # the internal engine fires every few minutes; the
+             # whole history would out-number the candles, so only
+             # the recent events are drawn
+             "int_marks": [m for m in i_marks if m[0] >= t0][-10:],
+             "trades": trades, "h1": h1,
+             "px": round(float(tick.bid), 2)},
+            open(OUT + ".tmp", "w"))
+        for _ in range(12):
+            try:
+                os.replace(OUT + ".tmp", OUT)
+                break
+            except PermissionError:
+                time.sleep(0.05)
+        else:
+            try:
+                os.replace(OUT + ".tmp", OUT)
+            except Exception:
+                pass
+        nerv_history_tick(_vn, _vr)
+        htf_tick()
+
+
 def main():
     assert connect(), "no terminal could serve BTCUSD candles"
     print("chart feed up", flush=True)
@@ -992,158 +1149,7 @@ def main():
         print(f"pullback chain catch-up skipped ({type(_e).__name__})", flush=True)
     while True:
         try:
-            R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
-                                        0, RAW_BARS)
-            tick = mt5.symbol_info_tick(SYMBOL)
-            # user 2026-09-13: previous (closed) H1 candle's open/close
-            # for a discreet reference on the chart; [t, o, h, l, c]
-            h1 = None
-            try:
-                _H = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_H1, 1, 1)
-                if _H is not None and len(_H) == 1:
-                    _b = _H[0]
-                    h1 = [int(_b["time"]), round(float(_b["open"]), 2),
-                          round(float(_b["high"]), 2), round(float(_b["low"]), 2),
-                          round(float(_b["close"]), 2)]
-            except Exception:
-                h1 = None
-            # 2026-09-16 (owner): positions are NOT published here any
-            # more. This process is attached to whatever terminal serves
-            # the candles, which is not the account being traded. The app
-            # server injects the VIEWER's own positions instead.
-            trades = []
-            if R is not None and len(R) > 1 and tick is not None:
-                kept = build(R[:-1])       # closed bars only
-                lv = R[-1]                 # the forming candle, live
-                live = [int(lv["time"]), round(float(lv["open"]), 2),
-                        round(float(lv["high"]), 2),
-                        round(float(lv["low"]), 2),
-                        round(float(lv["close"]), 2),
-                        1 if lv["close"] >= lv["open"] else -1]
-                win = kept[-KEEP_LAST:]
-                t0 = win[0][0] if win else 0
-                _mbrk = []
-                (dots, marks, trend, choch, nxt, inv,
-                 nxt_t, inv_t, _mdir,
-                 _mflp, _mflp_t, _mfdir) = engine(kept, brk_out=_mbrk)
-                # INTERNAL STRUCTURE (owner 2026-09-16): between two main
-                # events the range can be wide enough for its own little
-                # BOS patterns. Run the SAME engine over the candles since
-                # the last main event only. The window restarts on the
-                # newest main event - dot, mark or break (2026-09-26: marks
-                # alone only cover flips, and the dot precedes its break).
-                _res = internal_structure(kept, nxt, inv, inv_t, _mflp, marks,
-                                          nxt_t, int(R[-1]["time"]),
-                                          pin=_INT_PIN,
-                                          brk_t=(_mbrk[-1][0] if _mbrk
-                                                 else None))
-                (i_dots, i_marks, i_trend, i_choch, i_nxt, i_inv, i_nxt_t,
-                 i_inv_t, i_dir, i_flp, i_flp_t, i_fdir, i_brk1h, i_ready,
-                 i_fready, _since, _win_len) = (
-                    _res["i_dots"], _res["i_marks"], _res["i_trend"],
-                    _res["i_choch"], _res["i_nxt"], _res["i_inv"],
-                    _res["i_nxt_t"], _res["i_inv_t"], _res["i_dir"],
-                    _res["i_flp"], _res["i_flp_t"], _res["i_fdir"],
-                    _res["i_brk1h"], _res["i_ready"], _res["i_fready"],
-                    _res["since"], _res["win_len"])
-                if trend == 1:
-                    dots = [d for d in dots if d[2] == 1]
-                elif trend == -1:
-                    dots = [d for d in dots if d[2] == -1]
-                try:
-                    _pb = pullback_view(kept, dots, marks, _mbrk,
-                                        sticky=PB_CHAIN)
-                except Exception:
-                    _pb = None
-                dots = [d for d in dots if d[0] >= t0]
-                marks = [m for m in marks if m[0] >= t0]
-                # owner 2026-09-16: the main structure anticipates its
-                # next break under the same condition as the internal one -
-                # price must have pulled back from the level first
-                _fready = pullback_since(kept, _mflp_t, _mfdir)
-                _ready = pullback_since(kept, nxt_t, _mdir)
-                # STRICT WINDOW (owner-visible bug 2026-09-22 13:59): the
-                # three bots refused a flip for "aucun grand mouvement depuis
-                # 2 h" and the 441 desk took it 3.5 s later, because by then
-                # this count had gone 0 -> 1 - it had counted the flip's OWN
-                # break. A signal was authorising itself through the gate
-                # that is supposed to ask whether the market moved BEFORE it.
-                # Measured over 41.7 days / 643 breaks: inclusive passes
-                # 100.0% of them (the gate never blocks by rule, only by
-                # losing a race with this file), strict passes 80.2%. The
-                # replay that measured this brake has always used the strict
-                # window, so live now matches what was measured.
-                _now = int(R[-1]["time"])
-                _mv2 = sum(1 for m in marks
-                           if _now - 7200 <= m[0] < _now)
-                _rng = [float(r["high"]) - float(r["low"]) for r in R[-60:]]
-                _ref = [float(r["high"]) - float(r["low"]) for r in R[-1440:]]
-                _rng.sort(); _ref.sort()
-                _vn = _rng[len(_rng) // 2] if _rng else 0.0
-                _vr = _ref[len(_ref) // 2] if _ref else 0.0
-                json.dump(
-                    {"updated": int(time.time()), "symbol": SYMBOL,
-                     "moves_2h": _mv2,
-                     "vol_now": round(_vn, 1), "vol_ref": round(_vr, 1),
-                     "spread": round(float(tick.ask - tick.bid), 2),
-                     "raw": len(R) - 1, "kept": len(kept),
-                     "candles": win, "live": live, "dots": dots, "pb": _pb,
-                     "marks": marks, "trend": trend, "choch": choch,
-                     # 2026-10-01 (owner): EVERY break, continuations
-                     # included, as [time, direction, level broken].
-                     # `marks` deliberately stays flips-only because
-                     # moves_2h counts it and the movement brake reads
-                     # that - see review/MOVEMENT_BRAKE.md.
-                     "breaks": [[b[0], b[1], round(b[2], 2)]
-                                for b in _mbrk
-                                if len(b) > 2 and b[0] >= t0][-12:],
-                     "next_bos": round(nxt, 2) if nxt else None,
-                     "invalid": round(inv, 2) if inv else None,
-                     "int_trend": i_trend,
-                     "int_bos": round(i_nxt, 2) if i_nxt else None,
-                     "int_inv": round(i_inv, 2) if i_inv else None,
-                     "int_dots": [d for d in i_dots if d[0] >= t0],
-                     "int_bos_t": i_nxt_t, "int_inv_t": i_inv_t,
-                     "next_bos_t": nxt_t, "invalid_t": inv_t,
-                     "int_since": _since,
-                     "int_choch": i_choch,
-                     "bos_dir": _mdir,
-                     "int_bos_dir": i_dir,
-                     "flip_bos": round(_mflp, 2) if _mflp else None,
-                     "flip_bos_t": _mflp_t, "flip_bos_dir": _mfdir,
-                     "flip_bos_ready": _fready,
-                     "int_flip_bos": round(i_flp, 2) if i_flp else None,
-                     "int_flip_bos_t": i_flp_t, "int_flip_bos_dir": i_fdir,
-                     "int_flip_bos_ready": i_fready,
-                     "bos_ready": _ready,
-                     "int_win": _win_len,
-                     "int_brk_1h": i_brk1h,
-                     "int_awake": i_brk1h >= 1,
-                     "int_state": (
-                         "none" if not i_trend else
-                         ("flip" if (i_choch and i_choch != i_trend) else
-                          ("ready" if i_ready else "forming"))),
-                     "int_bos_ready": i_ready,
-                     # the internal engine fires every few minutes; the
-                     # whole history would out-number the candles, so only
-                     # the recent events are drawn
-                     "int_marks": [m for m in i_marks if m[0] >= t0][-10:],
-                     "trades": trades, "h1": h1,
-                     "px": round(float(tick.bid), 2)},
-                    open(OUT + ".tmp", "w"))
-                for _ in range(12):
-                    try:
-                        os.replace(OUT + ".tmp", OUT)
-                        break
-                    except PermissionError:
-                        time.sleep(0.05)
-                else:
-                    try:
-                        os.replace(OUT + ".tmp", OUT)
-                    except Exception:
-                        pass
-                nerv_history_tick(_vn, _vr)
-                htf_tick()
+            tick_once()
         except Exception as e:
             print(f"{datetime.now(timezone.utc).isoformat()} ERROR "
                   f"{type(e).__name__}: {e}", flush=True)

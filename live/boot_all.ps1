@@ -293,6 +293,13 @@ try {
     Say ("copier revive failed: " + $_)
 }
 
+# 3b1) chart data for the other markets (2026-10-12): the chart's symbol switch reads it
+if (-not (ProcRunning "owl_chart_multi.py")) {
+    Say "starting multi-market chart feed"
+    Start-Process pythonw -ArgumentList "owl_chart_multi.py" `
+        -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
+}
+
 # 3b2) setup scanner (2026-10-11): other markets, virtual trades only - reads prices, never trades
 if (-not (ProcRunning "owl_scanner.py")) {
     Say "starting setup scanner"

@@ -10738,6 +10738,34 @@ def _test_pocket(rs):
     return {"value": round(v, 2), "n": len(rs), "curve": curve}
 
 
+def chart_symbols():
+    """2026-10-12 (owner): the markets the chart can switch to - BTC (the robot's market) first, then the
+    multi-market feed's (live/chart_multi/meta.json)."""
+    out = [{"sym": "BTCUSD", "fr": "Bitcoin", "en": "Bitcoin", "digits": 2, "scale": 1, "robot": True}]
+    try:
+        m = json.load(open(os.path.join(DIR, "chart_multi", "meta.json"), encoding="utf-8")).get("symbols") or {}
+        for s, v in m.items():
+            if os.path.exists(os.path.join(DIR, "chart_multi", s + ".json")):
+                out.append({"sym": s, "fr": v.get("name_fr") or s, "en": v.get("name_en") or s,
+                            "digits": v.get("digits", 2), "scale": v.get("scale", 1), "robot": False})
+    except Exception:
+        pass
+    return out
+
+
+def chart_sym(path):
+    """the ?sym= of a chart request, if it is one of the switchable markets other than BTC"""
+    try:
+        import urllib.parse as _u
+        q = _u.parse_qs(path.split("?", 1)[1]) if "?" in path else {}
+        s = (q.get("sym", [""])[0] or "").upper()
+    except Exception:
+        return None
+    if not s or s == "BTCUSD":
+        return None
+    return s if any(x["sym"] == s for x in chart_symbols()) else None
+
+
 def scanner_payload(detail):
     """2026-10-11 (owner): the setup scanner (live/owl_scanner.py) - what each
     symbol is doing now, its virtual trades, and forward vs backtest. Levels
@@ -16545,8 +16573,9 @@ class H(BaseHTTPRequestHandler):
                 _qh = _uph.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
                 _tf = (_qh.get("tf", ["H1"])[0] or "H1").upper()
                 if _tf == "ALL":
-                    _h = json.load(open(os.path.join(
-                        DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                    _hs = chart_sym(self.path)
+                    _h = json.load(open(os.path.join(DIR, "chart_multi", _hs + "_htf.json") if _hs
+                                        else os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
                     _sum = {}
                     for _k in ("M15", "H1", "H4"):
                         _t = (_h.get("tf") or {}).get(_k) or {}
@@ -16566,7 +16595,9 @@ class H(BaseHTTPRequestHandler):
                 if chart_view(user) != "full":
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                     return
-                _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                _hs = chart_sym(self.path)
+                _h = json.load(open(os.path.join(DIR, "chart_multi", _hs + "_htf.json") if _hs
+                                    else os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
                 _d = dict((_h.get("tf") or {}).get(_tf) or {})
                 _d["tf"] = _tf
                 _d["updated"] = _h.get("updated")
@@ -16707,11 +16738,20 @@ class H(BaseHTTPRequestHandler):
             # account BEING VIEWED, never the terminal that happens to
             # serve the candles. Works for every member, and keeps
             # working if the demo account goes away.
+            # 2026-10-12 (owner): ?sym= switches the chart to another market (owl_chart_multi.py); the robot's
+            # trades exist only on BTC, so another market shows the structure without trade lines
+            _msym = chart_sym(self.path)
             try:
-                d = json.load(open(os.path.join(DIR, "owl_chart_btc.json")))
+                d = json.load(open(os.path.join(DIR, "chart_multi", _msym + ".json") if _msym
+                                   else os.path.join(DIR, "owl_chart_btc.json")))
             except Exception:
                 self._send("{}", "application/json")
                 return
+            _syms = chart_symbols()
+            _sm = next((x for x in _syms if x["sym"] == (_msym or "BTCUSD")), _syms[0])
+            d["symbols"] = [{"sym": x["sym"], "fr": x["fr"], "en": x["en"], "robot": x["robot"]} for x in _syms]
+            d["sym"] = _sm["sym"]; d["scale"] = _sm["scale"]; d["digits"] = _sm["digits"]
+            d["sym_fr"] = _sm["fr"]; d["sym_en"] = _sm["en"]; d["robot_market"] = bool(_sm["robot"])
             tr = []
             uid = user.get("id")
             try:
@@ -16783,6 +16823,9 @@ class H(BaseHTTPRequestHandler):
                 d["closed"] = _cl
             except Exception:
                 d["closed"] = []
+            if _msym:
+                tr = []
+                d["trades"] = []; d["closed"] = []; d.pop("pending", None)
             d["acct"] = user.get("login")
             d["uid"] = user.get("id")     # which account this chart shows
             d["auto"] = acct_auto(user)
