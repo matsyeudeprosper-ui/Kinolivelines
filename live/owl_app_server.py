@@ -10683,6 +10683,46 @@ def pockets_payload(uid):
     return {"pockets": out, "balance": w.get("balance"), "currency": w.get("currency")}
 
 
+def test_pockets_payload(detail):
+    """2026-10-12 (owner): the markets the scanner trades VIRTUALLY, as test pockets in Patrimoine.
+    Only the scanner's live virtual trades (forward_v3, engine v3-quote, the strategy - not the controls).
+    Pretend money: TEST_POCKET_START per market, TEST_POCKET_RISK of the pocket per trade. Never real money,
+    never added to a balance; when a market trades for real it simply appears as a real pocket."""
+    D = os.path.join(DIR, "scanner")
+    names = {}
+    try:
+        for r in json.load(open(os.path.join(D, "state.json"), encoding="utf-8")).get("symbols") or []:
+            names[r["sym"]] = r.get("name") or r["sym"]
+    except Exception:
+        pass
+    closes, opens = {}, {}
+    try:
+        for ln in open(os.path.join(D, "forward_v3.jsonl"), encoding="utf-8"):
+            try:
+                x = json.loads(ln)
+            except Exception:
+                continue
+            if x.get("engine") != "v3-quote":
+                continue
+            if x.get("ev") == "open":
+                opens[x["sym"]] = x
+            elif x.get("ev") == "close":
+                opens.pop(x["sym"], None)
+                t = [int(float(x.get("detect") or x.get("t"))), int(x.get("xt") or 0), int(x["d"]), float(x["r"])]
+                if detail:
+                    t += [x.get("e"), x.get("x")]
+                closes.setdefault(x["sym"], []).append(t)
+    except Exception:
+        pass
+    out = []
+    for s in sorted(set(closes) | set(opens)):
+        o = opens.get(s)
+        out.append({"sym": s, "name": names.get(s, s), "trades": sorted(closes.get(s, []), key=lambda t: t[1]),
+                    "open": ({"d": o["d"], "t": int(float(o.get("detect") or o.get("t")))} if o else None)})
+    return {"rule": {"start": TEST_POCKET_START, "risk": TEST_POCKET_RISK}, "pockets": out,
+            "watched": len(names), "detail": bool(detail)}
+
+
 TEST_POCKET_START = 100.0      # every test pocket starts with the same pretend amount
 TEST_POCKET_RISK = 0.02        # and risks 2 % of its current value on each virtual trade
 
@@ -16549,6 +16589,12 @@ class H(BaseHTTPRequestHandler):
             try:
                 _rp = open(os.path.join(DIR, "owl_proof_page.html"), encoding="utf-8").read()
                 self._send(_rp, "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "test_pockets":
+            try:
+                _det = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
+                self._send(json.dumps(test_pockets_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "pockets":

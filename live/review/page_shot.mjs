@@ -18,7 +18,7 @@ const ev = async (e) => (await send("Runtime.evaluate", { expression: e, returnB
 await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 800, deviceScaleFactor: 1, mobile: true }, S);
 const url = `${BASE}/${TOKEN}/${PATH || ""}`;
 await send("Page.navigate", { url }, S); await sleep(3000);
-if (JS) { await ev(JS); await send("Page.navigate", { url }, S); }
+if (JS) { await ev(JS); await send("Page.reload", { ignoreCache: true }, S); }   // reload: navigating to the same URL with a #hash would not reload
 await sleep(6000);
 const h = await ev("document.documentElement.scrollHeight");
 await send("Emulation.setDeviceMetricsOverride", { width: 360, height: Math.min(h, 9000), deviceScaleFactor: 1, mobile: true }, S); await sleep(1200);
