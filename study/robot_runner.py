@@ -39,10 +39,10 @@ def arm_for(name, parts, bars, S):
         ex = {"id": ex}
     pkg = parts.get("money") or "base"
     cfg_b = H.package_cfg(pkg, {"balance": BAL}); cfg_b.update({"scale_lot": 1, "scale_daily": 1})
-    if ex.get("id") == "target" and ex.get("rr"):
+    if ex.get("id") in ("target", "target_choch") and ex.get("rr"):
         cfg_b["rr"] = float(ex["rr"])
     cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1))
-    return RobotArm(name, cfg, bars, S, exit="choch" if ex.get("id") == "choch" else "target",
+    return RobotArm(name, cfg, bars, S, exit=ex.get("id") if ex.get("id") in ("choch", "target_choch") else "target",
                     stop="none" if ex.get("stop") == "none" else "protected",
                     allowance="all_bos" if parts.get("recovery") == "all_bos" else "current",
                     order="live", cap_rule="adaptive", cap="on")

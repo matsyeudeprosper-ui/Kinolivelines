@@ -657,7 +657,7 @@ const pic=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-
 function partName(kind,v){const P=BLD().parts||{};
  if(kind==='money'){const r=rbById('pkg-'+(v||'base'));return r?rn(r):(v||'base');}
  const id=(v&&typeof v==='object')?v.id:v;const p=(P[kind]||[]).find(x=>x.id===id);let s=p?T(p.fr,p.en):(id||'—');
- if(kind==='exit'&&v&&v.id==='target')s+=' · '+num(v.rr||0.8,1)+' × '+T('le risque','the risk');return s;}
+ if(kind==='exit'&&v&&(v.id==='target'||v.id==='target_choch'))s+=' · '+num(v.rr||0.8,1)+' × '+T('le risque','the risk');return s;}
 function partPlain(kind,v){const P=BLD().parts||{};if(kind==='money'){const r=rbById('pkg-'+(v||'base'));return r?rp(r):'';}const id=(v&&typeof v==='object')?v.id:v;const p=(P[kind]||[]).find(x=>x.id===id);return p?T(p.plain_fr,p.plain_en):'';}
 function bCard(r,i){const m=BST[r.stage]||BST.tested;const R=r.resolved||{};const own=r.parts||{};const t=r.test;
  const d=t&&t.robot&&t.parent_result?t.robot.net-t.parent_result.net:null;
@@ -712,8 +712,8 @@ function renderNew(){const B=BLD(),P=B.parts||{};const base=bById(NEWD.parent)||
  h+='<div class="card"><h2>1 · '+T('Partir de','Start from')+'</h2><div class="opts">'+(B.robots||[]).map(r=>opt('parent',r.id,T(r.name_fr,r.name_en),'',NEWD.parent===r.id)).join('')+'</div></div>';
  h+='<div class="card"><h2>2 · '+T('Les pièces','The parts')+'</h2>';
  h+='<div class="grp" style="margin:4px 0 8px">'+T('Entrée','Entry')+'</div><div class="opts">'+(P.entry||[]).map(p=>opt('entry',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('entry',p.id))).join('')+'</div>';
- h+='<div class="grp" style="margin:16px 0 8px">'+T('Sortie','Exit')+'</div><div class="opts">'+(P.exit||[]).map(p=>{if(p.id==='target'){const v=cur('exit');const rr=(v&&v.id==='target')?(v.rr||0.8):0.8;
-   return opt('exit','target',T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('exit','target'))+(isOn('exit','target')?'<div class="rrs">'+((p.dial||{}).rr||[]).map(x=>'<button class="chip'+(x===rr?' on':'')+'" onclick="newPick(\'exit\',\'target\','+x+')">'+num(x,1)+' ×</button>').join('')+'</div>':'');}
+ h+='<div class="grp" style="margin:16px 0 8px">'+T('Sortie','Exit')+'</div><div class="opts">'+(P.exit||[]).map(p=>{if(p.id==='target'||p.id==='target_choch'){const v=cur('exit');const rr=(v&&v.id===p.id)?(v.rr||0.8):0.8;
+   return opt('exit',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('exit',p.id))+(isOn('exit',p.id)?'<div class="rrs">'+((p.dial||{}).rr||[]).map(x=>'<button class="chip'+(x===rr?' on':'')+'" onclick="newPick(\'exit\',\''+p.id+'\','+x+')">'+num(x,1)+' ×</button>').join('')+'</div>':'');}
    return opt('exit',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('exit',p.id));}).join('')+'</div>';
  h+='<div class="grp" style="margin:16px 0 8px">'+T('Rattrapage après une perte','Catch-up after a loss')+'</div><div class="opts">'+(P.recovery||[]).map(p=>opt('recovery',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('recovery',p.id))).join('')+'</div>';
  h+='<div class="grp" style="margin:16px 0 8px">'+T('Argent','Money')+'</div><div class="opts">'+money.map(r=>{const id=r.id.slice(4);return opt('money',id,rn(r),rp(r),(cur('money')||'base')===id);}).join('')+'</div></div>';
@@ -721,7 +721,7 @@ function renderNew(){const B=BLD(),P=B.parts||{};const base=bById(NEWD.parent)||
   '<div class="note" id="nerr"></div><button class="cta" style="margin-top:14px" onclick="newSave()">'+T('Créer et tester','Build and test')+'</button></div>';
  $('det').innerHTML=h;}
 function newPick(kind,id,rr){if(kind==='parent'){NEWD.parent=id;NEWD.parts={};}
- else if(kind==='exit')NEWD.parts.exit=id==='target'?{id:'target',rr:rr||0.8}:{id:id};else NEWD.parts[kind]=id;
+ else if(kind==='exit')NEWD.parts.exit=(id==='target'||id==='target_choch')?{id:id,rr:rr||0.8}:{id:id};else NEWD.parts[kind]=id;
  const y=window.scrollY;renderNew();window.scrollTo(0,y);}
 async function newSave(){const base=bById(NEWD.parent)||{};const R=base.resolved||{};const diff={};
  Object.keys(NEWD.parts).forEach(k=>{if(JSON.stringify(NEWD.parts[k])!==JSON.stringify(R[k]))diff[k]=NEWD.parts[k];});

@@ -11462,9 +11462,9 @@ def robot_create(user, body):
         if ex.get("id") not in exs:
             return {"ok": False, "err": "exit"}
         e2 = {"id": ex["id"]}
-        if ex["id"] == "target":
+        if ex["id"] in ("target", "target_choch"):
             rr = float(ex.get("rr") or 0.8)
-            if rr not in (exs["target"].get("dial") or {}).get("rr", [0.8]):
+            if rr not in (exs[ex["id"]].get("dial") or {}).get("rr", [0.8]):
                 return {"ok": False, "err": "rr"}
             e2["rr"] = rr
         clean["exit"] = e2

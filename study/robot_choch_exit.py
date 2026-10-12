@@ -45,7 +45,7 @@ class RobotArm(PbGateArm):
 
     def signal(self, o, k, TM, BID, ASK):
         p = self.pos
-        if p is not None and self.exit_mode == "choch" and o["flip"] and o["d"] == -p["d"]:
+        if p is not None and self.exit_mode in ("choch", "target_choch") and o["flip"] and o["d"] == -p["d"]:
             d = p["d"]; xq = BID[k] if d == 1 else ASK[k]
             prof = d * (xq - p["e"]) * p["lot"] + sum(d * (xq - ad["e"]) * ad["lot"] * ad["n"] for ad in p["adds"])
             self.n["choch_exits"] += 1; self.n["choch_exit_wins"] += 1 if prof > 0 else 0
