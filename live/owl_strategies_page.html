@@ -244,6 +244,11 @@ button.pc{cursor:pointer}
 .inp:focus{border-color:var(--accent)}
 .spin{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid var(--surface3);border-top-color:var(--warn);animation:rot 1s linear infinite}
 @keyframes rot{to{transform:rotate(360deg)}}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mb{border:1px solid var(--border);background:var(--surface2);border-radius:14px;padding:12px 8px;text-align:center}
+.mb svg{width:20px;height:20px;display:block;margin:0 auto 6px;color:var(--accent-soft)}.mb b{display:block;font-size:.86rem}.mb small{display:block;font-size:.68rem;color:var(--muted);margin-top:3px;line-height:1.3}
+.mb.del svg{color:var(--down-soft)}
+.cta[disabled]{opacity:.45}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -541,18 +546,7 @@ function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};
  const node=(r,d)=>{const m=RST[r.stage]||RST.model;const ch=(kids[r.id]||[]).sort((a,b)=>RORDER.indexOf(a.stage)-RORDER.indexOf(b.stage));
   return '<div class="tn" style="--d:'+d+'"><button class="tnb'+(r.stage==='retired'?' dim':'')+'" onclick="goR(\''+r.id+'\')"><span class="dot" style="background:'+m.c+'"></span><b>'+esc(rn(r))+'</b>'+((r.accounts||[]).length?'<em>'+(r.accounts||[]).length+'</em>':'')+'</button>'+(ch.length?'<div class="tk">'+ch.map(c=>node(c,d+1)).join('')+'</div>':'')+'</div>';};
  return (kids['_']||[]).map(r=>node(r,0)).join('');}
-function renderRobots(){if(!RB)return;const c=RB.counts||{},R=RB.robots||[];
- const live=R.filter(r=>['real','demo','virtual','paper'].includes(r.stage)&&r.alive!=null);const on=live.filter(r=>r.kind==='owl'?(r.alive||0)>0:r.alive);
- let h=builderTop()+'<div class="grp" style="margin-top:26px">'+T('Sous le capot','Under the hood')+'</div>';
- h+='<div class="card"><h2>'+T('Les versions d\'argent de l\'Owl','The Owl\'s money versions')+'<span class="bd ev">Owl</span></h2><div class="sub" style="margin-bottom:12px">'+T('La pièce « argent » de chaque compte : taille, objectif du jour, plafonds. Chaque version hérite de sa mère et n\'en change que quelques réglages.','Each account\'s money part: size, daily target, caps. Each version inherits from its mother and changes only a few settings.')+'</div><div class="tree">'+tree()+'</div></div>';
- const W=(RB.workshop||[]).filter(q=>q.status==='open');
- if(W.length||c.built_parts)h+='<div class="card"><h2>'+T('L\'atelier','The workshop')+'<span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+W.length+T(' en cours',' in progress')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Le constructeur (une IA) fabrique les pièces que le chercheur demande. ','The builder (an AI) makes the parts the researcher asks for. ')+num(c.built_parts||0)+T(' pièces déjà construites.',' parts already built.')+'</div><div class="mini">'+W.map(q=>'<div class="mi"><span class="fi" style="color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span><span><b>'+esc(EN?q.title_en:q.title_fr)+'</b><br><small style="color:var(--muted)">'+fdate(q.date)+'</small></span></div>').join('')+'</div></div>';
- h+='<nav id="nav"><div class="chips">'+[['all',T('Tous','All')]].concat(RORDER.filter(s=>R.some(r=>r.stage===s)).map(s=>[s,T(RST[s].fr,RST[s].en)])).map(([k,l])=>'<button class="chip'+(RF===k?' on':'')+'" onclick="setRF(\''+k+'\')">'+(k!=='all'?'<span class="dot" style="background:'+RST[k].c+'"></span>':'')+l+' <em>'+(k==='all'?R.length:R.filter(r=>r.stage===k).length)+'</em></button>').join('')+'</div></nav>';
- $('top').innerHTML=h;
- const F2=R.filter(r=>RF==='all'||r.stage===RF||(RF==='built'&&r.stage==='built'));let L='',i=0;
- RORDER.forEach(s=>{const G=F2.filter(r=>r.stage===s).sort((a,b)=>((b.total||{}).n||0)-((a.total||{}).n||0));if(!G.length)return;
-  L+='<div class="grp"><span class="dot" style="background:'+RST[s].c+'"></span>'+T(RST[s].fr,RST[s].en)+' <em>'+G.length+'</em></div><div class="grid">'+G.map(r=>rCard(r,i++)).join('')+'</div>';});
- $('list').innerHTML=L||'<div class="empty">'+T('Aucun robot ici.','No robot here.')+'</div>';}
+function renderRobots(){if(!RB)return;$('top').innerHTML=builderTop();$('list').innerHTML='';}
 function setRF(k){RF=(RF===k&&k!=='all')?'all':k;renderRobots();const n=$('nav');if(n)n.scrollIntoView({behavior:'smooth'});}
 function goR(id,sec){NAV++;location.hash='r='+id+(sec?'&v='+sec:'');}
 function dv(d){const v=d.v;if(d.kind==='bool')return v?T('oui','yes'):T('non','no');if(v==null||v===0&&['usd','pct','min','pts'].includes(d.kind)&&d.k!=='kill_net')return T('aucun','none');
@@ -663,15 +657,16 @@ function bCard(r,i){const m=BST[r.stage]||BST.tested;const R=r.resolved||{};cons
  const d=t&&t.robot&&t.parent_result?t.robot.net-t.parent_result.net:null;
  return '<button class="sc'+(r.stage==='real'?' flag':'')+'" style="--c:'+m.c+';animation-delay:'+Math.min(i,12)*30+'ms" onclick="goB(\''+r.id+'\')"><div class="top"><span class="fi">'+BOT+'</span><span class="tt"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+(r.parent?T('enfant de ','child of ')+esc((bById(r.parent)||{}).name_fr||r.parent):T('le robot d\'origine','the original robot'))+(r.mine?' · '+T('le vôtre','yours'):'')+'</small></span></div>'+
   '<div class="pchips">'+PARTK.map(k=>'<span class="pc'+(own[k[0]]!==undefined&&r.parent?' ch':'')+'">'+pic(k[2])+esc(partName(k[0],R[k[0]]))+'</span>').join('')+'</div>'+
-  '<div class="ft">'+bsb(r.stage)+'<span class="met">'+(t&&t.robot?spark(cumOf(t.robot.curve))+'<span class="'+cl(t.robot.net)+'">'+money(t.robot.net)+'</span>':'')+(d!=null&&r.parent?'<span class="bd ev" style="'+(d>=0?'color:var(--up-soft)':'color:var(--down-soft)')+'">'+(d>=0?'+':'−')+'$'+num(Math.abs(d),0)+T(' vs parent',' vs parent')+'</span>':'')+'</span></div></button>';}
+  '<div class="ft">'+bsb(r.stage)+(r.mine?'<span class="bd ev">'+(r.public?T('public','public'):T('privé','private'))+'</span>':'')+'<span class="met">'+(t&&t.robot?spark(cumOf(t.robot.curve))+'<span class="'+cl(t.robot.net)+'">'+money(t.robot.net)+'</span>':'')+(d!=null&&r.parent?'<span class="bd ev" style="'+(d>=0?'color:var(--up-soft)':'color:var(--down-soft)')+'">'+(d>=0?'+':'−')+'$'+num(Math.abs(d),0)+T(' vs parent',' vs parent')+'</span>':'')+'</span></div></button>';}
 function cumOf(c){return [0].concat((c||[]).map(q=>+q[1]));}
 function builderTop(){const B=BLD();
  let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 style="font-size:1.3rem;font-weight:900;color:#fff;margin-top:10px;line-height:1.25">'+T('Un robot = des yeux + 4 pièces','A robot = eyes + 4 parts')+'</h3>'+
   '<p>'+T('Les yeux lisent la structure du marché (cassures, CHoCH, tendance de fond) : ce sont les mêmes pour tous les robots. Les pièces, elles, se changent : prenez un robot, gardez ce qui vous plaît, remplacez le reste.','The eyes read the market structure (breaks, CHoCH, background trend): the same for every robot. The parts can be swapped: take a robot, keep what you like, replace the rest.')+'</p>'+
   '<div class="parts4"><div class="p4 eyes">'+pic('M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z')+'<b>'+T('Yeux','Eyes')+'</b><small>'+T('communs','shared')+'</small></div>'+PARTK.map(k=>'<div class="p4">'+pic(k[2])+'<b>'+k[1]+'</b><small>'+T('à choisir','to choose')+'</small></div>').join('')+'</div>'+
   (B.can_create?'<button class="cta" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Créer un robot','Build a robot')+'</button>':'')+'</div>';
- const L=B.robots||[];
- h+='<div class="grp">'+T('Les robots','The robots')+' <em>'+L.length+'</em></div><div class="grid">'+L.map((r,i)=>bCard(r,i)).join('')+'</div>';
+ const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine);
+ if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="grid">'+MY.map((r,i)=>bCard(r,i)).join('')+'</div>';
+ h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="grid">'+PUB.map((r,i)=>bCard(r,i)).join('')+'</div>';
  const PL=B.plugs||[];
  if(PL.length)h+='<div class="card" style="margin-top:14px"><h2>'+T('Où ils tournent','Where they run')+'<span class="bd ev">'+PL.length+T(' prises',' plugs')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque compte a une prise : un robot, sa version d\'argent et un marché. Pour l\'instant, tout tourne sur le Bitcoin avec L\'Owl.','Each account has a plug: a robot, its money version and a market. For now everything runs on Bitcoin with the Owl.')+'</div><div class="plugs">'+
   PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+(p.real?T('argent réel','real money'):T('démo','demo'))+'</small></span><span class="pl-r"><span class="pc">'+BOT+esc(T((bById(p.robot)||{}).name_fr||p.robot,(bById(p.robot)||{}).name_en||p.robot))+'</span><button class="pc" onclick="goR(\''+p.money+'\')">'+pic(PARTK[3][2])+esc(T(p.money_fr,p.money_en))+'</button><span class="pc">'+(SYMI[p.market]||'')+' '+p.market+'</span></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i></span>')+'</div>').join('')+'</div></div>';
@@ -698,18 +693,43 @@ function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;co
   const po=t.parts_only;
   if(po)h+='<div class="grp" style="margin:16px 0 8px">'+T('Pièce par pièce','Part by part')+'</div><div class="rk">'+[[T('Seulement la sortie au CHoCH','Only the CHoCH exit'),po.exit],[T('Seulement le rattrapage sans limite','Only the unlimited catch-up'),po.recovery],[T('Les deux, et sans aucun stop','Both, and no stop at all'),po.no_stop]].filter(x=>x[1]).map(x=>'<div class="rr"><span class="nm"><b style="white-space:normal">'+x[0]+'</b><small>'+x[1].trades+' trades · '+num(100*x[1].win_rate,0)+T(' % gagnés · recul −$',' % won · dip −$')+num(x[1].cc_dd,0)+'</small></span><span class="vv"><b class="'+cl(x[1].net)+'">'+money(x[1].net)+'</b><small>'+T('vs ','vs ')+money(b.net)+'</small></span></div>').join('')+'</div>';
   h+='</div>';}
+ if(r.can_edit)h+=manageCard(r);
  const PL=(BLD().plugs||[]).filter(p=>p.robot===r.id);
- h+='<div class="card"><h2>'+T('Où il tourne','Where it runs')+'</h2>'+(PL.length?'<div class="plugs">'+PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+esc(T(p.money_fr,p.money_en))+' · '+p.market+'</small></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i>'+(p.alive?T('en marche','running'):T('arrêté','stopped'))+'</span>')+'</div>').join('')+'</div>':
+ if(r.can_edit&&!PL.length)h+=plugCard(r);
+ else h+='<div class="card"><h2>'+T('Où il tourne','Where it runs')+'</h2>'+(PL.length?'<div class="plugs">'+PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+esc(T(p.money_fr,p.money_en))+' · '+p.market+'</small></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i>'+(p.alive?T('en marche','running'):T('arrêté','stopped'))+'</span>')+'</div>').join('')+'</div>':
   '<div class="sub">'+T('Nulle part pour l\'instant. Les étapes : un jumeau sans argent à côté du vrai robot, puis un compte démo, puis, si vous le décidez, un vrai compte ou un autre marché.','Nowhere yet. The steps: a twin without money next to the real robot, then a demo account, then, if you decide so, a real account or another market.')+'</div>')+'</div>';
  $('det').innerHTML=h;}
 let CURB=null,NEWD=null;
+function manageCard(r){return '<div class="card"><h2>'+T('Gérer mon robot','Manage my robot')+'</h2><div class="mgrid">'+
+ '<button class="mb" onclick="editRobot(\''+r.id+'\')">'+pic('M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z')+'<b>'+T('Modifier','Edit')+'</b><small>'+T('nom et pièces','name and parts')+'</small></button>'+
+ '<button class="mb" onclick="robotVis(\''+r.id+'\','+(!r.public)+')">'+pic(r.public?'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z':'M17.9 17.9A10 10 0 0 1 12 19c-6.5 0-10-7-10-7a18 18 0 0 1 4.1-5M9.9 4.2A9 9 0 0 1 12 4c6.5 0 10 7 10 7a18 18 0 0 1-2.2 3.2M2 2l20 20')+'<b>'+(r.public?T('Public','Public'):T('Privé','Private'))+'</b><small>'+(r.public?T('tout le labo le voit · rendre privé','the whole lab sees it · make private'):T('vous seul le voyez · rendre public','only you see it · make public'))+'</small></button>'+
+ '<button class="mb del" onclick="robotDel(\''+r.id+'\')">'+pic('M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6')+'<b>'+T('Supprimer','Delete')+'</b><small>'+T('définitif','for good')+'</small></button></div><div class="note" id="merr"></div></div>';}
+function plugCard(r){const TG=BLD().targets||{where:[],markets:[]};const pg=r.plug;
+ const wl=w=>{const x=(TG.where||[]).find(t=>t.id===w);return x?T(x.fr,x.en):w;};
+ let h='<div class="card"><h2>'+T('Où le faire tourner','Where to run it')+'</h2>';
+ if(pg){const st=r.live_capable?T('Demande enregistrée : le propriétaire la valide, puis le robot du compte redémarre avec ces pièces.','Request saved: the owner approves it, then the account\'s robot restarts with these parts.'):T('Demande enregistrée. Une de ses pièces n\'existe pas encore dans le vrai robot : elle doit d\'abord y être construite.','Request saved. One of its parts does not exist in the real robot yet: it must be built there first.');
+  h+='<div class="plug"><span class="pl-a"><b>'+esc(wl(pg.where))+'</b><small>'+esc(pg.market)+' · '+T('demandé le ','asked on ')+fdate(pg.date)+'</small></span><span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+T('en attente','waiting')+'</span></div><div class="note">'+st+'</div><button class="chip" style="margin-top:10px" onclick="robotPlug(\''+r.id+'\',null)">'+T('Annuler la demande','Cancel the request')+'</button></div>';return h;}
+ h+='<div class="sub" style="margin-bottom:12px">'+(r.live_capable?T('Toutes ses pièces existent déjà dans le vrai robot : il peut tourner dès que le propriétaire valide.','All its parts already exist in the real robot: it can run as soon as the owner approves.'):T('Une de ses pièces n\'existe pas encore dans le vrai robot. Vous pouvez déjà demander où il tournera.','One of its parts does not exist in the real robot yet. You can already ask where it will run.'))+'</div>'+
+  '<div class="grp" style="margin:4px 0 8px">'+T('Sur','On')+'</div><div class="chips" style="flex-wrap:wrap">'+(TG.where||[]).map(t=>'<button class="chip'+(PLW.w===t.id?' on':'')+'" onclick="PLW.w=\''+t.id+'\';renderB()">'+esc(T(t.fr,t.en))+'</button>').join('')+'</div>'+
+  '<div class="grp" style="margin:14px 0 8px">'+T('Marché','Market')+'</div><div class="chips" style="flex-wrap:wrap">'+(TG.markets||[]).map(m=>'<button class="chip'+(PLW.m===m.sym?' on':'')+'" onclick="PLW.m=\''+m.sym+'\';renderB()">'+(SYMI[m.sym]||'')+' '+esc(T(m.fr,m.en))+'</button>').join('')+'</div>'+
+  (PLW.m!=='BTCUSD'?'<div class="note">'+T('Le vrai robot ne trade que le Bitcoin pour l'instant : sur un autre marché, il tournera d'abord en virtuel.','The real robot trades only Bitcoin for now: on another market it will first run virtually.')+'</div>':'')+'<button class="cta" style="margin-top:14px" onclick="robotPlug(\''+r.id+'\',{where:PLW.w,market:PLW.m})"'+(PLW.w?'':' disabled')+'>'+T('Demander ce branchement','Ask for this plug')+'</button><div class="note" id="perr"></div></div>';return h;}
+const PLW={w:null,m:'BTCUSD'};
+async function robotPost(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
+const MERR={not_yours:T('Ce robot n\'est pas à vous.','This robot is not yours.'),has_children:T('D\'autres robots héritent de lui : supprimez-les d\'abord.','Other robots inherit from it: delete them first.'),where:T('Choix invalide.','Invalid choice.'),same:T('Changez au moins une pièce.','Change at least one part.'),limit:T('Vous avez déjà le maximum de robots.','You already have the maximum of robots.')};
+async function robotVis(id,pub){const j=await robotPost('robot_update',{id,public:pub});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}await refreshB(id);}
+async function robotDel(id){if(!confirm(T('Supprimer ce robot pour de bon ?','Delete this robot for good?')))return;const j=await robotPost('robot_delete',{id});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}
+ RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
+async function robotPlug(id,plug){if(plug&&!plug.where)return;const j=await robotPost('robot_update',{id,plug});if(!j.ok){const e=$('perr')||$('merr');if(e)e.textContent=MERR[j.err]||j.err;return;}PLW.w=null;await refreshB(id);}
+async function refreshB(id){RB=null;await load();CURB=bById(id);if(CURB)renderB();}
+function editRobot(id){const r=bById(id);if(!r)return;NEWD={edit:id,parent:r.parent||'owl',parts:JSON.parse(JSON.stringify(r.parts||{})),name:r.name_fr};NAV++;location.hash='new=1';}
 function renderNew(){const B=BLD(),P=B.parts||{};const base=bById(NEWD.parent)||bById('owl');const R=(base&&base.resolved)||{};
  const money=(RB.robots||[]).filter(r=>r.kind==='owl'&&r.stage!=='retired'&&r.stage!=='model'||r.id==='pkg-base');
  const opt=(kind,id,label,plain,on,extra)=>'<button class="opt'+(on?' on':'')+'" onclick="newPick(\''+kind+'\',\''+id+'\''+(extra!=null?','+extra:'')+')"><span class="rad"></span><span><b>'+esc(label)+'</b>'+(plain?'<small>'+esc(plain)+'</small>':'')+'</span></button>';
  const cur=k=>NEWD.parts[k]!==undefined?NEWD.parts[k]:R[k];
  const isOn=(k,id)=>{const v=cur(k);return ((v&&typeof v==='object')?v.id:v)===id;};
- let h='<div class="card dh"><span class="fi" style="color:var(--warn)">'+pic('M12 5v14M5 12h14')+'</span><h3>'+T('Créer un robot','Build a robot')+'</h3><p>'+T('Partez d\'un robot, changez les pièces que vous voulez. Il sera testé sur 42 jours de vrais prix à côté de son parent. Aucun argent n\'est engagé.','Start from a robot, change the parts you want. It will be tested over 42 days of real prices next to its parent. No money is involved.')+'</p></div>';
- h+='<div class="card"><h2>1 · '+T('Partir de','Start from')+'</h2><div class="opts">'+(B.robots||[]).map(r=>opt('parent',r.id,T(r.name_fr,r.name_en),'',NEWD.parent===r.id)).join('')+'</div></div>';
+ const ED=!!NEWD.edit;
+ let h='<div class="card dh"><span class="fi" style="color:var(--warn)">'+pic(ED?'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z':'M12 5v14M5 12h14')+'</span><h3>'+(ED?T('Modifier mon robot','Edit my robot'):T('Créer un robot','Build a robot'))+'</h3><p>'+(ED?T('Changez son nom ou ses pièces. Si une pièce change, il est testé à nouveau.','Change its name or its parts. If a part changes, it is tested again.'):T('Partez d\'un robot, changez les pièces que vous voulez. Il sera testé sur 42 jours de vrais prix à côté de son parent. Aucun argent n\'est engagé.','Start from a robot, change the parts you want. It will be tested over 42 days of real prices next to its parent. No money is involved.'))+'</p></div>';
+ if(!ED)h+='<div class="card"><h2>1 · '+T('Partir de','Start from')+'</h2><div class="opts">'+(B.robots||[]).map(r=>opt('parent',r.id,T(r.name_fr,r.name_en),'',NEWD.parent===r.id)).join('')+'</div></div>';
  h+='<div class="card"><h2>2 · '+T('Les pièces','The parts')+'</h2>';
  h+='<div class="grp" style="margin:4px 0 8px">'+T('Entrée','Entry')+'</div><div class="opts">'+(P.entry||[]).map(p=>opt('entry',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('entry',p.id))).join('')+'</div>';
  h+='<div class="grp" style="margin:16px 0 8px">'+T('Sortie','Exit')+'</div><div class="opts">'+(P.exit||[]).map(p=>{if(p.id==='target'||p.id==='target_choch'){const v=cur('exit');const rr=(v&&v.id===p.id)?(v.rr||0.8):0.8;
@@ -718,7 +738,7 @@ function renderNew(){const B=BLD(),P=B.parts||{};const base=bById(NEWD.parent)||
  h+='<div class="grp" style="margin:16px 0 8px">'+T('Rattrapage après une perte','Catch-up after a loss')+'</div><div class="opts">'+(P.recovery||[]).map(p=>opt('recovery',p.id,T(p.fr,p.en),T(p.plain_fr,p.plain_en),isOn('recovery',p.id))).join('')+'</div>';
  h+='<div class="grp" style="margin:16px 0 8px">'+T('Argent','Money')+'</div><div class="opts">'+money.map(r=>{const id=r.id.slice(4);return opt('money',id,rn(r),rp(r),(cur('money')||'base')===id);}).join('')+'</div></div>';
  h+='<div class="card"><h2>3 · '+T('Son nom','Its name')+'</h2><input id="nname" class="inp" maxlength="40" placeholder="'+T('Par exemple : Owl patient','For example: Owl patient')+'" value="'+esc(NEWD.name||'')+'" oninput="NEWD.name=this.value">'+
-  '<div class="note" id="nerr"></div><button class="cta" style="margin-top:14px" onclick="newSave()">'+T('Créer et tester','Build and test')+'</button></div>';
+  '<div class="note" id="nerr"></div><button class="cta" style="margin-top:14px" onclick="newSave()">'+(ED?T('Enregistrer','Save'):T('Créer et tester','Build and test'))+'</button></div>';
  $('det').innerHTML=h;}
 function newPick(kind,id,rr){if(kind==='parent'){NEWD.parent=id;NEWD.parts={};}
  else if(kind==='exit')NEWD.parts.exit=(id==='target'||id==='target_choch')?{id:id,rr:rr||0.8}:{id:id};else NEWD.parts[kind]=id;
@@ -727,6 +747,8 @@ async function newSave(){const base=bById(NEWD.parent)||{};const R=base.resolved
  Object.keys(NEWD.parts).forEach(k=>{if(JSON.stringify(NEWD.parts[k])!==JSON.stringify(R[k]))diff[k]=NEWD.parts[k];});
  const er=$('nerr');if(!NEWD.name||NEWD.name.trim().length<2){er.textContent=T('Donnez-lui un nom.','Give it a name.');return;}
  if(!Object.keys(diff).length){er.textContent=T('Changez au moins une pièce : sinon c\'est le même robot.','Change at least one part: otherwise it is the same robot.');return;}
+ if(NEWD.edit){er.textContent=T('Enregistrement…','Saving…');const j=await robotPost('robot_update',{id:NEWD.edit,name:NEWD.name.trim(),parts:diff});
+  if(!j.ok){er.textContent=MERR[j.err]||j.err;return;}const id=NEWD.edit;NEWD=null;RB=null;await load();history.replaceState(null,'','#b='+id);NAV=Math.max(0,NAV-1);route();return;}
  er.textContent=T('Création…','Building…');
  try{const r=await fetch('robot_create',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:NEWD.name.trim(),parent:NEWD.parent,parts:diff})});const j=await r.json();
   if(!j.ok){er.textContent=T('Impossible : ','Not possible: ')+(j.err==='limit'?T('vous avez déjà le maximum de robots.','you already have the maximum of robots.'):j.err);return;}
