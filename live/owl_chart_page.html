@@ -2388,7 +2388,7 @@ async function load(){
  try{
   const _q=EQ?'?src=eq':(SYMQ()?'?'+SYMQ():''),_sy=SYM;
   const r=await fetch('/'+tok+'/chart_data'+_q,{cache:'no-store'});
-  if(r.ok){const _j=await r.json();if(_sy!==SYM)return;   // the market changed while this was in flight
+  if(r.ok){const _j=await r.json();if(_sy!==SYM||PAST)return;   // the market changed while this was in flight (or a past day / the studio took over)
    SC=+_j.scale||1;DG=+_j.digits||2;symHead(_j);
    D=swingApply(ctApply(_j));digest(D);ui();if(HT.on&&HT.tf==='PB')htLoad(true);}
  }catch(e){}
@@ -3475,4 +3475,99 @@ function wxGauge(){
   '<circle cx="'+X(t1).toFixed(1)+'" cy="'+Y(last).toFixed(1)+'" r="3" style="fill:var(--accent-soft)"/>'+
   '<text x="'+Math.min(262,X(t1)-8).toFixed(1)+'" y="'+(Y(last)-9).toFixed(1)+'" text-anchor="end" font-size="9" font-weight="700" style="fill:var(--accent-soft)">'+last.toFixed(2).replace('.',',')+'×</text>';
 }
+
+// ==== 2026-10-12 (owner): the STUDIO - replay a past day candle by candle and take trades by hand; the system
+// records where you enter, where your stop is and where you exit, then says what it observed (Labo > Robots).
+// The structure on screen is rebuilt at each step from the candles closed so far: nothing from the future.
+const STUDIO=(()=>{try{return new URLSearchParams(location.search).get('studio')==='1'&&FULL&&!EQ;}catch(e){return false;}})();
+const ST={day:null,view:'silence',n:10,cur:0,t0:0,trades:[],pos:null,wantStop:false,auto:null,busy:false,end:false,last:null};
+if(STUDIO){
+ PAST='studio';
+ const _ctpb=CTPB;CTPB=function(){return ST.view==='pullback'?true:(ST.day?false:_ctpb());};
+ document.body.classList.add('studio');
+ // the split view would show TODAY's higher timeframe next to a past day: off in the studio (not saved)
+ try{HT.on=false;htApply();}catch(e){}
+ const css=document.createElement('style');css.textContent=`
+ body.studio #botbar,body.studio #hdstrip,body.studio #backlive,body.studio #mtopen,body.studio #pastbar,body.studio #sigseg,body.studio #wkseg,body.studio #acseg,body.studio #meteo,body.studio #autobadge{display:none!important}
+ #stu{position:fixed;left:0;right:0;bottom:0;z-index:100;padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(11,15,20,.96);border-top:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px);font-family:Inter,system-ui,sans-serif;color:#e8eef4}
+ body.light #stu{background:rgba(255,255,255,.97);border-color:rgba(15,23,42,.12);color:#0f172a}
+ #stu .r{display:flex;gap:8px;align-items:center}#stu .r+.r{margin-top:8px}
+ #stu button{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:inherit;border-radius:12px;padding:11px 12px;font-weight:800;font-size:.84rem;font-family:inherit;flex:1;min-width:0}
+ body.light #stu button{border-color:rgba(15,23,42,.14);background:rgba(15,23,42,.04)}
+ #stu button.buy{background:#15803d;border-color:#15803d;color:#fff}#stu button.sell{background:#b91c1c;border-color:#b91c1c;color:#fff}
+ #stu button.go{background:#3b82f6;border-color:#3b82f6;color:#fff}#stu button.on{background:#e8c55a;color:#1b1500;border-color:#e8c55a}
+ #stu button:disabled{opacity:.4}
+ #stu .lbl{font-size:.74rem;color:#8a9bb0;white-space:nowrap}#stu .lbl b{color:inherit;font-weight:800}
+ #stu .hint{font-size:.8rem;color:#e8c55a;line-height:1.35;flex:1}
+ #stu .pg{flex:1;height:5px;border-radius:99px;background:rgba(127,127,127,.25);overflow:hidden}#stu .pg i{display:block;height:100%;background:#3b82f6}
+ #stuset{position:fixed;inset:0;z-index:110;background:rgba(5,8,12,.82);display:flex;align-items:flex-end;justify-content:center;font-family:Inter,system-ui,sans-serif}
+ #stuset .sh{width:min(560px,100%);background:#121a25;color:#e8eef4;border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom,0px));border:1px solid #1f2a38}
+ body.light #stuset .sh{background:#fff;color:#0f172a;border-color:#dde4ed}
+ #stuset h3{font-size:1.2rem;font-weight:900}#stuset p{font-size:.88rem;color:#8a9bb0;line-height:1.5;margin-top:6px}
+ #stuset .k{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8a9bb0;margin:16px 0 8px}
+ #stuset .ch{display:flex;gap:6px;flex-wrap:wrap}#stuset .ch button{border:1px solid #2b3a4d;background:transparent;color:inherit;border-radius:99px;padding:9px 13px;font-weight:700;font-size:.84rem;font-family:inherit}
+ #stuset .ch button.on{background:#3b82f6;border-color:#3b82f6;color:#fff}
+ #stuset input{width:100%;height:44px;border-radius:12px;border:1px solid #2b3a4d;background:transparent;color:inherit;padding:0 12px;font:inherit}
+ #stuset .go{margin-top:18px;width:100%;border:0;border-radius:14px;padding:14px;font-weight:800;font-size:.95rem;background:#3b82f6;color:#fff;font-family:inherit}`;
+ document.head.appendChild(css);
+ const bar=document.createElement('div');bar.id='stu';document.body.appendChild(bar);
+ const sh=document.createElement('div');sh.id='stuset';document.body.appendChild(sh);
+ stuSetup();
+}
+function stuT(f,e){return CL?e:f;}
+function stuSetup(){const sh=document.getElementById('stuset');const y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+ const mn=new Date(Date.now()-59*86400000).toISOString().slice(0,10);ST.day=ST.day||y;
+ const V=[['raw',stuT('Bougies normales','Normal candles')],['silence',stuT('Filtre : silence','Filter: silence')],['pullback',stuT('Filtre : reculs','Filter: pullbacks')]];
+ sh.innerHTML='<div class="sh"><h3>'+stuT('Studio : apprendre au robot','Studio: teach the robot')+'</h3><p>'+stuT('Une journée passée défile bougie par bougie. Prenez vos trades comme d’habitude : achat ou vente, votre stop, votre sortie. Après quelques trades, le système vous dit ce qu’il a observé et vous confirmez.','A past day plays candle by candle. Take your trades as usual: buy or sell, your stop, your exit. After a few trades the system tells you what it observed and you confirm.')+'</p>'+
+  '<div class="k">'+stuT('La journée','The day')+'</div><input id="stud" type="date" min="'+mn+'" max="'+y+'" value="'+ST.day+'">'+
+  '<div class="k">'+stuT('Le graphique','The chart')+'</div><div class="ch">'+V.map(v=>'<button class="'+(ST.view===v[0]?'on':'')+'" onclick="ST.view=\''+v[0]+'\';stuSetup()">'+v[1]+'</button>').join('')+'</div>'+
+  '<div class="k">'+stuT('Nombre de trades','Number of trades')+'</div><div class="ch">'+[5,10,20].map(n=>'<button class="'+(ST.n===n?'on':'')+'" onclick="ST.n='+n+';stuSetup()">'+n+'</button>').join('')+'</div>'+
+  '<button class="go" onclick="stuStart()">'+stuT('Commencer','Start')+'</button></div>';
+ sh.style.display='flex';}
+async function stuStart(){const i=document.getElementById('stud');if(i&&i.value)ST.day=i.value;
+ ST.t0=Math.floor(new Date(ST.day+'T00:00:00Z').getTime()/1000);ST.cur=ST.t0+2*3600;ST.end=false;
+ document.getElementById('stuset').style.display='none';viewOff=0;voff=0;seen.first=true;await stuFetch(0);}
+async function stuFetch(adv){if(ST.busy)return;ST.busy=true;
+ try{const r=await fetch('/'+tok+'/chart_replay?d='+ST.day+'&view='+ST.view+'&upto='+ST.cur+'&since='+ST.cur+(adv?'&adv='+adv:''),{cache:'no-store'});const j=await r.json();
+  if(j.err){alert(j.err);ST.busy=false;return;}
+  const prev=ST.cur;ST.cur=j.replay.upto;ST.end=ST.cur>=j.replay.t1;
+  stuCheckStop(j.hl||[],prev);
+  j.closed=ST.trades.filter(t=>t.tx!=null).map(t=>[t.te,t.tx,t.e,t.x,t.d*(t.x-t.e)]);
+  j.trades=ST.pos?[[ST.pos.d,0.01,ST.pos.e,ST.pos.sl||0,0,0,'s']]:[];
+  D=ctApply(j);ST.last=D.candles&&D.candles.length?D.candles[D.candles.length-1]:null;digest(D);ui();
+ }catch(e){}
+ ST.busy=false;stuBar();}
+function stuCheckStop(cands,prev){const p=ST.pos;if(!p||!p.sl)return;
+ for(const c of (cands||[])){if(c[0]+60<=prev||c[0]<=p.te)continue;
+  if((p.d===1&&c[2]<=p.sl)||(p.d===-1&&c[1]>=p.sl)){stuClose(p.sl,c[0],'stop');return;}}}
+function stuOpen(d){if(!ST.last||ST.pos)return;ST.pos={d,te:ST.last[0],e:ST.last[4],sl:0};ST.wantStop=true;stuPaint();}
+function stuClose(x,tx,why){const p=ST.pos;if(!p)return;p.x=x;p.tx=tx;p.why=why;ST.trades.push(p);ST.pos=null;ST.wantStop=false;
+ if(ST.auto){clearInterval(ST.auto);ST.auto=null;}stuPaint();}
+function stuExit(){if(!ST.pos||!ST.last)return;stuClose(ST.last[4],ST.last[0],'hand');}
+function stuProtected(){const p=ST.pos;if(!p)return;const dd=(D.dots||[]).filter(x=>x[2]===(p.d===1?1:-1)&&x[0]<=p.te);
+ if(!dd.length){alert(stuT('Pas de point protégé visible : touchez le graphique.','No protected point visible: tap the chart.'));return;}stuSetStop(dd[dd.length-1][1]);}
+function stuSetStop(v){const p=ST.pos;if(!p)return;if((p.d===1&&v>=p.e)||(p.d===-1&&v<=p.e)){alert(stuT('Le stop doit être sous l’entrée pour un achat, au-dessus pour une vente.','The stop must be below the entry for a buy, above for a sell.'));return;}
+ p.sl=Math.round(v*100)/100;ST.wantStop=false;stuPaint();}
+function stuPaint(){if(!D)return;D.closed=ST.trades.map(t=>[t.te,t.tx,t.e,t.x,t.d*(t.x-t.e)]);D.trades=ST.pos?[[ST.pos.d,0.01,ST.pos.e,ST.pos.sl||0,0,0,'s']]:[];ui();stuBar();}
+function stuAuto(){if(ST.auto){clearInterval(ST.auto);ST.auto=null;stuBar();return;}ST.auto=setInterval(()=>{if(ST.end||ST.wantStop){clearInterval(ST.auto);ST.auto=null;stuBar();return;}stuFetch(1);},900);stuBar();}
+function stuBar(){const b=document.getElementById('stu');if(!b)return;const p=ST.pos,done=ST.trades.length;
+ const tm=new Date(ST.cur*1000),hh=String(tm.getUTCHours()).padStart(2,'0')+':'+String(tm.getUTCMinutes()).padStart(2,'0');
+ const pr=Math.max(0,Math.min(1,(ST.cur-ST.t0)/86400));
+ let r1='<div class="r"><span class="lbl"><b>'+ST.day.slice(8,10)+'/'+ST.day.slice(5,7)+' '+hh+'</b> UTC</span><span class="pg"><i style="width:'+(pr*100).toFixed(1)+'%"></i></span><span class="lbl"><b>'+done+'</b> / '+ST.n+' trades</span></div>';
+ let r2='';
+ if(ST.end&&!p)r2='<div class="r"><span class="hint">'+stuT('Fin de la journée.','End of the day.')+'</span><button onclick="stuNextDay()">'+stuT('Jour suivant','Next day')+'</button></div>';
+ else r2='<div class="r"><button onclick="stuFetch(1)"'+(ST.wantStop?' disabled':'')+'>▶ 1</button><button onclick="stuFetch(10)"'+(ST.wantStop?' disabled':'')+'>▶▶ 10</button><button class="'+(ST.auto?'on':'')+'" onclick="stuAuto()"'+(ST.wantStop?' disabled':'')+'>'+(ST.auto?'⏸':'⏵ Auto')+'</button></div>';
+ let r3;
+ if(!p)r3='<div class="r"><button class="buy" onclick="stuOpen(1)">'+stuT('Acheter','Buy')+'</button><button class="sell" onclick="stuOpen(-1)">'+stuT('Vendre','Sell')+'</button></div>';
+ else if(ST.wantStop)r3='<div class="r"><span class="hint">'+stuT('Touchez le graphique là où est votre stop','Tap the chart where your stop is')+'</span><button onclick="stuProtected()">'+stuT('Point protégé','Protected point')+'</button></div>';
+ else{const rv=ST.last&&p.sl?p.d*(ST.last[4]-p.e)/Math.abs(p.e-p.sl):0;
+  r3='<div class="r"><span class="lbl">'+(p.d===1?stuT('Achat','Buy'):stuT('Vente','Sell'))+' · <b style="color:'+(rv>=0?'#2ecc71':'#ff5c5c')+'">'+(rv>=0?'+':'')+rv.toFixed(2)+' R</b></span><button class="go" onclick="stuExit()">'+stuT('Sortir ici','Exit here')+'</button></div>';}
+ const r4=done>=3?'<div class="r"><button class="'+(done>=ST.n?'go':'')+'" onclick="stuSave()"'+(p?' disabled':'')+'>'+stuT('Voir ce que le système a observé','See what the system observed')+' ('+done+')</button></div>':'';
+ b.innerHTML=r1+r2+r3+r4;}
+function stuNextDay(){const d=new Date(ST.day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);const y=new Date(Date.now()-86400000).toISOString().slice(0,10);
+ const nd=d.toISOString().slice(0,10);if(nd>y){alert(stuT('Pas de journée plus récente.','No later day.'));return;}ST.day=nd;stuStart();}
+async function stuSave(){if(ST.pos||ST.trades.length<3)return;
+ try{const r=await fetch('/'+tok+'/studio_save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({day:ST.day,view:ST.view,trades:ST.trades})});const j=await r.json();
+  if(!j.ok){alert(j.err);return;}location.href='/'+tok+'/robots#studio='+j.id;}catch(e){alert(stuT('Réseau indisponible.','Network unavailable.'));}}
+if(STUDIO){cv.addEventListener('pointerup',e=>{if(!ST.wantStop)return;const r=cv.getBoundingClientRect();const v=yToP(e.clientY-r.top);if(v==null)return;e.stopImmediatePropagation();stuSetStop(v);},true);}
 </script></body></html>

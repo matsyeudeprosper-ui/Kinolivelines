@@ -329,7 +329,7 @@ console.log("labo");
   // The Labo button now leads there; every side must paint, with no NaN/undefined and no bare verdict letter.
   await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(6000);
   check("the Labo button opens the Labo space", /\/strategies$/.test(await ev("location.pathname")), await ev("location.pathname.split('/').pop()"));   // never print the token
-  for (const [side, path, sel, min] of [["Strategies", "strategies", ".sc", 10], ["Robots", "robots", ".sc", 8], ["AI team", "equipe", ".mem", 4]]) {
+  for (const [side, path, sel, min] of [["Strategies", "strategies", ".sc", 10], ["Robots", "robots", ".sc", 2], ["AI team", "equipe", ".mem", 4]]) {
     await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
     const n = await ev(`document.querySelectorAll('${sel}').length`);
     check(`Labo · ${side} paints its cards`, n >= min, String(n));
@@ -337,8 +337,8 @@ console.log("labo");
     check(`Labo · ${side} has no NaN/undefined`, !/NaN|undefined/.test(tx));
     check(`Labo · ${side} has no bare verdict letter`, !/(^|\s)[ABC](\s|$)/m.test(await ev("Array.from(document.querySelectorAll('.bd')).map(function(e){return e.innerText.trim();}).join('\\n')")));
     if (side === "Robots") {
-      await ev("(function(){var b=document.querySelector('#list .sc');if(b)b.click();return 1;})()"); await sleep(1500);
-      check("Labo · a robot opens its own space", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .kp').length")) >= 4);
+      await ev("(function(){var b=document.querySelector('#top .sc');if(b)b.click();return 1;})()"); await sleep(1500);
+      check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .pr').length")) >= 5);   // 2026-10-12: eyes + 4 parts
     }
   }
   await shot("smoke_labo");

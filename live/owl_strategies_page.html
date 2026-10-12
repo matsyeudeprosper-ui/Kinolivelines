@@ -249,6 +249,15 @@ button.pc{cursor:pointer}
 .mb svg{width:20px;height:20px;display:block;margin:0 auto 6px;color:var(--accent-soft)}.mb b{display:block;font-size:.86rem}.mb small{display:block;font-size:.68rem;color:var(--muted);margin-top:3px;line-height:1.3}
 .mb.del svg{color:var(--down-soft)}
 .cta[disabled]{opacity:.45}
+.cta2{margin-top:10px;width:100%;border:1px solid rgba(255,255,255,.3);border-radius:14px;padding:13px;font-size:.9rem;font-weight:800;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta2 svg{width:18px;height:18px}
+.obs{display:grid;gap:10px}
+.ob{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border)}
+.ob.y{border-color:rgba(46,204,113,.45)}
+.obt{flex:1;min-width:0}.obt b{display:block;font-size:.9rem;line-height:1.4}.obt small{display:block;font-size:.74rem;color:var(--muted);margin-top:3px}
+.obbar{display:block;height:5px;border-radius:99px;background:var(--surface3);margin-top:6px;overflow:hidden}.obbar i{display:block;height:100%;background:var(--accent)}
+.yn{flex:none;display:flex;flex-direction:column;gap:5px}.yn button{border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:10px;padding:6px 12px;font-weight:800;font-size:.78rem}
+.yn button.on{background:var(--up);border-color:var(--up);color:#fff}.yn button.on.no{background:var(--down);border-color:var(--down)}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -663,7 +672,8 @@ function builderTop(){const B=BLD();
  let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 style="font-size:1.3rem;font-weight:900;color:#fff;margin-top:10px;line-height:1.25">'+T('Un robot = des yeux + 4 pièces','A robot = eyes + 4 parts')+'</h3>'+
   '<p>'+T('Les yeux lisent la structure du marché (cassures, CHoCH, tendance de fond) : ce sont les mêmes pour tous les robots. Les pièces, elles, se changent : prenez un robot, gardez ce qui vous plaît, remplacez le reste.','The eyes read the market structure (breaks, CHoCH, background trend): the same for every robot. The parts can be swapped: take a robot, keep what you like, replace the rest.')+'</p>'+
   '<div class="parts4"><div class="p4 eyes">'+pic('M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z')+'<b>'+T('Yeux','Eyes')+'</b><small>'+T('communs','shared')+'</small></div>'+PARTK.map(k=>'<div class="p4">'+pic(k[2])+'<b>'+k[1]+'</b><small>'+T('à choisir','to choose')+'</small></div>').join('')+'</div>'+
-  (B.can_create?'<button class="cta" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Créer un robot','Build a robot')+'</button>':'')+'</div>';
+  (B.can_create?'<button class="cta" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Créer un robot','Build a robot')+'</button>'+
+   '<button class="cta2" onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+T('Apprendre au robot depuis le graphique','Teach the robot from the chart')+'</button>':'')+'</div>';
  const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine);
  if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="grid">'+MY.map((r,i)=>bCard(r,i)).join('')+'</div>';
  h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="grid">'+PUB.map((r,i)=>bCard(r,i)).join('')+'</div>';
@@ -754,11 +764,38 @@ async function newSave(){const base=bById(NEWD.parent)||{};const R=base.resolved
   if(!j.ok){er.textContent=T('Impossible : ','Not possible: ')+(j.err==='limit'?T('vous avez déjà le maximum de robots.','you already have the maximum of robots.'):j.err);return;}
   RB=null;await load();history.replaceState(null,'','#b='+j.id);route();}catch(e){er.textContent=T('Hors ligne.','Offline.');}}
 
+
+/* ---------- 2026-10-12 (owner): the studio's result - what the system observed in the member's chart trades ---------- */
+let STU=null,STUOK={};
+async function openStudio(id){try{const r=await fetch('studio_get?id='+encodeURIComponent(id)+'&t='+Date.now(),{cache:'no-store'});STU=await r.json();}catch(e){STU={err:'net'};}
+ STUOK={};(STU.summary||[]).forEach(s=>{STUOK[s.id]=(STU.confirmed?!!STU.confirmed[s.id]:s.pct>=60);});renderStudio();}
+function renderStudio(){const s=STU;if(!s)return;
+ if(s.err){$('det').innerHTML='<div class="card"><div class="sub">'+T('Cette séance est introuvable.','This session cannot be found.')+'</div></div>';return;}
+ const T2=s.trades||[],X=T2.filter(t=>t.x!=null);const rs=X.map(t=>t.d*(t.x-t.e)/Math.max(1e-9,Math.abs(t.e-(t.sl||t.e))));
+ const won=rs.filter(r=>r>0).length;const VW={raw:T('bougies normales','normal candles'),silence:T('filtre silence','silence filter'),pullback:T('filtre reculs','pullback filter')};
+ let h='<div class="card dh"><span class="fi" style="color:var(--warn)">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><h3>'+T('Ce que le système a observé','What the system observed')+'</h3><p>'+T('Vos ','Your ')+T2.length+T(' trades du ',' trades of ')+fdate(s.day)+' ('+VW[s.view]+'). '+T('Pour chaque phrase, dites si c\'est bien ce que vous faites.','For each sentence, say whether it is really what you do.')+'</p>'+
+  '<div class="ft"><span class="bd ev">'+won+'/'+X.length+T(' gagnés',' won')+'</span><span class="bd ev">'+(rs.reduce((a,b)=>a+b,0)>=0?'+':'')+num(rs.reduce((a,b)=>a+b,0),1)+' R</span></div></div>';
+ const grp=(k,title)=>{const L=(s.summary||[]).filter(x=>x.kind===k);if(!L.length)return '';
+  return '<div class="card"><h2>'+title+'</h2><div class="obs">'+L.map(x=>'<div class="ob'+(STUOK[x.id]?' y':'')+'"><div class="obt"><b>'+esc(T(x.fr,x.en))+'</b><small>'+x.k+' / '+x.n+T(' trades',' trades')+'</small><span class="obbar"><i style="width:'+x.pct+'%"></i></span></div>'+
+   '<div class="yn"><button class="'+(STUOK[x.id]?'on':'')+'" onclick="STUOK[\''+x.id+'\']=true;renderStudio()">'+T('Oui','Yes')+'</button><button class="'+(!STUOK[x.id]?'on no':'')+'" onclick="STUOK[\''+x.id+'\']=false;renderStudio()">'+T('Non','No')+'</button></div></div>').join('')+'</div></div>';};
+ h+=grp('entry',T('Votre entrée','Your entry'))+grp('exit',T('Votre stop et votre sortie','Your stop and your exit'));
+ h+='<div class="card"><h2>'+T('Vos trades','Your trades')+'</h2><div class="rk">'+T2.map((t,i)=>{const r=t.x!=null?rs[X.indexOf(t)]:null;const tm=new Date(t.te*1000);
+  return '<div class="rr"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+String(tm.getUTCHours()).padStart(2,'0')+':'+String(tm.getUTCMinutes()).padStart(2,'0')+' UTC</b><small>'+T('entrée ','entry ')+num(t.e,0)+' · stop '+num(t.sl,0)+(t.x!=null?' · '+T('sortie ','exit ')+num(t.x,0)+(t.why==='stop'?T(' (stop)',' (stop)'):''):'')+'</small></span><span class="vv"><b class="'+cl(r)+'">'+(r==null?'—':(r>=0?'+':'')+num(r,2)+' R')+'</b></span></div>';}).join('')+'</div></div>';
+ h+='<div class="card"><button class="cta" onclick="studioConfirm()">'+T('Confirmer','Confirm')+'</button><div class="note" id="sterr"></div><div id="stparts">'+(s.parts?studioParts(s.parts):'')+'</div></div>';
+ $('det').innerHTML=h;}
+function studioParts(P){const row=(k,x)=>'<div class="pr'+(x&&x.match?'':' chg')+'"><span class="fi">'+pic(k==='entry'?PARTK[0][2]:PARTK[1][2])+'</span><span><small>'+(k==='entry'?T('Entrée','Entry'):T('Sortie','Exit'))+'</small><b>'+(x?esc(T(x.fr,x.en)):T('Pas assez clair','Not clear enough'))+'</b><em>'+(!x?T('Vos réponses ne dessinent pas une règle : jouez plus de trades ou changez vos réponses.','Your answers do not draw a rule: play more trades or change your answers.'):(x.match?T('Cette pièce existe : vous pouvez l\'utiliser tout de suite dans un robot.','This part exists: you can use it in a robot right away.'):T('Cette pièce n\'existe pas encore : elle est enregistrée pour être construite.','This part does not exist yet: it is saved to be built.')))+'</em></span></div>';
+ const ex=P.exit&&P.exit.match?(P.exit.match==='target'?{id:'target',rr:P.exit.rr}:{id:P.exit.match}):null,en=P.entry&&P.entry.match?P.entry.match:null;
+ return '<div class="grp" style="margin:16px 0 8px">'+T('Vos pièces','Your parts')+'</div><div class="plist">'+row('entry',P.entry)+row('exit',P.exit)+'</div>'+
+  ((ex||en)?'<button class="cta" style="margin-top:14px" onclick=\'studioRobot('+JSON.stringify({entry:en,exit:ex})+')\'>'+T('Créer un robot avec ces pièces','Build a robot with these parts')+'</button>':'');}
+async function studioConfirm(){try{const j=await robotPost('studio_confirm',{id:STU.id,ok:STUOK});if(!j.ok){$('sterr').textContent=j.err;return;}STU.parts=j.parts;STU.confirmed=STUOK;$('stparts').innerHTML=studioParts(j.parts);}catch(e){$('sterr').textContent=T('Hors ligne.','Offline.');}}
+function studioRobot(p){const parts={};if(p.entry)parts.entry=p.entry;if(p.exit)parts.exit=p.exit;NEWD={parent:'owl',parts,name:''};NAV++;location.hash='new=1';}
+
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
  if(id&&D&&byId(id)){if(SIDE!=='strat'){SIDE='strat';doors();}CUR=byId(id);CURR=null;SEC=h.get('v')||'ov';document.body.classList.add('det');renderDet();window.scrollTo(0,0);return;}
  if(rid&&RB&&rbById(rid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURR=rbById(rid);CUR=null;RSEC=h.get('v')||'ov';document.body.classList.add('det');renderRobot();window.scrollTo(0,0);return;}
- const bid=h.get('b');
+ const bid=h.get('b'),sid=h.get('studio');
+ if(sid){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(!STU||STU.id!==sid){$('det').innerHTML='<div class="skel"></div>';openStudio(sid);}else renderStudio();window.scrollTo(0,0);return;}
  if(bid&&RB&&bById(bid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=bById(bid);CUR=null;CURR=null;document.body.classList.add('det');renderB();window.scrollTo(0,0);return;}
  if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
  if((id&&!D)||((rid||bid||h.get('new'))&&!RB)){load();return;}

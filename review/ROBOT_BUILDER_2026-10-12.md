@@ -45,3 +45,21 @@ Reading: the CHoCH exit is the part that costs (break-even instead of +57; half 
 the rest at the safety stop). The unlimited catch-up alone keeps most of the money (+49 vs +57) with a
 SMALLER dip (20 vs 28) - better first half, worse second half: a lead, not a verdict (one 42-day window).
 Without the safety stop the robot reaches the -60 kill line in the first half. Nothing deployed.
+
+## Update (same day, owner): manage + the chart studio
+- Robots tab = only the builder: definition, "Mes robots", "Robots publics", where they run. Money versions,
+  twins, scanner, Harvest and the workshop are reachable from a part or live in Strategies / AI team.
+- Managing a robot (owner of the robot or admin): edit name + parts (a part change re-queues the test), public /
+  private (members' robots start private), delete (refused if another robot inherits from it; the Owl never),
+  "where to run it" = a REQUEST (twin / demo / my account x market). Nothing is switched automatically: the live
+  bot reads its package at start; a robot made only of live parts (target N x risk, debt gate on/off, a money
+  version) can become a package + a bot restart once the owner approves. CHoCH exits and other markets cannot.
+- Chart STUDIO (`chart?studio=1`, Strategie/admin): a past day (<= 60 d) replayed candle by candle on normal
+  candles, the silence filter or the pullback filter; `chart_replay` rebuilds the structure from the bars CLOSED
+  at the cursor only (causal; the pullback view is not sticky here), the split view is forced off (it would show
+  today). Buy / sell at a candle close, stop by a tap or at the protected point, stops checked on every raw minute,
+  exit by hand. After >= 3 trades `studio_save` observes each trade causally (on a break candle in its direction,
+  with the main / background trend, after a CHoCH, stop on the protected point, exit on an opposite CHoCH, R at
+  exit, hold) and the member confirms each sentence; `studio_confirm` maps the answers to a known part (owl_bos,
+  target N x risk, choch) or records it as a part still to build. Checked end to end by live/review/studio_check.mjs
+  (and a variant that enters only on break candles: entries detected 3/4, exits mapped to a 0.8 x target).

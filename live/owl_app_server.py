@@ -11614,6 +11614,258 @@ def robot_delete(user, body):
     return {"ok": True}
 
 
+# ---- 2026-10-12 (owner): the chart STUDIO - replay a past day candle by candle, take trades by hand,
+# and let the system observe where the member enters and exits, to build an entry / exit part from them ----
+_REPLAY_RATES = {}
+STUDIO_DIR = os.path.join(DIR, "robots", "studio")
+
+
+def replay_rates(ds):
+    """M1 bars of that UTC day plus 8 h of warm-up (the structure needs history), cached per day"""
+    c = _REPLAY_RATES.get(ds)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if c and (ds != today or time.time() - c[0] < 60):
+        return c[1]
+    day = datetime.strptime(ds, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    with _lock:
+        if not mt5.initialize(path=TERMINAL):
+            raise RuntimeError("mt5 init")
+        sym = "BTCUSD" if mt5.symbol_info("BTCUSD") else "BTCUSDm"
+        mt5.symbol_select(sym, True)
+        rt = mt5.copy_rates_range(sym, mt5.TIMEFRAME_M1, day - timedelta(hours=8), day + timedelta(days=1))
+    if rt is None or len(rt) == 0:
+        raise RuntimeError("no history for that day")
+    rows = [(int(r["time"]), float(r["open"]), float(r["high"]), float(r["low"]), float(r["close"])) for r in rt]
+    if len(_REPLAY_RATES) > 4:
+        _REPLAY_RATES.pop(next(iter(_REPLAY_RATES)))
+    _REPLAY_RATES[ds] = (time.time(), rows)
+    return rows
+
+
+def _replay_struct(rows):
+    """the nest's structure computed ONLY from these closed bars (causal): kept candles, dots, marks, trend,
+    the pullback view"""
+    import owl_chart_feed as _F
+    rr = [{"time": t, "open": o, "high": h, "low": l, "close": c} for t, o, h, l, c in rows]
+    kept = _F.build(rr)
+    bk = []
+    res = _F.engine(kept, brk_out=bk)
+    dots, marks, trend = res[0], res[1], res[2]
+    if trend == 1:
+        dots = [d for d in dots if d[2] == 1]
+    elif trend == -1:
+        dots = [d for d in dots if d[2] == -1]
+    try:
+        pb = _F.pullback_view(kept, dots, marks, bk)
+    except Exception:
+        pb = None
+    return kept, dots, marks, trend, pb
+
+
+def replay_advance(rows, t0, upto, view, n):
+    """the cursor after N more candles of THIS view (a raw minute, or a candle the silence filter keeps)"""
+    import owl_chart_feed as _F
+    end = t0 + 86400
+    if view == "raw":
+        return min(end, upto + 60 * n)
+    base = [r for r in rows if r[0] + 60 <= upto]
+    rr = [{"time": t, "open": o, "high": h, "low": l, "close": c} for t, o, h, l, c in base]
+    have = len(_F.build(rr))
+    u = upto
+    for r in rows:
+        if r[0] + 60 <= upto:
+            continue
+        rr.append({"time": r[0], "open": r[1], "high": r[2], "low": r[3], "close": r[4]})
+        u = r[0] + 60
+        if u > end:
+            return end
+        if len(_F.build(rr)) >= have + n:
+            return u
+    return min(end, u)
+
+
+def replay_payload(ds, upto, view, adv=0, since=None):
+    rows = replay_rates(ds)
+    t0 = int(datetime.strptime(ds, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+    upto = max(t0 + 1800, min(int(upto), t0 + 86400))
+    if adv:
+        upto = replay_advance(rows, t0, upto, view, max(1, min(60, int(adv))))
+    rows = [r for r in rows if r[0] + 60 <= upto]          # bars CLOSED at the cursor
+    kept, dots, marks, trend, pb = _replay_struct(rows)
+    if view == "raw":
+        cands = [[t, round(o, 2), round(h, 2), round(l, 2), round(c, 2), 1 if c >= o else -1] for t, o, h, l, c in rows if t >= t0]
+    else:
+        cands = [k for k in kept if k[0] >= t0]
+    lo = t0 - 8 * 3600
+    d = {"updated": int(time.time()), "symbol": "BTCUSD", "day": ds, "past": True, "replay": {"upto": upto, "t0": t0, "t1": t0 + 86400, "view": view},
+         "candles": cands, "live": None, "dots": [x for x in dots if x[0] >= lo], "marks": [x for x in marks if x[0] >= lo],
+         "int_dots": [], "int_marks": [], "trend": trend, "choch": 0, "next_bos": None, "invalid": None, "int_trend": 0, "h1": [],
+         "px": (rows[-1][4] if rows else None), "trades": [], "pending": [], "moves_2h": 0, "vol_now": 0, "vol_ref": 0, "closed": []}
+    if view == "pullback" and pb:
+        d["pb"] = pb
+    if since:
+        # every raw minute since the previous cursor (high, low): a stop is checked on real bars, not only
+        # on the candles the filter keeps
+        d["hl"] = [[t, round(h, 2), round(l, 2)] for t, o, h, l, c in rows if t + 60 > int(since) - 60]
+    return d
+
+
+def _studio_observe(ds, trades, view):
+    """what the system sees at each recorded trade, from the structure as it was at that moment (causal)"""
+    rows = replay_rates(ds)
+    obs = []
+    for tr in trades:
+        te, d, e, sl = int(tr["te"]), int(tr["d"]), float(tr["e"]), float(tr.get("sl") or 0)
+        R = [r for r in rows if r[0] + 60 <= te + 60]          # the entry candle included (entry at its close)
+        kept, dots, marks, trend, pb = _replay_struct(R)
+        last = marks[-1] if marks else None                     # [t, price, kind, dir?]
+        bar_t = R[-1][0] if R else te
+        recent = [m for m in marks if m[0] >= bar_t - 3 * 60 and len(m) > 3 and int(m[3]) == d]
+        on_break = any(m[0] >= bar_t - 60 and len(m) > 3 and int(m[3]) == d for m in marks)
+        kinds = [str(m[2]) if len(m) > 2 else "" for m in recent]
+        pbt = int((pb or {}).get("trend") or 0)
+        prot = None
+        if dots:
+            opp = [x for x in dots if (x[2] == 1 if d == 1 else x[2] == -1)]
+            prot = float(opp[-1][1]) if opp else None
+        risk = abs(e - sl) if sl else None
+        o = {"te": te, "d": d, "with_trend": trend == d, "with_pb_trend": pbt == d, "on_break": on_break,
+             "break_kind": ("choch" if any("choch" in k for k in kinds) else ("bos" if kinds else None)),
+             "hour": datetime.fromtimestamp(te, tz=timezone.utc).hour,
+             "stop_at_protected": bool(prot and risk and abs(sl - prot) <= 0.2 * risk)}
+        if tr.get("tx") is not None and tr.get("x") is not None and risk:
+            tx = int(tr["tx"])
+            o["r"] = round(d * (float(tr["x"]) - e) / risk, 2)
+            o["why"] = tr.get("why") or "hand"
+            Rx = [r for r in rows if r[0] + 60 <= tx + 60]
+            _k2, _d2, mk2, _t2, _p2 = _replay_struct(Rx)
+            xb = Rx[-1][0] if Rx else tx
+            near = [m for m in mk2 if m[0] >= xb - 3 * 60 and m[0] > te]
+            o["exit_on_choch"] = any(len(m) > 3 and m[2] == "choch" and int(m[3]) == -d for m in near)
+            o["exit_on_break"] = any(len(m) > 3 and int(m[3]) == -d for m in near)
+            o["hold_min"] = round((tx - te) / 60.0)
+        obs.append(o)
+    return obs
+
+
+def _studio_summary(obs):
+    """the statements the member confirms, with counts; each maps to a part the builder knows when it can"""
+    n = len(obs)
+    if not n:
+        return []
+    S = []
+    def share(f):
+        k = sum(1 for o in obs if f(o))
+        return k, round(100.0 * k / n)
+    k, p = share(lambda o: o["on_break"])
+    S.append({"id": "on_break", "kind": "entry", "k": k, "n": n, "pct": p,
+              "fr": "Vous entrez à la clôture de la bougie qui casse la structure (BOS ou CHoCH)", "en": "You enter at the close of the candle that breaks the structure (BOS or CHoCH)"})
+    k, p = share(lambda o: o["with_trend"])
+    S.append({"id": "with_trend", "kind": "entry", "k": k, "n": n, "pct": p,
+              "fr": "Vous entrez dans le sens de la tendance de la structure principale", "en": "You enter with the main structure's trend"})
+    k, p = share(lambda o: o["with_pb_trend"])
+    S.append({"id": "with_pb_trend", "kind": "entry", "k": k, "n": n, "pct": p,
+              "fr": "Vous entrez dans le sens de la tendance de fond (graphique des reculs)", "en": "You enter with the background trend (pullback chart)"})
+    k, p = share(lambda o: o["break_kind"] == "choch")
+    S.append({"id": "choch_entry", "kind": "entry", "k": k, "n": n, "pct": p,
+              "fr": "Votre entrée suit un changement de sens (CHoCH) plutôt qu'une simple cassure", "en": "Your entry follows a change of direction (CHoCH) rather than a plain break"})
+    k, p = share(lambda o: o["stop_at_protected"])
+    S.append({"id": "stop_protected", "kind": "exit", "k": k, "n": n, "pct": p,
+              "fr": "Votre stop est sur le point protégé (le dernier creux ou sommet)", "en": "Your stop is on the protected point (the last low or high)"})
+    X = [o for o in obs if o.get("r") is not None]
+    if X:
+        m = len(X)
+        k = sum(1 for o in X if o.get("exit_on_choch")); S.append({"id": "exit_choch", "kind": "exit", "k": k, "n": m, "pct": round(100.0 * k / m),
+              "fr": "Vous sortez quand la structure change de sens contre vous (CHoCH)", "en": "You exit when the structure changes direction against you (CHoCH)"})
+        W = sorted(o["r"] for o in X if o["r"] > 0 and o.get("why") != "stop")
+        if W:
+            med = W[len(W) // 2]
+            near = sum(1 for r in W if abs(r - med) <= 0.25)
+            S.append({"id": "exit_r", "kind": "exit", "k": near, "n": len(W), "pct": round(100.0 * near / len(W)), "r": round(med, 2),
+                      "fr": "Quand vous gagnez, vous sortez vers %s fois votre risque" % (("%.1f" % med).replace(".", ",")),
+                      "en": "When you win, you exit around %.1f times your risk" % med})
+        hs = sorted(o.get("hold_min") or 0 for o in X)
+        S.append({"id": "hold", "kind": "exit", "k": m, "n": m, "pct": 100, "min": hs[len(hs) // 2],
+                  "fr": "Vos trades durent en général %d minutes" % hs[len(hs) // 2], "en": "Your trades usually last %d minutes" % hs[len(hs) // 2]})
+    return S
+
+
+def _studio_parts(S, ok):
+    """turn the confirmed statements into builder parts: a known part when they match one, otherwise a
+    request for the builder AI (the lab's constructeur) to make it"""
+    g = {s["id"]: s for s in S if ok.get(s["id"])}
+    entry = exit_ = None
+    if "on_break" in g and "with_pb_trend" in g and "choch_entry" not in g:
+        entry = {"match": "owl_bos", "fr": "Pareil que l'entrée de l'Owl : cassure dans la tendance", "en": "Same as the Owl's entry: break with the trend"}
+    elif "on_break" in g:
+        entry = {"match": None, "fr": "Une cassure, à la clôture" + (" après un CHoCH" if "choch_entry" in g else "") + (" dans la tendance principale" if "with_trend" in g else ""),
+                 "en": "A break, at the close" + (" after a CHoCH" if "choch_entry" in g else "") + (" with the main trend" if "with_trend" in g else "")}
+    if "exit_choch" in g:
+        exit_ = {"match": "choch", "fr": "Sortie au CHoCH", "en": "CHoCH exit"}
+    elif "exit_r" in g:
+        rr = g["exit_r"]["r"]
+        dial = [0.6, 0.8, 1.0, 1.5, 2.0]
+        near = min(dial, key=lambda x: abs(x - rr))
+        exit_ = {"match": "target", "rr": near, "fr": "Objectif fixe à %s fois le risque" % (("%.1f" % near).replace(".", ",")), "en": "Fixed target at %.1f times the risk" % near}
+    return {"entry": entry, "exit": exit_}
+
+
+def studio_save(user, body):
+    """a finished recording: the trades, the day, the chart type. Observed at once; stored per member"""
+    try:
+        ds = str(body.get("day") or "")
+        datetime.strptime(ds, "%Y-%m-%d")
+    except Exception:
+        return {"ok": False, "err": "day"}
+    view = body.get("view") if body.get("view") in ("raw", "silence", "pullback") else "silence"
+    T = []
+    for t in (body.get("trades") or [])[:40]:
+        try:
+            T.append({"te": int(t["te"]), "d": 1 if int(t["d"]) > 0 else -1, "e": float(t["e"]), "sl": float(t.get("sl") or 0),
+                      "tx": int(t["tx"]) if t.get("tx") is not None else None, "x": float(t["x"]) if t.get("x") is not None else None,
+                      "why": "stop" if t.get("why") == "stop" else "hand"})
+        except Exception:
+            continue
+    if len(T) < 3:
+        return {"ok": False, "err": "few"}
+    obs = _studio_observe(ds, T, view)
+    S = _studio_summary(obs)
+    sid = "%s_%d" % (user.get("id"), int(time.time()))
+    os.makedirs(STUDIO_DIR, exist_ok=True)
+    json.dump({"id": sid, "uid": user.get("id"), "day": ds, "view": view, "trades": T, "obs": obs, "summary": S,
+               "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "confirmed": None},
+              open(os.path.join(STUDIO_DIR, sid + ".json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return {"ok": True, "id": sid}
+
+
+def studio_get(user, sid):
+    import re as _re
+    if not _re.match(r"^[A-Za-z0-9_]+$", sid or ""):
+        return {"err": "id"}
+    try:
+        s = json.load(open(os.path.join(STUDIO_DIR, sid + ".json"), encoding="utf-8"))
+    except Exception:
+        return {"err": "missing"}
+    if s.get("uid") != user.get("id") and not is_admin(user):
+        return {"err": "not_yours"}
+    s.pop("uid", None)
+    return s
+
+
+def studio_confirm(user, body):
+    s = studio_get(user, str(body.get("id") or ""))
+    if s.get("err"):
+        return {"ok": False, "err": s["err"]}
+    ok = {k: bool(v) for k, v in (body.get("ok") or {}).items()}
+    parts = _studio_parts(s.get("summary") or [], ok)
+    p = os.path.join(STUDIO_DIR, s["id"] + ".json")
+    full = json.load(open(p, encoding="utf-8"))
+    full["confirmed"] = ok
+    full["parts"] = parts
+    json.dump(full, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    return {"ok": True, "parts": parts}
+
+
 def team_payload():
     """the lab's AI team in one read: the chercheur, the constructeur, the critic, the watcher, and the
     night run's health - everything the old Labo tab had that the Strategies/Robots spaces do not."""
@@ -15333,14 +15585,15 @@ class H(BaseHTTPRequestHandler):
                            "application/json")
                 return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
-        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete"):
+        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
                 return
             try:
-                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 4000)).decode("utf-8", "replace") or "{}")
-                _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete}[_parts[1]]
+                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 40000)).decode("utf-8", "replace") or "{}")
+                _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
+                       "studio_save": studio_save, "studio_confirm": studio_confirm}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -17456,6 +17709,28 @@ class H(BaseHTTPRequestHandler):
             try:
                 _det = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub in ("chart_replay", "studio_get"):
+            # 2026-10-12 (owner): the chart studio - a past day replayed with the structure as it was at
+            # each candle (Strategie / admin), and a recorded session's observations
+            _sd = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
+            try:
+                import urllib.parse as _upr
+                _q = _upr.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                if not _sd:
+                    self._send(json.dumps({"err": "strategy"}), "application/json")
+                elif sub == "studio_get":
+                    self._send(json.dumps(studio_get(user, (_q.get("id", [""])[0]))), "application/json")
+                else:
+                    _ds = (_q.get("d", [""])[0] or "").strip()
+                    _dd = datetime.strptime(_ds, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                    if _dd > datetime.now(timezone.utc) or (datetime.now(timezone.utc) - _dd).days > 60:
+                        self._send(json.dumps({"err": "out of range"}), "application/json")
+                    else:
+                        _vw = (_q.get("view", ["silence"])[0])
+                        self._send(json.dumps(replay_payload(_ds, int(float(_q.get("upto", ["0"])[0] or 0)), _vw if _vw in ("raw", "silence", "pullback") else "silence",
+                                                             int(_q.get("adv", ["0"])[0] or 0), int(_q.get("since", ["0"])[0] or 0) or None)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub in ("strategies", "strategies_data", "robots", "equipe", "robots_data", "team_data"):
