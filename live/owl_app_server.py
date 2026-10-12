@@ -2603,6 +2603,30 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="jprog" style="display:none;margin-top:10px"></div>
  <div id="rbn-more" style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px -16px;padding:11px 16px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft)"><span id="rbn-mt">Tout sur le robot</span><svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></div>
 </div>
+<!-- 2026-10-12 (owner): the live-trade card sits right after "Le robot en ce moment" -->
+<div id="battles-sec" style="display:none">
+<div class="panel" style="margin-top:12px;
+ background:linear-gradient(135deg,var(--surface3),var(--surface2));
+ border:1px solid var(--border2);box-shadow:0 6px 22px rgba(37,99,235,.28)">
+ <div style="display:flex;justify-content:space-between;
+  align-items:center;margin-bottom:6px">
+  <span style="font-size:.7rem;color:var(--accent-soft);text-transform:uppercase;
+   letter-spacing:.08em;font-weight:700;display:inline-flex;
+   align-items:center;gap:6px"><svg class="ic ic-s"><use href="#i-wave"/></svg>En plein
+   combat</span>
+  <span style="font-size:.66rem;color:var(--up-soft);font-weight:800;
+   letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
+ </div>
+ <div id="battles"></div>
+ <a id="batchart" href="#" style="display:flex;align-items:center;
+  justify-content:center;gap:7px;margin-top:10px;padding:9px;
+  border-radius:12px;text-decoration:none;color:var(--accent-soft);
+  font-size:.8rem;font-weight:700;
+  background:rgba(127,179,224,.1);
+  border:1px solid rgba(127,179,224,.3)"><svg class="ic ic-s"><use href="#i-chart"/></svg> Suivre sur le
+  graphique en direct</a>
+</div>
+</div>
 <!-- 2026-10-08 (owner): the Croissance card, redesigned as a mini ladder of
      paliers, and the door to "Votre parcours" in Patrimoine. -->
 <div class="panel" id="palier" role="link" tabindex="0" aria-label="Croissance, voir votre parcours"
@@ -2693,29 +2717,6 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    flex:none">Activer</button>
  </div>
  <div id="actmsg" style="margin-top:8px;font-size:.85rem;color:var(--down-soft)"></div>
-</div>
-<div id="battles-sec" style="display:none">
-<div class="panel" style="margin-top:24px;
- background:linear-gradient(135deg,var(--surface3),var(--surface2));
- border:1px solid var(--border2);box-shadow:0 6px 22px rgba(37,99,235,.28)">
- <div style="display:flex;justify-content:space-between;
-  align-items:center;margin-bottom:6px">
-  <span style="font-size:.7rem;color:var(--accent-soft);text-transform:uppercase;
-   letter-spacing:.08em;font-weight:700;display:inline-flex;
-   align-items:center;gap:6px"><svg class="ic ic-s"><use href="#i-wave"/></svg>En plein
-   combat</span>
-  <span style="font-size:.66rem;color:var(--up-soft);font-weight:800;
-   letter-spacing:.06em"><span class="livedot"></span>EN DIRECT</span>
- </div>
- <div id="battles"></div>
- <a id="batchart" href="#" style="display:flex;align-items:center;
-  justify-content:center;gap:7px;margin-top:10px;padding:9px;
-  border-radius:12px;text-decoration:none;color:var(--accent-soft);
-  font-size:.8rem;font-weight:700;
-  background:rgba(127,179,224,.1);
-  border:1px solid rgba(127,179,224,.3)"><svg class="ic ic-s"><use href="#i-chart"/></svg> Suivre sur le
-  graphique en direct</a>
-</div>
 </div>
 <!-- 2026-10-01 (owner): this was a 2x2. "Aujourd'hui" repeated the hero
      figure word for word, and "Pire creux" was the only red tile among
