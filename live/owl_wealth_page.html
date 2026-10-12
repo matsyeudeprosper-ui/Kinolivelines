@@ -53,6 +53,25 @@ header{position:relative;z-index:2;padding:calc(14px + env(safe-area-inset-top,0
 .pkbar{height:6px;border-radius:99px;background:var(--tile-bg,rgba(255,255,255,.06));overflow:hidden;margin-top:10px}.pkbar i{display:block;height:6px;border-radius:99px}
 .recon{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;color:var(--muted2);padding:6px 0;border-top:1px solid var(--border)}
 .recon:first-of-type{border-top:0}.recon b{color:var(--text);font-variant-numeric:tabular-nums}
+
+.pkl{padding:12px 0;cursor:pointer}.pkl .chv{flex:none;margin-left:2px}
+.pkr{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+.pkr:first-of-type{border-top:0}.pkr .sd{flex:none;width:18px;text-align:center;font-size:.8rem}
+.pkr .nm{flex:1;min-width:0}.pkr .nm b{display:block;font-size:.88rem;font-weight:700}.pkr .nm small{display:block;font-size:.72rem;color:var(--muted);margin-top:1px}
+.pkr>b{flex:none;font-variant-numeric:tabular-nums}
+.pkback{background:none;border:0;color:var(--accent-soft,#8fc6ff);font:inherit;font-weight:700;font-size:.9rem;padding:4px 2px 10px;cursor:pointer}
+.pkm{display:grid;grid-template-columns:1fr 1.2fr auto 26px;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:.86rem}
+.pkm:first-of-type{border-top:0}.pkm span{text-transform:capitalize;color:var(--text2)}.pkm .bar{height:6px;border-radius:99px;background:var(--tile-bg,rgba(255,255,255,.06));overflow:hidden}.pkm .bar i{display:block;height:6px;border-radius:99px}
+.pkm b{text-align:right;font-variant-numeric:tabular-nums}.pkm small{color:var(--muted);text-align:right;font-size:.72rem}
+.pkh{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:4px;margin-top:6px}
+.pkh>div{text-align:center}.pkh .col{position:relative;height:70px;border-radius:6px;background:var(--tile-bg,rgba(255,255,255,.04))}
+.pkh .col::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--border)}
+.pkh .col i{position:absolute;left:22%;right:22%;height:0;border-radius:3px;max-height:50%}
+.pkh span{display:block;font-size:.66rem;color:var(--muted2);margin-top:4px}.pkh small{display:block;font-size:.6rem;color:var(--muted)}
+.pkf{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px}.pkf button{border:1px solid var(--border);background:transparent;color:var(--muted2);border-radius:99px;padding:6px 11px;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
+.pkf button.on{background:var(--surface3,rgba(255,255,255,.08));color:var(--text);border-color:var(--border2,rgba(255,255,255,.14))}
+.pkmh{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px}
+.pkmore{display:block;width:100%;margin-top:10px;padding:11px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--accent-soft,#8fc6ff);font:inherit;font-weight:700;cursor:pointer}
 /* tabs */
 nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 70%,transparent);padding:10px 0 12px}
 .tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;position:relative;padding:4px;
@@ -289,7 +308,7 @@ const TABS=[['ov',tx('Aperçu','Overview')],['po',tx('Poches','Pockets')],['gr',
 if(LAB)TABS.push(['ch',tx('Chercheur','Researcher')]);
 let CUR=(()=>{try{return localStorage.getItem('owlWTab')||'ov';}catch(e){return 'ov';}})();
 // 2026-10-08: the home Croissance card opens straight on "Votre parcours"
-const GOPAR=location.hash==='#parcours';if(GOPAR)CUR='ov';if(location.hash==='#poches')CUR='po';if(!TABS.some(t=>t[0]===CUR))CUR='ov';
+const GOPAR=location.hash==='#parcours';if(GOPAR)CUR='ov';if(location.hash==='#poches')CUR='po';{const _m=(location.hash||'').match(/^#poche-(.+)$/);if(_m){CUR='po';window._pkFocus=decodeURIComponent(_m[1]);}}if(!TABS.some(t=>t[0]===CUR))CUR='ov';
 function buildTabs(){const tb=$('tabs');tb.innerHTML='<span id="tabind"></span>'+TABS.map(t=>'<button class="tab'+(t[0]===CUR?' on':'')+'" data-k="'+t[0]+'">'+svgI(t[0])+t[1]+'</button>').join('');
  tb.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{CUR=b.dataset.k;try{localStorage.setItem('owlWTab',CUR);}catch(e){}tipHide();
   tb.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));moveInd();render(true);b.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});window.scrollTo({top:0,behavior:'smooth'});});
@@ -307,32 +326,95 @@ const PKN={BTCUSD:['Bitcoin','₿'],ETHUSD:['Ethereum','Ξ'],XAUUSD:[tx('Or','Go
  US30:['Dow Jones','DJ'],USTEC:['Nasdaq 100','NQ'],US500:['S&P 500','SP'],DE30:['DAX','DAX'],UK100:['FTSE 100','UK'],JP225:['Nikkei 225','JP'],
  EURUSD:[tx('Euro / Dollar','Euro / Dollar'),'€$'],GBPUSD:[tx('Livre / Dollar','Pound / Dollar'),'£$'],USDJPY:[tx('Dollar / Yen','Dollar / Yen'),'$¥']};
 const pkSym=s=>{s=String(s||'BTCUSD').toUpperCase();return s.endsWith('M')&&PKN[s.slice(0,-1)]?s.slice(0,-1):s;};
+function pkGroup(W){const P={};(W.trades||[]).forEach(x=>{const k=pkSym(x[5]);(P[k]=P[k]||[]).push(x);});return P;}
+function pkSum(T){return T.reduce((a,x)=>a+x[1],0);}
+function pkStats(T){const n=T.length,P=T.map(x=>x[1]),W=P.filter(p=>p>0),L=P.filter(p=>p<=0),gw=W.reduce((a,b)=>a+b,0),gl=-L.reduce((a,b)=>a+b,0);
+ let c=0,pk=0,dd=0,ws=0,ls=0,mws=0,mls=0;P.forEach(p=>{c+=p;pk=Math.max(pk,c);dd=Math.max(dd,pk-c);if(p>0){ws++;ls=0;}else{ls++;ws=0;}mws=Math.max(mws,ws);mls=Math.max(mls,ls);});
+ const dur=T.map(x=>x[4]).filter(v=>v!=null),buys=T.filter(x=>x[3]===1),sells=T.filter(x=>x[3]!==1);
+ return {n,net:gw-gl,wr:n?W.length/n*100:0,avg:n?(gw-gl)/n:0,pf:gl>0?gw/gl:null,dd,avgW:W.length?gw/W.length:0,avgL:L.length?-gl/L.length:0,
+  best:n?Math.max(...P):0,worst:n?Math.min(...P):0,mws,mls,dur:dur.length?dur.reduce((a,b)=>a+b,0)/dur.length:null,
+  buyN:buys.length,buyNet:pkSum(buys),sellN:sells.length,sellNet:pkSum(sells)};}
+function pkCurve(T,col,h){h=h||70;if(T.length<2)return '';let c=0;const v=[0].concat(T.map(x=>c+=x[1]));const mn=Math.min(...v,0),mx=Math.max(...v,0),X=i=>i/(v.length-1)*300,Y=y=>h-4-(y-mn)/((mx-mn)||1)*(h-8);
+ const d=v.map((y,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(y).toFixed(1)).join(' ');
+ return '<svg viewBox="0 0 300 '+h+'" preserveAspectRatio="none" style="width:100%;height:'+h+'px;display:block;margin-top:10px"><line x1="0" x2="300" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--border)" stroke-dasharray="3 4"/><path d="'+d+' L300 '+Y(0).toFixed(1)+' L0 '+Y(0).toFixed(1)+' Z" fill="'+col+'" opacity=".12"/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2"/></svg>';}
+function pkIco(k,big){const nm=PKN[k]||[k,k.slice(0,3)];return '<span class="ico" style="'+(big?'width:48px;height:48px;font-size:.95rem':'')+'">'+nm[1]+'</span>';}
+function pkName(k){return (PKN[k]||[k])[0];}
+function pkDate(t,withTime){const d=new Date(t*1000);return d.toLocaleDateString(EN?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'})+(withTime?' '+d.toLocaleTimeString(EN?'en-GB':'fr-FR',{hour:'2-digit',minute:'2-digit'}):'');}
+function pkDur(m){if(m==null)return '';return m<60?Math.round(m)+' min':(m<1440?(m/60).toFixed(1).replace('.',EN?'.':',')+' h':(m/1440).toFixed(1).replace('.',EN?'.':',')+(EN?' d':' j'));}
+function pkRow(x,showPocket){const g=x[1],c=g>=0?'var(--up-soft)':'var(--down-soft)';
+ return '<div class="pkr"><span class="sd" style="color:'+(x[3]===1?'var(--up-soft)':'var(--down-soft)')+'">'+(x[3]===1?'▲':'▼')+'</span><div class="nm"><b>'+(showPocket?pkName(pkSym(x[5]))+' · ':'')+(x[3]===1?tx('Achat','Buy'):tx('Vente','Sell'))+' '+x[2]+'</b><small>'+pkDate(x[0],true)+(x[4]!=null?' · '+pkDur(x[4]):'')+'</small></div><b style="color:'+c+'">'+money(g,1)+'</b></div>';}
+
 function pPo(el,W){
- const P={};(W.trades||[]).forEach(x=>{const k=pkSym(x[5]);(P[k]=P[k]||[]).push(x);});
+ const P=pkGroup(W),F=window._pkFocus;
+ if(F&&P[F]){pPoOne(el,W,F,P[F]);return;}
+ window._pkFocus=null;
  const oth=(W.others||[]).reduce((a,x)=>a+x[1],0),fl=(W.flows||[]).reduce((a,x)=>a+x[1],0);
- const keys=Object.keys(P).sort((p,q)=>P[q].reduce((a,x)=>a+x[1],0)-P[p].reduce((a,x)=>a+x[1],0));
- const tot=keys.reduce((a,k)=>a+P[k].reduce((s,x)=>s+x[1],0),0);
+ const keys=Object.keys(P).sort((p,q)=>pkSum(P[q])-pkSum(P[p]));
+ if(!keys.length){el.innerHTML='<div class="card"><h2>'+tx('Vos poches','Your pockets')+'</h2><div class="empty">'+tx('Les poches se rempliront dès le premier trade.','Pockets fill up from the first trade.')+'</div></div>';return;}
+ const all=[].concat(...keys.map(k=>P[k])).sort((p,q)=>p[0]-q[0]),S=pkStats(all),tot=S.net;
+ const pos=keys.filter(k=>pkSum(P[k])>0),posTot=pos.reduce((a,k)=>a+pkSum(P[k]),0);
+ const COL=['var(--s1,#3b82f6)','#e8c55a','#8df0bb','#c084fc','#f97316','#38bdf8','#f472b6'];
+ // 1. all pockets together
+ let h='<div class="card hero"><div class="lab">'+tx('Toutes les poches','All pockets')+'</div><div class="big" style="color:'+(tot>=0?'var(--up-soft)':'var(--down-soft)')+'">'+money(tot,1)+'</div>'+
+  '<div class="row"><div class="pill"><span>'+tx('Trades','Trades')+'</span><b>'+S.n+'</b></div><div class="pill"><span>'+tx('Réussite','Won')+'</span><b>'+Math.round(S.wr)+'\u202f%</b></div><div class="pill"><span>'+tx('Poches','Pockets')+'</span><b>'+keys.length+'</b></div></div>'+
+  (pos.length>1?'<div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:14px;gap:2px">'+pos.map((k,i)=>'<i style="flex:'+pkSum(P[k]).toFixed(2)+';background:'+COL[i%COL.length]+'"></i>').join('')+'</div><div class="legend">'+pos.map((k,i)=>'<span><i style="background:'+COL[i%COL.length]+'"></i>'+pkName(k)+' '+Math.round(pkSum(P[k])/posTot*100)+'\u202f%</span>').join('')+'</div>':'')+
+  '</div>';
+ // 2. the pockets
+ h+='<div class="card"><h2>'+tx('Vos poches','Your pockets')+'</h2><div class="sub">'+tx('Touchez une poche pour tout voir : ses chiffres, sa courbe, ses mois, ses heures et chacun de ses trades.','Tap a pocket to see everything: its numbers, curve, months, hours and every trade.')+'</div>'+
+  keys.map((k,i)=>{const T=P[k],s=pkStats(T),col=s.net>=0?'var(--up-soft)':'var(--down-soft)';
+   return '<div class="pkl" data-k="'+k+'" role="button" tabindex="0"'+(i?' style="border-top:1px solid var(--border)"':'')+'><div class="pk">'+pkIco(k)+'<div class="nm"><b>'+pkName(k)+'</b><small>'+s.n+' trade'+(s.n>1?'s':'')+' · '+Math.round(s.wr)+'\u202f% '+tx('réussite','won')+' · '+money(s.avg,1)+' '+tx('/ trade','/ trade')+'</small></div>'+
+    '<div class="gn"><b style="color:'+col+'">'+money(s.net,1)+'</b><small>'+tx('dernier','last')+' '+pkDate(T[T.length-1][0])+'</small></div><svg class="chv" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></div>'+pkCurve(T,col,34)+'</div>';}).join('')+'</div>';
+ // 3. the latest trades, every pocket
+ const last=all.slice(-8).reverse();
+ h+='<div class="card"><h2>'+tx('Derniers trades, toutes poches','Latest trades, every pocket')+'</h2>'+last.map(x=>pkRow(x,true)).join('')+'</div>';
+ // 4. the balance, pocket by pocket
  const recon=(W.bal_start||0)+fl+tot+oth;
- const spark=(arr,col)=>{if(arr.length<2)return '';let c=0;const v=[0].concat(arr.map(x=>c+=x[1]));const mn=Math.min(...v),mx=Math.max(...v),X=i=>i/(v.length-1)*300,Y=y=>34-(y-mn)/((mx-mn)||1)*30;
-  return '<svg viewBox="0 0 300 36" preserveAspectRatio="none" style="width:100%;height:36px;display:block;margin-top:10px"><path d="'+v.map((y,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(y).toFixed(1)).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2"/></svg>';};
- let h='<div class="card"><h2>'+tx('Vos poches','Your pockets')+'</h2><div class="sub">'+tx('Une poche par marché que le robot a vraiment tradé sur ce compte. Elle montre ce que ce marché a rapporté : dans un seul compte, l’argent n’est pas séparé par marché.','One pocket per market the robot really traded on this account. It shows what that market earned: in one account, money is not split by market.')+'</div>';
- if(!keys.length){h+='<div class="empty">'+tx('Les poches se rempliront dès le premier trade.','Pockets fill up from the first trade.')+'</div></div>';el.innerHTML=h;return;}
- const maxAbs=Math.max(...keys.map(k=>Math.abs(P[k].reduce((a,x)=>a+x[1],0))))||1;
- keys.forEach((k,i)=>{const T=P[k],g=T.reduce((a,x)=>a+x[1],0),n=T.length,w=T.filter(x=>x[1]>0).length,best=Math.max(...T.map(x=>x[1])),worst=Math.min(...T.map(x=>x[1]));
-  const nm=PKN[k]||[k,k.slice(0,3)],col=g>=0?'var(--up-soft)':'var(--down-soft)',last=new Date(T[T.length-1][0]*1000);
-  h+=(i?'<div style="height:1px;background:var(--border);margin:14px 0"></div>':'<div style="height:6px"></div>')+
-   '<div class="pk"><span class="ico">'+nm[1]+'</span><div class="nm"><b>'+nm[0]+'</b><small>'+k+' · '+n+' trade'+(n>1?'s':'')+'</small></div>'+
-   '<div class="gn"><b style="color:'+col+'">'+money(g,1)+'</b><small>'+(tot>0&&g>0?Math.round(g/tot*100)+'\u202f% '+tx('des gains','of gains'):tx('dernier','last')+' '+last.toLocaleDateString(EN?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit'}))+'</small></div></div>'+
-   '<div class="pkbar"><i style="width:'+(Math.abs(g)/maxAbs*100).toFixed(0)+'%;background:'+col+'"></i></div>'+
-   '<div class="pkt"><div><b>'+Math.round(w/n*100)+'\u202f%</b><span>'+tx('réussite','won')+'</span></div><div><b style="color:var(--up-soft)">'+money(best,1)+'</b><span>'+tx('meilleur','best')+'</span></div><div><b style="color:var(--down-soft)">'+money(worst,1)+'</b><span>'+tx('pire','worst')+'</span></div><div><b>'+money(g/n,1)+'</b><span>'+tx('par trade','per trade')+'</span></div></div>'+
-   spark(T,col);});
- h+='</div>';
- h+='<div class="card"><h2>'+tx('Le solde, poche par poche','The balance, pocket by pocket')+'</h2><div class="sub">'+tx('Le solde du compte = l’argent de départ et versé + ce que chaque poche a rapporté.','The account balance = the starting and deposited money + what each pocket earned.')+'</div>'+
+ h+='<div class="card"><h2>'+tx('Le solde, poche par poche','The balance, pocket by pocket')+'</h2><div class="sub">'+tx('Le solde du compte = l’argent de départ et versé + ce que chaque poche a rapporté. Dans un seul compte, l’argent n’est pas séparé par marché : une poche montre ce que ce marché a rapporté.','The account balance = the starting and deposited money + what each pocket earned. In one account money is not split by market: a pocket shows what that market earned.')+'</div>'+
   '<div class="recon"><span>'+tx('Départ et versements','Start and deposits')+'</span><b>'+money((W.bal_start||0)+fl)+'</b></div>'+
-  keys.map(k=>'<div class="recon"><span>'+tx('Poche ','Pocket ')+(PKN[k]||[k])[0]+'</span><b style="color:'+(P[k].reduce((a,x)=>a+x[1],0)>=0?'var(--up-soft)':'var(--down-soft)')+'">'+money(P[k].reduce((a,x)=>a+x[1],0),1)+'</b></div>').join('')+
+  keys.map(k=>'<div class="recon"><span>'+tx('Poche ','Pocket ')+pkName(k)+'</span><b style="color:'+(pkSum(P[k])>=0?'var(--up-soft)':'var(--down-soft)')+'">'+money(pkSum(P[k]),1)+'</b></div>').join('')+
   (Math.abs(oth)>=0.005?'<div class="recon"><span>'+tx('Hors robot (frais, trades manuels)','Outside the robot (fees, hand trades)')+'</span><b>'+money(oth,1)+'</b></div>':'')+
   '<div class="recon" style="color:var(--text);font-weight:700"><span>'+tx('Solde','Balance')+'</span><b>'+money(recon)+(Math.abs(recon-(W.balance||0))<0.02?' \u2713':'')+'</b></div></div>';
- el.innerHTML=h;}
+ el.innerHTML=h;
+ el.querySelectorAll('.pkl').forEach(b=>{const go=()=>{window._pkFocus=b.dataset.k;window._pkFilt='all';window._pkMore=30;try{history.pushState({pk:b.dataset.k},'','#poche-'+b.dataset.k);}catch(e){}render(true);window.scrollTo({top:0});};b.onclick=go;b.onkeydown=e=>{if(e.key==='Enter')go();};});}
+
+function pPoOne(el,W,k,T){
+ const s=pkStats(T),col=s.net>=0?'var(--up-soft)':'var(--down-soft)',allNet=pkSum(W.trades||[]);
+ const tile=(l,v,c)=>'<div><b'+(c?' style="color:'+c+'"':'')+'>'+v+'</b><span>'+l+'</span></div>';
+ const f2=v=>v==null?'—':(EN?v.toFixed(2):v.toFixed(2).replace('.',','));
+ let h='<button class="pkback" id="pkback">‹ '+tx('Toutes les poches','All pockets')+'</button>'+
+  '<div class="card hero"><div class="pk">'+pkIco(k,1)+'<div class="nm"><b style="font-size:1.15rem">'+pkName(k)+'</b><small>'+k+' · '+tx('depuis le ','since ')+pkDate(T[0][0])+'</small></div></div>'+
+  '<div class="big" style="color:'+col+';margin-top:12px">'+money(s.net,1)+'</div>'+
+  '<div class="row"><div class="pill"><span>'+tx('Trades','Trades')+'</span><b>'+s.n+'</b></div><div class="pill"><span>'+tx('Réussite','Won')+'</span><b>'+Math.round(s.wr)+'\u202f%</b></div><div class="pill"><span>'+tx('Part du total','Share of total')+'</span><b>'+(allNet>0&&s.net>0?Math.round(s.net/allNet*100)+'\u202f%':'—')+'</b></div></div>'+
+  pkCurve(T,col,80)+'</div>';
+ h+='<div class="card"><h2>'+tx('Les chiffres','The numbers')+'</h2><div class="pkt">'+tile(tx('par trade','per trade'),money(s.avg,1),s.avg>=0?'var(--up-soft)':'var(--down-soft)')+tile('profit factor',f2(s.pf))+tile(tx('plus forte baisse','deepest dip'),'-'+money(s.dd).replace('-',''),'var(--down-soft)')+'</div>'+
+  '<div class="pkt">'+tile(tx('gain moyen','avg win'),money(s.avgW,1),'var(--up-soft)')+tile(tx('perte moyenne','avg loss'),money(s.avgL,1),'var(--down-soft)')+tile(tx('durée moyenne','avg duration'),pkDur(s.dur)||'—')+'</div>'+
+  '<div class="pkt">'+tile(tx('meilleur','best'),money(s.best,1),'var(--up-soft)')+tile(tx('pire','worst'),money(s.worst,1),'var(--down-soft)')+tile(tx('séries gagnées / perdues','win / loss streaks'),'<i style="font-style:normal;color:var(--up-soft)">'+s.mws+'</i> / <i style="font-style:normal;color:var(--down-soft)">'+s.mls+'</i>')+'</div>'+
+  '<div class="pkt">'+tile(tx('achats','buys')+' · '+s.buyN,money(s.buyNet,1),s.buyNet>=0?'var(--up-soft)':'var(--down-soft)')+tile(tx('ventes','sells')+' · '+s.sellN,money(s.sellNet,1),s.sellNet>=0?'var(--up-soft)':'var(--down-soft)')+'</div></div>';
+ // months
+ const M={};T.forEach(x=>{const d=new Date(x[0]*1000),key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(M[key]=M[key]||[]).push(x);});
+ const mk=Object.keys(M).sort().reverse(),mMax=Math.max(...mk.map(m=>Math.abs(pkSum(M[m]))))||1;
+ h+='<div class="card"><h2>'+tx('Mois par mois','Month by month')+'</h2>'+mk.map(m=>{const g=pkSum(M[m]),d=new Date(m+'-15T12:00:00');
+  return '<div class="pkm"><span>'+d.toLocaleDateString(EN?'en-GB':'fr-FR',{month:'long',year:'numeric'})+'</span><div class="bar"><i style="width:'+(Math.abs(g)/mMax*100).toFixed(0)+'%;background:'+(g>=0?'var(--up-soft)':'var(--down-soft)')+'"></i></div><b style="color:'+(g>=0?'var(--up-soft)':'var(--down-soft)')+'">'+money(g,1)+'</b><small>'+M[m].length+'</small></div>';}).join('')+'</div>';
+ // hours (local) and weekdays
+ const H=new Array(8).fill(0),Hn=new Array(8).fill(0),D=new Array(7).fill(0),Dn=new Array(7).fill(0);
+ T.forEach(x=>{const d=new Date(x[0]*1000),b=Math.floor(d.getHours()/3);H[b]+=x[1];Hn[b]++;const wd=(d.getDay()+6)%7;D[wd]+=x[1];Dn[wd]++;});
+ const bars=(vals,ns,labels)=>{const mx=Math.max(...vals.map(Math.abs))||1;return '<div class="pkh">'+vals.map((v,i)=>'<div><div class="col"><i style="height:'+(Math.abs(v)/mx*100).toFixed(0)+'%;background:'+(v>=0?'var(--up-soft)':'var(--down-soft)')+';'+(v>=0?'bottom:50%':'top:50%')+'"></i></div><span>'+labels[i]+'</span><small>'+(ns[i]||'')+'</small></div>').join('')+'</div>';};
+ h+='<div class="card"><h2>'+tx('Ses heures','Its hours')+'</h2><div class="sub">'+tx('Ce que la poche a gagné ou perdu selon l’heure de clôture (heure locale), par tranches de 3 h.','What the pocket won or lost by closing time (local time), in 3-hour slots.')+'</div>'+
+  bars(H,Hn,['0h','3h','6h','9h','12h','15h','18h','21h'])+'</div>'+
+  '<div class="card"><h2>'+tx('Ses jours','Its days')+'</h2>'+bars(D,Dn,EN?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lun','mar','mer','jeu','ven','sam','dim'])+'</div>';
+ // the history
+ const FL=window._pkFilt||'all',flt={all:x=>true,won:x=>x[1]>0,lost:x=>x[1]<=0,buy:x=>x[3]===1,sell:x=>x[3]!==1}[FL]||(x=>true);
+ const list=T.filter(flt).slice().reverse(),more=window._pkMore||30;
+ h+='<div class="card"><h2>'+tx('Tous ses trades','All its trades')+'</h2><div class="pkf">'+[['all',tx('Tous','All')],['won',tx('Gagnés','Won')],['lost',tx('Perdus','Lost')],['buy',tx('Achats','Buys')],['sell',tx('Ventes','Sells')]].map(c=>'<button data-f="'+c[0]+'" class="'+(FL===c[0]?'on':'')+'">'+c[1]+'</button>').join('')+'</div>';
+ let lastM='';list.slice(0,more).forEach(x=>{const d=new Date(x[0]*1000),mm=d.toLocaleDateString(EN?'en-GB':'fr-FR',{month:'long',year:'numeric'});if(mm!==lastM){h+='<div class="pkmh">'+mm+'</div>';lastM=mm;}h+=pkRow(x,false);});
+ if(!list.length)h+='<div class="empty">'+tx('Aucun trade dans ce filtre.','No trade in this filter.')+'</div>';
+ if(list.length>more)h+='<button class="pkmore" id="pkmore">'+tx('Voir plus','Show more')+' ('+(list.length-more)+')</button>';
+ h+='</div>';
+ el.innerHTML=h;
+ $('pkback').onclick=()=>{try{history.back();}catch(e){window._pkFocus=null;render(true);}};
+ el.querySelectorAll('.pkf button').forEach(b=>b.onclick=()=>{window._pkFilt=b.dataset.f;window._pkMore=30;render();});
+ const pm=$('pkmore');if(pm)pm.onclick=()=>{window._pkMore=more+30;render();};}
+addEventListener('popstate',()=>{const m=(location.hash||'').match(/^#poche-(.+)$/);window._pkFocus=m?decodeURIComponent(m[1]):null;if(CUR==='po')render(true);});
 
 function pOv(el,W){
  const res=S.cumP;
