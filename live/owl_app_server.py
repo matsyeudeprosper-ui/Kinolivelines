@@ -2646,6 +2646,15 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="pal-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"></div>
  <div id="pal-goal" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"></div>
 </div>
+<!-- 2026-10-12 (owner): "Vos poches" - what each market really earned on this account -->
+<div class="panel" id="pockcard" role="link" tabindex="0" style="display:none;margin-top:12px;cursor:pointer"
+ onclick="location.href=B+'wealth#poches'" onkeydown="if(event.key==='Enter')this.click()">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl" id="pk-lbl">Vos poches</div>
+  <span style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="pk-go">Le d&eacute;tail</span>
+   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <div id="pk-rows" style="margin-top:6px"></div>
+</div>
 <!-- 2026-10-11 (owner): the door to the "Rentabilite" space - the strategy
      measured on a real account: return, win rate, profit factor, max drawdown -->
 <!-- 2026-10-11 (owner): the home proof card, same design as the landing card:
@@ -2884,7 +2893,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <div id="mx-scan" style="display:none">
  <div class="sec" style="margin-top:14px">Scanner <span class="hint" id="scn-hint">&middot; autres march&eacute;s, en essai</span></div>
  <div id="scn-intro" style="font-size:.86rem;color:var(--muted2);line-height:1.5;margin-top:6px">Le robot cherche sa configuration sur d&rsquo;autres march&eacute;s. Rien n&rsquo;y est trad&eacute; : chaque signal devient un trade virtuel, pour v&eacute;rifier si ces march&eacute;s tiennent ce que promet leur backtest.</div>
- <div class="scn-f" id="scn-f"><button type="button" class="on" data-f="live">En ce moment</button><button type="button" data-f="all">Tous</button><button type="button" data-f="res">R&eacute;sultats</button></div>
+ <div class="scn-f" id="scn-f"><button type="button" class="on" data-f="live">Maintenant</button><button type="button" data-f="all">Tous</button><button type="button" data-f="pk">Poches</button><button type="button" data-f="res">R&eacute;sultats</button></div>
  <div id="scn-body"></div>
 </div>
 <div id="mx-lab" style="display:none">
@@ -4566,7 +4575,7 @@ function scnR(v){const en=LANG()==='en';if(v==null)return '—';const s=(v>=0?'+
 function scanPaint(){const j=window._scn,body=document.getElementById('scn-body');if(!body)return;const en=LANG()==='en',$=id=>document.getElementById(id);
  $('scn-hint').textContent=en?'· other markets, on trial':'· autres marchés, en essai';
  $('scn-intro').textContent=en?'The robot looks for its setup on other markets. Nothing is traded there: every signal becomes a virtual trade, to check whether these markets keep what their backtest promises.':'Le robot cherche sa configuration sur d’autres marchés. Rien n’y est tradé : chaque signal devient un trade virtuel, pour vérifier si ces marchés tiennent ce que promet leur backtest.';
- const fb=document.querySelectorAll('#scn-f button'),lab=[en?'Right now':'En ce moment',en?'All':'Tous',en?'Results':'Résultats'];
+ const fb=document.querySelectorAll('#scn-f button'),lab=[en?'Now':'Maintenant',en?'All':'Tous',en?'Pockets':'Poches',en?'Results':'Résultats'];
  fb.forEach((b,i)=>{b.textContent=lab[i];b.onclick=()=>{window._scnF=b.dataset.f;fb.forEach(x=>x.classList.toggle('on',x===b));scanPaint();};b.classList.toggle('on',(window._scnF||'live')===b.dataset.f);});
  if(!j||!j.state||!(j.state.symbols||[]).length){body.innerHTML='<div class="panel" style="margin-top:12px;color:var(--muted2)">'+(en?'The scanner is starting…':'Le scanner démarre…')+'</div>';return;}
  const S=scanTxt(),rows=(j.state.symbols||[]).slice().sort((a,b)=>SCN_ORD.indexOf(a.status)-SCN_ORD.indexOf(b.status)||((a.near==null?9:a.near)-(b.near==null?9:b.near)));
@@ -4590,6 +4599,21 @@ function scanPaint(){const j=window._scn,body=document.getElementById('scn-body'
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Close to a trigger':'Proches d’un déclencheur')+'</div>'+(live.length?live.map(rowH).join('')+'<div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:10px">'+(en?'“Soon” and “Ready” only mean the price is near a trigger level. They are not trading recommendations.':'« Bientôt » et « Prêt » veulent seulement dire que le prix est proche d’un niveau de déclenchement. Ce ne sont pas des recommandations de trading.')+'</div>':'<div style="font-size:.9rem;color:var(--muted2);line-height:1.5;margin-top:8px">'+(en?'No market is close to its trigger right now. The scanner checks every minute.':'Aucun marché n’est près de son déclencheur pour l’instant. Le scanner vérifie chaque minute.')+'</div>')+'</div>';
   const rec=(j.recent||[]).slice(0,5);
   if(rec.length)h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Latest virtual trades':'Derniers trades virtuels')+'</div>'+rec.map(t=>'<div class="scn-row" style="cursor:default"><span class="tr">'+arrow(t.d)+'</span><div class="nm"><b>'+(t.name||t.sym)+'</b><small>'+new Date((t.xt||t.t)*1000).toLocaleString(en?'en-GB':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</small></div><b style="color:'+(t.r>0?'var(--up-soft)':'var(--down-soft)')+';font-variant-numeric:tabular-nums">'+scnR(t.r)+'</b></div>').join('')+'</div>';
+ }else if(F==='pk'){
+  // 2026-10-12 (owner): test pockets - pretend money per market, never added to any real balance
+  const R=j.results||{},pr=j.pocket_rule||{start:100,risk:0.02},st=pr.start;
+  const fm=v=>(en?'$'+v.toFixed(2):v.toFixed(2).replace('.',',')+' $');
+  const sp=(c,col)=>{if(!c||c.length<2)return '';const mn=Math.min(...c),mx=Math.max(...c),X=i=>i/(c.length-1)*300,Y=v=>30-(v-mn)/((mx-mn)||1)*26;
+   return '<svg viewBox="0 0 300 32" preserveAspectRatio="none" style="width:100%;height:30px;display:block;margin-top:8px"><path d="'+c.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2"/></svg>';};
+  const ord=rows.slice().sort((p,q)=>((((R[q.sym]||{}).pocket||{}).bt||{}).value||0)-((((R[p.sym]||{}).pocket||{}).bt||{}).value||0));
+  h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Test pockets · virtual':'Poches d’essai · virtuel')+'</div>'+
+   '<div style="font-size:.84rem;color:var(--muted2);line-height:1.5;margin:8px 0 4px">'+(en?'Each market gets a pocket of '+fm(st)+' of pretend money; each virtual trade risks '+Math.round(pr.risk*100)+' % of the pocket. Nothing here is real and nothing is added to your balance.':'Chaque marché a une poche de '+fm(st)+' fictifs ; chaque trade virtuel risque '+Math.round(pr.risk*100)+' % de la poche. Rien n’est réel et rien ne s’ajoute à votre solde.')+'</div>'+
+   ord.map((r,i)=>{const pk=(R[r.sym]||{}).pocket||{},b=pk.bt||{},lv=pk.live||{},bc=(b.value||st)>=st?'var(--up-soft)':'var(--down-soft)',lc=(lv.value||st)>=st?'var(--up-soft)':'var(--down-soft)';
+    return '<div style="padding:12px 0;'+(i?'border-top:1px solid var(--border)':'')+'"><div style="display:flex;align-items:center;gap:12px"><span class="tr">'+arrow(r.pb_trend)+'</span><div class="nm" style="flex:1;min-width:0"><b style="display:block;font-size:.95rem">'+(r.name||r.sym)+(r.sym==='BTCUSD'?' <small style="color:var(--muted);font-weight:600">'+(en?'(reference)':'(référence)')+'</small>':'')+'</b></div></div>'+
+     '<div style="display:flex;gap:6px;margin-top:8px"><div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 6px;text-align:center"><b style="display:block;font-size:.98rem;color:'+bc+'">'+fm(b.value||st)+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'backtest 30 d':'backtest 30 j')+' · '+(b.n||0)+'</span></div>'+
+     '<div style="flex:1;min-width:0;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;padding:8px 6px;text-align:center"><b style="display:block;font-size:.98rem;color:'+(lv.n?lc:'var(--muted)')+'">'+(lv.n?fm(lv.value):fm(st))+'</b><span style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+(en?'live test':'essai en direct')+' · '+(lv.n||0)+'</span></div></div>'+
+     sp(b.curve,bc)+'</div>';}).join('')+
+   '<div style="font-size:.76rem;color:var(--muted);line-height:1.45;margin-top:10px">'+(en?'Backtest: the same rule replayed on the last 30 calendar days (candle close). Live test: virtual trades since the test started, at live quotes. A pocket is not a recommendation.':'Backtest : la même règle rejouée sur les 30 derniers jours (clôture de bougie). Essai en direct : les trades virtuels depuis le début de l’essai, aux cotations réelles. Une poche n’est pas une recommandation.')+'</div></div>';
  }else if(F==='all'){
   h+='<div class="panel" style="margin-top:12px"><div class="lbl">'+(en?'Every market watched':'Tous les marchés suivis')+'</div>'+rows.map(rowH).join('')+'</div>';
  }else{
@@ -7287,6 +7311,22 @@ function rcPaint(){const j=window._rcJ;if(!j)return;const en=LANG()==='en',$=id=
  $('rc2-nt').innerHTML=s.n+' trades \u00b7 '+note;$('rc2-ey').textContent=en?'Proof of profitability':'Preuve de rentabilit\u00e9';
  $('rc2-lv').textContent=V==='real'?(en?'Live':'En direct'):(en?'Up to date':'\u00c0 jour');$('rc2-b1').textContent=en?'Witness account':'Compte t\u00e9moin';$('rc2-gt').textContent=go;}
 setTimeout(()=>{try{loadRent();}catch(e){}},1500);
+// 2026-10-12 (owner): "Vos poches" home card
+async function loadPockets(){const el=document.getElementById('pockcard');if(!el)return;
+ if(window._pkT&&Date.now()-window._pkT<300000){pkPaint();return;}window._pkT=Date.now();
+ try{const r=await fetch(B+'pockets?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err)window._pk=j;}}catch(e){}
+ pkPaint();}
+function pkPaint(){const j=window._pk,el=document.getElementById('pockcard');if(!el)return;const P=(j&&j.pockets)||[];
+ if(!P.length){el.style.display='none';return;}const en=LANG()==='en';
+ const N={BTCUSD:['Bitcoin','₿'],ETHUSD:['Ethereum','Ξ'],XAUUSD:[en?'Gold':'Or','Au'],XAGUSD:[en?'Silver':'Argent','Ag'],USOIL:[en?'US oil':'Pétrole US','OIL'],US30:['Dow Jones','DJ'],USTEC:['Nasdaq 100','NQ'],US500:['S&P 500','SP'],DE30:['DAX','DAX'],UK100:['FTSE 100','UK'],JP225:['Nikkei 225','JP'],EURUSD:['Euro / Dollar','€$'],GBPUSD:[en?'Pound / Dollar':'Livre / Dollar','£$'],USDJPY:['Dollar / Yen','$¥']};
+ const m=v=>(v<0?'-':'+')+'$'+Math.abs(v).toFixed(2);
+ document.getElementById('pk-lbl').textContent=en?'Your pockets':'Vos poches';document.getElementById('pk-go').textContent=en?'Details':'Le détail';
+ document.getElementById('pk-rows').innerHTML=P.map((p,i)=>{const nm=N[p.sym]||[p.sym,p.sym.slice(0,3)];
+  return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'+(i?'border-top:1px solid var(--border)':'')+'"><span style="flex:none;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.76rem;background:var(--tile-bg);border:1px solid var(--tile-bd)">'+nm[1]+'</span>'+
+   '<div style="flex:1;min-width:0"><b style="display:block;font-size:.95rem">'+nm[0]+'</b><small style="display:block;font-size:.74rem;color:var(--muted)">'+p.n+' trade'+(p.n>1?'s':'')+' · '+Math.round(p.won/p.n*100)+'\u202f% '+(en?'won':'gagnés')+'</small></div>'+
+   '<b style="flex:none;font-size:1.02rem;color:'+(p.net>=0?'var(--up-soft)':'var(--down-soft)')+'">'+m(p.net)+'</b></div>';}).join('');
+ el.style.display='';}
+setTimeout(()=>{try{loadPockets();}catch(e){}},1900);
 // 2026-10-11 (owner): the AI at work - counts and times from <tok>/ai_pulse
 async function loadAI(){const el=document.getElementById('aicard');if(!el)return;
  if(!(window._aiT&&Date.now()-window._aiT<120000)){window._aiT=Date.now();
@@ -10623,6 +10663,41 @@ _LAND_CACHE = [0.0, None]
 _AI_CACHE = [0.0, None]
 
 
+def pockets_payload(uid):
+    """2026-10-12 (owner, "Poches"): what each market really earned on this account, from the worker's
+    wealth file (field 5 = the trade's symbol; older records without it are the robot's BTC)."""
+    try:
+        w = json.load(open(os.path.join(DIR, "nest_data", "%s.wealth.json" % uid), encoding="utf-8"))
+    except Exception:
+        return {"pockets": []}
+    P = {}
+    for x in w.get("trades") or []:
+        s = str(x[5] if len(x) > 5 and x[5] else "BTCUSD").upper()
+        if s.endswith("M") and len(s) > 4:
+            s = s[:-1]
+        p = P.setdefault(s, {"sym": s, "net": 0.0, "n": 0, "won": 0, "last": 0})
+        p["net"] += float(x[1]); p["n"] += 1; p["won"] += 1 if float(x[1]) > 0 else 0; p["last"] = max(p["last"], int(x[0]))
+    out = sorted(P.values(), key=lambda p: -p["net"])
+    for p in out:
+        p["net"] = round(p["net"], 2)
+    return {"pockets": out, "balance": w.get("balance"), "currency": w.get("currency")}
+
+
+TEST_POCKET_START = 100.0      # every test pocket starts with the same pretend amount
+TEST_POCKET_RISK = 0.02        # and risks 2 % of its current value on each virtual trade
+
+
+def _test_pocket(rs):
+    v, curve = TEST_POCKET_START, [TEST_POCKET_START]
+    for r in rs:
+        v *= (1.0 + TEST_POCKET_RISK * float(r))
+        curve.append(round(v, 2))
+    if len(curve) > 120:
+        step = len(curve) / 120.0
+        curve = [curve[int(i * step)] for i in range(120)] + [curve[-1]]
+    return {"value": round(v, 2), "n": len(rs), "curve": curve}
+
+
 def scanner_payload(detail):
     """2026-10-11 (owner): the setup scanner (live/owl_scanner.py) - what each
     symbol is doing now, its virtual trades, and forward vs backtest. Levels
@@ -10671,6 +10746,13 @@ def scanner_payload(detail):
         except Exception:
             pass
         res[s] = {"fwd": summ(fwd.get(s) or []), "bt": bt}
+        # test pockets (virtual money, never added to any real balance): same start, same risk rule
+        try:
+            _bt_rs = [t["r"] for t in (json.load(open(os.path.join(D, "backtest_%s.json" % s), encoding="utf-8")).get("trades") or [])]
+        except Exception:
+            _bt_rs = []
+        _fw = sorted(fwd.get(s) or [], key=lambda t: t.get("xt") or 0)
+        res[s]["pocket"] = {"live": _test_pocket([t["r"] for t in _fw]), "bt": _test_pocket(_bt_rs)}
         if not detail:
             for k in ("pb_bos", "next_bos", "inv"):
                 row.pop(k, None)
@@ -10685,7 +10767,8 @@ def scanner_payload(detail):
     except Exception:
         pass
     return {"state": st, "results": res, "recent": [{k: t.get(k) for k in keep} for t in recent],
-            "detail": bool(detail), "fwd_since": started, "fwd_model": "v3-quote", "missed": missed}
+            "detail": bool(detail), "fwd_since": started, "fwd_model": "v3-quote", "missed": missed,
+            "pocket_rule": {"start": TEST_POCKET_START, "risk": TEST_POCKET_RISK}}
 
 
 def ai_pulse():
@@ -16466,6 +16549,11 @@ class H(BaseHTTPRequestHandler):
             try:
                 _rp = open(os.path.join(DIR, "owl_proof_page.html"), encoding="utf-8").read()
                 self._send(_rp, "text/html; charset=utf-8")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "pockets":
+            try:
+                self._send(json.dumps(pockets_payload(user.get("id"))), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "scanner_data":

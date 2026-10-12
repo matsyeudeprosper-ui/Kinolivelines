@@ -360,12 +360,15 @@ def wealth():
         trades.append([int(d.time), round(d.profit + d.commission + d.swap, 2),
                        round(d.volume, 2),
                        1 if (_in is not None and _in.type == mt5.DEAL_TYPE_BUY) else -1,
-                       (round((d.time - _in.time) / 60) if _in is not None else None)])
+                       (round((d.time - _in.time) / 60) if _in is not None else None),
+                       # 2026-10-12 (owner: "Poches"): the market of the trade, appended LAST so every
+                       # reader of fields 0-4 is unchanged
+                       d.symbol])
     flows = [[int(d.time), round(d.profit, 2), (d.comment or "")[:40]]
              for d in alld if d.type == mt5.DEAL_TYPE_BALANCE]
     # anything else that moved the balance (hand trades on a bot-only
     # account, fees): needed to rebuild the balance before each trade
-    others = [[int(d.time), round(d.profit + d.commission + d.swap, 2)]
+    others = [[int(d.time), round(d.profit + d.commission + d.swap, 2), d.symbol or ""]
               for d in alld
               if d.type != mt5.DEAL_TYPE_BALANCE and d.ticket not in mine
               and abs(d.profit + d.commission + d.swap) > 0.004]
