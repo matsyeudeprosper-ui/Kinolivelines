@@ -695,7 +695,7 @@ def weather(max_age=180):
         return None
 
 
-def weather_gate(need_int=False, cj=None):
+def weather_gate(need_int=False, cj=None, sig_t=None):
     """Shared entry brakes. None allows, a string refuses.
 
     Owner 2026-09-18: "every time we make a change in the main bot, update
@@ -732,7 +732,18 @@ def weather_gate(need_int=False, cj=None):
         if (cj.get("int_brk_1h") or 0) < 1:
             return "aucun petit mouvement depuis 1 h"
     else:
-        if (cj.get("moves_2h") or 0) < 1:
+        # 2026-10-12 (owner, "do it"): count the big moves strictly BEFORE the signal's own candle,
+        # from the feed's list of marks, instead of the feed's running moves_2h counter. On
+        # 2026-10-12 04:43 the feed rewrote its file between the robots' reads: six read
+        # moves_2h = 0 and refused, Valere read it 0.1 s later = 1 (the counter already included
+        # the very flip being traded) and entered. With sig_t every account gets the same answer,
+        # and it is the window the brake was measured with (bt - 7200 <= mark < bt).
+        if sig_t is not None and isinstance(cj.get("marks"), list):
+            mv = sum(1 for m in cj["marks"]
+                     if isinstance(m, (list, tuple)) and m and sig_t - 7200 <= int(m[0]) < sig_t)
+        else:
+            mv = cj.get("moves_2h") or 0
+        if mv < 1:
             return "aucun grand mouvement depuis 2 h"
     return None
 
@@ -1339,7 +1350,7 @@ def main():
                 say(f"{kind} dans le sens des reculs {_sens}, prix {_px0:.2f} "
                     f"au-dela du dernier BOS des reculs {_pbb:.2f}")
         _cj0 = weather()          # captured once, reused for the gate
-        _wg = weather_gate(need_int=internal, cj=_cj0)
+        _wg = weather_gate(need_int=internal, cj=_cj0, sig_t=bt)
         if _wg:
             say(f"{kind} refuse: {_wg}")
             # Owner 2026-09-18: the nervosity brake could not be settled in
@@ -1349,7 +1360,7 @@ def main():
             if _wg.startswith("trop nerveux"):
                 _cjx = weather()
                 if _cjx and not weather_gate(
-                        cj=dict(_cjx, vol_now=0, vol_ref=1)):
+                        cj=dict(_cjx, vol_now=0, vol_ref=1), sig_t=bt):
                     _tk = mt5.symbol_info_tick(SYMBOL)
                     if _tk:
                         _e = _tk.ask if d == 1 else _tk.bid

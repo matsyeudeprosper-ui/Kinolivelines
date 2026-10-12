@@ -272,12 +272,13 @@ def chart():
         return {}
 
 
-def gates(cj, need_int):
+def gates(cj, need_int, sig_t=None):
     """The entry brakes - ONE implementation, in the bot, shared by every
     account (owner 2026-09-18). This desk used to carry its own copy, and
     that is exactly how 441 and Valere ended up obeying different rules.
     Kept as a thin wrapper so the desk's call sites read the same."""
-    return B.weather_gate(need_int=need_int, cj=cj)
+    # 2026-10-12: sig_t = the signal candle's time -> big moves counted strictly before it (same fix as the bot)
+    return B.weather_gate(need_int=need_int, cj=cj, sig_t=sig_t)
 # owner 2026-09-15: no single trade may risk more than 10% of the balance.
 # The automated bot already enforces this; the manual desk does too.
 MAX_RISK_PCT = 0.10
@@ -1004,7 +1005,7 @@ def main():
                             last_int = _ivt
                         # then the main structure, on its own signal
                         if sig:
-                            _g = gates(_cj, False)
+                            _g = gates(_cj, False, sig_t=bt)
                             if _g:
                                 say(f"AUTO grande structure ignoree: {_g}")
                                 shadow_note(_cj, int(sig[0]),
@@ -1041,7 +1042,7 @@ def main():
                         # in the state for the app and the chart, pushed in
                         # the simplest format a signal consumer wants.
                         _cj2 = chart()
-                        _why = gates(_cj2, False) if _cj2 else None
+                        _why = gates(_cj2, False, sig_t=bt) if _cj2 else None
                         _dbt = led2["debt"] > 0.5
                         if not _why and _dbt and not flip:
                             if _ENG.get("cont_used"):
