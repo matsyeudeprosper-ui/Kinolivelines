@@ -165,7 +165,7 @@
    },
    "built_date": "2026-10-06",
    "built_commit": "2e3f47c",
-   "c_nights": 1
+   "c_nights": 0
   },
   {
    "id": "halves_without_kill",
@@ -205,7 +205,8 @@
     "b": 30
    },
    "built_date": "2026-10-10",
-   "built_commit": "2da94b2"
+   "built_commit": "2da94b2",
+   "c_nights": 0
   },
   {
    "id": "flip_loss_size",
@@ -279,7 +280,17 @@
    "what_en": "Split the day into four UTC blocks: 1-8, 8-16, 16-21, 21-1. Before each entry, add up the results of the robot's own trades (in the test) entered in the same block over the last X days; if the sum is negative and there are at least 5 trades, no entry. X from 7 to 28 days, 0 = off (default, nothing changes).",
    "why_fr": "Couper la journée et la fin de soirée gagne beaucoup depuis le 24 septembre (8 vrais comptes sur 9 d'accord) mais perdait avant : chaque coupure fixe est meilleure sur une moitié et pire sur l'autre. Un frein qui suit les heures qui perdent en ce moment répondrait sans choisir les heures à la main.",
    "why_en": "Cutting the day and the late evening gains a lot since 24 September (8 real accounts in 9 agree) but lost before: every fixed cut is better on one half and worse on the other. A brake that follows the hours losing right now would answer without picking hours by hand.",
-   "status": "open"
+   "status": "built",
+   "key": "hour_brake_days",
+   "built_note_fr": "Le test peut maintenant suspendre les entrées dans une tranche d'heures (1-8 h, 8-16 h, 16-21 h, 21-1 h UTC) tant que ses trades des derniers jours, au moins 5, sont en perte au total. Par défaut c'est éteint : rien ne change tant qu'une idée qui l'utilise n'a pas gagné son duel.",
+   "built_note_en": "The test can now pause entries in a block of hours (1-8, 8-16, 16-21, 21-1 UTC) while its trades of the last few days, at least 5 of them, add up to a loss. It is off by default: nothing changes until an idea that uses it wins its duel.",
+   "test": {
+    "flag": "--hour-brake",
+    "a": 0,
+    "b": 14
+   },
+   "build_attempts": 1,
+   "build_error": "périmètre : study/proof_autorun.lock"
   },
   {
    "id": "early_moves_size",
@@ -301,6 +312,28 @@
    "what_en": "Add 'move' (the number of big moves counted over the last 2 hours at entry, as in the reading tools) to the facts a pile can use, with the same operators. Nothing changes for existing piles.",
    "why_fr": "Le meilleur indice de ce soir (les tendances mûres gagnent, les jeunes perdent) ne peut pas devenir une pile : ce fait n'est pas dans la liste. Une pile « à partir du 4e mouvement » le suivrait avec la vérification des deux moitiés.",
    "why_en": "Tonight's best clue (mature trends win, young ones lose) cannot become a pile: this fact is not on the list. A pile 'from the 4th move on' would follow it with the two-halves check.",
+   "status": "open"
+  },
+  {
+   "id": "pb_gate_parity",
+   "date": "2026-10-12",
+   "title_fr": "Vérifier que le test filtre comme les vrais comptes",
+   "title_en": "Check that the test filters like the real accounts",
+   "what_fr": "Depuis le 10 octobre, les comptes réels refusent les entrées contre le sens du repli. Ajouter au contrôle de chaque nuit : combien d'entrées par jour les vrais comptes ont prises depuis le 10, et combien le test en prend avec ce filtre sur les mêmes jours ; et, si possible, refaire le filtre du test avec la même mémoire que le robot. Rien ne change quand le filtre est coupé.",
+   "what_en": "Since 10 October the real accounts refuse entries against the pullback direction. Add to the nightly check: how many entries a day the real accounts took since the 10th, and how many the test takes with this filter on the same days; and, if possible, rebuild the test's filter with the same memory as the robot. Nothing changes when the filter is off.",
+   "why_fr": "Ce soir, avec ce filtre, le test ne garde qu'un trade sur quatre (65 au lieu de 276 en 42 jours), alors que les vrais comptes sont passés d'environ 6 à 4 entrées par jour. Tant que les deux ne filtrent pas pareil, aucune idée testée « avec le filtre » ne décrit les vrais comptes.",
+   "why_en": "Tonight, with this filter, the test keeps only one trade in four (65 instead of 276 in 42 days), while the real accounts went from about 6 to 4 entries a day. Until both filter alike, no idea tested 'with the filter' describes the real accounts.",
+   "status": "open"
+  },
+  {
+   "id": "loss_wait_day",
+   "date": "2026-10-12",
+   "title_fr": "Pause après une perte, seulement le jour",
+   "title_en": "A pause after a loss, only by day",
+   "what_fr": "Nouveau réglage : après un trade PERDANT fermé entre 8 h et minuit UTC, aucun nouveau trade (rattrapage compris) pendant X minutes, de 0 à 120 ; après un gain, ou la nuit (0 h - 8 h), rien ne change. 0 = coupé, ce qui ne change rien.",
+   "what_en": "New setting: after a LOSING trade closed between 08:00 and midnight UTC, no new trade (catch-up included) for X minutes, 0 to 120; after a win, or at night (00-08), nothing changes. 0 = off, which changes nothing.",
+   "why_fr": "Le jour, juste après une perte, le robot gagne un trade sur trois (39 trades, -51 $, les deux moitiés d'accord) ; la nuit, après une perte, deux sur trois. Une pause pour tous a déjà aidé les comptes avec plafond ; celle-ci viserait la seule fuite, sans retarder la nuit qui gagne.",
+   "why_en": "By day, right after a loss, the robot wins one trade in three (39 trades, -$51, both halves agree); at night, after a loss, two in three. A pause for everyone already helped capped accounts; this one would aim at the one leak, without delaying the winning night.",
    "status": "open"
   }
  ]
