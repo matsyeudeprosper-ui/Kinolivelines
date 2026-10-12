@@ -1,0 +1,247 @@
+{
+ "about": "2026-10-12 (owner): the catalog behind the Strategies space - studies and research outcomes that are not computed live. Plain words; verdict letters never shown. Edit by hand when a study changes state. Items the lab registry (lab/registry.json) already holds are NOT repeated here; the server merges both.",
+ "items": [
+  {
+   "id": "study-delayed-entry",
+   "fam": "entree",
+   "status": "study",
+   "evidence": "virtual",
+   "title_fr": "Entrée retardée (étude gelée)",
+   "title_en": "Delayed entry (frozen study)",
+   "plain_fr": "Entrer un peu après la cassure au lieu de tout de suite : un essai gelé compare les deux sur des prix en direct.",
+   "plain_en": "Entering a little after the break instead of at once: a frozen trial compares both on live prices.",
+   "verdict_fr": "En cours. Teste les anciennes règles (sans le filtre de tendance) : un résultat ne pourra pas être appliqué tel quel au robot d'aujourd'hui.",
+   "verdict_en": "Running. It tests the earlier rules (no trend filter): a result cannot be applied as is to today's robot.",
+   "start": "2026-10-10",
+   "end": "2026-11-21",
+   "next": [
+    {
+     "date": "2026-10-31",
+     "fr": "Point d'étape",
+     "en": "Interim look"
+    },
+    {
+     "date": "2026-11-21",
+     "fr": "Verdict",
+     "en": "Verdict"
+    }
+   ],
+   "src": "review/DELAYED_ENTRY_PREREG.md"
+  },
+  {
+   "id": "study-portfolio",
+   "fam": "portefeuille",
+   "status": "not_started",
+   "evidence": "idea",
+   "title_fr": "L'Owl multi-marchés (un seul compte)",
+   "title_en": "Multi-market Owl (one account)",
+   "plain_fr": "Quand le Bitcoin n'a pas de configuration, prendre la prochaine sur un autre marché approuvé, avec un seul compte et les mêmes garde-fous.",
+   "plain_en": "When Bitcoin has no setup, take the next one on another approved market, in one account with the same safeguards.",
+   "verdict_fr": "Spécification écrite, en attente des choix de recherche avant de lancer les tests.",
+   "verdict_en": "Specification written, waiting for research decisions before the tests start.",
+   "src": "review/PORTFOLIO_STUDY_SPEC.md"
+  },
+  {
+   "id": "study-valere-fidelity",
+   "fam": "recherche",
+   "status": "study",
+   "evidence": "backtest",
+   "title_fr": "Fidélité du simulateur (compte témoin)",
+   "title_en": "Simulator fidelity (witness account)",
+   "plain_fr": "Pourquoi le simulateur gagne en dollars autrement que le vrai compte, alors qu'il trouve les mêmes trades.",
+   "plain_en": "Why the simulator earns differently in dollars from the real account although it finds the same trades.",
+   "verdict_fr": "Diagnostic programmé.",
+   "verdict_en": "Diagnostic scheduled.",
+   "next": [
+    {
+     "date": "2026-10-16",
+     "fr": "Diagnostic",
+     "en": "Diagnostic"
+    }
+   ],
+   "src": "review/VALERE_FIDELITY_HANDOFF.md"
+  },
+  {
+   "id": "pb-touch",
+   "fam": "entree",
+   "status": "trial",
+   "evidence": "real",
+   "title_fr": "Retour sur le point protégé",
+   "title_en": "Touch of the protected point",
+   "plain_fr": "Les trades pris quand le prix revient toucher son point protégé : suivis sur les vrais trades.",
+   "plain_en": "Trades taken when price comes back to touch its protected point: followed on real trades.",
+   "verdict_fr": "Suivi en cours, verdict à 40 trades.",
+   "verdict_en": "Tracking, verdict at 40 trades.",
+   "src": "review/pb_touch_tracker.py"
+  },
+  {
+   "id": "loss-pause",
+   "fam": "risque",
+   "status": "trial",
+   "evidence": "virtual",
+   "title_fr": "Pause après une perte",
+   "title_en": "Pause after a loss",
+   "plain_fr": "Faire une courte pause après une perte, suivie dans l'ombre sans toucher au robot.",
+   "plain_en": "A short pause after a loss, followed in the shadow without touching the robot.",
+   "verdict_fr": "Suivi en cours, verdict à 40 trades.",
+   "verdict_en": "Tracking, verdict at 40 trades.",
+   "src": "review/loss_pause_tracker.py"
+  },
+  {
+   "id": "recov-bullets",
+   "fam": "risque",
+   "status": "validated",
+   "evidence": "backtest",
+   "title_fr": "Rattrapage par les renforts seulement",
+   "title_en": "Catch-up with adds only",
+   "plain_fr": "En rattrapage, ne pas reprendre l'entrée de cassure mais renforcer au milieu.",
+   "plain_en": "During catch-up, skip the break entry and add at the midpoint instead.",
+   "verdict_fr": "Mieux à tous les spreads testés, creux plus petit ; pas encore déployé.",
+   "verdict_en": "Better at every spread tested, smaller dip; not deployed yet.",
+   "src": "memory: recovery bullets-only"
+  },
+  {
+   "id": "movement-brake",
+   "fam": "risque",
+   "status": "live",
+   "evidence": "backtest",
+   "title_fr": "Frein de mouvement",
+   "title_en": "Movement brake",
+   "plain_fr": "Ne pas trader quand le marché n'a fait aucun grand mouvement depuis 2 heures.",
+   "plain_en": "No trade when the market made no big move in the last 2 hours.",
+   "verdict_fr": "Gardé : le retirer coûte 43 à 65 % et double le creux. C'est un contrôle du creux.",
+   "verdict_en": "Kept: removing it costs 43-65 % and doubles the dip. It controls drawdown.",
+   "src": "memory: movement brake"
+  },
+  {
+   "id": "trend-rule",
+   "fam": "structure",
+   "status": "live",
+   "evidence": "real",
+   "title_fr": "Suivre la tendance de fond",
+   "title_en": "Follow the background trend",
+   "plain_fr": "Seulement les cassures dans le sens de la tendance de fond, et au-delà de sa dernière cassure.",
+   "plain_en": "Only breaks in the background trend's direction, beyond its last break.",
+   "verdict_fr": "Règle officielle depuis le 10/10 ; mesurée en direct depuis.",
+   "verdict_en": "Official rule since 10/10; measured live since.",
+   "src": "review/URGENT_CHANGES_BACKTEST_2026-10-10.md"
+  },
+  {
+   "id": "carry",
+   "fam": "marche",
+   "status": "validated",
+   "evidence": "backtest",
+   "title_fr": "Portage neutre (financement)",
+   "title_en": "Delta-neutral carry (funding)",
+   "plain_fr": "Encaisser le taux de financement en étant acheteur et vendeur en même temps.",
+   "plain_en": "Collect the funding rate while being long and short at once.",
+   "verdict_fr": "Premier résultat positif de la recherche, mais il faut un marché comptant et un perpétuel : pas faisable chez ce courtier.",
+   "verdict_en": "The first positive research result, but it needs spot and perpetual markets: not possible at this broker.",
+   "src": "memory: carry"
+  },
+  {
+   "id": "e015",
+   "fam": "marche",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Rebond après liquidations",
+   "title_en": "Bounce after liquidations",
+   "plain_fr": "Acheter juste après une cascade de liquidations.",
+   "plain_en": "Buy right after a liquidation cascade.",
+   "verdict_fr": "Vrai mécanisme (+35 points en 5 minutes) mais il disparaît avec le moindre délai d'exécution.",
+   "verdict_en": "A real mechanism (+35 points in 5 minutes) but it vanishes with any execution delay.",
+   "src": "review (E015, E016)"
+  },
+  {
+   "id": "e013",
+   "fam": "marche",
+   "status": "validated",
+   "evidence": "backtest",
+   "title_fr": "Les bonnes périodes",
+   "title_en": "The good periods",
+   "plain_fr": "Qu'est-ce qui distingue les périodes où le robot gagne ?",
+   "plain_en": "What sets apart the periods where the robot wins?",
+   "verdict_fr": "Des périodes moins chères et plus calmes, pas plus tendancielles ; seul le propre résultat récent les sépare.",
+   "verdict_en": "Cheaper and quieter periods, not trendier; only the robot's own recent result separates them.",
+   "src": "review (E013)"
+  },
+  {
+   "id": "e022-024",
+   "fam": "structure",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Filtres de la bougie H1",
+   "title_en": "H1 candle filters",
+   "plain_fr": "N'entrer que selon la direction ou les extrêmes de la bougie H1 précédente.",
+   "plain_en": "Enter only by the previous H1 candle's direction or extremes.",
+   "verdict_fr": "Coupent les gagnants ; non adoptés.",
+   "verdict_en": "They cut the winners; not adopted.",
+   "src": "review (E022-E024)"
+  },
+  {
+   "id": "e028",
+   "fam": "risque",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Reprendre après l'objectif du jour",
+   "title_en": "Resume after the daily target",
+   "plain_fr": "Reprendre plus tôt après avoir atteint l'objectif du jour.",
+   "plain_en": "Resume earlier after reaching the daily target.",
+   "verdict_fr": "Plus de gain mais un creux plus profond ; le gain est mangé par les frais réels.",
+   "verdict_en": "More gain but a deeper dip; the gain is eaten by real costs.",
+   "src": "review (E028)"
+  },
+  {
+   "id": "trail",
+   "fam": "risque",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Stop suiveur",
+   "title_en": "Trailing stop",
+   "plain_fr": "Remonter le stop derrière la structure pendant le trade.",
+   "plain_en": "Trail the stop behind the structure during the trade.",
+   "verdict_fr": "Fait toucher la limite de perte totale ; famille fermée.",
+   "verdict_en": "Hits the total loss line; family closed.",
+   "src": "memory: trail-stop"
+  },
+  {
+   "id": "virtual-gate",
+   "fam": "risque",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Reprendre après un gain fictif",
+   "title_en": "Resume after a paper win",
+   "plain_fr": "Après des pertes, attendre un gain fictif avant de reprendre.",
+   "plain_en": "After losses, wait for a paper win before resuming.",
+   "verdict_fr": "Les pertes n'ont pas de mémoire : moins 26 % de gain pour un creux plus petit.",
+   "verdict_en": "Losses have no memory: 26 % less gain for a smaller dip.",
+   "src": "memory: virtual gate"
+  },
+  {
+   "id": "orderbook",
+   "fam": "marche",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Signal du carnet d'ordres",
+   "title_en": "Order-book signal",
+   "plain_fr": "Lire le déséquilibre du carnet d'ordres.",
+   "plain_en": "Read the order-book imbalance.",
+   "verdict_fr": "Réel mais 5 fois trop petit pour payer les frais.",
+   "verdict_en": "Real but 5 times too small to pay the costs.",
+   "src": "memory: order-book"
+  },
+  {
+   "id": "funding-dvol-cot",
+   "fam": "marche",
+   "status": "rejected",
+   "evidence": "backtest",
+   "title_fr": "Financement, volatilité implicite, positions COT",
+   "title_en": "Funding, implied volatility, COT positioning",
+   "plain_fr": "Trois sources de données hors prix testées pour prévoir la direction.",
+   "plain_en": "Three non-price data sources tested to forecast direction.",
+   "verdict_fr": "Aucune ne tient hors échantillon.",
+   "verdict_en": "None holds out of sample.",
+   "src": "memory: funding, DVOL, COT"
+  }
+ ]
+}

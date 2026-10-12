@@ -2815,6 +2815,17 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div id="aic-t" style="display:flex;gap:6px;margin-top:12px"></div>
  <div id="aic-n" style="font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.45"></div>
 </div>
+<!-- 2026-10-12 (owner): the door to the "Strategies" space (Strategie members and the admin) -->
+<div class="panel" id="stcard" role="link" tabindex="0" style="display:none;margin-top:12px;cursor:pointer" onclick="location.href=B+'strategies'" onkeydown="if(event.key==='Enter')location.href=B+'strategies'">
+ <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+  <div class="lbl" id="stc-ey">Strat&eacute;gies</div>
+  <span style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="stc-gt">Tout voir</span>
+   <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
+ <div id="stc-h" style="font-size:1.08rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
+ <div id="stc-b" style="display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;margin-top:12px;background:var(--tile-bg)"></div>
+ <div id="stc-l" style="display:flex;gap:6px 12px;flex-wrap:wrap;margin-top:10px;font-size:.78rem;color:var(--text2)"></div>
+ <div id="stc-n" style="font-size:.8rem;color:var(--text2);margin-top:10px;line-height:1.45"></div>
+</div>
 </div>
 <div class="tab" id="tab-marche">
 <!-- 2026-09-28 (owner): two spaces, one switch - the MARKET (what the
@@ -7350,6 +7361,20 @@ function aiPaint(){const j=window._aiJ,el=document.getElementById('aicard');if(!
  el.onclick=canLab?go:null;el.onkeydown=canLab?(e=>{if(e.key==='Enter')go();}):null;
  el.style.display='';}
 setTimeout(()=>{try{loadAI();}catch(e){}},1700);
+// 2026-10-12 (owner): the Strategies door - counts by status + the next date
+async function loadStratCard(){const el=document.getElementById('stcard');if(!el)return;
+ if(!(typeof labVisible==='function'&&labVisible())){el.style.display='none';return;}
+ try{const r=await fetch(B+'strategies_data?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j.err)return;
+  const en=LANG()==='en',$=id=>document.getElementById(id),c=j.counts||{},N=(j.items||[]).length;
+  const S=[['live','var(--up)','en direct','live'],['trial','var(--accent)','en essai','in trial'],['study','#a78bfa','à l’étude','studied'],['ready','var(--warn)','validées','validated'],['not_started','var(--muted)','à venir','not started'],['rejected','var(--down)','écartées','rejected']].filter(s=>c[s[0]]);
+  $('stc-ey').textContent=en?'Strategies':'Stratégies';$('stc-gt').textContent=en?'See all':'Tout voir';
+  $('stc-h').textContent=en?(N+' strategies tracked, from idea to real money'):(N+' stratégies suivies, de l’idée à l’argent réel');
+  $('stc-b').innerHTML=S.map(s=>'<i style="flex:'+c[s[0]]+';background:'+s[1]+'"></i>').join('');
+  $('stc-l').innerHTML=S.map(s=>'<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:50%;background:'+s[1]+'"></i><b style="color:var(--text)">'+c[s[0]]+'</b> '+(en?s[3]:s[2])+'</span>').join('');
+  const n=(j.next||[])[0];
+  $('stc-n').textContent=n?((en?'Next: ':'Prochain rendez-vous : ')+(en?n.en:n.fr).toLowerCase()+(en?' of ':' de ')+'« '+(en?n.title_en:n.title_fr)+' », '+n.date.slice(8,10)+'/'+n.date.slice(5,7)+'.'):'';
+  el.style.display='';}catch(e){}}
+setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
  el.style.display='none';return;
@@ -10837,6 +10862,253 @@ def scanner_payload(detail):
     return {"state": st, "results": res, "recent": [{k: t.get(k) for k in keep} for t in recent],
             "detail": bool(detail), "fwd_since": started, "fwd_model": "v3-quote", "missed": missed,
             "pocket_rule": {"start": TEST_POCKET_START, "risk": TEST_POCKET_RISK}}
+
+
+_STRAT_CACHE = {}
+TREND_RULE_T = 1791647710      # 2026-10-10 15:55 UTC: the trend-following rule went live
+
+
+def _strat_stats(T, bal0):
+    """one account's (or one market's) numbers from worker trade rows [t_close, net, lot, side, minutes, sym]"""
+    n = len(T)
+    if not n:
+        return {"n": 0}
+    P = [float(x[1]) for x in T]
+    W = [p for p in P if p > 0]; gw = sum(W); gl = -sum(p for p in P if p <= 0)
+    c = pk = 0.0; dd = 0.0; ls = mls = 0; curve = [0.0]
+    for p in P:
+        c += p; pk = max(pk, c); dd = max(dd, pk - c); curve.append(round(c, 2))
+        ls = ls + 1 if p <= 0 else 0; mls = max(mls, ls)
+    if len(curve) > 80:
+        st = len(curve) / 80.0
+        curve = [curve[int(i * st)] for i in range(80)] + [curve[-1]]
+    out = {"n": n, "net": round(gw - gl, 2), "wr": round(100.0 * len(W) / n, 1), "pf": round(gw / gl, 2) if gl > 0 else None,
+           "avg": round((gw - gl) / n, 2), "best": round(max(P), 2), "worst": round(min(P), 2), "dd": round(dd, 2),
+           "dd_pct": round(100 * dd / bal0, 1) if bal0 else None, "ret": round(100 * (gw - gl) / bal0, 1) if bal0 else None,
+           "streak": mls, "first": int(T[0][0]), "last": int(T[-1][0]), "curve": curve}
+    mins = [float(x[4]) for x in T if len(x) > 4 and x[4] not in (None, "")]
+    if mins:
+        out["hold_min"] = round(sorted(mins)[len(mins) // 2])
+    return out
+
+
+def _strat_sym(x):
+    s = str(x[5] if len(x) > 5 and x[5] else "BTCUSD").upper()
+    return s[:-1] if s.endswith("M") and len(s) > 4 else s
+
+
+def _strat_breakdowns(T):
+    """by market, by side, by time of day (UTC, 4-hour blocks), by week - the 'where does it work' cuts"""
+    def sm(rows):
+        P = [float(x[1]) for x in rows]
+        W = [p for p in P if p > 0]; gl = -sum(p for p in P if p <= 0)
+        return {"n": len(P), "net": round(sum(P), 2), "wr": round(100.0 * len(W) / len(P), 1) if P else None,
+                "pf": round(sum(W) / gl, 2) if gl > 0 else None}
+    g = {}
+    for x in T:
+        g.setdefault(("sym", _strat_sym(x)), []).append(x)
+        g.setdefault(("side", "buy" if int(x[3] or 0) > 0 else "sell"), []).append(x)
+        h = datetime.fromtimestamp(int(x[0]), tz=timezone.utc).hour
+        g.setdefault(("hour", "%02d-%02d" % (h // 4 * 4, h // 4 * 4 + 4)), []).append(x)
+        d = datetime.fromtimestamp(int(x[0]), tz=timezone.utc)
+        g.setdefault(("week", (d - timedelta(days=d.weekday())).strftime("%Y-%m-%d")), []).append(x)
+    out = {"sym": {}, "side": {}, "hour": {}, "week": {}}
+    for (k, v), rows in g.items():
+        out[k][v] = sm(rows)
+    return out
+
+
+def _strat_account_label(u, i, detail):
+    if u.get("reference"):
+        return {"fr": "Compte de référence", "en": "Reference account"}
+    if u.get("id") == "u224016179":
+        return {"fr": "Compte témoin", "en": "Witness account"}
+    if u.get("public"):
+        return {"fr": "Compte démo public", "en": "Public demo account"}
+    if detail:
+        nm = str(u.get("name") or u.get("id"))
+        return {"fr": nm, "en": nm}
+    L = "ABCDEFGHIJ"[i % 10]
+    return {"fr": "Compte " + L, "en": "Account " + L}
+
+
+def strategies_payload(detail):
+    """2026-10-12 (owner, "Stratégies"): every strategy the nest has run, is running, tests or rejected,
+    in ONE catalog. Live numbers come from the same files the other pages read (worker wealth files,
+    lab/proof_current.json, the scanner, the lab registry); the research history from
+    live/strategies/registry.json. Nothing new is measured here - this page only gathers."""
+    key = "d" if detail else "m"
+    c = _STRAT_CACHE.get(key)
+    if c and time.time() - c[0] < 120:
+        return c[1]
+    S = []
+    now = int(time.time())
+    try:
+        PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        PK = {"accounts": {}, "packages": {}}
+    # ---------- 1. the Owl (BOS + trend) on every account that runs it ----------
+    accts, allT, allT_after, fresh = [], [], [], None
+    i = 0
+    for u in users():
+        uid = u.get("id")
+        try:
+            w = json.load(open(os.path.join(DIR, "nest_data", "%s.wealth.json" % uid), encoding="utf-8"))
+        except Exception:
+            continue
+        T = sorted([x for x in (w.get("trades") or []) if isinstance(x, list) and len(x) >= 5], key=lambda x: x[0])
+        real = "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None
+        bal0 = float(w.get("bal_start") or 0)
+        if bal0 <= 0:   # the era began before the first deposit: the start is that deposit
+            bal0 = next((float(f[1]) for f in (w.get("flows") or []) if float(f[1]) > 0), 0.0)
+        if uid == "fresh":
+            fresh = (u, w, T, bal0)
+            continue
+        lab = _strat_account_label(u, i, detail)
+        if not (u.get("reference") or uid == "u224016179" or u.get("public")):
+            i += 1
+        pk = (PK.get("accounts") or {}).get(uid)
+        pkl = ((PK.get("packages") or {}).get(pk) or {}).get("label") if pk else None
+        a = {"id": uid if detail else "a%d" % len(accts), "label": lab, "real": real,
+             "kind": "semi" if u.get("mode") == "semi" else ("reference" if u.get("reference") else ("witness" if uid == "u224016179" else "auto")),
+             "since": u.get("era_start"), "balance": w.get("balance"), "bal0": bal0, "currency": w.get("currency") or "USD",
+             "package": (pkl or pk) if detail else None,
+             "all": _strat_stats(T, bal0), "after": _strat_stats([x for x in T if x[0] >= TREND_RULE_T], bal0),
+             "cuts": _strat_breakdowns(T)}
+        accts.append(a)
+        allT += T
+        allT_after += [x for x in T if x[0] >= TREND_RULE_T]
+    allT.sort(key=lambda x: x[0])
+    rp = rentabilite_payload()
+    bt = None
+    t = rp.get("test") or {}
+    try:
+        R = (t.get("rows") or {}).get("0.35") or {}
+        def _bt(rw):
+            if not rw:
+                return None
+            return {k: rw.get(k) for k in ("net", "trades", "wins", "win_rate", "profit_factor", "cc_dd", "first_half", "later_half", "curve", "max_loss_streak")}
+        bt = {"today": _bt(R.get("today")), "no_filter": _bt(R.get("no_filter")), "days": t.get("days"), "balance": t.get("balance"),
+              "window": t.get("window_utc"), "current": t.get("rules_current"), "rebuilt_at": t.get("rebuilt_at")}
+    except Exception:
+        bt = None
+    pos = sum(1 for a in accts if (a["all"].get("net") or 0) > 0)
+    owl_cuts = _strat_breakdowns(allT)
+    S.append({"id": "owl", "fam": "structure", "status": "live", "evidence": "real", "flag": True,
+              "title_fr": "L'Owl — cassure de structure dans la tendance", "title_en": "The Owl — structure break with the trend",
+              "plain_fr": "Le robot entre à la clôture d'une bougie au-delà d'une cassure de structure, seulement dans le sens de la tendance de fond. Un objectif à 0,8 fois le risque, des freins de marché, et un système de rattrapage après les pertes.",
+              "plain_en": "The robot enters at a candle close beyond a structure break, only with the background trend. A target at 0.8 times the risk, market brakes, and a catch-up system after losses.",
+              "since": "2026-09-08", "markets": ["BTCUSD"],
+              "accounts": accts, "accounts_pos": pos,
+              "total": _strat_stats(allT, 0), "total_after": _strat_stats(sorted(allT_after, key=lambda x: x[0]), 0),
+              "cuts": owl_cuts, "backtest": bt, "witness": landing_payload().get("witness"),
+              "rules": rp.get("rules") or [], "trend_rule_t": TREND_RULE_T,
+              "verdict": (rp.get("verdict") or {}).get("overall")})
+    # ---------- 2. FRESH-H1 harvest (demo, BTC + ETH) ----------
+    if fresh:
+        u, w, T, bal0 = fresh
+        S.append({"id": "fresh", "fam": "structure", "status": "trial", "evidence": "demo",
+                  "title_fr": "Retournement frais H1", "title_en": "Fresh H1 reversal",
+                  "plain_fr": "Un autre robot : il prend un retournement tout frais en H1, seulement dans les deux premiers cycles. Il tourne sur un compte démo, sur le Bitcoin et l'Ether.",
+                  "plain_en": "Another robot: it takes a fresh H1 reversal, only in the first two cycles. It runs on a demo account, on Bitcoin and Ether.",
+                  "since": u.get("era_start", "")[:10], "markets": sorted({_strat_sym(x) for x in T}),
+                  "accounts": [{"id": "fresh" if detail else "f0", "label": {"fr": "Compte d'essai (démo)", "en": "Trial account (demo)"}, "real": False,
+                                "kind": "auto", "since": u.get("era_start"), "balance": w.get("balance"), "bal0": bal0,
+                                "currency": w.get("currency") or "USD", "all": _strat_stats(T, bal0), "after": {"n": 0},
+                                "cuts": _strat_breakdowns(T)}],
+                  "total": _strat_stats(T, bal0), "cuts": _strat_breakdowns(T),
+                  "verdict_fr": "Premier résultat confirmé de la recherche (bat le hasard dans 8 cases sur 8 sur le passé) ; ici, il est suivi en démo.",
+                  "verdict_en": "The research's first confirmed result (beat random entries in 8 of 8 cells on past data); here it is followed on demo."})
+    # ---------- 3. the same robot on other markets (the scanner, virtual) ----------
+    try:
+        sc = scanner_payload(False)
+        pw = {}
+        try:
+            pw = json.load(open(os.path.join(DIR, "scanner", "protocol_window.json"), encoding="utf-8"))
+        except Exception:
+            pass
+        mk = []
+        for row in (sc.get("state") or {}).get("symbols") or []:
+            s = row.get("sym"); r = (sc.get("results") or {}).get(s) or {}
+            b = r.get("bt") or {}
+            mk.append({"sym": s, "name": row.get("name") or s, "cat": row.get("cat"), "status": row.get("status"),
+                       "corr": row.get("corr_btc"), "bt": {k: b.get(k) for k in ("n", "wr", "pf", "avg_r", "sum_r", "days")} if b else None,
+                       "fwd": r.get("fwd") or {"n": 0}, "pocket": r.get("pocket"),
+                       "open": bool(row.get("open"))})
+        st0, en0 = pw.get("start"), pw.get("end")
+        S.append({"id": "scanner", "fam": "marches", "status": "trial", "evidence": "virtual",
+                  "title_fr": "L'Owl sur d'autres marchés", "title_en": "The Owl on other markets",
+                  "plain_fr": "Les mêmes règles que le robot, appliquées à l'or, aux indices, au pétrole et aux devises — en trades virtuels seulement. Le but : trouver des marchés qui ne bougent pas comme le Bitcoin.",
+                  "plain_en": "The robot's same rules, applied to gold, indices, oil and currencies — virtual trades only. The aim: find markets that do not move like Bitcoin.",
+                  "since": "2026-10-11", "markets": [m["sym"] for m in mk if m["sym"] != "BTCUSD"], "mk": mk,
+                  "protocol": {"name": pw.get("protocol"), "start": st0, "end": en0, "primary": ["USTEC", "XAUUSD"], "need": 100,
+                               "days": 42, "elapsed": round(max(0, min(now, en0 or now) - (st0 or now)) / 86400.0, 1) if st0 else None},
+                  "pocket_rule": sc.get("pocket_rule"), "max_corr": (sc.get("state") or {}).get("max_corr")})
+    except Exception:
+        pass
+    # ---------- 4. the lab's ideas (lab/registry.json) + the twins' live numbers ----------
+    MAP = {"deployed": "live", "candidate": "ready", "forward": "trial", "observation": "study", "idea": "not_started", "rejected": "rejected"}
+    try:
+        L = lab_payload()
+        tw = {x.get("id"): x for x in (L.get("twins") or [])}
+        e017 = L.get("e017") or {}
+        for it in L.get("items") or []:
+            st = MAP.get(it.get("status"), "study")
+            x = {"id": it.get("id"), "fam": it.get("family"), "status": st, "src_kind": "lab",
+                 # how it was PROVEN: a rule now in the robot was validated on past data (the robot's own
+                 # real-money numbers belong to the Owl, not to each of its parts)
+                 "evidence": "virtual" if st == "trial" else ("idea" if st == "not_started" else "backtest"),
+                 "title_fr": it.get("title_fr"), "title_en": it.get("title_en"),
+                 "plain_fr": it.get("note_fr") or "", "plain_en": it.get("note_en") or "",
+                 "verdict_fr": it.get("nums_fr") or "", "verdict_en": it.get("nums_en") or "",
+                 "grade": it.get("verdict"), "since": it.get("date"), "in_robot": it.get("robot") == "oui"}
+            if st == "live":
+                x["parent"] = "owl"
+            tid = (it.get("id") or "").replace("twin_", "")
+            if tid in tw:
+                x["twin"] = {k: tw[tid].get(k) for k in ("trades", "wins", "win", "net", "rolling20", "alive", "started", "status")}
+            if it.get("id") == "twin_touch" and L.get("twin"):
+                x["twin"] = {k: L["twin"].get(k) for k in ("trades", "wins", "win", "net", "rolling20", "curve")}
+                x["twin"]["alive"] = bool(L["twin"].get("last") and now - int(L["twin"]["last"]) < 3 * 86400)
+            if it.get("id") == "e017" and e017:
+                x["progress"] = {"have": e017.get("events"), "need": e017.get("need") or 30, "unit_fr": "événements", "unit_en": "events"}
+            S.append(x)
+    except Exception:
+        pass
+    # ---------- 5. the hand-kept research catalog ----------
+    try:
+        for it in json.load(open(os.path.join(DIR, "strategies", "registry.json"), encoding="utf-8")).get("items") or []:
+            x = dict(it); x["src_kind"] = "registry"
+            if x.get("status") == "validated":
+                x["status"] = "ready"
+            if x.get("status") == "live":
+                x["parent"] = "owl"
+            if not detail:
+                x.pop("src", None)
+            S.append(x)
+    except Exception:
+        pass
+    if not detail:
+        for x in S:
+            x.pop("src", None)
+    cnt = {}
+    for x in S:
+        cnt[x["status"]] = cnt.get(x["status"], 0) + 1
+    # upcoming dates (studies, verdicts) for the hero
+    nxt = []
+    for x in S:
+        for n in x.get("next") or []:
+            if n.get("date") and n["date"] >= datetime.now(timezone.utc).strftime("%Y-%m-%d"):
+                nxt.append({"date": n["date"], "id": x["id"], "fr": n.get("fr"), "en": n.get("en"), "title_fr": x.get("title_fr"), "title_en": x.get("title_en")})
+    for x in S:
+        p = x.get("protocol")
+        if p and p.get("end"):
+            nxt.append({"date": datetime.fromtimestamp(p["end"], tz=timezone.utc).strftime("%Y-%m-%d"), "id": x["id"], "fr": "Verdict", "en": "Verdict",
+                        "title_fr": x.get("title_fr"), "title_en": x.get("title_en")})
+    nxt.sort(key=lambda n: n["date"])
+    out = {"updated": now, "detail": bool(detail), "items": S, "counts": cnt, "next": nxt[:6]}
+    _STRAT_CACHE[key] = (time.time(), out)
+    return out
 
 
 def ai_pulse():
@@ -16637,6 +16909,19 @@ class H(BaseHTTPRequestHandler):
             try:
                 _det = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub in ("strategies", "strategies_data"):
+            # 2026-10-12 (owner): "Strategies" - every strategy in one catalog. Strategie members and the
+            # admin only (the numbers per account and the research are the Strategie offer)
+            _sd = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
+            try:
+                if sub == "strategies":
+                    self._send(open(os.path.join(DIR, "owl_strategies_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+                elif not _sd:
+                    self._send(json.dumps({"err": "strategy"}), "application/json")
+                else:
+                    self._send(json.dumps(strategies_payload(is_admin(user) or admin_cookie_ok(self.headers))), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "ai_pulse":
