@@ -11346,6 +11346,158 @@ def robots_payload(detail):
     return out
 
 
+# ---- 2026-10-12 (owner): the robot builder (live/robots/robots.json, tested by study/robot_runner.py) ----
+ROBOT_REG = os.path.join(DIR, "robots", "robots.json")
+ROBOT_MAX_PER_USER = 12
+
+
+def robot_reg():
+    try:
+        return json.load(open(ROBOT_REG, encoding="utf-8"))
+    except Exception:
+        return {"parts": {}, "robots": []}
+
+
+def robot_resolve(rid, robots, seen=None):
+    seen = seen or set()
+    r = robots.get(rid)
+    if r is None or rid in seen:
+        return {}
+    seen.add(rid)
+    out = robot_resolve(r.get("parent"), robots, seen) if r.get("parent") else {}
+    for k, v in (r.get("parts") or {}).items():
+        out[k] = v
+    return out
+
+
+def robot_runner_kick():
+    """test the queued robots now, in the background, unless a run is already going"""
+    try:
+        lk = os.path.join(DIR, "robots", "runner.lock")
+        if os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 3 * 3600:
+            return
+        import subprocess
+        st = os.path.join(os.path.dirname(DIR), "study")
+        subprocess.Popen(["pythonw", "robot_runner.py"], cwd=st, creationflags=0x08000000)
+    except Exception:
+        pass
+
+
+def builder_payload(user, detail):
+    """the builder side of the Robots view: the parts, the composed robots (with their test result
+    against their parent), and where the main robot is plugged (one line per account)"""
+    reg = robot_reg()
+    me = user.get("id")
+    R = [r for r in reg.get("robots") or [] if detail or r.get("by") in ("owner", "claude", "chercheur") or r.get("by_uid") == me]
+    byid = {r["id"]: r for r in reg.get("robots") or []}
+    out = []
+    for r in R:
+        x = {k: v for k, v in r.items() if k not in ("by_uid",)}
+        x["resolved"] = robot_resolve(r["id"], byid)
+        x["mine"] = r.get("by_uid") == me
+        try:
+            if r.get("id") == "owl-choch" and r.get("result"):
+                j = json.load(open(os.path.join(os.path.dirname(DIR), r["result"]), encoding="utf-8"))
+                row = (j.get("rows") or {}).get("0.35") or {}
+                x["test"] = {"robot": row.get("owner_robot"), "parent_result": row.get("today"), "days": j.get("days"), "window_utc": j.get("window_utc"),
+                             "parts_only": {"exit": row.get("exit_choch"), "recovery": row.get("money_all_bos"), "no_stop": row.get("owner_no_stop")}}
+            else:
+                j = json.load(open(os.path.join(DIR, "robots", "results", r["id"] + ".json"), encoding="utf-8"))
+                x["test"] = {"robot": j.get("robot"), "parent_result": j.get("parent_result"), "days": j.get("days"), "window_utc": j.get("window_utc")}
+        except Exception:
+            x["test"] = None
+        if x.get("test"):
+            for k in ("robot", "parent_result"):
+                if x["test"].get(k):
+                    x["test"][k] = {kk: vv for kk, vv in x["test"][k].items() if kk != "pnls"}
+        out.append(x)
+    try:
+        PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        PK = {"accounts": {}}
+    plugs = []
+    i = 0
+    for u in users():
+        uid = u.get("id")
+        pk = (PK.get("accounts") or {}).get(uid)
+        if not pk:
+            continue
+        lab, alive, why = bot_on(uid)
+        nm = ROBOT_NAMES.get(pk, (pk, pk))
+        plugs.append({"account": _strat_account_label(u, i, detail), "robot": "owl", "money": "pkg-" + pk, "money_fr": nm[0], "money_en": nm[1],
+                      "market": "BTCUSD", "alive": (bool(alive) if lab else None),
+                      "real": "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None})
+        if not (u.get("reference") or uid == "u224016179" or u.get("public")):
+            i += 1
+    return {"parts": reg.get("parts") or {}, "robots": out, "plugs": plugs, "can_create": True,
+            "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
+
+
+def robot_create(user, body):
+    """a new robot from the builder: a parent + the parts it replaces + a name; queued for its test"""
+    import re as _re
+    reg = robot_reg()
+    parts_ok = reg.get("parts") or {}
+    rob = reg.get("robots") or []
+    me = user.get("id")
+    if sum(1 for r in rob if r.get("by_uid") == me) >= ROBOT_MAX_PER_USER and not is_admin(user):
+        return {"ok": False, "err": "limit"}
+    name = str(body.get("name") or "").strip()[:40]
+    if len(name) < 2:
+        return {"ok": False, "err": "name"}
+    parent = str(body.get("parent") or "owl")
+    if parent not in {r["id"] for r in rob}:
+        return {"ok": False, "err": "parent"}
+    P = body.get("parts") or {}
+    clean = {}
+    ents = {p["id"] for p in parts_ok.get("entry") or []}
+    exs = {p["id"]: p for p in parts_ok.get("exit") or []}
+    recs = {p["id"] for p in parts_ok.get("recovery") or []}
+    if P.get("entry"):
+        if P["entry"] not in ents:
+            return {"ok": False, "err": "entry"}
+        clean["entry"] = P["entry"]
+    if P.get("exit"):
+        ex = P["exit"] if isinstance(P["exit"], dict) else {"id": P["exit"]}
+        if ex.get("id") not in exs:
+            return {"ok": False, "err": "exit"}
+        e2 = {"id": ex["id"]}
+        if ex["id"] == "target":
+            rr = float(ex.get("rr") or 0.8)
+            if rr not in (exs["target"].get("dial") or {}).get("rr", [0.8]):
+                return {"ok": False, "err": "rr"}
+            e2["rr"] = rr
+        clean["exit"] = e2
+    if P.get("recovery"):
+        if P["recovery"] not in recs:
+            return {"ok": False, "err": "recovery"}
+        clean["recovery"] = P["recovery"]
+    if P.get("money"):
+        try:
+            pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("packages") or {}
+        except Exception:
+            pk = {}
+        if P["money"] not in pk:
+            return {"ok": False, "err": "money"}
+        clean["money"] = P["money"]
+    if not clean:
+        return {"ok": False, "err": "same"}
+    base = _re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:24] or "robot"
+    rid, n = base, 2
+    ids = {r["id"] for r in rob}
+    while rid in ids:
+        rid = "%s-%d" % (base, n); n += 1
+    rob.append({"id": rid, "name_fr": name, "name_en": name, "parent": parent, "parts": clean,
+                "by": "owner" if is_admin(user) else "member", "by_uid": me,
+                "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "stage": "queued"})
+    reg["robots"] = rob
+    tmp = ROBOT_REG + ".tmp"
+    json.dump(reg, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, ROBOT_REG)
+    robot_runner_kick()
+    return {"ok": True, "id": rid}
+
+
 def team_payload():
     """the lab's AI team in one read: the chercheur, the constructeur, the critic, the watcher, and the
     night run's health - everything the old Labo tab had that the Strategies/Robots spaces do not."""
@@ -15064,6 +15216,18 @@ class H(BaseHTTPRequestHandler):
                                        "err": "compte demo: lecture seule"}),
                            "application/json")
                 return
+        # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
+        if len(_parts) == 2 and _parts[1] == "robot_create":
+            _ru = user_by_token(_parts[0])
+            if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
+                self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
+                return
+            try:
+                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 4000)).decode("utf-8", "replace") or "{}")
+                self._send(json.dumps(robot_create(_ru, _rb)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
+            return
         # token-gated user actions (2026-09-05 user): pause the robot's
         # trading on THIS account / delete the account from the bot.
         if len(_parts) == 2 and _parts[1] == "set_goal":
@@ -17188,7 +17352,9 @@ class H(BaseHTTPRequestHandler):
                 elif not _sd:
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                 elif sub == "robots_data":
-                    self._send(json.dumps(robots_payload(is_admin(user) or admin_cookie_ok(self.headers))), "application/json")
+                    _dd = is_admin(user) or admin_cookie_ok(self.headers)
+                    _ro = dict(robots_payload(_dd)); _ro["builder"] = builder_payload(user, _dd)
+                    self._send(json.dumps(_ro), "application/json")
                 elif sub == "team_data":
                     self._send(json.dumps(team_payload()), "application/json")
                 else:

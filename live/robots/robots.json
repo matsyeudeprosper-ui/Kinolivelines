@@ -1,0 +1,37 @@
+{
+ "about": "2026-10-12 (owner): the robot builder. A robot = the EYES (the nest's market-structure reading: swings, BOS, CHoCH, the pullback chart - shared by every robot, never swapped) + an ENTRY + an EXIT + a MONEY part. A robot can inherit from another (parent) and replace any part, or borrow parts from several robots. A new robot is first tested on past ticks (study/robot_runner.py), then runs as a twin without money, then on demo; plugging it onto a real account or another market is the owner's decision. Plugs (which robot runs where) live in owl_packages.json 'accounts' today, all on BTCUSD.",
+ "parts": {
+  "entry": [
+   {"id": "owl_bos", "status": "live", "fr": "Cassure dans la tendance", "en": "Break with the trend",
+    "plain_fr": "Entre à la clôture d'une bougie au-delà d'une cassure de structure (BOS ou CHoCH), seulement dans le sens de la tendance de fond et au-delà de sa dernière cassure.",
+    "plain_en": "Enters at the close of a candle beyond a structure break (BOS or CHoCH), only with the background trend and beyond its last break."}
+  ],
+  "exit": [
+   {"id": "target", "status": "live", "fr": "Objectif fixe", "en": "Fixed target", "dial": {"rr": [0.6, 0.8, 1.0, 1.5, 2.0]},
+    "plain_fr": "Ferme à un objectif de N fois le risque, ou au stop placé sur le point protégé.",
+    "plain_en": "Closes at a target of N times the risk, or at the stop on the protected point."},
+   {"id": "choch", "status": "backtest", "fr": "Sortie au CHoCH", "en": "CHoCH exit",
+    "plain_fr": "Pas d'objectif : le trade reste ouvert jusqu'à ce que la structure change de sens contre lui (un CHoCH), à la clôture de la bougie. Le stop sur le point protégé reste comme filet de sécurité.",
+    "plain_en": "No target: the trade stays open until the structure changes direction against it (a CHoCH), at the candle close. The stop on the protected point stays as a safety net."}
+  ],
+  "recovery": [
+   {"id": "current", "status": "live", "fr": "Rattrapage limité", "en": "Limited catch-up",
+    "plain_fr": "Après une perte : le changement de sens, puis un seul trade de plus dans le même sens.",
+    "plain_en": "After a loss: the change of direction, then only one more trade the same way."},
+   {"id": "all_bos", "status": "backtest", "fr": "Rattrapage sans limite", "en": "Unlimited catch-up",
+    "plain_fr": "Après une perte : chaque cassure (BOS) peut être prise, sans limite de nombre.",
+    "plain_en": "After a loss: every break (BOS) may be taken, no limit on the number."}
+  ]
+ },
+ "robots": [
+  {"id": "owl", "name_fr": "L'Owl", "name_en": "The Owl", "parent": null, "by": "owner", "created": "2026-09-08", "stage": "real",
+   "parts": {"entry": "owl_bos", "exit": {"id": "target", "rr": 0.8}, "recovery": "current", "money": "base"},
+   "plain_fr": "Le robot principal : il tourne sur tous les comptes, avec une version d'argent par compte.",
+   "plain_en": "The main robot: it runs on every account, with one money version per account."},
+  {"id": "owl-choch", "name_fr": "Owl CHoCH", "name_en": "Owl CHoCH", "parent": "owl", "by": "owner", "created": "2026-10-12", "stage": "tested",
+   "parts": {"exit": {"id": "choch"}, "recovery": "all_bos"},
+   "plain_fr": "L'Owl, mais il ne sort qu'au CHoCH, et rattrape sur chaque cassure.",
+   "plain_en": "The Owl, but it only exits on a CHoCH, and catches up on every break.",
+   "result": "study/robot_choch_exit.json"}
+ ]
+}
