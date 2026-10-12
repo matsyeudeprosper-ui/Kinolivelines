@@ -2818,7 +2818,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <!-- 2026-10-12 (owner): the door to the "Strategies" space (Strategie members and the admin) -->
 <div class="panel" id="stcard" role="link" tabindex="0" style="display:none;margin-top:12px;cursor:pointer" onclick="location.href=B+'strategies'" onkeydown="if(event.key==='Enter')location.href=B+'strategies'">
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-  <div class="lbl" id="stc-ey">Strat&eacute;gies</div>
+  <div class="lbl" id="stc-ey">Le labo</div>
   <span style="font-size:.74rem;font-weight:700;color:var(--accent-soft);display:inline-flex;align-items:center;gap:2px;white-space:nowrap"><span id="stc-gt">Tout voir</span>
    <svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></span></div>
  <div id="stc-h" style="font-size:1.08rem;font-weight:700;color:var(--text);margin-top:10px;line-height:1.35"></div>
@@ -4560,7 +4560,11 @@ window.addEventListener('load',()=>{
 });
 function labAllowed(){const d=window._d||{};return !!(d.is_master||TIER()==='strategy');}
 function labVisible(){const d=window._d||{};return !d.public;}
-function mxView(v,quiet){v=(v==='robot')?'robot':(v==='scan'?'scan':(v==='lab'&&labVisible()?'lab':'market'));
+function mxView(v,quiet){
+ // 2026-10-12 (owner): the old Labo board is replaced by the Labo space (Strategies, Robots, AI team);
+ // members who have it go there, the others keep the teaser below
+ if(v==='lab'&&labAllowed()){if(quiet)v='market';else{location.href=B+'strategies';return;}}
+ v=(v==='robot')?'robot':(v==='scan'?'scan':(v==='lab'&&labVisible()?'lab':'market'));
  const m=document.getElementById('mx-market'),r=document.getElementById('mx-robot'),l=document.getElementById('mx-lab'),sc=document.getElementById('mx-scan');if(!m||!r)return;
  m.style.display=v==='market'?'':'none';r.style.display=v==='robot'?'':'none';if(l)l.style.display=v==='lab'?'':'none';if(sc)sc.style.display=v==='scan'?'':'none';
  if(v==='lab'){window._labT=0;loadLab(window._d||{});}
@@ -7356,7 +7360,7 @@ function aiPaint(){const j=window._aiJ,el=document.getElementById('aicard');if(!
  $('aic-t').innerHTML=tile('trades',c.n)+tile(en?'won':'gagnés',pc(c.win),better==null?null:(better>=0?'var(--up-soft)':'var(--down-soft)'))+tile(en?'the others':'les autres',pc(c.rest_win));
  $('aic-n').textContent=(c.n<30)?(en?('A question the AI put to the real trades. '+(30-c.n)+' more trades before it can be read: under 30, a number can still be luck.'):('Une question que l’IA pose aux vrais trades. Encore '+(30-c.n)+' trades avant de pouvoir conclure : sous 30, un chiffre peut être de la chance.'))
   :(en?'A question the AI put to the real trades, against all the others.':'Une question que l’IA pose aux vrais trades, contre tous les autres.');
- const canLab=typeof labVisible==='function'&&labVisible(),go=()=>{tab('marche',document.getElementById('tb-marche'));mxView('lab');};
+ const canLab=typeof labVisible==='function'&&labVisible(),go=()=>{if(labAllowed()){location.href=B+'equipe';return;}tab('marche',document.getElementById('tb-marche'));mxView('lab');};
  $('aic-go').style.display=canLab?'':'none';el.style.cursor=canLab?'pointer':'default';
  el.onclick=canLab?go:null;el.onkeydown=canLab?(e=>{if(e.key==='Enter')go();}):null;
  el.style.display='';}
@@ -7367,8 +7371,8 @@ async function loadStratCard(){const el=document.getElementById('stcard');if(!el
  try{const r=await fetch(B+'strategies_data?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j.err)return;
   const en=LANG()==='en',$=id=>document.getElementById(id),c=j.counts||{},N=(j.items||[]).length;
   const S=[['live','var(--up)','en direct','live'],['trial','var(--accent)','en essai','in trial'],['study','#a78bfa','à l’étude','studied'],['ready','var(--warn)','validées','validated'],['not_started','var(--muted)','à venir','not started'],['rejected','var(--down)','écartées','rejected']].filter(s=>c[s[0]]);
-  $('stc-ey').textContent=en?'Strategies':'Stratégies';$('stc-gt').textContent=en?'See all':'Tout voir';
-  $('stc-h').textContent=en?(N+' strategies tracked, from idea to real money'):(N+' stratégies suivies, de l’idée à l’argent réel');
+  $('stc-ey').textContent=en?'The lab':'Le labo';$('stc-gt').textContent=en?'See all':'Tout voir';
+  $('stc-h').textContent=en?(N+' strategies, the robots that run them and the AI team at work'):(N+' stratégies, les robots qui les font tourner et l’équipe IA au travail');
   $('stc-b').innerHTML=S.map(s=>'<i style="flex:'+c[s[0]]+';background:'+s[1]+'"></i>').join('');
   $('stc-l').innerHTML=S.map(s=>'<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:7px;height:7px;border-radius:50%;background:'+s[1]+'"></i><b style="color:var(--text)">'+c[s[0]]+'</b> '+(en?s[3]:s[2])+'</span>').join('');
   const n=(j.next||[])[0];
@@ -11109,6 +11113,268 @@ def strategies_payload(detail):
     out = {"updated": now, "detail": bool(detail), "items": S, "counts": cnt, "next": nxt[:6]}
     _STRAT_CACHE[key] = (time.time(), out)
     return out
+
+
+# 2026-10-12 (owner, "le labo des robots"): a ROBOT = the strategy's code + a package of settings
+# (owl_packages.json, with inheritance) + the accounts that run it. Paper twins, the virtual scanner,
+# the hourly Harvest robot and the Signal robot are robots too. Names below are generic on purpose
+# (package labels carry member names).
+ROBOT_NAMES = {
+    "base": ("Owl Standard", "Owl Standard", "Le modèle dont tous les autres héritent.", "The model every other one inherits from."),
+    "valere": ("Owl 3 $ par jour", "Owl $3 a day", "S'arrête pour la journée après 3 $ de gain.", "Stops for the day after $3 of gain."),
+    "valere_cap3": ("Owl plafonné", "Owl capped", "3 $ par jour, et jamais plus de 3 % du solde en risque sur un trade.", "$3 a day, and never more than 3 % of the balance at risk on one trade."),
+    "valere_cap3_eqhalf": ("Owl prudent", "Owl careful", "Plafonné, et taille réduite de moitié quand les résultats du compte baissent.", "Capped, and half size while the account's results go down."),
+    "special": ("Owl Spécial", "Owl Special", "Les freins par défaut, sans objectif du jour.", "Default brakes, no daily target."),
+    "special_10": ("Owl Spécial 3 $", "Owl Special $3", "Comme le Spécial, avec l'objectif de 3 $ par jour.", "Like Special, with the $3 daily target."),
+    "demo": ("Owl démo publique", "Owl public demo", "Le robot montré à tout le monde sur la démo publique.", "The robot shown to everyone on the public demo."),
+    "reference": ("Owl de référence", "Owl reference", "Taille fixe, sans rattrapage ni objectif : il prend chaque signal, pour mesurer la stratégie nue.", "Fixed size, no catch-up and no target: it takes every signal, to measure the bare strategy."),
+    "labo": ("Owl du labo", "Owl of the lab", "Le labo le règle lui-même quand un jumeau bat le vrai robot sur 30 trades.", "The lab sets it itself when a twin beats the real robot over 30 trades."),
+    "kino_sans_frein": ("Owl sans frein nervosité", "Owl without nervosity brake", "Un essai A/B en argent réel du frein nervosité.", "A real-money A/B test of the nervosity brake."),
+    "sniper": ("Sniper", "Sniper", "Grosse taille, sans rattrapage.", "Big size, no catch-up."),
+    "halfdebt": ("Demi-dette", "Half debt", "Le rattrapage ne cherche à récupérer que la moitié de la perte.", "Catch-up only tries to win back half the loss."),
+}
+DIAL_WORDS = {   # package fields shown in plain words: (fr, en, kind)
+    "base_lot": ("Taille de base", "Base size", "lot"), "rr": ("Objectif, en fois le risque", "Target, in times the risk", "x"),
+    "adds_on": ("Rattrapage après une perte", "Catch-up after a loss", "bool"), "max_extra": ("Trades de rattrapage en plus, au plus", "Extra catch-up trades, at most", "n"),
+    "k_streak": ("Pertes de suite avant d'arrêter le rattrapage", "Losses in a row before catch-up stops", "n"),
+    "jar": ("Tirelire (une part des gains pour se refaire)", "Jar (part of the wins kept to recover)", "bool"),
+    "day_cap": ("Objectif du jour", "Daily target", "usd"), "week_target": ("Objectif de la semaine", "Weekly target", "usd"),
+    "max_trades_day": ("Trades par jour, au plus", "Trades a day, at most", "n"), "kill_net": ("Arrêt automatique à", "Automatic stop at", "usd"),
+    "min_balance": ("Solde minimum pour trader", "Minimum balance to trade", "usd"), "risk_fit_pct": ("Risque par trade, au plus", "Risk per trade, at most", "pct"),
+    "scale_with_balance": ("La taille suit le solde", "Size follows the balance", "bool"), "nervosity": ("Frein nervosité", "Nervosity brake", "bool"),
+    "movement": ("Frein mouvement", "Movement brake", "bool"), "eq_half": ("Demi-taille quand les résultats baissent", "Half size while results go down", "bool"),
+    "recov_bullets_only": ("Rattrapage au milieu seulement", "Catch-up at the midpoint only", "bool"),
+    "pb_dir_gate": ("Seulement avec la tendance de fond", "Only with the background trend", "bool"),
+    "internal_entries": ("Petites cassures internes", "Small internal breaks", "bool"), "debt_gate": ("Le rattrapage peut retenir un signal", "Catch-up can hold back a signal", "bool"),
+}
+TWIN_WORDS = {   # replay/twin dials (lab/harness.py CFG_BASE)
+    "rr": ("Objectif, en fois le risque", "Target, in times the risk", "x"), "n_cont": ("Trades dans le même sens après une perte", "Same-direction trades after a loss", "n"),
+    "wait_min": ("Pause après chaque trade", "Pause after each trade", "min"), "wait_win": ("Pause après un gain", "Pause after a win", "min"),
+    "ext_pts": ("Pas d'entrée après une envolée de", "No entry after a run of", "pts"), "chase_pts": ("Pas d'entrée après un mouvement dans son sens de", "No entry after a move its way of", "pts"),
+    "skip_wd": ("Jours sans trade", "Days without trading", "days"), "skip_hours": ("Heures sans trade (UTC)", "Hours without trading (UTC)", "hours"),
+    "size_hot": ("Taille en marché nerveux", "Size in a nervous market", "x"), "nerv_gate": ("Frein nervosité", "Nervosity brake", "bool"),
+    "storm": ("Seuil d'orage", "Storm threshold", "x"), "bullets": ("Trades de rattrapage, au plus", "Catch-up trades, at most", "n"),
+    "k_streak": ("Pertes de suite avant d'arrêter le rattrapage", "Losses in a row before catch-up stops", "n"), "lot": ("Taille", "Size", "lot"),
+    "first_move_size": ("Taille au premier grand mouvement", "Size on the first big move", "x"), "flip_hot_size": ("Taille d'un retournement en marché nerveux", "Size of a reversal in a nervous market", "x"),
+    "nerv_floor": ("Pas d'entrée si le marché dort sous", "No entry if the market sleeps under", "x"), "cap_resume_h4": ("Reprise après l'objectif, en bougies de 4 h", "Resume after the target, in 4-hour candles", "n"),
+}
+_ROBOT_CACHE = {}
+
+
+def _dials(cfg, words, ref=None):
+    out = []
+    for k, w in words.items():
+        if k not in cfg:
+            continue
+        v = cfg[k]
+        if ref is not None and ref.get(k) == v:
+            continue
+        out.append({"k": k, "fr": w[0], "en": w[1], "kind": w[2], "v": v, "was": (ref or {}).get(k)})
+    return out
+
+
+def robots_payload(detail):
+    key = "d" if detail else "m"
+    c = _ROBOT_CACHE.get(key)
+    if c and time.time() - c[0] < 120:
+        return c[1]
+    now = int(time.time())
+    R = []
+    try:
+        import owl_package as _OP
+        PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        _OP, PK = None, {"packages": {}, "accounts": {}}
+    packs = PK.get("packages") or {}
+    acc_of = PK.get("accounts") or {}
+    S = {x["id"]: x for x in (strategies_payload(detail).get("items") or [])}
+    owl = S.get("owl") or {}
+    # the Owl's accounts, already measured and labelled by strategies_payload, matched back by user order
+    U = [u for u in users() if os.path.exists(os.path.join(DIR, "nest_data", "%s.wealth.json" % u.get("id"))) and u.get("id") != "fresh"]
+    A_by_uid = {}
+    for u, a in zip(U, owl.get("accounts") or []):
+        A_by_uid[u.get("id")] = a
+    users_of = {}
+    for uid, pk in acc_of.items():
+        users_of.setdefault(pk, []).append(uid)
+    base_cfg = _OP._resolve("base", packs) if _OP else {}
+    for name, p in packs.items():
+        if not isinstance(p, dict):
+            continue
+        cfg = _OP._resolve(name, packs) if _OP else dict(p)
+        parent = p.get("extends")
+        pcfg = _OP._resolve(parent, packs) if (_OP and parent) else (None if not parent else {})
+        uids = [u for u in users_of.get(name, []) if u in A_by_uid]
+        accs = []
+        for uid in uids:
+            a = dict(A_by_uid[uid])
+            lab, alive, why = bot_on(uid)
+            a["alive"] = bool(alive) if lab else None      # no heartbeat file known for this account
+            a["why_off"] = why
+            a.pop("cuts", None)
+            accs.append(a)
+        label = str(p.get("label") or "")
+        dead = "mort" in label or "dead" in label
+        real = any(a.get("real") for a in accs)
+        if dead:
+            stage = "retired"
+        elif accs:
+            stage = "real" if real else "demo"
+        elif name == "base":
+            stage = "model"
+        elif name == "labo":
+            stage = "built"
+        else:
+            stage = "retired"
+        nm = ROBOT_NAMES.get(name, (name, name, "", ""))
+        # its whole life: every "_why..." note the owner left in the package, dated when it starts with one
+        hist = []
+        for k, v in p.items():
+            if k.startswith("_why") and isinstance(v, str):
+                hist.append({"date": v[:10] if v[:4].isdigit() else None, "txt": v if detail else None, "k": k})
+        tot = {"n": 0}
+        if accs:
+            T = []
+            for a in accs:
+                T.append(a.get("all") or {})
+            n = sum(t.get("n") or 0 for t in T)
+            tot = {"n": n, "net": round(sum(t.get("net") or 0 for t in T), 2),
+                   "wr": round(sum((t.get("wr") or 0) * (t.get("n") or 0) for t in T) / n, 1) if n else None,
+                   "last": max((t.get("last") or 0) for t in T) or None}
+        R.append({"id": "pkg-" + name, "kind": "owl", "stage": stage, "strategy": "owl",
+                  "name_fr": nm[0], "name_en": nm[1], "plain_fr": nm[2], "plain_en": nm[3],
+                  "parent": ("pkg-" + parent) if parent else None, "markets": ["BTCUSD"],
+                  "dials": _dials(cfg, DIAL_WORDS), "changes": _dials(cfg, DIAL_WORDS, pcfg if parent else None) if parent else [],
+                  "vs_base": _dials(cfg, DIAL_WORDS, base_cfg) if name != "base" else [],
+                  "accounts": accs, "alive": sum(1 for a in accs if a.get("alive")), "total": tot, "hist": hist,
+                  "by": "owner"})
+    # the hourly Harvest robot (its own code), the Signal robot (sends, a person clicks), the scanner
+    fr = S.get("fresh")
+    if fr:
+        lab, alive, why = bot_on("fresh")
+        a = dict((fr.get("accounts") or [{}])[0]); a["alive"] = bool(alive); a.pop("cuts", None)
+        R.append({"id": "harvest", "kind": "other", "stage": "demo", "strategy": "fresh",
+                  "name_fr": "Harvest H1", "name_en": "Harvest H1",
+                  "plain_fr": "Un robot à part : il lit les bougies d'une heure et prend les retournements tout frais, sur le Bitcoin et l'Ether.",
+                  "plain_en": "A robot of its own: it reads hourly candles and takes fresh reversals, on Bitcoin and Ether.",
+                  "markets": fr.get("markets"), "accounts": [a], "alive": 1 if alive else 0,
+                  "total": {k: (fr.get("total") or {}).get(k) for k in ("n", "net", "wr", "last", "curve", "pf")}, "by": "claude", "since": fr.get("since")})
+    sig = next((a for a in (owl.get("accounts") or []) if a.get("kind") == "semi"), None)
+    if sig:
+        R.append({"id": "signal", "kind": "other", "stage": "signal", "strategy": "owl",
+                  "name_fr": "Robot Signal", "name_en": "Signal robot",
+                  "plain_fr": "Il ne trade pas : il envoie le signal de l'Owl et une personne le prend à la main.",
+                  "plain_en": "It does not trade: it sends the Owl's signal and a person takes it by hand.",
+                  "markets": ["BTCUSD"], "accounts": [dict(sig, cuts=None)], "alive": None,
+                  "total": {k: (sig.get("all") or {}).get(k) for k in ("n", "net", "wr", "last", "curve", "pf")}, "by": "owner"})
+    sc = S.get("scanner")
+    if sc:
+        n = sum((m.get("fwd") or {}).get("n") or 0 for m in sc.get("mk") or [])
+        sr = sum((m.get("fwd") or {}).get("sum_r") or 0 for m in sc.get("mk") or [])
+        try:
+            hb_age = now - os.path.getmtime(os.path.join(DIR, "scanner", "heartbeat.jsonl"))
+        except Exception:
+            hb_age = 1e9
+        R.append({"id": "scanner", "kind": "other", "stage": "virtual", "strategy": "scanner",
+                  "name_fr": "Le scanner", "name_en": "The scanner",
+                  "plain_fr": "Un robot virtuel qui applique les règles de l'Owl sur 13 marchés à la fois, sans argent.",
+                  "plain_en": "A virtual robot applying the Owl's rules to 13 markets at once, with no money.",
+                  "markets": [m["sym"] for m in sc.get("mk") or []], "accounts": [], "alive": 1 if hb_age < 600 else 0,
+                  "total": {"n": n, "sum_r": round(sr, 2)}, "by": "claude", "since": "2026-10-11", "protocol": sc.get("protocol")})
+    # paper twins: the chercheur's (and the owner's) robots, run live next to the real one without money
+    try:
+        L = lab_payload()
+    except Exception:
+        L = {}
+    tw0 = L.get("twin") or {}
+    if tw0.get("trades"):
+        R.append({"id": "twin-touch", "kind": "twin", "stage": "paper", "strategy": "owl",
+                  "name_fr": "Le jumeau sans freins", "name_en": "The brakeless twin",
+                  "plain_fr": "Un robot fictif qui prend tous les signaux, sans aucun frein, pour voir ce que les freins coûtent ou rapportent.",
+                  "plain_en": "A pretend robot taking every signal with no brake at all, to see what the brakes cost or earn.",
+                  "markets": ["BTCUSD"], "accounts": [], "alive": 1 if (tw0.get("last") and now - int(tw0["last"]) < 3 * 86400) else 0,
+                  "total": {"n": tw0.get("trades"), "net": tw0.get("net"), "wr": tw0.get("win"), "last": tw0.get("last"), "curve": tw0.get("curve")},
+                  "by": "owner", "since": datetime.fromtimestamp(tw0["since"], tz=timezone.utc).strftime("%Y-%m-%d") if tw0.get("since") else None})
+    try:
+        import importlib
+        sys.path.insert(0, os.path.join(DIR, "lab"))
+        H = importlib.import_module("harness")
+        cfg0 = dict(H.CFG_BASE)
+    except Exception:
+        cfg0 = {}
+    try:
+        TW = json.load(open(os.path.join(DIR, "lab", "twins.json"), encoding="utf-8")).get("twins") or []
+    except Exception:
+        TW = []
+    tl = {x.get("id"): x for x in (L.get("twins") or [])}
+    for t in TW:
+        x = tl.get(t.get("id")) or {}
+        du = x.get("duel") or {}
+        st = "paper" if t.get("status") in ("active", "running", None) else ("real" if t.get("status") == "deployed" else "retired")
+        curve = [round(v[1], 2) for v in ((du.get("twin") or {}).get("curve") or [])]
+        rcurve = [round(v[1], 2) for v in ((du.get("real") or {}).get("curve") or [])]
+        fin = t.get("final") or {}
+        R.append({"id": "twin-" + str(t.get("id")), "kind": "twin", "stage": st, "strategy": "owl",
+                  "name_fr": t.get("title_fr"), "name_en": t.get("title_en"),
+                  "plain_fr": "Un jumeau : le robot réel avec ce réglage changé, tourné en direct sans argent, puis comparé au vrai.",
+                  "plain_en": "A twin: the real robot with this one setting changed, run live without money, then compared with the real one.",
+                  "markets": ["BTCUSD"], "accounts": [], "alive": 1 if x.get("alive") else 0,
+                  "dials": _dials(t.get("cfg") or {}, TWIN_WORDS, cfg0 or None), "grade": t.get("verdict"),
+                  "total": {"n": x.get("trades") or fin.get("trades"), "net": x.get("net") if x.get("trades") else fin.get("net"),
+                            "wr": x.get("win"), "curve": [0] + curve if curve else None},
+                  "duel": {"real_curve": [0] + rcurve if rcurve else None, "real_net": (du.get("real") or {}).get("net"),
+                           "twin_worst": (du.get("twin") or {}).get("worst"), "real_worst": (du.get("real") or {}).get("worst")} if du else None,
+                  "retired_fr": (("Lancé avant la correction du simulateur du 29 septembre : son résultat mesure une version de la stratégie qui n'existe plus. Gardé comme souvenir, pas comme preuve."
+                                  if "engine was corrected" in (t.get("retired_why") or "") else (t.get("retired_why") or "")) if st == "retired" else ""),
+                  "retired_en": (t.get("retired_why") or "") if st == "retired" else "", "by": t.get("by"),
+                  "since": (t.get("started") or "")[:10], "until": (t.get("retired") or "")[:10] or None})
+    # the workshop: what the constructeur has built and is building for the robots
+    try:
+        RQ = json.load(open(os.path.join(DIR, "lab", "requests.json"), encoding="utf-8")).get("requests") or []
+    except Exception:
+        RQ = []
+    shop = [{"id": q.get("id"), "status": q.get("status"), "date": q.get("date"), "title_fr": q.get("title_fr"), "title_en": q.get("title_en"),
+             "what_fr": q.get("what_fr"), "what_en": q.get("what_en")} for q in RQ]
+    shop.sort(key=lambda q: (q.get("status") != "open", q.get("date") or ""), reverse=False)
+    cnt = {}
+    for r in R:
+        cnt[r["stage"]] = cnt.get(r["stage"], 0) + 1
+    cnt["built_parts"] = sum(1 for q in RQ if q.get("status") == "built")
+    cnt["open_parts"] = sum(1 for q in RQ if q.get("status") == "open")
+    out = {"updated": now, "robots": R, "counts": cnt, "workshop": shop, "detail": bool(detail)}
+    _ROBOT_CACHE[key] = (time.time(), out)
+    return out
+
+
+def team_payload():
+    """the lab's AI team in one read: the chercheur, the constructeur, the critic, the watcher, and the
+    night run's health - everything the old Labo tab had that the Strategies/Robots spaces do not."""
+    L = lab_payload()
+    note = L.get("note") or {}
+    try:
+        CR = json.load(open(os.path.join(DIR, "lab", "critiques.json"), encoding="utf-8")).get("critiques") or []
+    except Exception:
+        CR = []
+    auto = L.get("auto") or {}
+    props = L.get("proposals") or []
+    reqs = []
+    try:
+        reqs = json.load(open(os.path.join(DIR, "lab", "requests.json"), encoding="utf-8")).get("requests") or []
+    except Exception:
+        pass
+    V = L.get("veille") or []
+    return {"updated": int(time.time()),
+            "chercheur": {"date": note.get("date"), "headline_fr": note.get("headline_fr"), "headline_en": note.get("headline_en"),
+                          "beliefs": (note.get("beliefs") or [])[:6], "sections": note.get("sections") or [],
+                          "pending": [p for p in props if p.get("status", "pending") == "pending"][-6:],
+                          "done": sum(1 for p in props if p.get("status") == "done")},
+            "constructeur": {"open": [r for r in reqs if r.get("status") == "open"], "built": sum(1 for r in reqs if r.get("status") == "built"),
+                             "last_built": next((r for r in reversed(reqs) if r.get("status") == "built"), None)},
+            "critique": {"items": CR[-6:][::-1]},
+            "veille": {"items": V[:8], "last": L.get("veille_last")},
+            "pistes": [c for c in (L.get("candidates") or []) if c.get("label") not in ("invalide", "doublon")][-12:][::-1],
+            "asks": (L.get("asks") or [])[-8:][::-1],
+            "night": {"updated": auto.get("updated"), "counts": auto.get("counts"), "days": auto.get("days"), "drift": bool((auto.get("parity") or {}).get("drift"))}}
 
 
 def ai_pulse():
@@ -16911,15 +17177,20 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
-        elif sub in ("strategies", "strategies_data"):
+        elif sub in ("strategies", "strategies_data", "robots", "equipe", "robots_data", "team_data"):
             # 2026-10-12 (owner): "Strategies" - every strategy in one catalog. Strategie members and the
             # admin only (the numbers per account and the research are the Strategie offer)
             _sd = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
             try:
-                if sub == "strategies":
+                if sub in ("strategies", "robots", "equipe"):
+                    # one page, three sides (2026-10-12 owner: the Labo = Strategies + Robots + the AI team)
                     self._send(open(os.path.join(DIR, "owl_strategies_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
                 elif not _sd:
                     self._send(json.dumps({"err": "strategy"}), "application/json")
+                elif sub == "robots_data":
+                    self._send(json.dumps(robots_payload(is_admin(user) or admin_cookie_ok(self.headers))), "application/json")
+                elif sub == "team_data":
+                    self._send(json.dumps(team_payload()), "application/json")
                 else:
                     self._send(json.dumps(strategies_payload(is_admin(user) or admin_cookie_ok(self.headers))), "application/json")
             except Exception as e:

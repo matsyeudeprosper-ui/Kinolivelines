@@ -325,21 +325,24 @@ console.log("labo");
   await ev("try{localStorage.setItem('owlTourDone','1');localStorage.setItem('owl_adm','1');localStorage.setItem('owlLabIntro','1');}catch(e){}1");
   await nav(`${BASE}/${KIN}/`); await sleep(12000);
   await ev("(function(){var b=document.getElementById('tb-marche');if(b)b.click();return 1;})()"); await sleep(1500);
-  await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(5000);
-  const order = await ev("Array.from(document.getElementById('lab-body').children).map(function(e){return e.className||e.id;}).join(' > ')");
-  // 2026-10-03: the week card (Sunday's digest) may sit between hero and board; the lab's robot card sits after the board
-  check("labo landing is hero > (week) > board > robot > clues row", /labhero > (panel labweek > )?panel jboard > panel lablabo/.test(order) && /labseedrow/.test(order), order);
-  check("the board has four columns", (await ev("document.querySelectorAll('.jrail .jn').length")) === 4);
-  check("a card renders in the open column", (await ev("document.querySelectorAll('#jcards .lc').length")) >= 1);
-  const lt = await ev("document.getElementById('lab-body').innerText");
-  check("no bare A/B/C verdict badge", !/(^|,)[ABC](,|$)/.test(await ev("Array.from(document.querySelectorAll('.lcb')).map(function(e){return e.innerText.trim();}).filter(Boolean).join(',')")));
-  check("no NaN/undefined on the landing", !/NaN|undefined/.test(lt));
-  await ev("(function(){var h=document.querySelector('.labhero');if(h)h.click();return 1;})()"); await sleep(1500);
-  const navTxt = await ev("Array.from(document.querySelectorAll('.nt-nav button')).map(function(b){return b.innerText;}).join(' | ')");
-  check("the night report opens with its sections", (await ev("document.querySelectorAll('.nt-sec').length")) >= 3, navTxt);
-  check("the report has no bare verdict letter", !/(?<=[\s(:])[ABC](?=[\s,.;:)])/.test(await ev("(function(){var c=document.getElementById('sheet-c').cloneNode(true);c.querySelectorAll('.nt-chip').forEach(function(e){e.remove();});return c.innerText;})()")));
+  // 2026-10-12 (owner): the old Labo board is replaced by the Labo space - Strategies, Robots, AI team.
+  // The Labo button now leads there; every side must paint, with no NaN/undefined and no bare verdict letter.
+  await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(6000);
+  check("the Labo button opens the Labo space", /\/strategies$/.test(await ev("location.pathname")), await ev("location.pathname.split('/').pop()"));   // never print the token
+  for (const [side, path, sel, min] of [["Strategies", "strategies", ".sc", 10], ["Robots", "robots", ".sc", 8], ["AI team", "equipe", ".mem", 4]]) {
+    await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
+    const n = await ev(`document.querySelectorAll('${sel}').length`);
+    check(`Labo · ${side} paints its cards`, n >= min, String(n));
+    const tx = await ev("document.body.innerText");
+    check(`Labo · ${side} has no NaN/undefined`, !/NaN|undefined/.test(tx));
+    check(`Labo · ${side} has no bare verdict letter`, !/(^|\s)[ABC](\s|$)/m.test(await ev("Array.from(document.querySelectorAll('.bd')).map(function(e){return e.innerText.trim();}).join('\\n')")));
+    if (side === "Robots") {
+      await ev("(function(){var b=document.querySelector('#list .sc');if(b)b.click();return 1;})()"); await sleep(1500);
+      check("Labo · a robot opens its own space", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .kp').length")) >= 4);
+    }
+  }
   await shot("smoke_labo");
-  await ev("window._shDone&&_shDone(1);1"); await sleep(500);
+  await nav("about:blank"); await nav(`${BASE}/${KIN}/`); await sleep(9000);
   await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()"); await sleep(3500);
   check("le Nid lists the accounts", (await ev("document.querySelectorAll('#nest .nrow').length")) >= 3);
   check("le Nid rows carry no emoji", !/[\u{1F300}-\u{1FAFF}]/u.test(await ev("document.getElementById('nest').innerText")));

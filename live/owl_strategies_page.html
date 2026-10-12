@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b0f14">
-<title>Stratégies</title>
+<title>Le labo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
@@ -36,7 +36,7 @@ header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px}
 .live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
 @keyframes blink{50%{opacity:.35}}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
+.card{scroll-margin-top:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:20px;margin-bottom:14px;position:relative;overflow:hidden}
 .card h2{font-size:.74rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .sub{font-size:.9rem;color:var(--muted);line-height:1.55}
 /* hero */
@@ -186,14 +186,39 @@ body.det #list,body.det #top{display:none}body.det #det{display:block;animation:
 .mi>span:not(.fi):not(.bd){flex:1;min-width:0;line-height:1.35}.mi .bd{flex:none}
 .skel{height:120px;border-radius:22px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface2) 50%,var(--surface) 100%);background-size:200% 100%;animation:sk 1.3s infinite;margin-bottom:12px}
 @keyframes sk{to{background-position:-200% 0}}
+/* the Labo's three sides */
+#doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;background:var(--surface);border:1px solid var(--border);border-radius:16px;margin:6px 0 12px;box-shadow:var(--hl)}
+body.det #doors{display:none}
+.door{border:0;background:transparent;color:var(--muted2);font-size:.86rem;font-weight:800;padding:10px 4px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;transition:all .2s}
+.door svg{width:17px;height:17px;flex:none}.door.on{background:var(--surface3);color:var(--text);box-shadow:inset 0 0 0 1px var(--border2)}
+.pipe{display:flex;align-items:stretch;gap:4px;margin-top:16px;overflow-x:auto;scrollbar-width:none}.pipe::-webkit-scrollbar{display:none}
+.pn{flex:1 0 54px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.18);border-radius:13px;padding:9px 4px;text-align:center;color:#d6e6f3}
+.pn.on{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.08)}
+.pn b{display:block;font-size:1.25rem;font-weight:900;line-height:1.1}.pn small{display:block;font-size:.62rem;font-weight:700;margin-top:3px;white-space:nowrap}
+.arr{align-self:center;color:#9fc2de;font-weight:900;flex:none}
+.alv{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:99px;padding:4px 8px;white-space:nowrap}
+.alv i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.alv.on{color:var(--up-soft);background:var(--ok-bg)}.alv.on i{box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}.alv.off{color:var(--muted2);background:var(--gr-bg)}
+.tree .tn{position:relative}.tree .tk{margin-left:16px;padding-left:12px;border-left:2px solid var(--border2)}
+.tnb{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:13px;padding:10px 12px;margin:6px 0;font-size:.88rem}
+.tnb b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}.tnb em{font-style:normal;font-size:.7rem;font-weight:800;color:var(--muted);background:var(--surface3);border-radius:99px;padding:2px 8px}
+.tnb.dim{opacity:.55}
+.dl{display:grid;gap:2px}.dr{display:flex;justify-content:space-between;gap:12px;padding:10px 2px;border-bottom:1px solid var(--border);font-size:.88rem}
+.dr span:first-child{color:var(--text2)}.dr b{text-align:right}.dr s{color:var(--muted);margin-right:6px}.dr.hl b{color:var(--accent-soft)}
+.av{flex:none;width:40px;height:40px;border-radius:13px;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:900;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.avs{display:flex;gap:8px;margin-top:14px}
+.mem .mh{display:flex;align-items:center;gap:12px}.mem .mh b{display:block;font-size:1.02rem;font-weight:800}.mem .mh small{display:block;font-size:.76rem;color:var(--muted);margin-top:2px;line-height:1.35}
+.quote{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent);background:var(--surface2);border-radius:0 12px 12px 0;font-size:.95rem;line-height:1.5;font-weight:600}
+.acc>button b{font-size:.9rem}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
 <header><div class="hrow">
  <a href="./" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
- <div class="ttl"><h1 id="h1">Stratégies</h1><div id="h1s">Tout ce que le nid utilise, teste et a écarté</div></div>
+ <div class="ttl"><h1 id="h1">Le labo</h1><div id="h1s"></div></div>
  <span class="live" id="livep"><i></i><span id="livet">En direct</span></span>
 </div></header>
+<div id="doors"></div>
 <div id="top"></div>
 <div id="list"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
 <div id="det"></div>
@@ -338,9 +363,6 @@ function renderRank(L){
 let CUR=null,SEC='ov';
 let NAV=0;
 function go(id,sec){NAV++;location.hash='s='+id+(sec?'&v='+sec:'');}
-function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s');
- if(!id||!D||!byId(id)){NAV=0;document.body.classList.remove('det');CUR=null;$('h1').textContent=T('Stratégies','Strategies');$('h1s').textContent=T('Tout ce que le nid utilise, teste et a écarté','Everything the nest uses, tests and rejected');return;}
- CUR=byId(id);SEC=h.get('v')||'ov';document.body.classList.add('det');renderDet();window.scrollTo(0,0);}
 function secs(x){const S=[['ov',T('Aperçu','Overview')]];
  if(x.accounts&&x.accounts.length)S.push(['acc',T('Comptes','Accounts')]);
  if(x.cuts||x.mk)S.push(['mk',T('Marchés','Markets')]);
@@ -350,7 +372,7 @@ function secs(x){const S=[['ov',T('Aperçu','Overview')]];
  if(x.rules&&x.rules.length||kids(x.id).length)S.push(['hist',T('Règles & historique','Rules & history')]);
  return S;}
 function renderDet(){const x=CUR;if(!x)return;const m=ST[x.status]||ST.study;
- $('h1').textContent=T('Stratégies','Strategies');$('h1s').textContent=T(m.fr,m.en)+' · '+fnm(x.fam);
+ $('h1').textContent=T('Le labo','The lab');$('h1s').textContent=T('Stratégie','Strategy')+' · '+T(m.fr,m.en);
  const S=secs(x);if(!S.find(s=>s[0]===SEC))SEC='ov';
  let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+fic(x.fam)+'</span><h3>'+esc(tt(x))+'</h3>'+(pl(x)?'<p>'+esc(pl(x))+'</p>':'')+
   '<div class="ft">'+sb(x.status)+eb(x.evidence)+(x.since?'<span class="bd ev">'+T('depuis le ','since ')+fdate(x.since)+'</span>':'')+(x.in_robot||x.parent?'<span class="bd ev">'+T('dans le robot','in the robot')+'</span>':'')+'</div>'+
@@ -440,16 +462,178 @@ function scannerMarkets(x,btFirst){const PR=(x.protocol&&x.protocol.primary)||[]
   '<div class="col"><div class="k">'+T('En direct (virtuel)','Live (virtual)')+'</div><div class="v '+cl(f.sum_r)+'">'+(f.n?(f.sum_r>=0?'+':'')+num(f.sum_r,1)+' R':'—')+'</div><div class="n">'+(f.n?f.n+' tr · '+num(f.wr,0)+' %':T('pas encore de trade','no trade yet'))+(m.open?' · '+T('1 ouvert','1 open'):'')+'</div></div></div>'+
   (btFirst&&m.pocket&&m.pocket.bt&&m.pocket.bt.n?'<div style="margin-top:10px">'+lineChart([{a:m.pocket.bt.curve.map(v=>v-100),c:'var(--accent)',n:''}],{h:90})+'</div>':'')+'</div>';}).join('')+'</div></div>';}
 
-/* ---------- load ---------- */
-async function load(){try{const r=await fetch('strategies_data?t='+Date.now(),{cache:'no-store'});const j=await r.json();
- if(j.err){$('top').innerHTML='';$('list').innerHTML='<div class="card" style="margin-top:10px"><h2>'+T('Réservé à l\'offre Stratégie','Strategy plan only')+'</h2><div class="sub">'+T('Cet espace montre toutes les stratégies du robot, leurs comptes et leurs tests. Il fait partie de l\'offre Stratégie.','This space shows every robot strategy, its accounts and its tests. It is part of the Strategy plan.')+'</div></div>';return;}
- const first=!D;D=j;$('livet').textContent=T('À jour','Up to date');
- // a refresh never moves the reader: the list redraws, an open strategy keeps its place
- if(first){renderTop();renderList();route();}else if(!document.body.classList.contains('det')){renderTop();renderList();const q=$('q');if(q&&Q){q.focus();q.setSelectionRange(Q.length,Q.length);}}else{CUR=byId(CUR.id)||CUR;}
+/* ================= 2026-10-12 (owner): the Labo = three sides - Stratégies, Robots, the AI team ================= */
+let SIDE=(()=>{const p=location.pathname.split('/').pop();return p==='robots'?'robots':(p==='equipe'?'team':'strat');})();
+let RB=null,TM=null,CURR=null,RSEC='ov',RF='all';
+const SIDES=[['strat',T('Stratégies','Strategies'),'M3 17l6-6 4 4 8-8M15 7h6v6'],['robots',T('Robots','Robots'),'M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6'],['team',T('Équipe IA','AI team'),'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0']];
+const SUBT={strat:T('Toutes les idées, de l\'essai à la décision','Every idea, from trial to decision'),robots:T('Les robots créés, testés, en service ou à l\'arrêt','Robots built, tested, in service or stopped'),team:T('Les IA qui cherchent, construisent et vérifient','The AIs that research, build and check')};
+function doors(){const el=$('doors');if(!el)return;el.innerHTML=SIDES.map(s=>'<button class="door'+(SIDE===s[0]?' on':'')+'" onclick="setSide(\''+s[0]+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+s[2]+'"/></svg>'+s[1]+'</button>').join('');}
+function setSide(s){if(s===SIDE)return;SIDE=s;const seg={strat:'strategies',robots:'robots',team:'equipe'}[s];
+ try{history.replaceState(null,'',seg);}catch(e){}NAV=0;document.body.classList.remove('det');CUR=null;CURR=null;doors();head();paint();load();window.scrollTo(0,0);}
+function head(){$('h1').textContent=T('Le labo','The lab');$('h1s').textContent=SUBT[SIDE];document.title=T('Le labo','The lab');}
+function paint(){if(SIDE==='strat'){if(D){renderTop();renderList();}else skel();}else if(SIDE==='robots'){if(RB)renderRobots();else skel();}else{if(TM)renderTeam();else skel();}}
+function skel(){$('top').innerHTML='';$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';}
+
+/* ---------- robots ---------- */
+const RST={built:{fr:'À l\'atelier',en:'In the workshop',c:'var(--warn)',cls:'background:var(--mid-bg);color:var(--warn)'},
+ paper:{fr:'Jumeau',en:'Twin',c:'var(--violet)',cls:'background:var(--vi-bg);color:var(--violet-soft)'},
+ virtual:{fr:'Virtuel',en:'Virtual',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
+ demo:{fr:'Démo',en:'Demo',c:'#38bdf8',cls:'background:rgba(56,189,248,.13);color:#7dd3fc'},
+ signal:{fr:'Signal',en:'Signal',c:'var(--warn)',cls:'background:var(--mid-bg);color:var(--warn)'},
+ real:{fr:'Argent réel',en:'Real money',c:'var(--up)',cls:'background:var(--ok-bg);color:var(--up-soft)'},
+ model:{fr:'Modèle',en:'Model',c:'var(--muted)',cls:'background:var(--gr-bg);color:var(--muted2)'},
+ retired:{fr:'À l\'arrêt',en:'Stopped',c:'var(--down)',cls:'background:var(--bad-bg);color:var(--down-soft)'}};
+const RORDER=['real','signal','demo','virtual','paper','built','model','retired'];
+const PIPE=[['built',T('Atelier','Workshop')],['paper',T('Jumeaux','Twins')],['virtual',T('Virtuel','Virtual')],['demo',T('Démo','Demo')],['real',T('Argent réel','Real money')],['retired',T('À l\'arrêt','Stopped')]];
+const rbById=id=>(RB&&RB.robots||[]).find(r=>r.id===id);
+const rn=r=>EN?(r.name_en||r.name_fr):(r.name_fr||r.name_en), rp=r=>EN?(r.plain_en||r.plain_fr):(r.plain_fr||r.plain_en);
+const rsb=s=>{const m=RST[s]||RST.model;return '<span class="bd" style="'+m.cls+'"><i></i>'+T(m.fr,m.en)+'</span>';};
+const BOT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6"/></svg>';
+const TWIN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v16M16 4v16M4 8h8M12 16h8"/></svg>';
+const rIcon=r=>r.kind==='twin'?TWIN:BOT;
+function aliveDot(r){if(r.alive==null)return '';const n=(r.accounts||[]).filter(a=>a.alive!=null).length,on=r.kind==='owl'?r.alive:(r.alive?1:0);
+ const ok=r.kind==='owl'?(n&&on===n):!!r.alive;if(r.stage==='retired'||r.stage==='model'||r.stage==='built')return '';
+ return '<span class="alv '+(ok?'on':'off')+'"><i></i>'+(r.kind==='owl'&&n>1?on+'/'+n+' ':'')+(ok?T('en marche','running'):T('arrêté','stopped'))+'</span>';}
+function rMet(r){const t=r.total||{};
+ if(t.curve&&t.curve.length>1)return spark(t.curve)+'<span class="'+cl(t.net)+'">'+money(t.net)+'</span>';
+ if(t.sum_r!=null)return '<span class="'+cl(t.sum_r)+'">'+(t.sum_r>=0?'+':'')+num(t.sum_r,1)+' R</span><span style="color:var(--muted);font-weight:600">'+t.n+' tr.</span>';
+ if(t.n)return '<span class="'+cl(t.net)+'">'+money(t.net)+'</span><span style="color:var(--muted);font-weight:600">'+num(t.n)+' tr.</span>';
+ return '';}
+function rCard(r,i){const m=RST[r.stage]||RST.model;const acc=(r.accounts||[]).length;
+ return '<button class="sc'+(r.stage==='real'?' flag':'')+'" style="--c:'+m.c+';animation-delay:'+Math.min(i,12)*30+'ms" onclick="goR(\''+r.id+'\')">'+
+  '<div class="top"><span class="fi">'+rIcon(r)+'</span><span class="tt"><b>'+esc(rn(r))+'</b><small>'+(r.kind==='twin'?T('jumeau','twin'):(r.kind==='owl'?'Owl':T('robot à part','own robot')))+(acc?' · '+acc+T(' compte',' account')+(acc>1?'s':''):'')+(r.markets&&r.markets.length?' · '+(r.markets.length>2?r.markets.length+T(' marchés',' markets'):r.markets.join(', ')):'')+'</small></span>'+aliveDot(r)+'</div>'+
+  (rp(r)?'<p>'+esc(rp(r))+'</p>':'')+'<div class="ft">'+rsb(r.stage)+(r.by==='chercheur'?'<span class="bd ev">'+T('créé par l\'IA','built by the AI')+'</span>':'')+'<span class="met">'+rMet(r)+'</span></div></button>';}
+function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};R.forEach(r=>{(kids[r.parent||'_']=kids[r.parent||'_']||[]).push(r);});
+ const node=(r,d)=>{const m=RST[r.stage]||RST.model;const ch=(kids[r.id]||[]).sort((a,b)=>RORDER.indexOf(a.stage)-RORDER.indexOf(b.stage));
+  return '<div class="tn" style="--d:'+d+'"><button class="tnb'+(r.stage==='retired'?' dim':'')+'" onclick="goR(\''+r.id+'\')"><span class="dot" style="background:'+m.c+'"></span><b>'+esc(rn(r))+'</b>'+((r.accounts||[]).length?'<em>'+(r.accounts||[]).length+'</em>':'')+'</button>'+(ch.length?'<div class="tk">'+ch.map(c=>node(c,d+1)).join('')+'</div>':'')+'</div>';};
+ return (kids['_']||[]).map(r=>node(r,0)).join('');}
+function renderRobots(){if(!RB)return;const c=RB.counts||{},R=RB.robots||[];
+ const live=R.filter(r=>['real','demo','virtual','paper'].includes(r.stage)&&r.alive!=null);const on=live.filter(r=>r.kind==='owl'?(r.alive||0)>0:r.alive);
+ let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><div class="big">'+R.length+'<small>'+T('robots','robots')+'</small></div>'+
+  '<p>'+T('Un robot, c\'est une stratégie plus ses réglages d\'argent. Ils naissent à l\'atelier, tournent d\'abord en jumeau sans argent, puis en démo, puis avec de l\'argent réel.','A robot is a strategy plus its money settings. They are born in the workshop, run first as a twin without money, then on demo, then with real money.')+'</p>'+
+  '<div class="pipe">'+PIPE.map((p,i)=>{const n=p[0]==='built'?(c.built||0)+(c.open_parts||0):(c[p[0]]||0)+(p[0]==='real'?(c.signal||0):0);return (i?'<span class="arr">›</span>':'')+'<button class="pn'+(RF===p[0]?' on':'')+'" onclick="setRF(\''+p[0]+'\')"><b style="color:'+RST[p[0]].c+'">'+n+'</b><small>'+p[1]+'</small></button>';}).join('')+'</div>'+
+  '<div class="pulse"><span class="dot"></span><span>'+on.length+'/'+live.length+T(' robots en marche en ce moment',' robots running right now')+'</span></div></div>';
+ h+='<div class="card"><h2>'+T('L\'arbre de famille','The family tree')+'<span class="bd ev">Owl</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque robot hérite des réglages de son parent et n\'en change que quelques-uns.','Each robot inherits its parent\'s settings and changes only a few.')+'</div><div class="tree">'+tree()+'</div></div>';
+ const W=(RB.workshop||[]).filter(q=>q.status==='open');
+ if(W.length||c.built_parts)h+='<div class="card"><h2>'+T('L\'atelier','The workshop')+'<span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+W.length+T(' en cours',' in progress')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Le constructeur (une IA) fabrique les pièces que le chercheur demande. ','The builder (an AI) makes the parts the researcher asks for. ')+num(c.built_parts||0)+T(' pièces déjà construites.',' parts already built.')+'</div><div class="mini">'+W.map(q=>'<div class="mi"><span class="fi" style="color:var(--warn)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span><span><b>'+esc(EN?q.title_en:q.title_fr)+'</b><br><small style="color:var(--muted)">'+fdate(q.date)+'</small></span></div>').join('')+'</div></div>';
+ h+='<nav id="nav"><div class="chips">'+[['all',T('Tous','All')]].concat(RORDER.filter(s=>R.some(r=>r.stage===s)).map(s=>[s,T(RST[s].fr,RST[s].en)])).map(([k,l])=>'<button class="chip'+(RF===k?' on':'')+'" onclick="setRF(\''+k+'\')">'+(k!=='all'?'<span class="dot" style="background:'+RST[k].c+'"></span>':'')+l+' <em>'+(k==='all'?R.length:R.filter(r=>r.stage===k).length)+'</em></button>').join('')+'</div></nav>';
+ $('top').innerHTML=h;
+ const F2=R.filter(r=>RF==='all'||r.stage===RF||(RF==='built'&&r.stage==='built'));let L='',i=0;
+ RORDER.forEach(s=>{const G=F2.filter(r=>r.stage===s).sort((a,b)=>((b.total||{}).n||0)-((a.total||{}).n||0));if(!G.length)return;
+  L+='<div class="grp"><span class="dot" style="background:'+RST[s].c+'"></span>'+T(RST[s].fr,RST[s].en)+' <em>'+G.length+'</em></div><div class="grid">'+G.map(r=>rCard(r,i++)).join('')+'</div>';});
+ $('list').innerHTML=L||'<div class="empty">'+T('Aucun robot ici.','No robot here.')+'</div>';}
+function setRF(k){RF=(RF===k&&k!=='all')?'all':k;renderRobots();const n=$('nav');if(n)n.scrollIntoView({behavior:'smooth'});}
+function goR(id,sec){NAV++;location.hash='r='+id+(sec?'&v='+sec:'');}
+function dv(d){const v=d.v;if(d.kind==='bool')return v?T('oui','yes'):T('non','no');if(v==null||v===0&&['usd','pct','min','pts'].includes(d.kind)&&d.k!=='kill_net')return T('aucun','none');
+ if(d.kind==='usd')return (v<0?'−':'')+'$'+num(Math.abs(v),0);if(d.kind==='pct')return num(v,v<1?2:0)+' %';if(d.kind==='x')return '× '+num(v,2);if(d.kind==='min')return v+' min';if(d.kind==='pts')return num(v)+' pts';
+ if(d.kind==='days'){const N=EN?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];return (v||[]).map(x=>N[x]).join(', ')||T('aucun','none');}
+ if(d.kind==='hours')return (v||[]).map(x=>x+' h').join(', ')||T('aucune','none');if(d.kind==='lot')return num(v,2)+' lot';return String(v);}
+function dvWas(d){return dv(Object.assign({},d,{v:d.was}));}
+function rSecs(r){const S=[['ov',T('Aperçu','Overview')]];if((r.dials||[]).length)S.push(['set',T('Réglages','Settings')]);if((r.accounts||[]).length)S.push(['acc',T('Comptes','Accounts')]);
+ if(r.duel)S.push(['duel',T('Le duel','The duel')]);if((r.hist||[]).length||r.since)S.push(['hist',T('Sa vie','Its life')]);return S;}
+function renderRobot(){const r=CURR;if(!r)return;const m=RST[r.stage]||RST.model;const S=rSecs(r);if(!S.find(s=>s[0]===RSEC))RSEC='ov';
+ const par=r.parent&&rbById(r.parent);const st=r.strategy&&D?byId(r.strategy):null;
+ let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+rIcon(r)+'</span><h3>'+esc(rn(r))+'</h3>'+(rp(r)?'<p>'+esc(rp(r))+'</p>':'')+
+  '<div class="ft">'+rsb(r.stage)+aliveDot(r)+(r.since?'<span class="bd ev">'+T('depuis le ','since ')+fdate(r.since)+'</span>':'')+(r.by==='chercheur'?'<span class="bd ev">'+T('créé par l\'IA','built by the AI')+'</span>':'')+'</div>'+
+  (par?'<div class="verd"><b>'+T('Sa famille','Its family')+'</b>'+T('Enfant de ','Child of ')+'<a style="font-weight:800;text-decoration:underline" href="#r='+par.id+'">'+esc(rn(par))+'</a>'+((r.changes||[]).length?T(', il change : ',', it changes: ')+r.changes.map(d=>esc(EN?d.en:d.fr).toLowerCase()+' → <strong>'+dv(d)+'</strong>').join(' · '):'')+'</div>':'')+
+  (r.retired_fr?'<div class="verd"><b>'+T('Pourquoi il est à l\'arrêt','Why it stopped')+'</b>'+esc(EN?(r.retired_en||r.retired_fr):r.retired_fr)+'</div>':'')+'</div>';
+ if(S.length>1)h+='<div class="stabs">'+S.map(s=>'<button class="chip'+(RSEC===s[0]?' on':'')+'" onclick="RSEC=\''+s[0]+'\';history.replaceState(null,\'\',\'#r='+r.id+'&v='+s[0]+'\');renderRobot()">'+s[1]+'</button>').join('')+'</div>';
+ h+=(RSECR[RSEC]||RSECR.ov)(r,st);$('det').innerHTML=h;
+ const on=document.querySelector('.stabs .chip.on');if(on){const s=on.parentNode;s.scrollLeft=on.offsetLeft-(s.clientWidth-on.offsetWidth)/2;}}
+const PAL=['var(--accent)','var(--up)','var(--warn)','var(--violet)','#38bdf8','var(--down-soft)'];
+const RSECR={
+ ov(r,st){const t=r.total||{};let h='<div class="card"><h2>'+T('En chiffres','In numbers')+'</h2><div class="kpis">'+
+  kp('Trades',t.n!=null?num(t.n):'—',t.last?T('dernier ','last ')+ago(t.last):'')+kp(T('Gagnés','Won'),t.wr!=null?num(t.wr,0)+' %':'—')+
+  (t.sum_r!=null?kp(T('Résultat','Result'),(t.sum_r>=0?'+':'')+num(t.sum_r,1)+' R',T('virtuel, en fois le risque','virtual, in times the risk'),cl(t.sum_r)):kp(T('Résultat','Result'),money(t.net),(r.accounts||[]).length>1?T('tous ses comptes','all its accounts'):'',cl(t.net)))+
+  kp(T('Comptes','Accounts'),num((r.accounts||[]).length),r.kind==='owl'&&(r.accounts||[]).length?(r.alive||0)+T(' en marche',' running'):'')+'</div>';
+  const A=(r.accounts||[]).filter(a=>a.all&&a.all.curve&&a.all.curve.length>1);
+  if(A.length)h+='<div style="margin-top:16px">'+lineChart(A.slice(0,6).map((a,i)=>({a:a.all.curve,c:PAL[i],n:T(a.label.fr,a.label.en)})))+'</div>'+(A.length>1?'<div class="note">'+T('Une ligne par compte, en dollars.','One line per account, in dollars.')+'</div>':'');
+  else if(t.curve&&t.curve.length>1)h+='<div style="margin-top:16px">'+lineChart([{a:t.curve,c:'var(--accent)',n:'Net'}])+'</div>';
+  h+='</div>';
+  if(r.protocol){const p=r.protocol;h+='<div class="card"><h2>'+T('Son essai figé','Its frozen trial')+'</h2><div style="display:flex;gap:16px;align-items:center">'+ring((p.elapsed||0)/p.days,'var(--accent)',Math.floor(p.elapsed||0)+'/'+p.days)+'<div class="sub">'+T('Règles et code figés jusqu\'au ','Rules and code frozen until ')+fdate(p.end)+'.</div></div></div>';}
+  if(st)h+='<button class="mi" onclick="openStrat(\''+st.id+'\')" style="margin-bottom:14px"><span class="fi" style="color:var(--up)">'+fic(st.fam)+'</span><span>'+T('Sa stratégie : ','Its strategy: ')+'<b>'+esc(tt(st))+'</b></span><span>›</span></button>';
+  const ch=(RB.robots||[]).filter(x=>x.parent===r.id);if(ch.length)h+='<div class="card"><h2>'+T('Ses enfants','Its children')+'<span class="bd ev">'+ch.length+'</span></h2><div class="mini">'+ch.map(c=>'<button class="mi" onclick="goR(\''+c.id+'\')"><span class="fi" style="color:'+(RST[c.stage]||RST.model).c+'">'+rIcon(c)+'</span><span>'+esc(rn(c))+'</span>'+rsb(c.stage)+'</button>').join('')+'</div></div>';
+  return h;},
+ set(r){const D2=r.dials||[];const ch=r.kind==='twin'?D2:(r.vs_base||[]);
+  let h='';if(ch.length&&r.id!=='pkg-base')h+='<div class="card"><h2>'+(r.kind==='twin'?T('Ce que le jumeau change','What the twin changes'):T('Ce qui le distingue du modèle','What sets it apart from the model'))+'</h2><div class="dl">'+ch.map(d=>'<div class="dr hl"><span>'+esc(EN?d.en:d.fr)+'</span><span><s>'+dvWas(d)+'</s> <b>'+dv(d)+'</b></span></div>').join('')+'</div></div>';
+  if(r.kind!=='twin')h+='<div class="card"><h2>'+T('Tous ses réglages','All its settings')+'</h2><div class="dl">'+D2.map(d=>'<div class="dr"><span>'+esc(EN?d.en:d.fr)+'</span><b>'+dv(d)+'</b></div>').join('')+'</div></div>';
+  return h||'<div class="empty">—</div>';},
+ acc(r){const A=(r.accounts||[]).slice().sort((a,b)=>((b.all||{}).ret||0)-((a.all||{}).ret||0));
+  return '<div class="card"><h2>'+T('Où il tourne','Where it runs')+'<span class="bd ev">'+A.length+'</span></h2>'+A.map((a,i)=>'<div class="acc'+(i===0?' open':'')+'"><button onclick="this.parentNode.classList.toggle(\'open\')"><span class="rr" style="padding:0;border:0;background:transparent;flex:1;min-width:0"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+esc(T(a.label.fr,a.label.en))+'</b><small>'+(a.alive==null?'':(a.alive?'● '+T('en marche','running'):'○ '+T('arrêté','stopped'))+' · ')+(a.real?T('argent réel','real money'):T('démo','demo'))+'</small></span>'+spark((a.all||{}).curve,64,28)+'<span class="vv"><b class="'+cl((a.all||{}).ret!=null?a.all.ret:(a.all||{}).net)+'">'+((a.all||{}).ret!=null?pc(a.all.ret):money((a.all||{}).net))+'</b><small>'+((a.all||{}).n||0)+' trades</small></span></span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button>'+
+   '<div class="ab">'+((a.all||{}).n?statsKpis(a.all,true)+(a.all.curve?'<div style="margin-top:14px">'+lineChart([{a:a.all.curve,c:'var(--accent)',n:'Net'}],{h:150})+'</div>':''):'<div class="empty">'+T('Pas encore de trade.','No trade yet.')+'</div>')+(a.why_off?'<div class="note">'+esc(a.why_off)+'</div>':'')+'</div></div>').join('')+'</div>';},
+ duel(r){const d=r.duel||{},t=r.total||{};const S=[];if(t.curve&&t.curve.length>1)S.push({a:t.curve,c:'var(--violet)',n:T('Le jumeau','The twin')});if(d.real_curve&&d.real_curve.length>1)S.push({a:d.real_curve,c:'var(--muted)',n:T('Le vrai robot, même période','The real robot, same period'),dash:1});
+  return '<div class="card"><h2>'+T('Jumeau contre vrai robot','Twin against the real robot')+'</h2>'+(r.grade&&GRADE[r.grade]?'<div class="mrow"><span>'+T('Sur le passé : ','On past data: ')+'<b>'+T(GRADE[r.grade][0],GRADE[r.grade][1]).toLowerCase()+'</b></span></div>':'')+'<div class="kpis">'+
+   kp(T('Jumeau','Twin'),money(t.net),(t.n||0)+' trades',cl(t.net))+kp(T('Vrai robot','Real robot'),money(d.real_net),'',cl(d.real_net))+kp(T('Pire creux, jumeau','Worst dip, twin'),d.twin_worst!=null?'−$'+num(d.twin_worst,2):'—')+kp(T('Pire creux, vrai','Worst dip, real'),d.real_worst!=null?'−$'+num(d.real_worst,2):'—')+'</div>'+
+   (S.length?'<div style="margin-top:16px">'+lineChart(S)+'</div>':'')+'<div class="note">'+T('Le vrai robot trade avec de l\'argent et ses propres tailles : comparez les formes, pas seulement les montants.','The real robot trades money at its own sizes: compare the shapes, not only the amounts.')+'</div></div>';},
+ hist(r){const H=(r.hist||[]).filter(x=>x.txt||x.date);let h='<div class="card"><h2>'+T('Sa vie','Its life')+'</h2><div class="tl">';
+  if(r.since)h+='<div class="tli"><b>'+fdate(r.since)+'</b><span>'+T('Mis en route','Started')+'</span></div>';
+  H.forEach(x=>{h+='<div class="tli"><b>'+(x.date?fdate(x.date):'—')+'</b><span>'+esc(x.txt?x.txt.replace(/^\d{4}-\d{2}-\d{2}\s*/,''):T('Réglage changé','Setting changed'))+'</span></div>';});
+  if(r.until)h+='<div class="tli"><b>'+fdate(r.until)+'</b><span>'+T('Arrêté','Stopped')+'</span></div>';
+  return h+'</div></div>';}};
+function openStrat(id){SIDE='strat';try{history.replaceState(null,'','strategies');}catch(e){}doors();head();if(!D){load().then(()=>{location.hash='s='+id;});}else{NAV++;location.hash='s='+id;}}
+
+/* ---------- the AI team ---------- */
+function jumpTo(id){const e=document.getElementById(id);if(e)e.scrollIntoView({behavior:'smooth',block:'start'});}
+function renderTeam(){const t=TM;if(!t)return;const c=t.chercheur||{},b=t.constructeur||{},k=t.critique||{},v=t.veille||{},n=t.night||{};
+ const nightAge=n.updated?(Date.now()-new Date(n.updated).getTime())/3600000:999,nightOk=nightAge<36&&!n.drift;
+ const AV=(l,col)=>'<span class="av" style="background:'+col+'">'+l+'</span>';
+ let h='<div class="card hero"><div class="eyebrow">'+T('L\'équipe IA','The AI team')+'</div><div class="big">4<small>'+T('IA au travail','AIs at work')+'</small></div>'+
+  '<p>'+T('Le chercheur pose les questions, le constructeur fabrique, la critique vérifie, la veille regarde chaque trade. Personne ne touche aux comptes réels sans le propriétaire.','The researcher asks, the builder builds, the critic checks, the watcher looks at every trade. Nobody touches real accounts without the owner.')+'</p>'+
+  '<div class="avs">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'</div>'+
+  '<div class="pulse"><span class="dot" style="'+(nightOk?'':'background:var(--down);box-shadow:0 0 10px var(--down)')+'"></span><span>'+(nightOk?T('Séance de nuit faite ','Night run done ')+ago(new Date(n.updated).getTime()/1000):(n.drift?T('Le simulateur ne décrit plus le robot : les verdicts sont à revoir','The simulator no longer matches the robot: verdicts need a recheck'):T('La séance de nuit n\'a pas tourné depuis ','The night run has not run for ')+Math.round(nightAge)+' h'))+'</span></div></div>'+
+  '<div class="chips" style="margin:0 0 14px">'+[['tm-ch',T('Le chercheur','Researcher')],['tm-co',T('Le constructeur','Builder')],['tm-cr',T('La critique','Critic')],['tm-ve',T('La veille','Watcher')],['tm-pi',T('Les pistes','Clues')],['tm-qa',T('Questions','Questions')]].map(x=>'<button class="chip" onclick="jumpTo(\''+x[0]+'\')">'+x[1]+'</button>').join('')+'</div>';
+ const cnt=n.counts||{};const tot=Object.values(cnt).reduce((a,x)=>a+x,0);
+ if(tot)h+='<div class="card"><h2>'+T('Cette nuit','Last night')+'<span class="bd ev">'+num(n.days,0)+T(' jours rejoués',' days replayed')+'</span></h2><div class="sbar" style="background:var(--surface3)">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<i style="flex:'+cnt[x[0]]+';background:'+x[1]+'"></i>').join('')+'</div>'+
+  '<div class="slegend" style="margin-top:12px">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<span style="display:inline-flex;align-items:center;gap:7px;font-size:.84rem;color:var(--text2)"><span class="dot" style="background:'+x[1]+'"></span><b>'+cnt[x[0]]+'</b> '+T(GRADE[x[0]][0],GRADE[x[0]][1]).toLowerCase()+'</span>').join('')+'</div><div class="note">'+tot+T(' réglages du robot rejoués sur le passé pendant la nuit.',' robot settings replayed on past data overnight.')+'</div></div>';
+ // the researcher
+ h+='<div class="card mem" id="tm-ch"><div class="mh">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+'<div><b>'+T('Le chercheur','The researcher')+'</b><small>'+T('pose les questions, propose les réglages','asks the questions, proposes settings')+(c.date?' · '+fdate(c.date):'')+'</small></div></div>'+
+  (c.headline_fr?'<div class="quote">'+esc(EN?c.headline_en:c.headline_fr)+'</div>':'')+
+  ((c.sections||[]).length?(c.sections||[]).map((s,i)=>'<div class="acc'+(i===0?' open':'')+'" style="margin-top:10px"><button onclick="this.parentNode.classList.toggle(\'open\')"><b style="flex:1">'+esc(EN?s.title_en:s.title_fr)+'</b><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button><div class="ab"><div class="sub" style="color:var(--text2)">'+esc(EN?s.en:s.fr)+'</div></div></div>').join(''):'')+
+  ((c.beliefs||[]).length?'<div class="grp" style="margin:16px 0 8px">'+T('Ce qu\'il croit','What it believes')+'</div><div class="mini">'+c.beliefs.map(x=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--accent-soft)">'+fic('recherche')+'</span><span>'+esc(EN?x.en:x.fr)+(x.evidence?'<br><small style="color:var(--muted)">'+esc(x.evidence)+'</small>':'')+'</span></div>').join('')+'</div>':'')+
+  ((c.pending||[]).length?'<div class="grp" style="margin:16px 0 8px">'+T('Ses propositions en attente','Its pending proposals')+' <em>'+c.pending.length+'</em></div><div class="mini">'+c.pending.map(p=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--warn)">'+fic(p.family)+'</span><span><b>'+esc(EN?p.title_en:p.title_fr)+'</b><br><small style="color:var(--muted)">'+esc(EN?p.why_en:p.why_fr)+'</small></span></div>').join('')+'</div>':'')+
+  '<div class="note">'+num(c.done||0)+T(' propositions déjà rejouées.',' proposals already replayed.')+'</div></div>';
+ // the builder
+ h+='<div class="card mem" id="tm-co"><div class="mh">'+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+'<div><b>'+T('Le constructeur','The builder')+'</b><small>'+T('fabrique les pièces que le chercheur demande','builds the parts the researcher asks for')+' · '+num(b.built||0)+T(' construites',' built')+'</small></div></div>'+
+  ((b.open||[]).length?'<div class="mini" style="margin-top:12px">'+b.open.map(q=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--warn)">'+fic('recherche')+'</span><span><b>'+esc(EN?q.title_en:q.title_fr)+'</b><br><small style="color:var(--muted)">'+esc(EN?q.what_en:q.what_fr)+'</small></span><span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+T('en cours','in progress')+'</span></div>').join('')+'</div>':'<div class="sub" style="margin-top:10px">'+T('Rien en cours.','Nothing in progress.')+'</div>')+
+  (b.last_built?'<div class="note">'+T('Dernière pièce : ','Last part: ')+'<b>'+esc(EN?b.last_built.title_en:b.last_built.title_fr)+'</b> ('+fdate(b.last_built.date)+')</div>':'')+'</div>';
+ // the critic
+ const KV={bloque:[T('bloquée','blocked'),'var(--down-soft)','var(--bad-bg)'],doute:[T('un doute','a doubt'),'var(--warn)','var(--mid-bg)'],ok:[T('passe','passes'),'var(--up-soft)','var(--ok-bg)']};
+ h+='<div class="card mem" id="tm-cr"><div class="mh">'+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+'<div><b>'+T('La critique','The critic')+'</b><small>'+T('essaie de casser chaque bonne nouvelle avant qu\'elle arrive au robot','tries to break every good news before it reaches the robot')+'</small></div></div><div class="mini" style="margin-top:12px">'+
+  ((k.items||[]).map(x=>{const q=KV[x.verdict]||KV.doute;return '<div class="mi" style="align-items:flex-start;flex-direction:column;gap:6px"><span style="display:flex;gap:8px;align-items:center;width:100%"><span class="bd" style="background:'+q[2]+';color:'+q[1]+'">'+q[0]+'</span><small style="color:var(--muted)">'+fdate(x.date)+'</small></span><span>'+esc(EN?x.en:x.fr)+'</span></div>';}).join('')||'<div class="sub">—</div>')+'</div></div>';
+ // the watcher
+ h+='<div class="card mem" id="tm-ve"><div class="mh">'+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'<div><b>'+T('La veille','The watcher')+'</b><small>'+T('regarde chaque trade pendant la journée','looks at every trade during the day')+(v.last?' · '+ago(v.last):'')+'</small></div></div><div class="tl" style="margin-top:14px">'+
+  ((v.items||[]).map(x=>'<div class="tli"><b>'+ago(new Date(x.t).getTime()/1000)+'</b><span>'+esc(EN?(x.en||x.fr):x.fr)+'</span></div>').join('')||'<div class="sub">—</div>')+'</div></div>';
+ // clues and questions
+ const P=t.pistes||[];const LB={trop_tot:[T('trop tôt','too early'),'var(--muted)'],a_tester:[T('à vérifier','worth checking'),'var(--up-soft)'],divergent:[T('pas net','not clear'),'var(--warn)']};
+ if(P.length)h+='<div class="card" id="tm-pi"><h2>'+T('Les pistes','The clues')+'<span class="bd ev">'+P.length+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Des piles de vrais trades que l\'IA met face à tous les autres.','Piles of real trades the AI puts against all the others.')+'</div><div class="rk">'+
+  P.map(p=>{const l=LB[p.label]||[T('en cours','being counted'),'var(--muted)'];const d=p.win!=null&&p.rest_win!=null?p.win-p.rest_win:null;
+   return '<div class="rr" style="align-items:flex-start"><span class="nm"><b style="white-space:normal">'+esc(EN?(p.name_en||p.name_fr):(p.name_fr||p.name_en))+'</b><small>'+(p.n||0)+' trades · <span style="color:'+l[1]+'">'+l[0]+'</span>'+(p.by==='chercheur'?' · '+T('ouverte par l\'IA','opened by the AI'):'')+'</small></span><span class="vv"><b class="'+(d==null?'':(d>=0?'pos':'neg'))+'">'+(p.win!=null?num(p.win,0)+' %':'—')+'</b><small>'+T('autres ','others ')+(p.rest_win!=null?num(p.rest_win,0)+' %':'—')+'</small></span></div>';}).join('')+'</div></div>';
+ const Q=t.asks||[];if(Q.length)h+='<div class="card" id="tm-qa"><h2>'+T('Questions et réponses','Questions and answers')+'</h2><div class="mini">'+Q.map(q=>'<div class="mi" style="align-items:flex-start;flex-direction:column;gap:6px"><b>'+esc(EN?q.seed_en:q.seed_fr)+'</b>'+(q.answer_fr?'<span style="color:var(--text2)">'+esc(EN?(q.answer_en||q.answer_fr):q.answer_fr)+'</span>':'<small style="color:var(--muted)">'+esc(q.note||T('en attente','waiting'))+'</small>')+'</div>').join('')+'</div></div>';
+ $('top').innerHTML=h;$('list').innerHTML='';}
+
+/* ---------- routing + loading for all three sides ---------- */
+function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
+ if(id&&D&&byId(id)){if(SIDE!=='strat'){SIDE='strat';doors();}CUR=byId(id);CURR=null;SEC=h.get('v')||'ov';document.body.classList.add('det');renderDet();window.scrollTo(0,0);return;}
+ if(rid&&RB&&rbById(rid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURR=rbById(rid);CUR=null;RSEC=h.get('v')||'ov';document.body.classList.add('det');renderRobot();window.scrollTo(0,0);return;}
+ if((id&&!D)||(rid&&!RB)){load();return;}
+ NAV=0;document.body.classList.remove('det');CUR=null;CURR=null;head();paint();}
+const LOCK='<div class="card" style="margin-top:10px"><h2>'+T('Réservé à l\'offre Stratégie','Strategy plan only')+'</h2><div class="sub">'+T('Le labo montre toutes les stratégies, tous les robots et le travail des IA. Il fait partie de l\'offre Stratégie.','The lab shows every strategy, every robot and the AIs\' work. It is part of the Strategy plan.')+'</div></div>';
+async function getJ(u){const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});return r.json();}
+async function load(){try{
+ const h=new URLSearchParams(location.hash.slice(1));
+ const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r'),needT=SIDE==='team';
+ const [s,r,t]=await Promise.all([needS?getJ('strategies_data'):null,needR?getJ('robots_data'):null,needT?getJ('team_data'):null]);
+ if([s,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
+ const first=(s&&!D)||(r&&!RB)||(t&&!TM);if(s)D=s;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');
+ // a refresh never moves the reader: lists redraw, an open strategy or robot keeps its place
+ if(document.body.classList.contains('det')){if(CUR)CUR=byId(CUR.id)||CUR;if(CURR)CURR=rbById(CURR.id)||CURR;if(first)route();return;}
+ const q=$('q'),typing=q&&document.activeElement===q;
+ if(first)route();else paint();
+ if(typing){const q2=$('q');if(q2){q2.focus();q2.setSelectionRange(Q.length,Q.length);}}
 }catch(e){$('livet').textContent=T('Hors ligne','Offline');}}
 window.addEventListener('hashchange',route);
 $('back').onclick=e=>{e.preventDefault();if(document.body.classList.contains('det')){if(NAV>0){NAV--;history.back();}else{history.replaceState(null,'',location.pathname+location.search);route();}return;}
  if(history.length>1)history.back();else location.href='./';};
 if(EN){document.documentElement.lang='en';}
-load();setInterval(()=>{if(!document.hidden)load();},60000);
+doors();head();load();setInterval(()=>{if(!document.hidden)load();},60000);
 </script></body></html>
