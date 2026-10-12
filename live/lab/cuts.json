@@ -308,6 +308,31 @@
      ]
     }
    ]
+  },
+  {
+   "id": "day_after_loss",
+   "title_fr": "Trade pris le jour (8 h - minuit UTC) juste après une perte",
+   "title_en": "Trade taken by day (08:00 - midnight UTC) right after a loss",
+   "by": "chercheur",
+   "date": "2026-10-12",
+   "status": "open",
+   "why_fr": "La nuit, le robot gagne même après une perte (15 trades, 10 gagnés, +16 $). Le jour, après une perte, il n'en gagne qu'un sur trois : 39 trades, -51 $, la plus grosse fuite du journal. Les deux moitiés sont d'accord (39 % puis 33 %). Cette pile dira si « courir après la perte, le jour » est la vraie cause.",
+   "why_en": "At night the robot wins even after a loss (15 trades, 10 won, +$16). By day, after a loss, it wins only one in three: 39 trades, -$51, the biggest leak in the journal. Both halves agree (39 % then 33 %). This pile will tell whether 'chasing the loss by day' is the real cause.",
+   "where": [
+    {
+     "field": "prev_win",
+     "op": "==",
+     "value": false
+    },
+    {
+     "field": "hour",
+     "op": "between",
+     "value": [
+      8,
+      23
+     ]
+    }
+   ]
   }
  ]
 }

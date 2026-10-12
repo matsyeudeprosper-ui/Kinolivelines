@@ -75,6 +75,26 @@
     "drag: auto = 0 (not yet 30 trades measured) -> +8.9 unchanged. drag 1 charges the variant only in this harness (-150.7 vs uncharged base) - not a fair duel; by count it trades 59 fewer, so a per-trade cost would favour it, not hurt it",
     "overlap: same trades as ext500/wait cut at another dose; 136 entries blocked of ~350"
    ]
+  },
+  {
+   "id": "ext400_capwait25_fm075",
+   "date": "2026-10-12",
+   "verdict": "bloque",
+   "fr": "C'est l'idée bloquée hier, retouchée. Rejouée ce matin, elle perd sur la première moitié, avec et sans plafond ; tout le gain vient des trois dernières semaines. Sans plafond, le gain (+19 $) vaut moins qu'une seule perte évitée (−39 $). À 300 points elle perd 17 $ ; sur 69 jours elle perd 9 $. Pour changer d'avis : un gain sur les deux moitiés et sur 69 jours.",
+   "en": "This is yesterday's blocked idea, reshaped. Replayed this morning, it loses in the first half, with and without a daily cap; all the gain comes from the last three weeks. Without a cap, the gain (+$19) is smaller than one single avoided loss (−$39). At 300 points it loses $17; over 69 days it loses $9. To change my mind: a gain in both halves and over 69 days.",
+   "checks": [
+    "dose ext (uncapped, fm 0.75, harness 2026-10-12): ext300 -16.6 (C), ext400 +18.8 (B), ext500 +35.9 (B). Sign flips one step below; gain grows as the filter loosens -> ext400 over-filters, ext500 is already a candidate",
+    "dose cap_wait (capped, ext400 fm0.75): 15 min +13.2, 25 min +76.4, 35 min +24.4 - all positive but a sharp spike at 25; first half negative at all three (-5.8 / -7.1 / -19.4)",
+    "halves: uncapped h1 -16.4 / h2 +21.7 (battery said +6 / +0.1 against another base); capped h1 -7.1 / h2 +78.4. Every shape's gain lives in the second half (2026-09-21 onwards)",
+    "shapes: capped carries the money (+76 vs +19); holes smaller in both (uncapped 80->57, capped 59->18) - the one consistent good point",
+    "long window: 69 days -9.36, its first half -51.62, hole +23 worse -> a loss there = doubt",
+    "real trades: +33.61 on 60 kept of 80 (20 blocked), but net still -4.41; hole -35.8 better",
+    "concentration: uncapped gain +18.8 < the single -39.16 base trade (2026-09-24) the variant avoids; capped h2 gain is largely the 2026-10-07 day (base -37 that day, variant +4)",
+    "past: ext300 rejected (C, -26), ext500 candidate B, wait 30/60 rejected (C); critique 2026-10-11 blocked ext400_wait25_fh075 for an isolated peak at 25 min/400 pts and a 69-day loss - same two dials, with a cap-only wait and first-move size swapped in",
+    "mechanism: 'no chase after a 400-pt hour, rest after a close when capped' plausibly cuts holes; nothing explains why exactly 25 min/400 pts earns more, and the first half says it does not",
+    "drag: --drag auto = null (not yet 30 measured trades) -> nets unchanged; variant trades fewer (uncapped 262 vs 276, capped 141 vs 184), so a per-trade cost would favour it, not hurt it",
+    "overlap: the old ext/wait idea re-cut after yesterday's block - re-proposing a blocked dial pair should need new evidence, not a new shape"
+   ]
   }
  ]
 }
