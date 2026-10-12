@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-12T13:30:19Z",
+ "updated": "2026-10-12T20:00:45Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -102,7 +102,8 @@
     "2026-10-12 05:00 veille: night nervous flip won +2.07 (entry 00 h). flip_hot 31 tr 35% -41.55 PF 0.45 (h 35/36). Night flips keep winning; the hour stays the split.",
     "2026-10-12 07:00 veille: night nervous FLIP-BOS SELL -6.89 (06 h, pace 1.759). flip_hot 32 tr 34% -48.44 PF 0.41 (h 35/33), past 30 trades.",
     "2026-10-12: flip_hot 34 tr 35% vs 56% -50.76 PF 0.42 (h 35/35) - past 30, gap 21 pts. trio+fh075 B +19.9 (h1 -0.9) / A +89.3 - near miss on uncapped first half.",
-    "2026-10-12 12:00 veille: 7 new, 2 won, ~-13.15. Five FLIP-BOS (1 won), two BOS (1 won). flip_day 44 tr 34% -61.83 PF 0.42 (h 33/35). Kind: FLIP-BOS 66 tr 42% -54.87 PF 0.60 (h 41/43); BOS 43 tr 56% +14.35 PF 1.15 (h 62/47)."
+    "2026-10-12 12:00 veille: 7 new, 2 won, ~-13.15. Five FLIP-BOS (1 won), two BOS (1 won). flip_day 44 tr 34% -61.83 PF 0.42 (h 33/35). Kind: FLIP-BOS 66 tr 42% -54.87 PF 0.60 (h 41/43); BOS 43 tr 56% +14.35 PF 1.15 (h 62/47).",
+    "2026-10-12 20:00 veille: FLIP-BOS BUY won +1.80 (closed 19:56, pace 0.886 = calm-ish, day, after the 12:35 win). Fits the hypothesis. Pile flip_day 45 tr 36% -60.03 PF 0.44 (h 33/38); inside it 0.8-1.0 band 11 tr 55% -5.02 vs 1.0-1.3 11 tr 18% -27.91 (peu). flip_hot 35 tr 34% -56.24 (h 35/33), after a loss 19 tr 26% -44.27."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -1884,6 +1885,14 @@
     "labo ask day_after_loss"
    ],
    "saw": "115 trades. 12:21 BOS SELL +3.34 was day-after-loss and won (against the pile); 12:35 BOS SELL +2.11 after a win. Pile 42 tr 36% vs 56% -54.28 PF 0.49 (h 37/35) - still agree. Answered ask (true, no proposal). No harness run (loss_wait_day not built), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-12T20:00:45Z",
+   "looked": [
+    "wake_context 1 trade closed 19:56 (FLIP-BOS BUY +1.80, pace 0.886, after a win)",
+    "scrutiny --pile flip_day (by nerv/prev/hour/dur), --pile flip_hot"
+   ],
+   "saw": "116 trades. A calm-ish day reversal after a win won small. flip_day 45 tr 36% -60.03 (h 33/38) still bad; its calm-ish 0.8-1.0 band 11 tr 55% vs nervous 1.0-1.3 18% (peu). flip_hot 35 tr 34% -56.24, both halves agree. No twins, labo, ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
