@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-12T23:00:00Z",
+ "updated": "2026-10-12T13:30:19Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -134,10 +134,11 @@
    "id": "day_loss_chase",
    "fr": "Le jour, juste après une perte, le robot court après son argent et perd ; la nuit, non.",
    "status": "nouveau",
-   "next": "Pile day_after_loss (opened 10-12, 39 tr); request loss_wait_day.",
+   "next": "Wait for loss_wait_day (requested 10-12); pile day_after_loss keeps counting.",
    "evidence": [
     "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4.",
-    "2026-10-12 12:00 veille: 11:29 FLIP-BOS SELL -1.92 and 11:57 BOS SELL -4.32, both day after a loss, both lost as predicted. Pile 41 tr 34% vs 56% -57.62 PF 0.46 (h 37/32); 1.0-1.3 11 tr 18%; <15 min 24 tr 29%. Past 30, halves agree."
+    "2026-10-12 12:00 veille: 11:29 FLIP-BOS SELL -1.92 and 11:57 BOS SELL -4.32, both day after a loss, both lost as predicted. Pile 41 tr 34% vs 56% -57.62 PF 0.46 (h 37/32); 1.0-1.3 11 tr 18%; <15 min 24 tr 29%. Past 30, halves agree.",
+    "2026-10-12 13:30 veille: BOS SELL +3.34 (pace 1.097, closed 12:21, day after the 11:57 loss) won against the pile; BOS SELL +2.11 (pace 1.227, 12:35, after a win). Pile 42 tr 36% vs 56% -54.28 PF 0.49 (h 37/35). Inside: 1.0-1.3 12 tr 25%, 1.3-1.85 13 tr 46% -25.62 (losses 2x wins), <15 min 25 tr 32%. Answered labo ask day_after_loss."
    ]
   },
   {
@@ -1874,6 +1875,15 @@
     "scrutiny --pile day_after_loss / flip_day / asia (by hour, dur); --by kind"
    ],
    "saw": "113 trades. Day after a loss: the two late-morning after-loss trades both lost; pile 41 tr 34% -57.62 (h 37/32). Two night-entered reversals (04 h, 07 h) lost after long holds; asia 42 tr 67% +33.32 (h 70/64). flip_day 44 tr 34% -61.83. FLIP-BOS 66 tr 42% -54.87; BOS 43 tr 56% +14.35. No twins, labo, ask. No harness run (loss_wait_day not built; hour cuts already tried), no pile, no proposal."
+  },
+  {
+   "t": "2026-10-12T13:30:19Z",
+   "looked": [
+    "wake_context 2 trades closed 12:21/12:35 (BOS SELL x2, both won, +5.45)",
+    "scrutiny --pile day_after_loss (by nerv/prev/hour/dur)",
+    "labo ask day_after_loss"
+   ],
+   "saw": "115 trades. 12:21 BOS SELL +3.34 was day-after-loss and won (against the pile); 12:35 BOS SELL +2.11 after a win. Pile 42 tr 36% vs 56% -54.28 PF 0.49 (h 37/35) - still agree. Answered ask (true, no proposal). No harness run (loss_wait_day not built), no pile, no proposal."
   }
  ],
  "lessons": [

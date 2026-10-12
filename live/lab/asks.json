@@ -157,7 +157,10 @@
    "by": "labo",
    "date": "2026-10-12",
    "note": "41 trades, 34 % gagnés contre 56 % pour les autres ; les deux moitiés sont d’accord.",
-   "status": "open"
+   "status": "answered",
+   "answered": "2026-10-12T13:30:19Z",
+   "answer_fr": "Vrai, c'est ma pile de ce matin. Le jour, juste après une perte : quarante-deux trades, un peu plus d'un sur trois gagné contre plus d'un sur deux pour les autres, cinquante-quatre dollars perdus, les deux moitiés d'accord. La nuit, après une perte, le robot gagne deux fois sur trois. À midi vingt, une cassure à la vente prise juste après une perte a gagné trois dollars : un gain ne change pas l'histoire. J'ai demandé une pause après une perte, seulement le jour ; pas encore construite. Pas de nouvelle proposition.",
+   "answer_en": "True, it is my pile from this morning. By day, right after a loss: forty-two trades, a bit over one in three won against over one in two for the others, fifty-four dollars lost, both halves agree. At night, after a loss, the robot wins two in three. At twelve twenty, a breakout sell taken right after a loss won three dollars: one win does not change the story. I asked for a pause after a loss, by day only; not built yet. No new proposal."
   }
  ]
 }
