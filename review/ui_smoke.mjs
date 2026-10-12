@@ -171,7 +171,11 @@ const isInner = (t) => /int /i.test(t) || /petite structure/i.test(t)
 // nothing to do with the switch. It did, once. Compare with the money
 // blanked out: the switch must not add or remove a label, and the live
 // number is not the switch's business.
-const noMoney = (t) => t.replace(/[-+−]?\$[0-9.,]+/g, "$").replace(/^\d:\d\d$/, "0:00");   // 2026-10-11: the bar-close countdown ticks between the two frames
+// 2026-10-12: an open trade's distance to its stop / target ("0.38%") is just as live as its money - the
+// labels are collected over several frames, so a tick between frames put "0.38%" and "0.40%" in the same set
+// and failed the check while the chart itself drew exactly the same two labels in every frame (verified one
+// frame at a time, inner on / off / on). Blank the live percentage too.
+const noMoney = (t) => t.replace(/[-+−]?\$[0-9.,]+/g, "$").replace(/[0-9]+[.,][0-9]+\s*%/g, "%").replace(/^\d:\d\d$/, "0:00");   // 2026-10-11: the bar-close countdown ticks between the two frames
 const mainOn = [...new Set(on.filter(t => !isInner(t)).map(noMoney))].sort();
 const mainOff = [...new Set(off.filter(t => !isInner(t)).map(noMoney))].sort();
 if (mainOn.length === 0 && mainOff.length === 0)
