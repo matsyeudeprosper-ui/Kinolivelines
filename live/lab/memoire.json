@@ -56,7 +56,8 @@
     "2026-10-11 07:00 veille: two FLIP-BOS BUY wins closed 06:45/06:46 (+0.54 pace 0.912, +1.73 pace 0.813). asia 37 tr 73% +48.97 PF 2.2 (h 70%/76%); 0.8-1.0 inside asia 13 tr 77% +10.55.",
     "2026-10-11: asia pile 38 tr 71% +48.26 (h 70/72) agree; europe 29 tr 38% -29.65; us 31 tr 32% -51.20.",
     "2026-10-11 15:00 veille (labo ask europe): europe 32 tr 38% -32.67 (h 37/38); after a loss 16 tr 25% -41.96 (h 29/22), after a win 15 tr 47% +1.49. The day's loss is the after-loss chase.",
-    "2026-10-12: size rule instead of cut: day stake 0.75 C -16.0 / A +18.1; 0.5 C/C; trio+day075 B +6.5 / B +73.9. Fixed-hour split again: h1 worse, h2 better. Real: day after a loss 39 tr 36% -51.38 (h 39/33); night after a loss 15 tr 67% +15.69."
+    "2026-10-12: size rule instead of cut: day stake 0.75 C -16.0 / A +18.1; 0.5 C/C; trio+day075 B +6.5 / B +73.9. Fixed-hour split again: h1 worse, h2 better. Real: day after a loss 39 tr 36% -51.38 (h 39/33); night after a loss 15 tr 67% +15.69.",
+    "2026-10-12 12:00 veille: two night-entered reversals lost late (entry 04 h held >3 h -5.48 closed 09:23; entry 07 h -4.64). asia 42 tr 67% +33.32 PF 1.57 (h 70/64), was 40 tr +43.44. 04 h 2 tr -1.85, >3 h holds 4 tr 50% -7.36. Night still positive, thinner."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -100,7 +101,8 @@
     "2026-10-11 15:00 veille: FLIP-BOS SELL +1.17 (pace 1.517, NERVOUS, day, closed 13:52) - a small win against flip_hot. flip_day 40 tr 32% -62.78 PF 0.38 (h 33/32). FLIP-BOS 58 tr 43% -40.88.",
     "2026-10-12 05:00 veille: night nervous flip won +2.07 (entry 00 h). flip_hot 31 tr 35% -41.55 PF 0.45 (h 35/36). Night flips keep winning; the hour stays the split.",
     "2026-10-12 07:00 veille: night nervous FLIP-BOS SELL -6.89 (06 h, pace 1.759). flip_hot 32 tr 34% -48.44 PF 0.41 (h 35/33), past 30 trades.",
-    "2026-10-12: flip_hot 34 tr 35% vs 56% -50.76 PF 0.42 (h 35/35) - past 30, gap 21 pts. trio+fh075 B +19.9 (h1 -0.9) / A +89.3 - near miss on uncapped first half."
+    "2026-10-12: flip_hot 34 tr 35% vs 56% -50.76 PF 0.42 (h 35/35) - past 30, gap 21 pts. trio+fh075 B +19.9 (h1 -0.9) / A +89.3 - near miss on uncapped first half.",
+    "2026-10-12 12:00 veille: 7 new, 2 won, ~-13.15. Five FLIP-BOS (1 won), two BOS (1 won). flip_day 44 tr 34% -61.83 PF 0.42 (h 33/35). Kind: FLIP-BOS 66 tr 42% -54.87 PF 0.60 (h 41/43); BOS 43 tr 56% +14.35 PF 1.15 (h 62/47)."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -134,7 +136,8 @@
    "status": "nouveau",
    "next": "Pile day_after_loss (opened 10-12, 39 tr); request loss_wait_day.",
    "evidence": [
-    "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4."
+    "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4.",
+    "2026-10-12 12:00 veille: 11:29 FLIP-BOS SELL -1.92 and 11:57 BOS SELL -4.32, both day after a loss, both lost as predicted. Pile 41 tr 34% vs 56% -57.62 PF 0.46 (h 37/32); 1.0-1.3 11 tr 18%; <15 min 24 tr 29%. Past 30, halves agree."
    ]
   },
   {
@@ -1863,6 +1866,14 @@
     "new pile day_after_loss by nerv/gap/hour/dur"
    ],
    "saw": "106 trades 49% -39.13 PF 0.83. Day after a loss is the biggest leak (39 tr 36% -51); night after a loss 67%. flip_hot 34 tr 35% past 30. Since pb gate: ~14 tr 71% won on main accounts (hint). Live entries/day 6.5 -> 4; replay with pb ~1.5/day."
+  },
+  {
+   "t": "2026-10-12T12:00:11Z",
+   "looked": [
+    "wake_context 7 trades closed 07:19-11:57 (FLIP-BOS x5 1 won, BOS x2 1 won, ~-13.15)",
+    "scrutiny --pile day_after_loss / flip_day / asia (by hour, dur); --by kind"
+   ],
+   "saw": "113 trades. Day after a loss: the two late-morning after-loss trades both lost; pile 41 tr 34% -57.62 (h 37/32). Two night-entered reversals (04 h, 07 h) lost after long holds; asia 42 tr 67% +33.32 (h 70/64). flip_day 44 tr 34% -61.83. FLIP-BOS 66 tr 42% -54.87; BOS 43 tr 56% +14.35. No twins, labo, ask. No harness run (loss_wait_day not built; hour cuts already tried), no pile, no proposal."
   }
  ],
  "lessons": [

@@ -148,6 +148,16 @@
    "answered": "2026-10-11T15:00:03Z",
    "answer_fr": "Vrai. De 8 h à 16 h UTC : trente-deux trades, moins de quatre sur dix gagnés, trente-trois dollars perdus, les deux moitiés d'accord. Mais presque toute la perte vient d'après une perte : seize trades, un sur quatre gagné, quarante-deux dollars perdus ; après un gain, la journée est à peu près à zéro. Le robot court après sa perte le jour. Refuser des heures entières a déjà échoué au test ; une pause après une perte est en essai. Pas de nouvelle proposition.",
    "answer_en": "True. From 8 to 16 UTC: thirty-two trades, under four in ten won, thirty-three dollars lost, both halves agree. But nearly all the loss comes after a loss: sixteen trades, one in four won, forty-two dollars lost; after a win, the day is about even. By day the robot chases its loss. Refusing whole hours already failed the test; a pause after a loss is being tested. No new proposal."
+  },
+  {
+   "id": "ask_1791806415_day_after_loss",
+   "seed": "day_after_loss",
+   "seed_fr": "Trade pris le jour (8 h - minuit UTC) juste après une perte",
+   "seed_en": "Trade taken by day (08:00 - midnight UTC) right after a loss",
+   "by": "labo",
+   "date": "2026-10-12",
+   "note": "41 trades, 34 % gagnés contre 56 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "open"
   }
  ]
 }
