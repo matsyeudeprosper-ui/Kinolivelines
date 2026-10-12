@@ -141,9 +141,10 @@
    "by": "owner",
    "by_uid": "kino",
    "created": "2026-10-12",
-   "stage": "queued",
+   "stage": "tested",
    "plain_fr": "Pekos owl, avec le rattrapage sans limite.",
-   "plain_en": "Pekos owl, with the unlimited catch-up."
+   "plain_en": "Pekos owl, with the unlimited catch-up.",
+   "tested_at": "2026-10-12T22:46:59Z"
   },
   {
    "id": "pekos-rattrapage-choch",
@@ -159,9 +160,10 @@
    "by": "owner",
    "by_uid": "kino",
    "created": "2026-10-12",
-   "stage": "queued",
+   "stage": "tested",
    "plain_fr": "Pekos rattrapage, qui sort aussi plus tôt si un CHoCH arrive avant l'objectif.",
-   "plain_en": "Pekos catch-up, which also exits early if a CHoCH comes before the target."
+   "plain_en": "Pekos catch-up, which also exits early if a CHoCH comes before the target.",
+   "tested_at": "2026-10-12T22:51:03Z"
   }
  ]
 }
