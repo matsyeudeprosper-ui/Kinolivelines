@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-11T15:00:03Z",
+ "updated": "2026-10-12T05:00:12Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -106,7 +106,8 @@
     "2026-10-11 07:00 veille: two night FLIP-BOS BUY wins (+0.54, +1.73, pace 0.91/0.81, closed ~06:45). Window slid to 96 tr: FLIP-BOS 55 tr 44% -38.78; flip_day 38 tr 32% -61.39 PF 0.38 (h 31%/32%); night flips ~17 tr ~12 won ~+22.6. Hour, not kind, splits the reversals (hint).",
     "2026-10-11: kind: FLIP-BOS 56 tr 43% -39.49 (h 40/45); flip_day 38 tr 32% -61.39 agree.",
     "2026-10-11 13:30 veille: FLIP-BOS BUY -2.56 (pace 1.373, NERVOUS, day, closed 12:18). flip_day 39 tr 31% -63.95 PF 0.37 (h 29%/32%); flip_hot 28 tr 29% -48.41 (h 35%/18%). As predicted.",
-    "2026-10-11 15:00 veille: FLIP-BOS SELL +1.17 (pace 1.517, NERVOUS, day, closed 13:52) - a small win against flip_hot. flip_day 40 tr 32% -62.78 PF 0.38 (h 33/32). FLIP-BOS 58 tr 43% -40.88."
+    "2026-10-11 15:00 veille: FLIP-BOS SELL +1.17 (pace 1.517, NERVOUS, day, closed 13:52) - a small win against flip_hot. flip_day 40 tr 32% -62.78 PF 0.38 (h 33/32). FLIP-BOS 58 tr 43% -40.88.",
+    "2026-10-12 05:00 veille: night nervous flip won +2.07 (entry 00 h). flip_hot 31 tr 35% -41.55 PF 0.45 (h 35/36). Night flips keep winning; the hour stays the split."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -121,7 +122,8 @@
     "2026-10-09 06:30 veille: labo ask 'us' (16-24 h) 32 tr 28% -47.99; but 16-20 h 19 tr 8 won -10.75, 21-23 h 13 tr 1 won -37.24 - the evening pile is the late pile. Engine skip 16-22 C -59.2 (h1 -64.1 / h2 +4.9), hole unchanged. Real and engine still disagree.",
     "2026-10-09: engine trace since 09-24: 21-23 h 9% (uncapped) / 0% (capped), -87; before 09-24 those hours won (h1 +79). Engine now agrees with the real trades on the recent period. skip21_23 C -10.3 (was -29.7 on 10-06; h -62.2/+54.3) / C -27.9; skip22_23 C -54.5 / B +9.3. A regime that started ~09-24, not a constant.",
     "2026-10-10: wealth: 21-0 h loses on 8 of 9 accounts. Engine ext400_skip2123 C -9.4 / C -21.2; with wait20 C -18.5 / B +38.0. Fixed cut still splits the halves.",
-    "2026-10-11 01:30 veille: FLIP-BOS BUY closed 01:15 (entry likely 01 h, outside the window) won +0.50 (calm). late_night 20 tr 25% -47.14 PF 0.22 (h 27%/22%); 00 h 9 tr 44% -14.97. Unchanged."
+    "2026-10-11 01:30 veille: FLIP-BOS BUY closed 01:15 (entry likely 01 h, outside the window) won +0.50 (calm). late_night 20 tr 25% -47.14 PF 0.22 (h 27%/22%); 00 h 9 tr 44% -14.97. Unchanged.",
+    "2026-10-12 05:00 veille: FLIP-BOS BUY +2.07 (pace 1.523, NERVOUS, entry 00 h, closed 00:25 Monday). late_night 21 tr 29% -45.07 PF 0.25 (h 27/30); 00 h 10 tr 50% -12.90 (avg win 2.35 vs avg loss 4.93); 21-23 h 11 tr 1 won -32.17. The 00 h wins half its trades but loses on size."
    ],
    "next": "Battery on skip21_23_wait30; watch skip21_23 drift toward B as old days leave the window."
   },
@@ -1730,6 +1732,14 @@
     "scrutiny --pile flip_day / flip_hot"
    ],
    "saw": "102 trades. A nervous day flip won again (second in a row, against flip_day / flip_hot). flip_day 41 tr 34% -59.16 PF 0.42 (h 33/35); 1.3-1.85 13 tr 38% -22.18; 15 h 2/2 won. flip_hot 30 tr 33% -43.62 PF 0.42 (h 35/31). Piles still hold. No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
+  },
+  {
+   "t": "2026-10-12T05:00:12Z",
+   "looked": [
+    "wake_context 1 trade (FLIP-BOS BUY +2.07 closed 00:25 pace 1.523)",
+    "scrutiny --pile late_night / flip_hot / asia"
+   ],
+   "saw": "103 trades, 50% -29.92 PF 0.86. A nervous reversal entered at 00 h won. late_night 21 tr 29% -45.07 (h 27/30); 00 h 10 tr 50% -12.90, avg loss twice avg win; 21-23 h 11 tr 1 won. flip_hot 31 tr 35% -41.55 (h 35/36). asia 39 tr 72% +50.33 (h 70/74). No twins, labo, ask. No harness run, no pile, no proposal: nothing new to test."
   }
  ],
  "lessons": [
