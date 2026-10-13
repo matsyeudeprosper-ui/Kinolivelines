@@ -332,10 +332,10 @@ console.log("labo");
   // 2026-10-13 (owner, calm layout): each side shows FOLDER rows (.fd); the cards live in the sheet a folder opens
   for (const [side, path, min, inSheet, inMin] of [["Strategies", "strategies", 5, ".sc", 1], ["Robots", "robots", 4, null, 0], ["AI team", "equipe", 4, ".mem", 1]]) {
     await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
-    const n = await ev("document.querySelectorAll('#top .fd,#list .fd').length");
+    const n = await ev("document.querySelectorAll('#top .fd,#list .fd,#list .sf,#top .rc').length");   // folders: .fd rows, .sf stage cards, .rc robot cards
     check(`Labo · ${side} paints its folders`, n >= min, String(n));
     if (inSheet) {
-      await ev("(function(){var b=document.querySelector('#top .fd,#list .fd');if(b)b.click();return 1;})()"); await sleep(1200);
+      await ev("(function(){var b=document.querySelector('#top .fd,#list .fd,#list .sf');if(b)b.click();return 1;})()"); await sleep(1200);
       const k = await ev(`document.querySelectorAll('#lsh ${inSheet}').length`);
       check(`Labo · ${side} folder opens its cards`, k >= inMin, String(k));
       await ev("(function(){if(window.shClose)shClose();return 1;})()"); await sleep(800);
@@ -344,7 +344,7 @@ console.log("labo");
     check(`Labo · ${side} has no NaN/undefined`, !/NaN|undefined/.test(tx));
     check(`Labo · ${side} has no bare verdict letter`, !/(^|\s)[ABC](\s|$)/m.test(await ev("Array.from(document.querySelectorAll('.bd')).map(function(e){return e.innerText.trim();}).join('\\n')")));
     if (side === "Robots") {
-      await ev("(function(){var b=document.querySelector('#top .fd');if(b)b.click();return 1;})()"); await sleep(1500);
+      await ev("(function(){var b=document.querySelector('#top .rc');if(b)b.click();return 1;})()"); await sleep(1500);
       check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .lg').length")) >= 7);   // 2026-10-13: eyes + 6 named pieces
     }
   }
