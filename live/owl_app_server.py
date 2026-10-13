@@ -7641,6 +7641,63 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){try{if(build()){paint();setInterval(paint,2000);}nidRow();}catch(e){console.error('perf',e);}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// ==== 2026-10-13 (owner, step 4): the TERMINAL - on a wide screen (>= 1180 px) the same app becomes a trading
+// terminal: the 5 destinations as a left rail, the live chart in the centre, the current page in a right column
+// (its sheets open inside that column). Nothing is rebuilt: the header, the pages and the bar are moved into place.
+// A rail button returns to the classic view (remembered on this device). Phones never see it. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T=(f,e)=>EN()?e:f;
+ const W=1180,COL=470,RAIL=88;
+ const css=document.createElement('style');css.textContent=`
+ body.term{overflow:hidden}
+ body.term .tabbar{top:0;bottom:0;right:auto;width:${RAIL}px;max-width:none;margin:0;flex-direction:column;justify-content:flex-start;gap:6px;
+  border-radius:0;border-top:0;border-right:1px solid var(--border);padding:18px 8px}
+ body.term .tabbar .tb{flex:none;min-height:66px;font-size:.68rem}
+ body.term .tabbar .trmlogo{flex:none;width:44px;height:44px;margin:0 auto 14px;border-radius:14px;background:url(icon192.png) center/cover}
+ body.term .tabbar .trmx{margin-top:auto}
+ #trmR{position:fixed;top:0;bottom:0;right:0;width:${COL}px;overflow-y:auto;overscroll-behavior:contain;border-left:1px solid var(--border);background:var(--bg);padding-bottom:30px}
+ #trmR .wrap{max-width:none;margin-top:-20px}
+ #trmR .hero{border-radius:0 0 28px 28px}
+ #trmC{position:fixed;top:0;bottom:0;left:${RAIL}px;right:${COL}px;background:var(--bg)}
+ #trmC iframe{width:100%;height:100%;border:0;display:block}
+ #trmC .trmbar{position:absolute;top:10px;right:12px;z-index:2;display:flex;gap:6px}
+ #trmC .trmbar a{font-size:.74rem;font-weight:700;color:var(--muted2);background:rgba(18,26,37,.85);border:1px solid var(--border);border-radius:99px;padding:6px 11px;text-decoration:none}
+ body.term #cksh .ckpn,body.term #cssh .xpn{left:auto!important;right:0!important;width:${COL}px!important;margin-left:0!important}
+ body.term #cksh .ckdim,body.term #cssh .xdim{left:auto;width:${COL}px}
+ body.term #sheet{left:auto!important;right:0!important;width:${COL}px;max-width:${COL}px;margin:0}
+ body.term #toast{left:auto;right:16px;width:${COL - 32}px}
+ .tb.trmx .ic{width:20px;height:20px}`;
+ document.head.appendChild(css);
+ let built=false;
+ const want=()=>{let off=false;try{off=localStorage.getItem('owlTerm')==='0';}catch(e){}return !off&&window.innerWidth>=W&&!/[?&]embed=1/.test(location.search);};
+ function on(){const hero=document.querySelector('body > .hero'),wrap=document.querySelector('body > .wrap')||($('trmR')&&$('trmR').querySelector('.wrap'));
+  if(!wrap)return;
+  if(!built){
+   const R=document.createElement('div');R.id='trmR';document.body.appendChild(R);
+   if(hero)R.appendChild(hero);R.appendChild(wrap);
+   const C=document.createElement('div');C.id='trmC';
+   C.innerHTML='<div class="trmbar"><a href="'+B+'chart" target="_blank" rel="noopener">'+T('Ouvrir en grand','Open full')+' ↗</a></div><iframe title="'+T('Graphique','Chart')+'" src="'+B+'chart?embed=1"></iframe>';
+   document.body.appendChild(C);
+   const bar=document.querySelector('.tabbar');
+   if(bar){const lg=document.createElement('div');lg.className='trmlogo';bar.insertBefore(lg,bar.firstChild);
+    const x=document.createElement('button');x.className='tb trmx';x.title=T('Vue classique','Classic view');
+    x.innerHTML='<svg class="ic"><use href="#i-switch"/></svg>'+T('Classique','Classic');x.onclick=()=>{try{localStorage.setItem('owlTerm','0');}catch(e){}location.reload();};
+    bar.appendChild(x);}
+   built=true;}
+  document.body.classList.add('term');}
+ function off(){if(!built)return;try{localStorage.removeItem('owlTermTmp');}catch(e){}location.reload();}
+ // the classic view offers the terminal back on a wide screen
+ function offerBack(){if(window.innerWidth<W)return;let o=false;try{o=localStorage.getItem('owlTerm')==='0';}catch(e){}
+  if(!o||$('trmback'))return;const b=document.createElement('button');b.id='trmback';
+  b.style.cssText='position:fixed;right:18px;bottom:110px;z-index:31;border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:99px;padding:10px 14px;font:inherit;font-size:.8rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.35)';
+  b.textContent=T('Vue terminal ⇆','Terminal view ⇆');b.onclick=()=>{try{localStorage.removeItem('owlTerm');}catch(e){}location.reload();};document.body.appendChild(b);}
+ function init(){try{if(want())on();else offerBack();}catch(e){console.error('terminal',e);}}
+ window.addEventListener('resize',()=>{if(built&&window.innerWidth<W)off();else if(!built&&want())on();});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
 
 
 

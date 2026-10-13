@@ -281,7 +281,10 @@ body.light #sympk button:hover,body.light #sympk button.on{background:rgba(15,23
 #sympk .st{flex:none;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#8df0bb}
 /* another market: the robot's own header items (its weather, signal, money) do not apply */
 body.othsym #autobadge,body.othsym #meteo,body.othsym #sigseg,body.othsym #wkseg,body.othsym #acseg{display:none!important}
-</style></head><body>
+
+/* 2026-10-13: inside the app's terminal view */
+html.embed #back{display:none!important}
+</style></head><body><script>try{if(window.top!==window)document.documentElement.classList.add('embed');}catch(e){}</script>
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.body.classList.add('light');}catch(e){}</script>
 <div id="aura"></div>
 <div id="hd">
