@@ -465,14 +465,14 @@ load();setInterval(()=>{if(document.visibilityState==='visible'&&!$('sh').classL
 <!-- 2026-10-13 (owner, step 5): the app's 5 destinations on every space, so leaving the main app never loses the way.
      Same look as the app's own bar; the current destination is lit. -->
 <style>
-#owlnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;max-width:480px;margin:0 auto;background:rgba(14,20,29,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border,#1f2a38);border-radius:20px 20px 0 0;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+#owlnav{position:fixed;left:0;right:0;bottom:0;top:auto;height:auto;z-index:30;display:flex;max-width:480px;margin:0 auto;background:rgba(14,20,29,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border,#1f2a38);border-radius:20px 20px 0 0;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
 :root[data-theme=light] #owlnav{background:rgba(255,255,255,.94)}
 #owlnav a{flex:1;color:var(--muted,#8a9bb0);font:600 .72rem Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;padding:6px 0;border-radius:12px;text-decoration:none;-webkit-tap-highlight-color:transparent}
 #owlnav a svg{width:22px;height:22px}
 #owlnav a.on{color:var(--accent-soft,#8fc6ff);background:var(--accent-bg,rgba(59,130,246,.14))}
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
 </style>
-<nav id="owlnav" aria-label="Navigation"></nav>
+<div id="owlnav" role="navigation" aria-label="Navigation"></div>
 <script>
 (function(){
  const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
