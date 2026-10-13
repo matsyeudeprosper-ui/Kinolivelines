@@ -8015,12 +8015,18 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  .edrx .lv-cand .st{font-size:.78rem;font-weight:800;white-space:nowrap}
  .edrx .lv-rbt{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;color:var(--muted2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 9px;margin-left:auto;margin-right:8px;white-space:nowrap;max-width:42%;overflow:hidden;text-overflow:ellipsis}
  button.lv-rbt{font:inherit;font-size:.7rem;font-weight:700;cursor:pointer}
+ .edrx .lv-rbt{min-width:0}.edrx .lv-rbt .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .edrx .lv-pv{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0 14px;padding:9px 11px;border-radius:12px;background:rgba(167,139,250,.12);border:1px dashed rgba(167,139,250,.55);font-size:.74rem;color:var(--text2)}
  .edrx .lv-pv b{color:#c4b5fd;letter-spacing:.06em}
  .edrx .lv-pv button{flex:none;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:inherit;font-size:.72rem;font-weight:700;border-radius:99px;padding:5px 10px;cursor:pointer}
  .edrx .lv-rbt.cu{color:var(--accent-soft);border-color:rgba(59,130,246,.35)}
  .edrx .lv-pcs{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
- .edrx .lv-pcs .t{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+ .edrx .lv-pcs .t{display:flex;justify-content:space-between;gap:8px;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+ .edrx .lv-pcs .t span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.edrx .lv-pcs .cnt{flex:none;color:var(--text2);letter-spacing:0;text-transform:none;font-size:.74rem}
+ .edrx .lv-pcs .pb{height:4px;border-radius:99px;background:var(--surface3);margin:8px 0 10px;overflow:hidden}.edrx .lv-pcs .pb i{display:block;height:100%;border-radius:99px;background:var(--up)}
+ .edrx .lv-pcs .all{display:block;width:100%;margin-top:10px;border:1px solid var(--border2);background:var(--surface2);color:var(--accent-soft);font:inherit;font-size:.8rem;font-weight:700;border-radius:12px;padding:10px;cursor:pointer}
+ .edrx .lv-pcs .g.one{grid-template-columns:minmax(0,1fr)}
+ .edrx .lv-pcs .g:not(.one) .pn b,.edrx .lv-pcs .g:not(.one) .pn small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
  .edrx .lv-pcs .g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
  .edrx .lv-pcs button{display:flex;align-items:flex-start;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:12px;padding:9px;font:inherit;color:inherit;cursor:pointer;min-width:0}
  .edrx .lv-pcs i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:900}
@@ -8058,8 +8064,16 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function rbName(rb){return EN()?(rb.name_en||rb.name_fr||rb.id):(rb.name_fr||rb.id);}
  function pieces(rb){const it=x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
    return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';};
-  const L=rb.pieces||[];if(!L.length)return '';
-  return '<div class="lv-pcs"><div class="t">'+T2('Ses pièces','Its pieces')+' · '+esc(rbName(rb))+'</div><div class="g">'+L.map(it).join('')+'</div></div>';}
+  // many pieces (owner): a count, then only what blocks or is awaited (max 4 tiles); the full list opens in the sheet
+  const L=pcsSorted(rb);if(!L.length)return '';const met=L.filter(x=>x.ok===true).length,MAX=4;
+  const show=L.length<=MAX?L:L.slice(0,MAX).filter((x,i)=>x.ok!==true||i<2);
+  return '<div class="lv-pcs"><div class="t"><span>'+T2('Ses pièces','Its pieces')+' · '+esc(rbName(rb))+'</span><span class="cnt">'+met+' / '+L.length+' '+T2('réunies','met')+'</span></div>'+
+   '<div class="pb" aria-hidden="true"><i style="width:'+Math.round(met/L.length*100)+'%"></i></div>'+
+   (show.length?'<div class="g">'+show.map(it).join('')+'</div>':'')+
+   (L.length>show.length?'<button type="button" class="all" id="edrpcs">'+(show.length?T2('Voir les ','See all ')+L.length+T2(' pièces',' pieces'):T2('Toutes réunies · voir les ','All met · see the ')+L.length+T2(' pièces',' pieces'))+' ›</button>':'')+'</div>';}
+ function pcsSorted(rb){const o=x=>x.ok===false?0:(x.ok===true?2:1);return (rb.pieces||[]).map((x,i)=>[x,i]).sort((a,b)=>o(a[0])-o(b[0])||a[1]-b[1]).map(z=>z[0]);}
+ function pcsList(rb){return '<div class="edrx"><div class="lv-pcs" style="margin:0;padding:0;border:0"><div class="g one">'+pcsSorted(rb).map(x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
+   return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';}).join('')+'</div></div></div>';}
  // the four checks, as four small dots inside the card
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
   const it=(ok,a,why)=>'<button type="button" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
@@ -8072,7 +8086,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
-     return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px"><use href="#i-bot"/></svg>'+esc(rbName(rb))+(own?' ▾</button>':'</span>');})():'')+
+     return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
@@ -8187,9 +8201,10 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    b.querySelectorAll('.lv-ev[data-p]').forEach(el=>el.onclick=()=>openTr(+el.dataset.p,+el.dataset.x));}
   else if(shK==='hours'){b.innerHTML='<div class="edrx" style="margin:0">'+(hours(D).replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')||'<div class="lv-note">'+T2('Pas encore assez de trades.','Not enough trades yet.')+'</div>')+'</div>';}}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
-  $('edrsh-t').textContent=k==='rb'?T2('Aperçu d’un robot','Preview a robot'):k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
+  $('edrsh-t').textContent=k==='pcs'?(()=>{let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}return T2('Ses pièces','Its pieces')+' · '+rbName(rbNow(D0));})():k==='rb'?T2('Aperçu d’un robot','Preview a robot'):k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
   b.innerHTML='';
   if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&single=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
+  else if(k==='pcs'){let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}b.innerHTML=pcsList(rbNow(D0));b.querySelectorAll('.lv-pcs button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}
   else if(k==='rb'){b.innerHTML='<div class="lv-note">'+T2('Chargement…','Loading…')+'</div>';
    fetch(B+'robot_preview?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(j=>{const L=(j&&j.robots)||[];let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}const cur=(D0.robot_now||{}).id||'owl';
     b.innerHTML='<div class="edrx"><div class="lv-note" style="margin:0 2px 12px">'+T2('Voyez les pièces d’un robot sur ce compte, en direct, comme s’il était branché. Rien n’est branché, le robot du compte ne change pas.','See a robot’s pieces live on this account, as if it were plugged. Nothing is plugged; the account’s robot does not change.')+'</div><div class="lv-mk" style="margin-top:0">'+
@@ -8228,8 +8243,8 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
   const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
-   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
-   lv.querySelectorAll('.lv-dots button,.lv-pcs button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const pcb=$('edrpcs');if(pcb)pcb.onclick=()=>shOpen('pcs');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
+   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
@@ -8240,6 +8255,9 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+
+
 
 
 
