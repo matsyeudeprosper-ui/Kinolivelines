@@ -12230,14 +12230,16 @@ BOT_VARIANT = {"kino": "kino", "u224016179": "valere", "demo": "demo", "infinity
 PLUG_LOG = os.path.join(DIR, "robots", "plug.log")
 
 
-def robot_package(r, pieces):
-    """a robot (resolved pieces) -> the package the live bot reads; raises ValueError when it cannot run live"""
+def robot_package(r, pieces, account_pkg=None, own_money=None):
+    """a robot (resolved pieces) -> the package the live bot reads; raises ValueError when it cannot run live.
+    MONEY (owner 2026-10-13): the account keeps its OWN money settings unless the robot explicitly chose a money
+    piece (own_money) - plugging a robot changes the strategy, not how the account is sized and protected."""
     P = {p["id"]: p for p in pieces}
     R = r["resolved"]
     F = R.get("filters") or []
     if "orage" not in F:
         raise ValueError("storm")
-    pk = {"extends": R.get("money") or "base", "label": "Robot %s" % (r.get("name_fr") or r["id"]),
+    pk = {"extends": own_money or account_pkg or R.get("money") or "base", "label": "Robot %s" % (r.get("name_fr") or r["id"]),
           "pb_dir_gate": "tendance-fond" in F, "pb_gate_mode": "trend", "movement": "mouvement" in F, "nervosity": "nervosite" in F,
           "debt_gate": R.get("recovery") != "rattrapage-sans-limite"}
     rules = {}
@@ -12278,11 +12280,15 @@ def _restart_bot(uid):
         try:
             import subprocess
             root = os.path.dirname(DIR)
-            r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", os.path.join(root, "restart.ps1"),
-                                "-What", "bots", "-Variant", v], cwd=root, capture_output=True, text=True, timeout=600,
-                               creationflags=0x08000000)
-            io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s restart %s (%s) rc %s\n%s\n%s\n" % (
-                datetime.now(timezone.utc).isoformat(), uid, v, r.returncode, (r.stdout or "")[-3000:], (r.stderr or "")[-1500:]))
+            # output straight to the log FILE: with pipes, the bot that restart.ps1 launches inherits them and
+            # run() waits for its 600 s timeout although the restart itself is done in seconds (2026-10-13)
+            with io.open(PLUG_LOG, "a", encoding="utf-8") as lf:
+                lf.write("\n=== %s restart %s (%s)\n" % (datetime.now(timezone.utc).isoformat(), uid, v))
+                lf.flush()
+                r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", os.path.join(root, "restart.ps1"),
+                                    "-What", "bots", "-Variant", v], cwd=root, stdout=lf, stderr=subprocess.STDOUT, timeout=600,
+                                   creationflags=0x08000000)
+                lf.write("=== rc %s\n" % r.returncode)
         except Exception as e:
             io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s restart %s FAILED %s\n" % (datetime.now(timezone.utc).isoformat(), uid, e))
     threading.Thread(target=_go, daemon=True).start()
@@ -12300,15 +12306,13 @@ def robot_plug_apply(user, body):
         return {"ok": False, "err": "where"}
     if pg.get("market", "BTCUSD") != "BTCUSD":
         return {"ok": False, "err": "market"}
+    if pg.get("status") == "applied":
+        return {"ok": False, "err": "already"}
     if r0.get("stage") not in ("tested", "real", "demo"):
         return {"ok": False, "err": "untested"}
     uid = wh[5:]
     byid = {x["id"]: x for x in reg.get("robots") or []}
     rr = dict(r0, resolved=robot_resolve(r0["id"], byid))
-    try:
-        pkg = robot_package(rr, reg.get("pieces") or [])
-    except ValueError as e:
-        return {"ok": False, "err": "not_live:" + str(e)}
     pp = os.path.join(DIR, "owl_packages.json")
     PK = json.load(open(pp, encoding="utf-8"))
     acc = PK.setdefault("accounts", {})
@@ -12319,6 +12323,15 @@ def robot_plug_apply(user, body):
     plugs = PK.setdefault("robot_plugs", {})
     if prev.startswith("robot-") and uid in plugs:
         prev = plugs[uid].get("prev") or "base"          # replugging: the ORIGINAL package stays the one to go back to
+    own_money, x = None, r0                               # a money piece chosen by this robot or an ancestor below the Owl
+    while x is not None and x.get("id") != "owl":
+        if (x.get("parts") or {}).get("money"):
+            own_money = x["parts"]["money"]; break
+        x = byid.get(x.get("parent"))
+    try:
+        pkg = robot_package(rr, reg.get("pieces") or [], prev, own_money)
+    except ValueError as e:
+        return {"ok": False, "err": "not_live:" + str(e)}
     PK.setdefault("packages", {})[name] = pkg
     acc[uid] = name
     plugs[uid] = {"robot": r0["id"], "prev": prev, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}

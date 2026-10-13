@@ -193,6 +193,26 @@
    "label": "Valere cap 3 % + demi-lot si resultats en baisse + reprise balles seulement",
    "_why": "2026-10-08 owner: rule #1b on Depenses - half lot while the account's own progression falls, until a CHoCH up. Bites from lot 0.02 (balance >= $200). 2026-10-09 owner: also bullets-only recovery (study/recovery_bullets_only_costs.py).",
    "recov_bullets_only": true
+  },
+  "robot-owl-de-nuit": {
+   "extends": "base",
+   "label": "Robot Owl de nuit",
+   "pb_dir_gate": true,
+   "pb_gate_mode": "trend",
+   "movement": true,
+   "nervosity": false,
+   "debt_gate": true,
+   "rr": 0.8,
+   "robot_rules": {
+    "filters": [
+     {
+      "kind": "hours",
+      "from": 0,
+      "to": 8
+     }
+    ]
+   },
+   "_why": "2026-10-13 robot builder: robot 'owl-de-nuit' plugged by the owner"
   }
  },
  "accounts": {
@@ -205,6 +225,13 @@
   "infinity": "valere",
   "expenses": "valere_cap3_eqhalf",
   "labo": "labo",
-  "u477508138": "reference"
+  "u477508138": "robot-owl-de-nuit"
+ },
+ "robot_plugs": {
+  "u477508138": {
+   "robot": "owl-de-nuit",
+   "prev": "reference",
+   "at": "2026-10-13T12:55:16Z"
+  }
  }
 }
