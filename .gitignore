@@ -148,3 +148,8 @@ study/frozen_entry_study/frozen_*.out
 live/scanner/state.json
 live/scanner/state.json.tmp
 live/scanner/scanner.log
+
+# 2026-10-13: members' interview and studio sessions (their own words / trades) stay off the repo
+live/robots/interviews/
+live/robots/studio/
+live/robots/runner.lock
