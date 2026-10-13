@@ -130,6 +130,14 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .mt0{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border-radius:20px;border:1px dashed var(--border2);background:var(--surface);color:var(--text);font:inherit;text-align:left;cursor:pointer}
 .mt0 .ic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.mt0 .ic svg{width:20px;height:20px}
 .mt0 b{display:block;font-size:.95rem}.mt0 small{font-size:.76rem;color:var(--muted2)}
+.tn{margin-top:16px;padding:12px 13px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08)}
+.tnh{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.tnh b{color:#fff;font-size:.9rem}.tnh span{font-size:.72rem;color:#9fc2de;text-align:right}
+.tnl{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:9px}.tnl>span{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;color:#d6e6f3}.tnl b{color:#fff}
+.t4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.t4 button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:12px;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font:inherit;text-align:left;cursor:pointer;min-width:0}
+.t4 .av{width:34px;height:34px;border-radius:11px;font-size:.72rem}
+.t4 .tx{min-width:0;width:100%}.t4 .tx b{display:block;font-size:.84rem}.t4 .tx small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.7rem;color:#c6d3df;line-height:1.3;margin-top:2px}
+.t4 em{position:absolute;top:10px;right:10px;font-style:normal;font-size:.68rem;font-weight:800;color:#0b1a2a;background:#e8c55a;border-radius:99px;padding:2px 7px}
 .how{display:block;width:100%;margin-top:12px;border:0;background:none;color:#9fc2de;font:inherit;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;padding:4px}
 .rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--hl)}
 .rc .rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
@@ -750,14 +758,8 @@ function jumpTo(id){const e=document.getElementById(id);if(e)e.scrollIntoView({b
 function renderTeam(){const t=TM;if(!t)return;const c=t.chercheur||{},b=t.constructeur||{},k=t.critique||{},v=t.veille||{},n=t.night||{};
  const nightAge=n.updated?(Date.now()-new Date(n.updated).getTime())/3600000:999,nightOk=nightAge<36&&!n.drift;
  const AV=(l,col)=>'<span class="av" style="background:'+col+'">'+l+'</span>';
- let h='<div class="card hero"><div class="eyebrow">'+T('L\'équipe IA','The AI team')+'</div><div class="big">4<small>'+T('IA au travail','AIs at work')+'</small></div>'+
-  '<p>'+T('Le chercheur pose les questions, le constructeur fabrique, la critique vérifie, la veille regarde chaque trade. Personne ne touche aux comptes réels sans le propriétaire.','The researcher asks, the builder builds, the critic checks, the watcher looks at every trade. Nobody touches real accounts without the owner.')+'</p>'+
-  '<div class="avs">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'</div>'+
-  '<div class="pulse"><span class="dot" style="'+(nightOk?'':'background:var(--down);box-shadow:0 0 10px var(--down)')+'"></span><span>'+(nightOk?T('Séance de nuit faite ','Night run done ')+ago(new Date(n.updated).getTime()/1000):(n.drift?T('Le simulateur ne décrit plus le robot : les verdicts sont à revoir','The simulator no longer matches the robot: verdicts need a recheck'):T('La séance de nuit n\'a pas tourné depuis ','The night run has not run for ')+Math.round(nightAge)+' h'))+'</span></div></div>';
- const S={};
+ let h=''; const S={};
  const cnt=n.counts||{};const tot=Object.values(cnt).reduce((a,x)=>a+x,0);
- if(tot)h+='<div class="card"><h2>'+T('Cette nuit','Last night')+'<span class="bd ev">'+num(n.days,0)+T(' jours rejoués',' days replayed')+'</span></h2><div class="sbar" style="background:var(--surface3)">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<i style="flex:'+cnt[x[0]]+';background:'+x[1]+'"></i>').join('')+'</div>'+
-  '<div class="slegend" style="margin-top:12px">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<span style="display:inline-flex;align-items:center;gap:7px;font-size:.84rem;color:var(--text2)"><span class="dot" style="background:'+x[1]+'"></span><b>'+cnt[x[0]]+'</b> '+T(GRADE[x[0]][0],GRADE[x[0]][1]).toLowerCase()+'</span>').join('')+'</div><div class="note">'+tot+T(' réglages du robot rejoués sur le passé pendant la nuit.',' robot settings replayed on past data overnight.')+'</div></div>';
  // the researcher
  S.ch='<div class="card mem" id="tm-ch"><div class="mh">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+'<div><b>'+T('Le chercheur','The researcher')+'</b><small>'+T('pose les questions, propose les réglages','asks the questions, proposes settings')+(c.date?' · '+fdate(c.date):'')+'</small></div></div>'+
   (c.headline_fr?'<div class="quote">'+esc(EN?c.headline_en:c.headline_fr)+'</div>':'')+
@@ -791,7 +793,14 @@ function renderTeam(){const t=TM;if(!t)return;const c=t.chercheur||{},b=t.constr
   ['cr',AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)'),T('La critique','The critic'),kl?((KV[kl.verdict]||KV.doute)[0]+' · '+fdate(kl.date)+' — '+cut(EN?kl.en:kl.fr,90)):'—',(k.items||[]).length||null],
   ['ve',AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)'),T('La veille','The watcher'),vl?(ago(new Date(vl.t).getTime()/1000)+' — '+cut(EN?(vl.en||vl.fr):vl.fr,100)):'—',null]];
  FDS.tm_ch=[T('Le chercheur','The researcher'),()=>S.ch];FDS.tm_co=[T('Le constructeur','The builder'),()=>S.co];FDS.tm_cr=[T('La critique','The critic'),()=>S.cr];FDS.tm_ve=[T('La veille','The watcher'),()=>S.ve];
- h+='<div class="grp">'+T('L\'équipe','The team')+'</div><div class="fds">'+ROWS.map(r=>fd('tm_'+r[0],r[1],r[2],esc(r[3]),r[4])).join('')+'</div>';
+ // 2026-10-13 (owner): one banner - what the night found, then the four members, each with its state of the moment
+ const GR=[['A','#2ecc71'],['B','#8df0bb'],['=','#8a9bb0'],['C','#ff5c5c']];
+ h+='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('L\'équipe IA','The AI team')+'</div><div class="hn"><b>4</b>'+T('IA au travail','AIs at work')+'</div></div>'+
+  '<span class="hl"'+(nightOk?'':' style="color:#ff9a9a;background:rgba(255,92,92,.13);border-color:rgba(255,92,92,.3)"')+'><i'+(nightOk?'':' style="background:var(--down);box-shadow:0 0 8px var(--down)"')+'></i>'+(nightOk?T('nuit faite ','night done ')+ago(new Date(n.updated).getTime()/1000):(n.drift?T('à revoir','to recheck'):T('nuit en retard','night late')))+'</span></div>'+
+  (tot?'<div class="tn"><div class="tnh"><b>'+T('Cette nuit','Last night')+'</b><span>'+tot+T(' réglages rejoués sur ',' settings replayed over ')+num(n.days,0)+T(' jours',' days')+'</span></div><div class="sbar" style="margin-top:10px">'+GR.filter(x=>cnt[x[0]]).map(x=>'<i style="flex:'+cnt[x[0]]+';background:'+x[1]+'"></i>').join('')+'</div>'+
+   '<div class="tnl">'+GR.filter(x=>cnt[x[0]]).map(x=>'<span><span class="dot" style="background:'+x[1]+'"></span><b>'+cnt[x[0]]+'</b> '+T(GRADE[x[0]][0],GRADE[x[0]][1]).toLowerCase()+'</span>').join('')+'</div></div>':'')+
+  '<div class="t4">'+ROWS.map(r=>'<button onclick="fdOpen(\'tm_'+r[0]+'\')">'+r[1]+'<span class="tx"><b>'+r[2]+'</b><small>'+esc(r[3])+'</small></span>'+(r[4]!=null?'<em>'+r[4]+'</em>':'')+'</button>').join('')+'</div>'+
+  '<div class="pcap" style="margin-top:12px">'+T('Personne ne touche aux comptes réels sans le propriétaire.','Nobody touches real accounts without the owner.')+'</div></div>';
  if(S.pi||S.qa){h+='<div class="grp">'+T('Ce qu\'elle étudie','What it studies')+'</div><div class="fds">';
   if(S.pi){FDS.tm_pi=[T('Les pistes','The clues'),()=>S.pi];h+=fd('tm_pi',ICO('#8fc6ff',pic('M3 3v18h18M7 14l4-4 3 3 5-6')),T('Les pistes','The clues'),T('Des piles de vrais trades face à tous les autres','Piles of real trades against all the others')+(np?' · '+np+' '+T('à vérifier','worth checking'):''),P.length);}
   if(S.qa){FDS.tm_qa=[T('Questions et réponses','Questions and answers'),()=>S.qa];h+=fd('tm_qa',ICO('#c4b5fd',pic('M12 17h.01M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2-3 4')),T('Questions et réponses','Questions and answers'),cut(EN?(Q[0]||{}).seed_en:(Q[0]||{}).seed_fr,90),Q.length);}
