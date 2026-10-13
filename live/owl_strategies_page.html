@@ -97,6 +97,58 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .fd .cv{flex:none;color:var(--muted)}
 .fd .av{width:38px;height:38px;border-radius:12px}
 .more2{display:block;width:100%;margin:2px 0 0;border:0;background:none;color:var(--accent-soft);font:inherit;font-size:.84rem;font-weight:700;text-align:left;padding:8px 4px;cursor:pointer}
+/* 2026-10-13 (owner: "cards not attractive, banners not relevant"): pipeline banner, robot banner, fund-style robot cards, stage folders */
+.mix{--t:color-mix(in srgb,var(--c) 16%,transparent);--b:color-mix(in srgb,var(--c) 38%,transparent)}
+.hh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.hn{font-size:1.02rem;color:#d6e6f3;margin-top:8px}.hn b{font-size:2.3rem;font-weight:900;color:#fff;letter-spacing:-.03em;margin-right:6px;vertical-align:-3px}
+.hl{flex:none;display:inline-flex;align-items:center;gap:7px;font-size:.74rem;font-weight:800;color:#8df0bb;background:rgba(46,204,113,.13);border:1px solid rgba(46,204,113,.3);border-radius:99px;padding:5px 10px}
+.hl i{width:7px;height:7px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}
+.pp5{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:20px}
+.pp5:before{content:"";position:absolute;left:10%;right:10%;top:17px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.12),rgba(46,204,113,.55))}
+.ps{position:relative;border:0;background:none;color:#d6e6f3;font:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;padding:0;min-width:0}
+.ps b{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:.92rem;font-weight:900;color:#fff;background:color-mix(in srgb,var(--c) 30%,#0f2236);border:2px solid var(--c);box-shadow:0 0 0 4px rgba(11,26,42,.6)}
+.ps span{font-size:.66rem;font-weight:700;text-align:center;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ps.z b{opacity:.45}
+.pcap{font-size:.72rem;color:#9fc2de;text-align:center;margin-top:10px}
+.rej{display:flex;align-items:center;gap:9px;width:100%;margin-top:14px;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);color:#d6e6f3;font:inherit;font-size:.8rem;text-align:left;cursor:pointer}
+.rej b{color:#ff9a9a}.rej span:last-child{margin-left:auto;color:#9fc2de}
+.k3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.k3 div{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:11px 8px;text-align:center}
+.k3 b{display:block;font-size:1.5rem;font-weight:900;color:#fff;line-height:1.1}.k3 span{font-size:.66rem;font-weight:700;color:#9fc2de;text-transform:uppercase;letter-spacing:.05em}
+.best{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:11px 13px;border-radius:14px;background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.25);color:#d6e6f3;font:inherit;text-align:left;cursor:pointer}
+.best .l{flex:1;min-width:0}.best small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb}.best b{display:block;font-size:.95rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.best .v{text-align:right;font-weight:900;font-size:1rem}.best .v small{color:#9fc2de;letter-spacing:0;text-transform:none;font-weight:700}
+.a3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.a3 button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px 11px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font:inherit;text-align:left;cursor:pointer;min-width:0}
+.a3 button.pr{background:#fff;color:#0b1a2a;border-color:#fff}
+.a3 svg{width:20px;height:20px;margin-bottom:6px}.a3 b{font-size:.84rem;font-weight:800}.a3 small{font-size:.68rem;opacity:.75;line-height:1.25;text-transform:none;letter-spacing:0;color:inherit;font-weight:600}
+.how{display:block;width:100%;margin-top:12px;border:0;background:none;color:#9fc2de;font:inherit;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;padding:4px}
+.rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--hl)}
+.rc .rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
+.rc .ra{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--t);color:var(--c);border:1px solid var(--b)}.rc .ra svg{width:21px;height:21px}
+.rc .rn{flex:1;min-width:0}.rc .rn b{display:block;font-size:1rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rc .rn small{font-size:.72rem;color:var(--muted)}
+.rc .rs{flex:none;font-size:.66rem;font-weight:800;letter-spacing:.04em;color:var(--c);background:var(--t);border:1px solid var(--b);border-radius:99px;padding:4px 9px;white-space:nowrap}
+.rc .rm{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:12px 14px 0}
+.rc .rv b{display:block;font-size:1.55rem;font-weight:900;letter-spacing:-.02em;line-height:1.1}.rc .rv small{font-size:.7rem;color:var(--muted)}
+.rc .rm svg{flex:none;width:118px!important;height:40px!important;max-width:40%}
+.rc .rv{min-width:0}.rc .rv b,.rc .rv small{white-space:nowrap}
+.rc .rq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0 0;border-top:1px solid var(--border)}
+.rc .rq div{padding:9px 4px;text-align:center;border-right:1px solid var(--border)}.rc .rq div:last-child{border-right:0}
+.rc .rq b{display:block;font-size:.84rem;font-weight:800}.rc .rq span{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.rc .r0{margin:12px 14px 0;padding:10px 12px;border-radius:12px;background:var(--surface2);font-size:.8rem;color:var(--text2)}
+.rc .rp{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:10px 14px 14px;border-top:1px solid var(--border);margin-top:0}
+.rc .rp .lb{font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.rc .rp .pc{background:var(--t);border-color:var(--b);color:var(--text)}
+.rc .pad{height:14px}
+.sf{display:block;width:100%;text-align:left;padding:14px 14px 13px 16px;border-radius:18px;background:linear-gradient(90deg,var(--t),var(--surface) 42%);border:1px solid var(--border);border-left:3px solid var(--c);color:var(--text);font:inherit;cursor:pointer}
+.sf .sh{display:flex;align-items:center;gap:12px}
+.sf .si{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--t);color:var(--c)}.sf .si svg{width:18px;height:18px}
+.sf .st{flex:1;min-width:0}.sf .st b{display:block;font-size:.98rem}.sf .st small{font-size:.72rem;color:var(--muted2)}
+.sf .sn{flex:none;font-size:1.35rem;font-weight:900;color:var(--c);letter-spacing:-.02em}
+.sf .sl{display:flex;flex-direction:column;gap:3px;margin:10px 0 0 48px}
+.sf .sl span{font-size:.78rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;padding-left:11px}
+.sf .sl span:before{content:"";position:absolute;left:0;top:.5em;width:4px;height:4px;border-radius:50%;background:var(--c)}
+.sf .sl em{font-style:normal;font-size:.72rem;color:var(--muted);padding-left:11px}
 #lsh{position:fixed;inset:0;z-index:60;display:none}#lsh.on{display:block}
 #lsh .xd{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}#lsh.open .xd{opacity:1}
 #lsh .xp{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
@@ -415,11 +467,13 @@ function card(x,i){const m=ST[x.status]||ST.study;
 function renderTop(){const c=D.counts||{},N=(D.items||[]).length;
  FDS.run=null;
  const owl=byId('owl');const last=owl&&owl.total&&owl.total.last;
- let h='<div class="card hero"><div class="eyebrow">'+T('Le laboratoire des stratégies','The strategy lab')+'</div>'+
-  '<div class="big">'+N+'<small>'+T('stratégies suivies','strategies tracked')+'</small></div>'+
-  '<p>'+T('Chaque idée passe par les mêmes étapes : sur le passé, puis en virtuel, puis avec de l\'argent. Celles qui échouent restent ici, pour ne jamais les refaire.','Every idea goes through the same steps: past data, then virtual, then real money. The ones that fail stay here, so they are never redone.')+'</p>'+
-  '<div class="sbar">'+ORDER.filter(s=>c[s]).map(s=>'<i style="flex:'+c[s]+';background:'+ST[s].c+'"></i>').join('')+'</div>'+
-  '<div class="slegend">'+ORDER.filter(s=>c[s]).map(s=>'<button onclick="fdOpen(\'st_'+s+'\')"><span class="dot" style="background:'+ST[s].c+'"></span>'+T(ST[s].fr,ST[s].en)+' <b>'+c[s]+'</b></button>').join('')+'</div>'+
+ // 2026-10-13 (owner): the banner IS the pipeline - every idea moves left to right; tap a step to open it
+ const PIPE=[['not_started',T('Idées','Ideas')],['study',T('Étude','Study')],['ready',T('Validées','Validated')],['trial',T('Essai','Trial')],['live',T('En direct','Live')]];
+ let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le laboratoire des stratégies','The strategy lab')+'</div><div class="hn"><b>'+N+'</b>'+T('stratégies suivies','strategies tracked')+'</div></div>'+
+  (c.live?'<span class="hl"><i></i>'+c.live+' '+T('en direct','live')+'</span>':'')+'</div>'+
+  '<div class="pp5">'+PIPE.map(s=>'<button class="ps'+(c[s[0]]?'':' z')+'" style="--c:'+ST[s[0]].c+'" onclick="fdOpen(\'st_'+s[0]+'\')"><b>'+(c[s[0]]||0)+'</b><span>'+s[1]+'</span></button>').join('')+'</div>'+
+  '<div class="pcap">'+T('Chaque idée avance de gauche à droite : sur le passé, en virtuel, puis avec de l\'argent.','Each idea moves left to right: past data, virtual, then real money.')+'</div>'+
+  (c.rejected?'<button class="rej" onclick="fdOpen(\'st_rejected\')"><span class="dot" style="background:var(--down)"></span><span><b>'+c.rejected+'</b> '+T('écartées — gardées pour ne jamais les refaire','rejected — kept so they are never redone')+'</span><span>›</span></button>':'')+
   (last?'<div class="pulse"><span class="dot"></span><span>'+T('Dernier trade du robot ','Robot\'s last trade ')+ago(last)+' · '+num(owl.total.n)+T(' trades sur tous les comptes',' trades across all accounts')+'</span></div>':'')+'</div>';
  // running now: anything with a progress to watch
  const R=[];
@@ -441,6 +495,12 @@ function renderTop(){const c=D.counts||{},N=(D.items||[]).length;
   '<div class="tb2"><div class="seg"><button class="'+(V==='list'?'on':'')+'" onclick="setV(\'list\')">'+T('Liste','List')+'</button><button class="'+(V==='rank'?'on':'')+'" onclick="setV(\'rank\')">'+T('Classement','Ranking')+'</button></div>'+
   '<label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" placeholder="'+T('Chercher…','Search…')+'" value="'+esc(Q)+'" oninput="Q=this.value;renderList()"></label></div></nav>';
  $('top').innerHTML=h;}
+// a stage folder: its colour edge, what the stage means, its first two ideas
+const SDESC={live:[T('Tourne avec de l\'argent réel','Running with real money'),'M22 12h-4l-3 9L9 3l-3 9H2'],trial:[T('À l\'essai en virtuel ou en démo','On trial, virtual or demo'),'M9 3h6M10 3v6L4 19a1 1 0 0 0 .9 1.5h14.2A1 1 0 0 0 20 19l-6-10V3'],
+ study:[T('Étudiée sur le passé','Studied on past data'),'M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16zM21 21l-4.3-4.3'],ready:[T('Validée, prête pour l\'essai','Validated, ready for a trial'),'M20 6L9 17l-5-5'],
+ not_started:[T('Idées pas encore commencées','Ideas not started yet'),'M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z'],rejected:[T('Écartées, gardées pour ne jamais les refaire','Rejected, kept so they are never redone'),'M18 6L6 18M6 6l12 12']};
+function sfCard(s,G){const d=SDESC[s]||['',''];return '<button class="sf mix" style="--c:'+ST[s].c+'" onclick="fdOpen(\'st_'+s+'\')"><div class="sh"><span class="si">'+pic(d[1])+'</span><span class="st"><b>'+T(ST[s].fr,ST[s].en)+'</b><small>'+d[0]+'</small></span><span class="sn">'+G.length+'</span></div>'+
+ '<div class="sl">'+G.slice(0,2).map(x=>'<span>'+esc(tt(x))+'</span>').join('')+(G.length>2?'<em>+ '+(G.length-2)+' '+T('autre'+(G.length-2>1?'s':''),'more')+'</em>':'')+'</div></button>';}
 function setF(k,scroll){F=k;try{localStorage.setItem('owlStratF',k);}catch(e){}renderTop();renderList();if(scroll){const n=$('nav');if(n)n.scrollIntoView({behavior:'smooth'});}}
 function setV(v){V=v;try{localStorage.setItem('owlStratV',v);}catch(e){}renderTop();renderList();}
 
@@ -453,7 +513,7 @@ function renderList(){if(!D)return;const L=(D.items||[]).filter(match);
  if(!Q){const srt=G=>G.slice().sort((a,b)=>(b.flag?1:0)-(a.flag?1:0)||((EVI[b.evidence]||{}).t||0)-((EVI[a.evidence]||{}).t||0)||String(b.since||'').localeCompare(String(a.since||'')));
   let f='<div class="fds">';ORDER.forEach(s=>{const G=srt(L.filter(x=>x.status===s));if(!G.length)return;
    FDS['st_'+s]=[T(ST[s].fr,ST[s].en)+' · '+G.length,()=>'<div class="grid">'+G.map((x,i)=>card(x,i)).join('')+'</div>'];
-   f+=fd('st_'+s,ICO(ST[s].c,'<span class="dot" style="background:'+ST[s].c+';width:12px;height:12px"></span>'),T(ST[s].fr,ST[s].en),G.slice(0,2).map(x=>esc(tt(x))).join(' · '),G.length);});
+   f+=sfCard(s,G);});
   $('list').innerHTML=f+'</div>';return;}
  let h='',i=0;
  ORDER.forEach(s=>{const G=L.filter(x=>x.status===s).sort((a,b)=>(b.flag?1:0)-(a.flag?1:0)||((EVI[b.evidence]||{}).t||0)-((EVI[a.evidence]||{}).t||0)||String(b.since||'').localeCompare(String(a.since||'')));
@@ -773,17 +833,23 @@ function piecesCat(){const types=SLOTS.map(s=>[SLOTT[s[0]],s[1],s[2]]);
   (BLD().can_create?'<button class="cta" style="margin-top:14px" onclick="goMake()">'+pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')+T('Fabriquer une pièce','Make a piece')+'</button>':'')+
   '<div class="mrow" style="margin:12px 0 0">'+Object.keys(PST).map(k=>'<span><span class="dot" style="background:'+PST[k].c+'"></span> '+T(PST[k].fr,PST[k].en)+'</span>').join('')+'</div></div>';}
 function builderTop(){const B=BLD();
- let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 style="font-size:1.3rem;font-weight:900;color:#fff;margin-top:10px;line-height:1.25">'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h3>'+
-  '<p>'+T('Les yeux lisent la structure du marché : les mêmes pour tous. Les pièces ont un nom ; on en retire une, on en met une autre.','The eyes read the market structure: the same for all. Pieces have a name; take one out, put another in.')+'</p>'+
-  '<div class="parts7"><div class="p4 eyes">'+pic(EYE)+'<b>'+T('Yeux','Eyes')+'</b></div>'+SLOTS.map(k=>'<div class="p4">'+pic(k[2])+'<b>'+k[1]+'</b></div>').join('')+'</div>'+
-  (B.can_create?'<button class="cta" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+T('Expliquer mon robot à l\'IA','Explain my robot to the AI')+'</button>'+
-   '<button class="cta2" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Assembler un robot pièce par pièce','Assemble a robot piece by piece')+'</button>'+
-   '<button class="cta2" onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+T('Apprendre au robot depuis le graphique','Teach the robot from the chart')+'</button>':'')+'</div>';
- const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine);
+ // 2026-10-13 (owner): the banner says where you stand (robots, accounts, your best) and offers the three ways to make one;
+ // "eyes + 6 pieces" is one tap away instead of taking the banner
+ const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine),PL0=B.plugs||[];
+ const best=MY.filter(r=>r.test&&r.test.robot).sort((a,b)=>b.test.robot.net-a.test.robot.net)[0];
+ const bd0=best&&best.test.parent_result?best.test.robot.net-best.test.parent_result.net:null;
+ FDS.how=[T('Comment ça marche','How it works'),()=>'<div class="card"><h2>'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h2><div class="sub">'+T('Les yeux lisent la structure du marché : les mêmes pour tous. Les pièces ont un nom ; on en retire une, on en met une autre, et le robot est testé sur le passé avant d\'aller plus loin.','The eyes read the market structure: the same for all. Pieces have a name; take one out, put another in, and the robot is tested on past data before going further.')+'</div>'+
+  '<div class="parts7" style="margin-top:14px"><div class="p4 eyes" style="color:var(--text)">'+pic(EYE)+'<b>'+T('Yeux','Eyes')+'</b></div>'+SLOTS.map(k=>'<div class="p4" style="color:var(--text);background:var(--surface2);border-color:var(--border)">'+pic(k[2])+'<b>'+k[1]+'</b></div>').join('')+'</div></div>'];
+ let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><div class="hn" style="margin-top:6px">'+T('Créez, testez, branchez.','Build, test, plug.')+'</div></div></div>'+
+  '<div class="k3"><div><b>'+MY.length+'</b><span>'+T('vos robots','your robots')+'</span></div><div><b>'+PUB.length+'</b><span>'+T('publics','public')+'</span></div><div><b>'+PL0.length+'</b><span>'+T('comptes','accounts')+'</span></div></div>'+
+  (best?'<button class="best" onclick="goB(\''+best.id+'\')"><span class="l"><small>'+T('Votre meilleur robot','Your best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span><span class="v '+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+(bd0!=null?'<small style="display:block">'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span style="color:#9fc2de">›</span></button>':'')+
+  (B.can_create?'<div class="a3"><button class="pr" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'<b>'+T('Expliquer','Explain')+'</b><small>'+T('à l\'IA, en mots','to the AI, in words')+'</small></button>'+
+   '<button onclick="goNew()">'+pic('M12 5v14M5 12h14')+'<b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
+   '<button onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'<b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
+  '<button class="how" onclick="fdOpen(\'how\')">'+T('Comment ça marche : des yeux + 6 pièces','How it works: eyes + 6 pieces')+' ›</button></div>';
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
- const bRow=r=>{const m=BST[r.stage]||BST.tested,t=r.test,d=t&&t.robot&&t.parent_result?t.robot.net-t.parent_result.net:null;
-  return '<button class="fd" onclick="goB(\''+r.id+'\')">'+ICO(m.c,BOT)+'<span class="tx"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+T(m.fr,m.en)+(r.mine?' · '+(r.public?T('public','public'):T('privé','private')):'')+(r.parent?' · '+T('enfant de ','child of ')+esc((bById(r.parent)||{}).name_fr||r.parent):'')+'</small></span>'+
-   (t&&t.robot?'<span style="flex:none;text-align:right;font-size:.82rem;font-weight:800" class="'+cl(t.robot.net)+'">'+money(t.robot.net)+(d!=null&&r.parent?'<small style="display:block;font-size:.66rem;font-weight:700;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">'+(d>=0?'+':'−')+'$'+num(Math.abs(d),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span>':'')+'<span class="cv">›</span></button>';};
+ const bRow=r=>rCard2(r,PL0);
+
  if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="fds">'+MY.map(bRow).join('')+'</div>';
  h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="fds">'+PUB.map(bRow).join('')+'</div>';
  const PL=B.plugs||[],NP=pcs().length;
@@ -792,6 +858,17 @@ function builderTop(){const B=BLD();
  if(PL.length){FDS.plugs=[T('Où ils tournent','Where they run'),()=>plugsCard(PL)];h+=fd('plugs',ICO('#2ecc71',pic('M12 2v6M8 4v4M16 4v4M6 8h12v4a6 6 0 0 1-12 0zM12 18v4')),T('Où ils tournent','Where they run'),T('Un robot, son argent et un marché par compte','One robot, its money and a market per account'),PL.length);}
  h+='</div>';
  return h;}
+// a robot as a fund card: who it is, what it made on past data (curve), four figures, and the pieces that are its own
+function rCard2(r,PL){const m=BST[r.stage]||BST.tested,tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result,d=tr&&pr?tr.net-pr.net:null,own=r.parts||{};
+ const mine=[];Object.keys(own).forEach(k=>{if(k==='filters')(own.filters||[]).forEach(f=>mine.push(['filters',f]));else mine.push([k,own[k]]);});
+ const nAcc=(PL||[]).filter(p=>p.robot===r.id).length,par=r.parent?bById(r.parent):null;
+ let h='<button class="rc mix" style="--c:'+m.c+'" onclick="goB(\''+r.id+'\')"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+(par?T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en)):T('le robot d\'origine','the original robot'))+(r.mine?' · '+(r.public?T('public','public'):T('privé','private')):'')+'</small></span><span class="rs">'+T(m.fr,m.en)+'</span></div>';
+ if(tr){const wr=tr.win_rate!=null?Math.round(tr.win_rate*100):null;
+  h+='<div class="rm"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small></div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
+   '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div></div>';}
+ else h+='<div class="r0">'+(r.stage==='real'?T('Argent réel · tourne sur ','Real money · runs on ')+nAcc+' '+T('compte'+(nAcc>1?'s':''),'account'+(nAcc>1?'s':'')):(r.stage==='queued'?T('Test en cours…','Being tested…'):T('Pas encore testé : ouvrez-le pour lancer son test.','Not tested yet: open it to run its test.')))+'</div>';
+ h+=mine.length?'<div class="rp" style="margin-top:12px"><span class="lb">'+T('Ses pièces','Its pieces')+'</span>'+mine.slice(0,4).map(x=>'<span class="pc">'+pic(slotIcon(x[0]))+esc(pName(x[1]))+'</span>').join('')+(mine.length>4?'<span class="pc">+'+(mine.length-4)+'</span>':'')+'</div>':'<div class="pad"></div>';
+ return h+'</button>';}
 function plugsCard(PL){return '<div class="card"><h2>'+T('Où ils tournent','Where they run')+'<span class="bd ev">'+PL.length+T(' prises',' plugs')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque compte a une prise : un robot, sa pièce d\'argent et un marché. Pour l\'instant, tout tourne sur le Bitcoin avec L\'Owl.','Each account has a plug: a robot, its money piece and a market. For now everything runs on Bitcoin with the Owl.')+'</div><div class="plugs">'+
   PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+(p.real?T('argent réel','real money'):T('démo','demo'))+(p.plugged&&BLD().admin&&p.uid?' · <a href="#" style="color:var(--down-soft);font-weight:800" onclick="event.preventDefault();plugUndo(\''+p.uid+'\')">'+T('débrancher','unplug')+'</a>':'')+'</small></span><span class="pl-r"><span class="pc">'+BOT+esc(T((bById(p.robot)||{}).name_fr||p.robot,(bById(p.robot)||{}).name_en||p.robot))+'</span><button class="pc" onclick="goP(\''+p.money.slice(4)+'\')">'+pic(slotIcon('money'))+esc(T(p.money_fr,p.money_en))+'</button><span class="pc">'+(SYMI[p.market]||'')+' '+p.market+'</span></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i></span>')+'</div>').join('')+'</div></div>';}
 function goB(id,sec){NAV++;location.hash='b='+id+(sec?'&v='+sec:'');}
@@ -1055,7 +1132,7 @@ window.addEventListener('hashchange',()=>{if(LSH)shHide();});
 const FDS={};   // what each folder opens: a builder, so it is fresh when opened
 function fd(k,icon,title,sub,n){return '<button class="fd" onclick="fdOpen(\''+k+'\')">'+icon+'<span class="tx"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span>'+(n!=null?'<span class="n">'+n+'</span>':'')+'<span class="cv">›</span></button>';}
 function fdOpen(k){const f=FDS[k];if(f)shOpen(f[0],f[1]());}
-const ICO=(c,inner)=>'<span class="ic" style="background:'+c+'26;color:'+c+'">'+inner+'</span>';
+const ICO=(c,inner)=>'<span class="ic" style="background:color-mix(in srgb,'+c+' 16%,transparent);color:'+c+'">'+inner+'</span>';
 
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
