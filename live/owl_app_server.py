@@ -8014,6 +8014,10 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  .edrx .lv-cand .n{flex:1;min-width:0}.edrx .lv-cand .n b{display:block;font-size:.95rem;color:var(--text)}.edrx .lv-cand .n small{font-size:.72rem;color:var(--muted2)}
  .edrx .lv-cand .st{font-size:.78rem;font-weight:800;white-space:nowrap}
  .edrx .lv-rbt{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;color:var(--muted2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 9px;margin-left:auto;margin-right:8px;white-space:nowrap;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+ button.lv-rbt{font:inherit;font-size:.7rem;font-weight:700;cursor:pointer}
+ .edrx .lv-pv{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-4px 0 14px;padding:9px 11px;border-radius:12px;background:rgba(167,139,250,.12);border:1px dashed rgba(167,139,250,.55);font-size:.74rem;color:var(--text2)}
+ .edrx .lv-pv b{color:#c4b5fd;letter-spacing:.06em}
+ .edrx .lv-pv button{flex:none;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:inherit;font-size:.72rem;font-weight:700;border-radius:99px;padding:5px 10px;cursor:pointer}
  .edrx .lv-rbt.cu{color:var(--accent-soft);border-color:rgba(59,130,246,.35)}
  .edrx .lv-pcs{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
  .edrx .lv-pcs .t{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
@@ -8045,7 +8049,12 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
  // 2026-10-13 (owner): the card follows the robot PLUGGED on the account (server: robot_now). The Owl keeps its
  // four checks; any other robot shows ITS pieces, each met or not, judged by the live bot's own rule functions.
- function rbNow(D){return (D&&D.robot_now)||{id:'owl'};}
+ // owner preview (2026-10-13): any robot judged live on this account, as if plugged - nothing is plugged
+ let PV=null,pvT=0;
+ function rbNow(D){return PV||(D&&D.robot_now)||{id:'owl'};}
+ async function pvLoad(id){let D={};try{D=JSON.parse(window._lastS);}catch(e){}const ms=D.meteo_struct||{};
+  const q='id='+encodeURIComponent(id)+'&vn='+(ms.vol_now??'')+'&vr='+(ms.vol_ref??'')+'&mv='+(ms.moves_2h??'')+'&pt='+(ms.pb_trend??0)+'&ps='+encodeURIComponent(ms.pb_side||'')+'&op='+((D.open_list||[]).length?1:0);
+  try{const r=await fetch(B+'robot_preview?'+q+'&t='+Date.now(),{cache:'no-store'});const j=await r.json();if(j&&!j.err){PV=j;pvT=Date.now();}}catch(e){}}
  function rbName(rb){return EN()?(rb.name_en||rb.name_fr||rb.id):(rb.name_fr||rb.id);}
  function pieces(rb){const it=x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
    return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';};
@@ -8062,9 +8071,11 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'))+'</div>';}
  function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
-   (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}return '<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'"><svg class="ic" style="width:13px;height:13px"><use href="#i-bot"/></svg>'+esc(rbName(rb))+'</span>';})():'')+
+   (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
+     return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px"><use href="#i-bot"/></svg>'+esc(rbName(rb))+(own?' ▾</button>':'</span>');})():'')+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
+   (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
    '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
   if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
    if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
@@ -8176,9 +8187,14 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    b.querySelectorAll('.lv-ev[data-p]').forEach(el=>el.onclick=()=>openTr(+el.dataset.p,+el.dataset.x));}
   else if(shK==='hours'){b.innerHTML='<div class="edrx" style="margin:0">'+(hours(D).replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')||'<div class="lv-note">'+T2('Pas encore assez de trades.','Not enough trades yet.')+'</div>')+'</div>';}}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
-  $('edrsh-t').textContent=k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
+  $('edrsh-t').textContent=k==='rb'?T2('Aperçu d’un robot','Preview a robot'):k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
   b.innerHTML='';
   if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&single=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
+  else if(k==='rb'){b.innerHTML='<div class="lv-note">'+T2('Chargement…','Loading…')+'</div>';
+   fetch(B+'robot_preview?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(j=>{const L=(j&&j.robots)||[];let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}const cur=(D0.robot_now||{}).id||'owl';
+    b.innerHTML='<div class="edrx"><div class="lv-note" style="margin:0 2px 12px">'+T2('Voyez les pièces d’un robot sur ce compte, en direct, comme s’il était branché. Rien n’est branché, le robot du compte ne change pas.','See a robot’s pieces live on this account, as if it were plugged. Nothing is plugged; the account’s robot does not change.')+'</div><div class="lv-mk" style="margin-top:0">'+
+     L.map(x=>'<button class="lv-mr'+((PV?PV.id:cur)===x.id?' on':'')+'" data-r="'+esc(x.id)+'"><span class="lv-sy" style="background:var(--accent-bg);color:var(--accent-soft)"><svg class="ic" style="width:16px;height:16px"><use href="#i-bot"/></svg></span><div class="n"><b>'+esc(EN()?x.name_en:x.name_fr)+'</b><span>'+(x.id===cur?T2('le robot de ce compte','this account’s robot'):esc(x.stage||''))+'</span></div><div class="s" style="color:var(--accent-soft)">'+(x.id===cur?'':T2('Aperçu','Preview')+' ›')+'</div></button>').join('')+'</div></div>';
+    b.querySelectorAll('.lv-mr[data-r]').forEach(x=>x.onclick=async()=>{const id=x.dataset.r;if(id===cur){PV=null;shClose();paint(true);return;}sel='BTCUSD';await pvLoad(id);shClose();paint(true);});}).catch(()=>{b.innerHTML='<div class="lv-note">'+T2('Impossible pour l’instant.','Not available right now.')+'</div>';});}
   else if(k==='det'){['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)b.appendChild(e);});}
   else shFill(D,B0,TR);
   s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
@@ -8212,7 +8228,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
   const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
-   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
+   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
    lv.querySelectorAll('.lv-dots button,.lv-pcs button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
@@ -8220,10 +8236,11 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
    lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
- function tick(){try{if(!build())return;if($('tab-marche').classList.contains('on')){scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
+ function tick(){try{if(!build())return;if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
 
 
 
@@ -12290,7 +12307,7 @@ def robot_resolve(rid, robots, seen=None):
     return out
 
 
-def robot_now(uid, ms, has_open):
+def robot_now(uid, ms, has_open, preview=None):
     """2026-10-13 (owner): En direct follows the robot PLUGGED on the account. Which robot (the Owl when none is
     plugged), and - for a plugged robot - each of its pieces, met or not, decided by the live bot's own functions
     (robots/robot_live.py filters_ok) on the same inputs the bot reads (the chart file's vol_now / vol_ref /
@@ -12300,6 +12317,10 @@ def robot_now(uid, ms, has_open):
         pl = (PK.get("robot_plugs") or {}).get(uid)
         reg = robot_reg()
         byid = {x["id"]: x for x in reg.get("robots") or []}
+        if preview:
+            if preview not in byid:
+                return {"id": "?", "err": "unknown"}
+            pl = {"robot": preview}
         rid = (pl or {}).get("robot") or "owl"
         r0 = byid.get(rid) or byid.get("owl") or {}
         out = {"id": rid, "name_fr": r0.get("name_fr") or rid, "name_en": r0.get("name_en") or r0.get("name_fr") or rid}
@@ -12308,6 +12329,13 @@ def robot_now(uid, ms, has_open):
         R = robot_resolve(rid, byid)
         P = {x["id"]: x for x in reg.get("pieces") or []}
         rules = PKG.for_account(uid).get("robot_rules") or {}
+        if preview:
+            try:
+                rules = robot_package(dict(byid[rid], resolved=R), reg.get("pieces") or [], "base", None).get("robot_rules") or {}
+            except ValueError as e:
+                out["not_live"] = str(e)
+                rules = {}
+            out["preview"] = True
         ms = ms or {}
         vn, vr = ms.get("vol_now"), ms.get("vol_ref")
         rv = (float(vn) / max(float(vr), 1e-9)) if (vn and vr) else None
@@ -19230,6 +19258,31 @@ class H(BaseHTTPRequestHandler):
             try:
                 _det = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
                 self._send(json.dumps(test_pockets_payload(_det)), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "robot_preview":
+            # 2026-10-13 (owner): "how do I test the pieces on En direct" - a read-only preview, nothing is plugged
+            try:
+                if not is_admin(user):
+                    self._send(json.dumps({"err": "owner"}), "application/json")
+                else:
+                    import urllib.parse as _upv
+                    _q = _upv.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                    _rid = (_q.get("id") or [""])[0]
+                    if not _rid:
+                        _rg = robot_reg()
+                        self._send(json.dumps({"robots": [{"id": x["id"], "name_fr": x.get("name_fr") or x["id"], "name_en": x.get("name_en") or x.get("name_fr") or x["id"],
+                                                           "stage": x.get("stage")} for x in _rg.get("robots") or []]}), "application/json")
+                    else:
+                        # the page sends the very numbers it shows (the api's meteo_struct), so the preview and the card agree
+                        def _qf(k):
+                            try:
+                                return float((_q.get(k) or [""])[0])
+                            except Exception:
+                                return None
+                        _ms = {"vol_now": _qf("vn"), "vol_ref": _qf("vr"), "moves_2h": _qf("mv"),
+                               "pb_trend": int(_qf("pt") or 0), "pb_side": (_q.get("ps") or [""])[0]}
+                        self._send(json.dumps(robot_now(user["id"], _ms, (_q.get("op") or ["0"])[0] == "1", preview=_rid)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
         elif sub == "pockets":
