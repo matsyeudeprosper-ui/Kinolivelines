@@ -7662,7 +7662,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  #trmR .hero{border-radius:0 0 28px 28px}
  #trmC{position:fixed;top:0;bottom:0;left:${RAIL}px;right:${COL}px;background:var(--bg)}
  #trmC iframe{width:100%;height:100%;border:0;display:block}
- #trmC .trmbar{position:absolute;top:10px;right:12px;z-index:2;display:flex;gap:6px}
+ #trmC .trmbar{position:absolute;bottom:14px;right:70px;z-index:2;display:flex;gap:6px}
  #trmC .trmbar a{font-size:.74rem;font-weight:700;color:var(--muted2);background:rgba(18,26,37,.85);border:1px solid var(--border);border-radius:99px;padding:6px 11px;text-decoration:none}
  body.term #cksh .ckpn,body.term #cssh .xpn{left:auto!important;right:0!important;width:${COL}px!important;margin-left:0!important}
  body.term #cksh .ckdim,body.term #cssh .xdim{left:auto;width:${COL}px}
