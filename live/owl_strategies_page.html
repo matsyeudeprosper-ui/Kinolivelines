@@ -774,7 +774,7 @@ function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;co
  if(r.can_edit)h+=manageCard(r);
  const PL=(BLD().plugs||[]).filter(p=>p.robot===r.id);
  if(r.can_edit&&!PL.length)h+=plugCard(r);
- else h+='<div class="card"><h2>'+T('Où il tourne','Where it runs')+'</h2>'+(PL.length?'<div class="plugs">'+PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+esc(T(p.money_fr,p.money_en))+' · '+p.market+'</small></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i>'+(p.alive?T('en marche','running'):T('arrêté','stopped'))+'</span>')+'</div>').join('')+'</div>':
+ else h+='<div class="card"><h2>'+T('Où il tourne','Where it runs')+'</h2>'+(PL.length?'<div class="plugs">'+PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+esc(T(p.money_fr,p.money_en))+' · '+p.market+'</small></span>'+(p.plugged&&BLD().admin&&p.uid?'<button class="chip" style="order:4;color:var(--down-soft);border-color:rgba(255,92,92,.4)" onclick="plugUndo(\''+p.uid+'\')">'+T('Débrancher','Unplug')+'</button>':'')+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i>'+(p.alive?T('en marche','running'):T('arrêté','stopped'))+'</span>')+'</div>').join('')+'</div>':
   '<div class="sub">'+T('Nulle part pour l\'instant. Les étapes : un jumeau sans argent à côté du vrai robot, puis un compte démo, puis, si vous le décidez, un vrai compte ou un autre marché.','Nowhere yet. The steps: a twin without money next to the real robot, then a demo account, then, if you decide so, a real account or another market.')+'</div>')+'</div>';
  $('det').innerHTML=h;}
 let CURB=null,NEWD=null;
@@ -804,7 +804,7 @@ async function plugApply(id){const r=bById(id)||{};const w=((r.plug||{}).where||
  const j=await robotPost('robot_plug_apply',{id});const e=$('plerr');if(!j.ok){if(e)e.textContent=PLERR[j.err]||j.err;return;}
  if(!j.restarted)alert(T('Branché. Ce compte se redémarre à la main : relancez son robot.','Plugged. This account restarts by hand: restart its robot.'));await refreshB(id);}
 async function plugUndo(uid){if(!confirm(T('Débrancher ce robot ? Le compte reprend ses réglages d\'avant et son robot redémarre.','Unplug this robot? The account goes back to its previous settings and its robot restarts.')))return;
- const j=await robotPost('robot_plug_undo',{uid});if(!j.ok){alert(PLERR[j.err]||j.err);return;}RB=null;await load();paint();}
+ const j=await robotPost('robot_plug_undo',{uid});if(!j.ok){alert(PLERR[j.err]||j.err);return;}RB=null;await load();route();}
 async function robotVis(id,pub){const j=await robotPost('robot_update',{id,public:pub});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}await refreshB(id);}
 async function robotDel(id){if(!confirm(T('Supprimer ce robot pour de bon ?','Delete this robot for good?')))return;const j=await robotPost('robot_delete',{id});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}
  RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}

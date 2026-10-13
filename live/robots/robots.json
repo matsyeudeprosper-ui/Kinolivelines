@@ -103,14 +103,14 @@
    "by": "owner",
    "by_uid": "kino",
    "created": "2026-10-13",
-   "stage": "demo",
-   "public": true,
+   "stage": "tested",
+   "public": false,
    "tested_at": "2026-10-13T09:40:48Z",
    "plug": {
     "where": "acct:u477508138",
     "market": "BTCUSD",
     "date": "2026-10-13",
-    "status": "applied",
+    "status": "unplugged",
     "applied_at": "2026-10-13T12:55:16Z"
    }
   },

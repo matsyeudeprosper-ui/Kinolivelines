@@ -225,13 +225,7 @@
   "infinity": "valere",
   "expenses": "valere_cap3_eqhalf",
   "labo": "labo",
-  "u477508138": "robot-owl-de-nuit"
+  "u477508138": "reference"
  },
- "robot_plugs": {
-  "u477508138": {
-   "robot": "owl-de-nuit",
-   "prev": "reference",
-   "at": "2026-10-13T12:55:16Z"
-  }
- }
+ "robot_plugs": {}
 }
