@@ -1023,4 +1023,28 @@ $('back').onclick=e=>{e.preventDefault();if(document.body.classList.contains('de
  if(history.length>1)history.back();else location.href='./';};
 if(EN){document.documentElement.lang='en';}
 doors();head();load();setInterval(()=>{if(!document.hidden)load();},60000);
-</script></body></html>
+</script>
+<!-- 2026-10-13 (owner, step 5): the app's 5 destinations on every space, so leaving the main app never loses the way.
+     Same look as the app's own bar; the current destination is lit. -->
+<style>
+#owlnav{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;max-width:480px;margin:0 auto;background:rgba(14,20,29,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--border,#1f2a38);border-radius:20px 20px 0 0;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
+:root[data-theme=light] #owlnav{background:rgba(255,255,255,.94)}
+#owlnav a{flex:1;color:var(--muted,#8a9bb0);font:600 .72rem Inter,system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:48px;padding:6px 0;border-radius:12px;text-decoration:none;-webkit-tap-highlight-color:transparent}
+#owlnav a svg{width:22px;height:22px}
+#owlnav a.on{color:var(--accent-soft,#8fc6ff);background:var(--accent-bg,rgba(59,130,246,.14))}
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
+</style>
+<nav id="owlnav" aria-label="Navigation"></nav>
+<script>
+(function(){
+ const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
+ const here=(location.pathname.split('/').pop()||'');
+ const cur=/^(strategies|robots|equipe)$/.test(here)?'labo':(/^(wealth|rentabilite)$/.test(here)?'perf':'');
+ const I={home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',mkt:'M22 12h-4l-3 9L9 3l-3 9H2',perf:'M3 17l6-6 4 4 8-8M15 7h6v6',
+  labo:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',set:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4'};
+ const L=[['home','./',EN?'Today':'Aujourd’hui'],['mkt','./#marche',EN?'Market':'Marché'],['perf','./#hist','Performance'],['labo','strategies',EN?'Lab':'Labo'],['set','./#set',EN?'Account':'Compte']];
+ const svg=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
+ document.getElementById('owlnav').innerHTML=L.map(x=>'<a href="'+x[1]+'" class="'+(x[0]===cur?'on':'')+'"'+(x[0]===cur?' aria-current="page"':'')+'>'+svg(I[x[0]])+'<span>'+x[2]+'</span></a>').join('');
+})();
+</script>
+</body></html>
