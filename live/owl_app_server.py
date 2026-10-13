@@ -7400,7 +7400,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  .ckt.wide .s{padding-right:100px}
  .ckt svg.sp{position:absolute;right:12px;bottom:12px;width:62px;height:24px;overflow:visible}
  .ckt.wide svg.sp{width:92px;height:32px}
- #cksh{position:fixed;inset:0;z-index:80;display:none}
+ #cksh{position:fixed;inset:0;z-index:39;display:none}
  #cksh.on{display:block}
  #cksh .ckdim{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}
  #cksh.open .ckdim{opacity:1}
@@ -7504,7 +7504,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  .csg .tx{flex:1;min-width:0}.csg .tx b{display:block;font-size:.98rem}.csg .tx small{display:block;font-size:.78rem;color:var(--muted2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
  .csg .ch{color:var(--muted);flex:none}
  .csg.own{border-style:dashed}
- #cssh{position:fixed;inset:0;z-index:80;display:none}#cssh.on{display:block}
+ #cssh{position:fixed;inset:0;z-index:39;display:none}#cssh.on{display:block}
  #cssh .xdim{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}#cssh.open .xdim{opacity:1}
  #cssh .xpn{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
  #cssh.open .xpn{transform:none}
