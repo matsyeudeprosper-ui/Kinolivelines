@@ -138,6 +138,15 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .t4 .av{width:34px;height:34px;border-radius:11px;font-size:.72rem}
 .t4 .tx{min-width:0;width:100%}.t4 .tx b{display:block;font-size:.84rem}.t4 .tx small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.7rem;color:#c6d3df;line-height:1.3;margin-top:2px}
 .t4 em{position:absolute;top:10px;right:10px;font-style:normal;font-size:.68rem;font-weight:800;color:#0b1a2a;background:#e8c55a;border-radius:99px;padding:2px 7px}
+.ctb{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}.ctb th{font-size:.74rem;text-align:right;padding:0 0 8px}.ctb td{padding:9px 0;border-top:1px solid var(--border);font-size:.86rem;color:var(--text2);text-align:right}
+.ctb td:first-child{text-align:left;color:var(--muted2)}.ctb td.w{font-weight:900;color:var(--text)}
+.cdf{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:center;padding:9px 0;border-top:1px solid var(--border);font-size:.8rem}.cdf:first-of-type{border-top:0}
+.cdf span{display:flex;align-items:center;gap:6px;color:var(--muted2)}.cdf span svg{width:14px;height:14px}.cdf b:nth-child(2){color:var(--accent-soft)}.cdf b:nth-child(3){color:#e8c55a}
+.nw{padding:14px 14px 10px;border-color:rgba(232,197,90,.35);background:linear-gradient(135deg,rgba(232,197,90,.08),var(--surface) 55%)}
+.nwh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}.nwh b{font-size:.84rem}.nwh em{font-style:normal;font-size:.72rem;font-weight:800;color:#0b1a2a;background:#e8c55a;border-radius:99px;padding:1px 7px;margin-left:4px}
+.nwh button{flex:none;white-space:nowrap;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font:inherit;font-size:.74rem;font-weight:700;border-radius:99px;padding:5px 11px;cursor:pointer}
+.nwi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--text);font:inherit;text-align:left;padding:8px 0;border-top:1px solid var(--border);cursor:pointer}
+.nwi>i{flex:none;width:8px;height:8px;border-radius:50%}.nwi span{flex:1;min-width:0}.nwi small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.nwi b{display:block;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nwi .cv{flex:none;color:var(--muted)}
 .how{display:block;width:100%;margin-top:12px;border:0;background:none;color:#9fc2de;font:inherit;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;padding:4px}
 .rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--hl)}
 .rc .rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
@@ -668,6 +677,7 @@ function setSide(s){if(s===SIDE)return;SIDE=s;const seg={strat:'strategies',robo
  try{history.replaceState(null,'',seg);}catch(e){}NAV=0;document.body.classList.remove('det');CUR=null;CURR=null;doors();head();paint();load();window.scrollTo(0,0);}
 function head(){$('h1').textContent=T('Le labo','The lab');$('h1s').textContent=SUBT[SIDE];document.title=T('Le labo','The lab');}
 function paint(){if(SIDE==='strat'){if(D){renderTop();renderList();}else skel();}else if(SIDE==='robots'){if(RB)renderRobots();else skel();}else{if(TM)renderTeam();else skel();}}
+const _paint0=paint;paint=function(){_paint0();try{nwInsert();}catch(e){}};
 function skel(){$('top').innerHTML='';$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';}
 
 /* ---------- robots ---------- */
@@ -857,7 +867,7 @@ function builderTop(){const B=BLD();
   (B.can_create?'<div class="a3"><button class="a3p" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'<b>'+T('Expliquer','Explain')+'</b><small>'+T('à l\'IA, en mots','to the AI, in words')+'</small></button>'+
    '<button onclick="goNew()">'+pic('M12 5v14M5 12h14')+'<b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
    '<button onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'<b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
-  '<button class="how" onclick="fdOpen(\'how\')">'+T('Comment ça marche : des yeux + 6 pièces','How it works: eyes + 6 pieces')+' ›</button></div>';
+  '<div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap">'+(cmpList().length>1?'<button class="how" style="width:auto" onclick="cmpPick()">'+T('Comparer deux robots','Compare two robots')+' ›</button><span style="color:#9fc2de;margin-top:12px">·</span>':'')+'<button class="how" style="width:auto" onclick="fdOpen(\'how\')">'+T('Comment ça marche','How it works')+' ›</button></div></div>';
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
 
@@ -894,7 +904,7 @@ function slotStack(R,own,parent,opts){opts=opts||{};
 function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;const R=r.resolved||{},own=r.parts||{};const par=r.parent&&bById(r.parent);
  let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+BOT+'</span><h3>'+esc(T(r.name_fr,r.name_en))+'</h3>'+((r.plain_fr)?'<p>'+esc(T(r.plain_fr,r.plain_en))+'</p>':'')+
   '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div></div>';
- h+=rStrip(r);
+ h+=rStrip(r);if(r.test&&r.test.robot&&cmpList().length>1)h+='<button class="more2" style="margin:-6px 0 12px" onclick="cmpPick(\''+r.id+'\')">'+T('Comparer avec un autre robot','Compare with another robot')+' ›</button>';
  h+='<div class="card"><h2>'+T('Ses pièces','Its pieces')+'</h2>'+slotStack(R,own,!!r.parent)+'</div>';
  const t=r.test;
  const TM=BLD().test_min||5;
@@ -1165,6 +1175,63 @@ window.addEventListener('popstate',()=>{FXCUR=null;});
 function rStrip(r){const tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result;if(!tr)return '';const d=pr?tr.net-pr.net:null,wr=tr.win_rate!=null?Math.round(tr.win_rate*100):null;
  return '<div class="card rc" style="cursor:default;margin-bottom:14px"><div class="rm" style="padding-top:14px"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small></div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
   '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div></div></div>';}
+
+/* ---------- 2026-10-13 (owner): "what's new since my last visit" - the page remembers (on this device) what it showed,
+   and lists what changed since: new or moved strategies, new or freshly tested robots, new pieces, new critic verdicts,
+   new researcher proposals. First visit: nothing shown, the snapshot starts. "Vu" moves the snapshot to now. ---------- */
+const NWK='owlLabSnap:'+(location.pathname.split('/').filter(Boolean)[0]||'');
+function nwOld(){try{return JSON.parse(localStorage.getItem(NWK)||'null');}catch(e){return null;}}
+function nwCur(){const o=nwOld()||{};const n=Object.assign({},o);
+ if(D&&D.items){n.s={};D.items.forEach(x=>{n.s[x.id]=x.status;});}
+ if(RB&&RB.builder){n.r={};(BLD().robots||[]).forEach(r=>{n.r[r.id]=r.stage;});n.p=pcs().map(x=>x.id);}
+ if(TM){n.c=((TM.critique||{}).items||[]).map(x=>x.id);n.ch=((TM.chercheur||{}).pending||[]).map(x=>x.id);}
+ return n;}
+function nwSave(){try{localStorage.setItem(NWK,JSON.stringify(nwCur()));}catch(e){}}
+window.addEventListener('pagehide',()=>{if(nwOld())nwSave();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&nwOld())nwSave();});
+function nwList(){const o=nwOld();const L=[];if(!o){nwSave();return L;}
+ const stn=s=>T((ST[s]||ST.study).fr,(ST[s]||ST.study).en),bst=s=>T((BST[s]||BST.tested).fr,(BST[s]||BST.tested).en);
+ if(SIDE==='strat'&&D&&o.s)D.items.forEach(x=>{if(!(x.id in o.s))L.push(['go(\''+x.id+'\')',(ST[x.status]||ST.study).c,T('Nouvelle idée','New idea'),tt(x)]);
+  else if(o.s[x.id]!==x.status)L.push(['go(\''+x.id+'\')',(ST[x.status]||ST.study).c,stn(o.s[x.id])+' → '+stn(x.status),tt(x)]);});
+ if(SIDE==='robots'&&RB&&o.r){(BLD().robots||[]).forEach(r=>{if(!(r.id in o.r))L.push(['goB(\''+r.id+'\')',(BST[r.stage]||BST.tested).c,T('Nouveau robot','New robot'),T(r.name_fr,r.name_en)]);
+   else if(o.r[r.id]!==r.stage)L.push(['goB(\''+r.id+'\')',(BST[r.stage]||BST.tested).c,bst(o.r[r.id])+' → '+bst(r.stage),T(r.name_fr,r.name_en)]);});
+  if(o.p)pcs().forEach(x=>{if(o.p.indexOf(x.id)<0)L.push(['goP(\''+x.id+'\')','#8fc6ff',T('Nouvelle pièce','New piece'),T(x.name_fr,x.name_en)]);});}
+ if(SIDE==='team'&&TM){if(o.c)((TM.critique||{}).items||[]).forEach(x=>{if(o.c.indexOf(x.id)<0)L.push(['fdOpen(\'tm_cr\')','#ff9a9a',T('La critique','The critic'),EN?x.en:x.fr]);});
+  if(o.ch)((TM.chercheur||{}).pending||[]).forEach(x=>{if(o.ch.indexOf(x.id)<0)L.push(['fdOpen(\'tm_ch\')','#8fc6ff',T('Le chercheur propose','The researcher proposes'),EN?x.title_en:x.title_fr]);});}
+ return L;}
+function nwInsert(){if(document.body.classList.contains('det'))return;const top=$('top');if(!top)return;const hero=top.querySelector('.hero');if(!hero)return;
+ const L=nwList();if(!L.length)return;const cut=(s,n)=>{s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s;};
+ const it=x=>'<button class="nwi" onclick="'+x[0]+'"><i style="background:'+x[1]+'"></i><span><small>'+esc(x[2])+'</small><b>'+esc(cut(x[3],80))+'</b></span><span class="cv">›</span></button>';
+ FDS.nw=[T('Nouveau depuis votre dernière visite','New since your last visit'),()=>'<div class="card nw" style="margin:0">'+L.map(it).join('')+'</div>'];
+ const c=document.createElement('div');c.className='card nw';
+ c.innerHTML='<div class="nwh"><b>'+T('Nouveau depuis votre dernière visite','New since your last visit')+' <em>'+L.length+'</em></b><button onclick="nwSave();paint()">'+T('Vu','Seen')+' ✓</button></div>'+L.slice(0,3).map(it).join('')+(L.length>3?'<button class="more2" onclick="fdOpen(\'nw\')">'+T('Tout voir','See all')+' · '+L.length+' ›</button>':'');
+ hero.after(c);}
+
+/* ---------- 2026-10-13 (owner): compare two robots - both tested on the same past period with the same account,
+   so their curves and figures line up; the pieces that differ are listed ---------- */
+function cmpList(){return (BLD().robots||[]).filter(r=>r.test&&r.test.robot);}
+function cmpPick(a){const L=cmpList().filter(r=>r.id!==a);const A=a?bById(a):null;
+ shOpen(A?T('Comparer ','Compare ')+T(A.name_fr,A.name_en)+T(' avec…',' with…'):T('Comparer deux robots : le premier','Compare two robots: the first'),
+  '<div class="fds">'+L.map(r=>{const tr=r.test.robot;return '<button class="fd" onclick="'+(a?'cmpShow(\''+a+'\',\''+r.id+'\')':'cmpPick(\''+r.id+'\')')+'">'+ICO((BST[r.stage]||BST.tested).c,BOT)+'<span class="tx"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+num(tr.trades||0)+' trades · '+Math.round((tr.win_rate||0)*100)+T(' % gagnés',' % won')+'</small></span><span style="font-weight:800" class="'+cl(tr.net)+'">'+money(tr.net)+'</span><span class="cv">›</span></button>';}).join('')+'</div>');}
+function cmpShow(a,b){const A=bById(a),B=bById(b);if(!A||!B)return;const x=A.test.robot,y=B.test.robot,na=T(A.name_fr,A.name_en),nb=T(B.name_fr,B.name_en);
+ const row=(l,va,vb,fa,fb,hi)=>{const wa=hi==null?0:(hi?(va>vb):(va<vb))?1:((va===vb)?0:2);
+  return '<tr><td>'+l+'</td><td'+(wa===1?' class="w"':'')+'>'+fa+'</td><td'+(wa===2?' class="w"':'')+'>'+fb+'</td></tr>';};
+ const pc2=v=>v==null?'—':Math.round(v*100)+' %';
+ const RA=A.resolved||{},RB2=B.resolved||{};const diff=[];
+ SLOTS.forEach(s=>{const k=s[0],va=slotVal(RA,k),vb=slotVal(RB2,k);if(va!==vb)diff.push('<div class="cdf"><span>'+pic(s[2])+s[1]+'</span><b>'+esc(va)+'</b><b>'+esc(vb)+'</b></div>');});
+ shOpen(na+' · '+nb,'<div class="card">'+lineChart([{a:cumOf(x.curve),c:'var(--accent)',n:na},{a:cumOf(y.curve),c:'#e8c55a',n:nb}],{h:200})+
+  '<div class="note">'+T('Les deux testés sur la même période, avec le même compte de départ : seules les pièces changent.','Both tested over the same period with the same starting account: only the pieces change.')+'</div></div>'+
+  '<div class="card"><table class="ctb"><tr><th></th><th style="color:var(--accent-soft)">'+esc(na)+'</th><th style="color:#e8c55a">'+esc(nb)+'</th></tr>'+
+  row(T('Résultat','Result'),x.net,y.net,'<span class="'+cl(x.net)+'">'+money(x.net)+'</span>','<span class="'+cl(y.net)+'">'+money(y.net)+'</span>',true)+
+  row('Trades',x.trades,y.trades,num(x.trades||0),num(y.trades||0),null)+
+  row(T('Gagnés','Won'),x.win_rate,y.win_rate,pc2(x.win_rate),pc2(y.win_rate),true)+
+  row(T('Facteur de profit','Profit factor'),x.profit_factor,y.profit_factor,num(x.profit_factor,2),num(y.profit_factor,2),true)+
+  row(T('Plus forte baisse','Deepest dip'),x.cc_dd,y.cc_dd,'−$'+num(x.cc_dd||0,0),'−$'+num(y.cc_dd||0,0),false)+
+  row(T('1re moitié','1st half'),x.first_half,y.first_half,money(x.first_half||0),money(y.first_half||0),true)+
+  row(T('2e moitié','2nd half'),x.later_half,y.later_half,money(x.later_half||0),money(y.later_half||0),true)+'</table>'+
+  '<div class="note">'+T('En gras : le meilleur des deux sur la ligne. Une seule moitié qui gagne ne suffit pas.','In bold: the better of the two on that line. Winning only one half is not enough.')+'</div></div>'+
+  (diff.length?'<div class="card"><h2>'+T('Ce qui les différencie','What differs')+'</h2>'+diff.join('')+'</div>':'')+
+  '<div class="fds"><button class="fd" onclick="goB(\''+a+'\')">'+ICO('#8fc6ff',BOT)+'<span class="tx"><b>'+esc(na)+'</b><small>'+T('ouvrir sa page','open its page')+'</small></span><span class="cv">›</span></button><button class="fd" onclick="goB(\''+b+'\')">'+ICO('#e8c55a',BOT)+'<span class="tx"><b>'+esc(nb)+'</b><small>'+T('ouvrir sa page','open its page')+'</small></span><span class="cv">›</span></button></div>');}
 
 /* ---------- 2026-10-13 (owner): one search for the whole lab - strategies, robots, pieces ---------- */
 async function gsOpen(){shOpen(T('Chercher dans le labo','Search the lab'),'<label class="search" style="width:100%;margin-bottom:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="gsq" placeholder="'+T('Une stratégie, un robot, une pièce…','A strategy, a robot, a piece…')+'" oninput="gsRun(this.value)" autocomplete="off"></label><div id="gsr"></div>');
