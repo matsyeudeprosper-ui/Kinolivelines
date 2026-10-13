@@ -7859,53 +7859,53 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  #edrh p{font-size:.8rem;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:7px}
  #edrh p i{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px rgba(46,204,113,.18)}
  #edr{display:flex;flex-direction:column;gap:12px;margin-top:10px}
- #edr .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px;position:relative;min-width:0}
- #edr .lv-l{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2);text-transform:uppercase}
- #edr .lv-l small{letter-spacing:0;text-transform:none;font-weight:600;color:var(--muted)}
- #edr .lv-sy{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:.78rem}
- #edr .lv-mk{display:flex;flex-direction:column;gap:8px;margin-top:12px}
- #edr .lv-mr{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
- #edr .lv-mr.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.18);background:var(--accent-bg)}
- #edr .lv-mr .n{flex:1;min-width:0}#edr .lv-mr .n b{display:block;font-size:.9rem;color:var(--text)}#edr .lv-mr .n span{font-size:.72rem;color:var(--muted)}
- #edr .lv-mr .s{text-align:right;font-size:.76rem;font-weight:700;white-space:nowrap}#edr .lv-mr .s small{display:block;font-weight:600;color:var(--muted);font-size:.68rem;margin-top:2px}
- #edr .lv-dt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
- #edr .lv-es{font-size:.6rem;font-weight:800;letter-spacing:.06em;color:var(--warn);background:rgba(232,197,90,.12);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:1px}
- #edr .lv-more{display:flex;justify-content:space-between;align-items:center;margin:12px -18px -18px;padding:12px 18px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft);cursor:pointer}
- #edr .lv-pill{display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:800;letter-spacing:.06em;color:var(--text2);background:var(--surface3);border:1px solid var(--border2);border-radius:99px;padding:4px 10px 4px 4px;margin-bottom:14px;text-transform:uppercase}
- #edr .lv-st{display:flex;gap:14px;align-items:flex-start}
- #edr .lv-li{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
- #edr .lv-li i{width:18px;height:18px;border-radius:50%}
- #edr .lv-st h3{font-size:1.32rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
- #edr .lv-st p{font-size:.86rem;color:var(--text2);line-height:1.45;margin-top:4px}
- #edr .lv-w{margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px}
- #edr .lv-w .t{font-size:.8rem;color:var(--muted2)}#edr .lv-w .t b{color:var(--text)}
- #edr .lv-rail{position:relative;height:8px;border-radius:99px;background:var(--surface3);margin:32px 4px 8px}
- #edr .lv-rail .f{position:absolute;top:0;bottom:0;border-radius:99px}
- #edr .lv-rail .px{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--text);border:3px solid var(--surface2)}
- #edr .lv-rail .tg{position:absolute;bottom:16px;transform:translateX(-50%);font-size:.7rem;font-weight:800;background:var(--text);color:var(--bg);border-radius:6px;padding:2px 6px;white-space:nowrap}
- #edr .lv-ends{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;color:var(--muted)}#edr .lv-ends b{display:block;color:var(--text2);font-size:.78rem;font-variant-numeric:tabular-nums}
- #edr .lv-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
- #edr .lv-tiles div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px}
- #edr .lv-tiles span{font-size:.62rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}#edr .lv-tiles b{display:block;font-size:.95rem;margin-top:3px;color:var(--text);font-variant-numeric:tabular-nums}
- #edr .lv-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--accent-soft);font:inherit;font-weight:700;font-size:.86rem;border-radius:14px;padding:12px;width:100%;cursor:pointer}
- #edr .lv-btn.ok{color:var(--muted2);font-weight:600;cursor:default}
- #edr .lv-ck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
- #edr .lv-ck>div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;gap:10px;align-items:center;min-width:0}
- #edr .lv-ck .ic2{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:900}
- #edr .lv-ck b{display:block;font-size:.8rem;color:var(--text)}#edr .lv-ck span{font-size:.7rem;color:var(--muted);line-height:1.3;display:block}
- #edr .lv-fs{position:absolute;top:14px;right:14px;font-size:.72rem;font-weight:700;color:var(--accent-soft);border:1px solid var(--border2);border-radius:99px;padding:6px 11px;text-decoration:none;background:var(--surface)}
- #edr .lv-fr{margin:14px -18px -18px;height:380px;border-top:1px solid var(--border);border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;background:var(--bg)}
- #edr .lv-fr iframe{width:100%;height:100%;border:0;display:block}
- #edr .lv-ev{display:flex;gap:12px;position:relative;padding-bottom:16px}
- #edr .lv-ev:before{content:'';position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--border)}
- #edr .lv-ev:last-child:before{display:none}#edr .lv-ev:last-child{padding-bottom:0}
- #edr .lv-ev .d{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:900;border:1px solid var(--border2);background:var(--surface2);color:var(--text2)}
- #edr .lv-ev .h{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
- #edr .lv-ev b{font-size:.88rem;color:var(--text)}#edr .lv-ev p{font-size:.78rem;color:var(--muted2);margin-top:2px;line-height:1.4}
- #edr .lv-tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;border-radius:6px;padding:2px 6px}
- #edr .lv-up{color:var(--up)}#edr .lv-dn{color:var(--down)}
- #edr .lv-note{font-size:.72rem;color:var(--muted);margin-top:10px;line-height:1.4}
- #edr .lv-ax{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:6px}
+ .edrx .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px;position:relative;min-width:0}
+ .edrx .lv-l{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2);text-transform:uppercase}
+ .edrx .lv-l small{letter-spacing:0;text-transform:none;font-weight:600;color:var(--muted)}
+ .edrx .lv-sy{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:.78rem}
+ .edrx .lv-mk{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+ .edrx .lv-mr{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+ .edrx .lv-mr.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.18);background:var(--accent-bg)}
+ .edrx .lv-mr .n{flex:1;min-width:0}.edrx .lv-mr .n b{display:block;font-size:.9rem;color:var(--text)}.edrx .lv-mr .n span{font-size:.72rem;color:var(--muted)}
+ .edrx .lv-mr .s{text-align:right;font-size:.76rem;font-weight:700;white-space:nowrap}.edrx .lv-mr .s small{display:block;font-weight:600;color:var(--muted);font-size:.68rem;margin-top:2px}
+ .edrx .lv-dt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+ .edrx .lv-es{font-size:.6rem;font-weight:800;letter-spacing:.06em;color:var(--warn);background:rgba(232,197,90,.12);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:1px}
+ .edrx .lv-more{display:flex;justify-content:space-between;align-items:center;margin:12px -18px -18px;padding:12px 18px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft);cursor:pointer}
+ .edrx .lv-pill{display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:800;letter-spacing:.06em;color:var(--text2);background:var(--surface3);border:1px solid var(--border2);border-radius:99px;padding:4px 10px 4px 4px;margin-bottom:14px;text-transform:uppercase}
+ .edrx .lv-st{display:flex;gap:14px;align-items:flex-start}
+ .edrx .lv-li{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+ .edrx .lv-li i{width:18px;height:18px;border-radius:50%}
+ .edrx .lv-st h3{font-size:1.32rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
+ .edrx .lv-st p{font-size:.86rem;color:var(--text2);line-height:1.45;margin-top:4px}
+ .edrx .lv-w{margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px}
+ .edrx .lv-w .t{font-size:.8rem;color:var(--muted2)}.edrx .lv-w .t b{color:var(--text)}
+ .edrx .lv-rail{position:relative;height:8px;border-radius:99px;background:var(--surface3);margin:32px 4px 8px}
+ .edrx .lv-rail .f{position:absolute;top:0;bottom:0;border-radius:99px}
+ .edrx .lv-rail .px{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--text);border:3px solid var(--surface2)}
+ .edrx .lv-rail .tg{position:absolute;bottom:16px;transform:translateX(-50%);font-size:.7rem;font-weight:800;background:var(--text);color:var(--bg);border-radius:6px;padding:2px 6px;white-space:nowrap}
+ .edrx .lv-ends{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;color:var(--muted)}.edrx .lv-ends b{display:block;color:var(--text2);font-size:.78rem;font-variant-numeric:tabular-nums}
+ .edrx .lv-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+ .edrx .lv-tiles div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px}
+ .edrx .lv-tiles span{font-size:.62rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}.edrx .lv-tiles b{display:block;font-size:.95rem;margin-top:3px;color:var(--text);font-variant-numeric:tabular-nums}
+ .edrx .lv-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--accent-soft);font:inherit;font-weight:700;font-size:.86rem;border-radius:14px;padding:12px;width:100%;cursor:pointer}
+ .edrx .lv-btn.ok{color:var(--muted2);font-weight:600;cursor:default}
+ .edrx .lv-ck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .edrx .lv-ck>div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;gap:10px;align-items:center;min-width:0}
+ .edrx .lv-ck .ic2{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:900}
+ .edrx .lv-ck b{display:block;font-size:.8rem;color:var(--text)}.edrx .lv-ck span{font-size:.7rem;color:var(--muted);line-height:1.3;display:block}
+ .edrx .lv-fs{position:absolute;top:14px;right:14px;font-size:.72rem;font-weight:700;color:var(--accent-soft);border:1px solid var(--border2);border-radius:99px;padding:6px 11px;text-decoration:none;background:var(--surface)}
+ .edrx .lv-fr{margin:14px -18px -18px;height:380px;border-top:1px solid var(--border);border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;background:var(--bg)}
+ .edrx .lv-fr iframe{width:100%;height:100%;border:0;display:block}
+ .edrx .lv-ev{display:flex;gap:12px;position:relative;padding-bottom:16px}
+ .edrx .lv-ev:before{content:'';position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--border)}
+ .edrx .lv-ev:last-child:before{display:none}.edrx .lv-ev:last-child{padding-bottom:0}
+ .edrx .lv-ev .d{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:900;border:1px solid var(--border2);background:var(--surface2);color:var(--text2)}
+ .edrx .lv-ev .h{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+ .edrx .lv-ev b{font-size:.88rem;color:var(--text)}.edrx .lv-ev p{font-size:.78rem;color:var(--muted2);margin-top:2px;line-height:1.4}
+ .edrx .lv-tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;border-radius:6px;padding:2px 6px}
+ .edrx .lv-up{color:var(--up)}.edrx .lv-dn{color:var(--down)}
+ .edrx .lv-note{font-size:.72rem;color:var(--muted);margin-top:10px;line-height:1.4}
+ .edrx .lv-ax{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:6px}
  #edrdet{margin-top:4px}
  #edrdet>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 18px;border:1px dashed var(--border2);border-radius:var(--r);color:var(--muted2);font-weight:700;font-size:.84rem}
  #edrdet>summary::-webkit-details-marker{display:none}
@@ -7934,67 +7934,11 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le marché dort. Dès qu’il se réveille, le robot cherche ','The market is asleep. When it wakes up, the robot looks for ')+'<b>'+side+'</b>'+(trend?' — '+trend:'')+'.',row:T2('Il attend','Waiting')};
   if(k==='forming'||k==='flip')return {c:'or',t:T2('Il attend','Waiting'),s:T(k==='forming'?'j_forming':'j_flip'),row:T2('Il attend','Waiting')};
   return {c:'bl',t:T2('Prêt','Ready'),s:T2('Les conditions sont réunies : il entrera dès qu’une cassure confirme ','Conditions are met: it enters as soon as a break confirms ')+'<b>'+side+'</b>.',row:T2('Prêt','Ready')};}
- // the four things the robot checks, in plain words
- function checks(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
-  const it=(ok,a,b)=>'<div><div class="ic2" style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</div><div style="min-width:0"><b>'+a+'</b><span>'+b+'</span></div></div>';
-  const lvl=ms.pb_detail&&ms.pb_last_bos!=null?' '+fmtN(Math.round(ms.pb_last_bos),0):'';
-  return '<div class="lv-ck">'+
-   it(t===1||t===-1,T2('Sens clair','Clear direction'),t===1?T2('tendance en hausse','trend up'):(t===-1?T2('tendance en baisse','trend down'):T2('pas encore','not yet')))+
-   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),ms.pb_side==='wrong'&&gate?T2('doit repasser','must come back past')+lvl:(lvl?(t===-1?T2('sous','below'):T2('au-dessus de','above'))+lvl:T2('du bon côté','on the right side')))+
-   it(k!=='nervous'&&k!=='brisk',T2('Pas de tempête','No storm'),k==='nervous'?T2('marché très agité','very rough market'):(k==='brisk'?T2('marché nerveux','nervous market'):T2('marché calme','calm market')))+
-   it(k!=='none',T2('Marché éveillé','Market awake'),k==='none'?T2('il dort encore','still asleep'):T2('il bouge','it is moving'))+'</div>';}
  // a price rail: left level, right level, the price between
  function rail(lo,hi,px,dg,fill,ends){const p=Math.max(2,Math.min(98,(px-lo)/((hi-lo)||1)*100));
   return '<div class="lv-rail">'+fill(p)+'<div class="px" style="left:'+p.toFixed(1)+'%"></div><div class="tg" style="left:'+Math.max(12,Math.min(88,p)).toFixed(1)+'%">'+fmtN(px,dg)+'</div></div><div class="lv-ends">'+ends+'</div>';}
- function btcCard(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c"><div class="lv-pill">'+badge('BTCUSD',22)+mname('BTCUSD')+' · BTCUSD</div>'+
-   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
-  if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
-   if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
-    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
-     rail(lo,hi,cur,0,q=>'<div class="f" style="left:0;width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35);'+(dir===1?'':'left:auto;right:0')+'"></div>',
-      '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(sl,0)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(e,0)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(tp,0)+'</b></div>')+'</div>'+
-     '<div class="lv-tiles"><div><span>'+T2('Taille','Size')+'</span><b>'+(+p.lot).toFixed(2)+'</b></div><div><span>'+T2('Maintenant','Now')+'</span><b>'+fmtN(cur,0)+'</b></div><div><span>'+T2('Trades ouverts','Open trades')+'</span><b>'+S.open.length+'</b></div></div>';}}
-  else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'){
-   const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
-   h+='<div class="lv-w"><div class="t">'+T2('Son déclencheur : une cassure ','Its trigger: a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b></div>'+
-    rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
-     up?'<div>'+T2('dernière cassure','last break')+'<b>'+fmtN(Math.round(ms.pb_last_bos),0)+'</b></div><div style="text-align:right">'+T2('déclencheur','trigger')+'<b>'+fmtN(Math.round(ms.next_bos),0)+' · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</b></div>'
-       :'<div>'+T2('déclencheur','trigger')+'<b>'+fmtN(Math.round(ms.next_bos),0)+' · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</b></div><div style="text-align:right">'+T2('dernière cassure','last break')+'<b>'+fmtN(Math.round(ms.pb_last_bos),0)+'</b></div>')+
-    '<div class="lv-note" style="margin-top:8px">'+T2('Ce qu’il attend, pas une prévision : personne ne sait quand le prix y arrivera.','What it waits for, not a forecast: nobody knows when price will get there.')+'</div></div>';}
-  const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
-  h+=on?'<div class="lv-btn ok">✓ '+T2('Vous êtes prévenu à chaque trade','You are notified on every trade')+'</div>':(nb?'<button class="lv-btn" id="edrnotif">🔔 '+T2('Prévenez-moi quand il entre','Tell me when it enters')+'</button>':'');
-  return h+'</div>'+checks(D);}
- // ---- other markets, on trial (scanner) ----
- function trialCard(r){const en=EN(),o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
-  if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' ouvert à ',' opened at ')+hm(o.t)+T2('. Rien n’est réellement acheté : ce trade sert à vérifier ce marché avant d’y mettre de l’argent.','. Nothing is really bought: this trade checks the market before any money goes there.');}
-  else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix est tout près de son déclencheur. Si la cassure se confirme, le robot ouvrira un trade virtuel.','Price is right next to its trigger. If the break confirms, the robot opens a virtual trade.');}
-  else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur. Le robot le surveille.','Price is nearing its trigger. The robot is watching it.');}
-  let h='<div class="lv-c"><div class="lv-pill">'+badge(r.sym,22)+mname(r.sym)+' · '+r.sym+'<span class="lv-es" style="margin-left:2px">'+T2('ESSAI','TRIAL')+'</span></div>'+
-   '<div class="lv-st">'+light(c)+'<div style="min-width:0"><h3>'+t+(o?' · <span class="'+(o.r_now>=0?'lv-up':'lv-dn')+'">'+R(o.r_now)+'</span>':'')+'</h3><p>'+s+'</p></div></div>';
-  if(o&&o.e!=null&&o.sl!=null&&o.tp!=null&&r.px){const dir=o.d,lo=dir===1?o.sl:o.tp,hi=dir===1?o.tp:o.sl,pe=(o.e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(r.px-o.e)/((o.tp-o.e)||1)*100));
-   h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
-    rail(lo,hi,r.px,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
-     '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(o.sl,dg)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(o.e,dg)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(o.tp,dg)+'</b></div>')+'</div>';}
-  else if(o){h+='<div class="lv-w"><div class="t">'+T2('Où il en est','Where it stands')+' · <b>'+R(o.r_now)+'</b></div><div class="lv-note" style="margin-top:6px">'+T2('R = le résultat comparé au risque : l’objectif vaut +0,8 R, le stop −1 R.','R = the result compared with the risk: the target is +0.8 R, the stop −1 R.')+'</div></div>';}
-  else if(r.next_bos!=null&&r.pb_bos!=null&&r.px){const up=r.pb_trend===1,lo=up?r.pb_bos:r.next_bos,hi=up?r.next_bos:r.pb_bos;
-   h+='<div class="lv-w"><div class="t">'+T2('Son déclencheur : une cassure ','Its trigger: a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(r.next_bos,dg)+'</b></div>'+
-    rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
-     '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
-  return h+'<div class="lv-note">'+T2('En essai : le robot teste sa configuration sur ce marché avec des trades virtuels. Aucun argent réel, rien ne s’ajoute à votre solde.','On trial: the robot tests its setup on this market with virtual trades. No real money, nothing is added to your balance.')+'</div></div>';}
  function trials(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={trade:0,ready:1,soon:2};
   return S.filter(r=>r.sym!=='BTCUSD'&&o[r.status]!=null&&(r.status!=='trade'||r.open)).sort((a,b)=>o[a.status]-o[b.status]||((a.near==null?9:a.near)-(b.near==null?9:b.near))).slice(0,6);}
- function marketsCard(D,B0,TR){const row=(s,on,stat,col,sub,es)=>'<button class="lv-mr'+(on?' on':'')+'" data-s="'+s+'">'+badge(s)+'<div class="n"><b>'+esc(mname(s))+'</b><span>'+s+(es?'<span class="lv-es">'+T2('ESSAI','TRIAL')+'</span>':'')+'</span></div><div class="s" style="color:'+col+'"><span class="lv-dt" style="background:'+col+'"></span>'+stat+'<small>'+sub+'</small></div></button>';
-  const C={gr:'var(--up)',or:'var(--warn)',rd:'var(--down)',bl:'var(--accent-soft)',gy:'var(--muted2)'};
-  let h='<div class="lv-c" style="padding:16px 16px 18px"><div class="lv-l">'+T2('Vos marchés','Your markets')+' <small>· '+T2('Bitcoin en priorité','Bitcoin first')+'</small></div><div class="lv-mk">'+
-   row('BTCUSD',sel==='BTCUSD',B0.row,C[B0.c],T2('aujourd’hui ','today ')+'<span class="'+((D.today||0)>=0?'lv-up':'lv-dn')+'">'+money(D.today||0)+'</span>',false)+
-   TR.map(r=>{const o=r.open;return row(r.sym,sel===r.sym,r.status==='trade'?T2('En essai ','On trial ')+(o?R(o.r_now):''):(r.status==='ready'?T2('Presque prêt','Nearly ready'):T2('Bientôt','Soon')),r.status==='trade'?C.gr:(r.status==='ready'?C.bl:C.or),
-    r.status==='trade'?(o&&o.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')):T2('en file d’attente','in the queue'),true);}).join('')+'</div>';
-  if(!TR.length)h+='<div class="lv-note">'+T2('Aucun autre marché n’a de trade ou de configuration proche pour l’instant.','No other market has a trade or a close setup right now.')+'</div>';
-  const n=((SC&&SC.state&&SC.state.symbols)||[]).length;
-  if(n)h+='<div class="lv-more" id="edrscan"><span>'+T2('Tous les marchés en essai','All markets on trial')+' · '+n+'</span><span>›</span></div>';
-  return h+'</div>';}
- // ---- the chart, the diary, the hours ----
- function chartCard(){return '<div class="lv-c" style="padding-bottom:18px"><div class="lv-l">'+T2('Le graphique','The chart')+' <small>· '+esc(mname(sel))+'</small></div><a class="lv-fs" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Plein écran','Full screen')+' ↗</a><div class="lv-fr" id="edrfr"></div></div>';}
  function diary(D){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000,ev=[],tag=(s,es)=>{const m=mk(s);return '<span class="lv-tag" style="background:'+m[1]+'26;color:'+m[1]+'">'+(s==='BTCUSD'?'BTC':esc(mname(s)).toUpperCase())+'</span>'+(es?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'');};
   (D.open_list||[]).forEach(p=>ev.push({t:Date.now()/1000,ic:'↗',c:'lv-up',h:tag('BTCUSD')+T2('maintenant','now'),b:(p.d==='A'?T2('Achat en cours','Buy running'):T2('Vente en cours','Sell running'))+' · <span class="'+((+p.pl)>=0?'lv-up':'lv-dn')+'">'+money(+p.pl||0)+'</span>',p:T2('Entré à ','Entered at ')+fmtN(+p.e,0)+'.'}));
   (Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).forEach(x=>ev.push({t:x.x||x.t,ic:x.p>=0?'✓':'✕',c:x.p>=0?'lv-up':'lv-dn',h:tag('BTCUSD')+hm(x.t)+(x.x?' → '+hm(x.x):''),b:(String(x.d).toUpperCase().startsWith('B')||x.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+' · <span class="'+(x.p>=0?'lv-up':'lv-dn')+'">'+money(x.p)+'</span>',p:x.p>=0?T2('Sorti en gain.','Closed in profit.'):T2('Sorti au stop.','Closed at the stop.')}));
@@ -8019,18 +7963,136 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const best=H.map((x,i)=>[i,x[1]]).sort((a,b)=>b[1]-a[1])[0];
   return '<div class="lv-c"><div class="lv-l">'+T2('Ses heures','Its hours')+' <small>· '+days.length+' '+T2('derniers jours','last days')+' · Bitcoin</small></div><div style="margin-top:14px">'+s+'</svg></div>'+
    '<div class="lv-note">'+T2('Le résultat de votre robot à chaque heure, sur ','Your robot’s result at each hour, over ')+n+' trades'+(best&&best[1]>0?T2(' — sa meilleure heure : ',' — its best hour: ')+best[0]+'h':'')+'. '+T2('Ce qui s’est passé, pas une prévision.','What happened, not a forecast.')+'</div></div>';}
+ // 2026-10-13 (owner, "too busy"): the calm layout - one status card for the market in view, one slim line for the
+ // other markets, four tiles; the chart, the diary, the hours and the trader details open in a slide-up sheet.
+ const css2=document.createElement('style');css2.textContent=`
+ .edrx .lv-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+ .edrx .lv-sw{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:inherit;font-weight:800;font-size:.86rem;border-radius:99px;padding:5px 12px 5px 5px;cursor:pointer;min-height:36px}
+ .edrx .lv-sw .cv{color:var(--muted);font-size:.7rem}
+ .edrx .lv-bell{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);display:grid;place-items:center;cursor:pointer;font-size:1rem}
+ .edrx .lv-bell.on{color:var(--up);border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
+ .edrx .lv-dots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+ .edrx .lv-dots div{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
+ .edrx .lv-dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:900}
+ .edrx .lv-dots span{font-size:.68rem;color:var(--muted2);font-weight:600;line-height:1.2}
+ .edrx .lv-strip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;font:inherit;color:inherit;width:100%;text-align:left}
+ .edrx .lv-stack{display:flex;flex:none}.edrx .lv-stack .lv-sy{width:30px;height:30px;border-radius:10px;font-size:.62rem;border:2px solid var(--surface);margin-left:-8px}.edrx .lv-stack .lv-sy:first-child{margin-left:0}
+ .edrx .lv-strip b{display:block;font-size:.86rem;color:var(--text)}.edrx .lv-strip small{font-size:.72rem;color:var(--muted)}
+ .edrx .lv-tl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .edrx .lv-t{text-align:left;min-height:96px;padding:14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;display:flex;flex-direction:column;min-width:0}
+ .edrx .lv-t .k{display:flex;align-items:center;gap:7px;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+ .edrx .lv-t .k i{width:22px;height:22px;border-radius:7px;display:inline-grid;place-items:center;font-style:normal;font-size:.72rem;background:var(--accent-bg);color:var(--accent-soft)}
+ .edrx .lv-t .v{font-size:1.1rem;font-weight:900;letter-spacing:-.01em;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .edrx .lv-t .s{font-size:.72rem;color:var(--muted2);margin-top:3px;line-height:1.3}
+ #edrsh{position:fixed;inset:0;z-index:39;display:none}#edrsh.on{display:block}
+ #edrsh .xd{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}#edrsh.open .xd{opacity:1}
+ #edrsh .xp{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+ #edrsh.open .xp{transform:none}
+ @media(min-width:700px){#edrsh .xp{left:50%;right:auto;width:560px;margin-left:-280px}}
+ body.term #edrsh .xp{left:auto!important;right:0!important;width:470px!important;margin-left:0!important}body.term #edrsh .xd{left:auto;width:470px}
+ #edrsh .xg{width:42px;height:5px;border-radius:99px;background:var(--border2);margin:4px auto 12px}
+ #edrsh .xh{display:flex;align-items:center;gap:10px;margin-bottom:8px;position:sticky;top:-8px;background:var(--bg);padding:6px 0 8px;z-index:2}
+ #edrsh .xh b{flex:1;font-size:1.2rem;font-weight:900;letter-spacing:-.01em;color:var(--text)}
+ #edrsh .xh button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.1rem}
+ #edrsh .xb>*+*{margin-top:12px}
+ #edrsh .xfr{height:72vh;border-radius:18px;overflow:hidden;border:1px solid var(--border)}#edrsh .xfr iframe{width:100%;height:100%;border:0;display:block}
+ #edrsh .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+ #edrstore{display:none}`;
+ document.head.appendChild(css2);
+ // the four checks, as four small dots inside the card
+ function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
+  const it=(ok,a)=>'<div><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></div>';
+  return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+
+   it(t===1||t===-1,T2('Sens clair','Clear trend'))+it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'))+
+   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'))+it(k!=='none',T2('Éveillé','Awake'))+'</div>';}
+ function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
+  return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
+   (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
+ function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
+   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
+  if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
+   if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
+    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+     rail(lo,hi,cur,0,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
+      '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(sl,0)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(e,0)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(tp,0)+'</b></div>')+'</div>';}}
+  else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'){
+   const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
+   h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
+    rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
+     '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(Math.round(lo),0)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(Math.round(hi),0)+'</b></div>')+'</div>';}
+  return h+dots(D)+'</div>';}
+ function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
+  if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
+  else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix touche presque son déclencheur. Aucun argent réel.','Price is almost at its trigger. No real money.');}
+  else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur. Aucun argent réel.','Price is nearing its trigger. No real money.');}
+  let h='<div class="lv-c">'+top(r.sym)+'<div class="lv-st">'+light(c)+'<div style="min-width:0"><h3>'+t+(o?' · <span class="'+(o.r_now>=0?'lv-up':'lv-dn')+'">'+R(o.r_now)+'</span>':'')+'</h3><p>'+s+'</p></div></div>';
+  if(o&&o.e!=null&&o.sl!=null&&o.tp!=null&&r.px){const dir=o.d,lo=dir===1?o.sl:o.tp,hi=dir===1?o.tp:o.sl,pe=(o.e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(r.px-o.e)/((o.tp-o.e)||1)*100));
+   h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+    rail(lo,hi,r.px,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
+     '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(o.sl,dg)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(o.e,dg)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(o.tp,dg)+'</b></div>')+'</div>';}
+  else if(!o&&r.next_bos!=null&&r.pb_bos!=null&&r.px){const up=r.pb_trend===1,lo=up?r.pb_bos:r.next_bos,hi=up?r.next_bos:r.pb_bos;
+   h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(r.next_bos,dg)+'</b></div>'+
+    rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
+     '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
+  return h+'</div>';}
+ // one slim line for the other markets; the list itself opens in the sheet
+ function strip(TR){const n=TR.length;const nt=TR.filter(r=>r.status==='trade').length,nr=n-nt;
+  if(!n&&!((SC&&SC.state&&SC.state.symbols)||[]).length)return '';
+  const sub=n?[nt?nt+' '+T2('en essai','on trial'):'',nr?nr+' '+T2('presque prêt'+(nr>1?'s':''),'nearly ready'):''].filter(Boolean).join(' · '):T2('aucun pour l’instant','none right now');
+  const shown=(sel==='BTCUSD'?TR:[{sym:'BTCUSD'}].concat(TR.filter(r=>r.sym!==sel))).slice(0,4);
+  return '<button class="lv-strip" id="edrstrip"><span class="lv-stack">'+shown.map(r=>badge(r.sym)).join('')+'</span><div style="flex:1;min-width:0"><b>'+(sel==='BTCUSD'?T2('Autres marchés','Other markets'):T2('Revenir à Bitcoin ou changer','Back to Bitcoin or switch'))+'</b><small>'+sub+'</small></div><span style="color:var(--muted)">›</span></button>';}
+ function marketList(D,B0,TR){const C={gr:'var(--up)',or:'var(--warn)',rd:'var(--down)',bl:'var(--accent-soft)',gy:'var(--muted2)'};
+  const row=(s,on,stat,col,sub,es)=>'<button class="lv-mr'+(on?' on':'')+'" data-s="'+s+'">'+badge(s)+'<div class="n"><b>'+esc(mname(s))+'</b><span>'+s+(es?'<span class="lv-es">'+T2('ESSAI','TRIAL')+'</span>':'')+'</span></div><div class="s" style="color:'+col+'"><span class="lv-dt" style="background:'+col+'"></span>'+stat+'<small>'+sub+'</small></div></button>';
+  const n=((SC&&SC.state&&SC.state.symbols)||[]).length;
+  return '<div class="edrx" style="margin:0"><div class="lv-mk" style="margin-top:0">'+row('BTCUSD',sel==='BTCUSD',B0.row,C[B0.c],T2('argent réel · aujourd’hui ','real money · today ')+money(D.today||0),false)+
+   TR.map(r=>{const o=r.open;return row(r.sym,sel===r.sym,r.status==='trade'?T2('En essai ','On trial ')+(o?R(o.r_now):''):(r.status==='ready'?T2('Presque prêt','Nearly ready'):T2('Bientôt','Soon')),r.status==='trade'?C.gr:(r.status==='ready'?C.bl:C.or),r.status==='trade'?(o&&o.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')):T2('en file d’attente','in the queue'),true);}).join('')+'</div>'+
+   '<div class="lv-note" style="margin:12px 2px 0">'+T2('Bitcoin trade avec votre argent. Les autres marchés sont en essai : des trades virtuels, sans argent réel, pour les vérifier avant.','Bitcoin trades with your money. The other markets are on trial: virtual trades, no real money, to check them first.')+'</div>'+
+   (n?'<button class="lv-btn" id="edrall">'+T2('Tous les marchés en essai','All markets on trial')+' · '+n+' ›</button>':'')+'</div>';}
+ // the four tiles
+ function tiles(D,TR){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000;
+  const nr=(Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length+(D.open_list||[]).length,ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
+  const DT=D.day_trades||{},H=Array(24).fill(0);let n=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const h=parseInt(String(x.t||'').slice(0,2),10);if(h>=0&&h<24){H[h]+=+x.p||0;n++;}}));
+  let bh=-1;H.forEach((v,i)=>{if(v>0&&(bh<0||v>H[bh]))bh=i;});
+  const ms=D.meteo_struct||{},cur=sel==='BTCUSD'?ms.px:((TR.find(r=>r.sym===sel)||{}).px);
+  const dg=sel==='BTCUSD'?0:Math.min(5,Math.max(0,((TR.find(r=>r.sym===sel)||{}).digits)||2));
+  const t=(k,ic,lab,v,s)=>'<button class="lv-t" data-k="'+k+'"><div class="k"><i><svg class="ic" style="width:13px;height:13px"><use href="#'+ic+'"/></svg></i>'+lab+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></button>';
+  return '<div class="lv-tl">'+
+   t('chart','i-chart',T2('Graphique','Chart'),cur?fmtN(cur,dg):esc(mname(sel)),esc(mname(sel))+' · '+T2('en direct','live'))+
+   t('diary','i-book',T2('Journal','Diary'),nr+' trade'+(nr>1?'s':''),(ni?ni+' '+T2('laissée'+(ni>1?'s':''),'passed'):T2('aujourd’hui','today'))+(nv?' · '+nv+' '+T2('en essai','on trial'):''))+
+   t('hours','i-calendar',T2('Ses heures','Its hours'),bh>=0?bh+'h':'—',bh>=0?T2('sa meilleure heure','its best hour')+' · '+Object.keys(DT).length+' '+T2('jours','days'):T2('pas encore assez de trades','not enough trades yet'))+
+   t('det','i-settings',T2('Pour traders','For traders'),T2('Détails','Details'),T2('météo · H4 / H1 / M15 · heures','weather · H4 / H1 / M15 · hours'))+'</div>';}
+ // the sheet: one at a time; the trader cards are MOVED in and back out, the chart frame exists only while open
+ let shK=null;
+ function sheet(){let s=$('edrsh');if(s)return s;s=document.createElement('div');s.id='edrsh';
+  s.innerHTML='<div class="xd"></div><div class="xp" role="dialog" aria-modal="true"><div class="xg"></div><div class="xh"><b id="edrsh-t"></b><button id="edrsh-x" aria-label="'+T2('Fermer','Close')+'">×</button></div><div class="xb" id="edrsh-b"></div></div>';
+  document.body.appendChild(s);s.querySelector('.xd').onclick=()=>shClose();$('edrsh-x').onclick=()=>shClose();
+  window.addEventListener('popstate',()=>{if(shK)shClose(true);});return s;}
+ function shFill(D,B0,TR){const b=$('edrsh-b');if(!b||!shK)return;
+  if(shK==='mk'){b.innerHTML=marketList(D,B0,TR);b.querySelectorAll('.lv-mr').forEach(x=>x.onclick=()=>{sel=x.dataset.s;shClose();paint(true);});const a=$('edrall');if(a)a.onclick=()=>{shClose();setTimeout(()=>mxView('scan'),300);};}
+  else if(shK==='diary'){b.innerHTML='<div class="edrx" style="margin:0">'+diary(D).replace('class="lv-c"','class="lv-c" style="padding:4px 0 0;background:none;border:0;box-shadow:none"').replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')+'</div>';const jr=$('edrjr');if(jr)jr.onclick=()=>{shClose();setTimeout(()=>{try{rjOpen();}catch(e){}},300);};}
+  else if(shK==='hours'){b.innerHTML='<div class="edrx" style="margin:0">'+(hours(D).replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')||'<div class="lv-note">'+T2('Pas encore assez de trades.','Not enough trades yet.')+'</div>')+'</div>';}}
+ function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
+  $('edrsh-t').textContent=k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
+  b.innerHTML='';
+  if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
+  else if(k==='det'){['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)b.appendChild(e);});}
+  else shFill(D,B0,TR);
+  s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
+  try{history.pushState({edr:k},'');}catch(e){}}
+ function shClose(fromPop){const s=$('edrsh');if(!s||!shK)return;const k=shK;shK=null;s.classList.remove('open');document.body.style.overflow='';
+  setTimeout(()=>{if(shK)return;s.classList.remove('on');const b=$('edrsh-b');
+   if(k==='det'){const st=$('edrstore');['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e&&st)st.appendChild(e);});}
+   if(b)b.innerHTML='';},330);
+  if(fromPop!==true){try{if(history.state&&history.state.edr)history.back();}catch(e){}}}
  // ---- build once, paint on every change ----
  function build(){const tab=$('tab-marche');if(!tab)return false;if($('edr'))return true;
   const h=document.createElement('div');h.id='edrh';
   h.innerHTML='<div class="pfi"><svg class="ic"><use href="#i-activity"/></svg></div><div><h2>'+T2('En direct','Live')+'</h2><p><i></i>'+T2('Ce que votre robot voit et attend','What your robot sees and waits for')+'</p></div>';
-  const edr=document.createElement('div');edr.id='edr';
-  const det=document.createElement('details');det.id='edrdet';
-  det.innerHTML='<summary>'+T2('Détails pour traders','Details for traders')+'<span>'+T2('météo chiffrée · H4 / H1 / M15 · heures du marché · leçons','weather figures · H4 / H1 / M15 · market hours · lessons')+' ▾</span></summary>';
+  const lv=document.createElement('div');lv.id='edr';lv.className='edrx';
   const back=document.createElement('button');back.id='edrback';back.type='button';back.innerHTML='‹ '+T2('Retour à En direct','Back to Live');back.onclick=()=>mxView('market');
-  tab.insertBefore(back,tab.firstChild);tab.insertBefore(edr,back.nextSibling);tab.insertBefore(h,edr);
-  ['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)det.appendChild(e);});
-  const mm=$('mx-market');if(mm)mm.appendChild(det);else edr.after(det);
-  // the bottom bar says what the page is now
+  const st=document.createElement('div');st.id='edrstore';
+  tab.insertBefore(back,tab.firstChild);tab.insertBefore(lv,back.nextSibling);tab.insertBefore(h,lv);lv.after(st);
+  ['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)st.appendChild(e);});
   const tb=$('tb-marche');if(tb){const tn=Array.from(tb.childNodes).find(n=>n.nodeType===3&&n.textContent.trim());if(tn)tn.textContent=T2('En direct','Live');}
   return true;}
  const ORIG=window.mxView;
@@ -8041,24 +8103,21 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   if(!scan){paint(true);}};
  async function scan(){if(Date.now()-scT<55000&&SC)return;scT=Date.now();
   try{const r=await fetch(B+'scanner_data?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err){SC=j;window._scn=j;}}}catch(e){}}
- function paint(force){const edr=$('edr');if(!edr||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
-  if(!$('edrA')){edr.innerHTML='<div id="edrA" style="display:flex;flex-direction:column;gap:12px"></div><div id="edrC"></div><div id="edrB" style="display:flex;flex-direction:column;gap:12px"></div>';}
+ function paint(force){const lv=$('edr');if(!lv||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
   const TR=trials();if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel))sel='BTCUSD';
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
-  const hA=marketsCard(D,B0,TR)+(sel==='BTCUSD'?btcCard(D):trialCard(cur)),hB=diary(D)+hours(D);
-  const A=$('edrA'),Bx=$('edrB'),C=$('edrC');
-  if(force||A._l!==hA){A._l=hA;A.innerHTML=hA;
-   A.querySelectorAll('.lv-mr').forEach(b=>b.onclick=()=>{sel=b.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);});
-   const sc=$('edrscan');if(sc)sc.onclick=()=>mxView('scan');
-   const nb=$('edrnotif');if(nb)nb.onclick=()=>{const o=$('notifbtn');if(o)o.click();};}
-  if(force||Bx._l!==hB){Bx._l=hB;Bx.innerHTML=hB;const jr=$('edrjr');if(jr)jr.onclick=()=>{try{rjOpen();}catch(e){}};}
-  // the chart is rebuilt only when the market changes (moving or rewriting an iframe reloads it)
-  if(C._s!==sel||C._lang!==EN()){C._s=sel;C._lang=EN();C.innerHTML=chartCard();frSym='';}
-  const f=$('edrfr');if(f&&frSym!==sel&&$('tab-marche').classList.contains('on')){frSym=sel;f.innerHTML='<iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&sym='+encodeURIComponent(sel)+'"></iframe>';}}
+  const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+strip(TR)+tiles(D,TR);
+  if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
+   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
+   const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
+   lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
+  if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
  function tick(){try{if(!build())return;if($('tab-marche').classList.contains('on')){scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+
 
 
 // ==== 2026-10-13 (owner, step 4): the TERMINAL - on a wide screen (>= 1180 px) the same app becomes a trading
