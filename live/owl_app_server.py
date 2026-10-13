@@ -7997,7 +7997,13 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  #edrsh .xb>*+*{margin-top:12px}
  #edrsh .xfr{height:72vh;border-radius:18px;overflow:hidden;border:1px solid var(--border)}#edrsh .xfr iframe{width:100%;height:100%;border:0;display:block}
  #edrsh .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
- #edrstore{display:none}`;
+ #edrstore{display:none}
+ .edrx .lv-cand{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;padding:14px;border-radius:var(--r);background:linear-gradient(135deg,rgba(59,130,246,.10),var(--surface) 60%);border:1px solid rgba(59,130,246,.35)}
+ .edrx .lv-cand .hd{display:flex;align-items:center;justify-content:space-between;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-soft)}
+ .edrx .lv-cand .rw{display:flex;align-items:center;gap:12px;margin-top:10px}
+ .edrx .lv-cand .n{flex:1;min-width:0}.edrx .lv-cand .n b{display:block;font-size:.95rem;color:var(--text)}.edrx .lv-cand .n small{font-size:.72rem;color:var(--muted2)}
+ .edrx .lv-cand .st{font-size:.78rem;font-weight:800;white-space:nowrap}
+ .edrx .lv-cand .bar{height:5px;border-radius:99px;background:var(--surface3);margin-top:12px;overflow:hidden}.edrx .lv-cand .bar i{display:block;height:100%;border-radius:99px}`;
  document.head.appendChild(css2);
  // the four checks, as four small dots inside the card
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
@@ -8035,6 +8041,17 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
     rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
   return h+'</div>';}
+ // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
+ // no trade open): nearly ready first, then soon, else the closest trend in place. Tap = it opens in the card.
+ function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2};
+  return S.filter(r=>r.sym!=='BTCUSD'&&r.sym!==sel&&o[r.status]!=null&&r.near!=null).sort((a,b)=>o[a.status]-o[b.status]||a.near-b.near)[0]||null;}
+ function candCard(){const r=cand();if(!r)return '';
+  const st=r.status==='ready'?[T2('Presque prêt','Nearly ready'),'var(--accent)','var(--accent-soft)']:(r.status==='soon'?[T2('Bientôt','Soon'),'var(--warn)','var(--warn)']:[T2('Tendance en place','Trend set'),'var(--muted)','var(--muted2)']);
+  const p=Math.max(4,Math.min(100,100-(r.near/3)*100)),side=r.pb_trend===1?T2('un achat','a buy'):(r.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
+  const dp=r.dist_pct!=null?(EN()?r.dist_pct.toFixed(2):r.dist_pct.toFixed(2).replace('.',','))+' %':null;
+  return '<button class="lv-cand" id="edrcand" data-s="'+r.sym+'"><div class="hd"><span>'+T2('Prochain candidat','Next candidate')+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>'+
+   '<div class="rw">'+badge(r.sym)+'<div class="n"><b>'+esc(mname(r.sym))+'</b><small>'+T2('cherche ','looks for ')+side+(dp?' · '+T2('déclencheur à ','trigger ')+dp+(EN()?' away':''):'')+'</small></div><span class="st" style="color:'+st[2]+'">'+st[0]+'</span></div>'+
+   '<div class="bar" aria-hidden="true"><i style="width:'+p.toFixed(0)+'%;background:'+st[1]+'"></i></div></button>';}
  // one slim line for the other markets; the list itself opens in the sheet
  function strip(TR){const n=TR.length;const nt=TR.filter(r=>r.status==='trade').length,nr=n-nt;
   if(!n&&!((SC&&SC.state&&SC.state.symbols)||[]).length)return '';
@@ -8106,9 +8123,9 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function paint(force){const lv=$('edr');if(!lv||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
   const TR=trials();if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel))sel='BTCUSD';
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
-  const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+strip(TR)+tiles(D,TR);
+  const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+candCard()+strip(TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
-   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
+   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
    lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
@@ -8116,6 +8133,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
 
 
 
