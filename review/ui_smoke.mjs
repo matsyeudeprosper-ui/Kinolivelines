@@ -329,15 +329,22 @@ console.log("labo");
   // The Labo button now leads there; every side must paint, with no NaN/undefined and no bare verdict letter.
   await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(6000);
   check("the Labo button opens the Labo space", /\/strategies$/.test(await ev("location.pathname")), await ev("location.pathname.split('/').pop()"));   // never print the token
-  for (const [side, path, sel, min] of [["Strategies", "strategies", ".sc", 10], ["Robots", "robots", ".sc", 2], ["AI team", "equipe", ".mem", 4]]) {
+  // 2026-10-13 (owner, calm layout): each side shows FOLDER rows (.fd); the cards live in the sheet a folder opens
+  for (const [side, path, min, inSheet, inMin] of [["Strategies", "strategies", 5, ".sc", 1], ["Robots", "robots", 4, null, 0], ["AI team", "equipe", 4, ".mem", 1]]) {
     await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
-    const n = await ev(`document.querySelectorAll('${sel}').length`);
-    check(`Labo · ${side} paints its cards`, n >= min, String(n));
+    const n = await ev("document.querySelectorAll('#top .fd,#list .fd').length");
+    check(`Labo · ${side} paints its folders`, n >= min, String(n));
+    if (inSheet) {
+      await ev("(function(){var b=document.querySelector('#top .fd,#list .fd');if(b)b.click();return 1;})()"); await sleep(1200);
+      const k = await ev(`document.querySelectorAll('#lsh ${inSheet}').length`);
+      check(`Labo · ${side} folder opens its cards`, k >= inMin, String(k));
+      await ev("(function(){if(window.shClose)shClose();return 1;})()"); await sleep(800);
+    }
     const tx = await ev("document.body.innerText");
     check(`Labo · ${side} has no NaN/undefined`, !/NaN|undefined/.test(tx));
     check(`Labo · ${side} has no bare verdict letter`, !/(^|\s)[ABC](\s|$)/m.test(await ev("Array.from(document.querySelectorAll('.bd')).map(function(e){return e.innerText.trim();}).join('\\n')")));
     if (side === "Robots") {
-      await ev("(function(){var b=document.querySelector('#top .sc');if(b)b.click();return 1;})()"); await sleep(1500);
+      await ev("(function(){var b=document.querySelector('#top .fd');if(b)b.click();return 1;})()"); await sleep(1500);
       check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .lg').length")) >= 7);   // 2026-10-13: eyes + 6 named pieces
     }
   }
