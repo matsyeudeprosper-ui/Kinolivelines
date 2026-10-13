@@ -64,6 +64,11 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # (the journal's movement_count = 1, main structure only). The
             # trade is still taken. 1.0 = off.
             "first_move_size": 1.0,
+            # 2026-10-13 (chercheur): early_moves_size = lot multiplier when
+            # the big moves counted in the last 2 hours (movement_count, main
+            # structure only) are between 1 and early_moves_max. Stacks with
+            # first_move_size. The trade is still taken. 1.0 = off.
+            "early_moves_size": 1.0, "early_moves_max": 3,
             # 2026-10-10 (chercheur): flip_loss_size = lot multiplier on a
             # change-of-direction trade only, when the previous closed trade
             # lost. The trade is still taken. 1.0 = off.
@@ -1139,6 +1144,8 @@ def simulate(R, spread, cfg):
             lot *= float(c["flip_hot_size"])
         if not i_fire and i >= 1440 and mv2 == 1:
             lot *= float(c["first_move_size"])
+        if not i_fire and i >= 1440 and 1 <= mv2 <= int(c["early_moves_max"]):
+            lot *= float(c["early_moves_size"])
         if flip and streak > 0:
             lot *= float(c["flip_loss_size"])
         pos_hs = float(c["hour_size"]) if g.hour in size_h else 1.0
@@ -1496,6 +1503,8 @@ def simulate_real(T, R, spread, cfg):
             lot *= float(c["flip_hot_size"])
         if not e.get("internal") and e.get("move") == 1:
             lot *= float(c["first_move_size"])
+        if not e.get("internal") and 1 <= (e.get("move") or 0) <= int(c["early_moves_max"]):
+            lot *= float(c["early_moves_size"])
         if e["flip"] and streak > 0:
             lot *= float(c["flip_loss_size"])
         hs = float(c["hour_size"]) if g.hour in size_h else 1.0
@@ -1569,6 +1578,8 @@ def main():
     ap.add_argument("--size-hot", type=float, help="lot multiplier when nervosity >= 1.0")
     ap.add_argument("--flip-hot-size", type=float, help="lot multiplier on a change-of-direction trade when nervosity >= 1.0")
     ap.add_argument("--first-move-size", type=float, help="lot multiplier when the entry is the first big move counted in the last 2 hours")
+    ap.add_argument("--early-moves-size", type=float, help="lot multiplier when 1 to --early-moves-max big moves were counted in the last 2 hours")
+    ap.add_argument("--early-moves-max", type=int, help="most big moves counted in the last 2 hours for --early-moves-size to apply (1-3)")
     ap.add_argument("--hour-size", type=str, help="HOURS:X = lot multiplier X (bullets too) at these UTC entry hours, e.g. 8-24:0.5")
     ap.add_argument("--flip-loss-size", type=float, help="lot multiplier on a change-of-direction trade when the previous trade lost")
     ap.add_argument("--pb-gate", type=int, help="1 = the live pullback-direction filter (the bot's own rule), 0 = off")
@@ -1614,6 +1625,8 @@ def main():
     if a.size_hot is not None: over["size_hot"] = a.size_hot
     if a.flip_hot_size is not None: over["flip_hot_size"] = a.flip_hot_size
     if a.first_move_size is not None: over["first_move_size"] = a.first_move_size
+    if a.early_moves_size is not None: over["early_moves_size"] = a.early_moves_size
+    if a.early_moves_max is not None: over["early_moves_max"] = a.early_moves_max
     if a.flip_loss_size is not None: over["flip_loss_size"] = a.flip_loss_size
     if a.hour_size:
         _hp, _hx = a.hour_size.rsplit(":", 1)

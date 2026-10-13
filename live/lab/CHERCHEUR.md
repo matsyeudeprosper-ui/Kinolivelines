@@ -257,9 +257,13 @@ itself (an ask with `"by":"labo"`); answer it like any other.
          "only_kind": ""|"flip"|"cont", "risk_max": 0-25, "bank_mult": 0-4, "cap_fit": 0|1,
          "chase_pts": 0-1500, "nerv_floor": 0|0.5-0.95, "flip_hot_size": 0.25-1.0,
          "cap_rr": 0|0.5-1.5, "first_move_size": 0.25-1.0, "cap_wait": 0-120,
+         "early_moves_size": 0.25-1.0, "early_moves_max": 1-3,
          "flip_loss_size": 0.25-1.0, "size_hours": [0-23], "hour_size": 0.25-1.0,
          "pb_dir_gate": true|false, "pb_gate_mode": "trend"|"choch"|"strict"}}
 ```
+`early_moves_size` + `early_moves_max` (2026-10-13, your request): multiplies the
+stake by X when the `move` fact (main structure) is between 1 and N; N = 1 is
+`first_move_size` again (do not set both, they stack); the trade is still taken; 1.0 = off.
 `pb_dir_gate` + `pb_gate_mode` (2026-10-11, your request): the pullback-direction
 filter the live accounts run since 2026-10-10, with the robot's own decision
 ("trend" = their rule); the replay rebuilds the pullback chart without the
