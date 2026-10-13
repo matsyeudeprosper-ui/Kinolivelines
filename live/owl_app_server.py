@@ -11351,6 +11351,11 @@ ROBOT_REG = os.path.join(DIR, "robots", "robots.json")
 ROBOT_MAX_PER_USER = 12
 
 
+def _ascii(s):
+    """an id from a name: accents folded (é -> e), not dropped"""
+    import unicodedata as _ud
+    return _ud.normalize("NFKD", str(s)).encode("ascii", "ignore").decode("ascii")
+
 def robot_reg():
     try:
         return json.load(open(ROBOT_REG, encoding="utf-8"))
@@ -11442,7 +11447,7 @@ def builder_payload(user, detail):
     except Exception:
         _pk = {"packages": {}, "accounts": {}}
     used_acc = set((_pk.get("accounts") or {}).values())
-    pieces = [dict(p) for p in reg.get("pieces") or []]
+    pieces = [dict(p) for p in reg.get("pieces") or [] if piece_visible(user, p, detail)]
     for name, pk in (_pk.get("packages") or {}).items():
         if not isinstance(pk, dict) or "mort" in str(pk.get("label") or ""):
             continue
@@ -11453,6 +11458,9 @@ def builder_payload(user, detail):
         pc["used_by"] = [x["id"] for x in out if (pc["id"] in (x["resolved"].get("filters") or [])) or pc["id"] in
                          [x["resolved"].get(k) for k in ("entry", "stop", "exit", "recovery", "money")]]
         pc.pop("engine", None)
+        pc["mine"] = bool(pc.get("by_uid")) and pc.get("by_uid") == me
+        pc["can_edit"] = bool(pc.get("rule")) and (pc["mine"] or bool(is_admin(user)))
+        pc.pop("by_uid", None)
     return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": True,
             "admin": bool(is_admin(user)), "targets": robot_targets(user, detail),
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
@@ -11475,7 +11483,8 @@ def robot_create(user, body, dry=False):
     P = body.get("parts") or {}
     clean = {}
     PCS = {p["id"]: p for p in reg.get("pieces") or []}
-    usable = lambda pid, typ: pid in PCS and PCS[pid].get("type") == typ and PCS[pid].get("status") not in ("pending", "to_build")
+    usable = lambda pid, typ: (pid in PCS and PCS[pid].get("type") == typ and PCS[pid].get("status") not in ("pending", "to_build")
+                               and piece_visible(user, PCS[pid], is_admin(user)))
     for k in ("entry", "stop", "exit", "recovery"):
         if P.get(k):
             if not usable(P[k], k):
@@ -11498,7 +11507,7 @@ def robot_create(user, body, dry=False):
         return {"ok": False, "err": "same"}
     if dry:
         return {"ok": True, "parts": clean}
-    base = _re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:24] or "robot"
+    base = _re.sub(r"[^a-z0-9]+", "-", _ascii(name).lower()).strip("-")[:24] or "robot"
     rid, n = base, 2
     ids = {r["id"] for r in rob}
     while rid in ids:
@@ -11871,6 +11880,86 @@ def studio_confirm(user, body):
     full["parts"] = parts
     json.dump(full, open(p, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     return {"ok": True, "parts": parts}
+
+
+# ---- 2026-10-13 (owner, step 2): pieces written in the piece language (live/robots/robot_dsl.py) ----
+PIECE_MAX_PER_USER = 20
+
+
+def _dsl():
+    import importlib
+    if os.path.join(DIR, "robots") not in sys.path:
+        sys.path.insert(0, os.path.join(DIR, "robots"))
+    return importlib.import_module("robot_dsl")
+
+
+def piece_visible(user, p, detail):
+    return detail or not p.get("by_uid") or p.get("by_uid") == user.get("id") or p.get("public")
+
+
+def piece_preview(user, body):
+    D = _dsl()
+    ok, c = D.validate(str(body.get("type") or ""), body.get("rule"))
+    if not ok:
+        return {"ok": False, "err": c}
+    fr, en = D.describe(body["type"], c)
+    return {"ok": True, "rule": c, "fr": fr, "en": en}
+
+
+def piece_create(user, body):
+    import re as _re
+    D = _dsl()
+    kind = str(body.get("type") or "")
+    ok, c = D.validate(kind, body.get("rule"))
+    if not ok:
+        return {"ok": False, "err": c}
+    name = str(body.get("name") or "").strip()[:32]
+    if len(name) < 2:
+        return {"ok": False, "err": "name"}
+    reg = robot_reg()
+    P = reg.get("pieces") or []
+    me = user.get("id")
+    if sum(1 for p in P if p.get("by_uid") == me) >= PIECE_MAX_PER_USER and not is_admin(user):
+        return {"ok": False, "err": "limit"}
+    same = next((p for p in P if p.get("type") == kind and p.get("rule") == c and piece_visible(user, p, is_admin(user))), None)
+    if same:
+        return {"ok": False, "err": "exists", "id": same["id"]}
+    base = "p-" + (_re.sub(r"[^a-z0-9]+", "-", _ascii(name).lower()).strip("-")[:24] or "piece")
+    pid, n = base, 2
+    ids = {p["id"] for p in P}
+    while pid in ids:
+        pid = "%s-%d" % (base, n); n += 1
+    fr, en = D.describe(kind, c)
+    P.append({"id": pid, "type": kind, "name_fr": name, "name_en": name, "plain_fr": fr, "plain_en": en, "status": "new",
+              "rule": c, "live": False, "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
+              "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "public": bool(is_admin(user))})
+    reg["pieces"] = P
+    _robot_save(reg)
+    return {"ok": True, "id": pid}
+
+
+def piece_delete(user, body):
+    reg = robot_reg()
+    P = reg.get("pieces") or []
+    p = next((x for x in P if x.get("id") == body.get("id")), None)
+    if not p or not p.get("rule") or not (is_admin(user) or p.get("by_uid") == user.get("id")):
+        return {"ok": False, "err": "not_yours"}
+    used = [r["id"] for r in reg.get("robots") or [] if p["id"] in [v for k, v in (r.get("parts") or {}).items() if k != "filters"] + list((r.get("parts") or {}).get("filters") or [])]
+    if used:
+        return {"ok": False, "err": "in_use"}
+    reg["pieces"] = [x for x in P if x.get("id") != p["id"]]
+    _robot_save(reg)
+    return {"ok": True}
+
+
+def piece_public(user, body):
+    reg = robot_reg()
+    p = next((x for x in reg.get("pieces") or [] if x.get("id") == body.get("id")), None)
+    if not p or not p.get("rule") or not (is_admin(user) or p.get("by_uid") == user.get("id")):
+        return {"ok": False, "err": "not_yours"}
+    p["public"] = bool(body.get("public"))
+    _robot_save(reg)
+    return {"ok": True}
 
 
 def team_payload():
@@ -15592,7 +15681,8 @@ class H(BaseHTTPRequestHandler):
                            "application/json")
                 return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
-        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm"):
+        if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
+                                              "piece_create", "piece_preview", "piece_delete", "piece_public"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -15600,7 +15690,8 @@ class H(BaseHTTPRequestHandler):
             try:
                 _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 40000)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
-                       "studio_save": studio_save, "studio_confirm": studio_confirm}[_parts[1]]
+                       "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
+                       "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

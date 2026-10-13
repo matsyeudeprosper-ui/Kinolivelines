@@ -15,6 +15,7 @@ from tick_engine_matrix import summarise
 import tick_engine_pbgate_sticky as K
 import harness as H
 from robot_choch_exit import RobotArm
+from robot_dsl_arm import DslArm
 LIVE = r"C:\Projects\KinoliveLines\live"
 REG = os.path.join(LIVE, "robots", "robots.json"); RES = os.path.join(LIVE, "robots", "results")
 LOCK = os.path.join(LIVE, "robots", "runner.lock"); BAL = 200.0; DRAG = 0.35
@@ -38,7 +39,15 @@ def arm_for(name, parts, bars, S, pieces=None):
     absent is switched OFF (the storm ceiling, the movement brake, the trend filter, the nervosity gate)."""
     P = pieces or {}
     eng = lambda pid: (P.get(pid) or {}).get("engine") or {}
+    rule = lambda pid: (P.get(pid) or {}).get("rule")
+    # pieces written in the piece language (robots.json 'rule'), run by DslArm
+    dsl = {}
+    for k in ("entry", "stop", "exit"):
+        if parts.get(k) and rule(parts[k]) is not None:
+            dsl[k] = rule(parts[k])
     ex = eng(parts.get("exit") or "objectif-08r")
+    if "exit" in dsl and dsl["exit"].get("target") is not None:
+        ex = {"rr": dsl["exit"]["target"]}
     pkg = parts.get("money") or "base"
     cfg_b = H.package_cfg(pkg, {"balance": BAL}); cfg_b.update({"scale_lot": 1, "scale_daily": 1})
     if ex.get("rr"):
@@ -47,13 +56,16 @@ def arm_for(name, parts, bars, S, pieces=None):
     F = ["tendance-fond", "orage", "mouvement"] if F is None else list(F)
     fe = {}
     for f in F:
-        fe.update(eng(f))
+        if rule(f) is not None:
+            dsl.setdefault("filters", []).append(rule(f))
+        else:
+            fe.update(eng(f))
     cfg_b["storm"] = float(fe.get("storm", 99.0))          # no storm piece: no storm ceiling
     cfg_b["movement"] = int(fe.get("movement", 0))
     cfg_b["nerv_gate"] = bool(fe.get("nerv_gate", False))
     cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1))
     rec = eng(parts.get("recovery") or "rattrapage-limite").get("recovery", "current")
-    return RobotArm(name, cfg, bars, S, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
+    return DslArm(name, cfg, bars, S, dsl=dsl, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
                     stop="protected", allowance="all_bos" if rec == "all_bos" else "current",
                     gate="trend" if fe.get("gate") == "trend" else "none",
                     order="live", cap_rule="adaptive", cap="on")
@@ -106,13 +118,24 @@ if __name__ == "__main__":
         opps, bars = E.streams(cfg0, E.R)
         cached = pickle.load(open(K.CACHE, "rb")); S_idx = cached["states"]
         S = {o["t"]: S_idx[o["i"]] for o in opps if o["i"] in S_idx}
-        for rid in todo:
+        done = set()
+        while todo:
+          rid = todo.pop(0)
+          if rid in done:
+            continue
+          done.add(rid)
+          if not todo and not ARGS[1:]:
+            # robots queued while this run was going: test them too before stopping
+            _r2 = json.load(open(REG, encoding="utf-8"))
+            todo += [x["id"] for x in _r2.get("robots") or [] if x.get("stage") == "queued" and x["id"] not in done]
+            robots = {x["id"]: x for x in _r2.get("robots") or []}; reg = _r2
+          if True:
             r = robots.get(rid)
             if not r:
                 continue
             t0 = time.time()
             parts = resolve(rid, robots); parent = r.get("parent") or "owl"
-            PCS = {p["id"]: p for p in reg.get("pieces") or []}
+            PCS = {p["id"]: p for p in json.load(open(REG, encoding="utf-8")).get("pieces") or []}   # fresh: pieces made meanwhile
             missing = [v for k, v in parts.items() if k != "money" and k != "filters" and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
             if missing:
                 print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
@@ -127,6 +150,10 @@ if __name__ == "__main__":
             for x in reg.get("robots") or []:
                 if x["id"] == rid and x.get("stage") in ("queued", "testing", None):
                     x["stage"] = "tested"; x["tested_at"] = res["generated_at"]
+            used = set(v for k, v in parts.items() if k not in ("filters", "money")) | set(parts.get("filters") or [])
+            for pc in reg.get("pieces") or []:          # a new rule piece becomes "tested" once a robot using it was tested
+                if pc.get("id") in used and pc.get("status") == "new":
+                    pc["status"] = "tested"
             json.dump(reg, open(REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             print(rid, "robot net %.2f vs parent %.2f (%ds)" % (out["robot"]["net"], out["parent"]["net"], res["secs"]), flush=True)
     finally:

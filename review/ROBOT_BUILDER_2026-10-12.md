@@ -75,3 +75,18 @@ Parity: the Owl rebuilt from its pieces reproduces the proof bench exactly (+57.
 UI: Lego builder (tap a slot -> swap from the list; filters ticked on/off), a page per piece (who uses it, live
 or not, "build a robot with this piece"), the catalogue on the Robots page. The live bot cannot drop the storm
 ceiling, so a robot without "Orage" is not live-capable.
+
+## Step 2 (2026-10-13): the piece language
+live/robots/robot_dsl.py - pieces as small JSON rules built only from what the eyes see: entry (any / BOS only /
+CHoCH only, at the close), filter (hours, weekdays, pace min/max, big moves in 2 h), stop (protected point + margin,
+break candle + margin, fixed distance), exit (target R, CHoCH, time limit, breakeven at R - first wins). Every field
+has a range; describe() writes the plain words FROM the rule. study/robot_dsl_arm.py = the bench interpreter
+(DslArm: filters at the live weather position, entry skip still lets a CHoCH close, stop replaces the setup's
+protected point, time/breakeven in tick). App: "Fabriquer une pièce" form with a live preview (POST piece_preview /
+piece_create / piece_delete / piece_public; 20 pieces per member; duplicates refused; private by default for
+members). A new piece is "Nouvelle" until a robot using it is tested. robot_runner now also picks up robots queued
+during a run.
+Parity: a robot whose exit is the RULE {target 0.8} = +57.39 / dd 28.15 / 82 trades, identical to the Owl.
+First new robot: "Owl de nuit" (Owl + filter 00-08 UTC): +21.63, dd 9.73, 29 trades, 76 % won, PF 1.84, both halves
+positive (+0.94 / +20.69) vs Owl +57.39 / dd 28.15 / 82. Far fewer trades (~21 a month).
+Rule pieces are not live (step 4).

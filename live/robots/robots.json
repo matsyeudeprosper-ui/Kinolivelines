@@ -86,6 +86,26 @@
    "plain_fr": "Pekos rattrapage, qui sort aussi plus tôt si un CHoCH arrive avant l'objectif.",
    "plain_en": "Pekos catch-up, which also exits early if a CHoCH comes before the target.",
    "tested_at": "2026-10-12T22:51:03Z"
+  },
+  {
+   "id": "owl-de-nuit",
+   "name_fr": "Owl de nuit",
+   "name_en": "Owl de nuit",
+   "parent": "owl",
+   "parts": {
+    "filters": [
+     "tendance-fond",
+     "orage",
+     "mouvement",
+     "p-nuit-seulement"
+    ]
+   },
+   "by": "owner",
+   "by_uid": "kino",
+   "created": "2026-10-13",
+   "stage": "tested",
+   "public": true,
+   "tested_at": "2026-10-13T09:40:48Z"
   }
  ],
  "pieces": [
@@ -374,6 +394,26 @@
    "by": "owner",
    "version": 1,
    "created": "2026-10-13"
+  },
+  {
+   "id": "p-nuit-seulement",
+   "type": "filter",
+   "name_fr": "Nuit seulement",
+   "name_en": "Nuit seulement",
+   "plain_fr": "Trade seulement entre 0 h et 8 h (UTC).",
+   "plain_en": "Trades only between 00:00 and 08:00 UTC.",
+   "status": "tested",
+   "rule": {
+    "kind": "hours",
+    "from": 0,
+    "to": 8
+   },
+   "live": false,
+   "by": "owner",
+   "by_uid": "kino",
+   "version": 1,
+   "created": "2026-10-13",
+   "public": true
   }
  ],
  "version": 2

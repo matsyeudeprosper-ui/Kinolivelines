@@ -279,6 +279,16 @@ button.pc{cursor:pointer}
 .pcl{display:flex;flex-wrap:wrap;gap:6px}
 .pcard{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--surface2);border-radius:12px;padding:8px 11px;font-size:.82rem;color:var(--text)}
 .pcard b{font-weight:700}.pcard em{font-style:normal;font-size:.68rem;font-weight:800;color:var(--muted);background:var(--surface3);border-radius:99px;padding:1px 6px}
+.mkrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mkn{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:13px;padding:6px}
+.mkn button{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--border2);background:var(--surface3);font-size:1.1rem;font-weight:800}
+.mkn span{flex:1;text-align:center;font-size:.9rem;color:var(--muted2)}.mkn span b{font-size:1.05rem;color:var(--text)}
+.mkt{border:1px solid var(--border);background:var(--surface2);border-radius:14px;padding:10px;margin-top:8px}.mkt.on{border-color:var(--accent)}
+.mkt .mkn{margin-top:8px;background:var(--surface)}
+.mkck{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;font-weight:700;font-size:.9rem;text-align:left;padding:2px}
+.mkck .chk{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:#fff}
+.mkt.on .chk{background:var(--accent);border-color:var(--accent)}
+.chip svg{width:14px;height:14px}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -683,7 +693,7 @@ const PARTK=SLOTS;   // older callers
 const SLOTT={entry:'entry',filters:'filter',stop:'stop',exit:'exit',recovery:'recovery',money:'money'};
 const EYE='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z';
 const pic=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
-const PST={live:{fr:'En service',en:'In service',c:'var(--up)'},tested:{fr:'Testée',en:'Tested',c:'var(--accent)'},pending:{fr:'Test prévu',en:'Test planned',c:'var(--warn)'},to_build:{fr:'À construire',en:'To build',c:'var(--muted)'}};
+const PST={new:{fr:'Nouvelle',en:'New',c:'var(--violet)'},live:{fr:'En service',en:'In service',c:'var(--up)'},tested:{fr:'Testée',en:'Tested',c:'var(--accent)'},pending:{fr:'Test prévu',en:'Test planned',c:'var(--warn)'},to_build:{fr:'À construire',en:'To build',c:'var(--muted)'}};
 const pcs=()=>BLD().pieces||[];
 const pById=id=>pcs().find(p=>p.id===id);
 const pOf=t=>pcs().filter(p=>p.type===t);
@@ -706,6 +716,7 @@ function cumOf(c){return [0].concat((c||[]).map(q=>+q[1]));}
 function piecesCat(){const types=SLOTS.map(s=>[SLOTT[s[0]],s[1],s[2]]);
  return '<div class="card" style="margin-top:14px"><h2>'+T('Les pièces','The pieces')+'<span class="bd ev">'+pcs().length+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque pièce a un nom. Touchez-en une pour voir ce qu\'elle fait, qui l\'utilise et ses résultats.','Each piece has a name. Tap one to see what it does, who uses it and its results.')+'</div>'+
   types.map(t=>{const L=pOf(t[0]);if(!L.length)return '';return '<div class="ptype"><div class="pth">'+pic(t[2])+'<b>'+t[1]+'</b><em>'+L.length+'</em></div><div class="pcl">'+L.map(p=>'<button class="pcard" onclick="goP(\''+p.id+'\')"><span class="dot" style="background:'+(PST[p.status]||PST.tested).c+'"></span><b>'+esc(T(p.name_fr,p.name_en))+'</b>'+(p.used_by&&p.used_by.length?'<em>'+p.used_by.length+'</em>':'')+'</button>').join('')+'</div></div>';}).join('')+
+  (BLD().can_create?'<button class="cta" style="margin-top:14px" onclick="goMake()">'+pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')+T('Fabriquer une pièce','Make a piece')+'</button>':'')+
   '<div class="mrow" style="margin:12px 0 0">'+Object.keys(PST).map(k=>'<span><span class="dot" style="background:'+PST[k].c+'"></span> '+T(PST[k].fr,PST[k].en)+'</span>').join('')+'</div></div>';}
 function builderTop(){const B=BLD();
  let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 style="font-size:1.3rem;font-weight:900;color:#fff;margin-top:10px;line-height:1.25">'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h3>'+
@@ -814,6 +825,9 @@ function renderPiece(){const p=CURP;if(!p)return;const st=PST[p.status]||PST.tes
   '<div class="verd"><b>'+T('Dans le vrai robot','In the real robot')+'</b>'+(p.live?T('Le robot des comptes sait déjà la faire tourner.','The accounts\' robot can already run it.'):T('Le robot des comptes ne sait pas encore la faire tourner : elle ne vit que dans les tests.','The accounts\' robot cannot run it yet: it only lives in tests.'))+'</div></div>';
  h+='<div class="card"><h2>'+T('Robots qui l\'utilisent','Robots that use it')+'<span class="bd ev">'+U.length+'</span></h2>'+(U.length?'<div class="grid">'+U.map((r,i)=>bCard(r,i)).join('')+'</div>':'<div class="sub">'+T('Aucun robot pour l\'instant.','No robot yet.')+'</div>')+'</div>';
  if(p.pkg)h+='<button class="mi" onclick="goR(\''+p.pkg+'\')" style="margin-bottom:14px"><span class="fi" style="color:var(--accent-soft)">'+pic(sl[2])+'</span><span>'+T('Tous ses réglages et les comptes qui l\'utilisent','All its settings and the accounts that use it')+'</span><span>›</span></button>';
+ if(p.can_edit)h+='<div class="card"><h2>'+T('Gérer ma pièce','Manage my piece')+'</h2><div class="mgrid" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+
+  '<button class="mb" onclick="piecePub(\''+p.id+'\','+(!p.public)+')">'+pic(EYE)+'<b>'+(p.public?T('Publique','Public'):T('Privée','Private'))+'</b><small>'+(p.public?T('rendre privée','make private'):T('rendre publique','make public'))+'</small></button>'+
+  '<button class="mb del" onclick="pieceDel(\''+p.id+'\')">'+pic('M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6')+'<b>'+T('Supprimer','Delete')+'</b><small>'+T('si aucun robot ne l\'utilise','if no robot uses it')+'</small></button></div></div>';
  if(pUsable(p)&&BLD().can_create)h+='<button class="cta" onclick="pieceRobot(\''+p.id+'\')">'+pic('M12 5v14M5 12h14')+T('Créer un robot avec cette pièce','Build a robot with this piece')+'</button>';
  $('det').innerHTML=h;}
 let CURP=null;
@@ -847,22 +861,72 @@ async function studioConfirm(){try{const j=await robotPost('studio_confirm',{id:
 function studioRobot(parts){if(parts.filters){const F=((bById('owl')||{}).resolved||{}).filters||[];const all=F.concat(parts.filters.filter(f=>!F.includes(f)));const order=pOf('filter').map(p=>p.id);parts.filters=order.filter(f=>all.includes(f));}
  NEWD={parent:'owl',parts:parts,name:''};NAV++;location.hash='new=1';}
 
+
+/* ---------- 2026-10-13 (owner, step 2): make a piece in the piece language ---------- */
+let MK=null,MKT=null;
+const MKDEF={entry:{event:'bos'},filter:{kind:'hours',from:0,to:8},stop:{kind:'protected',buffer:20},exit:{target:1.0,choch:false,time_min:null,breakeven_at:null}};
+function goMake(t){MK={type:t||'exit',rule:JSON.parse(JSON.stringify(MKDEF[t||'exit'])),name:'',prev:null,err:''};NAV++;location.hash='mk=1';}
+function mkSet(path,v){const r=MK.rule;r[path]=v;mkRender();mkPreview();}
+function mkType(t){MK.type=t;MK.rule=JSON.parse(JSON.stringify(MKDEF[t]));mkRender();mkPreview();}
+function mkPreview(){clearTimeout(MKT);MKT=setTimeout(async()=>{try{const j=await robotPost('piece_preview',{type:MK.type,rule:MK.rule});MK.prev=j.ok?T(j.fr,j.en):null;MK.err=j.ok?'':j.err;}catch(e){MK.prev=null;}
+ const el=$('mkprev');if(el)el.innerHTML=mkPrevHtml();},250);}
+const MKERR={hours:T('L\'heure de fin doit être après l\'heure de début.','The end hour must be after the start hour.'),days:T('Choisissez entre 1 et 6 jours.','Pick between 1 and 6 days.'),pace:T('Donnez un minimum, un maximum, ou les deux (minimum plus petit).','Give a minimum, a maximum, or both (minimum smaller).'),
+ exit_none:T('Une sortie a besoin d\'un objectif, d\'un CHoCH ou d\'une durée.','An exit needs a target, a CHoCH or a time.'),breakeven:T('Le passage au prix d\'entrée doit venir avant l\'objectif.','Breakeven must come before the target.'),exit_range:T('Une valeur est hors limites.','A value is out of range.'),
+ buffer:T('Marge entre 0 et 500 points.','Margin between 0 and 500 points.'),points:T('Distance entre 20 et 3000 points.','Distance between 20 and 3000 points.'),moves:T('Entre 1 et 10 mouvements.','Between 1 and 10 moves.'),
+ exists:T('Cette pièce existe déjà.','This piece already exists.'),name:T('Donnez-lui un nom.','Give it a name.'),limit:T('Vous avez déjà le maximum de pièces.','You already have the maximum of pieces.')};
+function mkPrevHtml(){return MK.prev?'<b>'+T('Ce que fait cette pièce','What this piece does')+'</b>'+esc(MK.prev):(MK.err?'<b style="color:var(--down-soft)">'+T('À corriger','To fix')+'</b>'+esc(MKERR[MK.err]||MK.err):'<b>…</b>');}
+function mkNum(path,v,step,mn,mx,unit){return '<div class="mkn"><button onclick="mkSet(\''+path+'\','+Math.max(mn,+(v-step).toFixed(2))+')">−</button><span><b>'+num(v,step<1?(step<0.1?2:1):0)+'</b> '+unit+'</span><button onclick="mkSet(\''+path+'\','+Math.min(mx,+(v+step).toFixed(2))+')">+</button></div>';}
+function mkTog(path,on,label,inner){return '<div class="mkt'+(on?' on':'')+'"><button class="mkck" onclick="mkSet(\''+path+'\','+(on?'null':'\'__on\'')+')"><span class="chk">'+(on?'✓':'')+'</span>'+label+'</button>'+(on&&inner?inner:'')+'</div>';}
+function mkRender(){const m=MK,r=m.rule;const TY=[['entry',T('Entrée','Entry')],['filter',T('Filtre','Filter')],['stop',T('Stop','Stop')],['exit',T('Sortie','Exit')]];
+ // toggles store '__on' then get their default value
+ if(r.target==='__on')r.target=1.0;if(r.time_min==='__on')r.time_min=60;if(r.breakeven_at==='__on')r.breakeven_at=0.5;if(r.choch==='__on')r.choch=true;if(r.choch===null&&m.type==='exit')r.choch=false;
+ if(r.min==='__on')r.min=0.8;if(r.max==='__on')r.max=1.3;
+ let h='<div class="card dh"><span class="fi" style="color:var(--warn)">'+pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')+'</span><h3>'+T('Fabriquer une pièce','Make a piece')+'</h3><p>'+T('Une pièce se construit avec ce que les yeux du robot voient déjà : les cassures, les CHoCH, le point protégé, la bougie de cassure, le rythme du marché, l\'heure. Elle pourra ensuite être testée dans n\'importe quel robot.','A piece is built from what the robot\'s eyes already see: breaks, CHoCH, the protected point, the break candle, the market\'s pace, the hour. It can then be tested in any robot.')+'</p></div>';
+ h+='<div class="card"><h2>1 · '+T('Quel genre de pièce','What kind of piece')+'</h2><div class="chips" style="flex-wrap:wrap">'+TY.map(t=>'<button class="chip'+(m.type===t[0]?' on':'')+'" onclick="mkType(\''+t[0]+'\')">'+pic(slotIcon(t[0]==='filter'?'filters':t[0]))+t[1]+'</button>').join('')+'</div></div>';
+ h+='<div class="card"><h2>2 · '+T('Sa règle','Its rule')+'</h2>';
+ const radio=(path,val,label,sub)=>'<button class="opt'+(r[path]===val?' on':'')+'" onclick="mkSet(\''+path+'\',\''+val+'\')"><span class="rad"></span><span><b>'+label+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span></button>';
+ if(m.type==='entry')h+='<div class="opts">'+radio('event','any',T('Toutes les cassures','Every break'),T('BOS et CHoCH, à la clôture.','BOS and CHoCH, at the close.'))+radio('event','bos',T('Seulement les BOS','BOS only'),T('Les cassures qui continuent la tendance.','Breaks that continue the trend.'))+radio('event','choch',T('Seulement les CHoCH','CHoCH only'),T('Quand la structure change de sens.','When the structure changes direction.'))+'</div>';
+ if(m.type==='filter'){h+='<div class="opts">'+radio('kind','hours',T('Heures','Hours'),T('Trader seulement à certaines heures.','Trade only at certain hours.'))+radio('kind','weekdays',T('Jours','Days'),T('Trader seulement certains jours.','Trade only on certain days.'))+radio('kind','pace',T('Rythme du marché','Market pace'),T('Seulement quand le marché va assez vite, ou pas trop vite.','Only when the market moves fast enough, or not too fast.'))+radio('kind','moves',T('Grands mouvements','Big moves'),T('Seulement après assez de grands mouvements.','Only after enough big moves.'))+'</div>';
+  if(r.kind==='hours'){if(r.from==null)r.from=0;if(r.to==null)r.to=8;h+='<div class="grp" style="margin:14px 0 8px">'+T('De … à … (UTC)','From … to … (UTC)')+'</div><div class="mkrow">'+mkNum('from',r.from,1,0,23,'h')+mkNum('to',r.to,1,1,24,'h')+'</div>';}
+  if(r.kind==='weekdays'){if(!Array.isArray(r.days))r.days=[0,1,2,3,4];const N=EN?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lun','mar','mer','jeu','ven','sam','dim'];
+   h+='<div class="grp" style="margin:14px 0 8px">'+T('Les jours','The days')+'</div><div class="chips" style="flex-wrap:wrap">'+N.map((n,i)=>'<button class="chip'+(r.days.includes(i)?' on':'')+'" onclick="mkDay('+i+')">'+n+'</button>').join('')+'</div>';}
+  if(r.kind==='pace'){if(r.min===undefined)r.min=null;if(r.max===undefined)r.max=1.3;h+='<div class="grp" style="margin:14px 0 8px">'+T('1 = le rythme habituel','1 = the usual pace')+'</div>'+mkTog('min',r.min!=null,T('Au moins','At least'),mkNum('min',r.min||0.8,0.1,0.3,3,'×'))+mkTog('max',r.max!=null,T('Au plus','At most'),mkNum('max',r.max||1.3,0.1,0.3,3,'×'));}
+  if(r.kind==='moves'){if(r.min==null)r.min=2;h+='<div class="grp" style="margin:14px 0 8px">'+T('Au moins, dans les 2 dernières heures','At least, in the last 2 hours')+'</div>'+mkNum('min',r.min,1,1,10,T('mouvements','moves'));}}
+ if(m.type==='stop'){h+='<div class="opts">'+radio('kind','protected',T('Point protégé','Protected point'),T('Le dernier creux ou sommet que la structure protège.','The last low or high the structure protects.'))+radio('kind','break_candle',T('Bougie de cassure','Break candle'),T('De l\'autre côté de la bougie qui a cassé.','On the other side of the candle that broke.'))+radio('kind','fixed',T('Distance fixe','Fixed distance'),T('Toujours le même nombre de points.','Always the same number of points.'))+'</div>';
+  if(r.kind==='fixed'){if(r.points==null)r.points=300;delete r.buffer;h+='<div class="grp" style="margin:14px 0 8px">'+T('Distance','Distance')+'</div>'+mkNum('points',r.points,50,20,3000,'pts');}
+  else{if(r.buffer==null)r.buffer=0;delete r.points;h+='<div class="grp" style="margin:14px 0 8px">'+T('Marge en plus','Extra margin')+'</div>'+mkNum('buffer',r.buffer,10,0,500,'pts');}}
+ if(m.type==='exit'){h+=mkTog('target',r.target!=null,T('Objectif','Target'),mkNum('target',r.target||1,0.1,0.3,5,'R'))+
+   '<div class="mkt'+(r.choch?' on':'')+'"><button class="mkck" onclick="mkSet(\'choch\','+(!r.choch)+')"><span class="chk">'+(r.choch?'✓':'')+'</span>'+T('Sortir au CHoCH contre le trade','Exit on a CHoCH against the trade')+'</button></div>'+
+   mkTog('time_min',r.time_min!=null,T('Durée maximum','Maximum time'),mkNum('time_min',r.time_min||60,15,5,1440,'min'))+
+   mkTog('breakeven_at',r.breakeven_at!=null,T('Stop au prix d\'entrée après','Stop to entry after'),mkNum('breakeven_at',r.breakeven_at||0.5,0.1,0.2,3,'R'));}
+ h+='<div class="verd" id="mkprev" style="margin-top:14px;background:var(--surface2);border-color:var(--border);color:var(--text)">'+mkPrevHtml()+'</div></div>';
+ h+='<div class="card"><h2>3 · '+T('Son nom','Its name')+'</h2><input class="inp" maxlength="32" placeholder="'+T('Par exemple : Nuit seulement','For example: Night only')+'" value="'+esc(m.name)+'" oninput="MK.name=this.value"><div class="note" id="mkerr"></div><button class="cta" style="margin-top:14px" onclick="mkSave()">'+T('Créer la pièce','Create the piece')+'</button></div>';
+ $('det').innerHTML=h;}
+function mkDay(i){const D=MK.rule.days;const j=D.indexOf(i);if(j>=0)D.splice(j,1);else D.push(i);D.sort();mkRender();mkPreview();}
+async function mkSave(){const e=$('mkerr');if(!MK.name||MK.name.trim().length<2){e.textContent=MKERR.name;return;}
+ e.textContent=T('Création…','Creating…');try{const j=await robotPost('piece_create',{type:MK.type,rule:MK.rule,name:MK.name.trim()});
+  if(!j.ok){e.textContent=MKERR[j.err]||j.err;return;}MK=null;RB=null;await load();history.replaceState(null,'','#p='+j.id);route();}catch(x){e.textContent=T('Hors ligne.','Offline.');}}
+async function pieceDel(id){if(!confirm(T('Supprimer cette pièce ?','Delete this piece?')))return;const j=await robotPost('piece_delete',{id});
+ if(!j.ok){alert(j.err==='in_use'?T('Un robot l\'utilise : changez-le d\'abord.','A robot uses it: change it first.'):j.err);return;}RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
+async function piecePub(id,pub){const j=await robotPost('piece_public',{id,public:pub});if(j.ok){RB=null;await load();CURP=pById(id);renderPiece();}}
+
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
  if(id&&D&&byId(id)){if(SIDE!=='strat'){SIDE='strat';doors();}CUR=byId(id);CURR=null;SEC=h.get('v')||'ov';document.body.classList.add('det');renderDet();window.scrollTo(0,0);return;}
  if(rid&&RB&&rbById(rid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURR=rbById(rid);CUR=null;RSEC=h.get('v')||'ov';document.body.classList.add('det');renderRobot();window.scrollTo(0,0);return;}
  const bid=h.get('b'),sid=h.get('studio'),pid=h.get('p');
+ if(h.get('mk')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!MK)MK={type:'exit',rule:JSON.parse(JSON.stringify(MKDEF.exit)),name:'',prev:null,err:''};document.body.classList.add('det');mkRender();mkPreview();window.scrollTo(0,0);return;}
  if(pid&&RB&&pById(pid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURP=pById(pid);CURB=null;CUR=null;CURR=null;document.body.classList.add('det');renderPiece();window.scrollTo(0,0);return;}
  if(sid){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(!STU||STU.id!==sid){$('det').innerHTML='<div class="skel"></div>';openStudio(sid);}else renderStudio();window.scrollTo(0,0);return;}
  if(bid&&RB&&bById(bid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=bById(bid);CUR=null;CURR=null;document.body.classList.add('det');renderB();window.scrollTo(0,0);return;}
  if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
- if((id&&!D)||((rid||bid||pid||h.get('new'))&&!RB)){load();return;}
- NAV=0;NEWD=null;document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
+ if((id&&!D)||((rid||bid||pid||h.get('new')||h.get('mk'))&&!RB)){load();return;}
+ NAV=0;NEWD=null;MK=null;document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
 const LOCK='<div class="card" style="margin-top:10px"><h2>'+T('Réservé à l\'offre Stratégie','Strategy plan only')+'</h2><div class="sub">'+T('Le labo montre toutes les stratégies, tous les robots et le travail des IA. Il fait partie de l\'offre Stratégie.','The lab shows every strategy, every robot and the AIs\' work. It is part of the Strategy plan.')+'</div></div>';
 async function getJ(u){const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});return r.json();}
 async function load(){try{
  const h=new URLSearchParams(location.hash.slice(1));
- const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r')||h.get('b')||h.get('p')||h.get('new'),needT=SIDE==='team';
+ const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r')||h.get('b')||h.get('p')||h.get('new')||h.get('mk'),needT=SIDE==='team';
  const [s,r,t]=await Promise.all([needS?getJ('strategies_data'):null,needR?getJ('robots_data'):null,needT?getJ('team_data'):null]);
  if([s,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
  const first=(s&&!D)||(r&&!RB)||(t&&!TM);if(s)D=s;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');
