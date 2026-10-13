@@ -3436,12 +3436,15 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 </div>
 </div>
 <div class="tabbar">
-<button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Accueil</button>
+<!-- 2026-10-13 (owner): the 5 destinations - Aujourd'hui, Marche, Performance, Labo, Compte. Le Nid opens from
+     Compte > Proprietaire; its button stays (hidden) because the app's own code addresses it. -->
+<button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Aujourd&rsquo;hui</button>
 <button class="tb" id="tb-marche" onclick="tab('marche',this)"><svg class="ic"><use href="#i-activity"/></svg>March&eacute;</button>
-<button class="tb" onclick="tab('hist',this)"><svg class="ic"><use href="#i-calendar"/></svg>Historique</button>
+<button class="tb" id="tb-hist" onclick="tab('hist',this)"><svg class="ic"><use href="#i-chart"/></svg>Performance</button>
+<button class="tb" id="tb-labo" onclick="goLabo()"><svg class="ic"><use href="#i-target"/></svg>Labo</button>
 <button class="tb" id="tb-nid" style="display:none"
  onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
-<button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>R&eacute;glages</button>
+<button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>Compte</button>
 </div>
 <div id="lock" aria-label="Code d&#39;acc&egrave;s">
  <img src="icon192.png" alt="" style="width:56px;height:56px;border-radius:16px">
@@ -3856,6 +3859,7 @@ function T(k){const Lb=LANG()==='en'?VOICE_EN:VOICE;const _vo=MAN()?'manual':(OB
 // back is exact. Regex entries handle counted words.
 const I18N_EN=new Map(Object.entries({
  'Accueil':'Home','Marché':'Market','Historique':'History','Réglages':'Settings','Le Nid':'The Nest',
+ 'Aujourd’hui':'Today','Labo':'Lab','Compte':'Account',
  'Le marché':'The market','Croissance':'Growth','Le rattrapage':'Catching up','Prochain lot':'Next lot','Risque':'Risk','Un gain enlève':'A win clears','Taille':'Size','normale':'normal','Pour miser plus':'To stake more','À rattraper':'to catch up','Réserve':'Reserve',
  'Prochain trade':'Next trade','Ma semaine':'My week','Jour par jour':'Day by day','· touchez un jour':'· tap a day',
  'Résumé du mois':'Month summary','Calendrier':'Calendar','Statistiques · 30 derniers trades':'Statistics · last 30 trades',
@@ -7585,6 +7589,59 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  function init(){try{if(build()){paint();setInterval(paint,2000);}}catch(e){console.error('compte',e);}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// ==== 2026-10-13 (owner, step 3): PERFORMANCE - the History tab becomes one space with chips (Résumé, Calendrier,
+// Trades, Signaux) plus doors to Poches, Preuve and Patrimoine. Panels are MOVED into the chip they belong to, never
+// rewritten; their own show / hide rules still decide whether they appear. ====
+function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.href=B+'strategies';return;}}catch(e){}
+ tab('marche',document.getElementById('tb-marche'));try{mxView('lab');}catch(e){}}
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T=(f,e)=>EN()?e:f;
+ const css=document.createElement('style');css.textContent=`
+ #tb-nid{display:none!important}
+ .pfh{padding:22px 2px 2px}.pfh h2{font-size:1.45rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}.pfh p{font-size:.82rem;color:var(--muted2);margin-top:3px}
+ .pfc{position:sticky;top:0;z-index:5;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:12px 0 10px;background:linear-gradient(var(--bg) 82%,transparent)}
+ .pfc::-webkit-scrollbar{display:none}
+ .pfc button{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--text2);font:inherit;font-size:.84rem;font-weight:700;padding:8px 14px;border-radius:99px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+ .pfc button.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+ .pfc button.door{color:var(--accent-soft)}
+ .pfg{display:none}.pfg.on{display:block;animation:tfade .2s ease}
+ .pfg>*:first-child{margin-top:4px!important}`;
+ document.head.appendChild(css);
+ const pick=id=>$(id);
+ const prevSec=id=>{const e=$(id);const p=e&&e.previousElementSibling;return p&&p.classList.contains('sec')?p:null;};
+ const G=[
+  {k:'sum',t:()=>T('Résumé','Summary'),els:()=>['since','tl','weekcard','msum-sec','msum','mvm','statx-sec','statx','cmp-sec','cmpcard'].map(pick)},
+  {k:'cal',t:()=>T('Calendrier','Calendar'),els:()=>[prevSec('days'),pick('days'),pick('cal-sec'),pick('cal')]},
+  {k:'trd',t:()=>T('Trades','Trades'),els:()=>[prevSec('tfilt'),pick('tfilt'),pick('tgo'),pick('tfpay'),pick('hist')]},
+  {k:'sig',t:()=>T('Signaux','Signals'),els:()=>['sig-sec','sigscore','siglist'].map(pick)}];
+ const DOORS=[{t:()=>T('Poches','Pockets'),h:'wealth#poches'},{t:()=>T('Preuve','Proof'),h:'rentabilite'},{t:()=>T('Patrimoine','Wealth'),h:'wealth'}];
+ let cur='sum';try{cur=localStorage.getItem('owlPerfTab')||'sum';}catch(e){}
+ function build(){const tab=$('tab-hist');if(!tab||$('pfc'))return false;
+  const head=document.createElement('div');head.className='pfh';head.id='pfh';
+  const chips=document.createElement('div');chips.className='pfc';chips.id='pfc';
+  tab.insertBefore(chips,tab.firstChild);tab.insertBefore(head,chips);
+  G.forEach(g=>{const box=document.createElement('div');box.className='pfg';box.id='pfg-'+g.k;g.els().forEach(e=>{if(e)box.appendChild(e);});tab.appendChild(box);});
+  return true;}
+ function paint(){const h=$('pfh'),c=$('pfc');if(!h||!c)return;
+  const hh='<h2>'+T('Performance','Performance')+'</h2><p>'+T('Tout ce que le robot a gagné ou perdu, au même endroit','Everything the robot won or lost, in one place')+'</p>';
+  if(h._l!==hh){h._l=hh;h.innerHTML=hh;}
+  const ch=G.map(g=>'<button data-k="'+g.k+'" class="'+(g.k===cur?'on':'')+'">'+g.t()+'</button>').join('')+DOORS.map(d=>'<button class="door" data-h="'+d.h+'">'+d.t()+' ↗</button>').join('');
+  if(c._l!==ch){c._l=ch;c.innerHTML=ch;
+   c.querySelectorAll('button[data-k]').forEach(b=>b.onclick=()=>{cur=b.dataset.k;try{localStorage.setItem('owlPerfTab',cur);}catch(e){}c._l='';paint();window.dispatchEvent(new Event('resize'));});
+   c.querySelectorAll('button[data-h]').forEach(b=>b.onclick=()=>{location.href=B+b.dataset.h;});}
+  G.forEach(g=>{const b=$('pfg-'+g.k);if(b)b.classList.toggle('on',g.k===cur);});}
+ // Le Nid lives in Compte > Propriétaire now (owner only: inside the administration panel)
+ function nidRow(){const a=$('adm-card');if(!a||$('nidrow'))return;
+  const r=document.createElement('div');r.className='srow';r.id='nidrow';
+  r.innerHTML='<div class="sic"><svg class="ic"><use href="#i-users"/></svg></div><div style="flex:1"><b>'+T('Le Nid','The Nest')+'</b><div class="ssub">'+T('Tous les comptes, les robots, les revenus','Every account, the robots, the revenue')+'</div></div><svg class="ic chv"><use href="#i-chev"/></svg>';
+  r.onclick=()=>{try{if(window.csClose)csClose();}catch(e){}setTimeout(()=>tab('nid',$('tb-nid')),320);};
+  a.insertBefore(r,a.firstChild);}
+ function init(){try{if(build()){paint();setInterval(paint,2000);}nidRow();}catch(e){console.error('perf',e);}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
 
 
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
