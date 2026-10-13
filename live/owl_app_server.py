@@ -7380,6 +7380,109 @@ async function loadStratCard(){const el=document.getElementById('stcard');if(!el
   $('stc-n').textContent=n?((en?'Next: ':'Prochain rendez-vous : ')+(en?n.en:n.fr).toLowerCase()+(en?' of ':' de ')+'« '+(en?n.title_en:n.title_fr)+' », '+n.date.slice(8,10)+'/'+n.date.slice(5,7)+'.'):'';
   el.style.display='';}catch(e){}}
 setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
+// ==== 2026-10-13 (owner): the COCKPIT. The home keeps the robot, the open trade and the alerts in view; every other
+// card becomes a tile (one number, one line) that opens the SAME card in a slide-up sheet. The cards are moved, not
+// rewritten: every painter keeps writing to the same ids, so nothing the home showed is lost or computed twice. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const CK_CSS=`
+ .ckhd{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 10px;font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+ .cktiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+ .ckt{position:relative;overflow:hidden;text-align:left;min-height:116px;padding:14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+ .ckt:active{transform:scale(.98)}
+ .ckt.wide{grid-column:1/3;min-height:auto}
+ .ckt .k{display:flex;align-items:center;gap:7px;font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+ .ckt .k i{width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;flex:none}
+ .ckt .k i svg{width:13px;height:13px}
+ .ckt .v{font-size:1.42rem;font-weight:900;letter-spacing:-.02em;margin-top:10px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .ckt .v.sm{font-size:1rem;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+ .ckt .s{font-size:.74rem;color:var(--muted2);margin-top:4px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-right:64px}
+ .ckt.wide .s{padding-right:100px}
+ .ckt svg.sp{position:absolute;right:12px;bottom:12px;width:62px;height:24px;overflow:visible}
+ .ckt.wide svg.sp{width:92px;height:32px}
+ #cksh{position:fixed;inset:0;z-index:80;display:none}
+ #cksh.on{display:block}
+ #cksh .dim{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}
+ #cksh.open .dim{opacity:1}
+ #cksh .pn{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+ #cksh.open .pn{transform:none}
+ @media(min-width:700px){#cksh .pn{left:50%;right:auto;width:560px;margin-left:-280px}}
+ #cksh .grab{width:42px;height:5px;border-radius:99px;background:var(--border2);margin:4px auto 12px}
+ #cksh .hd{display:flex;align-items:center;gap:10px;margin-bottom:4px;position:sticky;top:-8px;background:var(--bg);padding:6px 0 8px;z-index:2}
+ #cksh .hd b{flex:1;font-size:1.2rem;font-weight:900;letter-spacing:-.01em}
+ #cksh .hd button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.1rem}
+ #cksh .bd>*:first-child{margin-top:4px!important}`;
+ const st=document.createElement('style');st.textContent=CK_CSS;document.head.appendChild(st);
+ const IC={up:'M3 17l6-6 4 4 8-8M15 7h6v6',cal:'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4',back:'M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5',grow:'M4 20V10M10 20V4M16 20v-7M22 20H2',pock:'M3 7h18v13H3zM16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2',lab:'M9 3h6M10 3v6L4 19a1 1 0 0 0 1 2h14a1 1 0 0 0 1-2l-6-10V3',ok:'M20 6 9 17l-5-5',test:'M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4'};
+ const svg=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
+ const txt=id=>{const e=$(id);return e?(e.textContent||'').replace(/\\s+/g,' ').trim():'';};
+ const shown=id=>{const e=$(id);return !!e&&e.style.display!=='none';};
+ const money=s=>{const m=String(s||'').match(/[−\\-+]?\\s?\\$\\s?[\\d\\s.,]+/);return m?m[0].replace(/\\s/g,''):'';};
+ const signCol=s=>/^[−\\-]/.test(s)?'var(--down-soft)':(/^\\+/.test(s)?'var(--up-soft)':'var(--text)');
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T=(f,e)=>EN()?e:f;
+ // a tile = which cards it opens, how to read its number from them, when it shows
+ const resGrid=()=>{const w=$('week');return w?w.closest('.grid'):null;};
+ const TILES=[
+  {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>txt('week'),s:()=>T('Ce mois : ','This month: ')+(txt('month')||'—'),spark:true,show:()=>true},
+  {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>txt('led-sub')||txt('led-txt'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
+  {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>txt('pal-head'),show:()=>shown('palier')},
+  {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>txt('pk-rows').replace(/[−\\-+]?\\$[\\d.,]+/g,'').trim(),show:()=>shown('pockcard')},
+  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Le labo','The lab'),cards:()=>[$('aicard'),$('stcard')],v:()=>txt('aic-h')||txt('stc-h')||T('Le labo','The lab'),vsm:true,s:()=>'',show:()=>shown('aicard')||shown('stcard')},
+  {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
+  {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
+ let store=null,wrap=null,open=null;
+ function build(){
+  const anchor=$('battles-sec');if(!anchor||$('ckwrap'))return false;
+  wrap=document.createElement('div');wrap.id='ckwrap';
+  wrap.innerHTML='<div class="ckhd"><span id="ck-h">'+T('En un coup d’œil','At a glance')+'</span></div><div class="cktiles" id="cktiles"></div>';
+  anchor.parentNode.insertBefore(wrap,anchor.nextSibling);
+  store=document.createElement('div');store.id='ckstore';store.style.display='none';wrap.parentNode.appendChild(store);
+  // cards that still need the eye stay on the page: activation, the trial banner
+  ['actcard','trial'].forEach(id=>{const e=$(id);if(e)wrap.parentNode.insertBefore(e,wrap);});
+  TILES.forEach(t=>t.cards().forEach(c=>{if(c)store.appendChild(c);}));
+  const sh=document.createElement('div');sh.id='cksh';sh.innerHTML='<div class="dim"></div><div class="pn" role="dialog" aria-modal="true"><div class="grab"></div><div class="hd"><b id="cksh-t"></b><button aria-label="Fermer" id="cksh-x">&times;</button></div><div class="bd" id="cksh-b"></div></div>';
+  document.body.appendChild(sh);
+  sh.querySelector('.dim').onclick=closeSheet;$('cksh-x').onclick=closeSheet;
+  // swipe the panel down to close
+  let y0=null;const pn=sh.querySelector('.pn');
+  pn.addEventListener('touchstart',e=>{y0=(pn.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
+  pn.addEventListener('touchmove',e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy>0)pn.style.transform='translateY('+dy+'px)';},{passive:true});
+  pn.addEventListener('touchend',e=>{if(y0==null)return;const dy=(e.changedTouches[0].clientY-y0);pn.style.transform='';if(dy>110)closeSheet();y0=null;});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&open)closeSheet();});
+  window.addEventListener('popstate',()=>{if(open)closeSheet(true);});
+  return true;}
+ function sparkOf(t){
+  if(t.spark===true){const s=$('spark');if(s&&s.innerHTML.trim())return '<svg class="sp" viewBox="'+(s.getAttribute('viewBox')||'0 0 300 80')+'" preserveAspectRatio="none">'+s.innerHTML.replace(/<text[\\s\\S]*?<\\/text>/g,'')+'</svg>';}
+  if(typeof t.spark==='string'){const s=$(t.spark);if(s&&s.innerHTML.trim())return '<svg class="sp" viewBox="'+(s.getAttribute('viewBox')||'0 0 120 44')+'" preserveAspectRatio="none">'+s.innerHTML+'</svg>';}
+  return '';}
+ function paint(){
+  const g=$('cktiles');if(!g)return;const h=$('ck-h');if(h)h.textContent=T('En un coup d’œil','At a glance');
+  const L=TILES.filter(t=>{try{return t.show();}catch(e){return false;}});
+  const html=L.map(t=>{let v='',s='';try{v=t.v()||'';s=t.s()||'';}catch(e){}
+   const vc=t.vcol||(t.vsm?'var(--text)':signCol(v));
+   return '<button class="ckt'+(t.wide?' wide':'')+'" data-k="'+t.k+'"><div class="k"><i style="background:rgba('+t.col+',.15);color:rgb('+t.col+')">'+svg(IC[t.ic])+'</i>'+t.t()+'</div>'+
+    '<div class="v'+(t.vsm?' sm':'')+'" style="color:'+vc+'">'+escH(v||'—')+'</div>'+(s?'<div class="s">'+escH(s)+'</div>':'')+sparkOf(t)+'</button>';}).join('');
+  // keep the wide tile last and the grid even: a lone half tile becomes wide
+  if(g._last!==html){g._last=html;g.innerHTML=html;
+   const half=[...g.querySelectorAll('.ckt:not(.wide)')];if(half.length%2===1)half[half.length-1].classList.add('wide');
+   g.querySelectorAll('.ckt').forEach(b=>b.onclick=()=>openSheet(b.dataset.k));}}
+ function escH(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+ function openSheet(k){const t=TILES.find(x=>x.k===k);if(!t)return;const b=$('cksh-b');
+  if(open)restore();
+  t.cards().forEach(c=>{if(c)b.appendChild(c);});open=t;$('cksh-t').textContent=t.t();
+  const sh=$('cksh');sh.classList.add('on');document.body.style.overflow='hidden';
+  requestAnimationFrame(()=>{sh.classList.add('open');window.dispatchEvent(new Event('resize'));});
+  try{history.pushState({ck:k},'');}catch(e){}}
+ function restore(){if(!open)return;open.cards().forEach(c=>{if(c)store.appendChild(c);});open=null;}
+ function closeSheet(fromPop){const sh=$('cksh');if(!sh||!open)return;sh.classList.remove('open');document.body.style.overflow='';
+  setTimeout(()=>{sh.classList.remove('on');restore();},300);
+  if(fromPop!==true){try{if(history.state&&history.state.ck)history.back();}catch(e){}}}
+ window.ckOpen=openSheet;window.ckClose=closeSheet;
+ function init(){try{if(build()){paint();setInterval(paint,1500);}}catch(e){console.error('cockpit',e);}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
  el.style.display='none';return;
