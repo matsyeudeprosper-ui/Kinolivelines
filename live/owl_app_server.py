@@ -8013,6 +8013,14 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  .edrx .lv-cand .rw{display:flex;align-items:center;gap:12px;margin-top:10px}
  .edrx .lv-cand .n{flex:1;min-width:0}.edrx .lv-cand .n b{display:block;font-size:.95rem;color:var(--text)}.edrx .lv-cand .n small{font-size:.72rem;color:var(--muted2)}
  .edrx .lv-cand .st{font-size:.78rem;font-weight:800;white-space:nowrap}
+ .edrx .lv-rbt{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;color:var(--muted2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:5px 9px;margin-left:auto;margin-right:8px;white-space:nowrap;max-width:42%;overflow:hidden;text-overflow:ellipsis}
+ .edrx .lv-rbt.cu{color:var(--accent-soft);border-color:rgba(59,130,246,.35)}
+ .edrx .lv-pcs{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+ .edrx .lv-pcs .t{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+ .edrx .lv-pcs .g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .edrx .lv-pcs button{display:flex;align-items:flex-start;gap:9px;text-align:left;border:1px solid var(--border);background:var(--surface2);border-radius:12px;padding:9px;font:inherit;color:inherit;cursor:pointer;min-width:0}
+ .edrx .lv-pcs i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:900}
+ .edrx .lv-pcs .pn{min-width:0}.edrx .lv-pcs .pn b{display:block;font-size:.76rem;color:var(--text)}.edrx .lv-pcs .pn small{display:block;font-size:.66rem;color:var(--muted);line-height:1.3;margin-top:1px}
  .edrx .lv-oth{padding:14px 14px 12px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--border)}
  .edrx .lv-oth .hd{display:flex;align-items:center;justify-content:space-between;font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
  .edrx .lv-oth .all,.edrx .lv-oth .more{border:0;background:none;color:var(--accent-soft);font:inherit;font-size:.74rem;font-weight:700;letter-spacing:0;text-transform:none;cursor:pointer;padding:4px 0}
@@ -8035,6 +8043,14 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+P.n+' trades · '+T2('depuis le début','since the start')+'</small></span><b class="'+(P.net>=0?'lv-up':'lv-dn')+'">'+money(P.net)+'</b><span class="c">›</span></a>';}
   const L=((((SC||{}).results||{})[sym]||{}).pocket||{}).live;if(!L)return '';const st=((SC||{}).pocket_rule||{}).start||100;
   return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
+ // 2026-10-13 (owner): the card follows the robot PLUGGED on the account (server: robot_now). The Owl keeps its
+ // four checks; any other robot shows ITS pieces, each met or not, judged by the live bot's own rule functions.
+ function rbNow(D){return (D&&D.robot_now)||{id:'owl'};}
+ function rbName(rb){return EN()?(rb.name_en||rb.name_fr||rb.id):(rb.name_fr||rb.id);}
+ function pieces(rb){const it=x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
+   return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';};
+  const L=rb.pieces||[];if(!L.length)return '';
+  return '<div class="lv-pcs"><div class="t">'+T2('Ses pièces','Its pieces')+' · '+esc(rbName(rb))+'</div><div class="g">'+L.map(it).join('')+'</div></div>';}
  // the four checks, as four small dots inside the card
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
   const it=(ok,a,why)=>'<button type="button" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
@@ -8046,6 +8062,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'))+'</div>';}
  function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
+   (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}return '<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'"><svg class="ic" style="width:13px;height:13px"><use href="#i-bot"/></svg>'+esc(rbName(rb))+'</span>';})():'')+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
    '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
@@ -8054,12 +8071,12 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
     h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
      rail(lo,hi,cur,0,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
       lvEnds(dir,fmtN(sl,0),fmtN(e,0),fmtN(tp,0)))+'</div>';}}
-  else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'){
+  else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'&&rbNow(D).entry_event!=='choch'){
    const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
     rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(Math.round(lo),0)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(Math.round(hi),0)+'</b></div>')+'</div>';}
-  return h+pkLine('BTCUSD')+dots(D)+'</div>';}
+  const rb=rbNow(D);return h+pkLine('BTCUSD')+(rb.id!=='owl'&&rb.pieces?pieces(rb):dots(D))+'</div>';}
  function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
   if(r.status==='closed'){c='gy';t=T2('Marché fermé','Market closed');s=reopen()+(o?T2(' Le trade virtuel reprend à la réouverture.',' The virtual trade resumes when it reopens.'):'');}
   else if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
@@ -8113,7 +8130,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
     '<div class="lv-cr" id="edrcand" role="button" tabindex="0" data-s="'+c.sym+'">'+badge(c.sym,30)+'<span class="n"><b>'+esc(mname(c.sym))+'</b><small>'+T2('cherche ','looks for ')+side+(dp?' · '+T2('déclencheur à ','trigger ')+dp+(EN()?' away':''):'')+'</small></span><span class="r" style="color:'+st[2]+'">'+st[0]+'</span></div>'+
     '<div class="bar" aria-hidden="true"><i style="width:'+pc.toFixed(0)+'%;background:'+st[1]+'"></i></div>';}
   if(!open.length&&!c)h+='<div class="lv-note" style="margin-top:8px">'+T2('Aucun trade d’essai ni marché proche de son déclencheur pour l’instant.','No trial trade and no market near its trigger right now.')+'</div>';
-  return h+'<div class="ft">'+T2('Marchés en essai : trades virtuels, aucun argent réel.','Trial markets: virtual trades, no real money.')+'</div></div>';}
+  const rb=rbNow(D);return h+'<div class="ft">'+T2('Marchés en essai : trades virtuels, aucun argent réel.','Trial markets: virtual trades, no real money.')+(rb.id!=='owl'?' '+T2('Ils testent la configuration de l’Owl, pas celle de ','They test the Owl’s setup, not ')+esc(rbName(rb))+'.':'')+'</div></div>';}
  function strip(TR){const n=TR.length;const nt=TR.filter(r=>r.open).length,nr=n-nt;
   if(!n&&!((SC&&SC.state&&SC.state.symbols)||[]).length)return '';
   const sub=n?[nt?nt+' '+T2('en essai','on trial'):'',nr?nr+' '+T2('presque prêt'+(nr>1?'s':''),'nearly ready'):''].filter(Boolean).join(' · '):T2('aucun pour l’instant','none right now');
@@ -8196,7 +8213,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
    const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
-   lv.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   lv.querySelectorAll('.lv-dots button,.lv-pcs button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
@@ -8207,6 +8224,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
 
 
 
@@ -12272,6 +12290,107 @@ def robot_resolve(rid, robots, seen=None):
     return out
 
 
+def robot_now(uid, ms, has_open):
+    """2026-10-13 (owner): En direct follows the robot PLUGGED on the account. Which robot (the Owl when none is
+    plugged), and - for a plugged robot - each of its pieces, met or not, decided by the live bot's own functions
+    (robots/robot_live.py filters_ok) on the same inputs the bot reads (the chart file's vol_now / vol_ref /
+    moves_2h, the pullback side). Read-only: nothing here changes what the bot does."""
+    try:
+        PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+        pl = (PK.get("robot_plugs") or {}).get(uid)
+        reg = robot_reg()
+        byid = {x["id"]: x for x in reg.get("robots") or []}
+        rid = (pl or {}).get("robot") or "owl"
+        r0 = byid.get(rid) or byid.get("owl") or {}
+        out = {"id": rid, "name_fr": r0.get("name_fr") or rid, "name_en": r0.get("name_en") or r0.get("name_fr") or rid}
+        if not pl:
+            return out
+        R = robot_resolve(rid, byid)
+        P = {x["id"]: x for x in reg.get("pieces") or []}
+        rules = PKG.for_account(uid).get("robot_rules") or {}
+        ms = ms or {}
+        vn, vr = ms.get("vol_now"), ms.get("vol_ref")
+        rv = (float(vn) / max(float(vr), 1e-9)) if (vn and vr) else None
+        mv = ms.get("moves_2h")
+        now = datetime.now(timezone.utc)
+        _rp = os.path.join(DIR, "robots")
+        if _rp not in sys.path:
+            sys.path.insert(0, _rp)
+        import robot_live as _RLS
+        items = []
+
+        def nm(pid):
+            x = P.get(pid) or {}
+            return x.get("name_fr") or pid, x.get("name_en") or x.get("name_fr") or pid
+
+        # entry: what it waits for (met = a trade is open)
+        ep = R.get("entry")
+        if ep:
+            ev = ((rules.get("entry") or {}).get("event")) or "bos"
+            w = {"choch": ("attend un CHoCH", "waits for a CHoCH"), "any": ("attend une cassure ou un CHoCH", "waits for a break or a CHoCH")}.get(
+                ev, ("attend une cassure (BOS)", "waits for a break (BOS)"))
+            f, e = nm(ep)
+            items.append({"k": "entry", "fr": f, "en": e, "ok": True if has_open else None,
+                          "why_fr": "un trade est ouvert" if has_open else w[0], "why_en": "a trade is open" if has_open else w[1]})
+            out["entry_event"] = ev
+        # filters: each piece on its own
+        for fp in R.get("filters") or []:
+            x = P.get(fp) or {}
+            f, e = nm(fp)
+            eng, rule = x.get("engine") or {}, x.get("rule")
+            ok, wf, we = None, "", ""
+            if rule:
+                ok, why = _RLS.filters_ok({"filters": [rule]}, now.hour, now.weekday(), rv, mv)
+                k = rule.get("kind")
+                if ok:
+                    wf, we = {"hours": ("dans ses heures (%s h - %s h UTC)" % (rule.get("from"), rule.get("to")),
+                                        "inside its hours (%s - %s UTC)" % (rule.get("from"), rule.get("to"))),
+                              "weekdays": ("un de ses jours", "one of its days"),
+                              "pace": ("rythme du marché dans sa plage", "market pace inside its range"),
+                              "moves": ("assez de grands mouvements", "enough big moves")}.get(k, ("ok", "ok"))
+                else:
+                    wf = why
+                    we = {"hours": "outside its hours (%s - %s UTC)" % (rule.get("from"), rule.get("to")),
+                          "weekdays": "not one of its days", "pace": "market pace outside its range",
+                          "moves": "not enough big moves"}.get(k, why)
+            elif eng.get("gate") == "trend":
+                t, sd = ms.get("pb_trend"), ms.get("pb_side")
+                ok = t in (1, -1) and sd != "wrong"
+                wf, we = (("tendance claire, prix du bon côté", "clear trend, price on the right side") if ok else
+                          (("le prix doit repasser sa dernière cassure", "price must come back past its last break") if t in (1, -1)
+                           else ("pas de tendance claire", "no clear trend")))
+            elif eng.get("storm"):
+                ok = rv is None or rv < float(eng["storm"])
+                wf, we = ("pas de tempête", "no storm") if ok else ("marché trop rapide", "market too fast")
+            elif eng.get("movement"):
+                ok = mv is None or int(mv) >= int(eng["movement"])
+                wf, we = ("le marché bouge", "the market is moving") if ok else ("pas de grand mouvement depuis 2 h", "no big move for 2 h")
+            elif eng.get("nerv_gate"):
+                ok = rv is None or rv <= 1.0
+                wf, we = ("marché calme", "calm market") if ok else ("marché nerveux", "nervous market")
+            else:
+                continue
+            items.append({"k": "filter", "fr": f, "en": e, "ok": bool(ok), "why_fr": wf, "why_en": we})
+        # exit: only says something while a trade is open
+        xp = R.get("exit")
+        if xp and has_open:
+            f, e = nm(xp)
+            x = rules.get("exit") or {}
+            bits_f, bits_e = [], []
+            if x.get("choch"):
+                bits_f.append("CHoCH contre le trade"); bits_e.append("a CHoCH against the trade")
+            if x.get("target"):
+                bits_f.append("objectif %sR" % x["target"]); bits_e.append("target %sR" % x["target"])
+            if x.get("time_min"):
+                bits_f.append("durée max %d min" % int(x["time_min"])); bits_e.append("max %d min" % int(x["time_min"]))
+            items.append({"k": "exit", "fr": f, "en": e, "ok": None,
+                          "why_fr": "surveille : " + (" ou ".join(bits_f) or "son objectif"), "why_en": "watching: " + (" or ".join(bits_e) or "its target")})
+        out["pieces"] = items
+        return out
+    except Exception as ex:
+        return {"id": "?", "err": str(ex)[:80]}
+
+
 def robot_runner_kick():
     """test the queued robots now, in the background, unless a run is already going"""
     try:
@@ -13872,6 +13991,7 @@ def user_stats(u, admin_override=False):
                         _t["tf"] = _hf[_k]
         except Exception:
             pass
+        d["robot_now"] = robot_now(u["id"], d.get("meteo_struct"), bool(d.get("open_list")))
         d["acct_rules"] = (lambda _p: {
             "package": _p.get("package"),
             "risk_fit_pct": _p.get("risk_fit_pct") or 0,
