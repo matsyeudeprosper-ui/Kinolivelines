@@ -161,6 +161,18 @@
    "answered": "2026-10-12T13:30:19Z",
    "answer_fr": "Vrai, c'est ma pile de ce matin. Le jour, juste après une perte : quarante-deux trades, un peu plus d'un sur trois gagné contre plus d'un sur deux pour les autres, cinquante-quatre dollars perdus, les deux moitiés d'accord. La nuit, après une perte, le robot gagne deux fois sur trois. À midi vingt, une cassure à la vente prise juste après une perte a gagné trois dollars : un gain ne change pas l'histoire. J'ai demandé une pause après une perte, seulement le jour ; pas encore construite. Pas de nouvelle proposition.",
    "answer_en": "True, it is my pile from this morning. By day, right after a loss: forty-two trades, a bit over one in three won against over one in two for the others, fifty-four dollars lost, both halves agree. At night, after a loss, the robot wins two in three. At twelve twenty, a breakout sell taken right after a loss won three dollars: one win does not change the story. I asked for a pause after a loss, by day only; not built yet. No new proposal."
+  },
+  {
+   "id": "ask_1791887322_cont_day",
+   "seed": "cont_day",
+   "seed_fr": "Un trade de plus dans le même sens, pris entre 8 h et minuit UTC",
+   "seed_en": "One more trade the same way, taken between 08:00 and midnight UTC",
+   "by": "labo",
+   "date": "2026-10-13",
+   "note": "30 trades, 43 % gagnés contre 54 % pour les autres ; les deux moitiés sont d’accord.",
+   "status": "answered",
+   "answer_fr": "C'est vrai : le jour, les trades de plus dans le même sens gagnent moins (43 %, contre 54 %), mais les changements de sens du jour perdent encore plus, donc c'est la journée entière qui fuit, pas ce type de trade. Couper ou réduire des heures fixes échoue toujours sur une moitié ; j'ai demandé un frein qui suit les heures qui perdent en ce moment, et une mise plus petite le jour après une perte.",
+   "answer_en": "True: by day, one more trade the same way wins less (43 %, against 54 %), but day changes of direction lose even more, so it is the whole day that leaks, not this kind of trade. Cutting or shrinking fixed hours always fails on one half; I asked for a brake that follows the hours losing right now, and a smaller stake by day after a loss."
   }
  ]
 }

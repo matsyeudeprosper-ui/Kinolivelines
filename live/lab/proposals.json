@@ -2576,7 +2576,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-12",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-13"
   },
   {
    "id": "pb_ext400_capwait25",
@@ -2604,7 +2606,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-12",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-13"
   },
   {
    "id": "ext400_capwait25_fm085",
@@ -2632,7 +2636,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-12",
-   "status": "pending"
+   "status": "done",
+   "verdict": "B",
+   "done": "2026-10-13"
   },
   {
    "id": "day_stake075",
@@ -2676,7 +2682,9 @@
    },
    "by": "chercheur",
    "date": "2026-10-12",
-   "status": "pending"
+   "status": "done",
+   "verdict": "C",
+   "done": "2026-10-13"
   },
   {
    "id": "pb_capwait25",
@@ -2695,7 +2703,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-12",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 97.5,
     "worst": 51.81,
@@ -2720,6 +2728,171 @@
      "diff_net": 50.94,
      "diff_worst": -47.08
     }
+   },
+   "verdict": "B",
+   "done": "2026-10-13"
+  },
+  {
+   "id": "capwait25_fh075_fm075",
+   "family": "argent",
+   "title_fr": "Pause de 25 minutes avec plafond, et miser moins sur deux trades fragiles",
+   "title_en": "A 25-minute pause on capped accounts, and less stake on two fragile trades",
+   "why_fr": "Avec plafond, attendre 25 minutes après chaque trade, et miser un quart de moins sur un changement de sens en marché nerveux et au premier mouvement d'une tendance. Avec plafond : +98 $ sur 42 jours, +96 $ sur 69 jours, mieux sur les deux moitiés, trou 9 au lieu de 65. Sans plafond : pareil en argent.",
+   "why_en": "On capped accounts, wait 25 minutes after each trade, and stake a quarter less on a change of direction in a nervous market and on a trend's first move. Capped: +$98 over 42 days, +$96 over 69 days, better on both halves, hole 9 instead of 65. Uncapped: same money.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "cap_wait": 25,
+    "flip_hot_size": 0.75,
+    "first_move_size": 0.75
+   },
+   "by": "chercheur",
+   "date": "2026-10-13",
+   "status": "pending",
+   "pretest": {
+    "net": 60.7,
+    "worst": 53.4,
+    "h1": -11.3,
+    "h2": 5.3,
+    "base_net": 60.88,
+    "base_worst": 64.92
+   }
+  },
+  {
+   "id": "ext500_capwait25",
+   "family": "rythme",
+   "title_fr": "Pas d'entrée après une heure de 500 points, pause avec plafond",
+   "title_en": "No entry after a 500-point hour, a pause on capped accounts",
+   "why_fr": "Ne pas entrer quand la dernière heure a déjà bougé de 500 points, et avec plafond attendre 25 minutes après chaque trade. C'est le réglage plus souple que le critique jugeait meilleur que 400. Sans plafond : +13 $ ; avec plafond : +90 $, trou 11 au lieu de 65. Sur 69 jours sans plafond : -9 $.",
+   "why_en": "No entry when the last hour already moved 500 points, and on capped accounts a 25-minute pause after each trade. It is the looser setting the critic rated above 400. Uncapped: +$13; capped: +$90, hole 11 instead of 65. Over 69 days uncapped: -$9.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 500,
+    "cap_wait": 25
+   },
+   "by": "chercheur",
+   "date": "2026-10-13",
+   "status": "pending",
+   "pretest": {
+    "net": 73.5,
+    "worst": 53.0,
+    "h1": 4.1,
+    "h2": -11.0,
+    "base_net": 60.88,
+    "base_worst": 64.92
+   }
+  },
+  {
+   "id": "ext500_capwait30_fm075",
+   "family": "rythme",
+   "title_fr": "Même idée, pause de 30 minutes et moins de mise au premier mouvement",
+   "title_en": "Same idea, a 30-minute pause and less stake on the first move",
+   "why_fr": "Réponse au critique, qui voyait un pic isolé à 25 minutes : avec plafond, 20, 25 et 30 minutes de pause gagnent +61, +89 et +92 $, première moitié positive aux trois. Celui-ci : sans plafond +18 $ (trou 45 au lieu de 65) ; avec plafond +92 $, trou 9.",
+   "why_en": "An answer to the critic, who saw a lone peak at 25 minutes: on capped accounts, 20, 25 and 30-minute pauses earn +$61, +$89 and +$92, first half positive at all three. This one: uncapped +$18 (hole 45 instead of 65); capped +$92, hole 9.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 500,
+    "cap_wait": 30,
+    "first_move_size": 0.75
+   },
+   "by": "chercheur",
+   "date": "2026-10-13",
+   "status": "pending",
+   "pretest": {
+    "net": 87.9,
+    "worst": 44.8,
+    "h1": -1.7,
+    "h2": 2.4,
+    "base_net": 69.76,
+    "base_worst": 64.92
+   }
+  },
+  {
+   "id": "capwait30",
+   "family": "rythme",
+   "title_fr": "Avec plafond, attendre 30 minutes après chaque trade, rien d'autre",
+   "title_en": "On capped accounts, wait 30 minutes after each trade, nothing else",
+   "why_fr": "La pause seule, sans aucune autre règle, pour savoir si c'est elle qui fait tout le gain avec plafond. Dans tous mes essais de ce soir, quel que soit son compagnon, avec plafond elle donne entre +61 et +101 $ et un trou de 9 à 13 au lieu de 65. Sans plafond, rien ne change. Pas encore testée seule à 30.",
+   "why_en": "The pause alone, with no other rule, to learn whether it makes the whole capped gain. In every run tonight, whatever its company, on capped accounts it gives +$61 to +$101 and a hole of 9 to 13 instead of 65. Uncapped, nothing changes. Not yet tested alone at 30.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "cap_wait": 30
+   },
+   "by": "chercheur",
+   "date": "2026-10-13",
+   "status": "pending",
+   "pretest": {
+    "net": 123.24,
+    "worst": 80.29,
+    "h1": 151.26,
+    "h2": -2.49,
+    "base_net": 123.24,
+    "base_worst": 80.29,
+    "base_h1": 151.26,
+    "base_h2": -2.49,
+    "verdict": "=",
+    "trades": 262,
+    "at": "2026-10-13 06:03",
+    "long": {
+     "days": 69,
+     "verdict": "=",
+     "diff_net": 0.0,
+     "diff_worst": 0.0
+    },
+    "real": {
+     "n_real": 87,
+     "trades": 73,
+     "diff_net": 0.0,
+     "diff_worst": 0.0
+    }
+   }
+  },
+  {
+   "id": "day_half_capwait25",
+   "family": "argent",
+   "title_fr": "Miser moitié moins de 8 h à 16 h, et pause avec plafond",
+   "title_en": "Half stake from 08:00 to 16:00, and a pause on capped accounts",
+   "why_fr": "Hors des sentiers : au lieu de couper la journée, y miser moitié moins, là où les vrais trades perdent (42 trades, 43 % gagnés). Avec plafond c'est le meilleur de la nuit : +101 $, trou 9 au lieu de 65. Sans plafond : -17 $, première moitié pire, seconde meilleure ; je le dis.",
+   "why_en": "Out of the box: instead of cutting the day, stake half there, where real trades lose (42 trades, 43 % won). Capped it is the best of the night: +$101, hole 9 instead of 65. Uncapped: -$17, first half worse, second better; I say so.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "size_hours": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15
+    ],
+    "hour_size": 0.5,
+    "cap_wait": 25
+   },
+   "by": "chercheur",
+   "date": "2026-10-13",
+   "status": "pending",
+   "pretest": {
+    "net": 44.0,
+    "worst": 41.0,
+    "h1": -26.8,
+    "h2": 11.5,
+    "base_net": 60.88,
+    "base_worst": 64.92
    }
   }
  ]

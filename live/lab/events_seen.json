@@ -17,7 +17,10 @@
   "early_moves_size",
   "pile_field_move",
   "pb_gate_parity",
-  "loss_wait_day"
+  "loss_wait_day",
+  "hour_brake_rebuild",
+  "day_loss_size",
+  "capped_only_verdict"
  ],
  "asks_answered": [
   "ask_1790670647",
@@ -30,6 +33,8 @@
   "ask_1791522013_flip_after_loss",
   "ask_1791547213_flip_day",
   "ask_1791655206_quick",
-  "ask_1791725405_europe"
+  "ask_1791725405_europe",
+  "ask_1791806415_day_after_loss",
+  "ask_1791887322_cont_day"
  ]
 }
