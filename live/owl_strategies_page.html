@@ -220,7 +220,7 @@ body.det #list,body.det #top{display:none}body.det #det{display:block;animation:
 .dh .ft{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .verd{margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);font-size:.9rem;line-height:1.5;color:#eaf2f9}
 .verd b{display:block;font-size:.68rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#9fc2de;margin-bottom:4px}
-.stabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;position:sticky;top:0;z-index:4;background:linear-gradient(var(--bg) 80%,transparent);padding:10px 0 8px}
+.stabs{display:flex;flex-wrap:wrap;gap:6px;overflow:visible;margin-bottom:14px;position:sticky;top:0;z-index:4;background:linear-gradient(var(--bg) 80%,transparent);padding:10px 0 8px}
 .stabs::-webkit-scrollbar{display:none}
 .kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 @media(min-width:620px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}}
@@ -575,7 +575,7 @@ function renderDet(){const x=CUR;if(!x)return;const m=ST[x.status]||ST.study;
   ((vd(x)||x.grade)?'<div class="verd"><b>'+T('Ce qu\'on sait','What we know')+'</b>'+(x.grade&&GRADE[x.grade]?'<strong>'+T(GRADE[x.grade][0],GRADE[x.grade][1])+'.</strong> ':'')+esc(vd(x))+'</div>':'')+'</div>';
  if(S.length>1)h+='<div class="stabs">'+S.map(s=>'<button class="chip'+(SEC===s[0]?' on':'')+'" onclick="SEC=\''+s[0]+'\';history.replaceState(null,\'\',\'#s='+x.id+'&v='+s[0]+'\');renderDet()">'+s[1]+'</button>').join('')+'</div>';
  h+='<div id="secb">'+(SECR[SEC]||SECR.ov)(x)+'</div>';
- $('det').innerHTML=h;
+ $('det').innerHTML=h;foldLong();
  const on=document.querySelector('.stabs .chip.on');if(on){const s=on.parentNode;s.scrollLeft=on.offsetLeft-(s.clientWidth-on.offsetWidth)/2;}}
 const kp=(k,v,n,c)=>'<div class="kp"><div class="k">'+k+'</div><div class="v '+(c||'')+'">'+v+'</div>'+(n?'<div class="n">'+n+'</div>':'')+'</div>';
 function statsKpis(s,showRet,merged){return '<div class="kpis">'+kp(merged?T('Trades (tous comptes)','Trades (all accounts)'):'Trades',num(s.n),s.first?T('du ','from ')+fdate(s.first)+T(' au ',' to ')+fdate(s.last):'')+kp(T('Gagnés','Won'),num(s.wr,0)+' %',merged?T('un même signal compte une fois par compte','one signal counts once per account'):T('série de pertes max ','longest losing run ')+s.streak)+
@@ -720,7 +720,7 @@ function renderRobot(){const r=CURR;if(!r)return;const m=RST[r.stage]||RST.model
   (par?'<div class="verd"><b>'+T('Sa famille','Its family')+'</b>'+T('Enfant de ','Child of ')+'<a style="font-weight:800;text-decoration:underline" href="#r='+par.id+'">'+esc(rn(par))+'</a>'+((r.changes||[]).length?T(', il change : ',', it changes: ')+r.changes.map(d=>esc(EN?d.en:d.fr).toLowerCase()+' → <strong>'+dv(d)+'</strong>').join(' · '):'')+'</div>':'')+
   (r.retired_fr?'<div class="verd"><b>'+T('Pourquoi il est à l\'arrêt','Why it stopped')+'</b>'+esc(EN?(r.retired_en||r.retired_fr):r.retired_fr)+'</div>':'')+'</div>';
  if(S.length>1)h+='<div class="stabs">'+S.map(s=>'<button class="chip'+(RSEC===s[0]?' on':'')+'" onclick="RSEC=\''+s[0]+'\';history.replaceState(null,\'\',\'#r='+r.id+'&v='+s[0]+'\');renderRobot()">'+s[1]+'</button>').join('')+'</div>';
- h+=(RSECR[RSEC]||RSECR.ov)(r,st);$('det').innerHTML=h;
+ h+=(RSECR[RSEC]||RSECR.ov)(r,st);$('det').innerHTML=h;foldLong();
  const on=document.querySelector('.stabs .chip.on');if(on){const s=on.parentNode;s.scrollLeft=on.offsetLeft-(s.clientWidth-on.offsetWidth)/2;}}
 const PAL=['var(--accent)','var(--up)','var(--warn)','var(--violet)','#38bdf8','var(--down-soft)'];
 const RSECR={
@@ -837,13 +837,6 @@ const slotIcon=k=>(SLOTS.find(s=>s[0]===k)||SLOTS[0])[2];
 function slotVal(R,k){if(k==='filters'){const F=R.filters||[];return F.length?F.map(pName).join(' · '):T('Aucun filtre','No filter');}return pName(R[k]);}
 function partName(kind,v){return kind==='filters'?(v||[]).map(pName).join(' · '):pName(v);}
 function partPlain(kind,v){return kind==='filters'?'':pPlain(v);}
-function bCard(r,i){const m=BST[r.stage]||BST.tested;const R=r.resolved||{};const own=r.parts||{};const t=r.test;
- const d=t&&t.robot&&t.parent_result?t.robot.net-t.parent_result.net:null;
- const chip=(k,id)=>'<span class="pc'+(r.parent&&own[k]!==undefined?' ch':'')+'">'+pic(slotIcon(k))+esc(pName(id))+'</span>';
- const chips=SLOTS.map(s=>s[0]==='filters'?(R.filters||[]).map(f=>chip('filters',f)).join(''):chip(s[0],R[s[0]])).join('');
- return '<button class="sc'+(r.stage==='real'?' flag':'')+'" style="--c:'+m.c+';animation-delay:'+Math.min(i,12)*30+'ms" onclick="goB(\''+r.id+'\')"><div class="top"><span class="fi">'+BOT+'</span><span class="tt"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+(r.parent?T('enfant de ','child of ')+esc((bById(r.parent)||{}).name_fr||r.parent):T('le robot d\'origine','the original robot'))+(r.mine?' · '+T('le vôtre','yours'):'')+'</small></span></div>'+
-  '<div class="pchips">'+chips+'</div>'+
-  '<div class="ft">'+bsb(r.stage)+(r.mine?'<span class="bd ev">'+(r.public?T('public','public'):T('privé','private'))+'</span>':'')+'<span class="met">'+(t&&t.robot?spark(cumOf(t.robot.curve))+'<span class="'+cl(t.robot.net)+'">'+money(t.robot.net)+'</span>':'')+(d!=null&&r.parent?'<span class="bd ev" style="'+(d>=0?'color:var(--up-soft)':'color:var(--down-soft)')+'">'+(d>=0?'+':'−')+'$'+num(Math.abs(d),0)+T(' vs parent',' vs parent')+'</span>':'')+'</span></div></button>';}
 function cumOf(c){return [0].concat((c||[]).map(q=>+q[1]));}
 function piecesCat(){const types=SLOTS.map(s=>[SLOTT[s[0]],s[1],s[2]]);
  return '<div class="card" style="margin-top:14px"><h2>'+T('Les pièces','The pieces')+'<span class="bd ev">'+pcs().length+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque pièce a un nom. Touchez-en une pour voir ce qu\'elle fait, qui l\'utilise et ses résultats.','Each piece has a name. Tap one to see what it does, who uses it and its results.')+'</div>'+
@@ -901,6 +894,7 @@ function slotStack(R,own,parent,opts){opts=opts||{};
 function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;const R=r.resolved||{},own=r.parts||{};const par=r.parent&&bById(r.parent);
  let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+BOT+'</span><h3>'+esc(T(r.name_fr,r.name_en))+'</h3>'+((r.plain_fr)?'<p>'+esc(T(r.plain_fr,r.plain_en))+'</p>':'')+
   '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div></div>';
+ h+=rStrip(r);
  h+='<div class="card"><h2>'+T('Ses pièces','Its pieces')+'</h2>'+slotStack(R,own,!!r.parent)+'</div>';
  const t=r.test;
  const TM=BLD().test_min||5;
@@ -925,7 +919,7 @@ function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;co
  if(r.can_edit&&!PL.length)h+=plugCard(r);
  else h+='<div class="card"><h2>'+T('Où il tourne','Where it runs')+'</h2>'+(PL.length?'<div class="plugs">'+PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+esc(T(p.money_fr,p.money_en))+' · '+p.market+'</small></span>'+(p.plugged&&BLD().admin&&p.uid?'<button class="chip" style="order:4;color:var(--down-soft);border-color:rgba(255,92,92,.4)" onclick="plugUndo(\''+p.uid+'\')">'+T('Débrancher','Unplug')+'</button>':'')+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i>'+(p.alive?T('en marche','running'):T('arrêté','stopped'))+'</span>')+'</div>').join('')+'</div>':
   '<div class="sub">'+T('Nulle part pour l\'instant. Les étapes : un jumeau sans argent à côté du vrai robot, puis un compte démo, puis, si vous le décidez, un vrai compte ou un autre marché.','Nowhere yet. The steps: a twin without money next to the real robot, then a demo account, then, if you decide so, a real account or another market.')+'</div>')+'</div>';
- $('det').innerHTML=h;}
+ $('det').innerHTML=h;foldLong();}
 let CURB=null,NEWD=null;
 function manageCard(r){return '<div class="card"><h2>'+T('Gérer mon robot','Manage my robot')+'</h2><div class="mgrid">'+
  '<button class="mb" onclick="editRobot(\''+r.id+'\')">'+pic('M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z')+'<b>'+T('Modifier','Edit')+'</b><small>'+T('nom et pièces','name and parts')+'</small></button>'+
@@ -995,13 +989,13 @@ function renderPiece(){const p=CURP;if(!p)return;const st=PST[p.status]||PST.tes
  let h='<div class="card dh"><span class="fi" style="color:'+st.c+'">'+pic(sl[2])+'</span><h3>'+esc(T(p.name_fr,p.name_en))+'</h3><p>'+esc(T(p.plain_fr,p.plain_en))+'</p>'+
   '<div class="ft"><span class="bd ev">'+T('pièce · ','piece · ')+sl[1].toLowerCase()+'</span>'+psb(p.status)+'<span class="bd ev">v'+(p.version||1)+'</span>'+(p.by?'<span class="bd ev">'+(p.by==='owner'?T('par le propriétaire','by the owner'):p.by==='claude'?T('par l\'IA','by the AI'):esc(p.by))+'</span>':'')+'</div>'+
   '<div class="verd"><b>'+T('Dans le vrai robot','In the real robot')+'</b>'+(p.live?T('Le robot des comptes sait déjà la faire tourner.','The accounts\' robot can already run it.'):T('Le robot des comptes ne sait pas encore la faire tourner : elle ne vit que dans les tests.','The accounts\' robot cannot run it yet: it only lives in tests.'))+'</div></div>';
- h+='<div class="card"><h2>'+T('Robots qui l\'utilisent','Robots that use it')+'<span class="bd ev">'+U.length+'</span></h2>'+(U.length?'<div class="grid">'+U.map((r,i)=>bCard(r,i)).join('')+'</div>':'<div class="sub">'+T('Aucun robot pour l\'instant.','No robot yet.')+'</div>')+'</div>';
+ h+='<div class="card"><h2>'+T('Robots qui l\'utilisent','Robots that use it')+'<span class="bd ev">'+U.length+'</span></h2>'+(U.length?'<div class="fds" style="margin:12px 0 0">'+U.map(r=>rCard2(r,BLD().plugs||[])).join('')+'</div>':'<div class="sub">'+T('Aucun robot pour l\'instant.','No robot yet.')+'</div>')+'</div>';
  if(p.pkg)h+='<button class="mi" onclick="goR(\''+p.pkg+'\')" style="margin-bottom:14px"><span class="fi" style="color:var(--accent-soft)">'+pic(sl[2])+'</span><span>'+T('Tous ses réglages et les comptes qui l\'utilisent','All its settings and the accounts that use it')+'</span><span>›</span></button>';
  if(p.can_edit)h+='<div class="card"><h2>'+T('Gérer ma pièce','Manage my piece')+'</h2><div class="mgrid" style="grid-template-columns:repeat(2,minmax(0,1fr))">'+
   '<button class="mb" onclick="piecePub(\''+p.id+'\','+(!p.public)+')">'+pic(EYE)+'<b>'+(p.public?T('Publique','Public'):T('Privée','Private'))+'</b><small>'+(p.public?T('rendre privée','make private'):T('rendre publique','make public'))+'</small></button>'+
   '<button class="mb del" onclick="pieceDel(\''+p.id+'\')">'+pic('M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6')+'<b>'+T('Supprimer','Delete')+'</b><small>'+T('si aucun robot ne l\'utilise','if no robot uses it')+'</small></button></div></div>';
  if(pUsable(p)&&BLD().can_create)h+='<button class="cta" onclick="pieceRobot(\''+p.id+'\')">'+pic('M12 5v14M5 12h14')+T('Créer un robot avec cette pièce','Build a robot with this piece')+'</button>';
- $('det').innerHTML=h;}
+ $('det').innerHTML=h;foldLong();}
 let CURP=null;
 function pieceRobot(id){const p=pById(id);if(!p)return;const k=Object.keys(SLOTT).find(x=>SLOTT[x]===p.type);const parts={};
  if(k==='filters'){const F=((bById('owl')||{}).resolved||{}).filters||[];parts.filters=F.includes(id)?F:F.concat([id]);}else parts[k]=id;
@@ -1152,6 +1146,25 @@ const FDS={};   // what each folder opens: a builder, so it is fresh when opened
 function fd(k,icon,title,sub,n){return '<button class="fd" onclick="fdOpen(\''+k+'\')">'+icon+'<span class="tx"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span>'+(n!=null?'<span class="n">'+n+'</span>':'')+'<span class="cv">›</span></button>';}
 function fdOpen(k){const f=FDS[k];if(f)shOpen(f[0],f[1]());}
 const ICO=(c,inner)=>'<span class="ic" style="background:color-mix(in srgb,'+c+' 16%,transparent);color:'+c+'">'+inner+'</span>';
+
+/* ---------- 2026-10-13 (owner, "detail pages too long"): on a detail page, a LONG card (taller than about half a phone
+   screen) becomes one line that opens it in the sheet; short cards stay. Automatic, so every strategy, robot and piece
+   gets it. Cards are kept whole (their buttons keep working); if the page redraws while one is open, the sheet follows. ---------- */
+let FXCUR=null;
+function foldLong(){const root=$('det');if(!root||window.innerWidth>=900)return;
+ const L=[].slice.call(root.querySelectorAll(':scope > .card:not(.dh):not(.rc), #secb > .card'));let first=true,n=0;
+ L.forEach(c=>{if(first){first=false;return;}if(c.offsetHeight<420)return;const h2=c.querySelector('h2');if(!h2)return;
+  const t=h2.cloneNode(true);t.querySelectorAll('.bd,a,button').forEach(e=>e.remove());const title=t.textContent.trim();if(!title)return;
+  const bd=h2.querySelector('.bd'),sub0=c.querySelector('.sub,.note,p');const sub=(bd?bd.textContent.trim():'')||(sub0?sub0.textContent.trim().slice(0,90):'');
+  const k='fx'+(n++)+':'+title,html=c.outerHTML;FDS[k]=[title,()=>html];
+  const row=document.createElement('div');row.className='fds';row.style.marginBottom='14px';
+  row.innerHTML='<button class="fd" onclick="FXCUR=\''+k.replace(/'/g,"\\'")+'\';fdOpen(this.dataset.k)" data-k="'+esc(k)+'">'+ICO('#8fc6ff',pic('M4 6h16M4 12h16M4 18h10'))+'<span class="tx"><b>'+esc(title)+'</b>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</span><span class="cv">›</span></button>';
+  c.replaceWith(row);
+  if(LSH&&FXCUR===k){const b=$('lsh-b');if(b){const y=b.parentNode.scrollTop;b.innerHTML=html;b.parentNode.scrollTop=y;}}});}
+window.addEventListener('popstate',()=>{FXCUR=null;});
+function rStrip(r){const tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result;if(!tr)return '';const d=pr?tr.net-pr.net:null,wr=tr.win_rate!=null?Math.round(tr.win_rate*100):null;
+ return '<div class="card rc" style="cursor:default;margin-bottom:14px"><div class="rm" style="padding-top:14px"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small></div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
+  '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div></div></div>';}
 
 /* ---------- 2026-10-13 (owner): one search for the whole lab - strategies, robots, pieces ---------- */
 async function gsOpen(){shOpen(T('Chercher dans le labo','Search the lab'),'<label class="search" style="width:100%;margin-bottom:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="gsq" placeholder="'+T('Une stratégie, un robot, une pièce…','A strategy, a robot, a piece…')+'" oninput="gsRun(this.value)" autocomplete="off"></label><div id="gsr"></div>');

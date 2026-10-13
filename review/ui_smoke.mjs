@@ -332,10 +332,10 @@ console.log("labo");
   // 2026-10-13 (owner, calm layout): each side shows FOLDER rows (.fd); the cards live in the sheet a folder opens
   for (const [side, path, min, inSheet, inMin] of [["Strategies", "strategies", 5, ".sc", 1], ["Robots", "robots", 4, null, 0], ["AI team", "equipe", 4, ".mem", 1]]) {
     await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
-    const n = await ev("document.querySelectorAll('#top .fd,#list .fd,#list .sf,#top .rc').length");   // folders: .fd rows, .sf stage cards, .rc robot cards
+    const n = await ev("document.querySelectorAll('#top .fd,#list .fd,#list .sf,#top .rc,#top .t4 button').length");   // folders: .fd rows, .sf stage cards, .rc robot cards, .t4 the AI members' tiles
     check(`Labo · ${side} paints its folders`, n >= min, String(n));
     if (inSheet) {
-      await ev("(function(){var b=document.querySelector('#top .fd,#list .fd,#list .sf');if(b)b.click();return 1;})()"); await sleep(1200);
+      await ev("(function(){var b=document.querySelector('#top .t4 button,#top .fd,#list .fd,#list .sf');if(b)b.click();return 1;})()"); await sleep(1200);
       const k = await ev(`document.querySelectorAll('#lsh ${inSheet}').length`);
       check(`Labo · ${side} folder opens its cards`, k >= inMin, String(k));
       await ev("(function(){if(window.shClose)shClose();return 1;})()"); await sleep(800);
