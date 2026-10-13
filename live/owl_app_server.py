@@ -7934,14 +7934,19 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le marché dort. Dès qu’il se réveille, le robot cherche ','The market is asleep. When it wakes up, the robot looks for ')+'<b>'+side+'</b>'+(trend?' — '+trend:'')+'.',row:T2('Il attend','Waiting')};
   if(k==='forming'||k==='flip')return {c:'or',t:T2('Il attend','Waiting'),s:T(k==='forming'?'j_forming':'j_flip'),row:T2('Il attend','Waiting')};
   return {c:'bl',t:T2('Prêt','Ready'),s:T2('Les conditions sont réunies : il entrera dès qu’une cassure confirme ','Conditions are met: it enters as soon as a break confirms ')+'<b>'+side+'</b>.',row:T2('Prêt','Ready')};}
+ // the three labels under a trade's rail follow its direction: a sell has its target on the LEFT
+ function lvEnds(dir,sl,e,tp){const S='<b class="lv-dn">'+sl+'</b>',Tg='<b class="lv-up">'+tp+'</b>',M='<div style="text-align:center">'+T2('entrée','entry')+'<b>'+e+'</b></div>';
+  return dir===1?'<div>'+T2('stop','stop')+S+'</div>'+M+'<div style="text-align:right">'+T2('objectif','target')+Tg+'</div>':'<div>'+T2('objectif','target')+Tg+'</div>'+M+'<div style="text-align:right">'+T2('stop','stop')+S+'</div>';}
  // a price rail: left level, right level, the price between
  function rail(lo,hi,px,dg,fill,ends){const p=Math.max(2,Math.min(98,(px-lo)/((hi-lo)||1)*100));
   return '<div class="lv-rail">'+fill(p)+'<div class="px" style="left:'+p.toFixed(1)+'%"></div><div class="tg" style="left:'+Math.max(12,Math.min(88,p)).toFixed(1)+'%">'+fmtN(px,dg)+'</div></div><div class="lv-ends">'+ends+'</div>';}
  function trials(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={trade:0,ready:1,soon:2};
-  return S.filter(r=>r.sym!=='BTCUSD'&&o[r.status]!=null&&(r.status!=='trade'||r.open)).sort((a,b)=>o[a.status]-o[b.status]||((a.near==null?9:a.near)-(b.near==null?9:b.near))).slice(0,6);}
+  const k=r=>r.open?0:o[r.status];
+  return S.filter(r=>r.sym!=='BTCUSD'&&(r.open||(o[r.status]!=null&&r.status!=='trade'))).sort((a,b)=>k(a)-k(b)||((a.near==null?9:a.near)-(b.near==null?9:b.near))).slice(0,6);}
+ const reopen=()=>{const d=new Date().getDay();return d===6||d===0?T2('Rouvre en début de semaine.','Reopens at the start of the week.'):T2('Rouvre à la prochaine séance.','Reopens at the next session.');};
  function diary(D){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000,ev=[],tag=(s,es)=>{const m=mk(s);return '<span class="lv-tag" style="background:'+m[1]+'26;color:'+m[1]+'">'+(s==='BTCUSD'?'BTC':esc(mname(s)).toUpperCase())+'</span>'+(es?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'');};
   (D.open_list||[]).forEach(p=>ev.push({t:Date.now()/1000,ic:'↗',c:'lv-up',h:tag('BTCUSD')+T2('maintenant','now'),b:(p.d==='A'?T2('Achat en cours','Buy running'):T2('Vente en cours','Sell running'))+' · <span class="'+((+p.pl)>=0?'lv-up':'lv-dn')+'">'+money(+p.pl||0)+'</span>',p:T2('Entré à ','Entered at ')+fmtN(+p.e,0)+'.'}));
-  (Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).forEach(x=>ev.push({t:x.x||x.t,ic:x.p>=0?'✓':'✕',c:x.p>=0?'lv-up':'lv-dn',h:tag('BTCUSD')+hm(x.t)+(x.x?' → '+hm(x.x):''),b:(String(x.d).toUpperCase().startsWith('B')||x.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+' · <span class="'+(x.p>=0?'lv-up':'lv-dn')+'">'+money(x.p)+'</span>',p:x.p>=0?T2('Sorti en gain.','Closed in profit.'):T2('Sorti au stop.','Closed at the stop.')}));
+  (Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).forEach(x=>ev.push({t:x.x||x.t,ic:x.p>=0?'✓':'✕',c:x.p>=0?'lv-up':'lv-dn',h:tag('BTCUSD')+hm(x.t)+(x.x?' → '+hm(x.x):''),b:(String(x.d).toUpperCase().startsWith('B')||x.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+' · <span class="'+(x.p>=0?'lv-up':'lv-dn')+'">'+money(x.p)+'</span>',p:(x.p>=0?T2('Sorti en gain.','Closed in profit.'):T2('Sorti au stop.','Closed at the stop.'))+' <span style="color:var(--accent-soft);font-weight:700">'+T2('Voir le trade','See the trade')+' ›</span>',trd:{p:x.p,x:x.x||x.t}}));
   const W=((D.why_idle||{}).why||[]).slice().sort((a,b)=>b.n-a.n)[0],wt=k=>{try{const w=WHYTXT[k];return w?w[EN()?1:0]:'';}catch(e){return '';}};
   let g=null;(Dy.ignored||[]).filter(x=>x[0]>=t0).forEach(x=>{if(g&&g.k===x[1]){g.n++;g.b=x[0];}else{g={k:x[1],n:1,a:x[0],b:x[0]};ev.push(g);g.t=0;}});
   ev.forEach(e=>{if(e.k){e.t=e.b;const why=e.k==='meteo'?wt('storm'):(W?wt(W.k):'');e.ic='💤';e.c='';e.h=tag('BTCUSD')+hm(e.a)+(e.b!==e.a?' → '+hm(e.b):'');
@@ -7950,7 +7955,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   trials().filter(r=>r.status==='trade'&&r.open&&r.open.t>=t0).forEach(r=>ev.push({t:r.open.t,ic:'↗',c:'lv-up',h:tag(r.sym,1)+hm(r.open.t),b:(r.open.d===1?T2('Achat virtuel ouvert','Virtual buy opened'):T2('Vente virtuelle ouverte','Virtual sell opened')),p:T2('En cours : ','Running: ')+R(r.open.r_now)+'.'}));
   ev.forEach(e=>{e.v=/lv-es/.test(e.h||'');});const vt=ev.filter(e=>e.v).sort((a,b)=>b.t-a.t).slice(0,4);
   const ev2=ev.filter(e=>!e.v).concat(vt).sort((a,b)=>b.t-a.t);const rc=D.recap;
-  const list=ev2.slice(0,10).map(e=>'<div class="lv-ev"><div class="d '+(e.c||'')+'">'+e.ic+'</div><div style="min-width:0"><div class="h">'+e.h+'</div><b>'+(e.bb||e.b)+'</b><p>'+e.p+'</p></div></div>').join('')+
+  const list=ev2.slice(0,10).map(e=>'<div class="lv-ev"'+(e.trd?' data-p="'+e.trd.p+'" data-x="'+e.trd.x+'" role="button" tabindex="0" style="cursor:pointer"':'')+'><div class="d '+(e.c||'')+'">'+e.ic+'</div><div style="min-width:0"><div class="h">'+e.h+'</div><b>'+(e.bb||e.b)+'</b><p>'+e.p+'</p></div></div>').join('')+
    '<div class="lv-ev"><div class="d">☀</div><div><div class="h">00:00</div><b>'+T2('Nouvelle journée','New day')+'</b><p>'+(rc&&rc.n!=null?T2('Hier : ','Yesterday: ')+rc.n+' trade'+(rc.n>1?'s':'')+', <span class="'+((rc.net||0)>=0?'lv-up':'lv-dn')+'">'+money(rc.net||0)+'</span>.':T2('Le robot repart pour une journée.','The robot starts a new day.'))+'</p></div></div>';
   return '<div class="lv-c"><div class="lv-l">'+T2('Son journal','Its diary')+' <small>· '+T2('aujourd’hui, tous les marchés','today, every market')+'</small></div><div style="margin-top:14px">'+list+'</div>'+
    ($('rjcard')?'<div class="lv-more" id="edrjr"><span>'+T2('Le journal complet','The full diary')+'</span><span>›</span></div>':'')+'</div>';}
@@ -7972,7 +7977,8 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  .edrx .lv-bell{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);display:grid;place-items:center;cursor:pointer;font-size:1rem}
  .edrx .lv-bell.on{color:var(--up);border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
  .edrx .lv-dots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
- .edrx .lv-dots div{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0}
+ .edrx .lv-dots button{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:4px 0;border-radius:12px}
+ .edrx .lv-dots button:active{background:var(--surface2)}
  .edrx .lv-dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:900}
  .edrx .lv-dots span{font-size:.68rem;color:var(--muted2);font-weight:600;line-height:1.2}
  .edrx .lv-strip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;font:inherit;color:inherit;width:100%;text-align:left}
@@ -7998,19 +8004,34 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  #edrsh .xfr{height:72vh;border-radius:18px;overflow:hidden;border:1px solid var(--border)}#edrsh .xfr iframe{width:100%;height:100%;border:0;display:block}
  #edrsh .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
  #edrstore{display:none}
+ .edrx .lv-pk{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);text-decoration:none;color:inherit}
+ .edrx .lv-pk .l{flex:1;min-width:0;font-size:.8rem;font-weight:700;color:var(--text)}.edrx .lv-pk .l small{display:block;font-size:.7rem;font-weight:500;color:var(--muted);margin-top:1px}
+ .edrx .lv-pk b{font-size:.95rem;font-variant-numeric:tabular-nums}.edrx .lv-pk .c{color:var(--muted)}
  .edrx .lv-cand{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;padding:14px;border-radius:var(--r);background:linear-gradient(135deg,rgba(59,130,246,.10),var(--surface) 60%);border:1px solid rgba(59,130,246,.35)}
  .edrx .lv-cand .hd{display:flex;align-items:center;justify-content:space-between;font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-soft)}
  .edrx .lv-cand .rw{display:flex;align-items:center;gap:12px;margin-top:10px}
  .edrx .lv-cand .n{flex:1;min-width:0}.edrx .lv-cand .n b{display:block;font-size:.95rem;color:var(--text)}.edrx .lv-cand .n small{font-size:.72rem;color:var(--muted2)}
  .edrx .lv-cand .st{font-size:.78rem;font-weight:800;white-space:nowrap}
+ .edrx .lv-cand .cb{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);font:inherit;font-size:.68rem;font-weight:800;letter-spacing:0;text-transform:none;border-radius:99px;padding:5px 10px;cursor:pointer}
+ .edrx .lv-cand .cb.on{color:var(--up);border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
  .edrx .lv-cand .bar{height:5px;border-radius:99px;background:var(--surface3);margin-top:12px;overflow:hidden}.edrx .lv-cand .bar i{display:block;height:100%;border-radius:99px}`;
  document.head.appendChild(css2);
+ // 2026-10-13 (owner): the market's pocket - real for BTC (Patrimoine > Poches), pretend money for a trial market
+ let pkT=0;
+ function pkLoad(){if(Date.now()-pkT<300000)return;pkT=Date.now();fetch(B+'pockets?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&!j.err)window._pk=j;}).catch(()=>{});}
+ function pkLine(sym){if(sym==='BTCUSD'){pkLoad();const P=((window._pk||{}).pockets||[]).find(x=>x.sym==='BTCUSD');if(!P)return '';
+   return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+P.n+' trades · '+T2('depuis le début','since the start')+'</small></span><b class="'+(P.net>=0?'lv-up':'lv-dn')+'">'+money(P.net)+'</b><span class="c">›</span></a>';}
+  const L=((((SC||{}).results||{})[sym]||{}).pocket||{}).live;if(!L)return '';const st=((SC||{}).pocket_rule||{}).start||100;
+  return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
  // the four checks, as four small dots inside the card
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
-  const it=(ok,a)=>'<div><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></div>';
+  const it=(ok,a,why)=>'<button type="button" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
+  const side=t===1?T2('que des achats','only buys'):T2('que des ventes','only sells');
   return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+
-   it(t===1||t===-1,T2('Sens clair','Clear trend'))+it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'))+
-   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'))+it(k!=='none',T2('Éveillé','Awake'))+'</div>';}
+   it(t===1||t===-1,T2('Sens clair','Clear trend'),t===1||t===-1?T2('La tendance de fond est en '+(t===1?'hausse':'baisse')+' : le robot ne prend '+side+'.','The background trend is '+(t===1?'up':'down')+': the robot takes '+side+'.'):T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'))+
+   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),(!gate||ms.pb_side!=='wrong')?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.'))+
+   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'))+
+   it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'))+'</div>';}
  function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
@@ -8020,27 +8041,28 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
     h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
      rail(lo,hi,cur,0,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
-      '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(sl,0)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(e,0)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(tp,0)+'</b></div>')+'</div>';}}
+      lvEnds(dir,fmtN(sl,0),fmtN(e,0),fmtN(tp,0)))+'</div>';}}
   else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'){
    const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
     rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(Math.round(lo),0)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(Math.round(hi),0)+'</b></div>')+'</div>';}
-  return h+dots(D)+'</div>';}
+  return h+pkLine('BTCUSD')+dots(D)+'</div>';}
  function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
-  if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
+  if(r.status==='closed'){c='gy';t=T2('Marché fermé','Market closed');s=reopen()+(o?T2(' Le trade virtuel reprend à la réouverture.',' The virtual trade resumes when it reopens.'):'');}
+  else if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
   else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix touche presque son déclencheur. Aucun argent réel.','Price is almost at its trigger. No real money.');}
   else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur. Aucun argent réel.','Price is nearing its trigger. No real money.');}
   let h='<div class="lv-c">'+top(r.sym)+'<div class="lv-st">'+light(c)+'<div style="min-width:0"><h3>'+t+(o?' · <span class="'+(o.r_now>=0?'lv-up':'lv-dn')+'">'+R(o.r_now)+'</span>':'')+'</h3><p>'+s+'</p></div></div>';
   if(o&&o.e!=null&&o.sl!=null&&o.tp!=null&&r.px){const dir=o.d,lo=dir===1?o.sl:o.tp,hi=dir===1?o.tp:o.sl,pe=(o.e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(r.px-o.e)/((o.tp-o.e)||1)*100));
    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
     rail(lo,hi,r.px,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
-     '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(o.sl,dg)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(o.e,dg)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(o.tp,dg)+'</b></div>')+'</div>';}
+     lvEnds(dir,fmtN(o.sl,dg),fmtN(o.e,dg),fmtN(o.tp,dg)))+'</div>';}
   else if(!o&&r.next_bos!=null&&r.pb_bos!=null&&r.px){const up=r.pb_trend===1,lo=up?r.pb_bos:r.next_bos,hi=up?r.next_bos:r.pb_bos;
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(r.next_bos,dg)+'</b></div>'+
     rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
-  return h+'</div>';}
+  return h+pkLine(r.sym)+'</div>';}
  // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
  // no trade open): nearly ready first, then soon, else the closest trend in place. Tap = it opens in the card.
  function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2};
@@ -8049,11 +8071,20 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const st=r.status==='ready'?[T2('Presque prêt','Nearly ready'),'var(--accent)','var(--accent-soft)']:(r.status==='soon'?[T2('Bientôt','Soon'),'var(--warn)','var(--warn)']:[T2('Tendance en place','Trend set'),'var(--muted)','var(--muted2)']);
   const p=Math.max(4,Math.min(100,100-(r.near/3)*100)),side=r.pb_trend===1?T2('un achat','a buy'):(r.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
   const dp=r.dist_pct!=null?(EN()?r.dist_pct.toFixed(2):r.dist_pct.toFixed(2).replace('.',','))+' %':null;
-  return '<button class="lv-cand" id="edrcand" data-s="'+r.sym+'"><div class="hd"><span>'+T2('Prochain candidat','Next candidate')+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>'+
+  const on=candOn();
+  return '<div class="lv-cand" id="edrcand" role="button" tabindex="0" data-s="'+r.sym+'"><div class="hd"><span>'+T2('Prochain candidat','Next candidate')+' <span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></span>'+
+   '<button type="button" class="cb'+(on?' on':'')+'" id="edrcbell" aria-pressed="'+on+'"><svg class="ic" style="width:13px;height:13px"><use href="#i-bell"/></svg>'+(on?T2('Prévenu','On'):T2('Prévenez-moi','Notify me'))+'</button></div>'+
    '<div class="rw">'+badge(r.sym)+'<div class="n"><b>'+esc(mname(r.sym))+'</b><small>'+T2('cherche ','looks for ')+side+(dp?' · '+T2('déclencheur à ','trigger ')+dp+(EN()?' away':''):'')+'</small></div><span class="st" style="color:'+st[2]+'">'+st[0]+'</span></div>'+
-   '<div class="bar" aria-hidden="true"><i style="width:'+p.toFixed(0)+'%;background:'+st[1]+'"></i></div></button>';}
+   '<div class="bar" aria-hidden="true"><i style="width:'+p.toFixed(0)+'%;background:'+st[1]+'"></i></div></div>';}
+ let candLocal=null;
+ function candOn(){if(candLocal!==null)return candLocal;try{return !!JSON.parse(window._lastS).cand_push;}catch(e){return false;}}
+ async function candToggle(){const want=!candOn(),nb=$('notifbtn');
+  if(want&&nb&&nb.dataset.on!=='1'){nb.click();}
+  candLocal=want;paint(true);
+  try{await fetch(B+'push_pref',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'cand='+(want?1:0)});}catch(e){}
+  try{toast(want?T2('Vous serez prévenu quand un marché en essai est presque prêt.','You will be told when a trial market is nearly ready.'):T2('Alerte du candidat coupée.','Candidate alert off.'),3500);}catch(e){}}
  // one slim line for the other markets; the list itself opens in the sheet
- function strip(TR){const n=TR.length;const nt=TR.filter(r=>r.status==='trade').length,nr=n-nt;
+ function strip(TR){const n=TR.length;const nt=TR.filter(r=>r.open).length,nr=n-nt;
   if(!n&&!((SC&&SC.state&&SC.state.symbols)||[]).length)return '';
   const sub=n?[nt?nt+' '+T2('en essai','on trial'):'',nr?nr+' '+T2('presque prêt'+(nr>1?'s':''),'nearly ready'):''].filter(Boolean).join(' · '):T2('aucun pour l’instant','none right now');
   const shown=(sel==='BTCUSD'?TR:[{sym:'BTCUSD'}].concat(TR.filter(r=>r.sym!==sel))).slice(0,4);
@@ -8062,7 +8093,9 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const row=(s,on,stat,col,sub,es)=>'<button class="lv-mr'+(on?' on':'')+'" data-s="'+s+'">'+badge(s)+'<div class="n"><b>'+esc(mname(s))+'</b><span>'+s+(es?'<span class="lv-es">'+T2('ESSAI','TRIAL')+'</span>':'')+'</span></div><div class="s" style="color:'+col+'"><span class="lv-dt" style="background:'+col+'"></span>'+stat+'<small>'+sub+'</small></div></button>';
   const n=((SC&&SC.state&&SC.state.symbols)||[]).length;
   return '<div class="edrx" style="margin:0"><div class="lv-mk" style="margin-top:0">'+row('BTCUSD',sel==='BTCUSD',B0.row,C[B0.c],T2('argent réel · aujourd’hui ','real money · today ')+money(D.today||0),false)+
-   TR.map(r=>{const o=r.open;return row(r.sym,sel===r.sym,r.status==='trade'?T2('En essai ','On trial ')+(o?R(o.r_now):''):(r.status==='ready'?T2('Presque prêt','Nearly ready'):T2('Bientôt','Soon')),r.status==='trade'?C.gr:(r.status==='ready'?C.bl:C.or),r.status==='trade'?(o&&o.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')):T2('en file d’attente','in the queue'),true);}).join('')+'</div>'+
+   TR.map(r=>{const o=r.open;if(r.status==='closed')return row(r.sym,sel===r.sym,T2('Fermé','Closed'),C.gy,o?T2('trade virtuel en pause','virtual trade paused'):reopen(),true);
+    return row(r.sym,sel===r.sym,o?T2('En essai ','On trial ')+R(o.r_now):(r.status==='ready'?T2('Presque prêt','Nearly ready'):T2('Bientôt','Soon')),o?C.gr:(r.status==='ready'?C.bl:C.or),o?(o.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')):T2('en file d’attente','in the queue'),true);}).join('')+'</div>'+
+   (function(){const cl=((SC&&SC.state&&SC.state.symbols)||[]).filter(r=>r.status==='closed'&&!r.open);return cl.length?'<div class="lv-note" style="margin:10px 2px 0">'+T2('Fermés en ce moment : ','Closed right now: ')+cl.map(r=>esc(mname(r.sym))).join(', ')+'. '+reopen()+'</div>':'';})()+
    '<div class="lv-note" style="margin:12px 2px 0">'+T2('Bitcoin trade avec votre argent. Les autres marchés sont en essai : des trades virtuels, sans argent réel, pour les vérifier avant.','Bitcoin trades with your money. The other markets are on trial: virtual trades, no real money, to check them first.')+'</div>'+
    (n?'<button class="lv-btn" id="edrall">'+T2('Tous les marchés en essai','All markets on trial')+' · '+n+' ›</button>':'')+'</div>';}
  // the four tiles
@@ -8078,6 +8111,12 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
    t('diary','i-book',T2('Journal','Diary'),nr+' trade'+(nr>1?'s':''),(ni?ni+' '+T2('laissée'+(ni>1?'s':''),'passed'):T2('aujourd’hui','today'))+(nv?' · '+nv+' '+T2('en essai','on trial'):''))+
    t('hours','i-calendar',T2('Ses heures','Its hours'),bh>=0?bh+'h':'—',bh>=0?T2('sa meilleure heure','its best hour')+' · '+Object.keys(DT).length+' '+T2('jours','days'):T2('pas encore assez de trades','not enough trades yet'))+
    t('det','i-settings',T2('Pour traders','For traders'),T2('Détails','Details'),T2('météo · H4 / H1 / M15 · heures','weather · H4 / H1 / M15 · hours'))+'</div>';}
+ // a diary trade -> the matching row of the app's trade list (same result, closest time) -> its own sheet
+ function openTr(p,x){const L=window._tr||[];let bi=-1,bd=1e12;
+  L.forEach((t,i)=>{if(Math.abs((+t.p||0)-p)>0.006)return;const m=/^(\\d\\d)\\/(\\d\\d) (\\d\\d):(\\d\\d)$/.exec(t.w||'');if(!m)return;const n=new Date();let y=n.getUTCFullYear();if(parseInt(m[2])>n.getUTCMonth()+1)y--;
+   const ts=Date.UTC(y,parseInt(m[2])-1,parseInt(m[1]),parseInt(m[3]),parseInt(m[4]))/1000,d=Math.min(Math.abs(ts-x),Math.abs(ts-x+86400),Math.abs(ts-x-86400));if(d<bd){bd=d;bi=i;}});
+  if(bi<0){try{toast(T2('Ce trade n’est plus dans la liste récente : voyez Performance › Trades.','This trade is no longer in the recent list: see Performance › Trades.'),3500);}catch(e){}return;}
+  shClose();setTimeout(()=>{try{tradeSheet(bi);}catch(e){}},360);}
  // the sheet: one at a time; the trader cards are MOVED in and back out, the chart frame exists only while open
  let shK=null;
  function sheet(){let s=$('edrsh');if(s)return s;s=document.createElement('div');s.id='edrsh';
@@ -8086,7 +8125,8 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   window.addEventListener('popstate',()=>{if(shK)shClose(true);});return s;}
  function shFill(D,B0,TR){const b=$('edrsh-b');if(!b||!shK)return;
   if(shK==='mk'){b.innerHTML=marketList(D,B0,TR);b.querySelectorAll('.lv-mr').forEach(x=>x.onclick=()=>{sel=x.dataset.s;shClose();paint(true);});const a=$('edrall');if(a)a.onclick=()=>{shClose();setTimeout(()=>mxView('scan'),300);};}
-  else if(shK==='diary'){b.innerHTML='<div class="edrx" style="margin:0">'+diary(D).replace('class="lv-c"','class="lv-c" style="padding:4px 0 0;background:none;border:0;box-shadow:none"').replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')+'</div>';const jr=$('edrjr');if(jr)jr.onclick=()=>{shClose();setTimeout(()=>{try{rjOpen();}catch(e){}},300);};}
+  else if(shK==='diary'){b.innerHTML='<div class="edrx" style="margin:0">'+diary(D).replace('class="lv-c"','class="lv-c" style="padding:4px 0 0;background:none;border:0;box-shadow:none"').replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')+'</div>';const jr=$('edrjr');if(jr)jr.onclick=()=>{shClose();setTimeout(()=>{try{rjOpen();}catch(e){}},300);};
+   b.querySelectorAll('.lv-ev[data-p]').forEach(el=>el.onclick=()=>openTr(+el.dataset.p,+el.dataset.x));}
   else if(shK==='hours'){b.innerHTML='<div class="edrx" style="margin:0">'+(hours(D).replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')||'<div class="lv-note">'+T2('Pas encore assez de trades.','Not enough trades yet.')+'</div>')+'</div>';}}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
   $('edrsh-t').textContent=k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
@@ -8125,7 +8165,9 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
   const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+candCard()+strip(TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
-   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
+   const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
+   lv.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
    lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
@@ -8133,6 +8175,8 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+
 
 
 
@@ -14152,6 +14196,7 @@ def user_stats(u, admin_override=False):
             d["build"] = APP_BUILD
             d["push_quiet"] = bool((_pp.get("_quiet") or {})
                                    .get(u["id"], {}).get("on"))
+            d["cand_push"] = bool((_pp.get("_cand") or {}).get(u["id"]))
         except Exception:
             d["push_level"] = "all"
             d["push_quiet"] = False
@@ -17923,6 +17968,9 @@ class H(BaseHTTPRequestHandler):
                     _lg = qs.get("lang", ["fr"])[0]
                     prefs.setdefault("_lang", {})[u["id"]] = (
                         "en" if _lg == "en" else "fr")
+                if "cand" in qs:
+                    # 2026-10-13 (owner): "tell me when the next candidate is nearly ready" (En direct)
+                    prefs.setdefault("_cand", {})[u["id"]] = qs["cand"][0] == "1"
                 if "quiet" in qs:
                     # 2026-09-26: silence 22h-7h in the phone's timezone
                     try:
@@ -18693,6 +18741,7 @@ class H(BaseHTTPRequestHandler):
                     _pp = json.load(open(PUSH_PREFS_FILE))
                     _d["push_level"] = _pp.get(user["id"], "all")
                     _d["push_quiet"] = bool((_pp.get("_quiet") or {}).get(user["id"], {}).get("on"))
+                    _d["cand_push"] = bool((_pp.get("_cand") or {}).get(user["id"]))
                 except Exception:
                     _d["push_level"] = "all"
                     _d["push_quiet"] = False
@@ -19359,7 +19408,48 @@ class H(BaseHTTPRequestHandler):
             self.end_headers()
 
 
+def _cand_watch():
+    """2026-10-13 (owner): En direct's "Prochain candidat" bell. Reads the scanner's state (never writes it);
+    when a market other than BTC turns 'ready', the members who switched the bell on get one push.
+    The first read only records the state, so a restart never fires a burst. Trial markets only:
+    the text says so, no real money is involved."""
+    prev, sent = None, {}
+    while True:
+        try:
+            st = json.load(open(os.path.join(DIR, "scanner", "state.json"), encoding="utf-8"))
+            now = {r.get("sym"): r for r in (st.get("symbols") or []) if r.get("sym") and r.get("sym") != "BTCUSD"}
+            if prev is not None:
+                try:
+                    prefs = json.load(open(PUSH_PREFS_FILE))
+                except Exception:
+                    prefs = {}
+                who = [k for k, v in (prefs.get("_cand") or {}).items() if v]
+                langs = prefs.get("_lang") or {}
+                for s, r in now.items():
+                    if r.get("status") != "ready" or prev.get(s) == "ready":
+                        continue
+                    if time.time() - sent.get(s, 0) < 3 * 3600:
+                        continue
+                    sent[s] = time.time()
+                    nm = r.get("name") or s
+                    side = r.get("pb_trend")
+                    for uid in who:
+                        if langs.get(uid) == "en":
+                            queue_push(uid, "%s nearly ready" % nm,
+                                       "The robot is close to a %s on %s. Trial market: virtual trades only, no real money."
+                                       % ("buy" if side == 1 else ("sell" if side == -1 else "trade"), nm))
+                        else:
+                            queue_push(uid, "%s presque prêt" % nm,
+                                       "Le robot s’approche %s sur %s. Marché en essai : trades virtuels, aucun argent réel."
+                                       % ("d’un achat" if side == 1 else ("d’une vente" if side == -1 else "d’un trade"), nm))
+            prev = {s: r.get("status") for s, r in now.items()}
+        except Exception:
+            pass
+        time.sleep(60)
+
+
 if __name__ == "__main__":
     print(f"OwlNest v2 serving on port {PORT}, token {TOKEN}")
+    threading.Thread(target=_cand_watch, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever()
 
