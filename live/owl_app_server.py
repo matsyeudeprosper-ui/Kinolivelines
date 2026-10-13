@@ -7483,6 +7483,109 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  function init(){try{if(build()){paint();setInterval(paint,1500);}}catch(e){console.error('cockpit',e);}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// ==== 2026-10-13 (owner, step 2): COMPTE - the settings page (4 300 px) becomes 6 entries; each opens its rows in a
+// slide-up sheet. Rows and panels are MOVED, not rewritten: every handler keeps working. Blocks whose visibility the
+// app decides as a whole (owner-only administration, Le Nid unlock, the robot switches, the plan) move as whole panels,
+// so a member never sees a row the app keeps for the owner. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T=(f,e)=>EN()?e:f;
+ const css=document.createElement('style');css.textContent=`
+ #tab-set.cs-on > .sec,#tab-set.cs-on > #howto{display:none!important}
+ .cshd{display:flex;align-items:center;gap:14px;margin:22px 0 4px;padding:16px;border-radius:22px;background:linear-gradient(140deg,var(--hero1),var(--hero2));border:1px solid rgba(143,198,255,.18)}
+ .cshd .av{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;flex:none}
+ .cshd b{display:block;font-size:1.1rem;color:#fff}.cshd small{display:block;font-size:.8rem;color:#9fc2de;margin-top:2px}
+ .csl{display:grid;gap:10px;margin-top:14px}
+ .csg{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;transition:transform .12s}
+ .csg:active{transform:scale(.985)}
+ .csg .ic2{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
+ .csg .ic2 svg{width:20px;height:20px}
+ .csg .tx{flex:1;min-width:0}.csg .tx b{display:block;font-size:.98rem}.csg .tx small{display:block;font-size:.78rem;color:var(--muted2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .csg .ch{color:var(--muted);flex:none}
+ .csg.own{border-style:dashed}
+ #cssh{position:fixed;inset:0;z-index:80;display:none}#cssh.on{display:block}
+ #cssh .xdim{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}#cssh.open .xdim{opacity:1}
+ #cssh .xpn{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+ #cssh.open .xpn{transform:none}
+ @media(min-width:700px){#cssh .xpn{left:50%;right:auto;width:560px;margin-left:-280px}}
+ #cssh .xgrab{width:42px;height:5px;border-radius:99px;background:var(--border2);margin:4px auto 12px}
+ #cssh .xhead{display:flex;align-items:center;gap:10px;position:sticky;top:-8px;background:var(--bg);padding:6px 0 8px;z-index:2}
+ #cssh .xhead b{flex:1;font-size:1.2rem;font-weight:900}
+ #cssh .xhead button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.1rem}
+ #cssh .xbody{display:block;width:100%}#cssh .xbody>*{margin-top:12px!important}#cssh .xbody>*:first-child{margin-top:4px!important}`;
+ document.head.appendChild(css);
+ const IC={money:'M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5 9 9.5 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.1-5-3',bell:'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
+  chart:'M3 3v18h18M7 14l4-4 3 3 5-6',key:'M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4',
+  help:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01',crown:'M2 18h20M3 8l4 5 5-8 5 8 4-5-2 10H5z'};
+ const svg=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
+ const byClick=f=>{const e=[...document.querySelectorAll('#tab-set .srow')].find(x=>(x.getAttribute('onclick')||'').indexOf(f)===0);return e||null;};
+ const exportRow=()=>[...document.querySelectorAll('#tab-set a.srow')].find(x=>(x.getAttribute('href')||'')==='export.csv')||null;
+ const notifPanel=()=>{const n=$('notifbtn');return n?n.closest('.panel'):null;};
+ const comptePanel=()=>{const n=$('tgrow');return n?n.closest('.panel'):null;};
+ // a group: rows (moved into a fresh panel) and/or whole panels (moved as they are)
+ const G=[
+  {k:'money',ic:'money',col:'46,204,113',t:()=>T('Mon robot et mon argent','My robot and my money'),s:()=>T('Patrimoine, vos règles, objectif, mode manuel','Wealth, your rules, goal, manual mode'),
+   panels:()=>[$('wealthrow'),$('arules'),$('rob-card')],rows:()=>[$('mygoalbtn'),$('stepsbtn'),exportRow()]},
+  {k:'notif',ic:'bell',col:'232,197,90',t:()=>T('Notifications et messages','Notifications and messages'),s:()=>{const d=$('inbox-dot');return (d&&d.style.display!=='none'?T('Nouveaux messages · ','New messages · '):'')+T('alertes, silence la nuit, son','alerts, quiet night, sound');},
+   panels:()=>[notifPanel()],rows:()=>[$('inboxbtn')]},
+  {k:'view',ic:'chart',col:'59,130,246',t:()=>T('Graphique et affichage','Chart and display'),s:()=>T('Structures, thème, langue, taille du texte','Structures, theme, language, text size'),
+   panels:()=>[],rows:()=>['intmkrow','pbintrow','tl2row','swingrow','wakerow','themerow','langrow','textrow'].map($)},
+  {k:'plan',ic:'key',col:'167,139,250',t:()=>T('Abonnement','Subscription'),s:()=>{const t=($('plan-t')||{}).textContent||'';return t.trim()||T('Votre offre et vos paiements','Your plan and payments');},
+   panels:()=>[$('plan-card')],rows:()=>[]},
+  {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
+   panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
+  {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>T('Propriétaire','Owner'),s:()=>T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'),
+   panels:()=>[$('adminlock-card'),$('adm-card')],rows:()=>[$('admback'),$('usagerow')]}];
+ const vis=e=>!!e&&e.style.display!=='none';
+ const anyRow=p=>!!p&&[...p.querySelectorAll('.srow')].some(vis);
+ let store=null,open=null;
+ function build(){
+  const tab=$('tab-set');if(!tab||$('csl'))return false;
+  tab.classList.add('cs-on');
+  const head=document.createElement('div');head.id='cshead';
+  const list=document.createElement('div');list.id='csl';list.className='csl';
+  tab.insertBefore(list,tab.firstChild);tab.insertBefore(head,list);
+  store=document.createElement('div');store.id='csstore';store.style.display='none';tab.appendChild(store);
+  G.forEach(g=>{const box=document.createElement('div');box.id='csg-'+g.k;
+   g.panels().forEach(p=>{if(p)box.appendChild(p);});
+   const R=g.rows().filter(Boolean);
+   if(R.length){const p=document.createElement('div');p.className='panel';p.style.padding='4px 14px';R.forEach(r=>p.appendChild(r));box.appendChild(p);g._rowp=p;}
+   (g.extra?g.extra():[]).forEach(x=>{if(x)box.appendChild(x);});
+   g._box=box;store.appendChild(box);});
+  // the emptied original panels go too
+  [...tab.querySelectorAll(':scope > .panel')].forEach(p=>{if(!p.querySelector('.srow,a,button,input'))p.style.display='none';});
+  const sh=document.createElement('div');sh.id='cssh';sh.innerHTML='<div class="xdim"></div><div class="xpn" role="dialog" aria-modal="true"><div class="xgrab"></div><div class="xhead"><b id="cssh-t"></b><button aria-label="Fermer" id="cssh-x">&times;</button></div><div class="xbody" id="cssh-b"></div></div>';
+  tab.appendChild(sh);
+  sh.querySelector('.xdim').onclick=close;$('cssh-x').onclick=close;
+  let y0=null;const pn=sh.querySelector('.xpn');
+  pn.addEventListener('touchstart',e=>{y0=(pn.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
+  pn.addEventListener('touchmove',e=>{if(y0==null)return;const dy=e.touches[0].clientY-y0;if(dy>0)pn.style.transform='translateY('+dy+'px)';},{passive:true});
+  pn.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;pn.style.transform='';if(dy>110)close();y0=null;});
+  window.addEventListener('popstate',()=>{if(open)close(true);});
+  return true;}
+ function shownGroup(g){const B=g._box;if(!B)return false;
+  return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
+ function paint(){const L=$('csl');if(!L)return;
+  const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Hello|Bonsoir)\\s*/i,'').trim();
+   const plan=(($('plan-t')||{}).textContent||'').trim();
+   const html='<div class="cshd"><div class="av">'+(nm?nm[0].toUpperCase():'🦉')+'</div><div style="min-width:0"><b>'+(nm||T('Mon compte','My account'))+'</b><small>'+(plan||'OwlNest')+'</small></div></div>';
+   if(h._l!==html){h._l=html;h.innerHTML=html;}}
+  const html=G.filter(shownGroup).map(g=>'<button class="csg'+(g.own?' own':'')+'" data-k="'+g.k+'"><span class="ic2" style="background:rgba('+g.col+',.14);color:rgb('+g.col+')">'+svg(IC[g.ic])+'</span><span class="tx"><b>'+g.t()+'</b><small>'+g.s()+'</small></span><span class="ch">›</span></button>').join('');
+  if(L._l!==html){L._l=html;L.innerHTML=html;L.querySelectorAll('.csg').forEach(b=>b.onclick=()=>openG(b.dataset.k));}}
+ function openG(k){const g=G.find(x=>x.k===k);if(!g||!g._box)return;if(open)restore();
+  $('cssh-b').appendChild(g._box);open=g;$('cssh-t').textContent=g.t();
+  const sh=$('cssh');sh.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>sh.classList.add('open'));
+  try{history.pushState({cs:k},'');}catch(e){}}
+ function restore(){if(open&&open._box)store.appendChild(open._box);open=null;}
+ function close(fromPop){const sh=$('cssh');if(!sh||!open)return;sh.classList.remove('open');document.body.style.overflow='';
+  setTimeout(()=>{sh.classList.remove('on');restore();},300);
+  if(fromPop!==true){try{if(history.state&&history.state.cs)history.back();}catch(e){}}}
+ window.csOpen=openG;window.csClose=close;
+ function init(){try{if(build()){paint();setInterval(paint,2000);}}catch(e){console.error('compte',e);}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
 
 async function loadProof(d){loadRent();const el=document.getElementById('proofcard');if(!el)return;
  // owner 2026-10-11: retired from the Marche tab - the Rentabilite space and its home card replace it
