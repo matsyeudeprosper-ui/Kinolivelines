@@ -106,6 +106,25 @@
    "stage": "tested",
    "public": true,
    "tested_at": "2026-10-13T09:40:48Z"
+  },
+  {
+   "id": "supply-and-demand",
+   "name_fr": "Supply and demand",
+   "name_en": "Supply and demand",
+   "parent": "owl",
+   "parts": {
+    "entry": "p-toute-cassure-bos-ou-cho",
+    "exit": "choch-principal",
+    "filters": [
+     "orage"
+    ]
+   },
+   "by": "owner",
+   "by_uid": "kino",
+   "created": "2026-10-13",
+   "stage": "tested",
+   "public": true,
+   "tested_at": "2026-10-13T10:43:27Z"
   }
  ],
  "pieces": [
@@ -407,6 +426,24 @@
     "kind": "hours",
     "from": 0,
     "to": 8
+   },
+   "live": false,
+   "by": "owner",
+   "by_uid": "kino",
+   "version": 1,
+   "created": "2026-10-13",
+   "public": true
+  },
+  {
+   "id": "p-toute-cassure-bos-ou-cho",
+   "type": "entry",
+   "name_fr": "Toute cassure (BOS ou CHoCH)",
+   "name_en": "Toute cassure (BOS ou CHoCH)",
+   "plain_fr": "Entre à la clôture de chaque cassure de structure (BOS ou CHoCH).",
+   "plain_en": "Enters at the close of every structure break (BOS or CHoCH).",
+   "status": "tested",
+   "rule": {
+    "event": "any"
    },
    "live": false,
    "by": "owner",

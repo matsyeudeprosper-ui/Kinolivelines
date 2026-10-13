@@ -289,6 +289,14 @@ button.pc{cursor:pointer}
 .mkck .chk{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:#fff}
 .mkt.on .chk{background:var(--accent);border-color:var(--accent)}
 .chip svg{width:14px;height:14px}
+.mch{display:block;width:100%;height:auto;margin-top:10px;background:var(--surface);border-radius:12px;border:1px solid var(--border)}
+.aic{padding:12px;border-radius:16px;background:var(--surface2);border:1px solid var(--border)}.aic+.aic{margin-top:10px}
+.aich b{display:block;font-size:.92rem}.aich small{display:block;font-size:.78rem;color:var(--muted2);margin-top:3px;line-height:1.4}
+.yn3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.yn3 button{border:1px solid var(--border2);background:transparent;color:var(--muted2);border-radius:11px;padding:10px 4px;font-weight:800;font-size:.8rem}
+.yn3 button.on.yes{background:var(--up);border-color:var(--up);color:#fff}.yn3 button.on.no{background:var(--down);border-color:var(--down);color:#fff}.yn3 button.on.unsure{background:var(--surface3);color:var(--text)}
+.aiq+.aiq{margin-top:14px}.aiq b{font-size:.92rem;line-height:1.4}
+.cta2[disabled]{opacity:.45}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -678,7 +686,7 @@ function renderTeam(){const t=TM;if(!t)return;const c=t.chercheur||{},b=t.constr
 
 
 /* ---------- 2026-10-12 (owner): the robot builder - a robot = eyes (shared) + entry + exit + catch-up + money ---------- */
-const BST={queued:{fr:'Test en cours',en:'Being tested',c:'var(--warn)',cls:'background:var(--mid-bg);color:var(--warn)'},
+const BST={draft:{fr:'Pas encore testé',en:'Not tested yet',c:'var(--muted)',cls:'background:var(--gr-bg);color:var(--muted2)'},queued:{fr:'Test en cours',en:'Being tested',c:'var(--warn)',cls:'background:var(--mid-bg);color:var(--warn)'},
  tested:{fr:'Testé sur le passé',en:'Tested on past data',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
  paper:{fr:'Jumeau',en:'Twin',c:'var(--violet)',cls:'background:var(--vi-bg);color:var(--violet-soft)'},
  demo:{fr:'Démo',en:'Demo',c:'#38bdf8',cls:'background:rgba(56,189,248,.13);color:#7dd3fc'},
@@ -722,7 +730,8 @@ function builderTop(){const B=BLD();
  let h='<div class="card hero"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 style="font-size:1.3rem;font-weight:900;color:#fff;margin-top:10px;line-height:1.25">'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h3>'+
   '<p>'+T('Les yeux lisent la structure du marché : les mêmes pour tous. Les pièces ont un nom ; on en retire une, on en met une autre.','The eyes read the market structure: the same for all. Pieces have a name; take one out, put another in.')+'</p>'+
   '<div class="parts7"><div class="p4 eyes">'+pic(EYE)+'<b>'+T('Yeux','Eyes')+'</b></div>'+SLOTS.map(k=>'<div class="p4">'+pic(k[2])+'<b>'+k[1]+'</b></div>').join('')+'</div>'+
-  (B.can_create?'<button class="cta" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Créer un robot','Build a robot')+'</button>'+
+  (B.can_create?'<button class="cta" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+T('Expliquer mon robot à l\'IA','Explain my robot to the AI')+'</button>'+
+   '<button class="cta2" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Assembler un robot pièce par pièce','Assemble a robot piece by piece')+'</button>'+
    '<button class="cta2" onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+T('Apprendre au robot depuis le graphique','Teach the robot from the chart')+'</button>':'')+'</div>';
  const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine);
  if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="grid">'+MY.map((r,i)=>bCard(r,i)).join('')+'</div>';
@@ -745,7 +754,10 @@ function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;co
   '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div></div>';
  h+='<div class="card"><h2>'+T('Ses pièces','Its pieces')+'</h2>'+slotStack(R,own,!!r.parent)+'</div>';
  const t=r.test;
- if(r.stage==='queued')h+='<div class="card"><h2>'+T('Le test','The test')+'</h2><div style="display:flex;gap:14px;align-items:center"><div class="spin"></div><div class="sub">'+T('Il est rejoué sur 42 jours de vrais prix, à côté de son parent. Comptez une vingtaine de minutes ; cette page se met à jour toute seule.','It is being replayed over 42 days of real prices, next to its parent. Allow about twenty minutes; this page updates by itself.')+'</div></div></div>';
+ const TM=BLD().test_min||5;
+ if(r.stage==='draft')h+='<div class="card"><h2>'+T('Le test','The test')+'</h2><div class="sub">'+T('Le robot sera rejoué sur 42 jours de vrais prix, à côté de son parent. Comptez environ '+TM+' minutes, plus si d\'autres tests attendent.','The robot will be replayed over 42 days of real prices, next to its parent. Allow about '+TM+' minutes, more if other tests are waiting.')+'</div>'+
+  (r.can_edit?'<button class="cta" style="margin-top:14px" onclick="robotTest(\''+r.id+'\')">'+pic('M5 3l14 9-14 9V3z')+T('Lancer le test','Run the test')+'</button><div class="note" id="terr"></div>':'')+'</div>';
+ if(r.stage==='queued'){const ah=r.ahead||0;h+='<div class="card"><h2>'+T('Le test','The test')+'</h2><div style="display:flex;gap:14px;align-items:center"><div class="spin"></div><div class="sub">'+(ah?T(ah+' test'+(ah>1?'s':'')+' avant le vôtre. ','%n test(s) ahead of yours. '.replace('%n',ah)):'')+T('Rejoué sur 42 jours de vrais prix, à côté de son parent : environ '+(TM*(ah+1))+' minutes. Cette page se met à jour toute seule.','Replayed over 42 days of real prices, next to its parent: about '+(TM*(ah+1))+' minutes. This page updates by itself.')+'</div></div></div>';}
  if(t&&t.robot&&t.parent_result){const a=t.robot,b=t.parent_result;const pn=par?T(par.name_fr,par.name_en):T('le parent','the parent');
   const ds=[...new Set([].concat((a.curve||[]).map(q=>q[0]),(b.curve||[]).map(q=>q[0])))].sort();const al=c=>{const mm={};(c||[]).forEach(q=>mm[q[0]]=+q[1]);let v=0;return [0].concat(ds.map(d=>(v=(d in mm)?mm[d]:v)));};
   const row=(k,f,va,vb,better)=>'<div class="vs"><span>'+k+'</span><b class="'+(better==null?'':(better?'pos':'neg'))+'">'+f(va)+'</b><b>'+f(vb)+'</b></div>';
@@ -782,6 +794,7 @@ function plugCard(r){const TG=BLD().targets||{where:[],markets:[]};const pg=r.pl
 const PLW={w:null,m:'BTCUSD'};
 async function robotPost(path,body){const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
 const MERR={not_yours:T('Ce robot n\'est pas à vous.','This robot is not yours.'),has_children:T('D\'autres robots héritent de lui : supprimez-les d\'abord.','Other robots inherit from it: delete them first.'),where:T('Choix invalide.','Invalid choice.'),same:T('Changez au moins une pièce.','Change at least one part.'),limit:T('Vous avez déjà le maximum de robots.','You already have the maximum of robots.')};
+async function robotTest(id){const j=await robotPost('robot_test',{id});if(!j.ok){const e=$('terr');if(e)e.textContent=MERR[j.err]||j.err;return;}await refreshB(id);}
 async function robotVis(id,pub){const j=await robotPost('robot_update',{id,public:pub});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}await refreshB(id);}
 async function robotDel(id){if(!confirm(T('Supprimer ce robot pour de bon ?','Delete this robot for good?')))return;const j=await robotPost('robot_delete',{id});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}
  RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
@@ -851,7 +864,7 @@ function renderStudio(){const s=STU;if(!s)return;
  h+=grp('entry',T('Votre entrée','Your entry'))+grp('exit',T('Votre stop et votre sortie','Your stop and your exit'));
  h+='<div class="card"><h2>'+T('Vos trades','Your trades')+'</h2><div class="rk">'+T2.map((t,i)=>{const r=t.x!=null?rs[X.indexOf(t)]:null;const tm=new Date(t.te*1000);
   return '<div class="rr"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+String(tm.getUTCHours()).padStart(2,'0')+':'+String(tm.getUTCMinutes()).padStart(2,'0')+' UTC</b><small>'+T('entrée ','entry ')+num(t.e,0)+' · stop '+num(t.sl,0)+(t.x!=null?' · '+T('sortie ','exit ')+num(t.x,0)+(t.why==='stop'?T(' (stop)',' (stop)'):''):'')+'</small></span><span class="vv"><b class="'+cl(r)+'">'+(r==null?'—':(r>=0?'+':'')+num(r,2)+' R')+'</b></span></div>';}).join('')+'</div></div>';
- h+='<div class="card"><button class="cta" onclick="studioConfirm()">'+T('Confirmer','Confirm')+'</button><div class="note" id="sterr"></div><div id="stparts">'+(s.parts?studioParts(s.parts):'')+'</div></div>';
+ h+='<div class="card"><button class="cta" onclick="studioConfirm()">'+T('Confirmer','Confirm')+'</button><button class="cta2" style="color:var(--text);border-color:var(--border2)" onclick="goAI(\''+s.id+'\')">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+T('Expliquer à l\'IA avec ces trades','Explain to the AI with these trades')+'</button><div class="note" id="sterr"></div><div id="stparts">'+(s.parts?studioParts(s.parts):'')+'</div></div>';
  $('det').innerHTML=h;}
 function studioParts(P){const row=(k,x)=>'<div class="lg'+(x&&x.match?'':' chg')+'"><span class="fi">'+pic(slotIcon(k))+'</span><span class="lgt"><small>'+(k==='entry'?T('Entrée','Entry'):T('Sortie','Exit'))+'</small><b>'+(x?esc(T(x.fr,x.en)):T('Pas assez clair','Not clear enough'))+'</b><em>'+(!x?T('Vos réponses ne dessinent pas une règle : jouez plus de trades ou changez vos réponses.','Your answers do not draw a rule: play more trades or change your answers.'):(x.match?T('Cette pièce existe : vous pouvez l\'utiliser tout de suite dans un robot.','This piece exists: you can use it in a robot right away.'):T('Cette pièce n\'existe pas encore : elle est enregistrée pour être construite.','This piece does not exist yet: it is saved to be built.')))+'</em></span></div>';
  const parts={};if(P.entry&&P.entry.match){parts.entry=P.entry.match;if(P.entry.filters)parts.filters=P.entry.filters;}if(P.exit&&P.exit.match)parts.exit=P.exit.match;
@@ -910,23 +923,80 @@ async function pieceDel(id){if(!confirm(T('Supprimer cette pièce ?','Delete thi
  if(!j.ok){alert(j.err==='in_use'?T('Un robot l\'utilise : changez-le d\'abord.','A robot uses it: change it first.'):j.err);return;}RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
 async function piecePub(id,pub){const j=await robotPost('piece_public',{id,public:pub});if(j.ok){RB=null;await load();CURP=pById(id);renderPiece();}}
 
+
+/* ---------- 2026-10-13 (owner, step 3): the AI interview - explain, show, answer, build ---------- */
+let AIJ=null,AIA={q:{},c:{}},AIT=null,AISTU=null;
+const AIERR={short:T('Écrivez au moins une phrase sur votre stratégie.','Write at least one sentence about your strategy.'),cap:T('Vous avez utilisé toutes vos conversations avec l\'IA ce mois-ci.','You have used all your AI conversations this month.'),
+ state:T('Attendez la fin de la réflexion.','Wait until the thinking is done.'),rounds:T('Plus de tour possible : créez le robot.','No more rounds: build the robot.'),same:T('Ce robot serait exactement L\'Owl : changez au moins une pièce.','This robot would be exactly the Owl: change at least one piece.'),model:T('L\'IA n\'a pas répondu. Réessayez dans un moment.','The AI did not answer. Try again in a moment.')};
+function goAI(stu){AISTU=stu||null;AIJ=null;NAV++;location.hash='ai=new'+(stu?'&studio='+stu:'');}
+function renderAINew(){let h='<div class="card dh"><span class="fi" style="color:var(--violet-soft)">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><h3>'+T('Expliquez votre robot à l\'IA','Explain your robot to the AI')+'</h3><p>'+T('Racontez votre stratégie comme à un ami : quand vous entrez, où est votre stop, quand vous sortez, ce que vous évitez. L\'IA la traduit en pièces, vous pose quelques questions, puis vous montre de vrais trades du passé pour vérifier qu\'elle a bien compris.','Tell your strategy as you would to a friend: when you enter, where your stop is, when you exit, what you avoid. The AI turns it into pieces, asks a few questions, then shows real past trades to check it understood.')+'</p></div>';
+ h+='<div class="card"><h2>'+T('Votre stratégie','Your strategy')+'</h2><textarea id="aitxt" class="inp" style="height:170px;padding:12px;line-height:1.5;resize:vertical" maxlength="3000" placeholder="'+T('Par exemple : je n\'entre que sur les CHoCH dans le sens de la tendance de fond, stop sous la bougie de cassure, je sors à 1,5 fois mon risque ou après une heure, jamais le week-end.','For example: I only enter on CHoCH with the background trend, stop below the break candle, I exit at 1.5 times my risk or after one hour, never at weekends.')+'"></textarea>'+
+  (AISTU?'<div class="note">'+T('Vos trades du studio seront joints : l\'IA verra aussi ce que vous avez fait.','Your studio trades will be attached: the AI will also see what you did.')+'</div>':'<div class="note">'+T('Astuce : jouez d\'abord quelques trades dans le studio du graphique, puis « Expliquer à l\'IA » depuis le résultat : l\'IA verra aussi vos trades.','Tip: first play a few trades in the chart studio, then "Explain to the AI" from the result: the AI will also see your trades.')+'</div>')+
+  '<div class="note" id="aierr"></div><button class="cta" style="margin-top:14px" onclick="aiStart()">'+T('Envoyer à l\'IA','Send to the AI')+'</button></div>';
+ $('det').innerHTML=h;}
+async function aiStart(){const t=($('aitxt').value||'').trim(),e=$('aierr');e.textContent=T('Envoi…','Sending…');
+ try{const j=await robotPost('ai_start',{text:t,studio_id:AISTU});if(!j.ok){e.textContent=AIERR[j.err]||j.err;return;}AIA={q:{},c:{}};history.replaceState(null,'','#ai='+j.id);route();}catch(x){e.textContent=T('Hors ligne.','Offline.');}}
+async function aiOpen(id){clearTimeout(AIT);try{const r=await fetch('ai_get?id='+encodeURIComponent(id)+'&t='+Date.now(),{cache:'no-store'});AIJ=await r.json();}catch(e){AIJ={err:'net'};}
+ if(!document.body.classList.contains('det')||new URLSearchParams(location.hash.slice(1)).get('ai')!==id)return;
+ renderAI();if(AIJ&&AIJ.status==='thinking')AIT=setTimeout(()=>aiOpen(id),4000);}
+function miniChart(c){const C=c.candles||[];if(C.length<2)return '';const W=320,H=140,P=6;let hi=-1e18,lo=1e18;C.forEach(k=>{hi=Math.max(hi,k[2]);lo=Math.min(lo,k[3]);});hi=Math.max(hi,c.level);lo=Math.min(lo,c.level);const r=(hi-lo)||1;
+ const X=i=>P+(i+0.5)*(W-2*P-14)/C.length,Y=v=>P+(hi-v)/r*(H-2*P),bw=Math.max(2,(W-2*P-14)/C.length*0.62);
+ let s='<svg viewBox="0 0 '+W+' '+H+'" class="mch"><line x1="0" x2="'+W+'" y1="'+Y(c.level).toFixed(1)+'" y2="'+Y(c.level).toFixed(1)+'" stroke="var(--warn)" stroke-dasharray="4 4" stroke-width="1"/>';
+ C.forEach((k,i)=>{const up=k[4]>=k[1],col=up?'var(--up)':'var(--down)',x=X(i);s+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+Y(k[2]).toFixed(1)+'" y2="'+Y(k[3]).toFixed(1)+'" stroke="'+col+'" stroke-width="1"/><rect x="'+(x-bw/2).toFixed(1)+'" y="'+Math.min(Y(k[1]),Y(k[4])).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,Math.abs(Y(k[1])-Y(k[4]))).toFixed(1)+'" fill="'+col+'" rx="1"/>';});
+ (c.dots||[]).forEach(d=>{const i=C.findIndex(k=>k[0]===d[0]);if(i>=0)s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(d[1]).toFixed(1)+'" r="3" fill="var(--accent-soft)"/>';});
+ const lx=X(C.length-1),ly=Y(C[C.length-1][4]);s+='<path d="M'+(lx+8)+' '+(ly+(c.d===1?8:-8))+' l6 '+(c.d===1?-10:10)+' l6 '+(c.d===1?10:-10)+'z" fill="'+(c.d===1?'var(--up)':'var(--down)')+'"/>';
+ return s+'</svg>';}
+function cardWords(c){const g=new Date(c.t*1000);const hm=String(g.getUTCHours()).padStart(2,'0')+':'+String(g.getUTCMinutes()).padStart(2,'0');
+ const tr={1:T('en hausse','up'),'-1':T('en baisse','down'),0:T('inconnue','unknown')}[c.pbt];
+ return (c.d===1?T('Achat','Buy'):T('Vente','Sell'))+' '+T('sur un ','on a ')+(c.kind==='choch'?'CHoCH':'BOS')+' '+T('à ','at ')+hm+' UTC · '+T('tendance de fond ','background trend ')+tr;}
+const WHY={'entry: BOS only':T('l\'entrée ne prend que les BOS','the entry only takes BOS'),'entry: CHoCH only':T('l\'entrée ne prend que les CHoCH','the entry only takes CHoCH'),'against the background trend':T('contre la tendance de fond','against the background trend'),'outside the hours':T('en dehors des heures','outside the hours'),'not one of the days':T('pas un des jours choisis','not one of the chosen days')};
+function aiSlot(k,s){const isNew=s&&s.rule;const nm=isNew?s.name:pName(s&&s.use);const pl=isNew?T(s.plain_fr,s.plain_en):pPlain(s&&s.use);
+ return '<div class="lg'+(isNew?' chg':'')+'"><span class="fi">'+pic(slotIcon(k))+'</span><span class="lgt"><small>'+(SLOTS.find(x=>x[0]===k)||SLOTS[0])[1]+(isNew?' · '+T('nouvelle pièce','new piece'):'')+'</small><b>'+esc(nm)+'</b><em>'+esc(pl)+'</em></span></div>';}
+function renderAI(){const j=AIJ;if(!j)return;if(j.err){$('det').innerHTML='<div class="card"><div class="sub">'+T('Conversation introuvable.','Conversation not found.')+'</div></div>';return;}
+ const R=(j.rounds||[]),last=R[R.length-1];
+ let h='<div class="card dh"><span class="fi" style="color:var(--violet-soft)">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><h3>'+T('Votre robot, avec l\'IA','Your robot, with the AI')+'</h3><p style="white-space:pre-wrap">« '+esc(j.text)+' »</p><div class="ft"><span class="bd ev">'+T('tour ','round ')+Math.max(1,R.length)+' / 3</span>'+(j.studio_id?'<span class="bd ev">'+T('avec vos trades du studio','with your studio trades')+'</span>':'')+'</div></div>';
+ if(j.status==='thinking')h+='<div class="card"><div style="display:flex;gap:14px;align-items:center"><div class="spin" style="border-top-color:var(--violet)"></div><div class="sub">'+(R.length?T('L\'IA relit le robot avec vos réponses… une demi-minute environ.','The AI is rereading the robot with your answers… about half a minute.'):T('L\'IA lit votre stratégie et la traduit en pièces… une demi-minute environ.','The AI is reading your strategy and turning it into pieces… about half a minute.'))+'</div></div></div>';
+ if(j.status==='error')h+='<div class="card"><div class="sub">'+(AIERR[j.error]||T('Un problème est survenu : ','A problem happened: ')+esc(j.error||''))+'</div></div>';
+ if(last&&j.status!=='thinking'){const d=last.draft;
+  h+='<div class="card"><h2>'+T('Ce que j\'ai compris','What I understood')+'</h2><div class="quote" style="margin-top:0;border-left-color:var(--violet)">'+esc(T(d.understood_fr,d.understood_en))+'</div></div>';
+  h+='<div class="card"><h2>'+T('Le robot proposé','The proposed robot')+'</h2><div class="lego"><div class="lg eyes"><span class="fi">'+pic(EYE)+'</span><span class="lgt"><small>'+T('Yeux','Eyes')+'</small><b>'+T('La structure du nid','The nest\'s structure')+'</b></span></div>'+
+   aiSlot('entry',d.slots.entry)+'<div class="lg"><span class="fi">'+pic(slotIcon('filters'))+'</span><span class="lgt"><small>'+T('Filtres','Filters')+'</small>'+((d.slots.filters||[]).length?'<div class="pchips" style="margin-top:6px">'+d.slots.filters.map(f=>'<span class="pc'+(f.rule?' ch':'')+'">'+esc(f.rule?f.name:pName(f.use))+'</span>').join('')+'</div>':'<b>'+T('Aucun filtre','No filter')+'</b>')+'</span></div>'+
+   aiSlot('stop',d.slots.stop)+aiSlot('exit',d.slots.exit)+aiSlot('recovery',d.slots.recovery)+aiSlot('money',d.slots.money)+'</div>'+
+   ((d.slots.filters||[]).some(f=>f.rule)?'<div class="note">'+(d.slots.filters||[]).filter(f=>f.rule).map(f=>'<b>'+esc(f.name)+'</b> : '+esc(T(f.plain_fr,f.plain_en))).join('<br>')+'</div>':'')+'</div>';
+  if((d.cannot||[]).length)h+='<div class="card"><h2>'+T('Ce que je ne peux pas faire','What I cannot do')+'</h2><div class="mini">'+d.cannot.map(c=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--warn)">'+pic('M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z')+'</span><span>'+esc(T(c.fr,c.en))+'</span></div>').join('')+'</div></div>';
+  const canMore=R.length<3;
+  if(canMore&&(d.questions||[]).length)h+='<div class="card"><h2>'+T('Mes questions','My questions')+'</h2>'+d.questions.map(q=>'<div class="aiq"><b>'+esc(T(q.fr,q.en))+'</b><div class="chips" style="flex-wrap:wrap;margin-top:8px">'+q.options.map(o=>'<button class="chip'+(AIA.q[q.id]===o.id?' on':'')+'" onclick="AIA.q[\''+q.id+'\']=\''+o.id+'\';renderAI()">'+esc(T(o.fr,o.en))+'</button>').join('')+'</div></div>').join('')+'</div>';
+  if(canMore&&(last.cards||[]).length)h+='<div class="card"><h2>'+T('Prendriez-vous ce trade ?','Would you take this trade?')+'<span class="bd ev">'+fdate(last.card_day)+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('De vraies cassures de cette journée, montrées telles qu\'elles étaient à la clôture de la bougie : rien de la suite. Répondez comme vous le feriez en direct.','Real breaks of that day, shown as they were at the candle close: nothing of what came next. Answer as you would live.')+'</div>'+
+   last.cards.map((c,i)=>'<div class="aic"><div class="aich"><b>'+esc(cardWords(c))+'</b><small>'+(c.draft_takes?T('Le robot proposé le prendrait.','The proposed robot would take it.'):T('Le robot proposé ne le prendrait pas : ','The proposed robot would not take it: ')+esc(WHY[c.why]||c.why))+'</small></div>'+miniChart(c)+
+    '<div class="yn3">'+[['yes',T('Je le prends','I take it')],['no',T('Je passe','I skip')],['unsure',T('Je ne sais pas','Not sure')]].map(x=>'<button class="'+(AIA.c[i]===x[0]?'on '+x[0]:'')+'" onclick="AIA.c['+i+']=\''+x[0]+'\';renderAI()">'+x[1]+'</button>').join('')+'</div></div>').join('')+'</div>';
+  const nA=Object.keys(AIA.q).length+Object.keys(AIA.c).length;
+  h+='<div class="card">'+(canMore?'<button class="cta2" style="margin-top:0;color:var(--text);border-color:var(--border2)" onclick="aiAnswer()"'+(nA?'':' disabled')+'>'+pic('M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5')+T('Affiner avec mes réponses','Refine with my answers')+(nA?' ('+nA+')':'')+'</button>':'')+
+   '<div class="grp" style="margin:16px 0 8px">'+T('Ou créer ce robot tel quel','Or build this robot as it is')+'</div><input id="ainame" class="inp" maxlength="40" placeholder="'+T('Son nom','Its name')+'"><div class="note" id="aierr2"></div><button class="cta" style="margin-top:12px" onclick="aiBuild()">'+T('Créer et tester ce robot','Build and test this robot')+'</button>'+
+   (j.robot?'<button class="mi" style="margin-top:12px" onclick="goB(\''+j.robot+'\')"><span class="fi">'+BOT+'</span><span>'+T('Le robot déjà créé','The robot already built')+'</span><span>›</span></button>':'')+'</div>';}
+ $('det').innerHTML=h;}
+async function aiAnswer(){const e=$('aierr2');try{const j=await robotPost('ai_answer',{id:AIJ.id,answers:AIA.q,cards:Object.fromEntries(Object.entries(AIA.c).map(([k,v])=>[String(k),v]))});if(!j.ok){if(e)e.textContent=AIERR[j.err]||j.err;return;}AIA={q:{},c:{}};aiOpen(AIJ.id);window.scrollTo(0,0);}catch(x){if(e)e.textContent=T('Hors ligne.','Offline.');}}
+async function aiBuild(){const e=$('aierr2'),n=($('ainame').value||'').trim();if(n.length<2){e.textContent=T('Donnez-lui un nom.','Give it a name.');return;}e.textContent=T('Création…','Building…');
+ try{const j=await robotPost('ai_build',{id:AIJ.id,name:n});if(!j.ok){e.textContent=AIERR[j.err]||MERR[j.err]||j.err;return;}RB=null;await load();history.replaceState(null,'','#b='+j.id);route();}catch(x){e.textContent=T('Hors ligne.','Offline.');}}
+
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
  if(id&&D&&byId(id)){if(SIDE!=='strat'){SIDE='strat';doors();}CUR=byId(id);CURR=null;SEC=h.get('v')||'ov';document.body.classList.add('det');renderDet();window.scrollTo(0,0);return;}
  if(rid&&RB&&rbById(rid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURR=rbById(rid);CUR=null;RSEC=h.get('v')||'ov';document.body.classList.add('det');renderRobot();window.scrollTo(0,0);return;}
- const bid=h.get('b'),sid=h.get('studio'),pid=h.get('p');
+ const bid=h.get('b'),sid=h.get('studio'),pid=h.get('p'),aid=h.get('ai');
+ if(aid&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');window.scrollTo(0,0);
+  if(aid==='new'){AISTU=h.get('studio')||AISTU;renderAINew();}else{if(!AIJ||AIJ.id!==aid){$('det').innerHTML='<div class="skel"></div>';}aiOpen(aid);}return;}
  if(h.get('mk')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!MK)MK={type:'exit',rule:JSON.parse(JSON.stringify(MKDEF.exit)),name:'',prev:null,err:''};document.body.classList.add('det');mkRender();mkPreview();window.scrollTo(0,0);return;}
  if(pid&&RB&&pById(pid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURP=pById(pid);CURB=null;CUR=null;CURR=null;document.body.classList.add('det');renderPiece();window.scrollTo(0,0);return;}
- if(sid){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(!STU||STU.id!==sid){$('det').innerHTML='<div class="skel"></div>';openStudio(sid);}else renderStudio();window.scrollTo(0,0);return;}
+ if(sid&&!aid){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(!STU||STU.id!==sid){$('det').innerHTML='<div class="skel"></div>';openStudio(sid);}else renderStudio();window.scrollTo(0,0);return;}
  if(bid&&RB&&bById(bid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=bById(bid);CUR=null;CURR=null;document.body.classList.add('det');renderB();window.scrollTo(0,0);return;}
  if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
- if((id&&!D)||((rid||bid||pid||h.get('new')||h.get('mk'))&&!RB)){load();return;}
- NAV=0;NEWD=null;MK=null;document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
+ if((id&&!D)||((rid||bid||pid||aid||h.get('new')||h.get('mk'))&&!RB)){load();return;}
+ NAV=0;NEWD=null;MK=null;clearTimeout(AIT);document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
 const LOCK='<div class="card" style="margin-top:10px"><h2>'+T('Réservé à l\'offre Stratégie','Strategy plan only')+'</h2><div class="sub">'+T('Le labo montre toutes les stratégies, tous les robots et le travail des IA. Il fait partie de l\'offre Stratégie.','The lab shows every strategy, every robot and the AIs\' work. It is part of the Strategy plan.')+'</div></div>';
 async function getJ(u){const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});return r.json();}
 async function load(){try{
  const h=new URLSearchParams(location.hash.slice(1));
- const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r')||h.get('b')||h.get('p')||h.get('new')||h.get('mk'),needT=SIDE==='team';
+ const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r')||h.get('b')||h.get('p')||h.get('new')||h.get('mk')||h.get('ai'),needT=SIDE==='team';
  const [s,r,t]=await Promise.all([needS?getJ('strategies_data'):null,needR?getJ('robots_data'):null,needT?getJ('team_data'):null]);
  if([s,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
  const first=(s&&!D)||(r&&!RB)||(t&&!TM);if(s)D=s;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');

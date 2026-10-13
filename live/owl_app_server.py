@@ -11405,6 +11405,9 @@ def builder_payload(user, detail):
         x["can_edit"] = _robot_mine(user, r) and r.get("id") != "owl"
         x["public"] = bool(r.get("public", r.get("by") in ("owner", "claude", "chercheur")))
         x["live_capable"] = robot_live_capable(x["resolved"], _pcs)
+        if r.get("stage") == "queued":
+            _q = [y["id"] for y in reg.get("robots") or [] if y.get("stage") == "queued"]
+            x["ahead"] = _q.index(r["id"]) if r["id"] in _q else 0
         if r.get("plug") and not detail and r.get("by_uid") == me and str(r["plug"].get("where", "")).startswith("acct:"):
             x["plug"] = dict(r["plug"], where="acct:mine")
         try:
@@ -11462,7 +11465,7 @@ def builder_payload(user, detail):
         pc["can_edit"] = bool(pc.get("rule")) and (pc["mine"] or bool(is_admin(user)))
         pc.pop("by_uid", None)
     return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": True,
-            "admin": bool(is_admin(user)), "targets": robot_targets(user, detail),
+            "admin": bool(is_admin(user)), "targets": robot_targets(user, detail), "test_min": ROBOT_TEST_MIN,
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
 
 
@@ -11514,12 +11517,11 @@ def robot_create(user, body, dry=False):
         rid = "%s-%d" % (base, n); n += 1
     rob.append({"id": rid, "name_fr": name, "name_en": name, "parent": parent, "parts": clean,
                 "by": "owner" if is_admin(user) else "member", "by_uid": me,
-                "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "stage": "queued", "public": bool(is_admin(user))})
+                "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "stage": "draft", "public": bool(is_admin(user))})
     reg["robots"] = rob
     tmp = ROBOT_REG + ".tmp"
     json.dump(reg, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(tmp, ROBOT_REG)
-    robot_runner_kick()
     return {"ok": True, "id": rid}
 
 
@@ -11588,7 +11590,7 @@ def robot_update(user, body):
             return chk
         if chk["parts"] != r.get("parts"):
             r["parts"] = chk["parts"]
-            r["stage"] = "queued"
+            r["stage"] = "draft"
             r.pop("tested_at", None)
             try:
                 os.remove(os.path.join(DIR, "robots", "results", r["id"] + ".json"))
@@ -11608,9 +11610,27 @@ def robot_update(user, body):
                 wh = "acct:" + str(user.get("id"))
             r["plug"] = {"where": wh, "market": mk, "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "status": "requested"}
     _robot_save(reg)
-    if r.get("stage") == "queued":
-        robot_runner_kick()
     return {"ok": True, "id": r["id"]}
+
+
+ROBOT_TEST_MIN = 5          # one robot next to its parent on the 42-day bench, minutes (measured 4-5)
+
+
+def robot_test(user, body):
+    """the member starts the test of their robot; it joins the queue (one test at a time)"""
+    reg = robot_reg()
+    rob = reg.get("robots") or []
+    r = next((x for x in rob if x.get("id") == body.get("id")), None)
+    if not _robot_mine(user, r) or r.get("id") == "owl":
+        return {"ok": False, "err": "not_yours"}
+    if r.get("stage") not in ("draft", "error"):
+        return {"ok": False, "err": "state"}
+    r["stage"] = "queued"
+    r["queued_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    _robot_save(reg)
+    robot_runner_kick()
+    pos = [x["id"] for x in rob if x.get("stage") == "queued"].index(r["id"])
+    return {"ok": True, "ahead": pos, "minutes": ROBOT_TEST_MIN * (pos + 1)}
 
 
 def robot_delete(user, body):
@@ -11960,6 +11980,239 @@ def piece_public(user, body):
     p["public"] = bool(body.get("public"))
     _robot_save(reg)
     return {"ok": True}
+
+
+# ---- 2026-10-13 (owner, step 3): the AI interview - explain, show, answer, build ----
+AI_MONTH_CAP = 10          # interviews a month per member (the owner: no cap); each costs a few model calls
+AI_ROUNDS = 3
+
+
+def _iv():
+    import importlib
+    if os.path.join(DIR, "robots") not in sys.path:
+        sys.path.insert(0, os.path.join(DIR, "robots"))
+    return importlib.import_module("robot_interview")
+
+
+def _ai_path(jid):
+    return os.path.join(DIR, "robots", "interviews", jid + ".json")
+
+
+def _ai_load(user, jid):
+    import re as _re
+    if not _re.match(r"^[A-Za-z0-9_]+$", jid or ""):
+        return None
+    try:
+        j = json.load(open(_ai_path(jid), encoding="utf-8"))
+    except Exception:
+        return None
+    if j.get("uid") != user.get("id") and not is_admin(user):
+        return None
+    return j
+
+
+def _ai_save(j):
+    tmp = _ai_path(j["id"]) + ".tmp"
+    json.dump(j, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, _ai_path(j["id"]))
+
+
+def _ai_owl():
+    reg = robot_reg()
+    byid = {r["id"]: r for r in reg.get("robots") or []}
+    return robot_resolve("owl", byid)
+
+
+def ai_cards(slots, ds, pieces):
+    """'would you take this trade?' - real breaks of a past day, judged by the draft's entry + the filters the cards can
+    check (background trend, hours, weekdays); each card shows ONLY what was visible at that candle's close"""
+    rows = replay_rates(ds)
+    t0 = int(datetime.strptime(ds, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+    kept, dots, marks, trend, pb = _replay_struct(rows)
+    day_marks = [m for m in marks if t0 + 3600 <= m[0] < t0 + 86400 and len(m) > 3]
+    P = {p["id"]: p for p in pieces}
+
+    def rule_of(s):
+        if not s:
+            return None
+        if s.get("rule"):
+            return s["rule"]
+        return (P.get(s.get("use")) or {}).get("rule")
+    ent = rule_of(slots.get("entry")) or {"event": "any"}
+    F = slots.get("filters") or []
+    uses_trend = any((f.get("use") == "tendance-fond") for f in F)
+    frules = [rule_of(f) for f in F if rule_of(f)]
+    C = []
+    for m in day_marks:
+        t, px, kind, d = int(m[0]), float(m[1]), str(m[2]), int(m[3])
+        R = [r for r in rows if r[0] <= t]
+        k2, d2, m2, tr2, pb2 = _replay_struct(R)
+        pbt = int((pb2 or {}).get("trend") or 0)
+        g = datetime.fromtimestamp(t, tz=timezone.utc)
+        take, why = True, ""
+        if ent.get("event") == "bos" and kind == "choch":
+            take, why = False, "entry: BOS only"
+        elif ent.get("event") == "choch" and kind != "choch":
+            take, why = False, "entry: CHoCH only"
+        if take and uses_trend and pbt != d:
+            take, why = False, "against the background trend"
+        for fr in frules:
+            if not take:
+                break
+            if fr.get("kind") == "hours" and not (fr["from"] <= g.hour < fr["to"]):
+                take, why = False, "outside the hours"
+            if fr.get("kind") == "weekdays" and g.weekday() not in fr["days"]:
+                take, why = False, "not one of the days"
+        win = [k for k in k2 if t - 90 * 60 <= k[0] <= t]
+        C.append({"t": t, "d": d, "kind": kind, "level": px, "draft_takes": take, "why": why, "pbt": pbt,
+                  "candles": win, "marks": [x for x in m2 if t - 90 * 60 <= x[0] <= t], "dots": [x for x in d2 if t - 90 * 60 <= x[0] <= t],
+                  "desc": "%s on a %s at %02d:%02d UTC (%s), background trend %s" % ("BUY" if d == 1 else "SELL", kind.upper(), g.hour, g.minute,
+                                                                                ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][g.weekday()], {1: "up", -1: "down", 0: "unknown"}[pbt])})
+    T = [c for c in C if c["draft_takes"]]
+    S = [c for c in C if not c["draft_takes"]]
+    pick = lambda L, n: [L[int(i * len(L) / n)] for i in range(n)] if len(L) > n else L
+    out = pick(T, 3) + pick(S, 2)
+    out.sort(key=lambda c: c["t"])
+    return out
+
+
+def _ai_round(jid, uid_user):
+    """background: one model round, then the cards"""
+    j = None
+    try:
+        iv = _iv(); D = _dsl()
+        j = json.load(open(_ai_path(jid), encoding="utf-8"))
+        user = uid_user
+        pieces = builder_payload(user, is_admin(user)).get("pieces") or []
+        owl = _ai_owl()
+        system = iv.SYSTEM % {"catalog": iv.catalog_text(pieces, owl)}
+        studio = None
+        if j.get("studio_id"):
+            st = studio_get(user, j["studio_id"])
+            studio = None if st.get("err") else st
+        rn = len(j.get("rounds") or []) + 1
+        last = (j.get("rounds") or [{}])[-1] if rn > 1 else None
+        up = iv.user_prompt(j.get("text"), studio, rn, (last or {}).get("raw"), (last or {}).get("answers"), (last or {}).get("cards_answered"))
+        raw = iv.call(system, up, log=os.path.join(DIR, "robots", "interviews", jid + ".log"))
+        if raw is None:
+            j["status"] = "error"; j["error"] = "model"
+            _ai_save(j); return
+        draft = iv.clean_draft(raw, pieces, owl, D)
+        ds = (studio or {}).get("day") or (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+        try:
+            cards = ai_cards(draft["slots"], ds, pieces) if rn < AI_ROUNDS else []
+        except Exception:
+            cards = []
+        j.setdefault("rounds", []).append({"raw": raw, "draft": draft, "cards": cards, "card_day": ds,
+                                            "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
+        j["status"] = "ready"
+        _ai_save(j)
+    except Exception as e:
+        try:
+            j = j or json.load(open(_ai_path(jid), encoding="utf-8"))
+            j["status"] = "error"; j["error"] = str(e)[:200]
+            _ai_save(j)
+        except Exception:
+            pass
+
+
+def ai_start(user, body):
+    text = str(body.get("text") or "").strip()
+    if len(text) < 15:
+        return {"ok": False, "err": "short"}
+    os.makedirs(os.path.join(DIR, "robots", "interviews"), exist_ok=True)
+    me = user.get("id")
+    month = datetime.now(timezone.utc).strftime("%Y-%m")
+    if not is_admin(user):
+        n = 0
+        for f in os.listdir(os.path.join(DIR, "robots", "interviews")):
+            if f.startswith(me + "_") and f.endswith(".json"):
+                try:
+                    if json.load(open(os.path.join(DIR, "robots", "interviews", f), encoding="utf-8")).get("created", "").startswith(month):
+                        n += 1
+                except Exception:
+                    pass
+        if n >= AI_MONTH_CAP:
+            return {"ok": False, "err": "cap"}
+    sid = str(body.get("studio_id") or "") or None
+    if sid and studio_get(user, sid).get("err"):
+        sid = None
+    jid = "%s_%d" % (me, int(time.time()))
+    _ai_save({"id": jid, "uid": me, "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "text": text[:3000],
+              "studio_id": sid, "status": "thinking", "rounds": []})
+    threading.Thread(target=_ai_round, args=(jid, user), daemon=True).start()
+    return {"ok": True, "id": jid}
+
+
+def ai_get(user, jid):
+    j = _ai_load(user, jid)
+    if j is None:
+        return {"err": "missing"}
+    j.pop("uid", None)
+    for r in j.get("rounds") or []:
+        r.pop("raw", None)
+    return j
+
+
+def ai_answer(user, body):
+    j = _ai_load(user, str(body.get("id") or ""))
+    if j is None or j.get("status") != "ready" or not j.get("rounds"):
+        return {"ok": False, "err": "state"}
+    if len(j["rounds"]) >= AI_ROUNDS:
+        return {"ok": False, "err": "rounds"}
+    last = j["rounds"][-1]
+    A = []
+    for q in last["draft"].get("questions") or []:
+        a = (body.get("answers") or {}).get(q["id"])
+        opt = next((o for o in q["options"] if o["id"] == a), None)
+        if opt:
+            A.append({"q": q["en"], "a": opt["en"]})
+    CA = []
+    for i, c in enumerate(last.get("cards") or []):
+        a = (body.get("cards") or {}).get(str(i))
+        if a in ("yes", "no", "unsure"):
+            CA.append({"desc": c["desc"], "draft_takes": c["draft_takes"], "why": c.get("why"), "answer": {"yes": "would take it", "no": "would NOT take it", "unsure": "not sure"}[a]})
+    last["answers"] = A; last["cards_answered"] = CA
+    j["status"] = "thinking"
+    _ai_save(j)
+    threading.Thread(target=_ai_round, args=(j["id"], user), daemon=True).start()
+    return {"ok": True}
+
+
+def ai_build(user, body):
+    """the last draft -> its new pieces (rules) + the robot, queued for its test"""
+    j = _ai_load(user, str(body.get("id") or ""))
+    if j is None or not j.get("rounds"):
+        return {"ok": False, "err": "state"}
+    slots = j["rounds"][-1]["draft"]["slots"]
+    parts = {}
+
+    def piece_id(kind, s):
+        if s.get("use"):
+            return s["use"]
+        r = piece_create(user, {"type": kind, "rule": s["rule"], "name": s.get("name") or kind})
+        if r.get("ok"):
+            return r["id"]
+        if r.get("err") == "exists":
+            return r["id"]
+        raise ValueError(r.get("err"))
+    try:
+        for k in ("entry", "stop", "exit", "recovery", "money"):
+            s = slots.get(k)
+            if s:
+                parts[k] = piece_id(k, s) if k in ("entry", "stop", "exit") else s.get("use")
+        parts["filters"] = [piece_id("filter", f) for f in slots.get("filters") or []]
+    except Exception as e:
+        return {"ok": False, "err": "piece:" + str(e)[:40]}
+    owl = _ai_owl()
+    diff = {k: v for k, v in parts.items() if v is not None and v != owl.get(k)}
+    if not diff:
+        return {"ok": False, "err": "same"}
+    r = robot_create(user, {"name": str(body.get("name") or "Mon robot")[:40], "parent": "owl", "parts": diff})
+    if r.get("ok"):
+        j["robot"] = r["id"]
+        _ai_save(j)
+    return r
 
 
 def team_payload():
@@ -15682,7 +15935,8 @@ class H(BaseHTTPRequestHandler):
                 return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
-                                              "piece_create", "piece_preview", "piece_delete", "piece_public"):
+                                              "piece_create", "piece_preview", "piece_delete", "piece_public",
+                                              "ai_start", "ai_answer", "ai_build", "robot_test"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -15691,7 +15945,8 @@ class H(BaseHTTPRequestHandler):
                 _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 40000)).decode("utf-8", "replace") or "{}")
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
-                       "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public}[_parts[1]]
+                       "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
+                       "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -17809,7 +18064,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(scanner_payload(_det)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
-        elif sub in ("chart_replay", "studio_get"):
+        elif sub in ("chart_replay", "studio_get", "ai_get"):
             # 2026-10-12 (owner): the chart studio - a past day replayed with the structure as it was at
             # each candle (Strategie / admin), and a recorded session's observations
             _sd = bool((is_admin(user) or has(user.get("id"), "strategy") or admin_cookie_ok(self.headers)) and not user.get("public"))
@@ -17820,6 +18075,8 @@ class H(BaseHTTPRequestHandler):
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                 elif sub == "studio_get":
                     self._send(json.dumps(studio_get(user, (_q.get("id", [""])[0]))), "application/json")
+                elif sub == "ai_get":
+                    self._send(json.dumps(ai_get(user, (_q.get("id", [""])[0]))), "application/json")
                 else:
                     _ds = (_q.get("d", [""])[0] or "").strip()
                     _dd = datetime.strptime(_ds, "%Y-%m-%d").replace(tzinfo=timezone.utc)
