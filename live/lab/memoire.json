@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-13T05:00:13Z",
+ "updated": "2026-10-13T06:30:15Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -384,7 +384,8 @@
     "2026-10-11 12:00 veille: BOS SELL -1.47 (pace 0.866, closed 08:30, day). cont_day 21 tr 38% -21.97 PF 0.69 (h 45%/30%); 08 h 0/2. Still under 30.",
     "2026-10-11 15:00 veille: BOS SELL -1.63 (pace 0.958, closed 14:29, day). cont_day 22 tr 36% -23.60 PF 0.67 (h 45/27). BOS overall 41 tr 56% +14.71 (h 64/47).",
     "2026-10-12 21:30 veille: two day BOS BUY, both pace ~0.85 (0.84 won +1.45 closed 20:04; 0.861 lost -2.53 closed 21:02, right after that win). cont_day 28 tr 43% vs 51% -19.59 PF 0.75 (h 43/43). Inside: 0.8-1.0 band 10 tr 30% -20.88 vs 1.0-1.3 11 tr 55% +12.95 (h 33/80, disagree) - the mirror of flip_day, where 0.8-1.0 wins (peu). 20-23 h inside 5 tr 0 won -20.68. BOS overall 47 tr 57% +18.72 (h 62/52).",
-    "2026-10-13 05:00 veille: night BOS BUY x4 02-03 h all won (pace 1.24-1.71); asia 46 tr 70% +46.41 (h 73/67). Day BOS SELL 22:59 pace 1.39 won +9.13: cont_day 29 tr 45% -10.46 (h 47/43); 0.8-1.0 band still 10 tr 30% -20.88, 1.3-1.85 7 tr 57% +2.45. BOS overall 52 tr 62% +40.94 (h 63/60)."
+    "2026-10-13 05:00 veille: night BOS BUY x4 02-03 h all won (pace 1.24-1.71); asia 46 tr 70% +46.41 (h 73/67). Day BOS SELL 22:59 pace 1.39 won +9.13: cont_day 29 tr 45% -10.46 (h 47/43); 0.8-1.0 band still 10 tr 30% -20.88, 1.3-1.85 7 tr 57% +2.45. BOS overall 52 tr 62% +40.94 (h 63/60).",
+    "2026-10-13 06:30 veille: night BOS BUY closed 05:14 pace 1.242 won +13.21. asia 46 tr 70% +55.78 PF 1.95 (h 73/67); its 1.0-1.3 band 10 tr 60% +31.85. BOS overall 52 tr 62% +50.31 (h 63/60). Count unchanged vs 05:00 (trade already in the ledger, money updated at close). cont_day still 29."
    ],
    "next": "Pile cont_day to 30 (1 more); the day loss now sits almost only in the 0.8-1.0 band - check that cut on both halves at 30; adaptive hour brake."
   }
@@ -1911,6 +1912,14 @@
     "scrutiny --by kind, --pile cont_day, --pile asia, --pile flip_hot, --streaks"
    ],
    "saw": "122 trades 52% -17.69 PF 0.93. BOS 52 tr 62% +40.94 (h 63/60); FLIP-BOS 68 tr 44% -49.19. asia 46 tr 70% +46.41 (h 73/67); 02-03 h 14 tr ~71% +30.8. cont_day 29 tr 45% -10.46 (h 47/43): the 22:59 win is in 1.3-1.85, 0.8-1.0 still 30% -20.88. Calm evening reversal won (fits flip calm view). flip_hot unchanged 35. No twins, labo, ask. No harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-13T06:30:15Z",
+   "looked": [
+    "wake_context 1 trade closed 05:14 (BOS BUY +13.21, pace 1.242, night)",
+    "scrutiny --pile cont_day, --pile asia, --by kind, --streaks"
+   ],
+   "saw": "122 trades. Night breakout won big, 7/7 since 21:44. asia 46 tr 70% +55.78 (h 73/67). BOS 52 tr 62% +50.31; FLIP-BOS 68 tr 44% -49.19. cont_day unchanged 29 tr 45% -10.46, 0.8-1.0 band 10 tr 30% -20.88. No twins, labo, ask. No harness run, no pile, no proposal."
   }
  ],
  "lessons": [
