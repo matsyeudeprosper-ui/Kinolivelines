@@ -671,7 +671,10 @@ try{const sv=JSON.parse(localStorage.getItem('owlHTF')||'null');
  // the minute chart - for anyone who has not chosen otherwise (a saved choice,
  // including "off", is respected)
  else if(HTFOK){HT.on=true;HT.tf='PB';}}catch(e){}
-function htSave(){try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
+// 2026-10-13 (owner): the app's "Graphique" panel shows ONE chart (?single=1); full screen keeps the split.
+// Not saved, so the member's own split choice is untouched.
+if(/[?&]single=1/.test(location.search)){HT.on=false;HT.nosave=true;}
+function htSave(){if(HT.nosave)return;try{localStorage.setItem('owlHTF',JSON.stringify({on:HT.on,tf:HT.tf,split:HT.split,r:HT.r}));}catch(e){}}
 function htLbl(){return HT.tf==='PB'?(CL?'PULLBACKS':'RECULS'):HT.tf;}
 function htApply(){document.body.classList.toggle('htf-v',HT.on&&HT.split==='v');
  document.body.classList.toggle('htf-h',HT.on&&HT.split==='h');

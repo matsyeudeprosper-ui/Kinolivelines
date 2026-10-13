@@ -8091,7 +8091,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
   $('edrsh-t').textContent=k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
   b.innerHTML='';
-  if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
+  if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&single=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
   else if(k==='det'){['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)b.appendChild(e);});}
   else shFill(D,B0,TR);
   s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
@@ -8133,6 +8133,7 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
 
 
 
