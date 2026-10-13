@@ -391,6 +391,7 @@ button.pc{cursor:pointer}
 <header><div class="hrow">
  <a href="./" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
  <div class="ttl"><h1 id="h1">Le labo</h1><div id="h1s"></div></div>
+ <button class="ib" id="gsb" aria-label="Chercher dans le labo" onclick="gsOpen()" style="margin-left:auto;margin-right:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
  <span class="live" id="livep"><i></i><span id="livet">En direct</span></span>
 </div></header>
 <div id="doors"></div>
@@ -1151,6 +1152,25 @@ const FDS={};   // what each folder opens: a builder, so it is fresh when opened
 function fd(k,icon,title,sub,n){return '<button class="fd" onclick="fdOpen(\''+k+'\')">'+icon+'<span class="tx"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span>'+(n!=null?'<span class="n">'+n+'</span>':'')+'<span class="cv">›</span></button>';}
 function fdOpen(k){const f=FDS[k];if(f)shOpen(f[0],f[1]());}
 const ICO=(c,inner)=>'<span class="ic" style="background:color-mix(in srgb,'+c+' 16%,transparent);color:'+c+'">'+inner+'</span>';
+
+/* ---------- 2026-10-13 (owner): one search for the whole lab - strategies, robots, pieces ---------- */
+async function gsOpen(){shOpen(T('Chercher dans le labo','Search the lab'),'<label class="search" style="width:100%;margin-bottom:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="gsq" placeholder="'+T('Une stratégie, un robot, une pièce…','A strategy, a robot, a piece…')+'" oninput="gsRun(this.value)" autocomplete="off"></label><div id="gsr"></div>');
+ setTimeout(()=>{const q=$('gsq');if(q)q.focus();},350);
+ try{const [s,r]=await Promise.all([D?null:getJ('strategies_data'),RB?null:getJ('robots_data')]);
+  if((s&&s.err)||(r&&r.err)){const g=$('gsr');if(g)g.innerHTML=LOCK;return;}if(s)D=s;if(r)RB=r;}catch(e){}
+ gsRun(($('gsq')||{}).value||'');}
+function gsRun(q){const g=$('gsr');if(!g)return;q=(q||'').trim().toLowerCase();
+ if(q.length<2){g.innerHTML='<div class="note">'+T('Tapez au moins deux lettres. On cherche dans les noms, les explications et les verdicts.','Type at least two letters. Names, explanations and verdicts are searched.')+'</div>';return;}
+ const has=t=>String(t||'').toLowerCase().includes(q);
+ const S=((D&&D.items)||[]).filter(x=>has(tt(x))||has(pl(x))||has(vd(x))).slice(0,12);
+ const R=(BLD().robots||[]).filter(r=>has(r.name_fr)||has(r.name_en)).slice(0,8);
+ const P=pcs().filter(x=>has(x.name_fr)||has(x.name_en)||has(x.plain_fr)||has(x.plain_en)).slice(0,10);
+ const row=(on,ic,c,t,s)=>'<button class="fd" onclick="'+on+'">'+ICO(c,ic)+'<span class="tx"><b>'+t+'</b>'+(s?'<small>'+s+'</small>':'')+'</span><span class="cv">›</span></button>';
+ let h='';
+ if(S.length)h+='<div class="grp">'+T('Stratégies','Strategies')+' <em>'+S.length+'</em></div><div class="fds">'+S.map(x=>{const m=ST[x.status]||ST.study;return row('go(\''+x.id+'\')',fic(x.fam),m.c,esc(tt(x)),T(m.fr,m.en)+' · '+fnm(x.fam));}).join('')+'</div>';
+ if(R.length)h+='<div class="grp">'+T('Robots','Robots')+' <em>'+R.length+'</em></div><div class="fds">'+R.map(r=>{const m=BST[r.stage]||BST.tested;return row('goB(\''+r.id+'\')',BOT,m.c,esc(T(r.name_fr,r.name_en)),T(m.fr,m.en));}).join('')+'</div>';
+ if(P.length)h+='<div class="grp">'+T('Pièces','Pieces')+' <em>'+P.length+'</em></div><div class="fds">'+P.map(x=>{const sl=SLOTS.find(s=>SLOTT[s[0]]===x.type)||SLOTS[0];return row('goP(\''+x.id+'\')',pic(sl[2]),(PST[x.status]||PST.tested).c,esc(T(x.name_fr,x.name_en)),sl[1]+' · '+T((PST[x.status]||PST.tested).fr,(PST[x.status]||PST.tested).en));}).join('')+'</div>';
+ g.innerHTML=h||'<div class="empty">'+T('Rien trouvé pour « ','Nothing found for “')+esc(q)+T(' ».','”.')+'</div>';}
 
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
