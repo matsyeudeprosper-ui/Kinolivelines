@@ -7828,6 +7828,238 @@ function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.
  function init(){tick();setInterval(tick,1500);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// ==== 2026-10-13 (owner): EN DIRECT - the Marche tab becomes the robot's window: what it is doing on each market,
+// what it waits for, its day and its hours. BTC (real money) always leads; other markets appear when the scanner has
+// a virtual trade open or a setup nearly ready, marked ESSAI, and they share the same detail space. The old market
+// cards (weather, timeframes, market hours, lessons) are MOVED into a "Details pour traders" fold, never rewritten;
+// the Scanner keeps its own view, opened from the market list. Reads only: window._lastS, window._day, scanner_data. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T2=(f,e)=>EN()?e:f;
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const hm=ts=>{const d=new Date(ts*1000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+ const fmtN=(v,dg)=>{if(v==null||isNaN(v))return '—';const s=Number(v).toLocaleString(EN()?'en-US':'fr-FR',{minimumFractionDigits:dg,maximumFractionDigits:dg});return s;};
+ const R=v=>(v>=0?'+':'−')+(EN()?Math.abs(v).toFixed(2):Math.abs(v).toFixed(2).replace('.',','))+' R';
+ // one look per market: a short code, a colour, a plain name
+ const MK={BTCUSD:['₿','#f7931a','Bitcoin','Bitcoin'],XAUUSD:['Au','#f5d27a','Or','Gold'],XAGUSD:['Ag','#c9d3df','Argent','Silver'],USOIL:['Oil','#9fc2de','Pétrole','Oil'],
+  US30:['DJ','#8fc6ff','Dow Jones','Dow Jones'],USTEC:['NQ','#a78bfa','Nasdaq','Nasdaq'],US500:['SP','#7dd3fc','S&P 500','S&P 500'],DE30:['DE','#fca5a5','DAX','DAX'],
+  UK100:['UK','#93c5fd','FTSE 100','FTSE 100'],JP225:['JP','#fda4af','Nikkei','Nikkei'],EURUSD:['€$','#8fc6ff','Euro / Dollar','Euro / Dollar'],GBPUSD:['£$','#c4b5fd','Livre / Dollar','Pound / Dollar'],
+  USDJPY:['$¥','#fcd34d','Dollar / Yen','Dollar / Yen'],ETHUSD:['Ξ','#a5b4fc','Ethereum','Ethereum']};
+ const mk=s=>MK[s]||[String(s||'?').slice(0,2),'#8fc6ff',s,s];
+ const mname=s=>{const m=mk(s);return EN()?m[3]:m[2];};
+ const badge=(s,sz)=>{const m=mk(s);return '<span class="lv-sy" style="background:'+m[1]+'26;color:'+m[1]+(sz?';width:'+sz+'px;height:'+sz+'px;border-radius:'+Math.round(sz/3)+'px;font-size:'+(sz<30?'.58rem':'.78rem'):'')+'">'+m[0]+'</span>';};
+ const css=document.createElement('style');css.textContent=`
+ #tab-marche #mxseg,#tab-marche #mx-jump,#tab-marche #mx-market>.sec{display:none!important}
+ #edrh{display:flex;align-items:center;gap:13px;padding:40px 4px 6px}
+ #edrh .pfi{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent-bg);border:1px solid var(--border2);color:var(--accent-soft)}
+ #edrh .pfi svg{width:22px;height:22px}
+ #edrh h2{font-size:1.5rem;font-weight:900;letter-spacing:-.025em;color:var(--text);line-height:1.1}
+ #edrh p{font-size:.8rem;color:var(--muted);margin-top:4px;display:flex;align-items:center;gap:7px}
+ #edrh p i{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 0 4px rgba(46,204,113,.18)}
+ #edr{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+ #edr .lv-c{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px;position:relative;min-width:0}
+ #edr .lv-l{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2);text-transform:uppercase}
+ #edr .lv-l small{letter-spacing:0;text-transform:none;font-weight:600;color:var(--muted)}
+ #edr .lv-sy{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:.78rem}
+ #edr .lv-mk{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+ #edr .lv-mr{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+ #edr .lv-mr.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.18);background:var(--accent-bg)}
+ #edr .lv-mr .n{flex:1;min-width:0}#edr .lv-mr .n b{display:block;font-size:.9rem;color:var(--text)}#edr .lv-mr .n span{font-size:.72rem;color:var(--muted)}
+ #edr .lv-mr .s{text-align:right;font-size:.76rem;font-weight:700;white-space:nowrap}#edr .lv-mr .s small{display:block;font-weight:600;color:var(--muted);font-size:.68rem;margin-top:2px}
+ #edr .lv-dt{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:1px}
+ #edr .lv-es{font-size:.6rem;font-weight:800;letter-spacing:.06em;color:var(--warn);background:rgba(232,197,90,.12);border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:1px}
+ #edr .lv-more{display:flex;justify-content:space-between;align-items:center;margin:12px -18px -18px;padding:12px 18px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft);cursor:pointer}
+ #edr .lv-pill{display:inline-flex;align-items:center;gap:7px;font-size:.7rem;font-weight:800;letter-spacing:.06em;color:var(--text2);background:var(--surface3);border:1px solid var(--border2);border-radius:99px;padding:4px 10px 4px 4px;margin-bottom:14px;text-transform:uppercase}
+ #edr .lv-st{display:flex;gap:14px;align-items:flex-start}
+ #edr .lv-li{flex:none;width:52px;height:52px;border-radius:50%;display:grid;place-items:center}
+ #edr .lv-li i{width:18px;height:18px;border-radius:50%}
+ #edr .lv-st h3{font-size:1.32rem;font-weight:900;letter-spacing:-.02em;color:var(--text)}
+ #edr .lv-st p{font-size:.86rem;color:var(--text2);line-height:1.45;margin-top:4px}
+ #edr .lv-w{margin-top:16px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px}
+ #edr .lv-w .t{font-size:.8rem;color:var(--muted2)}#edr .lv-w .t b{color:var(--text)}
+ #edr .lv-rail{position:relative;height:8px;border-radius:99px;background:var(--surface3);margin:32px 4px 8px}
+ #edr .lv-rail .f{position:absolute;top:0;bottom:0;border-radius:99px}
+ #edr .lv-rail .px{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--text);border:3px solid var(--surface2)}
+ #edr .lv-rail .tg{position:absolute;bottom:16px;transform:translateX(-50%);font-size:.7rem;font-weight:800;background:var(--text);color:var(--bg);border-radius:6px;padding:2px 6px;white-space:nowrap}
+ #edr .lv-ends{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;color:var(--muted)}#edr .lv-ends b{display:block;color:var(--text2);font-size:.78rem;font-variant-numeric:tabular-nums}
+ #edr .lv-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+ #edr .lv-tiles div{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:10px}
+ #edr .lv-tiles span{font-size:.62rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}#edr .lv-tiles b{display:block;font-size:.95rem;margin-top:3px;color:var(--text);font-variant-numeric:tabular-nums}
+ #edr .lv-btn{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--accent-soft);font:inherit;font-weight:700;font-size:.86rem;border-radius:14px;padding:12px;width:100%;cursor:pointer}
+ #edr .lv-btn.ok{color:var(--muted2);font-weight:600;cursor:default}
+ #edr .lv-ck{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #edr .lv-ck>div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px;display:flex;gap:10px;align-items:center;min-width:0}
+ #edr .lv-ck .ic2{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:900}
+ #edr .lv-ck b{display:block;font-size:.8rem;color:var(--text)}#edr .lv-ck span{font-size:.7rem;color:var(--muted);line-height:1.3;display:block}
+ #edr .lv-fs{position:absolute;top:14px;right:14px;font-size:.72rem;font-weight:700;color:var(--accent-soft);border:1px solid var(--border2);border-radius:99px;padding:6px 11px;text-decoration:none;background:var(--surface)}
+ #edr .lv-fr{margin:14px -18px -18px;height:380px;border-top:1px solid var(--border);border-radius:0 0 var(--r-lg) var(--r-lg);overflow:hidden;background:var(--bg)}
+ #edr .lv-fr iframe{width:100%;height:100%;border:0;display:block}
+ #edr .lv-ev{display:flex;gap:12px;position:relative;padding-bottom:16px}
+ #edr .lv-ev:before{content:'';position:absolute;left:15px;top:32px;bottom:0;width:2px;background:var(--border)}
+ #edr .lv-ev:last-child:before{display:none}#edr .lv-ev:last-child{padding-bottom:0}
+ #edr .lv-ev .d{flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:.85rem;font-weight:900;border:1px solid var(--border2);background:var(--surface2);color:var(--text2)}
+ #edr .lv-ev .h{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px}
+ #edr .lv-ev b{font-size:.88rem;color:var(--text)}#edr .lv-ev p{font-size:.78rem;color:var(--muted2);margin-top:2px;line-height:1.4}
+ #edr .lv-tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;border-radius:6px;padding:2px 6px}
+ #edr .lv-up{color:var(--up)}#edr .lv-dn{color:var(--down)}
+ #edr .lv-note{font-size:.72rem;color:var(--muted);margin-top:10px;line-height:1.4}
+ #edr .lv-ax{display:flex;justify-content:space-between;font-size:.68rem;color:var(--muted);margin-top:6px}
+ #edrdet{margin-top:4px}
+ #edrdet>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:15px 18px;border:1px dashed var(--border2);border-radius:var(--r);color:var(--muted2);font-weight:700;font-size:.84rem}
+ #edrdet>summary::-webkit-details-marker{display:none}
+ #edrdet>summary span{font-weight:500;font-size:.72rem;color:var(--muted);text-align:right}
+ #edrback{display:none;align-items:center;gap:8px;margin:30px 0 4px;border:0;background:none;color:var(--accent-soft);font:inherit;font-weight:700;font-size:.9rem;cursor:pointer;padding:6px 2px}`;
+ document.head.appendChild(css);
+ try{I18N_EN.set('En direct','Live');}catch(e){}
+ let sel='BTCUSD',SC=null,scT=0,frSym='';
+ const LI={gr:['rgba(46,204,113,.14)','var(--up)'],or:['rgba(232,197,90,.14)','var(--warn)'],rd:['rgba(255,92,92,.14)','var(--down)'],bl:['rgba(59,130,246,.16)','var(--accent)'],gy:['rgba(138,155,176,.14)','var(--muted)']};
+ const light=c=>{const l=LI[c]||LI.gy;return '<div class="lv-li" style="background:'+l[0]+';box-shadow:0 0 0 6px '+l[0].replace(/[.0-9]+\\)$/,'.05)')+'"><i style="background:'+l[1]+';box-shadow:0 0 18px '+l[1]+'"></i></div>';};
+ // ---- BTC, the real robot: one state from the same facts the home card uses ----
+ function btc(D){const ms=D.meteo_struct||{},k=window._mxk||'none',lg=D.ledger||{},open=D.open_list||[],Dy=window._day||{},now=Date.now()/1000;
+  const gate=!!ms.pb_gate,t=ms.pb_trend,side=gate?(t===1?T2('un achat','a buy'):(t===-1?T2('une vente','a sell'):T2('un trade','a trade'))):T2('un trade','a trade');
+  const trend=t===1?T2('la tendance est en hausse','the trend is up'):(t===-1?T2('la tendance est en baisse','the trend is down'):'');
+  const recent=(Dy.trades||[]).filter(x=>x.x&&now-x.x<1800).sort((a,b)=>b.x-a.x)[0];
+  const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&lg.cap_today>0&&(lg.day_pnl_bot||0)>=lg.cap_today);
+  if(open.length){const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0),p=open[0];
+   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:(p.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+T2(' ouvert. Le robot laisse courir jusqu’à l’objectif ou au stop.',' open. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
+  if(recent)return {c:recent.p>=0?'gr':'rd',t:T2('Trade terminé','Trade closed'),pl:recent.p,s:T2('Il y a '+Math.max(1,Math.round((now-recent.x)/60))+' min. Le robot reprend sa surveillance.',Math.max(1,Math.round((now-recent.x)/60))+' min ago. The robot is watching again.'),row:T2('Terminé ','Closed ')+money(recent.p)};
+  if(D.bot_killed)return {c:'rd',t:T2('Arrêté','Stopped'),s:T2('La ligne d’arrêt du compte est atteinte : le robot ne prend plus de trade.','The account’s stop line was reached: the robot takes no more trades.'),row:T2('Arrêté','Stopped')};
+  if(D.trading_paused)return {c:'gy',t:T2('En pause','Paused'),s:T2('Le robot est en pause sur ce compte.','The robot is paused on this account.'),row:T2('En pause','Paused')};
+  if(done&&lg.bos)return {c:'gy',t:T2('Au repos','Resting'),s:T2('L’objectif du jour est atteint. Le robot reprend demain.','The day’s target is reached. The robot starts again tomorrow.'),row:T2('Au repos','Resting')};
+  if(gate&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),row:T2('Il attend','Waiting')};
+  if(gate&&ms.pb_side==='wrong')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le prix est du mauvais côté de sa dernière cassure : le robot attend qu’il repasse — ','Price is on the wrong side of its last break: the robot waits for it to come back — ')+trend+'.',row:T2('Il attend','Waiting')};
+  if(k==='nervous'||k==='brisk')return {c:'or',t:T2('Il se méfie','Cautious'),s:T(k==='nervous'?'j_storm':'j_nervous'),row:T2('Il se méfie','Cautious')};
+  if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le marché dort. Dès qu’il se réveille, le robot cherche ','The market is asleep. When it wakes up, the robot looks for ')+'<b>'+side+'</b>'+(trend?' — '+trend:'')+'.',row:T2('Il attend','Waiting')};
+  if(k==='forming'||k==='flip')return {c:'or',t:T2('Il attend','Waiting'),s:T(k==='forming'?'j_forming':'j_flip'),row:T2('Il attend','Waiting')};
+  return {c:'bl',t:T2('Prêt','Ready'),s:T2('Les conditions sont réunies : il entrera dès qu’une cassure confirme ','Conditions are met: it enters as soon as a break confirms ')+'<b>'+side+'</b>.',row:T2('Prêt','Ready')};}
+ // the four things the robot checks, in plain words
+ function checks(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
+  const it=(ok,a,b)=>'<div><div class="ic2" style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</div><div style="min-width:0"><b>'+a+'</b><span>'+b+'</span></div></div>';
+  const lvl=ms.pb_detail&&ms.pb_last_bos!=null?' '+fmtN(Math.round(ms.pb_last_bos),0):'';
+  return '<div class="lv-ck">'+
+   it(t===1||t===-1,T2('Sens clair','Clear direction'),t===1?T2('tendance en hausse','trend up'):(t===-1?T2('tendance en baisse','trend down'):T2('pas encore','not yet')))+
+   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),ms.pb_side==='wrong'&&gate?T2('doit repasser','must come back past')+lvl:(lvl?(t===-1?T2('sous','below'):T2('au-dessus de','above'))+lvl:T2('du bon côté','on the right side')))+
+   it(k!=='nervous'&&k!=='brisk',T2('Pas de tempête','No storm'),k==='nervous'?T2('marché très agité','very rough market'):(k==='brisk'?T2('marché nerveux','nervous market'):T2('marché calme','calm market')))+
+   it(k!=='none',T2('Marché éveillé','Market awake'),k==='none'?T2('il dort encore','still asleep'):T2('il bouge','it is moving'))+'</div>';}
+ // a price rail: left level, right level, the price between
+ function rail(lo,hi,px,dg,fill,ends){const p=Math.max(2,Math.min(98,(px-lo)/((hi-lo)||1)*100));
+  return '<div class="lv-rail">'+fill(p)+'<div class="px" style="left:'+p.toFixed(1)+'%"></div><div class="tg" style="left:'+Math.max(12,Math.min(88,p)).toFixed(1)+'%">'+fmtN(px,dg)+'</div></div><div class="lv-ends">'+ends+'</div>';}
+ function btcCard(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c"><div class="lv-pill">'+badge('BTCUSD',22)+mname('BTCUSD')+' · BTCUSD</div>'+
+   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
+  if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
+   if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
+    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+     rail(lo,hi,cur,0,q=>'<div class="f" style="left:0;width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35);'+(dir===1?'':'left:auto;right:0')+'"></div>',
+      '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(sl,0)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(e,0)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(tp,0)+'</b></div>')+'</div>'+
+     '<div class="lv-tiles"><div><span>'+T2('Taille','Size')+'</span><b>'+(+p.lot).toFixed(2)+'</b></div><div><span>'+T2('Maintenant','Now')+'</span><b>'+fmtN(cur,0)+'</b></div><div><span>'+T2('Trades ouverts','Open trades')+'</span><b>'+S.open.length+'</b></div></div>';}}
+  else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'){
+   const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
+   h+='<div class="lv-w"><div class="t">'+T2('Son déclencheur : une cassure ','Its trigger: a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b></div>'+
+    rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
+     up?'<div>'+T2('dernière cassure','last break')+'<b>'+fmtN(Math.round(ms.pb_last_bos),0)+'</b></div><div style="text-align:right">'+T2('déclencheur','trigger')+'<b>'+fmtN(Math.round(ms.next_bos),0)+' · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</b></div>'
+       :'<div>'+T2('déclencheur','trigger')+'<b>'+fmtN(Math.round(ms.next_bos),0)+' · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</b></div><div style="text-align:right">'+T2('dernière cassure','last break')+'<b>'+fmtN(Math.round(ms.pb_last_bos),0)+'</b></div>')+
+    '<div class="lv-note" style="margin-top:8px">'+T2('Ce qu’il attend, pas une prévision : personne ne sait quand le prix y arrivera.','What it waits for, not a forecast: nobody knows when price will get there.')+'</div></div>';}
+  const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
+  h+=on?'<div class="lv-btn ok">✓ '+T2('Vous êtes prévenu à chaque trade','You are notified on every trade')+'</div>':(nb?'<button class="lv-btn" id="edrnotif">🔔 '+T2('Prévenez-moi quand il entre','Tell me when it enters')+'</button>':'');
+  return h+'</div>'+checks(D);}
+ // ---- other markets, on trial (scanner) ----
+ function trialCard(r){const en=EN(),o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
+  if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' ouvert à ',' opened at ')+hm(o.t)+T2('. Rien n’est réellement acheté : ce trade sert à vérifier ce marché avant d’y mettre de l’argent.','. Nothing is really bought: this trade checks the market before any money goes there.');}
+  else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix est tout près de son déclencheur. Si la cassure se confirme, le robot ouvrira un trade virtuel.','Price is right next to its trigger. If the break confirms, the robot opens a virtual trade.');}
+  else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur. Le robot le surveille.','Price is nearing its trigger. The robot is watching it.');}
+  let h='<div class="lv-c"><div class="lv-pill">'+badge(r.sym,22)+mname(r.sym)+' · '+r.sym+'<span class="lv-es" style="margin-left:2px">'+T2('ESSAI','TRIAL')+'</span></div>'+
+   '<div class="lv-st">'+light(c)+'<div style="min-width:0"><h3>'+t+(o?' · <span class="'+(o.r_now>=0?'lv-up':'lv-dn')+'">'+R(o.r_now)+'</span>':'')+'</h3><p>'+s+'</p></div></div>';
+  if(o&&o.e!=null&&o.sl!=null&&o.tp!=null&&r.px){const dir=o.d,lo=dir===1?o.sl:o.tp,hi=dir===1?o.tp:o.sl,pe=(o.e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(r.px-o.e)/((o.tp-o.e)||1)*100));
+   h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+    rail(lo,hi,r.px,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
+     '<div>'+T2('stop','stop')+'<b class="lv-dn">'+fmtN(o.sl,dg)+'</b></div><div style="text-align:center">'+T2('entrée','entry')+'<b>'+fmtN(o.e,dg)+'</b></div><div style="text-align:right">'+T2('objectif','target')+'<b class="lv-up">'+fmtN(o.tp,dg)+'</b></div>')+'</div>';}
+  else if(o){h+='<div class="lv-w"><div class="t">'+T2('Où il en est','Where it stands')+' · <b>'+R(o.r_now)+'</b></div><div class="lv-note" style="margin-top:6px">'+T2('R = le résultat comparé au risque : l’objectif vaut +0,8 R, le stop −1 R.','R = the result compared with the risk: the target is +0.8 R, the stop −1 R.')+'</div></div>';}
+  else if(r.next_bos!=null&&r.pb_bos!=null&&r.px){const up=r.pb_trend===1,lo=up?r.pb_bos:r.next_bos,hi=up?r.next_bos:r.pb_bos;
+   h+='<div class="lv-w"><div class="t">'+T2('Son déclencheur : une cassure ','Its trigger: a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(r.next_bos,dg)+'</b></div>'+
+    rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
+     '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
+  return h+'<div class="lv-note">'+T2('En essai : le robot teste sa configuration sur ce marché avec des trades virtuels. Aucun argent réel, rien ne s’ajoute à votre solde.','On trial: the robot tests its setup on this market with virtual trades. No real money, nothing is added to your balance.')+'</div></div>';}
+ function trials(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={trade:0,ready:1,soon:2};
+  return S.filter(r=>r.sym!=='BTCUSD'&&o[r.status]!=null&&(r.status!=='trade'||r.open)).sort((a,b)=>o[a.status]-o[b.status]||((a.near==null?9:a.near)-(b.near==null?9:b.near))).slice(0,6);}
+ function marketsCard(D,B0,TR){const row=(s,on,stat,col,sub,es)=>'<button class="lv-mr'+(on?' on':'')+'" data-s="'+s+'">'+badge(s)+'<div class="n"><b>'+esc(mname(s))+'</b><span>'+s+(es?'<span class="lv-es">'+T2('ESSAI','TRIAL')+'</span>':'')+'</span></div><div class="s" style="color:'+col+'"><span class="lv-dt" style="background:'+col+'"></span>'+stat+'<small>'+sub+'</small></div></button>';
+  const C={gr:'var(--up)',or:'var(--warn)',rd:'var(--down)',bl:'var(--accent-soft)',gy:'var(--muted2)'};
+  let h='<div class="lv-c" style="padding:16px 16px 18px"><div class="lv-l">'+T2('Vos marchés','Your markets')+' <small>· '+T2('Bitcoin en priorité','Bitcoin first')+'</small></div><div class="lv-mk">'+
+   row('BTCUSD',sel==='BTCUSD',B0.row,C[B0.c],T2('aujourd’hui ','today ')+'<span class="'+((D.today||0)>=0?'lv-up':'lv-dn')+'">'+money(D.today||0)+'</span>',false)+
+   TR.map(r=>{const o=r.open;return row(r.sym,sel===r.sym,r.status==='trade'?T2('En essai ','On trial ')+(o?R(o.r_now):''):(r.status==='ready'?T2('Presque prêt','Nearly ready'):T2('Bientôt','Soon')),r.status==='trade'?C.gr:(r.status==='ready'?C.bl:C.or),
+    r.status==='trade'?(o&&o.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')):T2('en file d’attente','in the queue'),true);}).join('')+'</div>';
+  if(!TR.length)h+='<div class="lv-note">'+T2('Aucun autre marché n’a de trade ou de configuration proche pour l’instant.','No other market has a trade or a close setup right now.')+'</div>';
+  const n=((SC&&SC.state&&SC.state.symbols)||[]).length;
+  if(n)h+='<div class="lv-more" id="edrscan"><span>'+T2('Tous les marchés en essai','All markets on trial')+' · '+n+'</span><span>›</span></div>';
+  return h+'</div>';}
+ // ---- the chart, the diary, the hours ----
+ function chartCard(){return '<div class="lv-c" style="padding-bottom:18px"><div class="lv-l">'+T2('Le graphique','The chart')+' <small>· '+esc(mname(sel))+'</small></div><a class="lv-fs" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Plein écran','Full screen')+' ↗</a><div class="lv-fr" id="edrfr"></div></div>';}
+ function diary(D){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000,ev=[],tag=(s,es)=>{const m=mk(s);return '<span class="lv-tag" style="background:'+m[1]+'26;color:'+m[1]+'">'+(s==='BTCUSD'?'BTC':esc(mname(s)).toUpperCase())+'</span>'+(es?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'');};
+  (D.open_list||[]).forEach(p=>ev.push({t:Date.now()/1000,ic:'↗',c:'lv-up',h:tag('BTCUSD')+T2('maintenant','now'),b:(p.d==='A'?T2('Achat en cours','Buy running'):T2('Vente en cours','Sell running'))+' · <span class="'+((+p.pl)>=0?'lv-up':'lv-dn')+'">'+money(+p.pl||0)+'</span>',p:T2('Entré à ','Entered at ')+fmtN(+p.e,0)+'.'}));
+  (Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).forEach(x=>ev.push({t:x.x||x.t,ic:x.p>=0?'✓':'✕',c:x.p>=0?'lv-up':'lv-dn',h:tag('BTCUSD')+hm(x.t)+(x.x?' → '+hm(x.x):''),b:(String(x.d).toUpperCase().startsWith('B')||x.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+' · <span class="'+(x.p>=0?'lv-up':'lv-dn')+'">'+money(x.p)+'</span>',p:x.p>=0?T2('Sorti en gain.','Closed in profit.'):T2('Sorti au stop.','Closed at the stop.')}));
+  const W=((D.why_idle||{}).why||[]).slice().sort((a,b)=>b.n-a.n)[0],wt=k=>{try{const w=WHYTXT[k];return w?w[EN()?1:0]:'';}catch(e){return '';}};
+  let g=null;(Dy.ignored||[]).filter(x=>x[0]>=t0).forEach(x=>{if(g&&g.k===x[1]){g.n++;g.b=x[0];}else{g={k:x[1],n:1,a:x[0],b:x[0]};ev.push(g);g.t=0;}});
+  ev.forEach(e=>{if(e.k){e.t=e.b;const why=e.k==='meteo'?wt('storm'):(W?wt(W.k):'');e.ic='💤';e.c='';e.h=tag('BTCUSD')+hm(e.a)+(e.b!==e.a?' → '+hm(e.b):'');
+   e.bb=e.n+' '+(e.n>1?T2('occasions laissées','chances passed'):T2('occasion laissée','chance passed'));e.p=why?T2('Raison : ','Why: ')+why+'.':T2('Le robot a préféré attendre.','The robot preferred to wait.');}});
+  const rec=(SC&&SC.recent)||[];rec.filter(x=>(x.xt||x.t)>=t0).forEach(x=>ev.push({t:x.xt||x.t,ic:x.r>0?'✓':'✕',c:x.r>0?'lv-up':'lv-dn',h:tag(x.sym,1)+hm(x.t)+(x.xt?' → '+hm(x.xt):''),b:(x.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+' · <span class="'+(x.r>0?'lv-up':'lv-dn')+'">'+R(x.r)+'</span>',p:T2('Trade d’essai, sans argent réel.','Trial trade, no real money.')}));
+  trials().filter(r=>r.status==='trade'&&r.open&&r.open.t>=t0).forEach(r=>ev.push({t:r.open.t,ic:'↗',c:'lv-up',h:tag(r.sym,1)+hm(r.open.t),b:(r.open.d===1?T2('Achat virtuel ouvert','Virtual buy opened'):T2('Vente virtuelle ouverte','Virtual sell opened')),p:T2('En cours : ','Running: ')+R(r.open.r_now)+'.'}));
+  ev.forEach(e=>{e.v=/lv-es/.test(e.h||'');});const vt=ev.filter(e=>e.v).sort((a,b)=>b.t-a.t).slice(0,4);
+  const ev2=ev.filter(e=>!e.v).concat(vt).sort((a,b)=>b.t-a.t);const rc=D.recap;
+  const list=ev2.slice(0,10).map(e=>'<div class="lv-ev"><div class="d '+(e.c||'')+'">'+e.ic+'</div><div style="min-width:0"><div class="h">'+e.h+'</div><b>'+(e.bb||e.b)+'</b><p>'+e.p+'</p></div></div>').join('')+
+   '<div class="lv-ev"><div class="d">☀</div><div><div class="h">00:00</div><b>'+T2('Nouvelle journée','New day')+'</b><p>'+(rc&&rc.n!=null?T2('Hier : ','Yesterday: ')+rc.n+' trade'+(rc.n>1?'s':'')+', <span class="'+((rc.net||0)>=0?'lv-up':'lv-dn')+'">'+money(rc.net||0)+'</span>.':T2('Le robot repart pour une journée.','The robot starts a new day.'))+'</p></div></div>';
+  return '<div class="lv-c"><div class="lv-l">'+T2('Son journal','Its diary')+' <small>· '+T2('aujourd’hui, tous les marchés','today, every market')+'</small></div><div style="margin-top:14px">'+list+'</div>'+
+   ($('rjcard')?'<div class="lv-more" id="edrjr"><span>'+T2('Le journal complet','The full diary')+'</span><span>›</span></div>':'')+'</div>';}
+ function hours(D){const DT=D.day_trades||{},days=Object.keys(DT);if(!days.length)return '';const H=Array.from({length:24},()=>[0,0]);let n=0;
+  days.forEach(k=>(DT[k]||[]).forEach(x=>{const h=parseInt(String(x.t||'').slice(0,2),10);if(h>=0&&h<24){H[h][0]++;H[h][1]+=+x.p||0;n++;}}));if(!n)return '';
+  const mx=Math.max(1,...H.map(x=>Math.abs(x[1]))),W=300,Hh=96,z=Hh/2,bw=(W-23*3)/24;
+  let s='<svg viewBox="0 0 '+W+' '+(Hh+16)+'" width="100%" height="'+(Hh+16)+'" role="img" aria-label="'+T2('Résultat par heure','Result by hour')+'"><line x1="0" x2="'+W+'" y1="'+z+'" y2="'+z+'" stroke="var(--border2)"/>';
+  H.forEach((x,i)=>{if(!x[0])return;const hh=Math.max(2,Math.abs(x[1])/mx*(z-4)),X=i*(bw+3);s+='<rect x="'+X.toFixed(1)+'" y="'+(x[1]>=0?z-hh:z).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="'+Math.min(3,bw/2).toFixed(1)+'" fill="'+(x[1]>=0?'var(--up)':'var(--down)')+'"><title>'+i+'h · '+x[0]+' trade'+(x[0]>1?'s':'')+' · '+money(x[1])+'</title></rect>';});
+  [0,6,12,18].forEach(h=>{s+='<text x="'+(h*(bw+3)).toFixed(1)+'" y="'+(Hh+13)+'" font-size="9" fill="var(--muted)">'+h+'h</text>';});
+  const best=H.map((x,i)=>[i,x[1]]).sort((a,b)=>b[1]-a[1])[0];
+  return '<div class="lv-c"><div class="lv-l">'+T2('Ses heures','Its hours')+' <small>· '+days.length+' '+T2('derniers jours','last days')+' · Bitcoin</small></div><div style="margin-top:14px">'+s+'</svg></div>'+
+   '<div class="lv-note">'+T2('Le résultat de votre robot à chaque heure, sur ','Your robot’s result at each hour, over ')+n+' trades'+(best&&best[1]>0?T2(' — sa meilleure heure : ',' — its best hour: ')+best[0]+'h':'')+'. '+T2('Ce qui s’est passé, pas une prévision.','What happened, not a forecast.')+'</div></div>';}
+ // ---- build once, paint on every change ----
+ function build(){const tab=$('tab-marche');if(!tab)return false;if($('edr'))return true;
+  const h=document.createElement('div');h.id='edrh';
+  h.innerHTML='<div class="pfi"><svg class="ic"><use href="#i-activity"/></svg></div><div><h2>'+T2('En direct','Live')+'</h2><p><i></i>'+T2('Ce que votre robot voit et attend','What your robot sees and waits for')+'</p></div>';
+  const edr=document.createElement('div');edr.id='edr';
+  const det=document.createElement('details');det.id='edrdet';
+  det.innerHTML='<summary>'+T2('Détails pour traders','Details for traders')+'<span>'+T2('météo chiffrée · H4 / H1 / M15 · heures du marché · leçons','weather figures · H4 / H1 / M15 · market hours · lessons')+' ▾</span></summary>';
+  const back=document.createElement('button');back.id='edrback';back.type='button';back.innerHTML='‹ '+T2('Retour à En direct','Back to Live');back.onclick=()=>mxView('market');
+  tab.insertBefore(back,tab.firstChild);tab.insertBefore(edr,back.nextSibling);tab.insertBefore(h,edr);
+  ['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)det.appendChild(e);});
+  const mm=$('mx-market');if(mm)mm.appendChild(det);else edr.after(det);
+  // the bottom bar says what the page is now
+  const tb=$('tb-marche');if(tb){const tn=Array.from(tb.childNodes).find(n=>n.nodeType===3&&n.textContent.trim());if(tn)tn.textContent=T2('En direct','Live');}
+  return true;}
+ const ORIG=window.mxView;
+ window.mxView=function(v,q){if(v==='lab'){try{goLabo();}catch(e){}return;}
+  const scan=v==='scan';try{ORIG(scan?'scan':'market',q);}catch(e){}
+  ['edrh','edr'].forEach(id=>{const e=$(id);if(e)e.style.display=scan?'none':'';});
+  const b=$('edrback');if(b)b.style.display=scan?'flex':'none';
+  if(!scan){paint(true);}};
+ async function scan(){if(Date.now()-scT<55000&&SC)return;scT=Date.now();
+  try{const r=await fetch(B+'scanner_data?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err){SC=j;window._scn=j;}}}catch(e){}}
+ function paint(force){const edr=$('edr');if(!edr||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
+  if(!$('edrA')){edr.innerHTML='<div id="edrA" style="display:flex;flex-direction:column;gap:12px"></div><div id="edrC"></div><div id="edrB" style="display:flex;flex-direction:column;gap:12px"></div>';}
+  const TR=trials();if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel))sel='BTCUSD';
+  const B0=btc(D),cur=TR.find(r=>r.sym===sel);
+  const hA=marketsCard(D,B0,TR)+(sel==='BTCUSD'?btcCard(D):trialCard(cur)),hB=diary(D)+hours(D);
+  const A=$('edrA'),Bx=$('edrB'),C=$('edrC');
+  if(force||A._l!==hA){A._l=hA;A.innerHTML=hA;
+   A.querySelectorAll('.lv-mr').forEach(b=>b.onclick=()=>{sel=b.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);});
+   const sc=$('edrscan');if(sc)sc.onclick=()=>mxView('scan');
+   const nb=$('edrnotif');if(nb)nb.onclick=()=>{const o=$('notifbtn');if(o)o.click();};}
+  if(force||Bx._l!==hB){Bx._l=hB;Bx.innerHTML=hB;const jr=$('edrjr');if(jr)jr.onclick=()=>{try{rjOpen();}catch(e){}};}
+  // the chart is rebuilt only when the market changes (moving or rewriting an iframe reloads it)
+  if(C._s!==sel||C._lang!==EN()){C._s=sel;C._lang=EN();C.innerHTML=chartCard();frSym='';}
+  const f=$('edrfr');if(f&&frSym!==sel&&$('tab-marche').classList.contains('on')){frSym=sel;f.innerHTML='<iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&sym='+encodeURIComponent(sel)+'"></iframe>';}}
+ function tick(){try{if(!build())return;if($('tab-marche').classList.contains('on')){scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
+ function init(){tick();setInterval(tick,2000);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
 
 // ==== 2026-10-13 (owner, step 4): the TERMINAL - on a wide screen (>= 1180 px) the same app becomes a trading
 // terminal: the 5 destinations as a left rail, the live chart in the centre, the current page in a right column
