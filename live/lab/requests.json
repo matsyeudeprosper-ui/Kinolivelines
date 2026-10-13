@@ -324,7 +324,9 @@
    "what_en": "Add 'move' (the number of big moves counted over the last 2 hours at entry, as in the reading tools) to the facts a pile can use, with the same operators. Nothing changes for existing piles.",
    "why_fr": "Le meilleur indice de ce soir (les tendances mûres gagnent, les jeunes perdent) ne peut pas devenir une pile : ce fait n'est pas dans la liste. Une pile « à partir du 4e mouvement » le suivrait avec la vérification des deux moitiés.",
    "why_en": "Tonight's best clue (mature trends win, young ones lose) cannot become a pile: this fact is not on the list. A pile 'from the 4th move on' would follow it with the two-halves check.",
-   "status": "open"
+   "status": "open",
+   "build_attempts": 1,
+   "build_error": "périmètre : live/robots/test_robot_live.py"
   },
   {
    "id": "pb_gate_parity",
