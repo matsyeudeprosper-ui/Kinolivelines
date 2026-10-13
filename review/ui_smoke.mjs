@@ -338,7 +338,7 @@ console.log("labo");
     check(`Labo · ${side} has no bare verdict letter`, !/(^|\s)[ABC](\s|$)/m.test(await ev("Array.from(document.querySelectorAll('.bd')).map(function(e){return e.innerText.trim();}).join('\\n')")));
     if (side === "Robots") {
       await ev("(function(){var b=document.querySelector('#top .sc');if(b)b.click();return 1;})()"); await sleep(1500);
-      check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .pr').length")) >= 5);   // 2026-10-12: eyes + 4 parts
+      check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .lg').length")) >= 7);   // 2026-10-13: eyes + 6 named pieces
     }
   }
   await shot("smoke_labo");

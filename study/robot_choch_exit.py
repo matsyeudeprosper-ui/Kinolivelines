@@ -30,8 +30,8 @@ FAR = 1e7
 
 class RobotArm(PbGateArm):
     """a PbGateArm whose EXIT part can be swapped: exit='target' (today) or 'choch'; stop='protected' or 'none'"""
-    def __init__(self, name, cfg, bars, S, exit="target", stop="protected", allowance="current", **kw):
-        super().__init__(name, cfg, bars, "trend", S, allowance=allowance, **kw)
+    def __init__(self, name, cfg, bars, S, exit="target", stop="protected", allowance="current", gate="trend", **kw):
+        super().__init__(name, cfg, bars, gate, S, allowance=allowance, **kw)
         self.exit_mode, self.stop_mode = exit, stop
         self.n.update({"choch_exits": 0, "choch_exit_wins": 0, "stop_exits": 0})
 

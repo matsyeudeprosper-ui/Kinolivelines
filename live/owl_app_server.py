@@ -11391,6 +11391,7 @@ def builder_payload(user, detail):
     R = [r for r in reg.get("robots") or [] if detail or r.get("by_uid") == me
          or r.get("public", r.get("by") in ("owner", "claude", "chercheur"))]
     byid = {r["id"]: r for r in reg.get("robots") or []}
+    _pcs = {p["id"]: p for p in reg.get("pieces") or []}
     out = []
     for r in R:
         x = {k: v for k, v in r.items() if k not in ("by_uid",)}
@@ -11398,7 +11399,7 @@ def builder_payload(user, detail):
         x["mine"] = r.get("by_uid") == me
         x["can_edit"] = _robot_mine(user, r) and r.get("id") != "owl"
         x["public"] = bool(r.get("public", r.get("by") in ("owner", "claude", "chercheur")))
-        x["live_capable"] = robot_live_capable(x["resolved"])
+        x["live_capable"] = robot_live_capable(x["resolved"], _pcs)
         if r.get("plug") and not detail and r.get("by_uid") == me and str(r["plug"].get("where", "")).startswith("acct:"):
             x["plug"] = dict(r["plug"], where="acct:mine")
         try:
@@ -11435,7 +11436,24 @@ def builder_payload(user, detail):
                       "real": "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None})
         if not (u.get("reference") or uid == "u224016179" or u.get("public")):
             i += 1
-    return {"parts": reg.get("parts") or {}, "robots": out, "plugs": plugs, "can_create": True,
+    # money pieces = the packages (generic names); a dead package is not offered
+    try:
+        _pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        _pk = {"packages": {}, "accounts": {}}
+    used_acc = set((_pk.get("accounts") or {}).values())
+    pieces = [dict(p) for p in reg.get("pieces") or []]
+    for name, pk in (_pk.get("packages") or {}).items():
+        if not isinstance(pk, dict) or "mort" in str(pk.get("label") or ""):
+            continue
+        nm = ROBOT_NAMES.get(name, (name, name, "", ""))
+        pieces.append({"id": name, "type": "money", "name_fr": nm[0], "name_en": nm[1], "plain_fr": nm[2], "plain_en": nm[3],
+                       "status": "live" if (name in used_acc or name == "base") else "tested", "live": True, "by": "owner", "version": 1, "pkg": "pkg-" + name})
+    for pc in pieces:
+        pc["used_by"] = [x["id"] for x in out if (pc["id"] in (x["resolved"].get("filters") or [])) or pc["id"] in
+                         [x["resolved"].get(k) for k in ("entry", "stop", "exit", "recovery", "money")]]
+        pc.pop("engine", None)
+    return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": True,
             "admin": bool(is_admin(user)), "targets": robot_targets(user, detail),
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
 
@@ -11444,7 +11462,6 @@ def robot_create(user, body, dry=False):
     """a new robot from the builder: a parent + the parts it replaces + a name; queued for its test"""
     import re as _re
     reg = robot_reg()
-    parts_ok = reg.get("parts") or {}
     rob = reg.get("robots") or []
     me = user.get("id")
     if not dry and sum(1 for r in rob if r.get("by_uid") == me) >= ROBOT_MAX_PER_USER and not is_admin(user):
@@ -11457,34 +11474,24 @@ def robot_create(user, body, dry=False):
         return {"ok": False, "err": "parent"}
     P = body.get("parts") or {}
     clean = {}
-    ents = {p["id"] for p in parts_ok.get("entry") or []}
-    exs = {p["id"]: p for p in parts_ok.get("exit") or []}
-    recs = {p["id"] for p in parts_ok.get("recovery") or []}
-    if P.get("entry"):
-        if P["entry"] not in ents:
-            return {"ok": False, "err": "entry"}
-        clean["entry"] = P["entry"]
-    if P.get("exit"):
-        ex = P["exit"] if isinstance(P["exit"], dict) else {"id": P["exit"]}
-        if ex.get("id") not in exs:
-            return {"ok": False, "err": "exit"}
-        e2 = {"id": ex["id"]}
-        if ex["id"] in ("target", "target_choch"):
-            rr = float(ex.get("rr") or 0.8)
-            if rr not in (exs[ex["id"]].get("dial") or {}).get("rr", [0.8]):
-                return {"ok": False, "err": "rr"}
-            e2["rr"] = rr
-        clean["exit"] = e2
-    if P.get("recovery"):
-        if P["recovery"] not in recs:
-            return {"ok": False, "err": "recovery"}
-        clean["recovery"] = P["recovery"]
+    PCS = {p["id"]: p for p in reg.get("pieces") or []}
+    usable = lambda pid, typ: pid in PCS and PCS[pid].get("type") == typ and PCS[pid].get("status") not in ("pending", "to_build")
+    for k in ("entry", "stop", "exit", "recovery"):
+        if P.get(k):
+            if not usable(P[k], k):
+                return {"ok": False, "err": k}
+            clean[k] = P[k]
+    if "filters" in P:
+        F = [f for f in (P.get("filters") or []) if isinstance(f, str)]
+        if len(set(F)) != len(F) or any(not usable(f, "filter") for f in F):
+            return {"ok": False, "err": "filters"}
+        clean["filters"] = F
     if P.get("money"):
         try:
             pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8")).get("packages") or {}
         except Exception:
             pk = {}
-        if P["money"] not in pk:
+        if P["money"] not in pk or "mort" in str((pk.get(P["money"]) or {}).get("label") or ""):
             return {"ok": False, "err": "money"}
         clean["money"] = P["money"]
     if not clean:
@@ -11508,17 +11515,17 @@ def robot_create(user, body, dry=False):
 
 
 # ---- 2026-10-12 (owner): members manage their robots - edit, delete, public/private, where to run it ----
-ROBOT_LIVE_PARTS = {"entry": {"owl_bos"}, "exit": {"target"}, "recovery": {"current", "all_bos"}}
-
-
-def robot_live_capable(parts):
-    """True when the live bot can already run every part (exit = a target at N x risk; catch-up = the
-    debt gate on or off; any money version) - such a robot becomes a money package + a plug"""
-    for k, ok in ROBOT_LIVE_PARTS.items():
+def robot_live_capable(parts, pieces=None):
+    """True when the live bot can already run every piece of the robot (robots.json v2 'live' flag) - such a
+    robot becomes a money package + a plug once the owner approves. The live bot cannot drop the storm ceiling."""
+    P = pieces if pieces is not None else {p["id"]: p for p in robot_reg().get("pieces") or []}
+    for k in ("entry", "stop", "exit", "recovery"):
         v = parts.get(k)
-        vid = v.get("id") if isinstance(v, dict) else v
-        if vid is not None and vid not in ok:
+        if v is not None and not (P.get(v) or {}).get("live"):
             return False
+    F = parts.get("filters")
+    if F is not None and (any(not (P.get(f) or {}).get("live") for f in F) or "orage" not in F):
+        return False
     return True
 
 
@@ -11796,17 +11803,17 @@ def _studio_parts(S, ok):
     g = {s["id"]: s for s in S if ok.get(s["id"])}
     entry = exit_ = None
     if "on_break" in g and "with_pb_trend" in g and "choch_entry" not in g:
-        entry = {"match": "owl_bos", "fr": "Pareil que l'entrée de l'Owl : cassure dans la tendance", "en": "Same as the Owl's entry: break with the trend"}
+        entry = {"match": "cassure-tendance", "filters": ["tendance-fond"], "fr": "Cassure-Tendance (l'entrée de l'Owl) avec le filtre Tendance de fond", "en": "Trend-Break (the Owl's entry) with the Background trend filter"}
     elif "on_break" in g:
         entry = {"match": None, "fr": "Une cassure, à la clôture" + (" après un CHoCH" if "choch_entry" in g else "") + (" dans la tendance principale" if "with_trend" in g else ""),
                  "en": "A break, at the close" + (" after a CHoCH" if "choch_entry" in g else "") + (" with the main trend" if "with_trend" in g else "")}
     if "exit_choch" in g:
-        exit_ = {"match": "choch", "fr": "Sortie au CHoCH", "en": "CHoCH exit"}
+        exit_ = {"match": "choch-principal", "fr": "CHoCH principal", "en": "Main CHoCH"}
     elif "exit_r" in g:
         rr = g["exit_r"]["r"]
         dial = [0.6, 0.8, 1.0, 1.5, 2.0]
         near = min(dial, key=lambda x: abs(x - rr))
-        exit_ = {"match": "target", "rr": near, "fr": "Objectif fixe à %s fois le risque" % (("%.1f" % near).replace(".", ",")), "en": "Fixed target at %.1f times the risk" % near}
+        exit_ = {"match": "objectif-%sr" % ("%g" % near).replace(".", ""), "fr": "Objectif %sR" % ("%g" % near).replace(".", ","), "en": "Target %gR" % near}
     return {"entry": entry, "exit": exit_}
 
 

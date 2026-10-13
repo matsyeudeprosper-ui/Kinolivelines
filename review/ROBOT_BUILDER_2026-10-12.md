@@ -63,3 +63,15 @@ Without the safety stop the robot reaches the -60 kill line in the first half. N
   exit, hold) and the member confirms each sentence; `studio_confirm` maps the answers to a known part (owl_bos,
   target N x risk, choch) or records it as a part still to build. Checked end to end by live/review/studio_check.mjs
   (and a variant that enters only on break candles: entries detected 3/4, exits mapped to a 0.8 x target).
+
+## Step 1 of the advanced builder (2026-10-13): named pieces
+robots.json v2: 6 slots - entry, filters (stackable list), stop, exit, catch-up, money - plus the shared eyes.
+28 named pieces (Cassure-Tendance; filters Tendance de fond / Orage / Mouvement / Nervosité; stops Point protégé +
+2 "à construire"; exits Objectif 0,6R..2R, CHoCH principal, Objectif 1R ou CHoCH, CHoCH des reculs (pending
+Friday); Rattrapage limité / sans limite; the money packages). Each piece: status (live / tested / pending /
+to_build), version, author, `engine` (bench settings) and `live` (the live bot can already run it). A missing
+filter is switched OFF on the bench (storm ceiling 99, movement 0, trend gate none, nervosity off).
+Parity: the Owl rebuilt from its pieces reproduces the proof bench exactly (+57.39 both, robot_runner.py owl).
+UI: Lego builder (tap a slot -> swap from the list; filters ticked on/off), a page per piece (who uses it, live
+or not, "build a robot with this piece"), the catalogue on the Robots page. The live bot cannot drop the storm
+ceiling, so a robot without "Orage" is not live-capable.

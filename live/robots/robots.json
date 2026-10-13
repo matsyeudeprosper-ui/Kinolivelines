@@ -1,79 +1,5 @@
 {
- "about": "2026-10-12 (owner): the robot builder. A robot = the EYES (the nest's market-structure reading: swings, BOS, CHoCH, the pullback chart - shared by every robot, never swapped) + an ENTRY + an EXIT + a MONEY part. A robot can inherit from another (parent) and replace any part, or borrow parts from several robots. A new robot is first tested on past ticks (study/robot_runner.py), then runs as a twin without money, then on demo; plugging it onto a real account or another market is the owner's decision. Plugs (which robot runs where) live in owl_packages.json 'accounts' today, all on BTCUSD.",
- "parts": {
-  "entry": [
-   {
-    "id": "owl_bos",
-    "status": "live",
-    "fr": "Cassure dans la tendance",
-    "en": "Break with the trend",
-    "plain_fr": "Entre à la clôture d'une bougie au-delà d'une cassure de structure (BOS ou CHoCH), seulement dans le sens de la tendance de fond et au-delà de sa dernière cassure.",
-    "plain_en": "Enters at the close of a candle beyond a structure break (BOS or CHoCH), only with the background trend and beyond its last break."
-   }
-  ],
-  "exit": [
-   {
-    "id": "target",
-    "status": "live",
-    "fr": "Objectif fixe",
-    "en": "Fixed target",
-    "dial": {
-     "rr": [
-      0.6,
-      0.8,
-      1.0,
-      1.5,
-      2.0
-     ]
-    },
-    "plain_fr": "Ferme à un objectif de N fois le risque, ou au stop placé sur le point protégé.",
-    "plain_en": "Closes at a target of N times the risk, or at the stop on the protected point."
-   },
-   {
-    "id": "choch",
-    "status": "backtest",
-    "fr": "Sortie au CHoCH",
-    "en": "CHoCH exit",
-    "plain_fr": "Pas d'objectif : le trade reste ouvert jusqu'à ce que la structure change de sens contre lui (un CHoCH), à la clôture de la bougie. Le stop sur le point protégé reste comme filet de sécurité.",
-    "plain_en": "No target: the trade stays open until the structure changes direction against it (a CHoCH), at the candle close. The stop on the protected point stays as a safety net."
-   },
-   {
-    "id": "target_choch",
-    "status": "backtest",
-    "fr": "Objectif ou CHoCH",
-    "en": "Target or CHoCH",
-    "dial": {
-     "rr": [
-      0.6,
-      0.8,
-      1.0,
-      1.5,
-      2.0
-     ]
-    },
-    "plain_fr": "Ferme à l'objectif de N fois le risque, au stop, ou plus tôt si la structure change de sens contre le trade (un CHoCH) avant l'objectif.",
-    "plain_en": "Closes at the target of N times the risk, at the stop, or earlier if the structure changes direction against the trade (a CHoCH) before the target."
-   }
-  ],
-  "recovery": [
-   {
-    "id": "current",
-    "status": "live",
-    "fr": "Rattrapage limité",
-    "en": "Limited catch-up",
-    "plain_fr": "Après une perte : le changement de sens, puis un seul trade de plus dans le même sens.",
-    "plain_en": "After a loss: the change of direction, then only one more trade the same way."
-   },
-   {
-    "id": "all_bos",
-    "status": "backtest",
-    "fr": "Rattrapage sans limite",
-    "en": "Unlimited catch-up",
-    "plain_fr": "Après une perte : chaque cassure (BOS) peut être prise, sans limite de nombre.",
-    "plain_en": "After a loss: every break (BOS) may be taken, no limit on the number."
-   }
-  ]
- },
+ "about": "2026-10-13 (owner): the robot builder, v2. A robot = the EYES (the nest's structure reading, shared, never swapped) + named PIECES: entry, filters (stackable), stop, exit, catch-up, money. A robot inherits its parent's pieces and replaces any of them (filters are replaced as a whole list). 'engine' says how study/robot_runner.py runs a piece; 'live' = the live bot can already run it; status live / tested / pending / to_build. Money pieces are the packages of owl_packages.json.",
  "robots": [
   {
    "id": "owl",
@@ -84,12 +10,15 @@
    "created": "2026-09-08",
    "stage": "real",
    "parts": {
-    "entry": "owl_bos",
-    "exit": {
-     "id": "target",
-     "rr": 0.8
-    },
-    "recovery": "current",
+    "entry": "cassure-tendance",
+    "filters": [
+     "tendance-fond",
+     "orage",
+     "mouvement"
+    ],
+    "stop": "point-protege",
+    "exit": "objectif-08r",
+    "recovery": "rattrapage-limite",
     "money": "base"
    },
    "plain_fr": "Le robot principal : il tourne sur tous les comptes, avec une version d'argent par compte.",
@@ -104,14 +33,13 @@
    "created": "2026-10-12",
    "stage": "tested",
    "parts": {
-    "exit": {
-     "id": "choch"
-    },
-    "recovery": "all_bos"
+    "exit": "choch-principal",
+    "recovery": "rattrapage-sans-limite"
    },
    "plain_fr": "L'Owl, mais il ne sort qu'au CHoCH, et rattrape sur chaque cassure.",
    "plain_en": "The Owl, but it only exits on a CHoCH, and catches up on every break.",
-   "result": "study/robot_choch_exit.json"
+   "result": "study/robot_choch_exit.json",
+   "public": false
   },
   {
    "id": "pekos-owl",
@@ -119,10 +47,7 @@
    "name_en": "Pekos owl",
    "parent": "owl",
    "parts": {
-    "exit": {
-     "id": "target",
-     "rr": 1.0
-    }
+    "exit": "objectif-1r"
    },
    "by": "owner",
    "by_uid": "kino",
@@ -136,7 +61,7 @@
    "name_en": "Pekos catch-up",
    "parent": "pekos-owl",
    "parts": {
-    "recovery": "all_bos"
+    "recovery": "rattrapage-sans-limite"
    },
    "by": "owner",
    "by_uid": "kino",
@@ -152,10 +77,7 @@
    "name_en": "Pekos catch-up CHoCH",
    "parent": "pekos-rattrapage",
    "parts": {
-    "exit": {
-     "id": "target_choch",
-     "rr": 1.0
-    }
+    "exit": "objectif-1r-ou-choch"
    },
    "by": "owner",
    "by_uid": "kino",
@@ -165,5 +87,294 @@
    "plain_en": "Pekos catch-up, which also exits early if a CHoCH comes before the target.",
    "tested_at": "2026-10-12T22:51:03Z"
   }
- ]
+ ],
+ "pieces": [
+  {
+   "id": "cassure-tendance",
+   "type": "entry",
+   "name_fr": "Cassure-Tendance",
+   "name_en": "Trend-Break",
+   "plain_fr": "Entre à la clôture d'une bougie au-delà d'une cassure de structure (BOS ou CHoCH). C'est l'entrée de l'Owl.",
+   "plain_en": "Enters at the close of a candle beyond a structure break (BOS or CHoCH). The Owl's entry.",
+   "status": "live",
+   "engine": {},
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "tendance-fond",
+   "type": "filter",
+   "name_fr": "Tendance de fond",
+   "name_en": "Background trend",
+   "plain_fr": "Seulement dans le sens de la tendance du graphique des reculs, et au-delà de sa dernière cassure.",
+   "plain_en": "Only with the pullback chart's trend, and beyond its last break.",
+   "status": "live",
+   "engine": {
+    "gate": "trend"
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "orage",
+   "type": "filter",
+   "name_fr": "Orage",
+   "name_en": "Storm",
+   "plain_fr": "Pas de trade quand le marché s'emballe (bougies presque deux fois plus grandes que d'habitude).",
+   "plain_en": "No trade when the market storms (candles almost twice their usual size).",
+   "status": "live",
+   "engine": {
+    "storm": 1.85
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "mouvement",
+   "type": "filter",
+   "name_fr": "Mouvement",
+   "name_en": "Movement",
+   "plain_fr": "Pas de trade si le marché n'a fait aucun grand mouvement depuis 2 heures.",
+   "plain_en": "No trade if the market made no big move in the last 2 hours.",
+   "status": "live",
+   "engine": {
+    "movement": 1
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "nervosite",
+   "type": "filter",
+   "name_fr": "Nervosité",
+   "name_en": "Nervosity",
+   "plain_fr": "Pas de trade quand le marché est plus nerveux que d'habitude.",
+   "plain_en": "No trade when the market is more nervous than usual.",
+   "status": "tested",
+   "engine": {
+    "nerv_gate": true
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "point-protege",
+   "type": "stop",
+   "name_fr": "Point protégé",
+   "name_en": "Protected point",
+   "plain_fr": "Le stop se place sur le dernier creux (achat) ou sommet (vente) que la structure protège.",
+   "plain_en": "The stop goes on the last low (buy) or high (sell) the structure protects.",
+   "status": "live",
+   "engine": {
+    "stop": "protected"
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "bougie-cassure",
+   "type": "stop",
+   "name_fr": "Bougie de cassure",
+   "name_en": "Break candle",
+   "plain_fr": "Le stop se place de l'autre côté de la bougie qui a cassé.",
+   "plain_en": "The stop goes on the other side of the candle that broke.",
+   "status": "to_build",
+   "engine": {},
+   "live": false,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "distance-fixe",
+   "type": "stop",
+   "name_fr": "Distance fixe",
+   "name_en": "Fixed distance",
+   "plain_fr": "Le stop est toujours à la même distance de l'entrée.",
+   "plain_en": "The stop is always the same distance from the entry.",
+   "status": "to_build",
+   "engine": {},
+   "live": false,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-06r",
+   "type": "exit",
+   "name_fr": "Objectif 0,6R",
+   "name_en": "Target 0.6R",
+   "plain_fr": "Ferme quand le gain atteint 0,6 fois le risque, ou au stop.",
+   "plain_en": "Closes when the gain reaches 0.6 times the risk, or at the stop.",
+   "status": "tested",
+   "engine": {
+    "exit": "target",
+    "rr": 0.6
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-08r",
+   "type": "exit",
+   "name_fr": "Objectif 0,8R",
+   "name_en": "Target 0.8R",
+   "plain_fr": "Ferme quand le gain atteint 0,8 fois le risque, ou au stop.",
+   "plain_en": "Closes when the gain reaches 0.8 times the risk, or at the stop.",
+   "status": "live",
+   "engine": {
+    "exit": "target",
+    "rr": 0.8
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-1r",
+   "type": "exit",
+   "name_fr": "Objectif 1R",
+   "name_en": "Target 1R",
+   "plain_fr": "Ferme quand le gain atteint 1 fois le risque, ou au stop.",
+   "plain_en": "Closes when the gain reaches 1 times the risk, or at the stop.",
+   "status": "tested",
+   "engine": {
+    "exit": "target",
+    "rr": 1.0
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-15r",
+   "type": "exit",
+   "name_fr": "Objectif 1,5R",
+   "name_en": "Target 1.5R",
+   "plain_fr": "Ferme quand le gain atteint 1,5 fois le risque, ou au stop.",
+   "plain_en": "Closes when the gain reaches 1.5 times the risk, or at the stop.",
+   "status": "tested",
+   "engine": {
+    "exit": "target",
+    "rr": 1.5
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-2r",
+   "type": "exit",
+   "name_fr": "Objectif 2R",
+   "name_en": "Target 2R",
+   "plain_fr": "Ferme quand le gain atteint 2 fois le risque, ou au stop.",
+   "plain_en": "Closes when the gain reaches 2 times the risk, or at the stop.",
+   "status": "tested",
+   "engine": {
+    "exit": "target",
+    "rr": 2.0
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "choch-principal",
+   "type": "exit",
+   "name_fr": "CHoCH principal",
+   "name_en": "Main CHoCH",
+   "plain_fr": "Pas d'objectif : ferme quand la structure principale change de sens contre le trade.",
+   "plain_en": "No target: closes when the main structure changes direction against the trade.",
+   "status": "tested",
+   "engine": {
+    "exit": "choch"
+   },
+   "live": false,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "objectif-1r-ou-choch",
+   "type": "exit",
+   "name_fr": "Objectif 1R ou CHoCH",
+   "name_en": "Target 1R or CHoCH",
+   "plain_fr": "Ferme à 1 fois le risque, au stop, ou plus tôt si la structure change de sens contre le trade.",
+   "plain_en": "Closes at 1 times the risk, at the stop, or earlier if the structure changes direction against the trade.",
+   "status": "tested",
+   "engine": {
+    "exit": "target_choch",
+    "rr": 1.0
+   },
+   "live": false,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "choch-reculs",
+   "type": "exit",
+   "name_fr": "CHoCH des reculs",
+   "name_en": "Pullback CHoCH",
+   "plain_fr": "Pas d'objectif : ferme quand le graphique des reculs change de sens contre le trade. Test prévu vendredi.",
+   "plain_en": "No target: closes when the pullback chart changes direction against the trade. Test planned for Friday.",
+   "status": "pending",
+   "engine": {},
+   "live": false,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "rattrapage-limite",
+   "type": "recovery",
+   "name_fr": "Rattrapage limité",
+   "name_en": "Limited catch-up",
+   "plain_fr": "Après une perte : le changement de sens, puis un seul trade de plus dans le même sens.",
+   "plain_en": "After a loss: the change of direction, then only one more trade the same way.",
+   "status": "live",
+   "engine": {
+    "recovery": "current"
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  },
+  {
+   "id": "rattrapage-sans-limite",
+   "type": "recovery",
+   "name_fr": "Rattrapage sans limite",
+   "name_en": "Unlimited catch-up",
+   "plain_fr": "Après une perte : chaque cassure (BOS) peut être prise, sans limite de nombre.",
+   "plain_en": "After a loss: every break (BOS) may be taken, no limit on the number.",
+   "status": "tested",
+   "engine": {
+    "recovery": "all_bos"
+   },
+   "live": true,
+   "by": "owner",
+   "version": 1,
+   "created": "2026-10-13"
+  }
+ ],
+ "version": 2
 }

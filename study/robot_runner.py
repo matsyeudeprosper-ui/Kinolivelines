@@ -33,18 +33,29 @@ def resolve(rid, robots, seen=None):
     return out
 
 
-def arm_for(name, parts, bars, S):
-    ex = parts.get("exit") or {"id": "target", "rr": 0.8}
-    if isinstance(ex, str):
-        ex = {"id": ex}
+def arm_for(name, parts, bars, S, pieces=None):
+    """a robot's named pieces (robots.json v2) -> the bench's settings. Filters are a list: a filter that is
+    absent is switched OFF (the storm ceiling, the movement brake, the trend filter, the nervosity gate)."""
+    P = pieces or {}
+    eng = lambda pid: (P.get(pid) or {}).get("engine") or {}
+    ex = eng(parts.get("exit") or "objectif-08r")
     pkg = parts.get("money") or "base"
     cfg_b = H.package_cfg(pkg, {"balance": BAL}); cfg_b.update({"scale_lot": 1, "scale_daily": 1})
-    if ex.get("id") in ("target", "target_choch") and ex.get("rr"):
+    if ex.get("rr"):
         cfg_b["rr"] = float(ex["rr"])
+    F = parts.get("filters")
+    F = ["tendance-fond", "orage", "mouvement"] if F is None else list(F)
+    fe = {}
+    for f in F:
+        fe.update(eng(f))
+    cfg_b["storm"] = float(fe.get("storm", 99.0))          # no storm piece: no storm ceiling
+    cfg_b["movement"] = int(fe.get("movement", 0))
+    cfg_b["nerv_gate"] = bool(fe.get("nerv_gate", False))
     cfg = H.cfg_strict(dict(cfg_b, drag=DRAG, limits_live=1))
-    return RobotArm(name, cfg, bars, S, exit=ex.get("id") if ex.get("id") in ("choch", "target_choch") else "target",
-                    stop="none" if ex.get("stop") == "none" else "protected",
-                    allowance="all_bos" if parts.get("recovery") == "all_bos" else "current",
+    rec = eng(parts.get("recovery") or "rattrapage-limite").get("recovery", "current")
+    return RobotArm(name, cfg, bars, S, exit=ex.get("exit") if ex.get("exit") in ("choch", "target_choch") else "target",
+                    stop="protected", allowance="all_bos" if rec == "all_bos" else "current",
+                    gate="trend" if fe.get("gate") == "trend" else "none",
                     order="live", cap_rule="adaptive", cap="on")
 
 
@@ -101,7 +112,11 @@ if __name__ == "__main__":
                 continue
             t0 = time.time()
             parts = resolve(rid, robots); parent = r.get("parent") or "owl"
-            arms = [arm_for("robot", parts, bars, S), arm_for("parent", resolve(parent, robots), bars, S)]
+            PCS = {p["id"]: p for p in reg.get("pieces") or []}
+            missing = [v for k, v in parts.items() if k != "money" and k != "filters" and (PCS.get(v) or {}).get("status") in ("pending", "to_build", None)]
+            if missing:
+                print(rid, "skipped: pieces not testable yet", missing, flush=True); continue
+            arms = [arm_for("robot", parts, bars, S, PCS), arm_for("parent", resolve(parent, robots), bars, S, PCS)]
             out = run_pair(arms, TM, BID, ASK, END, opps, bars)
             res = {"id": rid, "parent": parent, "parts": parts, "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                    "balance": BAL, "drag": DRAG, "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
