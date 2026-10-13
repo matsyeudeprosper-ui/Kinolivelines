@@ -87,6 +87,26 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .search{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:0 12px;height:40px;color:var(--muted)}
 .search input{flex:1;min-width:0;border:0;background:transparent;color:var(--text);font:inherit;font-size:.88rem;outline:none}
 /* list */
+/* 2026-10-13 (owner: "very busy long page"): folders and a slide-up sheet - nothing removed, everything one tap away */
+.fds{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.fd{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer}
+.fd .ic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:.82rem}
+.fd .ic svg{width:18px;height:18px}
+.fd .tx{flex:1;min-width:0}.fd .tx b{display:block;font-size:.95rem}.fd .tx small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.74rem;color:var(--muted2);line-height:1.35;margin-top:2px}
+.fd .n{flex:none;font-size:.8rem;font-weight:800;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:3px 9px}
+.fd .cv{flex:none;color:var(--muted)}
+.fd .av{width:38px;height:38px;border-radius:12px}
+.more2{display:block;width:100%;margin:2px 0 0;border:0;background:none;color:var(--accent-soft);font:inherit;font-size:.84rem;font-weight:700;text-align:left;padding:8px 4px;cursor:pointer}
+#lsh{position:fixed;inset:0;z-index:60;display:none}#lsh.on{display:block}
+#lsh .xd{position:absolute;inset:0;background:rgba(3,6,10,.55);opacity:0;transition:opacity .25s}#lsh.open .xd{opacity:1}
+#lsh .xp{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px calc(28px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 60px rgba(0,0,0,.45)}
+#lsh.open .xp{transform:none}
+@media(min-width:700px){#lsh .xp{left:50%;right:auto;width:600px;margin-left:-300px}}
+#lsh .xg{width:42px;height:5px;border-radius:99px;background:var(--border2);margin:4px auto 12px}
+#lsh .xh{display:flex;align-items:center;gap:10px;margin-bottom:10px;position:sticky;top:-8px;background:var(--bg);padding:6px 0 8px;z-index:2}
+#lsh .xh b{flex:1;font-size:1.2rem;font-weight:900;letter-spacing:-.01em}
+#lsh .xh button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.1rem}
+#lsh .xb .card:last-child{margin-bottom:0}
 .grp{margin:18px 2px 10px;display:flex;align-items:center;gap:10px;font-size:.76rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}
 .grp:after{content:"";flex:1;height:1px;background:var(--border)}
 .grp em{font-style:normal;color:var(--muted)}
@@ -393,12 +413,13 @@ function card(x,i){const m=ST[x.status]||ST.study;
 
 /* ---------- top: hero + running now + dates ---------- */
 function renderTop(){const c=D.counts||{},N=(D.items||[]).length;
+ FDS.run=null;
  const owl=byId('owl');const last=owl&&owl.total&&owl.total.last;
  let h='<div class="card hero"><div class="eyebrow">'+T('Le laboratoire des stratégies','The strategy lab')+'</div>'+
   '<div class="big">'+N+'<small>'+T('stratégies suivies','strategies tracked')+'</small></div>'+
   '<p>'+T('Chaque idée passe par les mêmes étapes : sur le passé, puis en virtuel, puis avec de l\'argent. Celles qui échouent restent ici, pour ne jamais les refaire.','Every idea goes through the same steps: past data, then virtual, then real money. The ones that fail stay here, so they are never redone.')+'</p>'+
   '<div class="sbar">'+ORDER.filter(s=>c[s]).map(s=>'<i style="flex:'+c[s]+';background:'+ST[s].c+'"></i>').join('')+'</div>'+
-  '<div class="slegend">'+ORDER.filter(s=>c[s]).map(s=>'<button onclick="setF(\''+s+'\',1)"><span class="dot" style="background:'+ST[s].c+'"></span>'+T(ST[s].fr,ST[s].en)+' <b>'+c[s]+'</b></button>').join('')+'</div>'+
+  '<div class="slegend">'+ORDER.filter(s=>c[s]).map(s=>'<button onclick="fdOpen(\'st_'+s+'\')"><span class="dot" style="background:'+ST[s].c+'"></span>'+T(ST[s].fr,ST[s].en)+' <b>'+c[s]+'</b></button>').join('')+'</div>'+
   (last?'<div class="pulse"><span class="dot"></span><span>'+T('Dernier trade du robot ','Robot\'s last trade ')+ago(last)+' · '+num(owl.total.n)+T(' trades sur tous les comptes',' trades across all accounts')+'</span></div>':'')+'</div>';
  // running now: anything with a progress to watch
  const R=[];
@@ -408,10 +429,15 @@ function renderTop(){const c=D.counts||{},N=(D.items||[]).length;
   else if(x.start&&x.end&&x.status==='study'){const a=new Date(x.start+'T00:00:00Z')/1e3,b=new Date(x.end+'T23:59:00Z')/1e3,p=(Date.now()/1e3-a)/(b-a);R.push({id:x.id,p,lab:Math.round(Math.max(0,Math.min(1,p))*100)+'%',t:tt(x),s:T('verdict le ','verdict on ')+fdate(x.end),c:'var(--violet)'});}
   else if(x.twin&&x.twin.trades&&x.status==='trial')R.push({id:x.id,p:Math.min(1,x.twin.trades/30),lab:x.twin.trades+'',t:tt(x),s:T('trades du jumeau · ','twin trades · ')+money(x.twin.net),c:'var(--accent)'});
   else if(x.id==='fresh'&&x.total)R.push({id:x.id,p:Math.min(1,x.total.n/100),lab:x.total.n+'',t:tt(x),s:T('trades en démo · ','demo trades · ')+money(x.total.net),c:'var(--accent)'});});
- if(R.length)h+='<div class="grp">'+T('En cours, à suivre','Running, worth watching')+' <em>'+R.length+'</em></div><div class="hs">'+R.map(r=>'<button class="run" onclick="go(\''+r.id+'\')">'+ring(r.p,r.c,r.lab)+'<span class="rt"><b>'+esc(r.t)+'</b><small>'+esc(r.s)+'</small></span></button>').join('')+'</div>';
- if((D.next||[]).length)h+='<div class="card" style="margin-top:6px"><h2>'+T('Prochains rendez-vous','Coming up')+'</h2><div class="dates">'+D.next.map(n=>{const d=new Date(n.date+'T12:00:00Z');
-  return '<button class="date" onclick="go(\''+n.id+'\')"><span class="cal"><b>'+d.getUTCDate()+'</b><small>'+MON[d.getUTCMonth()]+'</small></span><span class="dt"><b>'+esc(EN?n.title_en:n.title_fr)+'</b><small>'+esc(EN?n.en:n.fr)+'</small></span><span class="in">'+dIn(n.date)+'</span></button>';}).join('')+'</div></div>';
- h+='<nav id="nav"><div class="chips">'+[['all',T('Tout','All')]].concat(ORDER.filter(s=>c[s]).map(s=>[s,T(ST[s].fr,ST[s].en)])).map(([k,l])=>'<button class="chip'+(F===k?' on':'')+'" onclick="setF(\''+k+'\')">'+(k!=='all'?'<span class="dot" style="background:'+ST[k].c+'"></span>':'')+l+' <em>'+(k==='all'?N:c[k])+'</em></button>').join('')+'</div>'+
+ // 2026-10-13 (owner): no sideways strip - three lines, the rest in the sheet
+ const runRow=r=>'<button class="run" style="width:100%;flex:none" onclick="go(\''+r.id+'\')">'+ring(r.p,r.c,r.lab)+'<span class="rt"><b>'+esc(r.t)+'</b><small>'+esc(r.s)+'</small></span></button>';
+ if(R.length){FDS.run=[T('En cours, à suivre','Running, worth watching'),()=>'<div class="fds">'+R.map(runRow).join('')+'</div>'];
+  h+='<div class="grp">'+T('En cours, à suivre','Running, worth watching')+' <em>'+R.length+'</em></div><div class="fds">'+R.slice(0,3).map(runRow).join('')+'</div>'+(R.length>3?'<button class="more2" onclick="fdOpen(\'run\')">'+T('Voir les ','See all ')+R.length+' ›</button>':'');}
+ const dateRow=n=>{const d=new Date(n.date+'T12:00:00Z');
+  return '<button class="date" onclick="go(\''+n.id+'\')"><span class="cal"><b>'+d.getUTCDate()+'</b><small>'+MON[d.getUTCMonth()]+'</small></span><span class="dt"><b>'+esc(EN?n.title_en:n.title_fr)+'</b><small>'+esc(EN?n.en:n.fr)+'</small></span><span class="in">'+dIn(n.date)+'</span></button>';};
+ const NX=D.next||[];FDS.dates=[T('Prochains rendez-vous','Coming up'),()=>'<div class="card"><div class="dates">'+NX.map(dateRow).join('')+'</div></div>'];
+ if(NX.length)h+='<div class="card" style="margin-top:6px"><h2>'+T('Prochains rendez-vous','Coming up')+'</h2><div class="dates">'+NX.slice(0,2).map(dateRow).join('')+'</div>'+(NX.length>2?'<button class="more2" onclick="fdOpen(\'dates\')">'+T('Tous les rendez-vous','All dates')+' · '+NX.length+' ›</button>':'')+'</div>';
+ F='all';h+='<div class="grp">'+T('Les idées','The ideas')+' <em>'+N+'</em></div><nav id="nav">'+
   '<div class="tb2"><div class="seg"><button class="'+(V==='list'?'on':'')+'" onclick="setV(\'list\')">'+T('Liste','List')+'</button><button class="'+(V==='rank'?'on':'')+'" onclick="setV(\'rank\')">'+T('Classement','Ranking')+'</button></div>'+
   '<label class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" placeholder="'+T('Chercher…','Search…')+'" value="'+esc(Q)+'" oninput="Q=this.value;renderList()"></label></div></nav>';
  $('top').innerHTML=h;}
@@ -423,6 +449,12 @@ function match(x){if(F!=='all'&&x.status!==F)return false;if(!Q)return true;cons
 function renderList(){if(!D)return;const L=(D.items||[]).filter(match);
  if(V==='rank'){renderRank(L);return;}
  if(!L.length){$('list').innerHTML='<div class="empty">'+T('Rien ici pour le moment.','Nothing here yet.')+'</div>';return;}
+ // 2026-10-13 (owner): no search typed = one folder per stage, each opens its cards in the sheet
+ if(!Q){const srt=G=>G.slice().sort((a,b)=>(b.flag?1:0)-(a.flag?1:0)||((EVI[b.evidence]||{}).t||0)-((EVI[a.evidence]||{}).t||0)||String(b.since||'').localeCompare(String(a.since||'')));
+  let f='<div class="fds">';ORDER.forEach(s=>{const G=srt(L.filter(x=>x.status===s));if(!G.length)return;
+   FDS['st_'+s]=[T(ST[s].fr,ST[s].en)+' · '+G.length,()=>'<div class="grid">'+G.map((x,i)=>card(x,i)).join('')+'</div>'];
+   f+=fd('st_'+s,ICO(ST[s].c,'<span class="dot" style="background:'+ST[s].c+';width:12px;height:12px"></span>'),T(ST[s].fr,ST[s].en),G.slice(0,2).map(x=>esc(tt(x))).join(' · '),G.length);});
+  $('list').innerHTML=f+'</div>';return;}
  let h='',i=0;
  ORDER.forEach(s=>{const G=L.filter(x=>x.status===s).sort((a,b)=>(b.flag?1:0)-(a.flag?1:0)||((EVI[b.evidence]||{}).t||0)-((EVI[a.evidence]||{}).t||0)||String(b.since||'').localeCompare(String(a.since||'')));
   if(!G.length)return;h+='<div class="grp"><span class="dot" style="background:'+ST[s].c+'"></span>'+T(ST[s].fr,ST[s].en)+' <em>'+G.length+'</em></div><div class="grid">'+G.map(x=>card(x,i++)).join('')+'</div>';});
@@ -653,35 +685,49 @@ function renderTeam(){const t=TM;if(!t)return;const c=t.chercheur||{},b=t.constr
  let h='<div class="card hero"><div class="eyebrow">'+T('L\'équipe IA','The AI team')+'</div><div class="big">4<small>'+T('IA au travail','AIs at work')+'</small></div>'+
   '<p>'+T('Le chercheur pose les questions, le constructeur fabrique, la critique vérifie, la veille regarde chaque trade. Personne ne touche aux comptes réels sans le propriétaire.','The researcher asks, the builder builds, the critic checks, the watcher looks at every trade. Nobody touches real accounts without the owner.')+'</p>'+
   '<div class="avs">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'</div>'+
-  '<div class="pulse"><span class="dot" style="'+(nightOk?'':'background:var(--down);box-shadow:0 0 10px var(--down)')+'"></span><span>'+(nightOk?T('Séance de nuit faite ','Night run done ')+ago(new Date(n.updated).getTime()/1000):(n.drift?T('Le simulateur ne décrit plus le robot : les verdicts sont à revoir','The simulator no longer matches the robot: verdicts need a recheck'):T('La séance de nuit n\'a pas tourné depuis ','The night run has not run for ')+Math.round(nightAge)+' h'))+'</span></div></div>'+
-  '<div class="chips" style="margin:0 0 14px">'+[['tm-ch',T('Le chercheur','Researcher')],['tm-co',T('Le constructeur','Builder')],['tm-cr',T('La critique','Critic')],['tm-ve',T('La veille','Watcher')],['tm-pi',T('Les pistes','Clues')],['tm-qa',T('Questions','Questions')]].map(x=>'<button class="chip" onclick="jumpTo(\''+x[0]+'\')">'+x[1]+'</button>').join('')+'</div>';
+  '<div class="pulse"><span class="dot" style="'+(nightOk?'':'background:var(--down);box-shadow:0 0 10px var(--down)')+'"></span><span>'+(nightOk?T('Séance de nuit faite ','Night run done ')+ago(new Date(n.updated).getTime()/1000):(n.drift?T('Le simulateur ne décrit plus le robot : les verdicts sont à revoir','The simulator no longer matches the robot: verdicts need a recheck'):T('La séance de nuit n\'a pas tourné depuis ','The night run has not run for ')+Math.round(nightAge)+' h'))+'</span></div></div>';
+ const S={};
  const cnt=n.counts||{};const tot=Object.values(cnt).reduce((a,x)=>a+x,0);
  if(tot)h+='<div class="card"><h2>'+T('Cette nuit','Last night')+'<span class="bd ev">'+num(n.days,0)+T(' jours rejoués',' days replayed')+'</span></h2><div class="sbar" style="background:var(--surface3)">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<i style="flex:'+cnt[x[0]]+';background:'+x[1]+'"></i>').join('')+'</div>'+
   '<div class="slegend" style="margin-top:12px">'+[['A','var(--up)'],['B','#8df0bb'],['=','var(--muted)'],['C','var(--down)']].filter(x=>cnt[x[0]]).map(x=>'<span style="display:inline-flex;align-items:center;gap:7px;font-size:.84rem;color:var(--text2)"><span class="dot" style="background:'+x[1]+'"></span><b>'+cnt[x[0]]+'</b> '+T(GRADE[x[0]][0],GRADE[x[0]][1]).toLowerCase()+'</span>').join('')+'</div><div class="note">'+tot+T(' réglages du robot rejoués sur le passé pendant la nuit.',' robot settings replayed on past data overnight.')+'</div></div>';
  // the researcher
- h+='<div class="card mem" id="tm-ch"><div class="mh">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+'<div><b>'+T('Le chercheur','The researcher')+'</b><small>'+T('pose les questions, propose les réglages','asks the questions, proposes settings')+(c.date?' · '+fdate(c.date):'')+'</small></div></div>'+
+ S.ch='<div class="card mem" id="tm-ch"><div class="mh">'+AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)')+'<div><b>'+T('Le chercheur','The researcher')+'</b><small>'+T('pose les questions, propose les réglages','asks the questions, proposes settings')+(c.date?' · '+fdate(c.date):'')+'</small></div></div>'+
   (c.headline_fr?'<div class="quote">'+esc(EN?c.headline_en:c.headline_fr)+'</div>':'')+
   ((c.sections||[]).length?(c.sections||[]).map((s,i)=>'<div class="acc'+(i===0?' open':'')+'" style="margin-top:10px"><button onclick="this.parentNode.classList.toggle(\'open\')"><b style="flex:1">'+esc(EN?s.title_en:s.title_fr)+'</b><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg></button><div class="ab"><div class="sub" style="color:var(--text2)">'+esc(EN?s.en:s.fr)+'</div></div></div>').join(''):'')+
   ((c.beliefs||[]).length?'<div class="grp" style="margin:16px 0 8px">'+T('Ce qu\'il croit','What it believes')+'</div><div class="mini">'+c.beliefs.map(x=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--accent-soft)">'+fic('recherche')+'</span><span>'+esc(EN?x.en:x.fr)+(x.evidence?'<br><small style="color:var(--muted)">'+esc(x.evidence)+'</small>':'')+'</span></div>').join('')+'</div>':'')+
   ((c.pending||[]).length?'<div class="grp" style="margin:16px 0 8px">'+T('Ses propositions en attente','Its pending proposals')+' <em>'+c.pending.length+'</em></div><div class="mini">'+c.pending.map(p=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--warn)">'+fic(p.family)+'</span><span><b>'+esc(EN?p.title_en:p.title_fr)+'</b><br><small style="color:var(--muted)">'+esc(EN?p.why_en:p.why_fr)+'</small></span></div>').join('')+'</div>':'')+
   '<div class="note">'+num(c.done||0)+T(' propositions déjà rejouées.',' proposals already replayed.')+'</div></div>';
  // the builder
- h+='<div class="card mem" id="tm-co"><div class="mh">'+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+'<div><b>'+T('Le constructeur','The builder')+'</b><small>'+T('fabrique les pièces que le chercheur demande','builds the parts the researcher asks for')+' · '+num(b.built||0)+T(' construites',' built')+'</small></div></div>'+
+ S.co='<div class="card mem" id="tm-co"><div class="mh">'+AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)')+'<div><b>'+T('Le constructeur','The builder')+'</b><small>'+T('fabrique les pièces que le chercheur demande','builds the parts the researcher asks for')+' · '+num(b.built||0)+T(' construites',' built')+'</small></div></div>'+
   ((b.open||[]).length?'<div class="mini" style="margin-top:12px">'+b.open.map(q=>'<div class="mi" style="align-items:flex-start"><span class="fi" style="color:var(--warn)">'+fic('recherche')+'</span><span><b>'+esc(EN?q.title_en:q.title_fr)+'</b><br><small style="color:var(--muted)">'+esc(EN?q.what_en:q.what_fr)+'</small></span><span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+T('en cours','in progress')+'</span></div>').join('')+'</div>':'<div class="sub" style="margin-top:10px">'+T('Rien en cours.','Nothing in progress.')+'</div>')+
   (b.last_built?'<div class="note">'+T('Dernière pièce : ','Last part: ')+'<b>'+esc(EN?b.last_built.title_en:b.last_built.title_fr)+'</b> ('+fdate(b.last_built.date)+')</div>':'')+'</div>';
  // the critic
  const KV={bloque:[T('bloquée','blocked'),'var(--down-soft)','var(--bad-bg)'],doute:[T('un doute','a doubt'),'var(--warn)','var(--mid-bg)'],ok:[T('passe','passes'),'var(--up-soft)','var(--ok-bg)']};
- h+='<div class="card mem" id="tm-cr"><div class="mh">'+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+'<div><b>'+T('La critique','The critic')+'</b><small>'+T('essaie de casser chaque bonne nouvelle avant qu\'elle arrive au robot','tries to break every good news before it reaches the robot')+'</small></div></div><div class="mini" style="margin-top:12px">'+
+ S.cr='<div class="card mem" id="tm-cr"><div class="mh">'+AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)')+'<div><b>'+T('La critique','The critic')+'</b><small>'+T('essaie de casser chaque bonne nouvelle avant qu\'elle arrive au robot','tries to break every good news before it reaches the robot')+'</small></div></div><div class="mini" style="margin-top:12px">'+
   ((k.items||[]).map(x=>{const q=KV[x.verdict]||KV.doute;return '<div class="mi" style="align-items:flex-start;flex-direction:column;gap:6px"><span style="display:flex;gap:8px;align-items:center;width:100%"><span class="bd" style="background:'+q[2]+';color:'+q[1]+'">'+q[0]+'</span><small style="color:var(--muted)">'+fdate(x.date)+'</small></span><span>'+esc(EN?x.en:x.fr)+'</span></div>';}).join('')||'<div class="sub">—</div>')+'</div></div>';
  // the watcher
- h+='<div class="card mem" id="tm-ve"><div class="mh">'+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'<div><b>'+T('La veille','The watcher')+'</b><small>'+T('regarde chaque trade pendant la journée','looks at every trade during the day')+(v.last?' · '+ago(v.last):'')+'</small></div></div><div class="tl" style="margin-top:14px">'+
+ S.ve='<div class="card mem" id="tm-ve"><div class="mh">'+AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)')+'<div><b>'+T('La veille','The watcher')+'</b><small>'+T('regarde chaque trade pendant la journée','looks at every trade during the day')+(v.last?' · '+ago(v.last):'')+'</small></div></div><div class="tl" style="margin-top:14px">'+
   ((v.items||[]).map(x=>'<div class="tli"><b>'+ago(new Date(x.t).getTime()/1000)+'</b><span>'+esc(EN?(x.en||x.fr):x.fr)+'</span></div>').join('')||'<div class="sub">—</div>')+'</div></div>';
  // clues and questions
  const P=t.pistes||[];const LB={trop_tot:[T('trop tôt','too early'),'var(--muted)'],a_tester:[T('à vérifier','worth checking'),'var(--up-soft)'],divergent:[T('pas net','not clear'),'var(--warn)']};
- if(P.length)h+='<div class="card" id="tm-pi"><h2>'+T('Les pistes','The clues')+'<span class="bd ev">'+P.length+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Des piles de vrais trades que l\'IA met face à tous les autres.','Piles of real trades the AI puts against all the others.')+'</div><div class="rk">'+
+ if(P.length)S.pi='<div class="card" id="tm-pi"><h2>'+T('Les pistes','The clues')+'<span class="bd ev">'+P.length+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Des piles de vrais trades que l\'IA met face à tous les autres.','Piles of real trades the AI puts against all the others.')+'</div><div class="rk">'+
   P.map(p=>{const l=LB[p.label]||[T('en cours','being counted'),'var(--muted)'];const d=p.win!=null&&p.rest_win!=null?p.win-p.rest_win:null;
    return '<div class="rr" style="align-items:flex-start"><span class="nm"><b style="white-space:normal">'+esc(EN?(p.name_en||p.name_fr):(p.name_fr||p.name_en))+'</b><small>'+(p.n||0)+' trades · <span style="color:'+l[1]+'">'+l[0]+'</span>'+(p.by==='chercheur'?' · '+T('ouverte par l\'IA','opened by the AI'):'')+'</small></span><span class="vv"><b class="'+(d==null?'':(d>=0?'pos':'neg'))+'">'+(p.win!=null?num(p.win,0)+' %':'—')+'</b><small>'+T('autres ','others ')+(p.rest_win!=null?num(p.rest_win,0)+' %':'—')+'</small></span></div>';}).join('')+'</div></div>';
- const Q=t.asks||[];if(Q.length)h+='<div class="card" id="tm-qa"><h2>'+T('Questions et réponses','Questions and answers')+'</h2><div class="mini">'+Q.map(q=>'<div class="mi" style="align-items:flex-start;flex-direction:column;gap:6px"><b>'+esc(EN?q.seed_en:q.seed_fr)+'</b>'+(q.answer_fr?'<span style="color:var(--text2)">'+esc(EN?(q.answer_en||q.answer_fr):q.answer_fr)+'</span>':'<small style="color:var(--muted)">'+esc(q.note||T('en attente','waiting'))+'</small>')+'</div>').join('')+'</div></div>';
+ const Q=t.asks||[];if(Q.length)S.qa='<div class="card" id="tm-qa"><h2>'+T('Questions et réponses','Questions and answers')+'</h2><div class="mini">'+Q.map(q=>'<div class="mi" style="align-items:flex-start;flex-direction:column;gap:6px"><b>'+esc(EN?q.seed_en:q.seed_fr)+'</b>'+(q.answer_fr?'<span style="color:var(--text2)">'+esc(EN?(q.answer_en||q.answer_fr):q.answer_fr)+'</span>':'<small style="color:var(--muted)">'+esc(q.note||T('en attente','waiting'))+'</small>')+'</div>').join('')+'</div></div>';
+ // 2026-10-13 (owner): one line each - its latest news - and the whole notebook in the sheet
+ const cut=(s,n)=>{s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s;};
+ const kl=(k.items||[])[0],vl=(v.items||[])[0],np=(P||[]).filter(p=>p.label==='a_tester').length;
+ const ROWS=[
+  ['ch',AV('Ch','linear-gradient(135deg,#3b82f6,#a78bfa)'),T('Le chercheur','The researcher'),cut(EN?c.headline_en:c.headline_fr,120)||T('pose les questions, propose les réglages','asks the questions, proposes settings'),(c.pending||[]).length?(c.pending||[]).length+' '+T('en attente','pending'):null],
+  ['co',AV('Co','linear-gradient(135deg,#e8c55a,#f59e0b)'),T('Le constructeur','The builder'),((b.open||[]).length?(b.open||[]).length+' '+T('pièce'+((b.open||[]).length>1?'s':'')+' en cours','in progress'):T('Rien en cours','Nothing in progress'))+' · '+num(b.built||0)+T(' construites',' built'),null],
+  ['cr',AV('Cr','linear-gradient(135deg,#ff5c5c,#a78bfa)'),T('La critique','The critic'),kl?((KV[kl.verdict]||KV.doute)[0]+' · '+fdate(kl.date)+' — '+cut(EN?kl.en:kl.fr,90)):'—',(k.items||[]).length||null],
+  ['ve',AV('Ve','linear-gradient(135deg,#2ecc71,#38bdf8)'),T('La veille','The watcher'),vl?(ago(new Date(vl.t).getTime()/1000)+' — '+cut(EN?(vl.en||vl.fr):vl.fr,100)):'—',null]];
+ FDS.tm_ch=[T('Le chercheur','The researcher'),()=>S.ch];FDS.tm_co=[T('Le constructeur','The builder'),()=>S.co];FDS.tm_cr=[T('La critique','The critic'),()=>S.cr];FDS.tm_ve=[T('La veille','The watcher'),()=>S.ve];
+ h+='<div class="grp">'+T('L\'équipe','The team')+'</div><div class="fds">'+ROWS.map(r=>fd('tm_'+r[0],r[1],r[2],esc(r[3]),r[4])).join('')+'</div>';
+ if(S.pi||S.qa){h+='<div class="grp">'+T('Ce qu\'elle étudie','What it studies')+'</div><div class="fds">';
+  if(S.pi){FDS.tm_pi=[T('Les pistes','The clues'),()=>S.pi];h+=fd('tm_pi',ICO('#8fc6ff',pic('M3 3v18h18M7 14l4-4 3 3 5-6')),T('Les pistes','The clues'),T('Des piles de vrais trades face à tous les autres','Piles of real trades against all the others')+(np?' · '+np+' '+T('à vérifier','worth checking'):''),P.length);}
+  if(S.qa){FDS.tm_qa=[T('Questions et réponses','Questions and answers'),()=>S.qa];h+=fd('tm_qa',ICO('#c4b5fd',pic('M12 17h.01M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2-3 4')),T('Questions et réponses','Questions and answers'),cut(EN?(Q[0]||{}).seed_en:(Q[0]||{}).seed_fr,90),Q.length);}
+  h+='</div>';}
  $('top').innerHTML=h;$('list').innerHTML='';}
 
 
@@ -734,13 +780,20 @@ function builderTop(){const B=BLD();
    '<button class="cta2" onclick="goNew()">'+pic('M12 5v14M5 12h14')+T('Assembler un robot pièce par pièce','Assemble a robot piece by piece')+'</button>'+
    '<button class="cta2" onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+T('Apprendre au robot depuis le graphique','Teach the robot from the chart')+'</button>':'')+'</div>';
  const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine);
- if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="grid">'+MY.map((r,i)=>bCard(r,i)).join('')+'</div>';
- h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="grid">'+PUB.map((r,i)=>bCard(r,i)).join('')+'</div>';
- h+=piecesCat();
- const PL=B.plugs||[];
- if(PL.length)h+='<div class="card" style="margin-top:14px"><h2>'+T('Où ils tournent','Where they run')+'<span class="bd ev">'+PL.length+T(' prises',' plugs')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque compte a une prise : un robot, sa pièce d\'argent et un marché. Pour l\'instant, tout tourne sur le Bitcoin avec L\'Owl.','Each account has a plug: a robot, its money piece and a market. For now everything runs on Bitcoin with the Owl.')+'</div><div class="plugs">'+
-  PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+(p.real?T('argent réel','real money'):T('démo','demo'))+(p.plugged&&BLD().admin&&p.uid?' · <a href="#" style="color:var(--down-soft);font-weight:800" onclick="event.preventDefault();plugUndo(\''+p.uid+'\')">'+T('débrancher','unplug')+'</a>':'')+'</small></span><span class="pl-r"><span class="pc">'+BOT+esc(T((bById(p.robot)||{}).name_fr||p.robot,(bById(p.robot)||{}).name_en||p.robot))+'</span><button class="pc" onclick="goP(\''+p.money.slice(4)+'\')">'+pic(slotIcon('money'))+esc(T(p.money_fr,p.money_en))+'</button><span class="pc">'+(SYMI[p.market]||'')+' '+p.market+'</span></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i></span>')+'</div>').join('')+'</div></div>';
+ // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
+ const bRow=r=>{const m=BST[r.stage]||BST.tested,t=r.test,d=t&&t.robot&&t.parent_result?t.robot.net-t.parent_result.net:null;
+  return '<button class="fd" onclick="goB(\''+r.id+'\')">'+ICO(m.c,BOT)+'<span class="tx"><b>'+esc(T(r.name_fr,r.name_en))+'</b><small>'+T(m.fr,m.en)+(r.mine?' · '+(r.public?T('public','public'):T('privé','private')):'')+(r.parent?' · '+T('enfant de ','child of ')+esc((bById(r.parent)||{}).name_fr||r.parent):'')+'</small></span>'+
+   (t&&t.robot?'<span style="flex:none;text-align:right;font-size:.82rem;font-weight:800" class="'+cl(t.robot.net)+'">'+money(t.robot.net)+(d!=null&&r.parent?'<small style="display:block;font-size:.66rem;font-weight:700;color:'+(d>=0?'var(--up-soft)':'var(--down-soft)')+'">'+(d>=0?'+':'−')+'$'+num(Math.abs(d),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span>':'')+'<span class="cv">›</span></button>';};
+ if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="fds">'+MY.map(bRow).join('')+'</div>';
+ h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="fds">'+PUB.map(bRow).join('')+'</div>';
+ const PL=B.plugs||[],NP=pcs().length;
+ FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
+ h+='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
+ if(PL.length){FDS.plugs=[T('Où ils tournent','Where they run'),()=>plugsCard(PL)];h+=fd('plugs',ICO('#2ecc71',pic('M12 2v6M8 4v4M16 4v4M6 8h12v4a6 6 0 0 1-12 0zM12 18v4')),T('Où ils tournent','Where they run'),T('Un robot, son argent et un marché par compte','One robot, its money and a market per account'),PL.length);}
+ h+='</div>';
  return h;}
+function plugsCard(PL){return '<div class="card"><h2>'+T('Où ils tournent','Where they run')+'<span class="bd ev">'+PL.length+T(' prises',' plugs')+'</span></h2><div class="sub" style="margin-bottom:12px">'+T('Chaque compte a une prise : un robot, sa pièce d\'argent et un marché. Pour l\'instant, tout tourne sur le Bitcoin avec L\'Owl.','Each account has a plug: a robot, its money piece and a market. For now everything runs on Bitcoin with the Owl.')+'</div><div class="plugs">'+
+  PL.map(p=>'<div class="plug"><span class="pl-a"><b>'+esc(T(p.account.fr,p.account.en))+'</b><small>'+(p.real?T('argent réel','real money'):T('démo','demo'))+(p.plugged&&BLD().admin&&p.uid?' · <a href="#" style="color:var(--down-soft);font-weight:800" onclick="event.preventDefault();plugUndo(\''+p.uid+'\')">'+T('débrancher','unplug')+'</a>':'')+'</small></span><span class="pl-r"><span class="pc">'+BOT+esc(T((bById(p.robot)||{}).name_fr||p.robot,(bById(p.robot)||{}).name_en||p.robot))+'</span><button class="pc" onclick="goP(\''+p.money.slice(4)+'\')">'+pic(slotIcon('money'))+esc(T(p.money_fr,p.money_en))+'</button><span class="pc">'+(SYMI[p.market]||'')+' '+p.market+'</span></span>'+(p.alive==null?'':'<span class="alv '+(p.alive?'on':'off')+'"><i></i></span>')+'</div>').join('')+'</div></div>';}
 function goB(id,sec){NAV++;location.hash='b='+id+(sec?'&v='+sec:'');}
 function goP(id){NAV++;location.hash='p='+id;}
 function goNew(){NEWD=null;NAV++;location.hash='new=1';}
@@ -987,6 +1040,22 @@ function renderAI(){const j=AIJ;if(!j)return;if(j.err){$('det').innerHTML='<div 
 async function aiAnswer(){const e=$('aierr2');try{const j=await robotPost('ai_answer',{id:AIJ.id,answers:AIA.q,cards:Object.fromEntries(Object.entries(AIA.c).map(([k,v])=>[String(k),v]))});if(!j.ok){if(e)e.textContent=AIERR[j.err]||j.err;return;}AIA={q:{},c:{}};aiOpen(AIJ.id);window.scrollTo(0,0);}catch(x){if(e)e.textContent=T('Hors ligne.','Offline.');}}
 async function aiBuild(){const e=$('aierr2'),n=($('ainame').value||'').trim();if(n.length<2){e.textContent=T('Donnez-lui un nom.','Give it a name.');return;}e.textContent=T('Création…','Building…');
  try{const j=await robotPost('ai_build',{id:AIJ.id,name:n});if(!j.ok){e.textContent=AIERR[j.err]||MERR[j.err]||j.err;return;}RB=null;await load();history.replaceState(null,'','#b='+j.id);route();}catch(x){e.textContent=T('Hors ligne.','Offline.');}}
+
+/* ---------- 2026-10-13 (owner): the page's sheet - a folder opens here; tapping inside navigates as before ---------- */
+let LSH=0;
+function shOpen(title,html){let s=$('lsh');if(!s){s=document.createElement('div');s.id='lsh';
+  s.innerHTML='<div class="xd"></div><div class="xp" role="dialog" aria-modal="true"><div class="xg"></div><div class="xh"><b id="lsh-t"></b><button id="lsh-x" aria-label="'+T('Fermer','Close')+'">×</button></div><div class="xb" id="lsh-b"></div></div>';
+  document.body.appendChild(s);s.querySelector('.xd').onclick=()=>shClose();$('lsh-x').onclick=()=>shClose();}
+ $('lsh-t').textContent=title;$('lsh-b').innerHTML=html;s.querySelector('.xp').scrollTop=0;s.classList.add('on');document.body.style.overflow='hidden';
+ requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));if(!LSH){LSH=1;try{history.pushState({lsh:1},'');}catch(e){}}}
+function shHide(){const s=$('lsh');if(!s)return;s.classList.remove('open');document.body.style.overflow='';LSH=0;setTimeout(()=>{if(!LSH)s.classList.remove('on');},330);}
+function shClose(){if(LSH&&history.state&&history.state.lsh){history.back();}else shHide();}
+window.addEventListener('popstate',()=>{if(LSH)shHide();});
+window.addEventListener('hashchange',()=>{if(LSH)shHide();});
+const FDS={};   // what each folder opens: a builder, so it is fresh when opened
+function fd(k,icon,title,sub,n){return '<button class="fd" onclick="fdOpen(\''+k+'\')">'+icon+'<span class="tx"><b>'+title+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span>'+(n!=null?'<span class="n">'+n+'</span>':'')+'<span class="cv">›</span></button>';}
+function fdOpen(k){const f=FDS[k];if(f)shOpen(f[0],f[1]());}
+const ICO=(c,inner)=>'<span class="ic" style="background:'+c+'26;color:'+c+'">'+inner+'</span>';
 
 /* ---------- routing + loading for all three sides ---------- */
 function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.get('s'),rid=h.get('r');
