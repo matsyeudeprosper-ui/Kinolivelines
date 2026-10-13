@@ -120,8 +120,16 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .best .v{text-align:right;font-weight:900;font-size:1rem}.best .v small{color:#9fc2de;letter-spacing:0;text-transform:none;font-weight:700}
 .a3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
 .a3 button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px 11px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font:inherit;text-align:left;cursor:pointer;min-width:0}
-.a3 button.pr{background:#fff;color:#0b1a2a;border-color:#fff}
+.a3 button.a3p{background:#fff;color:#0b1a2a;border-color:#fff}
 .a3 svg{width:20px;height:20px;margin-bottom:6px}.a3 b{font-size:.84rem;font-weight:800}.a3 small{font-size:.68rem;opacity:.75;line-height:1.25;text-transform:none;letter-spacing:0;color:inherit;font-weight:600}
+.hero .pos{color:#8df0bb}.hero .neg{color:#ff9a9a}
+@media(min-width:760px){.fds{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.fds>.more2{grid-column:1/-1}}
+.lock{text-align:left}.lock .lk{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(255,255,255,.1);color:#fff;margin-bottom:12px}.lock .lk svg{width:22px;height:22px}
+.lock h3{font-size:1.3rem;font-weight:900;color:#fff;line-height:1.25}.lock ul{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.lock li{display:flex;gap:10px;font-size:.88rem;color:#d6e6f3;line-height:1.4}.lock li b{color:#fff}.lock li i{flex:none;width:20px;height:20px;border-radius:50%;background:rgba(46,204,113,.18);color:#8df0bb;display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:900;margin-top:1px}
+.mt0{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border-radius:20px;border:1px dashed var(--border2);background:var(--surface);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+.mt0 .ic{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.mt0 .ic svg{width:20px;height:20px}
+.mt0 b{display:block;font-size:.95rem}.mt0 small{font-size:.76rem;color:var(--muted2)}
 .how{display:block;width:100%;margin-top:12px;border:0;background:none;color:#9fc2de;font:inherit;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;padding:4px}
 .rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--hl)}
 .rc .rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
@@ -843,7 +851,7 @@ function builderTop(){const B=BLD();
  let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><div class="hn" style="margin-top:6px">'+T('Créez, testez, branchez.','Build, test, plug.')+'</div></div></div>'+
   '<div class="k3"><div><b>'+MY.length+'</b><span>'+T('vos robots','your robots')+'</span></div><div><b>'+PUB.length+'</b><span>'+T('publics','public')+'</span></div><div><b>'+PL0.length+'</b><span>'+T('comptes','accounts')+'</span></div></div>'+
   (best?'<button class="best" onclick="goB(\''+best.id+'\')"><span class="l"><small>'+T('Votre meilleur robot','Your best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span><span class="v '+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+(bd0!=null?'<small style="display:block">'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span style="color:#9fc2de">›</span></button>':'')+
-  (B.can_create?'<div class="a3"><button class="pr" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'<b>'+T('Expliquer','Explain')+'</b><small>'+T('à l\'IA, en mots','to the AI, in words')+'</small></button>'+
+  (B.can_create?'<div class="a3"><button class="a3p" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'<b>'+T('Expliquer','Explain')+'</b><small>'+T('à l\'IA, en mots','to the AI, in words')+'</small></button>'+
    '<button onclick="goNew()">'+pic('M12 5v14M5 12h14')+'<b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
    '<button onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'<b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
   '<button class="how" onclick="fdOpen(\'how\')">'+T('Comment ça marche : des yeux + 6 pièces','How it works: eyes + 6 pieces')+' ›</button></div>';
@@ -851,6 +859,7 @@ function builderTop(){const B=BLD();
  const bRow=r=>rCard2(r,PL0);
 
  if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="fds">'+MY.map(bRow).join('')+'</div>';
+ else if(B.can_create)h+='<div class="grp">'+T('Mes robots','My robots')+'</div><button class="mt0" onclick="goNew()"><span class="ic">'+pic('M12 5v14M5 12h14')+'</span><span><b>'+T('Créez votre premier robot','Build your first robot')+'</b><small>'+T('Partez de L\'Owl et changez une pièce : il est testé sur le passé pour vous.','Start from the Owl and change one piece: it gets tested on past data for you.')+'</small></span></button>';
  h+='<div class="grp">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em></div><div class="fds">'+PUB.map(bRow).join('')+'</div>';
  const PL=B.plugs||[],NP=pcs().length;
  FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
@@ -1148,7 +1157,13 @@ function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.
  if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
  if((id&&!D)||((rid||bid||pid||aid||h.get('new')||h.get('mk'))&&!RB)){load();return;}
  NAV=0;NEWD=null;MK=null;clearTimeout(AIT);document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
-const LOCK='<div class="card" style="margin-top:10px"><h2>'+T('Réservé à l\'offre Stratégie','Strategy plan only')+'</h2><div class="sub">'+T('Le labo montre toutes les stratégies, tous les robots et le travail des IA. Il fait partie de l\'offre Stratégie.','The lab shows every strategy, every robot and the AIs\' work. It is part of the Strategy plan.')+'</div></div>';
+// 2026-10-13 (owner): the Labo is the Strategie package (never part of Family) - the lock says what it opens and where to get it
+const LOCK='<div class="card hero lock" style="margin-top:10px"><div class="lk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>'+
+ '<div class="eyebrow">'+T('Offre Stratégie','Strategy plan')+'</div><h3 style="margin-top:8px">'+T('Le labo : voir comment le robot est construit, et construire le vôtre','The lab: see how the robot is built, and build your own')+'</h3><ul>'+
+ '<li><i>✓</i><span><b>'+T('Toutes les stratégies','Every strategy')+'</b> — '+T('de l\'idée à l\'argent réel, avec leurs résultats','from idea to real money, with their results')+'</span></li>'+
+ '<li><i>✓</i><span><b>'+T('Vos propres robots','Your own robots')+'</b> — '+T('assemblés pièce par pièce, testés sur le passé','assembled piece by piece, tested on past data')+'</span></li>'+
+ '<li><i>✓</i><span><b>'+T('L\'équipe IA','The AI team')+'</b> — '+T('ce que les IA cherchent et vérifient chaque nuit','what the AIs research and check every night')+'</span></li></ul>'+
+ '<button class="cta" onclick="location.href=\'./#set\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
 async function getJ(u){const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});return r.json();}
 async function load(){try{
  const h=new URLSearchParams(location.hash.slice(1));

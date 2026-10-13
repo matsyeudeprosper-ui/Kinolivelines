@@ -7592,8 +7592,9 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
 // ==== 2026-10-13 (owner, step 3): PERFORMANCE - the History tab becomes one space with chips (Résumé, Calendrier,
 // Trades, Signaux) plus doors to Poches, Preuve and Patrimoine. Panels are MOVED into the chip they belong to, never
 // rewritten; their own show / hide rules still decide whether they appear. ====
-function goLabo(){try{if(typeof labAllowed==='function'&&labAllowed()){location.href=B+'strategies';return;}}catch(e){}
- tab('marche',document.getElementById('tb-marche'));try{mxView('lab');}catch(e){}}
+// 2026-10-13: the Labo page itself shows the Strategie lock to members without it (the old fallback went
+// through mxView('lab'), which En direct maps back to goLabo - a loop)
+function goLabo(){location.href=B+'strategies';}
 (function(){
  const $=id=>document.getElementById(id);
  const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
