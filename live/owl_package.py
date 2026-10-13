@@ -75,7 +75,11 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # 2026-10-10 (owner, evening): the gate's rule - "trend" (official:
           # with the pullback trend AND beyond its last BOS), "choch" (the
           # morning rule), "strict". Decision in live/pb_gate.py.
-          "pb_gate_mode")
+          "pb_gate_mode",
+          # 2026-10-13 (owner, robot builder step 4): the rule pieces of a robot
+          # plugged onto the account (live/robots/robot_live.py reads them);
+          # None everywhere else, so every other account is unchanged
+          "robot_rules")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -87,7 +91,7 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
         "debt_gate": True, "eq_half": False, "recov_bullets_only": False,
-        "pb_dir_gate": False, "pb_gate_mode": "trend"}
+        "pb_dir_gate": False, "pb_gate_mode": "trend", "robot_rules": None}
 
 _cache = {"t": 0.0, "raw": None, "err": None}
 

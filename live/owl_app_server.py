@@ -18,6 +18,7 @@ Token = first line of owl_app_token.txt. Stats from MT5 deal history
 INCLUDING open-trade floating pain (sightings kept in _ddhist).
 """
 import json, math, os, sys, time, secrets, struct, threading, zlib
+import io, shutil
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import numpy as np
@@ -11438,9 +11439,14 @@ def builder_payload(user, detail):
         if not pk:
             continue
         lab, alive, why = bot_on(uid)
+        rob = "owl"
+        if pk.startswith("robot-") and pk[6:] in byid:
+            rob = pk[6:]
+            pk = robot_resolve(rob, byid).get("money") or "base"
         nm = ROBOT_NAMES.get(pk, (pk, pk))
-        plugs.append({"account": _strat_account_label(u, i, detail), "robot": "owl", "money": "pkg-" + pk, "money_fr": nm[0], "money_en": nm[1],
-                      "market": "BTCUSD", "alive": (bool(alive) if lab else None),
+        plugs.append({"account": _strat_account_label(u, i, detail), "robot": rob, "money": "pkg-" + pk, "money_fr": nm[0], "money_en": nm[1],
+                      "market": "BTCUSD", "alive": (bool(alive) if lab else None), "uid": uid if detail else None,
+                      "plugged": rob != "owl", "restart_auto": uid in BOT_VARIANT,
                       "real": "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None})
         if not (u.get("reference") or uid == "u224016179" or u.get("public")):
             i += 1
@@ -11532,10 +11538,10 @@ def robot_live_capable(parts, pieces=None):
     P = pieces if pieces is not None else {p["id"]: p for p in robot_reg().get("pieces") or []}
     for k in ("entry", "stop", "exit", "recovery"):
         v = parts.get(k)
-        if v is not None and not (P.get(v) or {}).get("live"):
+        if v is not None and not ((P.get(v) or {}).get("live") or (P.get(v) or {}).get("rule")):
             return False
     F = parts.get("filters")
-    if F is not None and (any(not (P.get(f) or {}).get("live") for f in F) or "orage" not in F):
+    if F is not None and (any(not ((P.get(f) or {}).get("live") or (P.get(f) or {}).get("rule")) for f in F) or "orage" not in F):
         return False
     return True
 
@@ -11951,7 +11957,7 @@ def piece_create(user, body):
         pid = "%s-%d" % (base, n); n += 1
     fr, en = D.describe(kind, c)
     P.append({"id": pid, "type": kind, "name_fr": name, "name_en": name, "plain_fr": fr, "plain_en": en, "status": "new",
-              "rule": c, "live": False, "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
+              "rule": c, "live": True, "by": "owner" if is_admin(user) else "member", "by_uid": me, "version": 1,
               "created": datetime.now(timezone.utc).strftime("%Y-%m-%d"), "public": bool(is_admin(user))})
     reg["pieces"] = P
     _robot_save(reg)
@@ -12213,6 +12219,144 @@ def ai_build(user, body):
         j["robot"] = r["id"]
         _ai_save(j)
     return r
+
+
+# ---- 2026-10-13 (owner, step 4): plugging a robot onto a real account (owner only) ----
+# The bot reads its package at start, so a plug = a generated package + the account pointing to it + a restart of
+# THAT account's bot only. The previous package is kept and "Débrancher" puts it back. BTCUSD only (the live bot
+# trades nothing else yet).
+BOT_VARIANT = {"kino": "kino", "u224016179": "valere", "demo": "demo", "infinity": "infinity", "expenses": "expenses",
+               "labo": "labo", "u477508138": "u477508138"}       # "bos" runs with no argument: restart by hand
+PLUG_LOG = os.path.join(DIR, "robots", "plug.log")
+
+
+def robot_package(r, pieces):
+    """a robot (resolved pieces) -> the package the live bot reads; raises ValueError when it cannot run live"""
+    P = {p["id"]: p for p in pieces}
+    R = r["resolved"]
+    F = R.get("filters") or []
+    if "orage" not in F:
+        raise ValueError("storm")
+    pk = {"extends": R.get("money") or "base", "label": "Robot %s" % (r.get("name_fr") or r["id"]),
+          "pb_dir_gate": "tendance-fond" in F, "pb_gate_mode": "trend", "movement": "mouvement" in F, "nervosity": "nervosite" in F,
+          "debt_gate": R.get("recovery") != "rattrapage-sans-limite"}
+    rules = {}
+    for k in ("entry", "stop", "exit"):
+        p = P.get(R.get(k)) or {}
+        if p.get("rule"):
+            rules[k] = p["rule"]
+        elif not p.get("live") and k != "exit":
+            raise ValueError(k)
+    ex = P.get(R.get("exit")) or {}
+    eng = ex.get("engine") or {}
+    if not ex.get("rule"):
+        if eng.get("exit") == "choch":
+            rules["exit"] = {"target": None, "choch": True, "time_min": None, "breakeven_at": None}
+        elif eng.get("exit") == "target_choch":
+            rules["exit"] = {"target": eng.get("rr"), "choch": True, "time_min": None, "breakeven_at": None}
+        elif eng.get("rr"):
+            pk["rr"] = float(eng["rr"])
+        else:
+            raise ValueError("exit")
+    elif ex["rule"].get("target"):
+        pk["rr"] = float(ex["rule"]["target"])
+    fr = [(P.get(f) or {}).get("rule") for f in F if (P.get(f) or {}).get("rule")]
+    if fr:
+        rules["filters"] = fr
+    pk["robot_rules"] = rules or None
+    pk["_why"] = "%s robot builder: robot '%s' plugged by the owner" % (datetime.now(timezone.utc).strftime("%Y-%m-%d"), r["id"])
+    return pk
+
+
+def _restart_bot(uid):
+    """restart ONE account's bot in the background (restart.ps1 -What bots -Variant <arg>), output to plug.log"""
+    v = BOT_VARIANT.get(uid)
+    if not v:
+        return False
+
+    def _go():
+        try:
+            import subprocess
+            root = os.path.dirname(DIR)
+            r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", os.path.join(root, "restart.ps1"),
+                                "-What", "bots", "-Variant", v], cwd=root, capture_output=True, text=True, timeout=600,
+                               creationflags=0x08000000)
+            io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s restart %s (%s) rc %s\n%s\n%s\n" % (
+                datetime.now(timezone.utc).isoformat(), uid, v, r.returncode, (r.stdout or "")[-3000:], (r.stderr or "")[-1500:]))
+        except Exception as e:
+            io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s restart %s FAILED %s\n" % (datetime.now(timezone.utc).isoformat(), uid, e))
+    threading.Thread(target=_go, daemon=True).start()
+    return True
+
+
+def robot_plug_apply(user, body):
+    if not is_admin(user):
+        return {"ok": False, "err": "owner"}
+    reg = robot_reg()
+    r0 = next((x for x in reg.get("robots") or [] if x.get("id") == body.get("id")), None)
+    pg = (r0 or {}).get("plug") or {}
+    wh = str(pg.get("where") or "")
+    if not r0 or not wh.startswith("acct:"):
+        return {"ok": False, "err": "where"}
+    if pg.get("market", "BTCUSD") != "BTCUSD":
+        return {"ok": False, "err": "market"}
+    if r0.get("stage") not in ("tested", "real", "demo"):
+        return {"ok": False, "err": "untested"}
+    uid = wh[5:]
+    byid = {x["id"]: x for x in reg.get("robots") or []}
+    rr = dict(r0, resolved=robot_resolve(r0["id"], byid))
+    try:
+        pkg = robot_package(rr, reg.get("pieces") or [])
+    except ValueError as e:
+        return {"ok": False, "err": "not_live:" + str(e)}
+    pp = os.path.join(DIR, "owl_packages.json")
+    PK = json.load(open(pp, encoding="utf-8"))
+    acc = PK.setdefault("accounts", {})
+    if uid not in acc:
+        return {"ok": False, "err": "account"}
+    name = "robot-" + r0["id"]
+    prev = acc[uid]
+    plugs = PK.setdefault("robot_plugs", {})
+    if prev.startswith("robot-") and uid in plugs:
+        prev = plugs[uid].get("prev") or "base"          # replugging: the ORIGINAL package stays the one to go back to
+    PK.setdefault("packages", {})[name] = pkg
+    acc[uid] = name
+    plugs[uid] = {"robot": r0["id"], "prev": prev, "at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}
+    shutil.copy(pp, pp + ".before_plug")
+    tmp = pp + ".tmp"
+    json.dump(PK, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, pp)
+    r0["plug"]["status"] = "applied"; r0["plug"]["applied_at"] = plugs[uid]["at"]
+    r0["stage"] = "real" if "trial" not in str((next((u for u in users() if u.get("id") == uid), {}) or {}).get("mt5_server") or "").lower() else "demo"
+    _robot_save(reg)
+    restarted = _restart_bot(uid)
+    return {"ok": True, "package": name, "restarted": restarted, "prev": prev}
+
+
+def robot_plug_undo(user, body):
+    if not is_admin(user):
+        return {"ok": False, "err": "owner"}
+    uid = str(body.get("uid") or "")
+    pp = os.path.join(DIR, "owl_packages.json")
+    PK = json.load(open(pp, encoding="utf-8"))
+    plugs = PK.get("robot_plugs") or {}
+    if uid not in plugs:
+        return {"ok": False, "err": "not_plugged"}
+    rid = plugs[uid].get("robot")
+    PK["accounts"][uid] = plugs[uid].get("prev") or "base"
+    del plugs[uid]
+    shutil.copy(pp, pp + ".before_unplug")
+    tmp = pp + ".tmp"
+    json.dump(PK, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, pp)
+    reg = robot_reg()
+    for x in reg.get("robots") or []:
+        if x.get("id") == rid:
+            x["stage"] = "tested"
+            if x.get("plug"):
+                x["plug"]["status"] = "unplugged"
+    _robot_save(reg)
+    return {"ok": True, "restarted": _restart_bot(uid)}
 
 
 def team_payload():
@@ -15936,7 +16080,7 @@ class H(BaseHTTPRequestHandler):
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
-                                              "ai_start", "ai_answer", "ai_build", "robot_test"):
+                                              "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -15946,7 +16090,8 @@ class H(BaseHTTPRequestHandler):
                 _fn = {"robot_create": robot_create, "robot_update": robot_update, "robot_delete": robot_delete,
                        "studio_save": studio_save, "studio_confirm": studio_confirm, "piece_create": piece_create,
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
-                       "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test}[_parts[1]]
+                       "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
+                       "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")

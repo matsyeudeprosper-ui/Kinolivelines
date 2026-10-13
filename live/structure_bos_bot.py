@@ -375,6 +375,12 @@ PB_DIR_GATE = bool(_P.get("pb_dir_gate", False))
 PB_GATE_MODE = str(_P.get("pb_gate_mode", "trend"))
 from pb_gate import pb_gate
 _PB_CACHE = {"t": 0.0, "v": (0, 0, None, None)}
+# 2026-10-13 (owner, robot builder step 4): a robot plugged onto this account brings RULE pieces (entry, filters,
+# stop, exit) from its package; robot_live.py decides them exactly as the bench does (live/robots/
+# test_robot_live.py). No rules (every account until a robot is plugged) = no change anywhere below.
+ROBOT_RULES = _P.get("robot_rules") or {}
+_sys.path.insert(0, os.path.join(DIR, "robots"))
+import robot_live as _RL
 
 
 def pb_state_now():
@@ -1044,6 +1050,52 @@ def my_positions():
             if p.magic == MAGIC]
 
 
+def robot_close_all(why):
+    """close every position of this bot (the main trade and its adds) at market"""
+    for p in my_positions():
+        tick = mt5.symbol_info_tick(SYMBOL)
+        if tick is None:
+            continue
+        r = mt5.order_send({
+            "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": p.volume, "position": p.ticket,
+            "type": mt5.ORDER_TYPE_SELL if p.type == mt5.POSITION_TYPE_BUY else mt5.ORDER_TYPE_BUY,
+            "price": tick.bid if p.type == mt5.POSITION_TYPE_BUY else tick.ask,
+            "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-robot", "type_filling": mt5.ORDER_FILLING_IOC})
+        say(f"ROBOT SORTIE ({why}): position {p.ticket} fermee"
+            + ("" if r is not None and r.retcode == mt5.TRADE_RETCODE_DONE else f" - ECHEC retcode={r.retcode if r else None}"))
+
+
+def robot_manage(st, new_trend):
+    """the robot's exit piece on the open MAIN trade: a CHoCH against it (new_trend set at a flip), its time
+    limit, its breakeven move - robot_live.manage decides, exactly as the bench (DslArm.tick / .signal)"""
+    adds = set(st.get("add_ids") or [])
+    tick = mt5.symbol_info_tick(SYMBOL)
+    if tick is None:
+        return
+    for p in my_positions():
+        if p.ticket in adds:
+            continue
+        d = 1 if p.type == mt5.POSITION_TYPE_BUY else -1
+        rec = (st.get("robot_open") or {}).get(str(p.ticket)) or {}
+        opened = float(rec.get("t") or p.time)
+        act = _RL.manage(ROBOT_RULES, d, p.price_open, p.sl, opened, time.time(),
+                         tick.bid if d == 1 else tick.ask, new_trend is not None and new_trend == -d, bool(rec.get("be")))
+        if not act:
+            continue
+        if act[0] == "close":
+            robot_close_all(act[1])
+            return
+        if act[0] == "sl":
+            r = mt5.order_send({"action": mt5.TRADE_ACTION_SLTP, "symbol": SYMBOL, "position": p.ticket,
+                                "sl": round(act[1], 2), "tp": p.tp})
+            ok = r is not None and r.retcode == mt5.TRADE_RETCODE_DONE
+            if ok:
+                st.setdefault("robot_open", {}).setdefault(str(p.ticket), {"t": opened})["be"] = True
+                save_state(st)
+            say(f"ROBOT stop au prix d'entree {act[1]:.2f} (position {p.ticket})"
+                + ("" if ok else f" - ECHEC retcode={r.retcode if r else None}"))
+
+
 def floating():
     return sum(p.profit + p.swap for p in my_positions())
 
@@ -1198,6 +1250,7 @@ def main():
         + ("" if DEBT_GATE else " | sans systeme de dette")
         + (" | demi-lot si resultats en baisse" if EQ_HALF else "")
         + (" | reprise: balles seulement" if RECOV_BULLETS_ONLY else "")
+        + (" | robot: " + ", ".join(sorted(ROBOT_RULES)) + " " + json.dumps(ROBOT_RULES, separators=(",", ":")) if ROBOT_RULES else "")
         + _scale_line)
     ensure_algo()
 
@@ -1270,6 +1323,11 @@ def main():
             return False
         if paused():
             return False
+        if ROBOT_RULES:
+            _rok, _rwhy = _RL.entry_ok(ROBOT_RULES, kind)
+            if not _rok:
+                say(f"{kind} refuse: robot - {_rwhy}")
+                return False
         # Owner 2026-09-24: "only did flip BOS during recovery" - tested
         # three ways before deploying (review/recovery_flip_only_test.py:
         # backtest, both halves, spreads 5/7/10; recovery_flip_only_
@@ -1370,6 +1428,15 @@ def main():
                                 PAUSE_UID, d, _e, slp,
                                 _e + d * RR * _ds, _wg, BASE_LOT)
             return False
+        if ROBOT_RULES.get("filters"):
+            _nw = datetime.now(timezone.utc)
+            _rvn, _rvr = (_cj0 or {}).get("vol_now"), (_cj0 or {}).get("vol_ref")
+            _rok, _rwhy = _RL.filters_ok(ROBOT_RULES, _nw.hour, _nw.weekday(),
+                                         (_rvn / max(_rvr, 1e-9)) if (_rvn and _rvr) else None,
+                                         (_cj0 or {}).get("moves_2h"))
+            if not _rok:
+                say(f"{kind} refuse: robot - {_rwhy}")
+                return False
         _why = day_blocked(st)
         if _why:
             if not st.get("day_capped"):
@@ -1385,6 +1452,17 @@ def main():
         if tick is None:
             return False
         e_ref = tick.ask if d == 1 else tick.bid
+        if ROBOT_RULES.get("stop"):
+            _kb1 = _KB[-1] if _KB else None
+            _slp0 = slp
+            slp = _RL.stop_for(ROBOT_RULES, d, slp,
+                               float(_kb1["close"]) if _kb1 is not None else e_ref,
+                               float(_kb1["low"]) if _kb1 is not None else e_ref,
+                               float(_kb1["high"]) if _kb1 is not None else e_ref)
+            if (d == 1 and slp >= e_ref) or (d == -1 and slp <= e_ref):
+                say(f"{kind} refuse: robot - stop {slp:.2f} du mauvais cote du prix {e_ref:.2f}")
+                return False
+            say(f"{kind} stop du robot {slp:.2f} (point protege {_slp0:.2f})")
         dist = abs(e_ref - slp)
         if dist <= S_MIN_DIST:
             say(f"{kind} skipped: dot {dist:.0f}pts inside the "
@@ -1452,7 +1530,7 @@ def main():
                 f"{MAX_RISK_PCT:.0%} of the ${ai2.balance:.2f} balance "
                 f"(${cap:.2f})")
             return False
-        tp = e_ref + d * RR * dist
+        tp = _RL.tp_for(ROBOT_RULES, d, e_ref, dist, RR) if ROBOT_RULES else e_ref + d * RR * dist
         # forward record for the FVG filter: this signal passed every rule
         # the bot has, so it is exactly what the replay counted. Virtual,
         # settled on raw bars by SHADOW.settle(..., book="fvg").
@@ -1468,7 +1546,7 @@ def main():
             _ordt = str(st["tord"])
         _storm = "1" if st.get("storm_seen") else "0"
         st["storm_seen"] = False       # this trade consumes the flag
-        SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp,
+        SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp if tp > 0 else e_ref + d * RR * dist,
                           f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt} "
                           f"storm={_storm}",
                           BASE_LOT, book="fvg")
@@ -1508,6 +1586,10 @@ def main():
         if r is None or r.retcode != mt5.TRADE_RETCODE_DONE:
             say(f"ENTRY FAILED retcode={r.retcode if r else None}")
             return False
+        if ROBOT_RULES.get("exit"):
+            st.setdefault("robot_open", {})[str(r.order)] = {"t": time.time(), "be": False}
+            for _ok_ in list(st["robot_open"])[:-10]:
+                del st["robot_open"][_ok_]
         say(f"{kind} ENTRY: {'BUY' if d == 1 else 'SELL'} {lot} @ "
             f"~{e_ref:.2f} SL {slp:.2f} TP {tp:.2f} "
             f"(risk ${dist * lot:.2f}, "
@@ -1601,6 +1683,8 @@ def main():
                 st["killed"] = True
                 save_state(st)
                 continue
+            if ROBOT_RULES.get("exit") and my_positions():
+                robot_manage(st, None)
             # recovery GHOST (recov_bullets_only): its own SL/TP on ticks,
             # so the loss streak counts it like a real main trade
             _gh = st.get("ghost")
@@ -1611,6 +1695,8 @@ def main():
                         _gl, _gw = _tkg.bid <= _gh["sl"], _tkg.bid >= _gh["tp"]
                     else:
                         _gl, _gw = _tkg.ask >= _gh["sl"], _tkg.ask <= _gh["tp"]
+                    if not _gh.get("tp"):
+                        _gw = False            # a robot with no target: the ghost ends at its stop only
                     if _gl or _gw:
                         st["loss_streak"] = (0 if _gw
                                              else st.get("loss_streak", 0) + 1)
@@ -1793,6 +1879,8 @@ def main():
                 del flips[:-20]
                 say(f"FLIP: trend now "
                     f"{'up' if eng.trend == 1 else 'down'}")
+                if ROBOT_RULES.get("exit") and my_positions():
+                    robot_manage(st, eng.trend)       # a CHoCH against the open trade closes it
             awake = any(f > bt - AWAKE_WIN for f in flips)
             try:
                 # live bullet price estimate: distance to the

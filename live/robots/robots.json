@@ -346,7 +346,7 @@
    "engine": {
     "exit": "choch"
    },
-   "live": false,
+   "live": true,
    "by": "owner",
    "version": 1,
    "created": "2026-10-13"
@@ -363,7 +363,7 @@
     "exit": "target_choch",
     "rr": 1.0
    },
-   "live": false,
+   "live": true,
    "by": "owner",
    "version": 1,
    "created": "2026-10-13"
@@ -427,7 +427,7 @@
     "from": 0,
     "to": 8
    },
-   "live": false,
+   "live": true,
    "by": "owner",
    "by_uid": "kino",
    "version": 1,
@@ -445,12 +445,12 @@
    "rule": {
     "event": "any"
    },
-   "live": false,
+   "live": true,
    "by": "owner",
    "by_uid": "kino",
    "version": 1,
    "created": "2026-10-13",
-   "public": true
+   "public": false
   }
  ],
  "version": 2
