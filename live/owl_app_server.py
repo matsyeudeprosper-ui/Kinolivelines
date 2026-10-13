@@ -7496,8 +7496,8 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  .cshd{display:flex;align-items:center;gap:14px;margin:22px 0 4px;padding:16px;border-radius:22px;background:linear-gradient(140deg,var(--hero1),var(--hero2));border:1px solid rgba(143,198,255,.18)}
  .cshd .av{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;color:#fff;flex:none}
  .cshd b{display:block;font-size:1.1rem;color:#fff}.cshd small{display:block;font-size:.8rem;color:#9fc2de;margin-top:2px}
- .csl{display:grid;gap:10px;margin-top:14px}
- .csg{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:15px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;transition:transform .12s}
+ .csl{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;margin-top:14px}
+ .csg{display:flex;align-items:center;gap:14px;width:100%;min-width:0;box-sizing:border-box;text-align:left;padding:15px 14px;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;transition:transform .12s}
  .csg:active{transform:scale(.985)}
  .csg .ic2{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex:none}
  .csg .ic2 svg{width:20px;height:20px}
@@ -7513,7 +7513,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  #cssh .xhead{display:flex;align-items:center;gap:10px;position:sticky;top:-8px;background:var(--bg);padding:6px 0 8px;z-index:2}
  #cssh .xhead b{flex:1;font-size:1.2rem;font-weight:900}
  #cssh .xhead button{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.1rem}
- #cssh .xbody{display:block;width:100%}#cssh .xbody>*{margin-top:12px!important}#cssh .xbody>*:first-child{margin-top:4px!important}`;
+ #cssh .xbody{display:block;width:100%;min-width:0}#cssh .xbody .panel{max-width:100%;box-sizing:border-box}#cssh .xbody>*{margin-top:12px!important}#cssh .xbody>*:first-child{margin-top:4px!important}`;
  document.head.appendChild(css);
  const IC={money:'M12 2v20M17 6.5C17 4.6 14.8 3.5 12 3.5S7 4.6 7 6.5 9 9.5 12 10s5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.1-5-3',bell:'M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0',
   chart:'M3 3v18h18M7 14l4-4 3 3 5-6',key:'M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4',
@@ -7535,7 +7535,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
    panels:()=>[$('plan-card')],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
-  {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>T('Propriétaire','Owner'),s:()=>T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'),
+  {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
    panels:()=>[$('adminlock-card'),$('adm-card')],rows:()=>[$('admback'),$('usagerow')]}];
  const vis=e=>!!e&&e.style.display!=='none';
  const anyRow=p=>!!p&&[...p.querySelectorAll('.srow')].some(vis);
@@ -7556,7 +7556,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
   // the emptied original panels go too
   [...tab.querySelectorAll(':scope > .panel')].forEach(p=>{if(!p.querySelector('.srow,a,button,input'))p.style.display='none';});
   const sh=document.createElement('div');sh.id='cssh';sh.innerHTML='<div class="xdim"></div><div class="xpn" role="dialog" aria-modal="true"><div class="xgrab"></div><div class="xhead"><b id="cssh-t"></b><button aria-label="Fermer" id="cssh-x">&times;</button></div><div class="xbody" id="cssh-b"></div></div>';
-  tab.appendChild(sh);
+  document.body.appendChild(sh);      // the settings rows have no #tab-set styles; a fixed sheet inside an animated tab would shift
   sh.querySelector('.xdim').onclick=close;$('cssh-x').onclick=close;
   let y0=null;const pn=sh.querySelector('.xpn');
   pn.addEventListener('touchstart',e=>{y0=(pn.scrollTop<=0)?e.touches[0].clientY:null;},{passive:true});
