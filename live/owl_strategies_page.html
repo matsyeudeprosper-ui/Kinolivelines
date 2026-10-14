@@ -138,7 +138,7 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .zh .k3 div{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.08)}
 .card.zh .zrob,.zh .zaud{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
 @media(max-width:380px){.lh .lh-t{font-size:1.35rem}.lh .lh-f button{font-size:.78rem;padding:11px 6px}.lh .lh-f button svg{display:none}.lh .lh-a button{padding:12px 10px}}
-.card.zh .zaslot{position:relative;z-index:2;margin-top:12px}.dh .zaslot{position:relative;z-index:2;margin-top:16px}.dh .zaud{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+.card.zh .zaslot{position:relative;z-index:2;margin-top:12px}.dh .zaslot{position:relative;z-index:2;margin:12px 0 4px}.dh .zaud{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
 .zaud{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer}
 .zaud .zpp{flex:none;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0d2236;border:0;cursor:pointer;box-shadow:0 0 0 0 rgba(255,255,255,.35)}
 .zaud .zpp svg{width:18px;height:18px}
@@ -1102,8 +1102,8 @@ function slotStack(R,own,parent,opts){opts=opts||{};
    const body=isF?((R.filters||[]).length?'<div class="pchips" style="margin-top:6px">'+(R.filters||[]).map(f=>'<span class="pc">'+esc(pName(f))+'</span>').join('')+'</div>':'<b>'+T('Aucun filtre','No filter')+'</b>'):'<b>'+esc(pName(R[k]))+'</b><em>'+esc(pPlain(R[k]))+'</em>';
    return '<div class="lg'+(changed?' chg':'')+(opts.edit&&NEWD&&NEWD.open===k?' open':'')+'"'+(opts.edit?' onclick="slotOpen(\''+k+'\')"':(!isF&&R[k]?' onclick="goP(\''+R[k]+'\')"':''))+'><span class="fi">'+pic(s[2])+'</span><span class="lgt"><small>'+s[1]+(parent?(changed?' · '+T('changé','changed'):' · '+T('hérité','inherited')):'')+'</small>'+body+'</span>'+(opts.edit?'<span class="lgc">'+(NEWD&&NEWD.open===k?T('Fermer','Close'):T('Changer','Change'))+'</span>':'<span class="lgc">›</span>')+'</div>'+(opts.edit&&NEWD&&NEWD.open===k?slotPicker(k,R):'');}).join('')+'</div>';}
 function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;const R=r.resolved||{},own=r.parts||{};const par=r.parent&&bById(r.parent);
- let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+BOT+'</span><h3>'+esc(T(r.name_fr,r.name_en))+'</h3>'+((r.plain_fr)?'<p>'+esc(T(r.plain_fr,r.plain_en))+'</p>':'')+
-  '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div><div class="zaslot" data-k="rb">'+zaHTML('rb')+'</div></div>';
+ let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+BOT+'</span><h3>'+esc(T(r.name_fr,r.name_en))+'</h3>'+'<div class="zaslot" data-k="rb">'+zaHTML('rb')+'</div>'+((r.plain_fr)?'<p>'+esc(T(r.plain_fr,r.plain_en))+'</p>':'')+
+  '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div></div>';
  h+=rStrip(r);if(r.test&&r.test.robot&&cmpList().length>1)h+='<button class="more2" style="margin:-6px 0 12px" onclick="cmpPick(\''+r.id+'\')">'+T('Comparer avec un autre robot','Compare with another robot')+' ›</button>';
  h+='<div class="card"><h2>'+T('Ses pièces','Its pieces')+'</h2>'+slotStack(R,own,!!r.parent)+'</div>';
  const t=r.test;
