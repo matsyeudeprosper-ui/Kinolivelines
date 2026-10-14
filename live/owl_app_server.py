@@ -12762,6 +12762,7 @@ def builder_payload(user, detail):
         except Exception:
             x["test"] = None
         x["mtests"] = _robot_mtests(r["id"])
+        x["mhist"] = _robot_mhist(r["id"])
         if x.get("test"):
             for k in ("robot", "parent_result"):
                 if x["test"].get(k):
@@ -12986,7 +12987,7 @@ def robot_test(user, body):
 ROBOT_MQ = os.path.join(DIR, "robots", "market_tests.json")
 MARKET_PACKS = os.path.join(os.path.dirname(DIR), "study", "markets")
 MARKET_POPULAR = ["XAUUSD", "USTEC", "US30", "US500", "EURUSD", "GBPUSD", "XAGUSD", "USOIL", "DE30", "USDJPY", "ETHUSD"]
-MARKET_BUILD_MIN, MARKET_TEST_MIN = 45, 6
+MARKET_BUILD_MIN, MARKET_TEST_MIN = 80, 6     # 2026-10-14 measured (3 workers)
 
 
 def _mq_load():
@@ -13049,6 +13050,15 @@ def robot_markets(user, body):
             "build_min": MARKET_BUILD_MIN, "test_min": MARKET_TEST_MIN}
 
 
+def robot_test_markets(user, body):
+    """the Zone de test: several markets in one go (max 4); each one is robot_test_market"""
+    syms = [str(x) for x in (body.get("syms") or [])][:4]
+    if not syms:
+        return {"ok": False, "err": "market"}
+    out = [dict(robot_test_market(user, {"id": body.get("id"), "sym": sy}), sym=sy) for sy in syms]
+    return {"ok": any(o.get("ok") for o in out), "jobs": out, "err": None if any(o.get("ok") for o in out) else out[0].get("err")}
+
+
 def robot_test_market(user, body):
     reg = robot_reg()
     r = next((x for x in reg.get("robots") or [] if x.get("id") == body.get("id")), None)
@@ -13063,7 +13073,7 @@ def robot_test_market(user, body):
     same = next((x for x in q if x.get("rid") == r["id"] and x.get("sym") == sym and x.get("state") in ("queued", "building", "testing")), None)
     if same:
         return {"ok": True, "already": True, "job": same["id"]}
-    if len(mine_open) >= 3 and not is_admin(user):
+    if len(mine_open) >= 6 and not is_admin(user):
         return {"ok": False, "err": "too_many"}
     term = None
     try:
@@ -13084,17 +13094,45 @@ def robot_test_market(user, body):
             "minutes": (0 if ready else MARKET_BUILD_MIN) + MARKET_TEST_MIN * (ahead + 1)}
 
 
+def _mq_eta():
+    """minutes left per open job, in queue order: a build counts MARKET_BUILD_MIN from its start, a test
+    MARKET_TEST_MIN; a queued job waits for every open job before it (one run at a time)"""
+    now, acc, eta = time.time(), 0.0, {}
+    for x in _mq_load():
+        if x.get("state") not in ("queued", "building", "testing"):
+            continue
+        if x.get("state") == "building":
+            try:
+                t0 = datetime.strptime(x.get("building_at") or "", "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
+            except Exception:
+                t0 = now
+            own = max(3.0, MARKET_BUILD_MIN - (now - t0) / 60.0) + MARKET_TEST_MIN
+            pct = min(95, int(100 * (now - t0) / 60.0 / (MARKET_BUILD_MIN + MARKET_TEST_MIN)))
+        elif x.get("state") == "testing":
+            own, pct = MARKET_TEST_MIN / 2.0, 92
+        else:
+            own = (0 if (_pack_ready(x["sym"]) or not x.get("first_build")) else MARKET_BUILD_MIN) + MARKET_TEST_MIN
+            pct = 0
+        acc += own
+        eta[x["id"]] = (int(round(acc)), pct)
+    return eta
+
+
 def _robot_mtests(rid):
     """the robot's other-market tests: finished results + jobs still in the queue, newest first"""
     out, seen = [], set()
+    ETA = _mq_eta()
     for x in reversed(_mq_load()):
         if x.get("rid") != rid or x.get("sym") in seen:
             continue
         seen.add(x["sym"])
         row = {"sym": x["sym"], "state": x.get("state"), "at": x.get("at"), "err": x.get("err"), "first_build": x.get("first_build")}
+        if x["id"] in ETA:
+            row["eta_min"], row["pct"] = ETA[x["id"]]
         try:
             j = json.load(open(os.path.join(DIR, "robots", "results", "%s@%s.json" % (rid, x["sym"])), encoding="utf-8"))
-            keep = ("net", "trades", "win_rate", "profit_factor", "cc_dd", "first_half", "later_half", "curve")
+            keep = ("net", "trades", "win_rate", "profit_factor", "cc_dd", "mtm_dd", "first_half", "later_half", "curve",
+                    "worst", "best", "max_loss_streak", "hold_median_min")
             row.update({"name": j.get("market_name"), "days": j.get("days"), "window_utc": j.get("window_utc"), "fills": j.get("fills"),
                         "robot": {k: (j.get("robot") or {}).get(k) for k in keep},
                         "parent_result": {k: (j.get("parent_result") or {}).get(k) for k in keep}, "tested_at": j.get("generated_at")})
@@ -13102,6 +13140,13 @@ def _robot_mtests(rid):
             pass
         out.append(row)
     return out
+
+
+def _robot_mhist(rid):
+    """every finished market run of this robot, newest first (the Zone de test history)"""
+    return [{"sym": x["sym"], "at": x.get("at"), "done_at": x.get("done_at"), "state": x.get("state"), "net": x.get("net"),
+             "parent_net": x.get("parent_net"), "err": x.get("err")}
+            for x in reversed(_mq_load()) if x.get("rid") == rid and x.get("state") in ("done", "error")][:20]
 
 
 def robot_delete(user, body):
@@ -17557,7 +17602,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
-                                              "robot_markets", "robot_test_market"):
+                                              "robot_markets", "robot_test_market", "robot_test_markets"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -17569,7 +17614,8 @@ class H(BaseHTTPRequestHandler):
                        "piece_preview": piece_preview, "piece_delete": piece_delete, "piece_public": piece_public,
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo,
-                       "robot_markets": robot_markets, "robot_test_market": robot_test_market}[_parts[1]]
+                       "robot_markets": robot_markets, "robot_test_market": robot_test_market,
+                       "robot_test_markets": robot_test_markets}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
