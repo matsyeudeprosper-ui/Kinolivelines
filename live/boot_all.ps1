@@ -3,7 +3,9 @@
 # USER as a scheduled task (auto-trading launch authority = user).
 $log = "C:\Projects\KinoliveLines\live\boot_all.log"
 function Say($m) {
-    Add-Content -Path $log -Value ("{0} {1}" -f (Get-Date -Format o), $m)
+    # 2026-10-15: Add-Content failed silently ("used by another process") from 10-14 07:35 UTC on - something
+    # keeps the file open for writing - so 15 h of runs left no line. A plain append shares the file.
+    try { [IO.File]::AppendAllText($log, ("{0} {1}`r`n" -f (Get-Date -Format o), $m)) } catch {}
 }
 Say "boot_all run"
 
