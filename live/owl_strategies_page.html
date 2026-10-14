@@ -124,6 +124,19 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .lh .lh-a .lh-tag{position:static;font-size:.58rem}
 .lh .lh-cv{color:rgba(214,230,243,.55);font-size:1.25rem;line-height:1}
 .lh .lh-f{gap:10px;margin-top:14px}.lh .lh-f button{flex:1 1 auto;padding:12px 16px;font-size:.84rem}
+/* 2026-10-14 (owner): the lab + test-zone banners darker, still premium - a near-black navy base, a soft blue light
+   from the top-right corner, a faint green hint low-left, a thin lit top edge; same in light theme (a dark banner on a
+   light page reads as premium too) */
+.card.hero.lh,.card.hero.zh{background:radial-gradient(120% 85% at 100% 0%,rgba(59,130,246,.17),transparent 55%),radial-gradient(90% 70% at 0% 100%,rgba(141,240,187,.06),transparent 60%),linear-gradient(165deg,#0d1824 0%,#0a121b 100%);border-color:rgba(143,198,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 10px 30px rgba(0,0,0,.25)}
+.card.hero.lh:after,.card.hero.zh:after{background:radial-gradient(circle,rgba(96,165,250,.10),transparent 70%)}
+.lh .lh-st{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.08)}
+.lh .lh-a button{background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.09)}
+.lh .lh-a button:hover{background:rgba(255,255,255,.06)}
+.lh .lh-a button:first-child{background:linear-gradient(160deg,rgba(141,240,187,.10),rgba(255,255,255,.025));border-color:rgba(141,240,187,.32)}
+.lh .lh-f button{border-color:rgba(255,255,255,.1)}
+.lh .lh-best{background:rgba(46,204,113,.07);border-color:rgba(46,204,113,.22)}
+.zh .k3 div{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.08)}
+.card.zh .zrob,.zh .zaud{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1)}
 @media(max-width:380px){.lh .lh-t{font-size:1.35rem}.lh .lh-f button{font-size:.78rem;padding:11px 6px}.lh .lh-f button svg{display:none}.lh .lh-a button{padding:12px 10px}}
 .card.zh .zaslot{position:relative;z-index:2;margin-top:12px}
 .zaud{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer}
