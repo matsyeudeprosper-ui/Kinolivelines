@@ -454,6 +454,9 @@ DEBT_CAP_WINDOW = 40
 DEBT_CAP_BONUS_MULT = 5
 
 
+_STALE = {"try": 0.0}   # last stale-candle reconnect attempt (main loop)
+
+
 def say(msg):
     line = f"{datetime.now(timezone.utc).isoformat()} {msg}"
     print(line, flush=True)
@@ -1829,6 +1832,28 @@ def main():
                             save_state(st)
                             if not SNIPER or st["ord"] == 2:
                                 enter(-1, m[2], "TOUCH")
+            # 2026-10-14: when its terminal is restarted the bot keeps
+            # running but copy_rates quietly returns the old bars (or None)
+            # - 7 bots sat blind for ~3 h and missed a breakout. The newest
+            # CLOSED bar is normally < 2 min old; past 5 min, reconnect
+            # (at most every 2 min) instead of waiting forever.
+            _lb = st.get("last_bar") or 0
+            if _lb and time.time() - _lb > 300 \
+                    and time.time() - _STALE["try"] > 120:
+                _STALE["try"] = time.time()
+                say(f"bougies figees depuis {int((time.time() - _lb) / 60)} min"
+                    f" - reconnexion au terminal")
+                try:
+                    mt5.shutdown()
+                except Exception:
+                    pass
+                if mt5.initialize(path=TERMINAL, login=LOGIN,
+                                  password=PASSWORD, server=SERVER,
+                                  timeout=60000):
+                    mt5.symbol_select(SYMBOL, True)
+                    say("reconnecte")
+                else:
+                    say(f"reconnexion echouee: {mt5.last_error()}")
             # 3 closed bars, not 2: the fair-value-gap tag needs the bar
             # two before the confirming one (owner 2026-09-19, forward test)
             kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
