@@ -227,10 +227,42 @@ def run_markets(fast=False):
             push(job.get("uid"), "Test terminé · " + sym, "« %s » sur %s : %+.2f $ (le parent : %+.2f $), à risque égal au test Bitcoin." % (
                 nm, sym, out["robot"]["net"], out["parent"]["net"]))
             mlog("%s @ %s: robot net %.2f vs parent %.2f (%d trades)" % (rid, sym, out["robot"]["net"], out["parent"]["net"], out["robot"]["trades"]))
+            if out["robot"]["net"] > 0:
+                random_control(rid, sym, job.get("uid"), nm)
         except BaseException as e:                           # SystemExit from a missing symbol included
             mq_set(qid, state="error", err=str(e)[:200])
             push(job.get("uid"), "Test impossible · " + sym, "Le test n’a pas pu se faire : " + str(e)[:120])
             mlog("%s @ %s: ERROR %r" % (rid, sym, e))
+
+
+CONTROL_SEEDS = 40
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+
+def random_control(rid, sym, uid, nm):
+    """2026-10-15 (owner's system rule, live/owl_markets.py): a market is traded for real only when the robot's test
+    made money AND its entries beat random ones (40 random runs, top 5 %). So a positive market test runs its
+    random-entry control right here, in this lane, one at a time (heavy: ~75 min) - never in parallel."""
+    import subprocess
+    out = os.path.join(HERE, "random_control_%s_%s.json" % (rid, sym))
+    mlog("%s @ %s: random-entry control, %d runs" % (rid, sym, CONTROL_SEEDS))
+    try:
+        if os.path.exists(out):
+            os.remove(out)                       # an old verdict must never stand for a new test
+        subprocess.run([sys.executable, os.path.join(HERE, "random_control_market.py"), sym, rid, str(CONTROL_SEEDS)],
+                       cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4 * 3600,
+                       creationflags=0x08000000)
+        j = json.load(open(out, encoding="utf-8"))
+        pc = float(j["percentile"])
+        mlog("%s @ %s: control percentile %.1f -> %s" % (rid, sym, pc, j.get("verdict")))
+        if pc >= 95:
+            push(uid, "Nouveau marché autorisé · " + sym, "« %s » bat le hasard sur %s (mieux que %.0f %% des entrées au hasard) : "
+                 "les comptes qui font tourner ce robot tradent maintenant aussi ce marché." % (nm, sym, pc))
+        else:
+            push(uid, "Contrôle terminé · " + sym, "« %s » sur %s : gagnant au test, mais dans la chance (%.0fe percentile) : "
+                 "ce marché reste en test, pas en réel." % (nm, sym, pc))
+    except BaseException as e:
+        mlog("%s @ %s: control ERROR %r" % (rid, sym, e))
 
 
 class _NoBtc(Exception):
