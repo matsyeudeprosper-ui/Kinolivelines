@@ -7831,6 +7831,77 @@ function goLabo(){location.href=B+'robots';}
  function init(){tick();setInterval(tick,1500);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+// ==== 2026-10-13 (owner): PERFORMANCE CHIPS - Calendrier, Trades and Signaux in the dashboard's look. The app's own
+// painters still draw everything (filters, "Voir plus", the trade sheet keep working); this block only reshapes what
+// they draw: the calendar first with each day's amount and the month in one line, trades grouped by day with a buy /
+// sell mark and a summary of what is shown, the date field as a chip, the timeframe study as one row. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T2=(f,e)=>EN()?e:f;
+ const money=v=>(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);
+ const css=document.createElement('style');css.textContent=`
+ #pfg-trd #tgo{display:none!important}
+ #pfg-trd #tfilt{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+ #pfg-trd #tfilt .tfc{border:1px solid var(--border);background:var(--surface);color:var(--text2);font:inherit;font-size:.8rem;font-weight:700;border-radius:99px;padding:8px 13px}
+ #pfg-trd #tfilt .tfc.on{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+ #pfg-trd #tfilt .pfday{color:var(--accent-soft)}
+ .pf-ts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+ .pf-ts div{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center}
+ .pf-ts b{display:block;font-size:1.05rem;font-weight:900;font-variant-numeric:tabular-nums}.pf-ts span{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+ #pfg-trd #hist{padding:4px 14px}
+ #pfg-trd #hist .row.pf-r{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border)}
+ #pfg-trd #hist .pf-dh+.row.pf-r{border-top:0}
+ #pfg-trd .pf-dh{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);padding:14px 0 4px}
+ #pfg-trd .pf-dh:first-child{padding-top:10px}
+ .pf-ic{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:.9rem}
+ .pf-ic.b{background:rgba(46,204,113,.13);color:var(--up)}.pf-ic.s{background:rgba(255,92,92,.13);color:var(--down)}
+ .pf-tx{flex:1;min-width:0}.pf-tx b{display:block;font-size:.9rem;color:var(--text)}.pf-tx small{font-size:.72rem;color:var(--muted)}
+ .pf-am{flex:none;font-weight:900;font-size:.95rem;font-variant-numeric:tabular-nums}
+ .pf-tag{font-size:.6rem;font-weight:800;color:var(--warn);background:rgba(232,197,90,.13);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px}
+ #pfg-trd #tfpay{display:none!important}
+ .pf-row1{display:flex;align-items:center;gap:12px;width:100%;margin-bottom:12px;padding:12px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+ .pf-row1 .i{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}
+ .pf-row1 b{display:block;font-size:.88rem}.pf-row1 small{font-size:.72rem;color:var(--muted2)}
+ .pf-ms{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+ .pf-ms div{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:10px;text-align:center}
+ .pf-ms b{display:block;font-size:1.05rem;font-weight:900;font-variant-numeric:tabular-nums}.pf-ms span{font-size:.62rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+ #pfg-cal #cal [title] .pf-ca{display:block;font-size:.52rem;font-weight:800;margin-top:1px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+ #pfg-cal #cal [title]{flex-direction:column}
+ #pfg-sig .empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:28px 18px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);text-align:center}`;
+ document.head.appendChild(css);
+ const num=s=>{const m=/([+-−])\\s*\\$?\\s*([\\d.,]+)/.exec(String(s||''));return m?(m[1]==='+'?1:-1)*parseFloat(m[2].replace(',','.')):null;};
+ // ---- trades: day groups, buy/sell mark, summary ----
+ function trades(){const h=$('hist');if(!h||!window._tr)return;const rows=[...h.querySelectorAll(':scope > .row[data-i]')];if(!rows.length)return;
+  if(rows.every(r=>r.dataset.pf==='1')&&h.querySelector('.pf-dh'))return;
+  h.querySelectorAll('.pf-dh').forEach(e=>e.remove());let day='',n=0,w=0,s=0;
+  rows.forEach(r=>{const x=window._tr[+r.dataset.i];if(!x)return;const m=/^(\\d\\d\\/\\d\\d) (\\d\\d:\\d\\d)/.exec(x.w||'');const d=m?m[1]:'';const p=+x.p||0;n++;if(p>0.005)w++;s+=p;
+   if(d!==day){day=d;const hd=document.createElement('div');hd.className='pf-dh';hd.textContent=d;r.before(hd);}
+   if(r.dataset.pf!=='1'){const buy=x.dir==='A'||x.dir==='BUY',dur=x.dur!=null?(x.dur>=60?Math.floor(x.dur/60)+' h '+String(x.dur%60).padStart(2,'0'):x.dur+' min'):'';
+    const tag=r.querySelector('.rowt span[style*="warn"],.rowt .bdg,.rowt b')&&/soldat|soldier/i.test(r.textContent)?'<span class="pf-tag">'+T2('soldat','soldier')+'</span>':'';
+    r.classList.add('pf-r');r.dataset.pf='1';
+    r.innerHTML='<span class="pf-ic '+(buy?'b':'s')+'">'+(buy?'↗':'↘')+'</span><span class="pf-tx"><b>'+(m?m[2]:'')+' · '+(buy?T2('Achat','Buy'):T2('Vente','Sell'))+tag+'</b><small>'+(dur?T2('durée ','lasted ')+dur:'')+(x.lot?' · '+(+x.lot).toFixed(2)+' lot':'')+'</small></span><span class="pf-am '+(p>=0?'pos':'neg')+'">'+money(p)+'</span>';}});
+  let sm=$('pf-ts');if(!sm){sm=document.createElement('div');sm.id='pf-ts';sm.className='pf-ts';h.before(sm);}
+  sm.innerHTML='<div><b>'+n+'</b><span>trades</span></div><div><b>'+(n?Math.round(w/n*100):0)+' %</b><span>'+T2('gagnés','won')+'</span></div><div><b class="'+(s>=0?'pos':'neg')+'">'+money(s)+'</b><span>'+T2('résultat','result')+'</span></div>';}
+ function tradesChrome(){const f=$('tfilt');if(f&&!f.querySelector('.pfday')){const b=document.createElement('button');b.className='tfc pfday';b.type='button';b.textContent=T2('Un jour…','A day…');
+   b.onclick=()=>{const i=$('tdate');if(!i)return;i.onchange=()=>{try{goDay();}catch(e){}};try{i.showPicker();}catch(e){i.focus();i.click();}};f.appendChild(b);}
+  const pay=$('tfpay');let r1=$('pf-pay');
+  if(pay&&pay.innerText.trim()&&getComputedStyle(pay).getPropertyValue('--x')!=='1'){if(!r1){r1=document.createElement('button');r1.id='pf-pay';r1.className='pf-row1';r1.type='button';pay.before(r1);}
+   const t=(pay.querySelector('.lbl,.sec,h2,b')||{}).textContent||T2('Les grandes unités','The big timeframes');
+   r1.innerHTML='<span class="i"><svg class="ic" style="width:16px;height:16px"><use href="#i-chart"/></svg></span><span style="flex:1;min-width:0"><b>'+T2('Quand les grandes unités étaient d’accord','When the big timeframes agreed')+'</b><small>'+T2('H4, H1 et M15 au moment de l’entrée','H4, H1 and M15 at entry')+'</small></span><span style="color:var(--muted)">›</span>';
+   r1.onclick=()=>{try{sheet('<div class="panel" style="margin:0">'+pay.innerHTML+'</div><button class="shbtn shghost" onclick="_shDone(1)">'+T2('Fermer','Close')+'</button>');}catch(e){}};}}
+ // ---- calendar first, each day's amount in its cell, the month in one line ----
+ function cal(){const g=$('pfg-cal'),c=$('cal'),cs=$('cal-sec');if(!g||!c||!cs)return;
+  if(g.firstElementChild!==cs){g.insertBefore(c,g.firstChild);g.insertBefore(cs,c);}
+  const cells=[...c.querySelectorAll('[title]')].filter(e=>/[+-]\\$/.test(e.getAttribute('title')));let net=0,gd=0,rd=0;
+  cells.forEach(e=>{const v=num(e.getAttribute('title'));if(v==null)return;net+=v;if(v>0.005)gd++;else if(v<-0.005)rd++;
+   if(!e.querySelector('.pf-ca')){const a=document.createElement('span');a.className='pf-ca';a.textContent=(v>=0?'+':'−')+Math.abs(v).toFixed(Math.abs(v)>=10?0:1);e.appendChild(a);}});
+  let ms=$('pf-ms');if(!ms){ms=document.createElement('div');ms.id='pf-ms';ms.className='pf-ms';cs.after(ms);}
+  ms.innerHTML='<div><b class="'+(net>=0?'pos':'neg')+'">'+money(net)+'</b><span>'+T2('ce mois','this month')+'</span></div><div><b class="pos">'+gd+'</b><span>'+T2('jours verts','green days')+'</span></div><div><b class="neg">'+rd+'</b><span>'+T2('jours rouges','red days')+'</span></div>';}
+ function tick(){try{if(!$('tab-hist')||!$('tab-hist').classList.contains('on'))return;trades();tradesChrome();cal();}catch(e){console.error('pfchips',e);}}
+ setInterval(tick,700);
+})();
+
 // ==== 2026-10-13 (owner): EN DIRECT - the Marche tab becomes the robot's window: what it is doing on each market,
 // what it waits for, its day and its hours. BTC (real money) always leads; other markets appear when the scanner has
 // a virtual trade open or a setup nearly ready, marked ESSAI, and they share the same detail space. The old market
