@@ -24,6 +24,7 @@ E, K, H = RR.E, RR.K, RR.H
 sym = (ARGS[1] if len(ARGS) > 1 else "USTEC").upper()
 rid = ARGS[2] if len(ARGS) > 2 else "owl"
 seeds = int(ARGS[3]) if len(ARGS) > 3 else 100
+start = int(ARGS[4]) if len(ARGS) > 4 else 0       # 2026-10-14: seeds split over several processes (merge_random_control.py)
 d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
 D = MP.use(meta, d, E, K, TMX, H)
 TM, BID, ASK, nb, END = MP.synthetic_ticks(D, meta)
@@ -53,7 +54,7 @@ real_t = [o["t"] for o in opps]; real_sorted = sorted(range(len(opps)), key=lamb
 rt_sorted = [opps[k]["t"] for k in real_sorted]
 lo = 1440                                   # same warm-up as the harness (nervosity needs a day of bars)
 nets, pfs, trs = [], [], []
-for sd in range(seeds):
+for sd in range(start, start + seeds):
     rnd = random.Random(1000 + sd)
     idx = sorted(rnd.sample(range(lo, len(D) - 2), len(opps)))
     op, St = [], {}
@@ -68,8 +69,8 @@ for sd in range(seeds):
         St[t] = S.get(rt_sorted[j], (0, 0, None, None)) if j >= 0 else (0, 0, None, None)
     r = run(op, St)
     nets.append(r["net"]); pfs.append(r["profit_factor"] or 0); trs.append(r["trades"])
-    if (sd + 1) % 10 == 0:
-        print("  %d/%d seeds (%.0fs)" % (sd + 1, seeds, time.time() - t0), flush=True)
+    if (sd - start + 1) % 5 == 0:
+        print("  %d/%d seeds (%.0fs)" % (sd - start + 1, seeds, time.time() - t0), flush=True)
 
 nets_s = sorted(nets)
 pct = 100.0 * sum(1 for x in nets if x < real["net"]) / len(nets)
@@ -80,5 +81,5 @@ out = {"symbol": sym, "robot": rid, "seeds": seeds, "real": {k: real[k] for k in
                    "median_pf": sorted(pfs)[len(pfs) // 2]},
        "percentile": pct, "verdict": "beats chance" if pct >= 95 else "within luck", "nets": nets,
        "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
-json.dump(out, open(os.path.join(HERE, "random_control_%s_%s.json" % (rid, sym)), "w"), indent=1)
+json.dump(out, open(os.path.join(HERE, "random_control_%s_%s%s.json" % (rid, sym, "_part%d" % start if len(ARGS) > 4 else "")), "w"), indent=1)
 print(json.dumps({k: v for k, v in out.items() if k != "nets"}, indent=1))
