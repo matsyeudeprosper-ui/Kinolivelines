@@ -1,0 +1,86 @@
+{
+ "robot": "owl",
+ "days": 41.7,
+ "drag0.35": {
+  "today": {
+   "net": 57.39,
+   "trades": 82,
+   "win_rate": 0.6707,
+   "profit_factor": 1.486,
+   "cc_dd": 28.15,
+   "first_half": 15.32,
+   "later_half": 42.02,
+   "worst": -9.73
+  },
+  "sl_inside_rule": {
+   "net": -7.8,
+   "trades": 45,
+   "win_rate": 0.5778,
+   "profit_factor": 0.857,
+   "cc_dd": 16.85,
+   "first_half": -6.79,
+   "later_half": -1.0,
+   "worst": -7.9
+  },
+  "refused_by_rule": 50
+ },
+ "drag0.0": {
+  "today": {
+   "net": 82.87,
+   "trades": 84,
+   "win_rate": 0.6667,
+   "profit_factor": 1.703,
+   "cc_dd": 22.72,
+   "first_half": 32.74,
+   "later_half": 50.1,
+   "worst": -9.38
+  },
+  "sl_inside_rule": {
+   "net": 10.4,
+   "trades": 47,
+   "win_rate": 0.5957,
+   "profit_factor": 1.16,
+   "cc_dd": 17.72,
+   "first_half": 2.37,
+   "later_half": 8.03,
+   "worst": -8.49
+  },
+  "refused_by_rule": 54
+ },
+ "split_today": {
+  "stop_inside": {
+   "n": 44,
+   "net": 8.45,
+   "win_rate": 0.614,
+   "avg": 0.19
+  },
+  "stop_outside": {
+   "n": 38,
+   "net": 48.89,
+   "win_rate": 0.737,
+   "avg": 1.29
+  },
+  "matched": 82,
+  "trades": 82,
+  "trade_keys": [
+   "add_fills",
+   "adds",
+   "d",
+   "e",
+   "e0",
+   "fill_ms",
+   "frozen",
+   "gap_max_ms",
+   "lot",
+   "pnl",
+   "pnl_add",
+   "pnl_main",
+   "risk",
+   "sl",
+   "t",
+   "tc",
+   "tp",
+   "win"
+  ]
+ }
+}

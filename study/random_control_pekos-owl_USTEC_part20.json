@@ -1,0 +1,50 @@
+{
+ "symbol": "USTEC",
+ "robot": "pekos-owl",
+ "seeds": 20,
+ "real": {
+  "net": 48.73,
+  "trades": 110,
+  "win_rate": 0.5909,
+  "profit_factor": 1.27,
+  "cc_dd": 35.99,
+  "first_half": 2.52,
+  "later_half": 46.21
+ },
+ "control": {
+  "median": -16.95,
+  "p05": -36.3,
+  "p25": -24.49,
+  "p75": 0.62,
+  "p95": 28.03,
+  "mean": -14.268,
+  "share_positive": 0.25,
+  "median_trades": 87,
+  "median_pf": 0.862
+ },
+ "percentile": 100.0,
+ "verdict": "beats chance",
+ "nets": [
+  -5.81,
+  -22.86,
+  -11.47,
+  -15.77,
+  -16.95,
+  -28.24,
+  -26.42,
+  28.03,
+  -35.59,
+  -36.3,
+  -24.49,
+  18.0,
+  -21.02,
+  -52.49,
+  -22.45,
+  0.62,
+  -8.54,
+  -17.27,
+  7.37,
+  6.29
+ ],
+ "generated_at": "2026-10-14T21:31:27Z"
+}
