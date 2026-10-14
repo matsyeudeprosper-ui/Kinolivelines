@@ -79,7 +79,12 @@ FIELDS = ("label", "base_lot", "max_extra", "adds_on", "chest_cap",
           # 2026-10-13 (owner, robot builder step 4): the rule pieces of a robot
           # plugged onto the account (live/robots/robot_live.py reads them);
           # None everywhere else, so every other account is unchanged
-          "robot_rules")
+          "robot_rules",
+          # 2026-10-14 (owner): day_cap_pct - a daily PROFIT cap as a share
+          # of that morning's balance (2.0 = stop new entries at +2 % on the
+          # day). The base for future paid offers ("jusqu'a +2 %/jour",
+          # "+5 %/jour"); None = no cap. Wins over the flat dollar day_cap.
+          "day_cap_pct")
 
 BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "adds_on": True, "chest_cap": 10.0, "jar": True, "jar_skim": 0.50,
@@ -90,6 +95,7 @@ BASE = {"label": "Standard", "base_lot": 0.02, "max_extra": 3,
         "day_cap_waived": True, "scale_with_balance": False,
         "scale_ref_balance": 200.0, "risk_fit_pct": 0.0,
         "internal_entries": False, "rr": 0.8, "k_streak": 2,
+        "day_cap_pct": None,
         "debt_gate": True, "eq_half": False, "recov_bullets_only": False,
         "pb_dir_gate": False, "pb_gate_mode": "trend", "robot_rules": None}
 

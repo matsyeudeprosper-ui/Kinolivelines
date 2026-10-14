@@ -128,9 +128,10 @@
   },
   "valere": {
    "extends": "base",
-   "label": "Valere - $3 par jour",
-   "day_cap": 3.0,
-   "week_target": 20.0
+   "label": "Valere - sans plafond du jour",
+   "day_cap": null,
+   "week_target": 20.0,
+   "_cap_note": "2026-10-14 owner: daily profit cap removed on all accounts (replay: cap off = A, ~2x net, same worst dip; review/CAP_OFF_KINO_2026-10-14.md). Was 3.0."
   },
   "sniper": {
    "extends": "base",
@@ -152,7 +153,7 @@
   },
   "demo": {
    "extends": "valere",
-   "label": "Compte demo public - $3 par jour"
+   "label": "Compte demo public - sans plafond du jour"
   },
   "special": {
    "extends": "base",
@@ -161,8 +162,9 @@
   },
   "special_10": {
    "extends": "special",
-   "label": "Special - meme regles que les autres comptes ($3/jour)",
-   "day_cap": 3.0
+   "label": "Special - meme regles que les autres comptes (sans plafond du jour)",
+   "day_cap": null,
+   "_cap_note": "2026-10-14 owner: daily profit cap removed on all accounts (replay: cap off = A, ~2x net, same worst dip; review/CAP_OFF_KINO_2026-10-14.md). Was 3.0."
   },
   "valere_cap3": {
    "extends": "valere",
@@ -213,6 +215,18 @@
     ]
    },
    "_why": "2026-10-13 robot builder: robot 'owl-de-nuit' plugged by the owner"
+  },
+  "plafond_2pct": {
+   "extends": "base",
+   "label": "Plafond +2 %/jour",
+   "day_cap_pct": 2.0,
+   "_note": "2026-10-14 owner: future paid option. Stops new entries once the day's realised profit reaches 2% of that morning's balance. Not assigned to any account yet."
+  },
+  "plafond_5pct": {
+   "extends": "base",
+   "label": "Plafond +5 %/jour",
+   "day_cap_pct": 5.0,
+   "_note": "2026-10-14 owner: future paid option, 5% of the morning balance. Not assigned to any account yet."
   }
  },
  "accounts": {

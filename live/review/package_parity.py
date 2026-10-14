@@ -30,19 +30,21 @@ _BASE = {"base_lot": 0.02, "max_extra": 3, "adds_on": True,
 # copied by hand from structure_bos_bot.py as it stood on 2026-09-17,
 # before money management moved into owl_packages.json
 FROZEN = {
+    # owner 2026-10-14: daily profit cap REMOVED on every account (replay:
+    # cap off = A, about 2x net, same worst dip - review/CAP_OFF_KINO_2026-10-14.md)
     # owner 2026-09-20: 441 moved to "special_10" - no brakes, and the
     # desk stops opening at +$10 realised for the day. Deliberate.
     # owner 2026-09-24: "switch dad to match other four... must also obey
     # the 1.5% target a day just like the rest" - $10 -> $3, day_cap_waived
     # back to true (review/day_cap_always_binds_test.py showed waived wins
     # once midpoint bullets are modelled, reversing the 2026-09-20 call).
-    "bos": dict(_BASE, day_cap=3.0),
+    "bos": dict(_BASE, day_cap=None),
     # owner 2026-09-24: "make Mike behave exactly like the other four...
     # that same 1.5% account daily profit like every other accounts" -
     # Mike had no day cap at all until now (the "special"/no-brakes A/B
     # test account). Moved onto the same package as Valere/demo/Infinity.
-    "kino": dict(_BASE, day_cap=3.0, week_target=20.0),
-    "u224016179": dict(_BASE, day_cap=3.0, week_target=20.0),
+    "kino": dict(_BASE, day_cap=None, week_target=20.0),
+    "u224016179": dict(_BASE, day_cap=None, week_target=20.0),
     "sniper": dict(_BASE, base_lot=0.06, max_extra=0, adds_on=False,
                    kill_net=-80.0),
     "half": dict(_BASE, debt_mode="half"),

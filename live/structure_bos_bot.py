@@ -338,6 +338,10 @@ RISK_FIT_PCT = float(_P.get("risk_fit_pct") or 0.0)
 INTERNAL_ENTRIES = bool(_P.get("internal_entries", False))
 DEBT_MODE = _P["debt_mode"]
 DAY_CAP = _P["day_cap"]
+# 2026-10-14 (owner): a daily profit cap as a % of the morning balance, for
+# future paid offers (+2 %/jour, +5 %/jour). None = off. When set it wins
+# over the flat dollar DAY_CAP; sized once a day in day_roll().
+DAY_CAP_PCT = float(_P.get("day_cap_pct") or 0) or None
 MAX_TRADES_DAY = _P["max_trades_day"]
 WEEK_TARGET = _P["week_target"]
 NERVOSITY = _P.get("nervosity", True)
@@ -848,6 +852,22 @@ def day_roll(st):
         else:
             st.pop("sized_lot", None)
             st.pop("sized_day_cap", None)
+    # 2026-10-14 (owner): % cap = DAY_CAP_PCT of THIS MORNING's balance,
+    # fixed for the whole UTC day like the lot (also sized right after a
+    # mid-day start, without touching the day's counters)
+    if DAY_CAP_PCT:
+        if _new_day or st.get("pct_day_cap") is None:
+            try:
+                _ai = mt5.account_info()
+                if _ai is not None and _ai.balance > 0:
+                    st["day_open_balance"] = round(_ai.balance, 2)
+                    st["pct_day_cap"] = round(_ai.balance * DAY_CAP_PCT / 100.0, 2)
+                    say(f"plafond du jour {DAY_CAP_PCT:g} % de ${_ai.balance:.2f}"
+                        f" = ${st['pct_day_cap']:.2f}")
+            except Exception:
+                pass
+    else:
+        st.pop("pct_day_cap", None)
     return st.get("day_pnl", 0.0)
 
 
@@ -864,6 +884,8 @@ def sized_lot(st):
 def sized_day_cap(st):
     """The day target to enforce right now - scaled if active and
     computed, else the package's own flat DAY_CAP (which may be None)."""
+    if DAY_CAP_PCT:
+        return st.get("pct_day_cap")     # None until sized = no cap yet
     if st.get("scale_active") and DAY_CAP is not None and st.get("sized_day_cap"):
         return st["sized_day_cap"]
     return DAY_CAP
@@ -944,6 +966,10 @@ def day_blocked(st):
     _adaptive = effective_cap_today(st)
     st["cap_today"] = _adaptive if _adaptive is not None else ""
     if _adaptive is None:
+        # 2026-10-14: the cap was removed mid-day - drop the "day done"
+        # flag at once, or the app keeps saying "Journee terminee" while
+        # the bot trades on
+        st["day_capped"] = False
         return None
     if pnl >= _adaptive:
         # Owner 2026-10-10 (urgent): an EXCEPTION file lets the accounts that
