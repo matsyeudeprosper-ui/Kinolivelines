@@ -3557,9 +3557,9 @@ function stuSetStop(v){const p=ST.pos;if(!p)return;if((p.d===1&&v>=p.e)||(p.d===
 function stuPaint(){if(!D)return;D.closed=ST.trades.map(t=>[t.te,t.tx,t.e,t.x,t.d*(t.x-t.e)]);D.trades=ST.pos?[[ST.pos.d,0.01,ST.pos.e,ST.pos.sl||0,0,0,'s']]:[];ui();stuBar();}
 function stuAuto(){if(ST.auto){clearInterval(ST.auto);ST.auto=null;stuBar();return;}ST.auto=setInterval(()=>{if(ST.end||ST.wantStop){clearInterval(ST.auto);ST.auto=null;stuBar();return;}stuFetch(1);},900);stuBar();}
 function stuBar(){const b=document.getElementById('stu');if(!b)return;const p=ST.pos,done=ST.trades.length;
- const tm=new Date(ST.cur*1000),hh=String(tm.getUTCHours()).padStart(2,'0')+':'+String(tm.getUTCMinutes()).padStart(2,'0');
+ const tm=new Date(ST.cur*1000),hh=String(tm.getDate()).padStart(2,'0')+'/'+String(tm.getMonth()+1).padStart(2,'0')+' '+String(tm.getHours()).padStart(2,'0')+':'+String(tm.getMinutes()).padStart(2,'0');   // 2026-10-15: local time
  const pr=Math.max(0,Math.min(1,(ST.cur-ST.t0)/86400));
- let r1='<div class="r"><span class="lbl"><b>'+ST.day.slice(8,10)+'/'+ST.day.slice(5,7)+' '+hh+'</b> UTC</span><span class="pg"><i style="width:'+(pr*100).toFixed(1)+'%"></i></span><span class="lbl"><b>'+done+'</b> / '+ST.n+' trades</span></div>';
+ let r1='<div class="r"><span class="lbl"><b>'+hh+'</b></span><span class="pg"><i style="width:'+(pr*100).toFixed(1)+'%"></i></span><span class="lbl"><b>'+done+'</b> / '+ST.n+' trades</span></div>';
  let r2='';
  if(ST.end&&!p)r2='<div class="r"><span class="hint">'+stuT('Fin de la journée.','End of the day.')+'</span><button onclick="stuNextDay()">'+stuT('Jour suivant','Next day')+'</button></div>';
  else r2='<div class="r"><button onclick="stuFetch(1)"'+(ST.wantStop?' disabled':'')+'>▶ 1</button><button onclick="stuFetch(10)"'+(ST.wantStop?' disabled':'')+'>▶▶ 10</button><button class="'+(ST.auto?'on':'')+'" onclick="stuAuto()"'+(ST.wantStop?' disabled':'')+'>'+(ST.auto?'⏸':'⏵ Auto')+'</button></div>';

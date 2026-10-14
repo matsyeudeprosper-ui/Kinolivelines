@@ -576,7 +576,21 @@ button.pc{cursor:pointer}
 <script>
 const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
 const T=(f,e)=>EN?e:f, $=id=>document.getElementById(id);
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// 2026-10-15 (owner: "all time hour date across the entire app in user local time"): clock times are shown in the
+// phone's own time zone. Data keeps UTC (rules, day keys); these turn it into local time on screen only.
+const TZM=-new Date().getTimezoneOffset();
+const lHM=t=>{const d=new Date(t*1000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
+const lHour=h=>((Math.round(+h*60+TZM)%1440+1440)%1440)/60;          // a UTC hour of the day -> the local one (may be x.5)
+function locUTC(s){if(s.indexOf('UTC')<0)return s;
+ const f=(h,m,hs,pad)=>{const x=((Math.round(+h*60+(+m||0)+TZM)%1440)+1440)%1440,H=Math.floor(x/60),M=x%60;
+  return hs?(H+' h'+(M?String(M).padStart(2,'0'):'')):((pad?String(H).padStart(2,'0'):H)+(m!=null||M?':'+String(M).padStart(2,'0'):''));};
+ s=s.replace(/(\d{1,2}):(\d{2})( ?(?:and|to|et|à|-|–) ?)(\d{1,2}):(\d{2})(?: \(UTC\)| ?UTC)/g,(a,h1,m1,sep,h2,m2)=>f(h1,m1,0,1)+sep+f(h2,m2,0,1));
+ s=s.replace(/(\d{1,2})( ?h)?( ?(?:and|to|et|à|-|–) ?)(\d{1,2})( ?h)?(?: \(UTC\)| ?UTC)/g,(a,h1,u1,sep,h2,u2)=>{const hs=!!(u1||u2);
+  return hs&&u1?f(h1,null,1)+sep+f(h2,null,1):(f(h1,null,0,h1.length>1)+sep+(hs?f(h2,null,1):f(h2,null,0,h2.length>1)));});
+ s=s.replace(/(\d{1,2}):(\d{2})(?: \(UTC\)| ?UTC)/g,(a,h,m)=>f(h,m,0,1));
+ s=s.replace(/(\d{1,2}) ?h(?: \(UTC\)| ?UTC)/g,(a,h)=>f(h,null,1));
+ return s.replace(/ ?\(UTC\)| UTC\b/g,'');}
+const esc=s=>locUTC(String(s==null?'':s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tt=x=>EN?(x.title_en||x.title_fr):(x.title_fr||x.title_en), pl=x=>EN?(x.plain_en||x.plain_fr):(x.plain_fr||x.plain_en), vd=x=>EN?(x.verdict_en||x.verdict_fr):(x.verdict_fr||x.verdict_en);
 const ST={live:{fr:'En direct',en:'Live',c:'var(--up)',cls:'background:var(--ok-bg);color:var(--up-soft)'},
  trial:{fr:'Essai en cours',en:'Trial running',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
@@ -604,7 +618,7 @@ const cl=v=>v==null?'':(v>0?'pos':(v<0?'neg':''));
 function ago(t){if(!t)return '—';const s=Date.now()/1000-t;if(s<90)return T("à l'instant",'just now');if(s<3600)return T('il y a ','')+Math.round(s/60)+' min'+T('',' ago');if(s<86400)return T('il y a ','')+Math.round(s/3600)+' h'+T('',' ago');return T('il y a ','')+Math.round(s/86400)+T(' j',' d ago');}
 function dIn(d){const t=new Date(d+'T12:00:00Z').getTime(),n=Math.ceil((t-Date.now())/86400000);return n<=0?T("aujourd'hui",'today'):(n===1?T('demain','tomorrow'):T('dans '+n+' j','in '+n+' d'));}
 const MON=EN?['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']:['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
-const fdate=s=>{if(!s)return '—';const d=new Date(typeof s==='number'?s*1000:(String(s).length<=10?s+'T12:00:00Z':s));if(isNaN(d))return '—';return d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear();};
+const fdate=s=>{if(!s)return '—';const loc=typeof s==='number'||String(s).length>10;const d=new Date(typeof s==='number'?s*1000:(String(s).length<=10?s+'T12:00:00Z':s));if(isNaN(d))return '—';return loc?d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear():d.getUTCDate()+' '+MON[d.getUTCMonth()]+' '+d.getUTCFullYear();};
 function spark(a,w=74,h=26){if(!a||a.length<2)return '';const mn=Math.min(0,...a),mx=Math.max(0,...a),r=(mx-mn)||1;
  const P=a.map((v,i)=>(i/(a.length-1)*w).toFixed(1)+','+(h-2-(v-mn)/r*(h-4)).toFixed(1));const up=a[a.length-1]>=0;
  const z=(h-2-(0-mn)/r*(h-4)).toFixed(1);
@@ -782,10 +796,10 @@ const SECR={
    (x.id==='owl'?'<div class="note">'+T('Le robot ne trade que le Bitcoin pour l\'instant. Les autres marchés sont essayés en virtuel dans « L\'Owl sur d\'autres marchés ».','The robot trades only Bitcoin for now. Other markets are tried virtually in "The Owl on other markets".')+' <a style="color:var(--accent-soft);font-weight:700" href="#s=scanner&v=mk">›</a></div>':'')+'</div>';},
  when(x){const c=x.cuts,sd=c.side||{},hr=c.hour||{},wk=c.week||{};
   const sides=Object.keys(sd).map(k=>({l:k==='buy'?T('Achats','Buys'):T('Ventes','Sells'),v:sd[k].net,s:sd[k].n+' · '+num(sd[k].wr,0)+' %'}));
-  const hours=Object.keys(hr).sort().map(k=>({l:k.replace('-','h–')+'h',v:hr[k].net,s:hr[k].n+' · '+num(hr[k].wr,0)+' %'}));
+  const hours=Object.keys(hr).map(k=>{const p=k.split('-').map(lHour);return {o:p[0],l:Math.floor(p[0])+'h–'+Math.floor(p[1])+'h',v:hr[k].net,s:hr[k].n+' · '+num(hr[k].wr,0)+' %'};}).sort((a,b)=>a.o-b.o);
   const weeks=Object.keys(wk).sort().slice(-10).map(k=>({l:T('sem. ','wk ')+fdate(k).split(' ').slice(0,2).join(' '),v:wk[k].net,s:wk[k].n+' trades'}));
   return '<div class="card"><h2>'+T('Achats ou ventes','Buys or sells')+'</h2>'+divBars(sides)+'</div>'+
-   '<div class="card"><h2>'+T('Heure de la journée','Time of day')+'<span class="bd ev">UTC</span></h2>'+divBars(hours)+'<div class="note">'+T('Le résultat en dollars des trades fermés dans chaque tranche de 4 heures, avec le nombre de trades et la part gagnée.','The dollar result of trades closed in each 4-hour block, with the trade count and the share won.')+'</div></div>'+
+   '<div class="card"><h2>'+T('Heure de la journée','Time of day')+'<span class="bd ev">'+T('heure locale','local time')+'</span></h2>'+divBars(hours)+'<div class="note">'+T('Le résultat en dollars des trades fermés dans chaque tranche de 4 heures, avec le nombre de trades et la part gagnée.','The dollar result of trades closed in each 4-hour block, with the trade count and the share won.')+'</div></div>'+
    '<div class="card"><h2>'+T('Semaine par semaine','Week by week')+'</h2>'+divBars(weeks)+'</div>';},
  bt(x){if(x.mk)return scannerMarkets(x,true);const b=x.backtest;if(!b||!b.today)return '<div class="empty">—</div>';const t=b.today,n=b.no_filter;
   let h='<div class="card"><h2>'+T('Le test sur le passé','The past-data test')+(b.current?'<span class="bd" style="background:var(--ok-bg);color:var(--up-soft)">'+T('règles actuelles','current rules')+'</span>':'<span class="bd" style="background:var(--mid-bg);color:var(--warn)">'+T('règles à rejouer','rules to replay')+'</span>')+'</h2>'+
@@ -1427,7 +1441,7 @@ function renderStudio(){const s=STU;if(!s)return;
    '<div class="yn"><button class="'+(STUOK[x.id]?'on':'')+'" onclick="STUOK[\''+x.id+'\']=true;renderStudio()">'+T('Oui','Yes')+'</button><button class="'+(!STUOK[x.id]?'on no':'')+'" onclick="STUOK[\''+x.id+'\']=false;renderStudio()">'+T('Non','No')+'</button></div></div>').join('')+'</div></div>';};
  h+=grp('entry',T('Votre entrée','Your entry'))+grp('exit',T('Votre stop et votre sortie','Your stop and your exit'));
  h+='<div class="card"><h2>'+T('Vos trades','Your trades')+'</h2><div class="rk">'+T2.map((t,i)=>{const r=t.x!=null?rs[X.indexOf(t)]:null;const tm=new Date(t.te*1000);
-  return '<div class="rr"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+String(tm.getUTCHours()).padStart(2,'0')+':'+String(tm.getUTCMinutes()).padStart(2,'0')+' UTC</b><small>'+T('entrée ','entry ')+num(t.e,0)+' · stop '+num(t.sl,0)+(t.x!=null?' · '+T('sortie ','exit ')+num(t.x,0)+(t.why==='stop'?T(' (stop)',' (stop)'):''):'')+'</small></span><span class="vv"><b class="'+cl(r)+'">'+(r==null?'—':(r>=0?'+':'')+num(r,2)+' R')+'</b></span></div>';}).join('')+'</div></div>';
+  return '<div class="rr"><span class="no">'+(i+1)+'</span><span class="nm"><b>'+(t.d===1?T('Achat','Buy'):T('Vente','Sell'))+' · '+lHM(t.te)+'</b><small>'+T('entrée ','entry ')+num(t.e,0)+' · stop '+num(t.sl,0)+(t.x!=null?' · '+T('sortie ','exit ')+num(t.x,0)+(t.why==='stop'?T(' (stop)',' (stop)'):''):'')+'</small></span><span class="vv"><b class="'+cl(r)+'">'+(r==null?'—':(r>=0?'+':'')+num(r,2)+' R')+'</b></span></div>';}).join('')+'</div></div>';
  h+='<div class="card"><button class="cta" onclick="studioConfirm()">'+T('Confirmer','Confirm')+'</button><button class="cta2" style="color:var(--text);border-color:var(--border2)" onclick="goAI(\''+s.id+'\')">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+T('Expliquer à l\'IA avec ces trades','Explain to the AI with these trades')+'</button><div class="note" id="sterr"></div><div id="stparts">'+(s.parts?studioParts(s.parts):'')+'</div></div>';
  $('det').innerHTML=h;}
 function studioParts(P){const row=(k,x)=>'<div class="lg'+(x&&x.match?'':' chg')+'"><span class="fi">'+pic(slotIcon(k))+'</span><span class="lgt"><small>'+(k==='entry'?T('Entrée','Entry'):T('Sortie','Exit'))+'</small><b>'+(x?esc(T(x.fr,x.en)):T('Pas assez clair','Not clear enough'))+'</b><em>'+(!x?T('Vos réponses ne dessinent pas une règle : jouez plus de trades ou changez vos réponses.','Your answers do not draw a rule: play more trades or change your answers.'):(x.match?T('Cette pièce existe : vous pouvez l\'utiliser tout de suite dans un robot.','This piece exists: you can use it in a robot right away.'):T('Cette pièce n\'existe pas encore : elle est enregistrée pour être construite.','This piece does not exist yet: it is saved to be built.')))+'</em></span></div>';
@@ -1452,7 +1466,7 @@ const MKERR={hours:T('L\'heure de fin doit être après l\'heure de début.','Th
  buffer:T('Marge entre 0 et 500 points.','Margin between 0 and 500 points.'),points:T('Distance entre 20 et 3000 points.','Distance between 20 and 3000 points.'),moves:T('Entre 1 et 10 mouvements.','Between 1 and 10 moves.'),
  exists:T('Cette pièce existe déjà.','This piece already exists.'),name:T('Donnez-lui un nom.','Give it a name.'),limit:T('Vous avez déjà le maximum de pièces.','You already have the maximum of pieces.')};
 function mkPrevHtml(){return MK.prev?'<b>'+T('Ce que fait cette pièce','What this piece does')+'</b>'+esc(MK.prev):(MK.err?'<b style="color:var(--down-soft)">'+T('À corriger','To fix')+'</b>'+esc(MKERR[MK.err]||MK.err):'<b>…</b>');}
-function mkNum(path,v,step,mn,mx,unit){return '<div class="mkn"><button onclick="mkSet(\''+path+'\','+Math.max(mn,+(v-step).toFixed(2))+')">−</button><span><b>'+num(v,step<1?(step<0.1?2:1):0)+'</b> '+unit+'</span><button onclick="mkSet(\''+path+'\','+Math.min(mx,+(v+step).toFixed(2))+')">+</button></div>';}
+function mkNum(path,v,step,mn,mx,unit,fmt){return '<div class="mkn"><button onclick="mkSet(\''+path+'\','+Math.max(mn,+(v-step).toFixed(2))+')">−</button><span><b>'+(fmt?fmt(v):num(v,step<1?(step<0.1?2:1):0))+'</b> '+unit+'</span><button onclick="mkSet(\''+path+'\','+Math.min(mx,+(v+step).toFixed(2))+')">+</button></div>';}
 function mkTog(path,on,label,inner){return '<div class="mkt'+(on?' on':'')+'"><button class="mkck" onclick="mkSet(\''+path+'\','+(on?'null':'\'__on\'')+')"><span class="chk">'+(on?'✓':'')+'</span>'+label+'</button>'+(on&&inner?inner:'')+'</div>';}
 function mkRender(){const m=MK,r=m.rule;const TY=[['entry',T('Entrée','Entry')],['filter',T('Filtre','Filter')],['stop',T('Stop','Stop')],['exit',T('Sortie','Exit')]];
  // toggles store '__on' then get their default value
@@ -1464,7 +1478,7 @@ function mkRender(){const m=MK,r=m.rule;const TY=[['entry',T('Entrée','Entry')]
  const radio=(path,val,label,sub)=>'<button class="opt'+(r[path]===val?' on':'')+'" onclick="mkSet(\''+path+'\',\''+val+'\')"><span class="rad"></span><span><b>'+label+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</span></button>';
  if(m.type==='entry')h+='<div class="opts">'+radio('event','any',T('Toutes les cassures','Every break'),T('BOS et CHoCH, à la clôture.','BOS and CHoCH, at the close.'))+radio('event','bos',T('Seulement les BOS','BOS only'),T('Les cassures qui continuent la tendance.','Breaks that continue the trend.'))+radio('event','choch',T('Seulement les CHoCH','CHoCH only'),T('Quand la structure change de sens.','When the structure changes direction.'))+'</div>';
  if(m.type==='filter'){h+='<div class="opts">'+radio('kind','hours',T('Heures','Hours'),T('Trader seulement à certaines heures.','Trade only at certain hours.'))+radio('kind','weekdays',T('Jours','Days'),T('Trader seulement certains jours.','Trade only on certain days.'))+radio('kind','pace',T('Rythme du marché','Market pace'),T('Seulement quand le marché va assez vite, ou pas trop vite.','Only when the market moves fast enough, or not too fast.'))+radio('kind','moves',T('Grands mouvements','Big moves'),T('Seulement après assez de grands mouvements.','Only after enough big moves.'))+'</div>';
-  if(r.kind==='hours'){if(r.from==null)r.from=0;if(r.to==null)r.to=8;h+='<div class="grp" style="margin:14px 0 8px">'+T('De … à … (UTC)','From … to … (UTC)')+'</div><div class="mkrow">'+mkNum('from',r.from,1,0,23,'h')+mkNum('to',r.to,1,1,24,'h')+'</div>';}
+  if(r.kind==='hours'){if(r.from==null)r.from=0;if(r.to==null)r.to=8;h+='<div class="grp" style="margin:14px 0 8px">'+T('De … à … (heure locale)','From … to … (local time)')+'</div><div class="mkrow">'+mkNum('from',r.from,1,0,23,'h',lHour)+mkNum('to',r.to,1,1,24,'h',lHour)+'</div>';}
   if(r.kind==='weekdays'){if(!Array.isArray(r.days))r.days=[0,1,2,3,4];const N=EN?['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:['lun','mar','mer','jeu','ven','sam','dim'];
    h+='<div class="grp" style="margin:14px 0 8px">'+T('Les jours','The days')+'</div><div class="chips" style="flex-wrap:wrap">'+N.map((n,i)=>'<button class="chip'+(r.days.includes(i)?' on':'')+'" onclick="mkDay('+i+')">'+n+'</button>').join('')+'</div>';}
   if(r.kind==='pace'){if(r.min===undefined)r.min=null;if(r.max===undefined)r.max=1.3;h+='<div class="grp" style="margin:14px 0 8px">'+T('1 = le rythme habituel','1 = the usual pace')+'</div>'+mkTog('min',r.min!=null,T('Au moins','At least'),mkNum('min',r.min||0.8,0.1,0.3,3,'×'))+mkTog('max',r.max!=null,T('Au plus','At most'),mkNum('max',r.max||1.3,0.1,0.3,3,'×'));}
@@ -1510,9 +1524,9 @@ function miniChart(c){const C=c.candles||[];if(C.length<2)return '';const W=320,
  (c.dots||[]).forEach(d=>{const i=C.findIndex(k=>k[0]===d[0]);if(i>=0)s+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(d[1]).toFixed(1)+'" r="3" fill="var(--accent-soft)"/>';});
  const lx=X(C.length-1),ly=Y(C[C.length-1][4]);s+='<path d="M'+(lx+8)+' '+(ly+(c.d===1?8:-8))+' l6 '+(c.d===1?-10:10)+' l6 '+(c.d===1?10:-10)+'z" fill="'+(c.d===1?'var(--up)':'var(--down)')+'"/>';
  return s+'</svg>';}
-function cardWords(c){const g=new Date(c.t*1000);const hm=String(g.getUTCHours()).padStart(2,'0')+':'+String(g.getUTCMinutes()).padStart(2,'0');
+function cardWords(c){const hm=lHM(c.t);
  const tr={1:T('en hausse','up'),'-1':T('en baisse','down'),0:T('inconnue','unknown')}[c.pbt];
- return (c.d===1?T('Achat','Buy'):T('Vente','Sell'))+' '+T('sur un ','on a ')+(c.kind==='choch'?'CHoCH':'BOS')+' '+T('à ','at ')+hm+' UTC · '+T('tendance de fond ','background trend ')+tr;}
+ return (c.d===1?T('Achat','Buy'):T('Vente','Sell'))+' '+T('sur un ','on a ')+(c.kind==='choch'?'CHoCH':'BOS')+' '+T('à ','at ')+hm+' · '+T('tendance de fond ','background trend ')+tr;}
 const WHY={'entry: BOS only':T('l\'entrée ne prend que les BOS','the entry only takes BOS'),'entry: CHoCH only':T('l\'entrée ne prend que les CHoCH','the entry only takes CHoCH'),'against the background trend':T('contre la tendance de fond','against the background trend'),'outside the hours':T('en dehors des heures','outside the hours'),'not one of the days':T('pas un des jours choisis','not one of the chosen days')};
 function aiSlot(k,s){const isNew=s&&s.rule;const nm=isNew?s.name:pName(s&&s.use);const pl=isNew?T(s.plain_fr,s.plain_en):pPlain(s&&s.use);
  return '<div class="lg'+(isNew?' chg':'')+'"><span class="fi">'+pic(slotIcon(k))+'</span><span class="lgt"><small>'+(SLOTS.find(x=>x[0]===k)||SLOTS[0])[1]+(isNew?' · '+T('nouvelle pièce','new piece'):'')+'</small><b>'+esc(nm)+'</b><em>'+esc(pl)+'</em></span></div>';}

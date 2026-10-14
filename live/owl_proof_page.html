@@ -315,6 +315,8 @@ function tabs(){const t=$('tabs');t.innerHTML='<span id="tabind"></span>'+TABS.m
  t.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;try{history.replaceState(null,'','#'+TAB);}catch(e){}render();scrollTo({top:0,behavior:'smooth'});});
  requestAnimationFrame(()=>{const on=t.querySelector('.tab.on'),ind=$('tabind');if(on&&ind){ind.style.left=on.offsetLeft+'px';ind.style.width=on.offsetWidth+'px';}});}
 function realSeries(R){const T=R.trades||[];let c=0;const S=[[R.start,R.bal0]];T.forEach(t=>{c+=t[1];S.push([t[0],R.bal0+c]);});return S;}
+// 2026-10-15: the trend-following rule went live 10/10 15:55 UTC - said in the phone's local time
+function RULE_AT(){const d=new Date(1791647710*1000),p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+':'+p(d.getMinutes());}
 function weekly(T){const m=new Map();T.forEach(t=>{const d=new Date(t[0]*1000),day=(d.getUTCDay()+6)%7,mon=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()-day));const k=mon.getTime();m.set(k,(m.get(k)||0)+t[1]);});
  const ud=k=>{const d=new Date(k);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');};
  return [...m.entries()].sort((a,b)=>a[0]-b[0]).map(([k,v])=>[ud(k),v,k]);}
@@ -360,7 +362,7 @@ function rePane(){const R=J.real;if(!R)return '';const P=R.trades.map(t=>t[1]),s
   '<div class="card"><h2>'+tx('Avant et depuis le filtre','Before and since the filter')+'</h2><div class="cmp" style="margin-top:8px">'+
    '<div class="h"></div><div class="h r">'+tx('avant le 10/10','before 10/10')+'</div><div class="h r">'+tx('depuis','since')+'</div>'+
    ['n','wr','pf','net'].map(k=>'<div class="l">'+({n:'Trades',wr:tx('Réussite','Win rate'),pf:'Profit factor',net:tx('Résultat','Result')})[k]+'</div><div class="r">'+fmtK(k,sp)+'</div><div class="r">'+(so?fmtK(k,so):'—')+'</div>').join('')+'</div>'+
-   '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au 10/10 à 15h55 UTC. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until 10/10 15:55 UTC. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>'+
+   '<div class="note">'+tx('Le compte a tourné avec les règles d’avant jusqu’au '+RULE_AT()+'. Depuis, il suit la tendance de fond. '+(post.length<30?'Trop peu de trades depuis pour juger ('+post.length+') : on compte, on ne conclut pas encore.':''),'The account ran the earlier rules until '+RULE_AT()+'. Since then it follows the background trend. '+(post.length<30?'Too few trades since to judge ('+post.length+'): we count, we do not conclude yet.':''))+'</div></div>'+
   '<div class="card"><h2>'+tx('Derniers trades','Latest trades')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+T.length+tx(' au total',' in all')+'</span></h2><div style="margin-top:10px">'+T.slice(0,4).map(trRow).join('')+'</div>'+
    '<button class="rowlink" id="opentrades"><span>'+tx('Tout l’historique des trades','The full trade history')+'</span><span>›</span></button></div>'+
   '<div class="card"><h2>'+tx('Les règles du robot','The robot’s rules')+'<span style="font-weight:700;letter-spacing:0;text-transform:none;color:var(--muted)">'+rules.length+tx(' changements',' changes')+'</span></h2>'+
