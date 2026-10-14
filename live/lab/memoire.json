@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-14T17:07:31Z",
+ "updated": "2026-10-14T19:00:19Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -127,7 +127,8 @@
     "2026-10-12 20:00 veille: FLIP-BOS BUY won +1.80 (closed 19:56, pace 0.886 = calm-ish, day, after the 12:35 win). Fits the hypothesis. Pile flip_day 45 tr 36% -60.03 PF 0.44 (h 33/38); inside it 0.8-1.0 band 11 tr 55% -5.02 vs 1.0-1.3 11 tr 18% -27.91 (peu). flip_hot 35 tr 34% -56.24 (h 35/33), after a loss 19 tr 26% -44.27.",
     "2026-10-13: pile flip_hot 35 tr 34% -56.24 (h 32/38). FLIP-BOS 69 tr 45% -48.03 PF 0.65 (h 39/50); BOS 53 tr 60% +45.86 PF 1.46 (h 63/58).",
     "2026-10-14 04:30 veille: night FLIP-BOS SELL -3.04 (pace 0.893, closed 04:28) - a night reversal lost, against 'hour splits the reversals'. FLIP-BOS 70 tr 44% -51.07 PF 0.63 (h 39/49); BOS 54 tr 59% +38.04 PF 1.35 (h 64/54).",
-    "2026-10-14: hot after loss FLIP 19 tr 26% -44.27. fls0.6+fh0.75+cw30 42 d capped B +58.8 (h1 -1.0) hole 26 / uncapped C -11.2; fls0.5+cw30 capped B +51.9 / C -7.8. Proposed fls06_fh075_capwait30."
+    "2026-10-14: hot after loss FLIP 19 tr 26% -44.27. fls0.6+fh0.75+cw30 42 d capped B +58.8 (h1 -1.0) hole 26 / uncapped C -11.2; fls0.5+cw30 capped B +51.9 / C -7.8. Proposed fls06_fh075_capwait30.",
+    "2026-10-14 19:00 veille: day FLIP-BOS SELL +2.76 (pace 1.116, closed 17:50, after the -13.14 loss) - a win against flip_day. flip_day 49 tr 41% -49.57 PF 0.53, halves 30%/50%: the day-flip leak is softer in the second half (watch whether it fades). 1.0-1.3 band 12 tr 25% -25.15 still the worst."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -169,7 +170,8 @@
     "2026-10-12 13:30 veille: BOS SELL +3.34 (pace 1.097, closed 12:21, day after the 11:57 loss) won against the pile; BOS SELL +2.11 (pace 1.227, 12:35, after a win). Pile 42 tr 36% vs 56% -54.28 PF 0.49 (h 37/35). Inside: 1.0-1.3 12 tr 25%, 1.3-1.85 13 tr 46% -25.62 (losses 2x wins), <15 min 25 tr 32%. Answered labo ask day_after_loss.",
     "2026-10-13: pile day_after_loss 43 tr 37% -50.40 (h 36/38). prev=after a loss 59 tr 44% -41.60 (h 47/41) vs after a win 58%. Requested day_loss_size (stake, not pause).",
     "2026-10-13 12:00 veille: BOS SELL -7.82 (11:23, pace 1.05) day after the 09:40 loss, as predicted. Pile 44 tr 36% -58.22 PF 0.49.",
-    "2026-10-14: real day after a loss with gap <30 min 17 tr 18% -33.11 (h 25/11) vs gap >=30 27 tr 48% -25.11: the quick restart is the leak. Hot after a loss 32 tr 34% -56.21 (26 of 32 by day)."
+    "2026-10-14: real day after a loss with gap <30 min 17 tr 18% -33.11 (h 25/11) vs gap >=30 27 tr 48% -25.11: the quick restart is the leak. Hot after a loss 32 tr 34% -56.21 (26 of 32 by day).",
+    "2026-10-14 19:00 veille: FLIP-BOS SELL +2.76 day after the -13.14 loss won against the pile. day_after_loss 45 tr 38% vs 59% -55.46 PF 0.51 (h 36/39) holds."
    ]
   },
   {
@@ -2188,6 +2190,16 @@
     "--by dayn, --by kind, --pile asia"
    ],
    "saw": "130 tr 52% -26.82. Biggest real loss in weeks (~3x avg loss). cont_day 33 tr 42% vs 55% -34.45 PF 0.67 (h 47/39); after a win now 19 tr 42% -15.22 (was -2.08), after a loss 13 tr -27.03 - the 'leak sits after losses' split thins. By hold: 1-3 h 4 tr 0 won -33.68, 30-60 min 6 tr 1 won -36.29 vs <30 min 21 tr 52% +11.76 (peu). dayn 1st 48 tr 62% but only +5.19 (avg loss -5.66 vs win 3.57). BOS 57 tr 60% +31.03; asia 48 tr 69% +57.45 unchanged. No ask, no twins, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-14T19:00:19Z",
+   "night": "veille",
+   "looked": [
+    "1 new: FLIP-BOS SELL +2.76 (closed 17:50, pace 1.116, day, right after the -13.14 BOS loss)",
+    "--pile flip_day by nerv/prev/hour/dur",
+    "--pile day_after_loss, --by kind"
+   ],
+   "saw": "131 tr 52% -24.06. A day flip after a loss won - against both flip_day and day_loss_chase. flip_day 49 tr 41% vs 59% -49.57 PF 0.53, halves 30%/50%: the second half is drifting toward even (was 45 tr 36% -60.03 on 10-12). 1.0-1.3 band still worst 12 tr 25% -25.15. day_after_loss 45 tr 38% -55.46 (h 36/39) holds. FLIP-BOS 72 tr 46% -45.65 (h 41/50); BOS 57 tr 60% +31.03. No ask, no twins, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
