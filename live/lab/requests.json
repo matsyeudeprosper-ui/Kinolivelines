@@ -121,7 +121,7 @@
    },
    "built_date": "2026-10-05",
    "built_commit": "96dbe40",
-   "c_nights": 0
+   "c_nights": 1
   },
   {
    "id": "cap_rr",
@@ -249,7 +249,7 @@
    },
    "built_date": "2026-10-11",
    "built_commit": "0bb1d2a",
-   "c_nights": 1
+   "c_nights": 2
   },
   {
    "id": "pb_dir_gate_test",
@@ -324,9 +324,15 @@
    "what_en": "Add 'move' (the number of big moves counted over the last 2 hours at entry, as in the reading tools) to the facts a pile can use, with the same operators. Nothing changes for existing piles.",
    "why_fr": "Le meilleur indice de ce soir (les tendances mûres gagnent, les jeunes perdent) ne peut pas devenir une pile : ce fait n'est pas dans la liste. Une pile « à partir du 4e mouvement » le suivrait avec la vérification des deux moitiés.",
    "why_en": "Tonight's best clue (mature trends win, young ones lose) cannot become a pile: this fact is not on the list. A pile 'from the 4th move on' would follow it with the two-halves check.",
-   "status": "open",
-   "build_attempts": 1,
-   "build_error": "périmètre : live/robots/test_robot_live.py"
+   "status": "built",
+   "build_attempts": 2,
+   "build_error": "ui_smoke: no CDP - is Edge installed?",
+   "key": "move",
+   "built_note_fr": "Une pile peut maintenant trier les trades selon l'âge de la tendance, c'est-à-dire le nombre de grands mouvements des 2 dernières heures avant l'entrée. Rien ne change pour les piles déjà là ni pour le robot tant qu'une idée qui s'en sert n'a pas gagné son duel.",
+   "built_note_en": "A pile can now sort trades by how old the trend is, meaning the number of big moves in the 2 hours before entry. Nothing changes for the existing piles or for the robot until an idea that uses it wins its duel.",
+   "test": {
+    "cmd": "python lab/scrutiny.py --by move"
+   }
   },
   {
    "id": "pb_gate_parity",
@@ -381,6 +387,28 @@
    "what_en": "A rule that acts only on capped accounts (like the pause after each trade) changes nothing uncapped: the test says \"same\" uncapped, so it can never be \"better on both halves\". Ask: for such a rule, let the verdict be the capped accounts' one, provided nothing really changes uncapped (same trades, same money).",
    "why_fr": "La pause avec plafond tient à 20, 25 et 30 minutes, sur 42 et 69 jours, sur les deux moitiés, et divise le trou par six. Elle ne peut pourtant pas obtenir de jumeau seule, à cause d'une règle pensée pour les idées partagées.",
    "why_en": "The capped pause holds at 20, 25 and 30 minutes, over 42 and 69 days, on both halves, and cuts the hole by six. Yet alone it can never earn a twin, because of a rule meant for shared ideas.",
+   "status": "open"
+  },
+  {
+   "id": "day_count_size",
+   "date": "2026-10-14",
+   "title_fr": "Miser moins à partir du 6e trade de la journée",
+   "title_en": "Stake less from the day's 6th trade",
+   "what_fr": "Deux réglages, dans le menu des idées. day_n_from (0 = rien, 3 à 8) : quand le compte a déjà ouvert N trades depuis minuit UTC (le même compteur que la limite de trades par jour, day_n), multiplier la mise par day_n_size (0,25 à 1,0). Le trade est quand même pris, ses trades de rattrapage suivent la même mise. Par défaut 0 et 1,0 : rien ne change.",
+   "what_en": "Two settings, in the ideas menu. day_n_from (0 = off, 3 to 8): when the account has already opened N trades since midnight UTC (the same counter as the trades-per-day limit, day_n), multiply the stake by day_n_size (0.25 to 1.0). The trade is still taken, its catch-up trades follow the same stake. Default 0 and 1.0: nothing changes.",
+   "why_fr": "Sur les 128 vrais trades, ceux pris après 5 trades déjà ouverts dans la journée n'en gagnent que 36 % et perdent 64 $ (45 trades, les deux moitiés d'accord) ; les premiers du jour sont presque à l'équilibre. Arrêter net (limite de 4, 5 ou 6 trades par jour) a été testé ce soir : non, les deux moitiés se contredisent. D'où une mise plus petite, pas un arrêt.",
+   "why_en": "Over the 128 real trades, those taken after 5 trades already opened that day win only 36 % and lose $64 (45 trades, both halves agree); the day's first ones are about even. A hard stop (limit of 4, 5 or 6 trades a day) was tested tonight: no, the two halves contradict each other. Hence a smaller stake, not a stop.",
+   "status": "open"
+  },
+  {
+   "id": "pile_field_dayn",
+   "date": "2026-10-14",
+   "title_fr": "Pouvoir faire une pile sur « le combientième trade du jour »",
+   "title_en": "Allow a pile on \"which trade of the day it is\"",
+   "what_fr": "Ajouter le champ dayn (trades déjà ouverts dans la journée au moment de l'entrée, 0 = le premier ; c'est day_n_at_entry du journal) aux champs permis dans les piles, avec les mêmes opérateurs que hour. Attention : le robot note ce nombre avant de remettre le compteur à zéro au changement de jour, le premier trade d'un jour peut donc porter le compte de la veille ; à corriger dans la lecture si possible.",
+   "what_en": "Add the field dayn (trades already opened that day at entry, 0 = the first; it is the journal's day_n_at_entry) to the fields allowed in piles, with the same operators as hour. Careful: the robot records this number before resetting the counter at the day change, so a day's first trade can carry the previous day's count; correct it on reading if possible.",
+   "why_fr": "Ce fait existe déjà dans le tableau des trades et montre la plus grosse fuite du journal (après 5 trades dans la journée : 36 % gagnés, -64 $). Une pile le suivrait chaque jour, à côté du réglage demandé.",
+   "why_en": "The fact already exists in the trades table and shows the journal's biggest leak (after 5 trades that day: 36 % won, -$64). A pile would follow it daily, next to the requested setting.",
    "status": "open"
   }
  ]

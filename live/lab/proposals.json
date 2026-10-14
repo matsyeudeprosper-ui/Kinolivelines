@@ -2750,7 +2750,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-13",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 60.7,
     "worst": 53.4,
@@ -2758,7 +2758,9 @@
     "h2": 5.3,
     "base_net": 60.88,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-14"
   },
   {
    "id": "ext500_capwait25",
@@ -2777,7 +2779,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-13",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 73.5,
     "worst": 53.0,
@@ -2785,7 +2787,9 @@
     "h2": -11.0,
     "base_net": 60.88,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-14"
   },
   {
    "id": "ext500_capwait30_fm075",
@@ -2805,7 +2809,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-13",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 87.9,
     "worst": 44.8,
@@ -2813,7 +2817,9 @@
     "h2": 2.4,
     "base_net": 69.76,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "A",
+   "done": "2026-10-14"
   },
   {
    "id": "capwait30",
@@ -2831,7 +2837,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-13",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 123.24,
     "worst": 80.29,
@@ -2856,7 +2862,9 @@
      "diff_net": 0.0,
      "diff_worst": 0.0
     }
-   }
+   },
+   "verdict": "=",
+   "done": "2026-10-14"
   },
   {
    "id": "day_half_capwait25",
@@ -2885,7 +2893,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-13",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 44.0,
     "worst": 41.0,
@@ -2893,7 +2901,74 @@
     "h2": 11.5,
     "base_net": 60.88,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-14"
+  },
+  {
+   "id": "ext500_nosun",
+   "family": "meteo",
+   "title_fr": "Pas d'entrée après une heure de 500 points, ni le dimanche",
+   "title_en": "No entry after a 500-point hour, and none on Sunday",
+   "why_fr": "Deux freins qui reviennent « un peu mieux » depuis dix nuits, réunis. Sans plafond : +33 $ sur 42 jours, mieux sur les deux moitiés, trou 50 au lieu de 65. Avec plafond : -9 $. Sur 69 jours, sans plafond, presque pareil (+3 $) : prudence.",
+   "why_en": "Two brakes that come back \"a little better\" for ten nights, put together. Uncapped: +$33 over 42 days, better on both halves, hole 50 instead of 65. Capped: -$9. Over 69 days, uncapped, almost the same (+$3): caution.",
+   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "ext_pts": 500, "skip_wd": [6]},
+   "by": "chercheur",
+   "date": "2026-10-14",
+   "status": "pending",
+   "pretest": {"net": 84.2, "worst": 49.7, "h1": 25.5, "h2": 19.7, "base_net": 50.84, "base_worst": 64.92}
+  },
+  {
+   "id": "ext500_nosun_capwait30",
+   "family": "rythme",
+   "title_fr": "Même chose, plus une pause de 30 minutes avec plafond",
+   "title_en": "The same, plus a 30-minute pause on capped accounts",
+   "why_fr": "Chaque compte reçoit son frein : l'heure agitée et le dimanche sans plafond, la pause avec plafond. Sur 42 jours : +33 $ sans plafond, +47 $ avec (trou 27 au lieu de 65). Sur 69 jours : +3 $ et +33 $. Seule idée positive partout ce soir ; première moitié faible avec plafond.",
+   "why_en": "Each account gets its own brake: the busy hour and Sunday uncapped, the pause capped. Over 42 days: +$33 uncapped, +$47 capped (hole 27 instead of 65). Over 69 days: +$3 and +$33. Tonight's only idea positive everywhere; weak first half capped.",
+   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "ext_pts": 500, "skip_wd": [6], "cap_wait": 30},
+   "by": "chercheur",
+   "date": "2026-10-14",
+   "status": "pending",
+   "pretest": {"net": 84.2, "worst": 49.7, "h1": 25.5, "h2": 19.7, "base_net": 50.84, "base_worst": 64.92}
+  },
+  {
+   "id": "em05n2_capwait30",
+   "family": "argent",
+   "title_fr": "Miser moitié moins sur une tendance jeune, et pause avec plafond",
+   "title_en": "Half stake on a young trend, and a pause on capped accounts",
+   "why_fr": "Hors des sentiers : les vrais trades des deux premiers grands mouvements d'une tendance perdent, ceux du 4e et plus gagnent (31 trades, 61 %). Y miser moitié moins, avec la pause : avec plafond +84 $, mieux sur les deux moitiés, trou 7 au lieu de 65. Sans plafond : -13 $.",
+   "why_en": "Out of the box: real trades on a trend's first two big moves lose, those from the 4th on win (31 trades, 61 %). Stake half there, with the pause: capped +$84, better on both halves, hole 7 instead of 65. Uncapped: -$13.",
+   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "early_moves_size": 0.5, "early_moves_max": 2, "cap_wait": 30},
+   "by": "chercheur",
+   "date": "2026-10-14",
+   "status": "pending",
+   "pretest": {"net": 37.8, "worst": 40.6, "h1": -29.8, "h2": 8.0, "base_net": 50.84, "base_worst": 64.92}
+  },
+  {
+   "id": "em075n3",
+   "family": "argent",
+   "title_fr": "Miser un quart de moins sur les trois premiers mouvements",
+   "title_en": "A quarter less stake on a trend's first three moves",
+   "why_fr": "Le nouveau réglage seul, en douceur. Avec plafond : +24 $, mieux sur les deux moitiés, même trou. Sans plafond : -5 $, première moitié moins bonne. Moitié moins sur trois mouvements : non sur les deux comptes. Une tendance jeune mérite une mise plus petite, pas un refus.",
+   "why_en": "The new setting alone, gently. Capped: +$24, better on both halves, same hole. Uncapped: -$5, weaker first half. Half stake on three moves: no on both accounts. A young trend deserves a smaller stake, not a refusal.",
+   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "early_moves_size": 0.75, "early_moves_max": 3},
+   "by": "chercheur",
+   "date": "2026-10-14",
+   "status": "pending",
+   "pretest": {"net": 46.3, "worst": 52.0, "h1": -8.3, "h2": 2.1, "base_net": 50.84, "base_worst": 64.92}
+  },
+  {
+   "id": "fls06_fh075_capwait30",
+   "family": "argent",
+   "title_fr": "Miser moins sur les changements de sens à risque, et pause",
+   "title_en": "Stake less on risky changes of direction, and pause",
+   "why_fr": "Les vrais changements de sens pris en marché nerveux juste après une perte n'en gagnent qu'un sur quatre (19 trades, -44 $). Mise réduite là, et pause avec plafond : avec plafond +59 $, trou 26 au lieu de 65, première moitié pareille. Sans plafond : -11 $.",
+   "why_en": "Real changes of direction taken in a nervous market right after a loss win only one in four (19 trades, -$44). Smaller stake there, and the pause capped: capped +$59, hole 26 instead of 65, first half the same. Uncapped: -$11.",
+   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "flip_loss_size": 0.6, "flip_hot_size": 0.75, "cap_wait": 30},
+   "by": "chercheur",
+   "date": "2026-10-14",
+   "status": "pending",
+   "pretest": {"net": 39.7, "worst": 54.1, "h1": -19.9, "h2": 8.8, "base_net": 50.84, "base_worst": 64.92}
   }
  ]
 }

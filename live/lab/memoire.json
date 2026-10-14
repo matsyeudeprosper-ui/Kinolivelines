@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-14T06:31:13Z",
+ "updated": "2026-10-14T11:30:00Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -30,6 +30,15 @@
    "next": "Answer critic with 12/12 money plateau; watch fm085 + pb_ext400_capwait25 in battery; get pb parity first."
   },
   {
+   "id": "day_count",
+   "fr": "Une fois cinq trades déjà pris dans la journée, le robot perd ; les premiers trades du jour gagnent.",
+   "status": "nouveau",
+   "evidence": [
+    "2026-10-14: real day_n_at_entry >=5 (= after 5 entries already counted; bot records before day_roll so a day's first trade may carry yesterday's count) 45 tr 36% -64.21 PF 0.46 (h 38/34 agree); by day dayn<=4 36 tr 47% -9.05 vs >=5 44 tr 36% -63.50; dayn 0-1 46 tr 63%. Harness max_trades_day (package param, not menu) 4/5/6 nokill 42 d: uncapped C -6.4 / C -14.4 / B +4.2, capped B +31.8 / C -8.4 / C -14.9, halves h1 -53..-95 / h2 +42..+90 - a hard stop is not a cause. Requested day_count_size (stake) + pile_field_dayn."
+   ],
+   "next": "Test day_n stake when built; check whether it is the day/after-loss leak in disguise."
+  },
+  {
    "id": "capped_slow_small",
    "fr": "Les comptes avec plafond de gain par jour aiment moins de trades et des mises plus petites ; les comptes sans plafond, non.",
    "status": "renforce",
@@ -39,9 +48,10 @@
     "2026-10-10: third night: battery wait20 capped A +39.2, wait30 B +37.2, wait45 B +55.8; uncapped C on all. With ext400 + flip_hot 0.75 the uncapped side turns better on both halves too.",
     "2026-10-11: cap_wait built; cw25 capped A +82.3 (h +7.9/+74.4) hole 57->18.7, uncapped untouched; 69 d capped B +55.0 (h1 -18.0).",
     "2026-10-12: cap_wait25 battery capped A +85.5, uncapped =. Holds on the filtered base: pb+cw25 capped A +16.1 (h +25.9/+6.2). Day stake 0.75 capped A +18.1 (h +2.0/+14.6), uncapped C -16.0.",
-    "2026-10-13: package views 42 d capped: cw20/25/30 (+e500+fm075) A +61.1/+88.8/+92.1, h1 +8.0/+5.6/+1.7, hole 65->9-13.5. Any companion gives capped +87..+101 hole ~9 (fm075+cw25 +87.5, bul2+cw25+fm075 +88.3, day8-16 half+cw25 +101.2). 69 d fh075+fm075+cw25 capped A +95.9 (h +5.5/+87.8) hole 64.9->19.7; e500+cw25 capped B +72.4 (h1 -5.1) hole 22.4. Answers the critic spike/first-half objections for the capped side."
+    "2026-10-13: package views 42 d capped: cw20/25/30 (+e500+fm075) A +61.1/+88.8/+92.1, h1 +8.0/+5.6/+1.7, hole 65->9-13.5. Any companion gives capped +87..+101 hole ~9 (fm075+cw25 +87.5, bul2+cw25+fm075 +88.3, day8-16 half+cw25 +101.2). 69 d fh075+fm075+cw25 capped A +95.9 (h +5.5/+87.8) hole 64.9->19.7; e500+cw25 capped B +72.4 (h1 -5.1) hole 22.4. Answers the critic spike/first-half objections for the capped side.",
+    "2026-10-14: battery ext500_capwait30_fm075 A both (+12.9 / +93.4 hole 72->15), long B +12.1, real +50.0 on 88; critic DOUTE (pause alone beats the combo; capped h1 a wash, 40 min h1 -21). My nokill views tonight (capped base h1 +61 / h2 -27): pause+companion capped +47..+84, but h1 now -35..+0 (em05n2+cw30 +0.1, fls+cw30 -1, e500+nosun+cw30 -32.6). 69 d e500+nosun+cw30 capped B +32.7, em075n3+cw30 B +43.0. Money and hole hold; first half wobbles with the window."
    ],
-   "next": "Battery capwait30 alone + capwait25_fh075_fm075; request capped_only_verdict so a capped-only dial can be judged."
+   "next": "Battery verdict on capwait30 alone (twin with doubt); capped_only_verdict request."
   },
   {
    "id": "night_carries",
@@ -62,7 +72,8 @@
     "2026-10-12 12:00 veille: two night-entered reversals lost late (entry 04 h held >3 h -5.48 closed 09:23; entry 07 h -4.64). asia 42 tr 67% +33.32 PF 1.57 (h 70/64), was 40 tr +43.44. 04 h 2 tr -1.85, >3 h holds 4 tr 50% -7.36. Night still positive, thinner.",
     "2026-10-13: size 0.5 at 08-15 h: C -16.8 (h -26.8/+11.5) / C -19.4 (h -27.5/+21.9) - fixed-hour split once more. Real asia 46 tr 70% +55.78 (h 70/70). Battery noday B/B (+1.5 / +47.6, hole -47/-50), long C -34.8. hour_brake_days marked built but absent from harness -> request hour_brake_rebuild.",
     "2026-10-13 12:00 veille: three day sells: FLIP-BOS +1.16, BOS -4.45, BOS -7.82. Pile cont_day passes 30: 31 tr 42% vs 54% -22.73 PF 0.75 (h 47/38 agree); its 0.8-1.0 band 11 tr 27% -25.33. The breakout edge is a night edge (real).",
-    "2026-10-14 04:30 veille: FLIP-BOS SELL -3.04 (pace 0.893, night, closed 04:28). asia 47 tr 68% +52.74 PF 1.86 (h 71/65 agree), was 46 tr 70% +55.78. Inside: 04 h 3 tr 1 won -4.89; 00 h 10 tr 50% -12.90; 01-03 h 22 tr ~77% +58. After a win 30 tr 73% +46.98 vs after a loss 17 tr 59% +5.76."
+    "2026-10-14 04:30 veille: FLIP-BOS SELL -3.04 (pace 0.893, night, closed 04:28). asia 47 tr 68% +52.74 PF 1.86 (h 71/65 agree), was 46 tr 70% +55.78. Inside: 04 h 3 tr 1 won -4.89; 00 h 10 tr 50% -12.90; 01-03 h 22 tr ~77% +58. After a win 30 tr 73% +46.98 vs after a loss 17 tr 59% +5.76.",
+    "2026-10-14: asia 48 tr 69% +57.45 PF 1.93 (h 72/65). dayn>=5 almost never at night (1 of 45): the day leak and the count leak overlap."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -110,23 +121,25 @@
     "2026-10-12 12:00 veille: 7 new, 2 won, ~-13.15. Five FLIP-BOS (1 won), two BOS (1 won). flip_day 44 tr 34% -61.83 PF 0.42 (h 33/35). Kind: FLIP-BOS 66 tr 42% -54.87 PF 0.60 (h 41/43); BOS 43 tr 56% +14.35 PF 1.15 (h 62/47).",
     "2026-10-12 20:00 veille: FLIP-BOS BUY won +1.80 (closed 19:56, pace 0.886 = calm-ish, day, after the 12:35 win). Fits the hypothesis. Pile flip_day 45 tr 36% -60.03 PF 0.44 (h 33/38); inside it 0.8-1.0 band 11 tr 55% -5.02 vs 1.0-1.3 11 tr 18% -27.91 (peu). flip_hot 35 tr 34% -56.24 (h 35/33), after a loss 19 tr 26% -44.27.",
     "2026-10-13: pile flip_hot 35 tr 34% -56.24 (h 32/38). FLIP-BOS 69 tr 45% -48.03 PF 0.65 (h 39/50); BOS 53 tr 60% +45.86 PF 1.46 (h 63/58).",
-    "2026-10-14 04:30 veille: night FLIP-BOS SELL -3.04 (pace 0.893, closed 04:28) - a night reversal lost, against 'hour splits the reversals'. FLIP-BOS 70 tr 44% -51.07 PF 0.63 (h 39/49); BOS 54 tr 59% +38.04 PF 1.35 (h 64/54)."
+    "2026-10-14 04:30 veille: night FLIP-BOS SELL -3.04 (pace 0.893, closed 04:28) - a night reversal lost, against 'hour splits the reversals'. FLIP-BOS 70 tr 44% -51.07 PF 0.63 (h 39/49); BOS 54 tr 59% +38.04 PF 1.35 (h 64/54).",
+    "2026-10-14: hot after loss FLIP 19 tr 26% -44.27. fls0.6+fh0.75+cw30 42 d capped B +58.8 (h1 -1.0) hole 26 / uncapped C -11.2; fls0.5+cw30 capped B +51.9 / C -7.8. Proposed fls06_fh075_capwait30."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
   {
    "id": "first_move",
    "fr": "Le premier mouvement d'une nouvelle tendance gagne moins que les suivants.",
-   "status": "renforce",
+   "status": "en test",
    "evidence": [
     "2026-10-06: real move 1: 16 tr 38% -21.88 (h 22%/57%); 2-3: 23 tr 61% +11.89; 4+: 13 tr 69% +28.04 PF 3.91. Overlaps reversals but not the same trades (27 FLIP-BOS).",
     "2026-10-08: first_move_size built. 42 d capped: 0.75 A +12.0 hole 30.3->26.4 (h +8.6/+7.5 nokill), 0.85 A +4.7 (h +2.8/+2.4), 0.5 C -19.3. Uncapped: 0.75 C -4.0, 0.85 = -0.7, 0.5 C -33.1. 69 d 0.75 capped C -8.4 (h -16.5/+6.3). Real move 1 22 tr 32% -34.27 (h 33%/30%). With rr1.0+nosun C/C.",
     "2026-10-09: battery fm075_capped capped A +12.7 second night; uncapped C -8.3; long C -10.7. bul2+fm075 C -9.7 / A +8.3.",
     "2026-10-11: in company it works on BOTH shapes: ext400+cap_wait25+fm075 A +34.3 (h +15.8/+17.5) hole 34.7 / A +86.5 hole 11.5. Real move 1: 31 tr 45% -34.52 (h 43/47); 2-3: 39 tr 44% -30.08; 4+: 28 tr 61% +32.01 PF 1.81 (h 62/60).",
     "2026-10-12: fm 0.85 inside trio: B +24.2 (h +11.5/-6.4) / A +87.6; fm 0.6: B +20.1 / B +81.5. Plateau 0.6-0.85 on money.",
-    "2026-10-13: fh075+fm075 alone B -0.2 (h -11.3/+5.3) / capped B +18.6; inside cw25 never hurts capped. Uncapped money neutral alone."
+    "2026-10-13: fh075+fm075 alone B -0.2 (h -11.3/+5.3) / capped B +18.6; inside cw25 never hurts capped. Uncapped money neutral alone.",
+    "2026-10-14: early_moves_size built. 42 d: em075n3 alone capped A +23.5 (h +5.3/+20.1) / uncapped C -4.5; em05n3 C/C; em05n2+cw30 capped A +84.4 hole 7.4 (h +0.1/+88.1) / uncapped C -13.1; em075n3+cw25 capped B +61.4 (h1 -34.5). 69 d em075n3+cw30 capped B +43 / uncapped C -22.9. Gentle dose helps capped; uncapped always pays."
    ],
-   "next": "Requested early_moves_size (N 1-3) and pile field move."
+   "next": "Battery em075n3 and em05n2_capwait30."
   },
   {
    "id": "test_vs_live_drift",
@@ -144,13 +157,14 @@
    "id": "day_loss_chase",
    "fr": "Le jour, juste après une perte, le robot court après son argent et perd ; la nuit, non.",
    "status": "renforce",
-   "next": "Wait for loss_wait_day / day_loss_size.",
+   "next": "loss_wait_day request still open.",
    "evidence": [
     "2026-10-12: day_after_loss 39 tr 36% vs 57% -51.38 PF 0.49 (h 39/33); night after a loss 15 tr 67% +15.69. Europe after loss 18 tr 33% -36.0; US after loss 21 tr 38% -15.4.",
     "2026-10-12 12:00 veille: 11:29 FLIP-BOS SELL -1.92 and 11:57 BOS SELL -4.32, both day after a loss, both lost as predicted. Pile 41 tr 34% vs 56% -57.62 PF 0.46 (h 37/32); 1.0-1.3 11 tr 18%; <15 min 24 tr 29%. Past 30, halves agree.",
     "2026-10-12 13:30 veille: BOS SELL +3.34 (pace 1.097, closed 12:21, day after the 11:57 loss) won against the pile; BOS SELL +2.11 (pace 1.227, 12:35, after a win). Pile 42 tr 36% vs 56% -54.28 PF 0.49 (h 37/35). Inside: 1.0-1.3 12 tr 25%, 1.3-1.85 13 tr 46% -25.62 (losses 2x wins), <15 min 25 tr 32%. Answered labo ask day_after_loss.",
     "2026-10-13: pile day_after_loss 43 tr 37% -50.40 (h 36/38). prev=after a loss 59 tr 44% -41.60 (h 47/41) vs after a win 58%. Requested day_loss_size (stake, not pause).",
-    "2026-10-13 12:00 veille: BOS SELL -7.82 (11:23, pace 1.05) day after the 09:40 loss, as predicted. Pile 44 tr 36% -58.22 PF 0.49."
+    "2026-10-13 12:00 veille: BOS SELL -7.82 (11:23, pace 1.05) day after the 09:40 loss, as predicted. Pile 44 tr 36% -58.22 PF 0.49.",
+    "2026-10-14: real day after a loss with gap <30 min 17 tr 18% -33.11 (h 25/11) vs gap >=30 27 tr 48% -25.11: the quick restart is the leak. Hot after a loss 32 tr 34% -56.21 (26 of 32 by day)."
    ]
   },
   {
@@ -173,9 +187,10 @@
   {
    "id": "mature_trend",
    "fr": "Les tendances mûres (4e grand mouvement et plus) gagnent ; les jeunes perdent.",
-   "status": "nouveau",
+   "status": "renforce",
    "evidence": [
-    "2026-10-11: real move 4+ 28 tr 61% +32.01 PF 1.81 (h 62/60) vs move 1-3 70 tr 44% -64.6. Under 30, hint."
+    "2026-10-11: real move 4+ 28 tr 61% +32.01 PF 1.81 (h 62/60) vs move 1-3 70 tr 44% -64.6. Under 30, hint.",
+    "2026-10-14: real move 4+ 31 tr 61% +33.97 PF 1.78 (h 70/45); move 1 38 tr 45% -40.90 (h 39/50 agree). Crossed 30."
    ],
    "next": "early_moves_size + pile field move requested."
   },
@@ -383,9 +398,10 @@
     "2026-10-06: battery ext400 B eighth night in a row (uncapped B +13.3 hole -10.3, capped C -55.2), long C -45.4. My run ext400+nosun: uncapped A +15.4 (h +2.0/+17.3) hole 50->12.8 (smallest ever), capped C -41.2.",
     "2026-10-08: battery ext400 B ninth night (uncapped +6.1 hole -10.3, capped C -48.3), long C -24.7. ext400_nosun battery uncapped A +15.3 (second time A), capped C -29.5, long C -43.1. soft3 uncapped A +20.5, capped C -23.3, long C -62.1.",
     "2026-10-09: battery ext400 B 11th night: uncapped A +19.1 (h +14.4/+2.7) hole -11, capped C -31.4; long C -16.1; real +28.4 on 46. ext400_nosun_caprr07 B uncapped +22.9, capped C -18.3: cap_rr 0.7 did NOT rescue the capped side. ext400+fliphot075 A +26.0 / C -21.1; ext400+bul2 A +21.6 / C -25.1. The capped side is rescued only by a pause (ext400_wait).",
-    "2026-10-13: 69 d e500+cw25 uncapped C -8.7 (h1 -24.3 / h2 +8.6). 42-day-only gain; battery ext500 B +20.3, long B +11.3 alone."
+    "2026-10-13: 69 d e500+cw25 uncapped C -8.7 (h1 -24.3 / h2 +8.6). 42-day-only gain; battery ext500 B +20.3, long B +11.3 alone.",
+    "2026-10-14: e500+nosun uncapped A +33.3 (h +25.5/+19.7) hole 65->50 on 42 d; 69 d B +2.6 (h1 -38.4). Battery: nosun B 10 nights in a row, ext400 B 10, ext500 B 4 - together A uncapped tonight; capped C -9.3. Proposed ext500_nosun."
    ],
-   "next": "Proposed ext400_nosun_caprr07: does the capped target rescue the capped side?"
+   "next": "Watch ext500_nosun in battery; long window still the obstacle."
   },
   {
    "id": "breakout_is_night",
@@ -1343,6 +1359,71 @@
    "d": "2026-10-13",
    "run": "not run (time limit killed jobs)",
    "res": "e5+cw25+fm085, noday halves"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "em075n3_cw25 (42 d nokill)",
+   "res": "C -4.5 / B +61.4 (h1 -34.5) hole 28"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "em05n2_cw30",
+   "res": "C -13.1 / A +84.4 (h +0.1/+88.1) hole 7.4 -> proposed (out of box)"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "e500_cw30_em075n3",
+   "res": "B +3.5 (h +15.1/-4.7) / B +75.2 (h1 -6.8) hole 11.7"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "fls06_fh075_cw30",
+   "res": "C -11.2 / B +58.8 (h1 -1.0) hole 26 -> proposed"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "e500_nosun",
+   "res": "A +33.3 (h +25.5/+19.7) hole 50 / C -9.3 -> proposed"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "e500_nosun_cw30",
+   "res": "A +33.3 / B +46.6 (h1 -32.6) hole 27 -> proposed"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "em075n3",
+   "res": "C -4.5 / A +23.5 (h +5.3/+20.1) -> proposed"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "em05n3",
+   "res": "C -3.2 / C -5.0"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "fls05_cw30",
+   "res": "C -7.8 / B +51.9 (h1 -0.9)"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "69 d e500_nosun_cw30",
+   "res": "B +2.6 (h1 -38.4) / B +32.7 (h1 -10.7)"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "69 d em075n3_cw30",
+   "res": "C -22.9 / B +43.0"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "69 d e500_cw30_em075n3",
+   "res": "C -28.8 / B +50.8"
+  },
+  {
+   "d": "2026-10-14",
+   "run": "max_trades_day 4/5/6 (package param)",
+   "res": "uncapped C -6.4 / C -14.4 / B +4.2; capped B +31.8 / C -8.4 / C -14.9; halves split everywhere - hard daily stop rejected"
   }
  ],
  "scrutiny_log": [
@@ -2054,6 +2135,21 @@
     "--pile cont_day"
    ],
    "saw": "asia 48 tr 69% +57.45 PF 1.93 (h 71/67); 06 h 5 tr 80% +3.67; after a loss in asia 18 tr 61% +10.47 (peu). Kind: BOS 55 tr 60% +42.75, FLIP-BOS 70 tr 44% -51.07. 127 trades total. No ask, no twins, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-14T11:30:00Z",
+   "night": "nuit",
+   "looked": [
+    "auto.json 37 variants",
+    "critiques (ext500_capwait30_fm075 doute)",
+    "scrutiny --all",
+    "cross-tabs hot x prev, dayn x hour x prev, gap x prev, top 15 winners",
+    "lab_researcher --cuts",
+    "proof drag",
+    "wealth ledgers",
+    "bot day_n code"
+   ],
+   "saw": "128 tr 52% -15.10. dayn>=5 45 tr 36% -64.21 agree (new lead). hot after loss 32 tr 34% -56 (81% inside day_after_loss -> no pile). Day after loss gap<30 17 tr 18%. Top winners: BOS, wide stops (300+ pts), after a pause. Since 10-10 40 tr 60% +17. Drag +0.559/trade on 70 (real better). No open ask, no twin running."
   }
  ],
  "lessons": [
@@ -2087,17 +2183,19 @@
   "2026-10-12: bars() reads fresh data, so base halves move between runs started minutes apart (h2 -21.95 vs -9.49). Compare variants only to the base computed in the same run.",
   "2026-10-13: a capped-only dial (cap_wait) scores = on the uncapped reference, so the battery can never call it A; judge it by the capped shape and say so (request capped_only_verdict).",
   "2026-10-13: a request marked built may not exist in code (hour_brake_days: build_error, no trace in harness) - grep the harness for the key before planning runs.",
-  "2026-10-13: background runs default to a ~10 min limit; each 42-d package run_cfg pair takes ~4-5 min, 69-d longer - launch with timeout 7200000 and at most 3 variants per job."
+  "2026-10-13: background runs default to a ~10 min limit; each 42-d package run_cfg pair takes ~4-5 min, 69-d longer - launch with timeout 7200000 and at most 3 variants per job.",
+  "2026-10-14: day_n_at_entry is the count BEFORE the entry, snapshotted before day_roll - a day's first trade can carry the previous day's count. Read it as 'trades already counted', not a clean UTC ordinal.",
+  "2026-10-14: the harness has package params outside the proposal grammar (max_trades_day): my runner can test them via package_cfg overrides before asking for a dial."
  ],
  "open": [
-  "capped_only_verdict (requested 10-13): cap_wait holds 20/25/30, 42+69 d, both halves on capped - can it earn a twin?",
-  "hour_brake_rebuild (10-13): adaptive hour brake still missing in code.",
-  "day_loss_size + loss_wait_day: the day chase after a loss (43 tr 37%).",
-  "Uncapped edge: only the 400-500-pt brake earns, and not over 69 d - find what helps uncapped on the long window.",
-  "pb_gate_parity (10-12): replay filter ~3x stricter than live.",
-  "Real since pb gate: 21 tr 67% - does it last to 30?",
-  "early_moves_size + pile field move (10-11).",
-  "flip_hot pile 35 tr 34%: wait for the labo ask.",
+  "day_count_size (requested 10-14): smaller stake after 5 trades in the day - is it the day/after-loss leak in disguise?",
+  "capped_only_verdict: the capped pause holds on money and hole, first half wobbles with the window.",
+  "Uncapped edge on 69 days: e500+nosun +33 on 42 d, +3 on 69 d.",
+  "early_moves_size: gentle 0.75 helps capped, uncapped always pays - battery verdict.",
+  "loss_wait_day / day_loss_size: the quick restart after a loss by day (17 tr 18%).",
+  "hour_brake_rebuild: adaptive hour brake still missing in code.",
+  "pb_gate_parity: replay filter ~3x stricter than live.",
+  "Real since pb gate: 40 tr 60% - holding past 30.",
   "Real better than test by +0.56 per trade: does it last?",
   "Buys vs sells: wait for a falling week."
  ]

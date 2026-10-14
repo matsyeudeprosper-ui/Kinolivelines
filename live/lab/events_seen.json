@@ -20,7 +20,9 @@
   "loss_wait_day",
   "hour_brake_rebuild",
   "day_loss_size",
-  "capped_only_verdict"
+  "capped_only_verdict",
+  "day_count_size",
+  "pile_field_dayn"
  ],
  "asks_answered": [
   "ask_1790670647",

@@ -95,6 +95,26 @@
     "drag: --drag auto = null (not yet 30 measured trades) -> nets unchanged; variant trades fewer (uncapped 262 vs 276, capped 141 vs 184), so a per-trade cost would favour it, not hurt it",
     "overlap: the old ext/wait idea re-cut after yesterday's block - re-proposing a blocked dial pair should need new evidence, not a new shape"
    ]
+  },
+  {
+   "id": "ext500_capwait30_fm075",
+   "date": "2026-10-14",
+   "verdict": "doute",
+   "fr": "Sur un compte avec plafond de gain par jour, la pause de 30 minutes tient aux réglages voisins (20 minutes aussi) et le trou passe de 72 à 15. Mais presque tout le gain vient de la deuxième moitié ; à 40 minutes la première moitié perd. La pause seule gagne plus : la mise réduite et le filtre n'ajoutent rien. Sur 69 jours, le trou s'aggrave de 31 $.",
+   "en": "On an account with a daily cap, the 30-minute pause holds at the neighbouring settings (20 minutes earns as much) and the biggest hole drops from 72 to 15. But nearly all the gain comes from the second half; at 40 minutes the first half loses. The pause alone earns more: the smaller stake and the filter add nothing. Over 69 days, the hole is $31 deeper.",
+   "checks": [
+    "dose cap_wait (capped, ext500 fm0.75, harness 2026-10-14, base 53.67 / hole 72.37): 20 min 145.28 (+91.6, hole 24.8), 30 min 146.05 (+92.4, hole 15.0), 40 min 116.59 (+62.9, hole 18.1, B). No sign flip on the full period - a plateau 20-30, weaker at 40. Answers the 2026-10-12 'lone peak at 25' doubt",
+    "halves (capped): 20 min h1 +7.3 / h2 +91.8; 30 min h1 +6.2 / h2 +93.7; 40 min h1 -21.2 / h2 +91.7. The first half is a wash (flips negative at 40); the gain is the second half, where the capped base lost -12.9",
+    "shapes: capped +92 (hole 72->15); uncapped harness +28.6 (100.71->129.28, h1 +16.2 / h2 +14.0, hole 80->49); battery uncapped ref +12.95 (hole 65->45), capped ref +93.4. Both shapes better, capped carries the money",
+    "isolation: pause alone, capped, no 500-pt filter and full stake = 159.82 (+106, h1 +5.3 / h2 +100.8, hole 16.9) - beats the idea. On the capped shape the filter and the 0.75 first-move stake cost ~14 $; the idea is the pause plus two passengers",
+    "long window: 69 days +12.09 but h1 -37.7 / h2 +47.1 and hole +31.33 deeper -> weaker, and a loss in its first half = doubt",
+    "real trades: +50.01 on 69 kept of 88 (19 blocked), hole -40.66 better, though real net still only +5.80 - the strongest point in its favour",
+    "concentration: uncapped gain +28.6 < the single -39.16 base trade the variant avoids (worst loss -39.16 -> -16.40) - the uncapped side is one avoided loss; capped gain is spread across many days of h2 (no single day explains it)",
+    "past: registry 'wait 30/60 after every trade' rejected (C, -106/-107) on uncapped; ext500 candidate B (same money, smaller hole); critiques 2026-10-11 and 2026-10-12 blocked the ext400 wait/capwait25 versions. No twin, not archived, one night of history (A)",
+    "mechanism: on a capped account the day ends at the cap anyway, so a pause after a close mostly removes quick re-entries into the same chop - a plausible real cause, but only for the pause; nothing explains the filter or the smaller first-move stake",
+    "real gap: --drag auto = null (not yet 30 measured trades) -> 146.05 unchanged. --drag 1 charges the variant only (-282.59 vs uncharged base) - not a fair duel; the variant trades fewer (128 vs 188 capped, 262 vs 264 uncapped), so a fair per-trade cost would favour it",
+    "overlap: the old wait idea, rescued by limiting it to capped accounts, re-stacked with ext500 (already a candidate) and a first-move stake cut; same trades as the blocked ext400_capwait25 cut at another setting"
+   ]
   }
  ]
 }
