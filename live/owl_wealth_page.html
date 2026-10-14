@@ -495,8 +495,10 @@ function pOv(el,W){
 function lotAt(B,P){return Math.max(0.01,Math.floor((P.base_lot||0.02)*B/P.ref/0.01+1e-9)*0.01);}
 function rungs(W){const P=DATA.pal||{},R=[];
  const top=Math.max(W.equity,...S.value.map(v=>v[1]));
- if(P.scale&&P.ref>0&&P.base_cap>0){const per=P.ref/P.base_cap,kmax=Math.floor(top/per)+3;
-  for(let k=1;k<=kmax;k++){const B=per*k;R.push({v:B,lab:'$'+k+tx('/jour','/day'),sub:tx('objectif de $','target $')+k+tx(' par jour',' a day')+' · lot '+lotAt(B,P).toFixed(2)});}}
+ // 2026-10-14 (owner): no daily target any more - the steps are the LOT
+ // snowball: +0.01 lot every ref x 0.01 / base_lot dollars of balance
+ if(P.scale&&P.ref>0&&P.base_lot>0){const per=P.ref*0.01/P.base_lot,kmax=Math.floor(top/per)+3;
+  for(let k=1;k<=kmax;k++){const B=per*k;R.push({v:B,lab:(k*0.01).toFixed(2)+' lot',sub:(k>1?tx('le robot mise ','the robot stakes ')+k+tx(' fois plus qu’à 0.01 lot',' times more than at 0.01 lot'):tx('mise de départ','starting stake'))});}}
  else{const st=P.week_step||50,b0=W.bal_start,kmax=Math.floor((top-b0)/st)+3;
   for(let k=1;k<=kmax;k++)R.push({v:b0+st*k,lab:'+$'+(st*k),sub:tx('palier de +$','step of +$')+st});}
  if(P.goal&&!R.some(r=>Math.abs(r.v-P.goal)<1))R.push({v:P.goal,lab:tx('Objectif','Goal'),sub:tx('votre objectif','your goal'),goal:1});
@@ -514,7 +516,7 @@ function parcours(el,W){const P=DATA.pal||{},R=rungs(W),now=W.equity;
    eta=tx('Au rythme des 14 derniers jours (','At the pace of the last 14 days (')+money(pace,1)+tx('/jour) : vers le ','/day): around ')+String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+' ('+dd+tx(' j',' d')+').';}
   else eta=tx('Au rythme des 14 derniers jours (','At the pace of the last 14 days (')+money(pace,1)+tx('/jour), ce palier n’est pas encore en vue.','/day), this step is not in sight yet.');}
  const climbed=R.filter(r=>r.t&&r.v<=now),ahead=R.filter(r=>r.v>now).slice(0,3);
- el.innerHTML='<h2>'+tx('Votre parcours','Your journey')+'</h2><div class="sub">'+(P.scale?tx('Chaque palier atteint donne au robot un objectif par jour plus grand.','Each step reached gives the robot a bigger daily target.'):tx('Les paliers de votre compte.','Your account’s steps.'))+'</div>'+
+ el.innerHTML='<h2>'+tx('Votre parcours','Your journey')+'</h2><div class="sub">'+(P.scale?tx('Chaque palier atteint fait grandir la mise du robot : ses gains grandissent avec votre solde.','Each step reached makes the robot stake more: its gains grow with your balance.'):tx('Les paliers de votre compte.','Your account’s steps.'))+'</div>'+
  (nxt?'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:12px">'+
   '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:1rem">'+tx('Prochain palier ','Next step ')+money(nxt.v)+'</b><span style="font-weight:800;color:var(--accent-soft)">'+nxt.lab+'</span></div>'+
   '<div style="height:10px;background:var(--surface3);border-radius:99px;margin:10px 0 8px;overflow:hidden"><div style="height:100%;width:'+pc.toFixed(1)+'%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--up))"></div></div>'+
@@ -523,7 +525,7 @@ function parcours(el,W){const P=DATA.pal||{},R=rungs(W),now=W.equity;
  '<div class="chart" id="c_pal"></div>'+
  '<div class="tl" style="margin-top:14px">'+
   climbed.map(r=>'<div class="it done"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+(r.start?tx('dès le départ','from the start'):tx('atteint le ','reached on ')+dfmt(r.t,1)+(r.dep?tx(' · grâce à un dépôt',' · thanks to a deposit'):''))+'</span></div>').join('')+
-  '<div class="it" style="color:var(--accent-soft)"><b style="color:var(--accent-soft)">'+tx('Vous êtes ici · ','You are here · ')+money(now)+'</b><span>'+(P.scale&&P.cap_now?tx('objectif actuel ','current target ')+'$'+(+P.cap_now).toFixed(2)+tx('/jour','/day'):'')+'</span></div>'+
+  '<div class="it" style="color:var(--accent-soft)"><b style="color:var(--accent-soft)">'+tx('Vous êtes ici · ','You are here · ')+money(now)+'</b><span>'+(P.scale&&P.ref>0?tx('lot actuel ','lot now ')+lotAt(now,P).toFixed(2):'')+'</span></div>'+
   ahead.map((r,i)=>'<div class="it next" style="opacity:'+(1-i*0.22)+'"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+money(r.v-now)+tx(' à faire',' to go')+(r.t?tx(' · déjà atteint le ',' · already reached on ')+dfmt(r.t):'')+'</span></div>').join('')+'</div>';
  const lv=R.filter(r=>r.v>=Math.min(...S.value.map(v=>v[1]))*0.9&&r.v<=Math.max(now,...S.value.map(v=>v[1]))*1.15).map(r=>({v:r.v,label:r.lab,
   color:r===nxt?css('--accent-soft'):(r.v<=now?css('--up'):css('--muted')),dash:r===nxt?'5 4':(r.v<=now?null:'2 5'),op:r===nxt?.9:(r.v<=now?.45:.5)}));

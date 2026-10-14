@@ -37,6 +37,17 @@ if (-not $SkipCheck) {
         Say "If you are certain, re-run with -SkipCheck."
         exit 1
     }
+    # 2026-10-14: an extra ')' in the page took the app down for 2 min -
+    # the page's own JavaScript is now checked BEFORE the restart too
+    Say "page JavaScript..."
+    $out = & $PY (Join-Path $ROOT "review\page_js_precheck.py") 2>&1
+    $rc = $LASTEXITCODE
+    $out | ForEach-Object { Say ("  " + $_) }
+    if ($rc -ne 0) {
+        Say ""
+        Say "REFUSING TO RESTART. The app page has a JavaScript syntax error."
+        exit 1
+    }
 } else {
     Say "pre-flight SKIPPED by request"
 }

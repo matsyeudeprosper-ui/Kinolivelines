@@ -5012,7 +5012,8 @@ function drawEqc(e,cv,sub,minW){
 // numbers as Patrimoine's "Votre parcours" (the bot's own scaling state).
 function renderGrow(d){const card=document.getElementById('palier');if(!card)return;
  const lg=d.ledger||{},eq=+d.equity||0,en=LANG()==='en';
- const scale=lg.scale_active&&!lg.scale_opt_out&&lg.scale_ref_balance>0&&lg.scale_base_cap>0;
+ // 2026-10-14 (owner): no daily cap any more - growth = the lot snowball
+ const scale=lg.scale_active&&!lg.scale_opt_out&&lg.scale_ref_balance>0&&lg.scale_base_lot>0;
  const goal=(!d.palier_def&&d.palier)?+d.palier:null;
  if(!eq||(!scale&&!d.palier)){card.style.display='none';return;}
  card.style.display='block';
@@ -5022,13 +5023,14 @@ function renderGrow(d){const card=document.getElementById('palier');if(!card)ret
  let pace=null;{const M=d.months||{},cut=new Date(Date.now()-14*86400000).toISOString().slice(0,10);
   const ds=[].concat(...Object.values(M));if(ds.length){pace=ds.filter(x=>x.d>=cut).reduce((a,x)=>a+(x.p||0),0)/14;}}
  let R=[],lo,hi,head,chips=[];
- if(scale){const per=lg.scale_ref_balance/lg.scale_base_cap,k=Math.floor(eq/per);
-  const rung=j=>({v:per*j,lab:'$'+j+(en?'/day':'/jour')});
-  const prev=rung(Math.max(k,0)),nxt=rung(k+1),nx2=rung(k+2);R=[prev,nxt,nx2];lo=prev.v;hi=nx2.v;
-  head='<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'to reach ':'pour passer \u00e0 ')+'<b>'+nxt.lab+'</b>';
+ if(scale){const per=lg.scale_ref_balance*0.01/lg.scale_base_lot,k=Math.max(1,Math.floor(eq/per+1e-9));
+  const rung=j=>({v:per*j,lab:(j*0.01).toFixed(2)+' lot'});
+  const prev=rung(k),nxt=rung(k+1),nx2=rung(k+2);R=[prev,nxt,nx2];lo=prev.v;hi=nx2.v;
+  const xr=(k+1)/k,xs=Math.abs(xr-Math.round(xr))<1e-9?String(Math.round(xr)):xr.toFixed(1).replace('.',en?'.':',');
+  head='<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before the robot moves up to ':'avant que le robot passe \u00e0 ')+'<b>'+nxt.lab+'</b> '+(en?'(stake \u00d7':'(mise \u00d7')+xs+')';
   const lot=(typeof lg.sized_lot==='number')?lg.sized_lot:Math.max(0.01,Math.floor((lg.scale_base_lot||0.02)*eq/lg.scale_ref_balance/0.01+1e-9)*0.01);
-  if(lg.sized_day_cap)chips.push([en?'Target today':'Objectif du jour','$'+(+lg.sized_day_cap).toFixed(2)]);
-  chips.push(['Lot',lot.toFixed(2)]);
+  chips.push([en?'Lot now':'Lot actuel',lot.toFixed(2)]);
+  chips.push([en?'Each step':'Chaque palier','+'+m0(per)]);
   if(pace!=null){if(pace>0.01){const dd=Math.ceil((nxt.v-eq)/pace),dt=new Date(Date.now()+dd*86400000);
     chips.push([en?'Around':'Vers le',String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')]);}
    else chips.push([en?'Pace 14 d':'Rythme 14 j',(pace<0?'-':'+')+m(pace)+(en?'/day':'/j')]);}}
@@ -8062,6 +8064,30 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-dots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
  .edrx .lv-dots button{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:4px 0;border-radius:12px}
  .edrx .lv-dots button:active{background:var(--surface2)}
+ .ckp .ck-mk{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin:0 2px 12px}
+ .ckp .ck-h{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2)}
+ .ckp .ck-h.ok{border-color:rgba(46,204,113,.35);background:linear-gradient(135deg,rgba(46,204,113,.10),var(--surface2))}
+ .ckp .ck-h.wt{border-color:rgba(232,197,90,.35);background:linear-gradient(135deg,rgba(232,197,90,.10),var(--surface2))}
+ .ckp .ck-i{flex:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
+ .ckp .ok .ck-i{background:rgba(46,204,113,.18);color:var(--up)}
+ .ckp .wt .ck-i{background:rgba(232,197,90,.18);color:var(--warn)}
+ .ckp .ck-h b{font-size:1rem}
+ .ckp .ck-h p{margin:4px 0 0;font-size:.84rem;color:var(--text2);line-height:1.45}
+ .ckp .ck-b{margin-top:12px;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+ .ckp .ck-r{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--border);font-size:.86rem}
+ .ckp .ck-r:first-child{border-top:0}
+ .ckp .ck-r span{color:var(--muted2);min-width:0}
+ .ckp .ck-r i{display:block;font-style:normal;font-size:.72rem;color:var(--muted);margin-top:2px}
+ .ckp .ck-r b{text-align:right;white-space:nowrap}
+ .ckp .ck-g{margin:16px 6px 4px}
+ .ckp .ck-gt{position:relative;height:10px;border-radius:99px;background:var(--surface3)}
+ .ckp .ck-gf{position:absolute;left:0;top:0;bottom:0;border-radius:99px;opacity:.85}
+ .ckp .ck-gt i{position:absolute;top:-4px;width:2px;height:18px;margin-left:-1px;background:var(--muted2);border-radius:2px}
+ .ckp .ck-gt em{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(0,0,0,.25)}
+ .ckp .ck-gl{position:relative;height:18px;margin-top:6px;font-size:.68rem;color:var(--muted)}
+ .ckp .ck-gl span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+ .ckp .ck-rule{margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.10);font-size:.84rem;line-height:1.45;color:var(--text)}
+ .ckp .ck-rule span{display:block;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:4px}
  .edrx .lv-dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:900}
  .edrx .lv-dots span{font-size:.68rem;color:var(--muted2);font-weight:600;line-height:1.2}
  .edrx .lv-strip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;font:inherit;color:inherit;width:100%;text-align:left}
@@ -8158,13 +8184,13 @@ function goLabo(){location.href=B+'robots';}
    return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';}).join('')+'</div></div></div>';}
  // the four checks, as four small dots inside the card
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
-  const it=(ok,a,why)=>'<button type="button" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
+  const it=(ok,a,why,ck)=>'<button type="button" data-ck="'+(ck||'')+'" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
   const side=t===1?T2('que des achats','only buys'):T2('que des ventes','only sells');
   return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+
-   it(t===1||t===-1,T2('Sens clair','Clear trend'),t===1||t===-1?T2('La tendance de fond est en '+(t===1?'hausse':'baisse')+' : le robot ne prend '+side+'.','The background trend is '+(t===1?'up':'down')+': the robot takes '+side+'.'):T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'))+
-   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),(!gate||ms.pb_side!=='wrong')?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.'))+
-   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'))+
-   it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'))+'</div>';}
+   it(t===1||t===-1,T2('Sens clair','Clear trend'),t===1||t===-1?T2('La tendance de fond est en '+(t===1?'hausse':'baisse')+' : le robot ne prend '+side+'.','The background trend is '+(t===1?'up':'down')+': the robot takes '+side+'.'):T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),'trend')+
+   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),(!gate||ms.pb_side!=='wrong')?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.'),'side')+
+   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'),'calm')+
+   it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'),'awake')+'</div>';}
  function top(sym,real){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
@@ -8292,7 +8318,52 @@ function goLabo(){location.href=B+'robots';}
   else if(shK==='diary'){b.innerHTML='<div class="edrx" style="margin:0">'+diary(D).replace('class="lv-c"','class="lv-c" style="padding:4px 0 0;background:none;border:0;box-shadow:none"').replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')+'</div>';const jr=$('edrjr');if(jr)jr.onclick=()=>{shClose();setTimeout(()=>{try{rjOpen();}catch(e){}},300);};
    b.querySelectorAll('.lv-ev[data-p]').forEach(el=>el.onclick=()=>openTr(+el.dataset.p,+el.dataset.x));}
   else if(shK==='hours'){b.innerHTML='<div class="edrx" style="margin:0">'+(hours(D).replace(/<div class="lv-l">.*?<\\/small><\\/div>/,'')||'<div class="lv-note">'+T2('Pas encore assez de trades.','Not enough trades yet.')+'</div>')+'</div>';}}
+ // 2026-10-14 (owner): tapping one of the four checks opens a panel with the
+ // live numbers behind the decision, not a one-line toast. Same facts as
+ // dots() and the weather card (meteo_struct, gates) - never a second opinion.
+ function ckPanel(key,D){const ms=D.meteo_struct||{},g=D.gates||{},k=window._mxk||'none';
+  const f2=v=>(v==null||isNaN(v))?'—':(+v).toFixed(2).replace('.',EN()?'.':','),f0=v=>(v==null||isNaN(v))?'—':fmtN(Math.round(+v),0);
+  const row=(l,v,sub)=>'<div class="ck-r"><span>'+l+(sub?'<i>'+sub+'</i>':'')+'</span><b>'+v+'</b></div>';
+  const head=(ok,yes,no,line)=>'<div class="ck-h '+(ok?'ok':'wt')+'"><div class="ck-i">'+(ok?'✓':'…')+'</div><div><b>'+(ok?yes:no)+'</b><p>'+line+'</p></div></div>';
+  const rule=t=>'<div class="ck-rule"><span>'+T2('La règle du robot','The robot’s rule')+'</span>'+t+'</div>';
+  const age=ms.updated?Math.max(0,Math.round((Date.now()/1000-ms.updated)/60)):null;
+  const mkt='<div class="ck-mk">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+' · '+(age==null?'':(age<1?T2('à l’instant','just now'):T2('il y a ','')+age+' min'+T2('',' ago')))+'</div>';
+  const gauge=(v,max,marks,col)=>{const P=x=>Math.max(0,Math.min(100,x/max*100));return '<div class="ck-g"><div class="ck-gt"><div class="ck-gf" style="width:'+P(v).toFixed(1)+'%;background:'+col+'"></div>'+marks.map(m=>'<i style="left:'+P(m[0]).toFixed(1)+'%"></i>').join('')+'<em style="left:'+P(v).toFixed(1)+'%"></em></div><div class="ck-gl">'+marks.map(m=>'<span style="left:'+P(m[0]).toFixed(1)+'%">'+m[1]+'</span>').join('')+'</div></div>';};
+  const tw=v=>v===1?T2('hausse','up'):(v===-1?T2('baisse','down'):T2('aucune','none'));
+  let t='',h='';
+  if(key==='trend'){const pt=ms.pb_trend,ok=pt===1||pt===-1;t=T2('Sens clair','Clear trend');
+   h=head(ok,T2('Oui, le sens est clair','Yes, the trend is clear'),T2('Pas encore','Not yet'),ok?T2('La tendance suivie est en '+tw(pt)+' : le robot ne prend que des '+(pt===1?'achats':'ventes')+'.','The trend it follows is '+tw(pt)+': it only takes '+(pt===1?'buys':'sells')+'.'):T2('Aucune tendance assez nette pour choisir un sens.','No trend clear enough to pick a side.'))+
+    '<div class="ck-b">'+row(T2('Tendance suivie','Trend it follows'),'<span class="'+(pt===1?'lv-up':(pt===-1?'lv-dn':''))+'">'+(pt===1?'▲ ':(pt===-1?'▼ ':''))+tw(pt)+'</span>',T2('graphique des reculs','pullback chart'))+
+     row(T2('Structure principale','Main structure'),tw(ms.trend))+
+     (ms.chg24!=null?row(T2('Sur 24 h','Over 24 h'),'<span class="'+(ms.chg24>=0?'lv-up':'lv-dn')+'">'+(ms.chg24>=0?'+':'')+f2(ms.chg24)+' %</span>'):'')+'</div>'+
+    rule(T2('Il ne trade que dans le sens de la tendance des reculs ; contre elle, il refuse.','It only trades with the pullback trend; against it, it refuses.'));}
+  else if(key==='side'){const ok=!ms.pb_gate||ms.pb_side!=='wrong',up=ms.pb_trend===1;t=T2('Bon côté','Right side');
+   h=head(ok,T2('Oui, du bon côté','Yes, on the right side'),T2('Pas encore','Not yet'),ok?T2('Le prix est au-delà de sa dernière cassure : une nouvelle cassure peut déclencher un trade.','Price is beyond its last break: a new break can trigger a trade.'):T2('Le prix est revenu '+(up?'sous':'au-dessus de')+' sa dernière cassure : le robot attend qu’il repasse.','Price came back '+(up?'below':'above')+' its last break: the robot waits for it to cross back.'))+
+    '<div class="ck-b">'+row(T2('Prix','Price'),f0(ms.px))+
+     (ms.pb_last_bos!=null?row(T2('Dernière cassure','Last break'),f0(ms.pb_last_bos),ms.px?((ms.px-ms.pb_last_bos>=0?'+':'')+f0(ms.px-ms.pb_last_bos)+' pts'):''):'')+
+     (ms.next_bos!=null?row(T2('Déclencheur','Trigger'),f0(ms.next_bos),ms.px?T2('encore ','still ')+f0(Math.abs(ms.next_bos-ms.px))+' pts':''):'')+
+     row(T2('Côté','Side'),ms.pb_side==='wrong'?'<span style="color:var(--warn)">'+T2('mauvais','wrong')+'</span>':'<span class="lv-up">'+T2('bon','right')+'</span>')+'</div>'+
+    rule(up?T2('Pour acheter, le prix doit être au-dessus de la dernière cassure des reculs.','To buy, price must be above the pullback chart’s last break.'):T2('Pour vendre, le prix doit être en dessous de la dernière cassure des reculs.','To sell, price must be below the pullback chart’s last break.'));}
+  else if(key==='calm'){const r=(ms.vol_now&&ms.vol_ref)?ms.vol_now/Math.max(ms.vol_ref,1):null,storm=r!=null&&r>=1.85,brake=g.nervosity!==false,ok=k!=='nervous'&&k!=='brisk';t=T2('Calme','Calm');
+   h=head(ok,T2('Oui, le marché est calme','Yes, the market is calm'),T2('Trop agité','Too agitated'),storm?T2('Les bougies font ×'+f2(r)+' leur taille habituelle : tempête, aucun compte ne trade.','Candles are ×'+f2(r)+' their usual size: storm, no account trades.'):(ok?T2('Le marché bouge à un rythme que le robot sait gérer.','The market moves at a pace the robot can handle.'):T2('Le marché va trop vite pour ce compte.','The market is too fast for this account.')))+
+    (r!=null?gauge(r,2.5,(brake?[[1,T2('frein ×1','brake ×1')]]:[]).concat([[1.85,T2('tempête ×1,85','storm ×1.85')]]),storm?'var(--down)':((r>1&&brake)?'var(--warn)':'var(--up)')):'')+
+    '<div class="ck-b">'+row(T2('Rythme du marché','Market pace'),r!=null?'×'+f2(r):'—',T2('taille des bougies / taille normale','candle size / usual size'))+
+     row(T2('Bougies maintenant','Candles now'),f0(ms.vol_now)+' pts')+row(T2('Bougies normales','Usual candles'),f0(ms.vol_ref)+' pts')+
+     (ms.spread?row(T2('Prix du ticket','Ticket price'),f0(ms.spread)+' pts',ms.vol_now?Math.round(ms.spread/ms.vol_now*100)+' % '+T2('d’une bougie','of a candle'):''):'')+
+     row(T2('Frein « nervosité » sur ce compte','“Nervousness” brake on this account'),brake?T2('actif','on'):T2('non','off'))+'</div>'+
+    rule((brake?T2('Au-dessus de ×1, ce compte attend. ','Above ×1, this account waits. '):'')+T2('Au-dessus de ×1,85 (tempête), aucun compte ne trade.','Above ×1.85 (storm), no account trades.'));}
+  else{const mv=ms.moves_2h!==undefined?ms.moves_2h:(ms.flips_2h||0),gm=g.movement!==false,ok=k!=='none';t=T2('Éveillé','Awake');
+   h=head(ok,T2('Oui, le marché est éveillé','Yes, the market is awake'),T2('Le marché dort','The market is asleep'),ok?T2('Il y a eu '+mv+' grand'+(mv>1?'s':'')+' mouvement'+(mv>1?'s':'')+' ces 2 dernières heures.',mv+' big move'+(mv>1?'s':'')+' in the last 2 hours.'):T2('Aucun grand mouvement depuis 2 h : une cassure dans un marché endormi échoue souvent.','No big move for 2 h: a break in a sleeping market often fails.'))+
+    gauge(Math.min(mv,4),4,[[1,T2('minimum 1','minimum 1')]],ok?'var(--up)':'var(--warn)')+
+    '<div class="ck-b">'+row(T2('Grands mouvements (2 h)','Big moves (2 h)'),String(mv))+
+     (ms.flips_2h!=null?row(T2('Changements de sens (2 h)','Direction changes (2 h)'),String(ms.flips_2h)):'')+
+     row(T2('Règle « marché éveillé » sur ce compte','“Awake market” rule on this account'),gm?T2('active','on'):T2('non','off'))+'</div>'+
+    rule(T2('Il faut au moins un grand mouvement dans les 2 dernières heures avant d’entrer.','At least one big move in the last 2 hours before entering.'));}
+  return {t:t,h:'<div class="edrx ckp">'+mkt+h+'</div>'};}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
+  if(k.slice(0,3)==='ck:'){const P=ckPanel(k.slice(3),D);$('edrsh-t').textContent=P.t;b.innerHTML=P.h;
+   s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
+   try{history.pushState({edr:k},'');}catch(e){}return;}
   $('edrsh-t').textContent=k==='pcs'?(()=>{let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}return T2('Ses pièces','Its pieces')+' · '+rbName(rbNow(D0));})():k==='rb'?T2('Aperçu d’un robot','Preview a robot'):k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
   b.innerHTML='';
   if(k==='chart')b.innerHTML='<div class="xfr"><iframe title="'+T2('Graphique','Chart')+'" src="'+B+'chart?embed=1&single=1&sym='+encodeURIComponent(sel)+'"></iframe></div><div class="edrx"><a class="lv-btn" style="text-decoration:none" href="'+B+'chart?sym='+encodeURIComponent(sel)+'">'+T2('Ouvrir en plein écran','Open full screen')+' ↗</a></div>';
@@ -8336,7 +8407,7 @@ function goLabo(){location.href=B+'robots';}
   const h=(sel==='BTCUSD'?calmBtc(D):(RS.indexOf(sel)>=0?calmReal(D,sel):calmTrial(cur)))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
    const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const pcb=$('edrpcs');if(pcb)pcb.onclick=()=>shOpen('pcs');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
-   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
@@ -8351,11 +8422,14 @@ function goLabo(){location.href=B+'robots';}
    document.head.appendChild(cs);const mt=$('rbn-mt');if(mt)mt.textContent=T2('Ouvrir En direct','Open Live');}
   const S=btc(D),c=cand(),own=(D.open_list||[]).filter(x=>!isBtc(x));
   try{window._pillUpd(D);}catch(e){}   // same snapshot as this card
-  const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
+  // 2026-10-14 (owner): the user always knows WHICH market the robot is on,
+  // also while it waits ("Il attend" alone did not say where)
+  const mkl='<div style="display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin-bottom:3px">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+'</div>';
+  const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0">'+mkl+'<h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
    (rbNow(D).id!=='owl'&&rbNow(D).pieces?'':dots(D))+
    (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+T2('Aussi en trade : ','Also trading: ')+'<b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></div>':
     (c?'<div class="hc"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+T2('Prochain candidat : ','Next candidate: ')+'<b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>':''));
-  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}}
+  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}}
  function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -9848,12 +9922,15 @@ function render(d){
    document.getElementById('scalebtn').style.display='flex';
    window._scaleOn=!_lg3.scale_opt_out;
    {const _ss=document.getElementById('scale-sw');if(_ss)_ss.classList.toggle('on',!!window._scaleOn);}
-   const _capTxt=(typeof _lg3.scale_base_cap==='number')
-    ?'$'+_lg3.scale_base_cap.toFixed(2)+'/jour fixe'
+   // 2026-10-14: no daily target any more - only the lot follows the balance
+   const _capTxt=(typeof _lg3.scale_base_lot==='number')
+    ?'un lot fixe de '+_lg3.scale_base_lot.toFixed(2)
     :'la taille fixe';
+   const _stepTxt=(_lg3.scale_base_lot>0&&_lg3.scale_ref_balance>0)
+    ?' (+0.01 lot tous les $'+Math.round(_lg3.scale_ref_balance*0.01/_lg3.scale_base_lot)+' de solde)':'';
    document.getElementById('scale-sub').innerHTML=window._scaleOn
-    ?'Activ&eacute;e (par d&eacute;faut) &mdash; le lot et la cible du '+
-     'jour suivent le solde. Toucher pour revenir &agrave; '+_capTxt+'.'
+    ?'Activ&eacute;e (par d&eacute;faut) &mdash; le lot grandit avec le '+
+     'solde'+_stepTxt+'. Toucher pour revenir &agrave; '+_capTxt+'.'
     :'D&eacute;sactiv&eacute;e &mdash; '+_capTxt+', quel que soit le '+
      'solde. Toucher pour activer la mise &agrave; l&#39;&eacute;chelle.';
   }
@@ -14581,27 +14658,23 @@ def user_stats(u, admin_override=False):
             if (not d.get("palier") and not d.get("palier_off")
                     and d.get("balance") is not None
                     and _lg.get("scale_active")
-                    and _lg.get("scale_base_cap")
+                    and _lg.get("scale_base_lot")
                     and _lg.get("scale_ref_balance")):
-                _base_cap = float(_lg["scale_base_cap"])
+                # 2026-10-14 (owner): the daily cap is gone, so growth is
+                # counted in LOT steps - the real snowball: the bot's lot is
+                # base_lot x balance / reference, floored to 0.01, so every
+                # `_per` dollars of balance adds 0.01 lot (200 x 0.01 / 0.02
+                # = $100: 0.01 lot under $200, 0.02 from $200, 0.03 from $300)
+                _base_lot = float(_lg["scale_base_lot"])
                 _ref_bal = float(_lg["scale_ref_balance"])
-                _now_cap = float(_lg.get("sized_day_cap") or _base_cap)
-                if _base_cap > 0 and _ref_bal > 0:
-                    _next_cap = math.floor(_now_cap) + 1
-                    d["palier"] = round(_ref_bal * _next_cap / _base_cap, 2)
-                    # 2026-10-01: this was the CURRENT balance, which makes
-                    # the bar (bal - bal) / (target - bal) = 0% forever -
-                    # it has never moved on any account. The honest base is
-                    # the balance the CURRENT daily cap started at, so the
-                    # bar shows the distance actually travelled between one
-                    # step and the next.
-                    _prev_cap = math.floor(_now_cap)
-                    d["palier_base"] = (
-                        round(_ref_bal * _prev_cap / _base_cap, 2)
-                        if _prev_cap >= 1 else 0.0)
+                if _base_lot > 0 and _ref_bal > 0:
+                    _per = _ref_bal * 0.01 / _base_lot
+                    _k = max(1, int(math.floor(float(d["balance"]) / _per + 1e-9)))
+                    d["palier"] = round(_per * (_k + 1), 2)
+                    d["palier_base"] = round(_per * _k, 2)
                     d["palier_def"] = True
                     d["palier_kind"] = "scale"
-                    d["palier_next_cap"] = _next_cap
+                    d["palier_next_lot"] = round((_k + 1) * 0.01, 2)
         except Exception:
             pass
         # default weekly objective (+$50 from Monday's balance) so the

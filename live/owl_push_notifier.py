@@ -88,6 +88,23 @@ def maybe_health():
     a = age("owl_chart_btc.json")
     if a is None or a > 300:
         late.append(("flux graphique", a))
+    # 2026-10-14: a terminal restart left the trial-market scanner and 7 bots
+    # running BLIND for hours (processes alive, heartbeat still written, no
+    # new candles). Watch what they actually read, not that they run.
+    a = age(os.path.join("scanner", "control_v3.jsonl"))
+    if a is not None and a > 1800:
+        late.append(("scanner des marchés d'essai", a))
+    try:
+        for f in sorted(os.listdir(DIR)):
+            if not (f.startswith("bos_state") and f.endswith(".json")):
+                continue
+            if f in ("bos_state_half.json", "bos_state_sniper.json"):
+                continue                       # retired accounts
+            lb = json.load(open(os.path.join(DIR, f), encoding="utf-8")).get("last_bar")
+            if lb and now - float(lb) > 600:
+                late.append((f"bougies du robot {f[10:-5] or 'bos'}", now - float(lb)))
+    except Exception:
+        pass
     try:
         for u in json.load(open(os.path.join(DIR, "owl_nest_users.json"), encoding="utf-8")):
             if not (u.get("trade") or u.get("id") == "kino"):
