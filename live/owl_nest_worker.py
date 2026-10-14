@@ -340,6 +340,27 @@ def compute():
 WEALTH_OUT = os.path.join(OUT, uid + ".wealth.json")
 LAB_WEALTH = os.path.join(DIR, "lab", "wealth")
 _wealth_t = 0.0
+# 2026-10-14 (owner): "the symbols a robot can be tested on are those of the
+# account's broker". Every 6 h the worker writes this account's tradable
+# markets - what the robot test bench needs to replay one (digits, contract,
+# dollar value of a price step, typical spread) - to nest_data/<uid>.symbols.json.
+SYM_OUT = os.path.join(OUT, uid + ".symbols.json")
+_sym_t = 0.0
+
+
+def symbols_dump():
+    rows = []
+    for x in mt5.symbols_get() or []:
+        if int(getattr(x, "trade_mode", 0) or 0) == 0:      # SYMBOL_TRADE_MODE_DISABLED
+            continue
+        rows.append({"s": x.name, "d": x.description or "", "path": x.path or "",
+                     "digits": int(x.digits), "point": x.point,
+                     "tick_size": x.trade_tick_size, "tick_value": x.trade_tick_value,
+                     "contract": x.trade_contract_size, "spread": int(x.spread or 0),
+                     "ccy": x.currency_profit, "vol_min": x.volume_min, "vol_step": x.volume_step})
+    rows.sort(key=lambda r: (r["path"], r["s"]))
+    return {"uid": uid, "server": getattr(mt5.account_info(), "server", ""), "n": len(rows),
+            "symbols": rows, "updated": int(time.time())}
 
 
 def wealth():
@@ -424,6 +445,15 @@ while True:
                     _wealth_t = time.time()
                 except Exception:
                     _wealth_t = time.time()
+            if time.time() - _sym_t > 6 * 3600:
+                _sym_t = time.time()             # once, even when it fails
+                try:
+                    _sd = symbols_dump()
+                    if _sd["n"]:
+                        json.dump(_sd, open(SYM_OUT + ".tmp", "w", encoding="utf-8"))
+                        os.replace(SYM_OUT + ".tmp", SYM_OUT)
+                except Exception:
+                    pass
     except Exception as e:
         data = {"error": str(e)}
     data.setdefault("updated_utc",

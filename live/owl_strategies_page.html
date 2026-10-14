@@ -89,6 +89,11 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 /* list */
 /* 2026-10-13 (owner: "very busy long page"): folders and a slide-up sheet - nothing removed, everything one tap away */
 .fds{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.mrows{border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.mrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--border)}
+.mrow:first-child{border-top:0}
+.mrow .mn{flex:1;min-width:0}.mrow .mn b{display:block;font-size:.95rem}.mrow .mn small{display:block;font-size:.74rem;color:var(--muted);margin-top:2px;line-height:1.35}
+.mrow .mv{flex:none;text-align:right}.mrow .mv b{display:block;font-size:1.02rem}.mrow .mv small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
 .fd{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 14px;border-radius:18px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer}
 .fd .ic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;font-size:.82rem}
 .fd .ic svg{width:18px;height:18px}
@@ -963,6 +968,7 @@ function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;co
   const po=t.parts_only;
   if(po)h+='<div class="grp" style="margin:16px 0 8px">'+T('Pièce par pièce','Part by part')+'</div><div class="rk">'+[[T('Seulement la sortie au CHoCH','Only the CHoCH exit'),po.exit],[T('Seulement le rattrapage sans limite','Only the unlimited catch-up'),po.recovery],[T('Les deux, et sans aucun stop','Both, and no stop at all'),po.no_stop]].filter(x=>x[1]).map(x=>'<div class="rr"><span class="nm"><b style="white-space:normal">'+x[0]+'</b><small>'+x[1].trades+' trades · '+num(100*x[1].win_rate,0)+T(' % gagnés · recul −$',' % won · dip −$')+num(x[1].cc_dd,0)+'</small></span><span class="vv"><b class="'+cl(x[1].net)+'">'+money(x[1].net)+'</b><small>'+T('vs ','vs ')+money(b.net)+'</small></span></div>').join('')+'</div>';
   h+='</div>';}
+ h+=mktCard(r);
  if(r.can_edit)h+=manageCard(r);
  const PL=(BLD().plugs||[]).filter(p=>p.robot===r.id);
  if(r.can_edit&&!PL.length)h+=plugCard(r);
@@ -1002,6 +1008,54 @@ async function robotDel(id){if(!confirm(T('Supprimer ce robot pour de bon ?','De
  RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
 async function robotPlug(id,plug){if(plug&&!plug.where)return;const j=await robotPost('robot_update',{id,plug});if(!j.ok){const e=$('perr')||$('merr');if(e)e.textContent=MERR[j.err]||j.err;return;}PLW.w=null;await refreshB(id);}
 async function refreshB(id){RB=null;await load();CURB=bById(id);if(CURB)renderB();}
+
+/* ---------- 2026-10-14 (owner): test a robot on another market of the member's own broker. The list is the
+   account's tradable markets (refreshed every 6 h); the first test on a market prepares its data (~45 min, then
+   reused); results are in dollars at the SAME RISK as the Bitcoin test, replayed on 1-minute candles. ---------- */
+const MKCAT={crypto:['Crypto','Crypto'],metals:['Métaux','Metals'],energy:['Énergie','Energy'],indices:['Indices','Indices'],forex:['Devises','Currencies'],stocks:['Actions','Stocks'],other:['Autres','Other']};
+const MKTERR={market:T('Ce marché n\'est pas sur votre compte.','This market is not on your account.'),too_many:T('Trois tests attendent déjà : patientez qu\'ils finissent.','Three tests are already waiting: let them finish first.'),not_yours:T('Ce robot n\'est pas à vous.','This robot is not yours.')};
+function mktCard(r){const MT=r.mtests||[],can=r.can_edit||r.id==='owl'||BLD().admin;if(!MT.length&&!can)return '';
+ const pend=MT.some(x=>['queued','building','testing'].includes(x.state));
+ if(pend&&!window._mtT){window._mtT=setTimeout(()=>{window._mtT=null;if(CURB&&CURB.id===r.id&&!LSH)refreshB(r.id);},30000);}
+ const row=x=>{const nm='<b>'+esc(x.sym)+'</b>';
+  if(x.state==='done'&&x.robot){const a=x.robot,b=x.parent_result||{};
+   return '<div class="mrow"><span class="mn">'+nm+'<small>'+esc(x.name||'')+' · '+num(x.days,0)+T(' j',' d')+' · '+num(a.trades)+' trades · '+num(100*(a.win_rate||0),0)+T(' % gagnés',' % won')+'</small></span>'+
+    '<span class="mv"><b class="'+(a.net>=0?'pos':'neg')+'">'+money(a.net)+'</b><small>'+T('parent ','parent ')+money(b.net)+'</small></span></div>';}
+  if(x.state==='error')return '<div class="mrow"><span class="mn">'+nm+'<small style="color:var(--down-soft)">'+T('Test impossible','Test failed')+(x.err?' · '+esc(String(x.err).slice(0,80)):'')+'</small></span></div>';
+  const lab=x.state==='building'?T('Préparation du marché (première fois, environ 45 min)…','Preparing the market (first time, about 45 min)…'):(x.state==='testing'?T('Test en cours…','Being tested…'):(x.first_build?T('En file · ce marché sera préparé d\'abord (environ 45 min)','Queued · this market will be prepared first (about 45 min)'):T('En file d\'attente','Queued')));
+  return '<div class="mrow"><span class="mn">'+nm+'<small>'+lab+'</small></span><div class="spin" style="width:22px;height:22px"></div></div>';};
+ return '<div class="card"><h2>'+T('Sur d\'autres marchés','On other markets')+(MT.length?'<span class="bd ev">'+MT.length+'</span>':'')+'</h2>'+
+  '<div class="sub" style="margin-bottom:10px">'+T('Le même robot rejoué sur un autre marché de votre courtier. Montants à risque égal au test Bitcoin ; rejoué sur des bougies d\'une minute, un peu moins précis que le Bitcoin.','The same robot replayed on another market of your broker. Amounts at the same risk as the Bitcoin test; replayed on 1-minute candles, a little less precise than Bitcoin.')+'</div>'+
+  (MT.length?'<div class="mrows">'+MT.map(row).join('')+'</div>':'')+
+  (can?'<button class="cta" style="margin-top:12px" onclick="mktPick(\''+r.id+'\')">'+pic('M3 3v18h18M7 14l4-4 4 4 5-6')+T('Tester sur un autre marché','Test on another market')+'</button>':'')+'</div>';}
+let MKL=null,MKQ='',MKC='all',MKR=null;
+// everyday names next to the broker's codes, also searched ("nasdaq" finds USTEC)
+const MKNM={XAUUSD:['Or','Gold'],XAGUSD:['Argent','Silver'],USOIL:['Pétrole US','US oil'],UKOIL:['Pétrole Brent','Brent oil'],USTEC:['Nasdaq 100','Nasdaq 100'],US30:['Dow Jones','Dow Jones'],US500:['S&P 500','S&P 500'],DE30:['DAX','DAX'],
+ UK100:['FTSE 100','FTSE 100'],JP225:['Nikkei 225','Nikkei 225'],FR40:['CAC 40','CAC 40'],ETHUSD:['Ethereum','Ethereum'],EURUSD:['Euro / Dollar','Euro / Dollar'],GBPUSD:['Livre / Dollar','Pound / Dollar'],USDJPY:['Dollar / Yen','Dollar / Yen'],XNGUSD:['Gaz naturel','Natural gas']};
+const mkBase=s=>(s.endsWith('m')&&s.slice(0,-1)===s.slice(0,-1).toUpperCase())?s.slice(0,-1):s;
+const mkName=s=>{const n=MKNM[mkBase(s)];return n?T(n[0],n[1]):'';};
+async function mktPick(id){MKR=id;MKQ='';MKC='all';
+ shOpen(T('Choisir un marché','Choose a market'),'<div class="sub">'+T('Chargement…','Loading…')+'</div>');
+ try{const j=await robotPost('robot_markets',{});if(!j.ok)throw 0;MKL=j;}catch(e){$('lsh-b').innerHTML='<div class="sub">'+T('Impossible pour l\'instant.','Not available right now.')+'</div>';return;}
+ const cats=['all'].concat(Object.keys(MKCAT).filter(c=>MKL.symbols.some(x=>x.cat===c)));
+ $('lsh-b').innerHTML='<div class="sub" style="margin-bottom:10px">'+(MKL.own?T('Les marchés de votre compte','Your account\'s markets'):T('Les marchés du courtier','The broker\'s markets'))+' · '+MKL.symbols.length+(MKL.server?' · '+esc(MKL.server):'')+'</div>'+
+  '<input id="mkq" type="search" placeholder="'+T('Chercher : or, nasdaq, EURUSD…','Search: gold, nasdaq, EURUSD…')+'" style="width:100%;box-sizing:border-box;padding:12px 14px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;font-size:.95rem;margin-bottom:10px">'+
+  '<div class="chips" id="mkc" style="margin-bottom:12px">'+cats.map(c=>'<button class="chip'+(c===MKC?' on':'')+'" data-c="'+c+'">'+(c==='all'?T('Tous','All'):T(MKCAT[c][0],MKCAT[c][1]))+'</button>').join('')+'</div>'+
+  '<div id="mkl" class="fds"></div>';
+ $('mkq').oninput=e=>{MKQ=e.target.value.trim().toLowerCase();mktList();};
+ $('mkc').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{MKC=b.dataset.c;$('mkc').querySelectorAll('.chip').forEach(z=>z.classList.toggle('on',z===b));mktList();});
+ mktList();}
+function mktList(){const L=(MKL.symbols||[]).filter(x=>(MKC==='all'||x.cat===MKC)&&(!MKQ||x.s.toLowerCase().includes(MKQ)||(x.d||'').toLowerCase().includes(MKQ)||mkName(x.s).toLowerCase().includes(MKQ)||(MKNM[mkBase(x.s)]||[]).join(' ').toLowerCase().includes(MKQ)));
+ const show=L.slice(0,60),r=bById(MKR)||{},done=new Set((r.mtests||[]).map(x=>x.sym));
+ $('mkl').innerHTML=(show.length?show.map(x=>'<button class="fd" onclick="mktGo(\''+esc(x.s)+'\')">'+ICO('var(--accent)','<b style="font-size:.62rem">'+esc(x.s.slice(0,3))+'</b>')+
+   '<span class="tx"><b>'+(mkName(x.s)?esc(mkName(x.s))+' <span style="color:var(--muted);font-weight:600">· '+esc(x.s)+'</span>':esc(x.s))+'</b><small>'+esc(x.d||T(MKCAT[x.cat][0],MKCAT[x.cat][1]))+'</small></span>'+
+   '<span class="n" style="'+(x.ready?'color:var(--up-soft)':'color:var(--muted)')+'">'+(done.has(x.s)?T('déjà testé','tested'):(x.ready?T('rapide','fast'):'~'+MKL.build_min+' min'))+'</span><span class="cv">›</span></button>').join(''):'<div class="sub">'+T('Aucun marché ne correspond.','No market matches.')+'</div>')+
+  (L.length>show.length?'<div class="sub">'+T('+'+(L.length-show.length)+' autres : affinez la recherche.','+'+(L.length-show.length)+' more: refine the search.')+'</div>':'');}
+async function mktGo(sym){const x=(MKL.symbols||[]).find(z=>z.s===sym)||{};const r=bById(MKR)||{};
+ if(!confirm(T('Tester « '+(r.name_fr||MKR)+' » sur '+sym+' ?','Test "'+(r.name_en||r.name_fr||MKR)+'" on '+sym+'?')+'\n'+(x.ready?T('Environ '+MKL.test_min+' minutes.','About '+MKL.test_min+' minutes.'):T('Première fois sur ce marché : environ '+(MKL.build_min+MKL.test_min)+' minutes. Vous serez prévenu.','First time on this market: about '+(MKL.build_min+MKL.test_min)+' minutes. You will be notified.'))))return;
+ const j=await robotPost('robot_test_market',{id:MKR,sym:sym});
+ if(!j.ok){alert(MKTERR[j.err]||j.err);return;}
+ shClose();await refreshB(MKR);}
 function editRobot(id){const r=bById(id);if(!r)return;NEWD={edit:id,parent:r.parent||'owl',parts:JSON.parse(JSON.stringify(r.parts||{})),name:r.name_fr};NAV++;location.hash='new=1';}
 function newBase(){return bById(NEWD.parent)||bById('owl');}
 function newCur(){const R=Object.assign({},(newBase()||{}).resolved||{});Object.keys(NEWD.parts).forEach(k=>{R[k]=NEWD.parts[k];});return R;}

@@ -102,15 +102,112 @@ def run_pair(arms, TM, BID, ASK, END, opps, bars):
     return out
 
 
+# ---- 2026-10-14 (owner): a robot tested on another market of the member's broker ----
+# The queue is live/robots/market_tests.json: [{id, rid, sym, uid, terminal, state, at, ...}], state
+# queued -> building (the market's pack, ~40 min the first time) -> testing -> done | error.
+# A market test re-points the engine's module data (bars, cutoff, cache, minimum stop), so it ALWAYS runs
+# in its own process (--markets), never in the process that ran a BTC test.
+MQ = os.path.join(LIVE, "robots", "market_tests.json")
+PUSHQ = os.path.join(LIVE, "owl_push_queue.json")
+
+
+def mq_load():
+    try:
+        return json.load(open(MQ, encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def mq_set(qid, **kw):
+    q = mq_load()
+    for x in q:
+        if x.get("id") == qid:
+            x.update(kw)
+    json.dump(q, open(MQ + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(MQ + ".tmp", MQ)
+
+
+def push(uid, title, body):
+    """same line format as owl_app_server.queue_push (the notifier also writes the inbox)"""
+    try:
+        try:
+            q = json.load(open(PUSHQ, encoding="utf-8"))
+        except Exception:
+            q = []
+        q.append({"uid": uid, "t": int(time.time()), "title": title, "body": body})
+        json.dump(q, open(PUSHQ, "w", encoding="utf-8"), ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def run_markets():
+    import market_pack as MP
+    import tick_engine_matrix as TMX
+    while True:
+        todo = [x for x in mq_load() if x.get("state") in ("queued", "building", "testing")]
+        if not todo:
+            return
+        job = todo[0]; qid, rid, sym = job["id"], job["rid"], job["sym"].upper()
+        try:
+            open(LOCK, "w").write(str(os.getpid()))            # keep the lock fresh across long builds
+            if not MP.pack_ready(sym):
+                mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+                MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL)
+            mq_set(qid, state="testing")
+            d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
+            D = MP.use(meta, d, E, K, TMX, H)
+            TM, BID, ASK, n_bad, END = MP.synthetic_ticks(D, meta)
+            K.install_nopause_gate()
+            cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": BAL}), drag=0.0, limits_live=1))
+            opps, bars = E.streams(cfg0, D)
+            cached = pickle.load(open(K.CACHE, "rb")); S_idx = cached["states"]
+            S = {o["t"]: S_idx[o["i"]] for o in opps if o["i"] in S_idx}
+            reg = json.load(open(REG, encoding="utf-8")); robots = {r["id"]: r for r in reg.get("robots") or []}
+            r = robots.get(rid)
+            if not r:
+                mq_set(qid, state="error", err="robot_gone"); continue
+            parts = resolve(rid, robots); parent = r.get("parent") or "owl"
+            PCS = {p["id"]: p for p in reg.get("pieces") or []}
+            t0 = time.time()
+            global DRAG
+            DRAG = 0.0          # cost: the market's own spread is in bid/ask; BTC's measured slippage does not transfer
+            arms = [arm_for("robot", parts, bars, S, PCS), arm_for("parent", resolve(parent, robots), bars, S, PCS)]
+            out = run_pair(arms, TM, BID, ASK, END, opps, bars)
+            res = {"id": rid, "parent": parent, "parts": parts, "market": sym, "market_name": meta.get("description") or sym,
+                   "server": meta.get("server"), "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                   "balance": BAL, "drag": 0.0, "fills": "bars", "risk_factor": meta["m"],
+                   "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
+                   "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
+                   "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}
+            os.makedirs(RES, exist_ok=True)
+            json.dump(res, open(os.path.join(RES, "%s@%s.json" % (rid, sym)), "w", encoding="utf-8"), indent=1)
+            mq_set(qid, state="done", done_at=res["generated_at"], net=out["robot"]["net"], parent_net=out["parent"]["net"])
+            nm = r.get("name_fr") or r.get("name") or rid
+            push(job.get("uid"), "Test terminé · " + sym, "« %s » sur %s : %+.2f $ (le parent : %+.2f $), à risque égal au test Bitcoin." % (
+                nm, sym, out["robot"]["net"], out["parent"]["net"]))
+            print(rid, "@", sym, "robot net %.2f vs parent %.2f" % (out["robot"]["net"], out["parent"]["net"]), flush=True)
+        except BaseException as e:                           # SystemExit from a missing symbol included
+            mq_set(qid, state="error", err=str(e)[:200])
+            push(job.get("uid"), "Test impossible · " + sym, "Le test n’a pas pu se faire : " + str(e)[:120])
+            print(rid, "@", sym, "ERROR", e, flush=True)
+
+
+class _NoBtc(Exception):
+    pass
+
+
 if __name__ == "__main__":
+    if "--markets" in ARGS:                                  # child process: the parent holds the lock
+        run_markets(); sys.exit(0)
     if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < 3 * 3600:
         print("another run is in progress"); sys.exit(0)
     open(LOCK, "w").write(str(os.getpid()))
+    RUN_T0 = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     try:
         reg = json.load(open(REG, encoding="utf-8")); robots = {r["id"]: r for r in reg.get("robots") or []}
         todo = ARGS[1:] or [r["id"] for r in reg.get("robots") or [] if r.get("stage") == "queued"]
         if not todo:
-            print("nothing queued"); sys.exit(0)
+            print("nothing queued"); raise _NoBtc()
         os.makedirs(RES, exist_ok=True)
         K.install_nopause_gate()
         TM, BID, ASK, n_bad, END = E.load_ticks()
@@ -156,6 +253,26 @@ if __name__ == "__main__":
                     pc["status"] = "tested"
             json.dump(reg, open(REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             print(rid, "robot net %.2f vs parent %.2f (%ds)" % (out["robot"]["net"], out["parent"]["net"], res["secs"]), flush=True)
+    except _NoBtc:
+        pass
     finally:
+        # 2026-10-14: then the other markets, in their OWN process (they re-point the engine's data), under
+        # this run's lock so a market build and a BTC test never run at the same time
+        try:
+            if any(x.get("state") in ("queued", "building", "testing") for x in mq_load()):
+                import subprocess
+                subprocess.run([sys.executable, os.path.abspath(__file__), "--markets"], cwd=os.path.dirname(os.path.abspath(__file__)))
+        except Exception as e:
+            print("markets:", e, flush=True)
         try: os.remove(LOCK)
         except Exception: pass
+        # anything queued meanwhile (a robot queued during a long market build) gets its own run
+        try:
+            _rq = json.load(open(REG, encoding="utf-8"))
+            # only what was queued AFTER this run started: a robot that stays queued (a piece not testable
+            # yet) must not make the runner respawn itself forever
+            if any(x.get("stage") == "queued" and (x.get("queued_at") or "") > RUN_T0 for x in _rq.get("robots") or [])                     or any(x.get("state") == "queued" and (x.get("at") or "") > RUN_T0 for x in mq_load()):
+                import subprocess
+                subprocess.Popen([sys.executable, os.path.abspath(__file__)], cwd=os.path.dirname(os.path.abspath(__file__)), creationflags=0x08000000)
+        except Exception:
+            pass

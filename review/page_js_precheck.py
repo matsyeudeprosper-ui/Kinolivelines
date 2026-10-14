@@ -41,4 +41,23 @@ with tempfile.TemporaryDirectory() as d:
             print(f"script {i}: SYNTAX ERROR")
             print("\n".join(r.stderr.splitlines()[:5]))
 print(f"{len(scripts)} scripts, {bad} with a syntax error")
+# 2026-10-14: the other served pages too (a duplicate `const` in owl_strategies_page.html would have broken
+# the robot pages). %%PLACEHOLDERS%% are filled by the server: replaced by null for the check.
+import glob
+LIVE = os.path.dirname(SRC)
+for hp in sorted(glob.glob(os.path.join(LIVE, "owl_*page*.html"))):
+    h = open(hp, encoding="utf-8-sig").read()
+    sc = re.findall(r"<script(?![^>]*src)[^>]*>([\s\S]*?)</script>", h)
+    nb = 0
+    with tempfile.TemporaryDirectory() as d:
+        for i, js in enumerate(sc, 1):
+            f = os.path.join(d, f"p{i}.js")
+            open(f, "w", encoding="utf-8").write(re.sub(r"%%[A-Z0-9_]+%%", "null", js))
+            r = subprocess.run(["node", "--check", f], capture_output=True, text=True)
+            if r.returncode:
+                nb += 1
+                print(f"{os.path.basename(hp)} script {i}: SYNTAX ERROR")
+                print(chr(10).join(r.stderr.splitlines()[:5]))
+    bad += nb
+    print(f"{os.path.basename(hp)}: {len(sc)} scripts, {nb} with a syntax error")
 sys.exit(1 if bad else 0)
