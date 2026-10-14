@@ -1,0 +1,15 @@
+Bienvenue sur la page de votre robot.
+
+Tout en haut, vous voyez son nom et ses badges. Le premier dit où il en est : brouillon, testé, ou « argent réel » quand il tourne sur un vrai compte. « Enfant de » vous dit de quel robot il est parti.
+
+Juste en dessous, son résultat. On l'a rejoué sur environ six semaines de vrais prix du Bitcoin, avec un compte de deux cents dollars. Vous voyez ce qu'il aurait gagné, le nombre de trades, et la part de trades gagnés. Le facteur de profit : au-dessus de un, ses gains dépassent ses pertes. La baisse, c'est le plus gros recul qu'il a traversé en chemin. Et « vs parent » compare avec le robot dont il est issu.
+
+Ensuite viennent ses pièces. Les yeux, c'est la structure du nid : la même pour tous les robots. Puis l'entrée, les filtres, le stop, la sortie, le rattrapage des pertes et la gestion de l'argent. « Hérité » veut dire que la pièce vient du parent. Touchez une pièce pour voir ce qu'elle fait, ou pour la changer : le robot devra alors être testé à nouveau.
+
+Plus bas, vous pouvez le comparer à un autre robot, et le tester sur d'autres marchés de votre courtier : l'or, le Nasdaq, les devises…
+
+Enfin, « Où le faire tourner ». Choisissez un compte, puis demandez le branchement. Une fois branché, le robot décide quand entrer et sortir ; votre compte, lui, garde ses propres réglages d'argent et de protection.
+
+Et voici à quoi vous attendre sur les marchés. Un compte branché trade le Bitcoin. Un autre marché ne s'ajoute tout seul que si le robot y a réussi deux examens. Un : son test sur ce marché gagne de l'argent. Deux : il fait mieux que quatre-vingt-quinze robots sur cent qui entreraient au hasard, avec le même risque. Sans ces deux preuves, le compte reste sur le Bitcoin. Et si un nouveau test échoue un jour, ce marché s'arrête : le robot termine simplement le trade en cours.
+
+Le passé n'est pas une promesse. Mais avec cette page, vous savez exactement ce que fait votre robot, et pourquoi.

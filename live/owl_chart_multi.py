@@ -104,6 +104,7 @@ def main():
             log("%s: pullback catch-up skipped %r" % (sym, e))
     json.dump({"updated": int(time.time()), "symbols": meta}, open(os.path.join(OUTD, "meta.json"), "w", encoding="utf-8"))
     log("multi feed up: %d markets" % len(inst))
+    last_fix = 0.0
     while True:
         t0 = time.time()
         for sym, m in inst.items():
@@ -111,6 +112,19 @@ def main():
                 m.tick_once()
             except Exception as e:
                 log("%s error %r" % (sym, e))
+        # 2026-10-15: the terminal restarted on 10-14 ~08:40 UTC and every market froze for 14 h (mt5 calls just
+        # return None). Like the BTC feed: when even the freshest market file is 2 min old, reconnect (at most
+        # every 5 min - over a weekend every market is shut and this would loop).
+        try:
+            age = min(time.time() - os.path.getmtime(m.OUT) for m in inst.values() if os.path.exists(m.OUT))
+        except ValueError:
+            age = 1e9
+        if age > 120 and time.time() - last_fix > 300:
+            last_fix = time.time()
+            ok = first.connect()
+            for sym in inst:
+                mt5.symbol_select(sym, True)
+            log("all market files stale (%.0f s) - reconnect %s" % (age, "ok" if ok else "FAILED"))
         time.sleep(max(2.0, CYCLE_S - (time.time() - t0)))
 
 

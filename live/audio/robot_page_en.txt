@@ -1,0 +1,15 @@
+Welcome to your robot's page.
+
+At the very top you see its name and its badges. The first one tells you where it stands: draft, tested, or "real money" when it runs on a real account. "Child of" tells you which robot it started from.
+
+Just below is its result. We replayed it over about six weeks of real Bitcoin prices, with a two-hundred-dollar account. You see what it would have made, how many trades it took, and the share of winning trades. The profit factor: above one, its gains are bigger than its losses. The dip is the deepest drop it went through along the way. And "versus parent" compares it with the robot it came from.
+
+Next come its pieces. The eyes are the nest's structure: the same for every robot. Then the entry, the filters, the stop, the exit, the loss catch-up and the money management. "Inherited" means the piece comes from the parent. Tap a piece to see what it does, or to change it: the robot will then need a new test.
+
+Further down, you can compare it with another robot, and test it on other markets of your broker: gold, the Nasdaq, currencies…
+
+Finally, "Where to run it". Pick an account, then ask for the plug. Once it is plugged, the robot decides when to enter and exit; your account keeps its own money and protection settings.
+
+And here is what to expect on markets. A plugged account trades Bitcoin. Another market is only added by itself if the robot passed two checks there. One: its test on that market makes money. Two: it does better than ninety-five out of a hundred robots that would enter at random, with the same risk. Without both proofs, the account stays on Bitcoin. And if a new test fails one day, that market stops: the robot simply finishes the trade in progress.
+
+The past is not a promise. But with this page, you know exactly what your robot does, and why.
