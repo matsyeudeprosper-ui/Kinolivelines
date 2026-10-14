@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-14T11:30:00Z",
+ "updated": "2026-10-14T12:05:00Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -34,7 +34,8 @@
    "fr": "Une fois cinq trades déjà pris dans la journée, le robot perd ; les premiers trades du jour gagnent.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-14: real day_n_at_entry >=5 (= after 5 entries already counted; bot records before day_roll so a day's first trade may carry yesterday's count) 45 tr 36% -64.21 PF 0.46 (h 38/34 agree); by day dayn<=4 36 tr 47% -9.05 vs >=5 44 tr 36% -63.50; dayn 0-1 46 tr 63%. Harness max_trades_day (package param, not menu) 4/5/6 nokill 42 d: uncapped C -6.4 / C -14.4 / B +4.2, capped B +31.8 / C -8.4 / C -14.9, halves h1 -53..-95 / h2 +42..+90 - a hard stop is not a cause. Requested day_count_size (stake) + pile_field_dayn."
+    "2026-10-14: real day_n_at_entry >=5 (= after 5 entries already counted; bot records before day_roll so a day's first trade may carry yesterday's count) 45 tr 36% -64.21 PF 0.46 (h 38/34 agree); by day dayn<=4 36 tr 47% -9.05 vs >=5 44 tr 36% -63.50; dayn 0-1 46 tr 63%. Harness max_trades_day (package param, not menu) 4/5/6 nokill 42 d: uncapped C -6.4 / C -14.4 / B +4.2, capped B +31.8 / C -8.4 / C -14.9, halves h1 -53..-95 / h2 +42..+90 - a hard stop is not a cause. Requested day_count_size (stake) + pile_field_dayn.",
+    "2026-10-14 veille: day_n is per account and scrutiny keeps one row per entry, so after a reboot or blind spell the count can restart (10-14: u477508138 alone took 04:19/05:07; demo/kino/valere's 08:01 FLIP-BOS BUY was day_n 0, won +2.66). Check the >=5 pile does not mix accounts whose counts differ."
    ],
    "next": "Test day_n stake when built; check whether it is the day/after-loss leak in disguise."
   },
@@ -2150,6 +2151,18 @@
     "bot day_n code"
    ],
    "saw": "128 tr 52% -15.10. dayn>=5 45 tr 36% -64.21 agree (new lead). hot after loss 32 tr 34% -56 (81% inside day_after_loss -> no pile). Day after loss gap<30 17 tr 18%. Top winners: BOS, wide stops (300+ pts), after a pause. Since 10-10 40 tr 60% +17. Drag +0.559/trade on 70 (real better). No open ask, no twin running."
+  },
+  {
+   "t": "2026-10-14T12:05:00Z",
+   "night": "veille",
+   "looked": [
+    "1 new: FLIP-BOS BUY +2.66 (entry 08:01, closed 08:06, pace 0.826, europe, after a win)",
+    "scrutiny --pile europe by hour/prev/dur",
+    "--pile flip_day",
+    "--by dayn",
+    "journals: day_n per account for 10-14 entries"
+   ],
+   "saw": "10-14 04:19 and 05:07 taken by u477508138 only (other bots blind until the dd104a2 reconnect); 08:01 taken by demo/kino/valere at day_n 0 = truly first of day for them, won. dayn same shape: 1st 46 tr 63% +16.91, 5th+ 45 tr 36% -64.21 (agree). europe 08 h 9 tr 44% +0.27; europe after a loss 22 tr 32% -46.74. 128 trades. No ask, no twins, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
