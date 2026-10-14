@@ -7388,6 +7388,7 @@ async function loadStratCard(){const el=document.getElementById('stcard');if(!el
  try{const r=await fetch(B+'strategies_data?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json();if(j.err)return;
   const en=LANG()==='en',$=id=>document.getElementById(id),c=j.counts||{},N=(j.items||[]).length;
   const S=[['live','var(--up)','en direct','live'],['trial','var(--accent)','en essai','in trial'],['study','#a78bfa','à l’étude','studied'],['ready','var(--warn)','validées','validated'],['not_started','var(--muted)','à venir','not started'],['rejected','var(--down)','écartées','rejected']].filter(s=>c[s[0]]);
+  window._stJ=j;
   $('stc-ey').textContent=en?'The lab':'Le labo';$('stc-gt').textContent=en?'See all':'Tout voir';
   $('stc-h').textContent=en?(N+' strategies, the robots that run them and the AI team at work'):(N+' stratégies, les robots qui les font tourner et l’équipe IA au travail');
   $('stc-b').innerHTML=S.map(s=>'<i style="flex:'+c[s[0]]+';background:'+s[1]+'"></i>').join('');
@@ -7396,6 +7397,7 @@ async function loadStratCard(){const el=document.getElementById('stcard');if(!el
   $('stc-n').textContent=n?((en?'Next: ':'Prochain rendez-vous : ')+(en?n.en:n.fr).toLowerCase()+(en?' of ':' de ')+'« '+(en?n.title_en:n.title_fr)+' », '+n.date.slice(8,10)+'/'+n.date.slice(5,7)+'.'):'';
   el.style.display='';}catch(e){}}
 setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
+setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the news tile stays fresh
 // ==== 2026-10-13 (owner): the COCKPIT. The home keeps the robot, the open trade and the alerts in view; every other
 // card becomes a tile (one number, one line) that opens the SAME card in a slide-up sheet. The cards are moved, not
 // rewritten: every painter keeps writing to the same ids, so nothing the home showed is lost or computed twice. ====
@@ -7439,6 +7441,20 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  const signCol=s=>/^[−\\-]/.test(s)?'var(--down-soft)':(/^\\+/.test(s)?'var(--up-soft)':'var(--text)');
  const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
  const T=(f,e)=>EN()?e:f;
+ // 2026-10-14 (owner): "the coulisses show the same thing for days". The tile
+ // now rotates through what actually moves in the lab: the next checkpoints
+ // with a countdown, the newest strategy, the AI's lead and how many trades it
+ // has counted, and the live/trial counts. Same feeds as the two cards.
+ const labNews=()=>{const en=EN(),j=window._stJ,a=window._aiJ,N=[],now=Date.now(),dm=d=>String(d).slice(8,10)+'/'+String(d).slice(5,7);
+  const SL={live:['en direct','live'],trial:['en essai','in trial'],study:['à l’étude','being studied'],ready:['validée','validated'],not_started:['à venir','not started'],rejected:['écartée','set aside']};
+  if(j){(j.next||[]).forEach(n=>{const dd=Math.ceil((Date.parse(n.date+'T12:00:00Z')-now)/86400000);
+     if(dd>=0&&dd<=10)N.push({h:(dd===0?T('Aujourd’hui','Today'):(dd===1?T('Demain','Tomorrow'):T('Dans '+dd+' jours','In '+dd+' days')))+' · '+(en?n.title_en:n.title_fr),s:(en?n.en:n.fr)+' · '+dm(n.date)});});
+   const it=(j.items||[]).filter(x=>x.since).sort((x,y)=>(y.since>x.since?1:-1))[0];
+   if(it&&now-Date.parse(it.since)<=21*86400000)N.push({h:T('Nouveau au labo : ','New in the lab: ')+(en?it.title_en:it.title_fr),s:((SL[it.status]||['',''])[en?1:0])+' · '+T('depuis le ','since ')+dm(it.since)});
+   const c=j.counts||{};N.push({h:(c.live||0)+T(' stratégies en direct, ',' strategies live, ')+(c.trial||0)+T(' en essai',' in trial'),s:(c.study||0)+T(' à l’étude · ',' being studied · ')+(c.rejected||0)+T(' écartées',' set aside')});}
+  if(a&&a.piste){const c=a.piste;N.push({h:T('La piste de l’IA : ','The AI’s lead: ')+(en?(c.name_en||c.name_fr):(c.name_fr||c.name_en)),s:c.n+T(' trades comptés',' trades counted')+(c.n<30?' / 30':'')});}
+  return N;};
+ const newsAt=()=>{const N=labNews();if(!N.length)return null;const i=Math.floor(Date.now()/7000)%N.length;return {n:N[i],i:i,len:N.length};};
  // a tile = which cards it opens, how to read its number from them, when it shows
  const resGrid=()=>{const w=$('week');return w?w.closest('.grid'):null;};
  const TILES=[
@@ -7446,7 +7462,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>T('à rattraper','to win back'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
   {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>{const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>{const r=$('pk-rows');const n=r?r.children.length:0;if(n>1)return n+T(' marchés',' markets');const w=txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim(),m=w.match(/^(.+?)\\s+(\\d+)\\s+trades?/);return m?m[1]+' · '+m[2]+' trades':w;},show:()=>shown('pockcard')},
-  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'),vsm:true,s:()=>'',show:()=>shown('aicard')||shown('stcard')},
+  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>{const x=newsAt();return x?x.n.h:(txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'));},vsm:true,s:()=>{const x=newsAt();return x?x.n.s+(x.len>1?'  ·  '+(x.i+1)+'/'+x.len:''):'';},show:()=>shown('aicard')||shown('stcard')},
   {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
   {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
  let store=null,wrap=null,open=null;
@@ -8075,6 +8091,7 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-dots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
  .edrx .lv-dots button{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:4px 0;border-radius:12px}
  .edrx .lv-dots button:active{background:var(--surface2)}
+ @media(max-width:380px){.edrx .lv-rbt .nm{display:none}}   /* 2026-10-14: a cut 'L' read as a typo; the icon alone says robot */
  .ckp .ck-mk{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin:0 2px 12px}
  .ckp .ck-h{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2)}
  .ckp .ck-h.ok{border-color:rgba(46,204,113,.35);background:linear-gradient(135deg,rgba(46,204,113,.10),var(--surface2))}
@@ -8206,6 +8223,7 @@ function goLabo(){location.href=B+'robots';}
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
+   '<button class="lv-bell" id="edrchart" aria-label="'+T2('Voir le graphique','See the chart')+'" title="'+T2('Voir le graphique','See the chart')+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-chart"/></svg></button>'+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
@@ -8422,6 +8440,8 @@ function goLabo(){location.href=B+'robots';}
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
+   // 2026-10-14 (owner): the chart of the market being watched, one tap away
+   const chb=$('edrchart');if(chb)chb.onclick=ev=>{ev.stopPropagation();shOpen('chart');};
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
    lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
