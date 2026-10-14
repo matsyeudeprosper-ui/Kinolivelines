@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-14T19:00:19Z",
+ "updated": "2026-10-14T21:01:30Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -128,7 +128,8 @@
     "2026-10-13: pile flip_hot 35 tr 34% -56.24 (h 32/38). FLIP-BOS 69 tr 45% -48.03 PF 0.65 (h 39/50); BOS 53 tr 60% +45.86 PF 1.46 (h 63/58).",
     "2026-10-14 04:30 veille: night FLIP-BOS SELL -3.04 (pace 0.893, closed 04:28) - a night reversal lost, against 'hour splits the reversals'. FLIP-BOS 70 tr 44% -51.07 PF 0.63 (h 39/49); BOS 54 tr 59% +38.04 PF 1.35 (h 64/54).",
     "2026-10-14: hot after loss FLIP 19 tr 26% -44.27. fls0.6+fh0.75+cw30 42 d capped B +58.8 (h1 -1.0) hole 26 / uncapped C -11.2; fls0.5+cw30 capped B +51.9 / C -7.8. Proposed fls06_fh075_capwait30.",
-    "2026-10-14 19:00 veille: day FLIP-BOS SELL +2.76 (pace 1.116, closed 17:50, after the -13.14 loss) - a win against flip_day. flip_day 49 tr 41% -49.57 PF 0.53, halves 30%/50%: the day-flip leak is softer in the second half (watch whether it fades). 1.0-1.3 band 12 tr 25% -25.15 still the worst."
+    "2026-10-14 19:00 veille: day FLIP-BOS SELL +2.76 (pace 1.116, closed 17:50, after the -13.14 loss) - a win against flip_day. flip_day 49 tr 41% -49.57 PF 0.53, halves 30%/50%: the day-flip leak is softer in the second half (watch whether it fades). 1.0-1.3 band 12 tr 25% -25.15 still the worst.",
+    "2026-10-14 21:00 veille: FLIP-BOS BUY -4.35 (entry 20 h, pace 0.863, after a win) lost. Pile flip_day 50 tr 40% -53.92 PF 0.51 (h 29/50); after a win 18 tr 44% -25.49, after a loss 32 tr 38% -28.43."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -421,7 +422,8 @@
     "2026-10-12 21:30 veille: two day BOS BUY, both pace ~0.85 (0.84 won +1.45 closed 20:04; 0.861 lost -2.53 closed 21:02, right after that win). cont_day 28 tr 43% vs 51% -19.59 PF 0.75 (h 43/43). Inside: 0.8-1.0 band 10 tr 30% -20.88 vs 1.0-1.3 11 tr 55% +12.95 (h 33/80, disagree) - the mirror of flip_day, where 0.8-1.0 wins (peu). 20-23 h inside 5 tr 0 won -20.68. BOS overall 47 tr 57% +18.72 (h 62/52).",
     "2026-10-13 05:00 veille: night BOS BUY x4 02-03 h all won (pace 1.24-1.71); asia 46 tr 70% +46.41 (h 73/67). Day BOS SELL 22:59 pace 1.39 won +9.13: cont_day 29 tr 45% -10.46 (h 47/43); 0.8-1.0 band still 10 tr 30% -20.88, 1.3-1.85 7 tr 57% +2.45. BOS overall 52 tr 62% +40.94 (h 63/60).",
     "2026-10-13 06:30 veille: night BOS BUY closed 05:14 pace 1.242 won +13.21. asia 46 tr 70% +55.78 PF 1.95 (h 73/67); its 1.0-1.3 band 10 tr 60% +31.85. BOS overall 52 tr 62% +50.31 (h 63/60). Count unchanged vs 05:00 (trade already in the ledger, money updated at close). cont_day still 29.",
-    "2026-10-13: labo ask cont_day (30 tr 43% vs 54%, h 47/40) answered: inside, 0.8-1.0 pace 11 tr 27%, nervous 1.0-1.3 11 tr 55% (peu). Day leaks in both kinds (flip_day 47 tr 38% -55): the hour, not the kind."
+    "2026-10-13: labo ask cont_day (30 tr 43% vs 54%, h 47/40) answered: inside, 0.8-1.0 pace 11 tr 27%, nervous 1.0-1.3 11 tr 55% (peu). Day leaks in both kinds (flip_day 47 tr 38% -55): the hour, not the kind.",
+    "2026-10-14 21:00 veille: FLIP-BOS BUY -4.35 (entry 20 h, pace 0.863, after a win) lost. Pile flip_day 50 tr 40% -53.92 PF 0.51 (h 29/50); after a win 18 tr 44% -25.49, after a loss 32 tr 38% -28.43."
    ],
    "next": "Pile cont_day to 30 (1 more); the day loss now sits almost only in the 0.8-1.0 band - check that cut on both halves at 30; adaptive hour brake."
   }
@@ -2200,6 +2202,17 @@
     "--pile day_after_loss, --by kind"
    ],
    "saw": "131 tr 52% -24.06. A day flip after a loss won - against both flip_day and day_loss_chase. flip_day 49 tr 41% vs 59% -49.57 PF 0.53, halves 30%/50%: the second half is drifting toward even (was 45 tr 36% -60.03 on 10-12). 1.0-1.3 band still worst 12 tr 25% -25.15. day_after_loss 45 tr 38% -55.46 (h 36/39) holds. FLIP-BOS 72 tr 46% -45.65 (h 41/50); BOS 57 tr 60% +31.03. No ask, no twins, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-14T21:01:30Z",
+   "night": "veille",
+   "looked": [
+    "1 new: FLIP-BOS BUY -4.35 (entry 20 h, closed 20:45, pace 0.863, day, after the 17:50 win)",
+    "--pile flip_day by nerv/prev/hour/dur",
+    "--by kind",
+    "--pile late_night"
+   ],
+   "saw": "132 tr. flip_day 50 tr 40% vs 59% -53.92 PF 0.51 (h 29%/50%): the loss lands as predicted; second half flat at 50%, the 'softening' did not continue. Day flip after a win 18 tr 44% -25.49 - the leak is not only after losses. FLIP-BOS 73 tr 45% -50.00 (h 40/50); BOS 57 tr 60% +31.03 unchanged. late_night 23 tr 35% -32.06 (entry 20 h, outside it). No ask, no twins, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
