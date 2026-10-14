@@ -8339,10 +8339,24 @@ function goLabo(){location.href=B+'robots';}
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
    lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
- function tick(){try{if(!build())return;if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
+ // 2026-10-13 (owner): the home card "Le robot en ce moment" speaks En direct's language - the same status, light,
+ // sentence and four checks, from the same code, plus the next candidate in one line; the old four steps are hidden.
+ function home(){const card=$('rbnow');if(!card||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
+  let box=$('rbn-calm');if(!box){box=document.createElement('div');box.id='rbn-calm';box.className='edrx';const st=$('rbn-steps');if(st)st.before(box);else card.appendChild(box);
+   const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .lv-dots{margin-top:12px;padding-top:12px}#rbn-calm .hc{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:.78rem;color:var(--text2)}#rbn-calm .hc b{color:var(--text)}';
+   document.head.appendChild(cs);const mt=$('rbn-mt');if(mt)mt.textContent=T2('Ouvrir En direct','Open Live');}
+  const S=btc(D),c=cand(),own=(D.open_list||[]).filter(x=>!isBtc(x));
+  const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
+   (rbNow(D).id!=='owl'&&rbNow(D).pieces?'':dots(D))+
+   (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+T2('Aussi en trade : ','Also trading: ')+'<b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></div>':
+    (c?'<div class="hc"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+T2('Prochain candidat : ','Next candidate: ')+'<b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>':''));
+  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}}
+ function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+
 
 
 
