@@ -7923,6 +7923,9 @@ function goLabo(){location.href=B+'robots';}
   USDJPY:['$¥','#fcd34d','Dollar / Yen','Dollar / Yen'],ETHUSD:['Ξ','#a5b4fc','Ethereum','Ethereum']};
  const mk=s=>MK[s]||[String(s||'?').slice(0,2),'#8fc6ff',s,s];
  const mname=s=>{const m=mk(s);return EN()?m[3]:m[2];};
+ // 2026-10-14 (owner: "we don't know what it's trading"): the home pill and
+ // the live-trade card name the market with the same words as En direct
+ window._mname=s=>mname(String(s||'BTCUSD').toUpperCase().replace(/M$/,''));
  const badge=(s,sz)=>{const m=mk(s);return '<span class="lv-sy" style="background:'+m[1]+'26;color:'+m[1]+(sz?';width:'+sz+'px;height:'+sz+'px;border-radius:'+Math.round(sz/3)+'px;font-size:'+(sz<30?'.58rem':'.78rem'):'')+'">'+m[0]+'</span>';};
  const css=document.createElement('style');css.textContent=`
  #tab-marche #mxseg,#tab-marche #mx-jump,#tab-marche #mx-market>.sec{display:none!important}
@@ -8000,8 +8003,9 @@ function goLabo(){location.href=B+'robots';}
   const trend=t===1?T2('la tendance est en hausse','the trend is up'):(t===-1?T2('la tendance est en baisse','the trend is down'):'');
   const recent=(Dy.trades||[]).filter(x=>x.x&&now-x.x<1800).sort((a,b)=>b.x-a.x)[0];
   const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&lg.cap_today>0&&(lg.day_pnl_bot||0)>=lg.cap_today);
-  if(open.length){const pl=open.reduce((a,p)=>a+(parseFloat(p.pl)||0),0),p=open[0];
-   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:(p.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+T2(' ouvert. Le robot laisse courir jusqu’à l’objectif ou au stop.',' open. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
+  if(open.length){const O=window._openSum(open),pl=O.pl;
+   const what=O.kind.charAt(0).toUpperCase()+O.kind.slice(1)+' '+O.markets;
+   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+(O.n>1?T2(' ouverts',' open'):T2(' ouvert',' open'))+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
   if(recent)return {c:recent.p>=0?'gr':'rd',t:T2('Trade terminé','Trade closed'),pl:recent.p,s:T2('Il y a '+Math.max(1,Math.round((now-recent.x)/60))+' min. Le robot reprend sa surveillance.',Math.max(1,Math.round((now-recent.x)/60))+' min ago. The robot is watching again.'),row:T2('Terminé ','Closed ')+money(recent.p)};
   if(D.bot_killed)return {c:'rd',t:T2('Arrêté','Stopped'),s:T2('La ligne d’arrêt du compte est atteinte : le robot ne prend plus de trade.','The account’s stop line was reached: the robot takes no more trades.'),row:T2('Arrêté','Stopped')};
   if(D.trading_paused)return {c:'gy',t:T2('En pause','Paused'),s:T2('Le robot est en pause sur ce compte.','The robot is paused on this account.'),row:T2('En pause','Paused')};
@@ -8346,6 +8350,7 @@ function goLabo(){location.href=B+'robots';}
    const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .lv-dots{margin-top:12px;padding-top:12px}#rbn-calm .hc{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:.78rem;color:var(--text2)}#rbn-calm .hc b{color:var(--text)}';
    document.head.appendChild(cs);const mt=$('rbn-mt');if(mt)mt.textContent=T2('Ouvrir En direct','Open Live');}
   const S=btc(D),c=cand(),own=(D.open_list||[]).filter(x=>!isBtc(x));
+  try{window._pillUpd(D);}catch(e){}   // same snapshot as this card
   const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
    (rbNow(D).id!=='owl'&&rbNow(D).pieces?'':dots(D))+
    (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+T2('Aussi en trade : ','Also trading: ')+'<b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></div>':
@@ -9219,6 +9224,30 @@ function ago(){
  const s=Math.max(0,Math.round((Date.now()-lastOk)/1000));
  document.getElementById('upd').innerHTML='Mis &agrave; jour il y a '+s+' s';
 }
+// 2026-10-14 (owner): one trade showed three results (+3.09 in the pill,
+// +3.50 on the robot card, +0.31 in En plein combat) and no market name.
+// Every place that sums the open trades uses openSum(); the pill is redrawn
+// from the same snapshot as the robot card (home() calls _pillUpd too).
+window._openSum=function(ol){ol=ol||[];
+ const en=(typeof LANG==='function'&&LANG()==='en');
+ const nm=s=>(window._mname?window._mname(s):(en?'Bitcoin':'Bitcoin'));
+ const pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
+ const mk=[...new Set(ol.map(p=>nm(p.sym)))];
+ const buys=ol.filter(p=>p.d==='A').length,sells=ol.length-buys;
+ const what=(n,b)=>en?(n+' '+(b?'buy':'sell')+(n>1?'s':'')):(n>1?n+' '+(b?'achats':'ventes'):(b?'achat':'vente'));
+ const kind=buys&&sells?(en?ol.length+' trades':ol.length+' trades'):what(ol.length,buys>0);
+ return {pl:pl,n:ol.length,markets:mk.join(', '),kind:kind};};
+window._ord=function(i){const en=(typeof LANG==='function'&&LANG()==='en');
+ if(en){const s=['th','st','nd','rd'],v=(i+1)%100;return (i+1)+(s[(v-20)%10]||s[v]||s[0]);}
+ return i===0?'1er':(i+1)+'e';};
+window._pillUpd=function(d){const _tp=document.getElementById('tradepill');if(!_tp)return;
+ const ol=(d&&d.open_list)||[];if(!ol.length){_tp.style.display='none';return;}
+ const S=window._openSum(ol),en=(typeof LANG==='function'&&LANG()==='en');
+ _tp.style.display='inline-flex';
+ _tp.innerHTML='<span class="dot" style="width:7px;height:7px;background:currentColor"></span>'+
+  S.markets+' · '+S.kind+(en?' running · ':' en cours · ')+(S.pl>=0?'+$':'-$')+Math.abs(S.pl).toFixed(2);
+ _tp.style.background=S.pl>=0?'rgba(46,204,113,.18)':'rgba(255,92,92,.18)';
+ _tp.style.color=S.pl>=0?'var(--up-soft)':'var(--down-soft)';};
 function render(d){
   window._d=d;
   if(d.expired){document.getElementById('st').innerHTML=
@@ -9751,14 +9780,7 @@ function render(d){
     '<div style="flex:1">Rattrapage termin\\u00e9 \\u2014 '+T('toast_debt_done')+'</div>',8000);
    try{confetti();}catch(e){}}
   window._prevDebt=_dbtNow;
-  const _tp=document.getElementById('tradepill'),_ol=d.open_list||[];
-  if(_tp){if(_ol.length){const _pl=_ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
-    _tp.style.display='inline-flex';
-    _tp.innerHTML='<span class="dot" style="width:7px;height:7px;background:currentColor"></span>'+
-     'Trade en cours \u00b7 '+(_pl>=0?'+$':'-$')+Math.abs(_pl).toFixed(2);
-    _tp.style.background=_pl>=0?'rgba(46,204,113,.18)':'rgba(255,92,92,.18)';
-    _tp.style.color=_pl>=0?'var(--up-soft)':'var(--down-soft)';}
-   else _tp.style.display='none';}
+  window._pillUpd(d);
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
@@ -9875,7 +9897,15 @@ function render(d){
    // 2026-09-29 (owner): the weather card and its nervosity gauge stay
    // visible while a trade is open - they live in the Marche space now
    bs.style.display='block';
-   document.getElementById('battles').innerHTML=d.open_list.map(x=>{
+   // 2026-10-14 (owner): the total comes FIRST (a second row cut off at
+   // the bottom of the screen held most of the money), then each trade
+   // named in words - "1er achat · Bitcoin" - instead of a bare "Achat"
+   const _OS=window._openSum(d.open_list),_en=LANG()==='en',_n=d.open_list.length;
+   document.getElementById('battles').innerHTML=(_n>1?
+    '<div class="row" style="border-bottom:1px solid var(--surface3);padding-bottom:10px;margin-bottom:6px">'+
+    '<span><b>'+_OS.markets+'</b> <span style="color:var(--muted);font-size:.85rem">· '+_OS.kind+(_en?' together':' au total')+'</span></span>'+
+    '<b style="font-size:1.25rem" class="'+sgn(_OS.pl)+'">'+(_OS.pl>=0?'+$':'-$')+Math.abs(_OS.pl).toFixed(2)+'</b></div>':'')+
+    d.open_list.map((x,_i)=>{
     let bar='';
     if(x.e&&x.sl&&x.tp&&x.cur){
      const P=(v)=>x.d=='A'
@@ -9902,18 +9932,19 @@ function render(d){
     return '<div class="row" style="border-bottom-color:var(--surface3);'+
     'border-bottom:0">'+
     '<span style="display:flex;align-items:center;gap:8px">'+
-    (x.d=='A'?'<span style="color:var(--up)">&#9650;</span> <b>Achat</b>'
-     :'<span style="color:var(--down)">&#9660;</span> <b>Vente</b>')+
+    (x.d=='A'?'<span style="color:var(--up)">&#9650;</span> '
+     :'<span style="color:var(--down)">&#9660;</span> ')+
+    '<b>'+(_n>1?window._ord(_i)+' '+(x.d=='A'?(_en?'buy':'achat'):(_en?'sell':'vente'))
+          :(x.d=='A'?(_en?'Buy':'Achat'):(_en?'Sell':'Vente')))+'</b>'+
+    ' <span style="color:var(--muted);font-size:.85rem">'+
+    (window._mname?window._mname(x.sym):'Bitcoin')+' · </span>'+
     ' <span style="color:var(--muted);font-size:.85rem">'+
     (x.sl>0
      ?(m=>'mise $'+(m<10?m.toFixed(1):m.toFixed(0))+
        ' <span style="font-size:.72rem;color:#51687e">('+
        x.lot.toFixed(2)+' lot)</span>')(Math.abs(x.e-x.sl)*x.lot)
      :x.lot.toFixed(2)+' lot')+
-    '</span>'+(x.k=='s'?' <span style="background:'+
-    'rgba(232,197,90,.15);color:var(--warn);padding:2px 8px;'+
-    'border-radius:99px;font-size:.68rem;font-weight:700">'+
-    'soldat</span>':'')+
+    '</span>'+
     '</span><b style="font-size:1.12rem" class="'+
     (sgn(x.pl))+'">'+
     (x.pl>=0?'+$':'-$')+Math.abs(x.pl).toFixed(2)+'</b></div>'+bar;
