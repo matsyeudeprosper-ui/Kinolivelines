@@ -151,20 +151,48 @@ def mlog(m):
         pass
 
 
-def run_markets():
+FAST_LOCK = os.path.join(LIVE, "robots", "runner_fast.lock")
+
+
+def _alive(pid):
+    """is this process still running? (Windows API - NEVER os.kill(pid, 0) here: on Windows it terminates it)"""
+    try:
+        import ctypes
+        h = ctypes.windll.kernel32.OpenProcess(0x1000, False, int(pid))     # PROCESS_QUERY_LIMITED_INFORMATION
+        if not h:
+            return False
+        code = ctypes.c_ulong()
+        ctypes.windll.kernel32.GetExitCodeProcess(h, ctypes.byref(code))
+        ctypes.windll.kernel32.CloseHandle(h)
+        return code.value == 259                                            # STILL_ACTIVE
+    except Exception:
+        return False
+
+
+def run_markets(fast=False):
+    """fast=True (2026-10-14, owner: "why one hour long"): the FAST LANE - only jobs whose market is already
+    prepared (a test of under a minute), run beside a long preparation instead of waiting behind it"""
     import market_pack as MP
     import tick_engine_matrix as TMX
     while True:
-        todo = [x for x in mq_load() if x.get("state") in ("queued", "building", "testing")]
+        q = mq_load()
+        if fast:
+            todo = [x for x in q if x.get("state") == "queued" and MP.pack_ready(x["sym"])]
+        else:          # a job another runner is testing right now (alive pid) is not ours
+            todo = [x for x in q if x.get("state") in ("queued", "building")
+                    or (x.get("state") == "testing" and not (x.get("pid") and x.get("pid") != os.getpid() and _alive(x["pid"])))]
         if not todo:
             return
         job = todo[0]; qid, rid, sym = job["id"], job["rid"], job["sym"].upper()
+        cur = next((x for x in mq_load() if x.get("id") == qid), {})
+        if cur.get("state") == "testing" and cur.get("pid") and cur.get("pid") != os.getpid() and _alive(cur["pid"]):
+            continue                                                         # taken meanwhile by the other lane
         try:
-            open(LOCK, "w").write(str(os.getpid()))            # keep the lock fresh across long builds
+            open(FAST_LOCK if fast else LOCK, "w").write(str(os.getpid()))  # keep the lock fresh across long builds
             if not MP.pack_ready(sym):
-                mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+                mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), pid=os.getpid())
                 MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL, log=mlog)
-            mq_set(qid, state="testing")
+            mq_set(qid, state="testing", pid=os.getpid())
             d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
             D = MP.use(meta, d, E, K, TMX, H)
             TM, BID, ASK, n_bad, END = MP.synthetic_ticks(D, meta)
@@ -212,6 +240,16 @@ class _NoBtc(Exception):
 if __name__ == "__main__":
     if "--markets" in ARGS:                                  # child process: the parent holds the lock
         run_markets(); sys.exit(0)
+    if "--fast" in ARGS:                                     # the fast lane: its own lock, prepared markets only
+        if os.path.exists(FAST_LOCK) and time.time() - os.path.getmtime(FAST_LOCK) < 1800:
+            print("fast lane already running"); sys.exit(0)
+        open(FAST_LOCK, "w").write(str(os.getpid()))
+        try:
+            run_markets(fast=True)
+        finally:
+            try: os.remove(FAST_LOCK)
+            except Exception: pass
+        sys.exit(0)
     if os.path.exists(LOCK) and time.time() - os.path.getmtime(LOCK) < 3 * 3600:
         print("another run is in progress"); sys.exit(0)
     open(LOCK, "w").write(str(os.getpid()))

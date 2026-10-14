@@ -153,7 +153,7 @@ button.zaud:not(.on) .zpp{animation:zaGlow 2.4s ease-in-out infinite}@keyframes 
 .zaud .zacl{min-width:32px;font-size:1rem}
 .zaud.pl .zpp{background:#8df0bb}   /* 2026-10-14: the hero's glow layer sat over it - taps never reached the button */
 .card.zh .zrob .zrn small{color:rgba(255,255,255,.66)}.card.zh .zrob .zrn b{color:#fff}.card.zh .zrob .zrc{color:#9cc9ff}.card.zh .zrob .zra{background:rgba(96,165,250,.22);color:#cfe3ff}
-.zleg i{white-space:nowrap;font-size:.6rem;letter-spacing:.06em}
+.zleg i{white-space:nowrap;font-size:.6rem;letter-spacing:.06em;gap:10px}
 .zbi b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:380px){.zbi b{font-size:.86rem}.zbar .zgo{padding:12px 14px}.zbr,.zleg{grid-template-columns:30px minmax(0,1fr) 30% 60px;gap:8px}}
 :root[data-theme=light] .mkb{filter:brightness(.62) saturate(1.4)}
@@ -1252,7 +1252,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  // 1) header: robot switcher + key figures
  let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div><div class="zaslot">'+zaHTML()+'</div>'+
   '<button class="zrob" onclick="ztPickRobot()" aria-label="'+T('Changer de robot','Change robot')+'"><span class="zra">'+BOT+'</span><span class="zrn"><small>'+T('Robot testé','Robot under test')+'</small><b>'+esc(T(r.name_fr,r.name_en))+'</b></span><span class="zrc">'+T('Changer','Change')+' ▾</span></button>'+
-  '<div class="k3"><div><b>'+R.length+'</b><span>'+T('marchés testés','markets tested')+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+T('gagnants','winning')+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(best.a.net,0):'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
+  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(best.a.net,0):'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
  // 2) results
  h+='<div class="zsec"><b>'+T('Où il marche','Where it works')+'</b>'+(R.length>1?'<span>'+T('du meilleur au moins bon','best first')+'</span>':'')+'</div>';
  if(R.length){h+='<div class="card zres">'+(R.length>1?'<div class="zins">'+(wins?T('Gagne sur ','Wins on ')+wins+T(' marché',' market')+(wins>1?'s':'')+T(' sur ',' out of ')+R.length+' · '+T('le meilleur : ','best: ')+'<b>'+esc(best.nm)+'</b>':T('Ne gagne sur aucun des marchés testés.','Wins on none of the markets tested.'))+'</div>':'')+

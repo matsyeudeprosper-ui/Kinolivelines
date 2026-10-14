@@ -13094,16 +13094,36 @@ def robot_test_market(user, body):
     json.dump(q, open(ROBOT_MQ + ".tmp", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     os.replace(ROBOT_MQ + ".tmp", ROBOT_MQ)
     robot_runner_kick()
+    if ready:
+        robot_fast_kick()          # a prepared market never waits behind another market's preparation
     return {"ok": True, "job": job["id"], "ahead": ahead, "first_build": not ready,
             "minutes": (0 if ready else MARKET_BUILD_MIN) + MARKET_TEST_MIN * (ahead + 1)}
 
 
+def robot_fast_kick():
+    """2026-10-14 (owner: "why one hour long"): the fast lane - tests on markets already prepared run at once,
+    beside a long preparation (study/robot_runner.py --fast, its own lock)"""
+    try:
+        lk = os.path.join(DIR, "robots", "runner_fast.lock")
+        if os.path.exists(lk) and time.time() - os.path.getmtime(lk) < 1800:
+            return
+        import subprocess
+        st = os.path.join(os.path.dirname(DIR), "study")
+        subprocess.Popen(["pythonw", "robot_runner.py", "--fast"], cwd=st, creationflags=0x08000000)
+    except Exception:
+        pass
+
+
 def _mq_eta():
-    """minutes left per open job, in queue order: a build counts MARKET_BUILD_MIN from its start, a test
-    MARKET_TEST_MIN; a queued job waits for every open job before it (one run at a time)"""
-    now, acc, eta = time.time(), 0.0, {}
+    """minutes left per open job. Two lanes (2026-10-14): a queued job on a PREPARED market waits only for the
+    fast lane (other prepared-market tests); everything else waits, in order, behind the preparation lane"""
+    now, acc, fast_acc, eta = time.time(), 0.0, 0.0, {}
     for x in _mq_load():
         if x.get("state") not in ("queued", "building", "testing"):
+            continue
+        if x.get("state") == "queued" and _pack_ready(x["sym"]):
+            fast_acc += MARKET_TEST_MIN
+            eta[x["id"]] = (int(round(fast_acc)), 5)
             continue
         if x.get("state") == "building":
             try:
