@@ -1155,6 +1155,19 @@ def main():
                   f"{type(e).__name__}: {e}", flush=True)
             time.sleep(15)
             connect()                      # the source may have gone away
+        # 2026-10-14: a terminal that goes away does not always RAISE -
+        # MT5 calls just return None and tick_once() skips quietly, so the
+        # chart froze 97 min after its terminal was restarted. No write for
+        # 2 min = reconnect.
+        try:
+            _stale = time.time() - os.path.getmtime(OUT) > 120
+        except OSError:
+            _stale = True
+        if _stale:
+            print(f"{datetime.now(timezone.utc).isoformat()} chart file stale "
+                  f"- reconnecting", flush=True)
+            connect()
+            time.sleep(10)
         # sync with the broker minute: wake right after each candle
         # close so the chart flips forming->closed with the broker,
         # ~1s ticks otherwise (user 2026-09-08)
