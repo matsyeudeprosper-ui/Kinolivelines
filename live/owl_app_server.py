@@ -19703,6 +19703,44 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(_d), "application/json")
             except Exception as e:
                 self._send(json.dumps({"err": str(e)[:100]}), "application/json")
+        elif sub == "audio" and len(parts) == 3 and re.fullmatch(r"[a-z0-9_]+\.mp3", parts[2] or ""):
+            # 2026-10-14 (owner): spoken explanations of a page (live/audio/<name>.mp3, generated from <name>.txt)
+            _ap = os.path.join(DIR, "audio", parts[2])
+            if not os.path.exists(_ap):
+                self.send_response(404)
+                self.end_headers()
+                return
+            # byte ranges: Safari / iPhone will not play media from a server that cannot send part of the file
+            try:
+                _ab = open(_ap, "rb").read()
+            except Exception:
+                self.send_response(404)
+                self.end_headers()
+                return
+            _rg = re.match(r"bytes=(\d*)-(\d*)", self.headers.get("Range") or "")
+            _n = len(_ab)
+            if _rg and (_rg.group(1) or _rg.group(2)):
+                if _rg.group(1):
+                    _a = int(_rg.group(1)); _z = int(_rg.group(2)) if _rg.group(2) else _n - 1
+                else:
+                    _a = max(0, _n - int(_rg.group(2))); _z = _n - 1
+                _z = min(_z, _n - 1)
+                if _a > _z:
+                    self.send_response(416)
+                    self.send_header("Content-Range", "bytes */%d" % _n)
+                    self.end_headers()
+                    return
+                self.send_response(206)
+                self.send_header("Content-Range", "bytes %d-%d/%d" % (_a, _z, _n))
+                _ab = _ab[_a:_z + 1]
+            else:
+                self.send_response(200)
+            self.send_header("Content-Type", "audio/mpeg")
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Cache-Control", "public, max-age=86400")
+            self.send_header("Content-Length", str(len(_ab)))
+            self.end_headers()
+            self.wfile.write(_ab)
         elif sub == "wealth":
             # 2026-10-08 (owner): Patrimoine - the money centre, own file
             try:

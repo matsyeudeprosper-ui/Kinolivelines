@@ -1,0 +1,15 @@
+Welcome to the test zone.
+
+This is where you find out where your robot really makes money… before you risk your own.
+
+The idea is simple. We replay your robot over weeks of real past prices, exactly as if it had traded back then. It sees the market just like on your chart, step by step, and never the future.
+
+Why does it matter? Because a robot that wins on Bitcoin can easily lose on gold, or on the Nasdaq. This test shows you that, without losing a single cent.
+
+How does it work? Pick your robot at the top. Tap up to four markets. Then press "Run". The first time on a market, it takes about an hour and a half to prepare its data. After that, a test takes barely a minute. You can close the app: a notification tells you when it's done.
+
+Reading the results is easy. Green means it wins. Red means it loses. And "Solid" means it won both at the start and at the end of the period: that's the sign to look for.
+
+When should you use it? Before you trust a new robot, before you change one of its pieces, or whenever you wonder if it would work somewhere else.
+
+Just keep in mind that the past is not a promise. The test zone is here to help you decide with facts, rather than gut feeling.

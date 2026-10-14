@@ -93,7 +93,21 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .mrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--border)}
 .mrow:first-child{border-top:0}
 .fd.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
-.card.zh .zrob{position:relative;z-index:2}   /* 2026-10-14: the hero's glow layer sat over it - taps never reached the button */
+.card.zh .zrob{position:relative;z-index:2}
+.card.zh .zaslot{position:relative;z-index:2;margin-top:12px}
+.zaud{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer}
+.zaud .zpp{flex:none;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0d2236;border:0;cursor:pointer;box-shadow:0 0 0 0 rgba(255,255,255,.35)}
+.zaud .zpp svg{width:18px;height:18px}
+button.zaud:not(.on) .zpp{animation:zaGlow 2.4s ease-in-out infinite}@keyframes zaGlow{50%{box-shadow:0 0 0 7px rgba(255,255,255,0)}}
+.zaud .zatx{flex:1;min-width:0}.zaud .zatx b{display:block;font-size:.95rem;color:#fff}.zaud .zatx small{display:block;font-size:.74rem;color:rgba(255,255,255,.66);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zwav{flex:none;display:flex;align-items:center;gap:3px;height:22px;padding-right:4px}.zwav i{display:block;width:3px;border-radius:2px;background:rgba(255,255,255,.55);height:8px}
+.zwav i:nth-child(2){height:16px}.zwav i:nth-child(3){height:22px}.zwav i:nth-child(4){height:13px}.zwav i:nth-child(5){height:9px}
+.zaud.on{cursor:default}.zamid{flex:1;min-width:0}.zat{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.zat b{font-size:.86rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.zat span{flex:none;font-size:.74rem;color:rgba(255,255,255,.7);font-variant-numeric:tabular-nums}
+.zabar{position:relative;height:6px;border-radius:99px;background:rgba(255,255,255,.18);margin-top:8px;cursor:pointer;touch-action:none}.zabar::before{content:'';position:absolute;left:0;right:0;top:-10px;bottom:-10px}
+.zabar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#9cc9ff,#8df0bb);transition:width .25s linear}
+.zaud .zasp,.zaud .zacl{flex:none;height:32px;min-width:38px;padding:0 8px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:.78rem;font-weight:800;cursor:pointer}
+.zaud .zacl{min-width:32px;font-size:1rem}
+.zaud.pl .zpp{background:#8df0bb}   /* 2026-10-14: the hero's glow layer sat over it - taps never reached the button */
 .card.zh .zrob .zrn small{color:rgba(255,255,255,.66)}.card.zh .zrob .zrn b{color:#fff}.card.zh .zrob .zrc{color:#9cc9ff}.card.zh .zrob .zra{background:rgba(96,165,250,.22);color:#cfe3ff}
 .zleg i{white-space:nowrap;font-size:.6rem;letter-spacing:.06em}
 .zbi b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1152,6 +1166,31 @@ function ztBars(R,max){const M=max||Math.max(1,...R.map(x=>Math.abs(x.a.net||0))
    '<span class="zbn"><b>'+esc(x.nm)+'</b><small><i style="background:'+v.c+'"></i>'+(v.sh||v.t)+'</small></span>'+
    '<span class="zbt"><span class="zb0"></span><span class="zbf '+(n>=0?'p':'n')+'" style="'+(n>=0?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%"></span></span>'+
    '<span class="zbv"><b class="'+cl(n)+'">'+money(n,0)+'</b><small>'+num(x.a.trades)+' trades</small></span></button>';}).join('');}
+/* 2026-10-14 (owner): a spoken guide of the Zone de test (what, why, how, when), FR + EN neural voices
+   (live/audio/zt_intro_<fr|en>.mp3, scripts beside them). One audio object for the page: the zone redraws often,
+   the player is redrawn from ZA's state and survives it; leaving the zone stops it. */
+const ZA={a:null,open:false,rate:1};
+const ZA_PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.6-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>';
+const ZA_PAUSE='<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>';
+const zaT=s=>{s=Math.max(0,Math.round(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+function zaHTML(){
+ if(!ZA.open)return '<button class="zaud" onclick="zaPlay()" aria-label="'+T('Écouter le guide de la zone de test','Listen to the test zone guide')+'"><span class="zpp">'+ZA_PLAY+'</span><span class="zatx"><b>'+T('Écouter le guide','Listen to the guide')+'</b><small>'+T('1 min · quoi, pourquoi, comment','1 min · what, why, how')+'</small></span><span class="zwav"><i></i><i></i><i></i><i></i><i></i></span></button>';
+ const a=ZA.a,p=a&&a.duration?a.currentTime/a.duration*100:0,pl=a&&!a.paused&&!a.ended;
+ return '<div class="zaud on'+(pl?' pl':'')+'" id="zaud"><button class="zpp" id="zapp" onclick="zaToggle()" aria-label="'+(pl?T('Pause','Pause'):T('Lecture','Play'))+'">'+(pl?ZA_PAUSE:ZA_PLAY)+'</button>'+
+  '<div class="zamid"><div class="zat"><b>'+T('Le guide','The guide')+'</b><span id="zatime">'+zaT(a&&a.currentTime)+' / '+zaT(a&&a.duration)+'</span></div>'+
+  '<div class="zabar" id="zabar" onclick="zaSeek(event)" role="slider" aria-label="'+T('Position','Position')+'"><i id="zafill" style="width:'+p.toFixed(1)+'%"></i></div></div>'+
+  '<button class="zasp" onclick="zaRate()" aria-label="'+T('Vitesse','Speed')+'">'+String(ZA.rate).replace('.',EN?'.':',')+'×</button><button class="zacl" onclick="zaClose()" aria-label="'+T('Fermer','Close')+'">×</button></div>';}
+function zaPaint(){const h=document.querySelector('.zh .zaslot');if(h)h.innerHTML=zaHTML();}
+function zaTick(){const a=ZA.a;if(!a)return;const f=$('zafill'),t=$('zatime');if(f&&a.duration)f.style.width=(a.currentTime/a.duration*100).toFixed(1)+'%';if(t)t.textContent=zaT(a.currentTime)+' / '+zaT(a.duration);}
+function zaPlay(){if(!ZA.a){ZA.a=new Audio('audio/zt_intro_'+(EN?'en':'fr')+'.mp3');ZA.a.preload='auto';
+  ZA.a.addEventListener('timeupdate',zaTick);ZA.a.addEventListener('loadedmetadata',zaTick);
+  ['play','pause','ended'].forEach(e=>ZA.a.addEventListener(e,zaPaint));}
+ ZA.open=true;ZA.a.playbackRate=ZA.rate;if(ZA.a.ended)ZA.a.currentTime=0;ZA.a.play().catch(()=>{});zaPaint();}
+function zaToggle(){const a=ZA.a;if(!a)return zaPlay();if(a.paused||a.ended){if(a.ended)a.currentTime=0;a.play().catch(()=>{});}else a.pause();}
+function zaSeek(e){const a=ZA.a,b=$('zabar');if(!a||!b||!a.duration)return;const r=b.getBoundingClientRect();a.currentTime=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*a.duration;zaTick();}
+function zaRate(){const R=[1,1.25,1.5];ZA.rate=R[(R.indexOf(ZA.rate)+1)%R.length];if(ZA.a)ZA.a.playbackRate=ZA.rate;zaPaint();}
+function zaClose(){if(ZA.a)ZA.a.pause();ZA.open=false;zaPaint();}
+window.addEventListener('hashchange',()=>{if(ZA.a&&!new URLSearchParams(location.hash.slice(1)).has('zt')){ZA.a.pause();ZA.open=false;}});
 function renderZT(){const B=BLD(),L=ztRobots();
  if(!L.length){$('det').innerHTML='<div class="card"><div class="sub">'+T('Aucun robot à tester pour l\'instant.','No robot to test yet.')+'</div></div>';return;}
  if(!ZT.rid||!L.find(x=>x.id===ZT.rid))ZT.rid=(L.find(x=>x.mine)||L.find(x=>x.id==='owl')||L[0]).id;
@@ -1159,7 +1198,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  clearTimeout(ZTT);if(pend.length)ZTT=setTimeout(async()=>{if(new URLSearchParams(location.hash.slice(1)).has('zt')&&!LSH){RB=null;await load();renderZT();}},30000);
  const wins=R.filter(x=>(x.a.net||0)>0).length,best=R[0];
  // 1) header: robot switcher + key figures
- let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div>'+
+ let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div><div class="zaslot">'+zaHTML()+'</div>'+
   '<button class="zrob" onclick="ztPickRobot()" aria-label="'+T('Changer de robot','Change robot')+'"><span class="zra">'+BOT+'</span><span class="zrn"><small>'+T('Robot testé','Robot under test')+'</small><b>'+esc(T(r.name_fr,r.name_en))+'</b></span><span class="zrc">'+T('Changer','Change')+' ▾</span></button>'+
   '<div class="k3"><div><b>'+R.length+'</b><span>'+T('marchés testés','markets tested')+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+T('gagnants','winning')+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(best.a.net,0):'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
  // 2) results
