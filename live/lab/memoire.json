@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-14T12:05:00Z",
+ "updated": "2026-10-14T13:30:28Z",
  "hypotheses": [
   {
    "id": "ext400_wait",
@@ -35,7 +35,8 @@
    "status": "nouveau",
    "evidence": [
     "2026-10-14: real day_n_at_entry >=5 (= after 5 entries already counted; bot records before day_roll so a day's first trade may carry yesterday's count) 45 tr 36% -64.21 PF 0.46 (h 38/34 agree); by day dayn<=4 36 tr 47% -9.05 vs >=5 44 tr 36% -63.50; dayn 0-1 46 tr 63%. Harness max_trades_day (package param, not menu) 4/5/6 nokill 42 d: uncapped C -6.4 / C -14.4 / B +4.2, capped B +31.8 / C -8.4 / C -14.9, halves h1 -53..-95 / h2 +42..+90 - a hard stop is not a cause. Requested day_count_size (stake) + pile_field_dayn.",
-    "2026-10-14 veille: day_n is per account and scrutiny keeps one row per entry, so after a reboot or blind spell the count can restart (10-14: u477508138 alone took 04:19/05:07; demo/kino/valere's 08:01 FLIP-BOS BUY was day_n 0, won +2.66). Check the >=5 pile does not mix accounts whose counts differ."
+    "2026-10-14 veille: day_n is per account and scrutiny keeps one row per entry, so after a reboot or blind spell the count can restart (10-14: u477508138 alone took 04:19/05:07; demo/kino/valere's 08:01 FLIP-BOS BUY was day_n 0, won +2.66). Check the >=5 pile does not mix accounts whose counts differ.",
+    "2026-10-14 13:30 veille: BOS BUY +1.42 (closed 12:04, pace 0.779, day, after a win) counted 1er du jour: 1st 47 tr 64% +18.33 (h 59/72); 5th+ unchanged 45 tr 36% -64.21. As predicted."
    ],
    "next": "Test day_n stake when built; check whether it is the day/after-loss leak in disguise."
   },
@@ -74,7 +75,8 @@
     "2026-10-13: size 0.5 at 08-15 h: C -16.8 (h -26.8/+11.5) / C -19.4 (h -27.5/+21.9) - fixed-hour split once more. Real asia 46 tr 70% +55.78 (h 70/70). Battery noday B/B (+1.5 / +47.6, hole -47/-50), long C -34.8. hour_brake_days marked built but absent from harness -> request hour_brake_rebuild.",
     "2026-10-13 12:00 veille: three day sells: FLIP-BOS +1.16, BOS -4.45, BOS -7.82. Pile cont_day passes 30: 31 tr 42% vs 54% -22.73 PF 0.75 (h 47/38 agree); its 0.8-1.0 band 11 tr 27% -25.33. The breakout edge is a night edge (real).",
     "2026-10-14 04:30 veille: FLIP-BOS SELL -3.04 (pace 0.893, night, closed 04:28). asia 47 tr 68% +52.74 PF 1.86 (h 71/65 agree), was 46 tr 70% +55.78. Inside: 04 h 3 tr 1 won -4.89; 00 h 10 tr 50% -12.90; 01-03 h 22 tr ~77% +58. After a win 30 tr 73% +46.98 vs after a loss 17 tr 59% +5.76.",
-    "2026-10-14: asia 48 tr 69% +57.45 PF 1.93 (h 72/65). dayn>=5 almost never at night (1 of 45): the day leak and the count leak overlap."
+    "2026-10-14: asia 48 tr 69% +57.45 PF 1.93 (h 72/65). dayn>=5 almost never at night (1 of 45): the day leak and the count leak overlap.",
+    "2026-10-14 13:30 veille: cont_day 32 tr 44% -21.31 PF 0.77 (h 47/41); inside after a loss 13 tr 38% -27.03 vs after a win 18 tr 44% -2.08 (peu): the day breakout leak sits after losses, overlapping day_loss_chase. 12 h 2 tr both won."
    ],
    "next": "Test hour_brake_adaptive when built; pile cont_day."
   },
@@ -2163,6 +2165,17 @@
     "journals: day_n per account for 10-14 entries"
    ],
    "saw": "10-14 04:19 and 05:07 taken by u477508138 only (other bots blind until the dd104a2 reconnect); 08:01 taken by demo/kino/valere at day_n 0 = truly first of day for them, won. dayn same shape: 1st 46 tr 63% +16.91, 5th+ 45 tr 36% -64.21 (agree). europe 08 h 9 tr 44% +0.27; europe after a loss 22 tr 32% -46.74. 128 trades. No ask, no twins, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-14T13:30:28Z",
+   "night": "veille",
+   "looked": [
+    "1 new: BOS BUY +1.42 (closed 12:04, pace 0.779, day, after a win, 1er du jour)",
+    "--pile cont_day by nerv/prev/hour/dur",
+    "--by dayn",
+    "--streaks"
+   ],
+   "saw": "129 tr 52% -13.68. cont_day 32 tr 44% -21.31 (after a loss 13 tr -27.03, after a win 18 tr -2.08). dayn 1st 47 tr 64% +18.33, 5th+ 45 tr 36% -64.21. After 3 losses in a row 11 tr 73% +21.65 (peu). No ask, no twins, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
