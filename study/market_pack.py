@@ -127,7 +127,7 @@ def build(sym, terminal=DEFAULT_TERMINAL, log=print):
     return meta
 
 
-WORKERS = 4      # leave cores for the live bots
+WORKERS = 4      # 2026-10-14: gold pack = 100 min on 4 workers (1.2 GB); fine once the desktop apps were closed
 
 
 def _walk_chunk(args):

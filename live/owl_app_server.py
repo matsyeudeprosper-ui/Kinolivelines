@@ -12987,7 +12987,7 @@ def robot_test(user, body):
 ROBOT_MQ = os.path.join(DIR, "robots", "market_tests.json")
 MARKET_PACKS = os.path.join(os.path.dirname(DIR), "study", "markets")
 MARKET_POPULAR = ["XAUUSD", "USTEC", "US30", "US500", "EURUSD", "GBPUSD", "XAGUSD", "USOIL", "DE30", "USDJPY", "ETHUSD"]
-MARKET_BUILD_MIN, MARKET_TEST_MIN = 80, 6     # 2026-10-14 measured (3 workers)
+MARKET_BUILD_MIN, MARKET_TEST_MIN = 100, 3    # 2026-10-14 measured on gold: pack 100 min (4 workers), test < 1 min
 
 
 def _mq_load():

@@ -1,0 +1,38 @@
+{
+ "ticks_drag0.35": {
+  "net": 57.39,
+  "trades": 82,
+  "win_rate": 0.6707,
+  "profit_factor": 1.486,
+  "cc_dd": 28.15,
+  "first_half": 15.32,
+  "later_half": 42.02
+ },
+ "ticks_drag0.0": {
+  "net": 82.87,
+  "trades": 84,
+  "win_rate": 0.6667,
+  "profit_factor": 1.703,
+  "cc_dd": 22.72,
+  "first_half": 32.74,
+  "later_half": 50.1
+ },
+ "bars_drag0.35": {
+  "net": 63.33,
+  "trades": 76,
+  "win_rate": 0.6711,
+  "profit_factor": 1.454,
+  "cc_dd": 20.99,
+  "first_half": 17.12,
+  "later_half": 46.2
+ },
+ "bars_drag0.0": {
+  "net": 71.26,
+  "trades": 77,
+  "win_rate": 0.6623,
+  "profit_factor": 1.506,
+  "cc_dd": 19.93,
+  "first_half": 10.2,
+  "later_half": 61.08
+ }
+}
