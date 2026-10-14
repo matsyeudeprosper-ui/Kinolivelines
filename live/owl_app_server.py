@@ -3472,6 +3472,32 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <script>
 const B=location.pathname.endsWith('/')?location.pathname:location.pathname+'/';
 const APP_BUILD='%%BUILD%%';
+// 2026-10-15 (owner): "all time hour date across the entire app in user local time". The data stays UTC (the robot's
+// trading day is UTC: day totals, months, caps); only what the member READS is converted, with the phone's own clock.
+function _p2(n){return String(n).padStart(2,'0');}
+function wTs(w){const m=/^(\\d\\d)\\/(\\d\\d) (\\d\\d):(\\d\\d)/.exec(w||'');if(!m)return null;const y=new Date().getUTCFullYear();let t=Date.UTC(y,+m[2]-1,+m[1],+m[3],+m[4]);if(t>Date.now()+86400000)t=Date.UTC(y-1,+m[2]-1,+m[1],+m[3],+m[4]);return t;}
+function locW(w){const t=wTs(w);if(t==null)return w||'';const d=new Date(t);return _p2(d.getDate())+'/'+_p2(d.getMonth()+1)+' '+_p2(d.getHours())+':'+_p2(d.getMinutes());}
+function locHM(hm){const m=/^(\\d{1,2}):(\\d\\d)/.exec(hm||'');if(!m)return hm||'';const d=new Date();d.setUTCHours((+m[1])%24,+m[2],0,0);return _p2(d.getHours())+':'+_p2(d.getMinutes());}
+function locH(h){const d=new Date();d.setUTCHours((+h)%24,0,0,0);return d.getHours();}
+function locT(ts){const d=new Date(ts*1000);return _p2(d.getHours())+':'+_p2(d.getMinutes());}
+// any "HH:MM UTC", "H h UTC" or "A-B h UTC" that reaches the screen (server texts included) -> local, label dropped
+function locTxt(s){if(!s||s.indexOf('UTC')<0)return s;
+ s=s.replace(/(minuit|midnight)(\\s*UTC)/g,'24 h$2');
+ s=s.replace(/(\\d{1,2})(?::(\\d\\d))?(\\s*h)?\\s*(-|\\u2013|to|\\u00e0|et|and)\\s*(\\d{1,2})(?::(\\d\\d))?(\\s*h)?\\s*UTC/g,(m,a,am,ah,sep,b,bm,bh)=>{const A=locHM(a+':'+(am||'00')),Z=locHM(b+':'+(bm||'00'));return (ah||bh)?(+A.slice(0,2))+' h '+sep+' '+(+Z.slice(0,2))+' h':A+'\\u2013'+Z;});
+ s=s.replace(/(\\d{1,2}):(\\d\\d)\\s*UTC/g,(m,a,b)=>locHM(a+':'+b));
+ s=s.replace(/(\\d{1,2})\\s*h\\s*UTC/g,(m,a)=>locH(a)+' h');
+ return s;}
+(function(){const skip=/^(SCRIPT|STYLE|TEXTAREA)$/;
+ const fix=root=>{if(!root)return;if(root.nodeType===3){const v=locTxt(root.nodeValue);if(v!==root.nodeValue)root.nodeValue=v;return;}
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>(n.nodeValue.indexOf('UTC')>=0&&!skip.test((n.parentNode||{}).nodeName||''))?1:3});
+  const L=[];let n;while((n=w.nextNode()))L.push(n);L.forEach(fix);};
+ const go=()=>{fix(document.body);new MutationObserver(ms=>ms.forEach(m=>{if(m.type==='characterData'){if((m.target.nodeValue||'').indexOf('UTC')>=0)fix(m.target);}
+  else m.addedNodes.forEach(x=>{if(x.nodeType===3?(x.nodeValue||'').indexOf('UTC')>=0:x.nodeType===1)fix(x);});})).observe(document.body,{childList:true,subtree:true,characterData:true});};
+ if(document.body)go();else document.addEventListener('DOMContentLoaded',go);})();
+// the phone's time zone, for the server-made texts (pushes) - sent when it changes
+try{const z=String(new Date().getTimezoneOffset())+'|'+((Intl.DateTimeFormat().resolvedOptions()||{}).timeZone||'');
+ if(localStorage.getItem('owlTz:'+B)!==z)fetch(B+'push_pref',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+  body:'tzo='+encodeURIComponent(z.split('|')[0])+'&tzn='+encodeURIComponent(z.split('|')[1])}).then(r=>{if(r.ok)localStorage.setItem('owlTz:'+B,z);}).catch(()=>{});}catch(e){}
 function sgn(v){return v>0?'pos':(v<0?'neg':'neu')}
 function SVGI(n){return '<svg class="ic"><use href="#'+n+'"/></svg>'}
 function arw(v){return v>0?'&#9650; ':(v<0?'&#9660; ':'')}
@@ -4713,7 +4739,7 @@ function dayx(l){
  const rows=tr.map(t=>'<div class="srow-ev">'+(t.p>=0?ico('i-check','var(--up)'):ico('i-x','var(--down)'))+
   '<div style="flex:1">'+(t.p>=0?who+'<b class="pos">gagn\u00e9 '+money(t.p)+'</b>.'
    :who+'<b class="neg">perdu $'+Math.abs(t.p).toFixed(2)+'</b>.')+'</div>'+
-  '<span class="evt">'+t.t+'</span></div>').join('');
+  '<span class="evt">'+locHM(t.t)+'</span></div>').join('');
  sheet('<h3>'+l+'</h3><p style="color:var(--text)">'+sum+'</p>'+daySpark(tr)+rows+
   '<button class="shbtn shmain" onclick="_shDone(1)">Fermer</button>');
 }
@@ -5383,7 +5409,7 @@ function tradeSheet(i){
   (x.ep!=null?L('Entr&eacute;e',x.ep.toFixed(2)):'')+
   (x.xp!=null?L('Sortie',x.xp.toFixed(2)):'')+
   (x.dur!=null?L('Dur&eacute;e',fdur(x.dur)):'')+
-  L('Quand',x.w)+
+  L('Quand',locW(x.w))+
   (function(){
    // 2026-10-01: the big picture at entry AND at exit. The interesting
    // case is when they differ - the trade outlived the context it was
@@ -5431,7 +5457,7 @@ function tradeSheet(i){
 function lpStart(ev,el){lpEnd();window._lpT=setTimeout(()=>{
  const x=(window._tr||[])[el.dataset.i];if(!x)return;
  const txt=(x.dir==='A'?'Achat':'Vente')+(x.lot?' '+x.lot.toFixed(2)+' lot':'')+' \u00b7 '+
-  (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+' \u00b7 '+x.w+' UTC';
+  (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+' \u00b7 '+locW(x.w);
  window._lpFired=1;
  try{navigator.vibrate&&navigator.vibrate(14);}catch(e){}
  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(
@@ -5521,8 +5547,8 @@ async function tradeSpark(tx,x){
  h+=hl(x.ep,LANG()==='en'?'entry':'entr\u00e9e','var(--muted2)')+hl(x.xp,LANG()==='en'?'exit':'sortie',col);
  if(x.ep!=null&&x.xp!=null){h+='<line x1="'+xe.toFixed(1)+'" y1="'+Y(x.ep).toFixed(1)+'" x2="'+xx.toFixed(1)+'" y2="'+Y(x.xp).toFixed(1)+'" style="stroke:'+col+'" stroke-width="1.6" stroke-dasharray="4 4"/>'+
   '<circle cx="'+xe.toFixed(1)+'" cy="'+Y(x.ep).toFixed(1)+'" r="3.2" style="fill:var(--text)"/><circle cx="'+xx.toFixed(1)+'" cy="'+Y(x.xp).toFixed(1)+'" r="3.6" style="fill:'+col+'"/>';}
- const ft=t=>{const d=new Date(t*1000);return String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');};
- h+='<text x="10" y="79" font-size="8" style="fill:var(--muted)">'+ft(C[0][0])+'</text><text x="290" y="79" font-size="8" text-anchor="end" style="fill:var(--muted)">'+ft(C[C.length-1][0])+' UTC</text>';
+ const ft=t=>locT(t);
+ h+='<text x="10" y="79" font-size="8" style="fill:var(--muted)">'+ft(C[0][0])+'</text><text x="290" y="79" font-size="8" text-anchor="end" style="fill:var(--muted)">'+ft(C[C.length-1][0])+'</text>';
  el.innerHTML=h;el.style.display='block';
 }
 // "Ma journee" share image
@@ -5561,7 +5587,7 @@ function shareDay(){
  g.textAlign='left';g.fillStyle='#8a9bb0';g.font='bold 16px Inter, system-ui, sans-serif';g.fillText('LES TRADES DU JOUR',80,top+34);
  if(!n){g.fillStyle='#5f7185';g.font='20px Inter, system-ui, sans-serif';g.fillText('Rien pour l\u2019instant.',80,top+74);}
  tr.slice(-6).forEach((t,i)=>{const y=top+58+i*dh;
-  g.textAlign='left';g.fillStyle='#c6d3df';g.font='22px Inter, system-ui, sans-serif';g.fillText(t.t+' UTC',80,y+14);
+  g.textAlign='left';g.fillStyle='#c6d3df';g.font='22px Inter, system-ui, sans-serif';g.fillText(locHM(t.t),80,y+14);
   g.textAlign='right';g.fillStyle=t.p>=0?'#2ecc71':'#ff5c5c';g.font='bold 22px Inter, system-ui, sans-serif';
   g.fillText((t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2),W-80,y+14);});
  g.textAlign='center';g.fillStyle='#8a9bb0';g.font='20px Inter, system-ui, sans-serif';
@@ -5786,8 +5812,8 @@ async function tradeStory(tx,x){
  const band=(st&&st.band)?(EN?(BAND[st.band]||st.band):st.band):'';
  const who=T('ts_who'),act=buy?T('ts_buy'):T('ts_sell');
  if(st&&st.found){const d=new Date(st.t*1000);
-  const dd=String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0'),
-   hh=String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0');
+  const dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'),
+   hh=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
   t=who+act+T('ts_on')+dd+T('ts_at')+hh+(band?T('ts_in')+band+T('ts_in2'):'')+'.'+
    (st.risk?T('ts_risk')+st.risk.toFixed(1)+'</b>.':'')+
    T('ts_dur')+fd(st.dur_min)+T('ts_end')+
@@ -6240,10 +6266,11 @@ function dayDone(d){
  if(wu>Date.now()/1000){const w=new Date(wu*1000);const wl=String(w.getHours()).padStart(2,'0')+':'+String(w.getMinutes()).padStart(2,'0');
   const wu2=String(w.getUTCHours()).padStart(2,'0')+':'+String(w.getUTCMinutes()).padStart(2,'0');
   document.getElementById('daydone-t').textContent=(en?'\u2713 Day target reached \u00b7 ':'\u2713 Objectif du jour atteint \u00b7 ')+(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
-  document.getElementById('daydone-s').textContent=en?('Today\u2019s exception: the robot carries on until '+wu2+' UTC ('+wl+' on your phone).'):('Exception d\u2019aujourd\u2019hui : le robot continue jusqu\u2019\u00e0 '+wu2+' UTC ('+wl+' chez vous).');}
+  document.getElementById('daydone-s').textContent=en?('Today\u2019s exception: the robot carries on until '+wl+'.'):('Exception d\u2019aujourd\u2019hui : le robot continue jusqu\u2019\u00e0 '+wl+'.');}
  else{
  document.getElementById('daydone-t').textContent=(en?'\u2713 Day complete \u00b7 ':'\u2713 Journ\u00e9e termin\u00e9e \u00b7 ')+(pnl>=0?'+$':'-$')+Math.abs(pnl).toFixed(2);
- document.getElementById('daydone-s').textContent=en?('The robot resumes tomorrow at 00:00 UTC ('+hm+' on your phone).'):('Le robot reprend demain \u00e0 00:00 UTC ('+hm+' chez vous).');}
+ const _td=nxt.toDateString()===new Date().toDateString();
+ document.getElementById('daydone-s').textContent=en?('The robot resumes '+(_td?'today':'tomorrow')+' at '+hm+'.'):('Le robot reprend '+(_td?'aujourd\u2019hui':'demain')+' \u00e0 '+hm+'.');}
  el.style.display='block';
  const dtc=document.getElementById('daytargetchip');if(dtc)dtc.style.display='none';
 }
@@ -7904,7 +7931,7 @@ function goLabo(){location.href=B+'robots';}
  function trades(){const h=$('hist');if(!h||!window._tr)return;const rows=[...h.querySelectorAll(':scope > .row[data-i]')];if(!rows.length)return;
   if(rows.every(r=>r.dataset.pf==='1')&&h.querySelector('.pf-dh'))return;
   h.querySelectorAll('.pf-dh').forEach(e=>e.remove());let day='',n=0,w=0,s=0;
-  rows.forEach(r=>{const x=window._tr[+r.dataset.i];if(!x)return;const m=/^(\\d\\d\\/\\d\\d) (\\d\\d:\\d\\d)/.exec(x.w||'');const d=m?m[1]:'';const p=+x.p||0;n++;if(p>0.005)w++;s+=p;
+  rows.forEach(r=>{const x=window._tr[+r.dataset.i];if(!x)return;const m=/^(\\d\\d\\/\\d\\d) (\\d\\d:\\d\\d)/.exec(locW(x.w));const d=m?m[1]:'';const p=+x.p||0;n++;if(p>0.005)w++;s+=p;
    if(d!==day){day=d;const hd=document.createElement('div');hd.className='pf-dh';hd.textContent=d;r.before(hd);}
    if(r.dataset.pf!=='1'){const buy=x.dir==='A'||x.dir==='BUY',dur=x.dur!=null?(x.dur>=60?Math.floor(x.dur/60)+' h '+String(x.dur%60).padStart(2,'0'):x.dur+' min'):'';
     const tag=r.querySelector('.rowt span[style*="warn"],.rowt .bdg,.rowt b')&&/soldat|soldier/i.test(r.textContent)?'<span class="pf-tag">'+T2('soldat','soldier')+'</span>':'';
@@ -8072,7 +8099,7 @@ function goLabo(){location.href=B+'robots';}
   return '<div class="lv-c"><div class="lv-l">'+T2('Son journal','Its diary')+' <small>· '+T2('aujourd’hui, tous les marchés','today, every market')+'</small></div><div style="margin-top:14px">'+list+'</div>'+
    ($('rjcard')?'<div class="lv-more" id="edrjr"><span>'+T2('Le journal complet','The full diary')+'</span><span>›</span></div>':'')+'</div>';}
  function hours(D){const DT=D.day_trades||{},days=Object.keys(DT);if(!days.length)return '';const H=Array.from({length:24},()=>[0,0]);let n=0;
-  days.forEach(k=>(DT[k]||[]).forEach(x=>{const h=parseInt(String(x.t||'').slice(0,2),10);if(h>=0&&h<24){H[h][0]++;H[h][1]+=+x.p||0;n++;}}));if(!n)return '';
+  days.forEach(k=>(DT[k]||[]).forEach(x=>{const h=locH(parseInt(String(x.t||'').slice(0,2),10));if(h>=0&&h<24){H[h][0]++;H[h][1]+=+x.p||0;n++;}}));if(!n)return '';
   const mx=Math.max(1,...H.map(x=>Math.abs(x[1]))),W=300,Hh=96,z=Hh/2,bw=(W-23*3)/24;
   let s='<svg viewBox="0 0 '+W+' '+(Hh+16)+'" width="100%" height="'+(Hh+16)+'" role="img" aria-label="'+T2('Résultat par heure','Result by hour')+'"><line x1="0" x2="'+W+'" y1="'+z+'" y2="'+z+'" stroke="var(--border2)"/>';
   H.forEach((x,i)=>{if(!x[0])return;const hh=Math.max(2,Math.abs(x[1])/mx*(z-4)),X=i*(bw+3);s+='<rect x="'+X.toFixed(1)+'" y="'+(x[1]>=0?z-hh:z).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="'+Math.min(3,bw/2).toFixed(1)+'" fill="'+(x[1]>=0?'var(--up)':'var(--down)')+'"><title>'+i+'h · '+x[0]+' trade'+(x[0]>1?'s':'')+' · '+money(x[1])+'</title></rect>';});
@@ -8263,8 +8290,10 @@ function goLabo(){location.href=B+'robots';}
   return h+'</div>';}
  // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
  // no trade open): nearly ready first, then soon, else the closest trend in place. Tap = it opens in the card.
- function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2};
-  return S.filter(r=>r.sym!=='BTCUSD'&&r.sym!==sel&&o[r.status]!=null&&r.near!=null).sort((a,b)=>o[a.status]-o[b.status]||a.near-b.near)[0]||null;}
+ // 2026-10-15 (owner): only markets where the robot RUNNING on this account tested positive (api cand_ok)
+ function candOk(){if(window._ckS!==window._lastS){window._ckS=window._lastS;try{window._ckL=JSON.parse(window._lastS).cand_ok||[];}catch(e){window._ckL=[];}}return window._ckL||[];}
+ function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2},ok=candOk();
+  return S.filter(r=>r.sym!=='BTCUSD'&&r.sym!==sel&&ok.indexOf(String(r.sym).toUpperCase())>=0&&o[r.status]!=null&&r.near!=null).sort((a,b)=>o[a.status]-o[b.status]||a.near-b.near)[0]||null;}
  function candCard(){const r=cand();if(!r)return '';
   const st=r.status==='ready'?[T2('Presque prêt','Nearly ready'),'var(--accent)','var(--accent-soft)']:(r.status==='soon'?[T2('Bientôt','Soon'),'var(--warn)','var(--warn)']:[T2('Tendance en place','Trend set'),'var(--muted)','var(--muted2)']);
   const p=Math.max(4,Math.min(100,100-(r.near/3)*100)),side=r.pb_trend===1?T2('un achat','a buy'):(r.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
@@ -8320,7 +8349,7 @@ function goLabo(){location.href=B+'robots';}
  // the four tiles
  function tiles(D,TR){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000;
   const nr=(Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length+(D.open_list||[]).length,ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
-  const DT=D.day_trades||{},H=Array(24).fill(0);let n=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const h=parseInt(String(x.t||'').slice(0,2),10);if(h>=0&&h<24){H[h]+=+x.p||0;n++;}}));
+  const DT=D.day_trades||{},H=Array(24).fill(0);let n=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const h=locH(parseInt(String(x.t||'').slice(0,2),10));if(h>=0&&h<24){H[h]+=+x.p||0;n++;}}));
   let bh=-1;H.forEach((v,i)=>{if(v>0&&(bh<0||v>H[bh]))bh=i;});
   const ms=D.meteo_struct||{},cur=sel==='BTCUSD'?ms.px:((TR.find(r=>r.sym===sel)||{}).px);
   const dg=sel==='BTCUSD'?0:Math.min(5,Math.max(0,((TR.find(r=>r.sym===sel)||{}).digits)||2));
@@ -8801,7 +8830,7 @@ async function loadJournal(d){const el=document.getElementById('rjcard');if(!el)
     :it.length+' derniers trades · '+w+' gagné'+(w>1?'s':''));}}
  document.getElementById('rj-list').innerHTML=it.map(x=>{const buy=(x.dir||'').toUpperCase().startsWith('A')||(x.dir||'').toUpperCase()==='BUY';const up=(+x.p||0)>=0;const b=x.band?bandL[x.band]||[x.band,'var(--muted)']:null;
   const q=B+'chart?t='+x.t+'&x='+x.x+(x.ep!=null?'&ep='+x.ep:'')+(x.xp!=null?'&xp='+x.xp:'')+'&d='+encodeURIComponent(x.dir||'')+'&p='+x.p;
-  return '<a href="'+q+'" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;font-size:.82rem"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span><span style="width:78px;color:var(--muted)">'+(x.w||'')+'</span>'+
+  return '<a href="'+q+'" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--border);text-decoration:none;color:inherit;font-size:.82rem"><span style="color:'+(buy?'var(--up)':'var(--down)')+';font-weight:800">'+(buy?'\u25b2':'\u25bc')+'</span><span style="width:78px;color:var(--muted)">'+locW(x.w)+'</span>'+
    (b?'<span style="font-size:.62rem;font-weight:700;color:'+b[1]+';border:1px solid '+b[1]+';border-radius:99px;padding:1px 7px;opacity:.9">'+b[0]+'</span>':'<span></span>')+
    '<span style="flex:1;color:var(--muted2);text-align:right;font-size:.74rem">'+(x.dur!=null?Math.round(x.dur)+' min':'')+'</span><b style="width:64px;text-align:right;color:'+(up?'var(--up-soft)':'var(--down-soft)')+'">'+mn(+x.p||0)+'</b></a>';}).join('');
  el.style.display='block';
@@ -10300,7 +10329,7 @@ function render(d){
     (x.p>=0?'+$':'-$')+Math.abs(x.p).toFixed(2)+'</b></div>'+
     (open?'<div style="padding:0 0 6px 18px;border-bottom:1px solid '+
     'var(--border)">'+tr.map(t=>'<div class="row" style="font-size:.85rem;'+
-    'padding:6px 4px;border-bottom:0"><span class="rowt">'+t.t+
+    'padding:6px 4px;border-bottom:0"><span class="rowt">'+locHM(t.t)+
     '</span><span class="'+(sgn(t.p))+'">'+
     (t.p>=0?'+$':'-$')+Math.abs(t.p).toFixed(2)+'</span></div>')
     .join('')+'</div>':'');
@@ -10447,7 +10476,7 @@ function render(d){
     (L.length?'':'<div class="empty"><p>Aucun trade dans cette s\u00e9lection</p></div>')+
     L.slice(0,N).map(([x,i])=>
     '<div class="row" style="cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none" data-i="'+i+
-    '" onclick="tradeSheet(this.dataset.i)" onpointerdown="lpStart(event,this)" onpointerup="lpEnd()" onpointercancel="lpEnd()" onpointerleave="lpEnd()" oncontextmenu="return false"><span class="rowt">'+x.w+
+    '" onclick="tradeSheet(this.dataset.i)" onpointerdown="lpStart(event,this)" onpointerup="lpEnd()" onpointercancel="lpEnd()" onpointerleave="lpEnd()" oncontextmenu="return false"><span class="rowt">'+locW(x.w)+
     (x.k==='soldat'?' <span class="pill pill-w">soldat</span>'
      :(x.k&&x.k!=='page'?' <span class="pill">'+x.k+'</span>':''))+
     (x.dur!=null?' &middot; '+fdur(x.dur):'')+
@@ -14871,6 +14900,7 @@ def user_stats(u, admin_override=False):
             d["push_quiet"] = bool((_pp.get("_quiet") or {})
                                    .get(u["id"], {}).get("on"))
             d["cand_push"] = bool((_pp.get("_cand") or {}).get(u["id"]))
+            d["cand_ok"] = cand_ok_for(u["id"])
         except Exception:
             d["push_level"] = "all"
             d["push_quiet"] = False
@@ -16060,7 +16090,7 @@ function landPaint(){const j=window._land;if(!j)return;const en=pvEn(),$=id=>doc
 function calcPaint(){const j=window._land,W=j&&j.witness;if(!W||W.ret==null)return;const en=pvEn(),$=id=>document.getElementById(id);
  const b=document.querySelector('#calc .amts button.on'),amt=+(b?b.dataset.a:1000);
  const f=v=>en?('$'+Math.round(v).toLocaleString('en-US')):(Math.round(v).toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' $');
- const now=amt*(1+W.ret/100),g=now-amt,lo=amt*(1+(W.low_pct||0)/100),d=new Date(W.start*1000),dd=String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0');
+ const now=amt*(1+W.ret/100),g=now-amt,lo=amt*(1+(W.low_pct||0)/100),d=new Date(W.start*1000),dd=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
  $('calc-v').textContent=f(now);$('calc-g').textContent=(g>=0?'+':'−')+f(Math.abs(g)).replace('$ ','$').trim()+(en?' since '+dd:' depuis le '+dd);$('calc-g').style.color=g>=0?'#8df0bb':'#ff9a9a';
  const nb=(W.low_pct||0)>=0;$('calc-ll').textContent=nb?(en?'Never below the starting amount':'Jamais sous la mise de départ'):(en?'At the lowest':'Au plus bas');$('calc-lo').textContent=f(nb?amt:lo);$('calc-lo').style.color=nb?'#8df0bb':'#ff9a9a';$('calc-l').textContent=en?'Today':'Aujourd’hui';
  $('calc-n').textContent=en?'Worked out from the witness account’s real results, in proportion. Past results do not promise future ones.':'Calculé sur les vrais résultats du compte témoin, en proportion. Les résultats passés ne promettent pas les suivants.';
@@ -16101,7 +16131,7 @@ function pvRender(d){
   $('pv-lbl').textContent=en?('Public demo account · '+(d.bot_killed?'paused':'live')):('Compte d\\u00e9mo public \\u00b7 '+(d.bot_killed?'en pause':'en direct'));
   if(d.bot_killed){$('pv-bot-t').textContent=en?'The demo is paused — it restarts soon.':'La d\\u00e9mo est en pause \\u2014 elle red\\u00e9marre bient\\u00f4t.';}
   else if(d.era_start){const es=new Date(d.era_start);if(!isNaN(es)&&Date.now()-es.getTime()<7*86400e3){
-   (function(){const dd=String(es.getUTCDate()).padStart(2,'0')+'/'+String(es.getUTCMonth()+1).padStart(2,'0');
+   (function(){const dd=String(es.getDate()).padStart(2,'0')+'/'+String(es.getMonth()+1).padStart(2,'0');
    // owner 2026-10-10: just when it started - no "restarted", no explanation
    $('pv-bot-t').textContent=en?('Demo since '+dd):('D\\u00e9mo depuis le '+dd);})();}}
  }catch(e){}
@@ -18644,6 +18674,14 @@ class H(BaseHTTPRequestHandler):
                 if "cand" in qs:
                     # 2026-10-13 (owner): "tell me when the next candidate is nearly ready" (En direct)
                     prefs.setdefault("_cand", {})[u["id"]] = qs["cand"][0] == "1"
+                if "tzo" in qs:
+                    # 2026-10-15 (owner: every time in the member's local time): the phone's UTC offset
+                    # (JS getTimezoneOffset: minutes, positive WEST of UTC) + its zone name, for pushes
+                    try:
+                        prefs.setdefault("_tz", {})[u["id"]] = {"off": int(qs["tzo"][0]),
+                                                                "name": (qs.get("tzn", [""])[0] or "")[:64]}
+                    except Exception:
+                        pass
                 if "quiet" in qs:
                     # 2026-09-26: silence 22h-7h in the phone's timezone
                     try:
@@ -19415,6 +19453,7 @@ class H(BaseHTTPRequestHandler):
                     _d["push_level"] = _pp.get(user["id"], "all")
                     _d["push_quiet"] = bool((_pp.get("_quiet") or {}).get(user["id"], {}).get("on"))
                     _d["cand_push"] = bool((_pp.get("_cand") or {}).get(user["id"]))
+                    _d["cand_ok"] = cand_ok_for(user["id"])
                 except Exception:
                     _d["push_level"] = "all"
                     _d["push_quiet"] = False
@@ -20146,6 +20185,39 @@ class H(BaseHTTPRequestHandler):
             self.end_headers()
 
 
+_CAND_OK = {}
+
+
+def cand_ok_for(uid):
+    """2026-10-15 (owner): "Let's not allow any symbol with no positive backtests results on the running bot to show
+    up as candidate". The robot running on the account (owl_markets.robot_of: plugged robot, else the Owl) must have
+    a market test robots/results/<robot>@<SYM>.json with a positive net. Common names (owl_markets.base); 60 s cache."""
+    c = _CAND_OK.get(uid)
+    if c and time.time() - c[0] < 60:
+        return c[1]
+    out = set()
+    try:
+        import owl_markets as _OMK
+        rid = _OMK.robot_of(uid)
+        rd = os.path.join(DIR, "robots", "results")
+        for f in os.listdir(rd):
+            if not f.endswith(".json") or "@" not in f:
+                continue
+            r, sy = f[:-5].split("@", 1)
+            if r != rid:
+                continue
+            try:
+                if float((json.load(open(os.path.join(rd, f), encoding="utf-8")).get("robot") or {}).get("net") or 0) > 0:
+                    out.add(_OMK.base(sy).upper())
+            except Exception:
+                pass
+    except Exception:
+        pass
+    out.discard("BTCUSD")
+    _CAND_OK[uid] = (time.time(), sorted(out))
+    return _CAND_OK[uid][1]
+
+
 def _cand_watch():
     """2026-10-13 (owner): En direct's "Prochain candidat" bell. Reads the scanner's state (never writes it);
     when a market other than BTC turns 'ready', the members who switched the bell on get one push.
@@ -20166,12 +20238,13 @@ def _cand_watch():
                 for s, r in now.items():
                     if r.get("status") != "ready" or prev.get(s) == "ready":
                         continue
-                    if time.time() - sent.get(s, 0) < 3 * 3600:
-                        continue
-                    sent[s] = time.time()
                     nm = r.get("name") or s
                     side = r.get("pb_trend")
                     for uid in who:
+                        # 2026-10-15: only a market the account's own robot tested positive on; 3 h per (member, market)
+                        if s.upper() not in cand_ok_for(uid) or time.time() - sent.get((uid, s), 0) < 3 * 3600:
+                            continue
+                        sent[(uid, s)] = time.time()
                         if langs.get(uid) == "en":
                             queue_push(uid, "%s nearly ready" % nm,
                                        "The robot is close to a %s on %s. Trial market: virtual trades only, no real money."

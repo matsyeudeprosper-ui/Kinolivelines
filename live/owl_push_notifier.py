@@ -58,6 +58,33 @@ def _inbox_write(new):
         pass
 
 
+def tz_east_of(uid):
+    """2026-10-15 (owner: every time in the member's local time): minutes EAST of UTC of the member's phone, from
+    push_pref (the app sends JS getTimezoneOffset, positive WEST); the quiet-hours offset as a fallback; else None."""
+    try:
+        p = json.load(open(os.path.join(DIR, "owl_push_prefs.json")))
+        z = (p.get("_tz") or {}).get(uid)
+        if z is not None:
+            return -int(z["off"])
+        q = (p.get("_quiet") or {}).get(uid)
+        if q and q.get("tz") is not None:
+            return -int(q["tz"])
+    except Exception:
+        pass
+    return None
+
+
+def restart_words(uid, lang):
+    """when the robot starts again (next 00:00 UTC) in the member's own clock: ('tomorrow'|'today', 'HH:MM')"""
+    nxt = (int(time.time()) // 86400 + 1) * 86400
+    off = tz_east_of(uid)
+    if off is None:
+        return ("tomorrow" if lang == "en" else "demain"), "00:00 UTC"
+    same = time.gmtime(nxt + off * 60)[:3] == time.gmtime(time.time() + off * 60)[:3]
+    w = ("today" if same else "tomorrow") if lang == "en" else ("aujourd\u2019hui" if same else "demain")
+    return w, time.strftime("%H:%M", time.gmtime(nxt + off * 60))
+
+
 def lang_of(uid):
     """2026-09-27: the phone's language (push_pref lang=), default fr."""
     try:
@@ -1358,14 +1385,15 @@ def maybe_day_close():
         if st.get("killed"):
             continue          # the kill has its own alarm; not a good day
         pnl = float(st.get("day_pnl") or 0.0)
+        _w, _hm = restart_words(uid, lang_of(uid))
         if lang_of(uid) == "en":
             title = f"\u2705 Day complete \u00b7 {pnl:+.2f} $"
             body = ("Target reached \u2014 the robot is done for today. "
-                    "It starts again at 00:00 UTC.")
+                    f"It starts again {_w} at {_hm}.")
         else:
             title = f"\u2705 Journ\u00e9e termin\u00e9e \u00b7 {pnl:+.2f} $"
             body = ("Objectif atteint \u2014 le robot a fini sa journ\u00e9e. "
-                    "\u00c0 demain \u00e0 00:00 UTC.")
+                    f"Il reprend {_w} \u00e0 {_hm}.")
         send_all(title, body, kind="batch", only_uid=uid)
         mark["sent"].append(uid)
         changed = True
