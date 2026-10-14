@@ -12990,7 +12990,9 @@ def robot_test(user, body):
 # builds the market's data pack (study/markets/<SYM>, ~40 min the first time, then reused).
 ROBOT_MQ = os.path.join(DIR, "robots", "market_tests.json")
 MARKET_PACKS = os.path.join(os.path.dirname(DIR), "study", "markets")
-MARKET_POPULAR = ["XAUUSD", "USTEC", "US30", "US500", "EURUSD", "GBPUSD", "XAGUSD", "USOIL", "DE30", "USDJPY", "ETHUSD"]
+# 2026-10-14 (owner): the markets shown first = the scanner's correlation-rule list (owl_scanner.SYMBOLS, every one
+# under 0.35 hourly correlation with BTC; ETHUSD left out at 0.85). Keep the two lists the same.
+MARKET_POPULAR = ["XAUUSD", "XAGUSD", "USOIL", "US30", "USTEC", "US500", "DE30", "UK100", "JP225", "EURUSD", "GBPUSD", "USDJPY"]
 MARKET_BUILD_MIN, MARKET_TEST_MIN = 100, 3    # 2026-10-14 measured on gold: pack 100 min (4 workers), test < 1 min
 
 
