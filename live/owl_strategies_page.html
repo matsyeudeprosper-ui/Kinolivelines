@@ -1286,9 +1286,13 @@ function renderZT(){const B=BLD(),L=ztRobots();
    '<button class="zx" onclick="ZT.sel=[];renderZT()" aria-label="'+T('Effacer','Clear')+'">×</button><button class="zgo" onclick="ztGo()">'+pic('M5 3l14 9-14 9V3z')+T('Lancer','Run')+'</button><div class="note" id="zterr"></div></div>';}
  $('det').innerHTML=h;}
 function ztPickRobot(){const L=ztRobots();
- shOpen(T('Quel robot tester ?','Which robot to test?'),'<div class="fds">'+L.map(x=>{const R=ztRows(x),b=R[0];return '<button class="fd'+(x.id===ZT.rid?' on':'')+'" onclick="ZT.rid=\''+x.id+'\';ZT.sel=[];shClose();goZt(\''+x.id+'\')">'+ICO('var(--accent)',BOT)+
+ shOpen(T('Quel robot tester ?','Which robot to test?'),'<div class="fds">'+L.map(x=>{const R=ztRows(x),b=R[0];return '<button class="fd'+(x.id===ZT.rid?' on':'')+'" onclick="ztSwitch(\''+x.id+'\')">'+ICO('var(--accent)',BOT)+
   '<span class="tx"><b>'+esc(T(x.name_fr,x.name_en))+'</b><small>'+(R.length?R.length+T(' marché',' market')+(R.length>1?'s':'')+T(' testé',' tested')+(R.length>1?'s':''):T('pas encore testé','not tested yet'))+(x.mine?' · '+T('à vous','yours'):'')+'</small></span>'+
   (b?'<span class="n '+cl(b.a.net)+'">'+money(b.a.net,0)+'</span>':'')+'<span class="cv">›</span></button>';}).join('')+'</div>');}
+// 2026-10-15: closing the sheet runs history.back() LATER, which undid goZt's new hash (back to the old robot).
+// Wait for the back to land, then swap the hash in place.
+function ztSwitch(id){ZT.rid=id;ZT.sel=[];const go=()=>{try{history.replaceState(null,'','#zt='+id);}catch(e){}renderZT();window.scrollTo(0,0);};
+ if(LSH&&history.state&&history.state.lsh){window.addEventListener('popstate',()=>setTimeout(go,0),{once:true});history.back();}else{shHide();go();}}
 function ztTog(s){const i=ZT.sel.indexOf(s);if(i>=0)ZT.sel.splice(i,1);else{if(ZT.sel.length>=4){alert(T('4 marchés au plus par lancement.','4 markets at most per run.'));return;}ZT.sel.push(s);}renderZT();}
 async function ztLoadMk(){if(MKL)return;try{const j=await robotPost('robot_markets',{});if(j.ok)MKL=j;}catch(e){}}
 async function ztMore(){MKMULTI=true;await mktPick(ZT.rid);}
