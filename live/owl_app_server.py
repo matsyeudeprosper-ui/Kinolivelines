@@ -12779,13 +12779,17 @@ def builder_payload(user, detail):
         pk = (PK.get("accounts") or {}).get(uid)
         if not pk:
             continue
+        # 2026-10-14 (owner): "users should not see each other's accounts" - a member gets only THEIR account's
+        # plug (no list, no count of the others); the owner keeps the whole view
+        if not detail and uid != me:
+            continue
         lab, alive, why = bot_on(uid)
         rob = "owl"
         if pk.startswith("robot-") and pk[6:] in byid:
             rob = pk[6:]
             pk = robot_resolve(rob, byid).get("money") or "base"
         nm = ROBOT_NAMES.get(pk, (pk, pk))
-        plugs.append({"account": _strat_account_label(u, i, detail), "robot": rob, "money": "pkg-" + pk, "money_fr": nm[0], "money_en": nm[1],
+        plugs.append({"account": (_strat_account_label(u, i, detail) if detail else {"fr": "Votre compte", "en": "Your account"}), "robot": rob, "money": "pkg-" + pk, "money_fr": nm[0], "money_en": nm[1],
                       "market": "BTCUSD", "alive": (bool(alive) if lab else None), "uid": uid if detail else None,
                       "plugged": rob != "owl", "restart_auto": uid in BOT_VARIANT,
                       "real": "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None})
