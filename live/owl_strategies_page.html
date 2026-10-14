@@ -1165,7 +1165,7 @@ async function plugUndo(uid){if(!confirm(T('Débrancher ce robot ? Le compte rep
 async function robotVis(id,pub){const j=await robotPost('robot_update',{id,public:pub});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}await refreshB(id);}
 async function robotDel(id){if(!confirm(T('Supprimer ce robot pour de bon ?','Delete this robot for good?')))return;const j=await robotPost('robot_delete',{id});if(!j.ok){$('merr').textContent=MERR[j.err]||j.err;return;}
  RB=null;await load();history.replaceState(null,'',location.pathname);NAV=0;route();}
-async function robotPlug(id,plug){if(plug&&!plug.where)return;const j=await robotPost('robot_update',{id,plug});if(!j.ok){const e=$('perr')||$('merr');if(e)e.textContent=MERR[j.err]||j.err;return;}PLW.w=null;await refreshB(id);}
+async function robotPlug(id,plug){if(plug&&!plug.where)return;const j=await robotPost('robot_update',{id,plug});if(!j.ok){const e=$('perr')||$('merr');if(e)e.textContent=MERR[j.err]||j.err;return;}PLW.w=null;if(LSH)shClose();await refreshB(id);}
 async function refreshB(id){RB=null;await load();CURB=bById(id);if(CURB)renderB();}
 
 /* ---------- 2026-10-14 (owner): test a robot on another market of the member's own broker. The list is the
