@@ -140,6 +140,17 @@ def push(uid, title, body):
         pass
 
 
+MLOG = os.path.join(LIVE, "robots", "market_runs.log")
+
+
+def mlog(m):
+    try:
+        with open(MLOG, "a", encoding="utf-8") as f:
+            f.write(time.strftime("%Y-%m-%d %H:%M:%S ") + str(m) + chr(10))
+    except Exception:
+        pass
+
+
 def run_markets():
     import market_pack as MP
     import tick_engine_matrix as TMX
@@ -152,7 +163,7 @@ def run_markets():
             open(LOCK, "w").write(str(os.getpid()))            # keep the lock fresh across long builds
             if not MP.pack_ready(sym):
                 mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
-                MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL)
+                MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL, log=mlog)
             mq_set(qid, state="testing")
             d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
             D = MP.use(meta, d, E, K, TMX, H)
@@ -161,6 +172,8 @@ def run_markets():
             cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": BAL}), drag=0.0, limits_live=1))
             opps, bars = E.streams(cfg0, D)
             cached = pickle.load(open(K.CACHE, "rb")); S_idx = cached["states"]
+            if cached.get("bars_sha") != meta.get("sha256"):          # never read a cache against other bars
+                raise RuntimeError("pack cache does not match its bars - rebuild the pack")
             S = {o["t"]: S_idx[o["i"]] for o in opps if o["i"] in S_idx}
             reg = json.load(open(REG, encoding="utf-8")); robots = {r["id"]: r for r in reg.get("robots") or []}
             r = robots.get(rid)
@@ -185,11 +198,11 @@ def run_markets():
             nm = r.get("name_fr") or r.get("name") or rid
             push(job.get("uid"), "Test terminé · " + sym, "« %s » sur %s : %+.2f $ (le parent : %+.2f $), à risque égal au test Bitcoin." % (
                 nm, sym, out["robot"]["net"], out["parent"]["net"]))
-            print(rid, "@", sym, "robot net %.2f vs parent %.2f" % (out["robot"]["net"], out["parent"]["net"]), flush=True)
+            mlog("%s @ %s: robot net %.2f vs parent %.2f (%d trades)" % (rid, sym, out["robot"]["net"], out["parent"]["net"], out["robot"]["trades"]))
         except BaseException as e:                           # SystemExit from a missing symbol included
             mq_set(qid, state="error", err=str(e)[:200])
             push(job.get("uid"), "Test impossible · " + sym, "Le test n’a pas pu se faire : " + str(e)[:120])
-            print(rid, "@", sym, "ERROR", e, flush=True)
+            mlog("%s @ %s: ERROR %r" % (rid, sym, e))
 
 
 class _NoBtc(Exception):

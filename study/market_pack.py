@@ -116,11 +116,71 @@ def build(sym, terminal=DEFAULT_TERMINAL, log=print):
     cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": 200.0}), drag=0.0, limits_live=1))
     opps, _bars = E.streams(cfg0, D)
     t0 = time.time()
-    K.causal_sticky_states([o["i"] for o in opps])
+    states = parallel_states(d, [o["i"] for o in opps], WIN, log=log)
+    import pickle
+    warm_meta = json.load(open(os.path.join(d, "warm.json")))
+    pickle.dump({"fingerprint": K.fingerprint(warm_meta), "bars_sha": meta["sha256"], "n_bars": len(D),
+                 "warmup_sha": warm_meta["sha256"], "states": states}, open(os.path.join(d, "pb_cache.pkl"), "wb"))
     meta["cache_ok"] = True; meta["cache_secs"] = round(time.time() - t0); meta["opportunities"] = len(opps)
     json.dump(meta, open(os.path.join(d, "meta.json"), "w"), indent=1)
     log("%s: pack ready (%d opportunities, %ds)" % (sym, len(opps), meta["cache_secs"]))
     return meta
+
+
+WORKERS = 4      # leave cores for the live bots
+
+
+def _walk_chunk(args):
+    """the bench's causal sticky walk (tick_engine_pbgate_sticky.causal_sticky_states, same loop body) over
+    RW[a:b). EXACT in pieces: the sticky set only keeps times inside the current 8000-bar window, and every time
+    in the window at bar a was produced by a window ending at or after a - WIN + 1, so starting the walk WIN
+    bars early rebuilds the set exactly (test_market_pack_chunks.py: 3000 BTC states, single vs 3 chunks, 0 differences)."""
+    rw_path, a, b, want, win = args
+    sys.argv = ["x"]
+    for pth in (HERE, r"C:\Projects\KinoliveLines\live"):
+        if pth not in sys.path:
+            sys.path.insert(0, pth)
+    import owl_chart_feed as F
+    import tick_engine_pbgate_sticky as K
+    RW = np.load(rw_path)["R"]; off = win; want = set(want)
+    S = set(); states = {}
+    for i in range(max(win - 1, a - win), b):
+        kept = F.build(RW[i - win + 1:i + 1])
+        if len(kept) < 3:
+            continue
+        bk = []; dots, marks, trend, *_ = F.engine(kept, brk_out=bk)
+        if trend:
+            dots = [x for x in dots if x[2] == trend]
+        S |= {t for t in ({x[0] for x in dots} | {m[0] for m in marks} | {q[0] for q in bk}) if t < kept[-1][0]}
+        S = {t for t in S if t >= kept[0][0]}
+        j = i - off
+        if i >= a and j in want:
+            try:
+                states[j] = K.pb_view_sticky(kept, dots, marks, bk, S)
+            except Exception:
+                states[j] = (0, 0, None, None)
+    return states
+
+
+def parallel_states(d, opp_idx, win, workers=WORKERS, log=print):
+    """the pullback states at every opportunity bar, the walk split over `workers` processes"""
+    from multiprocessing import get_context
+    W = np.load(os.path.join(d, "warm.npz"))["R"]; D = np.load(os.path.join(d, "bars.npz"))["R"]
+    RW = np.concatenate([W, D]); rw_path = os.path.join(d, "rw.npz"); np.savez(rw_path, R=RW)
+    lo, hi = win - 1, len(RW); step = (hi - lo + workers - 1) // workers
+    jobs = [(rw_path, a, min(hi, a + step), sorted(opp_idx), win) for a in range(lo, hi, step)]
+    t0 = time.time()
+    with get_context("spawn").Pool(len(jobs)) as pool:
+        parts = pool.map(_walk_chunk, jobs)
+    states = {}
+    for p in parts:
+        states.update(p)
+    try:
+        os.remove(rw_path)
+    except Exception:
+        pass
+    log("walk done in %ds over %d processes" % (time.time() - t0, len(jobs)))
+    return states
 
 
 def use(meta, d, E, K, TMX, H):
