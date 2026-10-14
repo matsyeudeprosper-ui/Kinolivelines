@@ -2020,6 +2020,16 @@
     "metrics piles cont_day, day_after_loss, flip_day, asia, europe"
    ],
    "saw": "cont_day crossed 30: 31 tr 42% vs 54% rest -22.73 PF 0.75 (h 47/38 agree); inside 0.8-1.0 11 tr 27% -25.33, 1.0-1.3 12 tr 50% +5.13. day_after_loss 44 tr 36% -58.22 PF 0.49. flip_day 47 tr 38% -54.99. europe 43 tr 42% -37.74; asia 46 tr 70% +55.78. scrutiny.py blocked by permissions this watch; metrics.json read directly."
+  },
+  {
+   "t": "2026-10-14T00:30:21Z",
+   "night": "veille",
+   "looked": [
+    "wake_context (4h timer)",
+    "asks.json",
+    "metrics.json updated/overview"
+   ],
+   "saw": "No new close since the 12:05 watch, still 125 trades (51% win, -19.43, PF 0.92). No twins, no labo activity, no open ask. Veille 'rien'. No harness run, no pile, no proposal. Hypotheses untouched."
   }
  ],
  "lessons": [
