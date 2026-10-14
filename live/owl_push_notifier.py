@@ -91,6 +91,13 @@ def maybe_health():
     # 2026-10-14: a terminal restart left the trial-market scanner and 7 bots
     # running BLIND for hours (processes alive, heartbeat still written, no
     # new candles). Watch what they actually read, not that they run.
+    # 2026-10-15: the other markets' feed froze 14 h unnoticed on 10-14 - market bots read their weather from it.
+    # Weekdays only (every market is shut from Friday 21:00 to Sunday 22:00 UTC).
+    _g = __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+    if _g.weekday() < 4 or (_g.weekday() == 4 and _g.hour < 21) or (_g.weekday() == 6 and _g.hour >= 23):
+        a = age(os.path.join("chart_multi", "XAUUSD.json"))
+        if a is not None and a > 1800:
+            late.append(("flux des autres marchés", a))
     a = age(os.path.join("scanner", "control_v3.jsonl"))
     if a is not None and a > 1800:
         late.append(("scanner des marchés d'essai", a))
@@ -102,6 +109,16 @@ def maybe_health():
                 continue                       # retired accounts
             lb = json.load(open(os.path.join(DIR, f), encoding="utf-8")).get("last_bar")
             if lb and now - float(lb) > 600:
+                # 2026-10-15: a MARKET bot (bos_state_<acct>_<SYM>.json) sees no candle while its market is shut
+                # (nights, weekends): late only if its market's own feed has a candle 10+ min newer than the bot's
+                mk = f[:-5].rsplit("_", 1)[-1]
+                if mk.isupper() and len(mk) >= 4:
+                    try:
+                        cs = json.load(open(os.path.join(DIR, "chart_multi", mk + ".json"), encoding="utf-8")).get("candles") or []
+                        if not cs or float(cs[-1][0]) - float(lb) <= 600:
+                            continue
+                    except Exception:
+                        continue
                 late.append((f"bougies du robot {f[10:-5] or 'bos'}", now - float(lb)))
     except Exception:
         pass

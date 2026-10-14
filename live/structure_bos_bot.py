@@ -57,6 +57,10 @@ import MetaTrader5 as mt5
 #        3x more adds) - the queued upgrade, auditioning forward.
 import sys as _sys
 VARIANT = _sys.argv[1] if len(_sys.argv) > 1 else "live"
+# 2026-10-15 (owner): "<variant>@<SYM>" = this account's bot on ANOTHER market (live/owl_markets.py: allowed only
+# when the plugged robot's test on that market made money AND beat random entries). Plain "<variant>" = Bitcoin.
+VARIANT, _, MKT = VARIANT.partition("@")
+MKT = MKT.upper()
 PASSWORD = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                      "owl_secrets.json"), encoding="utf-8"))["mt5_password"]  # not in git
 SYMBOL = "BTCUSD"
@@ -264,6 +268,37 @@ else:
     # as a paper twin in bos_paper_touch.py for a side-by-side record.
     TOUCH_ENTRIES = False
 
+# --- MARKET BOT (2026-10-15) ------------------------------------------
+# Everything below is written for Bitcoin. A market bot sees its market's prices multiplied by the market pack's k
+# - the very transform its test used - so every rule, dial and distance applies unchanged; owl_markets.ScaledMT5
+# divides prices back on the way out and sizes lots so a point of risk costs the dollars the test counted.
+# Its own state, log, journal, magic and shadow book; the account's pause switches still stop it.
+if MKT:
+    import owl_markets as _OM
+    _MKT_UID = {v: k for k, v in _OM.VARIANT.items()}.get(VARIANT, VARIANT)
+    _MM = _OM.pack_meta(MKT)
+    assert _MM, f"no market pack for {MKT}"
+    SYMBOL = _OM.account_symbol(_MKT_UID, MKT)
+    _SFX = _SFX + "_" + MKT
+    MAGIC = _OM.market_magic(MAGIC, MKT)
+    S_MIN_DIST = float(_MM["s_min_dist"])
+    mt5 = _OM.ScaledMT5(mt5, SYMBOL, _MM["k"])
+_MKT_OK = {"t": 0.0, "v": (True, "")}
+
+
+def market_allowed():
+    """(ok, why) - a market bot re-reads the rule every minute: a failed retest stops new entries"""
+    if not MKT:
+        return True, ""
+    if time.time() - _MKT_OK["t"] > 60:
+        try:
+            _MKT_OK["v"] = _OM.check(_MKT_UID, MKT)
+        except Exception as _e:
+            _MKT_OK["v"] = (False, "regle illisible (%s)" % type(_e).__name__)
+        _MKT_OK["t"] = time.time()
+    return _MKT_OK["v"]
+
+
 DIR = os.path.dirname(os.path.abspath(__file__))
 STATE_F = os.path.join(DIR, f"bos_state{_SFX}.json")
 LOG_F = os.path.join(DIR, f"bos_bot{_SFX}.log")
@@ -310,6 +345,7 @@ def fvg_pts(d):
         return max(0.0, float(c3["low"]) - float(c1["high"]))
     return max(0.0, float(c1["low"]) - float(c3["high"]))
 _P = _PKG.for_account(PAUSE_UID)
+_SHADOW_ID = PAUSE_UID + ("@" + MKT if MKT else "")
 PACKAGE = _P["package"]
 BASE_LOT = _P["base_lot"]
 MAX_EXTRA = _P["max_extra"]
@@ -406,7 +442,8 @@ def pb_state_now():
             if _tr:
                 _d = [x for x in _d if x[2] == _tr]
             # owner 2026-10-10: the sticky chain the feed keeps (read-only here)
-            _pb = _pv(_k, _d, _m, _bk, sticky=_pbc, write=False) or {}
+            _pb = _pv(_k, _d, _m, _bk, sticky=(os.path.join(DIR, "chart_multi", MKT + "_pbchain.json") if MKT else _pbc),
+                      write=False) or {}
             _t = int(_pb.get("trend") or 0); _c = int(_pb.get("choch") or 0)
             _c = _c if (_c and _c != _t) else 0
             _lvl = None
@@ -492,7 +529,7 @@ def htf_snap():
     string, or "" if the feed cannot be read. Never raises: a
     logging helper must not be able to stop a trading loop."""
     try:
-        _h = json.load(open(os.path.join(DIR, "owl_chart_htf.json"),
+        _h = json.load(open(os.path.join(DIR, "chart_multi", MKT + "_htf.json") if MKT else os.path.join(DIR, "owl_chart_htf.json"),
                             encoding="utf-8"))
         _m = weather() or {}
         now = int(time.time())
@@ -694,6 +731,8 @@ def load_state():
 
 
 CHART_F = os.path.join(DIR, "owl_chart_btc.json")
+if MKT:
+    CHART_F = os.path.join(DIR, "chart_multi", MKT + ".json")
 
 
 def weather(max_age=180):
@@ -724,7 +763,8 @@ def weather_gate(need_int=False, cj=None, sig_t=None):
     """
     cj = cj if cj is not None else weather()
     if not cj:
-        return None
+        # a market bot has no reason to trade blind: its feed (owl_chart_multi.py) silent = no entry
+        return ("meteo du marche %s indisponible" % MKT) if MKT else None
     # BOTH halves can now be switched off per account. nervosity: owner
     # 2026-09-18 live A/B. movement: owner 2026-09-20, "trade all signals,
     # no gates, good weather or bad". Turning a brake off is not an edge
@@ -1243,6 +1283,13 @@ def main():
     ai = mt5.account_info()
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
     mt5.symbol_select(SYMBOL, True)
+    if MKT:
+        global S_MIN_DIST
+        _si = mt5.symbol_info(SYMBOL)
+        assert _si is not None, f"{SYMBOL} not on this account"
+        S_MIN_DIST = max(S_MIN_DIST, 10.0 / 7.0 * float(_si.spread) * float(_si.point) * float(_MM["k"]))
+        say(f"MARCHE {MKT} ({SYMBOL}) | k {_MM['k']:.4f} | lot x{mt5.lot_factor():.4f} | S_MIN_DIST {S_MIN_DIST:.2f} "
+            f"| magic {MAGIC} | regle: {market_allowed()[1]}")
     # name the package and the two brakes. A package reaches a bot only at
     # import, so the log line is the only place that can prove WHICH dials
     # this process is actually running (owner 2026-09-20).
@@ -1352,6 +1399,10 @@ def main():
             return False
         if paused():
             return False
+        _mok, _mwhy = market_allowed()
+        if not _mok:
+            say(f"{kind} refuse: {MKT} plus autorise sur ce compte - {_mwhy}")
+            return False
         if ROBOT_RULES:
             _rok, _rwhy = _RL.entry_ok(ROBOT_RULES, kind)
             if not _rok:
@@ -1454,7 +1505,7 @@ def main():
                         _ds = abs(_e - slp)
                         if _ds > S_MIN_DIST:
                             SHADOW.open_trade(
-                                PAUSE_UID, d, _e, slp,
+                                _SHADOW_ID, d, _e, slp,
                                 _e + d * RR * _ds, _wg, BASE_LOT)
             return False
         if ROBOT_RULES.get("filters"):
@@ -1575,7 +1626,7 @@ def main():
             _ordt = str(st["tord"])
         _storm = "1" if st.get("storm_seen") else "0"
         st["storm_seen"] = False       # this trade consumes the flag
-        SHADOW.open_trade(PAUSE_UID, d, e_ref, slp, tp if tp > 0 else e_ref + d * RR * dist,
+        SHADOW.open_trade(_SHADOW_ID, d, e_ref, slp, tp if tp > 0 else e_ref + d * RR * dist,
                           f"fvg={fvg_pts(d):.0f} {kind} ord={_ordt} "
                           f"storm={_storm}",
                           BASE_LOT, book="fvg")
@@ -1690,6 +1741,9 @@ def main():
                 # would really enforce right now.
                 day_blocked(st)
                 save_state(st)
+                if MKT and not market_allowed()[0] and not my_positions() and not st.get("ghost"):
+                    say(f"{MKT} plus autorise ({market_allowed()[1]}) et aucun trade ouvert - arret")
+                    _sys.exit(0)
             net = st.get("banked", 0.0) + floating()
             if net <= KILL_NET:
                 say(f"KILL LINE: net {net:.2f} <= {KILL_NET} - "
@@ -1895,8 +1949,8 @@ def main():
             # settle the virtual trades the nervosity brake refused, on the
             # raw bar - they must be judged on every minute, not only on the
             # candles the silence filter keeps (owner 2026-09-18)
-            SHADOW.settle(PAUSE_UID, float(bar["high"]), float(bar["low"]))
-            SHADOW.settle(PAUSE_UID, float(bar["high"]), float(bar["low"]),
+            SHADOW.settle(_SHADOW_ID, float(bar["high"]), float(bar["low"]))
+            SHADOW.settle(_SHADOW_ID, float(bar["high"]), float(bar["low"]),
                           book="fvg")
             _pt = eng.trend
             _hv, _lv = eng.hi_v, eng.lo_v

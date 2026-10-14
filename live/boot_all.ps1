@@ -13,6 +13,15 @@ function ProcRunning($match) {
     return ($null -ne $p)
 }
 
+# 2026-10-15: a bot's argument must match EXACTLY. With "contains", a running market bot
+# "expenses@USTEC" made "structure_bos_bot.py expenses" look alive, and a dead Bitcoin bot
+# would never have been revived.
+function BotRunning($v) {
+    $re = 'structure_bos_bot\.py"?\s+"?' + [regex]::Escape($v) + '"?\s*$'
+    $p = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match $re }
+    return ($null -ne $p)
+}
+
 # 1) live MT5 terminal
 if (-not (ProcRunning "MT5-KinoliveTrader\terminal64.exe")) {
     Say "starting live terminal"
@@ -25,7 +34,7 @@ if (-not (ProcRunning "MT5-KinoliveTrader\terminal64.exe")) {
 # nervosity brake OFF (package kino_sans_frein): a live A/B against
 # Valere, which keeps the brake. 41.7 days of replay could not say
 # whether that brake helps, so the two accounts answer it forward.
-if (-not (ProcRunning "structure_bos_bot.py kino")) {
+if (-not (BotRunning "kino")) {
     Say "starting STRUCTURE kino (real 223985697, no nervosity)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "kino" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -78,14 +87,14 @@ try {
 # 2h) the PUBLIC showcase account 296378359 (owner 2026-09-19): same bot,
 # base package, auto. Anyone can watch it from the front door; the server
 # refuses every action on its token.
-if (-not (ProcRunning "structure_bos_bot.py demo")) {
+if (-not (BotRunning "demo")) {
     Say "starting STRUCTURE demo (public showcase 296378359)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "demo" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
 # 2g) Valere's real account: its own instance of the frozen live config
 # (own debt ledger, own war-chest, own -$60 kill line). Owner 2026-09-14.
-if (-not (ProcRunning "structure_bos_bot.py valere")) {
+if (-not (BotRunning "valere")) {
     Say "starting BOS bot (valere)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "valere" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -93,12 +102,12 @@ if (-not (ProcRunning "structure_bos_bot.py valere")) {
 # 2i) Infinity's real account. Owner 2026-09-19/24 addition - found
 # 2026-09-25 that this block never existed (only kino/demo/valere were
 # ever wired in here), so a real reboot would NOT have revived it.
-if (-not (ProcRunning "structure_bos_bot.py infinity")) {
+if (-not (BotRunning "infinity")) {
     Say "starting BOS bot (infinity)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "infinity" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
-if (-not (ProcRunning "structure_bos_bot.py expenses")) {
+if (-not (BotRunning "expenses")) {
     Say "starting BOS bot (expenses)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "expenses" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -107,7 +116,7 @@ if (-not (ProcRunning "structure_bos_bot.py expenses")) {
 # winning idea here by itself and restarts this one bot; it must come
 # back after a reboot like the rest, or the lab quietly loses its
 # account and every duel it wins goes nowhere.
-if (-not (ProcRunning "structure_bos_bot.py labo")) {
+if (-not (BotRunning "labo")) {
     Say "starting BOS bot (labo)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "labo" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -124,7 +133,7 @@ if (-not (ProcRunning "bos_reference_ledger.py infinity")) {
 # "reference": fixed lot, no scaling, no day cap, no kill line). Its
 # progression chart is the reference indicator on the real chart. The nest
 # record is "dedicated", so no copier ever trades it twice.
-if (-not (ProcRunning "structure_bos_bot.py u477508138")) {
+if (-not (BotRunning "u477508138")) {
     Say "starting BOS bot (reference u477508138)"
     Start-Process pythonw -ArgumentList "structure_bos_bot.py", "u477508138" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
@@ -161,6 +170,19 @@ if (-not (Get-CimInstance Win32_Process |
     Start-Process pythonw -ArgumentList "pb_touch_logger.py" `
         -WorkingDirectory "C:\Projects\KinoliveLines\live" -WindowStyle Hidden
 }
+# 2c-bis) MARKET BOTS (owner 2026-10-15): an account also trades every market where its robot's
+#   test made money AND beat random entries (live/owl_markets.py, the system rule). One bot per
+#   account and market, "<variant>@<SYM>"; a bot stops itself when its market is no longer allowed.
+try {
+    $ml = & "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe" (Join-Path $PSScriptRoot "owl_markets.py") --launch
+    foreach ($m in @($ml)) {
+        $m = "$m".Trim()
+        if ($m -and -not (BotRunning $m)) {
+            Say ("starting market bot " + $m)
+            Start-Process pythonw -ArgumentList "structure_bos_bot.py", $m -WorkingDirectory $PSScriptRoot -WindowStyle Hidden
+        }
+    }
+} catch { Say ("market bots: " + $_) }
 # 2c) the lab's variant twins (2026-09-28): every running entry in lab/twins.json
 try {
     # (2026-09-29: the path used to hold a TAB instead of a backslash, so this
