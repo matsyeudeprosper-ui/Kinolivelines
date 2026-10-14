@@ -492,13 +492,16 @@ function pOv(el,W){
 
 /* 2026-10-08 (owner): "Votre parcours" = the paliers - where the account
    stands on its ladder, the steps already climbed, and where it is going. */
+// 2026-10-14 (owner): speak money - the typical win of this account, per 0.01 lot
+function g1(){const w=S.trades.slice(-60).filter(x=>x.p>0&&x.lot>0).map(x=>x.p/(x.lot/0.01)).sort((a,b)=>a-b);return w.length>=5?w[Math.floor(w.length/2)]:null;}
 function lotAt(B,P){return Math.max(0.01,Math.floor((P.base_lot||0.02)*B/P.ref/0.01+1e-9)*0.01);}
 function rungs(W){const P=DATA.pal||{},R=[];
  const top=Math.max(W.equity,...S.value.map(v=>v[1]));
  // 2026-10-14 (owner): no daily target any more - the steps are the LOT
  // snowball: +0.01 lot every ref x 0.01 / base_lot dollars of balance
  if(P.scale&&P.ref>0&&P.base_lot>0){const per=P.ref*0.01/P.base_lot,kmax=Math.floor(top/per)+3;
-  for(let k=1;k<=kmax;k++){const B=per*k;R.push({v:B,lab:(k*0.01).toFixed(2)+' lot',sub:(k>1?tx('le robot mise ','the robot stakes ')+k+tx(' fois plus qu’à 0.01 lot',' times more than at 0.01 lot'):tx('mise de départ','starting stake'))});}}
+  const G=g1();
+  for(let k=1;k<=kmax;k++){const B=per*k,L=(k*0.01).toFixed(2)+' lot';R.push({v:B,lab:G?'~'+money(G*k)+tx(' / gain',' / win'):L,sub:(G?tx('un trade gagnant rapporterait environ ','a winning trade would bring about ')+money(G*k)+' ('+L+')':(k>1?tx('le robot mise ','the robot stakes ')+k+tx(' fois plus qu’à 0.01 lot',' times more than at 0.01 lot'):tx('mise de départ','starting stake')))});}}
  else{const st=P.week_step||50,b0=W.bal_start,kmax=Math.floor((top-b0)/st)+3;
   for(let k=1;k<=kmax;k++)R.push({v:b0+st*k,lab:'+$'+(st*k),sub:tx('palier de +$','step of +$')+st});}
  if(P.goal&&!R.some(r=>Math.abs(r.v-P.goal)<1))R.push({v:P.goal,lab:tx('Objectif','Goal'),sub:tx('votre objectif','your goal'),goal:1});
@@ -525,7 +528,7 @@ function parcours(el,W){const P=DATA.pal||{},R=rungs(W),now=W.equity;
  '<div class="chart" id="c_pal"></div>'+
  '<div class="tl" style="margin-top:14px">'+
   climbed.map(r=>'<div class="it done"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+(r.start?tx('dès le départ','from the start'):tx('atteint le ','reached on ')+dfmt(r.t,1)+(r.dep?tx(' · grâce à un dépôt',' · thanks to a deposit'):''))+'</span></div>').join('')+
-  '<div class="it" style="color:var(--accent-soft)"><b style="color:var(--accent-soft)">'+tx('Vous êtes ici · ','You are here · ')+money(now)+'</b><span>'+(P.scale&&P.ref>0?tx('lot actuel ','lot now ')+lotAt(now,P).toFixed(2):'')+'</span></div>'+
+  '<div class="it" style="color:var(--accent-soft)"><b style="color:var(--accent-soft)">'+tx('Vous êtes ici · ','You are here · ')+money(now)+'</b><span>'+(P.scale&&P.ref>0?(g1()?tx('gain typique ~','typical win ~')+money(g1()*Math.round(lotAt(now,P)/0.01))+' ('+lotAt(now,P).toFixed(2)+' lot)':tx('lot actuel ','lot now ')+lotAt(now,P).toFixed(2)):'')+'</span></div>'+
   ahead.map((r,i)=>'<div class="it next" style="opacity:'+(1-i*0.22)+'"><b>'+r.lab+' · '+money(r.v)+'</b><span>'+money(r.v-now)+tx(' à faire',' to go')+(r.t?tx(' · déjà atteint le ',' · already reached on ')+dfmt(r.t):'')+'</span></div>').join('')+'</div>';
  const lv=R.filter(r=>r.v>=Math.min(...S.value.map(v=>v[1]))*0.9&&r.v<=Math.max(now,...S.value.map(v=>v[1]))*1.15).map(r=>({v:r.v,label:r.lab,
   color:r===nxt?css('--accent-soft'):(r.v<=now?css('--up'):css('--muted')),dash:r===nxt?'5 4':(r.v<=now?null:'2 5'),op:r===nxt?.9:(r.v<=now?.45:.5)}));
@@ -671,7 +674,9 @@ load(true);setInterval(()=>{if(!document.hidden)load(false);},30000);
  window.cfOpen=open;
  function fold(){const m=$('main');if(!m||window.innerWidth>=900)return;
   const cards=[...m.querySelectorAll('.card')].filter(c=>!c.parentElement.closest('.card')&&!c.closest('#cfsh'));let i=0;
-  cards.forEach(c=>{i++;if(i<=2||c.offsetHeight<440)return;const hd=c.querySelector('h2,h3,.lbl,.ttl,.eyebrow');if(!hd)return;
+  // 2026-10-14 (owner): "Votre parcours" never folds - the home Croissance
+  // tile opens straight on it, and folded it lost its progress and steps
+  cards.forEach(c=>{i++;if(i<=2||c.offsetHeight<440||c.id==='parcours')return;const hd=c.querySelector('h2,h3,.lbl,.ttl,.eyebrow');if(!hd)return;
    const t=hd.cloneNode(true);t.querySelectorAll('.bd,.badge,button,a,.hint,span[class*=pill]').forEach(e=>e.remove());let title=t.textContent.trim().replace(/\s+/g,' ');if(!title||title.length>70)return;
    title=title.charAt(0)+title.slice(1).toLowerCase();
    const sub=(c.querySelector('.sub,p,.note')||{}).textContent||'';const k='cf'+title;STORE[k]=[title,c.outerHTML];

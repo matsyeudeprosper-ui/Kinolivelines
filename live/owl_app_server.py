@@ -5024,14 +5024,23 @@ function renderGrow(d){const card=document.getElementById('palier');if(!card)ret
   const ds=[].concat(...Object.values(M));if(ds.length){pace=ds.filter(x=>x.d>=cut).reduce((a,x)=>a+(x.p||0),0)/14;}}
  let R=[],lo,hi,head,chips=[];
  if(scale){const per=lg.scale_ref_balance*0.01/lg.scale_base_lot,k=Math.max(1,Math.floor(eq/per+1e-9));
-  const rung=j=>({v:per*j,lab:(j*0.01).toFixed(2)+' lot'});
+  // 2026-10-14 (owner): speak money, not lots - "a winning trade brings
+  // about $X now, $Y after the next step"; the lot only in brackets. X is
+  // the MEDIAN of this account's recent wins, scaled to 0.01 lot (sturdier
+  // than the mean against one big win) - an estimate, said as one (~).
+  const wn=(d.trades||[]).filter(x=>x.p>0&&x.lot>0).map(x=>x.p/(x.lot/0.01)).sort((a,b)=>a-b);
+  const g1=wn.length>=5?wn[Math.floor(wn.length/2)]:null,gw=j=>'~$'+(g1*j).toFixed(2);
+  const rung=j=>({v:per*j,lab:g1?gw(j)+(en?' / win':' / gain'):(j*0.01).toFixed(2)+' lot',lot:(j*0.01).toFixed(2)+' lot'});
   const prev=rung(k),nxt=rung(k+1),nx2=rung(k+2);R=[prev,nxt,nx2];lo=prev.v;hi=nx2.v;
   const xr=(k+1)/k,xs=Math.abs(xr-Math.round(xr))<1e-9?String(Math.round(xr)):xr.toFixed(1).replace('.',en?'.':',');
-  window._palTile={lab:nxt.lab,x:xs};
-  head='<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before the robot moves up to ':'avant que le robot passe \u00e0 ')+'<b>'+nxt.lab+'</b> '+(en?'(stake \u00d7':'(mise \u00d7')+xs+')';
+  window._palTile={s:g1?(en?'then '+gw(k+1)+' per win (\u00d7'+xs+')':'puis '+gw(k+1)+' par gain (\u00d7'+xs+')'):(en?'to ':'jusqu\u2019\u00e0 ')+nxt.lot+(en?' \u00b7 stake \u00d7':' \u00b7 mise \u00d7')+xs};
+  head=g1?'<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before each win grows from ':'avant que chaque gain passe de ')+'<b>'+gw(k)+'</b>'+(en?' to ':' \u00e0 ')+'<b>'+gw(k+1)+'</b>'+
+    '<span style="display:block;font-size:.76rem;font-weight:500;color:var(--muted);margin-top:4px">'+(en?'estimate from your recent wins \u00b7 (':'estimation d\u2019apr\u00e8s vos derniers gains \u00b7 (')+prev.lot+' \u2192 '+nxt.lot+')</span>'
+   :'<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before the robot moves up to ':'avant que le robot passe \u00e0 ')+'<b>'+nxt.lot+'</b> '+(en?'(stake \u00d7':'(mise \u00d7')+xs+')';
   const lot=(typeof lg.sized_lot==='number')?lg.sized_lot:Math.max(0.01,Math.floor((lg.scale_base_lot||0.02)*eq/lg.scale_ref_balance/0.01+1e-9)*0.01);
-  chips.push([en?'Lot now':'Lot actuel',lot.toFixed(2)]);
-  chips.push([en?'Each step':'Chaque palier','+'+m0(per)]);
+  if(g1)chips.push([en?'Typical win':'Gain typique',gw(Math.round(lot/0.01))+' ('+lot.toFixed(2)+' lot)']);
+  else chips.push([en?'Lot now':'Lot actuel',lot.toFixed(2)]);
+  chips.push([en?'Next step at':'Palier suivant \u00e0',m0(nxt.v)]);
   if(pace!=null){if(pace>0.01){const dd=Math.ceil((nxt.v-eq)/pace),dt=new Date(Date.now()+dd*86400000);
     chips.push([en?'Around':'Vers le',String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')]);}
    else chips.push([en?'Pace 14 d':'Rythme 14 j',(pace<0?'-':'+')+m(pace)+(en?'/day':'/j')]);}}
@@ -5049,7 +5058,7 @@ function renderGrow(d){const card=document.getElementById('palier');if(!card)ret
  R.forEach((r,i)=>{const x=X(r.v),done=r.v<=eq+1e-9,col=done?up:(i===1?ac:mu);
   g+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="24" y2="40" stroke="'+col+'" stroke-width="2" stroke-linecap="round" opacity="'+(done||i===1?1:.6)+'"/>'+
    '<text x="'+x.toFixed(1)+'" y="15" text-anchor="'+(i===0?'start':i===R.length-1?'end':'middle')+'" font-size="11" font-weight="800" fill="'+(done?up:(i===1?tx2:mu))+'">'+r.lab+'</text>'+
-   '<text x="'+x.toFixed(1)+'" y="57" text-anchor="'+(i===0?'start':i===R.length-1?'end':'middle')+'" font-size="10" fill="'+mu+'">'+m0(r.v)+'</text>';});
+   '<text x="'+x.toFixed(1)+'" y="57" text-anchor="'+(i===0?'start':i===R.length-1?'end':'middle')+'" font-size="10" fill="'+mu+'">'+m0(r.v)+(r.lot?' ('+r.lot+')':'')+'</text>';});
  g+='<circle cx="'+xe.toFixed(1)+'" cy="32" r="9" fill="'+up+'" opacity=".35" filter="url(#pgl)"/><circle cx="'+xe.toFixed(1)+'" cy="32" r="5.5" fill="#fff" stroke="'+up+'" stroke-width="2.5"/>';
  document.getElementById('pal-track').innerHTML=g;
  document.getElementById('pal-chips').innerHTML=chips.map(c=>'<span style="font-size:.74rem;color:var(--muted2);background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:99px;padding:5px 10px;white-space:nowrap">'+c[0]+' <b style="color:var(--text)">'+c[1]+'</b></span>').join('');
@@ -7435,7 +7444,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
  const TILES=[
   {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>txt('week'),s:()=>T('Ce mois : ','This month: ')+(txt('month')||'—'),spark:true,show:()=>true},
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>T('à rattraper','to win back'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
-  {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>{const q=window._palTile;return q?T('jusqu’à ','to ')+q.lab+' · '+T('mise ×','stake ×')+q.x:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
+  {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>{const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>{const r=$('pk-rows');const n=r?r.children.length:0;if(n>1)return n+T(' marchés',' markets');const w=txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim(),m=w.match(/^(.+?)\\s+(\\d+)\\s+trades?/);return m?m[1]+' · '+m[2]+' trades':w;},show:()=>shown('pockcard')},
   {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'),vsm:true,s:()=>'',show:()=>shown('aicard')||shown('stcard')},
   {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
@@ -8420,7 +8429,7 @@ function goLabo(){location.href=B+'robots';}
  // sentence and four checks, from the same code, plus the next candidate in one line; the old four steps are hidden.
  function home(){const card=$('rbnow');if(!card||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
   let box=$('rbn-calm');if(!box){box=document.createElement('div');box.id='rbn-calm';box.className='edrx';const st=$('rbn-steps');if(st)st.before(box);else card.appendChild(box);
-   const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .lv-dots{margin-top:12px;padding-top:12px}#rbn-calm .hc{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:.84rem;color:var(--text2);line-height:1.3}#rbn-calm .hc b{color:var(--text)}#rbn-calm .hc .hl{display:block;font-style:normal;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}#rbn-calm .lv-dots{margin-top:16px!important;padding-top:14px!important}#rbn-calm .lv-st{gap:14px}';
+   const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .lv-dots{margin-top:12px;padding-top:12px}#rbn-calm .hc{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:.84rem;color:var(--text2);line-height:1.3}#rbn-calm .hc b{color:var(--text)}#rbn-calm .hc .hcl{display:block;font-style:normal;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}#rbn-calm .lv-dots{margin-top:16px!important;padding-top:14px!important}#rbn-calm .lv-st{gap:14px}';
    document.head.appendChild(cs);const mt=$('rbn-mt');if(mt)mt.textContent=T2('Ouvrir En direct','Open Live');}
   const S=btc(D),c=cand(),own=(D.open_list||[]).filter(x=>!isBtc(x));
   try{window._pillUpd(D);}catch(e){}   // same snapshot as this card
@@ -8429,8 +8438,8 @@ function goLabo(){location.href=B+'robots';}
   const mkl='<div style="display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin-bottom:3px">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+'</div>';
   const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0">'+mkl+'<h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
    (rbNow(D).id!=='owl'&&rbNow(D).pieces?'':dots(D))+
-   (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+'<span style="flex:1;min-width:0"><i class="hl">'+T2('Aussi en trade','Also trading')+'</i><b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></span></div>':
-    (c?'<div class="hc"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>':''));
+   (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+'<span style="flex:1;min-width:0"><i class="hcl">'+T2('Aussi en trade','Also trading')+'</i><b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></span></div>':
+    (c?'<div class="hc"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hcl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>':''));
   if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}}
  function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
