@@ -117,7 +117,14 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .lh .lh-f{display:flex;gap:8px;margin-top:12px;position:relative;z-index:2}
 .lh .lh-f button{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#cfe3ff;font:inherit;font-size:.84rem;font-weight:700;cursor:pointer;white-space:nowrap}
 .lh .lh-f button svg{width:16px;height:16px;flex:none}
-@media(max-width:380px){.lh .lh-t{font-size:1.35rem}.lh .lh-tag{display:none}.lh .lh-f button{font-size:.78rem;padding:11px 6px}.lh .lh-f button svg{display:none}.lh .lh-a button{padding:12px 10px}}
+.lh .lh-a{display:flex;flex-direction:column;gap:8px}
+.lh .lh-a button{display:grid;grid-template-columns:40px minmax(0,1fr) 14px;align-items:center;gap:14px;padding:14px 16px;border-radius:16px}
+.lh .lh-a .lh-i{width:40px;height:40px;border-radius:12px;margin:0}.lh .lh-a .lh-i svg{width:20px;height:20px}
+.lh .lh-rt{min-width:0}.lh .lh-rt b{display:flex;align-items:center;gap:8px;font-size:1rem;font-weight:800}.lh .lh-rt small{display:block;font-size:.8rem;color:rgba(214,230,243,.74);margin-top:3px;line-height:1.35}
+.lh .lh-a .lh-tag{position:static;font-size:.58rem}
+.lh .lh-cv{color:rgba(214,230,243,.55);font-size:1.25rem;line-height:1}
+.lh .lh-f{gap:10px;margin-top:14px}.lh .lh-f button{flex:1 1 auto;padding:12px 16px;font-size:.84rem}
+@media(max-width:380px){.lh .lh-t{font-size:1.35rem}.lh .lh-f button{font-size:.78rem;padding:11px 6px}.lh .lh-f button svg{display:none}.lh .lh-a button{padding:12px 10px}}
 .card.zh .zaslot{position:relative;z-index:2;margin-top:12px}
 .zaud{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer}
 .zaud .zpp{flex:none;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0d2236;border:0;cursor:pointer;box-shadow:0 0 0 0 rgba(255,255,255,.35)}
@@ -1041,9 +1048,9 @@ function builderTop(){const B=BLD();
   (best?'<button class="lh-best" onclick="goB(\''+best.id+'\')"><span class="lh-tr">'+pic('M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3')+'</span><span class="l"><small>'+T('Meilleur robot','Best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span>'+
    '<span class="v"><b class="'+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+'</b>'+(bd0!=null?'<small>'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span class="cv">›</span></button>':'')+
   (B.can_create?'<div class="lh-sec">'+T('Créer un robot','Build a robot')+'</div><div class="lh-a">'+
-   '<button onclick="goAI()"><span class="lh-ir"><span class="lh-i">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><span class="lh-tag">'+T('facile','easy')+'</span></span><b>'+T('Expliquer','Explain')+'</b><small>'+T('à l’IA, en mots','to the AI, in words')+'</small></button>'+
-   '<button onclick="goNew()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
-   '<button onclick="location.href=\'chart?studio=1\'"><span class="lh-i">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
+   '<button class="lh-r1" onclick="goAI()"><span class="lh-i">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><span class="lh-rt"><b>'+T('Expliquer','Explain')+'<span class="lh-tag">'+T('facile','easy')+'</span></b><small>'+T('Décrivez votre idée à l’IA, en mots simples','Describe your idea to the AI, in plain words')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
+   '<button onclick="goNew()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Assembler','Assemble')+'</b><small>'+T('Choisissez ses pièces une à une','Pick its pieces one by one')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
+   '<button onclick="location.href=\'chart?studio=1\'"><span class="lh-i">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><span class="lh-rt"><b>'+T('Montrer','Show')+'</b><small>'+T('Pointez vos entrées sur le graphique','Point at your entries on the chart')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button></div>':'')+
   '<div class="lh-f">'+(cmpList().length>1?'<button onclick="cmpPick()">'+pic('M7 7h11l-3-3M17 17H6l3 3')+T('Comparer','Compare')+'</button>':'')+'<button onclick="fdOpen(\'how\')">'+pic('M12 17h.01M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z')+T('Comment ça marche','How it works')+'</button></div></div>';
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
