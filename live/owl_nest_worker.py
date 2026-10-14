@@ -125,6 +125,8 @@ def compute():
                   "pl": round(p.profit + p.swap, 2),
                   "e": p.price_open, "sl": p.sl, "tp": p.tp,
                   "cur": p.price_current,
+                  # 2026-10-13 (owner): which market - En direct shows a real trade on another market under ITS name
+                  "sym": p.symbol,
                   "k": ("s" if ((p.comment or "").startswith("OWL-recov")
                                or _bullets(p.comment, p.volume))
                         else "p")} for p in _shown]

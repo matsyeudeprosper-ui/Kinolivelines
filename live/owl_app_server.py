@@ -7919,8 +7919,12 @@ function goLabo(){location.href=B+'robots';}
  let sel='BTCUSD',SC=null,scT=0,frSym='';
  const LI={gr:['rgba(46,204,113,.14)','var(--up)'],or:['rgba(232,197,90,.14)','var(--warn)'],rd:['rgba(255,92,92,.14)','var(--down)'],bl:['rgba(59,130,246,.16)','var(--accent)'],gy:['rgba(138,155,176,.14)','var(--muted)']};
  const light=c=>{const l=LI[c]||LI.gy;return '<div class="lv-li" style="background:'+l[0]+';box-shadow:0 0 0 6px '+l[0].replace(/[.0-9]+\\)$/,'.05)')+'"><i style="background:'+l[1]+';box-shadow:0 0 18px '+l[1]+'"></i></div>';};
+ // 2026-10-13: a real open trade carries its market (worker: open_list[].sym, broker suffix "m" dropped)
+ const nsym=s=>String(s||'BTCUSD').toUpperCase().replace(/M$/,'');
+ const isBtc=p=>/^BTC/.test(nsym(p.sym));
+ function realOthers(D){return (D.open_list||[]).filter(p=>!isBtc(p));}
  // ---- BTC, the real robot: one state from the same facts the home card uses ----
- function btc(D){const ms=D.meteo_struct||{},k=window._mxk||'none',lg=D.ledger||{},open=D.open_list||[],Dy=window._day||{},now=Date.now()/1000;
+ function btc(D){const ms=D.meteo_struct||{},k=window._mxk||'none',lg=D.ledger||{},open=(D.open_list||[]).filter(isBtc),Dy=window._day||{},now=Date.now()/1000;
   const gate=!!ms.pb_gate,t=ms.pb_trend,side=gate?(t===1?T2('un achat','a buy'):(t===-1?T2('une vente','a sell'):T2('un trade','a trade'))):T2('un trade','a trade');
   const trend=t===1?T2('la tendance est en hausse','the trend is up'):(t===-1?T2('la tendance est en baisse','the trend is down'):'');
   const recent=(Dy.trades||[]).filter(x=>x.x&&now-x.x<1800).sort((a,b)=>b.x-a.x)[0];
@@ -7949,7 +7953,7 @@ function goLabo(){location.href=B+'robots';}
   return L.filter(r=>r.open).concat(L.filter(r=>!r.open).slice(0,3));}
  const reopen=()=>{const d=new Date().getDay();return d===6||d===0?T2('Rouvre en début de semaine.','Reopens at the start of the week.'):T2('Rouvre à la prochaine séance.','Reopens at the next session.');};
  function diary(D){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000,ev=[],tag=(s,es)=>{const m=mk(s);return '<span class="lv-tag" style="background:'+m[1]+'26;color:'+m[1]+'">'+(s==='BTCUSD'?'BTC':esc(mname(s)).toUpperCase())+'</span>'+(es?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'');};
-  (D.open_list||[]).forEach(p=>ev.push({t:Date.now()/1000,ic:'↗',c:'lv-up',h:tag('BTCUSD')+T2('maintenant','now'),b:(p.d==='A'?T2('Achat en cours','Buy running'):T2('Vente en cours','Sell running'))+' · <span class="'+((+p.pl)>=0?'lv-up':'lv-dn')+'">'+money(+p.pl||0)+'</span>',p:T2('Entré à ','Entered at ')+fmtN(+p.e,0)+'.'}));
+  (D.open_list||[]).forEach(p=>ev.push({t:Date.now()/1000,ic:'↗',c:'lv-up',h:tag(nsym(p.sym))+T2('maintenant','now'),b:(p.d==='A'?T2('Achat en cours','Buy running'):T2('Vente en cours','Sell running'))+' · <span class="'+((+p.pl)>=0?'lv-up':'lv-dn')+'">'+money(+p.pl||0)+'</span>',p:T2('Entré à ','Entered at ')+fmtN(+p.e,0)+'.'}));
   (Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).forEach(x=>ev.push({t:x.x||x.t,ic:x.p>=0?'✓':'✕',c:x.p>=0?'lv-up':'lv-dn',h:tag('BTCUSD')+hm(x.t)+(x.x?' → '+hm(x.x):''),b:(String(x.d).toUpperCase().startsWith('B')||x.d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+' · <span class="'+(x.p>=0?'lv-up':'lv-dn')+'">'+money(x.p)+'</span>',p:(x.p>=0?T2('Sorti en gain.','Closed in profit.'):T2('Sorti au stop.','Closed at the stop.'))+' <span style="color:var(--accent-soft);font-weight:700">'+T2('Voir le trade','See the trade')+' ›</span>',trd:{p:x.p,x:x.x||x.t}}));
   const W=((D.why_idle||{}).why||[]).slice().sort((a,b)=>b.n-a.n)[0],wt=k=>{try{const w=WHYTXT[k];return w?w[EN()?1:0]:'';}catch(e){return '';}};
   let g=null;(Dy.ignored||[]).filter(x=>x[0]>=t0).forEach(x=>{if(g&&g.k===x[1]){g.n++;g.b=x[0];}else{g={k:x[1],n:1,a:x[0],b:x[0]};ev.push(g);g.t=0;}});
@@ -8086,8 +8090,8 @@ function goLabo(){location.href=B+'robots';}
    it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),(!gate||ms.pb_side!=='wrong')?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.'))+
    it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'))+
    it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'))+'</div>';}
- function top(sym){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
-  return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
+ function top(sym,real){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
+  return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
@@ -8120,6 +8124,13 @@ function goLabo(){location.href=B+'robots';}
     rail(lo,hi,r.px,dg,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(lo,dg)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(hi,dg)+'</b></div>')+'</div>';}
   return h+pkLine(r.sym)+'</div>';}
+ function calmReal(D,sym){const L=realOthers(D).filter(p=>nsym(p.sym)===sym);if(!L.length)return '';const p=L[0],pl=L.reduce((s,x)=>s+(+x.pl||0),0),e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
+  const dg=Math.abs(e)<20?4:(Math.abs(e)<1000?2:0);
+  let h='<div class="lv-c">'+top(sym,1)+'<div class="lv-st">'+light('gr')+'<div style="min-width:0"><h3>'+T2('En trade','In a trade')+' · <span class="'+(pl>=0?'lv-up':'lv-dn')+'">'+money(pl)+'</span></h3><p>'+(dir===1?T2('Achat','Buy'):T2('Vente','Sell'))+T2(' avec votre argent sur ',' with your money on ')+'<b>'+esc(mname(sym))+'</b>.</p></div></div>';
+  if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
+   h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+    rail(lo,hi,cur,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',lvEnds(dir,fmtN(sl,dg),fmtN(e,dg),fmtN(tp,dg)))+'</div>';}
+  return h+'</div>';}
  // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
  // no trade open): nearly ready first, then soon, else the closest trend in place. Tap = it opens in the card.
  function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2};
@@ -8148,6 +8159,9 @@ function goLabo(){location.href=B+'robots';}
   const line=(s,sub,right,col)=>'<button type="button" class="lv-or" data-s="'+s+'">'+badge(s,30)+'<span class="n"><b>'+esc(mname(s))+'</b><small>'+sub+'</small></span><span class="r" style="color:'+col+'">'+right+'</span><span class="c">›</span></button>';
   let h='<div class="lv-oth"><div class="hd"><span>'+T2('Autres marchés','Other markets')+'</span><button type="button" class="all" id="edrall2">'+T2('Tout voir','See all')+' ›</button></div>';
   if(sel!=='BTCUSD')h+=line('BTCUSD',T2('argent réel','real money'),B0.row,C[B0.c]);
+  const RO={};realOthers(D).forEach(p=>{const s=nsym(p.sym);RO[s]=(RO[s]||0)+(+p.pl||0);});
+  const ros=Object.keys(RO).filter(s=>s!==sel);
+  if(ros.length)h+='<div class="sub">'+T2('Trades réels en cours','Real trades running')+' · '+ros.length+'</div>'+ros.map(s=>line(s,T2('argent réel','real money'),money(RO[s]),RO[s]>=0?'var(--up)':'var(--down)')).join('');
   if(open.length){h+='<div class="sub">'+T2('Trades d’essai en cours','Trial trades running')+' · '+open.length+'</div>'+
    open.slice(0,3).map(r=>r.status==='closed'?line(r.sym,T2('marché fermé · en pause','market closed · paused'),R(r.open.r_now),'var(--muted2)'):line(r.sym,r.open.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell'),R(r.open.r_now),r.open.r_now>=0?'var(--up)':'var(--down)')).join('')+
    (open.length>3?'<button type="button" class="more" id="edrmore">+ '+(open.length-3)+' '+T2('autre'+(open.length-3>1?'s':''),'more')+' ›</button>':'');}
@@ -8242,9 +8256,9 @@ function goLabo(){location.href=B+'robots';}
  async function scan(){if(Date.now()-scT<55000&&SC)return;scT=Date.now();
   try{const r=await fetch(B+'scanner_data?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err){SC=j;window._scn=j;}}}catch(e){}}
  function paint(force){const lv=$('edr');if(!lv||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
-  const TR=trials();if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel))sel='BTCUSD';
+  const TR=trials(),RS=realOthers(D).map(p=>nsym(p.sym));if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel)&&RS.indexOf(sel)<0)sel='BTCUSD';
   const B0=btc(D),cur=TR.find(r=>r.sym===sel);
-  const h=(sel==='BTCUSD'?calmBtc(D):calmTrial(cur))+othCard(D,B0,TR)+tiles(D,TR);
+  const h=(sel==='BTCUSD'?calmBtc(D):(RS.indexOf(sel)>=0?calmReal(D,sel):calmTrial(cur)))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
    const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const pcb=$('edrpcs');if(pcb)pcb.onclick=()=>shOpen('pcs');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
    lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
@@ -8258,6 +8272,7 @@ function goLabo(){location.href=B+'robots';}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
 
 
 
