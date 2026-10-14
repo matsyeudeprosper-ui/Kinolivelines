@@ -94,6 +94,30 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .mrow:first-child{border-top:0}
 .fd.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .card.zh .zrob{position:relative;z-index:2}
+/* 2026-10-14: the lab banner v2 (scoped: .lh) */
+.lh .lh-top{display:flex;gap:14px;align-items:flex-start}.lh .lh-tx{flex:1;min-width:0}
+.lh .lh-t{font-size:1.55rem;font-weight:900;letter-spacing:-.025em;line-height:1.15;color:#fff;margin:8px 0 0}
+.lh .lh-s{font-size:.88rem;line-height:1.45;color:rgba(214,230,243,.82);margin:8px 0 0;max-width:420px}
+.lh .lh-ico{flex:none;width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(96,165,250,.35),rgba(141,240,187,.18));border:1px solid rgba(255,255,255,.16);color:#e6f1ff}.lh .lh-ico svg{width:28px;height:28px}
+.lh .lh-st{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:16px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(0,0,0,.16)}
+.lh .lh-st div{padding:11px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.08)}.lh .lh-st div:first-child{border-left:0}
+.lh .lh-st b{display:block;font-size:1.35rem;font-weight:900;color:#fff;line-height:1.1}.lh .lh-st span{display:block;font-size:.72rem;color:#9fc2de;margin-top:3px;white-space:nowrap}
+.lh .lh-best{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:12px 14px;border-radius:16px;background:rgba(46,204,113,.09);border:1px solid rgba(46,204,113,.28);color:#d6e6f3;font:inherit;text-align:left;cursor:pointer;position:relative;z-index:2}
+.lh .lh-tr{flex:none;width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(46,204,113,.16);color:#8df0bb}.lh .lh-tr svg{width:19px;height:19px}
+.lh .lh-best .l{flex:1;min-width:0}.lh .lh-best .l small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:#8df0bb}.lh .lh-best .l b{display:block;font-size:.98rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.lh .lh-best .v{text-align:right}.lh .lh-best .v b{display:block;font-size:1.05rem;font-weight:900}.lh .lh-best .v small{display:block;font-size:.7rem;color:#9fc2de;margin-top:2px;white-space:nowrap}.lh .lh-best .cv{color:#9fc2de}
+.lh .lh-sec{font-size:.68rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#9fc2de;margin:18px 2px 8px}
+.lh .lh-a{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;position:relative;z-index:2}
+.lh .lh-a button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;padding:14px 12px 13px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:inherit;text-align:left;cursor:pointer;transition:background .15s,border-color .15s,transform .1s}
+.lh .lh-a button:active{transform:scale(.97)}.lh .lh-a button:hover{background:rgba(255,255,255,.1)}
+.lh .lh-a button:first-child{border-color:rgba(141,240,187,.45);background:linear-gradient(160deg,rgba(141,240,187,.14),rgba(255,255,255,.05))}
+.lh .lh-i{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(96,165,250,.2);color:#cfe3ff;margin-bottom:8px}.lh .lh-a button:first-child .lh-i{background:rgba(141,240,187,.2);color:#8df0bb}.lh .lh-i svg{width:18px;height:18px}
+.lh .lh-a b{font-size:.9rem;font-weight:800}.lh .lh-a small{font-size:.7rem;color:rgba(214,230,243,.72);line-height:1.3}
+.lh .lh-ir{display:flex;align-items:center;gap:6px;margin-bottom:8px}.lh .lh-ir .lh-i{margin-bottom:0}.lh .lh-tag{font-size:.56rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 6px;border-radius:99px;background:rgba(141,240,187,.18);color:#8df0bb}
+.lh .lh-f{display:flex;gap:8px;margin-top:12px;position:relative;z-index:2}
+.lh .lh-f button{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:transparent;color:#cfe3ff;font:inherit;font-size:.84rem;font-weight:700;cursor:pointer;white-space:nowrap}
+.lh .lh-f button svg{width:16px;height:16px;flex:none}
+@media(max-width:380px){.lh .lh-t{font-size:1.35rem}.lh .lh-tag{display:none}.lh .lh-f button{font-size:.78rem;padding:11px 6px}.lh .lh-f button svg{display:none}.lh .lh-a button{padding:12px 10px}}
 .card.zh .zaslot{position:relative;z-index:2;margin-top:12px}
 .zaud{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;font:inherit;text-align:left;cursor:pointer}
 .zaud .zpp{flex:none;width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#0d2236;border:0;cursor:pointer;box-shadow:0 0 0 0 rgba(255,255,255,.35)}
@@ -1008,13 +1032,19 @@ function builderTop(){const B=BLD();
  const bd0=best&&best.test.parent_result?best.test.robot.net-best.test.parent_result.net:null;
  FDS.how=[T('Comment ça marche','How it works'),()=>'<div class="card"><h2>'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h2><div class="sub">'+T('Les yeux lisent la structure du marché : les mêmes pour tous. Les pièces ont un nom ; on en retire une, on en met une autre, et le robot est testé sur le passé avant d\'aller plus loin.','The eyes read the market structure: the same for all. Pieces have a name; take one out, put another in, and the robot is tested on past data before going further.')+'</div>'+
   '<div class="parts7" style="margin-top:14px"><div class="p4 eyes" style="color:var(--text)">'+pic(EYE)+'<b>'+T('Yeux','Eyes')+'</b></div>'+SLOTS.map(k=>'<div class="p4" style="color:var(--text);background:var(--surface2);border-color:var(--border)">'+pic(k[2])+'<b>'+k[1]+'</b></div>').join('')+'</div></div>'];
- let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><div class="hn" style="margin-top:6px">'+T('Créez, testez, branchez.','Build, test, plug.')+'</div></div></div>'+
-  '<div class="k3"><div><b>'+MY.length+'</b><span>'+T('vos robots','your robots')+'</span></div><div><b>'+PUB.length+'</b><span>'+T('publics','public')+'</span></div><div><b>'+PL0.length+'</b><span>'+T('comptes','accounts')+'</span></div></div>'+
-  (best?'<button class="best" onclick="goB(\''+best.id+'\')"><span class="l"><small>'+T('Votre meilleur robot','Your best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span><span class="v '+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+(bd0!=null?'<small style="display:block">'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span style="color:#9fc2de">›</span></button>':'')+
-  (B.can_create?'<div class="a3"><button class="a3p" onclick="goAI()">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'<b>'+T('Expliquer','Explain')+'</b><small>'+T('à l\'IA, en mots','to the AI, in words')+'</small></button>'+
-   '<button onclick="goNew()">'+pic('M12 5v14M5 12h14')+'<b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
-   '<button onclick="location.href=\'chart?studio=1\'">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'<b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
-  '<div style="display:flex;justify-content:center;gap:4px;flex-wrap:wrap">'+(cmpList().length>1?'<button class="how" style="width:auto" onclick="cmpPick()">'+T('Comparer deux robots','Compare two robots')+' ›</button><span style="color:#9fc2de;margin-top:12px">·</span>':'')+'<button class="how" style="width:auto" onclick="fdOpen(\'how\')">'+T('Comment ça marche','How it works')+' ›</button></div></div>';
+ // 2026-10-14 (owner): the lab banner, upgraded - one headline, a one-line promise, stats on one row, three EQUAL ways to
+ // build (the simplest one tagged instead of painted white), two clean footer buttons
+ const st=(n,fr,fr1,en,en1)=>'<div><b>'+n+'</b><span>'+(n===1?T(fr1,en1):T(fr,en))+'</span></div>';
+ let h='<div class="card hero lh"><div class="lh-top"><div class="lh-tx"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 class="lh-t">'+T('Créez, testez, branchez.','Build, test, plug.')+'</h3>'+
+   '<p class="lh-s">'+T('Des robots faits de pièces, testés sur de vrais prix avant de toucher à votre argent.','Robots made of pieces, tested on real prices before they touch your money.')+'</p></div><span class="lh-ico">'+BOT+'</span></div>'+
+  '<div class="lh-st">'+st(MY.length,'vos robots','votre robot','your robots','your robot')+st(PUB.length,'publics','public','public','public')+st(PL0.length,'comptes','compte','accounts','account')+'</div>'+
+  (best?'<button class="lh-best" onclick="goB(\''+best.id+'\')"><span class="lh-tr">'+pic('M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3')+'</span><span class="l"><small>'+T('Meilleur robot','Best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span>'+
+   '<span class="v"><b class="'+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+'</b>'+(bd0!=null?'<small>'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span class="cv">›</span></button>':'')+
+  (B.can_create?'<div class="lh-sec">'+T('Créer un robot','Build a robot')+'</div><div class="lh-a">'+
+   '<button onclick="goAI()"><span class="lh-ir"><span class="lh-i">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><span class="lh-tag">'+T('facile','easy')+'</span></span><b>'+T('Expliquer','Explain')+'</b><small>'+T('à l’IA, en mots','to the AI, in words')+'</small></button>'+
+   '<button onclick="goNew()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><b>'+T('Assembler','Assemble')+'</b><small>'+T('pièce par pièce','piece by piece')+'</small></button>'+
+   '<button onclick="location.href=\'chart?studio=1\'"><span class="lh-i">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><b>'+T('Montrer','Show')+'</b><small>'+T('sur le graphique','on the chart')+'</small></button></div>':'')+
+  '<div class="lh-f">'+(cmpList().length>1?'<button onclick="cmpPick()">'+pic('M7 7h11l-3-3M17 17H6l3 3')+T('Comparer','Compare')+'</button>':'')+'<button onclick="fdOpen(\'how\')">'+pic('M12 17h.01M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z')+T('Comment ça marche','How it works')+'</button></div></div>';
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
 
