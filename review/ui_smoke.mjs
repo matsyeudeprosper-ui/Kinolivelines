@@ -328,7 +328,8 @@ console.log("labo");
   // 2026-10-12 (owner): the old Labo board is replaced by the Labo space - Strategies, Robots, AI team.
   // The Labo button now leads there; every side must paint, with no NaN/undefined and no bare verdict letter.
   await ev("(function(){var b=document.getElementById('mxs-lab');if(b)b.click();return 1;})()"); await sleep(6000);
-  check("the Labo button opens the Labo space", /\/strategies$/.test(await ev("location.pathname")), await ev("location.pathname.split('/').pop()"));   // never print the token
+  // 2026-10-13 (owner): the bar's 4th place is ROBOTS; strategies + AI team are "Les coulisses" under Performance
+  check("the Robots button opens the Robots space", /\/robots$/.test(await ev("location.pathname")), await ev("location.pathname.split('/').pop()"));   // never print the token
   // 2026-10-13 (owner, calm layout): each side shows FOLDER rows (.fd); the cards live in the sheet a folder opens
   for (const [side, path, min, inSheet, inMin] of [["Strategies", "strategies", 5, ".sc", 1], ["Robots", "robots", 4, null, 0], ["AI team", "equipe", 4, ".mem", 1]]) {
     await nav("about:blank"); await nav(`${BASE}/${KIN}/${path}`); await sleep(7000);
@@ -348,6 +349,10 @@ console.log("labo");
       check("Labo · a robot opens its own space with its parts", (await ev("document.body.classList.contains('det')&&document.querySelectorAll('#det .lg').length")) >= 7);   // 2026-10-13: eyes + 6 named pieces
     }
   }
+  // a member WITHOUT Strategie: Robots shows their own robot (pieces in words), never the lock
+  await nav("about:blank"); await nav(`${BASE}/${TOK("bos")}/robots`); await sleep(7000);
+  check("Robots · a member without Strategie sees their own robot", (await ev("document.querySelectorAll('.mrp').length")) >= 3, String(await ev("document.querySelectorAll('.mrp').length")));
+  check("Robots · that member gets no lock and no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.mrp')")) === true);
   await shot("smoke_labo");
   await nav("about:blank"); await nav(`${BASE}/${KIN}/`); await sleep(9000);
   await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()"); await sleep(3500);

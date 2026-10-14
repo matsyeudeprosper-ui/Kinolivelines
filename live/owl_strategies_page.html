@@ -147,6 +147,10 @@ nav{position:sticky;top:0;z-index:5;background:linear-gradient(var(--bg) 78%,tra
 .nwh button{flex:none;white-space:nowrap;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font:inherit;font-size:.74rem;font-weight:700;border-radius:99px;padding:5px 11px;cursor:pointer}
 .nwi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;color:var(--text);font:inherit;text-align:left;padding:8px 0;border-top:1px solid var(--border);cursor:pointer}
 .nwi>i{flex:none;width:8px;height:8px;border-radius:50%}.nwi span{flex:1;min-width:0}.nwi small{display:block;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}.nwi b{display:block;font-size:.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nwi .cv{flex:none;color:var(--muted)}
+.mrp{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--border)}.mrp:first-child{border-top:0}
+.mrp .fi{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.mrp .fi svg{width:17px;height:17px}
+.mrp small{display:block;font-size:.62rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}.mrp b{display:block;font-size:.92rem;margin-top:1px}.mrp em{display:block;font-style:normal;font-size:.78rem;color:var(--muted2);line-height:1.4;margin-top:3px}
+#doors:empty{display:none}
 .how{display:block;width:100%;margin-top:12px;border:0;background:none;color:#9fc2de;font:inherit;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;padding:4px}
 .rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;overflow:hidden;box-shadow:var(--hl)}
 .rc .rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
@@ -672,10 +676,11 @@ let SIDE=(()=>{const p=location.pathname.split('/').pop();return p==='robots'?'r
 let RB=null,TM=null,CURR=null,RSEC='ov',RF='all';
 const SIDES=[['strat',T('Stratégies','Strategies'),'M3 17l6-6 4 4 8-8M15 7h6v6'],['robots',T('Robots','Robots'),'M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6'],['team',T('Équipe IA','AI team'),'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0']];
 const SUBT={strat:T('Toutes les idées, de l\'essai à la décision','Every idea, from trial to decision'),robots:T('Les robots créés, testés, en service ou à l\'arrêt','Robots built, tested, in service or stopped'),team:T('Les IA qui cherchent, construisent et vérifient','The AIs that research, build and check')};
-function doors(){const el=$('doors');if(!el)return;el.innerHTML=SIDES.map(s=>'<button class="door'+(SIDE===s[0]?' on':'')+'" onclick="setSide(\''+s[0]+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+s[2]+'"/></svg>'+s[1]+'</button>').join('');}
+// 2026-10-13 (owner): Robots is the bar's own place; Strategies + AI team are "Les coulisses" (Performance > Aller plus loin)
+function doors(){const el=$('doors');if(!el)return;if(SIDE==='robots'){el.innerHTML='';return;}el.innerHTML=SIDES.filter(s=>s[0]!=='robots').map(s=>'<button class="door'+(SIDE===s[0]?' on':'')+'" onclick="setSide(\''+s[0]+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+s[2]+'"/></svg>'+s[1]+'</button>').join('');}
 function setSide(s){if(s===SIDE)return;SIDE=s;const seg={strat:'strategies',robots:'robots',team:'equipe'}[s];
  try{history.replaceState(null,'',seg);}catch(e){}NAV=0;document.body.classList.remove('det');CUR=null;CURR=null;doors();head();paint();load();window.scrollTo(0,0);}
-function head(){$('h1').textContent=T('Le labo','The lab');$('h1s').textContent=SUBT[SIDE];document.title=T('Le labo','The lab');}
+function head(){const n=SIDE==='robots'?T('Robots','Robots'):T('Les coulisses','Behind the scenes');$('h1').textContent=n;const gs=$('gsb');if(gs)gs.style.display=(SIDE==='robots'&&RB&&RB.limited)?'none':'';$('h1s').textContent=SIDE==='robots'&&RB&&RB.limited?T('Le robot de votre compte','Your account\'s robot'):SUBT[SIDE];document.title=n;}
 function paint(){if(SIDE==='strat'){if(D){renderTop();renderList();}else skel();}else if(SIDE==='robots'){if(RB)renderRobots();else skel();}else{if(TM)renderTeam();else skel();}}
 const _paint0=paint;paint=function(){_paint0();try{nwInsert();}catch(e){}};
 function skel(){$('top').innerHTML='';$('list').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>';}
@@ -713,7 +718,23 @@ function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};
  const node=(r,d)=>{const m=RST[r.stage]||RST.model;const ch=(kids[r.id]||[]).sort((a,b)=>RORDER.indexOf(a.stage)-RORDER.indexOf(b.stage));
   return '<div class="tn" style="--d:'+d+'"><button class="tnb'+(r.stage==='retired'?' dim':'')+'" onclick="goR(\''+r.id+'\')"><span class="dot" style="background:'+m.c+'"></span><b>'+esc(rn(r))+'</b>'+((r.accounts||[]).length?'<em>'+(r.accounts||[]).length+'</em>':'')+'</button>'+(ch.length?'<div class="tk">'+ch.map(c=>node(c,d+1)).join('')+'</div>':'')+'</div>';};
  return (kids['_']||[]).map(r=>node(r,0)).join('');}
-function renderRobots(){if(!RB)return;$('top').innerHTML=builderTop();$('list').innerHTML='';}
+function renderRobots(){if(!RB)return;head();$('top').innerHTML=RB.limited?myRobotView():builderTop();$('list').innerHTML='';}
+// every member: the robot on their account, its pieces in plain words, what it did; building it is the Strategie offer
+function myRobotView(){const m=RB.mine||{},S=m.since||{},wr=S.n?Math.round((S.won||0)/S.n*100):null;
+ let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Votre robot','Your robot')+'</div><div class="hn" style="margin-top:6px"><b style="font-size:1.7rem">'+esc(T(m.name_fr,m.name_en))+'</b></div></div><span class="hl"><i></i>'+T('sur votre compte','on your account')+'</span></div>'+
+  (m.plain_fr?'<p style="margin-top:8px">'+esc(T(m.plain_fr,m.plain_en))+'</p>':'')+
+  (S.n?'<div class="k3"><div><b class="'+cl(S.net)+'" style="font-size:1.15rem">'+money(S.net)+'</b><span>'+T('depuis le début','since the start')+'</span></div><div><b>'+num(S.n)+'</b><span>trades</span></div><div><b>'+wr+' %</b><span>'+T('gagnés','won')+'</span></div></div>':'')+
+  '<div class="a3" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button class="a3p" onclick="location.href=\'./#marche\'">'+pic('M22 12h-4l-3 9L9 3l-3 9H2')+'<b>'+T('En direct','Live')+'</b><small>'+T('ce qu\'il voit et attend','what it sees and waits for')+'</small></button>'+
+  '<button onclick="location.href=\'./#hist\'">'+pic('M3 17l6-6 4 4 8-8M15 7h6v6')+'<b>Performance</b><small>'+T('tous ses résultats','all its results')+'</small></button></div></div>';
+ const P=m.parts||[];
+ if(P.length)h+='<div class="grp">'+T('Ses pièces','Its pieces')+' <em>'+P.length+'</em></div><div class="card" style="padding:6px 16px">'+P.map(q=>{const sl=SLOTS.find(s=>s[0]===q.slot)||SLOTS[0];
+  return '<div class="mrp"><span class="fi">'+pic(sl[2])+'</span><span><small>'+sl[1]+'</small><b>'+esc(T(q.name_fr,q.name_en))+'</b>'+(q.plain_fr?'<em>'+esc(T(q.plain_fr,q.plain_en))+'</em>':'')+'</span></div>';}).join('')+'</div>';
+ h+='<div class="card hero lock"><div class="eyebrow">'+T('Offre Stratégie','Strategy plan')+'</div><h3 style="margin-top:8px">'+T('Créez le vôtre','Build your own')+'</h3><ul>'+
+  '<li><i>✓</i><span><b>'+T('Assemblez','Assemble')+'</b> — '+T('changez une pièce de L\'Owl, ou expliquez votre idée à l\'IA','change one piece of the Owl, or explain your idea to the AI')+'</span></li>'+
+  '<li><i>✓</i><span><b>'+T('Testez','Test')+'</b> — '+T('sur le passé, avec le même compte de départ','on past data, with the same starting account')+'</span></li>'+
+  '<li><i>✓</i><span><b>'+T('Comparez et branchez','Compare and plug')+'</b> — '+T('face à L\'Owl, puis sur un compte quand il est prêt','against the Owl, then on an account when it is ready')+'</span></li></ul>'+
+  '<button class="cta" onclick="location.href=\'./#set\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
+ return h;}
 function setRF(k){RF=(RF===k&&k!=='all')?'all':k;renderRobots();const n=$('nav');if(n)n.scrollIntoView({behavior:'smooth'});}
 function goR(id,sec){NAV++;location.hash='r='+id+(sec?'&v='+sec:'');}
 function dv(d){const v=d.v;if(d.kind==='bool')return v?T('oui','yes'):T('non','no');if(v==null||v===0&&['usd','pct','min','pts'].includes(d.kind)&&d.k!=='kill_net')return T('aucun','none');
@@ -1278,8 +1299,9 @@ async function load(){try{
  const h=new URLSearchParams(location.hash.slice(1));
  const needS=SIDE==='strat'||h.get('s')||SIDE==='robots',needR=SIDE==='robots'||h.get('r')||h.get('b')||h.get('p')||h.get('new')||h.get('mk')||h.get('ai'),needT=SIDE==='team';
  const [s,r,t]=await Promise.all([needS?getJ('strategies_data'):null,needR?getJ('robots_data'):null,needT?getJ('team_data'):null]);
- if([s,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
- const first=(s&&!D)||(r&&!RB)||(t&&!TM);if(s)D=s;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');
+ let s2=s;if(SIDE==='robots'&&r&&!r.err&&s&&s.err)s2=null;
+ if([s2,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
+ const first=(s2&&!D)||(r&&!RB)||(t&&!TM);if(s2)D=s2;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');
  // a refresh never moves the reader: lists redraw, an open strategy or robot keeps its place
  if(document.body.classList.contains('det')){if(CUR)CUR=byId(CUR.id)||CUR;if(CURR)CURR=rbById(CURR.id)||CURR;
   if(CURB){const nb=bById(CURB.id);if(nb&&nb.stage!==CURB.stage){CURB=nb;renderB();}else if(nb)CURB=nb;}
@@ -1309,10 +1331,10 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
 (function(){
  const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
  const here=(location.pathname.split('/').pop()||'');
- const cur=/^(strategies|robots|equipe)$/.test(here)?'labo':(/^(wealth|rentabilite)$/.test(here)?'perf':'');
+ const cur=here==='robots'?'labo':(/^(wealth|rentabilite|strategies|equipe)$/.test(here)?'perf':'');
  const I={home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',mkt:'M22 12h-4l-3 9L9 3l-3 9H2',perf:'M3 17l6-6 4 4 8-8M15 7h6v6',
-  labo:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',set:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4'};
- const L=[['home','./',EN?'Today':'Aujourd’hui'],['mkt','./#marche',EN?'Live':'En direct'],['perf','./#hist','Performance'],['labo','strategies',EN?'Lab':'Labo'],['set','./#set',EN?'Account':'Compte']];
+  labo:'M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6',set:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4'};
+ const L=[['home','./',EN?'Today':'Aujourd’hui'],['mkt','./#marche',EN?'Live':'En direct'],['perf','./#hist','Performance'],['labo','robots','Robots'],['set','./#set',EN?'Account':'Compte']];
  const svg=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
  document.getElementById('owlnav').innerHTML=L.map(x=>'<a href="'+x[1]+'" class="'+(x[0]===cur?'on':'')+'"'+(x[0]===cur?' aria-current="page"':'')+'>'+svg(I[x[0]])+'<span>'+x[2]+'</span></a>').join('');
 })();

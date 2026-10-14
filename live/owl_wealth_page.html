@@ -644,10 +644,10 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))!important}
 (function(){
  const EN=(()=>{try{return localStorage.getItem('owlLang')==='en';}catch(e){return false;}})();
  const here=(location.pathname.split('/').pop()||'');
- const cur=/^(strategies|robots|equipe)$/.test(here)?'labo':(/^(wealth|rentabilite)$/.test(here)?'perf':'');
+ const cur=here==='robots'?'labo':(/^(wealth|rentabilite|strategies|equipe)$/.test(here)?'perf':'');
  const I={home:'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',mkt:'M22 12h-4l-3 9L9 3l-3 9H2',perf:'M3 17l6-6 4 4 8-8M15 7h6v6',
-  labo:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 12h.01',set:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4'};
- const L=[['home','./',EN?'Today':'Aujourd’hui'],['mkt','./#marche',EN?'Live':'En direct'],['perf','./#hist','Performance'],['labo','strategies',EN?'Lab':'Labo'],['set','./#set',EN?'Account':'Compte']];
+  labo:'M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6',set:'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4'};
+ const L=[['home','./',EN?'Today':'Aujourd’hui'],['mkt','./#marche',EN?'Live':'En direct'],['perf','./#hist','Performance'],['labo','robots','Robots'],['set','./#set',EN?'Account':'Compte']];
  const svg=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
  document.getElementById('owlnav').innerHTML=L.map(x=>'<a href="'+x[1]+'" class="'+(x[0]===cur?'on':'')+'"'+(x[0]===cur?' aria-current="page"':'')+'>'+svg(I[x[0]])+'<span>'+x[2]+'</span></a>').join('');
 })();

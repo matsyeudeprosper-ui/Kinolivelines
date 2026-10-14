@@ -3441,7 +3441,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Aujourd&rsquo;hui</button>
 <button class="tb" id="tb-marche" onclick="tab('marche',this)"><svg class="ic"><use href="#i-activity"/></svg>March&eacute;</button>
 <button class="tb" id="tb-hist" onclick="tab('hist',this)"><svg class="ic"><use href="#i-chart"/></svg>Performance</button>
-<button class="tb" id="tb-labo" onclick="goLabo()"><svg class="ic"><use href="#i-target"/></svg>Labo</button>
+<button class="tb" id="tb-labo" onclick="goLabo()"><svg class="ic"><use href="#i-bot"/></svg>Robots</button>
 <button class="tb" id="tb-nid" style="display:none"
  onclick="tab('nid',this)"><svg class="ic"><use href="#i-users"/></svg>Le Nid</button>
 <button class="tb" onclick="tab('set',this)"><svg class="ic"><use href="#i-settings"/></svg>Compte</button>
@@ -7433,7 +7433,7 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>T('à rattraper','to win back'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
   {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>txt('pal-head').replace(money(txt('pal-head')),'').trim(),show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>{const r=$('pk-rows');const n=r?r.children.length:0;return n>1?(n+T(' marchés',' markets')):txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim();},show:()=>shown('pockcard')},
-  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Le labo','The lab'),cards:()=>[$('aicard'),$('stcard')],v:()=>txt('aic-h')||txt('stc-h')||T('Le labo','The lab'),vsm:true,s:()=>'',show:()=>shown('aicard')||shown('stcard')},
+  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'),vsm:true,s:()=>'',show:()=>shown('aicard')||shown('stcard')},
   {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
   {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
  let store=null,wrap=null,open=null;
@@ -7594,7 +7594,9 @@ setTimeout(()=>{try{loadStratCard();}catch(e){}},2100);
 // rewritten; their own show / hide rules still decide whether they appear. ====
 // 2026-10-13: the Labo page itself shows the Strategie lock to members without it (the old fallback went
 // through mxView('lab'), which En direct maps back to goLabo - a loop)
-function goLabo(){location.href=B+'strategies';}
+// 2026-10-13 (owner): the bar's 4th place is ROBOTS (every member sees their robot); strategies and the AI team
+// moved to Performance > Les coulisses
+function goLabo(){location.href=B+'robots';}
 (function(){
  const $=id=>document.getElementById(id);
  const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
@@ -7700,7 +7702,7 @@ function goLabo(){location.href=B+'strategies';}
  #pfd .pf-mb b{position:absolute;top:0;bottom:0;border-radius:99px}
  #pfd .pf-foot{display:flex;justify-content:space-between;gap:10px;margin-top:10px;font-size:.74rem;color:var(--muted)}
  #pfd .pf-foot b{font-weight:800}
- #pfd .pf-doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+ #pfd .pf-doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
  #pfd .pf-doors a{display:flex;flex-direction:column;gap:3px;padding:13px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--hl);text-decoration:none;min-width:0}
  #pfd .pf-doors .ic{width:20px;height:20px;color:var(--accent-soft);margin-bottom:6px}
  #pfd .pf-doors b{font-size:.84rem;color:var(--text)}
@@ -7809,7 +7811,7 @@ function goLabo(){location.href=B+'strategies';}
    '<div class="pf-mb"><b style="'+(r.net>=0?'left:50%':'right:50%')+';width:'+(Math.abs(r.net)/mmx*50).toFixed(1)+'%;background:'+(r.net>=0?'var(--up)':'var(--down)')+'"></b></div></td>'+
    '<td class="pf-r '+cls(r.net)+'">'+money(r.net)+'</td></tr>').join('')+'</table></div>':'')+
   '<div class="pf-pl" style="margin:10px 4px -2px">'+T('Aller plus loin','Go further')+'</div><div class="pf-doors">'+
-   [['wealth#poches','i-target',T('Poches','Pockets'),T('Par marché','By market')],['rentabilite','i-check',T('Preuve','Proof'),T('Les comptes réels','Real accounts')],['wealth','i-chart',T('Patrimoine','Wealth'),T('Argent et dépôts','Money and deposits')]]
+   [['wealth#poches','i-target',T('Poches','Pockets'),T('Par marché','By market')],['rentabilite','i-check',T('Preuve','Proof'),T('Les comptes réels','Real accounts')],['wealth','i-chart',T('Patrimoine','Wealth'),T('Argent et dépôts','Money and deposits')],['strategies','i-book',T('Les coulisses','Behind the scenes'),T('Stratégies et équipe IA','Strategies and AI team')]]
    .map(x=>'<a href="'+B+x[0]+'"><svg class="ic"><use href="#'+x[1]+'"/></svg><b>'+x[2]+'</b><span>'+x[3]+'</span></a>').join('')+'</div>';
   if(force||box._l!==h){box._l=h;box.innerHTML=h;
    box.querySelectorAll('.pf-seg button').forEach(b=>b.onclick=()=>{per=b.dataset.p;try{localStorage.setItem('owlPfPer',per);}catch(e){}paint(true);});
@@ -12324,6 +12326,42 @@ def robot_resolve(rid, robots, seen=None):
     for k, v in (r.get("parts") or {}).items():
         out[k] = v
     return out
+
+
+def my_robot_payload(uid):
+    """2026-10-13 (owner): the Robots tab is for every member - without Strategie they see THEIR robot (the one plugged
+    on their account, the Owl when none is), its pieces in plain words and what it has done on this account. Building,
+    testing and comparing stay in the Strategie offer."""
+    reg = robot_reg()
+    byid = {x["id"]: x for x in reg.get("robots") or []}
+    try:
+        PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
+    except Exception:
+        PK = {}
+    pl = (PK.get("robot_plugs") or {}).get(uid)
+    rid = (pl or {}).get("robot") or "owl"
+    r0 = byid.get(rid) or byid.get("owl") or {}
+    R = robot_resolve(rid, byid)
+    P = {x["id"]: x for x in reg.get("pieces") or []}
+
+    def piece(slot, pid):
+        x = P.get(pid) or {}
+        return {"slot": slot, "id": pid, "name_fr": x.get("name_fr") or pid, "name_en": x.get("name_en") or x.get("name_fr") or pid,
+                "plain_fr": x.get("plain_fr") or "", "plain_en": x.get("plain_en") or x.get("plain_fr") or ""}
+    parts = []
+    for slot in ("entry", "filters", "stop", "exit", "recovery"):
+        v = R.get(slot)
+        for pid in (v if isinstance(v, list) else [v] if v else []):
+            parts.append(piece(slot, pid))
+    try:
+        nd = json.load(open(os.path.join(DIR, "nest_data", "%s.json" % uid), encoding="utf-8"))
+        ss = nd.get("since_start") or {}
+    except Exception:
+        ss = {}
+    return {"limited": True,
+            "mine": {"id": rid, "name_fr": r0.get("name_fr") or rid, "name_en": r0.get("name_en") or r0.get("name_fr") or rid,
+                     "plain_fr": r0.get("plain_fr") or "", "plain_en": r0.get("plain_en") or r0.get("plain_fr") or "",
+                     "parts": parts, "since": {k: ss.get(k) for k in ("n", "won", "net", "days", "first")}}}
 
 
 def robot_now(uid, ms, has_open, preview=None):
@@ -19347,6 +19385,8 @@ class H(BaseHTTPRequestHandler):
                 if sub in ("strategies", "robots", "equipe"):
                     # one page, three sides (2026-10-12 owner: the Labo = Strategies + Robots + the AI team)
                     self._send(open(os.path.join(DIR, "owl_strategies_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+                elif not _sd and sub == "robots_data":
+                    self._send(json.dumps(my_robot_payload(user.get("id"))), "application/json")
                 elif not _sd:
                     self._send(json.dumps({"err": "strategy"}), "application/json")
                 elif sub == "robots_data":
