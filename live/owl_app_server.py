@@ -3612,6 +3612,10 @@ window.addEventListener('load',()=>{let t='dark';
   try{localStorage.setItem('owlBig',on?'1':'0')}catch(e){}_tsp(on);});
  loadDay();setInterval(loadDay,60000);
  try{const _h=(location.hash||'').slice(1);
+  // 2026-10-15 (owner): "Voir l'offre" buttons on other pages landed on Compte - #offres opens the offers sheet
+  // itself (on the Compte tab, once the account data it reads has arrived)
+  if(_h==='offres'){const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'set'")>=0);
+   if(_b)tab('set',_b);let _n=0;const _w=setInterval(()=>{if(window._d||++_n>40){clearInterval(_w);try{history.replaceState(null,'',location.pathname+'#set');}catch(e){}offersSheet();}},250);}
   if(_h==='marche'||_h==='robot'||_h==='hist'||_h==='set'||_h==='resume'){
    const _hh=(_h==='robot')?'marche':_h;
    const _b=[...document.querySelectorAll('.tb')].find(x=>(x.getAttribute('onclick')||'').indexOf("'"+_hh+"'")>=0);

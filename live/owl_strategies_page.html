@@ -985,7 +985,7 @@ function myRobotView(){const m=RB.mine||{},S=m.since||{},wr=S.n?Math.round((S.wo
   '<li><i>✓</i><span><b>'+T('Assemblez','Assemble')+'</b> — '+T('changez une pièce de L\'Owl, ou expliquez votre idée à l\'IA','change one piece of the Owl, or explain your idea to the AI')+'</span></li>'+
   '<li><i>✓</i><span><b>'+T('Testez','Test')+'</b> — '+T('sur le passé, avec le même compte de départ','on past data, with the same starting account')+'</span></li>'+
   '<li><i>✓</i><span><b>'+T('Comparez et branchez','Compare and plug')+'</b> — '+T('face à L\'Owl, puis sur un compte quand il est prêt','against the Owl, then on an account when it is ready')+'</span></li></ul>'+
-  '<button class="cta" onclick="location.href=\'./#set\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
+  '<button class="cta" onclick="location.href=\'./#offres\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
  return h;}
 function setRF(k){RF=(RF===k&&k!=='all')?'all':k;renderRobots();const n=$('nav');if(n)n.scrollIntoView({behavior:'smooth'});}
 function goR(id,sec){NAV++;location.hash='r='+id+(sec?'&v='+sec:'');}
@@ -1762,7 +1762,7 @@ const LOCK='<div class="card hero lock" style="margin-top:10px"><div class="lk">
  '<li><i>✓</i><span><b>'+T('Toutes les stratégies','Every strategy')+'</b> — '+T('de l\'idée à l\'argent réel, avec leurs résultats','from idea to real money, with their results')+'</span></li>'+
  '<li><i>✓</i><span><b>'+T('Vos propres robots','Your own robots')+'</b> — '+T('assemblés pièce par pièce, testés sur le passé','assembled piece by piece, tested on past data')+'</span></li>'+
  '<li><i>✓</i><span><b>'+T('L\'équipe IA','The AI team')+'</b> — '+T('ce que les IA cherchent et vérifient chaque nuit','what the AIs research and check every night')+'</span></li></ul>'+
- '<button class="cta" onclick="location.href=\'./#set\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
+ '<button class="cta" onclick="location.href=\'./#offres\'">'+T('Voir l\'offre Stratégie','See the Strategy plan')+'</button></div>';
 async function getJ(u){const r=await fetch(u+'?t='+Date.now(),{cache:'no-store'});return r.json();}
 async function load(){try{
  const h=new URLSearchParams(location.hash.slice(1));

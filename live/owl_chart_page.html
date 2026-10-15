@@ -3152,7 +3152,7 @@ function rbRender(){
   let h='';
   if(RB&&'trading_paused' in RB){
    const paused=!!RB.trading_paused,locked=!!RB.pause_locked;
-   const offers='<a class="btn ghost" style="text-align:center;text-decoration:none" href="/'+tok+'/#set">Voir les offres</a>'+(P.mql5_url?'<a class="btn ghost" style="text-align:center;text-decoration:none" href="'+P.mql5_url+'" target="_blank" rel="noopener">Ouvrir le signal MQL5 de Kino</a>':'');
+   const offers='<a class="btn ghost" style="text-align:center;text-decoration:none" href="/'+tok+'/#offres">Voir les offres</a>'+(P.mql5_url?'<a class="btn ghost" style="text-align:center;text-decoration:none" href="'+P.mql5_url+'" target="_blank" rel="noopener">Ouvrir le signal MQL5 de Kino</a>':'');
    if(obs||locked){h='<div class="lbl"><span>Le mode</span></div><div class="note">Le trading sur votre compte demande un paquet : <b>Manuel</b> pour trader vous-même avec les signaux et l’outil, <b>Automatique</b> (réglé avec Kino) ou la copie du compte de Kino sur MQL5 pour le robot.</div>'+offers;}
    else if(paused&&!fam){h='<div class="lbl"><span>Le mode</span></div><div class="note">Vous êtes en manuel, c’est votre paquet. Le trading automatique, c’est le paquet <b>Automatique</b>, réglé avec Kino, ou la copie du compte de Kino sur MQL5.</div>'+offers;}
    else{h='<div class="lbl"><span>Le mode</span></div><button class="btn '+(paused?'ok':'warn')+'" onclick="rbAsk('+(paused?0:1)+')">'+(paused?'Lancer l’automatique':'Repasser en manuel')+'</button><div id="rb-pw"></div>';}
