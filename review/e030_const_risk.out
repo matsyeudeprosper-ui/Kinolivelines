@@ -1,0 +1,44 @@
+========================================================================
+A. REAL MONEY - 484 closed trades, 8 accounts
+========================================================================
+  bos          82 trades  net   -16.86 ->   -20.31   max dip  60.61 ->  45.62   worst  -17.93 ->   -6.01   TRADE-OFF
+  demo         17 trades  net    +7.48 ->    +9.63   max dip   4.38 ->   4.38   worst   -4.38 ->   -4.38   BETTER
+  expenses     40 trades  net    -8.04 ->    -6.14   max dip  24.02 ->  23.74   worst   -5.97 ->   -5.97   BETTER
+  infinity     84 trades  net    -6.39 ->    -4.74   max dip  16.66 ->  20.22   worst   -5.97 ->   -5.97   TRADE-OFF
+  kino         94 trades  net   -15.14 ->    -6.92   max dip  39.00 ->  33.87   worst  -11.95 ->   -5.97   BETTER
+  labo         18 trades  net    +7.61 ->    +9.10   max dip   4.38 ->   5.05   worst   -4.38 ->   -4.38   TRADE-OFF
+  u477508138   66 trades  net   -32.99 ->   -64.41   max dip  50.31 -> 123.41   worst  -17.17 ->  -16.26   WORSE
+  valere       83 trades  net   -10.85 ->   -17.20   max dip  34.43 ->  37.45   worst  -11.95 ->   -6.03   WORSE
+  ALL         484 trades  net   -75.18 ->  -101.00   max dip 187.15 -> 252.96   worst  -17.93 ->  -16.26   WORSE
+    bigger lot (tight stops)   207 trades, they made  -33.23 (-0.16 each), median stop  101 pts
+    smaller lot (wide stops)    80 trades, they made  -47.07 (-0.59 each), median stop  267 pts
+    unchanged                  197 trades, they made   +5.12 (+0.03 each), median stop  174 pts
+
+  A2. SAME AVERAGE RISK, ONLY THE SHAPE CHANGES (each account's 1.5%% lots scaled so its total risk
+      equals what it really risked) - separates 'how much' from 'constant %% vs current'
+      bos         net   -16.86 ->   -25.11   max dip  60.61 ->  56.41   TRADE-OFF
+      demo        net    +7.48 ->    +8.04   max dip   4.38 ->   3.66   BETTER
+      expenses    net    -8.04 ->    -6.71   max dip  24.02 ->  25.92   TRADE-OFF
+      infinity    net    -6.39 ->    -3.89   max dip  16.66 ->  16.57   BETTER
+      kino        net   -15.14 ->    -6.63   max dip  39.00 ->  32.46   BETTER
+      labo        net    +7.61 ->    +7.45   max dip   4.38 ->   4.13   TRADE-OFF
+      u477508138  net   -32.99 ->   -17.40   max dip  50.31 ->  33.33   BETTER
+      valere      net   -10.85 ->   -19.11   max dip  34.43 ->  41.61   WORSE
+      ALL         net   -75.18 ->   -63.35   max dip 187.15 -> 184.65   BETTER
+
+========================================================================
+B. RANDOM-LOT CONTROL - the same 1.5% lots shuffled over the same 484 main trades, 5000 times
+========================================================================
+  1.5% sizing on main trades: -101.00   random assignment: median -151.74, 5-95% [-583.84 .. +245.81]   -> 58th percentile
+
+========================================================================
+C. FULL RE-SIMULATION - $200 start, compounding, debt + recovery, spread 7
+   each account's own dials (rr, 3%% cap, trend gate, streak, adds, kill line)
+========================================================================
+  BTCUSDm: 99000 M1 bars
+  Mike/Infinity  net  +134.15 ->   +71.14   max dip  28.96 ->  19.44   worst  -22.32 ->  -11.16   trades 112/110  over1.5% 15   TRADE-OFF   (not modelled: max_risk_pct)
+  Valere         net   +97.29 ->   +71.14   max dip  17.64 ->  19.44   worst   -7.01 ->  -11.16   trades 115/110  over1.5% 15   WORSE   (not modelled: max_risk_pct)
+  Dad            net  +134.15 ->   +71.14   max dip  28.96 ->  19.44   worst  -22.32 ->  -11.16   trades 112/110  over1.5% 15   TRADE-OFF   (not modelled: max_risk_pct)
+  Depenses       net  +121.06 ->  +124.91   max dip  19.31 ->  18.98   worst   -5.63 ->  -11.16   trades 104/103  over1.5% 12   BETTER   (not modelled: eq_half, recov_bullets_only, debt_gate, max_risk_pct)
+
+saved review/e030_const_risk.json

@@ -119,6 +119,14 @@ CFG_BASE = {"rr": 0.8, "drag": 0.0, "n_cont": 1, "wait_min": 0, "ext_pts": 0, "s
             # widest stops are the BEST trades, so skipping them has to
             # be the last resort, not the first move.
             "risk_fit": 0.0, "risk_fit_abs": 0.0,
+            # 2026-10-15 (owner, E030): CONSTANT risk - every main entry
+            # risks risk_const % of the running balance whatever the stop
+            # distance: lot = floor(bal*pct/dist / 0.01)*0.01, never below
+            # 0.01 (the broker minimum, which then risks MORE than pct on
+            # the widest stops - counted in n_rc_over). Replaces the base
+            # lot, its policy multipliers and the in-debt half lot; the
+            # recovery bullets keep their own sizing. 0 = off.
+            "risk_const": 0.0,
             # 2026-09-30 (owner): internal-structure entries. The BOT
             # takes these live and this harness did not model them at
             # all, so every backtest number excluded a trade type that
@@ -481,6 +489,7 @@ def simulate(R, spread, cfg):
     bal_ref = bal if bal > 0 else BAL0
     LIM_LIVE = bool(c.get("limits_live", 0))
     n_minbal = 0
+    n_rc_over = 0
     NB, K = float(c["bullets"]), int(c["k_streak"])
     skip_wd, skip_h = set(c["skip_wd"] or []), set(c["skip_hours"] or [])
     size_h = set(int(h) for h in (c["size_hours"] or []))
@@ -1174,6 +1183,11 @@ def simulate(R, spread, cfg):
         if DEBT_MAIN_MULT is not None and debt_now > 0.5:
             # 2026-10-10: broker step - floor 0.01 unless the main is a ghost (0)
             lot = 0.0 if float(DEBT_MAIN_MULT) == 0 else max(0.01, math.floor(lot * float(DEBT_MAIN_MULT) / 0.01 + 1e-9) * 0.01)
+        if c.get("risk_const") and lot > 0:      # a ghost main (lot 0) stays a ghost
+            _rc = max(0.0, bal_ref + run) * float(c["risk_const"]) / 100.0
+            lot = max(0.01, math.floor((_rc / dist) / 0.01 + 1e-9) * 0.01)
+            if dist * lot > _rc * 1.0001:
+                n_rc_over += 1
         _risk = dist * lot
         if c["risk_max"] and _risk > float(c["risk_max"]):
             blocked += 1
@@ -1285,7 +1299,7 @@ def simulate(R, spread, cfg):
     if days:
         dated.append([days[-1], round(run, 2)])
     return {"net": round(run, 2), "maxdd": round(dd, 2), "worst_debt": round(worst, 2), "trades": n_trades,
-            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "minbal": n_minbal, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
+            "wr": round(wins / n_trades * 100, 1) if n_trades else 0.0, "blocked": blocked, "minbal": n_minbal, "rc_over": n_rc_over, "rearm": n_rearm, "internal": n_int, "curve": dated, "pnls": pnls,
             "trailed": n_trail, "trail_exits": n_trail_exit,
             "trail_gain_pts": round(trail_gain, 1),
             "storm_exits": n_storm_exit, "flip_exits": n_flip_exit,
