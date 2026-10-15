@@ -226,7 +226,21 @@ class ScaledMT5(types.ModuleType):
                     r["volume"] = real.volume
             else:
                 r["volume"] = self._vol_out(r["volume"])
-        res = self._m.order_send(r)
+        # the bot always asks IOC (fine on Bitcoin); other symbols may refuse it (10030 invalid fill, USTEC
+        # 2026-10-15): put the symbol's allowed modes first, then fall back through the rest on 10030
+        if "type_filling" in r:
+            fm = int(getattr(self._si(), "filling_mode", 0) or 0)
+            IOC, FOK, RET = self._m.ORDER_FILLING_IOC, self._m.ORDER_FILLING_FOK, self._m.ORDER_FILLING_RETURN
+            modes = [m for m, ok in ((r["type_filling"], True), (IOC, fm & 2), (FOK, fm & 1)) if ok]
+            modes = sorted(dict.fromkeys(modes + [IOC, FOK, RET]), key=lambda m: 0 if (
+                (m == IOC and fm & 2) or (m == FOK and fm & 1)) else 1)
+            for m in modes:
+                r["type_filling"] = m
+                res = self._m.order_send(r)
+                if res is None or res.retcode != 10030:
+                    break
+        else:
+            res = self._m.order_send(r)
         if res is None:
             return res
         return _Obj(res, price=(res.price or 0) * self._k, volume=(res.volume or 0) / self.lot_factor(),
