@@ -25,23 +25,6 @@
    "plain_en": "The main robot: it runs on every account, with one money version per account."
   },
   {
-   "id": "owl-choch",
-   "name_fr": "Owl CHoCH",
-   "name_en": "Owl CHoCH",
-   "parent": "owl",
-   "by": "owner",
-   "created": "2026-10-12",
-   "stage": "tested",
-   "parts": {
-    "exit": "choch-principal",
-    "recovery": "rattrapage-sans-limite"
-   },
-   "plain_fr": "L'Owl, mais il ne sort qu'au CHoCH, et rattrape sur chaque cassure.",
-   "plain_en": "The Owl, but it only exits on a CHoCH, and catches up on every break.",
-   "result": "study/robot_choch_exit.json",
-   "public": false
-  },
-  {
    "id": "pekos-owl",
    "name_fr": "Pekos owl",
    "name_en": "Pekos owl",
@@ -52,86 +35,16 @@
    "by": "owner",
    "by_uid": "kino",
    "created": "2026-10-12",
-   "stage": "tested",
-   "tested_at": "2026-10-12T22:25:55Z"
-  },
-  {
-   "id": "pekos-rattrapage",
-   "name_fr": "Pekos rattrapage",
-   "name_en": "Pekos catch-up",
-   "parent": "pekos-owl",
-   "parts": {
-    "recovery": "rattrapage-sans-limite"
-   },
-   "by": "owner",
-   "by_uid": "kino",
-   "created": "2026-10-12",
-   "stage": "tested",
-   "plain_fr": "Pekos owl, avec le rattrapage sans limite.",
-   "plain_en": "Pekos owl, with the unlimited catch-up.",
-   "tested_at": "2026-10-12T22:46:59Z"
-  },
-  {
-   "id": "pekos-rattrapage-choch",
-   "name_fr": "Pekos rattrapage CHoCH",
-   "name_en": "Pekos catch-up CHoCH",
-   "parent": "pekos-rattrapage",
-   "parts": {
-    "exit": "objectif-1r-ou-choch"
-   },
-   "by": "owner",
-   "by_uid": "kino",
-   "created": "2026-10-12",
-   "stage": "tested",
-   "plain_fr": "Pekos rattrapage, qui sort aussi plus tôt si un CHoCH arrive avant l'objectif.",
-   "plain_en": "Pekos catch-up, which also exits early if a CHoCH comes before the target.",
-   "tested_at": "2026-10-12T22:51:03Z"
-  },
-  {
-   "id": "owl-de-nuit",
-   "name_fr": "Owl de nuit",
-   "name_en": "Owl de nuit",
-   "parent": "owl",
-   "parts": {
-    "filters": [
-     "tendance-fond",
-     "orage",
-     "mouvement",
-     "p-nuit-seulement"
-    ]
-   },
-   "by": "owner",
-   "by_uid": "kino",
-   "created": "2026-10-13",
-   "stage": "tested",
-   "public": false,
-   "tested_at": "2026-10-13T09:40:48Z",
+   "stage": "real",
+   "tested_at": "2026-10-12T22:25:55Z",
    "plug": {
-    "where": "acct:u477508138",
+    "where": "acct:expenses",
     "market": "BTCUSD",
-    "date": "2026-10-13",
+    "date": "2026-10-14",
     "status": "unplugged",
-    "applied_at": "2026-10-13T12:55:16Z"
-   }
-  },
-  {
-   "id": "supply-and-demand",
-   "name_fr": "Supply and demand",
-   "name_en": "Supply and demand",
-   "parent": "owl",
-   "parts": {
-    "entry": "p-toute-cassure-bos-ou-cho",
-    "exit": "choch-principal",
-    "filters": [
-     "orage"
-    ]
+    "applied_at": "2026-10-14T22:39:57Z"
    },
-   "by": "owner",
-   "by_uid": "kino",
-   "created": "2026-10-13",
-   "stage": "tested",
-   "public": true,
-   "tested_at": "2026-10-13T10:43:27Z"
+   "public": true
   }
  ],
  "pieces": [
