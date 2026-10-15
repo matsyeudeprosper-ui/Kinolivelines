@@ -3948,7 +3948,7 @@ const I18N_EN=new Map(Object.entries({
 const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+)\s*→\s*\$(\d+)\/jour\s*·\s*(\d+)\s*%$/,'Next step $$$1 → $$$2/day · $3 %'],[/^Objectif : \$(\d+)\s*·\s*(\d+)\s*%$/,'Goal: $$$1 · $2 %'],
  [/^Lot de base actuel : ([\d.]+) lot · mise à l\u2019échelle active$/,'Current base lot: $1 lot · scaling on'],[/^Trade en cours · (.+)$/,'Running trade · $1'],
  [/^(\d+) trades? · (\d+) (occasions? laissées? passer|signa(?:l|ux) écartés?)$/,'$1 trades · $2 set aside'],[/^ aujourd\u2019hui$/,' today'],[/^(\d+) sur (\d+) étapes$/,'$1 of $2 milestones'],
- [/^(\d+) comptes? · total$/,'$1 accounts · total'],[/^Bonjour (.+)$/,'Good morning $1'],[/^Bon après-midi (.+)$/,'Good afternoon $1'],[/^Bonsoir (.+)$/,'Good evening $1']];
+ [/^(\d+) comptes? · total$/,'$1 accounts · total'],[/^Bonjour Visiteur$/,'Good morning, visitor'],[/^Bon après-midi Visiteur$/,'Good afternoon, visitor'],[/^Bonsoir Visiteur$/,'Good evening, visitor'],[/^Bonjour (.+)$/,'Good morning $1'],[/^Bon après-midi (.+)$/,'Good afternoon $1'],[/^Bonsoir (.+)$/,'Good evening $1']];
 function _i18nText(fr){const k=fr.trim();if(!k)return null;
  if(I18N_EN.has(k))return fr.replace(k,I18N_EN.get(k));
  for(const [rx,to] of I18N_RX){if(rx.test(k))return fr.replace(k,k.replace(rx,to));}
@@ -19643,7 +19643,8 @@ class H(BaseHTTPRequestHandler):
             return
         sub = parts[1] if len(parts) > 1 else ""
         if sub == "":
-            page = (PAGE.replace("%%NAME%%", user.get("name", ""))
+            # 2026-10-15 (owner): the public demo greets a visitor, not "Compte demo"
+            page = (PAGE.replace("%%NAME%%", "Visiteur" if user.get("public") else user.get("name", ""))
                     .replace("%%BUILD%%", APP_BUILD))
             # opening an account page signs this phone in to it (the owner browsing
             # a member's page from the admin session does not)
