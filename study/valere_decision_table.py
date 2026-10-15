@@ -69,7 +69,8 @@ def real_side(end_s):
     J = []
     for r in csv.DictReader(open(JOURNAL, encoding="utf-8", errors="replace", newline="")):
         try:
-            J.append({"te": ts_of(r["entry_time_utc"]), "tx": ts_of(r["exit_time_utc"]) if r.get("exit_time_utc") else None,
+            # add rows carry no entry time in the journal (only the exit) - keep them, they are matched by exit time
+            J.append({"te": ts_of(r["entry_time_utc"]) if r.get("entry_time_utc") else None, "tx": ts_of(r["exit_time_utc"]) if r.get("exit_time_utc") else None,
                       "kind": r["kind"], "add": r["is_add"] == "True", "d": 1 if r["direction"] == "BUY" else -1, "lot": float(r["lot"]),
                       "debt": float(r["debt_at_entry"] or 0), "bal": float(r["balance_at_entry"] or 0), "pnl": float(r["profit_usd"] or 0),
                       "dist": float(r["dist_pts"] or 0)})
@@ -79,7 +80,7 @@ def real_side(end_s):
         g["te"] = g["tc"] - 60 * g["minutes"]
         js = [j for j in J if j["tx"] and abs(j["tx"] - g["tc"]) <= 120 and j["d"] == g["d"]]
         mains = [j for j in js if not j["add"]]
-        g["kind"] = mains[0]["kind"] if mains else ("?" if g["tc"] >= J[0]["te"] else "pre-journal")
+        g["kind"] = mains[0]["kind"] if mains else ("?" if g["tc"] >= min(j["te"] for j in J if j["te"]) else "pre-journal")
         if mains:
             g["te"] = mains[0]["te"]; g["main_lot"] = mains[0]["lot"]; g["main_pnl"] = mains[0]["pnl"]; g["debt"] = mains[0]["debt"]
         g["add_lots"] = [j["lot"] for j in js if j["add"]]

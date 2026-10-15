@@ -1,0 +1,16 @@
+structure cache reused f72585eaa3187781
+synced pass over 505 signals in 80s
+
+SYNCHRONISED DECISIONS on 505 signals: agree 497 (98.4%)
+  both entered 88 | both stayed out 409 | ENGINE ONLY entered 7 | REAL ONLY entered 1
+
+  engine entered, real did not - what the real bot said:
+       3  real log: FLIP-BOS refuse: aucun grand mouvement depuis N h
+       2  real: silent
+       1  real log: BOS ENTRY: BUY N @ ~N SL N TP N (risk $N, trend up)
+       1  real log: FLIP-BOS refuse: marche tres rapide (Nx) - exception, person
+
+  real entered, engine did not - the engine's gate (with the REAL state):
+       1  day_cap          real P&L of those trades +9.32
+
+  real trades with no engine signal at all within 3 min: 9 (real P&L +9.17; kinds {'pre-journal': 8, 'INT': 1})

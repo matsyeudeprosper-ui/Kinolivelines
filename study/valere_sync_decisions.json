@@ -1,0 +1,76 @@
+{
+ "generated_at": "2026-10-15T20:44:34Z",
+ "signals": 505,
+ "agree": 497,
+ "confusion": {
+  "enter/enter": 88,
+  "no/no": 409,
+  "no/enter": 7,
+  "enter/no": 1
+ },
+ "engine_only_why": {
+  "real log: BOS ENTRY: BUY N @ ~N SL N TP N (risk $N, trend up)": 1,
+  "real: silent": 2,
+  "real log: FLIP-BOS refuse: marche tres rapide (Nx) - exception, person": 1,
+  "real log: FLIP-BOS refuse: aucun grand mouvement depuis N h": 3
+ },
+ "real_only_gate": {
+  "day_cap": 1
+ },
+ "real_no_signal": [
+  {
+   "te": "2026-09-15 10:03:01",
+   "d": 1,
+   "kind": "pre-journal",
+   "pnl": 10.2
+  },
+  {
+   "te": "2026-09-19 22:54:56",
+   "d": 1,
+   "kind": "pre-journal",
+   "pnl": 2.05
+  },
+  {
+   "te": "2026-09-19 23:40:45",
+   "d": 1,
+   "kind": "pre-journal",
+   "pnl": -3.1
+  },
+  {
+   "te": "2026-09-21 19:00:58",
+   "d": 1,
+   "kind": "pre-journal",
+   "pnl": 2.25
+  },
+  {
+   "te": "2026-09-21 19:34:35",
+   "d": 1,
+   "kind": "pre-journal",
+   "pnl": 5.23
+  },
+  {
+   "te": "2026-09-24 00:12:52",
+   "d": -1,
+   "kind": "pre-journal",
+   "pnl": 1.78
+  },
+  {
+   "te": "2026-09-24 01:19:03",
+   "d": -1,
+   "kind": "pre-journal",
+   "pnl": -2.47
+  },
+  {
+   "te": "2026-09-24 01:44:55",
+   "d": -1,
+   "kind": "pre-journal",
+   "pnl": 5.18
+  },
+  {
+   "te": "2026-09-25 00:06:02",
+   "d": 1,
+   "kind": "INT",
+   "pnl": -11.95
+  }
+ ]
+}

@@ -1,0 +1,20 @@
+structure cache reused f72585eaa3187781
+synced execution pass: 87 paired entries, 87 engine trades closed, 82s
+
+PAIRED TRADES 87 (journal detail on 76)
+  total: real +35.89 vs engine +35.84  (gap +0.05)
+  same outcome (win/loss) on 87 of 87; same lot on 87 of 87
+  journal trades: main real -21.79 vs engine -24.54 | adds real +27.99 (18 trades with adds) vs engine +24.78 (16 with adds)
+  close time gap: median 0s, within 5 s 75, within 60 s 80, over 10 min 3
+
+  biggest differences:
+   09-18 05:00 BUY  pre-journal lot 0.04/0.04 adds -/0  real  +7.34 eng +14.85  close gap 3832s
+   10-06 18:48 SELL BOS      lot 0.02/0.02 adds 0.03/0  real  +6.28 eng  +1.69  close gap 0s
+   10-10 01:28 BUY  FLIP-BOS lot 0.02/0.02 adds 0.02/3  real  +8.25 eng +11.02  close gap 0s
+   10-07 17:26 SELL BOS      lot 0.02/0.02 adds -/0  real  +6.50 eng  +5.35  close gap 0s
+   09-15 08:56 BUY  pre-journal lot 0.04/0.04 adds -/0  real  -3.10 eng  -4.23  close gap 0s
+   10-09 19:51 SELL BOS      lot 0.02/0.02 adds 0.03/3  real -12.58 eng -11.82  close gap 0s
+   10-02 02:05 BUY  FLIP-BOS lot 0.02/0.02 adds -/0  real  +2.46 eng  +3.19  close gap 454s
+   10-11 01:14 BUY  FLIP-BOS lot 0.02/0.02 adds 0.03/0  real  +1.05 eng  +0.36  close gap 0s
+   10-06 23:50 BUY  FLIP-BOS lot 0.02/0.02 adds 0.03/3  real  -1.35 eng  -2.03  close gap 0s
+   09-15 08:46 BUY  pre-journal lot 0.04/0.04 adds -/0  real  +2.98 eng  +2.34  close gap -15s

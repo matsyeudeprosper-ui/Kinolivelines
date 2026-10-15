@@ -754,7 +754,9 @@ def simulate(R, spread, cfg):
                         # never buy more recovery than the debt needs, and take
                         # nothing when the market is not calm. `nv` is the
                         # reading at entry, the closest we have to the midpoint.
-                        r001 = dist * BLOT
+                        # 2026-10-15 fidelity diagnostic: the add sits at the MIDPOINT, so it risks HALF the
+                        # stop distance - the live bot's risk001 = 0.5 x dist x 0.01. Full dist bought ~half the bullets.
+                        r001 = 0.5 * dist * BLOT
                         gain001 = pos_rr * r001
                         by_budget = int((chest * JAR_STAKE) // r001) if r001 > 0 else 0
                         by_debt = int(math.ceil(debt / gain001)) if gain001 > 0 else 0

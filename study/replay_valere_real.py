@@ -42,6 +42,10 @@ SCHEDULE = [
      "start: $3 cap waived in debt, no recovery restriction, no jar, no streak limit, no storm rule, fixed 0.02 lot"),
     (utc("2026-09-15T22:05:18"), {"hard_cap_pct": 0.10}, "2412dad: no trade may risk more than 10 % of the balance"),
     (utc("2026-09-16T21:09:47"), {"jar": 1}, "e1a5260/5c9ccde: tab-and-jar recovery on (skim 50 %)"),
+    # 2026-10-15 fidelity diagnostic: the nervosity brake ("trop nerveux") was ON from the restart that loaded ab1bebc/
+    # c752a7c until the restart that loaded the "sans frein" package (its first and last refusals: 09-19 15:42 / 09-22 02:13)
+    (utc("2026-09-18T08:45:55"), {"nerv_gate": 1}, "ab1bebc/c752a7c loaded at the 08:45 restart: nervosity brake ON (no entry above 1.0x)"),
+    (utc("2026-09-22T14:37:51"), {"nerv_gate": 0}, "restart with the package's 'sans frein nervosite': brake OFF"),
     (utc("2026-09-21T09:02:45"), {"storm": 1.85}, "b944516: storm exception, no entry at nervosity >= 1.85"),
     (utc("2026-09-23T12:51:03"), {"k_streak": 2}, "fed021c: no recovery bullets after 2 straight losses"),
     (utc("2026-09-24T04:18:58"), {"scale_daily": 1}, "1e75d50: lot and day cap scaled with the balance (ref 200) at each day roll"),
@@ -50,6 +54,7 @@ SCHEDULE = [
     (utc("2026-09-25T14:05:04"), {"n_cont": 1}, "827fb9c: one continuation after the flip during recovery"),
     (utc("2026-09-27T00:47:54"), {"touch_rearm": 1}, "8fe4f35: a touch of the protected dot re-arms the one continuation"),
     (utc("2026-10-01T12:46:40"), {"risk_fit": 3.0}, "43b4092: 3 % per-trade risk ceiling (valere_cap3)"),
+    (utc("2026-10-10T08:49:22"), {"gmode": "trend"}, "2b1a602 loaded at the 08:49 restart: pullback-direction gate ON (first refusal 10:08)"),
     (utc("2026-10-10T07:05:31"), {"cap_rule": "off"}, "RECORDED MANUAL OVERRIDE: 'continue today' switch, cap lifted until 23:59 UTC"),
     # 2026-10-15 fidelity diagnostic: until 9ff36ce the bot read the feed's running moves_2h, which had already counted the
     # flip being traded (48ea5b2 made the FEED window strict on 09-22, but the counter it published still included the
@@ -96,6 +101,7 @@ class RealArm(PbGateArm):
             if k == "cap_rule": self.cap_rule = v
             elif k == "touch_rearm": self.touch_rearm = bool(v)
             elif k == "flip_counts_itself": self.flip_counts_itself = bool(v)
+            elif k == "gmode": self.gmode = v
             elif k == "k_streak": self.c["k_streak"] = v; self.K = int(v)
             elif k == "bullets": self.c["bullets"] = v; self.NB = int(v)
             elif k == "scale_daily":

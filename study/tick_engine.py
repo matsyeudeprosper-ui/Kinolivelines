@@ -257,7 +257,8 @@ class Arm:
         if not (debt > 0.5 and self.streak < self.K and self.NB > 0): return
         nv = self.bars.get(int(TM[k]) // 60000 * 60, (False, p["nv"]))[1]     # nervosity of the current bar (falls back to entry)
         if c["jar"]:
-            r001 = p["dist"] * BLOT; gain001 = self.rr * r001
+            # 2026-10-15: the add sits at the midpoint -> half the stop distance (live risk001 = 0.5 x dist x 0.01)
+            r001 = 0.5 * p["dist"] * BLOT; gain001 = self.rr * r001
             by_budget = int((self.chest * JAR_STAKE) // r001) if r001 > 0 else 0
             by_debt = int(math.ceil(debt / gain001)) if gain001 > 0 else 0
             nb = 0 if nv > 1.0 else max(0, min(self.NB, by_budget, by_debt))
