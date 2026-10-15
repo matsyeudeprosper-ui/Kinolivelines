@@ -14,14 +14,15 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-15T09:40:00Z",
+ "updated": "2026-10-15T12:00:10Z",
  "hypotheses": [
   {
    "id": "rested_cont",
    "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant (15 min - 3 h) ; repris en moins de 15 minutes, il perd.",
    "status": "nouveau",
    "evidence": [
-    "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait."
+    "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
+    "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day."
    ],
    "next": "Pile cont_rested to 30; cont_wait when built (10-15 min, uncapped); check engine trace by gap (does the test's quick BOS win?)."
   },
@@ -131,7 +132,8 @@
     "2026-10-14 04:30 veille: night FLIP-BOS SELL -3.04 (pace 0.893, closed 04:28) - a night reversal lost, against 'hour splits the reversals'. FLIP-BOS 70 tr 44% -51.07 PF 0.63 (h 39/49); BOS 54 tr 59% +38.04 PF 1.35 (h 64/54).",
     "2026-10-14: hot after loss FLIP 19 tr 26% -44.27. fls0.6+fh0.75+cw30 42 d capped B +58.8 (h1 -1.0) hole 26 / uncapped C -11.2; fls0.5+cw30 capped B +51.9 / C -7.8. Proposed fls06_fh075_capwait30.",
     "2026-10-14 19:00 veille: day FLIP-BOS SELL +2.76 (pace 1.116, closed 17:50, after the -13.14 loss) - a win against flip_day. flip_day 49 tr 41% -49.57 PF 0.53, halves 30%/50%: the day-flip leak is softer in the second half (watch whether it fades). 1.0-1.3 band 12 tr 25% -25.15 still the worst.",
-    "2026-10-14 21:00 veille: FLIP-BOS BUY -4.35 (entry 20 h, pace 0.863, after a win) lost. Pile flip_day 50 tr 40% -53.92 PF 0.51 (h 29/50); after a win 18 tr 44% -25.49, after a loss 32 tr 38% -28.43."
+    "2026-10-14 21:00 veille: FLIP-BOS BUY -4.35 (entry 20 h, pace 0.863, after a win) lost. Pile flip_day 50 tr 40% -53.92 PF 0.51 (h 29/50); after a win 18 tr 44% -25.49, after a loss 32 tr 38% -28.43.",
+    "2026-10-15 12:00 veille: FLIP-BOS SELL -1.79 (closed 10:13, pace 0.731 calm, first trade after ~8 h pause) lost as predicted. flip_day 51 tr 39% vs 58% -55.71 PF 0.50 (h 29/48); 10 h 5 tr 1 won -10.26; calm <0.8 11 tr 27%. FLIP-BOS 74 tr 45% -51.79; BOS 59 tr 59% +28.79."
    ],
    "next": "Pile flip_day; hour_size request. flip_loss_size still open."
   },
@@ -2268,6 +2270,18 @@
     "battery wait10/20/30 real view"
    ],
    "saw": "134 tr (no new since 05:00). BOS gap 15-180 27 tr 74% +65.5 both halves and both periods; BOS <15 24 tr 46% -27. After a loss <15 min 18%, 15-60 min 64%. dayn>=5 leak gone since 10-10 (15 tr -2.87). Winners: BOS, wide stop, mature, held long. Real money since 10-10 positive on 5 of 6 ledgers. No ask, no critique tonight, no twins. Pile cont_rested."
+  },
+  {
+   "t": "2026-10-15T12:00:10Z",
+   "night": "veille",
+   "looked": [
+    "1 new: FLIP-BOS SELL -1.79 (closed 10:13, pace 0.731, day, first after ~8 h pause)",
+    "--pile flip_day by nerv/prev/hour/dur",
+    "--pile day_after_loss",
+    "--by gap",
+    "--by kind"
+   ],
+   "saw": "135 tr 51% -32.44. Day flip lost as predicted: flip_day 51 tr 39% -55.71 (h 29/48). New: gap >3 h 31 tr 48% -38.16 (h 47/50) - the pause pays only 15-60 min (30-60 min 30 tr 63% +37.45), long pauses lose; inverted U. No ask, no twins, no labo, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
@@ -2320,6 +2334,7 @@
   "Uncapped edge on 69 days: e500+nosun +33 on 42 d, +3 on 69 d.",
   "hour_brake_rebuild: adaptive hour brake still missing in code.",
   "adds_in_scrutiny: add-ons are real money; do they change which piles leak?",
-  "Buys vs sells: wait for a falling week."
+  "Buys vs sells: wait for a falling week.",
+  "Gap >3 h 31 tr 48% -38 (h 47/50): is the long-pause loss the same as the day's first trade, or a kind/hour effect? Cross gap x kind x day/night tonight."
  ]
 }
