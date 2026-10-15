@@ -561,15 +561,16 @@ button.pc{cursor:pointer}
 .cta2[disabled]{opacity:.45}
 
 /* 2026-10-15 (owner): the member picks the robot of their own account */
-.arb .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.arb .nm{font-size:1.35rem;font-weight:800;margin-top:6px;letter-spacing:-.01em}
-.arb .pd{margin-top:12px;padding:11px 13px;border-radius:14px;background:rgba(232,197,90,.10);border:1px solid rgba(232,197,90,.28);font-size:.84rem;line-height:1.45;color:var(--text)}
-.arb .pd b{color:#f3d27a}
+.arb .lh-ico{position:relative}
+.arb .lh-ico i{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px var(--surface,#131a26),0 0 10px rgba(46,204,113,.6)}
+.arb .lh-ico i.wt{background:#e8c55a;box-shadow:0 0 0 3px var(--surface,#131a26),0 0 10px rgba(232,197,90,.55)}
+.arb .lh-t{margin-top:6px}
+.arb .lh-st b.pos{color:var(--up-soft)}.arb .lh-st b.neg{color:var(--down-soft)}
+.arb .lh-s b{color:#f3d27a}
 .arb .bt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
 .arb .bt.one{grid-template-columns:minmax(0,1fr)}
 .arb .bt button{border-radius:14px;padding:12px;font:inherit;font-size:.88rem;font-weight:800;cursor:pointer;border:1px solid var(--border2,rgba(255,255,255,.14));background:var(--surface2,rgba(255,255,255,.06));color:var(--text)}
 .arb .bt button.pri{background:var(--accent);border-color:transparent;color:#fff}
-.arb .hl.wt{color:#f3d27a;background:rgba(232,197,90,.12);border-color:rgba(232,197,90,.3)}
 .arbl{display:flex;flex-direction:column;gap:10px}
 .arbl button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--border,rgba(255,255,255,.1));background:var(--surface2,rgba(255,255,255,.05));border-radius:16px;padding:13px 14px;font:inherit;color:var(--text);cursor:pointer}
 .arbl button:disabled{cursor:default;border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.06)}
@@ -919,13 +920,16 @@ function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};
 function renderRobots(){if(!RB)return;head();$('top').innerHTML=acctCard()+(RB.limited?myRobotView():builderTop());$('list').innerHTML='';}
 // 2026-10-15 (owner): "the user should be free to decide which bot to use; default is the Owl". Every member, own
 // account: the robot on it, a picker (tested + profitable + can run live), a password confirm; a trade open -> it waits.
-function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.current||{},pd=A.pending,owl=c.id==='owl';
- return '<div class="card arb"><div class="top"><div style="min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><div class="nm">'+esc(T(c.name_fr,c.name_en))+'</div></div>'+
-  (pd?'<span class="hl wt"><i></i>'+T('Changement prévu','Change planned')+'</span>':'<span class="hl"><i></i>'+T('En marche','Running')+'</span>')+'</div>'+
-  (owl&&!pd?'<p style="margin-top:6px">'+T('Le robot par défaut. Vous pouvez en choisir un autre quand vous voulez.','The default robot. You can pick another one whenever you like.')+'</p>':'')+
-  (pd?'<div class="pd">'+T('Passera à ','Will switch to ')+'<b>'+esc(T(pd.name_fr,pd.name_en))+'</b>'+T(' dès que le trade en cours sera fermé.',' as soon as the open trade is closed.')+'</div>':'')+
+function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.current)||{};
+ const sub=pd?T('Passe à ','Switching to ')+'<b>'+esc(T(pd.name_fr,pd.name_en))+'</b>'+T(' dès que le trade en cours sera fermé.',' once the open trade is closed.')
+  :(owl?T('Le robot par défaut. Choisissez-en un autre quand vous voulez.','The default robot. Pick another one whenever you like.')
+   :T('Choisi pour ce compte. Retour à L’Owl possible à tout moment.','Chosen for this account. You can go back to the Owl at any time.'));
+ return '<div class="card arb lh"><div class="lh-top"><span class="lh-ico" title="'+(pd?T('Changement prévu','Change planned'):T('En marche','Running'))+'">'+BOT+'<i class="'+(pd?'wt':'')+'"></i></span>'+
+  '<div class="lh-tx" style="flex:1;min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><h3 class="lh-t">'+esc(T(c.name_fr,c.name_en))+'</h3><p class="lh-s">'+sub+'</p></div></div>'+
+  (t.net!=null?'<div class="lh-st"><div><b class="'+(t.net>=0?'pos':'neg')+'">'+(t.net>=0?'+':'−')+'$'+Math.round(Math.abs(t.net))+'</b><span>'+T('test 42 jours','42-day test')+'</span></div>'+
+   '<div><b>'+(t.trades!=null?t.trades:'—')+'</b><span>trades</span></div><div><b>'+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div></div>':'')+
   '<div class="bt'+(owl&&!pd?' one':'')+'"><button class="pri" onclick="arbPick()">'+T('Changer de robot','Change robot')+'</button>'+
-  (pd?'<button onclick="arbAsk(\''+c.id+'\')">'+T('Annuler le changement','Cancel the change')+'</button>':(owl?'':'<button onclick="arbAsk(\'owl\')">'+T('Revenir à L’Owl','Back to the Owl')+'</button>'))+'</div></div>';}
+  (pd?'<button onclick="arbAsk(\''+c.id+'\')">'+T('Annuler','Cancel')+'</button>':(owl?'':'<button onclick="arbAsk(\'owl\')">'+T('Revenir à L’Owl','Back to the Owl')+'</button>'))+'</div></div>';}
 function arbPick(){const A=RB.acct,L=A.choices||[];
  shOpen(T('Choisir un robot','Choose a robot'),'<p style="font-size:.84rem;color:var(--muted);margin:0 0 12px;line-height:1.45">'+T('Les robots testés sur 42 jours de Bitcoin qui ont gagné de l’argent et peuvent tourner en direct. Le passé ne garantit pas l’avenir.','Robots tested on 42 days of Bitcoin that made money and can run live. The past does not guarantee the future.')+'</p><div class="arbl">'+
   L.map(x=>{const on=x.current,pl=A.pending&&A.pending.id===x.id;return '<button '+(on&&!A.pending?'disabled':'onclick="arbAsk(\''+x.id+'\')"')+'><span class="n"><b>'+esc(T(x.name_fr,x.name_en))+
