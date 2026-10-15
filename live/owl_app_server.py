@@ -2593,14 +2593,16 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
   <div class="lbl" id="rbn-lbl" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">Le robot en ce moment</div>
   <span id="rbn-ago" style="font-size:.74rem;color:var(--muted);white-space:nowrap"></span></div>
- <div class="jsteps" id="rbn-steps" style="margin-top:12px">
+ <!-- 2026-10-15: hidden from the first paint - the new card (home() > #rbn-calm) replaces them; the old steps flashed
+      on a slow connection until the first data arrived -->
+ <div class="jsteps" id="rbn-steps" style="margin-top:12px;display:none">
   <div class="jl"></div>
   <div class="js" data-i="1"><div class="jc"><svg class="ic ic-s"><use href="#i-eye"/></svg></div><span>Observe</span></div>
   <div class="js" data-i="2"><div class="jc"><svg class="ic ic-s"><use href="#i-target"/></svg></div><span>Occasion</span></div>
   <div class="js" data-i="3"><div class="jc"><svg class="ic ic-s"><use href="#i-chart"/></svg></div><span>Trade</span></div>
   <div class="js" data-i="4"><div class="jc"><svg class="ic ic-s"><use href="#i-check"/></svg></div><span>Bilan</span></div>
  </div>
- <div id="rbn-msg" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:12px"></div>
+ <div id="rbn-msg" style="font-size:.92rem;color:var(--text);line-height:1.5;margin-top:12px;display:none"></div>
  <div id="jprog" style="display:none;margin-top:10px"></div>
  <div id="rbn-more" style="display:flex;justify-content:space-between;align-items:center;margin:12px -16px -16px;padding:11px 16px;border-top:1px solid var(--border);font-size:.82rem;font-weight:700;color:var(--accent-soft)"><span id="rbn-mt">Tout sur le robot</span><svg class="ic" style="width:14px;height:14px"><use href="#i-chev"/></svg></div>
 </div>
@@ -8225,15 +8227,15 @@ function goLabo(){location.href=B+'robots';}
   const q='id='+encodeURIComponent(id)+'&vn='+(ms.vol_now??'')+'&vr='+(ms.vol_ref??'')+'&mv='+(ms.moves_2h??'')+'&pt='+(ms.pb_trend??0)+'&ps='+encodeURIComponent(ms.pb_side||'')+'&op='+((D.open_list||[]).length?1:0);
   try{const r=await fetch(B+'robot_preview?'+q+'&t='+Date.now(),{cache:'no-store'});const j=await r.json();if(j&&!j.err){PV=j;pvT=Date.now();}}catch(e){}}
  function rbName(rb){return EN()?(rb.name_en||rb.name_fr||rb.id):(rb.name_fr||rb.id);}
- function pieces(rb){const it=x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
-   return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';};
-  // many pieces (owner): a count, then only what blocks or is awaited (max 4 tiles); the full list opens in the sheet
-  const L=pcsSorted(rb);if(!L.length)return '';const met=L.filter(x=>x.ok===true).length,MAX=4;
-  const show=L.length<=MAX?L:L.slice(0,MAX).filter((x,i)=>x.ok!==true||i<2);
-  return '<div class="lv-pcs"><div class="t"><span>'+T2('Ses pièces','Its pieces')+' · '+esc(rbName(rb))+'</span><span class="cnt">'+met+' / '+L.length+' '+T2('réunies','met')+'</span></div>'+
-   '<div class="pb" aria-hidden="true"><i style="width:'+Math.round(met/L.length*100)+'%"></i></div>'+
-   (show.length?'<div class="g">'+show.map(it).join('')+'</div>':'')+
-   (L.length>show.length?'<button type="button" class="all" id="edrpcs">'+(show.length?T2('Voir les ','See all ')+L.length+T2(' pièces',' pieces'):T2('Toutes réunies · voir les ','All met · see the ')+L.length+T2(' pièces',' pieces'))+' ›</button>':'')+'</div>';}
+ // 2026-10-15 (owner): every account shows its robot's pieces the way Mike's Owl shows its four checks - a row of
+ // dots, a tap opens the panel (the Owl's own panel when the piece is the same check, else the piece's sheet)
+ function pieces(rb){const L=rb.pieces||[];if(!L.length)return '';
+  return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+L.map((x,i)=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
+   return '<button type="button" data-ck="'+esc(x.ck||'')+'" data-pc="'+i+'" data-why="'+esc(nm+' : '+why)+'" aria-label="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':'…')+'</i><span>'+esc(nm)+'</span></button>';}).join('')+'</div>';}
+ function pcPanel(i,D){const x=(rbNow(D).pieces||[])[i];if(!x)return {t:'',h:''};const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
+  const role={entry:T2('Son entrée','Its entry'),exit:T2('Sa sortie','Its exit')}[x.k]||T2('Un de ses filtres','One of its filters');
+  return {t:nm,h:'<div class="edrx ckp"><div class="ck-mk">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+' · '+esc(rbName(rbNow(D)))+'</div><div class="ck-h '+(ok?'ok':'wt')+'"><div class="ck-i">'+(ok?'✓':'…')+'</div><div><b>'+(ok?T2('Oui, c’est bon','Yes, it is met'):(no?T2('Pas encore','Not yet'):T2('Il attend','It waits')))+'</b><p>'+esc(why)+'</p></div></div>'+
+   '<div class="ck-rule"><span>'+role+'</span>'+esc(nm)+'</div></div>'};}
  function pcsSorted(rb){const o=x=>x.ok===false?0:(x.ok===true?2:1);return (rb.pieces||[]).map((x,i)=>[x,i]).sort((a,b)=>o(a[0])-o(b[0])||a[1]-b[1]).map(z=>z[0]);}
  function pcsList(rb){return '<div class="edrx"><div class="lv-pcs" style="margin:0;padding:0;border:0"><div class="g one">'+pcsSorted(rb).map(x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
    return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';}).join('')+'</div></div></div>';}
@@ -8247,7 +8249,7 @@ function goLabo(){location.href=B+'robots';}
    it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'),'calm')+
    it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'),'awake')+'</div>';}
  function top(sym,real){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
-  return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?'<span class="lv-es" style="margin-left:0">'+T2('ESSAI','TRIAL')+'</span>':'')+'<span class="cv">▾</span></button>'+
+  return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?esB(sym,'margin-left:0'):'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    '<button class="lv-bell" id="edrchart" aria-label="'+T2('Voir le graphique','See the chart')+'" title="'+T2('Voir le graphique','See the chart')+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-chart"/></svg></button>'+
@@ -8269,8 +8271,8 @@ function goLabo(){location.href=B+'robots';}
  function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
   if(r.status==='closed'){c='gy';t=T2('Marché fermé','Market closed');s=reopen()+(o?T2(' Le trade virtuel reprend à la réouverture.',' The virtual trade resumes when it reopens.'):'');}
   else if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
-  else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix touche presque son déclencheur. Aucun argent réel.','Price is almost at its trigger. No real money.');}
-  else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur. Aucun argent réel.','Price is nearing its trigger. No real money.');}
+  else if(r.status==='ready'){c='bl';t=T2('Presque prêt','Nearly ready');s=T2('Le prix touche presque son déclencheur.','Price is almost at its trigger.')+(isReal(r.sym)?T2(' Ce compte trade ce marché avec son vrai argent.',' This account trades this market with real money.'):T2(' Aucun argent réel.',' No real money.'));}
+  else {c='or';t=T2('Bientôt','Soon');s=T2('Le prix s’approche de son déclencheur.','Price is nearing its trigger.')+(isReal(r.sym)?T2(' Ce compte trade ce marché avec son vrai argent.',' This account trades this market with real money.'):T2(' Aucun argent réel.',' No real money.'));}
   let h='<div class="lv-c">'+top(r.sym)+'<div class="lv-st">'+light(c)+'<div style="min-width:0"><h3>'+t+(o?' · <span class="'+(o.r_now>=0?'lv-up':'lv-dn')+'">'+R(o.r_now)+'</span>':'')+'</h3><p>'+s+'</p></div></div>';
   if(o&&o.e!=null&&o.sl!=null&&o.tp!=null&&r.px){const dir=o.d,lo=dir===1?o.sl:o.tp,hi=dir===1?o.tp:o.sl,pe=(o.e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(r.px-o.e)/((o.tp-o.e)||1)*100));
    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
@@ -8291,6 +8293,9 @@ function goLabo(){location.href=B+'robots';}
  // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
  // no trade open): nearly ready first, then soon, else the closest trend in place. Tap = it opens in the card.
  // 2026-10-15 (owner): only markets where the robot RUNNING on this account tested positive (api cand_ok)
+ // 2026-10-15 (owner): a market the account trades with real money (api real_mk) is never labelled ESSAI
+ function isReal(sym){try{return (JSON.parse(window._lastS).real_mk||[]).indexOf(String(sym).toUpperCase())>=0;}catch(e){return false;}}
+ function esB(sym,st){st=st||'';return isReal(sym)?'<span class="lv-es" style="color:var(--up);background:rgba(46,204,113,.12);'+st+'">'+T2('RÉEL','REAL')+'</span>':'<span class="lv-es" style="'+st+'">'+T2('ESSAI','TRIAL')+'</span>';}
  function candOk(){if(window._ckS!==window._lastS){window._ckS=window._lastS;try{window._ckL=JSON.parse(window._lastS).cand_ok||[];}catch(e){window._ckL=[];}}return window._ckL||[];}
  function cand(){const S=(SC&&SC.state&&SC.state.symbols)||[],o={ready:0,soon:1,far:2},ok=candOk();
   return S.filter(r=>r.sym!=='BTCUSD'&&r.sym!==sel&&ok.indexOf(String(r.sym).toUpperCase())>=0&&o[r.status]!=null&&r.near!=null).sort((a,b)=>o[a.status]-o[b.status]||a.near-b.near)[0]||null;}
@@ -8299,7 +8304,7 @@ function goLabo(){location.href=B+'robots';}
   const p=Math.max(4,Math.min(100,100-(r.near/3)*100)),side=r.pb_trend===1?T2('un achat','a buy'):(r.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
   const dp=r.dist_pct!=null?(EN()?r.dist_pct.toFixed(2):r.dist_pct.toFixed(2).replace('.',','))+' %':null;
   const on=candOn();
-  return '<div class="lv-cand" id="edrcand" role="button" tabindex="0" data-s="'+r.sym+'"><div class="hd"><span>'+T2('Prochain candidat','Next candidate')+' <span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></span>'+
+  return '<div class="lv-cand" id="edrcand" role="button" tabindex="0" data-s="'+r.sym+'"><div class="hd"><span>'+T2('Prochain candidat','Next candidate')+' '+esB(r.sym)+'</span>'+
    '<button type="button" class="cb'+(on?' on':'')+'" id="edrcbell" aria-pressed="'+on+'"><svg class="ic" style="width:13px;height:13px"><use href="#i-bell"/></svg>'+(on?T2('Prévenu','On'):T2('Prévenez-moi','Notify me'))+'</button></div>'+
    '<div class="rw">'+badge(r.sym)+'<div class="n"><b>'+esc(mname(r.sym))+'</b><small>'+T2('cherche ','looks for ')+side+(dp?' · '+T2('déclencheur à ','trigger ')+dp+(EN()?' away':''):'')+'</small></div><span class="st" style="color:'+st[2]+'">'+st[0]+'</span></div>'+
    '<div class="bar" aria-hidden="true"><i style="width:'+p.toFixed(0)+'%;background:'+st[1]+'"></i></div></div>';}
@@ -8419,7 +8424,7 @@ function goLabo(){location.href=B+'robots';}
     rule(T2('Il faut au moins un grand mouvement dans les 2 dernières heures avant d’entrer.','At least one big move in the last 2 hours before entering.'));}
   return {t:t,h:'<div class="edrx ckp">'+mkt+h+'</div>'};}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
-  if(k.slice(0,3)==='ck:'){const P=ckPanel(k.slice(3),D);$('edrsh-t').textContent=P.t;b.innerHTML=P.h;
+  if(k.slice(0,3)==='ck:'||k.slice(0,3)==='pc:'){const P=k[0]==='c'?ckPanel(k.slice(3),D):pcPanel(+k.slice(3),D);$('edrsh-t').textContent=P.t;b.innerHTML=P.h;
    s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
    try{history.pushState({edr:k},'');}catch(e){}return;}
   $('edrsh-t').textContent=k==='pcs'?(()=>{let D0={};try{D0=JSON.parse(window._lastS);}catch(e){}return T2('Ses pièces','Its pieces')+' · '+rbName(rbNow(D0));})():k==='rb'?T2('Aperçu d’un robot','Preview a robot'):k==='mk'?T2('Vos marchés','Your markets'):(k==='chart'?T2('Le graphique','The chart')+' · '+mname(sel):(k==='diary'?T2('Son journal · aujourd’hui','Its diary · today'):(k==='hours'?T2('Ses heures','Its hours'):T2('Détails pour traders','Details for traders'))));
@@ -8460,12 +8465,13 @@ function goLabo(){location.href=B+'robots';}
  async function scan(){if(Date.now()-scT<55000&&SC)return;scT=Date.now();
   try{const r=await fetch(B+'scanner_data?t='+Date.now(),{cache:'no-store'});if(r.ok){const j=await r.json();if(!j.err){SC=j;window._scn=j;}}}catch(e){}}
  function paint(force){const lv=$('edr');if(!lv||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
-  const TR=trials(),RS=realOthers(D).map(p=>nsym(p.sym));if(sel!=='BTCUSD'&&!TR.some(r=>r.sym===sel)&&RS.indexOf(sel)<0)sel='BTCUSD';
-  const B0=btc(D),cur=TR.find(r=>r.sym===sel);
+  // 2026-10-15: a candidate can be "trend set" (not in trials()) - picking it must not snap back to Bitcoin
+  const TR=trials(),AL=(SC&&SC.state&&SC.state.symbols)||[],RS=realOthers(D).map(p=>nsym(p.sym));if(sel!=='BTCUSD'&&!AL.some(r=>r.sym===sel)&&RS.indexOf(sel)<0)sel='BTCUSD';
+  const B0=btc(D),cur=AL.find(r=>r.sym===sel);
   const h=(sel==='BTCUSD'?calmBtc(D):(RS.indexOf(sel)>=0?calmReal(D,sel):calmTrial(cur)))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
    const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const pcb=$('edrpcs');if(pcb)pcb.onclick=()=>shOpen('pcs');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
-   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
@@ -8486,10 +8492,14 @@ function goLabo(){location.href=B+'robots';}
   // also while it waits ("Il attend" alone did not say where)
   const mkl='<div style="display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin-bottom:3px">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+'</div>';
   const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0">'+mkl+'<h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
-   (rbNow(D).id!=='owl'&&rbNow(D).pieces?'':dots(D))+
+   (rbNow(D).id!=='owl'&&rbNow(D).pieces?pieces(rbNow(D)):dots(D))+
    (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+'<span style="flex:1;min-width:0"><i class="hcl">'+T2('Aussi en trade','Also trading')+'</i><b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></span></div>':
-    (c?'<div class="hc"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hcl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span><span class="lv-es">'+T2('ESSAI','TRIAL')+'</span></div>':''));
-  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});}}
+    (c?'<div class="hc" id="rbn-cand" role="button" tabindex="0" data-s="'+c.sym+'"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hcl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span>'+esB(c.sym)+'</div>':''));
+  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   // 2026-10-15 (owner: "clicking prochain candidat Nasdaq takes me to En direct yet Bitcoin is still selected"):
+   // the candidate line opens En direct ON that market, not on Bitcoin
+   const hc=$('rbn-cand');if(hc)hc.onclick=ev=>{ev.stopPropagation();sel=hc.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}
+    tab('marche',$('tb-marche'));mxView('robot',true);scan().then(()=>paint(true));};}}
  function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
@@ -12691,7 +12701,7 @@ def robot_now(uid, ms, has_open, preview=None):
             x = P.get(fp) or {}
             f, e = nm(fp)
             eng, rule = x.get("engine") or {}, x.get("rule")
-            ok, wf, we = None, "", ""
+            ok, wf, we, ck = None, "", "", ""
             if rule:
                 ok, why = _RLS.filters_ok({"filters": [rule]}, now.hour, now.weekday(), rv, mv)
                 k = rule.get("kind")
@@ -12709,21 +12719,25 @@ def robot_now(uid, ms, has_open, preview=None):
             elif eng.get("gate") == "trend":
                 t, sd = ms.get("pb_trend"), ms.get("pb_side")
                 ok = t in (1, -1) and sd != "wrong"
+                ck = "trend" if t not in (1, -1) else "side"
                 wf, we = (("tendance claire, prix du bon côté", "clear trend, price on the right side") if ok else
                           (("le prix doit repasser sa dernière cassure", "price must come back past its last break") if t in (1, -1)
                            else ("pas de tendance claire", "no clear trend")))
             elif eng.get("storm"):
                 ok = rv is None or rv < float(eng["storm"])
+                ck = "calm"
                 wf, we = ("pas de tempête", "no storm") if ok else ("marché trop rapide", "market too fast")
             elif eng.get("movement"):
                 ok = mv is None or int(mv) >= int(eng["movement"])
+                ck = "awake"
                 wf, we = ("le marché bouge", "the market is moving") if ok else ("pas de grand mouvement depuis 2 h", "no big move for 2 h")
             elif eng.get("nerv_gate"):
                 ok = rv is None or rv <= 1.0
+                ck = "calm"
                 wf, we = ("marché calme", "calm market") if ok else ("marché nerveux", "nervous market")
             else:
                 continue
-            items.append({"k": "filter", "fr": f, "en": e, "ok": bool(ok), "why_fr": wf, "why_en": we})
+            items.append({"k": "filter", "fr": f, "en": e, "ok": bool(ok), "why_fr": wf, "why_en": we, "ck": ck})
         # exit: only says something while a trade is open
         xp = R.get("exit")
         if xp and has_open:
@@ -14541,7 +14555,6 @@ def user_stats(u, admin_override=False):
                         _t["tf"] = _hf[_k]
         except Exception:
             pass
-        d["robot_now"] = robot_now(u["id"], d.get("meteo_struct"), bool(d.get("open_list")))
         d["acct_rules"] = (lambda _p: {
             "package": _p.get("package"),
             "risk_fit_pct": _p.get("risk_fit_pct") or 0,
@@ -14901,6 +14914,7 @@ def user_stats(u, admin_override=False):
                                    .get(u["id"], {}).get("on"))
             d["cand_push"] = bool((_pp.get("_cand") or {}).get(u["id"]))
             d["cand_ok"] = cand_ok_for(u["id"])
+            d["real_mk"] = real_mk_for(u["id"])
         except Exception:
             d["push_level"] = "all"
             d["push_quiet"] = False
@@ -15107,6 +15121,9 @@ def user_stats(u, admin_override=False):
         # account can end up with an unlocked-looking switch
         if "trading_paused" in d:
             d["pause_locked"] = not can_switch(u)
+        # 2026-10-15: judged here, AFTER meteo_struct is loaded - it ran before it and every robot's
+        # trend piece said "pas de tendance claire" whatever the market did
+        d["robot_now"] = robot_now(u["id"], d.get("meteo_struct"), bool(d.get("open_list")))
         d["plan"] = plan_of(u)
         # 2026-09-28: a manual member without a push subscription gets no signal
         d["push_on"] = bool(_push_subs().get(u.get("id")))
@@ -19454,6 +19471,7 @@ class H(BaseHTTPRequestHandler):
                     _d["push_quiet"] = bool((_pp.get("_quiet") or {}).get(user["id"], {}).get("on"))
                     _d["cand_push"] = bool((_pp.get("_cand") or {}).get(user["id"]))
                     _d["cand_ok"] = cand_ok_for(user["id"])
+                    _d["real_mk"] = real_mk_for(user["id"])
                 except Exception:
                     _d["push_level"] = "all"
                     _d["push_quiet"] = False
@@ -20216,6 +20234,26 @@ def cand_ok_for(uid):
     out.discard("BTCUSD")
     _CAND_OK[uid] = (time.time(), sorted(out))
     return _CAND_OK[uid][1]
+
+
+_REAL_MK = {}
+
+
+def real_mk_for(uid):
+    """2026-10-15 (owner: "Dépenses still says essai next to the symbol"): the markets this account trades with REAL
+    money under the system rule (owl_markets.check: positive test AND beats random AND on the broker). The page
+    shows them as real, never as ESSAI. 60 s cache."""
+    c = _REAL_MK.get(uid)
+    if c and time.time() - c[0] < 60:
+        return c[1]
+    out = []
+    try:
+        import owl_markets as _OMK
+        out = sorted(_OMK.base(x["sym"]).upper() for x in _OMK.allowed(uid) if x.get("ok"))
+    except Exception:
+        pass
+    _REAL_MK[uid] = (time.time(), out)
+    return out
 
 
 def _cand_watch():
