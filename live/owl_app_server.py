@@ -8117,9 +8117,18 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-sw .cv{color:var(--muted);font-size:.7rem}
  .edrx .lv-bell{flex:none;width:38px;height:38px;border-radius:12px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);display:grid;place-items:center;cursor:pointer;font-size:1rem}
  .edrx .lv-bell.on{color:var(--up);border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}
- .edrx .lv-dots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
- .edrx .lv-dots button{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;min-width:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;padding:4px 0;border-radius:12px}
- .edrx .lv-dots button:active{background:var(--surface2)}
+ .edrx .lv-dots{margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+ .edrx .lv-dots .hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+ .edrx .lv-dots .hd span{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2)}
+ .edrx .lv-dots .hd b{font-size:.78rem;font-weight:800;color:var(--text2);font-variant-numeric:tabular-nums;white-space:nowrap}
+ .edrx .lv-dots .hd b.all{color:var(--up)}
+ .edrx .lv-dots .seg{display:flex;gap:3px;margin:8px 0 12px}.edrx .lv-dots .seg i{flex:1;height:4px;border-radius:99px;background:var(--surface3)}
+ .edrx .lv-dots .seg i.ok{background:var(--up)}.edrx .lv-dots .seg i.wt{background:rgba(232,197,90,.55)}
+ .edrx .lv-dots .ps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .edrx .lv-dots button{display:flex;align-items:center;gap:8px;min-width:0;min-height:40px;padding:6px 10px 6px 7px;border-radius:14px;text-align:left;border:1px solid var(--border);background:var(--surface2);font:inherit;color:var(--text);cursor:pointer;transition:background .15s}
+ .edrx .lv-dots button:active{background:var(--surface3)}
+ .edrx .lv-dots button.ok{background:transparent}.edrx .lv-dots button.ok span{color:var(--muted2)}
+ .edrx .lv-dots button.no{border-color:rgba(232,197,90,.35)}
  @media(max-width:380px){.edrx .lv-rbt .nm{display:none}}   /* 2026-10-14: a cut 'L' read as a typo; the icon alone says robot */
  .ckp .ck-mk{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin:0 2px 12px}
  .ckp .ck-h{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2)}
@@ -8145,8 +8154,8 @@ function goLabo(){location.href=B+'robots';}
  .ckp .ck-gl span{position:absolute;transform:translateX(-50%);white-space:nowrap}
  .ckp .ck-rule{margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.10);font-size:.84rem;line-height:1.45;color:var(--text)}
  .ckp .ck-rule span{display:block;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-soft);margin-bottom:4px}
- .edrx .lv-dots i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.72rem;font-weight:900}
- .edrx .lv-dots span{font-size:.68rem;color:var(--muted2);font-weight:600;line-height:1.2}
+ .edrx .lv-dots button i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.68rem;font-weight:900}
+ .edrx .lv-dots button span{min-width:0;font-size:.78rem;font-weight:600;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
  .edrx .lv-strip{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);cursor:pointer;font:inherit;color:inherit;width:100%;text-align:left}
  .edrx .lv-stack{display:flex;flex:none}.edrx .lv-stack .lv-sy{width:30px;height:30px;border-radius:10px;font-size:.62rem;border:2px solid var(--surface);margin-left:-8px}.edrx .lv-stack .lv-sy:first-child{margin-left:0}
  .edrx .lv-strip b{display:block;font-size:.86rem;color:var(--text)}.edrx .lv-strip small{font-size:.72rem;color:var(--muted)}
@@ -8229,9 +8238,18 @@ function goLabo(){location.href=B+'robots';}
  function rbName(rb){return EN()?(rb.name_en||rb.name_fr||rb.id):(rb.name_fr||rb.id);}
  // 2026-10-15 (owner): every account shows its robot's pieces the way Mike's Owl shows its four checks - a row of
  // dots, a tap opens the panel (the Owl's own panel when the piece is the same check, else the piece's sheet)
- function pieces(rb){const L=rb.pieces||[];if(!L.length)return '';
-  return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+L.map((x,i)=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
-   return '<button type="button" data-ck="'+esc(x.ck||'')+'" data-pc="'+i+'" data-why="'+esc(nm+' : '+why)+'" aria-label="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':'…')+'</i><span>'+esc(nm)+'</span></button>';}).join('')+'</div>';}
+ // 2026-10-15 (owner: "the text of the pieces are fighting for space... any robot, more or fewer pieces"): ONE
+ // checklist for the Owl's checks and any robot's pieces - a count, a segmented bar, then pills sized to their own
+ // text that wrap; what blocks comes first, what waits next, what is met last; past 6 pills the met ones fold into
+ // one "+N" pill that opens the full list. Items: {ok:true|false|null, nm, why, ck?, pc?}
+ function chk(L,more){if(!L.length)return '';const met=L.filter(x=>x.ok===true).length,o=x=>x.ok===false?0:(x.ok===true?2:1);
+  const S=L.map((x,i)=>[x,i]).sort((a,b)=>o(a[0])-o(b[0])||a[1]-b[1]).map(z=>z[0]),MAX=6;
+  let show=S,fold=0;if(more&&S.length>MAX){show=S.filter(x=>x.ok!==true);if(show.length<MAX-1)show=show.concat(S.filter(x=>x.ok===true).slice(0,MAX-1-show.length));fold=S.length-show.length;}
+  const pill=x=>{const ok=x.ok===true,no=x.ok===false;return '<button type="button" role="listitem" class="'+(ok?'ok':(no?'no':'wt'))+'" data-ck="'+esc(x.ck||'')+'" data-pc="'+(x.pc==null?'':x.pc)+'" data-why="'+esc(x.nm+' : '+x.why)+'" aria-label="'+esc(x.nm+' : '+x.why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':'…')+'</i><span>'+esc(x.nm)+'</span></button>';};
+  return '<div class="lv-dots"><div class="hd"><span>'+T2('Ce qu’il vérifie','What it checks')+'</span><b class="'+(met===L.length?'all':'')+'">'+(met===L.length?T2('Tout est réuni','All met'):met+' / '+L.length+' '+T2('réunies','met'))+'</b></div>'+
+   '<div class="seg" aria-hidden="true">'+S.map(x=>'<i class="'+(x.ok===true?'ok':(x.ok===false?'wt':''))+'"></i>').join('')+'</div>'+
+   '<div class="ps" role="list">'+show.map(pill).join('')+(fold?'<button type="button" class="ok" id="'+more+'"><i style="background:rgba(46,204,113,.15);color:var(--up)">+'+fold+'</i><span>'+T2('Voir tout','See all')+'</span></button>':'')+'</div></div>';}
+ function pieces(rb){return chk((rb.pieces||[]).map((x,i)=>({ok:x.ok,nm:EN()?x.en:x.fr,why:EN()?x.why_en:x.why_fr,ck:x.ck,pc:i})),'edrpcs');}
  function pcPanel(i,D){const x=(rbNow(D).pieces||[])[i];if(!x)return {t:'',h:''};const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
   const role={entry:T2('Son entrée','Its entry'),exit:T2('Sa sortie','Its exit')}[x.k]||T2('Un de ses filtres','One of its filters');
   return {t:nm,h:'<div class="edrx ckp"><div class="ck-mk">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+' · '+esc(rbName(rbNow(D)))+'</div><div class="ck-h '+(ok?'ok':'wt')+'"><div class="ck-i">'+(ok?'✓':'…')+'</div><div><b>'+(ok?T2('Oui, c’est bon','Yes, it is met'):(no?T2('Pas encore','Not yet'):T2('Il attend','It waits')))+'</b><p>'+esc(why)+'</p></div></div>'+
@@ -8239,15 +8257,14 @@ function goLabo(){location.href=B+'robots';}
  function pcsSorted(rb){const o=x=>x.ok===false?0:(x.ok===true?2:1);return (rb.pieces||[]).map((x,i)=>[x,i]).sort((a,b)=>o(a[0])-o(b[0])||a[1]-b[1]).map(z=>z[0]);}
  function pcsList(rb){return '<div class="edrx"><div class="lv-pcs" style="margin:0;padding:0;border:0"><div class="g one">'+pcsSorted(rb).map(x=>{const ok=x.ok===true,no=x.ok===false,why=EN()?x.why_en:x.why_fr,nm=EN()?x.en:x.fr;
    return '<button type="button" data-why="'+esc(nm+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':(no?'rgba(232,197,90,.15);color:var(--warn)':'rgba(59,130,246,.15);color:var(--accent-soft)'))+'">'+(ok?'✓':(no?'✕':'…'))+'</i><span class="pn"><b>'+esc(nm)+'</b><small>'+esc(why)+'</small></span></button>';}).join('')+'</div></div></div>';}
- // the four checks, as four small dots inside the card
+ // the Owl's four checks, through the same checklist as any robot (2026-10-15)
  function dots(D){const ms=D.meteo_struct||{},k=window._mxk||'none',t=ms.pb_trend,gate=!!ms.pb_gate;
-  const it=(ok,a,why,ck)=>'<button type="button" data-ck="'+(ck||'')+'" data-why="'+esc(why)+'" aria-label="'+esc(a+' : '+why)+'"><i style="background:'+(ok?'rgba(46,204,113,.15);color:var(--up)':'rgba(232,197,90,.15);color:var(--warn)')+'">'+(ok?'✓':'…')+'</i><span>'+a+'</span></button>';
-  const side=t===1?T2('que des achats','only buys'):T2('que des ventes','only sells');
-  return '<div class="lv-dots" role="list" aria-label="'+T2('Ce que le robot vérifie','What the robot checks')+'">'+
-   it(t===1||t===-1,T2('Sens clair','Clear trend'),t===1||t===-1?T2('La tendance de fond est en '+(t===1?'hausse':'baisse')+' : le robot ne prend '+side+'.','The background trend is '+(t===1?'up':'down')+': the robot takes '+side+'.'):T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),'trend')+
-   it(!gate||ms.pb_side!=='wrong',T2('Bon côté','Right side'),(!gate||ms.pb_side!=='wrong')?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.'),'side')+
-   it(k!=='nervous'&&k!=='brisk',T2('Calme','Calm'),(k!=='nervous'&&k!=='brisk')?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.'),'calm')+
-   it(k!=='none',T2('Éveillé','Awake'),k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.'),'awake')+'</div>';}
+  const side=t===1?T2('que des achats','only buys'):T2('que des ventes','only sells'),sideOk=!gate||ms.pb_side!=='wrong',calm=k!=='nervous'&&k!=='brisk';
+  return chk([
+   {ok:t===1||t===-1,nm:T2('Sens clair','Clear trend'),ck:'trend',why:t===1||t===-1?T2('La tendance de fond est en '+(t===1?'hausse':'baisse')+' : le robot ne prend '+side+'.','The background trend is '+(t===1?'up':'down')+': the robot takes '+side+'.'):T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.')},
+   {ok:sideOk,nm:T2('Bon côté','Right side'),ck:'side',why:sideOk?T2('Le prix est du bon côté de sa dernière cassure.','Price is on the right side of its last break.'):T2('Le prix doit d’abord repasser sa dernière cassure.','Price must first come back past its last break.')},
+   {ok:calm,nm:T2('Calme','Calm'),ck:'calm',why:calm?T2('Le marché bouge normalement : pas de tempête.','The market moves normally: no storm.'):T2('Le marché va trop vite : le robot reste à l’abri jusqu’à ce que ça se calme.','The market is too fast: the robot stays out until it calms down.')},
+   {ok:k!=='none',nm:T2('Éveillé','Awake'),ck:'awake',why:k!=='none'?T2('Le marché a fait de vrais mouvements récemment.','The market made real moves recently.'):T2('Pas de grand mouvement depuis 2 h : le robot attend que le marché se réveille.','No big move for 2 h: the robot waits for the market to wake up.')}]);}
  function top(sym,real){const nb=$('notifbtn'),on=nb&&nb.dataset.on==='1';
   return '<div class="lv-top"><button class="lv-sw" id="edrsw" aria-label="'+T2('Changer de marché','Switch market')+'">'+badge(sym,26)+esc(mname(sym))+(sym!=='BTCUSD'&&!real?esB(sym,'margin-left:0'):'')+'<span class="cv">▾</span></button>'+
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
@@ -8471,7 +8488,7 @@ function goLabo(){location.href=B+'robots';}
   const h=(sel==='BTCUSD'?calmBtc(D):(RS.indexOf(sel)>=0?calmReal(D,sel):calmTrial(cur)))+othCard(D,B0,TR)+tiles(D,TR);
   if(force||lv._l!==h){lv._l=h;lv.innerHTML=h;
    const sw=$('edrsw');if(sw)sw.onclick=()=>shOpen('mk');const rbb=$('edrrbt');if(rbb)rbb.onclick=()=>shOpen('rb');const pvx=$('edrpvx');if(pvx)pvx.onclick=()=>{PV=null;paint(true);};const pcb=$('edrpcs');if(pcb)pcb.onclick=()=>shOpen('pcs');const cb=$('edrcbell');if(cb)cb.onclick=ev=>{ev.stopPropagation();candToggle();};
-   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+   lv.querySelectorAll('.lv-dots button,.lv-pcs .g button').forEach(x=>x.onclick=()=>{if(x.id==='edrpcs'){shOpen('pcs');return;}if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    lv.querySelectorAll('.lv-or').forEach(x=>x.onclick=()=>{sel=x.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});});
    ['edrall2','edrmore'].forEach(id=>{const x=$(id);if(x)x.onclick=()=>shOpen('mk');});
    const cd=$('edrcand');if(cd)cd.onclick=()=>{sel=cd.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}paint(true);window.scrollTo({top:($('edrh').getBoundingClientRect().top+scrollY-10),behavior:'smooth'});};const sp=$('edrstrip');if(sp)sp.onclick=()=>shOpen('mk');
@@ -8484,7 +8501,7 @@ function goLabo(){location.href=B+'robots';}
  // sentence and four checks, from the same code, plus the next candidate in one line; the old four steps are hidden.
  function home(){const card=$('rbnow');if(!card||!window._lastS)return;let D;try{D=JSON.parse(window._lastS);}catch(e){return;}
   let box=$('rbn-calm');if(!box){box=document.createElement('div');box.id='rbn-calm';box.className='edrx';const st=$('rbn-steps');if(st)st.before(box);else card.appendChild(box);
-   const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .lv-dots{margin-top:12px;padding-top:12px}#rbn-calm .hc{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:.84rem;color:var(--text2);line-height:1.3}#rbn-calm .hc b{color:var(--text)}#rbn-calm .hc .hcl{display:block;font-style:normal;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}#rbn-calm .lv-dots{margin-top:16px!important;padding-top:14px!important}#rbn-calm .lv-st{gap:14px}';
+   const cs=document.createElement('style');cs.textContent='#rbnow #rbn-steps,#rbnow #rbn-msg{display:none!important}#rbn-calm{margin-top:12px}#rbn-calm .lv-st h3{font-size:1.15rem}#rbn-calm .lv-st p{font-size:.84rem}#rbn-calm .lv-li{width:44px;height:44px}#rbn-calm .hc{display:flex;align-items:center;gap:10px;margin-top:14px;padding:11px 13px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);font-size:.84rem;color:var(--text2);line-height:1.3}#rbn-calm .hc b{color:var(--text)}#rbn-calm .hc .hcl{display:block;font-style:normal;font-size:.64rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}#rbn-calm .lv-st{gap:14px}';
    document.head.appendChild(cs);const mt=$('rbn-mt');if(mt)mt.textContent=T2('Ouvrir En direct','Open Live');}
   const S=btc(D),c=cand(),own=(D.open_list||[]).filter(x=>!isBtc(x));
   try{window._pillUpd(D);}catch(e){}   // same snapshot as this card
@@ -8495,7 +8512,7 @@ function goLabo(){location.href=B+'robots';}
    (rbNow(D).id!=='owl'&&rbNow(D).pieces?pieces(rbNow(D)):dots(D))+
    (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+'<span style="flex:1;min-width:0"><i class="hcl">'+T2('Aussi en trade','Also trading')+'</i><b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></span></div>':
     (c?'<div class="hc" id="rbn-cand" role="button" tabindex="0" data-s="'+c.sym+'"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hcl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span>'+esB(c.sym)+'</div>':''));
-  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
+  if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.id==='edrpcs'){shOpen('pcs');return;}if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
    // 2026-10-15 (owner: "clicking prochain candidat Nasdaq takes me to En direct yet Bitcoin is still selected"):
    // the candidate line opens En direct ON that market, not on Bitcoin
    const hc=$('rbn-cand');if(hc)hc.onclick=ev=>{ev.stopPropagation();sel=hc.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}
