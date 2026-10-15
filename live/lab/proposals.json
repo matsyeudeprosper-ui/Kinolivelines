@@ -2912,11 +2912,27 @@
    "title_en": "No entry after a 500-point hour, and none on Sunday",
    "why_fr": "Deux freins qui reviennent « un peu mieux » depuis dix nuits, réunis. Sans plafond : +33 $ sur 42 jours, mieux sur les deux moitiés, trou 50 au lieu de 65. Avec plafond : -9 $. Sur 69 jours, sans plafond, presque pareil (+3 $) : prudence.",
    "why_en": "Two brakes that come back \"a little better\" for ten nights, put together. Uncapped: +$33 over 42 days, better on both halves, hole 50 instead of 65. Capped: -$9. Over 69 days, uncapped, almost the same (+$3): caution.",
-   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "ext_pts": 500, "skip_wd": [6]},
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 500,
+    "skip_wd": [
+     6
+    ]
+   },
    "by": "chercheur",
    "date": "2026-10-14",
    "status": "pending",
-   "pretest": {"net": 84.2, "worst": 49.7, "h1": 25.5, "h2": 19.7, "base_net": 50.84, "base_worst": 64.92}
+   "pretest": {
+    "net": 84.2,
+    "worst": 49.7,
+    "h1": 25.5,
+    "h2": 19.7,
+    "base_net": 50.84,
+    "base_worst": 64.92
+   }
   },
   {
    "id": "ext500_nosun_capwait30",
@@ -2925,11 +2941,28 @@
    "title_en": "The same, plus a 30-minute pause on capped accounts",
    "why_fr": "Chaque compte reçoit son frein : l'heure agitée et le dimanche sans plafond, la pause avec plafond. Sur 42 jours : +33 $ sans plafond, +47 $ avec (trou 27 au lieu de 65). Sur 69 jours : +3 $ et +33 $. Seule idée positive partout ce soir ; première moitié faible avec plafond.",
    "why_en": "Each account gets its own brake: the busy hour and Sunday uncapped, the pause capped. Over 42 days: +$33 uncapped, +$47 capped (hole 27 instead of 65). Over 69 days: +$3 and +$33. Tonight's only idea positive everywhere; weak first half capped.",
-   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "ext_pts": 500, "skip_wd": [6], "cap_wait": 30},
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 500,
+    "skip_wd": [
+     6
+    ],
+    "cap_wait": 30
+   },
    "by": "chercheur",
    "date": "2026-10-14",
    "status": "pending",
-   "pretest": {"net": 84.2, "worst": 49.7, "h1": 25.5, "h2": 19.7, "base_net": 50.84, "base_worst": 64.92}
+   "pretest": {
+    "net": 84.2,
+    "worst": 49.7,
+    "h1": 25.5,
+    "h2": 19.7,
+    "base_net": 50.84,
+    "base_worst": 64.92
+   }
   },
   {
    "id": "em05n2_capwait30",
@@ -2938,11 +2971,26 @@
    "title_en": "Half stake on a young trend, and a pause on capped accounts",
    "why_fr": "Hors des sentiers : les vrais trades des deux premiers grands mouvements d'une tendance perdent, ceux du 4e et plus gagnent (31 trades, 61 %). Y miser moitié moins, avec la pause : avec plafond +84 $, mieux sur les deux moitiés, trou 7 au lieu de 65. Sans plafond : -13 $.",
    "why_en": "Out of the box: real trades on a trend's first two big moves lose, those from the 4th on win (31 trades, 61 %). Stake half there, with the pause: capped +$84, better on both halves, hole 7 instead of 65. Uncapped: -$13.",
-   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "early_moves_size": 0.5, "early_moves_max": 2, "cap_wait": 30},
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "early_moves_size": 0.5,
+    "early_moves_max": 2,
+    "cap_wait": 30
+   },
    "by": "chercheur",
    "date": "2026-10-14",
    "status": "pending",
-   "pretest": {"net": 37.8, "worst": 40.6, "h1": -29.8, "h2": 8.0, "base_net": 50.84, "base_worst": 64.92}
+   "pretest": {
+    "net": 37.8,
+    "worst": 40.6,
+    "h1": -29.8,
+    "h2": 8.0,
+    "base_net": 50.84,
+    "base_worst": 64.92
+   }
   },
   {
    "id": "em075n3",
@@ -2951,11 +2999,25 @@
    "title_en": "A quarter less stake on a trend's first three moves",
    "why_fr": "Le nouveau réglage seul, en douceur. Avec plafond : +24 $, mieux sur les deux moitiés, même trou. Sans plafond : -5 $, première moitié moins bonne. Moitié moins sur trois mouvements : non sur les deux comptes. Une tendance jeune mérite une mise plus petite, pas un refus.",
    "why_en": "The new setting alone, gently. Capped: +$24, better on both halves, same hole. Uncapped: -$5, weaker first half. Half stake on three moves: no on both accounts. A young trend deserves a smaller stake, not a refusal.",
-   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "early_moves_size": 0.75, "early_moves_max": 3},
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "early_moves_size": 0.75,
+    "early_moves_max": 3
+   },
    "by": "chercheur",
    "date": "2026-10-14",
    "status": "pending",
-   "pretest": {"net": 46.3, "worst": 52.0, "h1": -8.3, "h2": 2.1, "base_net": 50.84, "base_worst": 64.92}
+   "pretest": {
+    "net": 46.3,
+    "worst": 52.0,
+    "h1": -8.3,
+    "h2": 2.1,
+    "base_net": 50.84,
+    "base_worst": 64.92
+   }
   },
   {
    "id": "fls06_fh075_capwait30",
@@ -2964,11 +3026,162 @@
    "title_en": "Stake less on risky changes of direction, and pause",
    "why_fr": "Les vrais changements de sens pris en marché nerveux juste après une perte n'en gagnent qu'un sur quatre (19 trades, -44 $). Mise réduite là, et pause avec plafond : avec plafond +59 $, trou 26 au lieu de 65, première moitié pareille. Sans plafond : -11 $.",
    "why_en": "Real changes of direction taken in a nervous market right after a loss win only one in four (19 trades, -$44). Smaller stake there, and the pause capped: capped +$59, hole 26 instead of 65, first half the same. Uncapped: -$11.",
-   "cfg": {"rr": 0.8, "n_cont": 1, "bullets": 3, "k_streak": 2, "flip_loss_size": 0.6, "flip_hot_size": 0.75, "cap_wait": 30},
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "flip_loss_size": 0.6,
+    "flip_hot_size": 0.75,
+    "cap_wait": 30
+   },
    "by": "chercheur",
    "date": "2026-10-14",
    "status": "pending",
-   "pretest": {"net": 39.7, "worst": 54.1, "h1": -19.9, "h2": 8.8, "base_net": 50.84, "base_worst": 64.92}
+   "pretest": {
+    "net": 39.7,
+    "worst": 54.1,
+    "h1": -19.9,
+    "h2": 8.8,
+    "base_net": 50.84,
+    "base_worst": 64.92
+   }
+  },
+  {
+   "id": "ext500_nosun_wait10",
+   "family": "rythme",
+   "title_fr": "Éviter les heures agitées et le dimanche, attendre 10 minutes entre trades",
+   "title_en": "Skip busy hours and Sundays, wait 10 minutes between trades",
+   "why_fr": "Attendre 10 minutes après chaque trade. Vrais trades repris en moins de 15 minutes : 35 trades, 37 % gagnés, -47 $ ; entre 15 et 60 minutes : 63 %. Rejouée sur les vrais trades, cette pause gagne 28 $ ; seule sur 42 jours, elle perd. Je l'essaie avec la paire qui gagnait hier sans plafond. Pas encore testé.",
+   "why_en": "Wait 10 minutes after each trade. Real trades restarted within 15 minutes: 35 trades, 37 % won, -$47; between 15 and 60 minutes: 63 %. Replayed on the real trades this pause gains $28; alone over 42 days it loses. I try it with the pair that won uncapped yesterday. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "ext_pts": 500,
+    "skip_wd": [
+     6
+    ],
+    "wait_min": 10
+   },
+   "by": "chercheur",
+   "date": "2026-10-15",
+   "status": "pending",
+   "pretest": {
+    "net": 101.75,
+    "worst": 40.24,
+    "h1": 92.09,
+    "h2": -28.5,
+    "base_net": 87.2,
+    "base_worst": 80.29,
+    "base_h1": 87.89,
+    "base_h2": -19.53,
+    "verdict": "B",
+    "trades": 189,
+    "at": "2026-10-15 04:23",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": -4.29,
+     "diff_worst": -38.16
+    },
+    "real": {
+     "n_real": 91,
+     "trades": 49,
+     "diff_net": 45.07,
+     "diff_worst": -30.54
+    }
+   }
+  },
+  {
+   "id": "em075n3_wait10",
+   "family": "argent",
+   "title_fr": "Miser moins sur une tendance jeune, attendre 10 minutes entre trades",
+   "title_en": "Smaller stake on a young trend, wait 10 minutes between trades",
+   "why_fr": "Hors des sentiers : donner la mise aux trades reposés et aux tendances installées. Les meilleurs trades sont un trade de plus dans le même sens, après une pause, sur une tendance mûre. Ici, un quart de mise en moins sur les trois premiers mouvements, et 10 minutes de souffle. Pas encore testé.",
+   "why_en": "Out of the box: give the stake to rested trades and settled trends. The best trades are one more the same way, after a pause, in a mature trend. Here, a quarter less stake on a trend's first three moves, and 10 minutes to breathe. Not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "early_moves_size": 0.75,
+    "early_moves_max": 3,
+    "wait_min": 10
+   },
+   "by": "chercheur",
+   "date": "2026-10-15",
+   "status": "pending",
+   "pretest": {
+    "net": 24.6,
+    "worst": 109.81,
+    "h1": 24.65,
+    "h2": -5.36,
+    "base_net": 87.2,
+    "base_worst": 80.29,
+    "base_h1": 87.89,
+    "base_h2": -19.53,
+    "verdict": "C",
+    "trades": 228,
+    "at": "2026-10-15 04:24",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -66.15,
+     "diff_worst": 29.52
+    },
+    "real": {
+     "n_real": 91,
+     "trades": 71,
+     "diff_net": 33.64,
+     "diff_worst": -25.51
+    }
+   }
+  },
+  {
+   "id": "fls05_wait10",
+   "family": "argent",
+   "title_fr": "10 minutes de pause, demi-mise sur un changement de sens après perte",
+   "title_en": "10-minute pause, half stake on a change of direction after a loss",
+   "why_fr": "Repartir moins de 15 minutes après une perte : 17 trades, 18 % gagnés, -41 $. Attendre 15 à 60 minutes après une perte : 28 trades, 64 %, +12 $. Ce n'est pas la perte qui coûte, c'est la hâte. Au lieu de refuser, demi-mise sur ce changement de sens, et 10 minutes de souffle. Trop peu de trades, pas encore testé.",
+   "why_en": "Restarting within 15 minutes of a loss: 17 trades, 18 % won, -$41. Waiting 15 to 60 minutes after a loss: 28 trades, 64 %, +$12. It is not the loss that costs, it is the hurry. Instead of refusing, half stake on that change of direction, and 10 minutes to breathe. Too few trades, not tested yet.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "flip_loss_size": 0.5,
+    "wait_min": 10
+   },
+   "by": "chercheur",
+   "date": "2026-10-15",
+   "status": "pending",
+   "pretest": {
+    "net": 29.15,
+    "worst": 117.05,
+    "h1": 29.35,
+    "h2": -12.64,
+    "base_net": 87.2,
+    "base_worst": 80.29,
+    "base_h1": 87.89,
+    "base_h2": -19.53,
+    "verdict": "C",
+    "trades": 227,
+    "at": "2026-10-15 04:24",
+    "long": {
+     "days": 69,
+     "verdict": "C",
+     "diff_net": -38.58,
+     "diff_worst": 36.76
+    },
+    "real": {
+     "n_real": 91,
+     "trades": 71,
+     "diff_net": 37.71,
+     "diff_worst": -17.7
+    }
+   }
   }
  ]
 }

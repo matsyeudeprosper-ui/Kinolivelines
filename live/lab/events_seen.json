@@ -22,7 +22,9 @@
   "day_loss_size",
   "capped_only_verdict",
   "day_count_size",
-  "pile_field_dayn"
+  "pile_field_dayn",
+  "adds_in_scrutiny",
+  "cont_wait"
  ],
  "asks_answered": [
   "ask_1790670647",

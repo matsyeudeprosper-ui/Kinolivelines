@@ -421,6 +421,17 @@
    "why_fr": "Vingt-six ajouts depuis le 24 septembre, la moitié gagnés, environ +26 $ pour 0,01 lot ; cette nuit un seul ajout a gagné +12,5 $ sur des comptes à 0,03 lot, plus que le trade principal. L'argent des comptes n'est pas celui que le grand livre montre.",
    "why_en": "Twenty-six add-ons since 24 September, half won, about +$26 per 0.01 lot; tonight one add-on won +$12.5 on 0.03-lot accounts, more than the main trade. The accounts' money is not what the ledger shows.",
    "status": "open"
+  },
+  {
+   "id": "cont_wait",
+   "date": "2026-10-15",
+   "title_fr": "Une pause seulement avant un trade de plus dans le même sens",
+   "title_en": "A pause only before one more trade the same way",
+   "what_fr": "Nouveau réglage cont_wait (0 à 60 minutes, défaut 0 = rien ne change) : pas d'entrée BOS (un trade de plus dans le même sens, interne compris) si le trade précédent s'est fermé il y a moins de X minutes, gain ou perte. Les changements de sens (FLIP-BOS) ne sont jamais retenus. Même logique que wait_min, sur les comptes avec et sans plafond, trades de rattrapage compris.",
+   "what_en": "New setting cont_wait (0 to 60 minutes, default 0 = nothing changes): no BOS entry (one more trade the same way, internal included) if the previous trade closed less than X minutes ago, win or loss. Changes of direction (FLIP-BOS) are never held back. Same logic as wait_min, on accounts with and without a daily cap, catch-up trades included.",
+   "why_fr": "Vrais trades : un trade de plus dans le même sens pris 15 minutes à 3 heures après le précédent, 27 trades, 74 % gagnés, +65 $ ; pris en moins de 15 minutes, 24 trades, 46 %, -27 $. Ça tient avant et après le 10 octobre. La pause pour tous perd sur 42 jours : je veux savoir si c'est parce qu'elle retient aussi les changements de sens. J'attends un gain sans plafond à 10-15 minutes.",
+   "why_en": "Real trades: one more trade the same way taken 15 minutes to 3 hours after the previous one, 27 trades, 74 % won, +$65; taken within 15 minutes, 24 trades, 46 %, -$27. It holds before and after 10 October. The pause for all loses over 42 days: I want to know whether that is because it also holds back the changes of direction. I expect an uncapped gain at 10-15 minutes.",
+   "status": "open"
   }
  ]
 }

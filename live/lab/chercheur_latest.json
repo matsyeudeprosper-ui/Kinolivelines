@@ -1,90 +1,82 @@
 {
- "date": "2026-10-14",
- "fr": "**Ce soir : une fois cinq trades déjà pris dans la journée, le robot n'en gagne plus que 36 % — la fuite est le nombre, pas seulement l'heure.**\n\n**Les verdicts (42 jours).** 37 idées : 2 mieux sur les deux moitiés, 6 un peu mieux, 1 pareil, 28 non. La meilleure : pas d'entrée après une heure de 500 points, pause de 30 minutes avec plafond, un quart de mise en moins sur le premier mouvement : +13 $ sans plafond, +93 $ avec, trou 15 au lieu de 65. Le critique doute : la pause seule fait aussi bien, et sans plafond le gain tient à une perte évitée. D'accord : c'est la pause qui travaille.\n\n**Mes 15 essais (sur 20).** Heure agitée + dimanche, sans plafond : +33 $, mieux sur les deux moitiés, mais pareil sur 69 jours. Avec la pause : positif partout, 42 et 69 jours. Tendance jeune : un quart de moins, avec plafond +24 $ sur les deux moitiés ; moitié moins + pause : +84 $, trou 7. Arrêter net à 4, 5 ou 6 trades par jour : non, les moitiés se contredisent. Honnête : ce soir la première moitié de la pause avec plafond est faible.\n\n**Ce que je crois.** RENFORCÉ : avec plafond, moins de trades. NOUVEAU : trop de trades dans une journée coûte. AFFAIBLI : l'heure agitée sans plafond, pas sur 69 jours.\n\n**Ce que les trades apprennent (128 trades, 52 %, -15 $).** 1er trade du jour : 70 % gagnés ; après cinq déjà pris : 45 trades, 36 %, -64 $, moitiés d'accord. Le jour, repartir moins de 30 minutes après une perte : 17 trades, 18 %. Les gros gains : même sens, après une pause. Depuis le 10 octobre : 40 trades, 60 %.\nPas de nouvelle pile : « nerveux après une perte » (32 trades, 34 %) est à 81 % dans une pile existante, et le nombre de trades du jour n'est pas un champ — je le demande.\n\n**Je propose.** Heure agitée + dimanche ; idem + pause ; hors des sentiers : moitié moins sur une tendance jeune + pause ; un quart de moins sur une tendance jeune ; moins sur les changements de sens à risque + pause.\n\n**Je demande.** Miser moins, sans s'arrêter, après cinq trades dans la journée ; une pile sur ce nombre.",
- "en": "**Tonight: once five trades are already taken that day, the robot wins only 36 % — the leak is the count, not just the hour.**\n\n**The verdicts (42 days).** 37 ideas: 2 better on both halves, 6 a little better, 1 same, 28 no. The best: no entry after a 500-point hour, a 30-minute pause capped, a quarter less stake on the first move: +$13 uncapped, +$93 capped, hole 15 instead of 65. The critic doubts: the pause alone does as well, and uncapped the gain is one avoided loss. Agreed: the pause does the work.\n\n**My 15 runs (of 20).** Busy hour + Sunday, uncapped: +$33, better on both halves, but the same over 69 days. With the pause: positive everywhere, 42 and 69 days. Young trend: a quarter less, capped +$24 on both halves; half stake + pause: +$84, hole 7. A hard stop at 4, 5 or 6 trades a day: no, the halves contradict. Honestly: tonight the capped pause's first half is weak.\n\n**What I believe.** STRENGTHENED: capped accounts want fewer trades. NEW: too many trades in a day costs. WEAKENED: the busy hour uncapped, not over 69 days.\n\n**What the trades teach (128 trades, 52 %, -$15).** The day's 1st trade: 70 % won; after five already taken: 45 trades, 36 %, -$64, halves agree. By day, restarting within 30 minutes of a loss: 17 trades, 18 %. The big wins: same way, after a pause. Since 10 October: 40 trades, 60 %.\nNo new pile: \"nervous after a loss\" (32 trades, 34 %) is 81 % inside an existing pile, and the day's trade count is not a field — I ask for it.\n\n**I propose.** Busy hour + Sunday; the same + pause; out of the box: half stake on a young trend + pause; a quarter less on a young trend; less on risky changes of direction + pause.\n\n**I ask for.** A smaller stake, not a stop, after five trades in the day; a pile on that number.",
+ "date": "2026-10-15",
+ "fr": "**Ce soir : un trade de plus dans le même sens, pris après une pause, est le meilleur trade du robot : 74 % gagnés.**\n\n**Les verdicts.** Pas de test cette nuit : la connexion au marché a été refusée (0 essai sur 20). Restent les chiffres d'hier : 2 idées mieux sur les deux moitiés, 6 un peu mieux, 28 non. Sans plafond, 10 minutes de pause perdent 23 $ sur 42 jours mais gagnent 28 $ sur les 88 vrais trades : le test et la réalité ne disent pas la même chose.\n\n**Ce que je crois.** NOUVEAU : la pause fait le bon trade dans le même sens. RENFORCÉ : ce n'est pas la perte qui coûte, c'est la hâte. AFFAIBLI : « trop de trades dans la journée » ; après cinq trades, 31 trades et -66 $ avant le 10 octobre, 15 trades et -3 $ depuis. Toujours vrai : la nuit porte le robot ; avec plafond, moins de trades.\n\n**Ce que les trades apprennent (134 trades, 51 %, -31 $).** Un trade de plus dans le même sens, pris 15 minutes à 3 heures après le précédent : 27 trades, 74 %, +65 $, positif sur les deux moitiés, avant et après le 10 octobre. En moins de 15 minutes : 24 trades, 46 %, -27 $. Après une perte, repartir en moins de 15 minutes : 18 % gagnés ; attendre 15 à 60 minutes : 64 %. Depuis le 10 octobre, la plupart des comptes réels gagnent.\nPile ouverte : « un trade de plus dans le même sens, pris après une pause », pour savoir si la pause est une vraie cause, pas de la chance.\n\n**Je propose (pas encore testé).** Éviter les heures agitées et le dimanche, avec 10 minutes de pause. Hors des sentiers : moins de mise sur une tendance jeune, avec la pause. Demi-mise sur un changement de sens après une perte, avec la pause.\n\n**Je demande.** Une pause seulement avant un trade de plus dans le même sens. Neuf demandes attendent ; la plus urgente : rendre fidèle le test du nouveau filtre.",
+ "en": "**Tonight: one more trade the same way, taken after a pause, is the robot's best trade: 74 % won.**\n\n**The verdicts.** No test tonight: the connection to the market was refused (0 runs of 20). Yesterday's numbers stand: 2 ideas better on both halves, 6 a little better, 28 no. Uncapped, a 10-minute pause loses $23 over 42 days but gains $28 on the 88 real trades: the test and reality disagree.\n\n**What I believe.** NEW: the pause makes the good same-way trade. STRENGTHENED: it is not the loss that costs, it is the hurry. WEAKENED: \"too many trades in a day\"; after five trades, 31 trades and -$66 before 10 October, 15 trades and -$3 since. Still true: the night carries the robot; capped accounts want fewer trades.\n\n**What the trades teach (134 trades, 51 %, -$31).** One more trade the same way, taken 15 minutes to 3 hours after the previous one: 27 trades, 74 %, +$65, positive in both halves, before and after 10 October. Within 15 minutes: 24 trades, 46 %, -$27. After a loss, restarting within 15 minutes: 18 % won; waiting 15 to 60 minutes: 64 %. Since 10 October most real accounts earn.\nNew pile: \"one more trade the same way, taken after a pause\", to learn whether the pause is a real cause, not luck.\n\n**I propose (not tested yet).** Skip busy hours and Sundays, with a 10-minute pause. Out of the box: a smaller stake on a young trend, with the pause. Half stake on a change of direction after a loss, with the pause.\n\n**I ask for.** A pause only before one more trade the same way. Nine requests wait; the most urgent: make the test of the new filter faithful.",
  "proposals": [
-  "ext500_nosun",
-  "ext500_nosun_capwait30",
-  "em05n2_capwait30",
-  "em075n3",
-  "fls06_fh075_capwait30"
+  "ext500_nosun_wait10",
+  "em075n3_wait10",
+  "fls05_wait10"
  ],
- "headline_fr": "Une fois cinq trades déjà pris dans la journée, le robot n'en gagne plus que 36 % : la fuite est le nombre, pas seulement l'heure.",
- "headline_en": "Once five trades are already taken that day, the robot wins only 36 %: the leak is the count, not just the hour.",
+ "headline_fr": "Un trade de plus dans le même sens, pris après une pause, est le meilleur trade du robot : 74 % gagnés.",
+ "headline_en": "One more trade the same way, taken after a pause, is the robot's best trade: 74 % won.",
  "beliefs": [
+  {
+   "fr": "Un trade de plus dans le même sens gagne surtout quand le robot a fait une pause avant.",
+   "en": "One more trade the same way wins mostly when the robot paused before it.",
+   "evidence": "Après 15 minutes à 3 heures : 27 trades, 74 % gagnés, +65 $ ; en moins de 15 minutes : 24 trades, 46 %, -27 $. Vrai avant et après le 10 octobre."
+  },
+  {
+   "fr": "Repartir trop vite coûte : ce n'est pas la perte qui fait perdre, c'est la hâte.",
+   "en": "Restarting too fast costs: it is not the loss that loses, it is the hurry.",
+   "evidence": "Après une perte, repartir en moins de 15 minutes : 17 trades, 18 % gagnés ; attendre 15 à 60 minutes : 28 trades, 64 %. Le test sur 42 jours n'est pas encore d'accord."
+  },
   {
    "fr": "Les comptes avec plafond de gain par jour gagnent à trader moins, en espaçant leurs trades.",
    "en": "Accounts with a daily cap gain by trading less, spacing their trades.",
-   "evidence": "Pause de 30 minutes : +47 à +93 $ sur 42 jours, trou 7 à 27 au lieu de 65 ; mais ce soir la première moitié est faible."
+   "evidence": "Pause de 30 minutes : +47 à +93 $ sur 42 jours, trou 7 à 27 au lieu de 65 ; la première moitié reste fragile."
   },
   {
-   "fr": "Trop de trades dans une même journée coûte cher.",
-   "en": "Too many trades in one day costs money.",
-   "evidence": "Après cinq trades déjà pris : 45 vrais trades, 36 % gagnés, -64 $, moitiés d'accord. Arrêter net : non dans le test. Nouveau."
+   "fr": "La nuit (de 1 h à 8 h, heure universelle) porte le robot ; le jour, il rend.",
+   "en": "The night (1 to 8 a.m. UTC) carries the robot; by day it gives back.",
+   "evidence": "La nuit : 38 trades, 74 % gagnés, +61 $. Les deux moitiés d'accord."
   },
   {
-   "fr": "La nuit (0 h - 8 h UTC) porte le robot ; le jour perd.",
-   "en": "The night (00-08 UTC) carries the robot; the day loses.",
-   "evidence": "Nuit : 48 trades, 69 % gagnés, +57 $, moitiés d'accord."
+   "fr": "Les changements de sens pris le jour ne rapportent rien.",
+   "en": "Changes of direction taken by day earn nothing.",
+   "evidence": "50 trades, 40 % gagnés, -54 $ ; la seconde moitié est à un sur deux."
   },
   {
-   "fr": "Le jour, juste après une perte, le robot court après son argent et perd.",
-   "en": "By day, right after a loss, the robot chases its money and loses.",
-   "evidence": "44 vrais trades, 36 % gagnés, -58 $ ; repartir en moins de 30 minutes : 17 trades, 18 % gagnés."
-  },
-  {
-   "fr": "Les changements de sens en marché nerveux perdent.",
-   "en": "Changes of direction in a nervous market lose.",
-   "evidence": "35 vrais trades, 34 % gagnés, -56 $ ; juste après une perte, un sur quatre."
-  },
-  {
-   "fr": "Une tendance jeune mérite une mise plus petite.",
-   "en": "A young trend deserves a smaller stake.",
-   "evidence": "Vrais trades : 4e grand mouvement et plus 61 % gagnés, +34 $ ; premier mouvement 45 %, -41 $. Test avec plafond : +24 $ sur les deux moitiés."
+   "fr": "Trop de trades dans la journée coûtait ; le nouveau filtre a peut-être fermé cette fuite.",
+   "en": "Too many trades in a day used to cost; the new filter may have closed that leak.",
+   "evidence": "Après cinq trades dans la journée : avant le 10 octobre 31 trades, 29 %, -66 $ ; depuis, 15 trades, 47 %, -3 $. Affaibli."
   }
  ],
  "sections": [
   {
    "title_fr": "Ce soir",
    "title_en": "Tonight",
-   "fr": "Une fois cinq trades déjà pris dans la journée, le robot n'en gagne plus que 36 % et perd 64 $ sur 45 trades. Les premiers trades du jour sont presque à l'équilibre. La fuite, c'est le nombre de trades, pas seulement l'heure.",
-   "en": "Once five trades are already taken that day, the robot wins only 36 % and loses $64 over 45 trades. The day's first trades are about even. The leak is the number of trades, not only the hour."
+   "fr": "Les meilleurs trades du robot se ressemblent : un trade de plus dans le même sens, pris 15 minutes à 3 heures après le précédent. 27 trades, 74 % gagnés, +65 $. Les mêmes pris en moins de 15 minutes : 46 %, -27 $. La pause fait la différence.",
+   "en": "The robot's best trades look alike: one more trade the same way, taken 15 minutes to 3 hours after the previous one. 27 trades, 74 % won, +$65. The same taken within 15 minutes: 46 %, -$27. The pause makes the difference."
   },
   {
    "title_fr": "Les verdicts",
    "title_en": "The verdicts",
-   "fr": "37 idées sur 42 jours : 2 mieux sur les deux moitiés, 6 un peu mieux, 1 pareil, 28 non. La meilleure : pas d'entrée après une heure de 500 points et pause de 30 minutes avec plafond, +13 $ sans plafond, +93 $ avec, trou 15 au lieu de 65. Le critique doute : la pause seule fait aussi bien. Je suis d'accord.",
-   "en": "37 ideas over 42 days: 2 better on both halves, 6 a little better, 1 same, 28 no. The best: no entry after a 500-point hour and a 30-minute pause capped, +$13 uncapped, +$93 capped, hole 15 instead of 65. The critic doubts: the pause alone does as well. I agree."
-  },
-  {
-   "title_fr": "Mes 15 essais",
-   "title_en": "My 15 runs",
-   "fr": "Heure agitée + dimanche, sans plafond : +33 $, mieux sur les deux moitiés, mais pareil sur 69 jours. Avec la pause en plus : positif partout. Moitié moins sur une tendance jeune + pause, avec plafond : +84 $, trou 7. Arrêter net à 4, 5 ou 6 trades par jour : non.",
-   "en": "Busy hour + Sunday, uncapped: +$33, better on both halves, but the same over 69 days. Adding the pause: positive everywhere. Half stake on a young trend + pause, capped: +$84, hole 7. A hard stop at 4, 5 or 6 trades a day: no."
+   "fr": "Pas de test cette nuit : la connexion au marché a été refusée. Les chiffres d'hier restent : 2 idées mieux sur les deux moitiés, 6 un peu mieux, 28 non. Les cinq idées d'hier attendent. Sans plafond, 10 minutes de pause perdent 23 $ sur 42 jours mais gagnent 28 $ sur les vrais trades.",
+   "en": "No test tonight: the connection to the market was refused. Yesterday's numbers stand: 2 ideas better on both halves, 6 a little better, 28 no. Yesterday's five ideas wait. Uncapped, a 10-minute pause loses $23 over 42 days but gains $28 on the real trades."
   },
   {
    "title_fr": "Ce que les trades apprennent",
    "title_en": "What the trades teach",
-   "fr": "128 trades, 52 % gagnés, -15 $. 1er trade du jour : 70 % gagnés. Le jour, repartir moins de 30 minutes après une perte : 18 % gagnés. Les plus gros gains : trades dans le même sens, pris après une pause. Depuis le 10 octobre : 40 trades, 60 % gagnés. Pas de nouvelle pile : le nombre de trades du jour n'est pas encore un champ.",
-   "en": "128 trades, 52 % won, -$15. The day's 1st trade: 70 % won. By day, restarting within 30 minutes of a loss: 18 % won. The biggest wins: same-way trades taken after a pause. Since 10 October: 40 trades, 60 % won. No new pile: the day's trade count is not a field yet."
+   "fr": "134 trades, 51 % gagnés, -31 $. Après une perte, repartir en moins de 15 minutes : 18 % gagnés ; attendre 15 à 60 minutes : 64 %. Ce n'est pas la perte, c'est la hâte. Depuis le 10 octobre, la plupart des comptes réels gagnent. Nouvelle pile : les trades dans le même sens pris après une pause.",
+   "en": "134 trades, 51 % won, -$31. After a loss, restarting within 15 minutes: 18 % won; waiting 15 to 60 minutes: 64 %. Not the loss, the hurry. Since 10 October most real accounts earn. New pile: same-way trades taken after a pause."
   },
   {
    "title_fr": "Ce que je crois",
    "title_en": "What I believe",
-   "fr": "Renforcé : avec plafond, moins de trades. Nouveau : trop de trades dans une journée coûte. Affaibli : le frein des heures agitées sans plafond, toujours pas sur 69 jours. Toujours vrai : la nuit gagne, le jour après une perte perd.",
-   "en": "Strengthened: capped accounts want fewer trades. New: too many trades in a day costs. Weakened: the busy-hour brake uncapped, still not over 69 days. Still true: night wins, day after a loss loses."
+   "fr": "Nouveau : la pause fait le bon trade dans le même sens. Renforcé : la hâte coûte. Affaibli : « trop de trades par jour » ; depuis le 10 octobre, après cinq trades, 47 % gagnés et -3 $ seulement. Toujours vrai : la nuit porte le robot ; avec plafond, moins de trades.",
+   "en": "New: the pause makes the good same-way trade. Strengthened: hurry costs. Weakened: 'too many trades a day'; since 10 October, after five trades, 47 % won and only -$3. Still true: the night carries the robot; capped accounts want fewer trades."
   },
   {
    "title_fr": "Ce que je propose",
    "title_en": "What I propose",
-   "fr": "Pas d'entrée après une heure de 500 points ni le dimanche ; la même chose avec la pause ; hors des sentiers : moitié moins sur une tendance jeune, avec la pause ; un quart de moins sur une tendance jeune ; moins sur les changements de sens à risque, avec la pause.",
-   "en": "No entry after a 500-point hour nor on Sunday; the same with the pause; out of the box: half stake on a young trend, with the pause; a quarter less on a young trend; less on risky changes of direction, with the pause."
+   "fr": "Pas encore testé. Éviter les heures agitées et le dimanche, 10 minutes de pause. Hors des sentiers : moins de mise sur une tendance jeune, 10 minutes de pause. Demi-mise sur un changement de sens après une perte, 10 minutes de pause.",
+   "en": "Not tested yet. Skip busy hours and Sundays, 10-minute pause. Out of the box: smaller stake on a young trend, 10-minute pause. Half stake on a change of direction after a loss, 10-minute pause."
   },
   {
    "title_fr": "Ce que je demande",
    "title_en": "What I ask for",
-   "fr": "Miser moins, sans s'arrêter, après cinq trades dans la journée ; pouvoir faire une pile sur ce nombre.",
-   "en": "A smaller stake, not a stop, after five trades in the day; a pile on that number."
+   "fr": "Une pause seulement avant un trade de plus dans le même sens, sans retenir les changements de sens. La pause pour tous perd sur 42 jours ; je veux savoir si c'est parce qu'elle retient aussi les changements de sens.",
+   "en": "A pause only before one more trade the same way, never holding back changes of direction. The pause for all loses over 42 days; I want to know whether that is because it also holds back changes of direction."
   }
  ]
 }

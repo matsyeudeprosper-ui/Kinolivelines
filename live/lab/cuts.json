@@ -333,6 +333,31 @@
      ]
     }
    ]
+  },
+  {
+   "id": "cont_rested",
+   "title_fr": "Un trade de plus dans le même sens, pris après une pause",
+   "title_en": "One more trade the same way, taken after a pause",
+   "by": "chercheur",
+   "date": "2026-10-15",
+   "status": "open",
+   "why_fr": "Les meilleurs trades du journal se ressemblent : un trade de plus dans le même sens, pris 15 minutes à 3 heures après le précédent. 27 trades, 74 % gagnés, +65 $, les deux moitiés positives. Les mêmes trades pris en moins de 15 minutes : 24 trades, 46 %, -27 $. Cette pile dira si la pause est la vraie cause.",
+   "why_en": "The journal's best trades look alike: one more trade the same way, taken 15 minutes to 3 hours after the previous one. 27 trades, 74 % won, +$65, both halves positive. The same trades taken within 15 minutes: 24 trades, 46 %, -$27. This pile will tell whether the pause is the real cause.",
+   "where": [
+    {
+     "field": "kind",
+     "op": "==",
+     "value": "BOS"
+    },
+    {
+     "field": "gap_min",
+     "op": "between",
+     "value": [
+      15,
+      180
+     ]
+    }
+   ]
   }
  ]
 }
