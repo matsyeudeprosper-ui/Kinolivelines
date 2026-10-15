@@ -597,6 +597,12 @@ button.pc{cursor:pointer}
 .vis.on .sw{background:var(--up)}.vis.on .sw i{transform:translateX(18px)}
 .runhere{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 .runhere .lbl{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+
+/* 2026-10-15: per-30-day yardstick + thin-sample flag */
+.z30{font-style:normal;font-size:.62em;font-weight:700;color:var(--muted);margin-left:2px}
+.zbn em.zfew{font-style:normal;font-weight:800;color:#f3d27a}
+.zbn small.ztn{display:block;margin-top:1px;color:var(--muted)}
+.zbv small{display:block;white-space:nowrap}.zbv b{white-space:nowrap}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -1295,17 +1301,20 @@ function ztRows(r){const R=[];
  else if(r.id==='owl'){const c=(BLD().robots||[]).find(x=>x.parent==='owl'&&x.test&&x.test.parent_result);
   if(c)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:c.test.parent_result,b:{},days:c.test.days,fills:'ticks',win:c.test.window_utc});}
  (r.mtests||[]).filter(x=>x.state==='done'&&x.robot).forEach(x=>R.push({sym:x.sym,nm:mkName(x.sym)||x.name||x.sym,cat:((MKL&&MKL.symbols||[]).find(z=>z.s===x.sym)||{}).cat,a:x.robot,b:x.parent_result||{},days:x.days,fills:'bars',win:x.window_utc,at:x.tested_at}));
- return R.sort((p,q)=>(q.a.net||0)-(p.a.net||0));}
+ return R.sort((p,q)=>m30(q)-m30(p));}
+// 2026-10-15 (owner: "fair and professional"): every result compared per 30 days; under 80 trades it says so
+const ZT_FEW=80;
+function m30(x){return x.days?(x.a.net||0)*30/x.days:(x.a.net||0);}
 function ztPend(r){return (r.mtests||[]).filter(x=>['queued','building','testing'].includes(x.state));}
 function ztSteps(x){const k=x.state==='queued'?0:(x.state==='building'?1:(x.state==='testing'?2:3));
  const L=[T('En file','Queued'),T('Préparation','Preparing'),T('Test','Testing'),T('Prêt','Ready')];
  return '<div class="zst">'+L.map((l,i)=>'<span class="'+(i<k?'dn':(i===k?'on':''))+'"><i></i>'+l+'</span>').join('')+'</div>';}
-function ztBars(R,max){const M=max||Math.max(1,...R.map(x=>Math.abs(x.a.net||0)));
- return R.map(x=>{const v=ztVerdict(x.a),n=x.a.net||0,w=Math.max(2,Math.abs(n)/M*50);
+function ztBars(R,max){const M=max||Math.max(1,...R.map(x=>Math.abs(m30(x))));
+ return R.map(x=>{const v=ztVerdict(x.a),n=m30(x),tot=x.a.net||0,few=(x.a.trades||0)<ZT_FEW,w=Math.max(2,Math.abs(n)/M*50);
   return '<button class="zbr" onclick="ztShow(\''+x.sym+'\')" aria-label="'+esc(x.nm)+' : '+money(n)+'">'+mkBadge(x.sym,x.cat,34)+
-   '<span class="zbn"><b>'+esc(x.nm)+'</b><small><i style="background:'+v.c+'"></i>'+(v.sh||v.t)+'</small></span>'+
+   '<span class="zbn"><b>'+esc(x.nm)+'</b><small><i style="background:'+v.c+'"></i>'+(v.sh||v.t)+'</small><small class="ztn">'+num(x.a.trades)+' trades'+(few?' · <em class="zfew">'+T('peu','few')+'</em>':'')+'</small></span>'+
    '<span class="zbt"><span class="zb0"></span><span class="zbf '+(n>=0?'p':'n')+'" style="'+(n>=0?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%"></span></span>'+
-   '<span class="zbv"><b class="'+cl(n)+'">'+money(n,0)+'</b><small>'+num(x.a.trades)+' trades</small></span></button>';}).join('');}
+   '<span class="zbv"><b class="'+cl(n)+'">'+money(n,0)+'<em class="z30">/30 j</em></b><small>'+money(tot,0)+(x.days?T(' en ',' in ')+Math.round(x.days)+' j':'')+'</small></span></button>';}).join('');}
 /* 2026-10-14 (owner): a spoken guide of the Zone de test (what, why, how, when), FR + EN neural voices
    (live/audio/zt_intro_<fr|en>.mp3, scripts beside them). One audio object for the page: the zone redraws often,
    the player is redrawn from ZA's state and survives it; leaving the zone stops it. */
@@ -1345,7 +1354,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  // 1) header: robot switcher + key figures
  let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div><div class="zaslot" data-k="zt">'+zaHTML('zt')+'</div>'+
   '<button class="zrob" onclick="ztPickRobot()" aria-label="'+T('Changer de robot','Change robot')+'"><span class="zra">'+BOT+'</span><span class="zrn"><small>'+T('Robot testé','Robot under test')+'</small><b>'+esc(T(r.name_fr,r.name_en))+'</b></span><span class="zrc">'+T('Changer','Change')+' ▾</span></button>'+
-  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(best.a.net,0):'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
+  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(m30(best),0)+'<em class="z30">/30 j</em>':'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
  // 2) results
  h+='<div class="zsec"><b>'+T('Où il marche','Where it works')+'</b>'+(R.length>1?'<span>'+T('du meilleur au moins bon','best first')+'</span>':'')+'</div>';
  if(R.length){h+='<div class="card zres">'+(R.length>1?'<div class="zins">'+(wins?T('Gagne sur ','Wins on ')+wins+T(' marché',' market')+(wins>1?'s':'')+T(' sur ',' out of ')+R.length+' · '+T('le meilleur : ','best: ')+'<b>'+esc(best.nm)+'</b>':T('Ne gagne sur aucun des marchés testés.','Wins on none of the markets tested.'))+'</div>':'')+
