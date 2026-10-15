@@ -51,6 +51,11 @@ SCHEDULE = [
     (utc("2026-09-27T00:47:54"), {"touch_rearm": 1}, "8fe4f35: a touch of the protected dot re-arms the one continuation"),
     (utc("2026-10-01T12:46:40"), {"risk_fit": 3.0}, "43b4092: 3 % per-trade risk ceiling (valere_cap3)"),
     (utc("2026-10-10T07:05:31"), {"cap_rule": "off"}, "RECORDED MANUAL OVERRIDE: 'continue today' switch, cap lifted until 23:59 UTC"),
+    # 2026-10-15 fidelity diagnostic: until 9ff36ce the bot read the feed's running moves_2h, which had already counted the
+    # flip being traded (48ea5b2 made the FEED window strict on 09-22, but the counter it published still included the
+    # signal's own mark by the time the bot read it - the 10-12 race). The journal confirms it: 15 real FLIP-BOS entries
+    # with movement_count 1-2 where the strict count is 0. Plain BOS are unaffected (marks are flips only).
+    (utc("2026-10-12T07:09:27"), {"flip_counts_itself": 0}, "9ff36ce: movement gate strictly BEFORE the signal candle - a flip no longer counts itself"),
 ]
 NOT_MODELLED = ["internal-structure entries ON 2026-09-19 20:01 -> 2026-09-30 17:58 UTC (the engine has no internal path; the real account took 1 such trade, -11.95)",
                 "touch entries (enabled on the account; none fired in the period)",
@@ -80,6 +85,9 @@ class RealArm(PbGateArm):
     def __init__(self, name, cfg, bars, mode, states, schedule=None, downtime=None, touch_rearm=True, **kw):
         super().__init__(name, cfg, bars, mode, states, **kw)
         self.schedule = sorted(schedule or [], key=lambda x: x[0]); self.sched_i = 0; self.downtime = downtime or []; self.touch_rearm = touch_rearm
+        # the real bot's movement gate counted a flip's own break until 9ff36ce (see SCHEDULE); an arm with a dated
+        # schedule starts that way, an arm without one runs today's strict rule
+        self.flip_counts_itself = bool(schedule)
         self.n.update({"bot_down": 0, "rule_steps": 0})
         self.applied = []
 
@@ -87,6 +95,7 @@ class RealArm(PbGateArm):
         for k, v in ch.items():
             if k == "cap_rule": self.cap_rule = v
             elif k == "touch_rearm": self.touch_rearm = bool(v)
+            elif k == "flip_counts_itself": self.flip_counts_itself = bool(v)
             elif k == "k_streak": self.c["k_streak"] = v; self.K = int(v)
             elif k == "bullets": self.c["bullets"] = v; self.NB = int(v)
             elif k == "scale_daily":
@@ -106,6 +115,8 @@ class RealArm(PbGateArm):
         t_ms = int(TM[k])
         for a, b in self.downtime:
             if a * 1000 <= t_ms < b * 1000: self.n["bot_down"] += 1; return
+        if self.flip_counts_itself and o.get("flip") and o.get("mv2") is not None:
+            o = dict(o, mv2=int(o["mv2"]) + 1)
         return super().signal(o, k, TM, BID, ASK)
 
 

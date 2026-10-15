@@ -1,0 +1,172 @@
+type,side,real_entry,engine_signal,close_offset_s,kind,real_lot,engine_lot,real_adds,engine_adds,real_pnl,engine_pnl,lot_gap,adds_gap,price_gap,real_debt,why
+paired,SELL,2026-09-14 23:02:24,2026-09-14 23:01:00,1,pre-journal,0.02,0.02,,0,2.92,3.15,0.0,0.0,-0.23,,
+real_only,SELL,2026-09-14 23:32:02,2026-09-14 23:31:00,,pre-journal,0.02,,,,2.47,,,,,,"engine: day_cap (engine debt 0.00, streak 0, cont 0)"
+paired,BUY,2026-09-15 08:46:47,2026-09-15 08:46:00,16,pre-journal,0.04,0.02,,0,2.98,1.17,1.17,0.0,0.64,,
+paired,BUY,2026-09-15 08:56:44,2026-09-15 08:56:00,0,pre-journal,0.04,0.02,,0,-3.1,-2.12,-2.12,0.0,1.14,,
+paired,BUY,2026-09-15 10:03:01,2026-09-15 09:47:00,96,pre-journal,0.07,0.02,,3,10.2,9.42,6.8,-6.7,0.68,,
+engine_only,BUY,,2026-09-18 05:00:00,,,,0.02,,0,,7.42,,,,,"real: already in a position :: engine debt 0.0, day 0.0, cap 3.15 (waiver, 0 debt-days) | real debt 0.0 | FLIP-BOS ENTRY: BUY 0.02 @ ~77594.37 SL 77152.69 TP 77947.71 (risk $8.83, trend up)"
+real_only,BUY,2026-09-18 05:00:39,2026-09-18 05:00:00,,pre-journal,0.04,,,,7.34,,,,,,"engine: ordered (engine debt 0.00, streak 0, cont 0)"
+engine_only,BUY,,2026-09-19 15:41:00,,,,0.02,,0,,-18.4,,,,,"real: refused (log) :: engine debt 0.0, day 0.0, cap 3.15 (waiver, 0 debt-days) | real debt 0.0 | FLIP-BOS refuse: trop nerveux (1.17x)"
+real_only,BUY,2026-09-19 22:54:56,,,pre-journal,0.03,,,,2.05,,,,,,engine: no signal within 4 min
+real_only,BUY,2026-09-19 23:40:45,,,pre-journal,0.03,,,,-3.1,,,,,,engine: no signal within 4 min
+paired,SELL,2026-09-20 02:42:36,2026-09-20 02:42:00,1,pre-journal,0.05,0.02,,0,5.09,2.11,3.16,0.0,-0.18,,
+engine_only,SELL,,2026-09-20 02:53:00,,,,0.02,,0,,4.7,,,,,"real: refused (log) :: engine debt 16.29, day 2.11, cap None (waiver, 0 debt-days) | real debt 0.0 | BOS refuse: trop nerveux (1.07x)"
+engine_only,SELL,,2026-09-20 03:15:00,,,,0.02,,0,,-8.06,,,,,"real: refused (log) :: engine debt 11.59, day 6.81, cap None (waiver, 0 debt-days) | real debt 0.0 | BOS refuse: trop nerveux (2.11x)"
+engine_only,BUY,,2026-09-20 05:11:00,,,,0.02,,0,,-1.99,,,,,"real: refused (log) :: engine debt 19.65, day -1.25, cap None (waiver, 0 debt-days) | real debt 0.0 | FLIP-BOS refuse: trop nerveux (1.22x)"
+engine_only,SELL,,2026-09-20 06:04:00,,,,0.02,,0,,3.31,,,,,"real: refused (log) :: engine debt 21.64, day -3.23, cap None (waiver, 0 debt-days) | real debt 0.0 | INT refuse: trop nerveux (1.29x) | FLIP-BOS refuse: trop nerveux (1.29x)"
+engine_only,SELL,,2026-09-20 06:55:00,,,,0.02,,0,,-4.32,,,,,"real: refused (log) :: engine debt 18.33, day 0.07, cap None (waiver, 0 debt-days) | real debt 0.0 | BOS refuse: trop nerveux (1.21x)"
+paired,BUY,2026-09-20 09:19:36,2026-09-20 09:19:00,1,pre-journal,0.02,0.02,,0,0.99,1.01,0.0,0.0,-0.02,,
+paired,BUY,2026-09-20 09:27:03,2026-09-20 09:26:00,0,pre-journal,0.04,0.02,,0,2.06,0.79,0.79,0.0,0.48,,
+engine_only,BUY,,2026-09-20 09:41:00,,,,0.02,,0,,-1.38,,,,,"real: other :: engine debt 20.85, day -2.45, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain jour UTC"
+engine_only,SELL,,2026-09-20 10:06:00,,,,0.02,,0,,1.49,,,,,"real: day limit reached earlier today :: engine debt 22.23, day -3.83, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-20 10:40:00,,,,0.02,,3,,-4.52,,,,,"real: day limit reached earlier today :: engine debt 20.74, day -2.34, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-20 11:52:00,,,,0.02,,3,,-4.37,,,,,"real: day limit reached earlier today :: engine debt 25.26, day -6.85, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-20 12:24:00,,,,0.02,,3,,2.18,,,,,"real: day limit reached earlier today :: engine debt 29.62, day -11.22, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-20 12:59:00,,,,0.02,,0,,1.02,,,,,"real: day limit reached earlier today :: engine debt 27.44, day -9.04, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-20 14:02:00,,,,0.02,,1,,-7.52,,,,,"real: day limit reached earlier today :: engine debt 26.42, day -8.02, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-20 21:01:00,,,,0.02,,0,,5.42,,,,,"real: day limit reached earlier today :: engine debt 33.94, day -15.54, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | FLIP-BOS refuse: aucun grand mouvement depuis 2 h"
+engine_only,SELL,,2026-09-20 21:11:00,,,,0.02,,0,,-6.15,,,,,"real: day limit reached earlier today :: engine debt 28.52, day -10.12, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-20 22:07:00,,,,0.02,,0,,3.71,,,,,"real: day limit reached earlier today :: engine debt 34.67, day -16.27, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | FLIP-BOS refuse: trop nerveux (1.22x)"
+engine_only,BUY,,2026-09-20 23:24:00,,,,0.02,,0,,4.15,,,,,"real: day limit reached earlier today :: engine debt 30.96, day -12.55, cap None (waiver, 0 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.04 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | BOS refuse: trop nerveux (1.28x)"
+engine_only,SELL,,2026-09-21 01:32:00,,,,0.02,,0,,4.64,,,,,"real: refused (log) :: engine debt 26.8, day 4.15, cap None (waiver, 1 debt-days) | real debt 0.0 | FLIP-BOS refuse: trop nerveux (1.87x)"
+paired,BUY,2026-09-21 05:33:40,2026-09-21 05:33:00,0,pre-journal,0.02,0.02,,3,-2.46,-4.36,0.0,1.87,0.03,,
+engine_only,SELL,,2026-09-21 05:41:00,,,,0.02,,0,,1.45,,,,,"real: refused (log) :: engine debt 26.52, day 4.44, cap None (waiver, 1 debt-days) | real debt 2.46 | FLIP-BOS refuse: trop nerveux (1.08x)"
+engine_only,SELL,,2026-09-21 05:56:00,,,,0.02,,0,,-1.61,,,,,"real: refused (log) :: engine debt 25.07, day 5.88, cap None (waiver, 1 debt-days) | real debt 2.46 | BOS refuse: trop nerveux (1.12x)"
+engine_only,BUY,,2026-09-21 06:14:00,,,,0.02,,0,,1.84,,,,,"real: refused (log) :: engine debt 26.68, day 4.27, cap None (waiver, 1 debt-days) | real debt 2.46 | FLIP-BOS refuse: trop nerveux (1.27x)"
+engine_only,BUY,,2026-09-21 06:27:00,,,,0.02,,0,,-2.33,,,,,"real: silent :: engine debt 24.84, day 6.11, cap None (waiver, 1 debt-days) | real debt 2.46 | "
+engine_only,BUY,,2026-09-21 08:06:00,,,,0.02,,0,,8.65,,,,,"real: refused (log) :: engine debt 27.17, day 3.78, cap None (waiver, 1 debt-days) | real debt 2.46 | BOS refuse: trop nerveux (1.13x)"
+engine_only,SELL,,2026-09-21 13:37:00,,,,0.02,,0,,-7.54,,,,,"real: refused (log) :: engine debt 18.53, day 12.43, cap None (waiver, 1 debt-days) | real debt 2.46 | FLIP-BOS refuse: trop nerveux (1.69x)"
+real_only,BUY,2026-09-21 19:00:58,,,pre-journal,0.01,,,,2.25,,,,,,engine: no signal within 4 min
+real_only,BUY,2026-09-21 19:34:35,,,pre-journal,0.01,,,,5.23,,,,,,engine: no signal within 4 min
+engine_only,SELL,,2026-09-21 22:48:00,,,,0.02,,1,,-6.56,,,,,"real: day limit reached earlier today :: engine debt 26.07, day 4.88, cap None (waiver, 1 debt-days) | real debt 0.0 | LIMITE DU JOUR: +5.02 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+paired,SELL,2026-09-22 00:07:09,2026-09-22 00:06:00,1,pre-journal,0.02,0.02,,1,4.85,8.83,0.0,-3.94,-0.04,,
+engine_only,SELL,,2026-09-22 00:55:00,,,,0.02,,0,,3.19,,,,,"real: refused (log) :: engine debt 23.8, day 8.83, cap None (waiver, 2 debt-days) | real debt 0.0 | BOS refuse: trop nerveux (1.07x)"
+engine_only,SELL,,2026-09-22 01:18:00,,,,0.02,,0,,-9.2,,,,,"real: refused (log) :: engine debt 20.61, day 12.02, cap None (waiver, 2 debt-days) | real debt 0.0 | BOS refuse: trop nerveux (1.20x)"
+engine_only,BUY,,2026-09-22 13:58:00,,,,0.02,,0,,-12.6,,,,,"real: day limit reached earlier today :: engine debt 29.81, day 2.82, cap None (waiver, 2 debt-days) | real debt 0.0 | LIMITE DU JOUR: +4.85 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | FLIP-BOS refuse: aucun grand mouvement depuis 2 h"
+engine_only,SELL,,2026-09-22 19:53:00,,,,0.02,,1,,-9.32,,,,,"real: day limit reached earlier today :: engine debt 42.41, day -9.79, cap None (waiver, 2 debt-days) | real debt 0.0 | LIMITE DU JOUR: +4.85 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+paired,BUY,2026-09-23 00:20:29,2026-09-23 01:02:00,25,pre-journal,0.02,0.02,,0,6.55,3.24,0.0,0.0,3.31,,
+engine_only,BUY,,2026-09-23 00:41:00,,,,0.02,,3,,-4.35,,,,,"real: already in a position :: engine debt 51.73, day -9.32, cap None (waiver, 3 debt-days) | real debt 0.0 | "
+engine_only,SELL,,2026-09-23 01:41:00,,,,0.02,,0,,2.8,,,,,"real: other :: engine debt 52.84, day -10.43, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain jour UTC"
+engine_only,BUY,,2026-09-23 03:21:00,,,,0.02,,0,,4.21,,,,,"real: day limit reached earlier today :: engine debt 50.04, day -7.62, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-23 04:21:00,,,,0.02,,0,,-8.43,,,,,"real: day limit reached earlier today :: engine debt 45.83, day -3.41, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-23 06:30:00,,,,0.02,,2,,9.38,,,,,"real: day limit reached earlier today :: engine debt 54.25, day -11.84, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-23 07:39:00,,,,0.02,,3,,5.29,,,,,"real: day limit reached earlier today :: engine debt 44.87, day -2.46, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-23 07:44:00,,,,0.02,,3,,-6.27,,,,,"real: day limit reached earlier today :: engine debt 39.58, day 2.83, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,BUY,,2026-09-23 14:00:00,,,,0.02,,0,,-5.52,,,,,"real: day limit reached earlier today :: engine debt 45.86, day -3.44, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+engine_only,SELL,,2026-09-23 15:37:00,,,,0.02,,0,,2.67,,,,,"real: day limit reached earlier today :: engine debt 51.38, day -8.96, cap None (waiver, 3 debt-days) | real debt 0.0 | LIMITE DU JOUR: +6.55 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+real_only,SELL,2026-09-24 00:12:52,,,pre-journal,0.02,,,,1.78,,,,,,engine: no signal within 4 min
+real_only,SELL,2026-09-24 01:19:03,,,pre-journal,0.02,,,,-2.47,,,,,,engine: no signal within 4 min
+real_only,SELL,2026-09-24 01:44:55,,,pre-journal,0.02,,,,5.18,,,,,,engine: no signal within 4 min
+engine_only,BUY,,2026-09-24 13:31:00,,,,0.01,,0,,2.86,,,,,"real: day limit reached earlier today :: engine debt 48.71, day 0.0, cap 2.71 (adaptive, 4 debt-days) | real debt 0.0 | LIMITE DU JOUR: +4.49 aujourd'hui (>= $3.00), sans dette - plus d'entree jusqu'au prochain | "
+real_only,BUY,2026-09-25 00:06:02,,,INT,0.02,,,,-11.95,,,,,0.0,internal entry (not modelled)
+engine_only,SELL,,2026-09-25 14:03:00,,,,0.01,,0,,-5.76,,,,,"real: refused (log) :: engine debt 45.84, day 0.0, cap 2.75 (adaptive, 5 debt-days) | real debt 11.95 | FLIP-BOS refuse: marche tres rapide (1.86x) - exception, personne ne trade"
+engine_only,BUY,,2026-09-26 08:32:00,,,,0.01,,1,,12.82,,,,,"real: refused (log) :: engine debt 51.6, day 0.0, cap 2.66 (adaptive, 6 debt-days) | real debt 11.95 | FLIP-BOS refuse: aucun grand mouvement depuis 2 h"
+real_only,SELL,2026-09-27 09:07:04,2026-09-27 09:06:00,,FLIP-BOS,0.02,,,,-2.82,,,,,11.95,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+real_only,SELL,2026-09-27 10:51:01,2026-09-27 10:50:00,,FLIP-BOS,0.02,,,,-1.97,,,,,14.77,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+real_only,BUY,2026-09-27 12:02:01,2026-09-27 12:01:00,,FLIP-BOS,0.02,,,,-2.46,,,,,16.74,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+real_only,BUY,2026-09-27 18:38:02,2026-09-27 18:37:00,,BOS,0.02,,,,1.35,,,,,19.2,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+real_only,BUY,2026-09-27 18:59:02,2026-09-27 18:58:00,,BOS,0.02,,,,-2.19,,,,,17.85,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+real_only,SELL,2026-09-27 20:24:03,2026-09-27 20:23:00,,FLIP-BOS,0.02,,,,9.27,,,,,20.04,"engine: day_cap (engine debt 38.78, streak 0, cont 0)"
+real_only,SELL,2026-09-27 21:37:02,2026-09-27 21:36:00,,BOS,0.02,,,,-4.28,,,,,10.77,"engine: debt_gate (engine debt 38.78, streak 0, cont 0)"
+real_only,SELL,2026-09-27 22:09:03,2026-09-27 22:08:00,,BOS,0.02,,,,-7.54,,,,,15.05,"engine: day_cap (engine debt 38.78, streak 0, cont 1)"
+engine_only,BUY,,2026-09-28 00:01:00,,,,0.01,,0,,-0.97,,,,,"real: already in a position :: engine debt 38.78, day 0.0, cap 2.85 (adaptive, 8 debt-days) | real debt 15.05 | "
+engine_only,BUY,,2026-09-28 00:18:00,,,,0.01,,0,,1.68,,,,,"real: already in a position :: engine debt 39.75, day -0.97, cap 2.85 (adaptive, 8 debt-days) | real debt 15.05 | COMBAT skipped: marche pas calme (1.52x) - pas de balles ici"
+engine_only,BUY,,2026-09-28 12:52:00,,,,0.01,,0,,1.69,,,,,"real: already in a position :: engine debt 38.07, day 0.71, cap 2.85 (adaptive, 8 debt-days) | real debt 22.59 | FLIP-BOS ENTRY: BUY 0.02 @ ~83457.75 SL 83237.72 TP 83633.77 (risk $4.40, trend up)"
+real_only,BUY,2026-09-28 12:53:02,2026-09-28 12:52:00,,FLIP-BOS,0.02,,,,3.48,,,,,22.59,"engine: ordered (engine debt 38.07, streak 0, cont 0)"
+paired,BUY,2026-09-28 13:39:02,2026-09-28 13:38:00,0,BOS,0.02,0.01,,0,-7.52,-4.01,-4.01,0.0,0.5,19.11,
+paired,BUY,2026-09-28 16:11:03,2026-09-28 16:10:00,4,BOS,0.02,0.01,,0,4.28,2.17,2.17,0.0,-0.06,26.63,
+engine_only,SELL,,2026-09-28 22:06:00,,,,0.01,,1,,-8.23,,,,,"real: refused (log) :: engine debt 38.22, day 0.56, cap 2.85 (adaptive, 8 debt-days) | real debt 22.35 | FLIP-BOS refuse: aucun grand mouvement depuis 2 h"
+real_only,BUY,2026-09-29 02:20:04,2026-09-29 02:19:00,,FLIP-BOS,0.02,,,,-4.46,,,,,22.35,"engine: skipped_open (engine debt 38.22, streak 0, cont 1)"
+real_only,BUY,2026-09-29 03:28:03,2026-09-29 03:27:00,,BOS,0.02,,,,17.91,,,,,26.81,"engine: skipped_open (engine debt 38.22, streak 0, cont 1)"
+engine_only,SELL,,2026-09-29 09:03:00,,,,0.01,,0,,-1.81,,,,,"real: other :: engine debt 46.46, day -8.23, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au prochain jour UTC"
+engine_only,BUY,,2026-09-29 09:44:00,,,,0.01,,0,,0.94,,,,,"real: day limit reached earlier today :: engine debt 48.27, day -10.04, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | "
+engine_only,SELL,,2026-09-29 14:49:00,,,,0.01,,0,,1.96,,,,,"real: day limit reached earlier today :: engine debt 47.33, day -9.11, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | INT refuse: dette active ($8.90) - structure interne en pause pendant la reprise"
+engine_only,SELL,,2026-09-29 15:12:00,,,,0.01,,0,,1.8,,,,,"real: day limit reached earlier today :: engine debt 45.37, day -7.14, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | BOS refuse: dette active ($8.90) - FLIP-BOS + 1 continuation deja pris pendant la reprise"
+engine_only,BUY,,2026-09-29 18:32:00,,,,0.01,,0,,1.26,,,,,"real: day limit reached earlier today :: engine debt 43.57, day -5.35, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | "
+engine_only,SELL,,2026-09-29 21:26:00,,,,0.01,,3,,-7.19,,,,,"real: day limit reached earlier today :: engine debt 42.31, day -4.09, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | "
+engine_only,BUY,,2026-09-29 23:04:00,,,,0.01,,3,,-5.84,,,,,"real: day limit reached earlier today :: engine debt 49.5, day -11.28, cap 2.86 (adaptive, 9 debt-days) | real debt 8.9 | LIMITE DU JOUR: +13.45 aujourd'hui (>= $3.58), dette active - plus d'entree jusqu'au proch | INT refuse: dette active ($8.90) - structure interne en pause pendant la reprise"
+real_only,SELL,2026-09-30 00:09:02,2026-09-30 00:08:00,,BOS,0.02,,,,2.02,,,,,8.9,"engine: skipped_open (engine debt 49.50, streak 1, cont 1)"
+engine_only,SELL,,2026-09-30 00:45:00,,,,0.01,,0,,1.59,,,,,"real: refused (log) :: engine debt 55.34, day -5.84, cap 2.69 (adaptive, 10 debt-days) | real debt 6.88 | BOS refuse: dette active ($6.88) - FLIP-BOS + 1 continuation deja pris pendant la reprise"
+paired,BUY,2026-09-30 07:20:04,2026-09-30 07:19:00,0,FLIP-BOS,0.02,0.01,,2,16.82,10.48,2.45,-8.03,0.03,6.88,
+paired,BUY,2026-10-01 09:05:45,2026-10-01 09:04:00,1,FLIP-BOS,0.02,0.01,,0,3.65,1.54,1.54,0.0,0.57,0.0,
+paired,BUY,2026-10-01 10:48:06,2026-10-01 10:47:00,1,BOS,0.02,0.01,,1,9.32,11.99,4.67,-7.32,-0.02,0.0,
+real_only,BUY,2026-10-02 00:16:20,2026-10-02 00:15:00,,BOS,0.02,,,,-3.74,,,,,0.0,"engine: debt_gate (engine debt 29.74, streak 0, cont 0)"
+paired,SELL,2026-10-02 01:12:02,2026-10-02 01:11:00,1,FLIP-BOS,0.02,0.01,,0,2.9,1.45,1.45,0.0,0.0,3.74,
+real_only,BUY,2026-10-02 02:05:05,2026-10-02 02:04:00,,FLIP-BOS,0.02,,,,2.46,,,,,0.84,"engine: ordered (engine debt 28.29, streak 0, cont 1)"
+paired,BUY,2026-10-02 02:56:10,2026-10-02 02:04:00,218,BOS,0.02,0.01,,0,5.28,1.59,1.59,0.0,2.1,0.0,
+paired,BUY,2026-10-03 17:45:03,2026-10-03 17:44:00,1,FLIP-BOS,0.02,0.02,,2,-4.67,-7.17,0.0,2.38,0.12,0.0,
+paired,SELL,2026-10-03 21:06:03,2026-10-03 21:05:00,158,FLIP-BOS,0.02,0.01,,0,-5.77,-2.98,-2.98,0.0,0.19,4.67,
+paired,BUY,2026-10-04 06:20:03,2026-10-04 06:19:00,45,FLIP-BOS,0.02,0.01,,0,0.86,0.38,0.38,0.0,0.1,10.44,
+paired,BUY,2026-10-04 06:33:04,2026-10-04 06:32:00,1,BOS,0.02,0.01,,0,2.29,1.14,1.14,0.0,0.01,9.58,
+paired,BUY,2026-10-04 08:14:04,2026-10-04 08:13:00,0,FLIP-BOS,0.02,0.01,,0,-1.44,-0.76,-0.76,0.0,0.08,7.29,
+paired,BUY,2026-10-04 09:24:03,2026-10-04 09:23:00,1,BOS,0.02,0.01,,0,2.54,1.27,1.27,0.0,0.0,8.73,
+paired,SELL,2026-10-04 12:47:02,2026-10-04 12:46:00,1,FLIP-BOS,0.02,0.01,,0,-2.81,-1.45,-1.45,0.0,0.09,6.19,
+paired,BUY,2026-10-04 15:15:02,2026-10-04 15:14:00,1,FLIP-BOS,0.02,0.01,,0,2.01,1.02,1.02,0.0,-0.03,9.0,
+paired,BUY,2026-10-05 05:45:05,2026-10-05 05:44:00,89,FLIP-BOS,0.02,0.01,,0,2.46,1.04,1.04,0.0,0.38,6.99,
+paired,BUY,2026-10-05 06:16:03,2026-10-05 06:15:00,0,BOS,0.02,0.01,,0,2.14,1.09,1.09,0.0,-0.04,4.53,
+engine_only,BUY,,2026-10-05 06:47:00,,,,0.01,,0,,2.58,,,,,"real: other :: engine debt 33.12, day 2.13, cap 2.91 (adaptive, 15 debt-days) | real debt 2.39 | LIMITE DU JOUR: +4.60 aujourd'hui (>= $4.25), dette active - plus d'entree jusqu'au prochain jour UTC"
+paired,BUY,2026-10-06 00:17:04,2026-10-06 00:16:00,1,FLIP-BOS,0.02,0.01,,3,-3.7,-2.84,-1.1,1.75,0.13,2.39,
+paired,SELL,2026-10-06 00:37:03,2026-10-06 00:36:00,0,FLIP-BOS,0.02,0.01,,3,-3.63,-2.85,-1.06,1.79,0.11,6.09,
+paired,SELL,2026-10-06 01:36:07,2026-10-06 01:35:00,9,BOS,0.02,0.01,,0,6.65,3.17,3.17,0.0,0.31,9.72,
+paired,BUY,2026-10-06 08:58:04,2026-10-06 08:57:00,0,FLIP-BOS,0.02,0.01,,0,-2.6,-1.43,-1.43,0.0,0.26,3.07,
+paired,BUY,2026-10-06 09:23:02,2026-10-06 09:22:00,1,BOS,0.02,0.01,,0,-4.28,-2.15,-2.15,0.0,0.02,5.67,
+paired,SELL,2026-10-06 13:31:02,2026-10-06 13:30:00,1,FLIP-BOS,0.02,0.01,,0,-2.13,-1.13,-1.13,0.0,0.13,9.95,
+paired,BUY,2026-10-06 13:51:01,2026-10-06 13:50:00,1,FLIP-BOS,0.02,0.01,,0,-7.65,-3.81,-3.81,0.0,-0.03,12.08,
+real_only,BUY,2026-10-06 14:53:02,2026-10-06 14:52:00,,BOS,0.01,,,,-6.03,,,,,19.73,"engine: ordered (engine debt 41.59, streak 4, cont 1)"
+engine_only,SELL,,2026-10-06 15:43:00,,,,0.01,,0,,2.94,,,,,"real: already in a position :: engine debt 41.59, day -11.05, cap 2.98 (adaptive, 16 debt-days) | real debt 19.73 | "
+paired,BUY,2026-10-06 18:01:03,2026-10-06 18:00:00,1,FLIP-BOS,0.02,0.01,,0,-1.87,-0.96,-0.96,0.0,0.05,25.76,
+engine_only,SELL,,2026-10-06 18:33:00,,,,0.01,,0,,0.79,,,,,"real: already in a position :: engine debt 39.6, day -9.07, cap 2.98 (adaptive, 16 debt-days) | real debt 27.63 | FLIP-BOS ENTRY: SELL 0.02 @ ~85623.71 SL 85723.95 TP 85543.52 (risk $2.00, trend down)"
+real_only,SELL,2026-10-06 18:34:02,2026-10-06 18:33:00,,FLIP-BOS,0.02,,,,1.6,,,,,27.63,"engine: ordered (engine debt 39.60, streak 1, cont 1)"
+paired,SELL,2026-10-06 18:48:02,2026-10-06 18:47:00,1,BOS,0.02,0.01,,0,6.28,0.84,0.84,0.0,0.2,26.03,
+paired,BUY,2026-10-06 19:48:03,2026-10-06 19:47:00,0,FLIP-BOS,0.02,0.01,,3,-6.81,-4.97,-1.97,2.99,-0.06,19.75,
+paired,SELL,2026-10-06 23:17:04,2026-10-06 23:16:00,0,FLIP-BOS,0.02,0.01,,3,7.87,6.93,1.15,-5.78,0.0,26.56,
+paired,SELL,2026-10-06 23:33:02,2026-10-06 23:32:00,1,BOS,0.02,0.01,,3,-5.72,-3.96,-1.63,2.33,-0.06,18.69,
+paired,BUY,2026-10-06 23:50:03,2026-10-06 23:49:00,1,FLIP-BOS,0.02,0.01,,3,-1.35,-1.61,-0.42,1.19,0.08,24.41,
+paired,SELL,2026-10-07 00:22:03,2026-10-07 00:21:00,0,FLIP-BOS,0.02,0.01,,0,2.11,1.09,1.09,0.0,-0.07,25.76,
+paired,SELL,2026-10-07 01:27:03,2026-10-07 01:26:00,1,BOS,0.02,0.01,,0,1.39,0.75,0.75,0.0,-0.11,23.65,
+paired,BUY,2026-10-07 16:21:03,2026-10-07 16:20:00,0,FLIP-BOS,0.02,0.01,,0,-3.36,-1.69,-1.69,0.0,0.02,22.26,
+paired,SELL,2026-10-07 16:50:02,2026-10-07 16:49:00,1,FLIP-BOS,0.02,0.01,,0,-2.22,-1.14,-1.14,0.0,0.06,25.62,
+paired,SELL,2026-10-07 17:26:02,2026-10-07 17:25:00,0,BOS,0.02,0.01,,0,6.5,2.68,2.68,0.0,1.14,27.84,
+engine_only,BUY,,2026-10-08 02:38:00,,,,0.01,,3,,-4.18,,,,,"real: other :: engine debt 39.89, day 2.68, cap 2.8 (adaptive, 18 debt-days) | real debt 21.34 | LIMITE DU JOUR: +6.50 aujourd'hui (>= $3.94), dette active - plus d'entree jusqu'au prochain jour UTC"
+engine_only,SELL,,2026-10-08 03:19:00,,,,0.01,,0,,1.03,,,,,"real: day limit reached earlier today :: engine debt 44.07, day -1.5, cap 2.8 (adaptive, 18 debt-days) | real debt 21.34 | LIMITE DU JOUR: +6.50 aujourd'hui (>= $3.94), dette active - plus d'entree jusqu'au procha | "
+engine_only,SELL,,2026-10-08 04:19:00,,,,0.01,,0,,3.69,,,,,"real: day limit reached earlier today :: engine debt 43.04, day -0.47, cap 2.8 (adaptive, 18 debt-days) | real debt 21.34 | LIMITE DU JOUR: +6.50 aujourd'hui (>= $3.94), dette active - plus d'entree jusqu'au procha | "
+paired,SELL,2026-10-09 01:16:04,2026-10-09 01:15:00,1,BOS,0.02,0.01,,2,-7.84,-4.54,-2.31,2.23,0.03,21.34,
+paired,BUY,2026-10-09 02:03:03,2026-10-09 02:02:00,1,FLIP-BOS,0.02,0.01,,0,2.04,1.03,1.03,0.0,-0.02,29.18,
+paired,BUY,2026-10-09 02:51:03,2026-10-09 02:50:00,27,BOS,0.02,0.01,,0,3.94,1.96,1.96,0.0,0.02,27.14,
+paired,SELL,2026-10-09 10:51:05,2026-10-09 10:50:00,1,FLIP-BOS,0.02,0.01,,3,-4.95,-3.39,-1.4,1.99,0.0,23.2,
+paired,BUY,2026-10-09 11:32:05,2026-10-09 11:31:00,0,FLIP-BOS,0.02,0.01,,0,4.06,2.02,2.02,0.0,0.02,28.15,
+paired,BUY,2026-10-09 11:46:05,2026-10-09 11:45:00,1,BOS,0.02,0.01,,0,3.93,1.97,1.97,0.0,-0.01,24.09,
+paired,SELL,2026-10-09 14:02:06,2026-10-09 14:01:00,0,FLIP-BOS,0.02,0.01,,0,-5.33,-2.62,-2.62,0.0,-0.09,20.16,
+paired,SELL,2026-10-09 17:23:05,2026-10-09 17:22:00,0,FLIP-BOS,0.02,0.01,,0,-2.68,-1.28,-1.28,0.0,-0.12,25.49,
+paired,BUY,2026-10-09 17:37:05,2026-10-09 17:36:00,0,FLIP-BOS,0.02,0.01,,0,-1.82,-0.92,-0.92,0.0,0.02,28.17,
+paired,SELL,2026-10-09 18:18:05,2026-10-09 18:17:00,0,FLIP-BOS,0.02,0.01,,0,2.14,1.09,1.09,0.0,-0.04,29.99,
+paired,SELL,2026-10-09 19:51:42,2026-10-09 19:50:00,1,BOS,0.02,0.01,,1,-12.58,-5.07,-3.39,1.68,-0.5,27.85,
+paired,BUY,2026-10-10 01:28:07,2026-10-10 01:27:00,1,FLIP-BOS,0.02,0.01,,2,8.25,6.8,1.63,-5.17,-0.1,40.43,
+engine_only,SELL,,2026-10-10 10:07:00,,,,0.01,,0,,0.37,,,,,"real: day limit reached earlier today :: engine debt 42.29, day 6.8, cap None (off, 20 debt-days) | real debt 32.18 | LIMITE DU JOUR levee par le proprietaire jusqu'a 23:59 UTC - on continue (+8.25 >= $3.75) | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers, CHoCH en attente mais prix pas encore au-dela de 82337.4"
+paired,BUY,2026-10-10 14:35:03,2026-10-10 14:34:00,1,FLIP-BOS,0.02,0.01,,0,2.15,1.07,1.07,0.0,0.01,32.18,
+engine_only,SELL,,2026-10-10 22:48:00,,,,0.01,,0,,-1.25,,,,,"real: day limit reached earlier today :: engine debt 40.85, day 8.24, cap None (off, 20 debt-days) | real debt 30.03 | LIMITE DU JOUR levee par le proprietaire jusqu'a 23:59 UTC - on continue (+8.25 >= $3.75) | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+paired,BUY,2026-10-11 01:14:04,2026-10-11 01:13:00,0,FLIP-BOS,0.02,0.01,,0,1.05,0.18,0.18,0.0,-0.03,30.03,
+paired,BUY,2026-10-11 01:31:03,2026-10-11 01:30:00,0,BOS,0.02,0.01,,0,0.45,0.28,0.28,0.0,-0.11,28.98,
+paired,BUY,2026-10-11 02:41:04,2026-10-11 02:40:00,1,BOS,0.02,0.01,,3,-3.7,-2.64,-1.05,1.6,0.09,28.53,
+engine_only,SELL,,2026-10-11 03:51:00,,,,0.01,,0,,0.98,,,,,"real: refused (log) :: engine debt 44.27, day -2.18, cap None (off, 21 debt-days) | real debt 32.23 | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+paired,BUY,2026-10-11 05:18:03,2026-10-11 05:17:00,1,FLIP-BOS,0.02,0.01,,3,4.38,3.17,0.6,-2.57,-0.04,32.23,
+engine_only,SELL,,2026-10-11 07:54:00,,,,0.01,,0,,-0.4,,,,,"real: refused (log) :: engine debt 40.13, day 1.96, cap None (off, 21 debt-days) | real debt 27.85 | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+engine_only,SELL,,2026-10-11 08:26:00,,,,0.01,,3,,-1.78,,,,,"real: refused (log) :: engine debt 40.53, day 1.56, cap None (off, 21 debt-days) | real debt 27.85 | BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+paired,BUY,2026-10-11 12:14:02,2026-10-11 12:13:00,1,FLIP-BOS,0.02,0.01,,0,-1.71,-0.83,-0.83,0.0,-0.05,27.85,
+engine_only,SELL,,2026-10-11 12:52:00,,,,0.01,,0,,0.59,,,,,"real: refused (log) :: engine debt 43.15, day -1.05, cap None (off, 21 debt-days) | real debt 29.56 | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+engine_only,SELL,,2026-10-11 14:24:00,,,,0.01,,3,,-2.11,,,,,"real: refused (log) :: engine debt 42.55, day -0.46, cap None (off, 21 debt-days) | real debt 29.56 | BOS refuse: dette active ($29.56) - FLIP-BOS + 1 continuation deja pris pendant la reprise"
+paired,BUY,2026-10-11 15:56:04,2026-10-11 15:55:00,1,FLIP-BOS,0.02,0.01,,0,2.3,1.24,1.24,0.0,-0.18,29.56,
+engine_only,SELL,,2026-10-11 21:12:00,,,,0.01,,0,,1.66,,,,,"real: refused (log) :: engine debt 43.42, day -1.33, cap None (off, 21 debt-days) | real debt 27.26 | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+paired,BUY,2026-10-12 00:22:03,2026-10-12 00:21:00,2,FLIP-BOS,0.02,0.01,,0,1.38,0.64,0.64,0.0,0.1,27.26,
+paired,BUY,2026-10-12 04:43:04,2026-10-12 04:42:00,1,FLIP-BOS,0.01,0.01,,0,-5.48,-5.52,0.0,0.0,0.04,25.88,
+engine_only,SELL,,2026-10-12 09:25:00,,,,0.01,,0,,-1.6,,,,,"real: refused (log) :: engine debt 46.64, day -4.88, cap None (off, 22 debt-days) | real debt 31.36 | BOS refuse: sens contraire au graphique des reculs (reculs haussiers)"
+engine_only,BUY,,2026-10-12 10:46:00,,,,0.01,,0,,-1.53,,,,,"real: refused (log) :: engine debt 48.24, day -6.48, cap None (off, 22 debt-days) | real debt 31.36 | FLIP-BOS refuse: reculs haussiers mais prix 83485.01 du mauvais cote du dernier BOS des reculs 84115.26 - continuation en pause"
+paired,SELL,2026-10-12 11:23:02,2026-10-12 11:22:00,1,FLIP-BOS,0.02,0.01,,0,-2.02,-0.66,-0.66,0.0,0.04,31.36,
+paired,SELL,2026-10-12 11:41:02,2026-10-12 11:40:00,0,BOS,0.02,0.01,,0,-2.87,-1.45,-1.45,0.0,0.03,33.38,
+paired,SELL,2026-10-12 12:08:02,2026-10-12 12:07:00,0,BOS,0.02,0.01,,0,2.23,1.16,1.16,0.0,-0.09,36.25,
+engine_only,BUY,,2026-10-12 19:34:00,,,,0.01,,0,,0.93,,,,,"real: refused (log) :: engine debt 50.72, day -8.96, cap None (off, 22 debt-days) | real debt 34.02 | FLIP-BOS refuse: sens contraire au graphique des reculs (reculs baissiers)"
+engine_only,BUY,,2026-10-12 19:56:00,,,,0.01,,0,,0.69,,,,,"real: refused (log) :: engine debt 49.78, day -8.03, cap None (off, 22 debt-days) | real debt 34.02 | BOS refuse: dette active ($34.02) - FLIP-BOS + 1 continuation deja pris pendant la reprise"
+paired,SELL,2026-10-12 21:43:03,2026-10-12 21:42:00,1,FLIP-BOS,0.02,0.01,,0,2.58,1.31,1.31,0.0,-0.04,34.02,
+paired,SELL,2026-10-12 22:57:03,2026-10-12 22:56:00,2,BOS,0.02,0.01,,0,6.08,3.0,3.0,0.0,0.08,31.44,
+engine_only,BUY,,2026-10-13 01:51:00,,,,0.01,,0,,1.28,,,,,"real: refused (log) :: engine debt 44.78, day 0.0, cap None (off, 23 debt-days) | real debt 25.36 | BOS refuse: sens contraire au graphique des reculs (reculs baissiers)"
+paired,BUY,2026-10-13 03:33:47,2026-10-13 03:32:00,16,BOS,0.01,0.01,,0,4.4,4.47,0.0,0.0,-0.07,25.36,

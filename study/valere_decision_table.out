@@ -1,0 +1,23 @@
+structure cache reused f72585eaa3187781
+baseline rerun: net -19.98, 145 trades (reply 21: +0.81, 85) in 91s
+
+REAL +59.66 (98 trades)   ENGINE -20.02 (145)   GAP +79.68
+signals seen by the engine: {'ordered': 147, 'day_cap': 58, 'not_awake': 127, 'skipped_open': 91, 'bot_down': 4, 'weather': 29, 'debt_gate': 49}
+
+(a) PAIRED 72: real +48.28 vs engine +31.42 -> gap +16.86 = main lot +14.87 + adds -17.71 + price/fill/exit +11.00
+(b) ENGINE-ONLY (engine traded, real did not), by what the bot's log said:
+     real: day limit reached earlier today  31 trades  engine   -32.11
+     real: refused (log)             29 trades  engine   -24.21
+     real: silent                     1 trades  engine    -2.33
+     real: other                      5 trades  engine    -1.99
+     real: already in a position      7 trades  engine    +9.20
+(c) REAL-ONLY (real traded, engine did not), by the engine's gate at that signal:
+     engine: skipped_open                   3 trades  real   +15.47
+     engine: no signal within 4 min         7 trades  real   +10.92
+     engine: ordered                        5 trades  real    +8.85
+     engine: day_cap                        8 trades  real    -3.89
+     engine: debt_gate                      2 trades  real    -8.02
+     internal entry (not modelled)          1 trades  real   -11.95
+
+-> C:\Projects\KinoliveLines\review\valere_decision_table.csv
+-> C:\Projects\KinoliveLines\study\valere_decision_table.json
