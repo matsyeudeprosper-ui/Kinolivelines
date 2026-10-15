@@ -410,6 +410,17 @@
    "why_fr": "Ce fait existe déjà dans le tableau des trades et montre la plus grosse fuite du journal (après 5 trades dans la journée : 36 % gagnés, -64 $). Une pile le suivrait chaque jour, à côté du réglage demandé.",
    "why_en": "The fact already exists in the trades table and shows the journal's biggest leak (after 5 trades that day: 36 % won, -$64). A pile would follow it daily, next to the requested setting.",
    "status": "open"
+  },
+  {
+   "id": "adds_in_scrutiny",
+   "date": "2026-10-15",
+   "title_fr": "Compter les ajouts de position dans les yeux du chercheur",
+   "title_en": "Count the position add-ons in the chercheur's eyes",
+   "what_fr": "Dans lab/scrutiny.py, load() rejette toute ligne dont outcome n'est pas win/loss AVANT de regarder is_add ; or les ajouts sont notés outcome=ADD, donc 'rattrapages' affiche toujours 0. Tester is_add avant le filtre (gagné = profit_usd > 0), et les dédoublonner par (minute de sortie, sens).",
+   "what_en": "In lab/scrutiny.py, load() drops every row whose outcome is not win/loss BEFORE checking is_add; add-ons are written outcome=ADD, so 'rattrapages' always shows 0. Check is_add before the filter (won = profit_usd > 0) and dedupe them by (exit minute, direction).",
+   "why_fr": "Vingt-six ajouts depuis le 24 septembre, la moitié gagnés, environ +26 $ pour 0,01 lot ; cette nuit un seul ajout a gagné +12,5 $ sur des comptes à 0,03 lot, plus que le trade principal. L'argent des comptes n'est pas celui que le grand livre montre.",
+   "why_en": "Twenty-six add-ons since 24 September, half won, about +$26 per 0.01 lot; tonight one add-on won +$12.5 on 0.03-lot accounts, more than the main trade. The accounts' money is not what the ledger shows.",
+   "status": "open"
   }
  ]
 }
