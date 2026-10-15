@@ -1206,7 +1206,7 @@ def why_idle(uid, day=None):
             for ln in f:
                 if not ln.startswith(day):
                     continue
-                if "ENTRY:" in ln:
+                if "ENTRY:" in ln or "COMBAT:" in ln:
                     took += 1
                     continue
                 if "INT note, pas pris" in ln:
@@ -2559,11 +2559,14 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
    min-width:40px;min-height:40px;font-size:1rem">&times;</button>
  </div>
 </div>
-<div class="panel" id="whyidle" style="display:none;margin-top:26px">
- <div style="display:flex;align-items:center;gap:12px">
+<div class="panel" id="whyidle" style="display:none;margin-top:26px;cursor:pointer" onclick="whyMore()">
+ <div style="display:flex;align-items:flex-start;gap:12px">
   <div class="sic"><svg class="ic"><use href="#i-info"/></svg></div>
   <div style="flex:1;min-width:0"><b id="whyidle-t" style="font-size:1rem"></b>
-   <div id="whyidle-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px"></div></div>
+   <div id="whyidle-s" style="font-size:.84rem;color:var(--muted2);line-height:1.45;margin-top:2px"></div>
+   <div id="whyidle-m" style="display:none;font-size:.8rem;color:var(--muted);line-height:1.45;margin-top:6px"></div></div>
+  <button id="whyidle-x" onclick="event.stopPropagation();whyHide()" aria-label="Fermer"
+   style="flex:none;border:0;background:transparent;color:var(--muted);min-width:40px;min-height:40px;font-size:1rem;margin:-8px -8px 0 0">&times;</button>
  </div>
 </div>
 <div class="panel" id="daydone" style="display:none;margin-top:26px;border-color:rgba(46,204,113,.35)">
@@ -6233,24 +6236,31 @@ function tfPayoff(d){
   '</div>');
  el.style.display='block';
 }
+// 2026-10-15 (owner: "it never gets removed... figure a better way"): only on a truly quiet day - nothing closed
+// today (a trade opened yesterday and closed today counts: it said "nothing" on a +$15 day), nothing open, no entry
+// or add, and not in the day's first 3 h; one line, details on tap; × hides it until tomorrow
+function whyHide(){const el=document.getElementById('whyidle');if(el)el.style.display='none';
+ try{localStorage.setItem('owlWhyX:'+B,new Date().toISOString().slice(0,10));}catch(e){}}
+function whyMore(){const m=document.getElementById('whyidle-m');if(m&&m.textContent)m.style.display=m.style.display==='none'?'block':'none';}
 function whyIdle(d){
  const el=document.getElementById('whyidle');if(!el)return;
- const w=d.why_idle;const en=LANG()==='en';
- if(!w||MAN()||d.public||!(d.ledger||{}).bos){el.style.display='none';return;}
- // it took trades today: the card is about a quiet day, not a busy one
- if(w.took>0||!(w.why||[]).length){el.style.display='none';return;}
+ const w=d.why_idle;const en=LANG()==='en';const off=()=>{el.style.display='none';};
+ if(!w||MAN()||d.public||!(d.ledger||{}).bos)return off();
+ if(w.took>0||!(w.why||[]).length)return off();
+ if(Math.abs(+d.today||0)>=0.005||(d.open_list||[]).length)return off();
+ if(new Date().getUTCHours()<3)return off();
+ try{if(localStorage.getItem('owlWhyX:'+B)===new Date().toISOString().slice(0,10))return off();}catch(e){}
  const first=WHYTXT[w.why[0].k];
- if(!first){el.style.display='none';return;}
- document.getElementById('whyidle-t').textContent=
-  en?'Why nothing today':'Pourquoi rien aujourd\u2019hui';
- let txt=(en?'The robot looked and stayed out: ':'Le robot a regard\u00e9 et n\u2019est pas entr\u00e9 : ')
-  +first[en?1:0]+' ('+w.why[0].n+'\u00d7).';
+ if(!first)return off();
+ document.getElementById('whyidle-t').textContent=en?'Why nothing today':'Pourquoi rien aujourd\u2019hui';
+ const cap=t=>t.charAt(0).toUpperCase()+t.slice(1);
+ document.getElementById('whyidle-s').textContent=cap(first[en?1:0])+' ('+w.why[0].n+'\u00d7).';
  const rest=(w.why||[]).slice(1).filter(x=>WHYTXT[x.k]);
- if(rest.length)txt+=(en?' Also: ':' Aussi : ')
-  +rest.map(x=>WHYTXT[x.k][en?1:0]+' ('+x.n+'\u00d7)').join(', ')+'.';
- if(w.inner)txt+=(en?' It also saw '+w.inner+' small-structure chances and left them alone, as set.'
-                    :' Il a aussi vu '+w.inner+' occasions de petite structure et les a laiss\u00e9es, comme r\u00e9gl\u00e9.');
- document.getElementById('whyidle-s').textContent=txt;
+ let more=rest.length?(en?'Also: ':'Aussi : ')+rest.map(x=>WHYTXT[x.k][en?1:0]+' ('+x.n+'\u00d7)').join(', ')+'. ':'';
+ if(w.inner)more+=en?'It saw '+w.inner+' small-structure chances and left them alone, as set.'
+                    :'Il a vu '+w.inner+' occasions de petite structure et les a laiss\u00e9es, comme r\u00e9gl\u00e9.';
+ const m=document.getElementById('whyidle-m');if(m.textContent!==more){m.textContent=more;if(!more)m.style.display='none';}
+ el.style.cursor=more?'pointer':'default';
  el.style.display='block';
 }
 // 2026-09-27: the daily objective reached -> one calm card, in the phone's clock
