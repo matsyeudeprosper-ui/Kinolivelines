@@ -559,6 +559,29 @@ button.pc{cursor:pointer}
 .yn3 button.on.yes{background:var(--up);border-color:var(--up);color:#fff}.yn3 button.on.no{background:var(--down);border-color:var(--down);color:#fff}.yn3 button.on.unsure{background:var(--surface3);color:var(--text)}
 .aiq+.aiq{margin-top:14px}.aiq b{font-size:.92rem;line-height:1.4}
 .cta2[disabled]{opacity:.45}
+
+/* 2026-10-15 (owner): the member picks the robot of their own account */
+.arb .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.arb .nm{font-size:1.35rem;font-weight:800;margin-top:6px;letter-spacing:-.01em}
+.arb .pd{margin-top:12px;padding:11px 13px;border-radius:14px;background:rgba(232,197,90,.10);border:1px solid rgba(232,197,90,.28);font-size:.84rem;line-height:1.45;color:var(--text)}
+.arb .pd b{color:#f3d27a}
+.arb .bt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}
+.arb .bt.one{grid-template-columns:minmax(0,1fr)}
+.arb .bt button{border-radius:14px;padding:12px;font:inherit;font-size:.88rem;font-weight:800;cursor:pointer;border:1px solid var(--border2,rgba(255,255,255,.14));background:var(--surface2,rgba(255,255,255,.06));color:var(--text)}
+.arb .bt button.pri{background:var(--accent);border-color:transparent;color:#fff}
+.arb .hl.wt{color:#f3d27a;background:rgba(232,197,90,.12);border-color:rgba(232,197,90,.3)}
+.arbl{display:flex;flex-direction:column;gap:10px}
+.arbl button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--border,rgba(255,255,255,.1));background:var(--surface2,rgba(255,255,255,.05));border-radius:16px;padding:13px 14px;font:inherit;color:var(--text);cursor:pointer}
+.arbl button:disabled{cursor:default;border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.06)}
+.arbl .n{flex:1;min-width:0}.arbl .n b{display:block;font-size:.95rem}.arbl .n small{display:block;font-size:.74rem;color:var(--muted);margin-top:3px}
+.arbl .tg{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:2px;background:rgba(59,130,246,.14);color:#9cc3ff}
+.arbl .tg.on{background:rgba(46,204,113,.14);color:#8df0bb}
+.arbl .r{text-align:right;white-space:nowrap}.arbl .r b{display:block;font-size:.95rem;font-variant-numeric:tabular-nums}.arbl .r small{font-size:.7rem;color:var(--muted)}
+.arbc p{font-size:.88rem;line-height:1.5;color:var(--text2,#c9d6e3);margin:0 0 10px}
+.arbc ul{margin:4px 0 14px;padding-left:18px;font-size:.84rem;line-height:1.55;color:var(--text2,#c9d6e3)}
+.arbc input{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid var(--border2,rgba(255,255,255,.16));background:var(--surface2,rgba(255,255,255,.05));color:var(--text);font:inherit;font-size:1rem;padding:13px 14px}
+.arbc .er{min-height:1.2em;color:#ff8a8a;font-size:.82rem;margin-top:8px}
+.arbc .cta{margin-top:10px}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -893,7 +916,43 @@ function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};
  const node=(r,d)=>{const m=RST[r.stage]||RST.model;const ch=(kids[r.id]||[]).sort((a,b)=>RORDER.indexOf(a.stage)-RORDER.indexOf(b.stage));
   return '<div class="tn" style="--d:'+d+'"><button class="tnb'+(r.stage==='retired'?' dim':'')+'" onclick="goR(\''+r.id+'\')"><span class="dot" style="background:'+m.c+'"></span><b>'+esc(rn(r))+'</b>'+((r.accounts||[]).length?'<em>'+(r.accounts||[]).length+'</em>':'')+'</button>'+(ch.length?'<div class="tk">'+ch.map(c=>node(c,d+1)).join('')+'</div>':'')+'</div>';};
  return (kids['_']||[]).map(r=>node(r,0)).join('');}
-function renderRobots(){if(!RB)return;head();$('top').innerHTML=RB.limited?myRobotView():builderTop();$('list').innerHTML='';}
+function renderRobots(){if(!RB)return;head();$('top').innerHTML=acctCard()+(RB.limited?myRobotView():builderTop());$('list').innerHTML='';}
+// 2026-10-15 (owner): "the user should be free to decide which bot to use; default is the Owl". Every member, own
+// account: the robot on it, a picker (tested + profitable + can run live), a password confirm; a trade open -> it waits.
+function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.current||{},pd=A.pending,owl=c.id==='owl';
+ return '<div class="card arb"><div class="top"><div style="min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><div class="nm">'+esc(T(c.name_fr,c.name_en))+'</div></div>'+
+  (pd?'<span class="hl wt"><i></i>'+T('Changement prévu','Change planned')+'</span>':'<span class="hl"><i></i>'+T('En marche','Running')+'</span>')+'</div>'+
+  (owl&&!pd?'<p style="margin-top:6px">'+T('Le robot par défaut. Vous pouvez en choisir un autre quand vous voulez.','The default robot. You can pick another one whenever you like.')+'</p>':'')+
+  (pd?'<div class="pd">'+T('Passera à ','Will switch to ')+'<b>'+esc(T(pd.name_fr,pd.name_en))+'</b>'+T(' dès que le trade en cours sera fermé.',' as soon as the open trade is closed.')+'</div>':'')+
+  '<div class="bt'+(owl&&!pd?' one':'')+'"><button class="pri" onclick="arbPick()">'+T('Changer de robot','Change robot')+'</button>'+
+  (pd?'<button onclick="arbAsk(\''+c.id+'\')">'+T('Annuler le changement','Cancel the change')+'</button>':(owl?'':'<button onclick="arbAsk(\'owl\')">'+T('Revenir à L’Owl','Back to the Owl')+'</button>'))+'</div></div>';}
+function arbPick(){const A=RB.acct,L=A.choices||[];
+ shOpen(T('Choisir un robot','Choose a robot'),'<p style="font-size:.84rem;color:var(--muted);margin:0 0 12px;line-height:1.45">'+T('Les robots testés sur 42 jours de Bitcoin qui ont gagné de l’argent et peuvent tourner en direct. Le passé ne garantit pas l’avenir.','Robots tested on 42 days of Bitcoin that made money and can run live. The past does not guarantee the future.')+'</p><div class="arbl">'+
+  L.map(x=>{const on=x.current,pl=A.pending&&A.pending.id===x.id;return '<button '+(on&&!A.pending?'disabled':'onclick="arbAsk(\''+x.id+'\')"')+'><span class="n"><b>'+esc(T(x.name_fr,x.name_en))+
+   (on?'<span class="tg on">'+T('sur ce compte','on this account')+'</span>':'')+(pl?'<span class="tg">'+T('prévu','planned')+'</span>':'')+(x.owl&&!on?'<span class="tg">'+T('par défaut','default')+'</span>':'')+(x.mine?'<span class="tg">'+T('le vôtre','yours')+'</span>':'')+'</b>'+
+   '<small>'+(x.trades!=null?x.trades+' trades'+(x.win_rate!=null?' · '+Math.round(x.win_rate*100)+' % '+T('gagnés','won'):''):'')+(x.dd!=null?' · '+T('creux ','dip ')+'$'+Math.round(x.dd):'')+'</small></span>'+
+   '<span class="r"><b class="'+((x.net||0)>=0?'pos':'neg')+'">'+(x.net!=null?((x.net>=0?'+':'−')+'$'+Math.round(Math.abs(x.net))):'—')+'</b><small>'+T('test 42 j','42-day test')+'</small></span></button>';}).join('')+'</div>');}
+function arbAsk(id){const A=RB.acct,x=(A.choices||[]).find(c=>c.id===id)||{},nm=esc(T(x.name_fr||id,x.name_en||x.name_fr||id)),back=id===(A.current||{}).id;
+ shOpen(back?T('Annuler le changement','Cancel the change'):T('Mettre ','Put ')+T(x.name_fr||id,x.name_en||x.name_fr||id)+T(' sur ce compte',' on this account'),'<div class="arbc">'+
+  (back?'<p>'+T('Le compte garde ','The account keeps ')+'<b>'+nm+'</b>.</p>':
+  '<p>'+T('À partir de maintenant, ','From now on, ')+'<b>'+nm+'</b>'+T(' décide des trades de ce compte.',' decides this account’s trades.')+'</p><ul>'+
+   '<li>'+T('Le robot du compte redémarre, en quelques secondes.','The account’s robot restarts, in a few seconds.')+'</li>'+
+   '<li>'+T('Vos réglages d’argent (taille des trades, protections) restent les mêmes.','Your money settings (trade size, protections) stay the same.')+'</li>'+
+   '<li>'+T('Si un trade est ouvert, le changement attend qu’il soit fermé.','If a trade is open, the change waits until it is closed.')+'</li>'+
+   '<li>'+T('Vous pouvez revenir à L’Owl à tout moment.','You can go back to the Owl at any time.')+'</li></ul>')+
+  '<label style="font-size:.78rem;font-weight:700;color:var(--muted)">'+T('Mot de passe de trading du compte','The account’s trading password')+'</label>'+
+  '<input id="arbpw" type="password" autocomplete="current-password" style="margin-top:6px"><div class="er" id="arber"></div>'+
+  '<button class="cta" id="arbgo" onclick="arbGo(\''+id+'\')">'+T('Confirmer','Confirm')+'</button></div>');
+ setTimeout(()=>{const i=$('arbpw');if(i){i.focus();i.onkeydown=e=>{if(e.key==='Enter')arbGo(id);};}},350);}
+const ARBERR={pwd:T('Mot de passe incorrect.','Wrong password.'),not_allowed:T('Ce robot n’est pas disponible pour ce compte.','This robot is not available for this account.'),already:T('Ce robot est déjà sur ce compte.','This robot is already on this account.'),no_bot:T('Ce compte n’a pas de robot à changer.','This account has no robot to change.')};
+async function arbGo(id){const b=$('arbgo'),er=$('arber'),pw=($('arbpw')||{}).value||'';if(!pw){er.textContent=T('Entrez le mot de passe.','Enter the password.');return;}
+ b.disabled=true;b.textContent=T('Un instant…','One moment…');
+ try{const j=await robotPost('account_robot_set',{id,pwd:pw});
+  if(!j.ok){er.textContent=ARBERR[j.err]||j.err;b.disabled=false;b.textContent=T('Confirmer','Confirm');return;}
+  $('lsh-b').innerHTML='<div class="arbc" style="text-align:center;padding:10px 0 4px"><div style="font-size:2rem">✓</div><p style="margin-top:6px"><b>'+(j.cancelled?T('Changement annulé.','Change cancelled.'):(j.pending?T('C’est noté.','Noted.'):T('C’est fait.','Done.')))+'</b><br>'+
+   (j.cancelled?'':(j.pending?T('Le nouveau robot prendra la main dès que le trade en cours sera fermé.','The new robot takes over as soon as the open trade is closed.'):T('Le robot du compte redémarre avec ses nouvelles règles.','The account’s robot restarts with its new rules.')))+'</p><button class="cta" onclick="shClose()">OK</button></div>';
+  RB=null;await load();route();}
+ catch(e){er.textContent=T('Hors ligne.','Offline.');b.disabled=false;b.textContent=T('Confirmer','Confirm');}}
 // every member: the robot on their account, its pieces in plain words, what it did; building it is the Strategie offer
 function myRobotView(){const m=RB.mine||{},S=m.since||{},wr=S.n?Math.round((S.won||0)/S.n*100):null;
  let h='<div class="card hero"><div class="hh"><div><div class="eyebrow">'+T('Votre robot','Your robot')+'</div><div class="hn" style="margin-top:6px"><b style="font-size:1.7rem">'+esc(T(m.name_fr,m.name_en))+'</b></div></div><span class="hl"><i></i>'+T('sur votre compte','on your account')+'</span></div>'+
