@@ -140,6 +140,25 @@ def maybe_health():
                 # (nights, weekends): late only if its market's own feed has a candle 10+ min newer than the bot's
                 mk = f[:-5].rsplit("_", 1)[-1]
                 if mk.isupper() and len(mk) >= 4:
+                    # 2026-10-15: a market bot the rule no longer allows stops itself once flat (Dépenses back on
+                    # the Owl -> expenses@USTEC "arret" 14:23, alert "105 min late" at 16:08). Watch it only while
+                    # it is meant to run OR its process still lives (a disallowed bot keeps managing an open trade).
+                    arg = f[10:-5].rsplit("_", 1)[0] + "@" + mk
+                    try:
+                        import owl_markets as _OMK
+                        meant = arg in _OMK.launch_list()
+                    except Exception:
+                        meant = True
+                    if not meant:
+                        try:
+                            ps = subprocess.run(["powershell", "-NoProfile", "-Command",
+                                                 "Get-CimInstance Win32_Process -Filter \"Name like 'python%'\" | ForEach-Object { $_.CommandLine }"],
+                                                capture_output=True, text=True, timeout=60, creationflags=0x08000000).stdout
+                            alive = any(ln.split("structure_bos_bot.py")[-1].strip(' "') == arg for ln in ps.splitlines() if "structure_bos_bot.py" in ln)
+                        except Exception:
+                            alive = True
+                        if not alive:
+                            continue
                     try:
                         cs = json.load(open(os.path.join(DIR, "chart_multi", mk + ".json"), encoding="utf-8")).get("candles") or []
                         if not cs or float(cs[-1][0]) - float(lb) <= 600:
