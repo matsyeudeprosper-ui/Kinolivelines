@@ -250,6 +250,7 @@ elif VARIANT not in ("live", "bos") and any(
         if x.get("id") == VARIANT][0]
     TERMINAL = _gu["terminal"]
     LOGIN = int(_gu["mt5_login"])
+    BROKER_SERVER = _gu["mt5_server"]           # item 7: picks this member's broker feed below
     SERVER = _gu.get("mt5_server_addr") or _gu["mt5_server"]     # 2026-10-16: the address the sign-up probe used, when the name is unknown to the terminal
     PASSWORD = _gu["mt5_password"]
     MAGIC = 909501
@@ -435,14 +436,14 @@ def pb_state_now():
     v = (0, 0, None, None)
     try:
         from owl_chart_feed import build as _fb, engine as _fe, pullback_view as _pv, PB_CHAIN as _pbc
-        _r = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1, 8000)
+        _r = rates_utc(mt5.TIMEFRAME_M1, 1, 8000)
         if _r is not None and len(_r) > 200:
             _k = _fb(_r); _bk = []
             _d, _m, _tr, *_rest = _fe(_k, brk_out=_bk)
             if _tr:
                 _d = [x for x in _d if x[2] == _tr]
             # owner 2026-10-10: the sticky chain the feed keeps (read-only here)
-            _pb = _pv(_k, _d, _m, _bk, sticky=(os.path.join(DIR, "chart_multi", MKT + "_pbchain.json") if MKT else _pbc),
+            _pb = _pv(_k, _d, _m, _bk, sticky=(os.path.join(DIR, "chart_multi", MKT + "_pbchain.json") if MKT else (globals().get("PBC_F") or _pbc)),
                       write=False) or {}
             _t = int(_pb.get("trend") or 0); _c = int(_pb.get("choch") or 0)
             _c = _c if (_c and _c != _t) else 0
@@ -529,8 +530,7 @@ def htf_snap():
     string, or "" if the feed cannot be read. Never raises: a
     logging helper must not be able to stop a trading loop."""
     try:
-        _h = json.load(open(os.path.join(DIR, "chart_multi", MKT + "_htf.json") if MKT else os.path.join(DIR, "owl_chart_htf.json"),
-                            encoding="utf-8"))
+        _h = json.load(open(HTF_F, encoding="utf-8"))
         _m = weather() or {}
         now = int(time.time())
         out = {}
@@ -731,8 +731,17 @@ def load_state():
 
 
 CHART_F = os.path.join(DIR, "owl_chart_btc.json")
+HTF_F = os.path.join(DIR, "owl_chart_htf.json")
 if MKT:
     CHART_F = os.path.join(DIR, "chart_multi", MKT + ".json")
+    HTF_F = os.path.join(DIR, "chart_multi", MKT + "_htf.json")
+elif "BROKER_SERVER" in globals() and BROKER_SERVER:
+    # 2026-10-16 item 7: a member at another broker reads THAT broker's feed (owl_chart_broker.py); without one,
+    # the broker gate (broker_ok: "feed") keeps new entries shut, so the Exness file is never traded on silently
+    import broker_book as _BB
+    CHART_F = _BB.feed_file(BROKER_SERVER) or CHART_F
+    HTF_F = _BB.feed_file(BROKER_SERVER, "htf") or HTF_F
+    PBC_F = _BB.feed_file(BROKER_SERVER, "pbchain")
 
 
 def weather(max_age=180):
@@ -1308,6 +1317,15 @@ BROKER_OFF = 0                 # broker server clock minus UTC, seconds (Exness 
 _FILL = {"v": None}
 
 
+def rates_utc(tf, start, n):
+    """item 4: this account's candles with UTC times (the terminal stamps them in broker time)"""
+    R = mt5.copy_rates_from_pos(SYMBOL, tf, start, n)
+    if R is None or not BROKER_OFF:
+        return R
+    R = R.copy(); R["time"] = R["time"] - BROKER_OFF
+    return R
+
+
 def fill_mode():
     """item 5: the fill type this symbol accepts - IOC where allowed (Exness), else FOK (FOREX.com), else RETURN"""
     if _FILL["v"] is None:
@@ -1397,8 +1415,7 @@ def main():
     eng = Struct()
     eng.quiet = True
     flips = []               # epoch times of trend flips (awake gate)
-    R = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1, 1,
-                                SEED_BARS)
+    R = rates_utc(mt5.TIMEFRAME_M1, 1, SEED_BARS)
     assert R is not None and len(R) > 100, "no history"
     for r in R:
         _pt = eng.trend
@@ -2003,8 +2020,7 @@ def main():
                     say(f"reconnexion echouee: {mt5.last_error()}")
             # 3 closed bars, not 2: the fair-value-gap tag needs the bar
             # two before the confirming one (owner 2026-09-19, forward test)
-            kb = mt5.copy_rates_from_pos(SYMBOL, mt5.TIMEFRAME_M1,
-                                         1, 3)
+            kb = rates_utc(mt5.TIMEFRAME_M1, 1, 3)
             if kb is None or len(kb) < 3:
                 continue
             _KB[:] = list(kb)

@@ -10,7 +10,7 @@ of the chat's own background shells never takes it down.
 """
 import os, sys, time, subprocess, ctypes
 
-NEED_GB, STEADY, PANIC_GB, TRIES = 4.5, 2, 0.9, 3
+NEED_GB, STEADY, PANIC_GB, TRIES = float(os.environ.get("WHEN_FREE_NEED_GB", "4.5")), 2, 0.9, 3
 HEAVY = ("tick_pack", "robot_runner", "random_control", "spread_whatif", "proof_current_rules", "market_pack", "valere_sync", "tick1s_pack")
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(HERE)
 

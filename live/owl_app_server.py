@@ -12059,6 +12059,32 @@ def chart_symbols():
     return out
 
 
+def member_feed(user, kind=""):
+    """2026-10-16 (owner, go-live item 7): the chart feed for THIS member's broker - Exness: the main feed;
+    another broker with a live per-broker feed (owl_chart_broker.py): chart_broker/<key>[_htf].json;
+    None when that broker has no feed yet (the caller falls back to the Exness file)."""
+    try:
+        import broker_book as _BB
+        return _BB.feed_file((user or {}).get("mt5_server") or "", kind)
+    except Exception:
+        return None
+
+
+def member_feed_label(user):
+    """'Prix FOREX.com' for a member whose prices come from another broker's feed; '' on Exness"""
+    try:
+        import broker_book as _BB
+        k = _BB.key_of((user or {}).get("mt5_server") or "")
+        if not k or k == "exness" or member_feed(user) is None:
+            return ""
+        m = json.load(open(os.path.join(DIR, "chart_broker", "meta.json"), encoding="utf-8")).get(k) or {}
+        import re as _rx
+        _mm = _rx.search(r"\(([^)]+)\)", m.get("company") or "")
+        return "Prix " + ((_mm.group(1) if _mm else (m.get("server") or k).split("-")[0]).replace(" Global", "").strip())
+    except Exception:
+        return ""
+
+
 def chart_sym(path):
     """the ?sym= of a chart request, if it is one of the switchable markets other than BTC"""
     try:
@@ -14917,7 +14943,7 @@ def user_stats(u, admin_override=False):
                     # the chart's numbers - volatility and spread live in
                     # the feed, not in the bot's weather file (2026-09-17)
                     try:
-                        _cj = json.load(open(os.path.join(
+                        _cj = json.load(open(member_feed(u) or os.path.join(
                             DIR, "owl_chart_btc.json")))
                         for _k in ("moves_2h", "vol_now", "vol_ref",
                                    "spread", "int_state", "int_trend",
@@ -14983,7 +15009,7 @@ def user_stats(u, admin_override=False):
                     # no price leaves this block, so there is no tier to
                     # gate and nothing to leak.
                     try:
-                        _hf = json.load(open(os.path.join(
+                        _hf = json.load(open(member_feed(u, "htf") or os.path.join(
                             DIR, "owl_chart_htf.json")))
                         _rows = []
                         for _k in ("H4", "H1", "M15"):
@@ -20073,7 +20099,7 @@ class H(BaseHTTPRequestHandler):
                 if _tf == "ALL":
                     _hs = chart_sym(self.path)
                     _h = json.load(open(os.path.join(DIR, "chart_multi", _hs + "_htf.json") if _hs
-                                        else os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                                        else (member_feed(user, "htf") or os.path.join(DIR, "owl_chart_htf.json")), encoding="utf-8"))
                     _sum = {}
                     for _k in ("M15", "H1", "H4"):
                         _t = (_h.get("tf") or {}).get(_k) or {}
@@ -20095,7 +20121,7 @@ class H(BaseHTTPRequestHandler):
                     return
                 _hs = chart_sym(self.path)
                 _h = json.load(open(os.path.join(DIR, "chart_multi", _hs + "_htf.json") if _hs
-                                    else os.path.join(DIR, "owl_chart_htf.json"), encoding="utf-8"))
+                                    else (member_feed(user, "htf") or os.path.join(DIR, "owl_chart_htf.json")), encoding="utf-8"))
                 _d = dict((_h.get("tf") or {}).get(_tf) or {})
                 _d["tf"] = _tf
                 _d["updated"] = _h.get("updated")
@@ -20352,7 +20378,9 @@ class H(BaseHTTPRequestHandler):
             _msym = chart_sym(self.path)
             try:
                 d = json.load(open(os.path.join(DIR, "chart_multi", _msym + ".json") if _msym
-                                   else os.path.join(DIR, "owl_chart_btc.json")))
+                                   else (member_feed(user) or os.path.join(DIR, "owl_chart_btc.json"))))
+                if not _msym and member_feed_label(user):
+                    d["feed_label"] = member_feed_label(user)
             except Exception:
                 self._send("{}", "application/json")
                 return
@@ -20471,7 +20499,9 @@ class H(BaseHTTPRequestHandler):
                 _lst = [x for x in sig_source(_uid) if not _era or x.get("t", 0) >= _era]
                 _d = {"mode": "manual", "view_only": True, "signal": (_lst[-1] if _lst else None)}
                 try:
-                    _d["px"] = json.load(open(os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")).get("px")
+                    _d["px"] = json.load(open(member_feed(user) or os.path.join(DIR, "owl_chart_btc.json"), encoding="utf-8")).get("px")
+                    if member_feed_label(user):
+                        _d["feed_label"] = member_feed_label(user)
                 except Exception:
                     pass
                 try:

@@ -104,6 +104,13 @@ def checks(p):
     add("hedging", p.get("margin_mode") == HEDGING, True, "Positions séparées autorisées (couverture)" if p.get("margin_mode") == HEDGING else "Compte en mode net (une seule position)",
         "Separate positions allowed (hedging)" if p.get("margin_mode") == HEDGING else "Netting account (one position only)", "bot logic - adds need hedging")
     feed = EXNESS_FEED in str(p.get("server", "")).lower() or EXNESS_FEED in str(p.get("company", "")).lower()
+    if not feed:
+        # 2026-10-16 item 7: a per-broker feed (owl_chart_broker.py -> chart_broker/<key>.json) that is alive counts
+        try:
+            import broker_book as _BB
+            feed = _BB.feed_fresh(p.get("server", ""))
+        except Exception:
+            feed = False
     add("feed", feed, True, "Signaux lus sur les prix de ce courtier" if feed else "Signaux lus sur les prix Exness, pas ceux de ce courtier",
         "Signals read on this broker's prices" if feed else "Signals read on Exness prices, not this broker's", "item 7 - per-broker feed")
     add("commission", True, False, "Commission par lot : à vérifier", "Commission per lot: to verify", "item 10")

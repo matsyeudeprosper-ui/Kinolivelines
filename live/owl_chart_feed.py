@@ -671,6 +671,8 @@ def candle_sources():
             t = u.get("terminal")
             if not t or t == TERMINAL or not os.path.exists(t):
                 continue
+            if "exness" not in str(u.get("mt5_server", "")).lower():
+                continue        # 2026-10-16: members at OTHER brokers exist now - never serve their prices as the Exness feed
             out.append((t, int(u.get("mt5_login") or u["login"]),
                         u.get("mt5_server", SERVER),
                         u.get("mt5_password") or PASSWORD))

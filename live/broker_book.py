@@ -37,6 +37,37 @@ def norm(server):
     return str(server or "").strip().lower()
 
 
+def key_of(server):
+    """the broker's feed key: the server name before '-', letters and digits only ("Exness-MT5Real30" -> "exness",
+    "FOREX.comGlobal-Demo 531" -> "forexcomglobal", "PepperstoneUK-Demo" -> "pepperstoneuk"); '' when unknown"""
+    import re
+    s = norm(server)
+    if not s:
+        return ""
+    if "exness" in s:
+        return "exness"
+    return re.sub(r"[^a-z0-9]", "", s.split("-")[0])
+
+
+def feed_file(server, kind=""):
+    """the chart feed files for a member's broker: Exness -> the main feed; another broker -> chart_broker/<key>...
+    kind '' candles, 'htf', 'nerv', 'pbchain'. Returns None for a non-Exness broker without a feed yet."""
+    k = key_of(server)
+    if not k or k == "exness":
+        return os.path.join(DIR, {"": "owl_chart_btc.json", "htf": "owl_chart_htf.json", "nerv": "owl_nerv_hist.json", "pbchain": "owl_pb_chain.json"}[kind])
+    p = os.path.join(DIR, "chart_broker", k + ("_" + kind if kind else "") + ".json")
+    return p if os.path.exists(os.path.join(DIR, "chart_broker", k + ".json")) else None
+
+
+def feed_fresh(server, max_age_s=180):
+    """is this broker's feed alive? (Exness: the main feed file; others: chart_broker/<key>.json)"""
+    p = feed_file(server)
+    try:
+        return p is not None and time.time() - os.path.getmtime(p) < max_age_s
+    except OSError:
+        return False
+
+
 def _load(path, default):
     try:
         return json.load(open(path, encoding="utf-8"))
