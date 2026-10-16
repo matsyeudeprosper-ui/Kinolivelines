@@ -16695,19 +16695,57 @@ def _gzip_bytes(b):
     return gzip.compress(b, 6)
 
 
-def _join_result(title, body_html):
+def _flow_page(title, body_html, step=None, doc_title="OwlNest"):
+    """2026-10-16 (owner): one shell for every standalone screen of the sign-up - the landing's tokens, a brand
+    row, an optional 3-step progress (1 Votre compte - 2 Verification - 3 Activation) and one card."""
+    steps = ""
+    if step:
+        names = ("Votre compte", "V&eacute;rification", "Activation")
+        steps = ("<div class=\"steps\">" + "".join("<div class=\"%s\"></div>" % ("done" if i < step else "on" if i == step else "") for i in range(1, 4)) + "</div>"
+                 "<div class=\"sl\">" + "".join("<span class=\"%s\">%s</span>" % ("on" if i == step else "", n) for i, n in enumerate(names, 1)) + "</div>")
     return ("<!doctype html><html lang=\"fr\" translate=\"no\"><head><meta charset=\"utf-8\"><meta name=\"google\" content=\"notranslate\">"
-            "<meta name=\"viewport\" content=\"width=device-width,"
-            "initial-scale=1\"><title>OwlNest</title>"
-            "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}body{background:#0b0f14;color:#e8eef4;margin:0;"
-            "padding:40px 20px;font-family:'Inter',-apple-system,'Segoe UI',Roboto,"
-            "sans-serif;text-align:center}a{color:#8fc6ff;font-size:1rem;"
-            "word-break:break-all}.k{background:#121a25;border:1px solid #1f2a38;border-radius:24px;"
-            "box-shadow:inset 0 1px 0 rgba(255,255,255,.04);padding:26px 20px;"
-            "max-width:420px;margin:0 auto;line-height:1.6}h2{font-size:1.2rem;margin:0 0 8px}"
-            "p{color:#c6d3df;font-size:.95rem;margin:8px 0}"
-            "</style></head><body><div class=\"k\">"
-            f"<h2>{title}</h2>{body_html}</div></body></html>")
+            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1,viewport-fit=cover\"><meta name=\"theme-color\" content=\"#0a0e13\">"
+            f"<title>{doc_title}</title><link rel=\"icon\" href=\"/icon192.png\">"
+            "<style>@font-face{font-family:'Inter';src:url('/fonts/inter.woff2') format('woff2');font-weight:100 900;font-display:swap}"
+            ":root{--bg:#0a0e13;--card:#111823;--card2:#151d2a;--bd:#1e2836;--tx:#e8eef4;--tx2:#aebccb;--tx3:#7d8da0;--up:#2ecc71;--warn:#e8c55a;--down:#ff6b6b;--accent:#3b82f6;--accent-soft:#8fc6ff}"
+            "*{-webkit-tap-highlight-color:transparent}body{margin:0;background:var(--bg);color:var(--tx);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;"
+            "padding:18px 16px 44px;-webkit-font-smoothing:antialiased}.w{max-width:440px;margin:0 auto}"
+            ".brand{display:flex;align-items:center;gap:10px;margin:2px 0 20px}.brand img{width:34px;height:34px;border-radius:10px}.brand b{font-size:1rem;letter-spacing:-.01em}"
+            ".brand a{margin-left:auto;color:var(--tx3);text-decoration:none;font-size:.82rem}"
+            ".steps{display:flex;gap:6px}.steps div{flex:1;height:4px;border-radius:99px;background:var(--bd)}.steps .on{background:var(--accent)}.steps .done{background:rgba(59,130,246,.45)}"
+            ".sl{display:flex;justify-content:space-between;font-size:.66rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 18px}.sl .on{color:var(--accent-soft)}"
+            ".card{background:linear-gradient(180deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--bd);border-radius:22px;padding:22px 18px 20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}"
+            "h1{font-size:1.32rem;margin:0 0 6px;letter-spacing:-.015em;line-height:1.25}h2{font-size:1.02rem;margin:22px 0 8px}.sub{color:var(--tx3);font-size:.84rem;margin:0 0 4px}"
+            "p{color:var(--tx2);line-height:1.58;font-size:.93rem;margin:10px 0}p b{color:var(--tx)}a{color:var(--accent-soft)}"
+            ".pill{display:inline-flex;align-items:center;gap:7px;border-radius:99px;padding:6px 12px;font-size:.78rem;font-weight:700;margin-bottom:12px}"
+            ".pill i{width:8px;height:8px;border-radius:99px;background:currentColor;font-style:normal}"
+            ".pill.g{color:#7fe0a6;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.35)}.pill.o{color:#f0d57a;background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35)}"
+            ".pill.r{color:#ff9a9a;background:rgba(255,107,107,.12);border:1px solid rgba(255,107,107,.35)}.pill.n{color:var(--accent-soft);background:rgba(143,198,255,.1);border:1px solid rgba(143,198,255,.3)}"
+            ".fact{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 4px}.fact div{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:14px;padding:11px 12px;min-width:0}"
+            ".fact span{display:block;font-size:.66rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}.fact b{display:block;font-size:1.02rem;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}"
+            ".fact small{display:block;color:var(--tx3);font-size:.74rem;margin-top:2px}"
+            ".go{display:block;width:100%;box-sizing:border-box;margin-top:14px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:inherit}"
+            ".go.sec{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--bd)}.go.sec:active,.go:active{opacity:.85}"
+            "label{display:block;font-size:.7rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 7px}"
+            "input{width:100%;box-sizing:border-box;background:#0d141d;border:1px solid var(--bd);border-radius:13px;color:var(--tx);padding:14px;font-size:1rem;font-family:inherit}input:focus{outline:none;border-color:var(--accent)}"
+            "input.code{letter-spacing:.34em;text-transform:uppercase;font-weight:800;text-align:center;font-size:1.26rem;padding:15px 14px}"
+            ".h{font-size:.79rem;color:var(--tx3);line-height:1.5;margin-top:7px}"
+            ".chk{list-style:none;margin:16px 0 0;padding:0}.chk li{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--bd);font-size:.92rem;color:var(--tx2)}.chk li:first-child{border-top:0}"
+            ".chk i{flex:none;width:22px;height:22px;border-radius:99px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.75rem;color:var(--tx3)}"
+            ".chk li.on i{border-color:var(--accent);border-top-color:transparent;animation:sp .9s linear infinite}.chk li.ok i{border-color:var(--up);color:var(--up)}"
+            "@keyframes sp{to{transform:rotate(360deg)}}"
+            ".doors{margin-top:16px}.doors>a,.doors>div{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border:1px solid var(--bd);border-radius:14px;margin-top:10px;background:rgba(255,255,255,.03);color:var(--tx);text-decoration:none}.doors>*>div{min-width:0}"
+            ".doors b{display:block;font-size:.92rem}.doors span{display:block;color:var(--tx3);font-size:.82rem;margin-top:2px;line-height:1.45}.doors em{flex:none;width:30px;height:30px;border-radius:10px;background:rgba(59,130,246,.14);color:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:.85rem}"
+            ".foot{color:var(--tx3);font-size:.76rem;text-align:center;margin-top:22px;line-height:1.6}.foot a{color:var(--tx3)}"
+            "</style></head><body><div class=\"w\">"
+            "<div class=\"brand\"><img src=\"/icon192.png\" alt=\"\"><b>OwlNest</b><a href=\"/\">Accueil</a></div>"
+            + steps + "<div class=\"card\">" + (f"<h1>{title}</h1>" if title else "") + body_html + "</div>"
+            "<div class=\"foot\">Le robot ne peut ni retirer ni d&eacute;placer votre argent. Vos identifiants restent sur notre serveur, jamais dans l&#8217;application.</div>"
+            "</div></body></html>")
+
+
+def _join_result(title, body_html):
+    return _flow_page(title, body_html)
 
 
 def _broker_line(server):
@@ -16720,77 +16758,97 @@ def _broker_line(server):
     _BB.sync_nest_data()
     pg = _BB.lookup(server)
     if not pg:
-        return {"known": False, "zone": "", "line": "Courtier pas encore dans notre carnet : nous lirons votre compte en moins d\u2019une minute apr\u00e8s \u00ab Activer \u00bb."}
+        return {"known": False, "zone": "", "line": "Courtier pas encore dans notre carnet : nous lirons votre compte en moins d\u2019une minute apr\u00e8s \u00ab V\u00e9rifier \u00bb."}
     v = pg.get("verdict") or {}
     fr = lambda x: ("%.2f" % float(x)).replace(".", ",")
-    nm = _BB.key_of(server)
     cost = ("Co\u00fbt par trade %s $ (Exness %s $). " % (fr(v.get("spread")), fr(v.get("exness_spread") or _BB.EXNESS_SPREAD))) if v.get("spread") is not None else ""
     z = v.get("zone") or "unknown"
     tail = {"green": "\u00c7a marche ici.", "orange": "\u00c7a marche, mais moins qu\u2019\u00e0 Exness.",
-            "red": "Rien ne gagne chez ce courtier.", "unknown": "V\u00e9rification compl\u00e8te apr\u00e8s \u00ab Activer \u00bb."}[z]
+            "red": "Rien ne gagne chez ce courtier.", "unknown": "V\u00e9rification compl\u00e8te apr\u00e8s \u00ab V\u00e9rifier \u00bb."}[z]
     return {"known": True, "zone": z, "line": cost + tail}
 
 
 def _probe_wait_page(jid):
-    """2026-10-16 (owner): a member from another broker waits under a minute while the probe reads the account"""
-    return _join_result("&#128269; Un instant",
-                        "<p id=\"pm\">Nous lisons votre compte chez votre courtier. Moins d&#8217;une minute, en g&eacute;n&eacute;ral.</p>"
-                        "<div id=\"card\"></div>"
-                        "<script>var J=" + json.dumps(jid) + ",n=0;function poll(){n++;fetch('/probe?j='+J,{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){"
-                        "if(d.state==='done'){document.getElementById('pm').style.display='none';document.getElementById('card').innerHTML=d.html;return;}"
-                        "if(d.state==='gone'){document.getElementById('pm').textContent='La v\u00e9rification a expir\u00e9. Recommencez l\u2019inscription.';return;}"
-                        "if(n===20){document.getElementById('pm').textContent='Votre courtier met du temps \u00e0 r\u00e9pondre. Nous continuons d\u2019essayer\u2026';}"
-                        "setTimeout(poll,3000);}).catch(function(){setTimeout(poll,4000);});}poll();</script>")
+    """2026-10-16 (owner): step 2 - the member waits under a minute while the probe reads the account"""
+    body = ("<div class=\"pill n\"><i></i>En cours</div>"
+            "<p>Nous entrons dans votre compte chez votre courtier et lisons ce qui compte pour le robot. Moins d&#8217;une minute, en g&eacute;n&eacute;ral.</p>"
+            "<ul class=\"chk\" id=\"chk\"><li class=\"on\"><i></i>Connexion &agrave; votre compte</li><li><i></i>Le Bitcoin chez ce courtier</li><li><i></i>Le co&ucirc;t par trade</li></ul>"
+            "<div class=\"h\" id=\"pm\" style=\"margin-top:14px\">Ne fermez pas cette page.</div>"
+            "<script>var J=" + json.dumps(jid) + ",n=0,li=document.querySelectorAll('#chk li');"
+            "function step(k){for(var i=0;i<li.length;i++){li[i].className=i<k?'ok':(i===k?'on':'');}for(var i=0;i<k&&i<li.length;i++){li[i].querySelector('i').textContent='\\u2713';}}"
+            "function poll(){n++;if(n===4)step(1);if(n===9)step(2);"
+            "fetch('/probe?j='+J,{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){"
+            "if(d.state==='done'){document.body.innerHTML=d.page;window.scrollTo(0,0);return;}"
+            "if(d.state==='gone'){document.getElementById('pm').textContent='La v\\u00e9rification a expir\\u00e9. Recommencez l\\u2019inscription.';return;}"
+            "if(n===20){document.getElementById('pm').textContent='Votre courtier met du temps \\u00e0 r\\u00e9pondre. Nous continuons d\\u2019essayer\\u2026';}"
+            "setTimeout(poll,3000);}).catch(function(){setTimeout(poll,4000);});}poll();</script>")
+    return _flow_page("V&eacute;rification de votre compte", body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
 
 
 def _probe_card(st, jid):
-    """the verdict card (grandma words): what we found, what it means, one clear next step"""
+    """step 2's result: a status pill, the broker, four facts, one plain sentence, one clear next step"""
     import html as _h
+    import re as _rx
     v = st.get("verdict") or {}; p = st.get("profile") or {}; b = p.get("btc") or {}
     zone = v.get("zone") or "unknown"
-    import re as _rx
     _comp = p.get("company") or ""
     _m = _rx.search(r"\(([^)]+)\)", _comp)          # "Gain Global Markets, Inc. (FOREX.com Global)" -> the name members know
     broker = _h.escape((_m.group(1) if _m else (_comp or p.get("server") or st.get("server") or "votre courtier").split("-")[0]).replace(" Global", "").strip())
     if "exness" in (p.get("server") or st.get("server") or "").lower():
         broker = "Exness"
     fr = lambda x: ("%.2f" % float(x)).replace(".", ",") if x is not None else "?"
-    rows = ""
-    if p:
-        rows += f"<p><b>{broker}</b></p>"
-        if b.get("name"):
-            rows += f"<p>Bitcoin trouv&eacute; : <b>{_h.escape(str(b['name']))}</b></p>"
-        if v.get("spread") is not None and broker == "Exness":
-            rows += f"<p>Co&ucirc;t par trade : <b>{fr(v['spread'])} $</b></p>"
-        elif v.get("spread") is not None:
-            rows += f"<p>Co&ucirc;t par trade chez vous : <b>{fr(v['spread'])} $</b> &middot; chez Exness : {fr(v.get('exness_spread'))} $</p>"
-    _code = ((st.get("form") or {}).get("code") or [""])[0].strip().upper()
-    cont = ("<form method=\"POST\" action=\"/activate\"><input type=\"hidden\" name=\"action\" value=\"continue\">"
-            f"<input type=\"hidden\" name=\"probe\" value=\"{_h.escape(jid)}\">"
-            "<label for=\"ccode\" style=\"display:block;text-align:left;margin-top:14px;font-size:.8rem;color:#9fb0c3;letter-spacing:.04em\">CODE D&#8217;ACTIVATION</label>"
-            f"<input id=\"ccode\" name=\"code\" maxlength=\"6\" value=\"{_h.escape(_code)}\" placeholder=\"ABC123\" autocapitalize=\"characters\" "
-            "style=\"width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:1px solid #1f2a38;background:#0b0f14;color:#e8eef4;font-size:1.1rem;text-align:center;letter-spacing:.3em\">"
-            "<div style=\"font-size:.8rem;color:#9fb0c3;text-align:left;margin-top:4px\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram. Pas de code ? &Eacute;crivez-lui : votre v&eacute;rification est gard&eacute;e une heure.</div>"
-            "<button class=\"go\" style=\"margin-top:14px;width:100%;padding:12px;border:0;border-radius:14px;background:#8fc6ff;color:#0b0f14;font-weight:700;font-size:1rem\">Continuer : ouvrir mon compte</button></form>")
-    back = "<p style=\"margin-top:14px\"><a href=\"/\">&larr; Retour</a></p>"
-    if zone == "green":
-        return rows + f"<p>&#9989; <b>&Ccedil;a marche chez {broker}.</b> Le robot y gagne autant qu&#8217;&agrave; Exness." + \
-               (f" Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" if v.get("est_net") is not None else "</p>") + cont + back
-    if zone == "orange":
-        return rows + f"<p>&#128992; <b>&Ccedil;a marche, mais moins.</b> Le co&ucirc;t par trade est plus haut ici. Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" + \
-               "<p>&Agrave; vous de choisir : continuer ici, ou ouvrir un compte chez un courtier moins cher et revenir.</p>" + cont + back
-    if zone == "red":
-        why = " ".join(_h.escape(r) for r in (v.get("reasons") or []))
-        return rows + f"<p>&#9940; <b>Rien ne gagne chez {broker}.</b> {why}.</p>" + \
-               "<p>Trois portes :</p>" \
-               "<p>&#8226; <b>Signal</b> : recevez les signaux et tradez vous-m&ecirc;me, chez n&#8217;importe quel courtier.</p>" \
-               "<p>&#8226; <b>Un courtier moins cher</b> : ouvrez un compte (Exness, par exemple) et revenez avec le m&ecirc;me code.</p>" \
-               "<p>&#8226; <b>&Eacute;crire au Owl</b> : nous regardons ensemble.</p>" \
-               "<p style=\"margin-top:14px\"><a href=\"/\">&larr; Retour &agrave; l&#8217;inscription</a></p>"
+    contact = nest_config().get("contact_url") or "/"
+    pills = {"green": ("g", "Pr&ecirc;t pour le robot"), "orange": ("o", "Possible, co&ucirc;t plus haut"), "red": ("r", "Pas chez ce courtier"), "unknown": ("n", "Compte lu")}
     if st.get("error"):
-        return rows + f"<p>&#9888;&#65039; <b>Nous n&#8217;avons pas pu entrer dans votre compte.</b> {_h.escape(str(st['error'])[:160])}</p>" \
-               "<p>V&eacute;rifiez le num&eacute;ro, le mot de passe principal et le nom du serveur (&eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes), puis r&eacute;essayez.</p>" + back
-    return rows + "<p>Votre compte se lit bien. Le r&eacute;sultat chiffr&eacute; chez ce courtier arrive bient&ocirc;t ; vous pouvez continuer.</p>" + cont + back
+        body = ("<div class=\"pill r\"><i></i>Connexion impossible</div>"
+                f"<p class=\"sub\">{_h.escape(st.get('server') or '')}</p>"
+                "<p>Nous n&#8217;avons pas pu entrer dans votre compte. Le plus souvent : le mot de passe est celui de l&#8217;application et non le <b>mot de passe principal</b>, ou le nom du serveur a une faute.</p>"
+                + ("<p class=\"h\">Le courtier a refus&eacute; le num&eacute;ro de compte ou le mot de passe.</p>" if "uthorization" in str(st["error"]) or "nvalid account" in str(st["error"])
+                   else "<p class=\"h\">Le courtier n&#8217;a pas r&eacute;pondu &agrave; temps : v&eacute;rifiez le nom du serveur.</p>" if "timeout" in str(st["error"]).lower() or "IPC" in str(st["error"])
+                   else f"<p class=\"h\">R&eacute;ponse du courtier : {_h.escape(str(st['error'])[:140])}</p>")
+                +
+                "<a class=\"go\" href=\"/#offres\">Corriger mes informations</a>"
+                f"<a class=\"go sec\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">&Eacute;crire au Owl</a>")
+        return _flow_page("Votre compte", body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
+    cls, lab = pills.get(zone, pills["unknown"])
+    facts = f"<div class=\"fact\"><div><span>Bitcoin</span><b>{_h.escape(str(b.get('name') or '?'))}</b><small>le nom chez ce courtier</small></div>"
+    if v.get("spread") is not None:
+        facts += "<div><span>Co&ucirc;t par trade</span><b>%s $</b><small>%s</small></div>" % (fr(v["spread"]), "le courtier du robot" if broker == "Exness" else "Exness : %s $" % fr(v.get("exness_spread")))
+    facts += "<div><span>Compte</span><b>%s</b><small>%s</small></div>" % (_h.escape(str(p.get("currency") or "?")), "positions s&eacute;par&eacute;es" if p.get("margin_mode") == 2 else "une position &agrave; la fois")
+    off = b.get("clock_offset_h")
+    facts += "<div><span>Horloge</span><b>UTC%s</b><small>%s</small></div></div>" % (("%+d h" % off) if off else "", "r&eacute;gl&eacute;e par le robot" if off else "la m&ecirc;me que le robot")
+    sub = f"<p class=\"sub\">{_h.escape(p.get('server') or st.get('server') or '')}</p>"
+    code_block = ""
+    if zone != "red":
+        _code = ((st.get("form") or {}).get("code") or [""])[0].strip().upper()
+        code_block = ("<form method=\"POST\" action=\"/activate\"><input type=\"hidden\" name=\"action\" value=\"continue\">"
+                      f"<input type=\"hidden\" name=\"probe\" value=\"{_h.escape(jid)}\">"
+                      "<label for=\"ccode\">Code d&#8217;activation</label>"
+                      f"<input id=\"ccode\" class=\"code\" name=\"code\" maxlength=\"6\" value=\"{_h.escape(_code)}\" placeholder=\"ABC123\" autocapitalize=\"characters\" autocomplete=\"off\">"
+                      "<div class=\"h\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.</div>"
+                      "<button class=\"go\">Activer mon compte</button></form>"
+                      f"<a class=\"go sec\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">Je n&#8217;ai pas de code &middot; &Eacute;crire au Owl</a>"
+                      "<div class=\"h\" style=\"text-align:center\">Votre v&eacute;rification reste valable une heure.</div>")
+    if zone == "green" and broker == "Exness":
+        say = "<p><b>Le courtier du robot : tout est pr&ecirc;t.</b> Entrez votre code et le robot d&eacute;marre sur ce compte dans quelques minutes.</p>"
+    elif zone == "green":
+        say = f"<p><b>&Ccedil;a marche chez {broker}.</b> Le robot y gagne autant qu&#8217;&agrave; Exness." + \
+              (f" Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" if v.get("est_net") is not None and broker != "Exness" else "</p>")
+    elif zone == "orange":
+        say = (f"<p><b>&Ccedil;a marche, mais moins.</b> Le co&ucirc;t par trade est plus haut ici. Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>"
+               "<p>&Agrave; vous de choisir : continuer ici, ou ouvrir un compte chez un courtier moins cher et revenir.</p>")
+    elif zone == "red":
+        why = " ".join(_h.escape(r[:1].upper() + r[1:]) + "." for r in (v.get("reasons") or []))
+        say = (f"<p><b>Rien ne gagne chez {broker}.</b> {why}</p>"
+               "<h2>Trois portes</h2><div class=\"doors\">"
+               "<a href=\"/#offres\"><em>1</em><div><b>Signal</b><span>Recevez les signaux et tradez vous-m&ecirc;me, chez n&#8217;importe quel courtier.</span></div></a>"
+               "<div><em>2</em><div><b>Un courtier moins cher</b><span>Ouvrez un compte chez Exness, par exemple, et revenez : l&#8217;inscription prend une minute.</span></div></div>"
+               f"<a href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\"><em>3</em><div><b>&Eacute;crire au Owl</b><span>Nous regardons ensemble ce qui est possible.</span></div></a></div>"
+               "<a class=\"go sec\" href=\"/\">Retour &agrave; l&#8217;accueil</a>")
+    else:
+        say = "<p>Votre compte se lit bien. Le r&eacute;sultat chiffr&eacute; chez ce courtier arrive bient&ocirc;t ; vous pouvez activer d&egrave;s maintenant.</p>"
+    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + say + code_block
+    return _flow_page(broker, body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
 
 
 def _step2_page(login, pwd):
@@ -17174,7 +17232,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "function pick(k){fn('choose');P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
             "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
-            "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
+            "document.getElementById('mp').textContent=fam?'Le compte que le robot va trader. Nous le lisons en moins d\u2019une minute, puis vous activez. Aucun code \u00e0 cette \u00e9tape.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
+            "var _tgb=document.getElementById('tg');if(_tgb){_tgb.style.display=fam?'none':'block';}"
+            "var _mh=document.getElementById('mh');if(_mh){_mh.textContent=fam?'Le mot de passe principal sert au robot pour passer les ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'';}"
             "document.getElementById('mt5').style.display=fam?'':'none';"
             "var _cf=document.getElementById('code'),_ch=document.getElementById('ch'),_cl=document.querySelector('label[for=code]');"
             "if(_cf){_cf.style.display=fam?'none':'';}if(_ch){_ch.style.display=fam?'none':'';}if(_cl){_cl.style.display=fam?'none':'';}"
@@ -19750,7 +19810,9 @@ class H(BaseHTTPRequestHandler):
             _st = _BB.probe_state(_j) if _j else None
             if not _st:
                 self._send(json.dumps({"state": "gone"}), "application/json"); return
-            self._send(json.dumps({"state": _st.get("state"), "html": _probe_card(_st, _j) if _st.get("state") == "done" else ""}, ensure_ascii=False), "application/json")
+            _pg = _probe_card(_st, _j) if _st.get("state") == "done" else ""
+            _inner = _pg[_pg.index("<body>") + 6:_pg.rindex("</body>")] if _pg else ""
+            self._send(json.dumps({"state": _st.get("state"), "page": _inner}, ensure_ascii=False), "application/json")
             return
         if len(parts) == 1 and parts[0] == "codeinfo":
             # the /activate page asks what a code is for (package, days) - nothing else
