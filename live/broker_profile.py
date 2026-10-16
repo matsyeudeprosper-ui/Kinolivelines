@@ -113,3 +113,38 @@ def checks(p):
 def ready(p):
     bad = [c["k"] for c in checks(p) if c["block"] and not c["ok"]]
     return (not bad), bad
+
+
+# ---- items 2, 4, 5 (2026-10-16): the three broker differences a bot meets at a non-Exness broker ----
+def pick_fill(flags, IOC=2, FOK=1, RETURN=0):
+    """item 5 - the order fill type this symbol accepts: IOC when allowed (the bots' habit), else FOK, else RETURN.
+    flags = symbol_info.filling_mode (bit 1 FOK, bit 2 IOC). Values default to the MetaTrader5 constants."""
+    f = int(flags or 0)
+    if f & FILL_IOC:
+        return IOC
+    if f & FILL_FOK:
+        return FOK
+    return RETURN
+
+
+def clock_offset_s(mt5, symbol):
+    """item 4 - broker server time minus UTC, in whole hours, as seconds (Exness 0; many brokers +7200/+10800).
+    Measured on the symbol's last tick: the tick is never more than a few minutes old on a 24/7 market."""
+    try:
+        tk = mt5.symbol_info_tick(symbol)
+        if tk is None or not getattr(tk, "time", 0):
+            return 0
+        return int(round((int(tk.time) - time.time()) / 3600.0)) * 3600
+    except Exception:
+        return 0
+
+
+def deals_utc(mt5, frm, to, off_s):
+    """item 4 - history_deals_get with UTC datetimes in and UTC deal times out, whatever the broker's clock:
+    the window is shifted INTO broker time for the query, each deal's time shifted BACK by the same offset."""
+    import datetime as _dt
+    sh = _dt.timedelta(seconds=int(off_s or 0))
+    ds = mt5.history_deals_get(frm + sh, to + sh) or []
+    if not off_s:
+        return list(ds)
+    return [d._replace(time=int(d.time) - int(off_s), time_msc=int(getattr(d, "time_msc", d.time * 1000)) - int(off_s) * 1000) for d in ds]

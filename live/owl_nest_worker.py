@@ -36,18 +36,36 @@ OUTP = os.path.join(OUT, uid + ".json")
 _ddhist = []
 
 
+BROKER_OFF = {"s": 0}          # 2026-10-16: broker clock minus UTC (items 2/4: symbol name + clock, see broker_profile)
+
+
 def init():
     if u.get("mt5_login"):
-        return mt5.initialize(path=u["terminal"],
-                              login=int(u["mt5_login"]),
-                              password=u.get("mt5_password", ""),
-                              server=u.get("mt5_server", ""))
-    return mt5.initialize(path=u["terminal"])
+        ok = mt5.initialize(path=u["terminal"],
+                            login=int(u["mt5_login"]),
+                            password=u.get("mt5_password", ""),
+                            server=u.get("mt5_server_addr") or u.get("mt5_server", ""))
+    else:
+        ok = mt5.initialize(path=u["terminal"])
+    if ok:
+        global SYMBOL
+        import broker_profile as _BP
+        if mt5.symbol_info(SYMBOL) is None:
+            _b = _BP.find_btc(mt5.symbols_get() or [])
+            if _b is not None:
+                SYMBOL = _b.name
+        BROKER_OFF["s"] = _BP.clock_offset_s(mt5, SYMBOL)
+    return ok
+
+
+def deals_utc(frm, to):
+    import broker_profile as _BP
+    return _BP.deals_utc(mt5, frm, to, BROKER_OFF["s"])
 
 
 def out_deals(frm, to):
     frm = max(frm, ERA)
-    alld = mt5.history_deals_get(ERA, to) or []
+    alld = deals_utc(ERA, to)
     ins = [d for d in alld if d.entry == mt5.DEAL_ENTRY_IN]
     if BOT_ONLY:
         keep = {d.position_id for d in ins
@@ -375,7 +393,7 @@ def wealth():
         return None
     now = datetime.now(timezone.utc)
     horizon = now + timedelta(minutes=5)
-    alld = sorted(mt5.history_deals_get(ERA, horizon) or [], key=lambda d: d.time)
+    alld = sorted(deals_utc(ERA, horizon), key=lambda d: d.time)
     outs, ins_map = out_deals(ERA, horizon)
     outs = sorted(outs, key=lambda d: d.time)
     mine = {d.ticket for d in outs}

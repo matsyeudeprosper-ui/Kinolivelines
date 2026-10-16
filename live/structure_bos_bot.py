@@ -250,7 +250,7 @@ elif VARIANT not in ("live", "bos") and any(
         if x.get("id") == VARIANT][0]
     TERMINAL = _gu["terminal"]
     LOGIN = int(_gu["mt5_login"])
-    SERVER = _gu["mt5_server"]
+    SERVER = _gu.get("mt5_server_addr") or _gu["mt5_server"]     # 2026-10-16: the address the sign-up probe used, when the name is unknown to the terminal
     PASSWORD = _gu["mt5_password"]
     MAGIC = 909501
     COMMENT = "KL-BOS-F"
@@ -1129,7 +1129,7 @@ def robot_close_all(why):
             "action": mt5.TRADE_ACTION_DEAL, "symbol": SYMBOL, "volume": p.volume, "position": p.ticket,
             "type": mt5.ORDER_TYPE_SELL if p.type == mt5.POSITION_TYPE_BUY else mt5.ORDER_TYPE_BUY,
             "price": tick.bid if p.type == mt5.POSITION_TYPE_BUY else tick.ask,
-            "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-robot", "type_filling": mt5.ORDER_FILLING_IOC})
+            "deviation": 200, "magic": MAGIC, "comment": COMMENT + "-robot", "type_filling": fill_mode()})
         say(f"ROBOT SORTIE ({why}): position {p.ticket} fermee"
             + ("" if r is not None and r.retcode == mt5.TRADE_RETCODE_DONE else f" - ECHEC retcode={r.retcode if r else None}"))
 
@@ -1146,7 +1146,7 @@ def robot_manage(st, new_trend):
             continue
         d = 1 if p.type == mt5.POSITION_TYPE_BUY else -1
         rec = (st.get("robot_open") or {}).get(str(p.ticket)) or {}
-        opened = float(rec.get("t") or p.time)
+        opened = float(rec.get("t") or (p.time - BROKER_OFF))
         act = _RL.manage(ROBOT_RULES, d, p.price_open, p.sl, opened, time.time(),
                          tick.bid if d == 1 else tick.ask, new_trend is not None and new_trend == -d, bool(rec.get("be")))
         if not act:
@@ -1180,9 +1180,9 @@ def book_closes(st, t_from):
     # day (and the balance resize) never depends on a trade happening to
     # occur near the boundary.
     day_roll(st)
-    ds = mt5.history_deals_get(
+    ds = deals_utc(
         datetime.fromtimestamp(t_from, tz=timezone.utc),
-        datetime.now(timezone.utc)) or []
+        datetime.now(timezone.utc))
     seen = st.setdefault("seen_deals", [])
     for d in ds:
         if d.magic != MAGIC or d.entry != mt5.DEAL_ENTRY_OUT:
@@ -1303,13 +1303,49 @@ def broker_ok(force=False):
     return _BRK["ok"], _BRK["bad"]
 
 
+# ---- 2026-10-16 (owner, multi-broker go-live items 2/4/5): what differs at a non-Exness broker ----
+BROKER_OFF = 0                 # broker server clock minus UTC, seconds (Exness 0; FOREX.com +10800)
+_FILL = {"v": None}
+
+
+def fill_mode():
+    """item 5: the fill type this symbol accepts - IOC where allowed (Exness), else FOK (FOREX.com), else RETURN"""
+    if _FILL["v"] is None:
+        import broker_profile as _BP
+        try:
+            _si = mt5.symbol_info(SYMBOL)
+            _FILL["v"] = _BP.pick_fill(getattr(_si, "filling_mode", 0), mt5.ORDER_FILLING_IOC, mt5.ORDER_FILLING_FOK, mt5.ORDER_FILLING_RETURN)
+        except Exception:
+            return mt5.ORDER_FILLING_IOC
+    return _FILL["v"]
+
+
+def deals_utc(frm, to):
+    """item 4: history deals with UTC in and UTC out (the window shifted into broker time, deal times shifted back)"""
+    import broker_profile as _BP
+    return _BP.deals_utc(mt5, frm, to, BROKER_OFF)
+
+
 def main():
+    global SYMBOL, BROKER_OFF
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
                           timeout=60000), "MT5 init failed"
     ai = mt5.account_info()
     assert ai and ai.login == LOGIN, f"wrong account {ai}"
+    if not MKT and mt5.symbol_info(SYMBOL) is None:
+        # item 2: this broker names Bitcoin differently ("BTCUSDm", "Bitcoin"...) - the finder picks it
+        import broker_profile as _BP
+        _b = _BP.find_btc(mt5.symbols_get() or [])
+        assert _b is not None, f"no Bitcoin symbol on this account (looked for {SYMBOL})"
+        say(f"COURTIER: Bitcoin s'appelle {_b.name} ici (pas {SYMBOL})")
+        SYMBOL = _b.name
     mt5.symbol_select(SYMBOL, True)
+    if not MKT:
+        import broker_profile as _BP
+        BROKER_OFF = _BP.clock_offset_s(mt5, SYMBOL)
+        _fm = {mt5.ORDER_FILLING_IOC: "IOC", mt5.ORDER_FILLING_FOK: "FOK"}.get(fill_mode(), "RETURN")
+        say(f"COURTIER: {ai.server} | symbole {SYMBOL} | horloge UTC{BROKER_OFF / 3600:+.0f} h | execution {_fm}")
     if MKT:
         global S_MIN_DIST
         _si = mt5.symbol_info(SYMBOL)
@@ -1394,8 +1430,8 @@ def main():
         if _era.tzinfo is None:
             _era = _era.replace(tzinfo=timezone.utc)
         _adds = set(st.get("add_ids") or [])
-        _ds = sorted([x for x in (mt5.history_deals_get(_era, datetime.now(timezone.utc)
-                      + timedelta(minutes=5)) or [])
+        _ds = sorted([x for x in deals_utc(_era, datetime.now(timezone.utc)
+                      + timedelta(minutes=5))
                       if x.magic == MAGIC and x.entry == mt5.DEAL_ENTRY_OUT
                       and x.position_id not in _adds and x.volume > 0],
                      key=lambda x: x.time)
@@ -1691,7 +1727,7 @@ def main():
                "tp": round(tp, 2), "deviation": 200,
                "magic": MAGIC, "comment": COMMENT,
                "type_time": mt5.ORDER_TIME_GTC,
-               "type_filling": mt5.ORDER_FILLING_IOC}
+               "type_filling": fill_mode()}
         r = mt5.order_send(req)
         if r is not None and r.retcode == 10027 and ensure_algo():
             r = mt5.order_send(req)
@@ -1794,7 +1830,7 @@ def main():
                                   else tick.ask),
                         "deviation": 200, "magic": MAGIC,
                         "comment": COMMENT + "-kill",
-                        "type_filling": mt5.ORDER_FILLING_IOC})
+                        "type_filling": fill_mode()})
                 st["killed"] = True
                 save_state(st)
                 continue
@@ -1894,8 +1930,7 @@ def main():
                                 "deviation": 200, "magic": MAGIC,
                                 "comment": COMMENT + "-ADD",
                                 "type_time": mt5.ORDER_TIME_GTC,
-                                "type_filling":
-                                    mt5.ORDER_FILLING_IOC})
+                                "type_filling": fill_mode()})
                             if (_r3 is not None and _r3.retcode
                                     == mt5.TRADE_RETCODE_DONE):
                                 st.setdefault("add_ids", [])\
