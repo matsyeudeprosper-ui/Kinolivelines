@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-16T12:00:17Z",
+ "updated": "2026-10-16T17:32:00Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -62,7 +62,8 @@
     "2026-10-14 19:00 veille: FLIP-BOS SELL +2.76 day after the -13.14 loss won against the pile. day_after_loss 45 tr 38% vs 59% -55.46 PF 0.51 (h 36/39) holds.",
     "2026-10-15: it is the hurry, not the loss: after a loss restart <15 min 17 tr 18% -40.91; after a loss 15-60 min 28 tr 64% +12.10. Quick after a win 18 tr 56% -6.15. Quick by day 26 tr 27% -43.96, quick by night 9 tr 67% -3.10.",
     "2026-10-15 16:30 veille: BOS BUY -6.03 by day after the 14:08 -17.17 loss, restarted after 1-3 h (not quick) - lost anyway. Gap 1-3 h all kinds now 25 tr 48% -2.71 (h 50/46). The pause cures the hurry, not the day breakout after a loss (peu).",
-    "2026-10-16: since 10-10 the reference-only trades by day lose; filtered day 13 tr 69%. Filter + wait10 C -10.2 (h +14.3/-26.8)."
+    "2026-10-16: since 10-10 the reference-only trades by day lose; filtered day 13 tr 69%. Filter + wait10 C -10.2 (h +14.3/-26.8).",
+    "2026-10-16 17:32 veille: FLIP-BOS SELL +12.83 by day (entry ~15 h, pace 1.705) after the -8.39 loss closed 10:01 - restarted hours later, not quick, and won; fits 'the hurry, not the loss'. After 1 loss all day/night 31 tr 48% -0.47."
    ]
   },
   {
@@ -2446,6 +2447,18 @@
     "--by kind"
    ],
    "saw": "Only u477508138 (unfiltered reference) took it; filtered accounts refused it - fits pb_filter_works. Night entry, so not a flip_day trade (pile 53 tr 40% -55.37 unchanged). By stop: >=400 pts 11 tr 36% -45.21 PF 0.46 (h 60/17, avg loss -11.98) vs 250-400 25 tr 60% +4.45 (peu, but a new lead; earlier notes said wide stops carry the top BOS wins). >3 h holds 9 tr 56% -0.33. FLIP-BOS 77 tr 44% -59.84; BOS 62 tr 58% +7.11. No ask, no twins, no labo, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-16T17:32:00Z",
+   "night": "veille",
+   "looked": [
+    "2 new, both closed 17:17: FLIP-BOS SELL +12.83 (entry ~15 h day, pace 1.705, after the -8.39 loss) and BOS SELL +9.22 (entry ~17 h day, pace 1.232)",
+    "--pile flip_day by nerv/prev/hour",
+    "--pile cont_day",
+    "--pile cont_rested",
+    "--streaks"
+   ],
+   "saw": "143 tr, 51% -40.12. Both day trades won, against flip_day and cont_day. flip_day 54 tr 41% -42.54 PF 0.63 (h 31/50, was 53 tr -55.37); 15 h now 3/3 +19.45 (peu); 1.3-1.85 band 16 tr 44% -10.79. cont_day 37 tr 43% -40.88 PF 0.68 (h 39/47); 17 h 2/2 +18.98 (peu). cont_rested unchanged at 28 tr (the BOS not counted rested). After 1 loss: 31 tr 48% -0.47. No ask, no twins, no labo, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
