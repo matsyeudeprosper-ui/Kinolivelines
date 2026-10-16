@@ -39,3 +39,8 @@ for sp in [None] + SP:
     print("spread %-7s owl net %+8.2f (%d trades, dd %.2f) | pekos-owl net %+8.2f (%d trades, dd %.2f)   %.0fs" % (
         tag, r["owl"]["net"], r["owl"]["trades"], r["owl"]["mtm_dd"], r["pekos-owl"]["net"], r["pekos-owl"]["trades"], r["pekos-owl"]["mtm_dd"], time.time() - t1), flush=True)
     json.dump(out, open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "spread_whatif.json"), "w", encoding="utf-8"), indent=1)
+    # the broker book's cost curve (live/broker_book.py est_at): native point + one point per forced spread
+    curve = {"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "days": out["days"], "balance": RR.BAL,
+             "native": {"spread": out["native_median_spread"], "owl": out["runs"]["native"]["owl"]["net"], "pekos-owl": out["runs"]["native"]["pekos-owl"]["net"]},
+             "points": [{"spread": float(k), "owl": v["owl"]["net"], "pekos-owl": v["pekos-owl"]["net"]} for k, v in out["runs"].items() if k != "native"]}
+    json.dump(curve, open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "live", "lab", "spread_curve.json"), "w", encoding="utf-8"), indent=1)
