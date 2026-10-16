@@ -140,18 +140,18 @@ def sync_nest_data():
 
 
 def curve():
-    """{"native": {...}, "points": [{"spread": 10, "owl": net, "pekos-owl": net}, ...]} or None"""
+    """{"native_spread": x, "robots": {id: {"name", "native": net, "points": {"10": net, "20": net, ...}}}} or None"""
     c = _load(CURVE, None)
-    return c if c and c.get("points") else None
+    return c if c and c.get("robots") else None
 
 
 def est_at(sp, robot="owl"):
-    """the robot's 42-day net at this spread, read off the curve (linear between measured points)"""
+    """this robot's 42-day net at this spread, read off its curve (linear between measured points) -> (est, native)"""
     c = curve()
-    if c is None or sp is None:
+    if c is None or sp is None or robot not in c["robots"]:
         return None, None
-    pts = sorted([(float(c["native"]["spread"]), float(c["native"][robot]))] + [(float(p["spread"]), float(p[robot])) for p in c["points"]])
-    nat = float(c["native"][robot])
+    r = c["robots"][robot]; nat = float(r["native"])
+    pts = sorted([(float(c["native_spread"]), nat)] + [(float(k), float(v)) for k, v in (r.get("points") or {}).items()])
     if sp <= pts[0][0]:
         return pts[0][1], nat
     for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
@@ -162,23 +162,35 @@ def est_at(sp, robot="owl"):
 
 
 def verdict(profile):
+    """owner 2026-10-16: "the verification should check any existing robot" - every robot on the curve is placed at
+    this broker's cost; the zone is the BEST robot's, and "robots" lists them all, best first (est > 0 = pays)."""
     import broker_profile as BP
-    out = {"zone": "unknown", "spread": spread_usd(profile), "exness_spread": EXNESS_SPREAD, "est_net": None, "native_net": None, "reasons": []}
+    out = {"zone": "unknown", "spread": spread_usd(profile), "exness_spread": EXNESS_SPREAD, "est_net": None, "native_net": None, "robots": [], "reasons": []}
     if not profile:
         out["reasons"].append("compte illisible"); return out
     C = {c["k"]: c for c in BP.checks(profile)}
     hard = [k for k in ("btc_found", "contract", "lots", "currency", "hedging") if k in C and not C[k]["ok"]]
-    if not hard and "exness" in str(profile.get("server", "")).lower():
-        out["zone"] = "green"; return out                   # the robot's home broker: the curve's native point
     if hard:
         out["zone"] = "red"; out["reasons"] = [C[k]["fr"] for k in hard]; return out
-    est, nat = est_at(out["spread"])
-    out["est_net"], out["native_net"] = est, nat
-    if est is None:
+    c = curve()
+    if c is None:
         out["reasons"].append("courbe de coût pas encore mesurée"); return out
-    if est <= 0:
-        out["zone"] = "red"; out["reasons"].append("le coût par trade mange tout le gain")
-    elif est >= GREEN_KEEP * nat:
+    rows = []
+    for rid, r in c["robots"].items():
+        est, nat = est_at(out["spread"], rid)
+        if est is not None:
+            rows.append({"id": rid, "name": r.get("name") or rid, "est": est, "native": nat, "pays": est > 0, "keeps": (est / nat) if nat else None})
+    rows.sort(key=lambda x: -x["est"])
+    out["robots"] = rows
+    if not rows:
+        out["reasons"].append("courbe de coût pas encore mesurée"); return out
+    best = rows[0]
+    out["est_net"], out["native_net"], out["best"] = best["est"], best["native"], best["id"]
+    if "exness" in str(profile.get("server", "")).lower():
+        out["zone"] = "green"; return out                    # the robots' home broker: the curve's native point
+    if best["est"] <= 0:
+        out["zone"] = "red"; out["reasons"].append("le coût par trade mange tout le gain, pour chaque robot")
+    elif best["keeps"] is not None and best["keeps"] >= GREEN_KEEP:
         out["zone"] = "green"
     else:
         out["zone"] = "orange"; out["reasons"].append("le coût par trade réduit le gain")

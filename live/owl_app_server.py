@@ -16736,6 +16736,8 @@ def _flow_page(title, body_html, step=None, doc_title="OwlNest"):
             "@keyframes sp{to{transform:rotate(360deg)}}"
             ".doors{margin-top:16px}.doors>a,.doors>div{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border:1px solid var(--bd);border-radius:14px;margin-top:10px;background:rgba(255,255,255,.03);color:var(--tx);text-decoration:none}.doors>*>div{min-width:0}"
             ".doors b{display:block;font-size:.92rem}.doors span{display:block;color:var(--tx3);font-size:.82rem;margin-top:2px;line-height:1.45}.doors em{flex:none;width:30px;height:30px;border-radius:10px;background:rgba(59,130,246,.14);color:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:.85rem}"
+            ".rl{list-style:none;margin:6px 0 0;padding:0}.rl li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--bd);font-size:.92rem}"
+            ".rl li:first-child{border-top:0}.rl b{font-weight:650}.rl small{display:block;color:var(--tx3);font-size:.76rem;margin-top:2px}.rl em{font-style:normal;font-weight:800;white-space:nowrap}.rl em.up{color:#7fe0a6}.rl em.dn{color:#ff9a9a}"
             ".foot{color:var(--tx3);font-size:.76rem;text-align:center;margin-top:22px;line-height:1.6}.foot a{color:var(--tx3)}"
             "</style></head><body><div class=\"w\">"
             "<div class=\"brand\"><img src=\"/icon192.png\" alt=\"\"><b>OwlNest</b><a href=\"/\">Accueil</a></div>"
@@ -16847,7 +16849,14 @@ def _probe_card(st, jid):
                "<a class=\"go sec\" href=\"/\">Retour &agrave; l&#8217;accueil</a>")
     else:
         say = "<p>Votre compte se lit bien. Le r&eacute;sultat chiffr&eacute; chez ce courtier arrive bient&ocirc;t ; vous pouvez activer d&egrave;s maintenant.</p>"
-    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + say + code_block
+    robots = ""
+    if (v.get("robots") or []) and broker != "Exness":
+        # owner 2026-10-16: "the verification should check any existing robot" - every public robot at this cost
+        robots = "<h2>Les robots chez vous</h2><ul class=\"rl\">" + "".join(
+            f"<li><div><b>{_h.escape(str(r.get('name') or r.get('id')))}</b><small>{fr(r.get('native'))} $ &agrave; Exness sur 42 jours</small></div>"
+            f"<em class=\"{'up' if r.get('pays') else 'dn'}\">{('+' if float(r.get('est') or 0) > 0 else '')}{fr(r.get('est'))} $</em></li>"
+            for r in v["robots"]) + "</ul>"
+    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + say + robots + code_block
     return _flow_page(broker, body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
 
 
