@@ -381,6 +381,23 @@ def has(uid, key):
     return False
 
 
+def _atomic_json(path, obj, **kw):
+    """2026-10-16 (owner: "bad user experience" - activation showed 'Permission denied' on owl_entitlements.json):
+    write to a temp file of THIS request, then swap it in, retrying ~3 s while Windows keeps the target open
+    (a reader, or a double-tapped second request writing the same file)."""
+    import threading as _th
+    tmp = "%s.%d.%d.tmp" % (path, os.getpid(), _th.get_ident())
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, **kw)
+    for i in range(30):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            time.sleep(0.1)
+    os.replace(tmp, path)
+
+
 def ent_grant(uid, pkg, days, src):
     """Extend from the later of now / the current end (a renewal adds)."""
     e = _ents()
@@ -393,8 +410,7 @@ def ent_grant(uid, pkg, days, src):
     r["updated"] = int(time.time())
     r["src"] = src
     e[uid] = r
-    json.dump(e, open(ENT_FILE + ".tmp", "w", encoding="utf-8"), indent=1)
-    os.replace(ENT_FILE + ".tmp", ENT_FILE)
+    _atomic_json(ENT_FILE, e, indent=1)
     return r
 
 
@@ -408,8 +424,7 @@ def ent_family(uid, on=True):
     r["family_until"] = 0
     r["updated"] = int(time.time())
     e[uid] = r
-    json.dump(e, open(ENT_FILE + ".tmp", "w", encoding="utf-8"), indent=1)
-    os.replace(ENT_FILE + ".tmp", ENT_FILE)
+    _atomic_json(ENT_FILE, e, indent=1)
 
 
 def manual_seats():
@@ -10724,7 +10739,7 @@ def _load_codes():
 
 
 def _save_codes(c):
-    json.dump(c, open(CODES_FILE, "w", encoding="utf-8"), indent=2)
+    _atomic_json(CODES_FILE, c, indent=2)
 
 
 CODE_TTL = 7 * 86400          # a code lives a week: Telegram takes its time
@@ -17017,7 +17032,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "<div id=\"tipbx\"><span id=\"tipt\"></span><br><button type=\"button\" onclick=\"document.getElementById('tipbx').style.display='none'\">Compris</button></div>"
             "<div id=\"bg\" onclick=\"closeM()\"></div><div id=\"md\"><div class=\"grab\"></div>"
             "<h2 id=\"mt\"></h2><p class=\"mp\" id=\"mp\"></p>"
-            "<form method=\"POST\" action=\"/activate\" id=\"f\" autocomplete=\"off\">"
+            "<form method=\"POST\" action=\"/activate\" id=\"f\" autocomplete=\"off\" onsubmit=\"var b=document.getElementById('ok');if(b&&b.dataset.busy){return false;}if(b){b.dataset.busy=1;b.textContent='Activation en cours\u2026 (jusqu\u2019\u00e0 une minute)';b.style.opacity='.7';}\">"
             "<input type=\"hidden\" name=\"pkg\" id=\"pkg\"><input type=\"hidden\" name=\"action\" id=\"act\" value=\"activate\">"
             f"<label for=\"name\">Votre pr&eacute;nom</label><input id=\"name\" name=\"name\" maxlength=\"30\" placeholder=\"Pr&eacute;nom\" value=\"{_h.escape(name)}\">"
             "<label for=\"lg\" id=\"lgl\">Choisissez un identifiant</label>"
@@ -17463,7 +17478,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
             for x in allu:
                 if x.get("id") == ex["id"]:
                     x.update({"login": int(ml), "mt5_login": int(ml), "mt5_password": pwd, "mt5_server": server})
-            json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+            _atomic_json(USERS_FILE, allu, ensure_ascii=False, indent=2)
             _users_cache["t"] = 0.0
         ok, why = grant_pending(ex["id"], days, pkg)
         if not ok:
@@ -17503,7 +17518,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                     if not x.get("dedicated"):
                         x["dedicated"] = f"structure_bos_bot.py {x['id']}"
                         x["managed"] = True
-            json.dump(_us, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+            _atomic_json(USERS_FILE, _us, ensure_ascii=False, indent=2)
             try:
                 _pf = os.path.join(DIR, pause_file(known["id"]))
                 if json.load(open(_pf, encoding="utf-8")).get("by") == "expiry":
@@ -17538,7 +17553,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     if pkg == "family":
         rec.update({"trade": True, "dedicated": f"structure_bos_bot.py {uid}", "managed": True})
     allu.append(rec)
-    json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _atomic_json(USERS_FILE, allu, ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
     redeem_activation_code(code, uid)
     ent_grant(uid, pkg, days, "code")
@@ -19396,7 +19411,16 @@ class H(BaseHTTPRequestHandler):
                 else:
                     self._send(_res, "text/html; charset=utf-8")
             except Exception as e:
-                self._send(_join_result("&#9888;&#65039; Petit souci", f"<p>{e}</p>"), "text/html; charset=utf-8")
+                try:
+                    with open(os.path.join(DIR, "owl_activate_errors.log"), "a", encoding="utf-8") as _lf:
+                        _lf.write("%s %r\n" % (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), e))
+                except Exception:
+                    pass
+                self._send(_join_result("&#9203; Un instant",
+                                        "<p>Votre demande est bien arriv&eacute;e et votre compte se pr&eacute;pare.</p>"
+                                        "<p>Dans 2 minutes, connectez-vous avec votre num&eacute;ro de compte et votre mot de passe. "
+                                        "S&#8217;il n&#8217;appara&icirc;t pas, &eacute;crivez au Owl : nous r&eacute;glons cela pour vous.</p>"
+                                        "<p><a href=\"/\">Aller &agrave; la connexion</a></p>"), "text/html; charset=utf-8")
             return
         if p.endswith("/login") or p.endswith("/register"):
             try:
