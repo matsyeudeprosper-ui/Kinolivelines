@@ -1,0 +1,26 @@
+{
+ "generated_at": "2026-10-16T18:44:53Z",
+ "days": 41.7,
+ "balance": 200.0,
+ "native_spread": 10.0,
+ "robots": {
+  "owl": {
+   "name": "L'Owl",
+   "native": 51.1,
+   "points": {
+    "10": 50.76,
+    "20": 56.66,
+    "40": -5.3
+   }
+  },
+  "pekos-owl": {
+   "name": "Pekos owl",
+   "native": 68.58,
+   "points": {
+    "10": 54.9,
+    "20": 1.14,
+    "40": -23.63
+   }
+  }
+ }
+}

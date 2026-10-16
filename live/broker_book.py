@@ -90,13 +90,17 @@ def lookup(server):
     b = book(); k = norm(server)
     if not k:
         return None
+    pg = None
     if k in b:
-        return b[k]
-    pre = k.split("-")[0]
-    for kk, v in b.items():
-        if kk.split("-")[0] == pre:
-            return dict(v, matched_by="prefix")
-    return None
+        pg = dict(b[k])
+    else:
+        pre = k.split("-")[0]
+        for kk, v in b.items():
+            if kk.split("-")[0] == pre:
+                pg = dict(v, matched_by="prefix"); break
+    if pg is not None and pg.get("btc"):
+        pg["verdict"] = verdict(pg)          # always against the CURRENT cost curve, never a stored verdict
+    return pg
 
 
 def spread_usd(profile):
@@ -151,7 +155,9 @@ def est_at(sp, robot="owl"):
     if c is None or sp is None or robot not in c["robots"]:
         return None, None
     r = c["robots"][robot]; nat = float(r["native"])
-    pts = sorted([(float(c["native_spread"]), nat)] + [(float(k), float(v)) for k, v in (r.get("points") or {}).items()])
+    _d = {float(k): float(v) for k, v in (r.get("points") or {}).items()}
+    _d[float(c["native_spread"])] = nat                   # the real-tick point wins over a forced one at the same spread
+    pts = sorted(_d.items())
     if sp <= pts[0][0]:
         return pts[0][1], nat
     for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
