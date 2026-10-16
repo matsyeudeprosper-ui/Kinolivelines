@@ -34,7 +34,11 @@ try {
   for (const t of targets) {
     const url = /^[a-z]+:\/\//i.test(t) ? t : "file:///" + t.replace(/\\/g, "/");
     await send("Page.navigate", { url }); await sleep(1200);
-    if (RUN) { await send("Runtime.evaluate", { expression: RUN, awaitPromise: true }); await sleep(700); }
+    if (RUN) {
+      const r = await send("Runtime.evaluate", { expression: RUN, awaitPromise: true, returnByValue: true });
+      if (r && r.result && r.result.value !== undefined) console.log("run ->", typeof r.result.value === "string" ? r.result.value : JSON.stringify(r.result.value));
+      await sleep(700);
+    }
     const { cssContentSize } = await send("Page.getLayoutMetrics");
     const h = Math.min(Math.ceil(cssContentSize.height), 3000);
     await send("Emulation.setDeviceMetricsOverride", { width: 390, height: h, deviceScaleFactor: 2, mobile: true });

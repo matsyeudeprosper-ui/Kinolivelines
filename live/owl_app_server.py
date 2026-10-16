@@ -9446,7 +9446,11 @@ function render(d){
   if(d.expired){document.getElementById('st').innerHTML=
    '&#9203; <b>Essai termin&eacute;.</b> Contactez le Owl pour passer au '+
    'Premium et continuer.';return}
-  if(d.error){document.getElementById('st').innerHTML=
+  if(d.error){
+   if(d.error.includes('patientez')){const _eq=document.getElementById('eq'),_dl=document.getElementById('dayline');
+    if(_eq){_eq.className='money';_eq.style.fontSize='1.15rem';_eq.style.lineHeight='1.4';_eq.innerHTML=(LANG()==='en'?'Your robot is getting ready\\u2026':'Votre robot se pr\\u00e9pare\\u2026');}
+    if(_dl){_dl.innerHTML='<span style="color:var(--text2);font-weight:500">'+(LANG()==='en'?'Two to three minutes. This page refreshes by itself.':'Deux \\u00e0 trois minutes. Cette page se rafra\\u00eechit toute seule.')+'</span>';}}
+   document.getElementById('st').innerHTML=
    (d.error.includes('patientez')
     ?'<div style="text-align:left;padding:4px 2px"><div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:99px;border:2px solid var(--accent);border-top-color:transparent;animation:owlspin .9s linear infinite;display:inline-block"></span><b style="font-size:1.05rem">'+(LANG()==='en'?'Your robot is getting ready':'Votre robot se pr\u00e9pare')+'</b></div>'
      +'<div style="color:var(--text2);font-size:.9rem;line-height:1.5;margin-top:8px">'+(LANG()==='en'?'We are opening your terminal and reading your account. Two to three minutes. This page refreshes by itself.':'Nous ouvrons votre terminal et lisons votre compte. Deux \u00e0 trois minutes. Cette page se rafra\u00eechit toute seule.')+'</div>'
