@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-16T20:30:20Z",
+ "updated": "2026-10-16T22:00:06Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2477,6 +2477,15 @@
     "asks.json: none open; twins/labo empty"
    ],
    "saw": "Nothing new. Trigger re-fired a second time on the 17:17 trade (seen at 17:32 and 19:02). No look, no run, no pile, no proposal. Wrote 'rien'."
+  },
+  {
+   "t": "2026-10-16T22:00:06Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: same 'new' trade a fourth time (FLIP-BOS SELL +12.83 closed 17:17); trades_total 143 unchanged",
+    "asks.json: none open; twins/labo empty"
+   ],
+   "saw": "Nothing new. Trigger keeps re-firing on the 17:17 trade (17:32, 19:02, 20:30, 22:00) - looks like the wake marker does not advance after a 'rien' watch. No look, no run, no pile, no proposal. Wrote 'rien'."
   }
  ],
  "lessons": [
