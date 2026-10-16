@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-16T11:30:00Z",
+ "updated": "2026-10-16T12:00:17Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -22,7 +22,8 @@
    "status": "renforce",
    "next": "real_pool_split + battery_live_base requests; watch refused vs kept on the reference account to 30 kept trades.",
    "evidence": [
-    "2026-10-16: reference account (unfiltered), same lot, since 10-10: refused-by-filter 31 tr 48% -23.22 per 0.01 (h -1.35/-21.87); kept 19 tr 68% +8.77 (h +3.59/+5.18). Wealth since 10-10: filtered accounts +12.66..+46.14 each, reference -28.92 on 50 (since 10-15: -34.49 on 8). Harness 42 d: trend filter +41.68 hole 51.81 vs raw +16.67 hole 82.16 (B, h -32.8/+45.9); but only 55 trades vs live ~4.5/day."
+    "2026-10-16: reference account (unfiltered), same lot, since 10-10: refused-by-filter 31 tr 48% -23.22 per 0.01 (h -1.35/-21.87); kept 19 tr 68% +8.77 (h +3.59/+5.18). Wealth since 10-10: filtered accounts +12.66..+46.14 each, reference -28.92 on 50 (since 10-15: -34.49 on 8). Harness 42 d: trend filter +41.68 hole 51.81 vs raw +16.67 hole 82.16 (B, h -32.8/+45.9); but only 55 trades vs live ~4.5/day.",
+    "2026-10-16 12:00 veille: night FLIP-BOS BUY -8.39 (entry 05:01, held 5 h, stop 411 pts) taken by the reference account only; filtered accounts refused it. One more refused loss."
    ]
   },
   {
@@ -2432,6 +2433,19 @@
     "owl_packages (cap removed 10-14, account 2 on pekos-owl rr1.0)"
    ],
    "saw": "The journal pool mixes the filtered accounts (22 tr 68% +23.28 since 10-10) and the unfiltered reference (31 own tr 48% -46.45) plus one USTEC trade. Same-account check: refused 31 tr -23.22/0.01 (both halves down) vs kept 19 tr +8.77 (both up). The >3 h loss is day-only. Best cell BOS night gap 15-60 11/11 +53.07."
+  },
+  {
+   "t": "2026-10-16T12:00:17Z",
+   "night": "veille",
+   "looked": [
+    "1 new: FLIP-BOS BUY -8.39 (entry 05:01 night, closed 10:01, held 300 min, pace 0.799, stop 411 pts, 0.02, dayn 1, after a win)",
+    "journals: which accounts took it",
+    "--pile flip_day",
+    "--by dur",
+    "--by dist",
+    "--by kind"
+   ],
+   "saw": "Only u477508138 (unfiltered reference) took it; filtered accounts refused it - fits pb_filter_works. Night entry, so not a flip_day trade (pile 53 tr 40% -55.37 unchanged). By stop: >=400 pts 11 tr 36% -45.21 PF 0.46 (h 60/17, avg loss -11.98) vs 250-400 25 tr 60% +4.45 (peu, but a new lead; earlier notes said wide stops carry the top BOS wins). >3 h holds 9 tr 56% -0.33. FLIP-BOS 77 tr 44% -59.84; BOS 62 tr 58% +7.11. No ask, no twins, no labo, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
@@ -2489,6 +2503,7 @@
   "hour_brake_rebuild: adaptive hour brake still missing in code.",
   "adds_in_scrutiny: add-ons are real money; do they change which piles leak?",
   "Buys vs sells: wait for a falling week.",
-  "Capped ideas parked (no account has a daily cap since 10-14): reopen if a cap returns."
+  "Capped ideas parked (no account has a daily cap since 10-14): reopen if a cap returns.",
+  "Wide stops >=400 pts: 11 tr 36% -45.21 (h 60/17, peu) vs the note that top BOS wins have wide stops (300+) - split dist>=400 by kind and by src at night; wait for 30 trades."
  ]
 }
