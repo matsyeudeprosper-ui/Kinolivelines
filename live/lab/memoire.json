@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-16T17:32:00Z",
+ "updated": "2026-10-16T19:02:24Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2459,6 +2459,15 @@
     "--streaks"
    ],
    "saw": "143 tr, 51% -40.12. Both day trades won, against flip_day and cont_day. flip_day 54 tr 41% -42.54 PF 0.63 (h 31/50, was 53 tr -55.37); 15 h now 3/3 +19.45 (peu); 1.3-1.85 band 16 tr 44% -10.79. cont_day 37 tr 43% -40.88 PF 0.68 (h 39/47); 17 h 2/2 +18.98 (peu). cont_rested unchanged at 28 tr (the BOS not counted rested). After 1 loss: 31 tr 48% -0.47. No ask, no twins, no labo, no harness run, no pile, no proposal."
+  },
+  {
+   "t": "2026-10-16T19:02:24Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: 1 'new' trade = FLIP-BOS SELL +12.83 closed 17:17, already logged at the 17:32 watch",
+    "asks.json: none open; twins/labo empty"
+   ],
+   "saw": "Nothing new since 17:32 (143 tr unchanged). No repeat look. Wrote 'rien'. Lesson: the wake trigger can re-fire on a trade an earlier watch already covered - check last_observations first."
   }
  ],
  "lessons": [
