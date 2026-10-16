@@ -1,0 +1,4 @@
+recorder ticks 4869156 | broker ticks 4867165 over the same window (100.0%)
+quote agreement: bid identical on 26.1%, within $1 on 56.2% | ask identical on 26.1%, within $1 on 56.2%
+recorder  Pekos owl +68.58 (79 trades)   Owl +51.10 (83 trades)
+broker    Pekos owl +68.60 (79 trades)   Owl +51.39 (83 trades)

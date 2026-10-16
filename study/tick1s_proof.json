@@ -1,0 +1,30 @@
+{
+ "robot": {
+  "raw": {
+   "net": 68.58,
+   "trades": 79,
+   "cc_dd": 47.38,
+   "wins": 50
+  },
+  "compact": {
+   "net": 82.81,
+   "trades": 79,
+   "cc_dd": 48.06,
+   "wins": 50
+  }
+ },
+ "parent": {
+  "raw": {
+   "net": 51.1,
+   "trades": 83,
+   "cc_dd": 29.15,
+   "wins": 55
+  },
+  "compact": {
+   "net": 73.99,
+   "trades": 84,
+   "cc_dd": 29.97,
+   "wins": 56
+  }
+ }
+}

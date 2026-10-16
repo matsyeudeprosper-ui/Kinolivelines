@@ -1,0 +1,26 @@
+{
+ "recorder": {
+  "robot": {
+   "net": 68.58,
+   "trades": 79,
+   "cc_dd": 47.38
+  },
+  "parent": {
+   "net": 51.1,
+   "trades": 83,
+   "cc_dd": 29.15
+  }
+ },
+ "broker": {
+  "robot": {
+   "net": 68.6,
+   "trades": 79,
+   "cc_dd": 47.44
+  },
+  "parent": {
+   "net": 51.39,
+   "trades": 83,
+   "cc_dd": 29.13
+  }
+ }
+}

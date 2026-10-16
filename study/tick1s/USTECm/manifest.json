@@ -1,0 +1,938 @@
+{
+ "symbol": "USTECm",
+ "server": "Exness-MT5Trial9",
+ "login": 436771046,
+ "point": 0.01,
+ "digits": 2,
+ "days": {
+  "2026-08-17": {
+   "raw": 742354,
+   "kept": 742354,
+   "first": 1786924800116,
+   "last": 1787011199393,
+   "sha256": "96f2b247e67b83bd",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 5.7
+  },
+  "2026-08-18": {
+   "raw": 1215725,
+   "kept": 1215725,
+   "first": 1787011200051,
+   "last": 1787097599893,
+   "sha256": "34d5c9c0ada8ec1e",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.0
+  },
+  "2026-08-19": {
+   "raw": 1479205,
+   "kept": 1479205,
+   "first": 1787097600001,
+   "last": 1787183999871,
+   "sha256": "e4de375839d22ccd",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.4
+  },
+  "2026-08-20": {
+   "raw": 1571334,
+   "kept": 1571334,
+   "first": 1787184000111,
+   "last": 1787270399850,
+   "sha256": "a5dc3de029671150",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 24.5
+  },
+  "2026-08-21": {
+   "raw": 1054090,
+   "kept": 1054090,
+   "first": 1787270400140,
+   "last": 1787345693818,
+   "sha256": "fd39e5d71c3e6869",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.6
+  },
+  "2026-08-22": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-08-23": {
+   "raw": 36768,
+   "kept": 36768,
+   "first": 1787522402522,
+   "last": 1787529599826,
+   "sha256": "961628df3e1bafea",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.8
+  },
+  "2026-08-24": {
+   "raw": 1334519,
+   "kept": 1334519,
+   "first": 1787529600158,
+   "last": 1787615999395,
+   "sha256": "55c7b5a094a30bae",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.1
+  },
+  "2026-08-25": {
+   "raw": 1336026,
+   "kept": 1336026,
+   "first": 1787616000074,
+   "last": 1787702399998,
+   "sha256": "93c5b81fe38b7def",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.4
+  },
+  "2026-08-26": {
+   "raw": 1048418,
+   "kept": 1048418,
+   "first": 1787702400002,
+   "last": 1787788799877,
+   "sha256": "cbd8c685b334fbf0",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 7.6
+  },
+  "2026-08-27": {
+   "raw": 1383711,
+   "kept": 1383711,
+   "first": 1787788800003,
+   "last": 1787875199938,
+   "sha256": "c7637fd30cbbcff1",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.1
+  },
+  "2026-08-28": {
+   "raw": 1408316,
+   "kept": 1408316,
+   "first": 1787875200006,
+   "last": 1787950499918,
+   "sha256": "8ed8358a8ef96ee6",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.7
+  },
+  "2026-08-29": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-08-30": {
+   "raw": 54272,
+   "kept": 54272,
+   "first": 1788127201281,
+   "last": 1788134399893,
+   "sha256": "92ab9d8f39368877",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.5
+  },
+  "2026-08-31": {
+   "raw": 1105864,
+   "kept": 1105864,
+   "first": 1788134400138,
+   "last": 1788220799990,
+   "sha256": "4dca8619be79d03e",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 7.1
+  },
+  "2026-09-01": {
+   "raw": 1173833,
+   "kept": 1173833,
+   "first": 1788220800005,
+   "last": 1788307199967,
+   "sha256": "4624c482b5a4973c",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 7.5
+  },
+  "2026-09-02": {
+   "raw": 1072952,
+   "kept": 1072952,
+   "first": 1788307200098,
+   "last": 1788393599990,
+   "sha256": "8136cc27895ee367",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.1
+  },
+  "2026-09-03": {
+   "raw": 1175850,
+   "kept": 1175850,
+   "first": 1788393600003,
+   "last": 1788479999828,
+   "sha256": "d0e883d1045a60d4",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.3
+  },
+  "2026-09-04": {
+   "raw": 881918,
+   "kept": 881918,
+   "first": 1788480000024,
+   "last": 1788555299702,
+   "sha256": "e9874312bae35765",
+   "check": {
+    "minutes": 1254,
+    "match": 1254,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 6.2
+  },
+  "2026-09-05": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-09-06": {
+   "raw": 19051,
+   "kept": 19051,
+   "first": 1788732002658,
+   "last": 1788739199938,
+   "sha256": "a0a7b7d3138c7314",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.2
+  },
+  "2026-09-07": {
+   "raw": 371573,
+   "kept": 371573,
+   "first": 1788739200129,
+   "last": 1788825599990,
+   "sha256": "c82e5d4480673244",
+   "check": {
+    "minutes": 1140,
+    "match": 1140,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 3.6
+  },
+  "2026-09-08": {
+   "raw": 1223691,
+   "kept": 1223691,
+   "first": 1788825600031,
+   "last": 1788911999922,
+   "sha256": "4efdfcb46bcdcd38",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.1
+  },
+  "2026-09-09": {
+   "raw": 1165939,
+   "kept": 1165939,
+   "first": 1788912000131,
+   "last": 1788998400000,
+   "sha256": "303c2e869a203260",
+   "check": {
+    "minutes": 1381,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 1,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.0
+  },
+  "2026-09-10": {
+   "raw": 1327782,
+   "kept": 1327782,
+   "first": 1788998400000,
+   "last": 1789084799920,
+   "sha256": "db068d9c8ba79ce0",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.6
+  },
+  "2026-09-11": {
+   "raw": 1348961,
+   "kept": 1348961,
+   "first": 1789084800124,
+   "last": 1789160099562,
+   "sha256": "875d03135233cfb0",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.3
+  },
+  "2026-09-12": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-09-13": {
+   "raw": 74714,
+   "kept": 74714,
+   "first": 1789336827050,
+   "last": 1789343999977,
+   "sha256": "1d131f79a6ea1cd1",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 1.5
+  },
+  "2026-09-14": {
+   "raw": 1419058,
+   "kept": 1419058,
+   "first": 1789344000614,
+   "last": 1789430399977,
+   "sha256": "cf8f0c93ca6e8d91",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 15.8
+  },
+  "2026-09-15": {
+   "raw": 1150561,
+   "kept": 1150561,
+   "first": 1789430400122,
+   "last": 1789516799964,
+   "sha256": "fe69da50efc18d8f",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 17.2
+  },
+  "2026-09-16": {
+   "raw": 1260122,
+   "kept": 1260122,
+   "first": 1789516800040,
+   "last": 1789603199997,
+   "sha256": "aa4839e7c49f2adb",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 15.0
+  },
+  "2026-09-17": {
+   "raw": 905967,
+   "kept": 905967,
+   "first": 1789603200015,
+   "last": 1789689599903,
+   "sha256": "1250e4fbe7866e21",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.7
+  },
+  "2026-09-18": {
+   "raw": 775118,
+   "kept": 775118,
+   "first": 1789689600133,
+   "last": 1789764899991,
+   "sha256": "af224a0712287ca0",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 7.3
+  },
+  "2026-09-19": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-09-20": {
+   "raw": 36017,
+   "kept": 36017,
+   "first": 1789941602076,
+   "last": 1789948799460,
+   "sha256": "8eb210cef084a0b4",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.6
+  },
+  "2026-09-21": {
+   "raw": 681762,
+   "kept": 681762,
+   "first": 1789948800125,
+   "last": 1790035199803,
+   "sha256": "014cf93086d55c2f",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 6.1
+  },
+  "2026-09-22": {
+   "raw": 887803,
+   "kept": 887803,
+   "first": 1790035200117,
+   "last": 1790121599943,
+   "sha256": "24a00fb0664761b8",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.9
+  },
+  "2026-09-23": {
+   "raw": 1069286,
+   "kept": 1069286,
+   "first": 1790121600008,
+   "last": 1790207999993,
+   "sha256": "875cfc06c81f9f9f",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.3
+  },
+  "2026-09-24": {
+   "raw": 1554051,
+   "kept": 1554051,
+   "first": 1790208000004,
+   "last": 1790294399999,
+   "sha256": "62b5fdbfcd8d2fe4",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 13.3
+  },
+  "2026-09-25": {
+   "raw": 1320123,
+   "kept": 1320123,
+   "first": 1790294400131,
+   "last": 1790369699659,
+   "sha256": "ef4d8851f7905369",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 10.8
+  },
+  "2026-09-26": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-09-27": {
+   "raw": 49474,
+   "kept": 49474,
+   "first": 1790546401787,
+   "last": 1790553599988,
+   "sha256": "69c5b28c70889d78",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.9
+  },
+  "2026-09-28": {
+   "raw": 1834376,
+   "kept": 1834376,
+   "first": 1790553600139,
+   "last": 1790639999997,
+   "sha256": "02fed8b0d3ed3b98",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 12.4
+  },
+  "2026-09-29": {
+   "raw": 1504929,
+   "kept": 1504929,
+   "first": 1790640000015,
+   "last": 1790726399963,
+   "sha256": "9b8577e536168790",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 11.0
+  },
+  "2026-09-30": {
+   "raw": 1495053,
+   "kept": 1495053,
+   "first": 1790726400119,
+   "last": 1790812799983,
+   "sha256": "1acb3f141815aeba",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 13.8
+  },
+  "2026-10-01": {
+   "raw": 2105505,
+   "kept": 2105505,
+   "first": 1790812800016,
+   "last": 1790899199986,
+   "sha256": "528ac85e2139ac4d",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 18.0
+  },
+  "2026-10-02": {
+   "raw": 1640963,
+   "kept": 1640963,
+   "first": 1790899200019,
+   "last": 1790974499765,
+   "sha256": "9e35409b04b44a2b",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 13.7
+  },
+  "2026-10-03": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-10-04": {
+   "raw": 33101,
+   "kept": 33101,
+   "first": 1791151202370,
+   "last": 1791158399880,
+   "sha256": "d9df21c0c1f0e0bd",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 1.0
+  },
+  "2026-10-05": {
+   "raw": 1075799,
+   "kept": 1075799,
+   "first": 1791158400119,
+   "last": 1791244799965,
+   "sha256": "257399942c1c51c9",
+   "check": {
+    "minutes": 1356,
+    "match": 1356,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.9
+  },
+  "2026-10-06": {
+   "raw": 862960,
+   "kept": 862960,
+   "first": 1791244800032,
+   "last": 1791331199880,
+   "sha256": "193a25c4cea81cb0",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.6
+  },
+  "2026-10-07": {
+   "raw": 999351,
+   "kept": 999351,
+   "first": 1791331200137,
+   "last": 1791417599873,
+   "sha256": "3712eae2f22ed446",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 9.2
+  },
+  "2026-10-08": {
+   "raw": 1574986,
+   "kept": 1574986,
+   "first": 1791417600005,
+   "last": 1791503999868,
+   "sha256": "992eb603b8bf674b",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 13.1
+  },
+  "2026-10-09": {
+   "raw": 1040219,
+   "kept": 1040219,
+   "first": 1791504000029,
+   "last": 1791579299197,
+   "sha256": "646e61fd97591496",
+   "check": {
+    "minutes": 1255,
+    "match": 1255,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 8.4
+  },
+  "2026-10-10": {
+   "raw": 0,
+   "kept": 0,
+   "note": "no ticks (market closed)"
+  },
+  "2026-10-11": {
+   "raw": 30726,
+   "kept": 30726,
+   "first": 1791756032780,
+   "last": 1791763199831,
+   "sha256": "e338affa3d60af5b",
+   "check": {
+    "minutes": 120,
+    "match": 120,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 0.6
+  },
+  "2026-10-12": {
+   "raw": 1059512,
+   "kept": 1059512,
+   "first": 1791763200100,
+   "last": 1791849599964,
+   "sha256": "04a6fea28ebc6207",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 9.3
+  },
+  "2026-10-13": {
+   "raw": 1405565,
+   "kept": 1405565,
+   "first": 1791849600003,
+   "last": 1791935999977,
+   "sha256": "01447519bfa835fe",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 12.9
+  },
+  "2026-10-14": {
+   "raw": 1972955,
+   "kept": 1972955,
+   "first": 1791936000008,
+   "last": 1792022399993,
+   "sha256": "cee352313fbb3e48",
+   "check": {
+    "minutes": 1380,
+    "match": 1380,
+    "mismatch": 0,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.0
+   },
+   "spread_med": 1.12,
+   "secs": 18.3
+  },
+  "2026-10-15": {
+   "raw": 2424246,
+   "kept": 2424246,
+   "first": 1792022400054,
+   "last": 1792108799998,
+   "sha256": "fca81ff284f2624c",
+   "check": {
+    "minutes": 1380,
+    "match": 1379,
+    "mismatch": 1,
+    "tick_min_no_bar": 0,
+    "bar_min_no_tick": 0,
+    "worst_diff": 0.25
+   },
+   "spread_med": 1.12,
+   "secs": 19.5
+  }
+ },
+ "bars": {
+  "n": 60415,
+  "first": 1786924800,
+  "last": 1792108740
+ }
+}
