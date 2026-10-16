@@ -6327,7 +6327,7 @@ function renderPlan(d){
  else if(P.family){title=(en?'Automatic':'Automatique')+plusS;txt=(P.family_until?(en?'The robot trades your account. Until ':'Le robot trade sur votre compte. Jusqu\u2019au ')+fd(P.family_until)+(en?' \u2014 renew with the Owl, then enter the code.':' \u2014 renouvelez aupr\u00e8s du Owl, puis entrez le code.'):(en?'The robot trades your account.':'Le robot trade sur votre compte.'));color='var(--warn)';}
  else if(P.family_expired){title=en?'Automatic \u2014 expired':'Automatique \u2014 expir\u00e9';txt=en?'Your period ended: the robot is paused on your account. Settle with the Owl and enter the renewal code below.':'Votre p\u00e9riode est termin\u00e9e : le robot est en pause sur votre compte. R\u00e9glez le Owl et entrez le code de renouvellement ci-dessous.';color='var(--down-soft)';}
  else if(P.manual){title='Signal'+plusS;txt=(en?'Signals on your phone, until ':'Signaux sur votre t\u00e9l\u00e9phone, jusqu\u2019au ')+fd(P.manual_until)+(P.strategy?(en?' \u00b7 full view until ':' \u00b7 vue compl\u00e8te jusqu\u2019au ')+fd(P.strategy_until):'')+'.';color='var(--up-soft)';}
- else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Manuel pour trader les signaux.');color='var(--warn)';}
+ else if(P.strategy){title=en?'Strategy':'Strat\u00e9gie';txt=(en?'The full chart and the method, until ':'Le graphique complet et la m\u00e9thode, jusqu\u2019au ')+fd(P.strategy_until)+(en?'. Add Manual to trade the signals.':'. Ajoutez Signal pour trader les signaux.');color='var(--warn)';}
  else{title=en?'No subscription':'Aucun abonnement';txt=en?'Signals and the full view are paid options. The demo is free for everyone.':'Les signaux et la vue compl\u00e8te sont des options payantes. La d\u00e9mo est gratuite pour tous.';}
  t.textContent=title;sub.textContent=txt;ic.style.color=color;
  // 2026-10-03 (owner): the one-time opening fee, until it is paid
@@ -9045,10 +9045,13 @@ function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
  [['family',P.family_until,en?'Automatic':'Automatique'],['strategy',P.strategy_until,en?'Strategy':'Strat\u00e9gie'],['manual',P.manual_until,en?'Signal':'Signal']].forEach(([k,u,l])=>{
-  if(u&&u>now&&(u-now)<=5*86400&&(!best||u<best.u))best={k,u,l};});
+  if(u&&(u-now)<=5*86400&&(now-u)<=45*86400&&(!best||(u>now&&u<best.u)||(best.u<=now&&u>best.u)))best={k,u,l};});
  if(!best||(best.k==='manual'&&P.strategy_until>now)){el.style.display='none';return;}
  const days=Math.max(0,Math.ceil((best.u-now)/86400));
- document.getElementById('renew-t').textContent=best.l+(en?' ends in ':' expire dans ')+days+(en?' day'+(days>1?'s':''):' jour'+(days>1?'s':''));
+ const ago=Math.max(1,Math.ceil((now-best.u)/86400));
+ document.getElementById('renew-t').textContent=best.u<=now
+  ?best.l+(en?' ended '+ago+' day'+(ago>1?'s':'')+' ago':' a expir\u00e9 il y a '+ago+' jour'+(ago>1?'s':''))
+  :best.l+(en?' ends in ':' expire dans ')+days+(en?' day'+(days>1?'s':''):' jour'+(days>1?'s':''));
  const b=document.getElementById('renew-b');
  if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with the Owl, then enter the code he sends you.':'R\u00e9glez le Owl, puis entrez le code qu\u2019il vous envoie.';
   b.textContent=en?'Enter the code':'Entrer le code';b.onclick=()=>{window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();}};}
@@ -9444,8 +9447,8 @@ window._pillUpd=function(d){const _tp=document.getElementById('tradepill');if(!_
 function render(d){
   window._d=d;
   if(d.expired){document.getElementById('st').innerHTML=
-   '&#9203; <b>Essai termin&eacute;.</b> Contactez le Owl pour passer au '+
-   'Premium et continuer.';return}
+   '&#9203; <b>Votre p&eacute;riode est termin&eacute;e.</b> Renouvelez dans R&eacute;glages &rsaquo; Abonnement : '+
+   'le code du Owl, ou en crypto.';return}
   if(d.error){
    if(d.error.includes('patientez')){const _eq=document.getElementById('eq'),_dl=document.getElementById('dayline');
     if(_eq){_eq.className='money';_eq.style.fontSize='1.15rem';_eq.style.lineHeight='1.4';_eq.innerHTML=(LANG()==='en'?'Your robot is getting ready\\u2026':'Votre robot se pr\\u00e9pare\\u2026');}
