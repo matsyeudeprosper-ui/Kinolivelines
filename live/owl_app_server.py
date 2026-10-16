@@ -2513,7 +2513,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <button id="news-b" class="shbtn shghost" style="flex:1;margin:0;padding:10px;font-size:.86rem;background:var(--tile-bg);border:1px solid var(--tile-bd);border-radius:12px;color:var(--text2)"></button>
  </div>
 </div>
-<div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(255,92,92,.45)">
+<div class="panel" id="nopushcard" style="display:none;margin-top:12px;border-color:rgba(232,197,90,.45)">
  <div style="display:flex;align-items:center;gap:12px">
   <div class="sic" style="color:var(--down-soft);background:rgba(255,92,92,.12)"><svg class="ic"><use href="#i-bell"/></svg></div>
   <div style="flex:1;min-width:0"><b id="nopush-t" style="font-size:.98rem"></b>
@@ -7516,7 +7516,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  // a tile = which cards it opens, how to read its number from them, when it shows
  const resGrid=()=>{const w=$('week');return w?w.closest('.grid'):null;};
  const TILES=[
-  {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>txt('week'),s:()=>T('Ce mois : ','This month: ')+(txt('month')||'—'),spark:true,show:()=>true},
+  {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>{const _d=window._d;if(_d&&typeof _d.week==='number'){return (_d.week<0?'-':'+')+'$'+Math.abs(_d.week).toFixed(2);}return txt('week');},s:()=>{const _d=window._d;const m=(_d&&typeof _d.month==='number')?((_d.month<0?'-':'+')+'$'+Math.abs(_d.month).toFixed(2)):(txt('month')||'\u2014');return T('Ce mois : ','This month: ')+m;},spark:true,show:()=>true},
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>T('à rattraper','to win back'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
   {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>{const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>{const r=$('pk-rows');const n=r?r.children.length:0;if(n>1)return n+T(' marchés',' markets');const w=txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim(),m=w.match(/^(.+?)\\s+(\\d+)\\s+trades?/);return m?m[1]+' · '+m[2]+' trades':w;},show:()=>shown('pockcard')},
@@ -8095,6 +8095,7 @@ function goLabo(){location.href=B+'robots';}
    return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+(O.n>1?T2(' ouverts',' open'):T2(' ouvert',' open'))+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
   if(recent)return {c:recent.p>=0?'gr':'rd',t:T2('Trade terminé','Trade closed'),pl:recent.p,s:T2('Il y a '+Math.max(1,Math.round((now-recent.x)/60))+' min. Le robot reprend sa surveillance.',Math.max(1,Math.round((now-recent.x)/60))+' min ago. The robot is watching again.'),row:T2('Terminé ','Closed ')+money(recent.p)};
   if(D.bot_killed)return {c:'rd',t:T2('Arrêté','Stopped'),s:T2('La ligne d’arrêt du compte est atteinte : le robot ne prend plus de trade.','The account’s stop line was reached: the robot takes no more trades.'),row:T2('Arrêté','Stopped')};
+  if(D.app_only&&D.trading_paused)return {c:'gy',t:T2('Signal','Signal'),s:T2('Le robot vous pr\u00e9vient ; vous tradez vous-m\u00eame, chez votre courtier.','The robot alerts you; you trade yourself, at your broker.'),row:T2('Signal','Signal')};
   if(D.trading_paused)return {c:'gy',t:T2('En pause','Paused'),s:T2('Le robot est en pause sur ce compte.','The robot is paused on this account.'),row:T2('En pause','Paused')};
   if(done&&lg.bos)return {c:'gy',t:T2('Au repos','Resting'),s:T2('L’objectif du jour est atteint. Le robot reprend demain.','The day’s target is reached. The robot starts again tomorrow.'),row:T2('Au repos','Resting')};
   if(gate&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),row:T2('Il attend','Waiting')};
@@ -8985,6 +8986,8 @@ function ddCap(d){
  dc.style.display='block';
 }
 function newsCard(d){const el=document.getElementById('newscard');if(!el)return;const en=LANG()==='en';
+ // 2026-10-16 (acquisition review): a member in their first week has nothing to catch up on
+ if(d.created&&(Date.now()/1000-d.created)<7*86400){el.style.display='none';return;}
  let seen='';try{seen=localStorage.getItem('owlNewsSeen:'+B)||'';}catch(e){}
  const P=d.plan||{};
  if(seen===NEWS_V){el.style.display='none';return;}
@@ -9017,7 +9020,7 @@ function noPushBanner(d){const el=document.getElementById('nopushcard');if(!el)r
  const show=!d.public&&SIGOK()&&!d.push_on&&!window._pushLocal;
  if(!show){el.style.display='none';return;}
  const nb=document.getElementById('notifbtn');const can=!!(nb&&nb.style.display!=='none');
- document.getElementById('nopush-t').textContent=en?'Your signals will not reach you':'Vos signaux ne vous arriveront pas';
+ document.getElementById('nopush-t').textContent=en?'Get the signals on your phone':'Recevez les signaux sur votre t\u00e9l\u00e9phone';
  document.getElementById('nopush-s').textContent=can?(en?'Notifications are off on this phone. A signal is pushed the second it appears.':'Les notifications sont d\u00e9sactiv\u00e9es sur ce t\u00e9l\u00e9phone. Un signal est envoy\u00e9 \u00e0 la seconde o\u00f9 il appara\u00eet.')
   :(/iPhone|iPad|iPod/.test(navigator.userAgent)?(en?'On iPhone: tap Share, then \u201cAdd to Home Screen\u201d, open the app from its icon, then enable notifications.':'Sur iPhone : touchez Partager, puis \u00ab Sur l\u2019\u00e9cran d\u2019accueil \u00bb, ouvrez l\u2019app depuis son ic\u00f4ne, puis activez les notifications.')
   :(en?'Install the app first (Settings \u203a Install), then enable notifications. Until then, open the app to see each signal.':'Installez d\u2019abord l\u2019app (R\u00e9glages \u203a Installer), puis activez les notifications. D\u2019ici l\u00e0, ouvrez l\u2019app pour voir chaque signal.'));
@@ -9041,7 +9044,7 @@ function myLotLine(sg,en){const lt=document.getElementById('sig-mylot');if(!lt)r
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
- [['family',P.family_until,en?'Automatic':'Automatique'],['strategy',P.strategy_until,en?'Strategy':'Strat\u00e9gie'],['manual',P.manual_until,en?'Manual':'Manuel']].forEach(([k,u,l])=>{
+ [['family',P.family_until,en?'Automatic':'Automatique'],['strategy',P.strategy_until,en?'Strategy':'Strat\u00e9gie'],['manual',P.manual_until,en?'Signal':'Signal']].forEach(([k,u,l])=>{
   if(u&&u>now&&(u-now)<=5*86400&&(!best||u<best.u))best={k,u,l};});
  if(!best||(best.k==='manual'&&P.strategy_until>now)){el.style.display='none';return;}
  const days=Math.max(0,Math.ceil((best.u-now)/86400));
@@ -9274,7 +9277,7 @@ async function waitlistToggle(on){const en=LANG()==='en';
 async function paySheet(){const en=LANG()==='en';
  let j={items:[],ends:{}};try{const r=await fetch(B+'payments?t='+Date.now(),{cache:'no-store'});if(r.ok)j=await r.json();}catch(e){}
  const fd=ts=>{const x=new Date(ts*1000);return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')+'/'+x.getFullYear();};
- const now=Date.now()/1000,E=j.ends||{},L={family:en?'Automatic':'Automatique',manual:en?'Manual':'Manuel',strategy:en?'Strategy':'Strat\u00e9gie'};
+ const now=Date.now()/1000,E=j.ends||{},L={family:en?'Automatic':'Automatique',manual:en?'Signal':'Signal',strategy:en?'Strategy':'Strat\u00e9gie'};
  const ends=Object.keys(L).filter(k=>E[k]).map(k=>'<div class="row"><span class="rowt">'+L[k]+'</span><b style="color:'+(E[k]>now?'var(--up-soft)':'var(--down-soft)')+'">'+(E[k]>now?(en?'until ':'jusqu\u2019au ')+fd(E[k]):(en?'ended ':'termin\u00e9 le ')+fd(E[k]))+'</b></div>').join('');
  const rows=(j.items||[]).map(p=>{const ok=p.granted&&p.granted!=='short';const st=ok?(en?'activated':'activ\u00e9'):((p.status==='finished'||p.status==='confirmed')?(en?'amount short':'montant insuffisant'):(p.status||'\u2014'));
   return '<div class="row"><span class="rowt">'+fd(p.t)+' \u00b7 '+(L[p.pkg]||p.pkg||'')+'</span><b style="color:'+(ok?'var(--up-soft)':'var(--muted2)')+'">$'+Number(p.amount||0).toFixed(0)+' \u00b7 '+st+'</b></div>';}).join('');
@@ -9444,8 +9447,11 @@ function render(d){
    '&#9203; <b>Essai termin&eacute;.</b> Contactez le Owl pour passer au '+
    'Premium et continuer.';return}
   if(d.error){document.getElementById('st').innerHTML=
-   '&#9203; '+(d.error.includes('patientez')?d.error:
-   'Petit souci technique, r&eacute;essai automatique...');return}
+   (d.error.includes('patientez')
+    ?'<div style="text-align:left;padding:4px 2px"><div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:99px;border:2px solid var(--accent);border-top-color:transparent;animation:owlspin .9s linear infinite;display:inline-block"></span><b style="font-size:1.05rem">'+(LANG()==='en'?'Your robot is getting ready':'Votre robot se pr\u00e9pare')+'</b></div>'
+     +'<div style="color:var(--text2);font-size:.9rem;line-height:1.5;margin-top:8px">'+(LANG()==='en'?'We are opening your terminal and reading your account. Two to three minutes. This page refreshes by itself.':'Nous ouvrons votre terminal et lisons votre compte. Deux \u00e0 trois minutes. Cette page se rafra\u00eechit toute seule.')+'</div>'
+     +'<style>@keyframes owlspin{to{transform:rotate(360deg)}}</style></div>'
+    :'&#9203; Petit souci technique, r&eacute;essai automatique...');return}
   const lv=document.getElementById('lv'),lvd=document.getElementById('lvd'),
    lvt=document.getElementById('lvt');
   // 2026-10-01: while the offline banner is up it owns the chip - this
@@ -15359,6 +15365,7 @@ def user_stats(u, admin_override=False):
         # trend piece said "pas de tendance claire" whatever the market did
         d["robot_now"] = robot_now(u["id"], d.get("meteo_struct"), bool(d.get("open_list")))
         d["plan"] = plan_of(u)
+        d["created"] = u.get("created")
         # 2026-09-28: a manual member without a push subscription gets no signal
         d["push_on"] = bool(_push_subs().get(u.get("id")))
         if d.get("is_master"):
@@ -16773,6 +16780,19 @@ def _broker_line(server):
     return {"known": True, "zone": z, "line": cost + tail}
 
 
+def _welcome_page(name, pkg_label, days, link, what, ident=None, extra=""):
+    """2026-10-16 (acquisition review): step 3 of the flow, done - one button, the link kept, short copy"""
+    import html as _h
+    body = ("<div class=\"pill g\"><i></i>Compte ouvert</div>"
+            f"<p class=\"sub\">{_h.escape(pkg_label)} &middot; {int(days)} jour{'s' if int(days) > 1 else ''}</p>"
+            + what
+            + (f"<p>Votre identifiant : <b>{_h.escape(ident)}</b>, avec le mot de passe que vous avez choisi, depuis n&#8217;importe quel t&eacute;l&eacute;phone.</p>" if ident else "")
+            + f"<a class=\"go\" href=\"{link}?in=1\">Ouvrir mon OwlNest</a>"
+            f"<div class=\"h\" style=\"text-align:center\">Votre lien : <a href=\"{link}?in=1\">{_h.escape(link.replace('https://', ''))}</a><br>Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil, ou installez l&#8217;application Android depuis l&#8217;accueil.</div>"
+            + extra)
+    return _flow_page("Bienvenue dans le nid, " + _h.escape(name), body, step=4, doc_title="OwlNest &middot; Bienvenue")
+
+
 def _probe_wait_page(jid):
     """2026-10-16 (owner): step 2 - the member waits under a minute while the probe reads the account"""
     body = ("<div class=\"pill n\"><i></i>En cours</div>"
@@ -17849,11 +17869,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     what = ("<p>Le robot tourne sur votre compte dans quelques minutes, avec ses r&egrave;gles et ses freins.</p>" if pkg == "family"
             else "<p>Vos signaux arrivent sur votre t&eacute;l&eacute;phone d&egrave;s que vous activez les notifications dans l&#8217;app.</p>" if pkg == "manual"
             else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
-    return _join_result("&#127881; Bienvenue dans le nid, " + name + " !",
-                        f"<p><b>{labels.get(pkg, pkg)}</b> &middot; {days} jours. Votre OwlNest se pr&eacute;pare (2-3 minutes).</p>" + what +
-                        f"<p>Votre lien personnel :</p><p><a href=\"{link}?in=1\">{link}</a></p>"
-                        "<p style=\"color:#9aa7b4;font-size:.85rem\">Gardez-le pr&eacute;cieusement, ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil "
-                        "ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>")
+    return _welcome_page(name, labels.get(pkg, pkg), days, link, what)
 
 
 def _new_app_only_record(name, pwd, tg, pkg, allu, ident=""):
@@ -17930,14 +17946,10 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident=""):
     except Exception:
         pass
     link = f"https://owltrader.duckdns.org/{rec['token']}/"
-    return _join_result("&#127881; Bienvenue dans le nid, " + name + " !",
-                        f"<p><b>{labels.get(pkg, pkg)}</b> &middot; {days} jours. Votre page est pr&ecirc;te.</p>"
-                        f"<p>Votre identifiant : <b>{rec['id']}</b> &mdash; celui que vous avez tap&eacute; &agrave; la connexion, avec le m&ecirc;me mot de passe. Ils vous reconnectent depuis n&#8217;importe quel t&eacute;l&eacute;phone.</p>"
-                        + ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
-                           else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
-                        + f"<p>Votre lien personnel :</p><p><a href=\"{link}?in=1\">{link}</a></p>"
-                        "<p style=\"color:#9aa7b4;font-size:.85rem\">Ajoutez-le &agrave; votre &eacute;cran d&#8217;accueil ou installez l&#8217;application Android depuis la page d&#8217;accueil.</p>"
-                        + _tg_link_html(rec["id"]))
+    return _welcome_page(name, labels.get(pkg, pkg), days, link,
+                         ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
+                          else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>"),
+                         ident=rec["id"], extra=_tg_link_html(rec["id"]))
 
 
 def _activate_buy(name, pwd, tg, pkg, origin, ident=""):
@@ -20007,7 +20019,7 @@ class H(BaseHTTPRequestHandler):
                 # 2026-10-03 (owner): the public demo's live view, their name and package
                 _d = user_stats(_data_user(user), False)
                 _d.update({"name": user.get("name", ""), "plan": plan_of(user), "public": False,
-                           "app_only": True, "is_master": False,
+                           "app_only": True, "is_master": False, "created": user.get("created"),
                            # a Signal member reads the app as a signal service
                            "trading_paused": bool(has(user.get("id"), "manual"))})
                 # the member's OWN notification state (user_stats read the demo's)
