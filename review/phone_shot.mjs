@@ -31,12 +31,27 @@ try {
   ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { const p = pending.get(m.id); pending.delete(m.id); m.error ? p.rej(new Error(m.error.message)) : p.res(m.result); } };
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await send("Page.enable");
+  // JavaScript errors and console errors are collected per page and printed after the capture ("nothing dies")
+  const errs = [];
+  await send("Runtime.enable"); await send("Log.enable"); await send("Network.enable");
+  const onmsg = ws.onmessage;
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    if (m.method === "Network.responseReceived" && m.params.response.status >= 400) { errs.push("http " + m.params.response.status + ": " + m.params.response.url.slice(0, 140)); }
+    else if (m.method === "Network.loadingFailed" && !m.params.canceled) { errs.push("failed: " + (m.params.errorText || "") + " " + (m.params.type || "")); }
+    if (m.method === "Runtime.exceptionThrown") { const d = m.params.exceptionDetails; errs.push("exception: " + ((d.exception && d.exception.description) || d.text || "").split("\n")[0].slice(0, 160)); }
+    else if (m.method === "Log.entryAdded" && m.params.entry.level === "error") { errs.push("console: " + String(m.params.entry.text).slice(0, 160)); }
+    else if (m.method === "Runtime.consoleAPICalled" && m.params.type === "error") { errs.push("console.error: " + m.params.args.map(a => a.value || a.description || "").join(" ").slice(0, 160)); }
+    onmsg(e);
+  };
   for (const t of targets) {
     const url = /^[a-z]+:\/\//i.test(t) ? t : "file:///" + t.replace(/\\/g, "/");
     await send("Page.navigate", { url }); await sleep(1200);
     if (RUN) {
-      const r = await send("Runtime.evaluate", { expression: RUN, awaitPromise: true, returnByValue: true });
-      if (r && r.result && r.result.value !== undefined) console.log("run ->", typeof r.result.value === "string" ? r.result.value : JSON.stringify(r.result.value));
+      try {
+        const r = await send("Runtime.evaluate", { expression: RUN, awaitPromise: true, returnByValue: true });
+        if (r && r.result && r.result.value !== undefined) console.log("run ->", typeof r.result.value === "string" ? r.result.value : JSON.stringify(r.result.value));
+      } catch (e) { console.log("run -> (interrupted: " + e.message + ")"); }
       await sleep(700);
     }
     const { cssContentSize } = await send("Page.getLayoutMetrics");
@@ -47,7 +62,9 @@ try {
     const name = basename(t).replace(/\.html?$/i, "").replace(/[^A-Za-z0-9_-]/g, "_") || "page";
     writeFileSync(join(outDir, name + ".png"), Buffer.from(shot.data, "base64"));
     const over = cssContentSize.width > 390 ? `  OVERFLOW: content ${cssContentSize.width}px wide` : "";
-    console.log(`${name}.png  ${Math.ceil(cssContentSize.width)}x${h} css px${over}`);
+    const seen = [...new Set(errs)];
+    console.log(`${name}.png  ${Math.ceil(cssContentSize.width)}x${h} css px${over}  JS errors: ${errs.length}${seen.length ? "\n   " + seen.slice(0, 8).join("\n   ") : ""}`);
+    errs.length = 0;
   }
 } finally {
   try { ws && ws.close(); } catch { }

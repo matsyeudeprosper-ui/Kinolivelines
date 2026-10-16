@@ -19836,7 +19836,7 @@ class H(BaseHTTPRequestHandler):
         if len(parts) == 2 and parts[1] == "nest_switches":
             u = user_by_token(parts[0])
             if not is_admin(u):
-                self._not_found()
+                self._send(json.dumps({"ok": False}), "application/json")     # every page asks; only the admin gets switches
                 return
             _paused = False; _until = None
             try:
@@ -19979,6 +19979,9 @@ class H(BaseHTTPRequestHandler):
             return
         if parts and parts[0] == "icon192.png":
             self._send(ICON192, "image/png")
+            return
+        if len(parts) == 1 and parts[0] == "favicon.ico":
+            self._send(ICON192, "image/png")              # browsers ask on their own; one less 404 in every console
             return
         if parts and parts[0] == "landing_data" and len(parts) == 1:
             try:
@@ -20761,7 +20764,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(_d), "application/json")
                 return
             if not manual_ok(user):
-                self._not_found()
+                self._send(json.dumps({"mode": None}), "application/json")    # the chart asks for everyone
                 return
             _uid = user.get("id")
             try:
