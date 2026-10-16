@@ -8461,13 +8461,13 @@ function goLabo(){location.href=B+'robots';}
      (ms.spread?row(T2('Prix du ticket','Ticket price'),f0(ms.spread)+' pts',ms.vol_now?Math.round(ms.spread/ms.vol_now*100)+' % '+T2('d’une bougie','of a candle'):''):'')+
      row(T2('Frein « nervosité » sur ce compte','“Nervousness” brake on this account'),brake?T2('actif','on'):T2('non','off'))+'</div>'+
     rule((brake?T2('Au-dessus de ×1, ce compte attend. ','Above ×1, this account waits. '):'')+T2('Au-dessus de ×1,85 (tempête), aucun compte ne trade.','Above ×1.85 (storm), no account trades.'));}
-  else{const mv=ms.moves_2h!==undefined?ms.moves_2h:(ms.flips_2h||0),gm=g.movement!==false,ok=k!=='none';t=T2('Éveillé','Awake');
-   h=head(ok,T2('Oui, le marché est éveillé','Yes, the market is awake'),T2('Le marché dort','The market is asleep'),ok?T2('Il y a eu '+mv+' grand'+(mv>1?'s':'')+' mouvement'+(mv>1?'s':'')+' ces 2 dernières heures.',mv+' big move'+(mv>1?'s':'')+' in the last 2 hours.'):T2('Aucun grand mouvement depuis 2 h : une cassure dans un marché endormi échoue souvent.','No big move for 2 h: a break in a sleeping market often fails.'))+
+  else{const mv=ms.flips_2h!=null?ms.flips_2h:(ms.moves_2h||0),br=(ms.breaks_2h!=null?ms.breaks_2h:null),gm=g.movement!==false,ok=k!=='none';t=T2('Éveillé','Awake');
+   h=head(ok,T2('Oui, le marché est éveillé','Yes, the market is awake'),T2('Le marché dort','The market is asleep'),ok?T2('Il y a eu '+mv+' changement'+(mv>1?'s':'')+' de sens ces 2 dernières heures.',mv+' change'+(mv>1?'s':'')+' of direction in the last 2 hours.'):T2('Aucun changement de sens depuis 2 h : une cassure dans un marché endormi échoue souvent. Le prix peut bouger beaucoup sans changer de sens.','No change of direction for 2 h: a break in a sleeping market often fails. Price can move a lot without changing direction.'))+
     gauge(Math.min(mv,4),4,[[1,T2('minimum 1','minimum 1')]],ok?'var(--up)':'var(--warn)')+
-    '<div class="ck-b">'+row(T2('Grands mouvements (2 h)','Big moves (2 h)'),String(mv))+
-     (ms.flips_2h!=null?row(T2('Changements de sens (2 h)','Direction changes (2 h)'),String(ms.flips_2h)):'')+
+    '<div class="ck-b">'+row(T2('Changements de sens (2 h)','Direction changes (2 h)'),String(mv))+
+     (br!=null?row(T2('Cassures (2 h)','Breaks (2 h)'),String(br)):'')+
      row(T2('Règle « marché éveillé » sur ce compte','“Awake market” rule on this account'),gm?T2('active','on'):T2('non','off'))+'</div>'+
-    rule(T2('Il faut au moins un grand mouvement dans les 2 dernières heures avant d’entrer.','At least one big move in the last 2 hours before entering.'));}
+    rule(T2('Il faut au moins un changement de sens dans les 2 dernières heures avant d’entrer.','At least one change of direction in the last 2 hours before entering.'));}
   return {t:t,h:'<div class="edrx ckp">'+mkt+h+'</div>'};}
  function shOpen(k){const s=sheet();shK=k;const b=$('edrsh-b');let D;try{D=JSON.parse(window._lastS);}catch(e){return;}const TR=trials(),B0=btc(D);
   if(k.slice(0,3)==='ck:'||k.slice(0,3)==='pc:'){const P=k[0]==='c'?ckPanel(k.slice(3),D):pcPanel(+k.slice(3),D);$('edrsh-t').textContent=P.t;b.innerHTML=P.h;
@@ -14950,6 +14950,9 @@ def user_stats(u, admin_override=False):
                                    "int_brk_1h", "int_awake"):
                             if _cj.get(_k) is not None:
                                 d["meteo_struct"][_k] = _cj[_k]
+                        # 2026-10-16 (owner): the "Eveille" card counts changes of direction (the rule) and shows
+                        # the chart's breaks of the last 2 h beside them - an $800 drop is not "no big move"
+                        d["meteo_struct"]["breaks_2h"] = sum(1 for _b in (_cj.get("breaks") or []) if _b and float(_b[0]) > time.time() - 7200)
                         # 2026-09-28: "Prochaine action" - the readiness flags for
                         # everyone, the LEVELS only for Strategie members and the admin
                         # 2026-10-01: which movement rule decides. The bot
@@ -16850,10 +16853,15 @@ def _probe_card(st, jid):
     else:
         say = "<p>Votre compte se lit bien. Le r&eacute;sultat chiffr&eacute; chez ce courtier arrive bient&ocirc;t ; vous pouvez activer d&egrave;s maintenant.</p>"
     robots = ""
+    _born = {}
+    try:
+        _born = {r["id"]: (r.get("born_at") or "Exness") for r in (json.load(open(os.path.join(DIR, "robots", "robots.json"), encoding="utf-8")).get("robots") or [])}
+    except Exception:
+        pass
     if (v.get("robots") or []) and broker != "Exness":
         # owner 2026-10-16: "the verification should check any existing robot" - every public robot at this cost
         robots = "<h2>Les robots chez vous</h2><ul class=\"rl\">" + "".join(
-            f"<li><div><b>{_h.escape(str(r.get('name') or r.get('id')))}</b><small>{fr(r.get('native'))} $ &agrave; Exness sur 42 jours</small></div>"
+            f"<li><div><b>{_h.escape(str(r.get('name') or r.get('id')))}</b><small>n&eacute; chez {_h.escape(_born.get(r.get('id')) or 'Exness')} &middot; {fr(r.get('native'))} $ l&agrave;-bas sur 42 jours</small></div>"
             f"<em class=\"{'up' if r.get('pays') else 'dn'}\">{('+' if float(r.get('est') or 0) > 0 else '')}{fr(r.get('est'))} $</em></li>"
             for r in v["robots"]) + "</ul>"
     body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + say + robots + code_block
