@@ -16684,6 +16684,59 @@ def _join_result(title, body_html):
             f"<h2>{title}</h2>{body_html}</div></body></html>")
 
 
+def _probe_wait_page(jid):
+    """2026-10-16 (owner): a member from another broker waits under a minute while the probe reads the account"""
+    return _join_result("&#128269; Un instant",
+                        "<p id=\"pm\">Nous lisons votre compte chez votre courtier. Moins d&#8217;une minute, en g&eacute;n&eacute;ral.</p>"
+                        "<div id=\"card\"></div>"
+                        "<script>var J=" + json.dumps(jid) + ",n=0;function poll(){n++;fetch('/probe?j='+J,{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){"
+                        "if(d.state==='done'){document.getElementById('pm').style.display='none';document.getElementById('card').innerHTML=d.html;return;}"
+                        "if(d.state==='gone'){document.getElementById('pm').textContent='La v\u00e9rification a expir\u00e9. Recommencez l\u2019inscription.';return;}"
+                        "if(n===20){document.getElementById('pm').textContent='Votre courtier met du temps \u00e0 r\u00e9pondre. Nous continuons d\u2019essayer\u2026';}"
+                        "setTimeout(poll,3000);}).catch(function(){setTimeout(poll,4000);});}poll();</script>")
+
+
+def _probe_card(st, jid):
+    """the verdict card (grandma words): what we found, what it means, one clear next step"""
+    import html as _h
+    v = st.get("verdict") or {}; p = st.get("profile") or {}; b = p.get("btc") or {}
+    zone = v.get("zone") or "unknown"
+    import re as _rx
+    _comp = p.get("company") or ""
+    _m = _rx.search(r"\(([^)]+)\)", _comp)          # "Gain Global Markets, Inc. (FOREX.com Global)" -> the name members know
+    broker = _h.escape((_m.group(1) if _m else (_comp or p.get("server") or st.get("server") or "votre courtier").split("-")[0]).replace(" Global", "").strip())
+    fr = lambda x: ("%.2f" % float(x)).replace(".", ",") if x is not None else "?"
+    rows = ""
+    if p:
+        rows += f"<p><b>{broker}</b></p>"
+        if b.get("name"):
+            rows += f"<p>Bitcoin trouv&eacute; : <b>{_h.escape(str(b['name']))}</b></p>"
+        if v.get("spread") is not None:
+            rows += f"<p>Co&ucirc;t par trade chez vous : <b>{fr(v['spread'])} $</b> &middot; chez Exness : {fr(v.get('exness_spread'))} $</p>"
+    cont = ("<form method=\"POST\" action=\"/activate\"><input type=\"hidden\" name=\"action\" value=\"continue\">"
+            f"<input type=\"hidden\" name=\"probe\" value=\"{_h.escape(jid)}\">"
+            "<button class=\"go\" style=\"margin-top:14px;width:100%;padding:12px;border:0;border-radius:14px;background:#8fc6ff;color:#0b0f14;font-weight:700;font-size:1rem\">Continuer : ouvrir mon compte</button></form>")
+    back = "<p style=\"margin-top:14px\"><a href=\"/\">&larr; Retour</a></p>"
+    if zone == "green":
+        return rows + f"<p>&#9989; <b>&Ccedil;a marche chez {broker}.</b> Le robot y gagne autant qu&#8217;&agrave; Exness." + \
+               (f" Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" if v.get("est_net") is not None else "</p>") + cont + back
+    if zone == "orange":
+        return rows + f"<p>&#128992; <b>&Ccedil;a marche, mais moins.</b> Le co&ucirc;t par trade est plus haut ici. Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" + \
+               "<p>&Agrave; vous de choisir : continuer ici, ou ouvrir un compte chez un courtier moins cher et revenir.</p>" + cont + back
+    if zone == "red":
+        why = " ".join(_h.escape(r) for r in (v.get("reasons") or []))
+        return rows + f"<p>&#9940; <b>Rien ne gagne chez {broker}.</b> {why}.</p>" + \
+               "<p>Trois portes :</p>" \
+               "<p>&#8226; <b>Signal</b> : recevez les signaux et tradez vous-m&ecirc;me, chez n&#8217;importe quel courtier.</p>" \
+               "<p>&#8226; <b>Un courtier moins cher</b> : ouvrez un compte (Exness, par exemple) et revenez avec le m&ecirc;me code.</p>" \
+               "<p>&#8226; <b>&Eacute;crire au Owl</b> : nous regardons ensemble.</p>" \
+               "<p style=\"margin-top:14px\"><a href=\"/\">&larr; Retour &agrave; l&#8217;inscription</a></p>"
+    if st.get("error"):
+        return rows + f"<p>&#9888;&#65039; <b>Nous n&#8217;avons pas pu entrer dans votre compte.</b> {_h.escape(str(st['error'])[:160])}</p>" \
+               "<p>V&eacute;rifiez le num&eacute;ro, le mot de passe principal et le nom du serveur (&eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes), puis r&eacute;essayez.</p>" + back
+    return rows + "<p>Votre compte se lit bien. Le r&eacute;sultat chiffr&eacute; chez ce courtier arrive bient&ocirc;t ; vous pouvez continuer.</p>" + cont + back
+
+
 def _step2_page(login, pwd):
     """Smart login step 2 (2026-09-06 user): the account is new - ask
     ONLY the missing pieces (first name + server)."""
@@ -17411,6 +17464,16 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     (Automatique). A known account with the right password is renewed
     instead of duplicated."""
     import re as _re
+    probed = None
+    if (form.get("action", [""])[0] or "") == "continue":
+        # 2026-10-16 (owner): the broker verdict card's "Continuer" - the form was kept with the probe job
+        import broker_book as _BB
+        _jid = _re.sub(r"[^a-z0-9]", "", (form.get("probe", [""])[0] or "").lower())[:24]
+        _st = _BB.probe_state(_jid) if _jid else None
+        if not _st or _st.get("state") != "done" or not _st.get("profile") or (_st.get("verdict") or {}).get("zone") == "red":
+            return _join_result("&#9203; V&eacute;rification introuvable",
+                                "<p>Elle a expir&eacute; ou n&#8217;a pas abouti. Recommencez l&#8217;inscription : c&#8217;est rapide.</p><p><a href=\"/\">&larr; Retour</a></p>")
+        form = _st.get("form") or {}; probed = _st
     code = (form.get("code", [""])[0] or "").strip().upper()[:12]
     name = (form.get("name", [""])[0] or "").strip()[:30]
     raw_login = (form.get("login", [""])[0] or "").strip()[:40]
@@ -17535,6 +17598,13 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     if pkg == "family" and family_count() >= FAMILY_CAP:
         return _join_result("&#9203; Le nid est plein",
                             "<p>Toutes les places Automatique sont prises pour l&#8217;instant. Le Owl vous pr&eacute;viendra quand une place se lib&egrave;re.</p>")
+    if pkg == "family" and probed is None and "exness" not in server.lower():
+        # 2026-10-16 (owner: "the fastest way to say it's not gonna work"): another broker -> the shared probe
+        # terminal reads the account in one call; the verdict card decides; no terminal is built for a red
+        import broker_book as _BB
+        _jid = secrets.token_hex(6)
+        _BB.probe_start(_jid, login, pwd, server, form)
+        return _probe_wait_page(_jid)
     base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
@@ -17552,6 +17622,14 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
            "mode": "auto", "telegram": tg, "created": int(time.time()), "via": "code"}
     if pkg == "family":
         rec.update({"trade": True, "dedicated": f"structure_bos_bot.py {uid}", "managed": True})
+    if probed is not None:
+        _pb = (probed.get("profile") or {}).get("btc") or {}
+        if _pb.get("name"):
+            rec["symbol"] = _pb["name"]
+        if probed.get("via") and probed["via"] != server:
+            rec["mt5_server_addr"] = probed["via"]
+        rec["broker"] = {k: (probed.get("verdict") or {}).get(k) for k in ("zone", "spread", "est_net", "native_net")}
+        rec["broker"]["server"] = (probed.get("profile") or {}).get("server") or server
     allu.append(rec)
     _atomic_json(USERS_FILE, allu, ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
@@ -19574,6 +19652,18 @@ class H(BaseHTTPRequestHandler):
             if "?" in self.path and "v=" in self.path.split("?", 1)[1] and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
                 usage_count("open_out")
             self._send(APP_PAGE, "text/html; charset=utf-8")
+            return
+        if len(parts) == 1 and parts[0] == "probe":
+            # 2026-10-16: the sign-up waiting page asks whether the broker probe is done; the card comes back as HTML
+            import urllib.parse as _upp
+            import re as _rep
+            import broker_book as _BB
+            _q = _upp.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _j = _rep.sub(r"[^a-z0-9]", "", (_q.get("j", [""])[0] or "").lower())[:24]
+            _st = _BB.probe_state(_j) if _j else None
+            if not _st:
+                self._send(json.dumps({"state": "gone"}), "application/json"); return
+            self._send(json.dumps({"state": _st.get("state"), "html": _probe_card(_st, _j) if _st.get("state") == "done" else ""}, ensure_ascii=False), "application/json")
             return
         if len(parts) == 1 and parts[0] == "codeinfo":
             # the /activate page asks what a code is for (package, days) - nothing else
