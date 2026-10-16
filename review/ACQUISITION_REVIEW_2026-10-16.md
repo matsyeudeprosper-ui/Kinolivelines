@@ -48,3 +48,12 @@ suite"; "Automatique a expire il y a 10 jours - Entrer le code"); "Ajoutez Manue
 legacy "Essai termine / Premium" line; the settings account card showed "Bon apres-midi Visiteur" as the name.
 Verified on the live page with fake plan dates (3 states). Still by hand: the owner issues Automatique renewal
 codes; crypto renewal exists for Signal/Strategie only.
+
+## Robustness pass (same day)
+`review/route_crawl.py` hits every public route, every member sub-route (demo token and a bogus token), the POST
+routes with empty and bogus bodies, plus hostile paths (300 chars, %00, ../). Before: 0 x 5xx, 0 tracebacks, 0
+dropped connections, 46 blank 404s. After: a "Page introuvable" page for browsers (JSON for scripts) at every 404
+site, and do_GET/do_POST wrapped: any exception answers a "Un instant" page that retries by itself (JSON
+{"error":"server","retry":true} for scripts) and logs the traceback to live/owl_app_errors.log. Offline: the
+service worker serves the cached page after 4 s or an offline page; the app shows "Connexion perdue" and retries.
+Re-crawl: 0 flagged.

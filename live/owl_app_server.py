@@ -18098,8 +18098,7 @@ class H(BaseHTTPRequestHandler):
         try:
             body = open(path, "rb").read()
         except Exception:
-            self.send_response(404)
-            self.end_headers()
+            self._not_found()
             return
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -18114,8 +18113,7 @@ class H(BaseHTTPRequestHandler):
         try:
             body = open(path, "rb").read()
         except Exception:
-            self.send_response(404)
-            self.end_headers()
+            self._not_found()
             return
         self.send_response(200)
         self.send_header("Content-Type", ctype)
@@ -18123,6 +18121,74 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _wants_html(self):
+        a = (self.headers.get("Accept") or "").lower()
+        return "text/html" in a and "application/json" not in a.split(",")[0]
+
+    def _not_found(self):
+        """2026-10-16: a page for people, JSON for scripts - never a blank 404"""
+        try:
+            if self._wants_html():
+                body = _flow_page("Page introuvable",
+                                  "<p>Cette adresse ne m&egrave;ne nulle part. Un lien incomplet, ou une page qui a chang&eacute; de place.</p>"
+                                  "<a class=\"go\" href=\"/\">Accueil</a>"
+                                  "<a class=\"go sec\" href=\"/app\">Ouvrir mon OwlNest</a>",
+                                  doc_title="OwlNest &middot; Introuvable").encode("utf-8")
+                ctype = "text/html; charset=utf-8"
+            else:
+                body = b'{"error": "not found"}'; ctype = "application/json"
+            self.send_response(404)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception:
+            pass
+
+    def _server_error(self, exc):
+        """2026-10-16: a bug in one route answers with a page that retries by itself, and a log line to fix it"""
+        import traceback as _tb
+        try:
+            with open(os.path.join(DIR, "owl_app_errors.log"), "a", encoding="utf-8") as _lf:
+                _lf.write("%s %s %s\n%s\n" % (time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), self.command, self.path[:200], _tb.format_exc()))
+        except Exception:
+            pass
+        try:
+            if self._wants_html():
+                body = _flow_page("Un instant",
+                                  "<p>Petit souci de notre c&ocirc;t&eacute;. La page r&eacute;essaie toute seule dans quelques secondes ; vos r&eacute;glages et votre compte ne bougent pas.</p>"
+                                  "<a class=\"go\" href=\"javascript:location.reload()\">R&eacute;essayer maintenant</a>"
+                                  "<a class=\"go sec\" href=\"/\">Accueil</a><script>setTimeout(function(){location.reload();},8000);</script>",
+                                  doc_title="OwlNest").encode("utf-8")
+                ctype = "text/html; charset=utf-8"
+            else:
+                body = b'{"error": "server", "retry": true}'; ctype = "application/json"
+            self.send_response(500)
+            self.send_header("Content-Type", ctype)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception:
+            pass
+
+    def do_GET(self):
+        try:
+            self._do_GET()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+        except Exception as _e:
+            self._server_error(_e)
+
+    def do_POST(self):
+        try:
+            self._do_POST()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+        except Exception as _e:
+            self._server_error(_e)
 
     def _send(self, body, ctype, cookie=None):
         if isinstance(body, str):
@@ -18142,7 +18208,7 @@ class H(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def do_POST(self):
+    def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
         if p == "/fn":
@@ -18214,8 +18280,7 @@ class H(BaseHTTPRequestHandler):
             # master sets the Objectif bar target (pwd gated)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18260,8 +18325,7 @@ class H(BaseHTTPRequestHandler):
             # master creates a real-account invite code (pwd gated)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18302,8 +18366,7 @@ class H(BaseHTTPRequestHandler):
             # read on every decision by structure_bos_bot).
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18342,8 +18405,7 @@ class H(BaseHTTPRequestHandler):
             # is read-only by construction.
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18562,8 +18624,7 @@ class H(BaseHTTPRequestHandler):
             # trade the signals on another broker
             u = user_by_token(_parts[0])
             if u is None or not (is_admin(u) or has(u["id"], "manual")):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18601,8 +18662,7 @@ class H(BaseHTTPRequestHandler):
             # notifier tells the waiting members when one frees up
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18646,8 +18706,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-27: create a NOWPayments invoice for a package
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18694,8 +18753,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-04 (owner): a one-week code that the Telegram bot turns into a link
             u = user_by_token(_parts[0])
             if u is None or u.get("public"):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 import secrets as _rl
@@ -18718,8 +18776,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-04 (owner): a member changes the app password (current one required)
             u = user_by_token(_parts[0])
             if u is None or u.get("public") or not (u.get("app_only") or u.get("app_login") or u.get("app_pwd")):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18751,8 +18808,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-03 (owner): a NOWPayments invoice for one share statement
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18792,8 +18848,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-03 (owner): "Marquer paye" in Le Nid (master pwd)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18830,8 +18885,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-27: owner settings shared by every member page (contact link)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18874,8 +18928,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-27: a private note per account, for the owner (master pwd)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18909,8 +18962,7 @@ class H(BaseHTTPRequestHandler):
             # owl_mode_switch.py does the stop / archive / era / start
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -18941,8 +18993,7 @@ class H(BaseHTTPRequestHandler):
             # (seed "patrimoine"); the chercheur reads it with lab/wealth/
             u = user_by_token(_parts[0])
             if u is None or u.get("public"):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 if not (is_admin(u) or has(u.get("id"), "strategy") or admin_cookie_ok(self.headers)):
@@ -18981,8 +19032,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-29: "Demander au chercheur" on a seed - Kino and Strategie members
             u = user_by_token(_parts[0])
             if u is None or u.get("public"):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 if not (is_admin(u) or has(u.get("id"), "strategy") or admin_cookie_ok(self.headers)):
@@ -19021,8 +19071,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-29: the owner's Approuver / Rejeter / Lancer un jumeau on an idea
             u = user_by_token(_parts[0])
             if not (is_admin(u) or admin_cookie_ok(self.headers)):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19048,8 +19097,7 @@ class H(BaseHTTPRequestHandler):
             # judge owns the file and the revert, so this only asks it.
             u = user_by_token(_parts[0])
             if not (is_admin(u) or admin_cookie_ok(self.headers)):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19072,8 +19120,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-04 (owner): a temporary app password for a member (master pwd)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19104,8 +19151,7 @@ class H(BaseHTTPRequestHandler):
             # needed) or drops it (master pwd)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19135,8 +19181,7 @@ class H(BaseHTTPRequestHandler):
             # master pauses/resumes any member (master pwd gated)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19181,8 +19226,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] == "push_pref":
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19233,8 +19277,7 @@ class H(BaseHTTPRequestHandler):
             # member's Messages (image kept in nest_data, <= 3 MB)
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19283,8 +19326,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-27: the member removes one of their own messages (by time)
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19302,8 +19344,7 @@ class H(BaseHTTPRequestHandler):
             # kept for the Sunday push (PNG only, <= 600 KB)
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19323,8 +19364,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] in ("push_sub", "push_unsub"):
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19348,8 +19388,7 @@ class H(BaseHTTPRequestHandler):
             # sizes from the debt ledger and sends it to the broker
             u = user_by_token(_parts[0])
             if not manual_ok(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19422,8 +19461,7 @@ class H(BaseHTTPRequestHandler):
             # family member enters the one-time code from the Owl
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19502,8 +19540,7 @@ class H(BaseHTTPRequestHandler):
             # exactly like every other master action.
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19535,8 +19572,7 @@ class H(BaseHTTPRequestHandler):
             # the master generates a fresh one-time code (password-gated)
             u = user_by_token(_parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             try:
                 ln = int(self.headers.get("Content-Length", 0))
@@ -19564,8 +19600,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] in ("pause", "delete"):
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             # both actions need the account's broker password (2026-09-05)
             ln = int(self.headers.get("Content-Length", 0))
@@ -19660,8 +19695,7 @@ class H(BaseHTTPRequestHandler):
             # rollover, same cadence as the resize itself.
             u = user_by_token(_parts[0])
             if u is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             if u.get("id") not in SCALE_TOGGLE_ALLOWED:
                 self._send(json.dumps({"ok": False,
@@ -19782,8 +19816,7 @@ class H(BaseHTTPRequestHandler):
                            "text/html; charset=utf-8")
             return
         if not p.endswith("/join"):
-            self.send_response(404)
-            self.end_headers()
+            self._not_found()
             return
         try:
             ln = int(self.headers.get("Content-Length", 0))
@@ -19796,15 +19829,14 @@ class H(BaseHTTPRequestHandler):
                                     f"<p>{e}</p>"),
                        "text/html; charset=utf-8")
 
-    def do_GET(self):
+    def _do_GET(self):
         p = self.path.split("?")[0].rstrip("/")
         parts = [x for x in p.split("/") if x]
         # Owner 2026-10-10: the state of the two Nid-wide switches (admin only)
         if len(parts) == 2 and parts[1] == "nest_switches":
             u = user_by_token(parts[0])
             if not is_admin(u):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             _paused = False; _until = None
             try:
@@ -19961,8 +19993,7 @@ class H(BaseHTTPRequestHandler):
             # 2026-09-27: landing screenshots, regenerated by review/landing_shots.mjs
             _sp = os.path.join(DIR, "static", parts[1])
             if not os.path.exists(_sp):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             self._send_static(_sp, "image/webp" if _sp.endswith(".webp") else "image/png", "public, max-age=3600")
             return
@@ -19977,8 +20008,7 @@ class H(BaseHTTPRequestHandler):
             # public account's page (owner 2026-09-19)
             pu = public_user()
             if pu is None:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             self.send_response(302)
             self.send_header("Location", f"/{pu['token']}/")
@@ -20003,8 +20033,7 @@ class H(BaseHTTPRequestHandler):
             return
         user = user_by_token(parts[0])
         if user is None:
-            self.send_response(404)
-            self.end_headers()
+            self._not_found()
             return
         sub = parts[1] if len(parts) > 1 else ""
         if sub == "":
@@ -20061,8 +20090,7 @@ class H(BaseHTTPRequestHandler):
             self._send(json.dumps(trade_story(_data_user(user), _t)), "application/json")
         elif sub == "nest_reset_preview":
             if not is_admin(user):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             import urllib.parse as _upv
             _q = _upv.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
@@ -20073,8 +20101,7 @@ class H(BaseHTTPRequestHandler):
             try:
                 data = open(_wp, "rb").read()
             except Exception:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             self.send_response(200)
             self.send_header("Content-Type", "image/png")
@@ -20087,8 +20114,7 @@ class H(BaseHTTPRequestHandler):
             if not (user.get("id") in ("kino", "std")
                     or str(user.get("login")) == str(LOGIN)
                     or admin_cookie_ok(self.headers)):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             self._send(json.dumps(service_health()), "application/json")
         elif sub == "proof":
@@ -20358,15 +20384,13 @@ class H(BaseHTTPRequestHandler):
             # 2026-10-14 (owner): spoken explanations of a page (live/audio/<name>.mp3, generated from <name>.txt)
             _ap = os.path.join(DIR, "audio", parts[2])
             if not os.path.exists(_ap):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             # byte ranges: Safari / iPhone will not play media from a server that cannot send part of the file
             try:
                 _ab = open(_ap, "rb").read()
             except Exception:
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             _rg = re.match(r"bytes=(\d*)-(\d*)", self.headers.get("Range") or "")
             _n = len(_ab)
@@ -20737,8 +20761,7 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(_d), "application/json")
                 return
             if not manual_ok(user):
-                self.send_response(404)
-                self.end_headers()
+                self._not_found()
                 return
             _uid = user.get("id")
             try:
@@ -20773,8 +20796,7 @@ class H(BaseHTTPRequestHandler):
         elif sub == "icon512m.png":
             self._send(ICON512M, "image/png")
         else:
-            self.send_response(404)
-            self.end_headers()
+            self._not_found()
 
 
 _CAND_OK = {}
