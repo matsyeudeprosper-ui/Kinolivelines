@@ -1276,6 +1276,33 @@ def book_closes(st, t_from):
             htf_exit=htf_snap()))
 
 
+# 2026-10-16 (owner, multi-broker go-live item 1): the broker readiness gate. The bot checks ITS OWN account
+# against what the code assumes (Bitcoin name, 1 lot = 1 BTC = $1/point, 0.01 lots, IOC fill, UTC clock, USD,
+# hedging, the Exness feed) and takes NO new entry while a blocking check fails; open trades are still managed.
+# Rechecked every 6 h. Market bots (<variant>@<SYM>) are guarded by owl_markets instead.
+_BRK = {"ok": True, "bad": [], "t": 0.0}
+
+
+def broker_ok(force=False):
+    if MKT:
+        return True, []
+    if not force and time.time() - _BRK["t"] < 6 * 3600:
+        return _BRK["ok"], _BRK["bad"]
+    _BRK["t"] = time.time()
+    try:
+        import broker_profile as _BP
+        _p = _BP.profile(mt5)
+        if _p is None:
+            return _BRK["ok"], _BRK["bad"]          # account not readable this instant - keep the last verdict
+        _ok, _bad = _BP.ready(_p)
+        if (_ok, _bad) != (_BRK["ok"], _BRK["bad"]) or force:
+            say("COURTIER: pret" if _ok else "COURTIER PAS PRET - aucune nouvelle entree: " + ", ".join(_bad))
+        _BRK["ok"], _BRK["bad"] = _ok, _bad
+    except Exception as _e:
+        say(f"COURTIER: verification impossible ({_e}) - dernier verdict garde")
+    return _BRK["ok"], _BRK["bad"]
+
+
 def main():
     assert mt5.initialize(path=TERMINAL, login=LOGIN,
                           password=PASSWORD, server=SERVER,
@@ -1310,6 +1337,7 @@ def main():
         if DAY_CAP:
             _scale_line += f", cap ${DAY_CAP * _ratio0:.2f}"
         _scale_line += ")"
+    broker_ok(force=True)
     say(f"BOS-BOT starting on {ai.login} balance {ai.balance:.2f} "
         f"base {BASE_LOT} RR {RR} serie {K_STREAK} "
         f"kill {KILL_NET} | paquet {PACKAGE}"
@@ -1398,6 +1426,10 @@ def main():
         if my_positions() or st.get("ghost"):
             return False
         if paused():
+            return False
+        _bok, _bbad = broker_ok()
+        if not _bok:
+            say(f"{kind} refuse: courtier pas pret - {', '.join(_bbad)}")
             return False
         _mok, _mwhy = market_allowed()
         if not _mok:

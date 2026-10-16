@@ -345,6 +345,8 @@ _wealth_t = 0.0
 # markets - what the robot test bench needs to replay one (digits, contract,
 # dollar value of a price step, typical spread) - to nest_data/<uid>.symbols.json.
 SYM_OUT = os.path.join(OUT, uid + ".symbols.json")
+# 2026-10-16 (multi-broker go-live item 1): the broker readiness profile, same 6 h rhythm (broker_profile.py)
+BRK_OUT = os.path.join(OUT, uid + ".broker.json")
 _sym_t = 0.0
 
 
@@ -452,6 +454,16 @@ while True:
                     if _sd["n"]:
                         json.dump(_sd, open(SYM_OUT + ".tmp", "w", encoding="utf-8"))
                         os.replace(SYM_OUT + ".tmp", SYM_OUT)
+                except Exception:
+                    pass
+                try:
+                    import broker_profile as _BP
+                    _bp = _BP.profile(mt5)
+                    if _bp:
+                        _ok, _bad = _BP.ready(_bp)
+                        _bp.update({"ready": _ok, "blocking": _bad, "checks": _BP.checks(_bp)})
+                        json.dump(_bp, open(BRK_OUT + ".tmp", "w", encoding="utf-8"), ensure_ascii=False)
+                        os.replace(BRK_OUT + ".tmp", BRK_OUT)
                 except Exception:
                     pass
     except Exception as e:
