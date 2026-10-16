@@ -20,6 +20,41 @@ def say(m):
         f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} {m}\n")
 
 
+STOCK_EA_DIRS = {"Advisors", "Examples", "Free Robots"}     # MetaQuotes samples, never attached
+CURRENT_EXE = r"C:\Program Files\MetaTrader 5\terminal64.exe"
+
+
+def clean_terminal(tgt):
+    """2026-10-16 (owner: "no EA on the terminal"): a member's terminal runs NOTHING but our Python bots.
+    After the copy: every <expert> block is stripped from chart and template files, every custom EA
+    folder is removed, and the terminal program is the current build (a fresh copy otherwise
+    self-updates and waits for a click nobody gives on a server). The pilot at Pepperstone found all
+    three: the template's Exness chart + old EA kept a non-Exness terminal busy for 5 min."""
+    import re, glob, shutil
+    n_blk = n_dir = 0
+    for f in glob.glob(os.path.join(tgt, "MQL5", "Profiles", "**", "*.*"), recursive=True):
+        if not f.endswith((".tpl", ".chr")):
+            continue
+        raw = open(f, "rb").read()
+        enc = "utf-16" if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else ("utf-16-le" if b"\x00" in raw[:400] else "utf-8")
+        txt = raw.decode(enc, errors="replace")
+        k = len(re.findall(r"<expert>.*?</expert>", txt, flags=re.S))
+        if k:
+            open(f, "wb").write(re.sub(r"<expert>.*?</expert>\r?\n?", "", txt, flags=re.S).encode(enc)); n_blk += k
+    ex = os.path.join(tgt, "MQL5", "Experts")
+    if os.path.isdir(ex):
+        for name in os.listdir(ex):
+            d = os.path.join(ex, name)
+            if os.path.isdir(d) and name not in STOCK_EA_DIRS:
+                shutil.rmtree(d, ignore_errors=True); n_dir += 1
+    try:
+        if os.path.exists(CURRENT_EXE):
+            shutil.copy2(CURRENT_EXE, os.path.join(tgt, "terminal64.exe"))
+    except Exception as e:
+        say(f"terminal exe refresh failed for {tgt}: {e}")
+    say(f"terminal cleaned {tgt}: {n_blk} expert block(s), {n_dir} EA folder(s) removed")
+
+
 say("provisioner starting")
 os.makedirs(DEST, exist_ok=True)
 while True:
@@ -45,6 +80,7 @@ while True:
                 capture_output=True)
             exe = os.path.join(tgt, "terminal64.exe")
             if r.returncode < 8 and os.path.exists(exe):
+                clean_terminal(tgt)
                 u["terminal"] = exe
                 changed = True
                 say(f"terminal ready for {uid}: {exe}")
