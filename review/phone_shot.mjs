@@ -8,8 +8,11 @@ import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
 
 const EDGE = "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
-const [outDir, ...targets] = process.argv.slice(2);
-if (!outDir || !targets.length) { console.error("usage: node review/phone_shot.mjs <out_dir> <url|file> ..."); process.exit(2); }
+// --run "<js>" runs that JavaScript on each page after it loads (e.g. open a sheet: "pick('family')")
+const argv = process.argv.slice(2);
+let RUN = ""; const ri = argv.indexOf("--run"); if (ri >= 0) { RUN = argv[ri + 1] || ""; argv.splice(ri, 2); }
+const [outDir, ...targets] = argv;
+if (!outDir || !targets.length) { console.error("usage: node review/phone_shot.mjs [--run <js>] <out_dir> <url|file> ..."); process.exit(2); }
 mkdirSync(outDir, { recursive: true });
 const PORT = 9333 + Math.floor(Math.random() * 300);
 const prof = join(tmpdir(), "owl_phone_shot_" + PORT);
@@ -31,6 +34,7 @@ try {
   for (const t of targets) {
     const url = /^[a-z]+:\/\//i.test(t) ? t : "file:///" + t.replace(/\\/g, "/");
     await send("Page.navigate", { url }); await sleep(1200);
+    if (RUN) { await send("Runtime.evaluate", { expression: RUN, awaitPromise: true }); await sleep(700); }
     const { cssContentSize } = await send("Page.getLayoutMetrics");
     const h = Math.min(Math.ceil(cssContentSize.height), 3000);
     await send("Emulation.setDeviceMetricsOverride", { width: 390, height: h, deviceScaleFactor: 2, mobile: true });
