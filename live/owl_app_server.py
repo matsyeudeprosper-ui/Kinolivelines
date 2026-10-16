@@ -17129,12 +17129,14 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
 
     tiers = (
         tier("manual", "Signal", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
-             "Le robot vous pr&eacute;vient, vous d&eacute;cidez",
-             ["Une alerte sur votre t&eacute;l&eacute;phone quand le robot voit une occasion "
-              + info("Le robot surveille le march\u00e9 nuit et jour. Quand ses conditions sont r\u00e9unies, votre t\u00e9l\u00e9phone sonne. Vous d\u00e9cidez si vous suivez, ou pas."),
-              "Tout ce que montre la d&eacute;mo, en direct, sous votre nom",
+             "Regardez le robot travailler, tradez quand vous voulez",
+             ["Chaque d&eacute;cision du robot en direct : ce qu&#8217;il voit, pourquoi il entre, pourquoi il attend "
+              + info("Le même écran que les comptes automatiques : le solde du robot, ses trades, le marché et ses vérifications, mis à jour toutes les 5 secondes."),
+              "Une alerte sur votre t&eacute;l&eacute;phone &agrave; chaque entr&eacute;e &mdash; vous suivez si vous voulez, &agrave; vos prix "
+              + info("Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique."),
               "Aucun compte de courtier &agrave; donner "
-              + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte.")],
+              + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte. Vous pouvez nommer votre courtier pour voir les niveaux \u00e0 ses prix."),
+              "Pour que le robot le fasse pour vous : Automatique"],
              "var(--up)")
         + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
              "Comprendre ce que le robot voit",
@@ -17887,7 +17889,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         pass
     link = f"https://owltrader.duckdns.org/{token}/"
     what = ("<p>Le robot tourne sur votre compte dans quelques minutes, avec ses r&egrave;gles et ses freins.</p>" if pkg == "family"
-            else "<p>Vos signaux arrivent sur votre t&eacute;l&eacute;phone d&egrave;s que vous activez les notifications dans l&#8217;app.</p>" if pkg == "manual"
+            else "<p>Vous voyez chaque d&eacute;cision du robot en direct. Activez les notifications pour &ecirc;tre pr&eacute;venu &agrave; chaque entr&eacute;e ; vous tradez quand vous le voulez, &agrave; vos prix.</p>" if pkg == "manual"
             else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>")
     return _welcome_page(name, labels.get(pkg, pkg), days, link, what)
 
@@ -17969,7 +17971,7 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker=""):
         pass
     link = f"https://owltrader.duckdns.org/{rec['token']}/"
     return _welcome_page(name, labels.get(pkg, pkg), days, link,
-                         ("<p>Activez les notifications dans l&#8217;app : les signaux du robot arrivent sur votre t&eacute;l&eacute;phone.</p>" if pkg == "manual"
+                         ("<p>Vous voyez chaque d&eacute;cision du robot en direct. Activez les notifications pour &ecirc;tre pr&eacute;venu &agrave; chaque entr&eacute;e ; vous tradez quand vous le voulez, &agrave; vos prix.</p>" if pkg == "manual"
                           else "<p>Le graphique complet et la m&eacute;thode vous attendent dans l&#8217;app.</p>"),
                          ident=rec["id"], extra=_tg_link_html(rec["id"]))
 
