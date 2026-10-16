@@ -17653,7 +17653,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
             return _join_result("&#9203; V&eacute;rification introuvable",
                                 "<p>Elle a expir&eacute; ou n&#8217;a pas abouti. Recommencez l&#8217;inscription : c&#8217;est rapide.</p><p><a href=\"/\">&larr; Retour</a></p>")
         _posted = form
-        form = dict(_st.get("form") or {}); probed = _st
+        form = dict(_st.get("form") or {}); probed = _st; _pjid = _jid
         for _k in ("code", "name"):                       # typed on the verdict card -> wins over the saved form
             if (_posted.get(_k, [""])[0] or "").strip():
                 form[_k] = [_posted[_k][0]]
@@ -17702,9 +17702,13 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         import broker_book as _BB
         _jid = secrets.token_hex(6)
         _BB.probe_start(_jid, login, pwd, server, form)
-        return _probe_wait_page(_jid)
+        return ("redirect", f"/verif?j={_jid}")
     if rate_limited(("activate", code or login or "?"), limit=8):
         return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
+    if probed is not None and not code:
+        return _join_result("&#128273; Il manque le code",
+                            "<p>Entrez le code re&ccedil;u du Owl sur Telegram pour activer ce compte. Votre v&eacute;rification est gard&eacute;e une heure.</p>"
+                            f"<a class=\"go\" href=\"/verif?j={_pjid}\">&larr; Revenir &agrave; ma v&eacute;rification</a>")
     if not pwd or not (code or buy in ("manual", "strategy")):
         return _join_result("&#10060; Il manque une information",
                             "<p>Revenez en arri&egrave;re et remplissez toutes les cases : un code, ou un paquet &agrave; acheter.</p>")
@@ -17720,7 +17724,8 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         code_guess_fail(("act", (login or name or "?").lower()))
         return _join_result("&#10060; Code inconnu ou d&eacute;j&agrave; utilis&eacute;",
                             "<p>V&eacute;rifiez le code, ou demandez-en un nouveau au Owl sur Telegram.</p>"
-                            "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>")
+                            + (f"<a class=\"go\" href=\"/verif?j={_pjid}\">&larr; Revenir &agrave; ma v&eacute;rification</a>" if probed is not None
+                               else "<p><a href=\"/activate\">&larr; R&eacute;essayer</a></p>"))
     pkg, days = ce.get("pkg") or "family", int(ce.get("days") or 30)
     labels = {"family": "Automatique", "manual": "Signal", "strategy": "Strat&eacute;gie"}
     ex = _find_member(raw_login, pwd)
@@ -17798,7 +17803,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         import broker_book as _BB
         _jid = secrets.token_hex(6)
         _BB.probe_start(_jid, login, pwd, server, form)
-        return _probe_wait_page(_jid)
+        return ("redirect", f"/verif?j={_jid}")
     base = _re.sub(r"[^a-z0-9]", "", name.lower()) or "membre"
     try:
         allu = json.load(open(USERS_FILE, encoding="utf-8"))
@@ -19846,6 +19851,27 @@ class H(BaseHTTPRequestHandler):
             if "?" in self.path and "v=" in self.path.split("?", 1)[1] and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
                 usage_count("open_out")
             self._send(APP_PAGE, "text/html; charset=utf-8")
+            return
+        if len(parts) == 1 and parts[0] == "verif":
+            # 2026-10-16: the verification's own address - refresh, back and "come back later" all work
+            import urllib.parse as _upv
+            import re as _rev
+            import broker_book as _BB
+            _q = _upv.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _j = _rev.sub(r"[^a-z0-9]", "", (_q.get("j", [""])[0] or "").lower())[:24]
+            _st = _BB.probe_state(_j) if _j else None
+            if not _st:
+                self._send(_join_result("&#9203; V&eacute;rification introuvable",
+                                        "<p>Elle a expir&eacute; (une heure) ou n&#8217;existe pas. Recommencez l&#8217;inscription : c&#8217;est rapide.</p>"
+                                        "<a class=\"go\" href=\"/offres\">Recommencer</a>"), "text/html; charset=utf-8")
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            _body = (_probe_card(_st, _j) if _st.get("state") == "done" else _probe_wait_page(_j)).encode("utf-8")
+            self.send_header("Content-Length", str(len(_body)))
+            self.end_headers()
+            self.wfile.write(_body)
             return
         if len(parts) == 1 and parts[0] == "brokerinfo":
             # 2026-10-16: the broker book answers under the server field, before any password is typed

@@ -67,6 +67,11 @@ def check(uid, sym):
     B = base(sym).upper()
     if uid in EXCLUDED:
         return False, "compte de reference: Bitcoin seulement"
+    # 2026-10-16: a hold set by hand (live/market_hold.json {"<robot>@<SYM>": "why"}) keeps a market out of real
+    # trading even when the two checks pass - e.g. a luck check that passed by one random run, to be confirmed
+    _hold = _load(os.path.join(DIR, "market_hold.json"), {}) or {}
+    if "%s@%s" % (rid, B) in _hold:
+        return False, "en attente : " + str(_hold["%s@%s" % (rid, B)])
     if B == "BTCUSD":
         # 2026-10-16: Bitcoin is every account's MAIN robot - a Bitcoin market bot would double it
         return False, "Bitcoin = robot principal du compte"
