@@ -173,11 +173,12 @@ def run_markets(fast=False):
     """fast=True (2026-10-14, owner: "why one hour long"): the FAST LANE - only jobs whose market is already
     prepared (a test of under a minute), run beside a long preparation instead of waiting behind it"""
     import market_pack as MP
+    import tick_pack as TP          # 2026-10-16 precision plan: a market with a verified-tick pack is tested on it
     import tick_engine_matrix as TMX
     while True:
         q = mq_load()
         if fast:
-            todo = [x for x in q if x.get("state") == "queued" and MP.pack_ready(x["sym"])]
+            todo = [x for x in q if x.get("state") == "queued" and (TP.tick_ready(x["sym"]) or MP.pack_ready(x["sym"]))]
         else:          # a job another runner is testing right now (alive pid) is not ours
             todo = [x for x in q if x.get("state") in ("queued", "building")
                     or (x.get("state") == "testing" and not (x.get("pid") and x.get("pid") != os.getpid() and _alive(x["pid"])))]
@@ -189,13 +190,14 @@ def run_markets(fast=False):
             continue                                                         # taken meanwhile by the other lane
         try:
             open(FAST_LOCK if fast else LOCK, "w").write(str(os.getpid()))  # keep the lock fresh across long builds
-            if not MP.pack_ready(sym):
+            tick = TP.tick_ready(sym)
+            if not tick and not MP.pack_ready(sym):
                 mq_set(qid, state="building", building_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), pid=os.getpid())
                 MP.build(sym, job.get("terminal") or MP.DEFAULT_TERMINAL, log=mlog)
             mq_set(qid, state="testing", pid=os.getpid())
-            d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
+            d = TP.tdir(sym) if tick else MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
             D = MP.use(meta, d, E, K, TMX, H)
-            TM, BID, ASK, n_bad, END = MP.synthetic_ticks(D, meta)
+            TM, BID, ASK, n_bad, END = TP.real_ticks(meta, d) if tick else MP.synthetic_ticks(D, meta)
             K.install_nopause_gate()
             cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": BAL}), drag=0.0, limits_live=1))
             opps, bars = E.streams(cfg0, D)
@@ -216,7 +218,9 @@ def run_markets(fast=False):
             out = run_pair(arms, TM, BID, ASK, END, opps, bars)
             res = {"id": rid, "parent": parent, "parts": parts, "market": sym, "market_name": meta.get("description") or sym,
                    "server": meta.get("server"), "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                   "balance": BAL, "drag": 0.0, "fills": "bars", "risk_factor": meta["m"],
+                   "balance": BAL, "drag": 0.0, "fills": "ticks" if tick else "bars", "risk_factor": meta["m"],
+                   "source": ("%s %s (every broker tick, lossless)" % (meta.get("server"), meta.get("source_symbol"))) if tick else meta.get("server"),
+                   "ticks": int(len(TM)),
                    "days": round((int(TM[-1]) - int(TM[0])) / 86400000, 1),
                    "window_utc": [time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[0]) / 1000)), time.strftime("%Y-%m-%d %H:%M", time.gmtime(int(TM[-1]) / 1000))],
                    "robot": out["robot"], "parent_result": out["parent"], "secs": round(time.time() - t0)}

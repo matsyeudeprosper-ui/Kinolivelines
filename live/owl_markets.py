@@ -25,6 +25,7 @@ ROOT = os.path.dirname(DIR)
 RESULTS = os.path.join(DIR, "robots", "results")
 CONTROLS = os.path.join(ROOT, "study")
 PACKS = os.path.join(ROOT, "study", "markets")
+TPACKS = os.path.join(ROOT, "study", "markets_tick")     # verified broker-tick packs (study/tick_pack.py)
 PCT_MIN = 95.0
 EXCLUDED = {"u477508138"}            # the reference account: Bitcoin only, never a copier or a second market
 # account id -> the argument its Bitcoin bot runs with (no argument = "live" = the 'bos' account)
@@ -55,7 +56,9 @@ def robot_of(uid):
 
 
 def pack_meta(sym):
-    return _load(os.path.join(PACKS, base(sym).upper(), "meta.json"))
+    # 2026-10-16 precision plan: a market tested on its verified-tick pack trades with THAT pack's scale
+    B = base(sym).upper()
+    return _load(os.path.join(TPACKS, B, "meta.json")) or _load(os.path.join(PACKS, B, "meta.json"))
 
 
 def check(uid, sym):
@@ -64,6 +67,9 @@ def check(uid, sym):
     B = base(sym).upper()
     if uid in EXCLUDED:
         return False, "compte de reference: Bitcoin seulement"
+    if B == "BTCUSD":
+        # 2026-10-16: Bitcoin is every account's MAIN robot - a Bitcoin market bot would double it
+        return False, "Bitcoin = robot principal du compte"
     res = _load(os.path.join(RESULTS, "%s@%s.json" % (rid, B)))
     if not res or not (res.get("robot") or {}).get("trades"):
         return False, "pas teste"

@@ -17,6 +17,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE); sys.path.insert(0, r"C:\Projects\KinoliveLines\live"); sys.path.insert(0, r"C:\Projects\KinoliveLines\live\lab")
 import robot_runner as RR
 import market_pack as MP
+import tick_pack as TP          # 2026-10-16: the luck check uses the SAME data as the test it checks
 import tick_engine_matrix as TMX
 from datetime import datetime, timezone
 E, K, H = RR.E, RR.K, RR.H
@@ -25,9 +26,10 @@ sym = (ARGS[1] if len(ARGS) > 1 else "USTEC").upper()
 rid = ARGS[2] if len(ARGS) > 2 else "owl"
 seeds = int(ARGS[3]) if len(ARGS) > 3 else 100
 start = int(ARGS[4]) if len(ARGS) > 4 else 0       # 2026-10-14: seeds split over several processes (merge_random_control.py)
-d = MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
+_tick = TP.tick_ready(sym)
+d = TP.tdir(sym) if _tick else MP.pack_dir(sym); meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
 D = MP.use(meta, d, E, K, TMX, H)
-TM, BID, ASK, nb, END = MP.synthetic_ticks(D, meta)
+TM, BID, ASK, nb, END = TP.real_ticks(meta, d) if _tick else MP.synthetic_ticks(D, meta)
 K.install_nopause_gate()
 cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": RR.BAL}), drag=0.0, limits_live=1))
 opps, bars = E.streams(cfg0, D)
