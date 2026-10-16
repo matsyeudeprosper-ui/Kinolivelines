@@ -121,7 +121,7 @@
    },
    "built_date": "2026-10-05",
    "built_commit": "96dbe40",
-   "c_nights": 1
+   "c_nights": 2
   },
   {
    "id": "cap_rr",
@@ -227,7 +227,8 @@
     "b": 0.5
    },
    "built_date": "2026-10-10",
-   "built_commit": "7c3b783"
+   "built_commit": "7c3b783",
+   "c_nights": 1
   },
   {
    "id": "hour_size",
@@ -313,7 +314,8 @@
     "b": 0.25
    },
    "built_date": "2026-10-13",
-   "built_commit": "f0e7dff"
+   "built_commit": "f0e7dff",
+   "c_nights": 0
   },
   {
    "id": "pile_field_move",
@@ -431,6 +433,28 @@
    "what_en": "New setting cont_wait (0 to 60 minutes, default 0 = nothing changes): no BOS entry (one more trade the same way, internal included) if the previous trade closed less than X minutes ago, win or loss. Changes of direction (FLIP-BOS) are never held back. Same logic as wait_min, on accounts with and without a daily cap, catch-up trades included.",
    "why_fr": "Vrais trades : un trade de plus dans le même sens pris 15 minutes à 3 heures après le précédent, 27 trades, 74 % gagnés, +65 $ ; pris en moins de 15 minutes, 24 trades, 46 %, -27 $. Ça tient avant et après le 10 octobre. La pause pour tous perd sur 42 jours : je veux savoir si c'est parce qu'elle retient aussi les changements de sens. J'attends un gain sans plafond à 10-15 minutes.",
    "why_en": "Real trades: one more trade the same way taken 15 minutes to 3 hours after the previous one, 27 trades, 74 % won, +$65; taken within 15 minutes, 24 trades, 46 %, -$27. It holds before and after 10 October. The pause for all loses over 42 days: I want to know whether that is because it also holds back the changes of direction. I expect an uncapped gain at 10-15 minutes.",
+   "status": "open"
+  },
+  {
+   "id": "real_pool_split",
+   "date": "2026-10-16",
+   "title_fr": "Séparer les trades du robot filtré de ceux du robot de référence",
+   "title_en": "Count the filtered robot's trades apart from the reference robot's",
+   "what_fr": "Dans lab/scrutiny.py (load), donc metrics.json et les piles : (1) ignorer les journaux d'un autre marché que le Bitcoin (nom de fichier contenant USTEC, ou autre symbole) ; (2) donner à chaque trade un fait `src` : \"filtre\" si au moins un compte dont le paquet a pb_dir_gate=true a pris la même entrée (même minute, même sens), \"reference\" si seul le compte de référence (le compte dont le paquet est « reference ») l'a prise ; (3) option --src filtre|reference et champ de pile `src` (opérateurs == et !=). Par défaut rien ne change (tous les trades Bitcoin), sauf l'exclusion des autres marchés.",
+   "what_en": "In lab/scrutiny.py (load), hence metrics.json and the piles: (1) skip journals of a market other than Bitcoin (file name containing USTEC, or another symbol); (2) give every trade a fact `src`: \"filtre\" if at least one account whose package has pb_dir_gate=true took the same entry (same minute, same direction), \"reference\" if only the reference account (the account whose package is \"reference\") took it; (3) option --src filtre|reference and pile field `src` (operators == and !=). By default nothing changes (all Bitcoin trades), except that other markets are left out.",
+   "why_fr": "Depuis le 10 octobre, le journal mêle deux robots. Les 31 trades pris par la seule référence, sans filtre, perdent 46 $ ; les 22 des comptes filtrés gagnent 23 $. Les fuites « le jour » et « après une perte » qui grandissaient ces derniers jours viennent surtout de la référence. Un trade du Nasdaq s'y était glissé aussi. Je veux lire le robot que les membres ont vraiment.",
+   "why_en": "Since 10 October the journal mixes two robots. The 31 trades taken by the reference alone, without the filter, lose $46; the 22 of the filtered accounts gain $23. The 'by day' and 'after a loss' leaks that grew lately come mostly from the reference. A Nasdaq trade slipped in too. I want to read the robot the members really have.",
+   "status": "open"
+  },
+  {
+   "id": "battery_live_base",
+   "date": "2026-10-16",
+   "title_fr": "Juger chaque nuit les idées sur le robot tel qu'il tourne vraiment",
+   "title_en": "Judge the ideas every night on the robot as it really runs",
+   "what_fr": "Dans lab_researcher.py, ajouter une troisième référence `live` = paquet base avec pb_dir_gate=true, pb_gate_mode=\"trend\" (le filtre des comptes réels), et donner à chaque idée son verdict contre elle dans byref.live (verdict, diff_net, diff_worst, h1, h2), l'idée recevant elle aussi le filtre. Le verdict actuel reste le verdict tant que Kino ne décide pas ; byref.live est une vue de plus, affichée à côté. Coût : environ 90 s par idée.",
+   "what_en": "In lab_researcher.py, add a third reference `live` = base package with pb_dir_gate=true, pb_gate_mode=\"trend\" (the real accounts' filter), and give every idea its verdict against it in byref.live (verdict, diff_net, diff_worst, h1, h2), the idea getting the filter too. The current verdict stays the verdict until Kino decides; byref.live is one more view, shown beside it. Cost: about 90 s per idea.",
+   "why_fr": "Tous les comptes réels tournent avec ce filtre depuis le 10 octobre, mais la batterie de nuit le teste sans. Ce soir, avec le filtre : le dimanche sans trade, la pause de 10 minutes et la petite mise sur une tendance jeune perdent toutes ; éviter les heures qui ont trop couru gagne à 400, 500 et 600 points. Les deux robots ne disent pas la même chose.",
+   "why_en": "Every real account runs with this filter since 10 October, but the night battery tests without it. Tonight, with the filter: no Sunday, the 10-minute pause and the smaller stake on a young trend all lose; skipping hours that ran too far wins at 400, 500 and 600 points. The two robots do not say the same thing.",
    "status": "open"
   }
  ]

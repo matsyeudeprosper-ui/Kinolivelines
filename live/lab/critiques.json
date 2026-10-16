@@ -115,6 +115,67 @@
     "real gap: --drag auto = null (not yet 30 measured trades) -> 146.05 unchanged. --drag 1 charges the variant only (-282.59 vs uncharged base) - not a fair duel; the variant trades fewer (128 vs 188 capped, 262 vs 264 uncapped), so a fair per-trade cost would favour it",
     "overlap: the old wait idea, rescued by limiting it to capped accounts, re-stacked with ext500 (already a candidate) and a first-move stake cut; same trades as the blocked ext400_capwait25 cut at another setting"
    ]
+  },
+  {
+   "id": "ext500_nosun",
+   "date": "2026-10-16",
+   "verdict": "doute",
+   "fr": "Sans plafond, le gain tient à 400 et 600 points et sur les deux moitiés, avec moins de trades. Mais le filtre de 500 points seul gagne plus : le dimanche n'ajoute rien. Le gain (+34 $) vaut à peu près une seule grosse perte évitée (−39 $). Avec plafond, −9 $. Mon inquiétude : sur 69 jours il perd 12 $, et sa première moitié 55 $.",
+   "en": "Without a cap, the gain holds at 400 and 600 points and in both halves, with fewer trades. But the 500-point filter alone earns more: skipping Sunday adds nothing. The gain (+$34) is about one big avoided loss (-$39). On an account with a daily cap, -$9. What worries me most: over 69 days it loses $12, and $55 in its first half.",
+   "checks": [
+    "dose (harness 2026-10-16, uncapped, base 17.11 / hole 82.16): ext400+Sun +17.13 (hole 55.07), ext500+Sun +34.14 (hole 60.21), ext600+Sun +30.10 (hole 76.27). No sign flip, all A - a plateau 500-600, weaker at 400",
+    "halves: idea h1 +25.92 / h2 +24.69 - both halves; ext400 h1 +8.48 / h2 +12.05; ext600 h1 +18.26 / h2 +14.13. Not carried by one half on the 42 days",
+    "isolation: ext500 alone +40.75 (h1 +29.01 / h2 +7.03, hole 64.96); Sunday alone +34.59 but h1 -3.09 / h2 +17.64 (B), keeps the -39.16 trade. Combined +34.14 < ext500 alone: Sunday is a passenger on the full period (it helps h2 only)",
+    "shapes: uncapped A (+34 harness, +46.51 battery); capped -9 $ per the chercheur's own pretest - not re-run here (harness has no cap without cap-rr/cap-wait); byref 'valere' row is identical to base, so the capped number is not independently confirmed",
+    "long window: 69 days -12.17, h1 -55.25 / h2 +50.30, hole +21.95 deeper -> a loss there, with halves of opposite sign = doubt",
+    "real trades: +32.34 on 54 kept of 91 (37 blocked), but real net still -3.97 and hole 22.85 deeper (per context) - mixed",
+    "concentration: idea's worst loss -19.12 vs base -39.16 (2026-09-24): the gain +34 is about the one avoided -39 loss; top winners 19.9-23.5 each, so one or two trades explain it",
+    "past: registry ext500 candidate B (same money, smaller hole); ext300 rejected (C); critiques 2026-10-11/12/14 judged ext400/ext500 stacks; first night of history (A), no twin, not archived",
+    "mechanism: after a 500-point hour, a new break is often the tail of a spike that snaps back - plausible. Sunday: thin weekend market - plausible, but the numbers don't show it adding anything once the 500-point filter is on",
+    "real gap: --drag auto = null (not yet 30 measured trades) -> 52.43 vs base 18.30, unchanged. --drag 1 charges the variant only; deployed rules at drag 1 = -454.87 vs idea -281.29 -> idea +173.6 under the same charge: it trades fewer (216 vs 264), so the gap favours it",
+    "overlap: ext500 is an old candidate; Sunday skip is a second old brake; storm (deployed) already stops trading in the wildest hours, so part of the 500-point filter may repeat it"
+   ]
+  },
+  {
+   "id": "ext500_nosun_capwait30",
+   "date": "2026-10-16",
+   "verdict": "bloque",
+   "fr": "La pause ne change rien ce soir : avec 15, 30, 60 minutes ou sans pause, mêmes trades, même argent, au centime près. Seule, elle ne bloque aucun trade. C'est l'idée « 500 points + pas le dimanche » sous un autre nom, déjà en doute ce matin (perte de 12 $ sur 69 jours). Pour changer d'avis : un rejeu où la pause change vraiment les trades.",
+   "en": "The pause changes nothing tonight: with 15, 30 or 60 minutes, or no pause at all, same trades, same money, to the cent. Alone, it blocks no trade. This is the '500 points + no Sunday' idea under another name, already doubted this morning (loses $12 over 69 days). To change my mind: a replay where the pause really changes the trades.",
+   "checks": [
+    "dose cap_wait (harness 2026-10-16, ext500 + no Sunday): 15 min, 30 min, 60 min and 0 min all give 52.43 net / hole 60.21 / 215 trades vs base 18.30 / 82.16 / 263 - identical to the cent. A dial that does nothing at any dose",
+    "isolation: pause alone (no 500-pt filter, Sunday traded) = 18.30, diff 0.00, 263 trades, verdict '=' - the pause blocks zero trades. Base is 18.30 with or without cap_wait, so the replay is not applying any daily cap to either side tonight (on 2026-10-14 cap_wait did bite: capped base 53.67). The 'capped account' shape this idea is built on is absent from tonight's evidence",
+    "shapes: battery byref base and capped rows identical (+46.51 / -15.45 both) - same finding: no separate capped result. The chercheur's '+47 capped, hole 27 instead of 65' is not reproduced by the engine tonight",
+    "halves: h1 +25.93 / h2 +24.69 - both halves, but that is ext500_nosun's gain, not the pause's",
+    "ext dose (with the pause): ext600 +30.10 (h1 +18.27 / h2 +14.13) - plateau 500-600; ext300 already rejected (C, -26). Same as the ext500_nosun critique",
+    "long window: 69 days -12.17, h1 -55.25 / h2 +50.30, hole +21.95 deeper -> a loss (same numbers as ext500_nosun)",
+    "real trades: +32.34 on 54 kept of 91 (37 blocked), real net still -3.97, hole 22.85 deeper - mixed",
+    "concentration: worst loss -39.16 (base) -> -19.12; the +34 gain is about that one avoided loss",
+    "past: registry 'wait 30/60 after every trade' rejected (C); ext500 candidate B; Sunday observation flips sign by half (-26 / +41); ext500_nosun got 'doute' this morning; critique 2026-10-14 found the capped pause real then - but it does not act tonight",
+    "mechanism: a pause on capped accounts could cut quick re-entries into chop (plausible, per 2026-10-14) - but tonight there is no cap in the replay, so nothing is being tested",
+    "real gap: --drag auto = null (not yet 30 measured trades) -> unchanged. --drag 1 charges the variant only (-279.91 vs uncharged 18.30) - not a fair duel; variant trades 48 fewer, so a fair per-trade cost would favour it",
+    "overlap: 100% - same trades, same money as ext500_nosun; a twin would duplicate that one and carry a pause label with no effect behind it"
+   ]
+  },
+  {
+   "id": "nosun",
+   "date": "2026-10-16",
+   "verdict": "bloque",
+   "fr": "Les trades du dimanche eux-mêmes ont gagné environ 4 $ en 42 jours : les enlever ne peut pas rapporter 27 $. Le gain vient d'un effet en cascade sur les autres jours. Sans le samedi non plus, l'idée perd 28 $. Sur 69 jours, la première moitié perd 26 $. Il était « un peu mieux » onze nuits, « mieux » seulement ce soir. Pour changer d'avis : des dimanches qui perdent vraiment, et un gain sur les deux moitiés des 69 jours.",
+   "en": "The Sunday trades themselves earned about $4 in 42 days: removing them cannot be worth $27. The gain is a knock-on effect on other days. Skipping Saturday too, the idea loses $28. Over 69 days, the first half loses $26. It was 'a little better' for eleven nights and 'better on both halves' only tonight. To change my mind: Sundays that really lose, and a gain in both halves of the 69 days.",
+   "checks": [
+    "engine runs: harness calls were refused permission in this session - nothing re-run tonight; everything below is from lab/critic_context.json, the registry and this morning's critiques",
+    "mechanism: base curve on Sunday-dated days: 09-06 -2.20, 09-13 +2.08, 09-20/09-27/10-04 0, 10-11 +3.96 = about +3.84. Skipping Sunday removes a small winner, yet the idea shows +26.67 with 47 fewer trades (260 -> 213, 75 blocked). The gain is path (catch-up chains / debt gate reshuffled on other days), not 'Sunday is bad'. No real cause given",
+    "dose (neighbour): the weekday dial has no slope; nearest neighbour is Sat+Sun ('weekend'), rejected C at -28 -> sign flips one step over. Monday not tested",
+    "halves: battery tonight +14.76 first / +4.13 second. Harness this morning (ext500_nosun critique, 'Sunday alone'): +34.59 but h1 -3.09 / h2 +17.64. Which half carries it depends on the run -> fragile",
+    "shapes: byref base and capped rows identical (+26.67 / -3.37) - no independent capped result",
+    "long window: 69 days +18.25 but h1 -26.22 / h2 +43.46, hole +4.75 deeper -> a loss in one half = doubt. Registry 'sunday' observation said the same: -26 / +41",
+    "real trades: +7.79 on 61 kept of 91 (29 blocked), but real net still -28.52 and hole 12.66 deeper - weak",
+    "concentration: +26.67 is about one big trade in the base ledger (-22.32, +19.94, +17.22 exist); the harness 'Sunday alone' run kept the -39.16 trade, so the gain is not an avoided disaster either",
+    "past: history B x11 with idea net sliding 192.46 -> 64.07 and hole 27.91 -> 68.78, A only tonight; registry 'sunday' observation (split halves), 'weekend' rejected C; ext500_nosun doubted this morning showed Sunday adds nothing on top of ext500; no twin, not archived",
+    "real gap: not run (permission). It trades 47 fewer, so a per-trade cost would favour it - cannot rescue a gain with no cause behind it",
+    "overlap: same brake as the 'sunday' observation and the 'weekend' rejection, and the passenger in ext500_nosun / ext500_nosun_capwait30"
+   ]
   }
  ]
 }

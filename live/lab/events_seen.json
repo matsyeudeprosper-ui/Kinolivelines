@@ -24,7 +24,9 @@
   "day_count_size",
   "pile_field_dayn",
   "adds_in_scrutiny",
-  "cont_wait"
+  "cont_wait",
+  "real_pool_split",
+  "battery_live_base"
  ],
  "asks_answered": [
   "ask_1790670647",

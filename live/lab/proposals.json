@@ -2924,7 +2924,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-14",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 84.2,
     "worst": 49.7,
@@ -2932,7 +2932,9 @@
     "h2": 19.7,
     "base_net": 50.84,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "A",
+   "done": "2026-10-16"
   },
   {
    "id": "ext500_nosun_capwait30",
@@ -2954,7 +2956,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-14",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 84.2,
     "worst": 49.7,
@@ -2962,7 +2964,9 @@
     "h2": 19.7,
     "base_net": 50.84,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "A",
+   "done": "2026-10-16"
   },
   {
    "id": "em05n2_capwait30",
@@ -2982,7 +2986,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-14",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 37.8,
     "worst": 40.6,
@@ -2990,7 +2994,9 @@
     "h2": 8.0,
     "base_net": 50.84,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-16"
   },
   {
    "id": "em075n3",
@@ -3009,7 +3015,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-14",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 46.3,
     "worst": 52.0,
@@ -3017,7 +3023,9 @@
     "h2": 2.1,
     "base_net": 50.84,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-16"
   },
   {
    "id": "fls06_fh075_capwait30",
@@ -3037,7 +3045,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-14",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 39.7,
     "worst": 54.1,
@@ -3045,7 +3053,9 @@
     "h2": 8.8,
     "base_net": 50.84,
     "base_worst": 64.92
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-16"
   },
   {
    "id": "ext500_nosun_wait10",
@@ -3067,7 +3077,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-15",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 101.75,
     "worst": 40.24,
@@ -3092,7 +3102,9 @@
      "diff_net": 45.07,
      "diff_worst": -30.54
     }
-   }
+   },
+   "verdict": "A",
+   "done": "2026-10-16"
   },
   {
    "id": "em075n3_wait10",
@@ -3112,7 +3124,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-15",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 24.6,
     "worst": 109.81,
@@ -3137,7 +3149,9 @@
      "diff_net": 33.64,
      "diff_worst": -25.51
     }
-   }
+   },
+   "verdict": "C",
+   "done": "2026-10-16"
   },
   {
    "id": "fls05_wait10",
@@ -3156,7 +3170,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-15",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 29.15,
     "worst": 117.05,
@@ -3180,6 +3194,157 @@
      "trades": 71,
      "diff_net": 37.71,
      "diff_worst": -17.7
+    }
+   },
+   "verdict": "C",
+   "done": "2026-10-16"
+  },
+  {
+   "id": "pb_ext500",
+   "family": "meteo",
+   "title_fr": "Garder le filtre des comptes et éviter les heures qui ont trop couru",
+   "title_en": "Keep the accounts' filter and skip hours that already ran too far",
+   "why_fr": "Les comptes réels refusent déjà les entrées à contre-sens du dernier recul du prix. Avec ce filtre, ne pas entrer après une heure de plus de 500 points : 115 $ au lieu de 42 sur 42 jours, trou de 15 au lieu de 52, mieux sur les deux moitiés, et aussi à 400 et 600 points. Prudence : une seule perte évitée de 39 $ en fait la moitié.",
+   "why_en": "The real accounts already refuse entries against the price's last pullback. With that filter, no entry after an hour of more than 500 points: $115 instead of $42 over 42 days, hole 15 instead of 52, better on both halves, and at 400 and 600 points too. Caution: one avoided $39 loss is half of it.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 500
+   },
+   "by": "chercheur",
+   "date": "2026-10-16",
+   "status": "pending",
+   "pretest": {
+    "net": 115.16,
+    "worst": 15.18,
+    "h1": 44.36,
+    "h2": 55.51,
+    "base_net": 41.68,
+    "base_worst": 51.81,
+    "base_h1": 4.11,
+    "base_h2": 32.84,
+    "verdict": "A",
+    "trades": 58,
+    "at": "2026-10-16 chercheur",
+    "base_label": "robot avec le filtre des comptes / robot with the accounts' filter",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 73.49,
+     "diff_worst": -31.5
+    },
+    "real": {
+     "n_real": 91,
+     "trades": 13,
+     "diff_net": 21.93
+    }
+   }
+  },
+  {
+   "id": "pb_choch_ext500",
+   "family": "meteo",
+   "title_fr": "Un filtre plus souple, et éviter les heures qui ont trop couru",
+   "title_en": "A looser filter, and skip hours that already ran too far",
+   "why_fr": "Hors des sentiers : le filtre du test garde trois fois moins de trades que les vrais comptes. Avec une version plus souple, qui trade presque au rythme réel, éviter les heures de plus de 500 points rapporte encore : 123 $ au lieu de 49, mieux sur les deux moitiés (+36 et +37), trou de 57 au lieu de 94.",
+   "why_en": "Out of the box: the test's filter keeps three times fewer trades than the real accounts. With a looser version that trades almost at the real pace, skipping hours of more than 500 points still pays: $123 instead of $49, better on both halves (+36 and +37), hole 57 instead of 94.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500
+   },
+   "by": "chercheur",
+   "date": "2026-10-16",
+   "status": "pending",
+   "pretest": {
+    "net": 122.83,
+    "worst": 57.38,
+    "h1": 6.79,
+    "h2": 97.49,
+    "base_net": 48.5,
+    "base_worst": 93.71,
+    "base_h1": -29.54,
+    "base_h2": 60.05,
+    "verdict": "A",
+    "trades": 165,
+    "at": "2026-10-16 chercheur",
+    "base_label": "robot avec le filtre souple / robot with the looser filter"
+   }
+  },
+  {
+   "id": "pb_rr10_ext500",
+   "family": "cible",
+   "title_fr": "Viser autant qu'on risque, avec le filtre, sans les heures trop rapides",
+   "title_en": "Aim for as much as we risk, with the filter, skipping hours that ran too far",
+   "why_fr": "Un compte vise maintenant autant que ce qu'il risque. Pour lui, avec le filtre, éviter les heures de plus de 500 points : 116 $ au lieu de 31 sur 42 jours, mieux sur les deux moitiés (+23 et +31), trou de 28 au lieu de 50. Viser plus haut seul, sans cela, perd 11 $.",
+   "why_en": "One account now aims for as much as it risks. For it, with the filter, skipping hours of more than 500 points: $116 instead of $31 over 42 days, better on both halves (+23 and +31), hole 28 instead of 50. Aiming higher alone, without it, loses $11.",
+   "cfg": {
+    "rr": 1.0,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 500
+   },
+   "by": "chercheur",
+   "date": "2026-10-16",
+   "status": "pending",
+   "pretest": {
+    "net": 115.66,
+    "worst": 27.79,
+    "h1": 36.59,
+    "h2": 42.62,
+    "base_net": 31.08,
+    "base_worst": 50.4,
+    "base_h1": 13.97,
+    "base_h2": 11.31,
+    "verdict": "A",
+    "trades": 53,
+    "at": "2026-10-16 chercheur",
+    "base_label": "robot avec le filtre, visant 1 fois le risque / robot with the filter, aiming 1x the risk"
+   }
+  },
+  {
+   "id": "pb_filter",
+   "family": "structure",
+   "title_fr": "Suivre chaque nuit le filtre des comptes réels dans le test",
+   "title_en": "Follow the real accounts' filter in the test every night",
+   "why_fr": "Sur le même compte et la même mise, les 31 trades que le filtre refuse ont perdu (48 % gagnés, -23 $ pour la plus petite mise, les deux moitiés en perte) ; les 19 qu'il garde ont gagné (68 %, +9 $, les deux moitiés positives). Le test le voit aussi : +25 $, trou de 52 au lieu de 82.",
+   "why_en": "On the same account at the same stake, the 31 trades the filter refuses lost (48 % won, -$23 at the smallest stake, both halves down); the 19 it keeps won (68 %, +$9, both halves up). The test sees it too: +$25, hole 52 instead of 82.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend"
+   },
+   "by": "chercheur",
+   "date": "2026-10-16",
+   "status": "pending",
+   "pretest": {
+    "net": 41.68,
+    "worst": 51.81,
+    "h1": 4.11,
+    "h2": 32.84,
+    "base_net": 16.67,
+    "base_worst": 82.16,
+    "base_h1": 36.9,
+    "base_h2": -13.02,
+    "verdict": "B",
+    "trades": 55,
+    "at": "2026-10-16 chercheur",
+    "real": {
+     "n_real": 91,
+     "trades": 15
     }
    }
   }
