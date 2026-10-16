@@ -44,4 +44,12 @@ b = BP.find_btc(syms)
 good = b is not None and b.name == "BTCUSD.r"
 fails += not good
 print(("ok  " if good else "FAIL") + " find_btc skips disabled / EUR / ETH -> %s" % (b.name if b else None))
+# FOREX.com (pilot 2026-10-16): the symbol is just "Bitcoin", quoted in USD; "Bitcoin Cash" must not win
+syms = [S(name="Bitcoin Cash", description="Bitcoin Cash", path="CFD\\Cryptocurrencies\\Bitcoin Cash", trade_mode=4, currency_profit="USD"),
+        S(name="Ethereum", description="Ethereum", path="CFD\\Cryptocurrencies\\Ethereum", trade_mode=4, currency_profit="USD"),
+        S(name="Bitcoin", description="Bitcoin", path="CFD\\Cryptocurrencies\\Bitcoin", trade_mode=4, currency_profit="USD")]
+b = BP.find_btc(syms)
+good = b is not None and b.name == "Bitcoin"
+fails += not good
+print(("ok  " if good else "FAIL") + " find_btc finds FOREX.com's 'Bitcoin' -> %s" % (b.name if b else None))
 sys.exit(1 if fails else 0)

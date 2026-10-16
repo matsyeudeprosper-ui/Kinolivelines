@@ -27,11 +27,14 @@ def find_btc(symbols):
         path = str(getattr(s, "path", "") or "").upper()
         if int(getattr(s, "trade_mode", 0) or 0) == 0:
             continue
+        ccy = str(getattr(s, "currency_profit", "") or "").upper()
         sc = 0
         if name.startswith("BTCUSD") or name.startswith("XBTUSD"):
             sc += 3
         if "BITCOIN" in desc and ("DOLLAR" in desc or "USD" in desc):
             sc += 2
+        if name == "BITCOIN" and ccy == "USD":          # FOREX.com (pilot 2026-10-16): symbol "Bitcoin", quoted in USD
+            sc += 3
         if "CRYPTO" in path:
             sc += 1
         if "BTC" in name and ("EUR" in name or "JPY" in name or "GBP" in name or "ETH" in name):
