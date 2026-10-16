@@ -17110,6 +17110,12 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
         note = (f"<div class=\"note\"><b>Votre demande {lab} attend son code.</b> Entrez-le d&egrave;s que le Owl vous l&#8217;envoie, "
                 "ou choisissez une autre formule.</div>")
 
+    try:
+        import broker_book as _BBk
+        _bsrv = "".join("<option value=\"%s\">" % _h.escape(str(v.get("server"))) for v in _BBk.book().values() if v.get("server"))
+    except Exception:
+        _bsrv = ""
+
     def info(txt):
         """A little (i): tap it, a plain sentence appears."""
         return f"<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"{_h.escape(txt, quote=True)}\" aria-label=\"Explication\">i</button>"
@@ -17215,7 +17221,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             ".h{font-size:.79rem;color:var(--tx3);line-height:1.5;margin-top:7px}"
             "#bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(3px);z-index:5}"
             "#md{display:none;position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,#131b27 0%,#0e141d 100%);border-radius:26px 26px 0 0;border-top:1px solid #243041;"
-            "padding:8px 20px 28px;z-index:6;max-height:94vh;overflow:auto;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:mdup .34s cubic-bezier(.2,.8,.2,1)}"
+            "padding:8px 20px 28px;z-index:6;max-height:88vh;max-height:calc(100dvh - 56px);overflow:auto;box-shadow:0 -24px 60px rgba(0,0,0,.55);animation:mdup .34s cubic-bezier(.2,.8,.2,1);overscroll-behavior:contain}"
             "@keyframes mdup{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}"
             "#md .glow{position:absolute;left:50%;top:-90px;width:380px;height:240px;transform:translateX(-50%);border-radius:50%;pointer-events:none;"
             "background:radial-gradient(closest-side,rgba(59,130,246,.26),transparent)}"
@@ -17290,6 +17296,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "<input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
             "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
             "<div class=\"h\" id=\"srvv\" style=\"margin-top:4px;color:#c6d3df\"></div></div></div></div>"
+            "<div class=\"fg\" id=\"brokg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"7\" rx=\"2\"/><rect x=\"3\" y=\"13\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M7 7.5h.01M7 16.5h.01\"/></svg></span><div class=\"fb\"><label for=\"broker\">Votre courtier <span style=\"text-transform:none;letter-spacing:0;font-weight:500\">(facultatif)</span>"
+            "<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"Pour afficher le graphique et les niveaux aux prix de votre courtier quand nous les avons. Sans r&eacute;ponse : les prix Exness, avec la mention.\" aria-label=\"Explication\">i</button></label>"
+            f"<input id=\"broker\" name=\"broker\" maxlength=\"48\" placeholder=\"ex. Exness, FOREX.com\" list=\"bsrv\"><datalist id=\"bsrv\">{_bsrv}</datalist></div></div></div>"
             "<div class=\"fg\" id=\"codeg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"14\" r=\"4\"/><path d=\"M11 11l9-9M16 6l3 3M13 9l3 3\"/></svg></span><div class=\"fb\"><label for=\"code\">Code d&#8217;activation <button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.\" aria-label=\"Explication\">i</button></label>"
             "<input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\" style=\"text-align:left;font-size:1.15rem;letter-spacing:.28em\">"
             "</div></div></div>"
@@ -17322,6 +17331,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "var _mh=document.getElementById('mh');if(_mh){_mh.textContent=fam?'Le robot passe des ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Vos identifiants restent sur notre serveur.';}"
             "document.getElementById('mt5').style.display=fam?'':'none';"
             "var _cg=document.getElementById('codeg');if(_cg){_cg.style.display=fam?'none':'';}"
+            "var _bg2=document.getElementById('brokg');if(_bg2){_bg2.style.display=fam?'none':'';}"
             "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':'Activer mon compte';}"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
             "if(b){b.style.display=fam?'none':'';o.style.display=fam?'none':'';ph.style.display=fam?'none':'';}"
@@ -17693,6 +17703,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     pwd = (form.get("password", [""])[0] or "").strip()[:64]
     server = (form.get("server", [""])[0] or "").strip()[:48]
     tg = (form.get("telegram", [""])[0] or "").strip()[:40]
+    broker_name = (form.get("broker", [""])[0] or "").strip()[:48]
     buy = (form.get("buy", [""])[0] or "").strip()
     action = (form.get("action", [""])[0] or "").strip()
     pkg_chosen = (form.get("pkg", [""])[0] or "").strip()
@@ -17789,7 +17800,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         nm = name or (raw_login if _re.search(r"[A-Za-z]", raw_login) else "")
         if not nm:
             return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
-        return _activate_app_only(nm, pwd, tg, pkg, days, code, raw_login)
+        return _activate_app_only(nm, pwd, tg, pkg, days, code, raw_login, broker=broker_name)
     us = users()
     known = next((x for x in us if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
     if known is not None:
@@ -17925,7 +17936,7 @@ def _tg_link_html(uid):
         return ""
 
 
-def _activate_app_only(name, pwd, tg, pkg, days, code, ident=""):
+def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker=""):
     """A Signal / Strategie account from a code: identifiant + password,
     the package for `days`, the public demo's view under their name."""
     try:
@@ -17937,6 +17948,8 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident=""):
         return _join_result("&#128274; Cet identifiant est d&eacute;j&agrave; pris",
                             "<p>Si c&#8217;est le v&ocirc;tre, connectez-vous avec son mot de passe ; sinon choisissez-en un autre.</p><p><a href=\"/\">&larr; Retour</a></p>")
     rec["via"] = "code"
+    if broker:
+        rec["mt5_server"] = broker        # 2026-10-16: the broker's NAME only - the chart reads that broker's feed when we have one
     allu.append(rec)
     json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
