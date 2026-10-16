@@ -253,8 +253,13 @@ def random_control(rid, sym, uid, nm):
     try:
         if os.path.exists(out):
             os.remove(out)                       # an old verdict must never stand for a new test
-        subprocess.run([sys.executable, os.path.join(HERE, "random_control_market.py"), sym, rid, str(CONTROL_SEEDS)],
-                       cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=4 * 3600,
+        # 2026-10-16: on a tick pack one seed replays every broker tick (14 min on Gold, ~1 h on Nasdaq) - the control
+        # runs as 4 processes of 5 seeds (ctrl_split.py); bar packs keep the 40 sequential seeds
+        import tick_pack as _TP
+        _tick = _TP.tick_ready(sym)
+        subprocess.run([sys.executable, os.path.join(HERE, "ctrl_split.py" if _tick else "random_control_market.py"), sym, rid,
+                        str(20 if _tick else CONTROL_SEEDS)] + (["4"] if _tick else []),
+                       cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=12 * 3600,
                        creationflags=0x08000000)
         j = json.load(open(out, encoding="utf-8"))
         pc = float(j["percentile"])
