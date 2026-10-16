@@ -63,7 +63,7 @@ def warm_bars(src, first_t, n):
         mt5.shutdown()
 
 
-def build(sym, log=print):
+def build(sym, log=print, workers=MP.WORKERS):
     import tick_engine as E
     import tick_engine_pbgate_sticky as K
     import tick_engine_matrix as TMX
@@ -105,7 +105,7 @@ def build(sym, log=print):
     cfg0 = H.cfg_strict(dict(H.package_cfg("base", {"balance": 200.0}), drag=0.0, limits_live=1))
     opps, _b = E.streams(cfg0, Dk)
     t0 = time.time()
-    states = MP.parallel_states(d, [o["i"] for o in opps], WIN, log=log)
+    states = MP.parallel_states(d, [o["i"] for o in opps], WIN, workers=workers, log=log)
     wm = json.load(open(os.path.join(d, "warm.json")))
     pickle.dump({"fingerprint": K.fingerprint(wm), "bars_sha": meta["sha256"], "n_bars": len(Dk), "warmup_sha": wm["sha256"], "states": states},
                 open(os.path.join(d, "pb_cache.pkl"), "wb"))
@@ -126,5 +126,7 @@ def real_ticks(meta, d):
 
 
 if __name__ == "__main__":
-    for s in ARGS[1:]:
-        build(s)
+    # --workers N (2026-10-16: 4 processes ran the server short of memory; 3 by default from the command line)
+    W = int(ARGS[ARGS.index("--workers") + 1]) if "--workers" in ARGS else 3
+    for s in [a for i, a in enumerate(ARGS[1:], 1) if a != "--workers" and ARGS[i - 1] != "--workers"]:
+        build(s, workers=W)
