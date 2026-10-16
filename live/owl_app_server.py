@@ -16710,6 +16710,27 @@ def _join_result(title, body_html):
             f"<h2>{title}</h2>{body_html}</div></body></html>")
 
 
+def _broker_line(server):
+    """{"known", "zone", "line"}: one plain sentence from the broker book for this server name"""
+    import broker_book as _BB
+    if not server:
+        return {"known": False, "zone": "", "line": ""}
+    if "exness" in server.lower():
+        return {"known": True, "zone": "green", "line": "Exness : le courtier du robot. Tout est pr\u00eat."}
+    _BB.sync_nest_data()
+    pg = _BB.lookup(server)
+    if not pg:
+        return {"known": False, "zone": "", "line": "Courtier pas encore dans notre carnet : nous lirons votre compte en moins d\u2019une minute apr\u00e8s \u00ab Activer \u00bb."}
+    v = pg.get("verdict") or {}
+    fr = lambda x: ("%.2f" % float(x)).replace(".", ",")
+    nm = _BB.key_of(server)
+    cost = ("Co\u00fbt par trade %s $ (Exness %s $). " % (fr(v.get("spread")), fr(v.get("exness_spread") or _BB.EXNESS_SPREAD))) if v.get("spread") is not None else ""
+    z = v.get("zone") or "unknown"
+    tail = {"green": "\u00c7a marche ici.", "orange": "\u00c7a marche, mais moins qu\u2019\u00e0 Exness.",
+            "red": "Rien ne gagne chez ce courtier.", "unknown": "V\u00e9rification compl\u00e8te apr\u00e8s \u00ab Activer \u00bb."}[z]
+    return {"known": True, "zone": z, "line": cost + tail}
+
+
 def _probe_wait_page(jid):
     """2026-10-16 (owner): a member from another broker waits under a minute while the probe reads the account"""
     return _join_result("&#128269; Un instant",
@@ -16739,8 +16760,13 @@ def _probe_card(st, jid):
             rows += f"<p>Bitcoin trouv&eacute; : <b>{_h.escape(str(b['name']))}</b></p>"
         if v.get("spread") is not None:
             rows += f"<p>Co&ucirc;t par trade chez vous : <b>{fr(v['spread'])} $</b> &middot; chez Exness : {fr(v.get('exness_spread'))} $</p>"
+    _code = ((st.get("form") or {}).get("code") or [""])[0].strip().upper()
     cont = ("<form method=\"POST\" action=\"/activate\"><input type=\"hidden\" name=\"action\" value=\"continue\">"
             f"<input type=\"hidden\" name=\"probe\" value=\"{_h.escape(jid)}\">"
+            "<label for=\"ccode\" style=\"display:block;text-align:left;margin-top:14px;font-size:.8rem;color:#9fb0c3;letter-spacing:.04em\">CODE D&#8217;ACTIVATION</label>"
+            f"<input id=\"ccode\" name=\"code\" maxlength=\"6\" value=\"{_h.escape(_code)}\" placeholder=\"ABC123\" autocapitalize=\"characters\" "
+            "style=\"width:100%;box-sizing:border-box;padding:12px;border-radius:14px;border:1px solid #1f2a38;background:#0b0f14;color:#e8eef4;font-size:1.1rem;text-align:center;letter-spacing:.3em\">"
+            "<div style=\"font-size:.8rem;color:#9fb0c3;text-align:left;margin-top:4px\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram. Pas de code ? &Eacute;crivez-lui : votre v&eacute;rification est gard&eacute;e une heure.</div>"
             "<button class=\"go\" style=\"margin-top:14px;width:100%;padding:12px;border:0;border-radius:14px;background:#8fc6ff;color:#0b0f14;font-weight:700;font-size:1rem\">Continuer : ouvrir mon compte</button></form>")
     back = "<p style=\"margin-top:14px\"><a href=\"/\">&larr; Retour</a></p>"
     if zone == "green":
@@ -17122,7 +17148,8 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "<div class=\"h\" id=\"pwh\">Notez-le quelque part. Vous pourrez aussi le retrouver par Telegram.</div>"
             "<div id=\"mt5\"><label for=\"server\">Serveur MT5</label><input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
             "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
-            "<div class=\"h\">C&#8217;est &eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div></div>"
+            "<div class=\"h\">C&#8217;est &eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.</div>"
+            "<div class=\"h\" id=\"srvv\" style=\"margin-top:6px;color:#c6d3df\"></div></div>"
             "<label for=\"code\">Code d&#8217;activation</label>"
             "<input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\">"
             "<div class=\"h\" id=\"ch\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.</div>"
@@ -17135,6 +17162,10 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             + "<div class=\"h\" id=\"mh\" style=\"margin-top:14px\"></div></form>"
             "<button type=\"button\" class=\"go sec\" onclick=\"closeM()\" style=\"margin-top:10px\">Annuler</button></div>"
             "<script>var P='';" + FN_JS +
+            "(function(){var s=document.getElementById('server'),o=document.getElementById('srvv'),tm=null;if(!s||!o)return;"
+            "function go(){var v=s.value.trim();if(v.length<4){o.textContent='';return;}"
+            "fetch('/brokerinfo?server='+encodeURIComponent(v),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){o.textContent=d.line||'';o.style.color=d.zone==='red'?'#ff8a8a':(d.zone==='green'?'#8fe3b0':'#c6d3df');}).catch(function(){});}"
+            "s.addEventListener('input',function(){clearTimeout(tm);tm=setTimeout(go,500);});s.addEventListener('change',go);})();"
             "function tip(b){var t=document.getElementById('tipbx');document.getElementById('tipt').innerHTML=b.getAttribute('data-tip');t.style.display='block';}"
             "function pick(k){fn('choose');P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
@@ -17499,7 +17530,11 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         if not _st or _st.get("state") != "done" or not _st.get("profile") or (_st.get("verdict") or {}).get("zone") == "red":
             return _join_result("&#9203; V&eacute;rification introuvable",
                                 "<p>Elle a expir&eacute; ou n&#8217;a pas abouti. Recommencez l&#8217;inscription : c&#8217;est rapide.</p><p><a href=\"/\">&larr; Retour</a></p>")
-        form = _st.get("form") or {}; probed = _st
+        _posted = form
+        form = dict(_st.get("form") or {}); probed = _st
+        for _k in ("code", "name"):                       # typed on the verdict card -> wins over the saved form
+            if (_posted.get(_k, [""])[0] or "").strip():
+                form[_k] = [_posted[_k][0]]
     code = (form.get("code", [""])[0] or "").strip().upper()[:12]
     name = (form.get("name", [""])[0] or "").strip()[:30]
     raw_login = (form.get("login", [""])[0] or "").strip()[:40]
@@ -17535,6 +17570,16 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     # the offers modal names the MT5 account in its own field
     if not login and form.get("mt5_login", [""])[0]:
         login = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or "")[:12]
+    if (pkg_chosen == "family" and probed is None and action in ("activate", "") and login and pwd and server
+            and "exness" not in server.lower()):
+        # 2026-10-16 (owner): the broker is read BEFORE the code is looked at - nobody needs a code to hear "no"
+        if rate_limited(("probe", login), limit=4):
+            return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
+        rate_fail(("probe", login))
+        import broker_book as _BB
+        _jid = secrets.token_hex(6)
+        _BB.probe_start(_jid, login, pwd, server, form)
+        return _probe_wait_page(_jid)
     if rate_limited(("activate", code or login or "?"), limit=8):
         return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
     if not pwd or not (code or buy in ("manual", "strategy")):
@@ -19678,6 +19723,14 @@ class H(BaseHTTPRequestHandler):
             if "?" in self.path and "v=" in self.path.split("?", 1)[1] and not admin_cookie_ok(self.headers) and not usage_local(self.headers):
                 usage_count("open_out")
             self._send(APP_PAGE, "text/html; charset=utf-8")
+            return
+        if len(parts) == 1 and parts[0] == "brokerinfo":
+            # 2026-10-16: the broker book answers under the server field, before any password is typed
+            import urllib.parse as _upb
+            import broker_book as _BB
+            _q = _upb.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+            _srv = (_q.get("server", [""])[0] or "").strip()[:48]
+            self._send(json.dumps(_broker_line(_srv), ensure_ascii=False), "application/json")
             return
         if len(parts) == 1 and parts[0] == "probe":
             # 2026-10-16: the sign-up waiting page asks whether the broker probe is done; the card comes back as HTML
