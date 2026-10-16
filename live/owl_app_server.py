@@ -7658,7 +7658,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  function shownGroup(g){const B=g._box;if(!B)return false;
   return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
  function paint(){const L=$('csl');if(!L)return;
-  const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Hello|Bonsoir)\\s*/i,'').trim();
+  const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Bonsoir|Bon apr\\u00e8s-midi|Hello|Good (?:morning|afternoon|evening))\\s*/i,'').trim();
    const plan=(($('plan-t')||{}).textContent||'').trim();
    const html='<div class="cshd"><div class="av">'+(nm?nm[0].toUpperCase():'🦉')+'</div><div style="min-width:0"><b>'+(nm||T('Mon compte','My account'))+'</b><small>'+(plan||'OwlNest')+'</small></div></div>';
    if(h._l!==html){h._l=html;h.innerHTML=html;}}
@@ -9055,7 +9055,9 @@ function renewBanner(d){
  const b=document.getElementById('renew-b');
  if(best.k==='family'){document.getElementById('renew-s').textContent=en?'Settle with the Owl, then enter the code he sends you.':'R\u00e9glez le Owl, puis entrez le code qu\u2019il vous envoie.';
   b.textContent=en?'Enter the code':'Entrer le code';b.onclick=()=>{window._showAct=true;const c=document.getElementById('actcard');if(c){c.style.display='block';c.scrollIntoView({block:'center'});const i=document.getElementById('actcode');if(i)i.focus();}};}
- else{document.getElementById('renew-s').textContent=en?'Renewing adds 30 days from the current end \u2014 no interruption.':'Renouveler ajoute 30 jours \u00e0 la fin actuelle \u2014 sans coupure.';
+ else{document.getElementById('renew-s').textContent=best.u<=now
+   ?(en?'Renewing brings the signals back right away, for 30 days.':'Renouveler relance vos signaux tout de suite, pour 30 jours.')
+   :(en?'Renewing adds 30 days from the current end \u2014 no interruption.':'Renouveler ajoute 30 jours \u00e0 la fin actuelle \u2014 sans coupure.');
   b.textContent=en?'Renew':'Renouveler';b.onclick=()=>buyPkg(best.k);}
  el.style.display='block';
 }
