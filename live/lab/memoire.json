@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-15T16:30:30Z",
+ "updated": "2026-10-16T04:00:14Z",
  "hypotheses": [
   {
    "id": "rested_cont",
@@ -22,7 +22,8 @@
    "status": "nouveau",
    "evidence": [
     "2026-10-15: real BOS gap 15-180 min 27 tr 74% +65.53 (count halves +35.37/+30.16); BOS gap<15 24 tr 46% -26.98 (h -14.17/-12.81). Before 10-10 +34.27 (15 tr) / -16.09 (16); since 10-10 +31.26 (12) / -10.89 (8): survives the pb gate. Gradient: 0-5 min 5 tr -7.18, 5-10 7 tr -12.91, 10-15 10 tr +0.95, 15-30 7 tr 86%, 30-60 13 tr 69%, 60-180 7 tr 71%. Day 14 tr 57% +13.01 vs quick day 17 tr 35% -30.23; night 13 tr 92%. BOS gap>=180 6 tr 33% -20.71. Top 15 wins per 0.01 lot: 13 BOS, dist 300-580, held 100-500 min. Battery 10-14 views: wait10 uncapped C -22.85 but real +28.21 on 88; wait20 real +22.43, wait30 +18.47 - test and real disagree on the pause. Pile cont_rested opened; requested cont_wait.",
-    "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day."
+    "2026-10-15 12:00 veille: --by gap (all kinds) 135 tr: <15 min 35 tr 37% -47.06 (h 37/38); 15-30 14 tr 64% +4.21; 30-60 30 tr 63% +37.45 PF 1.79 (h 62/65); 1-3 h 24 tr 50% +3.32; >3 h 31 tr 48% -38.16 PF 0.51 (h 47/50 agree). The rest helps only up to ~1 h; a long pause (first trade of a session) loses too - an inverted U, not 'more rest is better'. Overlaps day_count's first trade (1st 48 tr 62% but net +5)? Check >3 h by kind/day.",
+    "2026-10-16 04:00 veille: cont by hour: early night 02-06 h 15 tr 14 won +58.81 vs afternoon 13-16 h 10 tr 2 won -56.13 (peu). The day/night split of cont may explain more than the pause; check at night whether cont_rested holds by day only."
    ],
    "next": "Pile cont_rested to 30; cont_wait when built (10-15 min, uncapped); check engine trace by gap (does the test's quick BOS win?)."
   },
@@ -2317,6 +2318,18 @@
     "--pile flip_hot"
    ],
    "saw": "141 tr. Two day flips cancel: the nervous sell lost as flip_day/flip_hot predict; the buy after it won against them. flip_day 53 tr 40% vs 57% -55.37 PF 0.52 (h 32/46) - flat since 12:00; 1.0-1.3 band 13 tr 31% -21.05. flip_hot 38 tr 37% -53.14 (h 36/38). No ask, no twins, no labo, no harness run, no pile, no proposal: nothing new to test."
+  },
+  {
+   "t": "2026-10-16T04:00:14Z",
+   "night": "veille",
+   "looked": [
+    "1 new: BOS SELL +1.52 (closed 03:41, pace 0.848, night)",
+    "--by gap",
+    "--pile cont_rested by nerv/dur",
+    "--pile late_night",
+    "--pile cont by hour"
+   ],
+   "saw": "Night cont won, as the day/night contrast predicts. cont 62 tr 58% +7.11 PF 1.05; by hour 02-06 h 15 tr 14 won +58.81 vs 13-16 h 10 tr 2 won -56.13 (peu, both). cont_rested 28 tr 71% +59.50 (h 83/62), 2 short of 30. Gap view unchanged (<15 min 36 tr -50.82; 30-60 +37.45; >3 h 33 tr -53.81). late_night 24 tr 38% -24.51 (not this trade). No ask, no twins, no labo, no harness run, no pile, no proposal."
   }
  ],
  "lessons": [
