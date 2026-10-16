@@ -34,3 +34,17 @@ captured at phone size with `review/phone_shot.mjs`, then removed.
   "preparing" message covers it.
 - The offers page cards (older design) next to the new sheet; the landing is the 10-11 overhaul.
 - Owner-side: the code still comes from the owner by hand for Automatique (family only).
+
+## Retention review (same day)
+What keeps a member: pushes (Bilan du jour per member 18:30-23:00 UTC, "Votre semaine" on Monday with a share image,
+the robot's signals and trade events; the owner alone gets the morning and the Monday digest), the inbox, the
+subscription reminders 5 and 2 days before the end and a notice at expiry (Automatique: the robot is paused by
+expiry and the home shows "Renouveler l'acces" with the code field; Signal/Strategie: "Abonnement termine", renew
+by code or crypto in Reglages > Abonnement), the first-visit tour, the journey in Reglages.
+
+Fixed: the home's renew card vanished the moment a package expired (it only counted future ends) - it now stays
+up to 45 days with the right words ("Signal a expire il y a 3 jours - Renouveler relance vos signaux tout de
+suite"; "Automatique a expire il y a 10 jours - Entrer le code"); "Ajoutez Manuel" -> "Ajoutez Signal"; the
+legacy "Essai termine / Premium" line; the settings account card showed "Bon apres-midi Visiteur" as the name.
+Verified on the live page with fake plan dates (3 states). Still by hand: the owner issues Automatique renewal
+codes; crypto renewal exists for Signal/Strategie only.
