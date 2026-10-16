@@ -168,6 +168,8 @@ def verdict(profile):
         out["reasons"].append("compte illisible"); return out
     C = {c["k"]: c for c in BP.checks(profile)}
     hard = [k for k in ("btc_found", "contract", "lots", "currency", "hedging") if k in C and not C[k]["ok"]]
+    if not hard and "exness" in str(profile.get("server", "")).lower():
+        out["zone"] = "green"; return out                   # the robot's home broker: the curve's native point
     if hard:
         out["zone"] = "red"; out["reasons"] = [C[k]["fr"] for k in hard]; return out
     est, nat = est_at(out["spread"])

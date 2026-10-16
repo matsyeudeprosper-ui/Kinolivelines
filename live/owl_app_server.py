@@ -16752,13 +16752,17 @@ def _probe_card(st, jid):
     _comp = p.get("company") or ""
     _m = _rx.search(r"\(([^)]+)\)", _comp)          # "Gain Global Markets, Inc. (FOREX.com Global)" -> the name members know
     broker = _h.escape((_m.group(1) if _m else (_comp or p.get("server") or st.get("server") or "votre courtier").split("-")[0]).replace(" Global", "").strip())
+    if "exness" in (p.get("server") or st.get("server") or "").lower():
+        broker = "Exness"
     fr = lambda x: ("%.2f" % float(x)).replace(".", ",") if x is not None else "?"
     rows = ""
     if p:
         rows += f"<p><b>{broker}</b></p>"
         if b.get("name"):
             rows += f"<p>Bitcoin trouv&eacute; : <b>{_h.escape(str(b['name']))}</b></p>"
-        if v.get("spread") is not None:
+        if v.get("spread") is not None and broker == "Exness":
+            rows += f"<p>Co&ucirc;t par trade : <b>{fr(v['spread'])} $</b></p>"
+        elif v.get("spread") is not None:
             rows += f"<p>Co&ucirc;t par trade chez vous : <b>{fr(v['spread'])} $</b> &middot; chez Exness : {fr(v.get('exness_spread'))} $</p>"
     _code = ((st.get("form") or {}).get("code") or [""])[0].strip().upper()
     cont = ("<form method=\"POST\" action=\"/activate\"><input type=\"hidden\" name=\"action\" value=\"continue\">"
@@ -17172,6 +17176,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "document.getElementById('mt').textContent=L+' \u00b7 ouvrir mon compte';"
             "document.getElementById('mp').textContent=fam?'Le Owl vous envoie un code sur Telegram apr\u00e8s un mot ensemble. Pr\u00e9parez le num\u00e9ro de votre compte MT5.':'Entrez votre code, ou payez en crypto : votre compte s\u2019ouvre tout de suite.';"
             "document.getElementById('mt5').style.display=fam?'':'none';"
+            "var _cf=document.getElementById('code'),_ch=document.getElementById('ch'),_cl=document.querySelector('label[for=code]');"
+            "if(_cf){_cf.style.display=fam?'none':'';}if(_ch){_ch.style.display=fam?'none':'';}if(_cl){_cl.style.display=fam?'none':'';}"
+            "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':'Activer mon compte';}"
             "var b=document.getElementById('buy'),o=document.getElementById('orline'),ph=document.getElementById('payh');"
             "if(b){b.style.display=fam?'none':'';o.style.display=fam?'none':'';ph.style.display=fam?'none':'';}"
             "document.getElementById('lgl').textContent=fam?'Num\u00e9ro de compte MT5':'Choisissez un identifiant';"
@@ -17570,9 +17577,10 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     # the offers modal names the MT5 account in its own field
     if not login and form.get("mt5_login", [""])[0]:
         login = _re.sub(r"\D", "", form.get("mt5_login", [""])[0] or "")[:12]
-    if (pkg_chosen == "family" and probed is None and action in ("activate", "") and login and pwd and server
-            and "exness" not in server.lower()):
-        # 2026-10-16 (owner): the broker is read BEFORE the code is looked at - nobody needs a code to hear "no"
+    _known_login = login and any(str(x.get("login")) == login or str(x.get("mt5_login") or "") == login for x in users())
+    if pkg_chosen == "family" and probed is None and action in ("activate", "") and login and pwd and server and not _known_login:
+        # 2026-10-16 (owner): the account is read BEFORE the code is looked at - every broker, Exness too (the
+        # probe also proves the login and password work) - nobody needs a code to hear "no"
         if rate_limited(("probe", login), limit=4):
             return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
         rate_fail(("probe", login))
