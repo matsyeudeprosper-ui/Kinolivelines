@@ -116,13 +116,44 @@ def build(sym, log=print, workers=MP.WORKERS):
 
 
 def real_ticks(meta, d):
-    """every broker tick of the window, scaled like the bars -> (TM, BID, ASK, n_bad, END) for the bench"""
+    """every broker tick of the window, scaled like the bars -> (TM, BID, ASK, n_bad, END) for the bench.
+    2026-10-16: served from a disk cache (<pack>/ticks_tm.npy, ticks_bid.npy, ticks_ask.npy) as read-only memory
+    maps - Nasdaq's 56 M ticks are 1.3 GB and building them in RAM (day parts + concatenation + scaled copies, ~5x)
+    ran the 12 GB server out of memory. The cache is filled one day at a time (peak = one day) and reused; the
+    replay walks the maps sequentially, so the OS pages them in as it goes."""
     src = meta["source_symbol"]; k = float(meta["k"])
-    parts = [load_day(os.path.join(TICK1S, src, day + ".npz")) for day in meta["tick_days"]]
-    t = np.concatenate([p[0] for p in parts]); b = np.concatenate([p[1] for p in parts]) * k; a = np.concatenate([p[2] for p in parts]) * k
     lo, hi = int(meta["first_bar"]) * 1000, int(meta["closed_bar_cutoff"]) * 1000
-    m = (t >= lo) & (t < hi)
-    return t[m], b[m], a[m], 0, hi
+    tag = os.path.join(d, "ticks_cache.json")
+    want = {"sha256": meta.get("sha256"), "k": k, "lo": lo, "hi": hi, "days": list(meta["tick_days"])}
+    files = [os.path.join(d, "ticks_%s.npy" % x) for x in ("tm", "bid", "ask")]
+    try:
+        have = json.load(open(tag, encoding="utf-8"))
+    except Exception:
+        have = None
+    if have != want or not all(os.path.exists(f) for f in files):
+        n = 0; counts = []
+        for day in meta["tick_days"]:                      # pass 1: how many ticks fall in the window
+            t, _, _ = load_day(os.path.join(TICK1S, src, day + ".npz"))
+            c = int(((t >= lo) & (t < hi)).sum()); counts.append(c); n += c
+        tmp = [f + ".tmp" for f in files]
+        TMw = np.lib.format.open_memmap(tmp[0], mode="w+", dtype=np.int64, shape=(n,))
+        Bw = np.lib.format.open_memmap(tmp[1], mode="w+", dtype=np.float64, shape=(n,))
+        Aw = np.lib.format.open_memmap(tmp[2], mode="w+", dtype=np.float64, shape=(n,))
+        pos = 0
+        for day, c in zip(meta["tick_days"], counts):      # pass 2: fill, one day in memory at a time
+            if not c:
+                continue
+            t, b, a = load_day(os.path.join(TICK1S, src, day + ".npz"))
+            m = (t >= lo) & (t < hi)
+            TMw[pos:pos + c] = t[m]; Bw[pos:pos + c] = b[m] * k; Aw[pos:pos + c] = a[m] * k
+            pos += c
+        assert pos == n
+        TMw.flush(); Bw.flush(); Aw.flush(); del TMw, Bw, Aw
+        for f, tf in zip(files, tmp):
+            os.replace(tf, f)
+        json.dump(want, open(tag, "w", encoding="utf-8"))
+    TM = np.load(files[0], mmap_mode="r"); B = np.load(files[1], mmap_mode="r"); A = np.load(files[2], mmap_mode="r")
+    return TM, B, A, 0, hi
 
 
 if __name__ == "__main__":
