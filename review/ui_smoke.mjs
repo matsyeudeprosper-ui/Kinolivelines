@@ -365,7 +365,7 @@ console.log("labo");
   // door), the public robots with their result, and the "Avec Strategie" door instead of the create buttons
   check("Robots · a member without Strategie sees the public robots", (await ev("document.querySelectorAll('#top .rc').length")) >= 1, String(await ev("document.querySelectorAll('#top .rc').length")));
   check("Robots · that member sees the account card or the Automatique door", (await ev("!!document.querySelector('#top .arb, #top .zdoor')")) === true);
-  check("Robots · that member gets the Strategie door, no create buttons, no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && /Avec Strat/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.lh-a button[onclick*=goNew]')")) === false);
+  check("Robots · that member gets the Strategie door, no create buttons, no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && /Avec (la formule )?Strat/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.lh-a button[onclick*=goNew]')")) === false);
   await shot("smoke_labo");
   await nav("about:blank"); await nav(`${BASE}/${KIN}/`); await sleep(9000);
   await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()");

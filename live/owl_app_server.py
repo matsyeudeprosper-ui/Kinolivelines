@@ -14069,15 +14069,18 @@ def robot_plug_undo(user, body):
 def _robot_test(rid):
     """the 42-day Bitcoin test of a robot: its own result file; the Owl's is any child's parent_result"""
     rd = os.path.join(DIR, "robots", "results")
+    # the origin of the figure travels with it: start balance, the recorded price window, its length (file top level)
+    org = lambda j: {k: j.get(k) for k in ("balance", "window_utc", "days", "generated_at") if j.get(k) is not None}
     try:
         if rid != "owl":
-            return json.load(open(os.path.join(rd, rid + ".json"), encoding="utf-8")).get("robot") or {}
+            j = json.load(open(os.path.join(rd, rid + ".json"), encoding="utf-8"))
+            return dict(org(j), **(j.get("robot") or {}))
         for f in sorted(os.listdir(rd)):
             if "@" in f or not f.endswith(".json"):
                 continue
             j = json.load(open(os.path.join(rd, f), encoding="utf-8"))
             if j.get("parent") == "owl" and (j.get("parent_result") or {}).get("net") is not None:
-                return j["parent_result"]
+                return dict(org(j), **j["parent_result"])
     except Exception:
         pass
     return {}
@@ -14131,7 +14134,8 @@ def acct_robot_block(user, admin=False):
             except Exception:
                 continue
         out["choices"].append(dict(nm(r), id=rid, net=t.get("net"), dd=t.get("cc_dd"), trades=t.get("trades"),
-                                   win_rate=t.get("win_rate"), days=42, owl=rid == "owl", mine=r.get("by_uid") == uid,
+                                   win_rate=t.get("win_rate"), days=t.get("days") or 42, balance=t.get("balance") or 200, window_utc=t.get("window_utc"),
+                                   owl=rid == "owl", mine=r.get("by_uid") == uid,
                                    public=bool(r.get("public")), current=rid == cur))
     out["choices"].sort(key=lambda c: (not c["current"], not c["owl"], -(c["net"] or 0)))
     return out

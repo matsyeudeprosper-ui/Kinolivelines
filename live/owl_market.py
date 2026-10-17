@@ -56,7 +56,8 @@ def result_of(rid):
     if rid == "owl" and not r:
         p = _load(os.path.join(DIR, "lab", "proof_current.json"), None)        # the Owl's proof is its test
         if p and isinstance(p.get("net"), (int, float)):
-            return {"net": p["net"], "trades": p.get("trades"), "win_rate": p.get("win_rate"), "mtm_dd": p.get("mtm_dd"), "days": p.get("days", 42)}
+            return {"net": p["net"], "trades": p.get("trades"), "win_rate": p.get("win_rate"), "mtm_dd": p.get("mtm_dd"), "days": p.get("days", 42),
+                    "balance": p.get("balance"), "window_utc": p.get("window_utc"), "tested_at": p.get("generated_at")}
         return None
     if not r:
         return None
