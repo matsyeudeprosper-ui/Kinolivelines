@@ -61,8 +61,10 @@ def result_of(rid):
     if not r:
         return None
     R = r.get("robot") or {}
-    return {"net": R.get("net"), "trades": R.get("trades"), "win_rate": R.get("win_rate"), "mtm_dd": R.get("mtm_dd"), "cc_dd": R.get("cc_dd"), "profit_factor": R.get("profit_factor"),
-            "days": r.get("days"), "tested_at": r.get("generated_at"), "curve": (R.get("curve") or [])[-120:]}
+    return {"net": R.get("net"), "trades": R.get("trades"), "wins": R.get("wins"), "win_rate": R.get("win_rate"), "mtm_dd": R.get("mtm_dd"), "cc_dd": R.get("cc_dd"),
+            "profit_factor": R.get("profit_factor"), "first_half": R.get("first_half"), "later_half": R.get("later_half"), "best": R.get("best"), "worst": R.get("worst"),
+            "max_loss_streak": R.get("max_loss_streak"), "hold_median_min": R.get("hold_median_min"), "balance": r.get("balance"),
+            "days": r.get("days"), "tested_at": r.get("generated_at"), "window_utc": r.get("window_utc"), "curve": (R.get("curve") or [])[-120:]}
 
 
 def markets_of(rid):
@@ -233,7 +235,7 @@ def catalogue(me_uid=None, my_server="", include_hidden=False):
         out.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "alias": L.get("alias"), "blurb": L.get("blurb"),
                     "price_usd": L.get("price_usd") or 0, "free": not L.get("price_usd"), "open_recipe": bool(L.get("open_recipe")),
                     "paused": bool(L.get("paused")), "hidden": bool(L.get("hidden")), "by_uid": L.get("by_uid"), "mine": L.get("by_uid") == me_uid,
-                    "published_at": L.get("published_at"), "followers": len(followers(rid)),
+                    "published_at": L.get("published_at"), "followers": len(followers(rid)), "by_nest": not rb.get("by_uid"),
                     "test": res, "markets": markets_of(rid), "at_my_broker": at_my_broker.get(rid),
                     "following": bool(me_uid and (sub_of(me_uid) or {}).get("rid") == rid)})
     out.sort(key=lambda x: (-(float((x["test"] or {}).get("net") or 0)), x["name"]))

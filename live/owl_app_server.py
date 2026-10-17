@@ -14298,6 +14298,12 @@ def place_payload(user, admin=False):
     except Exception:
         me["current_robot"] = None
     listings = _OMKT.catalogue(uid, me["broker_server"], include_hidden=me["admin"])
+    try:
+        _adm = {u.get("id") for u in users() if is_admin(u)}
+        for _x in listings:
+            _x["by_nest"] = bool(_x.get("by_nest") or _x.get("by_uid") in _adm)      # the owner's robots carry the nest crown
+    except Exception:
+        pass
     mine = []
     for st in _OMKT.creator_stats(uid):
         rb = R.get(st["id"]) or {}; L = _OMKT.listing(st["id"]) or {}
