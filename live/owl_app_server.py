@@ -399,8 +399,12 @@ def _atomic_json(path, obj, **kw):
     os.replace(tmp, path)
 
 
-def ent_grant(uid, pkg, days, src):
-    """Extend from the later of now / the current end (a renewal adds)."""
+def ent_grant(uid, pkg, days, src, usd=None):
+    """Extend from the later of now / the current end (a renewal adds).
+    2026-10-17 (owner: "I'm not spending money in this model, right?"): the grant records the MONEY RECEIVED for it
+    (paid_usd over paid_days). The creator share accrues only on that money: a crypto payment carries its amount, a
+    code is valued at the package price (the owner sells codes), and wallet days, welcome days, owner grants and the
+    grandfathered first period carry 0 -> no share at all for them."""
     e = _ents()
     r = e.get(uid) or {}
     k = pkg + "_until"
@@ -410,6 +414,15 @@ def ent_grant(uid, pkg, days, src):
         r["family"] = True           # legacy flag, kept in step with the date
     r["updated"] = int(time.time())
     r["src"] = src
+    if usd is None:
+        usd = 0.0
+        if src == "code":
+            try:
+                usd = float(nest_config().get("family_usd") or 60) if pkg == "family" else float((PACKAGES.get(pkg) or {}).get("usd") or 0)
+            except Exception:
+                usd = 0.0
+    if pkg == "family":
+        r["paid_usd"] = round(float(usd or 0), 2); r["paid_days"] = int(days); r["paid_at"] = int(time.time())
     e[uid] = r
     _atomic_json(ENT_FILE, e, indent=1)
     return r
@@ -14297,8 +14310,8 @@ def _creator_accrue(d, now):
     minutes earn five minutes; a whole month earns the whole 30 %. Nothing for the Owl or the owner's robots.
     Returns True when a sub's clock was touched (the caller saves)."""
     import owl_wallet as _OW
-    fam = float(nest_config().get("family_usd") or 60)
     adm = {u.get("id") for u in users() if is_admin(u)}
+    ents = _ents()
     changed = False
     for uid, sub in list((d.get("subs") or {}).items()):
         if sub.get("ended") or not (sub.get("open") or float(sub.get("until") or 0) > now):
@@ -14310,6 +14323,12 @@ def _creator_accrue(d, now):
         dt = min(now - last, 48 * 3600)          # a long gap = the app was down, the robot still ran; cap for safety
         if dt <= 0 or not has(uid, "family"):
             continue
+        # only money the nest RECEIVED for this member's current period is shared (ent_grant records it)
+        _e = ents.get(uid) or {}
+        _pu, _pd = float(_e.get("paid_usd") or 0), int(_e.get("paid_days") or 0)
+        if _pu <= 0 or _pd <= 0:
+            continue
+        fam = _pu / _pd * 30.0                   # the period's money, as a monthly value
         L = (d.get("listings") or {}).get(sub.get("rid")) or {}
         cr = L.get("by_uid")
         if not cr or cr == uid or cr in adm or L.get("hidden"):
@@ -18920,7 +18939,7 @@ class H(BaseHTTPRequestHandler):
                             paid = float(data.get("price_amount") or 0)
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
                                 _r = ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
-                                               f"nowpayments:{data.get('payment_id')}")
+                                               f"nowpayments:{data.get('payment_id')}", usd=paid)
                                 rec["granted"] = _pkg
                                 try:
                                     import owl_wallet as _OW

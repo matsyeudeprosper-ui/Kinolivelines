@@ -87,3 +87,11 @@ member's plan is active and the creator's robot is attached: share = family_usd 
 Fractions of a cent wait in cash_frac; whole cents go to cash and to one history line per robot, follower and day.
 Five minutes earn ~$0.002 (nothing visible); a full day on a $60 plan earns $0.60; a full month the full $18.
 Switching back and forth simply splits the time between creators. The Owl and the owner's robots accrue nothing.
+
+### The nest never pays what it did not receive (owner: "I'm not spending money in this model, right?")
+Checked against the live entitlements on 2026-10-17: every Automatique member is on the grandfathered first period
+(no payment recorded). Rule: ent_grant now records paid_usd / paid_days on each Automatique grant; the share accrues
+ONLY on that money: crypto = the amount paid; code = the package price (the owner sells codes; a code given away is
+the owner's conscious gift); wallet days, welcome days, owner grants, the grandfathered period = 0 -> no share.
+Worst case per member and month = 30 % of what that member paid, and only for the time they ran a member's robot.
+The Owl and the owner's robots accrue nothing, so today the exposure is exactly $0.
