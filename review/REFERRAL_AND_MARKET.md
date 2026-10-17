@@ -12,11 +12,17 @@ is paid cash. Two sources:
 |---|---|---|
 | A referred member pays Signal ($29) or Strategie ($49) in crypto | the referrer | 20 % ($5.80 / $9.80) |
 | A referred member's Automatique month is settled with the owner (code) | the referrer | 20 % of `family_usd` (nest_config, default $60 -> $12) |
-| A follower pays a robot subscription ($5-$49/month) | the robot's creator | 70 % |
+| A follower pays a robot subscription ($5-$49/month, crypto through our payment system) | the robot's creator, in REAL MONEY (earnings, apart from the cagnotte) | 70 %, paid out by the owner in USDT once >= $50 |
 
 Spending: "Utiliser ma cagnotte" adds floor(usd / daily price of the member's CURRENT package) days (Signal
-$0.97/day, Strategie $1.63/day, Automatique `family_usd`/30). A cagnotte can also pay a robot subscription in
-full. Brake: at most 10 credited friends per referrer per calendar month.
+$0.97/day, Strategie $1.63/day, Automatique `family_usd`/30). The cagnotte buys days and nothing else (owner
+2026-10-17: referral = time, robots = money). Brake: at most 10 credited friends per referrer per calendar month.
+
+Creators: 70 % of each robot month is EARNINGS in dollars (`owl_wallet.earnings`), never spendable as time; the
+creator saves a USDT address in the app; from $50 the owner pays by hand once a month (the owner's place page
+lists who is due, "J'ai paye" records the transfer and tells the creator). Why through our payment system and
+not creator-to-follower: the robot gate (positive real-tick test, pause when negative) and the 30 % only exist
+if the month is paid where the robot is switched; a direct payment would bypass both and leave disputes to us.
 
 ## Why the nest cannot lose money on it
 - Every credit is a fraction (20 % or 70 %) of a payment already received; the nest keeps 80 % / 30 % in cash.
@@ -34,7 +40,7 @@ full. Brake: at most 10 credited friends per referrer per calendar month.
 - Publish: creator or owner; robot tested, 42-day Bitcoin test on real ticks positive; alias (author name shown,
   never the member's name), one sentence, price (free or $5-$49), "others may start from my recipe".
 - Follow: Automatique members only (a robot needs an account to run on); free -> the switch right away;
-  paid -> the cagnotte if it covers the month, else a NOWPayments invoice (order "uid|robot:rid|ts"); after the
+  paid -> a NOWPayments invoice (order "uid|robot:rid|ts"); after the
   payment, the switch asks the member's password like any robot change.
 - Month end: the notifier switches the account back to the Owl and tells the member; a renewal re-subscribes.
 - Pause: a listing whose latest test is no longer positive is paused for new followers; existing followers finish
