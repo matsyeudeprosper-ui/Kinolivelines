@@ -12661,6 +12661,16 @@ def robots_payload(detail):
         cnt[r["stage"]] = cnt.get(r["stage"], 0) + 1
     cnt["built_parts"] = sum(1 for q in RQ if q.get("status") == "built")
     cnt["open_parts"] = sum(1 for q in RQ if q.get("status") == "open")
+    try:
+        # 2026-10-17 (owner): the public list says which robots are on the place, free or paid
+        import owl_market as _OMKT
+        _LS = _OMKT.data().get("listings") or {}
+        for r in R:
+            _L = _LS.get(r.get("id"))
+            r["market"] = ({"price_usd": _L.get("price_usd") or 0, "free": not _L.get("price_usd"), "paused": bool(_L.get("paused")), "alias": _L.get("alias")}
+                           if _L and not _L.get("hidden") else None)
+    except Exception:
+        pass
     out = {"updated": now, "robots": R, "counts": cnt, "workshop": shop, "detail": bool(detail)}
     _ROBOT_CACHE[key] = (time.time(), out)
     return out
@@ -14282,7 +14292,14 @@ def place_payload(user, admin=False):
     W.update({"pkg": pkg, "days": _OW.days_available(uid, pkg, PACKAGES, fam)})
     friends = _OW.friends_of(uid)
     credited = sum(1 for h in W.get("history") or [] if h.get("kind") == "referral")
-    return {"me": me, "listings": listings, "mine": mine, "my_robots": my_robots, "sub": sub, "wallet": W,
+    earnings = _OW.earnings(uid) if (mine or me["strategy"] or me["admin"]) else None
+    payouts_due = _OW.payouts_due() if me["admin"] else None
+    if payouts_due:
+        _nm = {u.get("id"): (u.get("name") or u.get("id")) for u in users()}
+        _al = {L.get("by_uid"): L.get("alias") for L in _OMKT.data().get("listings", {}).values()}
+        for p in payouts_due:
+            p["name"] = _nm.get(p["uid"], p["uid"]); p["alias"] = _al.get(p["uid"]) or ""
+    return {"me": me, "listings": listings, "mine": mine, "my_robots": my_robots, "sub": sub, "wallet": W, "earnings": earnings, "payouts_due": payouts_due,
             "ref": {"code": _OW.code_of(uid), "link": f"https://owltrader.duckdns.org/offres?p={_OW.code_of(uid)}", "friends": friends, "credited": credited,
                     "alias": next((m.get("alias") for m in mine if m.get("alias")), "")},
             "packages": {k: {"usd": v["usd"]} for k, v in PACKAGES.items()}, "family_usd": fam}
@@ -14298,6 +14315,16 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         return _OMKT.publish(str(body.get("id") or ""), uid, body.get("alias"), body.get("blurb"), body.get("price"), body.get("open_recipe"), admin)
     if action == "place_unpublish":
         return _OMKT.unpublish(str(body.get("id") or ""), uid, admin)
+    if action == "wallet_addr":
+        # the creator's USDT address for payouts (owner pays by hand from PAYOUT_MIN, the app keeps the ledger)
+        return {"ok": True, "addr": _OW.set_payout_addr(uid, body.get("addr"))}
+    if action == "payout_mark":
+        if not admin:
+            return {"ok": False, "err": "owner"}
+        ok = _OW.mark_paid(str(body.get("uid") or ""), float(body.get("usd") or 0), body.get("ref"))
+        if ok:
+            queue_push(str(body.get("uid")), "\U0001f4b8 Paiement envoyé", f"Vos gains de créateur : ${float(body.get('usd') or 0):.2f} envoyés à votre adresse. Merci pour votre robot.")
+        return {"ok": bool(ok)}
     if action == "wallet_use":
         pkg = _member_pkg(uid); fam = float(nest_config().get("family_usd") or 60)
         avail = _OW.days_available(uid, pkg, PACKAGES, fam)
@@ -14330,20 +14357,9 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         price = float(L.get("price_usd") or 0)
         cur = _OMKT.sub_of(uid)
         if price > 0 and not (cur and cur.get("rid") == rid):
-            pay = str(body.get("pay") or "")
-            if pay == "wallet":
-                if not _OW.pay_from_wallet(uid, price, "robot %s" % rid):
-                    return {"ok": False, "err": "wallet"}
-                _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
-                if not _sw.get("ok"):
-                    _OW._credit(uid, price, "refund", "robot %s" % rid)        # the switch failed: nothing is kept
-                    return _sw
-                _OMKT.start_sub(uid, rid, price, "wallet")
-                _OW.on_robot_payment(L.get("by_uid"), uid, rid, price)
-                if L.get("by_uid"):
-                    queue_push(L["by_uid"], "\U0001f4b0 Un abonn\u00e9 sur la place", f"Votre robot a un nouvel abonn\u00e9 : ${price * _OW.CREATOR_PCT:.2f} dans votre cagnotte.")
-                return _sw
-            else:
+            if True:
+                # owner 2026-10-17: robot months are real money - paid in crypto through our payment system, never
+                # from the referral cagnotte (time only); the IPN starts the month, the member then taps "Suivre"
                 # crypto: a NOWPayments invoice; the IPN starts the month, the member then taps "Suivre" again
                 cfg = nest_config()
                 if not cfg.get("np_api_key"):
@@ -18494,7 +18510,7 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
-        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use"):
+        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use", "wallet_addr", "payout_mark"):
             # 2026-10-17 (owner): La place des robots + the cagnotte
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public"):

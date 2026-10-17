@@ -129,13 +129,65 @@ def on_member_payment(uid, pkg, usd, label=""):
     return ref, credit
 
 
+PAYOUT_MIN = 50.0         # a creator is paid (USDT, by the owner) once their earnings reach this
+
+
 def on_robot_payment(creator_uid, follower_uid, rid, usd):
-    """a follower's CONFIRMED robot subscription -> the creator's cagnotte (CREATOR_PCT)"""
+    """a follower's CONFIRMED robot subscription -> the creator's EARNINGS in real money (CREATOR_PCT), kept
+    apart from the referral cagnotte (owner 2026-10-17: referral = time, robots = money, paid out from PAYOUT_MIN)"""
     if not creator_uid or creator_uid == follower_uid or usd <= 0:
         return 0.0
     credit = round(usd * CREATOR_PCT, 2)
-    _credit(creator_uid, credit, "robot", "%s <- %s" % (rid, follower_uid))
+    with _LOCK:
+        W = _load(WALLET, {}) or {}
+        w = W.setdefault(creator_uid, {"usd": 0.0, "earned": 0.0, "history": []})
+        w["cash"] = round(float(w.get("cash") or 0) + credit, 2)
+        w["cash_earned"] = round(float(w.get("cash_earned") or 0) + credit, 2)
+        w.setdefault("cash_history", []).append({"t": int(time.time()), "usd": credit, "kind": "robot", "note": "%s <- %s" % (rid, follower_uid)})
+        w["cash_history"] = w["cash_history"][-300:]
+        _save(WALLET, W)
     return credit
+
+
+def earnings(uid):
+    """the creator's money side: balance, total, payout address, last payouts, and whether a payout is due"""
+    w = (_load(WALLET, {}) or {}).get(uid) or {}
+    cash = round(float(w.get("cash") or 0), 2)
+    return {"cash": cash, "cash_earned": round(float(w.get("cash_earned") or 0), 2), "payout_addr": w.get("payout_addr") or "",
+            "payout_min": PAYOUT_MIN, "due": cash >= PAYOUT_MIN, "payouts": (w.get("payouts") or [])[-12:], "history": (w.get("cash_history") or [])[-30:]}
+
+
+def set_payout_addr(uid, addr):
+    addr = str(addr or "").strip()[:120]
+    with _LOCK:
+        W = _load(WALLET, {}) or {}
+        w = W.setdefault(uid, {"usd": 0.0, "earned": 0.0, "history": []})
+        w["payout_addr"] = addr
+        _save(WALLET, W)
+    return addr
+
+
+def payouts_due():
+    """[(uid, cash, addr)] creators at or above PAYOUT_MIN - the owner's list"""
+    out = []
+    for uid, w in (_load(WALLET, {}) or {}).items():
+        cash = round(float(w.get("cash") or 0), 2)
+        if cash >= PAYOUT_MIN:
+            out.append({"uid": uid, "cash": cash, "addr": w.get("payout_addr") or ""})
+    return sorted(out, key=lambda x: -x["cash"])
+
+
+def mark_paid(uid, usd, ref):
+    """the owner paid `usd` to this creator (USDT tx `ref`): debits the earnings, keeps the record"""
+    with _LOCK:
+        W = _load(WALLET, {}) or {}
+        w = W.get(uid)
+        if not w or float(w.get("cash") or 0) + 1e-9 < usd or usd <= 0:
+            return False
+        w["cash"] = round(float(w.get("cash") or 0) - usd, 2)
+        w.setdefault("payouts", []).append({"t": int(time.time()), "usd": round(usd, 2), "ref": str(ref or "")[:80], "addr": w.get("payout_addr") or ""})
+        _save(WALLET, W)
+        return True
 
 
 def daily_price(pkg, packages, family_usd):
