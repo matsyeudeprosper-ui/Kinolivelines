@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-16T23:30:31Z",
+ "updated": "2026-10-17T05:00:19Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2495,6 +2495,16 @@
     "asks.json: none open; twins/labo empty"
    ],
    "saw": "Nothing new. Fifth re-fire on the 17:17 trade (17:32, 19:02, 20:30, 22:00, 23:30) - the wake marker still does not advance; worth flagging to the night session. No look, no run, no pile, no proposal. Wrote 'rien' (night hours 01-04 are the ones to watch; 00 h is the weak one)."
+  },
+  {
+   "t": "2026-10-17T05:00:19Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: same 'new' trade a sixth time (FLIP-BOS SELL +12.83 closed 10-16 17:17); trades_total 143 unchanged",
+    "scrutiny --by hour (143 tr): 02-03 h 15 tr ~73% +41.70 still the best hours; 13-14 h 10 tr -58.04 the worst; every hour under 30 (peu)",
+    "asks.json: none open; twins/labo empty"
+   ],
+   "saw": "Nothing new, and the whole night 00-05 h closed no real trade - the night that carries the robot was empty (Friday-night/Saturday market close for indices? check). Sixth re-fire on the 17:17 trade: the wake marker does not advance - flag to the night session. No run, no pile, no proposal. Wrote 'rien'."
   }
  ],
  "lessons": [
