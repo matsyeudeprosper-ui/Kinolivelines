@@ -17370,6 +17370,13 @@ var EN={
 "Le robot trade à votre place": "The robot trades for you",
 "Famille": "Family",
 "sur invitation": "by invitation",
+"Sur invitation · écrire au Owl": "By invitation · write to the Owl",
+"Les robots du nid et la place, en lecture ; le parrainage : 7 jours offerts à chaque ami, des jours pour vous": "The nest's robots and the place, to read; referral: 7 free days for each friend, days for you",
+"La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l’argent": "The robot place: publish it, every member running your robot earns you money",
+"Le graphique complet, la méthode en mots simples et les coulisses du nid ; Signal inclus": "The full chart, the method in plain words and the nest's backstage; Signal included",
+"Pour le faire tourner sur votre propre compte : Automatique, sur invitation": "To run it on your own account: Automatic, by invitation",
+"Le robot de votre choix : L’Owl, ou n’importe quel robot de la place, inclus": "The robot of your choice: the Owl, or any robot of the place, included",
+"Votre patrimoine, vos poches et vos résultats, jour par jour ; les alertes sur votre téléphone": "Your wealth, your pockets and your results, day by day; alerts on your phone",
 "Le robot passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur": "The robot places orders on your MT5 account, day and night, from our server",
 "Ses règles, ses freins, son rattrapage après une perte": "Its rules, its brakes, its recovery after a loss",
 "Prix fixe chaque mois, réglé avec le Owl ; code par Telegram": "Fixed price each month, settled with the Owl; code via Telegram",
@@ -17550,11 +17557,13 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
         tier("manual", "Signal", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
              "Regardez le robot travailler, tradez quand vous voulez",
              ["Chaque d&eacute;cision du robot en direct : ce qu&#8217;il voit, pourquoi il entre, pourquoi il attend "
-              + info("Le même écran que les comptes automatiques : le solde du robot, ses trades, le marché et ses vérifications, mis à jour toutes les 5 secondes."),
+              + info("Le tableau de bord du robot : son solde, ses trades, le marché et ses vérifications, mis à jour toutes les 5 secondes. Les niveaux d’entrée restent ceux du robot : l’alerte vous les donne au moment où il entre."),
               "Une alerte sur votre t&eacute;l&eacute;phone &agrave; chaque entr&eacute;e &mdash; vous suivez si vous voulez, &agrave; vos prix "
               + info("Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique."),
               "Aucun compte de courtier &agrave; donner "
               + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte. Vous pouvez nommer votre courtier pour voir les niveaux \u00e0 ses prix."),
+              "Les robots du nid et la place, en lecture ; le parrainage : 7 jours offerts &agrave; chaque ami, des jours pour vous "
+              + info("Votre code de parrainage est dans Compte › Parrainage. Chaque mois payé par un ami vous donne 20 % en jours d’abonnement."),
               "Pour que le robot le fasse pour vous : Automatique"],
              "var(--up)")
         + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
@@ -17565,13 +17574,19 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
               + info("Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard."),
               "La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l&#8217;argent "
               + info("30 % de l\u2019abonnement de chaque membre, pour le temps o\u00f9 il tourne avec votre robot, vers\u00e9 en USDT \u00e0 partir de 50 $."),
-              "Le graphique complet et la m&eacute;thode en mots simples ; Signal inclus"],
+              "Le graphique complet, la m&eacute;thode en mots simples et les coulisses du nid ; Signal inclus "
+              + info("Les coulisses : toutes les stratégies essayées, leurs verdicts, et l’équipe IA qui cherche la nuit. Signal : les alertes et le tableau de bord, compris."),
+              "Pour le faire tourner sur votre propre compte : Automatique, sur invitation "
+              + info("Stratégie construit, teste et publie. Faire trader un robot sur votre compte MT5, le vôtre ou un autre, c’est la formule Automatique.")],
              "var(--warn)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
              "Le robot trade &agrave; votre place",
              ["Le robot passe les ordres sur votre compte MT5, jour et nuit, depuis notre serveur "
               + info("Il faut alors nous confier le mot de passe de votre compte chez le courtier, pour qu\u2019il puisse passer les ordres. Nous ne pouvons ni retirer ni d\u00e9placer votre argent : le robot ne sait qu\u2019ouvrir et fermer des trades."),
               "Ses r&egrave;gles, ses freins, son rattrapage apr&egrave;s une perte",
+              "Le robot de votre choix : L&#8217;Owl, ou n&#8217;importe quel robot de la place, inclus "
+              + info("Changez de robot quand vous voulez depuis la page Robots ; le changement attend la fin du trade en cours. Rien de plus à payer."),
+              "Votre patrimoine, vos poches et vos r&eacute;sultats, jour par jour ; les alertes sur votre t&eacute;l&eacute;phone",
               "Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code par Telegram "
               + info("Cette formule n\u2019est pas en vente libre : on en parle d\u2019abord ensemble sur Telegram. 50 places au total.")],
              "var(--accent-soft)", "&nbsp;<span class=\"bdg\">Sur invitation</span>", button=_fam_btn))
