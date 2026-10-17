@@ -45,11 +45,18 @@ def is_approved(uid):
     return r.get("status") == "approved"
 
 
-def apply(uid, channel, video, note=""):
-    """a member asks to join: channel + the video that mentions the app. A refused member may apply again."""
+PLATFORMS = ("youtube", "tiktok", "instagram", "facebook", "telegram", "blog", "podcast", "other")
+PRIVATE = ("telegram", "facebook")     # may be a closed group: the proof is the invite link + a screenshot sent to the Owl
+
+
+def apply(uid, channel, video, note="", platform="youtube"):
+    """a member asks to join (owner 2026-10-17: any platform, not only YouTube): where they publish (optional profile
+    or page link), the PUBLICATION that mentions the app - a video, a post, an article, a pinned message - which must
+    show their link or code, and a note. A refused member may apply again."""
+    platform = str(platform or "youtube").lower()
+    if platform not in PLATFORMS:
+        platform = "other"
     ch, vd = _clean_url(channel), _clean_url(video)
-    if not ch:
-        return {"ok": False, "err": "channel"}
     if not vd:
         return {"ok": False, "err": "video"}
     with _LOCK:
@@ -57,7 +64,7 @@ def apply(uid, channel, video, note=""):
         cur = d.get(uid) or {}
         if cur.get("status") == "approved":
             return {"ok": False, "err": "already"}
-        d[uid] = {"channel": ch, "video": vd, "note": str(note or "").strip()[:240], "status": "pending",
+        d[uid] = {"platform": platform, "channel": ch, "video": vd, "note": str(note or "").strip()[:240], "status": "pending",
                   "applied_t": int(time.time()), "reviewed_t": None, "review_note": ""}
         _save(d)
     return {"ok": True}

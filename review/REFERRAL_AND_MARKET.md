@@ -142,3 +142,8 @@ Update (same night): the 30 % is limited to the first 12 PAID MONTHS of each use
 has their own page /<tok>/createur (owl_creator_page.html): status badge, link, KPIs (active subscribers, expected next
 month if all renew, this month, in all), 6-month chart, payout ring, subscribers with months paid / months left bars,
 the approved video and channel, the rules; the Parrainage page only shows a status-aware door to it. 68 checks pass.
+Proof on any platform (owner, same night): the application names the platform (YouTube, TikTok, Instagram,
+Facebook, Telegram, blog/site, podcast, other) and ONE link to the publication that mentions OwlNest and shows the
+creator's link or code; the page/profile link is optional. Closed Telegram / Facebook groups: the invite link plus
+a screenshot of the pinned message sent to the Owl on Telegram. The data is the final proof: sign-ups through the
+link appear on the dashboard whether approved or not.

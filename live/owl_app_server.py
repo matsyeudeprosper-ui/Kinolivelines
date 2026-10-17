@@ -14481,7 +14481,7 @@ def _inf_block(user, st):
     import owl_wallet as _OW
     uid = user.get("id")
     r = _INF.status(uid) or {}
-    out = {"status": r.get("status") or "none", "channel": r.get("channel") or "", "video": r.get("video") or "", "applied_t": r.get("applied_t"),
+    out = {"status": r.get("status") or "none", "platform": r.get("platform") or "", "channel": r.get("channel") or "", "video": r.get("video") or "", "note": r.get("note") or "", "applied_t": r.get("applied_t"),
            "reviewed_t": r.get("reviewed_t"), "review_note": r.get("review_note") or "", "pct": int(_OW.INF_PCT * 100), "months": _OW.INF_MONTHS,
            "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring"),
            "expected": st.get("expected")}
@@ -14510,7 +14510,7 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         import owl_influencers as _INF
         if user.get("public"):
             return {"ok": False, "err": "public"}
-        r = _INF.apply(uid, body.get("channel"), body.get("video"), body.get("note"))
+        r = _INF.apply(uid, body.get("channel"), body.get("video"), body.get("note"), platform=body.get("platform"))
         if r.get("ok"):
             queue_push("kino", "\U0001f3ac Demande créateur", f"{user.get('name') or uid} demande le programme créateurs. Voir Compte › Parrainage pour approuver.")
         return r
