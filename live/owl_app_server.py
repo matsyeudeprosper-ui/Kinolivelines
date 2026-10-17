@@ -7682,7 +7682,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   window.addEventListener('popstate',()=>{if(open)close(true);});
   return true;}
  function shownGroup(g){if(g.href)return !(window._d&&window._d.public);const B=g._box;if(!B)return false;
-  return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
+  return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||p.id==='refcard'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
  function paint(){const L=$('csl');if(!L)return;
   const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Bonsoir|Bon apr\\u00e8s-midi|Hello|Good (?:morning|afternoon|evening))\\s*/i,'').trim();
    const plan=(($('plan-t')||{}).textContent||'').trim();
