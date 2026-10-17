@@ -69,7 +69,17 @@ const ev = async (expr) => {
     console.log("  JS ERR", r.result.exceptionDetails.exception?.description);
   return r.result?.result?.value;
 };
-const nav = async (url) => { await send("Page.navigate", { url }, S); await waitEvent("Page.loadEventFired", S); };
+const nav = async (url) => {
+  // 2026-10-17: a stale loadEventFired left in the queue made nav() return before the page changed, so a check could
+  // run against the PREVIOUS page (the Nid check once ran on the Robots page). Drain, navigate, wait, verify, retry once.
+  for (let k = events.length - 1; k >= 0; k--) if (events[k].method === "Page.loadEventFired" && events[k].sessionId === S) events.splice(k, 1);
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await send("Page.navigate", { url }, S); await waitEvent("Page.loadEventFired", S); await sleep(300);
+    const here = String(await ev("location.href") || "");
+    if (url === "about:blank" || here.split("#")[0] === url.split("#")[0]) return;
+    console.log(`  nav retry: wanted ${url} got ${here}`);
+  }
+};
 const shot = async (n) => {
   const { result } = await send("Page.captureScreenshot", { format: "png" }, S);
   writeFileSync(`${OUT}\\${n}.png`, Buffer.from(result.data, "base64"));
@@ -351,13 +361,21 @@ console.log("labo");
   }
   // a member WITHOUT Strategie: Robots shows their own robot (pieces in words), never the lock
   await nav("about:blank"); await nav(`${BASE}/${TOK("bos")}/robots`); await sleep(7000);
-  check("Robots · a member without Strategie sees their own robot", (await ev("document.querySelectorAll('.mrp').length")) >= 3, String(await ev("document.querySelectorAll('.mrp').length")));
-  check("Robots · that member gets no lock and no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.mrp')")) === true);
+  // 2026-10-17 (owner): the Robots page is for EVERY account - a reader sees the account card (or the Automatique
+  // door), the public robots with their result, and the "Avec Strategie" door instead of the create buttons
+  check("Robots · a member without Strategie sees the public robots", (await ev("document.querySelectorAll('#top .rc').length")) >= 1, String(await ev("document.querySelectorAll('#top .rc').length")));
+  check("Robots · that member sees the account card or the Automatique door", (await ev("!!document.querySelector('#top .arb, #top .zdoor')")) === true);
+  check("Robots · that member gets the Strategie door, no create buttons, no NaN", !/NaN|undefined/.test(await ev("document.body.innerText")) && /Avec Strat/.test(await ev("document.body.innerText")) && (await ev("!!document.querySelector('.lh-a button[onclick*=goNew]')")) === false);
   await shot("smoke_labo");
   await nav("about:blank"); await nav(`${BASE}/${KIN}/`); await sleep(9000);
-  await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()"); await sleep(3500);
-  check("le Nid lists the accounts", (await ev("document.querySelectorAll('#nest .nrow').length")) >= 3);
-  check("le Nid rows carry no emoji", !/[\u{1F300}-\u{1FAFF}]/u.test(await ev("document.getElementById('nest').innerText")));
+  await ev("(function(){var b=document.getElementById('tb-nid');if(b){b.style.display='';b.click();}return !!b;})()");
+  let nidRows = 0;                       // the Nid rows arrive with the owner's data: poll up to 20 s instead of one fixed wait
+  for (let i = 0; i < 20 && nidRows < 3; i++) { await sleep(1000); nidRows = await ev("document.querySelectorAll('#nest .nrow, #tab-nid .nrow').length"); }
+  check("le Nid lists the accounts", nidRows >= 3, String(nidRows) + " tb=" + String(await ev("(function(){var b=document.getElementById('tb-nid');return b?b.style.display+'/'+b.className:'none';})()"))
+        + " at=" + String(await ev("location.pathname+location.hash")) + " tabs=" + String(await ev("document.querySelectorAll('.tb').length"))
+        + " mx=" + String(await ev("(function(){try{return Object.keys(localStorage).filter(function(k){return k.indexOf('owlMxView')===0}).map(function(k){return k.slice(10,14)+'='+localStorage.getItem(k)}).join(',')}catch(e){return 'x'}})()"))
+        + " ref=" + String(await ev("document.referrer")) + " navtype=" + String(await ev("(performance.getEntriesByType('navigation')[0]||{}).type")));
+  check("le Nid rows carry no emoji", !/[\u{1F300}-\u{1FAFF}]/u.test(await ev("(document.getElementById('nest')||document.getElementById('tab-nid')||{innerText:''}).innerText")));
   check("no runtime errors on the lab screens", (await ev("(window.__errs||[]).length")) === 0,
         await ev("(window.__errs||[]).slice(0,3).join(' | ')"));
 }

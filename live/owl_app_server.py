@@ -8530,7 +8530,11 @@ function goLabo(){location.href=B+'robots';}
   const tb=$('tb-marche');if(tb){const tn=Array.from(tb.childNodes).find(n=>n.nodeType===3&&n.textContent.trim());if(tn)tn.textContent=T2('En direct','Live');}
   return true;}
  const ORIG=window.mxView;
- window.mxView=function(v,q){if(v==='lab'){try{goLabo();}catch(e){}return;}
+ window.mxView=function(v,q){if(v==='lab'){
+   // 2026-10-17: a 'lab' view SAVED on the phone before 2026-10-12 made every home load jump to Robots (found by
+   // ui_smoke on an old profile). A quiet (on-load) call never navigates: it forgets the saved view instead.
+   if(q){v='market';try{localStorage.setItem('owlMxView:'+B,'market');}catch(e){}}
+   else{try{goLabo();}catch(e){}return;}}
   const scan=v==='scan';try{ORIG(scan?'scan':'market',q);}catch(e){}
   ['edrh','edr'].forEach(id=>{const e=$(id);if(e)e.style.display=scan?'none':'';});
   const b=$('edrback');if(b)b.style.display=scan?'flex':'none';
