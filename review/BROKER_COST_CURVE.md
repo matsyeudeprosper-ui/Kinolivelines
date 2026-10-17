@@ -18,3 +18,14 @@ Readings
 - Owl is nearly flat up to $20 and even ends higher there with 5 fewer trades. To audit (good results get audited hardest): which trades disappear and why - likely the engine's minimum-stop rule skipping tight stops that happened to lose.
 - The live Pro accounts pay ~$4.48 (variable), BELOW the test's native cost: the proof is conservative for them.
 - Zones: green = the best robot keeps >= 70 % of its native result; orange = positive but less; red = nothing positive; Exness = green by definition.
+
+## 2026-10-17 — Audit: why the Owl at a $20 spread "beat" native (+56.66 vs +51.10)
+
+study/spread_audit_owl20.py, result study/spread_audit_owl_20.json. Same ticks, same rules, spread forced to $20.
+* 77 trades are shared: the wider spread costs them $8.24 (native +69.98 -> +61.74), exactly the expected drag.
+* 6 trades exist only at native cost and all 6 LOST (-18.94 together: 09-06, 09-07, 09-10, 10-05, 10-08 x2).
+  At $20 the entry rule does not fire on them (the wider spread moves the fill past the trigger), so they are skipped.
+* 1 trade exists only at $20 and lost -5.06.
+Net: +51.10 - (-18.94) ... = the "gain" at $20 is the accidental removal of six small losers, not a better robot.
+Verdict: composition luck (6 of 83 trades). The cost curve keeps its meaning: wider spread = lower result; the
+$20 point is a noise bump, not a feature to exploit. Nothing to change in the bots or the verdict card.
