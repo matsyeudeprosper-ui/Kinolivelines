@@ -14,7 +14,7 @@
   "lessons: things it learned about the data itself (traps, noise floors).",
   "open: questions it has not answered yet, ranked."
  ],
- "updated": "2026-10-17T12:00:00Z",
+ "updated": "2026-10-17T13:30:03Z",
  "hypotheses": [
   {
    "id": "pb_filter_works",
@@ -2591,6 +2591,16 @@
     "asks.json: none open"
   ],
   "saw": "Nothing new. Wake marker still stuck on the 17:17 trade (flag again to the night session). Twin ext700 just began, nothing to judge. Weekend, market closed. No run, no pile, no proposal. Wrote 'rien'."
+  },
+  {
+   "t": "2026-10-17T13:30:03Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: same 'new' trade a ninth time (FLIP-BOS SELL +12.83 closed 10-16 17:17); trades_total 143 unchanged",
+    "twin ext700: running, 0 trades",
+    "asks.json: none open"
+   ],
+   "saw": "Nothing new. Wake marker still stuck on the 17:17 trade (ninth re-fire - flag to the night session). Weekend, market closed. No run, no pile, no proposal. Wrote 'rien'."
   }
  ],
  "lessons": [
