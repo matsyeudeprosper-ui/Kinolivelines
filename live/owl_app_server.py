@@ -14039,7 +14039,7 @@ def acct_robot_block(user, admin=False):
     if base.startswith("robot-"):
         base = ((PK.get("robot_plugs") or {}).get(uid) or {}).get("prev") or "base"
     nm = lambda r: {"name_fr": r.get("name_fr") or r.get("id"), "name_en": r.get("name_en") or r.get("name_fr") or r.get("id")}
-    out = {"can": bool(uid in BOT_VARIANT and not user.get("public")), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
+    out = {"can": bool((uid in BOT_VARIANT or _generic_bot(user)) and not user.get("public")), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
            "pending": dict(nm(byid.get(pend["robot"]) or {"id": pend["robot"]}), id=pend["robot"], at=pend.get("at")) if pend else None,
            "choices": []}
     if not out["can"]:
@@ -14066,11 +14066,30 @@ def acct_robot_block(user, admin=False):
     return out
 
 
+def _generic_bot(user):
+    """2026-10-17: a member whose bot the manager runs as `structure_bos_bot.py <uid>` (every Automatique sign-up)"""
+    return bool(user and user.get("trade") and user.get("mt5_login") and str(user.get("dedicated") or "").startswith("structure_bos_bot.py "))
+
+
 def _restart_acct_bots(uid):
     """restart the account's Bitcoin bot AND its market bots (<variant>@<SYM>) one after the other, logged to plug.log"""
     v = BOT_VARIANT.get(uid)
     if not v:
-        return False
+        # 2026-10-17 (La place): a generic member's bot is managed - stop it, the manager brings it back within
+        # minutes with the account's new package (same for its market bots)
+        u = next((x for x in users() if x.get("id") == uid), None)
+        if not _generic_bot(u):
+            return False
+        try:
+            import subprocess
+            subprocess.run(["powershell", "-NoProfile", "-Command",
+                            "Get-CimInstance Win32_Process -Filter \"Name like 'python%%'\" | Where-Object { $_.CommandLine -like '*structure_bos_bot.py %s' -or $_.CommandLine -like '*structure_bos_bot.py %s@*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }" % (uid, uid)],
+                           capture_output=True, text=True, timeout=60, creationflags=0x08000000)
+            io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s %s: generic bot stopped, the manager relaunches it\n" % (datetime.now(timezone.utc).isoformat(), uid))
+            return True
+        except Exception as e:
+            io.open(PLUG_LOG, "a", encoding="utf-8").write("\n=== %s %s: generic bot stop FAILED %s\n" % (datetime.now(timezone.utc).isoformat(), uid, e))
+            return False
     try:
         import subprocess
         out = subprocess.run(["powershell", "-NoProfile", "-Command",
@@ -14112,7 +14131,10 @@ def acct_robot_apply(uid, rid, by="member"):
         PK = json.load(open(pp, encoding="utf-8"))
         acc = PK.setdefault("accounts", {})
         if uid not in acc:
-            return {"ok": False, "err": "account"}
+            if _generic_bot(next((x for x in users() if x.get("id") == uid), None)):
+                acc[uid] = "base"                      # 2026-10-17: a managed member runs the base package until told otherwise
+            else:
+                return {"ok": False, "err": "account"}
         plugs = PK.setdefault("robot_plugs", {})
         prev = acc[uid]
         if prev.startswith("robot-"):
@@ -14307,10 +14329,15 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
             if pay == "wallet":
                 if not _OW.pay_from_wallet(uid, price, "robot %s" % rid):
                     return {"ok": False, "err": "wallet"}
+                _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
+                if not _sw.get("ok"):
+                    _OW._credit(uid, price, "refund", "robot %s" % rid)        # the switch failed: nothing is kept
+                    return _sw
                 _OMKT.start_sub(uid, rid, price, "wallet")
                 _OW.on_robot_payment(L.get("by_uid"), uid, rid, price)
                 if L.get("by_uid"):
                     queue_push(L["by_uid"], "\U0001f4b0 Un abonn\u00e9 sur la place", f"Votre robot a un nouvel abonn\u00e9 : ${price * _OW.CREATOR_PCT:.2f} dans votre cagnotte.")
+                return _sw
             else:
                 # crypto: a NOWPayments invoice; the IPN starts the month, the member then taps "Suivre" again
                 cfg = nest_config()
@@ -14330,9 +14357,10 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
                 return {"ok": True, "url": inv["invoice_url"]}
         elif price > 0 and cur and cur.get("rid") == rid and body.get("pay") in ("wallet", "crypto") and str(body.get("renew") or "") == "1":
             pass
-        if price == 0 and not (cur and cur.get("rid") == rid):
-            _OMKT.start_sub(uid, rid, 0.0, "free")
-        return account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
+        _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
+        if _sw.get("ok") and price == 0 and not (cur and cur.get("rid") == rid):
+            _OMKT.start_sub(uid, rid, 0.0, "free")       # recorded only once the switch is accepted
+        return _sw
     return {"ok": False, "err": "?"}
 
 
