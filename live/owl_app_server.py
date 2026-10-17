@@ -224,7 +224,9 @@ SW = (
     "self.addEventListener('fetch',e=>{"
     "if(e.request.method==='GET'&&(/\\/fonts\\//.test(e.request.url)||/icon\\d+m?\\.png$/.test(e.request.url))){"
     "e.respondWith(caches.match(e.request).then(m=>m||fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();caches.open('owl1').then(c=>c.put(e.request,cp));}return r;})));return;}"
-    "if(e.request.mode==='navigate'&&!/owlnest\\.apk|apk\\.json/.test(e.request.url)){"
+    # 2026-10-17 (owner's sign-up test): a form POST is a navigation too; racing it against the 4 s cache fallback
+    # ended on the offline page while the server was fine. The worker only handles GET navigations now.
+    "if(e.request.mode==='navigate'&&e.request.method==='GET'&&!/owlnest\\.apk|apk\\.json|\\/activate|\\/verif/.test(e.request.url)){"
     # 2026-10-04 (owner): fresh first - a change must show on the FIRST open;
     # the cached page only steps in when the network is slow (4 s) or gone
     "const net=fetch(e.request).then(r=>{if(r&&r.ok){const cp=r.clone();"
