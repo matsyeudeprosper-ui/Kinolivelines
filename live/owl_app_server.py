@@ -9206,7 +9206,7 @@ async function nestCodeFor(name,pkg,days,free){
  const r=await fetch(AB()+'actcode',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pwd='+encodeURIComponent(pw)+'&pkg='+encodeURIComponent(pkg)+'&days='+encodeURIComponent(days)+'&for='+encodeURIComponent(name||'')+'&free='+(free?'1':'0')}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
- const msg='Bonjour'+(name?' '+name:'')+', votre code OwlNest '+LAB+' : '+j.code+' ('+days+' jours, valable 7 jours). Nouveau compte : https://owltrader.duckdns.org/activate \u2014 D\u00e9j\u00e0 membre : R\u00e9glages \u203a Abonnement \u203a \u00ab J\u2019ai un code \u00bb.';
+ const msg='Bonjour'+(name?' '+name:'')+', votre code OwlNest '+LAB+' : '+j.code+' ('+days+' jours, valable 7 jours). Nouveau compte : '+(pkg==='family'?'https://owltrader.duckdns.org/offres?inv='+j.code:'https://owltrader.duckdns.org/activate')+' \u2014 D\u00e9j\u00e0 membre : Compte \u203a Abonnement \u203a \u00ab J\u2019ai un code \u00bb.';
  sheet('<h3>Code pour '+name+(j.free?' <span style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);border:1px solid rgba(232,197,90,.4);border-radius:99px;padding:3px 8px;vertical-align:middle">offert</span>':'')+'</h3><div style="font-size:2rem;font-weight:800;letter-spacing:.3em;text-align:center;background:var(--bg);border-radius:14px;padding:18px 6px;margin:6px 0 10px;color:var(--up-soft)">'+j.code+'</div>'+
   '<p style="font-size:.86rem;color:var(--muted2)">'+msg+'</p>'+
   '<button class="shbtn shmain" onclick="(navigator.clipboard?navigator.clipboard.writeText('+JSON.stringify(msg).replace(/"/g,'&quot;')+'):Promise.reject()).then(()=>toast(&#39;Message copi\u00e9&#39;,2000),()=>toast(&#39;Copie impossible&#39;,2000))">Copier le message</button>'+
@@ -17498,7 +17498,7 @@ if(window._en)paint();
 </script>"""
 
 
-def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
+def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=None):
     """2026-10-04 (owner): the shop window. Three cards, a modal per card,
     and a little (i) wherever a newcomer could wonder - in the plainest
     words, for people who have never touched crypto or trading.
@@ -17531,12 +17531,20 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
         """A little (i): tap it, a plain sentence appears."""
         return f"<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"{_h.escape(txt, quote=True)}\" aria-label=\"Explication\">i</button>"
 
-    def tier(k, title, price, sub, lines, color, badge=""):
+    def tier(k, title, price, sub, lines, color, badge="", button=None):
         body = "".join(f"<li>{x}</li>" for x in lines)
         return (f"<div class=\"t\" style=\"--a:{color}\">"
                 f"<div class=\"th\"><div><b>{title}</b>{badge}<div class=\"ts\">{sub}</div></div><div class=\"tp\">{price}</div></div>"
                 f"<ul>{body}</ul>"
-                f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button></div>")
+                + (button or f"<button type=\"button\" class=\"go\" onclick=\"pick('{k}')\">Choisir {title}</button>") + "</div>")
+
+    # 2026-10-17 (owner "Go"): Automatique is NOT sold on the public page any more - the card stays so the nest is
+    # understood, its button goes to Telegram; the sheet opens only from an invitation link (/offres?inv=<code>)
+    import urllib.parse as _upi
+    _tg_text = _upi.quote("Bonjour, je voudrais la formule Automatique (sur invitation).")
+    _fam_btn = (f"<button type=\"button\" class=\"go\" onclick=\"pick('family')\">Ouvrir mon compte</button>" if invite else
+                (f"<a class=\"go\" href=\"{contact}{'&' if '?' in contact else '?'}text={_tg_text}\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;text-align:center;display:block\">Sur invitation &middot; &eacute;crire au Owl</a>" if contact
+                 else "<button type=\"button\" class=\"go\" disabled>Sur invitation</button>"))
 
     tiers = (
         tier("manual", "Signal", "$%d<span>/ 30 jours</span>" % PACKAGES["manual"]["usd"],
@@ -17555,8 +17563,8 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
               + info("Vous choisissez l\u2019entr\u00e9e, le stop, l\u2019objectif, les freins. L\u2019atelier assemble le robot et le met en file pour son test."),
               "Le test sur de vrais prix : 42 jours de Bitcoin tick par tick, puis l&#8217;or et le Nasdaq, avec le contr&ocirc;le du hasard "
               + info("Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard."),
-              "La place des robots : publiez-le, chaque abonn&eacute; vous rapporte du temps d&#8217;abonnement "
-              + info("70 % de chaque mois pay\u00e9 par un abonn\u00e9 va dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement."),
+              "La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l&#8217;argent "
+              + info("30 % de l\u2019abonnement de chaque membre, pour le temps o\u00f9 il tourne avec votre robot, vers\u00e9 en USDT \u00e0 partir de 50 $."),
               "Le graphique complet et la m&eacute;thode en mots simples ; Signal inclus"],
              "var(--warn)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
@@ -17566,7 +17574,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
               "Ses r&egrave;gles, ses freins, son rattrapage apr&egrave;s une perte",
               "Prix fixe chaque mois, r&eacute;gl&eacute; avec le Owl ; code par Telegram "
               + info("Cette formule n\u2019est pas en vente libre : on en parle d\u2019abord ensemble sur Telegram. 50 places au total.")],
-             "var(--accent-soft)", "&nbsp;<span class=\"bdg\">Sur invitation</span>"))
+             "var(--accent-soft)", "&nbsp;<span class=\"bdg\">Sur invitation</span>", button=_fam_btn))
 
     pay_help = ("Choisissez parmi les cryptomonnaies propos&eacute;es sur la page de paiement, puis suivez les instructions. "
                 "Votre acc&egrave;s sera activ&eacute; automatiquement apr&egrave;s confirmation du paiement."
@@ -17827,6 +17835,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
             "if(P!=='family'&&document.getElementById('code').value.trim().length<6){e.preventDefault();unbusy();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
             + _pf_js
+            + ((f"(function(){{try{{pick('family');var c=document.getElementById('code');if(c)c.value={json.dumps(invite)};}}catch(e){{}}}})();") if invite else "")
             + "fn('offers');</script>" + OFFERS_EN_JS + "</body></html>")
 
 
@@ -20541,7 +20550,18 @@ class H(BaseHTTPRequestHandler):
                     _pf = _st.get("form") or None
             except Exception:
                 _pf = None
-            self._send(_offers_page("", "", prefill=_pf), "text/html; charset=utf-8")
+            # 2026-10-17 (owner "Go"): the Automatique sheet opens only from an invitation link carrying a valid,
+            # unused Automatique code (the owner sends it on Telegram); without it the card points to Telegram
+            _inv = None
+            try:
+                _ic = (_q.get("inv", [""])[0] or "").strip().upper()[:12]
+                if len(_ic) >= 6 and not rate_limited(("inv", _ic), limit=20):
+                    _ce = peek_activation_code(_ic)
+                    if _ce and (_ce.get("pkg") or "family") == "family":
+                        _inv = _ic
+            except Exception:
+                _inv = None
+            self._send(_offers_page("", "", prefill=_pf, invite=_inv), "text/html; charset=utf-8")
             return
         if len(parts) == 1 and parts[0] == "activate":
             # 2026-10-04 (owner): one door - everything starts at the login

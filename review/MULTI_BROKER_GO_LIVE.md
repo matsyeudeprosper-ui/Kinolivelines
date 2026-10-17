@@ -57,3 +57,13 @@ the fields with the brand's server as placeholder; "another broker" says the acc
 So nobody at a known-bad broker types a login. The verdict card's robot list is now a two-column comparison
 ("à Exness" / "chez X", gagne / perd) placed BEFORE the doors on a red card. Hints and reasons say "écart", not
 "coût par trade". Verified headless: chips 3, doors 3, fields hidden on FOREX.com; fields shown on Exness.
+
+## 2026-10-17 — Automatique is invitation-only on the public page (owner "Go", legal caution)
+Running trades on members' accounts from our server is the exposed part (automatic execution = portfolio
+management under EU rules); the public one-click sign-up was the exposure, not the member count. Decision: the
+Automatique card stays on /offres (so the nest is understood) but its button is "Sur invitation · écrire au Owl"
+(Telegram, prefilled text). The Automatique sheet opens only from an invitation link /offres?inv=<code> carrying a
+valid, unused Automatique activation code; the owner's code sheet now writes that link into the message for
+Automatique codes. Signal and Stratégie keep the public sign-up. Everything behind the sheet (probe, broker
+chooser, verdict card) is unchanged. Longer-term safe model written in the chat of 2026-10-17: the robot as an
+.ex5 the member runs on their own terminal/VPS, the nest reading results with the investor (read-only) password.
