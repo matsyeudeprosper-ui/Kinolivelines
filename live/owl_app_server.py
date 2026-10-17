@@ -14289,6 +14289,31 @@ def _ref_family_credit(uid, days):
             queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler Automatique : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
     except Exception:
         pass
+    _creator_share(uid, float(nest_config().get("family_usd") or 60) * float(days) / 30.0)
+
+
+def _creator_share(uid, usd):
+    """pay once (owner 2026-10-17): the member's confirmed plan payment -> CREATOR_SHARE to the creator of the robot
+    the member runs right now (nothing for the Owl or the owner's robots)"""
+    try:
+        import owl_market as _OMKT
+        import owl_wallet as _OW
+        _s = _OMKT.sub_of(uid)
+        if not _s:
+            return 0.0
+        _L = _OMKT.listing(_s.get("rid")) or {}
+        _cr = _L.get("by_uid")
+        if not _cr or _cr == uid or _L.get("hidden"):
+            return 0.0
+        _cu = next((u for u in users() if u.get("id") == _cr), None)
+        if _cu is None or is_admin(_cu):
+            return 0.0
+        _c = _OW.on_plan_share(_cr, uid, _s.get("rid"), float(usd))
+        if _c:
+            queue_push(_cr, "\U0001f4b0 Part de cr\u00e9ateur", f"Un membre tourne avec votre robot ce mois : ${_c:.2f} dans vos gains de cr\u00e9ateur.")
+        return _c
+    except Exception:
+        return 0.0
 
 
 def _member_pkg(uid):
@@ -14406,9 +14431,9 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
             return {"ok": False, "err": "no_auto"}
         if L.get("by_uid") == uid:
             return account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)     # the creator runs their own robot for free
-        price = float(L.get("price_usd") or 0)
+        price = 0.0            # pay once (owner 2026-10-17): every robot on the place is included in the plan
         cur = _OMKT.sub_of(uid)
-        if price > 0 and (not (cur and cur.get("rid") == rid) or str(body.get("renew") or "") == "1"):
+        if price > 0:
             if True:
                 # owner 2026-10-17: robot months are real money - paid in crypto through our payment system, never
                 # from the referral cagnotte (time only); the IPN starts the month, the member then taps "Suivre"
@@ -14429,8 +14454,8 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
                     return {"ok": False, "err": "no invoice"}
                 return {"ok": True, "url": inv["invoice_url"]}
         _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
-        if _sw.get("ok") and price == 0 and not (cur and cur.get("rid") == rid):
-            _OMKT.start_sub(uid, rid, 0.0, "free")       # recorded only once the switch is accepted
+        if _sw.get("ok") and not (cur and cur.get("rid") == rid):
+            _OMKT.start_sub(uid, rid, 0.0, "included")   # recorded only once the switch is accepted; open-ended
         return _sw
     return {"ok": False, "err": "?"}
 
@@ -14449,6 +14474,8 @@ def _market_tick():
         _OMKT.refresh_pauses()
         d = _OMKT.data(); R = _OMKT.robots()
         for uid, sub in list((d.get("subs") or {}).items()):
+            if sub.get("open"):
+                continue                      # pay once: included robots have no end date
             until = float(sub.get("until") or 0); rid = sub.get("rid")
             nm = (R.get(rid) or {}).get("name_fr") or rid
             if until <= time.time() and not sub.get("ended"):
@@ -18886,6 +18913,7 @@ class H(BaseHTTPRequestHandler):
                                         queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {PACKAGES[_pkg]['label']} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
                                 except Exception:
                                     pass
+                                _creator_share(_uid, paid)
                                 # 2026-10-03 (owner): an account opened from the public
                                 # page waits for this; now the provisioner may build it
                                 try:

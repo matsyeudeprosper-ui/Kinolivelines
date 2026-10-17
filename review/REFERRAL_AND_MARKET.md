@@ -66,3 +66,17 @@ How it is enforced: `robots_data` returns the full page to everyone but strips p
 list for readers (`builder.can_create=false`, `tier`); POSTs `robot_*`, `piece_*`, `ai_*`, `studio_*`, `robot_test*`
 answer `{"err":"strategy"}` without Stratégie; `account_robot_set` needs a trading account (Automatique);
 `place_follow` needs Automatique and, for a paid robot, a confirmed crypto invoice; `place_publish` needs Stratégie.
+
+## 2026-10-17 — PAY ONCE (owner "Go")
+
+The owner asked whether a member should pay the plan AND a robot month. Decision: no. Every robot on the place is
+INCLUDED in the plan. The creator of the robot a member runs gets CREATOR_SHARE = 30 % of that member's confirmed
+plan payment (crypto IPN or a code settled with the owner, valued at family_usd), in real money, paid in USDT from
+$50 as before. Running the Owl or one of the owner's robots: the nest keeps 100 %. Referral stays time-only.
+
+Mechanics: owl_wallet.on_plan_share (kind "share"), called by owl_app_server._creator_share from the two payment
+confirmation points (_ref_family_credit for codes, the NOWPayments IPN for plans). Subscriptions are OPEN-ENDED
+(owl_market start_sub -> "open": true, no month end, no reminder); a member stops or switches whenever they want.
+No invoice is ever created for a robot; the price picker is gone; listings carry price 0; the "robot:" IPN branch
+stays only for history. Later, with several followed member robots, the add-on plan ("Automatique Plus") can fund
+the creator share instead of the base plan — a configuration change, not a rebuild.

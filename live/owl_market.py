@@ -114,12 +114,8 @@ def publish(rid, uid, alias, blurb, price_usd, open_recipe, is_admin=False):
     ok, why = can_publish(rid, uid, is_admin)
     if not ok:
         return {"ok": False, "err": why}
-    try:
-        price = float(price_usd or 0)
-    except Exception:
-        return {"ok": False, "err": "prix"}
-    if price != 0 and not (PRICE_MIN <= price <= PRICE_MAX):
-        return {"ok": False, "err": "prix entre %d et %d $ (ou gratuit)" % (PRICE_MIN, PRICE_MAX)}
+    price = 0.0          # 2026-10-17 (owner "Go"): pay once - every robot on the place is included in the plan; the
+                         # creator is paid a share of each follower's plan payment (owl_wallet.CREATOR_SHARE)
     alias = str(alias or "").strip()[:24]
     blurb = str(blurb or "").strip()[:160]
     if len(alias) < 2:
@@ -165,14 +161,17 @@ def refresh_pauses():
             _save(MARKET, d)
 
 
+def _active(s):
+    return bool(s) and (bool(s.get("open")) or float(s.get("until") or 0) > time.time())
+
+
 def followers(rid):
-    now = time.time()
-    return [uid for uid, s in data()["subs"].items() if s.get("rid") == rid and float(s.get("until") or 0) > now]
+    return [uid for uid, s in data()["subs"].items() if s.get("rid") == rid and _active(s)]
 
 
 def sub_of(uid):
     s = data()["subs"].get(uid)
-    return s if s and float(s.get("until") or 0) > time.time() else None
+    return s if _active(s) else None
 
 
 def listing(rid):
@@ -180,14 +179,15 @@ def listing(rid):
 
 
 def start_sub(uid, rid, usd, via):
-    """a CONFIRMED payment (wallet or crypto) -> 30 days of this robot for this member; returns the sub"""
+    """the member runs this robot from now on (pay once: included in the plan, OPEN-ENDED until they stop or switch);
+    a legacy paid month (usd > 0) still gets its 30 days. Returns the sub."""
     with _LOCK:
         d = data()
         cur = d["subs"].get(uid) or {}
         base = float(cur.get("until") or 0) if cur.get("rid") == rid else 0.0
-        until = int(max(time.time(), base) + SUB_DAYS * 86400)
+        until = int(max(time.time(), base) + SUB_DAYS * 86400) if float(usd or 0) > 0 else 0
         d["subs"][uid] = {"rid": rid, "price_usd": round(float(usd), 2), "started": cur.get("started") if cur.get("rid") == rid else int(time.time()),
-                          "until": until, "paid_via": via, "auto": False, "last_pay": int(time.time())}
+                          "until": until, "open": float(usd or 0) <= 0, "paid_via": via, "auto": False, "last_pay": int(time.time())}
         d["log"].append({"t": int(time.time()), "ev": "sub", "rid": rid, "uid": uid, "usd": usd, "via": via})
         _save(MARKET, d)
         return d["subs"][uid]
@@ -206,7 +206,7 @@ def stop_sub(uid):
 def expired_subs(grace_s=0):
     """[(uid, sub)] whose month ended (the notifier switches them back to the Owl and tells them)"""
     now = time.time()
-    return [(uid, s) for uid, s in data()["subs"].items() if float(s.get("until") or 0) + grace_s <= now and not s.get("ended")]
+    return [(uid, s) for uid, s in data()["subs"].items() if not s.get("open") and float(s.get("until") or 0) + grace_s <= now and not s.get("ended")]
 
 
 def mark_ended(uid):
@@ -233,7 +233,7 @@ def catalogue(me_uid=None, my_server="", include_hidden=False):
         rb = R.get(rid) or {}
         res = result_of(rid) or {}
         out.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "alias": L.get("alias"), "blurb": L.get("blurb"),
-                    "price_usd": L.get("price_usd") or 0, "free": not L.get("price_usd"), "open_recipe": bool(L.get("open_recipe")),
+                    "price_usd": 0, "free": True, "open_recipe": bool(L.get("open_recipe")),
                     "paused": bool(L.get("paused")), "hidden": bool(L.get("hidden")), "by_uid": L.get("by_uid"), "mine": L.get("by_uid") == me_uid,
                     "published_at": L.get("published_at"), "followers": len(followers(rid)), "by_nest": not rb.get("by_uid"),
                     "test": res, "markets": markets_of(rid), "at_my_broker": at_my_broker.get(rid),
@@ -248,7 +248,11 @@ def creator_stats(uid):
     for rid, L in d["listings"].items():
         if L.get("by_uid") != uid:
             continue
-        earned = sum(float(x.get("usd") or 0) for x in d["log"] if x.get("ev") == "sub" and x.get("rid") == rid) * 0.7
-        out.append({"id": rid, "followers": len(followers(rid)), "price_usd": L.get("price_usd") or 0, "paused": bool(L.get("paused")),
+        try:
+            import owl_wallet as _OW
+            earned = _OW.creator_earned(rid)
+        except Exception:
+            earned = 0.0
+        out.append({"id": rid, "followers": len(followers(rid)), "price_usd": 0, "paused": bool(L.get("paused")),
                     "hidden": bool(L.get("hidden")), "earned_usd": round(earned, 2), "published_at": L.get("published_at")})
     return out

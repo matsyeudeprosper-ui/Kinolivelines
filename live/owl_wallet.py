@@ -4,7 +4,9 @@ dollars, SPENT ONLY AS SUBSCRIPTION TIME. Nobody is ever paid cash, and nothing 
 Money rules (review/REFERRAL_AND_MARKET.md has the arithmetic):
   * a referred member's confirmed payment credits the referrer REF_PCT of it (Signal / Strategie paid in crypto;
     Automatique settled with the owner, valued at nest_config "family_usd");
-  * a robot subscription paid by a follower credits the robot's creator CREATOR_PCT of it;
+  * PAY ONCE (2026-10-17): robots on the place are included in the plan; the creator of the robot a member RUNS gets
+    CREATOR_SHARE of that member's confirmed plan payment, in real money (cash, paid out from PAYOUT_MIN);
+    (legacy: a robot month paid on its own credited CREATOR_PCT - no longer sold)
   * the cagnotte converts into days of the member's CURRENT package at that package's daily price, any time the
     member taps "Utiliser" (floor(usd / daily), at least 1 day); it can also pay a robot subscription in full.
 Files: live/owl_wallet.json {uid: {"usd", "earned", "history": [...]}}; the referral links live on the member
@@ -16,7 +18,9 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 WALLET = os.path.join(DIR, "owl_wallet.json")
 USERS = os.path.join(DIR, "owl_nest_users.json")
 REF_PCT = 0.20            # of each confirmed payment by a referred member
-CREATOR_PCT = 0.70        # of each robot subscription paid by a follower
+CREATOR_PCT = 0.70        # legacy: of a robot month paid on its own (no longer sold since 2026-10-17)
+CREATOR_SHARE = 0.30      # 2026-10-17 (owner "Go"): PAY ONCE - the creator of the robot a member RUNS gets this share
+                          # of that member's plan payment; the Owl and the owner's robots keep 100 % for the nest
 MAX_REF_PER_MONTH = 10    # credited friends per referrer per calendar month (abuse brake)
 _LOCK = threading.Lock()
 
@@ -130,6 +134,33 @@ def on_member_payment(uid, pkg, usd, label=""):
 
 
 PAYOUT_MIN = 50.0         # a creator is paid (USDT, by the owner) once their earnings reach this
+
+
+def on_plan_share(creator_uid, follower_uid, rid, plan_usd):
+    """pay once (owner 2026-10-17): a member's CONFIRMED plan payment, while they run a member's robot -> that creator
+    gets CREATOR_SHARE of it in real money. Nothing when the member runs the Owl or the owner's own robots."""
+    if not creator_uid or creator_uid == follower_uid or plan_usd <= 0:
+        return 0.0
+    credit = round(plan_usd * CREATOR_SHARE, 2)
+    with _LOCK:
+        W = _load(WALLET, {}) or {}
+        w = W.setdefault(creator_uid, {"usd": 0.0, "earned": 0.0, "history": []})
+        w["cash"] = round(float(w.get("cash") or 0) + credit, 2)
+        w["cash_earned"] = round(float(w.get("cash_earned") or 0) + credit, 2)
+        w.setdefault("cash_history", []).append({"t": int(time.time()), "usd": credit, "kind": "share", "note": "%s <- %s" % (rid, follower_uid)})
+        w["cash_history"] = w["cash_history"][-300:]
+        _save(WALLET, W)
+    return credit
+
+
+def creator_earned(rid):
+    """what a listed robot has earned its creator in all (the sum of its shares and legacy robot months)"""
+    tot = 0.0
+    for w in (_load(WALLET, {}) or {}).values():
+        for h in w.get("cash_history") or []:
+            if str(h.get("note") or "").startswith(rid + " <-"):
+                tot += float(h.get("usd") or 0)
+    return round(tot, 2)
 
 
 def on_robot_payment(creator_uid, follower_uid, rid, usd):
