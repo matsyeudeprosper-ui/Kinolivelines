@@ -1769,7 +1769,7 @@ function route(){const h=new URLSearchParams(location.hash.slice(1));const id=h.
  if(sid&&!aid){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(!STU||STU.id!==sid){$('det').innerHTML='<div class="skel"></div>';openStudio(sid);}else renderStudio();window.scrollTo(0,0);return;}
  if(bid&&RB&&bById(bid)){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=bById(bid);CUR=null;CURR=null;document.body.classList.add('det');renderB();window.scrollTo(0,0);return;}
  if(h.has('zt')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}head();CURB=null;CUR=null;CURR=null;document.body.classList.add('det');if(h.get('zt'))ZT.rid=h.get('zt');renderZT();ztLoadMk().then(()=>{if(new URLSearchParams(location.hash.slice(1)).has('zt'))renderZT();});window.scrollTo(0,0);return;}
- if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
+ if(h.get('new')&&RB){if(SIDE!=='robots'){SIDE='robots';doors();}CURB=null;CUR=null;CURR=null;if(!NEWD)NEWD={parent:(h.get('new')!=='1'&&bById(h.get('new')))?h.get('new'):'owl',parts:{},name:''};document.body.classList.add('det');renderNew();window.scrollTo(0,0);return;}
  if((id&&!D)||((rid||bid||pid||aid||h.get('new')||h.get('mk')||h.has('zt'))&&!RB)){load();return;}
  NAV=0;NEWD=null;MK=null;clearTimeout(AIT);document.body.classList.remove('det');CUR=null;CURR=null;CURB=null;head();paint();}
 // 2026-10-13 (owner): the Labo is the Strategie package (never part of Family) - the lock says what it opens and where to get it
