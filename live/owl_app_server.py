@@ -14451,6 +14451,29 @@ def referral_payload(user):
             "inf": _inf_block(user, st)}
 
 
+def _INF_STATUS(uid):
+    import owl_influencers as _INF
+    return _INF.status(uid)
+
+
+def _inf_autocheck(uid, name):
+    """2026-10-17 (owner: "approve without asking"): fetch the publication, look for the code or the link; found ->
+    approved on the spot and both sides told; otherwise the owner's queue shows the reason and the link's traffic"""
+    import owl_influencers as _INF
+    import owl_wallet as _OW
+    try:
+        code = _OW.code_of(uid)
+        r = _INF.verify(uid, code, f"owltrader.duckdns.org/offres?p={code}")
+        ck = (r or {}).get("auto_check") or {}
+        if (r or {}).get("status") == "approved" and str((r or {}).get("review_note", "")).startswith("auto"):
+            queue_push(uid, "\U0001f3ac Programme créateurs : approuvé", f"Votre publication est validée ({ck.get('reason')}). Dès maintenant, {int(_OW.INF_PCT * 100)} % de chaque mois payé par vos abonnés est pour vous, pendant leurs {_OW.INF_MONTHS} premiers mois.")
+            queue_push("kino", "\U0001f3ac Créateur approuvé automatiquement", f"{name} : {ck.get('reason')}. Compte › Créateurs pour voir ou retirer.")
+        elif (r or {}).get("status") == "pending":
+            queue_push("kino", "\U0001f3ac Demande créateur à regarder", f"{name} : {ck.get('reason') or 'vérification impossible'}. Compte › Créateurs pour décider.")
+    except Exception:
+        pass
+
+
 def _inf_block(user, st):
     import owl_influencers as _INF
     import owl_wallet as _OW
@@ -14460,10 +14483,16 @@ def _inf_block(user, st):
            "reviewed_t": r.get("reviewed_t"), "review_note": r.get("review_note") or "", "pct": int(_OW.INF_PCT * 100), "months": _OW.INF_MONTHS,
            "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring"),
            "expected": st.get("expected")}
+    out["auto_check"] = r.get("auto_check")
+    out["clicks"] = st.get("clicks"); out["conversion"] = st.get("conversion")
     if is_admin(user):
         _nm = {u.get("id"): (u.get("name") or u.get("id")) for u in users()}
-        out["pending"] = [dict(p, name=_nm.get(p["uid"], p["uid"])) for p in _INF.pending()]
-        out["approved"] = sorted(_INF.approved_uids())
+        _rows = []
+        for p in _INF.pending():
+            _s = _OW.referral_stats(p["uid"])
+            _rows.append(dict(p, name=_nm.get(p["uid"], p["uid"]), clicks=_s["clicks"], signed=_s["signed"], paid=_s["paid"]))
+        out["pending"] = _rows
+        out["approved"] = [{"uid": k, "name": _nm.get(k, k)} for k in sorted(_INF.approved_uids())]
     return out
 
 
@@ -14487,8 +14516,15 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
             return {"ok": False, "err": "public"}
         r = _INF.apply(uid, body.get("channel"), body.get("video"), body.get("note"), platform=body.get("platform"))
         if r.get("ok"):
-            queue_push("kino", "\U0001f3ac Demande créateur", f"{user.get('name') or uid} demande le programme créateurs. Voir Compte › Parrainage pour approuver.")
+            threading.Thread(target=_inf_autocheck, args=(uid, user.get("name") or uid), daemon=True).start()
         return r
+    if action == "inf_recheck":
+        if not admin:
+            return {"ok": False, "err": "owner"}
+        _tu = str(body.get("uid") or "")
+        _nm = next((u.get("name") for u in users() if u.get("id") == _tu), _tu)
+        _inf_autocheck(_tu, _nm)
+        return {"ok": True, "check": ((_INF_STATUS(_tu) or {}).get("auto_check"))}
     if action == "inf_review":
         if not admin:
             return {"ok": False, "err": "owner"}
@@ -18823,7 +18859,7 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
-        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use", "wallet_addr", "payout_mark", "inf_apply", "inf_review"):
+        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use", "wallet_addr", "payout_mark", "inf_apply", "inf_review", "inf_recheck"):
             # 2026-10-17 (owner): La place des robots + the cagnotte
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public"):
@@ -20608,6 +20644,14 @@ class H(BaseHTTPRequestHandler):
             try:
                 import urllib.parse as _upq
                 _q = _upq.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                # 2026-10-17 (owner): count the visit to a referral link (per code, per day, daily uniques; no IP stored)
+                _pc = (_q.get("p", [""])[0] or "").strip().upper()[:9]
+                if _pc.startswith("OWL-") and not rate_limited(("refclick", self.client_address[0]), limit=30):
+                    try:
+                        import owl_wallet as _OWc
+                        _OWc.record_click(_pc, (self.headers.get("X-Forwarded-For") or self.client_address[0] or "").split(",")[0].strip())
+                    except Exception:
+                        pass
                 _ej = re.sub(r"[^a-z0-9]", "", (_q.get("edit", [""])[0] or "").lower())[:24]
                 if _ej:
                     import broker_book as _BB

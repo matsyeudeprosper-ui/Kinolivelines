@@ -154,6 +154,70 @@ def on_member_payment(uid, pkg, usd, label=""):
     return ref, credit
 
 
+# ---- link traffic (owner 2026-10-17: "do we track traffic to the referral link?") ----
+CLICKS = os.path.join(DIR, "owl_ref_clicks.json")
+SALT_F = os.path.join(DIR, "owl_ref_salt")
+
+
+def _salt():
+    try:
+        return open(SALT_F, encoding="utf-8").read().strip() or "owl"
+    except Exception:
+        import secrets
+        s = secrets.token_hex(16)
+        try:
+            open(SALT_F, "w", encoding="utf-8").write(s)
+        except Exception:
+            pass
+        return s
+
+
+def record_click(code, ip):
+    """a visit to /offres?p=<code>: +1 for the day, and a daily unique through a salted hash (no IP is stored).
+    {code: {"YYYY-MM-DD": {"n": hits, "u": [hash, ...]}}} - the last 90 days only"""
+    uid = uid_of_code(code)
+    if not uid:
+        return False
+    code = str(code).strip().upper()
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    h = hashlib.sha256((_salt() + "|" + day + "|" + str(ip or "")).encode()).hexdigest()[:12]
+    with _LOCK:
+        C = _load(CLICKS, {}) or {}
+        c = C.setdefault(code, {})
+        d = c.setdefault(day, {"n": 0, "u": []})
+        d["n"] = int(d.get("n") or 0) + 1
+        if h not in d["u"]:
+            d["u"].append(h)
+        cutoff = time.strftime("%Y-%m-%d", time.gmtime(time.time() - 90 * 86400))
+        for k in [k for k in c if k < cutoff]:
+            c.pop(k, None)
+        _save(CLICKS, C)
+    return True
+
+
+def clicks_of(uid):
+    """{d7, d30, total, u7, u30, today} for this member's link"""
+    code = code_of(uid)
+    c = (_load(CLICKS, {}) or {}).get(code) or {}
+    now = time.time()
+    out = {"today": 0, "d7": 0, "d30": 0, "total": 0, "u7": 0, "u30": 0}
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    for day, d in c.items():
+        try:
+            age = (now - time.mktime(time.strptime(day, "%Y-%m-%d"))) / 86400.0
+        except Exception:
+            continue
+        n, u = int(d.get("n") or 0), len(d.get("u") or [])
+        out["total"] += n
+        if day == today:
+            out["today"] += n
+        if age <= 7:
+            out["d7"] += n; out["u7"] += u
+        if age <= 30:
+            out["d30"] += n; out["u30"] += u
+    return out
+
+
 def referral_stats(uid):
     """the referrer's campaign: every friend who signed up with the code, whether their first month is paid, what it
     earned, plus the totals - the numbers behind the Parrainage page"""
@@ -181,7 +245,9 @@ def referral_stats(uid):
     this_month = months.get(time.strftime("%Y-%m", time.gmtime()), 0.0)
     series = [{"m": m, "usd": months.get(m, 0.0)} for m in sorted(months)[-6:]]
     active = sum(1 for f in friends if f["paid"] and (now - float(f.get("paid_t") or 0)) < 35 * 86400)
+    ck = clicks_of(uid)
     return {"friends": friends, "signed": len(friends), "paid": sum(1 for x in friends if x["paid"]), "earned": earned,
+            "clicks": ck, "conversion": (round(100.0 * len(friends) / ck["u30"], 1) if ck["u30"] else None),
             "cash_ref": round(float(w.get("cash_ref") or 0), 2), "pct": int(REF_PCT * 100), "payout_min": REF_PAYOUT_MIN,
             "inf_pct": int(INF_PCT * 100), "inf_months": INF_MONTHS, "this_month": this_month, "series": series, "active": active,
             "expected": round(sum(f["last_paid"] * INF_PCT for f in friends if f["paid"] and f["months_left"] > 0 and (now - float(f.get("paid_t") or 0)) < 35 * 86400), 2),

@@ -164,5 +164,36 @@ for i in range(14):
 n_v2 = sum(1 for h in W.earnings("yt")["history"] if h.get("kind") == "influencer" and h.get("friend") == "v2")
 check("the 30 %% stops after %d paid months of the same user" % W.INF_MONTHS, n_v2 == W.INF_MONTHS, n_v2)
 check("months_left reaches 0 for that user", max(W.referral_stats("yt")["friends"], key=lambda f: f["usd"])["months_left"] == 0)
+
+print("LINK TRAFFIC + AUTO-CHECK")
+W.CLICKS = os.path.join(TMP, "clicks.json"); W.SALT_F = os.path.join(TMP, "salt")
+code = W.code_of("ann")
+check("a visit with an unknown code is ignored", W.record_click("OWL-ZZZZZ", "1.2.3.4") is False)
+for ip in ("1.2.3.4", "1.2.3.4", "5.6.7.8"):
+    W.record_click(code, ip)
+ck = W.clicks_of("ann")
+check("3 hits, 2 unique visitors today", ck["today"] == 3 and ck["u7"] == 2 and ck["d30"] == 3, ck)
+check("no IP is stored, only a salted hash", "1.2.3.4" not in open(W.CLICKS).read())
+check("stats carry the clicks and a conversion rate", W.referral_stats("ann")["clicks"]["u7"] == 2 and W.referral_stats("ann")["conversion"] is not None)
+check("SSRF guard: localhost refused", INF._public_host("http://127.0.0.1:8787/") is False and INF._public_host("http://192.168.1.5/") is False)
+check("SSRF guard: a public name is allowed", INF._public_host("https://example.com/") is True)
+check("a file: or ftp: link is refused", INF._public_host("file:///etc/passwd") is False)
+
+print("AUTOMATIC CHECK OF THE PUBLICATION")
+check("our own pages are never a proof", INF._public_host("https://owltrader.duckdns.org/offres?p=OWL-ABCDE") is False)
+check("a bare IP is never a publication", INF._public_host("http://8.8.8.8/post") is False)
+INF.apply("yt2", "https://youtube.com/@two", "https://example.com/video-two", platform="youtube")
+_real = INF.fetch_text
+INF.fetch_text = lambda url: "<html>my OwlNest code is " + W.code_of("yt2") + " enjoy</html>"
+r = INF.verify("yt2", W.code_of("yt2"), "owltrader.duckdns.org/offres?p=" + W.code_of("yt2"))
+check("code found on the page -> approved automatically", r["status"] == "approved" and r["auto_check"]["found"] is True and r["review_note"].startswith("auto"), r.get("auto_check"))
+INF.apply("yt3", "", "https://example.com/other", platform="blog")
+INF.fetch_text = lambda url: "<html>nothing about it</html>"
+r = INF.verify("yt3", W.code_of("yt3"), "")
+check("code absent -> stays pending with the reason", r["status"] == "pending" and r["auto_check"]["found"] is False and "absent" in r["auto_check"]["reason"], r.get("auto_check"))
+INF.fetch_text = lambda url: None
+r = INF.verify("yt3", W.code_of("yt3"), "")
+check("page unreadable -> stays pending, says so", r["status"] == "pending" and "illisible" in r["auto_check"]["reason"])
+INF.fetch_text = _real
 print("\n%d checks, %d failed" % (N[0], N[1]))
 sys.exit(1 if N[1] else 0)

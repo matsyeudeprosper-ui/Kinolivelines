@@ -90,3 +90,76 @@ def pending():
 
 def approved_uids():
     return {k for k, v in _load().items() if v.get("status") == "approved"}
+
+
+# ---- automatic check (owner 2026-10-17: "approve without asking, all automated") ----
+AUTO_APPROVE = True
+FETCH_TIMEOUT = 12
+FETCH_MAX = 2 * 1024 * 1024
+
+
+def _public_host(url):
+    """SSRF guard: only http(s) to a public address - never our own server, a LAN box or a cloud metadata address"""
+    import socket, ipaddress
+    from urllib.parse import urlparse
+    try:
+        u = urlparse(url)
+        if u.scheme not in ("http", "https") or not u.hostname:
+            return False
+        if u.hostname.lower().endswith(("owltrader.duckdns.org", "duckdns.org")):
+            return False                     # our own pages always show the code: never a proof
+        if u.hostname.lower() in ("localhost",) or u.hostname.replace(".", "").isdigit():
+            return False                     # names only; a bare IP is never a publication
+        for info in socket.getaddrinfo(u.hostname, None):
+            ip = ipaddress.ip_address(info[4][0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast or ip.is_unspecified:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def fetch_text(url):
+    """the publication's page, as text (HTML, best effort), or None"""
+    import urllib.request
+    if not _public_host(url):
+        return None
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Linux; Android 13) OwlNest-check/1.0", "Accept": "text/html,*/*"})
+        with urllib.request.urlopen(req, timeout=FETCH_TIMEOUT) as r:
+            if not _public_host(r.geturl()):
+                return None
+            return r.read(FETCH_MAX).decode("utf-8", "replace")
+    except Exception:
+        return None
+
+
+def verify(uid, code, link=""):
+    """fetch the publication and look for the member's code or link. Records the result on the application:
+    auto_check = {"t", "found", "reason"}. Returns the record. Approves when found and AUTO_APPROVE is on."""
+    r = _load().get(uid)
+    if not r:
+        return None
+    url = r.get("video") or ""
+    txt = fetch_text(url)
+    found = False; reason = ""
+    if txt is None:
+        reason = "page illisible (site fermé ou privé)"
+    else:
+        hay = txt.upper()
+        if code and code.upper() in hay:
+            found = True; reason = "code trouvé sur la page"
+        elif link and link.lower() in txt.lower():
+            found = True; reason = "lien trouvé sur la page"
+        else:
+            reason = "code absent de la page"
+    with _LOCK:
+        d = _load()
+        r = d.get(uid)
+        if not r:
+            return None
+        r["auto_check"] = {"t": int(time.time()), "found": found, "reason": reason}
+        if found and AUTO_APPROVE and r.get("status") == "pending":
+            r["status"] = "approved"; r["reviewed_t"] = int(time.time()); r["review_note"] = "auto : " + reason
+        _save(d)
+    return r

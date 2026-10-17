@@ -147,3 +147,13 @@ Facebook, Telegram, blog/site, podcast, other) and ONE link to the publication t
 creator's link or code; the page/profile link is optional. Closed Telegram / Facebook groups: the invite link plus
 a screenshot of the pinned message sent to the Owl on Telegram. The data is the final proof: sign-ups through the
 link appear on the dashboard whether approved or not.
+
+## 2026-10-17 late — Link traffic + automatic check (owner: "do we track traffic? approve without asking?")
+Traffic: every visit to /offres?p=<code> is counted per code and per day (hits + daily uniques through a salted
+hash, owl_ref_clicks.json, 90 days, no IP stored; rate-limited 30/10 min per address). The Parrainage page shows
+"visiteurs 30 j"; the creator dashboard shows visitors 30 d / 7 d and the sign-ups-per-visitor rate.
+Automatic check: on application the server fetches the publication (public hosts only - SSRF guard refuses private,
+loopback, link-local, bare IPs and our own domain, which always shows the code) and looks for the member's code or
+link. Found -> approved on the spot (review_note "auto : ..."), creator and owner told. Not found or unreadable ->
+stays in the owner's queue with the reason, the link's visitors, sign-ups and paid counts, and a "re-vérifier"
+button. Tests: 80 checks (review/test_market_wallet.py).
