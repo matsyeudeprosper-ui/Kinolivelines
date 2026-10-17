@@ -1,14 +1,14 @@
 {
- "updated": "2026-10-16T10:26:51+00:00",
+ "updated": "2026-10-17T10:13:13+00:00",
  "symbol": "BTCUSDm",
  "days": 41.7,
  "base": {
   "full": {
-   "net": 37.4,
-   "maxdd": -72.15,
-   "worst_debt": 72.15,
-   "trades": 260,
-   "wr": 56.5,
+   "net": 28.49,
+   "maxdd": -78.17,
+   "worst_debt": 78.17,
+   "trades": 261,
+   "wr": 56.7,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -16,200 +16,200 @@
    "internal": 0,
    "curve": [
     [
-     "2026-09-04",
-     0.0
-    ],
-    [
      "2026-09-05",
      0.0
     ],
     [
      "2026-09-06",
-     -2.2
+     -1.84
     ],
     [
      "2026-09-07",
-     3.89
+     -0.55
     ],
     [
      "2026-09-08",
-     10.86
+     9.58
     ],
     [
      "2026-09-09",
-     8.51
+     7.23
     ],
     [
      "2026-09-10",
-     33.03
+     31.75
     ],
     [
      "2026-09-11",
-     40.64
+     39.36
     ],
     [
      "2026-09-12",
-     58.79
+     57.51
     ],
     [
      "2026-09-13",
-     60.87
+     59.59
     ],
     [
      "2026-09-14",
-     63.79
+     62.51
     ],
     [
      "2026-09-15",
-     63.13
+     61.85
     ],
     [
      "2026-09-16",
-     62.22
+     60.94
     ],
     [
      "2026-09-17",
-     62.22
+     60.94
     ],
     [
      "2026-09-18",
-     62.22
+     60.94
     ],
     [
      "2026-09-19",
-     57.6
+     56.32
     ],
     [
      "2026-09-20",
-     57.6
+     56.32
     ],
     [
      "2026-09-21",
-     41.26
+     39.98
     ],
     [
      "2026-09-22",
-     35.7
+     34.42
     ],
     [
      "2026-09-23",
-     51.9
+     50.62
     ],
     [
      "2026-09-24",
-     26.95
+     25.67
     ],
     [
      "2026-09-25",
-     34.46
+     33.18
     ],
     [
      "2026-09-26",
-     34.46
+     33.18
     ],
     [
      "2026-09-27",
-     34.46
+     33.18
     ],
     [
      "2026-09-28",
-     27.21
+     25.93
     ],
     [
      "2026-09-29",
-     16.09
+     14.81
     ],
     [
      "2026-09-30",
-     28.4
+     27.12
     ],
     [
      "2026-10-01",
-     59.11
+     57.83
     ],
     [
      "2026-10-02",
-     54.9
+     53.62
     ],
     [
      "2026-10-03",
-     85.65
+     84.37
     ],
     [
      "2026-10-04",
-     85.65
+     84.37
     ],
     [
      "2026-10-05",
-     86.46
+     85.18
     ],
     [
      "2026-10-06",
-     107.94
+     106.66
     ],
     [
      "2026-10-07",
-     76.7
+     75.43
     ],
     [
      "2026-10-08",
-     77.54
+     76.26
     ],
     [
      "2026-10-09",
-     54.18
+     52.9
     ],
     [
      "2026-10-10",
-     44.51
+     43.23
     ],
     [
      "2026-10-11",
-     48.47
+     47.2
     ],
     [
      "2026-10-12",
-     45.11
+     43.83
     ],
     [
      "2026-10-13",
-     36.68
+     35.4
     ],
     [
      "2026-10-14",
-     39.61
+     38.33
     ],
     [
      "2026-10-15",
-     55.39
+     54.12
     ],
     [
      "2026-10-16",
-     35.79
+     34.51
     ],
     [
-     "2026-10-16",
-     37.4
+     "2026-10-17",
+     28.49
+    ],
+    [
+     "2026-10-17",
+     28.49
     ]
    ],
    "pnls": [
-    -2.93,
+    -2.57,
     -1.65,
     1.13,
     1.25,
     2.84,
     -3.04,
     0.7,
-    5.09,
+    9.27,
     2.01,
-    -2.79,
+    -6.01,
+    -4.99,
     3.18,
-    -0.88,
+    -1.65,
     -3.63,
     2.61,
     1.32,
     1.5,
-    -3.16,
     -1.29,
     -3.67,
     1.94,
@@ -451,7 +451,9 @@
     -9.93,
     -3.78,
     3.84,
-    1.61
+    1.61,
+    -13.7,
+    6.07
    ],
    "trailed": 0,
    "trail_exits": 0,
@@ -511,7 +513,7 @@
    "tl_events": []
   },
   "h1": {
-   "net": 34.46,
+   "net": 33.18,
    "maxdd": -36.84,
    "worst_debt": 36.84,
    "trades": 125,
@@ -523,116 +525,116 @@
    "internal": 0,
    "curve": [
     [
-     "2026-09-04",
-     0.0
-    ],
-    [
      "2026-09-05",
      0.0
     ],
     [
      "2026-09-06",
-     -2.2
+     -1.84
     ],
     [
      "2026-09-07",
-     3.89
+     -0.55
     ],
     [
      "2026-09-08",
-     10.86
+     9.58
     ],
     [
      "2026-09-09",
-     8.51
+     7.23
     ],
     [
      "2026-09-10",
-     33.03
+     31.75
     ],
     [
      "2026-09-11",
-     40.64
+     39.36
     ],
     [
      "2026-09-12",
-     58.79
+     57.51
     ],
     [
      "2026-09-13",
-     60.87
+     59.59
     ],
     [
      "2026-09-14",
-     63.79
+     62.51
     ],
     [
      "2026-09-15",
-     63.13
+     61.85
     ],
     [
      "2026-09-16",
-     62.22
+     60.94
     ],
     [
      "2026-09-17",
-     62.22
+     60.94
     ],
     [
      "2026-09-18",
-     62.22
+     60.94
     ],
     [
      "2026-09-19",
-     57.6
+     56.32
     ],
     [
      "2026-09-20",
-     57.6
+     56.32
     ],
     [
      "2026-09-21",
-     41.26
+     39.98
     ],
     [
      "2026-09-22",
-     35.7
+     34.42
     ],
     [
      "2026-09-23",
-     51.9
+     50.62
     ],
     [
      "2026-09-24",
-     26.95
+     25.67
     ],
     [
      "2026-09-25",
-     34.46
+     33.18
     ],
     [
-     "2026-09-25",
-     34.46
+     "2026-09-26",
+     33.18
+    ],
+    [
+     "2026-09-26",
+     33.18
     ]
    ],
    "pnls": [
-    -2.93,
+    -2.57,
     -1.65,
     1.13,
     1.25,
     2.84,
     -3.04,
     0.7,
-    5.09,
+    9.27,
     2.01,
-    -2.79,
+    -6.01,
+    -4.99,
     3.18,
-    -0.88,
+    -1.65,
     -3.63,
     2.61,
     1.32,
     1.5,
-    -3.16,
     -1.29,
     -3.67,
     1.94,
@@ -800,11 +802,11 @@
    "tl_events": []
   },
   "h2": {
-   "net": -11.84,
-   "maxdd": -72.15,
-   "worst_debt": 72.15,
-   "trades": 140,
-   "wr": 53.6,
+   "net": -9.01,
+   "maxdd": -78.17,
+   "worst_debt": 78.17,
+   "trades": 139,
+   "wr": 55.4,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -812,116 +814,114 @@
    "internal": 0,
    "curve": [
     [
-     "2026-09-25",
+     "2026-09-26",
      0.0
     ],
     [
-     "2026-09-26",
-     -11.78
-    ],
-    [
      "2026-09-27",
-     -11.78
+     2.15
     ],
     [
      "2026-09-28",
-     -9.51
+     6.32
     ],
     [
      "2026-09-29",
-     -20.63
+     -4.8
     ],
     [
      "2026-09-30",
-     -12.4
+     7.51
     ],
     [
      "2026-10-01",
-     9.87
+     20.33
     ],
     [
      "2026-10-02",
-     5.67
+     16.12
     ],
     [
      "2026-10-03",
-     36.41
+     46.87
     ],
     [
      "2026-10-04",
-     36.41
+     46.87
     ],
     [
      "2026-10-05",
-     37.22
+     47.68
     ],
     [
      "2026-10-06",
-     58.7
+     69.16
     ],
     [
      "2026-10-07",
-     27.47
+     37.93
     ],
     [
      "2026-10-08",
-     28.3
+     38.76
     ],
     [
      "2026-10-09",
-     4.95
+     15.4
     ],
     [
      "2026-10-10",
-     -4.73
+     5.73
     ],
     [
      "2026-10-11",
-     -0.76
+     9.7
     ],
     [
      "2026-10-12",
-     -4.13
+     6.33
     ],
     [
      "2026-10-13",
-     -12.56
+     -2.1
     ],
     [
      "2026-10-14",
-     -9.63
+     0.83
     ],
     [
      "2026-10-15",
-     6.16
+     16.62
     ],
     [
      "2026-10-16",
-     -13.45
+     -2.99
     ],
     [
-     "2026-10-16",
-     -11.84
+     "2026-10-17",
+     -9.01
+    ],
+    [
+     "2026-10-17",
+     -9.01
     ]
    ],
    "pnls": [
-    -3.7,
-    -2.74,
-    6.07,
-    -11.41,
-    9.52,
+    2.15,
+    6.0,
     -2.97,
+    4.09,
     -2.11,
-    -2.47,
+    -4.42,
     1.08,
     -2.14,
     8.89,
-    -7.52,
+    -4.24,
     -7.74,
     -7.59,
     4.2,
     -4.61,
-    13.14,
+    17.22,
     -2.49,
     1.22,
     3.44,
@@ -929,7 +929,7 @@
     -7.85,
     2.99,
     11.92,
-    15.21,
+    5.76,
     2.55,
     9.11,
     -4.64,
@@ -1043,7 +1043,9 @@
     -9.93,
     -3.78,
     3.84,
-    1.61
+    1.61,
+    -13.7,
+    6.07
    ],
    "trailed": 0,
    "trail_exits": 0,
@@ -1176,10 +1178,10 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -62.41,
+    "net": -61.45,
     "maxdd": -81.67,
     "worst_debt": 81.67,
-    "trades": 288,
+    "trades": 291,
     "wr": 72.2,
     "blocked": 0,
     "minbal": 0,
@@ -1244,11 +1246,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": -11.94,
+    "net": -10.97,
     "maxdd": -41.11,
     "worst_debt": 41.11,
-    "trades": 142,
-    "wr": 72.5,
+    "trades": 145,
+    "wr": 72.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1312,11 +1314,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -60.92,
+    "net": -60.99,
     "maxdd": -71.74,
     "worst_debt": 71.74,
-    "trades": 153,
-    "wr": 70.6,
+    "trades": 151,
+    "wr": 71.5,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1385,35 +1387,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -99.81,
-     "diff_worst": 9.52
+     "diff_net": -89.94,
+     "diff_worst": 3.5
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -99.81,
-     "diff_worst": 9.52
+     "diff_net": -89.94,
+     "diff_worst": 3.5
     }
    },
    "src": "battery",
-   "diff_net": -99.81,
-   "diff_worst": 9.52,
-   "net_raw": -62.41,
+   "diff_net": -89.94,
+   "diff_worst": 3.5,
+   "net_raw": -61.45,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -243.99,
-    "diff_worst": 32.04,
-    "h1": -193.98,
-    "h2": -35.58,
-    "net": -40.28,
-    "worst": 114.2,
-    "trades": 518
+    "diff_net": -248.89,
+    "diff_worst": 36.01,
+    "h1": -197.79,
+    "h2": -34.73,
+    "net": -61.12,
+    "worst": 124.19,
+    "trades": 516
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 82,
-    "blocked": 9,
+    "blocked": 10,
     "net": -32.02,
     "worst": 75.69,
     "diff_net": 4.29,
@@ -1492,11 +1494,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -0.73,
-    "maxdd": -78.79,
-    "worst_debt": 78.79,
-    "trades": 291,
-    "wr": 68.4,
+    "net": -8.5,
+    "maxdd": -83.84,
+    "worst_debt": 83.84,
+    "trades": 293,
+    "wr": 68.6,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1509,9 +1511,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 86.36,
-    "mtm_dd_close": 86.23,
-    "cc_dd": 83.72,
+    "mtm_dd_adverse": 90.82,
+    "mtm_dd_close": 90.21,
+    "cc_dd": 90.16,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -1560,11 +1562,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 26.95,
+    "net": 25.19,
     "maxdd": -41.69,
     "worst_debt": 41.69,
-    "trades": 145,
-    "wr": 69.7,
+    "trades": 146,
+    "wr": 69.9,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1628,11 +1630,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -23.69,
-    "maxdd": -78.79,
-    "worst_debt": 78.79,
-    "trades": 156,
-    "wr": 66.7,
+    "net": -31.51,
+    "maxdd": -83.84,
+    "worst_debt": 83.84,
+    "trades": 155,
+    "wr": 67.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1645,9 +1647,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 86.36,
-    "mtm_dd_close": 86.23,
-    "cc_dd": 83.71,
+    "mtm_dd_adverse": 90.82,
+    "mtm_dd_close": 90.21,
+    "cc_dd": 90.15,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -1701,35 +1703,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -38.13,
-     "diff_worst": 6.64
+     "diff_net": -36.99,
+     "diff_worst": 5.67
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -38.13,
-     "diff_worst": 6.64
+     "diff_net": -36.99,
+     "diff_worst": 5.67
     }
    },
    "src": "battery",
-   "diff_net": -38.13,
-   "diff_worst": 6.64,
-   "net_raw": -0.73,
+   "diff_net": -36.99,
+   "diff_worst": 5.67,
+   "net_raw": -8.5,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -185.38,
-    "diff_worst": 25.75,
-    "h1": -157.28,
-    "h2": -24.03,
-    "net": 18.33,
-    "worst": 107.91,
-    "trades": 510
+    "diff_net": -196.95,
+    "diff_worst": 28.73,
+    "h1": -168.99,
+    "h2": -15.06,
+    "net": -9.18,
+    "worst": 116.91,
+    "trades": 505
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 78,
-    "blocked": 13,
+    "blocked": 14,
     "net": -7.18,
     "worst": 76.26,
     "diff_net": 29.13,
@@ -1808,11 +1810,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 20.93,
-    "maxdd": -78.46,
-    "worst_debt": 78.46,
-    "trades": 278,
-    "wr": 62.6,
+    "net": 12.1,
+    "maxdd": -84.49,
+    "worst_debt": 84.49,
+    "trades": 280,
+    "wr": 62.9,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1825,9 +1827,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 83.28,
-    "mtm_dd_close": 83.15,
-    "cc_dd": 81.29,
+    "mtm_dd_adverse": 89.72,
+    "mtm_dd_close": 89.1,
+    "cc_dd": 88.99,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -1876,11 +1878,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 31.86,
+    "net": 30.24,
     "maxdd": -39.98,
     "worst_debt": 39.98,
-    "trades": 138,
-    "wr": 63.8,
+    "trades": 139,
+    "wr": 64.0,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1944,11 +1946,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -45.0,
-    "maxdd": -78.46,
-    "worst_debt": 78.46,
-    "trades": 145,
-    "wr": 60.0,
+    "net": -61.49,
+    "maxdd": -89.01,
+    "worst_debt": 89.01,
+    "trades": 143,
+    "wr": 60.8,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -1961,9 +1963,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 83.28,
-    "mtm_dd_close": 83.15,
-    "cc_dd": 81.29,
+    "mtm_dd_adverse": 85.3,
+    "mtm_dd_close": 84.75,
+    "cc_dd": 88.99,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -2017,35 +2019,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -16.47,
-     "diff_worst": 6.31
+     "diff_net": -16.39,
+     "diff_worst": 6.32
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -16.47,
-     "diff_worst": 6.31
+     "diff_net": -16.39,
+     "diff_worst": 6.32
     }
    },
    "src": "battery",
-   "diff_net": -16.47,
-   "diff_worst": 6.31,
-   "net_raw": 20.93,
+   "diff_net": -16.39,
+   "diff_worst": 6.32,
+   "net_raw": 12.1,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -71.23,
-    "diff_worst": 32.94,
-    "h1": -60.36,
-    "h2": -5.71,
-    "net": 132.48,
-    "worst": 115.1,
-    "trades": 483
+    "diff_net": -92.27,
+    "diff_worst": 34.92,
+    "h1": -79.92,
+    "h2": -20.38,
+    "net": 95.5,
+    "worst": 123.1,
+    "trades": 479
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 82,
-    "blocked": 9,
+    "blocked": 10,
     "net": 5.34,
     "worst": 78.68,
     "diff_net": 41.65,
@@ -2124,9 +2126,9 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -2.46,
-    "maxdd": -76.61,
-    "worst_debt": 76.61,
+    "net": -14.06,
+    "maxdd": -81.64,
+    "worst_debt": 81.64,
     "trades": 265,
     "wr": 59.6,
     "blocked": 0,
@@ -2141,9 +2143,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 84.07,
-    "mtm_dd_close": 83.72,
-    "cc_dd": 82.41,
+    "mtm_dd_adverse": 87.64,
+    "mtm_dd_close": 87.03,
+    "cc_dd": 86.91,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -2192,11 +2194,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 16.32,
+    "net": 11.14,
     "maxdd": -44.63,
     "worst_debt": 44.63,
-    "trades": 128,
-    "wr": 61.7,
+    "trades": 127,
+    "wr": 61.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2260,11 +2262,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -9.65,
-    "maxdd": -76.61,
-    "worst_debt": 76.61,
-    "trades": 147,
-    "wr": 58.5,
+    "net": -3.58,
+    "maxdd": -81.64,
+    "worst_debt": 81.64,
+    "trades": 146,
+    "wr": 60.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2277,9 +2279,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 84.07,
-    "mtm_dd_close": 83.72,
-    "cc_dd": 82.41,
+    "mtm_dd_adverse": 87.64,
+    "mtm_dd_close": 87.03,
+    "cc_dd": 86.91,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -2333,35 +2335,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -39.86,
-     "diff_worst": 4.46
+     "diff_net": -42.55,
+     "diff_worst": 3.47
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -39.86,
-     "diff_worst": 4.46
+     "diff_net": -42.55,
+     "diff_worst": 3.47
     }
    },
    "src": "battery",
-   "diff_net": -39.86,
-   "diff_worst": 4.46,
-   "net_raw": -2.46,
+   "diff_net": -42.55,
+   "diff_worst": 3.47,
+   "net_raw": -14.06,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -91.03,
-    "diff_worst": 15.54,
-    "h1": -75.42,
-    "h2": -9.98,
-    "net": 112.68,
-    "worst": 97.7,
-    "trades": 458
+    "diff_net": -98.2,
+    "diff_worst": 16.53,
+    "h1": -81.25,
+    "h2": -13.65,
+    "net": 89.57,
+    "worst": 104.71,
+    "trades": 453
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -36.92,
     "worst": 88.73,
     "diff_net": -0.61,
@@ -2440,11 +2442,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -27.97,
-    "maxdd": -90.67,
-    "worst_debt": 90.67,
-    "trades": 226,
-    "wr": 49.1,
+    "net": -41.15,
+    "maxdd": -94.7,
+    "worst_debt": 94.7,
+    "trades": 227,
+    "wr": 49.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2457,9 +2459,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 106.76,
-    "mtm_dd_close": 106.75,
-    "cc_dd": 105.28,
+    "mtm_dd_adverse": 112.86,
+    "mtm_dd_close": 112.25,
+    "cc_dd": 112.1,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -2508,7 +2510,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 23.56,
+    "net": 16.46,
     "maxdd": -24.28,
     "worst_debt": 24.28,
     "trades": 104,
@@ -2576,11 +2578,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -51.0,
-    "maxdd": -90.67,
-    "worst_debt": 90.67,
-    "trades": 128,
-    "wr": 47.7,
+    "net": -45.58,
+    "maxdd": -94.7,
+    "worst_debt": 94.7,
+    "trades": 127,
+    "wr": 49.6,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2593,9 +2595,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 106.76,
-    "mtm_dd_close": 106.75,
-    "cc_dd": 105.27,
+    "mtm_dd_adverse": 112.86,
+    "mtm_dd_close": 112.25,
+    "cc_dd": 112.1,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -2649,35 +2651,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -65.37,
-     "diff_worst": 18.52
+     "diff_net": -69.64,
+     "diff_worst": 16.53
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -65.37,
-     "diff_worst": 18.52
+     "diff_net": -69.64,
+     "diff_worst": 16.53
     }
    },
    "src": "battery",
-   "diff_net": -65.37,
-   "diff_worst": 18.52,
-   "net_raw": -27.97,
+   "diff_net": -69.64,
+   "diff_worst": 16.53,
+   "net_raw": -41.15,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -10.58,
-    "diff_worst": 5.61,
-    "h1": -0.59,
-    "h2": -21.57,
-    "net": 193.13,
-    "worst": 87.77,
-    "trades": 378
+    "diff_net": -5.84,
+    "diff_worst": 3.62,
+    "h1": 3.55,
+    "h2": 6.41,
+    "net": 181.93,
+    "worst": 91.8,
+    "trades": 375
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 76,
-    "blocked": 12,
+    "blocked": 13,
     "net": -21.57,
     "worst": 85.57,
     "diff_net": 14.74,
@@ -2756,11 +2758,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 7.0,
-    "maxdd": -50.01,
-    "worst_debt": 50.01,
-    "trades": 211,
-    "wr": 45.0,
+    "net": -1.41,
+    "maxdd": -50.07,
+    "worst_debt": 50.07,
+    "trades": 212,
+    "wr": 45.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2773,8 +2775,8 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 71.65,
-    "mtm_dd_close": 71.24,
+    "mtm_dd_adverse": 72.31,
+    "mtm_dd_close": 71.7,
     "cc_dd": 71.65,
     "pend": {
      "setups": 0,
@@ -2824,9 +2826,9 @@
     "tl_events": []
    },
    "h1": {
-    "net": 2.46,
-    "maxdd": -27.72,
-    "worst_debt": 27.72,
+    "net": -3.41,
+    "maxdd": -31.13,
+    "worst_debt": 31.13,
     "trades": 97,
     "wr": 45.4,
     "blocked": 0,
@@ -2892,11 +2894,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": 30.35,
-    "maxdd": -50.01,
-    "worst_debt": 50.01,
-    "trades": 118,
-    "wr": 45.8,
+    "net": 17.57,
+    "maxdd": -50.07,
+    "worst_debt": 50.07,
+    "trades": 119,
+    "wr": 46.2,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -2909,8 +2911,8 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 71.65,
-    "mtm_dd_close": 71.24,
+    "mtm_dd_adverse": 72.31,
+    "mtm_dd_close": 71.7,
     "cc_dd": 71.65,
     "pend": {
      "setups": 0,
@@ -2965,35 +2967,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -30.4,
-     "diff_worst": -22.14
+     "diff_net": -29.9,
+     "diff_worst": -28.1
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -30.4,
-     "diff_worst": -22.14
+     "diff_net": -29.9,
+     "diff_worst": -28.1
     }
    },
    "src": "battery",
-   "diff_net": -30.4,
-   "diff_worst": -22.14,
-   "net_raw": 7.0,
+   "diff_net": -29.9,
+   "diff_worst": -28.1,
+   "net_raw": -1.41,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -171.31,
-    "diff_worst": 2.76,
-    "h1": -211.11,
-    "h2": 22.71,
-    "net": 32.4,
-    "worst": 84.92,
-    "trades": 361
+    "diff_net": -194.01,
+    "diff_worst": -2.86,
+    "h1": -236.01,
+    "h2": 67.03,
+    "net": -6.24,
+    "worst": 85.32,
+    "trades": 360
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 71,
-    "blocked": 14,
+    "blocked": 15,
     "net": -33.22,
     "worst": 78.59,
     "diff_net": 3.09,
@@ -3072,11 +3074,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 2.96,
-    "maxdd": -47.98,
-    "worst_debt": 47.98,
-    "trades": 157,
-    "wr": 56.1,
+    "net": -6.02,
+    "maxdd": -57.72,
+    "worst_debt": 57.72,
+    "trades": 158,
+    "wr": 56.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3089,9 +3091,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 53.97,
-    "mtm_dd_close": 53.84,
-    "cc_dd": 51.79,
+    "mtm_dd_adverse": 55.98,
+    "mtm_dd_close": 55.44,
+    "cc_dd": 57.69,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -3140,11 +3142,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 28.49,
+    "net": 29.25,
     "maxdd": -17.11,
     "worst_debt": 17.11,
-    "trades": 80,
-    "wr": 61.3,
+    "trades": 81,
+    "wr": 61.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3208,11 +3210,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -4.43,
-    "maxdd": -47.98,
-    "worst_debt": 47.98,
-    "trades": 89,
-    "wr": 53.9,
+    "net": -1.63,
+    "maxdd": -57.72,
+    "worst_debt": 57.72,
+    "trades": 87,
+    "wr": 56.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3225,9 +3227,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 53.97,
-    "mtm_dd_close": 53.84,
-    "cc_dd": 51.79,
+    "mtm_dd_adverse": 55.98,
+    "mtm_dd_close": 55.44,
+    "cc_dd": 57.69,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -3281,35 +3283,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -34.44,
-     "diff_worst": -24.17
+     "diff_net": -34.51,
+     "diff_worst": -20.45
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -34.44,
-     "diff_worst": -24.17
+     "diff_net": -34.51,
+     "diff_worst": -20.45
     }
    },
    "src": "battery",
-   "diff_net": -34.44,
-   "diff_worst": -24.17,
-   "net_raw": 2.96,
+   "diff_net": -34.51,
+   "diff_worst": -20.45,
+   "net_raw": -6.02,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -211.93,
-    "diff_worst": -11.95,
-    "h1": -194.31,
-    "h2": -11.86,
-    "net": -8.22,
-    "worst": 70.21,
-    "trades": 269
+    "diff_net": -232.36,
+    "diff_worst": -4.28,
+    "h1": -207.49,
+    "h2": -15.03,
+    "net": -44.59,
+    "worst": 83.9,
+    "trades": 264
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 52,
-    "blocked": 38,
+    "blocked": 39,
     "net": -44.08,
     "worst": 65.34,
     "diff_net": -7.77,
@@ -3388,11 +3390,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 3.59,
+    "net": -4.52,
     "maxdd": -61.55,
     "worst_debt": 61.55,
-    "trades": 283,
-    "wr": 55.5,
+    "trades": 285,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3456,11 +3458,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 12.1,
+    "net": 7.66,
     "maxdd": -36.6,
     "worst_debt": 36.6,
-    "trades": 134,
-    "wr": 57.5,
+    "trades": 135,
+    "wr": 57.0,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3524,11 +3526,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -16.27,
-    "maxdd": -58.71,
-    "worst_debt": 58.71,
-    "trades": 155,
-    "wr": 53.5,
+    "net": -4.11,
+    "maxdd": -60.78,
+    "worst_debt": 60.78,
+    "trades": 154,
+    "wr": 55.2,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -3541,9 +3543,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 66.56,
-    "mtm_dd_close": 66.55,
-    "cc_dd": 65.12,
+    "mtm_dd_adverse": 70.14,
+    "mtm_dd_close": 69.53,
+    "cc_dd": 69.41,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -3592,40 +3594,40 @@
     "tl_events": []
    },
    "verdict": "C",
-   "prev_verdict": "B",
+   "prev_verdict": "C",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -33.81,
-     "diff_worst": -10.6
+     "diff_net": -33.01,
+     "diff_worst": -16.62
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -33.81,
-     "diff_worst": -10.6
+     "diff_net": -33.01,
+     "diff_worst": -16.62
     }
    },
    "src": "battery",
-   "diff_net": -33.81,
-   "diff_worst": -10.6,
-   "net_raw": 3.59,
+   "diff_net": -33.01,
+   "diff_worst": -16.62,
+   "net_raw": -4.52,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -63.55,
-    "diff_worst": 35.52,
-    "h1": -34.8,
-    "h2": -28.74,
-    "net": 140.16,
+    "diff_net": -87.79,
+    "diff_worst": 29.5,
+    "h1": -59.05,
+    "h2": -35.26,
+    "net": 99.98,
     "worst": 117.68,
-    "trades": 478
+    "trades": 475
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 83,
-    "blocked": 5,
+    "blocked": 6,
     "net": -41.12,
     "worst": 97.95,
     "diff_net": -4.81,
@@ -3704,11 +3706,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -9.88,
-    "maxdd": -81.74,
-    "worst_debt": 81.74,
-    "trades": 226,
-    "wr": 55.8,
+    "net": -18.1,
+    "maxdd": -87.76,
+    "worst_debt": 87.76,
+    "trades": 227,
+    "wr": 55.9,
     "blocked": 47,
     "minbal": 0,
     "rc_over": 0,
@@ -3721,9 +3723,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 93.48,
-    "mtm_dd_close": 93.46,
-    "cc_dd": 92.03,
+    "mtm_dd_adverse": 101.0,
+    "mtm_dd_close": 100.39,
+    "cc_dd": 100.28,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -3772,7 +3774,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 13.37,
+    "net": 12.77,
     "maxdd": -64.4,
     "worst_debt": 64.4,
     "trades": 105,
@@ -3840,11 +3842,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -22.61,
-    "maxdd": -78.54,
-    "worst_debt": 78.54,
-    "trades": 130,
-    "wr": 53.8,
+    "net": -17.69,
+    "maxdd": -84.56,
+    "worst_debt": 84.56,
+    "trades": 129,
+    "wr": 55.8,
     "blocked": 19,
     "minbal": 0,
     "rc_over": 0,
@@ -3857,9 +3859,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 83.81,
-    "mtm_dd_close": 83.8,
-    "cc_dd": 82.36,
+    "mtm_dd_adverse": 91.34,
+    "mtm_dd_close": 90.73,
+    "cc_dd": 90.61,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -3913,35 +3915,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -47.28,
+     "diff_net": -46.59,
      "diff_worst": 9.59
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -47.28,
+     "diff_net": -46.59,
      "diff_worst": 9.59
     }
    },
    "src": "battery",
-   "diff_net": -47.28,
+   "diff_net": -46.59,
    "diff_worst": 9.59,
-   "net_raw": -9.88,
+   "net_raw": -18.1,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -36.82,
-    "diff_worst": 34.97,
-    "h1": 6.82,
-    "h2": -40.91,
-    "net": 166.89,
+    "diff_net": -48.29,
+    "diff_worst": 28.95,
+    "h1": -4.66,
+    "h2": -38.41,
+    "net": 139.48,
     "worst": 117.13,
-    "trades": 385
+    "trades": 383
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 70,
-    "blocked": 18,
+    "blocked": 19,
     "net": -8.1,
     "worst": 66.22,
     "diff_net": 28.21,
@@ -4020,11 +4022,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -6.22,
-    "maxdd": -66.32,
-    "worst_debt": 66.32,
-    "trades": 208,
-    "wr": 55.8,
+    "net": -14.43,
+    "maxdd": -70.39,
+    "worst_debt": 70.39,
+    "trades": 209,
+    "wr": 56.0,
     "blocked": 79,
     "minbal": 0,
     "rc_over": 0,
@@ -4037,9 +4039,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 83.09,
-    "mtm_dd_close": 82.91,
-    "cc_dd": 83.0,
+    "mtm_dd_adverse": 85.53,
+    "mtm_dd_close": 84.92,
+    "cc_dd": 84.78,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4088,7 +4090,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 7.45,
+    "net": 6.86,
     "maxdd": -53.18,
     "worst_debt": 53.18,
     "trades": 100,
@@ -4156,12 +4158,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -16.58,
-    "maxdd": -68.74,
-    "worst_debt": 68.74,
+    "net": -29.64,
+    "maxdd": -72.8,
+    "worst_debt": 72.8,
     "trades": 115,
-    "wr": 52.2,
-    "blocked": 40,
+    "wr": 53.0,
+    "blocked": 39,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4173,9 +4175,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 81.1,
-    "mtm_dd_close": 80.92,
-    "cc_dd": 81.01,
+    "mtm_dd_adverse": 83.54,
+    "mtm_dd_close": 82.93,
+    "cc_dd": 82.79,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4229,35 +4231,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -43.62,
-     "diff_worst": -5.83
+     "diff_net": -42.92,
+     "diff_worst": -7.78
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -43.62,
-     "diff_worst": -5.83
+     "diff_net": -42.92,
+     "diff_worst": -7.78
     }
    },
    "src": "battery",
-   "diff_net": -43.62,
-   "diff_worst": -5.83,
-   "net_raw": -6.22,
+   "diff_net": -42.92,
+   "diff_worst": -7.78,
+   "net_raw": -14.43,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -125.1,
-    "diff_worst": 37.73,
-    "h1": -61.75,
-    "h2": -58.39,
-    "net": 78.61,
-    "worst": 119.89,
-    "trades": 358
+    "diff_net": -137.19,
+    "diff_worst": 37.72,
+    "h1": -76.14,
+    "h2": -50.09,
+    "net": 50.58,
+    "worst": 125.9,
+    "trades": 355
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 64,
-    "blocked": 24,
+    "blocked": 25,
     "net": -13.88,
     "worst": 73.42,
     "diff_net": 22.43,
@@ -4336,12 +4338,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -9.99,
-    "maxdd": -66.01,
-    "worst_debt": 66.01,
-    "trades": 196,
-    "wr": 54.6,
-    "blocked": 103,
+    "net": -18.05,
+    "maxdd": -72.03,
+    "worst_debt": 72.03,
+    "trades": 197,
+    "wr": 54.8,
+    "blocked": 104,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4353,9 +4355,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 84.4,
-    "mtm_dd_close": 84.39,
-    "cc_dd": 83.9,
+    "mtm_dd_adverse": 89.96,
+    "mtm_dd_close": 89.35,
+    "cc_dd": 89.22,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4404,12 +4406,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 2.19,
+    "net": 1.76,
     "maxdd": -59.73,
     "worst_debt": 59.73,
     "trades": 92,
     "wr": 56.5,
-    "blocked": 54,
+    "blocked": 55,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4472,12 +4474,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -10.71,
-    "maxdd": -67.88,
-    "worst_debt": 67.88,
+    "net": -23.76,
+    "maxdd": -73.9,
+    "worst_debt": 73.9,
     "trades": 108,
-    "wr": 52.8,
-    "blocked": 52,
+    "wr": 53.7,
+    "blocked": 51,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4489,9 +4491,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 79.09,
-    "mtm_dd_close": 79.07,
-    "cc_dd": 78.58,
+    "mtm_dd_adverse": 84.64,
+    "mtm_dd_close": 84.03,
+    "cc_dd": 83.9,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4545,35 +4547,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -47.39,
+     "diff_net": -46.54,
      "diff_worst": -6.14
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -47.39,
+     "diff_net": -46.54,
      "diff_worst": -6.14
     }
    },
    "src": "battery",
-   "diff_net": -47.39,
+   "diff_net": -46.54,
    "diff_worst": -6.14,
-   "net_raw": -9.99,
+   "net_raw": -18.05,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -165.7,
+    "diff_net": -171.94,
     "diff_worst": 52.06,
-    "h1": -84.28,
-    "h2": -73.74,
-    "net": 38.01,
-    "worst": 134.22,
-    "trades": 337
+    "h1": -92.98,
+    "h2": -65.41,
+    "net": 15.83,
+    "worst": 140.24,
+    "trades": 335
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 63,
-    "blocked": 25,
+    "blocked": 26,
     "net": -17.84,
     "worst": 77.38,
     "diff_net": 18.47,
@@ -4652,12 +4654,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 0.53,
-    "maxdd": -64.56,
-    "worst_debt": 64.56,
-    "trades": 224,
-    "wr": 54.9,
-    "blocked": 86,
+    "net": -0.58,
+    "maxdd": -68.6,
+    "worst_debt": 68.6,
+    "trades": 225,
+    "wr": 55.1,
+    "blocked": 87,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4669,9 +4671,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 69.92,
-    "mtm_dd_close": 69.9,
-    "cc_dd": 68.47,
+    "mtm_dd_adverse": 75.47,
+    "mtm_dd_close": 74.86,
+    "cc_dd": 74.74,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4720,12 +4722,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 36.03,
+    "net": 40.57,
     "maxdd": -12.78,
     "worst_debt": 12.78,
     "trades": 112,
     "wr": 58.9,
-    "blocked": 38,
+    "blocked": 39,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4788,12 +4790,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -27.14,
-    "maxdd": -64.56,
-    "worst_debt": 64.56,
-    "trades": 115,
-    "wr": 50.4,
-    "blocked": 50,
+    "net": -25.58,
+    "maxdd": -68.6,
+    "worst_debt": 68.6,
+    "trades": 116,
+    "wr": 52.6,
+    "blocked": 48,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -4805,9 +4807,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 69.92,
-    "mtm_dd_close": 69.9,
-    "cc_dd": 68.47,
+    "mtm_dd_adverse": 75.47,
+    "mtm_dd_close": 74.86,
+    "cc_dd": 74.74,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -4861,35 +4863,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -36.87,
-     "diff_worst": -7.59
+     "diff_net": -29.07,
+     "diff_worst": -9.57
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -36.87,
-     "diff_worst": -7.59
+     "diff_net": -29.07,
+     "diff_worst": -9.57
     }
    },
    "src": "battery",
-   "diff_net": -36.87,
-   "diff_worst": -7.59,
-   "net_raw": 0.53,
+   "diff_net": -29.07,
+   "diff_worst": -9.57,
+   "net_raw": -0.58,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -57.18,
+    "diff_net": -53.68,
     "diff_worst": -6.55,
-    "h1": -74.96,
-    "h2": 19.36,
-    "net": 146.53,
-    "worst": 75.61,
-    "trades": 376
+    "h1": -71.47,
+    "h2": 12.64,
+    "net": 134.09,
+    "worst": 81.63,
+    "trades": 374
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 63,
-    "blocked": 28,
+    "blocked": 29,
     "net": -1.75,
     "worst": 41.57,
     "diff_net": 34.56,
@@ -4968,11 +4970,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 50.19,
-    "maxdd": -54.92,
-    "worst_debt": 54.92,
-    "trades": 249,
-    "wr": 56.2,
+    "net": 41.29,
+    "maxdd": -60.94,
+    "worst_debt": 60.94,
+    "trades": 250,
+    "wr": 56.4,
     "blocked": 41,
     "minbal": 0,
     "rc_over": 0,
@@ -4987,7 +4989,7 @@
     "eq_all": 0,
     "mtm_dd_adverse": 68.06,
     "mtm_dd_close": 67.72,
-    "cc_dd": 66.41,
+    "cc_dd": 67.09,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -5036,7 +5038,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 57.67,
+    "net": 56.39,
     "maxdd": -22.48,
     "worst_debt": 22.48,
     "trades": 122,
@@ -5104,12 +5106,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -5.92,
-    "maxdd": -54.92,
-    "worst_debt": 54.92,
+    "net": -12.41,
+    "maxdd": -60.94,
+    "worst_debt": 60.94,
     "trades": 132,
-    "wr": 53.8,
-    "blocked": 25,
+    "wr": 55.3,
+    "blocked": 24,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -5123,7 +5125,7 @@
     "eq_all": 0,
     "mtm_dd_adverse": 68.06,
     "mtm_dd_close": 67.72,
-    "cc_dd": 66.41,
+    "cc_dd": 67.09,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -5171,41 +5173,41 @@
     },
     "tl_events": []
    },
-   "verdict": "A",
-   "prev_verdict": "B",
+   "verdict": "B",
+   "prev_verdict": "A",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
-     "verdict": "A",
-     "diff_net": 12.79,
+     "verdict": "B",
+     "diff_net": 12.8,
      "diff_worst": -17.23
     },
     "valere": {
-     "verdict": "A",
-     "diff_net": 12.79,
+     "verdict": "B",
+     "diff_net": 12.8,
      "diff_worst": -17.23
     }
    },
    "src": "battery",
-   "diff_net": 12.79,
+   "diff_net": 12.8,
    "diff_worst": -17.23,
-   "net_raw": 50.19,
+   "net_raw": 41.29,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -19.66,
-    "diff_worst": -20.9,
-    "h1": -35.14,
-    "h2": 17.06,
-    "net": 184.05,
-    "worst": 61.26,
-    "trades": 409
+    "diff_net": -21.8,
+    "diff_worst": -22.35,
+    "h1": -37.28,
+    "h2": 19.68,
+    "net": 165.97,
+    "worst": 65.83,
+    "trades": 406
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 66,
-    "blocked": 25,
+    "blocked": 26,
     "net": 7.84,
     "worst": 41.57,
     "diff_net": 44.15,
@@ -5284,11 +5286,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 57.86,
-    "maxdd": -60.06,
-    "worst_debt": 60.06,
-    "trades": 256,
-    "wr": 57.0,
+    "net": 48.96,
+    "maxdd": -66.08,
+    "worst_debt": 66.08,
+    "trades": 257,
+    "wr": 57.2,
     "blocked": 24,
     "minbal": 0,
     "rc_over": 0,
@@ -5303,7 +5305,7 @@
     "eq_all": 0,
     "mtm_dd_adverse": 73.2,
     "mtm_dd_close": 72.86,
-    "cc_dd": 71.55,
+    "cc_dd": 72.23,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -5352,7 +5354,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 61.18,
+    "net": 59.9,
     "maxdd": -26.88,
     "worst_debt": 26.88,
     "trades": 126,
@@ -5420,12 +5422,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -4.05,
-    "maxdd": -60.06,
-    "worst_debt": 60.06,
+    "net": -10.54,
+    "maxdd": -66.08,
+    "worst_debt": 66.08,
     "trades": 134,
-    "wr": 54.5,
-    "blocked": 17,
+    "wr": 56.0,
+    "blocked": 16,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -5439,7 +5441,7 @@
     "eq_all": 0,
     "mtm_dd_adverse": 73.2,
     "mtm_dd_close": 72.86,
-    "cc_dd": 71.55,
+    "cc_dd": 72.23,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -5487,25 +5489,25 @@
     },
     "tl_events": []
    },
-   "verdict": "A",
-   "prev_verdict": "B",
+   "verdict": "B",
+   "prev_verdict": "A",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
-     "verdict": "A",
-     "diff_net": 20.46,
+     "verdict": "B",
+     "diff_net": 20.47,
      "diff_worst": -12.09
     },
     "valere": {
-     "verdict": "A",
-     "diff_net": 20.46,
+     "verdict": "B",
+     "diff_net": 20.47,
      "diff_worst": -12.09
     }
    },
    "src": "battery",
-   "diff_net": 20.46,
+   "diff_net": 20.47,
    "diff_worst": -12.09,
-   "net_raw": 57.86,
+   "net_raw": 48.96,
    "charged": 0,
    "long": {
     "days": 69,
@@ -5513,15 +5515,15 @@
     "diff_net": 11.32,
     "diff_worst": -17.2,
     "h1": -28.49,
-    "h2": 41.39,
-    "net": 215.03,
-    "worst": 64.96,
-    "trades": 428
+    "h2": 37.31,
+    "net": 199.09,
+    "worst": 70.98,
+    "trades": 424
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 69,
-    "blocked": 22,
+    "blocked": 23,
     "net": 0.74,
     "worst": 48.67,
     "diff_net": 37.05,
@@ -5600,11 +5602,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 41.16,
-    "maxdd": -71.73,
-    "worst_debt": 71.73,
-    "trades": 260,
-    "wr": 56.5,
+    "net": 32.26,
+    "maxdd": -77.75,
+    "worst_debt": 77.75,
+    "trades": 261,
+    "wr": 56.7,
     "blocked": 6,
     "minbal": 0,
     "rc_over": 0,
@@ -5668,7 +5670,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 37.8,
+    "net": 36.53,
     "maxdd": -35.27,
     "worst_debt": 35.27,
     "trades": 125,
@@ -5736,11 +5738,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -11.43,
-    "maxdd": -71.73,
-    "worst_debt": 71.73,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -8.59,
+    "maxdd": -77.75,
+    "worst_debt": 77.75,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 4,
     "minbal": 0,
     "rc_over": 0,
@@ -5804,24 +5806,24 @@
     "tl_events": []
    },
    "verdict": "A",
-   "prev_verdict": "C",
+   "prev_verdict": "A",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "A",
-     "diff_net": 3.76,
+     "diff_net": 3.77,
      "diff_worst": -0.42
     },
     "valere": {
      "verdict": "A",
-     "diff_net": 3.76,
+     "diff_net": 3.77,
      "diff_worst": -0.42
     }
    },
    "src": "battery",
-   "diff_net": 3.76,
+   "diff_net": 3.77,
    "diff_worst": -0.42,
-   "net_raw": 41.16,
+   "net_raw": 32.26,
    "charged": 0,
    "long": {
     "days": 69,
@@ -5829,15 +5831,15 @@
     "diff_net": -12.12,
     "diff_worst": 5.27,
     "h1": -5.31,
-    "h2": -6.81,
-    "net": 191.59,
-    "worst": 87.43,
-    "trades": 430
+    "h2": -5.92,
+    "net": 175.65,
+    "worst": 93.45,
+    "trades": 426
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 73,
-    "blocked": 17,
+    "blocked": 18,
     "net": -20.22,
     "worst": 64.99,
     "diff_net": 16.09,
@@ -5918,12 +5920,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 64.07,
-    "maxdd": -68.78,
-    "worst_debt": 68.78,
-    "trades": 213,
-    "wr": 57.7,
-    "blocked": 75,
+    "net": 56.8,
+    "maxdd": -74.8,
+    "worst_debt": 74.8,
+    "trades": 214,
+    "wr": 57.9,
+    "blocked": 77,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -5986,12 +5988,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 49.22,
+    "net": 49.58,
     "maxdd": -24.95,
     "worst_debt": 24.95,
     "trades": 98,
     "wr": 59.2,
-    "blocked": 42,
+    "blocked": 44,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -6054,12 +6056,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -7.71,
-    "maxdd": -68.78,
-    "worst_debt": 68.78,
-    "trades": 120,
-    "wr": 55.0,
-    "blocked": 33,
+    "net": 7.78,
+    "maxdd": -74.8,
+    "worst_debt": 74.8,
+    "trades": 119,
+    "wr": 57.1,
+    "blocked": 34,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -6122,40 +6124,40 @@
     "tl_events": []
    },
    "verdict": "A",
-   "prev_verdict": "B",
+   "prev_verdict": "A",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "A",
-     "diff_net": 26.67,
+     "diff_net": 28.31,
      "diff_worst": -3.37
     },
     "valere": {
      "verdict": "A",
-     "diff_net": 26.67,
+     "diff_net": 28.31,
      "diff_worst": -3.37
     }
    },
    "src": "battery",
-   "diff_net": 26.67,
+   "diff_net": 28.31,
    "diff_worst": -3.37,
-   "net_raw": 64.07,
+   "net_raw": 56.8,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "B",
-    "diff_net": 18.25,
+    "diff_net": 16.14,
     "diff_worst": -4.75,
-    "h1": -26.22,
-    "h2": 43.46,
-    "net": 221.96,
-    "worst": 77.41,
-    "trades": 370
+    "h1": -28.35,
+    "h2": 46.71,
+    "net": 203.91,
+    "worst": 83.43,
+    "trades": 368
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 61,
-    "blocked": 29,
+    "blocked": 30,
     "net": -28.52,
     "worst": 93.75,
     "diff_net": 7.79,
@@ -6237,12 +6239,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 55.85,
-    "maxdd": -72.75,
-    "worst_debt": 72.75,
-    "trades": 201,
-    "wr": 57.2,
-    "blocked": 96,
+    "net": 48.22,
+    "maxdd": -78.77,
+    "worst_debt": 78.77,
+    "trades": 202,
+    "wr": 57.4,
+    "blocked": 99,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -6310,7 +6312,7 @@
     "worst_debt": 24.95,
     "trades": 89,
     "wr": 59.6,
-    "blocked": 60,
+    "blocked": 63,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -6373,12 +6375,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -4.98,
-    "maxdd": -72.75,
-    "worst_debt": 72.75,
-    "trades": 116,
-    "wr": 54.3,
-    "blocked": 37,
+    "net": -16.23,
+    "maxdd": -78.77,
+    "worst_debt": 78.77,
+    "trades": 111,
+    "wr": 55.0,
+    "blocked": 40,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -6446,35 +6448,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": 18.45,
+     "diff_net": 19.73,
      "diff_worst": 0.6
     },
     "valere": {
      "verdict": "C",
-     "diff_net": 18.45,
+     "diff_net": 19.73,
      "diff_worst": 0.6
     }
    },
    "src": "battery",
-   "diff_net": 18.45,
+   "diff_net": 19.73,
    "diff_worst": 0.6,
-   "net_raw": 55.85,
+   "net_raw": 48.22,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -27.38,
+    "diff_net": -28.32,
     "diff_worst": -1.79,
-    "h1": -61.4,
-    "h2": 45.76,
-    "net": 176.33,
-    "worst": 80.37,
-    "trades": 340
+    "h1": -64.43,
+    "h2": 43.75,
+    "net": 159.45,
+    "worst": 86.39,
+    "trades": 339
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 58,
-    "blocked": 32,
+    "blocked": 33,
     "net": -16.43,
     "worst": 91.06,
     "diff_net": 19.88,
@@ -6555,11 +6557,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 7.5,
-    "maxdd": -61.3,
-    "worst_debt": 61.3,
-    "trades": 204,
-    "wr": 55.9,
+    "net": -2.59,
+    "maxdd": -65.35,
+    "worst_debt": 65.35,
+    "trades": 206,
+    "wr": 55.8,
     "blocked": 78,
     "minbal": 0,
     "rc_over": 0,
@@ -6572,9 +6574,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 67.63,
-    "mtm_dd_close": 67.62,
-    "cc_dd": 66.18,
+    "mtm_dd_adverse": 73.18,
+    "mtm_dd_close": 72.57,
+    "cc_dd": 72.45,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -6623,11 +6625,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 33.52,
+    "net": 29.09,
     "maxdd": -30.8,
     "worst_debt": 30.8,
-    "trades": 98,
-    "wr": 61.2,
+    "trades": 99,
+    "wr": 60.6,
     "blocked": 38,
     "minbal": 0,
     "rc_over": 0,
@@ -6691,11 +6693,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -25.55,
-    "maxdd": -59.59,
-    "worst_debt": 59.59,
-    "trades": 114,
-    "wr": 50.9,
+    "net": -15.37,
+    "maxdd": -63.63,
+    "worst_debt": 63.63,
+    "trades": 113,
+    "wr": 53.1,
     "blocked": 40,
     "minbal": 0,
     "rc_over": 0,
@@ -6708,9 +6710,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 66.41,
-    "mtm_dd_close": 66.39,
-    "cc_dd": 64.94,
+    "mtm_dd_adverse": 71.96,
+    "mtm_dd_close": 71.35,
+    "cc_dd": 71.21,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -6764,35 +6766,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -29.9,
-     "diff_worst": -10.85
+     "diff_net": -31.08,
+     "diff_worst": -12.82
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -29.9,
-     "diff_worst": -10.85
+     "diff_net": -31.08,
+     "diff_worst": -12.82
     }
    },
    "src": "battery",
-   "diff_net": -29.9,
-   "diff_worst": -10.85,
-   "net_raw": 7.5,
+   "diff_net": -31.08,
+   "diff_worst": -12.82,
+   "net_raw": -2.59,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "B",
-    "diff_net": 2.68,
-    "diff_worst": -9.74,
-    "h1": 12.58,
-    "h2": -8.32,
-    "net": 206.39,
-    "worst": 72.42,
+    "diff_net": 8.02,
+    "diff_worst": -9.75,
+    "h1": 17.92,
+    "h2": -20.0,
+    "net": 195.79,
+    "worst": 78.43,
     "trades": 354
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 66,
-    "blocked": 25,
+    "blocked": 26,
     "net": -20.86,
     "worst": 81.95,
     "diff_net": 15.45,
@@ -6880,11 +6882,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -53.25,
+    "net": -44.26,
     "maxdd": -111.34,
     "worst_debt": 111.34,
-    "trades": 185,
-    "wr": 54.1,
+    "trades": 187,
+    "wr": 54.5,
     "blocked": 129,
     "minbal": 0,
     "rc_over": 0,
@@ -6948,11 +6950,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 16.25,
+    "net": 19.16,
     "maxdd": -49.22,
     "worst_debt": 49.22,
-    "trades": 88,
-    "wr": 60.2,
+    "trades": 89,
+    "wr": 60.7,
     "blocked": 67,
     "minbal": 0,
     "rc_over": 0,
@@ -7016,12 +7018,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -60.59,
-    "maxdd": -60.59,
-    "worst_debt": 60.59,
-    "trades": 64,
-    "wr": 42.2,
-    "blocked": 36,
+    "net": -40.24,
+    "maxdd": -63.0,
+    "worst_debt": 63.0,
+    "trades": 103,
+    "wr": 51.5,
+    "blocked": 62,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7033,9 +7035,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 60.52,
-    "mtm_dd_close": 60.51,
-    "cc_dd": 60.56,
+    "mtm_dd_adverse": 72.53,
+    "mtm_dd_close": 72.19,
+    "cc_dd": 70.89,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -7089,35 +7091,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -90.65,
-     "diff_worst": 39.19
+     "diff_net": -72.75,
+     "diff_worst": 33.17
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -90.65,
-     "diff_worst": 39.19
+     "diff_net": -72.75,
+     "diff_worst": 33.17
     }
    },
    "src": "battery",
-   "diff_net": -90.65,
-   "diff_worst": 39.19,
-   "net_raw": -53.25,
+   "diff_net": -72.75,
+   "diff_worst": 33.17,
+   "net_raw": -44.26,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -181.33,
-    "diff_worst": 82.44,
-    "h1": -81.63,
-    "h2": -96.38,
-    "net": 22.38,
+    "diff_net": -156.98,
+    "diff_worst": 76.42,
+    "h1": -70.98,
+    "h2": -79.75,
+    "net": 30.79,
     "worst": 164.6,
     "trades": 315
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 47,
-    "blocked": 42,
+    "blocked": 43,
     "net": -55.18,
     "worst": 95.77,
     "diff_net": -18.87,
@@ -7205,12 +7207,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 61.29,
-    "maxdd": -21.12,
-    "worst_debt": 21.12,
-    "trades": 181,
-    "wr": 56.4,
-    "blocked": 134,
+    "net": 60.18,
+    "maxdd": -24.97,
+    "worst_debt": 24.97,
+    "trades": 182,
+    "wr": 56.6,
+    "blocked": 135,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7273,12 +7275,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 26.29,
+    "net": 30.83,
     "maxdd": -17.12,
     "worst_debt": 17.12,
     "trades": 92,
     "wr": 56.5,
-    "blocked": 58,
+    "blocked": 59,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7341,12 +7343,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": 17.73,
-    "maxdd": -21.12,
-    "worst_debt": 21.12,
-    "trades": 89,
-    "wr": 56.2,
-    "blocked": 81,
+    "net": 32.59,
+    "maxdd": -24.97,
+    "worst_debt": 24.97,
+    "trades": 91,
+    "wr": 57.1,
+    "blocked": 78,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7414,35 +7416,35 @@
    "byref": {
     "base": {
      "verdict": "B",
-     "diff_net": 23.89,
-     "diff_worst": -51.03
+     "diff_net": 31.69,
+     "diff_worst": -53.2
     },
     "valere": {
      "verdict": "B",
-     "diff_net": 23.89,
-     "diff_worst": -51.03
+     "diff_net": 31.69,
+     "diff_worst": -53.2
     }
    },
    "src": "battery",
-   "diff_net": 23.89,
-   "diff_worst": -51.03,
-   "net_raw": 61.29,
+   "diff_net": 31.69,
+   "diff_worst": -53.2,
+   "net_raw": 60.18,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -10.77,
+    "diff_net": -13.62,
     "diff_worst": -53.15,
-    "h1": -63.02,
-    "h2": 64.76,
-    "net": 192.94,
-    "worst": 29.01,
-    "trades": 303
+    "h1": -68.44,
+    "h2": 55.79,
+    "net": 174.15,
+    "worst": 35.03,
+    "trades": 301
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 50,
-    "blocked": 40,
+    "blocked": 41,
     "net": 1.83,
     "worst": 29.47,
     "diff_net": 38.14,
@@ -7530,12 +7532,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 0.56,
-    "maxdd": -74.89,
-    "worst_debt": 74.89,
+    "net": -10.06,
+    "maxdd": -82.66,
+    "worst_debt": 82.66,
     "trades": 177,
     "wr": 57.1,
-    "blocked": 143,
+    "blocked": 145,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7547,9 +7549,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 80.98,
-    "mtm_dd_close": 80.84,
-    "cc_dd": 74.98,
+    "mtm_dd_adverse": 82.99,
+    "mtm_dd_close": 82.45,
+    "cc_dd": 82.75,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -7598,12 +7600,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": -11.25,
+    "net": -14.1,
     "maxdd": -56.03,
     "worst_debt": 56.03,
     "trades": 87,
     "wr": 59.8,
-    "blocked": 62,
+    "blocked": 63,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7666,12 +7668,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -13.44,
-    "maxdd": -74.89,
-    "worst_debt": 74.89,
-    "trades": 97,
-    "wr": 54.6,
-    "blocked": 81,
+    "net": -18.74,
+    "maxdd": -82.66,
+    "worst_debt": 82.66,
+    "trades": 94,
+    "wr": 56.4,
+    "blocked": 84,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -7683,9 +7685,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 80.98,
-    "mtm_dd_close": 80.84,
-    "cc_dd": 74.98,
+    "mtm_dd_adverse": 82.99,
+    "mtm_dd_close": 82.45,
+    "cc_dd": 82.75,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -7739,35 +7741,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -36.84,
-     "diff_worst": 2.74
+     "diff_net": -38.55,
+     "diff_worst": 4.49
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -36.84,
-     "diff_worst": 2.74
+     "diff_net": -38.55,
+     "diff_worst": 4.49
     }
    },
    "src": "battery",
-   "diff_net": -36.84,
-   "diff_worst": 2.74,
-   "net_raw": 0.56,
+   "diff_net": -38.55,
+   "diff_worst": 4.49,
+   "net_raw": -10.06,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -121.22,
-    "diff_worst": 13.4,
-    "h1": -103.4,
-    "h2": -13.94,
-    "net": 82.49,
-    "worst": 95.56,
-    "trades": 305
+    "diff_net": -145.92,
+    "diff_worst": 15.15,
+    "h1": -127.36,
+    "h2": -4.17,
+    "net": 41.85,
+    "worst": 103.33,
+    "trades": 303
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 55,
-    "blocked": 35,
+    "blocked": 36,
     "net": 26.32,
     "worst": 45.93,
     "diff_net": 62.63,
@@ -7846,10 +7848,10 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 31.03,
-    "maxdd": -59.51,
-    "worst_debt": 59.51,
-    "trades": 261,
+    "net": 14.87,
+    "maxdd": -62.46,
+    "worst_debt": 62.46,
+    "trades": 263,
     "wr": 56.3,
     "blocked": 0,
     "minbal": 0,
@@ -7914,11 +7916,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 24.42,
+    "net": 14.96,
     "maxdd": -26.41,
     "worst_debt": 26.41,
-    "trades": 126,
-    "wr": 58.7,
+    "trades": 127,
+    "wr": 58.3,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -7982,11 +7984,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -0.33,
-    "maxdd": -59.51,
-    "worst_debt": 59.51,
-    "trades": 141,
-    "wr": 53.9,
+    "net": 5.92,
+    "maxdd": -62.46,
+    "worst_debt": 62.46,
+    "trades": 140,
+    "wr": 55.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -8055,35 +8057,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -6.37,
-     "diff_worst": -12.64
+     "diff_net": -13.62,
+     "diff_worst": -15.71
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -6.37,
-     "diff_worst": -12.64
+     "diff_net": -13.62,
+     "diff_worst": -15.71
     }
    },
    "src": "battery",
-   "diff_net": -6.37,
-   "diff_worst": -12.64,
-   "net_raw": 31.03,
+   "diff_net": -13.62,
+   "diff_worst": -15.71,
+   "net_raw": 14.87,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -41.85,
-    "diff_worst": -4.76,
-    "h1": -49.07,
-    "h2": 13.03,
-    "net": 161.86,
-    "worst": 77.4,
-    "trades": 436
+    "diff_net": -33.68,
+    "diff_worst": -1.72,
+    "h1": -37.87,
+    "h2": 6.63,
+    "net": 154.09,
+    "worst": 86.46,
+    "trades": 432
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 78,
-    "blocked": 12,
+    "blocked": 13,
     "net": -8.58,
     "worst": 61.22,
     "diff_net": 27.73,
@@ -8162,12 +8164,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 31.62,
+    "net": 15.1,
     "maxdd": -41.53,
     "worst_debt": 41.53,
-    "trades": 135,
-    "wr": 57.8,
-    "blocked": 220,
+    "trades": 143,
+    "wr": 56.6,
+    "blocked": 211,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8230,12 +8232,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 7.7,
+    "net": 0.93,
     "maxdd": -21.54,
     "worst_debt": 21.54,
-    "trades": 63,
-    "wr": 58.7,
-    "blocked": 105,
+    "trades": 71,
+    "wr": 56.3,
+    "blocked": 95,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8298,12 +8300,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": 22.68,
+    "net": 20.11,
     "maxdd": -41.53,
     "worst_debt": 41.53,
     "trades": 77,
     "wr": 55.8,
-    "blocked": 115,
+    "blocked": 112,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8371,35 +8373,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -5.78,
-     "diff_worst": -30.62
+     "diff_net": -13.39,
+     "diff_worst": -36.64
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -5.78,
-     "diff_worst": -30.62
+     "diff_net": -13.39,
+     "diff_worst": -36.64
     }
    },
    "src": "battery",
-   "diff_net": -5.78,
-   "diff_worst": -30.62,
-   "net_raw": 31.62,
+   "diff_net": -13.39,
+   "diff_worst": -36.64,
+   "net_raw": 15.1,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -91.28,
-    "diff_worst": -32.49,
-    "h1": -152.66,
-    "h2": 64.72,
-    "net": 112.43,
+    "diff_net": -98.62,
+    "diff_worst": -38.51,
+    "h1": -153.94,
+    "h2": 64.98,
+    "net": 89.15,
     "worst": 49.67,
-    "trades": 258
+    "trades": 256
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 40,
-    "blocked": 51,
+    "blocked": 52,
     "net": 25.55,
     "worst": 28.14,
     "diff_net": 61.86,
@@ -8478,12 +8480,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 67.38,
+    "net": 35.42,
     "maxdd": -41.53,
     "worst_debt": 41.53,
-    "trades": 152,
-    "wr": 59.2,
-    "blocked": 187,
+    "trades": 151,
+    "wr": 57.6,
+    "blocked": 195,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8546,12 +8548,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 23.14,
+    "net": 0.93,
     "maxdd": -21.54,
     "worst_debt": 21.54,
-    "trades": 72,
-    "wr": 59.7,
-    "blocked": 88,
+    "trades": 71,
+    "wr": 56.3,
+    "blocked": 95,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8614,12 +8616,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": 47.2,
+    "net": 40.43,
     "maxdd": -41.53,
     "worst_debt": 41.53,
-    "trades": 86,
-    "wr": 57.0,
-    "blocked": 97,
+    "trades": 85,
+    "wr": 57.6,
+    "blocked": 96,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -8682,40 +8684,40 @@
     "tl_events": []
    },
    "verdict": "B",
-   "prev_verdict": "C",
+   "prev_verdict": "B",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "B",
-     "diff_net": 29.98,
-     "diff_worst": -30.62
+     "diff_net": 6.93,
+     "diff_worst": -36.64
     },
     "valere": {
      "verdict": "B",
-     "diff_net": 29.98,
-     "diff_worst": -30.62
+     "diff_net": 6.93,
+     "diff_worst": -36.64
     }
    },
    "src": "battery",
-   "diff_net": 29.98,
-   "diff_worst": -30.62,
-   "net_raw": 67.38,
+   "diff_net": 6.93,
+   "diff_worst": -36.64,
+   "net_raw": 35.42,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -52.28,
-    "diff_worst": -32.49,
-    "h1": -132.83,
-    "h2": 83.9,
-    "net": 151.43,
+    "diff_net": -70.94,
+    "diff_worst": -38.51,
+    "h1": -145.43,
+    "h2": 84.16,
+    "net": 116.83,
     "worst": 49.67,
-    "trades": 276
+    "trades": 272
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 47,
-    "blocked": 44,
+    "blocked": 45,
     "net": 35.56,
     "worst": 37.5,
     "diff_net": 71.87,
@@ -8794,11 +8796,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 24.34,
-    "maxdd": -64.71,
-    "worst_debt": 64.71,
-    "trades": 256,
-    "wr": 56.6,
+    "net": 18.4,
+    "maxdd": -68.75,
+    "worst_debt": 68.75,
+    "trades": 257,
+    "wr": 56.8,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -8862,7 +8864,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 31.63,
+    "net": 31.34,
     "maxdd": -38.73,
     "worst_debt": 38.73,
     "trades": 125,
@@ -8930,11 +8932,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -4.99,
-    "maxdd": -64.71,
-    "worst_debt": 64.71,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -5.68,
+    "maxdd": -68.75,
+    "worst_debt": 68.75,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -8998,40 +9000,40 @@
     "tl_events": []
    },
    "verdict": "C",
-   "prev_verdict": "A",
+   "prev_verdict": "C",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -13.06,
-     "diff_worst": -7.44
+     "diff_net": -10.09,
+     "diff_worst": -9.42
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -13.06,
-     "diff_worst": -7.44
+     "diff_net": -10.09,
+     "diff_worst": -9.42
     }
    },
    "src": "battery",
-   "diff_net": -13.06,
-   "diff_worst": -7.44,
-   "net_raw": 24.34,
+   "diff_net": -10.09,
+   "diff_worst": -9.42,
+   "net_raw": 18.4,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -33.69,
-    "diff_worst": -7.77,
-    "h1": -34.59,
-    "h2": -3.23,
-    "net": 170.02,
-    "worst": 74.39,
-    "trades": 430
+    "diff_net": -44.93,
+    "diff_worst": -12.75,
+    "h1": -48.98,
+    "h2": 2.89,
+    "net": 142.84,
+    "worst": 75.43,
+    "trades": 426
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -17.13,
     "worst": 70.89,
     "diff_net": 19.18,
@@ -9110,11 +9112,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 42.04,
-    "maxdd": -74.03,
-    "worst_debt": 74.03,
-    "trades": 260,
-    "wr": 56.5,
+    "net": 33.59,
+    "maxdd": -78.08,
+    "worst_debt": 78.08,
+    "trades": 261,
+    "wr": 56.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9178,7 +9180,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 33.32,
+    "net": 30.52,
     "maxdd": -34.67,
     "worst_debt": 34.67,
     "trades": 125,
@@ -9246,11 +9248,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -14.84,
-    "maxdd": -74.03,
-    "worst_debt": 74.03,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -7.62,
+    "maxdd": -78.08,
+    "worst_debt": 78.08,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9313,41 +9315,41 @@
     },
     "tl_events": []
    },
-   "verdict": "C",
+   "verdict": "B",
    "prev_verdict": "C",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
-     "verdict": "C",
-     "diff_net": 4.64,
-     "diff_worst": 1.88
+     "verdict": "B",
+     "diff_net": 5.1,
+     "diff_worst": -0.09
     },
     "valere": {
-     "verdict": "C",
-     "diff_net": 4.64,
-     "diff_worst": 1.88
+     "verdict": "B",
+     "diff_net": 5.1,
+     "diff_worst": -0.09
     }
    },
    "src": "battery",
-   "diff_net": 4.64,
-   "diff_worst": 1.88,
-   "net_raw": 42.04,
+   "diff_net": 5.1,
+   "diff_worst": -0.09,
+   "net_raw": 33.59,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": 34.93,
-    "diff_worst": 10.77,
-    "h1": 37.44,
-    "h2": -1.96,
-    "net": 238.64,
-    "worst": 92.93,
-    "trades": 432
+    "diff_net": 34.31,
+    "diff_worst": 12.75,
+    "h1": 39.95,
+    "h2": -5.34,
+    "net": 222.08,
+    "worst": 100.93,
+    "trades": 428
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -40.49,
     "worst": 91.29,
     "diff_net": -4.18,
@@ -9426,11 +9428,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -17.84,
+    "net": -22.03,
     "maxdd": -59.43,
     "worst_debt": 59.43,
-    "trades": 255,
-    "wr": 56.5,
+    "trades": 256,
+    "wr": 56.6,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9494,7 +9496,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": -1.6,
+    "net": -4.09,
     "maxdd": -45.51,
     "worst_debt": 45.51,
     "trades": 126,
@@ -9562,11 +9564,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -27.32,
-    "maxdd": -49.83,
-    "worst_debt": 49.83,
-    "trades": 138,
-    "wr": 52.9,
+    "net": -6.44,
+    "maxdd": -49.92,
+    "worst_debt": 49.92,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9635,35 +9637,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -55.24,
-     "diff_worst": -12.72
+     "diff_net": -50.52,
+     "diff_worst": -18.74
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -55.24,
-     "diff_worst": -12.72
+     "diff_net": -50.52,
+     "diff_worst": -18.74
     }
    },
    "src": "battery",
-   "diff_net": -55.24,
-   "diff_worst": -12.72,
-   "net_raw": -17.84,
+   "diff_net": -50.52,
+   "diff_worst": -18.74,
+   "net_raw": -22.03,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -113.72,
-    "diff_worst": -22.73,
-    "h1": -108.93,
-    "h2": -0.1,
-    "net": 89.99,
+    "diff_net": -111.83,
+    "diff_worst": -28.75,
+    "h1": -116.46,
+    "h2": 11.03,
+    "net": 75.94,
     "worst": 59.43,
-    "trades": 427
+    "trades": 423
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -23.78,
     "worst": 50.49,
     "diff_net": 12.53,
@@ -9742,11 +9744,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": -4.36,
-    "maxdd": -74.36,
-    "worst_debt": 74.36,
-    "trades": 257,
-    "wr": 56.4,
+    "net": -11.07,
+    "maxdd": -80.38,
+    "worst_debt": 80.38,
+    "trades": 258,
+    "wr": 56.6,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9759,9 +9761,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 81.44,
-    "mtm_dd_close": 81.42,
-    "cc_dd": 79.98,
+    "mtm_dd_adverse": 88.97,
+    "mtm_dd_close": 88.35,
+    "cc_dd": 88.23,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -9810,7 +9812,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 14.63,
+    "net": 15.55,
     "maxdd": -36.59,
     "worst_debt": 36.59,
     "trades": 125,
@@ -9878,11 +9880,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -16.53,
-    "maxdd": -74.36,
-    "worst_debt": 74.36,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -14.28,
+    "maxdd": -80.38,
+    "worst_debt": 80.38,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -9895,9 +9897,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 81.44,
-    "mtm_dd_close": 81.42,
-    "cc_dd": 79.98,
+    "mtm_dd_adverse": 88.97,
+    "mtm_dd_close": 88.35,
+    "cc_dd": 88.23,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -9951,35 +9953,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": -41.76,
+     "diff_net": -39.56,
      "diff_worst": 2.21
     },
     "valere": {
      "verdict": "C",
-     "diff_net": -41.76,
+     "diff_net": -39.56,
      "diff_worst": 2.21
     }
    },
    "src": "battery",
-   "diff_net": -41.76,
+   "diff_net": -39.56,
    "diff_worst": 2.21,
-   "net_raw": -4.36,
+   "net_raw": -11.07,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -50.93,
+    "diff_net": -61.37,
     "diff_worst": 1.33,
-    "h1": -42.8,
-    "h2": -12.52,
-    "net": 152.78,
-    "worst": 83.49,
-    "trades": 430
+    "h1": -56.73,
+    "h2": 1.83,
+    "net": 126.4,
+    "worst": 89.51,
+    "trades": 426
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 76,
-    "blocked": 14,
+    "blocked": 15,
     "net": -4.9,
     "worst": 78.98,
     "diff_net": 31.41,
@@ -10058,11 +10060,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 38.23,
-    "maxdd": -74.51,
-    "worst_debt": 74.51,
-    "trades": 260,
-    "wr": 56.5,
+    "net": 34.19,
+    "maxdd": -80.53,
+    "worst_debt": 80.53,
+    "trades": 261,
+    "wr": 56.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -10126,7 +10128,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 30.24,
+    "net": 33.83,
     "maxdd": -41.06,
     "worst_debt": 41.06,
     "trades": 125,
@@ -10194,11 +10196,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -16.24,
-    "maxdd": -74.51,
-    "worst_debt": 74.51,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -8.61,
+    "maxdd": -80.53,
+    "worst_debt": 80.53,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -10267,35 +10269,35 @@
    "byref": {
     "base": {
      "verdict": "C",
-     "diff_net": 0.83,
+     "diff_net": 5.7,
      "diff_worst": 2.36
     },
     "valere": {
      "verdict": "C",
-     "diff_net": 0.83,
+     "diff_net": 5.7,
      "diff_worst": 2.36
     }
    },
    "src": "battery",
-   "diff_net": 0.83,
+   "diff_net": 5.7,
    "diff_worst": 2.36,
-   "net_raw": 38.23,
+   "net_raw": 34.19,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -48.05,
+    "diff_net": -63.36,
     "diff_worst": 21.11,
-    "h1": -19.28,
-    "h2": -32.0,
-    "net": 155.66,
-    "worst": 103.27,
-    "trades": 428
+    "h1": -34.59,
+    "h2": -26.41,
+    "net": 124.41,
+    "worst": 109.29,
+    "trades": 424
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -13.14,
     "worst": 68.39,
     "diff_net": 23.17,
@@ -10374,11 +10376,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 53.92,
+    "net": 47.84,
     "maxdd": -65.64,
     "worst_debt": 65.64,
-    "trades": 264,
-    "wr": 56.8,
+    "trades": 265,
+    "wr": 57.0,
     "blocked": 1,
     "minbal": 0,
     "rc_over": 0,
@@ -10442,7 +10444,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 49.75,
+    "net": 48.47,
     "maxdd": -28.09,
     "worst_debt": 28.09,
     "trades": 130,
@@ -10510,11 +10512,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -13.08,
+    "net": 0.18,
     "maxdd": -65.64,
     "worst_debt": 65.64,
     "trades": 139,
-    "wr": 54.0,
+    "wr": 56.1,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -10577,41 +10579,41 @@
     },
     "tl_events": []
    },
-   "verdict": "B",
-   "prev_verdict": "C",
+   "verdict": "A",
+   "prev_verdict": "B",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
-     "verdict": "B",
-     "diff_net": 16.52,
-     "diff_worst": -6.51
+     "verdict": "A",
+     "diff_net": 19.35,
+     "diff_worst": -12.53
     },
     "valere": {
-     "verdict": "B",
-     "diff_net": 4.18,
-     "diff_worst": -1.74
+     "verdict": "A",
+     "diff_net": 5.04,
+     "diff_worst": -7.76
     }
    },
    "src": "battery",
-   "diff_net": 16.52,
-   "diff_worst": -6.51,
-   "net_raw": 53.92,
+   "diff_net": 19.35,
+   "diff_worst": -12.53,
+   "net_raw": 47.84,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "B",
-    "diff_net": -8.78,
-    "diff_worst": -1.96,
-    "h1": -39.86,
-    "h2": 31.08,
-    "net": 194.93,
-    "worst": 80.2,
-    "trades": 445
+    "diff_net": -2.89,
+    "diff_worst": -2.81,
+    "h1": -34.83,
+    "h2": 22.7,
+    "net": 184.88,
+    "worst": 85.37,
+    "trades": 441
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -36.31,
     "worst": 81.09,
     "diff_net": 0.0,
@@ -10690,11 +10692,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 44.0,
-    "maxdd": -72.15,
-    "worst_debt": 72.15,
-    "trades": 260,
-    "wr": 56.5,
+    "net": 35.1,
+    "maxdd": -78.17,
+    "worst_debt": 78.17,
+    "trades": 261,
+    "wr": 56.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -10758,7 +10760,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 45.62,
+    "net": 44.34,
     "maxdd": -28.09,
     "worst_debt": 28.09,
     "trades": 125,
@@ -10826,11 +10828,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -25.24,
-    "maxdd": -72.15,
-    "worst_debt": 72.15,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -13.56,
+    "maxdd": -78.17,
+    "worst_debt": 78.17,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -10894,12 +10896,12 @@
     "tl_events": []
    },
    "verdict": "B",
-   "prev_verdict": "C",
+   "prev_verdict": "B",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
      "verdict": "B",
-     "diff_net": 6.6,
+     "diff_net": 6.61,
      "diff_worst": 0.0
     },
     "valere": {
@@ -10909,25 +10911,25 @@
     }
    },
    "src": "battery",
-   "diff_net": 6.6,
+   "diff_net": 6.61,
    "diff_worst": 0.0,
-   "net_raw": 44.0,
+   "net_raw": 35.1,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -11.2,
+    "diff_net": -11.19,
     "diff_worst": 0.0,
     "h1": -12.91,
-    "h2": 1.71,
-    "net": 192.51,
-    "worst": 82.16,
-    "trades": 432
+    "h2": 0.09,
+    "net": 176.58,
+    "worst": 88.18,
+    "trades": 428
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -36.31,
     "worst": 81.09,
     "diff_net": 0.0,
@@ -11006,11 +11008,11 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 48.56,
-    "maxdd": -72.15,
-    "worst_debt": 72.15,
-    "trades": 260,
-    "wr": 56.5,
+    "net": 39.65,
+    "maxdd": -78.17,
+    "worst_debt": 78.17,
+    "trades": 261,
+    "wr": 56.7,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -11074,7 +11076,7 @@
     "tl_events": []
    },
    "h1": {
-    "net": 45.62,
+    "net": 44.34,
     "maxdd": -28.09,
     "worst_debt": 28.09,
     "trades": 125,
@@ -11142,11 +11144,11 @@
     "tl_events": []
    },
    "h2": {
-    "net": -11.84,
-    "maxdd": -72.15,
-    "worst_debt": 72.15,
-    "trades": 140,
-    "wr": 53.6,
+    "net": -9.01,
+    "maxdd": -78.17,
+    "worst_debt": 78.17,
+    "trades": 139,
+    "wr": 55.4,
     "blocked": 0,
     "minbal": 0,
     "rc_over": 0,
@@ -11210,7 +11212,7 @@
     "tl_events": []
    },
    "verdict": "B",
-   "prev_verdict": "C",
+   "prev_verdict": "B",
    "engine": "2026-09-29b",
    "byref": {
     "base": {
@@ -11227,23 +11229,23 @@
    "src": "battery",
    "diff_net": 11.16,
    "diff_worst": 0.0,
-   "net_raw": 48.56,
+   "net_raw": 39.65,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -2.0,
+    "diff_net": -1.99,
     "diff_worst": 0.0,
     "h1": -8.27,
-    "h2": 6.27,
-    "net": 201.71,
-    "worst": 82.16,
-    "trades": 432
+    "h2": -0.24,
+    "net": 185.78,
+    "worst": 88.18,
+    "trades": 428
    },
    "real": {
-    "n_real": 91,
+    "n_real": 92,
     "trades": 75,
-    "blocked": 15,
+    "blocked": 16,
     "net": -36.31,
     "worst": 81.09,
     "diff_net": 0.0,
@@ -11251,9 +11253,9 @@
    }
   },
   {
-   "id": "ext500_nosun",
-   "title_fr": "Pas d'entrée après une heure de 500 points, ni le dimanche",
-   "title_en": "No entry after a 500-point hour, and none on Sunday",
+   "id": "pb_ext500",
+   "title_fr": "Garder le filtre des comptes et éviter les heures qui ont trop couru",
+   "title_en": "Keep the accounts' filter and skip hours that already ran too far",
    "family": "meteo",
    "cfg": {
     "rr": 0.8,
@@ -11261,9 +11263,7 @@
     "n_cont": 1,
     "wait_min": 0,
     "ext_pts": 500,
-    "skip_wd": [
-     6
-    ],
+    "skip_wd": [],
     "skip_hours": [],
     "size_hot": 1.0,
     "nerv_gate": false,
@@ -11283,7 +11283,7 @@
     "flip_loss_size": 1.0,
     "size_hours": [],
     "hour_size": 1.0,
-    "pb_dir_gate": false,
+    "pb_dir_gate": true,
     "pb_gate_mode": "trend",
     "cost_max": 0.0,
     "min_range": 0.0,
@@ -11324,12 +11324,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 83.91,
-    "maxdd": -56.7,
-    "worst_debt": 56.7,
-    "trades": 211,
-    "wr": 57.8,
-    "blocked": 98,
+    "net": 60.84,
+    "maxdd": -9.24,
+    "worst_debt": 9.24,
+    "trades": 58,
+    "wr": 63.8,
+    "blocked": 295,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -11341,9 +11341,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 69.84,
-    "mtm_dd_close": 69.5,
-    "cc_dd": 68.19,
+    "mtm_dd_adverse": 16.65,
+    "mtm_dd_close": 16.57,
+    "cc_dd": 15.87,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -11392,12 +11392,12 @@
     "tl_events": []
    },
    "h1": {
-    "net": 72.15,
-    "maxdd": -11.33,
-    "worst_debt": 11.33,
-    "trades": 100,
-    "wr": 59.0,
-    "blocked": 50,
+    "net": 19.49,
+    "maxdd": -8.03,
+    "worst_debt": 8.03,
+    "trades": 34,
+    "wr": 64.7,
+    "blocked": 141,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -11409,9 +11409,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 20.97,
-    "mtm_dd_close": 19.65,
-    "cc_dd": 19.49,
+    "mtm_dd_adverse": 16.65,
+    "mtm_dd_close": 16.57,
+    "cc_dd": 15.87,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -11460,12 +11460,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": 13.32,
-    "maxdd": -56.7,
-    "worst_debt": 56.7,
-    "trades": 116,
-    "wr": 56.0,
-    "blocked": 49,
+    "net": 35.63,
+    "maxdd": -9.24,
+    "worst_debt": 9.24,
+    "trades": 27,
+    "wr": 59.3,
+    "blocked": 153,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -11477,959 +11477,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 69.84,
-    "mtm_dd_close": 69.5,
-    "cc_dd": 68.19,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "A",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "A",
-     "diff_net": 46.51,
-     "diff_worst": -15.45
-    },
-    "valere": {
-     "verdict": "A",
-     "diff_net": 46.51,
-     "diff_worst": -15.45
-    }
-   },
-   "src": "chercheur",
-   "diff_net": 46.51,
-   "diff_worst": -15.45,
-   "net_raw": 83.91,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "C",
-    "diff_net": -12.17,
-    "diff_worst": -21.95,
-    "h1": -55.25,
-    "h2": 50.3,
-    "net": 191.54,
-    "worst": 60.21,
-    "trades": 366
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 54,
-    "blocked": 37,
-    "net": -3.97,
-    "worst": 58.24,
-    "diff_net": 32.34,
-    "diff_worst": -22.85
-   }
-  },
-  {
-   "id": "ext500_nosun_capwait30",
-   "title_fr": "Même chose, plus une pause de 30 minutes avec plafond",
-   "title_en": "The same, plus a 30-minute pause on capped accounts",
-   "family": "rythme",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 0,
-    "ext_pts": 500,
-    "skip_wd": [
-     6
-    ],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 1.0,
-    "early_moves_max": 3,
-    "flip_loss_size": 1.0,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 30,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": 83.91,
-    "maxdd": -56.7,
-    "worst_debt": 56.7,
-    "trades": 211,
-    "wr": 57.8,
-    "blocked": 98,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 69.84,
-    "mtm_dd_close": 69.5,
-    "cc_dd": 68.19,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 72.15,
-    "maxdd": -11.33,
-    "worst_debt": 11.33,
-    "trades": 100,
-    "wr": 59.0,
-    "blocked": 50,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 20.97,
-    "mtm_dd_close": 19.65,
-    "cc_dd": 19.49,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": 13.32,
-    "maxdd": -56.7,
-    "worst_debt": 56.7,
-    "trades": 116,
-    "wr": 56.0,
-    "blocked": 49,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 69.84,
-    "mtm_dd_close": 69.5,
-    "cc_dd": 68.19,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "A",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "A",
-     "diff_net": 46.51,
-     "diff_worst": -15.45
-    },
-    "valere": {
-     "verdict": "A",
-     "diff_net": 46.51,
-     "diff_worst": -15.45
-    }
-   },
-   "src": "chercheur",
-   "diff_net": 46.51,
-   "diff_worst": -15.45,
-   "net_raw": 83.91,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "C",
-    "diff_net": -12.17,
-    "diff_worst": -21.95,
-    "h1": -55.25,
-    "h2": 50.3,
-    "net": 191.54,
-    "worst": 60.21,
-    "trades": 366
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 54,
-    "blocked": 37,
-    "net": -3.97,
-    "worst": 58.24,
-    "diff_net": 32.34,
-    "diff_worst": -22.85
-   }
-  },
-  {
-   "id": "em05n2_capwait30",
-   "title_fr": "Miser moitié moins sur une tendance jeune, et pause avec plafond",
-   "title_en": "Half stake on a young trend, and a pause on capped accounts",
-   "family": "argent",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 0,
-    "ext_pts": 0,
-    "skip_wd": [],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 0.5,
-    "early_moves_max": 2,
-    "flip_loss_size": 1.0,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 30,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": 31.02,
-    "maxdd": -45.2,
-    "worst_debt": 45.2,
-    "trades": 262,
-    "wr": 56.1,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 56.31,
-    "mtm_dd_close": 55.96,
-    "cc_dd": 54.65,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 15.42,
-    "maxdd": -31.4,
-    "worst_debt": 31.4,
-    "trades": 126,
-    "wr": 58.7,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 40.66,
-    "mtm_dd_close": 40.3,
-    "cc_dd": 38.61,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": 10.02,
-    "maxdd": -45.2,
-    "worst_debt": 45.2,
-    "trades": 142,
-    "wr": 53.5,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 56.31,
-    "mtm_dd_close": 55.96,
-    "cc_dd": 54.65,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "C",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "C",
-     "diff_net": -6.38,
-     "diff_worst": -26.95
-    },
-    "valere": {
-     "verdict": "C",
-     "diff_net": -6.38,
-     "diff_worst": -26.95
-    }
-   },
-   "src": "chercheur",
-   "diff_net": -6.38,
-   "diff_worst": -26.95,
-   "net_raw": 31.02,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "B",
-    "diff_net": -7.04,
-    "diff_worst": -11.07,
-    "h1": -18.09,
-    "h2": 7.72,
-    "net": 196.67,
-    "worst": 71.09,
-    "trades": 432
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 76,
-    "blocked": 14,
-    "net": -21.95,
-    "worst": 58.31,
-    "diff_net": 14.36,
-    "diff_worst": -22.78
-   }
-  },
-  {
-   "id": "em075n3",
-   "title_fr": "Miser un quart de moins sur les trois premiers mouvements",
-   "title_en": "A quarter less stake on a trend's first three moves",
-   "family": "argent",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 0,
-    "ext_pts": 0,
-    "skip_wd": [],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 0.75,
-    "early_moves_max": 3,
-    "flip_loss_size": 1.0,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 0,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": 45.13,
-    "maxdd": -58.28,
-    "worst_debt": 58.28,
-    "trades": 261,
-    "wr": 56.3,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 70.58,
-    "mtm_dd_close": 70.32,
-    "cc_dd": 69.33,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 32.89,
-    "maxdd": -28.9,
-    "worst_debt": 28.9,
-    "trades": 125,
-    "wr": 59.2,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 42.0,
-    "mtm_dd_close": 41.78,
-    "cc_dd": 40.79,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": -3.16,
-    "maxdd": -58.28,
-    "worst_debt": 58.28,
-    "trades": 142,
-    "wr": 53.5,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 70.58,
-    "mtm_dd_close": 70.32,
-    "cc_dd": 69.33,
+    "mtm_dd_adverse": 13.82,
+    "mtm_dd_close": 13.46,
+    "cc_dd": 9.24,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -12483,46 +11533,678 @@
    "byref": {
     "base": {
      "verdict": "B",
-     "diff_net": 7.73,
-     "diff_worst": -13.87
+     "diff_net": 32.35,
+     "diff_worst": -68.93
     },
     "valere": {
      "verdict": "B",
-     "diff_net": 7.73,
-     "diff_worst": -13.87
+     "diff_net": 32.35,
+     "diff_worst": -68.93
     }
    },
    "src": "chercheur",
-   "diff_net": 7.73,
-   "diff_worst": -13.87,
-   "net_raw": 45.13,
+   "diff_net": 32.35,
+   "diff_worst": -68.93,
+   "net_raw": 60.84,
    "charged": 0,
    "long": {
     "days": 69,
-    "verdict": "C",
-    "diff_net": -14.73,
-    "diff_worst": -13.07,
-    "h1": -25.53,
-    "h2": 9.04,
-    "net": 188.98,
-    "worst": 69.09,
-    "trades": 432
+    "verdict": "B",
+    "diff_net": 53.39,
+    "diff_worst": -67.87,
+    "h1": -72.3,
+    "h2": 118.97,
+    "net": 241.16,
+    "worst": 20.31,
+    "trades": 115
    },
    "real": {
-    "n_real": 91,
-    "trades": 76,
-    "blocked": 14,
-    "net": -27.03,
-    "worst": 63.31,
-    "diff_net": 9.28,
-    "diff_worst": -17.78
+    "n_real": 92,
+    "trades": 13,
+    "blocked": 79,
+    "net": 23.56,
+    "worst": 12.09,
+    "diff_net": 59.87,
+    "diff_worst": -69.0
    }
   },
   {
-   "id": "fls06_fh075_capwait30",
-   "title_fr": "Miser moins sur les changements de sens à risque, et pause",
-   "title_en": "Stake less on risky changes of direction, and pause",
-   "family": "argent",
+   "id": "pb_choch_ext500",
+   "title_fr": "Un filtre plus souple, et éviter les heures qui ont trop couru",
+   "title_en": "A looser filter, and skip hours that already ran too far",
+   "family": "meteo",
+   "cfg": {
+    "rr": 0.8,
+    "drag": 0.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 500,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02,
+    "debt_nerv_gate": false,
+    "wait_win": 0,
+    "cap_resume_h4": 0,
+    "chase_pts": 0,
+    "nerv_floor": 0.0,
+    "flip_hot_size": 1.0,
+    "first_move_size": 1.0,
+    "early_moves_size": 1.0,
+    "early_moves_max": 3,
+    "flip_loss_size": 1.0,
+    "size_hours": [],
+    "hour_size": 1.0,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "risk_fit": 0.0,
+    "risk_fit_abs": 0.0,
+    "risk_const": 0.0,
+    "internal": 0,
+    "int_max_stop": 0.0,
+    "int_tighter": 0,
+    "max_trades_day": 0,
+    "movement": 1,
+    "debt_mode": "hwm",
+    "storm_exit": 0,
+    "flip_exit": 0,
+    "trail_prot": 0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "cap_fit": 0,
+    "cap_rr": 0.0,
+    "cap_wait": 0,
+    "balance": 0.0,
+    "scale_ref": 200.0,
+    "scale_daily": 0,
+    "debt_gate": 1,
+    "limits_live": 0,
+    "hard_cap_pct": 0.1,
+    "min_balance": 0.0,
+    "scale_lot": 1,
+    "delay_main_mid": 0,
+    "delay_order": "adverse",
+    "entry_mode": "bos"
+   },
+   "full": {
+    "net": 94.27,
+    "maxdd": -42.29,
+    "worst_debt": 42.29,
+    "trades": 161,
+    "wr": 59.6,
+    "blocked": 156,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 51.11,
+    "mtm_dd_close": 50.78,
+    "cc_dd": 46.89,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "h1": {
+    "net": 16.52,
+    "maxdd": -34.35,
+    "worst_debt": 34.35,
+    "trades": 87,
+    "wr": 58.6,
+    "blocked": 60,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 40.09,
+    "mtm_dd_close": 40.01,
+    "cc_dd": 39.3,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "h2": {
+    "net": 64.6,
+    "maxdd": -10.34,
+    "worst_debt": 10.34,
+    "trades": 73,
+    "wr": 63.0,
+    "blocked": 105,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 27.75,
+    "mtm_dd_close": 27.41,
+    "cc_dd": 26.12,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "verdict": "B",
+   "prev_verdict": null,
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": 65.78,
+     "diff_worst": -35.88
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 65.78,
+     "diff_worst": -35.88
+    }
+   },
+   "src": "chercheur",
+   "diff_net": 65.78,
+   "diff_worst": -35.88,
+   "net_raw": 94.27,
+   "charged": 0,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": 63.78,
+    "diff_worst": -30.8,
+    "h1": -75.53,
+    "h2": 154.81,
+    "net": 251.55,
+    "worst": 57.38,
+    "trades": 265
+   },
+   "real": {
+    "n_real": 92,
+    "trades": 43,
+    "blocked": 49,
+    "net": 34.52,
+    "worst": 16.28,
+    "diff_net": 70.83,
+    "diff_worst": -64.81
+   }
+  },
+  {
+   "id": "pb_rr10_ext500",
+   "title_fr": "Viser autant qu'on risque, avec le filtre, sans les heures trop rapides",
+   "title_en": "Aim for as much as we risk, with the filter, skipping hours that ran too far",
+   "family": "cible",
+   "cfg": {
+    "rr": 1.0,
+    "drag": 0.0,
+    "n_cont": 1,
+    "wait_min": 0,
+    "ext_pts": 500,
+    "skip_wd": [],
+    "skip_hours": [],
+    "size_hot": 1.0,
+    "nerv_gate": false,
+    "storm": 1.85,
+    "bullets": 3,
+    "k_streak": 2,
+    "lot": 0.02,
+    "debt_nerv_gate": false,
+    "wait_win": 0,
+    "cap_resume_h4": 0,
+    "chase_pts": 0,
+    "nerv_floor": 0.0,
+    "flip_hot_size": 1.0,
+    "first_move_size": 1.0,
+    "early_moves_size": 1.0,
+    "early_moves_max": 3,
+    "flip_loss_size": 1.0,
+    "size_hours": [],
+    "hour_size": 1.0,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "cost_max": 0.0,
+    "min_range": 0.0,
+    "minute_win": [],
+    "one_per_hour": false,
+    "only_kind": "",
+    "risk_max": 0.0,
+    "bank_mult": 0.0,
+    "risk_pct": 0.0,
+    "risk_fit": 0.0,
+    "risk_fit_abs": 0.0,
+    "risk_const": 0.0,
+    "internal": 0,
+    "int_max_stop": 0.0,
+    "int_tighter": 0,
+    "max_trades_day": 0,
+    "movement": 1,
+    "debt_mode": "hwm",
+    "storm_exit": 0,
+    "flip_exit": 0,
+    "trail_prot": 0,
+    "jar": false,
+    "day_cap": 0.0,
+    "kill_net": 0.0,
+    "cap_fit": 0,
+    "cap_rr": 0.0,
+    "cap_wait": 0,
+    "balance": 0.0,
+    "scale_ref": 200.0,
+    "scale_daily": 0,
+    "debt_gate": 1,
+    "limits_live": 0,
+    "hard_cap_pct": 0.1,
+    "min_balance": 0.0,
+    "scale_lot": 1,
+    "delay_main_mid": 0,
+    "delay_order": "adverse",
+    "entry_mode": "bos"
+   },
+   "full": {
+    "net": 60.39,
+    "maxdd": -19.75,
+    "worst_debt": 19.75,
+    "trades": 51,
+    "wr": 62.7,
+    "blocked": 295,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 24.15,
+    "mtm_dd_close": 22.95,
+    "cc_dd": 22.96,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "h1": {
+    "net": 9.42,
+    "maxdd": -19.75,
+    "worst_debt": 19.75,
+    "trades": 30,
+    "wr": 60.0,
+    "blocked": 142,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 24.15,
+    "mtm_dd_close": 22.95,
+    "cc_dd": 22.96,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "h2": {
+    "net": 39.54,
+    "maxdd": -9.24,
+    "worst_debt": 9.24,
+    "trades": 25,
+    "wr": 60.0,
+    "blocked": 152,
+    "minbal": 0,
+    "rc_over": 0,
+    "rearm": 0,
+    "internal": 0,
+    "trailed": 0,
+    "trail_exits": 0,
+    "trail_gain_pts": 0.0,
+    "storm_exits": 0,
+    "flip_exits": 0,
+    "virtual": 0,
+    "eq_all": 0,
+    "mtm_dd_adverse": 14.94,
+    "mtm_dd_close": 13.63,
+    "cc_dd": 9.24,
+    "pend": {
+     "setups": 0,
+     "filled": 0,
+     "missed_win": 0,
+     "cancelled_stop_first": 0,
+     "ambiguous": 0,
+     "ambiguous_kinds": {
+      "mid_sl": 0,
+      "mid_tp": 0,
+      "mid_sl_tp": 0
+     },
+     "favorable_cancels": 0,
+     "still_waiting": 0
+    },
+    "tl": {
+     "anchors": 0,
+     "anchor_time_invalid": 0,
+     "pairs": 0,
+     "slope_pos": 0,
+     "slope_neg": 0,
+     "slope_flat": 0,
+     "touches": 0,
+     "geom_reject": 0,
+     "entries": 0,
+     "arm_to_touch_s": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "displacement": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "stop_vs_spread": {
+      "n": 0,
+      "median": null,
+      "min": null,
+      "max": null
+     },
+     "gap_fills": 0,
+     "pre_confirm_touch": 0
+    },
+    "tl_events": []
+   },
+   "verdict": "B",
+   "prev_verdict": null,
+   "engine": "2026-09-29b",
+   "byref": {
+    "base": {
+     "verdict": "B",
+     "diff_net": 31.9,
+     "diff_worst": -58.42
+    },
+    "valere": {
+     "verdict": "B",
+     "diff_net": 31.9,
+     "diff_worst": -58.42
+    }
+   },
+   "src": "chercheur",
+   "diff_net": 31.9,
+   "diff_worst": -58.42,
+   "net_raw": 60.39,
+   "charged": 0,
+   "long": {
+    "days": 69,
+    "verdict": "B",
+    "diff_net": 68.47,
+    "diff_worst": -60.39,
+    "h1": -52.94,
+    "h2": 137.89,
+    "net": 256.24,
+    "worst": 27.79,
+    "trades": 101
+   },
+   "real": {
+    "n_real": 92,
+    "trades": 16,
+    "blocked": 76,
+    "net": 44.42,
+    "worst": 9.22,
+    "diff_net": 80.73,
+    "diff_worst": -71.87
+   }
+  },
+  {
+   "id": "pb_filter",
+   "title_fr": "Suivre chaque nuit le filtre des comptes réels dans le test",
+   "title_en": "Follow the real accounts' filter in the test every night",
+   "family": "structure",
    "cfg": {
     "rr": 0.8,
     "drag": 0.0,
@@ -12542,14 +12224,14 @@
     "cap_resume_h4": 0,
     "chase_pts": 0,
     "nerv_floor": 0.0,
-    "flip_hot_size": 0.75,
+    "flip_hot_size": 1.0,
     "first_move_size": 1.0,
     "early_moves_size": 1.0,
     "early_moves_max": 3,
-    "flip_loss_size": 0.6,
+    "flip_loss_size": 1.0,
     "size_hours": [],
     "hour_size": 1.0,
-    "pb_dir_gate": false,
+    "pb_dir_gate": true,
     "pb_gate_mode": "trend",
     "cost_max": 0.0,
     "min_range": 0.0,
@@ -12576,7 +12258,7 @@
     "kill_net": 0.0,
     "cap_fit": 0,
     "cap_rr": 0.0,
-    "cap_wait": 30,
+    "cap_wait": 0,
     "balance": 0.0,
     "scale_ref": 200.0,
     "scale_daily": 0,
@@ -12590,12 +12272,12 @@
     "entry_mode": "bos"
    },
    "full": {
-    "net": 33.13,
-    "maxdd": -62.44,
-    "worst_debt": 62.44,
-    "trades": 261,
-    "wr": 56.3,
-    "blocked": 0,
+    "net": 28.04,
+    "maxdd": -27.24,
+    "worst_debt": 27.24,
+    "trades": 56,
+    "wr": 64.3,
+    "blocked": 274,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -12607,9 +12289,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 76.18,
-    "mtm_dd_close": 75.83,
-    "cc_dd": 74.51,
+    "mtm_dd_adverse": 30.98,
+    "mtm_dd_close": 29.77,
+    "cc_dd": 29.78,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -12658,261 +12340,11 @@
     "tl_events": []
    },
    "h1": {
-    "net": 19.96,
-    "maxdd": -37.99,
-    "worst_debt": 37.99,
-    "trades": 125,
-    "wr": 59.2,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 51.8,
-    "mtm_dd_close": 51.8,
-    "cc_dd": 48.38,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": -12.85,
-    "maxdd": -62.44,
-    "worst_debt": 62.44,
-    "trades": 141,
-    "wr": 53.2,
-    "blocked": 0,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 76.18,
-    "mtm_dd_close": 75.83,
-    "cc_dd": 74.51,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "C",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "C",
-     "diff_net": -4.27,
-     "diff_worst": -9.71
-    },
-    "valere": {
-     "verdict": "C",
-     "diff_net": -4.27,
-     "diff_worst": -9.71
-    }
-   },
-   "src": "chercheur",
-   "diff_net": -4.27,
-   "diff_worst": -9.71,
-   "net_raw": 33.13,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "C",
-    "diff_net": -18.34,
-    "diff_worst": -7.97,
-    "h1": -26.94,
-    "h2": 11.96,
-    "net": 185.37,
-    "worst": 74.19,
-    "trades": 430
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 79,
-    "blocked": 11,
-    "net": 1.89,
-    "worst": 64.4,
-    "diff_net": 38.2,
-    "diff_worst": -16.69
-   }
-  },
-  {
-   "id": "ext500_nosun_wait10",
-   "title_fr": "Éviter les heures agitées et le dimanche, attendre 10 minutes entre trades",
-   "title_en": "Skip busy hours and Sundays, wait 10 minutes between trades",
-   "family": "rythme",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 10,
-    "ext_pts": 500,
-    "skip_wd": [
-     6
-    ],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 1.0,
-    "early_moves_max": 3,
-    "flip_loss_size": 1.0,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 0,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": 55.77,
-    "maxdd": -62.48,
-    "worst_debt": 62.48,
-    "trades": 188,
-    "wr": 57.4,
+    "net": -3.92,
+    "maxdd": -27.24,
+    "worst_debt": 27.24,
+    "trades": 31,
+    "wr": 64.5,
     "blocked": 136,
     "minbal": 0,
     "rc_over": 0,
@@ -12925,77 +12357,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 67.75,
-    "mtm_dd_close": 67.73,
-    "cc_dd": 66.32,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 64.02,
-    "maxdd": -10.86,
-    "worst_debt": 10.86,
-    "trades": 86,
-    "wr": 60.5,
-    "blocked": 73,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 28.59,
-    "mtm_dd_close": 28.52,
-    "cc_dd": 27.64,
+    "mtm_dd_adverse": 30.98,
+    "mtm_dd_close": 29.77,
+    "cc_dd": 29.78,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -13044,12 +12408,12 @@
     "tl_events": []
    },
    "h2": {
-    "net": -6.69,
-    "maxdd": -62.48,
-    "worst_debt": 62.48,
-    "trades": 107,
-    "wr": 54.2,
-    "blocked": 64,
+    "net": 19.66,
+    "maxdd": -9.8,
+    "worst_debt": 9.8,
+    "trades": 30,
+    "wr": 56.7,
+    "blocked": 137,
     "minbal": 0,
     "rc_over": 0,
     "rearm": 0,
@@ -13061,9 +12425,9 @@
     "flip_exits": 0,
     "virtual": 0,
     "eq_all": 0,
-    "mtm_dd_adverse": 67.75,
-    "mtm_dd_close": 67.73,
-    "cc_dd": 66.32,
+    "mtm_dd_adverse": 18.64,
+    "mtm_dd_close": 18.34,
+    "cc_dd": 16.92,
     "pend": {
      "setups": 0,
      "filled": 0,
@@ -13111,693 +12475,61 @@
     },
     "tl_events": []
    },
-   "verdict": "A",
+   "verdict": "B",
    "prev_verdict": null,
    "engine": "2026-09-29b",
    "byref": {
     "base": {
-     "verdict": "A",
-     "diff_net": 18.37,
-     "diff_worst": -9.67
+     "verdict": "B",
+     "diff_net": -0.45,
+     "diff_worst": -50.93
     },
     "valere": {
-     "verdict": "A",
-     "diff_net": 18.37,
-     "diff_worst": -9.67
+     "verdict": "B",
+     "diff_net": -0.45,
+     "diff_worst": -50.93
     }
    },
    "src": "chercheur",
-   "diff_net": 18.37,
-   "diff_worst": -9.67,
-   "net_raw": 55.77,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "B",
-    "diff_net": -0.62,
-    "diff_worst": -22.31,
-    "h1": -40.53,
-    "h2": 44.47,
-    "net": 203.09,
-    "worst": 59.85,
-    "trades": 330
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 49,
-    "blocked": 42,
-    "net": 8.76,
-    "worst": 50.55,
-    "diff_net": 45.07,
-    "diff_worst": -30.54
-   }
-  },
-  {
-   "id": "em075n3_wait10",
-   "title_fr": "Miser moins sur une tendance jeune, attendre 10 minutes entre trades",
-   "title_en": "Smaller stake on a young trend, wait 10 minutes between trades",
-   "family": "argent",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 10,
-    "ext_pts": 0,
-    "skip_wd": [],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 0.75,
-    "early_moves_max": 3,
-    "flip_loss_size": 1.0,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 0,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": -5.05,
-    "maxdd": -67.67,
-    "worst_debt": 67.67,
-    "trades": 226,
-    "wr": 55.8,
-    "blocked": 47,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 73.56,
-    "mtm_dd_close": 73.55,
-    "cc_dd": 72.49,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 8.97,
-    "maxdd": -54.17,
-    "worst_debt": 54.17,
-    "trades": 105,
-    "wr": 58.1,
-    "blocked": 28,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 63.75,
-    "mtm_dd_close": 63.54,
-    "cc_dd": 62.55,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": -14.97,
-    "maxdd": -64.31,
-    "worst_debt": 64.31,
-    "trades": 131,
-    "wr": 53.4,
-    "blocked": 19,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 68.26,
-    "mtm_dd_close": 68.25,
-    "cc_dd": 67.19,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "C",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "C",
-     "diff_net": -42.45,
-     "diff_worst": -4.48
-    },
-    "valere": {
-     "verdict": "C",
-     "diff_net": -42.45,
-     "diff_worst": -4.48
-    }
-   },
-   "src": "chercheur",
-   "diff_net": -42.45,
-   "diff_worst": -4.48,
-   "net_raw": -5.05,
+   "diff_net": -0.45,
+   "diff_worst": -50.93,
+   "net_raw": 28.04,
    "charged": 0,
    "long": {
     "days": 69,
     "verdict": "C",
-    "diff_net": -62.94,
-    "diff_worst": 27.65,
-    "h1": -29.22,
-    "h2": -30.96,
-    "net": 140.77,
-    "worst": 109.81,
-    "trades": 384
+    "diff_net": -20.09,
+    "diff_worst": -36.37,
+    "h1": -72.31,
+    "h2": 63.74,
+    "net": 167.68,
+    "worst": 51.81,
+    "trades": 115
    },
    "real": {
-    "n_real": 91,
-    "trades": 71,
-    "blocked": 17,
-    "net": -2.67,
-    "worst": 55.58,
-    "diff_net": 33.64,
-    "diff_worst": -25.51
-   }
-  },
-  {
-   "id": "fls05_wait10",
-   "title_fr": "10 minutes de pause, demi-mise sur un changement de sens après perte",
-   "title_en": "10-minute pause, half stake on a change of direction after a loss",
-   "family": "argent",
-   "cfg": {
-    "rr": 0.8,
-    "drag": 0.0,
-    "n_cont": 1,
-    "wait_min": 10,
-    "ext_pts": 0,
-    "skip_wd": [],
-    "skip_hours": [],
-    "size_hot": 1.0,
-    "nerv_gate": false,
-    "storm": 1.85,
-    "bullets": 3,
-    "k_streak": 2,
-    "lot": 0.02,
-    "debt_nerv_gate": false,
-    "wait_win": 0,
-    "cap_resume_h4": 0,
-    "chase_pts": 0,
-    "nerv_floor": 0.0,
-    "flip_hot_size": 1.0,
-    "first_move_size": 1.0,
-    "early_moves_size": 1.0,
-    "early_moves_max": 3,
-    "flip_loss_size": 0.5,
-    "size_hours": [],
-    "hour_size": 1.0,
-    "pb_dir_gate": false,
-    "pb_gate_mode": "trend",
-    "cost_max": 0.0,
-    "min_range": 0.0,
-    "minute_win": [],
-    "one_per_hour": false,
-    "only_kind": "",
-    "risk_max": 0.0,
-    "bank_mult": 0.0,
-    "risk_pct": 0.0,
-    "risk_fit": 0.0,
-    "risk_fit_abs": 0.0,
-    "risk_const": 0.0,
-    "internal": 0,
-    "int_max_stop": 0.0,
-    "int_tighter": 0,
-    "max_trades_day": 0,
-    "movement": 1,
-    "debt_mode": "hwm",
-    "storm_exit": 0,
-    "flip_exit": 0,
-    "trail_prot": 0,
-    "jar": false,
-    "day_cap": 0.0,
-    "kill_net": 0.0,
-    "cap_fit": 0,
-    "cap_rr": 0.0,
-    "cap_wait": 0,
-    "balance": 0.0,
-    "scale_ref": 200.0,
-    "scale_daily": 0,
-    "debt_gate": 1,
-    "limits_live": 0,
-    "hard_cap_pct": 0.1,
-    "min_balance": 0.0,
-    "scale_lot": 1,
-    "delay_main_mid": 0,
-    "delay_order": "adverse",
-    "entry_mode": "bos"
-   },
-   "full": {
-    "net": -3.91,
-    "maxdd": -71.89,
-    "worst_debt": 71.89,
-    "trades": 226,
-    "wr": 55.8,
-    "blocked": 47,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 81.19,
-    "mtm_dd_close": 81.06,
-    "cc_dd": 78.72,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h1": {
-    "net": 11.74,
-    "maxdd": -59.75,
-    "worst_debt": 59.75,
-    "trades": 105,
-    "wr": 58.1,
-    "blocked": 28,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 71.61,
-    "mtm_dd_close": 71.61,
-    "cc_dd": 68.31,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "h2": {
-    "net": -34.38,
-    "maxdd": -69.93,
-    "worst_debt": 69.93,
-    "trades": 129,
-    "wr": 53.5,
-    "blocked": 19,
-    "minbal": 0,
-    "rc_over": 0,
-    "rearm": 0,
-    "internal": 0,
-    "trailed": 0,
-    "trail_exits": 0,
-    "trail_gain_pts": 0.0,
-    "storm_exits": 0,
-    "flip_exits": 0,
-    "virtual": 0,
-    "eq_all": 0,
-    "mtm_dd_adverse": 74.32,
-    "mtm_dd_close": 74.19,
-    "cc_dd": 71.86,
-    "pend": {
-     "setups": 0,
-     "filled": 0,
-     "missed_win": 0,
-     "cancelled_stop_first": 0,
-     "ambiguous": 0,
-     "ambiguous_kinds": {
-      "mid_sl": 0,
-      "mid_tp": 0,
-      "mid_sl_tp": 0
-     },
-     "favorable_cancels": 0,
-     "still_waiting": 0
-    },
-    "tl": {
-     "anchors": 0,
-     "anchor_time_invalid": 0,
-     "pairs": 0,
-     "slope_pos": 0,
-     "slope_neg": 0,
-     "slope_flat": 0,
-     "touches": 0,
-     "geom_reject": 0,
-     "entries": 0,
-     "arm_to_touch_s": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "displacement": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "stop_vs_spread": {
-      "n": 0,
-      "median": null,
-      "min": null,
-      "max": null
-     },
-     "gap_fills": 0,
-     "pre_confirm_touch": 0
-    },
-    "tl_events": []
-   },
-   "verdict": "C",
-   "prev_verdict": null,
-   "engine": "2026-09-29b",
-   "byref": {
-    "base": {
-     "verdict": "C",
-     "diff_net": -41.31,
-     "diff_worst": -0.26
-    },
-    "valere": {
-     "verdict": "C",
-     "diff_net": -41.31,
-     "diff_worst": -0.26
-    }
-   },
-   "src": "chercheur",
-   "diff_net": -41.31,
-   "diff_worst": -0.26,
-   "net_raw": -3.91,
-   "charged": 0,
-   "long": {
-    "days": 69,
-    "verdict": "C",
-    "diff_net": -35.83,
-    "diff_worst": 34.89,
-    "h1": 3.38,
-    "h2": -36.1,
-    "net": 167.88,
-    "worst": 117.05,
-    "trades": 386
-   },
-   "real": {
-    "n_real": 91,
-    "trades": 71,
-    "blocked": 17,
-    "net": 1.4,
-    "worst": 63.39,
-    "diff_net": 37.71,
-    "diff_worst": -17.7
+    "n_real": 92,
+    "trades": 15,
+    "blocked": 76,
+    "net": 1.63,
+    "worst": 34.02,
+    "diff_net": 37.94,
+    "diff_worst": -47.07
    }
   }
  ],
  "counts": {
-  "C": 27,
-  "A": 7,
-  "B": 6
+  "C": 22,
+  "B": 11,
+  "A": 3
  },
  "engine": "2026-09-29b",
  "refs": {
   "base": {
-   "net": 37.4,
-   "maxdd": -72.15,
-   "worst_debt": 72.15,
-   "trades": 260,
-   "wr": 56.5,
+   "net": 28.49,
+   "maxdd": -78.17,
+   "worst_debt": 78.17,
+   "trades": 261,
+   "wr": 56.7,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -13861,11 +12593,11 @@
    "tl_events": []
   },
   "valere": {
-   "net": 37.4,
-   "maxdd": -72.15,
-   "worst_debt": 72.15,
-   "trades": 260,
-   "wr": 56.5,
+   "net": 28.49,
+   "maxdd": -78.17,
+   "worst_debt": 78.17,
+   "trades": 261,
+   "wr": 56.7,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -13932,11 +12664,11 @@
  "days_long": 69,
  "base_long": {
   "full": {
-   "net": 203.71,
-   "maxdd": -82.16,
-   "worst_debt": 82.16,
-   "trades": 431,
-   "wr": 59.2,
+   "net": 187.77,
+   "maxdd": -88.18,
+   "worst_debt": 88.18,
+   "trades": 427,
+   "wr": 59.0,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -13944,302 +12676,297 @@
    "internal": 0,
    "curve": [
     [
-     "2026-08-08",
+     "2026-08-09",
      0.0
     ],
     [
-     "2026-08-09",
-     1.18
-    ],
-    [
      "2026-08-10",
-     1.81
+     -1.15
     ],
     [
      "2026-08-11",
-     11.65
+     -19.17
     ],
     [
      "2026-08-12",
-     2.74
+     -23.16
     ],
     [
      "2026-08-13",
-     0.08
+     -25.83
     ],
     [
      "2026-08-14",
-     6.28
+     -19.63
     ],
     [
      "2026-08-15",
-     8.47
+     -17.43
     ],
     [
      "2026-08-16",
-     9.32
+     -16.59
     ],
     [
      "2026-08-17",
-     9.52
+     -16.39
     ],
     [
      "2026-08-18",
-     11.6
+     -14.3
     ],
     [
      "2026-08-19",
-     17.63
+     -9.63
     ],
     [
      "2026-08-20",
-     19.78
+     -9.77
     ],
     [
      "2026-08-21",
-     39.71
+     31.4
     ],
     [
      "2026-08-22",
-     47.28
+     38.97
     ],
     [
      "2026-08-23",
-     61.85
+     53.54
     ],
     [
      "2026-08-24",
-     70.17
+     61.86
     ],
     [
      "2026-08-25",
-     90.72
+     82.41
     ],
     [
      "2026-08-26",
-     54.99
+     46.68
     ],
     [
      "2026-08-27",
-     56.73
+     48.42
     ],
     [
      "2026-08-28",
-     47.55
+     39.24
     ],
     [
      "2026-08-29",
-     29.57
+     21.26
     ],
     [
      "2026-08-30",
-     47.05
+     38.74
     ],
     [
      "2026-08-31",
-     66.71
+     58.4
     ],
     [
      "2026-09-01",
-     54.59
+     46.28
     ],
     [
      "2026-09-02",
-     98.44
+     90.13
     ],
     [
      "2026-09-03",
-     120.55
+     112.24
     ],
     [
      "2026-09-04",
-     126.19
+     117.88
     ],
     [
      "2026-09-05",
-     154.19
+     145.88
     ],
     [
      "2026-09-06",
-     155.19
+     146.88
     ],
     [
      "2026-09-07",
-     172.51
+     164.2
     ],
     [
      "2026-09-08",
-     182.2
+     173.89
     ],
     [
      "2026-09-09",
-     184.43
+     176.12
     ],
     [
      "2026-09-10",
-     220.07
+     211.76
     ],
     [
      "2026-09-11",
-     233.49
+     225.18
     ],
     [
      "2026-09-12",
-     251.65
+     243.34
     ],
     [
      "2026-09-13",
-     253.73
+     245.42
     ],
     [
      "2026-09-14",
-     260.53
+     252.22
     ],
     [
      "2026-09-15",
-     258.85
+     250.54
     ],
     [
      "2026-09-16",
-     253.6
+     245.29
     ],
     [
      "2026-09-17",
-     253.6
+     245.29
     ],
     [
      "2026-09-18",
-     253.6
+     245.29
     ],
     [
      "2026-09-19",
-     248.98
+     240.67
     ],
     [
      "2026-09-20",
-     248.98
+     240.67
     ],
     [
      "2026-09-21",
-     230.17
+     221.86
     ],
     [
      "2026-09-22",
-     228.47
+     220.16
     ],
     [
      "2026-09-23",
-     248.52
+     240.21
     ],
     [
      "2026-09-24",
-     202.74
+     194.43
     ],
     [
      "2026-09-25",
-     210.24
+     201.93
     ],
     [
      "2026-09-26",
-     210.24
+     201.93
     ],
     [
      "2026-09-27",
-     210.24
+     201.93
     ],
     [
      "2026-09-28",
-     197.27
+     188.96
     ],
     [
      "2026-09-29",
-     180.24
+     171.93
     ],
     [
      "2026-09-30",
-     185.06
+     176.75
     ],
     [
      "2026-10-01",
-     215.77
+     207.46
     ],
     [
      "2026-10-02",
-     227.34
+     219.03
     ],
     [
      "2026-10-03",
-     247.08
+     238.77
     ],
     [
      "2026-10-04",
-     247.08
+     238.77
     ],
     [
      "2026-10-05",
-     252.87
+     244.56
     ],
     [
      "2026-10-06",
-     284.26
+     275.95
     ],
     [
      "2026-10-07",
-     247.16
+     238.85
     ],
     [
      "2026-10-08",
-     246.09
+     237.78
     ],
     [
      "2026-10-09",
-     236.14
+     227.83
     ],
     [
      "2026-10-10",
-     224.97
+     216.66
     ],
     [
      "2026-10-11",
-     233.5
+     225.19
     ],
     [
      "2026-10-12",
-     228.75
+     220.44
     ],
     [
      "2026-10-13",
-     211.89
+     203.58
     ],
     [
      "2026-10-14",
-     220.5
+     212.19
     ],
     [
      "2026-10-15",
-     229.26
+     220.95
     ],
     [
      "2026-10-16",
-     202.1
+     193.79
     ],
     [
-     "2026-10-16",
-     203.71
+     "2026-10-17",
+     187.77
+    ],
+    [
+     "2026-10-17",
+     187.77
     ]
    ],
    "pnls": [
-    1.18,
-    0.64,
-    -1.17,
-    7.44,
+    -1.15,
+    -17.72,
     1.97,
     1.36,
-    -2.14,
     2.66,
-    3.25,
-    -3.53,
-    -4.91,
+    -6.29,
     0.91,
     1.71,
     -1.73,
@@ -14284,7 +13011,7 @@
     -2.97,
     7.0,
     5.91,
-    -1.66,
+    -3.01,
     0.8,
     -3.64,
     -2.11,
@@ -14293,13 +13020,13 @@
     0.29,
     3.23,
     3.22,
-    -1.2,
+    -2.2,
     3.45,
-    -1.59,
+    -2.89,
     0.41,
     1.08,
     6.96,
-    8.66,
+    29.91,
     4.31,
     7.57,
     -9.93,
@@ -14336,7 +13063,7 @@
     1.74,
     -4.5,
     -3.02,
-    -3.01,
+    -3.0,
     3.17,
     -6.34,
     6.59,
@@ -14658,7 +13385,9 @@
     -17.48,
     -3.78,
     3.84,
-    1.61
+    1.61,
+    -13.7,
+    6.07
    ],
    "trailed": 0,
    "trail_exits": 0,
@@ -14718,11 +13447,11 @@
    "tl_events": []
   },
   "h1": {
-   "net": 251.65,
+   "net": 245.42,
    "maxdd": -61.15,
    "worst_debt": 61.15,
-   "trades": 248,
-   "wr": 62.9,
+   "trades": 247,
+   "wr": 61.9,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -14730,162 +13459,157 @@
    "internal": 0,
    "curve": [
     [
-     "2026-08-08",
+     "2026-08-09",
      0.0
     ],
     [
-     "2026-08-09",
-     1.18
-    ],
-    [
      "2026-08-10",
-     1.81
+     -1.15
     ],
     [
      "2026-08-11",
-     11.65
+     -19.17
     ],
     [
      "2026-08-12",
-     2.74
+     -23.16
     ],
     [
      "2026-08-13",
-     0.08
+     -25.83
     ],
     [
      "2026-08-14",
-     6.28
+     -19.63
     ],
     [
      "2026-08-15",
-     8.47
+     -17.43
     ],
     [
      "2026-08-16",
-     9.32
+     -16.59
     ],
     [
      "2026-08-17",
-     9.52
+     -16.39
     ],
     [
      "2026-08-18",
-     11.6
+     -14.3
     ],
     [
      "2026-08-19",
-     17.63
+     -9.63
     ],
     [
      "2026-08-20",
-     19.78
+     -9.77
     ],
     [
      "2026-08-21",
-     39.71
+     31.4
     ],
     [
      "2026-08-22",
-     47.28
+     38.97
     ],
     [
      "2026-08-23",
-     61.85
+     53.54
     ],
     [
      "2026-08-24",
-     70.17
+     61.86
     ],
     [
      "2026-08-25",
-     90.72
+     82.41
     ],
     [
      "2026-08-26",
-     54.99
+     46.68
     ],
     [
      "2026-08-27",
-     56.73
+     48.42
     ],
     [
      "2026-08-28",
-     47.55
+     39.24
     ],
     [
      "2026-08-29",
-     29.57
+     21.26
     ],
     [
      "2026-08-30",
-     47.05
+     38.74
     ],
     [
      "2026-08-31",
-     66.71
+     58.4
     ],
     [
      "2026-09-01",
-     54.59
+     46.28
     ],
     [
      "2026-09-02",
-     98.44
+     90.13
     ],
     [
      "2026-09-03",
-     120.55
+     112.24
     ],
     [
      "2026-09-04",
-     126.19
+     117.88
     ],
     [
      "2026-09-05",
-     154.19
+     145.88
     ],
     [
      "2026-09-06",
-     155.19
+     146.88
     ],
     [
      "2026-09-07",
-     172.51
+     164.2
     ],
     [
      "2026-09-08",
-     182.2
+     173.89
     ],
     [
      "2026-09-09",
-     184.43
+     176.12
     ],
     [
      "2026-09-10",
-     220.07
+     211.76
     ],
     [
      "2026-09-11",
-     233.49
+     225.18
     ],
     [
-     "2026-09-11",
-     251.65
+     "2026-09-12",
+     243.34
+    ],
+    [
+     "2026-09-12",
+     245.42
     ]
    ],
    "pnls": [
-    1.18,
-    0.64,
-    -1.17,
-    7.44,
+    -1.15,
+    -17.72,
     1.97,
     1.36,
-    -2.14,
     2.66,
-    3.25,
-    -3.53,
-    -4.91,
+    -6.29,
     0.91,
     1.71,
     -1.73,
@@ -14930,7 +13654,7 @@
     -2.97,
     7.0,
     5.91,
-    -1.66,
+    -3.01,
     0.8,
     -3.64,
     -2.11,
@@ -14939,13 +13663,13 @@
     0.29,
     3.23,
     3.22,
-    -1.2,
+    -2.2,
     3.45,
-    -1.59,
+    -2.89,
     0.41,
     1.08,
     6.96,
-    8.66,
+    29.91,
     4.31,
     7.57,
     -9.93,
@@ -14982,7 +13706,7 @@
     1.74,
     -4.5,
     -3.02,
-    -3.01,
+    -3.0,
     3.17,
     -6.34,
     6.59,
@@ -15122,7 +13846,10 @@
     6.45,
     1.8,
     -2.84,
-    9.81
+    9.81,
+    -1.18,
+    4.86,
+    -1.6
    ],
    "trailed": 0,
    "trail_exits": 0,
@@ -15133,7 +13860,7 @@
    "eq_all": 0,
    "mtm_dd_adverse": 63.39,
    "mtm_dd_close": 62.91,
-   "cc_dd": 62.26,
+   "cc_dd": 62.25,
    "pend": {
     "setups": 0,
     "filled": 0,
@@ -15182,11 +13909,11 @@
    "tl_events": []
   },
   "h2": {
-   "net": -59.68,
-   "maxdd": -83.15,
-   "worst_debt": 83.15,
-   "trades": 190,
-   "wr": 53.2,
+   "net": -65.29,
+   "maxdd": -95.79,
+   "worst_debt": 95.79,
+   "trades": 187,
+   "wr": 54.0,
    "blocked": 0,
    "minbal": 0,
    "rc_over": 0,
@@ -15194,170 +13921,166 @@
    "internal": 0,
    "curve": [
     [
-     "2026-09-11",
-     0.0
-    ],
-    [
      "2026-09-12",
      0.0
     ],
     [
      "2026-09-13",
-     -8.08
+     0.0
     ],
     [
      "2026-09-14",
-     -1.28
+     8.14
     ],
     [
      "2026-09-15",
-     -2.96
+     0.88
     ],
     [
      "2026-09-16",
-     -9.78
+     -14.28
     ],
     [
      "2026-09-17",
-     -9.78
+     -14.28
     ],
     [
      "2026-09-18",
-     -9.78
+     -14.28
     ],
     [
      "2026-09-19",
-     -14.4
+     -18.9
     ],
     [
      "2026-09-20",
-     -14.4
+     -18.9
     ],
     [
      "2026-09-21",
-     -33.22
+     -37.71
     ],
     [
      "2026-09-22",
-     -34.92
+     -39.42
     ],
     [
      "2026-09-23",
-     -14.87
+     -19.37
     ],
     [
      "2026-09-24",
-     -60.65
+     -65.15
     ],
     [
      "2026-09-25",
-     -53.14
+     -57.64
     ],
     [
      "2026-09-26",
-     -53.14
+     -57.64
     ],
     [
      "2026-09-27",
-     -53.14
+     -57.64
     ],
     [
      "2026-09-28",
-     -66.12
+     -70.62
     ],
     [
      "2026-09-29",
-     -83.15
+     -87.65
     ],
     [
      "2026-09-30",
-     -78.33
+     -82.83
     ],
     [
      "2026-10-01",
-     -47.62
+     -52.12
     ],
     [
      "2026-10-02",
-     -36.04
+     -40.54
     ],
     [
      "2026-10-03",
-     -16.31
+     -20.81
     ],
     [
      "2026-10-04",
-     -16.31
+     -20.81
     ],
     [
      "2026-10-05",
-     -10.51
+     -15.01
     ],
     [
      "2026-10-06",
-     20.88
+     22.89
     ],
     [
      "2026-10-07",
-     -16.22
+     -14.21
     ],
     [
      "2026-10-08",
-     -17.29
+     -15.28
     ],
     [
      "2026-10-09",
-     -27.25
+     -25.23
     ],
     [
      "2026-10-10",
-     -38.42
+     -36.4
     ],
     [
      "2026-10-11",
-     -29.89
+     -27.88
     ],
     [
      "2026-10-12",
-     -34.64
+     -32.62
     ],
     [
      "2026-10-13",
-     -51.49
+     -49.48
     ],
     [
      "2026-10-14",
-     -42.88
+     -40.87
     ],
     [
      "2026-10-15",
-     -34.13
+     -32.11
     ],
     [
      "2026-10-16",
-     -61.28
+     -59.27
     ],
     [
-     "2026-10-16",
-     -59.68
+     "2026-10-17",
+     -65.29
+    ],
+    [
+     "2026-10-17",
+     -65.29
     ]
    ],
    "pnls": [
-    1.26,
-    -3.34,
-    -1.83,
-    -1.44,
-    -1.15,
-    -1.63,
-    0.21,
-    -2.11,
-    4.86,
-    -2.9,
+    -1.06,
+    -5.34,
+    2.41,
+    7.13,
     5.42,
+    -1.81,
     0.93,
     2.7,
     -2.25,
-    -2.24,
+    -6.6,
+    -1.22,
     -2.27,
     -2.61,
     -2.63,
@@ -15367,10 +14090,10 @@
     3.57,
     -3.55,
     8.04,
-    -4.12,
+    -7.31,
     0.73,
     5.18,
-    -6.72,
+    -11.87,
     -9.96,
     -4.62,
     4.57,
@@ -15441,7 +14164,7 @@
     4.9,
     3.39,
     7.35,
-    2.62,
+    9.13,
     2.23,
     1.8,
     0.21,
@@ -15531,7 +14254,9 @@
     -17.48,
     -3.78,
     3.84,
-    1.61
+    1.61,
+    -13.7,
+    6.07
    ],
    "trailed": 0,
    "trail_exits": 0,
@@ -15540,9 +14265,9 @@
    "flip_exits": 0,
    "virtual": 0,
    "eq_all": 0,
-   "mtm_dd_adverse": 102.43,
-   "mtm_dd_close": 102.1,
-   "cc_dd": 98.22,
+   "mtm_dd_adverse": 110.42,
+   "mtm_dd_close": 110.09,
+   "cc_dd": 106.22,
    "pend": {
     "setups": 0,
     "filled": 0,
@@ -15597,16 +14322,16 @@
   "worst_debt": 81.09,
   "trades": 75,
   "wr": 53.3,
-  "blocked": 15,
-  "n_real": 91,
+  "blocked": 16,
+  "n_real": 92,
   "actual": 2.24,
-  "actual_all": -8.36
+  "actual_all": -2.21
  },
- "real_n": 91,
- "minutes": 115.9,
+ "real_n": 92,
+ "minutes": 102.9,
  "charged": 0,
  "parity": {
   "drift": false,
-  "report": "BOT vs HARNESS parity - 2026-09-29b\n\n1. RULE FLAGS the bot reads vs dials the harness has\n   internal_entries       -> harness internal     ok             live values ['False']\n   risk_fit_pct           -> harness risk_fit     ok             live values ['0.0', '3.0']\n   max_risk_pct           -> harness risk_pct     ok             live values ['0.1']\n   nervosity              -> harness nerv_gate    ok             live values ['False']\n   day_cap                -> harness day_cap      ok             live values ['None']\n   kill_net               -> harness kill_net     ok             live values ['-60.0']\n   jar                    -> harness jar          ok             live values ['True']\n   base_lot               -> harness lot          ok             live values ['0.02']\n   scale_with_balance     -> harness balance      ok             live values ['True']\n   rr                     -> harness rr           ok             live values ['0.8', '1.0']\n   k_streak               -> harness k_streak     ok             live values ['2']\n   pb_dir_gate            -> harness pb_dir_gate  ok             live values ['True']\n   pb_gate_mode           -> harness pb_gate_mode ok             live values [\"'trend'\"]\n   max_trades_day         -> harness None         no dial, matches assumption live values ['None']\n   movement               -> harness None         no dial, matches assumption live values ['True']\n   debt_mode              -> harness None         no dial, matches assumption live values [\"'hwm'\"]\n\n2. TRADE KINDS in the live journals vs kinds the harness produces\n   FLIP-BOS      207  ok\n   BOS           149  ok\n   INT             4  ok\n   internal-flagged live trades: 4\n\n3. ENTRY RATE, live vs simulated\n   live        91 entries over  19.9 d  =  4.57/day\n   simulated  260 entries over  41.7 d  =  6.24/day\n   ratio sim/live: 1.37x\n\nPARITY: OK - every rule the bot reads has a dial, every live\ntrade kind can be produced, entry rates agree.\n"
+  "report": "BOT vs HARNESS parity - 2026-09-29b\n\n1. RULE FLAGS the bot reads vs dials the harness has\n   internal_entries       -> harness internal     ok             live values ['False']\n   risk_fit_pct           -> harness risk_fit     ok             live values ['0.0', '3.0']\n   max_risk_pct           -> harness risk_pct     ok             live values ['0.1']\n   nervosity              -> harness nerv_gate    ok             live values ['False']\n   day_cap                -> harness day_cap      ok             live values ['None']\n   kill_net               -> harness kill_net     ok             live values ['-60.0']\n   jar                    -> harness jar          ok             live values ['True']\n   base_lot               -> harness lot          ok             live values ['0.02']\n   scale_with_balance     -> harness balance      ok             live values ['True']\n   rr                     -> harness rr           ok             live values ['0.8', '1.0']\n   k_streak               -> harness k_streak     ok             live values ['2']\n   pb_dir_gate            -> harness pb_dir_gate  ok             live values ['True']\n   pb_gate_mode           -> harness pb_gate_mode ok             live values [\"'trend'\"]\n   max_trades_day         -> harness None         no dial, matches assumption live values ['None']\n   movement               -> harness None         no dial, matches assumption live values ['True']\n   debt_mode              -> harness None         no dial, matches assumption live values [\"'hwm'\"]\n\n2. TRADE KINDS in the live journals vs kinds the harness produces\n   FLIP-BOS      207  ok\n   BOS           154  ok\n   INT             4  ok\n   internal-flagged live trades: 4\n\n3. ENTRY RATE, live vs simulated\n   live        92 entries over  21.7 d  =  4.24/day\n   simulated  261 entries over  41.7 d  =  6.26/day\n   ratio sim/live: 1.48x\n\nPARITY: OK - every rule the bot reads has a dial, every live\ntrade kind can be produced, entry rates agree.\n"
  }
 }

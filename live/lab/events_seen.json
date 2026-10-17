@@ -26,7 +26,8 @@
   "adds_in_scrutiny",
   "cont_wait",
   "real_pool_split",
-  "battery_live_base"
+  "battery_live_base",
+  "veille_wake_marker"
  ],
  "asks_answered": [
   "ask_1790670647",

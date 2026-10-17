@@ -456,6 +456,17 @@
    "why_fr": "Tous les comptes réels tournent avec ce filtre depuis le 10 octobre, mais la batterie de nuit le teste sans. Ce soir, avec le filtre : le dimanche sans trade, la pause de 10 minutes et la petite mise sur une tendance jeune perdent toutes ; éviter les heures qui ont trop couru gagne à 400, 500 et 600 points. Les deux robots ne disent pas la même chose.",
    "why_en": "Every real account runs with this filter since 10 October, but the night battery tests without it. Tonight, with the filter: no Sunday, the 10-minute pause and the smaller stake on a young trend all lose; skipping hours that ran too far wins at 400, 500 and 600 points. The two robots do not say the same thing.",
    "status": "open"
+  },
+  {
+   "id": "veille_wake_marker",
+   "date": "2026-10-17",
+   "title_fr": "Ne réveiller le chercheur de jour qu'une fois par trade fermé",
+   "title_en": "Wake the day watcher only once per closed trade",
+   "what_fr": "Dans le script qui prépare le réveil de la veille (wake_context, voir lab/VEILLE.md), faire avancer le repère « dernier trade vu » même quand la veille répond « rien », pour qu'un trade déjà raconté ne déclenche plus de réveil. Rien d'autre ne change : un nouveau trade fermé réveille toujours la veille.",
+   "what_en": "In the script that prepares the day watch's wake-up (wake_context, see lab/VEILLE.md), move the 'last trade seen' marker forward even when the watch answers 'nothing', so a trade already told no longer triggers a wake-up. Nothing else changes: a new closed trade still wakes the watch.",
+   "why_fr": "Du 16 octobre 17 h 32 au 17 octobre 6 h 31, la veille a été réveillée sept fois pour la même vente gagnante de 13 $, déjà racontée. Sept réveils pour rien, et un vrai nouveau trade risque de se perdre dans le bruit.",
+   "why_en": "From 16 October 17:32 to 17 October 06:31 the day watch was woken seven times for the same $13 winning sell, already told. Seven wake-ups for nothing, and a real new trade could get lost in the noise.",
+   "status": "open"
   }
  ]
 }

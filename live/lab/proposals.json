@@ -3217,7 +3217,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-16",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 115.16,
     "worst": 15.18,
@@ -3242,7 +3242,9 @@
      "trades": 13,
      "diff_net": 21.93
     }
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-17"
   },
   {
    "id": "pb_choch_ext500",
@@ -3262,7 +3264,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-16",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 122.83,
     "worst": 57.38,
@@ -3276,7 +3278,9 @@
     "trades": 165,
     "at": "2026-10-16 chercheur",
     "base_label": "robot avec le filtre souple / robot with the looser filter"
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-17"
   },
   {
    "id": "pb_rr10_ext500",
@@ -3296,7 +3300,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-16",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 115.66,
     "worst": 27.79,
@@ -3310,7 +3314,9 @@
     "trades": 53,
     "at": "2026-10-16 chercheur",
     "base_label": "robot avec le filtre, visant 1 fois le risque / robot with the filter, aiming 1x the risk"
-   }
+   },
+   "verdict": "B",
+   "done": "2026-10-17"
   },
   {
    "id": "pb_filter",
@@ -3329,7 +3335,7 @@
    },
    "by": "chercheur",
    "date": "2026-10-16",
-   "status": "pending",
+   "status": "done",
    "pretest": {
     "net": 41.68,
     "worst": 51.81,
@@ -3345,6 +3351,181 @@
     "real": {
      "n_real": 91,
      "trades": 15
+    }
+   },
+   "verdict": "B",
+   "done": "2026-10-17"
+  },
+  {
+   "id": "pb_choch_ext400",
+   "family": "meteo",
+   "title_fr": "Filtre souple, et pas d'entrée après une heure de 400 points",
+   "title_en": "Looser filter, and no entry after a 400-point hour",
+   "why_fr": "Avec le filtre plus souple, qui trade presque au rythme des vrais comptes, ne pas entrer quand la dernière heure a déjà bougé de plus de 400 points. Testé sur les 42 derniers jours : 116 $ au lieu de 61, mieux sur les deux moitiés (+33 et +30), trou de 54 au lieu de 94.",
+   "why_en": "With the looser filter, which trades almost at the real accounts' pace, do not enter when the last hour already moved more than 400 points. Tested on the last 42 days: $116 instead of $61, better on both halves (+33 and +30), hole 54 instead of 94.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 400
+   },
+   "by": "chercheur",
+   "date": "2026-10-17",
+   "status": "pending",
+   "pretest": {
+    "net": 116.39,
+    "worst": 54.32,
+    "h1": 32.65,
+    "h2": 30.42,
+    "base_net": 61.15,
+    "base_worst": 93.71,
+    "verdict": "A",
+    "trades": 152,
+    "at": "2026-10-17 chercheur",
+    "base_label": "robot avec le filtre souple / robot with the looser filter"
+   }
+  },
+  {
+   "id": "pb_choch_ext600",
+   "family": "meteo",
+   "title_fr": "Filtre souple, et pas d'entrée après une heure de 600 points",
+   "title_en": "Looser filter, and no entry after a 600-point hour",
+   "why_fr": "Le même frein, réglé plus large : on ne refuse que les heures de plus de 600 points. 107 $ au lieu de 61, mieux sur les deux moitiés (+40 et +10), trou de 53 au lieu de 94. Avec 400 et 500 qui gagnent aussi, c'est un palier, pas un réglage chanceux.",
+   "why_en": "The same brake, set wider: only hours of more than 600 points are refused. $107 instead of $61, better on both halves (+40 and +10), hole 53 instead of 94. With 400 and 500 winning too, this is a plateau, not a lucky setting.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 600
+   },
+   "by": "chercheur",
+   "date": "2026-10-17",
+   "status": "pending",
+   "pretest": {
+    "net": 107.27,
+    "worst": 53.45,
+    "h1": 40.26,
+    "h2": 10.29,
+    "base_net": 61.15,
+    "base_worst": 93.71,
+    "verdict": "A",
+    "trades": 160,
+    "at": "2026-10-17 chercheur",
+    "base_label": "robot avec le filtre souple / robot with the looser filter"
+   }
+  },
+  {
+   "id": "pb_ext450",
+   "family": "meteo",
+   "title_fr": "Filtre des comptes réels, pas d'entrée après une heure de 450 points",
+   "title_en": "Real accounts' filter, no entry after a 450-point hour",
+   "why_fr": "Avec le filtre qui tourne sur les vrais comptes, ne pas entrer après une heure de plus de 450 points. 92 $ au lieu de 34, mieux sur les deux moitiés (+36 et +11), trou de 15 au lieu de 52. Prudence : ce filtre ne garde que 57 trades en 42 jours.",
+   "why_en": "With the filter the real accounts run, do not enter after an hour of more than 450 points. $92 instead of $34, better on both halves (+36 and +11), hole 15 instead of 52. Caution: this filter keeps only 57 trades in 42 days.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "trend",
+    "ext_pts": 450
+   },
+   "by": "chercheur",
+   "date": "2026-10-17",
+   "status": "pending",
+   "pretest": {
+    "net": 92.35,
+    "worst": 15.18,
+    "h1": 35.99,
+    "h2": 11.38,
+    "base_net": 34.4,
+    "base_worst": 51.81,
+    "verdict": "A",
+    "trades": 57,
+    "at": "2026-10-17 chercheur",
+    "base_label": "robot avec le filtre des comptes réels / robot with the real accounts' filter"
+   }
+  },
+  {
+   "id": "pb_choch_ext500_rr09",
+   "family": "cible",
+   "title_fr": "Filtre souple, heures agitées évitées, viser 0,9 fois ce qu'on risque",
+   "title_en": "Looser filter, stretched hours skipped, aim for 0.9 times what we risk",
+   "why_fr": "Une tentative de sauvetage : viser un peu plus loin. Sur 42 jours le test dit non de peu : 124 $ au lieu de 135, première moitié -17, seconde +15, trou de 68 au lieu de 57. Mais rejoué sur 45 vrais trades du robot, il gagne 29 $ de plus. Je veux savoir qui a raison.",
+   "why_en": "A rescue attempt: aim a little further. Over 42 days the test says no by a little: $124 instead of $135, first half -17, second +15, hole 68 instead of 57. But replayed on 45 of the robot's real trades it earns $29 more. I want to know which one is right.",
+   "cfg": {
+    "rr": 0.9,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "ext_pts": 500
+   },
+   "by": "chercheur",
+   "date": "2026-10-17",
+   "status": "pending",
+   "pretest": {
+    "net": 123.98,
+    "worst": 68.16,
+    "h1": -16.98,
+    "h2": 14.75,
+    "base_net": 135.49,
+    "base_worst": 57.38,
+    "verdict": "C",
+    "trades": 156,
+    "at": "2026-10-17 chercheur",
+    "base_label": "filtre souple + pas d'entrée après 500 points / looser filter + no entry after 500 points"
+   }
+  },
+  {
+   "id": "pb_choch_chase500",
+   "family": "meteo",
+   "title_fr": "Filtre souple : ne refuser que l'heure qui a couru dans notre sens",
+   "title_en": "Looser filter: refuse only the hour that ran our way",
+   "why_fr": "Hors des sentiers : au lieu de refuser toute heure agitée, ne refuser que celle qui a déjà couru plus de 500 points dans le sens du trade. Une heure qui est allée contre nous ne bloque plus. Jamais essayé avec le filtre ; le test de cette nuit dira si on garde le gain avec plus de trades.",
+   "why_en": "Out of the box: instead of refusing every stretched hour, refuse only the one that already ran more than 500 points the trade's way. An hour that went against us no longer blocks. Never tried with the filter; tonight's test will say whether we keep the gain with more trades.",
+   "cfg": {
+    "rr": 0.8,
+    "n_cont": 1,
+    "bullets": 3,
+    "k_streak": 2,
+    "pb_dir_gate": true,
+    "pb_gate_mode": "choch",
+    "chase_pts": 500
+   },
+   "by": "chercheur",
+   "date": "2026-10-17",
+   "status": "pending",
+   "pretest": {
+    "net": 135.49,
+    "worst": 57.38,
+    "h1": 13.37,
+    "h2": 89.68,
+    "base_net": 28.89,
+    "base_worst": 88.18,
+    "base_h1": 43.05,
+    "base_h2": -22.52,
+    "verdict": "B",
+    "trades": 158,
+    "at": "2026-10-17 05:35",
+    "long": {
+     "days": 69,
+     "verdict": "B",
+     "diff_net": 85.03,
+     "diff_worst": -30.8
+    },
+    "real": {
+     "n_real": 92,
+     "trades": 43,
+     "diff_net": 70.83,
+     "diff_worst": -64.81
     }
    }
   }

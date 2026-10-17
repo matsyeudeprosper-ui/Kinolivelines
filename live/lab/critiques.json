@@ -176,6 +176,42 @@
     "real gap: not run (permission). It trades 47 fewer, so a per-trade cost would favour it - cannot rescue a gain with no cause behind it",
     "overlap: same brake as the 'sunday' observation and the 'weekend' rejection, and the passenger in ext500_nosun / ext500_nosun_capwait30"
    ]
+  },
+  {
+   "id": "fit3",
+   "date": "2026-10-17",
+   "verdict": "doute",
+   "fr": "Limiter un trade à 3 % du compte protège : le plus gros trou baisse. Mais presque tout le gain vient d'une seule grosse perte évitée, dans la première moitié des 42 jours. La seconde moitié est pareille ou un peu pire, et sur 69 jours le résultat est un peu plus bas (−7 $). Sur les vrais trades, rien ne change. Utile comme ceinture, pas encore prouvé comme gain.",
+   "en": "Capping one trade at 3% of the account protects: the biggest hole shrinks. But nearly all the gain comes from one big loss avoided, in the first half of the 42 days. The second half is the same or a little worse, and over 69 days the result is slightly lower (−$7). On the real trades nothing changes. Useful as a safety belt, not yet proven as a gain.",
+   "checks": [
+    "dose: 2% / 3% / 4% all +13 / +28 / +38 on 42d (no sign flip) - but 4% beats 3%, and 2% loses 57 on the long window: the looser the cap, the better; no sweet spot at 3",
+    "halves: re-run at ~10:30 gives B, not A: h1 +26.6, h2 -17.7 (accounts without a daily cap); capped shape h1 +15.3, h2 -0.7. Gain is a first-half story on both shapes",
+    "long window (69d): -7.24 net, h1 -39.2 / h2 +22.7, worst -2.8 -> a small loss, a doubt; at 2% -56.6",
+    "real trades: diff 0.00 - the cap never bit on the 75 real trades, no live evidence either way",
+    "concentration: base's single worst trade -39.16 disappears under the cap (fit3 worst loss ~ -17); that one trade alone is larger than the +27.8 gain; losses<-8 sum -279 -> -213, wins>8 sum 315 -> 290 (it also trims big winners)",
+    "past: no registry/archive entry, no twin; history 10 nights C, then B, then A only tonight - A is new and fragile",
+    "mechanism: plain and real - a wide stop at full size risks too much, the cap shrinks the lot; but E009 found wide-stop trades are the best ones, which matches the long-window first-half loss",
+    "overlap: cousin of risk_pct / risk_max (cap per trade) and of kill/jar; this one shrinks instead of skipping, so mostly new",
+    "drag: auto = 0 (real beats the test); drag $1: d +38.5, both halves up (A) - smaller lots pay less drag, survives the dollar"
+   ]
+  },
+  {
+   "id": "ext700",
+   "date": "2026-10-17",
+   "verdict": "bloque",
+   "fr": "Le gain de ce soir (+4 $) est plus petit qu'un seul trade, et il change de signe d'une heure à l'autre : relancé à 10 h 30, il perd 7 $. À 800 points il perd aussi. Sur 69 jours il perd 12 $, sur les deux moitiés. Il était C huit soirs sur douze. Ce qui me ferait changer d'avis : 600, 700 et 800 gagnants une semaine d'affilée, et un gain sur 69 jours.",
+   "en": "Tonight's gain (+$4) is smaller than one single trade, and it flips sign from one hour to the next: re-run at 10:30 it loses $7. At 800 points it loses too. Over 69 days it loses $12, on both halves. It was C on eight nights out of twelve. What would change my mind: 600, 700 and 800 all winning for a week in a row, plus a gain over 69 days.",
+   "checks": [
+    "dose: 600 -> +22.6 (B), 700 re-run -> -6.8 (C), 800 -> -5.3 (C); the context's +3.77 A became -6.81 C the same morning on fresh data - the sign flips with the clock and between neighbours",
+    "halves (re-run): h1 +3.35, h2 -5.27; context: h1 +3.35, h2 +0.42 - what gain there is sits in the first half; both account shapes give the same diff (+3.77 base and valere), so no shape carries it",
+    "long window (69d): -12.12, h1 -5.31 / h2 -5.92, worst +5.27 -> a loss on both halves, a doubt",
+    "real trades: +16.09 on 73 trades (18 blocked), worst -16.1 - the only good sign, but one window, and it did not keep the idea out of C for eight nights",
+    "concentration: 6 trades blocked in 42 days; +3.77 is smaller than one typical $7 trade; ext600's +22.6 is mostly one trade (-39.16 cut to -13.04), the same trade that carried fit3",
+    "past: ext300 rejected (-26), ext500 already a candidate (B, smaller hole) - ext700 is a weaker dose of an idea already watched; history C or = on 9 of 12 nights, A only the last 2",
+    "mechanism: plausible (do not chase a stretched market), but at 700 points it almost never fires, so the rule barely acts",
+    "overlap: same filter as ext500/ext300, cut at another line; the 600 gain is the same big loss fit3 trims",
+    "drag: auto = same as no drag (C, -6.81); --drag 1 printed the variant charged (-431) against an uncharged base, so that run tells nothing - trade count 256 vs 255, a per-trade cost would not rescue it either"
+   ]
   }
  ]
 }
