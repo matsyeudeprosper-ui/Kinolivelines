@@ -14262,6 +14262,20 @@ def account_robot_set(user, body, admin=False):
     rid = str(body.get("id") or "")
     if not any(c["id"] == rid for c in B["choices"]):
         return {"ok": False, "err": "not_allowed"}
+    # 2026-10-17 (owner: "what if the robot trades something else?"): a robot's market must exist at the member's
+    # broker. Every robot is Bitcoin today (robots.json "market" absent -> BTCUSD); a market robot names its market.
+    try:
+        _rb = next((x for x in (robot_reg().get("robots") or []) if x.get("id") == rid), {}) or {}
+        _mkt = str(_rb.get("market") or "BTCUSD").upper()
+        if _mkt not in ("BTCUSD", "BTCUSDM"):
+            _bp = json.load(open(os.path.join(DIR, "nest_data", f"{uid}.broker.json"), encoding="utf-8"))
+            _prof = _bp.get("profile") if isinstance(_bp.get("profile"), dict) else _bp
+            if not ((_prof.get("markets") or {}).get(_mkt)):
+                return {"ok": False, "err": "no_market", "market": _mkt}
+    except FileNotFoundError:
+        pass                                   # no profile yet (Exness members have every nest market by definition)
+    except Exception:
+        pass
     pp = os.path.join(DIR, "owl_packages.json")
     if rid == B["current"]["id"]:
         if not B["pending"]:
@@ -17197,6 +17211,14 @@ def _probe_card(st, jid):
     facts += "<div><span>Compte</span><b>%s</b><small>%s</small></div>" % (_h.escape(str(p.get("currency") or "?")), "positions s&eacute;par&eacute;es" if p.get("margin_mode") == 2 else "une position &agrave; la fois")
     off = b.get("clock_offset_h")
     facts += "<div><span>Horloge</span><b>UTC%s</b><small>%s</small></div></div>" % (("%+d h" % off) if off else "", "r&eacute;gl&eacute;e par le robot" if off else "la m&ecirc;me que le robot")
+    # 2026-10-17 (owner: "are we assuming only BTC?"): the other nest markets at this broker - information today
+    # (real money is Bitcoin-only), the gate for a market robot tomorrow
+    _mks = v.get("markets") or []
+    if _mks:
+        _found = [m for m in _mks if m.get("found")]; _miss = [m for m in _mks if not m.get("found")]
+        facts += ("<p class=\"h\" style=\"margin-top:10px\"><b>Autres march&eacute;s</b> &middot; " + ", ".join(_h.escape(m["label"]) + " &#10003;" for m in _found)
+                  + ((" &middot; " if _found else "") + ", ".join(_h.escape(m["label"]) + " &#10007;" for m in _miss) if _miss else "")
+                  + ". Le robot trade le Bitcoin ; les autres march&eacute;s sont en essai et ne d&eacute;marreront ici que s&#8217;ils existent chez votre courtier.</p>")
     sub = f"<p class=\"sub\">{_h.escape(p.get('server') or st.get('server') or '')}</p>"
     code_block = ""
     if zone != "red":

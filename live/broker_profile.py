@@ -44,13 +44,76 @@ def find_btc(symbols):
     return best if score >= 3 else None
 
 
+# 2026-10-17 (owner: "are we assuming the user will trade only BTC?"): the nest's other markets, so the sign-up probe
+# and the member's broker profile say which of them exist at THIS broker. Real money is Bitcoin-only today; a market
+# robot or a market that qualifies later will be refused on an account whose broker lacks it (owl_app_server).
+NEST_MARKETS = [
+    ("XAUUSD", "Or", "Gold", ("XAUUSD", "GOLD"), ("GOLD",)),
+    ("USTEC", "Nasdaq 100", "Nasdaq 100", ("USTEC", "NAS100", "US100", "NDX100", "USTECH", "NASDAQ"), ("NASDAQ", "NAS 100", "US TECH")),
+    ("US30", "Dow Jones", "Dow Jones", ("US30", "DJ30", "DOW", "DJI30", "WS30"), ("DOW", "WALL STREET")),
+    ("USOIL", "Pétrole US", "US oil", ("USOIL", "WTI", "XTIUSD", "CRUDEOIL", "OILUSD", "USCRUDE", "CL"), ("WTI", "CRUDE")),
+]
+
+
+def find_market(symbols, key):
+    """the account's symbol for one nest market (name prefixes first, then the description), or None"""
+    spec = next((m for m in NEST_MARKETS if m[0] == key), None)
+    if spec is None:
+        return None
+    _, _, _, names, words = spec
+    best, score = None, 0
+    for s in symbols:
+        if int(getattr(s, "trade_mode", 0) or 0) == 0:
+            continue
+        name = str(getattr(s, "name", "") or "").upper()
+        desc = str(getattr(s, "description", "") or "").upper()
+        base = name.rstrip("M").rstrip(".").rstrip("_")
+        sc = 0
+        if name in names or base in names:
+            sc += 3
+        elif any(name.startswith(n) for n in names):
+            sc += 2
+        elif any(w in name for w in words):              # FOREX.com-style "US Tech 100", "Gold"
+            sc += 2
+        if any(w in desc for w in words):
+            sc += 1
+        if key == "XAUUSD" and ("EUR" in name or "GBP" in name or "AUD" in name or "XAG" in name):
+            sc = 0
+        if sc > score or (sc == score and best is not None and len(name) < len(str(best.name))):
+            best, score = s, sc
+    return best if score >= 2 else None
+
+
+def markets(mt5, symbols=None):
+    """{key: {name, spread, contract, digits} | None} for every nest market"""
+    syms = symbols if symbols is not None else (mt5.symbols_get() or [])
+    out = {}
+    for key, fr, en, _, _ in NEST_MARKETS:
+        s = find_market(syms, key)
+        if s is None:
+            out[key] = None
+            continue
+        try:
+            si = mt5.symbol_info(s.name)
+            out[key] = {"name": si.name, "spread": int(si.spread or 0), "point": si.point, "contract": si.trade_contract_size,
+                        "digits": si.digits, "vol_min": si.volume_min, "ccy_profit": si.currency_profit}
+        except Exception:
+            out[key] = {"name": getattr(s, "name", "?")}
+    return out
+
+
 def profile(mt5):
     ai = mt5.account_info()
     if ai is None:
         return None
-    btc = find_btc(mt5.symbols_get() or [])
+    _syms = mt5.symbols_get() or []
+    btc = find_btc(_syms)
     out = {"login": ai.login, "server": ai.server, "company": getattr(ai, "company", ""), "currency": ai.currency,
            "leverage": ai.leverage, "margin_mode": int(getattr(ai, "margin_mode", -1)), "checked_at": int(time.time())}
+    try:
+        out["markets"] = markets(mt5, _syms)
+    except Exception:
+        out["markets"] = {}
     if btc is None:
         out["btc"] = None
         return out

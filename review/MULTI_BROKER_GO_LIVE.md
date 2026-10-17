@@ -33,3 +33,17 @@ Order: 1 -> 2-6 (one broker-details layer) -> 7 -> 12 pilot -> rest.
 - 12 PILOT: FOREX.com demo 22319196 (USD, hedging, 1:100): Bitcoin = "Bitcoin", sizing OK, FOK only, clock UTC+3, min stop $0.50, history 3 days M1 / 7 months H1, SPREAD FIXED $40 (Exness Pro $4.48). Verdict waits for the cost curve; expected red.
 - 7 (per-broker feed) NEXT: one price-only terminal per broker (a demo you own, else the first automatic member's terminal), every signal/chart/robot decision read on that broker's prices, label "Prix <courtier>" wherever a price is shown; until then Exness signals carry the line "Prix Exness. Vérifiez le niveau sur votre plateforme."
 - 7 BUILT (2026-10-16 evening, commit below): `live/owl_chart_broker.py <key>` = the BTC feed's own code on another broker's price-only account (owner's demo from owl_secrets, else a member there), outputs `live/chart_broker/<key>[_htf|_nerv|_pbchain].json` + meta.json, candle/tick times shifted back to UTC (FOREX.com +3 h). `broker_book.key_of / feed_file / feed_fresh`; the readiness check's "feed" passes when that broker's feed is alive. Readers: app chart/htf/home card/Signal price via `member_feed(user)` + label "Prix FOREX.com" (chart header, `feed_label`); the generic member bot reads CHART_F/HTF_F/PBC_F from its broker's feed and pulls its own candles through `rates_utc`. The Exness feed no longer falls back to a non-Exness member terminal. Pilot feed running: forexcomglobal (symbol Bitcoin). NOT yet: signals/notifier per broker for Signal members (they get Exness signals + the "Prix Exness" line), auto-start of broker feeds by the provisioner/restart.ps1.
+
+## 2026-10-17 — Markets at the member's broker (owner: "are we assuming the user will trade only BTC?")
+Real money is Bitcoin-only today (no other market has passed the luck check), so the verdict card's Bitcoin check
+is the right gate. Groundwork for the day that changes:
+* broker_profile.NEST_MARKETS (Or, Nasdaq 100, Dow Jones, Pétrole US) + find_market(): name prefixes, then
+  FOREX.com-style names ("Gold", "US Tech 100"), then the description; gold in euro and untradeable symbols are
+  ignored. profile() now carries "markets" (name, spread, contract) - the sign-up probe and the 6-hourly member
+  profile (nest_data/<uid>.broker.json) both get it. On the idle Exness demo all four are found (XAUUSDm, USTECm,
+  US30m, USOILm).
+* broker_book.verdict carries "markets" [{key,label,found,name}]; the card shows "Autres marchés · Or ✓, ... ·
+  Pétrole US ✗" with the sentence that only Bitcoin trades for real.
+* account_robot_set refuses a robot whose "market" (robots.json, default BTCUSD) is absent from the member's
+  broker profile ({"err":"no_market"}); every robot is BTCUSD today so nothing changes for anyone.
+Tests: live/test_broker_profile.py (markets block) - all pass.

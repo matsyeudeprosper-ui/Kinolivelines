@@ -175,6 +175,9 @@ def verdict(profile):
     if not profile:
         out["reasons"].append("compte illisible"); return out
     C = {c["k"]: c for c in BP.checks(profile)}
+    # 2026-10-17: which of the nest's other markets exist at this broker (information today, a gate for market robots)
+    _mk = profile.get("markets") or {}
+    out["markets"] = [{"key": k, "label": fr, "found": bool(_mk.get(k)), "name": (_mk.get(k) or {}).get("name")} for k, fr, _, _, _ in BP.NEST_MARKETS]
     hard = [k for k in ("btc_found", "contract", "lots", "currency", "hedging") if k in C and not C[k]["ok"]]
     if hard:
         out["zone"] = "red"; out["reasons"] = [C[k]["fr"] for k in hard]; return out

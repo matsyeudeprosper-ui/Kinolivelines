@@ -85,4 +85,26 @@ fm.off = 0
 good = BP.clock_offset_s(fm, "BTCUSD") == 0 and BP.deals_utc(fm, frm, to, 0)[0].time == int(frm.timestamp()) + 60
 fails += not good
 print(("ok  " if good else "FAIL") + " Exness: offset 0, deals untouched")
-sys.exit(1 if fails else 0)
+# (the market tests below continue; the exit is at the end)
+
+# 2026-10-17 (owner: "are we assuming the user will trade only BTC?"): the nest's other markets at a broker
+mk = [S(name="XAUUSDm", description="Gold vs US Dollar", path="Metals/XAUUSDm", trade_mode=4),
+      S(name="XAUEUR", description="Gold vs Euro", path="Metals/XAUEUR", trade_mode=4),
+      S(name="USTECm", description="US Tech 100 Index", path="Indices/USTECm", trade_mode=4),
+      S(name="US30m", description="US Wall Street 30 Index", path="Indices/US30m", trade_mode=4),
+      S(name="USOILm", description="US Crude Oil", path="Energies/USOILm", trade_mode=4),
+      S(name="NAS100", description="Nasdaq 100", path="Indices/NAS100", trade_mode=0)]
+for key, want in (("XAUUSD", "XAUUSDm"), ("USTEC", "USTECm"), ("US30", "US30m"), ("USOIL", "USOILm")):
+    got = BP.find_market(mk, key); good = got is not None and got.name == want
+    fails += not good; print(("ok  " if good else "FAIL") + " market %-7s -> %s" % (key, got.name if got else None))
+got = BP.find_market([S(name="XAUEUR", description="Gold vs Euro", path="", trade_mode=4)], "XAUUSD")
+fails += got is not None; print(("ok  " if got is None else "FAIL") + " gold in euro is not the nest's gold")
+got = BP.find_market([S(name="NAS100", description="Nasdaq 100", path="", trade_mode=0)], "USTEC")
+fails += got is not None; print(("ok  " if got is None else "FAIL") + " a symbol that cannot be traded does not count")
+fx = [S(name="Bitcoin", description="Bitcoin", path="CFD/Cryptocurrencies", trade_mode=4), S(name="US Tech 100", description="US Tech 100", path="CFD/Indices", trade_mode=4),
+      S(name="Gold", description="Gold Spot", path="CFD/Metals", trade_mode=4)]
+got = BP.find_market(fx, "XAUUSD"); good = got is not None and got.name == "Gold"
+fails += not good; print(("ok  " if good else "FAIL") + " FOREX.com-style 'Gold' found by name")
+got = BP.find_market(fx, "USTEC"); good = got is not None and got.name == "US Tech 100"
+fails += not good; print(("ok  " if good else "FAIL") + " FOREX.com-style 'US Tech 100' found by description")
+print("\nfails:", fails); sys.exit(1 if fails else 0)
