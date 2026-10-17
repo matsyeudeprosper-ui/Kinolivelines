@@ -126,3 +126,15 @@ A campaign page /<tok>/parrainage (owl_referral_page.html, referral_data) shows 
 $100 progress and payouts; any account can refer, paid or not (an unpaid sign-up has a code; the public demo is
 told to open an account). A quiet nudge on the home appears when the account is above its start balance, at most
 once every 14 days, dismissible. The old days-cagnotte stays readable for anyone who had one (none today).
+
+## 2026-10-17 night — Creators / YouTubers programme (owner)
+A member applies on the Parrainage page with their channel and the video that mentions OwlNest (a tick: no gains
+promised, the demo shown, Signal/Stratégie only - Automatique is on invitation and must not be advertised). The owner
+sees the queue on his own Parrainage page and approves or refuses with a button (push both ways). Approved: the
+SAME code now pays INF_PCT = 30 % of EVERY payment of the creator's users, as long as they pay (kind "influencer"),
+instead of 50 % once. One code, one rule, never both: the worst month pays out 30 % creator-programme + 30 % robot
+share = 60 %, the nest keeps at least 40 %; fake users cost the fraudster 70 % of each payment. Refused: back to the
+one-time rule. Payout from $100 with the referral money. Dashboard for an approved creator: active subscribers
+(paid in the last 35 days), this month, in all, 6-month bars, links to the video and channel. Files:
+live/owl_influencers.py (+ owl_influencers.json, git-ignored). Tests: review/test_market_wallet.py 66 checks.
+Option kept in one constant for later: limit the 30 % to the first N months of each user.

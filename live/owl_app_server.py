@@ -14469,9 +14469,26 @@ def referral_payload(user):
             "pct": st["pct"], "payout_min": st["payout_min"], "welcome_days": 7,
             "signed": st["signed"], "paid": st["paid"], "earned": st["earned"], "friends": st["friends"][:60],
             "cash": E["cash"], "cash_ref": st["cash_ref"], "due": E["due"], "payout_addr": E["payout_addr"], "payouts": E["payouts"],
-            "history": [h for h in E["history"] if h.get("kind") == "referral"][-30:],
+            "history": [h for h in E["history"] if h.get("kind") in ("referral", "influencer")][-30:],
             "plan": {"family": "Automatique", "manual": "Signal", "strategy": "Stratégie"}.get(_member_pkg(uid), ""),
-            "active": bool(has(uid, "family") or has(uid, "manual") or has(uid, "strategy"))}
+            "active": bool(has(uid, "family") or has(uid, "manual") or has(uid, "strategy")),
+            # the creator / YouTuber side (2026-10-17): the member's application and, for the owner, the queue
+            "inf": _inf_block(user, st)}
+
+
+def _inf_block(user, st):
+    import owl_influencers as _INF
+    import owl_wallet as _OW
+    uid = user.get("id")
+    r = _INF.status(uid) or {}
+    out = {"status": r.get("status") or "none", "channel": r.get("channel") or "", "video": r.get("video") or "", "applied_t": r.get("applied_t"),
+           "reviewed_t": r.get("reviewed_t"), "review_note": r.get("review_note") or "", "pct": int(_OW.INF_PCT * 100),
+           "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring")}
+    if is_admin(user):
+        _nm = {u.get("id"): (u.get("name") or u.get("id")) for u in users()}
+        out["pending"] = [dict(p, name=_nm.get(p["uid"], p["uid"])) for p in _INF.pending()]
+        out["approved"] = sorted(_INF.approved_uids())
+    return out
 
 
 def place_action(user, action, body, admin=False, origin="https://owltrader.duckdns.org"):
@@ -14487,6 +14504,27 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
     if action == "wallet_addr":
         # the creator's USDT address for payouts (owner pays by hand from PAYOUT_MIN, the app keeps the ledger)
         return {"ok": True, "addr": _OW.set_payout_addr(uid, body.get("addr"))}
+    if action == "inf_apply":
+        # 2026-10-17 (owner): a creator / YouTuber applies with their channel and the video; the owner is told
+        import owl_influencers as _INF
+        if user.get("public"):
+            return {"ok": False, "err": "public"}
+        r = _INF.apply(uid, body.get("channel"), body.get("video"), body.get("note"))
+        if r.get("ok"):
+            queue_push("kino", "\U0001f3ac Demande créateur", f"{user.get('name') or uid} demande le programme créateurs. Voir Compte › Parrainage pour approuver.")
+        return r
+    if action == "inf_review":
+        if not admin:
+            return {"ok": False, "err": "owner"}
+        import owl_influencers as _INF
+        _tu = str(body.get("uid") or "")
+        r = _INF.review(_tu, bool(body.get("approve")), body.get("note"))
+        if r.get("ok"):
+            if r["status"] == "approved":
+                queue_push(_tu, "\U0001f3ac Programme créateurs : approuvé", f"Votre vidéo est validée. Dès maintenant, {int(_OW.INF_PCT * 100)} % de chaque mois payé par vos abonnés est pour vous, tant qu’ils restent.")
+            else:
+                queue_push(_tu, "Programme créateurs", "Nous n’avons pas pu valider la vidéo cette fois. " + (str(body.get("note") or "")[:120]))
+        return r
     if action == "payout_mark":
         if not admin:
             return {"ok": False, "err": "owner"}
@@ -18809,7 +18847,7 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
-        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use", "wallet_addr", "payout_mark"):
+        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use", "wallet_addr", "payout_mark", "inf_apply", "inf_review"):
             # 2026-10-17 (owner): La place des robots + the cagnotte
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public"):
