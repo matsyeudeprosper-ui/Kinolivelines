@@ -7641,6 +7641,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   {k:'plan',ic:'key',col:'167,139,250',t:()=>T('Abonnement','Subscription'),s:()=>{const t=($('plan-t')||{}).textContent||'';return t.trim()||T('Votre offre et vos paiements','Your plan and payments');},
    panels:()=>[$('plan-card')],rows:()=>[]},
   {k:'ref',ic:'money',col:'167,139,250',href:B+'parrainage',t:()=>T('Parrainage','Referral'),s:()=>T('50 % du premier mois de chaque ami, pour vous','50 % of each friend’s first month, for you'),panels:()=>[],rows:()=>[]},
+  {k:'crea',ic:'chart',col:'245,192,74',href:B+'createur',t:()=>T('Créateurs','Creators'),s:()=>T('YouTube, TikTok, Telegram, blog : 30 % de chaque mois de vos abonnés','YouTube, TikTok, Telegram, blog: 30 % of every month your subscribers pay'),panels:()=>[],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
   {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
