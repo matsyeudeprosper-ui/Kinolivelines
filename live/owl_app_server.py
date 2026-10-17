@@ -2481,6 +2481,17 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
   <button id="renew-b" class="shbtn shmain" style="width:auto;margin:0;padding:9px 12px;font-size:.82rem;min-height:0"></button>
  </div>
 </div>
+<div class="panel" id="refcard" style="display:none;margin-top:12px">
+ <div style="display:flex;align-items:center;gap:12px">
+  <div class="sic" style="color:var(--violet-soft);background:rgba(167,139,250,.14)"><svg class="ic"><use href="#i-users"/></svg></div>
+  <div style="flex:1;min-width:0"><b style="font-size:.98rem">Parrainage</b>
+   <div style="font-size:.82rem;color:var(--muted2);line-height:1.4;margin-top:2px">Invitez un ami : il re&ccedil;oit 7 jours, vous recevez 20 % de chacun de ses paiements en jours d&#8217;abonnement, tant qu&#8217;il reste.</div></div>
+ </div>
+ <div id="ref-code" style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.35rem;font-weight:900;letter-spacing:.14em;background:var(--surface2);border:1px dashed var(--border2);border-radius:14px;padding:12px;text-align:center;margin-top:12px"></div>
+ <div style="display:flex;gap:8px;margin-top:10px"><button class="shbtn shmain" style="margin:0" onclick="refShare()">Partager</button><button class="shbtn shghost" style="margin:0" onclick="refCopy()">Copier le lien</button></div>
+ <div id="ref-stats" style="font-size:.86rem;color:var(--muted2);margin-top:12px;line-height:1.7"></div>
+ <div id="ref-wallet" style="margin-top:10px"></div>
+</div>
 <div class="panel" id="missedcard" style="display:none;margin-top:12px">
  <div style="display:flex;align-items:center;gap:12px">
   <div class="sic" style="color:var(--accent-soft);background:rgba(59,130,246,.12)"><svg class="ic"><use href="#i-calendar"/></svg></div>
@@ -7627,7 +7638,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    panels:()=>[$('plan-card')],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
-  {k:'place',ic:'money',col:'167,139,250',href:B+'place',t:()=>T('Parrainage et place des robots','Referral and the robot place'),s:()=>T('Votre code, votre cagnotte, suivre ou publier un robot','Your code, your cagnotte, follow or publish a robot'),panels:()=>[],rows:()=>[]},
+  {k:'ref',ic:'money',col:'167,139,250',t:()=>T('Parrainage','Referral'),s:()=>T('Votre code, vos amis, votre cagnotte en jours','Your code, your friends, your cagnotte in days'),panels:()=>[$('refcard')],rows:()=>[]},
   {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
    panels:()=>[$('adminlock-card'),$('adm-card')],rows:()=>[$('admback'),$('usagerow')]}];
  const vis=e=>!!e&&e.style.display!=='none';
@@ -9043,6 +9054,21 @@ function myLotLine(sg,en){const lt=document.getElementById('sig-mylot');if(!lt)r
   setH(lt,'<span>'+(en?'Your lot for $':'Votre lot pour $')+my.toFixed(0)+' : <b style="color:var(--text)">'+l.toFixed(2)+'</b> \u00b7 '+(en?'risk ~$':'risque ~$')+(sg.risk*k).toFixed(2)+'</span> \u00b7 <a href="#" onclick="event.preventDefault();myBalSet()" style="color:var(--muted);text-decoration:none">'+(en?'change':'modifier')+'</a>');}
  else setH(lt,'<span>'+(en?'Lot sized for a $':'Lot calcul\u00e9 pour un compte de $')+sg.bal.toFixed(0)+(en?' account \u00b7 risk ~$':' \u00b7 risque ~$')+sg.risk.toFixed(2)+'.</span> <a href="#" onclick="event.preventDefault();myBalSet()" style="color:var(--accent-soft);text-decoration:none">'+(en?'Another broker? Enter your balance':'Autre broker ? Entrez votre solde')+'</a>');}
 // ---- batch 26 ----
+let _REF=null;
+async function refCard(d){const el=document.getElementById('refcard');if(!el||d.public){if(el)el.style.display='none';return;}
+ try{const r=await fetch(B+'place_data',{cache:'no-store'});_REF=await r.json();}catch(e){return;}
+ const R=_REF.ref||{},W=_REF.wallet||{};if(!R.code){el.style.display='none';return;}
+ const en=LANG()==='en';
+ document.getElementById('ref-code').textContent=R.code;
+ const pk={family:en?'Automatic':'Automatique',manual:'Signal',strategy:en?'Strategy':'Stratégie'}[W.pkg]||W.pkg;
+ document.getElementById('ref-stats').innerHTML=(en?'Friends signed up with your code: ':'Amis inscrits avec votre code : ')+'<b>'+(R.friends||[]).length+'</b><br>'+(en?'Months credited: ':'Mois crédités : ')+'<b>'+(R.credited||0)+'</b>';
+ document.getElementById('ref-wallet').innerHTML='<div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:1.3rem">$'+Number(W.usd||0).toFixed(2)+'</b><span style="color:var(--muted2);font-size:.86rem">= '+(W.days||0)+(en?' day':' jour')+(W.days>1?'s':'')+(en?' of ':' de ')+pk+'</span></div>'
+  +'<div style="font-size:.8rem;color:var(--muted2);margin-top:4px">'+(en?'Your cagnotte buys subscription days, nothing else.':'Votre cagnotte s’ajoute en jours d’abonnement, rien d’autre.')+'</div>'
+  +(W.days>0?'<button class="shbtn shmain" style="margin-top:10px" onclick="refUse('+W.days+')">'+(en?'Add '+W.days+' day'+(W.days>1?'s':'')+' to my subscription':'Ajouter '+W.days+' jour'+(W.days>1?'s':'')+' à mon abonnement')+'</button>':'');
+ el.style.display='block';}
+function refShare(){const R=(_REF||{}).ref||{};const txt='OwlNest : un robot qui trade le Bitcoin, et tout ce qu’il fait en direct. Mon code : '+R.code+' (7 jours offerts). '+R.link;if(navigator.share){navigator.share({title:'OwlNest',text:txt,url:R.link}).catch(()=>{});}else refCopy();}
+function refCopy(){const R=(_REF||{}).ref||{};try{navigator.clipboard.writeText(R.link+'  code '+R.code);toast('Lien et code copiés.');}catch(e){prompt('Votre lien :',R.link);}}
+async function refUse(days){const n=parseInt(prompt('Combien de jours ajouter ? (jusqu’à '+days+')',days)||'0',10);if(!n)return;const r=await fetch(B+'wallet_use',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:n})});const j=await r.json();toast(j.ok?('+'+j.days+' jour'+(j.days>1?'s':'')+' · jusqu’au '+j.until):(j.err||'Pas possible.'));if(j.ok&&window._d)refCard(window._d);}
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
@@ -9463,6 +9489,7 @@ function render(d){
      +'<div style="color:var(--text2);font-size:.9rem;line-height:1.5;margin-top:8px">'+(LANG()==='en'?'We are opening your terminal and reading your account. Two to three minutes. This page refreshes by itself.':'Nous ouvrons votre terminal et lisons votre compte. Deux \u00e0 trois minutes. Cette page se rafra\u00eechit toute seule.')+'</div>'
      +'<style>@keyframes owlspin{to{transform:rotate(360deg)}}</style></div>'
     :'&#9203; Petit souci technique, r&eacute;essai automatique...');return}
+  if(!window._refOnce){window._refOnce=1;setTimeout(()=>{try{refCard(d);}catch(e){}},1500);}   // 2026-10-17: the Parrainage card, once per visit
   const lv=document.getElementById('lv'),lvd=document.getElementById('lvd'),
    lvt=document.getElementById('lvt');
   // 2026-10-01: while the offline banner is up it owns the chip - this
@@ -20378,8 +20405,10 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(user_stats(
                     user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "place":
-            # 2026-10-17 (owner): La place des robots - served from disk like the lab pages
-            self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            # 2026-10-17 (owner): the place lives inside the Robots page
+            self.send_response(302)
+            self.send_header("Location", f"/{user['token']}/robots")
+            self.end_headers()
         elif sub == "place_data":
             self._send(json.dumps(place_payload(user, admin_cookie_ok(self.headers)), ensure_ascii=False), "application/json")
         elif sub == "day":
