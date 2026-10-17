@@ -375,7 +375,8 @@ def has(uid, key):
     if key == "family":
         return family_active(e, now)
     if key == "manual":
-        return family_active(e, now) or float(e.get("manual_until") or 0) > now
+        # 2026-10-17 (owner, catalogue review): Strategie includes Signal - the builder's member gets the signals too
+        return family_active(e, now) or float(e.get("manual_until") or 0) > now or float(e.get("strategy_until") or 0) > now
     if key == "strategy":
         return float(e.get("strategy_until") or 0) > now
     return False
@@ -14194,7 +14195,175 @@ def _robot_pending_watch():
                     acct_robot_apply(uid, pd.get("robot") or "owl")
         except Exception:
             pass
+        _market_tick()
         time.sleep(20)
+
+
+# ---- 2026-10-17 (owner): parrainage + La place des robots ----
+def _ref_family_credit(uid, days):
+    """an Automatique month settled with the owner (a code) -> the referrer's cagnotte (owl_wallet.REF_PCT)"""
+    try:
+        import owl_wallet as _OW
+        _fam = float(nest_config().get("family_usd") or 60)
+        _rf, _rc = _OW.on_member_payment(uid, "family", _fam * float(days) / 30.0, "Automatique")
+        if _rf and _rc:
+            queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler Automatique : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
+    except Exception:
+        pass
+
+
+def _member_pkg(uid):
+    """the package the cagnotte converts into: the one the member has (family > strategy > manual), else manual"""
+    for k in ("family", "strategy", "manual"):
+        if has(uid, k):
+            return k
+    return "manual"
+
+
+def place_payload(user, admin=False):
+    import owl_market as _OMKT
+    import owl_wallet as _OW
+    uid = user.get("id"); fam = float(nest_config().get("family_usd") or 60)
+    R = _OMKT.robots()
+    me = {"uid": uid, "name": user.get("name") or uid, "auto": bool(user.get("trade") and user.get("mt5_login")),
+          "strategy": bool(has(uid, "strategy")), "admin": bool(admin or is_admin(user)), "broker_server": user.get("mt5_server") or ""}
+    try:
+        _blk = acct_robot_block(user, me["admin"]) if me["auto"] else {}
+        me["current_robot"] = (_blk.get("current") or {}).get("id")
+        me["current_robot_name"] = (_blk.get("current") or {}).get("name_fr") or (_blk.get("current") or {}).get("name") or me["current_robot"]
+    except Exception:
+        me["current_robot"] = None
+    listings = _OMKT.catalogue(uid, me["broker_server"], include_hidden=me["admin"])
+    mine = []
+    for st in _OMKT.creator_stats(uid):
+        rb = R.get(st["id"]) or {}; L = _OMKT.listing(st["id"]) or {}
+        mine.append(dict(st, name=rb.get("name_fr") or rb.get("name") or st["id"], alias=L.get("alias"), blurb=L.get("blurb"), open_recipe=bool(L.get("open_recipe"))))
+    my_robots = []
+    for rid, rb in R.items():
+        if rb.get("by_uid") == uid and rid not in {m["id"] for m in mine}:
+            ok, why = _OMKT.can_publish(rid, uid, me["admin"])
+            my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.result_of(rid)})
+    if me["admin"]:
+        for rid, rb in R.items():
+            if rid not in {m["id"] for m in mine} and rid not in {m["id"] for m in my_robots} and rb.get("public"):
+                ok, why = _OMKT.can_publish(rid, uid, True)
+                my_robots.append({"id": rid, "name": rb.get("name_fr") or rb.get("name") or rid, "can": ok, "why": why, "test": _OMKT.result_of(rid)})
+    sub = _OMKT.sub_of(uid)
+    if sub:
+        sub = dict(sub, name=(R.get(sub.get("rid")) or {}).get("name_fr") or sub.get("rid"))
+    W = _OW.account(uid); pkg = _member_pkg(uid)
+    W.update({"pkg": pkg, "days": _OW.days_available(uid, pkg, PACKAGES, fam)})
+    friends = _OW.friends_of(uid)
+    credited = sum(1 for h in W.get("history") or [] if h.get("kind") == "referral")
+    return {"me": me, "listings": listings, "mine": mine, "my_robots": my_robots, "sub": sub, "wallet": W,
+            "ref": {"code": _OW.code_of(uid), "link": f"https://owltrader.duckdns.org/offres?p={_OW.code_of(uid)}", "friends": friends, "credited": credited,
+                    "alias": next((m.get("alias") for m in mine if m.get("alias")), "")},
+            "packages": {k: {"usd": v["usd"]} for k, v in PACKAGES.items()}, "family_usd": fam}
+
+
+def place_action(user, action, body, admin=False, origin="https://owltrader.duckdns.org"):
+    import owl_market as _OMKT
+    import owl_wallet as _OW
+    uid = user.get("id"); body = body or {}
+    if action == "place_publish":
+        if not (admin or has(uid, "strategy")):
+            return {"ok": False, "err": "Strat\u00e9gie n\u00e9cessaire pour publier"}
+        return _OMKT.publish(str(body.get("id") or ""), uid, body.get("alias"), body.get("blurb"), body.get("price"), body.get("open_recipe"), admin)
+    if action == "place_unpublish":
+        return _OMKT.unpublish(str(body.get("id") or ""), uid, admin)
+    if action == "wallet_use":
+        pkg = _member_pkg(uid); fam = float(nest_config().get("family_usd") or 60)
+        avail = _OW.days_available(uid, pkg, PACKAGES, fam)
+        days = max(0, min(int(body.get("days") or 0), avail))
+        if days <= 0:
+            return {"ok": False, "err": "Pas assez dans la cagnotte pour un jour de " + {"family": "Automatique", "manual": "Signal", "strategy": "Strat\u00e9gie"}.get(pkg, pkg) + "."}
+        usd = _OW.spend_days(uid, pkg, days, PACKAGES, fam)
+        if not usd:
+            return {"ok": False, "err": "Cagnotte insuffisante."}
+        r = ent_grant(uid, pkg, days, "wallet")
+        return {"ok": True, "days": days, "usd": usd, "until": time.strftime("%d/%m", time.gmtime(float(r.get(pkg + "_until") or time.time())))}
+    if action == "place_unfollow":
+        if not (pwd_ok(user, str(body.get("pwd") or "")) or master_pwd_ok(str(body.get("pwd") or ""))):
+            return {"ok": False, "err": "pwd"}
+        _OMKT.stop_sub(uid)
+        try:
+            return account_robot_set(user, {"id": "owl", "pwd": body.get("pwd")}, admin)
+        except Exception as e:
+            return {"ok": True, "note": str(e)[:60]}
+    if action == "place_follow":
+        rid = str(body.get("id") or ""); L = _OMKT.listing(rid)
+        if not L or L.get("hidden"):
+            return {"ok": False, "err": "not_allowed"}
+        if L.get("paused"):
+            return {"ok": False, "err": "paused"}
+        if not (user.get("trade") and user.get("mt5_login")):
+            return {"ok": False, "err": "no_auto"}
+        if L.get("by_uid") == uid:
+            return account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)     # the creator runs their own robot for free
+        price = float(L.get("price_usd") or 0)
+        cur = _OMKT.sub_of(uid)
+        if price > 0 and not (cur and cur.get("rid") == rid):
+            pay = str(body.get("pay") or "")
+            if pay == "wallet":
+                if not _OW.pay_from_wallet(uid, price, "robot %s" % rid):
+                    return {"ok": False, "err": "wallet"}
+                _OMKT.start_sub(uid, rid, price, "wallet")
+                _OW.on_robot_payment(L.get("by_uid"), uid, rid, price)
+                if L.get("by_uid"):
+                    queue_push(L["by_uid"], "\U0001f4b0 Un abonn\u00e9 sur la place", f"Votre robot a un nouvel abonn\u00e9 : ${price * _OW.CREATOR_PCT:.2f} dans votre cagnotte.")
+            else:
+                # crypto: a NOWPayments invoice; the IPN starts the month, the member then taps "Suivre" again
+                cfg = nest_config()
+                if not cfg.get("np_api_key"):
+                    return {"ok": False, "err": "paiement indisponible"}
+                import urllib.request as _urq
+                api = "https://api-sandbox.nowpayments.io" if cfg.get("np_sandbox") else "https://api.nowpayments.io"
+                rbname = (_OMKT.robots().get(rid) or {}).get("name_fr") or rid
+                bodyj = json.dumps({"price_amount": price, "price_currency": "usd", "order_id": f"{uid}|robot:{rid}|{int(time.time())}",
+                                    "order_description": f"OwlNest - robot {rbname} - 30 jours", "ipn_callback_url": f"{origin}/np_ipn",
+                                    "success_url": f"{origin}/{user['token']}/place", "cancel_url": f"{origin}/{user['token']}/place"}).encode()
+                req = _urq.Request(api + "/v1/invoice", data=bodyj, method="POST", headers={"x-api-key": cfg["np_api_key"], "Content-Type": "application/json"})
+                with _urq.urlopen(req, timeout=20) as r:
+                    inv = json.loads(r.read().decode("utf-8", "replace"))
+                if not inv.get("invoice_url"):
+                    return {"ok": False, "err": "no invoice"}
+                return {"ok": True, "url": inv["invoice_url"]}
+        elif price > 0 and cur and cur.get("rid") == rid and body.get("pay") in ("wallet", "crypto") and str(body.get("renew") or "") == "1":
+            pass
+        if price == 0 and not (cur and cur.get("rid") == rid):
+            _OMKT.start_sub(uid, rid, 0.0, "free")
+        return account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
+    return {"ok": False, "err": "?"}
+
+
+_MARKET_TICK = {"t": 0.0}
+
+
+def _market_tick():
+    """every 10 min from the robot-pending watch: listings paused when their test turns negative; subscriptions
+    that ended -> back to the Owl, the member told; a reminder 2 days before the end"""
+    if time.time() - _MARKET_TICK["t"] < 600:
+        return
+    _MARKET_TICK["t"] = time.time()
+    try:
+        import owl_market as _OMKT
+        _OMKT.refresh_pauses()
+        d = _OMKT.data(); R = _OMKT.robots()
+        for uid, sub in list((d.get("subs") or {}).items()):
+            until = float(sub.get("until") or 0); rid = sub.get("rid")
+            nm = (R.get(rid) or {}).get("name_fr") or rid
+            if until <= time.time() and not sub.get("ended"):
+                _OMKT.mark_ended(uid)
+                try:
+                    acct_robot_apply(uid, "owl", by="market")
+                except Exception:
+                    pass
+                queue_push(uid, "\U0001f989 Retour \u00e0 l\u2019Owl", f"Votre mois avec \u00ab {nm} \u00bb est termin\u00e9 : votre compte reprend le robot du nid. Renouvelez sur la place quand vous voulez.")
+            elif 0 < until - time.time() <= 2 * 86400 and not sub.get("warned"):
+                sub["warned"] = int(time.time()); _OMKT._save(_OMKT.MARKET, d)
+                queue_push(uid, "\u23f3 Robot suivi : 2 jours", f"Votre mois avec \u00ab {nm} \u00bb se termine dans 2 jours. Renouvelez sur la place pour le garder.")
+    except Exception:
+        pass
 
 
 def team_payload():
@@ -17139,11 +17308,14 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
               "Pour que le robot le fasse pour vous : Automatique"],
              "var(--up)")
         + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
-             "Comprendre ce que le robot voit",
-             ["Le graphique complet : les points que le march&eacute; prot&egrave;ge, les cassures, les niveaux attendus "
-              + info("Le m\u00eame graphique que le robot regarde, avec ses rep\u00e8res dessin\u00e9s dessus, en direct."),
-              "La m&eacute;thode expliqu&eacute;e en mots simples : entr&eacute;es, stop, freins, rattrapage",
-              "Se combine avec Signal ou Automatique"],
+             "Construisez votre propre robot",
+             ["L&#8217;atelier : un robot &agrave; partir de pi&egrave;ces simples, sans une ligne de code "
+              + info("Vous choisissez l\u2019entr\u00e9e, le stop, l\u2019objectif, les freins. L\u2019atelier assemble le robot et le met en file pour son test."),
+              "Le test sur de vrais prix : 42 jours de Bitcoin tick par tick, puis l&#8217;or et le Nasdaq, avec le contr&ocirc;le du hasard "
+              + info("Le m\u00eame banc d\u2019essai que le robot du nid. Un r\u00e9sultat n\u2019est retenu que s\u2019il bat des entr\u00e9es au hasard."),
+              "La place des robots : publiez-le, chaque abonn&eacute; vous rapporte du temps d&#8217;abonnement "
+              + info("70 % de chaque mois pay\u00e9 par un abonn\u00e9 va dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement."),
+              "Le graphique complet et la m&eacute;thode en mots simples ; Signal inclus"],
              "var(--warn)")
         + tier("family", "Automatique", "Famille<span>sur invitation</span>",
              "Le robot trade &agrave; votre place",
@@ -17301,6 +17473,9 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "<div class=\"fg\" id=\"brokg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"7\" rx=\"2\"/><rect x=\"3\" y=\"13\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M7 7.5h.01M7 16.5h.01\"/></svg></span><div class=\"fb\"><label for=\"broker\">Votre courtier <span style=\"text-transform:none;letter-spacing:0;font-weight:500\">(facultatif)</span>"
             "<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"Pour afficher le graphique et les niveaux aux prix de votre courtier quand nous les avons. Sans r&eacute;ponse : les prix Exness, avec la mention.\" aria-label=\"Explication\">i</button></label>"
             f"<input id=\"broker\" name=\"broker\" maxlength=\"48\" placeholder=\"ex. Exness, FOREX.com\" list=\"bsrv\"><datalist id=\"bsrv\">{_bsrv}</datalist></div></div></div>"
+            "<div class=\"fg\" id=\"refg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"8\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M12 8v13M3 13h18M12 8c-2-3-6-3-6 0h6zm0 0c2-3 6-3 6 0h-6z\"/></svg></span><div class=\"fb\"><label for=\"parrain\">Code de parrainage <span style=\"text-transform:none;letter-spacing:0;font-weight:500\">(facultatif)</span>"
+            "<button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"Le code d&#8217;un ami d&eacute;j&agrave; membre : 7 jours offerts pour vous, et lui gagne du temps d&#8217;abonnement tant que vous restez.\" aria-label=\"Explication\">i</button></label>"
+            "<input id=\"parrain\" name=\"parrain\" maxlength=\"9\" placeholder=\"OWL-XXXXX\" autocapitalize=\"characters\" autocomplete=\"off\"></div></div></div>"
             "<div class=\"fg\" id=\"codeg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"8\" cy=\"14\" r=\"4\"/><path d=\"M11 11l9-9M16 6l3 3M13 9l3 3\"/></svg></span><div class=\"fb\"><label for=\"code\">Code d&#8217;activation <button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.\" aria-label=\"Explication\">i</button></label>"
             "<input id=\"code\" name=\"code\" maxlength=\"6\" placeholder=\"ABC123\" autocapitalize=\"characters\" style=\"text-align:left;font-size:1.15rem;letter-spacing:.28em\">"
             "</div></div></div>"
@@ -17314,6 +17489,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             + "</form>"
             "<button type=\"button\" class=\"lnk\" onclick=\"closeM()\">Annuler</button></div>"
             "<script>var P='';" + FN_JS +
+            "(function(){try{var p=new URLSearchParams(location.search).get('p');if(p){var e=document.getElementById('parrain');if(e)e.value=p.toUpperCase();}}catch(e){}})();"
             "(function(){var s=document.getElementById('server'),o=document.getElementById('srvv'),tm=null;if(!s||!o)return;"
             "function go(){var v=s.value.trim();if(v.length<4){o.textContent='';return;}"
             "fetch('/brokerinfo?server='+encodeURIComponent(v),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){o.textContent=d.line||'';o.style.color=d.zone==='red'?'#ff8a8a':(d.zone==='green'?'#8fe3b0':'#c6d3df');}).catch(function(){});}"
@@ -17706,6 +17882,12 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     server = (form.get("server", [""])[0] or "").strip()[:48]
     tg = (form.get("telegram", [""])[0] or "").strip()[:40]
     broker_name = (form.get("broker", [""])[0] or "").strip()[:48]
+    referred_by = None
+    try:
+        import owl_wallet as _OW
+        referred_by = _OW.uid_of_code((form.get("parrain", [""])[0] or "").strip())
+    except Exception:
+        referred_by = None
     buy = (form.get("buy", [""])[0] or "").strip()
     action = (form.get("action", [""])[0] or "").strip()
     pkg_chosen = (form.get("pkg", [""])[0] or "").strip()
@@ -17802,7 +17984,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         nm = name or (raw_login if _re.search(r"[A-Za-z]", raw_login) else "")
         if not nm:
             return _join_result("&#10060; Il manque votre pr&eacute;nom", "<p>Revenez en arri&egrave;re et indiquez votre pr&eacute;nom.</p>")
-        return _activate_app_only(nm, pwd, tg, pkg, days, code, raw_login, broker=broker_name)
+        return _activate_app_only(nm, pwd, tg, pkg, days, code, raw_login, broker=broker_name, referred_by=referred_by)
     us = users()
     known = next((x for x in us if str(x.get("login")) == login or str(x.get("mt5_login") or "") == login), None)
     if known is not None:
@@ -17813,6 +17995,8 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         # a renewal from the public page: same as the in-app "J'ai un code"
         redeem_activation_code(code, known["id"])
         ent_grant(known["id"], pkg, days, "code")
+        if pkg == "family":
+            _ref_family_credit(known["id"], days)
         if pkg == "family":
             _us = json.load(open(USERS_FILE, encoding="utf-8"))
             for x in _us:
@@ -17863,6 +18047,8 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
            "mode": "auto", "telegram": tg, "created": int(time.time()), "via": "code"}
     if pkg == "family":
         rec.update({"trade": True, "dedicated": f"structure_bos_bot.py {uid}", "managed": True})
+    if referred_by and referred_by != uid:
+        rec["referred_by"] = referred_by
     if probed is not None:
         _pb = (probed.get("profile") or {}).get("btc") or {}
         if _pb.get("name"):
@@ -17876,6 +18062,10 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     _users_cache["t"] = 0.0
     redeem_activation_code(code, uid)
     ent_grant(uid, pkg, days, "code")
+    if rec.get("referred_by"):
+        ent_grant(uid, pkg, 7, "referral")                 # the friend's 7 welcome days
+    if pkg == "family":
+        _ref_family_credit(uid, days)                      # settled with the owner -> the referrer's cagnotte
     try:
         _qf = os.path.join(DIR, "owl_push_queue.json")
         try:
@@ -17938,7 +18128,7 @@ def _tg_link_html(uid):
         return ""
 
 
-def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker=""):
+def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker="", referred_by=None):
     """A Signal / Strategie account from a code: identifiant + password,
     the package for `days`, the public demo's view under their name."""
     try:
@@ -17952,11 +18142,15 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker=""):
     rec["via"] = "code"
     if broker:
         rec["mt5_server"] = broker        # 2026-10-16: the broker's NAME only - the chart reads that broker's feed when we have one
+    if referred_by and referred_by != rec["id"]:
+        rec["referred_by"] = referred_by  # 2026-10-17: parrainage - who invited them
     allu.append(rec)
     json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
     redeem_activation_code(code, rec["id"])
     ent_grant(rec["id"], pkg, days, "code")
+    if rec.get("referred_by"):
+        ent_grant(rec["id"], pkg, 7, "referral")          # the friend's 7 welcome days
     labels = {"manual": "Signal", "strategy": "Strat&eacute;gie"}
     try:
         _qf = os.path.join(DIR, "owl_push_queue.json")
@@ -18267,6 +18461,20 @@ class H(BaseHTTPRequestHandler):
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
             return
+        if len(_parts) == 2 and _parts[1] in ("place_publish", "place_unpublish", "place_follow", "place_unfollow", "wallet_use"):
+            # 2026-10-17 (owner): La place des robots + the cagnotte
+            _ru = user_by_token(_parts[0])
+            if _ru is None or _ru.get("public"):
+                self._send(json.dumps({"ok": False, "err": "account"}), "application/json")
+                return
+            try:
+                _rb = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 4000)).decode("utf-8", "replace") or "{}")
+                _host = self.headers.get("Host") or "owltrader.duckdns.org"
+                _origin = ("http" if ("127.0.0.1" in _host or "localhost" in _host) else "https") + "://" + _host
+                self._send(json.dumps(place_action(_ru, _parts[1], _rb, is_admin(_ru) or admin_cookie_ok(self.headers), _origin), ensure_ascii=False), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
+            return
         # 2026-10-12 (owner): the robot builder - Strategie members and the admin create robots (queued for a test)
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
@@ -18548,12 +18756,37 @@ class H(BaseHTTPRequestHandler):
                                     json.dump(_q, open(_qf, "w", encoding="utf-8"))
                                 except Exception:
                                     pass
+                        if _pkg.startswith("robot:"):
+                            # 2026-10-17: a robot subscription on the place, paid in crypto
+                            paid = float(data.get("price_amount") or 0)
+                            try:
+                                import owl_market as _OMKT
+                                import owl_wallet as _OW
+                                _rid = _pkg[6:]; _L = _OMKT.listing(_rid) or {}
+                                if float(_L.get("price_usd") or 0) > 0 and paid + 0.01 >= float(_L["price_usd"]) * 0.97:
+                                    _OMKT.start_sub(_uid, _rid, paid, f"nowpayments:{data.get('payment_id')}")
+                                    _OW.on_robot_payment(_L.get("by_uid"), _uid, _rid, paid)
+                                    rec["granted"] = "robot"
+                                    queue_push(_uid, "\U0001f916 Robot pay\u00e9", "Votre mois est r\u00e9gl\u00e9. Ouvrez la place des robots et touchez \u00ab Suivre \u00bb pour le mettre sur votre compte.")
+                                    if _L.get("by_uid"):
+                                        queue_push(_L["by_uid"], "\U0001f4b0 Un abonn\u00e9 sur la place", f"Votre robot a un nouvel abonn\u00e9 : ${paid * _OW.CREATOR_PCT:.2f} dans votre cagnotte.")
+                                else:
+                                    rec["granted"] = "short"
+                            except Exception as _e:
+                                rec["granted"] = "robot_err:" + str(_e)[:60]
                         if _pkg in PACKAGES:
                             paid = float(data.get("price_amount") or 0)
                             if paid + 0.01 >= PACKAGES[_pkg]["usd"] * 0.97:
                                 _r = ent_grant(_uid, _pkg, PACKAGES[_pkg]["days"],
                                                f"nowpayments:{data.get('payment_id')}")
                                 rec["granted"] = _pkg
+                                try:
+                                    import owl_wallet as _OW
+                                    _rf, _rc = _OW.on_member_payment(_uid, _pkg, paid, PACKAGES[_pkg]["label"])
+                                    if _rf and _rc:
+                                        queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {PACKAGES[_pkg]['label']} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
+                                except Exception:
+                                    pass
                                 # 2026-10-03 (owner): an account opened from the public
                                 # page waits for this; now the provisioner may build it
                                 try:
@@ -20095,6 +20328,11 @@ class H(BaseHTTPRequestHandler):
             else:
                 self._send(json.dumps(user_stats(
                     user, admin_cookie_ok(self.headers))), "application/json")
+        elif sub == "place":
+            # 2026-10-17 (owner): La place des robots - served from disk like the lab pages
+            self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub == "place_data":
+            self._send(json.dumps(place_payload(user, admin_cookie_ok(self.headers)), ensure_ascii=False), "application/json")
         elif sub == "day":
             self._send(json.dumps(day_payload(_data_user(user))), "application/json")
         elif sub == "trade":
