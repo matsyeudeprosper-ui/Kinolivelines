@@ -46,3 +46,23 @@ if the month is paid where the robot is switched; a direct payment would bypass 
 - Pause: a listing whose latest test is no longer positive is paused for new followers; existing followers finish
   their month and are told.
 - Creator side: "Mes robots sur la place": followers, earnings, pause state; the cagnotte in Parrainage.
+
+## 2026-10-17 — Who may do what on the Robots page and the place (owner: "accessible by all, paid actions by the right account")
+
+Reading is free for every account, the demo included. Every paid action is checked on the server at the POST, and the
+page shows the door that opens it instead of hiding the feature.
+
+| Action | Démo (public) | Signal $29 | Automatique | Stratégie $49 | Stratégie + Automatique | Owner |
+|---|---|---|---|---|---|---|
+| See the Owl, public robots, their pieces in plain words, 42-day results, test zone results, the place catalogue | yes | yes | yes | yes | yes | yes |
+| Change the robot of MY account (free robots) | – (door: Automatique) | – (door: Automatique) | yes (password) | – (door: Automatique) | yes | yes |
+| Follow a PAID robot from the place (crypto month, 70 % to the creator) | – | – | yes | – | yes | yes |
+| Create / edit / delete a robot, make pieces, explain to the AI, chart studio | – (door: Stratégie) | – (door: Stratégie) | – (door: Stratégie) | yes | yes | yes |
+| Launch market tests (zone de test) | – | – | – | yes | yes | yes |
+| Publish on the place, set a price, earn 70 % | – | – | – | yes | yes | yes |
+| Plug a robot on ANOTHER account, pay creators | – | – | – | – | – | yes |
+
+How it is enforced: `robots_data` returns the full page to everyone but strips piece rules, edit rights and the plug
+list for readers (`builder.can_create=false`, `tier`); POSTs `robot_*`, `piece_*`, `ai_*`, `studio_*`, `robot_test*`
+answer `{"err":"strategy"}` without Stratégie; `account_robot_set` needs a trading account (Automatique);
+`place_follow` needs Automatique and, for a paid robot, a confirmed crypto invoice; `place_publish` needs Stratégie.

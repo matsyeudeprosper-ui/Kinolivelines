@@ -12995,7 +12995,15 @@ def builder_payload(user, detail):
                             "followers": len(_OMKT.followers(x.get("id")))} if _L and not _L.get("hidden") else None)
     except Exception:
         pass
-    return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": True,
+    _can = bool((is_admin(user) or has(me, "strategy")) and not user.get("public"))
+    if not _can:
+        # readers (demo, Signal, Automatique): the names and plain words, never the rules or the edit rights
+        for pc in pieces:
+            pc.pop("rule", None); pc["can_edit"] = False
+        for x in out:
+            x["can_edit"] = False
+        plugs = []                     # which accounts run which robot names members: never shown to readers
+    return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": _can,
             "admin": bool(is_admin(user)), "targets": robot_targets(user, detail), "test_min": ROBOT_TEST_MIN,
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}
 
@@ -20854,16 +20862,24 @@ class H(BaseHTTPRequestHandler):
                 if sub in ("strategies", "robots", "equipe"):
                     # one page, three sides (2026-10-12 owner: the Labo = Strategies + Robots + the AI team)
                     self._send(open(os.path.join(DIR, "owl_strategies_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
-                elif not _sd and sub == "robots_data":
-                    _mr = dict(my_robot_payload(user.get("id"))); _mr["acct"] = acct_robot_block(user, admin_cookie_ok(self.headers))
-                    self._send(json.dumps(_mr), "application/json")
-                elif not _sd:
-                    self._send(json.dumps({"err": "strategy"}), "application/json")
                 elif sub == "robots_data":
+                    # 2026-10-17 (owner): the Robots page is for EVERY account (demo included) - reading is free, the paid
+                    # actions are gated by the package: Automatique switches the robot of its account, Strategie builds,
+                    # tests and publishes (server-side on every POST; the page only shows the right door)
                     _dd = is_admin(user) or admin_cookie_ok(self.headers)
                     _ro = dict(robots_payload(_dd)); _ro["builder"] = builder_payload(user, _dd)
                     _ro["acct"] = acct_robot_block(user, _dd)
+                    _uid = user.get("id")
+                    _ro["tier"] = {"public": bool(user.get("public")), "auto": bool(user.get("trade") and user.get("mt5_login")) and not user.get("public"),
+                                   "strategy": bool(_sd), "signal": bool(has(_uid, "manual")) and not user.get("public")}
+                    if not _sd:
+                        try:
+                            _ro["mine"] = my_robot_payload(_uid).get("mine")
+                        except Exception:
+                            pass
                     self._send(json.dumps(_ro), "application/json")
+                elif not _sd:
+                    self._send(json.dumps({"err": "strategy"}), "application/json")
                 elif sub == "team_data":
                     self._send(json.dumps(team_payload()), "application/json")
                 else:
