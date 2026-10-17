@@ -1333,7 +1333,7 @@ function ztBars(R,max){const M=max||Math.max(1,...R.map(x=>Math.abs(m30(x))));
   return '<button class="zbr" onclick="ztShow(\''+x.sym+'\')" aria-label="'+esc(x.nm)+' : '+money(n)+'">'+mkBadge(x.sym,x.cat,34)+
    '<span class="zbn"><b>'+esc(x.nm)+'</b><small><i style="background:'+v.c+'"></i>'+(v.sh||v.t)+'</small><small class="ztn">'+num(x.a.trades)+' trades'+(few?' · <em class="zfew">'+T('peu','few')+'</em>':'')+'</small></span>'+
    '<span class="zbt"><span class="zb0"></span><span class="zbf '+(n>=0?'p':'n')+'" style="'+(n>=0?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%"></span></span>'+
-   '<span class="zbv"><b class="'+cl(n)+'">'+money(n,0)+'<em class="z30">/30 j</em></b><small>'+money(tot,0)+(x.days?T(' en ',' in ')+Math.round(x.days)+' j':'')+'</small></span></button>';}).join('');}
+   '<span class="zbv"><b class="'+cl(n)+'">'+money(n,0)+'<em class="z30">'+T('par 30 j','per 30 d')+'</em></b><small>'+money(tot,0)+(x.days?T(' sur le test de ',' over the ')+Math.round(x.days)+T(' j',' d test'):'')+'</small></span></button>';}).join('');}
 /* 2026-10-14 (owner): a spoken guide of the Zone de test (what, why, how, when), FR + EN neural voices
    (live/audio/zt_intro_<fr|en>.mp3, scripts beside them). One audio object for the page: the zone redraws often,
    the player is redrawn from ZA's state and survives it; leaving the zone stops it. */
@@ -1373,7 +1373,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  // 1) header: robot switcher + key figures
  let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div><div class="zaslot" data-k="zt">'+zaHTML('zt')+'</div>'+
   '<button class="zrob" onclick="ztPickRobot()" aria-label="'+T('Changer de robot','Change robot')+'"><span class="zra">'+BOT+'</span><span class="zrn"><small>'+T('Robot testé','Robot under test')+'</small><b>'+esc(T(r.name_fr,r.name_en))+'</b></span><span class="zrc">'+T('Changer','Change')+' ▾</span></button>'+
-  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(m30(best),0)+'<em class="z30">/30 j</em>':'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
+  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(m30(best),0)+'<em class="z30">'+T('par 30 j','per 30 d')+'</em>':'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
  // 2) results
  h+='<div class="zsec"><b>'+T('Où il marche','Where it works')+'</b>'+(R.length>1?'<span>'+T('du meilleur au moins bon','best first')+'</span>':'')+'</div>';
  if(R.length){h+='<div class="card zres">'+(R.length>1?'<div class="zins">'+(wins?T('Gagne sur ','Wins on ')+wins+T(' marché',' market')+(wins>1?'s':'')+T(' sur ',' out of ')+R.length+' · '+T('le meilleur : ','best: ')+'<b>'+esc(best.nm)+'</b>':T('Ne gagne sur aucun des marchés testés.','Wins on none of the markets tested.'))+'</div>':'')+
