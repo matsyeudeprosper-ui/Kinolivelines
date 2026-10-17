@@ -17105,6 +17105,14 @@ def _flow_page(title, body_html, step=None, doc_title="OwlNest"):
             ".fact{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0 4px}.fact div{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:14px;padding:11px 12px;min-width:0}"
             ".fact span{display:block;font-size:.66rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em}.fact b{display:block;font-size:1.02rem;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}"
             ".fact small{display:block;color:var(--tx3);font-size:.74rem;margin-top:2px}"
+            # 2026-10-17 (owner: "beautify, less text"): icon tiles, market chips, one verdict line, a text link
+            ".fact i{display:flex;width:30px;height:30px;border-radius:10px;background:rgba(59,130,246,.12);color:var(--accent-soft);align-items:center;justify-content:center;margin-bottom:8px}.fact i svg{width:16px;height:16px}"
+            ".mk{margin:14px 0 2px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.mk span{flex-basis:100%;font-size:.66rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}"
+            ".mk em{font-style:normal;font-size:.78rem;font-weight:700;border-radius:99px;padding:5px 10px;border:1px solid var(--bd);color:var(--tx2)}.mk em.ok{color:#7fe0a6;border-color:rgba(46,204,113,.35);background:rgba(46,204,113,.08)}.mk em.no{color:var(--tx3)}"
+            ".mk small{flex-basis:100%;color:var(--tx3);font-size:.74rem;margin-top:4px}"
+            ".say{display:flex;flex-direction:column;gap:3px;margin:18px 0 4px;padding:14px 16px;border-radius:14px;border:1px solid var(--bd);background:rgba(255,255,255,.03)}.say b{font-size:1rem}.say span{color:var(--tx2);font-size:.88rem;line-height:1.5}"
+            ".say.g{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.06)}.say.o{border-color:rgba(232,197,90,.3);background:rgba(232,197,90,.06)}"
+            ".lnk{display:block;text-align:center;margin-top:14px;color:var(--accent-soft);font-size:.9rem;font-weight:600;text-decoration:none}"
             ".go{display:block;width:100%;box-sizing:border-box;margin-top:14px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:inherit}"
             ".go.sec{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--bd)}.go.sec:active,.go:active{opacity:.85}"
             "label{display:block;font-size:.7rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 7px}"
@@ -17207,24 +17215,27 @@ def _probe_card(st, jid):
                 f"<a class=\"go sec\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">&Eacute;crire au Owl</a>")
         return _flow_page("Votre compte", body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
     cls, lab = pills.get(zone, pills["unknown"])
-    facts = f"<div class=\"fact\"><div><span>Bitcoin</span><b>{_h.escape(str(b.get('name') or '?'))}</b><small>le nom chez ce courtier</small></div>"
+    # 2026-10-17 (owner: "feels stuffy with texts"): four tiles with an icon, a value and at most three words; the
+    # explanations live in the (i) of the sign-up sheet, not here
+    _ic = lambda d: f"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"{d}\"/></svg>"
+    I_BTC = "M12 3v18M8 7h6a3 3 0 0 1 0 6H8M8 13h7a3 3 0 0 1 0 6H8"
+    I_GAP = "M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4"
+    I_ACC = "M3 7h18v12H3zM3 11h18M7 15h4"
+    I_CLK = "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2"
+    facts = f"<div class=\"fact\"><div><i>{_ic(I_BTC)}</i><span>Bitcoin</span><b>{_h.escape(str(b.get('name') or '?'))}</b><small>trouv&eacute;</small></div>"
     if v.get("spread") is not None:
-        # 2026-10-17 (owner: "is that the spread? it depends on lot size"): say what it is - the buy/sell gap for ONE
-        # Bitcoin (1 lot), no commission counted; at 0.01 lot it is a hundredth of that
-        facts += "<div><span>&Eacute;cart achat-vente</span><b>%s $</b><small>par Bitcoin (1 lot) &middot; %s $ &agrave; 0,01 lot &middot; %s</small></div>" % (
-            fr(v["spread"]), fr(float(v["spread"]) / 100.0),
-            "sans commission" if broker == "Exness" else ("Exness : %s $ &middot; commission non comprise" % fr(v.get("exness_spread"))))
-    facts += "<div><span>Compte</span><b>%s</b><small>%s</small></div>" % (_h.escape(str(p.get("currency") or "?")), "positions s&eacute;par&eacute;es" if p.get("margin_mode") == 2 else "une position &agrave; la fois")
+        # the buy/sell gap for ONE Bitcoin (1 lot), spread only (owner: "is that the spread? depends on lot size")
+        facts += "<div><i>%s</i><span>&Eacute;cart</span><b>%s $</b><small>par Bitcoin &middot; %s $ &agrave; 0,01 lot%s</small></div>" % (
+            _ic(I_GAP), fr(v["spread"]), fr(float(v["spread"]) / 100.0), "" if broker == "Exness" else " &middot; hors commission")
+    facts += "<div><i>%s</i><span>Compte</span><b>%s</b><small>%s</small></div>" % (_ic(I_ACC), _h.escape(str(p.get("currency") or "?")), "couverture ok" if p.get("margin_mode") == 2 else "une position")
     off = b.get("clock_offset_h")
-    facts += "<div><span>Horloge</span><b>UTC%s</b><small>%s</small></div></div>" % (("%+d h" % off) if off else "", "r&eacute;gl&eacute;e par le robot" if off else "la m&ecirc;me que le robot")
-    # 2026-10-17 (owner: "are we assuming only BTC?"): the other nest markets at this broker - information today
-    # (real money is Bitcoin-only), the gate for a market robot tomorrow
+    facts += "<div><i>%s</i><span>Horloge</span><b>UTC%s</b><small>%s</small></div></div>" % (_ic(I_CLK), ("%+d h" % off) if off else "", "r&eacute;gl&eacute;e" if off else "comme le robot")
+    # 2026-10-17 (owner: "are we assuming only BTC?"): the other nest markets at this broker, as chips
     _mks = v.get("markets") or []
     if _mks:
-        _found = [m for m in _mks if m.get("found")]; _miss = [m for m in _mks if not m.get("found")]
-        facts += ("<p class=\"h\" style=\"margin-top:10px\"><b>Autres march&eacute;s</b> &middot; " + ", ".join(_h.escape(m["label"]) + " &#10003;" for m in _found)
-                  + ((" &middot; " if _found else "") + ", ".join(_h.escape(m["label"]) + " &#10007;" for m in _miss) if _miss else "")
-                  + ". Le robot trade le Bitcoin ; les autres march&eacute;s sont en essai et ne d&eacute;marreront ici que s&#8217;ils existent chez votre courtier.</p>")
+        facts += ("<div class=\"mk\"><span>Autres march&eacute;s</span>"
+                  + "".join("<em class=\"%s\">%s %s</em>" % ("ok" if m.get("found") else "no", _h.escape(m["label"]), "&#10003;" if m.get("found") else "&#10007;") for m in _mks)
+                  + "<small>Bitcoin seul en argent r&eacute;el ; les autres sont en essai.</small></div>")
     sub = f"<p class=\"sub\">{_h.escape(p.get('server') or st.get('server') or '')}</p>"
     code_block = ""
     if zone != "red":
@@ -17233,18 +17244,17 @@ def _probe_card(st, jid):
                       f"<input type=\"hidden\" name=\"probe\" value=\"{_h.escape(jid)}\">"
                       "<label for=\"ccode\">Code d&#8217;activation</label>"
                       f"<input id=\"ccode\" class=\"code\" name=\"code\" maxlength=\"6\" value=\"{_h.escape(_code)}\" placeholder=\"ABC123\" autocapitalize=\"characters\" autocomplete=\"off\">"
-                      "<div class=\"h\">Six lettres et chiffres, re&ccedil;us du Owl sur Telegram.</div>"
                       "<button class=\"go\">Activer mon compte</button></form>"
-                      f"<a class=\"go sec\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">Je n&#8217;ai pas de code &middot; &Eacute;crire au Owl</a>"
-                      "<div class=\"h\" style=\"text-align:center\">Votre v&eacute;rification reste valable une heure.</div>")
+                      f"<a class=\"lnk\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">Pas de code ? &Eacute;crire au Owl sur Telegram</a>"
+                      "<div class=\"h\" style=\"text-align:center;margin-top:4px\">Re&ccedil;u du Owl &middot; valable une heure</div>")
     if zone == "green" and broker == "Exness":
-        say = "<p><b>Le courtier du robot : tout est pr&ecirc;t.</b> Entrez votre code et le robot d&eacute;marre sur ce compte dans quelques minutes.</p>"
+        say = "<div class=\"say g\"><b>Tout est pr&ecirc;t.</b><span>Entrez votre code : le robot d&eacute;marre ici dans quelques minutes.</span></div>"
     elif zone == "green":
-        say = f"<p><b>&Ccedil;a marche chez {broker}.</b> Le robot y gagne autant qu&#8217;&agrave; Exness." + \
-              (f" Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>" if v.get("est_net") is not None and broker != "Exness" else "</p>")
+        say = f"<div class=\"say g\"><b>&Ccedil;a marche chez {broker}.</b><span>" + \
+              (f"Sur 42 jours de test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness." if v.get("est_net") is not None else "Le robot y gagne autant qu&#8217;&agrave; Exness.") + "</span></div>"
     elif zone == "orange":
-        say = (f"<p><b>&Ccedil;a marche, mais moins.</b> Le co&ucirc;t par trade est plus haut ici. Sur les 42 derniers jours du test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness.</p>"
-               "<p>&Agrave; vous de choisir : continuer ici, ou ouvrir un compte chez un courtier moins cher et revenir.</p>")
+        say = (f"<div class=\"say o\"><b>&Ccedil;a marche, mais moins.</b><span>L&#8217;&eacute;cart est plus haut ici. Sur 42 jours de test : {fr(v['est_net'])} $ ici, {fr(v['native_net'])} $ &agrave; Exness. "
+               "Continuez ici, ou ouvrez un compte chez un courtier moins cher et revenez.</span></div>")
     elif zone == "red":
         why = " ".join(_h.escape(r[:1].upper() + r[1:]) + "." for r in (v.get("reasons") or []))
         say = (f"<p><b>Rien ne gagne chez {broker}.</b> {why}</p>"
