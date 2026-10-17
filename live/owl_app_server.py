@@ -17113,6 +17113,11 @@ def _flow_page(title, body_html, step=None, doc_title="OwlNest"):
             ".say{display:flex;flex-direction:column;gap:3px;margin:18px 0 4px;padding:14px 16px;border-radius:14px;border:1px solid var(--bd);background:rgba(255,255,255,.03)}.say b{font-size:1rem}.say span{color:var(--tx2);font-size:.88rem;line-height:1.5}"
             ".say.g{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.06)}.say.o{border-color:rgba(232,197,90,.3);background:rgba(232,197,90,.06)}"
             ".lnk{display:block;text-align:center;margin-top:14px;color:var(--accent-soft);font-size:.9rem;font-weight:600;text-decoration:none}"
+            ".dt{margin-top:18px;border:1px solid var(--bd);border-radius:16px;background:rgba(255,255,255,.02);padding:0 14px}"
+            ".dt summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 0;cursor:pointer;font-weight:700;font-size:.95rem}.dt summary::-webkit-details-marker{display:none}"
+            ".dt summary small{color:var(--tx3);font-weight:600;font-size:.78rem}.dt summary i{margin-left:auto;width:9px;height:9px;border-right:2px solid var(--tx3);border-bottom:2px solid var(--tx3);transform:rotate(45deg);transition:transform .2s}"
+            ".dt[open] summary i{transform:rotate(-135deg)}.dt[open] summary{border-bottom:1px solid var(--bd)}.dt .fact{margin-top:14px}.dt h2{font-size:.95rem}.dt>*:last-child{margin-bottom:14px}"
+            ".say{margin-top:14px}"
             ".rl li.hd{padding:4px 0 6px;border-top:0}.rl li.hd em{font-size:.64rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;min-width:84px;text-align:right}"
             ".rl li em{min-width:84px;text-align:right}.rl em small{display:block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.8}"
             ".go{display:block;width:100%;box-sizing:border-box;margin-top:14px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:inherit}"
@@ -17285,7 +17290,12 @@ def _probe_card(st, jid):
             f"<em class=\"up\">{('+' if float(r.get('native') or 0) > 0 else '')}{fr(r.get('native'))} $</em>"
             f"<em class=\"{'up' if r.get('pays') else 'dn'}\">{('+' if float(r.get('est') or 0) > 0 else '')}{fr(r.get('est'))} $<small>{'gagne' if r.get('pays') else 'perd'}</small></em></li>"
             for r in v["robots"]) + "</ul>")
-    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + ((robots + say) if zone == "red" else (say + robots)) + code_block
+    # 2026-10-17 (owner: "verdict first, everything else second"): pill, verdict, the one action; the reading's
+    # details (tiles, markets, robot comparison) fold into one panel underneath
+    _n = 4 + (1 if v.get("markets") else 0) + (len(v.get("robots") or []) if robots else 0)
+    details = ("<details class=\"dt\"><summary><span>D&eacute;tails de la lecture</span><small>%d points</small><i></i></summary>" % _n
+               + facts + robots + "</details>")
+    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + say + code_block + details
     return _flow_page(broker, body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
 
 
