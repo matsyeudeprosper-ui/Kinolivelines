@@ -17187,7 +17187,7 @@ def _probe_card(st, jid):
                    else "<p class=\"h\">Le courtier n&#8217;a pas r&eacute;pondu &agrave; temps : v&eacute;rifiez le nom du serveur.</p>" if "timeout" in str(st["error"]).lower() or "IPC" in str(st["error"])
                    else f"<p class=\"h\">R&eacute;ponse du courtier : {_h.escape(str(st['error'])[:140])}</p>")
                 +
-                "<a class=\"go\" href=\"/#offres\">Corriger mes informations</a>"
+                f"<a class=\"go\" href=\"/offres?edit={_h.escape(jid)}\">Corriger mes informations</a>"
                 f"<a class=\"go sec\" href=\"{_h.escape(contact)}\" target=\"_blank\" rel=\"noopener\">&Eacute;crire au Owl</a>")
         return _flow_page("Votre compte", body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
     cls, lab = pills.get(zone, pills["unknown"])
@@ -17442,12 +17442,21 @@ if(window._en)paint();
 </script>"""
 
 
-def _offers_page(login, pwd, pending_pkg=None, name=""):
+def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
     """2026-10-04 (owner): the shop window. Three cards, a modal per card,
     and a little (i) wherever a newcomer could wonder - in the plainest
-    words, for people who have never touched crypto or trading."""
+    words, for people who have never touched crypto or trading.
+    2026-10-17 (owner): `prefill` = the form of a failed verification - "Corriger mes informations" reopens the
+    sheet with everything typed back in (never the password) instead of landing on the front page."""
     import html as _h
     cfg = nest_config()
+    _pf_js = ""
+    if prefill:
+        _pf = {k: (prefill.get(k, [""])[0] if isinstance(prefill.get(k), list) else prefill.get(k) or "") for k in ("name", "login", "server", "broker", "parrain", "pkg")}
+        _pf["pkg"] = _pf.get("pkg") if _pf.get("pkg") in ("family", "manual", "strategy") else "family"
+        _pf_js = ("(function(){var p=" + json.dumps(_pf, ensure_ascii=True) + ";try{pick(p.pkg);}catch(e){}"
+                  "var s=function(id,v){var e=document.getElementById(id);if(e&&v)e.value=v;};s('name',p.name);s('lg',p.login);s('server',p.server);s('broker',p.broker);s('parrain',p.parrain);"
+                  "setTimeout(function(){var w=document.getElementById('pw');if(w){w.focus();}var h=document.getElementById('ch');},400);})();")
     contact = _h.escape(cfg.get("contact_url") or "")
     pay = bool(cfg.get("np_api_key"))
     note = ""
@@ -17726,6 +17735,7 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             # and a refused submit must give the button back (it stayed on 'Activation en cours' forever)
             "if(P!=='family'&&document.getElementById('code').value.trim().length<6){e.preventDefault();unbusy();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
+            + _pf_js
             + "fn('offers');</script>" + OFFERS_EN_JS + "</body></html>")
 
 
@@ -20401,7 +20411,19 @@ class H(BaseHTTPRequestHandler):
             return
         if len(parts) == 1 and parts[0] == "offres":
             # 2026-10-04 (owner): 'Creer un compte' - the offers first, credentials after the choice
-            self._send(_offers_page("", ""), "text/html; charset=utf-8")
+            # 2026-10-17 (owner): ?edit=<probe job> reopens the sheet with the details of a failed verification
+            _pf = None
+            try:
+                import urllib.parse as _upq
+                _q = _upq.parse_qs(self.path.split("?", 1)[1]) if "?" in self.path else {}
+                _ej = re.sub(r"[^a-z0-9]", "", (_q.get("edit", [""])[0] or "").lower())[:24]
+                if _ej:
+                    import broker_book as _BB
+                    _st = _BB.probe_state(_ej) or {}
+                    _pf = _st.get("form") or None
+            except Exception:
+                _pf = None
+            self._send(_offers_page("", "", prefill=_pf), "text/html; charset=utf-8")
             return
         if len(parts) == 1 and parts[0] == "activate":
             # 2026-10-04 (owner): one door - everything starts at the login
