@@ -63,11 +63,30 @@ def apply(uid, channel, video, note="", platform="youtube"):
         d = _load()
         cur = d.get(uid) or {}
         if cur.get("status") == "approved":
-            return {"ok": False, "err": "already"}
+            # 2026-10-17 (owner): an approved creator ADDS a publication (a new video, a new post) - checked like the first
+            pubs = cur.setdefault("pubs", [])
+            if any(p.get("url") == vd for p in pubs) or vd == cur.get("video"):
+                return {"ok": False, "err": "dup"}
+            pubs.append({"url": vd, "platform": platform, "t": int(time.time()), "auto_check": None})
+            cur["pubs"] = pubs[-30:]
+            if ch:
+                cur["channel"] = ch
+            d[uid] = cur; _save(d)
+            return {"ok": True, "added": True}
         d[uid] = {"platform": platform, "channel": ch, "video": vd, "note": str(note or "").strip()[:240], "status": "pending",
-                  "applied_t": int(time.time()), "reviewed_t": None, "review_note": ""}
+                  "applied_t": int(time.time()), "reviewed_t": None, "review_note": "", "pubs": []}
         _save(d)
     return {"ok": True}
+
+
+def publications(uid):
+    """[{url, platform, t, auto_check, main}] - the approved publication first, then the ones added later"""
+    r = _load().get(uid) or {}
+    if not r:
+        return []
+    out = [{"url": r.get("video"), "platform": r.get("platform"), "t": r.get("applied_t"), "auto_check": r.get("auto_check"), "main": True}]
+    out += [dict(p, main=False) for p in (r.get("pubs") or [])]
+    return out
 
 
 def review(uid, approve, note=""):
@@ -134,14 +153,16 @@ def fetch_text(url):
         return None
 
 
-def verify(uid, code, link=""):
-    """fetch the publication and look for the member's code or link. Records the result on the application:
-    auto_check = {"t", "found", "reason"}. Returns the record. Approves when found and AUTO_APPROVE is on."""
+def verify(uid, code, link="", url=None):
+    """fetch the publication (the main one, or `url` = one added later) and look for the member's code or link.
+    Records auto_check = {"t", "found", "reason"} on it. Returns the record. The MAIN publication, when found and
+    AUTO_APPROVE is on, approves the creator."""
     r = _load().get(uid)
     if not r:
         return None
-    url = r.get("video") or ""
-    txt = fetch_text(url)
+    main = url is None or url == r.get("video")
+    url = r.get("video") if main else url
+    txt = fetch_text(url or "")
     found = False; reason = ""
     if txt is None:
         reason = "page illisible (site fermé ou privé)"
@@ -158,8 +179,14 @@ def verify(uid, code, link=""):
         r = d.get(uid)
         if not r:
             return None
-        r["auto_check"] = {"t": int(time.time()), "found": found, "reason": reason}
-        if found and AUTO_APPROVE and r.get("status") == "pending":
-            r["status"] = "approved"; r["reviewed_t"] = int(time.time()); r["review_note"] = "auto : " + reason
+        chk = {"t": int(time.time()), "found": found, "reason": reason}
+        if main:
+            r["auto_check"] = chk
+            if found and AUTO_APPROVE and r.get("status") == "pending":
+                r["status"] = "approved"; r["reviewed_t"] = int(time.time()); r["review_note"] = "auto : " + reason
+        else:
+            for p in r.get("pubs") or []:
+                if p.get("url") == url:
+                    p["auto_check"] = chk
         _save(d)
     return r

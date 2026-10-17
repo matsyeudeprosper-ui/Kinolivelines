@@ -195,5 +195,16 @@ INF.fetch_text = lambda url: None
 r = INF.verify("yt3", W.code_of("yt3"), "")
 check("page unreadable -> stays pending, says so", r["status"] == "pending" and "illisible" in r["auto_check"]["reason"])
 INF.fetch_text = _real
+
+print("PUBLICATIONS OF AN APPROVED CREATOR")
+check("an approved creator adds a publication instead of re-applying", INF.apply("yt2", "", "https://example.com/video-three", platform="tiktok") == {"ok": True, "added": True})
+check("the same link twice is refused", INF.apply("yt2", "", "https://example.com/video-three")["err"] == "dup")
+P = INF.publications("yt2")
+check("publications: the approved one first, then the added one", len(P) == 2 and P[0]["main"] is True and P[1]["url"].endswith("video-three"))
+INF.fetch_text = lambda url: "<html>no code here</html>"
+INF.verify("yt2", W.code_of("yt2"), "", url="https://example.com/video-three")
+P = INF.publications("yt2")
+check("an added publication is checked on its own, the status stays approved", INF.is_approved("yt2") and P[1]["auto_check"]["found"] is False and P[0]["auto_check"]["found"] is True)
+INF.fetch_text = _real
 print("\n%d checks, %d failed" % (N[0], N[1]))
 sys.exit(1 if N[1] else 0)

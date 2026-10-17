@@ -14443,6 +14443,7 @@ def referral_payload(user):
     return {"public": False, "name": user.get("name") or uid, "code": code, "link": f"https://owltrader.duckdns.org/offres?p={code}",
             "pct": st["pct"], "payout_min": st["payout_min"], "welcome_days": 7,
             "signed": st["signed"], "paid": st["paid"], "earned": st["earned"], "friends": st["friends"][:60],
+            "clicks": st.get("clicks"), "conversion": st.get("conversion"),
             "cash": E["cash"], "cash_ref": st["cash_ref"], "due": E["due"], "payout_addr": E["payout_addr"], "payouts": E["payouts"],
             "history": [h for h in E["history"] if h.get("kind") in ("referral", "influencer")][-30:],
             "plan": {"family": "Automatique", "manual": "Signal", "strategy": "Stratégie"}.get(_member_pkg(uid), ""),
@@ -14484,6 +14485,7 @@ def _inf_block(user, st):
            "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring"),
            "expected": st.get("expected")}
     out["auto_check"] = r.get("auto_check")
+    out["pubs"] = _INF.publications(uid) if r else []
     out["clicks"] = st.get("clicks"); out["conversion"] = st.get("conversion")
     if is_admin(user):
         _nm = {u.get("id"): (u.get("name") or u.get("id")) for u in users()}
@@ -14515,7 +14517,11 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         if user.get("public"):
             return {"ok": False, "err": "public"}
         r = _INF.apply(uid, body.get("channel"), body.get("video"), body.get("note"), platform=body.get("platform"))
-        if r.get("ok"):
+        if r.get("ok") and r.get("added"):
+            # an approved creator added a publication: check that one, no status change
+            _url = _INF._clean_url(body.get("video"))
+            threading.Thread(target=lambda: _INF.verify(uid, _OW.code_of(uid), f"owltrader.duckdns.org/offres?p={_OW.code_of(uid)}", url=_url), daemon=True).start()
+        elif r.get("ok"):
             threading.Thread(target=_inf_autocheck, args=(uid, user.get("name") or uid), daemon=True).start()
         return r
     if action == "inf_recheck":

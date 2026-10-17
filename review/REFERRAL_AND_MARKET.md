@@ -157,3 +157,6 @@ loopback, link-local, bare IPs and our own domain, which always shows the code) 
 link. Found -> approved on the spot (review_note "auto : ..."), creator and owner told. Not found or unreadable ->
 stays in the owner's queue with the reason, the link's visitors, sign-ups and paid counts, and a "re-vérifier"
 button. Tests: 80 checks (review/test_market_wallet.py).
+Publications (owner, same night): an approved creator adds new publications from the dashboard ("Vos publications",
+platform + link); each is checked automatically on its own (✓ code trouvé / ✗ reason) without touching the status;
+duplicates refused; the channel/page link stays optional and informational - the publication link is the proof.
