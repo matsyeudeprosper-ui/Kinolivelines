@@ -9187,20 +9187,21 @@ async function nestCodeAny(){
   [['family','Automatique','famille'],['manual','Signal','$29'],['strategy','Strat\u00e9gie','$49']].map(x=>'<label style="display:block;text-align:center;border:1px solid var(--border);border-radius:12px;padding:10px 4px;cursor:pointer;background:var(--surface2)"><input type="radio" name="cd-pkg" value="'+x[0]+'" '+(x[0]==='family'?'checked':'')+' style="margin:0 0 6px"><br><b>'+x[1]+'</b><div style="font-size:.7rem;color:var(--muted)">'+x[2]+'</div></label>').join('')+'</div>'+
   '<div class="lbl" style="margin-top:12px">Dur\u00e9e</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
   [30,90,365].map(d=>'<label style="display:block;text-align:center;border:1px solid var(--border);border-radius:12px;padding:10px 4px;cursor:pointer;background:var(--surface2)"><input type="radio" name="cd-days" value="'+d+'" '+(d===30?'checked':'')+' style="margin:0 0 6px"><br><b>'+d+' j</b></label>').join('')+'</div>'+
-  '<button class="shbtn shmain" style="margin-top:16px" onclick="_shDone({f:document.getElementById(&#39;cd-for&#39;).value,p:(document.querySelector(&#39;input[name=cd-pkg]:checked&#39;)||{}).value,d:(document.querySelector(&#39;input[name=cd-days]:checked&#39;)||{}).value})">\U0001f511 G\u00e9n\u00e9rer</button>'+
+  '<label style="display:flex;align-items:center;gap:10px;margin-top:12px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--surface2);cursor:pointer"><input type="checkbox" id="cd-free" style="margin:0;width:18px;height:18px"><span><b>Offert</b><div style="font-size:.74rem;color:var(--muted)">Code donn\u00e9 sans paiement : ce mois ne verse aucune part de cr\u00e9ateur.</div></span></label>'+
+  '<button class="shbtn shmain" style="margin-top:16px" onclick="_shDone({f:document.getElementById(&#39;cd-for&#39;).value,p:(document.querySelector(&#39;input[name=cd-pkg]:checked&#39;)||{}).value,d:(document.querySelector(&#39;input[name=cd-days]:checked&#39;)||{}).value,fr:document.getElementById(&#39;cd-free&#39;).checked})">\U0001f511 G\u00e9n\u00e9rer</button>'+
   '<button class="shbtn shghost" onclick="_shDone(null)">Annuler</button>');
  if(!pick||!pick.p)return;
- nestCodeFor(pick.f||'',pick.p,pick.d||30);
+ nestCodeFor(pick.f||'',pick.p,pick.d||30,!!pick.fr);
 }
-async function nestCodeFor(name,pkg,days){
+async function nestCodeFor(name,pkg,days,free){
  pkg=pkg||'family';days=days||30;
  const LAB={family:'Automatique',manual:'Signal',strategy:'Strat\u00e9gie'}[pkg]||pkg;
  const pw=await askPwd('Code '+LAB+(name?' pour '+name:''),days+' jours, usage unique, valable 7 jours.','🔑 G\u00e9n\u00e9rer');if(!pw)return;
- const r=await fetch(AB()+'actcode',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pwd='+encodeURIComponent(pw)+'&pkg='+encodeURIComponent(pkg)+'&days='+encodeURIComponent(days)+'&for='+encodeURIComponent(name||'')}).catch(()=>null);
+ const r=await fetch(AB()+'actcode',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'pwd='+encodeURIComponent(pw)+'&pkg='+encodeURIComponent(pkg)+'&days='+encodeURIComponent(days)+'&for='+encodeURIComponent(name||'')+'&free='+(free?'1':'0')}).catch(()=>null);
  let j=null;try{j=await r.json();}catch(e){}
  if(!j||!j.ok){await info('&#10060; <h3>'+(j&&j.err==='bad password'?'Mot de passe incorrect.':'Impossible pour l\u2019instant.')+'</h3>');return;}
  const msg='Bonjour'+(name?' '+name:'')+', votre code OwlNest '+LAB+' : '+j.code+' ('+days+' jours, valable 7 jours). Nouveau compte : https://owltrader.duckdns.org/activate \u2014 D\u00e9j\u00e0 membre : R\u00e9glages \u203a Abonnement \u203a \u00ab J\u2019ai un code \u00bb.';
- sheet('<h3>Code pour '+name+'</h3><div style="font-size:2rem;font-weight:800;letter-spacing:.3em;text-align:center;background:var(--bg);border-radius:14px;padding:18px 6px;margin:6px 0 10px;color:var(--up-soft)">'+j.code+'</div>'+
+ sheet('<h3>Code pour '+name+(j.free?' <span style="font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);border:1px solid rgba(232,197,90,.4);border-radius:99px;padding:3px 8px;vertical-align:middle">offert</span>':'')+'</h3><div style="font-size:2rem;font-weight:800;letter-spacing:.3em;text-align:center;background:var(--bg);border-radius:14px;padding:18px 6px;margin:6px 0 10px;color:var(--up-soft)">'+j.code+'</div>'+
   '<p style="font-size:.86rem;color:var(--muted2)">'+msg+'</p>'+
   '<button class="shbtn shmain" onclick="(navigator.clipboard?navigator.clipboard.writeText('+JSON.stringify(msg).replace(/"/g,'&quot;')+'):Promise.reject()).then(()=>toast(&#39;Message copi\u00e9&#39;,2000),()=>toast(&#39;Copie impossible&#39;,2000))">Copier le message</button>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
@@ -10803,7 +10804,7 @@ CODE_TTL = 7 * 86400          # a code lives a week: Telegram takes its time
 CODE_PKGS = ("family", "manual", "strategy")
 
 
-def new_activation_code(pkg="family", days=30, for_name=""):
+def new_activation_code(pkg="family", days=30, for_name="", free=False):
     """One-time activation code (2026-09-05 user; 2026-10-03 owner: it
     names a PACKAGE and a duration). The master generates it in HIS app
     and sends it on Telegram; entering it - in the app to renew, or on
@@ -10816,7 +10817,9 @@ def new_activation_code(pkg="family", days=30, for_name=""):
     c = _load_codes()
     c["codes"].append({"code": code, "t": time.time(), "used_by": None,
                        "pkg": pkg if pkg in CODE_PKGS else "family", "days": int(days or 30),
-                       "for": (for_name or "")[:40]})
+                       "for": (for_name or "")[:40],
+                       # 2026-10-17 (owner): a code given away -> the month carries no money -> no creator share
+                       "free": bool(free)})
     c["codes"] = c["codes"][-500:]
     _save_codes(c)
     return code
@@ -18155,7 +18158,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
                                 "<p>Le mot de passe ne correspond pas. Connectez-vous avec le bon mot de passe, puis entrez le code dans l&#8217;app : R&eacute;glages &rsaquo; Abonnement.</p>")
         # a renewal from the public page: same as the in-app "J'ai un code"
         redeem_activation_code(code, known["id"])
-        ent_grant(known["id"], pkg, days, "code")
+        ent_grant(known["id"], pkg, days, "code", usd=(0.0 if ce.get("free") else None))
         if pkg == "family":
             _ref_family_credit(known["id"], days)
         if pkg == "family":
@@ -19925,7 +19928,7 @@ class H(BaseHTTPRequestHandler):
                 json.dump(us, open(USERS_FILE, "w", encoding="utf-8"),
                           indent=2)
                 _users_cache["t"] = 0.0
-                ent_grant(u["id"], "family", _cdays, "code")      # the family package, for the code's days
+                ent_grant(u["id"], "family", _cdays, "code", usd=(0.0 if _ce.get("free") else None))      # the family package, for the code's days
                 try:
                     _pf = os.path.join(DIR, pause_file(u["id"]))
                     _pz = json.load(open(_pf, encoding="utf-8"))
@@ -20000,7 +20003,9 @@ class H(BaseHTTPRequestHandler):
                 except Exception:
                     _days = 30
                 self._send(json.dumps({"ok": True, "pkg": _pkg if _pkg in CODE_PKGS else "family", "days": _days,
-                                       "code": new_activation_code(_pkg, _days, _fq.get("for", [""])[0])}),
+                                       "free": (_fq.get("free", [""])[0] or "") in ("1", "on", "true"),
+                                       "code": new_activation_code(_pkg, _days, _fq.get("for", [""])[0],
+                                                                   free=(_fq.get("free", [""])[0] or "") in ("1", "on", "true"))}),
                            "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)}),
