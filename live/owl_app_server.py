@@ -17719,9 +17719,12 @@ def _offers_page(login, pwd, pending_pkg=None, name=""):
             "if(c.length<6){h.textContent='Six lettres et chiffres, re\u00e7us du Owl sur Telegram.';return;}"
             "fetch('/codeinfo?c='+encodeURIComponent(c)).then(function(r){return r.json();}).then(function(j){"
             "h.textContent=(j&&j.ok)?('Code '+j.label+' \u00b7 '+j.days+' jours'):'Code inconnu ou d\u00e9j\u00e0 utilis\u00e9.';}).catch(function(){});});"
+            "function unbusy(){var b=document.getElementById('ok');if(b){delete b.dataset.busy;b.style.opacity='';b.textContent=(P==='family')?'V\u00e9rifier mon compte':'Activer mon compte';}}"
             "document.getElementById('f').addEventListener('submit',function(e){if(document.getElementById('act').value==='activate'){"
-            "if(!need()){e.preventDefault();return;}"
-            "if(document.getElementById('code').value.trim().length<6){e.preventDefault();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
+            "if(!need()){e.preventDefault();unbusy();return;}"
+            # 2026-10-17 (owner): Automatique is verified FIRST (the probe), the code comes on the verdict card - never ask it here;
+            # and a refused submit must give the button back (it stayed on 'Activation en cours' forever)
+            "if(P!=='family'&&document.getElementById('code').value.trim().length<6){e.preventDefault();unbusy();alert('Entrez le code complet (6 caract\u00e8res), ou payez en crypto.');}}});"
             + (f"pick('{pending_pkg}');" if pending_pkg in ("manual", "strategy", "family") else "")
             + "fn('offers');</script>" + OFFERS_EN_JS + "</body></html>")
 
@@ -18104,6 +18107,12 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         _jid = secrets.token_hex(6)
         _BB.probe_start(_jid, login, pwd, server, form)
         return ("redirect", f"/verif?j={_jid}")
+    if pkg_chosen == "family" and _known_login and not code and action in ("activate", "") and probed is None:
+        # 2026-10-17 (owner's own test): an account already in the nest, sent through the sign-up sheet without a
+        # code - say so plainly instead of "code inconnu" (the sheet has no code field for Automatique)
+        return _join_result("&#129417; Ce compte est d&eacute;j&agrave; dans le nid",
+                            "<p>Connectez-vous avec ce num&eacute;ro et votre mot de passe. Pour renouveler, entrez le code dans l&#8217;app : Compte &rsaquo; Abonnement.</p>"
+                            "<p><a href=\"/\">&larr; Se connecter</a></p>")
     if rate_limited(("activate", code or login or "?"), limit=8):
         return _join_result("&#9203; Trop d&#8217;essais", "<p>Attendez 10 minutes puis r&eacute;essayez.</p>")
     if probed is not None and not code:
