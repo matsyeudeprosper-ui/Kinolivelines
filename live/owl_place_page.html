@@ -127,6 +127,11 @@ function cardHtml(x){
 function render(){
  const L=(D.listings||[]).filter(x=>F==='all'||(F==='free'&&x.free)||(F==='paid'&&!x.free)||(F==='mine_broker'&&x.at_my_broker&&x.at_my_broker.pays));
  $('list').innerHTML=L.length?L.map(cardHtml).join(''):'<div class="empty">'+(F==='mine_broker'?'Aucun robot ne gagne au co&ucirc;t de votre courtier pour l&#8217;instant.':'Aucun robot sur la place pour l&#8217;instant. Le premier publi&eacute; appara&icirc;tra ici.')+'</div>';
+ if(D.me.public){
+  // the public demo: look, then open an account
+  $('mysub').innerHTML='';$('creator').innerHTML='';
+  $('ref').innerHTML='<div class="sect">Pour suivre un robot</div><div class="card"><h3>Ouvrez un compte</h3><p class="blurb">Avec Automatique, le robot de votre choix tourne sur votre propre compte. Avec Strat&eacute;gie, vous construisez le v&ocirc;tre et le publiez ici.</p><a class="btn full" style="text-decoration:none;display:block;text-align:center" href="/offres">Voir les offres</a></div>';
+  return;}
  // my subscription
  const s=D.sub;
  $('mysub').innerHTML=s?'<div class="sect">Mon abonnement</div><div class="card"><div class="kv"><span>Robot suivi</span><b>'+esc(s.name||s.rid)+'</b></div><div class="kv"><span>Jusqu&#8217;au</span><b>'+fd(s.until)+'</b></div><div class="kv"><span>Prix</span><b>'+(Number(s.price_usd)?'$'+Number(s.price_usd).toFixed(0)+' / mois':'Gratuit')+'</b></div>'

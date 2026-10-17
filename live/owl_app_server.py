@@ -7627,6 +7627,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    panels:()=>[$('plan-card')],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
+  {k:'place',ic:'money',col:'167,139,250',href:B+'place',t:()=>T('Parrainage et place des robots','Referral and the robot place'),s:()=>T('Votre code, votre cagnotte, suivre ou publier un robot','Your code, your cagnotte, follow or publish a robot'),panels:()=>[],rows:()=>[]},
   {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
    panels:()=>[$('adminlock-card'),$('adm-card')],rows:()=>[$('admback'),$('usagerow')]}];
  const vis=e=>!!e&&e.style.display!=='none';
@@ -7656,7 +7657,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   pn.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;pn.style.transform='';if(dy>110)close();y0=null;});
   window.addEventListener('popstate',()=>{if(open)close(true);});
   return true;}
- function shownGroup(g){const B=g._box;if(!B)return false;
+ function shownGroup(g){if(g.href)return !(window._d&&window._d.public);const B=g._box;if(!B)return false;
   return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
  function paint(){const L=$('csl');if(!L)return;
   const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Bonsoir|Bon apr\\u00e8s-midi|Hello|Good (?:morning|afternoon|evening))\\s*/i,'').trim();
@@ -7665,7 +7666,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    if(h._l!==html){h._l=html;h.innerHTML=html;}}
   const html=G.filter(shownGroup).map(g=>'<button class="csg'+(g.own?' own':'')+'" data-k="'+g.k+'"><span class="ic2" style="background:rgba('+g.col+',.14);color:rgb('+g.col+')">'+svg(IC[g.ic])+'</span><span class="tx"><b>'+g.t()+'</b><small>'+g.s()+'</small></span><span class="ch">›</span></button>').join('');
   if(L._l!==html){L._l=html;L.innerHTML=html;L.querySelectorAll('.csg').forEach(b=>b.onclick=()=>openG(b.dataset.k));}}
- function openG(k){const g=G.find(x=>x.k===k);if(!g||!g._box)return;if(open)restore();
+ function openG(k){const g=G.find(x=>x.k===k);if(g&&g.href){location.href=g.href;return;}if(!g||!g._box)return;if(open)restore();
   $('cssh-b').appendChild(g._box);open=g;$('cssh-t').textContent=g.t();
   const sh=$('cssh');sh.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>sh.classList.add('open'));
   try{history.pushState({cs:k},'');}catch(e){}}
@@ -14247,6 +14248,10 @@ def place_payload(user, admin=False):
     import owl_wallet as _OW
     uid = user.get("id"); fam = float(nest_config().get("family_usd") or 60)
     R = _OMKT.robots()
+    if user.get("public"):
+        # the public demo: the catalogue only - no code, no cagnotte, no actions
+        return {"me": {"uid": None, "public": True, "auto": False, "strategy": False, "admin": False, "broker_server": ""},
+                "listings": _OMKT.catalogue(None, "", False), "mine": [], "my_robots": [], "sub": None, "wallet": None, "ref": None}
     me = {"uid": uid, "name": user.get("name") or uid, "auto": bool(user.get("trade") and user.get("mt5_login")),
           "strategy": bool(has(uid, "strategy")), "admin": bool(admin or is_admin(user)), "broker_server": user.get("mt5_server") or ""}
     try:
