@@ -153,6 +153,34 @@ def on_plan_share(creator_uid, follower_uid, rid, plan_usd):
     return credit
 
 
+def accrue_share(creator_uid, follower_uid, rid, usd):
+    """pay once, BY TIME (owner 2026-10-17: "what if they run it five minutes?"): called every few minutes while a
+    member's plan is active AND the creator's robot is attached; usd is the share for that slice of time. Fractions
+    of a cent wait in cash_frac; whole cents move to cash and into ONE history line per robot, follower and day."""
+    if not creator_uid or creator_uid == follower_uid or usd <= 0:
+        return 0.0
+    with _LOCK:
+        W = _load(WALLET, {}) or {}
+        w = W.setdefault(creator_uid, {"usd": 0.0, "earned": 0.0, "history": []})
+        frac = float(w.get("cash_frac") or 0) + float(usd)
+        cents = int(frac * 100 + 1e-9) / 100.0
+        if cents > 0:
+            w["cash"] = round(float(w.get("cash") or 0) + cents, 2)
+            w["cash_earned"] = round(float(w.get("cash_earned") or 0) + cents, 2)
+            day = time.strftime("%Y-%m-%d", time.gmtime()); note = "%s <- %s" % (rid, follower_uid)
+            H = w.setdefault("cash_history", [])
+            for h in reversed(H[-60:]):
+                if h.get("note") == note and h.get("kind") == "share" and time.strftime("%Y-%m-%d", time.gmtime(int(h.get("t") or 0))) == day:
+                    h["usd"] = round(float(h.get("usd") or 0) + cents, 2); h["t"] = int(time.time()); break
+            else:
+                H.append({"t": int(time.time()), "usd": round(cents, 2), "kind": "share", "note": note})
+            w["cash_history"] = H[-300:]
+            frac -= cents
+        w["cash_frac"] = round(frac, 6)
+        _save(WALLET, W)
+    return cents
+
+
 def creator_earned(rid):
     """what a listed robot has earned its creator in all (the sum of its shares and legacy robot months)"""
     tot = 0.0

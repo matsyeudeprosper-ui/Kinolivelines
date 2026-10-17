@@ -80,3 +80,10 @@ confirmation points (_ref_family_credit for codes, the NOWPayments IPN for plans
 No invoice is ever created for a robot; the price picker is gone; listings carry price 0; the "robot:" IPN branch
 stays only for history. Later, with several followed member robots, the add-on plan ("Automatique Plus") can fund
 the creator share instead of the base plan — a configuration change, not a rebuild.
+
+### Share BY TIME (owner, same day: "what if they run it five minutes?")
+The 30 % is NOT credited at payment time. It accrues every tick (~10 min, _market_tick -> _creator_accrue) while the
+member's plan is active and the creator's robot is attached: share = family_usd / 30 / 86400 * seconds * 0.30.
+Fractions of a cent wait in cash_frac; whole cents go to cash and to one history line per robot, follower and day.
+Five minutes earn ~$0.002 (nothing visible); a full day on a $60 plan earns $0.60; a full month the full $18.
+Switching back and forth simply splits the time between creators. The Owl and the owner's robots accrue nothing.

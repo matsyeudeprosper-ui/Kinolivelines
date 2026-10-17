@@ -14289,31 +14289,36 @@ def _ref_family_credit(uid, days):
             queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler Automatique : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
     except Exception:
         pass
-    _creator_share(uid, float(nest_config().get("family_usd") or 60) * float(days) / 30.0)
 
 
-def _creator_share(uid, usd):
-    """pay once (owner 2026-10-17): the member's confirmed plan payment -> CREATOR_SHARE to the creator of the robot
-    the member runs right now (nothing for the Owl or the owner's robots)"""
-    try:
-        import owl_market as _OMKT
-        import owl_wallet as _OW
-        _s = _OMKT.sub_of(uid)
-        if not _s:
-            return 0.0
-        _L = _OMKT.listing(_s.get("rid")) or {}
-        _cr = _L.get("by_uid")
-        if not _cr or _cr == uid or _L.get("hidden"):
-            return 0.0
-        _cu = next((u for u in users() if u.get("id") == _cr), None)
-        if _cu is None or is_admin(_cu):
-            return 0.0
-        _c = _OW.on_plan_share(_cr, uid, _s.get("rid"), float(usd))
-        if _c:
-            queue_push(_cr, "\U0001f4b0 Part de cr\u00e9ateur", f"Un membre tourne avec votre robot ce mois : ${_c:.2f} dans vos gains de cr\u00e9ateur.")
-        return _c
-    except Exception:
-        return 0.0
+def _creator_accrue(d, now):
+    """pay once, BY TIME (owner 2026-10-17): every tick, each member whose plan is active and who runs a member's
+    robot earns that creator CREATOR_SHARE of the plan's value for the time elapsed since the last tick. Five
+    minutes earn five minutes; a whole month earns the whole 30 %. Nothing for the Owl or the owner's robots.
+    Returns True when a sub's clock was touched (the caller saves)."""
+    import owl_wallet as _OW
+    fam = float(nest_config().get("family_usd") or 60)
+    adm = {u.get("id") for u in users() if is_admin(u)}
+    changed = False
+    for uid, sub in list((d.get("subs") or {}).items()):
+        if sub.get("ended") or not (sub.get("open") or float(sub.get("until") or 0) > now):
+            continue
+        last = float(sub.get("acc_t") or 0)
+        sub["acc_t"] = int(now); changed = True
+        if not last:
+            continue
+        dt = min(now - last, 48 * 3600)          # a long gap = the app was down, the robot still ran; cap for safety
+        if dt <= 0 or not has(uid, "family"):
+            continue
+        L = (d.get("listings") or {}).get(sub.get("rid")) or {}
+        cr = L.get("by_uid")
+        if not cr or cr == uid or cr in adm or L.get("hidden"):
+            continue
+        try:
+            _OW.accrue_share(cr, uid, sub.get("rid"), fam / 30.0 / 86400.0 * dt * _OW.CREATOR_SHARE)
+        except Exception:
+            pass
+    return changed
 
 
 def _member_pkg(uid):
@@ -14456,6 +14461,12 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
         _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
         if _sw.get("ok") and not (cur and cur.get("rid") == rid):
             _OMKT.start_sub(uid, rid, 0.0, "included")   # recorded only once the switch is accepted; open-ended
+            try:
+                _cr = L.get("by_uid")
+                if _cr and _cr != uid and not is_admin(next((u for u in users() if u.get("id") == _cr), {}) or {}):
+                    queue_push(_cr, "\U0001f916 Un membre tourne avec votre robot", "Vos gains de créateur montent chaque jour tant qu’il le garde.")
+            except Exception:
+                pass
         return _sw
     return {"ok": False, "err": "?"}
 
@@ -14473,6 +14484,11 @@ def _market_tick():
         import owl_market as _OMKT
         _OMKT.refresh_pauses()
         d = _OMKT.data(); R = _OMKT.robots()
+        try:
+            if _creator_accrue(d, time.time()):
+                _OMKT._save(_OMKT.MARKET, d)
+        except Exception:
+            pass
         for uid, sub in list((d.get("subs") or {}).items()):
             if sub.get("open"):
                 continue                      # pay once: included robots have no end date
@@ -18913,7 +18929,6 @@ class H(BaseHTTPRequestHandler):
                                         queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {PACKAGES[_pkg]['label']} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
                                 except Exception:
                                     pass
-                                _creator_share(_uid, paid)
                                 # 2026-10-03 (owner): an account opened from the public
                                 # page waits for this; now the provisioner may build it
                                 try:
