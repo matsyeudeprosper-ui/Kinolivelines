@@ -603,6 +603,8 @@ button.pc{cursor:pointer}
 .zbn em.zfew{font-style:normal;font-weight:800;color:#f3d27a}
 .zbn small.ztn{display:block;margin-top:1px;color:var(--muted)}
 .zbv small{display:block;white-space:nowrap}.zbv b{white-space:nowrap}
+/* 2026-10-17 (owner): the zone header's third tile wrapped '+$37 /30 j' onto two lines */
+.k3 b{white-space:nowrap;font-size:1.3rem}.k3 b .z30{font-size:.58em;font-weight:700;color:var(--muted);margin-left:3px;font-style:normal;letter-spacing:0}
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -1169,7 +1171,7 @@ function builderTop(){const B=BLD();
    '<button class="lh-r1" onclick="goAI()"><span class="lh-i">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><span class="lh-rt"><b>'+T('Expliquer','Explain')+'<span class="lh-tag">'+T('facile','easy')+'</span></b><small>'+T('Décrivez votre idée à l’IA, en mots simples','Describe your idea to the AI, in plain words')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
    '<button onclick="goNew()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Assembler','Assemble')+'</b><small>'+T('Choisissez ses pièces une à une','Pick its pieces one by one')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
    '<button onclick="location.href=\'chart?studio=1\'"><span class="lh-i">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><span class="lh-rt"><b>'+T('Montrer','Show')+'</b><small>'+T('Pointez vos entrées sur le graphique','Point at your entries on the chart')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button></div>'
-   :'<div class="lh-sec">'+T('Créer un robot','Build a robot')+'</div><div class="lh-a"><button class="lh-r1" onclick="goOffer(\'strategy\')"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Avec Stratégie','With Strategy')+'<span class="lh-tag">'+T('$49 / mois','$49 / mo')+'</span></b><small>'+T('Assemblez, expliquez à l’IA, testez sur de vrais prix, publiez sur la place','Assemble, explain to the AI, test on real prices, publish on the place')+'</small></span><span class="lh-cv">›</span></button></div>')+
+   :'<div class="lh-sec">'+T('Créer un robot','Build a robot')+'</div><div class="lh-a"><button class="lh-r1" onclick="goOffer(\'strategy\')"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Avec la formule Stratégie','With the Strategy plan')+'<span class="lh-tag">'+T('$49 / mois','$49 / mo')+'</span></b><small>'+T('Assemblez, expliquez à l’IA, testez sur de vrais prix, publiez sur la place','Assemble, explain to the AI, test on real prices, publish on the place')+'</small></span><span class="lh-cv">›</span></button></div>')+
   '<div class="lh-f">'+(cmpList().length>1?'<button onclick="cmpPick()">'+pic('M7 7h11l-3-3M17 17H6l3 3')+T('Comparer','Compare')+'</button>':'')+'<button onclick="fdOpen(\'how\')">'+pic('M12 17h.01M9.1 9a3 3 0 0 1 5.8 1c0 2-3 2-3 4M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z')+T('Comment ça marche','How it works')+'</button></div></div>';
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
@@ -1385,7 +1387,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  const tiles=POP.map(have).filter(Boolean);ZT.sel.forEach(s=>{if(!tiles.find(t=>t.s===s)){const x=syms.find(z=>z.s===s);if(x)tiles.push(x);}});
  const ready=syms.filter(x=>x.ready&&!tested.has(x.s)&&!busy.has(x.s));
  h+='<div class="zsec"><b>'+T('Tester sur…','Test on…')+'</b><span>'+T('jusqu\'à 4 à la fois','up to 4 at once')+'</span></div>';
- if(!syms.length){if(!BLD().can_create)h+='<div class="card"><div class="sub">'+T('Avec Stratégie, vous testez ce robot sur l’or, le Nasdaq, le pétrole… aux prix de votre courtier.','With Strategy, you test this robot on gold, the Nasdaq, oil… at your broker’s prices.')+'</div><button class="cta" style="margin-top:12px" onclick="goOffer(&quot;strategy&quot;)">'+T('Avec Stratégie','With Strategy')+' ›</button></div>';else h+='<div class="card"><div class="sub">'+T('Chargement des marchés de votre compte…','Loading your account’s markets…')+'</div></div>';}
+ if(!syms.length){if(!BLD().can_create)h+='<div class="card"><div class="sub">'+T('Avec la formule Stratégie, vous testez ce robot sur l’or, le Nasdaq, le pétrole… aux prix de votre courtier.','With the Strategy plan, you test this robot on gold, the Nasdaq, oil… at your broker’s prices.')+'</div><button class="cta" style="margin-top:12px" onclick="goOffer(&quot;strategy&quot;)">'+T('Avec la formule Stratégie','With the Strategy plan')+' ›</button></div>';else h+='<div class="card"><div class="sub">'+T('Chargement des marchés de votre compte…','Loading your account’s markets…')+'</div></div>';}
  else{if(ready.length)h+='<div class="zrdy"><span>⚡ '+T('Prêts tout de suite','Ready right now')+'</span>'+ready.slice(0,6).map(x=>'<button class="chip'+(ZT.sel.includes(x.s)?' on':'')+'" onclick="ztTog(\''+esc(x.s)+'\')">'+esc(mkName(x.s)||x.s)+'</button>').join('')+'</div>';
   h+='<div class="zgrid">'+tiles.map(x=>{const on=ZT.sel.includes(x.s),rr=R.find(z=>z.sym===x.s);
     const st=busy.has(x.s)?'<em class="zb">'+T('en cours','running')+'</em>':(rr?'<em class="'+cl(rr.a.net)+'">'+money(rr.a.net,0)+'</em>':(x.ready?'<em class="zf">⚡ '+T('rapide','fast')+'</em>':'<em>'+T('1re fois ','1st time ')+fmtMin((MKL&&MKL.build_min||100)+(MKL&&MKL.test_min||3))+'</em>'));
@@ -1402,7 +1404,7 @@ function renderZT(){const B=BLD(),L=ztRobots();
  // 6) floating launch bar
  if(ZT.sel.length){const rd=ZT.sel.filter(s=>(syms.find(x=>x.s===s)||{}).ready).length,nb=ZT.sel.length-rd,tm=(MKL&&MKL.test_min)||3,bm=(MKL&&MKL.build_min)||100;
   h+='<div style="height:92px"></div><div class="zbar"><div class="zbi"><b>'+ZT.sel.length+T(' marché',' market')+(ZT.sel.length>1?'s':'')+' · '+ZT.sel.map(s=>esc(mkName(s)||s)).join(', ')+'</b><small>'+T('environ ','about ')+fmtMin(nb*bm+ZT.sel.length*tm).replace('~','')+(nb?' · '+nb+T(' à préparer',' to prepare'):' · '+T('prêts','ready'))+'</small></div>'+
-   '<button class="zx" onclick="ZT.sel=[];renderZT()" aria-label="'+T('Effacer','Clear')+'">×</button>'+(BLD().can_create?'<button class="zgo" onclick="ztGo()">'+pic('M5 3l14 9-14 9V3z')+T('Lancer','Run')+'</button>':'<button class="zgo" onclick="goOffer(\'strategy\')">'+T('Avec Stratégie','With Strategy')+' ›</button>')+'<div class="note" id="zterr"></div></div>';}
+   '<button class="zx" onclick="ZT.sel=[];renderZT()" aria-label="'+T('Effacer','Clear')+'">×</button>'+(BLD().can_create?'<button class="zgo" onclick="ztGo()">'+pic('M5 3l14 9-14 9V3z')+T('Lancer','Run')+'</button>':'<button class="zgo" onclick="goOffer(\'strategy\')">'+T('Avec la formule Stratégie','With the Strategy plan')+' ›</button>')+'<div class="note" id="zterr"></div></div>';}
  $('det').innerHTML=h;}
 function ztPickRobot(){const L=ztRobots();
  shOpen(T('Quel robot tester ?','Which robot to test?'),'<div class="fds">'+L.map(x=>{const R=ztRows(x),b=R[0];return '<button class="fd'+(x.id===ZT.rid?' on':'')+'" onclick="ztSwitch(\''+x.id+'\')">'+ICO('var(--accent)',BOT)+
