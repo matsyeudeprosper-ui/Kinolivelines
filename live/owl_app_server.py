@@ -12694,7 +12694,8 @@ def robots_payload(detail):
         _LS = _OMKT.data().get("listings") or {}
         for r in R:
             _L = _LS.get(r.get("id"))
-            r["market"] = ({"price_usd": _L.get("price_usd") or 0, "free": not _L.get("price_usd"), "paused": bool(_L.get("paused")), "alias": _L.get("alias")}
+            r["market"] = ({"price_usd": _L.get("price_usd") or 0, "free": not _L.get("price_usd"), "paused": bool(_L.get("paused")), "alias": _L.get("alias"),
+                            "followers": len(_OMKT.followers(r.get("id")))}
                            if _L and not _L.get("hidden") else None)
     except Exception:
         pass
@@ -12984,6 +12985,16 @@ def builder_payload(user, detail):
         pc["mine"] = bool(pc.get("by_uid")) and pc.get("by_uid") == me
         pc["can_edit"] = bool(pc.get("rule")) and (pc["mine"] or bool(is_admin(user)))
         pc.pop("by_uid", None)
+    try:
+        # 2026-10-17 (owner): the robot's own page says whether it is on the place (publish row in "Gerer mon robot")
+        import owl_market as _OMKT
+        _LS = _OMKT.data().get("listings") or {}
+        for x in out:
+            _L = _LS.get(x.get("id"))
+            x["market"] = ({"price_usd": _L.get("price_usd") or 0, "free": not _L.get("price_usd"), "paused": bool(_L.get("paused")), "alias": _L.get("alias"),
+                            "followers": len(_OMKT.followers(x.get("id")))} if _L and not _L.get("hidden") else None)
+    except Exception:
+        pass
     return {"pieces": pieces, "robots": out, "plugs": plugs, "can_create": True,
             "admin": bool(is_admin(user)), "targets": robot_targets(user, detail), "test_min": ROBOT_TEST_MIN,
             "max": ROBOT_MAX_PER_USER, "running": os.path.exists(os.path.join(DIR, "robots", "runner.lock"))}

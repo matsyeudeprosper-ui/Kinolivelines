@@ -157,7 +157,9 @@ function closeSh(pop){if(!SHEET)return;$('sh').classList.remove('on');document.b
 window.addEventListener('popstate',()=>{if(SHEET)closeSh(true);});
 async function api(path,body){const r=await fetch(B+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});return r.json();}
 async function load(){try{D=await api('place_data');}catch(e){$('list').innerHTML='<div class="empty">'+T('La place ne répond pas pour l’instant. Réessayez dans un instant.','The place is not answering right now. Try again in a moment.')+'</div>';return;}render();
- const m=location.hash.match(/r=([\w.-]+)/);if(m&&!SHEET)detail(m[1]);}
+ const m=location.hash.match(/(r|pub|mine)=([\w.-]+)/);if(m&&!SHEET){const k=m[1],id=m[2];history.replaceState(null,'',location.pathname);
+  if(k==='r')detail(id);else if(k==='mine'){if((D.mine||[]).some(y=>y.id===id))mineSh(id);else detail(id);}
+  else{const r=(D.my_robots||[]).find(y=>y.id===id);if((D.mine||[]).some(y=>y.id===id)||(r&&r.can))publishSh(id);else toast(r&&r.why?T('Pas encore : ','Not yet: ')+r.why:T('Ce robot ne peut pas être publié ici.','This robot cannot be published here.'));}}}
 const pricePill=x=>x.paused?'<span class="rs pause">'+T('en pause','paused')+'</span>':(x.free?'<span class="rs free">'+T('gratuit','free')+'</span>':'<span class="rs paid">$'+Number(x.price_usd).toFixed(0)+T(' / mois',' / mo')+'</span>');
 const byLine=x=>'<small>'+T('par ','by ')+(x.by_nest?'<span class="nest">'+CROWN+esc(x.alias||'Le Nid')+'</span>':esc(x.alias||'?'))+' · '+plural(x.followers||0,'abonné','follower')+(x.mine?' · '+T('le vôtre','yours'):'')+'</small>';
 function action(x){const me=D.me||{};
