@@ -2581,6 +2581,16 @@
     "--mm"
    ],
    "saw": "Raw base second half now -9: every trade-less idea (nosun, fit3, noday, debtnerv) climbs from C/B to B/A as the reference decays. Filtered accounts all positive since 10-10, reference negative. Filtered pool: evening 5/5, night flat, winners have wide stops (>=300 pts 5 of 7). Weekend: no trade since Fri 17:17. Twin ext700 running though critic bloque."
+  },
+  {
+   "t": "2026-10-17T12:01:00Z",
+   "night": "veille",
+   "looked": [
+    "wake_context: same 'new' trade an eighth time (FLIP-BOS SELL +12.83 closed 10-16 17:17); trades_total 143 unchanged",
+    "twin ext700: running, 0 trades, net 0 - the 'score moved' trigger is just its start",
+    "asks.json: none open"
+  ],
+  "saw": "Nothing new. Wake marker still stuck on the 17:17 trade (flag again to the night session). Twin ext700 just began, nothing to judge. Weekend, market closed. No run, no pile, no proposal. Wrote 'rien'."
   }
  ],
  "lessons": [
