@@ -14436,7 +14436,8 @@ def referral_payload(user):
     import owl_wallet as _OW
     uid = user.get("id")
     if user.get("public") or not uid:
-        return {"public": True, "pct": int(_OW.REF_PCT * 100), "payout_min": _OW.REF_PAYOUT_MIN, "welcome_days": 7}
+        return {"public": True, "pct": int(_OW.REF_PCT * 100), "payout_min": _OW.REF_PAYOUT_MIN, "welcome_days": 7,
+                "inf": {"status": "public", "pct": int(_OW.INF_PCT * 100), "months": _OW.INF_MONTHS}}
     st = _OW.referral_stats(uid)
     E = _OW.earnings(uid)
     code = _OW.code_of(uid)
@@ -17796,7 +17797,8 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
             ".lgb:focus-visible,.go:focus-visible,.i:focus-visible,a:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}"
             "</style></head><body>"
             "<div class=\"hero\"><div class=\"nav c\"><span class=\"brand\"><img src=\"/icon192.png\" alt=\"\">OwlNest</span>"
-            "<span class=\"nr\"><a href=\"/\">&#8592; Retour</a>"
+            # 2026-10-17 (owner): a member who came from inside the app goes BACK into the app, not to the front page
+            "<span class=\"nr\"><a href=\"/\" onclick=\"try{if(document.referrer&&document.referrer.indexOf(location.host)>=0&&document.referrer.indexOf('/offres')<0){history.back();return false;}}catch(e){}\">&#8592; Retour</a>"
             "<button type=\"button\" class=\"lgb\" id=\"lgb\" aria-label=\"English\">EN</button></span></div>"
             "<h1>Choisissez votre formule</h1>"
             "<p>Trois fa&ccedil;ons de suivre le robot. Vos identifiants ne vous sont demand&eacute;s qu&#8217;apr&egrave;s votre choix.</p></div>"
