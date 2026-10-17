@@ -17209,7 +17209,11 @@ def _probe_card(st, jid):
     cls, lab = pills.get(zone, pills["unknown"])
     facts = f"<div class=\"fact\"><div><span>Bitcoin</span><b>{_h.escape(str(b.get('name') or '?'))}</b><small>le nom chez ce courtier</small></div>"
     if v.get("spread") is not None:
-        facts += "<div><span>Co&ucirc;t par trade</span><b>%s $</b><small>%s</small></div>" % (fr(v["spread"]), "le courtier du robot" if broker == "Exness" else "Exness : %s $" % fr(v.get("exness_spread")))
+        # 2026-10-17 (owner: "is that the spread? it depends on lot size"): say what it is - the buy/sell gap for ONE
+        # Bitcoin (1 lot), no commission counted; at 0.01 lot it is a hundredth of that
+        facts += "<div><span>&Eacute;cart achat-vente</span><b>%s $</b><small>par Bitcoin (1 lot) &middot; %s $ &agrave; 0,01 lot &middot; %s</small></div>" % (
+            fr(v["spread"]), fr(float(v["spread"]) / 100.0),
+            "sans commission" if broker == "Exness" else ("Exness : %s $ &middot; commission non comprise" % fr(v.get("exness_spread"))))
     facts += "<div><span>Compte</span><b>%s</b><small>%s</small></div>" % (_h.escape(str(p.get("currency") or "?")), "positions s&eacute;par&eacute;es" if p.get("margin_mode") == 2 else "une position &agrave; la fois")
     off = b.get("clock_offset_h")
     facts += "<div><span>Horloge</span><b>UTC%s</b><small>%s</small></div></div>" % (("%+d h" % off) if off else "", "r&eacute;gl&eacute;e par le robot" if off else "la m&ecirc;me que le robot")
