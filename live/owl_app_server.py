@@ -7636,9 +7636,9 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    panels:()=>[],rows:()=>['intmkrow','pbintrow','tl2row','swingrow','wakerow','themerow','langrow','textrow'].map($)},
   {k:'plan',ic:'key',col:'167,139,250',t:()=>T('Abonnement','Subscription'),s:()=>{const t=($('plan-t')||{}).textContent||'';return t.trim()||T('Votre offre et vos paiements','Your plan and payments');},
    panels:()=>[$('plan-card')],rows:()=>[]},
+  {k:'ref',ic:'money',col:'167,139,250',t:()=>T('Parrainage','Referral'),s:()=>T('Votre code, vos amis, votre cagnotte en jours','Your code, your friends, your cagnotte in days'),panels:()=>[$('refcard')],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
-  {k:'ref',ic:'money',col:'167,139,250',t:()=>T('Parrainage','Referral'),s:()=>T('Votre code, vos amis, votre cagnotte en jours','Your code, your friends, your cagnotte in days'),panels:()=>[$('refcard')],rows:()=>[]},
   {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
    panels:()=>[$('adminlock-card'),$('adm-card')],rows:()=>[$('admback'),$('usagerow')]}];
  const vis=e=>!!e&&e.style.display!=='none';
