@@ -1,0 +1,107 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>Parrainage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-10-17 (owner): the referral CAMPAIGN page - 50 % of each friend's first paid month, in money. Same tokens as
+   the Robots page and the place: the page is a summary, details fold into panels. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;--border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--muted2:#a9b8c8;--accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;--warn:#e8c55a;--violet:#a78bfa;--violet-soft:#c4b5fd;--r:16px;--r-lg:24px;--ok-bg:rgba(46,204,113,.12);--sh:0 18px 50px rgba(0,0,0,.45)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#ffffff;--surface2:#f6f8fb;--surface3:#eef2f7;--border:#dfe6ee;--border2:#cfd8e3;--text:#10161f;--text2:#2b3745;--muted:#64748b;--muted2:#4b5868;--accent-bg:rgba(59,130,246,.1);--ok-bg:rgba(46,204,113,.14);--sh:0 18px 50px rgba(20,40,70,.18)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:56px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20% -10% auto -10%;height:60vh;pointer-events:none;z-index:0;background:radial-gradient(45% 55% at 15% 20%,rgba(167,139,250,.16),transparent 70%),radial-gradient(45% 50% at 85% 10%,rgba(59,130,246,.14),transparent 70%);filter:blur(12px)}
+a{color:var(--accent-soft)}button{font-family:inherit}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px}.hrow{display:flex;align-items:center;gap:12px}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex:none;text-decoration:none;cursor:pointer}
+.ttl{flex:1;min-width:0}h1{font-size:1.35rem;font-weight:800;letter-spacing:-.015em;margin:0}.ttl div{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero{background:linear-gradient(135deg,rgba(167,139,250,.18),var(--surface) 60%);border:1px solid rgba(167,139,250,.35);border-radius:var(--r-lg);padding:20px 18px;box-shadow:var(--hl);animation:rise .45s both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero .eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--violet-soft)}
+.hero h2{margin:6px 0 4px;font-size:1.5rem;font-weight:900;letter-spacing:-.02em;line-height:1.15}.hero p{margin:0;color:var(--text2);font-size:.92rem;line-height:1.5}
+.code{display:flex;align-items:center;gap:10px;margin-top:16px;background:rgba(0,0,0,.25);border:1px dashed rgba(167,139,250,.5);border-radius:16px;padding:12px 14px}
+.code b{flex:1;font-size:1.35rem;font-weight:900;letter-spacing:.14em;font-variant-numeric:tabular-nums}.code small{color:var(--muted);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;display:block;font-weight:700}
+.acts{display:flex;gap:8px;margin-top:12px}
+.btn{appearance:none;border:0;border-radius:13px;padding:12px 16px;font-size:.88rem;font-weight:800;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;flex:1}
+.btn.glow{background:linear-gradient(135deg,var(--violet),#6366f1);box-shadow:0 8px 24px rgba(167,139,250,.3)}.btn.sec{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}.btn.full{width:100%;margin-top:12px;padding:14px}.btn:active{transform:scale(.98)}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.strip div{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 10px;box-shadow:var(--hl);animation:rise .45s both}
+.strip b{display:block;font-size:1.35rem;font-weight:900;letter-spacing:-.02em}.strip span{font-size:.64rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px 16px;margin-top:12px;animation:rise .45s both}
+.card h3{margin:0;font-size:1rem;font-weight:800}.eyebrow{font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de}
+.note{font-size:.8rem;color:var(--muted);line-height:1.5;margin:8px 0 0}.p{font-size:.9rem;color:var(--text2);line-height:1.55;margin:6px 0 0}
+.ring{width:72px;height:72px;flex:none;position:relative}.ring svg{width:72px;height:72px;transform:rotate(-90deg)}.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:.78rem;font-weight:900}
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--border)}.row:first-child{border-top:0}
+.av{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-weight:900;color:#fff}
+.row .rl{flex:1;min-width:0}.row .rl b{display:block;font-size:.92rem}.row .rl small{font-size:.74rem;color:var(--muted)}.row .rr{text-align:right;font-weight:800}
+.tag{font-size:.64rem;font-weight:800;border-radius:99px;padding:3px 8px;text-transform:uppercase;letter-spacing:.04em}.tag.ok{color:var(--up-soft);background:var(--ok-bg)}.tag.wait{color:var(--warn);background:rgba(232,197,90,.12)}
+.steps{display:grid;gap:10px;margin-top:12px}.steps div{display:flex;gap:12px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px}.steps i{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-style:normal;font-weight:900;background:rgba(167,139,250,.16);color:var(--violet-soft)}.steps b{display:block;font-size:.9rem}.steps small{font-size:.78rem;color:var(--muted2);line-height:1.45}
+.empty{text-align:center;padding:22px 12px;color:var(--muted2);font-size:.9rem;line-height:1.55}
+label{display:block;font-size:.66rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}
+input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:13px;color:var(--text);padding:12px 13px;font-size:1rem;font-family:inherit}input:focus{outline:none;border-color:var(--accent)}
+.pos{color:var(--up-soft)}
+details.dt{margin-top:12px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface);padding:0 16px;box-shadow:var(--hl)}
+details.dt summary{list-style:none;display:flex;align-items:center;gap:10px;padding:16px 0;cursor:pointer;font-weight:800;font-size:.95rem}details.dt summary::-webkit-details-marker{display:none}
+details.dt summary i{margin-left:auto;width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}details.dt[open] summary i{transform:rotate(-135deg)}details.dt[open] summary{border-bottom:1px solid var(--border)}details.dt>*:last-child{margin-bottom:16px}
+.toast{position:fixed;left:16px;right:16px;bottom:18px;background:var(--surface3);border:1px solid var(--border2);border-radius:16px;padding:12px 14px;font-size:.9rem;z-index:50;display:none;box-shadow:var(--sh)}
+.sk{color:var(--muted);font-size:.9rem;padding:20px 0;text-align:center}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header><div class="hrow">
+ <a href="./#set" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+ <div class="ttl"><h1 id="h1">Parrainage</h1><div id="h1s">Votre campagne, vos amis, vos gains</div></div>
+ <button class="ib" data-act="how" aria-label="Comment ça marche"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5M12 17h.01"/></svg></button>
+</div></header>
+<div id="main"><div class="sk">Chargement&hellip;</div></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const B=location.pathname.replace(/parrainage\/?$/,'');
+let EN=false;try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
+const T=(fr,en)=>EN?en:fr;
+if(EN){document.getElementById('h1').textContent='Referral';document.getElementById('h1s').textContent='Your campaign, your friends, your earnings';}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fd=t=>{if(!t)return '';const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
+const usd=v=>'$'+(+v||0).toFixed(2);
+const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h;};
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3200);}
+async function api(path,body){const r=await fetch(B+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});return r.json();}
+let D=null;
+async function load(){try{D=await api('referral_data');}catch(e){$('main').innerHTML='<div class="empty">'+T('La page ne répond pas pour l’instant.','The page is not answering right now.')+'</div>';return;}render();}
+function ring(pct){const c=2*Math.PI*31;return '<div class="ring"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="31" fill="none" stroke="var(--border2)" stroke-width="7"/><circle cx="36" cy="36" r="31" fill="none" stroke="var(--violet)" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+(c*(1-pct/100)).toFixed(1)+'"/></svg><b>'+pct+' %</b></div>';}
+function render(){const d=D;
+ if(d.public){$('main').innerHTML='<div class="hero"><div class="eyebrow">'+T('Parrainage','Referral')+'</div><h2>'+T('50 % du premier mois de chaque ami, pour vous.','50 % of each friend’s first month, for you.')+'</h2><p>'+T('Ouvrez un compte, même sans formule : vous recevez un code. Chaque ami qui s’inscrit avec a 7 jours offerts, et son premier mois payé vous rapporte la moitié, en argent.','Open an account, even without a plan: you get a code. Each friend who signs up with it gets 7 free days, and their first paid month earns you half, in money.')+'</p><a class="btn glow full" href="/offres">'+T('Ouvrir un compte','Open an account')+'</a></div>'+how();return;}
+ const pct=Math.min(100,Math.round(100*(d.cash||0)/(d.payout_min||100)));
+ let h='<div class="hero"><div class="eyebrow">'+T('Votre code','Your code')+'</div><h2>'+T('50 % du premier mois de chaque ami.','50 % of each friend’s first month.')+'</h2><p>'+T('Votre ami a 7 jours offerts. Son premier mois payé vous rapporte la moitié, en argent, versée en USDT à partir de $'+Math.round(d.payout_min)+'.','Your friend gets 7 free days. Their first paid month earns you half, in money, paid in USDT from $'+Math.round(d.payout_min)+'.')+'</p>'
+  +'<div class="code"><span><small>'+T('Code','Code')+'</small><b>'+esc(d.code)+'</b></span><button class="btn sec" style="flex:none" data-act="copy">'+T('Copier','Copy')+'</button></div>'
+  +'<div class="acts"><button class="btn glow" data-act="share">'+T('Partager mon lien','Share my link')+'</button><button class="btn sec" data-act="msg">'+T('Message prêt','Ready message')+'</button></div></div>';
+ h+='<div class="strip"><div><b>'+d.signed+'</b><span>'+T('inscrit'+(d.signed>1?'s':''),'signed up')+'</span></div><div><b>'+d.paid+'</b><span>'+T('premier'+(d.paid>1?'s':'')+' mois payé'+(d.paid>1?'s':''),'first month'+(d.paid>1?'s':'')+' paid')+'</span></div><div><b class="pos">'+usd(d.earned)+'</b><span>'+T('gagnés','earned')+'</span></div></div>';
+ h+='<div class="card"><div style="display:flex;gap:14px;align-items:center">'+ring(pct)+'<div style="flex:1;min-width:0"><div class="eyebrow">'+T('À recevoir','To receive')+'</div><b style="font-size:1.5rem;font-weight:900;display:block;margin-top:2px">'+usd(d.cash)+'</b><small style="color:var(--muted2);font-size:.78rem">'+(d.due?'<span class="pos">'+T('Seuil atteint : versé au prochain tour mensuel.','Threshold reached: paid at the next monthly round.')+'</span>':T('versé en USDT dès $'+Math.round(d.payout_min),'paid in USDT from $'+Math.round(d.payout_min)))+'</small></div></div>'
+  +'<button class="btn sec full" data-act="addr">'+(d.payout_addr?T('Mon adresse USDT et mes versements','My USDT address and payouts'):T('Donner mon adresse USDT','Give my USDT address'))+'</button></div>';
+ const F=d.friends||[];
+ h+='<div class="card" style="padding:4px 16px"><div class="row" style="border-top:0;padding-top:14px"><span class="rl"><b>'+T('Mes amis','My friends')+'</b><small>'+T('ceux qui ont utilisé votre code','those who used your code')+'</small></span></div>'
+  +(F.length?F.map((f,i)=>'<div class="row"><span class="av" style="background:linear-gradient(135deg,hsl('+hue(f.label+i)+' 60% 50%),hsl('+((hue(f.label+i)+50)%360)+' 60% 40%))">'+esc(f.label)+'</span><span class="rl"><b>'+T('Ami inscrit le ','Friend signed up ')+fd(f.since)+'</b><small>'+(f.paid?T('premier mois payé le ','first month paid ')+fd(f.paid_t):T('pas encore de mois payé','no paid month yet'))+'</small></span><span class="rr">'+(f.paid?'<span class="pos">+'+usd(f.usd)+'</span>':'<span class="tag wait">'+T('en attente','waiting')+'</span>')+'</span></div>').join('')
+  :'<div class="empty">'+T('Personne encore. Partagez votre lien : le premier ami qui paie son mois vous rapporte la moitié.','Nobody yet. Share your link: the first friend who pays their month earns you half.')+'</div>')+'</div>';
+ h+=how();
+ $('main').innerHTML=h;}
+function how(){return '<details class="dt"><summary><span>'+T('Comment ça marche','How it works')+'</span><i></i></summary><div class="steps"><div><i>1</i><span><b>'+T('Partagez votre lien ou votre code','Share your link or code')+'</b><small>'+T('Par message, par Telegram, de vive voix. Votre ami ouvre un compte avec.','By message, on Telegram, in person. Your friend opens an account with it.')+'</small></span></div>'
+ +'<div><i>2</i><span><b>'+T('Il a 7 jours offerts','They get 7 free days')+'</b><small>'+T('Sur la formule qu’il choisit. Il regarde, il décide.','On the plan they pick. They watch, they decide.')+'</small></span></div>'
+ +'<div><i>3</i><span><b>'+T('Son premier mois payé : la moitié pour vous','Their first paid month: half for you')+'</b><small>'+T('En argent réel, quelle que soit la formule. Les mois suivants sont pour le nid.','Real money, whatever the plan. Later months go to the nest.')+'</small></span></div>'
+ +'<div><i>4</i><span><b>'+T('Versé en USDT dès $100','Paid in USDT from $100')+'</b><small>'+T('Donnez votre adresse ici. Vous êtes prévenu à chaque gain et à chaque versement.','Give your address here. You are told at each gain and each payout.')+'</small></span></div></div></details>';}
+function msgText(){const d=D;return T('OwlNest : un robot qui trade le Bitcoin, et tout ce qu’il fait en direct. Mon code : '+d.code+' (7 jours offerts). '+d.link,'OwlNest: a robot that trades Bitcoin, and everything it does live. My code: '+d.code+' (7 free days). '+d.link);}
+document.addEventListener('click',async e=>{const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act;
+ if(a==='copy'){try{await navigator.clipboard.writeText(D.code);toast(T('Code copié.','Code copied.'));}catch(x){prompt(T('Votre code :','Your code:'),D.code);}}
+ else if(a==='share'){const t=msgText();if(navigator.share){navigator.share({title:'OwlNest',text:t,url:D.link}).catch(()=>{});}else{try{await navigator.clipboard.writeText(t);toast(T('Lien copié.','Link copied.'));}catch(x){prompt(T('Votre lien :','Your link:'),D.link);}}}
+ else if(a==='msg'){const t=msgText();try{await navigator.clipboard.writeText(t);toast(T('Message copié, collez-le où vous voulez.','Message copied, paste it anywhere.'));}catch(x){prompt(T('Votre message :','Your message:'),t);}}
+ else if(a==='how'){const dt=document.querySelector('details.dt');if(dt){dt.open=true;dt.scrollIntoView({behavior:'smooth'});}}
+ else if(a==='addr'){const v=prompt(T('Votre adresse USDT (TRC20 ou ERC20) :','Your USDT address (TRC20 or ERC20):'),D.payout_addr||'');if(v===null)return;const r=await api('wallet_addr',{addr:v});toast(r.ok?T('Adresse enregistrée.','Address saved.'):T('Pas possible.','Not possible.'));if(r.ok)load();}});
+load();
+</script></body></html>

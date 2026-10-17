@@ -17,7 +17,8 @@ import json, os, time, hashlib, threading
 DIR = os.path.dirname(os.path.abspath(__file__))
 WALLET = os.path.join(DIR, "owl_wallet.json")
 USERS = os.path.join(DIR, "owl_nest_users.json")
-REF_PCT = 0.20            # of each confirmed payment by a referred member
+REF_PCT = 0.50            # 2026-10-17: of a referred member's FIRST confirmed payment, in real money (was 20 % in days)
+REF_PAYOUT_MIN = 100.0    # referral money is paid out (USDT, by the owner) from this balance
 CREATOR_PCT = 0.70        # legacy: of a robot month paid on its own (no longer sold since 2026-10-17)
 CREATOR_SHARE = 0.30      # 2026-10-17 (owner "Go"): PAY ONCE - the creator of the robot a member RUNS gets this share
                           # of that member's plan payment; the Owl and the owner's robots keep 100 % for the nest
@@ -111,26 +112,49 @@ def _debit(uid, usd, kind, note):
 
 
 def on_member_payment(uid, pkg, usd, label=""):
-    """a referred member's CONFIRMED payment -> the referrer's cagnotte (REF_PCT), at most MAX_REF_PER_MONTH friends
-    a month. Returns (referrer_uid, credited_usd) or (None, 0)."""
+    """2026-10-17 (owner changed his mind): a referred member's FIRST confirmed payment -> REF_PCT (50 %) of it to the
+    referrer, in REAL MONEY (the cash ledger, kind "referral"), paid out from REF_PAYOUT_MIN. Later months of the
+    same friend credit nothing; at most MAX_REF_PER_MONTH new friends a month. Returns (referrer_uid, credited_usd)."""
     ref = referrer_of(uid)
     if not ref or ref == uid or usd <= 0:
         return None, 0.0
     month = time.strftime("%Y-%m", time.gmtime())
     W = _load(WALLET, {}) or {}
-    hist = (W.get(ref) or {}).get("history") or []
+    hist = (W.get(ref) or {}).get("cash_history") or []
+    if any(h.get("kind") == "referral" and h.get("friend") == uid for h in hist):
+        return ref, 0.0                                   # only the first month ever
     friends_this_month = {h.get("friend") for h in hist if h.get("kind") == "referral" and time.strftime("%Y-%m", time.gmtime(int(h.get("t") or 0))) == month}
-    if uid not in friends_this_month and len(friends_this_month) >= MAX_REF_PER_MONTH:
+    if len(friends_this_month) >= MAX_REF_PER_MONTH:
         return ref, 0.0
     credit = round(usd * REF_PCT, 2)
     with _LOCK:
         W = _load(WALLET, {}) or {}
         w = W.setdefault(ref, {"usd": 0.0, "earned": 0.0, "history": []})
-        w["usd"] = round(float(w.get("usd") or 0) + credit, 2); w["earned"] = round(float(w.get("earned") or 0) + credit, 2)
-        w.setdefault("history", []).append({"t": int(time.time()), "usd": credit, "kind": "referral", "friend": uid, "note": label or pkg})
-        w["history"] = w["history"][-200:]
+        w["cash"] = round(float(w.get("cash") or 0) + credit, 2)
+        w["cash_earned"] = round(float(w.get("cash_earned") or 0) + credit, 2)
+        w["cash_ref"] = round(float(w.get("cash_ref") or 0) + credit, 2)
+        w.setdefault("cash_history", []).append({"t": int(time.time()), "usd": credit, "kind": "referral", "friend": uid, "note": label or pkg, "paid_usd": round(float(usd), 2)})
+        w["cash_history"] = w["cash_history"][-300:]
         _save(WALLET, W)
     return ref, credit
+
+
+def referral_stats(uid):
+    """the referrer's campaign: every friend who signed up with the code, whether their first month is paid, what it
+    earned, plus the totals - the numbers behind the Parrainage page"""
+    W = _load(WALLET, {}) or {}
+    w = W.get(uid) or {}
+    hist = [h for h in (w.get("cash_history") or []) if h.get("kind") == "referral"]
+    by_friend = {h.get("friend"): h for h in hist}
+    friends = []
+    for f in friends_of(uid):
+        h = by_friend.get(f["id"])
+        friends.append({"since": f.get("since"), "plan": f.get("plan"), "paid": bool(h), "usd": float((h or {}).get("usd") or 0), "paid_t": (h or {}).get("t"),
+                        "label": "Ami" if not f.get("name") else str(f.get("name"))[:1].upper() + "."})
+    friends.sort(key=lambda x: -(x.get("since") or 0))
+    earned = round(sum(h.get("usd") or 0 for h in hist), 2)
+    return {"friends": friends, "signed": len(friends), "paid": sum(1 for x in friends if x["paid"]), "earned": earned,
+            "cash_ref": round(float(w.get("cash_ref") or 0), 2), "pct": int(REF_PCT * 100), "payout_min": REF_PAYOUT_MIN}
 
 
 PAYOUT_MIN = 50.0         # a creator is paid (USDT, by the owner) once their earnings reach this
@@ -213,7 +237,17 @@ def earnings(uid):
     w = (_load(WALLET, {}) or {}).get(uid) or {}
     cash = round(float(w.get("cash") or 0), 2)
     return {"cash": cash, "cash_earned": round(float(w.get("cash_earned") or 0), 2), "payout_addr": w.get("payout_addr") or "",
-            "payout_min": PAYOUT_MIN, "due": cash >= PAYOUT_MIN, "payouts": (w.get("payouts") or [])[-12:], "history": (w.get("cash_history") or [])[-30:]}
+            "payout_min": PAYOUT_MIN, "due": _due(w), "payouts": (w.get("payouts") or [])[-12:], "history": (w.get("cash_history") or [])[-30:]}
+
+
+def _due(w):
+    """one cash balance, two doors: creator money from PAYOUT_MIN, referral money from REF_PAYOUT_MIN. The balance is
+    due when it reaches the threshold of what it is mostly made of (all-referral -> 100, any creator share -> 50
+    once the creator part alone reaches 50)."""
+    cash = float(w.get("cash") or 0)
+    ref = min(cash, float(w.get("cash_ref") or 0))
+    creator = cash - ref
+    return cash >= REF_PAYOUT_MIN or creator >= PAYOUT_MIN
 
 
 def set_payout_addr(uid, addr):
@@ -231,8 +265,8 @@ def payouts_due():
     out = []
     for uid, w in (_load(WALLET, {}) or {}).items():
         cash = round(float(w.get("cash") or 0), 2)
-        if cash >= PAYOUT_MIN:
-            out.append({"uid": uid, "cash": cash, "addr": w.get("payout_addr") or ""})
+        if _due(w):
+            out.append({"uid": uid, "cash": cash, "addr": w.get("payout_addr") or "", "ref": round(min(cash, float(w.get("cash_ref") or 0)), 2)})
     return sorted(out, key=lambda x: -x["cash"])
 
 
@@ -244,6 +278,7 @@ def mark_paid(uid, usd, ref):
         if not w or float(w.get("cash") or 0) + 1e-9 < usd or usd <= 0:
             return False
         w["cash"] = round(float(w.get("cash") or 0) - usd, 2)
+        w["cash_ref"] = round(max(0.0, float(w.get("cash_ref") or 0) - usd), 2)       # a payout empties the referral part first
         w.setdefault("payouts", []).append({"t": int(time.time()), "usd": round(usd, 2), "ref": str(ref or "")[:80], "addr": w.get("payout_addr") or ""})
         _save(WALLET, W)
         return True

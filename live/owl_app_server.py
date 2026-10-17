@@ -7651,7 +7651,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    panels:()=>[],rows:()=>['intmkrow','pbintrow','tl2row','swingrow','wakerow','themerow','langrow','textrow'].map($)},
   {k:'plan',ic:'key',col:'167,139,250',t:()=>T('Abonnement','Subscription'),s:()=>{const t=($('plan-t')||{}).textContent||'';return t.trim()||T('Votre offre et vos paiements','Your plan and payments');},
    panels:()=>[$('plan-card')],rows:()=>[]},
-  {k:'ref',ic:'money',col:'167,139,250',t:()=>T('Parrainage','Referral'),s:()=>T('Votre code, vos amis, votre cagnotte en jours','Your code, your friends, your cagnotte in days'),panels:()=>[$('refcard')],rows:()=>[]},
+  {k:'ref',ic:'money',col:'167,139,250',href:B+'parrainage',t:()=>T('Parrainage','Referral'),s:()=>T('50 % du premier mois de chaque ami, pour vous','50 % of each friend’s first month, for you'),panels:()=>[],rows:()=>[]},
   {k:'help',ic:'help',col:'143,198,255',t:()=>T('Aide, sécurité et compte','Help, security and account'),s:()=>T('Installer, code d’accès, contact, Telegram, déconnexion','Install, access code, contact, Telegram, log out'),
    panels:()=>[comptePanel()],rows:()=>[byClick('inst('),byClick('appExit('),$('apkrow'),$('pinbtn'),$('contactrow'),$('healthrow'),$('infobtn'),$('tourbtn')],extra:()=>[$('howto')]},
   {k:'own',ic:'crown',col:'232,197,90',own:true,t:()=>(vis($('adm-card'))?T('Propriétaire','Owner'):T('Accès propriétaire','Owner access')),s:()=>(vis($('adm-card'))?T('Le Nid, objectif, paiements, codes, suivi','Le Nid, goal, payments, codes, tracking'):T('Réservé au propriétaire du robot','For the robot’s owner only')),
@@ -9088,6 +9088,17 @@ async function refCard(d){const el=document.getElementById('refcard');if(!el||d.
 function refShare(){const R=(_REF||{}).ref||{};const txt='OwlNest : un robot qui trade le Bitcoin, et tout ce qu’il fait en direct. Mon code : '+R.code+' (7 jours offerts). '+R.link;if(navigator.share){navigator.share({title:'OwlNest',text:txt,url:R.link}).catch(()=>{});}else refCopy();}
 function refCopy(){const R=(_REF||{}).ref||{};try{navigator.clipboard.writeText(R.link+'  code '+R.code);toast('Lien et code copiés.');}catch(e){prompt('Votre lien :',R.link);}}
 async function refUse(days){const n=parseInt(prompt('Combien de jours ajouter ? (jusqu’à '+days+')',days)||'0',10);if(!n)return;const r=await fetch(B+'wallet_use',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:n})});const j=await r.json();toast(j.ok?('+'+j.days+' jour'+(j.days>1?'s':'')+' · jusqu’au '+j.until):(j.err||'Pas possible.'));if(j.ok&&window._d)refCard(window._d);}
+// 2026-10-17 (owner): a quiet nudge for the referral campaign - only when the account is above its start, at most
+// once every 14 days, dismissible, never a popup. The public demo gets the "open an account" version.
+function refNudge(d){try{const S=d.since_start||{},net=+S.net||0,up=net>0||(+d.today||0)>0;const anchor=document.getElementById('renewcard');if(!anchor)return;
+ let el=document.getElementById('refnudge');const key='owlRefNudge:'+B;let last=0;try{last=parseInt(localStorage.getItem(key)||'0',10)||0;}catch(e){}
+ const show=up&&(Date.now()-last>14*86400000);if(!show){if(el)el.style.display='none';return;}
+ const en=LANG()==='en';const txt=d.public?(en?'The robot is in the green. Open an account, invite a friend: 50 % of their first month is yours.':'Le robot est dans le vert. Ouvrez un compte, invitez un ami : 50 % de son premier mois est pour vous.')
+  :(en?'Your account is in the green. Share it: 50 % of each friend’s first month is yours, in money.':'Votre compte est dans le vert. Partagez-le : 50 % du premier mois de chaque ami est pour vous, en argent.');
+ if(!el){el=document.createElement('div');el.id='refnudge';el.className='panel';el.style.cssText='margin-top:26px;border-color:rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(167,139,250,.12),var(--surface))';anchor.parentNode.insertBefore(el,anchor);}
+ el.innerHTML='<div style="display:flex;gap:12px;align-items:flex-start"><div style="flex:none;width:40px;height:40px;border-radius:12px;background:rgba(167,139,250,.16);color:var(--violet-soft,#c4b5fd);display:grid;place-items:center;font-size:1.2rem">🎁</div><div style="flex:1;min-width:0"><b style="display:block;font-size:.95rem">'+(en?'Referral':'Parrainage')+'</b><div style="color:var(--text2);font-size:.86rem;line-height:1.5;margin-top:2px">'+txt+'</div>'
+  +'<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><a class="shbtn shmain" style="margin:0;text-decoration:none;display:inline-block;padding:9px 14px;font-size:.86rem" href="'+(d.public?'/offres':B+'parrainage')+'">'+(d.public?(en?'Open an account':'Ouvrir un compte'):(en?'My campaign':'Ma campagne'))+'</a><button class="shbtn shghost" style="margin:0;padding:9px 12px;font-size:.86rem" onclick="refNudgeLater()">'+(en?'Later':'Plus tard')+'</button></div></div></div>';el.style.display='block';}catch(e){}}
+function refNudgeLater(){try{localStorage.setItem('owlRefNudge:'+B,String(Date.now()));}catch(e){}var el=document.getElementById('refnudge');if(el)el.style.display='none';}
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
  const en=LANG()==='en',now=Date.now()/1000;let best=null;
@@ -9292,7 +9303,7 @@ function offersSheet(){fnb('offers');
    [T2('Chaque d\u00e9cision du robot en direct : ce qu\u2019il voit, pourquoi il entre, pourquoi il attend','Every robot decision live: what it sees, why it enters, why it waits')+ic(T2('Le tableau de bord du robot : son solde, ses trades, le march\u00e9 et ses v\u00e9rifications, mis \u00e0 jour toutes les 5 secondes. Les niveaux d\u2019entr\u00e9e restent ceux du robot : l\u2019alerte vous les donne au moment o\u00f9 il entre.','The robot\u2019s dashboard: its balance, its trades, the market and its checks, refreshed every 5 seconds. Entry levels stay the robot\u2019s: the alert gives them to you as it enters.')),
     T2('Une alerte sur votre t\u00e9l\u00e9phone \u00e0 chaque entr\u00e9e \u2014 vous suivez si vous voulez, \u00e0 vos prix','An alert on your phone at each entry \u2014 follow if you want, at your prices')+ic(T2('Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique.','The robot enters to the second; you, a few seconds later, at another price. The alert is a signal to understand, not an identical copy.')),
     T2('Aucun compte de courtier \u00e0 donner','No broker account to hand over')+ic(T2('Vous choisissez un identifiant et un mot de passe, c\u2019est tout. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte.','You pick an identifiant and a password, nothing else. We never touch your money or your account.')),
-    T2('Les robots du nid et la place, en lecture ; le parrainage : 7 jours offerts \u00e0 chaque ami, des jours pour vous','The nest\u2019s robots and the place, to read; referral: 7 free days for each friend, days for you')+ic(T2('Votre code est dans Compte \u203a Parrainage. Chaque mois pay\u00e9 par un ami vous donne 20 % en jours d\u2019abonnement.','Your code is in Account \u203a Referral. Each month a friend pays gives you 20 % in subscription days.')),
+    T2('Le parrainage : 50 % du premier mois de chaque ami, pour vous, en argent','Referral: 50 % of each friend\u2019s first month, for you, in money')+ic(T2('Votre code et votre page de campagne sont dans Compte \u203a Parrainage. Votre ami a 7 jours offerts ; son premier mois pay\u00e9 vous rapporte la moiti\u00e9, vers\u00e9e en USDT \u00e0 partir de 100 $.','Your code and your campaign page are in Account \u203a Referral. Your friend gets 7 free days; their first paid month earns you half, paid in USDT from $100.')),
     T2('Pour que le robot le fasse pour vous : Automatique','For the robot to do it for you: Automatic')],
    'var(--up-soft)')+
   tier('strategy',T2('Strat\u00e9gie','Strategy'),'$'+(pk.strategy||{}).usd+'<span>'+T2('/ 30 jours','/ 30 days')+'</span>',
@@ -10261,7 +10272,7 @@ function render(d){
    try{localStorage.setItem('owlPlan:'+B,cur);}catch(e){}})();
   try{tfPaint(d);}catch(e){}
   try{loadRent();}catch(e){}
-  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);usageRow(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
+  drawSpark();drawGoal(d);renderSince(d);checkBadges(d);renderMvM(d);renderTimeline(d);renderEmpty(d);dayDone(d);whyIdle(d);acctRules(d);showRecap(d);try{refNudge(d);}catch(e){}tfPayoff(d);renderPlan(d);observerView(d);loadProof(d);pollSignal();renewBanner(d);noPushBanner(d);tgAskOnce(d);usageRow(d);newsCard(d);missedCard(d);renderRevenue(d);loadSignals();loadCompare(d);renderNext(d);loadWhy(d);loadJournal(d);loadMarketHours(d);loadPatterns(d);(function(){const sg=document.getElementById('mxs-lab');if(sg)sg.style.display=labVisible()?'':'none';if(document.getElementById('mx-lab')&&document.getElementById('mx-lab').style.display!=='none')loadLab(d);})();
   if(d.is_master&&d.nest){
    // Owner 2026-09-18: remember the ADMIN's own base path in this
    // browser. Switching into another account makes every page speak with
@@ -14337,7 +14348,7 @@ def _ref_family_credit(uid, days, free=False, pkg="family"):
         _lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat\u00e9gie"}.get(pkg, pkg)
         _rf, _rc = _OW.on_member_payment(uid, pkg, _usd, _lab)
         if _rf and _rc:
-            queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {_lab} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
+            queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler son premier mois {_lab} : ${_rc:.2f} pour vous, en argent r\u00e9el. Voir Compte \u203a Parrainage.")
     except Exception:
         pass
 
@@ -14442,6 +14453,25 @@ def place_payload(user, admin=False):
             "ref": {"code": _OW.code_of(uid), "link": f"https://owltrader.duckdns.org/offres?p={_OW.code_of(uid)}", "friends": friends, "credited": credited,
                     "alias": next((m.get("alias") for m in mine if m.get("alias")), "")},
             "packages": {k: {"usd": v["usd"]} for k, v in PACKAGES.items()}, "family_usd": fam}
+
+
+def referral_payload(user):
+    """the Parrainage page: the member's code and link, the campaign (friends, first months paid, money), the
+    payout side (address, due, history). The public demo gets the rules and a door to open an account."""
+    import owl_wallet as _OW
+    uid = user.get("id")
+    if user.get("public") or not uid:
+        return {"public": True, "pct": int(_OW.REF_PCT * 100), "payout_min": _OW.REF_PAYOUT_MIN, "welcome_days": 7}
+    st = _OW.referral_stats(uid)
+    E = _OW.earnings(uid)
+    code = _OW.code_of(uid)
+    return {"public": False, "name": user.get("name") or uid, "code": code, "link": f"https://owltrader.duckdns.org/offres?p={code}",
+            "pct": st["pct"], "payout_min": st["payout_min"], "welcome_days": 7,
+            "signed": st["signed"], "paid": st["paid"], "earned": st["earned"], "friends": st["friends"][:60],
+            "cash": E["cash"], "cash_ref": st["cash_ref"], "due": E["due"], "payout_addr": E["payout_addr"], "payouts": E["payouts"],
+            "history": [h for h in E["history"] if h.get("kind") == "referral"][-30:],
+            "plan": {"family": "Automatique", "manual": "Signal", "strategy": "Stratégie"}.get(_member_pkg(uid), ""),
+            "active": bool(has(uid, "family") or has(uid, "manual") or has(uid, "strategy"))}
 
 
 def place_action(user, action, body, admin=False, origin="https://owltrader.duckdns.org"):
@@ -17377,7 +17407,7 @@ var EN={
 "Famille": "Family",
 "sur invitation": "by invitation",
 "Sur invitation · écrire au Owl": "By invitation · write to the Owl",
-"Les robots du nid et la place, en lecture ; le parrainage : 7 jours offerts à chaque ami, des jours pour vous": "The nest's robots and the place, to read; referral: 7 free days for each friend, days for you",
+"Le parrainage : 50 % du premier mois de chaque ami, pour vous, en argent": "Referral: 50 % of each friend’s first month, for you, in money",
 "La place des robots : publiez-le, chaque membre qui tourne avec votre robot vous rapporte de l’argent": "The robot place: publish it, every member running your robot earns you money",
 "Le graphique complet, la méthode en mots simples et les coulisses du nid ; Signal inclus": "The full chart, the method in plain words and the nest's backstage; Signal included",
 "Pour le faire tourner sur votre propre compte : Automatique, sur invitation": "To run it on your own account: Automatic, by invitation",
@@ -17568,8 +17598,8 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None, invite=Non
               + info("Le robot entre \u00e0 la seconde ; vous, quelques secondes apr\u00e8s, \u00e0 un autre prix. L\u2019alerte est un signal \u00e0 comprendre, pas une copie \u00e0 l\u2019identique."),
               "Aucun compte de courtier &agrave; donner "
               + info("Vous choisissez simplement un identifiant et un mot de passe. Nous ne touchons jamais \u00e0 votre argent ni \u00e0 votre compte. Vous pouvez nommer votre courtier pour voir les niveaux \u00e0 ses prix."),
-              "Les robots du nid et la place, en lecture ; le parrainage : 7 jours offerts &agrave; chaque ami, des jours pour vous "
-              + info("Votre code de parrainage est dans Compte › Parrainage. Chaque mois payé par un ami vous donne 20 % en jours d’abonnement."),
+              "Le parrainage : 50 % du premier mois de chaque ami, pour vous, en argent "
+              + info("Votre code et votre page de campagne sont dans Compte › Parrainage. Votre ami a 7 jours offerts ; son premier mois payé vous rapporte la moitié, versée en USDT à partir de 100 $."),
               "Pour que le robot le fasse pour vous : Automatique"],
              "var(--up)")
         + tier("strategy", "Strat&eacute;gie", "$%d<span>/ 30 jours</span>" % PACKAGES["strategy"]["usd"],
@@ -19102,7 +19132,7 @@ class H(BaseHTTPRequestHandler):
                                     import owl_wallet as _OW
                                     _rf, _rc = _OW.on_member_payment(_uid, _pkg, paid, PACKAGES[_pkg]["label"])
                                     if _rf and _rc:
-                                        queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {PACKAGES[_pkg]['label']} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
+                                        queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler son premier mois {PACKAGES[_pkg]['label']} : ${_rc:.2f} pour vous, en argent r\u00e9el. Voir Compte \u203a Parrainage.")
                                 except Exception:
                                     pass
                                 # 2026-10-03 (owner): an account opened from the public
@@ -20704,6 +20734,11 @@ class H(BaseHTTPRequestHandler):
             self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "place_data":
             self._send(json.dumps(place_payload(user, admin_cookie_ok(self.headers)), ensure_ascii=False), "application/json")
+        elif sub == "parrainage":
+            # 2026-10-17 (owner): the referral campaign page - code, share, friends, money, payouts; served from disk
+            self._send(open(os.path.join(DIR, "owl_referral_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub == "referral_data":
+            self._send(json.dumps(referral_payload(user), ensure_ascii=False), "application/json")
         elif sub == "day":
             self._send(json.dumps(day_payload(_data_user(user))), "application/json")
         elif sub == "trade":

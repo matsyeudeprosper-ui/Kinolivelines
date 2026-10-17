@@ -115,3 +115,14 @@ Money paths checked, each with a test in review/test_market_wallet.py (49 checks
   NOWPayments.
 Why it is the right model here: paid in time, so it is never a cash liability; proportional to real revenue; capped;
 and it rewards the referrer every month the friend stays, which is what the owner asked for.
+
+## 2026-10-17 evening — Referral becomes REAL MONEY: 50 % of the friend's FIRST paid month (owner changed his mind)
+"To really motivate people, even those who don't take signals": the referrer gets 50 % of the referred member's first
+confirmed payment (any package; a code month at package price; an offered code = 0), in the cash ledger (kind
+"referral"), paid out in USDT by the owner from $100 (creator money keeps its $50 door; one balance, owl_wallet._due).
+Later months of the same friend credit nothing. 10 new friends a month max. The friend keeps the 7 welcome days.
+The nest keeps 50 % of that first month and 100 % of every later month: no path pays more than received.
+A campaign page /<tok>/parrainage (owl_referral_page.html, referral_data) shows code, share, friends, earned, the
+$100 progress and payouts; any account can refer, paid or not (an unpaid sign-up has a code; the public demo is
+told to open an account). A quiet nudge on the home appears when the account is above its start balance, at most
+once every 14 days, dismissible. The old days-cagnotte stays readable for anyone who had one (none today).
