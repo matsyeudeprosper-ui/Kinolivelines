@@ -95,3 +95,23 @@ ONLY on that money: crypto = the amount paid; code = the package price (the owne
 the owner's conscious gift); wallet days, welcome days, owner grants, the grandfathered period = 0 -> no share.
 Worst case per member and month = 30 % of what that member paid, and only for the time they ran a member's robot.
 The Owl and the owner's robots accrue nothing, so today the exposure is exactly $0.
+
+## 2026-10-17 — Referral audit (owner: "best model, not losing money in whatever case, solid")
+
+Money paths checked, each with a test in review/test_market_wallet.py (49 checks, all pass):
+* A referred member's confirmed payment credits the referrer 20 % as DAYS (never cash). Crypto = the amount paid;
+  code = the package price; an OFFERED code = 0 (fixed today: before, a free Automatique code still credited $12
+  of days). Wallet days, welcome days and owner grants credit nothing.
+* Self-referral is refused; a public account has no code; at most 10 friends credited per referrer per month.
+* The cagnotte converts at the member's own package price, cannot go negative, never pays cash, never touches
+  the creator ledger.
+* The 7 welcome days cost service time only, once per referred member.
+* Worst case per referred payment: 20 % in days + 30 % creator share (only while running a member robot) =
+  the nest keeps >= 50 % cash-equivalent, >= 70 % in cash. There is no path that credits anything on money the
+  nest did not receive. A member who refers their own second account gets a 20 % discount in days - the cap
+  (10 friends/month) and the fact that the nest still receives 80 % make it harmless.
+* Signal / Strategie codes now credit the referrer like a crypto payment would (they did not before; no loss,
+  just inconsistency). IPN replays are rejected by payment_id; signatures are verified or cross-checked with
+  NOWPayments.
+Why it is the right model here: paid in time, so it is never a cash liability; proportional to real revenue; capped;
+and it rewards the referrer every month the friend stays, which is what the owner asked for.

@@ -14295,14 +14295,23 @@ def _robot_pending_watch():
 
 
 # ---- 2026-10-17 (owner): parrainage + La place des robots ----
-def _ref_family_credit(uid, days):
-    """an Automatique month settled with the owner (a code) -> the referrer's cagnotte (owl_wallet.REF_PCT)"""
+def _ref_family_credit(uid, days, free=False, pkg="family"):
+    """a month settled with the owner (a code) -> the referrer's cagnotte (owl_wallet.REF_PCT of the package price).
+    2026-10-17 (owner audit): an OFFERED code carries no money -> no credit (the nest never gives days on money it
+    did not receive); Signal / Strategie codes credit at their package price like a crypto payment would."""
+    if free:
+        return
     try:
         import owl_wallet as _OW
-        _fam = float(nest_config().get("family_usd") or 60)
-        _rf, _rc = _OW.on_member_payment(uid, "family", _fam * float(days) / 30.0, "Automatique")
+        if pkg == "family":
+            _usd = float(nest_config().get("family_usd") or 60) * float(days) / 30.0
+        else:
+            _p = PACKAGES.get(pkg) or {}
+            _usd = float(_p.get("usd") or 0) * float(days) / float(_p.get("days") or 30)
+        _lab = {"family": "Automatique", "manual": "Signal", "strategy": "Strat\u00e9gie"}.get(pkg, pkg)
+        _rf, _rc = _OW.on_member_payment(uid, pkg, _usd, _lab)
         if _rf and _rc:
-            queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler Automatique : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
+            queue_push(_rf, "\U0001f381 Parrainage", f"Votre ami vient de r\u00e9gler {_lab} : ${_rc:.2f} dans votre cagnotte, \u00e0 d\u00e9penser en jours d\u2019abonnement.")
     except Exception:
         pass
 
@@ -18159,8 +18168,7 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
         # a renewal from the public page: same as the in-app "J'ai un code"
         redeem_activation_code(code, known["id"])
         ent_grant(known["id"], pkg, days, "code", usd=(0.0 if ce.get("free") else None))
-        if pkg == "family":
-            _ref_family_credit(known["id"], days)
+        _ref_family_credit(known["id"], days, free=bool(ce.get("free")), pkg=pkg)
         if pkg == "family":
             _us = json.load(open(USERS_FILE, encoding="utf-8"))
             for x in _us:
@@ -18224,12 +18232,12 @@ def handle_activate(form, origin="https://owltrader.duckdns.org"):
     allu.append(rec)
     _atomic_json(USERS_FILE, allu, ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
+    _cef = bool((peek_activation_code(code) or {}).get("free"))
     redeem_activation_code(code, uid)
-    ent_grant(uid, pkg, days, "code")
+    ent_grant(uid, pkg, days, "code", usd=(0.0 if _cef else None))
     if rec.get("referred_by"):
         ent_grant(uid, pkg, 7, "referral")                 # the friend's 7 welcome days
-    if pkg == "family":
-        _ref_family_credit(uid, days)                      # settled with the owner -> the referrer's cagnotte
+    _ref_family_credit(uid, days, free=_cef, pkg=pkg)      # settled with the owner -> the referrer's cagnotte
     try:
         _qf = os.path.join(DIR, "owl_push_queue.json")
         try:
@@ -18311,10 +18319,12 @@ def _activate_app_only(name, pwd, tg, pkg, days, code, ident="", broker="", refe
     allu.append(rec)
     json.dump(allu, open(USERS_FILE, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     _users_cache["t"] = 0.0
+    _cef = bool((peek_activation_code(code) or {}).get("free"))
     redeem_activation_code(code, rec["id"])
-    ent_grant(rec["id"], pkg, days, "code")
+    ent_grant(rec["id"], pkg, days, "code", usd=(0.0 if _cef else None))
     if rec.get("referred_by"):
         ent_grant(rec["id"], pkg, 7, "referral")          # the friend's 7 welcome days
+    _ref_family_credit(rec["id"], days, free=_cef, pkg=pkg)   # 2026-10-17: a Signal / Strategie code credits the referrer too
     labels = {"manual": "Signal", "strategy": "Strat&eacute;gie"}
     try:
         _qf = os.path.join(DIR, "owl_push_queue.json")
@@ -19894,7 +19904,8 @@ class H(BaseHTTPRequestHandler):
                 _cpkg, _cdays = _ce.get("pkg") or "family", int(_ce.get("days") or 30)
                 if _cpkg != "family":
                     redeem_activation_code(code, u["id"])
-                    ent_grant(u["id"], _cpkg, _cdays, "code")
+                    ent_grant(u["id"], _cpkg, _cdays, "code", usd=(0.0 if _ce.get("free") else None))
+                    _ref_family_credit(u["id"], _cdays, free=bool(_ce.get("free")), pkg=_cpkg)
                     _users_cache["t"] = 0.0
                     self._send(json.dumps({"ok": True, "pkg": _cpkg, "days": _cdays}), "application/json")
                     return
