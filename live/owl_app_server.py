@@ -14383,7 +14383,7 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
             return account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)     # the creator runs their own robot for free
         price = float(L.get("price_usd") or 0)
         cur = _OMKT.sub_of(uid)
-        if price > 0 and not (cur and cur.get("rid") == rid):
+        if price > 0 and (not (cur and cur.get("rid") == rid) or str(body.get("renew") or "") == "1"):
             if True:
                 # owner 2026-10-17: robot months are real money - paid in crypto through our payment system, never
                 # from the referral cagnotte (time only); the IPN starts the month, the member then taps "Suivre"
@@ -14403,8 +14403,6 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
                 if not inv.get("invoice_url"):
                     return {"ok": False, "err": "no invoice"}
                 return {"ok": True, "url": inv["invoice_url"]}
-        elif price > 0 and cur and cur.get("rid") == rid and body.get("pay") in ("wallet", "crypto") and str(body.get("renew") or "") == "1":
-            pass
         _sw = account_robot_set(user, {"id": rid, "pwd": body.get("pwd")}, admin)
         if _sw.get("ok") and price == 0 and not (cur and cur.get("rid") == rid):
             _OMKT.start_sub(uid, rid, 0.0, "free")       # recorded only once the switch is accepted
@@ -20405,10 +20403,8 @@ class H(BaseHTTPRequestHandler):
                 self._send(json.dumps(user_stats(
                     user, admin_cookie_ok(self.headers))), "application/json")
         elif sub == "place":
-            # 2026-10-17 (owner): the place lives inside the Robots page
-            self.send_response(302)
-            self.send_header("Location", f"/{user['token']}/robots")
-            self.end_headers()
+            # 2026-10-17 (owner): La place des robots - its own page, in the Robots page's look, served from disk
+            self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "place_data":
             self._send(json.dumps(place_payload(user, admin_cookie_ok(self.headers)), ensure_ascii=False), "application/json")
         elif sub == "day":

@@ -61,8 +61,8 @@ def result_of(rid):
     if not r:
         return None
     R = r.get("robot") or {}
-    return {"net": R.get("net"), "trades": R.get("trades"), "win_rate": R.get("win_rate"), "mtm_dd": R.get("mtm_dd"), "profit_factor": R.get("profit_factor"),
-            "days": r.get("days"), "tested_at": r.get("generated_at")}
+    return {"net": R.get("net"), "trades": R.get("trades"), "win_rate": R.get("win_rate"), "mtm_dd": R.get("mtm_dd"), "cc_dd": R.get("cc_dd"), "profit_factor": R.get("profit_factor"),
+            "days": r.get("days"), "tested_at": r.get("generated_at"), "curve": (R.get("curve") or [])[-120:]}
 
 
 def markets_of(rid):

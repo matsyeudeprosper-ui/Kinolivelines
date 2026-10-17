@@ -1,0 +1,172 @@
+<!doctype html><html lang="fr" translate="no" class="notranslate"><head>
+<meta charset="utf-8">
+<meta name="google" content="notranslate"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<title>La place des robots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+<style>
+/* 2026-10-17 (owner): "La place des robots" - its own page, in the Robots page's language: the same tokens, the
+   same header, the same robot cards. Robots built by members, tested on real ticks, followed on your own account. */
+:root{--bg:#0b0f14;--surface:#121a25;--surface2:#172130;--surface3:#1d2a3b;
+ --border:#1f2a38;--border2:#2b3a4d;--hl:inset 0 1px 0 rgba(255,255,255,.04);
+ --text:#e8eef4;--text2:#c6d3df;--muted:#8a9bb0;--muted2:#a9b8c8;
+ --accent:#3b82f6;--accent-soft:#8fc6ff;--accent-bg:rgba(59,130,246,.14);
+ --up:#2ecc71;--up-soft:#8df0bb;--down:#ff5c5c;--down-soft:#ff9a9a;--warn:#e8c55a;--violet:#a78bfa;--violet-soft:#c4b5fd;
+ --r:16px;--r-lg:24px;--ok-bg:rgba(46,204,113,.12)}
+:root[data-theme="light"]{--bg:#f3f6fa;--surface:#ffffff;--surface2:#f6f8fb;--surface3:#eef2f7;--border:#dfe6ee;--border2:#cfd8e3;
+ --text:#10161f;--text2:#2b3745;--muted:#64748b;--muted2:#4b5868;--accent-bg:rgba(59,130,246,.1);--ok-bg:rgba(46,204,113,.14)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:48px}
+a{color:var(--accent-soft)}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+header{padding:calc(14px + env(safe-area-inset-top,0px)) 0 8px}
+.hrow{display:flex;align-items:center;gap:12px}
+.ib{width:40px;height:40px;border-radius:12px;border:1px solid var(--border);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;color:var(--text2);flex:none;text-decoration:none}
+.ttl{flex:1;min-width:0}h1{font-size:1.35rem;font-weight:800;letter-spacing:-.015em;margin:0}.ttl div{font-size:.78rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--up-soft);border:1px solid rgba(46,204,113,.35);background:var(--ok-bg);border-radius:99px;padding:6px 10px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.live i{width:6px;height:6px;border-radius:50%;background:var(--up);box-shadow:0 0 8px var(--up);animation:blink 1.6s infinite}@keyframes blink{50%{opacity:.35}}
+.lead{color:var(--text2);font-size:.92rem;line-height:1.5;margin:6px 2px 12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:99px;padding:8px 13px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit}.chip.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-soft)}
+.grp{margin:18px 2px 10px;display:flex;align-items:center;gap:10px;font-size:.76rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2)}.grp em{font-style:normal;color:var(--muted)}
+.fds{display:grid;gap:12px}
+.rc{display:block;width:100%;text-align:left;padding:0;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;overflow:hidden;box-shadow:var(--hl)}
+.rh{display:flex;align-items:center;gap:12px;padding:14px 14px 0}
+.ra{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(167,139,250,.14);color:var(--violet-soft);border:1px solid rgba(167,139,250,.35)}.ra svg{width:22px;height:22px}
+.rn{flex:1;min-width:0}.rn b{display:block;font-size:1rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rn small{font-size:.72rem;color:var(--muted)}
+.rs{flex:none;font-size:.66rem;font-weight:800;letter-spacing:.04em;border-radius:99px;padding:4px 9px;white-space:nowrap;text-transform:uppercase}
+.rs.free{color:var(--up-soft);background:var(--ok-bg);border:1px solid rgba(46,204,113,.35)}.rs.paid{color:var(--violet-soft);background:rgba(167,139,250,.14);border:1px solid rgba(167,139,250,.35)}
+.rs.pause{color:var(--warn);background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.35)}.rs.off{color:var(--down-soft);background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.35)}.rs.on{color:var(--accent-soft);background:var(--accent-bg);border:1px solid rgba(59,130,246,.35)}
+.rm{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:12px 14px 0}
+.rv{min-width:0}.rv b{display:block;font-size:1.55rem;font-weight:900;letter-spacing:-.02em;line-height:1.1}.rv small{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.sp{width:118px;height:40px;flex:none}
+.rq{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:12px 0 0;border-top:1px solid var(--border)}
+.rq div{padding:9px 4px;text-align:center;border-right:1px solid var(--border)}.rq div:last-child{border-right:0}
+.rq b{display:block;font-size:.84rem;font-weight:800}.rq span{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.rb{margin:12px 14px 0;font-size:.86rem;color:var(--text2);line-height:1.5}
+.mk{display:flex;flex-wrap:wrap;gap:6px;margin:10px 14px 0}.mk span{font-size:.7rem;border-radius:99px;padding:3px 8px;border:1px solid var(--border2);color:var(--muted2)}.mk span.ok{border-color:rgba(46,204,113,.4);color:var(--up-soft)}
+.ract{display:flex;align-items:center;gap:8px;padding:12px 14px 14px;border-top:1px solid var(--border);margin-top:12px}
+.btn{appearance:none;border:0;border-radius:12px;padding:11px 15px;font-size:.88rem;font-weight:800;cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;text-decoration:none;display:inline-block;white-space:nowrap}
+.btn.sec{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}.btn.ghost{background:none;color:var(--accent-soft);padding:8px 4px}.btn.full{width:100%;margin-top:12px;padding:13px;text-align:center}.btn:disabled{opacity:.5;cursor:default}
+.pos{color:var(--up-soft)}.neg{color:var(--down-soft)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--hl);padding:18px 16px;position:relative}
+.card h2{margin:0;font-size:1.02rem;font-weight:800}.eyebrow{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fc2de}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--border);font-size:.9rem}.kv:first-of-type{border-top:0}.kv span{color:var(--muted2)}.kv b{text-align:right}
+.note{font-size:.8rem;color:var(--muted);line-height:1.5;margin-top:10px}
+.empty{color:var(--muted2);font-size:.9rem;line-height:1.55;padding:6px 2px}
+label{display:block;font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}
+input,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:13px;color:var(--text);padding:12px 13px;font-size:1rem;font-family:inherit}input:focus,textarea:focus{outline:none;border-color:var(--accent)}textarea{min-height:72px;resize:vertical}
+.opts{display:flex;gap:8px;flex-wrap:wrap}.opt{flex:1;min-width:58px;text-align:center;border:1px solid var(--border2);border-radius:12px;padding:10px 6px;font-weight:700;cursor:pointer;background:var(--surface2);font-size:.9rem}.opt.on{border-color:var(--accent);color:var(--accent-soft);background:var(--accent-bg)}
+.tg{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;font-size:.9rem}
+.sw{width:46px;height:26px;border-radius:99px;background:var(--border2);position:relative;cursor:pointer;flex:none}.sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:99px;background:#fff;transition:left .15s}.sw.on{background:var(--accent)}.sw.on::after{left:23px}
+#sh{position:fixed;inset:0;z-index:40;display:none}#sh.on{display:block}#sh .dim{position:absolute;inset:0;background:rgba(3,6,10,.6)}
+#sh .pn{position:absolute;left:0;right:0;bottom:0;max-height:88vh;max-height:calc(100dvh - 48px);overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-radius:26px 26px 0 0;border-top:1px solid var(--border2);padding:8px 16px 28px}
+@media(min-width:700px){#sh .pn{left:50%;right:auto;width:560px;margin-left:-280px}}
+#sh .grab{width:42px;height:5px;border-radius:99px;background:var(--border2);margin:4px auto 12px}#sh h2{margin:0 0 6px;font-size:1.2rem;padding-right:44px}
+#sh .close{position:absolute;right:16px;top:16px;width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:1.2rem}
+.toast{position:fixed;left:16px;right:16px;bottom:18px;background:var(--surface3);border:1px solid var(--border2);border-radius:16px;padding:12px 14px;font-size:.9rem;z-index:50;display:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+.sk{color:var(--muted);font-size:.9rem;padding:20px 0;text-align:center}
+</style></head><body>
+<div class="wrap">
+<header><div class="hrow">
+ <a href="robots" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
+ <div class="ttl"><h1 id="h1">La place des robots</h1><div id="h1s">Des robots de membres, test&eacute;s sur de vrais prix</div></div>
+ <span class="live"><i></i><span id="livet">&Agrave; jour</span></span>
+</div></header>
+<p class="lead" id="lead">Suivez un robot sur votre compte, ou publiez le v&ocirc;tre.</p>
+<div class="chips" id="chips">
+ <button class="chip on" data-f="all">Tous</button><button class="chip" data-f="free">Gratuits</button><button class="chip" data-f="paid">Payants</button><button class="chip" data-f="broker">Gagnent chez mon courtier</button>
+</div>
+<div id="list" class="fds"><div class="sk">Chargement&hellip;</div></div>
+<div id="mysub"></div>
+<div id="creator"></div>
+</div>
+<div id="sh"><div class="dim" onclick="closeSh()"></div><div class="pn"><div class="grab"></div><button class="close" onclick="closeSh()" aria-label="Fermer">&times;</button><div id="shb"></div></div></div>
+<div class="toast" id="toast"></div>
+<script>
+const B=location.pathname.replace(/place\/?$/,'');
+let EN=false;try{EN=localStorage.getItem('owlLang')==='en';}catch(e){}
+const T=(fr,en)=>EN?en:fr;
+if(EN){document.getElementById('h1').textContent='The robot place';document.getElementById('h1s').textContent='Member robots, tested on real prices';document.getElementById('lead').textContent='Follow a robot on your account, or publish yours.';document.getElementById('livet').textContent='Live';
+ const L={all:'All',free:'Free',paid:'Paid',broker:'Pay at my broker'};document.querySelectorAll('.chip').forEach(c=>c.textContent=L[c.dataset.f]||c.textContent);}
+let D=null,F='all';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(v,d=2)=>v==null?'—':((v>=0?'+':'−')+'$'+Math.abs(v).toLocaleString(EN?'en-US':'fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}));
+const num=(v,d=0)=>v==null?'—':(+v).toLocaleString(EN?'en-US':'fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const cl=v=>v==null?'':(v>0?'pos':(v<0?'neg':''));
+const fd=t=>{if(!t)return '';const d=new Date(t*1000);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');};
+const BOT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6"/></svg>';
+function spark(a,w=118,h=40){if(!a||a.length<2)return '';const mn=Math.min(0,...a),mx=Math.max(0,...a),r=(mx-mn)||1;
+ const P=a.map((v,i)=>(i/(a.length-1)*w).toFixed(1)+','+(h-2-(v-mn)/r*(h-4)).toFixed(1));const up=a[a.length-1]>=0;const z=(h-2-(0-mn)/r*(h-4)).toFixed(1);
+ return '<svg class="sp" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="0" x2="'+w+'" y1="'+z+'" y2="'+z+'" stroke="var(--border2)" stroke-width="1" stroke-dasharray="2 2"/><polyline points="'+P.join(' ')+'" fill="none" stroke="'+(up?'var(--up)':'var(--down)')+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';}
+const cumOf=c=>[0].concat((c||[]).map(q=>+q[1]));
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3200);}
+function openSh(h){$('shb').innerHTML=h;$('sh').classList.add('on');document.body.style.overflow='hidden';}
+function closeSh(){$('sh').classList.remove('on');document.body.style.overflow='';}
+async function api(path,body){const r=await fetch(B+path,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});return r.json();}
+async function load(){try{D=await api('place_data');}catch(e){$('list').innerHTML='<div class="empty">'+T('La place ne répond pas pour l’instant. Réessayez dans un instant.','The place is not answering right now. Try again in a moment.')+'</div>';return;}render();}
+const pricePill=x=>x.paused?'<span class="rs pause">'+T('en pause','paused')+'</span>':(x.free?'<span class="rs free">'+T('gratuit','free')+'</span>':'<span class="rs paid">$'+Number(x.price_usd).toFixed(0)+T(' / mois',' / mo')+'</span>');
+function card(x){const t=x.test||{},me=D.me||{},atb=x.at_my_broker;
+ const act=x.following?'<button class="btn sec" onclick="unfollowSh()">'+T('Je le suis · arrêter','Following · stop')+'</button>'
+  :(x.paused?'<button class="btn sec" disabled>'+T('En pause','Paused')+'</button>'
+  :(me.public?'<a class="btn" href="/offres">'+T('Créer un compte','Open an account')+'</a>'
+  :(me.auto?'<button class="btn" onclick="followSh(\''+esc(x.id)+'\')">'+T('Suivre ce robot','Follow this robot')+'</button>'
+  :'<a class="btn" href="/offres">'+T('Suivre · avec Automatique','Follow · with Automatic')+'</a>')));
+ const insp=(x.open_recipe&&(me.strategy||me.admin))?'<a class="btn ghost" href="'+B+'robots#r='+encodeURIComponent(x.id)+'">'+T('S’en inspirer','Start from it')+'</a>':'';
+ return '<div class="rc"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(x.name)+'</b><small>'+T('par ','by ')+esc(x.alias||'?')+' · '+(x.followers||0)+' '+T('abonné'+(x.followers>1?'s':''),'follower'+(x.followers>1?'s':''))+(x.mine?' · '+T('le vôtre','yours'):'')+'</small></span>'+pricePill(x)+'</div>'
+  +'<div class="rm"><div class="rv"><b class="'+cl(t.net)+'">'+money(t.net)+'</b><small>'+T('sur ','over ')+num(t.days||42)+T(' jours · ',' days · ')+num(t.trades||0)+' trades</small></div>'+spark(cumOf(t.curve))+'</div>'
+  +'<div class="rq"><div><b>'+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(t.profit_factor!=null?num(t.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(t.cc_dd!=null?'−$'+num(t.cc_dd,0):(t.mtm_dd!=null?'−$'+num(t.mtm_dd,0):'—'))+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(atb?cl(atb.est):'')+'">'+(atb?money(atb.est,0):'—')+'</b><span>'+T('chez vous','at yours')+'</span></div></div>'
+  +(x.blurb?'<div class="rb">'+esc(x.blurb)+'</div>':'')
+  +(x.markets&&x.markets.length?'<div class="mk"><span class="ok">Bitcoin ✓</span>'+x.markets.map(m=>'<span class="'+(m.pays?'ok':'')+'">'+esc(m.name||m.sym)+(m.pays?' ✓':'')+'</span>').join('')+'</div>':'')
+  +'<div class="ract">'+act+insp+'</div></div>';}
+function render(){
+ const L=(D.listings||[]).filter(x=>F==='all'||(F==='free'&&x.free)||(F==='paid'&&!x.free)||(F==='broker'&&x.at_my_broker&&x.at_my_broker.pays));
+ $('list').innerHTML=L.length?L.map(card).join(''):'<div class="empty">'+(F==='broker'?T('Aucun robot ne gagne au coût de votre courtier pour l’instant.','No robot pays at your broker’s cost for now.'):T('Aucun robot sur la place pour l’instant.','No robot on the place yet.'))+'</div>';
+ if(D.me.public){$('mysub').innerHTML='';$('creator').innerHTML='<div class="grp">'+T('Pour suivre un robot','To follow a robot')+'</div><div class="card"><h2>'+T('Ouvrez un compte','Open an account')+'</h2><p class="note" style="color:var(--text2);font-size:.9rem">'+T('Avec Automatique, le robot de votre choix tourne sur votre propre compte. Avec Stratégie, vous construisez le vôtre et le publiez ici.','With Automatic, the robot of your choice runs on your own account. With Strategy, you build yours and publish it here.')+'</p><a class="btn full" href="/offres">'+T('Voir les offres','See the offers')+'</a></div>';return;}
+ const s=D.sub;
+ $('mysub').innerHTML=s?'<div class="grp">'+T('Mon abonnement','My subscription')+'</div><div class="card"><div class="kv"><span>'+T('Robot suivi','Robot followed')+'</span><b>'+esc(s.name||s.rid)+'</b></div><div class="kv"><span>'+T('Jusqu’au','Until')+'</span><b>'+fd(s.until)+'</b></div><div class="kv"><span>'+T('Prix','Price')+'</span><b>'+(Number(s.price_usd)?'$'+Number(s.price_usd).toFixed(0)+T(' / mois',' / mo'):T('Gratuit','Free'))+'</b></div>'
+  +'<p class="note">'+T('À la fin du mois, sans renouvellement, votre compte revient sur le robot du nid. Vous êtes prévenu 2 jours avant.','At month end, without renewal, your account goes back to the nest robot. You are told 2 days before.')+'</p>'
+  +(Number(s.price_usd)?'<button class="btn full" onclick="followSh(\''+esc(s.rid)+'\',true)">'+T('Renouveler 30 jours','Renew 30 days')+'</button>':'')+'<button class="btn sec full" onclick="unfollowSh()">'+T('Arrêter et revenir à l’Owl','Stop and go back to the Owl')+'</button></div>':'';
+ if(!(D.me.strategy||D.me.admin||(D.mine&&D.mine.length))){$('creator').innerHTML='<div class="grp">'+T('Créer un robot','Build a robot')+'</div><div class="card"><h2>'+T('Votre robot, sur la place','Your robot, on the place')+'</h2><p class="note" style="color:var(--text2);font-size:.9rem">'+T('Avec Stratégie, vous construisez un robot à partir de pièces simples, vous le testez sur de vrais prix, et vous le publiez ici. Chaque abonné vous rapporte 70 % de son mois.','With Strategy, you build a robot from simple pieces, test it on real prices, and publish it here. Each follower earns you 70 % of their month.')+'</p><a class="btn full" href="/offres">'+T('Découvrir Stratégie','Discover Strategy')+'</a></div>';return;}
+ const listed=(D.mine||[]).map(m=>{const t=m.test||{};const pill=m.hidden?'<span class="rs off">'+T('retiré','retired')+'</span>':(m.paused?'<span class="rs pause">'+T('en pause','paused')+'</span>':'<span class="rs on">'+T('sur la place','on the place')+'</span>');
+  return '<div class="rc"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(m.name)+'</b><small>'+(Number(m.price_usd)?'$'+Number(m.price_usd).toFixed(0)+T(' / mois',' / mo'):T('gratuit','free'))+' · '+m.followers+' '+T('abonné'+(m.followers>1?'s':''),'follower'+(m.followers>1?'s':''))+' · '+T('gagné ','earned ')+money(m.earned_usd)+'</small></span>'+pill+'</div>'
+   +'<div class="ract"><button class="btn sec" onclick="publishSh(\''+esc(m.id)+'\')">'+T('Modifier','Edit')+'</button>'+(m.hidden?'':'<button class="btn ghost" onclick="unpublish(\''+esc(m.id)+'\')">'+T('Retirer','Retire')+'</button>')+'</div></div>';}).join('');
+ const cand=(D.my_robots||[]).map(r=>{const t=r.test||{};return '<div class="rc"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(r.name)+'</b><small>'+(t.net!=null?'<span class="'+cl(t.net)+'">'+money(t.net)+'</span>'+T(' sur 42 jours',' over 42 days'):T('pas encore testé','not tested yet'))+'</small></span>'+(r.can?'<button class="btn" onclick="publishSh(\''+esc(r.id)+'\')">'+T('Publier','Publish')+'</button>':'<span class="rs pause" title="'+esc(r.why)+'">'+esc(r.why)+'</span>')+'</div><div style="height:14px"></div></div>';}).join('');
+ const E=D.earnings||{cash:0,cash_earned:0,payout_min:50,payouts:[],history:[]};
+ const gains='<div class="card" style="margin-top:12px"><div class="eyebrow">'+T('Mes gains de créateur','My creator earnings')+'</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><b style="font-size:1.55rem;font-weight:900">$'+Number(E.cash||0).toFixed(2)+'</b><span style="color:var(--muted2);font-size:.84rem">'+T('à recevoir · ','to receive · ')+'$'+Number(E.cash_earned||0).toFixed(2)+T(' gagnés en tout',' earned in all')+'</span></div>'
+  +'<p class="note">'+T('70 % de chaque mois payé par un abonné, en argent réel. ','70 % of each month paid by a follower, real money. ')+(E.due?'<b class="pos">'+T('Seuil atteint : paiement au prochain versement mensuel.','Threshold reached: paid at the next monthly round.')+'</b>':T('Versé en USDT à partir de $'+Number(E.payout_min||50).toFixed(0)+', une fois par mois.','Paid in USDT from $'+Number(E.payout_min||50).toFixed(0)+', once a month.'))+'</p>'
+  +'<label>'+T('Votre adresse USDT (TRC20 ou ERC20)','Your USDT address (TRC20 or ERC20)')+'</label><div style="display:flex;gap:8px"><input id="paddr" placeholder="T... / 0x..." value="'+esc(E.payout_addr||'')+'"><button class="btn sec" style="flex:none" onclick="saveAddr()">OK</button></div>'
+  +((E.payouts||[]).length?'<p class="note">'+E.payouts.slice(-4).reverse().map(p=>fd(p.t)+' · $'+Number(p.usd).toFixed(2)).join(' · ')+'</p>':'')+'</div>';
+ const due=(D.payouts_due||[]).length?'<div class="grp">'+T('À payer aux créateurs','Creators to pay')+'</div>'+D.payouts_due.map(p=>'<div class="card" style="margin-bottom:10px"><div class="kv"><span>'+esc(p.alias||p.name||p.uid)+'</span><b>$'+Number(p.cash).toFixed(2)+'</b></div><p class="note" style="word-break:break-all">'+(p.addr?esc(p.addr):'<b class="neg">'+T('pas d’adresse encore','no address yet')+'</b>')+'</p><button class="btn sec full" onclick="markPaid(\''+esc(p.uid)+'\','+Number(p.cash)+')">'+T('J’ai payé $','I paid $')+Number(p.cash).toFixed(2)+'</button></div>').join(''):'';
+ $('creator').innerHTML='<div class="grp">'+T('Mes robots sur la place','My robots on the place')+'</div><div class="fds">'+(listed||'')+(cand||'')+'</div>'+((!listed&&!cand)?'<div class="empty">'+T('Construisez un robot dans l’atelier. Une fois testé et positif sur 42 jours, vous pourrez le publier ici.','Build a robot in the workshop. Once tested and positive over 42 days, you can publish it here.')+'</div>':'')+gains+due;
+}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');F=c.dataset.f;render();});
+function followSh(rid,renew){const x=(D.listings||[]).find(y=>y.id===rid);if(!x)return;const p=Number(x.price_usd||0);const cur=D.me.current_robot_name||'L’Owl';
+ openSh('<h2>'+(renew?T('Renouveler « ','Renew « '):T('Suivre « ','Follow « '))+esc(x.name)+' »</h2><p class="note" style="color:var(--text2);font-size:.9rem">'+(renew?T('30 jours de plus sur votre compte.','30 more days on your account.'):T('Ce robot va trader votre compte à la place de <b>'+esc(cur)+'</b>, avec les mêmes freins et le même rattrapage. Si un trade est ouvert, le changement attend qu’il se termine.','This robot will trade your account instead of <b>'+esc(cur)+'</b>, same brakes, same recovery. If a trade is open, the change waits.'))+'</p>'
+  +(x.at_my_broker?'<p class="note">'+T('Chez votre courtier, sur 42 jours : ','At your broker, over 42 days: ')+'<b class="'+cl(x.at_my_broker.est)+'">'+money(x.at_my_broker.est)+'</b></p>':'')
+  +(p>0?'<p class="note"><b>$'+p.toFixed(0)+T(' pour 30 jours',' for 30 days')+'</b>'+T(', payés en crypto (USDT, BTC ou autre). Dès que le paiement est confirmé, revenez ici et touchez « Suivre » : votre mois est enregistré. 70 % vont au créateur.',', paid in crypto. Once confirmed, come back and tap Follow again. 70 % goes to the creator.')+'</p>':'')
+  +'<label>'+T('Mot de passe de votre compte','Your account password')+'</label><input id="fpw" type="password" autocomplete="current-password"><p class="note">'+T('Celui du compte de trading ou de l’application, comme pour tout changement de robot.','Trading or app password, as for any robot change.')+'</p>'
+  +'<button class="btn full" onclick="followGo(\''+esc(rid)+'\','+(renew?1:0)+')">'+(p>0?T('Payer et suivre','Pay and follow'):T('Suivre maintenant','Follow now'))+'</button>');}
+async function followGo(rid,renew){const pw=($('fpw')||{}).value||'';const b=document.querySelector('#shb .btn.full');if(b){b.disabled=true;b.textContent=T('Un instant…','One moment…');}
+ const r=await api('place_follow',{id:rid,pay:'crypto',pwd:pw,renew:renew?'1':''});if(r.ok&&r.url){location.href=r.url;return;}closeSh();
+ if(r.ok){toast(r.pending?T('C’est noté : le robot change dès que le trade en cours se termine.','Noted: the robot changes when the open trade ends.'):T('Le robot tourne sur votre compte.','The robot runs on your account.'));load();}
+ else toast({pwd:T('Mot de passe incorrect.','Wrong password.'),not_allowed:T('Ce robot ne peut pas tourner sur ce compte.','This robot cannot run on this account.'),paused:T('Ce robot est en pause.','This robot is paused.'),no_bot:T('Ce compte n’a pas de robot.','This account has no robot.'),no_auto:T('Il faut Automatique pour suivre un robot.','Automatic is needed to follow a robot.')}[r.err]||(T('Pas possible : ','Not possible: ')+(r.err||'?')));}
+function unfollowSh(){openSh('<h2>'+T('Revenir à l’Owl','Back to the Owl')+'</h2><p class="note" style="color:var(--text2);font-size:.9rem">'+T('Votre compte reprend le robot du nid. Les jours restants ne sont pas remboursés.','Your account goes back to the nest robot. Remaining days are not refunded.')+'</p><label>'+T('Mot de passe de votre compte','Your account password')+'</label><input id="fpw" type="password"><button class="btn full" onclick="unfollowGo()">'+T('Arrêter et revenir à l’Owl','Stop and go back to the Owl')+'</button>');}
+async function unfollowGo(){const pw=($('fpw')||{}).value||'';const r=await api('place_unfollow',{pwd:pw});closeSh();if(r.ok){toast(T('Retour à l’Owl.','Back to the Owl.'));load();}else toast(r.err==='pwd'?T('Mot de passe incorrect.','Wrong password.'):(T('Pas possible : ','Not possible: ')+(r.err||'?')));}
+function pick(el){el.parentNode.querySelectorAll('.opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');}
+function publishSh(rid){const cur=(D.mine||[]).find(m=>m.id===rid)||{};const r=(D.my_robots||[]).find(m=>m.id===rid)||{};const name=cur.name||r.name||rid;const P=[0,9,19,29,49];
+ openSh('<h2>'+T('Publier « ','Publish « ')+esc(name)+' »</h2><p class="note" style="color:var(--text2);font-size:.9rem">'+T('Dites-le simplement : qui vous êtes, ce que fait le robot, et son prix par mois. Les membres le verront avec son vrai résultat sur 42 jours.','Say it simply: who you are, what the robot does, its monthly price. Members see it with its real 42-day result.')+'</p>'
+  +'<label>'+T('Votre nom d’auteur','Your author name')+'</label><input id="pa" maxlength="24" placeholder="ex. Mike" value="'+esc(cur.alias||(D.ref&&D.ref.alias)||'')+'"><p class="note">'+T('Ce nom apparaît sur la place, jamais votre identifiant.','Shown on the place, never your login.')+'</p>'
+  +'<label>'+T('Une phrase sur le robot','One sentence about the robot')+'</label><textarea id="pb" maxlength="160" placeholder="'+T('ex. Il attend les cassures franches et vise petit, tous les jours.','e.g. It waits for clean breaks and aims small, every day.')+'">'+esc(cur.blurb||'')+'</textarea>'
+  +'<label>'+T('Prix par mois','Price per month')+'</label><div class="opts" id="pp">'+P.map(p=>'<div class="opt'+((cur.price_usd||0)==p?' on':'')+'" data-v="'+p+'" onclick="pick(this)">'+(p?'$'+p:T('Gratuit','Free'))+'</div>').join('')+'</div><p class="note">'+T('Vous gardez 70 % de chaque mois payé, en argent réel, versé en USDT à partir de $50.','You keep 70 % of each paid month, real money, paid in USDT from $50.')+'</p>'
+  +'<div class="tg"><span>'+T('Les autres peuvent partir de ma recette','Others may start from my recipe')+'</span><div class="sw'+(cur.open_recipe?' on':'')+'" id="por" onclick="this.classList.toggle(\'on\')"></div></div><p class="note">'+T('Un membre Stratégie pourra copier les pièces et les modifier chez lui. Votre robot reste le vôtre.','A Strategy member may copy the pieces and change them at home. Your robot stays yours.')+'</p>'
+  +'<button class="btn full" onclick="publishGo(\''+esc(rid)+'\')">'+T('Publier sur la place','Publish on the place')+'</button>');}
+async function publishGo(rid){const o=document.querySelector('#pp .opt.on');const r=await api('place_publish',{id:rid,alias:$('pa').value,blurb:$('pb').value,price:o?Number(o.dataset.v):0,open_recipe:$('por').classList.contains('on')});closeSh();if(r.ok){toast(T('Publié sur la place.','Published.'));load();}else toast(r.err||T('Pas possible.','Not possible.'));}
+async function unpublish(rid){if(!confirm(T('Retirer ce robot de la place ? Les abonnés en cours finissent leur mois.','Retire this robot? Current followers finish their month.')))return;const r=await api('place_unpublish',{id:rid});if(r.ok){toast(T('Retiré.','Retired.'));load();}else toast(r.err||T('Pas possible.','Not possible.'));}
+async function saveAddr(){const r=await api('wallet_addr',{addr:$('paddr').value});toast(r.ok?T('Adresse enregistrée.','Address saved.'):T('Pas possible.','Not possible.'));}
+async function markPaid(uid,usd){const ref=prompt(T('Référence du virement :','Transfer reference:'),'');if(ref===null)return;const r=await api('payout_mark',{uid:uid,usd:usd,ref:ref});if(r.ok){toast(T('Noté comme payé.','Marked as paid.'));load();}else toast(r.err||T('Pas possible.','Not possible.'));}
+load();
+</script></body></html>

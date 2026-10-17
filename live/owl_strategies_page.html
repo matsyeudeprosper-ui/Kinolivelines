@@ -603,20 +603,6 @@ button.pc{cursor:pointer}
 .zbn em.zfew{font-style:normal;font-weight:800;color:#f3d27a}
 .zbn small.ztn{display:block;margin-top:1px;color:var(--muted)}
 .zbv small{display:block;white-space:nowrap}.zbv b{white-space:nowrap}
-/* 2026-10-17 (owner): La place des robots, inside this page */
-.plrow{margin:-6px 0 12px;padding:10px 12px 12px;background:var(--surface2);border:1px solid var(--border);border-top:0;border-radius:0 0 16px 16px}
-.plmeta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted2)}.plmeta b{color:var(--text)}.plbl{width:100%;color:var(--text2);font-size:.86rem;line-height:1.45}
-.plact{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
-.plb{appearance:none;border:0;border-radius:12px;padding:10px 14px;font-size:.86rem;font-weight:800;cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;text-decoration:none;display:inline-block}
-.plb.sec{background:var(--surface);color:var(--text);border:1px solid var(--border2)}.plb.ghost{background:none;color:var(--accent-soft);padding:8px 4px}.plb.full{width:100%;margin-top:12px;padding:13px}.plb:disabled{opacity:.5}
-.plbadge{display:inline-flex;align-items:center;border-radius:99px;padding:3px 9px;font-size:.68rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-.plbadge.g{background:rgba(46,204,113,.12);color:var(--up-soft);border:1px solid rgba(46,204,113,.35)}.plbadge.w{background:rgba(232,197,90,.12);color:var(--warn);border:1px solid rgba(232,197,90,.35)}.plbadge.r{background:rgba(255,92,92,.12);color:var(--down-soft);border:1px solid rgba(255,92,92,.35)}
-.plchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}.plchips::-webkit-scrollbar{display:none}
-.plchip{flex:none;border:1px solid var(--border2);background:var(--surface);color:var(--text2);border-radius:99px;padding:8px 13px;font-size:.84rem;font-weight:600;cursor:pointer;font-family:inherit}.plchip.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent-soft)}
-.pll{display:block;font-size:.68rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 6px}
-.plin{width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);border-radius:13px;color:var(--text);padding:12px 13px;font-size:1rem;font-family:inherit}.plin:focus{outline:none;border-color:var(--accent)}
-.up{color:var(--up-soft)}.dn{color:var(--down-soft)}
-
 </style></head><body>
 <div id="aur"></div>
 <div class="wrap">
@@ -1128,6 +1114,8 @@ const PARTK=SLOTS;   // older callers
 const SLOTT={entry:'entry',filters:'filter',stop:'stop',exit:'exit',recovery:'recovery',money:'money'};
 const EYE='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z';
 const pic=p=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+p+'"/></svg>';
+// 2026-10-17 (owner): the door to La place des robots - its own page, same look
+function plDoor(){return '<button class="zdoor" style="border-color:rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(167,139,250,.12),var(--surface))" onclick="location.href=\'place\'"><span class="mkb" style="width:44px;height:44px;border-radius:14px;background:rgba(167,139,250,.14);color:var(--violet-soft)">'+pic('M3 7h18l-2 4H5zM5 11v9h14v-9M9 20v-5h6v5')+'</span><span class="zdt"><small>'+T('La place des robots','The robot place')+'</small><b>'+T('Suivre un robot, publier le vôtre','Follow a robot, publish yours')+'</b><em>'+T('Des robots de membres, testés sur de vrais prix, avec leur auteur et leur prix','Member robots, tested on real prices, with their author and price')+'</em></span><span class="cv">›</span></button>';}
 const PST={new:{fr:'Nouvelle',en:'New',c:'var(--violet)'},live:{fr:'En service',en:'In service',c:'var(--up)'},tested:{fr:'Testée',en:'Tested',c:'var(--accent)'},pending:{fr:'Test prévu',en:'Test planned',c:'var(--warn)'},to_build:{fr:'À construire',en:'To build',c:'var(--muted)'}};
 const pcs=()=>BLD().pieces||[];
 const pById=id=>pcs().find(p=>p.id===id);
@@ -1155,7 +1143,7 @@ function pType(t){const sl=SLOTS.find(s=>SLOTT[s[0]]===t)||SLOTS[0],L=pList(t);
  shOpen(sl[1]+' · '+L.length,'<button class="more2" style="margin:-4px 0 8px" onclick="fdOpen(\'pieces\')">‹ '+T('Toutes les pièces','All pieces')+'</button><div class="pl2">'+L.map(p=>{const st=PST[p.status]||PST.tested,u=(p.used_by||[]).length;
   return '<button class="pr2" onclick="goP(\''+p.id+'\')"><span class="tx"><b>'+esc(T(p.name_fr,p.name_en))+'</b>'+(p.plain_fr?'<small>'+esc(T(p.plain_fr,p.plain_en))+'</small>':'')+
    '<span class="mt"><span class="st" style="color:'+st.c+';background:color-mix(in srgb,'+st.c+' 14%,transparent)">'+T(st.fr,st.en)+'</span>'+(u?'<span class="us">'+T('utilisée par ','used by ')+u+' robot'+(u>1?'s':'')+'</span>':'')+'</span></span><span class="cv">›</span></button>';}).join('')+'</div>');}
-function builderTop(){const B=BLD();if(!PM&&!PM_L)loadPlace();
+function builderTop(){const B=BLD();
  // 2026-10-13 (owner): the banner says where you stand (robots, accounts, your best) and offers the three ways to make one;
  // "eyes + 6 pieces" is one tap away instead of taking the banner
  const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine),PL0=B.plugs||[];
@@ -1181,10 +1169,11 @@ function builderTop(){const B=BLD();if(!PM&&!PM_L)loadPlace();
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
 
+ h+=plDoor();
  h+='<button class="zdoor" onclick="goZt()"><span class="mkb" style="width:44px;height:44px;border-radius:14px;background:var(--accent-bg);color:var(--accent-soft)">'+pic('M3 3v18h18M7 14l4-4 4 4 5-6')+'</span><span class="zdt"><small>'+T('Zone de test','Test zone')+'</small><b>'+T('Où vos robots marchent-ils ?','Where do your robots work?')+'</b><em>'+T('Testez-les sur l’or, le Nasdaq, l’euro… et comparez','Test them on gold, the Nasdaq, the euro… and compare')+'</em></span><span class="cv">›</span></button>';
- if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="fds">'+MY.map(r=>bRow(r)+plMine(r)).join('')+'</div>'+plGains();
+ if(MY.length)h+='<div class="grp">'+T('Mes robots','My robots')+' <em>'+MY.length+'</em></div><div class="fds">'+MY.map(bRow).join('')+'</div>';
  else if(B.can_create)h+='<div class="grp">'+T('Mes robots','My robots')+'</div><button class="mt0" onclick="goNew()"><span class="ic">'+pic('M12 5v14M5 12h14')+'</span><span><b>'+T('Créez votre premier robot','Build your first robot')+'</b><small>'+T('Partez de L\'Owl et changez une pièce : il est testé sur le passé pour vous.','Start from the Owl and change one piece: it gets tested on past data for you.')+'</small></span></button>';
- h+=plPublic(PUB,bRow);
+ h+='<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('Robots publics','Public robots')+' <em>'+PUB.length+'</em><a href="place" style="margin-left:auto;font-size:.8rem;font-weight:800;color:var(--violet-soft);text-decoration:none;text-transform:none;letter-spacing:0">'+T('La place des robots →','The robot place →')+'</a></div><div class="fds">'+PUB.map(bRow).join('')+'</div>';
  const PL=B.plugs||[],NP=pcs().length;
  FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
  h+='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
@@ -1659,67 +1648,6 @@ async function aiBuild(){const e=$('aierr2'),n=($('ainame').value||'').trim();if
 
 /* ---------- 2026-10-13 (owner): the page's sheet - a folder opens here; tapping inside navigates as before ---------- */
 let LSH=0;
-/* ---------- 2026-10-17 (owner): La place des robots, inside the Robots page ---------- */
-let PM=null,PM_L=false,PF='all';
-async function loadPlace(){PM_L=true;try{PM=await getJ('place_data');}catch(e){PM={err:1};}PM_L=false;if(SIDE==='robots'&&RB&&!location.hash.includes('b='))paint();}
-const plL=id=>((PM&&PM.listings)||[]).find(x=>x.id===id);
-const plUsd=v=>{v=Number(v||0);return (v<0?'-':(v>0?'+':''))+'$'+Math.abs(v).toFixed(2);};
-const plPrice=v=>Number(v||0)?('$'+Number(v).toFixed(0)+T(' / mois',' / mo')):T('Gratuit','Free');
-function plPublic(PUB,bRow){
- const L=PUB.filter(r=>{const x=plL(r.id);if(PF==='all')return true;if(!x)return false;if(PF==='free')return x.free;if(PF==='paid')return !x.free;if(PF==='broker')return x.at_my_broker&&x.at_my_broker.pays;return true;});
- const chip=(k,fr,en)=>'<button class="plchip'+(PF===k?' on':'')+'" onclick="PF=\''+k+'\';paint()">'+T(fr,en)+'</button>';
- return '<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('La place des robots','The robot place')+' <em>'+PUB.length+'</em></div>'
-  +'<p class="note" style="margin:0 0 10px">'+T('Des robots construits par des membres, testés sur de vrais prix. Suivez-en un sur votre compte.','Robots built by members, tested on real prices. Follow one on your own account.')+'</p>'
-  +'<div class="plchips">'+chip('all','Tous','All')+chip('free','Gratuits','Free')+chip('paid','Payants','Paid')+chip('broker','Gagnent chez mon courtier','Pay at my broker')+'</div>'
-  +'<div class="fds">'+(L.length?L.map(r=>bRow(r)+plRow(r)).join(''):'<div class="note">'+T('Aucun robot pour ce filtre.','No robot for this filter.')+'</div>')+'</div>';}
-function plRow(r){const x=plL(r.id);if(!x)return '';const me=(PM&&PM.me)||{};
- const btn=x.following?'<button class="plb sec" onclick="plUnfollowSh()">'+T('Je le suis · arrêter','Following · stop')+'</button>'
-  :(x.paused?'<button class="plb sec" disabled>'+T('En pause','Paused')+'</button>'
-  :(me.public?'<a class="plb" href="/offres">'+T('Créer un compte','Open an account')+'</a>'
-  :(me.auto?'<button class="plb" onclick="plFollowSh(\''+x.id+'\')">'+T('Suivre ce robot','Follow this robot')+'</button>'
-  :'<a class="plb" href="/offres">'+T('Suivre · avec Automatique','Follow · with Automatic')+'</a>')));
- const insp=(x.open_recipe&&(me.strategy||me.admin))?'<a class="plb ghost" href="robots?parent='+encodeURIComponent(x.id)+'">'+T('S’en inspirer','Start from it')+'</a>':'';
- const atb=x.at_my_broker;
- return '<div class="plrow"><div class="plmeta"><span>'+T('par ','by ')+'<b>'+esc(x.alias||'?')+'</b></span><span>'+(x.followers||0)+' '+T('abonné'+(x.followers>1?'s':''),'follower'+(x.followers>1?'s':''))+'</span>'
-  +(atb?'<span>'+T('chez votre courtier ','at your broker ')+'<b class="'+(atb.est>0?'up':'dn')+'">'+plUsd(atb.est)+'</b></span>':'')+(x.blurb?'<span class="plbl">'+esc(x.blurb)+'</span>':'')+'</div><div class="plact">'+btn+insp+'</div></div>';}
-function plMine(r){if(!PM||!PM.me||PM.me.public)return '';const mine=(PM.mine||[]).find(m=>m.id===r.id);const cand=(PM.my_robots||[]).find(m=>m.id===r.id);
- if(mine)return '<div class="plrow"><div class="plmeta"><span class="plbadge '+(mine.hidden?'r':(mine.paused?'w':'g'))+'">'+(mine.hidden?T('retiré de la place','off the place'):(mine.paused?T('en pause · test négatif','paused · negative test'):T('sur la place','on the place')))+'</span><span>'+plPrice(mine.price_usd)+'</span><span>'+mine.followers+' '+T('abonné'+(mine.followers>1?'s':''),'follower'+(mine.followers>1?'s':''))+'</span><span>'+T('gagné ','earned ')+'<b class="up">'+plUsd(mine.earned_usd)+'</b></span></div>'
-  +'<div class="plact"><button class="plb sec" onclick="plPublishSh(\''+r.id+'\')">'+T('Modifier','Edit')+'</button>'+(mine.hidden?'':'<button class="plb ghost" onclick="plUnpublish(\''+r.id+'\')">'+T('Retirer','Retire')+'</button>')+'</div></div>';
- if(cand)return '<div class="plrow"><div class="plact">'+(cand.can?'<button class="plb" onclick="plPublishSh(\''+r.id+'\')">'+T('Publier sur la place','Publish on the place')+'</button>':'<span class="plbadge w">'+esc(cand.why)+'</span>')+'</div></div>';
- return '';}
-function plGains(){if(!PM||!PM.earnings)return '';const E=PM.earnings;
- const due=(PM.payouts_due||[]).length?'<div class="grp">'+T('À payer aux créateurs','Creators to pay')+'</div>'+PM.payouts_due.map(p=>'<div class="card" style="margin-top:8px"><div class="plmeta"><span><b>'+esc(p.alias||p.name||p.uid)+'</b></span><span><b>$'+Number(p.cash).toFixed(2)+'</b></span><span style="word-break:break-all">'+(p.addr?esc(p.addr):'<b class="dn">'+T('pas d’adresse encore','no address yet')+'</b>')+'</span></div><button class="plb sec" style="margin-top:8px" onclick="plMarkPaid(\''+esc(p.uid)+'\','+Number(p.cash)+')">'+T('J’ai payé $','I paid $')+Number(p.cash).toFixed(2)+'</button></div>').join(''):'';
- return '<div class="card" style="margin-top:10px"><div class="eyebrow">'+T('Mes gains de créateur','My creator earnings')+'</div><div style="display:flex;align-items:baseline;gap:8px;margin-top:6px"><b style="font-size:1.5rem">$'+Number(E.cash||0).toFixed(2)+'</b><span class="note" style="margin:0">'+T('à recevoir · ','to receive · ')+'$'+Number(E.cash_earned||0).toFixed(2)+T(' gagnés en tout',' earned in all')+'</span></div>'
-  +'<p class="note" style="margin:8px 0 0">'+T('70 % de chaque mois payé par un abonné, en argent réel. ','70 % of each month paid by a follower, real money. ')+(E.due?'<b class="up">'+T('Seuil atteint : paiement au prochain versement mensuel.','Threshold reached: paid at the next monthly round.')+'</b>':T('Versé en USDT à partir de $50, une fois par mois.','Paid in USDT from $50, once a month.'))+'</p>'
-  +'<div style="display:flex;gap:8px;margin-top:10px"><input id="paddr" class="plin" placeholder="'+T('Adresse USDT (TRC20 ou ERC20)','USDT address (TRC20 or ERC20)')+'" value="'+esc(E.payout_addr||'')+'"><button class="plb sec" onclick="plSaveAddr()">OK</button></div>'
-  +((E.payouts||[]).length?'<div class="note" style="margin-top:8px">'+E.payouts.slice(-4).reverse().map(x=>new Date(x.t*1000).toLocaleDateString()+' · $'+Number(x.usd).toFixed(2)).join(' · ')+'</div>':'')+'</div>'+due;}
-function plFollowSh(rid){const x=plL(rid);if(!x)return;const p=Number(x.price_usd||0),me=PM.me||{};const cur=me.current_robot_name||'L’Owl';const rb=bById(rid);
- shOpen(T('Suivre « ','Follow « ')+esc(rb?T(rb.name_fr,rb.name_en):rid)+' »',
-  '<p class="note">'+T('Ce robot va trader votre compte à la place de <b>'+esc(cur)+'</b>, avec les mêmes freins et le même rattrapage. Si un trade est ouvert, le changement attend qu’il se termine.','This robot will trade your account instead of <b>'+esc(cur)+'</b>, same brakes, same recovery. If a trade is open, the change waits.')+'</p>'
-  +(x.at_my_broker?'<p class="note">'+T('Chez votre courtier, sur 42 jours : ','At your broker, over 42 days: ')+'<b class="'+(x.at_my_broker.est>0?'up':'dn')+'">'+plUsd(x.at_my_broker.est)+'</b></p>':'')
-  +(p>0?'<p class="note">'+T('<b>$'+p.toFixed(0)+' pour 30 jours</b>, payés en crypto (USDT, BTC ou autre). Dès que le paiement est confirmé, revenez ici et touchez « Suivre » : votre mois est enregistré. 70 % vont au créateur.','<b>$'+p.toFixed(0)+' for 30 days</b>, paid in crypto. Once confirmed, come back and tap Follow again.')+'</p>':'')
-  +'<label class="pll">'+T('Mot de passe de votre compte','Your account password')+'</label><input id="plpw" class="plin" type="password" autocomplete="current-password"><p class="note">'+T('Celui du compte de trading ou de l’application, comme pour tout changement de robot.','Trading or app password, as for any robot change.')+'</p>'
-  +'<button class="plb full" onclick="plFollowGo(\''+rid+'\')">'+(p>0?T('Payer et suivre','Pay and follow'):T('Suivre maintenant','Follow now'))+'</button>');}
-async function plFollowGo(rid){const pw=($('plpw')||{}).value||'';const r=await robotPost('place_follow',{id:rid,pay:'crypto',pwd:pw});
- if(r.ok&&r.url){location.href=r.url;return;}shClose();
- if(r.ok){plToast(r.pending?T('C’est noté : le robot change dès que le trade en cours se termine.','Noted: the robot changes when the open trade ends.'):T('Le robot tourne sur votre compte.','The robot runs on your account.'));PM=null;loadPlace();}
- else plToast({pwd:T('Mot de passe incorrect.','Wrong password.'),not_allowed:T('Ce robot ne peut pas tourner sur ce compte.','This robot cannot run on this account.'),paused:T('Ce robot est en pause.','This robot is paused.'),no_bot:T('Ce compte n’a pas de robot.','This account has no robot.'),no_auto:T('Il faut Automatique pour suivre un robot.','Automatic is needed to follow a robot.')}[r.err]||(T('Pas possible : ','Not possible: ')+(r.err||'?')));}
-function plUnfollowSh(){shOpen(T('Revenir à l’Owl','Back to the Owl'),'<p class="note">'+T('Votre compte reprend le robot du nid. Les jours restants ne sont pas remboursés.','Your account goes back to the nest robot. Remaining days are not refunded.')+'</p><label class="pll">'+T('Mot de passe de votre compte','Your account password')+'</label><input id="plpw" class="plin" type="password"><button class="plb full" onclick="plUnfollowGo()">'+T('Arrêter et revenir à l’Owl','Stop and go back to the Owl')+'</button>');}
-async function plUnfollowGo(){const pw=($('plpw')||{}).value||'';const r=await robotPost('place_unfollow',{pwd:pw});shClose();if(r.ok){plToast(T('Retour à l’Owl.','Back to the Owl.'));PM=null;loadPlace();}else plToast(r.err==='pwd'?T('Mot de passe incorrect.','Wrong password.'):(T('Pas possible : ','Not possible: ')+(r.err||'?')));}
-function plPublishSh(rid){const cur=(PM.mine||[]).find(m=>m.id===rid)||{};const rb=bById(rid)||{};const name=T(rb.name_fr,rb.name_en)||rid;const P=[0,9,19,29,49];
- shOpen(T('Publier « ','Publish « ')+esc(name)+' »',
-  '<p class="note">'+T('Dites-le simplement : qui vous êtes, ce que fait le robot, et son prix par mois. Les membres le verront avec son vrai résultat sur 42 jours.','Say it simply: who you are, what the robot does, its monthly price. Members see it with its real 42-day result.')+'</p>'
-  +'<label class="pll">'+T('Votre nom d’auteur','Your author name')+'</label><input id="pla" class="plin" maxlength="24" value="'+esc(cur.alias||(PM.ref&&PM.ref.alias)||'')+'" placeholder="ex. Mike"><p class="note">'+T('Ce nom apparaît sur la place, jamais votre identifiant.','Shown on the place, never your login.')+'</p>'
-  +'<label class="pll">'+T('Une phrase sur le robot','One sentence about the robot')+'</label><textarea id="plb" class="plin" maxlength="160" rows="3">'+esc(cur.blurb||'')+'</textarea>'
-  +'<label class="pll">'+T('Prix par mois','Price per month')+'</label><div class="plchips" id="plp">'+P.map(v=>'<button class="plchip'+((cur.price_usd||0)==v?' on':'')+'" data-v="'+v+'" onclick="this.parentNode.querySelectorAll(\'.plchip\').forEach(c=>c.classList.remove(\'on\'));this.classList.add(\'on\')">'+(v?'$'+v:T('Gratuit','Free'))+'</button>').join('')+'</div><p class="note">'+T('Vous gardez 70 % de chaque mois payé, en argent réel, versé en USDT à partir de $50.','You keep 70 % of each paid month, real money, paid in USDT from $50.')+'</p>'
-  +'<label class="pll" style="display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:.9rem"><input type="checkbox" id="plo" style="width:auto"'+(cur.open_recipe?' checked':'')+'> '+T('Les autres peuvent partir de ma recette','Others may start from my recipe')+'</label>'
-  +'<button class="plb full" onclick="plPublishGo(\''+rid+'\')">'+T('Publier sur la place','Publish on the place')+'</button>');}
-async function plPublishGo(rid){const o=document.querySelector('#plp .plchip.on');const r=await robotPost('place_publish',{id:rid,alias:$('pla').value,blurb:$('plb').value,price:o?Number(o.dataset.v):0,open_recipe:$('plo').checked});shClose();if(r.ok){plToast(T('Publié sur la place.','Published.'));PM=null;RB=null;await load();loadPlace();}else plToast(r.err||T('Pas possible.','Not possible.'));}
-async function plUnpublish(rid){if(!confirm(T('Retirer ce robot de la place ? Les abonnés en cours finissent leur mois.','Retire this robot? Current followers finish their month.')))return;const r=await robotPost('place_unpublish',{id:rid});if(r.ok){plToast(T('Retiré.','Retired.'));PM=null;RB=null;await load();loadPlace();}else plToast(r.err||T('Pas possible.','Not possible.'));}
-async function plSaveAddr(){const r=await robotPost('wallet_addr',{addr:($('paddr')||{}).value||''});plToast(r.ok?T('Adresse enregistrée.','Address saved.'):T('Pas possible.','Not possible.'));}
-async function plMarkPaid(uid,usd){const ref=prompt(T('Référence du virement :','Transfer reference:'),'');if(ref===null)return;const r=await robotPost('payout_mark',{uid:uid,usd:usd,ref:ref});if(r.ok){plToast(T('Noté comme payé.','Marked as paid.'));PM=null;loadPlace();}else plToast(r.err||T('Pas possible.','Not possible.'));}
-function plToast(m){let t=$('pltoast');if(!t){t=document.createElement('div');t.id='pltoast';t.style.cssText='position:fixed;left:16px;right:16px;bottom:18px;background:var(--surface3);border:1px solid var(--border2);border-radius:16px;padding:12px 14px;font-size:.9rem;z-index:60;box-shadow:0 12px 40px rgba(0,0,0,.4)';document.body.appendChild(t);}t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3200);}
-
 function shOpen(title,html){let s=$('lsh');if(!s){s=document.createElement('div');s.id='lsh';
   s.innerHTML='<div class="xd"></div><div class="xp" role="dialog" aria-modal="true"><div class="xg"></div><div class="xh"><b id="lsh-t"></b><button id="lsh-x" aria-label="'+T('Fermer','Close')+'">×</button></div><div class="xb" id="lsh-b"></div></div>';
   document.body.appendChild(s);s.querySelector('.xd').onclick=()=>shClose();$('lsh-x').onclick=()=>shClose();}
