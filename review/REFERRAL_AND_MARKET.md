@@ -138,3 +138,7 @@ one-time rule. Payout from $100 with the referral money. Dashboard for an approv
 (paid in the last 35 days), this month, in all, 6-month bars, links to the video and channel. Files:
 live/owl_influencers.py (+ owl_influencers.json, git-ignored). Tests: review/test_market_wallet.py 66 checks.
 Option kept in one constant for later: limit the 30 % to the first N months of each user.
+Update (same night): the 30 % is limited to the first 12 PAID MONTHS of each user (owl_wallet.INF_MONTHS); the creator
+has their own page /<tok>/createur (owl_creator_page.html): status badge, link, KPIs (active subscribers, expected next
+month if all renew, this month, in all), 6-month chart, payout ring, subscribers with months paid / months left bars,
+the approved video and channel, the rules; the Parrainage page only shows a status-aware door to it. 68 checks pass.

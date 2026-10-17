@@ -19,7 +19,8 @@ WALLET = os.path.join(DIR, "owl_wallet.json")
 USERS = os.path.join(DIR, "owl_nest_users.json")
 REF_PCT = 0.50            # 2026-10-17: of a referred member's FIRST confirmed payment, in real money (was 20 % in days)
 REF_PAYOUT_MIN = 100.0    # referral money is paid out (USDT, by the owner) from this balance
-INF_PCT = 0.30            # 2026-10-17: an approved creator / YouTuber, on EVERY payment of their users (owl_influencers)
+INF_PCT = 0.30            # 2026-10-17: an approved creator / YouTuber, on every payment of their users (owl_influencers)
+INF_MONTHS = 12           # ... for the first 12 paid months of each user (owner 2026-10-17), then nothing
 CREATOR_PCT = 0.70        # legacy: of a robot month paid on its own (no longer sold since 2026-10-17)
 CREATOR_SHARE = 0.30      # 2026-10-17 (owner "Go"): PAY ONCE - the creator of the robot a member RUNS gets this share
                           # of that member's plan payment; the Owl and the owner's robots keep 100 % for the nest
@@ -131,6 +132,9 @@ def on_member_payment(uid, pkg, usd, label=""):
     month = time.strftime("%Y-%m", time.gmtime())
     W = _load(WALLET, {}) or {}
     hist = (W.get(ref) or {}).get("cash_history") or []
+    if kind == "influencer":
+        if sum(1 for h in hist if h.get("kind") == "influencer" and h.get("friend") == uid) >= INF_MONTHS:
+            return ref, 0.0                               # the first INF_MONTHS paid months of this user, then nothing
     if kind == "referral":
         if any(h.get("kind") in ("referral", "influencer") and h.get("friend") == uid for h in hist):
             return ref, 0.0                               # only the first month ever
@@ -158,13 +162,15 @@ def referral_stats(uid):
     hist = [h for h in (w.get("cash_history") or []) if h.get("kind") in ("referral", "influencer")]
     by_friend = {}
     for h in hist:
-        f = by_friend.setdefault(h.get("friend"), {"first": h, "n": 0, "usd": 0.0, "last_t": 0})
-        f["n"] += 1; f["usd"] += float(h.get("usd") or 0); f["last_t"] = max(f["last_t"], int(h.get("t") or 0))
+        f = by_friend.setdefault(h.get("friend"), {"first": h, "n": 0, "inf_n": 0, "usd": 0.0, "last_t": 0, "last_paid": 0.0})
+        f["n"] += 1; f["inf_n"] += 1 if h.get("kind") == "influencer" else 0
+        f["usd"] += float(h.get("usd") or 0); f["last_t"] = max(f["last_t"], int(h.get("t") or 0)); f["last_paid"] = float(h.get("paid_usd") or 0)
     friends = []
     for f in friends_of(uid):
         h = by_friend.get(f["id"])
         friends.append({"since": f.get("since"), "plan": f.get("plan"), "paid": bool(h), "usd": round((h or {}).get("usd") or 0.0, 2),
                         "paid_t": (h or {}).get("last_t"), "months": (h or {}).get("n") or 0,
+                        "months_left": max(0, INF_MONTHS - ((h or {}).get("inf_n") or 0)), "last_paid": (h or {}).get("last_paid") or 0.0,
                         "label": "Ami" if not f.get("name") else str(f.get("name"))[:1].upper() + "."})
     friends.sort(key=lambda x: -(x.get("since") or 0))
     earned = round(sum(h.get("usd") or 0 for h in hist), 2)
@@ -177,7 +183,8 @@ def referral_stats(uid):
     active = sum(1 for f in friends if f["paid"] and (now - float(f.get("paid_t") or 0)) < 35 * 86400)
     return {"friends": friends, "signed": len(friends), "paid": sum(1 for x in friends if x["paid"]), "earned": earned,
             "cash_ref": round(float(w.get("cash_ref") or 0), 2), "pct": int(REF_PCT * 100), "payout_min": REF_PAYOUT_MIN,
-            "inf_pct": int(INF_PCT * 100), "this_month": this_month, "series": series, "active": active,
+            "inf_pct": int(INF_PCT * 100), "inf_months": INF_MONTHS, "this_month": this_month, "series": series, "active": active,
+            "expected": round(sum(f["last_paid"] * INF_PCT for f in friends if f["paid"] and f["months_left"] > 0 and (now - float(f.get("paid_t") or 0)) < 35 * 86400), 2),
             "recurring": round(sum(float(h.get("usd") or 0) for h in hist if h.get("kind") == "influencer"), 2)}
 
 

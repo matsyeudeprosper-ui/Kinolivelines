@@ -14482,8 +14482,9 @@ def _inf_block(user, st):
     uid = user.get("id")
     r = _INF.status(uid) or {}
     out = {"status": r.get("status") or "none", "channel": r.get("channel") or "", "video": r.get("video") or "", "applied_t": r.get("applied_t"),
-           "reviewed_t": r.get("reviewed_t"), "review_note": r.get("review_note") or "", "pct": int(_OW.INF_PCT * 100),
-           "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring")}
+           "reviewed_t": r.get("reviewed_t"), "review_note": r.get("review_note") or "", "pct": int(_OW.INF_PCT * 100), "months": _OW.INF_MONTHS,
+           "active_users": st.get("active"), "this_month": st.get("this_month"), "series": st.get("series"), "recurring": st.get("recurring"),
+           "expected": st.get("expected")}
     if is_admin(user):
         _nm = {u.get("id"): (u.get("name") or u.get("id")) for u in users()}
         out["pending"] = [dict(p, name=_nm.get(p["uid"], p["uid"])) for p in _INF.pending()]
@@ -20777,6 +20778,9 @@ class H(BaseHTTPRequestHandler):
             self._send(open(os.path.join(DIR, "owl_referral_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "referral_data":
             self._send(json.dumps(referral_payload(user), ensure_ascii=False), "application/json")
+        elif sub == "createur":
+            # 2026-10-17 (owner): the creators / YouTubers dashboard - its own page, apart from the simple referral
+            self._send(open(os.path.join(DIR, "owl_creator_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "day":
             self._send(json.dumps(day_payload(_data_user(user))), "application/json")
         elif sub == "trade":
