@@ -17113,6 +17113,8 @@ def _flow_page(title, body_html, step=None, doc_title="OwlNest"):
             ".say{display:flex;flex-direction:column;gap:3px;margin:18px 0 4px;padding:14px 16px;border-radius:14px;border:1px solid var(--bd);background:rgba(255,255,255,.03)}.say b{font-size:1rem}.say span{color:var(--tx2);font-size:.88rem;line-height:1.5}"
             ".say.g{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.06)}.say.o{border-color:rgba(232,197,90,.3);background:rgba(232,197,90,.06)}"
             ".lnk{display:block;text-align:center;margin-top:14px;color:var(--accent-soft);font-size:.9rem;font-weight:600;text-decoration:none}"
+            ".rl li.hd{padding:4px 0 6px;border-top:0}.rl li.hd em{font-size:.64rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;min-width:84px;text-align:right}"
+            ".rl li em{min-width:84px;text-align:right}.rl em small{display:block;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;opacity:.8}"
             ".go{display:block;width:100%;box-sizing:border-box;margin-top:14px;border:0;border-radius:14px;padding:14px;font-size:.98rem;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;text-align:center;text-decoration:none;font-family:inherit}"
             ".go.sec{background:rgba(255,255,255,.06);color:var(--tx);border:1px solid var(--bd)}.go.sec:active,.go:active{opacity:.85}"
             "label{display:block;font-size:.7rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 7px}"
@@ -17152,10 +17154,11 @@ def _broker_line(server):
         return {"known": False, "zone": "", "line": "Courtier pas encore dans notre carnet : nous lirons votre compte en moins d\u2019une minute apr\u00e8s \u00ab V\u00e9rifier \u00bb."}
     v = pg.get("verdict") or {}
     fr = lambda x: ("%.2f" % float(x)).replace(".", ",")
-    cost = ("Co\u00fbt par trade %s $ (Exness %s $). " % (fr(v.get("spread")), fr(v.get("exness_spread") or _BB.EXNESS_SPREAD))) if v.get("spread") is not None else ""
+    # 2026-10-17 (owner): grandma words - the gap per Bitcoin here vs Exness, then what it means for the robots
+    cost = ("\u00c9cart %s $ par Bitcoin ici, %s $ \u00e0 Exness : " % (fr(v.get("spread")), fr(v.get("exness_spread") or _BB.EXNESS_SPREAD))) if v.get("spread") is not None else ""
     z = v.get("zone") or "unknown"
-    tail = {"green": "\u00c7a marche ici.", "orange": "\u00c7a marche, mais moins qu\u2019\u00e0 Exness.",
-            "red": "Rien ne gagne chez ce courtier.", "unknown": "V\u00e9rification compl\u00e8te apr\u00e8s \u00ab V\u00e9rifier \u00bb."}[z]
+    tail = {"green": "les robots gagnent autant ici.", "orange": "les robots gagnent, mais moins qu\u2019\u00e0 Exness.",
+            "red": "aucun robot ne gagne chez ce courtier.", "unknown": "v\u00e9rification compl\u00e8te apr\u00e8s \u00ab V\u00e9rifier \u00bb."}[z]
     return {"known": True, "zone": z, "line": cost + tail}
 
 
@@ -17272,12 +17275,17 @@ def _probe_card(st, jid):
     except Exception:
         pass
     if (v.get("robots") or []) and broker != "Exness":
-        # owner 2026-10-16: "the verification should check any existing robot" - every public robot at this cost
-        robots = "<h2>Les robots chez vous</h2><ul class=\"rl\">" + "".join(
-            f"<li><div><b>{_h.escape(str(r.get('name') or r.get('id')))}</b><small>n&eacute; chez {_h.escape(_born.get(r.get('id')) or 'Exness')} &middot; {fr(r.get('native'))} $ l&agrave;-bas sur 42 jours</small></div>"
-            f"<em class=\"{'up' if r.get('pays') else 'dn'}\">{('+' if float(r.get('est') or 0) > 0 else '')}{fr(r.get('est'))} $</em></li>"
-            for r in v["robots"]) + "</ul>"
-    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + say + robots + code_block
+        # owner 2026-10-16: "the verification should check any existing robot" - every public robot at this cost.
+        # 2026-10-17 (owner: "what does it mean? what are the red numbers?"): one comparison per robot, same 42 days,
+        # Exness on the left, this broker on the right, and the word "gagne" / "perd" next to the number
+        robots = ("<h2>Les robots, avec l&#8217;&eacute;cart de " + _h.escape(broker) + "</h2>"
+                  "<p class=\"h\" style=\"margin:-2px 0 8px\">M&ecirc;mes 42 jours, m&ecirc;mes trades : seul le co&ucirc;t de chaque trade change.</p>"
+                  "<ul class=\"rl\"><li class=\"hd\"><div></div><em>&agrave; Exness</em><em>chez " + _h.escape(broker) + "</em></li>" + "".join(
+            f"<li><div><b>{_h.escape(str(r.get('name') or r.get('id')))}</b></div>"
+            f"<em class=\"up\">{('+' if float(r.get('native') or 0) > 0 else '')}{fr(r.get('native'))} $</em>"
+            f"<em class=\"{'up' if r.get('pays') else 'dn'}\">{('+' if float(r.get('est') or 0) > 0 else '')}{fr(r.get('est'))} $<small>{'gagne' if r.get('pays') else 'perd'}</small></em></li>"
+            for r in v["robots"]) + "</ul>")
+    body = f"<div class=\"pill {cls}\"><i></i>{lab}</div>" + sub + facts + ((robots + say) if zone == "red" else (say + robots)) + code_block
     return _flow_page(broker, body, step=2, doc_title="OwlNest &middot; V&eacute;rification")
 
 
@@ -17652,6 +17660,13 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
             "padding:14px 16px;font-size:.88rem;color:var(--tx);line-height:1.55;z-index:9;box-shadow:0 12px 40px rgba(0,0,0,.5)}"
             "#tipbx button{margin-top:10px;background:none;border:0;color:var(--accent-soft);font-weight:700;font-size:.86rem;padding:0;cursor:pointer}"
             ".nr{display:inline-flex;align-items:center;gap:10px}"
+            # the broker chooser (2026-10-17)
+            ".bkh{font-size:.7rem;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin:4px 0 8px}"
+            ".bkc{display:flex;align-items:center;gap:10px;width:100%;box-sizing:border-box;text-align:left;border:1px solid var(--bd);border-radius:14px;padding:11px 12px;margin-bottom:8px;background:rgba(255,255,255,.03);color:var(--tx);font:inherit;cursor:pointer}"
+            ".bkc.on{border-color:var(--accent-soft);background:rgba(59,130,246,.1)}.bkc i{flex:none;width:9px;height:9px;border-radius:99px}.bkc b{font-weight:700;font-size:.95rem}.bkc small{margin-left:auto;color:var(--tx3);font-size:.76rem;text-align:right;max-width:52%}"
+            ".bkdoors{border:1px solid rgba(255,107,107,.3);background:rgba(255,107,107,.06);border-radius:16px;padding:14px;margin:6px 0 10px}.bkdoors>b{display:block;font-size:1rem}.bkdoors>span{display:block;color:var(--tx2);font-size:.86rem;line-height:1.5;margin:4px 0 10px}"
+            ".bkdoors a{display:flex;gap:12px;align-items:flex-start;padding:11px 12px;border:1px solid var(--bd);border-radius:12px;margin-top:8px;background:var(--card);color:var(--tx);text-decoration:none}.bkdoors a em{flex:none;width:28px;height:28px;border-radius:9px;background:rgba(59,130,246,.14);color:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:.82rem}"
+            ".bkdoors a b{display:block;font-size:.9rem}.bkdoors a small{display:block;color:var(--tx3);font-size:.78rem;line-height:1.4;margin-top:2px}"
             ".lgb{min-width:44px;min-height:44px;border-radius:999px;border:1px solid #2b394b;background:var(--card);color:var(--tx2);font:inherit;font-weight:700;font-size:.8rem;cursor:pointer}"
             ".lgb:focus-visible,.go:focus-visible,.i:focus-visible,a:focus-visible{outline:2px solid var(--accent-soft);outline-offset:3px}"
             "</style></head><body>"
@@ -17690,6 +17705,9 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
             "</div>"
             "<button type=\"button\" class=\"eye\" onclick=\"var p=document.getElementById('pw');p.type=p.type==='password'?'text':'password';\" aria-label=\"Afficher\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/></svg></button></div>"
             "</div>"
+            # 2026-10-17 (owner): "suggest the brokers that will likely work, so they don't have to give login details" -
+            # the broker chooser comes FIRST on the Automatique sheet; a known-red broker shows the three doors right here
+            "<div id=\"bk\" style=\"display:none\"><div class=\"bkh\">Chez quel courtier est votre compte ?</div><div id=\"bkl\"></div><div id=\"bkd\"></div></div>"
             "<div id=\"mt5\" class=\"fg\"><div class=\"fr\"><span class=\"fi\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"7\" rx=\"2\"/><rect x=\"3\" y=\"13\" width=\"18\" height=\"7\" rx=\"2\"/><path d=\"M7 7.5h.01M7 16.5h.01\"/></svg></span><div class=\"fb\"><label for=\"server\">Serveur MT5 <button type=\"button\" class=\"i\" onclick=\"tip(this)\" data-tip=\"C&#8217;est &eacute;crit dans votre application MT5 : Param&egrave;tres &rsaquo; Comptes.\" aria-label=\"Explication\">i</button></label>"
             "<input id=\"server\" name=\"server\" placeholder=\"Exness-MT5Real30\" list=\"srv\">"
             "<datalist id=\"srv\"><option value=\"Exness-MT5Real30\"><option value=\"Exness-MT5Real27\"><option value=\"Exness-MT5Trial9\"></datalist>"
@@ -17719,6 +17737,30 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
             "fetch('/brokerinfo?server='+encodeURIComponent(v),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){o.textContent=d.line||'';o.style.color=d.zone==='red'?'#ff8a8a':(d.zone==='green'?'#8fe3b0':'#c6d3df');}).catch(function(){});}"
             "s.addEventListener('input',function(){clearTimeout(tm);tm=setTimeout(go,500);});s.addEventListener('change',go);})();"
             "function tip(b){var t=document.getElementById('tipbx');document.getElementById('tipt').innerHTML=b.getAttribute('data-tip');t.style.display='block';}"
+            # the broker chooser (2026-10-17): chips from /brokers; a red brand shows the doors and hides the fields
+            "var BK=null,BKSEL=null;"
+            "function brokersUI(fam){var w=document.getElementById('bk');if(!w)return;if(!fam){w.style.display='none';bkFields(true);return;}w.style.display='';"
+            "if(BK){bkRender();return;}fetch('/brokers',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){BK=d.brokers||[];bkRender();}).catch(function(){BK=[];bkRender();});}"
+            "function bkDot(z){return {green:'#2ecc71',orange:'#e8c55a',red:'#ff6b6b'}[z]||'#7d8da0';}"
+            "function bkRender(){var l=document.getElementById('bkl');if(!l)return;var h='';(BK||[]).forEach(function(b){"
+            "var s=b.recommended?'recommandé · le courtier du robot':(b.zone==='red'?'aucun robot ne gagne':(b.zone==='orange'?'ça marche, un peu moins':(b.zone==='green'?'ça marche':'à vérifier')));"
+            "h+='<button type=\"button\" class=\"bkc'+(BKSEL===b.name?' on':'')+'\" onclick=\"bkPick(this.getAttribute(\\'data-n\\'))\" data-n=\"'+b.name.replace(/\"/g,'')+'\"><i style=\"background:'+bkDot(b.zone)+'\"></i><b>'+b.name+'</b><small>'+s+'</small></button>';});"
+            "h+='<button type=\"button\" class=\"bkc'+(BKSEL==='*'?' on':'')+'\" onclick=\"bkPick(\\'*\\')\" data-n=\"*\"><i style=\"background:#7d8da0\"></i><b>Un autre courtier</b><small>on lit votre compte en une minute</small></button>';"
+            "l.innerHTML=h;bkApply();}"
+            "function bkPick(n){BKSEL=n;bkRender();}"
+            "function bkFields(on){var f1=document.querySelector('#f > .fg'),m=document.getElementById('mt5'),r=document.getElementById('refg'),ok=document.getElementById('ok'),su=document.querySelector('#f .sure');"
+            "[f1,m,r,ok,su].forEach(function(e){if(e)e.style.display=on?'':'none';});}"
+            "function bkApply(){var d=document.getElementById('bkd');if(!d)return;var b=(BK||[]).find(function(x){return x.name===BKSEL;});var sv=document.getElementById('server');"
+            "if(BKSEL===null){d.innerHTML='';bkFields(true);return;}"
+            "if(b&&b.zone==='red'){bkFields(false);var fr=function(x){return (Math.round(x*100)/100).toFixed(2).replace('.',',');};"
+            "d.innerHTML='<div class=\"bkdoors\"><b>Rien ne gagne chez '+b.name+'.</b><span>Écart '+fr(b.spread)+' $ par Bitcoin ici, '+fr(b.exness_spread)+' $ à Exness : le coût mange le gain de chaque robot. Pas besoin de vos identifiants.</span>'"
+            "+'<a href=\"#\" onclick=\"pick(\\'manual\\');return false;\"><em>1</em><div><b>Signal</b><small>Recevez les signaux et tradez vous-même, ici ou ailleurs.</small></div></a>'"
+            "+'<a href=\"#\" onclick=\"bkPick(\\'Exness\\');return false;\"><em>2</em><div><b>Un compte chez Exness</b><small>Le courtier du robot. Ouvrez-le, puis revenez ici : une minute.</small></div></a>'"
+            "+(document.getElementById('tg')?'<a href=\"'+document.getElementById('tg').getAttribute('data-h')+'\" target=\"_blank\" rel=\"noopener\"><em>3</em><div><b>Écrire au Owl</b><small>On regarde ensemble ce qui est possible.</small></div></a>':'')"
+            "+'<button type=\"button\" class=\"lnk\" onclick=\"bkPick(\\'force\\')\">Vérifier quand même mon compte</button></div>';return;}"
+            "bkFields(true);"
+            "if(b&&b.servers&&b.servers.length&&sv){sv.placeholder=b.servers[0];if(b.name==='Exness'){sv.setAttribute('list','srv');}}"
+            "d.innerHTML=(BKSEL==='*')?'<div class=\"h\" style=\"margin:4px 0 10px\">Courtier pas encore dans notre carnet : nous lisons votre compte en moins d’une minute, et vous dites si ça marche avant tout code.</div>':(b&&b.zone==='orange'?'<div class=\"h\" style=\"margin:4px 0 10px\">Ça marche chez '+b.name+', un peu moins qu’à Exness. On vous montre les chiffres après la lecture du compte.</div>':'');}"
             "function pick(k){fn('choose');P=k;document.getElementById('pkg').value=k;"
             "var L={manual:'Signal',strategy:'Strat\u00e9gie',family:'Automatique'}[k];var fam=(k==='family');"
             "document.getElementById('mt').textContent=L;"
@@ -17732,6 +17774,7 @@ def _offers_page(login, pwd, pending_pkg=None, name="", prefill=None):
             "var _tgb=document.getElementById('tg');if(_tgb){_tgb.style.display=fam?'none':'block';}"
             "var _mh=document.getElementById('mh');if(_mh){_mh.textContent=fam?'Le robot passe des ordres. Il ne peut ni retirer ni d\u00e9placer votre argent.':'Vos identifiants restent sur notre serveur.';}"
             "document.getElementById('mt5').style.display=fam?'':'none';"
+            "try{brokersUI(fam);}catch(e){}"
             "var _cg=document.getElementById('codeg');if(_cg){_cg.style.display=fam?'none':'';}"
             "var _bg2=document.getElementById('brokg');if(_bg2){_bg2.style.display=fam?'none':'';}"
             "var _ok=document.getElementById('ok');if(_ok){_ok.textContent=fam?'V\u00e9rifier mon compte':'Activer mon compte';}"
@@ -20411,6 +20454,33 @@ class H(BaseHTTPRequestHandler):
             self.send_header("Content-Length", str(len(_body)))
             self.end_headers()
             self.wfile.write(_body)
+            return
+        if len(parts) == 1 and parts[0] == "brokers":
+            # 2026-10-17 (owner): "suggest the brokers that will likely work" - the broker book, one row per brand,
+            # judged against the current cost curve, so the sheet can answer BEFORE any login is typed
+            try:
+                import broker_book as _BB
+                import re as _rb
+                _rows, _seen = [], {}
+                for _k, _pg in (_BB.book() or {}).items():
+                    if not isinstance(_pg, dict) or not _pg.get("btc"):
+                        continue
+                    _comp = _pg.get("company") or ""; _srv = _pg.get("server") or _k
+                    _m = _rb.search(r"\(([^)]+)\)", _comp)
+                    _brand = "Exness" if "exness" in (_srv + _comp).lower() else (_m.group(1) if _m else (_comp or _srv).split("-")[0]).replace(" Global", "").strip()
+                    _v = _BB.verdict(_pg)
+                    _row = _seen.get(_brand)
+                    if _row is None:
+                        _row = {"name": _brand, "zone": _v.get("zone"), "spread": _v.get("spread"), "exness_spread": _v.get("exness_spread"),
+                                "best_est": _v.get("est_net"), "best_native": _v.get("native_net"), "servers": [], "recommended": _brand == "Exness"}
+                        _seen[_brand] = _row; _rows.append(_row)
+                    if _srv not in _row["servers"]:
+                        _row["servers"].append(_srv)
+                _order = {"green": 0, "orange": 1, "unknown": 2, "red": 3}
+                _rows.sort(key=lambda r: (0 if r["recommended"] else 1, _order.get(r["zone"], 2), r["name"]))
+                self._send(json.dumps({"brokers": _rows}, ensure_ascii=False), "application/json")
+            except Exception as e:
+                self._send(json.dumps({"brokers": [], "err": str(e)[:80]}), "application/json")
             return
         if len(parts) == 1 and parts[0] == "brokerinfo":
             # 2026-10-16: the broker book answers under the server field, before any password is typed

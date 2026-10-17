@@ -47,3 +47,13 @@ is the right gate. Groundwork for the day that changes:
 * account_robot_set refuses a robot whose "market" (robots.json, default BTCUSD) is absent from the member's
   broker profile ({"err":"no_market"}); every robot is BTCUSD today so nothing changes for anyone.
 Tests: live/test_broker_profile.py (markets block) - all pass.
+
+## 2026-10-17 — Broker chooser BEFORE any login (owner: "we already know; suggest brokers that will work")
+The Automatique sheet opens with "Chez quel courtier est votre compte ?": one chip per brand of the broker book
+(GET /brokers: brand, zone against the current cost curve, spread, servers; Exness first and "recommandé") plus
+"Un autre courtier". A red brand hides the fields and shows the three doors right there (Signal / an Exness
+account / write to the Owl) with "Vérifier quand même mon compte" for the stubborn; a green or orange brand shows
+the fields with the brand's server as placeholder; "another broker" says the account will be read in a minute.
+So nobody at a known-bad broker types a login. The verdict card's robot list is now a two-column comparison
+("à Exness" / "chez X", gagne / perd) placed BEFORE the doors on a red card. Hints and reasons say "écart", not
+"coût par trade". Verified headless: chips 3, doors 3, fields hidden on FOREX.com; fields shown on Exness.

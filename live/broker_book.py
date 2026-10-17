@@ -198,11 +198,11 @@ def verdict(profile):
     if "exness" in str(profile.get("server", "")).lower():
         out["zone"] = "green"; return out                    # the robots' home broker: the curve's native point
     if best["est"] <= 0:
-        out["zone"] = "red"; out["reasons"].append("le coût par trade mange tout le gain, pour chaque robot")
+        out["zone"] = "red"; out["reasons"].append("l'écart par trade mange tout le gain, pour chaque robot")
     elif best["keeps"] is not None and best["keeps"] >= GREEN_KEEP:
         out["zone"] = "green"
     else:
-        out["zone"] = "orange"; out["reasons"].append("le coût par trade réduit le gain")
+        out["zone"] = "orange"; out["reasons"].append("l'écart par trade réduit le gain")
     return out
 
 
