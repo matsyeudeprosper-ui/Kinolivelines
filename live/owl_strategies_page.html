@@ -564,6 +564,16 @@ button.pc{cursor:pointer}
 /* 2026-10-15 (owner): the member picks the robot of their own account */
 .arb .lh-ico{position:relative}
 .arb .lh-ico i{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px var(--surface,#131a26),0 0 10px rgba(46,204,113,.6)}
+.vch{display:inline-flex;align-items:center;gap:5px;margin-left:8px;font-size:.66rem;font-weight:800;color:var(--text2);vertical-align:1px}.vch:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.lh-cur{margin-top:12px}.lh-mini{width:100%;height:46px;display:block}.lh-cur small{font-size:.7rem;color:var(--muted)}
+.lh-links{display:flex;flex-wrap:wrap;gap:4px 16px}
+.whys{display:grid;gap:10px}.why{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:12px}.why i{flex:none;width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-weight:900;background:var(--accent-bg);color:var(--accent-soft)}.why b{display:block;font-size:.9rem}.why small{font-size:.8rem;color:var(--muted2);line-height:1.5}
+.whyk{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin:-2px 0 0 38px;font-size:.8rem;color:var(--muted2)}.whyk b{font-size:1.05rem;font-weight:900}.whyk small{color:var(--muted)}
+.news{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:0 0 12px;padding:10px 12px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font:inherit;font-size:.8rem;cursor:pointer}.news .nb{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.news .nb svg{width:15px;height:15px}.news .nt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.news small{flex:none;color:var(--muted);font-size:.7rem}.news .cv{color:var(--muted)}
+.doors2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 10px}.doors2 .zdoor{flex-direction:column;align-items:flex-start;gap:10px;margin:0;padding:14px}.doors2 .zdoor em,.doors2 .zdoor .cv{display:none}.doors2 .zdoor b{font-size:.9rem;line-height:1.25}
+.fds.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fds.two .fd small,.fds.two .fd .cv{display:none}
+.arbx{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:.72rem;font-weight:800}.arbd{display:block;margin-top:3px;color:var(--muted)}
+#livep.spin i{animation:spinp .8s linear infinite}@keyframes spinp{50%{transform:scale(1.8);opacity:.4}}
 .crts{display:grid;gap:10px}.crt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}.crt-i{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.crt-i svg{width:20px;height:20px}.crt-t{flex:1;min-width:0}.crt-t b{display:flex;align-items:center;gap:8px;font-size:.95rem}.crt-t small{display:block;font-size:.78rem;color:var(--muted);margin-top:2px}.crt-tag{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--up-soft);background:var(--ok-bg);border-radius:99px;padding:2px 7px}.crt-cv{color:var(--muted);font-size:1.2rem}
 .arb .lh-stat{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.84rem;font-weight:700;color:var(--text2)}.arb .lh-stat i{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 8px rgba(46,204,113,.6);flex:none}.arb .lh-stat.wt i{background:#e8c55a;box-shadow:0 0 8px rgba(232,197,90,.5)}.arb .lh-stat.off i{background:var(--down,#ff5c5c);box-shadow:none}
 .arb .lh-test{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:.78rem;color:var(--muted)}.arb .lh-test b{font-weight:800}
@@ -618,7 +628,7 @@ button.pc{cursor:pointer}
  <a href="./" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
  <div class="ttl"><h1 id="h1">Le labo</h1><div id="h1s"></div></div>
  <button class="ib" id="gsb" aria-label="Chercher dans le labo" onclick="gsOpen()" style="margin-left:auto;margin-right:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
- <span class="live" id="livep" title="Données à jour à cette heure"><i></i><span id="livet">En direct</span></span>
+ <span class="live" id="livep" title="Données à jour à cette heure · toucher pour rafraîchir" onclick="refreshNow()" style="cursor:pointer"><i></i><span id="livet">En direct</span></span>
 </div></header>
 <div id="doors"></div>
 <div id="top"></div>
@@ -945,7 +955,7 @@ function tree(){const R=(RB.robots||[]).filter(r=>r.kind==='owl');const kids={};
  const node=(r,d)=>{const m=RST[r.stage]||RST.model;const ch=(kids[r.id]||[]).sort((a,b)=>RORDER.indexOf(a.stage)-RORDER.indexOf(b.stage));
   return '<div class="tn" style="--d:'+d+'"><button class="tnb'+(r.stage==='retired'?' dim':'')+'" onclick="goR(\''+r.id+'\')"><span class="dot" style="background:'+m.c+'"></span><b>'+esc(rn(r))+'</b>'+((r.accounts||[]).length?'<em>'+(r.accounts||[]).length+'</em>':'')+'</button>'+(ch.length?'<div class="tk">'+ch.map(c=>node(c,d+1)).join('')+'</div>':'')+'</div>';};
  return (kids['_']||[]).map(r=>node(r,0)).join('');}
-function renderRobots(){if(!RB)return;head();$('top').innerHTML=(acctCard()||autoDoor())+(RB.limited?myRobotView():builderTop());$('list').innerHTML='';}
+function renderRobots(){if(!RB)return;head();$('top').innerHTML=(acctCard()||autoDoor())+newsStrip()+(RB.limited?myRobotView():builderTop());$('list').innerHTML='';}
 // 2026-10-17 (owner): every account reads the Robots page; the paid doors name the package that opens them
 function goOffer(pkg){try{sessionStorage.setItem('owlPick',pkg||'');}catch(e){}location.href='./#offres';}
 function autoDoor(){const t=RB&&RB.tier;if(!t||t.auto)return '';
@@ -957,10 +967,44 @@ function originHtml(t){const w=t.window_utc,d=s=>s?String(s).slice(8,10)+'/'+Str
 function originOpen(){const A=RB&&RB.acct,t=((A&&A.choices)||[]).find(x=>x.current)||{};shOpen(T('D’où vient ce chiffre ?','Where does this figure come from?'),originHtml(t));}
 // 2026-10-18 (owner upgrade list): the card says what happens on THIS account first (status, money since the start,
 // this month), the past test comes second with its trust badge; changing robot is a quiet button with the count
+// 2026-10-18 (owner, 3rd list) ----------
+const agoN=s=>{if(!s)return '';const m=Math.max(0,Math.round((Date.now()-new Date(s).getTime())/60000));return m<60?T('il y a ','')+m+' min'+T('',' ago'):(m<1440?T('il y a ','')+Math.round(m/60)+' h'+T('',' ago'):T('il y a ','')+Math.round(m/1440)+' j'+T('',' d ago'));};
+const okCtl=c=>!!(c&&c.pct>=95&&(c.seeds||0)>=40);
+function vChip(a,c){if(!a)return '';const v=ztVerdict(a,c);return '<span class="vch" style="--c:'+v.c+'">'+(v.sh||v.t)+'</span>';}
+// what changes between two robots, in piece names
+function partsDiff(fromId,toId){const A=(bById(fromId)||{}).resolved||{},Bp=(bById(toId)||{}).resolved||{},O=[];
+ ['entry','stop','exit','recovery','money'].forEach(k=>{if(A[k]!==Bp[k]&&Bp[k])O.push(pName(Bp[k])+(A[k]?T(' au lieu de ',' instead of ')+pName(A[k]):''));});
+ const fa=A.filters||[],fb=Bp.filters||[];fb.filter(f=>!fa.includes(f)).forEach(f=>O.push('+ '+pName(f)));fa.filter(f=>!fb.includes(f)).forEach(f=>O.push(T('sans ','without ')+pName(f)));return O;}
+function mini(a,w=96,h=34){if(!a||a.length<2)return '';const mn=Math.min(0,...a),mx=Math.max(0,...a),r=(mx-mn)||1,y=v=>(h-3-(v-mn)/r*(h-6)).toFixed(1);const P=a.map((v,i)=>(i/(a.length-1)*w).toFixed(1)+','+y(v));const c=a[a.length-1]>=0?'var(--up)':'var(--down)';
+ return '<svg class="lh-mini" viewBox="0 0 '+w+' '+h+'" preserveAspectRatio="none"><line x1="0" x2="'+w+'" y1="'+y(0)+'" y2="'+y(0)+'" stroke="var(--border2)" stroke-dasharray="2 3"/><polyline points="'+P.join(' ')+'" fill="none" stroke="'+c+'" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';}
+// 1) why the account and the test differ: same trades, different periods, rules and sizes
+function whySh(){const A=RB.acct,L=A.live||{},t=(A.choices||[]).find(x=>x.current)||{},cv=L.curve||[],d=s=>s?String(s).slice(8,10)+'/'+String(s).slice(5,7):'';
+ const cf=L.curve_from?new Date(L.curve_from*1000):null,cfd=cf?String(cf.getDate()).padStart(2,'0')+'/'+String(cf.getMonth()+1).padStart(2,'0'):'',cnow=cv.length?cv[cv.length-1]:null;
+ const lv=(BLD().live_vs_test||[]).slice(-1)[0];
+ const row=(n,b,s)=>'<div class="why"><i>'+n+'</i><span><b>'+b+'</b><small>'+s+'</small></span></div>';
+ shOpen(T('Pourquoi la différence ?','Why the difference?'),'<div class="whys">'
+  +row('1',T('Pas la même période','Not the same period'),T('Le test rejoue du ','The test replays ')+d((t.window_utc||[])[0])+T(' au ',' to ')+d((t.window_utc||[])[1])+T('. Votre compte compte depuis le ','. Your account counts from ')+d(L.since)+'.')
+  +row('2',T('Pas les mêmes règles tout du long','Not the same rules all along'),T('Le test applique les règles d’aujourd’hui sur toute sa période. Votre compte a tourné avec les règles de chaque moment : la règle de tendance date du 10/10, le plafond du jour a été retiré le 14/10.','The test applies today’s rules over its whole period. Your account ran with the rules of each moment: the trend rule dates from 10/10, the daily cap was removed on 14/10.'))
+   +(cnow!=null&&cfd?'<div class="whyk"><span>'+T('Avec les règles actuelles, sur votre compte depuis le ','With the current rules, on your account since ')+cfd+'</span><b class="'+(cnow>=0?'pos':'neg')+'">'+money(cnow,0)+'</b><small>'+cv.length+' trades</small></div>':'')
+  +row('3',T('Pas la même taille','Not the same size'),T('Le test part d’un compte de $200 avec un lot de 0,02 qui grandit avec le solde. Votre compte trade ','The test starts from a $200 account with a 0.02 lot that grows with the balance. Your account trades ')+(L.lot!=null?num(L.lot,2):'—')+T(' par trade.',' per trade.'))
+  +(lv?row('4',T('Le test n’embellit pas','The test does not flatter'),T('Sur un compte en argent réel du nid, les ','On a real-money account of the nest, the ')+lv.trades+T(' mêmes trades ont fait ',' same trades made ')+money(lv.actual,0)+T(' en vrai, quand le test prévoyait ',' for real, where the test predicted ')+money(lv.expected,0)+'.'):'')
+  +'</div><p style="font-size:.8rem;color:var(--muted);line-height:1.5;margin:12px 0 0">'+T('Un test sur le passé n’est pas une promesse ; il sert à comparer des robots entre eux, sur les mêmes prix.','A past-data test is not a promise; it compares robots with each other, on the same prices.')+'</p>');}
+// 9) robot news: tests, market tests, luck checks - newest first
+function newsItems(){const E=[];(BLD().robots||[]).forEach(r=>{const nm=T(r.name_fr,r.name_en);
+  if(r.tested_at&&r.test&&r.test.robot)E.push({t:r.tested_at,id:r.id,b:nm,s:T('testé sur Bitcoin · ','tested on Bitcoin · ')+money(r.test.robot.net,0)});
+  (r.mtests||[]).forEach(x=>{if(x.state==='done'&&x.tested_at&&x.robot)E.push({t:x.tested_at,id:r.id,b:nm,s:(mkName(x.sym)||x.sym)+' · '+money(x.robot.net,0)});else if(x.state==='testing')E.push({t:new Date().toISOString(),id:r.id,b:nm,s:(mkName(x.sym)||x.sym)+T(' · test en cours',' · being tested'),live:1});});});
+ (BLD().controls||[]).forEach(j=>{const r=bById(j.rid);E.push({t:j.at,id:j.rid,b:r?T(r.name_fr,r.name_en):j.rid,s:(mkName(j.sym)||j.sym)+' · '+({waiting:T('contrôle du hasard en attente','luck check waiting'),running:T('contrôle du hasard en cours','luck check running'),done:T('contrôle du hasard fini','luck check done'),error:T('contrôle impossible','check failed')}[j.state]||''),live:j.state==='running'||j.state==='waiting'});});
+ return E.sort((a,b)=>String(b.t).localeCompare(String(a.t))).slice(0,12);}
+function newsStrip(){const E=newsItems();if(!E.length)return '';const e=E[0];
+ return '<button class="news" onclick="newsSh()"><span class="nb">'+pic('M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0')+'</span><span class="nt"><b>'+esc(e.b)+'</b> · '+esc(e.s)+'</span><small>'+(e.live?T('maintenant','now'):agoN(e.t))+'</small><span class="cv">›</span></button>';}
+function newsSh(){const E=newsItems();shOpen(T('Nouvelles des robots','Robot news'),'<div class="fds">'+E.map(e=>'<button class="fd" onclick="shClose();setTimeout(function(){goB(\''+e.id+'\')},250)">'+ICO(e.live?'#e8c55a':'#8fc6ff',pic(e.live?'M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z':'M20 6L9 17l-5-5'))+'<span class="tx"><b>'+esc(e.b)+'</b><small>'+esc(e.s)+' · '+(e.live?T('maintenant','now'):agoN(e.t))+'</small></span><span class="cv">›</span></button>').join('')+'</div>');}
+// 8) tap the time pill to refresh
+async function refreshNow(){const p=$('livep');if(!p||p.classList.contains('spin'))return;p.classList.add('spin');try{await load();}finally{setTimeout(()=>p.classList.remove('spin'),400);}}
 function acctLive(A){const L=A.live;if(!L)return '';const pd=A.pending;
  const st=pd?['wt',T('Changement prévu','Change planned')]:(L.alive===false?['off',L.why?T('À l’arrêt : ','Stopped: ')+L.why:T('À l’arrêt','Stopped')]:(L.why?['wt',T('En pause : ','Paused: ')+L.why]:['on',T('En marche','Running')+(L.open?T(' · 1 trade ouvert',' · 1 open trade').replace('1',L.open):(L.last?T(' · dernier trade le ',' · last trade ')+esc(L.last):''))]));
  const won=L.n?Math.round(100*(L.won||0)/L.n):null,d=s=>s?String(s).slice(8,10)+'/'+String(s).slice(5,7):'';
  return '<div class="lh-stat '+st[0]+'"><i></i><span>'+st[1]+'</span></div>'+
+  ((L.curve||[]).length>2?'<div class="lh-cur">'+mini(L.curve,300,46)+'<small>'+T('vos trades depuis le ','your trades since ')+(L.curve_from?(()=>{const c=new Date(L.curve_from*1000);return String(c.getDate()).padStart(2,'0')+'/'+String(c.getMonth()+1).padStart(2,'0');})():'')+' · '+money(L.curve[L.curve.length-1],0)+'</small></div>':'')+
   (L.n?'<div class="lh-st"><div><b class="'+((L.net||0)>=0?'pos':'neg')+'">'+money(L.net,0)+'</b><span>'+T('depuis le ','since ')+d(L.since)+'</span></div><div><b class="'+((L.month||0)>=0?'pos':'neg')+'">'+money(L.month,0)+'</b><span>'+T('ce mois','this month')+'</span></div><div><b>'+num(L.n)+'</b><span>trades'+(won!=null?' · '+won+' %':'')+'</span></div></div>':'');}
 function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.current)||{};
  const rb=bById(c.id),ctl=rb&&rb.test&&rb.test.ctl,proven=!!(ctl&&ctl.pct>=95&&(ctl.seeds||0)>=40),nAlt=(A.choices||[]).filter(x=>!x.current).length;
@@ -972,7 +1016,7 @@ function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.curren
   acctLive(A)+
   (t.net!=null?'<div class="lh-test"><span>'+T('Test sur le passé : ','Past-data test: ')+'<b class="'+(t.net>=0?'pos':'neg')+'">'+(t.net>=0?'+':'−')+'$'+Math.round(Math.abs(t.net))+'</b>'+T(' en ',' in ')+Math.round(t.days||42)+T(' j · ',' d · ')+(t.trades!=null?t.trades:'—')+' trades · '+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</span>'+
    '<button class="lh-chip '+(proven?'ok':'')+'" onclick="proofSh('+(proven?1:0)+')">'+(proven?'✓ '+T('Prouvé contre le hasard','Proven against chance'):T('Pas encore prouvé','Not proven yet'))+'</button></div>'+
-   originBtn('originOpen()'):'')+
+   '<div class="lh-links">'+originBtn('originOpen()')+(A.live&&A.live.n?'<button class="ori-q" onclick="whySh()"><i>?</i>'+T('Pourquoi la différence ?','Why the difference?')+'</button>':'')+'</div>':'')+
   '<div class="bt'+(owl&&!pd?' one':'')+'"><button class="sec2" onclick="arbPick()">'+T('Changer de robot','Change robot')+(nAlt?' · '+nAlt+T(' possible',' available')+(nAlt>1?T('s',''):''):'')+' ›</button>'+
   (pd?'<button onclick="arbAsk(\''+c.id+'\')">'+T('Annuler','Cancel')+'</button>':(owl?'':'<button onclick="arbAsk(\'owl\')">'+T('Revenir à L’Owl','Back to the Owl')+'</button>'))+'</div></div>';}
 function proofSh(ok){const A=RB.acct,c=A.current||{},rb=bById(c.id),ctl=rb&&rb.test&&rb.test.ctl;
@@ -981,12 +1025,16 @@ function arbPick(){const A=RB.acct,L=A.choices||[];
  shOpen(T('Choisir un robot','Choose a robot'),'<p style="font-size:.84rem;color:var(--muted);margin:0 0 12px;line-height:1.45">'+T('Les robots testés sur 42 jours de Bitcoin qui ont gagné de l’argent et peuvent tourner en direct. Le passé ne garantit pas l’avenir.','Robots tested on 42 days of Bitcoin that made money and can run live. The past does not guarantee the future.')+'</p><div class="arbl">'+
   L.map(x=>{const on=x.current,pl=A.pending&&A.pending.id===x.id;return '<button '+(on&&!A.pending?'disabled':'onclick="arbAsk(\''+x.id+'\')"')+'><span class="n"><b>'+esc(T(x.name_fr,x.name_en))+
    (on?'<span class="tg on">'+T('sur ce compte','on this account')+'</span>':'')+(pl?'<span class="tg">'+T('prévu','planned')+'</span>':'')+(x.owl&&!on?'<span class="tg">'+T('par défaut','default')+'</span>':'')+(x.mine?'<span class="tg">'+T('le vôtre','yours')+'</span>':'')+'</b>'+
-   '<small>'+(x.trades!=null?x.trades+' trades'+(x.win_rate!=null?' · '+Math.round(x.win_rate*100)+' % '+T('gagnés','won'):''):'')+(x.dd!=null?' · '+T('creux ','dip ')+'$'+Math.round(x.dd):'')+'</small></span>'+
+   '<small>'+(x.trades!=null?x.trades+' trades'+(x.win_rate!=null?' · '+Math.round(x.win_rate*100)+' % '+T('gagnés','won'):''):'')+(x.dd!=null?' · '+T('creux ','dip ')+'$'+Math.round(x.dd):'')+'</small>'+
+   (()=>{const rb=bById(x.id),c=rb&&rb.test&&rb.test.ctl,cur=L.find(y=>y.current),df=on?[]:partsDiff((A.current||{}).id,x.id),dv=cur&&!on&&x.net!=null&&cur.net!=null?x.net-cur.net:null;
+    return '<span class="arbx"><span class="lh-chip '+(okCtl(c)?'ok':'')+'">'+(okCtl(c)?'✓ '+T('prouvé','proven'):T('pas prouvé','not proven'))+'</span>'+(dv!=null?'<span class="'+(dv>=0?'pos':'neg')+'">'+(dv>=0?'+':'−')+'$'+Math.round(Math.abs(dv))+T(' vs actuel',' vs current')+'</span>':'')+'</span>'+(df.length?'<small class="arbd">'+esc(df.slice(0,3).join(' · '))+'</small>':'');})()+'</span>'+
    '<span class="r"><b class="'+((x.net||0)>=0?'pos':'neg')+'">'+(x.net!=null?((x.net>=0?'+':'−')+'$'+Math.round(Math.abs(x.net))):'—')+'</b><small>'+T('test ','test ')+Math.round(x.days||42)+' j</small></span></button>';}).join('')+'</div>');}
 function arbAsk(id){const A=RB.acct,x=(A.choices||[]).find(c=>c.id===id)||{},nm=esc(T(x.name_fr||id,x.name_en||x.name_fr||id)),back=id===(A.current||{}).id;
  shOpen(back?T('Annuler le changement','Cancel the change'):T('Mettre ','Put ')+T(x.name_fr||id,x.name_en||x.name_fr||id)+T(' sur ce compte',' on this account'),'<div class="arbc">'+
   (back?'<p>'+T('Le compte garde ','The account keeps ')+'<b>'+nm+'</b>.</p>':
   '<p>'+T('À partir de maintenant, ','From now on, ')+'<b>'+nm+'</b>'+T(' décide des trades de ce compte.',' decides this account’s trades.')+'</p><ul>'+
+   (()=>{const df=partsDiff((A.current||{}).id,id),rb=bById(id),c=rb&&rb.test&&rb.test.ctl;return (df.length?'<li><b>'+T('Ce qui change : ','What changes: ')+'</b>'+esc(df.join(' · '))+'.</li>':'')+'<li>'+(okCtl(c)?T('Ce robot a battu les entrées au hasard sur Bitcoin.','This robot beat random entries on Bitcoin.'):T('Ce robot n’est pas encore prouvé contre le hasard : son test peut être de la chance.','This robot is not proven against chance yet: its test can be luck.'))+'</li>';})()+
+   '<li>'+T('Les freins (orage, mouvement) et le rattrapage du robot choisi s’appliquent ; votre plafond de risque reste le vôtre.','The chosen robot’s brakes (storm, movement) and recovery apply; your risk cap stays yours.')+'</li>'+
    '<li>'+T('Le robot du compte redémarre, en quelques secondes.','The account’s robot restarts, in a few seconds.')+'</li>'+
    '<li>'+T('Vos réglages d’argent (taille des trades, protections) restent les mêmes.','Your money settings (trade size, protections) stay the same.')+'</li>'+
    '<li>'+T('Si un trade est ouvert, le changement attend qu’il soit fermé.','If a trade is open, the change waits until it is closed.')+'</li>'+
@@ -1216,10 +1264,10 @@ function builderTop(){const B=BLD();
  if(MY.length)h+='<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('Mon meilleur robot','My best robot')+lnk('mesrobots',(MY.length>1?T('Tous mes robots','All my robots')+' ('+MY.length+')':T('Mes robots','My robots'))+' →')+'</div><div class="fds">'+bRow(bTop(MY))+'</div>';
  else if(B.can_create)h+='<div class="grp">'+T('Mes robots','My robots')+'</div><button class="mt0" onclick="goNew()"><span class="ic">'+pic('M12 5v14M5 12h14')+'</span><span><b>'+T('Créez votre premier robot','Build your first robot')+'</b><small>'+T('Partez de L\'Owl et changez une pièce : il est testé sur le passé pour vous.','Start from the Owl and change one piece: it gets tested on past data for you.')+'</small></span></button>';
  if(PUB.length)h+='<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('Le meilleur robot public','The best public robot')+'<a href="place" style="margin-left:auto;font-size:.8rem;font-weight:800;color:var(--violet-soft);text-decoration:none;text-transform:none;letter-spacing:0">'+(PUB.length>1?T('Les ','All ')+PUB.length+T(' sur la place',' on the place'):T('La place des robots','The robot place'))+' →</a></div><div class="fds">'+bRow(bTop(PUB))+'</div>';
- h+=doors+hero;   // 2026-10-18 (owner): best robots first, then the place and the test zone, then the lab
+ h+='<div class="doors2">'+doors+'</div>'+hero;   // 2026-10-18 (owner): best robots first, then the place and the test zone, then the lab
  const PL=B.plugs||[],NP=pcs().length;
  FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
- h+='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
+ h+='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds two">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
  if(PL.length){FDS.plugs=[T('Où ils tournent','Where they run'),()=>plugsCard(PL)];h+=fd('plugs',ICO('#2ecc71',pic('M12 2v6M8 4v4M16 4v4M6 8h12v4a6 6 0 0 1-12 0zM12 18v4')),T('Où ils tournent','Where they run'),T('Un robot, son argent et un marché par compte','One robot, its money and a market per account'),PL.length);}
  h+='</div>';
  return h;}
@@ -1229,8 +1277,8 @@ function rCard2(r,PL){const m=bstOf(r),tr=r.test&&r.test.robot,pr=r.test&&r.test
  const nAcc=(PL||[]).filter(p=>p.robot===r.id).length,par=r.parent?bById(r.parent):null;
  let h='<button class="rc mix" style="--c:'+m.c+'" onclick="goB(\''+r.id+'\')"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(T(r.name_fr,r.name_en))+(r.market?' <span style="display:inline-block;vertical-align:middle;margin-left:6px;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:99px;padding:2px 7px;'+(r.market.paused?'background:rgba(232,197,90,.12);color:var(--warn);border:1px solid rgba(232,197,90,.35)':'background:rgba(46,204,113,.12);color:var(--up-soft);border:1px solid rgba(46,204,113,.35)')+'">'+(r.market.paused?T('en pause','paused'):T('inclus','included'))+'</span>':'')+'</b><small>'+(par?T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en)):T('le robot d\'origine','the original robot'))+(r.mine?' · '+(r.public?T('public','public'):T('privé','private')):'')+'</small></span><span class="rs">'+T(m.fr,m.en)+'</span></div>';
  if(tr){const wr=tr.win_rate!=null?Math.round(tr.win_rate*100):null;
-  h+='<div class="rm"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small></div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
-   '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div></div>';}
+  h+='<div class="rm"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small>'+vChip(tr,r.test&&r.test.ctl)+'</div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
+   '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div>'+(d==null&&r.test&&r.test.ctl&&r.test.ctl.pct!=null?'<div><b class="'+(okCtl(r.test.ctl)?'pos':'')+'">'+(r.test.ctl.pct>=100?r.test.ctl.seeds:Math.round(r.test.ctl.pct/100*r.test.ctl.seeds))+'/'+r.test.ctl.seeds+'</b><span>'+T('vs hasard','vs chance')+'</span></div>':'<div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div>')+'</div>';}
  else h+='<div class="r0">'+(r.stage==='real'?(BLD().admin?T('Argent réel · tourne sur ','Real money · runs on ')+nAcc+' '+T('compte'+(nAcc>1?'s':''),'account'+(nAcc>1?'s':'')):(nAcc?T('Argent réel · tourne sur votre compte','Real money · runs on your account'):T('Argent réel','Real money'))):(r.stage==='queued'?T('Test en cours…','Being tested…'):T('Pas encore testé : ouvrez-le pour lancer son test.','Not tested yet: open it to run its test.')))+'</div>';
  h+=mine.length?'<div class="rp" style="margin-top:12px"><span class="lb">'+T('Ses pièces','Its pieces')+'</span>'+mine.slice(0,4).map(x=>'<span class="pc">'+pic(slotIcon(x[0]))+esc(pName(x[1]))+'</span>').join('')+(mine.length>4?'<span class="pc">+'+(mine.length-4)+'</span>':'')+'</div>':'<div class="pad"></div>';
  return h+'</button>';}
@@ -1735,7 +1783,7 @@ function foldLong(){const root=$('det');if(!root||window.innerWidth>=900)return;
   if(LSH&&FXCUR===k){const b=$('lsh-b');if(b){const y=b.parentNode.scrollTop;b.innerHTML=html;b.parentNode.scrollTop=y;}}});}
 window.addEventListener('popstate',()=>{FXCUR=null;});
 function rStrip(r){const tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result;if(!tr)return '';const d=pr?tr.net-pr.net:null,wr=tr.win_rate!=null?Math.round(tr.win_rate*100):null;
- return '<div class="card rc" style="cursor:default;margin-bottom:14px"><div class="rm" style="padding-top:14px"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small></div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
+ return '<div class="card rc" style="cursor:default;margin-bottom:14px"><div class="rm" style="padding-top:14px"><div class="rv"><b class="'+cl(tr.net)+'">'+money(tr.net)+'</b><small>'+T('sur le passé · ','past data · ')+num(tr.trades||0)+' trades</small>'+vChip(tr,r.test&&r.test.ctl)+'</div>'+spark(cumOf(tr.curve),118,40)+'</div>'+
   '<div class="rq"><div><b>'+(wr!=null?wr+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(tr.profit_factor!=null?num(tr.profit_factor,2):'—')+'</b><span>PF</span></div><div><b class="neg">'+(tr.cc_dd!=null?'−$'+num(tr.cc_dd,0):'—')+'</b><span>'+T('baisse','dip')+'</span></div><div><b class="'+(d==null?'':cl(d))+'">'+(d==null?'—':(d>=0?'+':'−')+'$'+num(Math.abs(d),0))+'</b><span>'+T('vs parent','vs parent')+'</span></div></div></div>';}
 
 /* ---------- 2026-10-13 (owner): "what's new since my last visit" - the page remembers (on this device) what it showed,
@@ -1802,16 +1850,20 @@ async function gsOpen(){shOpen(T('Chercher dans le labo','Search the lab'),'<lab
   if((s&&s.err)||(r&&r.err)){const g=$('gsr');if(g)g.innerHTML=LOCK;return;}if(s)D=s;if(r)RB=r;}catch(e){}
  gsRun(($('gsq')||{}).value||'');}
 function gsRun(q){const g=$('gsr');if(!g)return;q=(q||'').trim().toLowerCase();
- if(q.length<2){g.innerHTML='<div class="note">'+T('Tapez au moins deux lettres. On cherche dans les noms, les explications et les verdicts.','Type at least two letters. Names, explanations and verdicts are searched.')+'</div>';return;}
+ if(q.length<2){g.innerHTML='<div class="note">'+T('Tapez au moins deux lettres : un robot, une pièce, un marché (or, nasdaq…) ou une stratégie.','Type at least two letters: a robot, a piece, a market (gold, nasdaq…) or a strategy.')+'</div>';return;}
  const has=t=>String(t||'').toLowerCase().includes(q);
  const S=((D&&D.items)||[]).filter(x=>has(tt(x))||has(pl(x))||has(vd(x))).slice(0,12);
  const R=(BLD().robots||[]).filter(r=>has(r.name_fr)||has(r.name_en)).slice(0,8);
  const P=pcs().filter(x=>has(x.name_fr)||has(x.name_en)||has(x.plain_fr)||has(x.plain_en)).slice(0,10);
+ const MK={};(BLD().robots||[]).forEach(r=>{if(r.test&&r.test.robot)(MK.BTCUSD=MK.BTCUSD||[]).push([r,r.test.robot,r.test.ctl]);(r.mtests||[]).filter(x=>x.state==='done'&&x.robot).forEach(x=>(MK[x.sym]=MK[x.sym]||[]).push([r,x.robot,x.ctl]));});
+ const MS=Object.keys(MK).filter(sy=>has(sy)||has(mkName(sy))||has({XAUUSD:'gold or',USTEC:'nasdaq',US30:'dow',USOIL:'oil petrole pétrole',BTCUSD:'bitcoin btc'}[sy]));
  const row=(on,ic,c,t,s)=>'<button class="fd" onclick="'+on+'">'+ICO(c,ic)+'<span class="tx"><b>'+t+'</b>'+(s?'<small>'+s+'</small>':'')+'</span><span class="cv">›</span></button>';
  let h='';
- if(S.length)h+='<div class="grp">'+T('Stratégies','Strategies')+' <em>'+S.length+'</em></div><div class="fds">'+S.map(x=>{const m=ST[x.status]||ST.study;return row('go(\''+x.id+'\')',fic(x.fam),m.c,esc(tt(x)),T(m.fr,m.en)+' · '+fnm(x.fam));}).join('')+'</div>';
- if(R.length)h+='<div class="grp">'+T('Robots','Robots')+' <em>'+R.length+'</em></div><div class="fds">'+R.map(r=>{const m=BST[r.stage]||BST.tested;return row('goB(\''+r.id+'\')',BOT,m.c,esc(T(r.name_fr,r.name_en)),T(m.fr,m.en));}).join('')+'</div>';
+ let hS='';if(S.length)hS+='<div class="grp">'+T('Stratégies','Strategies')+' <em>'+S.length+'</em></div><div class="fds">'+S.map(x=>{const m=ST[x.status]||ST.study;return row('go(\''+x.id+'\')',fic(x.fam),m.c,esc(tt(x)),T(m.fr,m.en)+' · '+fnm(x.fam));}).join('')+'</div>';
+ if(R.length)h+='<div class="grp">'+T('Robots','Robots')+' <em>'+R.length+'</em></div><div class="fds">'+R.map(r=>{const m=bstOf(r),tr=r.test&&r.test.robot;return row('goB(\''+r.id+'\')',BOT,m.c,esc(T(r.name_fr,r.name_en)),T(m.fr,m.en)+(tr?' · '+money(tr.net,0)+' · '+(ztVerdict(tr,r.test.ctl).sh||''):''));}).join('')+'</div>';
+ if(MS.length)h+='<div class="grp">'+T('Marchés','Markets')+' <em>'+MS.length+'</em></div><div class="fds">'+MS.map(sy=>{const L=MK[sy].sort((a,b)=>(b[1].net||0)-(a[1].net||0)),bst=L[0],v=ztVerdict(bst[1],bst[2]);return row('goZt(\''+bst[0].id+'\')',pic('M3 3v18h18M7 14l4-4 4 4 5-6'),v.c,esc(mkName(sy)||sy),L.length+T(' robot'+(L.length>1?'s':'')+' testé'+(L.length>1?'s':'')+' · meilleur : ',' robot'+(L.length>1?'s':'')+' tested · best: ')+esc(T(bst[0].name_fr,bst[0].name_en))+' '+money(bst[1].net,0)+' · '+(v.sh||''));}).join('')+'</div>';
  if(P.length)h+='<div class="grp">'+T('Pièces','Pieces')+' <em>'+P.length+'</em></div><div class="fds">'+P.map(x=>{const sl=SLOTS.find(s=>SLOTT[s[0]]===x.type)||SLOTS[0];return row('goP(\''+x.id+'\')',pic(sl[2]),(PST[x.status]||PST.tested).c,esc(T(x.name_fr,x.name_en)),sl[1]+' · '+T((PST[x.status]||PST.tested).fr,(PST[x.status]||PST.tested).en));}).join('')+'</div>';
+ h+=hS;   // strategies last: robots, markets and pieces are what people look for here
  g.innerHTML=h||'<div class="empty">'+T('Rien trouvé pour « ','Nothing found for “')+esc(q)+T(' ».','”.')+'</div>';}
 
 /* ---------- routing + loading for all three sides ---------- */

@@ -14256,7 +14256,10 @@ def acct_robot_block(user, admin=False):
         out["live"] = {"since": _ss.get("first"), "n": _ss.get("n"), "won": _ss.get("won"), "net": _ss.get("net"),
                        "month": _nd.get("month"), "last": (_tr[0].get("w") if _tr else None),
                        "open": _nd.get("open_positions") or 0, "alive": bool(_alive) if _lab else None, "why": _why,
-                       "updated": _nd.get("updated_utc")}
+                       "updated": _nd.get("updated_utc"),
+                       # trade-by-trade running total since curve_from (the account's recent stretch) + the lot it trades
+                       "curve": (_nd.get("curve") or [])[-80:], "curve_from": _nd.get("curve_from"),
+                       "lot": (_tr[0].get("lot") if _tr else None)}
     except Exception:
         pass
     if not out["can"]:
