@@ -20822,6 +20822,10 @@ class H(BaseHTTPRequestHandler):
         elif sub == "place":
             # 2026-10-17 (owner): La place des robots - its own page, in the Robots page's look, served from disk
             self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub == "mesrobots":
+            # 2026-10-18 (owner): "Mes robots" - every robot of the member on its own page (results, markets,
+            # progress, pieces in panels); the Robots page keeps only the best one. Data = robots_data. From disk.
+            self._send(open(os.path.join(DIR, "owl_myrobots_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
         elif sub == "place_data":
             self._send(json.dumps(place_payload(user, admin_cookie_ok(self.headers)), ensure_ascii=False), "application/json")
         elif sub == "parrainage":
