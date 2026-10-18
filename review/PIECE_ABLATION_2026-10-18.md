@@ -42,3 +42,10 @@ on GOLD (and helps there), while it protects Nasdaq. Candidate = a gold-only rob
 
 Incident during the runs: the runner's automatic 4-process controls starved the VPS ~17 min (live bots froze, no
 open position); fixed in study/robot_runner.py (wait for room, 2 processes). See memory feedback_research_starved_live_bots.
+
+## Gold confirmation, 40 draws (2026-10-18 22:34 UTC)
+
+owl-sans-orage on XAUUSD: real net +59.87 (105 trades, PF 1.30, both halves ~+30).
+Random control, 40 draws: median −4.17, p95 +82.52, 5 of 40 draws beat it.
+Percentile 87.5 → **within luck**. The 20-draw "beats chance" (exactly p95) did not hold.
+Gold is not a second edge yet. Nothing live changed.
