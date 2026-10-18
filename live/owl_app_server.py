@@ -1456,11 +1456,11 @@ body{background:var(--bg);color:var(--text);
  -webkit-backdrop-filter:blur(14px);
  border-top:1px solid var(--border);border-radius:20px 20px 0 0;
  padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))}
-.tb{flex:1;background:none;border:0;color:var(--muted);font-size:.76rem;
+.tb{flex:1;min-width:0;white-space:nowrap;letter-spacing:-.01em;background:none;border:0;color:var(--muted);font-size:min(.76rem,3.05vw);
  font-weight:600;display:flex;flex-direction:column;min-height:48px;
  align-items:center;justify-content:center;gap:4px;padding:6px 0;
  border-radius:12px;cursor:pointer;transition:color .15s,background .15s}
-.tb .ic{width:22px;height:22px}
+.tb .ic{width:24px;height:24px}
 .tb.on{color:var(--accent-soft);background:var(--accent-bg)}
 .srow{display:flex;align-items:center;gap:13px;padding:14px 2px;
  min-height:56px;border-bottom:1px solid var(--border);cursor:pointer;
@@ -1479,7 +1479,7 @@ body{background:var(--bg);color:var(--text);
 .hpulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:hpl 1.4s ease-in-out infinite}
 @keyframes hpl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.65)}}
 .hlive{cursor:pointer}
-#hfresh{font-size:.66rem;font-weight:600;opacity:.45;margin-top:8px;min-height:1em}
+#hfresh{font-size:.66rem;font-weight:600;opacity:.45;margin-top:6px;min-height:1em}
 #heye{background:none;border:0;color:#dbe9f7;opacity:.6;padding:2px 4px;min-height:30px!important;min-width:30px!important;line-height:1;cursor:pointer;display:inline-flex}
 #hbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(9px + env(safe-area-inset-top)) 18px 9px;background:var(--hero1);color:#fff;font-weight:800;transform:translateY(-110%);transition:transform .22s ease;box-shadow:0 4px 18px rgba(0,0,0,.28);cursor:pointer}
 #hbar.on{transform:none}#hbar .hb-v{font-size:1.08rem}#hbar .hb-d{font-size:.84rem;white-space:nowrap}
@@ -1488,7 +1488,7 @@ html.privy #eq,html.privy #eqe,html.privy #eqsub,html.privy #dayline b,html.priv
 .hero .dlm{display:inline-block;margin-left:6px;font-size:.72em;opacity:.55;vertical-align:1px}
 .hero .hwarn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 11px;border-radius:99px;font-size:.78rem;font-weight:800}
 .hero{background:linear-gradient(165deg,var(--hero1) 0%,var(--hero2) 100%);
- color:#fff;padding:20px 22px 26px;border-radius:0 0 28px 28px;
+ color:#fff;padding:20px 22px 18px;border-radius:0 0 28px 28px;
  text-align:center;position:relative;overflow:hidden;
  box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
 .hero>*{position:relative}
@@ -5122,7 +5122,7 @@ function renderGrow(d){const card=document.getElementById('palier');if(!card)ret
   const rung=j=>({v:per*j,lab:g1?gw(j)+(en?' / win':' / gain'):(j*0.01).toFixed(2)+' lot',lot:(j*0.01).toFixed(2)+' lot'});
   const prev=rung(k),nxt=rung(k+1),nx2=rung(k+2);R=[prev,nxt,nx2];lo=prev.v;hi=nx2.v;
   const xr=(k+1)/k,xs=Math.abs(xr-Math.round(xr))<1e-9?String(Math.round(xr)):xr.toFixed(1).replace('.',en?'.':',');
-  window._palTile={s:g1?(en?'then '+gw(k+1)+' per win (\u00d7'+xs+')':'puis '+gw(k+1)+' par gain (\u00d7'+xs+')'):(en?'to ':'jusqu\u2019\u00e0 ')+nxt.lot+(en?' \u00b7 stake \u00d7':' \u00b7 mise \u00d7')+xs};
+  window._palTile={f:Math.max(0,Math.min(1,(eq-prev.v)/((nxt.v-prev.v)||1))),s:g1?(en?'then '+gw(k+1)+' per win (\u00d7'+xs+')':'puis '+gw(k+1)+' par gain (\u00d7'+xs+')'):(en?'to ':'jusqu\u2019\u00e0 ')+nxt.lot+(en?' \u00b7 stake \u00d7':' \u00b7 mise \u00d7')+xs};
   head=g1?'<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before each win grows from ':'avant que chaque gain passe de ')+'<b>'+gw(k)+'</b>'+(en?' to ':' \u00e0 ')+'<b>'+gw(k+1)+'</b>'+
     '<span style="display:block;font-size:.76rem;font-weight:500;color:var(--muted);margin-top:4px">'+(en?'estimate from your recent wins \u00b7 (':'estimation d\u2019apr\u00e8s vos derniers gains \u00b7 (')+prev.lot+' \u2192 '+nxt.lot+')</span>'
    :'<b style="color:var(--up)">'+m(nxt.v-eq)+'</b> '+(en?'before the robot moves up to ':'avant que le robot passe \u00e0 ')+'<b>'+nxt.lot+'</b> '+(en?'(stake \u00d7':'(mise \u00d7')+xs+')';
@@ -7506,6 +7506,10 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  const CK_CSS=`
  .ckhd{display:flex;justify-content:space-between;align-items:center;margin:26px 4px 10px;font-size:.72rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
  .cktiles{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+ .ckt .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:22px}
+ .ckbar{margin-top:10px;height:6px;border-radius:99px;background:var(--surface3);overflow:hidden;flex:none}.ckbar i{display:block;height:100%;border-radius:99px}
+ .ckhd2{grid-column:1/3;margin:14px 4px 0!important}
+ .cknext{grid-column:1/3;margin:8px 0 4px;padding:14px;border:0;background:none;color:var(--accent-soft);font:inherit;font-size:.88rem;font-weight:800;text-align:center;cursor:pointer}
  .ckt .s{margin-top:auto!important;padding-top:6px}
  #kinocard .lbl{white-space:normal!important;overflow:visible!important}
  .ckt{position:relative;overflow:hidden;text-align:left;min-height:124px;padding:16px;display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;border-radius:20px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
@@ -7561,12 +7565,12 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  const resGrid=()=>{const w=$('week');return w?w.closest('.grid'):null;};
  let pkT0=0;setInterval(()=>{if(Date.now()-pkT0<300000)return;pkT0=Date.now();fetch(B+'pockets?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&!j.err)window._pk=j;}).catch(()=>{});},3000);
  const TILES=[
-  {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>{const _d=window._d;if(_d&&typeof _d.week==='number'){return (_d.week<0?'-':'+')+'$'+Math.abs(_d.week).toFixed(2);}return txt('week');},s:()=>{const _d=window._d||{},n0=new Date(),mon=new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-((n0.getDay()+6)%7));
+  {k:'res',ic:'up',col:'46,204,113',t:()=>T('Semaine','Week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>{const _d=window._d;if(_d&&typeof _d.week==='number'){return (_d.week<0?'-':'+')+'$'+Math.abs(_d.week).toFixed(2);}return txt('week');},s:()=>{const _d=window._d||{},n0=new Date(),mon=new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-((n0.getDay()+6)%7));
     const L=(_d.days||[]).filter(x=>{const m=/(\d\d)\/(\d\d)$/.exec(x.d||'');if(!m)return false;let dt=new Date(n0.getFullYear(),+m[2]-1,+m[1]);if(dt>n0)dt.setFullYear(dt.getFullYear()-1);return dt>=mon;});
     if(!L.length)return T('pas encore de jour fermé','no closed day yet');const b=L.reduce((a,x)=>(+x.p||0)>(+a.p||0)?x:a,L[0]);return T('meilleur jour ','best day ')+((+b.p||0)>=0?'+$':'-$')+Math.abs(+b.p||0).toFixed(2)+' · '+(()=>{const m=/(\d\d)\/(\d\d)$/.exec(b.d||'');if(!m)return String(b.d||'').split(' ')[0];const dt=new Date(n0.getFullYear(),+m[2]-1,+m[1]);return dt.toLocaleDateString(EN()?'en-GB':'fr-FR',{weekday:'short'}).replace('.','');})();},spark:true,show:()=>true},
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>{const d=window._d||{},db=+((d.ledger||{}).debt||0),k='owlDebtPk:'+B;let pk=0;try{pk=+localStorage.getItem(k)||0;if(db<=0.005){localStorage.removeItem(k);pk=0;}else if(db>pk){pk=db;localStorage.setItem(k,String(db));}}catch(e){}
     const back=pk>0?Math.max(0,Math.min(1,(pk-db)/pk)):0;return back>=0.05?T('déjà ','already ')+Math.round(back*100)+T(' % regagnés',' % won back'):T('à regagner, peu à peu','to win back, bit by bit');},show:()=>shown('ledcard'),vcol:'var(--text)'},
-  {k:'pal',ic:'grow',col:'59,130,246',t:()=>(window._palGoal?T('Objectif de la semaine','Week goal'):T('Prochain palier','Next step')),cards:()=>[$('palier')],vsm:()=>!!window._palGoal,
+  {k:'pal',ic:'grow',col:'59,130,246',t:()=>(window._palGoal?T('Objectif semaine','Week goal'):T('Palier','Next level')),cards:()=>[$('palier')],vsm:()=>!!window._palGoal,
    v:()=>{const g=window._palGoal;if(g){const done=Math.max(0,g.step-g.left);return '$'+done.toFixed(2)+' / $'+g.step.toFixed(0);}return money(txt('pal-head'))||'—';},
    s:()=>{const g=window._palGoal;if(g)return g.left<=0.005?T('atteint','reached'):T('encore ','still ')+'$'+g.left.toFixed(2);if(window._palTile)return T('à gagner, puis des gains plus grands','to win, then bigger gains');const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],
@@ -7574,7 +7578,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
    s:()=>{const P=((window._pk||{}).pockets)||[];if(P.length&&P.some(p=>p.month!=null)){const t=P.reduce((a,p)=>a+(+p.net||0),0);return T('ce mois · total ','this month · total ')+(t>=0?'+$':'-$')+Math.abs(t).toFixed(2)+(P.length>1?' · '+P.length+T(' marchés',' markets'):'');}const r=$('pk-rows');const n=r?r.children.length:0;if(n>1)return n+T(' marchés',' markets');const w=txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim(),m=w.match(/^(.+?)\\s+(\\d+)\\s+trades?/);return m?m[1]+' · '+m[2]+' trades':w;},show:()=>shown('pockcard')},
   {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>{const x=newsAt();return x?x.n.h:(txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'));},vsm:true,s:()=>{const x=newsAt();return x?x.n.s+(x.len>1?'  ·  '+(x.i+1)+'/'+x.len:''):'';},show:()=>(TIER()==='strategy'||!!(window._d&&window._d.is_master))&&(shown('aicard')||shown('stcard'))},
   {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
-  {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs')+T(' · un vrai compte du nid, résultats passés',' · a real account of the nest, past results'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
+  {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs')+T(' · résultats passés',' · past results'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
  let store=null,wrap=null,open=null;
  function build(){
   const anchor=$('battles-sec');if(!anchor||$('ckwrap'))return false;
@@ -7608,11 +7612,19 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   const html=L.map(t=>{let v='',s='';try{v=t.v()||'';s=t.s()||'';}catch(e){}
    const vc=t.vcol||(t.vsm?'var(--text)':signCol(v));
    return '<button class="ckt'+(t.wide?' wide':'')+'" data-k="'+t.k+'"><div class="k"><i style="background:rgba('+t.col+',.15);color:rgb('+t.col+')">'+svg(IC[t.ic])+'</i>'+t.t()+'</div>'+
-    '<div class="v'+((typeof t.vsm==='function'?t.vsm():t.vsm)?' sm':'')+'" style="color:'+vc+'">'+escH(v||'—')+'</div>'+(s?'<div class="s">'+escH(s)+'</div>':'')+sparkOf(t)+'</button>';}).join('');
+    '<div class="v'+((typeof t.vsm==='function'?t.vsm():t.vsm)?' sm':'')+'" style="color:'+vc+'">'+escH(v||'—')+'</div>'+(s?'<div class="s">'+escH(s)+'</div>':'')+sparkOf(t)+barOf(t)+'</button>';}).join('')
+   .replace('<button class="ckt wide" data-k="rc">','<div class="ckhd ckhd2">'+T('Exemple · un vrai compte du nid','Example · a real account of the nest')+'</div><button class="ckt wide" data-k="rc">')
+   +'<button type="button" class="cknext" id="cknext">'+(new Date().getDay()===0?T('Votre semaine en un coup d’œil','Your week at a glance'):T('Tous vos résultats, jour par jour','All your results, day by day'))+' ›</button>';
   // keep the wide tile last and the grid even: a lone half tile becomes wide
   if(g._last!==html){g._last=html;g.innerHTML=html;
    const half=[...g.querySelectorAll('.ckt:not(.wide)')];if(half.length%2===1)half[half.length-1].classList.add('wide');
-   g.querySelectorAll('.ckt').forEach(b=>b.onclick=()=>openSheet(b.dataset.k));}}
+   g.querySelectorAll('.ckt').forEach(b=>b.onclick=()=>openSheet(b.dataset.k));
+   {const nx=$('cknext');if(nx)nx.onclick=()=>{try{tab('hist',$('tb-hist'));window.scrollTo(0,0);}catch(e){}};}}}
+ function barOf(t){let f=null;
+  if(t.k==='led'){const d=window._d||{},db=+((d.ledger||{}).debt||0);let pk=0;try{pk=+localStorage.getItem('owlDebtPk:'+B)||0;}catch(e){}if(db>0.005&&pk>0)f=Math.max(0,Math.min(1,(pk-db)/pk));}
+  else if(t.k==='pal'){const g=window._palGoal;if(g&&g.step>0)f=Math.max(0,Math.min(1,(g.step-g.left)/g.step));else if(window._palTile&&typeof window._palTile.f==='number')f=window._palTile.f;}
+  if(f==null)return '';const c=t.k==='led'?'232,197,90':'59,130,246';
+  return '<div class="ckbar"><i style="width:'+Math.round(Math.max(.03,f)*100)+'%;background:rgb('+c+')"></i></div>';}
  function escH(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
  function openSheet(k){const t=TILES.find(x=>x.k===k);if(!t)return;const b=$('cksh-b');
   if(open)restore();
@@ -8338,8 +8350,8 @@ function goLabo(){location.href=B+'robots';}
   if(gate&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),row:T2('Il attend','Waiting')};
   if(gate&&ms.pb_side==='wrong')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le prix est du mauvais côté de sa dernière cassure : le robot attend qu’il repasse — ','Price is on the wrong side of its last break: the robot waits for it to come back — ')+trend+'.',row:T2('Il attend','Waiting')};
   if(k==='nervous'||k==='brisk')return {c:'or',t:T2('Il se méfie','Cautious'),s:T(k==='nervous'?'j_storm':'j_nervous'),row:T2('Il se méfie','Cautious')};
-  if(k==='none'&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Il attend deux choses : que le marché se réveille, et qu’un sens clair se dessine.','It waits for two things: the market to wake up, and a clear direction.'),row:T2('Il attend','Waiting')};
-  if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le marché dort. Dès qu’il se réveille, le robot cherche ','The market is asleep. When it wakes up, the robot looks for ')+'<b>'+side+'</b>'+(trend?' — '+trend:'')+'.',row:T2('Il attend','Waiting')};
+  if(k==='none'&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Il attend que le marché se réveille et choisisse un sens.','It waits for the market to wake up and pick a direction.'),row:T2('Il attend','Waiting')};
+  if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Il cherche ','It looks for ')+'<b>'+side+'</b>'+T2(' dès que le marché se réveille.',' as soon as the market wakes up.'),row:T2('Il attend','Waiting')};
   if(k==='forming'||k==='flip')return {c:'or',t:T2('Il attend','Waiting'),s:T(k==='forming'?'j_forming':'j_flip'),row:T2('Il attend','Waiting')};
   return {c:'bl',t:T2('Prêt','Ready'),s:T2('Les conditions sont réunies : il entrera dès qu’une cassure confirme ','Conditions are met: it enters as soon as a break confirms ')+'<b>'+side+'</b>.',row:T2('Prêt','Ready')};}
  // what the open trade(s) would make at the target / lose at the stop: dollars per point from the live P&L
@@ -9342,10 +9354,10 @@ function refNudge(d){try{const S=d.since_start||{},net=+S.net||0,up=net>0||(+d.t
  const en=LANG()==='en';const txt=d.public?(en?'The robot is in the green. Open an account, invite a friend: 50 % of their first month is yours.':'Le robot est dans le vert. Ouvrez un compte, invitez un ami : 50 % de son premier mois est pour vous.')
   :(en?'Your account is in the green. Share it: 50 % of each friend’s first month is yours, in money.':'Votre compte est dans le vert. Partagez-le : 50 % du premier mois de chaque ami est pour vous, en argent.');
  if(!el){el=document.createElement('div');el.id='refnudge';el.className='panel';el.style.cssText='margin-top:26px;border-color:rgba(167,139,250,.4);background:linear-gradient(135deg,rgba(167,139,250,.12),var(--surface))';anchor.parentNode.insertBefore(el,anchor);}
- const short=d.public?(en?'Invite a friend: 50 % of their first month is yours.':'Invitez un ami : 50 % de son premier mois pour vous.'):(en?'In the green: share it, 50 % of a friend’s first month is yours.':'Dans le vert : partagez, 50 % du 1er mois d’un ami pour vous.');
- el.style.marginTop='14px';el.style.padding='12px 14px';
- el.innerHTML='<div style="display:flex;gap:12px;align-items:center"><div style="flex:none;width:34px;height:34px;border-radius:11px;background:rgba(167,139,250,.16);color:var(--violet-soft,#c4b5fd);display:grid;place-items:center;font-size:1rem">🎁</div><div style="flex:1;min-width:0;font-size:.84rem;line-height:1.4;color:var(--text2)">'+short+'</div>'
-  +'<a class="shbtn shmain" style="flex:none;width:auto;margin:0;text-decoration:none;padding:8px 12px;font-size:.8rem" href="'+(d.public?'/offres':B+'parrainage')+'">'+(d.public?(en?'Open':'Ouvrir'):(en?'Share':'Partager'))+'</a><button aria-label="'+(en?'Later':'Plus tard')+'" style="flex:none;width:30px;min-width:0;height:30px;padding:0;margin:0;border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer" onclick="refNudgeLater()">×</button></div>';el.style.display='block';}catch(e){}}
+ const short=en?'Refer a friend: 50 %':'Parrainez : 50 % pour vous';
+ el.style.marginTop='14px';el.style.padding='8px 8px 8px 12px';
+ el.innerHTML='<div style="display:flex;gap:10px;align-items:center"><div style="flex:none;width:28px;height:28px;border-radius:9px;background:rgba(167,139,250,.16);display:grid;place-items:center;font-size:.85rem">🎁</div><div style="flex:1;min-width:0;font-size:.84rem;font-weight:600;line-height:1.3;color:var(--text2)">'+short+'</div>'
+  +'<a style="flex:none;text-decoration:none;font-size:.84rem;font-weight:800;color:var(--accent-soft);padding:6px 4px;white-space:nowrap" href="'+(d.public?'/offres':B+'parrainage')+'">'+(d.public?(en?'Open':'Ouvrir'):(en?'Share':'Partager'))+' ›</a><button aria-label="'+(en?'Later':'Plus tard')+'" style="flex:none;width:30px;min-width:0;height:30px;padding:0;margin:0;border:0;background:none;color:var(--muted);font-size:1.1rem;cursor:pointer" onclick="refNudgeLater()">×</button></div>';el.style.display='block';}catch(e){}}
 function refNudgeLater(){try{localStorage.setItem('owlRefNudge:'+B,String(Date.now()));}catch(e){}var el=document.getElementById('refnudge');if(el)el.style.display='none';}
 function renewBanner(d){
  const el=document.getElementById('renewcard'),P=d.plan;if(!el||!P||d.public){if(el)el.style.display='none';return;}
