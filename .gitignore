@@ -159,3 +159,4 @@ study/tick1s/*/*.npz
 live/owl_influencers.json
 live/owl_ref_clicks.json
 live/owl_ref_salt
+live/robots/notified.json

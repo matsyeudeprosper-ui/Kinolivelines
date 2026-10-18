@@ -12945,6 +12945,11 @@ def builder_payload(user, detail):
                 x["test"] = {"robot": j.get("robot"), "parent_result": j.get("parent_result"), "days": j.get("days"), "window_utc": j.get("window_utc")}
         except Exception:
             x["test"] = None
+        if r.get("id") == "owl" and not x.get("test"):
+            _ot = _robot_test("owl")
+            if _ot.get("net") is not None:
+                x["test"] = {"robot": {k: v for k, v in _ot.items() if k not in ("balance", "window_utc", "days", "generated_at")},
+                             "parent_result": None, "days": _ot.get("days"), "window_utc": _ot.get("window_utc")}
         x["mtests"] = _robot_mtests(r["id"])
         x["mhist"] = _robot_mhist(r["id"])
         if x.get("test"):
@@ -12982,6 +12987,23 @@ def builder_payload(user, detail):
                       "real": "trial" not in str(u.get("mt5_server") or "").lower() and u.get("mt5_server") is not None})
         if not (u.get("reference") or uid == "u224016179" or u.get("public")):
             i += 1
+    # 2026-10-18 (owner upgrade list): is the robot running anywhere? (a member sees yes/no, never the others' count)
+    try:
+        _cnt = {}
+        for _u in users():
+            _pk = (PK.get("accounts") or {}).get(_u.get("id"))
+            if not _pk or _u.get("public"):
+                continue
+            _rb = _pk[6:] if _pk.startswith("robot-") and _pk[6:] in byid else "owl"
+            _cnt[_rb] = _cnt.get(_rb, 0) + 1
+        _rp = PK.get("robot_plugs") or {}
+        for _x in out:
+            _x["running"] = _cnt.get(_x["id"], 0) if detail else bool(_cnt.get(_x["id"]))
+            _ats = [str(v.get("at") or "") for v in _rp.values() if isinstance(v, dict) and v.get("robot") == _x["id"]]
+            if _ats:
+                _x["plugged_at"] = max(_ats)          # the latest plug on any account (a date only, never whose)
+    except Exception:
+        pass
     # money pieces = the packages (generic names); a dead package is not offered
     try:
         _pk = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
@@ -13136,6 +13158,12 @@ def robot_update(user, body):
         return {"ok": False, "err": "not_yours"}
     if "public" in body:
         r["public"] = bool(body["public"])
+    if "archived" in body:                      # 2026-10-18: archived robots leave the lists, keep their history
+        if body["archived"]:
+            r["archived"] = True
+            r["public"] = False
+        else:
+            r.pop("archived", None)
     if body.get("name"):
         nm = str(body["name"]).strip()[:40]
         if len(nm) >= 2:
@@ -13179,6 +13207,14 @@ def robot_test(user, body):
     r = next((x for x in rob if x.get("id") == body.get("id")), None)
     if not _robot_mine(user, r) or r.get("id") == "owl":
         return {"ok": False, "err": "not_yours"}
+    if r.get("stage") in ("tested", "paper", "demo", "real") and body.get("again"):
+        if r.get("retest"):
+            return {"ok": True, "already": True}
+        r["retest"] = True
+        r["queued_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        _robot_save(reg)
+        robot_runner_kick()
+        return {"ok": True, "minutes": ROBOT_TEST_MIN}
     if r.get("stage") not in ("draft", "error"):
         return {"ok": False, "err": "state"}
     r["stage"] = "queued"
@@ -13359,6 +13395,81 @@ def _random_ctl(rid, sym):
                 "p95": (c.get("control") or {}).get("p95")}
     except Exception:
         return None
+
+
+# 2026-10-18 (owner upgrade list): tests run before this engine fix are flagged "à refaire" on the robot pages
+ROBOT_ENGINE_AT = "2026-10-15T22:30:00Z"      # reply 22: the add-risk fix in engine + harness
+ROBOT_CTL = os.path.join(DIR, "robots", "controls.json")
+
+
+def _ctl_load():
+    try:
+        return json.load(open(ROBOT_CTL, encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def _ctl_state():
+    """the luck-check jobs with their state read from disk: a result file newer than the request = done"""
+    out = []
+    for j in _ctl_load()[-30:]:
+        st = "waiting"
+        try:
+            c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (j["rid"], j["sym"])), encoding="utf-8"))
+            if str(c.get("generated_at") or "") >= j["at"]:
+                st = "done"
+        except Exception:
+            pass
+        if st != "done":
+            try:
+                lg = open(os.path.join(os.path.dirname(DIR), "study", "when_free_%s.log" % j["name"]), encoding="utf-8").read()
+                if " start (" in lg:
+                    st = "running"
+                if "gave up" in lg or ("all done" in lg and "exit 0" not in lg):
+                    st = "error"
+            except Exception:
+                pass
+            if st in ("waiting", "running") and time.time() - j.get("t", time.time()) > 12 * 3600:
+                st = "error"
+        out.append({"rid": j["rid"], "sym": j["sym"], "at": j["at"], "state": st, "mine": None})
+    return out
+
+
+def robot_control(user, body):
+    """2026-10-18 (owner): 'Contrôler contre le hasard' - queue the 40-draw random-entry check of a robot on a market
+    where it wins. One check at a time on the whole VPS (heavy job, ~2 h), started by study/when_free.py when RAM allows."""
+    reg = robot_reg()
+    r = next((x for x in reg.get("robots") or [] if x.get("id") == body.get("id")), None)
+    sym = str(body.get("sym") or "")
+    if r is None or not (_robot_mine(user, r) or is_admin(user) or (r.get("id") == "owl" and is_admin(user))):
+        return {"ok": False, "err": "not_yours"}
+    if sym == "BTCUSD":
+        res = _robot_test(r["id"])
+    else:
+        try:
+            res = (json.load(open(os.path.join(DIR, "robots", "results", "%s@%s.json" % (r["id"], sym)), encoding="utf-8")).get("robot") or {})
+        except Exception:
+            res = {}
+    if (res.get("net") or 0) <= 0 or (res.get("trades") or 0) < 20:
+        return {"ok": False, "err": "not_winning"}
+    if not os.path.isdir(os.path.join(os.path.dirname(DIR), "study", "markets_tick", sym)) and not os.path.isdir(os.path.join(MARKET_PACKS, sym)):
+        return {"ok": False, "err": "market"}
+    if any(j["state"] in ("waiting", "running") for j in _ctl_state()):
+        return {"ok": False, "err": "busy"}
+    if _random_ctl(r["id"], sym) and not body.get("again"):
+        return {"ok": False, "err": "done"}
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    name = "ctl_%s_%s_%d" % (re.sub(r"[^a-z0-9]+", "", r["id"].lower())[:20], sym.lower(), int(time.time()))
+    root = os.path.dirname(DIR)
+    import subprocess
+    subprocess.Popen([sys.executable, os.path.join("study", "when_free.py"), name, "--", sys.executable,
+                      os.path.join("study", "random_control_market.py"), sym, r["id"], "40"],
+                     cwd=root, creationflags=0x08000000 | 0x00000008, close_fds=True)
+    q = _ctl_load()
+    q.append({"rid": r["id"], "sym": sym, "uid": user.get("id"), "at": now, "t": time.time(), "name": name})
+    json.dump(q[-60:], open(ROBOT_CTL + ".tmp", "w", encoding="utf-8"), indent=1)
+    os.replace(ROBOT_CTL + ".tmp", ROBOT_CTL)
+    return {"ok": True}
 
 
 def _robot_mtests(rid):
@@ -14642,12 +14753,56 @@ def place_action(user, action, body, admin=False, origin="https://owltrader.duck
 _MARKET_TICK = {"t": 0.0}
 
 
+ROBOT_NOTIFIED = os.path.join(DIR, "robots", "notified.json")
+
+
+def _robot_finish_push():
+    """2026-10-18 (owner upgrade list): tell the member when a test they started is finished. First run = seed only."""
+    try:
+        seen = set(json.load(open(ROBOT_NOTIFIED, encoding="utf-8")))
+        first = False
+    except Exception:
+        seen, first = set(), True
+    reg = robot_reg()
+    byid = {r["id"]: r for r in reg.get("robots") or []}
+    nm = lambda rid: (byid.get(rid) or {}).get("name_fr") or rid
+    ev = []
+    for r in reg.get("robots") or []:
+        if r.get("tested_at") and r.get("by_uid"):
+            ev.append(("t:%s:%s" % (r["id"], r["tested_at"]), r["by_uid"], "Robot testé",
+                       "« %s » a fini son test sur le Bitcoin. Le résultat est sur la page Mes robots." % nm(r["id"])))
+    for x in _mq_load():
+        if x.get("state") in ("done", "error") and x.get("uid"):
+            ev.append(("m:%s" % x["id"], x["uid"], "Test de marché fini",
+                       "« %s » sur %s : %s" % (nm(x["rid"]), x["sym"], "résultat prêt sur la page Mes robots." if x["state"] == "done" else "le test n’a pas pu aller au bout.")))
+    for j in _ctl_load():
+        st = next((c["state"] for c in _ctl_state() if c["rid"] == j["rid"] and c["sym"] == j["sym"] and c["at"] == j["at"]), None)
+        if st in ("done", "error") and j.get("uid"):
+            c = _random_ctl(j["rid"], j["sym"]) or {}
+            ev.append(("c:%s:%s:%s" % (j["rid"], j["sym"], j["at"]), j["uid"], "Contrôle contre le hasard fini",
+                       "« %s » sur %s : %s" % (nm(j["rid"]), j["sym"], ("mieux que %d tirages au hasard sur 100." % round(c["pct"])) if st == "done" and c.get("pct") is not None else "le contrôle n’a pas pu aller au bout.")))
+    new = [e for e in ev if e[0] not in seen]
+    if not first:
+        for k, uid, title, body in new[:10]:
+            try:
+                queue_push(uid, title, body)
+            except Exception:
+                pass
+    seen |= {e[0] for e in ev}
+    json.dump(sorted(seen)[-2000:], open(ROBOT_NOTIFIED + ".tmp", "w", encoding="utf-8"))
+    os.replace(ROBOT_NOTIFIED + ".tmp", ROBOT_NOTIFIED)
+
+
 def _market_tick():
     """every 10 min from the robot-pending watch: listings paused when their test turns negative; subscriptions
     that ended -> back to the Owl, the member told; a reminder 2 days before the end"""
     if time.time() - _MARKET_TICK["t"] < 600:
         return
     _MARKET_TICK["t"] = time.time()
+    try:
+        _robot_finish_push()
+    except Exception:
+        pass
     try:
         import owl_market as _OMKT
         _OMKT.refresh_pauses()
@@ -18909,7 +19064,7 @@ class H(BaseHTTPRequestHandler):
         if len(_parts) == 2 and _parts[1] in ("robot_create", "robot_update", "robot_delete", "studio_save", "studio_confirm",
                                               "piece_create", "piece_preview", "piece_delete", "piece_public",
                                               "ai_start", "ai_answer", "ai_build", "robot_test", "robot_plug_apply", "robot_plug_undo",
-                                              "robot_markets", "robot_test_market", "robot_test_markets"):
+                                              "robot_markets", "robot_test_market", "robot_test_markets", "robot_control"):
             _ru = user_by_token(_parts[0])
             if _ru is None or _ru.get("public") or not (is_admin(_ru) or has(_ru.get("id"), "strategy")):
                 self._send(json.dumps({"ok": False, "err": "strategy"}), "application/json")
@@ -18922,7 +19077,7 @@ class H(BaseHTTPRequestHandler):
                        "ai_start": ai_start, "ai_answer": ai_answer, "ai_build": ai_build, "robot_test": robot_test,
                        "robot_plug_apply": robot_plug_apply, "robot_plug_undo": robot_plug_undo,
                        "robot_markets": robot_markets, "robot_test_market": robot_test_market,
-                       "robot_test_markets": robot_test_markets}[_parts[1]]
+                       "robot_test_markets": robot_test_markets, "robot_control": robot_control}[_parts[1]]
                 self._send(json.dumps(_fn(_ru, _rb)), "application/json")
             except Exception as e:
                 self._send(json.dumps({"ok": False, "err": str(e)[:80]}), "application/json")
@@ -21271,7 +21426,15 @@ class H(BaseHTTPRequestHandler):
                     # actions are gated by the package: Automatique switches the robot of its account, Strategie builds,
                     # tests and publishes (server-side on every POST; the page only shows the right door)
                     _dd = is_admin(user) or admin_cookie_ok(self.headers)
-                    _ro = dict(robots_payload(_dd)); _ro["builder"] = builder_payload(user, _dd)
+                    _ro = {} if "lite=1" in self.path else dict(robots_payload(_dd))
+                    _ro["builder"] = builder_payload(user, _dd)
+                    _ro["builder"]["engine_at"] = ROBOT_ENGINE_AT
+                    _ro["builder"]["controls"] = _ctl_state()
+                    try:
+                        _dh = json.load(open(os.path.join(DIR, "lab", "drag_history.json"), encoding="utf-8"))
+                        _ro["builder"]["live_vs_test"] = [{k: z.get(k) for k in ("d", "trades", "expected", "actual")} for z in _dh][-30:]
+                    except Exception:
+                        pass
                     _ro["acct"] = acct_robot_block(user, _dd)
                     _uid = user.get("id")
                     _ro["tier"] = {"public": bool(user.get("public")), "auto": bool(user.get("trade") and user.get("mt5_login")) and not user.get("public"),

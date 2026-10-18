@@ -126,18 +126,23 @@ input,textarea{width:100%;background:var(--surface2);border:1px solid var(--bord
 .vb{display:flex;gap:12px;align-items:flex-start;border-radius:var(--r);padding:12px 14px;margin-top:12px;border:1px solid var(--border)}.vb i{flex:none;width:26px;height:26px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-weight:900}.vb b{display:block;font-size:.9rem}.vb p{margin:3px 0 0;font-size:.78rem;color:var(--muted2);line-height:1.45}
 .vb.gr{background:var(--ok-bg);border-color:rgba(46,204,113,.35)}.vb.gr i{background:rgba(46,204,113,.2);color:var(--up-soft)}.vb.or{background:rgba(232,197,90,.08);border-color:rgba(232,197,90,.3)}.vb.or i{background:rgba(232,197,90,.18);color:var(--warn)}.vb.rd{background:rgba(255,92,92,.07);border-color:rgba(255,92,92,.3)}.vb.rd i{background:rgba(255,92,92,.18);color:var(--down-soft)}.vb.gy{background:var(--surface);}.vb.gy i{background:var(--surface3);color:var(--muted2)}
 .rs.off{color:var(--muted2);background:var(--surface3);border:1px solid var(--border2)}
+.fam{margin:18px 2px 8px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;gap:8px}.fam:after{content:"";flex:1;height:1px;background:var(--border)}
+.stale{font-size:.6rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--warn);background:rgba(232,197,90,.12);border:1px solid rgba(232,197,90,.3);border-radius:99px;padding:2px 7px;margin-left:6px}
+.pk{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border);cursor:pointer}.pk:first-child{border-top:0}.pk .bx{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid var(--border2);display:grid;place-items:center;color:#fff;font-size:.8rem;font-weight:900}.pk.on .bx{background:var(--accent);border-color:var(--accent)}.pk .rl{flex:1;min-width:0}.pk .rl b{display:block;font-size:.9rem}.pk .rl small{font-size:.74rem;color:var(--muted)}
+.cmpt{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:12px}.cmpt td,.cmpt th{padding:9px 6px;border-top:1px solid var(--border);text-align:right}.cmpt th{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:800}.cmpt td:first-child,.cmpt th:first-child{text-align:left;color:var(--muted2)}
 .btn2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn2 .btn{margin:0;width:100%}
 </style></head><body>
 <div class="wrap">
 <header><div class="hrow">
  <a href="robots" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
  <div class="ttl"><h1 id="h1">Mes robots</h1><div id="h1s">Leurs tests, leurs marchés, leurs progrès</div></div>
+ <button class="ib" data-act="combine" aria-label="Combiner des poches" title="Combiner des poches"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5zM3 13l9 5 9-5"/></svg></button>
  <a id="newb" href="robots#new=1" class="ib" aria-label="Nouveau robot" style="display:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></a>
 </div></header>
 <div class="strip" id="strip"></div>
 <div id="hero"></div>
 <div class="tool"><div class="chips" id="chips">
- <button class="chip on" data-f="all">Tous</button><button class="chip" data-f="tested">Test&eacute;s</button><button class="chip" data-f="todo">&Agrave; tester</button><button class="chip" data-f="live">En vrai</button>
+ <button class="chip on" data-f="all">Tous</button><button class="chip" data-f="tested">Test&eacute;s</button><button class="chip" data-f="todo">&Agrave; tester</button><button class="chip" data-f="live">En vrai</button><button class="chip" data-f="arch">Archiv&eacute;s</button>
 </div></div>
 <div id="list" class="fds"><div class="skc"></div><div class="skc" style="animation-delay:.15s"></div></div>
 </div>
@@ -202,6 +207,8 @@ function verdict(a,c){if(!a||a.trades==null)return {k:'gy',i:'?',c:'var(--border
  const hv=(a.first_half||0)>0&&(a.later_half||0)>0,pc=c&&c.pct!=null?Math.round(c.pct):null,ns=c&&c.seeds?c.seeds:100,nb=pc!=null?Math.round(pc/100*ns):0;
  if(a.net<=0)return {k:'rd',i:'✕',c:'var(--down)',sh:T('Perd','Loses'),t:T('Perd sur ce marché','Loses on this market'),s:T('Sur la période testée, le robot a perdu de l’argent ici.','Over the tested period, the robot lost money here.')};
  if(pc!=null&&pc<95)return {k:'or',i:'!',c:'var(--warn)',sh:T('Pas prouvé','Not proven'),t:T('Gagne, mais pas mieux que le hasard','Wins, but no better than chance'),s:T('Des entrées au hasard font aussi bien ou mieux '+(ns-nb)+' fois sur '+ns+'. Il en faut moins de 5 sur 100 pour y croire.','Random entries do as well or better '+(ns-nb)+' times out of '+ns+'. It takes fewer than 5 in 100 to trust it.')};
+ // a pass on fewer than 40 draws is checked again on 40 before it is called solid (gold 10-17: 19/20, then 36/40)
+ if(pc!=null&&ns<40)return {k:'or',i:'!',c:'var(--warn)',sh:T('À confirmer','To confirm'),t:T('Passe de justesse : à confirmer','Passes narrowly: to confirm'),s:T('Mieux que '+nb+' tirages au hasard sur '+ns+'. Avec si peu de tirages, un seul de plus peut tout changer : on confirme sur 40 avant de dire « solide ».','Better than '+nb+' random draws out of '+ns+'. With so few draws one more can change everything: we confirm on 40 before saying "solid".')};
  if(pc!=null)return {k:'gr',i:'✓',c:'var(--up)',sh:T('Solide','Solid'),t:hv?T('Bat le hasard et gagne sur les deux moitiés','Beats chance and wins in both halves'):T('Bat le hasard','Beats chance'),s:(pc>=100?T('Mieux que les '+ns+' tirages au hasard','Better than all '+ns+' random draws'):T('Mieux que '+nb+' tirages au hasard sur '+ns,'Better than '+nb+' random draws out of '+ns))+(hv?'':T(', mais une des deux moitiés perd.',', but one of the two halves loses.'))};
  return {k:'or',i:'!',c:'var(--warn)',sh:T('À contrôler','To check'),t:T('Gagne, hasard pas encore contrôlé','Wins, chance not checked yet'),s:T('Le contrôle contre des entrées au hasard n’est pas encore fait : on ne dit pas « solide » avant.','The check against random entries is not done yet: we do not say "solid" before that.')};}
 function markets(r){const t=testOf(r),R=[];if(t)R.push({sym:'BTCUSD',a:t.a,ctl:t.ctl,days:t.days||42,fills:'ticks',win:t.win});
@@ -222,19 +229,39 @@ function insights(r){const t=testOf(r);if(!t)return [];const a=t.a,p=t.p,par=r.p
  if(a.cc_dd!=null)O.push(['i-i','↧',T('Plus forte baisse','Deepest dip'),'−$'+num(a.cc_dd,0)+T(', soit ',', i.e. ')+Math.round(100*a.cc_dd/200)+T(' % du compte de départ de $200.',' % of the $200 start account.')]);
  return O.slice(0,5);}
 const best=L=>L.filter(r=>netOf(r)!=null).sort((x,y)=>netOf(y)-netOf(x))[0]||null;
+// 2026-10-18 (owner upgrade list)
+const stOf=r=>(['real','demo'].includes(r.stage)&&(r.running===false||r.running===0))?[T('Au repos','Resting'),'off']:(ST[r.stage]||ST.tested);
+const EAT=()=>BL().engine_at||'';
+const staleBtc=r=>r.id!=='owl'&&!!testOf(r)&&!!r.tested_at&&r.tested_at<EAT();
+const staleMk=m=>!!m.at&&m.at<EAT();
+const ctlJob=(rid,sym)=>(BL().controls||[]).filter(j=>j.rid===rid&&j.sym===sym).slice(-1)[0]||null;
+const ctlBusy=()=>(BL().controls||[]).some(j=>j.state==='waiting'||j.state==='running');
+const canAct=r=>!!(r.can_edit||BL().admin);
+// the luck-check block of one market: done / running / a button (only where the robot wins and has 20+ trades)
+function ctlBlock(r,sym,a,ctl){const conf=!!(ctl&&ctl.pct!=null&&ctl.pct>=95&&(ctl.seeds||0)<40);if(ctl&&ctl.pct!=null&&!conf)return '';if(!a||(a.net||0)<=0||(a.trades||0)<20)return '';const j=ctlJob(r.id,sym);
+ if(j&&(j.state==='waiting'||j.state==='running'))return '<div class="vb gy" style="margin-top:12px"><i>⏳</i><div><b>'+(j.state==='running'?T('Contrôle contre le hasard en cours','Luck check running'):T('Contrôle en attente de place','Luck check waiting for room'))+'</b><p>'+T('40 tirages au hasard sur le même marché, environ 2 heures. Le verdict arrive ici tout seul, avec une notification.','40 random draws on the same market, about 2 hours. The verdict lands here on its own, with a notification.')+'</p></div></div>';
+ if(!canAct(r))return '';
+ if(ctlBusy())return '<button class="btn sec full" disabled>'+T('Un contrôle tourne déjà : réessayez plus tard','A check is already running: try later')+'</button>';
+ return '<button class="btn glow full" data-act="ctl" data-id="'+esc(r.id)+'" data-s="'+esc(sym)+'"'+(conf?' data-again="1"':'')+'>'+(conf?T('Confirmer sur 40 tirages · ~2 h','Confirm on 40 draws · ~2 h'):T('Contrôler contre le hasard · ~2 h','Check against chance · ~2 h'))+'</button>';}
+// max drawdown of a cumulative daily series
+const mdd=a=>{let pk=0,dd=0;a.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,pk-v);});return dd;};
+const align=(C,ds)=>{const m={};(C||[]).forEach(q=>m[q[0]]=+q[1]);let v=0;return ds.map(d=>(v=(d in m)?m[d]:v));};
 
 /* ---- page ---- */
-async function load(){try{const r=await fetch(B+'robots_data',{cache:'no-store'});D=await r.json();}catch(e){$('list').innerHTML='<div class="empty">'+T('Les robots ne répondent pas pour l’instant. Réessayez dans un instant.','The robots are not answering right now. Try again in a moment.')+'</div>';return;}
+async function load(){try{const r=await fetch(B+'robots_data?lite=1',{cache:'no-store'});D=await r.json();}catch(e){$('list').innerHTML='<div class="empty">'+T('Les robots ne répondent pas pour l’instant. Réessayez dans un instant.','The robots are not answering right now. Try again in a moment.')+'</div>';return;}
  if(BL().can_create)$('newb').style.display='';render();
  const m=location.hash.match(/r=([\w.-]+)/);if(m&&!SHEET&&byId(m[1]))detail(m[1]);
  if(mineL().some(r=>['queued'].includes(r.stage)||(r.mtests||[]).some(x=>['queued','building','testing'].includes(x.state)))){clearTimeout(load._t);load._t=setTimeout(()=>{if(!SHEET)load();},60000);}}
-function render(){const L=mineL(),tested=L.filter(r=>netOf(r)!=null),bst=best(L),live=L.filter(r=>['real','demo'].includes(r.stage)).length;
+function render(){const L=mineL().filter(r=>F==='arch'?r.archived:!r.archived),tested=L.filter(r=>netOf(r)!=null),bst=best(L),live=L.filter(r=>['real','demo'].includes(r.stage)).length;
  $('strip').innerHTML='<div><b>'+L.length+'</b><span>'+T('robot'+(L.length>1?'s':''),'robot'+(L.length>1?'s':''))+'</span></div><div><b>'+tested.length+'</b><span>'+T('testé'+(tested.length>1?'s':''),'tested')+'</span></div><div><b class="'+(bst?cl(netOf(bst)):'')+'">'+(bst?money(netOf(bst),0):'—')+'</b><span>'+T('meilleur test','best test')+'</span></div>';
  $('hero').innerHTML=false&&bst&&L.length>1?(()=>{const t=testOf(bst),I=insights(bst);return '<div class="hero" data-act="detail" data-id="'+esc(bst.id)+'"><div class="eyebrow">'+T('Votre meilleur robot','Your best robot')+'</div><h3>'+esc(rName(bst))+'</h3><div class="hv"><div><b class="'+cl(t.a.net)+'">'+money(t.a.net)+'</b><small>'+T('sur ','over ')+num(t.days||42,0)+T(' j de vrais prix · ',' d of real prices · ')+num(t.a.trades||0)+' trades</small></div>'+spark(cum(t.a.curve),150,52)+'</div>'+(I[0]?'<div class="ins" style="margin:12px 0 0"><i class="'+I[0][0]+'">'+I[0][1]+'</i><span><b>'+esc(I[0][2])+'</b> · '+esc(I[0][3])+'</span></div>':'')+'</div>';})():'';
- const k={all:()=>1,tested:r=>netOf(r)!=null,todo:r=>netOf(r)==null,live:r=>['real','demo'].includes(r.stage)}[F];
+ const k={all:()=>1,arch:()=>1,tested:r=>netOf(r)!=null,todo:r=>netOf(r)==null,live:r=>['real','demo'].includes(r.stage)}[F];
  const S=L.filter(k).sort((x,y)=>(netOf(y)==null?-1e9:netOf(y))-(netOf(x)==null?-1e9:netOf(x)));
- $('list').innerHTML=S.length?S.map(card).join(''):'<div class="empty">'+BOT+'<br>'+(L.length?T('Aucun robot dans ce filtre.','No robot in this filter.'):T('Vous n’avez pas encore de robot. Partez de l’Owl, changez une pièce : il est testé sur de vrais prix pour vous.','You have no robot yet. Start from the Owl, change one piece: it gets tested on real prices for you.')+(BL().can_create?'<br><a class="btn glow" style="margin-top:14px" href="robots#new=1">'+T('Créer mon premier robot','Build my first robot')+'</a>':''))+'</div>';}
-function card(r,i){const st=ST[r.stage]||ST.tested,t=testOf(r),par=r.parent?byId(r.parent):null;
+ // families: robots grouped under their parent when the list mixes several parents or is long
+ const fams={};S.forEach(r=>{const k=r.parent||'_';(fams[k]=fams[k]||[]).push(r);});const FK=Object.keys(fams);
+ const grouped=S.length>3&&FK.length>=1&&F!=='arch'?FK.map(k=>'<div class="fam">'+(k==='_'?T('Robots d’origine','Original robots'):T('Famille de ','Family of ')+esc(rName(byId(k))||k))+' · '+fams[k].length+'</div>'+fams[k].map(card).join('')).join(''):null;
+ $('list').innerHTML=grouped?grouped:S.length?S.map(card).join(''):'<div class="empty">'+BOT+'<br>'+(L.length?T('Aucun robot dans ce filtre.','No robot in this filter.'):T('Vous n’avez pas encore de robot. Partez de l’Owl, changez une pièce : il est testé sur de vrais prix pour vous.','You have no robot yet. Start from the Owl, change one piece: it gets tested on real prices for you.')+(BL().can_create?'<br><a class="btn glow" style="margin-top:14px" href="robots#new=1">'+T('Créer mon premier robot','Build my first robot')+'</a>':''))+'</div>';}
+function card(r,i){i=i||0;const st=stOf(r),t=testOf(r),par=r.parent?byId(r.parent):null;
  let h='<div class="rc" data-act="detail" data-id="'+esc(r.id)+'" style="animation-delay:'+(i*60)+'ms"><div class="rh">'+avatar(r.id)+'<span class="rn"><b>'+esc(rName(r))+'</b><small>'+(par?T('enfant de ','child of ')+esc(rName(par)):T('robot d’origine','original robot'))+' · '+(r.public?T('public','public'):T('privé','private'))+'</small></span><span class="rs '+st[1]+'">'+st[0]+'</span></div>';
  if(t){const a=t.a,d=t.p&&t.p.net!=null?a.net-t.p.net:null;
   h+='<div class="rm"><div class="rv"><b class="'+cl(a.net)+'">'+money(a.net)+'</b><small>'+T('Bitcoin · ','Bitcoin · ')+num(t.days||42,0)+T(' j · ',' d · ')+num(a.trades||0)+' trades</small></div>'+spark(cum(a.curve))+'</div>'
@@ -244,18 +271,20 @@ function card(r,i){const st=ST[r.stage]||ST.tested,t=testOf(r),par=r.parent?byId
  else{const M=markets(r).filter(m=>m.pending||m.a);
   h+='<div class="r0">'+(r.stage==='queued'?T('Son test sur Bitcoin est en cours. Le résultat arrive ici tout seul.','Its Bitcoin test is running. The result lands here on its own.'):T('Pas encore testé sur Bitcoin. Ouvrez-le pour lancer son test (environ 5 minutes).','Not tested on Bitcoin yet. Open it to run its test (about 5 minutes).'))+'</div>'
    +(M.length?'<div class="mkd">'+M.map(m=>{const v=m.a?verdict(m.a,m.ctl):null;return '<span style="--c:'+(m.pending?'var(--accent)':v.c)+'">'+esc(mkName(m.sym,m.name))+(m.pending?T(' · en test',' · testing'):' '+money(m.a.net,0))+'</span>';}).join('')+'</div>':'');}
- return h+'<div class="ract"><span style="font-size:.74rem;color:var(--muted)">'+(r.tested_at?T('testé le ','tested ')+fdl(r.tested_at):T('créé le ','created ')+fdl(r.created))+'</span><span class="btn ghost">'+T('Détails','Details')+' ›</span></div></div>';}
+ return h+'<div class="ract"><span style="font-size:.74rem;color:var(--muted)">'+(r.tested_at?T('testé le ','tested ')+fdl(r.tested_at):T('créé le ','created ')+fdl(r.created))+(staleBtc(r)?'<span class="stale">'+T('à refaire','redo')+'</span>':'')+(r.retest?'<span class="stale" style="color:var(--accent-soft);border-color:rgba(59,130,246,.35);background:var(--accent-bg)">'+T('re-test en cours','re-testing')+'</span>':'')+'</span><span class="btn ghost">'+T('Détails','Details')+' ›</span></div></div>';}
 
 /* ---- the robot's panel ---- */
-function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';const t=testOf(r),st=ST[r.stage]||ST.tested,par=r.parent?byId(r.parent):null;
+function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';const t=testOf(r),st=stOf(r),par=r.parent?byId(r.parent):null;
  const tabs=[['res',T('Résultat','Result')],['mk',T('Marchés','Markets')],['pr',T('Progrès','Progress')],['pc',T('Pièces','Pieces')]];
  let body='';
  if(DTAB==='res'){
   if(!t)body='<div class="r0" style="margin:0">'+T('Pas encore de résultat. Le test sur Bitcoin rejoue le robot sur les vrais prix enregistrés, tick par tick, avec les mêmes freins que sur un compte.','No result yet. The Bitcoin test replays the robot on the recorded real prices, tick by tick, with the same brakes as on an account.')+'</div>'+(r.can_edit&&r.stage==='draft'?'<button class="btn glow full" data-act="test" data-id="'+esc(r.id)+'">'+T('Lancer son test','Run its test')+'</button>':'');
   else{const a=t.a,v=verdict(a,t.ctl),fh=+a.first_half||0,lh=+a.later_half||0,mx=Math.max(Math.abs(fh),Math.abs(lh))||1,I=insights(r);
    const hb=(l,x)=>'<div class="hb"><span style="width:92px">'+l+'</span><div class="h"><i style="left:'+(x<0?50-50*Math.abs(x)/mx:50)+'%;width:'+(50*Math.abs(x)/mx)+'%;background:'+(x>=0?'var(--up)':'var(--down)')+'"></i></div><b class="'+cl(x)+'" style="width:58px;text-align:right">'+money(x,0)+'</b></div>';
-   body=chart2(a.curve,t.p&&t.p.curve,rName(r),par?rName(par):'')
-    +'<div class="vb '+v.k+'"><i>'+v.i+'</i><div><b>'+v.t+'</b>'+(v.s?'<p>'+v.s+'</p>':'')+'</div></div>'
+   body=(staleBtc(r)?'<div class="vb or" style="margin:0 0 12px"><i>↻</i><div><b>'+(r.retest?T('Re-test en cours','Re-test running'):T('Test à refaire','Test to redo'))+'</b><p>'+T('Ce test date d’avant la correction du moteur du 15 octobre. Le refaire donne un chiffre comparable aux autres (environ 5 minutes).','This test predates the 15 October engine fix. Redoing it gives a figure comparable with the others (about 5 minutes).')+'</p>'+(canAct(r)&&r.can_edit&&!r.retest?'<button class="btn sec" style="margin-top:10px" data-act="retest" data-id="'+esc(r.id)+'">'+T('Re-tester','Re-test')+'</button>':'')+'</div></div>':'')
+    +chart2(a.curve,t.p&&t.p.curve,rName(r),par?rName(par):'')
+    +'<div class="vb '+v.k+'"><i>'+v.i+'</i><div><b>'+v.t+'</b>'+(v.s?'<p>'+v.s+'</p>':'')+'</div></div>'+ctlBlock(r,'BTCUSD',a,t.ctl)
+    +(r.id==='owl'?liveVsTest():'')
     +(I.length?'<div class="grp">'+T('Ce qu’il faut retenir','Key takeaways')+'</div><div class="insl">'+I.map(x=>'<div><i class="'+x[0]+'">'+x[1]+'</i><span><b>'+esc(x[2])+'</b><small>'+esc(x[3])+'</small></span></div>').join('')+'</div>':'')
     +'<div class="grp">'+T('En chiffres','In numbers')+'</div><div class="g2" style="margin-top:0"><div><b>'+num(a.trades||0)+'</b><span>trades</span></div><div><b>'+(a.win_rate!=null?Math.round(a.win_rate*100)+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div><div><b>'+(a.profit_factor!=null?num(a.profit_factor,2):'—')+'</b><span>'+T('gain / perte','profit factor')+'</span></div>'
     +'<div><b class="neg">'+(a.cc_dd!=null?'−$'+num(a.cc_dd,0):'—')+'</b><span>'+T('plus forte baisse','worst dip')+'</span></div><div><b class="pos">'+(a.best!=null?money(a.best,0):'—')+'</b><span>'+T('meilleur trade','best trade')+'</span></div><div><b class="neg">'+(a.worst!=null?money(a.worst,0):'—')+'</b><span>'+T('pire trade','worst trade')+'</span></div>'
@@ -264,7 +293,7 @@ function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';cons
     +'<p class="note">'+T('Vrais prix Bitcoin enregistrés chez Exness'+(t.win?' du '+fds(t.win[0])+' au '+fds(t.win[1]):'')+', tick par tick, compte de $200 au départ, lot qui suit le solde, mêmes freins et même rattrapage que sur un compte. Un test sur le passé n’est pas une promesse.','Real Bitcoin prices recorded at Exness'+(t.win?' from '+fds(t.win[0])+' to '+fds(t.win[1]):'')+', tick by tick, $200 start account, lot follows the balance, same brakes and recovery as on an account. A past-data test is not a promise.')+'</p>';}}
  else if(DTAB==='mk'){const M=markets(r);
   body=(M.length?'<div class="card" style="padding:4px 16px">'+M.map(m=>{if(m.pending)return '<div class="row">'+mkBadge(m.sym)+'<span class="rl"><b>'+esc(mkName(m.sym,m.name))+'</b><small>'+(m.pending==='queued'?T('dans la file','queued'):T('test en cours','being tested'))+(m.eta?' · ~'+m.eta+' min':'')+'</small></span><span class="tag soon">…</span></div>';
-   const v=verdict(m.a,m.ctl),n=p30(m);return '<div class="row" data-act="mkd" data-id="'+esc(r.id)+'" data-s="'+esc(m.sym)+'" style="cursor:pointer">'+mkBadge(m.sym)+'<span class="rl"><b>'+esc(mkName(m.sym,m.name))+'</b><small><span style="color:'+v.c+'">●</span> '+v.sh+' · '+num(m.a.trades||0)+' trades</small></span><span class="rr '+cl(n)+'">'+money(n,0)+'<small>'+T('par 30 j','per 30 d')+'</small></span></div>';}).join('')+'</div>':'<div class="r0" style="margin:0">'+T('Aucun marché testé pour l’instant.','No market tested yet.')+'</div>')
+   const v=verdict(m.a,m.ctl),n=p30(m);return '<div class="row" data-act="mkd" data-id="'+esc(r.id)+'" data-s="'+esc(m.sym)+'" style="cursor:pointer">'+mkBadge(m.sym)+'<span class="rl"><b>'+esc(mkName(m.sym,m.name))+'</b><small><span style="color:'+v.c+'">●</span> '+v.sh+' · '+num(m.a.trades||0)+' trades'+(staleMk(m)?'<span class="stale">'+T('à refaire','redo')+'</span>':'')+'</small></span><span class="rr '+cl(n)+'">'+money(n,0)+'<small>'+T('par 30 j','per 30 d')+'</small></span></div>';}).join('')+'</div>':'<div class="r0" style="margin:0">'+T('Aucun marché testé pour l’instant.','No market tested yet.')+'</div>')
    +'<p class="note">'+T('Tout est ramené à 30 jours pour comparer des tests de durées différentes. « Solide » veut dire : gagne ET bat 95 entrées au hasard sur 100 sur le même marché.','Everything is brought to 30 days to compare tests of different lengths. "Solid" means: wins AND beats 95 random entries out of 100 on the same market.')+'</p>'
    +'<a class="btn sec full" href="robots#zt='+encodeURIComponent(r.id)+'">'+T('Tester sur d’autres marchés','Test on other markets')+'</a>';}
  else if(DTAB==='pr'){const E=[];
@@ -275,7 +304,8 @@ function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';cons
   Object.keys(G).forEach(sy=>{const L=G[sy],z=L[L.length-1];E.push({d:z.done_at||z.at,c:z.net>=0?'var(--up)':'var(--down)',b:mkName(sy)+(L.length>1?' <span style="font-weight:600;color:var(--muted);font-size:.74rem">· '+L.length+T(' tests',' tests')+'</span>':''),
    s:(L.length>1?L.map((x,i)=>'<em class="'+cl(x.net)+'"'+(i<L.length-1?' style="opacity:.6"':'')+'>'+money(x.net,0)+'</em>').join(' → '):'<em class="'+cl(z.net)+'">'+money(z.net,0)+'</em>')+(z.parent_net!=null&&r.parent?' · '+T('parent ','parent ')+money(z.parent_net,0):'')});});
   if(r.plug&&r.plug.date)E.push({d:r.plug.applied_at||r.plug.date,c:'var(--accent)',b:r.plug.status==='unplugged'?T('Débranché d’un compte','Unplugged from an account'):T('Branché sur un compte','Plugged on an account'),s:esc(mkName(r.plug.market||'BTCUSD'))});
-  if(['real','demo'].includes(r.stage)&&!(r.plug&&r.plug.status==='unplugged'))E.push({d:null,c:'var(--up)',b:st[0],s:T('Il tourne aujourd’hui.','It runs today.')});
+  if(r.plugged_at&&(!r.plug||String(r.plugged_at)>String(r.plug.applied_at||r.plug.date||'')))E.push({d:r.plugged_at,c:'var(--accent)',b:T('Branché sur un compte','Plugged on an account'),s:T('en argent réel','real money')});
+  if(['real','demo'].includes(r.stage)&&r.running)E.push({d:null,c:'var(--up)',b:st[0],s:T('Il tourne aujourd’hui.','It runs today.')});
   E.sort((x,y)=>String(x.d||'9').localeCompare(String(y.d||'9')));
   body='<div class="card" style="padding:16px"><div class="tl">'+E.map(e=>'<div style="--c:'+e.c+'"><b>'+e.b+'</b><small>'+(e.d?fdl(e.d)+' · ':'')+e.s+'</small></div>').join('')+'</div></div>'
    +'<p class="note">'+T('Plusieurs tests sur un marché : la fenêtre de prix avance et le moteur de test s’améliore, donc un robot peut monter ou descendre sans avoir changé. Le dernier chiffre est celui qui compte.','Several tests on a market: the price window moves and the test engine improves, so a robot can go up or down without having changed. The last figure is the one that counts.')+'</p>';}
@@ -283,11 +313,14 @@ function detail(id,tab){const r=byId(id);if(!r)return;DTAB=tab||DTAB||'res';cons
   ['entry','filters','stop','exit','recovery','money'].forEach(k=>{const v=k in own?own[k]:R[k];if(k==='filters'){const F=(v||[]);if(!F.length)rows.push([k,null,'filters' in own]);F.forEach(f=>rows.push([k,f,'filters' in own]));}else if(v)rows.push([k,v,k in own]);});
   body='<div class="card pcs" style="padding:4px 16px">'+rows.map(x=>{const p=x[1]?pc(x[1]):null;return '<div class="row"><span class="ic">'+pic(SLOT[x[0]][1])+'</span><span class="rl"><b>'+(x[1]?esc(pName(x[1])):T('Aucun filtre','No filter'))+(x[2]?'<span class="chg">'+T('changé','changed')+'</span>':'')+'</b><small>'+SLOT[x[0]][0]+(p&&(p.plain_fr||p.plain_en)?' · '+esc(T(p.plain_fr,p.plain_en||p.plain_fr)):'')+'</small></span></div>';}).join('')+'</div>'
    +(par?'<p class="note">'+T('« Changé » = ce que ce robot fait autrement que ','"Changed" = what this robot does differently from ')+esc(rName(par))+T('. Le reste vient de lui.','. The rest comes from it.')+'</p>':'');}
- const acts=[];if(r.can_edit||BL().admin)acts.push('<a class="btn sec" href="robots#b='+encodeURIComponent(r.id)+'">'+T('Ouvrir dans l’atelier','Open in the workshop')+'</a>');
+ const acts=[];if(t)acts.push('<button class="btn sec" data-act="cmp" data-id="'+esc(r.id)+'">'+T('Comparer','Compare')+'</button>');
+ if(r.can_edit)acts.push('<button class="btn sec" data-act="arch" data-id="'+esc(r.id)+'">'+(r.archived?T('Désarchiver','Unarchive'):T('Archiver','Archive'))+'</button>');
+ if(r.can_edit||BL().admin)acts.push('<a class="btn sec" href="robots#b='+encodeURIComponent(r.id)+'">'+T('Ouvrir dans l’atelier','Open in the workshop')+'</a>');
  if(t&&t.a.net>0&&r.mine)acts.push('<a class="btn" href="place#pub='+encodeURIComponent(r.id)+'">'+T('Publier sur la place','Publish on the place')+'</a>');
+ const actH=acts.length?'<div class="cta"><div class="btn2" style="grid-template-columns:repeat('+Math.min(2,acts.length)+',1fr)">'+acts.join('')+'</div></div>':'';
  openSh('<div style="display:flex;align-items:center;gap:12px;margin-top:4px;padding-right:44px">'+avatar(r.id)+'<span class="rn" style="flex:1;min-width:0"><h2 style="padding:0">'+esc(rName(r))+'</h2><small>'+(par?T('enfant de ','child of ')+esc(rName(par)):T('robot d’origine','original robot'))+' · '+(r.public?T('public','public'):T('privé','private'))+'</small></span><span class="rs '+st[1]+'">'+st[0]+'</span></div>'
   +'<div class="seg">'+tabs.map(x=>'<button data-act="tab" data-id="'+esc(r.id)+'" data-tab="'+x[0]+'" class="'+(DTAB===x[0]?'on':'')+'">'+x[1]+'</button>').join('')+'</div>'+body
-  +(acts.length?'<div class="cta">'+(acts.length>1?'<div class="btn2">'+acts.join('')+'</div>':acts[0].replace('class="btn sec"','class="btn sec full" style="margin:0"').replace('class="btn"','class="btn full" style="margin:0"'))+'</div>':''),'r:'+id);
+  +actH,'r:'+id);
  if(location.hash!=='#r='+id)history.replaceState(history.state,'','#r='+id);}
 // one market of one robot, in detail
 function mkDetail(id,sym){const r=byId(id);const m=markets(r).find(x=>x.sym===sym);if(!m||!m.a)return;const a=m.a,v=verdict(a,m.ctl),fh=+a.first_half||0,lh=+a.later_half||0,mx=Math.max(Math.abs(fh),Math.abs(lh))||1;
@@ -298,14 +331,62 @@ function mkDetail(id,sym){const r=byId(id);const m=markets(r).find(x=>x.sym===sy
   +'<div class="g2"><div><b class="'+cl(a.net)+'">'+money(a.net,0)+'</b><span>'+T('sur le test','over the test')+'</span></div><div><b class="'+cl(p30(m))+'">'+money(p30(m),0)+'</b><span>'+T('par 30 j','per 30 d')+'</span></div><div><b>'+num(a.trades||0)+'</b><span>trades</span></div>'
   +'<div><b>'+(a.profit_factor!=null?num(a.profit_factor,2):'—')+'</b><span>'+T('gain / perte','profit factor')+'</span></div><div><b class="neg">'+(a.cc_dd!=null?'−$'+num(a.cc_dd,0):'—')+'</b><span>'+T('plus forte baisse','worst dip')+'</span></div><div><b>'+(m.ctl&&m.ctl.pct!=null?Math.round(m.ctl.pct)+' / 100':'—')+'</b><span>'+T('contre le hasard','vs chance')+'</span></div></div>'
   +'<div class="grp">'+T('Les deux moitiés','The two halves')+'</div>'+hb(T('1re moitié','1st half'),fh)+hb(T('2e moitié','2nd half'),lh)
+  +ctlBlock(r,m.sym,a,m.ctl)
+  +(staleMk(m)&&canAct(r)?'<button class="btn sec full" data-act="remk" data-id="'+esc(id)+'" data-s="'+esc(m.sym)+'">'+T('Re-tester ce marché','Re-test this market')+'</button>':'')
   +'<p class="note">'+(m.win?fdl(m.win[0])+' → '+fdl(m.win[1])+' · ':'')+T('compte de $200, lot qui suit le solde.','$200 account, lot follows the balance.')+'</p>'
   +'<button class="btn sec full" data-act="tab" data-id="'+esc(id)+'" data-tab="mk">‹ '+T('Tous les marchés','All markets')+'</button>','m:'+id);}
+async function post(path,body){const r=await fetch(B+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
+const ERR={strategy:T('Avec la formule Stratégie.','With the Strategy plan.'),busy:T('Un contrôle tourne déjà. Réessayez plus tard.','A check is already running. Try later.'),done:T('Déjà contrôlé.','Already checked.'),not_winning:T('Il faut un gain et au moins 20 trades.','It needs a gain and at least 20 trades.'),not_yours:T('Ce robot n’est pas à vous.','This robot is not yours.'),market:T('Données du marché pas prêtes.','Market data not ready.')};
+async function act(path,body,ok,el){if(el)el.disabled=true;try{const j=await post(path,body);if(j.ok){toast(ok);await load();if(SHEET&&SHEET.startsWith('r:'))detail(SHEET.slice(2));}else{toast(ERR[j.err]||T('Pas possible pour l’instant.','Not possible right now.'));if(el)el.disabled=false;}}catch(e){toast(T('Pas de connexion.','No connection.'));if(el)el.disabled=false;}}
+// live against the test: the Owl's real trades on a real-money account of the nest vs what the test predicted for them
+function liveVsTest(){const L=(BL().live_vs_test||[]).filter((z,i,A)=>i===0||z.trades!==A[i-1].trades||z.actual!==A[i-1].actual);if(!L.length)return '';const z=L[L.length-1],g=(z.actual||0)-(z.expected||0),pt=z.trades?g/z.trades:0;
+ return '<div class="grp">'+T('En vrai contre le test','Live against the test')+'</div><div class="card" style="padding:14px 16px">'
+  +chart2(L.map(q=>[q.d,q.actual]),L.map(q=>[q.d,q.expected]),T('En vrai','Live'),T('Ce que le test prévoyait','What the test predicted'))
+  +'<div class="g2"><div><b>'+num(z.trades)+'</b><span>'+T('vrais trades','real trades')+'</span></div><div><b class="'+cl(z.expected)+'">'+money(z.expected,0)+'</b><span>'+T('prévu','predicted')+'</span></div><div><b class="'+cl(z.actual)+'">'+money(z.actual,0)+'</b><span>'+T('réel','real')+'</span></div></div>'
+  +'<p class="note">'+T('Les mêmes trades, rejoués par le test et faits en vrai sur un compte en argent réel du nid. Écart : ','The same trades, replayed by the test and made for real on a real-money account of the nest. Gap: ')+'<b class="'+cl(pt)+'">'+money(pt,2)+T(' par trade',' per trade')+'</b>'+(pt>=0?T(' en faveur du vrai.',' in favour of live.'):T(' : le vrai fait moins bien que le test.',': live does worse than the test.'))+'</p></div>';}
+// compare two robots: curves, numbers, markets per 30 days
+function cmpPick(id){const L=(BL().robots||[]).filter(x=>x.id!==id&&!x.archived&&testOf(x));
+ openSh('<h2>'+T('Comparer avec…','Compare with…')+'</h2><div class="card" style="padding:4px 16px;margin-top:12px">'+(L.length?L.map(x=>'<div class="pk" data-act="cmpgo" data-id="'+esc(id)+'" data-s="'+esc(x.id)+'">'+avatar(x.id)+'<span class="rl"><b>'+esc(rName(x))+'</b><small>'+money(testOf(x).a.net,0)+' · '+num(testOf(x).a.trades||0)+' trades</small></span><span class="btn ghost" style="margin:0">›</span></div>').join(''):'<div class="row"><span class="rl"><small>'+T('Aucun autre robot testé.','No other tested robot.')+'</small></span></div>')+'</div>','cmp');}
+function cmpShow(a,b){const A=byId(a),Bb=byId(b),ta=testOf(A),tb=testOf(Bb);if(!ta||!tb)return;const ma=markets(A),mb=markets(Bb),syms=[...new Set(ma.concat(mb).filter(m=>m.a).map(m=>m.sym))];
+ const row=(l,x,y,f,hi)=>{const bx=hi==null?'':(hi?(x>y?' class="pos"':''):(x<y?' class="pos"':''));const by=hi==null?'':(hi?(y>x?' class="pos"':''):(y<x?' class="pos"':''));return '<tr><td>'+l+'</td><td'+bx+'>'+f(x)+'</td><td'+by+'>'+f(y)+'</td></tr>';};
+ const pa=ta.a,pb=tb.a,g=m=>m?p30(m):null;
+ openSh('<h2>'+esc(rName(A))+' · '+esc(rName(Bb))+'</h2><div style="margin-top:12px">'+chart2(pa.curve,pb.curve,rName(A),rName(Bb))+'</div>'
+  +'<table class="cmpt"><tr><th></th><th>'+esc(rName(A))+'</th><th>'+esc(rName(Bb))+'</th></tr>'
+  +row(T('Bitcoin, test','Bitcoin, test'),pa.net,pb.net,v=>money(v,0),true)+row('Trades',pa.trades,pb.trades,v=>num(v),null)+row(T('Gagnés','Won'),pa.win_rate,pb.win_rate,v=>v==null?'—':Math.round(v*100)+' %',true)
+  +row(T('Gain / perte','Profit factor'),pa.profit_factor,pb.profit_factor,v=>v==null?'—':num(v,2),true)+row(T('Plus forte baisse','Worst dip'),pa.cc_dd,pb.cc_dd,v=>v==null?'—':'−$'+num(v,0),false)
+  +syms.filter(s=>s!=='BTCUSD').map(s=>row(esc(mkName(s))+T(' / 30 j',' / 30 d'),g(ma.find(m=>m.sym===s&&m.a)),g(mb.find(m=>m.sym===s&&m.a)),v=>v==null?'—':money(v,0),true)).join('')+'</table>'
+  +'<p class="note">'+T('En vert, le meilleur des deux sur chaque ligne. Même test, mêmes prix, même compte de départ.','In green, the better of the two on each line. Same test, same prices, same start account.')+'</p>'
+  +'<button class="btn sec full" data-act="cmp" data-id="'+esc(a)+'">‹ '+T('Choisir un autre','Pick another')+'</button>','cmp2');}
+// combine pockets: proven robot x market pairs, their summed curve, the dip and the shock day
+let CB=null,CBALL=false;
+function pockets(){const O=[];(BL().robots||[]).filter(r=>!r.archived).forEach(r=>markets(r).filter(m=>m.a&&m.a.curve&&m.a.curve.length>1).forEach(m=>{const v=verdict(m.a,m.ctl);O.push({k:r.id+'@'+m.sym,r,m,v});}));return O;}
+function combineSh(){const O=pockets(),show=O.filter(o=>CBALL||o.v.k==='gr');if(!CB)CB=new Set(O.filter(o=>o.v.k==='gr').map(o=>o.k));
+ const sel=O.filter(o=>CB.has(o.k));let res='';
+ if(sel.length){const ds=[...new Set([].concat(...sel.map(o=>o.m.a.curve.map(q=>q[0]))))].sort();const S=sel.map(o=>align(o.m.a.curve,ds)),tot=ds.map((d,i)=>S.reduce((s,a)=>s+a[i],0));
+  const sumDd=S.reduce((s,a)=>s+mdd(a),0),cDd=mdd(tot),shock=sel.reduce((s,o)=>s+Math.abs(Math.min(0,o.m.a.worst||0)),0),p30t=sel.reduce((s,o)=>s+(p30(o.m)||0),0);
+  res=chart2(ds.map((d,i)=>[d,tot[i]]),null,'','')
+   +'<div class="g2"><div><b class="'+cl(p30t)+'">'+money(p30t,0)+'</b><span>'+T('par 30 j','per 30 d')+'</span></div><div><b class="neg">−$'+num(cDd,0)+'</b><span>'+T('baisse ensemble','dip together')+'</span></div><div><b class="neg">−$'+num(shock,0)+'</b><span>'+T('pire jour possible','worst day possible')+'</span></div></div>'
+   +(sel.length>1?'<p class="note">'+T('Séparées, leurs baisses s’additionnent à ','Apart, their dips add up to ')+'<b>−$'+num(sumDd,0)+'</b>'+T(' ; ensemble, la baisse est de ','; together the dip is ')+'<b>−$'+num(cDd,0)+'</b>'+(cDd<sumDd?T(' : les poches se compensent en partie.',': the pockets partly offset each other.'):T(' : elles baissent en même temps.',': they fall at the same time.'))+'</p>':'')
+   +'<p class="note">'+T('« Pire jour possible » = chaque poche perd son pire trade le même jour. Chaque poche part de $200 ; les fenêtres de test ne sont pas toutes les mêmes (Bitcoin 42 j, autres marchés 60 j).','"Worst day possible" = each pocket loses its worst trade on the same day. Each pocket starts at $200; the test windows are not all the same (Bitcoin 42 d, other markets 60 d).')+'</p>';}
+ else res='<div class="r0" style="margin:0">'+T('Choisissez au moins une poche.','Pick at least one pocket.')+'</div>';
+ openSh('<h2>'+T('Combiner des poches','Combine pockets')+'</h2><p class="p">'+T('Une poche = un robot sur un marché, avec son propre argent. Par défaut, seules les poches « solides » (qui battent le hasard) sont proposées.','A pocket = one robot on one market, with its own money. By default only "solid" pockets (that beat chance) are offered.')+'</p>'
+  +'<div style="margin-top:14px">'+res+'</div><div class="grp">'+T('Poches','Pockets')+' <em>'+show.length+'</em></div><div class="card" style="padding:4px 16px">'
+  +(show.length?show.map(o=>'<div class="pk'+(CB.has(o.k)?' on':'')+'" data-act="cbt" data-id="'+esc(o.k)+'"><span class="bx">'+(CB.has(o.k)?'✓':'')+'</span>'+mkBadge(o.m.sym)+'<span class="rl"><b>'+esc(rName(o.r))+' · '+esc(mkName(o.m.sym,o.m.name))+'</b><small><span style="color:'+o.v.c+'">●</span> '+o.v.sh+' · '+money(p30(o.m),0)+T(' par 30 j',' per 30 d')+'</small></span></div>').join(''):'<div class="row"><span class="rl"><small>'+T('Aucune poche solide pour l’instant.','No solid pocket yet.')+'</small></span></div>')+'</div>'
+  +'<div class="tg"><span>'+T('Montrer aussi les poches non prouvées','Also show unproven pockets')+'</span><span class="sw'+(CBALL?' on':'')+'" data-act="cball"></span></div>'
+  +(CBALL?'<p class="note" style="color:var(--warn)">'+T('Les poches non prouvées peuvent gagner par chance : elles servent à voir, pas à décider.','Unproven pockets can win by luck: they are for looking, not for deciding.')+'</p>':''),'cb');}
 async function runTest(id,el){el.disabled=true;try{const r=await fetch(B+'robot_test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});const j=await r.json();
  if(j.ok){toast(T('Test lancé : environ 5 minutes.','Test started: about 5 minutes.'));closeSh();load();}else{toast(j.err==='strategy'?T('Avec la formule Stratégie.','With the Strategy plan.'):T('Pas possible pour l’instant.','Not possible right now.'));el.disabled=false;}}catch(e){toast(T('Pas de connexion.','No connection.'));el.disabled=false;}}
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el)return;const a=el.dataset.act,id=el.dataset.id;
+ if(a==='combine'){combineSh();return;}if(a==='cbt'){CB.has(id)?CB.delete(id):CB.add(id);const y=$('sh').querySelector('.pn').scrollTop;combineSh();$('sh').querySelector('.pn').scrollTop=y;return;}
+ if(a==='cball'){CBALL=!CBALL;combineSh();return;}
+ if(a==='cmp'){cmpPick(id);return;}if(a==='cmpgo'){cmpShow(id,el.dataset.s);return;}
+ if(a==='ctl'){act('robot_control',{id:id,sym:el.dataset.s,again:el.dataset.again?1:0},T('Contrôle demandé : il démarre dès que le serveur a de la place.','Check requested: it starts as soon as the server has room.'),el);return;}
+ if(a==='retest'){act('robot_test',{id:id,again:1},T('Re-test lancé : environ 5 minutes.','Re-test started: about 5 minutes.'),el);return;}
+ if(a==='remk'){act('robot_test_market',{id:id,sym:el.dataset.s},T('Re-test du marché lancé.','Market re-test started.'),el);return;}
+ if(a==='arch'){const r=byId(id);act('robot_update',{id:id,archived:!r.archived},r.archived?T('Robot remis dans la liste.','Robot back in the list.'):T('Robot archivé : il garde son historique.','Robot archived: it keeps its history.'),el);return;}
  if(a==='close')closeSh();else if(a==='detail')detail(id,'res');else if(a==='tab')detail(id,el.dataset.tab);else if(a==='mkd')mkDetail(id,el.dataset.s);else if(a==='test')runTest(id,el);});
 document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));c.classList.add('on');F=c.dataset.f;render();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSh();});
-if(EN){$('h1').textContent='My robots';$('h1s').textContent='Their tests, their markets, their progress';const C=document.querySelectorAll('.chip');['All','Tested','To test','Live'].forEach((t,i)=>{if(C[i])C[i].textContent=t;});document.title='My robots';}
+if(EN){$('h1').textContent='My robots';$('h1s').textContent='Their tests, their markets, their progress';const C=document.querySelectorAll('.chip');['All','Tested','To test','Live','Archived'].forEach((t,i)=>{if(C[i])C[i].textContent=t;});document.title='My robots';}
 load();
 </script></body></html>

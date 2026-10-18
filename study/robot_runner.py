@@ -297,7 +297,7 @@ if __name__ == "__main__":
     RUN_T0 = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     try:
         reg = json.load(open(REG, encoding="utf-8")); robots = {r["id"]: r for r in reg.get("robots") or []}
-        todo = ARGS[1:] or [r["id"] for r in reg.get("robots") or [] if r.get("stage") == "queued"]
+        todo = ARGS[1:] or [r["id"] for r in reg.get("robots") or [] if r.get("stage") == "queued" or r.get("retest")]   # 2026-10-18: re-tests keep their stage
         if not todo:
             print("nothing queued"); raise _NoBtc()
         os.makedirs(RES, exist_ok=True)
@@ -316,7 +316,7 @@ if __name__ == "__main__":
           if not todo and not ARGS[1:]:
             # robots queued while this run was going: test them too before stopping
             _r2 = json.load(open(REG, encoding="utf-8"))
-            todo += [x["id"] for x in _r2.get("robots") or [] if x.get("stage") == "queued" and x["id"] not in done]
+            todo += [x["id"] for x in _r2.get("robots") or [] if (x.get("stage") == "queued" or x.get("retest")) and x["id"] not in done]
             robots = {x["id"]: x for x in _r2.get("robots") or []}; reg = _r2
           if True:
             r = robots.get(rid)
@@ -339,6 +339,8 @@ if __name__ == "__main__":
             for x in reg.get("robots") or []:
                 if x["id"] == rid and x.get("stage") in ("queued", "testing", None):
                     x["stage"] = "tested"; x["tested_at"] = res["generated_at"]
+                if x["id"] == rid and x.get("retest"):
+                    x.pop("retest", None); x["tested_at"] = res["generated_at"]
             used = set(v for k, v in parts.items() if k not in ("filters", "money")) | set(parts.get("filters") or [])
             for pc in reg.get("pieces") or []:          # a new rule piece becomes "tested" once a robot using it was tested
                 if pc.get("id") in used and pc.get("status") == "new":
@@ -363,7 +365,7 @@ if __name__ == "__main__":
             _rq = json.load(open(REG, encoding="utf-8"))
             # only what was queued AFTER this run started: a robot that stays queued (a piece not testable
             # yet) must not make the runner respawn itself forever
-            if any(x.get("stage") == "queued" and (x.get("queued_at") or "") > RUN_T0 for x in _rq.get("robots") or [])                     or any(x.get("state") == "queued" and (x.get("at") or "") > RUN_T0 for x in mq_load()):
+            if any((x.get("stage") == "queued" or x.get("retest")) and (x.get("queued_at") or "") > RUN_T0 for x in _rq.get("robots") or [])                     or any(x.get("state") == "queued" and (x.get("at") or "") > RUN_T0 for x in mq_load()):
                 import subprocess
                 subprocess.Popen([sys.executable, os.path.abspath(__file__)], cwd=os.path.dirname(os.path.abspath(__file__)), creationflags=0x08000000)
         except Exception:

@@ -1114,7 +1114,10 @@ const BST={draft:{fr:'Pas encore testé',en:'Not tested yet',c:'var(--muted)',cl
  tested:{fr:'Testé sur le passé',en:'Tested on past data',c:'var(--accent)',cls:'background:var(--accent-bg);color:var(--accent-soft)'},
  paper:{fr:'Jumeau',en:'Twin',c:'var(--violet)',cls:'background:var(--vi-bg);color:var(--violet-soft)'},
  demo:{fr:'Démo',en:'Demo',c:'#38bdf8',cls:'background:rgba(56,189,248,.13);color:#7dd3fc'},
- real:{fr:'Argent réel',en:'Real money',c:'var(--up)',cls:'background:var(--ok-bg);color:var(--up-soft)'}};
+ real:{fr:'Argent réel',en:'Real money',c:'var(--up)',cls:'background:var(--ok-bg);color:var(--up-soft)'},
+ rest:{fr:'Au repos',en:'Resting',c:'var(--muted)',cls:'background:var(--gr-bg);color:var(--muted2)'}};
+// 2026-10-18: a live robot that no account runs any more says so (the label follows the plug)
+const bstOf=r=>(['real','demo'].includes(r.stage)&&r.running===false||r.running===0&&['real','demo'].includes(r.stage))?BST.rest:(BST[r.stage]||BST.tested);
 const bsb=s=>{const m=BST[s]||BST.tested;return '<span class="bd" style="'+m.cls+'"><i></i>'+T(m.fr,m.en)+'</span>';};
 const BLD=()=>(RB&&RB.builder)||{parts:{},robots:[],plugs:[]};
 const bById=id=>BLD().robots.find(r=>r.id===id);
@@ -1157,7 +1160,7 @@ function pType(t){const sl=SLOTS.find(s=>SLOTT[s[0]]===t)||SLOTS[0],L=pList(t);
 function builderTop(){const B=BLD();
  // 2026-10-13 (owner): the banner says where you stand (robots, accounts, your best) and offers the three ways to make one;
  // "eyes + 6 pieces" is one tap away instead of taking the banner
- const L=B.robots||[],MY=L.filter(r=>r.mine),PUB=L.filter(r=>!r.mine),PL0=B.plugs||[];
+ const L=B.robots||[],MY=L.filter(r=>r.mine&&!r.archived),PUB=L.filter(r=>!r.mine&&!r.archived),PL0=B.plugs||[];
  const best=MY.filter(r=>r.test&&r.test.robot).sort((a,b)=>b.test.robot.net-a.test.robot.net)[0];
  const bd0=best&&best.test.parent_result?best.test.robot.net-best.test.parent_result.net:null;
  FDS.how=[T('Comment ça marche','How it works'),()=>'<div class="card"><h2>'+T('Un robot = des yeux + 6 pièces','A robot = eyes + 6 pieces')+'</h2><div class="sub">'+T('Les yeux lisent la structure du marché : les mêmes pour tous. Les pièces ont un nom ; on en retire une, on en met une autre, et le robot est testé sur le passé avant d\'aller plus loin.','The eyes read the market structure: the same for all. Pieces have a name; take one out, put another in, and the robot is tested on past data before going further.')+'</div>'+
@@ -1197,7 +1200,7 @@ function builderTop(){const B=BLD();
  h+='</div>';
  return h;}
 // a robot as a fund card: who it is, what it made on past data (curve), four figures, and the pieces that are its own
-function rCard2(r,PL){const m=BST[r.stage]||BST.tested,tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result,d=tr&&pr?tr.net-pr.net:null,own=r.parts||{};
+function rCard2(r,PL){const m=bstOf(r),tr=r.test&&r.test.robot,pr=r.test&&r.test.parent_result,d=tr&&pr?tr.net-pr.net:null,own=r.parts||{};
  const mine=[];Object.keys(own).forEach(k=>{if(k==='filters')(own.filters||[]).forEach(f=>mine.push(['filters',f]));else mine.push([k,own[k]]);});
  const nAcc=(PL||[]).filter(p=>p.robot===r.id).length,par=r.parent?bById(r.parent):null;
  let h='<button class="rc mix" style="--c:'+m.c+'" onclick="goB(\''+r.id+'\')"><div class="rh"><span class="ra">'+BOT+'</span><span class="rn"><b>'+esc(T(r.name_fr,r.name_en))+(r.market?' <span style="display:inline-block;vertical-align:middle;margin-left:6px;font-size:.66rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:99px;padding:2px 7px;'+(r.market.paused?'background:rgba(232,197,90,.12);color:var(--warn);border:1px solid rgba(232,197,90,.35)':'background:rgba(46,204,113,.12);color:var(--up-soft);border:1px solid rgba(46,204,113,.35)')+'">'+(r.market.paused?T('en pause','paused'):T('inclus','included'))+'</span>':'')+'</b><small>'+(par?T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en)):T('le robot d\'origine','the original robot'))+(r.mine?' · '+(r.public?T('public','public'):T('privé','private')):'')+'</small></span><span class="rs">'+T(m.fr,m.en)+'</span></div>';
@@ -1217,7 +1220,7 @@ function slotStack(R,own,parent,opts){opts=opts||{};
   SLOTS.map(s=>{const k=s[0],changed=parent&&own[k]!==undefined;const isF=k==='filters';
    const body=isF?((R.filters||[]).length?'<div class="pchips" style="margin-top:6px">'+(R.filters||[]).map(f=>'<span class="pc">'+esc(pName(f))+'</span>').join('')+'</div>':'<b>'+T('Aucun filtre','No filter')+'</b>'):'<b>'+esc(pName(R[k]))+'</b><em>'+esc(pPlain(R[k]))+'</em>';
    return '<div class="lg'+(changed?' chg':'')+(opts.edit&&NEWD&&NEWD.open===k?' open':'')+'"'+(opts.edit?' onclick="slotOpen(\''+k+'\')"':(!isF&&R[k]?' onclick="goP(\''+R[k]+'\')"':''))+'><span class="fi">'+pic(s[2])+'</span><span class="lgt"><small>'+s[1]+(parent?(changed?' · '+T('changé','changed'):' · '+T('hérité','inherited')):'')+'</small>'+body+'</span>'+(opts.edit?'<span class="lgc">'+(NEWD&&NEWD.open===k?T('Fermer','Close'):T('Changer','Change'))+'</span>':'<span class="lgc">›</span>')+'</div>'+(opts.edit&&NEWD&&NEWD.open===k?slotPicker(k,R):'');}).join('')+'</div>';}
-function renderB(){const r=CURB;if(!r)return;const m=BST[r.stage]||BST.tested;const R=r.resolved||{},own=r.parts||{};const par=r.parent&&bById(r.parent);
+function renderB(){const r=CURB;if(!r)return;const m=bstOf(r);const R=r.resolved||{},own=r.parts||{};const par=r.parent&&bById(r.parent);
  let h='<div class="card dh"><span class="fi" style="color:'+m.c+'">'+BOT+'</span><h3>'+esc(T(r.name_fr,r.name_en))+'</h3>'+'<div class="zaslot" data-k="rb">'+zaHTML('rb')+'</div>'+((r.plain_fr)?'<p>'+esc(T(r.plain_fr,r.plain_en))+'</p>':'')+
   '<div class="ft">'+bsb(r.stage)+(r.created?'<span class="bd ev">'+T('créé le ','built ')+fdate(r.created)+'</span>':'')+(par?'<span class="bd ev">'+T('enfant de ','child of ')+esc(T(par.name_fr,par.name_en))+'</span>':'')+(r.live_capable?'<span class="bd ev">'+T('peut tourner en vrai','can run for real')+'</span>':'')+'</div></div>';
  h+=rStrip(r);if(r.test&&r.test.robot&&cmpList().length>1)h+='<button class="more2" style="margin:-6px 0 12px" onclick="cmpPick(\''+r.id+'\')">'+T('Comparer avec un autre robot','Compare with another robot')+' ›</button>';
@@ -1321,6 +1324,7 @@ function ztVerdict(a,c){if(!a||a.trades==null)return {c:'var(--muted)',k:'gy',i:
  // period (95 out of 100 random draws do worse). Below that, a gain is "not proven"; with no control yet, it says so.
  const hv=(a.first_half||0)>0&&(a.later_half||0)>0,pc=c&&c.pct!=null?Math.round(c.pct):null,ns=c&&c.seeds?c.seeds:100,nb=pc!=null?Math.round(pc/100*ns):0,bt=pc!=null?(pc>=100?T('Mieux que les '+ns+' tirages au hasard','Better than all '+ns+' random draws'):T('Mieux que '+nb+' tirages au hasard sur '+ns,'Better than '+nb+' random draws out of '+ns)):'';
  if(a.net>0&&pc!=null&&pc<95)return {c:'var(--warn)',k:'or',i:'!',sh:T('Pas prouvé','Not proven'),t:T('Gagne, mais pas mieux que le hasard','Wins, but no better than chance'),s:T('Des entrées au hasard sur ce marché, même période, font aussi bien ou mieux '+(100-pc)+' fois sur 100 ('+(c.seeds||0)+' tirages). Il faut 95 sur 100 pour y croire.','Random entries on this market, same period, do as well or better '+(100-pc)+' times out of 100 ('+(c.seeds||0)+' draws). It takes 95 out of 100 to trust it.')};
+ if(a.net>0&&pc!=null&&(c.seeds||0)<40)return {c:'var(--warn)',k:'or',i:'!',sh:T('À confirmer','To confirm'),t:T('Passe de justesse : à confirmer sur 40 tirages','Passes narrowly: to confirm on 40 draws'),s:bt+T('. Avec si peu de tirages, un seul de plus peut tout changer : on confirme sur 40 avant de dire « solide ».','. With so few draws one more can change everything: we confirm on 40 before saying "solid".')};
  if(a.net>0&&pc!=null&&hv)return {c:'var(--up)',k:'gr',i:'✓',sh:T('Solide','Solid'),t:T('Bat le hasard et gagne sur les deux moitiés','Beats chance and wins in both halves'),s:bt+T(', positif au début ET à la fin de la période : le signe le plus solide.',', positive at the start AND at the end of the period: the strongest sign.')};
  if(a.net>0&&pc!=null)return {c:'var(--up)',k:'gr',i:'✓',sh:T('Bat le hasard','Beats chance'),t:T('Bat le hasard, mais pas sur toute la période','Beats chance, but not over the whole period'),s:bt+T(', mais une des deux moitiés perd.',', but one of the two halves loses.')};
  if(a.net>0&&hv)return {c:'var(--warn)',k:'or',i:'!',sh:T('À contrôler','To check'),t:T('Gagne sur les deux moitiés, hasard pas encore contrôlé','Wins in both halves, chance not checked yet'),s:T('Positif au début ET à la fin de la période. Le contrôle contre des entrées au hasard n\'est pas encore fait : on ne dit pas « solide » avant.','Positive at the start AND at the end of the period. The check against random entries is not done yet: we do not say "solid" before that.')};
