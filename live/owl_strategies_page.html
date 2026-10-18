@@ -1311,9 +1311,15 @@ function mkBadge(s,cat,sz){sz=sz||36;const b=MKI[mkBase(String(s||''))]||[String
 const fmtMin=m=>m==null?'':(m>=60?'~'+Math.floor(m/60)+' h '+String(Math.round(m%60)).padStart(2,'0'):'~'+Math.max(1,Math.round(m))+' min');
 function goZt(rid){NAV++;location.hash='zt='+(rid||'');}
 function ztRobots(){const B=BLD();return (B.robots||[]).filter(r=>r.can_edit||r.id==='owl'||B.admin);}
-function ztVerdict(a){if(!a||a.trades==null)return {c:'var(--muted)',k:'gy',i:'?',t:T('Pas de résultat','No result'),s:''};
+function ztVerdict(a,c){if(!a||a.trades==null)return {c:'var(--muted)',k:'gy',i:'?',t:T('Pas de résultat','No result'),s:''};
  if(a.trades<20)return {c:'var(--muted)',k:'gy',i:'?',sh:T('Trop peu de trades','Too few trades'),t:T('Trop peu de trades pour conclure','Too few trades to conclude'),s:T('Moins de 20 trades : le résultat peut encore être de la chance.','Under 20 trades: the result can still be luck.')};
- if(a.net>0&&(a.first_half||0)>0&&(a.later_half||0)>0)return {c:'var(--up)',k:'gr',i:'✓',sh:T('Solide','Solid'),t:T('Gagne sur les deux moitiés','Wins in both halves'),s:T('Positif au début ET à la fin de la période : le signe le plus solide.','Positive at the start AND at the end of the period: the strongest sign.')};
+ // 2026-10-17 (owner: "solid, not random?"): a gain is only "solid" when it beats random entries on the same market and
+ // period (95 out of 100 random draws do worse). Below that, a gain is "not proven"; with no control yet, it says so.
+ const hv=(a.first_half||0)>0&&(a.later_half||0)>0,pc=c&&c.pct!=null?Math.round(c.pct):null;
+ if(a.net>0&&pc!=null&&pc<95)return {c:'var(--warn)',k:'or',i:'!',sh:T('Pas prouvé','Not proven'),t:T('Gagne, mais pas mieux que le hasard','Wins, but no better than chance'),s:T('Des entrées au hasard sur ce marché, même période, font aussi bien ou mieux '+(100-pc)+' fois sur 100 ('+(c.seeds||0)+' tirages). Il faut 95 sur 100 pour y croire.','Random entries on this market, same period, do as well or better '+(100-pc)+' times out of 100 ('+(c.seeds||0)+' draws). It takes 95 out of 100 to trust it.')};
+ if(a.net>0&&pc!=null&&hv)return {c:'var(--up)',k:'gr',i:'✓',sh:T('Solide','Solid'),t:T('Bat le hasard et gagne sur les deux moitiés','Beats chance and wins in both halves'),s:T('Mieux que '+pc+' tirages au hasard sur 100, positif au début ET à la fin de la période : le signe le plus solide.','Better than '+pc+' random draws out of 100, positive at the start AND at the end of the period: the strongest sign.')};
+ if(a.net>0&&pc!=null)return {c:'var(--up)',k:'gr',i:'✓',sh:T('Bat le hasard','Beats chance'),t:T('Bat le hasard, mais pas sur toute la période','Beats chance, but not over the whole period'),s:T('Mieux que '+pc+' tirages au hasard sur 100, mais une des deux moitiés perd.','Better than '+pc+' random draws out of 100, but one of the two halves loses.')};
+ if(a.net>0&&hv)return {c:'var(--warn)',k:'or',i:'!',sh:T('À contrôler','To check'),t:T('Gagne sur les deux moitiés, hasard pas encore contrôlé','Wins in both halves, chance not checked yet'),s:T('Positif au début ET à la fin de la période. Le contrôle contre des entrées au hasard n\'est pas encore fait : on ne dit pas « solide » avant.','Positive at the start AND at the end of the period. The check against random entries is not done yet: we do not say "solid" before that.')};
  if(a.net>0)return {c:'var(--warn)',k:'or',i:'!',sh:T('Fragile','Fragile'),t:T('Gagne, mais pas sur toute la période','Wins, but not over the whole period'),s:T('Une des deux moitiés perd : à surveiller avant d\'y croire.','One of the two halves loses: watch it before trusting it.')};
  return {c:'var(--down)',k:'rd',i:'✕',sh:T('Perd','Loses'),t:T('Perd ici','Loses here'),s:T('Sur ce marché, le robot a perdu de l\'argent sur la période.','On this market, the robot lost money over the period.')};}
 function ztRows(r){const R=[];
@@ -1324,7 +1330,7 @@ function ztRows(r){const R=[];
  else if(r.test&&r.test.robot)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:r.test.robot,b:r.test.parent_result||{},days:r.test.days,fills:'ticks',win:r.test.window_utc});
  else if(r.id==='owl'&&!btcNew){const c=(BLD().robots||[]).find(x=>x.parent==='owl'&&x.test&&x.test.parent_result);
   if(c)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:c.test.parent_result,b:{},days:c.test.days,fills:'ticks',win:c.test.window_utc});}
- (r.mtests||[]).filter(x=>x.state==='done'&&x.robot).forEach(x=>R.push({sym:x.sym,nm:mkName(x.sym)||x.name||x.sym,cat:((MKL&&MKL.symbols||[]).find(z=>z.s===x.sym)||{}).cat,a:x.robot,b:x.parent_result||{},days:x.days,fills:x.fills||'bars',win:x.window_utc,at:x.tested_at}));
+ (r.mtests||[]).filter(x=>x.state==='done'&&x.robot).forEach(x=>R.push({sym:x.sym,nm:mkName(x.sym)||x.name||x.sym,cat:((MKL&&MKL.symbols||[]).find(z=>z.s===x.sym)||{}).cat,a:x.robot,b:x.parent_result||{},ctl:x.ctl||null,days:x.days,fills:x.fills||'bars',win:x.window_utc,at:x.tested_at}));
  return R.sort((p,q)=>m30(q)-m30(p));}
 // 2026-10-15 (owner: "fair and professional"): every result compared per 30 days; under 80 trades it says so
 const ZT_FEW=80;
@@ -1334,7 +1340,7 @@ function ztSteps(x){const k=x.state==='queued'?0:(x.state==='building'?1:(x.stat
  const L=[T('En file','Queued'),T('Préparation','Preparing'),T('Test','Testing'),T('Prêt','Ready')];
  return '<div class="zst">'+L.map((l,i)=>'<span class="'+(i<k?'dn':(i===k?'on':''))+'"><i></i>'+l+'</span>').join('')+'</div>';}
 function ztBars(R,max){const M=max||Math.max(1,...R.map(x=>Math.abs(m30(x))));
- return R.map(x=>{const v=ztVerdict(x.a),n=m30(x),tot=x.a.net||0,few=(x.a.trades||0)<ZT_FEW,w=Math.max(2,Math.abs(n)/M*50);
+ return R.map(x=>{const v=ztVerdict(x.a,x.ctl),n=m30(x),tot=x.a.net||0,few=(x.a.trades||0)<ZT_FEW,w=Math.max(2,Math.abs(n)/M*50);
   return '<button class="zbr" onclick="ztShow(\''+x.sym+'\')" aria-label="'+esc(x.nm)+' : '+money(n)+'">'+mkBadge(x.sym,x.cat,34)+
    '<span class="zbn"><b>'+esc(x.nm)+'</b><small><i style="background:'+v.c+'"></i>'+(v.sh||v.t)+'</small><small class="ztn">'+num(x.a.trades)+' trades'+(few?' · <em class="zfew">'+T('peu','few')+'</em>':'')+'</small></span>'+
    '<span class="zbt"><span class="zb0"></span><span class="zbf '+(n>=0?'p':'n')+'" style="'+(n>=0?'left:50%':'right:50%')+';width:'+w.toFixed(1)+'%"></span></span>'+
@@ -1374,14 +1380,14 @@ function renderZT(){const B=BLD(),L=ztRobots();
  if(!ZT.rid||!L.find(x=>x.id===ZT.rid))ZT.rid=(L.find(x=>x.mine)||L.find(x=>x.id==='owl')||L[0]).id;
  const r=bById(ZT.rid)||L[0],pend=ztPend(r),R=ztRows(r),syms=(MKL&&MKL.symbols)||[],tested=new Set(R.map(x=>x.sym)),busy=new Set(pend.map(x=>x.sym));
  clearTimeout(ZTT);if(pend.length)ZTT=setTimeout(async()=>{if(new URLSearchParams(location.hash.slice(1)).has('zt')&&!LSH){RB=null;await load();renderZT();}},30000);
- const wins=R.filter(x=>(x.a.net||0)>0).length,best=R[0];
+ const wins=R.filter(x=>(x.a.net||0)>0).length,best=R[0],proven=R.filter(x=>ztVerdict(x.a,x.ctl).k==='gr').length;
  // 1) header: robot switcher + key figures
  let h='<div class="card hero zh"><div class="eyebrow">'+T('Zone de test','Test zone')+'</div><div class="zaslot" data-k="zt">'+zaHTML('zt')+'</div>'+
   '<button class="zrob" onclick="ztPickRobot()" aria-label="'+T('Changer de robot','Change robot')+'"><span class="zra">'+BOT+'</span><span class="zrn"><small>'+T('Robot testé','Robot under test')+'</small><b>'+esc(T(r.name_fr,r.name_en))+'</b></span><span class="zrc">'+T('Changer','Change')+' ▾</span></button>'+
-  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(m30(best),0)+'<em class="z30">'+T('par 30 j','per 30 d')+'</em>':'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
+  '<div class="k3"><div><b>'+R.length+'</b><span>'+(R.length===1?T('marché testé','market tested'):T('marchés testés','markets tested'))+'</span></div><div><b class="'+(wins?'pos':'')+'">'+wins+'</b><span>'+(wins===1?T('gagnant','winning'):T('gagnants','winning'))+(wins?' · '+proven+T(' prouvé',' proven')+(proven>1?'s':''):'')+'</span></div><div><b class="'+(best?cl(best.a.net):'')+'">'+(best?money(m30(best),0)+'<em class="z30">'+T('par 30 j','per 30 d')+'</em>':'—')+'</b><span>'+(best?T('meilleur : ','best: ')+esc(best.nm):T('meilleur','best'))+'</span></div></div></div>';
  // 2) results
  h+='<div class="zsec"><b>'+T('Où il marche','Where it works')+'</b>'+(R.length>1?'<span>'+T('du meilleur au moins bon','best first')+'</span>':'')+'</div>';
- if(R.length){h+='<div class="card zres">'+(R.length>1?'<div class="zins">'+(wins?T('Gagne sur ','Wins on ')+wins+T(' marché',' market')+(wins>1?'s':'')+T(' sur ',' out of ')+R.length+' · '+T('le meilleur : ','best: ')+'<b>'+esc(best.nm)+'</b>':T('Ne gagne sur aucun des marchés testés.','Wins on none of the markets tested.'))+'</div>':'')+
+ if(R.length){h+='<div class="card zres">'+(R.length>1?'<div class="zins">'+(wins?T('Gagne sur ','Wins on ')+wins+T(' marché',' market')+(wins>1?'s':'')+T(' sur ',' out of ')+R.length+(proven?'':T(', aucun prouvé contre le hasard',', none proven against chance'))+' · '+T('le meilleur : ','best: ')+'<b>'+esc(best.nm)+'</b>':T('Ne gagne sur aucun des marchés testés.','Wins on none of the markets tested.'))+'</div>':'')+
    '<div class="zleg"><i><span>← '+T('perd','loses')+'</span><span>'+T('gagne','wins')+' →</span></i></div>'+ztBars(R)+'</div>';}
  else h+='<div class="card zempty">'+pic('M3 3v18h18M7 14l4-4 4 4 5-6')+'<b>'+T('Pas encore de résultat','No result yet')+'</b><span>'+T('Choisissez un ou plusieurs marchés ci-dessous : chaque test rejoue le robot sur des semaines de vrais prix.','Pick one or more markets below: each test replays the robot over weeks of real prices.')+'</span></div>';
  // 3) running
@@ -1427,7 +1433,7 @@ async function ztGo(){const j=await robotPost('robot_test_markets',{id:ZT.rid,sy
  if(!j.ok){const e=$('zterr');if(e)e.textContent=MKTERR[j.err]||j.err||'';return;}
  const bad=(j.jobs||[]).filter(x=>!x.ok);ZT.sel=[];RB=null;await load();renderZT();window.scrollTo({top:0,behavior:'smooth'});
  if(bad.length)alert(bad.map(x=>x.sym+' : '+(MKTERR[x.err]||x.err)).join('\n'));}
-function ztShow(sym){const r=bById(ZT.rid);if(!r)return;const x=ztRows(r).find(z=>z.sym===sym);if(!x)return;const a=x.a,b=x.b||{},v=ztVerdict(a),hasP=b.net!=null&&r.id!=='owl'&&r.parent!==r.id;
+function ztShow(sym){const r=bById(ZT.rid);if(!r)return;const x=ztRows(r).find(z=>z.sym===sym);if(!x)return;const a=x.a,b=x.b||{},v=ztVerdict(a,x.ctl),hasP=b.net!=null&&r.id!=='owl'&&r.parent!==r.id;
  const par=r.parent&&bById(r.parent),pn=par?T(par.name_fr,par.name_en):T('le parent','the parent');
  const ds=[...new Set([].concat((a.curve||[]).map(q=>q[0]),(b.curve||[]).map(q=>q[0])))].sort();const al=c=>{const mm={};(c||[]).forEach(q=>mm[q[0]]=+q[1]);let w=0;return [0].concat(ds.map(d=>(w=(d in mm)?mm[d]:w)));};
  const g=(l,val)=>'<div class="ztg"><small>'+l+'</small><b>'+val+'</b></div>';
@@ -1439,7 +1445,8 @@ function ztShow(sym){const r=bById(ZT.rid);if(!r)return;const x=ztRows(r).find(z
   '<div style="margin-top:14px">'+lineChart([{a:al(a.curve),c:'var(--accent)',n:T(r.name_fr,r.name_en)}].concat(hasP&&b.curve?[{a:al(b.curve),c:'var(--muted)',n:pn,dash:1}]:[]),{h:170})+'</div>'+
   '<div class="zsub">'+T('Les deux moitiés','The two halves')+'</div>'+hb(T('1re moitié','1st half'),h1)+hb(T('2e moitié','2nd half'),h2)+
   '<div class="zsub">'+T('En détail','In detail')+'</div><div class="ztgs">'+g(T('Facteur de profit','Profit factor'),a.profit_factor!=null?(+a.profit_factor).toFixed(2):'—')+g(T('Plus gros recul','Deepest dip'),'−$'+num(a.cc_dd,2))+g(T('Pertes d\'affilée','Losses in a row'),a.max_loss_streak!=null?num(a.max_loss_streak):'—')+
-   g(T('Pire trade','Worst trade'),money(a.worst))+g(T('Meilleur trade','Best trade'),money(a.best))+g(T('Durée typique','Typical hold'),a.hold_median_min!=null?num(a.hold_median_min,0)+' min':'—')+'</div>'+
+   g(T('Pire trade','Worst trade'),money(a.worst))+g(T('Meilleur trade','Best trade'),money(a.best))+g(T('Durée typique','Typical hold'),a.hold_median_min!=null?num(a.hold_median_min,0)+' min':'—')+
+   g(T('Contre le hasard','Vs chance'),x.ctl&&x.ctl.pct!=null?Math.round(x.ctl.pct)+' / 100':T('pas encore','not yet'))+g(T('Hasard, résultat médian','Chance, median result'),x.ctl&&x.ctl.median!=null?money(x.ctl.median):'—')+'</div>'+
   (hasP?'<div class="zpar '+(d>=0?'p':'n')+'"><b>'+(d>=0?'+':'−')+'$'+num(Math.abs(d),2)+'</b><span>'+(d>=0?T('de mieux que ','better than '):T('de moins que ','less than '))+esc(pn)+T(' sur ce marché',' on this market')+'</span></div>':'')+
   '<div class="zfoot">'+(x.win?esc(fdate(String(x.win[0]).slice(0,10)))+' → '+esc(fdate(String(x.win[1]).slice(0,10)))+' · ':'')+(x.fills==='ticks'?T('tick par tick','tick by tick'):T('bougies d\'une minute, même risque que le Bitcoin','1-minute candles, same risk as Bitcoin'))+'</div>'+
   (others.length?'<button class="cta" style="margin-top:14px" onclick="ztCmp(\''+sym+'\')">'+pic('M3 12h4l3-8 4 16 3-8h4')+T('Comparer avec un autre marché','Compare with another market')+'</button>':''));}
@@ -1453,7 +1460,7 @@ function ztCmp2(s1,s2){const r=bById(ZT.rid),R=ztRows(r),x=R.find(z=>z.sym===s1)
   '<table class="ctb" style="margin-top:12px"><tr><th></th><th>'+esc(x.nm)+'</th><th>'+esc(y.nm)+'</th></tr>'+
   row(T('Résultat','Result'),money,x.a.net,y.a.net,true)+row('Trades',v=>num(v),x.a.trades,y.a.trades,null)+row(T('Gagnés','Won'),v=>num(100*(v||0),0)+' %',x.a.win_rate,y.a.win_rate,true)+
   row(T('Facteur de profit','Profit factor'),v=>v!=null?(+v).toFixed(2):'—',x.a.profit_factor||0,y.a.profit_factor||0,true)+row(T('Plus gros recul','Deepest dip'),v=>'−$'+num(v,2),x.a.cc_dd,y.a.cc_dd,false)+
-  row(T('Verdict','Verdict'),v=>v,ztVerdict(x.a).sh||ztVerdict(x.a).t,ztVerdict(y.a).sh||ztVerdict(y.a).t,null)+'</table>'+
+  row(T('Verdict','Verdict'),v=>v,ztVerdict(x.a,x.ctl).sh||ztVerdict(x.a,x.ctl).t,ztVerdict(y.a,y.ctl).sh||ztVerdict(y.a,y.ctl).t,null)+'</table>'+
   '<div class="zfoot">'+T('Même robot, même risque par trade : les courbes suivent chaque trade, du premier au dernier.','Same robot, same risk per trade: the curves follow each trade, first to last.')+'</div>');}
 // everyday names next to the broker's codes, also searched ("nasdaq" finds USTEC)
 const MKNM={XAUUSD:['Or','Gold'],XAGUSD:['Argent','Silver'],USOIL:['Pétrole US','US oil'],UKOIL:['Pétrole Brent','Brent oil'],USTEC:['Nasdaq 100','Nasdaq 100'],US30:['Dow Jones','Dow Jones'],US500:['S&P 500','S&P 500'],DE30:['DAX','DAX'],

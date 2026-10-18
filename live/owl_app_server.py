@@ -13366,6 +13366,15 @@ def _robot_mtests(rid):
                         "parent_result": {k: (j.get("parent_result") or {}).get(k) for k in keep}, "tested_at": j.get("generated_at")})
         except Exception:
             pass
+        # 2026-10-17 (owner "the $14 for gold, solid, not random?"): the random-entry control travels with the result,
+        # so the page can only say "solid" when the robot beats chance (study/random_control_<rid>_<SYM>.json, >= 95th)
+        try:
+            c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, x["sym"])), encoding="utf-8"))
+            if c.get("percentile") is not None:
+                row["ctl"] = {"pct": c["percentile"], "seeds": c.get("seeds"), "median": (c.get("control") or {}).get("median"),
+                              "p95": (c.get("control") or {}).get("p95")}
+        except Exception:
+            pass
         out.append(row)
     return out
 
