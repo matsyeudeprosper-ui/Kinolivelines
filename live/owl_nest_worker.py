@@ -143,6 +143,7 @@ def compute():
                   "pl": round(p.profit + p.swap, 2),
                   "e": p.price_open, "sl": p.sl, "tp": p.tp,
                   "cur": p.price_current,
+                  "t": int(p.time),          # 2026-10-18: open time -> En direct shows 'depuis 12 min'
                   # 2026-10-13 (owner): which market - En direct shows a real trade on another market under ITS name
                   "sym": p.symbol,
                   "k": ("s" if ((p.comment or "").startswith("OWL-recov")

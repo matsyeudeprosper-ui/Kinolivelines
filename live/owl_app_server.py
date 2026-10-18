@@ -3475,7 +3475,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <!-- 2026-10-13 (owner): the 5 destinations - Aujourd'hui, Marche, Performance, Labo, Compte. Le Nid opens from
      Compte > Proprietaire; its button stays (hidden) because the app's own code addresses it. -->
 <button class="tb on" onclick="tab('home',this)"><svg class="ic"><use href="#i-home"/></svg>Aujourd&rsquo;hui</button>
-<button class="tb" id="tb-marche" onclick="tab('marche',this)"><svg class="ic"><use href="#i-activity"/></svg>March&eacute;</button>
+<button class="tb" id="tb-marche" onclick="tab('marche',this)"><svg class="ic"><use href="#i-activity"/></svg>En direct</button>
 <button class="tb" id="tb-hist" onclick="tab('hist',this)"><svg class="ic"><use href="#i-chart"/></svg>Performance</button>
 <button class="tb" id="tb-labo" onclick="goLabo()"><svg class="ic"><use href="#i-bot"/></svg>Robots</button>
 <button class="tb" id="tb-nid" style="display:none"
@@ -3976,7 +3976,7 @@ const I18N_EN=new Map(Object.entries({
  'Vert = frais, orange = en retard, rouge = figé ou arrêté.':'Green = fresh, amber = late, red = stale or stopped.',
  'Lot de base actuel :':'Current base lot:','mise à l\u2019échelle active':'scaling on','Aucun trade pour l\u2019instant':'No trade yet','Rien à raconter pour l\u2019instant.':'Nothing to tell yet.'
 }));
-const I18N_RX=[[/^(\d+) trades?$/,'$1 trades'],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+)\s*→\s*\$(\d+)\/jour\s*·\s*(\d+)\s*%$/,'Next step $$$1 → $$$2/day · $3 %'],[/^Objectif : \$(\d+)\s*·\s*(\d+)\s*%$/,'Goal: $$$1 · $2 %'],
+const I18N_RX=[[/^(\d+) trades?$/,(m,n)=>n+(n==='1'?' trade':' trades')],[/^(\d+) trades? en cours$/,'$1 running'],[/^Prochain palier \$(\d+)\s*→\s*\$(\d+)\/jour\s*·\s*(\d+)\s*%$/,'Next step $$$1 → $$$2/day · $3 %'],[/^Objectif : \$(\d+)\s*·\s*(\d+)\s*%$/,'Goal: $$$1 · $2 %'],
  [/^Lot de base actuel : ([\d.]+) lot · mise à l\u2019échelle active$/,'Current base lot: $1 lot · scaling on'],[/^Trade en cours · (.+)$/,'Running trade · $1'],
  [/^(\d+) trades? · (\d+) (occasions? laissées? passer|signa(?:l|ux) écartés?)$/,'$1 trades · $2 set aside'],[/^ aujourd\u2019hui$/,' today'],[/^(\d+) sur (\d+) étapes$/,'$1 of $2 milestones'],
  [/^(\d+) comptes? · total$/,'$1 accounts · total'],[/^Bonjour Visiteur$/,'Good morning, visitor'],[/^Bon après-midi Visiteur$/,'Good afternoon, visitor'],[/^Bonsoir Visiteur$/,'Good evening, visitor'],[/^Bonjour (.+)$/,'Good morning $1'],[/^Bon après-midi (.+)$/,'Good afternoon $1'],[/^Bonsoir (.+)$/,'Good evening $1']];
@@ -8102,7 +8102,9 @@ function goLabo(){location.href=B+'robots';}
  const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const hm=ts=>{const d=new Date(ts*1000);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');};
  const fmtN=(v,dg)=>{if(v==null||isNaN(v))return '—';const s=Number(v).toLocaleString(EN()?'en-US':'fr-FR',{minimumFractionDigits:dg,maximumFractionDigits:dg});return s;};
- const R=v=>(v>=0?'+':'−')+(EN()?Math.abs(v).toFixed(2):Math.abs(v).toFixed(2).replace('.',','))+' R';
+ // 2026-10-18 (owner, plain words): a trial trade in pretend dollars of its trial pocket (risk x start), never "R"
+ const R=v=>{let pr=null;try{pr=(SC&&SC.pocket_rule)||null;}catch(e){}const usd=v*((pr&&pr.risk)||0.02)*((pr&&pr.start)||100);
+  return (usd>=0?'+':'−')+'$'+(EN()?Math.abs(usd).toFixed(2):Math.abs(usd).toFixed(2).replace('.',','))+' <small class="lv-fk">'+T2('fictif','pretend')+'</small>';};
  // one look per market: a short code, a colour, a plain name
  const MK={BTCUSD:['₿','#f7931a','Bitcoin','Bitcoin'],XAUUSD:['Au','#f5d27a','Or','Gold'],XAGUSD:['Ag','#c9d3df','Argent','Silver'],USOIL:['Oil','#9fc2de','Pétrole','Oil'],
   US30:['DJ','#8fc6ff','Dow Jones','Dow Jones'],USTEC:['NQ','#a78bfa','Nasdaq','Nasdaq'],US500:['SP','#7dd3fc','S&P 500','S&P 500'],DE30:['DE','#fca5a5','DAX','DAX'],
@@ -8116,6 +8118,11 @@ function goLabo(){location.href=B+'robots';}
  const badge=(s,sz)=>{const m=mk(s);return '<span class="lv-sy" style="background:'+m[1]+'26;color:'+m[1]+(sz?';width:'+sz+'px;height:'+sz+'px;border-radius:'+Math.round(sz/3)+'px;font-size:'+(sz<30?'.58rem':'.78rem'):'')+'">'+m[0]+'</span>';};
  const css=document.createElement('style');css.textContent=`
  #tab-marche #mxseg,#tab-marche #mx-jump,#tab-marche #mx-market>.sec{display:none!important}
+ .edrx .lv-pm{display:block;font-size:.62rem;font-weight:700;color:var(--muted);text-align:right;letter-spacing:0}
+ .edrx .lv-fk{font-size:.62rem;font-weight:700;color:var(--muted);margin-left:2px}
+ .edrx .lv-pz{display:block;font-size:.66rem;color:var(--muted);font-weight:600;margin-top:1px}
+ .edrx .lv-top{flex-wrap:wrap;row-gap:8px}.edrx .lv-rbt{flex:none;white-space:nowrap}
+ .edrx .lv-bell.lv-alrt{width:auto;padding:0 12px;gap:6px;display:inline-flex;align-items:center;font:inherit;font-size:.74rem;font-weight:800}
  #edrh{display:flex;align-items:center;gap:13px;padding:40px 4px 6px}
  #edrh .pfi{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent-bg);border:1px solid var(--border2);color:var(--accent-soft)}
  #edrh .pfi svg{width:22px;height:22px}
@@ -8192,7 +8199,9 @@ function goLabo(){location.href=B+'robots';}
   const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&lg.cap_today>0&&(lg.day_pnl_bot||0)>=lg.cap_today);
   if(open.length){const O=window._openSum(open),pl=O.pl;
    const what=O.kind.charAt(0).toUpperCase()+O.kind.slice(1)+' '+O.markets;
-   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+(O.n>1?T2(' ouverts',' open'):T2(' ouvert',' open'))+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
+   const ot=Math.min(...open.map(p=>+p.t||Infinity)),mins=isFinite(ot)?Math.max(1,Math.round((now-ot)/60)):null;
+   const since=mins==null?'':(mins<60?T2(' depuis '+mins+' min',' for '+mins+' min'):T2(' depuis '+Math.floor(mins/60)+' h '+String(mins%60).padStart(2,'0'),' for '+Math.floor(mins/60)+' h '+String(mins%60).padStart(2,'0')));
+   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+(O.n>1?T2(' ouverts',' open'):T2(' ouvert',' open'))+since+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
   if(recent)return {c:recent.p>=0?'gr':'rd',t:T2('Trade terminé','Trade closed'),pl:recent.p,s:T2('Il y a '+Math.max(1,Math.round((now-recent.x)/60))+' min. Le robot reprend sa surveillance.',Math.max(1,Math.round((now-recent.x)/60))+' min ago. The robot is watching again.'),row:T2('Terminé ','Closed ')+money(recent.p)};
   if(D.bot_killed)return {c:'rd',t:T2('Arrêté','Stopped'),s:T2('La ligne d’arrêt du compte est atteinte : le robot ne prend plus de trade.','The account’s stop line was reached: the robot takes no more trades.'),row:T2('Arrêté','Stopped')};
   if(D.app_only&&D.trading_paused)return {c:'gy',t:T2('Signal','Signal'),s:T2('Le robot vous pr\u00e9vient ; vous tradez vous-m\u00eame, chez votre courtier.','The robot alerts you; you trade yourself, at your broker.'),row:T2('Signal','Signal')};
@@ -8201,11 +8210,17 @@ function goLabo(){location.href=B+'robots';}
   if(gate&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Pas de tendance claire : le robot attend qu’un sens se dessine.','No clear trend: the robot waits for a direction.'),row:T2('Il attend','Waiting')};
   if(gate&&ms.pb_side==='wrong')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le prix est du mauvais côté de sa dernière cassure : le robot attend qu’il repasse — ','Price is on the wrong side of its last break: the robot waits for it to come back — ')+trend+'.',row:T2('Il attend','Waiting')};
   if(k==='nervous'||k==='brisk')return {c:'or',t:T2('Il se méfie','Cautious'),s:T(k==='nervous'?'j_storm':'j_nervous'),row:T2('Il se méfie','Cautious')};
+  if(k==='none'&&t!==1&&t!==-1)return {c:'or',t:T2('Il attend','Waiting'),s:T2('Il attend deux choses : que le marché se réveille, et qu’un sens clair se dessine.','It waits for two things: the market to wake up, and a clear direction.'),row:T2('Il attend','Waiting')};
   if(k==='none')return {c:'or',t:T2('Il attend','Waiting'),s:T2('Le marché dort. Dès qu’il se réveille, le robot cherche ','The market is asleep. When it wakes up, the robot looks for ')+'<b>'+side+'</b>'+(trend?' — '+trend:'')+'.',row:T2('Il attend','Waiting')};
   if(k==='forming'||k==='flip')return {c:'or',t:T2('Il attend','Waiting'),s:T(k==='forming'?'j_forming':'j_flip'),row:T2('Il attend','Waiting')};
   return {c:'bl',t:T2('Prêt','Ready'),s:T2('Les conditions sont réunies : il entrera dès qu’une cassure confirme ','Conditions are met: it enters as soon as a break confirms ')+'<b>'+side+'</b>.',row:T2('Prêt','Ready')};}
+ // what the open trade(s) would make at the target / lose at the stop: dollars per point from the live P&L
+ // (or the lot, Bitcoin = 1 per point per lot), summed over the open positions
+ function moneyAt(L,e,tp,sl,cur,dir){const pl=(L||[]).reduce((a,p)=>a+(+p.pl||0),0),lot=(L||[]).reduce((a,p)=>a+(+p.lot||0),0),mv=(cur-e)*dir;
+  const k=Math.abs(mv)>1e-9&&Math.abs(pl)>0.005?pl/mv:lot;if(!k)return {};const f=v=>(v>=0?'+$':'−$')+Math.abs(v).toFixed(2);
+  return {tp:f((tp-e)*dir*k),sl:f((sl-e)*dir*k)};}
  // the three labels under a trade's rail follow its direction: a sell has its target on the LEFT
- function lvEnds(dir,sl,e,tp){const S='<b class="lv-dn">'+sl+'</b>',Tg='<b class="lv-up">'+tp+'</b>',M='<div style="text-align:center">'+T2('entrée','entry')+'<b>'+e+'</b></div>';
+ function lvEnds(dir,sl,e,tp,m){m=m||{};const S=(m.sl?'<b class="lv-dn">'+m.sl+'</b><small class="lv-pz">'+sl+'</small>':'<b class="lv-dn">'+sl+'</b>'),Tg=(m.tp?'<b class="lv-up">'+m.tp+'</b><small class="lv-pz">'+tp+'</small>':'<b class="lv-up">'+tp+'</b>'),M='<div style="text-align:center">'+T2('entrée','entry')+'<b>'+e+'</b></div>';
   return dir===1?'<div>'+T2('stop','stop')+S+'</div>'+M+'<div style="text-align:right">'+T2('objectif','target')+Tg+'</div>':'<div>'+T2('objectif','target')+Tg+'</div>'+M+'<div style="text-align:right">'+T2('stop','stop')+S+'</div>';}
  // a price rail: left level, right level, the price between
  function rail(lo,hi,px,dg,fill,ends){const p=Math.max(2,Math.min(98,(px-lo)/((hi-lo)||1)*100));
@@ -8354,7 +8369,7 @@ function goLabo(){location.href=B+'robots';}
  let pkT=0;
  function pkLoad(){if(Date.now()-pkT<300000)return;pkT=Date.now();fetch(B+'pockets?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&!j.err)window._pk=j;}).catch(()=>{});}
  function pkLine(sym){if(sym==='BTCUSD'){pkLoad();const P=((window._pk||{}).pockets||[]).find(x=>x.sym==='BTCUSD');if(!P)return '';
-   return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+P.n+' trades · '+T2('depuis le début','since the start')+'</small></span><b class="'+(P.net>=0?'lv-up':'lv-dn')+'">'+money(P.net)+'</b><span class="c">›</span></a>';}
+   const hm0=P.month!=null;return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+(hm0?(P.month_n||0)+' trades '+T2('ce mois','this month')+' · '+T2('depuis le début ','since the start ')+money(P.net):P.n+' trades · '+T2('depuis le début','since the start'))+'</small></span><b class="'+((hm0?P.month:P.net)>=0?'lv-up':'lv-dn')+'">'+money(hm0?P.month:P.net)+(hm0?'<small class="lv-pm">'+T2('ce mois','this month')+'</small>':'')+'</b><span class="c">›</span></a>';}
   const L=((((SC||{}).results||{})[sym]||{}).pocket||{}).live;if(!L)return '';const st=((SC||{}).pocket_rule||{}).start||100;
   return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
  // 2026-10-13 (owner): the card follows the robot PLUGGED on the account (server: robot_now). The Owl keeps its
@@ -8400,7 +8415,7 @@ function goLabo(){location.href=B+'robots';}
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    '<button class="lv-bell" id="edrchart" aria-label="'+T2('Voir le graphique','See the chart')+'" title="'+T2('Voir le graphique','See the chart')+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-chart"/></svg></button>'+
-   (sym==='BTCUSD'&&nb?'<button class="lv-bell'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-bell"/></svg></button>':'')+'</div>';}
+   (sym==='BTCUSD'&&nb?'<button class="lv-bell lv-alrt'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:15px;height:15px"><use href="#i-bell"/></svg><span>'+(on?T2('Alerte ✓','Alert ✓'):T2('Alerte','Alert'))+'</span></button>':'')+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
    '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
@@ -8408,7 +8423,7 @@ function goLabo(){location.href=B+'robots';}
    if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
     h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
      rail(lo,hi,cur,0,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
-      lvEnds(dir,fmtN(sl,0),fmtN(e,0),fmtN(tp,0)))+'</div>';}}
+      lvEnds(dir,fmtN(sl,0),fmtN(e,0),fmtN(tp,0),moneyAt(S.open,e,tp,sl,cur,dir)))+'</div>';}}
   else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'&&rbNow(D).entry_event!=='choch'){
    const up=ms.pb_trend===1,lo=up?ms.pb_last_bos:ms.next_bos,hi=up?ms.next_bos:ms.pb_last_bos,dist=Math.abs(ms.next_bos-ms.px);
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
@@ -8500,16 +8515,17 @@ function goLabo(){location.href=B+'robots';}
    (n?'<button class="lv-btn" id="edrall">'+T2('Tous les marchés en essai','All markets on trial')+' · '+n+' ›</button>':'')+'</div>';}
  // the four tiles
  function tiles(D,TR){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000;
-  const nr=(Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length+(D.open_list||[]).length,ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
+  const dd=String(m0.getDate()).padStart(2,'0')+'/'+String(m0.getMonth()+1).padStart(2,'0'),dk=Object.keys(D.day_trades||{}).find(k=>k.slice(-5)===dd);
+  const nr=Math.max((Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length,dk?(D.day_trades[dk]||[]).length:0)+(D.open_list||[]).length,ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
   const DT=D.day_trades||{},H=Array(24).fill(0);let n=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const h=locH(parseInt(String(x.t||'').slice(0,2),10));if(h>=0&&h<24){H[h]+=+x.p||0;n++;}}));
   let bh=-1;H.forEach((v,i)=>{if(v>0&&(bh<0||v>H[bh]))bh=i;});
   const ms=D.meteo_struct||{},cur=sel==='BTCUSD'?ms.px:((TR.find(r=>r.sym===sel)||{}).px);
   const dg=sel==='BTCUSD'?0:Math.min(5,Math.max(0,((TR.find(r=>r.sym===sel)||{}).digits)||2));
   const t=(k,ic,lab,v,s)=>'<button class="lv-t" data-k="'+k+'"><div class="k"><i><svg class="ic" style="width:13px;height:13px"><use href="#'+ic+'"/></svg></i>'+lab+'</div><div class="v">'+v+'</div><div class="s">'+s+'</div></button>';
   return '<div class="lv-tl">'+
-   t('chart','i-chart',T2('Graphique','Chart'),cur?fmtN(cur,dg):esc(mname(sel)),esc(mname(sel))+' · '+T2('en direct','live'))+
+   t('chart','i-chart',T2('Graphique','Chart'),cur?fmtN(cur,dg):T2('Ouvrir','Open'),esc(mname(sel))+' · '+T2('en direct','live'))+
    t('diary','i-book',T2('Journal','Diary'),nr+' trade'+(nr>1?'s':''),(ni?ni+' '+T2('laissée'+(ni>1?'s':''),'passed'):T2('aujourd’hui','today'))+(nv?' · '+nv+' '+T2('en essai','on trial'):''))+
-   t('hours','i-calendar',T2('Ses heures','Its hours'),bh>=0?bh+'h':'—',bh>=0?T2('sa meilleure heure','its best hour')+' · '+Object.keys(DT).length+' '+T2('jours','days'):T2('pas encore assez de trades','not enough trades yet'))+
+   t('hours','i-calendar',T2('Ses heures','Its hours'),bh>=0?bh+'h':'—',bh>=0?(Object.keys(DT).length<20?T2('à confirmer · ','to confirm · ')+Object.keys(DT).length+' '+T2('jours seulement','days only'):T2('sa meilleure heure','its best hour')+' · '+Object.keys(DT).length+' '+T2('jours','days')):T2('pas encore assez de trades','not enough trades yet'))+
    t('det','i-settings',T2('Pour traders','For traders'),T2('Détails','Details'),T2('météo · H4 / H1 / M15 · heures','weather · H4 / H1 / M15 · hours'))+'</div>';}
  // a diary trade -> the matching row of the app's trade list (same result, closest time) -> its own sheet
  function openTr(p,x){const L=window._tr||[];let bi=-1,bd=1e12;
@@ -12122,11 +12138,13 @@ def pockets_payload(uid):
         s = str(x[5] if len(x) > 5 and x[5] else "BTCUSD").upper()
         if s.endswith("M") and len(s) > 4:
             s = s[:-1]
-        p = P.setdefault(s, {"sym": s, "net": 0.0, "n": 0, "won": 0, "last": 0})
+        p = P.setdefault(s, {"sym": s, "net": 0.0, "n": 0, "won": 0, "last": 0, "month": 0.0, "month_n": 0})
         p["net"] += float(x[1]); p["n"] += 1; p["won"] += 1 if float(x[1]) > 0 else 0; p["last"] = max(p["last"], int(x[0]))
+        if datetime.fromtimestamp(int(x[0]), timezone.utc).strftime("%Y-%m") == datetime.now(timezone.utc).strftime("%Y-%m"):
+            p["month"] += float(x[1]); p["month_n"] += 1     # 2026-10-18: En direct leads with this month (like Performance)
     out = sorted(P.values(), key=lambda p: -p["net"])
     for p in out:
-        p["net"] = round(p["net"], 2)
+        p["net"] = round(p["net"], 2); p["month"] = round(p["month"], 2)
     return {"pockets": out, "balance": w.get("balance"), "currency": w.get("currency")}
 
 
