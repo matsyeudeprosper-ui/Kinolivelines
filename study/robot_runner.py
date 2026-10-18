@@ -257,7 +257,7 @@ def _control_running():
     import subprocess
     try:
         o = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command",
-                            "@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*random_control_market*' -or $_.CommandLine -like '*ctrl_split*' }).Count"],
+                            "@(Get-CimInstance Win32_Process | Where-Object { ($_.CommandLine -like '*random_control_market*' -or $_.CommandLine -like '*ctrl_split*') -and $_.CommandLine -notlike '*when_free*' }).Count"],
                            capture_output=True, text=True, timeout=90, creationflags=0x08000000)
         return int((o.stdout or "0").strip() or 0) > 0
     except Exception:
