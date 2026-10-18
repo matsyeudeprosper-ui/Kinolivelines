@@ -1472,6 +1472,18 @@ body{background:var(--bg);color:var(--text);
  justify-content:center;font-size:1.15rem;flex:none}
 .chv{color:var(--muted);width:18px;height:18px}
 .ssub{font-size:.82rem;color:var(--muted);margin-top:2px}
+.hero{position:relative;overflow:hidden}.hero>*{position:relative;z-index:1}
+.hero>#hspark{position:absolute;left:0;top:30%;width:100%;height:46%;pointer-events:none;opacity:.17;z-index:0}
+.hero .dlm{opacity:1!important;font-size:.6em!important;letter-spacing:.05em;margin-left:8px!important}
+.hero .dlm i{font-style:normal;margin:0 2px;opacity:.4}.hero .dlm i.on{opacity:1}
+.hpulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:1px;animation:hpl 1.4s ease-in-out infinite}
+@keyframes hpl{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.65)}}
+.hlive{cursor:pointer}
+#hfresh{font-size:.66rem;font-weight:600;opacity:.45;margin-top:8px;min-height:1em}
+#heye{background:none;border:0;color:#dbe9f7;opacity:.6;padding:2px 4px;min-height:30px!important;min-width:30px!important;line-height:1;cursor:pointer;display:inline-flex}
+#hbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:calc(9px + env(safe-area-inset-top)) 18px 9px;background:var(--hero1);color:#fff;font-weight:800;transform:translateY(-110%);transition:transform .22s ease;box-shadow:0 4px 18px rgba(0,0,0,.28);cursor:pointer}
+#hbar.on{transform:none}#hbar .hb-v{font-size:1.08rem}#hbar .hb-d{font-size:.84rem;white-space:nowrap}
+html.privy #eq,html.privy #eqe,html.privy #eqsub,html.privy #dayline b,html.privy #tradepill,html.privy #hbar .hb-v,html.privy #hbar .hb-d,html.privy .ckt .v,html.privy .ckt .s,html.privy .td2p b{filter:blur(9px);transition:filter .2s}
 .hero .topline button,.hero .topline a{min-height:40px;min-width:40px;justify-content:center;align-items:center}
 .hero .dlm{display:inline-block;margin-left:6px;font-size:.72em;opacity:.55;vertical-align:1px}
 .hero .hwarn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 11px;border-radius:99px;font-size:.78rem;font-weight:800}
@@ -1785,9 +1797,9 @@ html.locked .wrap,html.locked .hero,html.locked .tabbar{visibility:hidden}
 .money,.val{font-variant-numeric:tabular-nums}
 @supports(padding:env(safe-area-inset-top)){
  .hero{padding-top:calc(22px + env(safe-area-inset-top))}}
-@keyframes fup{0%{text-shadow:0 0 20px rgba(46,204,113,.95)}
+@keyframes fup{0%{text-shadow:0 0 22px rgba(46,204,113,.95);transform:scale(1.035)}
  100%{text-shadow:none}}
-@keyframes fdn{0%{text-shadow:0 0 20px rgba(255,92,92,.95)}
+@keyframes fdn{0%{text-shadow:0 0 22px rgba(255,92,92,.95);transform:scale(1.035)}
  100%{text-shadow:none}}
 .flash-up{animation:fup .9s ease}
 .flash-dn{animation:fdn .9s ease}
@@ -2441,9 +2453,10 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
 <script>try{if(localStorage.getItem('owlTheme')==='light')document.documentElement.dataset.theme='light';if(localStorage.getItem('owlPin:'+location.pathname))document.documentElement.classList.add('locked');if(localStorage.getItem('owlBig')==='1')document.documentElement.style.fontSize='112.5%'}catch(e){}</script>
 
 <div class="hero">
+<svg id="hspark" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true"></svg>
 <div class="topline"><span style="display:flex;flex-direction:column;align-items:flex-start;gap:3px">
 <span class="brand"><img class="brandmk" src="icon192.png" alt="">OwlNest</span>
-<span style="display:flex;align-items:center;gap:8px"><span id="acctline"></span><span class="live" id="lv"><span class="dot" id="lvd"></span><span id="lvt">EN DIRECT</span></span></span></span>
+<span style="display:flex;align-items:center;gap:8px"><span id="acctline"></span><span class="live" id="lv"><span class="dot" id="lvd"></span><span id="lvt">EN DIRECT</span></span><button id="heye" type="button" onclick="hidePriv()" aria-label="Masquer les montants" title="Masquer les montants"><svg class="ic ic-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path id="heye-p" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle id="heye-c" cx="12" cy="12" r="3"/><path id="heye-x" d="M4 4l16 16" style="display:none"/></svg></button></span></span>
 <span style="display:flex;align-items:center;gap:8px;flex:none">
 <button id="acctchip" onclick="acctSheet()" aria-label="Changer de compte" style="display:none;align-items:center;gap:5px;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
@@ -2470,7 +2483,9 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  border-radius:99px;font-size:.72rem;font-weight:700;
  background:rgba(127,179,224,.13);color:var(--text3)"></span>
 <span id="tradepill" class="hchip" role="button" tabindex="0" style="display:none" onclick="tradePillTap()"></span></div>
+<div id="hfresh"></div>
 </div>
+<div id="hbar" role="button" aria-label="Haut de page" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span class="hb-v"></span><span class="hb-d"></span></div>
 <div class="wrap">
 <div class="tab on" id="tab-home">
 <div id="ptr"><svg class="ic ic-s"><use href="#i-activity"/></svg>Actualisation...</div>
@@ -5307,7 +5322,7 @@ function inboxWhen(t){const d=new Date(t*1000),n=new Date();
 async function loadInbox(){
  try{const r=await fetch(B+'inbox');if(!r.ok)return;const j=await r.json();window._inbox=j.items||[];}catch(e){return;}
  let seen=0;try{seen=parseInt(localStorage.getItem(inboxKey())||'0',10)||0;}catch(e){}
- const it=window._inbox,noise=x=>/gardien a relanc|watchdog restarted/i.test(String(x.body||'')),nw=it.filter(x=>x.t>seen&&!noise(x)).length;   // 2026-10-18: restart notices never ring the bell
+ const it=window._inbox,noise=x=>/gardien a relanc|watchdog restarted/i.test(String(x.body||'')),rec=Date.now()/1000-3*86400,nw=it.filter(x=>x.t>seen&&x.t>rec&&!noise(x)).length;   // 2026-10-18: restart notices never ring the bell
  const sub=document.getElementById('inbox-sub'),dot=document.getElementById('inbox-dot');
  if(!sub)return;
  if(!it.length)sub.textContent='Aucun message pour l\u2019instant';
@@ -5351,6 +5366,7 @@ function inboxSheet(){
   '<div id="ib-list" style="max-height:52vh;overflow-y:auto;margin:0 -2px"></div>';
  h+='<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>';
  try{if(it.length)localStorage.setItem(inboxKey(),String(it[0].t));}catch(e){}
+ {const hb=document.getElementById('hbell-n');if(hb)hb.style.display='none';try{navigator.clearAppBadge&&navigator.clearAppBadge();}catch(e){}}
  window._ibF='all';window._ibQ='';
  sheet(h);
  // 2026-09-28 (owner): "Tous is selected but no data" - sheet() renders
@@ -7798,17 +7814,38 @@ function goLabo(){location.href=B+'robots';}
   // under the balance: demo money, what is still open, the week's direction, and the safety line when it nears
   const el=sub();if(el){const ol=d.open_list||[],pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0),bits=[];
    if(d.acct&&d.real===false&&!d.public)bits.push('<span style="color:#ffd27a">'+T('argent fictif','pretend money')+'</span>');
-   if(ol.length)bits.push('<span style="color:'+(pl>=0?'#8df0bb':'#ffb3b3')+'">'+T('dont ','of which ')+m(pl)+T(' en cours',' still open')+'</span>');
-   else if(per==='d'&&typeof d.week==='number'&&Math.abs(d.week)>0.005)bits.push('<span style="color:'+(d.week>=0?'#8df0bb':'#ffb3b3')+';opacity:.85">'+(d.week>=0?'▲ ':'▼ ')+m(d.week)+T(' cette semaine',' this week')+'</span>');
+   if(ol.length)bits.push('<span class="hlive" role="button" style="color:'+(pl>=0?'#8df0bb':'#ffb3b3')+'"><span class="hpulse"></span>'+T('dont ','of which ')+m(pl)+T(' en cours',' still open')+'</span>');
+   else{const S=d.since_start||{},net0=+S.net,base=(+d.balance||0)-net0;
+    if(typeof S.net==='number'&&base>1){const pc=net0/base*100,flat=Math.abs(pc)<0.05;
+     bits.push('<span style="color:'+(flat?'rgba(219,233,247,.72)':(pc>=0?'#8df0bb':'#ffb3b3'))+';opacity:.85">'+(flat?'':(pc>=0?'▲ ':'▼ '))+Math.abs(pc).toFixed(1).replace('.',EN()?'.':',')+' %'+T(' depuis le début',' since the start')+'</span>');}}
    let h=bits.join(' · ');
    const kill=+((d.acct_rules||{}).kill||0),net=+((d.since_start||{}).net||0);
    if(d.bot_killed)h+='<div><span class="hwarn" style="background:rgba(255,92,92,.18);color:#ffb3b3">'+T('Ligne de sécurité atteinte : le robot est arrêté','Safety line reached: the robot is stopped')+'</span></div>';
    else if(kill<0&&net<=0.8*kill&&!d.public)h+='<div><span class="hwarn" style="background:rgba(232,197,90,.16);color:#ffd27a">'+T('Proche de la ligne de sécurité · ','Close to the safety line · ')+m(net)+' / '+m(kill)+'</span></div>';
-   if(el._l!==h){el._l=h;el.innerHTML=h;el.style.display=h?'':'none';}}
+   if(el._l!==h){el._l=h;el.innerHTML=h;el.style.display=h?'':'none';}
+   if(!el._tap){el._tap=1;el.addEventListener('click',ev=>{if(ev.target.closest('.hlive')){try{tab('marche',$('tb-marche'));}catch(e){}}});}}
   // 2) the account line under the logo is not needed when the chip names the account; demo keeps its warning under the balance
   const al=$('acctline'),ch=$('acctchip');if(al){const hide=!!(ch&&getComputedStyle(ch).display!=='none')||(d.acct&&d.real===false);al.style.display=hide?'none':'';}
   // 3) the day line says it can change
-  const dl0=$('dayline');if(dl0&&!dl0.querySelector('.dlm')&&dl0.textContent.trim())dl0.insertAdjacentHTML('beforeend','<span class="dlm">⇄</span>');
+  const dl0=$('dayline');if(dl0&&dl0.textContent.trim()){let mk=dl0.querySelector('.dlm');
+   const L=EN()?['D','W','M']:['J','S','M'];
+   if(!mk||mk.dataset.l!==L.join('')){if(mk)mk.remove();dl0.insertAdjacentHTML('beforeend','<span class="dlm" data-l="'+L.join('')+'"><i>'+L[0]+'</i><i>'+L[1]+'</i><i>'+L[2]+'</i></span>');mk=dl0.querySelector('.dlm');}
+   const ix={d:0,w:1,m:2}[per];[...mk.children].forEach((x,i)=>x.classList.toggle('on',i===ix));}
+  // 6) the week's money curve, very faint, behind the balance
+  {const sv=$('hspark'),c=(d.curve||[]).map(Number).filter(x=>isFinite(x)),key=c.join(',');
+   if(sv&&sv._k!==key){sv._k=key;if(c.length<3){sv.innerHTML='';}else{const pts=[0].concat(c),lo=Math.min(...pts),hi=Math.max(...pts),rg=(hi-lo)||1;
+    const xy=pts.map((v,i)=>(i/(pts.length-1)*100).toFixed(2)+','+(36-(v-lo)/rg*32).toFixed(2));
+    const col=c[c.length-1]>=0?'#8df0bb':'#ffb3b3';
+    sv.innerHTML='<polygon points="0,40 '+xy.join(' ')+' 100,40" fill="'+col+'" opacity=".35"/><polyline points="'+xy.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="1.4" vector-effect="non-scaling-stroke"/>';}}}
+  // 7) how fresh the numbers are
+  {const fe=$('hfresh');if(fe){let t='';const u=Date.parse(d.updated_utc||'');
+    if(window._offNow)t='';else if(isFinite(u)){const a=Math.max(0,(Date.now()-u)/1000);t=a<90?T('Mis à jour à l’instant','Updated just now'):T('Mis à jour il y a '+Math.round(a/60)+' min','Updated '+Math.round(a/60)+' min ago');}
+    if(fe._l!==t){fe._l=t;fe.textContent=t;}}}
+  // 5) the slim bar that stays when the balance scrolls away
+  {const hb=$('hbar');if(hb){const v=hb.querySelector('.hb-v'),dd=hb.querySelector('.hb-d'),eq=$('eq');
+    if(eq&&v.textContent!==eq.textContent)v.textContent=eq.textContent;
+    const tv=+d.today||0,ht='<span style="color:'+(Math.abs(tv)<0.5?'rgba(219,233,247,.8)':(tv>=0?'#8df0bb':'#ffb3b3'))+'">'+m(tv)+'</span> '+T('aujourd’hui','today');
+    if(dd._l!==ht){dd._l=ht;dd.innerHTML=ht;}}}
   // 4) the greeting on Today; elsewhere, the account and what the robot is doing
   const he=$('hello');if(he){if(greet===null)greet=he.innerHTML;const home=$('tab-home')&&$('tab-home').classList.contains('on');
    const ol=d.open_list||[],st=ol.length?T('en trade','in a trade'):(d.trading_paused?T('en pause','paused'):T('le robot surveille','the robot is watching'));
@@ -7816,9 +7853,22 @@ function goLabo(){location.href=B+'robots';}
    const want=home?greet.replace(/\s*\((d[ée]mo|demo)\)\s*/i,' ').replace(/\s+$/,''):esc2(nm)+(d.acct?' · '+(d.real?T('Réel','Real'):T('Démo','Demo')):'')+(d.public?'':' · '+st);
    if(he._l!==want){he._l=want;he.innerHTML=want;}}
   // 7) the day line follows the chosen period
-  if(per!=='d'){const dl=$('dayline');if(dl){const v=per==='w'?(+d.week||0):(+d.month||0),h='<b style="color:'+(Math.abs(v)<0.005?'rgba(219,233,247,.72)':(v>=0?'#8df0bb':'#ffb3b3'))+'">'+m(v)+'</b> '+(per==='w'?T('cette semaine','this week'):T('ce mois','this month'));if(dl._p!==h){dl._p=h;dl.innerHTML=h;}}}}
+  if(per!=='d'){const dl=$('dayline');if(dl){const v=per==='w'?(+d.week||0):(+d.month||0),h='<b style="color:'+(Math.abs(v)<0.5?'rgba(219,233,247,.72)':(v>=0?'#8df0bb':'#ffb3b3'))+'">'+m(v)+'</b> '+(per==='w'?T('cette semaine','this week'):T('ce mois','this month'));if(dl._p!==h){dl._p=h;dl.innerHTML=h;}}}}
  function esc2(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
  function init(){const dl=$('dayline');if(dl){dl.onclick=e=>{e.preventDefault();per=per==='d'?'w':(per==='w'?'m':'d');dl._p='';if(per==='d'){window._lastS=null;try{load();}catch(err){}}tick();try{navigator.vibrate&&navigator.vibrate(5);}catch(err){}};dl.setAttribute('aria-label',T('Changer de période','Change period'));}
+  // 3) hide the amounts: remembered on this phone
+  window.hidePriv=function(on){const h=document.documentElement;on=(on===undefined)?!h.classList.contains('privy'):!!on;h.classList.toggle('privy',on);
+   try{localStorage.setItem('owlPriv',on?'1':'0');}catch(e){}
+   const x=$('heye-x');if(x)x.style.display=on?'':'none';const b=$('heye');if(b){const t=on?T('Afficher les montants','Show amounts'):T('Masquer les montants','Hide amounts');b.title=t;b.setAttribute('aria-label',t);}};
+  try{if(localStorage.getItem('owlPriv')==='1')window.hidePriv(true);}catch(e){}
+  // 5) the slim bar shows once the big balance has left the screen
+  try{const eq=$('eq'),hb=$('hbar');if(eq&&hb&&'IntersectionObserver' in window)new IntersectionObserver(es=>{es.forEach(e=>hb.classList.toggle('on',!e.isIntersecting&&e.boundingClientRect.top<0));}).observe(eq);}catch(e){}
+  // 7) pull down at the top of the page to refresh
+  {let y0=null,pulled=false;
+   window.addEventListener('touchstart',e=>{y0=(window.scrollY<=0&&e.touches.length===1)?e.touches[0].clientY:null;pulled=false;},{passive:true});
+   window.addEventListener('touchmove',e=>{if(y0!==null&&!pulled&&e.touches[0].clientY-y0>90){pulled=true;try{navigator.vibrate&&navigator.vibrate(8);}catch(err){}
+     try{if(typeof toast==='function')toast(T('Actualisation…','Refreshing…'),1200);}catch(err){}window._lastS=null;try{load();}catch(err){}}},{passive:true});
+   window.addEventListener('touchend',()=>{y0=null;},{passive:true});}
   tick();setInterval(tick,1000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -10167,7 +10217,7 @@ function render(d){
    const from=prevEq,to=d.equity,t0=performance.now();
    eqEl.classList.remove('flash-up','flash-dn');void eqEl.offsetWidth;
    eqEl.classList.add(to>=from?'flash-up':'flash-dn');
-   (function stepA(ts){const k=Math.min(1,(ts-t0)/500);
+   (function stepA(ts){const k=Math.min(1,(ts-t0)/900);
     eqEl.textContent='$'+(from+(to-from)*(1-Math.pow(1-k,3)))
      .toFixed(2);
     if(k<1)requestAnimationFrame(stepA);})(t0);
@@ -10189,8 +10239,8 @@ function render(d){
   window._bal=d.balance;
   (function(){const dl=document.getElementById('dayline');if(!dl)return;
    let h='';
-   if(typeof d.today==='number'){const up=d.today>=0,z=Math.abs(d.today)<0.005;
-    h+='<b style="color:'+(z?'rgba(219,233,247,.72)':up?'#8df0bb':'#ffb3b3')+'">'+
+   if(typeof d.today==='number'){const up=d.today>=0,z=Math.abs(d.today)<0.005,sm=Math.abs(d.today)<0.5;
+    h+='<b style="color:'+(sm?'rgba(219,233,247,.72)':up?'#8df0bb':'#ffb3b3')+'">'+
      (z?'$0.00':(up?'+$':'-$')+Math.abs(d.today).toFixed(2))+'</b> aujourd\u2019hui';}
    if(d.trades){const _td=new Date();
     const _k=String(_td.getUTCDate()).padStart(2,'0')+'/'+String(_td.getUTCMonth()+1).padStart(2,'0');
