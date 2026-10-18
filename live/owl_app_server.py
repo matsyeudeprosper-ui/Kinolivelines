@@ -5304,13 +5304,13 @@ function inboxWhen(t){const d=new Date(t*1000),n=new Date();
 async function loadInbox(){
  try{const r=await fetch(B+'inbox');if(!r.ok)return;const j=await r.json();window._inbox=j.items||[];}catch(e){return;}
  let seen=0;try{seen=parseInt(localStorage.getItem(inboxKey())||'0',10)||0;}catch(e){}
- const it=window._inbox,nw=it.filter(x=>x.t>seen).length;
+ const it=window._inbox,noise=x=>/gardien a relanc|watchdog restarted/i.test(String(x.body||'')),nw=it.filter(x=>x.t>seen&&!noise(x)).length;   // 2026-10-18: restart notices never ring the bell
  const sub=document.getElementById('inbox-sub'),dot=document.getElementById('inbox-dot');
  if(!sub)return;
  if(!it.length)sub.textContent='Aucun message pour l\u2019instant';
  else sub.textContent=(nw?nw+' nouveau'+(nw>1?'x':'')+' \u00b7 ':'')+'dernier : '+inboxWhen(it[0].t);
  if(dot)dot.style.display=nw?'inline-block':'none';
- const hb=document.getElementById('hbell-n');if(hb){hb.textContent=nw>9?'9+':String(nw);hb.style.display=nw?'flex':'none';}
+ const hb=document.getElementById('hbell-n');if(hb){hb.textContent=nw>9?'9+':String(nw);hb.style.display=nw?'flex':'none';hb.style.background='var(--accent)';}
  try{if(navigator.setAppBadge){if(nw)navigator.setAppBadge(nw);else if(navigator.clearAppBadge)navigator.clearAppBadge();}}catch(e){}
 }
 function inboxKind(x){const t=(x.title||'')+' '+(x.body||'');
@@ -5839,7 +5839,7 @@ async function healthSheet(){
   '<div style="font-size:.72rem;color:var(--muted);margin-top:8px">build '+(h.build||'')+'</div>'+
   '<button class="shbtn shghost" onclick="_shDone(1)">Fermer</button>');
 }
-async function tradePillTap(){
+async function tradePillTap(){try{tab('marche',document.getElementById('tb-marche'));return;}catch(e){}
  const d=window._d||{},ol=d.open_list||[];
  const pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0);
  toast('<div class="evi" style="color:var(--accent-soft)"><svg class="ic ic-s"><use href="#i-activity"/></svg></div>'+
@@ -7780,6 +7780,33 @@ function goLabo(){location.href=B+'robots';}
   c.innerHTML='<div class="sic" style="color:var(--accent-soft);background:var(--accent-bg)"><svg class="ic"><use href="#i-chart"/></svg></div><div style="flex:1"><b>'+T('La console','The console')+'</b><div class="ssub">'+T('Piloter tout le nid : comptes, membres, argent, système','Run the whole nest: accounts, members, money, system')+'</div></div><svg class="ic chv"><use href="#i-chev"/></svg>';
   a.insertBefore(c,a.firstChild);}
  function init(){try{if(build()){paint();setInterval(paint,2000);}nidRow();}catch(e){console.error('perf',e);}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+// ==== 2026-10-18 (owner, header list): the header says which account, warns on demo money, shows what is still open,
+// and its day line cycles day / week / month on tap. Reads window._d only. ====
+(function(){
+ const $=id=>document.getElementById(id);
+ const EN=()=>{try{return typeof LANG==='function'&&LANG()==='en';}catch(e){return false;}};
+ const T=(f,e)=>EN()?e:f;
+ const m=v=>(v>0.005?'+$':(v<-0.005?'-$':'±$'))+Math.abs(v).toFixed(2);
+ let per='d',greet=null;
+ function sub(){let el=$('eqsub');if(!el){const eq=$('eq');if(!eq)return null;el=document.createElement('div');el.id='eqsub';el.style.cssText='font-size:.82rem;font-weight:700;margin-top:2px;min-height:0';eq.after(el);}return el;}
+ function tick(){const d=window._d;if(!d||d.error)return;
+  // 5) + 6) under the balance: demo money, and how much of it is still in an open trade
+  const el=sub();if(el){const ol=d.open_list||[],pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0),bits=[];
+   if(d.acct&&d.real===false&&!d.public)bits.push('<span style="color:#ffd27a">'+T('argent fictif · compte démo','pretend money · demo account')+'</span>');
+   if(ol.length)bits.push('<span style="color:'+(pl>=0?'#8df0bb':'#ffb3b3')+'">'+T('dont ','of which ')+m(pl)+T(' en cours',' still open')+'</span>');
+   const h=bits.join(' · ');if(el._l!==h){el._l=h;el.innerHTML=h;el.style.display=h?'':'none';}}
+  // 4) the greeting on Today; elsewhere, the account and what the robot is doing
+  const he=$('hello');if(he){if(greet===null)greet=he.innerHTML;const home=$('tab-home')&&$('tab-home').classList.contains('on');
+   const ol=d.open_list||[],st=ol.length?T('en trade','in a trade'):(d.trading_paused?T('en pause','paused'):T('le robot surveille','the robot is watching'));
+   const want=home?greet:esc2(d.name||'')+(d.acct?' · '+(d.real?T('Réel','Real'):T('Démo','Demo')):'')+(d.public?'':' · '+st);
+   if(he._l!==want){he._l=want;he.innerHTML=want;}}
+  // 7) the day line follows the chosen period
+  if(per!=='d'){const dl=$('dayline');if(dl){const v=per==='w'?(+d.week||0):(+d.month||0),h='<b style="color:'+(Math.abs(v)<0.005?'rgba(219,233,247,.72)':(v>=0?'#8df0bb':'#ffb3b3'))+'">'+m(v)+'</b> '+(per==='w'?T('cette semaine','this week'):T('ce mois','this month'));if(dl._p!==h){dl._p=h;dl.innerHTML=h;}}}}
+ function esc2(x){return String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+ function init(){const dl=$('dayline');if(dl){dl.onclick=e=>{e.preventDefault();per=per==='d'?'w':(per==='w'?'m':'d');dl._p='';if(per==='d'){window._lastS=null;try{load();}catch(err){}}tick();try{navigator.vibrate&&navigator.vibrate(5);}catch(err){}};dl.setAttribute('aria-label',T('Changer de période','Change period'));}
+  tick();setInterval(tick,1000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 // ==== 2026-10-13 (owner): PERFORMANCE DASHBOARD - the Résumé chip opens on a real dashboard: the result over time
@@ -10213,10 +10240,10 @@ function render(d){
   const lvE=document.getElementById('lv'),
    lvtE=document.getElementById('lvt');
   if(lvE&&lvtE){
-   if(d.stale){lvtE.textContent='EN ATTENTE \\u23f3';
+   if(d.stale){lvtE.textContent=(LANG()==='en'?'LATE':'EN RETARD');lvE.style.display='';
     lvE.style.background='rgba(230,160,40,.16)';
     lvE.style.color='#ffd27a';}
-   else{lvtE.textContent='EN DIRECT';
+   else if(!window._offNow){lvtE.textContent='EN DIRECT';lvE.style.display='none';   // 2026-10-18: live is the normal state - say nothing
     lvE.style.background='';lvE.style.color='';}
   }
   if(d.acct&&d.app_only){
@@ -10442,7 +10469,7 @@ function render(d){
    window._nest=d.nest;
    (function(){const hr=document.getElementById('healthrow');if(hr)hr.style.display='flex';})();
    (function(){const ch=document.getElementById('acctchip');if(!ch)return;ch.style.display='inline-flex';
-    document.getElementById('acctchip-n').textContent=d.nest.length;})();
+    const _me=(d.nest||[]).find(x=>x.tok&&location.pathname.indexOf('/'+x.tok)===0);document.getElementById('acctchip-n').textContent=((_me&&_me.name)||d.name||String(d.nest.length))+' ▾';})();
    const asw=document.getElementById('acctsw');
    asw.style.display='block';
    document.getElementById('acctsw-b').innerHTML=d.nest
@@ -10832,7 +10859,7 @@ function offlineUI(on){
   if(lv&&lvd&&lvt){
    if(on){lv.style.background='rgba(230,160,40,.16)';
     lv.style.color='#ffd27a';lvd.style.background='#e6a028';
-    lvt.textContent=LANG()==='en'?'OFFLINE':'HORS LIGNE';}
+    lvt.textContent=LANG()==='en'?'OFFLINE':'HORS LIGNE';lv.style.display='';}
    else if(window._d){lv.style.background='rgba(46,204,113,.16)';
     lv.style.color='var(--up-soft)';lvd.style.background='var(--up)';
     lvt.textContent='EN DIRECT';}}}
