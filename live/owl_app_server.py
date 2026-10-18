@@ -14247,6 +14247,18 @@ def acct_robot_block(user, admin=False):
     out = {"can": bool((uid in BOT_VARIANT or _generic_bot(user)) and not user.get("public")), "current": dict(nm(byid.get(cur) or {"id": cur}), id=cur),
            "pending": dict(nm(byid.get(pend["robot"]) or {"id": pend["robot"]}), id=pend["robot"], at=pend.get("at")) if pend else None,
            "choices": []}
+    # 2026-10-18 (owner upgrade list): what the robot did on THIS account, and is it running right now
+    try:
+        _nd = json.load(open(os.path.join(DIR, "nest_data", uid + ".json"), encoding="utf-8"))
+        _ss = _nd.get("since_start") or {}
+        _lab, _alive, _why = bot_on(uid)
+        _tr = _nd.get("trades") or []
+        out["live"] = {"since": _ss.get("first"), "n": _ss.get("n"), "won": _ss.get("won"), "net": _ss.get("net"),
+                       "month": _nd.get("month"), "last": (_tr[0].get("w") if _tr else None),
+                       "open": _nd.get("open_positions") or 0, "alive": bool(_alive) if _lab else None, "why": _why,
+                       "updated": _nd.get("updated_utc")}
+    except Exception:
+        pass
     if not out["can"]:
         return out
     for r in reg.get("robots") or []:

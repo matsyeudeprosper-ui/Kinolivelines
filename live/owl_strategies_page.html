@@ -564,6 +564,11 @@ button.pc{cursor:pointer}
 /* 2026-10-15 (owner): the member picks the robot of their own account */
 .arb .lh-ico{position:relative}
 .arb .lh-ico i{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:var(--up);box-shadow:0 0 0 3px var(--surface,#131a26),0 0 10px rgba(46,204,113,.6)}
+.crts{display:grid;gap:10px}.crt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface);color:var(--text);font:inherit;cursor:pointer}.crt-i{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.crt-i svg{width:20px;height:20px}.crt-t{flex:1;min-width:0}.crt-t b{display:flex;align-items:center;gap:8px;font-size:.95rem}.crt-t small{display:block;font-size:.78rem;color:var(--muted);margin-top:2px}.crt-tag{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--up-soft);background:var(--ok-bg);border-radius:99px;padding:2px 7px}.crt-cv{color:var(--muted);font-size:1.2rem}
+.arb .lh-stat{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:.84rem;font-weight:700;color:var(--text2)}.arb .lh-stat i{width:8px;height:8px;border-radius:50%;background:var(--up);box-shadow:0 0 8px rgba(46,204,113,.6);flex:none}.arb .lh-stat.wt i{background:#e8c55a;box-shadow:0 0 8px rgba(232,197,90,.5)}.arb .lh-stat.off i{background:var(--down,#ff5c5c);box-shadow:none}
+.arb .lh-test{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:.78rem;color:var(--muted)}.arb .lh-test b{font-weight:800}
+.lh-chip{border:1px solid var(--border2);background:var(--surface2);color:var(--muted2);border-radius:99px;padding:5px 10px;font:inherit;font-size:.7rem;font-weight:800;cursor:pointer;white-space:nowrap}.lh-chip.ok{color:var(--up-soft);background:var(--ok-bg);border-color:rgba(46,204,113,.35)}
+.arb .bt .sec2{flex:1;border:1px solid var(--border2);background:var(--surface2);color:var(--text);border-radius:14px;padding:13px 14px;font:inherit;font-size:.9rem;font-weight:800;cursor:pointer}
 .arb .lh-ico i.wt{background:#e8c55a;box-shadow:0 0 0 3px var(--surface,#131a26),0 0 10px rgba(232,197,90,.55)}
 .arb .lh-t{margin-top:6px}
 .arb .lh-st b.pos{color:var(--up-soft)}.arb .lh-st b.neg{color:var(--down-soft)}
@@ -613,7 +618,7 @@ button.pc{cursor:pointer}
  <a href="./" id="back" class="ib" aria-label="Retour"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></a>
  <div class="ttl"><h1 id="h1">Le labo</h1><div id="h1s"></div></div>
  <button class="ib" id="gsb" aria-label="Chercher dans le labo" onclick="gsOpen()" style="margin-left:auto;margin-right:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></button>
- <span class="live" id="livep"><i></i><span id="livet">En direct</span></span>
+ <span class="live" id="livep" title="Données à jour à cette heure"><i></i><span id="livet">En direct</span></span>
 </div></header>
 <div id="doors"></div>
 <div id="top"></div>
@@ -897,7 +902,7 @@ function scannerMarkets(x,btFirst){const PR=(x.protocol&&x.protocol.primary)||[]
 let SIDE=(()=>{const p=location.pathname.split('/').pop();return p==='robots'?'robots':(p==='equipe'?'team':'strat');})();
 let RB=null,TM=null,CURR=null,RSEC='ov',RF='all';
 const SIDES=[['strat',T('Stratégies','Strategies'),'M3 17l6-6 4 4 8-8M15 7h6v6'],['robots',T('Robots','Robots'),'M12 8V4M8 4h8M5 8h14a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM9 13h.01M15 13h.01M9 17h6'],['team',T('Équipe IA','AI team'),'M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0']];
-const SUBT={strat:T('Toutes les idées, de l\'essai à la décision','Every idea, from trial to decision'),robots:T('Les robots créés, testés, en service ou à l\'arrêt','Robots built, tested, in service or stopped'),team:T('Les IA qui cherchent, construisent et vérifient','The AIs that research, build and check')};
+const SUBT={strat:T('Toutes les idées, de l\'essai à la décision','Every idea, from trial to decision'),robots:T('Vos robots','Your robots'),team:T('Les IA qui cherchent, construisent et vérifient','The AIs that research, build and check')};
 // 2026-10-13 (owner): Robots is the bar's own place; Strategies + AI team are "Les coulisses" (Performance > Aller plus loin)
 function doors(){const el=$('doors');if(!el)return;if(SIDE==='robots'){el.innerHTML='';return;}el.innerHTML=SIDES.filter(s=>s[0]!=='robots').map(s=>'<button class="door'+(SIDE===s[0]?' on':'')+'" onclick="setSide(\''+s[0]+'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="'+s[2]+'"/></svg>'+s[1]+'</button>').join('');}
 function setSide(s){if(s===SIDE)return;SIDE=s;const seg={strat:'strategies',robots:'robots',team:'equipe'}[s];
@@ -950,17 +955,28 @@ function autoDoor(){const t=RB&&RB.tier;if(!t||t.auto)return '';
 // where a test figure comes from (start balance, real recorded prices, dated window): a sheet, never inline text
 function originHtml(t){const w=t.window_utc,d=s=>s?String(s).slice(8,10)+'/'+String(s).slice(5,7)+'/'+String(s).slice(0,4):'',b=Math.round(t.balance||200),lot=(0.02*b/200).toFixed(2);return '<div class="ori">'+'<div><small>'+T('Compte de départ','Start account')+'</small><b>$'+b+'</b></div>'+'<div><small>'+T('Prix','Prices')+'</small><b>'+T('Vrais prix Bitcoin · Exness','Real Bitcoin prices · Exness')+'</b></div>'+(w?'<div><small>'+T('Période','Period')+'</small><b>'+T('du ','from ')+d(w[0])+T(' au ',' to ')+d(w[1])+' · '+Math.round(t.days||42)+' j</b></div>':'')+'<div><small>'+T('Lot','Lot')+'</small><b>'+lot+T(' au départ · suit le solde',' to start · follows the balance')+'</b></div>'+(t.trades!=null?'<div><small>Trades</small><b>'+t.trades+'</b></div>':'')+'</div>'+'<p class="ori-n">'+T('La période est la plus récente disponible ; elle avance à chaque nouveau test. Les gains sont ceux de ce compte de départ : sur un compte plus gros, le lot est plus gros aussi. Un test sur le passé n’est pas une promesse.','The period is the latest available; it moves forward with each new test. Gains are those of this start account: on a bigger account the lot is bigger too. A past-data test is not a promise.')+'</p>';}function originBtn(fn){return '<button class="ori-q" onclick="'+fn+'"><i>i</i>'+T('D’où vient ce chiffre ?','Where does this figure come from?')+'</button>';}
 function originOpen(){const A=RB&&RB.acct,t=((A&&A.choices)||[]).find(x=>x.current)||{};shOpen(T('D’où vient ce chiffre ?','Where does this figure come from?'),originHtml(t));}
+// 2026-10-18 (owner upgrade list): the card says what happens on THIS account first (status, money since the start,
+// this month), the past test comes second with its trust badge; changing robot is a quiet button with the count
+function acctLive(A){const L=A.live;if(!L)return '';const pd=A.pending;
+ const st=pd?['wt',T('Changement prévu','Change planned')]:(L.alive===false?['off',L.why?T('À l’arrêt : ','Stopped: ')+L.why:T('À l’arrêt','Stopped')]:(L.why?['wt',T('En pause : ','Paused: ')+L.why]:['on',T('En marche','Running')+(L.open?T(' · 1 trade ouvert',' · 1 open trade').replace('1',L.open):(L.last?T(' · dernier trade le ',' · last trade ')+esc(L.last):''))]));
+ const won=L.n?Math.round(100*(L.won||0)/L.n):null,d=s=>s?String(s).slice(8,10)+'/'+String(s).slice(5,7):'';
+ return '<div class="lh-stat '+st[0]+'"><i></i><span>'+st[1]+'</span></div>'+
+  (L.n?'<div class="lh-st"><div><b class="'+((L.net||0)>=0?'pos':'neg')+'">'+money(L.net,0)+'</b><span>'+T('depuis le ','since ')+d(L.since)+'</span></div><div><b class="'+((L.month||0)>=0?'pos':'neg')+'">'+money(L.month,0)+'</b><span>'+T('ce mois','this month')+'</span></div><div><b>'+num(L.n)+'</b><span>trades'+(won!=null?' · '+won+' %':'')+'</span></div></div>':'');}
 function acctCard(){const A=RB&&RB.acct;if(!A||!A.can)return '';const c=A.current||{},pd=A.pending,owl=c.id==='owl',t=(A.choices||[]).find(x=>x.current)||{};
+ const rb=bById(c.id),ctl=rb&&rb.test&&rb.test.ctl,proven=!!(ctl&&ctl.pct>=95&&(ctl.seeds||0)>=40),nAlt=(A.choices||[]).filter(x=>!x.current).length;
  const sub=pd?T('Passe à ','Switching to ')+'<b>'+esc(T(pd.name_fr,pd.name_en))+'</b>'+T(' dès que le trade en cours sera fermé.',' once the open trade is closed.')
   :(owl?T('Le robot par défaut. Choisissez-en un autre quand vous voulez.','The default robot. Pick another one whenever you like.')
    :T('Choisi pour ce compte. Retour à L’Owl possible à tout moment.','Chosen for this account. You can go back to the Owl at any time.'));
  return '<div class="card arb lh"><div class="lh-top"><span class="lh-ico" title="'+(pd?T('Changement prévu','Change planned'):T('En marche','Running'))+'">'+BOT+'<i class="'+(pd?'wt':'')+'"></i></span>'+
   '<div class="lh-tx" style="flex:1;min-width:0"><div class="eyebrow">'+T('Le robot de ce compte','This account’s robot')+'</div><h3 class="lh-t">'+esc(T(c.name_fr,c.name_en))+'</h3><p class="lh-s">'+sub+'</p></div></div>'+
-  (t.net!=null?'<div class="lh-st"><div><b class="'+(t.net>=0?'pos':'neg')+'">'+(t.net>=0?'+':'−')+'$'+Math.round(Math.abs(t.net))+'</b><span>'+T('test ','test ')+Math.round(t.days||42)+' j</span></div>'+
-   '<div><b>'+(t.trades!=null?t.trades:'—')+'</b><span>trades</span></div><div><b>'+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</b><span>'+T('gagnés','won')+'</span></div></div>'+
+  acctLive(A)+
+  (t.net!=null?'<div class="lh-test"><span>'+T('Test sur le passé : ','Past-data test: ')+'<b class="'+(t.net>=0?'pos':'neg')+'">'+(t.net>=0?'+':'−')+'$'+Math.round(Math.abs(t.net))+'</b>'+T(' en ',' in ')+Math.round(t.days||42)+T(' j · ',' d · ')+(t.trades!=null?t.trades:'—')+' trades · '+(t.win_rate!=null?Math.round(t.win_rate*100)+' %':'—')+'</span>'+
+   '<button class="lh-chip '+(proven?'ok':'')+'" onclick="proofSh('+(proven?1:0)+')">'+(proven?'✓ '+T('Prouvé contre le hasard','Proven against chance'):T('Pas encore prouvé','Not proven yet'))+'</button></div>'+
    originBtn('originOpen()'):'')+
-  '<div class="bt'+(owl&&!pd?' one':'')+'"><button class="pri" onclick="arbPick()">'+T('Changer de robot','Change robot')+'</button>'+
+  '<div class="bt'+(owl&&!pd?' one':'')+'"><button class="sec2" onclick="arbPick()">'+T('Changer de robot','Change robot')+(nAlt?' · '+nAlt+T(' possible',' available')+(nAlt>1?T('s',''):''):'')+' ›</button>'+
   (pd?'<button onclick="arbAsk(\''+c.id+'\')">'+T('Annuler','Cancel')+'</button>':(owl?'':'<button onclick="arbAsk(\'owl\')">'+T('Revenir à L’Owl','Back to the Owl')+'</button>'))+'</div></div>';}
+function proofSh(ok){const A=RB.acct,c=A.current||{},rb=bById(c.id),ctl=rb&&rb.test&&rb.test.ctl;
+ shOpen(ok?T('Prouvé contre le hasard','Proven against chance'):T('Pas encore prouvé','Not proven yet'),'<p style="font-size:.9rem;line-height:1.55;color:var(--text2);margin:0">'+(ok?T('Sur les mêmes prix Bitcoin, le robot a fait mieux que les ','On the same Bitcoin prices, the robot did better than ')+(ctl.pct>=100?ctl.seeds:Math.round(ctl.pct/100*ctl.seeds))+T(' robots tirés au hasard sur ',' random robots out of ')+ctl.seeds+T(' (mêmes stops, même risque, entrées au hasard). Son gain n’est donc pas que de la chance sur cette période.',' (same stops, same risk, random entries). So its gain is not just luck over this period.'):T('Ce robot n’a pas encore été comparé à des entrées au hasard, ou ne les a pas assez battues. Son résultat peut encore être de la chance.','This robot has not yet been compared with random entries, or did not beat them enough. Its result can still be luck.'))+'</p><p style="font-size:.8rem;color:var(--muted);line-height:1.5;margin:12px 0 0">'+T('Une période de test ne garantit pas la suivante.','One test period does not guarantee the next.')+'</p>');}
 function arbPick(){const A=RB.acct,L=A.choices||[];
  shOpen(T('Choisir un robot','Choose a robot'),'<p style="font-size:.84rem;color:var(--muted);margin:0 0 12px;line-height:1.45">'+T('Les robots testés sur 42 jours de Bitcoin qui ont gagné de l’argent et peuvent tourner en direct. Le passé ne garantit pas l’avenir.','Robots tested on 42 days of Bitcoin that made money and can run live. The past does not guarantee the future.')+'</p><div class="arbl">'+
   L.map(x=>{const on=x.current,pl=A.pending&&A.pending.id===x.id;return '<button '+(on&&!A.pending?'disabled':'onclick="arbAsk(\''+x.id+'\')"')+'><span class="n"><b>'+esc(T(x.name_fr,x.name_en))+
@@ -1157,6 +1173,10 @@ function pType(t){const sl=SLOTS.find(s=>SLOTT[s[0]]===t)||SLOTS[0],L=pList(t);
  shOpen(sl[1]+' · '+L.length,'<button class="more2" style="margin:-4px 0 8px" onclick="fdOpen(\'pieces\')">‹ '+T('Toutes les pièces','All pieces')+'</button><div class="pl2">'+L.map(p=>{const st=PST[p.status]||PST.tested,u=(p.used_by||[]).length;
   return '<button class="pr2" onclick="goP(\''+p.id+'\')"><span class="tx"><b>'+esc(T(p.name_fr,p.name_en))+'</b>'+(p.plain_fr?'<small>'+esc(T(p.plain_fr,p.plain_en))+'</small>':'')+
    '<span class="mt"><span class="st" style="color:'+st.c+';background:color-mix(in srgb,'+st.c+' 14%,transparent)">'+T(st.fr,st.en)+'</span>'+(u?'<span class="us">'+T('utilisée par ','used by ')+u+' robot'+(u>1?'s':'')+'</span>':'')+'</span></span><span class="cv">›</span></button>';}).join('')+'</div>');}
+function createSh(){const it=(fn,ic,t,s,tag)=>'<button class="crt" onclick="shClose();setTimeout(function(){'+fn+'},250)"><span class="crt-i">'+pic(ic)+'</span><span class="crt-t"><b>'+t+(tag?'<span class="crt-tag">'+tag+'</span>':'')+'</b><small>'+s+'</small></span><span class="crt-cv">›</span></button>';
+ shOpen(T('Créer un robot','Build a robot'),'<div class="crts">'+it('goAI()','M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0',T('Expliquer','Explain'),T('Décrivez votre idée à l’IA, en mots simples','Describe your idea to the AI, in plain words'),T('facile','easy'))
+  +it('goNew()','M12 5v14M5 12h14',T('Assembler','Assemble'),T('Choisissez ses pièces une à une','Pick its pieces one by one'))
+  +it("location.href='chart?studio=1'",'M3 3v18h18M7 14l4-4 3 3 5-6',T('Montrer','Show'),T('Pointez vos entrées sur le graphique','Point at your entries on the chart'))+'</div>');}
 function builderTop(){const B=BLD();
  // 2026-10-13 (owner): the banner says where you stand (robots, accounts, your best) and offers the three ways to make one;
  // "eyes + 6 pieces" is one tap away instead of taking the banner
@@ -1170,12 +1190,15 @@ function builderTop(){const B=BLD();
  // 2026-10-14 (owner): members never see how many accounts the nest has - the third figure is theirs
  const MKT_N=new Set([].concat(...MY.map(r=>(r.test&&r.test.robot?['BTCUSD']:[]).concat((r.mtests||[]).filter(x=>x.state==='done').map(x=>x.sym))))).size;
  const st=(n,fr,fr1,en,en1)=>'<div><b>'+n+'</b><span>'+(n===1?T(fr1,en1):T(fr,en))+'</span></div>';
- let h='<div class="card hero lh"><div class="lh-top"><div class="lh-tx"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 class="lh-t">'+T('Créez, testez, branchez.','Build, test, plug.')+'</h3>'+
+ // 2026-10-18: counters that mean something - tested, proven against chance (40+ draws), running for real
+ const okC=c=>!!(c&&c.pct>=95&&(c.seeds||0)>=40);
+ const nTested=MY.filter(r=>r.test&&r.test.robot).length,nProven=MY.filter(r=>okC(r.test&&r.test.ctl)||(r.mtests||[]).some(x=>okC(x.ctl)&&x.robot&&x.robot.net>0)).length,nLive=MY.filter(r=>['real','demo'].includes(r.stage)&&r.running).length;
+ let hero='<div class="card hero lh"><div class="lh-top"><div class="lh-tx"><div class="eyebrow">'+T('Le labo des robots','The robot lab')+'</div><h3 class="lh-t">'+T('Créez, testez, branchez.','Build, test, plug.')+'</h3>'+
    '<p class="lh-s">'+T('Des robots faits de pièces, testés sur de vrais prix avant de toucher à votre argent.','Robots made of pieces, tested on real prices before they touch your money.')+'</p></div><span class="lh-ico">'+BOT+'</span></div>'+
-  '<div class="lh-st">'+st(MY.length,'vos robots','votre robot','your robots','your robot')+st(PUB.length,'publics','public','public','public')+st(MKT_N,'marchés testés','marché testé','markets tested','market tested')+'</div>'+
-  (best?'<button class="lh-best" onclick="goB(\''+best.id+'\')"><span class="lh-tr">'+pic('M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3')+'</span><span class="l"><small>'+T('Meilleur robot','Best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span>'+
+  '<div class="lh-st">'+st(nTested,'testés','testé','tested','tested')+st(nProven,'prouvés','prouvé','proven','proven')+st(nLive,'en vrai','en vrai','live','live')+'</div>'+
+  (false&&best?'<button class="lh-best" onclick="goB(\''+best.id+'\')"><span class="lh-tr">'+pic('M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3')+'</span><span class="l"><small>'+T('Meilleur robot','Best robot')+'</small><b>'+esc(T(best.name_fr,best.name_en))+'</b></span>'+
    '<span class="v"><b class="'+cl(best.test.robot.net)+'">'+money(best.test.robot.net)+'</b>'+(bd0!=null?'<small>'+(bd0>=0?'+':'−')+'$'+num(Math.abs(bd0),0)+T(' vs parent',' vs parent')+'</small>':'')+'</span><span class="cv">›</span></button>':'')+
-  (B.can_create?'<div class="lh-sec">'+T('Créer un robot','Build a robot')+'</div><div class="lh-a">'+
+  (B.can_create?'<div class="lh-a"><button class="lh-r1" onclick="createSh()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Créer un robot','Build a robot')+'</b><small>'+T('Expliquez-le à l’IA, assemblez ses pièces ou montrez vos entrées','Explain it to the AI, assemble its pieces or show your entries')+'</small></span><span class="lh-cv">›</span></button></div><div style="display:none">'+
    '<button class="lh-r1" onclick="goAI()"><span class="lh-i">'+pic('M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21a8 8 0 0 1 16 0')+'</span><span class="lh-rt"><b>'+T('Expliquer','Explain')+'<span class="lh-tag">'+T('facile','easy')+'</span></b><small>'+T('Décrivez votre idée à l’IA, en mots simples','Describe your idea to the AI, in plain words')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
    '<button onclick="goNew()"><span class="lh-i">'+pic('M12 5v14M5 12h14')+'</span><span class="lh-rt"><b>'+T('Assembler','Assemble')+'</b><small>'+T('Choisissez ses pièces une à une','Pick its pieces one by one')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button>'+
    '<button onclick="location.href=\'chart?studio=1\'"><span class="lh-i">'+pic('M3 3v18h18M7 14l4-4 3 3 5-6')+'</span><span class="lh-rt"><b>'+T('Montrer','Show')+'</b><small>'+T('Pointez vos entrées sur le graphique','Point at your entries on the chart')+'</small></span>'+'<span class="lh-cv">›</span>'+'</button></div>'
@@ -1184,8 +1207,8 @@ function builderTop(){const B=BLD();
  // 2026-10-13 (owner): one line per robot (its stage and result); the full card is its own page, as before
  const bRow=r=>rCard2(r,PL0);
 
- h+=plDoor();
- h+='<button class="zdoor" onclick="goZt()"><span class="mkb" style="width:44px;height:44px;border-radius:14px;background:var(--accent-bg);color:var(--accent-soft)">'+pic('M3 3v18h18M7 14l4-4 4 4 5-6')+'</span><span class="zdt"><small>'+T('Zone de test','Test zone')+'</small><b>'+T('Où vos robots marchent-ils ?','Where do your robots work?')+'</b><em>'+T('Testez-les sur l’or, le Nasdaq, l’euro… et comparez','Test them on gold, the Nasdaq, the euro… and compare')+'</em></span><span class="cv">›</span></button>';
+ let h='';let doors=plDoor();
+ doors+='<button class="zdoor" onclick="goZt()"><span class="mkb" style="width:44px;height:44px;border-radius:14px;background:var(--accent-bg);color:var(--accent-soft)">'+pic('M3 3v18h18M7 14l4-4 4 4 5-6')+'</span><span class="zdt"><small>'+T('Zone de test','Test zone')+'</small><b>'+T('Où vos robots marchent-ils ?','Where do your robots work?')+'</b><em>'+T('Testez-les sur l’or, le Nasdaq, l’euro… et comparez','Test them on gold, the Nasdaq, the euro… and compare')+'</em></span><span class="cv">›</span></button>';
  // 2026-10-18 (owner): only the best robot of each list stays here; all of mine live on "Mes robots", the public ones on the place
  const bNet=r=>{if(r.test&&r.test.robot&&r.test.robot.net!=null)return +r.test.robot.net;if(r.id==='owl'){const c=L.find(x=>x.parent==='owl'&&x.test&&x.test.parent_result);if(c)return +c.test.parent_result.net;}return null;};
  const bTop=A=>A.slice().sort((x,y)=>(bNet(y)==null?-1e9:bNet(y))-(bNet(x)==null?-1e9:bNet(x)))[0];
@@ -1193,6 +1216,7 @@ function builderTop(){const B=BLD();
  if(MY.length)h+='<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('Mon meilleur robot','My best robot')+lnk('mesrobots',(MY.length>1?T('Tous mes robots','All my robots')+' ('+MY.length+')':T('Mes robots','My robots'))+' →')+'</div><div class="fds">'+bRow(bTop(MY))+'</div>';
  else if(B.can_create)h+='<div class="grp">'+T('Mes robots','My robots')+'</div><button class="mt0" onclick="goNew()"><span class="ic">'+pic('M12 5v14M5 12h14')+'</span><span><b>'+T('Créez votre premier robot','Build your first robot')+'</b><small>'+T('Partez de L\'Owl et changez une pièce : il est testé sur le passé pour vous.','Start from the Owl and change one piece: it gets tested on past data for you.')+'</small></span></button>';
  if(PUB.length)h+='<div class="grp" style="display:flex;align-items:center;gap:8px">'+T('Le meilleur robot public','The best public robot')+'<a href="place" style="margin-left:auto;font-size:.8rem;font-weight:800;color:var(--violet-soft);text-decoration:none;text-transform:none;letter-spacing:0">'+(PUB.length>1?T('Les ','All ')+PUB.length+T(' sur la place',' on the place'):T('La place des robots','The robot place'))+' →</a></div><div class="fds">'+bRow(bTop(PUB))+'</div>';
+ h+=doors+hero;   // 2026-10-18 (owner): best robots first, then the place and the test zone, then the lab
  const PL=B.plugs||[],NP=pcs().length;
  FDS.pieces=[T('Les pièces','The pieces'),()=>piecesCat()];
  h+='<div class="grp">'+T('L\'atelier','The workshop')+'</div><div class="fds">'+fd('pieces',ICO('#8fc6ff',pic('M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z')),T('Les pièces','The pieces'),T('Entrées, filtres, stops, sorties, rattrapage, argent','Entries, filters, stops, exits, catch-up, money'),NP);
@@ -1819,7 +1843,7 @@ async function load(){try{
  const [s,r,t]=await Promise.all([needS?getJ('strategies_data'):null,needR?getJ('robots_data'):null,needT?getJ('team_data'):null]);
  let s2=s;if(SIDE==='robots'&&r&&!r.err&&s&&s.err)s2=null;
  if([s2,r,t].some(x=>x&&x.err)){$('top').innerHTML='';$('list').innerHTML=LOCK;return;}
- const first=(s2&&!D)||(r&&!RB)||(t&&!TM);if(s2)D=s2;if(r)RB=r;if(t)TM=t;$('livet').textContent=T('À jour','Up to date');
+ const first=(s2&&!D)||(r&&!RB)||(t&&!TM);if(s2)D=s2;if(r)RB=r;if(t)TM=t;{const _n=new Date();$('livet').textContent=String(_n.getHours()).padStart(2,'0')+':'+String(_n.getMinutes()).padStart(2,'0');}
  // a refresh never moves the reader: lists redraw, an open strategy or robot keeps its place
  if(document.body.classList.contains('det')){if(CUR)CUR=byId(CUR.id)||CUR;if(CURR)CURR=rbById(CURR.id)||CURR;
   if(CURB){const nb=bById(CURB.id);if(nb&&nb.stage!==CURB.stage){CURB=nb;renderB();}else if(nb)CURB=nb;}
