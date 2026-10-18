@@ -7547,7 +7547,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
     if(!L.length)return T('pas encore de jour fermé','no closed day yet');const b=L.reduce((a,x)=>(+x.p||0)>(+a.p||0)?x:a,L[0]);return T('meilleur jour ','best day ')+((+b.p||0)>=0?'+$':'-$')+Math.abs(+b.p||0).toFixed(2)+' · '+(()=>{const m=/(\d\d)\/(\d\d)$/.exec(b.d||'');if(!m)return String(b.d||'').split(' ')[0];const dt=new Date(n0.getFullYear(),+m[2]-1,+m[1]);return dt.toLocaleDateString(EN()?'en-GB':'fr-FR',{weekday:'short'}).replace('.','');})();},spark:true,show:()=>true},
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>{const d=window._d||{},db=+((d.ledger||{}).debt||0),k='owlDebtPk:'+B;let pk=0;try{pk=+localStorage.getItem(k)||0;if(db<=0.005){localStorage.removeItem(k);pk=0;}else if(db>pk){pk=db;localStorage.setItem(k,String(db));}}catch(e){}
     const back=pk>0?Math.max(0,Math.min(1,(pk-db)/pk)):0;return back>=0.05?T('déjà ','already ')+Math.round(back*100)+T(' % regagnés',' % won back'):T('à regagner, peu à peu','to win back, bit by bit');},show:()=>shown('ledcard'),vcol:'var(--text)'},
-  {k:'pal',ic:'grow',col:'59,130,246',t:()=>(window._palGoal?T('Objectif de la semaine','Week goal'):T('Prochain palier','Next step')),cards:()=>[$('palier')],vsm:true,
+  {k:'pal',ic:'grow',col:'59,130,246',t:()=>(window._palGoal?T('Objectif de la semaine','Week goal'):T('Prochain palier','Next step')),cards:()=>[$('palier')],vsm:()=>!!window._palGoal,
    v:()=>{const g=window._palGoal;if(g){const done=Math.max(0,g.step-g.left);return '$'+done.toFixed(2)+' / $'+g.step.toFixed(0);}return money(txt('pal-head'))||'—';},
    s:()=>{const g=window._palGoal;if(g)return g.left<=0.005?T('atteint','reached'):T('encore ','still ')+'$'+g.left.toFixed(2);if(window._palTile)return T('à gagner, puis des gains plus grands','to win, then bigger gains');const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],
@@ -7589,7 +7589,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   const html=L.map(t=>{let v='',s='';try{v=t.v()||'';s=t.s()||'';}catch(e){}
    const vc=t.vcol||(t.vsm?'var(--text)':signCol(v));
    return '<button class="ckt'+(t.wide?' wide':'')+'" data-k="'+t.k+'"><div class="k"><i style="background:rgba('+t.col+',.15);color:rgb('+t.col+')">'+svg(IC[t.ic])+'</i>'+t.t()+'</div>'+
-    '<div class="v'+(t.vsm?' sm':'')+'" style="color:'+vc+'">'+escH(v||'—')+'</div>'+(s?'<div class="s">'+escH(s)+'</div>':'')+sparkOf(t)+'</button>';}).join('');
+    '<div class="v'+((typeof t.vsm==='function'?t.vsm():t.vsm)?' sm':'')+'" style="color:'+vc+'">'+escH(v||'—')+'</div>'+(s?'<div class="s">'+escH(s)+'</div>':'')+sparkOf(t)+'</button>';}).join('');
   // keep the wide tile last and the grid even: a lone half tile becomes wide
   if(g._last!==html){g._last=html;g.innerHTML=html;
    const half=[...g.querySelectorAll('.ckt:not(.wide)')];if(half.length%2===1)half[half.length-1].classList.add('wide');
@@ -8721,7 +8721,7 @@ function goLabo(){location.href=B+'robots';}
   // 2026-10-18 (owner: "not so catchy"): the day as a strip - its net result as the headline, one chip per trade
   const tnet=TD.reduce((a,x)=>a+(+x.p||0),0),won=TD.filter(x=>(+x.p||0)>0).length;
   const TRL=window._tr||[],idxOf=x=>{const v=+x.p||0;return TRL.findIndex(t=>Math.abs((+t.p||0)-v)<0.006&&String(t.w||'').slice(-5)===String(x.t||'').slice(0,5));};
-  const today=TD.length?'<div role="button" tabindex="0" class="td2" id="rbn-today"><span class="td2h"><span class="td2l">'+T2('Aujourd’hui','Today')+'</span><b style="color:'+(tnet>0.005?'var(--up)':(tnet<-0.005?'var(--down)':'var(--text)'))+'">'+(Math.abs(tnet)<0.005?'±$0.00':money(tnet))+'</b><span class="td2m">'+TD.length+' trade'+(TD.length>1?'s':'')+' · '+won+' '+T2('gagné','won')+(won>1&&!EN()?'s':'')+'</span><span class="cv">›</span></span>'+
+  const today=TD.length?'<div role="button" tabindex="0" class="td2" id="rbn-today"><span class="td2h"><span class="td2l">'+T2('Trades du jour','Today’s trades')+'</span><span class="td2m"></span><span class="cv">›</span></span>'+
    '<span class="td2c">'+TD.map(x=>{const v=+x.p||0,up=v>=0,i=idxOf(x);return '<button type="button" class="td2p '+(up?'u':'d')+'" data-i="'+i+'"><i>'+(up?'▲':'▼')+'</i><small>'+esc(locHM?locHM(x.t):x.t)+'</small><b>'+money(v)+'</b></button>';}).join('')+'</span></div>'
    :'<div class="td2 td2e"><span class="td2h"><span class="td2l">'+T2('Aujourd’hui','Today')+'</span><span class="td2m">'+T2('pas encore de trade fermé','no closed trade yet')+'</span></span></div>';
   const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0">'+mkl+'<h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+(ago&&!S.open?' <span class="rbn-ago2">'+esc(ago)+'</span>':'')+'</p></div></div>'+today+
