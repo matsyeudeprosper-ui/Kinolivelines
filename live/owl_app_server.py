@@ -3946,7 +3946,7 @@ const I18N_EN=new Map(Object.entries({
  'Trades':'Trades','Jours verts / rouges':'Green / red days','Meilleur jour':'Best day','Jour le plus dur':'Hardest day','Plus longue série':'Longest streak',
  'Trades gagnants':'Winning trades','Gain moyen':'Average win','Perte moyenne':'Average loss','Gains / pertes':'Wins / losses','Meilleure série':'Best streak',
  'Le robot en ce moment':'The robot right now','Tout sur le robot':'All about the robot','Le signal en ce moment':'The signal right now','La journée du robot':'The robot\u2019s day','Votre journée':'Your day',
- 'Grands mouvements':'Big moves','Nervosité vs 24 h':'Nervousness vs 24 h','Petits mouvements':'Small moves',
+ 'Grands mouvements':'Big moves','grands mouvements':'big moves','petits mouvements':'small moves','sens':'direction','prix du ticket':'ticket price','taille des bougies':'candle size','tendance de fond':'background trend','▼ baisse':'▼ down','▲ hausse':'▲ up','baisse':'down','hausse':'up','calme':'calm','rapide':'fast','très rapide':'very fast','Nervosité vs 24 h':'Nervousness vs 24 h','Petits mouvements':'Small moves',
  'Mode manuel':'Manual mode','Mode automatique':'Automatic mode','Mise à l\\'échelle du solde':'Scale with balance','Mise à l\u2019échelle du solde':'Scale with balance',
  'Bienvenue':'Welcome','Votre premier trade':'Your first trade','Les notifications':'Notifications','Aujourd\\'hui':'Today','Aujourd\u2019hui':'Today',
  'gains du jour':'today\u2019s result','depuis lundi':'since Monday','7 derniers jours':'last 7 days','depuis le 1er':'since the 1st','Pire creux':'Worst dip','Ce mois':'This month',
@@ -8120,11 +8120,12 @@ function goLabo(){location.href=B+'robots';}
  #tab-marche #mxseg,#tab-marche #mx-jump,#tab-marche #mx-market>.sec{display:none!important}
  .edrx .lv-pm{display:block;font-size:.62rem;font-weight:700;color:var(--muted);text-align:right;letter-spacing:0}
  .edrx .lv-fk{font-size:.62rem;font-weight:700;color:var(--muted);margin-left:2px}
- .edrx .lv-pz{display:block;font-size:.66rem;color:var(--muted);font-weight:600;margin-top:1px}
+ .edrx .lv-pz{display:none;font-size:.66rem;color:var(--muted);font-weight:600;margin-top:1px}.edrx .lv-w.px-on .lv-pz{display:block}.edrx .lv-w{cursor:pointer}
  .edrx .lv-top{flex-wrap:wrap;row-gap:8px}.edrx .lv-rbt{flex:none;white-space:nowrap}
  .edrx .lv-st p b{white-space:nowrap}
  .edrx .lv-today{font-size:.78rem;color:var(--muted2);margin:10px 0 0 2px}.edrx .lv-today b{font-weight:800}
  .edrx .lv-gd{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.edrx .lv-gd .hd{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2);text-transform:uppercase;margin-bottom:8px}
+ .edrx .lv-tl>.lv-t:nth-child(3):last-child{grid-column:1/-1}
  .edrx .lv-gcs{display:flex;flex-wrap:wrap;gap:8px}.edrx .lv-gc{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 11px}.edrx .lv-gc i{width:7px;height:7px;border-radius:50%}
  .edrx .lv-gr{display:flex;gap:12px;align-items:flex-start;padding:8px 0}.edrx .lv-gr i{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:.8rem}.edrx .lv-gr b{display:block;font-size:.88rem;color:var(--text)}.edrx .lv-gr small{display:block;font-size:.76rem;color:var(--muted2);margin-top:1px;line-height:1.4}
  .edrx .lv-flu{animation:lvfu 1.2s ease-out}.edrx .lv-fld{animation:lvfd 1.2s ease-out}
@@ -8162,6 +8163,7 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-w .t{font-size:.8rem;color:var(--muted2)}.edrx .lv-w .t b{color:var(--text)}
  .edrx .lv-rail{position:relative;height:8px;border-radius:99px;background:var(--surface3);margin:32px 4px 8px}
  .edrx .lv-rail .f{position:absolute;top:0;bottom:0;border-radius:99px}
+ .edrx .lv-rail:before,.edrx .lv-rail:after{content:"";position:absolute;top:-5px;bottom:-5px;width:2px;border-radius:2px;opacity:.75}.edrx .lv-rail:before{left:0;background:var(--muted2)}.edrx .lv-rail:after{right:0;background:var(--muted2)}
  .edrx .lv-rail .px{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--text);border:3px solid var(--surface2)}
  .edrx .lv-rail .tg{position:absolute;bottom:16px;transform:translateX(-50%);font-size:.7rem;font-weight:800;background:var(--text);color:var(--bg);border-radius:6px;padding:2px 6px;white-space:nowrap}
  .edrx .lv-ends{display:flex;justify-content:space-between;gap:8px;font-size:.7rem;color:var(--muted)}.edrx .lv-ends b{display:block;color:var(--text2);font-size:.78rem;font-variant-numeric:tabular-nums}
@@ -8194,7 +8196,8 @@ function goLabo(){location.href=B+'robots';}
  #edrback{display:none;align-items:center;gap:8px;margin:30px 0 4px;border:0;background:none;color:var(--accent-soft);font:inherit;font-weight:700;font-size:.9rem;cursor:pointer;padding:6px 2px}`;
  document.head.appendChild(css);
  try{I18N_EN.set('En direct','Live');}catch(e){}
- let sel='BTCUSD',SC=null,scT=0,frSym='';
+ let sel=(()=>{try{return localStorage.getItem('owlEdrSel')||'BTCUSD';}catch(e){return 'BTCUSD';}})(),SC=null,scT=0,frSym='';
+ setInterval(()=>{try{localStorage.setItem('owlEdrSel',sel);}catch(e){}},1500);
  const LI={gr:['rgba(46,204,113,.14)','var(--up)'],or:['rgba(232,197,90,.14)','var(--warn)'],rd:['rgba(255,92,92,.14)','var(--down)'],bl:['rgba(59,130,246,.16)','var(--accent)'],gy:['rgba(138,155,176,.14)','var(--muted)']};
  const light=c=>{const l=LI[c]||LI.gy;return '<div class="lv-li" style="background:'+l[0]+';box-shadow:0 0 0 6px '+l[0].replace(/[.0-9]+\\)$/,'.05)')+'"><i style="background:'+l[1]+';box-shadow:0 0 18px '+l[1]+'"></i></div>';};
  // 2026-10-13: a real open trade carries its market (worker: open_list[].sym, broker suffix "m" dropped)
@@ -8379,7 +8382,7 @@ function goLabo(){location.href=B+'robots';}
  let pkT=0;
  function pkLoad(){if(Date.now()-pkT<300000)return;pkT=Date.now();fetch(B+'pockets?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&!j.err)window._pk=j;}).catch(()=>{});}
  function pkLine(sym){if(sym==='BTCUSD'){pkLoad();const P=((window._pk||{}).pockets||[]).find(x=>x.sym==='BTCUSD');if(!P)return '';
-   const hm0=P.month!=null;return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+(hm0?(P.month_n||0)+' trades '+T2('ce mois','this month'):P.n+' trades · '+T2('depuis le début','since the start'))+'</small></span><b class="'+((hm0?P.month:P.net)>=0?'lv-up':'lv-dn')+'">'+money(hm0?P.month:P.net)+(hm0?'<small class="lv-pm">'+T2('ce mois','this month')+'</small>':'')+'</b><span class="c">›</span></a>';}
+   const hm0=P.month!=null;return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+(hm0?(P.month_n||0)+' trades':P.n+' trades · '+T2('depuis le début','since the start'))+'</small></span><b class="'+((hm0?P.month:P.net)>=0?'lv-up':'lv-dn')+'">'+money(hm0?P.month:P.net)+(hm0?'<small class="lv-pm">'+T2('ce mois','this month')+'</small>':'')+'</b><span class="c">›</span></a>';}
   const L=((((SC||{}).results||{})[sym]||{}).pocket||{}).live;if(!L)return '';const st=((SC||{}).pocket_rule||{}).start||100;
   return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
  // 2026-10-13 (owner): the card follows the robot PLUGGED on the account (server: robot_now). The Owl keeps its
@@ -8437,7 +8440,7 @@ function goLabo(){location.href=B+'robots';}
   const fl=(S.pl!=null&&window._edrPl!=null&&Math.abs(S.pl-window._edrPl)>0.004)?(S.pl>window._edrPl?' lv-flu':' lv-fld'):'';window._edrPl=S.pl;
   let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
-   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+fl+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
+   '<div class="lv-st">'+light(S.open&&S.pl!=null&&S.pl<0?'or':S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+fl+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
   if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
    if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
     h+='<div class="lv-w"><div class="t">'+pathTitle(e,tp,sl,cur,pct)+'</div>'+
@@ -8455,7 +8458,7 @@ function goLabo(){location.href=B+'robots';}
  // 2) during a trade: what protects it, instead of the entry checklist (those conditions are behind it)
  function guard(D,MM){const lg=D.ledger||{};const row=(ic,c,b,t)=>'<div class="lv-gr"><i style="background:'+c+'1f;color:'+c+'">'+ic+'</i><span><b>'+b+'</b><small>'+t+'</small></span></div>';
   const ch=(c,t)=>'<span class="lv-gc"><i style="background:'+c+'"></i>'+t+'</span>';
-  return '<div class="lv-gd"><div class="hd">'+T2('Protections','Protections')+'</div><div class="lv-gcs">'+ch('#ff5c5c',T2('Stop posé','Stop set'))+ch('#2ecc71',T2('Objectif posé','Target set'))+(lg.bos||lg.max_extra?ch('#8fc6ff',T2('Rattrapage prêt','Recovery ready')):'')+'</div></div>';}
+  return '<div class="lv-gd"><div class="lv-gcs">'+ch('#ff5c5c',T2('Stop posé','Stop set'))+ch('#2ecc71',T2('Objectif posé','Target set'))+(lg.bos||lg.max_extra?ch('#8fc6ff',T2('Rattrapage prêt','Recovery ready')):'')+'</div></div>';}
  // 6) what already happened today, inside the card
  function todayLine(D){const n0=new Date(),dd=String(n0.getDate()).padStart(2,'0')+'/'+String(n0.getMonth()+1).padStart(2,'0'),dk=Object.keys(D.day_trades||{}).find(k=>k.slice(-5)===dd),L=dk?(D.day_trades[dk]||[]):[];
   if(!L.length)return '<div class="lv-today">'+T2('Aujourd’hui : pas encore de trade fermé.','Today: no closed trade yet.')+'</div>';
@@ -8463,7 +8466,7 @@ function goLabo(){location.href=B+'robots';}
   return '<div class="lv-today">'+T2('Aujourd’hui : ','Today: ')+L.length+' trade'+(L.length>1?'s':'')+' · <b class="'+(net>=0?'lv-up':'lv-dn')+'">'+money(net)+'</b>'+(last?' · '+T2('le dernier à ','the last at ')+last:'')+'</div>';}
  // 2026-10-18 (owner: "the alert is misplaced"): a clear toggle row at the bottom of the card, not a pill in the top row
  function alertRow(){const nb=$('notifbtn');if(!nb)return '';const on=nb.dataset.on==='1';
-  return '<button type="button" class="lv-al'+(on?' on':'')+'" id="edrbell" role="switch" aria-checked="'+on+'"><span class="ai"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></span><span class="at"><b>'+T2('Me prévenir à chaque trade','Tell me on every trade')+'</b><small>'+(on?T2('Activé : une notification à chaque entrée et sortie','On: a notification at every entry and exit'):T2('Une notification quand le robot entre ou sort','A notification when the robot enters or exits'))+'</small></span><span class="sw'+(on?' on':'')+'" aria-hidden="true"></span></button>';}
+  return '<button type="button" class="lv-al'+(on?' on':'')+'" id="edrbell" role="switch" aria-checked="'+on+'"><span class="ai"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></span><span class="at"><b>'+T2('Me prévenir à chaque trade','Tell me on every trade')+'</b></span><span class="sw'+(on?' on':'')+'" aria-hidden="true"></span></button>';}
  function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
   if(r.status==='closed'){c='gy';t=T2('Marché fermé','Market closed');s=reopen()+(o?T2(' Le trade virtuel reprend à la réouverture.',' The virtual trade resumes when it reopens.'):'');}
   else if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
@@ -8523,7 +8526,7 @@ function goLabo(){location.href=B+'robots';}
   const ros=Object.keys(RO).filter(s=>s!==sel);
   if(ros.length)h+='<div class="sub">'+T2('Trades réels en cours','Real trades running')+' · '+ros.length+'</div>'+ros.map(s=>line(s,T2('argent réel','real money'),money(RO[s]),RO[s]>=0?'var(--up)':'var(--down)')).join('');
   if(open.length){h+='<div class="sub">'+T2('Trades d’essai en cours','Trial trades running')+' · '+open.length+'</div>'+
-   open.slice(0,3).map(r=>r.status==='closed'?line(r.sym,T2('marché fermé · en pause','market closed · paused'),R(r.open.r_now),'var(--muted2)'):line(r.sym,(r.open.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell'))+(r.open.t?T2(' · depuis ',' · since ')+hm(r.open.t):''),R(r.open.r_now),r.open.r_now>=0?'var(--up)':'var(--down)')).join('')+
+   open.slice(0,3).map(r=>r.status==='closed'?line(r.sym,T2('marché fermé · en pause','market closed · paused'),R(r.open.r_now),'var(--muted2)'):line(r.sym,(r.open.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell')),R(r.open.r_now),r.open.r_now>=0?'var(--up)':'var(--down)')).join('')+
    (open.length>3?'<button type="button" class="more" id="edrmore">+ '+(open.length-3)+' '+T2('autre'+(open.length-3>1?'s':''),'more')+' ›</button>':'');}
   if(c){const st=c.status==='ready'?[T2('Presque prêt','Nearly ready'),'var(--accent)','var(--accent-soft)']:(c.status==='soon'?[T2('Bientôt','Soon'),'var(--warn)','var(--warn)']:[T2('Tendance en place','Trend set'),'var(--muted)','var(--muted2)']);
    const pc=Math.max(4,Math.min(100,100-(c.near/3)*100)),side=c.pb_trend===1?T2('un achat','a buy'):(c.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
@@ -8559,8 +8562,7 @@ function goLabo(){location.href=B+'robots';}
   return '<div class="lv-tl">'+
    t('chart','i-chart',T2('Graphique','Chart'),cur?fmtN(cur,dg):T2('Ouvrir','Open'),esc(mname(sel))+' · '+T2('en direct','live'))+
    t('diary','i-book',T2('Journal','Diary'),nr+' trade'+(nr>1?'s':''),(ni?ni+' '+T2('laissée'+(ni>1?'s':''),'passed'):T2('aujourd’hui','today'))+(nv?' · '+nv+' '+T2('en essai','on trial'):''))+
-   t('hours','i-calendar',T2('Ses heures','Its hours'),bh>=0?bh+'h':'—',bh>=0?(Object.keys(DT).length<20?T2('à confirmer · ','to confirm · ')+Object.keys(DT).length+' '+T2('jours seulement','days only'):T2('sa meilleure heure','its best hour')+' · '+Object.keys(DT).length+' '+T2('jours','days')):T2('pas encore assez de trades','not enough trades yet'))+
-   t('det','i-settings',T2('Pour traders','For traders'),T2('Détails','Details'),T2('météo · H4 / H1 / M15 · heures','weather · H4 / H1 / M15 · hours'))+'</div>';}
+   t('det','i-settings',T2('Pour traders','For traders'),T2('Détails','Details'),T2('météo · tendances · ses heures','weather · trends · its hours'))+'</div>';}
  // a diary trade -> the matching row of the app's trade list (same result, closest time) -> its own sheet
  function openTr(p,x){const L=window._tr||[];let bi=-1,bd=1e12;
   L.forEach((t,i)=>{if(Math.abs((+t.p||0)-p)>0.006)return;const m=/^(\\d\\d)\\/(\\d\\d) (\\d\\d):(\\d\\d)$/.exec(t.w||'');if(!m)return;const n=new Date();let y=n.getUTCFullYear();if(parseInt(m[2])>n.getUTCMonth()+1)y--;
@@ -8633,13 +8635,14 @@ function goLabo(){location.href=B+'robots';}
     b.innerHTML='<div class="edrx"><div class="lv-note" style="margin:0 2px 12px">'+T2('Voyez les pièces d’un robot sur ce compte, en direct, comme s’il était branché. Rien n’est branché, le robot du compte ne change pas.','See a robot’s pieces live on this account, as if it were plugged. Nothing is plugged; the account’s robot does not change.')+'</div><div class="lv-mk" style="margin-top:0">'+
      L.map(x=>'<button class="lv-mr'+((PV?PV.id:cur)===x.id?' on':'')+'" data-r="'+esc(x.id)+'"><span class="lv-sy" style="background:var(--accent-bg);color:var(--accent-soft)"><svg class="ic" style="width:16px;height:16px"><use href="#i-bot"/></svg></span><div class="n"><b>'+esc(EN()?x.name_en:x.name_fr)+'</b><span>'+(x.id===cur?T2('le robot de ce compte','this account’s robot'):esc(x.stage||''))+'</span></div><div class="s" style="color:var(--accent-soft)">'+(x.id===cur?'':T2('Aperçu','Preview')+' ›')+'</div></button>').join('')+'</div></div>';
     b.querySelectorAll('.lv-mr[data-r]').forEach(x=>x.onclick=async()=>{const id=x.dataset.r;if(id===cur){PV=null;shClose();paint(true);return;}sel='BTCUSD';await pvLoad(id);shClose();paint(true);});}).catch(()=>{b.innerHTML='<div class="lv-note">'+T2('Impossible pour l’instant.','Not available right now.')+'</div>';});}
-  else if(k==='det'){['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)b.appendChild(e);});}
+  else if(k==='det'){let D1={};try{D1=JSON.parse(window._lastS);}catch(e){}const hh=hours(D1);if(hh){const w=document.createElement('div');w.className='edrx';w.id='edrhrs';w.style.margin='0 0 14px';w.innerHTML=hh;b.appendChild(w);}
+   ['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e)b.appendChild(e);});try{if(EN()&&typeof applyLang==='function')applyLang(b);}catch(e){}}
   else shFill(D,B0,TR);
   s.classList.add('on');document.body.style.overflow='hidden';requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('open')));
   try{history.pushState({edr:k},'');}catch(e){}}
  function shClose(fromPop){const s=$('edrsh');if(!s||!shK)return;const k=shK;shK=null;s.classList.remove('open');document.body.style.overflow='';
   setTimeout(()=>{if(shK)return;s.classList.remove('on');const b=$('edrsh-b');
-   if(k==='det'){const st=$('edrstore');['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e&&st)st.appendChild(e);});}
+   if(k==='det'){const hw=$('edrhrs');if(hw)hw.remove();const st=$('edrstore');['meteo','tfcard','mhcard','lrn-card'].forEach(id=>{const e=$(id);if(e&&st)st.appendChild(e);});}
    if(b)b.innerHTML='';},330);
   if(fromPop!==true){try{if(history.state&&history.state.edr)history.back();}catch(e){}}}
  // ---- build once, paint on every change ----
@@ -8679,7 +8682,8 @@ function goLabo(){location.href=B+'robots';}
    // 2026-10-14 (owner): the chart of the market being watched, one tap away
    const chb=$('edrchart');if(chb)chb.onclick=ev=>{ev.stopPropagation();shOpen('chart');};
    const bl=$('edrbell');if(bl)bl.onclick=()=>{const o=$('notifbtn');if(o&&o.dataset.on!=='1')o.click();else{try{toast(T2('Vous êtes prévenu à chaque trade. Réglage dans Compte.','You are notified on every trade. Setting in Account.'),3000);}catch(e){}}};
-   lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));}
+   lv.querySelectorAll('.lv-t').forEach(t=>t.onclick=()=>shOpen(t.dataset.k));
+   lv.querySelectorAll('.lv-w').forEach(w=>{if(window._edrPx)w.classList.add('px-on');w.onclick=()=>{window._edrPx=!window._edrPx;lv.querySelectorAll('.lv-w').forEach(x=>x.classList.toggle('px-on',!!window._edrPx));};});}
   if(shK==='mk'||shK==='diary'||shK==='hours'){const b=$('edrsh-b'),y=b&&b.parentElement.scrollTop;shFill(D,B0,TR);if(b)b.parentElement.scrollTop=y;}}
  // 2026-10-13 (owner): the home card "Le robot en ce moment" speaks En direct's language - the same status, light,
  // sentence and four checks, from the same code, plus the next candidate in one line; the old four steps are hidden.
