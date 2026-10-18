@@ -1472,8 +1472,11 @@ body{background:var(--bg);color:var(--text);
  justify-content:center;font-size:1.15rem;flex:none}
 .chv{color:var(--muted);width:18px;height:18px}
 .ssub{font-size:.82rem;color:var(--muted);margin-top:2px}
+.hero .topline button,.hero .topline a{min-height:40px;min-width:40px;justify-content:center;align-items:center}
+.hero .dlm{display:inline-block;margin-left:6px;font-size:.72em;opacity:.55;vertical-align:1px}
+.hero .hwarn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:5px 11px;border-radius:99px;font-size:.78rem;font-weight:800}
 .hero{background:linear-gradient(165deg,var(--hero1) 0%,var(--hero2) 100%);
- color:#fff;padding:20px 22px 40px;border-radius:0 0 28px 28px;
+ color:#fff;padding:20px 22px 26px;border-radius:0 0 28px 28px;
  text-align:center;position:relative;overflow:hidden;
  box-shadow:inset 0 -1px 0 rgba(255,255,255,.05)}
 .hero>*{position:relative}
@@ -2447,11 +2450,11 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  border-radius:99px;padding:5px 8px;font-size:.7rem;font-weight:700;line-height:1"><svg class="ic ic-s"><use href="#i-users"/></svg><span id="acctchip-n"></span></button>
 <button id="hbell" class="tap44" onclick="inboxSheet()" title="Messages" aria-label="Messages" style="position:relative;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-bell"/></svg><span id="hbell-n" style="display:none;position:absolute;top:-7px;right:-7px;min-width:17px;height:17px;border-radius:99px;background:var(--down);color:#fff;font-size:.6rem;font-weight:800;align-items:center;justify-content:center;padding:0 4px;border:2px solid #0e1a2b"></span></button>
-<a id="chartlink" class="tap44" href="#" title="Graphique en direct" aria-label="Graphique en direct"
+<a id="chartlink" class="tap44" href="#" title="Graphique des prix" aria-label="Graphique des prix"
  style="text-decoration:none;line-height:1;display:inline-flex;
  color:#dbe9f7;background:rgba(255,255,255,.08);
  border:1px solid rgba(255,255,255,.14);
- border-radius:99px;padding:5px 9px"><svg class="ic ic-s"><use href="#i-chart"/></svg></a>
+ border-radius:99px;padding:5px 9px"><svg class="ic ic-s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v4M7 17v4M17 3v6M17 19v2"/><rect x="4.5" y="7" width="5" height="10" rx="1"/><rect x="14.5" y="9" width="5" height="10" rx="1"/></svg></a>
 </span></div>
 <!-- 2026-10-01 (owner): the wave was the last emoji in the hero. -->
 <div class="hello" id="hello">Bonjour %%NAME%%</div>
@@ -7792,15 +7795,25 @@ function goLabo(){location.href=B+'robots';}
  let per='d',greet=null;
  function sub(){let el=$('eqsub');if(!el){const eq=$('eq');if(!eq)return null;el=document.createElement('div');el.id='eqsub';el.style.cssText='font-size:.82rem;font-weight:700;margin-top:2px;min-height:0';eq.after(el);}return el;}
  function tick(){const d=window._d;if(!d||d.error)return;
-  // 5) + 6) under the balance: demo money, and how much of it is still in an open trade
+  // under the balance: demo money, what is still open, the week's direction, and the safety line when it nears
   const el=sub();if(el){const ol=d.open_list||[],pl=ol.reduce((a,p)=>a+(parseFloat(p.pl)||0),0),bits=[];
-   if(d.acct&&d.real===false&&!d.public)bits.push('<span style="color:#ffd27a">'+T('argent fictif · compte démo','pretend money · demo account')+'</span>');
+   if(d.acct&&d.real===false&&!d.public)bits.push('<span style="color:#ffd27a">'+T('argent fictif','pretend money')+'</span>');
    if(ol.length)bits.push('<span style="color:'+(pl>=0?'#8df0bb':'#ffb3b3')+'">'+T('dont ','of which ')+m(pl)+T(' en cours',' still open')+'</span>');
-   const h=bits.join(' · ');if(el._l!==h){el._l=h;el.innerHTML=h;el.style.display=h?'':'none';}}
+   else if(per==='d'&&typeof d.week==='number'&&Math.abs(d.week)>0.005)bits.push('<span style="color:'+(d.week>=0?'#8df0bb':'#ffb3b3')+';opacity:.85">'+(d.week>=0?'▲ ':'▼ ')+m(d.week)+T(' cette semaine',' this week')+'</span>');
+   let h=bits.join(' · ');
+   const kill=+((d.acct_rules||{}).kill||0),net=+((d.since_start||{}).net||0);
+   if(d.bot_killed)h+='<div><span class="hwarn" style="background:rgba(255,92,92,.18);color:#ffb3b3">'+T('Ligne de sécurité atteinte : le robot est arrêté','Safety line reached: the robot is stopped')+'</span></div>';
+   else if(kill<0&&net<=0.8*kill&&!d.public)h+='<div><span class="hwarn" style="background:rgba(232,197,90,.16);color:#ffd27a">'+T('Proche de la ligne de sécurité · ','Close to the safety line · ')+m(net)+' / '+m(kill)+'</span></div>';
+   if(el._l!==h){el._l=h;el.innerHTML=h;el.style.display=h?'':'none';}}
+  // 2) the account line under the logo is not needed when the chip names the account; demo keeps its warning under the balance
+  const al=$('acctline'),ch=$('acctchip');if(al){const hide=!!(ch&&getComputedStyle(ch).display!=='none')||(d.acct&&d.real===false);al.style.display=hide?'none':'';}
+  // 3) the day line says it can change
+  const dl0=$('dayline');if(dl0&&!dl0.querySelector('.dlm')&&dl0.textContent.trim())dl0.insertAdjacentHTML('beforeend','<span class="dlm">⇄</span>');
   // 4) the greeting on Today; elsewhere, the account and what the robot is doing
   const he=$('hello');if(he){if(greet===null)greet=he.innerHTML;const home=$('tab-home')&&$('tab-home').classList.contains('on');
    const ol=d.open_list||[],st=ol.length?T('en trade','in a trade'):(d.trading_paused?T('en pause','paused'):T('le robot surveille','the robot is watching'));
-   const want=home?greet:esc2(d.name||'')+(d.acct?' · '+(d.real?T('Réel','Real'):T('Démo','Demo')):'')+(d.public?'':' · '+st);
+   const nm=String(d.name||'').replace(/\s*\((d[ée]mo|demo)\)\s*/i,' ').trim();
+   const want=home?greet.replace(/\s*\((d[ée]mo|demo)\)\s*/i,' ').replace(/\s+$/,''):esc2(nm)+(d.acct?' · '+(d.real?T('Réel','Real'):T('Démo','Demo')):'')+(d.public?'':' · '+st);
    if(he._l!==want){he._l=want;he.innerHTML=want;}}
   // 7) the day line follows the chosen period
   if(per!=='d'){const dl=$('dayline');if(dl){const v=per==='w'?(+d.week||0):(+d.month||0),h='<b style="color:'+(Math.abs(v)<0.005?'rgba(219,233,247,.72)':(v>=0?'#8df0bb':'#ffb3b3'))+'">'+m(v)+'</b> '+(per==='w'?T('cette semaine','this week'):T('ce mois','this month'));if(dl._p!==h){dl._p=h;dl.innerHTML=h;}}}}
@@ -10168,6 +10181,7 @@ function render(d){
    if(window.npcPaint)window.npcPaint();
   }
   if(d.eurusd){const _eqe=document.getElementById('eqe');
+   const _eqb=document.getElementById('eq');if(_eqb&&!_eqb._eurTap){_eqb._eurTap=1;_eqb.style.cursor='pointer';_eqb.title='$ / €';_eqb.onclick=()=>{_eqe.style.fontSize=_eqe.style.fontSize?'':'1.6rem';_eqe.style.fontWeight=_eqe.style.fontWeight?'':'900';};}
    _eqe.style.display='block';_eqe.innerHTML=
    '&asymp; '+(d.equity/d.eurusd).toFixed(0)+' &euro;';}
   // 2026-09-27: one line under the number - today's result and the trade
