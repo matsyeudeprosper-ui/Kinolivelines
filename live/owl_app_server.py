@@ -12268,6 +12268,19 @@ def console_payload():
         out["research"] = {}
     c = nest_config()
     out["config"] = {k: c.get(k) for k in ("contact_url", "contact_label", "mql5_url", "family_usd") if k in c}
+    # 2026-10-18 (owner): only the accounts he owns count in "money managed"; members' money is shown apart.
+    # New accounts are NOT counted until he says so (list in owl_nest_config.json "owned_accounts").
+    out["owned"] = list(c.get("owned_accounts") or [])
+    # subscriptions cashed in: ours, a separate total (payments marked test are left out)
+    try:
+        _P = [p for p in json.load(open(PAY_FILE, encoding="utf-8")) if p.get("granted") in PACKAGES and not p.get("test")
+              and str(p.get("status") or "finished") in ("finished", "confirmed", "paid", "")]
+        _ym = time.strftime("%Y-%m", time.gmtime())
+        out["subs_cash"] = {"total": round(sum(float(p.get("amount") or 0) for p in _P), 2),
+                            "month": round(sum(float(p.get("amount") or 0) for p in _P if time.strftime("%Y-%m", time.gmtime(float(p.get("t") or 0))) == _ym), 2),
+                            "n": len(_P)}
+    except Exception:
+        out["subs_cash"] = {"total": 0, "month": 0, "n": 0}
     try:
         out["plans"] = {k: {"usd": v.get("usd"), "label": v.get("label")} for k, v in PACKAGES.items()}
     except Exception:
