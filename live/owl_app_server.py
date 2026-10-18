@@ -7651,6 +7651,8 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  const comptePanel=()=>{const n=$('tgrow');return n?n.closest('.panel'):null;};
  // a group: rows (moved into a fresh panel) and/or whole panels (moved as they are)
  const G=[
+  // 2026-10-18 (owner): the control room, first on the Compte page - owner only
+  {k:'console',ic:'crown',col:'59,130,246',href:B+'console',admin:true,t:()=>T('La console','The console'),s:()=>T('Le Nid et tout le business : comptes, membres, argent, système','The Nest and the whole business: accounts, members, money, system'),panels:()=>[],rows:()=>[]},
   {k:'money',ic:'money',col:'46,204,113',t:()=>T('Mon robot et mon argent','My robot and my money'),s:()=>T('Patrimoine, vos règles, objectif, mode manuel','Wealth, your rules, goal, manual mode'),
    panels:()=>[$('wealthrow'),$('arules'),$('rob-card')],rows:()=>[$('mygoalbtn'),$('stepsbtn'),exportRow()]},
   {k:'notif',ic:'bell',col:'232,197,90',t:()=>T('Notifications et messages','Notifications and messages'),s:()=>{const d=$('inbox-dot');return (d&&d.style.display!=='none'?T('Nouveaux messages · ','New messages · '):'')+T('alertes, silence la nuit, son','alerts, quiet night, sound');},
@@ -7692,7 +7694,7 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   pn.addEventListener('touchend',e=>{if(y0==null)return;const dy=e.changedTouches[0].clientY-y0;pn.style.transform='';if(dy>110)close();y0=null;});
   window.addEventListener('popstate',()=>{if(open)close(true);});
   return true;}
- function shownGroup(g){if(g.href)return !(window._d&&window._d.public);const B=g._box;if(!B)return false;
+ function shownGroup(g){if(g.admin)return !!(window._d&&window._d.is_master);if(g.href)return !(window._d&&window._d.public);const B=g._box;if(!B)return false;
   return g.panels().some(p=>p&&vis(p)&&(p.id==='wealthrow'||p.id==='plan-card'||p.id==='arules'||p.id==='refcard'||anyRow(p)))||(g._rowp&&anyRow(g._rowp));}
  function paint(){const L=$('csl');if(!L)return;
   const h=$('cshead');if(h){const nm=((document.querySelector('#hello')||{}).textContent||'').replace(/^(Bonjour|Bonsoir|Bon apr\\u00e8s-midi|Hello|Good (?:morning|afternoon|evening))\\s*/i,'').trim();
@@ -7772,7 +7774,11 @@ function goLabo(){location.href=B+'robots';}
   const r=document.createElement('div');r.className='srow';r.id='nidrow';
   r.innerHTML='<div class="sic"><svg class="ic"><use href="#i-users"/></svg></div><div style="flex:1"><b>'+T('Le Nid','The Nest')+'</b><div class="ssub">'+T('Tous les comptes, les robots, les revenus','Every account, the robots, the revenue')+'</div></div><svg class="ic chv"><use href="#i-chev"/></svg>';
   r.onclick=()=>{try{if(window.csClose)csClose();}catch(e){}setTimeout(()=>tab('nid',$('tb-nid')),320);};
-  a.insertBefore(r,a.firstChild);}
+  a.insertBefore(r,a.firstChild);
+  // 2026-10-18 (owner): the control room, above Le Nid
+  const c=document.createElement('a');c.className='srow';c.id='consolerow';c.href=B+'console';c.style.textDecoration='none';c.style.color='inherit';
+  c.innerHTML='<div class="sic" style="color:var(--accent-soft);background:var(--accent-bg)"><svg class="ic"><use href="#i-chart"/></svg></div><div style="flex:1"><b>'+T('La console','The console')+'</b><div class="ssub">'+T('Piloter tout le nid : comptes, membres, argent, système','Run the whole nest: accounts, members, money, system')+'</div></div><svg class="ic chv"><use href="#i-chev"/></svg>';
+  a.insertBefore(c,a.firstChild);}
  function init(){try{if(build()){paint();setInterval(paint,2000);}nidRow();}catch(e){console.error('perf',e);}}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -12203,6 +12209,70 @@ def _proof_lab():
 _RENT_CACHE = [0.0, None]
 _LAND_CACHE = [0.0, None]
 _AI_CACHE = [0.0, None]
+
+
+def console_payload():
+    """2026-10-18 (owner): the control room's extras (the accounts, pending requests and revenue come from /api).
+    Never sends a secret: payment keys and passwords stay on the server."""
+    out = {"t": int(time.time())}
+    try:
+        U = json.load(open(USERS_FILE, encoding="utf-8"))
+    except Exception:
+        U = []
+    names = {x.get("id"): x.get("name") or x.get("id") for x in U}
+    out["names"] = names
+    try:
+        F = json.load(open(FUNNEL_FILE, encoding="utf-8"))
+        ks = sorted(F)[-21:]
+        out["funnel"] = [dict({"d": k}, **(F.get(k) or {})) for k in ks]
+    except Exception:
+        out["funnel"] = []
+    try:
+        C = (json.load(open(CODES_FILE, encoding="utf-8")) or {}).get("codes") or []
+        out["codes"] = [{"code": c.get("code"), "t": c.get("t"), "pkg": c.get("pkg") or "family", "days": c.get("days"),
+                         "for": c.get("for") or c.get("name") or "", "free": bool(c.get("free")),
+                         "used_by": names.get(c.get("used_by"), c.get("used_by")) if c.get("used_by") else None,
+                         "used_t": c.get("used_t")} for c in C[-30:]][::-1]
+    except Exception:
+        out["codes"] = []
+    try:
+        import owl_wallet as _OW
+        out["payouts"] = [dict(p, name=names.get(p["uid"], p["uid"])) for p in _OW.payouts_due()]
+    except Exception:
+        out["payouts"] = []
+    try:
+        import owl_influencers as _INF
+        out["creators"] = [dict(p, name=names.get(p["uid"], p["uid"])) for p in _INF.pending()]
+    except Exception:
+        out["creators"] = []
+    try:
+        out["health"] = service_health()
+    except Exception:
+        out["health"] = {}
+    try:
+        import ctypes, shutil
+        class _MS(ctypes.Structure):
+            _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong), ("ullTotalPhys", ctypes.c_ulonglong),
+                        ("ullAvailPhys", ctypes.c_ulonglong), ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                        ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong), ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+        m = _MS(); m.dwLength = ctypes.sizeof(_MS); ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+        du = shutil.disk_usage("C:\\")
+        out["system"] = {"mem_total": round(m.ullTotalPhys / 2**30, 1), "mem_free": round(m.ullAvailPhys / 2**30, 1), "mem_load": m.dwMemoryLoad,
+                         "disk_total": round(du.total / 2**30), "disk_free": round(du.free / 2**30)}
+    except Exception:
+        out["system"] = {}
+    try:
+        out["research"] = {"controls": _ctl_state()[-8:],
+                           "market": [{"rid": x.get("rid"), "sym": x.get("sym"), "state": x.get("state")} for x in _mq_load() if x.get("state") in ("queued", "building", "testing")]}
+    except Exception:
+        out["research"] = {}
+    c = nest_config()
+    out["config"] = {k: c.get(k) for k in ("contact_url", "contact_label", "mql5_url", "family_usd") if k in c}
+    try:
+        out["plans"] = {k: {"usd": v.get("usd"), "label": v.get("label")} for k, v in PACKAGES.items()}
+    except Exception:
+        out["plans"] = {}
+    return out
 
 
 def pockets_payload(uid):
@@ -21176,6 +21246,19 @@ class H(BaseHTTPRequestHandler):
         elif sub == "place":
             # 2026-10-17 (owner): La place des robots - its own page, in the Robots page's look, served from disk
             self._send(open(os.path.join(DIR, "owl_place_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+        elif sub in ("console", "console_data"):
+            # 2026-10-18 (owner): the owner's control room - everything needed to run the business on one page.
+            # Owner only; the actions it triggers are the existing admin POSTs (master password on each).
+            if not (is_admin(user) or admin_cookie_ok(self.headers)):
+                self._not_found()
+                return
+            if sub == "console":
+                self._send(open(os.path.join(DIR, "owl_console_page.html"), encoding="utf-8").read(), "text/html; charset=utf-8")
+            else:
+                try:
+                    self._send(json.dumps(console_payload(), ensure_ascii=False), "application/json")
+                except Exception as e:
+                    self._send(json.dumps({"err": str(e)[:120]}), "application/json")
         elif sub == "mesrobots":
             # 2026-10-18 (owner): "Mes robots" - every robot of the member on its own page (results, markets,
             # progress, pieces in panels); the Robots page keeps only the best one. Data = robots_data. From disk.
