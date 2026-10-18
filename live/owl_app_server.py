@@ -8122,7 +8122,10 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-fk{font-size:.62rem;font-weight:700;color:var(--muted);margin-left:2px}
  .edrx .lv-pz{display:block;font-size:.66rem;color:var(--muted);font-weight:600;margin-top:1px}
  .edrx .lv-top{flex-wrap:wrap;row-gap:8px}.edrx .lv-rbt{flex:none;white-space:nowrap}
- .edrx .lv-bell.lv-alrt{width:auto;padding:0 12px;gap:6px;display:inline-flex;align-items:center;font:inherit;font-size:.74rem;font-weight:800}
+ .edrx .lv-al{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:inherit;text-align:left;cursor:pointer}
+ .edrx .lv-al .ai{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.edrx .lv-al.on .ai{background:rgba(46,204,113,.14);color:var(--up)}
+ .edrx .lv-al .at{flex:1;min-width:0}.edrx .lv-al b{display:block;font-size:.88rem}.edrx .lv-al small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
+ .edrx .lv-al .sw{flex:none;width:42px;height:24px;border-radius:99px;background:var(--border2);position:relative}.edrx .lv-al .sw:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}.edrx .lv-al .sw.on{background:var(--up)}.edrx .lv-al .sw.on:after{left:21px}
  #edrh{display:flex;align-items:center;gap:13px;padding:40px 4px 6px}
  #edrh .pfi{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:var(--accent-bg);border:1px solid var(--border2);color:var(--accent-soft)}
  #edrh .pfi svg{width:22px;height:22px}
@@ -8415,7 +8418,7 @@ function goLabo(){location.href=B+'robots';}
    (sym==='BTCUSD'?(()=>{let rb={id:'owl'};try{rb=rbNow(JSON.parse(window._lastS));}catch(e){}let own=false;try{own=!!JSON.parse(window._lastS).is_master;}catch(e){}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    '<button class="lv-bell" id="edrchart" aria-label="'+T2('Voir le graphique','See the chart')+'" title="'+T2('Voir le graphique','See the chart')+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-chart"/></svg></button>'+
-   (sym==='BTCUSD'&&nb?'<button class="lv-bell lv-alrt'+(on?' on':'')+'" id="edrbell" aria-label="'+(on?T2('Vous êtes prévenu à chaque trade','You are notified on every trade'):T2('Prévenez-moi quand il entre','Tell me when it enters'))+'"><svg class="ic" style="width:15px;height:15px"><use href="#i-bell"/></svg><span>'+(on?T2('Alerte ✓','Alert ✓'):T2('Alerte','Alert'))+'</span></button>':'')+'</div>';}
+   ''+'</div>';}
  function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
    '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
@@ -8429,7 +8432,10 @@ function goLabo(){location.href=B+'robots';}
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
     rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(Math.round(lo),0)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(Math.round(hi),0)+'</b></div>')+'</div>';}
-  const rb=rbNow(D);return h+pkLine('BTCUSD')+(rb.id!=='owl'&&rb.pieces?pieces(rb):dots(D))+'</div>';}
+  const rb=rbNow(D);return h+pkLine('BTCUSD')+(rb.id!=='owl'&&rb.pieces?pieces(rb):dots(D))+alertRow()+'</div>';}
+ // 2026-10-18 (owner: "the alert is misplaced"): a clear toggle row at the bottom of the card, not a pill in the top row
+ function alertRow(){const nb=$('notifbtn');if(!nb)return '';const on=nb.dataset.on==='1';
+  return '<button type="button" class="lv-al'+(on?' on':'')+'" id="edrbell" role="switch" aria-checked="'+on+'"><span class="ai"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></span><span class="at"><b>'+T2('Me prévenir à chaque trade','Tell me on every trade')+'</b><small>'+(on?T2('Activé : une notification à chaque entrée et sortie','On: a notification at every entry and exit'):T2('Une notification quand le robot entre ou sort','A notification when the robot enters or exits'))+'</small></span><span class="sw'+(on?' on':'')+'" aria-hidden="true"></span></button>';}
  function calmTrial(r){const o=r.open,dg=Math.min(5,Math.max(0,r.digits==null?2:r.digits));let c,t,s;
   if(r.status==='closed'){c='gy';t=T2('Marché fermé','Market closed');s=reopen()+(o?T2(' Le trade virtuel reprend à la réouverture.',' The virtual trade resumes when it reopens.'):'');}
   else if(r.status==='trade'&&o){c='gr';t=T2('En essai','On trial');s=(o.d===1?T2('Achat virtuel','Virtual buy'):T2('Vente virtuelle','Virtual sell'))+T2(' depuis ',' since ')+hm(o.t)+T2(' — aucun argent réel.',' — no real money.');}
