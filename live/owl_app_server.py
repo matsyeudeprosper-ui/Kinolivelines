@@ -13414,6 +13414,9 @@ def _ctl_state():
     out = []
     for j in _ctl_load()[-30:]:
         st = "waiting"
+        if j.get("stopped"):                       # stopped by hand (2026-10-18 incident): never blocks the queue
+            out.append({"rid": j["rid"], "sym": j["sym"], "at": j["at"], "state": "error", "mine": None})
+            continue
         try:
             c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (j["rid"], j["sym"])), encoding="utf-8"))
             if str(c.get("generated_at") or "") >= j["at"]:
@@ -14259,7 +14262,8 @@ def acct_robot_block(user, admin=False):
                        "updated": _nd.get("updated_utc"),
                        # trade-by-trade running total since curve_from (the account's recent stretch) + the lot it trades
                        "curve": (_nd.get("curve") or [])[-80:], "curve_from": _nd.get("curve_from"),
-                       "lot": (_tr[0].get("lot") if _tr else None)}
+                       "lot": (_tr[0].get("lot") if _tr else None),
+                       "error": bool(_nd.get("error")), "auth_failed": bool(_nd.get("auth_failed"))}
     except Exception:
         pass
     if not out["can"]:

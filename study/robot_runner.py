@@ -243,6 +243,36 @@ CONTROL_SEEDS = 40
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
+def _free_gb():
+    import ctypes
+    class _MS(ctypes.Structure):
+        _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong), ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong), ("ullTotalVirtual", ctypes.c_ulonglong),
+                    ("ullAvailVirtual", ctypes.c_ulonglong), ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+    m = _MS(); m.dwLength = ctypes.sizeof(_MS); ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return m.ullAvailPhys / 2**30
+
+
+def _control_running():
+    import subprocess
+    try:
+        o = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command",
+                            "@(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*random_control_market*' -or $_.CommandLine -like '*ctrl_split*' }).Count"],
+                           capture_output=True, text=True, timeout=90, creationflags=0x08000000)
+        return int((o.stdout or "0").strip() or 0) > 0
+    except Exception:
+        return True                              # cannot tell = assume busy
+
+
+def _wait_room(rid, sym, need=4.5, hours=6):
+    t0 = time.time()
+    while time.time() - t0 < hours * 3600:
+        if _free_gb() >= need and not _control_running():
+            return True
+        time.sleep(120)
+    return False
+
+
 def random_control(rid, sym, uid, nm):
     """2026-10-15 (owner's system rule, live/owl_markets.py): a market is traded for real only when the robot's test
     made money AND its entries beat random ones (40 random runs, top 5 %). So a positive market test runs its
@@ -257,8 +287,14 @@ def random_control(rid, sym, uid, nm):
         # runs as 4 processes of 5 seeds (ctrl_split.py); bar packs keep the 40 sequential seeds
         import tick_pack as _TP
         _tick = _TP.tick_ready(sym)
+        # 2026-10-18 incident: 4 control processes (1.3 GB each) beside two runners starved the VPS - the MT5 terminals
+        # lost authorization and the live bots froze ~17 min. Now: wait for room (>= 4.5 GB free, no other control),
+        # and split in 2 processes, never 4. Live trading always comes before research.
+        if not _wait_room(rid, sym):
+            mlog("%s @ %s: control SKIPPED - no room on the VPS for 6 h (run it later from the Robots page)" % (rid, sym))
+            return
         subprocess.run([sys.executable, os.path.join(HERE, "ctrl_split.py" if _tick else "random_control_market.py"), sym, rid,
-                        str(20 if _tick else CONTROL_SEEDS)] + (["4"] if _tick else []),
+                        str(20 if _tick else CONTROL_SEEDS)] + (["2"] if _tick else []),
                        cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=12 * 3600,
                        creationflags=0x08000000)
         j = json.load(open(out, encoding="utf-8"))
