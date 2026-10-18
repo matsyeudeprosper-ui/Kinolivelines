@@ -2555,7 +2555,7 @@ html.apponly #rob-sec,html.apponly #rob-card,html.apponly #healthrow{display:non
  </div>
 </div>
 <div class="panel" id="kinocard" style="display:none;margin-top:12px">
- <div class="lbl">Le robot du Owl &middot; r&eacute;sultats</div>
+ <div class="lbl">Un vrai compte du nid &middot; pas le v&ocirc;tre</div>
  <div id="kino-g" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px"></div>
  <svg id="kino-spark" viewBox="0 0 300 44" style="width:100%;height:44px;display:none;margin-top:10px"></svg>
  <div id="kino-s" style="font-size:.78rem;color:var(--muted2);margin-top:8px"></div>
@@ -5112,6 +5112,7 @@ function renderGrow(d){const card=document.getElementById('palier');if(!card)ret
    else chips.push([en?'Pace 14 d':'Rythme 14 j',(pace<0?'-':'+')+m(pace)+(en?'/day':'/j')]);}}
  else{const b0=(d.palier_base&&d.palier_base<d.palier)?+d.palier_base:0;lo=b0;hi=+d.palier;
   R=[{v:lo,lab:en?'start':'d\u00e9part'},{v:hi,lab:d.palier_def?(en?'week goal':'objectif semaine'):(en?'goal':'objectif')}];
+  window._palGoal=d.palier_def?{left:Math.max(0,hi-eq),step:+(d.palier_step||50)}:null;
   head='<b style="color:var(--up)">'+m(Math.max(0,hi-eq))+'</b> '+(en?'to ':'pour ')+(d.palier_def?(en?'this week\u2019s goal (+$':'l\u2019objectif de la semaine (+$')+(d.palier_step||50).toFixed(0)+')':(en?'the goal ':'l\u2019objectif ')+m0(hi));}
  document.getElementById('pal-head').innerHTML=head;
  // the track: one scale, rung ticks, the travelled part filled, a dot = now
@@ -7534,11 +7535,13 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
  const TILES=[
   {k:'res',ic:'up',col:'46,204,113',t:()=>T('Cette semaine','This week'),cards:()=>[resGrid(),$('pgoal'),$('cvpanel')],v:()=>{const _d=window._d;if(_d&&typeof _d.week==='number'){return (_d.week<0?'-':'+')+'$'+Math.abs(_d.week).toFixed(2);}return txt('week');},s:()=>{const _d=window._d;const m=(_d&&typeof _d.month==='number')?((_d.month<0?'-':'+')+'$'+Math.abs(_d.month).toFixed(2)):(txt('month')||'\u2014');return T('Ce mois : ','This month: ')+m;},spark:true,show:()=>true},
   {k:'led',ic:'back',col:'232,197,90',t:()=>T('Rattrapage','Catch-up'),cards:()=>[$('ledcard')],v:()=>money(txt('led-txt'))||T('À jour','Clear'),s:()=>T('à rattraper','to win back'),show:()=>shown('ledcard'),vcol:'var(--warn)'},
-  {k:'pal',ic:'grow',col:'59,130,246',t:()=>T('Croissance','Growth'),cards:()=>[$('palier')],v:()=>money(txt('pal-head'))||'—',s:()=>{const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
+  {k:'pal',ic:'grow',col:'59,130,246',t:()=>(window._palGoal?T('Objectif de la semaine','Week goal'):T('Croissance','Growth')),cards:()=>[$('palier')],
+   v:()=>{const g=window._palGoal;if(g){const done=Math.max(0,g.step-g.left);return '$'+done.toFixed(2)+' / $'+g.step.toFixed(0);}return money(txt('pal-head'))||'—';},
+   s:()=>{const g=window._palGoal;if(g)return g.left<=0.005?T('atteint','reached'):T('encore ','still ')+'$'+g.left.toFixed(2);const q=window._palTile;return q?q.s:txt('pal-head').replace(money(txt('pal-head')),'').trim();},show:()=>shown('palier')},
   {k:'pk',ic:'pock',col:'59,130,246',t:()=>T('Vos poches','Your pockets'),cards:()=>[$('pockcard')],v:()=>money(txt('pk-rows'))||'—',s:()=>{const r=$('pk-rows');const n=r?r.children.length:0;if(n>1)return n+T(' marchés',' markets');const w=txt('pk-rows').replace(money(txt('pk-rows')),'').replace(/^\\S+\\s*/,'').trim(),m=w.match(/^(.+?)\\s+(\\d+)\\s+trades?/);return m?m[1]+' · '+m[2]+' trades':w;},show:()=>shown('pockcard')},
-  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>{const x=newsAt();return x?x.n.h:(txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'));},vsm:true,s:()=>{const x=newsAt();return x?x.n.s+(x.len>1?'  ·  '+(x.i+1)+'/'+x.len:''):'';},show:()=>shown('aicard')||shown('stcard')},
+  {k:'lab',ic:'lab',col:'167,139,250',t:()=>T('Les coulisses','Behind the scenes'),cards:()=>[$('aicard'),$('stcard')],v:()=>{const x=newsAt();return x?x.n.h:(txt('aic-h')||txt('stc-h')||T('Les coulisses','Behind the scenes'));},vsm:true,s:()=>{const x=newsAt();return x?x.n.s+(x.len>1?'  ·  '+(x.i+1)+'/'+x.len:''):'';},show:()=>(TIER()==='strategy'||!!(window._d&&window._d.is_master))&&(shown('aicard')||shown('stcard'))},
   {k:'ft',ic:'test',col:'143,198,255',t:()=>T('Le grand test','The big test'),cards:()=>[$('ftcard')],v:()=>txt('ft-txt'),vsm:true,s:()=>txt('ft-sub'),show:()=>shown('ftcard')},
-  {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
+  {k:'rc',ic:'ok',col:'46,204,113',t:()=>T('Preuve de rentabilité','Proof of returns'),cards:()=>[$('rentcard')],v:()=>txt('rc2-big'),s:()=>txt('rc2-bs')+T(' · un vrai compte du nid, résultats passés',' · a real account of the nest, past results'),wide:true,spark:'rc2-sp',show:()=>shown('rentcard')}];
  let store=null,wrap=null,open=null;
  function build(){
   const anchor=$('battles-sec');if(!anchor||$('ckwrap'))return false;
@@ -7561,6 +7564,8 @@ setInterval(()=>{try{loadStratCard();}catch(e){}},600000);   // 2026-10-14: the 
   window.addEventListener('popstate',()=>{if(open)closeSheet(true);});
   return true;}
  function sparkOf(t){
+  if(t.k==='res'){const d=window._d||{},n0=new Date(),mon=new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-((n0.getDay()+6)%7)),L=(d.days||[]).filter(x=>{const m=/(\d\d)\/(\d\d)$/.exec(x.d||'');if(!m)return false;let dt=new Date(n0.getFullYear(),+m[2]-1,+m[1]);if(dt>n0)dt.setFullYear(dt.getFullYear()-1);return dt>=mon;}).reverse();if(L.length>1){let c=0;const a=[0].concat(L.map(x=>c+=(+x.p||0))),mn=Math.min(...a),mx=Math.max(...a),r=(mx-mn)||1,col=c>=0?'var(--up)':'var(--down)';
+    return '<svg class="sp" viewBox="0 0 120 44" preserveAspectRatio="none"><polyline points="'+a.map((v,i)=>(i/(a.length-1)*120).toFixed(1)+','+(40-(v-mn)/r*36).toFixed(1)).join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>';}}
   if(t.spark===true){const s=$('spark');if(s&&s.innerHTML.trim())return '<svg class="sp" viewBox="'+(s.getAttribute('viewBox')||'0 0 300 80')+'" preserveAspectRatio="none">'+s.innerHTML.replace(/<text[\\s\\S]*?<\\/text>/g,'')+'</svg>';}
   if(typeof t.spark==='string'){const s=$(t.spark);if(s&&s.innerHTML.trim())return '<svg class="sp" viewBox="'+(s.getAttribute('viewBox')||'0 0 120 44')+'" preserveAspectRatio="none">'+s.innerHTML+'</svg>';}
   return '';}
@@ -8697,7 +8702,6 @@ function goLabo(){location.href=B+'robots';}
   // also while it waits ("Il attend" alone did not say where)
   const mkl='<div style="display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin-bottom:3px">'+badge('BTCUSD',18)+esc(mname('BTCUSD'))+'</div>';
   const h='<div class="lv-st">'+light(S.c)+'<div style="min-width:0">'+mkl+'<h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>'+
-   (rbNow(D).id!=='owl'&&rbNow(D).pieces?pieces(rbNow(D)):dots(D))+
    (own.length?'<div class="hc"><span class="lv-dt" style="background:var(--up)"></span>'+'<span style="flex:1;min-width:0"><i class="hcl">'+T2('Aussi en trade','Also trading')+'</i><b>'+own.map(x=>esc(mname(nsym(x.sym)))).join(', ')+'</b></span></div>':
     (c?'<div class="hc" id="rbn-cand" role="button" tabindex="0" data-s="'+c.sym+'"><span class="lv-dt" style="background:'+(c.status==='ready'?'var(--accent)':'var(--warn)')+'"></span><span style="flex:1;min-width:0">'+'<i class="hcl">'+T2('Prochain candidat','Next candidate')+'</i><b>'+esc(mname(c.sym))+'</b> · '+(c.status==='ready'?T2('presque prêt','nearly ready'):T2('bientôt','soon'))+'</span>'+esB(c.sym)+'</div>':''));
   if(box._l!==h){box._l=h;box.innerHTML=h;box.querySelectorAll('.lv-dots button').forEach(x=>x.onclick=ev=>{ev.stopPropagation();if(x.id==='edrpcs'){shOpen('pcs');return;}if(x.dataset.ck){shOpen('ck:'+x.dataset.ck);return;}if(x.dataset.pc){shOpen('pc:'+x.dataset.pc);return;}try{toast('<div style="flex:1">'+x.dataset.why+'</div>',4500);}catch(e){}});
@@ -8705,7 +8709,15 @@ function goLabo(){location.href=B+'robots';}
    // the candidate line opens En direct ON that market, not on Bitcoin
    const hc=$('rbn-cand');if(hc)hc.onclick=ev=>{ev.stopPropagation();sel=hc.dataset.s;try{navigator.vibrate&&navigator.vibrate(6);}catch(e){}
     tab('marche',$('tb-marche'));mxView('robot',true);scan().then(()=>paint(true));};}}
- function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
+ // 2026-10-18 (owner, home review): the robot on my money first, then ONE promo card (rotating by day), then the showcase
+ function homeOrder(){const rb=$('rbnow'),bs=$('battles-sec'),ap=$('apkcard');if(!rb||!bs)return;
+  const top=$('newscard');if(top&&rb.compareDocumentPosition(top)&Node.DOCUMENT_POSITION_PRECEDING){top.before(rb);rb.after(bs);}
+  let at=bs;['refnudge','newscard','offercard','kinocard'].forEach(id=>{const e=$(id);if(e&&at.nextElementSibling!==e)at.after(e);if(e)at=e;});
+  const P=['refnudge','newscard','offercard'].map(id=>$(id)).filter(e=>e&&e.style.display!=='none'&&!e.hidden);
+  P.forEach(e=>e.classList.remove('promo-off'));const vis=P.filter(e=>getComputedStyle(e).display!=='none');
+  if(vis.length>1){const k=Math.floor(Date.now()/86400000)%vis.length;vis.forEach((e,i)=>{if(i!==k)e.classList.add('promo-off');});}}
+ if(!document.getElementById('promo-css')){const pc=document.createElement('style');pc.id='promo-css';pc.textContent='.promo-off{display:none!important}';document.head.appendChild(pc);}
+ function tick(){try{if(!build())return;if($('tab-home')&&$('tab-home').classList.contains('on')){try{homeOrder();}catch(e){}scan().then(home);}if($('tab-marche').classList.contains('on')){if(PV&&Date.now()-pvT>60000){pvT=Date.now();pvLoad(PV.id);}scan().then(()=>paint(false));}}catch(e){console.error('live',e);}}
  function init(){tick();setInterval(tick,2000);}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
@@ -21093,7 +21105,7 @@ class H(BaseHTTPRequestHandler):
         sub = parts[1] if len(parts) > 1 else ""
         if sub == "":
             # 2026-10-15 (owner): the public demo greets a visitor, not "Compte demo"
-            page = (PAGE.replace("%%NAME%%", "Visiteur" if user.get("public") else user.get("name", ""))
+            page = (PAGE.replace("%%NAME%%", "" if user.get("public") else user.get("name", ""))
                     .replace("%%BUILD%%", APP_BUILD))
             # opening an account page signs this phone in to it (the owner browsing
             # a member's page from the admin session does not)
