@@ -21444,7 +21444,8 @@ class H(BaseHTTPRequestHandler):
                     _ro = {} if "lite=1" in self.path else dict(robots_payload(_dd))
                     _ro["builder"] = builder_payload(user, _dd)
                     _ro["builder"]["engine_at"] = ROBOT_ENGINE_AT
-                    _ro["builder"]["controls"] = _ctl_state()
+                    _vis = {x["id"] for x in _ro["builder"].get("robots") or []}
+                    _ro["builder"]["controls"] = [c for c in _ctl_state() if c["rid"] in _vis]
                     try:
                         _dh = json.load(open(os.path.join(DIR, "lab", "drag_history.json"), encoding="utf-8"))
                         _ro["builder"]["live_vs_test"] = [{k: z.get(k) for k in ("d", "trades", "expected", "actual")} for z in _dh][-30:]
