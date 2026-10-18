@@ -8122,6 +8122,13 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-fk{font-size:.62rem;font-weight:700;color:var(--muted);margin-left:2px}
  .edrx .lv-pz{display:block;font-size:.66rem;color:var(--muted);font-weight:600;margin-top:1px}
  .edrx .lv-top{flex-wrap:wrap;row-gap:8px}.edrx .lv-rbt{flex:none;white-space:nowrap}
+ .edrx .lv-st p b{white-space:nowrap}
+ .edrx .lv-today{font-size:.78rem;color:var(--muted2);margin:10px 0 0 2px}.edrx .lv-today b{font-weight:800}
+ .edrx .lv-gd{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.edrx .lv-gd .hd{font-size:.68rem;letter-spacing:.12em;font-weight:700;color:var(--muted2);text-transform:uppercase;margin-bottom:8px}
+ .edrx .lv-gcs{display:flex;flex-wrap:wrap;gap:8px}.edrx .lv-gc{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 11px}.edrx .lv-gc i{width:7px;height:7px;border-radius:50%}
+ .edrx .lv-gr{display:flex;gap:12px;align-items:flex-start;padding:8px 0}.edrx .lv-gr i{flex:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:.8rem}.edrx .lv-gr b{display:block;font-size:.88rem;color:var(--text)}.edrx .lv-gr small{display:block;font-size:.76rem;color:var(--muted2);margin-top:1px;line-height:1.4}
+ .edrx .lv-flu{animation:lvfu 1.2s ease-out}.edrx .lv-fld{animation:lvfd 1.2s ease-out}
+ @keyframes lvfu{0%{text-shadow:0 0 18px rgba(46,204,113,.9)}100%{text-shadow:none}}@keyframes lvfd{0%{text-shadow:0 0 18px rgba(255,92,92,.9)}100%{text-shadow:none}}
  .edrx .lv-al{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:12px 14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:inherit;text-align:left;cursor:pointer}
  .edrx .lv-al .ai{flex:none;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--accent-bg);color:var(--accent-soft)}.edrx .lv-al.on .ai{background:rgba(46,204,113,.14);color:var(--up)}
  .edrx .lv-al .at{flex:1;min-width:0}.edrx .lv-al b{display:block;font-size:.88rem}.edrx .lv-al small{display:block;font-size:.72rem;color:var(--muted);margin-top:2px}
@@ -8201,10 +8208,10 @@ function goLabo(){location.href=B+'robots';}
   const recent=(Dy.trades||[]).filter(x=>x.x&&now-x.x<1800).sort((a,b)=>b.x-a.x)[0];
   const done=!!lg.day_capped||(typeof lg.cap_today==='number'&&lg.cap_today>0&&(lg.day_pnl_bot||0)>=lg.cap_today);
   if(open.length){const O=window._openSum(open),pl=O.pl;
-   const what=O.kind.charAt(0).toUpperCase()+O.kind.slice(1)+' '+O.markets;
+   const what=O.n>1?O.kind.charAt(0).toUpperCase()+O.kind.slice(1)+T2(' sur ',' on ')+O.markets:(open[0].d==='A'?T2('Achat','Buy'):T2('Vente','Sell'))+T2(' sur ',' on ')+O.markets;
    const ot=Math.min(...open.map(p=>+p.t||Infinity)),mins=isFinite(ot)?Math.max(1,Math.round((now-ot)/60)):null;
    const since=mins==null?'':(mins<60?T2(' depuis '+mins+' min',' for '+mins+' min'):T2(' depuis '+Math.floor(mins/60)+' h '+String(mins%60).padStart(2,'0'),' for '+Math.floor(mins/60)+' h '+String(mins%60).padStart(2,'0')));
-   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+(O.n>1?T2(' ouverts',' open'):T2(' ouvert',' open'))+since+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
+   return {c:'gr',t:T2('En trade','In a trade'),pl:pl,s:what+T2(' en cours',' running')+since+T2('. Le robot laisse courir jusqu’à l’objectif ou au stop.','. The robot lets it run to the target or the stop.'),open:open,row:T2('En trade ','In a trade ')+money(pl)};}
   if(recent)return {c:recent.p>=0?'gr':'rd',t:T2('Trade terminé','Trade closed'),pl:recent.p,s:T2('Il y a '+Math.max(1,Math.round((now-recent.x)/60))+' min. Le robot reprend sa surveillance.',Math.max(1,Math.round((now-recent.x)/60))+' min ago. The robot is watching again.'),row:T2('Terminé ','Closed ')+money(recent.p)};
   if(D.bot_killed)return {c:'rd',t:T2('Arrêté','Stopped'),s:T2('La ligne d’arrêt du compte est atteinte : le robot ne prend plus de trade.','The account’s stop line was reached: the robot takes no more trades.'),row:T2('Arrêté','Stopped')};
   if(D.app_only&&D.trading_paused)return {c:'gy',t:T2('Signal','Signal'),s:T2('Le robot vous pr\u00e9vient ; vous tradez vous-m\u00eame, chez votre courtier.','The robot alerts you; you trade yourself, at your broker.'),row:T2('Signal','Signal')};
@@ -8277,7 +8284,7 @@ function goLabo(){location.href=B+'robots';}
  .edrx .lv-dots button:active{background:var(--surface3)}
  .edrx .lv-dots button.ok{background:transparent}.edrx .lv-dots button.ok span{color:var(--muted2)}
  .edrx .lv-dots button.no{border-color:rgba(232,197,90,.35)}
- @media(max-width:380px){.edrx .lv-rbt .nm{display:none}}   /* 2026-10-14: a cut 'L' read as a typo; the icon alone says robot */
+ @media(max-width:330px){.edrx .lv-rbt .nm{display:none}}   /* 2026-10-14: a cut 'L' read as a typo; the icon alone says robot */
  .ckp .ck-mk{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:700;color:var(--muted2);margin:0 2px 12px}
  .ckp .ck-h{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;border:1px solid var(--border);background:var(--surface2)}
  .ckp .ck-h.ok{border-color:rgba(46,204,113,.35);background:linear-gradient(135deg,rgba(46,204,113,.10),var(--surface2))}
@@ -8372,7 +8379,7 @@ function goLabo(){location.href=B+'robots';}
  let pkT=0;
  function pkLoad(){if(Date.now()-pkT<300000)return;pkT=Date.now();fetch(B+'pockets?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&!j.err)window._pk=j;}).catch(()=>{});}
  function pkLine(sym){if(sym==='BTCUSD'){pkLoad();const P=((window._pk||{}).pockets||[]).find(x=>x.sym==='BTCUSD');if(!P)return '';
-   const hm0=P.month!=null;return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+(hm0?(P.month_n||0)+' trades '+T2('ce mois','this month')+' · '+T2('depuis le début ','since the start ')+money(P.net):P.n+' trades · '+T2('depuis le début','since the start'))+'</small></span><b class="'+((hm0?P.month:P.net)>=0?'lv-up':'lv-dn')+'">'+money(hm0?P.month:P.net)+(hm0?'<small class="lv-pm">'+T2('ce mois','this month')+'</small>':'')+'</b><span class="c">›</span></a>';}
+   const hm0=P.month!=null;return '<a class="lv-pk" href="'+B+'wealth#poche-BTCUSD"><span class="l">'+T2('Sa poche','Its pocket')+'<small>'+(hm0?(P.month_n||0)+' trades '+T2('ce mois','this month'):P.n+' trades · '+T2('depuis le début','since the start'))+'</small></span><b class="'+((hm0?P.month:P.net)>=0?'lv-up':'lv-dn')+'">'+money(hm0?P.month:P.net)+(hm0?'<small class="lv-pm">'+T2('ce mois','this month')+'</small>':'')+'</b><span class="c">›</span></a>';}
   const L=((((SC||{}).results||{})[sym]||{}).pocket||{}).live;if(!L)return '';const st=((SC||{}).pocket_rule||{}).start||100;
   return '<a class="lv-pk" href="'+B+'wealth#essai-'+encodeURIComponent(sym)+'"><span class="l">'+T2('Poche d’essai','Trial pocket')+'<small>'+T2('fictive · départ ','pretend · start ')+st+' $ · '+(L.n||0)+' trades</small></span><b class="'+((L.value||st)>=st?'lv-up':'lv-dn')+'">'+(EN()?'$'+(L.value||st).toFixed(2):(L.value||st).toFixed(2).replace('.',',')+' $')+'</b><span class="c">›</span></a>';}
  // 2026-10-13 (owner): the card follows the robot PLUGGED on the account (server: robot_now). The Owl keeps its
@@ -8419,12 +8426,21 @@ function goLabo(){location.href=B+'robots';}
      return (own?'<button type="button" id="edrrbt" class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Aperçu d’un autre robot','Preview another robot')+'">':'<span class="lv-rbt'+(rb.id!=='owl'?' cu':'')+'" title="'+T2('Le robot de ce compte','This account’s robot')+'">')+'<svg class="ic" style="width:13px;height:13px;flex:none"><use href="#i-bot"/></svg><span class="nm">'+esc(rbName(rb))+'</span>'+(own?'<span style="flex:none">▾</span></button>':'</span>');})():'')+
    '<button class="lv-bell" id="edrchart" aria-label="'+T2('Voir le graphique','See the chart')+'" title="'+T2('Voir le graphique','See the chart')+'"><svg class="ic" style="width:18px;height:18px"><use href="#i-chart"/></svg></button>'+
    ''+'</div>';}
- function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};let h='<div class="lv-c">'+top('BTCUSD')+
+ function calmBtc(D){const S=btc(D),ms=D.meteo_struct||{};
+  // 3) an open trade says concretely what happens at each end
+  let MM=null;if(S.open){const p0=S.open[0],e0=+p0.e,tp0=+p0.tp,sl0=+p0.sl,c0=+(p0.cur||p0.e),d0=p0.d==='A'?1:-1;if(e0&&tp0&&sl0){MM=moneyAt(S.open,e0,tp0,sl0,c0,d0);
+   S.s=S.s.split('.')[0]+'.';}}
+  // 8) asleep: when it usually trades (from its own days)
+  if(!S.open&&(window._mxk||'none')==='none'&&S.c==='or'){const DT=D.day_trades||{},Hc=Array(24).fill(0);let nn=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const hh=locH(parseInt(String(x.t||'').slice(0,2),10));if(hh>=0&&hh<24){Hc[hh]++;nn++;}}));
+   if(nn>=20){const b=Hc.indexOf(Math.max(...Hc));S.s+=' '+T2('Il trade le plus souvent vers ','It trades most often around ')+b+'h.';}}
+  // 7) the result flashes when it changes
+  const fl=(S.pl!=null&&window._edrPl!=null&&Math.abs(S.pl-window._edrPl)>0.004)?(S.pl>window._edrPl?' lv-flu':' lv-fld'):'';window._edrPl=S.pl;
+  let h='<div class="lv-c">'+top('BTCUSD')+
    (PV?'<div class="lv-pv"><span><b>'+T2('APERÇU','PREVIEW')+'</b> · '+esc(rbName(PV))+' — '+T2('rien n’est branché','nothing is plugged')+(PV.not_live?' · '+T2('ne peut pas encore tourner en direct','cannot run live yet'):'')+'</span><button type="button" id="edrpvx">'+T2('Arrêter','Stop')+'</button></div>':'')+
-   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
+   '<div class="lv-st">'+light(S.c)+'<div style="min-width:0"><h3>'+S.t+(S.pl!=null?' · <span class="'+(S.pl>=0?'lv-up':'lv-dn')+fl+'">'+money(S.pl)+'</span>':'')+'</h3><p>'+S.s+'</p></div></div>';
   if(S.open){const p=S.open[0],e=+p.e,tp=+p.tp,sl=+p.sl,cur=+(p.cur||p.e),dir=p.d==='A'?1:-1;
    if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
-    h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+    h+='<div class="lv-w"><div class="t">'+pathTitle(e,tp,sl,cur,pct)+'</div>'+
      rail(lo,hi,cur,0,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',
       lvEnds(dir,fmtN(sl,0),fmtN(e,0),fmtN(tp,0),moneyAt(S.open,e,tp,sl,cur,dir)))+'</div>';}}
   else if(ms.pb_detail&&ms.next_bos!=null&&ms.pb_last_bos!=null&&ms.px&&(ms.pb_trend===1||ms.pb_trend===-1)&&S.c!=='gy'&&S.c!=='rd'&&rbNow(D).entry_event!=='choch'){
@@ -8432,7 +8448,19 @@ function goLabo(){location.href=B+'robots';}
    h+='<div class="lv-w"><div class="t">'+T2('Il entre sur une cassure ','It enters on a break ')+'<b>'+(up?T2('au-dessus de ','above '):T2('en dessous de ','below '))+fmtN(Math.round(ms.next_bos),0)+'</b> · '+T2('encore ','still ')+fmtN(Math.round(dist),0)+' pts</div>'+
     rail(lo,hi,ms.px,0,p=>'<div class="f" style="'+(up?'left:0;width:'+p.toFixed(1)+'%':'right:0;width:'+(100-p).toFixed(1)+'%')+';background:linear-gradient(90deg,rgba(46,204,113,.25),var(--up))"></div>',
      '<div>'+(up?T2('dernière cassure','last break'):T2('déclencheur','trigger'))+'<b>'+fmtN(Math.round(lo),0)+'</b></div><div style="text-align:right">'+(up?T2('déclencheur','trigger'):T2('dernière cassure','last break'))+'<b>'+fmtN(Math.round(hi),0)+'</b></div>')+'</div>';}
-  const rb=rbNow(D);return h+pkLine('BTCUSD')+(rb.id!=='owl'&&rb.pieces?pieces(rb):dots(D))+alertRow()+'</div>';}
+  const rb=rbNow(D);return h+pkLine('BTCUSD')+(S.open&&MM&&MM.tp?guard(D,MM):(rb.id!=='owl'&&rb.pieces?pieces(rb):dots(D)))+alertRow()+'</div>';}
+ // 1) the path bar never says 0 % while the trade goes the other way: it then shows how far toward the stop
+ function pathTitle(e,tp,sl,cur,pct){const toSl=Math.max(0,Math.min(100,(cur-e)/((sl-e)||1)*100));
+  return pct<=0.5&&toSl>0.5?T2('Vers le stop','Toward the stop')+' · <b class="lv-dn">'+Math.round(toSl)+' %</b>':T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b>';}
+ // 2) during a trade: what protects it, instead of the entry checklist (those conditions are behind it)
+ function guard(D,MM){const lg=D.ledger||{};const row=(ic,c,b,t)=>'<div class="lv-gr"><i style="background:'+c+'1f;color:'+c+'">'+ic+'</i><span><b>'+b+'</b><small>'+t+'</small></span></div>';
+  const ch=(c,t)=>'<span class="lv-gc"><i style="background:'+c+'"></i>'+t+'</span>';
+  return '<div class="lv-gd"><div class="hd">'+T2('Protections','Protections')+'</div><div class="lv-gcs">'+ch('#ff5c5c',T2('Stop posé','Stop set'))+ch('#2ecc71',T2('Objectif posé','Target set'))+(lg.bos||lg.max_extra?ch('#8fc6ff',T2('Rattrapage prêt','Recovery ready')):'')+'</div></div>';}
+ // 6) what already happened today, inside the card
+ function todayLine(D){const n0=new Date(),dd=String(n0.getDate()).padStart(2,'0')+'/'+String(n0.getMonth()+1).padStart(2,'0'),dk=Object.keys(D.day_trades||{}).find(k=>k.slice(-5)===dd),L=dk?(D.day_trades[dk]||[]):[];
+  if(!L.length)return '<div class="lv-today">'+T2('Aujourd’hui : pas encore de trade fermé.','Today: no closed trade yet.')+'</div>';
+  const net=L.reduce((a,x)=>a+(+x.p||0),0),last=L.map(x=>String(x.t||'')).sort().pop();
+  return '<div class="lv-today">'+T2('Aujourd’hui : ','Today: ')+L.length+' trade'+(L.length>1?'s':'')+' · <b class="'+(net>=0?'lv-up':'lv-dn')+'">'+money(net)+'</b>'+(last?' · '+T2('le dernier à ','the last at ')+last:'')+'</div>';}
  // 2026-10-18 (owner: "the alert is misplaced"): a clear toggle row at the bottom of the card, not a pill in the top row
  function alertRow(){const nb=$('notifbtn');if(!nb)return '';const on=nb.dataset.on==='1';
   return '<button type="button" class="lv-al'+(on?' on':'')+'" id="edrbell" role="switch" aria-checked="'+on+'"><span class="ai"><svg class="ic" style="width:16px;height:16px"><use href="#i-bell"/></svg></span><span class="at"><b>'+T2('Me prévenir à chaque trade','Tell me on every trade')+'</b><small>'+(on?T2('Activé : une notification à chaque entrée et sortie','On: a notification at every entry and exit'):T2('Une notification quand le robot entre ou sort','A notification when the robot enters or exits'))+'</small></span><span class="sw'+(on?' on':'')+'" aria-hidden="true"></span></button>';}
@@ -8455,7 +8483,7 @@ function goLabo(){location.href=B+'robots';}
   const dg=Math.abs(e)<20?4:(Math.abs(e)<1000?2:0);
   let h='<div class="lv-c">'+top(sym,1)+'<div class="lv-st">'+light('gr')+'<div style="min-width:0"><h3>'+T2('En trade','In a trade')+' · <span class="'+(pl>=0?'lv-up':'lv-dn')+'">'+money(pl)+'</span></h3><p>'+(dir===1?T2('Achat','Buy'):T2('Vente','Sell'))+T2(' avec votre argent sur ',' with your money on ')+'<b>'+esc(mname(sym))+'</b>.</p></div></div>';
   if(e&&tp&&sl){const lo=dir===1?sl:tp,hi=dir===1?tp:sl,pe=(e-lo)/((hi-lo)||1)*100,pct=Math.max(0,Math.min(100,(cur-e)/((tp-e)||1)*100));
-   h+='<div class="lv-w"><div class="t">'+T2('Chemin vers l’objectif','Path to the target')+' · <b>'+Math.round(pct)+' %</b></div>'+
+   h+='<div class="lv-w"><div class="t">'+pathTitle(e,tp,sl,cur,pct)+'</div>'+
     rail(lo,hi,cur,dg,q=>'<div class="f" style="'+(dir===1?'left:0':'right:0')+';width:'+(dir===1?pe:100-pe).toFixed(1)+'%;background:rgba(255,92,92,.35)"></div>',lvEnds(dir,fmtN(sl,dg),fmtN(e,dg),fmtN(tp,dg)))+'</div>';}
   return h+'</div>';}
  // 2026-10-13 (owner): the next candidate - the market closest to starting a trade (not BTC, not the one in view,
@@ -8495,7 +8523,7 @@ function goLabo(){location.href=B+'robots';}
   const ros=Object.keys(RO).filter(s=>s!==sel);
   if(ros.length)h+='<div class="sub">'+T2('Trades réels en cours','Real trades running')+' · '+ros.length+'</div>'+ros.map(s=>line(s,T2('argent réel','real money'),money(RO[s]),RO[s]>=0?'var(--up)':'var(--down)')).join('');
   if(open.length){h+='<div class="sub">'+T2('Trades d’essai en cours','Trial trades running')+' · '+open.length+'</div>'+
-   open.slice(0,3).map(r=>r.status==='closed'?line(r.sym,T2('marché fermé · en pause','market closed · paused'),R(r.open.r_now),'var(--muted2)'):line(r.sym,r.open.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell'),R(r.open.r_now),r.open.r_now>=0?'var(--up)':'var(--down)')).join('')+
+   open.slice(0,3).map(r=>r.status==='closed'?line(r.sym,T2('marché fermé · en pause','market closed · paused'),R(r.open.r_now),'var(--muted2)'):line(r.sym,(r.open.d===1?T2('achat virtuel','virtual buy'):T2('vente virtuelle','virtual sell'))+(r.open.t?T2(' · depuis ',' · since ')+hm(r.open.t):''),R(r.open.r_now),r.open.r_now>=0?'var(--up)':'var(--down)')).join('')+
    (open.length>3?'<button type="button" class="more" id="edrmore">+ '+(open.length-3)+' '+T2('autre'+(open.length-3>1?'s':''),'more')+' ›</button>':'');}
   if(c){const st=c.status==='ready'?[T2('Presque prêt','Nearly ready'),'var(--accent)','var(--accent-soft)']:(c.status==='soon'?[T2('Bientôt','Soon'),'var(--warn)','var(--warn)']:[T2('Tendance en place','Trend set'),'var(--muted)','var(--muted2)']);
    const pc=Math.max(4,Math.min(100,100-(c.near/3)*100)),side=c.pb_trend===1?T2('un achat','a buy'):(c.pb_trend===-1?T2('une vente','a sell'):T2('un trade','a trade'));
@@ -8522,7 +8550,7 @@ function goLabo(){location.href=B+'robots';}
  // the four tiles
  function tiles(D,TR){const Dy=window._day||{},m0=new Date();m0.setHours(0,0,0,0);const t0=m0.getTime()/1000;
   const dd=String(m0.getDate()).padStart(2,'0')+'/'+String(m0.getMonth()+1).padStart(2,'0'),dk=Object.keys(D.day_trades||{}).find(k=>k.slice(-5)===dd);
-  const nr=Math.max((Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length,dk?(D.day_trades[dk]||[]).length:0)+(D.open_list||[]).length,ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
+  const nr=Math.max((Dy.trades||[]).filter(x=>(x.x||x.t)>=t0).length,dk?(D.day_trades[dk]||[]).length:0),ni=(Dy.ignored||[]).filter(x=>x[0]>=t0).length,nv=((SC&&SC.recent)||[]).filter(x=>(x.xt||x.t)>=t0).length;
   const DT=D.day_trades||{},H=Array(24).fill(0);let n=0;Object.keys(DT).forEach(k=>(DT[k]||[]).forEach(x=>{const h=locH(parseInt(String(x.t||'').slice(0,2),10));if(h>=0&&h<24){H[h]+=+x.p||0;n++;}}));
   let bh=-1;H.forEach((v,i)=>{if(v>0&&(bh<0||v>H[bh]))bh=i;});
   const ms=D.meteo_struct||{},cur=sel==='BTCUSD'?ms.px:((TR.find(r=>r.sym===sel)||{}).px);
