@@ -1327,9 +1327,9 @@ function ztRows(r){const R=[];
  // that result is the Bitcoin row; the old 42-day test only fills in until then
  const btcNew=(r.mtests||[]).some(x=>x.state==='done'&&x.robot&&x.sym==='BTCUSD');
  if(btcNew){}
- else if(r.test&&r.test.robot)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:r.test.robot,b:r.test.parent_result||{},days:r.test.days,fills:'ticks',win:r.test.window_utc});
+ else if(r.test&&r.test.robot)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:r.test.robot,b:r.test.parent_result||{},ctl:r.test.ctl||null,days:r.test.days,fills:'ticks',win:r.test.window_utc});
  else if(r.id==='owl'&&!btcNew){const c=(BLD().robots||[]).find(x=>x.parent==='owl'&&x.test&&x.test.parent_result);
-  if(c)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:c.test.parent_result,b:{},days:c.test.days,fills:'ticks',win:c.test.window_utc});}
+  if(c)R.push({sym:'BTCUSD',nm:T('Bitcoin','Bitcoin'),cat:'crypto',a:c.test.parent_result,b:{},ctl:c.test.parent_ctl||null,days:c.test.days,fills:'ticks',win:c.test.window_utc});}
  (r.mtests||[]).filter(x=>x.state==='done'&&x.robot).forEach(x=>R.push({sym:x.sym,nm:mkName(x.sym)||x.name||x.sym,cat:((MKL&&MKL.symbols||[]).find(z=>z.s===x.sym)||{}).cat,a:x.robot,b:x.parent_result||{},ctl:x.ctl||null,days:x.days,fills:x.fills||'bars',win:x.window_utc,at:x.tested_at}));
  return R.sort((p,q)=>m30(q)-m30(p));}
 // 2026-10-15 (owner: "fair and professional"): every result compared per 30 days; under 80 trades it says so

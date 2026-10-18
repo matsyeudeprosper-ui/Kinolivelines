@@ -12951,6 +12951,9 @@ def builder_payload(user, detail):
             for k in ("robot", "parent_result"):
                 if x["test"].get(k):
                     x["test"][k] = {kk: vv for kk, vv in x["test"][k].items() if kk != "pnls"}
+            # 2026-10-17: the Bitcoin row carries its random-entry control too (own + parent's), same file family
+            x["test"]["ctl"] = _random_ctl(r["id"], "BTCUSD")
+            x["test"]["parent_ctl"] = _random_ctl(r.get("parent") or "owl", "BTCUSD") if r.get("id") != "owl" else None
         out.append(x)
     try:
         PK = json.load(open(os.path.join(DIR, "owl_packages.json"), encoding="utf-8"))
@@ -13346,6 +13349,18 @@ def _mq_eta():
     return eta
 
 
+def _random_ctl(rid, sym):
+    """the random-entry control of a robot on a market (study/random_control_<rid>_<SYM>.json) or None"""
+    try:
+        c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, sym)), encoding="utf-8"))
+        if c.get("percentile") is None:
+            return None
+        return {"pct": c["percentile"], "seeds": c.get("seeds"), "median": (c.get("control") or {}).get("median"),
+                "p95": (c.get("control") or {}).get("p95")}
+    except Exception:
+        return None
+
+
 def _robot_mtests(rid):
     """the robot's other-market tests: finished results + jobs still in the queue, newest first"""
     out, seen = [], set()
@@ -13368,13 +13383,9 @@ def _robot_mtests(rid):
             pass
         # 2026-10-17 (owner "the $14 for gold, solid, not random?"): the random-entry control travels with the result,
         # so the page can only say "solid" when the robot beats chance (study/random_control_<rid>_<SYM>.json, >= 95th)
-        try:
-            c = json.load(open(os.path.join(os.path.dirname(DIR), "study", "random_control_%s_%s.json" % (rid, x["sym"])), encoding="utf-8"))
-            if c.get("percentile") is not None:
-                row["ctl"] = {"pct": c["percentile"], "seeds": c.get("seeds"), "median": (c.get("control") or {}).get("median"),
-                              "p95": (c.get("control") or {}).get("p95")}
-        except Exception:
-            pass
+        c = _random_ctl(rid, x["sym"])
+        if c:
+            row["ctl"] = c
         out.append(row)
     return out
 
