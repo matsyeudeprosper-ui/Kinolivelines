@@ -7825,9 +7825,6 @@ function goLabo(){location.href=B+'robots';}
  .pf-dd{font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-radius:99px;padding:3px 8px}.pf-dd.b{color:var(--up);background:rgba(46,204,113,.12)}.pf-dd.s{color:var(--down);background:rgba(255,92,92,.12)}
  .pf-dx{width:100%;margin-top:14px;padding:13px;border-radius:14px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:inherit;font-weight:800}
  body:has(#tab-hist.on) #msum-verdict{display:none!important}
- body:has(#tab-hist.on) .hero .hello,body:has(#tab-hist.on) .hero #eqe{display:none}
- body:has(#tab-hist.on) .hero #eq{font-size:2.1rem;margin-top:6px}
- body:has(#tab-hist.on) .hero{padding-bottom:16px}
  #pfdet{margin-top:16px}
  #pfdet>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-size:.8rem;font-weight:700;color:var(--muted2);padding:12px;border:1px dashed var(--border2);border-radius:var(--r)}
  #pfdet>summary::-webkit-details-marker{display:none}
@@ -7930,7 +7927,7 @@ function goLabo(){location.href=B+'robots';}
    '<div class="pf-big '+cls(cum)+'">'+money(cum)+'</div>'+
    '<div class="pf-sub">'+PL[per]+' · '+S.length+' '+T('jours de trading','trading days')+'</div><div class="pf-sub" style="margin-top:2px">'+T('Depuis le début : ','Since the start: ')+wr+T(' % des trades gagnés',' % of trades won')+'</div>'+
    '<div class="pf-say">'+(cum>=0?T('Le robot avance.','The robot is moving ahead.'):T('Période difficile ; le robot continue, avec les mêmes freins.','A hard stretch; the robot carries on, with the same brakes.'))+'</div>'+
-   '<div class="pf-chips"><span><i style="background:var(--up)"></i>'+gd+' '+T('jours verts','green days')+'</span><span><i style="background:var(--down)"></i>'+rd+' '+T('rouges','red')+'</span>'+
+   '<div class="pf-chips"><span><i style="background:var(--up)"></i>'+gd+' '+(gd>1?T('jours verts','green days'):T('jour vert','green day'))+'</span><span><i style="background:var(--down)"></i>'+rd+' '+(rd>1?T('rouges','red'):T('rouge','red'))+'</span>'+
 '</div>'+
    '<div class="pf-cv" id="pfcv"></div></div>'+
   '<div class="pf-kg">'+
