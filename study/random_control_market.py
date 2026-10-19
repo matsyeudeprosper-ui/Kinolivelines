@@ -99,7 +99,7 @@ def summary(nets, trs, pfs):
             "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
 
 
-MAXN, ALLOW, ROOM_GB = 100, 5, 2.0
+MAXN, ALLOW, ROOM_GB = 100, 5, 1.2         # pause line measured WITH our own ~1.3 GB held; when_free kills at 0.9
 JDIR = os.path.join(HERE, "luck")
 
 

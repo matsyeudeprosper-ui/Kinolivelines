@@ -19,7 +19,7 @@ from when_free import free_gb, heavy_running
 
 LDIR = os.path.join(HERE, "luck")
 QF = os.path.join(LDIR, "queue.json")
-NEED_GB = float(os.environ.get("WHEN_FREE_NEED_GB", "4.5"))     # same bar as every other heavy job
+NEED_GB = float(os.environ.get("LUCK_NEED_GB", "3.0"))   # ONE process (~1.3 GB); this VPS idles at 2.5-3.6 GB free, 4.5 never came (10-17)
 FINAL = ("pass", "fail", "data_changed")
 
 
