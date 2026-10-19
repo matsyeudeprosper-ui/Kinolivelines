@@ -14896,6 +14896,41 @@ def _chat_show(c, user, sh):
     return None
 
 
+def _demo_later(cid, user, sh):
+    """2026-10-19 (owner: "where is the example?"): the market has no candles for charts yet - say so, fetch them
+    (robot_demo.fetch, ~1-2 min), then post the chart; the page keeps polling meanwhile (status building)"""
+    c = json.load(open(_chat_path(cid), encoding="utf-8"))
+    mk = (_rc().market_of(sh.get("market"), _chat_markets(user)) if sh.get("market") else None) or _chat_market(c)
+    en = c.get("lang") == "en"
+    _CHAT_B.add(cid)
+    _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("Fetching %s's prices to show you - a minute or two." if en else
+                                                        "Je récupère les prix de %s pour te montrer - une minute ou deux.") % mk))
+
+    def wait():
+        try:
+            _rd().fetch(mk)
+            for _ in range(60):
+                time.sleep(5)
+                if _rd().ready(mk):
+                    break
+            c2 = json.load(open(_chat_path(cid), encoding="utf-8"))
+            dm = _chat_show(dict(c2, market=mk, robot=dict(c2.get("robot") or {}, market=mk)), user, sh)
+            if dm and not dm.get("nodata"):
+                _chat_mut(cid, lambda c: c.setdefault("msgs", []).append(dict(dm, t=int(time.time()))))
+            else:
+                _chat_mut(cid, lambda c: _chat_msg(c, "sys", text=("I couldn't get %s's prices this time." if en else
+                                                                    "Je n'ai pas réussi à récupérer les prix de %s cette fois.") % mk))
+        except Exception:
+            pass
+        finally:
+            _CHAT_B.discard(cid)
+            try:
+                _chat_mut(cid, lambda c: None)
+            except Exception:
+                pass
+    threading.Thread(target=wait, daemon=True).start()
+
+
 def _chat_quick(cid, user, event=None, notify=False, important=False):
     """background: the quick reply (or the reply to an event); starts the builder when the robot must change"""
     en = False
@@ -14941,6 +14976,8 @@ def _chat_quick(cid, user, event=None, notify=False, important=False):
             raise
         if q["build"]:
             threading.Thread(target=_chat_build, args=(cid, user), daemon=True).start()
+        if _qdm and _qdm.get("nodata") and (q or {}).get("show"):
+            _demo_later(cid, user, q["show"])
         if notify and q.get("say"):
             _companion_deliver(user, cid, q["say"], important)
     except Exception as e:
@@ -14996,6 +15033,8 @@ def _chat_build(cid, user):
                 dm = _chat_show(c, user, ans.get("show"))
                 if dm and not dm.get("nodata"):
                     c.setdefault("msgs", []).append(dict(dm, t=int(time.time())))
+                elif dm and dm.get("nodata"):
+                    threading.Thread(target=_demo_later, args=(cid, user, ans.get("show")), daemon=True).start()
                 if ans.get("understood"):
                     c["understood"] = ans["understood"]
             _chat_mut(cid, put)

@@ -14,7 +14,7 @@ structure engine (class Struct lifted from structure_bos_bot.py, as live/robots/
 cached per dataset. A demonstration is a simplified replay (candle highs/lows, no spread, no brakes): it shows HOW the
 robot trades; the money figures come from the real test.
 """
-import ast, hashlib, json, os, pickle, sys, threading
+import ast, hashlib, json, os, pickle, sys, threading, time
 
 import numpy as np
 
@@ -74,14 +74,43 @@ def data(market):
         try:
             meta = json.load(open(os.path.join(d, "meta.json"), encoding="utf-8"))
             R = np.load(os.path.join(d, "bars.npz"))["R"]
+            k, key = float(meta["k"]), base + "_" + str(meta.get("sha256", ""))[:12]
         except Exception:
-            return None
-        k, key = float(meta["k"]), base + "_" + str(meta.get("sha256", ""))[:12]
+            # 2026-10-19: no test pack - the light demo candles (demo_bars.py), fetched on demand, refreshed after 12 h
+            fn = os.path.join(CACHE, "bars_%s.npz" % base)
+            try:
+                lm = json.load(open(fn.replace(".npz", ".json"), encoding="utf-8"))
+                R = np.load(fn)["R"]
+                k, key = float(lm["k"]), "%s_light_%d" % (base, int(lm["at"]))
+                if time.time() - float(lm["at"]) > 12 * 3600:
+                    fetch(base)
+            except Exception:
+                fetch(base)
+                return None
     eyes = _eyes(R, key)
     out = (R, k, eyes, key)
     with _LOCK:
         _MEM[m] = out
     return out
+
+
+def fetch(sym):
+    """start the light candle download for a market (background, below-normal priority, one at a time per market)"""
+    import subprocess
+    lock = os.path.join(CACHE, "bars_%s.npz.lock" % sym.upper())
+    if os.path.exists(lock) and time.time() - os.path.getmtime(lock) < 600:
+        return
+    os.makedirs(CACHE, exist_ok=True)
+    py = sys.executable.replace("python.exe", "pythonw.exe")
+    subprocess.Popen([py if os.path.exists(py) else sys.executable, os.path.join(HERE, "demo_bars.py"), sym.upper()],
+                     cwd=HERE, creationflags=0x08000000 | 0x00004000, close_fds=True)
+
+
+def ready(market):
+    """True when charts can be drawn for this market right now"""
+    m = (market or "BTCUSD").upper()
+    b = m[:-1] if m.endswith("M") else m
+    return b.startswith("BTCUSD") or os.path.exists(os.path.join(STUDY, "markets", b, "bars.npz"))         or os.path.exists(os.path.join(CACHE, "bars_%s.npz" % b))
 
 
 def _bars(R, eyes=None, upto=None):

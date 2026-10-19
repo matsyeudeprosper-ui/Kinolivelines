@@ -268,10 +268,17 @@ def _hm(t):
 def market_text(markets, current):
     """the member's markets for the prompt: ready ones first, then the rest by name"""
     M = markets or []
+    try:
+        import robot_demo as RD
+        cur_ok = RD.ready(current or "BTCUSD")
+    except Exception:
+        cur_ok = True
     rd = [m["s"] for m in M if m.get("ready")]
     other = [m["s"] for m in M if not m.get("ready")]
-    return ("current market of the robot: %s\nready (test in minutes): BTCUSD%s\nother markets of the broker (~100 min the "
-            "first time): %s" % (current or "BTCUSD", "".join(", " + x for x in rd), ", ".join(other[:260]) or "-"))
+    return ("current market of the robot: %s (charts: %s)\nready (test in minutes): BTCUSD%s\nother markets of the broker (~100 min the "
+            "first time): %s" % (current or "BTCUSD", "available now" if cur_ok else "NOT ready yet - its prices are fetched when you "
+                                 "show something (1-2 min): say you are fetching them, never 'voilà' before the chart exists",
+                                 "".join(", " + x for x in rd), ", ".join(other[:260]) or "-"))
 
 
 def memory_text(mem):
