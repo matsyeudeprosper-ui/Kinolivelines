@@ -251,6 +251,30 @@ def bilan(token, cid, txt):
     return False
 
 
+# 2026-10-19 (owner): Kino on Telegram - a linked member's message goes to Kino (the app's local bridge), Kino's reply
+# (and its emoji reaction) comes back here; Kino's later messages reach Telegram from the app itself (tg_send)
+def kino_bridge(token, cid, uid, text, msg_id):
+    import threading
+
+    def run():
+        try:
+            sec = open(os.path.join(DIR, "kino_bridge.secret"), encoding="utf-8").read().strip()
+            tg(token, "sendChatAction", chat_id=cid, action="typing")
+            req = urllib.request.Request("http://127.0.0.1:8787/kino_tg", data=json.dumps({"uid": uid, "text": text}).encode("utf-8"),
+                                         headers={"Content-Type": "application/json", "X-Kino-Secret": sec})
+            r = json.loads(urllib.request.urlopen(req, timeout=150).read().decode("utf-8"))
+            if r.get("react"):
+                tg(token, "setMessageReaction", chat_id=cid, message_id=msg_id,
+                   reaction=json.dumps([{"type": "emoji", "emoji": r["react"]}]))
+            if r.get("say"):
+                for part in [x.strip() for x in r["say"].split("\n\n") if x.strip()][:4]:
+                    tg(token, "sendMessage", chat_id=cid, text=part)
+                    time.sleep(0.8)
+        except Exception as e:
+            say(f"kino bridge error: {e}")
+    threading.Thread(target=run, daemon=True).start()
+
+
 def main():
     say("telegram daemon starting")
     # wait for config with a token
@@ -268,7 +292,7 @@ def main():
     last_upd = 0.0
     while True:
         # 1) subscriptions (every ~10s)
-        if time.time() - last_upd > 10:
+        if time.time() - last_upd > 3:
             last_upd = time.time()
             r = tg(token, "getUpdates", offset=offset, timeout=0)
             if r and r.get("ok"):
@@ -290,6 +314,10 @@ def main():
                             continue
                     except Exception as e:
                         say(f"recovery error: {e}")
+                    mem = _member_of(cid)
+                    if mem and txt and not txt.startswith("/") and txt != join_word:
+                        kino_bridge(token, cid, mem.get("id"), m.get("text") or "", m.get("message_id"))
+                        continue
                     if txt == join_word and cid not in c.get("chat_ids", []):
                         c.setdefault("chat_ids", []).append(cid)
                         save_cfg(c)

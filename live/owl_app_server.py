@@ -15039,6 +15039,8 @@ def _chat_build(cid, user):
                 if probs:
                     txt += ("\n\n(One piece didn't pass the checks, so I kept the previous one.)" if en else
                             "\n\n(Une pièce n'a pas passé les contrôles, j'ai gardé l'ancienne.)")
+                if txt.strip() and _tg_live(user.get("id")) and any(mm.get("via") == "telegram" for mm in (c.get("msgs") or [])[-4:]):
+                    threading.Thread(target=tg_send, args=(user.get("id"), txt.strip()), daemon=True).start()
                 if txt.strip() or ans.get("made") or ans.get("robot"):
                     _chat_msg(c, "ai", text=txt.strip() or ("Robot updated." if en else "Robot mis à jour."), chips=ans.get("chips") or [],
                               made=ans.get("made") or [], rev=c.get("rev"), ready=bool(ans.get("ready")), probs=probs[:4] if probs else None,
@@ -15166,6 +15168,9 @@ def _companion_deliver(user, cid, text, important=False):
         return "live"
     if not important and _trade_open(uid) and time.time() - _LAST_SEEN.get(uid, 0) < 120:
         important = False                                   # busy with a trade: the card waits until it is closed
+
+    if _tg_live(uid) and tg_send(uid, text):
+        return "telegram"                                   # they are talking to Kino on Telegram right now
 
     def put(m):
         n = {"t": int(time.time()), "cid": cid, "text": str(text)[:400], "important": bool(important), "seen": False, "pushed": 0}
@@ -15729,6 +15734,67 @@ def kino_forget(user, body):
             mm["notes"] = n
     _mem_note_safe(user.get("id"), put)
     return {"ok": True}
+
+
+# ---- 2026-10-19 (owner: "Kino on Telegram, same memory and personality: you talk to it there, it reaches you there") ----
+# owl_telegram.py forwards a linked member's message to POST /kino_tg (localhost only + live/kino_bridge.secret); it goes
+# into their latest conversation like any message; the quick reply comes back in the HTTP answer, later messages
+# (Kino's follow-up, proactive ones) are sent to their Telegram by tg_send while the Telegram thread is "live".
+def _tg_token():
+    try:
+        return json.load(open(os.path.join(DIR, "owl_telegram.json"), encoding="utf-8")).get("token")
+    except Exception:
+        return None
+
+
+def tg_send(uid, text):
+    u = next((x for x in users() if x.get("id") == uid), None)
+    cid, tok = (u or {}).get("telegram_chat"), _tg_token()
+    if not cid or not tok or not text:
+        return False
+    try:
+        import urllib.request, urllib.parse
+        data = urllib.parse.urlencode({"chat_id": cid, "text": str(text)[:3500]}).encode()
+        url = "https://api.telegram.org/bot%s/sendMessage" % tok
+        try:
+            urllib.request.urlopen(url, data=data, timeout=15).read()
+        except Exception as e:
+            if "CERTIFICATE_VERIFY_FAILED" not in str(e):
+                raise
+            import ssl as _ssl            # this box's Python distrusts the chain (owl_telegram.py does the same)
+            urllib.request.urlopen(url, data=data, timeout=15, context=_ssl._create_unverified_context()).read()
+        return True
+    except Exception:
+        return False
+
+
+def _tg_live(uid):
+    return time.time() - float(_mem_get(uid).get("tg_live") or 0) < 1800
+
+
+def kino_tg(body):
+    uid, text = str(body.get("uid") or ""), str(body.get("text") or "").strip()[:1500]
+    u = next((x for x in users() if x.get("id") == uid), None)
+    if not u or not text:
+        return {"ok": False}
+    if not (is_admin(u) or has(uid, "strategy")):
+        return {"ok": True, "say": "Kino, le compagnon de trading de l'app, est inclus dans la formule Stratégie. Tu peux la voir dans l'app : Compte › Abonnement."}
+    ch = chat_list(u).get("chats") or []
+    cid = ch[0]["id"] if ch else chat_start(u, {"lang": "fr"}).get("id")
+    if not cid:
+        return {"ok": False}
+    if _CHAT_Q.get(cid):
+        return {"ok": True, "say": None}
+    _mem_note_safe(uid, lambda mm: mm.__setitem__("tg_live", time.time()))
+    _CHAT_Q[cid] = _CHAT_Q.get(cid, 0) + 1
+    _chat_mut(cid, lambda c: _chat_msg(c, "user", text=text, via="telegram"))
+    n0 = len((_chat_load(u, cid) or {}).get("msgs") or [])
+    _chat_quick(cid, u)                                     # synchronous here: the bridge waits for the reply
+    c = _chat_load(u, cid) or {}
+    new = [m for m in (c.get("msgs") or [])[n0:] if m.get("role") == "ai"]
+    last_user = next((m for m in reversed(c.get("msgs") or []) if m.get("role") == "user"), {})
+    return {"ok": True, "say": "\n\n".join(m.get("text") or "" for m in new) or None, "react": last_user.get("react"),
+            "chips": (new[-1].get("chips") if new else None) or []}
 
 
 def ai_nudge(user):
@@ -21147,6 +21213,18 @@ class H(BaseHTTPRequestHandler):
     def _do_POST(self):
         p = self.path.split("?")[0].rstrip("/")
         _parts = [x for x in p.split("/") if x]
+        if p == "/kino_tg":
+            try:
+                _sec = open(os.path.join(DIR, "kino_bridge.secret"), encoding="utf-8").read().strip()
+            except Exception:
+                _sec = ""
+            import hmac as _hm
+            if self.client_address[0] not in ("127.0.0.1", "::1") or self.headers.get("X-Forwarded-For") or self.headers.get("X-Real-IP")                     or not _sec or not _hm.compare_digest(self.headers.get("X-Kino-Secret") or "", _sec):
+                self._not_found()
+                return
+            _b = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 8000)).decode("utf-8", "replace") or "{}")
+            self._send(json.dumps(kino_tg(_b), ensure_ascii=False), "application/json")
+            return
         if p == "/fn":
             try:
                 import urllib.parse as _upf
